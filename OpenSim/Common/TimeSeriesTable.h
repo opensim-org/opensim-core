@@ -245,7 +245,7 @@ public:
                             this TimeSeriesTable_ type.                       */
     TimeSeriesTable_(const std::string& filename, 
                      const std::string& tablename) {
-        auto absTables = FileAdapter::readFile(filename);
+        auto absTables = FileAdapter::createAdapterFromExtension(filename)->read(filename);
 
         OPENSIM_THROW_IF(absTables.size() > 1 && tablename.empty(),
                          InvalidArgument,
@@ -312,6 +312,38 @@ public:
             return std::distance(timeCol.begin(), iter);
         else
             return std::distance(timeCol.begin(), std::prev(iter));
+    }
+    /** Get index of row whose time is first to be higher than the given value.
+
+     \param time Value to search for.
+     */
+    size_t getRowIndexAfterTime(
+            const double& time) const {
+        size_t candidate = getNearestRowIndexForTime(time, false);
+        using DT = DataTable_<double, ETY>;
+        const auto& timeCol = DT::getIndependentColumn();
+        const SimTK::Real eps = SimTK::SignificantReal;
+        // increment if less than time passed in
+        if (timeCol[candidate] < time-eps) 
+            candidate++;
+        OPENSIM_THROW_IF(candidate > timeCol.size() - 1,
+                    TimeOutOfRange, time, timeCol.front(), timeCol.back());
+        return candidate;
+    }
+    /** Get index of row whose time is the largest time less than the given value.
+
+     \param time Value to search for.
+     */
+    size_t getRowIndexBeforeTime(const double& time) const {
+        size_t candidate = getNearestRowIndexForTime(time, false);
+        using DT = DataTable_<double, ETY>;
+        const auto& timeCol = DT::getIndependentColumn();
+        const SimTK::Real eps = SimTK::SignificantReal;
+        // increment if less than time passed in
+        if (timeCol[candidate] > time+eps) candidate--;
+        OPENSIM_THROW_IF(candidate < 0, TimeOutOfRange, time,
+                timeCol.front(), timeCol.back());
+        return candidate;
     }
 
     /** Get row whose time column is nearest/closest to the given value. 
@@ -399,7 +431,37 @@ public:
 
         return row;
     }
+    /**
+     * Trim TimeSeriesTable to rows that have times that lies between 
+     * newStartTime, newFinalTime. The trimming is done in place, no copy is made. 
+     * Uses getRowIndexAfterTime to locate first row and
+     * getNearestRowIndexForTime method to locate last row.
+     */
+    void trim(const double& newStartTime, const double& newFinalTime) {
+        OPENSIM_THROW_IF(newFinalTime < newStartTime, EmptyTable);
+        const auto& timeCol = this->getIndependentColumn();
+        size_t start_index = 0;
+        size_t last_index = this->getNumRows() - 1;
+        // Avoid throwing exception if newStartTime is less than first time
+        // or newFinalTime is greater than last value in table
+        start_index = this->getRowIndexAfterTime(newStartTime);
+        last_index = this->getRowIndexBeforeTime(newFinalTime);
 
+        // do the actual trimming based on index instead of time.
+        trimToIndices(start_index, last_index);
+    }
+    /**
+     * trim TimeSeriesTable, keeping rows at newStartTime to the end.
+     */
+    void trimFrom(const double& newStartTime) { 
+        this->trim(newStartTime, this->getIndependentColumn().back());
+    }
+    /**
+     * trim TimeSeriesTable, keeping rows up to newFinalTime
+     */
+    void trimTo(const double& newFinalTime) {
+        this->trim(this->getIndependentColumn().front(), newFinalTime);
+    }
 protected:
     /** Validate the given row. 
 
@@ -425,6 +487,24 @@ protected:
                              DT::_indData[rowIndex + 1]);
         }
     }
+    /** trim table to rows ebtween start_index and last_index incluslively
+     */
+    void trimToIndices(const size_t& start_index, const size_t& last_index) {
+        // This uses the rather invasive but efficient mechanism to copy a
+        // block of the underlying Matrix.
+        // Side effect may include that headers/metaData may be left stale.
+        // Alternatively we can create a new TimeSeriesTable and copy contents
+        // one row at a time but that's rather overkill
+        SimTK::Matrix_<ETY> matrixBlock = this->updMatrix()((int)start_index, 0,
+                (int)(last_index - start_index + 1),
+                (int)this->getNumColumns());
+        this->updMatrix() = matrixBlock;
+        std::vector<double> newIndependentVector = std::vector<double>(
+                this->getIndependentColumn().begin() + start_index,
+                this->getIndependentColumn().begin() + last_index + 1);
+        this->_indData = newIndependentVector;
+    }
+
 }; // TimeSeriesTable_
 
 /** See TimeSeriesTable_ for details on the interface.                        */
@@ -432,6 +512,9 @@ typedef TimeSeriesTable_<SimTK::Real> TimeSeriesTable;
 
 /** See TimeSeriesTable_ for details on the interface.                        */
 typedef TimeSeriesTable_<SimTK::Vec3> TimeSeriesTableVec3;
+
+/** See TimeSeriesTable_ for details on the interface.                        */
+typedef TimeSeriesTable_<SimTK::Quaternion> TimeSeriesTableQuaternion;
 } // namespace OpenSim
 
 #endif // OPENSIM_TIME_SERIES_DATA_TABLE_H_

@@ -38,7 +38,7 @@ using namespace OpenSim;
 using SimTK::Vec3;
 
 static const Vec3 DefaultMuscleColor(.8, .1, .1); // Red for backward compatibility
-//static int counter=0;
+
 //=============================================================================
 // CONSTRUCTOR
 //=============================================================================
@@ -660,11 +660,13 @@ void Muscle::computeForce(const SimTK::State& s,
                           SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
                           SimTK::Vector& generalizedForces) const
 {
-    Super::computeForce(s, bodyForces, generalizedForces); // Calls compute actuation.
+    // This calls compute actuation.
+    Super::computeForce(s, bodyForces, generalizedForces); 
 
-    // NOTE: Actuation could be negative, in particular during CMC, when the optimizer
-    // is computing gradients, but in those cases the actuation will be 
-    // overridden and will not be computed by the muscle
+    if (getDebugLevel() < 0) return;
+    // NOTE: Actuation could be negative, in particular during CMC, when the 
+    // optimizer is computing gradients, but in those cases the actuation will 
+    // be overridden and will not be computed by the muscle.
     if (!isActuationOverridden(s) && (getActuation(s) < -SimTK::SqrtEps)) {
         string msg = getConcreteClassName()
             + "::computeForce, muscle "+ getName() + " force < 0";

@@ -141,32 +141,32 @@ int main() {
 
     std::cout << "Testing TRCFileAdapter::read() and TRCFileAdapter::write()"
               << std::endl;
-    for(const auto& filename : filenames) {
+    for (const auto& filename : filenames) {
         std::cout << "  " << filename << std::endl;
         TRCFileAdapter trcfileadapter{};
         try {
-            auto table = trcfileadapter.read(filename);
+            TimeSeriesTable_<SimTK::Vec3> table(filename);
             trcfileadapter.write(table, tmpfile);
             compareFiles(filename, tmpfile);
-        }
-        catch (std::exception& ex) {
+        } catch (std::exception& ex) {
             std::cout << "Failed because: '" << ex.what() << "'." << std::endl;
             failed = true;
         }
     }
 
-    std::cout << "Testing FileAdapter::readFile() and FileAdapter::writeFile()"
+    std::cout << "Testing FileAdapter::read() and FileAdapter::writeFile()"
               << std::endl;
-    for(const auto& filename : filenames) {
+    for (const auto& filename : filenames) {
         std::cout << "  " << filename << std::endl;
         try {
-            auto table = FileAdapter::readFile(filename).at("markers");
+            auto table = FileAdapter::createAdapterFromExtension(filename)
+                                 ->read(filename)
+                                 .at("markers");
             DataAdapter::InputTables tables{};
-            tables.emplace(std::string{ "markers" }, table.get());
+            tables.emplace(std::string{"markers"}, table.get());
             FileAdapter::writeFile(tables, tmpfile);
             compareFiles(filename, tmpfile);
-        }
-        catch (std::exception& ex) {
+        } catch (std::exception& ex) {
             std::cout << "Failed because: '" << ex.what() << "'." << std::endl;
             failed = true;
         }
@@ -174,22 +174,36 @@ int main() {
 
     std::cout << "Testing TimeSeriesTableVec3 and TRCFileAdapter::write()"
               << std::endl;
-    for(const auto& filename : filenames) {
+    for (const auto& filename : filenames) {
         try {
             std::cout << "  " << filename << std::endl;
             TimeSeriesTableVec3 table{filename};
             TRCFileAdapter::write(table, tmpfile);
             compareFiles(filename, tmpfile);
-        }
-        catch (std::exception& ex) {
+        } catch (std::exception& ex) {
             std::cout << "Failed because: '" << ex.what() << "'." << std::endl;
             failed = true;
         }
     }
 
-    if (failed)
-        return 1;
+    if (failed) return 1;
+    std::cout << "Testing TimeSeriesTable::trim() " << std::endl;
 
+    TimeSeriesTable_<SimTK::Vec3> table(tmpfile);
+    double trimToTime = 0.1;
+    table.trim(0.02, trimToTime);
+    TRCFileAdapter::write(table, "trimmed_" + tmpfile);
+    TimeSeriesTable_<SimTK::Vec3> roundTripTable("trimmed_" + tmpfile);
+    OPENSIM_THROW_IF(roundTripTable.getNumRows() != 5, OpenSim::Exception,
+            "Trimmed table has wrong size");
+    OPENSIM_THROW_IF(roundTripTable.getIndependentColumn().back() > trimToTime,
+            OpenSim::Exception, "Trimmed table has wrong end time.");
+    OPENSIM_THROW_IF(roundTripTable.getIndependentColumn().front() < 0.02,
+            OpenSim::Exception, "Trimmed table has wrong start time.");
+    // Use final time < first time should throw exception 
+    SimTK_TEST_MUST_THROW_EXC(table.trim(.02, 0), OpenSim::EmptyTable);
+    
+    std::remove(("trimmed_" + tmpfile).c_str());
     std::remove(tmpfile.c_str());
     std::cout << "\nAll tests passed!" << std::endl;
 

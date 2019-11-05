@@ -250,11 +250,8 @@ public:
     bool isConsistent() const;
 
     /** Weak check for if the trajectory can be used with the given model.
-     * Returns true if the trajectory isConsistent() and if the following
-     * quantities are the same:
-     * - number of model state variables and number of Y's in the state 
-     * - number of coordinates in the model and number of Q's in state
-     * - number of speeds in the model and number of U's in state
+     * Returns true if the trajectory isConsistent() and if the number of speeds
+     * in the model matches the number of U's in state.
      *
      * Returns false otherwise. This method **cannot** guarantee that the
      * trajectory will work with the given model, and makes no attempt to

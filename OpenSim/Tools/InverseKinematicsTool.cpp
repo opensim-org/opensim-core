@@ -24,22 +24,21 @@
 // INCLUDES
 //=============================================================================
 #include "InverseKinematicsTool.h"
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/InverseKinematicsSolver.h>
 
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/Storage.h>
-#include <OpenSim/Common/FunctionSet.h>
-#include <OpenSim/Common/GCVSplineSet.h>
-#include <OpenSim/Common/Constant.h>
-#include <OpenSim/Common/XMLDocument.h>
-
-#include <OpenSim/Analyses/Kinematics.h>
-
-#include "IKTaskSet.h"
 #include "IKCoordinateTask.h"
 #include "IKMarkerTask.h"
+#include "IKTaskSet.h"
 
+#include <OpenSim/Analyses/Kinematics.h>
+#include <OpenSim/Common/Constant.h>
+#include <OpenSim/Common/FunctionSet.h>
+#include <OpenSim/Common/GCVSplineSet.h>
+#include <OpenSim/Common/IO.h>
+#include <OpenSim/Common/Stopwatch.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/XMLDocument.h>
+#include <OpenSim/Simulation/InverseKinematicsSolver.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -358,7 +357,7 @@ bool InverseKinematicsTool::run()
         Storage *modelMarkerErrors = _reportErrors ? 
             new Storage(Nframes, "ModelMarkerErrors") : nullptr;
 
-        const clock_t start = clock();
+        Stopwatch watch;
 
         for (int i = start_ix; i <= final_ix; ++i) {
             s.updTime() = times[i];
@@ -460,7 +459,7 @@ bool InverseKinematicsTool::run()
         success = true;
 
         cout << "InverseKinematicsTool completed " << Nframes << " frames in "
-            <<(double)(clock()-start)/CLOCKS_PER_SEC << "s\n" <<endl;
+            << watch.getElapsedTimeFormatted() << "\n" <<endl;
     }
     catch (const std::exception& ex) {
         std::cout << "InverseKinematicsTool Failed: " << ex.what() << std::endl;
@@ -620,20 +619,17 @@ void InverseKinematicsTool::populateReferences(MarkersReference& markersReferenc
         }
         else if (IKMarkerTask *markerTask = dynamic_cast<IKMarkerTask *>(&_ikTaskSet[i])) {
             if (markerTask->getApply()) {
+                // Only track markers that have a task and it is "applied"
                 markerWeights.adoptAndAppend(
                     new MarkerWeight(markerTask->getName(), markerTask->getWeight()));
             }
         }
     }
 
-    // Set the default weight for markers
-    markersReference.setDefaultWeight(1.0);
-    // Set the weights for markers (markers in the model and the marker file
-    // but not assigned a weight in the markerWeightSet will use the default
-    // weight
-    markersReference.setMarkerWeightSet(markerWeights);
-    //Load the makers
-    markersReference.loadMarkersFile(_markerFileName);
+    //Read in the marker data file and set the weights for associated markers.
+    //Markers in the model and the marker file but not in the markerWeights are
+    //ignored
+    markersReference.initializeFromMarkersFile(_markerFileName, markerWeights);
 }
 
 

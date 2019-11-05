@@ -201,7 +201,9 @@ constructColumnLabels()
     if(_model) 
         for (int i = 0; i < _forceSet->getActuators().getSize(); i++) {
             if (ScalarActuator* act = dynamic_cast<ScalarActuator*>(&_forceSet->getActuators().get(i))) {
-                labels.append(act->getName());
+                //std::cout << act->dump() << std::endl;
+                if (act->get_appliesForce())
+                    labels.append(act->getName());
             }
         }
     setColumnLabels(labels);
@@ -510,6 +512,13 @@ int StaticOptimization::begin(const SimTK::State& s )
     // Make a working copy of the model
     delete _modelWorkingCopy;
     _modelWorkingCopy = _model->clone();
+    // Remove disabled Actuators so we don't use them downstream (issue #2438)
+    const Set<Actuator>& actuators= _modelWorkingCopy->getActuators();
+    for (int i = actuators.getSize() - 1; i >= 0; i--) {
+        if (!actuators.get(i).get_appliesForce()) {
+            _modelWorkingCopy->updForceSet().remove(i);
+        }
+    }
     _modelWorkingCopy->initSystem();
 
     // Replace model force set with only generalized forces
@@ -551,7 +560,7 @@ int StaticOptimization::begin(const SimTK::State& s )
         sWorkingCopy.setTime(s.getTime());
         sWorkingCopy.setQ(s.getQ());
         sWorkingCopy.setU(s.getU());
-        sWorkingCopy.setZ(s.getZ());
+        // No need to copy Zs to be consistent with record method below 
         _modelWorkingCopy->getMultibodySystem().realize(s,SimTK::Stage::Velocity);
         _modelWorkingCopy->equilibrateMuscles(sWorkingCopy);
         // Gather indices into speed set corresponding to the unconstrained degrees of freedom 

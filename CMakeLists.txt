@@ -89,7 +89,9 @@ option(OPENSIM_COPY_DEPENDENCIES "Copy Simbody and BTK into the
 OpenSim installation. This should be set to ON when making a relocatable
 distribution, and should be set to OFF when packaging for Homebrew, Debian,
 etc. On Linux and macOS: we use relative RPATHs when ON, and absolute RPATHs
-when OFF." ON)
+when OFF. For most users, this should also be on if BUILD_JAVA_WRAPPING or 
+BUILD_PYTHON_WRAPPING is ON, so if this OFF, a warning is thrown." ON)
+mark_as_advanced(OPENSIM_COPY_DEPENDENCIES)
 
 option(OPENSIM_PYTHON_STANDALONE "Make the Python package standalone, meaning
 the OpenSim (and Simbody and BTK) shared libraries it depends on are copied
@@ -392,7 +394,7 @@ set(BUILD_JAVA_WRAPPING OFF CACHE BOOL "Build Java wrapping (needed if you're bu
 
 set(BUILD_PYTHON_WRAPPING OFF CACHE BOOL "Build Python wrapping (needed if you're building the Python wrapping; requires that you have SWIG and Python installed on your machine.)")
 
-set(OPENSIM_PYTHON_VERSION 2 CACHE STRING
+set(OPENSIM_PYTHON_VERSION 3 CACHE STRING
     "The major Python version (2 or 3) for which to build the wrapping.")
 # To create a drop-down in the CMake GUI:
 set_property(CACHE OPENSIM_PYTHON_VERSION PROPERTY STRINGS "2" "3")
@@ -439,6 +441,15 @@ if(${BUILD_JAVA_WRAPPING})
                 message(WARNING ${MSG})
             endif()
         endif()
+    endif()
+    # Most users need to copy dependencies if wrapping is on. Warn user
+    # if it isn't on.
+    if (NOT OPENSIM_COPY_DEPENDENCIES)
+        string(CONCAT MSG
+           "BUILD_JAVA_WRAPPING is ON but OPENSIM_COPY_DEPENDENCIES is OFF. "
+           "Wrapping may not work correctly. Consider switching the "
+           "OPENSIM_COPY_DEPENDENCIES flag to ON.")
+        message(WARNING ${MSG})
     endif()
 endif()
 
@@ -488,7 +499,16 @@ if(${BUILD_PYTHON_WRAPPING})
             CACHE FILEPATH "${pylib_desc}")
     endif()
     find_package(PythonLibs ${required_python_version} REQUIRED)
-
+    
+    # Most users need to copy dependencies if wrapping is on. Warn user
+    # if it isn't on.
+    if (NOT OPENSIM_COPY_DEPENDENCIES)
+        string(CONCAT MSG
+           "BUILD_PYTHON_WRAPPING is ON but OPENSIM_COPY_DEPENDENCIES is OFF. "
+           "Wrapping may not work correctly. Consider switching the "
+           "OPENSIM_COPY_DEPENDENCIES flag to ON.")
+        message(WARNING ${MSG})
+    endif()
 endif()
 
 if(WIN32)

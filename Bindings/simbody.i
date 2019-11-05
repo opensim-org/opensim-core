@@ -15,6 +15,23 @@ namespace SimTK {
 %template(Vec4) Vec<4>;
 %template(Vec6) Vec<6>;
 }
+%define ADD_VEC_OPERATOR_METHODS(VEC_TYPE)
+%extend VEC_TYPE {
+	%template(scalarEq) scalarEq<double>;
+	%template(scalarPlusEq) scalarPlusEq<double>;
+	%template(scalarMinusEq) scalarMinusEq<double>;
+	%template(scalarTimesEq) scalarTimesEq<double>;
+	%template(scalarDivideEq) scalarDivideEq<double>;
+}
+%enddef
+
+ADD_VEC_OPERATOR_METHODS(SimTK::Vec<2>)
+
+ADD_VEC_OPERATOR_METHODS(SimTK::Vec<3>)
+
+ADD_VEC_OPERATOR_METHODS(SimTK::Vec<4>)
+
+ADD_VEC_OPERATOR_METHODS(SimTK::Vec<6>)
 
 // Mat33
 %include <SWIGSimTK/Mat.h>
@@ -24,8 +41,10 @@ namespace SimTK {
 }
 %include <SWIGSimTK/CoordinateAxis.h>
 %include <SWIGSimTK/UnitVec.h>
+%include <SWIGSimTK/Quaternion.h>
 namespace SimTK {
 %template(UnitVec3)  SimTK::UnitVec<double,1>;
+%template(Quaternion)  SimTK::Quaternion_<double>;
 }
 
 // Vector and Matrix
@@ -152,23 +171,41 @@ namespace SimTK {
          return rowVec;
      }
  }
-%template(MatrixBaseVec3)    SimTK::MatrixBase<Vec3>;
-%template(MatrixViewVec3)    SimTK::MatrixView_<Vec3>;
-%template(MatrixVec3)        SimTK::Matrix_<Vec3>;
-%template(VectorBaseVec3)    SimTK::VectorBase<Vec3>;
-%template(VectorViewVec3)    SimTK::VectorView_<Vec3>;
-// Following is wrapped few lines below.
-// %template(VectorVec3)        SimTK::Vector_<Vec3>;
-%template(RowVectorBaseVec3) SimTK::RowVectorBase<Vec3>;
-%template(RowVectorViewVec3) SimTK::RowVectorView_<Vec3>;
-%template(RowVectorOfVec3)     SimTK::RowVector_<Vec3>;
+
+// Swig macro to instantiate all template classes needed 
+// to make a DataTable of type ETY
+%define INSTANTIATE_MATRIXTYPES(ETY)
+%template(MatrixBase ## ETY)    SimTK::MatrixBase<ETY>;
+%template(MatrixView ## ETY)    SimTK::MatrixView_<ETY>;
+%template(Matrix ## ETY)        SimTK::Matrix_<ETY>;
+%template(VectorBase ## ETY)    SimTK::VectorBase<ETY>;
+%template(VectorView ## ETY)    SimTK::VectorView_<ETY>;
+%template(Vector ## ETY)        SimTK::Vector_<ETY>;
+%template(RowVectorBase ## ETY) SimTK::RowVectorBase<ETY>;
+%template(RowVectorView ## ETY) SimTK::RowVectorView_<ETY>;
+%template(RowVector ## ETY)     SimTK::RowVector_<ETY>;
+%enddef
+
+INSTANTIATE_MATRIXTYPES(Vec3)
+INSTANTIATE_MATRIXTYPES(Vec6)
+
+
+%template(MatrixBaseQuaternion)    SimTK::MatrixBase<Quaternion_<double>>;
+//%template(MatrixViewQuaternion)    SimTK::MatrixView_<Quaternion_<double>>;
+%template(MatrixQuaternion)        SimTK::Matrix_<Quaternion_<double>>;
+%template(VectorBaseQuaternion)    SimTK::VectorBase<Quaternion_<double>>;
+//%template(VectorViewQuaternion)    SimTK::VectorView_<Quaternion_<double>>;
+%template(VectorQuaternion)        SimTK::Vector_<Quaternion_<double>>;
+%template(RowVectorBaseQuaternion) SimTK::RowVectorBase<Quaternion_<double>>;
+%template(RowVectorViewQuaternion) SimTK::RowVectorView_<Quaternion_<double>>;
+%template(RowVectorQuaternion)     SimTK::RowVector_<Quaternion_<double>>;
+
 }
 
 %include <SWIGSimTK/SpatialAlgebra.h>
 namespace SimTK {
 %template(SpatialVec) Vec<2,   Vec3>;
 %template(VectorOfSpatialVec) Vector_<SpatialVec>;
-%template(VectorOfVec3) Vector_<Vec3>;
 %template(MatrixOfSpatialVec) Matrix_<SpatialVec>;
 }
 
@@ -176,11 +213,31 @@ namespace SimTK {
 namespace SimTK {
 %template(Rotation) SimTK::Rotation_<double>;
 %template(InverseRotation) SimTK::InverseRotation_<double>;
+
+INSTANTIATE_MATRIXTYPES(Mat33)
+%template(MatrixBaseRotation)    SimTK::MatrixBase<SimTK::Rotation_<double>>;
+//%template(MatrixViewRotation)    SimTK::MatrixView_<SimTK::Rotation_<double>>;
+%template(MatrixRotation)        SimTK::Matrix_<SimTK::Rotation_<double>>;
+%template(VectorBaseRotation)    SimTK::VectorBase<SimTK::Rotation_<double>>;
+//%template(VectorViewRotation)    SimTK::VectorView_<SimTK::Rotation_<double>>;
+%template(VectorRotation)        SimTK::Vector_<SimTK::Rotation_<double>>;
+%template(RowVectorBaseRotation) SimTK::RowVectorBase<SimTK::Rotation_<double>>;
+%template(RowVectorViewRotation) SimTK::RowVectorView_<SimTK::Rotation_<double>>;
+%template(RowVectorRotation)     SimTK::RowVector_<SimTK::Rotation_<double>>;
+
 }
 
 %extend SimTK::Rotation_<double> {
     Vec3 multiply(const Vec3& v) {
         return operator*(*$self, v);
+    }
+
+    Rotation_<double> multiply(const Rotation_<double>& r) {
+        return operator*(*$self, r);
+    }
+
+    Rotation_<double> multiply(const InverseRotation_<double>& r) {
+        return operator*(*$self, r);
     }
 
     RowVector_<Vec3> multiply(const RowVector_<Vec3>& row) {
@@ -212,6 +269,7 @@ namespace SimTK {
 %template(SimTKArrayDouble) SimTK::Array_<double>;
 %template(SimTKArrayVec3) SimTK::Array_<SimTK::Vec3>;
 %template(SimTKArrayInt) SimTK::Array_<int>;
+%template(SimTKArrayRotation) SimTK::Array_<SimTK::Rotation_<double>>;
 }
 
 typedef int SubsystemIndex;
@@ -283,3 +341,4 @@ namespace SimTK {
     }
 }
 }
+

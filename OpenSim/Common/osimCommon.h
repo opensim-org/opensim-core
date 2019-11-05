@@ -24,6 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "About.h"
+#include "CommonUtilities.h"
 #include "Object.h"
 #include "RegisterTypes_osimCommon.h"
 #include "FunctionSet.h"
@@ -31,6 +32,8 @@
 #include "ScaleSet.h"
 #include "GCVSpline.h"
 #include "IO.h"
+
+#include "Stopwatch.h"
 
 #include "Scale.h"
 #include "SimmSpline.h"

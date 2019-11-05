@@ -277,7 +277,7 @@ class TestTables {
         Vec3 elem = new Vec3(1, 1, 1);
         StdVectorVec3 elems = new StdVectorVec3();
         elems.add(elem); elems.add(elem); elems.add(elem); elems.add(elem);
-        RowVectorOfVec3 row = new RowVectorOfVec3(elems);
+        RowVectorVec3 row = new RowVectorVec3(elems);
         table.appendRow(0.1, row);
         assert table.getNumRows() == 1;
         assert table.getNumColumns() == 4;
@@ -533,7 +533,7 @@ class TestTables {
         assert tableFlat.getNumRows()             == 3;
         assert tableFlat.getNumColumns()          == 12;
         System.out.println(tableFlat);
-        RowVectorOfVec3 avgRowVec3 = tableVec3.averageRow(1, 2);
+        RowVectorVec3 avgRowVec3 = tableVec3.averageRow(1, 2);
         assert avgRowVec3.ncol() == 4;
         assert Math.abs(avgRowVec3.get(0).get(0) - 1.5) < 1e-8/*epsilon*/;
         assert Math.abs(avgRowVec3.get(3).get(2) - 1.5) < 1e-8/*epsilon*/;
@@ -607,7 +607,7 @@ class TestTables {
         Vec3 elem = new Vec3(1, 1, 1);
         StdVectorVec3 elems = new StdVectorVec3();
         elems.add(elem); elems.add(elem); elems.add(elem); elems.add(elem);
-        RowVectorOfVec3 row = new RowVectorOfVec3(elems);
+        RowVectorVec3 row = new RowVectorVec3(elems);
         table.appendRow(0.1, row);
         assert table.getNumRows() == 1;
         assert table.getNumColumns() == 4;
@@ -641,7 +641,7 @@ class TestTables {
         } catch(java.lang.RuntimeException exc) {}
         System.out.println(table);
         // Average row.
-        RowVectorOfVec3 avgRow = table.averageRow(0.1, 0.2);
+        RowVectorVec3 avgRow = table.averageRow(0.1, 0.2);
         assert avgRow.ncol() == 4;
         assert Math.abs(avgRow.get(0).get(0) - 1.5) < 1e-8/*epsilon*/;
         assert Math.abs(avgRow.get(3).get(2) - 1.5) < 1e-8/*epsilon*/;
@@ -703,12 +703,11 @@ class TestTables {
     }
 
     public static void test_FlattenWithIK() throws java.io.IOException {
-        String setupFileName = new String("subject01_Setup_IK_generic.xml");
-        String markerFileName = new String("walk_free_01.trc");
-        String modelFileName = new String("subject01_gait2392_scaled.osim");
+        String setupFileName = "subject01_Setup_IK_generic.xml";
+        String markerFileName = "walk_free_01.trc";
+        String modelFileName = "subject01_gait2392_scaled.osim";
 
-        TRCFileAdapter trcAdapter = new TRCFileAdapter();
-        TimeSeriesTableVec3 markerTable = trcAdapter.read(markerFileName);
+        TimeSeriesTableVec3 markerTable = new TimeSeriesTableVec3(markerFileName);
         System.out.println(markerTable);
         StdVectorString suffixes = new StdVectorString();
         suffixes.add(".x"); suffixes.add(".y"); suffixes.add(".z");
@@ -748,19 +747,19 @@ class TestTables {
             assert rowVec_copy.get(i) == i;
         }
         {
-        System.out.println("Test transpose RowVectorOfVec3 to VectorOfVec3.");
+        System.out.println("Test transpose RowVectorVec3 to VectorVec3.");
         StdVectorVec3 elems = new StdVectorVec3();
         for(int i = 0; i < 4; ++i)
             elems.add(new Vec3(i, i+1, i+2)); 
-        RowVectorOfVec3 rowVec = new RowVectorOfVec3(elems);
-        VectorOfVec3 colVec = rowVec.transpose();
+        RowVectorVec3 rowVec = new RowVectorVec3(elems);
+        VectorVec3 colVec = rowVec.transpose();
         assert colVec.size() == 4;
         for(int i = 0; i < 4; ++i)
             assert colVec.get(i).get(0) == i &&
                    colVec.get(i).get(1) == i+1 &&
                    colVec.get(i).get(2) == i+2;
-        System.out.println("Test transpose VectorOfVec3 to RowVectorOfVec3.");
-        RowVectorOfVec3 rowVec_copy = colVec.transpose();
+        System.out.println("Test transpose VectorVec3 to RowVectorVec3.");
+        RowVectorVec3 rowVec_copy = colVec.transpose();
         assert rowVec_copy.size() == 4;
         for(int i = 0; i < 4; ++i)
             assert rowVec_copy.get(i).get(0) == i &&

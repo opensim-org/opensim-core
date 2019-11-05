@@ -1,4 +1,4 @@
-Guidelines for Contributing to OpenSim-Core
+﻿Guidelines for Contributing to OpenSim-Core
 ===========================================
 OpenSim is a community resource that is housed in the OpenSim-Core repository.
 We encourage everyone to contribute to the OpenSim project. This could be adding new code for a feature, improving an algorithm, or letting us know about a bug or making a feature request. The purpose of our contribution policy is to ensure that all code in OpenSim-Core has undergone real scrutiny, thereby reducing the likelihood of errors.
@@ -31,7 +31,7 @@ There are lots of ways to contribute to the OpenSim project, and people with wid
 
     Delp SL, Anderson FC, Arnold AS, Loan P, Habib A, John CT, Guendelman E, Thelen DG (2007) OpenSim: open-source software to create and analyze dynamic simulations of movement. *IEEE Trans Biomed Eng* 54:1940–50.
 
-    Seth A, Sherman M, Reinbolt JA, Delp SL (2011) OpenSim: A musculoskeletal modeling and simulation framework for in silico investigations and exchange. *Procedia IUTAM* 2:212–232.
+    Seth A, Hicks JL, Uchida TK, Habib A, Dembia CL, Dunne JJ, Ong CF, DeMers MS, Rajagopal A, Millard M, Hamner SR, Arnold EM, Yong JR, Lakshmikanth SK, Sherman MA, Ku JP, Delp SL (2018) OpenSim: Simulating musculoskeletal dynamics and neuromuscular control to study human and animal movement. *PLoS Computational Biology* 14(7):e1006223.
 
 
 
@@ -53,9 +53,11 @@ When you are ready to make a PR, please adhere to the following guidelines:
 
 5. Updates to comments, Doxygen, compiler compatibility, CMake files, or continuous integration files must be reviewed by at least one member of the Dev Team before being merged. The original author or the reviewer(s) may merge the pull request.
 
-6. Any other changes to the code require review by at least two members of the Dev Team. If the pull request involves adding a new class or performing a major object/algorithm refactor, one of these reviewers must be an Owner. The Owners and Dev Team are Teams within the opensim-org GitHub organization. The original author may NOT merge the pull request.
+6. Any other changes to the code require review by one member of the Dev Team, and manual testing by one member of the Dev Team. If the pull request involves adding a new class or performing a major object/algorithm refactor, one of these reviewers must be an Owner. The Owners and Dev Team are Teams within the opensim-org GitHub organization. Dev Team members are listed [here](https://github.com/orgs/opensim-org/teams/dev-team/members). Owners can be determined from [this list](https://github.com/orgs/opensim-org/people). The first reviewer determines if a second reviewer is required for the pull request to be accepted; you may also suggest whether the pull request should require one or two reviewers. You or the reviewers may merge the pull request once the reviewers accept the pull request. 
 
 7. As the changes introduced by your pull request become finalized throughout the review process, you should decide if your changes warrant being mentioned in the change log. If so, update the [CHANGELOG.md](https://github.com/opensim-org/opensim-core/blob/master/CHANGELOG.md) with an additional commit to your pull request.
+
+8. CI must be run for all changes, except Matlab tests and examples, non-Doxygen markdown files, and non-Doxygen comments. CI tests must pass before merge, unless the author and reviewer(s) deem the failures unrelated to the change.
 
 A few additional practices will help streamline the code review process. Please use tags (i.e., @user_name) and quoting to help keep the discussion organized. Please also call for a meeting or Skype call when discussions start to stagnate. In addition, we recommend getting input on your interface design before implementing a major new component or other change.
 

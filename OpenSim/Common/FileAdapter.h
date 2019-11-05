@@ -175,7 +175,14 @@ public:
 };
 
 /** FileAdapter is a DataAdapter that reads and writes files with methods
-readFile and writeFile respectively.                                          */
+read and writeFile respectively. The read method is implemented in the base class and it
+calls the virtual extendRead method implemented by format specific subclasses. 
+Typically you don't need to call read explicitly if reading one DataTable from file, instead use 
+a constructor of the table from the specific file. e.g. 
+\code{.cpp}
+TimeSeriesTableVec3 table(filename);
+ \endcode
+ */
 class OSIMCOMMON_API FileAdapter : public DataAdapter {
 public:
     FileAdapter()                              = default;
@@ -184,12 +191,6 @@ public:
     FileAdapter& operator=(const FileAdapter&) = default;
     FileAdapter& operator=(FileAdapter&&)      = default;
     virtual ~FileAdapter()                     = default;
-
-    /** Read a file with the given name. Returns a collection of tables 
-    depending on the contents of the file read. For example, a TRC file contains
-    just one table whereas a C3D file might contain multiple tables. Refer to
-    the specific adapter's documentation to see what was returned.            */
-    static OutputTables readFile(const std::string& fileName);
 
     /** Write a collection of tables to the given file. Different file formats
     require different number/type of tables. See specific adapter's 
@@ -205,14 +206,17 @@ public:
     the given delimiters.                                                     */
     static std::vector<std::string> getNextLine(std::istream& stream,
         const std::string& delims);
-
-protected:    
+   
     /** Tokenize/split a given string using the given delimiters. The delimiters
     are each required to be one character and the string is split if/when any 
     of those characters are found. For example, a delimiter string " \t" 
     specifies that either a space or a tab can act as the delimiter.          */
     static std::vector<std::string> tokenize(const std::string& str, 
                                       const std::string& delims);
+    /** Create a concerte FileAdapter based on the extension of the passed in file and return it.
+     This serves as a Factory of FileAdapters so clients don't need to know specific concrete 
+     subclasses, as long as the generic base class read interface is used */
+    static std::shared_ptr<DataAdapter> createAdapterFromExtension(const std::string& fileName);
 };
 
 } // OpenSim namespace

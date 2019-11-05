@@ -252,11 +252,9 @@ void simulateMuscle(
     //==========================================================================
     // 5. Verify files were written with correct values
     //==========================================================================
-    auto tableD = STOFileAdapter::read("testOutputReporter_Outputs.sto");
-    auto tableV3 = STOFileAdapter_<SimTK::Vec3>::
-        read("testOutputReporter_OutputsVec3.sto");
-    auto tableSV = STOFileAdapter_<SimTK::SpatialVec>::
-        read("testOutputReporter_OutputsSpatialVec.sto");
+    TimeSeriesTable tableD("testOutputReporter_Outputs.sto");
+    TimeSeriesTable_<SimTK::Vec3> tableV3("testOutputReporter_OutputsVec3.sto");
+    TimeSeriesTable_<SimTK::SpatialVec> tableSV("testOutputReporter_OutputsSpatialVec.sto");
 
     double val_t0 = tableD.getIndependentColumn()[0];
     const SimTK::Real& val_ke0 = tableD.getRowAtIndex(0)[0];

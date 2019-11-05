@@ -163,9 +163,11 @@ void Component::addComponent(Component* subcomponent)
 void Component::prependComponentPathToConnecteePath(
         Component& subcomponent) {
     const std::string compPath = subcomponent.getAbsolutePathString();
+    const Component& root = subcomponent.getRoot();
     for (auto& comp : subcomponent.updComponentList()) {
         for (auto& it : comp._socketsTable) {
-            it.second->prependComponentPathToConnecteePath(compPath);
+            if (!root.hasComponent(it.second->getConnecteePath()))
+                it.second->prependComponentPathToConnecteePath(compPath);
         }
         for (auto& it : comp._inputsTable) {
             it.second->prependComponentPathToConnecteePath(compPath);
@@ -1789,11 +1791,15 @@ void Component::warnBeforePrint() const {
         }
     }
     if (!message.empty()) {
-        std::cout << "Warning in " << getConcreteClassName()
+        std::stringstream buffer;
+        buffer << "Warning in " << getConcreteClassName()
                 << "::print(): The following connections are not finalized "
                    "and will not appear in the resulting XML file. "
                    "Call finalizeConnections() before print().\n"
+                   "To ignore, set the debug level to at least 1 "
+                   "(e.g, by calling Object::setDebugLevel(1)) first.\n"
                 << message << std::endl;
+        OPENSIM_THROW_FRMOBJ(Exception, buffer.str());
     }
 }
 
