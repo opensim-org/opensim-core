@@ -71,7 +71,7 @@ namespace OpenSim {
             in OpenSim based on the first frame of the passed in table of quaternions
             quatTimeSeries. 
         */
-        static SimTK::Rotation computeHeadingCorrection(
+        static SimTK::Rotation_<double> computeHeadingCorrection(
                 OpenSim::Model& model,
                 OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>&
                         quatTimeSeries, 
