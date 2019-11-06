@@ -1,12 +1,74 @@
 namespace OpenSim {
 /**
 
+@example exampleMarkerTracking10DOF.m
+This is a simple example of using a marker tracking goal.
+
+@example exampleMocoTrack.m
+This is an example using the MocoTrack tool with a complex model to track
+walking.
+
+@example exampleSitToStand.m
+This is an example that predicts a sit-to-stand movement and optimizes
+the stiffness of an assistive passive device.
+
+@example exampleMinimizeJointReaction.m
+This is an example of MocoJointReactionGoal.
+
+
+
+@example exampleOptimizeMass.m
+A simple parameter optimization example.
+
 @example examplePrototypeCustomGoal.m
 This is an example of how to prototype a custom goal in Matlab. See
 @ref customgoal.
 
+@example exampleSlidingMass.m
+This is Moco's simplest example.
+
+
+
+@example exampleMocoTrack.py
+This is an example using the MocoTrack tool with a complex model to track
+walking.
+
+@example exampleOptimizeMass.py
+A simple parameter optimization example.
+
+@example examplePredictAndTrack.py
+This example predicts the trajectory to swing a double pendulum from horizontal
+to vertical, and then tracks the resulting trajectory.
+
+@example exampleSlidingMass.py
+This is Moco's simplest example.
+
+
+
+@example example2DWalking.cpp
+This example conducts a 2-D prediction of walking, employing a
+MocoPerodicityGoal.
+
 @example exampleCustomImplicitAuxiliaryDynamics.cpp
 This example shows how to define dynamics with an implicit differential
 equation.
+
+@example exampleMarkerTracking.cpp
+This is a simple example of using a marker tracking goal.
+
+@example exampleMocoTrack.cpp
+This is an example using the MocoTrack tool with a complex model to track
+walking.
+
+@example exampleSlidingMass.cpp
+This is Moco's simplest example.
+
+@example exampleSlidingMassAdvanced.cpp
+This example builds upon exampleSlidingMass.cpp and shows how to customize a
+study.
+
+@example exampleTracking.cpp
+This is a simple example of how to use a MocoStateTrackingGoal.
+
 */
 } // namespace OpenSim
