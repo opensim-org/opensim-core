@@ -440,7 +440,7 @@ SimTK::Rotation OpenSenseUtilities::computeHeadingCorrection(
 
         UnitVec3 groundX = UnitVec3(1, 0, 0);
         SimTK::Real angularDifference = acos(~pelvisHeading * groundX);
-        // Compute the angular correction.
+        // Compute the sign of the angular correction.
         SimTK::Vec3 xproduct = (groundX % pelvisHeading);
         if (xproduct.get(2) > 0) { 
             angularDifference *= -1; 
