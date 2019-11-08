@@ -37,7 +37,7 @@ void MocoInverse::constructProperties() {
 
     constructProperty_kinematics(TableProcessor());
     constructProperty_kinematics_allow_extra_columns(false);
-    constructProperty_minimize_sum_squared_states(false);
+    constructProperty_minimize_sum_squared_activations(false);
     constructProperty_max_iterations();
     constructProperty_convergence_tolerance(1e-3);
     constructProperty_constraint_tolerance(1e-3);
@@ -102,8 +102,10 @@ std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
     // Prevent "free" activation at the beginning of the motion.
     problem.addGoal<MocoInitialActivationGoal>("initial_activation");
 
-    if (get_minimize_sum_squared_states()) {
-        problem.addGoal<MocoSumSquaredStateGoal>("activation_effort");
+    if (get_minimize_sum_squared_activations()) {
+        auto* act_goal = 
+            problem.addGoal<MocoSumSquaredStateGoal>("activation_effort");
+        act_goal->setPattern(".*activation$");
     }
 
     // Configure the MocoSolver.
