@@ -153,8 +153,7 @@ runInverseKinematicsWithOrientationsFromFile(Model& model,
         << "' along its '" << axis_string << "' axis." << endl;
 
     TimeSeriesTable_<SimTK::Rotation> orientationsData =
-        OpenSenseUtilities::convertQuaternionsToRotations(quatTable,
-             startEnd, "", heading);
+        OpenSenseUtilities::convertQuaternionsToRotations(quatTable, startEnd);
 
     OrientationsReference oRefs(orientationsData);
     MarkersReference mRefs{};
