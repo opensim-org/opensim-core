@@ -439,6 +439,11 @@ SimTK::Rotation OpenSenseUtilities::computeHeadingCorrection(
             pelvisHeading = pelvisHeading.negate();
         UnitVec3 groundX = UnitVec3(1, 0, 0);
         SimTK::Real angularDifference = acos(~pelvisHeading * groundX);
+        // Compute correction direction 
+        SimTK::Vec3 xproduct = (groundX % pelvisHeading);
+        if (xproduct.get(2)>0){
+          angularDifference *= -1;
+        } 
 
         std::cout << "Heading correction computed to be "
                   << angularDifference * SimTK_RADIAN_TO_DEGREE
