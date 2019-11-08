@@ -28,7 +28,6 @@ MocoSumSquaredStateGoal::MocoSumSquaredStateGoal() {
 void MocoSumSquaredStateGoal::initializeOnModelImpl(const Model& model) const {
     // Throw exception if a weight is specified for a nonexistent state.
     auto allSysYIndices = createSystemYIndexMap(model);
-    auto svNames = model.getStateVariableNames();
 
     std::regex regex;
     if (getProperty_pattern().size()) { regex = std::regex(get_pattern()); }
@@ -57,10 +56,11 @@ void MocoSumSquaredStateGoal::initializeOnModelImpl(const Model& model) const {
 
     // If pattern is given, populate m_sysYIndices based on the pattern.
     if (getProperty_pattern().size()) {
-        for (int i = 0; i < svNames.size(); ++i) {
-            const auto& svName = svNames[i];
+        for (const auto& sysYPair : allSysYIndices) {
+            const auto& svName = sysYPair.first;
             if (std::regex_match(svName, regex)) {
                 m_sysYIndices.push_back(allSysYIndices[svName]);
+                m_state_names.push_back(svName);
 
                 double weight = getStateWeight(svName);
                 m_state_weights.push_back(weight);
@@ -78,9 +78,10 @@ void MocoSumSquaredStateGoal::initializeOnModelImpl(const Model& model) const {
     // If no pattern is given, fill in all states into m_sysYIndices, and
     // then either use user-provided weight if given or 1.0 if not given.
     else {
-        for (int i = 0; i < svNames.size(); ++i) {
-            const auto& svName = svNames[i];
+        for (const auto& sysYPair : allSysYIndices) {
+            const auto& svName = sysYPair.first;
             m_sysYIndices.push_back(allSysYIndices[svName]);
+            m_state_names.push_back(svName);
 
             double weight = getStateWeight(svName);
             m_state_weights.push_back(weight);
