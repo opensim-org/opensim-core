@@ -43,9 +43,6 @@ void InverseKinematicsStudy::constructProperties()
     Array<double> range{ Infinity, 2};
     constructProperty_time_range(range);
 
-    constructProperty_base_imu_label("");
-    constructProperty_base_heading_axis("z");
-
     constructProperty_model_file_name("");
     constructProperty_marker_file_name("");
     constructProperty_orientations_file_name("");
@@ -136,21 +133,6 @@ runInverseKinematicsWithOrientationsFromFile(Model& model,
     OpenSenseUtilities::rotateOrientationTable(quatTable, sensorToOpenSim);
 
     auto startEnd = getTimeRangeInUse(quatTable.getIndependentColumn());
-
-    const auto axis_string = IO::Lowercase(get_base_heading_axis());
-    int direction = 1;
-    if (axis_string.length() > 1) { 
-        if (axis_string.front() == '-') 
-            direction = -1;
-    }
-    int axis = (axis_string.back()=='x' ? 0 : 
-                                    ((axis_string.back() == 'y') ? 1 : 2));
-
-    SimTK::CoordinateDirection heading( SimTK::CoordinateAxis(axis), direction );
-
-
-    cout << "Heading correction for base '" << get_base_imu_label()
-        << "' along its '" << axis_string << "' axis." << endl;
 
     TimeSeriesTable_<SimTK::Rotation> orientationsData =
         OpenSenseUtilities::convertQuaternionsToRotations(quatTable, startEnd);
