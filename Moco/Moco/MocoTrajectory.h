@@ -512,10 +512,10 @@ public:
     /// \f[
     ///     \epsilon_{\textrm{RMS}} =
     ///     \sqrt{\frac{1}{N(t_f - t_i)} \int_{t_i}^{t_f} \left(
-    ///         \sum_{ \textrm{i \in states} } \epsilon_i(t)^2 +
-    ///         \sum_{ \textrm{i \in controls} } \epsilon_i(t)^2 +
-    ///         \sum_{ \textrm{i \in mult} } \epsilon_i(t)^2 +
-    ///         \sum_{ \textrm{i \in deriv} } \epsilon_i(t)^2
+    ///         \sum_{ i \in \textrm{states} } \epsilon_i(t)^2 +
+    ///         \sum_{ i \in \textrm{controls} } \epsilon_i(t)^2 +
+    ///         \sum_{ i \in \textrm{mult} } \epsilon_i(t)^2 +
+    ///         \sum_{ i \in \textrm{deriv} } \epsilon_i(t)^2
     ///     \right) dt  },
     /// \f]
     /// where \f$N\f$ is the number of columns and \f$ \epsilon \f$ indicates
