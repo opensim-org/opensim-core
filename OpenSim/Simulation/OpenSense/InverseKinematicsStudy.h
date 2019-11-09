@@ -73,6 +73,9 @@ public:
     OpenSim_DECLARE_PROPERTY(orientations_file_name, std::string,
         "Name/path to a .sto file of sensor frame orientations as quaternions.");
 
+    OpenSim_DECLARE_PROPERTY(sensor_to_opensim_rotations, SimTK::Vec3,
+            "Space fixed rotations from IMU Space (typically z up) to OpenSim (Y up, X forward)");
+
     OpenSim_DECLARE_LIST_PROPERTY_SIZE(time_range, double, 2,
         "The time range for the study.");
 

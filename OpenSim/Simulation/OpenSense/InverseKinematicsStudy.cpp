@@ -43,6 +43,9 @@ void InverseKinematicsStudy::constructProperties()
     Array<double> range{ Infinity, 2};
     constructProperty_time_range(range);
 
+    constructProperty_sensor_to_opensim_rotations(
+            SimTK::Vec3(-SimTK_PI / 2, 0, 0));
+
     constructProperty_model_file_name("");
     constructProperty_marker_file_name("");
     constructProperty_orientations_file_name("");
@@ -127,7 +130,11 @@ runInverseKinematicsWithOrientationsFromFile(Model& model,
     std::cout << "Loading orientations as quaternions from "
         << orientationsFileName << std::endl;
     // Convert to OpenSim Frame
-    SimTK::Rotation sensorToOpenSim(-SimTK_PI / 2, SimTK::XAxis);
+    const SimTK::Vec3& rotations = get_sensor_to_opensim_rotations();
+    SimTK::Rotation sensorToOpenSim = SimTK::Rotation(
+            SimTK::BodyOrSpaceType::SpaceRotationSequence, 
+            rotations[0], SimTK::XAxis, rotations[1], SimTK::YAxis, 
+            rotations[2], SimTK::ZAxis);
 
     // Rotate data so Y-Axis is up
     OpenSenseUtilities::rotateOrientationTable(quatTable, sensorToOpenSim);
