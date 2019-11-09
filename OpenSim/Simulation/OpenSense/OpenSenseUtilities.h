@@ -50,9 +50,7 @@ namespace OpenSim {
             */
         static  OpenSim::TimeSeriesTable_<SimTK::Rotation_<double>> 
             convertQuaternionsToRotations(
-                const OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>& qauternionsTable,
-                const SimTK::Array_<int>& startEnd = { 0, 1 }
-        );
+                const OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>& qauternionsTable);
 
         /** Compute a SimTK::Rotation matrix that aligns the specified 
             baseIMU + CoordinateDirection combination with the positive X (=forward) direction 

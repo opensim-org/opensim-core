@@ -32,21 +32,20 @@ using namespace std;
 
 TimeSeriesTable_<SimTK::Rotation> OpenSenseUtilities::
     convertQuaternionsToRotations(
-        const TimeSeriesTableQuaternion& quaternionsTable,
-        const SimTK::Array_<int>& startEnd)
+        const TimeSeriesTableQuaternion& quaternionsTable)
 {
 
     int nc = int(quaternionsTable.getNumColumns());
 
     const auto& times = quaternionsTable.getIndependentColumn();
 
-    size_t nt = startEnd[1] - startEnd[0] + 1;
+    size_t nt = int(quaternionsTable.getNumRows());
 
     std::vector<double> newTimes(nt, SimTK::NaN);
     SimTK::Matrix_<SimTK::Rotation> matrix(int(nt), nc, Rotation());
 
     int cnt = 0;
-    for (size_t i = startEnd[0]; i <= startEnd[1]; ++i) {
+    for (size_t i = 0; i < nt; ++i) {
         newTimes[cnt] = times[i];
         const auto& quatRow = quaternionsTable.getRowAtIndex(i);
         for (int j = 0; j < nc; ++j) {
@@ -78,7 +77,6 @@ void OpenSim::OpenSenseUtilities::rotateOrientationTable(
     int nc = int(quaternionsTable.getNumColumns());
     size_t nt = quaternionsTable.getNumRows();
 
-
     for (size_t i = 0; i < nt; ++i) {
         auto quatRow = quaternionsTable.updRowAtIndex(i);
         for (int j = 0; j < nc; ++j) {
@@ -98,8 +96,6 @@ Model OpenSenseUtilities::calibrateModelFromOrientations(
     bool visualizeCalibratedModel)
 {
     Model model(modelCalibrationPoseFile);
-
-    const SimTK::Array_<int>& startEnd = { 0, 1 };
 
     TimeSeriesTable_<SimTK::Quaternion> quatTable(calibrationOrientationsFile);
 
@@ -122,8 +118,7 @@ Model OpenSenseUtilities::calibrateModelFromOrientations(
 
     // This is now plain conversion, no Rotation or magic underneath
     TimeSeriesTable_<SimTK::Rotation> orientationsData =
-        OpenSenseUtilities::convertQuaternionsToRotations(quatTable,
-            startEnd);
+        OpenSenseUtilities::convertQuaternionsToRotations(quatTable);
 
     std::cout << "Loaded orientations as quaternions from "
         << calibrationOrientationsFile << std::endl;
