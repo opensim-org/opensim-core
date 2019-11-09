@@ -39,13 +39,13 @@ TimeSeriesTable_<SimTK::Rotation> OpenSenseUtilities::
 
     const auto& times = quaternionsTable.getIndependentColumn();
 
-    int nt = int(quaternionsTable.getNumRows());
+    size_t nt = int(quaternionsTable.getNumRows());
 
     std::vector<double> newTimes(nt, SimTK::NaN);
     SimTK::Matrix_<SimTK::Rotation> matrix(int(nt), nc, Rotation());
 
     int cnt = 0;
-    for (int i = 0; i < nt; ++i) {
+    for (size_t i = 0; i < nt; ++i) {
         newTimes[cnt] = times[i];
         const auto& quatRow = quaternionsTable.getRowAtIndex(i);
         for (int j = 0; j < nc; ++j) {
@@ -76,7 +76,6 @@ void OpenSim::OpenSenseUtilities::rotateOrientationTable(
 
     int nc = int(quaternionsTable.getNumColumns());
     size_t nt = quaternionsTable.getNumRows();
-
 
     for (size_t i = 0; i < nt; ++i) {
         auto quatRow = quaternionsTable.updRowAtIndex(i);
