@@ -1,3 +1,6 @@
+- 2019-11-09: Improve the reliability of building the Ipopt dependency by using
+              more stable servers for downloading Metis and MUMPS.
+
 - 2019-10-19: configureMoco.m adds Moco's Matlab Utilities directory
               to the Matlab path, and removes any detected OpenSense beta
               installations from Matlab.
