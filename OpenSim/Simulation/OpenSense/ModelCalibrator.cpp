@@ -66,6 +66,7 @@ ModelCalibrator::~ModelCalibrator()
  */
 void ModelCalibrator::constructProperties() 
 {
+    constructProperty_model_file_name("");
     constructProperty_base_imu_label("z");
     constructProperty_base_heading_axis("pelvis_imu");
     constructProperty_sensor_to_opensim_rotations(

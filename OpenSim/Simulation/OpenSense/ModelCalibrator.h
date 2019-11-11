@@ -23,10 +23,11 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include <OpenSim/Common/Object.h>
-#include "osimToolsDLL.h"
-
+#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <Simbody.h>
 namespace OpenSim {
 
+class Model;
 //=============================================================================
 //=============================================================================
 /**
@@ -36,13 +37,17 @@ namespace OpenSim {
  *
  * @author Ayman Habib
  */
-class OSIMTOOLS_API ModelCalibrator : public Object {
-OpenSim_DECLARE_CONCRETE_OBJECT(ModelCalibrator, Object);
+class OSIMSIMULATION_API ModelCalibrator : public Object {
+    OpenSim_DECLARE_CONCRETE_OBJECT(ModelCalibrator, Object);
 
 public:
     //==============================================================================
     // PROPERTIES
     //==============================================================================
+    OpenSim_DECLARE_PROPERTY(model_file_name, std::string,
+            "Name/path to the xml .osim file used to load a model to be "
+            "calibrated.");
+
     OpenSim_DECLARE_PROPERTY(base_imu_label, std::string,
             "The label of the base IMU in the orientations_file used to account "
             "for the heading difference between the sensor data and the forward "
@@ -65,9 +70,12 @@ public:
     ModelCalibrator();
     ModelCalibrator(const std::string& setupFile);
     bool run(bool visualizeResults = false) const;
+    void setModel(Model& aModel) { _model = &aModel; };
 
 private:
     void constructProperties();
+    /** Pointer to the model being calibrated. */
+    SimTK::ReferencePtr<Model> _model;
 
 };  // END of class ModelCalibrator
 //=============================================================================
