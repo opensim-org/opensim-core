@@ -26,6 +26,7 @@
 //=============================================================================
 #include "ModelCalibrator.h"
 #include <OpenSim/Simulation/Model/Model.h>
+#include "OpenSenseUtilities.h"
 
 using namespace std;
 using namespace OpenSim;
@@ -79,14 +80,44 @@ void ModelCalibrator::constructProperties()
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * This method scales a model based on user-specified XYZ body scale factors
- * and/or a set of marker-to-marker distance measurements.
- *
- * @param aModel the model to scale.
- * @param aSubjectMass the final mass of the model after scaling.
- * @return Whether the scaling process was successful or not.
+ * This method runs the calibration method on the _model maintained by
+ * this ModelCalibrator
  */
-bool ModelCalibrator::run(bool visualizeResults) const {
+bool ModelCalibrator::run(bool visualizeResults)  {
+    if (_model.empty()) { 
+        _model.reset(new Model(get_model_file_name())); 
+    }
+    TimeSeriesTable_<SimTK::Quaternion> quatTable(get_calibration_file_name());
+
+    const SimTK::Vec3& rotations = get_sensor_to_opensim_rotations();
+    SimTK::Rotation sensorToOpenSim =
+            SimTK::Rotation(SimTK::BodyOrSpaceType::SpaceRotationSequence,
+                    rotations[0], SimTK::XAxis, rotations[1], SimTK::YAxis,
+                    rotations[2], SimTK::ZAxis);
+    // Rotate data so Y-Axis is up
+    OpenSenseUtilities::rotateOrientationTable(quatTable, sensorToOpenSim);
+
+    std::string imu_axis = IO::Lowercase(get_base_imu_label());
+    SimTK::CoordinateDirection directionOnIMU(SimTK::ZAxis);
+    int direction = 1;
+    if (imu_axis.front() == '-') 
+        direction = -1;
+    char& back = imu_axis.back();
+    if (back == 'x')
+        directionOnIMU = SimTK::CoordinateDirection(SimTK::XAxis, direction);
+    else if (back == 'y')
+        directionOnIMU = SimTK::CoordinateDirection(SimTK::YAxis, direction);
+    else if (back == 'z')
+        directionOnIMU = SimTK::CoordinateDirection(SimTK::ZAxis, direction);
+    else { // Throw, invalid specification
     
+    }
+
+    // Compute rotation matrix so that (e.g. "pelvis_imu"+ SimTK::ZAxis) lines up
+    // with model forward (+X)
+    SimTK::Rotation headingRotation =
+            OpenSenseUtilities::computeHeadingCorrection(
+                    *_model, quatTable, get_base_heading_axis(), directionOnIMU);
+
     return true;
 }

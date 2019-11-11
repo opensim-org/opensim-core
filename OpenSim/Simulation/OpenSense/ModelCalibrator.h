@@ -69,7 +69,7 @@ public:
     virtual ~ModelCalibrator();
     ModelCalibrator();
     ModelCalibrator(const std::string& setupFile);
-    bool run(bool visualizeResults = false) const;
+    bool run(bool visualizeResults = false);
     void setModel(Model& aModel) { _model = &aModel; };
 
 private:
