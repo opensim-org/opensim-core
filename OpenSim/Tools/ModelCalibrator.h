@@ -23,6 +23,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include <OpenSim/Common/Object.h>
+#include "osimToolsDLL.h"
 
 namespace OpenSim {
 
@@ -62,16 +63,11 @@ public:
 public:
     virtual ~ModelCalibrator();
     ModelCalibrator();
-
+    ModelCalibrator(const std::string& setupFile);
+    bool run(bool visualizeResults = false) const;
 
 private:
-    void constructProperties() { 
-        constructProperty_base_imu_label('z');
-        constructProperty_base_heading_axis('pelvis_imu');
-        constructProperty_sensor_to_opensim_rotations(
-                SimTK::Vec3(-SimTK_PI / 2, 0, 0));
-        constructProperty_calibration_file_name("");
-    }
+    void constructProperties();
 
 };  // END of class ModelCalibrator
 //=============================================================================
