@@ -103,7 +103,6 @@ SimTK::Vector OpenSim::interpolate(const SimTK::Vector& x,
     OPENSIM_THROW_IF(x_no_nans.empty(), Exception,
             "Input vectors are empty (perhaps after removing NaNs).");
 
-
     PiecewiseLinearFunction function(
             (int)x_no_nans.size(), &x_no_nans[0], &y_no_nans[0]);
     SimTK::Vector newY(newX.size(), SimTK::NaN);
@@ -634,8 +633,6 @@ MocoTrajectory OpenSim::createPeriodicTrajectory(
                     const double& oldFinal = oldTraj.getElt(oldN - 1, i);
                     newTraj.updBlock(oldN, i, oldN - 1, 1) =
                             SimTK::Matrix(oldTraj.block(1, i, oldN - 1, 1).negate());
-                    newTraj.updBlock(oldN, i, oldN - 1, 1).updCol(0) +=
-                            2 * oldFinal;
                     break;
                 }
             }

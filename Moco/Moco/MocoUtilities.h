@@ -521,9 +521,11 @@ OSIMMOCO_API MocoTrajectory createPeriodicTrajectory(
         std::vector<std::string> addPatterns = {".*pelvis_tx/value"},
         std::vector<std::string> negatePatterns = {".*pelvis_list.*",
                                                    ".*pelvis_rotation.*",
-                                                   ".*pelvis_tz.*"},
-        std::vector<std::pair<std::string, std::string>> symmetryPatterns =
-                {{R"(_r(\/|$))", "_l$1"}, {R"(_l(\/|$))", "_r$1"}});
+                                                   ".*pelvis_tz.*", 
+                                                   ".*lumbar_bending.*",
+                                                   ".*lumbar_rotation.*"},
+        std::vector<std::pair<std::string, std::string>> symmetryPatterns = 
+                {{R"(_r(\/|_|$))", "_l$1"}, {R"(_l(\/|_|$))", "_r$1"}});
 
 /// Throw an exception if the property's value is not in the provided set.
 /// We assume that `p` is a single-value property.
