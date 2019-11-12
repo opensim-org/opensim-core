@@ -130,4 +130,4 @@ Design goals
 [buildstatus_image_travis]: https://travis-ci.org/opensim-org/opensim-moco.svg?branch=master
 [travisci]: https://travis-ci.org/opensim-org/opensim-moco
 [buildstatus_image_appveyor]: https://ci.appveyor.com/api/projects/status/6e731j81t9vkt92w/branch/master?svg=true
-[appveyorci]: https://ci.appveyor.com/project/opensim-org/opensim-moco-k7o80/branch/master
+[appveyorci]: https://ci.appveyor.com/project/opensim-org/opensim-moco/branch/master
