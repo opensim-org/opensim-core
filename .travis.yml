@@ -12,6 +12,8 @@ addons:
       - shell.sourceforge.net
       # For uploading binaries.
       - frs.sourceforge.net
+  # Using homebrew directly may not work because of Ruby versions; use the
+  # Homebrew addon.
   homebrew:
     packages:
       - openblas

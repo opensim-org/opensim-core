@@ -62,8 +62,8 @@ if [[ "$WRAP" = "on" ]]; then sh autogen.sh && ./configure --prefix=$HOME/swig -
 # $ cp .travis-ci.yml travis-ci-backup.yml
 # Encrypt the private key, add decryption line to .travis.yml. 
 # $ travis encrypt-file .github/.deploy_myosin_sourceforge_rsa --add
-# Manually edit the .travis.yml file to clean up the added lines and restore
-# comments to the file; move the decryption line to the before_deploy step.
+# Copy the relevant parts of the added decryption line to
+# .github/travis_dependencies.sh and .github/travis_buildtest.sh.
 # Remove the unencrypted private key. DO NOT commmit the unencrypted private
 # key.
 # $ rm -f .github/.deploy_myosin_sourceforge_rsa
@@ -71,7 +71,7 @@ if [[ "$WRAP" = "on" ]]; then sh autogen.sh && ./configure --prefix=$HOME/swig -
 # $ mv .deploy_myosin_sourceforge_rsa.enc .github/
 # Manually, log into the sourceforge website (user opensim-bot) and add the
 # public key (contents of .github/.deploy_myosin_sourceforge_rsa.pub) in
-# Profile > SSH Settings.
+# Account Settings > SSH Settings.
 # Now you can delete the public key file from your local machine.
 # Commit the encrypted private key and the changes to .travis.yml.
 # $ git commit .travis.yml .github/.deploy_myosin_sourceforge_rsa.enc
