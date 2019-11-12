@@ -2,26 +2,6 @@ FROM ubuntu
 
 MAINTAINER Christopher Dembia
 
-# opensim-moco is a private repository on GitHub, so we need permission to
-# access the repository within the Docker container. Create a Personal Access
-# Token on the GitHub website:
-# 1. Click user icon in the upper right hand corner.
-# 2. Click Settings.
-# 3. Click Developer settings.
-# 4. Click Personal access tokens.
-# 5. Click Generate new token.
-# 6. Give a name to your token, e.g., "opensim-moco Docker"
-# 7. Check the box next to "repo"
-# 8. Click Generate token.
-# 9. Copy the token to the clipboard.
-# 10. Run Docker build as follows:
-#
-#       docker build --build-arg GITHUBTOKEN=<paste> .
-#
-
-# TODO: Remove when opensim-moco is public.
-ARG GITHUBTOKEN
-
 ARG MOCOBRANCH=master
 
 RUN echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula \
@@ -50,8 +30,7 @@ RUN mkdir -p ~/.config/matplotlib && \
     echo 'font.sans-serif : Arial, Helvetica, sans-serif' >> ~/.config/matplotlib/matplotlibrc
 
 # Must be careful to not embed the GitHub token in the image.
-RUN git config --global url."https://$GITHUBTOKEN:@github.com/".insteadOf "https://github.com/" \
-        && git clone https://github.com/stanfordnmbl/opensim-moco.git /opensim-moco \
+RUN git clone https://github.com/opensim-org/opensim-moco.git /opensim-moco \
         && cd /opensim-moco \
         && git checkout $MOCOBRANCH \
         && rm ~/.gitconfig
