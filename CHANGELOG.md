@@ -17,6 +17,7 @@ v4.1
 - Exposed convertMillimeters2Meters() in osimC3D.m. This function converts COP and moment data from mm to m and now must be invoked prior to writing force data to file. Previously, this was automatically performed during writing forces to file. 
 - Methods that operate on SimTK::Vec<n> are now available through Java/Matlab and python bindings to add/subtract/divide/multiply vec<n> contents with a scalar (PR #2558)
 - The new Stopwatch class allows C++ API users to easily measure the runtime of their code.
+- If finalizeConnections() method was not called on a model after making changes and before printing, an exception is thrown to avoid creating corrupt model files quietly (PR #2529)
 
 Converting from v4.0 to v4.1
 ----------------------------
