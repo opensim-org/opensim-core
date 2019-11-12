@@ -39,6 +39,8 @@ if(Git_FOUND)
 else()
     set(VERSION_SUFFIX "?")
 endif()
+set(MOCO_FULL_VERSION "${PROJECT_VERSION}${VERSION_SUFFIX}" CACHE STRING
+        "Full version string, containing git commit date/hash suffix." FORCE)
 
 # Moco settings.
 # --------------

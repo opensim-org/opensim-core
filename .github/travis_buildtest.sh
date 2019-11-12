@@ -49,7 +49,10 @@ printf '%s\n' "${OSIM_CMAKE_ARGS[@]}"
 cmake "${OSIM_CMAKE_ARGS[@]}"
 
 cmake . -LAH
-  
+
+VERSION=`cmake -L . | grep MOCO_FULL_VERSION | cut -d "=" -f2`
+echo $VERSION
+
 make -j$NPROC;
 
 ctest -j8 --output-on-failure $CTEST_FLAGS --exclude-regex $TESTS_TO_EXCLUDE
@@ -65,13 +68,21 @@ make -j8 install > /dev/null
 mkdir ~/to_deploy
 # Zip up Moco relative to where it's installed.
 cd ~
-# Leave symlinks intact.
-ZIPNAME=opensim-moco-${TRAVIS_OS_NAME}
+OS_NAME=$TRAVIS_OS_NAME
+if [ "$TRAVIS_OS_NAME" = "osx" ]; then
+    OS_NAME=mac
+fi
+ZIPNAME=opensim-moco-${VERSION}-${OS_NAME}
+if [ "$TRAVIS_BRANCH" != "master" ]; then
+    ZIPNAME=${ZIPNAME}_${TRAVIS_BRANCH}
+fi
 if [ ! -z "$TRAVIS_PULL_REQUEST_BRANCH" ]; then
     ZIPNAME=${ZIPNAME}_${TRAVIS_PULL_REQUEST_BRANCH}
 fi
-ZIPNAME=${ZIPNAME}_${TRAVIS_BRANCH}.zip
-zip --symlinks --recurse-paths --quiet ~/to_deploy/$ZIPNAME opensim-moco
+ZIPNAME=${ZIPNAME}.zip
+# Leave symlinks intact.
+mv opensim-moco opensim-moco-${VERSION}
+zip --symlinks --recurse-paths --quiet ~/to_deploy/$ZIPNAME opensim-moco-${VERSION}
 
 ## Set up ssh for sourceforge.
 cd $TRAVIS_BUILD_DIR

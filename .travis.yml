@@ -14,10 +14,12 @@ addons:
       - frs.sourceforge.net
   # Using homebrew directly may not work because of Ruby versions; use the
   # Homebrew addon.
+  # https://docs.travis-ci.com/user/installing-dependencies#installing-packages-on-macos
   homebrew:
     packages:
       - openblas
       - doxygen
+    update: true
 
 env: 
   global:
