@@ -51,4 +51,3 @@ jobs:
       if: commit_message =~ /(build deps|build eigen)/
     - stage: buildtest
       script: bash .github/travis_buildtest.sh
-
