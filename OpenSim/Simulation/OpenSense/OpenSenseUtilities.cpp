@@ -105,41 +105,6 @@ Model OpenSenseUtilities::calibrateModelFromOrientations(
     calibrator.run();
 
     return calibrator.getModel();
-    /**
-    if (visualizeCalibratedModel) {
-        model.setUseVisualizer(true);
-        SimTK::State& s = model.initSystem();
-
-        s.updTime() = times[0];
-
-        // create the solver given the input data
-        MarkersReference mRefs{};
-        OrientationsReference oRefs(orientationsData);
-        SimTK::Array_<CoordinateReference> coordRefs{};
-
-        const double accuracy = 1e-4;
-        InverseKinematicsSolver ikSolver(model, mRefs, oRefs, coordRefs);
-        ikSolver.setAccuracy(accuracy);
-        
-        SimTK::Visualizer& viz = model.updVisualizer().updSimbodyVisualizer();
-        // We use the input silo to get key presses.
-        auto silo = &model.updVisualizer().updInputSilo();
-        silo->clear(); // Ignore any previous key presses.
-
-        SimTK::DecorativeText help("Press any key to quit.");
-        help.setIsScreenText(true);
-        viz.addDecoration(SimTK::MobilizedBodyIndex(0), SimTK::Vec3(0), help);
-        model.getVisualizer().getSimbodyVisualizer().setShowSimTime(true);
-        ikSolver.assemble(s);
-        model.getVisualizer().show(s);
-
-        unsigned key, modifiers;
-        silo->waitForKeyHit(key, modifiers);
-        viz.shutdown();
-    }
-
-    return model;
-        */
 }
 
 SimTK::Transform OpenSenseUtilities::formTransformFromPoints(const Vec3& op,

@@ -24,9 +24,11 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "ModelCalibrator.h"
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/MarkersReference.h>
+#include <OpenSim/Simulation/InverseKinematicsSolver.h>
 #include "OpenSenseUtilities.h"
+#include "ModelCalibrator.h"
 
 using namespace std;
 using namespace OpenSim;
@@ -130,7 +132,7 @@ bool ModelCalibrator::run(bool visualizeResults)  {
 
     // The rotations of the IMUs at the start time in order
     // the labels in the TimerSeriesTable of orientations
-    auto& rotations = orientationsData.updRowAtIndex(0);
+    auto rotations = orientationsData.updRowAtIndex(0);
 
     SimTK::State& s0 = _model->initSystem();
     s0.updTime() = times[0];
@@ -195,5 +197,38 @@ bool ModelCalibrator::run(bool visualizeResults)  {
     }
 
     _model->finalizeConnections();
+
+    if (visualizeResults) {
+        _model->setUseVisualizer(true);
+        SimTK::State& s = _model->initSystem();
+
+        s.updTime() = times[0];
+
+        // create the solver given the input data
+        MarkersReference mRefs{};
+        OrientationsReference oRefs(orientationsData);
+        SimTK::Array_<CoordinateReference> coordRefs{};
+
+        const double accuracy = 1e-4;
+        InverseKinematicsSolver ikSolver(*_model, mRefs, oRefs, coordRefs);
+        ikSolver.setAccuracy(accuracy);
+
+        SimTK::Visualizer& viz = _model->updVisualizer().updSimbodyVisualizer();
+        // We use the input silo to get key presses.
+        auto silo = &_model->updVisualizer().updInputSilo();
+        silo->clear(); // Ignore any previous key presses.
+
+        SimTK::DecorativeText help("Press any key to quit.");
+        help.setIsScreenText(true);
+        viz.addDecoration(SimTK::MobilizedBodyIndex(0), SimTK::Vec3(0), help);
+        _model->getVisualizer().getSimbodyVisualizer().setShowSimTime(true);
+        ikSolver.assemble(s);
+        _model->getVisualizer().show(s);
+
+        unsigned key, modifiers;
+        silo->waitForKeyHit(key, modifiers);
+        viz.shutdown();
+
+    }
     return true;
 }
