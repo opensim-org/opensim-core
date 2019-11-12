@@ -6,8 +6,6 @@ cd $TRAVIS_BUILD_DIR
 if $(git log -n1 --format="%B" | grep --quiet '\[skip travis\]'); then exit; fi 
   
 cmake --version # To help debug any cmake-related issues.
-
-if [[ "$TRAVIS_OS_NAME" = "osx" ]]; then brew install openblas; fi
   
 ## Ensure that there are no tabs in source code.
 # GREP returns 0 (true) if there are any matches, and
@@ -38,7 +36,6 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then export LD_LIBRARY_PATH=$LD_LIBRARY_PATH
 if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then mkdir ~/doxygen && cd ~/doxygen; fi
 if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then wget http://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.10.linux.bin.tar.gz; fi
 if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then tar xzf doxygen-1.8.10.linux.bin.tar.gz; fi
-if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "osx" ]]; then brew install doxygen; fi
 
 
 ## Install SWIG to build Java/python wrapping.
