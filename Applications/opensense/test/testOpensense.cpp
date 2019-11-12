@@ -40,7 +40,7 @@ int main()
     Model model = OpenSenseUtilities::calibrateModelFromOrientations(
         "subject07.osim",
         "imuOrientations.sto",
-        "pelvis_imu", SimTK::ZAxis,
+        "pelvis_imu", "z",
         false
         );
     // Previous line produces a model with same name but "calibrated_" prefix.
@@ -53,7 +53,7 @@ int main()
     Model facingX = OpenSenseUtilities::calibrateModelFromOrientations(
         "subject07.osim",
         "MT_012005D6_009-quaternions_calibration_trial_Facing_X.sto",
-        "pelvis_imu", SimTK::ZAxis,
+        "pelvis_imu", "z",
         false);
     facingX.setName("calibrated_FacingX");
     facingX.finalizeFromProperties();
@@ -67,7 +67,7 @@ int main()
     Model facingNegX = OpenSenseUtilities::calibrateModelFromOrientations(
         "subject07.osim",
         "MT_012005D6_009-quaternions_calibration_trial_Facing_negX.sto",
-        "pelvis_imu", SimTK::ZAxis,
+        "pelvis_imu", "z",
         false);
     facingNegX.setName("calibrated_FacingNegX");
     facingNegX.finalizeFromProperties();

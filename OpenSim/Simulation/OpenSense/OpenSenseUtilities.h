@@ -74,9 +74,8 @@ namespace OpenSim {
                          to account for the heading difference between the sensor
                          data and the forward direction of the model. Leave blank
                          if no heading correction is to be applied.
-            baseHeadingDirection: The axis of the base IMU that corresponds to its
-                             heading direction. Options are SimTK::X/Y/ZAxis, along with
-                             direction of +1/-1
+            baseHeadingDirectionString: The axis of the base IMU that corresponds to its
+                             heading direction. Options are x/y/z/-x/-y/-z
             Assumptions about the inputs: 
              1) the model default pose is the same as the pose used to collect
                 calibration data
@@ -89,7 +88,7 @@ namespace OpenSim {
             const std::string& modelCalibrationPoseFile,
             const std::string& calibrationOrientationsFile,
             const std::string& baseImuName = "",
-            const SimTK::CoordinateDirection& baseHeadingDirection =SimTK::ZAxis,
+            const std::string& baseHeadingDirectionString="z",
             bool visualizeCalibratedModel =true);
         /**
          * Create Orientations as a TimeSeriesTable based on passed in markerFile

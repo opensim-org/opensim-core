@@ -154,26 +154,23 @@ int main(int argc, char **argv)
                     std::string modelCalibrationPoseFile{ argv[i + 1] };
                     std::string calibrationOrientationsFile{ argv[i + 2] };
                     std::string baseImuName{ "" };
-                    SimTK::CoordinateAxis imuHeading{ SimTK::ZAxis };
+                    std::string axisString("z");
                     if (argc > 4)
                         baseImuName = std::string{ argv[i + 3] };
                     
-                    if (argc > 5) {
-                        char axc{ argv[i + 4][0] };
-                        axc = std::tolower(axc);
-                        int axis = (axc == 'x' ? 0 :
-                            ((axc == 'y') ? 1 : 2));
-                        imuHeading = SimTK::CoordinateAxis{ axis };
-                    }
+                    if (argc > 5) 
+                        axisString = argv[i + 4];
+                    
                   
                     if (!baseImuName.empty()) {
                         cout << "Calibration will perform heading correction using '"
-                            << baseImuName << "'along its '" << imuHeading << "'axis." << endl;
+                             << baseImuName << "'along its '" << axisString
+                             << "'axis." << endl;
                     }
                     Model model = OpenSenseUtilities::calibrateModelFromOrientations(
                         modelCalibrationPoseFile,
-                        calibrationOrientationsFile,
-                        baseImuName, imuHeading);
+                        calibrationOrientationsFile, baseImuName,
+                                    axisString);
 
                     auto filename = "calibrated_" + model.getName() + ".osim";
                     cout << "Wrote calibrated model to file: '" << filename << "'." << endl;

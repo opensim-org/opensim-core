@@ -92,8 +92,8 @@ void OpenSim::OpenSenseUtilities::rotateOrientationTable(
 Model OpenSenseUtilities::calibrateModelFromOrientations(
     const string& modelCalibrationPoseFile,
     const string& calibrationOrientationsFile,
-    const std::string& baseImuName,
-    const SimTK::CoordinateDirection& baseHeadingDirection,
+    const std::string& baseImuName, 
+    const std::string& baseHeadingDirectionString,
     bool visualizeCalibratedModel)
 {
     OpenSim::ModelCalibrator calibrator;
@@ -101,7 +101,7 @@ Model OpenSenseUtilities::calibrateModelFromOrientations(
     calibrator.set_model_file_name(modelCalibrationPoseFile);
     calibrator.set_base_imu_label(baseImuName);
     calibrator.set_calibration_file_name(calibrationOrientationsFile);
-    calibrator.set_base_heading_axis("z");
+    calibrator.set_base_heading_axis(baseHeadingDirectionString);
     calibrator.run();
 
     return calibrator.getModel();
