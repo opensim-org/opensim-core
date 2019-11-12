@@ -25,6 +25,7 @@
 #include <OpenSim/Simulation/MarkersReference.h>
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
 #include "OpenSenseUtilities.h"
+#include "ModelCalibrator.h"
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -95,108 +96,16 @@ Model OpenSenseUtilities::calibrateModelFromOrientations(
     const SimTK::CoordinateDirection& baseHeadingDirection,
     bool visualizeCalibratedModel)
 {
-    Model model(modelCalibrationPoseFile);
+    OpenSim::ModelCalibrator calibrator;
 
-    TimeSeriesTable_<SimTK::Quaternion> quatTable(calibrationOrientationsFile);
+    calibrator.set_model_file_name(modelCalibrationPoseFile);
+    calibrator.set_base_imu_label(baseImuName);
+    calibrator.set_calibration_file_name(calibrationOrientationsFile);
+    calibrator.set_base_heading_axis("z");
+    calibrator.run();
 
-    // Rotation matrix that maps the IMU World reference frame to
-    // OpenSim's ground reference frame. The default is to rotate -Pi/2 about
-    // the IMU world X - axis to get IMU World Z -axis to point up as OpenSim's
-    // ground Y-axis.
-    SimTK::Rotation sensorToOpenSim(-SimTK_PI / 2, SimTK::XAxis);
-
-    // Rotate data so Y-Axis is up
-    OpenSenseUtilities::rotateOrientationTable(quatTable, sensorToOpenSim);
-
-    // Compute rotation matrix so that ("pelvis_imu"+ SimTK::ZAxis) lines up
-    // with model forward (+X)
-    SimTK::Rotation headingRotation =
-            OpenSenseUtilities::computeHeadingCorrection(
-                    model, quatTable, "pelvis_imu", SimTK::ZAxis);
-
-    OpenSenseUtilities::rotateOrientationTable(quatTable, headingRotation);
-
-    // This is now plain conversion, no Rotation or magic underneath
-    TimeSeriesTable_<SimTK::Rotation> orientationsData =
-        OpenSenseUtilities::convertQuaternionsToRotations(quatTable);
-
-    std::cout << "Loaded orientations as quaternions from "
-        << calibrationOrientationsFile << std::endl;
-
-    auto imuLabels = orientationsData.getColumnLabels();
-    auto& times = orientationsData.getIndependentColumn();
-
-    // The rotations of the IMUs at the start time in order
-    // the labels in the TimerSeriesTable of orientations
-    auto rotations = orientationsData.updRowAtIndex(0);
-
-    SimTK::State& s0 = model.initSystem();
-    s0.updTime() = times[0];
-
-    // default pose of the model defined by marker-based IK 
-    model.realizePosition(s0);
-
-    size_t imuix = 0;
-    std::vector<PhysicalFrame*> bodies{ imuLabels.size(), nullptr };
-    std::map<std::string, SimTK::Rotation> imuBodiesInGround;
-
-    // First compute the transform of each of the imu bodies in ground
-    for (auto& imuName : imuLabels) {
-        auto ix = imuName.rfind("_imu");
-        if (ix != std::string::npos) {
-            auto bodyName = imuName.substr(0, ix);
-            auto body = model.findComponent<PhysicalFrame>(bodyName);
-            if (body) {
-                bodies[imuix] = const_cast<PhysicalFrame*>(body);
-                imuBodiesInGround[imuName] =
-                    body->getTransformInGround(s0).R();
-            }
-        }
-        ++imuix;
-    }
-
-    // Now cycle through each imu with a body and compute the relative
-    // offset of the IMU measurement relative to the body and
-    // update the modelOffset OR add an offset if none exists
-    imuix = 0;
-    for (auto& imuName : imuLabels) {
-        cout << "Processing " << imuName << endl;
-        if (imuBodiesInGround.find(imuName) != imuBodiesInGround.end()) {
-            cout << "Computed offset for " << imuName << endl;
-            auto R_FB = ~imuBodiesInGround[imuName] * rotations[int(imuix)];
-            cout << "Offset is " << R_FB << endl;
-            PhysicalOffsetFrame* imuOffset = nullptr;
-            const PhysicalOffsetFrame* mo = nullptr;
-            if ((mo = model.findComponent<PhysicalOffsetFrame>(imuName))) {
-                imuOffset = const_cast<PhysicalOffsetFrame*>(mo);
-                auto X = imuOffset->getOffsetTransform();
-                X.updR() = R_FB;
-                imuOffset->setOffsetTransform(X);
-            }
-            else {
-                cout << "Creating offset frame for " << imuName << endl;
-                OpenSim::Body* body = dynamic_cast<OpenSim::Body*>(bodies[imuix]);
-                SimTK::Vec3 p_FB(0);
-                if (body) {
-                    p_FB = body->getMassCenter();
-                }
-
-                imuOffset = new PhysicalOffsetFrame(imuName,
-                    *bodies[imuix], SimTK::Transform(R_FB, p_FB));
-                auto* brick = new Brick(Vec3(0.02, 0.01, 0.005));
-                brick->setColor(SimTK::Orange);
-                imuOffset->attachGeometry(brick);
-                bodies[imuix]->addComponent(imuOffset);
-                cout << "Added offset frame for " << imuName << endl;
-            }
-            cout << imuOffset->getName() << " offset computed from " <<
-                imuName << " data from file." << endl;
-        }
-        imuix++;
-    }
-
-    model.finalizeConnections();
-
+    return calibrator.getModel();
+    /**
     if (visualizeCalibratedModel) {
         model.setUseVisualizer(true);
         SimTK::State& s = model.initSystem();
@@ -230,6 +139,7 @@ Model OpenSenseUtilities::calibrateModelFromOrientations(
     }
 
     return model;
+        */
 }
 
 SimTK::Transform OpenSenseUtilities::formTransformFromPoints(const Vec3& op,

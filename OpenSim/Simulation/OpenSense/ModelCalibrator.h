@@ -71,6 +71,7 @@ public:
     ModelCalibrator(const std::string& setupFile);
     bool run(bool visualizeResults = false);
     void setModel(Model& aModel) { _model = &aModel; };
+    Model& getModel() const { return *_model; }
 
 private:
     void constructProperties();
