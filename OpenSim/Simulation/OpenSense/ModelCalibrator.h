@@ -71,13 +71,14 @@ public:
     ModelCalibrator(const std::string& setupFile);
     bool run(bool visualizeResults = false);
     void setModel(Model& aModel) { _model = &aModel; };
-    Model& getModel() const { return *_model; }
+    Model& getCalibratedModel() const;
 
 private:
     void constructProperties();
-    /** Pointer to the model being calibrated. */
+    /** Pointer to the model being _calibrated. */
     SimTK::ReferencePtr<Model> _model;
-
+    /** Flag indicating if Calibration run has been invoked already */
+    bool _calibrated;
 };  // END of class ModelCalibrator
 //=============================================================================
 //=============================================================================

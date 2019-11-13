@@ -44,6 +44,7 @@ using SimTK::Vec3;
 ModelCalibrator::ModelCalibrator() 
 {
     constructProperties();
+    _calibrated = false;
 }
 
 
@@ -86,6 +87,8 @@ void ModelCalibrator::constructProperties()
  * this ModelCalibrator
  */
 bool ModelCalibrator::run(bool visualizeResults)  {
+
+    _calibrated = false;
     if (_model.empty()) { 
         _model.reset(new Model(get_model_file_name())); 
     }
@@ -113,7 +116,8 @@ bool ModelCalibrator::run(bool visualizeResults)  {
     else if (back == 'z')
         directionOnIMU = SimTK::CoordinateDirection(SimTK::ZAxis, direction);
     else { // Throw, invalid specification
-    
+        OPENSIM_THROW(Exception, "Invalid specification of heading axis '" +
+                                         imu_axis + "' found.");
     }
 
     // Compute rotation matrix so that (e.g. "pelvis_imu"+ SimTK::ZAxis) lines up
@@ -198,6 +202,7 @@ bool ModelCalibrator::run(bool visualizeResults)  {
 
     _model->finalizeConnections();
 
+    _calibrated = true;
     if (visualizeResults) {
         _model->setUseVisualizer(true);
         SimTK::State& s = _model->initSystem();
@@ -231,4 +236,11 @@ bool ModelCalibrator::run(bool visualizeResults)  {
 
     }
     return true;
+}
+
+Model& ModelCalibrator::getCalibratedModel() const { 
+    if (_calibrated)
+        return *_model; 
+    OPENSIM_THROW(Exception,
+            "Attempt to retrieve calibrated model without invoking ModelCalibrator::run.");
 }

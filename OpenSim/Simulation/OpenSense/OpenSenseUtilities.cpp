@@ -104,7 +104,7 @@ Model OpenSenseUtilities::calibrateModelFromOrientations(
     calibrator.set_base_heading_axis(baseHeadingDirectionString);
     calibrator.run();
 
-    return calibrator.getModel();
+    return calibrator.getCalibratedModel();
 }
 
 SimTK::Transform OpenSenseUtilities::formTransformFromPoints(const Vec3& op,
@@ -271,6 +271,9 @@ SimTK::Rotation OpenSenseUtilities::computeHeadingCorrection(
                 SimTK::BodyOrSpaceType::SpaceRotationSequence, 0, SimTK::XAxis,
                 angularDifference, SimTK::YAxis, 0, SimTK::ZAxis);
 
-    }
+    } 
+    else
+        OPENSIM_THROW(Exception,
+                "Heading correction attempted without base imu specification. Aborting.'");
     return rotation;
 }
