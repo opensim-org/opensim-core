@@ -74,7 +74,12 @@ if [ "$TRAVIS_OS_NAME" = "osx" ]; then
 fi
 ZIPNAME=opensim-moco-${VERSION}-${OS_NAME}
 if [ "$TRAVIS_BRANCH" != "master" ]; then
-    ZIPNAME=${ZIPNAME}-${TRAVIS_BRANCH}
+    if [ "$TRAVIS_BRANCH" != "$TRAVIS_TAG" ]; then
+        # If there is a tag, then TRAVIS_BRANCH is equal to TRAVIS_TAG,
+        # and the version is already the tag, so we don't need to
+        # repeat the tag.
+        ZIPNAME=${ZIPNAME}-${TRAVIS_BRANCH}
+    fi
 fi
 if [ ! -z "$TRAVIS_PULL_REQUEST_BRANCH" ]; then
     ZIPNAME=${ZIPNAME}-${TRAVIS_PULL_REQUEST_BRANCH}
