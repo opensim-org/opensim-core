@@ -1,11 +1,9 @@
-
 - 2019-10-30: ModelFactory::replaceMusclesWithPathActuators() now adds the
               PathActuators to the Model's ForceSet, and the connectee names
               for PathPoints are now valid.
 
 - 2019-10-30: Solvers print the date and time before and after solving a 
               problem.
-
 
 - 2019-10-19: configureMoco.m adds Moco's Matlab Utilities directory
               to the Matlab path, and removes any detected OpenSense beta
