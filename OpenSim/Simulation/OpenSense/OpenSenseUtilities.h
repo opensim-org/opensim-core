@@ -52,12 +52,12 @@ namespace OpenSim {
             convertQuaternionsToRotations(
                 const OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>& qauternionsTable);
 
-        /** Compute a SimTK::Rotation matrix that aligns the specified 
+        /** Compute a SimTK::Vec3 of Space rotations that aligns the specified 
             baseIMU + CoordinateDirection combination with the positive X (=forward) direction 
             in OpenSim based on the first frame of the passed in table of quaternions
             quatTimeSeries. 
         */
-        static SimTK::Rotation_<double> computeHeadingCorrection(
+        static SimTK::Vec3 computeHeadingCorrection(
                 OpenSim::Model& model,
                 OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>&
                         quatTimeSeries, 

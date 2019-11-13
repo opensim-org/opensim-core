@@ -122,9 +122,13 @@ bool ModelCalibrator::run(bool visualizeResults)  {
 
     // Compute rotation matrix so that (e.g. "pelvis_imu"+ SimTK::ZAxis) lines up
     // with model forward (+X)
-    SimTK::Rotation headingRotation =
+    SimTK::Vec3 headingRotationVec3 =
             OpenSenseUtilities::computeHeadingCorrection(
                     *_model, quatTable, get_base_imu_label(), directionOnIMU);
+    SimTK::Rotation headingRotation(
+            SimTK::BodyOrSpaceType::SpaceRotationSequence,
+            headingRotationVec3[0], SimTK::XAxis, headingRotationVec3[1],
+            SimTK::YAxis, headingRotationVec3[2], SimTK::ZAxis);
 
     OpenSenseUtilities::rotateOrientationTable(quatTable, headingRotation);
     // This is now plain conversion, no Rotation or magic underneath

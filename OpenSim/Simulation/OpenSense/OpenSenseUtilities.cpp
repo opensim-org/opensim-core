@@ -220,14 +220,14 @@ OpenSenseUtilities::createOrientationsFileFromMarkers(const std::string& markers
     return quaternions;
  }
 
-SimTK::Rotation OpenSenseUtilities::computeHeadingCorrection(
+SimTK::Vec3 OpenSenseUtilities::computeHeadingCorrection(
         Model& model,
             OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>&
                     quaternionsTable,
             const std::string& baseImuName,
             const SimTK::CoordinateDirection baseHeadingDirection) 
 {
-    SimTK::Rotation rotation;
+     SimTK::Vec3 rotations{0};
  
     // if a base imu is specified, perform heading correction, otherwise skip
     if (!baseImuName.empty()) {
@@ -267,13 +267,11 @@ SimTK::Rotation OpenSenseUtilities::computeHeadingCorrection(
                   << angularDifference * SimTK_RADIAN_TO_DEGREE
                   << "degs about ground Y" << std::endl;
 
-        rotation = SimTK::Rotation(
-                SimTK::BodyOrSpaceType::SpaceRotationSequence, 0, SimTK::XAxis,
-                angularDifference, SimTK::YAxis, 0, SimTK::ZAxis);
+        rotations = SimTK::Vec3( 0, angularDifference,  0);
 
     } 
     else
         OPENSIM_THROW(Exception,
                 "Heading correction attempted without base imu specification. Aborting.'");
-    return rotation;
+    return rotations;
 }
