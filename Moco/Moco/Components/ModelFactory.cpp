@@ -133,8 +133,8 @@ void ModelFactory::replaceMusclesWithPathActuators(OpenSim::Model &model) {
     // a list of pointers of the muscles to delete.
     std::vector<Muscle*> musclesToDelete;
     auto& muscleSet = model.updMuscles();
-    for (int i = 0; i < muscleSet.getSize(); ++i) {
-        auto& musc = muscleSet.get(i);
+    for (int im = 0; im < muscleSet.getSize(); ++im) {
+        auto& musc = muscleSet.get(im);
         auto* actu = new PathActuator();
         actu->setName(musc.getName());
         musc.setName(musc.getName() + "_delete");
@@ -142,20 +142,24 @@ void ModelFactory::replaceMusclesWithPathActuators(OpenSim::Model &model) {
         actu->setMinControl(musc.getMinControl());
         actu->setMaxControl(musc.getMaxControl());
 
+        model.addForce(actu);
+
+        // For the connectee names in the PathPoints to be correct, we must add
+        // the path points after adding the PathActuator to the model.
         const auto& pathPointSet = musc.getGeometryPath().getPathPointSet();
         auto& geomPath = actu->updGeometryPath();
-        for (int i = 0; i < pathPointSet.getSize(); ++i) {
-            auto* pathPoint = pathPointSet.get(i).clone();
+        for (int ip = 0; ip < pathPointSet.getSize(); ++ip) {
+            auto* pathPoint = pathPointSet.get(ip).clone();
             const auto& socketNames = pathPoint->getSocketNames();
             for (const auto& socketName : socketNames) {
                 pathPoint->updSocket(socketName)
-                        .connect(pathPointSet.get(i)
-                                         .getSocket(socketName)
-                                         .getConnecteeAsObject());
+                        .connect(pathPointSet.get(ip)
+                                .getSocket(socketName)
+                                .getConnecteeAsObject());
             }
             geomPath.updPathPointSet().adoptAndAppend(pathPoint);
         }
-        model.addComponent(actu);
+
         musclesToDelete.push_back(&musc);
     }
 
