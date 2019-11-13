@@ -18,7 +18,6 @@ if(Git_FOUND)
     )
     if(${GIT_DESCRIBE_EXACT_MATCH_RETVAL} EQUAL 0)
         # A tag exists.
-        message("DEBUG ${GIT_TAG}")
         set(FULL_VERSION ${GIT_TAG})
         # Do not add anything to the version.
     else()
