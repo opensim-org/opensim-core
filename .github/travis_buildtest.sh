@@ -80,22 +80,27 @@ if [ ! -z "$TRAVIS_PULL_REQUEST_BRANCH" ]; then
     ZIPNAME=${ZIPNAME}_${TRAVIS_PULL_REQUEST_BRANCH}
 fi
 ZIPNAME=${ZIPNAME}.zip
-# Leave symlinks intact.
-mv opensim-moco opensim-moco-${VERSION}
-zip --symlinks --recurse-paths --quiet ~/to_deploy/$ZIPNAME opensim-moco-${VERSION}
 
-## Set up ssh for sourceforge.
-cd $TRAVIS_BUILD_DIR
-if [[ "$DEPLOY" = "yes" ]]; then PREP_SOURCEFORGE_SSH=0; else PREP_SOURCEFORGE_SSH=1; fi
-# Decrypt the private key stored in the repository to the tmp dir.
-if [ $PREP_SOURCEFORGE_SSH = "0" ]; then openssl aes-256-cbc -K $encrypted_3d3280d08c79_key -iv $encrypted_3d3280d08c79_iv -in .github/.deploy_myosin_sourceforge_rsa.enc -out /tmp/deploy_myosin_sourceforge_rsa -d; fi
-# Start the ssh agent.
-if [ $PREP_SOURCEFORGE_SSH = "0" ]; then eval "$(ssh-agent -s)"; fi
-# Register this private key with this client (the travis machine).
-if [ $PREP_SOURCEFORGE_SSH = "0" ]; then chmod 600 /tmp/deploy_myosin_sourceforge_rsa; fi
-if [ $PREP_SOURCEFORGE_SSH = "0" ]; then ssh-add /tmp/deploy_myosin_sourceforge_rsa; fi
+if [ ! -z "$TRAVIS_TAG" ]; then
 
-# Uploads to sourceforge.net/projects/myosin
-# See https://docs.travis-ci.com/user/deployment/custom/
-# '--archive' preserves symlinks.
-rsync --archive --compress --verbose ~/to_deploy/$ZIPNAME opensim-bot@frs.sourceforge.net:/home/frs/project/myosin/opensim-moco/
+    # Leave symlinks intact.
+    mv opensim-moco opensim-moco-${VERSION}
+    zip --symlinks --recurse-paths --quiet ~/to_deploy/$ZIPNAME opensim-moco-${VERSION}
+
+    ## Set up ssh for sourceforge.
+    cd $TRAVIS_BUILD_DIR
+    if [[ "$DEPLOY" = "yes" ]]; then PREP_SOURCEFORGE_SSH=0; else PREP_SOURCEFORGE_SSH=1; fi
+    # Decrypt the private key stored in the repository to the tmp dir.
+    if [ $PREP_SOURCEFORGE_SSH = "0" ]; then openssl aes-256-cbc -K $encrypted_3d3280d08c79_key -iv $encrypted_3d3280d08c79_iv -in .github/.deploy_myosin_sourceforge_rsa.enc -out /tmp/deploy_myosin_sourceforge_rsa -d; fi
+    # Start the ssh agent.
+    if [ $PREP_SOURCEFORGE_SSH = "0" ]; then eval "$(ssh-agent -s)"; fi
+    # Register this private key with this client (the travis machine).
+    if [ $PREP_SOURCEFORGE_SSH = "0" ]; then chmod 600 /tmp/deploy_myosin_sourceforge_rsa; fi
+    if [ $PREP_SOURCEFORGE_SSH = "0" ]; then ssh-add /tmp/deploy_myosin_sourceforge_rsa; fi
+
+    # Uploads to sourceforge.net/projects/myosin
+    # See https://docs.travis-ci.com/user/deployment/custom/
+    # '--archive' preserves symlinks.
+    rsync --archive --compress --verbose ~/to_deploy/$ZIPNAME opensim-bot@frs.sourceforge.net:/home/frs/project/myosin/opensim-moco/
+
+fi
