@@ -496,7 +496,7 @@ std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(
 /// half of the period for that column is (first_half_trajectory +
 /// half_period_value - initial_value).
 /// @param negatePatterns If a column label matches a negatePattern, then the
-/// second half of the period for that column is (-first_half_trajectory + 2 * 
+/// second half of the period for that column is (-first_half_trajectory + 2 *
 /// half_period_value). This is usually relevant for only 3D models.
 /// @param symmetryPatterns This argument is a list of pairs, where the first
 /// element of the pair is a pattern to match, and the second is a substitution
