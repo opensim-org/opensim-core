@@ -574,6 +574,8 @@ public:
     Storage exportToStatesStorage() const;
     /// Same as exportToStatesStorage() except using TimeSeriesTable.
     TimeSeriesTable exportToStatesTable() const;
+    /// Same as exportToStatesTable() but for the trajectory controls.
+    TimeSeriesTable exportToControlsTable() const;
     /// Controls are not carried over to the StatesTrajectory.
     /// The MocoProblem is necessary because we need the underlying Model to
     /// order the state variables correctly.

@@ -633,6 +633,8 @@ MocoTrajectory OpenSim::createPeriodicTrajectory(
                     const double& oldFinal = oldTraj.getElt(oldN - 1, i);
                     newTraj.updBlock(oldN, i, oldN - 1, 1) =
                             SimTK::Matrix(oldTraj.block(1, i, oldN - 1, 1).negate());
+                    newTraj.updBlock(oldN, i, oldN - 1, 1).updCol(0) +=
+                            2 * oldFinal;
                     break;
                 }
             }
