@@ -125,7 +125,6 @@ std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
     if (!getProperty_max_iterations().empty()) {
         solver.set_optim_max_iterations(get_max_iterations());
     }
-
     return std::make_pair(
             study, posmotPtr->exportToTable(kinematics.getIndependentColumn()));
 }
