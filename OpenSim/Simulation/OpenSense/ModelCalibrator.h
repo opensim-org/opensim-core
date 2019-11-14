@@ -1,5 +1,5 @@
-#ifndef __ModelCalibrator_h__
-#define __ModelCalibrator_h__
+#ifndef __OPENSIM_MODEL_CALIBRATOR_H__
+#define __OPENSIM_MODEL_CALIBRATOR_H__
 /* -------------------------------------------------------------------------- *
  *                          OpenSim:  ModelCalibrator.h                       *
  * -------------------------------------------------------------------------- *
@@ -85,6 +85,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __ModelCalibrator_h__
+#endif // __OPENSIM_MODEL_CALIBRATOR_H__
 
 
