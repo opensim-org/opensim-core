@@ -129,6 +129,7 @@ void muscleDrivenStateTracking() {
             ModOpReplaceMusclesWithDeGrooteFregly2016() |
             // Only valid for DeGrooteFregly2016Muscles.
             ModOpIgnorePassiveFiberForcesDGF() |
+            ModOpIgnoreTendonCompliance() |
             // Only valid for DeGrooteFregly2016Muscles.
             ModOpScaleActiveFiberForceCurveWidthDGF(1.5);
     track.setModel(modelProcessor);
@@ -169,14 +170,16 @@ void muscleDrivenStateTracking() {
     // Put a large weight on the pelvis CoordinateActuators, which act as the
     // residual, or 'hand-of-god', forces which we would like to keep as small
     // as possible.
-     Model model = modelProcessor.process();
-     for (const auto& coordAct : model.getComponentList<CoordinateActuator>()) {
+    Model model = modelProcessor.process();
+    for (const auto& coordAct : model.getComponentList<CoordinateActuator>()) {
         auto coordPath = coordAct.getAbsolutePathString();
         if (coordPath.find("pelvis") != std::string::npos) {
             effort.setWeightForControl(coordPath, 10);
         }
     }
-    
+    auto& solver = study.updSolver<MocoCasADiSolver>();
+    solver.set_output_interval(5);
+
     // Solve and visualize.
     MocoSolution solution = study.solve();
     study.visualize(solution);
@@ -186,7 +189,7 @@ int main() {
 
     // Solve the torque-driven marker tracking problem.
     // This problem takes a few minutes to solve.
-    torqueDrivenMarkerTracking();
+    // torqueDrivenMarkerTracking();
 
     // Solve the muscle-driven state tracking problem.
     // This problem could take an hour or more to solve, depending on the 
