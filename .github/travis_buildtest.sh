@@ -86,7 +86,7 @@ if [ ! -z "$TRAVIS_PULL_REQUEST_BRANCH" ]; then
 fi
 ZIPNAME=${ZIPNAME}.zip
 
-# if [ ! -z "$TRAVIS_TAG" ]; then
+if [ ! -z "$TRAVIS_TAG" ]; then
 
     # Leave symlinks intact.
     mv opensim-moco opensim-moco-${VERSION}
@@ -108,4 +108,4 @@ ZIPNAME=${ZIPNAME}.zip
     # '--archive' preserves symlinks.
     rsync --archive --compress --verbose ~/to_deploy/$ZIPNAME opensim-bot@frs.sourceforge.net:/home/frs/project/myosin/opensim-moco/
 
-# fi
+fi
