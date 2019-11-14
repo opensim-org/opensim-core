@@ -93,7 +93,7 @@ void MocoSumSquaredStateGoal::initializeOnModelImpl(const Model& model) const {
 
 void MocoSumSquaredStateGoal::calcIntegrandImpl(
         const SimTK::State& state, double& integrand) const {
-    for (int i = 0; i < m_state_weights.size(); ++i) {
+    for (int i = 0; i < (int)m_state_weights.size(); ++i) {
         const auto& value = state.getY()[m_sysYIndices[i]];
         integrand += m_state_weights[i] * value * value;
     }
