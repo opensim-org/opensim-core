@@ -6,8 +6,6 @@ cd $TRAVIS_BUILD_DIR
 if $(git log -n1 --format="%B" | grep --quiet '\[skip travis\]'); then exit; fi 
   
 cmake --version # To help debug any cmake-related issues.
-
-if [[ "$TRAVIS_OS_NAME" = "osx" ]]; then brew install openblas; fi
   
 ## Ensure that there are no tabs in source code.
 # GREP returns 0 (true) if there are any matches, and
@@ -38,7 +36,6 @@ if [ "$TRAVIS_OS_NAME" = "linux" ]; then export LD_LIBRARY_PATH=$LD_LIBRARY_PATH
 if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then mkdir ~/doxygen && cd ~/doxygen; fi
 if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then wget http://ftp.stack.nl/pub/users/dimitri/doxygen-1.8.10.linux.bin.tar.gz; fi
 if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "linux" ]]; then tar xzf doxygen-1.8.10.linux.bin.tar.gz; fi
-if [[ "$DOXY" = "on" && "$TRAVIS_OS_NAME" = "osx" ]]; then brew install doxygen; fi
 
 
 ## Install SWIG to build Java/python wrapping.
@@ -65,8 +62,8 @@ if [[ "$WRAP" = "on" ]]; then sh autogen.sh && ./configure --prefix=$HOME/swig -
 # $ cp .travis-ci.yml travis-ci-backup.yml
 # Encrypt the private key, add decryption line to .travis.yml. 
 # $ travis encrypt-file .github/.deploy_myosin_sourceforge_rsa --add
-# Manually edit the .travis.yml file to clean up the added lines and restore
-# comments to the file; move the decryption line to the before_deploy step.
+# Copy the relevant parts of the added decryption line to
+# .github/travis_dependencies.sh and .github/travis_buildtest.sh.
 # Remove the unencrypted private key. DO NOT commmit the unencrypted private
 # key.
 # $ rm -f .github/.deploy_myosin_sourceforge_rsa
@@ -74,7 +71,8 @@ if [[ "$WRAP" = "on" ]]; then sh autogen.sh && ./configure --prefix=$HOME/swig -
 # $ mv .deploy_myosin_sourceforge_rsa.enc .github/
 # Manually, log into the sourceforge website (user opensim-bot) and add the
 # public key (contents of .github/.deploy_myosin_sourceforge_rsa.pub) in
-# Profile > SSH Settings.
+# Account Settings > SSH Settings.
 # Now you can delete the public key file from your local machine.
 # Commit the encrypted private key and the changes to .travis.yml.
 # $ git commit .travis.yml .github/.deploy_myosin_sourceforge_rsa.enc
+

@@ -137,6 +137,10 @@ build_script:
   #-DCMAKE_TOOLCHAIN_FILE="C:\Tools\vcpkg\scripts\buildsystems\vcpkg.cmake"
   - cmake --build . --config %BTYPE% -- /maxcpucount:4 /verbosity:minimal
 
+  - ps: $env:match = cmake -L . | Select-String -Pattern MOCO_FULL_VERSION
+  - ps: $env:VERSION = $env:match.split('=')[1]
+  - ps: $env:VERSION
+
 test_script:
   - ctest --build-config %BTYPE% --parallel 4 --output-on-failure --exclude-regex "testTugOfWarDeGrooteFregly2016|test2Muscles2DOFsDeGrooteFregly2016"
 
@@ -156,8 +160,9 @@ after_test:
   # - IF %APPVEYOR_REPO_BRANCH% EQU master IF NOT DEFINED APPVEYOR_PULL_REQUEST_NUMBER SET DISTR=TRUE
   # Deploy always.
   - SET DISTR=TRUE
-  - IF DEFINED DISTR 7z a C:\opensim-moco.zip C:\opensim-moco
-  - IF DEFINED DISTR appveyor PushArtifact C:\opensim-moco.zip
+  - move C:\opensim-moco C:\opensim-moco-%VERSION%
+  - IF DEFINED DISTR 7z a C:\opensim-moco-%VERSION%-win.zip C:\opensim-moco-%VERSION%
+  - IF DEFINED DISTR appveyor PushArtifact C:\opensim-moco-%VERSION%-win.zip
   # Upload pre-built dependencies to speed up local development.
   # Change the modified timestamp of dependencies because otherwise these files
   # may have been written "in the future" (b/c of the time zone difference
