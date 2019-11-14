@@ -59,8 +59,11 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
     auto header_tokens = tokenize(header, _headerDelimiters);
     OPENSIM_THROW_IF(header_tokens.empty(),
                      FileIsEmpty,
-                     fileName);        
-    OPENSIM_THROW_IF(header_tokens.at(0) != "PathFileType",
+                     fileName);  
+    std::string pathfileTypeString("PathFileType");
+    OPENSIM_THROW_IF(
+            !std::equal(pathfileTypeString.rbegin(), pathfileTypeString.rend(),
+                             header_tokens.at(0).rbegin()),
                      MissingHeader);
     table->updTableMetaData().setValueForKey("header", header);
 
@@ -92,6 +95,10 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
                      keys.size(),
                      values.size());
 
+    // Throw if ',' used as a delimiter
+    OPENSIM_THROW_IF(values[0].find(',') != std::string::npos,
+            UnhandledEncoding, fileName);
+                    
     // Fill up the metadata container.
     for(std::size_t i = 0; i < keys.size(); ++i)
         table->updTableMetaData().setValueForKey(keys[i], values[i]);

@@ -131,6 +131,18 @@ public:
     }
 };
 
+class UnhandledEncoding : public IOError {
+public:
+    UnhandledEncoding(const std::string& file, size_t line,
+            const std::string& func, const std::string& filename)
+            : IOError(file, line, func) {
+        std::string msg = "Error reading MetaData in file '" + filename + "'. ";
+        msg += "Unexpected encoding or use of non-US delimiters. ";
+
+        addMessage(msg);
+    }
+};
+
 /** TRCFileAdapter is a FileAdapter that reads and writes TRC files. It accepts
 (when writing) and returns (when reading) a specific type of DataTable referred 
 to as Table in this class. Be sure to expect/provide that table when working
