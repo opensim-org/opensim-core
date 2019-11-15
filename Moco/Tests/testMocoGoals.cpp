@@ -23,6 +23,7 @@
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Actuators/PointActuator.h>
 #include <OpenSim/Common/LogManager.h>
+#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 
 using namespace OpenSim;
@@ -379,6 +380,66 @@ TEMPLATE_TEST_CASE(
     CHECK(solution.getObjective() == Approx(0.0).margin(1e-6));
 }
 
+TEST_CASE("Test MocoSumSquaredStateGoal") {
+    using SimTK::Inertia;
+    using SimTK::Vec3;
+    Model model = ModelFactory::createDoublePendulum();
+    const Coordinate& q0 = model.getCoordinateSet().get("q0");
+    const Coordinate& q1 = model.getCoordinateSet().get("q1");
+    std::string q0_str = q0.getAbsolutePathString() + "/value";
+    std::string q1_str = q1.getAbsolutePathString() + "/value";
+
+    SimTK::State state = model.initSystem();
+    q0.setValue(state, 1.0);
+    q1.setValue(state, 0.5);
+
+    MocoProblem mp;
+    mp.setModelCopy(model);
+
+    // If no state weights are given, should return sum squared state values
+    // with weight of 1.0 for each state
+    // 1.00 + 0.25 = 1.25
+    auto* goal = mp.addGoal<MocoSumSquaredStateGoal>();
+    goal->initializeOnModel(model);
+    CHECK(goal->calcIntegrand(state) == Approx(1.25).margin(1e-6));
+
+    // If one state weight given, use that state weight, but then also
+    // set weight to all other states as 1.0.
+    // 1 * 1 + 10 * 0.25 = 3.5
+    auto* goal2 = mp.addGoal<MocoSumSquaredStateGoal>();
+    goal2->setWeightForState(q1_str, 10.0);
+    goal2->initializeOnModel(model);
+    CHECK(goal2->calcIntegrand(state) == Approx(3.5).margin(1e-6));
+
+    MocoWeightSet moco_weight_set;
+    moco_weight_set.cloneAndAppend({q0_str, 0.5});
+    moco_weight_set.cloneAndAppend({q1_str, 10.0});
+
+    // 0.5 * 1 + 10.0 * 0.25 = 3.0
+    auto* goal3 = mp.addGoal<MocoSumSquaredStateGoal>();
+    goal3->setWeightSet(moco_weight_set);
+    goal3->initializeOnModel(model);
+    CHECK(goal3->calcIntegrand(state) == Approx(3.0).margin(1e-6));
+
+    // 0.5 * 1.00 + 10.0 * 0.25 = 3.0
+    auto* goal4 = mp.addGoal<MocoSumSquaredStateGoal>();
+    goal4->setWeightSet(moco_weight_set);
+    goal4->setPattern(".*value$");
+    goal4->initializeOnModel(model);
+    CHECK(goal4->calcIntegrand(state) == Approx(3.0).margin(1e-6));
+
+    // Throws since weight set has some names that don't match pattern.
+    auto* goal5 = mp.addGoal<MocoSumSquaredStateGoal>();
+    goal5->setWeightSet(moco_weight_set);
+    goal5->setPattern(".*pin1.*");
+    CHECK_THROWS(goal5->initializeOnModel(model));
+
+    // Throws since this state name doesn't exist in the model.
+    auto* goal6 = mp.addGoal<MocoSumSquaredStateGoal>();
+    goal6->setWeightForState("/jointset/j2/q2/value", 100.0);
+    CHECK_THROWS(goal6->initializeOnModel(model));
+}
+
 class MocoPeriodicish : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoPeriodicish, MocoGoal);
 
@@ -510,8 +571,8 @@ TEMPLATE_TEST_CASE("MocoPeriodicityGoal", "", MocoCasADiSolver) {
 }
 
 class MocoControlGoalWithEndpointConstraint : public MocoGoal {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoControlGoalWithEndpointConstraint,
-            MocoGoal);
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+            MocoControlGoalWithEndpointConstraint, MocoGoal);
 
 public:
     MocoControlGoalWithEndpointConstraint() = default;
@@ -522,7 +583,8 @@ public:
     void initializeOnModelImpl(const Model&) const override {
         setNumIntegralsAndOutputs(1, 1);
     }
-    void calcIntegrandImpl(const SimTK::State& state, double& integrand) const override {
+    void calcIntegrandImpl(
+            const SimTK::State& state, double& integrand) const override {
         getModel().realizeVelocity(state);
         const auto& controls = getModel().getControls(state);
         integrand = controls.normSqr();

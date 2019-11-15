@@ -1,3 +1,10 @@
+- 2019-10-30: ModelFactory::replaceMusclesWithPathActuators() now adds the
+              PathActuators to the Model's ForceSet, and the connectee names
+              for PathPoints are now valid.
+
+- 2019-10-30: Solvers print the date and time before and after solving a 
+              problem.
+
 - 2019-10-27: DeGrooteFregly2016Muscle::replaceMuscles() now carries over the
               appliesForce property. This affects 
               ModOpReplaceMusclesWithDeGrooteFregly2016 as well.
