@@ -251,7 +251,7 @@ void ExternalLoads::transformPointsExpressedInGroundToAppliedBodies(
     }
     // Once we've transformed the forces (done with computation),
     // then replace them in the Set
-    for (int i = 0; i < transformedForces.size(); ++i) {
+    for (int i = 0; i < (int)transformedForces.size(); ++i) {
         ExternalForce *transformedExf = transformedForces[i];
         if (transformedExf) {
             set(i, transformedExf);

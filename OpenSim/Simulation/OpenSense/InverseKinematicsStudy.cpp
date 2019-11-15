@@ -96,7 +96,7 @@ void InverseKinematicsStudy::
     std::cout << "press any key to visualize experimental marker data ..." << std::endl;
     std::cin >> c;
 
-    for (size_t j =startEnd[0]; j <= startEnd[1]; j=j+10) {
+    for (int j =startEnd[0]; j <= startEnd[1]; j=j+10) {
         std::cout << "time: " << times[j] << "s" << std::endl;
         state.setTime(times[j]);
         previewWorld.realizePosition(state);

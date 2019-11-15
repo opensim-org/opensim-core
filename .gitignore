@@ -9,6 +9,7 @@
 tmp
 # Ignore build trees.
 /build*
+/out
 # CLion integrated development environment
 /cmake-build-*
 # Ignore install dir.
@@ -27,4 +28,6 @@ dependencies/*
 
 # MAC File System files
 .DS_Store
+
+/CMakeSettings.json
 

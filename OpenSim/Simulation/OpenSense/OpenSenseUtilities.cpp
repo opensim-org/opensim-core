@@ -52,7 +52,7 @@ TimeSeriesTable_<SimTK::Rotation> OpenSenseUtilities::
     SimTK::Matrix_<SimTK::Rotation> matrix(int(nt), nc, Rotation());
 
     int cnt = 0;
-    for (size_t i = startEnd[0]; i <= startEnd[1]; ++i) {
+    for (int i = startEnd[0]; i <= startEnd[1]; ++i) {
         newTimes[cnt] = times[i];
         const auto& quatRow = quaternionsTable.getRowAtIndex(i);
         for (int j = 0; j < nc; ++j) {
