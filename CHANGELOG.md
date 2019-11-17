@@ -1,3 +1,5 @@
+- 2019-11-18: Add a "Getting started" page to the User Guide.
+
 - 2019-11-05: Updated the documentation to contain a list of all examples.
 
 - 2019-10-16: Fix a bug in ModOpscaleMaxIsometricForce, where the scale factor
