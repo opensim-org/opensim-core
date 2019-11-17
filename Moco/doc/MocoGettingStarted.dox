@@ -76,6 +76,9 @@ files that you can then use through the command-line interface.
 
 @section usingcpp Using Moco in C++
 
+This section is under development.
+
+<!--
 TODO: examples are designed so that you can run them without any special
 settings.
 
@@ -83,6 +86,7 @@ TODO: unify documentation for executables and plugins in C++ because they
 share background about compilers.
 
 TODO use through CMake. Use the same compiler or newer. Use C++11.
+-->
 
 */
 

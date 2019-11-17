@@ -39,7 +39,7 @@ well-tested and work well with Moco's solvers, so we encourage you to use them
 if possible. In the case that you want to create your own custom cost term,
 you can derive from MocoGoal in C++.
 
-If you do not want to write C++ code, you can prototype your cost in Matlab
+If you do not want to write C++ code, you can prototype your cost in MATLAB
 and we can help convert it to C++. See the Matlab example
 @ref examplePrototypeCustomGoal.m for more information.
 
