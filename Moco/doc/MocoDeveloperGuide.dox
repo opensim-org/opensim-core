@@ -14,7 +14,8 @@ Moco is organized as pairs of Problem and Solver classes.
 
 @image html MocoImplementationDiagram.svg width=700px
 
-Figure: Organization of classes in Moco. Abstract classes are denoted by dashed lines.
+<i>Organization of classes in Moco. Abstract classes are denoted by dashed
+lines.</i>
 
 MocoProblem describes a direct collocation problem using an OpenSim Model, and
 MocoSolver is an abstract class for solving MocoProblems. Moco provides two

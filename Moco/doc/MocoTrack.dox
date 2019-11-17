@@ -28,11 +28,11 @@ time window is consistent with all data sets, filling in missing coordinate spee
 states to track if only coordinate values are available, and appending tracking
 data to the problem initial guess. 
 
-Example:
-- `Moco/Examples/C++/exampleMocoTrack/exampleMocoTrack.cpp` (C++) 
-- `Moco/Bindings/Java/Matlab/Examples/exampleMocoTrack/exampleMocoTrack.m` 
+Examples in the Moco distribution:
+- `Resources/Code/CPP/exampleMocoTrack/exampleMocoTrack.cpp` (C++)
+- `Resources/Code/Matlab/exampleMocoTrack/exampleMocoTrack.m`
 (Matlab)
-- `Moco/Bindings/Python/examples/exampleMocoTrack/exampleMocoTrack.py` 
+- `Resources/Code/Python/exampleMocoTrack/exampleMocoTrack.py`
 (Python)
 
 
