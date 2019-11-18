@@ -13,7 +13,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
-    - name: Install Chocolatey packages
+    - name: Install SWIG
       run: choco install swig --version 3.0.9 --yes --limit-output 
 
     - name: Install NumPy 
@@ -29,43 +29,45 @@ jobs:
       # TODO: Add caching.
       run: |
         git submodule update --init
-        echo %GITHUB_WORKSPACE%\\build_deps
-        mkdir %GITHUB_WORKSPACE%\\build_deps
-        chdir %GITHUB_WORKSPACE%\\build_deps
+        echo $env:GITHUB_WORKSPACE\\build_deps
+        mkdir $env:GITHUB_WORKSPACE\\build_deps
+        chdir $env:GITHUB_WORKSPACE\\build_deps
         cmake --version
         # /W0 disables warnings. The other flags are copied from CMake's
         # default CMAKE_CXX_FLAGS.
         # https://msdn.microsoft.com/en-us/library/19z1t1wy.aspx
-        cmake %GITHUB_WORKSPACE%\\dependencies -G"Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=%GITHUB_WORKSPACE%\\moco_dependencies_install -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /W0 /GR /EHsc"
+        cmake $env:GITHUB_WORKSPACE\\dependencies -G"Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=$env:GITHUB_WORKSPACE\\moco_dependencies_install -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /W0 /GR /EHsc"
         cmake . -LAH
         cmake --build . --config Release -- /maxcpucount:4 
 
     - name: Build Moco
       run: |
-        mkdir %GITHUB_WORKSPACE%\\build 
-        chdir %GITHUB_WORKSPACE%\\build
+        mkdir $env:GITHUB_WORKSPACE\\build 
+        chdir $env:GITHUB_WORKSPACE\\build
         # TODO: Can remove /WX when we use that in CMakeLists.txt.
-        cmake -E env CXXFLAGS="/WX" cmake %GITHUB_WORKSPACE% -G"Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=%GITHUB_WORKSPACE%\\opensim-core-install -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on -DDOXYGEN_EXECUTABLE=C:\\doxygen
+        cmake -E env CXXFLAGS="/WX" cmake $env:GITHUB_WORKSPACE -G"Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=$env:GITHUB_WORKSPACE\\opensim-core-install -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on -DDOXYGEN_EXECUTABLE=C:\\doxygen
         cmake . -LAH
         cmake --build . --config Release -- /maxcpucount:4 /verbosity:minimal
 
-    - name: Test
+    - name: Test Moco
       run: |
-        chdir %GITHUB_WORKSPACE%\\build
+        chdir $env:GITHUB_WORKSPACE\\build
         ctest --parallel 4 --output-on-failure --build-config Release
 
-    - name: Install
+    - name: Install Moco
       run: |
-        chdir %GITHUB_WORKSPACE%\\build
+        chdir $env:GITHUB_WORKSPACE\\build
         cmake --build . --config Release --target install -- /maxcpucount:4 /verbosity:quiet
 
     # TODO: Fix name of the path to use tag/version.
-    - uses: actions/upload-artifact@v1.0.0
+    - name: Upload Moco (binary)
+      uses: actions/upload-artifact@v1.0.0
       with:
         name: opensim-moco
         path: C:\\opensim-moco.zip
 
-    - uses: actions/upload-artifact@v1.0.0
+    - name: Upload Moco dependencies (binary)
+      uses: actions/upload-artifact@v1.0.0
       with:
         name: opensim-moco-dependencies 
         path: C:\\opensim-moco-dependencies.zip
