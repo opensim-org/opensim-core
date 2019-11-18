@@ -20,7 +20,7 @@
       <tab type="classmembers" visible="yes" title="" intro=""/>
     </tab>
 
-    <tab type="examples" visible="yes" title="" intro=""/>
+    <tab type="user" url="@ref mocoexamples" visible="yes" title="Examples" intro=""/>
     <tab type="pages" visible="yes" title="Index" intro=""/>
     <!--<tab type="modules" visible="yes" title="" intro=""/>-->
     <!--<tab type="namespaces" visible="yes" title="">
