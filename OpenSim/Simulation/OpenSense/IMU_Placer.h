@@ -1,5 +1,5 @@
-#ifndef __OPENSIM_MODEL_CALIBRATOR_H__
-#define __OPENSIM_MODEL_CALIBRATOR_H__
+#ifndef __OPENSIM_IMU_PLACER_H__
+#define __OPENSIM_IMU_PLACER_H__
 /* -------------------------------------------------------------------------- *
  *                          OpenSim:  IMU_Placer.h                       *
  * -------------------------------------------------------------------------- *
@@ -85,6 +85,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __OPENSIM_MODEL_CALIBRATOR_H__
+#endif // __OPENSIM_IMU_PLACER_H__
 
 
