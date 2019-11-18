@@ -26,6 +26,7 @@
 #include "MocoProblemInfo.h"
 #include <regex>
 #include <unordered_set>
+#include "Components/ActivationCoordinateActuator.h"
 
 using namespace OpenSim;
 
@@ -406,7 +407,10 @@ void MocoProblemRep::initialize() {
 
             if (ph0.get_bound_activation_from_excitation()) {
                 const auto* muscle = dynamic_cast<const Muscle*>(&actu);
-                if (muscle && !muscle->get_ignore_activation_dynamics()) {
+                const auto* activationCoordinateActuator = 
+                    dynamic_cast<const ActivationCoordinateActuator*>(&actu);
+                if ((muscle && !muscle->get_ignore_activation_dynamics()) ||
+                        activationCoordinateActuator) {
                     const std::string stateName = actuName + "/activation";
                     auto& info = m_state_infos[stateName];
                     if (info.getName().empty()) { info.setName(stateName); }

@@ -496,8 +496,12 @@ std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(
 /// half of the period for that column is (first_half_trajectory +
 /// half_period_value - initial_value).
 /// @param negatePatterns If a column label matches a negatePattern, then the
-/// second half of the period for that column is (-first_half_trajectory + 2 *
-/// half_period_value). This is usually relevant for only 3D models.
+/// second half of the period for that column is (-first_half_trajectory). 
+/// This is usually relevant for only 3D models.
+/// @param negateAndShiftPatterns If a column label matches a 
+/// negateAndShiftPattern, then the second half of the period for that column is 
+/// (-first_half_trajectory + 2 * half_period_value). This is usually relevant 
+/// for only 3D models.
 /// @param symmetryPatterns This argument is a list of pairs, where the first
 /// element of the pair is a pattern to match, and the second is a substitution
 /// to convert the column label into the opposite column label of the symmetric
@@ -519,11 +523,27 @@ std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(
 OSIMMOCO_API MocoTrajectory createPeriodicTrajectory(
         const MocoTrajectory& halfPeriodTrajectory,
         std::vector<std::string> addPatterns = {".*pelvis_tx/value"},
-        std::vector<std::string> negatePatterns = {".*pelvis_list.*",
-                                                   ".*pelvis_rotation.*",
-                                                   ".*pelvis_tz.*", 
-                                                   ".*lumbar_bending.*",
-                                                   ".*lumbar_rotation.*"},
+        std::vector<std::string> negatePatterns = {".*pelvis_list/speed",
+                                                   ".*pelvis_rotation/speed",
+                                                   ".*pelvis_tz/speed", 
+                                                   ".*lumbar_bending/speed",
+                                                   ".*lumbar_rotation/speed",
+                                                   ".*pelvis_list/activation", 
+                                                   ".*pelvis_rotation/activation",
+                                                   ".*pelvis_tz/activation", 
+                                                   ".*lumbar_bending/activation",
+                                                   ".*lumbar_rotation/activation",
+                                                   ".*pelvis_list$", 
+                                                   ".*pelvis_rotation$",
+                                                   ".*pelvis_tz$", 
+                                                   ".*lumbar_bending$",
+                                                   ".*lumbar_rotation$"},
+        std::vector<std::string> negateAndShiftPatterns = {
+                                                   ".*pelvis_list/value",
+                                                   ".*pelvis_rotation/value", 
+                                                   ".*pelvis_tz/value", 
+                                                   ".*lumbar_bending/value",
+                                                   ".*lumbar_rotation/value"},
         std::vector<std::pair<std::string, std::string>> symmetryPatterns = 
                 {{R"(_r(\/|_|$))", "_l$1"}, {R"(_l(\/|_|$))", "_r$1"}});
 
