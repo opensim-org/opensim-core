@@ -12,10 +12,10 @@ jobs:
     - uses: actions/checkout@v1
 
     - name: Install Homebrew packages
-    - run: brew install openblas doxygen
+      run: brew install openblas doxygen
 
     - name: Install SWIG
-    - run: |
+      run: |
         mkdir ~/swig-source && cd ~/swig-source
         wget https://github.com/swig/swig/archive/rel-3.0.9.tar.tz
         tar xzf rel-3.0.9.tar.gz && cd swig-rel-3.0.9
@@ -23,7 +23,7 @@ jobs:
         make && make -j4 install
 
     - name: Build dependencies
-    - run: |
+      run: |
         mkdir $GITHUB_WORKSPACE/build_deps
         cd $GITHUB_WORKSPACE/build_deps
         DEP_CMAKE_ARGS=($GITHUB_WORKSPACE/dependencies)
