@@ -8,12 +8,14 @@ project(MocoDependencies)
 # We require a version of CMake that supports Visual Studio 2015.
 cmake_minimum_required(VERSION 3.2)
 
-if(MSVC AND NOT ${CMAKE_GENERATOR} MATCHES "Win64")
-    # This requirement results from the use of 64-bit pre-built binaries for
-    # ADOL-C and Ipopt.
-    set(MSG "You must choose a 64-bit generator")
-    set(MSG "${MSG} (e.g., 'Visual Studio 14 2015 Win64').")
-    message(FATAL_ERROR ${MSG})
+if(MSVC)
+    if (${CMAKE_GENERATOR} MATCHES "Win64" OR 
+            ${CMAKE_GENERATOR_PLATFORM} STREQUAL "x64")
+    else()
+        # This requirement results from the use of 64-bit pre-built binaries for
+        # ADOL-C and Ipopt.
+        message(FATAL_ERROR "Only 64-bit platforms supported.")
+    end()
 endif()
 
 option(OPENSIM_JAVA_WRAPPING "Build opensim-core Java/MATLAB interface." OFF)
