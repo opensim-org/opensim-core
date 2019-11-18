@@ -1,3 +1,10 @@
+- 2019-11-18: Formatting updates in report.py. Added support fpr automatic 
+              activation bounds for ActivationCoordinateActuator. Exporting 
+              controls to TimeSeriesTable via 
+              MocoTrajectory::exportToControlsTable(). Utility 
+              createPeriodicTrajectory() now properly handles antisymmetric
+              coordinate position, speed, and actuator variables.
+
 - 2019-11-05: Updated the documentation to contain a list of all examples.
 
 - 2019-10-16: Fix a bug in ModOpscaleMaxIsometricForce, where the scale factor
