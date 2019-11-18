@@ -1,4 +1,4 @@
-name: continuous-integration-mac
+name: Mac
 
 on: pull_request
 
@@ -17,7 +17,7 @@ jobs:
     - name: Install SWIG
       run: |
         mkdir ~/swig-source && cd ~/swig-source
-        wget https://github.com/swig/swig/archive/rel-3.0.9.tar.tz
+        wget https://github.com/swig/swig/archive/rel-3.0.9.tar.gz
         tar xzf rel-3.0.9.tar.gz && cd swig-rel-3.0.9
         sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache
         make && make -j4 install
