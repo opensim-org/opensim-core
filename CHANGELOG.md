@@ -1,9 +1,16 @@
+- 2019-11-09: Improve the reliability of building the Ipopt dependency by using
+              more stable servers for downloading Metis and MUMPS.
+
 - 2019-10-30: ModelFactory::replaceMusclesWithPathActuators() now adds the
               PathActuators to the Model's ForceSet, and the connectee names
               for PathPoints are now valid.
 
 - 2019-10-30: Solvers print the date and time before and after solving a 
               problem.
+
+- 2019-10-27: DeGrooteFregly2016Muscle::replaceMuscles() now carries over the
+              appliesForce property. This affects 
+              ModOpReplaceMusclesWithDeGrooteFregly2016 as well.
 
 - 2019-10-19: configureMoco.m adds Moco's Matlab Utilities directory
               to the Matlab path, and removes any detected OpenSense beta

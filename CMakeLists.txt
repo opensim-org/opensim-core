@@ -3,42 +3,45 @@ project(OpenSimMoco VERSION 0.1.0)
 
 # Version.
 # --------
-set(VERSION_SUFFIX "")
+set(FULL_VERSION "")
 find_package(Git)
 if(Git_FOUND)
     # This command provides the annotated tag for the current commit, if it
     # exists, and returns an error if a tag does not exist.
     execute_process(
-            COMMAND git describe --exact-match
+            COMMAND "${GIT_EXECUTABLE}" describe --exact-match
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
             RESULT_VARIABLE GIT_DESCRIBE_EXACT_MATCH_RETVAL
             OUTPUT_VARIABLE GIT_TAG
             OUTPUT_STRIP_TRAILING_WHITESPACE
-            OUTPUT_QUIET
             ERROR_QUIET
     )
     if(${GIT_DESCRIBE_EXACT_MATCH_RETVAL} EQUAL 0)
         # A tag exists.
+        set(FULL_VERSION ${GIT_TAG})
         # Do not add anything to the version.
     else()
         execute_process(
-                COMMAND git log -1 --format=%h
+                COMMAND "${GIT_EXECUTABLE}" log -1 --format=%h
                 WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                 OUTPUT_VARIABLE GIT_COMMIT_HASH
                 OUTPUT_STRIP_TRAILING_WHITESPACE
         )
         # Prepend date for sorting.
         execute_process(
-                COMMAND git show -s --format=%cd --date=short HEAD
+                COMMAND "${GIT_EXECUTABLE}" show -s --format=%cd --date=short HEAD
                 WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                 OUTPUT_VARIABLE GIT_COMMIT_DATE
                 OUTPUT_STRIP_TRAILING_WHITESPACE
         )
-        set(VERSION_SUFFIX "-${GIT_COMMIT_DATE}-${GIT_COMMIT_HASH}")
+        set(FULL_VERSION
+                "${PROJECT_VERSION}-${GIT_COMMIT_DATE}-${GIT_COMMIT_HASH}")
     endif()
 else()
-    set(VERSION_SUFFIX "?")
+    set(FULL_VERSION "${PROJECT_VERSION}?")
 endif()
+set(MOCO_FULL_VERSION "${FULL_VERSION}" CACHE STRING
+        "Full version string, containing git commit date/hash suffix." FORCE)
 
 # Moco settings.
 # --------------

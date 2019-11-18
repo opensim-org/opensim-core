@@ -49,7 +49,10 @@ printf '%s\n' "${OSIM_CMAKE_ARGS[@]}"
 cmake "${OSIM_CMAKE_ARGS[@]}"
 
 cmake . -LAH
-  
+
+VERSION=`cmake -L . | grep MOCO_FULL_VERSION | cut -d "=" -f2`
+echo $VERSION
+
 make -j$NPROC;
 
 ctest -j8 --output-on-failure $CTEST_FLAGS --exclude-regex $TESTS_TO_EXCLUDE
@@ -65,26 +68,44 @@ make -j8 install > /dev/null
 mkdir ~/to_deploy
 # Zip up Moco relative to where it's installed.
 cd ~
-# Leave symlinks intact.
-ZIPNAME=opensim-moco-${TRAVIS_OS_NAME}
-if [ ! -z "$TRAVIS_PULL_REQUEST_BRANCH" ]; then
-    ZIPNAME=${ZIPNAME}_${TRAVIS_PULL_REQUEST_BRANCH}
+OS_NAME=$TRAVIS_OS_NAME
+if [ "$TRAVIS_OS_NAME" = "osx" ]; then
+    OS_NAME=mac
 fi
-ZIPNAME=${ZIPNAME}_${TRAVIS_BRANCH}.zip
-zip --symlinks --recurse-paths --quiet ~/to_deploy/$ZIPNAME opensim-moco
+ZIPNAME=opensim-moco-${VERSION}-${OS_NAME}
+if [ "$TRAVIS_BRANCH" != "master" ]; then
+    if [ "$TRAVIS_BRANCH" != "$TRAVIS_TAG" ]; then
+        # If there is a tag, then TRAVIS_BRANCH is equal to TRAVIS_TAG,
+        # and the version is already the tag, so we don't need to
+        # repeat the tag.
+        ZIPNAME=${ZIPNAME}-${TRAVIS_BRANCH}
+    fi
+fi
+if [ ! -z "$TRAVIS_PULL_REQUEST_BRANCH" ]; then
+    ZIPNAME=${ZIPNAME}-${TRAVIS_PULL_REQUEST_BRANCH}
+fi
+ZIPNAME=${ZIPNAME}.zip
 
-## Set up ssh for sourceforge.
-cd $TRAVIS_BUILD_DIR
-if [[ "$DEPLOY" = "yes" ]]; then PREP_SOURCEFORGE_SSH=0; else PREP_SOURCEFORGE_SSH=1; fi
-# Decrypt the private key stored in the repository to the tmp dir.
-if [ $PREP_SOURCEFORGE_SSH = "0" ]; then openssl aes-256-cbc -K $encrypted_115b27a55ea5_key -iv $encrypted_115b27a55ea5_iv -in .github/.deploy_myosin_sourceforge_rsa.enc -out /tmp/deploy_myosin_sourceforge_rsa -d; fi
-# Start the ssh agent.
-if [ $PREP_SOURCEFORGE_SSH = "0" ]; then eval "$(ssh-agent -s)"; fi
-# Register this private key with this client (the travis machine).
-if [ $PREP_SOURCEFORGE_SSH = "0" ]; then chmod 600 /tmp/deploy_myosin_sourceforge_rsa; fi
-if [ $PREP_SOURCEFORGE_SSH = "0" ]; then ssh-add /tmp/deploy_myosin_sourceforge_rsa; fi
+if [ ! -z "$TRAVIS_TAG" ]; then
 
-# Uploads to sourceforge.net/projects/myosin
-# See https://docs.travis-ci.com/user/deployment/custom/
-# '--archive' preserves symlinks.
-rsync --archive --compress --verbose ~/to_deploy/$ZIPNAME opensim-bot@frs.sourceforge.net:/home/frs/project/myosin/opensim-moco/
+    # Leave symlinks intact.
+    mv opensim-moco opensim-moco-${VERSION}
+    zip --symlinks --recurse-paths --quiet ~/to_deploy/$ZIPNAME opensim-moco-${VERSION}
+
+    ## Set up ssh for sourceforge.
+    cd $TRAVIS_BUILD_DIR
+    if [[ "$DEPLOY" = "yes" ]]; then PREP_SOURCEFORGE_SSH=0; else PREP_SOURCEFORGE_SSH=1; fi
+    # Decrypt the private key stored in the repository to the tmp dir.
+    if [ $PREP_SOURCEFORGE_SSH = "0" ]; then openssl aes-256-cbc -K $encrypted_3d3280d08c79_key -iv $encrypted_3d3280d08c79_iv -in .github/.deploy_myosin_sourceforge_rsa.enc -out /tmp/deploy_myosin_sourceforge_rsa -d; fi
+    # Start the ssh agent.
+    if [ $PREP_SOURCEFORGE_SSH = "0" ]; then eval "$(ssh-agent -s)"; fi
+    # Register this private key with this client (the travis machine).
+    if [ $PREP_SOURCEFORGE_SSH = "0" ]; then chmod 600 /tmp/deploy_myosin_sourceforge_rsa; fi
+    if [ $PREP_SOURCEFORGE_SSH = "0" ]; then ssh-add /tmp/deploy_myosin_sourceforge_rsa; fi
+
+    # Uploads to sourceforge.net/projects/myosin
+    # See https://docs.travis-ci.com/user/deployment/custom/
+    # '--archive' preserves symlinks.
+    rsync --archive --compress --verbose ~/to_deploy/$ZIPNAME opensim-bot@frs.sourceforge.net:/home/frs/project/myosin/opensim-moco/
+
+fi

@@ -24,7 +24,7 @@ if(SUPERBUILD_opensim-core)
     # OpenSim's dependencies.
     AddDependency(NAME simbody
                   GIT_URL    https://github.com/simbody/simbody.git
-                  GIT_TAG    94814f3c19e613f82a91ab58abd5471ed63aad96
+                  GIT_TAG    95dc0675914829f8db94cc297543d5fa340fc8df
                   CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF 
                              -DBUILD_TESTING:BOOL=OFF)
 
