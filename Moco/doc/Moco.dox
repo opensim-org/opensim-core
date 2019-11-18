@@ -19,6 +19,7 @@ Here are some problems you can solve with Moco:
 - Solve for mass properties that minimize residual (unrealistic) forces.
 
 Sections of the documentation:
+ - @ref gettingstarted
  - @ref mocouserguide "User Guide: Learning how to use Moco"
     - @ref mocotool "Solving for muscle activity that tracks an observed motion"
     - @ref mocostudy "Defining a custom optimization problem"
