@@ -40,6 +40,7 @@ jobs:
         cmake --build . --config Release -- /maxcpucount:4 
 
     - name: Build Moco
+      run: |
         mkdir %GITHUB_WORKSPACE%\\build 
         chdir %GITHUB_WORKSPACE%\\build
         # TODO: Can remove /WX when we use that in CMakeLists.txt.
