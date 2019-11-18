@@ -10,7 +10,7 @@ cmake_minimum_required(VERSION 3.2)
 
 if(MSVC)
     if (${CMAKE_GENERATOR} MATCHES "Win64" OR 
-            ${CMAKE_GENERATOR_PLATFORM} STREQUAL "x64")
+            "${CMAKE_GENERATOR_PLATFORM}" STREQUAL "x64")
     else()
         # This requirement results from the use of 64-bit pre-built binaries for
         # ADOL-C and Ipopt.
