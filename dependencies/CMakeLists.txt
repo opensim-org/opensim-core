@@ -15,7 +15,7 @@ if(MSVC)
         # This requirement results from the use of 64-bit pre-built binaries for
         # ADOL-C and Ipopt.
         message(FATAL_ERROR "Only 64-bit platforms supported.")
-    end()
+    endif()
 endif()
 
 option(OPENSIM_JAVA_WRAPPING "Build opensim-core Java/MATLAB interface." OFF)

@@ -22,3 +22,17 @@ jobs:
         sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache
         make && make -j4 install
 
+    - name: Build dependencies
+    - run: |
+        mkdir $GITHUB_WORKSPACE/build_deps
+        cd $GITHUB_WORKSPACE/build_deps
+        DEP_CMAKE_ARGS=($GITHUB_WORKSPACE/dependencies)
+        DEP_CMAKE_ARGS+=(-DCMAKE_BUILD_TYPE=Release)
+        DEP_CMAKE_ARGS+=(-DOPENSIM_JAVA_WRAPPING=on -DOPENSIM_PYTHON_WRAPPING=on)
+        DEP_CMAKE_ARGS+=(-DSWIG_EXECUTABLE=$HOME/swig/bin/swig)
+        DEP_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=10.10)
+        printf '%s\n' "${DEP_CMAKE_ARGS[@]}"
+        cmake "${DEP_CMAKE_ARGS[@]}"
+        make -j2 ipopt
+        make -j2
+
