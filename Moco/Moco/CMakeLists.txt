@@ -133,7 +133,7 @@ if (MOCO_WITH_TROPTER)
     target_compile_definitions(osimMoco PUBLIC MOCO_WITH_TROPTER)
 endif ()
 target_compile_definitions(osimMoco PRIVATE
-        OPENSIM_MOCO_VERSION=${PROJECT_VERSION}${VERSION_SUFFIX}
+        OPENSIM_MOCO_VERSION=${MOCO_FULL_VERSION}
 )
 
 MocoAddInstallRPATHSelf(TARGET osimMoco LOADER)

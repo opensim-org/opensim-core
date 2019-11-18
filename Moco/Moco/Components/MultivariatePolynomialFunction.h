@@ -64,7 +64,7 @@ public:
             coefficients(coefficients), dimension(dimension), order(order) {
         OPENSIM_THROW_IF(dimension < 0 || dimension > 4, Exception, format(
                 "Expected dimension >= 0 && <=4 but got %i.", dimension));
-        std::array<int, 4> nq{0};
+        std::array<int, 4> nq {{0, 0, 0, 0}};
         int coeff_nr = 0;
         for (nq[0] = 0; nq[0] < order + 1; ++nq[0]) {
             int nq2_s;
@@ -90,7 +90,7 @@ public:
 
     }
     T calcValue(const SimTK::Vector& x) const override {
-        std::array<int, 4> nq{0};
+        std::array<int, 4> nq {{0, 0, 0, 0}};
         T value = static_cast<T>(0);
         int coeff_nr = 0;
         for (nq[0] = 0; nq[0] < order + 1; ++nq[0]) {
@@ -120,7 +120,7 @@ public:
     }
     T calcDerivative(const SimTK::Array_<int>& derivComponent,
                      const SimTK::Vector& x) const override {
-        std::array<int, 4> nq{0};
+        std::array<int, 4> nq {{0, 0, 0, 0}};
         T value = static_cast<T>(0);
         int nqNonNegative;
         int coeff_nr = 0;

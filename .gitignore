@@ -14,6 +14,7 @@ out.log
 dependencies/*
 !dependencies/CMakeLists.txt
 !dependencies/*.cmake
+!dependencies/*.patch
 
 # python
 *.pyc
