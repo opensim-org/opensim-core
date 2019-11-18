@@ -1,6 +1,8 @@
 OpenSim Moco
 ============
 
+![](https://github.com/opensim-org/opensim-moco/workflows/continuous_integration_windows/badge.svg)
+
 OpenSim Moco is a toolkit for solving optimal control problems involving
 musculoskeletal systems using the direct collocation method. Moco solves the
 following broad categories of problems:
