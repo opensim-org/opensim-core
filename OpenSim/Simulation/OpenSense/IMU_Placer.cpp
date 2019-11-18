@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                         OpenSim:  ModelCalibrator.cpp                      *
+ *                         OpenSim:  IMU_Placer.cpp                      *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -28,7 +28,7 @@
 #include <OpenSim/Simulation/MarkersReference.h>
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
 #include "OpenSenseUtilities.h"
-#include "ModelCalibrator.h"
+#include "IMU_Placer.h"
 
 using namespace std;
 using namespace OpenSim;
@@ -41,14 +41,14 @@ using SimTK::Vec3;
 /**
  * Default constructor.
  */
-ModelCalibrator::ModelCalibrator() 
+IMU_Placer::IMU_Placer() 
 {
     constructProperties();
     _calibrated = false;
 }
 
 
-ModelCalibrator::ModelCalibrator(const std::string& setupFile)
+IMU_Placer::IMU_Placer(const std::string& setupFile)
         : Object(setupFile, true) {
     constructProperties();
     updateFromXMLDocument();
@@ -58,7 +58,7 @@ ModelCalibrator::ModelCalibrator(const std::string& setupFile)
 /**
  * Destructor.
  */
-ModelCalibrator::~ModelCalibrator()
+IMU_Placer::~IMU_Placer()
 {
 }
 
@@ -68,7 +68,7 @@ ModelCalibrator::~ModelCalibrator()
 //_____________________________________________________________________________
 /**
  */
-void ModelCalibrator::constructProperties() 
+void IMU_Placer::constructProperties() 
 {
     constructProperty_model_file_name("");
     constructProperty_base_imu_label("z");
@@ -84,9 +84,9 @@ void ModelCalibrator::constructProperties()
 //_____________________________________________________________________________
 /**
  * This method runs the calibration method on the _model maintained by
- * this ModelCalibrator
+ * this IMU_Placer
  */
-bool ModelCalibrator::run(bool visualizeResults)  {
+bool IMU_Placer::run(bool visualizeResults)  {
 
     _calibrated = false;
     if (_model.empty()) { 
@@ -242,7 +242,7 @@ bool ModelCalibrator::run(bool visualizeResults)  {
     return true;
 }
 
-Model& ModelCalibrator::getCalibratedModel() const { 
+Model& IMU_Placer::getCalibratedModel() const { 
     if (_calibrated)
         return *_model; 
     OPENSIM_THROW(Exception,

@@ -25,7 +25,7 @@
 #include <OpenSim/Simulation/MarkersReference.h>
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
 #include "OpenSenseUtilities.h"
-#include "ModelCalibrator.h"
+#include "IMU_Placer.h"
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -96,7 +96,7 @@ Model OpenSenseUtilities::calibrateModelFromOrientations(
     const std::string& baseHeadingDirectionString,
     bool visualizeCalibratedModel)
 {
-    OpenSim::ModelCalibrator calibrator;
+    OpenSim::IMU_Placer calibrator;
 
     calibrator.set_model_file_name(modelCalibrationPoseFile);
     calibrator.set_base_imu_label(baseImuName);
