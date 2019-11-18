@@ -20,13 +20,13 @@
 
 #include "Components/AccelerationMotion.h"
 #include "Components/DeGrooteFregly2016Muscle.h"
+#include "Components/ActivationCoordinateActuator.h"
 #include "Components/DiscreteForces.h"
 #include "Components/PositionMotion.h"
 #include "MocoProblem.h"
 #include "MocoProblemInfo.h"
 #include <regex>
 #include <unordered_set>
-#include "Components/ActivationCoordinateActuator.h"
 
 using namespace OpenSim;
 
