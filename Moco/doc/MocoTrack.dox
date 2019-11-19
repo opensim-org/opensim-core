@@ -29,11 +29,9 @@ states to track if only coordinate values are available, and appending tracking
 data to the problem initial guess. 
 
 Examples in the Moco distribution:
-- `Resources/Code/CPP/exampleMocoTrack/exampleMocoTrack.cpp` (C++)
-- `Resources/Code/Matlab/exampleMocoTrack/exampleMocoTrack.m`
-(Matlab)
-- `Resources/Code/Python/exampleMocoTrack/exampleMocoTrack.py`
-(Python)
+- MATLAB: [Resources/Code/Matlab/exampleMocoTrack/exampleMocoTrack.m](@ref exampleMocoTrack.m)
+- Python: [Resources/Code/Python/exampleMocoTrack/exampleMocoTrack.py](@ref exampleMocoTrack.py)
+- C++: [Resources/Code/CPP/exampleMocoTrack/exampleMocoTrack.cpp](@ref exampleMocoTrack.cpp)
 
 
 [1] Lin Y., Pandy M., 2017, Three-dimensional data-tracking dynamic optimization
