@@ -225,8 +225,8 @@ SimTK::Array_<int> InverseKinematicsStudy::getTimeRangeInUse(
     int nt = static_cast<int>(times.size());
     int startIx = 0;
     int endIx = nt-1;
-    int startTime = times[startIx];
-    int endTime   = times[endIx];
+    auto startTime = times[startIx];
+    auto endTime   = times[endIx];
     
     if (get_time_range(0)>get_time_range(1)){
       throw std::invalid_argument( "Start time greater than End time" );
