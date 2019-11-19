@@ -12,13 +12,13 @@ jobs:
     - uses: actions/checkout@v1
 
     - name: Install Homebrew packages
-      run: brew install cmake pkgconfig gcc autoconf libtool automake wget doxygen
+      run: brew install cmake pkgconfig gcc autoconf libtool automake wget pcre doxygen
 
     - name: Install SWIG
       run: |
         mkdir ~/swig-source && cd ~/swig-source
-        wget https://github.com/swig/swig/archive/rel-3.0.9.tar.gz
-        tar xzf rel-3.0.9.tar.gz && cd swig-rel-3.0.9
+        wget https://github.com/swig/swig/archive/rel-3.0.12.tar.gz
+        tar xzf rel-3.0.12.tar.gz && cd swig-rel-3.0.12
         sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache
         make && make -j4 install
 
