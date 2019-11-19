@@ -37,3 +37,47 @@ jobs:
         make -j2 ipopt
         make -j2
 
+    - name: Build Moco
+    - run: |
+        mkdir $GITHUB_WORKSPACE/build
+        cd $GITHUB_WORKSPACE/build
+        MOCO_CMAKE_ARGS=($GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=Release)
+        MOCO_CMAKE_ARGS+=(-DCMAKE_INSTALL_PREFIX=~/opensim-moco)
+        MOCO_CMAKE_ARGS+=(-DMOCO_JAVA_BINDINGS=on -DMOCO_PYTHON_BINDINGS=on)
+        MOCO_CMAKE_ARGS+=(-DSWIG_EXECUTABLE=$HOME/swig/bin/swig)
+        MOCO_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=10.10)
+        printf '%s\n' "${DEP_CMAKE_ARGS[@]}"
+        cmake "${DEP_CMAKE_ARGS[@]}"
+        cmake . -LAH
+        VERSION=`cmake -L . | grep MOCO_FULL_VERSION | cut -d "=" -f2`
+        echo $VERSION
+        make -j2
+
+    - name: Test Moco
+    - run: |
+        ctest -j2 --output-on-failuregT
+
+    - name: Install Moco
+    - run: |
+        make Moco_doxygen
+        make -j2 install
+
+    - name: Zip Moco
+    - run: |
+        mkdir ~/to_upload
+        ZIPNAME=opensim-moco-${VERSION}-mac.zip
+        # TODO: Consider the presence of a tag.
+        # Zip up Moco relative to where it's installed.
+        cd ~/
+        mv ~/opensim-moco ~/opensim-moco-${VERSION}
+        zip --symlinks --recurse-paths --quiet ~/to_upload/$ZIPNAME opensim-moco-${VERSION}
+
+    - name: Upload Moco
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        name: opensim-moco
+        path: ~/to_upload/$ZIPNAME
+
+ 
+
+        
