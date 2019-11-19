@@ -136,7 +136,7 @@
 #include <OpenSim/Simulation/CoordinateReference.h>
 #include <OpenSim/Simulation/OrientationsReference.h>
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
-#include <OpenSim/Simulation/OpenSense/ModelCalibrator.h>
+#include <OpenSim/Simulation/OpenSense/IMU_Placer.h>
 #include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
 #include <OpenSim/Simulation/OpenSense/InverseKinematicsStudy.h>
 
@@ -159,4 +159,3 @@
 #include <OpenSim/Actuators/TendonForceLengthCurve.h>
 
 #endif // OPENSIM_OPENSIM_HEADERS_SIMULATION_H_
-

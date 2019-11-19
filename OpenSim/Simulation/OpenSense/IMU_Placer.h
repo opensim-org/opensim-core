@@ -1,7 +1,7 @@
-#ifndef __OPENSIM_MODEL_CALIBRATOR_H__
-#define __OPENSIM_MODEL_CALIBRATOR_H__
+#ifndef __OPENSIM_IMU_PLACER_H__
+#define __OPENSIM_IMU_PLACER_H__
 /* -------------------------------------------------------------------------- *
- *                          OpenSim:  ModelCalibrator.h                       *
+ *                          OpenSim:  IMU_Placer.h                       *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -37,8 +37,8 @@ class Model;
  *
  * @author Ayman Habib
  */
-class OSIMSIMULATION_API ModelCalibrator : public Object {
-    OpenSim_DECLARE_CONCRETE_OBJECT(ModelCalibrator, Object);
+class OSIMSIMULATION_API IMU_Placer : public Object {
+    OpenSim_DECLARE_CONCRETE_OBJECT(IMU_Placer, Object);
 
 public:
     //==============================================================================
@@ -66,9 +66,9 @@ public:
             "quaternions to be used for calibration.");
 
 public:
-    virtual ~ModelCalibrator();
-    ModelCalibrator();
-    ModelCalibrator(const std::string& setupFile);
+    virtual ~IMU_Placer();
+    IMU_Placer();
+    IMU_Placer(const std::string& setupFile);
     bool run(bool visualizeResults = false);
     void setModel(Model& aModel) { _model = &aModel; };
     Model& getCalibratedModel() const;
@@ -79,12 +79,12 @@ private:
     SimTK::ReferencePtr<Model> _model;
     /** Flag indicating if Calibration run has been invoked already */
     bool _calibrated;
-};  // END of class ModelCalibrator
+};  // END of class IMU_Placer
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __OPENSIM_MODEL_CALIBRATOR_H__
+#endif // __OPENSIM_IMU_PLACER_H__
 
 
