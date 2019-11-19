@@ -12,7 +12,7 @@ jobs:
     - uses: actions/checkout@v1
 
     - name: Install Homebrew packages
-      run: brew install openblas doxygen
+      run: brew install cmake pkgconfig gcc autoconf libtool automake wget doxygen
 
     - name: Install SWIG
       run: |
@@ -24,6 +24,7 @@ jobs:
 
     - name: Build dependencies
       run: |
+        git submodule update --init
         mkdir $GITHUB_WORKSPACE/build_deps
         cd $GITHUB_WORKSPACE/build_deps
         DEP_CMAKE_ARGS=($GITHUB_WORKSPACE/dependencies)

@@ -3,6 +3,8 @@ name: Windows
 # TODO: build master branch after PRs are merged.
 # syntax https://help.github.com/en/articles/workflow-syntax-for-github-actions
 on: pull_request
+
+# TODO: use "-A x64" and VS 2019.
     
 jobs:
   windows:
@@ -36,7 +38,7 @@ jobs:
         # /W0 disables warnings. The other flags are copied from CMake's
         # default CMAKE_CXX_FLAGS.
         # https://msdn.microsoft.com/en-us/library/19z1t1wy.aspx
-        cmake $env:GITHUB_WORKSPACE\\dependencies -G"Visual Studio 16 2019 Win64" -DCMAKE_INSTALL_PREFIX=$env:GITHUB_WORKSPACE\\moco_dependencies_install -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /W0 /GR /EHsc" -DOPENSIM_JAVA_WRAPPING=on -DOPENSIM_PYTHON_WRAPPING=on
+        cmake $env:GITHUB_WORKSPACE\\dependencies -G"Visual Studio 15 2017 Win64" -DCMAKE_INSTALL_PREFIX=$env:GITHUB_WORKSPACE\\moco_dependencies_install -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /W0 /GR /EHsc" -DOPENSIM_JAVA_WRAPPING=on -DOPENSIM_PYTHON_WRAPPING=on
         cmake . -LAH
         cmake --build . --config Release -- /maxcpucount:4 
 
@@ -45,7 +47,7 @@ jobs:
         mkdir $env:GITHUB_WORKSPACE\\build 
         chdir $env:GITHUB_WORKSPACE\\build
         # TODO: Can remove /WX when we use that in CMakeLists.txt.
-        cmake -E env CXXFLAGS="/WX" cmake $env:GITHUB_WORKSPACE -G"Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=$env:GITHUB_WORKSPACE\\opensim-core-install -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on -DDOXYGEN_EXECUTABLE=C:\\doxygen
+        cmake -E env CXXFLAGS="/WX" cmake $env:GITHUB_WORKSPACE -G"Visual Studio 15 2019 Win64" -DCMAKE_INSTALL_PREFIX=$env:GITHUB_WORKSPACE\\opensim-core-install -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on -DDOXYGEN_EXECUTABLE=C:\\doxygen
         cmake . -LAH
         cmake --build . --config Release -- /maxcpucount:4 /verbosity:minimal
 
@@ -60,13 +62,13 @@ jobs:
         cmake --build . --config Release --target install -- /maxcpucount:4 /verbosity:quiet
 
     # TODO: Fix name of the path to use tag/version.
-    - name: Upload Moco (binary)
+    - name: Upload Moco
       uses: actions/upload-artifact@v1.0.0
       with:
         name: opensim-moco
         path: C:\\opensim-moco.zip
 
-    - name: Upload Moco dependencies (binary)
+    - name: Upload Moco dependencies
       uses: actions/upload-artifact@v1.0.0
       with:
         name: opensim-moco-dependencies 
