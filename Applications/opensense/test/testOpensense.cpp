@@ -25,7 +25,7 @@
 // INCLUDES
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
-#include <OpenSim/Simulation/OpenSense/InverseKinematicsStudy.h>
+#include <OpenSim/Simulation/OpenSense/IMUInverseKinematicsTool.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
@@ -58,7 +58,7 @@ int main()
     facingX.setName("calibrated_FacingX");
     facingX.finalizeFromProperties();
 
-    InverseKinematicsStudy ik_hjc("setup_track_HJC_trial.xml");
+    IMUInverseKinematicsTool ik_hjc("setup_track_HJC_trial.xml");
     ik_hjc.setModel(facingX);
     ik_hjc.set_results_directory("ik_hjc_" + facingX.getName());
     ik_hjc.run(false);

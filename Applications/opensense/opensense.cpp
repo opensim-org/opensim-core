@@ -1,7 +1,7 @@
 /* --------------------------------------------------------------------------*
 *                                  opensense                                 *
 * -------------------------------------------------------------------------- *
-* Command line application for running an InverseKinematicsStudy with IMU    *
+* Command line application for running an IMUInverseKinematicsTool with IMU  *
 * supplied as quaternions and registered onto a subject via labeled markers  *
 * OR, by registering IMU rotations on to a model in the calibration pose.    *
 *                                                                            *
@@ -40,7 +40,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/MarkersReference.h>
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
-#include <OpenSim/Simulation/OpenSense/InverseKinematicsStudy.h>
+#include <OpenSim/Simulation/OpenSense/IMUInverseKinematicsTool.h>
 #include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
 
 #include <ctime>  // clock(), clock_t, CLOCKS_PER_SEC
@@ -189,7 +189,7 @@ int main(int argc, char **argv)
                     break;
                 }
                 else if ((option == "-PrintSetup") || (option == "-PS")) {
-                    InverseKinematicsStudy *study = new InverseKinematicsStudy();
+                    IMUInverseKinematicsTool *study = new IMUInverseKinematicsTool();
                     study->setName("new");
                     Object::setSerializeAllDefaults(true);
                     study->print("new_Setup_OpenSense.xml");
@@ -234,7 +234,7 @@ int main(int argc, char **argv)
 
         // CONSTRUCT
         cout << "Constructing tool from setup file " << setupFileName << ".\n\n";
-        InverseKinematicsStudy ik(setupFileName);
+        IMUInverseKinematicsTool ik(setupFileName);
 
         // start timing
         std::clock_t startTime = std::clock();
@@ -341,7 +341,7 @@ void addImuFramesFromMarkers(const string& modelFile, const string& markersFile)
     model.updForceSet().clearAndDestroy();
 
     TimeSeriesTableVec3 table =
-        InverseKinematicsStudy::loadMarkersFile(markersFile);
+        IMUInverseKinematicsTool::loadMarkersFile(markersFile);
 
     model.setUseVisualizer(true);
 
