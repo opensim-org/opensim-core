@@ -145,8 +145,6 @@ runInverseKinematicsWithOrientationsFromFile(Model& model,
         OpenSenseUtilities::convertQuaternionsToRotations(quatTable);
 
     // Trim orientation data based on User input times
-    cout << startEnd[0] << endl;
-    cout << startEnd[1] << endl;
     orientationsData.trim(startEnd[0],startEnd[1]);
         
     OrientationsReference oRefs(orientationsData);
@@ -257,9 +255,6 @@ SimTK::Array_<int> InverseKinematicsStudy::getTimeRangeInUse(
     SimTK::Array_<int> retArray;
     retArray.push_back(startTime);
     retArray.push_back(endTime);
-    std::cout << "startTime::" << startTime << std::endl;
-    std::cout << "endTime::"   << endTime << std::endl;
-    
     return retArray;
 }
 
