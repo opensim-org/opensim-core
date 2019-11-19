@@ -246,5 +246,5 @@ Model& IMU_Placer::getCalibratedModel() const {
     if (_calibrated)
         return *_model; 
     OPENSIM_THROW(Exception,
-            "Attempt to retrieve calibrated model without invoking ModelCalibrator::run.");
+            "Attempt to retrieve calibrated model without invoking IMU_Placer::run.");
 }
