@@ -37,7 +37,7 @@ jobs:
         key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
         restore-keys: |
           ${{ runner.os }}-dependencies-
-
+ 
     - name: Build dependencies
       if: steps.cache-dependencies.outputs.cache-hit != 'true'
       run: |
@@ -62,7 +62,7 @@ jobs:
         echo 'DEBUG2'
         # TODO: Can remove /WX when we use that in CMakeLists.txt.
         # cmake -E env CXXFLAGS="/WX" 
-        cmake $env:GITHUB_WORKSPACE -G"Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DMOCO_DEPENDENCIES_DIR=~/moco_dependencies_dir -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WRAPPING=on -DDOXYGEN_EXECUTABLE=C:\\doxygen
+        cmake $env:GITHUB_WORKSPACE -G"Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DMOCO_DEPENDENCIES_DIR=~/moco_dependencies_install -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WRAPPING=on -DDOXYGEN_EXECUTABLE=C:\\doxygen
         echo 'DEBUG3'
         cmake . -LAH
         echo 'DEBUG4'
