@@ -33,12 +33,12 @@ jobs:
     - name: Cache dependencies
       id: cache-dependencies
       uses: actions/cache@v1
-        with:
-          path: $env:GITHUB_WORKSPACE/moco_dependencies_install
-          # TODO: avoid having to copy over the opensim-core commit hash.
-          key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
-          restore-keys: |
-            ${{ runner.os }}-dependencies-
+      with:
+        path: $env:GITHUB_WORKSPACE/moco_dependencies_install
+        # TODO: avoid having to copy over the opensim-core commit hash.
+        key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
+        restore-keys: |
+          ${{ runner.os }}-dependencies-
 
     - name: Build dependencies
       if: steps.cache-dependencies.outputs.cache-hit != 'true'
