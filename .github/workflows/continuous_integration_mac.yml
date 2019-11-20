@@ -107,18 +107,16 @@ jobs:
  
     - name: Zip Moco
       run: |
-        mkdir ~/to_upload
-        ZIPNAME=opensim-moco-${VERSION}-mac.zip
         # Zip up Moco relative to where it's installed.
         cd ~/
         mv ~/opensim-moco ~/opensim-moco-${VERSION}
-        zip --symlinks --recurse-paths --quiet ~/to_upload/$ZIPNAME opensim-moco-${VERSION}
+        zip --symlinks --recurse-paths --quiet $GITHUB_WORKSPACE/opensim-moco.zip opensim-moco-${VERSION}
  
     - name: Upload Moco
       uses: actions/upload-artifact@v1.0.0
       with:
         name: opensim-moco
-        path: ~/to_upload/$ZIPNAME
+        path: opensim-moco.zip
  
  
 

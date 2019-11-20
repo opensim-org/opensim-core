@@ -58,7 +58,7 @@ jobs:
         mkdir $env:GITHUB_WORKSPACE\\build 
         chdir $env:GITHUB_WORKSPACE\\build
         # TODO: Can remove /WX when we use that in CMakeLists.txt.
-        cmake -E env CXXFLAGS="/WX" cmake $env:GITHUB_WORKSPACE -G"Visual Studio 15 2019" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on -DDOXYGEN_EXECUTABLE=C:\\doxygen
+        cmake -E env CXXFLAGS="/WX" cmake $env:GITHUB_WORKSPACE -G"Visual Studio 15 2019" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WRAPPING=on -DDOXYGEN_EXECUTABLE=C:\\doxygen
         cmake . -LAH
         cmake --build . --config Release -- /maxcpucount:4 /verbosity:minimal
 
@@ -77,8 +77,7 @@ jobs:
         cmake --build . --config Release --target install -- /maxcpucount:4 /verbosity:quiet
 
         move ~/opensim-moco C:/opensim-moco-$env:VERSION
-        $env:ZIPNAME = C:/opensim-moco-$env:VERSION-win.zip
-        7z a C:/$env:ZIPNAME C:/opensim-moco-$env:VERSION
+        7z a $env:GITHUB_WORKSPACE/opensim-moco.zip C:/opensim-moco-$env:VERSION
 
     # TODO: Fix name of the path to use tag/version.
     # Use {{ github.ref }}
@@ -87,7 +86,7 @@ jobs:
       uses: actions/upload-artifact@v1.0.0
       with:
         name: opensim-moco
-        path: C:/$env:ZIPNAME
+        path: opensim-moco.zip 
 
 # TODO    - name: Upload Moco dependencies
 # TODO      uses: actions/upload-artifact@v1.0.0
