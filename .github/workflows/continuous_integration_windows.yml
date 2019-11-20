@@ -24,6 +24,7 @@ jobs:
       run: |
         cd ~
         (New-Object System.Net.WebClient).DownloadFile("https://sourceforge.net/projects/myosin/files/doxygen-1.8.14.windows.x64.bin.zip/download", "doxygen.zip")
+        ls
         7z x doxygen.zip -odoxygen
 
     - name: Update submodules
