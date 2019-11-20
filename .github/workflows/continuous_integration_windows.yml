@@ -57,12 +57,17 @@ jobs:
 
     - name: Build Moco
       run: |
+        echo 'DEBUG0'
         mkdir $env:GITHUB_WORKSPACE\\build 
+        echo 'DEBUG1'
         chdir $env:GITHUB_WORKSPACE\\build
+        echo 'DEBUG2'
         # TODO: Can remove /WX when we use that in CMakeLists.txt.
         # cmake -E env CXXFLAGS="/WX" 
         cmake $env:GITHUB_WORKSPACE -G"Visual Studio 15 2019" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WRAPPING=on -DDOXYGEN_EXECUTABLE=C:\\doxygen
+        echo 'DEBUG3'
         cmake . -LAH
+        echo 'DEBUG4'
         cmake --build . --config Release -- /maxcpucount:4 /verbosity:minimal
 
         $env:match = cmake -L . | Select-String -Pattern MOCO_FULL_VERSION
