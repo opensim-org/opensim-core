@@ -14,7 +14,15 @@ jobs:
     - name: Install Homebrew packages
       run: brew install cmake pkgconfig gcc autoconf libtool automake wget pcre doxygen
 
+    - name: Cache SWIG
+      id: cache-swig
+      uses: actions/cache@v1
+        with:
+          path: ~/swig
+          key: ${{ runner.os }}-swig
+
     - name: Install SWIG
+      if: steps.cache-swig.outputs.cache-hit != 'true'
       run: |
         mkdir ~/swig-source && cd ~/swig-source
         wget https://github.com/swig/swig/archive/rel-3.0.12.tar.gz
@@ -22,9 +30,22 @@ jobs:
         sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache
         make && make -j4 install
 
+    - name: Update submodules
+      run: git submodule update --init
+
+    - name: Cache dependencies
+      id: cache-dependencies
+      uses: actions/cache@v1
+        with:
+          path: $GITHUB_WORKSPACE/moco_dependencies_install
+          # TODO: avoid having to copy over the opensim-core commit hash.
+          key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
+          restore-keys: |
+            ${{ runner.os }}-dependencies-
+            
     - name: Build dependencies
+      if: steps.cache-dependencies.outputs.cache-hit != 'true'
       run: |
-        git submodule update --init
         mkdir $GITHUB_WORKSPACE/build_deps
         cd $GITHUB_WORKSPACE/build_deps
         DEP_CMAKE_ARGS=($GITHUB_WORKSPACE/dependencies)
@@ -41,13 +62,14 @@ jobs:
       run: |
         mkdir $GITHUB_WORKSPACE/build
         cd $GITHUB_WORKSPACE/build
-        MOCO_CMAKE_ARGS=($GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=Release)
+        MOCO_CMAKE_ARGS=($GITHUB_WORKSPACE)
+        DEP_CMAKE_ARGS+=(-DCMAKE_BUILD_TYPE=Release)
         MOCO_CMAKE_ARGS+=(-DCMAKE_INSTALL_PREFIX=~/opensim-moco)
         MOCO_CMAKE_ARGS+=(-DMOCO_JAVA_BINDINGS=on -DMOCO_PYTHON_BINDINGS=on)
         MOCO_CMAKE_ARGS+=(-DSWIG_EXECUTABLE=$HOME/swig/bin/swig)
         MOCO_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=10.10)
-        printf '%s\n' "${DEP_CMAKE_ARGS[@]}"
-        cmake "${DEP_CMAKE_ARGS[@]}"
+        printf '%s\n' "${MOCO_CMAKE_ARGS[@]}"
+        cmake "${MOCO_CMAKE_ARGS[@]}"
         cmake . -LAH
         VERSION=`cmake -L . | grep MOCO_FULL_VERSION | cut -d "=" -f2`
         echo $VERSION
@@ -55,7 +77,7 @@ jobs:
 
     - name: Test Moco
       run: |
-        ctest -j2 --output-on-failuregT
+        ctest -j2 --output-on-failure
 
     - name: Install Moco
       run: |
@@ -66,7 +88,6 @@ jobs:
       run: |
         mkdir ~/to_upload
         ZIPNAME=opensim-moco-${VERSION}-mac.zip
-        # TODO: Consider the presence of a tag.
         # Zip up Moco relative to where it's installed.
         cd ~/
         mv ~/opensim-moco ~/opensim-moco-${VERSION}
