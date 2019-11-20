@@ -120,8 +120,8 @@
 #include "SimbodyEngine/TransformAxis.h"
 #include "SimbodyEngine/Coordinate.h"
 #include "SimbodyEngine/SpatialTransform.h"
-#include "OpenSense/IMU_Placer.h"
-#include "OpenSense/InverseKinematicsStudy.h"
+#include "OpenSense/IMUPlacer.h"
+#include "OpenSense/IMUInverseKinematicsTool.h"
 
 #include "StatesTrajectoryReporter.h"
 
@@ -260,8 +260,8 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet() );
     Object::registerType( Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter() );
 
-    Object::registerType( IMU_Placer());
-    Object::registerType( InverseKinematicsStudy() );
+    Object::registerType( IMUPlacer());
+    Object::registerType( IMUInverseKinematicsTool() );
     
     Object::registerType( StatesTrajectoryReporter() );
 
@@ -284,6 +284,9 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 
     Object::renameType("MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameterSet",  
         "Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet");
+
+    Object::renameType(
+            "InverseKinematicsStudy", "IMUInverseKinematicsTool");
 
   } catch (const std::exception& e) {
     std::cerr 

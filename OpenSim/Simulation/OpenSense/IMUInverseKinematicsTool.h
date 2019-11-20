@@ -1,7 +1,7 @@
-#ifndef OPENSIM_INVERSE_KINEMATICS_STUDY_H_
-#define OPENSIM_INVERSE_KINEMATICS_STUDY_H_
+#ifndef OPENSIM_IMU_INVERSE_KINEMATICS_TOOL_H_
+#define OPENSIM_IMU_INVERSE_KINEMATICS_TOOL_H_
 /* -------------------------------------------------------------------------- *
- *                    OpenSim:  InverseKinematicsStudy.h                      *
+ *                    OpenSim:  IMUInverseKinematicsTool.h                    *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -12,7 +12,7 @@
  * Distribution Statement A – Approved for Public Release; Distribution is    *
  * Unlimited.                                                                 *
  *                                                                            *
- * InverseKinematicsStudy is written in part by AMJR consulting under a       *
+ * IMUInverseKinematicsTool is written in part by AMJR consulting under a     *
  * contract and in a collaborative effort with The Johns Hopkins University   *
  * Applied Physics Laboratory for a project sponsored by the United States    *
  * Army Natick Soldier Research Development and Engineering Center and        *
@@ -58,8 +58,8 @@ class IKTaskSet;
  *
  * @author Ajay Seth
  */
-class OSIMSIMULATION_API InverseKinematicsStudy : public Object {
-OpenSim_DECLARE_CONCRETE_OBJECT(InverseKinematicsStudy, Object);
+class OSIMSIMULATION_API IMUInverseKinematicsTool : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(IMUInverseKinematicsTool, Object);
 public:
 //==============================================================================
 // PROPERTIES
@@ -74,7 +74,7 @@ public:
         "Name/path to a .sto file of sensor frame orientations as quaternions.");
 
     OpenSim_DECLARE_PROPERTY(sensor_to_opensim_rotations, SimTK::Vec3,
-            "Space fixed rotations from IMU Space (typically z up) to OpenSim (Y up, X forward)");
+            "Space fixed rotations from IMU Space (typically Z up) to OpenSim (Y up, X forward)");
 
     OpenSim_DECLARE_LIST_PROPERTY_SIZE(time_range, double, 2,
         "The time range for the study.");
@@ -106,9 +106,9 @@ private:
     // CONSTRUCTION
     //--------------------------------------------------------------------------
 public:
-    virtual ~InverseKinematicsStudy();
-    InverseKinematicsStudy();
-    InverseKinematicsStudy(const std::string &setupFile);
+    virtual ~IMUInverseKinematicsTool();
+    IMUInverseKinematicsTool();
+    IMUInverseKinematicsTool(const std::string &setupFile);
     //--------------------------------------------------------------------------
     // INTERFACE
     //--------------------------------------------------------------------------
@@ -137,8 +137,8 @@ private:
         const TimeSeriesTable_<SimTK::Rotation>& orientations) const;
 
 //=============================================================================
-};  // END of class InverseKinematicsStudy
+};  // END of class IMUInverseKinematicsTool
 //=============================================================================
 } // namespace
 
-#endif // OPENSIM_INVERSE_KINEMATICS_STUDY_H_
+#endif // OPENSIM_IMU_INVERSE_KINEMATICS_TOOL_H_

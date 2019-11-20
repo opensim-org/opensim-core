@@ -1,5 +1,5 @@
 
-#include "InverseKinematicsStudy.h"
+#include "IMUInverseKinematicsTool.h"
 #include "OpenSenseUtilities.h"
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
@@ -20,23 +20,23 @@ using namespace SimTK;
 using namespace std;
 
 
-InverseKinematicsStudy::InverseKinematicsStudy()
+IMUInverseKinematicsTool::IMUInverseKinematicsTool()
 {
     constructProperties();
 }
 
-InverseKinematicsStudy::InverseKinematicsStudy(const std::string& setupFile)
+IMUInverseKinematicsTool::IMUInverseKinematicsTool(const std::string& setupFile)
     : Object(setupFile, true)
 {
     constructProperties();
     updateFromXMLDocument();
 }
 
-InverseKinematicsStudy::~InverseKinematicsStudy()
+IMUInverseKinematicsTool::~IMUInverseKinematicsTool()
 {
 }
 
-void InverseKinematicsStudy::constructProperties()
+void IMUInverseKinematicsTool::constructProperties()
 {
     constructProperty_accuracy(1e-6);
     constructProperty_constraint_weight(Infinity);
@@ -53,7 +53,7 @@ void InverseKinematicsStudy::constructProperties()
     constructProperty_results_directory("");
 }
 
-void InverseKinematicsStudy::
+void IMUInverseKinematicsTool::
     previewExperimentalData(const TimeSeriesTableVec3& markers,
                 const TimeSeriesTable_<SimTK::Rotation>& orientations) const
 {
@@ -104,7 +104,7 @@ void InverseKinematicsStudy::
     }
 }
 
-void InverseKinematicsStudy::
+void IMUInverseKinematicsTool::
 runInverseKinematicsWithOrientationsFromFile(Model& model,
     const std::string& orientationsFileName,
     bool visualizeResults)
@@ -206,7 +206,7 @@ runInverseKinematicsWithOrientationsFromFile(Model& model,
 
 
 // main driver
-bool InverseKinematicsStudy::run(bool visualizeResults)
+bool IMUInverseKinematicsTool::run(bool visualizeResults)
 {
     if (_model.empty()) {
         _model.reset(new Model(get_model_file_name()));
@@ -219,7 +219,7 @@ bool InverseKinematicsStudy::run(bool visualizeResults)
     return true;
 }
 
-SimTK::Array_<int> InverseKinematicsStudy::getTimeRangeInUse(
+SimTK::Array_<int> IMUInverseKinematicsTool::getTimeRangeInUse(
                                 const std::vector<double>& times ) const
 {
     int nt = static_cast<int>(times.size());
@@ -259,7 +259,7 @@ SimTK::Array_<int> InverseKinematicsStudy::getTimeRangeInUse(
 }
 
 TimeSeriesTable_<SimTK::Vec3> 
-    InverseKinematicsStudy::loadMarkersFile(const std::string& markerFile)
+    IMUInverseKinematicsTool::loadMarkersFile(const std::string& markerFile)
 {
     TimeSeriesTable_<Vec3> markers(markerFile);
     std::cout << markerFile << " loaded " << markers.getNumColumns() << " markers "

@@ -219,9 +219,9 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 
 %include <OpenSim/Simulation/AssemblySolver.h>
 %include <OpenSim/Simulation/InverseKinematicsSolver.h>
-%include <OpenSim/Simulation/OpenSense/IMU_Placer.h>
+%include <OpenSim/Simulation/OpenSense/IMUPlacer.h>
 %include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
-%include <OpenSim/Simulation/OpenSense/InverseKinematicsStudy.h>
+%include <OpenSim/Simulation/OpenSense/IMUInverseKinematicsTool.h>
 
 %include <OpenSim/Simulation/StatesTrajectory.h>
 // This enables iterating using the getBetween() method.
