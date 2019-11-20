@@ -46,6 +46,7 @@ jobs:
         echo $env:GITHUB_WORKSPACE\\build_deps
         mkdir $env:GITHUB_WORKSPACE\\build_deps
         chdir $env:GITHUB_WORKSPACE\\build_deps
+        # TODO: Ignore warnings in dependencies.
         # /W0 disables warnings. The other flags are copied from CMake's
         # default CMAKE_CXX_FLAGS.
         # https://msdn.microsoft.com/en-us/library/19z1t1wy.aspx
@@ -54,40 +55,41 @@ jobs:
         cmake . -LAH
         cmake --build . --config Release -- /maxcpucount:4 
 
-#    - name: Build Moco
-#      run: |
-#        mkdir $env:GITHUB_WORKSPACE\\build 
-#        chdir $env:GITHUB_WORKSPACE\\build
-#        # TODO: Can remove /WX when we use that in CMakeLists.txt.
-#        cmake -E env CXXFLAGS="/WX" cmake $env:GITHUB_WORKSPACE -G"Visual Studio 15 2019" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WRAPPING=on -DDOXYGEN_EXECUTABLE=C:\\doxygen
-#        cmake . -LAH
-#        cmake --build . --config Release -- /maxcpucount:4 /verbosity:minimal
-#
-#        $env:match = cmake -L . | Select-String -Pattern MOCO_FULL_VERSION
-#        $env:VERSION = $env:match.split('=')[1]
-#        $env:VERSION
-#
-#    - name: Test Moco
-#      run: |
-#        chdir $env:GITHUB_WORKSPACE\\build
-#        ctest --parallel 4 --output-on-failure --build-config Release
-#
-#    - name: Install Moco
-#      run: |
-#        chdir $env:GITHUB_WORKSPACE\\build
-#        cmake --build . --config Release --target install -- /maxcpucount:4 /verbosity:quiet
-#
-#        move ~/opensim-moco C:/opensim-moco-$env:VERSION
-#        7z a $env:GITHUB_WORKSPACE/opensim-moco.zip C:/opensim-moco-$env:VERSION
-#
-#    # TODO: Fix name of the path to use tag/version.
-#    # Use {{ github.ref }}
-#    # https://help.github.com/en/actions/automating-your-workflow-with-github-actions/contexts-and-expression-syntax-for-github-actions
-#    - name: Upload Moco
-#      uses: actions/upload-artifact@v1.0.0
-#      with:
-#        name: opensim-moco
-#        path: opensim-moco.zip 
+    - name: Build Moco
+      run: |
+        mkdir $env:GITHUB_WORKSPACE\\build 
+        chdir $env:GITHUB_WORKSPACE\\build
+        # TODO: Can remove /WX when we use that in CMakeLists.txt.
+        # cmake -E env CXXFLAGS="/WX" 
+        cmake $env:GITHUB_WORKSPACE -G"Visual Studio 15 2019" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WRAPPING=on -DDOXYGEN_EXECUTABLE=C:\\doxygen
+        cmake . -LAH
+        cmake --build . --config Release -- /maxcpucount:4 /verbosity:minimal
+
+        $env:match = cmake -L . | Select-String -Pattern MOCO_FULL_VERSION
+        $env:VERSION = $env:match.split('=')[1]
+        $env:VERSION
+
+    - name: Test Moco
+      run: |
+        chdir $env:GITHUB_WORKSPACE\\build
+        ctest --parallel 4 --output-on-failure --build-config Release
+
+    - name: Install Moco
+      run: |
+        chdir $env:GITHUB_WORKSPACE\\build
+        cmake --build . --config Release --target install -- /maxcpucount:4 /verbosity:quiet
+
+        move ~/opensim-moco C:/opensim-moco-$env:VERSION
+        7z a $env:GITHUB_WORKSPACE/opensim-moco.zip C:/opensim-moco-$env:VERSION
+
+    # TODO: Fix name of the path to use tag/version.
+    # Use {{ github.ref }}
+    # https://help.github.com/en/actions/automating-your-workflow-with-github-actions/contexts-and-expression-syntax-for-github-actions
+    - name: Upload Moco
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        name: opensim-moco
+        path: opensim-moco.zip 
 
 # TODO    - name: Upload Moco dependencies
 # TODO      uses: actions/upload-artifact@v1.0.0

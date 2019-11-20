@@ -78,28 +78,29 @@ jobs:
         VERSION=`cmake -L . | grep MOCO_FULL_VERSION | cut -d "=" -f2`
         echo $VERSION
 
-    - name: Cache Moco build
-      id: cache-moco-build
-      uses: actions/cache@v1
-      with:
-        path: ~/opensim-moco
-        # TODO: avoid having to copy over the opensim-core commit hash.
-        key: ${{ runner.os }}-moco-build-${{ hashFiles('**') }}
+    #- name: Cache Moco build
+    #  id: cache-moco-build
+    #  uses: actions/cache@v1
+    #  with:
+    #    path: ~/opensim-moco
+    #    # TODO: avoid having to copy over the opensim-core commit hash.
+    #    # TODO: this is not working.
+    #    key: ${{ runner.os }}-moco-build-${{ hashFiles('**') }}
 
     - name: Build Moco
-      if: steps.cache-moco-build.outputs.cache-hit != 'true'
+      # if: steps.cache-moco-build.outputs.cache-hit != 'true'
       run: |
         cd $GITHUB_WORKSPACE/build
         make -j4
  
     - name: Test Moco
-      if: steps.cache-moco-build.outputs.cache-hit != 'true'
+      # if: steps.cache-moco-build.outputs.cache-hit != 'true'
       run: |
         cd $GITHUB_WORKSPACE/build
         ctest -j4 --output-on-failure
  
     - name: Install Moco
-      if: steps.cache-moco-build.outputs.cache-hit != 'true'
+      # if: steps.cache-moco-build.outputs.cache-hit != 'true'
       run: |
         cd $GITHUB_WORKSPACE/build
         make Moco_doxygen
