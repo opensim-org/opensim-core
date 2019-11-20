@@ -17,7 +17,7 @@ jobs:
       # choco install doxygen.portable # <-- too unreliable.
       run: |
         (New-Object System.Net.WebClient).DownloadFile("https://sourceforge.net/projects/myosin/files/doxygen-1.8.14.windows.x64.bin.zip/download", "doxygen.zip")
-        7z x doxygen.zip -o~/doxygen
+        7z x doxygen.zip -o$env:HOMEDRIVE$env:HOMEPATH/doxygen
         ls
         ls ~
 
@@ -63,7 +63,7 @@ jobs:
         $env:PATH = "$env:HOMEDRIVE$env:HOMEPATH/doxygen;$env:PATH"
         # TODO: Can remove /WX when we use that in CMakeLists.txt.
         $env:CXXFLAGS = "/WX"
-        cmake $env:GITHUB_WORKSPACE -G"Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DMOCO_DEPENDENCIES_DIR=~/moco_dependencies_install -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WRAPPING=on 
+        cmake $env:GITHUB_WORKSPACE -G"Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core -DMOCO_DEPENDENCIES_DIR=~/moco_dependencies_install -DMOCO_JAVA_BINDINGS=on -DMOCO_PYTHON_BINDINGS=on 
         $env:CXXFLAGS = ""
         echo 'DEBUG3'
         cmake . -LAH
