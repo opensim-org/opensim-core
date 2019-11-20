@@ -1,7 +1,7 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: exampleSlidingMassAdvanced.cpp                               *
+ * OpenSim Moco: exampleMocoCustomEffortGoal.cpp                              *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2017 Stanford University and the Authors                     *
+ * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
  * Author(s): Christopher Dembia                                              *
  *                                                                            *
@@ -16,6 +16,21 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include <Moco/osimMoco.h>
+#include "MocoCustomEffortGoal.h"
+
+using namespace OpenSim;
+
+/// This example shows how to create a C++ plugin library containing a custom
+/// goal. The custom goal is defined in MocoCustomEffortGoal.(h|cpp).
+/// In this file, we create a MocoStudy that uses the custom goal.
+/// The separate example exampleSlidingMassAdvanced.cpp solves the same problem
+/// with the same custom goal, but the custom goal is not in a separate plugin
+/// library. With a separate plugin library, the custom goal can be used from
+/// the command-line, Matlab, Python, and the GUI. In Matlab, load the plugin
+/// using `org.opensim.modeling.opensimCommon.LoadOpenSimLibraryExact`. In
+/// Python, use `opensim.LoadOpenSimLibraryExact`.
+///
 /// Translate a point mass in one dimension in minimum time. This example
 /// also exhibits more advanced features of Moco, including defining a custom
 /// goal (cost term).
@@ -34,13 +49,6 @@
 ///            t_f in [0, 5]     final time
 /// constants  m       mass
 /// @endverbatim
-
-#include <Moco/osimMoco.h>
-
-#include <OpenSim/Actuators/CoordinateActuator.h>
-#include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
-
-using namespace OpenSim;
 
 std::unique_ptr<Model> createSlidingMassModel() {
     auto model = make_unique<Model>();
@@ -67,38 +75,6 @@ std::unique_ptr<Model> createSlidingMassModel() {
 
     return model;
 }
-
-/// Minimize the sum of squared controls integrated over the phase.
-/// (This can be achieved with MocoControlGoal, but we duplicate the cost
-/// just to illustrate creating a custom goal).
-/// Refer to Doxygen documentation for more information on creating a custom
-/// goal.
-class MocoCustomEffortGoal : public MocoGoal {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoCustomEffortGoal, MocoGoal);
-
-public:
-    MocoCustomEffortGoal() {}
-    MocoCustomEffortGoal(std::string name) : MocoGoal(std::move(name)) {}
-    MocoCustomEffortGoal(std::string name, double weight)
-            : MocoGoal(std::move(name), weight) {}
-
-protected:
-    Mode getDefaultModeImpl() const override { return Mode::Cost; }
-    bool getSupportsEndpointConstraintImpl() const override { return true; }
-    void initializeOnModelImpl(const Model&) const override {
-        setNumIntegralsAndOutputs(1, 1);
-    }
-    void calcIntegrandImpl(
-            const SimTK::State& state, double& integrand) const override {
-        getModel().realizeVelocity(state);
-        const auto& controls = getModel().getControls(state);
-        integrand = controls.normSqr();
-    }
-    void calcGoalImpl(
-            const GoalInput& input, SimTK::Vector& cost) const override {
-        cost[0] = input.integral;
-    }
-};
 
 int main() {
 
@@ -130,6 +106,7 @@ int main() {
     // Cost.
     // -----
     problem.addGoal<MocoFinalTimeGoal>("time");
+    // Use the goal from the plugin:
     problem.addGoal<MocoCustomEffortGoal>("effort");
 
     // Configure the solver.
@@ -143,9 +120,6 @@ int main() {
     solver.set_optim_finite_difference_scheme("forward");
     solver.set_optim_sparsity_detection("random");
     solver.set_optim_write_sparsity("sliding_mass");
-    // solver.set_optim_constraint_tolerance(1e-5);
-    // solver.set_optim_convergence_tolerance(1e-5);
-    // solver.set_optim_findiff_hessian_step_size(1e-3);
 
     // Specify an initial guess.
     // -------------------------

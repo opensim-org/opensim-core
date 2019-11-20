@@ -108,4 +108,17 @@ CustomImplicitAuxiliaryDynamics | N/A | Creating a component with implicit auxil
 
 
 */
+
+/** @example exampleSlidingMassAdvanced.cpp
+This example shows setting solver settings, customizing an initial guess,
+and defining a custom goal (cost term).
+See @ref customgoal.
+*/
+
+/** @example exampleMocoCustomEffortGoal.cpp
+This example shows creating a custom goal in a plugin library, which allows
+you to use the custom goal in C++, the command-line, Matlab, Python, and the
+GUI.
+See @ref customgoal.
+*/
 } // namespace OpenSim

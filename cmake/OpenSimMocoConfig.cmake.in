@@ -19,10 +19,7 @@ include("@PACKAGE_MOCO_INSTALL_CMAKEDIR@/@CMAKE_PROJECT_NAME@Targets.cmake")
 
 list(APPEND @CMAKE_PROJECT_NAME@_LIBRARIES osimMoco)
 
-# TODO add logic for if depenendencies are not copied.
-find_package(tropter REQUIRED PATHS "@PACKAGE_CMAKE_INSTALL_PREFIX@"
-        NO_MODULE NO_DEFAULT_PATH)
-
+# TODO add logic for if dependencies are not copied.
 find_package(OpenSim 4.0 REQUIRED PATHS "@PACKAGE_CMAKE_INSTALL_PREFIX@"
         NO_MODULE NO_DEFAULT_PATH)
 

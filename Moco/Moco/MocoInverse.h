@@ -107,9 +107,8 @@ public:
             "states in the model. "
             "This is false by default to help you avoid accidents.");
 
-    OpenSim_DECLARE_PROPERTY(minimize_sum_squared_states, bool,
-            "Minimize the sum of squared states (e.g., activations). "
-            "Do not use this if tendon compliance is enabled. Default: false.");
+    OpenSim_DECLARE_PROPERTY(minimize_sum_squared_activations, bool,
+            "Minimize the sum of squared activations. Default: false.");
 
     OpenSim_DECLARE_OPTIONAL_PROPERTY(max_iterations, int,
             "Maximum number of solver iterations (default: solver default).");
