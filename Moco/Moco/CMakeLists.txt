@@ -40,6 +40,10 @@ set(MOCO_SOURCES
         MocoGoal/MocoOrientationTrackingGoal.cpp
         MocoGoal/MocoTranslationTrackingGoal.h
         MocoGoal/MocoTranslationTrackingGoal.cpp
+        MocoGoal/MocoAngularVelocityTrackingGoal.h
+        MocoGoal/MocoAngularVelocityTrackingGoal.cpp
+        MocoGoal/MocoAccelerationTrackingGoal.h
+        MocoGoal/MocoAccelerationTrackingGoal.cpp
         MocoGoal/MocoInitialActivationGoal.cpp
         MocoGoal/MocoInitialActivationGoal.h
         MocoGoal/MocoInitialVelocityEquilibriumDGFGoal.h

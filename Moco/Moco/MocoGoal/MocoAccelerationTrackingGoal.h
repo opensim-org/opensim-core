@@ -1,7 +1,7 @@
-#ifndef MOCO_MOCOTRANSLATIONTRACKINGGOAL_H
-#define MOCO_MOCOTRANSLATIONTRACKINGGOAL_H
+#ifndef MOCO_MOCOACCELERATIONTRACKINGGOAL_H
+#define MOCO_MOCOACCELERATIONTRACKINGGOAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoTranslationTrackingGoal.h                                *
+ * OpenSim Moco: MocoAccelerationTrackingGoal.h                               *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -27,155 +27,170 @@
 #include <OpenSim/Simulation/Model/Frame.h>
 namespace OpenSim {
 
-/// The squared difference between a model frame's origin position and a
-/// reference position value, summed over the frames for which a reference is
-/// provided, and integrated over the phase. This can be used to track position
-/// quantities in the model that don't correspond to model degrees of freedom.
-/// The reference can be provided as a trajectory of SimTK::Vec3%s
-/// representing the translation reference data, or as a model-compatible states
-/// trajectory from which the tracked translation reference is computed. Both
-/// translation and states references can be provided as a file name to a STO or
-/// CSV file (or other file types for which there is a FileAdapter), or
-/// programmatically as a TimeSeriesTableVec3 (for the translation reference)
-/// or as a scalar TimeSeriesTable (for the states reference).
-///
-/// Technically, a cost function with the same effect could be achieved with the
-/// MocoMarkerTrackingCost class. However, this class avoids the need for adding
-/// markers to the frame origins and provides the convenient
-/// setStatesReference() and setStatesReferenceFile() methods which let the user
-/// set up a tracking cost given only a states trajectory.
-///
-/// This cost requires realization to SimTK::Stage::Position.
-///
-/// Tracking problems in direct collocation perform best when tracking smooth
-/// data, so it is recommended to filter the data in the reference you provide
-/// to the cost.
-/// @ingroup mocogoal
-class OSIMMOCO_API MocoTranslationTrackingGoal : public MocoGoal {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoTranslationTrackingGoal, MocoGoal);
+class OSIMMOCO_API MocoAccelerationTrackingGoal : public MocoGoal {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoAccelerationTrackingGoal, MocoGoal);
 
 public:
-    MocoTranslationTrackingGoal() { constructProperties(); }
-    MocoTranslationTrackingGoal(std::string name) : MocoGoal(std::move(name)) {
+    MocoAccelerationTrackingGoal() { constructProperties(); }
+    MocoAccelerationTrackingGoal(std::string name) : MocoGoal(std::move(name)) {
         constructProperties();
     }
-    MocoTranslationTrackingGoal(std::string name, double weight)
+    MocoAccelerationTrackingGoal(std::string name, double weight)
             : MocoGoal(std::move(name), weight) {
         constructProperties();
     }
 
-    /// Set directly the translation of individual frames in ground to be
+    /// Set directly the acceleration of individual frames in ground to be
     /// tracked in the cost. The column labels of the provided reference must
     /// be paths to frames in the model, e.g. `/bodyset/torso`. If the
     /// frame_paths property is empty, all frames with data in this reference
     /// will be tracked. Otherwise, only the frames specified via
     /// setFramePaths() will be tracked. Calling this function clears the values
-    /// provided via setStatesReference(), setTranslationReference(), or the
+    /// provided via setStatesReference(), setAccelerationReference(), or the
     /// `states_reference_file` property, if any.
-    void setTranslationReferenceFile(const std::string& filepath) {
+    void setAccelerationReferenceFile(const std::string& filepath) {
         set_states_reference(TableProcessor());
-        m_translation_table = TimeSeriesTableVec3();
-        set_translation_reference_file(filepath);
+        m_acceleration_table = TimeSeriesTableVec3();
+        set_acceleration_reference_file(filepath);
     }
     /// Each column label must be the path of a valid frame path (see
-    /// setTranslationReferenceFile()). Calling this function clears the
-    /// `states_reference_file` and `translation_reference_file` properties or
+    /// setAccelerationReferenceFile()). Calling this function clears the
+    /// `states_reference_file` and `acceleration_reference_file` properties or
     /// the table provided via setStatesReference(), if any.
-    void setTranslationReference(const TimeSeriesTableVec3& ref) {
+    void setAccelerationReference(const TimeSeriesTableVec3& ref) {
         set_states_reference(TableProcessor());
-        set_translation_reference_file("");
-        m_translation_table = ref;
+        set_acceleration_reference_file("");
+        m_acceleration_table = ref;
     }
     /// Provide a table containing values of model state
     /// variables. These data are used to create a StatesTrajectory internally,
-    /// from which the translation data for the frames specified in
+    /// from which the acceleration data for the frames specified in
     /// setFramePaths() are computed. Each column label in the reference must be
     /// the path of a state variable, e.g., `/jointset/ankle_angle_r/value`.
     /// Calling this function clears the table provided via
-    /// setTranslationReference(), or the
-    /// `translation_reference_file` property, if any. The table is not loaded
+    /// setAccelerationReference(), or the
+    /// `acceleration_reference_file` property, if any. The table is not loaded
     /// until the MocoProblem is initialized.
     void setStatesReference(const TableProcessor& ref) {
-        set_translation_reference_file("");
-        m_translation_table = TimeSeriesTableVec3();
+        set_acceleration_reference_file("");
+        m_acceleration_table = TimeSeriesTableVec3();
         set_states_reference(std::move(ref));
     }
     /// Set the paths to frames in the model that this cost term will track. The
     /// names set here must correspond to OpenSim::Component%s that derive from
-    /// OpenSim::Frame, which includes 'position' (SimTK::Vec3) as an output.
-    /// Replaces the frame path set if it already exists.
+    /// OpenSim::Frame, which includes 'linear_acceleration' (SimTK::Vec3) as an 
+    /// output. Replaces the frame path set if it already exists.
     void setFramePaths(const std::vector<std::string>& paths) {
         updProperty_frame_paths().clear();
         for (const auto& path : paths) { append_frame_paths(path); }
     }
-    /// Set the weight for an individual frame's translation tracking. If a
+    /// Set the weight for an individual frame's acceleration tracking. If a
     /// weight is already set for the requested frame, then the provided weight
     /// replaces the previous weight. An exception is thrown if a weight
     /// for an unknown frame is provided.
     void setWeightForFrame(const std::string& frameName, const double& weight) {
-        if (get_translation_weights().contains(frameName)) {
-            upd_translation_weights().get(frameName).setWeight(weight);
+        if (get_acceleration_weights().contains(frameName)) {
+            upd_acceleration_weights().get(frameName).setWeight(weight);
         } else {
-            upd_translation_weights().cloneAndAppend({frameName, weight});
+            upd_acceleration_weights().cloneAndAppend({frameName, weight});
         }
     }
-    /// Provide a MocoWeightSet to weight frame translation tracking in the
+    /// Provide a MocoWeightSet to weight frame acceleration tracking in the
     /// cost. Replaces the weight set if it already exists.
     void setWeightSet(const MocoWeightSet& weightSet) {
-        upd_translation_weights() = weightSet;
+        upd_acceleration_weights() = weightSet;
     }
     /// If no states reference has been provided, this returns an empty
     /// processor.
     const TableProcessor& getStatesReference() const {
         return get_states_reference();
     }
-    /// If no translation reference file has been provided, this returns an
+    /// If no acceleration reference file has been provided, this returns an
     /// empty string.
-    std::string getTranslationReferenceFile() const {
-        return get_translation_reference_file();
+    std::string getAccelerationReferenceFile() const {
+        return get_acceleration_reference_file();
     }
 
 protected:
+    bool getSupportsEndpointConstraintImpl() const override { return true; }
+    Mode getDefaultModeImpl() const override {
+        return Mode::Cost;
+    }
     void initializeOnModelImpl(const Model& model) const override;
     void calcIntegrandImpl(
             const SimTK::State& state, double& integrand) const override;
     void calcGoalImpl(
-            const GoalInput& input, SimTK::Vector& cost) const override {
-        cost[0] = input.integral;
+            const GoalInput& input, SimTK::Vector& goal) const override {
+        if (getModeIsCost()) {
+            goal[0] = input.integral;
+        } else {
+            const auto& initialTime = input.initial_state.getTime();
+            const auto& finalTime = input.final_state.getTime();
+            SimTK::Vector initialTimeVec(1, initialTime);
+            SimTK::Vector finalTimeVec(1, finalTime);
+
+            for (int iframe = 0; iframe < (int)m_model_frames.size(); ++iframe) 
+            {
+                getModel().realizeAcceleration(input.initial_state);
+                const auto& a_model_init =
+                    m_model_frames[iframe]->getLinearAccelerationInGround(
+                                input.initial_state);
+                getModel().realizeAcceleration(input.final_state);
+                const auto& a_model_final =
+                        m_model_frames[iframe]->getLinearAccelerationInGround(
+                                input.final_state);
+
+                // Compute acceleration error.
+                SimTK::Vec3 a_ref_init(0.0);
+                SimTK::Vec3 a_ref_final(0.0);
+                for (int ia = 0; ia < a_ref_init.size(); ++ia) {
+                    a_ref_init[ia] = m_ref_splines[3*iframe + ia].calcValue(
+                            initialTimeVec);
+                    a_ref_final[ia] = m_ref_splines[3*iframe + ia].calcValue(
+                            finalTimeVec);
+                }
+                SimTK::Vec3 errorInitial = a_model_init - a_ref_init;
+                SimTK::Vec3 errorFinal = a_model_final - a_ref_final;
+
+                // Add errors to constraint vector.
+                goal[iframe] = errorInitial.normSqr();
+                goal[iframe + (int)m_model_frames.size()] = errorFinal.normSqr();
+            }
+        }
     }
     void printDescriptionImpl(std::ostream& stream = std::cout) const override;
 
 private:
     OpenSim_DECLARE_PROPERTY(states_reference, TableProcessor,
             "Trajectories of model state variables from which tracked "
-            "translation data is computed. Column labels should be model state "
-            "paths, e.g., '/jointset/ankle_angle_r/value'");
-    OpenSim_DECLARE_PROPERTY(translation_reference_file, std::string,
-            "Path to file (.sto, .csv, ...) containing translation reference "
+            "acceleration data is computed. Column labels should be model "
+            "state paths, e.g., '/jointset/ankle_angle_r/value'");
+    OpenSim_DECLARE_PROPERTY(acceleration_reference_file, std::string,
+            "Path to file (.sto, .csv, ...) containing acceleration reference "
             "data to track. Column labels should be paths to frames in the "
             "model, e.g. `/bodyset/torso`.");
     OpenSim_DECLARE_LIST_PROPERTY(frame_paths, std::string,
             "The frames in the model that this cost term will track. "
             "The names set here must correspond to Components that "
             "derive from class OpenSim::Frame, which includes "
-            "'position' (Vec3) as an output.");
-    OpenSim_DECLARE_PROPERTY(translation_weights, MocoWeightSet,
+            "'linear_acceleration' (Vec3) as an output.");
+    OpenSim_DECLARE_PROPERTY(acceleration_weights, MocoWeightSet,
             "Set of weight objects to weight the tracking of "
-            "individual frames' translations in the cost.");
+            "individual frames' accelerations in the cost.");
 
     void constructProperties() {
         constructProperty_states_reference(TableProcessor());
-        constructProperty_translation_reference_file("");
+        constructProperty_acceleration_reference_file("");
         constructProperty_frame_paths();
-        constructProperty_translation_weights(MocoWeightSet());
+        constructProperty_acceleration_weights(MocoWeightSet());
     }
 
-    TimeSeriesTableVec3 m_translation_table;
+    TimeSeriesTableVec3 m_acceleration_table;
     mutable GCVSplineSet m_ref_splines;
     mutable std::vector<SimTK::ReferencePtr<const Frame>> m_model_frames;
-    mutable std::vector<double> m_translation_weights;
+    mutable std::vector<double> m_acceleration_weights;
 };
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOTRANSLATIONTRACKINGGOAL_H
+#endif // MOCO_MOCOACCELERATIONTRACKINGGOAL_H

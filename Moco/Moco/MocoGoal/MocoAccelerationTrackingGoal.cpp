@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoTranslationTrackingGoal.h                                *
+ * OpenSim Moco: MocoAccelerationTrackingGoal.cpp                             *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -16,7 +16,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoTranslationTrackingGoal.h"
+#include "MocoAccelerationTrackingGoal.h"
 
 #include "../MocoUtilities.h"
 #include <algorithm>
@@ -27,57 +27,57 @@
 using namespace OpenSim;
 using SimTK::Vec3;
 
-void MocoTranslationTrackingGoal::initializeOnModelImpl(const Model& model)
-        const {
+void MocoAccelerationTrackingGoal::initializeOnModelImpl(
+        const Model& model) const {
     // Get the reference data.
-    TimeSeriesTableVec3 translationTable;
+    TimeSeriesTableVec3 accelerationTable;
     std::vector<std::string> pathsToUse;
-    if (m_translation_table.getNumColumns() != 0 ||   // translation table or 
-            get_translation_reference_file() != "") { // reference file provided
-        TimeSeriesTableVec3 translationTableToUse;
+    if (m_acceleration_table.getNumColumns() != 0 ||   // acceleration table or
+            get_acceleration_reference_file() != "") { // reference file provided
+        TimeSeriesTableVec3 accelerationTableToUse;
         // Should not be able to supply any two simultaneously.
         assert(get_states_reference().empty());
-        if (get_translation_reference_file() != "") { // translation ref file
-            assert(m_translation_table.getNumColumns() == 0);
-            translationTableToUse = readTableFromFileT<Vec3>(
-                    get_translation_reference_file());
+        if (get_acceleration_reference_file() != "") { // acceleration ref file
+            assert(m_acceleration_table.getNumColumns() == 0);
+            accelerationTableToUse =
+                    readTableFromFileT<Vec3>(get_acceleration_reference_file());
 
-        } else { // translation table
-            assert(get_translation_reference_file() == "");
-            translationTableToUse = m_translation_table;
+        } else { // acceleration table
+            assert(get_acceleration_reference_file() == "");
+            accelerationTableToUse = m_acceleration_table;
         }
 
         // If the frame_paths property is empty, use all frame paths specified
-        // in the table's column labels. Otherwise, select only the columns 
+        // in the table's column labels. Otherwise, select only the columns
         // from the tabel that correspond with paths in frame_paths.
         if (!getProperty_frame_paths().empty()) {
-            pathsToUse = translationTableToUse.getColumnLabels();
-            translationTable = translationTableToUse;
+            pathsToUse = accelerationTableToUse.getColumnLabels();
+            accelerationTable = accelerationTableToUse;
         } else {
-            translationTable = TimeSeriesTableVec3(
-                translationTableToUse.getIndependentColumn());
-            const auto& labels = translationTableToUse.getColumnLabels();
+            accelerationTable = TimeSeriesTableVec3(
+                    accelerationTableToUse.getIndependentColumn());
+            const auto& labels = accelerationTableToUse.getColumnLabels();
             for (int i = 0; i < getProperty_frame_paths().size(); ++i) {
                 const auto& path = get_frame_paths(i);
                 OPENSIM_THROW_IF_FRMOBJ(
-                    std::find(labels.begin(), labels.end(), path) ==
+                    std::find(labels.begin(), labels.end(), path) == 
                         labels.end(),
                     Exception,
                     format("Expected frame_paths to match at least one of the "
-                        "column labels in the translation reference, but frame "
-                        "path '%s' not found in the reference labels.", path));
+                       "column labels in the acceleration reference, but frame "
+                       "path '%s' not found in the reference labels.", path));
                 pathsToUse.push_back(path);
-                translationTable.appendColumn(path,
-                    translationTableToUse.getDependentColumn(path));
+                accelerationTable.appendColumn(path, 
+                    accelerationTableToUse.getDependentColumn(path));
             }
         }
 
     } else { // states reference file or states reference provided
-        assert(get_translation_reference_file() != "");
-        assert(m_translation_table.getNumColumns() == 0);
+        assert(get_acceleration_reference_file() != "");
+        assert(m_acceleration_table.getNumColumns() == 0);
         // TODO: set relativeToDirectory properly.
-        TimeSeriesTable statesTableToUse = get_states_reference().process("", 
-            &model);
+        TimeSeriesTable statesTableToUse =
+                get_states_reference().process("", &model);
 
         // Check that the reference state names match the model state names.
         auto modelStateNames = model.getStateVariableNames();
@@ -97,73 +97,75 @@ void MocoTranslationTrackingGoal::initializeOnModelImpl(const Model& model)
 
         // Use all paths provided in frame_paths.
         OPENSIM_THROW_IF_FRMOBJ(getProperty_frame_paths().empty(), Exception,
-            "Expected paths in the frame_paths property, but none were found.");
+                "Expected paths in the frame_paths property, but none were "
+                "found.");
         for (int i = 0; i < getProperty_frame_paths().size(); ++i) {
             pathsToUse.push_back(get_frame_paths(i));
         }
 
-        // Use the StatesTrajectory to create the table of translation data to
+        // Use the StatesTrajectory to create the table of acceleration data to
         // be used in the cost.
         for (auto state : statesTraj) {
             // This realization ignores any SimTK::Motions prescribed in the
             // model.
-            model.realizePosition(state);
-            std::vector<Vec3> translations;
+            model.realizeAcceleration(state);
+            std::vector<Vec3> accelerations;
             for (const auto& path : pathsToUse) {
-                Vec3 translation =
-                    model.getComponent<Frame>(path).getPositionInGround(state);
-                translations.push_back(translation);
+                Vec3 acceleration =
+                        model.getComponent<Frame>(path)
+                             .getLinearAccelerationInGround(state);
+                accelerations.push_back(acceleration);
             }
-            translationTable.appendRow(state.getTime(), translations);
+            accelerationTable.appendRow(state.getTime(), accelerations);
         }
-        translationTable.setColumnLabels(pathsToUse);
-
+        accelerationTable.setColumnLabels(pathsToUse);
     }
 
     // Check that there are no redundant columns in the reference data.
-    checkRedundantLabels(translationTable.getColumnLabels());
+    checkRedundantLabels(accelerationTable.getColumnLabels());
 
-    // Cache the model frames and translation weights based on the order of the 
-    // translation table.
+    // Cache the model frames and acceleration weights based on the order of the
+    // acceleration table.
     for (int i = 0; i < (int)pathsToUse.size(); ++i) {
         const auto& path = pathsToUse[i];
         const auto& frame = model.getComponent<Frame>(path);
         m_model_frames.emplace_back(&frame);
 
         double weight = 1.0;
-        if (get_translation_weights().contains(path)) {
-            weight = get_translation_weights().get(path).getWeight();
+        if (get_acceleration_weights().contains(path)) {
+            weight = get_acceleration_weights().get(path).getWeight();
         }
-        m_translation_weights.push_back(weight);
+        m_acceleration_weights.push_back(weight);
     }
 
     // Create a new scalar-valued TimeSeriesTable using the time index from the
-    // translation table argument. We'll populate this table with the 
-    // translation values we need when calculating the integral tracking cost, 
-    // namely the frame position vector elements.
-    TimeSeriesTable flatTable(translationTable.getIndependentColumn());
+    // acceleration table argument. We'll populate this table with the
+    // acceleration values we need when calculating the integral tracking cost,
+    // namely the frame acceleration vector elements.
+    TimeSeriesTable flatTable(accelerationTable.getIndependentColumn());
 
     // This matrix has the input table number of columns times three to hold all
-    // position elements per translation.
-    SimTK::Matrix mat((int)translationTable.getNumRows(),
-                      3*(int)translationTable.getNumColumns());
+    // acceleration elements.
+    SimTK::Matrix mat((int)accelerationTable.getNumRows(),
+                      3*(int)accelerationTable.getNumColumns());
     // Column labels are necessary for creating the GCVSplineSet from the table,
-    // so we'll label each column using the frame path and the position vector
-    // element (e.g. "<frame-path>/position_p0" for the first position vector
-    // element).
+    // so we'll label each column using the frame path and the acceleration 
+    // vector element (e.g. "<frame-path>/acceleration_a0" for the first 
+    // acceleration vector element).
     std::vector<std::string> colLabels;
-    for (int irow = 0; irow < (int)translationTable.getNumRows(); ++irow) {
-        const auto row = translationTable.getRowAtIndex(irow);
+    for (int irow = 0; irow < (int)accelerationTable.getNumRows(); ++irow) {
+        const auto row = accelerationTable.getRowAtIndex(irow);
 
-        // Get position vector elements.
+        // Get acceleration vector elements.
         int icol = 0;
         for (int ielt = 0; ielt < row.size(); ++ielt) {
-            const auto& label = translationTable.getColumnLabel(ielt);
+            const auto& label = accelerationTable.getColumnLabel(ielt);
             const auto& p = row[ielt];
             for (int ip = 0; ip < p.size(); ++ip) {
                 mat.updElt(irow, icol++) = p[ip];
                 if (!irow) {
-                    colLabels.push_back(format("%s/position_p%i", label, ip));
+                    colLabels.push_back(format("%s/acceleration_a%i", label, 
+                        ip));
                 }
             }
         }
@@ -174,37 +176,43 @@ void MocoTranslationTrackingGoal::initializeOnModelImpl(const Model& model)
 
     m_ref_splines = GCVSplineSet(flatTable);
 
-    setNumIntegralsAndOutputs(1, 1);
+    if (getModeIsCost()) {
+        setNumIntegralsAndOutputs(1, 1);
+    } else {
+        setNumIntegralsAndOutputs(0, 2*(int)m_model_frames.size());
+    }
 }
 
-void MocoTranslationTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
+void MocoAccelerationTrackingGoal::calcIntegrandImpl(const SimTK::State& state, 
         double& integrand) const {
     const auto& time = state.getTime();
-    getModel().realizePosition(state);
+    getModel().realizeAcceleration(state);
     SimTK::Vector timeVec(1, time);
 
     integrand = 0;
     for (int iframe = 0; iframe < (int)m_model_frames.size(); ++iframe) {
-        const auto& p_model =
-            m_model_frames[iframe]->getPositionInGround(state);
+        const auto& a_model =
+                m_model_frames[iframe]->getLinearAccelerationInGround(state);
 
-        // Compute position error.
-        Vec3 p_ref(0.0);
-        for (int ip = 0; ip < p_ref.size(); ++ip) {
-            p_ref[ip] = m_ref_splines[3*iframe + ip].calcValue(timeVec);
+        // Compute acceleration error.
+        Vec3 a_ref(0.0);
+        for (int ia = 0; ia < a_ref.size(); ++ia) {
+            a_ref[ia] = m_ref_splines[3*iframe + ia].calcValue(timeVec);
         }
-        Vec3 error = p_model - p_ref;
+        Vec3 error = a_model - a_ref;
 
-        // Add this frame's position error to the integrand.
-        const double& weight = m_translation_weights[iframe];
+        // Add this frame's acceleration error to the integrand.
+        const double& weight = m_acceleration_weights[iframe];
         integrand += weight * error.normSqr();
     }
 }
 
-void MocoTranslationTrackingGoal::printDescriptionImpl(std::ostream& stream) const {
+void MocoAccelerationTrackingGoal::printDescriptionImpl(
+        std::ostream& stream) const {
     stream << "        ";
-    stream << "translation reference file: "
-           << get_translation_reference_file() << std::endl;
+    stream << "acceleration reference file: " 
+           << get_acceleration_reference_file()
+           << std::endl;
     for (int i = 0; i < getProperty_frame_paths().size(); i++) {
         stream << "        ";
         stream << "frame " << i << ": " << get_frame_paths(i) << std::endl;

@@ -303,7 +303,7 @@ OSIMMOCO_API void visualize(Model, TimeSeriesTable);
 /// the template argument, otherwise they are not included in the report.
 /// @note Parameters in the MocoTrajectory are **not** applied to the model.
 template <typename T>
-TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& iterate,
+TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& traj,
         std::vector<std::string> outputPaths) {
 
     // Initialize the system so we can access the outputs.
@@ -339,7 +339,7 @@ TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& iterate,
     model.initSystem();
 
     // Get states trajectory.
-    Storage storage = iterate.exportToStatesStorage();
+    Storage storage = traj.exportToStatesStorage();
     auto statesTraj = StatesTrajectory::createFromStatesStorage(model, storage);
 
     // Loop through the states trajectory to create the report.
@@ -351,7 +351,7 @@ TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& iterate,
         model.getSystem().prescribe(state);
 
         // Create a SimTK::Vector of the control values for the current state.
-        SimTK::RowVector controlsRow = iterate.getControlsTrajectory().row(i);
+        SimTK::RowVector controlsRow = traj.getControlsTrajectory().row(i);
         SimTK::Vector controls(controlsRow.size(),
                 controlsRow.getContiguousScalarData(), true);
 
