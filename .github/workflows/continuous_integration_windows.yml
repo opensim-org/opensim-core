@@ -22,8 +22,9 @@ jobs:
     - name: Install Doxygen
       # choco install doxygen.portable # <-- too unreliable.
       run: |
-        (New-Object System.Net.WebClient).DownloadFile("https://sourceforge.net/projects/myosin/files/doxygen-1.8.14.windows.x64.bin.zip/download", "C:\doxygen.zip")
-        7z x C:\\doxygen.zip -oC:\\doxygen
+        cd ~
+        (New-Object System.Net.WebClient).DownloadFile("https://sourceforge.net/projects/myosin/files/doxygen-1.8.14.windows.x64.bin.zip/download", "doxygen.zip")
+        7z x doxygen.zip -odoxygen
 
     - name: Update submodules
       run: git submodule update --init
@@ -48,21 +49,20 @@ jobs:
         # /W0 disables warnings. The other flags are copied from CMake's
         # default CMAKE_CXX_FLAGS.
         # https://msdn.microsoft.com/en-us/library/19z1t1wy.aspx
-        echo $env:PATH
+        $env:CXXFLAGS = "/W0"
         cmake $env:GITHUB_WORKSPACE/dependencies -G"Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=~/moco_dependencies_install -DOPENSIM_JAVA_WRAPPING=on -DOPENSIM_PYTHON_WRAPPING=on
+        $env:CXXFLAGS = ""
         cmake . -LAH
         cmake --build . --config Release -- /maxcpucount:4 
 
     - name: Build Moco
       run: |
-        echo 'DEBUG0'
         mkdir $env:GITHUB_WORKSPACE\\build 
-        echo 'DEBUG1'
         chdir $env:GITHUB_WORKSPACE\\build
-        echo 'DEBUG2'
         # TODO: Can remove /WX when we use that in CMakeLists.txt.
-        # cmake -E env CXXFLAGS="/WX" 
-        cmake $env:GITHUB_WORKSPACE -G"Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DMOCO_DEPENDENCIES_DIR=~/moco_dependencies_install -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WRAPPING=on -DDOXYGEN_EXECUTABLE=C:\\doxygen
+        $env:CXXFLAGS = "/WX"
+        cmake $env:GITHUB_WORKSPACE -G"Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DMOCO_DEPENDENCIES_DIR=~/moco_dependencies_install -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WRAPPING=on -DDOXYGEN_EXECUTABLE=~/doxygen
+        $env:CXXFLAGS = ""
         echo 'DEBUG3'
         cmake . -LAH
         echo 'DEBUG4'
