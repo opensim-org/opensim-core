@@ -8,7 +8,9 @@
 
 - 2019-11-18: Utility createPeriodicTrajectory() now properly handles 
               antisymmetric coordinate position, speed, and actuator 
-              variables.           
+              variables.    
+              
+- 2019-11-18: Add a "Getting started" page to the User Guide.
 
 - 2019-11-05: Updated the documentation to contain a list of all examples.
 

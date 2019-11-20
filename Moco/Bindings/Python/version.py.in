@@ -1,1 +1,1 @@
-__version__ = "@PROJECT_VERSION@@VERSION_SUFFIX@"
+__version__ = "@MOCO_FULL_VERSION@"

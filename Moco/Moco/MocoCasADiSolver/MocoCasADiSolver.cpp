@@ -308,7 +308,8 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
 
     if (get_verbosity()) {
         std::cout << std::string(79, '=') << "\n";
-        std::cout << "MocoCasADiSolver starting.\n";
+        std::cout << "MocoCasADiSolver starting. ";
+        std::cout << getFormattedDateTime(false, "%c") << "\n";
         std::cout << std::string(79, '-') << std::endl;
         getProblemRep().printDescription();
     }
@@ -400,6 +401,7 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
         std::cout << std::string(79, '-') << "\n";
         std::cout << "Elapsed real time: " << stopwatch.formatNs(elapsed)
                   << ".\n";
+        std::cout << getFormattedDateTime(false, "%c") << "\n";
         if (mocoSolution) {
             std::cout << "MocoCasADiSolver succeeded!\n";
         } else {
