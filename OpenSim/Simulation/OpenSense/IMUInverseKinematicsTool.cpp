@@ -41,6 +41,7 @@ void IMUInverseKinematicsTool::constructProperties()
     constructProperty_accuracy(1e-6);
     constructProperty_constraint_weight(Infinity);
     Array<double> range{ Infinity, 2};
+    range[0] = -Infinity; // Make range -Infinity to Infinity so limited only by data
     constructProperty_time_range(range);
 
     constructProperty_sensor_to_opensim_rotations(
@@ -129,6 +130,9 @@ runInverseKinematicsWithOrientationsFromFile(Model& model,
     TimeSeriesTable_<SimTK::Quaternion> quatTable(orientationsFileName);
     std::cout << "Loading orientations as quaternions from "
         << orientationsFileName << std::endl;
+    // Will maintain only data in time range specified by the tool
+    // If unspecified {-inf, inf} no trimming is done
+    quatTable.trim(getStartTime(), getEndTime());
     // Convert to OpenSim Frame
     const SimTK::Vec3& rotations = get_sensor_to_opensim_rotations();
     SimTK::Rotation sensorToOpenSim = SimTK::Rotation(
