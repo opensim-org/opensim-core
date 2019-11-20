@@ -15,17 +15,17 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
-#    - name: Install NumPy 
-#      run: python -m pip install numpy
-#
-#    - name: Install SWIG
-#      run: choco install swig --version 3.0.9 --yes --limit-output 
-#
-#    - name: Install Doxygen
-#      # choco install doxygen.portable # <-- too unreliable.
-#      run: |
-#        (New-Object System.Net.WebClient).DownloadFile("https://sourceforge.net/projects/myosin/files/doxygen-1.8.14.windows.x64.bin.zip/download", "C:\doxygen.zip")
-#        7z x C:\\doxygen.zip -oC:\\doxygen
+    - name: Install NumPy 
+      run: python -m pip install numpy
+ 
+    - name: Install SWIG
+      run: choco install swig --version 3.0.9 --yes --limit-output 
+ 
+    - name: Install Doxygen
+      # choco install doxygen.portable # <-- too unreliable.
+      run: |
+        (New-Object System.Net.WebClient).DownloadFile("https://sourceforge.net/projects/myosin/files/doxygen-1.8.14.windows.x64.bin.zip/download", "C:\doxygen.zip")
+        7z x C:\\doxygen.zip -oC:\\doxygen
 
     - name: Update submodules
       run: git submodule update --init
@@ -58,9 +58,13 @@ jobs:
         mkdir $env:GITHUB_WORKSPACE\\build 
         chdir $env:GITHUB_WORKSPACE\\build
         # TODO: Can remove /WX when we use that in CMakeLists.txt.
-        cmake -E env CXXFLAGS="/WX" cmake $env:GITHUB_WORKSPACE -G"Visual Studio 15 2019" -A x64 -DCMAKE_INSTALL_PREFIX=$env:GITHUB_WORKSPACE\\opensim-core-install -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on -DDOXYGEN_EXECUTABLE=C:\\doxygen
+        cmake -E env CXXFLAGS="/WX" cmake $env:GITHUB_WORKSPACE -G"Visual Studio 15 2019" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on -DDOXYGEN_EXECUTABLE=C:\\doxygen
         cmake . -LAH
         cmake --build . --config Release -- /maxcpucount:4 /verbosity:minimal
+
+        $env:match = cmake -L . | Select-String -Pattern MOCO_FULL_VERSION
+        $env:VERSION = $env:match.split('=')[1]
+        $env:VERSION
 
     - name: Test Moco
       run: |
@@ -72,6 +76,11 @@ jobs:
         chdir $env:GITHUB_WORKSPACE\\build
         cmake --build . --config Release --target install -- /maxcpucount:4 /verbosity:quiet
 
+        move ~/opensim-moco C:/opensim-moco-$env:VERSION
+        $env:ZIPNAME = C:/opensim-moco-$env:VERSION-win.zip
+        7z a $env:ZIPNAME C:/opensim-moco-$env:VERSION
+  - IF DEFINED DISTR appveyor PushArtifact C:\opensim-moco-%VERSION%-win.zip
+
     # TODO: Fix name of the path to use tag/version.
     # Use {{ github.ref }}
     # https://help.github.com/en/actions/automating-your-workflow-with-github-actions/contexts-and-expression-syntax-for-github-actions
@@ -79,10 +88,10 @@ jobs:
       uses: actions/upload-artifact@v1.0.0
       with:
         name: opensim-moco
-        path: C:\\opensim-moco.zip
+        path: C:\\$env:ZIPNAME
 
-    - name: Upload Moco dependencies
-      uses: actions/upload-artifact@v1.0.0
-      with:
-        name: opensim-moco-dependencies 
-        path: C:\\opensim-moco-dependencies.zip
+# TODO    - name: Upload Moco dependencies
+# TODO      uses: actions/upload-artifact@v1.0.0
+# TODO      with:
+# TODO        name: opensim-moco-dependencies 
+# TODO        path: C:\\opensim-moco-dependencies.zip
