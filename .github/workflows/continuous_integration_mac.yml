@@ -17,9 +17,9 @@ jobs:
     - name: Cache SWIG
       id: cache-swig
       uses: actions/cache@v1
-        with:
-          path: ~/swig
-          key: ${{ runner.os }}-swig
+      with:
+        path: ~/swig
+        key: ${{ runner.os }}-swig
 
     - name: Install SWIG
       if: steps.cache-swig.outputs.cache-hit != 'true'
@@ -36,12 +36,12 @@ jobs:
     - name: Cache dependencies
       id: cache-dependencies
       uses: actions/cache@v1
-        with:
-          path: $GITHUB_WORKSPACE/moco_dependencies_install
-          # TODO: avoid having to copy over the opensim-core commit hash.
-          key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
-          restore-keys: |
-            ${{ runner.os }}-dependencies-
+      with:
+        path: $GITHUB_WORKSPACE/moco_dependencies_install
+        # TODO: avoid having to copy over the opensim-core commit hash.
+        key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
+        restore-keys: |
+          ${{ runner.os }}-dependencies-
             
     - name: Build dependencies
       if: steps.cache-dependencies.outputs.cache-hit != 'true'
