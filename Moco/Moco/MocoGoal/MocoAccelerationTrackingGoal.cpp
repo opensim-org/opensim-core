@@ -36,7 +36,6 @@ void MocoAccelerationTrackingGoal::initializeOnModelImpl(
             get_acceleration_reference_file() != "") { // reference file provided
         TimeSeriesTableVec3 accelerationTableToUse;
         // Should not be able to supply any two simultaneously.
-        assert(get_states_reference().empty());
         if (get_acceleration_reference_file() != "") { // acceleration ref file
             assert(m_acceleration_table.getNumColumns() == 0);
             accelerationTableToUse =
@@ -72,53 +71,6 @@ void MocoAccelerationTrackingGoal::initializeOnModelImpl(
             }
         }
 
-    } else { // states reference file or states reference provided
-        assert(get_acceleration_reference_file() != "");
-        assert(m_acceleration_table.getNumColumns() == 0);
-        // TODO: set relativeToDirectory properly.
-        TimeSeriesTable statesTableToUse =
-                get_states_reference().process("", &model);
-
-        // Check that the reference state names match the model state names.
-        auto modelStateNames = model.getStateVariableNames();
-        auto tableStateNames = statesTableToUse.getColumnLabels();
-        for (int i = 0; i < modelStateNames.getSize(); ++i) {
-            const auto& name = modelStateNames[i];
-            OPENSIM_THROW_IF_FRMOBJ(std::count(tableStateNames.begin(),
-                    tableStateNames.end(), name) == 0,
-                Exception, format("Expected the reference state names to match "
-                    "the model state names, but reference state %s not found "
-                    "in the model.", name));
-        }
-
-        // Create the StatesTrajectory.
-        Storage sto = convertTableToStorage(statesTableToUse);
-        auto statesTraj = StatesTrajectory::createFromStatesStorage(model, sto);
-
-        // Use all paths provided in frame_paths.
-        OPENSIM_THROW_IF_FRMOBJ(getProperty_frame_paths().empty(), Exception,
-                "Expected paths in the frame_paths property, but none were "
-                "found.");
-        for (int i = 0; i < getProperty_frame_paths().size(); ++i) {
-            pathsToUse.push_back(get_frame_paths(i));
-        }
-
-        // Use the StatesTrajectory to create the table of acceleration data to
-        // be used in the cost.
-        for (auto state : statesTraj) {
-            // This realization ignores any SimTK::Motions prescribed in the
-            // model.
-            model.realizeAcceleration(state);
-            std::vector<Vec3> accelerations;
-            for (const auto& path : pathsToUse) {
-                Vec3 acceleration =
-                        model.getComponent<Frame>(path)
-                             .getLinearAccelerationInGround(state);
-                accelerations.push_back(acceleration);
-            }
-            accelerationTable.appendRow(state.getTime(), accelerations);
-        }
-        accelerationTable.setColumnLabels(pathsToUse);
     }
 
     // Check that there are no redundant columns in the reference data.
@@ -176,11 +128,7 @@ void MocoAccelerationTrackingGoal::initializeOnModelImpl(
 
     m_ref_splines = GCVSplineSet(flatTable);
 
-    if (getModeIsCost()) {
-        setNumIntegralsAndOutputs(1, 1);
-    } else {
-        setNumIntegralsAndOutputs(0, 2*(int)m_model_frames.size());
-    }
+    setNumIntegralsAndOutputs(1, 1);
 }
 
 void MocoAccelerationTrackingGoal::calcIntegrandImpl(const SimTK::State& state, 

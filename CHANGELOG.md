@@ -1,3 +1,7 @@
+- 2019-11-20: Added MocoAngularVelocityTrackingGoal and 
+              MocoAccelerationTrackingGoal to support applications using
+              IMU data.
+
 - 2019-11-05: Updated the documentation to contain a list of all examples.
 
 - 2019-10-16: Fix a bug in ModOpscaleMaxIsometricForce, where the scale factor

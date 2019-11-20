@@ -217,7 +217,9 @@ void MocoOrientationTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
 
 void MocoOrientationTrackingGoal::printDescriptionImpl(std::ostream& stream) const {
     stream << "        ";
-    stream << "rotation reference file: " << get_rotation_reference_file() << std::endl;
+    stream << "rotation reference file: " 
+           << get_rotation_reference_file() 
+           << std::endl;
     for (int i = 0; i < (int) getProperty_frame_paths().size(); i++) {
         stream << "        ";
         stream << "frame path " << i << ": "

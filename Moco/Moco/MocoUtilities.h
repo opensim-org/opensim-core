@@ -301,7 +301,8 @@ OSIMMOCO_API void visualize(Model, TimeSeriesTable);
 /// PositionMotion) is.
 /// The output paths must correspond to outputs that match the type provided in
 /// the template argument, otherwise they are not included in the report.
-/// @note Parameters in the MocoTrajectory are **not** applied to the model.
+/// @note Parameters and Lagrange multipliers in the MocoTrajectory are **not** 
+///       applied to the model.
 template <typename T>
 TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& traj,
         std::vector<std::string> outputPaths) {
