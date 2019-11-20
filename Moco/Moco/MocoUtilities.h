@@ -511,13 +511,16 @@ std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(
 ///
 /// The default values for the patterns are intended to handle the column labels
 /// for typical 2D or 3D OpenSim gait models.
-/// The default value for symmetryPatterns warrants an explanation. R"()" is a
-/// string literal that permits us to not escape backslash characters. The regex
-/// "_r(\/|$)" matches "_r" followed by either a forward slash
-/// (which is escaped) OR the end of the string ($). Since the forward slash
-/// and end of the string are within parentheses, whatever matches this is
-/// captured and is available in the substitution (the second element of the
-/// pair) as $1. The default symmetry patterns cause the following replacements:
+/// The default values for negatePatterns and symmetryPatterns warrant an 
+/// explanation. The string pattern before the regex "(?!/value)" is followed by 
+/// anything except "/value" since it is contained in the negative lookahead 
+/// "(?!...)".  R"()" is a string literal that permits us to not escape 
+/// backslash characters. The regex "_r(\/|_|$)" matches "_r" followed by either 
+/// a forward slash (which is escaped), an underscore, OR the end of the string 
+/// ($). Since the forward slash and end of the string are within parentheses, 
+/// whatever matches this is captured and is available in the substitution (the
+/// second element of the pair) as $1. The default symmetry patterns cause the 
+/// following replacements:
 /// - "/jointset/hip_r/hip_flexion_r/value" becomes "/jointset/hip_l/hip_flexion_l/value"
 /// - "/forceset/soleus_r" becomes "/forceset/soleus_l"
 OSIMMOCO_API MocoTrajectory createPeriodicTrajectory(
