@@ -140,13 +140,10 @@ runInverseKinematicsWithOrientationsFromFile(Model& model,
     OpenSenseUtilities::rotateOrientationTable(quatTable, sensorToOpenSim);
 
     auto startEnd = getTimeRangeInUse(quatTable.getIndependentColumn());
-    
+
     TimeSeriesTable_<SimTK::Rotation> orientationsData =
         OpenSenseUtilities::convertQuaternionsToRotations(quatTable);
 
-    // Trim orientation data based on User input times
-    orientationsData.trim(startEnd[0],startEnd[1]);
-        
     OrientationsReference oRefs(orientationsData);
     MarkersReference mRefs{};
 
@@ -225,36 +222,27 @@ SimTK::Array_<int> IMUInverseKinematicsTool::getTimeRangeInUse(
     int nt = static_cast<int>(times.size());
     int startIx = 0;
     int endIx = nt-1;
-    auto startTime = times[startIx];
-    auto endTime   = times[endIx];
-    
-    if (get_time_range(0)>get_time_range(1)){
-      throw std::invalid_argument( "Start time greater than End time" );
+
+    for (int i = 0; i < nt; ++i) {
+        if (times[i] <= get_time_range(0)) {
+            startIx = i;
+        }
+        else {
+            break;
+        }
     }
-    
-    // Check and set the start time
-    if (get_time_range(0) != Infinity) {
-        // Check if User Specified time ranges are legal
-        if (get_time_range(0)<times[startIx]) {
-          throw std::invalid_argument( "Start time out of range" );
-        } else {
-          startTime = get_time_range(0);
-        } 
+
+    for (int i = nt - 1; i > 0; --i) {
+        if (times[i] >= get_time_range(1)) {
+            endIx= i;
+        }
+        else {
+            break;
+        }
     }
-    
-    // Check and set end time
-    if (get_time_range(1) != Infinity) {
-        // Check if User Specified time ranges are legal
-        if (get_time_range(1)>times[endIx]) {
-          throw std::invalid_argument( "End time out of range" );
-        } else {
-          endTime = get_time_range(1);
-        } 
-    }
-    
     SimTK::Array_<int> retArray;
-    retArray.push_back(startTime);
-    retArray.push_back(endTime);
+    retArray.push_back(startIx);
+    retArray.push_back(endIx);
     return retArray;
 }
 
