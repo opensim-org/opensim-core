@@ -39,7 +39,7 @@ jobs:
       id: cache-dependencies
       uses: actions/cache@v1
       with:
-        path: $GITHUB_WORKSPACE/moco_dependencies_install
+        path: ~/moco_dependencies_install
         # TODO: avoid having to copy over the opensim-core commit hash.
         key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
         restore-keys: |
@@ -52,13 +52,14 @@ jobs:
         cd $GITHUB_WORKSPACE/build_deps
         DEP_CMAKE_ARGS=($GITHUB_WORKSPACE/dependencies)
         DEP_CMAKE_ARGS+=(-DCMAKE_BUILD_TYPE=Release)
+        DEP_CMAKE_ARGS+=(-DCMAKE_INSTALL_PREFIX=~/moco_dependencies_install)
         DEP_CMAKE_ARGS+=(-DOPENSIM_JAVA_WRAPPING=on -DOPENSIM_PYTHON_WRAPPING=on)
         DEP_CMAKE_ARGS+=(-DSWIG_EXECUTABLE=$HOME/swig/bin/swig)
         DEP_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=10.10)
         printf '%s\n' "${DEP_CMAKE_ARGS[@]}"
         cmake "${DEP_CMAKE_ARGS[@]}"
-        make -j2 ipopt
-        make -j2
+        make -j4 ipopt
+        make -j4
 
 #    - name: Build Moco
 #      run: |
@@ -67,6 +68,7 @@ jobs:
 #        MOCO_CMAKE_ARGS=($GITHUB_WORKSPACE)
 #        DEP_CMAKE_ARGS+=(-DCMAKE_BUILD_TYPE=Release)
 #        MOCO_CMAKE_ARGS+=(-DCMAKE_INSTALL_PREFIX=~/opensim-moco)
+#        MOCO_CMAKE_ARGS+=(-DMOCO_DEPENDENCIES_DIR=~/moco_dependencies_install)
 #        MOCO_CMAKE_ARGS+=(-DMOCO_JAVA_BINDINGS=on -DMOCO_PYTHON_BINDINGS=on)
 #        MOCO_CMAKE_ARGS+=(-DSWIG_EXECUTABLE=$HOME/swig/bin/swig)
 #        MOCO_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=10.10)
@@ -75,16 +77,16 @@ jobs:
 #        cmake . -LAH
 #        VERSION=`cmake -L . | grep MOCO_FULL_VERSION | cut -d "=" -f2`
 #        echo $VERSION
-#        make -j2
+#        make -j4
 #
 #    - name: Test Moco
 #      run: |
-#        ctest -j2 --output-on-failure
+#        ctest -j4 --output-on-failure
 #
 #    - name: Install Moco
 #      run: |
 #        make Moco_doxygen
-#        make -j2 install
+#        make -j4 install
 #
 #    - name: Zip Moco
 #      run: |
