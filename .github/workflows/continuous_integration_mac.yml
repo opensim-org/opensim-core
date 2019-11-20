@@ -61,7 +61,7 @@ jobs:
         make -j4 ipopt
         make -j4
 
-    - name: Build Moco
+    - name: Configure Moco
       run: |
         mkdir $GITHUB_WORKSPACE/build
         cd $GITHUB_WORKSPACE/build
@@ -77,13 +77,27 @@ jobs:
         cmake . -LAH
         VERSION=`cmake -L . | grep MOCO_FULL_VERSION | cut -d "=" -f2`
         echo $VERSION
+
+    - name: Cache Moco build
+      id: cache-moco-build
+      uses: actions/cache@v1
+      with:
+        path: ~/opensim-moco
+        # TODO: avoid having to copy over the opensim-core commit hash.
+        key: ${{ runner.os }}-moco-build-${{ hashFiles('**') }}
+
+    - name: Build Moco
+      if: steps.cache-moco-build.outputs.cache-hit != 'true'
+      run: |
         make -j4
  
     - name: Test Moco
+      if: steps.cache-moco-build.outputs.cache-hit != 'true'
       run: |
         ctest -j4 --output-on-failure
  
     - name: Install Moco
+      if: steps.cache-moco-build.outputs.cache-hit != 'true'
       run: |
         make Moco_doxygen
         make -j4 install
