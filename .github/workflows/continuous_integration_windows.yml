@@ -34,7 +34,7 @@ jobs:
       id: cache-dependencies
       uses: actions/cache@v1
       with:
-        path: $env:GITHUB_WORKSPACE/moco_dependencies_install
+        path: ~/moco_dependencies_install
         # TODO: avoid having to copy over the opensim-core commit hash.
         key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
         restore-keys: |
@@ -78,8 +78,7 @@ jobs:
 
         move ~/opensim-moco C:/opensim-moco-$env:VERSION
         $env:ZIPNAME = C:/opensim-moco-$env:VERSION-win.zip
-        7z a $env:ZIPNAME C:/opensim-moco-$env:VERSION
-  - IF DEFINED DISTR appveyor PushArtifact C:\opensim-moco-%VERSION%-win.zip
+        7z a C:/$env:ZIPNAME C:/opensim-moco-$env:VERSION
 
     # TODO: Fix name of the path to use tag/version.
     # Use {{ github.ref }}
@@ -88,7 +87,7 @@ jobs:
       uses: actions/upload-artifact@v1.0.0
       with:
         name: opensim-moco
-        path: C:\\$env:ZIPNAME
+        path: C:/$env:ZIPNAME
 
 # TODO    - name: Upload Moco dependencies
 # TODO      uses: actions/upload-artifact@v1.0.0
