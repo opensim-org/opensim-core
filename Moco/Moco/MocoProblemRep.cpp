@@ -19,7 +19,6 @@
 #include "MocoProblemRep.h"
 
 #include "Components/AccelerationMotion.h"
-#include "Components/DeGrooteFregly2016Muscle.h"
 #include "Components/DiscreteForces.h"
 #include "Components/PositionMotion.h"
 #include "MocoProblem.h"
