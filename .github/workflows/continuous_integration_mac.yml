@@ -109,7 +109,7 @@ jobs:
       run: |
         # Zip up Moco relative to where it's installed.
         cd ~/
-        mv ~/opensim-moco ~/opensim-moco-${VERSION}
+        cp ~/opensim-moco ~/opensim-moco-${VERSION}
         zip --symlinks --recurse-paths --quiet $GITHUB_WORKSPACE/opensim-moco.zip opensim-moco-${VERSION}
  
     - name: Upload Moco
