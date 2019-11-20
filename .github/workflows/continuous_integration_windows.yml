@@ -54,7 +54,7 @@ jobs:
         # /W0 disables warnings. The other flags are copied from CMake's
         # default CMAKE_CXX_FLAGS.
         # https://msdn.microsoft.com/en-us/library/19z1t1wy.aspx
-        cmake $env:GITHUB_WORKSPACE\\dependencies -G"Visual Studio 16 2019" -A x64
+        cmake $env:GITHUB_WORKSPACE/dependencies -G"Visual Studio 16 2019" -A x64
         cmake . -LAH
 #        cmake $env:GITHUB_WORKSPACE\\dependencies -G"Visual Studio 15 2017 Win64" -DCMAKE_INSTALL_PREFIX=$env:GITHUB_WORKSPACE\\moco_dependencies_install -DCMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /W0 /GR /EHsc" -DOPENSIM_JAVA_WRAPPING=on -DOPENSIM_PYTHON_WRAPPING=on
 #        cmake . -LAH
