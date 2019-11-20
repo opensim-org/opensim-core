@@ -19,7 +19,7 @@ jobs:
       run: python -m pip install numpy
  
     - name: Install SWIG
-      run: choco install swig --version 3.0.9 --yes --limit-output 
+      run: choco install swig --version 3.0.12 --yes --limit-output 
  
     - name: Install Doxygen
       # choco install doxygen.portable # <-- too unreliable.
@@ -49,6 +49,7 @@ jobs:
         # /W0 disables warnings. The other flags are copied from CMake's
         # default CMAKE_CXX_FLAGS.
         # https://msdn.microsoft.com/en-us/library/19z1t1wy.aspx
+        echo $env:PATH
         cmake $env:GITHUB_WORKSPACE/dependencies -G"Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=~/moco_dependencies_install -DOPENSIM_JAVA_WRAPPING=on -DOPENSIM_PYTHON_WRAPPING=on
         cmake . -LAH
         cmake --build . --config Release -- /maxcpucount:4 
