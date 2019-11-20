@@ -89,16 +89,19 @@ jobs:
     - name: Build Moco
       if: steps.cache-moco-build.outputs.cache-hit != 'true'
       run: |
+        cd $GITHUB_WORKSPACE/build
         make -j4
  
     - name: Test Moco
       if: steps.cache-moco-build.outputs.cache-hit != 'true'
       run: |
+        cd $GITHUB_WORKSPACE/build
         ctest -j4 --output-on-failure
  
     - name: Install Moco
       if: steps.cache-moco-build.outputs.cache-hit != 'true'
       run: |
+        cd $GITHUB_WORKSPACE/build
         make Moco_doxygen
         make -j4 install
  
