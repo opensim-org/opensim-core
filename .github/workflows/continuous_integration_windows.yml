@@ -61,6 +61,7 @@ jobs:
         cmake --build . --config Release -- /maxcpucount:4 
 
     - name: Configure Moco
+      id: configure-moco
       run: |
         mkdir $env:GITHUB_WORKSPACE\\build 
         chdir $env:GITHUB_WORKSPACE\\build        
@@ -74,6 +75,7 @@ jobs:
         $version = $env:match.split('=')[1]
         echo $version
         echo "::set-env name=VERSION::$version"
+        echo "::set-output name=version::$VERSION"
 
     - name: Build Moco
       run: |
@@ -92,8 +94,7 @@ jobs:
         cmake --build . --config Release --target install -- /maxcpucount:4 /verbosity:quiet
 
         chdir $env:GITHUB_WORKSPACE
-        mkdir opensim-moco
-        move ~/opensim-moco opensim-moco/opensim-moco-$env:VERSION
+        move ~/opensim-moco opensim-moco-$env:VERSION
 
     # TODO: Fix name of the path to use tag/version.
     # Use {{ github.ref }}
@@ -101,8 +102,8 @@ jobs:
     - name: Upload Moco
       uses: actions/upload-artifact@v1.0.0
       with:
-        name: opensim-moco
-        path: opensim-moco/
+        name: opensim-moco-${{ steps.configure-moco-outputs.version }}
+        path: opensim-moco-${{ steps.configure-moco-outputs.version }}
 
     # TODO: Must be relative to the workspace?
     # - name: Upload Moco dependencies
@@ -110,3 +111,29 @@ jobs:
     #   with:
     #     name: opensim-moco-dependencies 
     #     path: moco_dependencies_install.zip
+        
+    - name: Create release
+      id: create-release
+      uses: actions/create-release@v1.0.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: OpenSim Moco ${{ github.ref }}
+        draft: true
+        prerelease: false
+
+    - name: Zip Moco
+      run: |
+        7z a opensim-moco-$VERSION.zip opensim-moco-${VERSION}
+
+    - name: Upload release asset
+      id: upload-release-asset 
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create-release.outputs.upload_url }}
+        asset_path: ./opensim-moco-${{ github.ref }}.zip
+        asset_name: opensim-moco-${{ github.ref }}.zip
+        asset_content_type: application/zip

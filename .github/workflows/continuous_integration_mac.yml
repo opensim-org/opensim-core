@@ -68,6 +68,7 @@ jobs:
         make -j4
 
     - name: Configure Moco
+      id: configure-moco
       run: |
         mkdir $GITHUB_WORKSPACE/build
         cd $GITHUB_WORKSPACE/build
@@ -84,7 +85,8 @@ jobs:
         VERSION=`cmake -L . | grep MOCO_FULL_VERSION | cut -d "=" -f2`
         echo $VERSION
         echo "::set-env name=VERSION::$VERSION"
-
+        echo "::set-output name=version::$VERSION"
+        
     - name: Build Moco
       run: |
         cd $GITHUB_WORKSPACE/build
@@ -102,40 +104,40 @@ jobs:
         make -j4 install
         
         cd $GITHUB_WORKSPACE
-        mkdir opensim-moco
-        mv ~/opensim-moco opensim-moco/opensim-moco-${VERSION}
+        mv ~/opensim-moco opensim-moco-${VERSION}
  
     - name: Upload Moco
       uses: actions/upload-artifact@v1.0.0
       with:
-        name: opensim-moco
-        path: opensim-moco/
-        
-    - name: Create release
-      id: create-release
-      uses: actions/create-release@v1.0.0
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: OpenSim Moco ${{ github.ref }}
-        draft: true
-        prerelease: false
+        # Does this ZIP preserve symlinks?
+        name: opensim-moco-${{ steps.configure-moco-outputs.version }}
+        path: opensim-moco-${{ steps.configure-moco-outputs.version }}
 
-    - name: Zip Moco
-      run: |
-        zip --symlinks --recurse-paths --quiet opensim-moco-$VERSION.zip opensim-moco-${VERSION}
+    # - name: Create release
+    #   id: create-release
+    #   uses: actions/create-release@v1.0.0
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   with:
+    #     tag_name: ${{ github.ref }}
+    #     release_name: OpenSim Moco ${{ steps.configure-moco.outputs.version }}
+    #     draft: true
+    #     prerelease: false
 
-    - name: Upload release asset
-      id: upload-release-asset 
-      uses: actions/upload-release-asset@v1.0.1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create-release.outputs.upload_url }}
-        asset_path: ./opensim-moco-${{ github.ref }}.zip
-        asset_name: opensim-moco-${{ github.ref }}.zip
-        asset_content_type: application/zip
+    # - name: Zip Moco
+    #   run: |
+    #     zip --symlinks --recurse-paths --quiet opensim-moco-$VERSION.zip opensim-moco-${VERSION}
+
+    # - name: Upload release asset
+    #   id: upload-release-asset 
+    #   uses: actions/upload-release-asset@v1.0.1
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   with:
+    #     upload_url: ${{ steps.create-release.outputs.upload_url }}
+    #     asset_path: ./opensim-moco-${{ steps.configure-moco.outputs.version }}.zip
+    #     asset_name: opensim-moco-${{ steps.configure-moco.outputs.version }}.zip
+    #     asset_content_type: application/zip
 
 
 
