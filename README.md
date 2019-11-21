@@ -1,7 +1,7 @@
 OpenSim Moco
 ============
 
-![Windows status][buildstatus_windows] ![Mac status][buildstatus_mac] [![Appveyor][buildstatus_image_appveyor]][appveyorci] [![Travis][buildstatus_image_travis]][travisci] 
+![Build Status with GitHub Actions][buildstatus_ghactions] [![Appveyor][buildstatus_image_appveyor]][appveyorci] [![Travis][buildstatus_image_travis]][travisci] 
 
 OpenSim Moco is a toolkit for solving optimal control problems involving
 musculoskeletal systems using the direct collocation method. Moco solves the
@@ -128,8 +128,7 @@ Design goals
 
 
 
-[buildstatus_windows]: https://github.com/opensim-org/opensim-moco/workflows/Windows/badge.svg
-[buildstatus_mac]: https://github.com/opensim-org/opensim-moco/workflows/Mac/badge.svg
+[buildstatus_ghactions]: https://github.com/opensim-org/opensim-moco/workflows/Continuous%20Integration/badge.svg
 [buildstatus_image_travis]: https://travis-ci.org/opensim-org/opensim-moco.svg?branch=master
 [travisci]: https://travis-ci.org/opensim-org/opensim-moco
 [buildstatus_image_appveyor]: https://ci.appveyor.com/api/projects/status/6e731j81t9vkt92w/branch/master?svg=true
