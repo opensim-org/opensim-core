@@ -105,13 +105,16 @@ jobs:
         
         cd $GITHUB_WORKSPACE
         mv ~/opensim-moco opensim-moco-${VERSION}
+        zip --symlinks --recurse-paths --quiet opensim-moco-$VERSION.zip opensim-moco-${VERSION}
  
     - name: Upload Moco
       uses: actions/upload-artifact@v1.0.0
       with:
         # Does this ZIP preserve symlinks?
-        name: opensim-moco-${{ steps.configure-moco.outputs.version }}
-        path: opensim-moco-${{ steps.configure-moco.outputs.version }}
+        # The upload-artifact zipping does not preserve symlinks or executable
+        # bits. So we zip ourslves, even though this causes a double-zip.
+        name: opensim-moco-${{ steps.configure-moco.outputs.version }}-mac
+        path: opensim-moco-${{ steps.configure-moco.outputs.version }}.zip
 
     # - name: Create release
     #   id: create-release

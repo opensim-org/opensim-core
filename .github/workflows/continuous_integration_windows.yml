@@ -91,18 +91,16 @@ jobs:
     - name: Install Moco
       run: |
         chdir $env:GITHUB_WORKSPACE\\build
-        cmake --build . --config Release --target install -- /maxcpucount:4 /verbosity:quiet
+        cmake --build . --config Release --target install -- /maxcpucount:4 # TODO /verbosity:quiet
 
         chdir $env:GITHUB_WORKSPACE
         move ~/opensim-moco opensim-moco-$env:VERSION
 
-    # TODO: Fix name of the path to use tag/version.
-    # Use {{ github.ref }}
     # https://help.github.com/en/actions/automating-your-workflow-with-github-actions/contexts-and-expression-syntax-for-github-actions
     - name: Upload Moco
       uses: actions/upload-artifact@v1.0.0
       with:
-        name: opensim-moco-${{ steps.configure-moco.outputs.version }}
+        name: opensim-moco-${{ steps.configure-moco.outputs.version }}-win
         path: opensim-moco-${{ steps.configure-moco.outputs.version }}
 
     # TODO: Must be relative to the workspace?
