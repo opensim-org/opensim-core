@@ -110,7 +110,6 @@ jobs:
     - name: Upload Moco
       uses: actions/upload-artifact@v1.0.0
       with:
-        # Does this ZIP preserve symlinks?
         # The upload-artifact zipping does not preserve symlinks or executable
         # bits. So we zip ourslves, even though this causes a double-zip.
         name: opensim-moco-${{ steps.configure-moco.outputs.version }}-mac
