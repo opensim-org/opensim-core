@@ -41,7 +41,14 @@ jobs:
       uses: actions/cache@v1
       with:
         path: ~/moco_dependencies_install
-        # TODO: avoid having to copy over the opensim-core commit hash.
+        # TODO: avoid having to copy over the opensim-core commit hash into
+        # dependencies/opensim-core.cmake.
+        # Every time a cache is created, it's stored with this key.
+        # In subsequent runs, if the key matches the key of an existing cache,
+        # then the cache is used. We chose for this key to depend on the
+        # operating system and a hash of the hashes of all files in the
+        # dependencies directory (non-recursive).
+        # https://help.github.com/en/actions/automating-your-workflow-with-github-actions/caching-dependencies-to-speed-up-workflows#matching-a-cache-key
         key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
         restore-keys: |
           ${{ runner.os }}-dependencies-
