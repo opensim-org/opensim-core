@@ -50,7 +50,7 @@ void MocoOrientationTrackingGoal::initializeOnModelImpl(const Model& model)
 
         // If the frame_paths property is empty, use all frame paths specified
         // in the table's column labels. Otherwise, select only the columns 
-        // from the tabel that correspond with paths in frame_paths.
+        // from the table that correspond with paths in frame_paths.
         if (!getProperty_frame_paths().empty()) {
             pathsToUse = rotationTableToUse.getColumnLabels();
             rotationTable = rotationTableToUse;
@@ -64,7 +64,7 @@ void MocoOrientationTrackingGoal::initializeOnModelImpl(const Model& model)
                     std::find(labels.begin(), labels.end(), path) ==
                         labels.end(),
                     Exception,
-                    format("Expected frame_paths to match at least one of the "
+                    format("Expected frame_paths to match one of the "
                         "column labels in the rotation reference, but frame "
                         "path '%s' not found in the reference labels.", path));
                 pathsToUse.push_back(path);

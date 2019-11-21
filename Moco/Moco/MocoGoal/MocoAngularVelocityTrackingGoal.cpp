@@ -49,7 +49,7 @@ void MocoAngularVelocityTrackingGoal::initializeOnModelImpl(
 
         // If the frame_paths property is empty, use all frame paths specified
         // in the table's column labels. Otherwise, select only the columns
-        // from the tabel that correspond with paths in frame_paths.
+        // from the table that correspond with paths in frame_paths.
         if (!getProperty_frame_paths().empty()) {
             pathsToUse = angularVelocityTableToUse.getColumnLabels();
             angularVelocityTable = angularVelocityTableToUse;
@@ -63,7 +63,7 @@ void MocoAngularVelocityTrackingGoal::initializeOnModelImpl(
                     std::find(labels.begin(), labels.end(), path) == 
                         labels.end(),
                     Exception,
-                    format("Expected frame_paths to match at least one of the "
+                    format("Expected frame_paths to match one of the "
                        "column labels in the angular velocity reference, but "
                        "frame path '%s' not found in the reference labels.",
                             path));
@@ -154,6 +154,7 @@ void MocoAngularVelocityTrackingGoal::initializeOnModelImpl(
     // vector element (e.g. "<frame-path>/angular_velocity_w0" for the first 
     // angular velocity vector element).
     std::vector<std::string> colLabels;
+    std::vector<std::string> directions{"x", "y", "z"};
     for (int irow = 0; irow < (int)angularVelocityTable.getNumRows(); ++irow) {
         const auto row = angularVelocityTable.getRowAtIndex(irow);
 
@@ -161,12 +162,12 @@ void MocoAngularVelocityTrackingGoal::initializeOnModelImpl(
         int icol = 0;
         for (int ielt = 0; ielt < row.size(); ++ielt) {
             const auto& label = angularVelocityTable.getColumnLabel(ielt);
-            const auto& p = row[ielt];
-            for (int ip = 0; ip < p.size(); ++ip) {
-                mat.updElt(irow, icol++) = p[ip];
+            const auto& angularVelocity = row[ielt];
+            for (int iangvel = 0; iangvel < angularVelocity.size(); ++iangvel) {
+                mat.updElt(irow, icol++) = angularVelocity[iangvel];
                 if (!irow) {
-                    colLabels.push_back(format("%s/angular_velocity_w%i", label, 
-                        ip));
+                    colLabels.push_back(format("%s/angular_velocity_%s", label, 
+                        iangvel));
                 }
             }
         }
@@ -187,16 +188,17 @@ void MocoAngularVelocityTrackingGoal::calcIntegrandImpl(
     SimTK::Vector timeVec(1, time);
 
     integrand = 0;
+    Vec3 angular_velocity_ref(0.0);
     for (int iframe = 0; iframe < (int)m_model_frames.size(); ++iframe) {
-        const auto& w_model =
+        const auto& angular_velocity_model =
                 m_model_frames[iframe]->getAngularVelocityInGround(state);
 
         // Compute angular velocity error.
-        Vec3 w_ref(0.0);
-        for (int iw = 0; iw < w_ref.size(); ++iw) {
-            w_ref[iw] = m_ref_splines[3*iframe + iw].calcValue(timeVec);
+        for (int iw = 0; iw < angular_velocity_ref.size(); ++iw) {
+            angular_velocity_ref[iw] =
+                    m_ref_splines[3 * iframe + iw].calcValue(timeVec);
         }
-        Vec3 error = w_model - w_ref;
+        Vec3 error = angular_velocity_model - angular_velocity_ref;
 
         // Add this frame's angular velocity error to the integrand.
         const double& weight = m_angular_velocity_weights[iframe];

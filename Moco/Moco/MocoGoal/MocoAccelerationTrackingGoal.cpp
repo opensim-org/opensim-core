@@ -48,7 +48,7 @@ void MocoAccelerationTrackingGoal::initializeOnModelImpl(
 
         // If the frame_paths property is empty, use all frame paths specified
         // in the table's column labels. Otherwise, select only the columns
-        // from the tabel that correspond with paths in frame_paths.
+        // from the table that correspond with paths in frame_paths.
         if (!getProperty_frame_paths().empty()) {
             pathsToUse = accelerationTableToUse.getColumnLabels();
             accelerationTable = accelerationTableToUse;
@@ -62,7 +62,7 @@ void MocoAccelerationTrackingGoal::initializeOnModelImpl(
                     std::find(labels.begin(), labels.end(), path) == 
                         labels.end(),
                     Exception,
-                    format("Expected frame_paths to match at least one of the "
+                    format("Expected frame_paths to match one of the "
                        "column labels in the acceleration reference, but frame "
                        "path '%s' not found in the reference labels.", path));
                 pathsToUse.push_back(path);
@@ -105,6 +105,7 @@ void MocoAccelerationTrackingGoal::initializeOnModelImpl(
     // vector element (e.g. "<frame-path>/acceleration_a0" for the first 
     // acceleration vector element).
     std::vector<std::string> colLabels;
+    std::vector<std::string> directions{"x", "y", "z"};
     for (int irow = 0; irow < (int)accelerationTable.getNumRows(); ++irow) {
         const auto row = accelerationTable.getRowAtIndex(irow);
 
@@ -112,12 +113,12 @@ void MocoAccelerationTrackingGoal::initializeOnModelImpl(
         int icol = 0;
         for (int ielt = 0; ielt < row.size(); ++ielt) {
             const auto& label = accelerationTable.getColumnLabel(ielt);
-            const auto& p = row[ielt];
-            for (int ip = 0; ip < p.size(); ++ip) {
-                mat.updElt(irow, icol++) = p[ip];
+            const auto& acceleration = row[ielt];
+            for (int iaccel = 0; iaccel < acceleration.size(); ++iaccel) {
+                mat.updElt(irow, icol++) = acceleration[iaccel];
                 if (!irow) {
-                    colLabels.push_back(format("%s/acceleration_a%i", label, 
-                        ip));
+                    colLabels.push_back(format("%s/acceleration_%s", label, 
+                        directions[iaccel]));
                 }
             }
         }
@@ -138,16 +139,17 @@ void MocoAccelerationTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
     SimTK::Vector timeVec(1, time);
 
     integrand = 0;
+    Vec3 acceleration_ref(0.0);
     for (int iframe = 0; iframe < (int)m_model_frames.size(); ++iframe) {
-        const auto& a_model =
+        const auto& acceleration_model =
                 m_model_frames[iframe]->getLinearAccelerationInGround(state);
 
         // Compute acceleration error.
-        Vec3 a_ref(0.0);
-        for (int ia = 0; ia < a_ref.size(); ++ia) {
-            a_ref[ia] = m_ref_splines[3*iframe + ia].calcValue(timeVec);
+        for (int ia = 0; ia < acceleration_ref.size(); ++ia) {
+            acceleration_ref[ia] =
+                    m_ref_splines[3*iframe + ia].calcValue(timeVec);
         }
-        Vec3 error = a_model - a_ref;
+        Vec3 error = acceleration_model - acceleration_ref;
 
         // Add this frame's acceleration error to the integrand.
         const double& weight = m_acceleration_weights[iframe];

@@ -285,10 +285,10 @@ void testDoublePendulumTracking() {
     solutionEffort.write(
             "testMocoGoals_" + typeString + "_effort_solution.sto");
 
-    // Re-run problem, now setting effort cost function to zero and adding a
-    // tracking cost.
+    // Re-run problem, now setting effort cost function to a low weight and
+    // adding a tracking cost.
     auto& problem = study.updProblem();
-    problem.updPhase(0).updGoal("effort").setWeight(0);
+    problem.updPhase(0).updGoal("effort").setWeight(0.001);
     auto* tracking = problem.addGoal<TrackingType>("tracking");
     tracking->setFramePaths({"/bodyset/b0", "/bodyset/b1"});
     tracking->setStatesReference(solutionEffort.exportToStatesTable());
@@ -298,27 +298,11 @@ void testDoublePendulumTracking() {
     solutionTracking.write(
             "testMocoGoals_" + typeString + "_tracking_solution.sto");
 
-    // Check that position-level states match the effort minimization solution.
-    CHECK(solutionTracking.compareContinuousVariablesRMS(solutionEffort,
-                  {{"states", {"/jointset/j0/q0/value",
-                               "/jointset/j1/q1/value"}}}) ==
-            Approx(0).margin(1e-2));
-
-    // Re-run problem again, now setting effort cost function weight to a low
-    // non-zero value as a regularization to smooth controls and velocity
-    // states.
-    problem.updPhase(0).updGoal("effort").setWeight(0.001);
-    study.updSolver<SolverType>().resetProblem(problem);
-    auto solutionTrackingWithRegularization = study.solve();
-    solutionTrackingWithRegularization.write(
-            "testMocoGoals_" + typeString + "_trackingWithReg_solution.sto");
-
-    // Now the full states and controls trajectories should match the effort
-    // minimization solution better.
+    // The tracking solution should match the effort solution.
     SimTK_TEST_EQ_TOL(solutionEffort.getControlsTrajectory(),
-            solutionTrackingWithRegularization.getControlsTrajectory(), 1e-1);
+            solutionTracking.getControlsTrajectory(), 1e-1);
     SimTK_TEST_EQ_TOL(solutionEffort.getStatesTrajectory(),
-            solutionTrackingWithRegularization.getStatesTrajectory(), 1e-1);
+            solutionTracking.getStatesTrajectory(), 1e-1);
 }
 
 TEMPLATE_TEST_CASE("Test MocoOrientationTrackingGoal", "", MocoTropterSolver,
@@ -345,12 +329,12 @@ void testDoublePendulumAccelerationTracking() {
     solutionEffort.write(
             "testMocoGoals_MocoAccelerationTrackingGoal_effort_solution.sto");
 
-    // Re-run problem, now setting effort cost function to zero and adding a
-    // tracking cost.
+    // Re-run problem, now setting effort cost function to a low weight and 
+    // adding a tracking cost.
     auto& problem = study.updProblem();
     MocoProblemRep problemRep = problem.createRep();
     Model model = problemRep.getModelBase();
-    problem.updPhase(0).updGoal("effort").setWeight(0);
+    problem.updPhase(0).updGoal("effort").setWeight(0.001);
     auto* tracking = problem.addGoal<MocoAccelerationTrackingGoal>("tracking");
     std::vector<std::string> framePaths = {"/bodyset/b0", "/bodyset/b1"};
     tracking->setFramePaths(framePaths);
@@ -369,27 +353,11 @@ void testDoublePendulumAccelerationTracking() {
     solutionTracking.write(
             "testMocoGoals_MocoAccelerationTrackingGoal_tracking_solution.sto");
 
-    // Check that position-level states match the effort minimization solution.
-    CHECK(solutionTracking.compareContinuousVariablesRMS(solutionEffort,
-                  {{"states", {"/jointset/j0/q0/value",
-                               "/jointset/j1/q1/value"}}}) ==
-            Approx(0).margin(1e-2));
-
-    // Re-run problem again, now setting effort cost function weight to a low
-    // non-zero value as a regularization to smooth controls and velocity
-    // states.
-    problem.updPhase(0).updGoal("effort").setWeight(0.001);
-    study.updSolver<SolverType>().resetProblem(problem);
-    auto solutionTrackingWithRegularization = study.solve();
-    solutionTrackingWithRegularization.write(
-    "testMocoGoals_MocoAccelerationTrackingGoal_trackingWithReg_solution.sto");
-
-    // Now the full states and controls trajectories should match the effort
-    // minimization solution better.
+    // The tracking solution should match the effort solution.
     SimTK_TEST_EQ_TOL(solutionEffort.getControlsTrajectory(),
-            solutionTrackingWithRegularization.getControlsTrajectory(), 1e-1);
+            solutionTracking.getControlsTrajectory(), 1e-1);
     SimTK_TEST_EQ_TOL(solutionEffort.getStatesTrajectory(),
-            solutionTrackingWithRegularization.getStatesTrajectory(), 1e-1);
+            solutionTracking.getStatesTrajectory(), 1e-1);
 }
 
 TEMPLATE_TEST_CASE("Test MocoAccelerationTrackingGoal", "",

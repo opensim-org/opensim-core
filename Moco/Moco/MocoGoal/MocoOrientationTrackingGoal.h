@@ -51,9 +51,6 @@ using SimTK::Rotation;
 /// tracked frame, compared to other more complicated approaches which could
 /// require multiple minimized error values (e.g. Euler angle errors, etc).
 ///
-/// Tracking problems in direct collocation perform best when tracking smooth
-/// data, so it is recommended to filter the data in the reference you provide
-/// to the cost.
 /// @ingroup mocogoal
 class OSIMMOCO_API MocoOrientationTrackingGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoOrientationTrackingGoal, MocoGoal);

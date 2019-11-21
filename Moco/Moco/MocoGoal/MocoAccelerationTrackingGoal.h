@@ -27,12 +27,12 @@
 #include <OpenSim/Simulation/Model/Frame.h>
 namespace OpenSim {
 
-/// The squared difference between a model frame's linear acceleration and a
-/// reference acceleration value, summed over the frames for which a
-/// reference is provided, and integrated over the phase. The reference can be 
-/// provided as a trajectory of SimTK::Vec3%s representing the acceleration
-/// reference data; provide either a file name to a STO or CSV file (or other 
-/// file types for which there is a FileAdapter) or a TimeSeriesTableVec3.
+/// The squared difference between a model frame origin's linear acceleration 
+/// and a reference acceleration value, summed over the frames for which a
+/// reference is provided, and integrated over the phase. The reference is 
+/// a trajectory of SimTK::Vec3%s representing the acceleration reference data. 
+/// You must provide either a file name to a STO or CSV file (or other file 
+/// types for which there is a FileAdapter) or a TimeSeriesTableVec3 directly.
 /// 
 /// Errors for this cost are computed assuming that the provided reference
 /// acceleration data is expressed in the ground frame. This cost is not yet
@@ -42,9 +42,6 @@ namespace OpenSim {
 ///
 /// This cost requires realization to SimTK::Stage::Acceleration.
 ///
-/// Tracking problems in direct collocation perform best when tracking smooth
-/// data, so it is recommended to filter the data in the reference you provide
-/// to the cost.
 /// @ingroup mocogoal
 class OSIMMOCO_API MocoAccelerationTrackingGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoAccelerationTrackingGoal, MocoGoal);
@@ -64,17 +61,15 @@ public:
     /// be paths to frames in the model, e.g. `/bodyset/torso`. If the
     /// frame_paths property is empty, all frames with data in this reference
     /// will be tracked. Otherwise, only the frames specified via
-    /// setFramePaths() will be tracked. Calling this function clears the values
-    /// setAccelerationReference() or the `states_reference_file` property, if 
-    /// any.
+    /// setFramePaths() will be tracked. Calling this function clears the table
+    /// set by setAccelerationReference() if it exists.
     void setAccelerationReferenceFile(const std::string& filepath) {
         m_acceleration_table = TimeSeriesTableVec3();
         set_acceleration_reference_file(filepath);
     }
     /// Each column label must be the path of a valid frame path (see
     /// setAccelerationReferenceFile()). Calling this function clears the
-    /// `states_reference_file` and `acceleration_reference_file` properties if 
-    /// any.
+    /// `acceleration_reference_file` property.
     void setAccelerationReference(const TimeSeriesTableVec3& ref) {
         set_acceleration_reference_file("");
         m_acceleration_table = ref;
@@ -127,8 +122,7 @@ private:
     OpenSim_DECLARE_LIST_PROPERTY(frame_paths, std::string,
             "The frames in the model that this cost term will track. "
             "The names set here must correspond to Components that "
-            "derive from class OpenSim::Frame, which includes "
-            "'linear_acceleration' (Vec3) as an output.");
+            "derive from class Frame.");
     OpenSim_DECLARE_PROPERTY(acceleration_weights, MocoWeightSet,
             "Set of weight objects to weight the tracking of "
             "individual frames' accelerations in the cost.");

@@ -49,7 +49,7 @@ void MocoTranslationTrackingGoal::initializeOnModelImpl(const Model& model)
 
         // If the frame_paths property is empty, use all frame paths specified
         // in the table's column labels. Otherwise, select only the columns 
-        // from the tabel that correspond with paths in frame_paths.
+        // from the table that correspond with paths in frame_paths.
         if (!getProperty_frame_paths().empty()) {
             pathsToUse = translationTableToUse.getColumnLabels();
             translationTable = translationTableToUse;
@@ -63,7 +63,7 @@ void MocoTranslationTrackingGoal::initializeOnModelImpl(const Model& model)
                     std::find(labels.begin(), labels.end(), path) ==
                         labels.end(),
                     Exception,
-                    format("Expected frame_paths to match at least one of the "
+                    format("Expected frame_paths to match one of the "
                         "column labels in the translation reference, but frame "
                         "path '%s' not found in the reference labels.", path));
                 pathsToUse.push_back(path);
@@ -152,6 +152,7 @@ void MocoTranslationTrackingGoal::initializeOnModelImpl(const Model& model)
     // element (e.g. "<frame-path>/position_p0" for the first position vector
     // element).
     std::vector<std::string> colLabels;
+    std::vector<std::string> directions{"x", "y", "z"};
     for (int irow = 0; irow < (int)translationTable.getNumRows(); ++irow) {
         const auto row = translationTable.getRowAtIndex(irow);
 
@@ -159,11 +160,12 @@ void MocoTranslationTrackingGoal::initializeOnModelImpl(const Model& model)
         int icol = 0;
         for (int ielt = 0; ielt < row.size(); ++ielt) {
             const auto& label = translationTable.getColumnLabel(ielt);
-            const auto& p = row[ielt];
-            for (int ip = 0; ip < p.size(); ++ip) {
-                mat.updElt(irow, icol++) = p[ip];
+            const auto& position = row[ielt];
+            for (int ipos = 0; ipos < position.size(); ++ipos) {
+                mat.updElt(irow, icol++) = position[ipos];
                 if (!irow) {
-                    colLabels.push_back(format("%s/position_p%i", label, ip));
+                    colLabels.push_back(format("%s/position_%s", label, 
+                            directions[ipos]));
                 }
             }
         }
@@ -184,16 +186,18 @@ void MocoTranslationTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
     SimTK::Vector timeVec(1, time);
 
     integrand = 0;
+    Vec3 position_ref;
     for (int iframe = 0; iframe < (int)m_model_frames.size(); ++iframe) {
-        const auto& p_model =
+        const auto& position_model =
             m_model_frames[iframe]->getPositionInGround(state);
 
         // Compute position error.
-        Vec3 p_ref(0.0);
-        for (int ip = 0; ip < p_ref.size(); ++ip) {
-            p_ref[ip] = m_ref_splines[3*iframe + ip].calcValue(timeVec);
+        
+        for (int ip = 0; ip < position_ref.size(); ++ip) {
+            position_ref[ip] =
+                    m_ref_splines[3*iframe + ip].calcValue(timeVec);
         }
-        Vec3 error = p_model - p_ref;
+        Vec3 error = position_model - position_ref;
 
         // Add this frame's position error to the integrand.
         const double& weight = m_translation_weights[iframe];
