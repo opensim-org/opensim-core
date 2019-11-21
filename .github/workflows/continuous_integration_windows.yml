@@ -112,28 +112,28 @@ jobs:
     #     name: opensim-moco-dependencies 
     #     path: moco_dependencies_install.zip
         
-    - name: Create release
-      id: create-release
-      uses: actions/create-release@v1.0.0
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: OpenSim Moco ${{ github.ref }}
-        draft: true
-        prerelease: false
+    # - name: Create release
+    #   id: create-release
+    #   uses: actions/create-release@v1.0.0
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   with:
+    #     tag_name: ${{ github.ref }}
+    #     release_name: OpenSim Moco ${{ github.ref }}
+    #     draft: true
+    #     prerelease: false
 
-    - name: Zip Moco
-      run: |
-        7z a opensim-moco-$VERSION.zip opensim-moco-${VERSION}
+    # - name: Zip Moco
+    #   run: |
+    #     7z a opensim-moco-$VERSION.zip opensim-moco-${VERSION}
 
-    - name: Upload release asset
-      id: upload-release-asset 
-      uses: actions/upload-release-asset@v1.0.1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create-release.outputs.upload_url }}
-        asset_path: ./opensim-moco-${{ github.ref }}.zip
-        asset_name: opensim-moco-${{ github.ref }}.zip
-        asset_content_type: application/zip
+    # - name: Upload release asset
+    #   id: upload-release-asset 
+    #   uses: actions/upload-release-asset@v1.0.1
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   with:
+    #     upload_url: ${{ steps.create-release.outputs.upload_url }}
+    #     asset_path: ./opensim-moco-${{ github.ref }}.zip
+    #     asset_name: opensim-moco-${{ github.ref }}.zip
+    #     asset_content_type: application/zip
