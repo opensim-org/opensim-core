@@ -41,7 +41,7 @@ void IMUInverseKinematicsTool::constructProperties()
     constructProperty_accuracy(1e-6);
     constructProperty_constraint_weight(Infinity);
     Array<double> range{ Infinity, 2};
-    range[0] = -Infinity; // Make range -Infinity to Infinity so limited only by data
+    range[0] = -Infinity; // Make range -Infinity to Infinity unless limited by data
     constructProperty_time_range(range);
 
     constructProperty_sensor_to_opensim_rotations(
@@ -60,9 +60,11 @@ void IMUInverseKinematicsTool::
 {
     Model previewWorld;
 
+    TimeSeriesTableVec3 trimmedMarkerData(markers);
+    trimmedMarkerData.trim(getStartTime(), getEndTime());
     // Load the marker data into a TableSource that has markers
     // as its output which each markers occupying its own channel
-    TableSourceVec3* markersSource = new TableSourceVec3(markers);
+    TableSourceVec3* markersSource = new TableSourceVec3(trimmedMarkerData);
     // Add the markersSource Component to the model
     previewWorld.addComponent(markersSource);
 
@@ -70,8 +72,6 @@ void IMUInverseKinematicsTool::
     // know how many markers we have and their names
     const auto& markerData = markersSource->getTable();
     auto& times = markerData.getIndependentColumn();
-
-    auto startEnd = getTimeRangeInUse(times);
 
     // Create an ExperimentalMarker Component for every column in the markerData 
     for (int i = 0; i < int(markerData.getNumColumns()) ; ++i) {
@@ -97,7 +97,7 @@ void IMUInverseKinematicsTool::
     std::cout << "press any key to visualize experimental marker data ..." << std::endl;
     std::cin >> c;
 
-    for (size_t j =startEnd[0]; j <= startEnd[1]; j=j+10) {
+    for (size_t j =0; j < times.size(); j=j+10) {
         std::cout << "time: " << times[j] << "s" << std::endl;
         state.setTime(times[j]);
         previewWorld.realizePosition(state);
@@ -142,8 +142,8 @@ runInverseKinematicsWithOrientationsFromFile(Model& model,
 
     // Rotate data so Y-Axis is up
     OpenSenseUtilities::rotateOrientationTable(quatTable, sensorToOpenSim);
-
-    auto startEnd = getTimeRangeInUse(quatTable.getIndependentColumn());
+    //Trim to time window required by Tool
+    quatTable.trim(getStartTime(), getEndTime());
 
     TimeSeriesTable_<SimTK::Rotation> orientationsData =
         OpenSenseUtilities::convertQuaternionsToRotations(quatTable);
@@ -218,36 +218,6 @@ bool IMUInverseKinematicsTool::run(bool visualizeResults)
                                                  visualizeResults);
 
     return true;
-}
-
-SimTK::Array_<int> IMUInverseKinematicsTool::getTimeRangeInUse(
-                                const std::vector<double>& times ) const
-{
-    int nt = static_cast<int>(times.size());
-    int startIx = 0;
-    int endIx = nt-1;
-
-    for (int i = 0; i < nt; ++i) {
-        if (times[i] <= get_time_range(0)) {
-            startIx = i;
-        }
-        else {
-            break;
-        }
-    }
-
-    for (int i = nt - 1; i > 0; --i) {
-        if (times[i] >= get_time_range(1)) {
-            endIx= i;
-        }
-        else {
-            break;
-        }
-    }
-    SimTK::Array_<int> retArray;
-    retArray.push_back(startIx);
-    retArray.push_back(endIx);
-    return retArray;
 }
 
 TimeSeriesTable_<SimTK::Vec3> 
