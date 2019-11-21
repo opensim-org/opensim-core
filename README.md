@@ -128,7 +128,7 @@ Design goals
 
 
 
-[buildstatus_ghactions]: https://github.com/opensim-org/opensim-moco/workflows/Continuous%20Integration/badge.svg
+[buildstatus_ghactions]: https://github.com/opensim-org/opensim-moco/workflows/continuous-integration/badge.svg
 [buildstatus_image_travis]: https://travis-ci.org/opensim-org/opensim-moco.svg?branch=master
 [travisci]: https://travis-ci.org/opensim-org/opensim-moco
 [buildstatus_image_appveyor]: https://ci.appveyor.com/api/projects/status/6e731j81t9vkt92w/branch/master?svg=true
