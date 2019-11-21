@@ -19,7 +19,6 @@
 #include "MocoTranslationTrackingGoal.h"
 
 #include "../MocoUtilities.h"
-#include <algorithm>
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
@@ -137,44 +136,8 @@ void MocoTranslationTrackingGoal::initializeOnModelImpl(const Model& model)
         m_translation_weights.push_back(weight);
     }
 
-    // Create a new scalar-valued TimeSeriesTable using the time index from the
-    // translation table argument. We'll populate this table with the 
-    // translation values we need when calculating the integral tracking cost, 
-    // namely the frame position vector elements.
-    TimeSeriesTable flatTable(translationTable.getIndependentColumn());
-
-    // This matrix has the input table number of columns times three to hold all
-    // position elements per translation.
-    SimTK::Matrix mat((int)translationTable.getNumRows(),
-                      3*(int)translationTable.getNumColumns());
-    // Column labels are necessary for creating the GCVSplineSet from the table,
-    // so we'll label each column using the frame path and the position vector
-    // element (e.g. "<frame-path>/position_p0" for the first position vector
-    // element).
-    std::vector<std::string> colLabels;
-    std::vector<std::string> directions{"x", "y", "z"};
-    for (int irow = 0; irow < (int)translationTable.getNumRows(); ++irow) {
-        const auto row = translationTable.getRowAtIndex(irow);
-
-        // Get position vector elements.
-        int icol = 0;
-        for (int ielt = 0; ielt < row.size(); ++ielt) {
-            const auto& label = translationTable.getColumnLabel(ielt);
-            const auto& position = row[ielt];
-            for (int ipos = 0; ipos < position.size(); ++ipos) {
-                mat.updElt(irow, icol++) = position[ipos];
-                if (!irow) {
-                    colLabels.push_back(format("%s/position_%s", label, 
-                            directions[ipos]));
-                }
-            }
-        }
-    }
-
-    flatTable.updMatrix() = mat;
-    flatTable.setColumnLabels(colLabels);
-
-    m_ref_splines = GCVSplineSet(flatTable);
+    m_ref_splines = GCVSplineSet(translationTable.flatten(
+        {"/position_x", "/position_y", "/position_z"}));
 
     setNumIntegralsAndOutputs(1, 1);
 }
@@ -211,6 +174,7 @@ void MocoTranslationTrackingGoal::printDescriptionImpl(std::ostream& stream) con
            << get_translation_reference_file() << std::endl;
     for (int i = 0; i < getProperty_frame_paths().size(); i++) {
         stream << "        ";
-        stream << "frame " << i << ": " << get_frame_paths(i) << std::endl;
+        stream << "frame " << i << ": " << get_frame_paths(i) << ", ";
+        stream << "weight: " << m_translation_weights[i] << std::endl;
     }
 }

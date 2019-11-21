@@ -33,12 +33,12 @@ namespace OpenSim {
 /// track angular velocity quantities in the model that don't correspond to 
 /// model degrees of freedom. The reference can be provided as a trajectory of 
 /// SimTK::Vec3%s representing the angular velocity reference data, or as a 
-/// model-compatible states trajectory from which the tracked angular velocity 
-/// reference is computed. Both angular velocity and states references can be 
-/// provided as a file name to a STO or CSV file (or other file types for which 
-/// there is a FileAdapter), or programmatically as a TimeSeriesTableVec3 (for 
-/// the angular velocity reference) or as a scalar TimeSeriesTable (for the 
-/// states reference).
+/// states trajectory from which the tracked angular velocity reference is 
+/// computed. Both angular velocity and states references can be provided as a 
+/// file name to a STO or CSV file (or other file types for which there is a 
+/// FileAdapter), or programmatically as a TimeSeriesTableVec3 (for the angular 
+/// velocity reference) or as a scalar TimeSeriesTable (for the states 
+/// reference).
 /// 
 /// Errors for this cost are computed assuming that the provided reference 
 /// angular velocity data is expressed in the ground frame. If you are using 
@@ -152,12 +152,11 @@ private:
     OpenSim_DECLARE_PROPERTY(angular_velocity_reference_file, std::string,
             "Path to file (.sto, .csv, ...) containing angular velocity "
             "reference data to track. Column labels should be paths to frames "
-            "in the model, e.g. `/bodyset/torso`.");
+            "in the model, e.g. '/bodyset/torso'.");
     OpenSim_DECLARE_LIST_PROPERTY(frame_paths, std::string,
             "The frames in the model that this cost term will track. "
             "The names set here must correspond to Components that "
-            "derive from class OpenSim::Frame, which includes "
-            "'angular_velocity' (Vec3) as an output.");
+            "derive from class Frame.");
     OpenSim_DECLARE_PROPERTY(angular_velocity_weights, MocoWeightSet,
             "Set of weight objects to weight the tracking of "
             "individual frames' angular velocities in the cost.");

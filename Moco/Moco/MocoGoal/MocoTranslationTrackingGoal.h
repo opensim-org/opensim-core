@@ -32,12 +32,12 @@ namespace OpenSim {
 /// provided, and integrated over the phase. This can be used to track position
 /// quantities in the model that don't correspond to model degrees of freedom.
 /// The reference can be provided as a trajectory of SimTK::Vec3%s
-/// representing the translation reference data, or as a model-compatible states
-/// trajectory from which the tracked translation reference is computed. Both
-/// translation and states references can be provided as a file name to a STO or
-/// CSV file (or other file types for which there is a FileAdapter), or
-/// programmatically as a TimeSeriesTableVec3 (for the translation reference)
-/// or as a scalar TimeSeriesTable (for the states reference).
+/// representing the translation reference data, or as a states trajectory from 
+/// which the tracked translation reference is computed. Both translation and 
+/// states references can be provided as a file name to a STO or CSV file (or 
+/// other file types for which there is a FileAdapter), or programmatically as 
+/// a TimeSeriesTableVec3 (for the translation reference) or as a scalar 
+/// TimeSeriesTable (for the states reference).
 ///
 /// Technically, a cost function with the same effect could be achieved with the
 /// MocoMarkerTrackingCost class. However, this class avoids the need for adding
@@ -61,7 +61,7 @@ public:
         constructProperties();
     }
 
-    /// Set directly the translation of individual frames in ground to be
+    /// Set the translation of individual frames in ground to be
     /// tracked in the cost. The column labels of the provided reference must
     /// be paths to frames in the model, e.g. `/bodyset/torso`. If the
     /// frame_paths property is empty, all frames with data in this reference
@@ -150,12 +150,11 @@ private:
     OpenSim_DECLARE_PROPERTY(translation_reference_file, std::string,
             "Path to file (.sto, .csv, ...) containing translation reference "
             "data to track. Column labels should be paths to frames in the "
-            "model, e.g. `/bodyset/torso`.");
+            "model, e.g. '/bodyset/torso'.");
     OpenSim_DECLARE_LIST_PROPERTY(frame_paths, std::string,
             "The frames in the model that this cost term will track. "
             "The names set here must correspond to Components that "
-            "derive from class OpenSim::Frame, which includes "
-            "'position' (Vec3) as an output.");
+            "derive from class Frame.");
     OpenSim_DECLARE_PROPERTY(translation_weights, MocoWeightSet,
             "Set of weight objects to weight the tracking of "
             "individual frames' translations in the cost.");

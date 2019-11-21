@@ -19,7 +19,6 @@
 #include "MocoAccelerationTrackingGoal.h"
 
 #include "../MocoUtilities.h"
-#include <algorithm>
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
@@ -90,44 +89,8 @@ void MocoAccelerationTrackingGoal::initializeOnModelImpl(
         m_acceleration_weights.push_back(weight);
     }
 
-    // Create a new scalar-valued TimeSeriesTable using the time index from the
-    // acceleration table argument. We'll populate this table with the
-    // acceleration values we need when calculating the integral tracking cost,
-    // namely the frame acceleration vector elements.
-    TimeSeriesTable flatTable(accelerationTable.getIndependentColumn());
-
-    // This matrix has the input table number of columns times three to hold all
-    // acceleration elements.
-    SimTK::Matrix mat((int)accelerationTable.getNumRows(),
-                      3*(int)accelerationTable.getNumColumns());
-    // Column labels are necessary for creating the GCVSplineSet from the table,
-    // so we'll label each column using the frame path and the acceleration 
-    // vector element (e.g. "<frame-path>/acceleration_a0" for the first 
-    // acceleration vector element).
-    std::vector<std::string> colLabels;
-    std::vector<std::string> directions{"x", "y", "z"};
-    for (int irow = 0; irow < (int)accelerationTable.getNumRows(); ++irow) {
-        const auto row = accelerationTable.getRowAtIndex(irow);
-
-        // Get acceleration vector elements.
-        int icol = 0;
-        for (int ielt = 0; ielt < row.size(); ++ielt) {
-            const auto& label = accelerationTable.getColumnLabel(ielt);
-            const auto& acceleration = row[ielt];
-            for (int iaccel = 0; iaccel < acceleration.size(); ++iaccel) {
-                mat.updElt(irow, icol++) = acceleration[iaccel];
-                if (!irow) {
-                    colLabels.push_back(format("%s/acceleration_%s", label, 
-                        directions[iaccel]));
-                }
-            }
-        }
-    }
-
-    flatTable.updMatrix() = mat;
-    flatTable.setColumnLabels(colLabels);
-
-    m_ref_splines = GCVSplineSet(flatTable);
+    m_ref_splines = GCVSplineSet(accelerationTable.flatten(
+        {"/acceleration_x", "/acceleration_y", "/acceleration_z"}));
 
     setNumIntegralsAndOutputs(1, 1);
 }
@@ -165,6 +128,7 @@ void MocoAccelerationTrackingGoal::printDescriptionImpl(
            << std::endl;
     for (int i = 0; i < getProperty_frame_paths().size(); i++) {
         stream << "        ";
-        stream << "frame " << i << ": " << get_frame_paths(i) << std::endl;
+        stream << "frame " << i << ": " << get_frame_paths(i) << ", ";
+        stream << "weight: " << m_acceleration_weights[i] << std::endl;
     }
 }

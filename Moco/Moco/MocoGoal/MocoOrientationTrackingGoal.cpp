@@ -19,7 +19,6 @@
 #include "MocoOrientationTrackingGoal.h"
 
 #include "../MocoUtilities.h"
-#include <algorithm>
 
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/Model/Frame.h>
@@ -222,8 +221,8 @@ void MocoOrientationTrackingGoal::printDescriptionImpl(std::ostream& stream) con
            << std::endl;
     for (int i = 0; i < (int) getProperty_frame_paths().size(); i++) {
         stream << "        ";
-        stream << "frame path " << i << ": "
-               << get_frame_paths(i) << std::endl;
+        stream << "frame " << i << ": " << get_frame_paths(i) << ", ";
+        stream << "weight: " << m_rotation_weights[i] << std::endl;
     }
 }
 

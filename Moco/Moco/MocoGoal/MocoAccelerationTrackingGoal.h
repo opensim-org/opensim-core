@@ -35,9 +35,10 @@ namespace OpenSim {
 /// types for which there is a FileAdapter) or a TimeSeriesTableVec3 directly.
 /// 
 /// Errors for this cost are computed assuming that the provided reference
-/// acceleration data is expressed in the ground frame. This cost is not yet
-/// suitable for tracking acceleration signals from an inertial measurement unit
-/// (IMU) as it does not account for gravitational acceleration and cannot 
+/// acceleration data is the derivative of a position vector with respect to the 
+/// ground frame and expressed in the ground frame. This cost is not yet 
+/// suitable for tracking acceleration signals from an inertial measurement unit 
+/// (IMU) as it does not account for gravitational acceleration and does not 
 /// re-express body accelerations into a different (e.g., IMU) frame. 
 ///
 /// This cost requires realization to SimTK::Stage::Acceleration.
@@ -118,7 +119,7 @@ private:
     OpenSim_DECLARE_PROPERTY(acceleration_reference_file, std::string,
             "Path to file (.sto, .csv, ...) containing acceleration reference "
             "data to track. Column labels should be paths to frames in the "
-            "model, e.g. `/bodyset/torso`.");
+            "model, e.g. '/bodyset/torso'.");
     OpenSim_DECLARE_LIST_PROPERTY(frame_paths, std::string,
             "The frames in the model that this cost term will track. "
             "The names set here must correspond to Components that "

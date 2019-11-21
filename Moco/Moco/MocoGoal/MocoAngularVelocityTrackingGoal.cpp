@@ -19,7 +19,6 @@
 #include "MocoAngularVelocityTrackingGoal.h"
 
 #include "../MocoUtilities.h"
-#include <algorithm>
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
@@ -32,15 +31,16 @@ void MocoAngularVelocityTrackingGoal::initializeOnModelImpl(
     // Get the reference data.
     TimeSeriesTableVec3 angularVelocityTable;
     std::vector<std::string> pathsToUse;
-    if (m_angular_velocity_table.getNumColumns() != 0 ||   // ang. vel. table or
-            get_angular_velocity_reference_file() != "") { // reference file provided
+    if (m_angular_velocity_table.getNumColumns() != 0 || // ang. vel. table or
+            get_angular_velocity_reference_file() !=
+                    "") { // reference file provided
         TimeSeriesTableVec3 angularVelocityTableToUse;
         // Should not be able to supply any two simultaneously.
         assert(get_states_reference().empty());
         if (get_angular_velocity_reference_file() != "") { // ang. vel. ref file
             assert(m_angular_velocity_table.getNumColumns() == 0);
-            angularVelocityTableToUse =
-                readTableFromFileT<Vec3>(get_angular_velocity_reference_file());
+            angularVelocityTableToUse = readTableFromFileT<Vec3>(
+                    get_angular_velocity_reference_file());
 
         } else { // ang. vel. table
             assert(get_angular_velocity_reference_file() == "");
@@ -59,16 +59,17 @@ void MocoAngularVelocityTrackingGoal::initializeOnModelImpl(
             const auto& labels = angularVelocityTableToUse.getColumnLabels();
             for (int i = 0; i < getProperty_frame_paths().size(); ++i) {
                 const auto& path = get_frame_paths(i);
-                OPENSIM_THROW_IF_FRMOBJ(
-                    std::find(labels.begin(), labels.end(), path) == 
-                        labels.end(),
-                    Exception,
-                    format("Expected frame_paths to match one of the "
-                       "column labels in the angular velocity reference, but "
-                       "frame path '%s' not found in the reference labels.",
-                            path));
+                OPENSIM_THROW_IF_FRMOBJ(std::find(labels.begin(), labels.end(),
+                                                path) == labels.end(),
+                        Exception,
+                        format("Expected frame_paths to match one of the "
+                               "column labels in the angular velocity "
+                               "reference, but "
+                               "frame path '%s' not found in the reference "
+                               "labels.",
+                                path));
                 pathsToUse.push_back(path);
-                angularVelocityTable.appendColumn(path, 
+                angularVelocityTable.appendColumn(path,
                         angularVelocityTableToUse.getDependentColumn(path));
             }
         }
@@ -86,10 +87,12 @@ void MocoAngularVelocityTrackingGoal::initializeOnModelImpl(
         for (int i = 0; i < modelStateNames.getSize(); ++i) {
             const auto& name = modelStateNames[i];
             OPENSIM_THROW_IF_FRMOBJ(std::count(tableStateNames.begin(),
-                    tableStateNames.end(), name) == 0,
-                Exception, format("Expected the reference state names to match "
-                   "the model state names, but reference state %s not "
-                   "found in the model.", name));
+                                            tableStateNames.end(), name) == 0,
+                    Exception,
+                    format("Expected the reference state names to match "
+                           "the model state names, but reference state %s not "
+                           "found in the model.",
+                            name));
         }
 
         // Create the StatesTrajectory.
@@ -104,7 +107,7 @@ void MocoAngularVelocityTrackingGoal::initializeOnModelImpl(
             pathsToUse.push_back(get_frame_paths(i));
         }
 
-        // Use the StatesTrajectory to create the table of angular velocity data 
+        // Use the StatesTrajectory to create the table of angular velocity data
         // to be used in the cost.
         for (auto state : statesTraj) {
             // This realization ignores any SimTK::Motions prescribed in the
@@ -112,9 +115,9 @@ void MocoAngularVelocityTrackingGoal::initializeOnModelImpl(
             model.realizeVelocity(state);
             std::vector<Vec3> angularVelocities;
             for (const auto& path : pathsToUse) {
-                Vec3 angularVelocity = 
+                Vec3 angularVelocity =
                         model.getComponent<Frame>(path)
-                             .getAngularVelocityInGround(state);
+                                .getAngularVelocityInGround(state);
                 angularVelocities.push_back(angularVelocity);
             }
             angularVelocityTable.appendRow(state.getTime(), angularVelocities);
@@ -125,7 +128,7 @@ void MocoAngularVelocityTrackingGoal::initializeOnModelImpl(
     // Check that there are no redundant columns in the reference data.
     checkRedundantLabels(angularVelocityTable.getColumnLabels());
 
-    // Cache the model frames and angular velocity weights based on the order of 
+    // Cache the model frames and angular velocity weights based on the order of
     // the angular velocity table.
     for (int i = 0; i < (int)pathsToUse.size(); ++i) {
         const auto& path = pathsToUse[i];
@@ -139,44 +142,8 @@ void MocoAngularVelocityTrackingGoal::initializeOnModelImpl(
         m_angular_velocity_weights.push_back(weight);
     }
 
-    // Create a new scalar-valued TimeSeriesTable using the time index from the
-    // angular velocity table argument. We'll populate this table with the
-    // angular velocity values we need when calculating the integral tracking 
-    // cost, namely the frame angular velocity vector elements.
-    TimeSeriesTable flatTable(angularVelocityTable.getIndependentColumn());
-
-    // This matrix has the input table number of columns times three to hold all
-    // angular velocity elements.
-    SimTK::Matrix mat((int)angularVelocityTable.getNumRows(),
-                      3*(int)angularVelocityTable.getNumColumns());
-    // Column labels are necessary for creating the GCVSplineSet from the table,
-    // so we'll label each column using the frame path and the angular velocity 
-    // vector element (e.g. "<frame-path>/angular_velocity_w0" for the first 
-    // angular velocity vector element).
-    std::vector<std::string> colLabels;
-    std::vector<std::string> directions{"x", "y", "z"};
-    for (int irow = 0; irow < (int)angularVelocityTable.getNumRows(); ++irow) {
-        const auto row = angularVelocityTable.getRowAtIndex(irow);
-
-        // Get angular velocity vector elements.
-        int icol = 0;
-        for (int ielt = 0; ielt < row.size(); ++ielt) {
-            const auto& label = angularVelocityTable.getColumnLabel(ielt);
-            const auto& angularVelocity = row[ielt];
-            for (int iangvel = 0; iangvel < angularVelocity.size(); ++iangvel) {
-                mat.updElt(irow, icol++) = angularVelocity[iangvel];
-                if (!irow) {
-                    colLabels.push_back(format("%s/angular_velocity_%s", label, 
-                        iangvel));
-                }
-            }
-        }
-    }
-
-    flatTable.updMatrix() = mat;
-    flatTable.setColumnLabels(colLabels);
-
-    m_ref_splines = GCVSplineSet(flatTable);
+    m_ref_splines = GCVSplineSet(angularVelocityTable.flatten(
+        {"/angular_velocity_x", "/angular_velocity_y", "/angular_velocity_z"}));
 
     setNumIntegralsAndOutputs(1, 1);
 }
@@ -209,11 +176,11 @@ void MocoAngularVelocityTrackingGoal::calcIntegrandImpl(
 void MocoAngularVelocityTrackingGoal::printDescriptionImpl(
         std::ostream& stream) const {
     stream << "        ";
-    stream << "angular velocity reference file: " 
-           << get_angular_velocity_reference_file()
-           << std::endl;
+    stream << "angular velocity reference file: "
+           << get_angular_velocity_reference_file() << std::endl;
     for (int i = 0; i < getProperty_frame_paths().size(); i++) {
         stream << "        ";
-        stream << "frame " << i << ": " << get_frame_paths(i) << std::endl;
+        stream << "frame " << i << ": " << get_frame_paths(i) << ", ";
+        stream << "weight: " << m_angular_velocity_weights[i] << std::endl;
     }
 }
