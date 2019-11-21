@@ -101,6 +101,7 @@ jobs:
         make Moco_doxygen
         make -j4 install
         
+        cd $GITHUB_WORKSPACE
         mkdir opensim-moco
         mv ~/opensim-moco opensim-moco/opensim-moco-${VERSION}
  

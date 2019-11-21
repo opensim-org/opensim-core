@@ -3,12 +3,12 @@ name: Windows
 # TODO: build master branch after PRs are merged.
 # syntax https://help.github.com/en/articles/workflow-syntax-for-github-actions
 on:
-   pull_request:
-     branches:
-       - '*'
-   push:
-     tags:
-       - '*'
+  pull_request:
+    branches:
+      - '*'
+  push:
+    tags:
+      - '*'
     
 jobs:
   windows:
@@ -92,7 +92,8 @@ jobs:
         cmake --build . --config Release --target install -- /maxcpucount:4 /verbosity:quiet
 
         chdir $env:GITHUB_WORKSPACE
-        move ~/opensim-moco opensim-moco-$env:VERSION
+        mkdir opensim-moco
+        move ~/opensim-moco opensim-moco/opensim-moco-$env:VERSION
 
     # TODO: Fix name of the path to use tag/version.
     # Use {{ github.ref }}
@@ -101,7 +102,7 @@ jobs:
       uses: actions/upload-artifact@v1.0.0
       with:
         name: opensim-moco
-        path: opensim-moco-$env:VERSION
+        path: opensim-moco/
 
     # TODO: Must be relative to the workspace?
     # - name: Upload Moco dependencies
