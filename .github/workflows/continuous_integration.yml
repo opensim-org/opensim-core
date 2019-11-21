@@ -5,6 +5,11 @@ name: continuous-integration
 on:
   schedule:
   - cron: '0 2 * * *'
+  push:
+    branches: 
+      - master
+    tags:
+      - '*'
     
 jobs:
   windows:
@@ -14,27 +19,29 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
+      
     - name: Install Chocolatey packages
       run: choco install swig --version 3.0.9 --yes --limit-output 
+      
     - name: Build
       run: |
-        echo %GITHUB_WORKSPACE%\\build_deps
-        mkdir %GITHUB_WORKSPACE%\\build_deps
-        chdir %GITHUB_WORKSPACE%\\build_deps
+        echo $env:GITHUB_WORKSPACE\\build_deps
+        mkdir $env:GITHUB_WORKSPACE\\build_deps
+        chdir $env:GITHUB_WORKSPACE\\build_deps
         cmake --version
-        cmake %GITHUB_WORKSPACE%\\dependencies -G"Visual Studio 15 2017" -A x64 -DCMAKE_INSTALL_PREFIX=%GITHUB_WORKSPACE%\\opensim_dependencies_install
+        cmake $env:GITHUB_WORKSPACE\\dependencies -G"Visual Studio 15 2017" -A x64 -DCMAKE_INSTALL_PREFIX=%GITHUB_WORKSPACE%\\opensim_dependencies_install
         cmake --build . --config Release -- /maxcpucount:4 
-        mkdir %GITHUB_WORKSPACE%\\build 
-        chdir %GITHUB_WORKSPACE%\\build
-        cmake %GITHUB_WORKSPACE% -G"Visual Studio 15 2017" -A x64 -DCMAKE_INSTALL_PREFIX=%GITHUB_WORKSPACE%\\opensim-core-install -DOPENSIM_DEPENDENCIES_DIR=%GITHUB_WORKSPACE%\\opensim_dependencies_install -DWITH_BTK=on -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on
+        mkdir $env:GITHUB_WORKSPACE\\build 
+        chdir $env:GITHUB_WORKSPACE\\build
+        cmake $env:GITHUB_WORKSPACE -G"Visual Studio 15 2017" -A x64 -DCMAKE_INSTALL_PREFIX=$env:GITHUB_WORKSPACE\\opensim-core-install -DOPENSIM_DEPENDENCIES_DIR=$env:GITHUB_WORKSPACE\\opensim_dependencies_install -DWITH_BTK=on -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on
         cmake --build . --config Release -- /maxcpucount:4 
     - name: Test
       run: |
-        chdir %GITHUB_WORKSPACE%\\build
+        chdir $env:GITHUB_WORKSPACE\\build
         ctest --parallel 4 --output-on-failure --build-config Release
     - name: Install
       run: |
-        chdir %GITHUB_WORKSPACE%\\build
+        chdir $env:GITHUB_WORKSPACE\\build
         cmake --build . --config Release --target install -- /maxcpucount:4 /verbosity:quiet
   
   mac:
