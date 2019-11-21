@@ -1,6 +1,7 @@
 - 2019-11-20: Added MocoAngularVelocityTrackingGoal and 
               MocoAccelerationTrackingGoal to support applications using
               IMU data.
+              
 - 2019-11-18: Updates to report.py linewidth and legend formatting. 
 
 - 2019-11-18: Added support for automatic activation bounds for 
