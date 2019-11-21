@@ -33,6 +33,12 @@ namespace OpenSim {
 /// provided as a trajectory of SimTK::Vec3%s representing the acceleration
 /// reference data; provide either a file name to a STO or CSV file (or other 
 /// file types for which there is a FileAdapter) or a TimeSeriesTableVec3.
+/// 
+/// Errors for this cost are computed assuming that the provided reference
+/// acceleration data is expressed in the ground frame. This cost is not yet
+/// suitable for tracking acceleration signals from an inertial measurement unit
+/// (IMU) as it does not account for gravitational acceleration and cannot 
+/// re-express body accelerations into a different (e.g., IMU) frame. 
 ///
 /// This cost requires realization to SimTK::Stage::Acceleration.
 ///

@@ -39,6 +39,12 @@ namespace OpenSim {
 /// there is a FileAdapter), or programmatically as a TimeSeriesTableVec3 (for 
 /// the angular velocity reference) or as a scalar TimeSeriesTable (for the 
 /// states reference).
+/// 
+/// Errors for this cost are computed assuming that the provided reference 
+/// angular velocity data is expressed in the ground frame. If you are using 
+/// this cost to track raw signals from an inertial measurement unit (IMU), make 
+/// sure that the frame you're tracking produces angular velocity values that
+/// correspond to the real-world placement of your IMU. 
 ///
 /// This cost requires realization to SimTK::Stage::Velocity.
 ///
