@@ -25,6 +25,7 @@
 // INCLUDES
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
+#include <OpenSim/Simulation/OpenSense/IMUPlacer.h>
 #include <OpenSim/Simulation/OpenSense/IMUInverseKinematicsTool.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
@@ -37,12 +38,10 @@ int main()
 {
 
     // Calibrate model and compare result to standard
-    Model model = OpenSenseUtilities::calibrateModelFromOrientations(
-        "subject07.osim",
-        "imuOrientations.sto",
-        "pelvis_imu", "z",
-        false
-        );
+    IMUPlacer imuPlacer("imuPlacer.xml");
+    imuPlacer.run();
+    Model model = imuPlacer.getCalibratedModel();
+
     // Previous line produces a model with same name but "calibrated_" prefix.
     Model stdModel{ "std_calibrated_subject07.osim" };
     model.print("calibrated_subject07.osim");
