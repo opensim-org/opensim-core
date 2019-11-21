@@ -70,8 +70,8 @@ jobs:
         cmake $env:GITHUB_WORKSPACE -G"Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-moco -DMOCO_DEPENDENCIES_DIR=~/moco_dependencies_install -DMOCO_JAVA_BINDINGS=on -DMOCO_PYTHON_BINDINGS=on 
         $env:CXXFLAGS = ""
         cmake . -LAH
-        $match = cmake -L . | Select-String -Pattern MOCO_FULL_VERSION
-        $version = $match.split('=')[1]
+        $env:match = cmake -L . | Select-String -Pattern MOCO_FULL_VERSION
+        $version = $env:match.split('=')[1]
         echo $version
         echo "::set-env name=VERSION::$version"
 
