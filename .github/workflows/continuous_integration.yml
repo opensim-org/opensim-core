@@ -29,7 +29,7 @@ jobs:
         mkdir $env:GITHUB_WORKSPACE\\build_deps
         chdir $env:GITHUB_WORKSPACE\\build_deps
         cmake --version
-        cmake $env:GITHUB_WORKSPACE\\dependencies -G"Visual Studio 15 2017" -A x64 -DCMAKE_INSTALL_PREFIX=%GITHUB_WORKSPACE%\\opensim_dependencies_install
+        cmake $env:GITHUB_WORKSPACE\\dependencies -G"Visual Studio 15 2017" -A x64 -DCMAKE_INSTALL_PREFIX=$env:GITHUB_WORKSPACE\\opensim_dependencies_install
         cmake --build . --config Release -- /maxcpucount:4 
         mkdir $env:GITHUB_WORKSPACE\\build 
         chdir $env:GITHUB_WORKSPACE\\build
