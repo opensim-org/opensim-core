@@ -165,6 +165,7 @@ if(${MOCO_INSTALL_UNIX_FHS})
     set(MOCO_INSTALL_APIEXDIR "${CMAKE_INSTALL_DOCDIR}/Code")
     # Actually determined by OpenSim's OPENSIM_INSTALL_UNIX_FHS:
     set(MOCO_INSTALL_SIMBODYDIR ".")
+    set(MOCO_INSTALL_CASADIDIR ".")
 
 else()
 
@@ -185,6 +186,7 @@ else()
     set(MOCO_INSTALL_JAVASRCDIR sdk/Java)
     set(MOCO_INSTALL_APIEXDIR Resources/Code)
     set(MOCO_INSTALL_SIMBODYDIR sdk/Simbody)
+    set(MOCO_INSTALL_CASADIDIR sdk)
 
 endif()
 
@@ -246,8 +248,14 @@ set_package_properties(casadi PROPERTIES
         TYPE REQUIRED
         PURPOSE "Differentiation and optimizer interface.")
 get_filename_component(CASADI_BIN_DIR "${casadi_DIR}/../" ABSOLUTE)
+# Copy CasADi into our installation.
 MocoCopyDLLs(DEP_NAME casadi
         DEP_BIN_DIR "${CASADI_BIN_DIR}" INSTALL_DLLS "${CMAKE_INSTALL_BINDIR}")
+if(NOT WIN32)
+    install(DIRECTORY "${CASADI_CMAKE_DIR}/../../../"
+            DESTINATION "${CMAKE_INSTALL_PREFIX}/${MOCO_INSTALL_CASADIDIR}"
+            USE_SOURCE_PERMISSIONS)
+endif()
 
 add_subdirectory(Moco)
 
