@@ -359,8 +359,6 @@ if(WIN32 AND ${CMAKE_C_COMPILER} MATCHES "cl")
     set(mxcpu ${BUILD_LIMIT_PARALLEL_COMPILES}) # abbreviation
 
     ## C++
-    # Disable "C4068: unknown pragma" warning.
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4068") 
     set(CMAKE_CXX_FLAGS_DEBUG
     "/MP${mxcpu} /D _DEBUG /MDd /Od /Ob0 /RTC1 /Zi /bigobj /GS- ${CL_INST_SET}"
         CACHE STRING "VC++ Debug build compile flags" FORCE)
@@ -387,6 +385,13 @@ if(WIN32 AND ${CMAKE_C_COMPILER} MATCHES "cl")
     set(CMAKE_C_FLAGS_MINSIZEREL
     "/MP${mxcpu} /D NDEBUG /MD  /O1 /Ob1 /Oi /GS- ${CL_INST_SET}"
         CACHE STRING "VC++ MinSizeRel build compile flags" FORCE)
+
+    # Treat warnings as errors.
+    # Ideally we would increase the warning level to 4 but that generates
+    # warnings in our dependencies.
+    # Convert warning 4388 ('operator' signed/unsigned mismatch) from
+    # level 4 to level 3 for consistency with Clang.
+    add_compile_options(/WX /w34388) # /W4
 
 endif()
 
