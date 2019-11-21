@@ -2,7 +2,13 @@ name: Windows
 
 # TODO: build master branch after PRs are merged.
 # syntax https://help.github.com/en/articles/workflow-syntax-for-github-actions
-on: pull_request
+on:
+   pull_request:
+     branches:
+       - '*'
+   push:
+     tags:
+       - '*'
     
 jobs:
   windows:
@@ -54,7 +60,7 @@ jobs:
         cmake . -LAH
         cmake --build . --config Release -- /maxcpucount:4 
 
-    - name: Build Moco
+    - name: Configure Moco
       run: |
         mkdir $env:GITHUB_WORKSPACE\\build 
         chdir $env:GITHUB_WORKSPACE\\build        
@@ -64,11 +70,16 @@ jobs:
         cmake $env:GITHUB_WORKSPACE -G"Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-moco -DMOCO_DEPENDENCIES_DIR=~/moco_dependencies_install -DMOCO_JAVA_BINDINGS=on -DMOCO_PYTHON_BINDINGS=on 
         $env:CXXFLAGS = ""
         cmake . -LAH
-        cmake --build . --config Release -- /maxcpucount:4 /verbosity:minimal
-
         $match = cmake -L . | Select-String -Pattern MOCO_FULL_VERSION
-        echo "::set-env name=VERSION::$match.split('=')[1]"
+        $version = $match.split('=')[1]
+        echo $version
+        echo "::set-env name=VERSION::$version"
 
+    - name: Build Moco
+      run: |
+        chdir $env:GITHUB_WORKSPACE\\build        
+        cmake --build . --config Release -- /maxcpucount:4 /verbosity:minimal
+        
     # TODO
     # - name: Test Moco
     #   run: |
