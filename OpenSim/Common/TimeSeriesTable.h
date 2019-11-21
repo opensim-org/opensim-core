@@ -436,7 +436,8 @@ public:
      * newStartTime, newFinalTime. The trimming is done in place, no copy is made. 
      * Uses getRowIndexAfterTime to locate first row and
      * getNearestRowIndexForTime method to locate last row.
-     * The method throws if the resulting TimeSeriesTable is empty
+     
+     \throws EmptyTable if the resulting TimeSeriesTable is empty.
      */
     void trim(const double& newStartTime, const double& newFinalTime) {
         OPENSIM_THROW_IF(newFinalTime < newStartTime, EmptyTable);
