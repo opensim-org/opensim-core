@@ -96,15 +96,15 @@ Model OpenSenseUtilities::calibrateModelFromOrientations(
     const std::string& baseHeadingDirectionString,
     bool visualizeCalibratedModel)
 {
-    OpenSim::IMUPlacer calibrator;
+    OpenSim::IMUPlacer imuPlacer;
 
-    calibrator.set_model_file_name(modelCalibrationPoseFile);
-    calibrator.set_base_imu_label(baseImuName);
-    calibrator.set_calibration_file_name(calibrationOrientationsFile);
-    calibrator.set_base_heading_axis(baseHeadingDirectionString);
-    calibrator.run();
+    imuPlacer.set_model_file_name(modelCalibrationPoseFile);
+    imuPlacer.set_base_imu_label(baseImuName);
+    imuPlacer.set_calibration_file_name(calibrationOrientationsFile);
+    imuPlacer.set_base_heading_axis(baseHeadingDirectionString);
+    imuPlacer.run();
 
-    return calibrator.getCalibratedModel();
+    return imuPlacer.getCalibratedModel();
 }
 
 SimTK::Transform OpenSenseUtilities::formTransformFromPoints(const Vec3& op,
