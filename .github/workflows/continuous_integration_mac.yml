@@ -101,13 +101,14 @@ jobs:
         make Moco_doxygen
         make -j4 install
         
-        mv ~/opensim-moco opensim-moco-${VERSION}
+        mkdir opensim-moco
+        mv ~/opensim-moco opensim-moco/opensim-moco-${VERSION}
  
     - name: Upload Moco
       uses: actions/upload-artifact@v1.0.0
       with:
         name: opensim-moco
-        path: opensim-moco-${VERSION}
+        path: opensim-moco/
         
     - name: Create release
       id: create-release
@@ -120,7 +121,6 @@ jobs:
         draft: true
         prerelease: false
 
-        
     - name: Zip Moco
       run: |
         zip --symlinks --recurse-paths --quiet opensim-moco-$VERSION.zip opensim-moco-${VERSION}
@@ -132,8 +132,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create-release.outputs.upload_url }}
-        asset_path: ./opensim-moco-$VERSION.zip
-        asset_name: opensim-moco-$VERSION.zip
+        asset_path: ./opensim-moco-${{ github.ref }}.zip
+        asset_name: opensim-moco-${{ github.ref }}.zip
         asset_content_type: application/zip
 
 
