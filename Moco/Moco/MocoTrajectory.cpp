@@ -881,6 +881,12 @@ TimeSeriesTable MocoTrajectory::exportToStatesTable() const {
             m_states, m_state_names};
 }
 
+TimeSeriesTable MocoTrajectory::exportToControlsTable() const {
+    ensureUnsealed();
+    return {std::vector<double>(&m_time[0], &m_time[0] + m_time.size()),
+            m_controls, m_control_names};
+}
+
 StatesTrajectory MocoTrajectory::exportToStatesTrajectory(
         const MocoProblem& problem) const {
     ensureUnsealed();
