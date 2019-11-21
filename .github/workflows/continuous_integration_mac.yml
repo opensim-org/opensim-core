@@ -110,8 +110,8 @@ jobs:
       uses: actions/upload-artifact@v1.0.0
       with:
         # Does this ZIP preserve symlinks?
-        name: opensim-moco-${{ steps.configure-moco-outputs.version }}
-        path: opensim-moco-${{ steps.configure-moco-outputs.version }}
+        name: opensim-moco-${{ steps.configure-moco.outputs.version }}
+        path: opensim-moco-${{ steps.configure-moco.outputs.version }}
 
     # - name: Create release
     #   id: create-release

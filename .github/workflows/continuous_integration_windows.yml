@@ -102,8 +102,8 @@ jobs:
     - name: Upload Moco
       uses: actions/upload-artifact@v1.0.0
       with:
-        name: opensim-moco-${{ steps.configure-moco-outputs.version }}
-        path: opensim-moco-${{ steps.configure-moco-outputs.version }}
+        name: opensim-moco-${{ steps.configure-moco.outputs.version }}
+        path: opensim-moco-${{ steps.configure-moco.outputs.version }}
 
     # TODO: Must be relative to the workspace?
     # - name: Upload Moco dependencies
