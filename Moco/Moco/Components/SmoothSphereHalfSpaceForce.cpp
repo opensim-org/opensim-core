@@ -213,7 +213,49 @@ void SmoothSphereHalfSpaceForce::generateDecorations(bool fixed,
         const ModelDisplayHints& hints, const SimTK::State& state,
         SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const {
     Super::generateDecorations(fixed, hints, state, geometry);
-    if (!fixed) return;
+
+    if (!fixed && (state.getSystemStage() >= SimTK::Stage::Dynamics)) {
+        const PhysicalFrame& contactSphereFrame =
+                getConnectee<PhysicalFrame>("sphere_frame");
+        SimTK::MobilizedBodyIndex contactSphereIdx =
+                contactSphereFrame.getMobilizedBody();
+
+        const Model& model = getModel();
+        const auto& forceSubsys = model.getForceSubsystem();
+        const SimTK::Force& abstractForce = forceSubsys.getForce(_index);
+        const auto& simtkForce =
+                static_cast<const SimTK::SmoothSphereHalfSpaceForce&>(
+                        abstractForce);
+
+        SimTK::Vector_<SimTK::SpatialVec> bodyForces(0);
+        SimTK::Vector_<SimTK::Vec3> particleForces(0);
+        SimTK::Vector mobilityForces(0);
+
+        simtkForce.calcForceContribution(
+                state, bodyForces, particleForces, mobilityForces);
+
+        const auto& thisBodyForce = bodyForces(contactSphereIdx);
+        double forceScale = 0.001;
+        SimTK::Vec3 scaled_F = forceScale * thisBodyForce[1];
+
+        SimTK::Real length(scaled_F.norm());
+        double aspectRatio = 25.0;
+        SimTK::Real radius(length / aspectRatio / 2.0);
+        SimTK::Vec3 p_G = contactSphereFrame.getTransformInGround(state).p() +
+                          contactSphereFrame.expressVectorInGround(
+                                  state, get_contact_sphere_location());
+
+        SimTK::Transform Xf(
+                SimTK::Rotation(SimTK::UnitVec3(scaled_F), SimTK::YAxis),
+                p_G + scaled_F / 2.0);
+
+        SimTK::DecorativeCylinder forceViz(radius, length / 2.0);
+        forceViz.setTransform(Xf);
+        forceViz.setColor(SimTK::Vec3(0.0, 1.0, 0.0));
+
+        geometry.push_back(forceViz);
+    }
+
     if (!hints.get_show_contact_geometry()) return;
 
     {
