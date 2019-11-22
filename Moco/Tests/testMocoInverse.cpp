@@ -19,6 +19,10 @@
 #include <Moco/osimMoco.h>
 
 #include <OpenSim/Common/LogManager.h>
+#include <OpenSim/Tools/CMC_TaskSet.h>
+#include <OpenSim/Tools/CMC_Joint.h>
+#include <OpenSim/Tools/CMC.h>
+#include <OpenSim/Tools/CMCTool.h>
 
 #define CATCH_CONFIG_MAIN
 #include "Testing.h"
@@ -145,7 +149,7 @@ TEST_CASE("MocoInverse Rajagopal2016, 18 muscles") {
 
     MocoTrajectory std("std_testMocoInverse_subject_18musc_solution.sto");
     const auto expected = std.getControlsTrajectory();
-    CHECK(std.compareContinuousVariablesRMS(solution, 
+    CHECK(std.compareContinuousVariablesRMS(solution,
             {{"controls", {}}}) < 1e-2);
     CHECK(std.compareContinuousVariablesRMS(solution, {{"states", {}}}) < 1e-2);
 }
