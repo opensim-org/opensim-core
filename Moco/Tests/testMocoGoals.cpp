@@ -268,7 +268,8 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoTropterSolver,
     solutionEffort.write(
             "testMocoGoals_DoublePendulumMinimizeEffort_solution.sto");
 
-    SECTION("MocoControlTrackingGoal") {
+    // MocoControlTrackingGoal
+    {
         // Re-run problem, now setting effort cost function to zero and adding a
         // control tracking cost.
         auto& problem = study.updProblem();
@@ -302,32 +303,44 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoTropterSolver,
                 solutionTracking.getStatesTrajectory(), 1e-4);
     }
 
-    SECTION("MocoOrientationTrackingGoal") {
+    // MocoOrientationTrackingGoal
+    {
+        MocoStudy studyOrientationTracking =
+                setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
         testDoublePendulumTracking<TestType, MocoOrientationTrackingGoal>(
-            study, solutionEffort);
+                studyOrientationTracking, solutionEffort);
     }
 
-    SECTION("MocoTranslationTrackingGoal") {
+    // MocoTranslationTrackingGoal
+    {
+        MocoStudy studyTranslationTracking =
+                setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
         testDoublePendulumTracking<TestType, MocoTranslationTrackingGoal>(
-            study, solutionEffort);
+            studyTranslationTracking, solutionEffort);
     }
 
-    SECTION("MocoAngularVelocityTrackingGoal") {
+    // MocoAngularVelocityTrackingGoal
+    {
+        MocoStudy studyAngularVelocityTracking =
+                setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
         testDoublePendulumTracking<TestType, MocoAngularVelocityTrackingGoal>(
-            study, solutionEffort);
+            studyAngularVelocityTracking, solutionEffort);
     }
 
-    SECTION("MocoAccelerationTrackingGoal") {
+    // MocoAccelerationTrackingGoal
+    {
+        MocoStudy studyAccelerationTracking =
+                setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
         // Re-run problem, now setting effort cost function to a low weight and
-        // adding a tracking cost.
-        auto& problem = study.updProblem();
+        // adding an acceleration tracking cost.
+        auto& problem = studyAccelerationTracking.updProblem();
         MocoProblemRep problemRep = problem.createRep();
-        Model model = problemRep.getModelBase();
+        const Model& model = problemRep.getModelBase();
         problem.updPhase(0).updGoal("effort").setWeight(0.001);
-        auto* tracking =
+        auto* accelerationTracking =
                 problem.addGoal<MocoAccelerationTrackingGoal>("tracking");
         std::vector<std::string> framePaths = {"/bodyset/b0", "/bodyset/b1"};
-        tracking->setFramePaths(framePaths);
+        accelerationTracking->setFramePaths(framePaths);
         // Compute the accelerations from the effort minimization solution to
         // use as a tracking reference. It's fine to use the analyze() utility
         // here, since this model has no kinematic constraints.
@@ -336,10 +349,10 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoTropterSolver,
                         {"/bodyset/b0\\|linear_acceleration",
                                 "/bodyset/b1\\|linear_acceleration"});
         accelTableEffort.setColumnLabels(framePaths);
-        tracking->setAccelerationReference(accelTableEffort);
+        accelerationTracking->setAccelerationReference(accelTableEffort);
 
-        study.updSolver<TestType>().resetProblem(problem);
-        auto solutionTracking = study.solve();
+        studyAccelerationTracking.updSolver<TestType>().resetProblem(problem);
+        auto solutionTracking = studyAccelerationTracking.solve();
         solutionTracking.write("testMocoGoals_MocoAccelerationTrackingGoal_"
                                "tracking_solution.sto");
 
@@ -349,7 +362,6 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoTropterSolver,
         SimTK_TEST_EQ_TOL(solutionEffort.getStatesTrajectory(),
                 solutionTracking.getStatesTrajectory(), 1e-1);
     }
-
 }
 
 TEMPLATE_TEST_CASE(

@@ -587,14 +587,11 @@ void OpenSim::checkRedundantLabels(std::vector<std::string> labels) {
 void OpenSim::checkLabelsMatchModelStates(const Model& model,
         const std::vector<std::string>& labels) {
     const auto modelStateNames = model.getStateVariableNames();
-    for (int i = 0; i < modelStateNames.getSize(); ++i) {
-        const auto& name = modelStateNames[i];
-        OPENSIM_THROW_IF(
-                std::count(labels.begin(), labels.end(), name) == 0,
-                Exception,
-                format("Expected the provided labels to match the model state "
-                       "names, but model state %s not found in the labels.", 
-                        name));
+    for (const auto& label : labels) {
+        OPENSIM_THROW_IF(modelStateNames.rfindIndex(label) == -1, Exception,
+            format("Expected the provided labels to match the model state "
+                   "names, but label %s does not correspond to any model "
+                    "state.", label));
     }
 }
 
