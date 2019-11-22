@@ -105,28 +105,39 @@ void IMUInverseKinematicsTool::
     }
 }
 
-void IMUInverseKinematicsTool::
-runInverseKinematicsWithOrientationsFromFile(Model& model,
-    const std::string& orientationsFileName,
-    bool visualizeResults)
-{
-    // Add a reporter to get IK computed coordinate values out
-    TableReporter* ikReporter = new TableReporter();
-    ikReporter->setName("ik_reporter");
+void IMUInverseKinematicsTool::runInverseKinematicsWithOrientationsFromFile(
+        Model& model, const std::string& orientationsFileName,
+        bool visualizeResults) {
+
+    // Ideally if we add a Reporter, we also remove it at the end for good hygiene but 
+    // at the moment there's no interface to remove Reporter so we'll reuse one if exists
+    const auto reporterExists = model.findComponent<TableReporter>("ik_reporter");
+
+    bool reuse_reporter = true;
+    TableReporter* ikReporter = nullptr;
+    if (reporterExists == nullptr) {
+        // Add a reporter to get IK computed coordinate values out
+        ikReporter = new TableReporter();
+        ikReporter->setName("ik_reporter");
+        reuse_reporter = false;
+    } else
+        ikReporter = &model.updComponent<TableReporter>("ik_reporter");
+
     auto coordinates = model.updComponentList<Coordinate>();
 
     // Hookup reporter inputs to the individual coordinate outputs
     // and lock coordinates that are translational since they cannot be
     for (auto& coord : coordinates) {
         ikReporter->updInput("inputs").connect(
-            coord.getOutput("value"), coord.getName());
-        if(coord.getMotionType() == Coordinate::Translational) {
+                coord.getOutput("value"), coord.getName());
+        if (coord.getMotionType() == Coordinate::Translational) {
             coord.setDefaultLocked(true);
         }
     }
 
-    model.addComponent(ikReporter);
-
+    if (!reuse_reporter) {
+        model.addComponent(ikReporter);
+    }
     TimeSeriesTable_<SimTK::Quaternion> quatTable(orientationsFileName);
     std::cout << "Loading orientations as quaternions from "
         << orientationsFileName << std::endl;
@@ -203,6 +214,9 @@ runInverseKinematicsWithOrientationsFromFile(Model& model,
 
     std::cout << "Wrote IK with IMU tracking results to: '" <<
         outputFile << "'." << std::endl;
+
+    // Results written to file, clear in case we run again
+    ikReporter->clearTable();
 }
 
 
