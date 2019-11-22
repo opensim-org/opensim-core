@@ -10,6 +10,12 @@ walking.
 
 @example exampleSitToStand.m
 This is an example that predicts a sit-to-stand movement and optimizes
+the stiffness of an assistive passive device. This example is used in hands-on
+workshops, and accordingly has blanks that users must fill in. See @ref
+exampleSitToStand_answers.m for a completed version.
+
+@example exampleSitToStand_answers.m
+This is an example that predicts a sit-to-stand movement and optimizes
 the stiffness of an assistive passive device.
 
 @example exampleMinimizeJointReaction.m
@@ -96,9 +102,9 @@ name | model/motion | description | interfaces
 MocoTrack | lower-limb | Using the MocoTrack tool for walking with marker tracking and state tracking | [MATLAB](@ref exampleMocoTrack.m), [Python](@ref exampleMocoTrack.py), [C++](@ref exampleMocoTrack.cpp)
 2DWalking | walking | MocoTrack, MocoStudy prediction, MocoControlGoal, MocoAverageSpeedGoal, MocoPerodicityGoal, createPeriodicSolution | [C++](@ref example2DWalking.cpp)
 MarkerTracking10DOF | walking | MocoControlGoal, MocoMarkerTrackingGoal | [MATLAB](@ref exampleMarkerTracking10DOF.m)
-SitToStand | torque-driven single leg | MocoStudy motion prediction, MocoInverse | [MATLAB](@ref exampleSitToStand.m)
+SitToStand | torque-driven single leg | MocoStudy motion prediction, MocoInverse | [MATLAB](@ref exampleSitToStand_answers.m)
 PredictAndTrack | double pendulum | MocoMarkerFinalGoal, MocoFinalTimeGoal, MocoMarkerTrackingGoal, MocoStateTrackingGoal | [Python](@ref examplePredictAndTrack.py)
-PrototypeCustomGoal | N/A | Sandbox for defining a custom MocoGoal | [MATLAB](@ref exampleSitToStand.m)
+PrototypeCustomGoal | N/A | Sandbox for defining a custom MocoGoal | [MATLAB](@ref examplePrototypeCustomGoal.m)
 
 @section Advanced
 
@@ -107,5 +113,18 @@ name | model/motion | description | interfaces
 CustomImplicitAuxiliaryDynamics | N/A | Creating a component with implicit auxiliary dynamics (like muscle tendon compliance) | [C++](@ref exampleCustomImplicitAuxiliaryDynamics.cpp)
 
 
+*/
+
+/** @example exampleSlidingMassAdvanced.cpp
+This example shows setting solver settings, customizing an initial guess,
+and defining a custom goal (cost term).
+See @ref customgoal.
+*/
+
+/** @example exampleMocoCustomEffortGoal.cpp
+This example shows creating a custom goal in a plugin library, which allows
+you to use the custom goal in C++, the command-line, Matlab, Python, and the
+GUI.
+See @ref customgoal.
 */
 } // namespace OpenSim

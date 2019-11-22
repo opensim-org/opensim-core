@@ -989,6 +989,7 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
         // Perform all the common mappings at base class level (OpenSim::Muscle)
         actu->setName(muscBase.getName());
         muscBase.setName(muscBase.getName() + "_delete");
+        actu->set_appliesForce(muscBase.get_appliesForce());
         actu->setMinControl(muscBase.getMinControl());
         actu->setMaxControl(muscBase.getMaxControl());
 
