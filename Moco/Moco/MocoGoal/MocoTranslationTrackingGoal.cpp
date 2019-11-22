@@ -30,7 +30,6 @@ void MocoTranslationTrackingGoal::initializeOnModelImpl(const Model& model)
         const {
     // Get the reference data.
     TimeSeriesTableVec3 translationTable;
-    std::vector<std::string> pathsToUse;
     if (m_translation_table.getNumColumns() != 0 ||   // translation table or 
             get_translation_reference_file() != "") { // reference file provided
         TimeSeriesTableVec3 translationTableToUse;
@@ -50,7 +49,7 @@ void MocoTranslationTrackingGoal::initializeOnModelImpl(const Model& model)
         // in the table's column labels. Otherwise, select only the columns 
         // from the table that correspond with paths in frame_paths.
         if (!getProperty_frame_paths().empty()) {
-            pathsToUse = translationTableToUse.getColumnLabels();
+            m_frame_paths = translationTableToUse.getColumnLabels();
             translationTable = translationTableToUse;
         } else {
             translationTable = TimeSeriesTableVec3(
@@ -65,7 +64,7 @@ void MocoTranslationTrackingGoal::initializeOnModelImpl(const Model& model)
                     format("Expected frame_paths to match one of the "
                         "column labels in the translation reference, but frame "
                         "path '%s' not found in the reference labels.", path));
-                pathsToUse.push_back(path);
+                m_frame_paths.push_back(path);
                 translationTable.appendColumn(path,
                     translationTableToUse.getDependentColumn(path));
             }
@@ -79,16 +78,7 @@ void MocoTranslationTrackingGoal::initializeOnModelImpl(const Model& model)
             &model);
 
         // Check that the reference state names match the model state names.
-        auto modelStateNames = model.getStateVariableNames();
-        auto tableStateNames = statesTableToUse.getColumnLabels();
-        for (int i = 0; i < modelStateNames.getSize(); ++i) {
-            const auto& name = modelStateNames[i];
-            OPENSIM_THROW_IF_FRMOBJ(std::count(tableStateNames.begin(),
-                    tableStateNames.end(), name) == 0,
-                Exception, format("Expected the reference state names to match "
-                    "the model state names, but reference state %s not found "
-                    "in the model.", name));
-        }
+        checkLabelsMatchModelStates(model, statesTableToUse.getColumnLabels());
 
         // Create the StatesTrajectory.
         Storage sto = convertTableToStorage(statesTableToUse);
@@ -98,7 +88,7 @@ void MocoTranslationTrackingGoal::initializeOnModelImpl(const Model& model)
         OPENSIM_THROW_IF_FRMOBJ(getProperty_frame_paths().empty(), Exception,
             "Expected paths in the frame_paths property, but none were found.");
         for (int i = 0; i < getProperty_frame_paths().size(); ++i) {
-            pathsToUse.push_back(get_frame_paths(i));
+            m_frame_paths.push_back(get_frame_paths(i));
         }
 
         // Use the StatesTrajectory to create the table of translation data to
@@ -108,14 +98,14 @@ void MocoTranslationTrackingGoal::initializeOnModelImpl(const Model& model)
             // model.
             model.realizePosition(state);
             std::vector<Vec3> translations;
-            for (const auto& path : pathsToUse) {
+            for (const auto& path : m_frame_paths) {
                 Vec3 translation =
                     model.getComponent<Frame>(path).getPositionInGround(state);
                 translations.push_back(translation);
             }
             translationTable.appendRow(state.getTime(), translations);
         }
-        translationTable.setColumnLabels(pathsToUse);
+        translationTable.setColumnLabels(m_frame_paths);
 
     }
 
@@ -124,8 +114,8 @@ void MocoTranslationTrackingGoal::initializeOnModelImpl(const Model& model)
 
     // Cache the model frames and translation weights based on the order of the 
     // translation table.
-    for (int i = 0; i < (int)pathsToUse.size(); ++i) {
-        const auto& path = pathsToUse[i];
+    for (int i = 0; i < (int)m_frame_paths.size(); ++i) {
+        const auto& path = m_frame_paths[i];
         const auto& frame = model.getComponent<Frame>(path);
         m_model_frames.emplace_back(&frame);
 
@@ -172,9 +162,9 @@ void MocoTranslationTrackingGoal::printDescriptionImpl(std::ostream& stream) con
     stream << "        ";
     stream << "translation reference file: "
            << get_translation_reference_file() << std::endl;
-    for (int i = 0; i < getProperty_frame_paths().size(); i++) {
+    for (int i = 0; i < m_frame_paths.size(); i++) {
         stream << "        ";
-        stream << "frame " << i << ": " << get_frame_paths(i) << ", ";
+        stream << "frame " << i << ": " << m_frame_paths[i] << ", ";
         stream << "weight: " << m_translation_weights[i] << std::endl;
     }
 }

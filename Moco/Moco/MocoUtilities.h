@@ -435,6 +435,11 @@ OSIMMOCO_API void checkOrderSystemControls(const Model& model);
 /// for redundancies.
 OSIMMOCO_API void checkRedundantLabels(std::vector<std::string> labels);
 
+/// Throws an exception if any label in the provided list does not match any 
+/// state variable names in the model.
+OSIMMOCO_API void checkLabelsMatchModelStates(const Model& model, 
+        const std::vector<std::string>& labels);
+
 /// Get a list of reference pointers to all outputs whose names (not paths)
 /// match a substring defined by a provided regex string pattern. The regex
 /// string pattern could be the full name of the output. Only Output%s that

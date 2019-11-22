@@ -584,6 +584,20 @@ void OpenSim::checkRedundantLabels(std::vector<std::string> labels) {
                     *it));
 }
 
+void OpenSim::checkLabelsMatchModelStates(const Model& model,
+        const std::vector<std::string>& labels) {
+    const auto modelStateNames = model.getStateVariableNames();
+    for (int i = 0; i < modelStateNames.getSize(); ++i) {
+        const auto& name = modelStateNames[i];
+        OPENSIM_THROW_IF(
+                std::count(labels.begin(), labels.end(), name) == 0,
+                Exception,
+                format("Expected the provided labels to match the model state "
+                       "names, but model state %s not found in the labels.", 
+                        name));
+    }
+}
+
 MocoTrajectory OpenSim::createPeriodicTrajectory(
         const MocoTrajectory& in, std::vector<std::string> addPatterns,
         std::vector<std::string> negatePatterns,

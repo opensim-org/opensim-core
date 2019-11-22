@@ -30,7 +30,6 @@ void MocoAngularVelocityTrackingGoal::initializeOnModelImpl(
         const Model& model) const {
     // Get the reference data.
     TimeSeriesTableVec3 angularVelocityTable;
-    std::vector<std::string> pathsToUse;
     if (m_angular_velocity_table.getNumColumns() != 0 || // ang. vel. table or
             get_angular_velocity_reference_file() !=
                     "") { // reference file provided
@@ -51,7 +50,7 @@ void MocoAngularVelocityTrackingGoal::initializeOnModelImpl(
         // in the table's column labels. Otherwise, select only the columns
         // from the table that correspond with paths in frame_paths.
         if (!getProperty_frame_paths().empty()) {
-            pathsToUse = angularVelocityTableToUse.getColumnLabels();
+            m_frame_paths = angularVelocityTableToUse.getColumnLabels();
             angularVelocityTable = angularVelocityTableToUse;
         } else {
             angularVelocityTable = TimeSeriesTableVec3(
@@ -68,7 +67,7 @@ void MocoAngularVelocityTrackingGoal::initializeOnModelImpl(
                                "frame path '%s' not found in the reference "
                                "labels.",
                                 path));
-                pathsToUse.push_back(path);
+                m_frame_paths.push_back(path);
                 angularVelocityTable.appendColumn(path,
                         angularVelocityTableToUse.getDependentColumn(path));
             }
@@ -82,18 +81,7 @@ void MocoAngularVelocityTrackingGoal::initializeOnModelImpl(
                 get_states_reference().process("", &model);
 
         // Check that the reference state names match the model state names.
-        auto modelStateNames = model.getStateVariableNames();
-        auto tableStateNames = statesTableToUse.getColumnLabels();
-        for (int i = 0; i < modelStateNames.getSize(); ++i) {
-            const auto& name = modelStateNames[i];
-            OPENSIM_THROW_IF_FRMOBJ(std::count(tableStateNames.begin(),
-                                            tableStateNames.end(), name) == 0,
-                    Exception,
-                    format("Expected the reference state names to match "
-                           "the model state names, but reference state %s not "
-                           "found in the model.",
-                            name));
-        }
+        checkLabelsMatchModelStates(model, statesTableToUse.getColumnLabels());
 
         // Create the StatesTrajectory.
         Storage sto = convertTableToStorage(statesTableToUse);
@@ -104,7 +92,7 @@ void MocoAngularVelocityTrackingGoal::initializeOnModelImpl(
                 "Expected paths in the frame_paths property, but none were "
                 "found.");
         for (int i = 0; i < getProperty_frame_paths().size(); ++i) {
-            pathsToUse.push_back(get_frame_paths(i));
+            m_frame_paths.push_back(get_frame_paths(i));
         }
 
         // Use the StatesTrajectory to create the table of angular velocity data
@@ -114,7 +102,7 @@ void MocoAngularVelocityTrackingGoal::initializeOnModelImpl(
             // model.
             model.realizeVelocity(state);
             std::vector<Vec3> angularVelocities;
-            for (const auto& path : pathsToUse) {
+            for (const auto& path : m_frame_paths) {
                 Vec3 angularVelocity =
                         model.getComponent<Frame>(path)
                                 .getAngularVelocityInGround(state);
@@ -122,7 +110,7 @@ void MocoAngularVelocityTrackingGoal::initializeOnModelImpl(
             }
             angularVelocityTable.appendRow(state.getTime(), angularVelocities);
         }
-        angularVelocityTable.setColumnLabels(pathsToUse);
+        angularVelocityTable.setColumnLabels(m_frame_paths);
     }
 
     // Check that there are no redundant columns in the reference data.
@@ -130,8 +118,8 @@ void MocoAngularVelocityTrackingGoal::initializeOnModelImpl(
 
     // Cache the model frames and angular velocity weights based on the order of
     // the angular velocity table.
-    for (int i = 0; i < (int)pathsToUse.size(); ++i) {
-        const auto& path = pathsToUse[i];
+    for (int i = 0; i < (int)m_frame_paths.size(); ++i) {
+        const auto& path = m_frame_paths[i];
         const auto& frame = model.getComponent<Frame>(path);
         m_model_frames.emplace_back(&frame);
 
@@ -178,9 +166,9 @@ void MocoAngularVelocityTrackingGoal::printDescriptionImpl(
     stream << "        ";
     stream << "angular velocity reference file: "
            << get_angular_velocity_reference_file() << std::endl;
-    for (int i = 0; i < getProperty_frame_paths().size(); i++) {
+    for (int i = 0; i < m_frame_paths.size(); i++) {
         stream << "        ";
-        stream << "frame " << i << ": " << get_frame_paths(i) << ", ";
+        stream << "frame " << i << ": " << m_frame_paths[i] << ", ";
         stream << "weight: " << m_angular_velocity_weights[i] << std::endl;
     }
 }

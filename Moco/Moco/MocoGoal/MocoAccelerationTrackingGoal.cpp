@@ -30,7 +30,6 @@ void MocoAccelerationTrackingGoal::initializeOnModelImpl(
         const Model& model) const {
     // Get the reference data.
     TimeSeriesTableVec3 accelerationTable;
-    std::vector<std::string> pathsToUse;
     if (m_acceleration_table.getNumColumns() != 0 ||   // acceleration table or
             get_acceleration_reference_file() != "") { // reference file provided
         TimeSeriesTableVec3 accelerationTableToUse;
@@ -49,7 +48,7 @@ void MocoAccelerationTrackingGoal::initializeOnModelImpl(
         // in the table's column labels. Otherwise, select only the columns
         // from the table that correspond with paths in frame_paths.
         if (!getProperty_frame_paths().empty()) {
-            pathsToUse = accelerationTableToUse.getColumnLabels();
+            m_frame_paths = accelerationTableToUse.getColumnLabels();
             accelerationTable = accelerationTableToUse;
         } else {
             accelerationTable = TimeSeriesTableVec3(
@@ -64,7 +63,7 @@ void MocoAccelerationTrackingGoal::initializeOnModelImpl(
                     format("Expected frame_paths to match one of the "
                        "column labels in the acceleration reference, but frame "
                        "path '%s' not found in the reference labels.", path));
-                pathsToUse.push_back(path);
+                m_frame_paths.push_back(path);
                 accelerationTable.appendColumn(path, 
                     accelerationTableToUse.getDependentColumn(path));
             }
@@ -77,8 +76,8 @@ void MocoAccelerationTrackingGoal::initializeOnModelImpl(
 
     // Cache the model frames and acceleration weights based on the order of the
     // acceleration table.
-    for (int i = 0; i < (int)pathsToUse.size(); ++i) {
-        const auto& path = pathsToUse[i];
+    for (int i = 0; i < (int)m_frame_paths.size(); ++i) {
+        const auto& path = m_frame_paths[i];
         const auto& frame = model.getComponent<Frame>(path);
         m_model_frames.emplace_back(&frame);
 
@@ -126,9 +125,9 @@ void MocoAccelerationTrackingGoal::printDescriptionImpl(
     stream << "acceleration reference file: " 
            << get_acceleration_reference_file()
            << std::endl;
-    for (int i = 0; i < getProperty_frame_paths().size(); i++) {
+    for (int i = 0; i < m_frame_paths.size(); i++) {
         stream << "        ";
-        stream << "frame " << i << ": " << get_frame_paths(i) << ", ";
+        stream << "frame " << i << ": " << m_frame_paths[i] << ", ";
         stream << "weight: " << m_acceleration_weights[i] << std::endl;
     }
 }

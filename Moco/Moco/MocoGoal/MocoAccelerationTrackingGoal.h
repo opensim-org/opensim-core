@@ -57,13 +57,13 @@ public:
         constructProperties();
     }
 
-    /// Set directly the acceleration of individual frames in ground to be
-    /// tracked in the cost. The column labels of the provided reference must
-    /// be paths to frames in the model, e.g. `/bodyset/torso`. If the
-    /// frame_paths property is empty, all frames with data in this reference
-    /// will be tracked. Otherwise, only the frames specified via
-    /// setFramePaths() will be tracked. Calling this function clears the table
-    /// set by setAccelerationReference() if it exists.
+    /// Set the acceleration of individual frames in ground to be tracked in the 
+    /// cost. The column labels of the provided reference must be paths to 
+    /// frames in the model, e.g. `/bodyset/torso`. If the frame_paths property 
+    /// is empty, all frames with data in this reference will be tracked. 
+    /// Otherwise, only the frames specified via setFramePaths() will be 
+    /// tracked. Calling this function clears the table set by 
+    /// setAccelerationReference() if it exists.
     void setAccelerationReferenceFile(const std::string& filepath) {
         m_acceleration_table = TimeSeriesTableVec3();
         set_acceleration_reference_file(filepath);
@@ -136,6 +136,7 @@ private:
 
     TimeSeriesTableVec3 m_acceleration_table;
     mutable GCVSplineSet m_ref_splines;
+    mutable std::vector<std::string> m_frame_paths;
     mutable std::vector<SimTK::ReferencePtr<const Frame>> m_model_frames;
     mutable std::vector<double> m_acceleration_weights;
 };

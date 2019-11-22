@@ -170,6 +170,7 @@ private:
 
     TimeSeriesTableVec3 m_angular_velocity_table;
     mutable GCVSplineSet m_ref_splines;
+    mutable std::vector<std::string> m_frame_paths;
     mutable std::vector<SimTK::ReferencePtr<const Frame>> m_model_frames;
     mutable std::vector<double> m_angular_velocity_weights;
 };
