@@ -1,7 +1,7 @@
-#ifndef __OPENSIM_IMU_PLACER_H__
-#define __OPENSIM_IMU_PLACER_H__
+#ifndef OPENSIM_IMU_PLACER_H_
+#define OPENSIM_IMU_PLACER_H_
 /* -------------------------------------------------------------------------- *
- *                          OpenSim:  IMUPlacer.h                       *
+ *                          OpenSim:  IMUPlacer.h                             *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -85,6 +85,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __OPENSIM_IMU_PLACER_H__
+#endif // OPENSIM_IMU_PLACER_H_
 
 

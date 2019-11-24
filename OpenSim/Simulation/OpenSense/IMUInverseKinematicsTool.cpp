@@ -94,7 +94,7 @@ void IMUInverseKinematicsTool::
     previewWorld.getVisualizer().show(state);
 
     char c;
-    std::cout << "press any key to visualize experimental marker data ..." << std::endl;
+    std::cout << "Press any key to visualize experimental marker data ..." << std::endl;
     std::cin >> c;
 
     for (size_t j =0; j < times.size(); j=j+10) {
