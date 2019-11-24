@@ -70,12 +70,12 @@ IMUPlacer::~IMUPlacer()
  */
 void IMUPlacer::constructProperties() 
 {
-    constructProperty_model_file_name("");
+    constructProperty_model_file("");
     constructProperty_base_imu_label("z");
     constructProperty_base_heading_axis("pelvis_imu");
     constructProperty_sensor_to_opensim_rotations(
             SimTK::Vec3(-SimTK_PI / 2, 0, 0));
-    constructProperty_calibration_file_name("");
+    constructProperty_orientation_file_for_calibration("");
 }
 
 //=============================================================================
@@ -90,9 +90,9 @@ bool IMUPlacer::run(bool visualizeResults)  {
 
     _calibrated = false;
     if (_model.empty()) { 
-        _model.reset(new Model(get_model_file_name())); 
+        _model.reset(new Model(get_model_file())); 
     }
-    TimeSeriesTable_<SimTK::Quaternion> quatTable(get_calibration_file_name());
+    TimeSeriesTable_<SimTK::Quaternion> quatTable(get_orientation_file_for_calibration());
 
     const SimTK::Vec3& sensor_to_opensim_rotations = get_sensor_to_opensim_rotations();
     SimTK::Rotation sensorToOpenSim =

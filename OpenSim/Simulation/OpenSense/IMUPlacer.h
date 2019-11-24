@@ -44,7 +44,7 @@ public:
     //==============================================================================
     // PROPERTIES
     //==============================================================================
-    OpenSim_DECLARE_PROPERTY(model_file_name, std::string,
+    OpenSim_DECLARE_PROPERTY(model_file, std::string,
             "Name/path to the xml .osim file used to load a model to be "
             "calibrated.");
 
@@ -61,7 +61,7 @@ public:
             "Space fixed rotations from IMU Space (typically z up) to OpenSim "
             "(Y up, X forward)");
 
-    OpenSim_DECLARE_PROPERTY(calibration_file_name, std::string,
+    OpenSim_DECLARE_PROPERTY(orientation_file_for_calibration, std::string,
             "Name/path to a .sto file of sensor frame orientations as "
             "quaternions to be used for calibration.");
 

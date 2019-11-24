@@ -98,9 +98,9 @@ Model OpenSenseUtilities::calibrateModelFromOrientations(
 {
     OpenSim::IMUPlacer imuPlacer;
 
-    imuPlacer.set_model_file_name(modelCalibrationPoseFile);
+    imuPlacer.set_model_file(modelCalibrationPoseFile);
     imuPlacer.set_base_imu_label(baseImuName);
-    imuPlacer.set_calibration_file_name(calibrationOrientationsFile);
+    imuPlacer.set_orientation_file_for_calibration(calibrationOrientationsFile);
     imuPlacer.set_base_heading_axis(baseHeadingDirectionString);
     imuPlacer.run();
 
