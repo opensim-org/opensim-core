@@ -64,13 +64,13 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    OpenSim_DECLARE_PROPERTY(model_file_name, std::string,
+    OpenSim_DECLARE_PROPERTY(model_file, std::string,
         "Name/path to the xml .osim file used to load a model to be analyzed.");
 
-    OpenSim_DECLARE_PROPERTY(marker_file_name, std::string,
+    OpenSim_DECLARE_PROPERTY(marker_file, std::string,
         "Name/path to a .trc or .sto file of type Vec3 of marker data.");
 
-    OpenSim_DECLARE_PROPERTY(orientations_file_name, std::string,
+    OpenSim_DECLARE_PROPERTY(orientations_file, std::string,
         "Name/path to a .sto file of sensor frame orientations as quaternions.");
 
     OpenSim_DECLARE_PROPERTY(sensor_to_opensim_rotations, SimTK::Vec3,

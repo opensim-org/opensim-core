@@ -8,11 +8,11 @@
 		<!--The time range for the study.-->
 		<time_range>417 431</time_range>
 		<!--Name/path to the xml .osim file used to load a model to be analyzed.-->
-		<model_file_name></model_file_name>
+		<model_file></model_file>
 		<!--Name/path to a .trc or .sto file of type Vec3 of marker data.-->
-		<marker_file_name></marker_file_name>
+		<marker_file></marker_file>
 		<!--Name/path to a .sto file of sensor frame orientations as quaternions.-->
-		<orientations_file_name>MT_012005D6_009-quaternions_RHJCSwinger.sto</orientations_file_name>
+		<orientations_file>MT_012005D6_009-quaternions_RHJCSwinger.sto</orientations_file>
 		<!--Name of the directory where results are written. Be default this is the directory in which the setup file is be  executed.-->
 		<results_directory></results_directory>
 	</IMUInverseKinematicsTool>

@@ -47,9 +47,9 @@ void IMUInverseKinematicsTool::constructProperties()
     constructProperty_sensor_to_opensim_rotations(
             SimTK::Vec3(-SimTK_PI / 2, 0, 0));
 
-    constructProperty_model_file_name("");
-    constructProperty_marker_file_name("");
-    constructProperty_orientations_file_name("");
+    constructProperty_model_file("");
+    constructProperty_marker_file("");
+    constructProperty_orientations_file("");
 
     constructProperty_results_directory("");
 }
@@ -224,11 +224,11 @@ void IMUInverseKinematicsTool::runInverseKinematicsWithOrientationsFromFile(
 bool IMUInverseKinematicsTool::run(bool visualizeResults)
 {
     if (_model.empty()) {
-        _model.reset(new Model(get_model_file_name()));
+        _model.reset(new Model(get_model_file()));
     }
 
     runInverseKinematicsWithOrientationsFromFile(*_model,
-                                                 get_orientations_file_name(),
+                                                 get_orientations_file(),
                                                  visualizeResults);
 
     return true;
