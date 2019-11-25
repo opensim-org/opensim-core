@@ -41,16 +41,15 @@ public:
 
     /// @name Convert Table of Quaternions into a Table for Rotations
     /// @{
-    /** Load a TimeSeriesTable of Rotation matrices from a Storage file containing
-        quaternions as data elements. Optionally provide a range of times for data
-        to be averaged. By default just uses the first time frame.
+    /** Convert a TimeSeriesTable with quaternions as data elements into a TimeSeriesTable
+        of Rotation matrices.
         */
     static  OpenSim::TimeSeriesTable_<SimTK::Rotation_<double>> 
         convertQuaternionsToRotations(
             const OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>& qauternionsTable);
 
     /** Compute a SimTK::Vec3 of Space rotations that aligns the specified 
-        baseIMU + CoordinateDirection combination with the positive X (=forward) direction 
+        baseIMU and CoordinateDirection combination with the positive X (=forward) direction 
         in OpenSim based on the first frame of the passed in table of quaternions
         quatTimeSeries. 
     */
@@ -63,16 +62,21 @@ public:
     /// @}
     /** Create a calibrated model from a model in the calibration pose and 
         the sensor (IMU) orientations (as quaternions) during the calibration.
-        modelCalibrationPoseFile: a model file where default pose matches that
-                                    used to collect the calibration data.
-        calibrationOrientationsFile: a storage file with IMU orientations 
-                                        expressed as Quaternions.
-        baseImuName: The label of the base IMU in the orientations_file used
-                        to account for the heading difference between the sensor
-                        data and the forward direction of the model. Leave blank
-                        if no heading correction is to be applied.
-        baseHeadingDirectionString: The axis of the base IMU that corresponds to its
-                            heading direction. Options are x/y/z/-x/-y/-z
+         @param[in] modelCalibrationPoseFile
+            model file where default pose matches that
+            used to collect the calibration data.
+         @param[in] calibrationOrientationsFile
+            Storage file with IMU orientations 
+            expressed as Quaternions.
+         @param[in] baseImuName
+            The label of the base IMU in the orientations_file used
+            to account for the heading difference between the sensor
+            data and the forward direction of the model. Leave blank
+            if no heading correction is to be applied.
+         @param[in] baseHeadingDirectionString
+            The axis of the base IMU that corresponds to its
+            heading direction. Options are x/y/z/-x/-y/-z
+
         Assumptions about the inputs: 
             1) the model default pose is the same as the pose used to collect
             calibration data

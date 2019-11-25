@@ -44,7 +44,6 @@ int main()
 
     // Previous line produces a model with same name but "calibrated_" prefix.
     Model stdModel{ "std_calibrated_subject07.osim" };
-    model.print("calibrated_subject07.osim");
     ASSERT(model == stdModel);
 
     // Calibrate model from two different standing trials facing
