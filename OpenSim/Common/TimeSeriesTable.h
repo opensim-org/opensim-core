@@ -447,10 +447,12 @@ public:
         // or newFinalTime is greater than last value in table
         start_index = this->getRowIndexAfterTime(newStartTime);
         last_index = this->getRowIndexBeforeTime(newFinalTime);
+        // Make sure last_index >= start_index before attempting to trim
+        OPENSIM_THROW_IF(last_index < start_index, EmptyTable);
         // do the actual trimming based on index instead of time.
         trimToIndices(start_index, last_index);
         // If resulting table is empty, throw
-        OPENSIM_THROW_IF(this->getNumRows()==0, EmptyTable);
+        std::cout << "WARNING: trimming resulted in an Empty Table" << std::endl;
     }
     /**
      * trim TimeSeriesTable, keeping rows at newStartTime to the end.

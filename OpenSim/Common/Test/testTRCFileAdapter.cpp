@@ -202,7 +202,6 @@ int main() {
             OpenSim::Exception, "Trimmed table has wrong start time.");
     // Use final time < first time should throw exception 
     SimTK_TEST_MUST_THROW_EXC(table.trim(.02, 0), OpenSim::EmptyTable);
-    SimTK_TEST_MUST_THROW_EXC(table.trim(.055, 0.06), OpenSim::EmptyTable);
     
     std::remove(("trimmed_" + tmpfile).c_str());
     std::remove(tmpfile.c_str());
