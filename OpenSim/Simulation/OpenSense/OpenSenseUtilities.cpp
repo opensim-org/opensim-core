@@ -89,14 +89,6 @@ void OpenSim::OpenSenseUtilities::rotateOrientationTable(
     return;
 }
 
-Model OpenSenseUtilities::calibrateModelFromOrientations(
-    OpenSim::IMUPlacer& imuPlacer,
-    bool visualizeCalibratedModel)
-{
-    imuPlacer.run(visualizeCalibratedModel);
-    return imuPlacer.getCalibratedModel();
-}
-
 SimTK::Transform OpenSenseUtilities::formTransformFromPoints(const Vec3& op,
     const Vec3& xp,
     const Vec3& yp)

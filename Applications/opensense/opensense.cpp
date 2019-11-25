@@ -153,8 +153,7 @@ int main(int argc, char **argv)
                     }
                     std::string modelCalibrationSetupFile{ argv[i + 1] };
                     IMUPlacer imuPlacer{modelCalibrationSetupFile};
-                    Model model = OpenSenseUtilities::calibrateModelFromOrientations(
-                                    imuPlacer);
+                    Model model =imuPlacer.run();
                     // If output_model was specified it will be written, otherwise preserve model by writing to "calibrated_"
                     if (imuPlacer.get_output_model_file().empty()) {
                         auto filename = "calibrated_" + model.getName() + ".osim";

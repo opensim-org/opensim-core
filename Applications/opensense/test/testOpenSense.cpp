@@ -49,8 +49,7 @@ int main()
     // Calibrate model from two different standing trials facing
     // opposite directions to verify that heading correction is working
     IMUPlacer placerX("imuPlacerFaceX.xml");
-    Model facingX = OpenSenseUtilities::calibrateModelFromOrientations(
-            placerX, false);
+    Model facingX = placerX.run(false);
     facingX.setName("calibrated_FacingX");
     facingX.finalizeFromProperties();
 
@@ -61,8 +60,7 @@ int main()
 
     // Now facing the opposite direction (negative X)
     IMUPlacer placerNegX("imuPlacerFaceNegX.xml");
-    Model facingNegX = OpenSenseUtilities::calibrateModelFromOrientations(
-            placerNegX, false);
+    Model facingNegX = placerNegX.run(false);
     facingNegX.setName("calibrated_FacingNegX");
     facingNegX.finalizeFromProperties();
 

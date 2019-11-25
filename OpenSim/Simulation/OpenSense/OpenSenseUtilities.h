@@ -61,22 +61,6 @@ public:
             const std::string& baseIMU, 
             const SimTK::CoordinateDirection);
     /// @}
-    /** Create a calibrated model from a model in the calibration pose and 
-        the sensor (IMU) orientations (as quaternions) during the calibration.
-        @param [in] imuPalcer
-        IMUPlacer object containing the specification of the model/pose and 
-        parameters needed to perform the calibration
-        Assumptions about the inputs: 
-            1) the model default pose is the same as the pose used to collect
-            calibration data
-            2) the sensors are labeled <body(or physical frame)_in_model>_imu in
-            the orientations data. The underlying PhysicalFrame in the model
-            is then identified and a corresponding Offset frame is attached, 
-            which represents the sensor affixed to the model.
-        */
-    static Model calibrateModelFromOrientations(
-        OpenSim::IMUPlacer& imuPalcer,
-        bool visualizeCalibratedModel =true);
     /**
         * Create Orientations as a TimeSeriesTable based on passed in markerFile
         */
