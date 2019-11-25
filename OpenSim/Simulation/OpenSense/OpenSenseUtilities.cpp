@@ -263,7 +263,7 @@ SimTK::Vec3 OpenSenseUtilities::computeHeadingCorrection(
             angularDifference *= -1; 
         }
         
-         std::cout << "Heading correction computed to be "
+        std::cout << "Heading correction computed to be "
                   << angularDifference * SimTK_RADIAN_TO_DEGREE
                   << "degs about ground Y" << std::endl;
 
