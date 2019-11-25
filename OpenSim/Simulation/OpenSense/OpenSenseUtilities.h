@@ -26,6 +26,7 @@
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include "IMUPlacer.h"
 
 namespace OpenSim {
 
@@ -62,21 +63,9 @@ public:
     /// @}
     /** Create a calibrated model from a model in the calibration pose and 
         the sensor (IMU) orientations (as quaternions) during the calibration.
-         @param[in] modelCalibrationPoseFile
-            model file where default pose matches that
-            used to collect the calibration data.
-         @param[in] calibrationOrientationsFile
-            Storage file with IMU orientations 
-            expressed as Quaternions.
-         @param[in] baseImuName
-            The label of the base IMU in the orientations_file used
-            to account for the heading difference between the sensor
-            data and the forward direction of the model. Leave blank
-            if no heading correction is to be applied.
-         @param[in] baseHeadingDirectionString
-            The axis of the base IMU that corresponds to its
-            heading direction. Options are x/y/z/-x/-y/-z
-
+        @param [in] imuPalcer
+        IMUPlacer object containing the specification of the model/pose and 
+        parameters needed to perform the calibration
         Assumptions about the inputs: 
             1) the model default pose is the same as the pose used to collect
             calibration data
@@ -86,10 +75,7 @@ public:
             which represents the sensor affixed to the model.
         */
     static Model calibrateModelFromOrientations(
-        const std::string& modelCalibrationPoseFile,
-        const std::string& calibrationOrientationsFile,
-        const std::string& baseImuName = "",
-        const std::string& baseHeadingDirectionString="z",
+        OpenSim::IMUPlacer& imuPalcer,
         bool visualizeCalibratedModel =true);
     /**
         * Create Orientations as a TimeSeriesTable based on passed in markerFile

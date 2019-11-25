@@ -452,7 +452,8 @@ public:
         // do the actual trimming based on index instead of time.
         trimToIndices(start_index, last_index);
         // If resulting table is empty, throw
-        std::cout << "WARNING: trimming resulted in an Empty Table" << std::endl;
+        if (this->getNumRows()==0)
+            std::cout << "WARNING: trimming resulted in an Empty Table" << std::endl;
     }
     /**
      * trim TimeSeriesTable, keeping rows at newStartTime to the end.

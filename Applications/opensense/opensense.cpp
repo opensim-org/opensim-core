@@ -147,35 +147,20 @@ int main(int argc, char **argv)
                 }
                 else if ((option == "-Calibrate") || (option == "-C")) {
                     if (argc < 4) {
-                        cout << "Model calibration .osim file,  orientation data .sto file  are needed with an optional heading Axis specification. Please fix and retry." << endl;
+                        cout << "Calibration specification file is needed. Please fix and retry." << endl;
                         PrintUsage(argv[0], cout);
                         exit(-1);
                     }
-                    std::string modelCalibrationPoseFile{ argv[i + 1] };
-                    std::string calibrationOrientationsFile{ argv[i + 2] };
-                    std::string baseImuName{ "" };
-                    std::string axisString("z");
-                    if (argc > 4)
-                        baseImuName = std::string{ argv[i + 3] };
-                    
-                    if (argc > 5) 
-                        axisString = argv[i + 4];
-                    
-                  
-                    if (!baseImuName.empty()) {
-                        cout << "Calibration will perform heading correction using '"
-                             << baseImuName << "'along its '" << axisString
-                             << "'axis." << endl;
-                    }
+                    std::string modelCalibrationSetupFile{ argv[i + 1] };
+                    IMUPlacer imuPlacer{modelCalibrationSetupFile};
                     Model model = OpenSenseUtilities::calibrateModelFromOrientations(
-                        modelCalibrationPoseFile,
-                        calibrationOrientationsFile, baseImuName,
-                                    axisString);
-
-                    auto filename = "calibrated_" + model.getName() + ".osim";
-                    cout << "Wrote calibrated model to file: '" << filename << "'." << endl;
-                    model.print(filename);
-
+                                    imuPlacer);
+                    // If output_model was specified it will be written, otherwise preserve model by writing to "calibrated_"
+                    if (imuPlacer.get_output_model_file().empty()) {
+                        auto filename = "calibrated_" + model.getName() + ".osim";
+                        cout << "Wrote calibrated model to file: '" << filename << "'." << endl;
+                        model.print(filename);
+                    }
                     cout << "Done." << endl;
                     return 0;
                 }
@@ -273,8 +258,8 @@ void PrintUsage(const char *aProgName, ostream &aOStream)
     aOStream << "-PropertyInfo, -PI                      Print help information for properties in setup files.\n";
     aOStream << "-ReadX, -RX  directory settings.xml     Parse Xsens exported files from directory using settingsFile.xml.\n";
     aOStream << "-ReadA, -RA  datafile.csv settings.xml  Parse single csv file provided by APDM using specified settingsFile.xml.\n";
-    aOStream << "-Calibrate, -C modelPoseFile.osim calibrationOrientations.sto. <base_imu_label> <base_heading_axis>\n";
-    aOStream << "                                        Calibrate the modelPoseFile.osim model by registering\n";
+    aOStream << "-Calibrate, -C IMUPlacer_setup.xml\n";
+    aOStream << "                                        Calibrate the model specified in the IMUPlacer_setup.xml file by registering\n";
     aOStream << "                                        IMU frames whose orientations in the sensor world frame are\n";
     aOStream << "                                        specified in calibrationOrientations.sto. and assuming \n";
     aOStream << "                                        the model's default pose is the calibration pose. The resultant\n";

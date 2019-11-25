@@ -90,20 +90,10 @@ void OpenSim::OpenSenseUtilities::rotateOrientationTable(
 }
 
 Model OpenSenseUtilities::calibrateModelFromOrientations(
-    const string& modelCalibrationPoseFile,
-    const string& calibrationOrientationsFile,
-    const std::string& baseImuName, 
-    const std::string& baseHeadingDirectionString,
+    OpenSim::IMUPlacer& imuPlacer,
     bool visualizeCalibratedModel)
 {
-    OpenSim::IMUPlacer imuPlacer;
-
-    imuPlacer.set_model_file(modelCalibrationPoseFile);
-    imuPlacer.set_base_imu_label(baseImuName);
-    imuPlacer.set_orientation_file_for_calibration(calibrationOrientationsFile);
-    imuPlacer.set_base_heading_axis(baseHeadingDirectionString);
-    imuPlacer.run();
-
+    imuPlacer.run(visualizeCalibratedModel);
     return imuPlacer.getCalibratedModel();
 }
 

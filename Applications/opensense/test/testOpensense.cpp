@@ -48,11 +48,9 @@ int main()
 
     // Calibrate model from two different standing trials facing
     // opposite directions to verify that heading correction is working
+    IMUPlacer placerX("imuPlacerFaceX.xml");
     Model facingX = OpenSenseUtilities::calibrateModelFromOrientations(
-        "subject07.osim",
-        "MT_012005D6_009-quaternions_calibration_trial_Facing_X.sto",
-        "pelvis_imu", "z",
-        false);
+            placerX, false);
     facingX.setName("calibrated_FacingX");
     facingX.finalizeFromProperties();
 
@@ -62,11 +60,9 @@ int main()
     ik_hjc.run(false);
 
     // Now facing the opposite direction (negative X)
+    IMUPlacer placerNegX("imuPlacerFaceNegX.xml");
     Model facingNegX = OpenSenseUtilities::calibrateModelFromOrientations(
-        "subject07.osim",
-        "MT_012005D6_009-quaternions_calibration_trial_Facing_negX.sto",
-        "pelvis_imu", "z",
-        false);
+            placerNegX, false);
     facingNegX.setName("calibrated_FacingNegX");
     facingNegX.finalizeFromProperties();
 
