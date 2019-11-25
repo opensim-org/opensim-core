@@ -49,7 +49,8 @@ int main()
     // Calibrate model from two different standing trials facing
     // opposite directions to verify that heading correction is working
     IMUPlacer placerX("imuPlacerFaceX.xml");
-    Model facingX = placerX.run(false);
+    placerX.run(false);
+    Model facingX = placerX.getCalibratedModel();
     facingX.setName("calibrated_FacingX");
     facingX.finalizeFromProperties();
 
@@ -60,7 +61,8 @@ int main()
 
     // Now facing the opposite direction (negative X)
     IMUPlacer placerNegX("imuPlacerFaceNegX.xml");
-    Model facingNegX = placerNegX.run(false);
+    placerNegX.run(false);
+    Model facingNegX = placerNegX.getCalibratedModel();
     facingNegX.setName("calibrated_FacingNegX");
     facingNegX.finalizeFromProperties();
 
