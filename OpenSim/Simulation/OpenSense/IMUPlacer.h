@@ -57,11 +57,11 @@ public:
     OpenSim_DECLARE_PROPERTY(base_heading_axis, std::string,
             "The axis of the base IMU that corresponds to its heading "
             "direction. Options are 'x', '-x', 'y', '-y', 'z' or '-z'."
-            "Default to z".);
+            "Default to z.");
 
     OpenSim_DECLARE_PROPERTY(sensor_to_opensim_rotations, SimTK::Vec3,
             "Space fixed Euler angles (XYZ order) from IMU Space to OpenSim"
-            "Default (from Z up) to OpenSim (Y up, X forward)");
+            "Default (from Z up) to OpenSim (Y up, X forward).");
 
     OpenSim_DECLARE_PROPERTY(orientation_file_for_calibration, std::string,
             "Name/path to a .sto file of sensor frame orientations as "
