@@ -49,7 +49,7 @@ public:
             "calibrated.");
 
     OpenSim_DECLARE_PROPERTY(base_imu_label, std::string,
-            "The label of the base IMU in the orientations_file used to account "
+            "The label of the base IMU in the orientation_file_for_calibration used to account "
             "for the heading difference between the sensor data and the forward "
             "direction of the model. Leave blank if no heading correction is applied."
             "Default to pelvis_imu.");
@@ -67,12 +67,22 @@ public:
             "Name/path to a .sto file of sensor frame orientations as "
             "quaternions to be used for calibration.");
 
+    OpenSim_DECLARE_PROPERTY(output_model_file, std::string,
+            "Name of OpenSim model file (.osim) to write when done placing IMUs.");
+
 public:
     virtual ~IMUPlacer();
     IMUPlacer();
+    /** Create an IMUPlacer based on a setup file */
     IMUPlacer(const std::string& setupFile);
+    /** Run the calibration method to place IMUs on the model,
+     Optionally visualize the model post calibration.
+     */
     bool run(bool visualizeResults = false);
     void setModel(Model& aModel) { _model = &aModel; };
+    /** Retrieve the calibrated model. This method will throw if called before 
+    the run method is invoked.
+    */
     Model& getCalibratedModel() const;
 
 private:

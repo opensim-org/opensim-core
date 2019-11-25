@@ -76,6 +76,7 @@ void IMUPlacer::constructProperties()
     constructProperty_sensor_to_opensim_rotations(
             SimTK::Vec3(-SimTK_PI / 2, 0, 0));
     constructProperty_orientation_file_for_calibration("");
+    constructProperty_output_model_file("");
 }
 
 //=============================================================================
@@ -205,6 +206,9 @@ bool IMUPlacer::run(bool visualizeResults)  {
     }
 
     _model->finalizeConnections();
+
+    if (!get_output_model_file().empty())
+        _model->print(get_output_model_file());
 
     _calibrated = true;
     if (visualizeResults) {

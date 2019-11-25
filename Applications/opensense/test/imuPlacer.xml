@@ -9,5 +9,6 @@
 		<base_heading_axis>z</base_heading_axis>
 		<!--Name/path to a .sto file of sensor frame orientations as quaternions to be used for calibration.-->
 		<orientation_file_for_calibration>imuOrientations.sto</orientation_file_for_calibration>
+		<output_model_file>calibrated_subject07.osim</output_model_file>
 	</IMUPlacer>
 </OpenSimDocument>
