@@ -189,12 +189,12 @@ int main(int argc, char **argv)
                     break;
                 }
                 else if ((option == "-PrintSetup") || (option == "-PS")) {
-                    IMUInverseKinematicsTool *study = new IMUInverseKinematicsTool();
-                    study->setName("new");
+                    IMUInverseKinematicsTool *imuIKTool = new IMUInverseKinematicsTool();
+                    imuIKTool->setName("new");
                     Object::setSerializeAllDefaults(true);
-                    study->print("new_Setup_OpenSense.xml");
+                    imuIKTool->print("new_Setup_IMUInverseKinematicsTool.xml");
                     Object::setSerializeAllDefaults(false);
-                    cout << "Created file new_Setup_OpenSense.xml with default setup." << endl;
+                    cout << "Created file new_Setup_IMUInverseKinematicsTool.xml with default setup." << endl;
                     return 0;
 
                     // PRINT PROPERTY INFO

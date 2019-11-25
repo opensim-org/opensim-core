@@ -26,15 +26,12 @@
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <SimTKsimbody.h>
 
 namespace OpenSim {
 
 class OSIMSIMULATION_API OpenSenseUtilities {
 public:
-    typedef OpenSim::TimeSeriesTable_<SimTK::Quaternion> TimeSeriesTableQuaternion;
-    typedef OpenSim::TimeSeriesTable_<SimTK::Rotation> TimeSeriesTableRotation;
-    /** Apply the passed in Rotation matrix to a TimeSeriesTable of Quaternions.
+     /** Apply the passed in Rotation matrix to a TimeSeriesTable of Quaternions.
         The rotation is done in place so the table passed in is modified
     */
     static void rotateOrientationTable(

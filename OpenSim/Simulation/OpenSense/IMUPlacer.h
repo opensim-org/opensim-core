@@ -51,15 +51,17 @@ public:
     OpenSim_DECLARE_PROPERTY(base_imu_label, std::string,
             "The label of the base IMU in the orientations_file used to account "
             "for the heading difference between the sensor data and the forward "
-            "direction of the model. Leave blank if no heading correction is applied.");
+            "direction of the model. Leave blank if no heading correction is applied."
+            "Default to pelvis_imu.");
 
     OpenSim_DECLARE_PROPERTY(base_heading_axis, std::string,
             "The axis of the base IMU that corresponds to its heading "
-            "direction. Options are 'x', '-x', 'y', '-y', 'z' or '-z'.");
+            "direction. Options are 'x', '-x', 'y', '-y', 'z' or '-z'."
+            "Default to z".);
 
     OpenSim_DECLARE_PROPERTY(sensor_to_opensim_rotations, SimTK::Vec3,
-            "Space fixed rotations from IMU Space (typically z up) to OpenSim "
-            "(Y up, X forward)");
+            "Space fixed Euler angles (XYZ order) from IMU Space to OpenSim"
+            "Default (from Z up) to OpenSim (Y up, X forward)");
 
     OpenSim_DECLARE_PROPERTY(orientation_file_for_calibration, std::string,
             "Name/path to a .sto file of sensor frame orientations as "

@@ -29,6 +29,7 @@ This file defines the TimeSeriesTable_ class, which is used by OpenSim to
 provide an in-memory container for data access and manipulation.              */
 
 #include "OpenSim/Common/DataTable.h"
+#include <SimTKsimbody.h>
 
 namespace OpenSim {
 
@@ -520,6 +521,11 @@ typedef TimeSeriesTable_<SimTK::Vec3> TimeSeriesTableVec3;
 
 /** See TimeSeriesTable_ for details on the interface.                        */
 typedef TimeSeriesTable_<SimTK::Quaternion> TimeSeriesTableQuaternion;
+
+typedef OpenSim::TimeSeriesTable_<SimTK::Quaternion> TimeSeriesTableQuaternion;
+
+typedef OpenSim::TimeSeriesTable_<SimTK::Rotation> TimeSeriesTableRotation;
+
 } // namespace OpenSim
 
 #endif // OPENSIM_TIME_SERIES_DATA_TABLE_H_

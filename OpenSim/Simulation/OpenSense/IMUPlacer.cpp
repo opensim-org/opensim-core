@@ -71,8 +71,8 @@ IMUPlacer::~IMUPlacer()
 void IMUPlacer::constructProperties() 
 {
     constructProperty_model_file("");
-    constructProperty_base_imu_label("z");
-    constructProperty_base_heading_axis("pelvis_imu");
+    constructProperty_base_imu_label("pelvis_imu");
+    constructProperty_base_heading_axis("z");
     constructProperty_sensor_to_opensim_rotations(
             SimTK::Vec3(-SimTK_PI / 2, 0, 0));
     constructProperty_orientation_file_for_calibration("");
