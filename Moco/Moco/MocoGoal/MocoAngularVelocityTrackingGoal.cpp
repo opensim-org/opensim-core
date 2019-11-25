@@ -166,7 +166,7 @@ void MocoAngularVelocityTrackingGoal::printDescriptionImpl(
     stream << "        ";
     stream << "angular velocity reference file: "
            << get_angular_velocity_reference_file() << std::endl;
-    for (int i = 0; i < m_frame_paths.size(); i++) {
+    for (int i = 0; i < (int)m_frame_paths.size(); i++) {
         stream << "        ";
         stream << "frame " << i << ": " << m_frame_paths[i] << ", ";
         stream << "weight: " << m_angular_velocity_weights[i] << std::endl;
