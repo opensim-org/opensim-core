@@ -38,6 +38,8 @@ MocoAddSandboxExecutable(NAME sandboxCasADiParallelMap
 
 MocoAddSandboxExecutable(NAME sandboxSimTKMotion
         LIB_DEPENDS SimTKsimbody)
+MocoAddSandboxExecutable(NAME sandboxMinimumDistanceConstraint
+        LIB_DEPENDS osimMoco)
 
 add_subdirectory(sandboxWholeBodyTracking)
 add_subdirectory(sandboxMarkerTrackingWholeBody)
