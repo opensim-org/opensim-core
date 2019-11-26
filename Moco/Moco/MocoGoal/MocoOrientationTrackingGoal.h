@@ -35,12 +35,12 @@ using SimTK::Rotation;
 /// and integrated over the phase. This can be used to track orientation
 /// quantities in the model that don't correspond to model degrees of freedom.
 /// The reference can be provided as a trajectory of SimTK::Rotation%s
-/// representing the orientation reference data, or as a model-compatible states
-/// trajectory from which the tracked rotation reference is computed. Both
-/// rotation and states references can be provided as a file name to a STO or
-/// CSV file (or other file types for which there is a FileAdapter), or
-/// programmatically as a TimeSeriesTable_<SimTK::Rotation> (for the rotation
-/// reference) or as a scalar TimeSeriesTable (for the states reference).
+/// representing the orientation reference data, or as a states trajectory from 
+/// which the tracked rotation reference is computed. Both rotation and states 
+/// references can be provided as a file name to a STO or CSV file (or other 
+/// file types for which there is a FileAdapter), or programmatically as a 
+/// TimeSeriesTable_<SimTK::Rotation> (for the rotation reference) or as a 
+/// scalar TimeSeriesTable (for the states reference).
 ///
 /// This cost requires realization to SimTK::Stage::Position. The cost is
 /// computed by creating a SimTK::Rotation between the model frame and the
@@ -51,9 +51,6 @@ using SimTK::Rotation;
 /// tracked frame, compared to other more complicated approaches which could
 /// require multiple minimized error values (e.g. Euler angle errors, etc).
 ///
-/// Tracking problems in direct collocation perform best when tracking smooth
-/// data, so it is recommended to filter the data in the reference you provide
-/// to the cost.
 /// @ingroup mocogoal
 class OSIMMOCO_API MocoOrientationTrackingGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoOrientationTrackingGoal, MocoGoal);
@@ -68,7 +65,7 @@ public:
         constructProperties();
     }
 
-    /// Set directly the rotations of individual frames in ground to be tracked
+    /// Set the rotations of individual frames in ground to be tracked
     /// in the cost. The column labels of the provided reference must
     /// be paths to frames in the model, e.g. `/bodyset/torso`. If the
     /// frame_paths property is empty, all frames with data in this reference
@@ -157,12 +154,11 @@ private:
     OpenSim_DECLARE_PROPERTY(rotation_reference_file, std::string,
             "Path to file (.sto, .csv, ...) containing orientation reference "
             "data to track. Column labels should be paths to frames in the "
-            "model, e.g. `/bodyset/torso`.");
+            "model, e.g. '/bodyset/torso'.");
     OpenSim_DECLARE_LIST_PROPERTY(frame_paths, std::string,
             "The frames in the model that this cost term will track. "
             "The names set here must correspond to Components that "
-            "derive from class Frame, which includes "
-            "Rotation as an output.");
+            "derive from class Frame.");
     OpenSim_DECLARE_PROPERTY(rotation_weights, MocoWeightSet,
             "Set of weight objects to weight the tracking of "
             "individual "
@@ -177,6 +173,7 @@ private:
 
     TimeSeriesTable_<Rotation> m_rotation_table;
     mutable GCVSplineSet m_ref_splines;
+    mutable std::vector<std::string> m_frame_paths;
     mutable std::vector<SimTK::ReferencePtr<const Frame>> m_model_frames;
     mutable std::vector<double> m_rotation_weights;
 };
