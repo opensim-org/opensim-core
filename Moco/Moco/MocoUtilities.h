@@ -301,9 +301,10 @@ OSIMMOCO_API void visualize(Model, TimeSeriesTable);
 /// PositionMotion) is.
 /// The output paths must correspond to outputs that match the type provided in
 /// the template argument, otherwise they are not included in the report.
-/// @note Parameters in the MocoTrajectory are **not** applied to the model.
+/// @note Parameters and Lagrange multipliers in the MocoTrajectory are **not** 
+///       applied to the model.
 template <typename T>
-TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& iterate,
+TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& traj,
         std::vector<std::string> outputPaths) {
 
     // Initialize the system so we can access the outputs.
@@ -339,7 +340,7 @@ TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& iterate,
     model.initSystem();
 
     // Get states trajectory.
-    Storage storage = iterate.exportToStatesStorage();
+    Storage storage = traj.exportToStatesStorage();
     auto statesTraj = StatesTrajectory::createFromStatesStorage(model, storage);
 
     // Loop through the states trajectory to create the report.
@@ -351,7 +352,7 @@ TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& iterate,
         model.getSystem().prescribe(state);
 
         // Create a SimTK::Vector of the control values for the current state.
-        SimTK::RowVector controlsRow = iterate.getControlsTrajectory().row(i);
+        SimTK::RowVector controlsRow = traj.getControlsTrajectory().row(i);
         SimTK::Vector controls(controlsRow.size(),
                 controlsRow.getContiguousScalarData(), true);
 
@@ -433,6 +434,11 @@ OSIMMOCO_API void checkOrderSystemControls(const Model& model);
 /// The argument copies the provided labels since we need to sort them to check
 /// for redundancies.
 OSIMMOCO_API void checkRedundantLabels(std::vector<std::string> labels);
+
+/// Throws an exception if any label in the provided list does not match any 
+/// state variable names in the model.
+OSIMMOCO_API void checkLabelsMatchModelStates(const Model& model, 
+        const std::vector<std::string>& labels);
 
 /// Get a list of reference pointers to all outputs whose names (not paths)
 /// match a substring defined by a provided regex string pattern. The regex
