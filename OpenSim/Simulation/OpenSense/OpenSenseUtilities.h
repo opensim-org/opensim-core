@@ -49,7 +49,7 @@ public:
         convertQuaternionsToRotations(
             const OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>& qauternionsTable);
 
-    /** Compute a SimTK::Vec3 of Space rotations that aligns the specified 
+    /** Compute a SimTK::Vec3 of Space-fixed XYZ Euler angles that aligns the specified 
         baseIMU and CoordinateDirection combination with the positive X (=forward) direction 
         in OpenSim based on the first frame of the passed in table of quaternions
         quatTimeSeries. 

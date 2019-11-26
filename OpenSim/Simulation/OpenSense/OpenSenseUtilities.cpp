@@ -71,8 +71,6 @@ void OpenSim::OpenSenseUtilities::rotateOrientationTable(
                 quaternionsTable,
         const SimTK::Rotation_<double>& rotationMatrix) 
 {
-    // Fixed transform to rotate sensor orientations in world with Z up into the
-    // OpenSim ground reference frame with Y up and X forward.
     SimTK::Rotation R_XG = rotationMatrix;
 
     int nc = int(quaternionsTable.getNumColumns());
