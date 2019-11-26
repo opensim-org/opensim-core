@@ -123,7 +123,7 @@ public:
 protected:
     /// Create a SimTK::Force which implements this Force.
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-    void extendRealizeInstance(SimTK::State& state) const override;
+    void extendRealizeTopology(SimTK::State& state) const override;
     void generateDecorations(bool fixed, const ModelDisplayHints& hints,
             const SimTK::State& state,
             SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const override;
