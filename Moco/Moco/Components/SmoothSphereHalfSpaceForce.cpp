@@ -118,6 +118,7 @@ void SmoothSphereHalfSpaceForce::extendAddToSystem(
 
 void OpenSim::SmoothSphereHalfSpaceForce::extendRealizeTopology(
         SimTK::State& state) const {
+    Super::extendRealizeTopology(state);
     if (!getProperty_force_visualization_scale_factor().empty()) {
         m_forceVizScaleFactor = get_force_visualization_scale_factor();
     } else {
