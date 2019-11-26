@@ -1,3 +1,6 @@
+- 2019-11-26: Consistently refer to MocoTrajectories as "trajectory" instead of
+              "iterate".
+
 - 2019-11-09: Improve the reliability of building the Ipopt dependency by using
               more stable servers for downloading Metis and MUMPS.
 
