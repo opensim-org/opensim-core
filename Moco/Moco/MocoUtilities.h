@@ -239,6 +239,20 @@ TimeSeriesTable resample(const TimeSeriesTable& in, const TimeVector& newTime) {
 // TODO move to the Storage class.
 OSIMMOCO_API Storage convertTableToStorage(const TimeSeriesTable&);
 
+/// Update a vector of state labels (in place) to use post-4.0 state paths
+/// instead of pre-4.0 state names. For example, this converts labels as
+/// follows:
+///   - `pelvis_tilt` -> `/jointset/ground_pelvis/pelvis_tilt/value`
+///   - `pelvis_tilt_u` -> `/jointset/ground_pelvis/pelvis_tilt/speed`
+///   - `soleus.activation` -> `/forceset/soleus/activation`
+///   - `soleus.fiber_length` -> `/forceset/soleus/fiber_length`
+/// This can also be used to update the column labels of an Inverse Kinematics
+/// Tool solution MOT file so that the data can be used as states. If a label
+/// does not identify a state in the model, the column label is not changed. We
+/// assume all labels are unique.
+OSIMMOCO_API void updateStateLabels40(
+        const Model& model, std::vector<std::string>& labels);
+
 /// Lowpass filter the data in a TimeSeriesTable at a provided cutoff frequency.
 /// The table is converted to a Storage object to use the lowpassIIR() method
 /// to filter, and then converted back to TimeSeriesTable.
@@ -772,6 +786,8 @@ TimeSeriesTable createExternalLoadsTableForGait(Model model,
         const MocoTrajectory& trajectory,
         const std::vector<std::string>& forceNamesRightFoot,
         const std::vector<std::string>& forceNamesLeftFoot);
+
+
 
 } // namespace OpenSim
 

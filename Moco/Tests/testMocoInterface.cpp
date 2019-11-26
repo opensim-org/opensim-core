@@ -1883,3 +1883,17 @@ TEST_CASE("MocoPhase::bound_activation_from_excitation") {
     }
 }
 
+TEST_CASE("updateStateLabels40") {
+    auto model = ModelFactory::createPendulum();
+    model.initSystem();
+    std::vector<std::string> labels = {
+            "q0",
+            "q0_u",
+            "nonexistent",
+    };
+    updateStateLabels40(model, labels);
+    CHECK(labels[0] == "/jointset/j0/q0/value");
+    CHECK(labels[1] == "/jointset/j0/q0/speed");
+    CHECK(labels[2] == "nonexistent");
+}
+
