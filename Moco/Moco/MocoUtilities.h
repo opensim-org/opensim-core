@@ -303,7 +303,7 @@ OSIMMOCO_API void visualize(Model, TimeSeriesTable);
 /// the template argument, otherwise they are not included in the report.
 /// @note Parameters in the MocoTrajectory are **not** applied to the model.
 template <typename T>
-TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& iterate,
+TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& trajectory,
         std::vector<std::string> outputPaths) {
 
     // Initialize the system so we can access the outputs.
@@ -339,7 +339,7 @@ TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& iterate,
     model.initSystem();
 
     // Get states trajectory.
-    Storage storage = iterate.exportToStatesStorage();
+    Storage storage = trajectory.exportToStatesStorage();
     auto statesTraj = StatesTrajectory::createFromStatesStorage(model, storage);
 
     // Loop through the states trajectory to create the report.
@@ -351,7 +351,8 @@ TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& iterate,
         model.getSystem().prescribe(state);
 
         // Create a SimTK::Vector of the control values for the current state.
-        SimTK::RowVector controlsRow = iterate.getControlsTrajectory().row(i);
+        SimTK::RowVector controlsRow =
+                trajectory.getControlsTrajectory().row(i);
         SimTK::Vector controls(controlsRow.size(),
                 controlsRow.getContiguousScalarData(), true);
 
@@ -372,16 +373,16 @@ TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& iterate,
 /// model quantities that require realization to the Dynamics stage or later.
 /// The function used to fit the controls can either be GCVSpline or
 /// PiecewiseLinearFunction.
-OSIMMOCO_API void prescribeControlsToModel(const MocoTrajectory& iterate,
+OSIMMOCO_API void prescribeControlsToModel(const MocoTrajectory& trajectory,
         Model& model, std::string functionType = "GCVSpline");
 
-/// Use the controls and initial state in the provided iterate to simulate the
-/// model using an ODE time stepping integrator (OpenSim::Manager), and return
-/// the resulting states and controls. We return a MocoTrajectory (rather than a
-/// StatesTrajectory) to facilitate comparing optimal control solutions with
-/// time stepping. Use integratorAccuracy to override the default setting.
-OSIMMOCO_API MocoTrajectory simulateIterateWithTimeStepping(
-        const MocoTrajectory& iterate, Model model,
+/// Use the controls and initial state in the provided trajectory to simulate
+/// the model using an ODE time stepping integrator (OpenSim::Manager), and
+/// return the resulting states and controls. We return a MocoTrajectory (rather
+/// than a StatesTrajectory) to facilitate comparing optimal control solutions
+/// with time stepping. Use integratorAccuracy to override the default setting.
+OSIMMOCO_API MocoTrajectory simulateTrajectoryWithTimeStepping(
+        const MocoTrajectory& trajectory, Model model,
         double integratorAccuracy = -1);
 
 /// The map provides the index of each state variable in

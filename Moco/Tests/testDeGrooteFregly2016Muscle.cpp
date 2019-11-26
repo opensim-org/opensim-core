@@ -1113,16 +1113,16 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
         if (!ignoreTendonCompliance && !isTendonDynamicsExplicit) {
             mutableDGFMuscle->set_tendon_compliance_dynamics_mode("explicit");
         }
-        const auto iterateSim =
-                simulateIterateWithTimeStepping(solutionTrajOpt, model);
-        std::string iterateFilename =
+        const auto trajSim =
+                simulateTrajectoryWithTimeStepping(solutionTrajOpt, model);
+        std::string trajFilename =
                 "testDeGrooteFregly2016Muscle_timestepping";
-        if (!ignoreActivationDynamics) iterateFilename += "_actdyn";
-        if (ignoreTendonCompliance) iterateFilename += "_rigidtendon";
-        iterateFilename += ".sto";
-        iterateSim.write(iterateFilename);
+        if (!ignoreActivationDynamics) trajFilename += "_actdyn";
+        if (ignoreTendonCompliance) trajFilename += "_rigidtendon";
+        trajFilename += ".sto";
+        trajSim.write(trajFilename);
 
-        const double error = iterateSim.compareContinuousVariablesRMS(
+        const double error = trajSim.compareContinuousVariablesRMS(
                 solutionTrajOpt, {{"states", {}}, {"controls", {}}});
         CHECK(error < 0.05);
         if (!ignoreTendonCompliance && !isTendonDynamicsExplicit) {
