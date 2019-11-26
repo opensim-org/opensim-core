@@ -248,8 +248,8 @@ OSIMMOCO_API Storage convertTableToStorage(const TimeSeriesTable&);
 ///   - `soleus.fiber_length` -> `/forceset/soleus/fiber_length`
 /// This can also be used to update the column labels of an Inverse Kinematics
 /// Tool solution MOT file so that the data can be used as states. If a label
-/// does not identify a state in the model, the column label is not changed. We
-/// assume all labels are unique.
+/// does not identify a state in the model, the column label is not changed.
+/// @throws Exception if labels are not unique.
 OSIMMOCO_API void updateStateLabels40(
         const Model& model, std::vector<std::string>& labels);
 

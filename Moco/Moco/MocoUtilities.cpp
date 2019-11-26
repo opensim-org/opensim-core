@@ -142,6 +142,9 @@ Storage OpenSim::convertTableToStorage(const TimeSeriesTable& table) {
 
 void OpenSim::updateStateLabels40(const Model& model,
         std::vector<std::string>& labels) {
+
+    checkRedundantLabels(labels);
+
     // Storage::getStateIndex() holds the logic for converting between
     // new-style state names and old-style state names. When opensim-core is
     // updated to put the conversion logic in a better place, we should update
@@ -163,7 +166,6 @@ void OpenSim::updateStateLabels40(const Model& model,
         osimLabels[isto + 1] = stateNames[isv];
     }
 
-    std::vector<std::string> newLabels;
     for (int i = 1; i < osimLabels.size(); ++i) {
         labels[i - 1] = osimLabels[i];
     }
@@ -610,8 +612,7 @@ void OpenSim::checkRedundantLabels(std::vector<std::string> labels) {
     std::sort(labels.begin(), labels.end());
     auto it = std::adjacent_find(labels.begin(), labels.end());
     OPENSIM_THROW_IF(it != labels.end(), Exception,
-            format("Multiple reference data provided for the variable %s.",
-                    *it));
+            format("Label '%s' appears more than once.", *it));
 }
 
 MocoTrajectory OpenSim::createPeriodicTrajectory(
