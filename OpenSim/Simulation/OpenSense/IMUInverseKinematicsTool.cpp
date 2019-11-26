@@ -1,5 +1,5 @@
 
-#include "InverseKinematicsStudy.h"
+#include "IMUInverseKinematicsTool.h"
 #include "OpenSenseUtilities.h"
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
@@ -20,48 +20,51 @@ using namespace SimTK;
 using namespace std;
 
 
-InverseKinematicsStudy::InverseKinematicsStudy()
+IMUInverseKinematicsTool::IMUInverseKinematicsTool()
 {
     constructProperties();
 }
 
-InverseKinematicsStudy::InverseKinematicsStudy(const std::string& setupFile)
+IMUInverseKinematicsTool::IMUInverseKinematicsTool(const std::string& setupFile)
     : Object(setupFile, true)
 {
     constructProperties();
     updateFromXMLDocument();
 }
 
-InverseKinematicsStudy::~InverseKinematicsStudy()
+IMUInverseKinematicsTool::~IMUInverseKinematicsTool()
 {
 }
 
-void InverseKinematicsStudy::constructProperties()
+void IMUInverseKinematicsTool::constructProperties()
 {
     constructProperty_accuracy(1e-6);
     constructProperty_constraint_weight(Infinity);
     Array<double> range{ Infinity, 2};
+    range[0] = -Infinity; // Make range -Infinity to Infinity unless limited by data
     constructProperty_time_range(range);
 
-    constructProperty_base_imu_label("");
-    constructProperty_base_heading_axis("z");
+    constructProperty_sensor_to_opensim_rotations(
+            SimTK::Vec3(-SimTK_PI / 2, 0, 0));
 
-    constructProperty_model_file_name("");
-    constructProperty_marker_file_name("");
-    constructProperty_orientations_file_name("");
+    constructProperty_model_file("");
+    constructProperty_marker_file("");
+    constructProperty_orientations_file("");
 
     constructProperty_results_directory("");
 }
 
-void InverseKinematicsStudy::
+void IMUInverseKinematicsTool::
     previewExperimentalData(const TimeSeriesTableVec3& markers,
                 const TimeSeriesTable_<SimTK::Rotation>& orientations) const
 {
     Model previewWorld;
 
+    TimeSeriesTableVec3 trimmedMarkerData(markers);
+    trimmedMarkerData.trim(getStartTime(), getEndTime());
     // Load the marker data into a TableSource that has markers
     // as its output which each markers occupying its own channel
-    TableSourceVec3* markersSource = new TableSourceVec3(markers);
+    TableSourceVec3* markersSource = new TableSourceVec3(trimmedMarkerData);
     // Add the markersSource Component to the model
     previewWorld.addComponent(markersSource);
 
@@ -69,8 +72,6 @@ void InverseKinematicsStudy::
     // know how many markers we have and their names
     const auto& markerData = markersSource->getTable();
     auto& times = markerData.getIndependentColumn();
-
-    auto startEnd = getTimeRangeInUse(times);
 
     // Create an ExperimentalMarker Component for every column in the markerData 
     for (int i = 0; i < int(markerData.getNumColumns()) ; ++i) {
@@ -93,10 +94,10 @@ void InverseKinematicsStudy::
     previewWorld.getVisualizer().show(state);
 
     char c;
-    std::cout << "press any key to visualize experimental marker data ..." << std::endl;
+    std::cout << "Press any key to visualize experimental marker data ..." << std::endl;
     std::cin >> c;
 
-    for (size_t j =startEnd[0]; j <= startEnd[1]; j=j+10) {
+    for (size_t j =0; j < times.size(); j=j+10) {
         std::cout << "time: " << times[j] << "s" << std::endl;
         state.setTime(times[j]);
         previewWorld.realizePosition(state);
@@ -104,47 +105,59 @@ void InverseKinematicsStudy::
     }
 }
 
-void InverseKinematicsStudy::
-runInverseKinematicsWithOrientationsFromFile(Model& model,
-    const std::string& orientationsFileName,
-    bool visualizeResults)
-{
-    // Add a reporter to get IK computed coordinate values out
-    TableReporter* ikReporter = new TableReporter();
-    ikReporter->setName("ik_reporter");
+void IMUInverseKinematicsTool::runInverseKinematicsWithOrientationsFromFile(
+        Model& model, const std::string& orientationsFileName,
+        bool visualizeResults) {
+
+    // Ideally if we add a Reporter, we also remove it at the end for good hygiene but 
+    // at the moment there's no interface to remove Reporter so we'll reuse one if exists
+    const auto reporterExists = model.findComponent<TableReporter>("ik_reporter");
+
+    bool reuse_reporter = true;
+    TableReporter* ikReporter = nullptr;
+    if (reporterExists == nullptr) {
+        // Add a reporter to get IK computed coordinate values out
+        ikReporter = new TableReporter();
+        ikReporter->setName("ik_reporter");
+        reuse_reporter = false;
+    } else
+        ikReporter = &model.updComponent<TableReporter>("ik_reporter");
+
     auto coordinates = model.updComponentList<Coordinate>();
 
     // Hookup reporter inputs to the individual coordinate outputs
     // and lock coordinates that are translational since they cannot be
     for (auto& coord : coordinates) {
         ikReporter->updInput("inputs").connect(
-            coord.getOutput("value"), coord.getName());
-        if(coord.getMotionType() == Coordinate::Translational) {
+                coord.getOutput("value"), coord.getName());
+        if (coord.getMotionType() == Coordinate::Translational) {
             coord.setDefaultLocked(true);
         }
     }
 
-    model.addComponent(ikReporter);
-
+    if (!reuse_reporter) {
+        model.addComponent(ikReporter);
+    }
     TimeSeriesTable_<SimTK::Quaternion> quatTable(orientationsFileName);
     std::cout << "Loading orientations as quaternions from "
         << orientationsFileName << std::endl;
+    // Will maintain only data in time range specified by the tool
+    // If unspecified {-inf, inf} no trimming is done
+    quatTable.trim(getStartTime(), getEndTime());
+    // Convert to OpenSim Frame
+    const SimTK::Vec3& rotations = get_sensor_to_opensim_rotations();
+    SimTK::Rotation sensorToOpenSim = SimTK::Rotation(
+            SimTK::BodyOrSpaceType::SpaceRotationSequence, 
+            rotations[0], SimTK::XAxis, rotations[1], SimTK::YAxis, 
+            rotations[2], SimTK::ZAxis);
 
-    auto startEnd = getTimeRangeInUse(quatTable.getIndependentColumn());
-
-    const auto axis_string = IO::Lowercase(get_base_heading_axis());
-
-    int axis = (axis_string == "x" ? 0 : 
-                                    ((axis_string == "y") ? 1 : 2) );
-    SimTK::CoordinateAxis heading{ axis };
-
-
-    cout << "Heading correction for base '" << get_base_imu_label()
-        << "' along its '" << axis_string << "' axis." << endl;
+    // Rotate data so Y-Axis is up
+    OpenSenseUtilities::rotateOrientationTable(quatTable, sensorToOpenSim);
+    //Trim to time window required by Tool
+    quatTable.trim(getStartTime(), getEndTime());
 
     TimeSeriesTable_<SimTK::Rotation> orientationsData =
-        OpenSenseUtilities::convertQuaternionsToRotations(quatTable,
-             startEnd, get_base_imu_label(), heading);
+        OpenSenseUtilities::convertQuaternionsToRotations(quatTable);
 
     OrientationsReference oRefs(orientationsData);
     MarkersReference mRefs{};
@@ -201,55 +214,28 @@ runInverseKinematicsWithOrientationsFromFile(Model& model,
 
     std::cout << "Wrote IK with IMU tracking results to: '" <<
         outputFile << "'." << std::endl;
+
+    // Results written to file, clear in case we run again
+    ikReporter->clearTable();
 }
 
 
 // main driver
-bool InverseKinematicsStudy::run(bool visualizeResults)
+bool IMUInverseKinematicsTool::run(bool visualizeResults)
 {
     if (_model.empty()) {
-        _model.reset(new Model(get_model_file_name()));
+        _model.reset(new Model(get_model_file()));
     }
 
     runInverseKinematicsWithOrientationsFromFile(*_model,
-                                                 get_orientations_file_name(),
+                                                 get_orientations_file(),
                                                  visualizeResults);
 
     return true;
 }
 
-SimTK::Array_<int> InverseKinematicsStudy::getTimeRangeInUse(
-                                const std::vector<double>& times ) const
-{
-    int nt = static_cast<int>(times.size());
-    int startIx = 0;
-    int endIx = nt-1;
-
-    for (int i = 0; i < nt; ++i) {
-        if (times[i] <= get_time_range(0)) {
-            startIx = i;
-        }
-        else {
-            break;
-        }
-    }
-
-    for (int i = nt - 1; i > 0; --i) {
-        if (times[i] >= get_time_range(1)) {
-            endIx= i;
-        }
-        else {
-            break;
-        }
-    }
-    SimTK::Array_<int> retArray;
-    retArray.push_back(startIx);
-    retArray.push_back(endIx);
-    return retArray;
-}
-
 TimeSeriesTable_<SimTK::Vec3> 
-    InverseKinematicsStudy::loadMarkersFile(const std::string& markerFile)
+    IMUInverseKinematicsTool::loadMarkersFile(const std::string& markerFile)
 {
     TimeSeriesTable_<Vec3> markers(markerFile);
     std::cout << markerFile << " loaded " << markers.getNumColumns() << " markers "
