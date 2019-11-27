@@ -367,7 +367,7 @@ void testHangingMuscleMinimumTime(
     // See if we end up at the correct final state.
     {
         const auto iterateSim =
-                simulateIterateWithTimeStepping(solutionTrajOpt, model);
+                simulateTrajectoryWithTimeStepping(solutionTrajOpt, model);
         const double error = iterateSim.compareContinuousVariablesRMS(
                 solutionTrajOpt, {{"states", {}}, {"controls", {}}});
         SimTK_TEST(error < 0.05);

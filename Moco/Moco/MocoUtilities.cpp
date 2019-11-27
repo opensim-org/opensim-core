@@ -340,7 +340,7 @@ std::unique_ptr<Function> createFunction<GCVSpline>(
 } // anonymous namespace
 
 void OpenSim::prescribeControlsToModel(
-        const MocoTrajectory& iterate, Model& model, std::string functionType) {
+        const MocoTrajectory& trajectory, Model& model, std::string functionType) {
     // Get actuator names.
     model.initSystem();
     OpenSim::Array<std::string> actuNames;
@@ -352,11 +352,11 @@ void OpenSim::prescribeControlsToModel(
     // Add prescribed controllers to actuators in the model, where the control
     // functions are splined versions of the actuator controls from the OCP
     // solution.
-    const SimTK::Vector& time = iterate.getTime();
+    const SimTK::Vector& time = trajectory.getTime();
     auto* controller = new PrescribedController();
     controller->setName("prescribed_controller");
     for (int i = 0; i < actuNames.size(); ++i) {
-        const auto control = iterate.getControl(actuNames[i]);
+        const auto control = trajectory.getControl(actuNames[i]);
         std::unique_ptr<Function> function;
         if (functionType == "GCVSpline") {
             function = createFunction<GCVSpline>(time, control);
@@ -374,10 +374,11 @@ void OpenSim::prescribeControlsToModel(
     model.addController(controller);
 }
 
-MocoTrajectory OpenSim::simulateIterateWithTimeStepping(
-        const MocoTrajectory& iterate, Model model, double integratorAccuracy) {
+MocoTrajectory OpenSim::simulateTrajectoryWithTimeStepping(
+        const MocoTrajectory& trajectory, Model model,
+        double integratorAccuracy) {
 
-    prescribeControlsToModel(iterate, model, "PiecewiseLinearFunction");
+    prescribeControlsToModel(trajectory, model, "PiecewiseLinearFunction");
 
     // Add states reporter to the model.
     auto* statesRep = new StatesTrajectoryReporter();
@@ -386,18 +387,18 @@ MocoTrajectory OpenSim::simulateIterateWithTimeStepping(
     model.addComponent(statesRep);
 
     // Simulate!
-    const SimTK::Vector& time = iterate.getTime();
+    const SimTK::Vector& time = trajectory.getTime();
     SimTK::State state = model.initSystem();
     state.setTime(time[0]);
     Manager manager(model);
 
     // Set the initial state.
     {
-        const auto& matrix = iterate.getStatesTrajectory();
+        const auto& matrix = trajectory.getStatesTrajectory();
         TimeSeriesTable initialStateTable(
-                std::vector<double>{iterate.getInitialTime()},
+                std::vector<double>{trajectory.getInitialTime()},
                 SimTK::Matrix(matrix.block(0, 0, 1, matrix.ncol())),
-                iterate.getStateNames());
+                trajectory.getStateNames());
         auto statesTraj = StatesTrajectory::createFromStatesStorage(
                 model, convertTableToStorage(initialStateTable));
         state.setY(statesTraj.front().getY());
