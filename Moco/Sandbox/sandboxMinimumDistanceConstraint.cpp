@@ -53,108 +53,108 @@ Model createModel() {
     return model;
 }
 
-class MocoMinimumDistanceConstraintPair : public Object {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoMinimumDistanceConstraintPair, Object);
-
-public:
-    OpenSim_DECLARE_PROPERTY(
-            first_frame, std::string, "TODO");
-    OpenSim_DECLARE_PROPERTY(
-            second_frame, std::string, "TODO");
-    OpenSim_DECLARE_PROPERTY(minimum_radius, double, "TODO");
-
-    MocoMinimumDistanceConstraintPair() {
-        constructProperties();
-    }
-    MocoMinimumDistanceConstraintPair(std::string firstFrame, 
-            std::string secondFrame, double radius) 
-            : MocoMinimumDistanceConstraintPair() {
-        set_first_frame(firstFrame);
-        set_second_frame(secondFrame);
-        set_minimum_radius(radius);
-    }
-
-private:
-    void constructProperties() {
-        constructProperty_first_frame("");
-        constructProperty_second_frame("");
-        constructProperty_minimum_radius(1.0);
-    }
-};
-
-
-class MocoMinimumDistanceConstraint : public MocoPathConstraint {
-    OpenSim_DECLARE_CONCRETE_OBJECT(
-        MocoMinimumDistanceConstraint, MocoPathConstraint);
-
-public:
-    OpenSim_DECLARE_LIST_PROPERTY(frame_pairs,
-            MocoMinimumDistanceConstraintPair, "TODO");
-    MocoMinimumDistanceConstraint() {
-        constructProperties();
-    }
-
-    void addFramePair(MocoMinimumDistanceConstraintPair pair) {
-        append_frame_pairs(std::move(pair));
-    }
-
-protected:
-    void initializeOnModelImpl(const Model& model, const MocoProblemInfo&) const 
-            override {
-        int nFramePairs = getProperty_frame_pairs().size();
-
-        MocoConstraintInfo info;
-        std::vector<MocoBounds> bounds;
-        for (int i = 0; i < nFramePairs; ++i) {
-            const auto first_frame_path = get_frame_pairs(i).get_first_frame();
-            OPENSIM_THROW_IF(!model.hasComponent<Frame>(first_frame_path),
-                    Exception, format("Could not find frame '%s'.", 
-                            first_frame_path));
-            auto& first_frame = model.getComponent<Frame>(first_frame_path);
-            const auto second_frame_path = 
-                    get_frame_pairs(i).get_second_frame();
-            OPENSIM_THROW_IF(!model.hasComponent<Frame>(second_frame_path),
-                    Exception, format("Could not find frame '%s'.", 
-                            second_frame_path));
-            auto& second_frame = model.getComponent<Frame>(second_frame_path);
-
-            m_frame_pairs.emplace_back(&first_frame, &second_frame);
-
-            bounds.emplace_back(get_frame_pairs(i).get_minimum_radius(), 
-                SimTK::Infinity);
-        }
-
-        setNumEquations(nFramePairs);
-        info.setBounds(bounds);
-        const_cast<MocoMinimumDistanceConstraint*>(this)->setConstraintInfo(
-                info);
-    }
-
-    void calcPathConstraintErrorsImpl(const SimTK::State& state, 
-            SimTK::Vector& errors) const override {
-        getModel().realizePosition(state);
-
-        int iconstr = 0;
-        Vec3 relative_position;
-        for (const auto& frame_pair : m_frame_pairs) {
-            const auto& first_frame_pos = 
-                frame_pair.first->getPositionInGround(state);
-            const auto& second_frame_pos =
-                frame_pair.second->getPositionInGround(state);
-            relative_position = second_frame_pos - first_frame_pos;
-
-            errors[iconstr++] = relative_position.norm();
-        }
-        
-    }
-private:
-    void constructProperties() {
-        constructProperty_frame_pairs();
-    }
-
-    mutable std::vector<std::pair<SimTK::ReferencePtr<const Frame>, 
-            SimTK::ReferencePtr<const Frame>>> m_frame_pairs;
-};
+//class MinimumDistanceConstraintPair : public Object {
+//    OpenSim_DECLARE_CONCRETE_OBJECT(MinimumDistanceConstraintPair, Object);
+//
+//public:
+//    OpenSim_DECLARE_PROPERTY(
+//            first_frame, std::string, "TODO");
+//    OpenSim_DECLARE_PROPERTY(
+//            second_frame, std::string, "TODO");
+//    OpenSim_DECLARE_PROPERTY(minimum_radius, double, "TODO");
+//
+//    MinimumDistanceConstraintPair() {
+//        constructProperties();
+//    }
+//    MinimumDistanceConstraintPair(std::string firstFrame, 
+//            std::string secondFrame, double radius) 
+//            : MinimumDistanceConstraintPair() {
+//        set_first_frame(firstFrame);
+//        set_second_frame(secondFrame);
+//        set_minimum_radius(radius);
+//    }
+//
+//private:
+//    void constructProperties() {
+//        constructProperty_first_frame("");
+//        constructProperty_second_frame("");
+//        constructProperty_minimum_radius(1.0);
+//    }
+//};
+//
+//
+//class MinimumDistanceConstraint : public MocoPathConstraint {
+//    OpenSim_DECLARE_CONCRETE_OBJECT(
+//        MinimumDistanceConstraint, MocoPathConstraint);
+//
+//public:
+//    OpenSim_DECLARE_LIST_PROPERTY(frame_pairs,
+//            MinimumDistanceConstraintPair, "TODO");
+//    MinimumDistanceConstraint() {
+//        constructProperties();
+//    }
+//
+//    void addFramePair(MinimumDistanceConstraintPair pair) {
+//        append_frame_pairs(std::move(pair));
+//    }
+//
+//protected:
+//    void initializeOnModelImpl(const Model& model, const MocoProblemInfo&) const 
+//            override {
+//        int nFramePairs = getProperty_frame_pairs().size();
+//
+//        MocoConstraintInfo info;
+//        std::vector<MocoBounds> bounds;
+//        for (int i = 0; i < nFramePairs; ++i) {
+//            const auto first_frame_path = get_frame_pairs(i).get_first_frame();
+//            OPENSIM_THROW_IF(!model.hasComponent<Frame>(first_frame_path),
+//                    Exception, format("Could not find frame '%s'.", 
+//                            first_frame_path));
+//            auto& first_frame = model.getComponent<Frame>(first_frame_path);
+//            const auto second_frame_path = 
+//                    get_frame_pairs(i).get_second_frame();
+//            OPENSIM_THROW_IF(!model.hasComponent<Frame>(second_frame_path),
+//                    Exception, format("Could not find frame '%s'.", 
+//                            second_frame_path));
+//            auto& second_frame = model.getComponent<Frame>(second_frame_path);
+//
+//            m_frame_pairs.emplace_back(&first_frame, &second_frame);
+//
+//            bounds.emplace_back(get_frame_pairs(i).get_minimum_radius(), 
+//                SimTK::Infinity);
+//        }
+//
+//        setNumEquations(nFramePairs);
+//        info.setBounds(bounds);
+//        const_cast<MinimumDistanceConstraint*>(this)->setConstraintInfo(
+//                info);
+//    }
+//
+//    void calcPathConstraintErrorsImpl(const SimTK::State& state, 
+//            SimTK::Vector& errors) const override {
+//        getModel().realizePosition(state);
+//
+//        int iconstr = 0;
+//        Vec3 relative_position;
+//        for (const auto& frame_pair : m_frame_pairs) {
+//            const auto& first_frame_pos = 
+//                frame_pair.first->getPositionInGround(state);
+//            const auto& second_frame_pos =
+//                frame_pair.second->getPositionInGround(state);
+//            relative_position = second_frame_pos - first_frame_pos;
+//
+//            errors[iconstr++] = relative_position.norm();
+//        }
+//        
+//    }
+//private:
+//    void constructProperties() {
+//        constructProperty_frame_pairs();
+//    }
+//
+//    mutable std::vector<std::pair<SimTK::ReferencePtr<const Frame>, 
+//            SimTK::ReferencePtr<const Frame>>> m_frame_pairs;
+//};
 
 int main() {
 
