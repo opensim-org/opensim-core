@@ -38,6 +38,9 @@ Model createModel() {
     qz.setName("qz");
     model.addJoint(joint);
 
+    auto* marker = new Marker("marker", *body, Vec3(0));
+    model.addMarker(marker);
+
     Ellipsoid bodyGeometry(0.5, 0.1, 0.1);
     bodyGeometry.setColor(SimTK::Gray);
     PhysicalOffsetFrame* body_center = new PhysicalOffsetFrame(
@@ -155,9 +158,22 @@ private:
 
 int main() {
 
-    Object::registerType(MocoMinimumDistanceConstraint());
-
     using SimTK::Pi;
+
+
+    Model model = createModel();
+    model.print("3Dpendulum.osim");
+
+    //model.setUseVisualizer(true);
+    //auto state = model.initSystem();
+    //state.updQ()[1] = -Pi/4;
+    //model.realizePosition(state);
+    //const Marker& marker = model.getComponent<Marker>("/markerset/marker");
+    //std::cout << "marker loc: " << marker.getLocationInGround(state) << std::endl;
+
+    //model.getVisualizer().show(state);
+
+
     
     MocoStudy study;
     auto& problem = study.updProblem();
@@ -165,19 +181,23 @@ int main() {
         ModOpAddReserves(50));
 
     problem.setTimeBounds(0, 0.5);
-    problem.setStateInfo("/jointset/gimbal/qx/value", {0});
+    problem.setStateInfo("/jointset/gimbal/qx/value", {-Pi/3, Pi/3}, 0);
     problem.setStateInfo(
             "/jointset/gimbal/qy/value", {-Pi/3, Pi/3}, Pi/4, -Pi/4);
-    problem.setStateInfo("/jointset/gimbal/qz/value", {-Pi/3, Pi/2});
+    problem.setStateInfo("/jointset/gimbal/qz/value", {-Pi/3, Pi/3}, 0);
     problem.setStateInfo("/jointset/gimbal/qx/speed", {-10, 10}, 0, 0);
     problem.setStateInfo("/jointset/gimbal/qy/speed", {-10, 10}, 0, 0);
     problem.setStateInfo("/jointset/gimbal/qz/speed", {-10, 10}, 0, 0);
 
     auto* distance = problem.addPathConstraint<MocoMinimumDistanceConstraint>();
-    MocoMinimumDistanceConstraintPair pair("/ground", "/bodyset/body", 0.001);
+    MocoMinimumDistanceConstraintPair pair("/ground", "/bodyset/body", 0.1);
     distance->addFramePair(pair);
 
-    problem.addGoal<MocoControlGoal>();
+    //problem.addGoal<MocoControlGoal>();
+
+    auto* finalMarkerGoal = problem.addGoal<MocoMarkerFinalGoal>("fina_marker");
+    finalMarkerGoal->setPointName("/markerset/marker");
+    finalMarkerGoal->setReferenceLocation(Vec3(0, 0.292893, 0.707107));
 
     //auto& solver = study.initCasADiSolver();
     //solver.set_optim_max_iterations(25);
@@ -185,13 +205,6 @@ int main() {
     MocoSolution solution = study.solve().unseal();
     study.visualize(solution);
 
-
-    //Model model = createModel();
-    //model.print("3Dpendulum.osim");
-    //model.setUseVisualizer(true);
-    //auto state = model.initSystem();
-
-    //model.getVisualizer().show(state);
 
     return EXIT_SUCCESS;
 }
