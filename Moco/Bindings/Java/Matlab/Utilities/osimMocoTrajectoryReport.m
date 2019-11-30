@@ -5,12 +5,14 @@ classdef osimMocoTrajectoryReport < handle
             args.addRequired('model');
             args.addRequired('trajectoryFilepath');
             args.addParameter('output', '');
+            args.addParameter('bilateral', false);
             args.parse(model, trajectoryFilepath, varargin{:});
             import org.opensim.modeling.*;
             self.model = args.Results.model;
             self.model.initSystem();
             self.trajectoryFilepath = args.Results.trajectoryFilepath;
             self.trajectory = MocoTrajectory(self.trajectoryFilepath);
+            self.bilateral = args.Results.bilateral;
 
             self.time = self.trajectory.getTimeMat();
             [~, self.trajectoryFname, ~] = ...
@@ -55,16 +57,25 @@ classdef osimMocoTrajectoryReport < handle
                 valueName = sprintf('%s/value', coordName);
                 speedName = sprintf('%s/speed', coordName);
                 % TODO accels
-                if ~stateLsMap.isKey(valueName)
-                    stateLsMap(valueName) = {};
-                end
-                if ~stateLsMap.isKey(speedName)
-                    stateLsMap(speedName) = {};
-                end
+
                 % TODO bilateral
-                stateLsMap(valueName) = [stateLsMap(valueName), {'-'}];
-                stateLsMap(speedName) = [stateLsMap(speedName), {'-'}];
-                % stateLsMap(accelName) = [stateLsMap(accelName), {'-'}];
+                if self.bilateral
+                    [valueName, stateLsMap] = ...
+                        self.bilateralize(valueName, stateLsMap);
+                    [speedName, stateLsMap] = ...
+                        self.bilateralize(speedName, stateLsMap);
+                    % TODO accel
+                else
+                    if ~stateLsMap.isKey(valueName)
+                        stateLsMap(valueName) = {};
+                    end
+                    if ~stateLsMap.isKey(speedName)
+                        stateLsMap(speedName) = {};
+                    end
+                    stateLsMap(valueName) = [stateLsMap(valueName), {'-'}];
+                    stateLsMap(speedName) = [stateLsMap(speedName), {'-'}];
+                    % stateLsMap(accelName) = [stateLsMap(accelName), {'-'}];
+                end
 
                 if ~stateMap.isKey(valueName)
                     stateMap(valueName) = {};
@@ -115,9 +126,11 @@ classdef osimMocoTrajectoryReport < handle
                     plot(self.time, var, linestyle, 'LineWidth', 1.5);
                 end
 
-                title(key, 'Interpreter', 'none');
+                set(ax, 'fontsize', 6);
+                title(key, 'Interpreter', 'none', 'fontsize', 10);
                 
-                if ivar > self.plotsPerPage * floor(double(varMap.Count) / self.plotsPerPage)
+                if ivar > self.plotsPerPage * ...
+                        floor(double(varMap.Count) / self.plotsPerPage)
                     % This is the last page.
                     plotsThisPage = varMap.Count - ...
                         nPagesPrinted * self.plotsPerPage;
@@ -127,13 +140,14 @@ classdef osimMocoTrajectoryReport < handle
                 if p > (plotsThisPage - self.numCols)
                     % Add xlabels for the bottom numCols plots on this
                     % page.
-                    xlabel('time (s)');
+                    xlabel('time (s)', 'fontsize', 8);
                 end
-                ylabel(labelMap(key));
+                ylabel(labelMap(key), 'fontsize', 8);
                 xlim([self.time(1), self.time(end)]);
                 if 0 <= ymin && ymax <= 1
                     ylim([0, 1]);
                 end
+                
 
                 if (mod(p, self.plotsPerPage) == 0 || ivar == varMap.Count)
                     print(fig, '-dpsc', '-append', self.output_ps);
@@ -164,13 +178,30 @@ classdef osimMocoTrajectoryReport < handle
         end
         function ax = createSubplot(self, p)
             ax = subplot(self.numRows, self.numCols, p + self.numCols);
-            pos = get(gca, 'Position');
-            %pos(1) = 0.055;
-            %pos(3) = 0.9;
-            set(gca, 'Position', pos)
+            set(ax, 'fontsize', 20);
+            hold on;
+            % pos = get(gca, 'Position');
+            % pos(1) = 0.055;
+            % pos(3) = 0.9;
+            % set(gca, 'Position', pos)
         end
     end
     methods (Static)
+        function [newName, lsMap] = bilateralize(name, lsMap)
+            newName = regexprep(name, '_r(/|_|$)', '$1');
+            if ~strcmp(newName, name)
+                if ~lsMap.isKey(newName)
+                    lsMap(newName) = {};
+                end
+                lsMap(newName) = [lsMap(newName), {'-'}];
+            else
+                newName = regexprep(name, '_l(/|_|$)', '$1');
+                if ~lsMap.isKey(newName)
+                    lsMap(newName) = {};
+                end
+                lsMap(newName) = [lsMap(newName), {'--'}];
+            end
+        end
         function label = getLabelFromMotionType(motionType, level)
             label = '';
             if strcmp(motionType, 'Rotational')
@@ -212,7 +243,7 @@ classdef osimMocoTrajectoryReport < handle
         model
         trajectoryFilepath
         trajectory
-        % TODO bilateral
+        bilateral
         % TODO refFiles
         trajectoryFname
         output
