@@ -57,7 +57,7 @@ int main()
     IMUInverseKinematicsTool ik_hjc("setup_IMUInverseKinematics_HJC_trial.xml");
     ik_hjc.setModel(facingX);
     ik_hjc.set_results_directory("ik_hjc_" + facingX.getName());
-    ik_hjc.run(true);
+    ik_hjc.run(false);
 
     // Now facing the opposite direction (negative X)
     IMUPlacer placerNegX("imuPlacerFaceNegX.xml");
@@ -68,7 +68,7 @@ int main()
 
     ik_hjc.setModel(facingNegX);
     ik_hjc.set_results_directory("ik_hjc_" + facingNegX.getName());
-    ik_hjc.run(true);
+    ik_hjc.run(false);
 
     Storage ik_X("ik_hjc_" + facingX.getName() + 
         "/ik_MT_012005D6_009-quaternions_RHJCSwinger.mot");
