@@ -75,7 +75,7 @@ public:
 
     OpenSim_DECLARE_PROPERTY(sensor_to_opensim_rotations, SimTK::Vec3,
             "Space fixed Euler angles (XYZ order) from IMU Space to OpenSim."
-            " Default fom IMU world (Z up) to OpenSim (Y up, X forward)");
+            " Default to Identity");
 
     OpenSim_DECLARE_LIST_PROPERTY_SIZE(time_range, double, 2,
         "The time range for the study.");

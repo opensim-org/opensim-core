@@ -45,7 +45,7 @@ void IMUInverseKinematicsTool::constructProperties()
     constructProperty_time_range(range);
 
     constructProperty_sensor_to_opensim_rotations(
-            SimTK::Vec3(-SimTK_PI / 2, 0, 0));
+            SimTK::Vec3(0));
 
     constructProperty_model_file("");
     constructProperty_marker_file("");
