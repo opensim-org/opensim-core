@@ -1,3 +1,28 @@
+% -------------------------------------------------------------------------- %
+% OpenSim Moco: osimMocoTrajectoryReport.m                                   %
+% -------------------------------------------------------------------------- %
+% Copyright (c) 2019 Stanford University and the Authors                     %
+%                                                                            %
+% Author(s): Christopher Dembia                                              %
+%                                                                            %
+% Licensed under the Apache License, Version 2.0 (the "License"); you may    %
+% not use this file except in compliance with the License. You may obtain a  %
+% copy of the License at http://www.apache.org/licenses/LICENSE-2.0          %
+%                                                                            %
+% Unless required by applicable law or agreed to in writing, software        %
+% distributed under the License is distributed on an "AS IS" BASIS,          %
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   %
+% See the License for the specific language governing permissions and        %
+% limitations under the License.                                             %
+% -------------------------------------------------------------------------- %
+% TODO: document.
+% TODO: refFiles
+% TODO: colormap
+% TODO: shrinking axes titles
+% TODO: adding a legend
+% TODO: accelerations
+% TODO: create subfunction for plotMultipliers, plotControls, etc.
+% TODO: parameters
 classdef osimMocoTrajectoryReport < handle
     methods
         function self = osimMocoTrajectoryReport(model, trajectoryFilepath, varargin)
@@ -31,11 +56,24 @@ classdef osimMocoTrajectoryReport < handle
             end
 
             self.numRows = floor(self.plotsPerPage / 3) + 1;
-
+            
+            
+            derivNames = self.trajectory.getDerivativeNames();
+            for id = 0:(derivNames.size()-1)
+                derivName = derivNames.get(id);
+                if endsWith(derivName, '/accel')
+                    self.accels = true;
+                end
+            end
         end
         function pdfFilepath = generate(self)
             self.plotKinematics();
             self.plotActivations();
+            self.plotNormalizedTendonForces();
+            self.plotAuxiliaryDerivatives();
+            self.plotControls();
+            self.plotMultipliers();
+            self.plotParameters();
             pdfFilepath = self.output;
         end
     end
@@ -109,6 +147,9 @@ classdef osimMocoTrajectoryReport < handle
                         [title, activLsMap] = ...
                             self.bilateralize(title, activLsMap);
                     else
+                        if ~activLsMap.isKey(title)
+                            activLsMap(title) = {};
+                        end
                         activLsMap(title) = ...
                             [activLsMap(title), {'-'}];
                     end
@@ -121,6 +162,117 @@ classdef osimMocoTrajectoryReport < handle
                 end
             end
             self.plotVariables('state', activMap, activLsMap, activLabelMap);
+        end
+        function plotNormalizedTendonForces(self)
+            map = containers.Map('KeyType', 'char', 'ValueType', 'any');
+            lsMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
+            labelMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
+            stateNames = self.trajectory.getStateNames();
+            for istate = 0:(stateNames.size()-1)
+                stateName = char(stateNames.get(istate));
+                if endsWith(stateName, '/normalized_tendon_force')
+                    title = stateName;
+                    if self.bilateral
+                        [title, lsMap] = self.bilateralize(title, lsMap);
+                    else
+                        if ~lsMap.isKey(title)
+                            lsMap(title) = {};
+                        end
+                        lsMap(title) = [lsMap(title), {'-'}];
+                    end
+                    if ~map.isKey(title)
+                        map(title) = {};
+                    end
+                    map(title) = [map(title), stateName];
+                    labelMap(title) = '';
+                end
+            end
+            self.plotVariables('state', map, lsMap, labelMap);
+        end
+        function plotAuxiliaryDerivatives(self)
+            map = containers.Map('KeyType', 'char', 'ValueType', 'any');
+            lsMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
+            labelMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
+            
+            derivNames = self.trajectory.getDerivativeNames();
+            auxDerivNames = {};
+            for id = 0:(derivNames.size()-1)
+                derivName = char(derivNames.get(id));
+                if ~endsWith(derivName, '/accel')
+                    auxDerivNames = [auxDerivNames, {derivName}];
+                end
+            end
+            
+            for iaux = 1:length(auxDerivNames)
+                auxDerivName = auxDerivNames{iaux};
+                title = auxDerivName;
+                if self.bilateral
+                    [title, lsMap] = self.bilateralize(title, lsMap);
+                else
+                    if ~lsMap.isKey(title)
+                        lsMap(title) = {};
+                    end
+                    lsMap(title) = [lsMap(title), {'-'}];
+                end
+                if ~map.isKey(title)
+                    map(title) = {};
+                end
+                map(title) = [map(title), auxDerivName];
+                labelMap(title) = '';
+            end
+            self.plotVariables('derivative', map, lsMap, labelMap);
+        end
+        function plotControls(self)
+            map = containers.Map('KeyType', 'char', 'ValueType', 'any');
+            lsMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
+            labelMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
+            
+            names = self.trajectory.getControlNames();
+            for ic = 0:(names.size() - 1)
+                name = char(names.get(ic));
+                title = name;
+                if self.bilateral
+                    [title, lsMap] = self.bilateralize(title, lsMap);
+                else
+                    if ~lsMap.isKey(title)
+                        lsMap(title) = {};
+                    end
+                    lsMap(title) = [lsMap(title), {'-'}];
+                end
+                if ~map.isKey(title)
+                    map(title) = {};
+                end
+                map(title) = [map(title), name];
+                labelMap(title) = '';
+            end
+            self.plotVariables('control', map, lsMap, labelMap);
+        end
+        function plotMultipliers(self)
+            map = containers.Map('KeyType', 'char', 'ValueType', 'any');
+            lsMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
+            labelMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
+            
+            names = self.trajectory.getMultiplierNames();
+            for ic = 0:(names.size() - 1)
+                name = char(names.get(ic));
+                title = name;
+                if self.bilateral
+                    [title, lsMap] = self.bilateralize(title, lsMap);
+                else
+                    if ~lsMap.isKey(title)
+                        lsMap(title) = {};
+                    end
+                    lsMap(title) = [lsMap(title), {'-'}];
+                end
+                if ~map.isKey(title)
+                    map(title) = {};
+                end
+                map(title) = [map(title), name];
+                labelMap(title) = '';
+            end
+            self.plotVariables('multiplier', map, lsMap, labelMap);
+        end
+        function plotParameters(self)
         end
         function plotVariables(self, varType, varMap, lsMap, labelMap)
             nPagesPrinted = 0;
@@ -153,7 +305,12 @@ classdef osimMocoTrajectoryReport < handle
                 end
 
                 set(ax, 'fontsize', 6);
-                title(key, 'Interpreter', 'none', 'fontsize', 10);
+                htitle = title(key, 'Interpreter', 'none', 'fontsize', 10);
+                if length(key) > 40
+                    htitle.FontSize = 6;
+                elseif length(key) > 30
+                    htitle.FontSize = 8;
+                end
                 
                 if ivar > self.plotsPerPage * ...
                         floor(double(varMap.Count) / self.plotsPerPage)
@@ -194,7 +351,20 @@ classdef osimMocoTrajectoryReport < handle
             elseif strcmp(type, 'multiplier')
                 var = self.trajectory.getMultiplierMat(path);
             elseif strcmp(type, 'derivative')
-                error('TODO');
+                % var = self.trajectory.getDerivativeMat(path);
+                derivsTraj = self.trajectory.getDerivativesTrajectory();
+                derivNames = self.trajectory.getDerivativeNames();
+                icol = 0;
+                for id = 0:(derivNames.size() - 1)
+                    if strcmp(char(derivNames.get(id)), path)
+                        icol = id;
+                    end
+                end
+                n = length(self.time);
+                var = zeros(n, 1);
+                for irow = 0:(n - 1)
+                    var(irow + 1) = derivsTraj.get(irow, icol);
+                end
             elseif strcmp(type, 'slack')
                 var = self.trajectory.getSlackMat(path);
             elseif strcmp(type, 'parameter')
@@ -228,7 +398,6 @@ classdef osimMocoTrajectoryReport < handle
             end
         end
         function label = getLabelFromMotionType(motionType, level)
-            label = '';
             if strcmp(motionType, 'Rotational')
                 if strcmp(level, 'value')
                     label = 'angle (rad)';
@@ -278,5 +447,7 @@ classdef osimMocoTrajectoryReport < handle
         plotsPerPage = 15.0;
         numCols = 3;
         numRows
+        
+        accels
     end
 end
