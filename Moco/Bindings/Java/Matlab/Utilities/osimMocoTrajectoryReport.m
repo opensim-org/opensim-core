@@ -15,13 +15,13 @@
 % See the License for the specific language governing permissions and        %
 % limitations under the License.                                             %
 % -------------------------------------------------------------------------- %
-% TODO: document.
+% TODO: add documentation
+% Refer to report.py (located in Moco/Bindings/Python in the source code)
+% for additional documentation.
 % TODO: refFiles
+% TODO: ps2pdf
 % TODO: colormap
-% TODO: shrinking axes titles
 % TODO: adding a legend
-% TODO: accelerations
-% TODO: create subfunction for plotMultipliers, plotControls, etc.
 % TODO: parameters
 classdef osimMocoTrajectoryReport < handle
     methods
@@ -83,7 +83,11 @@ classdef osimMocoTrajectoryReport < handle
             stateMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
             stateLsMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
             stateLabelMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
-
+            
+            accelMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
+            accelLsMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
+            accelLabelMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
+            
             coordSet = self.model.getCoordinateSet();
 
             for i = 0:(coordSet.getSize() - 1)
@@ -95,14 +99,19 @@ classdef osimMocoTrajectoryReport < handle
                 % variables.
                 valueName = sprintf('%s/value', coordName);
                 speedName = sprintf('%s/speed', coordName);
-                % TODO accels
-
+                if self.accels
+                    accelName = sprintf('%s/accel', coordName);
+                end
+                
                 if self.bilateral
                     [valueName, stateLsMap] = ...
                         self.bilateralize(valueName, stateLsMap);
                     [speedName, stateLsMap] = ...
                         self.bilateralize(speedName, stateLsMap);
-                    % TODO accel
+                    if self.accels
+                        [accelName, accelLsMap] = ...
+                            self.bilateralize(accelName, accelLsMap);
+                    end
                 else
                     if ~stateLsMap.isKey(valueName)
                         stateLsMap(valueName) = {};
@@ -112,7 +121,12 @@ classdef osimMocoTrajectoryReport < handle
                     end
                     stateLsMap(valueName) = [stateLsMap(valueName), {'-'}];
                     stateLsMap(speedName) = [stateLsMap(speedName), {'-'}];
-                    % stateLsMap(accelName) = [stateLsMap(accelName), {'-'}];
+                    if self.accels
+                        if ~accelLsMap.isKey(accelName)
+                            accelLsMap(accelName) = {};
+                        end
+                        accelLsMap(accelName) = [accelLsMap(accelName), {'-'}];
+                    end
                 end
 
                 if ~stateMap.isKey(valueName)
@@ -130,9 +144,23 @@ classdef osimMocoTrajectoryReport < handle
                     [stateMap(speedName), sprintf('%s/speed', coordPath)];
                 stateLabelMap(speedName) = ...
                     self.getLabelFromMotionType(coordMotType, 'speed');
+                
+                if self.accels
+                    if ~accelMap.isKey(accelName)
+                        accelMap(accelName) = {};
+                    end
+                    accelMap(accelName) = ...
+                        [accelMap(accelName), sprintf('%s/accel', coordPath)];
+                    accelLabelMap(accelName) = ...
+                        self.getLabelFromMotionType(coordMotType, 'accel');
+                end
             end
 
             self.plotVariables('state', stateMap, stateLsMap, stateLabelMap);
+            if self.accels
+                self.plotVariables('derivative', accelMap, accelLsMap, ...
+                    accelLabelMap);
+            end
         end
         function plotActivations(self)
             activMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
@@ -273,6 +301,7 @@ classdef osimMocoTrajectoryReport < handle
             self.plotVariables('multiplier', map, lsMap, labelMap);
         end
         function plotParameters(self)
+            % TODO
         end
         function plotVariables(self, varType, varMap, lsMap, labelMap)
             nPagesPrinted = 0;
@@ -306,9 +335,11 @@ classdef osimMocoTrajectoryReport < handle
 
                 set(ax, 'fontsize', 6);
                 htitle = title(key, 'Interpreter', 'none', 'fontsize', 10);
-                if length(key) > 40
+                if length(key) > 45
                     htitle.FontSize = 6;
-                elseif length(key) > 30
+                elseif length(key) > 40
+                    htitle.FontSize = 7;
+                elseif length(key) > 35
                     htitle.FontSize = 8;
                 end
                 
@@ -373,7 +404,6 @@ classdef osimMocoTrajectoryReport < handle
         end
         function ax = createSubplot(self, p)
             ax = subplot(self.numRows, self.numCols, p + self.numCols);
-            set(ax, 'fontsize', 20);
             hold on;
             % pos = get(gca, 'Position');
             % pos(1) = 0.055;
