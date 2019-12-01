@@ -35,6 +35,7 @@ classdef osimMocoTrajectoryReport < handle
         end
         function pdfFilepath = generate(self)
             self.plotKinematics();
+            self.plotActivations();
             pdfFilepath = self.output;
         end
     end
@@ -58,7 +59,6 @@ classdef osimMocoTrajectoryReport < handle
                 speedName = sprintf('%s/speed', coordName);
                 % TODO accels
 
-                % TODO bilateral
                 if self.bilateral
                     [valueName, stateLsMap] = ...
                         self.bilateralize(valueName, stateLsMap);
@@ -96,6 +96,32 @@ classdef osimMocoTrajectoryReport < handle
 
             self.plotVariables('state', stateMap, stateLsMap, stateLabelMap);
         end
+        function plotActivations(self)
+            activMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
+            activLsMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
+            activLabelMap = containers.Map('KeyType', 'char', 'ValueType', 'any');
+            stateNames = self.trajectory.getStateNames();
+            for istate = 0:(stateNames.size()-1)
+                stateName = char(stateNames.get(istate));
+                if endsWith(stateName, '/activation')
+                    title = stateName;
+                    if self.bilateral
+                        [title, activLsMap] = ...
+                            self.bilateralize(title, activLsMap);
+                    else
+                        activLsMap(title) = ...
+                            [activLsMap(title), {'-'}];
+                    end
+                    if ~activMap.isKey(title)
+                        activMap(title) = {};
+                    end
+                    activMap(title) = ...
+                        [activMap(title), stateName];
+                    activLabelMap(title) = '';
+                end
+            end
+            self.plotVariables('state', activMap, activLsMap, activLabelMap);
+        end
         function plotVariables(self, varType, varMap, lsMap, labelMap)
             nPagesPrinted = 0;
             
@@ -111,8 +137,8 @@ classdef osimMocoTrajectoryReport < handle
                 end
                 % Skip the first row, which is used for the legend.
                 ax = self.createSubplot(p);
-                ymin = -inf;
-                ymax =  inf;
+                ymin =  inf;
+                ymax = -inf;
 
                 numConds = length(varMap(key));
                 for icond = 1:numConds
@@ -147,7 +173,6 @@ classdef osimMocoTrajectoryReport < handle
                 if 0 <= ymin && ymax <= 1
                     ylim([0, 1]);
                 end
-                
 
                 if (mod(p, self.plotsPerPage) == 0 || ivar == varMap.Count)
                     print(fig, '-dpsc', '-append', self.output_ps);
