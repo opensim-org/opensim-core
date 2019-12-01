@@ -43,13 +43,13 @@ def getLabelFromMotionType(motionTypeEnum, level):
     label = ''
     if motionTypeEnum == 1:
         if level == 'value': label = 'angle (rad)'
-        elif level == 'speed': label = 'ang. vel. (rad/s)'
-        elif level == 'accel': label = 'ang. accel. (rad/s^2)'
+        elif level == 'speed': label = 'speed (rad/s)'
+        elif level == 'accel': label = 'accel. (rad/s^2)'
         else: label = 'rotate'
         return label
     elif motionTypeEnum == 2:
         if level == 'value': label = 'position (m)'
-        elif level == 'speed': label = 'velocity (m/s)'
+        elif level == 'speed': label = 'speed (m/s)'
         elif level == 'accel': label = 'accel. (m/s^s)'
         else: label = 'translate'
         return label
