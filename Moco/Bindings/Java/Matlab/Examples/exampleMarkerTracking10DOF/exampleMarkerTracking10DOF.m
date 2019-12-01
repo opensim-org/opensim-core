@@ -105,7 +105,7 @@ problem.addGoal(markerTrackingCost);
 % Add a low-weighted control effort cost to reduce oscillations in the 
 % actuator controls.
 controlCost = MocoControlGoal();
-controlCost.set_weight(0.001);
+controlCost.setWeight(0.001);
 problem.addGoal(controlCost);
 
 % Configure the solver.

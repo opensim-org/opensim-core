@@ -137,6 +137,7 @@ track.setName("muscle_driven_state_tracking");
 % parameters.
 modelProcessor = ModelProcessor("subject_walk_armless.osim");
 modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
+modelProcessor.append(ModOpIgnoreTendonCompliance());
 modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
 % Only valid for DeGrooteFregly2016Muscles.
 modelProcessor.append(ModOpIgnorePassiveFiberForcesDGF());

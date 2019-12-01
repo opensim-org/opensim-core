@@ -31,7 +31,7 @@ runInvertedPendulumProblem('minimize_control_effort', effort);
 % This problem minimizes the reaction loads on the rotating body at the pin 
 % joint. Specifically, the norm of the reaction forces and moments integrated
 % over the phase is minimized.
-reaction = MocoJointReactionCost();
+reaction = MocoJointReactionGoal();
 reaction.setJointPath('pin');
 runInvertedPendulumProblem('minimize_joint_reaction_loads', reaction);
 
