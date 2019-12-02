@@ -1,7 +1,7 @@
 % Generate a report given a MocoTrajectory and an associated OpenSim Model.
 % Optionally, additional reference data compatible with the MocoTrajectory
-% may be plotted.
-% 
+% may be plotted. Use the generate() method to create the report.
+%
 % Arguments
 % ---------
 %   model: An OpenSim Model object associated with the trajectory.
@@ -15,6 +15,24 @@
 %   bilateral (true/false): Plot left and right limb quantities on the
 %       same axes. Default: false.
 %   refFiles (cell array of strings): Paths to reference data files.
+%
+% Examples
+% --------
+% Here is a basic example:
+%
+%   >> trajReport = osimMocoTrajectoryReport(model, ...
+%             'MocoStudy_assisted_solution.sto');
+%   >> reportFilepath = trajReport.generate();
+%   >> open(reportFilepath);
+%
+% Here is an example using the optional arguments:
+%
+%   >> trajReport = osimMocoTrajectoryReport(model, ...
+%             'MocoStudy_assisted_solution.sto', ...
+%             'outputFilepath', 'myreport.pdf', ...
+%             'bilateral', true, 'refFiles', {'MocoStudy_solution.sto'});
+%   >> reportFilepath = trajReport.generate();
+%   >> open(reportFilepath);
 %
 % We attempt to generate the report as a PDF file, but this requires that
 % you have Ghostscript installed, and that Ghostscript's `ps2pdf` command

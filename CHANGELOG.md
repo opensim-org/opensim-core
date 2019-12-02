@@ -1,3 +1,7 @@
+- 2019-12-02: Add a MATLAB MocoTrajectory plotting utility, 
+              osimMocoTrajectoryReport.m. This has the same functionality as 
+              report.py in Moco's python package.
+
 - 2019-11-26: Consistently refer to MocoTrajectories as "trajectory" instead of
               "iterate".
 
