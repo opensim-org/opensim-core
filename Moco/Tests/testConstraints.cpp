@@ -1655,7 +1655,7 @@ TEMPLATE_TEST_CASE("MocoMinimumDistanceConstraint", "", MocoTropterSolver,
 
     study.initSolver<TestType>();
     MocoSolution solution = study.solve().unseal();
-    study.visualize(solution);
+    //study.visualize(solution);
 
     TimeSeriesTableVec3 positionTable = analyze<SimTK::Vec3>(model, solution, 
             {"/markerset/marker\\|location"});
