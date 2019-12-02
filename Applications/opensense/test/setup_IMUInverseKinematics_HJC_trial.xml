@@ -3,7 +3,7 @@
 	<IMUInverseKinematicsTool name="track_HJC_trial">
 		<!--The accuracy of the solution in absolute terms, i.e. the number of significant digits to which the solution can be trusted. Default 1e-6.-->
 		<accuracy>9.9999999999999995e-07</accuracy>
-		<!-- Space fixed Euler angles (XYZ order) from IMU Space to OpenSim. Default to Identity. -->
+		<!-- Space fixed Euler angles (XYZ order) from IMU Space to OpenSim. Default to (0, 0, 0). -->
 		<sensor_to_opensim_rotations>-1.5707963 0 0</sensor_to_opensim_rotations>
 		<!--The relative weighting of kinematic constraint errors. By default this is Infinity, which means constraints are strictly enforced as part of the optimization and are not appended to the objective (cost) function. Any other non-zero positive scalar is the penalty factor for constraint violations.-->
 		<constraint_weight>Inf</constraint_weight>
