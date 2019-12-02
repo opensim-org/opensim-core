@@ -1660,7 +1660,7 @@ TEMPLATE_TEST_CASE("MocoMinimumDistanceConstraint", "", MocoTropterSolver,
     TimeSeriesTableVec3 positionTable = analyze<SimTK::Vec3>(model, solution, 
             {"/markerset/marker\\|location"});
     SimTK::Vec3 position;
-    for (int irow = 0; irow < positionTable.getNumRows(); ++irow) {
+    for (int irow = 0; irow < (int)positionTable.getNumRows(); ++irow) {
         position = positionTable.getRowAtIndex(irow)[0];
         CHECK(position.norm() >= distance);
     }
