@@ -1,3 +1,5 @@
+- 2019-12-02: Added MocoMinimumDistanceConstraint.
+
 - 2019-11-25: Update SmoothSphereHalfSpaceForce to visualize contact forces in
               the Simbody visualizer (not the OpenSim GUI). 
 
