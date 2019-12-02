@@ -49,7 +49,7 @@ clear;
 import org.opensim.modeling.*;
 
 % ---------------------------------------------------------------------------
-% Set-up a coordinate tracking problem where the goal is to minimize the
+% Set up a coordinate tracking problem where the goal is to minimize the
 % difference between provided and simulated coordinate values and speeds,
 % as well as to minimize an effort cost (squared controls). The provided data
 % represents half a gait cycle. Endpoint constraints enforce periodicity of
@@ -60,13 +60,13 @@ import org.opensim.modeling.*;
 % Define the optimal control problem
 % ==================================
 track = MocoTrack();
-track.setName("gaitTracking");
+track.setName('gaitTracking');
 
 % Reference data for tracking problem
-tableProcessor = TableProcessor("referenceCoordinates.sto");
+tableProcessor = TableProcessor('referenceCoordinates.sto');
 tableProcessor.append(TabOpLowPassFilter(6));
 
-modelProcessor = ModelProcessor("2D_gait.osim");
+modelProcessor = ModelProcessor('2D_gait.osim');
 track.setModel(modelProcessor);
 track.setStatesReference(tableProcessor);
 track.set_states_global_tracking_weight(10.0);
@@ -133,29 +133,32 @@ symmetryGoal.addControlPair(MocoPeriodicityGoalPair('/lumbarAct'));
 
 % Get a reference to the MocoControlGoal that is added to every MocoTrack
 % problem by default and change the weight
-effort = MocoControlGoal.safeDownCast(problem.updGoal("control_effort"));
+effort = MocoControlGoal.safeDownCast(problem.updGoal('control_effort'));
 effort.setWeight(10);
 
 
 % Bounds
 % ======
-problem.setStateInfo("/jointset/groundPelvis/pelvis_tilt/value", [-20*pi/180, -10*pi/180]);
-problem.setStateInfo("/jointset/groundPelvis/pelvis_tx/value", [0, 1]);
-problem.setStateInfo("/jointset/groundPelvis/pelvis_ty/value", [0.75, 1.25]);
-problem.setStateInfo("/jointset/hip_l/hip_flexion_l/value", [-10*pi/180, 60*pi/180]);
-problem.setStateInfo("/jointset/hip_r/hip_flexion_r/value", [-10*pi/180, 60*pi/180]);
-problem.setStateInfo("/jointset/knee_l/knee_angle_l/value", [-50*pi/180, 0]);
-problem.setStateInfo("/jointset/knee_r/knee_angle_r/value", [-50*pi/180, 0]);
-problem.setStateInfo("/jointset/ankle_l/ankle_angle_l/value", [-15*pi/180, 25*pi/180]);
-problem.setStateInfo("/jointset/ankle_r/ankle_angle_r/value", [-15*pi/180, 25*pi/180]);
-problem.setStateInfo("/jointset/lumbar/lumbar/value", [0, 20*pi/180]);
+problem.setStateInfo('/jointset/groundPelvis/pelvis_tilt/value', [-20*pi/180, -10*pi/180]);
+problem.setStateInfo('/jointset/groundPelvis/pelvis_tx/value', [0, 1]);
+problem.setStateInfo('/jointset/groundPelvis/pelvis_ty/value', [0.75, 1.25]);
+problem.setStateInfo('/jointset/hip_l/hip_flexion_l/value', [-10*pi/180, 60*pi/180]);
+problem.setStateInfo('/jointset/hip_r/hip_flexion_r/value', [-10*pi/180, 60*pi/180]);
+problem.setStateInfo('/jointset/knee_l/knee_angle_l/value', [-50*pi/180, 0]);
+problem.setStateInfo('/jointset/knee_r/knee_angle_r/value', [-50*pi/180, 0]);
+problem.setStateInfo('/jointset/ankle_l/ankle_angle_l/value', [-15*pi/180, 25*pi/180]);
+problem.setStateInfo('/jointset/ankle_r/ankle_angle_r/value', [-15*pi/180, 25*pi/180]);
+problem.setStateInfo('/jointset/lumbar/lumbar/value', [0, 20*pi/180]);
 
 
 % Solve the problem
 % =================
 gaitTrackingSolution = study.solve();
 
-% Create a full stride from the periodic single step solution
+% Create a full stride from the periodic single step solution.
+% For details, navigate to
+% User Guide > Utilities > Model and trajectory utilities
+% in the Moco Documentation.
 fullStride = opensimMoco.createPeriodicTrajectory(gaitTrackingSolution);
 fullStride.write('gaitTracking_solution_fullStride.sto');
 
@@ -167,10 +170,10 @@ fullStride.write('gaitTracking_solution_fullStride.sto');
 % ==============================
 contactSpheres_r = StdVectorString();
 contactSpheres_l = StdVectorString();
-contactSpheres_r.add("contactSphereHeel_r");
-contactSpheres_r.add("contactSphereFront_r");
-contactSpheres_l.add("contactSphereHeel_l");
-contactSpheres_l.add("contactSphereFront_l");
+contactSpheres_r.add('contactSphereHeel_r');
+contactSpheres_r.add('contactSphereFront_r');
+contactSpheres_l.add('contactSphereHeel_l');
+contactSpheres_l.add('contactSphereFront_l');
 
 externalForcesTableFlat = opensimMoco.createExternalLoadsTableForGait(model, ...
                                  fullStride,contactSpheres_r,contactSpheres_l);
@@ -184,8 +187,8 @@ opensimMoco.writeTableToFile(externalForcesTableFlat, ...
 
 
 %------------------------------------------------------------------------
-% Set-up a gait prediction problem where the goal is to minimize effort
-% (squared controls) over distance traveled while enforcing symmetry of
+% Set up a gait prediction problem where the goal is to minimize effort
+% (squared controls) divided by distance traveled while enforcing symmetry of
 % the walking cycle and a prescribed average gait speed through endpoint
 % constraints. The solution of the coordinate tracking problem is
 % used as an initial guess for the prediction.
@@ -194,7 +197,7 @@ opensimMoco.writeTableToFile(externalForcesTableFlat, ...
 % Define the optimal control problem
 % ==================================
 study = MocoStudy();
-study.setName("gaitPrediction");
+study.setName('gaitPrediction');
 
 problem = study.updProblem();
 modelProcessor = ModelProcessor('2D_gait.osim');
@@ -269,16 +272,16 @@ effortGoal.setDivideByDisplacement(true);
 % Bounds
 % ======
 problem.setTimeBounds(0, [0.4, 0.6]);
-problem.setStateInfo("/jointset/groundPelvis/pelvis_tilt/value", [-20*pi/180, -10*pi/180]);
-problem.setStateInfo("/jointset/groundPelvis/pelvis_tx/value", [0, 1]);
-problem.setStateInfo("/jointset/groundPelvis/pelvis_ty/value", [0.75, 1.25]);
-problem.setStateInfo("/jointset/hip_l/hip_flexion_l/value", [-10*pi/180, 60*pi/180]);
-problem.setStateInfo("/jointset/hip_r/hip_flexion_r/value", [-10*pi/180, 60*pi/180]);
-problem.setStateInfo("/jointset/knee_l/knee_angle_l/value", [-50*pi/180, 0]);
-problem.setStateInfo("/jointset/knee_r/knee_angle_r/value", [-50*pi/180, 0]);
-problem.setStateInfo("/jointset/ankle_l/ankle_angle_l/value", [-15*pi/180, 25*pi/180]);
-problem.setStateInfo("/jointset/ankle_r/ankle_angle_r/value", [-15*pi/180, 25*pi/180]);
-problem.setStateInfo("/jointset/lumbar/lumbar/value", [0, 20*pi/180]);
+problem.setStateInfo('/jointset/groundPelvis/pelvis_tilt/value', [-20*pi/180, -10*pi/180]);
+problem.setStateInfo('/jointset/groundPelvis/pelvis_tx/value', [0, 1]);
+problem.setStateInfo('/jointset/groundPelvis/pelvis_ty/value', [0.75, 1.25]);
+problem.setStateInfo('/jointset/hip_l/hip_flexion_l/value', [-10*pi/180, 60*pi/180]);
+problem.setStateInfo('/jointset/hip_r/hip_flexion_r/value', [-10*pi/180, 60*pi/180]);
+problem.setStateInfo('/jointset/knee_l/knee_angle_l/value', [-50*pi/180, 0]);
+problem.setStateInfo('/jointset/knee_r/knee_angle_r/value', [-50*pi/180, 0]);
+problem.setStateInfo('/jointset/ankle_l/ankle_angle_l/value', [-15*pi/180, 25*pi/180]);
+problem.setStateInfo('/jointset/ankle_r/ankle_angle_r/value', [-15*pi/180, 25*pi/180]);
+problem.setStateInfo('/jointset/lumbar/lumbar/value', [0, 20*pi/180]);
 
 
 % Configure the solver
@@ -286,7 +289,7 @@ problem.setStateInfo("/jointset/lumbar/lumbar/value", [0, 20*pi/180]);
 solver = study.initCasADiSolver();
 solver.set_num_mesh_intervals(50);
 solver.set_verbosity(2);
-solver.set_optim_solver("ipopt");
+solver.set_optim_solver('ipopt');
 solver.set_optim_convergence_tolerance(1e-4);
 solver.set_optim_constraint_tolerance(1e-4);
 solver.set_optim_max_iterations(1000);
@@ -297,7 +300,10 @@ solver.setGuess(gaitTrackingSolution); % Use tracking solution as initial guess
 % =============
 gaitPredictionSolution = study.solve();
 
-% Create a full stride from the periodic single step solution
+% Create a full stride from the periodic single step solution.
+% For details, navigate to
+% User Guide > Utilities > Model and trajectory utilities
+% in the Moco Documentation.
 fullStride = opensimMoco.createPeriodicTrajectory(gaitPredictionSolution);
 fullStride.write('gaitPrediction_solution_fullStride.sto');
 
@@ -309,13 +315,18 @@ fullStride.write('gaitPrediction_solution_fullStride.sto');
 % ==============================
 contactSpheres_r = StdVectorString();
 contactSpheres_l = StdVectorString();
-contactSpheres_r.add("contactSphereHeel_r");
-contactSpheres_r.add("contactSphereFront_r");
-contactSpheres_l.add("contactSphereHeel_l");
-contactSpheres_l.add("contactSphereFront_l");
+contactSpheres_r.add('contactSphereHeel_r');
+contactSpheres_r.add('contactSphereFront_r');
+contactSpheres_l.add('contactSphereHeel_l');
+contactSpheres_l.add('contactSphereFront_l');
 
+% Create a conventional ground reaction forces file by summing the contact
+% forces of contact spheres on each foot.
+% For details, navigate to
+% User Guide > Utilities > Model and trajectory utilities
+% in the Moco Documentation.
 externalForcesTableFlat = opensimMoco.createExternalLoadsTableForGait(model, ...
-                                 fullStride,contactSpheres_r,contactSpheres_l);
+                             fullStride, contactSpheres_r, contactSpheres_l);
 opensimMoco.writeTableToFile(externalForcesTableFlat, ...
                              'gaitPrediction_solution_fullStride_GRF.sto');
 
