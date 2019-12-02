@@ -3,14 +3,12 @@
 % https://www.ghostscript.com/download/gsdnld.html      
 % Refer to report.py (located in Moco/Bindings/Python in the source code)
 % for additional documentation.
-% TODO: refFiles
-% TODO: colormap
 % TODO: adding a legend
+% TODO reduce margin around figure.
 % TODO: parameters
 % Based on report.py.
 % TODO use tiledlayout
 % (https://www.mathworks.com/help/matlab/ref/tiledlayout.html).
-% TODO reduce margin around figure.
 
 % -------------------------------------------------------------------------- %
 % OpenSim Moco: osimMocoTrajectoryReport.m                                   %
@@ -545,27 +543,6 @@ classdef osimMocoTrajectoryReport < handle
         end
         function index = getIndexForNearestValue(vec, val)
             [~, index] = min(abs(vec - val));
-        end
-        function structFieldName = createStructFieldName(name)
-            % Taken from osimMocoTableToStruct.m.
-            if ~isvarname(col_label)
-                % Find any non-alphanumeric characters and replace with '_'
-                col_label(~(isstrprop(col_label,'alphanum'))) = '_';
-                % Check if first character is a letter, and append 'unlabeled' if not
-                if ~(isletter(col_label(1)))
-                    col_label = ['unlabeled', col_label];
-                end
-                % Last check for too long a name 
-                % Have user input a new name, and make them keep doing it until the
-                % variable name is valid
-                while ~isvarname(col_label)
-                    disp(['Error: ', disp_label ' is an invalid label name; enter a new name that:'])
-                    disp('  - starts with a letter')
-                    disp('  - contains only letters, numbers, and/or underscores (_)')
-                    disp(['  - is no longer than ', num2str(namelengthmax), ' characters'])
-                    col_label = input('New name (no quotes): ', 's');
-                end
-            end
         end
     end
     properties (SetAccess = private)
