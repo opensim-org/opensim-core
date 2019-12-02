@@ -1,5 +1,5 @@
 - 2019-12-02: Fixed multiple examples by updating "cost" to "goal", and other 
-              such changes. Fixed  exampleMocoTrack by ignoring tendon 
+              such changes. Fixed exampleMocoTrack by ignoring tendon 
               compliance.
 
 - 2019-12-02: Add a MATLAB MocoTrajectory plotting utility, 
