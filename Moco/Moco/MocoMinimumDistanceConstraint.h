@@ -68,7 +68,6 @@ class OSIMMOCO_API MocoMinimumDistanceConstraint : public MocoPathConstraint {
 public:
     MocoMinimumDistanceConstraint();
 
-    /// Add a MocoMinimumDistanceConstraintPair 
     void addFramePair(MocoMinimumDistanceConstraintPair pair) {
         append_frame_pairs(std::move(pair));
     }
