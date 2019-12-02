@@ -1,3 +1,7 @@
+- 2019-12-02: Fixed multiple examples by updating "cost" to "goal", and other 
+              such changes. Fixed  exampleMocoTrack by ignoring tendon 
+              compliance.
+
 - 2019-12-02: Add a MATLAB MocoTrajectory plotting utility, 
               osimMocoTrajectoryReport.m. This has the same functionality as 
               report.py in Moco's python package.
