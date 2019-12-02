@@ -119,6 +119,7 @@ def muscleDrivenStateTracking():
     # parameters.
     modelProcessor = osim.ModelProcessor("subject_walk_armless.osim")
     modelProcessor.append(osim.ModOpAddExternalLoads("grf_walk.xml"))
+    modelProcessor.append(osim.ModOpIgnoreTendonCompliance())
     modelProcessor.append(osim.ModOpReplaceMusclesWithDeGrooteFregly2016())
     # Only valid for DeGrooteFregly2016Muscles.
     modelProcessor.append(osim.ModOpIgnorePassiveFiberForcesDGF())
@@ -156,7 +157,7 @@ def muscleDrivenStateTracking():
     # Get a reference to the MocoControlCost that is added to every MocoTrack
     # problem by default.
     problem = study.updProblem()
-    effort = osim.MocoControlCost.safeDownCast(problem.updCost("control_effort"))
+    effort = osim.MocoControlGoal.safeDownCast(problem.updGoal("control_effort"))
 
     # Put a large weight on the pelvis CoordinateActuators, which act as the
     # residual, or 'hand-of-god', forces which we would like to keep as small

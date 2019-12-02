@@ -28,6 +28,8 @@ file(GLOB GEOMETRY "${CMAKE_SOURCE_DIR}/opensim-models/Geometry/*"
     "${CMAKE_SOURCE_DIR}/opensim-models/Models/RajagopalModel/Geometry/*")
 install(FILES ${GEOMETRY}
     DESTINATION "${MOCO_INSTALL_MATLABEXDIR}/exampleSitToStand/Geometry")
+install(FILES ${GEOMETRY}
+    DESTINATION "${MOCO_INSTALL_MATLABEXDIR}/exampleMarkerTracking10DOF/Geometry")
 
 # The configureMoco.m script contains paths into the Moco installation
 # that may be different on different platforms, so we configure it with CMake
