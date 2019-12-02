@@ -6,6 +6,9 @@
               osimMocoTrajectoryReport.m. This has the same functionality as 
               report.py in Moco's python package.
 
+- 2019-11-28: Brian Umberger contributed a Matlab version of example2DWalking,
+              which contains a 2-D prediction of walking.
+
 - 2019-11-26: Consistently refer to MocoTrajectories as "trajectory" instead of
               "iterate".
 
