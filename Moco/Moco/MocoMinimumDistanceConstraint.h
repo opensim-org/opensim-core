@@ -42,12 +42,25 @@ private:
     void constructProperties();
 };
 
-/// This goal enforces that a minimum distance in the ground reference frame is 
-/// kept between the origins model frame pairs. Pairs of frames and the minimum
-/// distance they are to be kept apart are specified via a 
-/// MocoMinimumDistancConstraintPair. Any model component derived from
-/// Frame is valid to be included in a frame pair, and any number of frame pairs
-/// may be append to this constraint via addFramePair().
+/// This goal enforces that a minimum distance is kept between the origins of 
+/// pairs of model frames. Frame pairs, and the minimum distance they are to be 
+/// kept apart, are specified via a MocoMinimumDistancConstraintPair. Distance
+/// is computed by taking the norm of the relative position vector in ground 
+/// between model frame origins. Any model component derived from Frame is valid 
+/// to be included in a frame pair, and any number of frame pairs may be append 
+/// to this constraint via addFramePair().
+/// 
+/// This constraint can be used as a simple method for preventing bodies in your
+/// model from intersecting during an optimization. For example, the
+/// following prevents feet from intersecting during a walking optimization:
+/// @code
+/// distance = problem.addPathConstraint<MocoMinimumDistanceConstraint>();
+/// distance.setName("minimum_distance"):
+/// distance.addFramePair({'/bodyset/calcn_l', '/bodyset/calcn_r', 0.1});
+/// distance.addFramePair({'/bodyset/toes_l', '/bodyset/toes_r', 0.1});
+/// distance.addFramePair({'/bodyset/calcn_l', '/bodyset/toes_r', 0.1});
+/// distance.addFramePair({'/bodyset/toes_l', '/bodyset/calcn_r', 0.1});
+/// @endcode
 class OSIMMOCO_API MocoMinimumDistanceConstraint : public MocoPathConstraint {
     OpenSim_DECLARE_CONCRETE_OBJECT(
             MocoMinimumDistanceConstraint, MocoPathConstraint);
@@ -55,6 +68,7 @@ class OSIMMOCO_API MocoMinimumDistanceConstraint : public MocoPathConstraint {
 public:
     MocoMinimumDistanceConstraint();
 
+    /// Add a MocoMinimumDistanceConstraintPair 
     void addFramePair(MocoMinimumDistanceConstraintPair pair) {
         append_frame_pairs(std::move(pair));
     }
@@ -68,7 +82,8 @@ protected:
 private:
     OpenSim_DECLARE_LIST_PROPERTY(frame_pairs, 
             MocoMinimumDistanceConstraintPair, 
-            "Pairs of frames constrained to be a minimum distance apart.");
+            "Pairs of frames whose origins are constrained to be a minimum "
+            "distance apart.");
 
     void constructProperties();
     mutable std::vector<std::pair<SimTK::ReferencePtr<const Frame>,

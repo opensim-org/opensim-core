@@ -195,7 +195,7 @@ int main() {
 
     //problem.addGoal<MocoControlGoal>();
 
-    auto* finalMarkerGoal = problem.addGoal<MocoMarkerFinalGoal>("fina_marker");
+    auto* finalMarkerGoal = problem.addGoal<MocoMarkerFinalGoal>("final_marker");
     finalMarkerGoal->setPointName("/markerset/marker");
     finalMarkerGoal->setReferenceLocation(Vec3(0, 0.292893, 0.707107));
 
