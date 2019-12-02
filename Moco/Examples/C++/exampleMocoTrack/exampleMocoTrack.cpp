@@ -126,6 +126,7 @@ void muscleDrivenStateTracking() {
     ModelProcessor modelProcessor =
             ModelProcessor("subject_walk_armless.osim") |
             ModOpAddExternalLoads("grf_walk.xml") |
+            ModOpIgnoreTendonCompliance() |
             ModOpReplaceMusclesWithDeGrooteFregly2016() |
             // Only valid for DeGrooteFregly2016Muscles.
             ModOpIgnorePassiveFiberForcesDGF() |
