@@ -5,6 +5,8 @@ if(Matlab_FOUND AND BUILD_TESTING)
 endif()
 
 install(DIRECTORY Examples/ DESTINATION "${MOCO_INSTALL_MATLABEXDIR}")
+install(DIRECTORY Utilities/
+        DESTINATION "${MOCO_INSTALL_MATLABEXDIR}/Utilities")
 
 # Copy example model and data files to use in Sandbox.
 set(SANDBOX_MARKER_TRACKING_DIR 

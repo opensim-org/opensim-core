@@ -1,14 +1,37 @@
 % TODO: add documentation
-% reportFilepath = self.output;
-% https://www.ghostscript.com/download/gsdnld.html      
 % Refer to report.py (located in Moco/Bindings/Python in the source code)
 % for additional documentation.
-% TODO: adding a legend
-% TODO reduce margin around figure.
 % TODO: parameters
 % Based on report.py.
 % TODO use tiledlayout
 % (https://www.mathworks.com/help/matlab/ref/tiledlayout.html).
+% Generate a report given a MocoTrajectory and an associated OpenSim Model.
+% Optionally, additional reference data compatible with the MocoTrajectory
+% may be plotted.
+
+% Tested with MATLAB 2019a. TODO contribute.
+%
+% We attempt to generate the report as a PDF file, but this requires that
+% you have Ghostscript installed, and that Ghostscript's `ps2pdf` command
+% is available on the system's PATH. You can download Ghostscript from
+% https://www.ghostscript.com/download/gsdnld.html; on Mac, you can install 
+% Ghostscript with Homebrew. If we do not detect Ghostscript, the report
+% is generated as a PostScript (.ps) file, which you can convert to a PDF
+% via the website https://www.ps2pdf.com/. On a Mac, you can open the 
+% PostScript file with Preview to convert it to a PDF.
+% 
+% 
+% Arguments
+% ---------
+%   model: 
+%   trajectoryFilepath:
+% 
+% Optional arguments
+% ------------------
+%   outputFilepath: TODO rename arg
+%   bilateral: 
+%   refFiles: 
+% 
 
 % -------------------------------------------------------------------------- %
 % OpenSim Moco: osimMocoTrajectoryReport.m                                   %
@@ -35,7 +58,7 @@ classdef osimMocoTrajectoryReport < handle
             args = inputParser();
             args.addRequired('model', @(x) isa(x, 'org.opensim.modeling.Model'));
             args.addRequired('trajectoryFilepath', @ischar);
-            args.addParameter('output', '', @ischar);
+            args.addParameter('outputFilepath', '', @ischar);
             args.addParameter('bilateral', false, @islogical);
             args.addParameter('refFiles', {}, @iscell);
             args.parse(model, trajectoryFilepath, varargin{:});
@@ -48,14 +71,14 @@ classdef osimMocoTrajectoryReport < handle
             self.time = self.trajectory.getTimeMat();
             [trajDir, self.trajectoryFname, ~] = ...
                 fileparts(self.trajectoryFilepath);
-            if isempty(args.Results.output)
+            if isempty(args.Results.outputFilepath)
                 self.output = sprintf('%s_report.pdf', ...
                     self.trajectoryFname);
             else
-                if ~endsWith(args.Result.output, '.pdf')
+                if ~endsWith(args.Result.outputFilepath, '.pdf')
                     error('Expected output to end with .pdf');
                 end
-                self.output = args.Results.output;
+                self.output = args.Results.outputFilepath;
             end
             if isempty(trajDir)
                 trajDir = './';
@@ -73,9 +96,10 @@ classdef osimMocoTrajectoryReport < handle
                 end
             end
             
+            self.refFiles = args.Results.refFiles;
             self.refs = {};
-            for ir = 1:length(args.Results.refFiles)
-                refFile = args.Results.refFiles{ir};
+            for ir = 1:length(self.refFiles)
+                refFile = self.refFiles{ir};
                 [~, ~, ext] = fileparts(refFile);
                 refTable = STOFileAdapter().read(refFile);
                 ext = lower(ext);
@@ -101,22 +125,6 @@ classdef osimMocoTrajectoryReport < handle
             cmapCount = size(cmapOrig, 1);
             cmapOrigX = (0:(cmapCount - 1)) / (cmapCount - 1);
             self.cmap = interp1(cmapOrigX, cmapOrig, cmapSamples);
-
-%         for sample, file in zip(self.cmap_samples, all_files):
-%             color = self.cmap(sample)
-%             import matplotlib.lines as mlines
-%             if bilateral:
-%                 r = mlines.Line2D([], [], ls='-', color=color, linewidth=3)
-%                 self.legend_handles.append(r)
-%                 self.legend_labels.append(file + ' (right leg)')
-%                 l = mlines.Line2D([], [], ls='--', color=color, linewidth=3)
-%                 self.legend_handles.append(l)
-%                 self.legend_labels.append(file + ' (left leg)')
-%             else:
-%                 h = mlines.Line2D([], [], ls='-', color=color, linewidth=3)
-%                 self.legend_handles.append(h)
-%                 self.legend_labels.append(file)
-%                 
         end
         function reportFilepath = generate(self)
             self.plotKinematics();
@@ -375,8 +383,49 @@ classdef osimMocoTrajectoryReport < handle
                 if mod(p, self.plotsPerPage) == 1
                     fig = self.createFigure();
                 end
+                
+                lastPlotOnPage = mod(p, self.plotsPerPage) == 0 || ...
+                    ivar == varMap.Count;
+                if lastPlotOnPage
+                    % Create a legend in the top-center subplot.
+                    axL = axes('Position', ...
+                        [0, 1.0 - 1 / self.numRows + 0.05, ...
+                        1, 1. / self.numRows - 0.06]);
+                    hold on;
+                    legendEntries = {};
+                    for ir = 1:length(self.refs)
+                        plot(nan, nan, '-', ...
+                            'LineWidth', 3, 'Color', self.cmap(ir, :)); 
+                        prefix = self.refFiles{ir};
+                        if self.bilateral
+                            legendEntries = [legendEntries, {[prefix ' (right)']}];
+                            plot(nan, nan, '--', ...
+                                'LineWidth', 3, 'Color', self.cmap(ir, :)); 
+                            legendEntries = [legendEntries, {[prefix ' (left)']}];
+                        else
+                            legendEntries = [legendEntries, {prefix}];
+                        end
+                    end
+                    plot(nan, nan, '-', 'LineWidth', 3, ...
+                        'Color', self.cmap(end, :));
+                    prefix = self.trajectoryFilepath;
+                    if self.bilateral
+                        legendEntries = [legendEntries, {[prefix ' (right)']}];
+                        plot(nan, nan, '--', 'LineWidth', 3, ...
+                            'Color', self.cmap(end, :));
+                        legendEntries = [legendEntries, {[prefix ' (left)']}];
+                    else
+                        legendEntries = [legendEntries, {prefix}];
+                    end
+                    
+                    set(axL, 'Visible', 'off');
+                    legend(axL, legendEntries, 'Interpreter', 'none', ...
+                        'Location', 'north');
+                    legend boxoff;
+                end
+                
                 % Skip the first row, which is used for the legend.
-                ax = self.createSubplot(p);
+                ax = self.createSubplot(p + self.numCols);
                 ymin =  inf;
                 ymax = -inf;
 
@@ -413,13 +462,14 @@ classdef osimMocoTrajectoryReport < handle
                             'Color', self.cmap(end, :));
                 end
 
+ 
                 set(ax, 'fontsize', 6);
                 htitle = title(key, 'Interpreter', 'none', 'fontsize', 10);
-                if length(key) > 45
+                if length(key) > 50
                     htitle.FontSize = 6;
-                elseif length(key) > 40
+                elseif length(key) > 45
                     htitle.FontSize = 7;
-                elseif length(key) > 35
+                elseif length(key) > 40
                     htitle.FontSize = 8;
                 end
                 
@@ -441,15 +491,26 @@ classdef osimMocoTrajectoryReport < handle
                 if 0 <= ymin && ymax <= 1
                     ylim([0, 1]);
                 end
-
-                if (mod(p, self.plotsPerPage) == 0 || ivar == varMap.Count)
+                
+                irow = ceil(p / self.numCols) + 1;
+                icol = mod(p - 1, self.numCols) + 1;
+                pos = get(ax, 'Position');
+                pos(1) = 0.05 + (icol - 1) * 1. / self.numCols;
+                pos(2) = 1.0 - 1 / self.numRows - (irow - 1) / self.numRows + 0.05;
+                pos(3) = 1 ./ self.numCols - 0.08;
+                pos(4) = 1 ./ self.numRows - 0.05;
+                set(ax, 'Position', pos, 'Visible', 'on');
+                
+                if lastPlotOnPage
                     print(fig, '-dpsc', '-append', self.output_ps);
                     close(fig);
+                    
                     p = 1;
                     nPagesPrinted = nPagesPrinted + 1;
                 else
                     p = p + 1;
                 end
+                                
 
             end
 
@@ -483,28 +544,24 @@ classdef osimMocoTrajectoryReport < handle
             end
         end
         function ax = createSubplot(self, p)
-            ax = subplot(self.numRows, self.numCols, p + self.numCols);
+            ax = subplot(self.numRows, self.numCols, p);
             hold on;
-            % pos = get(gca, 'Position');
-            % pos(1) = 0.055;
-            % pos(3) = 0.9;
-            % set(gca, 'Position', pos)
         end
     end
     methods (Static)
         function [newName, lsMap] = bilateralize(name, lsMap)
-            newName = regexprep(name, '_r(/|_|$)', '$1');
+            newName = regexprep(name, '_l(/|_|$)', '$1');
             if ~strcmp(newName, name)
                 if ~lsMap.isKey(newName)
                     lsMap(newName) = {};
                 end
-                lsMap(newName) = [lsMap(newName), {'-'}];
+                lsMap(newName) = [lsMap(newName), {'--'}];
             else
-                newName = regexprep(name, '_l(/|_|$)', '$1');
+                newName = regexprep(name, '_r(/|_|$)', '$1');
                 if ~lsMap.isKey(newName)
                     lsMap(newName) = {};
                 end
-                lsMap(newName) = [lsMap(newName), {'--'}];
+                lsMap(newName) = [lsMap(newName), {'-'}];
             end
         end
         function label = getLabelFromMotionType(motionType, level)
@@ -546,7 +603,6 @@ classdef osimMocoTrajectoryReport < handle
         end
     end
     properties (SetAccess = private)
-        % Input.
         model
         trajectoryFilepath
         trajectory
@@ -555,6 +611,7 @@ classdef osimMocoTrajectoryReport < handle
         output
         output_ps
         accels
+        refFiles
         refs
 
         time
