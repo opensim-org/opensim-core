@@ -334,7 +334,7 @@
 							<objects>
 								<DisplayGeometry>
 									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file>femur.vtp</geometry_file>
+									<geometry_file>femur_r.vtp</geometry_file>
 									<!--Color used to display the geometry when visible-->
 									<color> 1 1 1</color>
 									<!--Name of texture file .jpg, .bmp-->
@@ -515,7 +515,7 @@
 							<objects>
 								<DisplayGeometry>
 									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file>tibia.vtp</geometry_file>
+									<geometry_file>tibia_r.vtp</geometry_file>
 									<!--Color used to display the geometry when visible-->
 									<color> 1 1 1</color>
 									<!--Name of texture file .jpg, .bmp-->

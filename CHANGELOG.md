@@ -1,3 +1,9 @@
+- 2019-11-28: Brian Umberger contributed a Matlab version of example2DWalking,
+              which contains a 2-D prediction of walking.
+
+- 2019-11-26: Consistently refer to MocoTrajectories as "trajectory" instead of
+              "iterate".
+
 - 2019-11-22: Introduce TabOpUseAbsoluteStateNames to convert column labels
               from IK solutions pre-4.0 states files to use new-style column
               labels.

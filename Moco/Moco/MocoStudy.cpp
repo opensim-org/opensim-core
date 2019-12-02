@@ -119,8 +119,8 @@ void MocoStudy::visualize(const MocoTrajectory& it) const {
     OpenSim::visualize(model, it.exportToStatesStorage());
 }
 
-TimeSeriesTable MocoStudy::analyze(const MocoTrajectory& iterate,
+TimeSeriesTable MocoStudy::analyze(const MocoTrajectory& trajectory,
         std::vector<std::string> outputPaths) const {
     return OpenSim::analyze<double>(get_problem().createRep().getModelBase(),
-        iterate, outputPaths);
+        trajectory, outputPaths);
 }

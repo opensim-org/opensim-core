@@ -122,11 +122,11 @@ public:
     /// hold.
     MocoSolution solve() const;
 
-    /// Interactively visualize an iterate using the simbody-visualizer. The
-    /// iterate could be an initial guess, a solution, etc.
+    /// Interactively visualize a trajectory using the simbody-visualizer. The
+    /// trajectory could be an initial guess, a solution, etc.
     /// @precondition
     ///     The MocoProblem must contain the model corresponding to
-    ///     the provided iterate.
+    ///     the provided trajectory.
     void visualize(const MocoTrajectory& it) const;
 
     /// Calculate the requested outputs using the model in the problem and the
