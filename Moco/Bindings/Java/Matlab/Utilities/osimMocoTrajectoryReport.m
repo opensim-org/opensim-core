@@ -1,15 +1,20 @@
-% TODO: add documentation
-% Refer to report.py (located in Moco/Bindings/Python in the source code)
-% for additional documentation.
-% TODO: parameters
-% Based on report.py.
-% TODO use tiledlayout
-% (https://www.mathworks.com/help/matlab/ref/tiledlayout.html).
 % Generate a report given a MocoTrajectory and an associated OpenSim Model.
 % Optionally, additional reference data compatible with the MocoTrajectory
 % may be plotted.
-
-% Tested with MATLAB 2019a. TODO contribute.
+% 
+% Arguments
+% ---------
+%   model: An OpenSim Model object associated with the trajectory.
+%   trajectoryFilepath: The path to a MocoTrajectory or MocoSolution STO file.
+% 
+% Optional arguments
+% ------------------
+%   outputFilepath: The file path to which the report should be written. This
+%       must end in '.pdf'. By default, this is
+%       <trajectoryFilepath-without-.sto>_report.pdf.
+%   bilateral (true/false): Plot left and right limb quantities on the
+%       same axes. Default: false.
+%   refFiles (cell array of strings): Paths to reference data files.
 %
 % We attempt to generate the report as a PDF file, but this requires that
 % you have Ghostscript installed, and that Ghostscript's `ps2pdf` command
@@ -20,18 +25,14 @@
 % via the website https://www.ps2pdf.com/. On a Mac, you can open the 
 % PostScript file with Preview to convert it to a PDF.
 % 
-% 
-% Arguments
-% ---------
-%   model: 
-%   trajectoryFilepath:
-% 
-% Optional arguments
-% ------------------
-%   outputFilepath: TODO rename arg
-%   bilateral: 
-%   refFiles: 
-% 
+% We tested this code with MATLAB 2019a. If you manage to make this code work
+% with other versions of MATLAB, please let the Moco developers know!
+%
+% This code is based on Moco's report.py Python module. Refer to report.py
+% (located in Moco/Bindings/Python in the source code) for additional 
+% documentation.
+
+% TODO: Plot parameters.
 
 % -------------------------------------------------------------------------- %
 % OpenSim Moco: osimMocoTrajectoryReport.m                                   %
