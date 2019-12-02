@@ -89,7 +89,3 @@ study.print('optimize_mass.omoco');
 
 sol = study.solve();
 sol.write('optimize_mass_solution.sto');
-
-report = osimMocoTrajectoryReport(model, 'optimize_mass_solution.sto');
-reportFilepath = report.generate();
-open(reportFilepath);

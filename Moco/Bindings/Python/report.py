@@ -255,8 +255,8 @@ class Report(object):
 
             plt.subplot(self.num_rows, self.num_cols, p + 3)
             # Loop through all the state variable paths for this key.
-            ymin = -np.inf
-            ymax = np.inf
+            ymin = np.inf
+            ymax = -np.inf
             for path, ls in zip(var_dict[key], ls_dict[key]):
                 var = self.getVariable(var_type, path)
                 ymin = np.minimum(ymin, np.min(var))

@@ -103,7 +103,9 @@ classdef osimMocoTrajectoryReport < handle
                 trajDir = './';
             end
             self.output_ps = sprintf('%s.ps', tempname(trajDir));
-            
+
+            % self.plotsPerPage is initialized in the "properties" section
+            % toward the end of this file.
             self.numRows = floor(self.plotsPerPage / 3) + 1;
             
             
@@ -199,6 +201,7 @@ classdef osimMocoTrajectoryReport < handle
                             self.bilateralize(accelName, accelLsMap);
                     end
                 else
+                    % Create an entry for valueName if one does not yet exist.
                     if ~stateLsMap.isKey(valueName)
                         stateLsMap(valueName) = {};
                     end

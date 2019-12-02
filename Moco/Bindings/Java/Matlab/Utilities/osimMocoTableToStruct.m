@@ -3,6 +3,10 @@
 %
 %  Output is a Maltab stucture where data.label = nX1 or nx3 array
 %  eg structdata.LASI = [2 3 4; 4 5 6, ...
+%
+%  This file is based on osimTableToStruct.m that comes with OpenSim 4.1,
+%  but we modified how illegal column names are handled. In this version,
+%  we remove the first character of a column name if it's illegal.
 
 % ----------------------------------------------------------------------- %
 % The OpenSim API is a toolkit for musculoskeletal modeling and           %
@@ -30,7 +34,7 @@
 %         Ajay Seth, Ayman Habib, Jen Hicks, Apoorva Rajagopal.
 
 %%
-function structdata = osimTableToStruct(osimtable)
+function structdata = osimMocoTableToStruct(osimtable)
 
 % Import Java libraries 
 import org.opensim.modeling.*
@@ -84,7 +88,7 @@ for iLabel = 0 : nLabels - 1
     if ~isvarname(col_label)
         % Find any non-alphanumeric characters and replace with '_'
         col_label(~(isstrprop(col_label,'alphanum'))) = '_';
-        % Check if first character is a letter, and append 'unlabeled' if not
+        % Check if first character is a letter, and remove it if not
         if ~(isletter(col_label(1)))
             col_label = col_label(2:end);
         end
