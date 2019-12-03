@@ -258,19 +258,13 @@ void PrintUsage(const char *aProgName, ostream &aOStream)
     aOStream << "-PropertyInfo, -PI                      Print help information for properties in setup files.\n";
     aOStream << "-ReadX, -RX  directory settings.xml     Parse Xsens exported files from directory using settingsFile.xml.\n";
     aOStream << "-ReadA, -RA  datafile.csv settings.xml  Parse single csv file provided by APDM using specified settingsFile.xml.\n";
-    aOStream << "-Calibrate, -C IMUPlacer_setup.xml\n";
-    aOStream << "                                        Calibrate the model specified in the IMUPlacer_setup.xml file by registering\n";
-    aOStream << "                                        IMU frames whose orientations in the sensor world frame are\n";
-    aOStream << "                                        specified in calibrationOrientations.sto. and assuming \n";
-    aOStream << "                                        the model's default pose is the calibration pose. The resultant\n";
-    aOStream << "                                        model with IMU frames registered is written to file as\n";
-    aOStream << "                                        calibrated_modelPoseFile.osim. Optional arguments for identifying the\n";
-    aOStream << "                                        base IMU by its label in the calibrationOrientations, e.g. 'pelvis imu'.\n";
-    aOStream << "                                        The base IMU and its heading axis as 'x', 'y', or 'z', are used to\n";
-    aOStream << "                                        align all the IMU data so that base imu's heading (forward) is in the X\n";
-    aOStream << "                                        direction of OpenSim ground. If no base IMU is specified, then the heading\n";
-    aOStream << "                                        correction is not applied. If the base_imu_label is provided but no axis,\n";
-    aOStream << "                                        then the 'z' axis of the base IMU is used to perform the heading correction.\n";
+    aOStream << "-Calibrate, -C IMUPlacer_setup.xml      Calibrate the model specified in the IMUPlacer_setup.xml file by registering\n";
+    aOStream << "                                        IMU frames whose orientations in the sensor world frame are described by quaternions file\n";
+    aOStream << "                                        specified in IMUPlacer_setup.xml and assuming the model's default pose \n";
+    aOStream << "                                        is the calibration pose. The resultant model with IMU frames registered \n";
+    aOStream << "                                        is written to file if output_model_file is specified in IMUPlacer_setup.xml.";
+    aOStream << "                                        Additional options can be described in IMUPlacer_setup.xml\n";
+    aOStream << "                                        to perform heading correction.\n";
     aOStream << "-InverseKinematics, -IK ik_settings.xml Run IK using an xml settings file to define the inverse kinematics problem.\n";
     aOStream << endl;
 /** Advanced options for experimental validation. Uncomment if/when ready to make public
