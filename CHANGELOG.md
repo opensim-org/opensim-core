@@ -50,6 +50,9 @@
               git commit hash and commit date. The opensim-moco command-line
               tool now has a --version flag to print the Moco version.
               
+- 2019-10-04: MocoControlGoal weights can be specified via regular expression
+              patterns.
+
 - 2019-10-04: report.py can plot normalized tendon force states. Users can 
               provide a MocoStudy file instead of a Model file, and users can
               specify the name of the report output file.
