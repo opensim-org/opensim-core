@@ -1,5 +1,5 @@
-%% IMUTracking.m
-% Example code to perform IMU Inverse Kinematices from IMU data.
+%% OpenSense_OrientationTracking.m
+% Example code to perform orienation tracking with OpenSense. 
 
 % The OpenSim API is a toolkit for musculoskeletal modeling and           %
 % simulation. See http://opensim.stanford.edu and the NOTICE file         %
