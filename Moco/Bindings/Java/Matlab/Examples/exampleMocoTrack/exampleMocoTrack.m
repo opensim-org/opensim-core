@@ -22,7 +22,10 @@
 %    to solve a torque-driven marker tracking problem. 
 %  - The second problem shows how to customize a muscle-driven state tracking 
 %    problem using more advanced features of the tool interface.
-% 
+%
+% This example also shows how to use the osimMocoTrajectoryReport.m utility to
+% create a PDF report of plots of a solution.
+%
 % Data and model source: https://simtk.org/projects/full_body
 % 
 % Model
@@ -120,6 +123,17 @@ track.set_mesh_interval(0.05);
 
 % Solve! The boolean argument indicates to visualize the solution.
 solution = track.solve(true);
+
+solution.write('exampleMocoTrack_markertracking_solution.sto');
+
+% Generate a PDF report containing plots of the variables in the solution.
+% For details, see osimMocoTrajectoryReport.m in Moco's
+% Resources/Code/Matlab/Utilities folder.
+model = modelProcessor.process();
+report = osimMocoTrajectoryReport(model, ...
+            'exampleMocoTrack_markertracking_solution.sto');
+reportFilepath = report.generate();
+open(reportFilepath);
 
 end
 
