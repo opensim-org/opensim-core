@@ -1,5 +1,5 @@
 %% IMUTracking.m
-% Example code to perform IMU Inverse Kinematices using from IMU data.
+% Example code to perform IMU Inverse Kinematices from IMU data.
 
 % The OpenSim API is a toolkit for musculoskeletal modeling and           %
 % simulation. See http://opensim.stanford.edu and the NOTICE file         %
