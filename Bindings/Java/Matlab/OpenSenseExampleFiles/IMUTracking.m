@@ -1,9 +1,8 @@
-%% OpenSense_OrientationTracking.m
+%% IMUTracking.m
 % Example code to perform orienation tracking with OpenSense. This
 % script uses the OpenSense library functions and is part of the OpenSense
 % Example files. 
 
-% ----------------------------------------------------------------------- %
 % The OpenSim API is a toolkit for musculoskeletal modeling and           %
 % simulation. See http://opensim.stanford.edu and the NOTICE file         %
 % for more information. OpenSim is developed at Stanford University       %
