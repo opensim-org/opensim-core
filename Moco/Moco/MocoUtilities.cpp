@@ -103,7 +103,6 @@ SimTK::Vector OpenSim::interpolate(const SimTK::Vector& x,
     OPENSIM_THROW_IF(x_no_nans.empty(), Exception,
             "Input vectors are empty (perhaps after removing NaNs).");
 
-
     PiecewiseLinearFunction function(
             (int)x_no_nans.size(), &x_no_nans[0], &y_no_nans[0]);
     SimTK::Vector newY(newX.size(), SimTK::NaN);
@@ -441,7 +440,7 @@ MocoTrajectory OpenSim::simulateTrajectoryWithTimeStepping(
     manager.initialize(state);
     state = manager.integrate(time[time.size() - 1]);
 
-    // Export results from states reporter to a TimeSeries Table
+    // Export results from states reporter to a TimeSeriesTable
     TimeSeriesTable states = statesRep->getStates().exportToTable(model);
 
     const auto& statesTimes = states.getIndependentColumn();
@@ -616,9 +615,21 @@ void OpenSim::checkRedundantLabels(std::vector<std::string> labels) {
             format("Label '%s' appears more than once.", *it));
 }
 
+void OpenSim::checkLabelsMatchModelStates(const Model& model,
+        const std::vector<std::string>& labels) {
+    const auto modelStateNames = model.getStateVariableNames();
+    for (const auto& label : labels) {
+        OPENSIM_THROW_IF(modelStateNames.rfindIndex(label) == -1, Exception,
+            format("Expected the provided labels to match the model state "
+                   "names, but label %s does not correspond to any model "
+                    "state.", label));
+    }
+}
+
 MocoTrajectory OpenSim::createPeriodicTrajectory(
         const MocoTrajectory& in, std::vector<std::string> addPatterns,
         std::vector<std::string> negatePatterns,
+        std::vector<std::string> negateAndShiftPatterns,
         std::vector<std::pair<std::string, std::string>> symmetryPatterns) {
 
     const int oldN = in.getNumTimes();
@@ -663,8 +674,19 @@ MocoTrajectory OpenSim::createPeriodicTrajectory(
                 if (std::regex_match(name, regex)) {
                     matched = true;
                     const double& oldFinal = oldTraj.getElt(oldN - 1, i);
-                    newTraj.updBlock(oldN, i, oldN - 1, 1) =
-                            SimTK::Matrix(oldTraj.block(1, i, oldN - 1, 1).negate());
+                    newTraj.updBlock(oldN, i, oldN - 1, 1) = SimTK::Matrix(
+                            oldTraj.block(1, i, oldN - 1, 1).negate());
+                    break;
+                }
+            }
+
+            for (const auto& pattern : negateAndShiftPatterns) {
+                const auto regex = std::regex(pattern);
+                if (std::regex_match(name, regex)) {
+                    matched = true;
+                    const double& oldFinal = oldTraj.getElt(oldN - 1, i);
+                    newTraj.updBlock(oldN, i, oldN - 1, 1) = SimTK::Matrix(
+                            oldTraj.block(1, i, oldN - 1, 1).negate());
                     newTraj.updBlock(oldN, i, oldN - 1, 1).updCol(0) +=
                             2 * oldFinal;
                     break;
