@@ -32,7 +32,7 @@ TEST_CASE("TableProcessor") {
         OpenSim_DECLARE_CONCRETE_OBJECT(MyTableOperator, TableOperator);
 
     public:
-        void operate(TimeSeriesTable& table) const override {
+        void operate(TimeSeriesTable& table, const Model*) const override {
             table.appendRow(10.0,
                     ~createVectorLinspace((int)table.getNumColumns(), 0, 1));
         }

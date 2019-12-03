@@ -140,6 +140,37 @@ Storage OpenSim::convertTableToStorage(const TimeSeriesTable& table) {
     return sto;
 }
 
+void OpenSim::updateStateLabels40(const Model& model,
+        std::vector<std::string>& labels) {
+
+    checkRedundantLabels(labels);
+
+    // Storage::getStateIndex() holds the logic for converting between
+    // new-style state names and old-style state names. When opensim-core is
+    // updated to put the conversion logic in a better place, we should update
+    // the implementation here.
+    Array<std::string> osimLabels;
+    osimLabels.append("time");
+    for (const auto& label : labels) {
+        osimLabels.append(label);
+    }
+    Storage sto;
+    sto.setColumnLabels(osimLabels);
+
+    const Array<std::string> stateNames = model.getStateVariableNames();
+    for (int isv = 0; isv < stateNames.size(); ++isv) {
+        int isto = sto.getStateIndex(stateNames[isv]);
+        if (isto == -1) continue;
+
+        // Skip over time.
+        osimLabels[isto + 1] = stateNames[isv];
+    }
+
+    for (int i = 1; i < osimLabels.size(); ++i) {
+        labels[i - 1] = osimLabels[i];
+    }
+}
+
 TimeSeriesTable OpenSim::filterLowpass(
         const TimeSeriesTable& table, double cutoffFreq, bool padData) {
     OPENSIM_THROW_IF(cutoffFreq < 0, Exception,
@@ -582,8 +613,7 @@ void OpenSim::checkRedundantLabels(std::vector<std::string> labels) {
     std::sort(labels.begin(), labels.end());
     auto it = std::adjacent_find(labels.begin(), labels.end());
     OPENSIM_THROW_IF(it != labels.end(), Exception,
-            format("Multiple reference data provided for the variable %s.",
-                    *it));
+            format("Label '%s' appears more than once.", *it));
 }
 
 MocoTrajectory OpenSim::createPeriodicTrajectory(

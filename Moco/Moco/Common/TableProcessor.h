@@ -5,7 +5,7 @@
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia, Nicholas Bianco                             *
+ * Author(s): Christopher Dembia, Nicholas Bianco, Prasanna Sritharan         *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -19,6 +19,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "../MocoUtilities.h"
+#include <algorithm>
 
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -31,7 +32,9 @@ class OSIMMOCO_API TableOperator : public Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(TableOperator, Object);
 
 public:
-    virtual void operate(TimeSeriesTable& table) const = 0;
+    /// This function may or may not be provided with a model. If the operation
+    /// requires a model and model == nullptr, an exception is thrown.
+    virtual void operate(TimeSeriesTable& table, const Model* model) const = 0;
 };
 
 /// This class describes a workflow for processing a table using
@@ -69,12 +72,13 @@ public:
         set_filepath(std::move(filepath));
     }
     /// Process and obtain the table. If a filepath is provided, it will be
-    /// evaluated relative `relativeToDirectory`, if provided.
+    /// evaluated relative `relativeToDirectory`.
     /// If a model is provided, it is used to convert columns from degrees to
     /// radians (if the table has a header with inDegrees=yes) before any
-    /// operations are performed.
-    TimeSeriesTable process(std::string relativeToDirectory = {},
-            const Model* modelToConvertDegreesToRadians = nullptr) const {
+    /// operations are performed. This model is accessible by any
+    /// TableOperator%s that require it.
+    TimeSeriesTable process(std::string relativeToDirectory,
+            const Model* model = nullptr) const {
         TimeSeriesTable table;
         if (get_filepath().empty()) {
             if (m_tableProvided) {
@@ -98,14 +102,18 @@ public:
 
         if (table.hasTableMetaDataKey("inDegrees") &&
                 table.getTableMetaDataAsString("inDegrees") == "yes") {
-            modelToConvertDegreesToRadians->getSimbodyEngine()
-                    .convertDegreesToRadians(table);
+            model->getSimbodyEngine().convertDegreesToRadians(table);
         }
 
         for (int i = 0; i < getProperty_operators().size(); ++i) {
-            get_operators(i).operate(table);
+            get_operators(i).operate(table, model);
         }
         return table;
+    }
+    /// Same as above, but paths are evaluated with respect to the current
+    /// working directory.
+    TimeSeriesTable process(const Model* model = nullptr) const {
+        return process({}, model);
     }
     /// Returns true if neither a filepath nor an in-memory table have been
     /// provided.
@@ -151,7 +159,8 @@ public:
     TabOpLowPassFilter(double cutoffFrequency) : TabOpLowPassFilter() {
         set_cutoff_frequency(cutoffFrequency);
     }
-    void operate(TimeSeriesTable& table) const override {
+    void operate(TimeSeriesTable& table, const Model* model = nullptr)
+            const override {
         if (get_cutoff_frequency() != -1) {
             OPENSIM_THROW_IF(get_cutoff_frequency() <= 0, Exception,
                     format("Expected cutoff frequency to be positive, "
@@ -160,6 +169,34 @@ public:
 
             table = filterLowpass(table, get_cutoff_frequency(), true);
         }
+    }
+};
+
+/// Update table column labels to use post-4.0 state paths instead of pre-4.0
+/// state names. For example, this converts column labels as follows:
+///   - `pelvis_tilt` -> `/jointset/ground_pelvis/pelvis_tilt/value`
+///   - `pelvis_tilt_u` -> `/jointset/ground_pelvis/pelvis_tilt/speed`
+///   - `soleus.activation` -> `/forceset/soleus/activation`
+///   - `soleus.fiber_length` -> `/forceset/soleus/fiber_length`
+/// This can also be used to convert an Inverse Kinematics Tool solution MOT
+/// file to be used as a states file (with only coordinate values).
+/// If a column label does not identify a state in the model,
+/// the column label is not changed. Column labels must be unique.
+/// This operator is implemented using updateStateLabels40().
+class OSIMMOCO_API TabOpUseAbsoluteStateNames : public TableOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(TabOpUseAbsoluteStateNames, TableOperator);
+
+public:
+    TabOpUseAbsoluteStateNames() {}
+
+    void operate(TimeSeriesTable& table, const Model* model) const override {
+
+        OPENSIM_THROW_IF(!model, Exception,
+                "Expected a model, but no model was provided.");
+
+        auto labels = table.getColumnLabels();
+        updateStateLabels40(*model, labels);
+        table.setColumnLabels(labels);
     }
 };
 
