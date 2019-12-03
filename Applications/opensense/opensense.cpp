@@ -146,7 +146,7 @@ int main(int argc, char **argv)
                     return 0;
                 }
                 else if ((option == "-Calibrate") || (option == "-C")) {
-                    if (argc < 4) {
+                    if (argc < 3) {
                         cout << "Calibration specification file is needed. Please fix and retry." << endl;
                         PrintUsage(argv[0], cout);
                         exit(-1);
