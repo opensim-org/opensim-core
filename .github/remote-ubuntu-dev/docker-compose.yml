@@ -8,7 +8,7 @@ services:
       context: ../../
       dockerfile: .github/remote-ubuntu-dev/Dockerfile
       args:
-        BTYPE: Debug
+        BTYPE: RelWithDebInfo
     security_opt: # options needed for gdb debugging
       - seccomp:unconfined
       - apparmor:unconfined
