@@ -1,7 +1,6 @@
-%% IMUDataConverter.m
-% Example code for reading, and converting, XSENS IMU sensor data to
-% OpenSense friendly format.
-% Run this script from the OpenSenseExampleFiles directory.
+%% APDMReading_example.m
+% Example code for reading, and converting, APDM IMU sensor data to OpenSim
+% friendly format.
 
 % ----------------------------------------------------------------------- %
 % The OpenSim API is a toolkit for musculoskeletal modeling and           %
@@ -23,40 +22,62 @@
 % WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or         %
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
-% ----------------------------------------------------------------------- % 
+% ----------------------------------------------------------------------- %
 
-%% Clear any variables in the workspace
+%% Clear any vairables in the workspace
 clear all; close all; clc;
 
 %% Import OpenSim libraries
 import org.opensim.modeling.*
 
-%% Build an Xsens Settings Object.
+%% Build an apdm Settings Object.
 % Instantiate the Reader Settings Class
-xsensSettings = XsensDataReaderSettings('myIMUMappings.xml');
-% Instantiate an XsensDataReader
-xsens = XsensDataReader(xsensSettings);
-% Get a table reference for the data
-tables = xsens.read('IMUData/');
-% get the trial name from the settings
-trial = char(xsensSettings.get_trial_prefix());
+apdmSettings = APDMDataReaderSettings();
+
+% List of files to read
+vecOfNames = StdVectorString();
+vecOfNames.add('Static');
+vecOfNames.add('Upper');
+vecOfNames.add('Middle');
+
+% List of IMU Names to read
+vecOfIMUNames = StdVectorString();
+vecOfIMUNames.add('torso');
+vecOfIMUNames.add('pelvis');
+vecOfIMUNames.add('shank');
+
+for i = 0 : vecOfIMUNames.size() - 1
+    % Instantiate an ExpermentalSensor using the source data file and a IMU
+    % name
+    nextSensor = ExperimentalSensor(vecOfNames.get(i), vecOfIMUNames.get(i) );
+    % Add the ExperimentalSensor to the Settings
+    apdmSettings.append_ExperimentalSensors(nextSensor);
+end
+
+% Write the settings to xml file
+apdmSettings.print('apdmTrial_Settings.xml');
+
+%% Instantiate a apdmDataReader
+apdm = APDMDataReader(apdmSettings);
+trialName = 'imuData01.csv';
+tables = apdm.read(trialName);
 
 %% Get Orientation Data as quaternions
-quatTable = xsens.getOrientationsTable(tables);
+quatTableTyped = apdm.getOrientationsTable(tables);
 % Write to file
-STOFileAdapterQuaternion.write(quatTable,  [trial '_orientations.sto']);
+STOFileAdapterQuaternion.write(quatTableTyped,  strrep(trialName,'.csv', '_quaternions.sto'));
 
 %% Get Acceleration Data
-accelTable = xsens.getLinearAccelerationsTable(tables);
+accelTable = apdm.getLinearAccelerationsTable(tables);
 % Write to file
-STOFileAdapterVec3.write(accelTable, [trial '_linearAccelerations.sto']);
+STOFileAdapterVec3.write(accelTable, strrep(trialName,'.csv', '_accelerations.sto'));
 
 %% Get Magnetic (North) Heading Data
-magTable = xsens.getMagneticHeadingTable(tables);
+magTable = apdm.getMagneticHeadingTable(tables);
 % Write to file
-STOFileAdapterVec3.write(magTable, [trial '_magneticNorthHeadings.sto']);
+STOFileAdapterVec3.write(magTable,  strrep(trialName,'.csv', '_magnetometers.sto'));
 
 %% Get Angular Velocity Data
-angVelTable = xsens.getAngularVelocityTable(tables);
+angVelTable = apdm.getAngularVelocityTable(tables);
 % Write to file
-STOFileAdapterVec3.write(angVelTable, [trial '_angularVelocities.sto']);
+STOFileAdapterVec3.write(angVelTable,  strrep(trialName,'.csv', '_gyros.sto'));

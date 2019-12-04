@@ -1,7 +1,7 @@
 %% OpenSense_OrientationTracking.m
 % Example code to perform orienation tracking with OpenSense. This
 % script uses the OpenSense library functions and is part of the OpenSense
-% Example files. 
+% Example files.
 
 % ----------------------------------------------------------------------- %
 % The OpenSim API is a toolkit for musculoskeletal modeling and           %
@@ -11,7 +11,7 @@
 % R24 HD065690) and by DARPA through the Warrior Web program.             %
 %                                                                         %
 % Copyright (c) 2005-2019 Stanford University and the Authors             %
-% Author(s): James Dunne                                                  %
+% Author(s): James Dunne, Ajay Seth, Ayman Habib, Jen Hicks, Chris Dembia %
 %                                                                         %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
 % you may not use this file except in compliance with the License.        %
@@ -25,41 +25,41 @@
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
 
-%% Clear the Workspace variables. 
+%% Clear the Workspace variables.
 clear all; close all; clc;
 import org.opensim.modeling.*
 
 %% Set variables to use
 modelFileName = 'calibrated_Rajagopal_2015.osim';                % The path to an input model
-orientationsFileName = 'MT_012005D6_009-001_orientations.sto';   % The path to orientation data for calibration 
+orientationsFileName = 'MT_012005D6_009-001_orientations.sto';   % The path to orientation data for calibration
 baseIMUName = 'pelvis_imu';     % The base IMU is the IMU on the base body of the model that dictates the heading (forward) direction of the model.
-baseIMUHeading = 'z';      % The Coordinate Axis of the base IMU that points in the heading direction. 
+baseIMUHeading = 'z';      % The Coordinate Axis of the base IMU that points in the heading direction.
 visualizeTracking = true;  % Boolean to Visualize the tracking simulation
-startTime = 7.25;          % Start time (in seconds) of the tracking simulation. 
+startTime = 7.25;          % Start time (in seconds) of the tracking simulation.
 endTime = 15;              % End time (in seconds) of the tracking simulation.
 resultsDirectory = 'IKResults';
 
 %% Instantiate an InverseKinematicsStudy
 ik = InverseKinematicsStudy();
- 
+
 %% Set the model path to be used for tracking
 ik.set_model_file_name(modelFileName);
- 
+
 % Set file with orientations to track
 ik.set_orientations_file_name(orientationsFileName);
- 
+
 % Set time range in seconds
-ik.set_time_range(0, startTime); 
-ik.set_time_range(1, endTime);   
+ik.set_time_range(0, startTime);
+ik.set_time_range(1, endTime);
 
 % Set the base IMU
 ik.set_base_imu_label(baseIMUName);
- 
+
 % Set the axis heading
 ik.set_base_heading_axis(baseIMUHeading);
 
 % Set a directory for the results to be written to
 ik.set_results_directory(resultsDirectory)
-  
+
 % Run IK
 ik.run(visualizeTracking);
