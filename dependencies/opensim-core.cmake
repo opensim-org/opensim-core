@@ -24,13 +24,13 @@ if(SUPERBUILD_opensim-core)
     # OpenSim's dependencies.
     AddDependency(NAME simbody
                   GIT_URL    https://github.com/simbody/simbody.git
-                  GIT_TAG    94814f3c19e613f82a91ab58abd5471ed63aad96
+                  GIT_TAG    95dc0675914829f8db94cc297543d5fa340fc8df
                   CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF 
                              -DBUILD_TESTING:BOOL=OFF)
 
     AddDependency(NAME       docopt
                   GIT_URL    https://github.com/docopt/docopt.cpp.git
-                  GIT_TAG    af03fa044ee1eff20819549b534ea86829a24a54
+                  GIT_TAG    3dd23e3280f213bacefdf5fcb04857bf52e90917
                   CMAKE_ARGS -DCMAKE_DEBUG_POSTFIX:STRING=_d)
 
     add_dependencies(opensim-core simbody docopt)

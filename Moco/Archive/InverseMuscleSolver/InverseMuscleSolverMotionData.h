@@ -23,9 +23,8 @@
 
 // TODO should not expose Eigen. This whole file could be private.
 // or forward declare MatrixXd.
+#include "../../Moco/osimMocoDLL.h"
 #include <Eigen/Dense>
-
-#include "../osimMocoDLL.h"
 
 namespace OpenSim {
 

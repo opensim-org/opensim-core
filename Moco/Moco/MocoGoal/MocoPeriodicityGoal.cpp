@@ -71,6 +71,7 @@ void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
                 format("Could not find state '%s'.", path2));
         int stateIndex1 = allSysYIndices[path1];
         int stateIndex2 = allSysYIndices[path2];
+        m_state_names.emplace_back(path1, path2);
         m_indices_states.emplace_back(stateIndex1, stateIndex2,
                 get_state_pairs(i).get_negate() ? -1 : 1);
     }
@@ -89,6 +90,7 @@ void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
         int controlIndex2 = systemControlIndexMap[path2];
         m_indices_states.emplace_back(controlIndex1, controlIndex2,
                 get_state_pairs(i).get_negate() ? -1 : 1);
+        m_control_names.emplace_back(path1, path2);
     }
 
     setNumIntegralsAndOutputs(
@@ -118,5 +120,22 @@ void MocoPeriodicityGoal::calcGoalImpl(
                       finalControls[std::get<1>(index_control)];
         if (getModeIsCost()) { goal[i + j] = SimTK::square(goal[i + j]); }
         ++j;
+    }
+}
+
+void MocoPeriodicityGoal::printDescriptionImpl(std::ostream& stream) const {
+    stream << "        ";
+    stream << "state periodicity pairs: " << std::endl;
+    for (const auto& pair : m_state_names) {
+        stream << "                ";
+        stream << "initial: " << pair.first
+               << ", final: " << pair.second << std::endl;
+    }
+    stream << "        ";
+    stream << "control periodicity pairs: " << std::endl;
+    for (const auto& pair : m_control_names) {
+        stream << "                ";
+        stream << "initial: " << pair.first
+               << ", final: " << pair.second << std::endl;
     }
 }

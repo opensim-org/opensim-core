@@ -21,16 +21,9 @@ import os
 import ntpath
 import math
 import opensim as osim
-from matplotlib.backends.backend_pdf import PdfPages
-import matplotlib.pyplot as plt
-import matplotlib.lines as mlines
-from matplotlib.ticker import FormatStrFormatter
-import matplotlib.cm as cm
 import numpy as np
 from collections import defaultdict, OrderedDict
 # import pdb
-
-
 
 ## Helper functions.
 # ==================
@@ -50,13 +43,13 @@ def getLabelFromMotionType(motionTypeEnum, level):
     label = ''
     if motionTypeEnum == 1:
         if level == 'value': label = 'angle (rad)'
-        elif level == 'speed': label = 'ang. vel. (rad/s)'
-        elif level == 'accel': label = 'ang. accel. (rad/s^2)'
+        elif level == 'speed': label = 'speed (rad/s)'
+        elif level == 'accel': label = 'accel. (rad/s^2)'
         else: label = 'rotate'
         return label
     elif motionTypeEnum == 2:
         if level == 'value': label = 'position (m)'
-        elif level == 'speed': label = 'velocity (m/s)'
+        elif level == 'speed': label = 'speed (m/s)'
         elif level == 'accel': label = 'accel. (m/s^s)'
         else: label = 'translate'
         return label
@@ -121,13 +114,23 @@ class Report(object):
                  bilateral=True,
                  ref_files=None,
                  colormap=None,
+                 output=None,
                  ):
         self.model = model
+        self.model.initSystem()
         self.trajectory_filepath = trajectory_filepath
         self.trajectory = osim.MocoTrajectory(self.trajectory_filepath)
         self.bilateral = bilateral
         self.ref_files = ref_files
         self.colormap = colormap
+        trajectory_fname = ntpath.basename(self.trajectory_filepath)
+        trajectory_fname = trajectory_fname.replace('.sto', '')
+        trajectory_fname = trajectory_fname.replace('.mot', '')
+        self.trajectory_fname = trajectory_fname
+        if output:
+            self.output = output
+        else:
+            self.output = trajectory_fname + '_report.pdf'
 
         # Get any reference files provided by the user and create a list of NumPy
         # arrays to use in plotting.
@@ -145,7 +148,6 @@ class Report(object):
                     ref = sto_adapter.read(ref_file)
                     if (ref.hasTableMetaDataKey('inDegrees') and 
                             ref.getTableMetaDataAsString('inDegrees') == 'yes'):
-                        self.model.initSystem()
                         simbodyEngine = self.model.getSimbodyEngine()
                         simbodyEngine.convertDegreesToRadians(ref)
                         ref_file = ref_file.replace(file_ext, 
@@ -166,6 +168,7 @@ class Report(object):
         # Load the colormap provided by the user. Use a default colormap ('jet') 
         # if not provided. Uniformly sample the colormap based on the number of 
         # reference data sets, plus one for the MocoTrajectory.
+        import matplotlib.cm as cm
         if colormap is None: colormap = 'jet'
         self.cmap_samples = np.linspace(0.1, 0.9, len(self.refs)+1)
         self.cmap = cm.get_cmap(colormap)
@@ -179,17 +182,21 @@ class Report(object):
         all_files = list()
         if ref_files != None: all_files += ref_files
         all_files.append(trajectory_filepath)
+        lw = 8 / len(self.cmap_samples)
+        if lw < 0.5: lw = 0.5
+        if lw > 2: lw = 2
         for sample, file in zip(self.cmap_samples, all_files):
             color = self.cmap(sample)
+            import matplotlib.lines as mlines
             if bilateral:
-                r = mlines.Line2D([], [], ls='-', color=color, linewidth=3)
+                r = mlines.Line2D([], [], ls='-', color=color, linewidth=lw)
                 self.legend_handles.append(r)
                 self.legend_labels.append(file + ' (right leg)')
-                l = mlines.Line2D([], [], ls='--', color=color, linewidth=3)
+                l = mlines.Line2D([], [], ls='--', color=color, linewidth=lw)
                 self.legend_handles.append(l)
                 self.legend_labels.append(file + ' (left leg)')
             else:
-                h = mlines.Line2D([], [], ls='-', color=color, linewidth=3)
+                h = mlines.Line2D([], [], ls='-', color=color, linewidth=lw)
                 self.legend_handles.append(h)
                 self.legend_labels.append(file)
 
@@ -239,6 +246,8 @@ class Report(object):
         return var
 
     def plotVariables(self, var_type, var_dict, ls_dict, label_dict):
+        import matplotlib.pyplot as plt
+
         # Loop through all keys in the dictionary and plot all variables.
         p = 1 # Counter to keep track of number of plots per page.
         for i, key in enumerate(var_dict.keys()):
@@ -253,8 +262,8 @@ class Report(object):
             ymax = -np.inf
             for path, ls in zip(var_dict[key], ls_dict[key]):
                 var = self.getVariable(var_type, path)
-                ymin = np.min(var)
-                ymax = np.max(var)
+                ymin = np.minimum(ymin, np.min(var))
+                ymax = np.maximum(ymax, np.max(var))
                 # If any reference data was provided, that has columns matching
                 # the current variable path, then plot them first.
                 for r, ref in enumerate(self.refs):
@@ -294,6 +303,7 @@ class Report(object):
             ax.get_yaxis().get_offset_text().set_position((-0.15,0))
             ax.get_yaxis().get_offset_text().set_fontsize(6)
             ax.tick_params(direction='in', gridOn=True)
+            from matplotlib.ticker import FormatStrFormatter
             ax.xaxis.set_major_formatter(
                 FormatStrFormatter('%.1f'))
 
@@ -301,10 +311,14 @@ class Report(object):
             # figure as a new page to the PDF. Otherwise, increment the plot
             # counter and keep going.
             if (p % self.plots_per_page == 0) or (i == len(var_dict.keys())-1):
+                legfontsize = 64 / len(self.legend_handles)
+                if legfontsize > 10: legfontsize = 10
                 fig.tight_layout()
                 plt.figlegend(self.legend_handles, self.legend_labels,
-                              loc='upper center', bbox_to_anchor=(0.5, 0.97),
-                              fancybox=True, shadow=True)
+                              loc='lower center',
+                              bbox_to_anchor=(0.5, 0.85),
+                              fancybox=True, shadow=True,
+                              prop={'size': legfontsize})
                 self.pdf.savefig(fig)
                 plt.close()
                 p = 1
@@ -315,27 +329,34 @@ class Report(object):
 
         ## Generate report.
         # =================
+        import matplotlib.pyplot as plt
+        from matplotlib.backends.backend_pdf import PdfPages
 
-        # TODO is ntpath cross-platform?
-        trajectory_fname = ntpath.basename(self.trajectory_filepath)
-        trajectory_fname = trajectory_fname.replace('.sto', '')
-        trajectory_fname = trajectory_fname.replace('.mot', '')
-        with PdfPages(trajectory_fname + '_report.pdf') as self.pdf:
+        with PdfPages(self.output) as self.pdf:
 
-            # States & Derivatives
-            # --------------------
+            # States & Accelerations
+            # ----------------------
             state_names = self.trajectory.getStateNames()
             derivative_names = self.trajectory.getDerivativeNames()
             derivs = True if (len(derivative_names) > 0) else False
+            accels = False
+            auxiliary_derivative_names = list()
+            for derivative_name in derivative_names:
+                leaf = os.path.basename(os.path.normpath(derivative_name))
+                if leaf == 'accel':
+                    accels = True
+                else:
+                    auxiliary_derivative_names.append(derivative_name)
+
             if len(state_names) > 0:
                 # Loop through the model's joints and cooresponding coordinates to
                 # store plotting information.
                 state_dict = OrderedDict()
                 state_ls_dict = defaultdict(list)
                 state_label_dict = dict()
-                derivative_dict = OrderedDict()
-                derivative_ls_dict = defaultdict(list)
-                derivative_label_dict = dict()
+                acceleration_dict = OrderedDict()
+                acceleration_ls_dict = defaultdict(list)
+                acceleration_label_dict = dict()
                 coordSet = self.model.getCoordinateSet()
                 for c in range(coordSet.getSize()):
                     coord = coordSet.get(c)
@@ -346,7 +367,7 @@ class Report(object):
                     # variables.
                     valueName = coordName + '/value'
                     speedName = coordName + '/speed'
-                    if derivs: accelName = coordName + '/accel'
+                    if accels: accelName = coordName + '/accel'
                     if self.bilateral:
                         # If the --bilateral flag was set by the user, remove
                         # substrings that indicate the body side and update the
@@ -355,14 +376,14 @@ class Report(object):
                                 state_ls_dict)
                         speedName, state_ls_dict = bilateralize(speedName,
                                 state_ls_dict)
-                        if derivs:
-                            accelName, derivative_ls_dict = bilateralize(accelName,
-                                    derivative_ls_dict)
+                        if accels:
+                            accelName, acceleration_ls_dict = bilateralize(
+                                accelName, acceleration_ls_dict)
 
                     else:
                         state_ls_dict[valueName].append('-')
                         state_ls_dict[speedName].append('-')
-                        if derivs: derivative_ls_dict[accelName].append('-')
+                        if accels: acceleration_ls_dict[accelName].append('-')
 
 
                     if not valueName in state_dict:
@@ -379,20 +400,20 @@ class Report(object):
                     state_label_dict[speedName] = \
                         getLabelFromMotionType(coordMotType, 'speed')
 
-                    if derivs:
-                        if not accelName in derivative_dict:
-                            derivative_dict[accelName] = list()
-                        derivative_dict[accelName].append(coordPath + '/accel')
-                        derivative_label_dict[accelName] = \
+                    if accels:
+                        if not accelName in acceleration_dict:
+                            acceleration_dict[accelName] = list()
+                        acceleration_dict[accelName].append(coordPath + '/accel')
+                        acceleration_label_dict[accelName] = \
                             getLabelFromMotionType(coordMotType, 'accel')
 
                 self.plotVariables('state', state_dict, state_ls_dict, 
                         state_label_dict)
-                if derivs:
-                    self.plotVariables('derivative', derivative_dict, 
-                            derivative_ls_dict, derivative_label_dict)
+                if accels:
+                    self.plotVariables('derivative', acceleration_dict,
+                            acceleration_ls_dict, acceleration_label_dict)
 
-                # Activation
+                # Activations
                 activ_dict = OrderedDict()
                 activ_ls_dict = defaultdict(list)
                 activ_label_dict = dict()
@@ -414,6 +435,49 @@ class Report(object):
                 self.plotVariables('state', activ_dict, activ_ls_dict,
                                    activ_label_dict)
 
+                # Normalized tendon forces
+                norm_tendon_force_dict = OrderedDict()
+                norm_tendon_force_ls_dict = defaultdict(list)
+                norm_tendon_force_label_dict = dict()
+                for state_name in state_names:
+                    if state_name.endswith('/normalized_tendon_force'):
+                        title = state_name
+                        if self.bilateral:
+                            title, norm_tendon_force_ls_dict = bilateralize(
+                                title, norm_tendon_force_ls_dict)
+                        else:
+                            norm_tendon_force_ls_dict[title].append('-')
+                        if not title in norm_tendon_force_dict:
+                            norm_tendon_force_dict[title] = list()
+                        # If --bilateral was set, the 'title' key will
+                        # correspond to a list containing paths for both sides
+                        # of the model.
+                        norm_tendon_force_dict[title].append(state_name)
+                        norm_tendon_force_label_dict[title] = ''
+                self.plotVariables('state', norm_tendon_force_dict,
+                        norm_tendon_force_ls_dict,
+                        norm_tendon_force_label_dict)
+
+                # Auxiliary derivative variables
+                aux_dict = OrderedDict()
+                aux_ls_dict = defaultdict(list)
+                aux_label_dict = dict()
+                for aux_name in auxiliary_derivative_names:
+                    title = aux_name
+                    if self.bilateral:
+                        title, aux_ls_dict = bilateralize(title,
+                                                            aux_ls_dict)
+                    else:
+                        aux_ls_dict[title].append('-')
+                    if not title in aux_dict:
+                        aux_dict[title] = list()
+                    # If --bilateral was set, the 'title' key will
+                    # correspond to a list containing paths for both sides
+                    # of the model.
+                    aux_dict[title].append(aux_name)
+                    aux_label_dict[title] = ''
+                self.plotVariables('derivative', aux_dict, aux_ls_dict,
+                                   aux_label_dict)
 
             # Controls
             # --------
@@ -448,13 +512,14 @@ class Report(object):
                 ls_dict = defaultdict(list)
                 label_dict = dict()
                 for multiplier_name in multiplier_names:
+                    title = multiplier_name.replace('/', '')
                     if self.bilateral:
                         # If the --bilateral flag was set by the user, remove
                         # substrings that indicate the body side and update the
                         # linestyle dict.
                         title, ls_dict = bilateralize(multiplier_name, ls_dict)
                     else:
-                        ls_dict[valueName].append('-')
+                        ls_dict[title].append('-')
 
                     if not title in multiplier_dict:
                         multiplier_dict[title] = list()
@@ -475,21 +540,24 @@ class Report(object):
                 ax = plt.axes()
 
                 cell_text = []
-                parameters = convert(trajectory.getParameters())
+                parameters = convert(self.trajectory.getParameters())
                 cell_text.append(['%10.5f' % p for p in parameters])
 
-                print('trajectory name', trajectory_fname)
                 plt.table(cellText=cell_text, rowLabels=parameter_names,
-                          colLabels=[trajectory_fname], loc='center')
+                          colLabels=[self.trajectory_fname], loc='center')
                 ax.axis('off')
                 ax.axis('tight')
 
                 plt.subplots_adjust(left=0.2, right=0.8)
 
-                plt.figlegend(legend_handles, legend_labels,
-                    loc='upper center', bbox_to_anchor=(0.5, 0.97),
-                    fancybox=True, shadow=True)
-                pdf.savefig(fig)
+                legfontsize = 64 / len(self.legend_handles)
+                if legfontsize > 10: legfontsize = 10
+                plt.figlegend(self.legend_handles, self.legend_labels,
+                              loc='lower center',
+                              bbox_to_anchor=(0.5, 0.85),
+                              fancybox=True, shadow=True,
+                              prop={'size': legfontsize})
+                self.pdf.savefig(fig)
                 plt.close()
 
             # Slacks
@@ -508,8 +576,10 @@ def main():
                     "compatible with the MocoTrajectory may be plotted "
                     "simultaneously.")
     # Required arguments.
-    parser.add_argument('model', type=str,
-                        help="OpenSim Model file name (including path).")
+    parser.add_argument('model_or_mocostudy',
+                        metavar='model-or-mocostudy', type=str,
+                        help="OpenSim Model or MocoStudy file name "
+                             "(including path).")
     parser.add_argument('trajectory', type=str,
                         help="MocoTrajectory file name (including path).")
     # Optional arguments.
@@ -521,10 +591,19 @@ def main():
     parser.add_argument('--colormap', type=str,
                         help="Matplotlib colormap from which plot colors are "
                              "sampled from.")
+    parser.add_argument('--output', type=str,
+                        help="Write the report to this filepath. "
+                             "Default: the report is named "
+                             "<trajectory-without-.sto>_report.pdf")
     args = parser.parse_args()
 
     # Load the Model and MocoTrajectory from file.
-    model = osim.Model(args.model)
+    model_or_mocostudy = args.model_or_mocostudy
+    if model_or_mocostudy.endswith('.osim'):
+        model = osim.Model(model_or_mocostudy)
+    elif model_or_mocostudy.endswith('.omoco'):
+        study = osim.MocoStudy(model_or_mocostudy)
+        model = study.getProblem().createRep().getModelBase()
 
     ref_files = args.ref_files
 
@@ -533,6 +612,7 @@ def main():
                     bilateral=args.bilateral,
                     colormap=args.colormap,
                     ref_files=ref_files,
+                    output=args.output,
                     )
     report.generate()
 

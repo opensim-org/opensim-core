@@ -80,9 +80,9 @@ protected:
 };
 
 void minimizePendulumReactionLoads() {
-    MocoStudy moco;
-    moco.setName("minimize_pendulum_reaction_loads");
-    MocoProblem& mp = moco.updProblem();
+    MocoStudy study;
+    study.setName("minimize_pendulum_reaction_loads");
+    MocoProblem& mp = study.updProblem();
     mp.setModel(createInvertedPendulumModel());
 
     mp.setTimeBounds(0, 1);
@@ -95,22 +95,22 @@ void minimizePendulumReactionLoads() {
     mp.addGoal(reactionNormCost);
 
     MocoTropterSolver& ms = moco.initSolver();
-    ms.set_num_mesh_points(50);
+    ms.set_num_mesh_intervals(50);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
     //ms.set_optim_ipopt_print_level(5);
     ms.setGuess("bounds");
 
-    MocoSolution solution = moco.solve();
+    MocoSolution solution = study.solve();
     solution.write("sandboxJointReaction_minimizePendulumReactionLoads.sto");
-    moco.visualize(solution);
+    study.visualize(solution);
 }
 
 void minimizeControlEffort() {
-    MocoStudy moco;
-    moco.setName("minimize_pendulum_reaction_loads");
-    MocoProblem& mp = moco.updProblem();
+    MocoStudy study;
+    study.setName("minimize_pendulum_reaction_loads");
+    MocoProblem& mp = study.updProblem();
     mp.setModel(createInvertedPendulumModel());
 
     mp.setTimeBounds(0, 1);
@@ -121,17 +121,17 @@ void minimizeControlEffort() {
     MocoControlGoal effort;
     mp.addGoal(effort);
 
-    MocoTropterSolver& ms = moco.initSolver();
-    ms.set_num_mesh_points(50);
+    MocoTropterSolver& ms = study.initSolver();
+    ms.set_num_mesh_intervals(50);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
     //ms.set_optim_ipopt_print_level(5);
     ms.setGuess("bounds");
 
-    MocoSolution solution = moco.solve();
+    MocoSolution solution = study.solve();
     solution.write("sandboxJointReaction_minimizeControlEffort.sto");
-    moco.visualize(solution);
+    study.visualize(solution);
 }
 
 void main() {

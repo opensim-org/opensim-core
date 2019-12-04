@@ -3,7 +3,7 @@
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia                                              *
+ * Author(s): Christopher Dembia, Nicholas Bianco                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -34,7 +34,6 @@
 #include <OpenSim/Simulation/Control/PrescribedController.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
 #include <OpenSim/Simulation/StatesTrajectoryReporter.h>
 
@@ -81,6 +80,10 @@ SimTK::Vector OpenSim::interpolate(const SimTK::Vector& x,
         const SimTK::Vector& y, const SimTK::Vector& newX,
         const bool ignoreNaNs) {
 
+    OPENSIM_THROW_IF(x.size() != y.size(), Exception,
+            format("Expected size of x to equal size of y, but size of x "
+                      "is %i and size of y is %i.", x.size(), y.size()));
+
     // Create vectors of non-NaN values if user set 'ignoreNaNs' argument to
     // 'true', otherwise throw an exception. If no NaN's are present in the
     // provided data vectors, the '*_no_nans' variables below will contain
@@ -96,6 +99,9 @@ SimTK::Vector OpenSim::interpolate(const SimTK::Vector& x,
             y_no_nans.push_back(y[i]);
         }
     }
+
+    OPENSIM_THROW_IF(x_no_nans.empty(), Exception,
+            "Input vectors are empty (perhaps after removing NaNs).");
 
     PiecewiseLinearFunction function(
             (int)x_no_nans.size(), &x_no_nans[0], &y_no_nans[0]);
@@ -131,6 +137,37 @@ Storage OpenSim::convertTableToStorage(const TimeSeriesTable& table) {
                 row.size() ? row.getContiguousScalarData() : &unused);
     }
     return sto;
+}
+
+void OpenSim::updateStateLabels40(const Model& model,
+        std::vector<std::string>& labels) {
+
+    checkRedundantLabels(labels);
+
+    // Storage::getStateIndex() holds the logic for converting between
+    // new-style state names and old-style state names. When opensim-core is
+    // updated to put the conversion logic in a better place, we should update
+    // the implementation here.
+    Array<std::string> osimLabels;
+    osimLabels.append("time");
+    for (const auto& label : labels) {
+        osimLabels.append(label);
+    }
+    Storage sto;
+    sto.setColumnLabels(osimLabels);
+
+    const Array<std::string> stateNames = model.getStateVariableNames();
+    for (int isv = 0; isv < stateNames.size(); ++isv) {
+        int isto = sto.getStateIndex(stateNames[isv]);
+        if (isto == -1) continue;
+
+        // Skip over time.
+        osimLabels[isto + 1] = stateNames[isv];
+    }
+
+    for (int i = 1; i < osimLabels.size(); ++i) {
+        labels[i - 1] = osimLabels[i];
+    }
 }
 
 TimeSeriesTable OpenSim::filterLowpass(
@@ -333,7 +370,7 @@ std::unique_ptr<Function> createFunction<GCVSpline>(
 } // anonymous namespace
 
 void OpenSim::prescribeControlsToModel(
-        const MocoTrajectory& iterate, Model& model, std::string functionType) {
+        const MocoTrajectory& trajectory, Model& model, std::string functionType) {
     // Get actuator names.
     model.initSystem();
     OpenSim::Array<std::string> actuNames;
@@ -345,11 +382,11 @@ void OpenSim::prescribeControlsToModel(
     // Add prescribed controllers to actuators in the model, where the control
     // functions are splined versions of the actuator controls from the OCP
     // solution.
-    const SimTK::Vector& time = iterate.getTime();
+    const SimTK::Vector& time = trajectory.getTime();
     auto* controller = new PrescribedController();
     controller->setName("prescribed_controller");
     for (int i = 0; i < actuNames.size(); ++i) {
-        const auto control = iterate.getControl(actuNames[i]);
+        const auto control = trajectory.getControl(actuNames[i]);
         std::unique_ptr<Function> function;
         if (functionType == "GCVSpline") {
             function = createFunction<GCVSpline>(time, control);
@@ -367,10 +404,11 @@ void OpenSim::prescribeControlsToModel(
     model.addController(controller);
 }
 
-MocoTrajectory OpenSim::simulateIterateWithTimeStepping(
-        const MocoTrajectory& iterate, Model model, double integratorAccuracy) {
+MocoTrajectory OpenSim::simulateTrajectoryWithTimeStepping(
+        const MocoTrajectory& trajectory, Model model,
+        double integratorAccuracy) {
 
-    prescribeControlsToModel(iterate, model, "PiecewiseLinearFunction");
+    prescribeControlsToModel(trajectory, model, "PiecewiseLinearFunction");
 
     // Add states reporter to the model.
     auto* statesRep = new StatesTrajectoryReporter();
@@ -379,18 +417,18 @@ MocoTrajectory OpenSim::simulateIterateWithTimeStepping(
     model.addComponent(statesRep);
 
     // Simulate!
-    const SimTK::Vector& time = iterate.getTime();
+    const SimTK::Vector& time = trajectory.getTime();
     SimTK::State state = model.initSystem();
     state.setTime(time[0]);
     Manager manager(model);
 
     // Set the initial state.
     {
-        const auto& matrix = iterate.getStatesTrajectory();
+        const auto& matrix = trajectory.getStatesTrajectory();
         TimeSeriesTable initialStateTable(
-                std::vector<double>{iterate.getInitialTime()},
+                std::vector<double>{trajectory.getInitialTime()},
                 SimTK::Matrix(matrix.block(0, 0, 1, matrix.ncol())),
-                iterate.getStateNames());
+                trajectory.getStateNames());
         auto statesTraj = StatesTrajectory::createFromStatesStorage(
                 model, convertTableToStorage(initialStateTable));
         state.setY(statesTraj.front().getY());
@@ -402,7 +440,7 @@ MocoTrajectory OpenSim::simulateIterateWithTimeStepping(
     manager.initialize(state);
     state = manager.integrate(time[time.size() - 1]);
 
-    // Export results from states reporter to a TimeSeries Table
+    // Export results from states reporter to a TimeSeriesTable
     TimeSeriesTable states = statesRep->getStates().exportToTable(model);
 
     const auto& statesTimes = states.getIndependentColumn();
@@ -574,13 +612,24 @@ void OpenSim::checkRedundantLabels(std::vector<std::string> labels) {
     std::sort(labels.begin(), labels.end());
     auto it = std::adjacent_find(labels.begin(), labels.end());
     OPENSIM_THROW_IF(it != labels.end(), Exception,
-            format("Multiple reference data provided for the variable %s.",
-                    *it));
+            format("Label '%s' appears more than once.", *it));
+}
+
+void OpenSim::checkLabelsMatchModelStates(const Model& model,
+        const std::vector<std::string>& labels) {
+    const auto modelStateNames = model.getStateVariableNames();
+    for (const auto& label : labels) {
+        OPENSIM_THROW_IF(modelStateNames.rfindIndex(label) == -1, Exception,
+            format("Expected the provided labels to match the model state "
+                   "names, but label %s does not correspond to any model "
+                    "state.", label));
+    }
 }
 
 MocoTrajectory OpenSim::createPeriodicTrajectory(
         const MocoTrajectory& in, std::vector<std::string> addPatterns,
         std::vector<std::string> negatePatterns,
+        std::vector<std::string> negateAndShiftPatterns,
         std::vector<std::pair<std::string, std::string>> symmetryPatterns) {
 
     const int oldN = in.getNumTimes();
@@ -610,8 +659,8 @@ MocoTrajectory OpenSim::createPeriodicTrajectory(
                 // entire name.
                 if (std::regex_match(name, regex)) {
                     matched = true;
-                    const double& oldInit = oldTraj.col(i)[0];
-                    const double& oldFinal = oldTraj.col(i)[oldN - 1];
+                    const double& oldInit = oldTraj.getElt(0, i);
+                    const double& oldFinal = oldTraj.getElt(oldN - 1, i);
                     newTraj.updBlock(oldN, i, oldN - 1, 1) =
                             oldTraj.block(1, i, oldN - 1, 1);
                     newTraj.updBlock(oldN, i, oldN - 1, 1).updCol(0) +=
@@ -624,9 +673,20 @@ MocoTrajectory OpenSim::createPeriodicTrajectory(
                 const auto regex = std::regex(pattern);
                 if (std::regex_match(name, regex)) {
                     matched = true;
-                    const double& oldFinal = oldTraj.col(i)[oldN - 1];
-                    newTraj.updBlock(oldN, i, oldN - 1, 1) =
-                            SimTK::Matrix(oldTraj.block(1, i, oldN - 1, 1).negate());
+                    const double& oldFinal = oldTraj.getElt(oldN - 1, i);
+                    newTraj.updBlock(oldN, i, oldN - 1, 1) = SimTK::Matrix(
+                            oldTraj.block(1, i, oldN - 1, 1).negate());
+                    break;
+                }
+            }
+
+            for (const auto& pattern : negateAndShiftPatterns) {
+                const auto regex = std::regex(pattern);
+                if (std::regex_match(name, regex)) {
+                    matched = true;
+                    const double& oldFinal = oldTraj.getElt(oldN - 1, i);
+                    newTraj.updBlock(oldN, i, oldN - 1, 1) = SimTK::Matrix(
+                            oldTraj.block(1, i, oldN - 1, 1).negate());
                     newTraj.updBlock(oldN, i, oldN - 1, 1).updCol(0) +=
                             2 * oldFinal;
                     break;

@@ -15,16 +15,17 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
+#include "Tests/Testing.h"
+#include <Moco/InverseMuscleSolver/DeGrooteFregly2016MuscleStandalone.h>
 #include <Moco/InverseMuscleSolver/GlobalStaticOptimization.h>
 #include <Moco/InverseMuscleSolver/INDYGO.h>
-#include <Moco/InverseMuscleSolver/DeGrooteFregly2016MuscleStandalone.h>
 #include <Moco/InverseMuscleSolver/InverseMuscleSolverMotionData.h>
-#include <tropter/tropter.h>
+
+#include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
-#include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 
-#include "Testing.h"
+#include <tropter/tropter.h>
 
 using namespace OpenSim;
 

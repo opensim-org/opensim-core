@@ -27,8 +27,8 @@
 
 namespace OpenSim {
 
-// TODO avoid checking ignore_tendon_compliance() in each function; might be
-// slow.
+// TODO avoid checking ignore_tendon_compliance() in each function;
+//       might be slow.
 // TODO prohibit fiber length from going below 0.2.
 
 /// This muscle model was published in De Groote et al. 2016.
@@ -47,7 +47,20 @@ namespace OpenSim {
 /// useful with explicit fiber dynamics than implicit fiber dynamics (when
 /// support for fiber dynamics is added).
 ///
-/// @note This class does not yet support tendon compliance (fiber dynamics).
+/// This class supports tendon compliance dynamics in both explicit and implicit 
+/// form. Both forms of the dynamics use normalized tendon force as the state
+/// variable (rather than the typical fiber length state). The explicit form is 
+/// handled through the usual Component dynamics interface. The implicit form 
+/// introduces an additional discrete and cache SimTK::State variable for the
+/// derivative of normalized tendon force and muscle-tendon equilibrium residual
+/// respectively. The implicit form is only for use with solvers that support
+/// implicit dynamics (i.e. Moco) and cannot be used to perform a time-stepping
+/// forward simulation with Manager; use explicit mode for time-stepping.
+/// 
+/// @note Normalized tendon force is bounded in the range [0, 5] in this class.
+///       The methods getMinNormalizedTendonForce() and 
+///       getMaxNormalizedTendonForce() are available to access these bounds for
+///       use in custom solvers.
 ///
 /// @underdevelopment
 ///
@@ -62,19 +75,16 @@ namespace OpenSim {
 /// setIngoreActivationDynamics() control modeling options, meaning these
 /// settings could theoretically be changed. However, for this class, the
 /// modeling option is ignored and the values of the ignore_tendon_compliance
-/// and ignore_activation_dynamics properties are used directly (though, as
-/// mentioned earlier, tendon compliance is not yet supported).
+/// and ignore_activation_dynamics properties are used directly.
 ///
-/// Groote, F., Kinney, A. L., Rao, A. V., & Fregly, B. J. (2016). Evaluation of
-/// Direct Collocation Optimal Control Problem Formulations for Solving the
+/// De Groote, F., Kinney, A. L., Rao, A. V., & Fregly, B. J. (2016). Evaluation
+/// of Direct Collocation Optimal Control Problem Formulations for Solving the
 /// Muscle Redundancy Problem. Annals of Biomedical Engineering, 44(10), 1–15.
 /// http://doi.org/10.1007/s10439-016-1591-9
 class OSIMMOCO_API DeGrooteFregly2016Muscle : public Muscle {
     OpenSim_DECLARE_CONCRETE_OBJECT(DeGrooteFregly2016Muscle, Muscle);
 
 public:
-    OpenSim_DECLARE_PROPERTY(default_normalized_fiber_length, double,
-            "Assumed initial normalized fiber length if none is assigned.");
     OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
             "Smaller value means activation can change more rapidly (units: "
             "seconds).");
@@ -84,7 +94,9 @@ public:
     OpenSim_DECLARE_PROPERTY(default_activation, double,
             "Value of activation in the default state returned by "
             "initSystem().");
-
+    OpenSim_DECLARE_PROPERTY(default_normalized_tendon_force, double,
+            "Value of normalized tendon force in the default state returned by "
+            "initSystem().");
     OpenSim_DECLARE_PROPERTY(active_force_width_scale, double,
             "Scale factor for the width of the active force-length curve. "
             "Larger values make the curve wider. "
@@ -93,9 +105,19 @@ public:
             "The linear damping of the fiber (default: 0.01).");
     OpenSim_DECLARE_PROPERTY(tendon_strain_at_one_norm_force, double,
             "Tendon strain at a tension of 1 normalized force.");
-
     OpenSim_DECLARE_PROPERTY(ignore_passive_fiber_force, bool,
             "Make the passive fiber force 0 (default: false).");
+    OpenSim_DECLARE_PROPERTY(tendon_compliance_dynamics_mode, std::string,
+            "The dynamics method used to enforce tendon compliance dynamics. "
+            "Options: 'explicit' or 'implicit'. Default: 'explicit'. ");
+
+    OpenSim_DECLARE_OUTPUT(implicitresidual_normalized_tendon_force, double,
+            getImplicitResidualNormalizedTendonForce, SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(implicitenabled_normalized_tendon_force, bool,
+            getImplicitEnabledNormalizedTendonForce, SimTK::Stage::Model);
+
+    OpenSim_DECLARE_OUTPUT(statebounds_normalized_tendon_force, SimTK::Vec2,
+            getBoundsNormalizedTendonForce, SimTK::Stage::Model);
 
     DeGrooteFregly2016Muscle() { constructProperties(); }
 
@@ -148,21 +170,19 @@ public:
         } else {
             setStateVariableValue(s, STATE_ACTIVATION_NAME, activation);
         }
+        //markCacheVariableInvalid(s, "velInfo");
+        //markCacheVariableInvalid(s, "dynamicsInfo");
     }
 
 protected:
     double calcInextensibleTendonActiveFiberForce(
-            SimTK::State&, double) const override {
-        OPENSIM_THROW_FRMOBJ(Exception, "Not implemented.");
-    }
+        SimTK::State&, double) const override;
     void calcMuscleLengthInfo(
             const SimTK::State& s, MuscleLengthInfo& mli) const override;
     void calcFiberVelocityInfo(
             const SimTK::State& s, FiberVelocityInfo& fvi) const override;
-    /// This function does not yet compute stiffness or power.
     void calcMuscleDynamicsInfo(
             const SimTK::State& s, MuscleDynamicsInfo& mdi) const override;
-    /// This function does not yet compute potential energy.
     void calcMusclePotentialEnergyInfo(const SimTK::State& s,
             MusclePotentialEnergyInfo& mpei) const override;
 
@@ -171,9 +191,114 @@ public:
     void computeInitialFiberEquilibrium(SimTK::State& s) const override;
     /// @}
 
-    /// @name Calculate multipliers.
+    /// @name Get methods.
+    /// @{
+
+    /// We don't need the state, but the state parameter is a requirement of
+    /// Output functions.
+    bool getImplicitEnabledNormalizedTendonForce(const SimTK::State&) const {
+        return !get_ignore_tendon_compliance() && !m_isTendonDynamicsExplicit;
+    }
+    /// Compute the muscle-tendon force equilibrium residual value when using
+    /// implicit contraction dynamics with normalized tendon force as the
+    /// state.
+    double getImplicitResidualNormalizedTendonForce(
+            const SimTK::State& s) const;
+
+    /// If ignore_tendon_compliance is true, this gets normalized fiber force
+    /// along the tendon instead.
+    double getNormalizedTendonForce(const SimTK::State& s) const {
+        if (get_ignore_tendon_compliance()) {
+            return getTendonForce(s) / get_max_isometric_force();
+        } else {
+            return getStateVariableValue(s, STATE_NORMALIZED_TENDON_FORCE_NAME);
+        }
+    }
+
+    /// If integration_mode is 'implicit', this gets the discrete variable
+    /// tendon force derivative value. If integration_mode is 'explicit', this
+    /// gets the value returned by getStateVariableDerivativeValue() for the
+    /// 'normalized_tendon_force' state. If ignore_tendon_compliance is false,
+    /// this returns zero.
+    double getNormalizedTendonForceDerivative(const SimTK::State& s) const {
+        if (get_ignore_tendon_compliance()) {
+            return 0.0;
+        } else {
+            if (m_isTendonDynamicsExplicit) {
+                return getStateVariableDerivativeValue(
+                        s, STATE_NORMALIZED_TENDON_FORCE_NAME);
+            } else {
+                return getDiscreteVariableValue(
+                        s, DERIVATIVE_NORMALIZED_TENDON_FORCE_NAME);
+            }
+        }
+    }
+
+    /// The residual (i.e. error) in the muscle-tendon equilibrium equation:
+    ///         residual = tendonForce - fiberForce * cosPennationAngle
+    double getEquilibriumResidual(const SimTK::State& s) const {
+        const auto& mdi = getMuscleDynamicsInfo(s);
+        return calcEquilibriumResidual(
+                mdi.tendonForce, mdi.fiberForceAlongTendon);
+    }
+
+    /// The residual (i.e. error) in the time derivative of the linearized
+    /// muscle-tendon equilibrium equation (Millard et al. 2013, equation A6):
+    ///     residual = fiberStiffnessAlongTendon * fiberVelocityAlongTendon -
+    ///                tendonStiffness *
+    ///                    (muscleTendonVelocity - fiberVelocityAlongTendon)
+    double getLinearizedEquilibriumResidualDerivative(
+            const SimTK::State& s) const {
+        const auto& muscleTendonVelocity = getLengtheningSpeed(s);
+        const FiberVelocityInfo& fvi = getFiberVelocityInfo(s);
+        const MuscleDynamicsInfo& mdi = getMuscleDynamicsInfo(s);
+
+        return calcLinearizedEquilibriumResidualDerivative(muscleTendonVelocity,
+                fvi.fiberVelocityAlongTendon, mdi.tendonStiffness,
+                mdi.fiberStiffnessAlongTendon);
+    }
+
+    static std::string getActivationStateName() {
+        return STATE_ACTIVATION_NAME;
+    }
+    static std::string getNormalizedTendonForceStateName() {
+        return STATE_NORMALIZED_TENDON_FORCE_NAME;
+    }
+    static std::string getImplicitDynamicsDerivativeName() {
+        return DERIVATIVE_NORMALIZED_TENDON_FORCE_NAME;
+    }
+    static std::string getImplicitDynamicsResidualName() {
+        return RESIDUAL_NORMALIZED_TENDON_FORCE_NAME;
+    }
+    static double getMinNormalizedTendonForce() { return m_minNormTendonForce; }
+    static double getMaxNormalizedTendonForce() { return m_maxNormTendonForce; }
+    /// The first element of the Vec2 is the lower bound, and the second is the
+    /// upper bound.
+    /// We don't need the state, but the state parameter is a requirement of
+    /// Output functions.
+    SimTK::Vec2 getBoundsNormalizedTendonForce(const SimTK::State&) const
+    { return {getMinNormalizedTendonForce(), getMaxNormalizedTendonForce()}; }
+    /// @}
+
+    /// @name Set methods.
+    /// @{
+    /// If ignore_tendon_compliance is true, this sets nothing.
+    void setNormalizedTendonForce(
+            SimTK::State& s, double normTendonForce) const {
+        if (!get_ignore_tendon_compliance()) {
+            setStateVariableValue(
+                    s, STATE_NORMALIZED_TENDON_FORCE_NAME, normTendonForce);
+            markCacheVariableInvalid(s, "lengthInfo");
+            markCacheVariableInvalid(s, "velInfo");
+            markCacheVariableInvalid(s, "dynamicsInfo");
+        }
+    }
+    /// @}
+
+    /// @name Calculation methods.
     /// These functions compute the values of normalized/dimensionless curves,
-    /// and do not depend on a SimTK::State.
+    /// their derivatives and integrals, and other quantities of the muscle.
+    /// These do not depend on a SimTK::State.
     /// @{
 
     /// The active force-length curve is the sum of 3 Gaussian-like curves. The
@@ -181,21 +306,6 @@ public:
     /// property.
     SimTK::Real calcActiveForceLengthMultiplier(
             const SimTK::Real& normFiberLength) const {
-        // Values are taken from https://simtk.org/projects/optcntrlmuscle
-        // rather than the paper supplement. b11 was modified to ensure that
-        // f(1) = 1.
-        static const double b11 = 0.8150671134243542;
-        static const double b21 = 1.055033428970575;
-        static const double b31 = 0.162384573599574;
-        static const double b41 = 0.063303448465465;
-        static const double b12 = 0.433004984392647;
-        static const double b22 = 0.716775413397760;
-        static const double b32 = -0.029947116970696;
-        static const double b42 = 0.200356847296188;
-        static const double b13 = 0.1;
-        static const double b23 = 1.0;
-        static const double b33 = 0.5 * sqrt(0.5);
-        static const double b43 = 0.0;
         const double& scale = get_active_force_width_scale();
         // Shift the curve so its peak is at the origin, scale it
         // horizontally, then shift it back so its peak is still at x = 1.0.
@@ -203,6 +313,23 @@ public:
         return calcGaussianLikeCurve(x, b11, b21, b31, b41) +
                calcGaussianLikeCurve(x, b12, b22, b32, b42) +
                calcGaussianLikeCurve(x, b13, b23, b33, b43);
+    }
+
+    /// The derivative of the active force-length curve with respect to
+    /// normalized fiber length. This curve is based on the derivative of the
+    /// Gaussian-like curve used in calcActiveForceLengthMultiplier(). The
+    /// active_force_width_scale property also affects the value of the
+    /// derivative curve.
+    SimTK::Real calcActiveForceLengthMultiplierDerivative(
+            const SimTK::Real& normFiberLength) const {
+        const double& scale = get_active_force_width_scale();
+        // Shift the curve so its peak is at the origin, scale it
+        // horizontally, then shift it back so its peak is still at x = 1.0.
+        const double x = (normFiberLength - 1.0) / scale + 1.0;
+        return (1.0 / scale) *
+               (calcGaussianLikeCurveDerivative(x, b11, b21, b31, b41) +
+                       calcGaussianLikeCurveDerivative(x, b12, b22, b32, b42) +
+                       calcGaussianLikeCurveDerivative(x, b13, b23, b33, b43));
     }
 
     /// The parameters of this curve are not modifiable, so this function is
@@ -233,12 +360,10 @@ public:
     SimTK::Real calcPassiveForceMultiplier(
             const SimTK::Real& normFiberLength) const {
         // Passive force-length curve.
-        // TODO turn some of these into properties:
-        static const double kPE = 4.0;
-        static const double e0 = 0.6;
-        static const double denom = exp(kPE) - 1;
+
+        static const double denom = exp(kPE) - 1.0;
         static const double numer_offset =
-                exp(kPE * (m_minNormFiberLength - 1) / e0);
+                exp(kPE * (m_minNormFiberLength - 1.0) / e0);
         // The version of this equation in the supplementary materials of De
         // Groote et al., 2016 has an error. The correct equation passes
         // through y = 0 at x = 0.2, and therefore is never negative within
@@ -247,6 +372,29 @@ public:
 
         if (get_ignore_passive_fiber_force()) return 0;
         return (exp(kPE * (normFiberLength - 1.0) / e0) - numer_offset) / denom;
+    }
+
+    /// This is the derivative of the passive force-length curve with respect to
+    /// the normalized fiber length.
+    SimTK::Real calcPassiveForceMultiplierDerivative(
+            const SimTK::Real& normFiberLength) const {
+
+        if (get_ignore_passive_fiber_force()) return 0;
+        return (kPE * exp((kPE * (normFiberLength - 1)) / e0)) /
+               (e0 * (exp(kPE) - 1));
+    }
+
+    /// This is the integral of the passive force-length curve with respect to
+    /// the normalized fiber length.
+    SimTK::Real calcPassiveForceMultiplierIntegral(
+            const SimTK::Real& normFiberLength) const {
+
+        if (get_ignore_passive_fiber_force()) return 0;
+
+        const auto temp1 = exp(-kPE) * SimTK::E * exp(-kPE / e0);
+        const auto temp2 = exp((kPE * normFiberLength) / e0);
+        const auto temp3 = e0 - kPE * normFiberLength;
+        return (temp1 * temp2 * temp3) / kPE;
     }
 
     /// The normalized tendon force as a function of normalized tendon length.
@@ -258,9 +406,227 @@ public:
         return c1 * exp(m_kT * (normTendonLength - c2)) - c3;
     }
 
+    /// This is the derivative of the tendon-force length curve with respect to
+    /// normalized tendon length.
+    SimTK::Real calcTendonForceMultiplierDerivative(
+            const SimTK::Real& normTendonLength) const {
+        return c1 * m_kT * exp(m_kT * (normTendonLength - c2));
+    }
+
+    /// This is the integral of the tendon-force length curve with respect to
+    /// normalized tendon length.
+    SimTK::Real calcTendonForceMultiplierIntegral(
+            const SimTK::Real& normTendonLength) const {
+        return (c1 * exp(-m_kT * (c2 - normTendonLength))) / m_kT -
+               c3 * normTendonLength;
+    }
+
+    /// This is the inverse of the tendon force-length curve, and returns the
+    /// normalized tendon length as a function of the normalized tendon force.
+    SimTK::Real calcTendonForceLengthInverseCurve(
+            const SimTK::Real& normTendonForce) const {
+        return log((1.0 / c1) * (normTendonForce + c3)) / m_kT + c2;
+    }
+
+    /// This is the derivative of the inverse tendon-force length. Given the
+    /// derivative of normalized tendon force and normalized tendon length, this
+    /// returns normalized tendon velocity.
+    SimTK::Real calcTendonForceLengthInverseCurveDerivative(
+            const SimTK::Real& derivNormTendonForce,
+            const SimTK::Real& normTendonLength) const {
+        return derivNormTendonForce /
+               (c1 * m_kT * exp(m_kT * (normTendonLength - c2)));
+    }
+
+    /// This computes both the total fiber force and the individual components
+    /// of fiber force (active, conservative passive, and non-conservative
+    /// passive).
+    /// @note based on Millard2012EquilibriumMuscle::calcFiberForce().
+    void calcFiberForce(const SimTK::Real& activation,
+            const SimTK::Real& activeForceLengthMultiplier,
+            const SimTK::Real& forceVelocityMultiplier,
+            const SimTK::Real& normPassiveFiberForce,
+            const SimTK::Real& normFiberVelocity, SimTK::Real& activeFiberForce,
+            SimTK::Real& conPassiveFiberForce,
+            SimTK::Real& nonConPassiveFiberForce,
+            SimTK::Real& totalFiberForce) const {
+        const auto& maxIsometricForce = get_max_isometric_force();
+        // active force
+        activeFiberForce =
+                maxIsometricForce * (activation * activeForceLengthMultiplier *
+                                            forceVelocityMultiplier);
+        // conservative passive force
+        conPassiveFiberForce = maxIsometricForce * normPassiveFiberForce;
+        // non-conservative passive force
+        nonConPassiveFiberForce =
+                maxIsometricForce * get_fiber_damping() * normFiberVelocity;
+        // total force
+        totalFiberForce = activeFiberForce + conPassiveFiberForce +
+                          nonConPassiveFiberForce;
+    }
+
+    /// The stiffness of the fiber in the direction of the fiber. This includes
+    /// both active and passive force contributions to stiffness from the muscle
+    /// fiber.
+    /// @note based on Millard2012EquilibriumMuscle::calcFiberStiffness().
+    SimTK::Real calcFiberStiffness(const SimTK::Real& activation,
+            const SimTK::Real& normFiberLength,
+            const SimTK::Real& fiberVelocityMultiplier) const {
+
+        const SimTK::Real partialNormFiberLengthPartialFiberLength =
+                1.0 / get_optimal_fiber_length();
+        const SimTK::Real partialNormActiveForcePartialFiberLength =
+                partialNormFiberLengthPartialFiberLength *
+                calcActiveForceLengthMultiplierDerivative(normFiberLength);
+        const SimTK::Real partialNormPassiveForcePartialFiberLength =
+                partialNormFiberLengthPartialFiberLength *
+                calcPassiveForceMultiplierDerivative(normFiberLength);
+
+        // fiberStiffness = d_fiberForce / d_fiberLength
+        return get_max_isometric_force() *
+               (activation * partialNormActiveForcePartialFiberLength *
+                               fiberVelocityMultiplier +
+                       partialNormPassiveForcePartialFiberLength);
+    }
+
+    /// The stiffness of the tendon in the direction of the tendon.
+    /// @note based on Millard2012EquilibriumMuscle.
+    SimTK::Real calcTendonStiffness(const SimTK::Real& normTendonLength) const {
+
+        if (get_ignore_tendon_compliance()) return SimTK::Infinity;
+        return (get_max_isometric_force() / get_tendon_slack_length()) *
+               calcTendonForceMultiplierDerivative(normTendonLength);
+    }
+
+    /// The stiffness of the whole musculotendon unit in the direction of the
+    /// tendon.
+    /// @note based on Millard2012EquilibriumMuscle.
+    SimTK::Real calcMuscleStiffness(const SimTK::Real& tendonStiffness,
+            const SimTK::Real& fiberStiffnessAlongTendon) const {
+
+        if (get_ignore_tendon_compliance()) return fiberStiffnessAlongTendon;
+        // TODO Millard2012EquilibriumMuscle includes additional checks that
+        // the stiffness is non-negative and that the denomenator is non-zero.
+        return (fiberStiffnessAlongTendon * tendonStiffness) /
+               (fiberStiffnessAlongTendon + tendonStiffness);
+    }
+
+    /// The derivative of pennation angle with respect to fiber length.
+    /// @note based on
+    /// MuscleFixedWidthPennationModel::calc_DPennationAngle_DFiberLength().
+    SimTK::Real calcPartialPennationAnglePartialFiberLength(
+            const SimTK::Real& fiberLength) const {
+
+        using SimTK::square;
+        // pennationAngle = asin(fiberWidth/fiberLength)
+        // d_pennationAngle/d_fiberLength =
+        //          d/d_fiberLength (asin(fiberWidth/fiberLength))
+        return (-m_fiberWidth / square(fiberLength)) /
+               sqrt(1.0 - square(m_fiberWidth / fiberLength));
+    }
+
+    /// The derivative of the fiber force along the tendon with respect to fiber
+    /// length.
+    /// @note based on
+    /// Millard2012EquilibriumMuscle::calc_DFiberForceAT_DFiberLength().
+    SimTK::Real calcPartialFiberForceAlongTendonPartialFiberLength(
+            const SimTK::Real& fiberForce, const SimTK::Real& fiberStiffness,
+            const SimTK::Real& sinPennationAngle,
+            const SimTK::Real& cosPennationAngle,
+            const SimTK::Real& partialPennationAnglePartialFiberLength) const {
+
+        const SimTK::Real partialCosPennationAnglePartialFiberLength =
+                -sinPennationAngle * partialPennationAnglePartialFiberLength;
+
+        // The stiffness of the fiber along the direction of the tendon. For
+        // small changes in length parallel to the fiber, this quantity is
+        // d_fiberForceAlongTendon / d_fiberLength =
+        //      d/d_fiberLength(fiberForce * cosPenneationAngle)
+        return fiberStiffness * cosPennationAngle +
+               fiberForce * partialCosPennationAnglePartialFiberLength;
+    }
+
+    /// The derivative of the fiber force along the tendon with respect to the
+    /// fiber length along the tendon.
+    /// @note based on
+    /// Millard2012EquilibriumMuscle::calc_DFiberForceAT_DFiberLengthAT.
+    SimTK::Real calcFiberStiffnessAlongTendon(const SimTK::Real& fiberLength,
+            const SimTK::Real& partialFiberForceAlongTendonPartialFiberLength,
+            const SimTK::Real& sinPennationAngle,
+            const SimTK::Real& cosPennationAngle,
+            const SimTK::Real& partialPennationAnglePartialFiberLength) const {
+
+        // The change in length of the fiber length along the tendon.
+        // fiberLengthAlongTendon = fiberLength * cosPennationAngle
+        const SimTK::Real partialFiberLengthAlongTendonPartialFiberLength =
+                cosPennationAngle -
+                fiberLength * sinPennationAngle *
+                        partialPennationAnglePartialFiberLength;
+
+        // fiberStiffnessAlongTendon
+        //    = d_fiberForceAlongTendon / d_fiberLengthAlongTendon
+        //    = (d_fiberForceAlongTendon / d_fiberLength) *
+        //      (1 / (d_fiberLengthAlongTendon / d_fiberLength))
+        return partialFiberForceAlongTendonPartialFiberLength *
+               (1.0 / partialFiberLengthAlongTendonPartialFiberLength);
+    }
+
+    SimTK::Real calcPartialTendonLengthPartialFiberLength(
+            const SimTK::Real& fiberLength,
+            const SimTK::Real& sinPennationAngle,
+            const SimTK::Real& cosPennationAngle,
+            const SimTK::Real& partialPennationAnglePartialFiberLength) const {
+
+        return fiberLength * sinPennationAngle *
+                       partialPennationAnglePartialFiberLength -
+               cosPennationAngle;
+    }
+
+    SimTK::Real calcPartialTendonForcePartialFiberLength(
+            const SimTK::Real& tendonStiffness, const SimTK::Real& fiberLength, 
+            const SimTK::Real& sinPennationAngle, 
+            const SimTK::Real& cosPennationAngle) const {
+        const SimTK::Real partialPennationAnglePartialFiberLength =
+                calcPartialPennationAnglePartialFiberLength(fiberLength);
+
+        const SimTK::Real partialTendonLengthPartialFiberLength =
+                calcPartialTendonLengthPartialFiberLength(fiberLength, 
+                    sinPennationAngle, cosPennationAngle,
+                        partialPennationAnglePartialFiberLength);
+
+        return tendonStiffness * partialTendonLengthPartialFiberLength;
+    }
+
+    /// @copydoc getEquilibriumResidual()
+    SimTK::Real calcEquilibriumResidual(const SimTK::Real& tendonForce,
+            const SimTK::Real& fiberForceAlongTendon) const {
+
+        return tendonForce - fiberForceAlongTendon;
+    }
+
+    /// @copydoc getLinearizedEquilibriumResidualDerivative()
+    SimTK::Real calcLinearizedEquilibriumResidualDerivative(
+            const SimTK::Real muscleTendonVelocity,
+            const SimTK::Real& fiberVelocityAlongTendon,
+            const SimTK::Real& tendonStiffness,
+            const SimTK::Real& fiberStiffnessAlongTendon) const {
+
+        return fiberStiffnessAlongTendon * fiberVelocityAlongTendon -
+               tendonStiffness *
+                       (muscleTendonVelocity - fiberVelocityAlongTendon);
+    }
+    /// @}
+
     /// @name Utilities
     /// @{
-
+    /// Given a residual lambda function and domain initial guess to the left
+    /// and right of a root, use bisection to find a root value.
+    SimTK::Real solveBisection(
+            std::function<SimTK::Real(const SimTK::Real&)> calcResidual,
+            SimTK::Real left, SimTK::Real right,
+            const SimTK::Real& xTolerance = 1e-6,
+            const SimTK::Real& yTolerance = 1e-6,
+            int maxIterations = 1000) const;
     /// Export the active force-length multiplier and passive force multiplier
     /// curves to a DataTable. If the normFiberLengths argument is omitted, we
     /// use createVectorLinspace(200, minNormFiberLength, maxNormFiberLength).
@@ -289,16 +655,32 @@ public:
     /// Currently, only Millard2012EquilibriumMuscles and Thelen2003Muscles
     /// are replaced. If the model has muscles of other types, an exception is
     /// thrown unless allowUnsupportedMuscles is true.
-    /// The resulting muscles will have ignore_tendon_compliance set as true,
-    /// regardless of the values in the original muscles, as this muscle class
-    /// does not yet support tendon compliance.
+    /// Since the DeGrooteFregly2016Muscle implements tendon compliance dynamics
+    /// with normalized tendon force as the state variable, this function
+    /// ignores the 'default_fiber_length' property in replaced muscles.
     static void replaceMuscles(
             Model& model, bool allowUnsupportedMuscles = false);
-
     /// @}
 
 private:
     void constructProperties();
+
+    void calcMuscleLengthInfoHelper(const SimTK::Real& muscleTendonLength,
+            const bool& ignoreTendonCompliance, MuscleLengthInfo& mli,
+            const SimTK::Real& normTendonForce) const;
+    void calcFiberVelocityInfoHelper(const SimTK::Real& muscleTendonVelocity,
+            const SimTK::Real& activation, const bool& ignoreTendonCompliance,
+            const bool& isTendonDynamicsExplicit,
+            const MuscleLengthInfo& mli, FiberVelocityInfo& fvi,
+            const SimTK::Real& normTendonForce,
+            const SimTK::Real& normTendonForceDerivative) const;
+    void calcMuscleDynamicsInfoHelper(const SimTK::Real& activation,
+            const SimTK::Real& muscleTendonVelocity,
+            const bool& ignoreTendonCompliance, const MuscleLengthInfo& mli,
+            const FiberVelocityInfo& fvi, MuscleDynamicsInfo& mdi,
+            const SimTK::Real& normTendonForce) const;
+    void calcMusclePotentialEnergyInfoHelper(const bool& ignoreTendonCompliance,
+            const MuscleLengthInfo& mli, MusclePotentialEnergyInfo& mpei) const;
 
     /// This is a Gaussian-like function used in the active force-length curve.
     /// A proper Gaussian function does not have the variable in the denominator
@@ -312,8 +694,67 @@ private:
         return b1 * exp(-0.5 * square(x - b2) / square(b3 + b4 * x));
     }
 
+    /// The derivative of the curve defined in calcGaussianLikeCurve() with
+    /// respect to 'x' (usually normalized fiber length).
+    static SimTK::Real calcGaussianLikeCurveDerivative(const SimTK::Real& x,
+            const double& b1, const double& b2, const double& b3,
+            const double& b4) {
+        using SimTK::cube;
+        using SimTK::square;
+        return (b1 * exp(-square(b2 - x) / (2 * square(b3 + b4 * x))) *
+                       (b2 - x) * (b3 + b2 * b4)) /
+               cube(b3 + b4 * x);
+    }
+
+    enum StatusFromEstimateMuscleFiberState {
+        Success_Converged,
+        Warning_FiberAtLowerBound,
+        Warning_FiberAtUpperBound,
+        Failure_MaxIterationsReached
+    };
+
+    struct ValuesFromEstimateMuscleFiberState {
+        int iterations;
+        double solution_error;
+        double fiber_length;
+        double fiber_velocity;
+        double normalized_tendon_force;
+    };
+
+    std::pair<StatusFromEstimateMuscleFiberState,
+            ValuesFromEstimateMuscleFiberState>
+    estimateMuscleFiberState(const double activation, 
+            const double muscleTendonLength, const double muscleTendonVelocity, 
+            const double normTendonForceDerivative, const double tolerance,
+            const int maxIterations) const;
+
     // Curve parameters.
     // Notation comes from De Groote et al., 2016 (supplement).
+
+    // Parameters for the active fiber force-length curve.
+    // ---------------------------------------------------
+    // Values are taken from https://simtk.org/projects/optcntrlmuscle
+    // rather than the paper supplement. b11 was modified to ensure that
+    // f(1) = 1.
+    constexpr static double b11 = 0.8150671134243542;
+    constexpr static double b21 = 1.055033428970575;
+    constexpr static double b31 = 0.162384573599574;
+    constexpr static double b41 = 0.063303448465465;
+    constexpr static double b12 = 0.433004984392647;
+    constexpr static double b22 = 0.716775413397760;
+    constexpr static double b32 = -0.029947116970696;
+    constexpr static double b42 = 0.200356847296188;
+    constexpr static double b13 = 0.1;
+    constexpr static double b23 = 1.0;
+    constexpr static double b33 = 0.353553390593274; // 0.5 * sqrt(0.5)
+    constexpr static double b43 = 0.0;
+
+    // Parameters for the passive fiber force-length curve.
+    // ---------------------------------------------------
+    // Exponential shape factor.
+    constexpr static double kPE = 4.0;
+    // Passive muscle strain due to max isometric force.
+    constexpr static double e0 = 0.6;
 
     // Parameters for the tendon force curve.
     // --------------------------------------
@@ -344,7 +785,13 @@ private:
     constexpr static double m_minNormFiberLength = 0.2;
     constexpr static double m_maxNormFiberLength = 1.8;
 
+    constexpr static double m_minNormTendonForce = 0.0;
+    constexpr static double m_maxNormTendonForce = 5.0;
+
     static const std::string STATE_ACTIVATION_NAME;
+    static const std::string STATE_NORMALIZED_TENDON_FORCE_NAME;
+    static const std::string DERIVATIVE_NORMALIZED_TENDON_FORCE_NAME;
+    static const std::string RESIDUAL_NORMALIZED_TENDON_FORCE_NAME;
 
     // Computed from properties.
     // -------------------------
@@ -356,6 +803,7 @@ private:
     // Tendon stiffness parameter from De Groote et al., 2016. Instead of
     // kT, users specify tendon strain at 1 norm force, which is more intuitive.
     SimTK::Real m_kT = SimTK::NaN;
+    bool m_isTendonDynamicsExplicit = true;
 };
 
 } // namespace OpenSim

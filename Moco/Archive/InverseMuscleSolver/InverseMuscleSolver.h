@@ -25,9 +25,9 @@
 
 // TODO make this a forward declaration (ran into issues with unique_ptr's
 // destructor).
-#include <OpenSim/Simulation/Model/Model.h>
+#include "../../Moco/osimMocoDLL.h"
 
-#include "../osimMocoDLL.h"
+#include <OpenSim/Simulation/Model/Model.h>
 
 namespace OpenSim {
 

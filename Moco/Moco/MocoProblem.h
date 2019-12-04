@@ -96,6 +96,11 @@ public:
     /// 1. Coordinate values: the Coordinate's range is used (regardless of
     ///     whether the coordinate is clamped).
     /// 2. Coordinate speeds: this class's default_speed_bounds property.
+    /// 3. All other states: if a component has a SimTK::Vec2 output named
+    ///    `statebounds_<state-name>`, then this output is used to set default
+    ///    bounds for the state variable `<state-name>` for that component.
+    ///    The first element of the Vec2 is the lower bound and the second is
+    ///    the upper bound.
     ///
     /// These defaults are also used if you completely omit state info for a
     /// state variable.

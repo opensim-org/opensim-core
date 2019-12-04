@@ -8,10 +8,10 @@ muscleDrivenModel = getMuscleDrivenModel();
 
 %% Part 1: Torque-driven Predictive Problem
 % Part 1a: Create a new MocoStudy.
-moco = MocoStudy();
+study = MocoStudy();
 
 % Part 1b: Initialize the problem and set the model.
-problem = moco.updProblem();
+problem = study.updProblem();
 problem.setModel(torqueDrivenModel);
 
 % Part 1c: Set bounds on the problem.
@@ -47,19 +47,19 @@ problem.setStateInfo('/jointset/ankle_r/ankle_angle_r/value', ...
 problem.setStateInfoPattern('/jointset/.*/speed', [], 0, 0);
 
 % Part 1d: Add a MocoControlCost to the problem.
-problem.addCost(MocoControlCost('myeffort'));
+problem.addGoal(MocoControlGoal('myeffort'));
 
 % Part 1e: Configure the solver.
-solver = moco.initCasADiSolver();
-solver.set_num_mesh_points(25);
+solver = study.initCasADiSolver();
+solver.set_num_mesh_intervals(25);
 solver.set_optim_convergence_tolerance(1e-4);
 solver.set_optim_constraint_tolerance(1e-4);
 
 if ~exist('predictSolution.sto', 'file')
 % Part 1f: Solve! Write the solution to file, and visualize.
-predictSolution = moco.solve();
+predictSolution = study.solve();
 predictSolution.write('predictSolution.sto');
-moco.visualize(predictSolution);
+study.visualize(predictSolution);
 end
 
 %% Part 2: Torque-driven Tracking Problem
@@ -73,15 +73,15 @@ tableProcessor.append(TabOpLowPassFilter(6));
 % from the predictive problem (via the TableProcessor we just created). 
 % Enable the setAllowUnusedReferences() setting to ignore the controls in
 % the predictive solution.
-tracking = MocoStateTrackingCost();
+tracking = MocoStateTrackingGoal();
 tracking.setName('mytracking');
 tracking.setReference(tableProcessor);
 tracking.setAllowUnusedReferences(true);
-problem.addCost(tracking);
+problem.addGoal(tracking);
 
 % Part 2c: Reduce the control cost weight so it now acts as a regularization 
 % term.
-problem.updCost('myeffort').set_weight(0.001);
+problem.updGoal('myeffort').setWeight(0.001);
 
 % Part 2d: Set the initial guess using the predictive problem solution.
 % Tighten convergence tolerance to ensure smooth controls.
@@ -90,9 +90,9 @@ solver.set_optim_convergence_tolerance(1e-6);
 
 if ~exist('trackingSolution.sto', 'file')
 % Part 2e: Solve! Write the solution to file, and visualize.
-trackingSolution = moco.solve();
+trackingSolution = study.solve();
 trackingSolution.write('trackingSolution.sto');
-moco.visualize(trackingSolution);
+study.visualize(trackingSolution);
 end
 
 %% Part 3: Compare Predictive and Tracking Solutions
@@ -118,11 +118,12 @@ inverse.setKinematics(tableProcessor);
 inverse.set_initial_time(0);
 inverse.set_final_time(1);
 inverse.set_mesh_interval(0.05);
-inverse.set_tolerance(1e-4);
+inverse.set_convergence_tolerance(1e-4);
+inverse.set_constraint_tolerance(1e-4);
 
 % Allow extra (unused) columns in the kinematics and minimize activations.
 inverse.set_kinematics_allow_extra_columns(true);
-inverse.set_minimize_sum_squared_states(true);
+inverse.set_minimize_sum_squared_activations(true);
 
 % Append additional outputs path for quantities that are calculated
 % post-hoc using the inverse problem solution.

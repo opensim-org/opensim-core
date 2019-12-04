@@ -1,1 +1,1 @@
-__version__ = @PROJECT_VERSION@
+__version__ = "@MOCO_FULL_VERSION@"

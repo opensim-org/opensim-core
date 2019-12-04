@@ -134,11 +134,14 @@ protected:
     void initializeOnModelImpl(const Model& model) const override;
     void calcGoalImpl(
             const GoalInput& input, SimTK::Vector& goal) const override;
+    void printDescriptionImpl(std::ostream& stream = std::cout) const override;
 
 private:
     void constructProperties();
     mutable std::vector<std::tuple<int, int, int>> m_indices_states;
     mutable std::vector<std::tuple<int, int, int>> m_indices_controls;
+    mutable std::vector<std::pair<std::string,std::string>> m_state_names;
+    mutable std::vector<std::pair<std::string,std::string>> m_control_names;
 };
 
 } // namespace OpenSim

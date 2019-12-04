@@ -147,10 +147,19 @@ public:
         else
             return casadi::Sparsity(0, 0);
     }
-    VectorDM eval(const VectorDM& args) const override;
 
 protected:
     int m_index = -1;
+};
+
+class CostIntegrand : public Integrand {
+public:
+    VectorDM eval(const VectorDM& args) const override;
+};
+
+class EndpointConstraintIntegrand : public Integrand {
+public:
+    VectorDM eval(const VectorDM& args) const override;
 };
 
 /// This function takes initial states/controls, final states/controls, and an
@@ -247,12 +256,13 @@ public:
 template <bool CalcKCErrors>
 class MultibodySystemExplicit : public Function {
 public:
-    casadi_int get_n_out() override final { return 3; }
+    casadi_int get_n_out() override final { return 4; }
     std::string get_name_out(casadi_int i) override final {
         switch (i) {
         case 0: return "multibody_derivatives";
         case 1: return "auxiliary_derivatives";
-        case 2: return "kinematic_constraint_errors";
+        case 2: return "auxiliary_residuals";
+        case 3: return "kinematic_constraint_errors";
         default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
         }
     }
@@ -289,12 +299,13 @@ public:
 
 template <bool CalcKCErrors>
 class MultibodySystemImplicit : public Function {
-    casadi_int get_n_out() override final { return 3; }
+    casadi_int get_n_out() override final { return 4; }
     std::string get_name_out(casadi_int i) override final {
         switch (i) {
         case 0: return "multibody_residuals";
         case 1: return "auxiliary_derivatives";
-        case 2: return "kinematic_constraint_errors";
+        case 2: return "auxiliary_residuals";
+        case 3: return "kinematic_constraint_errors";
         default: OPENSIM_THROW(OpenSim::Exception, "Internal error.");
         }
     }

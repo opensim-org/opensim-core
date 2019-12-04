@@ -15,16 +15,17 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include <Moco/InverseMuscleSolver/INDYGO.h>
-#include <Moco/InverseMuscleSolver/GlobalStaticOptimization.h>
+#include "Tests/Testing.h"
 #include <Moco/InverseMuscleSolver/DeGrooteFregly2016MuscleStandalone.h>
-#include <tropter/tropter.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
-#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
-#include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
+#include <Moco/InverseMuscleSolver/GlobalStaticOptimization.h>
+#include <Moco/InverseMuscleSolver/INDYGO.h>
 
-#include "Testing.h"
+#include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
+
+#include <tropter/tropter.h>
 
 using namespace OpenSim;
 
@@ -177,7 +178,7 @@ public:
             out.dynamics[3] = max_contraction_velocity * normFibVel;
         }
     }
-    void calc_cost(int cost_index, const tropter::CostInput<adouble>& in,
+    void calc_cost(int, const tropter::CostInput<adouble>& in,
             T& cost) const override {
         cost = in.final_time;
     }
@@ -446,7 +447,7 @@ void testLiftingMassGSO(
     // ---------------------------------------------------------------------
     rootMeanSquare(solution.activation, "/actuator",
                    ocpSolution,         "activation",
-                   0.03);
+                   0.04);
     auto reserveForceRMS = reserveOptimalForce *
          solution.other_controls.getDependentColumnAtIndex(0).normRMS();
     SimTK_TEST(reserveForceRMS < 0.02);

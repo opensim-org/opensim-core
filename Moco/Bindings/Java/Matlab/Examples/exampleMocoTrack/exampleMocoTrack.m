@@ -22,7 +22,10 @@
 %    to solve a torque-driven marker tracking problem. 
 %  - The second problem shows how to customize a muscle-driven state tracking 
 %    problem using more advanced features of the tool interface.
-% 
+%
+% This example also shows how to use the osimMocoTrajectoryReport.m utility to
+% create a PDF report of plots of a solution.
+%
 % Data and model source: https://simtk.org/projects/full_body
 % 
 % Model
@@ -121,6 +124,17 @@ track.set_mesh_interval(0.05);
 % Solve! The boolean argument indicates to visualize the solution.
 solution = track.solve(true);
 
+solution.write('exampleMocoTrack_markertracking_solution.sto');
+
+% Generate a PDF report containing plots of the variables in the solution.
+% For details, see osimMocoTrajectoryReport.m in Moco's
+% Resources/Code/Matlab/Utilities folder.
+model = modelProcessor.process();
+report = osimMocoTrajectoryReport(model, ...
+            'exampleMocoTrack_markertracking_solution.sto');
+reportFilepath = report.generate();
+open(reportFilepath);
+
 end
 
 function muscleDrivenStateTracking()
@@ -137,6 +151,7 @@ track.setName("muscle_driven_state_tracking");
 % parameters.
 modelProcessor = ModelProcessor("subject_walk_armless.osim");
 modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
+modelProcessor.append(ModOpIgnoreTendonCompliance());
 modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
 % Only valid for DeGrooteFregly2016Muscles.
 modelProcessor.append(ModOpIgnorePassiveFiberForcesDGF());
@@ -169,11 +184,11 @@ track.set_mesh_interval(0.08);
 % Instead of calling solve(), call initialize() to receive a pre-configured
 % MocoStudy object based on the settings above. Use this to customize the
 % problem beyond the MocoTrack interface.
-moco = track.initialize();
+study = track.initialize();
 
 % Get a reference to the MocoControlGoal that is added to every MocoTrack
 % problem by default.
-problem = moco.updProblem();
+problem = study.updProblem();
 effort = MocoControlGoal.safeDownCast(problem.updGoal("control_effort"));
 
 % Put a large weight on the pelvis CoordinateActuators, which act as the
@@ -190,8 +205,8 @@ for i = 0:forceSet.getSize()-1
 end
 
 % Solve and visualize.
-solution = moco.solve();
-moco.visualize(solution);
+solution = study.solve();
+study.visualize(solution);
 
 end
 

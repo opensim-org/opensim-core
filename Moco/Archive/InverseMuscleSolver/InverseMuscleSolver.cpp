@@ -18,7 +18,7 @@
 
 #include "InverseMuscleSolver.h"
 
-#include "../MocoUtilities.h"
+#include "../../Moco/MocoUtilities.h"
 
 #include <OpenSim/Common/TimeSeriesTable.h>
 

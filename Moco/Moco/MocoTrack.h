@@ -103,7 +103,7 @@ class MocoTrajectory;
 /// Default solver settings
 /// -----------------------
 /// - solver: MocoCasADiSolver
-/// - dynamics_mode: explicit
+/// - multibody_dynamics_mode: explicit
 /// - transcription_scheme: Hermite-Simpson
 /// - optim_convergence_tolerance: 1e-2
 /// - optim_constraint_tolerance: 1e-2
@@ -139,18 +139,18 @@ class MocoTrajectory;
 ///                ModOpAddExternalLoads());
 /// track.setStatesReference("states_reference_file.sto");
 ///
-/// MocoStudy moco = track.initialize();
+/// MocoStudy study = track.initialize();
 ///
-/// auto& problem = moco.updProblem();
+/// auto& problem = study.updProblem();
 /// auto* hipForceCost = problem.addGoal<MocoJointReactionCost>("hip_force");
 /// hipForceCost->set_weight(10);
 /// hipForceCost->setJointPath("/jointset/hip_r");
 /// hipForceCost->setReactionMeasures({"force-y"});
 ///
-/// auto& solver = moco.updSolver<MocoCasADiSolver>();
-/// solver.set_dynamics_mode("implicit");
+/// auto& solver = study.updSolver<MocoCasADiSolver>();
+/// solver.set_multibody_dynamics_mode("implicit");
 ///
-/// MocoSolution solution = moco.solve();
+/// MocoSolution solution = study.solve();
 /// @endcode
 ///
 /// @underdevelopment

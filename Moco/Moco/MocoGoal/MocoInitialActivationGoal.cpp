@@ -20,7 +20,8 @@
 
 using namespace OpenSim;
 
-void MocoInitialActivationGoal::initializeOnModelImpl(const Model& model) const {
+void MocoInitialActivationGoal::initializeOnModelImpl(
+        const Model& model) const {
 
     auto allSysYIndices = createSystemYIndexMap(model);
     auto systemControlIndexMap = createSystemControlIndexMap(model);

@@ -18,6 +18,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "About.h"
 #include "Common/TableProcessor.h"
 #include "Components/ActivationCoordinateActuator.h"
 #include "Components/DeGrooteFregly2016Muscle.h"
@@ -34,6 +35,8 @@
 #include "MocoGoal/MocoControlGoal.h"
 #include "MocoGoal/MocoControlTrackingGoal.h"
 #include "MocoGoal/MocoInitialActivationGoal.h"
+#include "MocoGoal/MocoInitialVelocityEquilibriumDGFGoal.h"
+#include "MocoGoal/MocoInitialForceEquilibriumGoal.h"
 #include "MocoGoal/MocoJointReactionGoal.h"
 #include "MocoGoal/MocoMarkerFinalGoal.h"
 #include "MocoGoal/MocoMarkerTrackingGoal.h"
