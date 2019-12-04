@@ -75,7 +75,8 @@ public:
 
     /// Set weights for all controls whose entire path matches the provided
     /// regular expression pattern.
-    /// Multiple pairs of patterns and weights can be provided.
+    /// Multiple pairs of patterns and weights can be provided by calling this
+    /// function multiple times.
     /// If a control matches multiple patterns, the weight associated with the
     /// last pattern is used.
     void setWeightForControlPattern(
