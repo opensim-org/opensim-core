@@ -34,8 +34,17 @@ class Model;
  * A class implementing a set of parameters describing how to calibrate
  * on a model to match placement of Sensors (IMUs)
  *
+ * Calibrates a model by registering IMU frames whose orientations in the
+ * sensor world frame are specified, assuming the model's default pose is the
+ * calibration pose. The resultant model with IMU frames registered is optionally 
+ * written to file. Optional properties are available to identify heading correction
+ * to line up the base IMU by its label in the orientation_file_for_calibration
+ * e.g. 'pelvis imu' and its heading axis as +/- 'x', 'y', or 'z', are used to 
+ * align all the IMU data so that base imu's heading (forward) is in the X direction 
+ * of OpenSim ground. If the base_imu_label is provided but no axis, then the 'z' axis 
+ * of the base IMU is used to perform the heading correction.
  *
- * @author Ayman Habib
+ * @author Ayman Habib, Ajay Seth
  */
 class OSIMSIMULATION_API IMUPlacer : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(IMUPlacer, Object);
