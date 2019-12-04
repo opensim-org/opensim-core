@@ -41,8 +41,8 @@ class Model;
  * to line up the base IMU by its label in the orientation_file_for_calibration
  * e.g. 'pelvis imu' and its heading axis as +/- 'x', 'y', or 'z', are used to 
  * align all the IMU data so that base imu's heading (forward) is in the X direction 
- * of OpenSim ground. If the base_imu_label is provided but no axis, then the 'z' axis 
- * of the base IMU is used to perform the heading correction.
+ * of OpenSim's ground frame. If the base_imu_label is provided but no axis is provided,  
+ * then the 'z' axis of the base IMU is used to perform the heading correction.
  *
  * @author Ayman Habib, Ajay Seth
  */
