@@ -34,7 +34,7 @@ visulizeCalibration = true;                     # Boolean to Visualize the Outpu
 # Instantiate an IMUPlacer object
 imuPlacer = osim.IMUPlacer();
 
-# Generate a model that calibrates the IMU sensors to a model pose.
+# Set properties for the IMUPlacer
 imuPlacer.set_model_file(modelFileName);
 imuPlacer.set_orientation_file_for_calibration(orientationsFileName);
 imuPlacer.set_sensor_to_opensim_rotations(sensor_to_opensim_rotations);
