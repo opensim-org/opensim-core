@@ -39,29 +39,6 @@
 
 using namespace OpenSim;
 
-std::string OpenSim::getFormattedDateTime(
-        bool appendMicroseconds, std::string format) {
-    using namespace std::chrono;
-    auto now = system_clock::now();
-    auto time_now = system_clock::to_time_t(now);
-    struct tm buf;
-#if defined(_WIN32)
-    localtime_s(&buf, &time_now);
-#else
-    localtime_r(&time_now, &buf);
-#endif
-    if (format == "ISO") { format = "%Y-%m-%dT%H:%M:%S"; }
-    std::stringstream ss;
-    ss << std::put_time(&buf, format.c_str());
-    if (appendMicroseconds) {
-        // Get number of microseconds since last second.
-        auto microsec =
-                duration_cast<microseconds>(now.time_since_epoch()) % 1000000;
-        ss << '.' << std::setfill('0') << std::setw(6) << microsec.count();
-    }
-    return ss.str();
-}
-
 SimTK::Vector OpenSim::createVectorLinspace(
         int length, double start, double end) {
     SimTK::Vector v(length);
