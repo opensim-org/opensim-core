@@ -1,9 +1,7 @@
-%% IMUDataConverter.m
+%% IMUDataConversion.m
 % Example code for reading, and converting, XSENS IMU sensor data to
 % OpenSense friendly format.
-% Run this script from the OpenSenseExampleFiles directory. 
 
-% ----------------------------------------------------------------------- %
 % The OpenSim API is a toolkit for musculoskeletal modeling and           %
 % simulation. See http://opensim.stanford.edu and the NOTICE file         %
 % for more information. OpenSim is developed at Stanford University       %

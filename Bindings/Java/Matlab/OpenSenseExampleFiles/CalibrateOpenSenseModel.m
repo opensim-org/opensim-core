@@ -1,9 +1,6 @@
-%% CalibrateOpenSenseModel.m
-% Example code to calibrate orienation data with OpenSense. This
-% script uses the OpenSense library functions and is part of the OpenSense
-% Example files. 
+%% CalibrateOpenSenseModel.m	
+% Example code to calibrate orienation data with OpenSense IMU procedure. 
 
-% ----------------------------------------------------------------------- %
 % The OpenSim API is a toolkit for musculoskeletal modeling and           %
 % simulation. See http://opensim.stanford.edu and the NOTICE file         %
 % for more information. OpenSim is developed at Stanford University       %
@@ -30,20 +27,28 @@ clear all; close all; clc;
 import org.opensim.modeling.*
 
 %% Set variables to use
-modelFileName = 'Rajagopal_2015.osim';        % The path to an input model
+modelFileName = 'Rajagopal_2015.osim';          % The path to an input model
 orientationsFileName = 'MT_012005D6_009-001_orientations.sto';   % The path to orientation data for calibration 
+sensor_to_opensim_rotations = Vec3(-pi/2, 0, 0);% The rotation of IMU data to the OpenSim world frame 
 baseIMUName = 'pelvis_imu';                     % The base IMU is the IMU on the base body of the model that dictates the heading (forward) direction of the model.
-baseIMUHeading = CoordinateAxis(2);             % The Coordinate Axis of the base IMU that points in the heading direction. 
+baseIMUHeading = 'z';                           % The Coordinate Axis of the base IMU that points in the heading direction. 
 visulizeCalibration = true;                     % Boolean to Visualize the Output model
 
-%% Instantiate an OpenSenseUtilities object
-ou = OpenSenseUtilities();
- 
-%% Generate a model that calibrates the IMU sensors to a model pose.
-model = ou.calibrateModelFromOrientations(modelFileName,...
-                                          orientationsFileName,...
-                                          baseIMUName,...
-                                          baseIMUHeading,...
-                                          visulizeCalibration);
+%% Instantiate an IMUPlacer object
+imuPlacer = IMUPlacer();
+
+% Set properties for the IMUPlacer
+imuPlacer.set_model_file(modelFileName);
+imuPlacer.set_orientation_file_for_calibration(orientationsFileName);
+imuPlacer.set_sensor_to_opensim_rotations(sensor_to_opensim_rotations);
+imuPlacer.set_base_imu_label(baseIMUName);
+imuPlacer.set_base_heading_axis(baseIMUHeading);
+
+% Run the IMUPlacer
+imuPlacer.run(visulizeCalibration);
+
+% Get the model with the calibrated IMU's
+model = imuPlacer.getCalibratedModel();
+
 %% Print the calibrated model to file.
-model.print(['calibrated_' modelFileName])
+model.print(['calibrated_' modelFileName]);

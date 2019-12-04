@@ -1,9 +1,6 @@
 %% OpenSense_OrientationTracking.m
-% Example code to perform orienation tracking with OpenSense. This
-% script uses the OpenSense library functions and is part of the OpenSense
-% Example files. 
+% Example code to perform orienation tracking with OpenSense. 
 
-% ----------------------------------------------------------------------- %
 % The OpenSim API is a toolkit for musculoskeletal modeling and           %
 % simulation. See http://opensim.stanford.edu and the NOTICE file         %
 % for more information. OpenSim is developed at Stanford University       %
@@ -32,34 +29,23 @@ import org.opensim.modeling.*
 %% Set variables to use
 modelFileName = 'calibrated_Rajagopal_2015.osim';                % The path to an input model
 orientationsFileName = 'MT_012005D6_009-001_orientations.sto';   % The path to orientation data for calibration 
-baseIMUName = 'pelvis_imu';     % The base IMU is the IMU on the base body of the model that dictates the heading (forward) direction of the model.
-baseIMUHeading = 'z';      % The Coordinate Axis of the base IMU that points in the heading direction. 
+sensor_to_opensim_rotation = Vec3(-pi/2, 0, 0); % The rotation of IMU data to the OpenSim world frame 
 visualizeTracking = true;  % Boolean to Visualize the tracking simulation
 startTime = 7.25;          % Start time (in seconds) of the tracking simulation. 
 endTime = 15;              % End time (in seconds) of the tracking simulation.
 resultsDirectory = 'IKResults';
 
-%% Instantiate an InverseKinematicsStudy
-ik = InverseKinematicsStudy();
+%% Instantiate an InverseKinematicsTool
+imuIK = IMUInverseKinematicsTool();
  
 %% Set the model path to be used for tracking
-ik.set_model_file_name(modelFileName);
- 
-% Set file with orientations to track
-ik.set_orientations_file_name(orientationsFileName);
- 
+imuIK.set_model_file(modelFileName);
+imuIK.set_orientations_file(orientationsFileName);
+imuIK.set_sensor_to_opensim_rotations(sensor_to_opensim_rotation)
 % Set time range in seconds
-ik.set_time_range(0, startTime); 
-ik.set_time_range(1, endTime);   
-
-% Set the base IMU
-ik.set_base_imu_label(baseIMUName);
- 
-% Set the axis heading
-ik.set_base_heading_axis(baseIMUHeading);
-
+imuIK.set_time_range(0, startTime); 
+imuIK.set_time_range(1, endTime);   
 % Set a directory for the results to be written to
-ik.set_results_directory(resultsDirectory)
-  
+imuIK.set_results_directory(resultsDirectory)
 % Run IK
-ik.run(visualizeTracking);
+imuIK.run(visualizeTracking);
