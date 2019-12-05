@@ -28,7 +28,6 @@
 #include <OpenSim/Common/LinearFunction.h>
 #include <OpenSim/Common/PolynomialFunction.h>
 
-
 namespace OpenSim {
 
 //=============================================================================
@@ -51,20 +50,22 @@ beyond the slack length.
 <B>Governing Equations</B>
 Spring Force:
 \f[
-F_{spring} = 
-\begin{Bmatrix}
-0 & \epsilon < 0 \\
-\frac{1}{2\epsilon_t }k\epsilon^2 & 0 \leq \epsilon \leq \epsilon_t \\  
- k(\epsilon - \frac{\epsilon_t}{2})& \epsilon > \epsilon_t
-\end{Bmatrix}
+    F_{spring} =
+    \begin{Bmatrix}
+    0 & \epsilon < 0 \\
+    \frac{1}{2\epsilon_t }k\epsilon^2 & 0 \leq \epsilon \leq \epsilon_t \\
+     k(\epsilon - \frac{\epsilon_t}{2})& \epsilon > \epsilon_t
+    \end{Bmatrix}
 \f]
+
 Damping Force:
 \f[
-F_{damping} = k\dot{c}\epsilon 
+    F_{damping} = k\dot{c}\epsilon
 \f]
+
 Total Force:
 \f[
-F_{total} = F_{spring} + F_{damping}
+    F_{total} = F_{spring} + F_{damping}
 \f]
 
 
@@ -100,7 +101,8 @@ property after the scale factors are applied in a manner that keeps the strain
 in the ligament in the default model pose (reference strain) constant. The 
 linear_stiffness parameter is not affected by scaling the model. 
 
-<B>Reference</B>\n
+### Reference
+
 [1]	Blankevoort, L. and Huiskes, R., (1991).
     Ligament-bone interaction in a three-dimensional model of the knee.
     J Biomech Eng, 113(3), 263-269
@@ -143,7 +145,7 @@ linear_stiffness parameter is not affected by scaling the model.
 
 [11] Pioletti, D. P., Rakotomanana, L. R., & Leyvraz, P. F. (1999). Strain 
     rate effect on the mechanical behavior of the anterior cruciate 
-    ligament–bone complex. Medical Engineering & Physics, 21(2), 95-100.
+    ligamentï¿½bone complex. Medical Engineering & Physics, 21(2), 95-100.
 
 @author Colin Smith
 
@@ -158,7 +160,7 @@ public:
 //=========================================================================
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(GeometryPath,
-    "The set of points defining the path of the ligament")
+        "The set of points defining the path of the ligament")
     OpenSim_DECLARE_PROPERTY(linear_stiffness, double,
         "Slope of the linear portion of the force-strain curve of "
         "ligament. Units of force/length.")
@@ -189,8 +191,6 @@ public:
         SimTK::Stage::Position);
     OpenSim_DECLARE_OUTPUT(lengthening_rate, double, getLengtheningSpeed,
         SimTK::Stage::Velocity);
-    
-
 
 //=========================================================================
 // METHODS
@@ -214,22 +214,16 @@ public:
     //---------------------------------------------------------------------
     // SET
     //---------------------------------------------------------------------
-    /**
-        * Set the slack length property using the strain in the ligament at a 
-        * known pose (reference state)
-        */
+    /** Set the slack length property using the strain in the ligament at a
+     * known pose (reference state). */
     void setSlackLengthFromReferenceStrain(
-        double strain, const SimTK::State& reference_state);
-    /**
-        * Set the slack length property using the force in the ligament at a 
-        * known pose (reference state)
-        */
+            double strain, const SimTK::State& reference_state);
+    /** Set the slack length property using the force in the ligament at a
+     * known pose (reference state). */
     void setSlackLengthFromReferenceForce(
-        double force, const SimTK::State& reference_state);
-        /**
-        * Set the linear_stiffness property using a value in units of 
-        * force/strain 
-        */
+            double force, const SimTK::State& reference_state);
+    /** Set the linear_stiffness property using a value in units of
+     * force/strain. */
     void setLinearStiffnessForcePerStrain(double linear_stiffness);
 
     //--------------------------------------------------------------------------
@@ -257,22 +251,20 @@ public:
 
     double computePotentialEnergy(
         const SimTK::State& state) const override;
-                
-        
 
-        
     //--------------------------------------------------------------------------
     // SCALE
     //--------------------------------------------------------------------------
-        
-    void extendPostScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
+    void extendPostScale(
+            const SimTK::State& s, const ScaleSet& scaleSet) override;
 
-    //-----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // REPORTING
-    //-----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     OpenSim::Array<std::string> getRecordLabels() const override;
-    OpenSim::Array<double> getRecordValues(const SimTK::State& state) const override;
-        
+    OpenSim::Array<double> getRecordValues(
+            const SimTK::State& state) const override;
+
 protected:
 
     void extendFinalizeFromProperties() override;
@@ -281,6 +273,7 @@ protected:
     double calcSpringForce(const SimTK::State& state) const;
     double calcDampingForce(const SimTK::State& state) const;
     double calcTotalForce(const SimTK::State& state) const;
+
 private:
     void setNull();
     void constructProperties();

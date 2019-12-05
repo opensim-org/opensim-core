@@ -1851,13 +1851,11 @@ void testTranslationalDampingEffect(Model& osimModel, Coordinate& sliderCoord, d
 
 }
 
-void testBlankevoort1991Ligament()
-{
 /* This test is modified from testPathSpring. The ligament is fixed to ground,
-wraps over a cylinder (pulley) and suspends a hanging mass against gravity. 
+wraps over a cylinder (pulley) and suspends a hanging mass against gravity.
 
-Test 1: The force in the ligament must be equal to the inertial and gravitial 
-forces acting on the block. 
+Test 1: The force in the ligament must be equal to the inertial and gravitial
+forces acting on the block.
             ____
            /    \
           /      \
@@ -1871,7 +1869,9 @@ forces acting on the block.
         |      |        |
         |      |        |
                ----------
-*/    
+*/
+void testBlankevoort1991Ligament()
+{
     using namespace SimTK;
 
     double mass = 0.1;
@@ -1884,7 +1884,7 @@ forces acting on the block.
     osimModel.setName("LigamentTest");
     osimModel.setGravity(gravity_vec);
 
-    //OpenSim bodies
+    // OpenSim bodies
     const Ground& ground = osimModel.getGround();;
     OpenSim::Body pulleyBody("PulleyBody", mass ,Vec3(0), 
                              mass*SimTK::Inertia::brick(0.1, 0.1, 0.1));
@@ -1912,7 +1912,7 @@ forces acting on the block.
     osimModel.addBody(&pulleyBody);    
     osimModel.addJoint(&weld);
     
-    //Add Block to Model
+    // Add Block to Model
     OpenSim::Body block("block", mass ,Vec3(0), 
                         mass*SimTK::Inertia::brick(0.05, 0.05, 0.05));
     block.attachGeometry(new Brick(Vec3(0.05, 0.05, 0.05)));
@@ -1930,17 +1930,20 @@ forces acting on the block.
     osimModel.addBody(&block);
     
 
-    Blankevoort1991Ligament ligament("ligament", stiffness, restlength);   
+    Blankevoort1991Ligament ligament("ligament", stiffness, restlength);
 
-    // BUG in defining wrapping API requires that the Force containing the GeometryPath be
-    // connected to the model before the wrap can be added
+    // BUG in defining wrapping API requires that the Force containing the
+    // GeometryPath be connected to the model before the wrap can be added
     osimModel.addForce(&ligament);
 
-    ligament.upd_GeometryPath().appendNewPathPoint("origin", ground, Vec3(0.0, 0.0 ,0.0));
+    ligament.upd_GeometryPath().appendNewPathPoint(
+            "origin", ground, Vec3(0.0, 0.0, 0.0));
     ligament.upd_GeometryPath().addPathWrap(*pulley1);
-    ligament.upd_GeometryPath().appendNewPathPoint("midpoint", ground, Vec3(0.1, 0.6 ,0.0));
+    ligament.upd_GeometryPath().appendNewPathPoint(
+            "midpoint", ground, Vec3(0.1, 0.6, 0.0));
     ligament.upd_GeometryPath().addPathWrap(*pulley2);
-    ligament.upd_GeometryPath().appendNewPathPoint("insertion", block, Vec3(0.0, 0.0 ,0.0));
+    ligament.upd_GeometryPath().appendNewPathPoint(
+            "insertion", block, Vec3(0.0, 0.0, 0.0));
 
     // Create the force reporter
     ForceReporter* reporter = new ForceReporter(&osimModel);
@@ -1971,7 +1974,9 @@ forces acting on the block.
 
     // get acceleration of the block
     osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
-    double hddot = osimModel.getCoordinateSet().get("block_h").getAccelerationValue(osim_state);
+    double hddot =
+            osimModel.getCoordinateSet().get("block_h").getAccelerationValue(
+                    osim_state);
 
     // the tension should be half the weight of the block
     double analytical_force = -(gravity_vec(1)-hddot)*mass;
