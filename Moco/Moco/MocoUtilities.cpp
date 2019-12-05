@@ -39,6 +39,29 @@
 
 using namespace OpenSim;
 
+std::string OpenSim::getMocoFormattedDateTime(
+        bool appendMicroseconds, std::string format) {
+    using namespace std::chrono;
+    auto now = system_clock::now();
+    auto time_now = system_clock::to_time_t(now);
+    struct tm buf;
+#if defined(_WIN32)
+    localtime_s(&buf, &time_now);
+#else
+    localtime_r(&time_now, &buf);
+#endif
+    if (format == "ISO") { format = "%Y-%m-%dT%H:%M:%S"; }
+    std::stringstream ss;
+    ss << std::put_time(&buf, format.c_str());
+    if (appendMicroseconds) {
+        // Get number of microseconds since last second.
+        auto microsec =
+                duration_cast<microseconds>(now.time_since_epoch()) % 1000000;
+        ss << '.' << std::setfill('0') << std::setw(6) << microsec.count();
+    }
+    return ss.str();
+}
+
 SimTK::Vector OpenSim::createVectorLinspace(
         int length, double start, double end) {
     SimTK::Vector v(length);
@@ -209,7 +232,7 @@ void OpenSim::visualize(Model model, Storage statesSto) {
     std::string title = "Visualizing model '" + modelName + "'";
     if (!statesSto.getName().empty() && statesSto.getName() != "UNKNOWN")
         title += " with motion '" + statesSto.getName() + "'";
-    title += " (" + getFormattedDateTime(false, "ISO") + ")";
+    title += " (" + getMocoFormattedDateTime(false, "ISO") + ")";
     viz.setWindowTitle(title);
     viz.setMode(SimTK::Visualizer::RealTime);
     // Buffering causes issues when the user adjusts the "Speed" slider.

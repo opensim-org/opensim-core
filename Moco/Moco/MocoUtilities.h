@@ -29,7 +29,6 @@
 
 #include "MocoTrajectory.h"
 #include "osimMocoDLL.h"
-#include <Common/CommonUtilities.h>
 #include <Common/Reporter.h>
 #include <Simulation/Model/Model.h>
 #include <Simulation/StatesTrajectory.h>
@@ -56,6 +55,17 @@ template <typename T, typename... Args>
 std::unique_ptr<T> make_unique(Args&&... args) {
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
+
+/// Get a string with the current date and time formatted as %Y-%m-%dT%H%M%S
+/// (year, month, day, "T", hour, minute, second). You can change the datetime
+/// format via the `format` parameter.
+/// If you specify "ISO", then we use the ISO 8601 extended datetime format
+/// %Y-%m-%dT%H:%M:%S.
+/// See https://en.cppreference.com/w/cpp/io/manip/put_time.
+/// @ingroup mocogenutil
+OSIMMOCO_API std::string getMocoFormattedDateTime(
+        bool appendMicroseconds = false,
+        std::string format = "%Y-%m-%dT%H%M%S");
 
 /// Determine if `string` starts with the substring `start`.
 /// https://stackoverflow.com/questions/874134/find-if-string-ends-with-another-string-in-c
@@ -775,7 +785,7 @@ public:
     FileDeletionThrower()
             : FileDeletionThrower(
                       "OpenSimMoco_delete_this_to_throw_exception_" +
-                      getFormattedDateTime() + ".txt") {}
+                      getMocoFormattedDateTime() + ".txt") {}
     FileDeletionThrower(std::string filepath)
             : m_filepath(std::move(filepath)) {
         std::ofstream f(m_filepath);
