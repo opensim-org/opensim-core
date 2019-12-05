@@ -51,8 +51,20 @@ std::string OpenSim::getMocoFormattedDateTime(
     localtime_r(&time_now, &buf);
 #endif
     if (format == "ISO") { format = "%Y-%m-%dT%H:%M:%S"; }
+
+    // To get the date/time in the desired format, we would ideally use
+    // std::put_time, but that is not available in GCC < 5.
+    // https://stackoverflow.com/questions/30269657/what-is-an-intelligent-way-to-determine-max-size-of-a-strftime-char-array
+    int size = 32;
+    std::unique_ptr<char[]> formatted(new char[size]);
+    while (strftime(formatted.get(), size - 1, format.c_str(), &buf) == 0) {
+        size *= 2;
+        formatted.reset(new char[size]);
+    }
+
     std::stringstream ss;
-    ss << std::put_time(&buf, format.c_str());
+    ss << formatted.get();
+
     if (appendMicroseconds) {
         // Get number of microseconds since last second.
         auto microsec =
