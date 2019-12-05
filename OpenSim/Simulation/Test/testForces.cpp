@@ -33,6 +33,7 @@
 //      7. ExternalForce
 //      8. PathSpring
 //      9. ExpressionBasedPointToPointForce
+//     10. Blankevoort1991Ligament
 //      
 //     Add tests here as Forces are added to OpenSim
 //
@@ -68,6 +69,7 @@ void testExpressionBasedPointToPointForce();
 void testExpressionBasedCoordinateForce();
 void testSerializeDeserialize();
 void testTranslationalDampingEffect(Model& osimModel, Coordinate& sliderCoord, double start_h, Component& componentWithDamping);
+void testBlankevoort1991Ligament();
 
 int main()
 {
@@ -154,6 +156,12 @@ int main()
     catch (const std::exception& e){
         cout << e.what() <<endl; 
         failures.push_back("testSerializeDeserialize");
+    }
+    
+    try { testBlankevoort1991Ligament(); }
+    catch (const std::exception& e){
+        cout << e.what() <<endl; 
+        failures.push_back("testBlankevoort1991Ligament");
     }
 
     if (!failures.empty()) {
@@ -1841,4 +1849,138 @@ void testTranslationalDampingEffect(Model& osimModel, Coordinate& sliderCoord, d
         lastEnergy = newEnergy;
     }
 
+}
+
+void testBlankevoort1991Ligament()
+{
+/* This test is modified from testPathSpring. The ligament is fixed to ground,
+wraps over a cylinder (pulley) and suspends a hanging mass against gravity. 
+
+Test 1: The force in the ligament must be equal to the inertial and gravitial 
+forces acting on the block. 
+            ____
+           /    \
+          /      \
+         /        \
+        /          \
+        |          |
+        |          |
+        |          |
+        |      ----------
+        |      |        |
+        |      |        |
+        |      |        |
+               ----------
+*/    
+    using namespace SimTK;
+
+    double mass = 0.1;
+    double stiffness = 10;
+    double restlength = 1.2;    
+    double start_h = 0.1;
+
+    // Setup OpenSim model
+    Model osimModel{};
+    osimModel.setName("LigamentTest");
+    osimModel.setGravity(gravity_vec);
+
+    //OpenSim bodies
+    const Ground& ground = osimModel.getGround();;
+    OpenSim::Body pulleyBody("PulleyBody", mass ,Vec3(0), 
+                             mass*SimTK::Inertia::brick(0.1, 0.1, 0.1));
+  
+    WrapCylinder* pulley1 = new WrapCylinder();
+    pulley1->setName("pulley1");
+    pulley1->set_radius(0.1);
+    pulley1->set_length(0.05);
+    pulley1->set_translation(Vec3(0.1, 0.4, 0));
+
+    WrapCylinder* pulley2 = new WrapCylinder();
+    pulley2->setName("pulley2");
+    pulley2->set_radius(0.1);
+    pulley2->set_length(0.05);
+    pulley2->set_translation(Vec3(0.1, 0.4, 0));
+
+    // Add the wrap object to the body, which takes ownership of it
+    pulleyBody.addWrapObject(pulley1);
+    pulleyBody.addWrapObject(pulley2);
+
+    // Add Pulley to Model
+    WeldJoint weld("pulley", ground, Vec3(0, 0.0, 0), Vec3(0),
+        pulleyBody, Vec3(0), Vec3(0));
+    
+    osimModel.addBody(&pulleyBody);    
+    osimModel.addJoint(&weld);
+    
+    //Add Block to Model
+    OpenSim::Body block("block", mass ,Vec3(0), 
+                        mass*SimTK::Inertia::brick(0.05, 0.05, 0.05));
+    block.attachGeometry(new Brick(Vec3(0.05, 0.05, 0.05)));
+
+    SliderJoint slider("slider", ground, Vec3(0.2,0,0), Vec3(0,0,Pi/2),
+        block, Vec3(0), Vec3(0,0,Pi/2));
+
+    double positionRange[2] = {-10, 10};    
+    auto& sliderCoord = slider.updCoordinate();
+    sliderCoord.setName("block_h");
+    sliderCoord.setRange(positionRange);
+    
+
+    osimModel.addJoint(&slider);
+    osimModel.addBody(&block);
+    
+
+    Blankevoort1991Ligament ligament("ligament", stiffness, restlength);   
+
+    // BUG in defining wrapping API requires that the Force containing the GeometryPath be
+    // connected to the model before the wrap can be added
+    osimModel.addForce(&ligament);
+
+    ligament.upd_GeometryPath().appendNewPathPoint("origin", ground, Vec3(0.0, 0.0 ,0.0));
+    ligament.upd_GeometryPath().addPathWrap(*pulley1);
+    ligament.upd_GeometryPath().appendNewPathPoint("midpoint", ground, Vec3(0.1, 0.6 ,0.0));
+    ligament.upd_GeometryPath().addPathWrap(*pulley2);
+    ligament.upd_GeometryPath().appendNewPathPoint("insertion", block, Vec3(0.0, 0.0 ,0.0));
+
+    // Create the force reporter
+    ForceReporter* reporter = new ForceReporter(&osimModel);
+    osimModel.addAnalysis(reporter);
+
+    osimModel.setUseVisualizer(true);
+    SimTK::State& osim_state = osimModel.initSystem();
+
+    sliderCoord.setValue(osim_state, start_h);
+    osimModel.getMultibodySystem().realize(osim_state, Stage::Position );
+
+    //==========================================================================
+    // Compute the force and torque at the specified times.
+
+    Manager manager(osimModel);
+    manager.setIntegratorAccuracy(1e-6);
+    osim_state.setTime(0.0);
+    manager.initialize(osim_state);
+
+    double final_t = 2.0;
+    osim_state = manager.integrate(final_t);
+
+    // tension should only be velocity dependent
+    osimModel.getMultibodySystem().realize(osim_state, Stage::Velocity);
+
+    // Now check that the force reported by spring
+    double model_force = ligament.getTotalForce(osim_state);
+
+    // get acceleration of the block
+    osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
+    double hddot = osimModel.getCoordinateSet().get("block_h").getAccelerationValue(osim_state);
+
+    // the tension should be half the weight of the block
+    double analytical_force = -(gravity_vec(1)-hddot)*mass;
+
+    // Save the forces
+    reporter->getForceStorage().print("ligament_forces.mot");  
+    
+    // something is wrong if the block does not reach equilibrium
+    ASSERT_EQUAL(analytical_force, model_force, 1e-3);
+
+    osimModel.disownAllComponents();
 }

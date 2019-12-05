@@ -107,6 +107,11 @@ int main()
     // Test PrescribedForce
     std::unique_ptr<PrescribedForce> f(new PrescribedForce());
     availableComponents.push_back(f.get());
+
+    //Test Blankevoort1991Ligament
+    std::unique_ptr<Blankevoort1991Ligament> bl(new Blankevoort1991Ligament());
+    availableComponents.push_back(bl.get());
+
     // continue with other Constraints, Forces, Actuators, ...
     //Examples of updated forces that pass
     ArrayPtrs<PointToPointSpring> availablePointToPointSpring;
