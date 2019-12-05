@@ -521,9 +521,8 @@ typedef TimeSeriesTable_<SimTK::Vec3> TimeSeriesTableVec3;
 /** See TimeSeriesTable_ for details on the interface.                        */
 typedef TimeSeriesTable_<SimTK::Quaternion> TimeSeriesTableQuaternion;
 
-typedef OpenSim::TimeSeriesTable_<SimTK::Quaternion> TimeSeriesTableQuaternion;
-
-typedef OpenSim::TimeSeriesTable_<SimTK::Rotation> TimeSeriesTableRotation;
+/** See TimeSeriesTable_ for details on the interface.                        */
+typedef TimeSeriesTable_<SimTK::Rotation> TimeSeriesTableRotation;
 
 } // namespace OpenSim
 
