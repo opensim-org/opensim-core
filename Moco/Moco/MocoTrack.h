@@ -280,7 +280,7 @@ private:
     // Convenience method for applying data from a states reference to the
     // problem guess.
     void applyStatesToGuess(
-            const TimeSeriesTable& states, MocoTrajectory& guess);
+            const TimeSeriesTable& states, MocoTrajectory& guess) const;
 };
 
 } // namespace OpenSim

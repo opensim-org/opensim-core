@@ -43,7 +43,7 @@ void MocoSumSquaredStateGoal::initializeOnModelImpl(const Model& model) const {
                         "' but this is not a recognized state.");
             }
 
-            if (getProperty_pattern().size()) { 
+            if (getProperty_pattern().size()) {
                 if (!std::regex_match(weightName, regex)) {
                     OPENSIM_THROW_FRMOBJ(Exception,
                             format("Weight provided with name '%s' but this "

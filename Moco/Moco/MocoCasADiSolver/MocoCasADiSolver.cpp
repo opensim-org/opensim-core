@@ -275,7 +275,7 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     OPENSIM_THROW_IF(get_implicit_multibody_accelerations_weight() < 0,
             Exception, format(
                 "Property implicit_multibody_accelerations_weight must be "
-                "non-negative, but it is set to %f.", 
+                "non-negative, but it is set to %f.",
                 get_implicit_multibody_accelerations_weight()));
     casSolver->setImplicitMultibodyAccelerationsWeight(
             get_implicit_multibody_accelerations_weight());
