@@ -14,7 +14,8 @@ Moco is organized as pairs of Problem and Solver classes.
 
 @image html MocoImplementationDiagram.svg width=700px
 
-Figure: Organization of classes in Moco. Abstract classes are denoted by dashed lines.
+<i>Organization of classes in Moco. Abstract classes are denoted by dashed
+lines.</i>
 
 MocoProblem describes a direct collocation problem using an OpenSim Model, and
 MocoSolver is an abstract class for solving MocoProblems. Moco provides two
@@ -105,7 +106,7 @@ equations for the multibody dynamics, kinematic constraints, and auxiliary dynam
 
 \f[
     \begin{alignat*}{2}
-         M(q, p)\dot{u} + G(q, p)^T \lambda &= f_{\textrm{app}}(t, y, x, p) - f_{\textrm{bias}}(q, u, p) \\
+         M(q, p)\dot{u} + G(q, p)^T \lambda &= f_{\textrm{app}}(t, y, x, p) - f_{\textrm{inertial}}(q, u, p) \\
          0 &= \phi(q, p) \\
          \dot{z}(t) &= f_{\textrm{aux}}(t, y, x, \lambda, p). \\
     \end{alignat*}
@@ -128,7 +129,7 @@ realizing a SimTK::System to SimTK::Stage::Acceleration.
     \end{bmatrix}
     &=
     \begin{bmatrix}
-        f_{\textrm{app}}(t, y, x, p) - f_{\textrm{bias}}(q, u, p) \\
+        f_{\textrm{app}}(t, y, x, p) - f_{\textrm{inertial}}(q, u, p) \\
         b(q, u)
         \end{bmatrix} \\
          \dot{z}(t) &= f_{\textrm{aux}}(t, y, x, \lambda, p) \\
@@ -182,7 +183,7 @@ This is similar to the "inverse dynamics" calculation, in which one knows \f$
 required for the multibody dynamics equation to hold:
 
 \f[
-f_{\mathrm{residual}} = M \dot{u} + f_{\mathrm{bias}} - f_{\mathrm{app}}.
+f_{\mathrm{residual}} = M \dot{u} + f_{\mathrm{inertial}} - f_{\mathrm{app}}.
 \f]
 
 Simbody provides the SimTK::SimbodyMatterSubsystem::calcResidual() "inverse
@@ -198,7 +199,7 @@ when realizing to SimTK::Stage::Acceleration, are set to be the forces required
 for multibody dynamics to hold.
 
 \f[
-M \dot{u} + f_{\mathrm{bias}} + \lambda_m = f_{\mathrm{app}}.
+M \dot{u} + f_{\mathrm{inertial}} + \lambda_m = f_{\mathrm{app}}.
 \f]
 
 That is, the motion multipliers are equivalent to the residual forces from
@@ -215,7 +216,7 @@ constraint Lagrange multipliers \f$ \lambda_c \f$ and motion Lagrange multpliers
 \f$ \lambda_m \f$:
 
 \f[
-M(q)\dot{u} + f_{\textrm{bias}}(q, u) + G(q)^T \lambda_c + \lambda_m = f_{\textrm{app}}(t, q, u, z, x).
+M(q)\dot{u} + f_{\textrm{inertial}}(q, u) + G(q)^T \lambda_c + \lambda_m = f_{\textrm{app}}(t, q, u, z, x).
 \f]
 
 Handling kinematic constraints with implicit multibody dynamics is no different
@@ -277,7 +278,7 @@ OpenSim::Coordinate); instead, variables are replaced with data.
 For a system without kinematic constraints, the equations of motion are:
 
 \f[
-M(\hat{q})\dot{\hat{u}} + f_{\textrm{bias}}(\hat{q}, \hat{u}) + \lambda_m = f_{\textrm{app}}(t, \hat{q}, \hat{u}, z, x) \\
+M(\hat{q})\dot{\hat{u}} + f_{\textrm{inertial}}(\hat{q}, \hat{u}) + \lambda_m = f_{\textrm{app}}(t, \hat{q}, \hat{u}, z, x) \\
 \f]
 
 The hat denotes known quantities; the only variables are  \f$ z \f$ and \f$ x
@@ -303,7 +304,7 @@ does not contain a PositionMotion.
 With kinematic constraints, the equations of motion are
 
 \f[
-M(\hat{q})\dot{\hat{u}} + f_{\textrm{bias}}(\hat{q}, \hat{u}) + G(\hat{q})^T \lambda_c + \lambda_m = f_{\textrm{app}}(t, \hat{q}, \hat{u}, z, x) \\
+M(\hat{q})\dot{\hat{u}} + f_{\textrm{inertial}}(\hat{q}, \hat{u}) + G(\hat{q})^T \lambda_c + \lambda_m = f_{\textrm{app}}(t, \hat{q}, \hat{u}, z, x) \\
 \f]
 
 \f$ G \f$ is the kinematic constraint Jacobian and \f$ \lambda_c \f$ are the
