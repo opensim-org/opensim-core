@@ -155,12 +155,7 @@ jobs:
       run: |
         brew install cmake pkgconfig gcc autoconf libtool automake wget pcre doxygen
         pip3 install numpy
-        echo 'gfortran -v'
         gfortran -v
-        echo 'which'
-        which gfortran
-        echo 'path'
-        echo $PATH
         mkdir gfortran_version
         gfortran -v &> gfortran_version/gfortran_version.txt
 
