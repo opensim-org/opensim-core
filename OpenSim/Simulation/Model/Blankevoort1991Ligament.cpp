@@ -27,7 +27,6 @@
 #include <OpenSim/Common/LinearFunction.h>
 #include <OpenSim/Common/PolynomialFunction.h>
 
-using namespace SimTK;
 using namespace OpenSim;
 
 
@@ -41,8 +40,8 @@ Blankevoort1991Ligament::Blankevoort1991Ligament() : Force() {
 }
 
 Blankevoort1991Ligament::Blankevoort1991Ligament(std::string name,
-        const PhysicalFrame& frame1, Vec3 point1, const PhysicalFrame& frame2,
-        Vec3 point2)
+        const PhysicalFrame& frame1, SimTK::Vec3 point1, const PhysicalFrame& frame2,
+        SimTK::Vec3 point2)
         : Blankevoort1991Ligament() {
     setName(name);
     upd_GeometryPath().appendNewPathPoint("p1", frame1, point1);
@@ -50,8 +49,8 @@ Blankevoort1991Ligament::Blankevoort1991Ligament(std::string name,
 }
 
 Blankevoort1991Ligament::Blankevoort1991Ligament(std::string name,
-        const PhysicalFrame& frame1, Vec3 point1, const PhysicalFrame& frame2,
-        Vec3 point2, double linear_stiffness, double slack_length)
+        const PhysicalFrame& frame1, SimTK::Vec3 point1, const PhysicalFrame& frame2,
+        SimTK::Vec3 point2, double linear_stiffness, double slack_length)
         : Blankevoort1991Ligament(name, frame1, point1, frame2, point2) {
     set_linear_stiffness(linear_stiffness);
     set_slack_length(slack_length);
@@ -114,19 +113,6 @@ void Blankevoort1991Ligament::extendFinalizeFromProperties() {
     // Set Default Ligament Color
     GeometryPath& path = upd_GeometryPath();
     path.setDefaultColor(SimTK::Vec3(0.1202, 0.7054, 0.1318));
-
-    // Set Spring Force Functions
-    // toe region F = 1/2 * k / e_t * e^2
-    SimTK::Vector coefficients(3, 0.0);
-    coefficients.set(0,
-            0.5 * getLinearStiffnessForcePerStrain() / get_transition_strain());
-    _springToeForceFunction = PolynomialFunction(coefficients);
-
-    // linear region F = k * (e-e_t/2)
-    double slope = getLinearStiffnessForcePerStrain();
-    double intercept =
-            -getLinearStiffnessForcePerStrain() * get_transition_strain() / 2;
-    _springLinearForceFunction = LinearFunction(slope, intercept);
 }
 
 void Blankevoort1991Ligament::extendAddToSystem(
@@ -168,7 +154,7 @@ double Blankevoort1991Ligament::getLength(const SimTK::State& state) const {
     return get_GeometryPath().getLength(state);
 }
 
-double Blankevoort1991Ligament::getLengtheningSpeed(
+double Blankevoort1991Ligament::getLengtheningRate(
         const SimTK::State& state) const {
     return get_GeometryPath().getLengtheningSpeed(state);
 }
@@ -186,7 +172,7 @@ double Blankevoort1991Ligament::getStrain(const SimTK::State& state) const{
 
 double Blankevoort1991Ligament::getStrainRate(const SimTK::State& state) const {
    if(!isCacheVariableValid(state,"strain_rate")){
-        double lengthening_speed = getLengtheningSpeed(state);
+        double lengthening_speed = getLengtheningRate(state);
         double strain_rate = lengthening_speed / get_slack_length();
 
         setCacheVariableValue<double>(state, "strain_rate", strain_rate);
@@ -272,33 +258,33 @@ void Blankevoort1991Ligament::setLinearStiffnessForcePerStrain(
 double Blankevoort1991Ligament::calcSpringForce(
         const SimTK::State& state) const {
     double strain = getStrain(state);
+    double k = getLinearStiffnessForcePerStrain();
+    double e_t = get_transition_strain();
+
     double force_spring;
     // slack region
     if (strain <= 0) {
         force_spring = 0;
     }
-    // toe region
-    else if ((strain > 0) && (strain < (get_transition_strain()))) {
-        SimTK::Vector vec(1, strain);
-        force_spring = _springToeForceFunction.calcValue(vec);
+    // toe region F = 1/2 * k / e_t * e^2
+    else if ((strain > 0) && (strain < e_t)) {        
+        force_spring = 0.5 * k / e_t * pow(strain,2);
     }
-    // linear region
-    else if (strain >= get_transition_strain()) {
-        force_spring =
-                _springLinearForceFunction.calcValue(SimTK::Vector(1, strain));
+    // linear region F = k * (e-e_t/2)
+    else if (strain >= e_t) {
+        force_spring = k * (strain - e_t / 2); 
     }
     return force_spring;
 }
 
 double Blankevoort1991Ligament::calcDampingForce(const SimTK::State& s) const {
     double strain = getStrain(s);
-    double lengthening_rate = getLengtheningSpeed(s);
+    double lengthening_rate = getLengtheningRate(s);
     double force_damping = 0.0;
 
-    if (strain > 0) {
-        double lin_stiff = getLinearStiffnessForcePerStrain();
+    if (strain > 0 && lengthening_rate > 0) {
         double damping_coeff = get_damping_coefficient();
-        force_damping = lin_stiff*damping_coeff*lengthening_rate;
+        force_damping = damping_coeff*lengthening_rate;
     }
     else {
         force_damping = 0.0;
@@ -332,16 +318,9 @@ void Blankevoort1991Ligament::computeForce(const SimTK::State& s,
         // total force
         double force_total = getTotalForce(s);
 
-        OpenSim::Array<PointForceDirection*> PFDs;
-        get_GeometryPath().getPointForceDirections(s, &PFDs);
+        const GeometryPath &path = get_GeometryPath();
 
-        for (int i = 0; i < PFDs.getSize(); i++) {
-            applyForceToPoint(s, PFDs[i]->frame(), PFDs[i]->point(),
-                force_total*PFDs[i]->direction(), bodyForces);
-        }
-
-        for (int i = 0; i < PFDs.getSize(); i++)
-            delete PFDs[i];
+        path.addInEquivalentForces(s, force_total, bodyForces, generalizedForces);
     }
 }
 
@@ -389,7 +368,7 @@ OpenSim::Array<double> Blankevoort1991Ligament::getRecordValues(
     values.append(getDampingForce(s));
     values.append(getTotalForce(s));
     values.append(getLength(s));
-    values.append(getLengtheningSpeed(s));
+    values.append(getLengtheningRate(s));
     values.append(getStrain(s));
     values.append(getStrainRate(s));
     return values;

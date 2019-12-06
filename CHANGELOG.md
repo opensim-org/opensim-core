@@ -19,7 +19,7 @@ v4.1
 - The new Stopwatch class allows C++ API users to easily measure the runtime of their code.
 - If finalizeConnections() method was not called on a model after making changes and before printing, an exception is thrown to avoid creating corrupt model files quietly (PR #2529)
 - Updated the docopt.cpp dependency so that OpenSim can be compiled with Visual C++ from Visual Studio 2019.
-
+- Added `Blankevoort1991Ligament` force component which represents ligament fibers as non-linear path springs. The force-strain curve has a quadratic toe region at low strains and a linear stiffness region at high strains. (PR #2632)  
 Converting from v4.0 to v4.1
 ----------------------------
 - The `OpenSim::Array` constructor is now marked explicit, which prevents

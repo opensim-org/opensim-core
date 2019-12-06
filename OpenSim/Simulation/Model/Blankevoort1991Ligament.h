@@ -36,8 +36,8 @@ namespace OpenSim {
 /**
 This class implements a nonlinear spring ligament model introduced by
 Blankevoort et al.\ (1991) [1] and further described in Smith et al.\ (2016) 
-[2]. This model is partially based on the formulation orginally proposed by 
-Wismans et al.\ (1980) [3]. The ligament is represented as a passive spring 
+[2].\ This model is partially based on the formulation orginally proposed by 
+Wismans et al.\ (1980) [3]\. The ligament is represented as a passive spring 
 with the force-strain relationship described by a quadratic "toe" region at 
 low strains and a linear region at high strains. The toe region represents the 
 uncrimping and alignment of collagen fibers and the linear region represents 
@@ -45,10 +45,11 @@ the subsequent stretching of the aligned fibers. The ligament model also
 includes a damping force that is only applied if the ligament is stretched 
 beyond the slack length.
 
-\image html fig_Blankevoort1991Ligament.svg
+\image html fig_Blankevoort1991Ligament.png
 
 <B>Governing Equations</B>
-Spring Force:
+
+Spring %Force:
 \f[
     F_{spring} =
     \begin{Bmatrix}
@@ -58,24 +59,28 @@ Spring Force:
     \end{Bmatrix}
 \f]
 
-Damping Force:
+Damping %Force:
 \f[
-    F_{damping} = k\dot{c}\epsilon
+    F_{damping} = c\cdot LengtheningSpeed
 \f]
 
-Total Force:
+Total %Force:
 \f[
     F_{total} = F_{spring} + F_{damping}
 \f]
 
 
 This model has the following properties:
+
 \li linear stiffness (k): The force/distance (e.g. N/m) stiffness of the linear
 region of the ligament model.
-\li slack_length (l_0): The resting length of the ligament.
-\li normalized damping coefficient (c): Damping coefficient used in the damping
-force calculation in units of seconds. Commonly set to 0.003.
-\li transition_strain (e_t): The strain value where the ligament model 
+
+\li slack_length (\f$l_0\f$): The resting length of the ligament (e.g. N).
+
+\li damping coefficient (c): Damping coefficient used in the damping
+force calculation in units of seconds. Commonly set to 0.001.
+
+\li transition_strain (\f$\epsilon_t\f$): The strain value where the ligament model
 transitions from the quadratic toe region to the linear stiffness region.
 Default value of 0.06 (6%) according to Blankevoort J Biomech Eng 1991.
 This value is widely used in the multibody knee modeling literature [2,4,5,6]
@@ -92,7 +97,7 @@ setSlackLengthFromReferenceStrain() and setSlackLengthFromReferenceForce() as
 well. Here, reference strain and reference force are the strain/force in the 
 ligament at a reference pose (state). If you want to compute the 
 reference strain or reference force of the ligament at at reference pose 
-(state), you can use the getStrain(state) and getSpringForce(state) methods.
+(state), you can use the getStrain(state) and getForce(state) methods.
 The linear_stiffness is saved in units of force/distance but can be set and 
 reported in units of force/strain using setLinearStiffnessForcePerStrain().
 
@@ -103,17 +108,17 @@ linear_stiffness parameter is not affected by scaling the model.
 
 ### Reference
 
-[1]	Blankevoort, L. and Huiskes, R., (1991).
+[1] Blankevoort, L. and Huiskes, R., (1991).
     Ligament-bone interaction in a three-dimensional model of the knee.
     J Biomech Eng, 113(3), 263-269
 
-[2]	Smith, C.R., Lenhart, R.L., Kaiser, J., Vignos, M.F. and Thelen, D.G.,
+[2] Smith, C.R., Lenhart, R.L., Kaiser, J., Vignos, M.F. and Thelen, D.G.,
     (2016). Influence of ligament properties on tibiofemoral mechanics
-    in walking. J Knee Surg, 29(02), 99-106.\n
-    
-[3]	Wismans, J.A.C., Veldpaus, F., Janssen, J., Huson, A. and Struben, P., 
+    in walking. J Knee Surg, 29(02), 99-106.
+
+[3] Wismans, J.A.C., Veldpaus, F., Janssen, J., Huson, A. and Struben, P., 
     (1980). A three-dimensional mathematical model of the knee-joint. 
-    J Biomech, 13(8), 677-685.\n
+    J Biomech, 13(8), 677-685.
 
 [4] Marra, M. A., Vanheule, V., Fluit, R., Koopman, B. H., Rasmussen, J., 
     Verdonschot, N., & Andersen, M. S. (2015). A subject-specific 
@@ -145,7 +150,7 @@ linear_stiffness parameter is not affected by scaling the model.
 
 [11] Pioletti, D. P., Rakotomanana, L. R., & Leyvraz, P. F. (1999). Strain 
     rate effect on the mechanical behavior of the anterior cruciate 
-    ligament�bone complex. Medical Engineering & Physics, 21(2), 95-100.
+    ligament-bone complex. Medical Engineering & Physics, 21(2), 95-100.
 
 @author Colin Smith
 
@@ -162,14 +167,15 @@ public:
     OpenSim_DECLARE_UNNAMED_PROPERTY(GeometryPath,
         "The set of points defining the path of the ligament")
     OpenSim_DECLARE_PROPERTY(linear_stiffness, double,
-        "Slope of the linear portion of the force-strain curve of "
+        "Slope of the linear portion of the force-strain curve of " 
         "ligament. Units of force/length.")
     OpenSim_DECLARE_PROPERTY(transition_strain, double,
-        "Strain at which ligament force-strain curve transitions from"
+        "Strain at which ligament force-strain curve transitions from "
         "quadratic to linear. Default value of 0.06.")
     OpenSim_DECLARE_PROPERTY(damping_coefficient, double,
-        "Coefficient for normalized damping of ligament."
-        "Units of seconds, default value of 0.003.")
+        "Coefficient for damping in ligament. "
+        "Units of force * time / distance (e.g. Ns/m). "
+        "Default value of 0.001.")
     OpenSim_DECLARE_PROPERTY(slack_length, double,
         "Length at which ligament begins developing tension")
 
@@ -189,7 +195,7 @@ public:
         SimTK::Stage::Velocity);
     OpenSim_DECLARE_OUTPUT(length, double, getLength,
         SimTK::Stage::Position);
-    OpenSim_DECLARE_OUTPUT(lengthening_rate, double, getLengtheningSpeed,
+    OpenSim_DECLARE_OUTPUT(lengthening_rate, double, getLengtheningRate,
         SimTK::Stage::Velocity);
 
 //=========================================================================
@@ -214,15 +220,15 @@ public:
     //---------------------------------------------------------------------
     // SET
     //---------------------------------------------------------------------
-    /** Set the slack length property using the strain in the ligament at a
+    /** %Set the slack length property using the strain in the ligament at a
      * known pose (reference state). */
     void setSlackLengthFromReferenceStrain(
             double strain, const SimTK::State& reference_state);
-    /** Set the slack length property using the force in the ligament at a
+    /** %Set the slack length property using the force in the ligament at a
      * known pose (reference state). */
     void setSlackLengthFromReferenceForce(
             double force, const SimTK::State& reference_state);
-    /** Set the linear_stiffness property using a value in units of
+    /** %Set the linear_stiffness property using a value in units of
      * force/strain. */
     void setLinearStiffnessForcePerStrain(double linear_stiffness);
 
@@ -233,7 +239,7 @@ public:
     double getStrain(const SimTK::State& state) const;
     double getStrainRate(const SimTK::State& state) const;
     double getLength(const SimTK::State& state) const;
-    double getLengtheningSpeed(const SimTK::State& state) const;
+    double getLengtheningRate(const SimTK::State& state) const;
     double getSpringForce(const SimTK::State& state) const;
     double getDampingForce(const SimTK::State& state) const;
 
@@ -277,11 +283,6 @@ protected:
 private:
     void setNull();
     void constructProperties();
-
-private:
-    PolynomialFunction _springToeForceFunction;
-    LinearFunction _springLinearForceFunction;
-
 //=============================================================================
 };	// END of class Blankevoort1991Ligament
 //=============================================================================
