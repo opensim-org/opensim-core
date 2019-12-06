@@ -156,10 +156,10 @@ jobs:
       run: |
         brew install cmake pkgconfig gcc autoconf libtool automake wget pcre doxygen
         pip3 install numpy
-        echo 'locate'
-        locate gfortran
         echo 'gfortran -v'
         gfortran -v
+        echo 'which'
+        which gfortran
         echo 'path'
         echo $PATH
 
