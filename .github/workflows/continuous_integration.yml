@@ -201,6 +201,7 @@ jobs:
         DEP_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=10.10)
         printf '%s\n' "${DEP_CMAKE_ARGS[@]}"
         cmake "${DEP_CMAKE_ARGS[@]}"
+        cmake . -LAH
         make -j4 ipopt
         make -j4
 
