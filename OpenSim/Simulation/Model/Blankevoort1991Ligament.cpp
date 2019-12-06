@@ -160,7 +160,7 @@ double Blankevoort1991Ligament::getLengtheningRate(
 }
 
 double Blankevoort1991Ligament::getStrain(const SimTK::State& state) const{
-    if(!isCacheVariableValid(state,"strain")){
+    if(!isCacheVariableValid(state,"strain")) {
         double length = getLength(state);
         double strain = (length - get_slack_length())/get_slack_length();
 
@@ -171,7 +171,7 @@ double Blankevoort1991Ligament::getStrain(const SimTK::State& state) const{
 }
 
 double Blankevoort1991Ligament::getStrainRate(const SimTK::State& state) const {
-   if(!isCacheVariableValid(state,"strain_rate")){
+   if(!isCacheVariableValid(state,"strain_rate")) {
         double lengthening_speed = getLengtheningRate(state);
         double strain_rate = lengthening_speed / get_slack_length();
 
@@ -202,7 +202,7 @@ double Blankevoort1991Ligament::getDampingForce(
 }
 
 double Blankevoort1991Ligament::getTotalForce(const SimTK::State& state) const {
-    if(!isCacheVariableValid(state,"force_total")){
+    if(!isCacheVariableValid(state,"force_total")) {
         double force = calcTotalForce(state);
         setCacheVariableValue<double>(state, "force_total", force);
         return force;
@@ -268,7 +268,7 @@ double Blankevoort1991Ligament::calcSpringForce(
     }
     // toe region F = 1/2 * k / e_t * e^2
     else if ((strain > 0) && (strain < e_t)) {        
-        force_spring = 0.5 * k / e_t * pow(strain,2);
+        force_spring = 0.5 * k / e_t * SimTK::square(strain);
     }
     // linear region F = k * (e-e_t/2)
     else if (strain >= e_t) {
@@ -286,14 +286,11 @@ double Blankevoort1991Ligament::calcDampingForce(const SimTK::State& s) const {
         double damping_coeff = get_damping_coefficient();
         force_damping = damping_coeff*lengthening_rate;
     }
-    else {
-        force_damping = 0.0;
-    }
 
     //Phase-out damping as strain goes to zero with smooth-step function
     SimTK::Function::Step step(0, 1, 0, 0.01);
-    SimTK::Vector in_vec(1,strain);
-    force_damping = force_damping*step.calcValue(in_vec);
+    SimTK::Vector in_vec(1, strain);
+    force_damping = force_damping * step.calcValue(in_vec);
 
     setCacheVariableValue<double>(s, "force_damping", force_damping);
     return force_damping;
@@ -320,7 +317,8 @@ void Blankevoort1991Ligament::computeForce(const SimTK::State& s,
 
         const GeometryPath &path = get_GeometryPath();
 
-        path.addInEquivalentForces(s, force_total, bodyForces, generalizedForces);
+        path.addInEquivalentForces(
+                s, force_total, bodyForces, generalizedForces);
     }
 }
 

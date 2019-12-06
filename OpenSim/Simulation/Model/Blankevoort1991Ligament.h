@@ -35,23 +35,26 @@ namespace OpenSim {
 //=============================================================================
 /**
 This class implements a nonlinear spring ligament model introduced by
-Blankevoort et al.\ (1991) [1] and further described in Smith et al.\ (2016) 
-[2].\ This model is partially based on the formulation orginally proposed by 
-Wismans et al.\ (1980) [3]\. The ligament is represented as a passive spring 
-with the force-strain relationship described by a quadratic "toe" region at 
-low strains and a linear region at high strains. The toe region represents the 
-uncrimping and alignment of collagen fibers and the linear region represents 
-the subsequent stretching of the aligned fibers. The ligament model also 
-includes a damping force that is only applied if the ligament is stretched 
-beyond the slack length.
+Blankevoort et al.\ (1991) [1] and further described in Smith et al.\ (2016)
+[2].\ This model is partially based on the formulation orginally proposed by
+Wismans et al.\ (1980) [3]\. The ligament is represented as a passive spring
+with the force-strain relationship described by a quadratic "toe" region at
+low strains and a linear region at high strains. The toe region represents the
+uncrimping and alignment of collagen fibers and the linear region represents
+the subsequent stretching of the aligned fibers. The ligament model also
+includes a damping force that is only applied if the ligament is stretched
+beyond the slack length and if the ligament is lengthening.
 
-\image html fig_Blankevoort1991Ligament.png
+The length of the ligament is \f$ l \f$, and its lengthening rate is  \f$
+\dot{l} \f$.
+
+\image html fig_Blankevoort1991Ligament.png width=400px
 
 <B>Governing Equations</B>
 
 Spring %Force:
 \f[
-    F_{spring} =
+    F_{\mathrm{spring}} =
     \begin{Bmatrix}
     0 & \epsilon < 0 \\
     \frac{1}{2\epsilon_t }k\epsilon^2 & 0 \leq \epsilon \leq \epsilon_t \\
@@ -61,50 +64,50 @@ Spring %Force:
 
 Damping %Force:
 \f[
-    F_{damping} = c\cdot LengtheningSpeed
+    F_{\mathrm{damping}} = c\cdot \dot{l}
 \f]
 
 Total %Force:
 \f[
-    F_{total} = F_{spring} + F_{damping}
+    F_{\mathrm{total}} = F_{\mathrm{spring}} + F_{\mathrm{damping}}
 \f]
-
 
 This model has the following properties:
 
-\li linear stiffness (k): The force/distance (e.g. N/m) stiffness of the linear
+- linear stiffness (k): The force/distance (e.g. N/m) stiffness of the linear
 region of the ligament model.
 
-\li slack_length (\f$l_0\f$): The resting length of the ligament (e.g. N).
+- slack_length (\f$l_0\f$): The resting length of the ligament (e.g. N).
 
-\li damping coefficient (c): Damping coefficient used in the damping
+- damping coefficient (c): Damping coefficient used in the damping
 force calculation in units of seconds. Commonly set to 0.001.
 
-\li transition_strain (\f$\epsilon_t\f$): The strain value where the ligament model
-transitions from the quadratic toe region to the linear stiffness region.
+- transition_strain (\f$\epsilon_t\f$): The strain value where the ligament
+model transitions from the quadratic toe region to the linear stiffness region.
 Default value of 0.06 (6%) according to Blankevoort J Biomech Eng 1991.
 This value is widely used in the multibody knee modeling literature [2,4,5,6]
 and also agrees with some experimental studies [7]. However, other literature
 suggests the transition strain of ligaments occurs at around 0.03 (3%) strain
 [8,9]. In reality, the transition strain is likely dependent on the strain
-rate [10,11], however that is not included in this implementation. 
+rate [10,11], however that is not included in this implementation.
 
-The Blankevoort1991Ligament implementation is intended to be compatible with 
-the other common methods in the literature to parameterize ligament properties.
-The zero-load length of the ligament is parameterized by the slack_length 
-property, but this property can be set using 
-setSlackLengthFromReferenceStrain() and setSlackLengthFromReferenceForce() as
-well. Here, reference strain and reference force are the strain/force in the 
-ligament at a reference pose (state). If you want to compute the 
-reference strain or reference force of the ligament at at reference pose 
-(state), you can use the getStrain(state) and getForce(state) methods.
-The linear_stiffness is saved in units of force/distance but can be set and 
-reported in units of force/strain using setLinearStiffnessForcePerStrain().
+The Blankevoort1991Ligament implementation is intended to be compatible with
+the other common methods in the literature for parameterizing ligament
+properties. The zero-load length of the ligament is parameterized by the
+slack_length property, which can be set directly, in meters, using
+set_slack_length(), or using setSlackLengthFromReferenceStrain() and
+setSlackLengthFromReferenceForce(). Here, reference strain and reference
+force are the strain or force in the ligament at a reference pose (state). If
+you want to compute the strain or force of the ligament in a given pose (state),
+you can use the getStrain() and getForce() methods. The
+linear_stiffness property has units of force/distance (meters/second) but can be
+set and obtained in units of force/strain using
+setLinearStiffnessForcePerStrain() and getLinearStiffnessForcePerStrain().
 
-Scaling the Blankevoort1991Ligament component adjusts the slack_length 
-property after the scale factors are applied in a manner that keeps the strain 
-in the ligament in the default model pose (reference strain) constant. The 
-linear_stiffness parameter is not affected by scaling the model. 
+Scaling the Blankevoort1991Ligament component adjusts the slack_length
+property after the scale factors are applied in a manner that keeps the strain
+in the ligament in the default model pose (reference strain) constant. The
+linear_stiffness parameter is not affected by scaling the model.
 
 ### Reference
 
@@ -116,40 +119,40 @@ linear_stiffness parameter is not affected by scaling the model.
     (2016). Influence of ligament properties on tibiofemoral mechanics
     in walking. J Knee Surg, 29(02), 99-106.
 
-[3] Wismans, J.A.C., Veldpaus, F., Janssen, J., Huson, A. and Struben, P., 
-    (1980). A three-dimensional mathematical model of the knee-joint. 
+[3] Wismans, J.A.C., Veldpaus, F., Janssen, J., Huson, A. and Struben, P.,
+    (1980). A three-dimensional mathematical model of the knee-joint.
     J Biomech, 13(8), 677-685.
 
-[4] Marra, M. A., Vanheule, V., Fluit, R., Koopman, B. H., Rasmussen, J., 
-    Verdonschot, N., & Andersen, M. S. (2015). A subject-specific 
-    musculoskeletal modeling framework to predict in vivo mechanics of total 
+[4] Marra, M. A., Vanheule, V., Fluit, R., Koopman, B. H., Rasmussen, J.,
+    Verdonschot, N., & Andersen, M. S. (2015). A subject-specific
+    musculoskeletal modeling framework to predict in vivo mechanics of total
     knee arthroplasty. Journal of biomechanical engineering, 137(2), 020904.
 
-[5] Guess, T. M., Razu, S., & Jahandar, H. (2016). Evaluation of knee ligament 
-    mechanics using computational models. The journal of knee surgery, 29(02), 
+[5] Guess, T. M., Razu, S., & Jahandar, H. (2016). Evaluation of knee ligament
+    mechanics using computational models. The journal of knee surgery, 29(02),
     126-137.
 
-[6] Li, G., Gil, J., Kanamori, A., & Woo, S. Y. (1999). A validated 
+[6] Li, G., Gil, J., Kanamori, A., & Woo, S. Y. (1999). A validated
     three-dimensional computational model of a human knee joint. Journal of
     biomechanical engineering, 121(6), 657-662.
 
-[7] Ristaniemi, A., Stenroth, L., Mikkonen, S., & Korhonen, R. K. (2018). 
+[7] Ristaniemi, A., Stenroth, L., Mikkonen, S., & Korhonen, R. K. (2018).
     Comparison of elastic, viscoelastic and failure tensile material properties
     of knee ligaments and patellar tendon. Journal of biomechanics, 79, 31-38.
 
-[8] Weiss, J. A., & Gardiner, J. C. (2001). Computational modeling of ligament 
+[8] Weiss, J. A., & Gardiner, J. C. (2001). Computational modeling of ligament
     mechanics. Critical Reviews in Biomedical Engineering, 29(3).
 
-[9] Martin, R. B., Burr, D. B., Sharkey, N. A., & Fyhrie, D. P. (2015). 
-    Mechanical properties of ligament and tendon. In Skeletal Tissue Mechanics 
+[9] Martin, R. B., Burr, D. B., Sharkey, N. A., & Fyhrie, D. P. (2015).
+    Mechanical properties of ligament and tendon. In Skeletal Tissue Mechanics
     (pp. 175-225). Springer, New York, NY.
 
-[10] Pioletti, D. P., Rakotomanana, L. R., Benvenuti, J. F., & Leyvraz, P. F. 
+[10] Pioletti, D. P., Rakotomanana, L. R., Benvenuti, J. F., & Leyvraz, P. F.
     (1998). Viscoelastic constitutive law in large deformations: application to
      human knee ligaments and tendons. Journal of biomechanics, 31(8), 753-757.
 
-[11] Pioletti, D. P., Rakotomanana, L. R., & Leyvraz, P. F. (1999). Strain 
-    rate effect on the mechanical behavior of the anterior cruciate 
+[11] Pioletti, D. P., Rakotomanana, L. R., & Leyvraz, P. F. (1999). Strain
+    rate effect on the mechanical behavior of the anterior cruciate
     ligament-bone complex. Medical Engineering & Physics, 21(2), 95-100.
 
 @author Colin Smith
