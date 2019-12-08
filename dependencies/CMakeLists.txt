@@ -149,8 +149,7 @@ AddDependency(NAME       BTK
 
 AddDependency(NAME       simbody
               URL        https://github.com/simbody/simbody.git
-              # simbody-3.6 branch containing fixes for GCC-8 warnings
-              TAG        45654969ef2cf34555bf388472b78bec08ede84f
+              TAG        Simbody-3.7
               CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF 
                          -DBUILD_TESTING:BOOL=OFF)
                      
