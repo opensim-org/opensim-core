@@ -1,3 +1,5 @@
+- 2019-12-08: Include support for OpenSim's C3DFileAdapter.
+
 - 2019-12-02: Fixed multiple examples by updating "cost" to "goal", and other 
               such changes. Fixed exampleMocoTrack by ignoring tendon 
               compliance.
