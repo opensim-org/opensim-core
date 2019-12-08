@@ -14,17 +14,23 @@ AddDependency(NAME       opensim-core
                     -DBUILD_JAVA_WRAPPING:BOOL=${OPENSIM_JAVA_WRAPPING}
                     -DBUILD_PYTHON_WRAPPING:BOOL=${OPENSIM_PYTHON_WRAPPING}
                     -DOPENSIM_PYTHON_VERSION:STRING=${OPENSIM_PYTHON_VERSION}
-                    -DSIMBODY_HOME:PATH=${CMAKE_INSTALL_PREFIX}/simbody
-                    -DCMAKE_PREFIX_PATH:PATH=${CMAKE_INSTALL_PREFIX}/docopt
+                    -DOPENSIM_DEPENDENCIES_DIR:PATH=${CMAKE_INSTALL_PREFIX}
+                    -DWITH_BTK:BOOL=ON
                     -DOPENSIM_INSTALL_UNIX_FHS:BOOL=OFF)
 
 
 if(SUPERBUILD_opensim-core)
 
     # OpenSim's dependencies.
+    AddDependency(NAME       BTK
+                  # URL        https://github.com/Biomechanical-ToolKit/BTKCore.git
+                  URL        https://github.com/opensim-org/BTKCore.git
+                  TAG        6d787d0be223851a8f454f2ee8c7d9e47b84cbbe
+                  CMAKE_ARGS -DBUILD_SHARED_LIBS:BOOL=ON)
+
     AddDependency(NAME simbody
                   GIT_URL    https://github.com/simbody/simbody.git
-                  GIT_TAG    95dc0675914829f8db94cc297543d5fa340fc8df
+                  GIT_TAG    Simbody-3.7
                   CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF 
                              -DBUILD_TESTING:BOOL=OFF)
 
