@@ -63,7 +63,8 @@ std::unique_ptr<T> make_unique(Args&&... args) {
 /// %Y-%m-%dT%H:%M:%S.
 /// See https://en.cppreference.com/w/cpp/io/manip/put_time.
 /// @ingroup mocogenutil
-OSIMMOCO_API std::string getFormattedDateTime(bool appendMicroseconds = false,
+OSIMMOCO_API std::string getMocoFormattedDateTime(
+        bool appendMicroseconds = false,
         std::string format = "%Y-%m-%dT%H%M%S");
 
 /// Determine if `string` starts with the substring `start`.
@@ -219,7 +220,7 @@ TimeSeriesTable resample(const TimeSeriesTable& in, const TimeVector& newTime) {
 
     const auto& time = in.getIndependentColumn();
 
-    OPENSIM_THROW_IF(newTime.size() < 2, Exception,
+    OPENSIM_THROW_IF(time.size() < 2, Exception,
             "Cannot resample if number of times is 0 or 1.");
     OPENSIM_THROW_IF(newTime[0] < time[0], Exception,
             format("New initial time (%f) cannot be less than existing "
@@ -288,41 +289,6 @@ OSIMMOCO_API void updateStateLabels40(
 OSIMMOCO_API TimeSeriesTable filterLowpass(
         const TimeSeriesTable& table, double cutoffFreq, bool padData = false);
 
-/// Read in a table of type TimeSeriesTable_<T> from file, where T is the type
-/// of the elements contained in the table's columns. The `filepath` argument
-/// should refer to a STO or CSV file (or other file types for which there is a
-/// FileAdapter). This function assumes that only one table is contained in the
-/// file, and will throw an exception otherwise.
-/// @ingroup moconumutil
-template <typename T>
-TimeSeriesTable_<T> readTableFromFileT(const std::string& filepath) {
-    auto tablesFromFile = FileAdapter::readFile(filepath);
-    // There should only be one table.
-    OPENSIM_THROW_IF(tablesFromFile.size() != 1, Exception,
-            format("Expected file '%s' to contain 1 table, but "
-                   "it contains %i tables.",
-                    filepath, tablesFromFile.size()));
-    // Get the first table.
-    auto* firstTable = dynamic_cast<TimeSeriesTable_<T>*>(
-            tablesFromFile.begin()->second.get());
-    OPENSIM_THROW_IF(!firstTable, Exception,
-            "Expected file to contain a TimeSeriesTable_<T> where T is "
-            "the type specified in the template argument, but it contains a "
-            "different type of table.");
-
-    return *firstTable;
-}
-
-/// Read in a TimeSeriesTable from file containing scalar elements. The
-/// `filepath` argument should refer to a STO or CSV file (or other file types
-/// for which there is a FileAdapter). This function assumes that only one table
-/// is contained in the file, and will throw an exception otherwise.
-/// @ingroup moconumutil
-OSIMMOCO_API inline TimeSeriesTable readTableFromFile(
-        const std::string& filepath) {
-    return readTableFromFileT<double>(filepath);
-}
-
 /// Write a single TimeSeriesTable to a file, using the FileAdapter associated
 /// with the provided file extension.
 /// @ingroup moconumutil
@@ -349,7 +315,8 @@ OSIMMOCO_API void visualize(Model, TimeSeriesTable);
 /// PositionMotion) is.
 /// The output paths must correspond to outputs that match the type provided in
 /// the template argument, otherwise they are not included in the report.
-/// @note Parameters in the MocoTrajectory are **not** applied to the model.
+/// @note Parameters and Lagrange multipliers in the MocoTrajectory are **not**
+///       applied to the model.
 /// @ingroup mocomodelutil
 template <typename T>
 TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& trajectory,
@@ -494,6 +461,11 @@ OSIMMOCO_API void checkOrderSystemControls(const Model& model);
 /// @ingroup mocomodelutil
 OSIMMOCO_API void checkRedundantLabels(std::vector<std::string> labels);
 
+/// Throws an exception if any label in the provided list does not match any
+/// state variable names in the model.
+OSIMMOCO_API void checkLabelsMatchModelStates(const Model& model,
+        const std::vector<std::string>& labels);
+
 /// Get a list of reference pointers to all outputs whose names (not paths)
 /// match a substring defined by a provided regex string pattern. The regex
 /// string pattern could be the full name of the output. Only Output%s that
@@ -511,7 +483,7 @@ std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(
     // Initialize outputs array.
     std::vector<SimTK::ReferencePtr<const Output<T>>> outputs;
 
-    std::function<void(const Component&, const std::regex&, bool, 
+    std::function<void(const Component&, const std::regex&, bool,
             std::vector<SimTK::ReferencePtr<const Output<T>>>&)> helper;
     helper = [&helper](const Component& component, const std::regex& regex,
             bool includeDescendents,
@@ -538,7 +510,7 @@ std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(
             }
         }
     };
-    
+
     helper(component, regex, includeDescendents, outputs);
     return outputs;
 }
@@ -557,8 +529,12 @@ std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(
 /// half of the period for that column is (first_half_trajectory +
 /// half_period_value - initial_value).
 /// @param negatePatterns If a column label matches a negatePattern, then the
-/// second half of the period for that column is (-first_half_trajectory + 2 *
-/// half_period_value). This is usually relevant for only 3D models.
+/// second half of the period for that column is (-first_half_trajectory).
+/// This is usually relevant for only 3D models.
+/// @param negateAndShiftPatterns If a column label matches a
+/// negateAndShiftPattern, then the second half of the period for that column is
+/// (-first_half_trajectory + 2 * half_period_value). This is usually relevant
+/// for only 3D models.
 /// @param symmetryPatterns This argument is a list of pairs, where the first
 /// element of the pair is a pattern to match, and the second is a substitution
 /// to convert the column label into the opposite column label of the symmetric
@@ -568,24 +544,36 @@ std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(
 ///
 /// The default values for the patterns are intended to handle the column labels
 /// for typical 2D or 3D OpenSim gait models.
-/// The default value for symmetryPatterns warrants an explanation. R"()" is a
-/// string literal that permits us to not escape backslash characters. The regex
-/// "_r(\/|$)" matches "_r" followed by either a forward slash
-/// (which is escaped) OR the end of the string ($). Since the forward slash
-/// and end of the string are within parentheses, whatever matches this is
-/// captured and is available in the substitution (the second element of the
-/// pair) as $1. The default symmetry patterns cause the following replacements:
+/// The default values for negatePatterns and symmetryPatterns warrant an
+/// explanation. The string pattern before the regex "(?!/value)" is followed by
+/// anything except "/value" since it is contained in the negative lookahead
+/// "(?!...)".  R"()" is a string literal that permits us to not escape
+/// backslash characters. The regex "_r(\/|_|$)" matches "_r" followed by either
+/// a forward slash (which is escaped), an underscore, OR the end of the string
+/// ($). Since the forward slash and end of the string are within parentheses,
+/// whatever matches this is captured and is available in the substitution (the
+/// second element of the pair) as $1. The default symmetry patterns cause the
+/// following replacements:
 /// - "/jointset/hip_r/hip_flexion_r/value" becomes "/jointset/hip_l/hip_flexion_l/value"
 /// - "/forceset/soleus_r" becomes "/forceset/soleus_l"
 /// @ingroup mocomodelutil
 OSIMMOCO_API MocoTrajectory createPeriodicTrajectory(
         const MocoTrajectory& halfPeriodTrajectory,
         std::vector<std::string> addPatterns = {".*pelvis_tx/value"},
-        std::vector<std::string> negatePatterns = {".*pelvis_list.*",
-                                                   ".*pelvis_rotation.*",
-                                                   ".*pelvis_tz.*"},
+        std::vector<std::string> negatePatterns = {
+                                            ".*pelvis_list(?!/value).*",
+                                            ".*pelvis_rotation(?!/value).*",
+                                            ".*pelvis_tz(?!/value).*",
+                                            ".*lumbar_bending(?!/value).*",
+                                            ".*lumbar_rotation(?!/value).*"},
+        std::vector<std::string> negateAndShiftPatterns = {
+                                                   ".*pelvis_list/value",
+                                                   ".*pelvis_rotation/value",
+                                                   ".*pelvis_tz/value",
+                                                   ".*lumbar_bending/value",
+                                                   ".*lumbar_rotation/value"},
         std::vector<std::pair<std::string, std::string>> symmetryPatterns =
-                {{R"(_r(\/|$))", "_l$1"}, {R"(_l(\/|$))", "_r$1"}});
+                {{R"(_r(\/|_|$))", "_l$1"}, {R"(_l(\/|_|$))", "_r$1"}});
 
 /// Throw an exception if the property's value is not in the provided set.
 /// We assume that `p` is a single-value property.
@@ -797,7 +785,7 @@ public:
     FileDeletionThrower()
             : FileDeletionThrower(
                       "OpenSimMoco_delete_this_to_throw_exception_" +
-                      getFormattedDateTime() + ".txt") {}
+                      getMocoFormattedDateTime() + ".txt") {}
     FileDeletionThrower(std::string filepath)
             : m_filepath(std::move(filepath)) {
         std::ofstream f(m_filepath);

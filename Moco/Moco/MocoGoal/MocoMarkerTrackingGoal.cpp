@@ -29,9 +29,11 @@ void MocoMarkerTrackingGoal::initializeOnModelImpl(const Model& model) const {
 
     // TODO: When should we load a markers file?
     if (get_markers_reference().get_marker_file() != "") {
-        const_cast<MocoMarkerTrackingGoal*>(this)
-                ->upd_markers_reference()
-                .loadMarkersFile(get_markers_reference().get_marker_file());
+        auto* mutableThis = const_cast<MocoMarkerTrackingGoal*>(this);
+        mutableThis->upd_markers_reference()
+                .initializeFromMarkersFile(
+                        get_markers_reference().get_marker_file(),
+                        Set<MarkerWeight>());
     }
 
     // Check that there are no redundant columns in the reference data.
