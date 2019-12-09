@@ -50,9 +50,7 @@ jobs:
         # dependencies directory (non-recursive).
         # https://help.github.com/en/actions/automating-your-workflow-with-github-actions/caching-dependencies-to-speed-up-workflows#matching-a-cache-key
         key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
-        restore-keys: |
-          ${{ runner.os }}-dependencies-
- 
+
     - name: Build dependencies
       if: steps.cache-dependencies.outputs.cache-hit != 'true'
       run: |
@@ -183,9 +181,7 @@ jobs:
         path: ~/moco_dependencies_install
         # TODO: avoid having to copy over the opensim-core commit hash.
         key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
-        restore-keys: |
-          ${{ runner.os }}-dependencies-
-            
+
     - name: Build dependencies
       if: steps.cache-dependencies.outputs.cache-hit != 'true'
       run: |

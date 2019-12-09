@@ -97,7 +97,7 @@ public:
                         getAbsolutePathnameUsingSpecifiedWorkingDirectory(
                                 relativeToDirectory, path);
             }
-            table = readTableFromFile(path);
+            table = TimeSeriesTable(path);
         }
 
         if (table.hasTableMetaDataKey("inDegrees") &&

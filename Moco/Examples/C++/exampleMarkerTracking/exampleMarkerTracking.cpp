@@ -133,8 +133,7 @@ int main() {
     markerWeights.cloneAndAppend({"/markerset/m1", 10});
 
     // Create the MarkersReference to be passed to the cost.
-    //MarkersReference ref(markerTrajectories);
-    MarkersReference ref(markerTrajectories, &markerWeights);
+    MarkersReference ref(markerTrajectories, markerWeights);
 
     // Create cost, set reference, and attach to problem.
     auto* markerTracking = problem.addGoal<MocoMarkerTrackingGoal>();

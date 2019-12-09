@@ -84,7 +84,7 @@ protected:
         addKinematicConstraints();
         addGenericPathConstraints();
 
-        std::string formattedTimeString(getFormattedDateTime(true));
+        std::string formattedTimeString(getMocoFormattedDateTime(true));
         m_fileDeletionThrower = OpenSim::make_unique<FileDeletionThrower>(
                 format("delete_this_to_stop_optimization_%s_%s.txt",
                         m_mocoProbRep.getName(), formattedTimeString));

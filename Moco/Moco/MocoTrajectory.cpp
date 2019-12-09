@@ -660,7 +660,7 @@ void MocoTrajectory::resample(SimTK::Vector time) {
 }
 
 MocoTrajectory::MocoTrajectory(const std::string& filepath) {
-    TimeSeriesTable table = readTableFromFile(filepath);
+    TimeSeriesTable table(filepath);
     const auto& metadata = table.getTableMetaData();
     // TODO: bug with file adapters.
     // auto numStates = metadata.getValueForKey("num_states").getValue<int>();
