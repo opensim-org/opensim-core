@@ -39,7 +39,7 @@ if(SUPERBUILD_opensim-core)
                   GIT_TAG    3dd23e3280f213bacefdf5fcb04857bf52e90917
                   CMAKE_ARGS -DCMAKE_DEBUG_POSTFIX:STRING=_d)
 
-    add_dependencies(opensim-core simbody docopt)
+    add_dependencies(opensim-core BTK simbody docopt)
 endif()
 
 
