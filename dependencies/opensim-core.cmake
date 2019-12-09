@@ -23,9 +23,8 @@ if(SUPERBUILD_opensim-core)
 
     # OpenSim's dependencies.
     AddDependency(NAME       BTK
-                  # URL        https://github.com/Biomechanical-ToolKit/BTKCore.git
-                  URL        https://github.com/opensim-org/BTKCore.git
-                  TAG        6d787d0be223851a8f454f2ee8c7d9e47b84cbbe
+                  GIT_URL    https://github.com/opensim-org/BTKCore.git
+                  GIT_TAG    6d787d0be223851a8f454f2ee8c7d9e47b84cbbe
                   CMAKE_ARGS -DBUILD_SHARED_LIBS:BOOL=ON)
 
     AddDependency(NAME simbody
