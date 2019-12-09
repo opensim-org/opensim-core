@@ -98,6 +98,20 @@ accelerations. These are stored in the trajectory as derivative variables. */
 class OSIMMOCO_API MocoTrajectory {
 public:
     MocoTrajectory() = default;
+    /// Create a trajectory witjjh no data. To add data, use setNumTimes(),
+    /// setTime(), and the other setters.
+    MocoTrajectory(std::vector<std::string> state_names,
+            std::vector<std::string> control_names,
+            std::vector<std::string> multiplier_names,
+            std::vector<std::string> parameter_names);
+    /// Create a trajectory (including columns for derivatives) with no data.
+    /// To add data, use setNumTimes(), setTime(), and the other setters.
+    MocoTrajectory(
+            std::vector<std::string> state_names,
+            std::vector<std::string> control_names,
+            std::vector<std::string> multiplier_names,
+            std::vector<std::string> derivative_names,
+            std::vector<std::string> parameter_names);
     MocoTrajectory(const SimTK::Vector& time,
             std::vector<std::string> state_names,
             std::vector<std::string> control_names,
@@ -494,7 +508,8 @@ public:
     /// problem? This may not catch all possible incompatibilities.
     /// The problem and this trajectory can still be compatible even if the
     /// trajectory contains no derivative columns.
-    bool isCompatible(const MocoProblemRep&, bool throwOnError = false) const;
+    bool isCompatible(const MocoProblemRep&, bool requireAccelerations = false,
+            bool throwOnError = false) const;
     /// Check if this trajectory is numerically equal to another trajectory.
     /// This uses SimTK::Test::numericallyEqual() internally.
     /// Accordingly, the tolerance is both a relative and absolute tolerance

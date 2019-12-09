@@ -1546,6 +1546,19 @@ TEST_CASE("MocoTrajectory") {
     testCompareParametersRMS(100, 0.5);
 }
 
+TEST_CASE("MocoTrajectory isCompatible") {
+    MocoProblem problem;
+    problem.setModel(createSlidingMassModel());
+    problem.setTimeBounds(MocoInitialBounds(0), MocoFinalBounds(0, 10));
+    problem.setStateInfo("/slider/position/value", MocoBounds(0, 1),
+            MocoInitialBounds(0), MocoFinalBounds(1));
+    problem.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
+
+    MocoProblemRep rep = problem.createRep();
+
+    CHECK(!MocoTrajectory({""}, {""}, {""}, {""}).isCompatible(rep));
+}
+
 TEST_CASE("MocoTrajectory randomize") {
     SimTK::Vector time(3);
     time[0] = 0;

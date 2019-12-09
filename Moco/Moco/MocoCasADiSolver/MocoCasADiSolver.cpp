@@ -74,7 +74,8 @@ MocoTrajectory MocoCasADiSolver::createGuess(const std::string& type) const {
 
 void MocoCasADiSolver::setGuess(MocoTrajectory guess) {
     // Ensure the guess is compatible with this solver/problem.
-    guess.isCompatible(getProblemRep(), true);
+    guess.isCompatible(getProblemRep(),
+            get_multibody_dynamics_mode() == "implicit", true);
     clearGuess();
     m_guessFromAPI = std::move(guess);
 }
@@ -96,7 +97,8 @@ const MocoTrajectory& MocoCasADiSolver::getGuess() const {
             assert(m_guessFromAPI.empty());
             // No need to load from file again if we've already loaded it.
             MocoTrajectory guessFromFile(get_guess_file());
-            guessFromFile.isCompatible(getProblemRep(), true);
+            guessFromFile.isCompatible(getProblemRep(),
+                    get_multibody_dynamics_mode() == "implicit", true);
             m_guessFromFile = guessFromFile;
             m_guessToUse.reset(&m_guessFromFile);
         } else {

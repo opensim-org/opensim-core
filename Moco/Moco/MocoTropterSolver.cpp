@@ -242,8 +242,9 @@ MocoTrajectory MocoTropterSolver::createGuess(const std::string& type) const {
 void MocoTropterSolver::setGuess(MocoTrajectory guess) {
     // Ensure the guess is compatible with this solver/problem.
     // Make sure to initialize the problem. TODO put in a better place.
-    createTropterProblem();
-    guess.isCompatible(getProblemRep(), true);
+    auto ocp = createTropterProblem();
+    guess.isCompatible(
+            getProblemRep(), get_multibody_dynamics_mode() == "implicit", true);
     clearGuess();
     m_guessFromAPI = std::move(guess);
 }
@@ -265,7 +266,9 @@ const MocoTrajectory& MocoTropterSolver::getGuess() const {
             assert(m_guessFromAPI.empty());
             // No need to load from file again if we've already loaded it.
             MocoTrajectory guessFromFile(get_guess_file());
-            guessFromFile.isCompatible(getProblemRep(), true);
+            guessFromFile.isCompatible(getProblemRep(),
+                    get_multibody_dynamics_mode() == "implicit",
+                    true);
             m_guessFromFile = guessFromFile;
             m_guessToUse.reset(&m_guessFromFile);
         } else {
