@@ -1,3 +1,5 @@
+- 2019-12-10: Add an example for MocoInverse in MATLAB, Python, and C++.
+
 - 2019-12-04: Updated the version of OpenSim used by Moco. As a result, we
               removed the utility readTableFromFile(). Use the TimeSeriesTable 
               constructor instead, which accepts a filename.
