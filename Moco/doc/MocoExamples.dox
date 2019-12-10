@@ -84,6 +84,10 @@ Some examples are available from multiple interfaces. Use the links in the
 <b>Interfaces</b> column to view the code. In the Moco distribution, all
 examples are in the `Resources/Code/` folder.
 
+@note The intent of all examples is to demonstrate Moco's interface. We do not
+validate the results of these examples. Users are responsible for
+validating their results before making any scientific claims.
+
 @section Beginner
 
 name | model/motion | description | interfaces
