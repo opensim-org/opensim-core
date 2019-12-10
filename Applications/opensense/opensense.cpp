@@ -258,13 +258,12 @@ void PrintUsage(const char *aProgName, ostream &aOStream)
     aOStream << "-PropertyInfo, -PI                      Print help information for properties in setup files.\n";
     aOStream << "-ReadX, -RX  directory settings.xml     Parse Xsens exported files from directory using settingsFile.xml.\n";
     aOStream << "-ReadA, -RA  datafile.csv settings.xml  Parse single csv file provided by APDM using specified settingsFile.xml.\n";
-    aOStream << "-Calibrate, -C IMUPlacer_setup.xml      Calibrate the model specified in the IMUPlacer_setup.xml file by registering\n";
-    aOStream << "                                        IMU frames whose orientations in the sensor world frame are described by quaternions file\n";
-    aOStream << "                                        specified in IMUPlacer_setup.xml and assuming the model's default pose \n";
-    aOStream << "                                        is the calibration pose. The resultant model with IMU frames registered \n";
-    aOStream << "                                        is written to file if output_model_file is specified in IMUPlacer_setup.xml.";
-    aOStream << "                                        Additional options can be described in IMUPlacer_setup.xml\n";
-    aOStream << "                                        to perform heading correction.\n";
+    aOStream << "-Calibrate, -C IMUPlacer_setup.xml      Place IMUs on the model specified that is in the IMUPlacer_setup.xml file.\n";
+    aOStream << "                                        The model is positioned in its default pose, IMUs are then registered to the model according to\n ";
+    aOStream << "                                        their orientations in the first frame of the quaternions file that is specified in IMUPlacer_setup.xml.\n";
+    aOStream << "                                        The orientations of the IMUs in the quaternions file are assumed to be in the IMU world frame.\n";
+    aOStream << "                                        The resultant model with IMU frames registered is written to file if output_model_file is specified\n";
+    aOStream << "                                        in IMUPlacer_setup.xml. Additional options can be specified in IMUPlacer_setup.xml to perform heading correction.\n";
     aOStream << "-InverseKinematics, -IK ik_settings.xml Run IK using an xml settings file to define the inverse kinematics problem.\n";
     aOStream << endl;
 /** Advanced options for experimental validation. Uncomment if/when ready to make public
