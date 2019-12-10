@@ -504,10 +504,11 @@ public:
     /// @name Comparisons
     /// @{
 
-    /// Do the state and control names in this trajectory match those in the
-    /// problem? This may not catch all possible incompatibilities.
-    /// The problem and this trajectory can still be compatible even if the
-    /// trajectory contains no derivative columns.
+    /// Do the state, control, multiplier, derivative, and parameter names in
+    /// this trajectory match those in the problem? This may not catch all
+    /// possible incompatibilities. If the trajectory should have generalized
+    /// accelerations (for implicit multibody dynamics mode), set
+    /// requireAccelerations to true.
     bool isCompatible(const MocoProblemRep&, bool requireAccelerations = false,
             bool throwOnError = false) const;
     /// Check if this trajectory is numerically equal to another trajectory.

@@ -976,39 +976,38 @@ bool MocoTrajectory::isCompatible(const MocoProblemRep& mp,
 
         int sum = (int)trajNames.size() + (int)probNames.size();
 
+        std::stringstream ss;
+
         // http://www.cplusplus.com/reference/algorithm/set_difference/
-        std::vector<std::string> inTrajNotProb(sum);
         {
+            std::vector<std::string> inTrajNotProb(sum);
             auto inTrajNotProbEnd = std::set_difference(trajNames.begin(),
                     trajNames.end(), probNames.begin(), probNames.end(),
                     inTrajNotProb.begin());
             inTrajNotProb.resize(inTrajNotProbEnd - inTrajNotProb.begin());
-        }
-        std::stringstream ss;
-        ss << "The trajectory and provided problem are not compatible. ";
-        if (!inTrajNotProb.empty()) {
-            ss << "The following " << varType << " are in the trajectory but "
-                                                 "not the problem:";
-            for (int i = 0; i < (int)inTrajNotProb.size(); ++i) {
-                ss << "\n  " << inTrajNotProb[i];
+            ss << "The trajectory and provided problem are not compatible. ";
+            if (!inTrajNotProb.empty()) {
+                ss << "The following " << varType
+                   << " are in the trajectory but not the problem:\n";
+                for (const auto& name : inTrajNotProb) {
+                    ss << "  " << name << "\n";
+                }
             }
-            ss << "\n";
         }
 
-        std::vector<std::string> inProbNotTraj(sum);
         {
+            std::vector<std::string> inProbNotTraj(sum);
             auto inProbNotTrajEnd = std::set_difference(probNames.begin(),
                     probNames.end(), trajNames.begin(), trajNames.end(),
-                    inTrajNotProb.begin());
+                    inProbNotTraj.begin());
             inProbNotTraj.resize(inProbNotTrajEnd - inProbNotTraj.begin());
-        }
-        if (!inProbNotTraj.empty()) {
-            ss << "The following " << varType << " are in the problem but not "
-                                                 "the trajectory:";
-            for (int i = 0; i < (int)inProbNotTraj.size(); ++i) {
-                ss << "\n  " << inProbNotTraj[i];
+            if (!inProbNotTraj.empty()) {
+                ss << "The following " << varType
+                   << " are in the problem but not the trajectory:";
+                for (const auto& name : inProbNotTraj) {
+                    ss << "  " << name << "\n";
+                }
             }
-            ss << "\n";
         }
         ss << message << "\n";
 

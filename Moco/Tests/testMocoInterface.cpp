@@ -1547,6 +1547,8 @@ TEST_CASE("MocoTrajectory") {
 }
 
 TEST_CASE("MocoTrajectory isCompatible") {
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cout.rdbuf(LogManager::cout.rdbuf());
     MocoProblem problem;
     problem.setModel(createSlidingMassModel());
     problem.setTimeBounds(MocoInitialBounds(0), MocoFinalBounds(0, 10));
@@ -1556,7 +1558,41 @@ TEST_CASE("MocoTrajectory isCompatible") {
 
     MocoProblemRep rep = problem.createRep();
 
-    CHECK(!MocoTrajectory({""}, {""}, {""}, {""}).isCompatible(rep));
+    CHECK(MocoTrajectory({"/slider/position/value", "/slider/position/speed"},
+            {"/actuator"}, {}, {}).isCompatible(rep, false, true));
+    CHECK(!MocoTrajectory({"/slider/position/value", "/slider/position/speed"},
+            {"/actuator"}, {}, {}).isCompatible(rep, true));
+
+    CHECK(MocoTrajectory({"/slider/position/value", "/slider/position/speed"},
+            {"/actuator"}, {}, {"/slider/position/accel"}, {}).isCompatible(rep, true));
+
+    CHECK(!MocoTrajectory({}, {}, {}, {}).isCompatible(rep));
+    CHECK(!MocoTrajectory({"/slider/position/value", "/slider/position/speed",
+                          "nonexistent"},
+            {"/actuator"}, {}, {}).isCompatible(rep));
+    CHECK(!MocoTrajectory({"/slider/position/value", "/slider/position/speed"},
+            {"/actuator"}, {"nonexistent"}, {}).isCompatible(rep));
+
+    CHECK_THROWS_WITH(
+            !MocoTrajectory({"/slider/position/value",
+                             "/slider/position/speed"},
+                              {"/actuator"}, {}, {})
+                               .isCompatible(rep, true, true),
+            Catch::Contains("accel"));
+    CHECK_THROWS_WITH(
+            !MocoTrajectory({}, {}, {}, {}).isCompatible(rep, false, true),
+            Catch::Contains("position"));
+    CHECK_THROWS_WITH(
+            !MocoTrajectory({"/slider/position/value", "/slider/position/speed",
+                             "nonexistent"},
+                    {"/actuator"}, {}, {})
+                     .isCompatible(rep, false, true),
+            Catch::Contains("nonexistent"));
+    CHECK_THROWS_WITH(
+            !MocoTrajectory({"/slider/position/value", "/slider/position/speed"}, {"/actuator"},
+            {"nonexistent"}, {})
+                               .isCompatible(rep, false, true),
+            Catch::Contains("nonexistent"));
 }
 
 TEST_CASE("MocoTrajectory randomize") {

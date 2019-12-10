@@ -1,3 +1,6 @@
+- 2019-12-09: MocoTrajectory::isCompatible() gives more details when provided 
+              with an incompatible problem.
+
 - 2019-12-04: Updated the version of OpenSim used by Moco. As a result, we
               removed the utility readTableFromFile(). Use the TimeSeriesTable 
               constructor instead, which accepts a filename.
