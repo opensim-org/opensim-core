@@ -1218,8 +1218,7 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
     {
         MocoTrajectory explicitGuess = ms.createGuess();
         ms.set_multibody_dynamics_mode("implicit");
-        ms.setGuess(explicitGuess);
-        CHECK_THROWS_WITH(study.solve(),
+        CHECK_THROWS_WITH(ms.setGuess(explicitGuess),
             Catch::Contains(
                 "'multibody_dynamics_mode' set to 'implicit' and coordinate states "
                 "exist in the guess, but no coordinate accelerations were "

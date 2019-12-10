@@ -243,21 +243,38 @@ void MocoTropterSolver::setGuess(MocoTrajectory guess) {
     // Ensure the guess is compatible with this solver/problem.
     // Make sure to initialize the problem. TODO put in a better place.
     auto ocp = createTropterProblem();
-    guess.isCompatible(
-            getProblemRep(), get_multibody_dynamics_mode() == "implicit", true);
+    checkGuess(guess);
     clearGuess();
     m_guessFromAPI = std::move(guess);
 }
+
 void MocoTropterSolver::setGuessFile(const std::string& file) {
     clearGuess();
     set_guess_file(file);
 }
+
+void MocoTropterSolver::checkGuess(const MocoTrajectory& guess) const {
+    OPENSIM_THROW_IF(get_multibody_dynamics_mode() == "implicit" &&
+            guess.hasCoordinateStates() &&
+            guess.getDerivativeNames().empty(),
+            Exception,
+            "'multibody_dynamics_mode' set to 'implicit' and coordinate states "
+            "exist in the guess, but no coordinate accelerations were found in "
+            "the guess. Consider using "
+            "MocoTrajectory::generateAccelerationsFromValues() or "
+            "MocoTrajectory::generateAccelerationsFromSpeeds() to construct an "
+            "appropriate guess.");
+    guess.isCompatible(
+            getProblemRep(), get_multibody_dynamics_mode() == "implicit", true);
+}
+
 void MocoTropterSolver::clearGuess() {
     m_guessFromAPI = MocoTrajectory();
     m_guessFromFile = MocoTrajectory();
     set_guess_file("");
     m_guessToUse.reset();
 }
+
 const MocoTrajectory& MocoTropterSolver::getGuess() const {
     if (!m_guessToUse) {
         if (get_guess_file() != "" && m_guessFromFile.empty()) {
@@ -266,9 +283,7 @@ const MocoTrajectory& MocoTropterSolver::getGuess() const {
             assert(m_guessFromAPI.empty());
             // No need to load from file again if we've already loaded it.
             MocoTrajectory guessFromFile(get_guess_file());
-            guessFromFile.isCompatible(getProblemRep(),
-                    get_multibody_dynamics_mode() == "implicit",
-                    true);
+            checkGuess(guessFromFile);
             m_guessFromFile = guessFromFile;
             m_guessToUse.reset(&m_guessFromFile);
         } else {
@@ -318,17 +333,6 @@ MocoSolution MocoTropterSolver::solveImpl() const {
     }
     auto dircol = createTropterSolver(ocp);
     MocoTrajectory guess = getGuess();
-    OPENSIM_THROW_IF(get_multibody_dynamics_mode() == "implicit" &&
-                             guess.hasCoordinateStates() &&
-                             guess.getDerivativeNames().empty(),
-            Exception,
-            "'multibody_dynamics_mode' set to 'implicit' and coordinate states "
-            "exist in the "
-            "guess, but no coordinate accelerations were found in the guess. "
-            "Consider using MocoTrajectory::generateAccelerationsFromValues() "
-            "or "
-            "MocoTrajectory::generateAccelerationsFromSpeeds() to construct an "
-            "appropriate guess.")
     tropter::Iterate tropIterate = ocp->convertToTropterIterate(guess);
     tropter::Solution tropSolution = dircol->solve(tropIterate);
 

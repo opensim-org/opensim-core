@@ -179,7 +179,10 @@ public:
     /// The number of time points in the trajectory does *not* need to match
     /// `num_mesh_intervals`; the trajectory will be interpolated to the correct
     /// size.
-    /// This clears the `guess_file`, if any.
+    /// If you have updated the problem since the solver was initialized, you
+    /// may need to invoke MocoSolver::resetProblem() for the provided guess to
+    /// be recognized as compatible with the problem.
+    /// This clears the `guess_file`, if one exists.
     void setGuess(MocoTrajectory guess);
     /// Use this convenience function if you want to choose the type of guess
     /// used, but do not want to modify it first.
@@ -211,6 +214,8 @@ protected:
     std::unique_ptr<MocoCasOCProblem> createCasOCProblem() const;
     std::unique_ptr<CasOC::Solver> createCasOCSolver(
             const MocoCasOCProblem&) const;
+
+    void checkGuess(const MocoTrajectory& guess) const;
 
 private:
     void constructProperties();
