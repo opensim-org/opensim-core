@@ -19,11 +19,17 @@
 - 2019-11-26: Consistently refer to MocoTrajectories as "trajectory" instead of
               "iterate".
 
+- 2019-11-25: Update SmoothSphereHalfSpaceForce to visualize contact forces in
+              the Simbody visualizer (not the OpenSim GUI). 
+
 - 2019-11-22: Introduce TabOpUseAbsoluteStateNames to convert column labels
               from IK solutions pre-4.0 states files to use new-style column
               labels.
 
 - 2019-11-18: Updates to report.py linewidth and legend formatting. 
+
+- 2019-11-18: Exporting controls to TimeSeriesTable via 
+              MocoTrajectory::exportToControlsTable().
 
 - 2019-11-18: Utility createPeriodicTrajectory() now properly handles 
               antisymmetric coordinate position, speed, and actuator 

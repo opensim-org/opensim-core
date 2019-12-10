@@ -126,6 +126,8 @@ Model ModelFactory::createPlanarPointMass() {
         model.addForce(forceY);
     }
 
+    model.finalizeConnections();
+
     return model;
 }
 
