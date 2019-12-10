@@ -1,3 +1,5 @@
+- 2019-12-10: Update the Simbody dependency to version 3.7.
+
 - 2019-12-08: Include support for OpenSim's C3DFileAdapter.
 
 - 2019-12-02: Fixed multiple examples by updating "cost" to "goal", and other 
