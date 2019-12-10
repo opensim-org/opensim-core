@@ -37,7 +37,7 @@ runInvertedPendulumProblem('minimize_joint_reaction_loads', reaction);
 
 end
 
-function solution = runInvertedPendulumProblem(name, cost) 
+function solution = runInvertedPendulumProblem(name, goal)
 
 import org.opensim.modeling.*;
 
@@ -95,9 +95,9 @@ problem.setStateInfo('/pin/angle/speed', [-50, 50], [0], [0]);
 % Applied moment must be between -100 and 100 N-m.
 problem.setControlInfo('/forceset/actuator', MocoBounds(-100, 100));
 
-% Cost.
+% Goal.
 % -----
-problem.addGoal(cost);
+problem.addGoal(goal);
 
 % Configure the solver.
 % =====================

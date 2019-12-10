@@ -23,14 +23,18 @@
               from IK solutions pre-4.0 states files to use new-style column
               labels.
 
-- 2019-11-09: Improve the reliability of building the Ipopt dependency by using
-              more stable servers for downloading Metis and MUMPS.
-
 - 2019-11-18: Updates to report.py linewidth and legend formatting. 
 
 - 2019-11-18: Utility createPeriodicTrajectory() now properly handles 
               antisymmetric coordinate position, speed, and actuator 
               variables.    
+              
+- 2019-11-18: Add a "Getting started" page to the User Guide.
+
+- 2019-11-09: Improve the reliability of building the Ipopt dependency by using
+              more stable servers for downloading Metis and MUMPS.
+
+- 2019-11-05: Updated the documentation to contain a list of all examples.
 
 - 2019-10-30: ModelFactory::replaceMusclesWithPathActuators() now adds the
               PathActuators to the Model's ForceSet, and the connectee names
@@ -57,6 +61,9 @@
               git commit hash and commit date. The opensim-moco command-line
               tool now has a --version flag to print the Moco version.
               
+- 2019-10-04: MocoControlGoal weights can be specified via regular expression
+              patterns.
+
 - 2019-10-04: report.py can plot normalized tendon force states. Users can 
               provide a MocoStudy file instead of a Model file, and users can
               specify the name of the report output file.
