@@ -1930,20 +1930,38 @@ wraps over a cylinder (pulley) and suspends a hanging mass against gravity.
         |      |        |
         |      |        |
                ----------
-Test 1: The force in the ligament must be equal to the inertial and gravitial
-forces acting on the block.
+Test 1.1: The force in the ligament must be equal to the inertial and 
+gravitational forces acting on the block.
 
-Test 2: With damping coefficient set to 0, energy must be conserved.
+Test 1.2: With damping coefficient set to 0, energy must be conserved.
 
-Test 3: With damping on, but block velocity = 0, the damping force should be
+Test 1.3: With damping on, but block velocity = 0, the damping force should be
         zero
 
-Test 4: With damping on and block velocity set to 1.0, the damping force should
-        match an analytical value.
+Test 1.4: With damping on and block velocity set to 1.0, the damping force 
+        should match an analytical value.
+
+============
+Test Setup 2
+============
+One end of the ligament is fixed to ground the other to a block. The motion of
+the block is prescribed to check the spring force, damping force and potential 
+energy in the ligament in the slack, toe, and linear regions and at multiple
+speeds.
+/               ______
+/              |      |
+/--------------|      |
+/              |______|
+/              
+
+
 */
 void testBlankevoort1991Ligament() {
     using namespace SimTK;
 
+    //=========================================================================
+    // Test Setup 1
+    //=========================================================================
     double mass = 0.1;
     double stiffness = 10;
     double restlength = 1.2;
@@ -1973,14 +1991,13 @@ void testBlankevoort1991Ligament() {
     ground.addWrapObject(pulley1);
     ground.addWrapObject(pulley2);
 
-
     // Add Block to Model
     OpenSim::Body* block = new OpenSim::Body("block", mass, Vec3(0),
             mass * SimTK::Inertia::brick(0.05, 0.05, 0.05));
     block->attachGeometry(new Brick(Vec3(0.05, 0.05, 0.05)));
 
-    SliderJoint* slider = new SliderJoint("slider", ground, Vec3(0.2, 0, 0), Vec3(0, 0, Pi / 2),
-            *block, Vec3(0), Vec3(0, 0, Pi / 2));
+    SliderJoint* slider = new SliderJoint("slider", ground, Vec3(0.2, 0, 0),
+            Vec3(0, 0, Pi / 2), *block, Vec3(0), Vec3(0, 0, Pi / 2));
 
     double positionRange[2] = {-10, 10};
     auto& sliderCoord = slider->updCoordinate();
@@ -1990,8 +2007,8 @@ void testBlankevoort1991Ligament() {
     osimModel.addJoint(slider);
     osimModel.addBody(block);
 
-    Blankevoort1991Ligament* ligament = 
-        new Blankevoort1991Ligament("ligament", stiffness, restlength);
+    Blankevoort1991Ligament* ligament =
+            new Blankevoort1991Ligament("ligament", stiffness, restlength);
     ligament->set_damping_coefficient(0.0);
 
     ligament->upd_GeometryPath().appendNewPathPoint(
@@ -2005,13 +2022,11 @@ void testBlankevoort1991Ligament() {
 
     osimModel.addForce(ligament);
 
-
-
     // Create the force reporter
     ForceReporter reporter = ForceReporter(&osimModel);
     osimModel.addAnalysis(&reporter);
 
-    osimModel.setUseVisualizer(true);
+    //osimModel.setUseVisualizer(true);
     SimTK::State& osim_state = osimModel.initSystem();
 
     sliderCoord.setValue(osim_state, start_h);
@@ -2029,7 +2044,7 @@ void testBlankevoort1991Ligament() {
     osim_state.setTime(0.0);
     manager.initialize(osim_state);
 
-    double final_t = 2.0;
+    double final_t = 3.0;
     osim_state = manager.integrate(final_t);
 
     // tension should only be velocity dependent
@@ -2044,7 +2059,7 @@ void testBlankevoort1991Ligament() {
             osimModel.getCoordinateSet().get("block_h").getAccelerationValue(
                     osim_state);
 
-    // the ligament tension should be half the weight of the block
+    // the ligament tension should be the weight of the block
     double analytical_force = -(gravity_vec(1) - hddot) * mass;
 
     // Save the forces
@@ -2052,8 +2067,8 @@ void testBlankevoort1991Ligament() {
 
     // something is wrong if the block does not reach equilibrium
     ASSERT_EQUAL(analytical_force, model_force, 1e-3, __FILE__, __LINE__,
-            "Blankevoort1991Ligament failed to report expected force necessary "
-            "for dynamic equilibrium");
+        "Blankevoort1991Ligament failed to report expected force "
+        "necessary for dynamic equilibrium");
 
     // Check that Energy is conserved
     double KE1 = osimModel.calcKineticEnergy(osim_state);
@@ -2061,34 +2076,155 @@ void testBlankevoort1991Ligament() {
     double E1 = KE1 + PE1;
 
     ASSERT_EQUAL(E0, E1, 1e-3, __FILE__, __LINE__,
-            "Blankevoort1991Ligament failed to conserve energy with damping set"
-            " to zero");
+        "Blankevoort1991Ligament failed to conserve energy with damping "
+        "set to zero");
 
     // Test damping force
     double damping_coeff = 0.001;
-    double block_velocity = -1.0;
-    
     ligament->set_damping_coefficient(damping_coeff);
 
     osim_state = osimModel.initSystem();
     osimModel.realizeVelocity(osim_state);
     double damp_force0 = ligament->getDampingForce(osim_state);
-    
+
     ASSERT_EQUAL(damp_force0, 0.0000, 1e-3, __FILE__, __LINE__,
-            "Blankevoort1991Ligament damping force was not zero when all"
-            "generalized speeds were zero.");
+        "Blankevoort1991Ligament damping force was not zero when all "
+        "generalized speeds were zero.");
 
-    //Coordinate& coord = osimModel.updCoordinateSet().get("block_h");
+    double block_velocity = -1.0;
     sliderCoord.setSpeedValue(osim_state, block_velocity);
-
+    
     osimModel.realizeReport(osim_state);
-
     double damp_force1 = ligament->getDampingForce(osim_state);
 
-    double analytical_damping_force = - damping_coeff * block_velocity;
-    double speed = ligament->getLengtheningRate(osim_state);    
-
-    ASSERT_EQUAL(damp_force1, analytical_damping_force, 1e-3, __FILE__, __LINE__,
+    double analytical_damping_force = -damping_coeff * block_velocity;
+    
+    ASSERT_EQUAL(damp_force1, analytical_damping_force, 1e-3, __FILE__,
+        __LINE__,
         "Blankevoort1991Ligament damping force was not equal to analytical "
         "value.");
+
+    //=========================================================================
+    // Test Setup 2
+    //=========================================================================
+    Model model;
+
+    OpenSim::Body* brick = new OpenSim::Body(
+            "brick", 1.0, Vec3(0), SimTK::Inertia::brick(0.05, 0.05, 0.05));
+    block->attachGeometry(new Brick(Vec3(0.05, 0.05, 0.05)));
+    model.addBody(brick);
+
+    SliderJoint* slot = new SliderJoint("slot", model.updGround(), Vec3(0),
+            Vec3(0), *brick, Vec3(0), Vec3(0));
+
+    double range[2] = {-10, 10};
+    auto& slotCoord = slot->updCoordinate();
+    slotCoord.setName("displacement");
+    slotCoord.setRange(range);
+    model.addJoint(slot);
+
+    double lig_stiffness = 10;
+    double lig_slack_length = 1.0;
+
+    Blankevoort1991Ligament* lig = new Blankevoort1991Ligament("ligament",
+            model.updGround(), SimTK::Vec3(0), *brick, SimTK::Vec3(0),
+            lig_stiffness, lig_slack_length);
+    model.addForce(lig);
+
+    SimTK::State state = model.initSystem();
+
+    // Strech the ligament
+    int nSteps = 25;
+    double disp = 0.95;
+    double time = 0.0;
+    double disp_step = 0.01;
+    double time_step = 1.0;
+
+    std::vector<double> ind_col;
+
+    std::vector<std::string> outputs;
+    outputs.push_back("strain");
+    outputs.push_back("strain_rate");
+    outputs.push_back("length");
+    outputs.push_back("lengthening_rate");
+    outputs.push_back("spring_force");
+    outputs.push_back("damping_force");
+    outputs.push_back("total_force");
+    outputs.push_back("potential_energy");
+
+    SimTK::Matrix output_data(nSteps, (int)outputs.size());
+
+    for (int i = 0; i < nSteps; ++i) {
+        slotCoord.setValue(state, disp);
+        slotCoord.setSpeedValue(state, disp_step / time_step);
+        state.setTime(time);
+        model.realizeReport(state);
+
+        ind_col.push_back(time);
+        for (int j = 0; j < outputs.size(); ++j) { 
+            output_data(i, j) = lig->getOutputValue<double>(state, outputs[j]);
+        }
+
+        disp += disp_step;
+        time += time_step;
+    }
+    TimeSeriesTable results(ind_col,output_data,outputs);
+    STOFileAdapter::write(results, "ligament_strain_test.sto");
+
+    //Check that potential energy and spring and damping forces are zero 
+    //when the ligament is slack
+    ASSERT_EQUAL(results.getDependentColumn("potential_energy")(0), 0.0, 1e-3,
+        __FILE__, __LINE__,
+        "Potential energy in Blankevoort1991Ligament was not"
+        "equal to zero when the ligament was slack");
+
+    ASSERT_EQUAL(results.getDependentColumn("spring_force")(0), 0.0, 1e-3,
+        __FILE__, __LINE__,
+        "spring_force in Blankevoort1991Ligament was not"
+        "equal to zero when the ligament was slack");
+
+    ASSERT_EQUAL(results.getDependentColumn("damping_force")(0), 0.0, 1e-3,
+        __FILE__, __LINE__,
+        "damping_force in Blankevoort1991Ligament was not"
+        "equal to zero when the ligament was slack");
+
+    //Check that the spring_force and potential_energy are greater when the 
+    //ligment crosses the transition from the toe region to linear region
+    ASSERT(results.getDependentColumn("potential_energy")(12) >
+        results.getDependentColumn("potential_energy")(10),
+        __FILE__, __LINE__,
+        "Potential energy in the Blankevoort1991Ligament was not greater "
+        "in the linear region compared to the toe region");
+
+    ASSERT(results.getDependentColumn("spring_force")(12) >
+        results.getDependentColumn("spring_force")(10),
+        __FILE__, __LINE__,
+        "Potential energy in the Blankevoort1991Ligament was not greater "
+        "in the linear region compared to the toe region");
+
+    //Check that damping is nonzero if ligament is lengthening
+    slotCoord.setSpeedValue(state, 1.0);
+    model.realizeReport(state);
+    double damping_lengthening = 
+        lig->getOutputValue<double>(state, "damping_force");
+
+    ASSERT(damping_lengthening > 0.0, __FILE__, __LINE__,
+            "The damping force in Blankevoort1991Ligament was less than or "
+            "equal "
+            "to zero when the ligament was streched beyond the slack length "
+            "and "
+            "the lengthening_rate was positive.");
+
+    //Check that damping is zero if ligament is shortening
+    slotCoord.setSpeedValue(state, -1.0);
+    model.realizeReport(state);
+    double damping_shortening = 
+        lig->getOutputValue<double>(state, "damping_force");
+
+    ASSERT_EQUAL(damping_shortening, 0.0, 1e-3, __FILE__, __LINE__,
+            "The damping force in Blankevoort1991Ligament was less than or "
+            "equal "
+            "to zero when the ligament was streched beyond the slack length "
+            "and "
+            "the lengthening_rate was positive.");
 }

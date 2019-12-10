@@ -25,8 +25,6 @@
 
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/Model/GeometryPath.h>
-#include <OpenSim/Common/LinearFunction.h>
-#include <OpenSim/Common/PolynomialFunction.h>
 
 namespace OpenSim {
 
@@ -36,8 +34,8 @@ namespace OpenSim {
 /**
 This class implements a nonlinear spring ligament model introduced by
 Blankevoort et al.\ (1991) [1] and further described in Smith et al.\ (2016)
-[2].\ This model is partially based on the formulation orginally proposed by
-Wismans et al.\ (1980) [3]\. The ligament is represented as a passive spring
+[2]. This model is partially based on the formulation orginally proposed by
+Wismans et al.\ (1980) [3]. The ligament is represented as a passive spring
 with the force-strain relationship described by a quadratic "toe" region at
 low strains and a linear region at high strains. The toe region represents the
 uncrimping and alignment of collagen fibers and the linear region represents
@@ -64,7 +62,11 @@ Spring %Force:
 
 Damping %Force:
 \f[
-    F_{\mathrm{damping}} = c\cdot \dot{l}
+    F_{\mathrm{damping}} = 
+    \begin{Bmatrix} 
+    c\cdot \dot{l} & \epsilon > 0 \: and \: \dot{l} > 0 \\
+    0 & otherwise
+    \end{Bmatrix}
 \f]
 
 Total %Force:
@@ -77,14 +79,14 @@ This model has the following properties:
 - linear stiffness (k): The force/distance (e.g. N/m) stiffness of the linear
 region of the ligament model.
 
-- slack_length (\f$l_0\f$): The resting length of the ligament (e.g. N).
+- slack_length (\f$l_0\f$): The resting length of the ligament (e.g. m).
 
 - damping coefficient (c): Damping coefficient used in the damping
-force calculation in units of seconds. Commonly set to 0.001.
+force calculation in units of seconds (e.g. N*s/m). The default value is 0.001.
 
 - transition_strain (\f$\epsilon_t\f$): The strain value where the ligament
 model transitions from the quadratic toe region to the linear stiffness region.
-Default value of 0.06 (6%) according to Blankevoort J Biomech Eng 1991.
+The default value is 0.06 (6%) according to Blankevoort (1991) [1].
 This value is widely used in the multibody knee modeling literature [2,4,5,6]
 and also agrees with some experimental studies [7]. However, other literature
 suggests the transition strain of ligaments occurs at around 0.03 (3%) strain
@@ -98,18 +100,21 @@ slack_length property, which can be set directly, in meters, using
 set_slack_length(), or using setSlackLengthFromReferenceStrain() and
 setSlackLengthFromReferenceForce(). Here, reference strain and reference
 force are the strain or force in the ligament at a reference pose (state). If
-you want to compute the strain or force of the ligament in a given pose (state),
-you can use the getStrain() and getForce() methods. The
-linear_stiffness property has units of force/distance (meters/second) but can be
-set and obtained in units of force/strain using
+you want to compute the strain or force of the ligament in a given pose 
+(state), you can use the getStrain() and getForce() methods. The
+linear_stiffness property has units of force/distance (meters/second) but can 
+be set and obtained in units of force/strain using
 setLinearStiffnessForcePerStrain() and getLinearStiffnessForcePerStrain().
 
-Scaling the Blankevoort1991Ligament component adjusts the slack_length
-property after the scale factors are applied in a manner that keeps the strain
-in the ligament in the default model pose (reference strain) constant. The
-linear_stiffness parameter is not affected by scaling the model.
+The slack_length property is scaled by the ratio of the entire GeometryPath 
+length in the default model pose before and after scaling the bone geometries. 
+This ensures that the strain in the ligament in the default pose is equivilent
+before and after scaling. Thus, it is important to consider the order 
+of scaling the model and setting the slack_length property for your specific 
+application. The linear_stiffness parameter is not affected by scaling 
+the model. 
 
-### Reference
+### References
 
 [1] Blankevoort, L. and Huiskes, R., (1991).
     Ligament-bone interaction in a three-dimensional model of the knee.
@@ -163,34 +168,34 @@ class OSIMSIMULATION_API Blankevoort1991Ligament : public Force  {
 OpenSim_DECLARE_CONCRETE_OBJECT(Blankevoort1991Ligament, Force)
 
 public:
-//=========================================================================
+//=============================================================================
 // PROPERTIES
-//=========================================================================
+//=============================================================================
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(GeometryPath,
         "The set of points defining the path of the ligament")
     OpenSim_DECLARE_PROPERTY(linear_stiffness, double,
         "Slope of the linear portion of the force-strain curve of " 
-        "ligament. Units of force/length.")
+        "ligament. Units of N/m.")
     OpenSim_DECLARE_PROPERTY(transition_strain, double,
         "Strain at which ligament force-strain curve transitions from "
         "quadratic to linear. Default value of 0.06.")
     OpenSim_DECLARE_PROPERTY(damping_coefficient, double,
         "Coefficient for damping in ligament. "
-        "Units of force * time / distance (e.g. Ns/m). "
+        "Units of N*s/m."
         "Default value of 0.001.")
     OpenSim_DECLARE_PROPERTY(slack_length, double,
-        "Length at which ligament begins developing tension")
+        "Length at which ligament begins developing tension. Units of N.")
 
-    //=====================================================================
+    //=========================================================================
     // OUTPUTS
-    //=====================================================================
+    //=========================================================================
         
-    OpenSim_DECLARE_OUTPUT(force_spring, double, getSpringForce, 
+    OpenSim_DECLARE_OUTPUT(spring_force, double, getSpringForce, 
         SimTK::Stage::Position);
-    OpenSim_DECLARE_OUTPUT(force_damping, double, getDampingForce, 
+    OpenSim_DECLARE_OUTPUT(damping_force, double, getDampingForce, 
         SimTK::Stage::Velocity);
-    OpenSim_DECLARE_OUTPUT(force_total, double, getTotalForce,
+    OpenSim_DECLARE_OUTPUT(total_force, double, getTotalForce,
         SimTK::Stage::Velocity);
     OpenSim_DECLARE_OUTPUT(strain, double, getStrain,
         SimTK::Stage::Position);
@@ -201,9 +206,9 @@ public:
     OpenSim_DECLARE_OUTPUT(lengthening_rate, double, getLengtheningRate,
         SimTK::Stage::Velocity);
 
-//=========================================================================
+//=============================================================================
 // METHODS
-//=========================================================================
+//=============================================================================
 public:
     //Constructors
     Blankevoort1991Ligament();
@@ -220,37 +225,50 @@ public:
     Blankevoort1991Ligament(std::string name, 
         double linear_stiffness, double slack_length);
 
-    //---------------------------------------------------------------------
+    //-------------------------------------------------------------------------
     // SET
-    //---------------------------------------------------------------------
-    /** %Set the slack length property using the strain in the ligament at a
-     * known pose (reference state). */
+    //-------------------------------------------------------------------------
+    /** %Set the slack_length property using the strain in the ligament at a
+     * known pose (reference state). Note that scaling the model will adjust 
+     the slack length propoerty to hold the input reference strain constant 
+     if the input reference_state is equal to the default model pose 
+     (generated by initSystem())*/
     void setSlackLengthFromReferenceStrain(
             double strain, const SimTK::State& reference_state);
-    /** %Set the slack length property using the force in the ligament at a
-     * known pose (reference state). */
+
+    /** %Set the slack_length property using the absolute force (N) in the 
+    ligament at a known pose (reference force). Note that scaling the model 
+    will adjust the slack_length property, thus it is important to consider 
+    the order of scaling and using this function for application*/
     void setSlackLengthFromReferenceForce(
             double force, const SimTK::State& reference_state);
+
     /** %Set the linear_stiffness property using a value in units of
      * force/strain. */
     void setLinearStiffnessForcePerStrain(double linear_stiffness);
 
-    //--------------------------------------------------------------------------
+    //-------------------------------------------------------------------------
     // GET
-    //--------------------------------------------------------------------------
-    double getTotalForce(const SimTK::State& state) const;
+    //-------------------------------------------------------------------------
     double getStrain(const SimTK::State& state) const;
     double getStrainRate(const SimTK::State& state) const;
     double getLength(const SimTK::State& state) const;
     double getLengtheningRate(const SimTK::State& state) const;
     double getSpringForce(const SimTK::State& state) const;
     double getDampingForce(const SimTK::State& state) const;
+    double getTotalForce(const SimTK::State& state) const;
 
+
+    /** Get the linear_stiffness property in units of force/strain (N)
+    */
     double getLinearStiffnessForcePerStrain() const;
 
-    //--------------------------------------------------------------------------
+    /** Get the length (m) of the ligment where the model transitions from the 
+    toe region to the linear region*/
+    double getTransitionLength() const;
+    //-------------------------------------------------------------------------
     // COMPUTATIONS
-    //--------------------------------------------------------------------------
+    //-------------------------------------------------------------------------
     double computeMomentArm(
         const SimTK::State& s, Coordinate& aCoord) const;
 
@@ -261,15 +279,15 @@ public:
     double computePotentialEnergy(
         const SimTK::State& state) const override;
 
-    //--------------------------------------------------------------------------
+    //-------------------------------------------------------------------------
     // SCALE
-    //--------------------------------------------------------------------------
+    //-------------------------------------------------------------------------
     void extendPostScale(
             const SimTK::State& s, const ScaleSet& scaleSet) override;
 
-    //--------------------------------------------------------------------------
+    //-------------------------------------------------------------------------
     // REPORTING
-    //--------------------------------------------------------------------------
+    //-------------------------------------------------------------------------
     OpenSim::Array<std::string> getRecordLabels() const override;
     OpenSim::Array<double> getRecordValues(
             const SimTK::State& state) const override;
@@ -282,6 +300,7 @@ protected:
     double calcSpringForce(const SimTK::State& state) const;
     double calcDampingForce(const SimTK::State& state) const;
     double calcTotalForce(const SimTK::State& state) const;
+    double calcInverseForceStrainCurve(double force);
 
 private:
     void setNull();

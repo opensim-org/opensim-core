@@ -24,11 +24,8 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PointForceDirection.h>
 #include "Blankevoort1991Ligament.h"
-#include <OpenSim/Common/LinearFunction.h>
-#include <OpenSim/Common/PolynomialFunction.h>
 
 using namespace OpenSim;
-
 
 //=============================================================================
 // CONSTRUCTORS
@@ -40,8 +37,8 @@ Blankevoort1991Ligament::Blankevoort1991Ligament() : Force() {
 }
 
 Blankevoort1991Ligament::Blankevoort1991Ligament(std::string name,
-        const PhysicalFrame& frame1, SimTK::Vec3 point1, const PhysicalFrame& frame2,
-        SimTK::Vec3 point2)
+        const PhysicalFrame& frame1, SimTK::Vec3 point1, 
+        const PhysicalFrame& frame2, SimTK::Vec3 point2)
         : Blankevoort1991Ligament() {
     setName(name);
     upd_GeometryPath().appendNewPathPoint("p1", frame1, point1);
@@ -49,8 +46,9 @@ Blankevoort1991Ligament::Blankevoort1991Ligament(std::string name,
 }
 
 Blankevoort1991Ligament::Blankevoort1991Ligament(std::string name,
-        const PhysicalFrame& frame1, SimTK::Vec3 point1, const PhysicalFrame& frame2,
-        SimTK::Vec3 point2, double linear_stiffness, double slack_length)
+        const PhysicalFrame& frame1, SimTK::Vec3 point1, 
+        const PhysicalFrame& frame2, SimTK::Vec3 point2, 
+        double linear_stiffness, double slack_length)
         : Blankevoort1991Ligament(name, frame1, point1, frame2, point2) {
     set_linear_stiffness(linear_stiffness);
     set_slack_length(slack_length);
@@ -84,9 +82,9 @@ void Blankevoort1991Ligament::setNull()
 
 void Blankevoort1991Ligament::constructProperties() {
     constructProperty_GeometryPath(GeometryPath());
-    constructProperty_linear_stiffness(0.0);
+    constructProperty_linear_stiffness(1.0);
     constructProperty_transition_strain(0.06);
-    constructProperty_damping_coefficient(0.003);
+    constructProperty_damping_coefficient(0.001);
     constructProperty_slack_length(0.0);
 }
 
@@ -159,24 +157,23 @@ double Blankevoort1991Ligament::getLengtheningRate(
     return get_GeometryPath().getLengtheningSpeed(state);
 }
 
-double Blankevoort1991Ligament::getStrain(const SimTK::State& state) const{
+double Blankevoort1991Ligament::getStrain(const SimTK::State& state) const {
     if(!isCacheVariableValid(state,"strain")) {
         double length = getLength(state);
-        double strain = (length - get_slack_length())/get_slack_length();
+        double strain = length / get_slack_length() -1;
 
         setCacheVariableValue<double>(state, "strain", strain);
-        return strain;
     }
     return getCacheVariableValue<double>(state, "strain");
 }
 
-double Blankevoort1991Ligament::getStrainRate(const SimTK::State& state) const {
+double Blankevoort1991Ligament::getStrainRate(
+        const SimTK::State& state) const {
    if(!isCacheVariableValid(state,"strain_rate")) {
         double lengthening_speed = getLengtheningRate(state);
         double strain_rate = lengthening_speed / get_slack_length();
 
         setCacheVariableValue<double>(state, "strain_rate", strain_rate);
-        return strain_rate;
     }
     return getCacheVariableValue<double>(state, "strain_rate");
 }
@@ -186,7 +183,6 @@ double Blankevoort1991Ligament::getSpringForce(
     if (!isCacheVariableValid(state, "force_spring")) {
         double force = calcSpringForce(state);
         setCacheVariableValue<double>(state, "force_spring", force);
-        return force;
     }
     return getCacheVariableValue<double>(state, "force_spring");
 }
@@ -196,16 +192,15 @@ double Blankevoort1991Ligament::getDampingForce(
     if (!isCacheVariableValid(state, "force_damping")) {
         double force = calcDampingForce(state);
         setCacheVariableValue<double>(state, "force_damping", force);
-        return force;
     }
     return getCacheVariableValue<double>(state, "force_damping");
 }
 
-double Blankevoort1991Ligament::getTotalForce(const SimTK::State& state) const {
+double Blankevoort1991Ligament::getTotalForce(
+        const SimTK::State& state) const {
     if(!isCacheVariableValid(state,"force_total")) {
         double force = calcTotalForce(state);
         setCacheVariableValue<double>(state, "force_total", force);
-        return force;
     }
     return getCacheVariableValue<double>(state, "force_total");
 }
@@ -213,6 +208,10 @@ double Blankevoort1991Ligament::getTotalForce(const SimTK::State& state) const {
 double Blankevoort1991Ligament::getLinearStiffnessForcePerStrain() const {
     return get_linear_stiffness() * get_slack_length();
 };
+
+double Blankevoort1991Ligament::getTransitionLength() const {
+    return get_slack_length() * (get_transition_strain() + 1.0);
+}
 
 //=============================================================================
 // SET
@@ -229,19 +228,11 @@ void Blankevoort1991Ligament::setSlackLengthFromReferenceStrain(
 void Blankevoort1991Ligament::setSlackLengthFromReferenceForce(
         double force, const SimTK::State& reference_state) {
 
-    double transistion_force =
-            get_transition_strain() * getLinearStiffnessForcePerStrain();
+    OPENSIM_THROW_IF(force < 0.0, Exception,"force parameter cannot be less "
+        "than 0. in setSlackLengthFromReferenceForce()")
 
-    double strain;
-    if (force < 0.0) {
-        strain = 0.0;
-    } else if (force > transistion_force) {
-        strain = force / get_linear_stiffness() + get_transition_strain() / 2;
-    } else {
-        strain = sqrt(
-                2 * get_transition_strain() * force / get_linear_stiffness());
-    }
-
+    double strain = calcInverseForceStrainCurve(force);
+    
     setSlackLengthFromReferenceStrain(strain, reference_state);
 };
 
@@ -255,6 +246,23 @@ void Blankevoort1991Ligament::setLinearStiffnessForcePerStrain(
 //=============================================================================
 // COMPUTATION
 //=============================================================================
+double Blankevoort1991Ligament::calcInverseForceStrainCurve(double force) {
+    double transition_force =
+        get_transition_strain() * getLinearStiffnessForcePerStrain();
+
+    double strain;
+
+    if (force > 0 && force < transition_force){
+        strain =
+            sqrt(2 * get_transition_strain() * force / get_linear_stiffness());
+    } else if (force >= transition_force) {
+        strain = force / get_linear_stiffness() + get_transition_strain() / 2;
+    } else { //force < 0.0
+        strain = 0.0;
+    }
+    return strain;
+}
+
 double Blankevoort1991Ligament::calcSpringForce(
         const SimTK::State& state) const {
     double strain = getStrain(state);
@@ -264,14 +272,14 @@ double Blankevoort1991Ligament::calcSpringForce(
     double force_spring;
     // slack region
     if (strain <= 0) {
-        force_spring = 0;
+        force_spring = 0.0;
     }
     // toe region F = 1/2 * k / e_t * e^2
     else if ((strain > 0) && (strain < e_t)) {        
         force_spring = 0.5 * k / e_t * SimTK::square(strain);
     }
     // linear region F = k * (e-e_t/2)
-    else if (strain >= e_t) {
+    else {//strain >= e_t 
         force_spring = k * (strain - e_t / 2); 
     }
     return force_spring;
@@ -286,13 +294,15 @@ double Blankevoort1991Ligament::calcDampingForce(const SimTK::State& s) const {
         double damping_coeff = get_damping_coefficient();
         force_damping = damping_coeff*lengthening_rate;
     }
+    else {
+        return 0.0;
+    }
 
     //Phase-out damping as strain goes to zero with smooth-step function
     SimTK::Function::Step step(0, 1, 0, 0.01);
     SimTK::Vector in_vec(1, strain);
     force_damping = force_damping * step.calcValue(in_vec);
-
-    setCacheVariableValue<double>(s, "force_damping", force_damping);
+    
     return force_damping;
 }
 
@@ -304,7 +314,6 @@ double Blankevoort1991Ligament::calcTotalForce(const SimTK::State& s) const {
         force_total = 0.0;
     }
 
-    setCacheVariableValue<double>(s, "force_total", force_total);
     return force_total;
 }
 
@@ -324,17 +333,29 @@ void Blankevoort1991Ligament::computeForce(const SimTK::State& s,
 
 double Blankevoort1991Ligament::computePotentialEnergy(
         const SimTK::State& state) const {
-    double strain = getCacheVariableValue<double>(state, "strain");
-    double lin_stiff = getLinearStiffnessForcePerStrain();
-    double trans_strain = get_transition_strain();
-    double slack_len = get_slack_length();
+    const double& l = getLength(state);
+    const double& k = get_linear_stiffness();
+    const double& l_t = getTransitionLength();
+    const double& l_0 = get_slack_length();
+    
+    double PE;
 
-    if (strain < trans_strain) {
-        return 1 / 6 * lin_stiff / trans_strain * pow(strain, 3);
-    } else {
-        return 1 / 6 * lin_stiff / trans_strain * pow(trans_strain, 3) +
-               1 / 2 * lin_stiff * strain * (strain - trans_strain);
+    //Toe Region
+    if (l > l_0 && l < l_t) {
+        PE = 1.0 / 6.0 * k / (l_t - l_0) * SimTK::cube(l - l_0); 
+    } 
+    //Linear Region
+    else if (l >= l_t){
+        PE = 1.0 / 6.0 * k * SimTK::square(l_0 - l_t) +
+             1.0 / 2.0 * k * (l - l_0) * (l - l_t); 
+    } 
+    //Slack Region
+    else { //strain <= 0.0
+        return 0.0;
     }
+
+    return PE;
+
 }
 
 double Blankevoort1991Ligament::computeMomentArm(
