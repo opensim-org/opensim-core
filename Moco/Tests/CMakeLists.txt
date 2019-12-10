@@ -47,7 +47,7 @@ MocoAddTest(NAME testMocoInverse RESOURCES
         subject_walk_armless_external_loads.xml
         std_testMocoInverse_subject_18musc_solution.sto
         )
-        
+
 MocoAddTest(NAME testMocoTrack RESOURCES
         ../Archive/Tests/testGait10dof18musc_subject01.osim
         walk_gait1018_state_reference.mot
