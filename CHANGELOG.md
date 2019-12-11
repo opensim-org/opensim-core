@@ -1,3 +1,9 @@
+- 2019-12-11: ActivationCoordinateActuator now provides default activation 
+              bounds equal to its control bounds.
+              
+- 2019-12-11: Add ModOpFiberDampingDFG to set the fiber damping for all
+              DeGrooteFregly2016Muscles in a model.
+
 - 2019-12-10: Add an example for MocoInverse in MATLAB, Python, and C++.
 
 - 2019-12-10: Update the Simbody dependency to version 3.7.

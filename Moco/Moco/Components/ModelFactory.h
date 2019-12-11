@@ -48,6 +48,13 @@ public:
     /// Gravity is default; that is, (0, -g, 0).
     static Model createPlanarPointMass();
 
+    /// This model contains:
+    /// - 1 body: mass 1.0 kg, `/bodyset/body`.
+    /// - 1 joint: SliderJoint along x axis, `/jointset/slider`, with
+    ///            coordinate `/jointset/slider/position`.
+    /// - 1 actuator: CoordinateActuator, controls [-10, 10], `/actuator`.
+    static Model createSlidingPointMass();
+
     /// @}
 
     /// @name Modify a Model
