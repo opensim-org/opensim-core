@@ -46,8 +46,15 @@ public:
     OpenSim_DECLARE_PROPERTY(default_activation, double,
         "Value of activation in the default state returned by initSystem().");
 
+    OpenSim_DECLARE_OUTPUT(statebounds_activation, SimTK::Vec2,
+        getBoundsActivation, SimTK::Stage::Model);
+
     ActivationCoordinateActuator() {
         constructProperties();
+    }
+
+    SimTK::Vec2 getBoundsActivation(const SimTK::State&) const {
+        return SimTK::Vec2(getMinControl(), getMaxControl());
     }
 
 protected:

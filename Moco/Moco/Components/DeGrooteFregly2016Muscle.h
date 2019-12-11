@@ -102,7 +102,7 @@ public:
             "Larger values make the curve wider. "
             "(default: 1.0).");
     OpenSim_DECLARE_PROPERTY(fiber_damping, double,
-            "The linear damping of the fiber (default: 0.01).");
+            "The linear damping of the fiber (default: 0).");
     OpenSim_DECLARE_PROPERTY(tendon_strain_at_one_norm_force, double,
             "Tendon strain at a tension of 1 normalized force.");
     OpenSim_DECLARE_PROPERTY(ignore_passive_fiber_force, bool,
