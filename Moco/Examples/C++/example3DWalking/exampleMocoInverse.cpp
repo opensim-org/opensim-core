@@ -60,8 +60,11 @@ int main() {
     inverse.set_final_time(1.79);
     inverse.set_mesh_interval(0.02);
 
+    // By default, Moco gives an error if the kinematics contains extra columns.
+    // Here, we tell Moco to allow (and ignore) those extra columns.
     inverse.set_kinematics_allow_extra_columns(true);
 
+    // Solve the problem and write the solution to a Storage file.
     MocoInverseSolution solution = inverse.solve();
     solution.getMocoSolution().write(
             "example3DWalking_MocoInverse_solution.sto");

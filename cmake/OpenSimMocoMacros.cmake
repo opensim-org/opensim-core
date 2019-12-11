@@ -58,6 +58,7 @@ function(MocoAddExampleCXX)
     cmake_parse_arguments(MOCOEX
             "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
+    # Build the example in the build tree.
     foreach(exe ${MOCOEX_EXECUTABLES})
         add_executable(${exe} ${exe}.cpp)
         set_target_properties(${exe} PROPERTIES FOLDER "Moco/Examples")
@@ -65,6 +66,8 @@ function(MocoAddExampleCXX)
     endforeach()
     file(COPY ${MOCOEX_RESOURCES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 
+    # Install files so that users can build the example.
+    # We do not install pre-built binaries of the examples.
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
             DESTINATION ${MOCO_INSTALL_CPPEXDIR}
             PATTERN "CMakeLists.txt" EXCLUDE)
