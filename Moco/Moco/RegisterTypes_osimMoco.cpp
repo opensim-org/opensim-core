@@ -23,7 +23,6 @@
 #include "Components/ActivationCoordinateActuator.h"
 #include "Components/DeGrooteFregly2016Muscle.h"
 #include "Components/DiscreteForces.h"
-#include "Components/MinettiAlexander1997Metabolics.h"
 #include "Components/MultivariatePolynomialFunction.h"
 #include "Components/PositionMotion.h"
 #include "Components/SmoothSphereHalfSpaceForce.h"
@@ -128,7 +127,6 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(PositionMotion());
         Object::registerType(DeGrooteFregly2016Muscle());
         Object::registerType(SmoothSphereHalfSpaceForce());
-        Object::registerType(MinettiAlexander1997Metabolics());
         Object::registerType(MultivariatePolynomialFunction());
 
         Object::registerType(DiscreteForces());

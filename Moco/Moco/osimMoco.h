@@ -23,7 +23,6 @@
 #include "Components/ActivationCoordinateActuator.h"
 #include "Components/DeGrooteFregly2016Muscle.h"
 #include "Components/DiscreteForces.h"
-#include "Components/MinettiAlexander1997Metabolics.h"
 #include "Components/ModelFactory.h"
 #include "Components/MultivariatePolynomialFunction.h"
 #include "Components/PositionMotion.h"

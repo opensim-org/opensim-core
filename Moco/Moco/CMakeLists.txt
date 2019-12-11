@@ -77,8 +77,6 @@ set(MOCO_SOURCES
         Components/StationPlaneContactForce.cpp
         Components/PositionMotion.h
         Components/PositionMotion.cpp
-        Components/MinettiAlexander1997Metabolics.h
-        Components/MinettiAlexander1997Metabolics.cpp
         Components/ModelFactory.h
         Components/ModelFactory.cpp
         Components/DiscreteForces.h
