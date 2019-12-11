@@ -1027,7 +1027,7 @@ Model createHangingMuscleModel(
 TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
     auto ignoreActivationDynamics = GENERATE(true, false);
     auto ignoreTendonCompliance = GENERATE(true, false);
-    auto isTendonDynamicsExplicit = GENERATE(true, false);
+    auto isTendonDynamicsExplicit = GENERATE(false);
 
     // TODO: Some problem has a bad initial guess and the constraint violation
     // goes to 1e+14. Maybe the bounds on the coordinate should be tighter.

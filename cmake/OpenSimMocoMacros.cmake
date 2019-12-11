@@ -54,16 +54,20 @@ endfunction()
 function(MocoAddExampleCXX)
     set(options)
     set(oneValueArgs NAME)
-    set(multiValueArgs RESOURCES)
+    set(multiValueArgs RESOURCES EXECUTABLES)
     cmake_parse_arguments(MOCOEX
             "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-    add_executable(${MOCOEX_NAME} ${MOCOEX_NAME}.cpp)
-    set_target_properties(${MOCOEX_NAME} PROPERTIES
-            FOLDER "Moco/Examples")
-    target_link_libraries(${MOCOEX_NAME} osimMoco)
+    # Build the example in the build tree.
+    foreach(exe ${MOCOEX_EXECUTABLES})
+        add_executable(${exe} ${exe}.cpp)
+        set_target_properties(${exe} PROPERTIES FOLDER "Moco/Examples")
+        target_link_libraries(${exe} osimMoco)
+    endforeach()
     file(COPY ${MOCOEX_RESOURCES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 
+    # Install files so that users can build the example.
+    # We do not install pre-built binaries of the examples.
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
             DESTINATION ${MOCO_INSTALL_CPPEXDIR}
             PATTERN "CMakeLists.txt" EXCLUDE)
@@ -72,6 +76,7 @@ function(MocoAddExampleCXX)
     # These next two variables are to be configured below (they are not used
     # here, but within ExampleCMakeListsToInstall.txt.in).
     set(_example_name ${MOCOEX_NAME})
+    set(_example_executables ${MOCOEX_EXECUTABLES})
     file(RELATIVE_PATH _moco_install_hint
             "${CMAKE_INSTALL_PREFIX}/${_example_install_dir}"
             "${CMAKE_INSTALL_PREFIX}")

@@ -1,5 +1,11 @@
+- 2019-12-10: Add an example for MocoInverse in MATLAB, Python, and C++.
+
+- 2019-12-10: Update the Simbody dependency to version 3.7.
+
 - 2019-12-09: MocoTrajectory::isCompatible() gives more details when provided 
               with an incompatible problem.
+
+- 2019-12-08: Include support for OpenSim's C3DFileAdapter.
 
 - 2019-12-04: Updated the version of OpenSim used by Moco. As a result, we
               removed the utility readTableFromFile(). Use the TimeSeriesTable 
@@ -22,18 +28,32 @@
 - 2019-11-26: Consistently refer to MocoTrajectories as "trajectory" instead of
               "iterate".
 
+- 2019-11-25: Update SmoothSphereHalfSpaceForce to visualize contact forces in
+              the Simbody visualizer (not the OpenSim GUI). 
+
 - 2019-11-22: Introduce TabOpUseAbsoluteStateNames to convert column labels
               from IK solutions pre-4.0 states files to use new-style column
               labels.
 
-- 2019-11-09: Improve the reliability of building the Ipopt dependency by using
-              more stable servers for downloading Metis and MUMPS.
+- 2019-11-20: Added MocoAngularVelocityTrackingGoal and 
+              MocoAccelerationTrackingGoal in anticipation of supporting 
+              applications using IMU data in the future.
 
 - 2019-11-18: Updates to report.py linewidth and legend formatting. 
+
+- 2019-11-18: Exporting controls to TimeSeriesTable via 
+              MocoTrajectory::exportToControlsTable().
 
 - 2019-11-18: Utility createPeriodicTrajectory() now properly handles 
               antisymmetric coordinate position, speed, and actuator 
               variables.    
+              
+- 2019-11-18: Add a "Getting started" page to the User Guide.
+
+- 2019-11-09: Improve the reliability of building the Ipopt dependency by using
+              more stable servers for downloading Metis and MUMPS.
+
+- 2019-11-05: Updated the documentation to contain a list of all examples.
 
 - 2019-10-30: ModelFactory::replaceMusclesWithPathActuators() now adds the
               PathActuators to the Model's ForceSet, and the connectee names

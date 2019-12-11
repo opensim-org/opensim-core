@@ -150,7 +150,7 @@ if(${MOCO_INSTALL_UNIX_FHS})
     # Now set variables that depend on those set by GNUInstallDirs.
 
     set(MOCO_INSTALL_ARCHIVEDIR "${CMAKE_INSTALL_LIBDIR}")
-    set(MOCO_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/Moco")
+    set(MOCO_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/OpenSimMoco")
     # Location of the opensim python package in the installation.
     # On Ubuntu/Debian (apt-get), would want lib/python2.7/dist-packages.
     # We replace VERSION with the correct version once we know it (in
