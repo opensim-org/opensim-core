@@ -5,7 +5,8 @@ set(EXAMPLE_MOCO_TRACK_FILES
         marker_trajectories.trc
         subject_walk_armless.osim)
 
-MocoAddExampleCXX(NAME exampleMocoTrack
+MocoAddExampleCXX(NAME example3DWalking
+        EXECUTABLES exampleMocoTrack exampleMocoInverse
         RESOURCES "${EXAMPLE_MOCO_TRACK_FILES}")
 
 file(GLOB GEOMETRY "${CMAKE_SOURCE_DIR}/opensim-models/Geometry/*"
@@ -13,25 +14,25 @@ file(GLOB GEOMETRY "${CMAKE_SOURCE_DIR}/opensim-models/Geometry/*"
 
 file(COPY ${GEOMETRY} 
         DESTINATION
-        "${CMAKE_BINARY_DIR}/Moco/Examples/C++/exampleMocoTrack/Geometry")
+        "${CMAKE_BINARY_DIR}/Moco/Examples/C++/example3DWalking/Geometry")
 install(FILES ${GEOMETRY}
-        DESTINATION "${MOCO_INSTALL_CPPEXDIR}/exampleMocoTrack/Geometry")
+        DESTINATION "${MOCO_INSTALL_CPPEXDIR}/example3DWalking/Geometry")
 
 file(COPY ${EXAMPLE_MOCO_TRACK_FILES}
         DESTINATION "${CMAKE_BINARY_DIR}/Moco/Sandbox/sandboxMocoTrack")
 
 file(COPY ${EXAMPLE_MOCO_TRACK_FILES}
         DESTINATION
-        "${CMAKE_BINARY_DIR}/Moco/Bindings/Java/Matlab/Examples/exampleMocoTrack")
+        "${CMAKE_BINARY_DIR}/Moco/Bindings/Java/Matlab/Examples/example3DWalking")
 install(FILES ${EXAMPLE_MOCO_TRACK_FILES}
-        DESTINATION "${MOCO_INSTALL_MATLABEXDIR}/exampleMocoTrack")
+        DESTINATION "${MOCO_INSTALL_MATLABEXDIR}/example3DWalking")
 install(FILES ${GEOMETRY}
-        DESTINATION "${MOCO_INSTALL_MATLABEXDIR}/exampleMocoTrack/Geometry")
+        DESTINATION "${MOCO_INSTALL_MATLABEXDIR}/example3DWalking/Geometry")
 
 file(COPY ${EXAMPLE_MOCO_TRACK_FILES}
         DESTINATION
-        "${CMAKE_BINARY_DIR}/Moco/Bindings/Python/examples/exampleMocoTrack")
+        "${CMAKE_BINARY_DIR}/Moco/Bindings/Python/examples/example3DWalking")
 install(FILES ${EXAMPLE_MOCO_TRACK_FILES}
-        DESTINATION "${MOCO_INSTALL_PYTHONEXDIR}/exampleMocoTrack")
+        DESTINATION "${MOCO_INSTALL_PYTHONEXDIR}/example3DWalking")
 install(FILES ${GEOMETRY}
-        DESTINATION "${MOCO_INSTALL_PYTHONEXDIR}/exampleMocoTrack/Geometry")
+        DESTINATION "${MOCO_INSTALL_PYTHONEXDIR}/example3DWalking/Geometry")
