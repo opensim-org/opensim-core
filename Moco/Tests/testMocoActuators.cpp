@@ -1208,4 +1208,19 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
 TEST_CASE("ActivationCoordinateActuator") {
     // TODO create a problem with ACA and ensure the activation bounds are
     // set as expected.
+    auto model = ModelFactory::createSlidingPointMass();
+    auto* actu = new ActivationCoordinateActuator();
+    actu->setName("aca");
+    actu->setCoordinate(&model.updCoordinateSet().get("position"));
+    actu->setMinControl(-0.31);
+    actu->setMaxControl(0.78);
+    model.addForce(actu);
+    MocoStudy study;
+    auto& problem = study.updProblem();
+    problem.setModelCopy(model);
+    auto rep = problem.createRep();
+    CHECK(rep.getStateInfo("/forceset/aca/activation").getBounds().getLower() ==
+            Approx(-0.31));
+    CHECK(rep.getStateInfo("/forceset/aca/activation").getBounds().getUpper() ==
+            Approx(0.78));
 }
