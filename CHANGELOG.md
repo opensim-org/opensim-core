@@ -30,6 +30,10 @@
               from IK solutions pre-4.0 states files to use new-style column
               labels.
 
+- 2019-11-20: Added MocoAngularVelocityTrackingGoal and 
+              MocoAccelerationTrackingGoal in anticipation of supporting 
+              applications using IMU data in the future.
+
 - 2019-11-18: Updates to report.py linewidth and legend formatting. 
 
 - 2019-11-18: Exporting controls to TimeSeriesTable via 
