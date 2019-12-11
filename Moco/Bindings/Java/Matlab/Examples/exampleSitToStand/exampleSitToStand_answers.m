@@ -47,7 +47,7 @@ problem.setStateInfo('/jointset/ankle_r/ankle_angle_r/value', ...
 problem.setStateInfoPattern('/jointset/.*/speed', [], 0, 0);
 
 % Part 1d: Add a MocoControlCost to the problem.
-problem.addCost(MocoControlCost('myeffort'));
+problem.addGoal(MocoControlGoal('myeffort'));
 
 % Part 1e: Configure the solver.
 solver = study.initCasADiSolver();
@@ -73,15 +73,15 @@ tableProcessor.append(TabOpLowPassFilter(6));
 % from the predictive problem (via the TableProcessor we just created). 
 % Enable the setAllowUnusedReferences() setting to ignore the controls in
 % the predictive solution.
-tracking = MocoStateTrackingCost();
+tracking = MocoStateTrackingGoal();
 tracking.setName('mytracking');
 tracking.setReference(tableProcessor);
 tracking.setAllowUnusedReferences(true);
-problem.addCost(tracking);
+problem.addGoal(tracking);
 
 % Part 2c: Reduce the control cost weight so it now acts as a regularization 
 % term.
-problem.updCost('myeffort').set_weight(0.001);
+problem.updGoal('myeffort').setWeight(0.001);
 
 % Part 2d: Set the initial guess using the predictive problem solution.
 % Tighten convergence tolerance to ensure smooth controls.
@@ -118,11 +118,12 @@ inverse.setKinematics(tableProcessor);
 inverse.set_initial_time(0);
 inverse.set_final_time(1);
 inverse.set_mesh_interval(0.05);
-inverse.set_tolerance(1e-4);
+inverse.set_convergence_tolerance(1e-4);
+inverse.set_constraint_tolerance(1e-4);
 
 % Allow extra (unused) columns in the kinematics and minimize activations.
 inverse.set_kinematics_allow_extra_columns(true);
-inverse.set_minimize_sum_squared_states(true);
+inverse.set_minimize_sum_squared_activations(true);
 
 % Append additional outputs path for quantities that are calculated
 % post-hoc using the inverse problem solution.

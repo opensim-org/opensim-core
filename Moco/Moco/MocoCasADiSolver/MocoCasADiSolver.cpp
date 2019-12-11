@@ -275,7 +275,7 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     OPENSIM_THROW_IF(get_implicit_multibody_accelerations_weight() < 0,
             Exception, format(
                 "Property implicit_multibody_accelerations_weight must be "
-                "non-negative, but it is set to %f.", 
+                "non-negative, but it is set to %f.",
                 get_implicit_multibody_accelerations_weight()));
     casSolver->setImplicitMultibodyAccelerationsWeight(
             get_implicit_multibody_accelerations_weight());
@@ -308,7 +308,8 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
 
     if (get_verbosity()) {
         std::cout << std::string(79, '=') << "\n";
-        std::cout << "MocoCasADiSolver starting.\n";
+        std::cout << "MocoCasADiSolver starting. ";
+        std::cout << getMocoFormattedDateTime(false, "%c") << "\n";
         std::cout << std::string(79, '-') << std::endl;
         getProblemRep().printDescription();
     }
@@ -400,6 +401,7 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
         std::cout << std::string(79, '-') << "\n";
         std::cout << "Elapsed real time: " << stopwatch.formatNs(elapsed)
                   << ".\n";
+        std::cout << getMocoFormattedDateTime(false, "%c") << "\n";
         if (mocoSolution) {
             std::cout << "MocoCasADiSolver succeeded!\n";
         } else {

@@ -45,6 +45,7 @@ public:
     /// - 2 bodies: a massless body "intermed", and "body" with mass 1.
     /// - 2 slider joints: "tx" and "ty" (coordinates "tx" and "ty").
     /// - 2 coordinate actuators: "force_x" and "force_y".
+    /// Gravity is default; that is, (0, -g, 0).
     static Model createPlanarPointMass();
 
     /// @}

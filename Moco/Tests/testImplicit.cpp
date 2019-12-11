@@ -242,18 +242,18 @@ TEMPLATE_TEST_CASE("Combining implicit dynamics with kinematic constraints",
 }
 
 SCENARIO("Using MocoTrajectory with the implicit dynamics mode",
-        "[implicit][iterate]") {
+        "[implicit][trajectory]") {
     GIVEN("MocoTrajectory with only derivatives") {
-        MocoTrajectory iterate;
-        const_cast<SimTK::Matrix*>(&iterate.getDerivativesTrajectory())
+        MocoTrajectory trajectory;
+        const_cast<SimTK::Matrix*>(&trajectory.getDerivativesTrajectory())
                 ->resize(3, 2);
-        THEN("it is not empty") { REQUIRE(!iterate.empty()); }
+        THEN("it is not empty") { REQUIRE(!trajectory.empty()); }
     }
     GIVEN("MocoTrajectory with only derivative names") {
-        MocoTrajectory iterate;
-        const_cast<std::vector<std::string>*>(&iterate.getDerivativeNames())
+        MocoTrajectory trajectory;
+        const_cast<std::vector<std::string>*>(&trajectory.getDerivativeNames())
                 ->resize(3);
-        THEN("it is not empty") { REQUIRE(!iterate.empty()); }
+        THEN("it is not empty") { REQUIRE(!trajectory.empty()); }
     }
     GIVEN("MocoTrajectory with derivative data") {
         MocoTrajectory iter(createVectorLinspace(6, 0, 1), {}, {}, {},

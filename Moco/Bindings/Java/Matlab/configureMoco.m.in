@@ -27,9 +27,10 @@ function configureMoco()
 %    OpenSim's MATLAB Utilities to the MATLAB path (e.g., addpath).
 %
 % Removing existing OpenSim paths:
-%    This function tries to detect any OpenSim or Moco installations you may
-%    have previously configured with MATLAB, and removes them from the Java
-%    class path, Java library path, and MATLAB path (all 3 items above).
+%    This function tries to detect any OpenSim or Moco (or OpenSense beta)
+%    installations you may have previously configured with MATLAB, and
+%    removes them from the Java class path, Java library path, and MATLAB
+%    path (all 3 items above).
 %  
 % MATLAB versions older than 2012b:
 %    If your MATLAB version is older than 2012b, we must use an older mechanism
@@ -121,6 +122,25 @@ try
         rmPrev = rmPrev | editPathTxtFile(libraryFileTool, '');
         libraryFilePref = fullfile(prefdir, 'javalibrarypath.txt');
         rmPrev = rmPrev | editPathTxtFile(libraryFilePref, libPath);
+    end
+
+%% Edit MATLAB path
+    cleanMatlabSearchPath();
+    utilitiesPath = fullfile(thisFolder, 'Utilities');
+    if exist(utilitiesPath, 'dir')
+        addpath(utilitiesPath);
+        fprintf('-- Added %s to the MATLAB path.\n\n', utilitiesPath);
+        status = savepath;
+        if status ~= 0 % Status is 0 for success (see doc savepath).
+            fprintf(['-- Could not save changes to the MATLAB path. ' ...
+            'Therefore, you will not have access to OpenSim-related '...
+            'MATLAB utilities like osimTableToStruct(). ' ...
+            'Restart MATLAB as administrator (or with sudo, on UNIX) '...
+            'and re-run configureOpenSim.m.'])
+        end
+    else
+        fprintf(['-- Could not find Utilities folder; ' ...
+                'not adding to MATLAB path.\n\n']);
     end
 
 %% Display final message.
@@ -232,16 +252,17 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [newC, foundExisting] = searchForOpenSimMoco(C, txtname)
     % Return a new cell array with all the same entries as C, except that
-    % entries containing opensim or moco are commented out.
+    % entries containing opensim, opensense, or moco are commented out.
     timeStr = datestr(now, 30);
     newC = cell(0);
     foundExisting = false;
     [Cnrows, Cncols] = cellfun(@size, C, 'UniformOutput', false);
     for i = 1:Cnrows{1}
         has_opensim = ~isempty(strfind(lower(C{1}{i}), 'opensim'));
+        has_opensense = ~isempty(strfind(lower(C{1}{i}), 'opensense'));
         has_moco = ~isempty(strfind(lower(C{1}{i}), 'moco'));
         commented_out = any(regexpi(C{1}{i}, '^\s*#') == 1);
-        if (has_opensim || has_moco) && ~commented_out
+        if (has_opensim || has_opensense || has_moco) && ~commented_out
             commentedOutLine = ['# removed by configureMoco.m ' ...
                      timeStr ' ' C{1}{i, 1}];
             foundExisting = true;
@@ -277,8 +298,7 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function cleanMatlabSearchPath()
     % goes through the matlab search path and removes any folders that have
-    % the strings 'OpenSim' and 'bin' in them. This is to clean out older bin
-    % folders.
+    % the strings opensense or opensim in them.
     
     % get the matlab path    
     matlabPath         = path;
@@ -295,19 +315,21 @@ function cleanMatlabSearchPath()
 
     attemptedBackup = false;
     timeStr = datestr(now, 30);
-    
+
     % for each folder
     for i = 1:nFoldersInPath-1
-        % get the start end end index for each folder name   
+        % get the start and end index for each folder name
         startString = matLabFoldersIndex(i);
         finishString = matLabFoldersIndex(i+1);
         % ouput the folder string
         folderName = matlabPath(startString+1 : finishString-1);
-        
-        % Check to see if the folder string contains 'OpenSim'.
+
+        % Check to see if the folder string contains opensim or opensense.
         % No need to check for 'moco' because this script never adds a path
         % to the MATLAB PATH.
-        if ~isempty(strfind(lower(folderName), 'opensim'))
+        has_opensim = ~isempty(strfind(lower(folderName), 'opensim'));
+        has_opensense = ~isempty(strfind(lower(folderName), 'opensense'));
+        if has_opensim || has_opensense
             if ~attemptedBackup
                 backup = fullfile(prefdir, ['pathdef_backup_' timeStr '.m']);
                 status = savepath(backup);

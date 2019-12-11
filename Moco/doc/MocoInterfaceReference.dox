@@ -8,24 +8,25 @@ the User Guide before consulting this reference.
 
 The following classes are used frequently:
 
+- MocoTool
+  - MocoInverse
+  - MocoTrack
+- MocoTrajectory
+  - MocoSolution
 - MocoStudy
   - MocoProblem
     - MocoGoal
     - MocoPathConstraint
+    - MocoParameter
   - MocoSolver
   - MocoProblemRep
 - MocoDirectCollocationSolver
   - MocoTropterSolver
   - MocoCasADiSolver
-- MocoTrajectory
-  - MocoSolution
 - ModelFactory
-- MocoTool
-  - MocoInverse
-  - MocoTrack
 
 If the class you seek is not in the list above, use the
-search box in the upper right or the drop down menu from the "API Reference"
+search box in the upper right or the drop-down menu from the "API Reference"
 button.
 
 

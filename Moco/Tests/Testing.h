@@ -123,10 +123,10 @@ do {                                                                         \
 
 #define OpenSim_CHECK_MATRIX(actual, expected)                               \
 do {                                                                         \
-    const auto& a = actual;                                                  \
-    const auto& b = expected;                                                \
-    using TypeA = std::remove_reference<decltype(a)>::type::E;               \
-    using TypeB = std::remove_reference<decltype(b)>::type::E;               \
+    const auto& aa = actual;                                                 \
+    const auto& bb = expected;                                               \
+    using TypeA = std::remove_reference<decltype(aa)>::type::E;              \
+    using TypeB = std::remove_reference<decltype(bb)>::type::E;              \
     const auto tol = SimTK::Test::defTol2<TypeA, TypeB>();                   \
     OpenSim_CATCH_MATRIX_INTERNAL(CHECK, actual, expected, tol, epsilon);    \
 } while (0)

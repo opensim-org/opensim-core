@@ -507,7 +507,7 @@ solveForTrajectory_GSO(const Model& model) {
     fWrite.close();
 
     // Create a table containing only the angle and speed of the pendulum.
-    TimeSeriesTable ocpSolution = CSVFileAdapter::read(trajFileWithHeader);
+    TimeSeriesTable ocpSolution(trajFileWithHeader);
     TimeSeriesTable kinematics;
     kinematics.setColumnLabels(
             {"/tx/tx/value", "/tx/tx/speed", "/ty/ty/value", "/ty/ty/speed"});
@@ -590,7 +590,7 @@ solveForTrajectory_INDYGO(const Model& model) {
     fWrite.close();
 
     // Create a table containing only the angle and speed of the pendulum.
-    TimeSeriesTable ocpSolution = CSVFileAdapter::read(trajFileWithHeader);
+    TimeSeriesTable ocpSolution(trajFileWithHeader);
     TimeSeriesTable kinematics;
     kinematics.setColumnLabels(
             {"/tx/tx/value", "/tx/tx/speed", "/ty/ty/value", "/ty/ty/speed"});

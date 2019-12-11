@@ -145,7 +145,7 @@ TEST_CASE("MocoInverse Rajagopal2016, 18 muscles") {
 
     MocoTrajectory std("std_testMocoInverse_subject_18musc_solution.sto");
     const auto expected = std.getControlsTrajectory();
-    CHECK(std.compareContinuousVariablesRMS(solution, 
+    CHECK(std.compareContinuousVariablesRMS(solution,
             {{"controls", {}}}) < 1e-2);
     CHECK(std.compareContinuousVariablesRMS(solution, {{"states", {}}}) < 1e-2);
 }

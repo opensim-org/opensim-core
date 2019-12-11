@@ -168,5 +168,10 @@ void MocoJointReactionGoal::printDescriptionImpl(std::ostream& stream) const {
     }
     stream << std::endl;
     stream << "        ";
-    stream << "reaction weights: " << get_reaction_weights() << std::endl;
+    stream << "reaction weights: ";
+    for (int i = 0; i < (int)m_measureWeights.size(); ++i) {
+        stream << m_measureWeights[i];
+        if (i < (int)m_measureWeights.size() - 1) { stream << ", "; }
+    }
+    stream << std::endl;
 }

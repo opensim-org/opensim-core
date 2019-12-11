@@ -147,7 +147,7 @@ solveForTrajectoryGSO() {
     fWrite.close();
 
     // Create a table containing only the position and speed of the mass.
-    TimeSeriesTable ocpSolution = CSVFileAdapter::read(trajFileWithHeader);
+    TimeSeriesTable ocpSolution(trajFileWithHeader);
     TimeSeriesTable kinematics;
     kinematics.setColumnLabels({"/joint/height/value",
                                 "/joint/height/speed"});
@@ -317,7 +317,7 @@ solveForTrajectoryINDYGO() {
     fWrite.close();
 
     // Create a table containing only the position and speed of the mass.
-    TimeSeriesTable ocpSolution = CSVFileAdapter::read(trajFileWithHeader);
+    TimeSeriesTable ocpSolution(trajFileWithHeader);
     TimeSeriesTable kinematics;
     kinematics.setColumnLabels({ "/joint/height/value",
         "/joint/height/speed" });

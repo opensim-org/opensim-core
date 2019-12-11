@@ -1,3 +1,4 @@
+
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: RegisterTypes_osimMoco.cpp                                   *
  * -------------------------------------------------------------------------- *
@@ -44,6 +45,8 @@
 #include "MocoGoal/MocoStateTrackingGoal.h"
 #include "MocoGoal/MocoSumSquaredStateGoal.h"
 #include "MocoGoal/MocoTranslationTrackingGoal.h"
+#include "MocoGoal/MocoAngularVelocityTrackingGoal.h"
+#include "MocoGoal/MocoAccelerationTrackingGoal.h"
 #include "MocoInverse.h"
 #include "MocoParameter.h"
 #include "MocoProblem.h"
@@ -78,6 +81,8 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(MocoJointReactionGoal());
         Object::registerType(MocoOrientationTrackingGoal());
         Object::registerType(MocoTranslationTrackingGoal());
+        Object::registerType(MocoAngularVelocityTrackingGoal());
+        Object::registerType(MocoAccelerationTrackingGoal());
         Object::registerType(MocoPeriodicityGoalPair());
         Object::registerType(MocoPeriodicityGoal());
         Object::registerType(MocoBounds());
@@ -103,6 +108,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(TableProcessor());
 
         Object::registerType(TabOpLowPassFilter());
+        Object::registerType(TabOpUseAbsoluteStateNames());
 
         Object::registerType(ModelProcessor());
         Object::registerType(ModOpReplaceMusclesWithDeGrooteFregly2016());
@@ -134,7 +140,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(Set<MarkerWeight>());
     } catch (const std::exception& e) {
         std::cerr << "ERROR during osimMoco Object registration:\n"
-                  << e.what() << std::endl;
+                << e.what() << std::endl;
     }
 }
 

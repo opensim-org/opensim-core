@@ -42,6 +42,10 @@ set(MOCO_SOURCES
         MocoGoal/MocoOutputGoal.cpp
         MocoGoal/MocoTranslationTrackingGoal.h
         MocoGoal/MocoTranslationTrackingGoal.cpp
+        MocoGoal/MocoAngularVelocityTrackingGoal.h
+        MocoGoal/MocoAngularVelocityTrackingGoal.cpp
+        MocoGoal/MocoAccelerationTrackingGoal.h
+        MocoGoal/MocoAccelerationTrackingGoal.cpp
         MocoGoal/MocoInitialActivationGoal.cpp
         MocoGoal/MocoInitialActivationGoal.h
         MocoGoal/MocoInitialVelocityEquilibriumDGFGoal.h
@@ -137,7 +141,7 @@ if (MOCO_WITH_TROPTER)
     target_compile_definitions(osimMoco PUBLIC MOCO_WITH_TROPTER)
 endif ()
 target_compile_definitions(osimMoco PRIVATE
-        OPENSIM_MOCO_VERSION=${PROJECT_VERSION}${VERSION_SUFFIX}
+        OPENSIM_MOCO_VERSION=${MOCO_FULL_VERSION}
         )
 
 MocoAddInstallRPATHSelf(TARGET osimMoco LOADER)

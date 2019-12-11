@@ -884,7 +884,7 @@ TEMPLATE_TEST_CASE("State tracking", "", MocoTropterSolver, MocoCasADiSolver) {
         auto moco = makeTool();
         MocoProblem& mp = moco.updProblem();
         auto tracking = mp.addGoal<MocoStateTrackingGoal>();
-        tracking->setReference(STOFileAdapter::read(fname));
+        tracking->setReference(TimeSeriesTable(fname));
         auto& ms = moco.template initSolver<TestType>();
         ms.set_num_mesh_intervals(5);
         ms.set_optim_hessian_approximation("exact");
@@ -1290,13 +1290,13 @@ TEMPLATE_TEST_CASE(
         auto labels = controlsTable.getColumnLabels();
         for (auto& label : labels) { label = "/forceset/" + label; }
         controlsTable.setColumnLabels(labels);
-        const auto iterateFromManager =
+        const auto trajectoryFromManager =
                 MocoTrajectory::createFromStatesControlsTables(
                         study.getProblem().createRep(),
                         manager.getStatesTable(),
                         controlsTable);
         SimTK_TEST(solutionSim.compareContinuousVariablesRMS(
-                           iterateFromManager) < 1e-2);
+                           trajectoryFromManager) < 1e-2);
     }
 
     // Ensure the forward simulation guess uses the correct time bounds.
@@ -1363,26 +1363,26 @@ TEST_CASE("MocoTrajectory") {
             void setSealedD(bool sealed) { MocoTrajectory::setSealed(sealed); }
             bool isSealedD() const { return MocoTrajectory::isSealed(); }
         };
-        MocoTrajectoryDerived iterate;
-        SimTK_TEST(!iterate.isSealedD());
-        iterate.setSealedD(true);
-        SimTK_TEST(iterate.isSealedD());
+        MocoTrajectoryDerived trajectory;
+        SimTK_TEST(!trajectory.isSealedD());
+        trajectory.setSealedD(true);
+        SimTK_TEST(trajectory.isSealedD());
         SimTK_TEST_MUST_THROW_EXC(
-                iterate.getNumTimes(), MocoTrajectoryIsSealed);
-        SimTK_TEST_MUST_THROW_EXC(iterate.getTime(), MocoTrajectoryIsSealed);
+                trajectory.getNumTimes(), MocoTrajectoryIsSealed);
+        SimTK_TEST_MUST_THROW_EXC(trajectory.getTime(), MocoTrajectoryIsSealed);
         SimTK_TEST_MUST_THROW_EXC(
-                iterate.getStateNames(), MocoTrajectoryIsSealed);
+                trajectory.getStateNames(), MocoTrajectoryIsSealed);
         SimTK_TEST_MUST_THROW_EXC(
-                iterate.getControlNames(), MocoTrajectoryIsSealed);
+                trajectory.getControlNames(), MocoTrajectoryIsSealed);
         SimTK_TEST_MUST_THROW_EXC(
-                iterate.getControlNames(), MocoTrajectoryIsSealed);
+                trajectory.getControlNames(), MocoTrajectoryIsSealed);
 
         // The clone() function doesn't call ensureSealed(), but the clone
         // should preserve the value of m_sealed.
-        std::unique_ptr<MocoTrajectoryDerived> ptr(iterate.clone());
+        std::unique_ptr<MocoTrajectoryDerived> ptr(trajectory.clone());
         SimTK_TEST(ptr->isSealedD());
         SimTK_TEST_MUST_THROW_EXC(
-                iterate.getNumTimes(), MocoTrajectoryIsSealed);
+                trajectory.getNumTimes(), MocoTrajectoryIsSealed);
     }
 
     // getInitialTime(), getFinalTime()
@@ -1881,5 +1881,19 @@ TEST_CASE("MocoPhase::bound_activation_from_excitation") {
                 Catch::Contains(
                         "No info available for state '/muscle/activation'."));
     }
+}
+
+TEST_CASE("updateStateLabels40") {
+    auto model = ModelFactory::createPendulum();
+    model.initSystem();
+    std::vector<std::string> labels = {
+            "q0",
+            "q0_u",
+            "nonexistent",
+    };
+    updateStateLabels40(model, labels);
+    CHECK(labels[0] == "/jointset/j0/q0/value");
+    CHECK(labels[1] == "/jointset/j0/q0/speed");
+    CHECK(labels[2] == "nonexistent");
 }
 
