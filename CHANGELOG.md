@@ -4,6 +4,8 @@
 - 2019-12-11: Add ModOpFiberDampingDFG to set the fiber damping for all
               DeGrooteFregly2016Muscles in a model.
 
+- 2019-12-10: Add an example for MocoInverse in MATLAB, Python, and C++.
+
 - 2019-12-10: Update the Simbody dependency to version 3.7.
 
 - 2019-12-08: Include support for OpenSim's C3DFileAdapter.
@@ -35,6 +37,10 @@
 - 2019-11-22: Introduce TabOpUseAbsoluteStateNames to convert column labels
               from IK solutions pre-4.0 states files to use new-style column
               labels.
+
+- 2019-11-20: Added MocoAngularVelocityTrackingGoal and 
+              MocoAccelerationTrackingGoal in anticipation of supporting 
+              applications using IMU data in the future.
 
 - 2019-11-18: Updates to report.py linewidth and legend formatting. 
 
