@@ -98,8 +98,8 @@ public:
     }
 };
 
-/// Turn off passive fiber forces for all DeGrooteFregly2016Muscle%s in the
-/// model.
+/// Set the tendon compliance dynamics mode to "implicit" for all 
+/// DeGrooteFregly2016Muscle%s in the model.
 class OSIMMOCO_API ModOpUseImplicitTendonComplianceDynamicsDGF
         : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(
