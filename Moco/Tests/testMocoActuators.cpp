@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: testDeGrooteFregly2016Muscle.cpp                             *
+ * OpenSim Moco: testMocoActuators.cpp                                        *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -1203,4 +1203,9 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
                 solutionTrack.compareContinuousVariablesRMS(solutionTrajOpt);
         CHECK(error < 0.015);
     }
+}
+
+TEST_CASE("ActivationCoordinateActuator") {
+    // TODO create a problem with ACA and ensure the activation bounds are
+    // set as expected.
 }
