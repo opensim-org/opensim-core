@@ -63,7 +63,8 @@ std::unique_ptr<T> make_unique(Args&&... args) {
 /// %Y-%m-%dT%H:%M:%S.
 /// See https://en.cppreference.com/w/cpp/io/manip/put_time.
 /// @ingroup mocogenutil
-OSIMMOCO_API std::string getFormattedDateTime(bool appendMicroseconds = false,
+OSIMMOCO_API std::string getMocoFormattedDateTime(
+        bool appendMicroseconds = false,
         std::string format = "%Y-%m-%dT%H%M%S");
 
 /// Determine if `string` starts with the substring `start`.
@@ -288,41 +289,6 @@ OSIMMOCO_API void updateStateLabels40(
 OSIMMOCO_API TimeSeriesTable filterLowpass(
         const TimeSeriesTable& table, double cutoffFreq, bool padData = false);
 
-/// Read in a table of type TimeSeriesTable_<T> from file, where T is the type
-/// of the elements contained in the table's columns. The `filepath` argument
-/// should refer to a STO or CSV file (or other file types for which there is a
-/// FileAdapter). This function assumes that only one table is contained in the
-/// file, and will throw an exception otherwise.
-/// @ingroup moconumutil
-template <typename T>
-TimeSeriesTable_<T> readTableFromFileT(const std::string& filepath) {
-    auto tablesFromFile = FileAdapter::readFile(filepath);
-    // There should only be one table.
-    OPENSIM_THROW_IF(tablesFromFile.size() != 1, Exception,
-            format("Expected file '%s' to contain 1 table, but "
-                   "it contains %i tables.",
-                    filepath, tablesFromFile.size()));
-    // Get the first table.
-    auto* firstTable = dynamic_cast<TimeSeriesTable_<T>*>(
-            tablesFromFile.begin()->second.get());
-    OPENSIM_THROW_IF(!firstTable, Exception,
-            "Expected file to contain a TimeSeriesTable_<T> where T is "
-            "the type specified in the template argument, but it contains a "
-            "different type of table.");
-
-    return *firstTable;
-}
-
-/// Read in a TimeSeriesTable from file containing scalar elements. The
-/// `filepath` argument should refer to a STO or CSV file (or other file types
-/// for which there is a FileAdapter). This function assumes that only one table
-/// is contained in the file, and will throw an exception otherwise.
-/// @ingroup moconumutil
-OSIMMOCO_API inline TimeSeriesTable readTableFromFile(
-        const std::string& filepath) {
-    return readTableFromFileT<double>(filepath);
-}
-
 /// Write a single TimeSeriesTable to a file, using the FileAdapter associated
 /// with the provided file extension.
 /// @ingroup moconumutil
@@ -517,7 +483,7 @@ std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(
     // Initialize outputs array.
     std::vector<SimTK::ReferencePtr<const Output<T>>> outputs;
 
-    std::function<void(const Component&, const std::regex&, bool, 
+    std::function<void(const Component&, const std::regex&, bool,
             std::vector<SimTK::ReferencePtr<const Output<T>>>&)> helper;
     helper = [&helper](const Component& component, const std::regex& regex,
             bool includeDescendents,
@@ -544,7 +510,7 @@ std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(
             }
         }
     };
-    
+
     helper(component, regex, includeDescendents, outputs);
     return outputs;
 }
@@ -819,7 +785,7 @@ public:
     FileDeletionThrower()
             : FileDeletionThrower(
                       "OpenSimMoco_delete_this_to_throw_exception_" +
-                      getFormattedDateTime() + ".txt") {}
+                      getMocoFormattedDateTime() + ".txt") {}
     FileDeletionThrower(std::string filepath)
             : m_filepath(std::move(filepath)) {
         std::ofstream f(m_filepath);

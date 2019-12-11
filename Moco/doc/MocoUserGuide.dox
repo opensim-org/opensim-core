@@ -7,6 +7,11 @@ This guide shows the various ways of using Moco.
 
 @tableofcontents
 
+@section gettingstartedsection Getting started
+
+To learn how to download, install, and run your first Moco example, see the
+following page:
+- @subpage gettingstarted
 
 @section mocotool MocoTools
 
@@ -58,7 +63,7 @@ if possible. In the case that you want to create your own custom cost term,
 you can derive from MocoGoal in C++. See @ref exampleSlidingMassAdvanced.cpp and
 @ref exampleMocoCustomEffortGoal.cpp.
 
-If you do not want to write C++ code, you can prototype your cost in Matlab
+If you do not want to write C++ code, you can prototype your cost in MATLAB
 and we can help convert it to C++. See the Matlab example
 @ref examplePrototypeCustomGoal.m for more information.
 

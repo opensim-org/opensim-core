@@ -34,7 +34,7 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
         : m_jar(std::move(jar)),
           m_paramsRequireInitSystem(
                   mocoCasADiSolver.get_parameters_require_initsystem()),
-          m_formattedTimeString(getFormattedDateTime(true)) {
+          m_formattedTimeString(getMocoFormattedDateTime(true)) {
 
     setDynamicsMode(dynamicsMode);
     const auto& model = problemRep.getModelBase();

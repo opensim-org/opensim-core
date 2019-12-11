@@ -4,6 +4,7 @@
   <navindex>
     <tab type="mainpage" visible="yes" title="Intro"/>
     <tab type="user" url="@ref mocouserguide" visible="yes" title="User Guide" intro="">
+      <tab type="user" url="@ref gettingstarted" visible="yes" title="Getting started" intro="" />
       <tab type="user" url="@ref mocotrack" visible="yes" title="MocoTrack" intro="" />
       <tab type="user" url="@ref mocoinverse" visible="yes" title="MocoInverse" intro="" />
       <tab type="user" url="@ref mocostudy" visible="yes" title="MocoStudy" intro="" />
@@ -19,7 +20,7 @@
       <tab type="classmembers" visible="yes" title="" intro=""/>
     </tab>
 
-    <tab type="examples" visible="yes" title="" intro=""/>
+    <tab type="user" url="@ref mocoexamples" visible="yes" title="Examples" intro=""/>
     <tab type="pages" visible="yes" title="Index" intro=""/>
     <!--<tab type="modules" visible="yes" title="" intro=""/>-->
     <!--<tab type="namespaces" visible="yes" title="">

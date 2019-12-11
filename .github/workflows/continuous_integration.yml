@@ -50,9 +50,7 @@ jobs:
         # dependencies directory (non-recursive).
         # https://help.github.com/en/actions/automating-your-workflow-with-github-actions/caching-dependencies-to-speed-up-workflows#matching-a-cache-key
         key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
-        restore-keys: |
-          ${{ runner.os }}-dependencies-
- 
+
     - name: Build dependencies
       if: steps.cache-dependencies.outputs.cache-hit != 'true'
       run: |
@@ -153,9 +151,13 @@ jobs:
     - uses: actions/checkout@v1
 
     - name: Install Homebrew packages
+      # Save the gfortran version to a file so we can use it in the cache key.
       run: |
         brew install cmake pkgconfig gcc autoconf libtool automake wget pcre doxygen
         pip3 install numpy
+        gfortran -v
+        mkdir gfortran_version
+        gfortran -v &> gfortran_version/gfortran_version.txt
 
     - name: Cache SWIG
       id: cache-swig
@@ -182,9 +184,10 @@ jobs:
       with:
         path: ~/moco_dependencies_install
         # TODO: avoid having to copy over the opensim-core commit hash.
-        key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
-        restore-keys: |
-          ${{ runner.os }}-dependencies-
+        # If Homebrew updates the gcc package, then our cache of IPOPT is invalid.
+        # Specifically, the pkgcfg_lib_IPOPT_gfortran CMake variable becomes
+        # undefined.
+        key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}-${{ hashFiles('gfortran_version/*') }}
             
     - name: Build dependencies
       if: steps.cache-dependencies.outputs.cache-hit != 'true'
@@ -199,6 +202,7 @@ jobs:
         DEP_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=10.10)
         printf '%s\n' "${DEP_CMAKE_ARGS[@]}"
         cmake "${DEP_CMAKE_ARGS[@]}"
+        cmake . -LAH
         make -j4 ipopt
         make -j4
 

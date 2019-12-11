@@ -38,8 +38,8 @@ void MocoOrientationTrackingGoal::initializeOnModelImpl(const Model& model)
         assert(get_states_reference().empty());
         if (get_rotation_reference_file() != "") { // rotation reference file
             assert(m_rotation_table.getNumColumns() == 0);
-            rotationTableToUse = readTableFromFileT<Rotation>(
-                get_rotation_reference_file());
+            rotationTableToUse = TimeSeriesTable_<Rotation>(
+                    get_rotation_reference_file());
 
         } else { // rotation table
             assert(get_rotation_reference_file() == "");

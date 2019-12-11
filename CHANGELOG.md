@@ -2,6 +2,13 @@
 
 - 2019-12-08: Include support for OpenSim's C3DFileAdapter.
 
+- 2019-12-04: Updated the version of OpenSim used by Moco. As a result, we
+              removed the utility readTableFromFile(). Use the TimeSeriesTable 
+              constructor instead, which accepts a filename.
+              
+- 2019-12-04: Removed support for approximating GeometryPaths with a generic 
+              function.
+
 - 2019-12-02: Fixed multiple examples by updating "cost" to "goal", and other 
               such changes. Fixed exampleMocoTrack by ignoring tendon 
               compliance.
@@ -20,14 +27,18 @@
               from IK solutions pre-4.0 states files to use new-style column
               labels.
 
-- 2019-11-09: Improve the reliability of building the Ipopt dependency by using
-              more stable servers for downloading Metis and MUMPS.
-
 - 2019-11-18: Updates to report.py linewidth and legend formatting. 
 
 - 2019-11-18: Utility createPeriodicTrajectory() now properly handles 
               antisymmetric coordinate position, speed, and actuator 
               variables.    
+              
+- 2019-11-18: Add a "Getting started" page to the User Guide.
+
+- 2019-11-09: Improve the reliability of building the Ipopt dependency by using
+              more stable servers for downloading Metis and MUMPS.
+
+- 2019-11-05: Updated the documentation to contain a list of all examples.
 
 - 2019-10-30: ModelFactory::replaceMusclesWithPathActuators() now adds the
               PathActuators to the Model's ForceSet, and the connectee names

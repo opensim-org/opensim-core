@@ -39,7 +39,7 @@
 
 using namespace OpenSim;
 
-std::string OpenSim::getFormattedDateTime(
+std::string OpenSim::getMocoFormattedDateTime(
         bool appendMicroseconds, std::string format) {
     using namespace std::chrono;
     auto now = system_clock::now();
@@ -51,8 +51,20 @@ std::string OpenSim::getFormattedDateTime(
     localtime_r(&time_now, &buf);
 #endif
     if (format == "ISO") { format = "%Y-%m-%dT%H:%M:%S"; }
+
+    // To get the date/time in the desired format, we would ideally use
+    // std::put_time, but that is not available in GCC < 5.
+    // https://stackoverflow.com/questions/30269657/what-is-an-intelligent-way-to-determine-max-size-of-a-strftime-char-array
+    int size = 32;
+    std::unique_ptr<char[]> formatted(new char[size]);
+    while (strftime(formatted.get(), size - 1, format.c_str(), &buf) == 0) {
+        size *= 2;
+        formatted.reset(new char[size]);
+    }
+
     std::stringstream ss;
-    ss << std::put_time(&buf, format.c_str());
+    ss << formatted.get();
+
     if (appendMicroseconds) {
         // Get number of microseconds since last second.
         auto microsec =
@@ -232,7 +244,7 @@ void OpenSim::visualize(Model model, Storage statesSto) {
     std::string title = "Visualizing model '" + modelName + "'";
     if (!statesSto.getName().empty() && statesSto.getName() != "UNKNOWN")
         title += " with motion '" + statesSto.getName() + "'";
-    title += " (" + getFormattedDateTime(false, "ISO") + ")";
+    title += " (" + getMocoFormattedDateTime(false, "ISO") + ")";
     viz.setWindowTitle(title);
     viz.setMode(SimTK::Visualizer::RealTime);
     // Buffering causes issues when the user adjusts the "Speed" slider.
