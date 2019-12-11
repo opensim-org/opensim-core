@@ -158,6 +158,27 @@ public:
     }
 };
 
+/// Set the fiber damping for all DeGrooteFregly2016Muscle%s in the model.
+class OSIMMOCO_API ModOpFiberDampingDGF : public ModelOperator {
+OpenSim_DECLARE_CONCRETE_OBJECT(ModOpFiberDampingDGF, ModelOperator);
+    OpenSim_DECLARE_PROPERTY(fiber_damping, double,
+            "The linear damping of the fiber (default: 0.0).")
+public:
+    ModOpFiberDampingDGF() {
+        constructProperty_fiber_damping(0);
+    }
+    ModOpFiberDampingDGF(double fiberDamping) : ModOpFiberDampingDGF() {
+        set_fiber_damping(fiberDamping);
+    }
+    void operate(Model& model, const std::string&) const override {
+        model.finalizeFromProperties();
+        for (auto& muscle :
+                model.updComponentList<DeGrooteFregly2016Muscle>()) {
+            muscle.set_fiber_damping(get_fiber_damping());
+        }
+    }
+};
+
 /// Scale the max isometric force for all muscles in the model.
 class OSIMMOCO_API ModOpScaleMaxIsometricForce : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(ModOpScaleMaxIsometricForce, ModelOperator);
