@@ -259,7 +259,7 @@ void PrintUsage(const char *aProgName, ostream &aOStream)
     aOStream << "-ReadX, -RX  directory settings.xml     Parse Xsens exported files from directory using settingsFile.xml.\n";
     aOStream << "-ReadA, -RA  datafile.csv settings.xml  Parse single csv file provided by APDM using specified settingsFile.xml.\n";
     aOStream << "-Calibrate, -C IMUPlacer_setup.xml      Place IMUs on the model that is specified in the IMUPlacer_setup.xml file.\n";
-    aOStream << "                                        The model is positioned in its default pose, IMUs are then registered to the model according to\n ";
+    aOStream << "                                        The model is positioned in its default pose. IMUs are then registered to the model according to\n ";
     aOStream << "                                        their orientations in the first frame of the quaternions file that is specified in IMUPlacer_setup.xml.\n";
     aOStream << "                                        The orientations of the IMUs in the quaternions file are assumed to be in the IMU world frame.\n";
     aOStream << "                                        The resultant model with IMU frames registered is written to file if output_model_file is specified\n";
