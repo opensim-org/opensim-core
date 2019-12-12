@@ -38,7 +38,7 @@ MocoAddTest(NAME testConstraints)
 
 MocoAddTest(NAME testContact)
 
-MocoAddTest(NAME testDeGrooteFregly2016Muscle)
+MocoAddTest(NAME testMocoActuators)
 
 MocoAddTest(NAME testMocoInverse RESOURCES
         subject_walk_armless_18musc.osim
