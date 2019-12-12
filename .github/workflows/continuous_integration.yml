@@ -33,7 +33,7 @@ jobs:
         cmake --build . --config Release -- /maxcpucount:4 
         mkdir $env:GITHUB_WORKSPACE\\build 
         chdir $env:GITHUB_WORKSPACE\\build
-        cmake $env:GITHUB_WORKSPACE -G"Visual Studio 15 2017" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install -DWITH_BTK=on -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on
+        cmake $env:GITHUB_WORKSPACE -G"Visual Studio 15 2017" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install -DWITH_BTK=on -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on -DSKIP_TIMING
         cmake --build . --config Release -- /maxcpucount:4 
     - name: Test
       run: |
