@@ -24,11 +24,13 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/MarkersReference.h>
-#include <OpenSim/Simulation/InverseKinematicsSolver.h>
-#include "OpenSenseUtilities.h"
 #include "IMUPlacer.h"
+
+#include "OpenSenseUtilities.h"
+
+#include <OpenSim/Simulation/InverseKinematicsSolver.h>
+#include <OpenSim/Simulation/MarkersReference.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -41,15 +43,12 @@ using SimTK::Vec3;
 /**
  * Default constructor.
  */
-IMUPlacer::IMUPlacer() 
-{
+IMUPlacer::IMUPlacer() {
     constructProperties();
     _calibrated = false;
 }
 
-
-IMUPlacer::IMUPlacer(const std::string& setupFile)
-        : Object(setupFile, true) {
+IMUPlacer::IMUPlacer(const std::string& setupFile) : Object(setupFile, true) {
     constructProperties();
     updateFromXMLDocument();
 }
@@ -58,9 +57,7 @@ IMUPlacer::IMUPlacer(const std::string& setupFile)
 /**
  * Destructor.
  */
-IMUPlacer::~IMUPlacer()
-{
-}
+IMUPlacer::~IMUPlacer() {}
 
 //=============================================================================
 // CONSTRUCTION
@@ -68,13 +65,11 @@ IMUPlacer::~IMUPlacer()
 //_____________________________________________________________________________
 /**
  */
-void IMUPlacer::constructProperties() 
-{
+void IMUPlacer::constructProperties() {
     constructProperty_model_file("");
     constructProperty_base_imu_label("");
     constructProperty_base_heading_axis("");
-    constructProperty_sensor_to_opensim_rotations(
-            SimTK::Vec3(0));
+    constructProperty_sensor_to_opensim_rotations(SimTK::Vec3(0));
     constructProperty_orientation_file_for_calibration("");
     constructProperty_output_model_file("");
 }
@@ -87,15 +82,19 @@ void IMUPlacer::constructProperties()
  * This method runs the calibration method on the _model maintained by
  * this IMUPlacer
  */
-bool IMUPlacer::run(bool visualizeResults)  {
+bool IMUPlacer::run(bool visualizeResults) {
 
     _calibrated = false;
-    if (_model.empty()) { 
-        _model.reset(new Model(get_model_file())); 
+    // Check there's a model file specified before trying to open it
+    if (get_model_file().size() == 0) {
+        OPENSIM_THROW(Exception, "No model file specified for IMUPlacer.");
     }
-    TimeSeriesTable_<SimTK::Quaternion> quatTable(get_orientation_file_for_calibration());
+    if (_model.empty()) { _model.reset(new Model(get_model_file())); }
+    TimeSeriesTable_<SimTK::Quaternion> quatTable(
+            get_orientation_file_for_calibration());
 
-    const SimTK::Vec3& sensor_to_opensim_rotations = get_sensor_to_opensim_rotations();
+    const SimTK::Vec3& sensor_to_opensim_rotations =
+            get_sensor_to_opensim_rotations();
     SimTK::Rotation sensorToOpenSim =
             SimTK::Rotation(SimTK::BodyOrSpaceType::SpaceRotationSequence,
                     sensor_to_opensim_rotations[0], SimTK::XAxis,
@@ -103,38 +102,50 @@ bool IMUPlacer::run(bool visualizeResults)  {
                     sensor_to_opensim_rotations[2], SimTK::ZAxis);
     // Rotate data so Y-Axis is up
     OpenSenseUtilities::rotateOrientationTable(quatTable, sensorToOpenSim);
+    // Check consistent heading correction specification
+    // both base_heading_axis and base_imu_label should be specified
+    // finer error checking is done downstream
+    bool performHeadingRequested =
+            !get_base_heading_axis().empty() && !get_base_imu_label().empty();
+    if (performHeadingRequested) {
+        std::string imu_axis = IO::Lowercase(get_base_heading_axis());
 
-    std::string imu_axis = IO::Lowercase(get_base_heading_axis());
-    SimTK::CoordinateDirection directionOnIMU(SimTK::ZAxis);
-    int direction = 1;
-    if (imu_axis.front() == '-') 
-        direction = -1;
-    char& back = imu_axis.back();
-    if (back == 'x')
-        directionOnIMU = SimTK::CoordinateDirection(SimTK::XAxis, direction);
-    else if (back == 'y')
-        directionOnIMU = SimTK::CoordinateDirection(SimTK::YAxis, direction);
-    else if (back == 'z')
-        directionOnIMU = SimTK::CoordinateDirection(SimTK::ZAxis, direction);
-    else { // Throw, invalid specification
-        OPENSIM_THROW(Exception, "Invalid specification of heading axis '" +
-                                         imu_axis + "' found.");
-    }
+        SimTK::CoordinateDirection directionOnIMU(SimTK::ZAxis);
+        int direction = 1;
+        if (imu_axis.front() == '-') direction = -1;
+        char& back = imu_axis.back();
+        if (back == 'x')
+            directionOnIMU =
+                    SimTK::CoordinateDirection(SimTK::XAxis, direction);
+        else if (back == 'y')
+            directionOnIMU =
+                    SimTK::CoordinateDirection(SimTK::YAxis, direction);
+        else if (back == 'z')
+            directionOnIMU =
+                    SimTK::CoordinateDirection(SimTK::ZAxis, direction);
+        else { // Throw, invalid specification
+            OPENSIM_THROW(Exception, "Invalid specification of heading axis '" +
+                                             imu_axis + "' found.");
+        }
 
-    // Compute rotation matrix so that (e.g. "pelvis_imu"+ SimTK::ZAxis) lines up
-    // with model forward (+X)
-    SimTK::Vec3 headingRotationVec3 =
-            OpenSenseUtilities::computeHeadingCorrection(
-                    *_model, quatTable, get_base_imu_label(), directionOnIMU);
-    SimTK::Rotation headingRotation(
-            SimTK::BodyOrSpaceType::SpaceRotationSequence,
-            headingRotationVec3[0], SimTK::XAxis, headingRotationVec3[1],
-            SimTK::YAxis, headingRotationVec3[2], SimTK::ZAxis);
+        // Compute rotation matrix so that (e.g. "pelvis_imu"+ SimTK::ZAxis)
+        // lines up with model forward (+X)
+        SimTK::Vec3 headingRotationVec3 =
+                OpenSenseUtilities::computeHeadingCorrection(*_model, quatTable,
+                        get_base_imu_label(), directionOnIMU);
+        SimTK::Rotation headingRotation(
+                SimTK::BodyOrSpaceType::SpaceRotationSequence,
+                headingRotationVec3[0], SimTK::XAxis, headingRotationVec3[1],
+                SimTK::YAxis, headingRotationVec3[2], SimTK::ZAxis);
 
-    OpenSenseUtilities::rotateOrientationTable(quatTable, headingRotation);
+        OpenSenseUtilities::rotateOrientationTable(quatTable, headingRotation);
+    } else
+        cout << "No heading correction is applied" << endl;
+
     // This is now plain conversion, no Rotation or magic underneath
-    TimeSeriesTable_<SimTK::Rotation> orientationsData =
-            OpenSenseUtilities::convertQuaternionsToRotations(quatTable);
+    TimeSeriesTable_<SimTK::Rotation>
+            orientationsData =
+    OpenSenseUtilities::convertQuaternionsToRotations(quatTable);
 
     auto imuLabels = orientationsData.getColumnLabels();
     auto& times = orientationsData.getIndependentColumn();
@@ -175,7 +186,8 @@ bool IMUPlacer::run(bool visualizeResults)  {
         cout << "Processing " << imuName << endl;
         if (imuBodiesInGround.find(imuName) != imuBodiesInGround.end()) {
             cout << "Computed offset for " << imuName << endl;
-            SimTK::Rotation R_FB = ~imuBodiesInGround[imuName] * rotations[int(imuix)];
+            SimTK::Rotation R_FB =
+                    ~imuBodiesInGround[imuName] * rotations[int(imuix)];
             cout << "Offset is " << R_FB << endl;
             PhysicalOffsetFrame* imuOffset = nullptr;
             const PhysicalOffsetFrame* mo = nullptr;
@@ -241,14 +253,12 @@ bool IMUPlacer::run(bool visualizeResults)  {
         unsigned key, modifiers;
         silo->waitForKeyHit(key, modifiers);
         viz.shutdown();
-
     }
     return true;
 }
 
-Model& IMUPlacer::getCalibratedModel() const { 
-    if (_calibrated)
-        return *_model; 
-    OPENSIM_THROW(Exception,
-            "Attempt to retrieve calibrated model without invoking IMU_Placer::run.");
+Model& IMUPlacer::getCalibratedModel() const {
+    if (_calibrated) return *_model;
+    OPENSIM_THROW(Exception, "Attempt to retrieve calibrated model without "
+                             "invoking IMU_Placer::run.");
 }
