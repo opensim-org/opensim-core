@@ -27,6 +27,8 @@ void MocoOutputGoal::constructProperties() {
 }
 
 void MocoOutputGoal::initializeOnModelImpl(const Model& output) const {
+    OPENSIM_THROW_IF_FRMOBJ(get_output_path().empty(), Exception,
+            "No output_path provided.");
     std::string componentPath;
     std::string outputName;
     std::string channelName;

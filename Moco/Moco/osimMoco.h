@@ -41,6 +41,7 @@
 #include "MocoGoal/MocoMarkerFinalGoal.h"
 #include "MocoGoal/MocoMarkerTrackingGoal.h"
 #include "MocoGoal/MocoOrientationTrackingGoal.h"
+#include "MocoGoal/MocoOutputGoal.h"
 #include "MocoGoal/MocoPeriodicityGoal.h"
 #include "MocoGoal/MocoStateTrackingGoal.h"
 #include "MocoGoal/MocoSumSquaredStateGoal.h"

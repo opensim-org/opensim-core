@@ -22,13 +22,14 @@
 
 namespace OpenSim {
 
-/// TODO
+/// This goal allows you to use any (double, or scalar) Output in the model
+/// as the integrand of a goal.
 /// @mocogoal
 class OSIMMOCO_API MocoOutputGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoOutputGoal, MocoGoal);
 
 public:
-    MocoOutputGoal();
+    MocoOutputGoal() { constructProperties(); }
     MocoOutputGoal(std::string name) : MocoGoal(std::move(name)) {
         constructProperties();
     }
@@ -37,7 +38,8 @@ public:
         constructProperties();
     }
 
-    /// TODO
+    /// Set the absolute path to the output in the model to use as the integrand
+    /// for this goal. The format is "/path/to/component|output_name".
     void setOutputPath(std::string path) { set_output_path(std::move(path)); }
     const std::string& getOutputPath() const { return get_output_path(); }
 
@@ -48,7 +50,7 @@ public:
         return get_divide_by_displacement();
     }
 
-    /// TODO
+    /// Set if the goal should be divided by the total mass of the model.
     void setDivideByMass(bool tf) { set_divide_by_mass(tf); }
     bool getDivideByMass() const {
         return get_divide_by_mass();
@@ -62,7 +64,9 @@ protected:
             const GoalInput& input, SimTK::Vector& cost) const override;
 
 private:
-    OpenSim_DECLARE_PROPERTY(output_path, std::string, "TODO");
+    OpenSim_DECLARE_PROPERTY(output_path, std::string,
+            "The absolute path to the output in the model to use as the "
+            "integrand for this goal.");
     OpenSim_DECLARE_PROPERTY(divide_by_displacement, bool,
             "Divide by the model's displacement over the phase (default: "
             "false)");

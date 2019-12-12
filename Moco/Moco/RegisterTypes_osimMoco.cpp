@@ -30,6 +30,8 @@
 #include "MocoBounds.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoControlBoundConstraint.h"
+#include "MocoGoal/MocoAccelerationTrackingGoal.h"
+#include "MocoGoal/MocoAngularVelocityTrackingGoal.h"
 #include "MocoGoal/MocoControlGoal.h"
 #include "MocoGoal/MocoControlTrackingGoal.h"
 #include "MocoGoal/MocoGoal.h"
@@ -40,12 +42,11 @@
 #include "MocoGoal/MocoMarkerFinalGoal.h"
 #include "MocoGoal/MocoMarkerTrackingGoal.h"
 #include "MocoGoal/MocoOrientationTrackingGoal.h"
+#include "MocoGoal/MocoOutputGoal.h"
 #include "MocoGoal/MocoPeriodicityGoal.h"
 #include "MocoGoal/MocoStateTrackingGoal.h"
 #include "MocoGoal/MocoSumSquaredStateGoal.h"
 #include "MocoGoal/MocoTranslationTrackingGoal.h"
-#include "MocoGoal/MocoAngularVelocityTrackingGoal.h"
-#include "MocoGoal/MocoAccelerationTrackingGoal.h"
 #include "MocoInverse.h"
 #include "MocoParameter.h"
 #include "MocoProblem.h"
@@ -84,6 +85,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(MocoAccelerationTrackingGoal());
         Object::registerType(MocoPeriodicityGoalPair());
         Object::registerType(MocoPeriodicityGoal());
+        Object::registerType(MocoOutputGoal());
         Object::registerType(MocoBounds());
         Object::registerType(MocoInitialBounds());
         Object::registerType(MocoFinalBounds());
@@ -138,7 +140,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(Set<MarkerWeight>());
     } catch (const std::exception& e) {
         std::cerr << "ERROR during osimMoco Object registration:\n"
-                << e.what() << std::endl;
+                  << e.what() << std::endl;
     }
 }
 
