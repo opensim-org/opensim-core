@@ -1573,22 +1573,22 @@ TEST_CASE("MocoTrajectory isCompatible") {
             {"/actuator"}, {"nonexistent"}, {}).isCompatible(rep));
 
     CHECK_THROWS_WITH(
-            !MocoTrajectory({"/slider/position/value",
+            MocoTrajectory({"/slider/position/value",
                              "/slider/position/speed"},
                               {"/actuator"}, {}, {})
                                .isCompatible(rep, true, true),
             Catch::Contains("accel"));
     CHECK_THROWS_WITH(
-            !MocoTrajectory({}, {}, {}, {}).isCompatible(rep, false, true),
+            MocoTrajectory({}, {}, {}, {}).isCompatible(rep, false, true),
             Catch::Contains("position"));
     CHECK_THROWS_WITH(
-            !MocoTrajectory({"/slider/position/value", "/slider/position/speed",
+            MocoTrajectory({"/slider/position/value", "/slider/position/speed",
                              "nonexistent"},
                     {"/actuator"}, {}, {})
                      .isCompatible(rep, false, true),
             Catch::Contains("nonexistent"));
     CHECK_THROWS_WITH(
-            !MocoTrajectory({"/slider/position/value", "/slider/position/speed"}, {"/actuator"},
+            MocoTrajectory({"/slider/position/value", "/slider/position/speed"}, {"/actuator"},
             {"nonexistent"}, {})
                                .isCompatible(rep, false, true),
             Catch::Contains("nonexistent"));

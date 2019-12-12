@@ -965,14 +965,16 @@ bool MocoTrajectory::isCompatible(const MocoProblemRep& mp,
     // Slack variables might be solver dependent, so we can't include them in 
     // the compatibility check.
 
-    auto compare = [&throwOnError](
+    const int debugLevel = Object::getDebugLevel();
+
+    auto compare = [&throwOnError, &debugLevel](
             std::string varType, std::vector<std::string> trajNames,
             std::vector<std::string> probNames,
             std::string message = "") {
         std::sort(trajNames.begin(), trajNames.end());
         std::sort(probNames.begin(), probNames.end());
         if (trajNames == probNames) return true;
-        if (!throwOnError) return false;
+        if (!throwOnError && debugLevel <= 0) return false;
 
         int sum = (int)trajNames.size() + (int)probNames.size();
 
@@ -1003,7 +1005,7 @@ bool MocoTrajectory::isCompatible(const MocoProblemRep& mp,
             inProbNotTraj.resize(inProbNotTrajEnd - inProbNotTraj.begin());
             if (!inProbNotTraj.empty()) {
                 ss << "The following " << varType
-                   << " are in the problem but not the trajectory:";
+                   << " are in the problem but not the trajectory:\n";
                 for (const auto& name : inProbNotTraj) {
                     ss << "  " << name << "\n";
                 }
@@ -1011,8 +1013,12 @@ bool MocoTrajectory::isCompatible(const MocoProblemRep& mp,
         }
         ss << message << "\n";
 
-        throw Exception(
-                __FILE__, __LINE__, "MocoTrajectory::isCompatible()", ss.str());
+        if (debugLevel <= 0) {
+            throw Exception(__FILE__, __LINE__,
+                    "MocoTrajectory::isCompatible()", ss.str());
+        }
+        std::cout << ss.str() << std::flush;
+        return false;
     };
 
     auto mpsn = mp.createStateInfoNames();
