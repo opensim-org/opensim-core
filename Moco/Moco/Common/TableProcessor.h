@@ -75,7 +75,7 @@ public:
     /// evaluated relative `relativeToDirectory`.
     /// If a model is provided, it is used to convert columns from degrees to
     /// radians (if the table has a header with inDegrees=yes) before any
-    /// operations are performed. This model is accessible by any 
+    /// operations are performed. This model is accessible by any
     /// TableOperator%s that require it.
     TimeSeriesTable process(std::string relativeToDirectory,
             const Model* model = nullptr) const {
@@ -159,7 +159,7 @@ public:
     TabOpLowPassFilter(double cutoffFrequency) : TabOpLowPassFilter() {
         set_cutoff_frequency(cutoffFrequency);
     }
-    void operate(TimeSeriesTable& table, const Model* model = nullptr) 
+    void operate(TimeSeriesTable& table, const Model* model = nullptr)
             const override {
         if (get_cutoff_frequency() != -1) {
             OPENSIM_THROW_IF(get_cutoff_frequency() <= 0, Exception,

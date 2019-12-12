@@ -959,7 +959,7 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
                     musc->get_activation_time_constant());
             actu->set_deactivation_time_constant(
                     musc->get_deactivation_time_constant());
-            actu->set_fiber_damping(0); // TODO musc->get_fiber_damping());
+            actu->set_fiber_damping(musc->get_fiber_damping());
             actu->set_tendon_strain_at_one_norm_force(
                     musc->get_TendonForceLengthCurve()
                             .get_strain_at_one_norm_force());

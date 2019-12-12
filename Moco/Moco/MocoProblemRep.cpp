@@ -19,7 +19,6 @@
 #include "MocoProblemRep.h"
 
 #include "Components/AccelerationMotion.h"
-#include "Components/ActivationCoordinateActuator.h"
 #include "Components/DiscreteForces.h"
 #include "Components/PositionMotion.h"
 #include "MocoProblem.h"
@@ -406,10 +405,7 @@ void MocoProblemRep::initialize() {
 
             if (ph0.get_bound_activation_from_excitation()) {
                 const auto* muscle = dynamic_cast<const Muscle*>(&actu);
-                const auto* activationCoordinateActuator =
-                    dynamic_cast<const ActivationCoordinateActuator*>(&actu);
-                if ((muscle && !muscle->get_ignore_activation_dynamics()) ||
-                        activationCoordinateActuator) {
+                if (muscle && !muscle->get_ignore_activation_dynamics()) {
                     const std::string stateName = actuName + "/activation";
                     auto& info = m_state_infos[stateName];
                     if (info.getName().empty()) { info.setName(stateName); }

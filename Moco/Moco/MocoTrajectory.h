@@ -237,7 +237,6 @@ public:
     /// overload below; it does *not* construct a 5-element vector with the
     /// value 10.
     void setState(const std::string& name, const SimTK::Vector& trajectory);
-    void setState(const std::string& name, const SimTK::VectorView& trajectory);
     /// Set the value of a single control variable across time. The provided
     /// vector must have length getNumTimes().
     /// @note Using `setControl(name, {5, 10})` uses the initializer list

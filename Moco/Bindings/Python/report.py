@@ -315,7 +315,7 @@ class Report(object):
                 if legfontsize > 10: legfontsize = 10
                 fig.tight_layout()
                 plt.figlegend(self.legend_handles, self.legend_labels,
-                              loc='lower center', 
+                              loc='lower center',
                               bbox_to_anchor=(0.5, 0.85),
                               fancybox=True, shadow=True,
                               prop={'size': legfontsize})
@@ -553,7 +553,7 @@ class Report(object):
                 legfontsize = 64 / len(self.legend_handles)
                 if legfontsize > 10: legfontsize = 10
                 plt.figlegend(self.legend_handles, self.legend_labels,
-                              loc='lower center',  
+                              loc='lower center',
                               bbox_to_anchor=(0.5, 0.85),
                               fancybox=True, shadow=True,
                               prop={'size': legfontsize})
