@@ -42,13 +42,12 @@ private:
     void constructProperties();
 };
 
-/// This goal enforces that a minimum distance is kept between the origins of 
-/// pairs of model frames. Frame pairs, and the minimum distance they are to be 
-/// kept apart, are specified via a MocoMinimumDistancConstraintPair. Distance
-/// is computed by taking the norm of the relative position vector in ground 
-/// between model frame origins. Any model component derived from Frame is valid 
-/// to be included in a frame pair, and any number of frame pairs may be append 
-/// to this constraint via addFramePair().
+/// This path constraint enforces that a minimum distance is kept between the 
+/// origins of pairs of model frames. Frame pairs, and the minimum distance they 
+/// are to be kept apart, are specified via a MocoMinimumDistancConstraintPair. 
+/// Any model component derived from Frame is valid to be included in a frame 
+/// pair, and any number of frame pairs may be append to this constraint via 
+/// addFramePair().
 /// 
 /// This constraint can be used as a simple method for preventing bodies in your
 /// model from intersecting during an optimization. For example, the
@@ -61,6 +60,12 @@ private:
 /// distance.addFramePair({'/bodyset/calcn_l', '/bodyset/toes_r', 0.1});
 /// distance.addFramePair({'/bodyset/toes_l', '/bodyset/calcn_r', 0.1});
 /// @endcode
+/// 
+/// @note This class represents a path constraint, *not* a model kinematic 
+/// constraint. Therefore, there are no Lagrange multipliers or constraint
+/// forces associated with this constraint.
+///       
+/// @ingroup mocopathcon
 class OSIMMOCO_API MocoMinimumDistanceConstraint : public MocoPathConstraint {
     OpenSim_DECLARE_CONCRETE_OBJECT(
             MocoMinimumDistanceConstraint, MocoPathConstraint);
