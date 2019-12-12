@@ -38,7 +38,7 @@ void MocoOutputGoal::initializeOnModelImpl(const Model& output) const {
     const auto& component = getModel().getComponent(componentPath);
     const auto& abstractOutput = component.getOutput(outputName);
     m_output.reset(&dynamic_cast<const Output<double>&>(abstractOutput));
-    setNumIntegralsAndOutputs(1, 1); // TODO, m_output->getDependsOnStage());
+    setNumIntegralsAndOutputs(1, 1);
 }
 
 void MocoOutputGoal::calcIntegrandImpl(

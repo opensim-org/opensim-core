@@ -59,12 +59,7 @@ MocoSolution gaitTracking() {
 
     // Define the optimal control problem.
     // ===================================
-    Model baseModel("2D_gait.osim");
-    auto metabolics = make_unique<MinettiAlexander1997Metabolics>();
-    metabolics->setName("metabolics");
-    baseModel.addComponent(metabolics.release());
-    ModelProcessor modelprocessor =
-            ModelProcessor(baseModel);
+    ModelProcessor modelprocessor = ModelProcessor("2D_gait.osim");
     track.setModel(modelprocessor);
     track.setStatesReference(
             TableProcessor("referenceCoordinates.sto") | TabOpLowPassFilter(6));
@@ -130,11 +125,7 @@ MocoSolution gaitTracking() {
     // MocoTrack problem by default.
     MocoControlGoal& effort =
             dynamic_cast<MocoControlGoal&>(problem.updGoal("control_effort"));
-    effort.setWeight(0.1);
-    auto* metGoal = problem.addGoal<MocoOutputGoal>("met", 10);
-    metGoal->setOutputPath("/metabolics|total_metabolic_rate");
-    metGoal->setDivideByDisplacement(true);
-    // metGoal->setDivideByMass(true);
+    effort.setWeight(10);
 
     // Bounds.
     // =======
@@ -165,13 +156,13 @@ MocoSolution gaitTracking() {
     solver.set_optim_solver("ipopt");
     solver.set_optim_convergence_tolerance(1e-4);
     solver.set_optim_constraint_tolerance(1e-4);
-    solver.set_optim_max_iterations(10000);
+    solver.set_optim_max_iterations(1000);
 
     // Solve problem.
     // ==============
     MocoSolution solution = study.solve();
     auto full = createPeriodicTrajectory(solution);
-    full.write("gaitTracking_minetti_solution_fullcycle.sto");
+    full.write("gaitTracking_solution_fullcycle.sto");
 
     // moco.visualize(solution);
 
@@ -313,7 +304,7 @@ void gaitPrediction(const MocoSolution& gaitTrackingSolution) {
 int main() {
     try {
         const MocoSolution gaitTrackingSolution = gaitTracking();
-        // TODO gaitPrediction(gaitTrackingSolution);
+        gaitPrediction(gaitTrackingSolution);
     } catch (const std::exception& e) { std::cout << e.what() << std::endl; }
     return EXIT_SUCCESS;
 }
