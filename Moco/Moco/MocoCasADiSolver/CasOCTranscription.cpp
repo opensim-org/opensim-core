@@ -487,28 +487,6 @@ void Transcription::setObjectiveAndEndpointConstraints() {
                        dot(quadCoeffs.T(), integrandTraj);
     }
 
-    if (m_solver.getMinimizeImplicitMultibodyAccelerations() &&
-            m_problem.isDynamicsModeImplicit()) {
-        const auto& numAccels = m_problem.getNumAccelerations();
-        const auto accels = m_vars[derivatives](Slice(0, numAccels), Slice());
-        const double accelWeight = 
-                m_solver.getImplicitMultibodyAccelerationsWeight();
-        MX integrandTraj = accelWeight * MX::sum1(MX::sq(accels));
-        m_objective += m_duration * dot(quadCoeffs.T(), integrandTraj);
-    }
-
-    if (m_solver.getMinimizeImplicitAuxiliaryDerivatives() && 
-            m_problem.getNumAuxiliaryResidualEquations()) {
-        const auto& numAccels = m_problem.getNumAccelerations();
-        const auto& numAuxDerivs = m_problem.getNumAuxiliaryResidualEquations();
-        const auto auxDerivs = m_vars[derivatives](
-                Slice(numAccels, numAccels + numAuxDerivs), Slice());
-        const double auxDerivWeight =
-                m_solver.getImplicitAuxiliaryDerivativesWeight();
-        MX integrandTraj = auxDerivWeight * MX::sum1(MX::sq(auxDerivs));
-        m_objective += m_duration * dot(quadCoeffs.T(), integrandTraj);
-    }
-
     for (int ic = 0; ic < m_problem.getNumCosts(); ++ic) {
         const auto& info = m_problem.getCostInfos()[ic];
 

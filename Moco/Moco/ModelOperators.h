@@ -119,25 +119,6 @@ public:
 
 /// Turn off passive fiber forces for all DeGrooteFregly2016Muscle%s in the
 /// model.
-class OSIMMOCO_API ModOpUseImplicitTendonComplianceDynamicsDGF 
-        : public ModelOperator {
-    OpenSim_DECLARE_CONCRETE_OBJECT(
-        ModOpUseImplicitTendonComplianceDynamicsDGF, ModelOperator);
-
-public:
-    void operate(Model& model, const std::string&) const override {
-        model.finalizeFromProperties();
-        for (auto& muscle :
-                model.updComponentList<DeGrooteFregly2016Muscle>()) {
-            if (!muscle.get_ignore_tendon_compliance()) {
-                muscle.set_tendon_compliance_dynamics_mode("implicit");
-            }
-        }
-    }
-};
-
-/// Turn off passive fiber forces for all DeGrooteFregly2016Muscle%s in the
-/// model.
 class OSIMMOCO_API ModOpIgnorePassiveFiberForcesDGF : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(
             ModOpIgnorePassiveFiberForcesDGF, ModelOperator);

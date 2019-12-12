@@ -42,9 +42,6 @@
               
 - 2019-11-18: Updates to report.py linewidth and legend formatting. 
 
-- 2019-11-18: Added support for automatic activation bounds for 
-              ActivationCoordinateActuator.
-
 - 2019-11-18: Exporting controls to TimeSeriesTable via 
               MocoTrajectory::exportToControlsTable().
 

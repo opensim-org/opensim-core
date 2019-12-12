@@ -19,10 +19,6 @@
 #include <Moco/osimMoco.h>
 
 #include <OpenSim/Common/LogManager.h>
-#include <OpenSim/Tools/CMC_TaskSet.h>
-#include <OpenSim/Tools/CMC_Joint.h>
-#include <OpenSim/Tools/CMC.h>
-#include <OpenSim/Tools/CMCTool.h>
 
 #define CATCH_CONFIG_MAIN
 #include "Testing.h"
