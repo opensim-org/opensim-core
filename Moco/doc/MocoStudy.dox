@@ -8,12 +8,16 @@ namespace OpenSim {
 MocoStudy allows one to solve a generic optimal control problem, where the
 costs, constraints, and solver settings are fully defined by the user.
 
+Solving a custom optimal control problem with direct collocation requires
+substantial tuning of the direct collocation method's settings. Use the more
+specific interfaces MocoInverse and MocoTrack if possible.
+
 For a mathematical description, see @ref mocoocp.
 
 In Moco, "goals", such as tracking marker data or effort, can be
 enforced either as cost terms to minimize or endpoint constraints.
 
-@section Overview
+@section mocostudyoverview Overview
 
 A MocoStudy contains a MocoProblem and a MocoSolver.
 
