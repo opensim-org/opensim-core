@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.2)
-project(Moco_@_example_name@)
+project(OpenSimMoco_@_example_name@)
 
 set(CMAKE_CXX_STANDARD 11)
 
@@ -27,5 +27,5 @@ target_link_libraries(example@_example_name@ osim@_example_name@)
 # For Windows: make sure DLLs for dependencies are available.
 MocoCopyDLLs(DEP_NAME OpenSimMoco DEP_BIN_DIR "${OpenSimMoco_BIN_DIR}")
 if(WIN32)
-    add_dependencies(osim@_example_name@ Copy_Moco_DLLs)
+    add_dependencies(osim@_example_name@ Copy_OpenSimMoco_DLLs)
 endif()
