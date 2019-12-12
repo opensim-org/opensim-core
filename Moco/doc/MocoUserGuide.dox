@@ -92,6 +92,12 @@ mocogenutil pages.
 
 See @subpage faq.
 
+@section mococheatsheet Cheat sheet
+
+@htmlonly
+<embed src="MocoCheatSheet.pdf" width="500px" height="600px"></embed>
+@endhtmlonly
+
 */
 } // namespace OpenSim
 
