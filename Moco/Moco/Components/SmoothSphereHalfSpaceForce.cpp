@@ -105,7 +105,7 @@ void SmoothSphereHalfSpaceForce::extendAddToSystem(
 
     force.setContactHalfSpaceBody(contactHalfSpaceFrame.getMobilizedBody());
 
-    const SimTK::Transform halfSpaceFrame = 
+    const SimTK::Transform halfSpaceFrame =
             getHalfSpaceTransformInHalfSpaceFrame();
 
     force.setContactHalfSpaceFrame(
@@ -230,7 +230,7 @@ void SmoothSphereHalfSpaceForce::generateDecorations(bool fixed,
         SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const {
     Super::generateDecorations(fixed, hints, state, geometry);
 
-    if (!fixed && (state.getSystemStage() >= SimTK::Stage::Dynamics) && 
+    if (!fixed && (state.getSystemStage() >= SimTK::Stage::Dynamics) &&
             hints.get_show_forces()) {
         // Get the underlying SimTK force element.
         const Model& model = getModel();
@@ -255,7 +255,7 @@ void SmoothSphereHalfSpaceForce::generateDecorations(bool fixed,
 
         // Get the translational force for the contact sphere associated with
         // this force element.
-        const auto& contactSphereForce = bodyForces(contactSphereIdx)[1];        
+        const auto& contactSphereForce = bodyForces(contactSphereIdx)[1];
 
         // Scale the contact force vector and compute the cylinder length.
         const auto& scaledContactForce =
@@ -263,11 +263,11 @@ void SmoothSphereHalfSpaceForce::generateDecorations(bool fixed,
         const SimTK::Real length(scaledContactForce.norm());
 
         // Compute the force visualization transform.
-        const SimTK::Vec3 contactSpherePosition = 
+        const SimTK::Vec3 contactSpherePosition =
                 contactSphereFrame.findStationLocationInGround(
                         state, get_contact_sphere_location());
         const SimTK::Transform forceVizTransform(
-                SimTK::Rotation(SimTK::UnitVec3(scaledContactForce), 
+                SimTK::Rotation(SimTK::UnitVec3(scaledContactForce),
                         SimTK::YAxis),
                 contactSpherePosition + scaledContactForce / 2.0);
 

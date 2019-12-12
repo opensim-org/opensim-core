@@ -37,7 +37,7 @@ void MocoAccelerationTrackingGoal::initializeOnModelImpl(
         if (get_acceleration_reference_file() != "") { // acceleration ref file
             assert(m_acceleration_table.getNumColumns() == 0);
             accelerationTableToUse =
-                    readTableFromFileT<Vec3>(get_acceleration_reference_file());
+                    TimeSeriesTableVec3(get_acceleration_reference_file());
 
         } else { // acceleration table
             assert(get_acceleration_reference_file() == "");

@@ -32,11 +32,11 @@ namespace OpenSim {
 /// provided, and integrated over the phase. This can be used to track position
 /// quantities in the model that don't correspond to model degrees of freedom.
 /// The reference can be provided as a trajectory of SimTK::Vec3%s
-/// representing the translation reference data, or as a states trajectory from 
-/// which the tracked translation reference is computed. Both translation and 
-/// states references can be provided as a file name to a STO or CSV file (or 
-/// other file types for which there is a FileAdapter), or programmatically as 
-/// a TimeSeriesTableVec3 (for the translation reference) or as a scalar 
+/// representing the translation reference data, or as a states trajectory from
+/// which the tracked translation reference is computed. Both translation and
+/// states references can be provided as a file name to a STO or CSV file (or
+/// other file types for which there is a FileAdapter), or programmatically as
+/// a TimeSeriesTableVec3 (for the translation reference) or as a scalar
 /// TimeSeriesTable (for the states reference).
 ///
 /// Technically, a cost function with the same effect could be achieved with the

@@ -38,7 +38,7 @@ void MocoAngularVelocityTrackingGoal::initializeOnModelImpl(
         assert(get_states_reference().empty());
         if (get_angular_velocity_reference_file() != "") { // ang. vel. ref file
             assert(m_angular_velocity_table.getNumColumns() == 0);
-            angularVelocityTableToUse = readTableFromFileT<Vec3>(
+            angularVelocityTableToUse = TimeSeriesTableVec3(
                     get_angular_velocity_reference_file());
 
         } else { // ang. vel. table

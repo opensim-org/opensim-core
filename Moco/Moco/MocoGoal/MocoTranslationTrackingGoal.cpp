@@ -37,7 +37,7 @@ void MocoTranslationTrackingGoal::initializeOnModelImpl(const Model& model)
         assert(get_states_reference().empty());
         if (get_translation_reference_file() != "") { // translation ref file
             assert(m_translation_table.getNumColumns() == 0);
-            translationTableToUse = readTableFromFileT<Vec3>(
+            translationTableToUse = TimeSeriesTableVec3(
                     get_translation_reference_file());
 
         } else { // translation table
@@ -74,7 +74,7 @@ void MocoTranslationTrackingGoal::initializeOnModelImpl(const Model& model)
         assert(get_translation_reference_file() != "");
         assert(m_translation_table.getNumColumns() == 0);
         // TODO: set relativeToDirectory properly.
-        TimeSeriesTable statesTableToUse = get_states_reference().process("", 
+        TimeSeriesTable statesTableToUse = get_states_reference().process("",
             &model);
 
         // Check that the reference state names match the model state names.
@@ -145,7 +145,7 @@ void MocoTranslationTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
             m_model_frames[iframe]->getPositionInGround(state);
 
         // Compute position error.
-        
+
         for (int ip = 0; ip < position_ref.size(); ++ip) {
             position_ref[ip] =
                     m_ref_splines[3*iframe + ip].calcValue(timeVec);

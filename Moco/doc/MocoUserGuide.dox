@@ -78,14 +78,15 @@ working with data, and postprocessing results.
 1. ModelFactory: Create standard models and modify existing models.
 2. ModelProcessor: Create a workflow of operations to perform on a model.
 3. TableProcessor: Create a workflow of operations to perform on a table.
-4. OpenSim::visualize: Visualize (animate) a MocoTrajectory.
-5. OpenSim::analyze: Compute the values of Component outputs from a given
-                     MocoTrajectory.
+4. @ref mocomodelutil, including visualizing and analyzing a MocoTrajectory.
+5. @ref moconumutil, including interpolating data and reading/writing tables.
 6. plot_trajectory.py: Plot a MocoTrajectory with the Python Matplotlib plotting
                        library.
 7. report.py: Generate a detailed PDF report about a MocoTrajectory and any
               reference data (part of the `opensim` Python package).
 
+Some less important utilities are described on the @ref mocologutil and @ref
+mocogenutil pages.
 
 @section faqsection Frequently Asked Questions
 

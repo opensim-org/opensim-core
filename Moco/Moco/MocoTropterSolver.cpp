@@ -309,7 +309,7 @@ MocoSolution MocoTropterSolver::solveImpl() const {
     if (get_verbosity()) {
         std::cout << std::string(79, '=') << "\n";
         std::cout << "MocoTropterSolver starting. ";
-        std::cout << getFormattedDateTime(false, "%c") << "\n";
+        std::cout << getMocoFormattedDateTime(false, "%c") << "\n";
         std::cout << std::string(79, '-') << std::endl;
         getProblemRep().printDescription();
     }
@@ -393,7 +393,7 @@ MocoSolution MocoTropterSolver::solveImpl() const {
         std::cout << std::string(79, '-') << "\n";
         std::cout << "Elapsed real time: " << stopwatch.formatNs(elapsed)
                   << ".\n";
-        std::cout << getFormattedDateTime(false, "%c") << "\n";
+        std::cout << getMocoFormattedDateTime(false, "%c") << "\n";
         if (mocoSolution) {
             std::cout << "MocoTropterSolver succeeded!\n";
         } else {

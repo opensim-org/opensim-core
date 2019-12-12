@@ -38,8 +38,8 @@ void MocoOrientationTrackingGoal::initializeOnModelImpl(const Model& model)
         assert(get_states_reference().empty());
         if (get_rotation_reference_file() != "") { // rotation reference file
             assert(m_rotation_table.getNumColumns() == 0);
-            rotationTableToUse = readTableFromFileT<Rotation>(
-                get_rotation_reference_file());
+            rotationTableToUse = TimeSeriesTable_<Rotation>(
+                    get_rotation_reference_file());
 
         } else { // rotation table
             assert(get_rotation_reference_file() == "");
@@ -206,8 +206,8 @@ void MocoOrientationTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
 
 void MocoOrientationTrackingGoal::printDescriptionImpl(std::ostream& stream) const {
     stream << "        ";
-    stream << "rotation reference file: " 
-           << get_rotation_reference_file() 
+    stream << "rotation reference file: "
+           << get_rotation_reference_file()
            << std::endl;
     for (int i = 0; i < (int)m_frame_paths.size(); i++) {
         stream << "        ";

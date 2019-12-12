@@ -49,9 +49,9 @@ class MocoCasOCProblem;
 /// However, the problem may solve faster if we discover more "zeros."
 ///
 /// See the optim_sparsity_detection setting for more information. In the case
-/// of "random", we use 3 random iterates and combine the resulting sparsity
-/// patterns. The seed used for these 3 random iterates is always exactly the
-/// same, ensuring that the sparsity pattern is deterministic.
+/// of "random", we use 3 random trajectories and combine the resulting sparsity
+/// patterns. The seed used for these 3 random trajectories is always exactly
+/// the same, ensuring that the sparsity pattern is deterministic.
 ///
 /// To explore the sparsity pattern for your problem, set optim_write_sparsity
 /// and run the resulting files with the plot_casadi_sparsity.py Python script.
@@ -136,9 +136,10 @@ public:
             "this number of threads. This overrides the OPENSIM_MOCO_PARALLEL "
             "environment variable.");
     OpenSim_DECLARE_PROPERTY(output_interval, int,
-            "Write intermediate iterates to file. 0, the default, indicates no "
-            "intermediate iterates are saved, 1 indicates each iteration "
-            "is saved, 5 indicates every fifth iteration is saved, etc.");
+            "Write intermediate trajectories to file. 0, the default, "
+            "indicates no intermediate trajectories are saved, 1 indicates "
+            "each iteration is saved, 5 indicates every fifth iteration is "
+            "saved, etc.");
 
     OpenSim_DECLARE_PROPERTY(minimize_implicit_multibody_accelerations, bool,
             "Minimize the integral of the squared acceleration continuous "
@@ -175,8 +176,9 @@ public:
     /// @precondition You must have called resetProblem().
     MocoTrajectory createGuess(const std::string& type = "bounds") const;
 
-    /// The number of time points in the iterate does *not* need to match
-    /// `num_mesh_intervals`; the iterate will be interpolated to the correct size.
+    /// The number of time points in the trajectory does *not* need to match
+    /// `num_mesh_intervals`; the trajectory will be interpolated to the correct
+    /// size.
     /// This clears the `guess_file`, if any.
     void setGuess(MocoTrajectory guess);
     /// Use this convenience function if you want to choose the type of guess

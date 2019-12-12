@@ -1,4 +1,37 @@
+- 2019-12-11: ActivationCoordinateActuator now provides default activation 
+              bounds equal to its control bounds.
+              
+- 2019-12-11: Add ModOpFiberDampingDFG to set the fiber damping for all
+              DeGrooteFregly2016Muscles in a model.
+
+- 2019-12-10: Add an example for MocoInverse in MATLAB, Python, and C++.
+
+- 2019-12-10: Update the Simbody dependency to version 3.7.
+
+- 2019-12-08: Include support for OpenSim's C3DFileAdapter.
+
+- 2019-12-04: Updated the version of OpenSim used by Moco. As a result, we
+              removed the utility readTableFromFile(). Use the TimeSeriesTable 
+              constructor instead, which accepts a filename.
+              
+- 2019-12-04: Removed support for approximating GeometryPaths with a generic 
+              function.
+
+- 2019-12-02: Fixed multiple examples by updating "cost" to "goal", and other 
+              such changes. Fixed exampleMocoTrack by ignoring tendon 
+              compliance.
+
+- 2019-12-02: Add a MATLAB MocoTrajectory plotting utility, 
+              osimMocoTrajectoryReport.m. This has the same functionality as 
+              report.py in Moco's python package.
+
 - 2019-12-02: Added MocoMinimumDistanceConstraint.
+
+- 2019-11-28: Brian Umberger contributed a Matlab version of example2DWalking,
+              which contains a 2-D prediction of walking.
+
+- 2019-11-26: Consistently refer to MocoTrajectories as "trajectory" instead of
+              "iterate".
 
 - 2019-11-25: Update SmoothSphereHalfSpaceForce to visualize contact forces in
               the Simbody visualizer (not the OpenSim GUI). 

@@ -39,7 +39,7 @@
 
 using namespace OpenSim;
 
-std::string OpenSim::getFormattedDateTime(
+std::string OpenSim::getMocoFormattedDateTime(
         bool appendMicroseconds, std::string format) {
     using namespace std::chrono;
     auto now = system_clock::now();
@@ -51,8 +51,20 @@ std::string OpenSim::getFormattedDateTime(
     localtime_r(&time_now, &buf);
 #endif
     if (format == "ISO") { format = "%Y-%m-%dT%H:%M:%S"; }
+
+    // To get the date/time in the desired format, we would ideally use
+    // std::put_time, but that is not available in GCC < 5.
+    // https://stackoverflow.com/questions/30269657/what-is-an-intelligent-way-to-determine-max-size-of-a-strftime-char-array
+    int size = 32;
+    std::unique_ptr<char[]> formatted(new char[size]);
+    while (strftime(formatted.get(), size - 1, format.c_str(), &buf) == 0) {
+        size *= 2;
+        formatted.reset(new char[size]);
+    }
+
     std::stringstream ss;
-    ss << std::put_time(&buf, format.c_str());
+    ss << formatted.get();
+
     if (appendMicroseconds) {
         // Get number of microseconds since last second.
         auto microsec =
@@ -139,6 +151,37 @@ Storage OpenSim::convertTableToStorage(const TimeSeriesTable& table) {
     return sto;
 }
 
+void OpenSim::updateStateLabels40(const Model& model,
+        std::vector<std::string>& labels) {
+
+    checkRedundantLabels(labels);
+
+    // Storage::getStateIndex() holds the logic for converting between
+    // new-style state names and old-style state names. When opensim-core is
+    // updated to put the conversion logic in a better place, we should update
+    // the implementation here.
+    Array<std::string> osimLabels;
+    osimLabels.append("time");
+    for (const auto& label : labels) {
+        osimLabels.append(label);
+    }
+    Storage sto;
+    sto.setColumnLabels(osimLabels);
+
+    const Array<std::string> stateNames = model.getStateVariableNames();
+    for (int isv = 0; isv < stateNames.size(); ++isv) {
+        int isto = sto.getStateIndex(stateNames[isv]);
+        if (isto == -1) continue;
+
+        // Skip over time.
+        osimLabels[isto + 1] = stateNames[isv];
+    }
+
+    for (int i = 1; i < osimLabels.size(); ++i) {
+        labels[i - 1] = osimLabels[i];
+    }
+}
+
 TimeSeriesTable OpenSim::filterLowpass(
         const TimeSeriesTable& table, double cutoffFreq, bool padData) {
     OPENSIM_THROW_IF(cutoffFreq < 0, Exception,
@@ -201,7 +244,7 @@ void OpenSim::visualize(Model model, Storage statesSto) {
     std::string title = "Visualizing model '" + modelName + "'";
     if (!statesSto.getName().empty() && statesSto.getName() != "UNKNOWN")
         title += " with motion '" + statesSto.getName() + "'";
-    title += " (" + getFormattedDateTime(false, "ISO") + ")";
+    title += " (" + getMocoFormattedDateTime(false, "ISO") + ")";
     viz.setWindowTitle(title);
     viz.setMode(SimTK::Visualizer::RealTime);
     // Buffering causes issues when the user adjusts the "Speed" slider.
@@ -339,7 +382,7 @@ std::unique_ptr<Function> createFunction<GCVSpline>(
 } // anonymous namespace
 
 void OpenSim::prescribeControlsToModel(
-        const MocoTrajectory& iterate, Model& model, std::string functionType) {
+        const MocoTrajectory& trajectory, Model& model, std::string functionType) {
     // Get actuator names.
     model.initSystem();
     OpenSim::Array<std::string> actuNames;
@@ -351,11 +394,11 @@ void OpenSim::prescribeControlsToModel(
     // Add prescribed controllers to actuators in the model, where the control
     // functions are splined versions of the actuator controls from the OCP
     // solution.
-    const SimTK::Vector& time = iterate.getTime();
+    const SimTK::Vector& time = trajectory.getTime();
     auto* controller = new PrescribedController();
     controller->setName("prescribed_controller");
     for (int i = 0; i < actuNames.size(); ++i) {
-        const auto control = iterate.getControl(actuNames[i]);
+        const auto control = trajectory.getControl(actuNames[i]);
         std::unique_ptr<Function> function;
         if (functionType == "GCVSpline") {
             function = createFunction<GCVSpline>(time, control);
@@ -373,10 +416,11 @@ void OpenSim::prescribeControlsToModel(
     model.addController(controller);
 }
 
-MocoTrajectory OpenSim::simulateIterateWithTimeStepping(
-        const MocoTrajectory& iterate, Model model, double integratorAccuracy) {
+MocoTrajectory OpenSim::simulateTrajectoryWithTimeStepping(
+        const MocoTrajectory& trajectory, Model model,
+        double integratorAccuracy) {
 
-    prescribeControlsToModel(iterate, model, "PiecewiseLinearFunction");
+    prescribeControlsToModel(trajectory, model, "PiecewiseLinearFunction");
 
     // Add states reporter to the model.
     auto* statesRep = new StatesTrajectoryReporter();
@@ -385,18 +429,18 @@ MocoTrajectory OpenSim::simulateIterateWithTimeStepping(
     model.addComponent(statesRep);
 
     // Simulate!
-    const SimTK::Vector& time = iterate.getTime();
+    const SimTK::Vector& time = trajectory.getTime();
     SimTK::State state = model.initSystem();
     state.setTime(time[0]);
     Manager manager(model);
 
     // Set the initial state.
     {
-        const auto& matrix = iterate.getStatesTrajectory();
+        const auto& matrix = trajectory.getStatesTrajectory();
         TimeSeriesTable initialStateTable(
-                std::vector<double>{iterate.getInitialTime()},
+                std::vector<double>{trajectory.getInitialTime()},
                 SimTK::Matrix(matrix.block(0, 0, 1, matrix.ncol())),
-                iterate.getStateNames());
+                trajectory.getStateNames());
         auto statesTraj = StatesTrajectory::createFromStatesStorage(
                 model, convertTableToStorage(initialStateTable));
         state.setY(statesTraj.front().getY());
@@ -580,8 +624,18 @@ void OpenSim::checkRedundantLabels(std::vector<std::string> labels) {
     std::sort(labels.begin(), labels.end());
     auto it = std::adjacent_find(labels.begin(), labels.end());
     OPENSIM_THROW_IF(it != labels.end(), Exception,
-            format("Multiple reference data provided for the variable %s.",
-                    *it));
+            format("Label '%s' appears more than once.", *it));
+}
+
+void OpenSim::checkLabelsMatchModelStates(const Model& model,
+        const std::vector<std::string>& labels) {
+    const auto modelStateNames = model.getStateVariableNames();
+    for (const auto& label : labels) {
+        OPENSIM_THROW_IF(modelStateNames.rfindIndex(label) == -1, Exception,
+            format("Expected the provided labels to match the model state "
+                   "names, but label %s does not correspond to any model "
+                    "state.", label));
+    }
 }
 
 void OpenSim::checkLabelsMatchModelStates(const Model& model,

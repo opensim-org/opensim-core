@@ -75,7 +75,7 @@ public:
     ///  - default value is not within the initial bounds: use midpoint of
     ///    initial bounds.
     ///
-    /// The number of times in the iterate is the number of successful
+    /// The number of times in the trajectory is the number of successful
     /// integration steps.
     ///
     /// @note This function does not yet support problems with parameters.

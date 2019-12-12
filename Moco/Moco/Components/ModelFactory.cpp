@@ -131,6 +131,30 @@ Model ModelFactory::createPlanarPointMass() {
     return model;
 }
 
+Model ModelFactory::createSlidingPointMass() {
+    Model model;
+    model.setName("sliding_mass");
+    auto* body = new Body("body", 1.0, SimTK::Vec3(0), SimTK::Inertia(0));
+    model.addComponent(body);
+
+    // Allows translation along x.
+    auto* joint = new SliderJoint("slider", model.getGround(), *body);
+    auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
+    coord.setName("position");
+    model.addComponent(joint);
+
+    auto* actu = new CoordinateActuator();
+    actu->setName("actuator");
+    actu->setCoordinate(&coord);
+    actu->setOptimalForce(1);
+    actu->setMinControl(-10);
+    actu->setMaxControl(10);
+    model.addForce(actu);
+
+    model.finalizeConnections();
+    return model;
+}
+
 void ModelFactory::replaceMusclesWithPathActuators(OpenSim::Model &model) {
 
     // Create path actuators from muscle properties and add to the model. Save

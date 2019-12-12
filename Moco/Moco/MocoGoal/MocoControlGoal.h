@@ -68,14 +68,15 @@ public:
     /// weight is already set for the requested state, then the provided
     /// weight replaces the previous weight. Only controls with non-zero weights
     /// that are associated with actuators for which appliesForce is True are
-    /// included in the cost function. Weights set here take precedents over
+    /// included in the cost function. Weights set here take precedence over
     /// weights specified with a regular expression.
     void setWeightForControl(
             const std::string& controlName, const double& weight);
 
     /// Set weights for all controls whose entire path matches the provided
     /// regular expression pattern.
-    /// Multiple pairs of patterns and weights can be provided.
+    /// Multiple pairs of patterns and weights can be provided by calling this
+    /// function multiple times.
     /// If a control matches multiple patterns, the weight associated with the
     /// last pattern is used.
     void setWeightForControlPattern(

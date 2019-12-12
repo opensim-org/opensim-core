@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: testDeGrooteFregly2016Muscle.cpp                             *
+ * OpenSim Moco: testMocoActuators.cpp                                        *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -1113,16 +1113,16 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
         if (!ignoreTendonCompliance && !isTendonDynamicsExplicit) {
             mutableDGFMuscle->set_tendon_compliance_dynamics_mode("explicit");
         }
-        const auto iterateSim =
-                simulateIterateWithTimeStepping(solutionTrajOpt, model);
-        std::string iterateFilename =
+        const auto trajSim =
+                simulateTrajectoryWithTimeStepping(solutionTrajOpt, model);
+        std::string trajFilename =
                 "testDeGrooteFregly2016Muscle_timestepping";
-        if (!ignoreActivationDynamics) iterateFilename += "_actdyn";
-        if (ignoreTendonCompliance) iterateFilename += "_rigidtendon";
-        iterateFilename += ".sto";
-        iterateSim.write(iterateFilename);
+        if (!ignoreActivationDynamics) trajFilename += "_actdyn";
+        if (ignoreTendonCompliance) trajFilename += "_rigidtendon";
+        trajFilename += ".sto";
+        trajSim.write(trajFilename);
 
-        const double error = iterateSim.compareContinuousVariablesRMS(
+        const double error = trajSim.compareContinuousVariablesRMS(
                 solutionTrajOpt, {{"states", {}}, {"controls", {}}});
         CHECK(error < 0.05);
         if (!ignoreTendonCompliance && !isTendonDynamicsExplicit) {
@@ -1203,4 +1203,24 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
                 solutionTrack.compareContinuousVariablesRMS(solutionTrajOpt);
         CHECK(error < 0.015);
     }
+}
+
+TEST_CASE("ActivationCoordinateActuator") {
+    // TODO create a problem with ACA and ensure the activation bounds are
+    // set as expected.
+    auto model = ModelFactory::createSlidingPointMass();
+    auto* actu = new ActivationCoordinateActuator();
+    actu->setName("aca");
+    actu->setCoordinate(&model.updCoordinateSet().get("position"));
+    actu->setMinControl(-0.31);
+    actu->setMaxControl(0.78);
+    model.addForce(actu);
+    MocoStudy study;
+    auto& problem = study.updProblem();
+    problem.setModelCopy(model);
+    auto rep = problem.createRep();
+    CHECK(rep.getStateInfo("/forceset/aca/activation").getBounds().getLower() ==
+            Approx(-0.31));
+    CHECK(rep.getStateInfo("/forceset/aca/activation").getBounds().getUpper() ==
+            Approx(0.78));
 }

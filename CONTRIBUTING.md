@@ -1,8 +1,7 @@
 Contributing
 ============
 
-This document describes coding conventions followed in the Muscollo and Tropter
-projects.
+This document describes coding conventions for Moco.
 
 Setters and pass-by-value
 -------------------------

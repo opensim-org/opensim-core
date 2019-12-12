@@ -22,24 +22,11 @@
 %    to solve a torque-driven marker tracking problem. 
 %  - The second problem shows how to customize a muscle-driven state tracking 
 %    problem using more advanced features of the tool interface.
-% 
-% Data and model source: https://simtk.org/projects/full_body
-% 
-% Model
-% -----
-% The model described in the file 'subject_walk_armless.osim' included in this
-% file is a modified version of the Rajagopoal et al. 2016 musculoskeletal 
-% model. The lumbar, subtalar, and mtp coordinates have been replaced with
-% WeldJoints and residual actuators have been added to the pelvis (1 N-m for
-% rotational coordinates and 10 N for translational coordinates). Finally, the
-% arms and all associated components have been removed for simplicity.
-% 
-% Data
-% ----
-% The coordinate and marker data included in the 'coordinates.sto' and 
-% 'marker_trajectories.trc' files also come from the Rajagopal et al. 2016
-% model distribution. The coordinates were computed using inverse kinematics
-% and modified via the Residual Reduction Algorithm (RRA). 
+%
+% This example also shows how to use the osimMocoTrajectoryReport.m utility to
+% create a PDF report of plots of a solution.
+%
+% See the README.txt next to this file for more information.
 
 function exampleMocoTrack()
 
@@ -121,6 +108,17 @@ track.set_mesh_interval(0.05);
 % Solve! The boolean argument indicates to visualize the solution.
 solution = track.solve(true);
 
+solution.write('exampleMocoTrack_markertracking_solution.sto');
+
+% Generate a PDF report containing plots of the variables in the solution.
+% For details, see osimMocoTrajectoryReport.m in Moco's
+% Resources/Code/Matlab/Utilities folder.
+model = modelProcessor.process();
+report = osimMocoTrajectoryReport(model, ...
+            'exampleMocoTrack_markertracking_solution.sto');
+reportFilepath = report.generate();
+open(reportFilepath);
+
 end
 
 function muscleDrivenStateTracking()
@@ -137,6 +135,7 @@ track.setName("muscle_driven_state_tracking");
 % parameters.
 modelProcessor = ModelProcessor("subject_walk_armless.osim");
 modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
+modelProcessor.append(ModOpIgnoreTendonCompliance());
 modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
 % Only valid for DeGrooteFregly2016Muscles.
 modelProcessor.append(ModOpIgnorePassiveFiberForcesDGF());

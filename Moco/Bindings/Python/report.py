@@ -43,13 +43,13 @@ def getLabelFromMotionType(motionTypeEnum, level):
     label = ''
     if motionTypeEnum == 1:
         if level == 'value': label = 'angle (rad)'
-        elif level == 'speed': label = 'ang. vel. (rad/s)'
-        elif level == 'accel': label = 'ang. accel. (rad/s^2)'
+        elif level == 'speed': label = 'speed (rad/s)'
+        elif level == 'accel': label = 'accel. (rad/s^2)'
         else: label = 'rotate'
         return label
     elif motionTypeEnum == 2:
         if level == 'value': label = 'position (m)'
-        elif level == 'speed': label = 'velocity (m/s)'
+        elif level == 'speed': label = 'speed (m/s)'
         elif level == 'accel': label = 'accel. (m/s^s)'
         else: label = 'translate'
         return label
@@ -262,8 +262,8 @@ class Report(object):
             ymax = -np.inf
             for path, ls in zip(var_dict[key], ls_dict[key]):
                 var = self.getVariable(var_type, path)
-                ymin = np.min(var)
-                ymax = np.max(var)
+                ymin = np.minimum(ymin, np.min(var))
+                ymax = np.maximum(ymax, np.max(var))
                 # If any reference data was provided, that has columns matching
                 # the current variable path, then plot them first.
                 for r, ref in enumerate(self.refs):

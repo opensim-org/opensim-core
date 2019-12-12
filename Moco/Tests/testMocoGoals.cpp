@@ -234,7 +234,7 @@ MocoStudy setupMocoStudyDoublePendulumMinimizeEffort() {
 }
 
 template <typename SolverType, typename TrackingType>
-void testDoublePendulumTracking(MocoStudy study, 
+void testDoublePendulumTracking(MocoStudy study,
         const MocoSolution& solutionEffort) {
     // Re-run problem, now setting effort cost function to a low weight and
     // adding a tracking cost.
@@ -247,7 +247,7 @@ void testDoublePendulumTracking(MocoStudy study,
     study.updSolver<SolverType>().resetProblem(problem);
     auto solutionTracking = study.solve();
     solutionTracking.write(
-            "testMocoGoals_" + TrackingType::getClassName() 
+            "testMocoGoals_" + TrackingType::getClassName()
             + "_tracking_solution.sto");
 
     // The tracking solution should match the effort solution.
