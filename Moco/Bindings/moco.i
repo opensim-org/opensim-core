@@ -222,4 +222,3 @@ moco_unique_ptr(OpenSim::PositionMotion);
 %include <Moco/Components/MultivariatePolynomialFunction.h>
 
 %include <Moco/ModelOperators.h>
-

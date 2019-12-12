@@ -34,7 +34,11 @@
               "iterate".
 
 - 2019-11-25: Update SmoothSphereHalfSpaceForce to visualize contact forces in
-              the Simbody visualizer (not the OpenSim GUI). 
+              the Simbody visualizer (not the OpenSim GUI).
+
+- 2019-11-22: Introduce TabOpUseAbsoluteStateNames to convert column labels  
+              from IK solutions pre-4.0 states files to use new-style column 
+              labels. 
 
 - 2019-11-20: Added MocoAngularVelocityTrackingGoal and 
               MocoAccelerationTrackingGoal in anticipation of supporting 
