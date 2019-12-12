@@ -160,6 +160,8 @@ protected:
     // TODO ensure that user-provided guess is within bounds.
     MocoSolution solveImpl() const override;
 
+    /// Check that the provided guess is compatible with the problem and this
+    /// solver.
     void checkGuess(const MocoTrajectory& guess) const;
 
 private:

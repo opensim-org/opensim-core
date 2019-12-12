@@ -215,6 +215,8 @@ protected:
     std::unique_ptr<CasOC::Solver> createCasOCSolver(
             const MocoCasOCProblem&) const;
 
+    /// Check that the provided guess is compatible with the problem and this
+    /// solver.
     void checkGuess(const MocoTrajectory& guess) const;
 
 private:
