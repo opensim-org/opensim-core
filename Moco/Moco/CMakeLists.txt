@@ -38,6 +38,8 @@ set(MOCO_SOURCES
         MocoGoal/MocoJointReactionGoal.cpp
         MocoGoal/MocoOrientationTrackingGoal.h
         MocoGoal/MocoOrientationTrackingGoal.cpp
+        MocoGoal/MocoOutputGoal.h
+        MocoGoal/MocoOutputGoal.cpp
         MocoGoal/MocoTranslationTrackingGoal.h
         MocoGoal/MocoTranslationTrackingGoal.cpp
         MocoGoal/MocoAngularVelocityTrackingGoal.h
@@ -108,12 +110,12 @@ set(MOCO_SOURCES
         Common/TableProcessor.h
         ModelProcessor.h
         ModelOperators.h
-        MocoTool.cpp
         MocoTool.h
-        MocoConstraintInfo.cpp
+        MocoTool.cpp
         MocoConstraintInfo.h
+        MocoConstraintInfo.cpp
         )
-if(MOCO_WITH_TROPTER)
+if (MOCO_WITH_TROPTER)
     list(APPEND MOCO_SOURCES
             tropter/TropterProblem.h
             tropter/TropterProblem.cpp
@@ -140,7 +142,7 @@ if (MOCO_WITH_TROPTER)
 endif ()
 target_compile_definitions(osimMoco PRIVATE
         OPENSIM_MOCO_VERSION=${MOCO_FULL_VERSION}
-)
+        )
 
 MocoAddInstallRPATHSelf(TARGET osimMoco LOADER)
 MocoAddInstallRPATHSimbody(TARGET osimMoco LOADER

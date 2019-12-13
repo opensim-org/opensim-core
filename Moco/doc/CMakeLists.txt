@@ -26,16 +26,21 @@ if(DOXYGEN_FOUND)
 
 endif()
 
-option(MOCO_CHEATSHEET "Compile the MocoCheatSheet with LaTeX." OFF)
-
-if(MOCO_CHEATSHEET)
-
-    find_package(LATEX COMPONENTS PDFLATEX)
+# The Moco repository stores a PDF version of MocoCheatSheet.tex, as well as the
+# LaTeX source for generating the PDF. This command generates the PDF from the
+# tex file, but it's written to a different location than the PDF stored in the
+# repository.
+find_package(LATEX COMPONENTS PDFLATEX)
+if(LATEX_PDFLATEX_FOUND)
 
     set_package_properties(LATEX PROPERTIES
             URL https://www.latex-project.org/
             TYPE OPTIONAL
             PURPOSE "Building the MocoCheatSheet PDF.")
+
+    set(cheatsheet_binary_dir "${CMAKE_CURRENT_BINARY_DIR}/cheatsheet/")
+    # So that we can build the install target even if doxygen was not built.
+    file(MAKE_DIRECTORY ${cheatsheet_binary_dir})
 
     add_custom_target(MocoCheatSheet
             COMMENT "MocoCheatSheet LaTeX PDF"
@@ -45,10 +50,11 @@ if(MOCO_CHEATSHEET)
     add_custom_command(TARGET MocoCheatSheet
             COMMENT "Running pdflatex to build MocoCheatSheet."
             COMMAND "${PDFLATEX_COMPILER}"
-                    "-output-directory='${CMAKE_CURRENT_BINARY_DIR}'"
+                    "-output-directory='${cheatsheet_binary_dir}'"
                     "MocoCheatSheet.tex"
             WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 
-    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/MocoCheatSheet.pdf"
-            DESTINATION "${CMAKE_INSTALL_DOCDIR}/")
+    install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/cheatsheet/"
+            DESTINATION "${CMAKE_INSTALL_DOCDIR}/"
+            FILES_MATCHING PATTERN "*.pdf")
 endif()

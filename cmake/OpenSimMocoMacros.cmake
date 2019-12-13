@@ -45,9 +45,10 @@ function(MocoCopyDLLs)
 endfunction()
 
 # Add a target to the Moco project for building an example with the given
-# NAME. The example must be within a source file named ${NAME}.cpp.
-# This function also installs the example file with a CMakeLists that can find
-# the Moco installation and build the example.
+# NAME. The example must be within a source file named ${NAME}.cpp, or could
+# contain multiple executable files, listed via the EXECUTABLES argument
+# (omitting the .cpp extension). This function also installs the example files
+# with a CMakeLists that can find the Moco installation and build the example.
 #
 # This function can only be used from the source distribution of Moco
 # (e.g., not via the UseOpenSimMoco.cmake file in a binary distribution).
@@ -57,6 +58,10 @@ function(MocoAddExampleCXX)
     set(multiValueArgs RESOURCES EXECUTABLES)
     cmake_parse_arguments(MOCOEX
             "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    if(NOT MOCOEX_EXECUTABLES)
+        set(MOCOEX_EXECUTABLES ${MOCOEX_NAME})
+    endif()
 
     # Build the example in the build tree.
     foreach(exe ${MOCOEX_EXECUTABLES})

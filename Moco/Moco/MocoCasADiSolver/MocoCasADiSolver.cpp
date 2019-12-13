@@ -74,7 +74,7 @@ MocoTrajectory MocoCasADiSolver::createGuess(const std::string& type) const {
 
 void MocoCasADiSolver::setGuess(MocoTrajectory guess) {
     // Ensure the guess is compatible with this solver/problem.
-    guess.isCompatible(getProblemRep(), true);
+    checkGuess(guess);
     clearGuess();
     m_guessFromAPI = std::move(guess);
 }
@@ -82,6 +82,22 @@ void MocoCasADiSolver::setGuessFile(const std::string& file) {
     clearGuess();
     set_guess_file(file);
 }
+
+void MocoCasADiSolver::checkGuess(const MocoTrajectory& guess) const {
+    OPENSIM_THROW_IF(get_multibody_dynamics_mode() == "implicit" &&
+            guess.hasCoordinateStates() &&
+            guess.getDerivativeNames().empty(),
+            Exception,
+            "'multibody_dynamics_mode' set to 'implicit' and coordinate states "
+            "exist in the guess, but no coordinate accelerations were found in "
+            "the guess. Consider using "
+            "MocoTrajectory::generateAccelerationsFromValues() or "
+            "MocoTrajectory::generateAccelerationsFromSpeeds() to construct an "
+            "appropriate guess.");
+    guess.isCompatible(
+            getProblemRep(), get_multibody_dynamics_mode() == "implicit", true);
+}
+
 void MocoCasADiSolver::clearGuess() {
     m_guessFromAPI = MocoTrajectory();
     m_guessFromFile = MocoTrajectory();
@@ -96,7 +112,7 @@ const MocoTrajectory& MocoCasADiSolver::getGuess() const {
             assert(m_guessFromAPI.empty());
             // No need to load from file again if we've already loaded it.
             MocoTrajectory guessFromFile(get_guess_file());
-            guessFromFile.isCompatible(getProblemRep(), true);
+            checkGuess(guessFromFile);
             m_guessFromFile = guessFromFile;
             m_guessToUse.reset(&m_guessFromFile);
         } else {
@@ -325,18 +341,6 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     if (guess.empty()) {
         casGuess = casSolver->createInitialGuessFromBounds();
     } else {
-        OPENSIM_THROW_IF(get_multibody_dynamics_mode() == "implicit" &&
-                                 guess.hasCoordinateStates() &&
-                                 guess.getDerivativeNames().empty(),
-                Exception,
-                "'multibody_dynamics_mode' set to 'implicit' and coordinate states exist "
-                "in "
-                "the guess, but no coordinate accelerations were found in the "
-                "guess. Consider using "
-                "MocoTrajectory::generateAccelerationsFromValues() or "
-                "MocoTrajectory::generateAccelerationsFromSpeeds() to "
-                "construct an "
-                "appropriate guess.")
         casGuess = convertToCasOCIterate(guess);
     }
     CasOC::Solution casSolution = casSolver->solve(casGuess);
