@@ -46,6 +46,16 @@ void MocoGoal::printDescription(std::ostream& stream) const {
     printDescriptionImpl(stream);
 }
 
+double MocoGoal::calcSystemDisplacement(const SimTK::State& initialState,
+        const SimTK::State& finalState) const {
+    const SimTK::Vec3 comInitial =
+            getModel().calcMassCenterPosition(initialState);
+    const SimTK::Vec3 comFinal =
+            getModel().calcMassCenterPosition(finalState);
+    // TODO: Use distance squared for convexity.
+    return (comFinal - comInitial).norm();
+}
+
 void MocoGoal::constructProperties() {
     constructProperty_enabled(true);
     constructProperty_weight(1);

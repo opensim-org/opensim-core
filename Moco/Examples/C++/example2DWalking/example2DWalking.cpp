@@ -39,6 +39,7 @@
 /// The coordinate data included in the 'referenceCoordinates.sto' comes from
 /// predictive simulations generated in Falisse et al. 2019.
 
+#include <Moco/MocoGoal/MocoOutputGoal.h>
 #include <Moco/osimMoco.h>
 
 using namespace OpenSim;
@@ -58,8 +59,7 @@ MocoSolution gaitTracking() {
 
     // Define the optimal control problem.
     // ===================================
-    ModelProcessor modelprocessor =
-            ModelProcessor("2D_gait.osim");
+    ModelProcessor modelprocessor = ModelProcessor("2D_gait.osim");
     track.setModel(modelprocessor);
     track.setStatesReference(
             TableProcessor("referenceCoordinates.sto") | TabOpLowPassFilter(6));
