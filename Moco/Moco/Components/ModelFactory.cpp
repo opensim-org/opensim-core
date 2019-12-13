@@ -105,9 +105,9 @@ Model ModelFactory::createPlanarPointMass() {
     model.addJoint(jointX);
 
     // The joint's x axis must point in the global "+y" direction.
-    auto* jointY = new SliderJoint("ty", *intermed, Vec3(0),
-            Vec3(0, 0, 0.5 * SimTK::Pi), *body, Vec3(0),
-            Vec3(0, 0, .5 * SimTK::Pi));
+    auto* jointY = new SliderJoint("ty", 
+            *intermed, Vec3(0), Vec3(0, 0, 0.5 * SimTK::Pi), 
+            *body, Vec3(0), Vec3(0, 0, .5 * SimTK::Pi));
     auto& coordY = jointY->updCoordinate(SliderJoint::Coord::TranslationX);
     coordY.setName("ty");
     model.addJoint(jointY);
