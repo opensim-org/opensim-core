@@ -79,7 +79,7 @@ void MocoFrameDistanceConstraint::initializeOnModelImpl(
         OPENSIM_THROW_IF(maximum < 0, Exception,
                 format("Expected the maximum distance for this frame pair to "
                        "non-negative, but it is %d.", maximum));
-        OPENSIM_THROW_IF(minimum <= maximum, Exception,
+        OPENSIM_THROW_IF(minimum > maximum, Exception,
                 format("Expected the minimum distance for this frame pair to "
                        "be less than or equal to the maximum distance, but "
                        "they are %d and %d, respectively.", minimum, maximum));
