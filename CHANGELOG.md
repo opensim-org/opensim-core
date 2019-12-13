@@ -8,6 +8,9 @@
 
 - 2019-12-10: Update the Simbody dependency to version 3.7.
 
+- 2019-12-09: MocoTrajectory::isCompatible() gives more details when provided 
+              with an incompatible problem.
+
 - 2019-12-08: Include support for OpenSim's C3DFileAdapter.
 
 - 2019-12-04: Updated the version of OpenSim used by Moco. As a result, we
