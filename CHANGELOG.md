@@ -1,3 +1,5 @@
+- 2019-12-12: Added MocoFrameDistanceConstraint.
+
 - 2019-12-11: ActivationCoordinateActuator now provides default activation 
               bounds equal to its control bounds.
               
@@ -24,8 +26,6 @@
 - 2019-12-02: Add a MATLAB MocoTrajectory plotting utility, 
               osimMocoTrajectoryReport.m. This has the same functionality as 
               report.py in Moco's python package.
-
-- 2019-12-02: Added MocoMinimumDistanceConstraint.
 
 - 2019-11-28: Brian Umberger contributed a Matlab version of example2DWalking,
               which contains a 2-D prediction of walking.

@@ -1,7 +1,7 @@
-#ifndef MOCO_MOCOMINIMUMDISTANCECONSTRAINT_H
-#define MOCO_MOCOMINIMUMDISTANCECONSTRAINT_H
+#ifndef MOCO_MOCOFRAMEDISTANCECONSTRAINT_H
+#define MOCO_MOCOFRAMEDISTANCECONSTRAINT_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoMinimumDistanceConstraint.h                              *
+ * OpenSim Moco: MocoFrameDistanceConstraint.h                                *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -23,28 +23,31 @@
 
 namespace OpenSim {
 
-class OSIMMOCO_API MocoMinimumDistanceConstraintPair : public Object {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoMinimumDistanceConstraintPair, Object);
+class OSIMMOCO_API MocoFrameDistanceConstraintPair : public Object {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoFrameDistanceConstraintPair, Object);
 
 public:
-    OpenSim_DECLARE_PROPERTY(first_frame_path, std::string,
+    OpenSim_DECLARE_PROPERTY(frame1_path, std::string,
             "The first model frame path of the pair.");
-    OpenSim_DECLARE_PROPERTY(second_frame_path, std::string,
+    OpenSim_DECLARE_PROPERTY(frame2_path, std::string,
             "The second model frame path of the pair.");
     OpenSim_DECLARE_PROPERTY(minimum_distance, double,
-            "The minimum distance apart that the two frame origins must be.");
+            "The minimum distance apart that the two frame origins can be.");
+    OpenSim_DECLARE_PROPERTY(maximum_distance, double,
+            "The maximum distance apart that the two frame origins can be.")
 
-    MocoMinimumDistanceConstraintPair();
-    MocoMinimumDistanceConstraintPair(std::string firstFramePath,
-            std::string secondFramePath, double minimum_distance);
+    MocoFrameDistanceConstraintPair();
+    MocoFrameDistanceConstraintPair(std::string firstFramePath,
+            std::string secondFramePath, double minimum_distance,
+            double maximum_distance);
 
 private:
     void constructProperties();
 };
 
-/// This path constraint enforces that a minimum distance is kept between the 
-/// origins of pairs of model frames. Frame pairs, and the minimum distance they 
-/// are to be kept apart, are specified via a MocoMinimumDistancConstraintPair. 
+/// This path constraint enforces that the distance between the origins of pairs 
+/// of model frames is kept between minimum and maximum bounds. Frame pairs and 
+/// their bounds are specified via a MocoFrameDistancConstraintPair. 
 /// Any model component derived from Frame is valid to be included in a frame 
 /// pair, and any number of frame pairs may be append to this constraint via 
 /// addFramePair().
@@ -53,28 +56,37 @@ private:
 /// model from intersecting during an optimization. For example, the
 /// following prevents feet from intersecting during a walking optimization:
 /// @code
-/// distance = problem.addPathConstraint<MocoMinimumDistanceConstraint>();
-/// distance.setName("minimum_distance"):
-/// distance.addFramePair({'/bodyset/calcn_l', '/bodyset/calcn_r', 0.1});
-/// distance.addFramePair({'/bodyset/toes_l', '/bodyset/toes_r', 0.1});
-/// distance.addFramePair({'/bodyset/calcn_l', '/bodyset/toes_r', 0.1});
-/// distance.addFramePair({'/bodyset/toes_l', '/bodyset/calcn_r', 0.1});
+/// distance = problem.addPathConstraint<MocoFrameDistanceConstraint>();
+/// distance.setName("minimum_distance");
+/// SimTK::Real inf = SimTK::Infinity;
+/// distance.addFramePair('/bodyset/calcn_l', '/bodyset/calcn_r', 0.1, inf);
+/// distance.addFramePair('/bodyset/toes_l', '/bodyset/toes_r', 0.1, inf);
+/// distance.addFramePair('/bodyset/calcn_l', '/bodyset/toes_r', 0.1, inf);
+/// distance.addFramePair('/bodyset/toes_l', '/bodyset/calcn_r', 0.1, inf);
 /// @endcode
 /// 
 /// @note This class represents a path constraint, *not* a model kinematic 
 /// constraint. Therefore, there are no Lagrange multipliers or constraint
-/// forces associated with this constraint.
+/// forces associated with this constraint. The model's force elements 
+/// (including actuators) must generate the forces necessary for satisfying this 
+/// constraint.
 ///       
 /// @ingroup mocopathcon
-class OSIMMOCO_API MocoMinimumDistanceConstraint : public MocoPathConstraint {
+class OSIMMOCO_API MocoFrameDistanceConstraint : public MocoPathConstraint {
     OpenSim_DECLARE_CONCRETE_OBJECT(
-            MocoMinimumDistanceConstraint, MocoPathConstraint);
+            MocoFrameDistanceConstraint, MocoPathConstraint);
 
 public:
-    MocoMinimumDistanceConstraint();
+    MocoFrameDistanceConstraint();
 
-    void addFramePair(MocoMinimumDistanceConstraintPair pair) {
+    void addFramePair(MocoFrameDistanceConstraintPair pair) {
         append_frame_pairs(std::move(pair));
+    }
+    void addFramePair(const std::string& frame1_path, 
+            const std::string& frame2_path, double minimum_distance, 
+            double maximum_distance) {
+        append_frame_pairs(MocoFrameDistanceConstraintPair(frame1_path, 
+            frame2_path, minimum_distance, maximum_distance));
     }
 
 protected:
@@ -85,9 +97,9 @@ protected:
 
 private:
     OpenSim_DECLARE_LIST_PROPERTY(frame_pairs, 
-            MocoMinimumDistanceConstraintPair, 
-            "Pairs of frames whose origins are constrained to be a minimum "
-            "distance apart.");
+            MocoFrameDistanceConstraintPair, 
+            "Pairs of frames whose origins are constrained to be within minimum "
+            "and maximum bounds.");
 
     void constructProperties();
     mutable std::vector<std::pair<SimTK::ReferencePtr<const Frame>,
@@ -96,4 +108,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOMINIMUMDISTANCECONSTRAINT_H
+#endif // MOCO_MOCOFRAMEDISTANCECONSTRAINT_H
