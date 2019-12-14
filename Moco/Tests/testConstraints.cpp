@@ -1600,7 +1600,7 @@ TEMPLATE_TEST_CASE(
     }
 }
 
-TEMPLATE_TEST_CASE("MocoMinimumDistanceConstraint", "", MocoTropterSolver, 
+TEMPLATE_TEST_CASE("MocoFrameDistanceConstraint", "", MocoTropterSolver, 
         MocoCasADiSolver) {
     using SimTK::Pi;
 
@@ -1646,7 +1646,8 @@ TEMPLATE_TEST_CASE("MocoMinimumDistanceConstraint", "", MocoTropterSolver,
     auto* distanceConstraint = 
         problem.addPathConstraint<MocoFrameDistanceConstraint>();
     const double distance = 0.1;
-    distanceConstraint->addFramePair({"/ground", "/bodyset/body", distance});
+    distanceConstraint->addFramePair({"/ground", "/bodyset/body", distance,
+        SimTK::Infinity});
 
     auto* finalMarkerGoal =
             problem.addGoal<MocoMarkerFinalGoal>("final_marker");
