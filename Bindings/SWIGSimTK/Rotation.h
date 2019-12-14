@@ -518,10 +518,10 @@ public:
     /// Theory: calculate qdot=N_P(q)*w_PB using multiplyByBodyXYZ_N_P().
     /// @see multiplyByBodyXYZ_N_P()
     static Vec3 convertAngVelInParentToBodyXYZDot
-       (const Vec2& cosxy,  ///< cos(qx), cos(qy)
-        const Vec2& sinxy,  ///< sin(qx), sin(qy)
-        P        oocosy, ///< 1/cos(qy)
-        const Vec3& w_PB)   ///< angular velocity of B in P, exp. in P
+       (const Vec2& cosxy,  //< cos(qx), cos(qy)
+        const Vec2& sinxy,  //< sin(qx), sin(qy)
+        P        oocosy, //< 1/cos(qy)
+        const Vec3& w_PB)   //< angular velocity of B in P, exp. in P
     {
         return multiplyByBodyXYZ_N_P(cosxy,sinxy,oocosy,w_PB);
     }
@@ -538,11 +538,11 @@ public:
     /// efficiently. The second term is just an acceleration remainder term
     /// quadratic in qdot.
     static Vec3 convertAngAccInParentToBodyXYZDotDot
-       (const Vec2& cosxy,  ///< cos(qx), cos(qy)
-        const Vec2& sinxy,  ///< sin(qx), sin(qy)
-        P        oocosy, ///< 1/cos(qy)
-        const Vec3& qdot,   ///< previously calculated BodyXYZDot
-        const Vec3& b_PB)   ///< angular acceleration, a.k.a. wdot_PB
+       (const Vec2& cosxy,  //< cos(qx), cos(qy)
+        const Vec2& sinxy,  //< sin(qx), sin(qy)
+        P        oocosy, //< 1/cos(qy)
+        const Vec3& qdot,   //< previously calculated BodyXYZDot
+        const Vec3& b_PB)   //< angular acceleration, a.k.a. wdot_PB
     {
         const P s1 = sinxy[1], c1 = cosxy[1];
         const P q0 = qdot[0], q1 = qdot[1], q2 = qdot[2];
@@ -1088,14 +1088,14 @@ public:
 #endif
     Rotation_<P>&        operator~()        { return updInvert(); }
     //@}
-
+#ifndef SWIG
     /// Access individual rows and columns of this InverseRotation; no cost or
     /// copying since suitably-cast references to the actual data are returned.
     /// There are no writable versions of these methods since changing a single
     /// row or column would violate the contract that these are always legitimate
     /// rotation matrices.
     //@{
-#ifndef SWIG
+
     const RowType&  row( int i ) const         { return reinterpret_cast<const RowType&>(asMat33()[i]); }
     const ColType&  col( int j ) const         { return reinterpret_cast<const ColType&>(asMat33()(j)); }
     const ColType&  x() const                  { return col(0); }
@@ -1111,8 +1111,8 @@ public:
     //@{
     const BaseMat&  asMat33() const  { return *static_cast<const BaseMat*>(this); }
     BaseMat         toMat33() const  { return asMat33(); }
-#endif
     //@}
+#endif
 };
 
 #ifndef SWIG
