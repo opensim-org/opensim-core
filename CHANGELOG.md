@@ -1,5 +1,8 @@
 - 2019-12-12: Added MocoFrameDistanceConstraint.
 
+- 2019-12-11: Add MocoOutputGoal, allowing any scalar model output to be used as
+              as a goal.
+
 - 2019-12-11: ActivationCoordinateActuator now provides default activation 
               bounds equal to its control bounds.
               
@@ -9,6 +12,9 @@
 - 2019-12-10: Add an example for MocoInverse in MATLAB, Python, and C++.
 
 - 2019-12-10: Update the Simbody dependency to version 3.7.
+
+- 2019-12-09: MocoTrajectory::isCompatible() gives more details when provided 
+              with an incompatible problem.
 
 - 2019-12-08: Include support for OpenSim's C3DFileAdapter.
 

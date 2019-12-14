@@ -133,13 +133,8 @@ void MocoControlGoal::calcGoalImpl(
         const GoalInput& input, SimTK::Vector& cost) const {
     cost[0] = input.integral;
     if (get_divide_by_displacement()) {
-        const SimTK::Vec3 comInitial =
-                getModel().calcMassCenterPosition(input.initial_state);
-        const SimTK::Vec3 comFinal =
-                getModel().calcMassCenterPosition(input.final_state);
-        // TODO: Use distance squared for convexity.
-        const SimTK::Real displacement = (comFinal - comInitial).norm();
-        cost[0] /= displacement;
+        cost[0] /=
+                calcSystemDisplacement(input.initial_state, input.final_state);
     }
 }
 

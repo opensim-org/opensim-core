@@ -96,6 +96,7 @@ jobs:
     - name: Install Moco
       run: |
         chdir $env:GITHUB_WORKSPACE\\build
+        cmake --build . --config Release --target Moco_doxygen -- /maxcpucount:4 /verbosity:quiet
         cmake --build . --config Release --target install -- /maxcpucount:4 /verbosity:quiet
 
         chdir $env:GITHUB_WORKSPACE
