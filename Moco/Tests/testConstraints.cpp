@@ -1644,7 +1644,7 @@ TEMPLATE_TEST_CASE("MocoMinimumDistanceConstraint", "", MocoTropterSolver,
     problem.setStateInfo("/jointset/gimbal/qz/speed", {-10, 10}, 0, 0);
 
     auto* distanceConstraint = 
-        problem.addPathConstraint<MocoMinimumDistanceConstraint>();
+        problem.addPathConstraint<MocoFrameDistanceConstraint>();
     const double distance = 0.1;
     distanceConstraint->addFramePair({"/ground", "/bodyset/body", distance});
 
