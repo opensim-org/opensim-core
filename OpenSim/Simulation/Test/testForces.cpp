@@ -1918,18 +1918,16 @@ Test Setup 1:
 This test is modified from testPathSpring. The ligament is fixed to ground,
 wraps over a cylinder (pulley) and suspends a hanging mass against gravity.
             ____
-           /    \
-          /      \
-         /        \
+           / __ \
+          / /  \ \
+         /  \__/  \
         /          \
         |          |
-        |          |
-        |          |
-        |      ----------
-        |      |        |
-        |      |        |
-        |      |        |
-               ----------
+        |       -------
+        |       |     |
+        |       |     |
+     ___|___    -------
+     ///////
 Test 1.1: The force in the ligament must be equal to the inertial and 
 gravitational forces acting on the block.
 
@@ -1948,13 +1946,11 @@ One end of the ligament is fixed to ground the other to a block. The motion of
 the block is prescribed to check the spring force, damping force and potential 
 energy in the ligament in the slack, toe, and linear regions and at multiple
 speeds.
-/               ______
-/              |      |
-/--------------|      |
-/              |______|
-/              
-
-
+/|               ______
+/|              |      |
+/|--------------|      |
+/|              |______|
+/|
 */
 void testBlankevoort1991Ligament() {
     using namespace SimTK;
@@ -2146,7 +2142,7 @@ void testBlankevoort1991Ligament() {
     outputs.push_back("strain");
     outputs.push_back("strain_rate");
     outputs.push_back("length");
-    outputs.push_back("lengthening_rate");
+    outputs.push_back("lengthening_speed");
     outputs.push_back("spring_force");
     outputs.push_back("damping_force");
     outputs.push_back("total_force");
@@ -2209,11 +2205,9 @@ void testBlankevoort1991Ligament() {
         lig->getOutputValue<double>(state, "damping_force");
 
     ASSERT(damping_lengthening > 0.0, __FILE__, __LINE__,
-            "The damping force in Blankevoort1991Ligament was less than or "
-            "equal "
-            "to zero when the ligament was streched beyond the slack length "
-            "and "
-            "the lengthening_rate was positive.");
+        "The damping force in Blankevoort1991Ligament was less than or "
+        "equal to zero when the ligament was streched beyond the slack length "
+        "and the lengthening_speed was positive.");
 
     //Check that damping is zero if ligament is shortening
     slotCoord.setSpeedValue(state, -1.0);
@@ -2222,9 +2216,54 @@ void testBlankevoort1991Ligament() {
         lig->getOutputValue<double>(state, "damping_force");
 
     ASSERT_EQUAL(damping_shortening, 0.0, 1e-3, __FILE__, __LINE__,
-            "The damping force in Blankevoort1991Ligament was less than or "
-            "equal "
-            "to zero when the ligament was streched beyond the slack length "
-            "and "
-            "the lengthening_rate was positive.");
+        "The damping force in Blankevoort1991Ligament was less than or "
+        "equal to zero when the ligament was streched beyond the slack "
+        "length and the lengthening_speed was positive.");
+
+    //Check linear stiffness in force/length
+    slotCoord.setSpeedValue(state, 0.0);
+    slotCoord.setValue(state, 1.06);
+    model.realizePosition(state);
+    double F1 = lig->getOutputValue<double>(state, "spring_force");
+    double L1 = lig->getOutputValue<double>(state, "length");
+
+    slotCoord.setValue(state, 1.08);
+    model.realizePosition(state);
+    double F2 = lig->getOutputValue<double>(state, "spring_force");
+    double L2 = lig->getOutputValue<double>(state, "length");
+
+    double calc_stiff = (F2 - F1) / (L2 - L1);
+    double lig_stiff = lig->getLinearStiffnessForcePerLength();
+
+    ASSERT_EQUAL(calc_stiff, lig_stiff, 1e-3, __FILE__, __LINE__,
+        "The calculated linear_stiffness in force/length in the "
+        "Blankevoort1991Ligament was not equal to the value returned by "
+        "getLinearStiffnessForcePerLength().");
+
+    //Check setting slack_length through reference force
+    double ref_force = 2.5;
+    double coord_value = 1.1;
+    sliderCoord.setValue(state, coord_value);
+    lig->setSlackLengthFromReferenceForce(ref_force, state);
+    state = model.initSystem();
+    sliderCoord.setValue(state, coord_value);
+    model.realizePosition(state);
+    double reported_force = lig->getSpringForce(state);
+
+    ASSERT_EQUAL(ref_force, reported_force, 1e-3, __FILE__, __LINE__,
+    "The force in the Blankevoort1991Ligament at the reference state was not "
+    "equal to the value input to setSlackLengthFromReferenceForce.");
+    
+    //Check setting slack_length through reference strain    
+    double ref_strain = 0.05;    
+    sliderCoord.setValue(state, coord_value);
+    lig->setSlackLengthFromReferenceStrain(ref_strain, state);
+    state = model.initSystem();
+    sliderCoord.setValue(state, coord_value);
+    model.realizePosition(state);
+    double reported_strain = lig->getStrain(state);
+
+    ASSERT_EQUAL(ref_strain, reported_strain, 1e-3, __FILE__, __LINE__,
+    "The strain in the Blankevoort1991Ligament at the reference state was not "
+    "equal to the value input to setSlackLengthFromReferenceStrain.");
 }
