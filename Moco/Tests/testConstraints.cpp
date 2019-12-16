@@ -1656,7 +1656,6 @@ TEMPLATE_TEST_CASE("MocoFrameDistanceConstraint", "", MocoTropterSolver,
 
     study.initSolver<TestType>();
     MocoSolution solution = study.solve();
-
     //study.visualize(solution);
 
     TimeSeriesTableVec3 positionTable = analyze<SimTK::Vec3>(model, solution, 
