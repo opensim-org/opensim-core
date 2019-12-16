@@ -1656,6 +1656,7 @@ TEMPLATE_TEST_CASE("MocoFrameDistanceConstraint", "", MocoTropterSolver,
 
     study.initSolver<TestType>();
     MocoSolution solution = study.solve();
+
     //study.visualize(solution);
 
     TimeSeriesTableVec3 positionTable = analyze<SimTK::Vec3>(model, solution, 
@@ -1663,6 +1664,8 @@ TEMPLATE_TEST_CASE("MocoFrameDistanceConstraint", "", MocoTropterSolver,
     SimTK::Vec3 position;
     for (int irow = 0; irow < (int)positionTable.getNumRows(); ++irow) {
         position = positionTable.getRowAtIndex(irow)[0];
-        CHECK(position.norm() >= distance);
+        // The margin is looser than the constraint tolerance because the
+        // constraint is on the square of the distance.
+        CHECK(Approx(position.norm()).margin(1e-3) >= distance);
     }
 }
