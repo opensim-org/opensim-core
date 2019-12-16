@@ -1663,6 +1663,6 @@ TEMPLATE_TEST_CASE("MocoFrameDistanceConstraint", "", MocoTropterSolver,
     SimTK::Vec3 position;
     for (int irow = 0; irow < (int)positionTable.getNumRows(); ++irow) {
         position = positionTable.getRowAtIndex(irow)[0];
-        CHECK(position.norm() >= distance);
+        CHECK(distance <= Approx(position.norm()));
     }
 }
