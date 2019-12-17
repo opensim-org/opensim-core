@@ -793,11 +793,11 @@ void Transcription::printConstraintValues(const Iterate& it,
     const auto& upper = m_upperBounds;
     print_bounds("State bounds", it.state_names, it.times, vars.at(states),
             lower.at(states), upper.at(states));
-    print_bounds("Control bounds", it.state_names, it.times, vars.at(controls),
+    print_bounds("Control bounds", it.control_names, it.times, vars.at(controls),
             lower.at(controls), upper.at(controls));
-    print_bounds("Multiplier bounds", it.state_names, it.times,
+    print_bounds("Multiplier bounds", it.multiplier_names, it.times,
             vars.at(multipliers), lower.at(multipliers), upper.at(multipliers));
-    print_bounds("Derivative bounds", it.state_names, it.times,
+    print_bounds("Derivative bounds", it.derivative_names, it.times,
             vars.at(derivatives), lower.at(derivatives), upper.at(derivatives));
     // Need to update times for the slacks:
     // print_bounds("Slack bounds", it.slack_names, it.times, vars.at(slacks),
