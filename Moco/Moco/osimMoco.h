@@ -32,6 +32,7 @@
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoConstraint.h"
 #include "MocoControlBoundConstraint.h"
+#include "MocoFrameDistanceConstraint.h"
 #include "MocoGoal/MocoControlGoal.h"
 #include "MocoGoal/MocoControlTrackingGoal.h"
 #include "MocoGoal/MocoInitialActivationGoal.h"
