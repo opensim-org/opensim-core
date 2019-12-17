@@ -160,7 +160,7 @@ affected by scaling the model.
     rate effect on the mechanical behavior of the anterior cruciate
     ligament-bone complex. Medical Engineering & Physics, 21(2), 95-100.
 
-[12] Galbusera, F., Freutel, M., Dürselen, L., D’Aiuto, M., Croce, D.,
+[12] Galbusera, F., Freutel, M., Durselen, L., D'Aiuto, M., Croce, D.,
     Villa, T., Sansone, V. & Innocenti, B. (2014). Material models and 
     properties in the finite element analysis of knee ligaments: a literature 
     review. Frontiers in bioengineering and biotechnology, 2, 54.
