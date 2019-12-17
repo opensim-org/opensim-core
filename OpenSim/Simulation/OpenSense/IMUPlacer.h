@@ -63,7 +63,7 @@ public:
 
     OpenSim_DECLARE_PROPERTY(base_heading_axis, std::string,
             "The axis of the base IMU that corresponds to its heading "
-            "direction. Options are 'x', '-x', 'y', '-y', 'z' or '-z'."
+            "direction. Options are 'x', '-x', 'y', '-y', 'z' or '-z'. "
             "Leave blank if no heading correction is desired.");
 
     OpenSim_DECLARE_PROPERTY(sensor_to_opensim_rotations, SimTK::Vec3,
