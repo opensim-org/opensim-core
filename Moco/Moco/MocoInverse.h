@@ -84,8 +84,8 @@ private:
 /// - optim_finite_difference_scheme: forward
 ///
 /// MocoInverse minimizes the sum of squared controls and, optionally, the sum
-/// of squared activations. Currently, the costs used by MocoInverse cannot be 
-/// customized. As MocoInverse becomes more mature and general, the costs will 
+/// of squared activations. Currently, the costs used by MocoInverse cannot be
+/// customized. As MocoInverse becomes more mature and general, the costs will
 /// become more flexible.
 ///
 /// Mesh interval
