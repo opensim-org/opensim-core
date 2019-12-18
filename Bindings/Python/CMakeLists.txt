@@ -329,3 +329,4 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/tests"
 # Install example files (not installed next to the python package).
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/examples/"
         DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}")
+install(DIRECTORY ../Java/Matlab/OpenSenseExampleFiles DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}")
