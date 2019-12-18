@@ -27,7 +27,7 @@ clear all; close all; clc;
 import org.opensim.modeling.*
 
 %% Set variables to use
-modelFileName = 'calibrated_Rajagopal_2015.osim';                % The path to an input model
+modelFileName = 'Rajagopal_2015_calibrated.osim';                % The path to an input model
 orientationsFileName = 'MT_012005D6_009-001_orientations.sto';   % The path to orientation data for calibration 
 sensor_to_opensim_rotation = Vec3(-pi/2, 0, 0); % The rotation of IMU data to the OpenSim world frame 
 visualizeTracking = true;  % Boolean to Visualize the tracking simulation

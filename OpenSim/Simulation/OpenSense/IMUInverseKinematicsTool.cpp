@@ -191,7 +191,7 @@ void IMUInverseKinematicsTool::runInverseKinematicsWithOrientationsFromFile(
         if (visualizeResults)  
             model.getVisualizer().show(s0);
         else
-            cout << "Solved frame at time: " << time << endl;
+            cout << "Solved at time: " << time << endl;
         // realize to report to get reporter to pull values from model
         model.realizeReport(s0);
     }

@@ -51,4 +51,4 @@ imuPlacer.run(visulizeCalibration);
 model = imuPlacer.getCalibratedModel();
 
 %% Print the calibrated model to file.
-model.print(['calibrated_' modelFileName]);
+model.print( strrep(modelFileName, '.osim', '_calibrated.osim') );
