@@ -94,7 +94,7 @@ int main(int argc, char **argv)
                     PrintUsage(argv[0], cout);
                     return 0;
                 }
-                else if ((option == "-ReadX") || (option == "-RX")) {
+                else if ((option == "-ReadXsens") || (option == "-RX")) {
                     if (argc < 4) {
                         cout << "Both the directory containing Xsens data files and the reader settings file are necessary to read Xsens data. Please retry with these inputs." << endl;
                         PrintUsage(argv[0], cout);
@@ -107,7 +107,7 @@ int main(int argc, char **argv)
                     cout << "Done." << endl;
                     return 0;
                 }
-                else if ((option == "-ReadA") || (option == "-RA")) {
+                else if ((option == "-ReadAPDM") || (option == "-RA")) {
                     if (argc < 4) {
                         cout << "Both the data file (.csv) with APDM formatted data and the reader settings file are necessary to read APDM data. Please retry with these inputs." << endl;
                         PrintUsage(argv[0], cout);
@@ -251,20 +251,20 @@ void PrintUsage(const char *aProgName, ostream &aOStream)
 {
     string progName = IO::GetFileNameFromURI(aProgName);
     aOStream << "\n\n" << progName << ":\n\n";
-    aOStream << "Option             Argument             Action / Notes\n";
-    aOStream << "------             --------             --------------\n";
-    aOStream << "-Help, -H                               Print the command-line options for " << progName << ".\n";
-    aOStream << "-PrintSetup, -PS                        Create a template inverse kinematics settings file that can be customized.\n";
-    aOStream << "-PropertyInfo, -PI                      Print help information for properties in setup files.\n";
-    aOStream << "-ReadX, -RX  directory settings.xml     Parse Xsens exported files from directory using settingsFile.xml.\n";
-    aOStream << "-ReadA, -RA  datafile.csv settings.xml  Parse single csv file provided by APDM using specified settingsFile.xml.\n";
-    aOStream << "-Calibrate, -C IMUPlacer_setup.xml      Place IMUs on the model that is specified in the IMUPlacer_setup.xml file.\n";
-    aOStream << "                                        The model is positioned in its default pose. IMUs are then registered to the model according to\n ";
-    aOStream << "                                        their orientations in the first frame of the quaternions file that is specified in IMUPlacer_setup.xml.\n";
-    aOStream << "                                        The orientations of the IMUs in the quaternions file are assumed to be in the IMU world frame.\n";
-    aOStream << "                                        The resultant model with IMU frames registered is written to file if output_model_file is specified\n";
-    aOStream << "                                        in IMUPlacer_setup.xml. Additional options can be specified in IMUPlacer_setup.xml to perform heading correction.\n";
-    aOStream << "-InverseKinematics, -IK ik_settings.xml Run IK using an xml settings file to define the inverse kinematics problem.\n";
+    aOStream << "Option             Argument               Action / Notes\n";
+    aOStream << "------             --------               --------------\n";
+    aOStream << "-Help, -H                                 Print the command-line options for " << progName << ".\n";
+    aOStream << "-PrintSetup, -PS                          Create a template inverse kinematics settings file that can be customized.\n";
+    aOStream << "-PropertyInfo, -PI                        Print help information for properties in setup files.\n";
+    aOStream << "-ReadXsens, -RX directory settings.xml    Parse Xsens exported files from directory using settingsFile.xml.\n";
+    aOStream << "-ReadAPDM, -RA datafile.csv settings.xml  Parse single csv file provided by APDM using specified settingsFile.xml.\n";
+    aOStream << "-Calibrate, -C IMUPlacer_setup.xml        Place IMUs on the model that is specified in the IMUPlacer_setup.xml file.\n";
+    aOStream << "                                          The model is positioned in its default pose. IMUs are then registered to the model according to\n ";
+    aOStream << "                                          their orientations in the first frame of the quaternions file that is specified in IMUPlacer_setup.xml.\n";
+    aOStream << "                                          The orientations of the IMUs in the quaternions file are assumed to be in the IMU world frame.\n";
+    aOStream << "                                          The resultant model with IMU frames registered is written to file if output_model_file is specified\n";
+    aOStream << "                                          in IMUPlacer_setup.xml. Additional options can be specified in IMUPlacer_setup.xml to perform heading correction.\n";
+    aOStream << "-InverseKinematics, -IK ik_settings.xml   Run IK using an xml settings file to define the inverse kinematics problem.\n";
     aOStream << endl;
 /** Advanced options for experimental validation. Uncomment if/when ready to make public
     aOStream << "-Transform, -T markerFileWithIMUframes.trc  Transform experimental marker locations that define axes of IMUs, or the plates\n";
