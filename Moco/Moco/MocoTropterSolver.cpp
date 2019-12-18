@@ -405,8 +405,8 @@ MocoSolution MocoTropterSolver::solveImpl() const {
             std::cout << "MocoTropterSolver succeeded!\n";
         } else {
             // TODO cout or cerr?
-            std::cout << "MocoTropterSolver did NOT succeed:\n";
-            std::cout << "  " << mocoSolution.getStatus() << "\n";
+            std::cerr << "MocoTropterSolver did NOT succeed:\n";
+            std::cerr << "  " << mocoSolution.getStatus() << std::endl;
         }
         std::cout << std::string(79, '=') << std::endl;
     }
