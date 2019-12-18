@@ -1,3 +1,6 @@
+0.3.0 (in development)
+======================
+
 0.2.0
 =====
 - 2019-12-12: Added MocoFrameDistanceConstraint.
