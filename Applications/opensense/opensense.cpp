@@ -157,7 +157,8 @@ int main(int argc, char **argv)
                     Model model = imuPlacer.getCalibratedModel();
                     // If output_model was specified it will be written, otherwise preserve model by writing to "calibrated_"
                     if (imuPlacer.get_output_model_file().empty()) {
-                        auto filename = "calibrated_" + model.getName() + ".osim";
+                        auto filename =
+                                model.getName() + "_calibrated" + ".osim";
                         cout << "Wrote calibrated model to file: '" << filename << "'." << endl;
                         model.print(filename);
                     }
@@ -256,8 +257,14 @@ void PrintUsage(const char *aProgName, ostream &aOStream)
     aOStream << "-Help, -H                                 Print the command-line options for " << progName << ".\n";
     aOStream << "-PrintSetup, -PS                          Create a template inverse kinematics settings file that can be customized.\n";
     aOStream << "-PropertyInfo, -PI                        Print help information for properties in setup files.\n";
-    aOStream << "-ReadXsens, -RX directory settings.xml    Parse Xsens exported files from directory using settingsFile.xml.\n";
-    aOStream << "-ReadAPDM, -RA datafile.csv settings.xml  Parse single csv file provided by APDM using specified settingsFile.xml.\n";
+    aOStream << "-ReadXsens, -RX directory settings.xml    Parse Xsens exported files from directory using settings.xml.\n";
+    aOStream << "                                          Creates a storage file with the orientation data for each sensor, \n";
+    aOStream << "                                          where each column in the storage file is named\n"; 
+    aOStream << "                                          according to the Frame in the corresponding OpenSim model.\n";
+    aOStream << "-ReadAPDM, -RA datafile.csv settings.xml  Parse single csv file provided by APDM using specified settings.xml.\n";
+    aOStream << "                                          Creates a storage file with the orientation data for each sensor, \n";
+    aOStream << "                                          where each column in the storage file is named\n";
+    aOStream << "                                          according to the Frame in the corresponding OpenSim model.\n";
     aOStream << "-Calibrate, -C IMUPlacer_setup.xml        Place IMUs on the model that is specified in the IMUPlacer_setup.xml file.\n";
     aOStream << "                                          The model is positioned in its default pose. IMUs are then registered to the model according to\n ";
     aOStream << "                                          their orientations in the first frame of the quaternions file that is specified in IMUPlacer_setup.xml.\n";
