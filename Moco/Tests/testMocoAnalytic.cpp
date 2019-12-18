@@ -92,3 +92,80 @@ TEMPLATE_TEST_CASE("Second order linear min effort", "", MocoTropterSolver,
 
     OpenSim_CHECK_MATRIX_ABSTOL(solution.getStatesTrajectory(), expected, 1e-5);
 }
+
+class DirectionActuator : public ScalarActuator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(DirectionActuator, ScalarActuator);
+public:
+    OpenSim_DECLARE_PROPERTY(a, double, "Constant.");
+    DirectionActuator() {
+        constructProperty_a(1.0);
+    }
+    double computeActuation(const SimTK::State&) const override {
+        return SimTK::NaN;
+    }
+    void computeForce(const SimTK::State& state,
+            SimTK::Vector_<SimTK::SpatialVec>&,
+            SimTK::Vector& mobilityForces) const override {
+        const double angle = getControl(state);
+        const auto& coordX = getModel().getCoordinateSet().get(0);
+        const auto& coordY = getModel().getCoordinateSet().get(1);
+        applyGeneralizedForce(
+                state, coordX, get_a() * cos(angle), mobilityForces);
+        applyGeneralizedForce(
+                state, coordY, get_a() * sin(angle), mobilityForces);
+    }
+};
+
+class LinearTangentFinalSpeed : public MocoGoal {
+public:
+    OpenSim_DECLARE_CONCRETE_OBJECT(LinearTangentFinalSpeed, MocoGoal);
+    void initializeOnModelImpl(const Model&) const override {
+        setNumIntegralsAndOutputs(0, 1);
+    }
+    void calcGoalImpl(const GoalInput& input, SimTK::Vector& cost) const override {
+        cost[0] = -input.final_state.getU()[0];
+    }
+};
+
+
+TEMPLATE_TEST_CASE("Linear tangent steering", "", MocoTropterSolver,
+        MocoCasADiSolver) {
+    const double a = 2;
+    const double finalTime = 3;
+    const double finalHeight = 1.0;
+    auto model = ModelFactory::createPlanarPointMass();
+    model.updForceSet().clearAndDestroy();
+    auto* actuator = new DirectionActuator();
+    actuator->setName("actuator");
+    actuator->set_a(a);
+    model.addForce(actuator);
+    model.finalizeConnections();
+
+    MocoStudy study;
+    auto& problem = study.updProblem();
+    problem.setModelCopy(model);
+    // const double initialAngle = 0.1;
+    problem.setTimeBounds(0, finalTime);
+    problem.setStateInfo("/jointset/tx/tx/value", {0, 10}, 0);
+    problem.setStateInfo("/jointset/ty/ty/value", {0, 10}, 0, finalHeight);
+    problem.setStateInfo("/jointset/tx/tx/speed", {0, 10}, 0);
+    problem.setStateInfo("/jointset/ty/ty/speed", {0, 10}, 0, 0);
+    problem.setControlInfo("/forceset/actuator", {-0.5 * SimTK::Pi, 0.5 * SimTK::Pi});
+
+    problem.addGoal<LinearTangentFinalSpeed>();
+
+    MocoSolution solution = study.solve();
+
+    // const double tanInitialAngle = -tan(initialAngle) + 2 * tan(initialAngle);
+    // const double c = 2 * tan(initialAngle) / finalTime;
+    //
+    // const SimTK::Vector time = solution.getTime();
+    // SimTK::Vector expectedAngle(time.size());
+    // for (int i = 0; i < expectedAngle.size(); ++i) {
+    //     expectedAngle[i] = atan(tanInitialAngle + c * time[0]);
+    // }
+    // OpenSim_CHECK_MATRIX_ABSTOL(solution.getControl("/forceset/actuator"),
+    //         expectedAngle, 1e-6);
+
+
+}
