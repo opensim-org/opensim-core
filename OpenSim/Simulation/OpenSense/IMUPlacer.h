@@ -67,7 +67,7 @@ public:
             "Leave blank if no heading correction is desired.");
 
     OpenSim_DECLARE_PROPERTY(sensor_to_opensim_rotations, SimTK::Vec3,
-            "Space fixed Euler angles (XYZ order) from IMU Space to OpenSim"
+            "Space fixed Euler angles (XYZ order) from IMU Space to OpenSim. "
             "Default (0, 0, 0).");
 
     OpenSim_DECLARE_PROPERTY(orientation_file_for_calibration, std::string,
