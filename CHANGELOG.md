@@ -1,6 +1,9 @@
 0.3.0 (in development)
 ======================
 
+- 2019-12-17: Fix a bug in report.py related to the now nonexistent 
+              STOFileAdapter.read.
+
 0.2.0
 =====
 - 2019-12-12: Added MocoFrameDistanceConstraint.
