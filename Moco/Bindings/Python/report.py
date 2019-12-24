@@ -144,15 +144,15 @@ class Report(object):
                 # a new file to be used for plotting.
                 # TODO: don't write the extra file permanently
                 if file_ext == '.sto' or file_ext == '.mot':
-                    sto_adapter = osim.STOFileAdapter()
-                    ref = sto_adapter.read(ref_file)
+                    ref = osim.TimeSeriesTable(ref_file)
                     if (ref.hasTableMetaDataKey('inDegrees') and 
                             ref.getTableMetaDataAsString('inDegrees') == 'yes'):
                         simbodyEngine = self.model.getSimbodyEngine()
                         simbodyEngine.convertDegreesToRadians(ref)
                         ref_file = ref_file.replace(file_ext, 
                                 '_radians' + file_ext)
-                        sto_adapter.write(ref, ref_file)                        
+                        sto_adapter = osim.STOFileAdapter()
+                        sto_adapter.write(ref, ref_file)
 
                 num_header_rows = 1
                 with open(ref_file) as f:

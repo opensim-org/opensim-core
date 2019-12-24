@@ -1599,3 +1599,72 @@ TEMPLATE_TEST_CASE(
         study.solve();
     }
 }
+
+TEMPLATE_TEST_CASE("MocoFrameDistanceConstraint", "", MocoTropterSolver, 
+        MocoCasADiSolver) {
+    using SimTK::Pi;
+
+    // Create a 3D pendulum model with a single body and a marker at the 
+    // end-effector.
+    Model model;
+    auto* body = new Body("body", 1, Vec3(0), SimTK::Inertia(1));
+    model.addBody(body);
+    auto* joint = new GimbalJoint("gimbal", model.getGround(), Vec3(0, 1, 0),
+            Vec3(0, 0, -Pi/2), *body, Vec3(-1, 0, 0), Vec3(0));
+    auto& qx = joint->updCoordinate(GimbalJoint::Coord::Rotation1X);
+    qx.setName("qx");
+    auto& qy = joint->updCoordinate(GimbalJoint::Coord::Rotation2Y);
+    qy.setName("qy");
+    auto& qz = joint->updCoordinate(GimbalJoint::Coord::Rotation3Z);
+    qz.setName("qz");
+    model.addJoint(joint);
+    auto* marker = new Marker("marker", *body, Vec3(0));
+    model.addMarker(marker);
+    Ellipsoid bodyGeometry(0.5, 0.1, 0.1);
+    bodyGeometry.setColor(SimTK::Gray);
+    PhysicalOffsetFrame* body_center = new PhysicalOffsetFrame(
+            "body_center", *body, SimTK::Transform(Vec3(-0.5, 0, 0)));
+    body->addComponent(body_center);
+    body_center->attachGeometry(bodyGeometry.clone());
+    model.finalizeConnections();
+
+    // Optimize the trajectory of the 3D pendulum to meet a final marker
+    // position goal while obeying a minimum distance between the ground origin
+    // and the marker (coincident with body frame origin).
+    MocoStudy study;
+    auto& problem = study.updProblem();
+    problem.setModelProcessor(ModelProcessor(model) | ModOpAddReserves(50));
+    problem.setTimeBounds(0, 0.5);
+    problem.setStateInfo("/jointset/gimbal/qx/value", {-Pi/3, Pi/3}, 0);
+    problem.setStateInfo(
+            "/jointset/gimbal/qy/value", {-Pi/3, Pi/3}, Pi/4, -Pi/4);
+    problem.setStateInfo("/jointset/gimbal/qz/value", {-Pi/3, Pi/3}, 0);
+    problem.setStateInfo("/jointset/gimbal/qx/speed", {-10, 10}, 0, 0);
+    problem.setStateInfo("/jointset/gimbal/qy/speed", {-10, 10}, 0, 0);
+    problem.setStateInfo("/jointset/gimbal/qz/speed", {-10, 10}, 0, 0);
+
+    auto* distanceConstraint = 
+        problem.addPathConstraint<MocoFrameDistanceConstraint>();
+    const double distance = 0.1;
+    distanceConstraint->addFramePair({"/ground", "/bodyset/body", distance,
+        SimTK::Infinity});
+
+    auto* finalMarkerGoal =
+            problem.addGoal<MocoMarkerFinalGoal>("final_marker");
+    finalMarkerGoal->setPointName("/markerset/marker");
+    finalMarkerGoal->setReferenceLocation(Vec3(0, 0.292893, 0.707107));
+
+    study.initSolver<TestType>();
+    MocoSolution solution = study.solve();
+    //study.visualize(solution);
+
+    TimeSeriesTableVec3 positionTable = analyze<SimTK::Vec3>(model, solution, 
+            {"/markerset/marker\\|location"});
+    SimTK::Vec3 position;
+    for (int irow = 0; irow < (int)positionTable.getNumRows(); ++irow) {
+        position = positionTable.getRowAtIndex(irow)[0];
+        // The margin is looser than the constraint tolerance because the
+        // constraint is on the square of the distance.
+        CHECK(Approx(position.norm()).margin(1e-3) >= distance);
+    }
+}

@@ -1,3 +1,13 @@
+0.3.0 (in development)
+======================
+
+- 2019-12-17: Fix a bug in report.py related to the now nonexistent 
+              STOFileAdapter.read.
+
+0.2.0
+=====
+- 2019-12-12: Added MocoFrameDistanceConstraint.
+
 - 2019-12-11: Add MocoOutputGoal, allowing any scalar model output to be used as
               as a goal.
 
@@ -38,16 +48,16 @@
               "iterate".
 
 - 2019-11-25: Update SmoothSphereHalfSpaceForce to visualize contact forces in
-              the Simbody visualizer (not the OpenSim GUI). 
+              the Simbody visualizer (not the OpenSim GUI).
 
-- 2019-11-22: Introduce TabOpUseAbsoluteStateNames to convert column labels
-              from IK solutions pre-4.0 states files to use new-style column
-              labels.
+- 2019-11-22: Introduce TabOpUseAbsoluteStateNames to convert column labels  
+              from IK solutions pre-4.0 states files to use new-style column 
+              labels. 
 
 - 2019-11-20: Added MocoAngularVelocityTrackingGoal and 
               MocoAccelerationTrackingGoal in anticipation of supporting 
               applications using IMU data in the future.
-
+              
 - 2019-11-18: Updates to report.py linewidth and legend formatting. 
 
 - 2019-11-18: Exporting controls to TimeSeriesTable via 
@@ -61,8 +71,6 @@
 
 - 2019-11-09: Improve the reliability of building the Ipopt dependency by using
               more stable servers for downloading Metis and MUMPS.
-
-- 2019-11-05: Updated the documentation to contain a list of all examples.
 
 - 2019-10-30: ModelFactory::replaceMusclesWithPathActuators() now adds the
               PathActuators to the Model's ForceSet, and the connectee names
@@ -82,6 +90,14 @@
 - 2019-10-18: MocoInverse has separate properties for constraint and convergence
               tolerances.
 
+- 2019-09-28: exampleSlidingMassAdvanced.cpp and exampleMocoCustomEffortGoal
+              show how to create a custom goal class.
+              
+0.1.0-preprint
+==============
+
+- 2019-11-05: Updated the documentation to contain a list of all examples.
+
 - 2019-10-16: Fix a bug in ModOpscaleMaxIsometricForce, where the scale factor
               was not used properly.
 
@@ -97,9 +113,6 @@
               specify the name of the report output file.
               
 - 2019-09-29: Remove INDYGO and GlobalStaticOptimization from Moco.
-
-- 2019-09-28: exampleSlidingMassAdvanced.cpp and exampleMocoCustomEffortGoal
-              show how to create a custom goal class.
 
 - 2019-09-23: MocoControlGoal has properties "exponent" and
               "divide_by_displacement". 

@@ -58,6 +58,7 @@ namespace OpenSim {
 %include <Moco/MocoConstraint.h>
 
 %include <Moco/MocoControlBoundConstraint.h>
+%include <Moco/MocoFrameDistanceConstraint.h>
 
 // unique_ptr
 // ----------

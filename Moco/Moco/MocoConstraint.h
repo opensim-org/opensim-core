@@ -59,7 +59,6 @@ enum class KinematicLevel {
 /// Objects of this class can only be instantiated by a MocoPhase, since
 /// information from each constraint in the model is required to ensure that
 /// the correct values are assigned to internal variables during construction.
-/// @ingroup mococonstraint
 class OSIMMOCO_API MocoKinematicConstraint {
 public:
     const MocoConstraintInfo& getConstraintInfo() const {
@@ -146,7 +145,7 @@ private:
 /// Therefore, there is no need to clear cache variables that you create in
 /// initializeImpl(). Also, information stored in this constraint does not
 /// persist across multiple solves.
-/// @ingroup mococonstraint
+/// @ingroup mocopathcon
 class OSIMMOCO_API MocoPathConstraint : public Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(MocoPathConstraint, Object);
 

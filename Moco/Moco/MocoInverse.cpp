@@ -18,7 +18,6 @@
 
 #include "MocoInverse.h"
 
-#include "Components/ModelFactory.h"
 #include "Components/PositionMotion.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoGoal/MocoControlGoal.h"
@@ -27,9 +26,6 @@
 #include "MocoProblem.h"
 #include "MocoStudy.h"
 #include "MocoUtilities.h"
-
-#include <OpenSim/Tools/InverseDynamicsTool.h>
-#include <OpenSim/Actuators/CoordinateActuator.h>
 
 using namespace OpenSim;
 
