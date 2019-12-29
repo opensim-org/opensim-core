@@ -190,6 +190,7 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 
 %include <OpenSim/Simulation/Model/GeometryPath.h>
 %include <OpenSim/Simulation/Model/Ligament.h>
+%include <OpenSim/Simulation/Model/Blankevoort1991Ligament.h>
 %include <OpenSim/Simulation/Model/PathActuator.h>
 %include <OpenSim/Simulation/Model/Muscle.h>
 %include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>

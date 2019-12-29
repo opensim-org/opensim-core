@@ -41,6 +41,7 @@
 #include "Model/ElasticFoundationForce.h"
 #include "Model/HuntCrossleyForce.h"
 #include "Model/Ligament.h"
+#include "Model/Blankevoort1991Ligament.h"
 #include "Model/JointSet.h"
 #include "Model/Marker.h"
 #include "Model/Station.h"
