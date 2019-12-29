@@ -20,6 +20,8 @@ v4.1
 - If finalizeConnections() method was not called on a model after making changes and before printing, an exception is thrown to avoid creating corrupt model files quietly (PR #2529)
 - Updated the docopt.cpp dependency so that OpenSim can be compiled with Visual C++ from Visual Studio 2019.
 - Updated Simbody to 3.7 to fix an issue with the simbody-visualizer on macOS 10.15 Catalina.
+- On Mac and Linux, we include a shell script opensim-install-command-line.sh to make OpenSim's command-line tools easily accessible.
+ 
 
 Converting from v4.0 to v4.1
 ----------------------------
