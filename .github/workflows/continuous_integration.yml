@@ -158,6 +158,7 @@ jobs:
         make doxygen
         make install
 
+        cd $GITHUB_WORKSPACE
         mv ~/opensim-core opensim-core
         zip --symlinks --recurse-paths --quiet opensim-core.zip opensim-core
 
@@ -234,6 +235,7 @@ jobs:
         make doxygen
         make install
 
+        cd $GITHUB_WORKSPACE
         mv ~/opensim-core opensim-core
         zip --symlinks --recurse-paths --quiet opensim-core.zip opensim-core
 
