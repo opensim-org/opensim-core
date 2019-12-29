@@ -73,7 +73,7 @@ void testSmith2018ArticularContactForce();
 int main()
 {
     SimTK::Array_<std::string> failures;
-    /*
+    
     try { testPathSpring(); }
     catch (const std::exception& e){
         cout << e.what() <<endl; failures.push_back("testPathSpring");
@@ -156,7 +156,7 @@ int main()
         cout << e.what() <<endl; 
         failures.push_back("testSerializeDeserialize");
     }
-    */
+ 
     try { testSmith2018ArticularContactForce(); }
     catch (const std::exception& e){
         cout << e.what() <<endl; 
