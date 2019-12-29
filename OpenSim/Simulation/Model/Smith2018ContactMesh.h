@@ -39,10 +39,10 @@ a triangle mesh from the mesh_file property (.stl, .vtp, .obj) that represents
 only the contact surface. The mesh does not need to be closed (ie water tight) 
 and a smaller number of triangles in the mesh will lead to faster 
 collision dection performance. The normal vectors of the mesh should be 
-pointing outwards from the articular surface towards the opposing contact mesh. 
-Misdirected triangle normals is a common issue when constructing new meshes. 
-Because the contact force and potential energy are calculated based on the 
-triangle areas and normals, and the derivatives of these outputs with 
+pointing outwards from the articular surface towards the opposing contact 
+mesh. Misdirected triangle normals is a common issue when constructing new 
+meshes. Because the contact force and potential energy are calculated based on 
+the triangle areas and normals, and the derivatives of these outputs with 
 respect to joint coordinates are commonly calculated in integrators and 
 optimizers, the best performance will be achieved with a smooth mesh whos 
 triangle areas are similar sized. In some extreme cases where the mesh becomes
@@ -72,12 +72,13 @@ respective bound.
 
 The mesh can be linearly scaled in the x,y,z directions using the 
 scale_factors property. When using the ScaleTool, these scale factors are 
-set based on the frame set in the scale_frame socket. It is generally advisable 
-to scale both Smith2018ContactMesh meshes used as a contacting pair by the 
-same scale factors to ensure the congruency of the articulating surfaces is
-not substaintially altered. For example, in a knee joint the scale_frame 
-socket for both the femur and tibia Smith2018ContactMeshes would be connected 
-to the femur frame to ensure both meshes are scaled by the femur scale factors.
+set based on the frame set in the scale_frame socket. It is generally 
+advisable to scale both Smith2018ContactMesh meshes used as a contacting pair 
+by the same scale factors to ensure the congruency of the articulating 
+surfaces is not substaintially altered. For example, in a knee joint the 
+scale_frame socket for both the femur and tibia Smith2018ContactMeshes would 
+be connected to the femur frame to ensure both meshes are scaled by the femur 
+scale factors.
 */
 
 
@@ -147,10 +148,11 @@ public:
     int getNumFaces() const {
         return _mesh.getNumFaces();}
 
-    int getNumVertices() const {		
+    int getNumVertices() const {
         return _mesh.getNumVertices();}
 
-    SimTK::Vector getNeighborTris(int tri, int& nNeighborTri) const;
+    const std::set<int>& getNeighborTris(int tri) const {
+        return _tri_neighbors[tri];}
 
     const std::vector<std::vector<int>>& getRegionalTriangleIndices() const {
         return _regional_tri_ind;
@@ -210,15 +212,16 @@ public:
     };
 
 private:
-    // INITIALIZATION
     void setNull();
     void constructProperties();
+
     void extendFinalizeFromProperties() override;
     void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
     void extendConnectToModel(Model& model) override;
+
     void initializeMesh();
     std::string findMeshFile(const std::string& file);
-        
+
     void createObbTree
         (OBBTreeNode& node, const SimTK::PolygonalMesh& mesh,
         const SimTK::Array_<int>& faceIndices);
@@ -238,8 +241,7 @@ private:
     SimTK::Vector _tri_area;
     std::vector<std::vector<int>> _regional_tri_ind;
     std::vector<int> _regional_n_tri;
-    SimTK::Matrix _tri_neighbors;
-    SimTK::Vector _n_tri_neighbors;
+    std::vector<std::set<int>> _tri_neighbors;
     SimTK::Vector_<SimTK::Vec3> _vertex_locations;
     SimTK::Matrix_<SimTK::Vec3> _face_vertex_locations;
     SimTK::Vector _tri_thickness;

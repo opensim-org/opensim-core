@@ -400,8 +400,8 @@ public:
 
     Smith2018ArticularContactForce();
 
-    Smith2018ArticularContactForce(const std::string& name, Smith2018ContactMesh& target_mesh,
-        Smith2018ContactMesh& casting_mesh);
+    Smith2018ArticularContactForce(const std::string& name,
+        Smith2018ContactMesh& target_mesh, Smith2018ContactMesh& casting_mesh);
 
     Smith2018ArticularContactForce(const std::string& name,
         Smith2018ContactMesh& target_mesh,
@@ -664,8 +664,7 @@ protected:
         SimTK::Vector& generalizedForces) const override;
 
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-    void extendInitStateFromProperties(SimTK::State& state)	const override;
-    void extendRealizeReport(const SimTK::State & state)	const override;
+    void extendRealizeReport(const SimTK::State & state) const override;
 
     void computeTriProximity(const SimTK::State& state,
         const Smith2018ContactMesh& casting_mesh,
@@ -723,7 +722,7 @@ private:
     std::vector<std::string> _stat_names;
     std::vector<std::string> _stat_names_vec3;
     std::vector<std::string> _mesh_data_names;
-};		
+};
 //=============================================================================
 // END of class Smith2018ArticularContactForce
 //=============================================================================

@@ -343,64 +343,33 @@ void Smith2018ContactMesh::initializeMesh()
     }
 
     //Vertex Connectivity
-    int max_ver_nTri = 20;
-    
-    SimTK::Matrix ver_tri_ind(_mesh.getNumVertices(), max_ver_nTri);
-    SimTK::Vector ver_nTri(_mesh.getNumVertices());
-    ver_tri_ind.setToZero();
-    ver_nTri.setToZero();
+    std::vector<std::vector<int>> ver_tri_ind(_mesh.getNumVertices());
+    std::vector<int> ver_nTri(_mesh.getNumVertices());
 
     for (int i = 0; i < _mesh.getNumFaces(); ++i) {
         for (int j = 0; j < 3; ++j) {
             int ver = _mesh.getFaceVertex(i, j);
-            ver_tri_ind(ver, ver_nTri(ver)) = i;
-            ver_nTri(ver)++;
-
-            if (ver_nTri(ver) == max_ver_nTri) {
-                max_ver_nTri +=5;
-                ver_tri_ind.resizeKeep(_mesh.getNumVertices(), max_ver_nTri);
-            }
+            ver_tri_ind[ver].push_back(i);
+            ver_nTri[ver]++;
         }
     }
 
-    int max_nNeighbors = 20; // Will increase automatically if necessary
+    //Triangle Neighbors
+    _tri_neighbors.resize(_mesh.getNumFaces());
 
-    _tri_neighbors.resize(_mesh.getNumFaces(), max_nNeighbors);
-    _tri_neighbors.setToZero();
-    _n_tri_neighbors.resize(_mesh.getNumFaces());
-    _n_tri_neighbors.setToZero();
-    
     for (int i = 0; i < _mesh.getNumFaces(); ++i) {
         for (int j = 0; j < 3; ++j) {
 
             int ver = _mesh.getFaceVertex(i, j);
 
-            for (int k = 0; k < ver_nTri(ver); ++k) {
-                bool repeat_tri = false;
-                int tri = ver_tri_ind(ver, k);
+            for (int k = 0; k < ver_nTri[ver]; ++k) {
+                int tri = ver_tri_ind[ver][k];
 
+                //triange can't be neighbor with itself
                 if (tri == i) {
                     continue;
                 }
-
-                for (int l = 0; l < _n_tri_neighbors(i); ++l) {
-                    if (tri == _tri_neighbors(i, l)){
-                        repeat_tri = true;
-                        break;
-                    }
-                }
-
-                if (repeat_tri)
-                    continue;
-
-                _tri_neighbors(i, _n_tri_neighbors(i)) = tri;
-                _n_tri_neighbors(i)++;
-
-                if (_n_tri_neighbors(i) == max_nNeighbors) {
-                    max_nNeighbors +=5;
-                    _tri_neighbors.resizeKeep(
-                        _mesh.getNumFaces(), max_nNeighbors);
-                }
+                _tri_neighbors[i].insert(tri);
             }
 
         }
@@ -474,20 +443,6 @@ void Smith2018ContactMesh::computeVariableCartilageThickness() {
         }
         _tri_thickness(i) = depth;
     }
-}
-
-SimTK::Vector Smith2018ContactMesh::getNeighborTris(
-    int tri, int& nNeighborTri) const
-{
-
-    nNeighborTri = _n_tri_neighbors(tri);
-
-    SimTK::Vector neighbor_tri_list(nNeighborTri);
-
-    for (int i = 0; i < nNeighborTri; ++i) {
-        neighbor_tri_list(i) = _tri_neighbors(tri,i);
-    }
-    return neighbor_tri_list;
 }
 
 void Smith2018ContactMesh::generateDecorations(

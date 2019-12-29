@@ -1893,7 +1893,7 @@ void testSmith2018ArticularContactForce() {
     ForceReporter* reporter = new ForceReporter(&model);
     model.addAnalysis(reporter);
 
-    model.setUseVisualizer(true);
+    //model.setUseVisualizer(true);
     SimTK::State& state = model.initSystem();
 
     model.getCoordinateSet().get("height").setValue(state, start_h);
