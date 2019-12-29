@@ -120,6 +120,8 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/Model/ContactSphere.h>
 %include <OpenSim/Simulation/Model/ElasticFoundationForce.h>
 %include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
+%include <OpenSim/Simulation/Model/Smith2018ContactMesh.h>
+%include <OpenSim/Simulation/Model/Smith2018ArticularContactForce.h>
 
 %include <OpenSim/Simulation/Model/Actuator.h>
 %template(SetActuators) OpenSim::Set<OpenSim::Actuator, OpenSim::Object>;

@@ -40,6 +40,8 @@
 #include "Model/CoordinateSet.h"
 #include "Model/ElasticFoundationForce.h"
 #include "Model/HuntCrossleyForce.h"
+#include "Model/Smith2018ContactMesh.h"
+#include "Model/Smith2018ArticularContactForce.h"
 #include "Model/Ligament.h"
 #include "Model/JointSet.h"
 #include "Model/Marker.h"

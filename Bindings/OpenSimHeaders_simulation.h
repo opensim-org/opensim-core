@@ -30,6 +30,9 @@
 #include <OpenSim/Simulation/Model/ElasticFoundationForce.h>
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
 
+#include <OpenSim/Simulation/Model/Smith2018ContactMesh.h>
+#include <OpenSim/Simulation/Model/Smith2018ArticularContactForce.h>
+
 #include <OpenSim/Simulation/Model/ContactGeometrySet.h>
 #include <OpenSim/Simulation/Model/Probe.h>
 #include <OpenSim/Simulation/Model/ProbeSet.h>

@@ -48,6 +48,8 @@
 #include "Model/CoordinateSet.h"
 #include "Model/ElasticFoundationForce.h"
 #include "Model/HuntCrossleyForce.h"
+#include "Model/Smith2018ContactMesh.h"
+#include "Model/Smith2018ArticularContactForce.h"
 #include "Model/Ligament.h"
 #include "Model/JointSet.h"
 #include "Model/Marker.h"
@@ -233,6 +235,9 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( HuntCrossleyForce::ContactParametersSet() );
     Object::registerType( ElasticFoundationForce::ContactParameters() );
     Object::registerType( ElasticFoundationForce::ContactParametersSet() );
+    Object::registerType( Smith2018ContactMesh() );
+    Object::registerType( Smith2018ArticularContactForce() );
+    Object::registerType( Smith2018ArticularContactForce::ContactParameters() );
 
     Object::registerType( Ligament() );
     Object::registerType( PrescribedForce() );
