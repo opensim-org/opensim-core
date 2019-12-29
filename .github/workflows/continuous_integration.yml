@@ -51,7 +51,7 @@ jobs:
         mkdir $env:GITHUB_WORKSPACE\\build_deps
         chdir $env:GITHUB_WORKSPACE\\build_deps
         cmake --version
-        cmake $env:GITHUB_WORKSPACE\\dependencies -G"Visual Studio 15 2017" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install
+        cmake $env:GITHUB_WORKSPACE\\dependencies -G"Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install
         cmake . -LAH
         cmake --build . --config Release -- /maxcpucount:4
 
@@ -62,7 +62,7 @@ jobs:
         chdir $env:GITHUB_WORKSPACE\\build
         # Turn warnings into errors.
         $env:CXXFLAGS = "/WX"
-        cmake $env:GITHUB_WORKSPACE -G"Visual Studio 15 2017" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core -DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install -DWITH_BTK=on -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on
+        cmake $env:GITHUB_WORKSPACE -G"Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core -DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install -DWITH_BTK=on -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on
         $env:CXXFLAGS = ""
         cmake . -LAH
 
