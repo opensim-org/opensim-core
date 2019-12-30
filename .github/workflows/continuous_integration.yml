@@ -118,7 +118,7 @@ jobs:
     - name: Testing
       run: |
         # Save the private SSH key to a file.
-        echo '"$TESTING" > /tmp/testing'
+        echo "$TESTING" > /tmp/testing
         cat /tmp/testing
         echo 'hi'
         # Start the ssh agent.
