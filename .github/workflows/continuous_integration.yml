@@ -115,22 +115,6 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
-    - name: Testing
-      run: 'echo "$TESTING" > /tmp/testing'
-      env:
-        TESTING: ${{ secrets.TESTING }}
-
-    - name: Testing 2
-      run: |
-        # Save the private SSH key to a file.
-        cat /tmp/testing
-        echo 'hi'
-        # Start the ssh agent.
-        eval "$(ssh-agent -s)"
-        # Register this private key with the GitHub Actions runner.
-        chmod 600 /tmp/testing
-        ssh-add /tmp/testing
-
     - name: Check for tabs in source code
       # GREP returns 0 (true) if there are any matches, and
       # we don't want any matches. If there are matches,
@@ -212,10 +196,15 @@ jobs:
         name: opensim-core-mac
         path: opensim-core.zip
 
+    - name: Add SSH key
+      # Save the private SSH key to a file.
+      # https://stackoverflow.com/questions/59481933/github-actions-how-can-i-save-secret-to-file
+      run: 'echo "$SSH_KEY" > /tmp/ghactions_deploy_myosin_sourceforge_rsa'
+      env:
+        SSH_KEY: ${{ secrets.GHACTIONS_DEPLOY_MYOSIN_SOURCEFORGE_RSA }}
+
     - name: Upload OpenSim to Sourceforge
       run: |
-        # Save the private SSH key to a file.
-        echo $GHACTIONS_DEPLOY_MYOSIN_SOURCEFORGE_RSA > /tmp/ghactions_deploy_myosin_sourceforge_rsa
         # Start the ssh agent.
         eval "$(ssh-agent -s)"
         # Register this private key with the GitHub Actions runner.
