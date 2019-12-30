@@ -121,6 +121,7 @@ jobs:
         TESTING: ${{ secrets.TESTING }}
 
     - name: Testing 2
+      run: |
         # Save the private SSH key to a file.
         cat /tmp/testing
         echo 'hi'
