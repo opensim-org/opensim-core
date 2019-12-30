@@ -21,6 +21,7 @@ v4.1
 - Updated the docopt.cpp dependency so that OpenSim can be compiled with Visual C++ from Visual Studio 2019.
 - Updated Simbody to 3.7 to fix an issue with the simbody-visualizer on macOS 10.15 Catalina.
 - Added `Smith2018ContactMesh` and `Smith2018ArticularContactForce` components to represent the contact forces between triangulated meshes representing articular surfaces. (PR #2658).
+- On Mac and Linux, we include a shell script opensim-install-command-line.sh to make OpenSim's command-line tools easily accessible.
 
 Converting from v4.0 to v4.1
 ----------------------------
