@@ -118,16 +118,16 @@ jobs:
     - name: Testing
       run: |
         # Save the private SSH key to a file.
-        echo $TESTING > /tmp/testing
+        echo '"$TESTING" > /tmp/testing'
         cat /tmp/testing
         echo 'hi'
-        echo ${{ secrets.TESTING }} > /tmp/testing2
-        cat /tmp/testing2
         # Start the ssh agent.
         eval "$(ssh-agent -s)"
         # Register this private key with the GitHub Actions runner.
         chmod 600 /tmp/testing
         ssh-add /tmp/testing
+      env:
+        TESTING: ${{ secrets.TESTING }}
 
     - name: Check for tabs in source code
       # GREP returns 0 (true) if there are any matches, and
