@@ -173,13 +173,25 @@ jobs:
         mv ~/opensim-core opensim-core
         zip --symlinks --recurse-paths --quiet opensim-core.zip opensim-core
 
-    - name: Upload OpenSim
+    - name: Upload OpenSim artifact
       uses: actions/upload-artifact@v1.0.0
       with:
         # The upload-artifact zipping does not preserve symlinks or executable
         # bits. So we zip ourselves, even though this causes a double-zip.
         name: opensim-core-mac
         path: opensim-core.zip
+
+    - name: Upload OpenSim to Sourceforge
+      run: |
+        # Save the private SSH key to a file.
+        echo $GHACTIONS_DEPLOY_MYOSIN_SOURCEFORGE_RSA > /tmp/ghactions_deploy_myosin_sourceforge_rsa
+        # Start the ssh agent.
+        eval "$(ssh-agent -s)"
+        # Register this private key with the GitHub Actions runner.
+        chmod 600 /tmp/ghactions_deploy_myosin_sourceforge_rsa
+        ssh-add /tmp/ghactions_deploy_myosin_sourceforge_rsa
+        # Upload.
+        rsync --archive --compress --verbose opensim-core.zip opensim-bot@frs.sourceforge.net:/home/frs/project/myosin/github-actions/opensim-core/
 
   ubuntu:
     name: Ubuntu
@@ -250,7 +262,7 @@ jobs:
         mv ~/opensim-core opensim-core
         zip --symlinks --recurse-paths --quiet opensim-core.zip opensim-core
 
-    - name: Upload OpenSim
+    - name: Upload OpenSim artifact
       uses: actions/upload-artifact@v1.0.0
       with:
         # The upload-artifact zipping does not preserve symlinks or executable
@@ -258,5 +270,28 @@ jobs:
         name: opensim-core-ubuntu
         path: opensim-core.zip
 
-
-  
+# Below is a description of the process for securely uploading files to
+# Sourceforge, taken from https://oncletom.io/2016/travis-ssh-deploy/.
+#
+# The following link is a great page to learn about SSH.
+# https://www.digitalocean.com/community/tutorials/understanding-the-ssh-encryption-and-connection-process
+#
+# Contact chrisdembia if you need the login information for opensim-bot at
+# sourceforge, to manage myosin.sourceforge.net.
+#
+# Locally, from the root of the opensim-core repository:
+# Create a 4096-bit RSA key, providing a comment.
+# $ ssh-keygen -t rsa -b 4096 -C 'opensim-bot@sourceforge.net' -f ghactions_deploy_myosin_sourceforge_rsa
+# When prompted for a passphrase, just hit enter (twice).
+# Encrypt the private key, add decryption line to .travis.yml.
+# Copy the entire contents of ghactions_deploy_myosin_sourceforge_rsa
+# and add it as a Secret at https://github.com/opensim-org/opensim-core/settings/secrets,
+# with the name GHACTIONS_DEPLOY_MYOSIN_SOURCEFORGE_RSA.
+# Remove the private key file ghactions_deploy_myosin_sourceforge_rsa.
+# DO NOT commmit the private key file.
+# $ rm -f ghactions_deploy_myosin_sourceforge_rsa
+# Manually, log into the sourceforge website (user opensim-bot) and add the
+# public key (contents of ghactions_deploy_myosin_sourceforge_rsa.pub) in
+# Account Settings > SSH Settings.
+# Now you can delete the public key file from your local machine.
+# $ rm -f ghactions_deploy_myosin_sourceforge_rsa.pub
