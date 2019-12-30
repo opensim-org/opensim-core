@@ -116,9 +116,12 @@ jobs:
     - uses: actions/checkout@v1
 
     - name: Testing
-      run: |
+      run: 'echo "$TESTING" > /tmp/testing'
+      env:
+        TESTING: ${{ secrets.TESTING }}
+
+    - name: Testing 2
         # Save the private SSH key to a file.
-        echo "$TESTING" > /tmp/testing
         cat /tmp/testing
         echo 'hi'
         # Start the ssh agent.
@@ -126,8 +129,6 @@ jobs:
         # Register this private key with the GitHub Actions runner.
         chmod 600 /tmp/testing
         ssh-add /tmp/testing
-      env:
-        TESTING: ${{ secrets.TESTING }}
 
     - name: Check for tabs in source code
       # GREP returns 0 (true) if there are any matches, and
