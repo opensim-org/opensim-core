@@ -92,6 +92,21 @@ jobs:
         name: opensim-core-win
         path: opensim-core
 
+    - name: Upload OpenSim to Sourceforge
+      shell: bash
+      run: |
+        # Save the private SSH key to a file.
+        echo $GHACTIONS_DEPLOY_MYOSIN_SOURCEFORGE_RSA > $TEMP/ghactions_deploy_myosin_sourceforge_rsa
+        # Start the ssh agent.
+        eval "$(ssh-agent -s)"
+        # Register this private key with the GitHub Actions runner.
+        chmod 600 $TEMP/ghactions_deploy_myosin_sourceforge_rsa
+        ssh-add $TEMP/ghactions_deploy_myosin_sourceforge_rsa
+        # Rename the ZIP.
+        mv opensim-core.zip opensim-core-win.zip
+        # Upload.
+        rsync --archive --compress --verbose opensim-core-win.zip opensim-bot@frs.sourceforge.net:/home/frs/project/myosin/github-actions/opensim-core/
+
   mac:
     name: Mac
 
@@ -190,8 +205,10 @@ jobs:
         # Register this private key with the GitHub Actions runner.
         chmod 600 /tmp/ghactions_deploy_myosin_sourceforge_rsa
         ssh-add /tmp/ghactions_deploy_myosin_sourceforge_rsa
+        # Rename the ZIP.
+        mv opensim-core.zip opensim-core-mac.zip
         # Upload.
-        rsync --archive --compress --verbose opensim-core.zip opensim-bot@frs.sourceforge.net:/home/frs/project/myosin/github-actions/opensim-core/
+        rsync --archive --compress --verbose opensim-core-mac.zip opensim-bot@frs.sourceforge.net:/home/frs/project/myosin/github-actions/opensim-core/
 
   ubuntu:
     name: Ubuntu
