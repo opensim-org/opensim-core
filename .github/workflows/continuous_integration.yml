@@ -130,7 +130,11 @@ jobs:
         chmod 600 /tmp/ghactions_deploy_myosin_sourceforge_rsa
         ssh-add /tmp/ghactions_deploy_myosin_sourceforge_rsa
         # Upload.
+        echo 'DEBUG TOUCH'
         touch testingupload.txt
+        echo 'DEBUG SCP'
+        scp testingupload.txt opensim-bot@frs.sourceforge.net:/home/frs/project/myosin/github-actions/opensim-core/
+        echo 'DEBUG RSYNC'
         rsync --archive --compress --verbose testingupload.txt opensim-bot@frs.sourceforge.net:/home/frs/project/myosin/github-actions/opensim-core/
 
     - name: Check for tabs in source code
