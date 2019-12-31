@@ -25,7 +25,7 @@ jobs:
       shell: bash
       # Save the private SSH key to a file.
       # https://stackoverflow.com/questions/59481933/github-actions-how-can-i-save-secret-to-file
-      run: 'echo "$SSH_KEY" > /tmp/ghactions_deploy_myosin_sourceforge_rsa'
+      run: 'echo "$SSH_KEY" > $TEMP/ghactions_deploy_myosin_sourceforge_rsa'
       env:
         SSH_KEY: ${{ secrets.GHACTIONS_DEPLOY_MYOSIN_SOURCEFORGE_RSA }}
 
