@@ -130,6 +130,7 @@ jobs:
         chmod 600 /tmp/ghactions_deploy_myosin_sourceforge_rsa
         ssh-add /tmp/ghactions_deploy_myosin_sourceforge_rsa
         echo 'DEBUG KEYSCAN'
+        touch ~/.ssh/known_hosts
         ssh-keyscan -t ECDSA -H frs.sourceforge.net >> ~/.ssh/known_hosts
         # Upload.
         echo 'DEBUG TOUCH'
