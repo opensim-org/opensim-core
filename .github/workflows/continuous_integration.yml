@@ -25,7 +25,7 @@ jobs:
       shell: bash
       run: |
         touch testing.txt
-        zip --recurse-paths --quiet testing.zip testing.txt
+        7z a testing.zip testing.txt
 
     - name: Install Doxygen
       # choco install doxygen.portable # <-- too unreliable.
@@ -90,6 +90,7 @@ jobs:
 
         chdir $env:GITHUB_WORKSPACE
         move ~/opensim-core opensim-core
+        7z a opensim-core-win.zip opensim-core
 
     # https://help.github.com/en/actions/automating-your-workflow-with-github-actions/contexts-and-expression-syntax-for-github-actions
     - name: Upload OpenSim
@@ -118,7 +119,6 @@ jobs:
         chmod 600 ~/ghactions_deploy_myosin_sourceforge_rsa
         ssh-add ~/ghactions_deploy_myosin_sourceforge_rsa
         # Rename the ZIP.
-        zip --recurse-paths --quiet opensim-core-win.zip opensim-core
         # Upload.
         rsync --archive --compress --verbose opensim-core-win.zip opensim-bot@frs.sourceforge.net:/home/frs/project/myosin/github-actions/opensim-core/
         rm ~/ghactions_deploy_myosin_sourceforge_rsa
