@@ -120,7 +120,7 @@ jobs:
       # https://stackoverflow.com/questions/59481933/github-actions-how-can-i-save-secret-to-file
       run: 'echo "$SSH_KEY" > /tmp/ghactions_deploy_myosin_sourceforge_rsa'
       env:
-        SSH_KEY: ${{ secrets.GHACTIONS_DEPLOY_MYOSIN_SOURCEFORGE_RSA }}
+        SSH_KEY: ${{ secrets.SSHKEYPRIVATE }}
 
     - name: Upload OpenSim to Sourceforge
       run: |
