@@ -92,6 +92,14 @@ jobs:
         name: opensim-core-win
         path: opensim-core
 
+    - name: Add SSH key
+      shell: bash
+      # Save the private SSH key to a file.
+      # https://stackoverflow.com/questions/59481933/github-actions-how-can-i-save-secret-to-file
+      run: 'echo "$SSH_KEY" > /tmp/ghactions_deploy_myosin_sourceforge_rsa'
+      env:
+        SSH_KEY: ${{ secrets.GHACTIONS_DEPLOY_MYOSIN_SOURCEFORGE_RSA }}
+
     - name: Upload OpenSim to Sourceforge
       shell: bash
       run: |
@@ -99,6 +107,9 @@ jobs:
         echo $GHACTIONS_DEPLOY_MYOSIN_SOURCEFORGE_RSA > $TEMP/ghactions_deploy_myosin_sourceforge_rsa
         # Start the ssh agent.
         eval "$(ssh-agent -s)"
+        mkdir ~/.ssh
+        touch ~/.ssh/known_hosts
+        ssh-keyscan -t ECDSA -H frs.sourceforge.net >> ~/.ssh/known_hosts
         # Register this private key with the GitHub Actions runner.
         chmod 600 $TEMP/ghactions_deploy_myosin_sourceforge_rsa
         ssh-add $TEMP/ghactions_deploy_myosin_sourceforge_rsa
@@ -114,32 +125,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-
-    - name: Add SSH key
-      # Save the private SSH key to a file.
-      # https://stackoverflow.com/questions/59481933/github-actions-how-can-i-save-secret-to-file
-      run: 'echo "$SSH_KEY" > /tmp/ghactions_deploy_myosin_sourceforge_rsa'
-      env:
-        SSH_KEY: ${{ secrets.SSHKEYPRIVATE }}
-
-    - name: Upload OpenSim to Sourceforge
-      run: |
-        # Start the ssh agent.
-        eval "$(ssh-agent -s)"
-        # Register this private key with the GitHub Actions runner.
-        chmod 600 /tmp/ghactions_deploy_myosin_sourceforge_rsa
-        ssh-add /tmp/ghactions_deploy_myosin_sourceforge_rsa
-        echo 'DEBUG KEYSCAN'
-        mkdir ~/.ssh
-        touch ~/.ssh/known_hosts
-        ssh-keyscan -t ECDSA -H frs.sourceforge.net >> ~/.ssh/known_hosts
-        # Upload.
-        echo 'DEBUG TOUCH'
-        touch testingupload.txt
-        echo 'DEBUG SCP'
-        scp testingupload.txt opensim-bot@frs.sourceforge.net:/home/frs/project/myosin/github-actions/opensim-core/
-        echo 'DEBUG RSYNC'
-        rsync --archive --compress --verbose testingupload.txt opensim-bot@frs.sourceforge.net:/home/frs/project/myosin/github-actions/opensim-core/
 
     - name: Check for tabs in source code
       # GREP returns 0 (true) if there are any matches, and
@@ -236,6 +221,9 @@ jobs:
         # Register this private key with the GitHub Actions runner.
         chmod 600 /tmp/ghactions_deploy_myosin_sourceforge_rsa
         ssh-add /tmp/ghactions_deploy_myosin_sourceforge_rsa
+        mkdir ~/.ssh
+        touch ~/.ssh/known_hosts
+        ssh-keyscan -t ECDSA -H frs.sourceforge.net >> ~/.ssh/known_hosts
         # Rename the ZIP.
         mv opensim-core.zip opensim-core-mac.zip
         # Upload.
