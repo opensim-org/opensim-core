@@ -21,31 +21,6 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
-    - name: Add SSH key
-      shell: bash
-      # Save the private SSH key to a file.
-      # https://stackoverflow.com/questions/59481933/github-actions-how-can-i-save-secret-to-file
-      run: 'echo "$SSH_KEY" > ~/ghactions_deploy_myosin_sourceforge_rsa'
-      env:
-        SSH_KEY: ${{ secrets.GHACTIONS_DEPLOY_MYOSIN_SOURCEFORGE_RSA }}
-
-    - name: Upload OpenSim to Sourceforge
-      shell: bash
-      run: |
-        # Start the ssh agent.
-        eval "$(ssh-agent -s)"
-        mkdir ~/.ssh
-        touch ~/.ssh/known_hosts
-        ssh-keyscan -t ECDSA -H frs.sourceforge.net >> ~/.ssh/known_hosts
-        # Register this private key with the GitHub Actions runner.
-        chmod 600 ~/ghactions_deploy_myosin_sourceforge_rsa
-        ssh-add ~/ghactions_deploy_myosin_sourceforge_rsa
-        # Upload.
-        touch testing.txt
-        7z a testing.zip testing.txt
-        scp testing.zip opensim-bot@frs.sourceforge.net:/home/frs/project/myosin/github-actions/opensim-core/
-        rm ~/ghactions_deploy_myosin_sourceforge_rsa
-
     - name: Install Doxygen
       # choco install doxygen.portable # <-- too unreliable.
       run: |
@@ -138,7 +113,7 @@ jobs:
         chmod 600 ~/ghactions_deploy_myosin_sourceforge_rsa
         ssh-add ~/ghactions_deploy_myosin_sourceforge_rsa
         # Upload.
-        rsync --archive --compress --verbose opensim-core-win.zip opensim-bot@frs.sourceforge.net:/home/frs/project/myosin/github-actions/opensim-core/
+        scp opensim-core-win.zip opensim-bot@frs.sourceforge.net:/home/frs/project/myosin/github-actions/opensim-core/
         rm ~/ghactions_deploy_myosin_sourceforge_rsa
 
   mac:
