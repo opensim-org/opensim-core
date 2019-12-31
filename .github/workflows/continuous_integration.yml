@@ -129,6 +129,8 @@ jobs:
         # Register this private key with the GitHub Actions runner.
         chmod 600 /tmp/ghactions_deploy_myosin_sourceforge_rsa
         ssh-add /tmp/ghactions_deploy_myosin_sourceforge_rsa
+        echo 'DEBUG KEYSCAN'
+        ssh-keyscan -t ECDSA -H frs.sourceforge.net >> ~/.ssh/known_hosts
         # Upload.
         echo 'DEBUG TOUCH'
         touch testingupload.txt
