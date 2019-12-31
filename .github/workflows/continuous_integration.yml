@@ -43,7 +43,6 @@ jobs:
         # Upload.
         touch testing.txt
         7z a testing.zip testing.txt
-        scp testing.zip
         scp testing.zip opensim-bot@frs.sourceforge.net:/home/frs/project/myosin/github-actions/opensim-core/
         rm ~/ghactions_deploy_myosin_sourceforge_rsa
 
