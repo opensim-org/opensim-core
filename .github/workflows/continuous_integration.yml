@@ -21,6 +21,12 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
+    - name: Debug zip
+      shell: bash
+      run: |
+        touch testing.txt
+        zip --recurse-paths --quiet testing.zip testing.txt
+
     - name: Install Doxygen
       # choco install doxygen.portable # <-- too unreliable.
       run: |
@@ -112,7 +118,7 @@ jobs:
         chmod 600 ~/ghactions_deploy_myosin_sourceforge_rsa
         ssh-add ~/ghactions_deploy_myosin_sourceforge_rsa
         # Rename the ZIP.
-        mv opensim-core.zip opensim-core-win.zip
+        zip --recurse-paths --quiet opensim-core-win.zip opensim-core
         # Upload.
         rsync --archive --compress --verbose opensim-core-win.zip opensim-bot@frs.sourceforge.net:/home/frs/project/myosin/github-actions/opensim-core/
         rm ~/ghactions_deploy_myosin_sourceforge_rsa
