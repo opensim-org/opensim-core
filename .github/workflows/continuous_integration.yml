@@ -69,7 +69,7 @@ jobs:
     - name: Build OpenSim
       run: |
         chdir $env:GITHUB_WORKSPACE\\build
-        cmake --build . --config Release -- /maxcpucount:4
+        cmake --build . --config Release --target install -- /maxcpucount:4
 
     - name: Test OpenSim
       run: |
@@ -80,8 +80,7 @@ jobs:
       run: |
         chdir $env:GITHUB_WORKSPACE\\build
         cmake --build . --config Release --target doxygen -- /maxcpucount:4 /verbosity:quiet
-        cmake --build . --config Release --target install -- /maxcpucount:4 /verbosity:quiet
-
+        # cmake --build . --config Release --target install -- /maxcpucount:4 /verbosity:quiet
         chdir $env:GITHUB_WORKSPACE
         move ~/opensim-core opensim-core
         7z a opensim-core-win.zip opensim-core
