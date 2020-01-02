@@ -114,7 +114,8 @@ set(MOCO_SOURCES
         MocoTool.cpp
         MocoConstraintInfo.h
         MocoConstraintInfo.cpp
-        )
+        MocoStudyFactory.h
+        MocoStudyFactory.cpp)
 if (MOCO_WITH_TROPTER)
     list(APPEND MOCO_SOURCES
             tropter/TropterProblem.h

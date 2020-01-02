@@ -196,28 +196,8 @@ TEMPLATE_TEST_CASE("Linear tangent steering", "", /*MocoTropterSolver, TODO*/
     STOFileAdapter::write(expected,
             "testMocoAnalytic_LinearTangentSteering_expected.sto");
 
-    auto model = ModelFactory::createPlanarPointMass();
-    model.set_gravity(SimTK::Vec3(0));
-    model.updForceSet().clearAndDestroy();
-    auto* actuator = new DirectionActuator();
-    actuator->setName("actuator");
-    actuator->set_a(a);
-    model.addForce(actuator);
-    model.finalizeConnections();
-
-    MocoStudy study;
-    auto& problem = study.updProblem();
-    problem.setModelCopy(model);
-    problem.setTimeBounds(0, finalTime);
-    problem.setStateInfo("/jointset/tx/tx/value", {0, 10}, 0);
-    problem.setStateInfo(
-            "/jointset/ty/ty/value", {0, finalHeight}, 0, finalHeight);
-    problem.setStateInfo("/jointset/tx/tx/speed", {0, 10}, 0);
-    problem.setStateInfo("/jointset/ty/ty/speed", {0, 10}, 0, 0);
-    problem.setControlInfo("/forceset/actuator",
-            {-0.5 * SimTK::Pi, 0.5 * SimTK::Pi});
-
-    problem.addGoal<LinearTangentFinalSpeed>();
+    MocoStudy study = MocoStudyFactory::createLinearTangentSteeringStudy(
+            a, finalTime, finalHeight);
 
     MocoSolution solution = study.solve().unseal();
     solution.write("testMocoAnalytic_LinearTangentSteering_solution.sto");

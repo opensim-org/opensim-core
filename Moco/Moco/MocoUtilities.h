@@ -26,7 +26,6 @@
 /// When adding a new function to this file, make sure to add it to one of the
 /// groups above.
 
-
 #include "MocoTrajectory.h"
 #include "osimMocoDLL.h"
 #include <Common/Reporter.h>
