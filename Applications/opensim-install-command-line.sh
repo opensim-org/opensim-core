@@ -13,8 +13,8 @@ fi
 # Create symbolic links.
 # -i: Prompt the user if the target file already exists.
 # -s: Create a symbolic link.
-sudo ln -i -s $(pwd)/opensim-cmd /usr/local/bin/opensim-cmd
-sudo ln -i -s $(pwd)/opensense /usr/local/bin/opensense
+sudo ln -i -s "$(pwd)/opensim-cmd" /usr/local/bin/opensim-cmd
+sudo ln -i -s "$(pwd)/opensense" /usr/local/bin/opensense
 # Un-cache the password, so that the next time sudo is used, a password is
 # required.
 sudo -k
