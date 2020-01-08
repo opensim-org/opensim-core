@@ -30,199 +30,201 @@
 
 namespace OpenSim {
 /**
- This Force component models the articular contact between trianglated surface 
- meshes representing cartilage, mensici, or implant components [1]. The 
- formulation of the contact model has previously been called an elastic 
- foundation model [2] or discrete element analysis [3,4]. In this 
- implementation, non-deforming triangulated meshes are allowed to 
- interpenetrate and the local overlap depth (proximity) is calculated for 
- each triangle. The contact pressure on each triangle face is then calculated 
- based on the overlap depth (see below).
- 
- To calculate the local overlap depth, it is necessary to detect the mesh 
- triangles that are interpenetrating (commonly called contact or collision 
- detection in computer graphics literature). This process is extremely slow if 
- a brute force approach is applied to check every triangle in one mesh against 
- every triangle in another mesh. Smith et al, CMBBE I&V, 2018 [1] introduced a 
- method to efficiently detect contact between triangular meshes using object 
- Oriented Bounding Boxes (OBB, a common approach in computer graphics) and 
- several additional speed ups that take advantage of the constrained nature of 
- articular contact. This approach has been implemented in the 
- Smith2018ArticularContactForce component along with some additional 
- features. 
- 
- Two articulating triangular meshes are defined as Smith2018ContactMesh 
- components (Sockets: casting_mesh and target_mesh). These meshes are fixed to
- bodies in the model, and thus their relative poses are determined by the 
- model coordinates. To detect contact, a normal ray is cast from the center of
- each triangle in the casting mesh backwards towards the overlapping target
- mesh. Ray intersection tests are then performed against an Oriented Bounding 
- Box tree constructed around the target mesh. This algorithm is implemented in
- the computeTriProximity() function with the OBB construction and ray 
- intersection queries managed by the Smith2018ContactMesh.
+This Force component models the articular contact between triangulated surface
+meshes representing cartilage, mensici, or joint implants [1]. The
+formulation of the contact model has previously been called an elastic
+foundation model [2] or discrete element analysis [3,4]. In this
+implementation, non-deforming triangulated meshes are allowed to
+interpenetrate and the local overlap depth (proximity) is calculated for
+each triangle. The contact pressure on each triangle face is then calculated
+based on the overlap depth (see below).
 
- The major speed up in the algorithm leverages the fact that changes in joint 
- coordinates and thus articular contact patterns between time steps are 
- generally small. Thus, after reposing the meshes, (i.e. realizePosition) each 
- triangle in the casting mesh is tested against the contacting target triangle 
- from the previous pose. Additional speed up is gained by casting the normal 
- ray in both directions, so even some of the out of contact triangles are 
- "remembered". If the previous contacting triangle test fails, the casting ray 
- is checked against the neighboring triangles (those that share a vertex) in 
- the target mesh. Then if this test fails, the expensive casting ray - OBB 
- test is performed.
+To calculate the local overlap depth, it is necessary to detect the mesh
+triangles that are interpenetrating (commonly called contact or collision
+detection in computer graphics literature). This task is extremely slow if
+a brute force approach is applied to check every triangle in one mesh against
+every triangle in another mesh. Smith et al, CMBBE I&V, 2018 [1] introduced a
+method to efficiently detect contact between triangular meshes using
+Oriented Bounding Boxes (OBBs, a common approach in computer graphics) and
+several additional speed-ups that take advantage of the constrained nature of
+articular contact. This approach has been implemented in the
+Smith2018ArticularContactForce component along with some additional
+features.
 
- When computing the contact force the ray casting is only performed from the
- casting_mesh towards the target_mesh. Thus, a pressure map is only generated 
- for the casting_mesh. A force vector is computed for each triangle in the 
- casting_mesh using Force = -normal*area*pressure, and the resultant force of 
- the summation of all triangle forces is applied to the casting_mesh in the 
- computeForce() function. The equal and opposite force is applied to the 
- target_mesh. The important ramification of this is that if the casting_mesh 
- and target_mesh are switched, the simulation results will NOT be exactly the 
- same. For best performance, the casting_mesh should be set to the mesh that 
- contains the smaller number of triangles.
- 
- As it is still useful to visualize the proximity and 
- pressure maps for the target_mesh, and in most situations the resultant force 
- from the target_mesh are very close to the mirrored casting_mesh resultant 
- force, there is a ModelingOption named "flip_meshes" that will cause the ray 
- casting to also be performed from the target_mesh to calculate triangle 
- proximity and pressure values. Note the applied contact force in this case is 
- still only that calculated for the casting_mesh. 
- 
- A linear and non-linear relationship between overlap depth and pressure can 
- be used via the elastic_foundation_formulation property. The implemented 
- equations are those proposed in Bei and Fregly, Med Eng Phys, 2004 [2]:
+Two articulating triangular meshes are defined as Smith2018ContactMesh
+components (Sockets: casting_mesh and target_mesh). These meshes are fixed to
+bodies in the model, and thus their relative poses are determined by the
+model coordinates. To detect contact, a normal ray is cast from the center of
+each triangle in the casting mesh towards the overlapping target
+mesh. Ray intersection tests are then performed against an Oriented Bounding
+Box tree constructed around the target mesh. This algorithm is implemented in
+the computeTriProximity() function with the OBB construction and ray
+intersection queries managed by the Smith2018ContactMesh.
 
- Linear: 
- \f[
-    P = E*\frac{(1-\nu)}{(1 + \nu)(1-2\nu)}*\frac{d}{h}
- \f]
- 
- Non-Linear: 
- \f[
-   P = -E*\frac{(1-\nu)}{(1 + \nu)(1-2\nu)}*ln(1-\frac{d}{h})
- \f]
- 
- Where:
- \f[ P = pressure \f]
- \f[ E = elastic\: modulus \f]
- \f[ \nu = Poisson's\: ratio \f]
- \f[ d = depth\: of\: overlap \f]
- \f[ h = height\: (i.e.\:thickness)\: of\: the\: elastic\: layer \f]
+The major speed-up in the algorithm leverages the fact that changes in joint
+coordinates and thus articular contact patterns between time steps are
+generally small. Thus, after reposing the meshes, (i.e. realizePosition()) each
+triangle in the casting mesh is tested against the contacting target triangle
+from the previous pose. Additional speed-up is gained by casting the normal
+ray in both directions, so even some of the out-of-contact triangles are
+"remembered". If the previous contacting triangle test fails, the casting ray
+is checked against the neighboring triangles (those that share a vertex) in
+the target mesh. Then if this test fails, the expensive casting ray--OBB
+test is performed.
 
+# Swapping the contact meshes changes the resulting forces
 
- The original Bei and Fregly formulation assumes that a rigid object is 
- contacting an object with a thin elastic layer. This is straightforward to 
- apply to joint replacements where a metal component contacts a polyethelene 
- component. To model cartilage-cartilage contact, this approach requires that
- the two cartilage layers are lumped together into one elastic layer, 
- necessitating that a constant thickness, elastic modulus, and poissons ratio 
- is assumed for each contacting triangle pair. Thus the total overlap depth is 
- split equally between each triangle contact pair. As cartilage-cartilage 
- contact often involves articulations between cartilage surfaces with varying 
- thickness and material properties, the Bei and Fregly approach was extended 
- to accomodate variable properties. The use_lumped_contact_model property 
- controls whether the constant property or variable property formulation is 
- used.
- 
- The variable property formulation is described in Zevenbergen et al, 
- PLOS One, 2018 [5]. Here, the following system of four equations must be
- solved to obtain the local overlap depth (proximity) and pressure for the 
- casting and target triangles. 
-  
- \f[
-   P_\mathrm{casting} = f(E,\nu,h,d_\mathrm{casting})\:
-   (linear or non-linear formulation above)
- \f]
- 
+The ray casting is only performed from the
+casting_mesh towards the target_mesh. Thus, a pressure map is only generated
+for the casting_mesh. A force vector is computed for each triangle in the
+casting_mesh using Force = -normal*area*pressure, and the resultant force of
+all triangle forces is applied to the body to which the casting_mesh is
+attached.
+An equal and opposite force is applied to the body to which the
+target_mesh is attached. The important ramification of this is that if the
+casting_mesh and target_mesh are switched, the simulation results will NOT be
+exactly the same. For best performance, the casting_mesh should be set to the
+mesh that contains the smaller number of triangles.
 
- \f[
-   P_\mathrm{target} = f(E,\nu,h,d_\mathrm{target})\:
-   (linear or non-linear formulation above) 
- \f]
+As it is still useful to visualize the proximity and
+pressure maps for the target_mesh, and in most situations the resultant force
+from the target_mesh are very close to the mirrored casting_mesh resultant
+force, there is a ModelingOption named "flip_meshes" that will cause the ray
+casting to also be performed from the target_mesh to calculate triangle
+proximity and pressure values. Note the applied contact force in this case is
+still only that calculated for the casting_mesh.
 
- \f[
-   P_\mathrm{casting} = P_\mathrm{target}
- \f]
- 
- \f[
-   d = d_\mathrm{casting} + d_\mathrm{target}
- \f]
+# The pressure-depth relationship
 
- Here, the first two equations use the Bei and Fregly elastic foundation model
- to define the relationship between the local mesh properties, local overlap 
- depth and computed pressure. The third equation is a force equilibrium, 
- assuming that the force applied to a pair of contacting triangles is 
- equal and opposite. This formulation further assumes that the triangles in 
- contact have the same area. The fourth equation states that the total overlap
- depth of the meshes (which is readily calculated) is the sum of the 
- local overlap depths of the two elastic layes in contact. 
+The relationship between overlap depth and pressure can be either linear or
+non-linear, depending on the value of the elastic_foundation_formulation
+property. The implemented equations are those proposed in Bei and Fregly, Med
+Eng Phys, 2004 [2]:
 
- This system of equations can be solved analytically if the linear Pressure-
- depth relationship is used. If the non-linear relationship is used, the 
- system of equations is solved using a numerical solver. 
+Linear:
+\f[
+   P = E\frac{(1-\nu)}{(1 + \nu)(1-2\nu)}\frac{d}{h}
+\f]
 
- The min_proximity and max_proximity properties limit the search region for a 
- contact triangle along a ray cast from the casting_mesh. These values should 
- be set to resonable limits for your application to prevent invalid contacts
- from being found. This is particularly important for situations with highly
- curved meshes where a ray cast from the casting_mesh may intersect the 
- target_mesh multiple times, or at infeasible contact locations. An example
- of this is patellofemoral contact, where rays cast from the patella 
- cartilage mesh can interesect the backsides of the femoral condyles, or the 
- the sides of the trochealar groove multiple times. The min_proximity can be 
- set to a negative value if you would like distance maps for the out of 
- contact triangles. For example, if you are visualizing kinematics measured 
- with fluoroscopy and only have meshes of the bones, using a negative 
- min_proximity enables the distance between the subcondral surfaces to be 
- mapped.
+Non-Linear:
+\f[
+  P = -E\frac{(1-\nu)}{(1 + \nu)(1-2\nu)}\ln{\left(1-\frac{d}{h}\right)}
+\f]
 
- This component has some outputs such as tri_proximity, tri_pressure, and 
- tri_potential_energy that return a SimTK::Vector with a value corresponding 
- to each  triangle face in the respective target or casting mesh. There are 
- also "summary" outputs that return values associated with the entire mesh 
- such as contact area, mean/max proximity/pressure, center of 
- proximity/pressure etc. Finally, there are regional summary outputs which 
- return a 1 x 6 SimTK::Vector. Here, the entries in the vector reflect the 
- summary metrics in a subspace of the mesh. The entries in the 
- 1 x 6 SimTK::Vector correspond to the subset of 
- triangles whose center is located in the half space [+x, -x, +y, -y, +z, -z].
- If the mesh coordinate system is aligned with anatomical axes, then this 
- enables simulation results to be more readily interpreted. For example, 
- when performing simulations of the knee, if the z axis is aligned to the 
- medial-lateral axis, points medially, and the origin is located between the 
- femoral condyles, then the regional outputs corresponding to +z and -z will
- enable comparisons of the loading in the medial and lateral compartments. 
+Where:
+ - \f$ P \f$: pressure
+ - \f$ E \f$: elastic modulus
+ - \f$ \nu \f$: Poisson's ratio
+ - \f$ d \f$: depth of overlap
+ - \f$ h \f$: height (i.e., thickness) of the elastic layer
 
-    [1] Smith, C. R., Won Choi, K., Negrut, D., & Thelen, D. G. (2018). 
-        Efficient computation of cartilage contact pressures within dynamic 
-        simulations of movement. Computer Methods in Biomechanics and 
-        Biomedical Engineering: Imaging & Visualization, 6(5), 491-498.
+# Material/mesh properties
 
-    [2] Bei, Y., & Fregly, B. J. (2004). Multibody dynamic simulation of knee 
-        contact mechanics. Medical engineering & physics, 26(9), 777-789.
+The original Bei and Fregly formulation assumes that a rigid object is
+contacting an object with a thin elastic layer. This assumption is appropriate
+when modeling joint replacements where a metal component (rigid) contacts a
+polyethylene component (elastic). To model cartilage-cartilage contact, this
+approach requires that the two cartilage layers are lumped together into one
+elastic layer, necessitating that a constant thickness, elastic modulus, and
+Poisson's ratio is assumed for each contacting triangle pair. Thus the total
+overlap depth is split equally between each triangle contact pair. As
+cartilage-cartilage contact often involves articulations between cartilage
+surfaces with varying thickness and material properties, the Bei and Fregly
+approach was extended to accommodate variable properties. The
+use_lumped_contact_model property controls whether the constant property or
+variable property formulation is used.
 
-    [3] Volokh, K. Y., Chao, E. Y. S., & Armand, M. (2007). On foundations of 
-        discrete element analysis of contact in diarthrodial joints. Molecular 
-        & cellular biomechanics: MCB, 4(2), 67.
+The variable property formulation is described in Zevenbergen et al,
+PLOS One, 2018 [5]. Here, the following system of four equations must be
+solved to obtain the local overlap depth (proximity) and pressure for the
+casting and target triangles.
 
-    [4] Abraham, C. L., Maas, S. A., Weiss, J. A., Ellis, B. J., Peters, C. 
-        L., & Anderson, A. E. (2013). A new discrete element analysis method 
-        for predicting hip joint contact stresses. Journal of biomechanics, 
-        46(6), 1121-1127.
+\f[
+ \begin{align}
+  P_\mathrm{casting} &= f(E,\nu,h,d_\mathrm{casting}) \\
+  P_\mathrm{target} &= f(E,\nu,h,d_\mathrm{target}) \\
+  P_\mathrm{casting} &= P_\mathrm{target} \\
+  d &= d_\mathrm{casting} + d_\mathrm{target}
+  \end{align}
+\f]
 
-    [5] Zevenbergen, L., Smith, C. R., Van Rossom, S., Thelen, D. G., Famaey,
-        N., Vander Sloten, J., & Jonkers, I. (2018). Cartilage defect location 
-        and stiffness predispose the tibiofemoral joint to aberrant loading 
-        conditions during stance phase of gait. PloS one, 13(10), e0205842.
+Here, the first two equations use the Bei and Fregly elastic foundation model
+(linear or non-linear) to define the relationship between the local mesh
+properties, local overlap depth and computed pressure. The third equation is a
+force equilibrium, assuming that the force applied to a pair of contacting
+triangles is equal and opposite. This formulation further assumes that the
+triangles in contact have the same area. The fourth equation states that the
+total overlap depth of the meshes (which is readily calculated) is the sum of
+the local overlap depths of the two elastic layers in contact.
+
+This system of equations can be solved analytically if the linear pressure-
+depth relationship is used. If the non-linear relationship is used, the
+system of equations is solved using a numerical solver.
+
+# Customizing the collision detection
+
+The min_proximity and max_proximity properties limit the search region for a
+contact triangle along a ray cast from the casting_mesh. These values should
+be set to reasonable limits for your application to prevent invalid contacts
+from being found. This is particularly important for situations with highly
+curved meshes where a ray cast from the casting_mesh may intersect the
+target_mesh multiple times, or at infeasible contact locations. An example
+of this is patellofemoral contact, where rays cast from the patella
+cartilage mesh can intersect the backsides of the femoral condyles, or the
+the sides of the trochlear groove multiple times. The min_proximity can be
+set to a negative value if you would like distance maps for the out of
+contact triangles. For example, if you are visualizing kinematics measured
+with fluoroscopy and only have meshes of the bones, using a negative
+min_proximity enables the distance between the subcondral surfaces to be
+mapped.
+
+# Outputs
+
+This component has some outputs such as tri_proximity, tri_pressure, and
+tri_potential_energy that return a SimTK::Vector with a value corresponding
+to each triangle face in the respective target or casting mesh. There are
+also "summary" outputs that return values associated with the entire mesh
+such as contact area, mean/max proximity/pressure, center of
+proximity/pressure etc. Finally, there are regional summary outputs which
+return a 1 x 6 SimTK::Vector. Here, the entries in the vector reflect the
+summary metrics in a subspace of the mesh. The entries in the
+1 x 6 SimTK::Vector correspond to the subset of
+triangles whose center is located in the half space [+x, -x, +y, -y, +z, -z].
+If the mesh coordinate system is aligned with anatomical axes, then this
+enables simulation results to be more readily interpreted. For example,
+when performing simulations of the knee, if the z axis is aligned to the
+medial-lateral axis, points medially, and the origin is located between the
+femoral condyles, then the regional outputs corresponding to +z and -z will
+enable comparisons of the loading in the medial and lateral compartments.
+
+# References
+
+   [1] Smith, C. R., Won Choi, K., Negrut, D., & Thelen, D. G. (2018).
+       Efficient computation of cartilage contact pressures within dynamic
+       simulations of movement. Computer Methods in Biomechanics and
+       Biomedical Engineering: Imaging & Visualization, 6(5), 491-498.
+
+   [2] Bei, Y., & Fregly, B. J. (2004). Multibody dynamic simulation of knee
+       contact mechanics. Medical engineering & physics, 26(9), 777-789.
+
+   [3] Volokh, K. Y., Chao, E. Y. S., & Armand, M. (2007). On foundations of
+       discrete element analysis of contact in diarthrodial joints. Molecular
+       & cellular biomechanics: MCB, 4(2), 67.
+
+   [4] Abraham, C. L., Maas, S. A., Weiss, J. A., Ellis, B. J., Peters, C.
+       L., & Anderson, A. E. (2013). A new discrete element analysis method
+       for predicting hip joint contact stresses. Journal of biomechanics,
+       46(6), 1121-1127.
+
+   [5] Zevenbergen, L., Smith, C. R., Van Rossom, S., Thelen, D. G., Famaey,
+       N., Vander Sloten, J., & Jonkers, I. (2018). Cartilage defect location
+       and stiffness predispose the tibiofemoral joint to aberrant loading
+       conditions during stance phase of gait. PloS one, 13(10), e0205842.
 */
-
 class OSIMSIMULATION_API Smith2018ArticularContactForce : public Force {
     OpenSim_DECLARE_CONCRETE_OBJECT(Smith2018ArticularContactForce, Force)
 
-        struct contact_stats;
+    struct contact_stats;
 
 public:
     class ContactParameters;
