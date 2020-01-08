@@ -133,9 +133,7 @@ inverse.append_output_paths('.*normalized_fiber_length');
 inverse.append_output_paths('.*passive_force_multiplier');
 
 % Part 4d: Solve! Write the MocoSolution to file.
-tic
 inverseSolution = inverse.solve();
-toc
 inverseSolution.getMocoSolution().write('inverseSolution.sto');
 
 % Part 4e: Get the outputs we calculated from the inverse solution.
@@ -158,9 +156,7 @@ modelProcessor.append(ModOpAddReserves(2));
 inverse.setModel(modelProcessor);
 
 % Part 5c: Solve! Write solution.
-tic
 inverseDeviceSolution = inverse.solve();
-toc
 inverseDeviceSolution.getMocoSolution().write('inverseDeviceSolution.sto');
 
 %% Part 6: Compare unassisted and assisted Inverse Problems.
