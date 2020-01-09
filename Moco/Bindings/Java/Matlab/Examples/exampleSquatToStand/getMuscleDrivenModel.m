@@ -3,7 +3,7 @@ function [model] = getMuscleDrivenModel(ignoreActDyn, subjectInfo)
 import org.opensim.modeling.*;
 
 % Load the base model.
-model = Model('sitToStand_3dof9musc.osim');
+model = Model('squatToStand_3dof9musc.osim');
 model.finalizeConnections();
 
 % Replace the muscles in the model with muscles from DeGroote, Fregly,

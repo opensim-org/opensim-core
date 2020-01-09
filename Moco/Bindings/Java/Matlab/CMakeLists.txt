@@ -15,19 +15,19 @@ file(COPY "Examples/exampleMarkerTracking10DOF/marker_trajectories.trc"
           "Examples/exampleMarkerTracking10DOF/subject01.osim"
           "Examples/exampleMarkerTracking10DOF/state_reference.mot"
      DESTINATION "${SANDBOX_MARKER_TRACKING_DIR}")
-file(COPY "Examples/exampleSitToStand/sitToStand_3dof9musc.osim"
+file(COPY "Examples/exampleSquatToStand/squatToStand_3dof9musc.osim"
      DESTINATION
-        "${CMAKE_BINARY_DIR}/Moco/Sandbox/sandboxSitToStand")
+        "${CMAKE_BINARY_DIR}/Moco/Sandbox/sandboxSquatToStand")
 
 # Copy example model and data files to use in Examples.
-file(COPY "Examples/exampleSitToStand/sitToStand_3dof9musc.osim"
+file(COPY "Examples/exampleSquatToStand/squatToStand_3dof9musc.osim"
      DESTINATION
-        "${CMAKE_BINARY_DIR}/Moco/Examples/C++/exampleSitToStand")
+        "${CMAKE_BINARY_DIR}/Moco/Examples/C++/exampleSquatToStand")
 
 file(GLOB GEOMETRY "${CMAKE_SOURCE_DIR}/opensim-models/Geometry/*"
     "${CMAKE_SOURCE_DIR}/opensim-models/Models/RajagopalModel/Geometry/*")
 install(FILES ${GEOMETRY}
-    DESTINATION "${MOCO_INSTALL_MATLABEXDIR}/exampleSitToStand/Geometry")
+    DESTINATION "${MOCO_INSTALL_MATLABEXDIR}/exampleSquatToStand/Geometry")
 install(FILES ${GEOMETRY}
     DESTINATION "${MOCO_INSTALL_MATLABEXDIR}/exampleMarkerTracking10DOF/Geometry")
 

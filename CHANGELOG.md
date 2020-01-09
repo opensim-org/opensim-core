@@ -1,5 +1,6 @@
 0.3.0 (in development)
 ======================
+- 2020-01-08: exampleSitToStand renamed to exampleSquatToStand. 
 
 - 2019-12-17: Fix a bug in report.py related to the now nonexistent 
               STOFileAdapter.read.
