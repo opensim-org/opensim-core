@@ -1980,3 +1980,37 @@ TEST_CASE("solveBisection()") {
         REQUIRE_THROWS_AS(solveBisection(parabola, -5, 5), Exception);
     }
 }
+
+TEST_CASE("Objective breakdown") {
+    class MocoConstantGoal : public MocoGoal {
+        OpenSim_DECLARE_CONCRETE_OBJECT(MocoConstantGoal, MocoGoal);
+    public:
+        MocoConstantGoal() {}
+        MocoConstantGoal(std::string name, double weight, double constant)
+                : MocoGoal(std::move(name), weight), m_constant(constant) {}
+
+    protected:
+        void initializeOnModelImpl(const Model&) const override {
+            setNumIntegralsAndOutputs(0, 1);
+        }
+        void calcGoalImpl(
+                const GoalInput& input, SimTK::Vector& cost) const override {
+            cost[0] = m_constant;
+        }
+    private:
+        double m_constant = 0;
+    };
+
+    MocoStudy study;
+    auto& problem = study.updProblem();
+    problem.addGoal<MocoConstantGoal>("goal_a", 1.5, 5.2);
+    problem.addGoal<MocoConstantGoal>("goal_b", 0.01, 7.3);
+
+    MocoSolution solution = study.solve();
+    CHECK(solution.getNumObjectiveTerms() == 2);
+    CHECK(solution.getObjectiveTermByIndex(0) == Approx(1.5 * 5.2));
+    CHECK(solution.getObjectiveTermByIndex(1) == Approx(0.01 * 7.3));
+    CHECK(solution.getObjectiveTerm("goal_a") == Approx(1.5 * 5.2));
+    CHECK(solution.getObjectiveTerm("goal_b") == Approx(0.01 * 7.3));
+}
+

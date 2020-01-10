@@ -399,7 +399,8 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     const long long elapsed = stopwatch.getElapsedTimeInNs();
     setSolutionStats(mocoSolution, casSolution.stats.at("success"),
             casSolution.objective, casSolution.stats.at("return_status"),
-            casSolution.stats.at("iter_count"), SimTK::nsToSec(elapsed));
+            casSolution.stats.at("iter_count"), SimTK::nsToSec(elapsed),
+            casSolution.objective_breakdown);
 
     if (get_verbosity()) {
         std::cout << std::string(79, '-') << "\n";
