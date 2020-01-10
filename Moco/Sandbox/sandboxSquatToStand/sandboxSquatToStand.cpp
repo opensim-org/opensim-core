@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: sandboxSitToStand.cpp                                        *
+ * OpenSim Moco: sandboxSquatToStand.cpp                                      *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -40,7 +40,7 @@ void addCoordinateActuator(Model& model, std::string coordName,
 
 Model createTorqueDrivenModel() {
 
-    Model model("sitToStand_3dof9musc.osim");
+    Model model("squatToStand_3dof9musc.osim");
 
     ModelFactory::removeMuscles(model);
     addCoordinateActuator(model, "hip_flexion_r", 100);
@@ -52,7 +52,7 @@ Model createTorqueDrivenModel() {
 
 Model createMuscleDrivenModel() {
 
-    Model model("sitToStand_3dof9musc.osim");
+    Model model("squatToStand_3dof9musc.osim");
 
     model.finalizeConnections();
     DeGrooteFregly2016Muscle::replaceMuscles(model);
