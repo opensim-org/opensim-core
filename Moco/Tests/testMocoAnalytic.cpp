@@ -94,40 +94,6 @@ TEMPLATE_TEST_CASE("Second order linear min effort", "", MocoTropterSolver,
     OpenSim_CHECK_MATRIX_ABSTOL(solution.getStatesTrajectory(), expected, 1e-5);
 }
 
-class DirectionActuator : public ScalarActuator {
-    OpenSim_DECLARE_CONCRETE_OBJECT(DirectionActuator, ScalarActuator);
-
-public:
-    OpenSim_DECLARE_PROPERTY(a, double, "Constant.");
-    DirectionActuator() { constructProperty_a(1.0); }
-    double computeActuation(const SimTK::State&) const override {
-        return SimTK::NaN;
-    }
-    void computeForce(const SimTK::State& state,
-            SimTK::Vector_<SimTK::SpatialVec>&,
-            SimTK::Vector& mobilityForces) const override {
-        const double angle = getControl(state);
-        const auto& coordX = getModel().getCoordinateSet().get(0);
-        const auto& coordY = getModel().getCoordinateSet().get(1);
-        applyGeneralizedForce(
-                state, coordX, get_a() * cos(angle), mobilityForces);
-        applyGeneralizedForce(
-                state, coordY, get_a() * sin(angle), mobilityForces);
-    }
-};
-
-class LinearTangentFinalSpeed : public MocoGoal {
-public:
-    OpenSim_DECLARE_CONCRETE_OBJECT(LinearTangentFinalSpeed, MocoGoal);
-    void initializeOnModelImpl(const Model&) const override {
-        setNumIntegralsAndOutputs(0, 1);
-    }
-    void calcGoalImpl(
-            const GoalInput& input, SimTK::Vector& cost) const override {
-        cost[0] = -input.final_state.getU()[0];
-    }
-};
-
 /// In the "linear tangent steering" problem, we control the direction to apply
 /// a constant thrust to a point mass to move the mass a given vertical distance
 /// and maximize its final horizontal speed. This problem is described in
