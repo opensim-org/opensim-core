@@ -1,12 +1,19 @@
+Change Log
+==========
+
 0.3.0 (in development)
-======================
+----------------------
+- 2020-01-10: MocoSolution now provides a breakdown of terms in the cost 
+              (only when using MocoCasADiSolver).
+
 - 2020-01-08: exampleSitToStand renamed to exampleSquatToStand. 
 
 - 2019-12-17: Fix a bug in report.py related to the now nonexistent 
               STOFileAdapter.read.
+              
 
 0.2.0
-=====
+-----
 - 2019-12-12: Added MocoFrameDistanceConstraint.
 
 - 2019-12-11: Add MocoOutputGoal, allowing any scalar model output to be used as
@@ -94,9 +101,9 @@
 - 2019-09-28: exampleSlidingMassAdvanced.cpp and exampleMocoCustomEffortGoal
               show how to create a custom goal class.
               
+              
 0.1.0-preprint
-==============
-
+--------------
 - 2019-11-05: Updated the documentation to contain a list of all examples.
 
 - 2019-10-16: Fix a bug in ModOpscaleMaxIsometricForce, where the scale factor

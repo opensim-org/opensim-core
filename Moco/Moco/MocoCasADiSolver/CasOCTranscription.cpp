@@ -133,7 +133,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
             "multipliers", m_problem.getNumMultipliers(), m_numGridPoints);
     m_vars[derivatives] = MX::sym(
             "derivatives", m_problem.getNumDerivatives(), m_numGridPoints);
-    
+
     // TODO: This assumes that slack variables are applied at all
     // collocation points on the mesh interval interior.
     m_vars[slacks] = MX::sym(
@@ -222,13 +222,13 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
         if (m_problem.isDynamicsModeImplicit()) {
             // "Slice()" grabs everything in that dimension (like ":" in
             // Matlab).
-            setVariableBounds(derivatives, Slice(0, m_problem.getNumSpeeds()), 
+            setVariableBounds(derivatives, Slice(0, m_problem.getNumSpeeds()),
                     Slice(), m_solver.getImplicitMultibodyAccelerationBounds());
         }
         if (m_problem.getNumAuxiliaryResidualEquations()) {
-            setVariableBounds(derivatives, 
-                Slice(m_problem.getNumAccelerations(), 
-                      m_problem.getNumDerivatives()), 
+            setVariableBounds(derivatives,
+                Slice(m_problem.getNumAccelerations(),
+                      m_problem.getNumDerivatives()),
                 Slice(), m_solver.getImplicitAuxiliaryDerivativeBounds());
         }
     }
@@ -265,7 +265,7 @@ void Transcription::transcribe() {
             "Problems with differing numbers of coordinates and speeds are "
             "not supported (e.g., quaternions).");
 
-    // TODO: Does creating all this memory have efficiency implications 
+    // TODO: Does creating all this memory have efficiency implications
     //        in CasADi?
     // Initialize memory for state derivatives and defects.
     // ----------------------------------------------------
@@ -336,7 +336,7 @@ void Transcription::transcribe() {
     // ---------------------------
     if (m_problem.isDynamicsModeImplicit()) {
         // udot.
-        const MX w = m_vars[derivatives](Slice(0, m_problem.getNumSpeeds()), 
+        const MX w = m_vars[derivatives](Slice(0, m_problem.getNumSpeeds()),
                 Slice());
         m_xdot(Slice(NQ, NQ + NU), Slice()) = w;
 
@@ -354,7 +354,7 @@ void Transcription::transcribe() {
             const auto out =
                     evalOnTrajectory(m_problem.getImplicitMultibodySystem(),
                             inputs, m_meshIndices);
-            m_constraints.multibody_residuals(Slice(), m_meshIndices) = 
+            m_constraints.multibody_residuals(Slice(), m_meshIndices) =
                     out.at(0);
             // zdot.
             m_xdot(Slice(NQ + NU, NS), m_meshIndices) = out.at(1);
@@ -524,7 +524,7 @@ void Transcription::setObjectiveAndEndpointConstraints() {
     if (minimizeAccelerations) {
         const auto& numAccels = m_problem.getNumAccelerations();
         const auto accels = m_vars[derivatives](Slice(0, numAccels), Slice());
-        const double accelWeight = 
+        const double accelWeight =
                 m_solver.getImplicitMultibodyAccelerationsWeight();
         MX integrandTraj = MX::sum1(MX::sq(accels));
         m_objectiveTerms(iterm++) = accelWeight * m_duration *
@@ -650,9 +650,12 @@ Solution Transcription::solve(const Iterate& guessOrig) {
     // The inputs to nlpsol() are symbolic (casadi::MX).
     casadi::MXDict nlp;
     nlp.emplace(std::make_pair("x", x));
-    // The m_objective symbolic variable holds an expression graph including
+    // The objective symbolic variable holds an expression graph including
     // all the calculations performed on the variables x.
     casadi::MX objective = MX::sum1(m_objectiveTerms);
+    if (m_objectiveTerms.numel() == 0) {
+        objective = 0;
+    }
     nlp.emplace(std::make_pair("f", objective));
     nlp.emplace(std::make_pair("g", g));
     if (!m_solver.getWriteSparsity().empty()) {
@@ -1099,10 +1102,15 @@ void Transcription::printConstraintValues(const Iterate& it,
 void Transcription::printObjectiveBreakdown(const Iterate& it,
         const casadi::DM& objectiveTerms,
         std::ostream& stream) const {
-    stream << "Breakdown of objective:\n";
-    for (int io = 0; io < (int)m_objectiveTermNames.size(); ++io) {
-        stream << "  " << m_objectiveTermNames[io] << ": "
-               << objectiveTerms(io).scalar() << "\n";
+    stream << "Breakdown of objective (including weights):";
+    if (objectiveTerms.numel() == 0) {
+        stream << " no terms";
+    } else {
+        stream << "\n";
+        for (int io = 0; io < (int)m_objectiveTermNames.size(); ++io) {
+            stream << "  " << m_objectiveTermNames[io] << ": "
+                   << objectiveTerms(io).scalar() << "\n";
+        }
     }
     stream << std::flush;
 }

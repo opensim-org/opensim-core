@@ -97,7 +97,9 @@ protected:
     static void setSolutionStats(MocoSolution&,
             bool success, double objective,
             const std::string& status, int numIterations,
-            double duration);
+            double duration,
+            std::vector<std::pair<std::string, double>> objectiveBreakdown =
+                    {});
 
     const MocoProblemRep& getProblemRep() const {
         return m_problemRep;

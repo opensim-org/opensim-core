@@ -87,12 +87,14 @@ MocoSolution MocoSolver::solve() const {
 
 void MocoSolver::setSolutionStats(MocoSolution& sol, bool success,
         double objective,
-        const std::string& status, int numIterations, double duration) {
+        const std::string& status, int numIterations, double duration,
+        std::vector<std::pair<std::string, double>> objectiveBreakdown) {
     sol.setSuccess(success);
     sol.setObjective(objective);
     sol.setStatus(status);
     sol.setNumIterations(numIterations);
     sol.setSolverDuration(duration);
+    sol.setObjectiveBreakdown(std::move(objectiveBreakdown));
 }
 
 std::unique_ptr<ThreadsafeJar<const MocoProblemRep>>
