@@ -734,8 +734,8 @@ private:
 /// means you cannot do anything with it until calling `unseal()`. This
 /// prevents you from silently proceeding with a failed solution.
 /// In the file written by write(), the header contains solver success, the
-/// objective, the individual terms in the objective (including the weight) the
-/// breakdown of the objective, and other quantities.
+/// objective, the individual terms in the objective (including the weight),
+/// the breakdown of the objective, and other quantities.
 class OSIMMOCO_API MocoSolution : public MocoTrajectory {
 public:
     /// Returns a dynamically-allocated copy of this solution. You must manage
