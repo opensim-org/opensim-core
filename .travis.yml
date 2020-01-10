@@ -1,5 +1,6 @@
 language: cpp
 os: osx
+# osx_image: xcode9.3 # For Java 8
 compiler: clang
 
 addons:
@@ -11,6 +12,14 @@ addons:
       - shell.sourceforge.net
       # For uploading binaries.
       - frs.sourceforge.net
+  # Using homebrew directly may not work because of Ruby versions; use the
+  # Homebrew addon.
+  # https://docs.travis-ci.com/user/installing-dependencies#installing-packages-on-macos
+  homebrew:
+    packages:
+      - openblas
+      - doxygen
+    update: true
 
 env: 
   global:
@@ -44,4 +53,3 @@ jobs:
       if: commit_message =~ /(build deps|build eigen)/
     - stage: buildtest
       script: bash .github/travis_buildtest.sh
-

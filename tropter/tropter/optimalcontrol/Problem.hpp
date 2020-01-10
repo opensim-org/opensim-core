@@ -150,12 +150,12 @@ calc_differential_algebraic_equations(const Input<T>&, Output<T>) const
 {}
 
 template<typename T>
-void Problem<T>::calc_cost(int cost_index, const CostInput<T>&, T&) const
+void Problem<T>::calc_cost(int /*cost_index*/, const CostInput<T>&, T&) const
 { TROPTER_THROW("calc_cost() not implemented."); }
 
 template<typename T>
 void Problem<T>::calc_cost_integrand(
-        int cost_index, const Input<T>&, T&) const
+        int /*cost_index*/, const Input<T>&, T&) const
 { TROPTER_THROW("calc_cost_integrand() not implemented."); }
 
 template<typename T>

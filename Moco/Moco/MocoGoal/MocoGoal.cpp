@@ -40,8 +40,20 @@ void MocoGoal::printDescription(std::ostream& stream) const {
     stream << getName() << ". " << getConcreteClassName() <<
             " enabled: " << get_enabled() << " mode: " << mode;
     if (mode == "cost") {
-        stream << " weight: " << get_weight() << std::endl;
+        stream << " weight: " << get_weight();
     }
+    stream << std::endl;
+    printDescriptionImpl(stream);
+}
+
+double MocoGoal::calcSystemDisplacement(const SimTK::State& initialState,
+        const SimTK::State& finalState) const {
+    const SimTK::Vec3 comInitial =
+            getModel().calcMassCenterPosition(initialState);
+    const SimTK::Vec3 comFinal =
+            getModel().calcMassCenterPosition(finalState);
+    // TODO: Use distance squared for convexity.
+    return (comFinal - comInitial).norm();
 }
 
 void MocoGoal::constructProperties() {

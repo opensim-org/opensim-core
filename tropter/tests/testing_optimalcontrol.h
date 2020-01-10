@@ -30,7 +30,7 @@ namespace tropter {
 /// between scalar types double and adouble.
 template <template <class> class OCPType>
 struct OCPDerivativesComparison {
-    int num_mesh_points = 5;
+    int num_mesh_intervals = 5;
     std::string findiff_hessian_mode = "fast";
     double findiff_hessian_step_size = 1e-3;
     double gradient_error_tolerance = 1e-7;
@@ -43,7 +43,7 @@ struct OCPDerivativesComparison {
         // double
         auto d = std::make_shared<OCPType<double>>();
         DirectCollocationSolver<double> ddc(d, "trapezoidal", "ipopt",
-                num_mesh_points);
+                num_mesh_intervals);
         auto dnlp = ddc.get_transcription().make_decorator();
         dnlp->set_findiff_hessian_step_size(findiff_hessian_step_size);
         dnlp->set_findiff_hessian_mode(findiff_hessian_mode);
@@ -58,7 +58,7 @@ struct OCPDerivativesComparison {
         // adouble
         auto a = std::make_shared<OCPType<adouble>>();
         DirectCollocationSolver<adouble> adc(a, "trapezoidal", "ipopt",
-                num_mesh_points);
+                num_mesh_intervals);
         auto anlp = adc.get_transcription().make_decorator();
         VectorXd agrad;
         SparseMatrix<double> ajac;

@@ -49,11 +49,11 @@ public:
         // xdot.row(1) = -x.row(1) + u.row(0);
     }
     void calc_cost(
-            int cost_index, const CostInput<T>& in, T& cost) const override {
+            int, const CostInput<T>& in, T& cost) const override {
         cost = in.integral;
     }
     void calc_cost_integrand(
-            int cost_index, const Input<T>& in, T& integrand) const override {
+            int, const Input<T>& in, T& integrand) const override {
         const auto& u = in.controls;
         integrand = 0.5 * u[0] * u[0];
     }

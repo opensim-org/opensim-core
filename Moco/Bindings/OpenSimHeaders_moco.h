@@ -3,22 +3,28 @@
 /* This header is only used with SWIG to create bindings.
  */
 
+#include <Moco/About.h>
 #include <Moco/Common/TableProcessor.h>
 #include <Moco/Components/ActivationCoordinateActuator.h>
 #include <Moco/Components/DeGrooteFregly2016Muscle.h>
 #include <Moco/Components/ModelFactory.h>
+#include <Moco/Components/MultivariatePolynomialFunction.h>
 #include <Moco/Components/PositionMotion.h>
 #include <Moco/Components/SmoothSphereHalfSpaceForce.h>
 #include <Moco/MocoBounds.h>
 #include <Moco/MocoCasADiSolver/MocoCasADiSolver.h>
 #include <Moco/MocoControlBoundConstraint.h>
+#include <Moco/MocoFrameDistanceConstraint.h>
 #include <Moco/MocoGoal/MocoControlGoal.h>
 #include <Moco/MocoGoal/MocoGoal.h>
 #include <Moco/MocoGoal/MocoInitialActivationGoal.h>
+#include <Moco/MocoGoal/MocoInitialForceEquilibriumGoal.h>
+#include <Moco/MocoGoal/MocoInitialVelocityEquilibriumDGFGoal.h>
 #include <Moco/MocoGoal/MocoJointReactionGoal.h>
 #include <Moco/MocoGoal/MocoMarkerFinalGoal.h>
 #include <Moco/MocoGoal/MocoMarkerTrackingGoal.h>
 #include <Moco/MocoGoal/MocoOrientationTrackingGoal.h>
+#include <Moco/MocoGoal/MocoOutputGoal.h>
 #include <Moco/MocoGoal/MocoPeriodicityGoal.h>
 #include <Moco/MocoGoal/MocoStateTrackingGoal.h>
 #include <Moco/MocoGoal/MocoSumSquaredStateGoal.h>

@@ -5,6 +5,8 @@ typedef SimTK::RowVector_<double> RowVector;
 
 %include <Moco/osimMocoDLL.h>
 
+%include <Moco/About.h>
+
 %include <Moco/Common/TableProcessor.h>
 
 
@@ -35,7 +37,10 @@ namespace OpenSim {
 %include <Moco/MocoGoal/MocoSumSquaredStateGoal.h>
 %include <Moco/MocoGoal/MocoOrientationTrackingGoal.h>
 %include <Moco/MocoGoal/MocoTranslationTrackingGoal.h>
+%include <Moco/MocoGoal/MocoOutputGoal.h>
 %include <Moco/MocoGoal/MocoPeriodicityGoal.h>
+%include <Moco/MocoGoal/MocoInitialForceEquilibriumGoal.h>
+%include <Moco/MocoGoal/MocoInitialVelocityEquilibriumDGFGoal.h>
 
 
 // %template(MocoBoundsVector) std::vector<OpenSim::MocoBounds>;
@@ -53,6 +58,7 @@ namespace OpenSim {
 %include <Moco/MocoConstraint.h>
 
 %include <Moco/MocoControlBoundConstraint.h>
+%include <Moco/MocoFrameDistanceConstraint.h>
 
 // unique_ptr
 // ----------
@@ -182,6 +188,8 @@ EXPOSE_BOUNDS_CONSTRUCTORS_HELPER(MocoFinalBounds);
         std::initializer_list<double>);
 %ignore OpenSim::MocoTrajectory::setMultiplier(const std::string&,
         std::initializer_list<double>);
+%ignore OpenSim::MocoTrajectory::setDerivative(const std::string&,
+        std::initializer_list<double>);
 
 %include <Moco/MocoTrajectory.h>
 
@@ -204,9 +212,14 @@ namespace OpenSim {
 %include <Moco/Components/DeGrooteFregly2016Muscle.h>
 moco_unique_ptr(OpenSim::PositionMotion);
 %include <Moco/Components/PositionMotion.h>
+
 %include <Moco/MocoUtilities.h>
+%template(analyze) OpenSim::analyze<double>;
+%template(analyzeVec3) OpenSim::analyze<SimTK::Vec3>;
+%template(analyzeSpatialVec) OpenSim::analyze<SimTK::SpatialVec>;
 
 %include <Moco/Components/ModelFactory.h>
 %include <Moco/Components/SmoothSphereHalfSpaceForce.h>
+%include <Moco/Components/MultivariatePolynomialFunction.h>
 
 %include <Moco/ModelOperators.h>

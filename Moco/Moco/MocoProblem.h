@@ -96,6 +96,11 @@ public:
     /// 1. Coordinate values: the Coordinate's range is used (regardless of
     ///     whether the coordinate is clamped).
     /// 2. Coordinate speeds: this class's default_speed_bounds property.
+    /// 3. All other states: if a component has a SimTK::Vec2 output named
+    ///    `statebounds_<state-name>`, then this output is used to set default
+    ///    bounds for the state variable `<state-name>` for that component.
+    ///    The first element of the Vec2 is the lower bound and the second is
+    ///    the upper bound.
     ///
     /// These defaults are also used if you completely omit state info for a
     /// state variable.
@@ -357,11 +362,11 @@ protected: // Protected so that doxygen shows the properties.
     OpenSim_DECLARE_PROPERTY(default_speed_bounds, MocoBounds,
             "Bounds for coordinate speeds if not specified in "
             "state_infos (default: [-50, 50]).");
-    OpenSim_DECLARE_PROPERTY(bound_activation_from_excitation, bool,
+    OpenSim_DECLARE_PROPERTY(bound_activation_from_excitation, bool,	    
             "For muscles without explicit activation bounds, set the bounds "
-            "for muscle activation (if activation dynamics are enabled) from "
-            "the bounds for muscle control (excitation), using "
-            "min/max control if explicit control bounds are not "
+            "for muscle activation (if activation dynamics are enabled) from " 
+            "the bounds for muscle control (excitation), using "             
+            "min/max control if explicit control bounds are not "            
             "provided. (default: true).");
     OpenSim_DECLARE_LIST_PROPERTY(
             state_infos, MocoVariableInfo, "The state variables' bounds.");

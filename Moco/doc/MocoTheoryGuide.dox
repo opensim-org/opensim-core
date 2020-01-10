@@ -1,0 +1,369 @@
+namespace OpenSim {
+/**
+
+@page mocotheoryguide Moco Theory Guide
+
+This guide explains the type of optimal control problems Moco can solve,
+in mathematical form, and how these problems are transcribed into
+nonlinear optimization problems.
+
+@tableofcontents
+
+@section mocoocp Optimal control problem
+
+The most generic problem that Moco solves can be expressed as follows:
+
+\f[
+\begin{align}
+    \begin{aligned}
+        \mbox{minimize}
+         \quad & \sum_j w_{j} J_{j}(t_0, t_f, y_0, y_f, x_{0}, x_{f}, \lambda_0, \lambda_f, p, S_{c,j}) && \textrm{costs} \\
+        & \quad\quad S_{c,j} = \int_{t_0}^{t_f} s_{c,j}(t, y, x, \lambda, p)\,dt  \\
+        \mbox{subject to}
+         \quad & \dot{q} = u \\
+         & M(q, p)\dot{u} + G(q, p)^T \lambda = f_{\mathrm{app}}(t, y, x, p) - f_{\mathrm{inertial}}(q, u, p)  && \textrm{multibody dynamics} \\
+         & \dot{z}_\textrm{ex}(t) = f_{\dot{z},\textrm{ex}}(t, y, x, \lambda, p) && \textrm{auxiliary dynamics, explicit} \\
+         & 0 = f_{\dot{z},\textrm{im}}(t, y, \dot{z}_{\textrm{im}}, x, \lambda, p) &&  \textrm{auxiliary dynamics, implicit}\\
+         & 0 = \phi(q, p) && \textrm{kinematic constraints} \\
+         & V_{L,k} \leq V_k(t_0, t_f, y_0, y_f, x_{0}, x_{f}, \lambda_0, \lambda_f, p, S_{b,k}) \leq V_{U,k} && \textrm{boundary constraints} \\
+         & \quad\quad S_{b,k} = \int_{t_0}^{t_f} s_{b,k}(t, y, x, \lambda, p)\,dt \quad k = 1, \ldots, K\\
+         & g_{L} \leq g(t, y, x, \lambda, p) \leq g_{U} && \textrm{path constraints} \\
+         & y_{0,L} \leq y_0 \leq y_{0,U} \quad\quad y_{f,L} \leq y_f \leq y_{f,U} && \textrm{initial and final states} \\
+         & x_{0,L} \leq x_0 \leq x_{0,U} \quad\quad x_{f,L} \leq x_f \leq x_{f,U} && \textrm{initial and final controls} \\
+         \mbox{with respect to} \quad
+         & t_0 \in [t_{0,L}, t_{0,U}] && \textrm{initial time} \\
+         & t_f \in [t_{f,L}, t_{f,U}] && \textrm{final time} \\
+         & y(t) = (q(t), u(t), z(t)) \in [y_{L}, y_{U}] && \textrm{states} \\
+         & x(t) \in [x_{L}, x_{U}] && \textrm{controls} \\
+         & \lambda(t) && \textrm{Lagrange multipliers} \\
+         & p \in [p_{L}, p_{U}] && \textrm{time-invariant parameters}
+    \end{aligned}
+\end{align}
+\f]
+
+We use the following notation:
+
+- \f$ t \f$: time
+- \f$ q(t) \f$: generalized coordinates
+- \f$ u(t) \f$: generalized speeds
+- \f$ z(t) \f$: auxiliary states (muscle fiber length and activation)
+- \f$ z_{\textrm{ex}}(t) \f$: the subset of \f$ z(t) \f$ with explicit differential
+   equations
+- \f$ z_{\textrm{im}}(t) \f$: the subset of \f$ z(t) \f$ with implicit differential
+   equations
+- \f$ y(t) = (q(t), u(t), z(t))\f$
+- \f$ x(t) \f$: controls (including muscle excitation)
+- \f$ p \f$: constant parameters
+- \f$ \lambda \f$: kinematic constraint multipliers
+- \f$ w_j \f$: weight for \f$ j \f$-th cost goal
+- \f$ J_{j} \f$: the \f$ j \f$-th cost goal
+- \f$ s_{c,j} \f$: integrand used in the \f$ j \f$-th cost goal
+- \f$ S_{c,j} \f$: integral of \f$ s_{c,j} \f$
+- \f$ M \f$: mass matrix
+- \f$ f_{\textrm{inertial}} \f$: centripetal and coriolis forces
+- \f$ G \f$: kinematic constraint Jacobian
+- \f$ f_{\textrm{app}} \f$: applied forces (gravity, muscles, etc.)
+- \f$ f_{\textrm{aux},\textrm{ex}} \f$: explicit auxiliary dynamics (muscle activation dynamics, etc.)
+- \f$ f_{\textrm{aux},\textrm{im}} \f$: implicit auxiliary dynamics (DeGrooteFregly2016Muscle's tendon compliance dynamics)
+- \f$ \phi \f$: position-level (holonomic) kinematic constraints
+- \f$ \nu \f$: velocity-level (non-holonomic) kinematic constraints
+- \f$ \alpha \f$: acceleration-level kinematic constraints
+- \f$ V_k \f$: the \f$ k \f$-th boundary constraint goal
+- \f$ s_{b,k} \f$: the integrand used in the \f$ k \f$-th boundary constraint goal
+- \f$ S_{b,k} \f$: the integral of \f$ s_{b,k} \f$
+- \f$ K \f$: number of boundary constraint goals
+- \f$ g \f$: path constraints
+- subscript \f$ U \f$: an upper bound
+- subscript \f$ L \f$: a lower bound
+
+In Moco, "goals", such as tracking marker data or effort, can be
+enforced either as cost terms to minimize or boundary constraints.
+
+Auxiliary dynamics are typically used for muscle activation dynamics and fiber
+dynamics. In Moco, these dynamics can be expressed with explicit differential
+equations, where the derivative of the auxiliary state variable is on the left
+hand side of the dynamics equations, or implicit differential equations, where
+the derivative of the auxiliary state variable is an input to a residual
+equation (i.e., the left hand side is 0). Note that the explicit auxiliary
+differential equations can depend on any auxiliary state variable, even on a
+variable whose dynamics are enforced with an implicit differential equation.
+Similarly, the implicit differential equations can depend on any of the
+auxiliary state variables.
+
+@subsection mocopreskintheory Prescribed kinematics
+
+Simbody provides two mechanisms for prescribing the value of a coordinate:
+adding a constraint with SimTK::Constraint::PrescribedMotion (see
+Coordinate's prescribed and prescribed_function properties), and removing a
+degree of freedom using SimTK::Motion. The former leads to a bigger system of
+equations (and does not avoid multibody dynamics), while the latter results in a
+smaller system of equations. In Moco, we use the PositionMotion component (which
+uses SimTK::Motion) to prescribe the motion of all degrees of freedom using
+spline functions, as this leads to a more tractable direct collocation problem
+that often converges reliably and in far less time than a problem containing
+multibody dynamics.
+
+In this formulation, the kinematic variables \f$ q \f$ and \f$ u \f$ are
+replaced with known quantities \f$ \hat{q} \f$ and \f$ \hat{u} \f$:
+
+\f[
+\begin{align}
+    \begin{aligned}
+        \mbox{minimize} \quad & \sum_j w_j J_{j}(t_0, t_f, \hat{q}_0, \hat{q}_f, \hat{u}_0, \hat{u}_f, z_0, z_f, x_{0}, x_{f}, \lambda_0, \lambda_f, p, S_{c,j}) && \textrm{costs} \\
+        & \quad\quad S_{c,j} = \int_{t_0}^{t_f} s_{c,j}(t, \hat{q}, \hat{u}, z, x, \lambda, p)~dt \\
+        \mbox{subject to} \quad &
+         M(\hat{q}, p)\hat{\dot{u}} + G(\hat{q}, p)^T \lambda = f_{\textrm{app}}(t, \hat{q}, \hat{u}, z, x, p) - f_{\textrm{inertial}}(\hat{q}, \hat{u}, p) && \textrm{multibody dynamics} \\
+        & \dot{z}_{\textrm{ex}}(t) = f_{\dot{z},\textrm{ex}}(t, \hat{q}, \hat{u}, z, x, \lambda, p) && \textrm{auxiliary dynamics, explicit} \\
+        & 0 = f_{\dot{z},\textrm{im}}(t, \hat{q}, \hat{u}, z, \dot{z}_\textrm{im}, x, \lambda, p) && \textrm{auxiliary dynamics, implicit}\\
+        & V_{L,k} \leq V_k(t_0, t_f, \hat{q}_0, \hat{q}_f, \hat{u}_0, \hat{u}_f, z_0, z_f, x_{0}, x_{f}, \lambda_0, \lambda_f, p, S_{b,k}) \leq V_{U,k}  && \textrm{boundary constraints} \\
+        & \quad\quad S_{b,k} = \int_{t_0}^{t_f} s_{b,k}(t, \hat{q}, \hat{u}, z, x, \lambda, p)~dt \quad k = 1, \ldots, K \\
+        & g_{L} \leq g(t, \hat{q}, \hat{u}, z, x, \lambda, p) \leq g_{U} && \textrm{path constraints} \\
+        & z_{0,L} \leq z_0 \leq z_{0,U} && \textrm{initial auxiliary states} \\
+        & z_{f,L} \leq z_f \leq z_{f,U} && \textrm{final auxiliary states} \\
+        & x_{0,L} \leq x_0 \leq x_{0,U} && \textrm{initial controls} \\
+        & x_{f,L} \leq x_f \leq x_{f,U} && \textrm{final controls} \\
+        \mbox{with respect to} \quad
+        & t_0 \in [t_{0,L}, t_{0,U}] && \textrm{initial time} \\
+        & t_f \in [t_{f,L}, t_{f,U}] && \textrm{final time} \\
+        & z(t) \in [z_{L}, z_{U}] && \textrm{auxiliary states} \\
+        & x(t) \in [x_{L}, x_{U}] && \textrm{controls} \\
+        & \lambda(t) && \textrm{Lagrange multipliers} \\
+        & p \in [p_{L}, p_{U}]. && \textrm{time-invariant parameters}
+    \end{aligned}
+\end{align}
+\f]
+
+The system still contains auxiliary state variables \f$ z \f$, control variables
+\f$ x \f$, and auxiliary dynamics. If none of the parameter variables affect the
+multibody system, then the multibody dynamics is reduced to a force balance:
+applied forces must match the net generalized forces determined by the
+kinematics (that is, inverse dynamics).
+
+See @ref implpreskin for more information.
+
+@section dircol Direct collocation
+
+The optimal control problems are solved using the direct collocation method.
+We provide a brief description of the method below; for a detailed explanation,
+see the following excellent material:
+
+  - Short paper: Kelly, M. (2017). An introduction to trajectory optimization:
+    how to do your own direct collocation. SIAM Review, 59(4), 849-904.
+    https://doi.org/10.1137/16M1062569
+  - Textbook: Betts, J. T. (2010). Practical methods for optimal control and
+    estimation using nonlinear programming (Vol. 19). Siam.
+
+@subsection mocotraptheory Trapezoidal transcription
+
+With trapezoidal transcription, we discretize the continuous variables along \f$
+n + 1 \f$ mesh points, leading to \f$ n \f$ mesh intervals:
+
+\f[
+    \begin{alignat*}{1}
+        0 &= \tau_0 < \tau_1 < \tau_2 < \ldots < \tau_i < \ldots < \tau_{n - 1} < \tau_n = 1 \\
+        t_i &= (t_f - t_0) \tau_i + t_0 \\
+        h_i &= (t_f - t_0)(\tau_i - \tau_{i-1})
+    \end{alignat*}
+\f]
+
+We use the trapezoidal rule to remove integrals and derivatives from the
+original continuous time problem,
+
+\f[
+    \textrm{trap}_i(F(\eta, p)) = \frac{1}{2} h_i (F(\eta_{i-1}, p) + F(\eta_i, p))
+\f]
+
+where \f$ \eta \f$ is any continuous variable in the optimal control problem
+(e.g., \f$ y \f$) and \f$ F \f$ is any function.
+
+Combining the discretization with the trapezoidal rule yields the following
+finite-dimensional nonlinear optimization problem (or nonlinear program, abbreviated as NLP):
+
+\f[
+\begin{align}
+    \begin{aligned}
+        \mbox{minimize} \quad
+         & \sum_j w_j J_{j}(t_0, t_f, y_0, y_n, x_{0}, x_{n}, \lambda_0, \lambda_n, p, S_{c,j})
+          + w_{\lambda} \sum_{i=1}^{n} \textrm{trap}_i(\|\lambda\|_2^2)  \\
+         & \quad\quad S_{c,j} = \sum_{i=1}^{n} \textrm{trap}_i(s_{c,j}(t, y, x, \lambda, p)) \\
+        \mbox{subject to} \quad
+         & q_i = q_{i-1} + \textrm{trap}_i(u) && i = 1, \ldots, n \\
+         & u_i = u_{i-1} + \textrm{trap}_i(f_{\dot{u}}(t, y, x, \lambda, p))  && i = 1, \ldots, n \\
+         & z_{\textrm{ex},i} = z_{\textrm{ex},i-1} + \textrm{trap}_i(f_{\dot{z},\textrm{ex}}(t, y, x, \lambda, p)) && i = 1, \ldots, n \\
+         & z_{\textrm{im},i} = z_{\textrm{im},i-1} + \textrm{trap}_i(\zeta) && i = 1, \ldots, n \\
+         & 0 = f_{\dot{z},\textrm{im}}(t_i, y_i, \zeta_i, x_i, \lambda_i, p) && i = 0, \ldots, n \\
+         & 0 = \phi(q_i, p)  && i = 0, \ldots, n\\
+         & V_{L,k} \leq V_k(t_0, t_f, y_0, y_f, x_{0}, x_{f}, \lambda_0, \lambda_f, p, S_{b,k}) \leq V_{U,k} \\
+         & \quad\quad S_{b,k} = \sum_{i=1}^{n} \textrm{trap}_i(s_{b,k}(t, y, x, \lambda, p)) && k = 1, \ldots, K \\
+         & g_{L} \leq g(t_i, y_i, x_{i}, \lambda_i, p) \leq g_{U}  && i = 0, \ldots, n\\
+         \mbox{with respect to} \quad
+         & t_0 \in [t_{0,L}, t_{0,U}] && t_n \in [t_{f,L}, t_{f,U}] \\
+         & y_0 \in [y_{0,L}, y_{0,U}] && y_n \in [y_{f,L}, y_{f,U}] \\
+         & y_i \in [y_{L}, y_{U}] && i = 1, \ldots, n - 1\\
+         & \zeta_i \in [\zeta_{L}, \zeta_{U}] && i = 0, \ldots, n \\
+         & x_0 \in [x_{0,L}, x_{0,U}] && x_n \in [x_{f,L}, x_{f,U}] \\
+         & x_i \in [x_{L}, x_{U}] && i = 1, \ldots, n - 1\\
+         & \lambda_i \in [\lambda_L, \lambda_U] && i = 0, \ldots, n \\
+         & p \in [p_{L}, p_{U}].
+    \end{aligned}
+\end{align}
+\f]
+
+Above, the multibody dynamics \f$ f_{\textrm{mb}} \f$ are expressed as explicit
+differential equations:
+
+\f[
+    f_{\textrm{mb}}(t, y, x, \lambda, p) =
+          M(q, p)^{-1}\big[(f_{\textrm{app}}(t, y, x, p) - f_{\textrm{inertial}}(q, u, p) - G(q, p)^T \lambda\big]
+\f]
+
+
+If the multibody dynamics are enforced as implicit differential equations, then
+the constraint involving \f$ f_\textrm{mb} \f$ is replaced with the following:
+
+\f[
+    \begin{alignat*}{2}
+    \mbox{subject to} \quad
+         & u_i = u_{i-1} + \textrm{trap}_i(\upsilon)  & i = 1, \ldots, n \\
+         & M(q_i, p)\upsilon_i + G(q_i, p)^T \lambda_i =
+          f_{\textrm{app}}(t_i, y_i, x_{i}, p) -
+            f_{\textrm{inertial}}(q_i, u_{i}, p) & \quad i = 0, \ldots, n \\
+    \mbox{with respect to} \quad
+         & \upsilon_i \in [-\upsilon_{B}, \upsilon_{B}] & i = 0, \ldots, n\\
+    \end{alignat*}
+\f]
+
+where \f$ \upsilon \f$ (upsilon) is generalized acceleration and
+\f$ \upsilon_B \f$ is a large number.
+
+Similar to implicit multibody dynamics, we enforce implicit auxiliary dynamics
+by introducing the variable \f$ \zeta \f$ for the derivative of the auxiliary
+state variable.
+
+@subsection mocohermitesimpsontheory Hermite–Simpson transcription
+
+With Hermite-Simpson transcription, we have \f$ n + 1 \f$ mesh points and
+\f$ n \f$ mesh intervals like Trapezoidal transcription, but we also introduce
+additional collocation points at the mesh interval midpoints. This leads to a
+total of \f$ 2n + 1 \f$ grid points on which we discretize the continuous
+variables:
+
+\f[
+    \begin{alignat*}{1}
+        0 &= \tau_0 < \tau_1 < \tau_2 < \ldots < \tau_i < \ldots < \tau_{n - 1} < \tau_n = 1 \\
+        \bar{\tau}_i &= 0.5 (\tau_{i-1} + \tau_i) \\
+        t_i &= (t_f - t_0) \tau_i + t_0 \\
+        \bar{t}_i &= (t_f - t_0) \bar{\tau}_i + t_0 \\
+        h_i &= (t_f - t_0)(\tau_i - \tau_{i-1}) \\
+    \end{alignat*}
+\f]
+
+where \f$ \bar{\tau}_i \f$ denote mesh interval midpoints.
+
+Derivatives and integrals are removed from the original continuous time problem
+with the Hermite interpolant and Simpson integration rule:
+
+\f[
+\begin{align}
+    \textrm{hermite}_i(\eta, F(\eta, p)) &= \frac{1}{2} (\eta_{i-1} + \eta_i) + \frac{h_i}{8} (F(\eta_{i-1}, p) - F(\eta_i, p)) \\
+    \textrm{simpson}_i(F(\eta, p)) &= \frac{h_i}{6} (F(\eta_{i-1}, p) + 4 F(\bar{\eta}_i, p) + F(\eta_i, p))
+\end{align}
+\f]
+
+where \f$ \eta \f$ is any continuous variable in the optimal control problem
+(e.g., \f$ y \f$) and \f$ F \f$ is any function. Note the midpoint function
+evaluation in the Simpson integration rule.
+
+The resulting finite-dimensional NLP is as follows:
+
+\f[
+\begin{align}
+    \begin{aligned}
+        \mbox{minimize} \quad
+         & \sum_j w_j J_{c,j}(t_0, t_f, y_0, y_n, x_{0}, x_{n}, \lambda_0, \lambda_n, p, S_{c,j})
+         + w_{\lambda} \sum_{i=1}^{n} \textrm{simpson}_i(\|\lambda\|_2^2)  \\
+         & \quad\quad S_{c,j} = \sum_{i=1}^{n} \textrm{simpson}_i(s_{c,j}(t, y, x, \lambda, p)) \\
+        \mbox{subject to} \quad
+         & \bar{q}_i = \textrm{hermite}_i(q, u) + G(\bar{q}_i, p)^T \bar{\gamma}_i && i = 1, \ldots, n \\
+         & q_i = q_{i-1} + \textrm{simpson}_i(u) && i = 1, \ldots, n \\
+         & \bar{u}_i = \textrm{hermite}_i(u, f_{\dot{u}}(t, y, x, \lambda, p)) && i = 1, \ldots, n \\
+         & u_i = u_{i-1} + \textrm{simpson}_i(f_{\dot{u}}(t, y, x, \lambda, p))  && i = 1, \ldots, n \\
+         & \bar{z}_{\textrm{ex},i} = \textrm{hermite}_i(z_{\textrm{ex}}, f_{\dot{z},\textrm{ex}}(t, y, x, \lambda, p)) && i = 1, \ldots, n \\
+         & z_{\textrm{ex},i} = z_{\textrm{ex},i-1} + \textrm{simpson}_i(f_{\dot{z},\textrm{ex}}(t, y, x, \lambda, p)) && i = 1, \ldots, n \\
+         & \bar{z}_{\textrm{im},i} = \textrm{hermite}_i(z_{\textrm{im}}, \zeta) && i = 1, \ldots, n \\
+         & z_{\textrm{im},i} = z_{\textrm{im},i-1} + \textrm{simpson}_i(\zeta) && i = 1, \ldots, n \\
+         & 0 = f_{\dot{z},\textrm{im}}(t_i, y_i, \zeta_i, x_i, \lambda_i, p) && i = 0, \ldots, n \\
+         & \bar{x}_i = (x_{i-1} + x_i)/2 && i = 1, \ldots, n \\
+         & 0 = \phi(q_i, p) && i = 0, \ldots, n\\
+         & 0 = \dot{\phi}(q_i, u_i, p) && i = 0, \ldots, n\\
+         & 0 = \ddot{\phi}(t_i, y_i, x_i, \lambda_i, p)  && i = 0, \ldots, n\\
+         & V_{L,k} \leq V_k(t_0, t_f, y_0, y_f, x_{0}, x_{f}, \lambda_0, \lambda_f, p, S_{b,k}) \leq V_{U,k} \\
+        & \quad\quad S_{b,k} = \sum_{i=1}^{n} \textrm{simpson}_i(s_{b,k}(t, y, x, \lambda, p)) && k = 1, \ldots, K \\
+        & g_{L} \leq g(t_i, y_i, x_{i}, \lambda_i, p) \leq g_{U} && i = 0, \ldots, n\\
+         \mbox{with respect to} \quad
+         & t_0 \in [t_{0,L}, t_{0,U}] && t_n \in [t_{f,L}, t_{f,U}] \\
+         & y_0 \in [y_{0,L}, y_{0,U}] && y_n \in [y_{f,L}, y_{f,U}] \\
+         & y_i \in [y_{L}, y_{U}] && i = 1, \ldots, n - 1 \\
+         & \bar{y}_i \in [y_{L}, y_{U}] && i = 1, \ldots, n \\
+         & \zeta_i \in [\zeta_{L}, \zeta_{U}] && i = 0, \ldots, n \\
+         & \bar{\zeta}_i \in [\zeta_{L}, \zeta_{U}] && i = 1, \ldots, n \\
+         & x_0 \in [x_{0,L}, x_{0,U}] && x_n \in [x_{f,L}, x_{f,U}] \\
+         & x_i \in [x_{L}, x_{U}] && i = 1, \ldots, n - 1 \\
+         & \bar{x}_i \in [x_{L}, x_{U}] && i = 1, \ldots, n \\
+         & \lambda_i \in [\lambda_L, \lambda_U] && i = 0, \ldots, n \\
+         & \bar{\lambda}_i \in [\lambda_L, \lambda_U] && i = 1, \ldots, n \\
+         & \bar{\gamma}_i \in [\bar{\gamma}_L, \bar{\gamma}_U] && i = 1, \ldots, n \\
+         & p \in [p_{L}, p_{U}].
+    \end{aligned}
+\end{align}
+\f]
+
+The explicit multibody dynamics function \f$ f_{\textrm{mb}} \f$ is the same as
+in Trapezoidal transcription.
+
+The \f$ G(\bar{q}_i, p)^T \bar{\gamma}_i \f$ term 
+represents a velocity correction that is necessary to impose when enforcing 
+derivatives of kinematic constraints in the NLP. The additional variables 
+\f$ \bar{\gamma}_i \f$ help avoid problems becoming overconstrained, and the 
+kinematic Jacobian transpose operator, \f$ G(\bar{q}_i, p)^T \f$, restricts the 
+velocity correction to the tangent plane of the constraint manifold (see Posa et 
+al. 2016 described in @ref kincon for more details). Currently, we only support 
+enforcing derivatives of position-level, or holonomic, constraints, represented 
+by the equations:
+
+\f[
+    \begin{alignat*}{2}
+         & 0 = \dot{\phi}(q, u, p) = G(q, p) u\\
+         & 0 = \ddot{\phi}(t, y, x, \lambda, p) = G(q, p) f_{\textrm{mb}}(t, y, x, \lambda, p) + \dot{G}(q, p) u \\
+    \end{alignat*}
+\f]
+
+The explicit multibody dynamics function is used here where \f$ \dot{u} \f$ 
+would be if it were a continuous variable in the problem (as is in implicit mode,
+see below).
+
+Even though OpenSim supports non-holonomic constraints (that is,
+\f$ \nu(q, u, p) = 0 \f$), we only support holonomic constraints; that is,
+\f$ \phi(q) = 0 \f$.
+
+The implicit dynamics formulation is as follows:
+
+\f[
+    \begin{alignat*}{2}
+    \mbox{subject to} \quad
+         & \bar{u}_i = \textrm{hermite}_i(u, \upsilon) & i = 1, \ldots, n \\
+         & u_i = u_{i-1} + \textrm{simpson}_i(\upsilon)  & i = 1, \ldots, n \\
+         & M(q_i, p)\upsilon_i + G(q_i, p)^T \lambda_i =
+          f_{\textrm{app}}(t_i, y_i, x_{i}, p) -
+            f_{\textrm{inertial}}(q_i, u_{i}, p) & \quad i = 0, \ldots, n \\
+         & M(\bar{q}_i, p)\bar{\upsilon}_i + G(\bar{q}_i, p)^T \bar{\lambda}_i =
+          f_{\textrm{app}}(\bar{t}_i, \bar{y}_i, \bar{x}_{i}, p) -
+            f_{\textrm{inertial}}(\bar{q}_i, \bar{u}_i, p) & \quad i = 1, \ldots, n \\
+    \mbox{with respect to} \quad
+         & \upsilon_i \in [-\upsilon_{B}, \upsilon_{B}] & i = 0, \ldots, n \\
+         & \bar{\upsilon}_i \in [-\upsilon_{B}, \upsilon_{B}] & i = 1, \ldots, n
+    \end{alignat*}
+\f]
+
+*/
+} // namespace OpenSim

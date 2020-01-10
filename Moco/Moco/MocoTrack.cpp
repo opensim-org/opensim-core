@@ -1,20 +1,20 @@
 /* -------------------------------------------------------------------------- *
-* OpenSim Moco: MocoTrack.cpp                                                *
-* -------------------------------------------------------------------------- *
-* Copyright (c) 2019 Stanford University and the Authors                     *
-*                                                                            *
-* Author(s): Nicholas Bianco                                                 *
-*                                                                            *
-* Licensed under the Apache License, Version 2.0 (the "License"); you may    *
-* not use this file except in compliance with the License. You may obtain a  *
-* copy of the License at http://www.apache.org/licenses/LICENSE-2.0          *
-*                                                                            *
-* Unless required by applicable law or agreed to in writing, software        *
-* distributed under the License is distributed on an "AS IS" BASIS,          *
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
-* See the License for the specific language governing permissions and        *
-* limitations under the License.                                             *
-* -------------------------------------------------------------------------- */
+ * OpenSim Moco: MocoTrack.cpp                                                *
+ * -------------------------------------------------------------------------- *
+ * Copyright (c) 2019 Stanford University and the Authors                     *
+ *                                                                            *
+ * Author(s): Nicholas Bianco                                                 *
+ *                                                                            *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
+ * not use this file except in compliance with the License. You may obtain a  *
+ * copy of the License at http://www.apache.org/licenses/LICENSE-2.0          *
+ *                                                                            *
+ * Unless required by applicable law or agreed to in writing, software        *
+ * distributed under the License is distributed on an "AS IS" BASIS,          *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
+ * See the License for the specific language governing permissions and        *
+ * limitations under the License.                                             *
+ * -------------------------------------------------------------------------- */
 
 #include "MocoTrack.h"
 
@@ -39,6 +39,7 @@ void MocoTrack::constructProperties() {
     constructProperty_states_reference(TableProcessor());
     constructProperty_states_global_tracking_weight(1);
     constructProperty_states_weight_set(MocoWeightSet());
+    constructProperty_scale_state_weights_with_range(false);
     constructProperty_track_reference_position_derivatives(false);
     constructProperty_markers_reference(TableProcessor());
     constructProperty_markers_global_tracking_weight(1);
@@ -52,13 +53,13 @@ void MocoTrack::constructProperties() {
 
 MocoStudy MocoTrack::initialize() {
 
-    MocoStudy moco;
-    moco.setName(getName());
-    MocoProblem& problem = moco.updProblem();
+    MocoStudy study;
+    study.setName(getName());
+    MocoProblem& problem = study.updProblem();
 
     // Modeling.
     // ---------
-    Model model = get_model().process();
+    Model model = get_model().process(getDocumentDirectory());
     model.initSystem();
 
     // Goals.
@@ -86,9 +87,9 @@ MocoStudy MocoTrack::initialize() {
     if (get_minimize_control_effort()) {
         OPENSIM_THROW_IF(get_control_effort_weight() < 0, Exception,
                 format("Expected a non-negative control effort weight, but "
-                       "got a weight with value %d.", 
+                       "got a weight with value %d.",
                         get_control_effort_weight()));
-      
+
         auto* effort = problem.addGoal<MocoControlGoal>("control_effort");
         effort->setWeight(get_control_effort_weight());
     }
@@ -103,9 +104,9 @@ MocoStudy MocoTrack::initialize() {
 
     // Configure solver.
     // -----------------
-    MocoCasADiSolver& solver = moco.initCasADiSolver();
-    solver.set_num_mesh_points(m_timeInfo.numMeshPoints);
-    solver.set_dynamics_mode("explicit");
+    MocoCasADiSolver& solver = study.initCasADiSolver();
+    solver.set_num_mesh_intervals(m_timeInfo.numMeshIntervals);
+    solver.set_multibody_dynamics_mode("explicit");
     solver.set_optim_convergence_tolerance(1e-2);
     solver.set_optim_constraint_tolerance(1e-2);
     solver.set_optim_finite_difference_scheme("forward");
@@ -123,34 +124,35 @@ MocoStudy MocoTrack::initialize() {
     // the user.
     if (get_apply_tracked_states_to_guess()) {
         auto guess = solver.getGuess();
-        applyStatesToGuess(tracked_states, model, guess);
+        applyStatesToGuess(tracked_states, guess);
         solver.setGuess(guess);
     }
 
-    return moco;
+    return study;
 }
 
 MocoSolution MocoTrack::solve(bool visualize) {
     // Generate the base MocoStudy.
-    MocoStudy moco = initialize();
+    MocoStudy study = initialize();
 
     // Solve!
     // ------
-    MocoSolution solution = moco.solve();
-    if (visualize) { moco.visualize(solution); }
+    MocoSolution solution = study.solve();
+    if (visualize) { study.visualize(solution); }
 
     return solution;
 }
 
-TimeSeriesTable MocoTrack::configureStateTracking(MocoProblem& problem, 
-        Model& model) {
+TimeSeriesTable MocoTrack::configureStateTracking(
+        MocoProblem& problem, Model& model) {
 
     // Read in the states reference data and spline.
-    TimeSeriesTable states = get_states_reference().process("", &model);
+    TimeSeriesTable states =
+            get_states_reference().process(getDocumentDirectory(), &model);
     auto stateSplines = GCVSplineSet(states, states.getColumnLabels());
 
     // Loop through all coordinates and compare labels in the reference data
-    // to coordinate variable names. 
+    // to coordinate variable names.
     auto time = states.getIndependentColumn();
     auto labels = states.getColumnLabels();
     int numRefStates = (int)states.getNumColumns();
@@ -172,7 +174,7 @@ TimeSeriesTable MocoTrack::configureStateTracking(MocoProblem& problem,
             }
         }
 
-        // If a coordinate value was provided to track in the reference data, 
+        // If a coordinate value was provided to track in the reference data,
         // but no corresponding speed, append the derivative of the coordinate
         // value to the tracking reference.
         if (trackingValue && !trackingSpeed &&
@@ -181,34 +183,31 @@ TimeSeriesTable MocoTrack::configureStateTracking(MocoProblem& problem,
             auto* valueSpline = stateSplines.getGCVSpline(valueIdx);
             SimTK::Vector speed((int)time.size());
             for (int j = 0; j < (int)time.size(); ++j) {
-                speed[j] = valueSpline->calcDerivative({0},
-                    SimTK::Vector(1, time[j]));
+                speed[j] = valueSpline->calcDerivative(
+                        {0}, SimTK::Vector(1, time[j]));
             }
             states.appendColumn(speedName, speed);
-        }
-
-        // State variable tracking weights.
-        bool valueWeightProvided = false;
-        bool speedWeightProvided = false;
-        for (int w = 0; w < user_weights.getSize(); ++w) {
-            const auto& user_weight = user_weights.get(w);
-            if (user_weight.getName() == valueName) {
-                weights.cloneAndAppend(user_weight);
-                valueWeightProvided = true;
-            } else if (user_weight.getName() == speedName) {
-                weights.cloneAndAppend(user_weight);
-                speedWeightProvided = true;
-            }
+            trackingSpeed = true;
         }
 
         // Unless the user already specified weights, don't track state
         // variables that are already constrained.
-        double weight = coord.isConstrained(model.getWorkingState()) ? 0 : 1;
-        if (!valueWeightProvided) {
-            weights.cloneAndAppend({valueName, weight});
+        bool isConstrained = coord.isConstrained(model.getWorkingState());
+        // Value weights.
+        if (user_weights.contains(valueName)) {
+            auto uw = user_weights.get(valueName);
+            weights.cloneAndAppend({valueName, uw.getWeight()});
+        } else if (isConstrained) {
+            weights.cloneAndAppend({valueName, 0});
         }
-        if (!speedWeightProvided) {
-            weights.cloneAndAppend({speedName, weight});
+        // Speed weights.
+        if (trackingSpeed) {
+            if (user_weights.contains(speedName)) {
+                auto uw = user_weights.get(speedName);
+                weights.cloneAndAppend({speedName, uw.getWeight()});
+            } else if (isConstrained) {
+                weights.cloneAndAppend({speedName, 0});
+            }
         }
     }
 
@@ -218,6 +217,8 @@ TimeSeriesTable MocoTrack::configureStateTracking(MocoProblem& problem,
     stateTracking->setReference(states);
     stateTracking->setWeightSet(weights);
     stateTracking->setAllowUnusedReferences(get_allow_unused_references());
+    stateTracking->setScaleWeightsWithRange(
+            get_scale_state_weights_with_range());
 
     // Update the time info struct.
     updateTimeInfo("states", states.getIndependentColumn().front(),
@@ -234,9 +235,10 @@ TimeSeriesTable MocoTrack::configureStateTracking(MocoProblem& problem,
 void MocoTrack::configureMarkerTracking(MocoProblem& problem, Model& model) {
 
     // Read in the markers reference data.
-    TimeSeriesTable markersFlat = get_markers_reference().process("", &model);
+    TimeSeriesTable markersFlat =
+            get_markers_reference().process(getDocumentDirectory(), &model);
     TimeSeriesTable_<SimTK::Vec3> markers = markersFlat.pack<SimTK::Vec3>();
-    MarkersReference markersRef(markers);
+    MarkersReference markersRef(markers, Set<MarkerWeight>());
 
     // If the user provided marker weights, append them to the markers
     // reference.
@@ -244,12 +246,12 @@ void MocoTrack::configureMarkerTracking(MocoProblem& problem, Model& model) {
         Set<MarkerWeight> markerWeights;
         for (int i = 0; i < get_markers_weight_set().getSize(); ++i) {
             const auto& weight = get_markers_weight_set().get(i);
-            markerWeights.cloneAndAppend(MarkerWeight(weight.getName(),
-                weight.getWeight()));
+            markerWeights.cloneAndAppend(
+                    MarkerWeight(weight.getName(), weight.getWeight()));
         }
         markersRef.setMarkerWeightSet(markerWeights);
     }
-    
+
     // Add marker tracking cost to the MocoProblem.
     auto* markerTracking = problem.addGoal<MocoMarkerTrackingGoal>(
             "marking_tracking", get_markers_global_tracking_weight());
@@ -265,8 +267,8 @@ void MocoTrack::configureMarkerTracking(MocoProblem& problem, Model& model) {
     writeTableToFile(markers.flatten(), getName() + "_tracked_markers.sto");
 }
 
-void MocoTrack::applyStatesToGuess(const TimeSeriesTable& states,
-        const Model& model, MocoTrajectory& guess) {
+void MocoTrack::applyStatesToGuess(
+        const TimeSeriesTable& states, MocoTrajectory& guess) const {
 
     guess.resampleWithNumTimes((int)states.getNumRows());
     std::vector<std::string> names = guess.getStateNames();
@@ -277,11 +279,11 @@ void MocoTrack::applyStatesToGuess(const TimeSeriesTable& states,
         if (std::find(names.begin(), names.end(), label) != names.end()) {
             guess.setState(label, col);
         } else {
-            OPENSIM_THROW_IF(!get_allow_unused_references(), Exception, 
-                format("Tried to apply data for state '%s' to guess, but this "
-                    "state does not exist in the model.", label));
+            OPENSIM_THROW_IF(!get_allow_unused_references(), Exception,
+                    format("Tried to apply data for state '%s' to guess, but "
+                           "this "
+                           "state does not exist in the model.",
+                            label));
         }
     }
 }
-
-

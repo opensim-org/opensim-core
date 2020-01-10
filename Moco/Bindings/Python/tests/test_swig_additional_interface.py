@@ -54,10 +54,10 @@ class TestSwigAddtlInterface(unittest.TestCase):
         actu.setOptimalForce(1)
         model.addComponent(actu)
         
-        moco = osim.MocoStudy()
-        moco.setName('sliding_mass')
+        study = osim.MocoStudy()
+        study.setName('sliding_mass')
         
-        mp = moco.updProblem()
+        mp = study.updProblem()
         
         mp.setModel(model)
         ph0 = mp.getPhase()
@@ -222,10 +222,10 @@ class TestSwigAddtlInterface(unittest.TestCase):
         model.addComponent(joint)
         model.finalizeConnections()
 
-        moco = osim.MocoStudy()
-        moco.setName('sliding_mass')
+        study = osim.MocoStudy()
+        study.setName('sliding_mass')
 
-        mp = moco.updProblem()
+        mp = study.updProblem()
         mp.setModel(model)
 
         pr = mp.createRep();
@@ -234,8 +234,8 @@ class TestSwigAddtlInterface(unittest.TestCase):
 class TestWorkflow(unittest.TestCase):
 
     def test_default_bounds(self):
-        moco = osim.MocoStudy()
-        problem = moco.updProblem()
+        study = osim.MocoStudy()
+        problem = study.updProblem()
         model = createSlidingMassModel()
         model.finalizeFromProperties()
         coord = model.updComponent("slider/position")
@@ -280,8 +280,8 @@ class TestWorkflow(unittest.TestCase):
         self.assertEqual(info.getBounds().getUpper(), 15)
 
     def test_changing_time_bounds(self):
-        moco = osim.MocoStudy()
-        problem = moco.updProblem()
+        study = osim.MocoStudy()
+        problem = study.updProblem()
         problem.setModel(createSlidingMassModel())
         problem.setTimeBounds(0, [0, 10])
         problem.setStateInfo("/slider/position/value", [0, 1], 0, 1)
@@ -289,62 +289,62 @@ class TestWorkflow(unittest.TestCase):
         problem.setControlInfo("/actuator", [-10, 10])
         problem.addGoal(osim.MocoFinalTimeGoal())
 
-        solver = moco.initTropterSolver()
+        solver = study.initTropterSolver()
         solver.set_transcription_scheme("trapezoidal");
-        solver.set_num_mesh_points(20)
+        solver.set_num_mesh_intervals(19)
         guess = solver.createGuess("random")
         guess.setTime(osim.createVectorLinspace(20, 0.0, 3.0))
         solver.setGuess(guess)
-        solution0 = moco.solve()
+        solution0 = study.solve()
 
         problem.setTimeBounds(0, [5.8, 10])
         # Editing the problem does not affect information in the Solver; the
         # guess still exists.
         assert(not solver.getGuess().empty())
 
-        solution = moco.solve()
+        solution = study.solve()
         self.assertAlmostEqual(solution.getFinalTime(), 5.8)
 
     def test_changing_model(self):
-        moco = osim.MocoStudy()
-        problem = moco.updProblem()
+        study = osim.MocoStudy()
+        problem = study.updProblem()
         model = createSlidingMassModel()
         problem.setModel(model)
         problem.setTimeBounds(0, [0, 10])
         problem.setStateInfo("/slider/position/value", [0, 1], 0, 1)
         problem.setStateInfo("/slider/position/speed", [-100, 100], 0, 0)
         problem.addGoal(osim.MocoFinalTimeGoal())
-        solver = moco.initTropterSolver()
-        solver.set_num_mesh_points(20)
+        solver = study.initTropterSolver()
+        solver.set_num_mesh_intervals(19)
         solver.set_transcription_scheme("trapezoidal");
-        finalTime0 = moco.solve().getFinalTime()
+        finalTime0 = study.solve().getFinalTime()
 
         self.assertAlmostEqual(finalTime0, 2.00, places=2)
 
         body = model.updComponent("body")
         body.setMass(2 * body.getMass())
-        finalTime1 = moco.solve().getFinalTime()
+        finalTime1 = study.solve().getFinalTime()
         assert(finalTime1 > 1.1 * finalTime0)
 
     def test_order(self):
         # Can set the cost and model in any order.
-        moco = osim.MocoStudy()
-        problem = moco.updProblem()
+        study = osim.MocoStudy()
+        problem = study.updProblem()
         problem.setTimeBounds(0, [0, 10])
         problem.setStateInfo("/slider/position/value", [0, 1], 0, 1)
         problem.setStateInfo("/slider/position/speed", [-100, 100], 0, 0)
         problem.addGoal(osim.MocoFinalTimeGoal())
         problem.setModel(createSlidingMassModel())
-        solver = moco.initTropterSolver()
-        solver.set_num_mesh_points(20)
+        solver = study.initTropterSolver()
+        solver.set_num_mesh_intervals(19)
         solver.set_transcription_scheme("trapezoidal");
-        finalTime =  moco.solve().getFinalTime()
+        finalTime =  study.solve().getFinalTime()
         self.assertAlmostEqual(finalTime, 2.0, places=2)
 
     def test_changing_costs(self):
         # Changes to the costs are obeyed.
-        moco = osim.MocoStudy()
-        problem = moco.updProblem()
+        study = osim.MocoStudy()
+        problem = study.updProblem()
         problem.setModel(createSlidingMassModel())
         problem.setTimeBounds(0, [0, 10])
         problem.setStateInfo("/slider/position/value", [0, 1], 0, 1)
@@ -352,10 +352,10 @@ class TestWorkflow(unittest.TestCase):
         problem.updPhase().addGoal(osim.MocoFinalTimeGoal())
         effort = osim.MocoControlGoal("effort")
         problem.updPhase().addGoal(effort)
-        solver = moco.initTropterSolver()
+        solver = study.initTropterSolver()
         solver.set_transcription_scheme("trapezoidal");
-        finalTime0 = moco.solve().getFinalTime()
+        finalTime0 = study.solve().getFinalTime()
 
         # Change the weights of the costs.
         effort.setWeight(0.1)
-        assert(moco.solve().getFinalTime() < 0.8 * finalTime0)
+        assert(study.solve().getFinalTime() < 0.8 * finalTime0)

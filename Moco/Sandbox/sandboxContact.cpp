@@ -161,12 +161,12 @@ void ball2d() {
     auto statesTimeSteppingTable = statesTimeStepping.exportToTable();
     STOFileAdapter::write(statesTimeSteppingTable, "ball2d_timestepping.sto");
 
-    MocoStudy moco;
-    moco.setName("ball2d");
+    MocoStudy study;
+    study.setName("ball2d");
 
     // Define the optimal control problem.
     // ===================================
-    MocoProblem& mp = moco.updProblem();
+    MocoProblem& mp = study.updProblem();
 
     // Model (dynamics).
     // -----------------
@@ -184,8 +184,8 @@ void ball2d() {
 
     // Configure the solver.
 
-    MocoTropterSolver& ms = moco.initSolver();
-    ms.set_num_mesh_points(500);
+    MocoTropterSolver& ms = study.initSolver();
+    ms.set_num_mesh_intervals(500);
 
     MocoTrajectory guess = ms.createGuess();
 
@@ -206,7 +206,7 @@ void ball2d() {
 
     // Solve the problem.
     // ==================
-    MocoSolution solution = moco.solve();
+    MocoSolution solution = study.solve();
 
     solution.write("ball2d_solution.sto");
 
@@ -215,7 +215,7 @@ void ball2d() {
 
     // Visualize.
     // ==========
-    moco.visualize(solution);
+    study.visualize(solution);
 }
 
 std::unique_ptr<Model> createModelPendulum(double linkLength, double jointHeight,
@@ -268,9 +268,9 @@ void pendulum() {
     auto statesTimeSteppingTable = statesTimeStepping.exportToTable();
     STOFileAdapter::write(statesTimeSteppingTable, "pendulum_timestepping.sto");
 
-    MocoStudy moco;
-    moco.setName("ball2d");
-    MocoProblem& mp = moco.updProblem();
+    MocoStudy study;
+    study.setName("ball2d");
+    MocoProblem& mp = study.updProblem();
     mp.setModel(std::move(model));
     mp.setTimeBounds(0, finalTime);
 
@@ -279,13 +279,13 @@ void pendulum() {
 
     // Configure the solver.
 
-    MocoTropterSolver& ms = moco.initSolver();
-    ms.set_num_mesh_points(500);
+    MocoTropterSolver& ms = study.initSolver();
+    ms.set_num_mesh_intervals(500);
     MocoTrajectory guess = ms.createGuess();
     guess.setStatesTrajectory(statesTimeSteppingTable);
 
     ms.setGuess(guess);
-    MocoSolution solution = moco.solve();
+    MocoSolution solution = study.solve();
 
     solution.write("pendulum_solution.sto");
 
@@ -294,7 +294,7 @@ void pendulum() {
 
     // Visualize.
     // ==========
-    moco.visualize(solution);
+    study.visualize(solution);
 }
 
 std::unique_ptr<Model> createModelPendulumActivationCoordinateActuator() {
@@ -358,9 +358,9 @@ void pendulumActivationCoordinateActuator() {
 
     /*
 
-    MocoStudy moco;
-    moco.setName("pendulumaca");
-    MocoProblem& mp = moco.updProblem();
+    MocoStudy study;
+    study.setName("pendulumaca");
+    MocoProblem& mp = study.updProblem();
     mp.setModel(model);
     mp.setTimeBounds(0, finalTime);
 
@@ -369,13 +369,13 @@ void pendulumActivationCoordinateActuator() {
 
     // Configure the solver.
 
-    MocoTropterSolver& ms = moco.initSolver();
-    ms.set_num_mesh_points(500);
+    MocoTropterSolver& ms = study.initSolver();
+    ms.set_num_mesh_intervals(500);
     MocoTrajectory guess = ms.createGuess();
     guess.setStatesTrajectory(statesTimeSteppingTable);
 
     ms.setGuess(guess);
-    MocoSolution solution = moco.solve();
+    MocoSolution solution = study.solve();
 
     solution.write("pendulumaca_solution.sto");
 
@@ -384,7 +384,7 @@ void pendulumActivationCoordinateActuator() {
 
     // Visualize.
     // ==========
-    moco.visualize(solution);
+    study.visualize(solution);
      */
 }
 
@@ -603,9 +603,9 @@ void slip(double rzvalue0 = 0, double rzspeed0 = 0) {
     auto statesTimeSteppingTable = statesTimeStepping.exportToTable();
     STOFileAdapter::write(statesTimeSteppingTable, "slip_timestepping.sto");
 
-    MocoStudy moco;
-    moco.setName("slip");
-    MocoProblem& mp = moco.updProblem();
+    MocoStudy study;
+    study.setName("slip");
+    MocoProblem& mp = study.updProblem();
     mp.setModel(std::move(model));
     mp.setTimeBounds(0, finalTime);
     using SimTK::Pi;
@@ -618,8 +618,8 @@ void slip(double rzvalue0 = 0, double rzspeed0 = 0) {
     mp.setStateInfo("/planar/rz/speed", {-10, 10}, rzspeed0);
     mp.setStateInfo("/leg/length/speed", {-10, 10}, 0);
 
-    MocoTropterSolver& ms = moco.initSolver();
-    ms.set_num_mesh_points(500);
+    MocoTropterSolver& ms = study.initSolver();
+    ms.set_num_mesh_intervals(500);
     //ms.set_optim_max_iterations(2);
     MocoTrajectory guess = ms.createGuess();
     //statesTimeSteppingTable.updMatrix() +=
@@ -629,11 +629,11 @@ void slip(double rzvalue0 = 0, double rzspeed0 = 0) {
     guess.setStatesTrajectory(statesTimeSteppingTable);
     ms.setGuess(guess);
 
-    MocoSolution solution = moco.solve().unseal();
+    MocoSolution solution = study.solve().unseal();
     solution.write("slip_solution.sto");
     std::cout << "RMS: " << solution.compareContinuousVariablesRMS(guess)
             << std::endl;
-    moco.visualize(solution);
+    study.visualize(solution);
 }
 
 void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
@@ -716,9 +716,9 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     markersToUse.setColumnLabels({"foot_COM", "pelvis_COM"});
     visualize(*modelTS, statesTimeStepping);
 
-    MocoStudy moco;
-    moco.setName("slipSolveForForce");
-    MocoProblem& mp = moco.updProblem();
+    MocoStudy study;
+    study.setName("slipSolveForForce");
+    MocoProblem& mp = study.updProblem();
     //mp.setModel(modelTS);
     mp.setModel(createModelSLIPActuated());
     mp.setTimeBounds(0, finalTime);
@@ -777,9 +777,9 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
 
 
     MocoTropterSolver& ms = moco.initSolver();
-    ms.set_dynamics_mode("implicit");
-    ms.set_num_mesh_points(100);
-    //ms.set_num_mesh_points(50);
+    ms.set_multibody_dynamics_mode("implicit");
+    ms.set_num_mesh_intervals(100);
+    //ms.set_num_mesh_intervals(50);
     //ms.set_optim_max_iterations(2);
     // I tried setting convergence and constraint tolerances to 1e-3, and the
     // time to solve increased from 11 to 16 minutes (using EspositoMiller2018
@@ -794,7 +794,7 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     guess.setStatesTrajectory(statesToTrack, true);
     ms.setGuess(guess);
 
-    MocoSolution solution = moco.solve().unseal();
+    MocoSolution solution = study.solve().unseal();
     solution.write("slipSolveForForce_solution.sto");
     std::cout << "RMS: " << solution.compareContinuousVariablesRMS(guess)
             << std::endl;
@@ -825,33 +825,33 @@ void slipSolveForForce(double rzvalue0 = 0, double rzspeed0 = 0) {
     STOFileAdapter::write(contactForceHistory.flatten({"x", "y", "z"}),
             "slipSolveForForce_dircol_force.sto");
 
-    //ms.set_num_mesh_points(50);
+    //ms.set_num_mesh_intervals(50);
     //ms.setGuess(solution);
     //// Does not converge instantly... TODO
-    //MocoSolution solution2 = moco.solve().unseal();
+    //MocoSolution solution2 = study.solve().unseal();
     //solution2.write("slipSolveForForce_solution2.sto");
 
-    //// 200 mesh points results in a *much* smoother solution than 50 but takes
+    //// 200 mesh intervals results in a *much* smoother solution than 50 but takes
     //// 7626 seconds to solve. and it's smoother but not smooth; very high
     //// frequency for most of the motion; smooth in the middle third.
-    //ms.set_num_mesh_points(200);
+    //ms.set_num_mesh_intervals(200);
     //ms.setGuess(solution2);
-    //MocoSolution solution200 = moco.solve().unseal();
+    //MocoSolution solution200 = study.solve().unseal();
     //solution200.write("slipSolveForForce_solution200.sto");
 
     // This works, but it takes a few minutes:
-    //ms.set_num_mesh_points(100);
+    //ms.set_num_mesh_intervals(100);
     //ms.setGuess(solution);
-    //MocoSolution solution100 = moco.solve().unseal();
+    //MocoSolution solution100 = study.solve().unseal();
     //solution100.write("slipSolveForForce_solution100.sto");
 
     // State and GRF tracking solution:
     // + Residual actuators at pelvis (rz, tx, ty)
     // + Implicit skeletal dynamics (no activation dynamics at coordinates)
-    // + 100 mesh points
+    // + 100 mesh intervals
     // + AckermannVanDenBogert2010Force contact (defaults w/ stiffness = 5e5)
 
-    moco.visualize(solution);
+    study.visualize(solution);
 }
 
 int main() {

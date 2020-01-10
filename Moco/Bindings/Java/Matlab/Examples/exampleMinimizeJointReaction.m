@@ -31,13 +31,13 @@ runInvertedPendulumProblem('minimize_control_effort', effort);
 % This problem minimizes the reaction loads on the rotating body at the pin 
 % joint. Specifically, the norm of the reaction forces and moments integrated
 % over the phase is minimized.
-reaction = MocoJointReactionCost();
+reaction = MocoJointReactionGoal();
 reaction.setJointPath('pin');
 runInvertedPendulumProblem('minimize_joint_reaction_loads', reaction);
 
 end
 
-function solution = runInvertedPendulumProblem(name, cost) 
+function solution = runInvertedPendulumProblem(name, goal)
 
 import org.opensim.modeling.*;
 
@@ -70,12 +70,12 @@ model.finalizeConnections();
 
 % Create MocoStudy.
 % ================
-moco = MocoStudy();
-moco.setName(name);
+study = MocoStudy();
+study.setName(name);
 
 % Define the optimal control problem.
 % ===================================
-problem = moco.updProblem();
+problem = study.updProblem();
 
 % Model (dynamics).
 % -----------------
@@ -95,28 +95,28 @@ problem.setStateInfo('/pin/angle/speed', [-50, 50], [0], [0]);
 % Applied moment must be between -100 and 100 N-m.
 problem.setControlInfo('/forceset/actuator', MocoBounds(-100, 100));
 
-% Cost.
+% Goal.
 % -----
-problem.addGoal(cost);
+problem.addGoal(goal);
 
 % Configure the solver.
 % =====================
-solver = moco.initCasADiSolver();
-solver.set_num_mesh_points(50);
+solver = study.initCasADiSolver();
+solver.set_num_mesh_intervals(50);
 solver.set_optim_convergence_tolerance(1e-3);
 
 % Now that we've finished setting up the tool, print it to a file.
-moco.print([name '.omoco']);
+study.print([name '.omoco']);
 
 % Solve the problem.
 % ==================
-solution = moco.solve();
+solution = study.solve();
 solution.write([name '_solution.sto']);
 
 % Visualize.
 % ==========
 if ~strcmp(getenv('OPENSIM_USE_VISUALIZER'), '0')
-    moco.visualize(solution);
+    study.visualize(solution);
 end
 
 % Plot results.

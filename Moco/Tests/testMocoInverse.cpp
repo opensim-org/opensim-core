@@ -102,46 +102,50 @@ TEST_CASE("PrescribedKinematics direct collocation auxiliary dynamics") {
     model.addModelComponent(motion);
     model.addComponent(new CustomDynamics());
 
-    MocoStudy moco;
-    auto& problem = moco.updProblem();
+    MocoStudy study;
+    auto& problem = study.updProblem();
     problem.setModelCopy(model);
     problem.setTimeBounds(0, 1);
     const double init_s = 0.2;
     problem.setStateInfo("/customdynamics/s", {0, 100}, init_s);
-    auto& solver = moco.initCasADiSolver();
+    auto& solver = study.initCasADiSolver();
     solver.set_transcription_scheme("trapezoidal");
-    solver.set_dynamics_mode("implicit");
+    solver.set_multibody_dynamics_mode("implicit");
 
-    MocoSolution solution = moco.solve();
+    MocoSolution solution = study.solve();
     OpenSim_CHECK_MATRIX_TOL(solution.getState("/customdynamics/s"),
             0.2 * SimTK::exp(solution.getTime()), 1e-4);
 }
 
-TEST_CASE("MocoInverse gait10dof18musc") {
+TEST_CASE("MocoInverse Rajagopal2016, 18 muscles") {
     std::cout.rdbuf(LogManager::cout.rdbuf());
     std::cerr.rdbuf(LogManager::cerr.rdbuf());
 
     MocoInverse inverse;
+    ModelProcessor modelProcessor =
+        ModelProcessor("subject_walk_armless_18musc.osim") |
+        ModOpReplaceJointsWithWelds({"subtalar_r", "subtalar_l",
+            "mtp_r", "mtp_l"}) |
+        ModOpReplaceMusclesWithDeGrooteFregly2016() |
+        ModOpIgnorePassiveFiberForcesDGF() |
+        ModOpTendonComplianceDynamicsModeDGF("implicit") |
+        ModOpAddExternalLoads("subject_walk_armless_external_loads.xml");
 
-    inverse.setModel(ModelProcessor("testGait10dof18musc_subject01.osim") |
-                     ModOpReplaceMusclesWithDeGrooteFregly2016() |
-                     ModOpIgnoreTendonCompliance() | ModOpAddReserves(2) |
-                     ModOpAddExternalLoads("walk_gait1018_subject01_grf.xml"));
-    inverse.setKinematics(TableProcessor("walk_gait1018_state_reference.mot") |
-                          TabOpLowPassFilter(6));
-    inverse.set_initial_time(0.01);
-    inverse.set_final_time(1.3);
-    inverse.print("testMocoInverse_setup.xml");
+    inverse.setModel(modelProcessor);
+    inverse.setKinematics(
+        TableProcessor("subject_walk_armless_coordinates.mot") |
+        TabOpLowPassFilter(6));
+    inverse.set_initial_time(0.450);
+    inverse.set_final_time(1.0);
+    inverse.set_kinematics_allow_extra_columns(true);
+    inverse.set_mesh_interval(0.05);
 
-    MocoInverseSolution solution = inverse.solve();
-    solution.getMocoSolution().write(
-            "testMocoInverseGait10dof18musc_solution.sto");
+    MocoSolution solution = inverse.solve().getMocoSolution();
+    solution.write("testMocoInverse_subject_18musc_solution.sto");
 
-    const auto actual = solution.getMocoSolution().getControlsTrajectory();
-    MocoTrajectory std("std_testMocoInverseGait10dof18musc_solution.sto");
+    MocoTrajectory std("std_testMocoInverse_subject_18musc_solution.sto");
     const auto expected = std.getControlsTrajectory();
-    CHECK(std.compareContinuousVariablesRMS(
-                  solution.getMocoSolution(), {{"controls", {}}}) < 1e-4);
-    CHECK(std.compareContinuousVariablesRMS(
-                  solution.getMocoSolution(), {{"states", {}}}) < 1e-4);
+    CHECK(std.compareContinuousVariablesRMS(solution,
+            {{"controls", {}}}) < 1e-2);
+    CHECK(std.compareContinuousVariablesRMS(solution, {{"states", {}}}) < 1e-2);
 }

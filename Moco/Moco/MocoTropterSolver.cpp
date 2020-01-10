@@ -38,10 +38,11 @@ std::shared_ptr<const MocoTropterSolver::TropterProblemBase<double>>
 MocoTropterSolver::createTropterProblem() const {
 #ifdef MOCO_WITH_TROPTER
     checkPropertyInSet(
-            *this, getProperty_dynamics_mode(), {"explicit", "implicit"});
-    if (get_dynamics_mode() == "explicit") {
+            *this, getProperty_multibody_dynamics_mode(),
+            {"explicit", "implicit"});
+    if (get_multibody_dynamics_mode() == "explicit") {
         return std::make_shared<ExplicitTropterProblem<double>>(*this);
-    } else if (get_dynamics_mode() == "implicit") {
+    } else if (get_multibody_dynamics_mode() == "implicit") {
         return std::make_shared<ImplicitTropterProblem<double>>(*this);
     } else {
         OPENSIM_THROW_FRMOBJ(Exception, "Internal error.");
@@ -55,8 +56,9 @@ MocoTropterSolver::createTropterSolver(
         std::shared_ptr<const MocoTropterSolver::TropterProblemBase<double>>
                 ocp) const {
 #ifdef MOCO_WITH_TROPTER
-    // Check that a positive number of mesh points was provided.
-    checkPropertyIsPositive(*this, getProperty_num_mesh_points());
+    // Check that a non-negative number of mesh points was provided.
+    checkPropertyInRangeOrSet(*this, getProperty_num_mesh_intervals(), 0,
+            std::numeric_limits<int>::max(), {});
 
     if (getProperty_mesh().size() > 0) {
 
@@ -94,6 +96,11 @@ MocoTropterSolver::createTropterSolver(
                        "Currently, it is set to '%s'.",
                         get_transcription_scheme()));
     }
+    OPENSIM_THROW_IF_FRMOBJ(
+            getProblemRep().getNumImplicitAuxiliaryResiduals(),
+            Exception, "MocoTropterSolver does not support problems "
+                       "with implicit auxiliary dynamics.");
+
     // Block sparsity detected is only in effect when using an exact Hessian
     // approximation.
     OPENSIM_THROW_IF(
@@ -131,7 +138,7 @@ MocoTropterSolver::createTropterSolver(
     if (getProperty_mesh().empty()) {
         dircol = OpenSim::make_unique<tropter::DirectCollocationSolver<double>>(
                 ocp, get_transcription_scheme(), get_optim_solver(),
-                get_num_mesh_points());
+                get_num_mesh_intervals());
     } else {
         std::vector<double> mesh;
         for (int i = 0; i < getProperty_mesh().size(); ++i) {
@@ -235,21 +242,39 @@ MocoTrajectory MocoTropterSolver::createGuess(const std::string& type) const {
 void MocoTropterSolver::setGuess(MocoTrajectory guess) {
     // Ensure the guess is compatible with this solver/problem.
     // Make sure to initialize the problem. TODO put in a better place.
-    createTropterProblem();
-    guess.isCompatible(getProblemRep(), true);
+    auto ocp = createTropterProblem();
+    checkGuess(guess);
     clearGuess();
     m_guessFromAPI = std::move(guess);
 }
+
 void MocoTropterSolver::setGuessFile(const std::string& file) {
     clearGuess();
     set_guess_file(file);
 }
+
+void MocoTropterSolver::checkGuess(const MocoTrajectory& guess) const {
+    OPENSIM_THROW_IF(get_multibody_dynamics_mode() == "implicit" &&
+            guess.hasCoordinateStates() &&
+            guess.getDerivativeNames().empty(),
+            Exception,
+            "'multibody_dynamics_mode' set to 'implicit' and coordinate states "
+            "exist in the guess, but no coordinate accelerations were found in "
+            "the guess. Consider using "
+            "MocoTrajectory::generateAccelerationsFromValues() or "
+            "MocoTrajectory::generateAccelerationsFromSpeeds() to construct an "
+            "appropriate guess.");
+    guess.isCompatible(
+            getProblemRep(), get_multibody_dynamics_mode() == "implicit", true);
+}
+
 void MocoTropterSolver::clearGuess() {
     m_guessFromAPI = MocoTrajectory();
     m_guessFromFile = MocoTrajectory();
     set_guess_file("");
     m_guessToUse.reset();
 }
+
 const MocoTrajectory& MocoTropterSolver::getGuess() const {
     if (!m_guessToUse) {
         if (get_guess_file() != "" && m_guessFromFile.empty()) {
@@ -258,7 +283,7 @@ const MocoTrajectory& MocoTropterSolver::getGuess() const {
             assert(m_guessFromAPI.empty());
             // No need to load from file again if we've already loaded it.
             MocoTrajectory guessFromFile(get_guess_file());
-            guessFromFile.isCompatible(getProblemRep(), true);
+            checkGuess(guessFromFile);
             m_guessFromFile = guessFromFile;
             m_guessToUse.reset(&m_guessFromFile);
         } else {
@@ -301,20 +326,13 @@ MocoSolution MocoTropterSolver::solveImpl() const {
     // Problem print information is verbosity 1 or 2.
     if (get_verbosity()) {
         std::cout << std::string(79, '=') << "\n";
-        std::cout << "MocoTropterSolver starting.\n";
+        std::cout << "MocoTropterSolver starting. ";
+        std::cout << getMocoFormattedDateTime(false, "%c") << "\n";
         std::cout << std::string(79, '-') << std::endl;
         getProblemRep().printDescription();
     }
     auto dircol = createTropterSolver(ocp);
     MocoTrajectory guess = getGuess();
-    OPENSIM_THROW_IF(get_dynamics_mode() == "implicit" &&
-            guess.hasCoordinateStates() &&
-            guess.getDerivativeNames().empty(), Exception,
-        "'dynamics_mode' set to 'implicit' and coordinate states exist in the "
-        "guess, but no coordinate accelerations were found in the guess. "
-        "Consider using MocoTrajectory::generateAccelerationsFromValues() or "
-        "MocoTrajectory::generateAccelerationsFromSpeeds() to construct an "
-        "appropriate guess.")
     tropter::Iterate tropIterate = ocp->convertToTropterIterate(guess);
     tropter::Solution tropSolution = dircol->solve(tropIterate);
 
@@ -376,13 +394,13 @@ MocoSolution MocoTropterSolver::solveImpl() const {
     const long long elapsed = stopwatch.getElapsedTimeInNs();
     MocoSolver::setSolutionStats(mocoSolution, tropSolution.success,
             tropSolution.objective, tropSolution.status,
-            tropSolution.num_iterations,
-            SimTK::nsToSec(elapsed));
+            tropSolution.num_iterations, SimTK::nsToSec(elapsed));
 
     if (get_verbosity()) {
         std::cout << std::string(79, '-') << "\n";
-        std::cout << "Elapsed real time: "
-                  << stopwatch.formatNs(elapsed) << ".\n";
+        std::cout << "Elapsed real time: " << stopwatch.formatNs(elapsed)
+                  << ".\n";
+        std::cout << getMocoFormattedDateTime(false, "%c") << "\n";
         if (mocoSolution) {
             std::cout << "MocoTropterSolver succeeded!\n";
         } else {

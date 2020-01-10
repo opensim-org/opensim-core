@@ -17,7 +17,8 @@
  * -------------------------------------------------------------------------- */
 
 /// Translate a point mass in one dimension in minimum time. This example
-/// also exhibits various features of the Moco interface.
+/// also exhibits more advanced features of Moco, including defining a custom
+/// goal (cost term).
 ///
 /// @verbatim
 /// minimize   t_f
@@ -34,9 +35,10 @@
 /// constants  m       mass
 /// @endverbatim
 
-#include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
-#include <OpenSim/Actuators/CoordinateActuator.h>
 #include <Moco/osimMoco.h>
+
+#include <OpenSim/Actuators/CoordinateActuator.h>
+#include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 
 using namespace OpenSim;
 
@@ -66,14 +68,46 @@ std::unique_ptr<Model> createSlidingMassModel() {
     return model;
 }
 
+/// Minimize the sum of squared controls integrated over the phase.
+/// (This can be achieved with MocoControlGoal, but we duplicate the cost
+/// just to illustrate creating a custom goal).
+/// Refer to Doxygen documentation for more information on creating a custom
+/// goal.
+class MocoCustomEffortGoal : public MocoGoal {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoCustomEffortGoal, MocoGoal);
+
+public:
+    MocoCustomEffortGoal() {}
+    MocoCustomEffortGoal(std::string name) : MocoGoal(std::move(name)) {}
+    MocoCustomEffortGoal(std::string name, double weight)
+            : MocoGoal(std::move(name), weight) {}
+
+protected:
+    Mode getDefaultModeImpl() const override { return Mode::Cost; }
+    bool getSupportsEndpointConstraintImpl() const override { return true; }
+    void initializeOnModelImpl(const Model&) const override {
+        setNumIntegralsAndOutputs(1, 1);
+    }
+    void calcIntegrandImpl(
+            const SimTK::State& state, double& integrand) const override {
+        getModel().realizeVelocity(state);
+        const auto& controls = getModel().getControls(state);
+        integrand = controls.normSqr();
+    }
+    void calcGoalImpl(
+            const GoalInput& input, SimTK::Vector& cost) const override {
+        cost[0] = input.integral;
+    }
+};
+
 int main() {
 
-    MocoStudy moco;
-    moco.setName("sliding_mass");
+    MocoStudy study;
+    study.setName("sliding_mass");
 
     // Define the optimal control problem.
     // ===================================
-    MocoProblem& problem = moco.updProblem();
+    MocoProblem& problem = study.updProblem();
 
     // Model (dynamics).
     // -----------------
@@ -95,12 +129,13 @@ int main() {
 
     // Cost.
     // -----
-    problem.addGoal<MocoFinalTimeGoal>();
+    problem.addGoal<MocoFinalTimeGoal>("time");
+    problem.addGoal<MocoCustomEffortGoal>("effort");
 
     // Configure the solver.
     // =====================
-    MocoCasADiSolver& solver = moco.initCasADiSolver();
-    solver.set_num_mesh_points(50);
+    MocoCasADiSolver& solver = study.initCasADiSolver();
+    solver.set_num_mesh_intervals(50);
     solver.set_verbosity(2);
     solver.set_optim_solver("ipopt");
     solver.set_optim_ipopt_print_level(4);
@@ -122,8 +157,9 @@ int main() {
 
     // Solve the problem.
     // ==================
-    MocoSolution solution = moco.solve();
+    MocoSolution solution = study.solve();
     std::cout << "Solution status: " << solution.getStatus() << std::endl;
+    study.visualize(solution);
 
     return EXIT_SUCCESS;
 }

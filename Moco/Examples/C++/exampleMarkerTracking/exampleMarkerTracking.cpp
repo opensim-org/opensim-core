@@ -96,12 +96,12 @@ std::unique_ptr<Model> createDoublePendulumModel() {
 
 int main() {
 
-    MocoStudy moco;
-    moco.setName("double_pendulum_marker_tracking");
+    MocoStudy study;
+    study.setName("double_pendulum_marker_tracking");
 
     // Define the optimal control problem.
     // ===================================
-    MocoProblem& problem = moco.updProblem();
+    MocoProblem& problem = study.updProblem();
 
     // Model (dynamics).
     // -----------------
@@ -133,8 +133,7 @@ int main() {
     markerWeights.cloneAndAppend({"/markerset/m1", 10});
 
     // Create the MarkersReference to be passed to the cost.
-    //MarkersReference ref(markerTrajectories);
-    MarkersReference ref(markerTrajectories, &markerWeights);
+    MarkersReference ref(markerTrajectories, markerWeights);
 
     // Create cost, set reference, and attach to problem.
     auto* markerTracking = problem.addGoal<MocoMarkerTrackingGoal>();
@@ -142,17 +141,17 @@ int main() {
 
     // Configure the solver.
     // =====================
-    auto& solver = moco.initCasADiSolver();
-    solver.set_num_mesh_points(50);
+    auto& solver = study.initCasADiSolver();
+    solver.set_num_mesh_intervals(50);
     solver.set_verbosity(2);
     solver.set_optim_hessian_approximation("exact");
 
     // Solve the problem.
     // ==================
-    MocoSolution solution = moco.solve();
+    MocoSolution solution = study.solve();
     solution.write("exampleMarkerTracking_solution.sto");
 
-    moco.visualize(solution);
+    study.visualize(solution);
 
     return EXIT_SUCCESS;
 }

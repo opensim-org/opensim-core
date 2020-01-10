@@ -26,6 +26,31 @@
 
 using namespace OpenSim;
 
+const std::vector<std::string> MocoTrajectory::m_allowedKeys =
+        {"states", "controls", "multipliers", "derivatives"};
+
+MocoTrajectory::MocoTrajectory(
+        std::vector<std::string> state_names,
+        std::vector<std::string> control_names,
+        std::vector<std::string> multiplier_names,
+        std::vector<std::string> parameter_names)
+        : m_state_names(std::move(state_names)),
+          m_control_names(std::move(control_names)),
+          m_multiplier_names(std::move(multiplier_names)),
+          m_parameter_names(std::move(parameter_names)) {}
+
+MocoTrajectory::MocoTrajectory(
+        std::vector<std::string> state_names,
+        std::vector<std::string> control_names,
+        std::vector<std::string> multiplier_names,
+        std::vector<std::string> derivative_names,
+        std::vector<std::string> parameter_names)
+        : m_state_names(std::move(state_names)),
+          m_control_names(std::move(control_names)),
+          m_multiplier_names(std::move(multiplier_names)),
+          m_derivative_names(std::move(derivative_names)),
+          m_parameter_names(std::move(parameter_names)) {}
+
 MocoTrajectory::MocoTrajectory(const SimTK::Vector& time,
         std::vector<std::string> state_names,
         std::vector<std::string> control_names,
@@ -175,6 +200,22 @@ void MocoTrajectory::setMultiplier(
     m_multipliers.updCol(index) = trajectory;
 }
 
+void MocoTrajectory::setDerivative(
+        const std::string& name, const SimTK::Vector& trajectory) {
+    ensureUnsealed();
+    OPENSIM_THROW_IF(trajectory.size() != m_derivatives.nrow(), Exception,
+            format("For derivative %s, expected %i elements but got %i.", name,
+                    m_derivatives.nrow(), trajectory.size()));
+
+    auto it = std::find(
+            m_derivative_names.cbegin(), m_derivative_names.cend(), name);
+    OPENSIM_THROW_IF(it == m_derivative_names.cend(), Exception,
+            format("Cannot find derivative named %s.", name));
+    int index = (int)std::distance(m_derivative_names.cbegin(), it);
+    m_derivatives.updCol(index) = trajectory;
+
+}
+
 void MocoTrajectory::setSlack(
         const std::string& name, const SimTK::Vector& trajectory) {
     ensureUnsealed();
@@ -229,12 +270,12 @@ void MocoTrajectory::setStatesTrajectory(const TimeSeriesTable& states,
     const auto& labels = states.getColumnLabels();
 
     if (!allowMissingColumns) {
-        for (const auto& iterate_state : m_state_names) {
-            OPENSIM_THROW_IF(find(labels, iterate_state) == labels.end(),
+        for (const auto& trajectory_state : m_state_names) {
+            OPENSIM_THROW_IF(find(labels, trajectory_state) == labels.end(),
                     Exception,
                     format("Expected table to contain column '%s'; consider "
                            "setting allowMissingColumns to true.",
-                            iterate_state));
+                            trajectory_state));
         }
     }
 
@@ -246,7 +287,7 @@ void MocoTrajectory::setStatesTrajectory(const TimeSeriesTable& states,
             if (!allowExtraColumns) {
                 OPENSIM_THROW(Exception,
                         format("Column '%s' is not a state in the "
-                               "iterate; consider setting allowExtraColumns to "
+                               "trajectory; consider setting allowExtraColumns to "
                                "true.",
                                 label));
             }
@@ -290,6 +331,37 @@ void MocoTrajectory::insertStatesTrajectory(
             for (int itime = 0; itime < m_time.size(); ++itime) {
                 curTime[0] = m_time[itime];
                 m_states(itime, istate) = splines.get(label).calcValue(curTime);
+            }
+        }
+    }
+}
+
+void MocoTrajectory::insertControlsTrajectory(
+        const TimeSeriesTable& subsetOfControls, bool overwrite) {
+    ensureUnsealed();
+
+    const auto origControlNames = m_control_names;
+    const auto& labelsToInsert = subsetOfControls.getColumnLabels();
+    for (const auto& label : labelsToInsert) {
+        auto it = find(m_control_names, label);
+        if (it == m_control_names.cend()) { m_control_names.push_back(label); }
+    }
+
+    m_controls.resizeKeep(getNumTimes(), (int)m_control_names.size());
+
+    const int numTimesTable = (int)subsetOfControls.getNumRows();
+
+    GCVSplineSet splines(subsetOfControls, {}, std::min(numTimesTable - 1, 5));
+    SimTK::Vector curTime(1, SimTK::NaN);
+    for (const auto& label : labelsToInsert) {
+        if (find(origControlNames, label) == origControlNames.cend()
+                || overwrite) {
+            auto it = find(m_control_names, label);
+            int istate = (int)std::distance(m_control_names.cbegin(), it);
+            for (int itime = 0; itime < m_time.size(); ++itime) {
+                curTime[0] = m_time[itime];
+                m_controls(itime, istate) =
+                    splines.get(label).calcValue(curTime);
             }
         }
     }
@@ -591,7 +663,7 @@ void MocoTrajectory::resample(SimTK::Vector time) {
 }
 
 MocoTrajectory::MocoTrajectory(const std::string& filepath) {
-    TimeSeriesTable table = readTableFromFile(filepath);
+    TimeSeriesTable table(filepath);
     const auto& metadata = table.getTableMetaData();
     // TODO: bug with file adapters.
     // auto numStates = metadata.getValueForKey("num_states").getValue<int>();
@@ -774,9 +846,9 @@ TimeSeriesTable MocoTrajectory::convertToTable() const {
     try {
         table = TimeSeriesTable(time, data, labels);
     } catch (const TimestampGreaterThanEqualToNext&) {
-        // TimeSeriesTable requires monotonically increasing time, but
-        // this might not be true for iterates. Create the table with complying
-        // times then hack in to set times back to what the iterate contains.
+        // TimeSeriesTable requires monotonically increasing time, but this
+        // might not be true for trajectories. Create the table with complying
+        // times then hack in to set times back to what the trajectory contains.
         std::vector<double> tempTime(time.size());
         for (int i = 0; i < (int)tempTime.size(); ++i)
             tempTime[i] = -1000.0 + i;
@@ -817,12 +889,25 @@ TimeSeriesTable MocoTrajectory::exportToStatesTable() const {
             m_states, m_state_names};
 }
 
+TimeSeriesTable MocoTrajectory::exportToControlsTable() const {
+    ensureUnsealed();
+    return {std::vector<double>(&m_time[0], &m_time[0] + m_time.size()),
+            m_controls, m_control_names};
+}
+
 StatesTrajectory MocoTrajectory::exportToStatesTrajectory(
         const MocoProblem& problem) const {
     ensureUnsealed();
+    // TODO update when we support multiple phases.
+    const auto& model = problem.getPhase(0).getModelProcessor().process();
+    return exportToStatesTrajectory(model);
+}
+
+StatesTrajectory MocoTrajectory::exportToStatesTrajectory(
+        const Model& model) const {
+    ensureUnsealed();
     Storage storage = exportToStatesStorage();
     // TODO update when we support multiple phases.
-    const auto& model = problem.getPhase(0).getModel();
     return StatesTrajectory::createFromStatesStorage(model, storage, true);
 }
 
@@ -890,57 +975,98 @@ void MocoTrajectory::randomize(bool add, const SimTK::Random& randGen) {
             SimTK::RowVector(0)); // TODO (parameters)
 }
 
-bool MocoTrajectory::isCompatible(
-        const MocoProblemRep& mp, bool throwOnError) const {
+bool MocoTrajectory::isCompatible(const MocoProblemRep& mp,
+        bool requireAccelerations, bool throwOnError) const {
     ensureUnsealed();
-    // Slack variables might be solver dependent, so we can't include them in 
+    // Slack variables might be solver dependent, so we can't include them in
     // the compatibility check.
 
+    const int debugLevel = Object::getDebugLevel();
+
+    auto compare = [&throwOnError, &debugLevel](
+            std::string varType, std::vector<std::string> trajNames,
+            std::vector<std::string> probNames,
+            std::string message = "") {
+        std::sort(trajNames.begin(), trajNames.end());
+        std::sort(probNames.begin(), probNames.end());
+        if (trajNames == probNames) return true;
+        if (!throwOnError && debugLevel <= 0) return false;
+
+        int sum = (int)trajNames.size() + (int)probNames.size();
+
+        std::stringstream ss;
+
+        // http://www.cplusplus.com/reference/algorithm/set_difference/
+        {
+            std::vector<std::string> inTrajNotProb(sum);
+            auto inTrajNotProbEnd = std::set_difference(trajNames.begin(),
+                    trajNames.end(), probNames.begin(), probNames.end(),
+                    inTrajNotProb.begin());
+            inTrajNotProb.resize(inTrajNotProbEnd - inTrajNotProb.begin());
+            ss << "The trajectory and provided problem are not compatible. ";
+            if (!inTrajNotProb.empty()) {
+                ss << "The following " << varType
+                   << " are in the trajectory but not the problem:\n";
+                for (const auto& name : inTrajNotProb) {
+                    ss << "  " << name << "\n";
+                }
+            }
+        }
+
+        {
+            std::vector<std::string> inProbNotTraj(sum);
+            auto inProbNotTrajEnd = std::set_difference(probNames.begin(),
+                    probNames.end(), trajNames.begin(), trajNames.end(),
+                    inProbNotTraj.begin());
+            inProbNotTraj.resize(inProbNotTrajEnd - inProbNotTraj.begin());
+            if (!inProbNotTraj.empty()) {
+                ss << "The following " << varType
+                   << " are in the problem but not the trajectory:\n";
+                for (const auto& name : inProbNotTraj) {
+                    ss << "  " << name << "\n";
+                }
+            }
+        }
+        ss << message << "\n";
+
+        if (debugLevel <= 0) {
+            throw Exception(__FILE__, __LINE__,
+                    "MocoTrajectory::isCompatible()", ss.str());
+        }
+        std::cout << ss.str() << std::flush;
+        return false;
+    };
+
     auto mpsn = mp.createStateInfoNames();
-    std::sort(mpsn.begin(), mpsn.end());
-    auto mpcn = mp.createControlInfoNames();
-    std::sort(mpcn.begin(), mpcn.end());
-    auto mpmn = mp.createMultiplierInfoNames();
-    std::sort(mpmn.begin(), mpmn.end());
-    auto mppn = mp.createParameterNames();
-    std::sort(mppn.begin(), mppn.end());
 
-    auto sn(m_state_names);
-    std::sort(sn.begin(), sn.end());
+    if (!compare("state(s)", m_state_names, mpsn)) return false;
+    if (!compare("control(s)", m_control_names, mp.createControlInfoNames()))
+        return false;
+    if (!compare("multiplier(s)", m_multiplier_names,
+                mp.createMultiplierInfoNames()))
+        return false;
+    if (!compare("parameter(s)", m_parameter_names, mp.createParameterNames()))
+        return false;
 
-    auto cn(m_control_names);
-    std::sort(cn.begin(), cn.end());
-
-    auto mn(m_multiplier_names);
-    std::sort(mn.begin(), mn.end());
-
-    auto dn(m_derivative_names);
-    std::sort(dn.begin(), dn.end());
-
-    auto pn(m_parameter_names);
-    std::sort(pn.begin(), pn.end());
-
-    // Create the expected names for the derivative variable names.
-    std::vector<std::string> mpdn;
-    for (auto name : mpsn) {
-        auto leafpos = name.find("value");
-        if (leafpos != std::string::npos) {
-            name.replace(leafpos, name.size(), "accel");
-            mpdn.push_back(name);
+    std::vector<std::string> mpdn; // Component derivative names only.
+    const auto& implicitComponentRefs = mp.getImplicitComponentReferencePtrs();
+    for (const auto& compRef : implicitComponentRefs) {
+        const auto& derivName =
+                compRef.second->getAbsolutePathString() + "/" + compRef.first;
+        mpdn.push_back(derivName);
+    }
+    if (requireAccelerations) {
+        // Create the expected names for the derivative variables.
+        for (auto name : mpsn) {
+            auto leafpos = name.find("value");
+            if (leafpos != std::string::npos) {
+                name.replace(leafpos, name.size(), "accel");
+                mpdn.push_back(name);
+            }
         }
     }
-    std::sort(mpdn.begin(), mpdn.end());
 
-    bool compatible = mpsn == sn && mpcn == cn && mpmn == mn &&
-                      // It's okay to not have any derivatives (for solving the
-                      // problem with an explicit dynamics mode).
-                      (dn.empty() || mpdn == dn) && mppn == pn;
-
-    // TODO more detailed error message specifying exactly what's different.
-    OPENSIM_THROW_IF(!compatible && throwOnError, Exception,
-            "Iterate and provided problem are not compatible.");
-
-    return compatible;
+    return compare("derivative(s)", m_derivative_names, mpdn);
 }
 
 bool MocoTrajectory::isNumericallyEqual(
@@ -988,7 +1114,7 @@ void checkContains(std::string type, VecStr a, VecStr b, VecStr c) {
     std::set_difference(
             a.begin(), a.end(), b.begin(), b.end(), std::back_inserter(diff));
     if (!diff.empty()) {
-        std::string msg = "Expected this iterate's " + type +
+        std::string msg = "Expected this trajectory's " + type +
                           " names to "
                           "contain the following:";
         for (const auto& elem : diff) msg += "\n  " + elem;
@@ -998,7 +1124,7 @@ void checkContains(std::string type, VecStr a, VecStr b, VecStr c) {
     std::set_difference(
             a.begin(), a.end(), c.begin(), c.end(), std::back_inserter(diff));
     if (!diff.empty()) {
-        std::string msg = "Expected the other iterate's " + type +
+        std::string msg = "Expected the other trajectory's " + type +
                           " names to contain the following:";
         for (const auto& elem : diff) msg += "\n  " + elem;
         OPENSIM_THROW(Exception, msg);
@@ -1017,7 +1143,7 @@ double MocoTrajectory::compareContinuousVariablesRMSInternal(
     if (stateNames.empty()) {
         OPENSIM_THROW_IF(!sameContents(m_state_names, other.m_state_names),
                 Exception,
-                "Expected both iterates to have the same state names; consider "
+                "Expected both trajectories to have the same state names; consider "
                 "specifying the states to compare.");
         stateNames = m_state_names;
     } else if (stateNames.size() == 1 && stateNames[0] == "none") {
@@ -1029,7 +1155,7 @@ double MocoTrajectory::compareContinuousVariablesRMSInternal(
     if (controlNames.empty()) {
         OPENSIM_THROW_IF(!sameContents(m_control_names, other.m_control_names),
                 Exception,
-                "Expected both iterates to have the same control names; "
+                "Expected both trajectories to have the same control names; "
                 "consider specifying the controls to compare.");
         controlNames = m_control_names;
     } else if (controlNames.size() == 1 && controlNames[0] == "none") {
@@ -1043,7 +1169,7 @@ double MocoTrajectory::compareContinuousVariablesRMSInternal(
         OPENSIM_THROW_IF(
                 !sameContents(m_multiplier_names, other.m_multiplier_names),
                 Exception,
-                "Expected both iterates to have the same multiplier names; "
+                "Expected both trajectories to have the same multiplier names; "
                 "consider specifying the multipliers to compare.");
         multiplierNames = m_multiplier_names;
     } else if (multiplierNames.size() == 1 && multiplierNames[0] == "none") {
@@ -1056,7 +1182,7 @@ double MocoTrajectory::compareContinuousVariablesRMSInternal(
         OPENSIM_THROW_IF(
                 !sameContents(m_derivative_names, other.m_derivative_names),
                 Exception,
-                "Expected both iterates to have the same derivative names; "
+                "Expected both trajectories to have the same derivative names; "
                 "consider specifying the derivatives to compare.");
         derivativeNames = m_derivative_names;
     } else if (derivativeNames.size() == 1 && derivativeNames[0] == "none") {
@@ -1143,17 +1269,9 @@ double MocoTrajectory::compareContinuousVariablesRMS(
         const MocoTrajectory& other,
         std::map<std::string, std::vector<std::string>> cols) const {
     ensureUnsealed();
-    std::vector<std::string> allowedKeys{
-            "states", "controls", "multipliers", "derivatives"};
     for (auto kv : cols) {
-        bool keyIsAllowed = false;
-        for (auto allowedKey : allowedKeys) {
-            if (kv.first == allowedKey) {
-                keyIsAllowed = true;
-                break;
-            }
-        }
-        OPENSIM_THROW_IF(!keyIsAllowed, Exception,
+        OPENSIM_THROW_IF(find(m_allowedKeys, kv.first) == m_allowedKeys.cend(),
+                Exception,
                 format("Key '%s' is not allowed.", kv.first));
     }
     if (cols.size() == 0) {
@@ -1167,6 +1285,33 @@ double MocoTrajectory::compareContinuousVariablesRMS(
             cols.count("derivatives") ? cols.at("derivatives") : none);
 }
 
+double MocoTrajectory::compareContinuousVariablesRMSPattern(
+        const MocoTrajectory& other, std::string columnType,
+        std::string pattern) const {
+    ensureUnsealed();
+    const std::vector<std::string>* names;
+    if (columnType == "states") {
+        names = &m_state_names;
+    } else if (columnType == "controls") {
+        names = &m_control_names;
+    } else if (columnType == "multipliers") {
+        names = &m_multiplier_names;
+    } else if (columnType == "derivatives") {
+        names = &m_derivative_names;
+    } else {
+        OPENSIM_THROW(Exception,
+                format("Column type '%s' is not allowed.", columnType));
+    }
+    std::vector<std::string> namesToUse;
+    std::regex regex(pattern);
+    for (const auto& name : *names) {
+        if (std::regex_match(name, regex)) {
+            namesToUse.push_back(name);
+        }
+    }
+    return compareContinuousVariablesRMS(other, {{columnType, namesToUse}});
+}
+
 double MocoTrajectory::compareParametersRMS(const MocoTrajectory& other,
         std::vector<std::string> parameterNames) const {
     ensureUnsealed();
@@ -1177,7 +1322,7 @@ double MocoTrajectory::compareParametersRMS(const MocoTrajectory& other,
         OPENSIM_THROW_IF(
                 !sameContents(m_parameter_names, other.m_parameter_names),
                 Exception,
-                "Expected both iterates to have the same parameter names; "
+                "Expected both trajectories to have the same parameter names; "
                 "consider "
                 "specifying the parameters to compare.");
         parameterNames = m_parameter_names;

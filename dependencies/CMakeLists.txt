@@ -8,12 +8,14 @@ project(MocoDependencies)
 # We require a version of CMake that supports Visual Studio 2015.
 cmake_minimum_required(VERSION 3.2)
 
-if(MSVC AND NOT ${CMAKE_GENERATOR} MATCHES "Win64")
-    # This requirement results from the use of 64-bit pre-built binaries for
-    # ADOL-C and Ipopt.
-    set(MSG "You must choose a 64-bit generator")
-    set(MSG "${MSG} (e.g., 'Visual Studio 14 2015 Win64').")
-    message(FATAL_ERROR ${MSG})
+if(MSVC)
+    if (${CMAKE_GENERATOR} MATCHES "Win64" OR 
+            "${CMAKE_GENERATOR_PLATFORM}" STREQUAL "x64")
+    else()
+        # This requirement results from the use of 64-bit pre-built binaries for
+        # ADOL-C and Ipopt.
+        message(FATAL_ERROR "Only 64-bit platforms supported.")
+    endif()
 endif()
 
 option(OPENSIM_JAVA_WRAPPING "Build opensim-core Java/MATLAB interface." OFF)
@@ -278,10 +280,14 @@ else()
         # TODO CMake documentation says "Whether the current working directory
         # is preserved between commands is not defined. Behavior of shell
         # operators like && is not defined."
+        # Patch the scripts that download Metis and MUMPS to use our
+        # Sourceforge mirror. The original links are not reliable.
         ExternalProject_Add(ipopt
             URL https://www.coin-or.org/download/source/Ipopt/Ipopt-3.12.8.zip
             INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/ipopt"
-            PATCH_COMMAND cd <SOURCE_DIR>/ThirdParty/Metis && ./get.Metis
+            PATCH_COMMAND cd <SOURCE_DIR>/ThirdParty/Metis && patch < ${CMAKE_SOURCE_DIR}/get.Metis.patch
+                  COMMAND cd <SOURCE_DIR>/ThirdParty/Metis && ./get.Metis
+                  COMMAND cd <SOURCE_DIR>/ThirdParty/Mumps && patch < ${CMAKE_SOURCE_DIR}/get.Mumps.patch
                   COMMAND cd <SOURCE_DIR>/ThirdParty/Mumps && ./get.Mumps
             CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
             BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}

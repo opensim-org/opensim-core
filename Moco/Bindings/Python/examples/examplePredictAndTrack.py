@@ -103,10 +103,10 @@ def solvePrediction():
     #
     #       iniital pose      final pose
     #
-    moco = osim.MocoStudy()
-    moco.setName("double_pendulum_predict")
+    study = osim.MocoStudy()
+    study.setName("double_pendulum_predict")
 
-    problem = moco.updProblem()
+    problem = study.updProblem()
 
     # Model (dynamics).
     problem.setModel(createDoublePendulumModel())
@@ -138,8 +138,8 @@ def solvePrediction():
 
 
     # Configure the solver.
-    solver = moco.initTropterSolver()
-    solver.set_num_mesh_points(100)
+    solver = study.initTropterSolver()
+    solver.set_num_mesh_intervals(100)
     solver.set_verbosity(2)
     solver.set_optim_solver("ipopt")
 
@@ -156,14 +156,14 @@ def solvePrediction():
     solver.setGuess(guess)
 
     # Save the problem to a setup file for reference.
-    moco.printToXML("examplePredictAndTrack_predict.omoco")
+    study.printToXML("examplePredictAndTrack_predict.omoco")
 
     # Solve the problem.
-    solution = moco.solve();
+    solution = study.solve();
     solution.write("examplePredictAndTrack_predict_solution.sto");
 
     if visualize:
-        moco.visualize(solution);
+        study.visualize(solution);
     return solution
     
 
@@ -187,7 +187,7 @@ def computeMarkersReference(predictedSolution):
         m0 = model.getComponent("markerset/m0")
         m1 = model.getComponent("markerset/m1")
         markerTrajectories.appendRow(state.getTime(),
-            osim.RowVectorOfVec3([m0.getLocationInGround(state),
+            osim.RowVectorVec3([m0.getLocationInGround(state),
                                   m1.getLocationInGround(state)]))
                                   
     # Assign a weight to each marker.
@@ -200,10 +200,10 @@ def computeMarkersReference(predictedSolution):
     
 def solveStateTracking(stateRef):
     # Predict the optimal trajectory for a minimum time swing-up.
-    moco = osim.MocoStudy()
-    moco.setName("double_pendulum_track")
+    study = osim.MocoStudy()
+    study.setName("double_pendulum_track")
 
-    problem = moco.updProblem()
+    problem = study.updProblem()
 
     # Model (dynamics).
     problem.setModel(createDoublePendulumModel())
@@ -232,8 +232,8 @@ def solveStateTracking(stateRef):
     # TODO problem.addGoal(effort)
 
     # Configure the solver.
-    solver = moco.initTropterSolver()
-    solver.set_num_mesh_points(50)
+    solver = study.initTropterSolver()
+    solver.set_num_mesh_intervals(50)
     solver.set_verbosity(2)
     solver.set_optim_solver("ipopt")
     solver.set_optim_jacobian_approximation("exact")
@@ -241,24 +241,24 @@ def solveStateTracking(stateRef):
     solver.set_exact_hessian_block_sparsity_mode("dense")
 
     # Save the problem to a setup file for reference.
-    moco.printToXML("examplePredictAndTrack_track_states.omoco")
+    study.printToXML("examplePredictAndTrack_track_states.omoco")
 
     # Solve the problem.
-    solution = moco.solve()
+    solution = study.solve()
 
     solution.write("examplePredictAndTrack_track_states_solution.sto")
 
     if visualize:
-        moco.visualize(solution)
+        study.visualize(solution)
     return solution
 
     
 def solveMarkerTracking(markersRef, guess):
     # Predict the optimal trajectory for a minimum time swing-up.
-    moco = osim.MocoStudy()
-    moco.setName("double_pendulum_track")
+    study = osim.MocoStudy()
+    study.setName("double_pendulum_track")
 
-    problem = moco.updProblem()
+    problem = study.updProblem()
 
     # Model (dynamics).
     problem.setModel(createDoublePendulumModel())
@@ -287,8 +287,8 @@ def solveMarkerTracking(markersRef, guess):
     # problem.addGoal(effort)
 
     # Configure the solver.
-    solver = moco.initTropterSolver()
-    solver.set_num_mesh_points(50)
+    solver = study.initTropterSolver()
+    solver.set_num_mesh_intervals(50)
     solver.set_verbosity(2)
     solver.set_optim_solver("ipopt")
     solver.set_optim_jacobian_approximation("exact")
@@ -298,15 +298,15 @@ def solveMarkerTracking(markersRef, guess):
     solver.setGuess(guess)
 
     # Save the problem to a setup file for reference.
-    moco.printToXML("examplePredictAndTrack_track_markers.omoco")
+    study.printToXML("examplePredictAndTrack_track_markers.omoco")
 
     # Solve the problem.
-    solution = moco.solve()
+    solution = study.solve()
 
     solution.write("examplePredictAndTrack_track_markers_solution.sto")
 
     if visualize:
-        moco.visualize(solution)
+        study.visualize(solution)
     return solution
     
 

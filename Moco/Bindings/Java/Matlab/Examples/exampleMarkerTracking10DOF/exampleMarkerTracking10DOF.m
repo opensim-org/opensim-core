@@ -41,12 +41,12 @@ addCoordinateActuator(model, 'ankle_angle_l', 5);
 
 % Create MocoStudy.
 % ================
-moco = MocoStudy();
-moco.setName('marker_tracking_10dof');
+study = MocoStudy();
+study.setName('marker_tracking_10dof');
 
 % Define the optimal control problem.
 % ===================================
-problem = moco.updProblem();
+problem = study.updProblem();
 
 % Model (dynamics).
 % -----------------
@@ -105,30 +105,30 @@ problem.addGoal(markerTrackingCost);
 % Add a low-weighted control effort cost to reduce oscillations in the 
 % actuator controls.
 controlCost = MocoControlGoal();
-controlCost.set_weight(0.001);
+controlCost.setWeight(0.001);
 problem.addGoal(controlCost);
 
 % Configure the solver.
 % =====================
-solver = moco.initCasADiSolver();
-solver.set_num_mesh_points(20);
+solver = study.initCasADiSolver();
+solver.set_num_mesh_intervals(20);
 solver.set_optim_constraint_tolerance(1e-3);
 solver.set_optim_convergence_tolerance(1e-3);
 
 solver.setGuess('bounds');
 
 % Now that we've finished setting up the tool, print it to a file.
-moco.print('marker_tracking_10dof.omoco');
+study.print('marker_tracking_10dof.omoco');
 
 % Solve the problem.
 % ==================
-solution = moco.solve();
+solution = study.solve();
 solution.write('marker_tracking_10dof_solution.sto');
 
 % Visualize.
 % ==========
 if ~strcmp(getenv('OPENSIM_USE_VISUALIZER'), '0')
-    moco.visualize(solution);
+    study.visualize(solution);
 end
 
 % Plot states trajectory solution.

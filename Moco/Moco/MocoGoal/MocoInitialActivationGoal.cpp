@@ -20,7 +20,8 @@
 
 using namespace OpenSim;
 
-void MocoInitialActivationGoal::initializeOnModelImpl(const Model& model) const {
+void MocoInitialActivationGoal::initializeOnModelImpl(
+        const Model& model) const {
 
     auto allSysYIndices = createSystemYIndexMap(model);
     auto systemControlIndexMap = createSystemControlIndexMap(model);
@@ -39,19 +40,19 @@ void MocoInitialActivationGoal::initializeOnModelImpl(const Model& model) const 
 
 void MocoInitialActivationGoal::calcGoalImpl(
         const GoalInput& input, SimTK::Vector& goal) const {
-    {
-        const auto& controls = getModel().getControls(input.initial_state);
-        const auto& states = input.initial_state.getY();
-        int i = 0;
+    const auto& controls = getModel().getControls(input.initial_state);
+    const auto& states = input.initial_state.getY();
+    int i = 0;
+    if (!getModeIsCost()) {
         for (const auto& indices : m_indices) {
             goal[i] = controls[indices.first] - states[indices.second];
             ++i;
         }
-    }
-    if (getModeIsCost()) {
-        for (int i = 0; i < goal.size(); ++i) {
-            goal[i] = SimTK::square(goal[i]);
-
+    } else {
+        for (const auto& indices : m_indices) {
+            goal[i] = SimTK::square(controls[indices.first] -
+                    states[indices.second]);
+            ++i;
         }
     }
 }
