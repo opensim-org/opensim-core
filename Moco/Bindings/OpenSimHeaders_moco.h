@@ -33,6 +33,7 @@
 #include <Moco/MocoParameter.h>
 #include <Moco/MocoProblem.h>
 #include <Moco/MocoStudy.h>
+#include <Moco/MocoStudyFactory.h>
 #include <Moco/MocoTrack.h>
 #include <Moco/MocoTrajectory.h>
 #include <Moco/MocoTropterSolver.h>

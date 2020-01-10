@@ -46,6 +46,7 @@ public:
     /// - 1 joint: SliderJoint along x axis, `/jointset/slider`, with
     ///            coordinate `/jointset/slider/position`.
     /// - 1 actuator: CoordinateActuator, controls [-10, 10], `/actuator`.
+    /// Gravity is default; that is, (0, -g, 0).
     static Model createSlidingPointMass();
     /// This model contains:
     /// - 2 bodies: a massless body "intermed", and "body" with mass 1.

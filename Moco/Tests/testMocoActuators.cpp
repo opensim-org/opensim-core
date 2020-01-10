@@ -931,50 +931,6 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
         }
     }
 
-    SECTION("solveBisection()") {
-
-        // solveBisection().
-        // -----------------
-        {
-            auto calcResidual = [](const SimTK::Real& x) { return x - 3.78; };
-            {
-                const auto root =
-                        muscle.solveBisection(calcResidual, -5, 5, 1e-6, 1e-12);
-                SimTK_TEST_EQ_TOL(root, 3.78, 1e-6);
-                // Make sure the x tolerance has an effect.
-                SimTK_TEST_NOTEQ_TOL(root, 3.78, 1e-10);
-            }
-            {
-                const auto root = muscle.solveBisection(
-                        calcResidual, -5, 5, 1e-10, 1e-12);
-                SimTK_TEST_EQ_TOL(root, 3.78, 1e-10);
-            }
-            // Make sure the y tolerance has an effect.
-            {
-                const auto root =
-                        muscle.solveBisection(calcResidual, -5, 5, 1e-12, 1e-4);
-                const auto residual = calcResidual(root);
-                SimTK_TEST_EQ_TOL(residual, 0, 1e-4);
-                // Make sure the x tolerance has an effect.
-                SimTK_TEST_NOTEQ_TOL(residual, 0, 1e-10);
-            }
-            {
-                const auto root = muscle.solveBisection(
-                        calcResidual, -5, 5, 1e-12, 1e-10);
-                const auto residual = calcResidual(root);
-                SimTK_TEST_EQ_TOL(residual, 0, 1e-10);
-            }
-        }
-        // Multiple roots.
-        {
-            auto parabola = [](const SimTK::Real& x) {
-                return SimTK::square(x - 2.5);
-            };
-            REQUIRE_THROWS_AS(
-                    muscle.solveBisection(parabola, -5, 5), Exception);
-        }
-    }
-
     // getActivation(), setActivation()
     // --------------------------------
     SECTION("getActivation(), setActivation()") {

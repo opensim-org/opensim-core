@@ -610,55 +610,6 @@ void DeGrooteFregly2016Muscle::computeInitialFiberEquilibrium(
 
 }
 
-SimTK::Real DeGrooteFregly2016Muscle::solveBisection(
-        std::function<SimTK::Real(const SimTK::Real&)> calcResidual,
-        SimTK::Real left, SimTK::Real right, const SimTK::Real& xTolerance,
-        const SimTK::Real& yTolerance, int maxIterations) const {
-    SimTK::Real midpoint = left;
-
-    OPENSIM_THROW_IF_FRMOBJ(maxIterations < 0, Exception,
-            format("Expected maxIterations to be positive, but got %i.",
-                    maxIterations));
-
-    const bool sameSign = calcResidual(left) * calcResidual(right) >= 0;
-    if (sameSign) {
-        const auto x = createVectorLinspace(1000, left, right);
-        TimeSeriesTable table;
-        table.setColumnLabels({"residual"});
-        SimTK::RowVector row(1);
-        for (int i = 0; i < x.nrow(); ++i) {
-            row[0] = calcResidual(x[i]);
-            table.appendRow(x[i], row);
-        }
-        writeTableToFile(table, "DEBUG_solveBisection_residual.sto");
-    }
-    OPENSIM_THROW_IF_FRMOBJ(sameSign, Exception,
-            format("Function has same sign at bounds of %f and %f.", left,
-                    right));
-
-    SimTK::Real residualMidpoint;
-    SimTK::Real residualLeft = calcResidual(left);
-    int iterCount = 0;
-    while (iterCount < maxIterations && (right - left) >= xTolerance) {
-        midpoint = 0.5 * (left + right);
-        residualMidpoint = calcResidual(midpoint);
-        if (std::abs(residualMidpoint) < yTolerance) {
-            break;
-        } else if (residualMidpoint * residualLeft < 0) {
-            // The solution is to the left of the current midpoint.
-            right = midpoint;
-        } else {
-            left = midpoint;
-            residualLeft = calcResidual(left);
-        }
-        ++iterCount;
-    }
-    if (iterCount == maxIterations)
-        printMessage("Warning: bisection reached max iterations "
-                     "at x = %g (%s %s).\n",
-                midpoint, getConcreteClassName(), getName());
-    return midpoint;
-}
 
 std::pair<DeGrooteFregly2016Muscle::StatusFromEstimateMuscleFiberState,
         DeGrooteFregly2016Muscle::ValuesFromEstimateMuscleFiberState>

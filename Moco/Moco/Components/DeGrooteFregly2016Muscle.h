@@ -619,14 +619,7 @@ public:
 
     /// @name Utilities
     /// @{
-    /// Given a residual lambda function and domain initial guess to the left
-    /// and right of a root, use bisection to find a root value.
-    SimTK::Real solveBisection(
-            std::function<SimTK::Real(const SimTK::Real&)> calcResidual,
-            SimTK::Real left, SimTK::Real right,
-            const SimTK::Real& xTolerance = 1e-6,
-            const SimTK::Real& yTolerance = 1e-6,
-            int maxIterations = 1000) const;
+
     /// Export the active force-length multiplier and passive force multiplier
     /// curves to a DataTable. If the normFiberLengths argument is omitted, we
     /// use createVectorLinspace(200, minNormFiberLength, maxNormFiberLength).
