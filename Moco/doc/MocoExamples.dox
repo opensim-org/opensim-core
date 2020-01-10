@@ -12,14 +12,14 @@ walking.
 This is an example using the MocoInverse tool with a complex model to prescribe
 walking.
 
-@example exampleSitToStand.m
-This is an example that predicts a sit-to-stand movement and optimizes
+@example exampleSquatToStand.m
+This is an example that predicts a squat-to-stand movement and optimizes
 the stiffness of an assistive passive device. This example is used in hands-on
 workshops, and accordingly has blanks that users must fill in. See @ref
-exampleSitToStand_answers.m for a completed version.
+exampleSquatToStand_answers.m for a completed version.
 
-@example exampleSitToStand_answers.m
-This is an example that predicts a sit-to-stand movement and optimizes
+@example exampleSquatToStand_answers.m
+This is an example that predicts a squat-to-stand movement and optimizes
 the stiffness of an assistive passive device.
 
 @example exampleMinimizeJointReaction.m
@@ -126,7 +126,7 @@ MocoTrack | lower-limb | Using the MocoTrack tool for walking with marker tracki
 MocoInverse | lower-limb | Using the MocoInverse tool for walking; generating a PDF report | [MATLAB](@ref exampleMocoInverse.m), [Python](@ref exampleMocoInverse.py), [C++](@ref exampleMocoInverse.cpp)
 2DWalking | walking | MocoTrack, MocoStudy prediction, MocoControlGoal, MocoAverageSpeedGoal, MocoPerodicityGoal, createPeriodicSolution | [C++](@ref example2DWalking.cpp)
 MarkerTracking10DOF | walking | MocoControlGoal, MocoMarkerTrackingGoal | [MATLAB](@ref exampleMarkerTracking10DOF.m)
-SitToStand | torque-driven single leg | MocoStudy motion prediction, MocoInverse | [MATLAB](@ref exampleSitToStand_answers.m)
+SquatToStand | torque-driven single leg | MocoStudy motion prediction, MocoInverse | [MATLAB](@ref exampleSquatToStand_answers.m)
 PredictAndTrack | double pendulum | MocoMarkerFinalGoal, MocoFinalTimeGoal, MocoMarkerTrackingGoal, MocoStateTrackingGoal | [Python](@ref examplePredictAndTrack.py)
 PrototypeCustomGoal | N/A | Sandbox for defining a custom MocoGoal | [MATLAB](@ref examplePrototypeCustomGoal.m)
 

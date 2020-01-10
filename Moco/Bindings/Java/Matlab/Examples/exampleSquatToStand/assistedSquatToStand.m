@@ -1,6 +1,6 @@
-function assistedSitToStand
+function assistedSquatToStand
 % This file is for a workshop competition to design an assistive device for
-% sit-to-stand that reduces control effort the most.
+% squat-to-stand that reduces control effort the most.
 % evaluateDevice() returns the score for your device, which is the percent
 % reduction in effort summed over 2 subjects, which have different mass
 % properties.
@@ -53,11 +53,11 @@ cacheUnassisted = 1;
 
 % Edit the argument to evaluateDevice() to any device function you create below.
 % This function performs the following steps:
-%   1. Predicts subject 1 unassisted sit-to-stand (skipped in subsequent calls).
-%   2. Predicts subject 1 assisted sit-to-stand.
+%   1. Predicts subject 1 unassisted squat-to-stand (skipped in subsequent calls).
+%   2. Predicts subject 1 assisted squat-to-stand.
 %   3. Plots comparison of assisted vs unassisted solutions for subject 1.
-%   4. Predicts subject 2 unassisted sit-to-stand (skipped in subsequent calls).
-%   5. Predicts subject 2 assisted sit-to-stand.
+%   4. Predicts subject 2 unassisted squat-to-stand (skipped in subsequent calls).
+%   5. Predicts subject 2 assisted squat-to-stand.
 %   6. Plots comparison of assisted vs unassisted solutions for subject 2.
 %   7. Computes the score for the assistive device.
 % Up to 4 Visualizer windows are created. The function only proceeds
@@ -115,7 +115,7 @@ subjectInfos{2}.torso = 1.5;
 end
 
 function [study] = createStudy(subjectIndex, addDeviceFunction)
-% This function builds a study for predicting a sit-to-stand motion given
+% This function builds a study for predicting a squat-to-stand motion given
 % adjustments to a model (given a subject index; 1 or 2) and, optionally, a
 % function for adding a device to a model. This returns a MocoStudy, and you can
 % access and modify the problem via updProblem().

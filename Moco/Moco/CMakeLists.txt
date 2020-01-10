@@ -68,6 +68,8 @@ set(MOCO_SOURCES
         MocoConstraint.cpp
         MocoControlBoundConstraint.cpp
         MocoControlBoundConstraint.h
+        MocoFrameDistanceConstraint.h
+        MocoFrameDistanceConstraint.cpp
         Components/DeGrooteFregly2016Muscle.h
         Components/DeGrooteFregly2016Muscle.cpp
         Components/SmoothSphereHalfSpaceForce.h
