@@ -109,8 +109,8 @@ protected:
     void printConstraintValues(const Iterate& it,
             const Constraints<casadi::DM>& constraints,
             std::ostream& stream = std::cout) const;
-    void printCostBreakdown(const Iterate& it,
-            const Cost TODO,
+    void printObjectiveBreakdown(const Iterate& it,
+            const casadi::DM& objectiveTerms,
             std::ostream& stream = std::cout) const;
 
     const Solver& m_solver;
@@ -143,7 +143,9 @@ private:
 
     casadi::MX m_xdot; // State derivatives.
 
-    casadi::MX m_objective;
+    casadi::MX m_objectiveTerms;
+    std::vector<std::string> m_objectiveTermNames;
+
     Constraints<casadi::MX> m_constraints;
     Constraints<casadi::DM> m_constraintsLowerBounds;
     Constraints<casadi::DM> m_constraintsUpperBounds;
@@ -385,6 +387,16 @@ private:
                 "Internal error.");
         return out;
     }
+
+    ObjectiveBreakdown expandObjectiveTerms(const casadi::DM& terms) const {
+        ObjectiveBreakdown out;
+        for (int io = 0; io < (int)m_objectiveTermNames.size(); ++io) {
+            out.push_back(std::make_pair(
+                    m_objectiveTermNames[io], terms(io).scalar()));
+        }
+        return out;
+    }
+
 
     friend class NlpsolCallback;
 };

@@ -450,43 +450,32 @@ void Transcription::setObjectiveAndEndpointConstraints() {
 
     // Objective.
     // ----------
-    m_objective = 0;
-
-    // Minimize Lagrange multipliers if specified by the solver.
-    if (m_solver.getMinimizeLagrangeMultipliers() &&
-            m_problem.getNumMultipliers()) {
-        const auto mults = m_vars[multipliers];
-        const double multiplierWeight = m_solver.getLagrangeMultiplierWeight();
-        // Sum across constraints of each multiplier element squared.
-        MX integrandTraj = MX::sum1(MX::sq(mults));
-        m_objective += multiplierWeight * m_duration *
-                       dot(quadCoeffs.T(), integrandTraj);
+    m_objectiveTermNames.clear();
+    for (int ic = 0; ic < m_problem.getNumCosts(); ++ic) {
+        const auto& info = m_problem.getCostInfos()[ic];
+        m_objectiveTermNames.push_back(info.name);
     }
-
-    if (m_solver.getMinimizeImplicitMultibodyAccelerations() &&
-            m_problem.isDynamicsModeImplicit()) {
-        const auto& numAccels = m_problem.getNumAccelerations();
-        const auto accels = m_vars[derivatives](Slice(0, numAccels), Slice());
-        const double accelWeight = 
-                m_solver.getImplicitMultibodyAccelerationsWeight();
-        MX integrandTraj = MX::sum1(MX::sq(accels));
-        m_objective += accelWeight * m_duration * 
-                       dot(quadCoeffs.T(), integrandTraj);
+    bool minimizeLagrangeMultipliers =
+            m_solver.getMinimizeLagrangeMultipliers() &&
+            m_problem.getNumMultipliers();
+    if (minimizeLagrangeMultipliers) {
+        m_objectiveTermNames.push_back("multipliers");
     }
-
-    if (m_solver.getMinimizeImplicitAuxiliaryDerivatives() && 
-            m_problem.getNumAuxiliaryResidualEquations()) {
-        const auto& numAccels = m_problem.getNumAccelerations();
-        const auto& numAuxDerivs = m_problem.getNumAuxiliaryResidualEquations();
-        const auto auxDerivs = m_vars[derivatives](
-                Slice(numAccels, numAccels + numAuxDerivs), Slice());
-        const double auxDerivWeight =
-                m_solver.getImplicitAuxiliaryDerivativesWeight();
-        MX integrandTraj = MX::sum1(MX::sq(auxDerivs));
-        m_objective += auxDerivWeight * m_duration *
-                       dot(quadCoeffs.T(), integrandTraj);
+    bool minimizeAccelerations =
+            m_solver.getMinimizeImplicitMultibodyAccelerations() &&
+            m_problem.isDynamicsModeImplicit();
+    if (minimizeAccelerations) {
+        m_objectiveTermNames.push_back("accelerations");
     }
+    bool minimizeAuxiliaryDerivatives =
+            m_solver.getMinimizeImplicitAuxiliaryDerivatives() &&
+            m_problem.getNumAuxiliaryResidualEquations();
+    if (minimizeAuxiliaryDerivatives) {
+        m_objectiveTermNames.push_back("auxiliary_derivatives");
+    }
+    m_objectiveTerms = MX::zeros((int)m_objectiveTermNames.size(), 1);
 
+    int iterm = 0;
     for (int ic = 0; ic < m_problem.getNumCosts(); ++ic) {
         const auto& info = m_problem.getCostInfos()[ic];
 
@@ -499,7 +488,7 @@ void Transcription::setObjectiveAndEndpointConstraints() {
             // is evaluated.
             MX integrandTraj = evalOnTrajectory(*info.integrand_function,
                     {states, controls, multipliers, derivatives}, m_gridIndices)
-                                       .at(0);
+                    .at(0);
 
             integral = m_duration * dot(quadCoeffs.T(), integrandTraj);
         } else {
@@ -509,20 +498,55 @@ void Transcription::setObjectiveAndEndpointConstraints() {
         MXVector costOut;
         info.endpoint_function->call(
                 {m_vars[initial_time], m_vars[states](Slice(), 0),
-                        m_vars[controls](Slice(), 0),
-                        m_vars[multipliers](Slice(), 0),
-                        m_vars[derivatives](Slice(), 0), m_vars[final_time],
-                        m_vars[states](Slice(), -1),
-                        m_vars[controls](Slice(), -1),
-                        m_vars[multipliers](Slice(), -1),
-                        m_vars[derivatives](Slice(), -1), m_vars[parameters],
-                        integral},
+                 m_vars[controls](Slice(), 0),
+                 m_vars[multipliers](Slice(), 0),
+                 m_vars[derivatives](Slice(), 0), m_vars[final_time],
+                 m_vars[states](Slice(), -1),
+                 m_vars[controls](Slice(), -1),
+                 m_vars[multipliers](Slice(), -1),
+                 m_vars[derivatives](Slice(), -1), m_vars[parameters],
+                 integral},
                 costOut);
-        m_objective += casadi::MX::sum1(costOut.at(0));
+        m_objectiveTerms(iterm++) = casadi::MX::sum1(costOut.at(0));
     }
 
-    // Endpoint constraints
+    // Minimize Lagrange multipliers if specified by the solver.
+    if (minimizeLagrangeMultipliers) {
+        const auto mults = m_vars[multipliers];
+        const double multiplierWeight = m_solver.getLagrangeMultiplierWeight();
+        // Sum across constraints of each multiplier element squared.
+        MX integrandTraj = MX::sum1(MX::sq(mults));
+        m_objectiveTerms(iterm++) = multiplierWeight * m_duration *
+                       dot(quadCoeffs.T(), integrandTraj);
+    }
 
+    // Minimize generalized accelerations.
+    if (minimizeAccelerations) {
+        const auto& numAccels = m_problem.getNumAccelerations();
+        const auto accels = m_vars[derivatives](Slice(0, numAccels), Slice());
+        const double accelWeight = 
+                m_solver.getImplicitMultibodyAccelerationsWeight();
+        MX integrandTraj = MX::sum1(MX::sq(accels));
+        m_objectiveTerms(iterm++) = accelWeight * m_duration *
+                       dot(quadCoeffs.T(), integrandTraj);
+    }
+
+    // Minimize auxiliary derivatives.
+    if (minimizeAuxiliaryDerivatives) {
+        const auto& numAccels = m_problem.getNumAccelerations();
+        const auto& numAuxDerivs = m_problem.getNumAuxiliaryResidualEquations();
+        const auto auxDerivs = m_vars[derivatives](
+                Slice(numAccels, numAccels + numAuxDerivs), Slice());
+        const double auxDerivWeight =
+                m_solver.getImplicitAuxiliaryDerivativesWeight();
+        MX integrandTraj = MX::sum1(MX::sq(auxDerivs));
+        m_objectiveTerms(iterm++) = auxDerivWeight * m_duration *
+                       dot(quadCoeffs.T(), integrandTraj);
+    }
+
+
+    // Endpoint constraints
+    // --------------------
     int numEndpointConstraints =
             (int)m_problem.getEndpointConstraintInfos().size();
     m_constraints.endpoint.resize(numEndpointConstraints);
@@ -628,7 +652,8 @@ Solution Transcription::solve(const Iterate& guessOrig) {
     nlp.emplace(std::make_pair("x", x));
     // The m_objective symbolic variable holds an expression graph including
     // all the calculations performed on the variables x.
-    nlp.emplace(std::make_pair("f", m_objective));
+    casadi::MX objective = MX::sum1(m_objectiveTerms);
+    nlp.emplace(std::make_pair("f", objective));
     nlp.emplace(std::make_pair("g", g));
     if (!m_solver.getWriteSparsity().empty()) {
         const auto prefix = m_solver.getWriteSparsity();
@@ -637,7 +662,7 @@ Solution Transcription::solve(const Iterate& guessOrig) {
                 prefix + "_objective_gradient_sparsity.mtx");
         auto hessian = casadi::MX::hessian(nlp["f"], nlp["x"]);
         hessian.sparsity().to_file(prefix + "_objective_Hessian_sparsity.mtx");
-        auto lagrangian = m_objective +
+        auto lagrangian = objective +
                           casadi::MX::dot(casadi::MX::ones(nlp["g"].sparsity()),
                                   nlp["g"]);
         auto hessian_lagr = casadi::MX::hessian(lagrangian, nlp["x"]);
@@ -666,16 +691,29 @@ Solution Transcription::solve(const Iterate& guessOrig) {
     const auto finalVariables = nlpResult.at("x");
     solution.variables = expandVariables(finalVariables);
     solution.objective = nlpResult.at("f").scalar();
+
+    casadi::DMVector finalVarsDMV{finalVariables};
+    casadi::Function objectiveFunc("objective", {x}, {m_objectiveTerms});
+    casadi::DMVector objectiveOut;
+    objectiveFunc.call(finalVarsDMV, objectiveOut);
+    solution.objective_breakdown = expandObjectiveTerms(objectiveOut[0]);
+
     solution.times = createTimes(
             solution.variables[initial_time], solution.variables[final_time]);
     solution.stats = nlpFunc.stats();
+
+    // Print breakdown of objective.
+    std::cout << "\n";
+    printObjectiveBreakdown(solution, objectiveOut[0]);
+
     if (!solution.stats.at("success")) {
+
         // For some reason, nlpResult.at("g") is all 0. So we calculate the
         // constraints ourselves.
         casadi::Function constraintFunc("constraints", {x}, {g});
-        casadi::DMVector out;
-        constraintFunc.call(casadi::DMVector{finalVariables}, out);
-        printConstraintValues(solution, expandConstraints(out[0]));
+        casadi::DMVector constraintsOut;
+        constraintFunc.call(finalVarsDMV, constraintsOut);
+        printConstraintValues(solution, expandConstraints(constraintsOut[0]));
     }
     return solution;
 }
@@ -1056,6 +1094,17 @@ void Transcription::printConstraintValues(const Iterate& it,
             stream << std::endl;
         }
     }
+}
+
+void Transcription::printObjectiveBreakdown(const Iterate& it,
+        const casadi::DM& objectiveTerms,
+        std::ostream& stream) const {
+    stream << "Breakdown of objective:\n";
+    for (int io = 0; io < (int)m_objectiveTermNames.size(); ++io) {
+        stream << "  " << m_objectiveTermNames[io] << ": "
+               << objectiveTerms(io).scalar() << "\n";
+    }
+    stream << std::flush;
 }
 
 Iterate Transcription::createInitialGuessFromBounds() const {
