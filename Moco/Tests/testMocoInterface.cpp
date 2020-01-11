@@ -1951,7 +1951,7 @@ TEST_CASE("solveBisection()") {
     {
         const auto root = solveBisection(calcResidual, -5, 5, 1e-6);
         SimTK_TEST_EQ_TOL(root, 3.78, 1e-6);
-        // Make sure the x tolerance has an effect.
+        // Make sure the tolerance has an effect.
         SimTK_TEST_NOTEQ_TOL(root, 3.78, 1e-10);
     }
     {
