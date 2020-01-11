@@ -552,7 +552,7 @@ void DeGrooteFregly2016Muscle::computeInitialFiberEquilibrium(
     };
 
     const auto equilNormTendonForce = solveBisection(calcResidual,
-            m_minNormTendonForce, m_maxNormTendonForce, 1e-10, 1e-10, 100);
+            m_minNormTendonForce, m_maxNormTendonForce, 1e-10, 100);
 
     setNormalizedTendonForce(s, equilNormTendonForce);
 

@@ -846,8 +846,8 @@ TimeSeriesTable OpenSim::createExternalLoadsTableForGait(Model model,
 
 SimTK::Real OpenSim::solveBisection(
         std::function<SimTK::Real(const SimTK::Real&)> calcResidual,
-        SimTK::Real left, SimTK::Real right, const SimTK::Real& xTolerance,
-        const SimTK::Real& yTolerance, int maxIterations) {
+        SimTK::Real left, SimTK::Real right, const SimTK::Real& tolerance,
+        int maxIterations) {
     SimTK::Real midpoint = left;
 
     OPENSIM_THROW_IF(maxIterations < 0, Exception,
@@ -873,12 +873,10 @@ SimTK::Real OpenSim::solveBisection(
     SimTK::Real residualMidpoint;
     SimTK::Real residualLeft = calcResidual(left);
     int iterCount = 0;
-    while (iterCount < maxIterations && (right - left) >= xTolerance) {
+    while (iterCount < maxIterations && (right - left) > tolerance) {
         midpoint = 0.5 * (left + right);
         residualMidpoint = calcResidual(midpoint);
-        if (std::abs(residualMidpoint) < yTolerance) {
-            break;
-        } else if (residualMidpoint * residualLeft < 0) {
+        if (residualMidpoint * residualLeft < 0) {
             // The solution is to the left of the current midpoint.
             right = midpoint;
         } else {

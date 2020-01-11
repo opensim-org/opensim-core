@@ -118,7 +118,7 @@ TEMPLATE_TEST_CASE("Linear tangent steering", "", /*MocoTropterSolver, TODO*/
                4 * h / (a * T * T);
     };
     const double initialAngle = solveBisection(
-            residual, 0.01, 0.99 * 0.5 * SimTK::Pi, 0.0001, 0.0001, 100);
+            residual, 0.01, 0.99 * 0.5 * SimTK::Pi, 0.0001, 100);
     const double tanInitialAngle = tan(initialAngle);
     const double c = 2 * tanInitialAngle / finalTime;
     auto txvalue = [a, c, initialAngle](const double& angle) {

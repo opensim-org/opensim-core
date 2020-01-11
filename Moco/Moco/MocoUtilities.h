@@ -835,17 +835,15 @@ TimeSeriesTable createExternalLoadsTableForGait(Model model,
 /// @param calcResidual a function that computes the error
 /// @param left lower bound on the root
 /// @param right upper bound on the root
-/// @param xTolerance convergence requires that the bisection's "left" and
-///     "right" are less than xTolerance apart.
-/// @param yTolerance convergence requires the value of calcResidual is less
-///     than yTolerance.
+/// @param tolerance convergence requires that the bisection's "left" and
+///     "right" are less than tolerance apart.
 /// @param maxIterations abort after this many iterations.
 /// @ingroup mocogenutil
 OSIMMOCO_API
 SimTK::Real solveBisection(
         std::function<double(const double&)> calcResidual,
         double left, double right, const double& xTolerance = 1e-6,
-        const double& yTolerance = 1e-6, int maxIterations = 1000);
+        int maxIterations = 1000);
 
 } // namespace OpenSim
 
