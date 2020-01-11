@@ -69,9 +69,11 @@ struct Iterate {
 
 /// This struct is used to return a solution to a problem. Use `stats`
 /// to check if the problem converged.
+using ObjectiveBreakdown = std::vector<std::pair<std::string, double>>;
 struct Solution : public Iterate {
     casadi::Dict stats;
     double objective;
+    ObjectiveBreakdown objective_breakdown;
 };
 
 } // namespace CasOC

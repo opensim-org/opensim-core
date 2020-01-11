@@ -1347,6 +1347,49 @@ void MocoTrajectory::ensureUnsealed() const {
     OPENSIM_THROW_IF(m_sealed, MocoTrajectoryIsSealed);
 }
 
+std::vector<std::string> MocoSolution::getObjectiveTermNames() const {
+    ensureUnsealed();
+    std::vector<std::string> names;
+    for (const auto& entry : m_objectiveBreakdown) {
+        names.push_back(entry.first);
+    }
+    return names;
+}
+
+double MocoSolution::getObjectiveTerm(const std::string& name) const {
+    ensureUnsealed();
+    for (const auto& entry : m_objectiveBreakdown) {
+        if (entry.first == name) {
+            return entry.second;
+        }
+    }
+    OPENSIM_THROW(
+            Exception, format("Objective term '%s' not found.", name));
+}
+
+double MocoSolution::getObjectiveTermByIndex(int index) const {
+    ensureUnsealed();
+    OPENSIM_THROW_IF(
+            index < 0, Exception, "Expected index to be non-negative.");
+    OPENSIM_THROW_IF(index >= (int)m_objectiveBreakdown.size(), Exception,
+            format("Expected index (%i) to be less than the number of "
+                   "objective terms (%i).",
+                    index, m_objectiveBreakdown.size()));
+    return m_objectiveBreakdown[index].second;
+}
+
+void MocoSolution::printObjectiveBreakdown() const {
+    ensureUnsealed();
+    if (m_objectiveBreakdown.empty()) {
+        std::cout << "no terms or no breakdown available" << std::endl;
+        return;
+    }
+    for (const auto& entry : m_objectiveBreakdown) {
+        std::cout << entry.first << ": " << entry.second << "\n";
+    }
+    std::cout << std::flush;
+}
+
 void MocoSolution::convertToTableImpl(TimeSeriesTable& table) const {
     std::string success = m_success ? "true" : "false";
     table.updTableMetaData().setValueForKey("success", success);
@@ -1357,4 +1400,9 @@ void MocoSolution::convertToTableImpl(TimeSeriesTable& table) const {
             "num_iterations", std::to_string(m_numIterations));
     table.updTableMetaData().setValueForKey(
             "solver_duration", std::to_string(m_solverDuration));
+    for (const auto& entry : m_objectiveBreakdown) {
+        table.updTableMetaData().setValueForKey(
+                "objective_" + entry.first, std::to_string(entry.second));
+
+    }
 }
