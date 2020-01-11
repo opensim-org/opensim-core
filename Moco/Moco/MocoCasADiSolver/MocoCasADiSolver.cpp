@@ -410,8 +410,8 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
         if (mocoSolution) {
             std::cout << "MocoCasADiSolver succeeded!\n";
         } else {
-            std::cerr << "MocoCasADiSolver did NOT succeed:\n";
-            std::cerr << "  " << mocoSolution.getStatus() << "\n";
+            std::cout << "MocoCasADiSolver did NOT succeed:\n";
+            std::cout << "  " << mocoSolution.getStatus() << "\n";
         }
         std::cout << std::string(79, '=') << std::endl;
     }

@@ -1716,7 +1716,7 @@ TEMPLATE_TEST_CASE("Sliding mass", "", MocoTropterSolver, MocoCasADiSolver) {
     int numStates = 2;
     int numControls = 1;
 
-// Check dimensions and metadata of the solution.
+    // Check dimensions and metadata of the solution.
     SimTK_TEST((solution.getStateNames() ==
                 std::vector<std::string>{
                         "/slider/position/value", "/slider/position/speed"}));
@@ -1943,6 +1943,29 @@ TEST_CASE("updateStateLabels40") {
     CHECK(labels[0] == "/jointset/j0/q0/value");
     CHECK(labels[1] == "/jointset/j0/q0/speed");
     CHECK(labels[2] == "nonexistent");
+}
+
+TEST_CASE("solveBisection()") {
+
+    auto calcResidual = [](const SimTK::Real& x) { return x - 3.78; };
+    {
+        const auto root = solveBisection(calcResidual, -5, 5, 1e-6);
+        SimTK_TEST_EQ_TOL(root, 3.78, 1e-6);
+        // Make sure the tolerance has an effect.
+        SimTK_TEST_NOTEQ_TOL(root, 3.78, 1e-10);
+    }
+    {
+        const auto root = solveBisection(calcResidual, -5, 5, 1e-10);
+        SimTK_TEST_EQ_TOL(root, 3.78, 1e-10);
+    }
+
+    // Multiple roots.
+    {
+        auto parabola = [](const SimTK::Real& x) {
+            return SimTK::square(x - 2.5);
+        };
+        REQUIRE_THROWS_AS(solveBisection(parabola, -5, 5), Exception);
+    }
 }
 
 TEST_CASE("Objective breakdown") {

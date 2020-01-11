@@ -404,7 +404,6 @@ MocoSolution MocoTropterSolver::solveImpl() const {
         if (mocoSolution) {
             std::cout << "MocoTropterSolver succeeded!\n";
         } else {
-            // TODO cout or cerr?
             std::cout << "MocoTropterSolver did NOT succeed:\n";
             std::cout << "  " << mocoSolution.getStatus() << "\n";
         }

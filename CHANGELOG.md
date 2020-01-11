@@ -8,6 +8,8 @@ Change Log
 
 - 2020-01-08: exampleSitToStand renamed to exampleSquatToStand. 
 
+- 2019-12-24: Added a bisection root solver.
+
 - 2019-12-17: Fix a bug in report.py related to the now nonexistent 
               STOFileAdapter.read.
               

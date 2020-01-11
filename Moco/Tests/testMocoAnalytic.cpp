@@ -21,6 +21,7 @@
 #include <Moco/osimMoco.h>
 
 #include <OpenSim/Actuators/SpringGeneralizedForce.h>
+#include <OpenSim/Common/LogManager.h>
 
 using namespace OpenSim;
 
@@ -91,4 +92,103 @@ TEMPLATE_TEST_CASE("Second order linear min effort", "", MocoTropterSolver,
     const auto expected = expectedSolution(solution.getTime());
 
     OpenSim_CHECK_MATRIX_ABSTOL(solution.getStatesTrajectory(), expected, 1e-5);
+}
+
+/// In the "linear tangent steering" problem, we control the direction to apply
+/// a constant thrust to a point mass to move the mass a given vertical distance
+/// and maximize its final horizontal speed. This problem is described in
+/// Section 2.4 of Bryson and Ho [1].
+/// Bryson, A. E., Ho, Y.‐C., Applied Optimal Control, Optimization, Estimation,
+/// and Control. New York‐London‐Sydney‐Toronto. John Wiley & Sons. 1975.
+TEMPLATE_TEST_CASE("Linear tangent steering", "", /*MocoTropterSolver, TODO*/
+        MocoCasADiSolver) {
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    // The problem is parameterized by a, T, and h, with 0 < 4h/(aT^2) < 1.
+    const double a = 5;
+    const double finalTime = 1; // "T"
+    const double finalHeight = 1.0; // "h"
+    auto residual = [a, finalHeight, finalTime](const double& angle) {
+        const double secx = 1.0 / cos(angle);
+        const double tanx = tan(angle);
+        const double& h = finalHeight;
+        const double& T = finalTime;
+        return 1.0 / sin(angle) -
+               log((secx + tanx) / (secx - tanx)) / (2.0 * tanx * tanx) -
+               4 * h / (a * T * T);
+    };
+    const double initialAngle = solveBisection(
+            residual, 0.01, 0.99 * 0.5 * SimTK::Pi, 0.0001, 100);
+    const double tanInitialAngle = tan(initialAngle);
+    const double c = 2 * tanInitialAngle / finalTime;
+    auto txvalue = [a, c, initialAngle](const double& angle) {
+        const double seci = 1.0 / cos(initialAngle);
+        const double tani = tan(initialAngle);
+        const double secx = 1.0 / cos(angle);
+        const double tanx = tan(angle);
+        return a / (c * c) *
+               (seci - secx - tanx * log((tani + seci) / (tanx + secx)));
+    };
+    auto tyvalue = [a, c, initialAngle](const double& angle) {
+        const double seci = 1.0 / cos(initialAngle);
+        const double tani = tan(initialAngle);
+        const double secx = 1.0 / cos(angle);
+        const double tanx = tan(angle);
+        return a / (2 * c * c) *
+               ((tani - tanx) * seci - (seci - secx) * tanx -
+                       log((tani + seci) / (tanx + secx)));
+    };
+    auto txspeed = [a, c, initialAngle](const double& angle) {
+        const double seci = 1.0 / cos(initialAngle);
+        const double secx = 1.0 / cos(angle);
+        const double tanx = tan(angle);
+        return a / c * log((tan(initialAngle) + seci) / (tanx + secx));
+    };
+    auto tyspeed = [a, c, initialAngle](const double& angle) {
+        return a / c * (1.0 / cos(initialAngle) - 1.0 / cos(angle));
+    };
+    TimeSeriesTable expected;
+    const auto expectedTime = createVectorLinspace(100, 0, finalTime);
+    expected.setColumnLabels({"/forceset/actuator", "/jointset/tx/tx/value",
+            "/jointset/ty/ty/value", "/jointset/tx/tx/speed",
+            "/jointset/ty/ty/speed"});
+    for (int itime = 0; itime < expectedTime.size(); ++itime) {
+        const double& time = expectedTime[itime];
+        const double angle = atan(tanInitialAngle - c * time);
+        expected.appendRow(
+                expectedTime[itime], {angle, txvalue(angle), tyvalue(angle),
+                                             txspeed(angle), tyspeed(angle)});
+    }
+    STOFileAdapter::write(expected,
+            "testMocoAnalytic_LinearTangentSteering_expected.sto");
+
+    MocoStudy study = MocoStudyFactory::createLinearTangentSteeringStudy(
+            a, finalTime, finalHeight);
+
+    MocoSolution solution = study.solve().unseal();
+    solution.write("testMocoAnalytic_LinearTangentSteering_solution.sto");
+
+    const SimTK::Vector time = solution.getTime();
+    SimTK::Vector expectedAngle(time.size());
+    SimTK::Vector expected_txvalue(time.size());
+    SimTK::Vector expected_tyvalue(time.size());
+    SimTK::Vector expected_txspeed(time.size());
+    SimTK::Vector expected_tyspeed(time.size());
+    for (int i = 0; i < expectedAngle.size(); ++i) {
+        expectedAngle[i] = atan(tanInitialAngle - c * time[i]);
+        expected_txvalue[i] = txvalue(expectedAngle[i]);
+        expected_tyvalue[i] = tyvalue(expectedAngle[i]);
+        expected_txspeed[i] = txspeed(expectedAngle[i]);
+        expected_tyspeed[i] = tyspeed(expectedAngle[i]);
+    }
+    OpenSim_CHECK_MATRIX_ABSTOL(
+            solution.getControl("/forceset/actuator"), expectedAngle, 1e-3);
+    OpenSim_CHECK_MATRIX_ABSTOL(
+            solution.getState("/jointset/tx/tx/value"), expected_txvalue, 1e-3);
+    OpenSim_CHECK_MATRIX_ABSTOL(
+            solution.getState("/jointset/ty/ty/value"), expected_tyvalue, 1e-3);
+    OpenSim_CHECK_MATRIX_ABSTOL(
+            solution.getState("/jointset/tx/tx/speed"), expected_txspeed, 1e-3);
+    OpenSim_CHECK_MATRIX_ABSTOL(
+            solution.getState("/jointset/ty/ty/speed"), expected_tyspeed, 1e-3);
 }
