@@ -254,7 +254,7 @@ void MocoTrack::configureMarkerTracking(MocoProblem& problem, Model& model) {
 
     // Add marker tracking cost to the MocoProblem.
     auto* markerTracking = problem.addGoal<MocoMarkerTrackingGoal>(
-            "marking_tracking", get_markers_global_tracking_weight());
+            "marker_tracking", get_markers_global_tracking_weight());
     markerTracking->setMarkersReference(markersRef);
     markerTracking->setAllowUnusedReferences(get_allow_unused_references());
 
