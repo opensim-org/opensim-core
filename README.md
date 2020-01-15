@@ -944,6 +944,11 @@ specific Ubuntu versions under 'For the impatient' below.
   `cmake-gui`.
 * **compiler**: [gcc](http://gcc.gnu.org) >= 4.9; `g++-4.9`, or
   [Clang](http://clang.llvm.org) >= 3.4; `clang-3.4`.
+* **Libraries** (e.g. from apt): 
+  * freeglut3-dev
+  * libxi-dev 
+  * libxmu-dev
+  * liblapack-dev 
 * **physics engine**: Simbody >= 3.7. Two options:
   * Let OpenSim get this for you using superbuild (see below).
   * [Build on your own](https://github.com/simbody/simbody#installing).
