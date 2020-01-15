@@ -37,6 +37,8 @@ private:
     void constructProperties();
 };
 
+
+/// The only contact element supported is SmoothSphereHalfSpaceForce.
 /// TODO: The error is computed in ground.
 /// @ingroup mocogoal
 class OSIMMOCO_API MocoContactTrackingGoal : public MocoGoal {
@@ -86,7 +88,6 @@ private:
 
     void constructProperties();
 
-    // TODO: Do not tailor this component to SmoothSphereHalfSpaceForce.
     struct GroupInfo {
         std::vector<std::pair<const SmoothSphereHalfSpaceForce*, int>> contacts;
         GCVSplineSet refSplines;
