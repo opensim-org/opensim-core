@@ -816,8 +816,8 @@ private:
 /// resulting from Force elements (e.g., SmoothSphereHalfSpaceForce), using the
 /// model and the trajectory. Forces and torques are expressed in the ground
 /// frame with respect to the ground origin. Hence, the centers of pressure are
-/// at the origin. Names of Force elements should be provided separately for
-/// elements of the right and left feet. The output is a table formated for use
+/// at the origin. Paths to Force elements should be provided separately for
+/// elements of the right and left feet. The output is a table formatted for use
 /// with OpenSim tools; the labels of the columns distinguish between right
 /// ("<>_r") and left ("<>_l") forces, centers of pressure, and torques. The
 /// forces and torques used are taken from the first six outputs of
@@ -828,8 +828,14 @@ private:
 OSIMMOCO_API
 TimeSeriesTable createExternalLoadsTableForGait(Model model,
         const MocoTrajectory& trajectory,
-        const std::vector<std::string>& forceNamesRightFoot,
-        const std::vector<std::string>& forceNamesLeftFoot);
+        const std::vector<std::string>& forcePathsRightFoot,
+        const std::vector<std::string>& forcePathsLeftFoot);
+
+OSIMMOCO_API
+TimeSeriesTable createExternalLoadsTableForGait(Model model,
+        const StatesTrajectory& trajectory,
+        const std::vector<std::string>& forcePathsRightFoot,
+        const std::vector<std::string>& forcePathsLeftFoot);
 
 /// Solve for the root of a scalar function using the bisection method.
 /// @param calcResidual a function that computes the error
