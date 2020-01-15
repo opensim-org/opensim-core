@@ -187,7 +187,7 @@ private:
             "Associate contact elements in the model with force data.");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(external_loads, ExternalLoads,
             "Experimental contact force data.");
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(external_loads_file, std::string,
+    OpenSim_DECLARE_PROPERTY(external_loads_file, std::string,
             "Experimental contact force data as an ExternalLoads XML file.");
     OpenSim_DECLARE_PROPERTY(projection, std::string,
             "'none' (default): use full 3-D force error; "

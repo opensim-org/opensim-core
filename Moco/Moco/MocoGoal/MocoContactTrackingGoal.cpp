@@ -43,7 +43,7 @@ void MocoContactTrackingGoalGroup::constructProperties() {
 void MocoContactTrackingGoal::constructProperties() {
     constructProperty_contact_groups();
     constructProperty_external_loads();
-    constructProperty_external_loads_file();
+    constructProperty_external_loads_file("");
     constructProperty_projection("none");
     constructProperty_projection_vector();
 }
@@ -51,7 +51,7 @@ void MocoContactTrackingGoal::constructProperties() {
 void MocoContactTrackingGoal::setExternalLoadsFile(
         const std::string& extLoadsFile) {
     updProperty_external_loads().clear();
-
+    set_external_loads_file(extLoadsFile);
 }
 
 void MocoContactTrackingGoal::setExternalLoads(const ExternalLoads& extLoads) {
@@ -77,10 +77,12 @@ void MocoContactTrackingGoal::initializeOnModelImpl(const Model& model) const {
                 "Expected either an ExternalLoads file or object, but both "
                 "were provided.");
         extLoads = &get_external_loads();
-    } else {
+    } else if (!get_external_loads_file().empty()) {
         extLoadsFromFile =
                 make_unique<ExternalLoads>(get_external_loads_file(), true);
         extLoads = extLoadsFromFile.get();
+    } else {
+        OPENSIM_THROW_FRMOBJ(Exception, "No ExternalLoads provided.");
     }
 
     // Spline the data.
@@ -267,6 +269,4 @@ void MocoContactTrackingGoal::printDescriptionImpl(std::ostream& stream) const {
             stream << group.get_contact_force_paths(ic) << std::endl;
         }
     }
-    // projection
-    // projection vector
 }
