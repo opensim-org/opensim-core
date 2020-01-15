@@ -848,7 +848,7 @@ TimeSeriesTable createExternalLoadsTableForGait(Model model,
 OSIMMOCO_API
 SimTK::Real solveBisection(
         std::function<double(const double&)> calcResidual,
-        double left, double right, const double& xTolerance = 1e-6,
+        double left, double right, const double& tolerance = 1e-6,
         int maxIterations = 1000);
 
 } // namespace OpenSim

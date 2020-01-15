@@ -42,36 +42,66 @@ void MocoContactTrackingGoalGroup::constructProperties() {
 
 void MocoContactTrackingGoal::constructProperties() {
     constructProperty_contact_groups();
-    constructProperty_external_loads(ExternalLoads());
+    constructProperty_external_loads();
+    constructProperty_external_loads_file();
+    constructProperty_projection("none");
+    constructProperty_projection_vector();
+}
+
+void MocoContactTrackingGoal::setExternalLoadsFile(
+        const std::string& extLoadsFile) {
+    updProperty_external_loads().clear();
+
 }
 
 void MocoContactTrackingGoal::setExternalLoads(const ExternalLoads& extLoads) {
+    updProperty_external_loads_file().clear();
     set_external_loads(extLoads);
 }
 
 void MocoContactTrackingGoal::initializeOnModelImpl(const Model& model) const {
 
+    // Calculate the denominator.
     m_denominator = model.getTotalMass(model.getWorkingState());
     const double gravityAccelMagnitude = model.get_gravity().norm();
     if (gravityAccelMagnitude > SimTK::SignificantReal) {
         m_denominator *= gravityAccelMagnitude;
     }
 
-    TimeSeriesTable data(get_external_loads().getDataFileName());
+    // Get the ExternalLoads object.
+    std::unique_ptr<ExternalLoads> extLoadsFromFile;
+    const ExternalLoads* extLoads;
+    if (!getProperty_external_loads().empty()) {
+        OPENSIM_THROW_IF_FRMOBJ(!getProperty_external_loads_file().empty(),
+                Exception,
+                "Expected either an ExternalLoads file or object, but both "
+                "were provided.");
+        extLoads = &get_external_loads();
+    } else {
+        extLoadsFromFile =
+                make_unique<ExternalLoads>(get_external_loads_file(), true);
+        extLoads = extLoadsFromFile.get();
+    }
 
-    // TODO: use different spline sets for different groups.
+    // Spline the data.
+    TimeSeriesTable data(extLoads->getDataFileName());
     GCVSplineSet allRefSplines(data);
 
+    // Each ExternalForce has an applied_to_body property. For the ExternalForce
+    // to be properly paired with a group of contact force components, the
+    // contact force components must also apply forces to the same body. Here,
+    // we find which of the two bodies in each contact force component matches
+    // the ExternalForce body.
     for (int ig = 0; ig < getProperty_contact_groups().size(); ++ig) {
         const auto& group = get_contact_groups(ig);
 
         OPENSIM_THROW_IF_FRMOBJ(
-                !get_external_loads().contains(group.get_external_force_name()),
+                !extLoads->contains(group.get_external_force_name()),
                 Exception,
                 format("External force '%s' not found.",
                         group.get_external_force_name()));
         const auto& extForce =
-                get_external_loads().get(group.get_external_force_name());
+                extLoads->get(group.get_external_force_name());
         const std::string& appliedToBody = extForce.get_applied_to_body();
 
         GroupInfo groupInfo;
@@ -81,7 +111,7 @@ void MocoContactTrackingGoal::initializeOnModelImpl(const Model& model) const {
             const auto& contactForce =
                     model.getComponent<SmoothSphereHalfSpaceForce>(path);
 
-            // Assume we want the first 3 entries in
+            // First, assume we want the first 3 entries in
             // SmoothSphereHalfSpaceForce::getRecordValues(), which contain
             // forces on the sphere.
             int recordOffset = 0;
@@ -90,6 +120,7 @@ void MocoContactTrackingGoal::initializeOnModelImpl(const Model& model) const {
                             .findBaseFrame()
                             .getName();
             if (sphereBaseName != appliedToBody) {
+                // The ExternalForce is not applied to the sphere's body.
                 const std::string& halfSpaceBaseName =
                         contactForce
                                 .getConnectee<PhysicalFrame>("half_space_frame")
@@ -105,27 +136,64 @@ void MocoContactTrackingGoal::initializeOnModelImpl(const Model& model) const {
                                 sphereBaseName, halfSpaceBaseName,
                                 appliedToBody,
                                 group.get_external_force_name()));
-                // We want forces applied to the half space, which are entries
-                // 6, 7, 8 in SmoothSphereHalfSpaceForce::getRecordValues().
+                // We want the forces applied to the half space, which are
+                // entries 6, 7, 8 in
+                // SmoothSphereHalfSpaceForce::getRecordValues().
                 recordOffset = 6;
             }
             groupInfo.contacts.push_back(
                     std::make_pair(&contactForce, recordOffset));
         }
 
+        // Gather the relevant data splines for this contact group.
+        // We assume that the "x", "y", and "z" columns could have been in any
+        // order.
         const std::string& forceID = extForce.get_force_identifier();
         groupInfo.refSplines.cloneAndAppend(allRefSplines.get(forceID + "x"));
         groupInfo.refSplines.cloneAndAppend(allRefSplines.get(forceID + "y"));
         groupInfo.refSplines.cloneAndAppend(allRefSplines.get(forceID + "z"));
 
+        // Check which frame the contact force data is expressed in.
+        groupInfo.refExpressedInFrame = nullptr;
+        if (extForce.get_force_expressed_in_body() != "ground") {
+            const auto& forceExpressedInBody =
+                    extForce.get_force_expressed_in_body();
+            if (model.hasComponent<PhysicalFrame>(forceExpressedInBody)) {
+                groupInfo.refExpressedInFrame =
+                        &model.getComponent<PhysicalFrame>(
+                                forceExpressedInBody);
+            } else if (model.hasComponent<PhysicalFrame>(
+                               "./bodyset/" + forceExpressedInBody)) {
+                groupInfo.refExpressedInFrame =
+                        &model.getComponent<PhysicalFrame>(
+                                "./bodyset/" + forceExpressedInBody);
+            } else {
+                OPENSIM_THROW_FRMOBJ(
+                        Exception, format("Could not find '%s' in the model or "
+                                          "the BodySet.",
+                                           forceExpressedInBody));
+            }
+        }
+
         m_groups.push_back(groupInfo);
     }
 
-    // TODO: Make sure ExternalForce applied_to_body and all forces connect to that body.
-    // Use applied_to_body to determine whether we want the force on the sphere or the half space.
-
-
-    // TODO: Error-check the groups.
+    // Should the contact force errors be projected onto a plane?
+    if (get_projection() == "vector") {
+        m_projectionType = ProjectionType::Vector;
+    } else if (get_projection() == "plane") {
+        m_projectionType = ProjectionType::Plane;
+    } else if (get_projection() != "none") {
+        OPENSIM_THROW_FRMOBJ(
+                Exception, format("Expected 'projection' to be 'none', "
+                                  "'vector', or 'plane', but got '%s'.",
+                                   get_projection()));
+    }
+    if (m_projectionType != ProjectionType::None) {
+        OPENSIM_THROW_IF_FRMOBJ(getProperty_projection_vector().empty(),
+                Exception, "Must provide a value for 'projection_vector'.");
+        m_projectionVector = SimTK::UnitVec3(get_projection_vector());
+    }
 
     setNumIntegralsAndOutputs(1, 1);
 }
@@ -136,38 +204,69 @@ void MocoContactTrackingGoal::calcIntegrandImpl(
     getModel().realizeVelocity(state);
     SimTK::Vector timeVec(1, time);
 
-    // TODO: This duplicates some of the code in ExternalForce; perhaps use that
-    // code directly?
-
-    // TODO support projecting or omitting a component/measure.
-
     integrand = 0;
-    SimTK::Vec3 force_model(0);
     SimTK::Vec3 force_ref;
     for (const auto& group : m_groups) {
 
+        // Model force.
+        SimTK::Vec3 force_model(0);
         for (const auto& entry : group.contacts) {
-            Array<double> recordValues =
-                    entry.first->getRecordValues(state);
+            Array<double> recordValues = entry.first->getRecordValues(state);
             const auto& recordOffset = entry.second;
             for (int im = 0; im < force_model.size(); ++im) {
                 force_model[im] += recordValues[recordOffset + im];
             }
         }
 
+        // Reference force.
         for (int ir = 0; ir < force_ref.size(); ++ir) {
             force_ref[ir] = group.refSplines[ir].calcValue(timeVec);
-            // TODO: re-express in ground if necessary.
         }
 
-        integrand += (force_model - force_ref).normSqr();
+        // Re-express the reference force.
+        if (group.refExpressedInFrame) {
+            group.refExpressedInFrame->expressVectorInGround(state, force_ref);
+        }
+
+        SimTK::Vec3 error3D = force_model - force_ref;
+
+        // Project the error.
+        SimTK::Vec3 error;
+        if (m_projectionType == ProjectionType::None) {
+            error = error3D;
+        } else if (m_projectionType == ProjectionType::Vector) {
+            error = SimTK::dot(error3D, m_projectionVector) *
+                    m_projectionVector;
+        } else {
+            error = error3D - SimTK::dot(error3D, m_projectionVector) *
+                                      m_projectionVector;
+        }
+
+        integrand += error.normSqr();
     }
 }
 
 void MocoContactTrackingGoal::printDescriptionImpl(std::ostream& stream) const {
-    // TODO
-    // for (int i = 0; i < getProperty_contact_groups().size(); ++i) {
-    //     stream << "                ";
-    //     stream << "group " << i << ": contact forces: "; // TODO
-    // }
+    stream << "        ";
+    stream << "projection type: " << get_projection() << std::endl;
+    if (m_projectionType != ProjectionType::None) {
+        stream << "        ";
+        stream << "projection vector: " << get_projection_vector() << std::endl;
+    }
+    for (int ig = 0; ig < getProperty_contact_groups().size(); ++ig) {
+        const auto& group = get_contact_groups(ig);
+        stream << "        ";
+        stream << "group " << ig
+               << ": ExternalForce: " << group.get_external_force_name()
+               << std::endl;
+        stream << "            ";
+        stream << "forces: " << std::endl;
+        for (int ic = 0; ic < group.getProperty_contact_force_paths().size();
+                ++ic) {
+            stream << "                ";
+            stream << group.get_contact_force_paths(ic) << std::endl;
+        }
+    }
+    // projection
+    // projection vector
 }

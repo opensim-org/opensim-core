@@ -597,10 +597,8 @@ TEST_CASE("MocoContactTrackingGoal") {
         problem.setStateInfo(
                 "/groundBall/groundBall_coord_2/speed", {-10, 10}, 0);
 
+        // Add a MocoContactTrackingGoal.
         auto* contactTracking = problem.addGoal<MocoContactTrackingGoal>();
-        // TODO: must provide XML file? TODO can provide force data
-        //  programmatically?
-        // contactTracking->setData().
         ExternalLoads extLoads;
         extLoads.setDataFileName(dataFileName);
         auto extForce = make_unique<ExternalForce>();
@@ -611,22 +609,26 @@ TEST_CASE("MocoContactTrackingGoal") {
 
         contactTracking->setExternalLoads(extLoads);
         contactTracking->addContactGroup({"contactBallHalfSpace"}, "right");
+        contactTracking->setProjection("vector");
+        contactTracking->setProjectionVector(SimTK::Vec3(0, 1, 0));
 
+        // Solve the problem.
         auto& solver = study.initCasADiSolver();
         solver.set_num_mesh_intervals(30);
 
         MocoSolution solution = study.solve();
 
-        externalLoadsDircol = createExternalLoadsTableForGait(model, solution,
-                {"contactBallHalfSpace"}, {});
-        STOFileAdapter::write(externalLoadsDircol,
-                "testContact_MocoContactTrackingGoal_external_loads_dircol."
-                "sto");
+        // STOFileAdapter::write(externalLoadsDircol,
+        //         "testContact_MocoContactTrackingGoal_external_loads_dircol."
+        //         "sto");
 
         const double actualInitialHeight =
                 solution.getState("/groundBall/groundBall_coord_2/value").
                         getElt(0, 0);
         CHECK(actualInitialHeight == Approx(initialHeight).margin(1e-2));
+
+        externalLoadsDircol = createExternalLoadsTableForGait(model, solution,
+                {"contactBallHalfSpace"}, {});
     }
 
     rootMeanSquare(externalLoadsDircol, "ground_force_r_vy",
