@@ -74,6 +74,21 @@ std::string OpenSim::getMocoFormattedDateTime(
     return ss.str();
 }
 
+std::string OpenSim::getAbsolutePathnameFromXMLDocument(
+        const std::string& documentFileName,
+        const std::string& pathnameRelativeToDocument) {
+    // Get the directory containing the XML file.
+    std::string directory;
+    {
+        bool dontApplySearchPath;
+        std::string fileName, extension;
+        SimTK::Pathname::deconstructPathname(documentFileName,
+                dontApplySearchPath, directory, fileName, extension);
+    }
+    return SimTK::Pathname::getAbsolutePathnameUsingSpecifiedWorkingDirectory(
+            directory, pathnameRelativeToDocument);
+}
+
 SimTK::Vector OpenSim::createVectorLinspace(
         int length, double start, double end) {
     SimTK::Vector v(length);

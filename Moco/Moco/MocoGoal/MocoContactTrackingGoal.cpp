@@ -86,7 +86,9 @@ void MocoContactTrackingGoal::initializeOnModelImpl(const Model& model) const {
     }
 
     // Spline the data.
-    TimeSeriesTable data(extLoads->getDataFileName());
+    const std::string dataFilePath = getAbsolutePathnameFromXMLDocument(
+            extLoads->getDocumentFileName(), extLoads->getDataFileName());
+    TimeSeriesTable data(dataFilePath);
     GCVSplineSet allRefSplines(data);
 
     // Each ExternalForce has an applied_to_body property. For the ExternalForce

@@ -87,6 +87,15 @@ inline bool endsWith(const std::string& string, const std::string& ending) {
     return false;
 }
 
+/// An OpenSim XML file may contain file paths that are relative to the
+/// directory containing the XML file; use this function to convert that
+/// relative path into an absolute path.
+/// @ingroup mocogenutil
+OSIMMOCO_API
+std::string getAbsolutePathnameFromXMLDocument(
+        const std::string& documentFileName,
+        const std::string& pathnameRelativeToDocument);
+
 /// @name Filling in a string with variables.
 /// @{
 
