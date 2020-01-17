@@ -79,12 +79,10 @@ std::string OpenSim::getAbsolutePathnameFromXMLDocument(
         const std::string& pathnameRelativeToDocument) {
     // Get the directory containing the XML file.
     std::string directory;
-    {
-        bool dontApplySearchPath;
-        std::string fileName, extension;
-        SimTK::Pathname::deconstructPathname(documentFileName,
-                dontApplySearchPath, directory, fileName, extension);
-    }
+    bool dontApplySearchPath;
+    std::string fileName, extension;
+    SimTK::Pathname::deconstructPathname(documentFileName, dontApplySearchPath,
+            directory, fileName, extension);
     return SimTK::Pathname::getAbsolutePathnameUsingSpecifiedWorkingDirectory(
             directory, pathnameRelativeToDocument);
 }

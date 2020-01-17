@@ -27,7 +27,6 @@
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 
 using namespace OpenSim;
-using SimTK::Vec3;
 
 std::unique_ptr<Model> createSlidingMassModel() {
     auto model = make_unique<Model>();

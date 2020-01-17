@@ -52,7 +52,9 @@ private:
 /// experimental external loads file. Tracking ground reaction forces for the
 /// left and right feet in gait requires only one instance of this goal.
 ///
-/// The only contact element supported is SmoothSphereHalfSpaceForce.
+/// @note The only contact element supported is SmoothSphereHalfSpaceForce.
+///
+/// @note This goal does not include torques or centers of pressure.
 ///
 /// This goal is computed as follows:
 ///
@@ -64,6 +66,9 @@ private:
 /// - \f$ mg \f$: the total weight of the system.
 /// - \f$ G \f$: the set of contact groups.
 /// - \f$ \hat{n} \f$: a vector used for projecting the force error.
+/// - \f$ \mathrm{proj}_{\hat{n}}() \f$: this function projects the force error
+///     either onto \f$ \hat{n} \f$ or onto the plane perpendicular to
+///     \f$ \hat{n} \f$.
 /// - \f$ F_{m,g} \f$ the sum of the contact forces in group \f$ g \f$,
 ///     expressed in ground.
 /// - \f$ F_{e,g} \f$ the experimental contact force for group \f$ g \f$,
@@ -71,8 +76,6 @@ private:
 ///
 /// If the model's gravity $g$ is 0, then we normalize by the total mass of the
 /// system instead of the total weight.
-///
-/// This goal does not include torques or centers of pressure.
 ///
 /// ### Tracking a subset of force components
 ///
@@ -117,6 +120,12 @@ private:
 /// goal. This means that experimental forces are processed differently by this
 /// goal than by other OpenSim tools such as Inverse Dynamics, Computed Muscle
 /// Control, and Forward.
+///
+/// @note The ExternalLoads used by this goal is separate from the model. Using
+/// this goal implies that the model contains compliant contact forces, so
+/// adding ExternalLoads to the model would be redundant. This class uses the
+/// ExternalLoads *only* for computing the force error, not for applying forces
+/// to the model.
 ///
 /// @ingroup mocogoal
 class OSIMMOCO_API MocoContactTrackingGoal : public MocoGoal {
