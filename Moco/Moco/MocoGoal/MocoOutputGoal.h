@@ -24,7 +24,7 @@ namespace OpenSim {
 
 /// This goal allows you to use any (double, or scalar) Output in the model
 /// as the integrand of a goal.
-/// @mocogoal
+/// @ingroup mocogoal
 class OSIMMOCO_API MocoOutputGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoOutputGoal, MocoGoal);
 

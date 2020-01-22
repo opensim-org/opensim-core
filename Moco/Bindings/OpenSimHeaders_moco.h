@@ -15,6 +15,7 @@
 #include <Moco/MocoCasADiSolver/MocoCasADiSolver.h>
 #include <Moco/MocoControlBoundConstraint.h>
 #include <Moco/MocoFrameDistanceConstraint.h>
+#include <Moco/MocoGoal/MocoContactTrackingGoal.h>
 #include <Moco/MocoGoal/MocoControlGoal.h>
 #include <Moco/MocoGoal/MocoGoal.h>
 #include <Moco/MocoGoal/MocoInitialActivationGoal.h>

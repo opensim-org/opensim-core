@@ -21,8 +21,8 @@
 
 #define CATCH_CONFIG_MAIN
 #include "Testing.h"
-
 #include <Moco/osimMoco.h>
+
 #include <OpenSim/Common/LogManager.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 
@@ -250,7 +250,8 @@ void testStationPlaneContactForce(CreateContactFunction createContact) {
 
 // Test our wrapping of SmoothSphereHalfSpaceForce in Moco
 // Create a model with SmoothSphereHalfSpaceForce
-Model createBallHalfSpaceModel() {
+Model createBallHalfSpaceModel(double frictionCoefficient = FRICTION_COEFFICIENT,
+        double dissipation = 1.0) {
     // Setup model.
     Model model;
     model.setName("BouncingBall_SmoothSphereHalfSpaceForce");
@@ -269,9 +270,8 @@ Model createBallHalfSpaceModel() {
     ball->attachGeometry(bodyGeometry.clone());
     // Setup contact.
     double stiffness = 10000;
-    double dissipation = 1.0;
-    double staticFriction = FRICTION_COEFFICIENT;
-    double dynamicFriction = FRICTION_COEFFICIENT;
+    double staticFriction = frictionCoefficient;
+    double dynamicFriction = frictionCoefficient;
     double viscousFriction = 0;
     double transitionVelocity = 0.05;
     double cf = 1e-5;
@@ -280,7 +280,7 @@ Model createBallHalfSpaceModel() {
     Vec3 sphereLocation(0);
     Vec3 halfSpaceLocation(0);
     // Set the plane parallel to the ground.
-    Vec3 halfSpaceOrientation(0,0,-0.5*SimTK::Pi);
+    Vec3 halfSpaceOrientation(0, 0, -0.5 * SimTK::Pi);
     auto* contactBallHalfSpace = new SmoothSphereHalfSpaceForce(
         "contactBallHalfSpace", *ball, sphereLocation, radius,
         model.getGround(), halfSpaceLocation, halfSpaceOrientation);
@@ -523,11 +523,11 @@ MeyerFregly2016Force* createMeyerFregly() {
 }
 
 TEST_CASE("testStationPlaneContactForce AckermannVanDenBogert2010Force") {
-testStationPlaneContactForce(createAVDB);
+    testStationPlaneContactForce(createAVDB);
 }
 
 TEST_CASE("testStationPlaneContactForce EspositoMiller2018Force") {
-testStationPlaneContactForce(createEspositoMiller);
+    testStationPlaneContactForce(createEspositoMiller);
 }
 
 // TODO does not pass:
@@ -535,10 +535,103 @@ testStationPlaneContactForce(createEspositoMiller);
 //     testStationPlaneContactForce(createMeyerFregly);
 // }
 
-
 TEST_CASE("testSmoothSphereHalfSpaceForce") {
     const SimTK::Real equilibriumHeight =
         testSmoothSphereHalfSpaceForce_NormalForce();
     testSmoothSphereHalfSpaceForce_FrictionForce(equilibriumHeight);
 }
 
+
+TEST_CASE("MocoContactTrackingGoal") {
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+
+    // We drop a ball from a prescribed initial height, record the contact
+    // force, then solve a trajectory optimization that tracks the recorded
+    // contact force and ensure we recover the correct initial height.
+    Model model(createBallHalfSpaceModel());
+
+    const double initialHeight = 0.65;
+    const SimTK::Real finalTime = 0.8;
+
+    const std::string dataFileName =
+            "testContact_MocoContactTrackingGoal_external_loads.sto";
+
+    // Time stepping.
+    // --------------
+    TimeSeriesTable externalLoadsTimeStepping;
+    {
+        SimTK::State initialState = model.initSystem();
+        model.setStateVariableValue(initialState,
+                "groundBall/groundBall_coord_2/value", initialHeight);
+        Manager manager(model);
+        manager.setIntegratorAccuracy(1e-6);
+        manager.initialize(initialState);
+        manager.integrate(finalTime);
+
+        auto statesTraj = StatesTrajectory::createFromStatesStorage(
+                model, manager.getStateStorage());
+        externalLoadsTimeStepping = createExternalLoadsTableForGait(
+                model, statesTraj, {"contactBallHalfSpace"}, {});
+        STOFileAdapter::write(externalLoadsTimeStepping, dataFileName);
+    }
+
+    // Trajectory optimization.
+    // ------------------------
+    TimeSeriesTable externalLoadsDircol;
+    {
+        MocoStudy study;
+        MocoProblem& problem = study.updProblem();
+        problem.setModelCopy(model);
+        problem.setTimeBounds(0, finalTime);
+        problem.setStateInfo(
+                "/groundBall/groundBall_coord_0/value", {-1, 1}, 0);
+        problem.setStateInfo(
+                "/groundBall/groundBall_coord_1/value", {-1, 1}, 0);
+        problem.setStateInfo("/groundBall/groundBall_coord_2/value", {-1, 1.5},
+                {0.5, 0.7});
+        problem.setStateInfo(
+                "/groundBall/groundBall_coord_0/speed", {-10, 10}, 0);
+        problem.setStateInfo(
+                "/groundBall/groundBall_coord_1/speed", {-10, 10}, 0);
+        problem.setStateInfo(
+                "/groundBall/groundBall_coord_2/speed", {-10, 10}, 0);
+
+        // Add a MocoContactTrackingGoal.
+        auto* contactTracking = problem.addGoal<MocoContactTrackingGoal>();
+        ExternalLoads extLoads;
+        extLoads.setDataFileName(dataFileName);
+        auto extForce = make_unique<ExternalForce>();
+        extForce->setName("right");
+        extForce->set_applied_to_body("ball");
+        extForce->set_force_identifier("ground_force_r_v");
+        extLoads.adoptAndAppend(extForce.release());
+
+        contactTracking->setExternalLoads(extLoads);
+        contactTracking->addContactGroup({"contactBallHalfSpace"}, "right");
+        contactTracking->setProjection("vector");
+        contactTracking->setProjectionVector(SimTK::Vec3(0, 1, 0));
+
+        // Solve the problem.
+        auto& solver = study.initCasADiSolver();
+        solver.set_num_mesh_intervals(30);
+
+        MocoSolution solution = study.solve();
+
+        // STOFileAdapter::write(externalLoadsDircol,
+        //         "testContact_MocoContactTrackingGoal_external_loads_dircol."
+        //         "sto");
+
+        const double actualInitialHeight =
+                solution.getState("/groundBall/groundBall_coord_2/value").
+                        getElt(0, 0);
+        CHECK(actualInitialHeight == Approx(initialHeight).margin(1e-2));
+
+        externalLoadsDircol = createExternalLoadsTableForGait(model, solution,
+                {"contactBallHalfSpace"}, {});
+    }
+
+    rootMeanSquare(externalLoadsDircol, "ground_force_r_vy",
+            externalLoadsTimeStepping, "ground_force_r_vy",
+            0.5);
+}

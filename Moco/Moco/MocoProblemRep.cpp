@@ -786,7 +786,7 @@ void MocoProblemRep::printDescription(std::ostream& stream) const {
         endpoint_constraint->printDescription(stream);
     }
 
-    stream << "Kinematic constraints: ";
+    stream << "Kinematic constraints:";
     if (m_kinematic_constraints.empty())
         stream << " none";
     else
