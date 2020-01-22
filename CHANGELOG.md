@@ -10,6 +10,7 @@ Change Log
               Instead, Moco adds a DiscreteController to the model and the 
               solvers modify the DiscreteController's control signals.
               This change allows Moco to support synergies in the future.
+              
 - 2020-01-10: MocoSolution now provides a breakdown of terms in the cost 
               (only when using MocoCasADiSolver).
 
