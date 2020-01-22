@@ -1,7 +1,7 @@
 #ifndef MOCO_MOCOTRAJECTORY_H
 #define MOCO_MOCOTRAJECTORY_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoTrajectory.h *
+ * OpenSim Moco: MocoTrajectory.h                                             *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -29,13 +29,13 @@ class MocoProblem;
 class MocoProblemRep;
 
 /// This exception is thrown if you try to invoke most methods on MocoTrajectory
-/// while the iterate is sealed.
+/// while the trajectory is sealed.
 class OSIMMOCO_API MocoTrajectoryIsSealed : public Exception {
 public:
     MocoTrajectoryIsSealed(
             const std::string& file, size_t line, const std::string& func)
             : Exception(file, line, func) {
-        addMessage("This iterate is sealed, to force you to acknowledge the "
+        addMessage("This trajectory is sealed, to force you to acknowledge the "
                    "solver failed; call unseal() to gain access.");
     }
 };
@@ -86,18 +86,31 @@ provide convenient access to the data directly in Matlab or Python (NumPy).
 In Python, the constructors can also accept NumPy matrices in addition to
 arguments of type SimTK::Matrix.
 @code
-iterate.getStateMat("<state-name>")
-iterate.getStatesTrajectoryMat()
+trajectory.getStateMat("<state-name>")
+trajectory.getStatesTrajectoryMat()
 @endcode
 
 @par Implicit dynamics model
 If the solver uses an implicit dynamics mode, then there are "control"
 variables ("adjunct" variables in tropter's terminology) for the generalized
-accelerations. These are stored in the iterate as derivative variables. */
+accelerations. These are stored in the trajectory as derivative variables. */
 // Not using three-slash doxygen comments because that messes up verbatim.
 class OSIMMOCO_API MocoTrajectory {
 public:
     MocoTrajectory() = default;
+    /// Create a trajectory with no data. To add data, use setNumTimes(),
+    /// setTime(), and the other setters.
+    MocoTrajectory(std::vector<std::string> state_names,
+            std::vector<std::string> control_names,
+            std::vector<std::string> multiplier_names,
+            std::vector<std::string> parameter_names);
+    /// Create a trajectory (including columns for derivatives) with no data.
+    /// To add data, use setNumTimes(), setTime(), and the other setters.
+    MocoTrajectory(std::vector<std::string> state_names,
+            std::vector<std::string> control_names,
+            std::vector<std::string> multiplier_names,
+            std::vector<std::string> derivative_names,
+            std::vector<std::string> parameter_names);
     MocoTrajectory(const SimTK::Vector& time,
             std::vector<std::string> state_names,
             std::vector<std::string> control_names,
@@ -122,9 +135,10 @@ public:
             const SimTK::RowVector& parameters);
 #ifndef SWIG
     /// This constructor allows you to control which
-    /// data you provide for the iterate. The possible keys for continuousVars
-    /// are "states", "controls", "multipliers", and "derivatives". The names
-    /// and data are grouped together, and you can leave out any of the keys.
+    /// data you provide for the trajectory. The possible keys for
+    /// continuousVars are "states", "controls", "multipliers", and
+    /// "derivatives". The names and data are grouped together, and you can
+    /// leave out any of the keys.
     template <typename T>
     using NamesAndData = std::pair<std::vector<std::string>, T>;
     MocoTrajectory(const SimTK::Vector& time,
@@ -138,9 +152,9 @@ public:
 
     virtual ~MocoTrajectory() = default;
 
-    /// Returns a dynamically-allocated copy of this iterate. You must manage
+    /// Returns a dynamically-allocated copy of this trajectory. You must manage
     /// the memory for return value.
-    /// @note This works even if the iterate is sealed.
+    /// @note This works even if the trajectory is sealed.
     virtual MocoTrajectory* clone() const { return new MocoTrajectory(*this); }
 
     bool empty() const {
@@ -158,7 +172,7 @@ public:
             auto leafpos = name.find("/value");
             if (leafpos != std::string::npos) return true;
         }
-        return false;    
+        return false;
     }
 
     /// @name Change the length of the trajectory
@@ -184,7 +198,7 @@ public:
         m_slacks.resize(numTimes, m_slacks.ncol());
         m_slacks.setToNaN();
     }
-    /// Uniformly resample (interpolate) the iterate so that it retains the
+    /// Uniformly resample (interpolate) the trajectory so that it retains the
     /// same initial and final times but now has the provided number of time
     /// points.
     /// Resampling is done by creating a 5-th degree GCV spline of the states
@@ -193,7 +207,7 @@ public:
     /// resampling is not possible if getNumTimes() < 2.
     /// @returns the resulting time interval between time points.
     double resampleWithNumTimes(int numTimes);
-    /// Uniformly resample (interpolate) the iterate to try to achieve the
+    /// Uniformly resample (interpolate) the trajectory to try to achieve the
     /// provided time interval between mesh points, while preserving the
     /// initial and final times. The resulting time interval may be shorter
     /// than what you request (in order to preserve initial and
@@ -203,7 +217,7 @@ public:
     /// The degree is reduced as necessary if getNumTimes() < 6, and
     /// resampling is not possible if getNumTimes() < 2.
     double resampleWithInterval(double desiredTimeInterval);
-    /// Uniformly resample (interpolate) the iterate to try to achieve the
+    /// Uniformly resample (interpolate) the trajectory to try to achieve the
     /// provided frequency of time points per second of the trajectory, while
     /// preserving the initial and final times. The resulting frequency may be
     /// higher than what you request (in order to preserve initial and final
@@ -213,9 +227,9 @@ public:
     /// The degree is reduced as necessary if getNumTimes() < 6, and
     /// resampling is not possible if getNumTimes() < 2.
     double resampleWithFrequency(double desiredNumTimePointsPerSecond);
-    /// Resample (interpolate) the data in this iterate at the provided times.
-    /// If all times have the same value (e.g., 0.0), then the value of each
-    /// variable for all time is its previous value at the initial time.
+    /// Resample (interpolate) the data in this trajectory at the provided
+    /// times. If all times have the same value (e.g., 0.0), then the value of
+    /// each variable for all time is its previous value at the initial time.
     /// @throws Exception if new times are not within existing initial and final
     /// times, if the new times are decreasing, or if getNumTimes() < 2.
     void resample(SimTK::Vector newTime);
@@ -266,7 +280,7 @@ public:
     /// "resample..." functions to change the number of times.
     /// This variant supports use of an initializer list. Example:
     /// @code{.cpp}
-    /// iterate.setTime({0, 0.5, 1.0});
+    /// trajectory.setTime({0, 0.5, 1.0});
     /// @endcode
     void setTime(std::initializer_list<double> time) {
         ensureUnsealed();
@@ -279,7 +293,7 @@ public:
     /// vector must have length getNumTimes().
     /// This variant supports use of an initializer list:
     /// @code{.cpp}
-    /// iterate.setState("/jointset/knee/flexion/value", {0, 0.5, 1.0});
+    /// trajectory.setState("/jointset/knee/flexion/value", {0, 0.5, 1.0});
     /// @endcode
     void setState(
             const std::string& name, std::initializer_list<double> trajectory) {
@@ -294,7 +308,7 @@ public:
     /// vector must have length getNumTimes().
     /// This variant supports use of an initializer list:
     /// @code{.cpp}
-    /// iterate.setControl("/forceset/soleus", {0, 0.5, 1.0});
+    /// trajectory.setControl("/forceset/soleus", {0, 0.5, 1.0});
     /// @endcode
     void setControl(
             const std::string& name, std::initializer_list<double> trajectory) {
@@ -309,7 +323,7 @@ public:
     /// provided vector must have length getNumTimes().
     /// This variant supports use of an initializer list:
     /// @code{.cpp}
-    /// iterate.setMultiplier("lambda_cid0_p0", {0, 0.5, 1.0});
+    /// trajectory.setMultiplier("lambda_cid0_p0", {0, 0.5, 1.0});
     /// @endcode
     void setMultiplier(
             const std::string& name, std::initializer_list<double> trajectory) {
@@ -324,7 +338,7 @@ public:
     /// provided vector must have length getNumTimes().
     /// This variant supports use of an initializer list:
     /// @code{.cpp}
-    /// iterate.setDerivative("/jointset/joint/coord/accel", {0, 0.5, 1.0});
+    /// trajectory.setDerivative("/jointset/joint/coord/accel", {0, 0.5, 1.0});
     /// @endcode
     void setDerivative(
             const std::string& name, std::initializer_list<double> trajectory) {
@@ -337,9 +351,9 @@ public:
     }
 
     /// Set the states trajectory. The provided data is interpolated at the
-    /// times contained within this iterate. The controls trajectory is not
+    /// times contained within this trajectory. The controls trajectory is not
     /// altered. If the table only contains a subset of the states in the
-    /// iterate (and allowMissingColumns is true), the unspecified states
+    /// trajectory (and allowMissingColumns is true), the unspecified states
     /// preserve their pre-existing values.
     ///
     /// This function might be helpful if you generate a guess using a
@@ -354,10 +368,10 @@ public:
     ///     times are ignored.
     /// @param allowMissingColumns
     ///     If false, an exception is thrown if there are states in the
-    ///     iterate that are not in the table.
+    ///     trajectory that are not in the table.
     /// @param allowExtraColumns
     ///     If false, an exception is thrown if there are states in the
-    ///     table that are not in the iterate.
+    ///     table that are not in the trajectory.
     /// @see createFromStatesControlsTables.
     // TODO add tests in testMocoInterface.
     // TODO add setStatesTrajectory(const StatesTrajectory&)
@@ -366,17 +380,17 @@ public:
             bool allowMissingColumns = false, bool allowExtraColumns = false);
 
     /// Add additional state columns. The provided data are interpolated using
-    /// GCV splines to match the times in this iterate. By default, we do not
-    /// overwrite data for states that already exist in the iterate; you can
+    /// GCV splines to match the times in this trajectory. By default, we do not
+    /// overwrite data for states that already exist in the trajectory; you can
     /// change this behavior with `overwrite`.
     void insertStatesTrajectory(
             const TimeSeriesTable& subsetOfStates, bool overwrite = false);
     /// Add additional control columns. The provided data are interpolated using
-    /// GCV splines to match the times in this iterate. By default, we do not
-    /// overwrite data for controls that already exist in the iterate; you can
-    /// change this behavior with `overwrite`.
-    void insertControlsTrajectory(const TimeSeriesTable& subsetOfControls,
-            bool overwrite = false);
+    /// GCV splines to match the times in this trajectory. By default, we do not
+    /// overwrite data for controls that already exist in the trajectory; you
+    /// can change this behavior with `overwrite`.
+    void insertControlsTrajectory(
+            const TimeSeriesTable& subsetOfControls, bool overwrite = false);
 
     /// Compute coordinate speeds based on coordinate position values and append
     /// to the trajectory. Coordinate values must exist in the original
@@ -489,12 +503,19 @@ public:
     /// @name Comparisons
     /// @{
 
-    /// Do the state and control names in this iterate match those in the
-    /// problem? This may not catch all possible incompatibilities.
-    /// The problem and this iterate can still be compatible even if the iterate
-    /// contains no derivative columns.
-    bool isCompatible(const MocoProblemRep&, bool throwOnError = false) const;
-    /// Check if this iterate is numerically equal to another iterate.
+    /// Do the state, control, multiplier, derivative, and parameter names in
+    /// this trajectory match those in the problem? This may not catch all
+    /// possible incompatibilities. If the trajectory should have generalized
+    /// accelerations (for implicit multibody dynamics mode), set
+    /// requireAccelerations to true.
+    /// To throw an exception with a detailed message if the problem is not
+    /// compatible, pass throwOnError as true. To get the detailed message
+    /// without an exception, set the Object debug level to a level greater than
+    /// 0 (e.g., `Object::setDebugLevel(1)` in C++, and
+    /// `OpenSimObject.setDebugLevel(1)` in MATLAB/Python).
+    bool isCompatible(const MocoProblemRep&, bool requireAccelerations = false,
+            bool throwOnError = false) const;
+    /// Check if this trajectory is numerically equal to another trajectory.
     /// This uses SimTK::Test::numericallyEqual() internally.
     /// Accordingly, the tolerance is both a relative and absolute tolerance
     /// (depending on the magnitude of quantities being compared).
@@ -502,8 +523,8 @@ public:
             double tol =
                     SimTK::NTraits<SimTK::Real>::getDefaultTolerance()) const;
     /// Compute the root-mean-square error between the continuous variables of
-    /// this iterate and another. The RMS is computed by numerically integrating
-    /// the sum of squared error across
+    /// this trajectory and another. The RMS is computed by numerically
+    /// integrating the sum of squared error across
     /// states,
     /// controls,
     /// Lagrange multipliers, and
@@ -512,20 +533,20 @@ public:
     /// \f[
     ///     \epsilon_{\textrm{RMS}} =
     ///     \sqrt{\frac{1}{N(t_f - t_i)} \int_{t_i}^{t_f} \left(
-    ///         \sum_{ \textrm{i \in states} } \epsilon_i(t)^2 +
-    ///         \sum_{ \textrm{i \in controls} } \epsilon_i(t)^2 +
-    ///         \sum_{ \textrm{i \in mult} } \epsilon_i(t)^2 +
-    ///         \sum_{ \textrm{i \in deriv} } \epsilon_i(t)^2
+    ///         \sum_{ i \in \textrm{states} } \epsilon_i(t)^2 +
+    ///         \sum_{ i \in \textrm{controls} } \epsilon_i(t)^2 +
+    ///         \sum_{ i \in \textrm{mult} } \epsilon_i(t)^2 +
+    ///         \sum_{ i \in \textrm{deriv} } \epsilon_i(t)^2
     ///     \right) dt  },
     /// \f]
     /// where \f$N\f$ is the number of columns and \f$ \epsilon \f$ indicates
     /// an error.
     ///
-    /// When one iterate does not cover the same time range as
-    /// the other, we assume values of 0 for the iterate with "missing" time.
+    /// When one trajectory does not cover the same time range as
+    /// the other, we assume values of 0 for the trajectory with "missing" time.
     /// Numerical integration is performed using the trapezoidal rule. By
     /// default, all states, controls, and multipliers are compared, and it is
-    /// expected that both iterates have the same states, controls, and
+    /// expected that both trajectories have the same states, controls, and
     /// multipliers. Alternatively, you can specify the specific
     /// states,
     /// controls,
@@ -536,18 +557,25 @@ public:
     /// the columns for that key, or a vector of column labels to compare
     /// for that key. Leaving out a key means no columns for that
     /// key are compared.
-    /// Both iterates must have at least 6 time nodes.
+    /// Both trajectories must have at least 6 time nodes.
     /// If the number of columns to compare is 0, this returns 0.
     double compareContinuousVariablesRMS(const MocoTrajectory& other,
             std::map<std::string, std::vector<std::string>> columnsToUse = {})
             const;
+    /// This is an alternative interface for compareContinuousVariablesRMS()
+    /// that uses regular expression patterns to select columns. The parameter
+    /// columnType is "states", "controls", "multipliers", or "derivatives".
+    /// All columns for the provided column type whose entire name matches the
+    /// provided regular expression are included in the root-mean-square.
+    double compareContinuousVariablesRMSPattern(const MocoTrajectory& other,
+            std::string columnType, std::string pattern) const;
     /// Compute the root-mean-square error between the parameters in this
-    /// iterate and another. The RMS is computed by dividing the the sum of the
-    /// squared errors between corresponding parameters and then dividing by the
-    /// number of parameters compared.
+    /// trajectory and another. The RMS is computed by dividing the the sum of
+    /// the squared errors between corresponding parameters and then dividing by
+    /// the number of parameters compared.
     /// By default, all parameters are compared, and it is expected that both
-    /// iterates have the same parameters. Alternatively, you can specify the
-    /// specific parameters to compare.
+    /// trajectories have the same parameters. Alternatively, you can specify
+    /// the specific parameters to compare.
     double compareParametersRMS(const MocoTrajectory& other,
             std::vector<std::string> parameterNames = {}) const;
     /// @}
@@ -555,7 +583,7 @@ public:
     /// @name Convert to other formats
     /// @{
 
-    /// Save the iterate to file(s). Use a ".sto" file extension.
+    /// Save the trajectory to file(s). Use a ".sto" file extension.
     void write(const std::string& filepath) const;
 
     /// The Storage can be used in the OpenSim GUI to visualize a motion, or
@@ -565,10 +593,15 @@ public:
     Storage exportToStatesStorage() const;
     /// Same as exportToStatesStorage() except using TimeSeriesTable.
     TimeSeriesTable exportToStatesTable() const;
+    /// Export the controls trajectory to a TimeSeriesTable.
+    TimeSeriesTable exportToControlsTable() const;
     /// Controls are not carried over to the StatesTrajectory.
     /// The MocoProblem is necessary because we need the underlying Model to
     /// order the state variables correctly.
     StatesTrajectory exportToStatesTrajectory(const MocoProblem&) const;
+    /// This is similar to the above function but requires only a model, not
+    /// a MocoProblem.
+    StatesTrajectory exportToStatesTrajectory(const Model&) const;
     /// @}
 
     /// @name Modify the data
@@ -576,8 +609,8 @@ public:
 
     /// Randomize all data except time using the provided random number
     /// generator. All data is replaced with the random numbers. Use this to
-    /// create a completely (pseudo-)random iterate, probably for a MocoSolver
-    /// guess.
+    /// create a completely (pseudo-)random trajectory, probably for a
+    /// MocoSolver guess.
     /// The default random number generator samples uniformly within [-0.1,
     /// 0.1].
     void randomizeReplace(
@@ -600,11 +633,11 @@ public:
     /// @name Convert from other formats
     /// @{
 
-    /// (Experimental) Create an iterate from a states trajectory and controls
+    /// (Experimental) Create a trajectory from a states trajectory and controls
     /// trajectory (i.e, from Manager::getStatesTable() and
     /// Model::getControlsTable()). The time columns from the two tables must
-    /// match exactly. The times in the iterate will be those from the tables.
-    /// This does not (yet) handle parameters.
+    /// match exactly. The times in the trajectory will be those from the
+    /// tables. This does not (yet) handle parameters.
     static MocoTrajectory createFromStatesControlsTables(const MocoProblemRep&,
             const TimeSeriesTable& statesTrajectory,
             const TimeSeriesTable& controlsTrajectory);
@@ -645,7 +678,7 @@ public:
 protected:
     void setSealed(bool sealed) { m_sealed = sealed; }
     bool isSealed() const { return m_sealed; }
-    /// @throws MocoTrajectoryIsSealed if the iterate is sealed.
+    /// @throws MocoTrajectoryIsSealed if the trajectory is sealed.
     void ensureUnsealed() const;
 
 private:
@@ -684,6 +717,7 @@ private:
     // We use "seal" instead of "lock" because locks have a specific meaning
     // with threading (e.g., std::unique_lock()).
     bool m_sealed = false;
+    static const std::vector<std::string> m_allowedKeys;
 };
 
 /// Return type for MocoStudy::solve(). Use success() to check if the solver
@@ -699,20 +733,24 @@ private:
 /// If the solver was not successful, then this object is "sealed", which
 /// means you cannot do anything with it until calling `unseal()`. This
 /// prevents you from silently proceeding with a failed solution.
-/// Solver success can also be found in the header of a solution (.sto) file
-/// written out by write.
+/// In the file written by write(), the header contains solver success, the
+/// objective, the individual terms in the objective (including the weight),
+/// the breakdown of the objective, and other quantities.
 class OSIMMOCO_API MocoSolution : public MocoTrajectory {
 public:
     /// Returns a dynamically-allocated copy of this solution. You must manage
     /// the memory for return value.
-    /// @note This works even if the iterate is sealed.
+    /// @note This works even if the trajectory is sealed.
     virtual MocoSolution* clone() const override {
         return new MocoSolution(*this);
     }
     /// Was the problem solved successfully? If not, then you cannot access
     /// the solution until you call unlock().
     bool success() const { return m_success; }
-    double getObjective() const { return m_objective; }
+    double getObjective() const {
+        ensureUnsealed();
+        return m_objective;
+    }
     /// Same as success().
     explicit operator bool() const { return success(); }
     /// Obtain a solver-dependent string describing the return status of the
@@ -720,10 +758,48 @@ public:
     const std::string& getStatus() const { return m_status; }
     /// Number of solver iterations at which this solution was obtained
     /// (-1 if not set).
-    int getNumIterations() const { return m_numIterations; }
+    int getNumIterations() const {
+        ensureUnsealed();
+        return m_numIterations;
+    }
     /// Get the amount of time (clock time, not CPU time) spent within solve().
     /// Units: seconds.
-    double getSolverDuration() const { return m_solverDuration; }
+    double getSolverDuration() const {
+        ensureUnsealed();
+        return m_solverDuration;
+    }
+
+    /// @name Breakdown of objective
+    /// Some solvers provide a breakdown of the terms in the objective. Use
+    /// these functions to access this breakdown. Some terms may come from
+    /// MocoGoals in the problem, while other terms may be added by the solver.
+    /// @{
+
+    /// Returns the number of terms in the objective. If the solver did not
+    /// provide this breakdown, then this returns 0.
+    int getNumObjectiveTerms() const {
+        ensureUnsealed();
+        return (int)m_objectiveBreakdown.size();
+    }
+    /// Get the names of all terms in the objective (either from MocoGoals in
+    /// the problem or added by the solver). Terms from MocoGoals are named with
+    /// the name of the associated MocoGoal. If the solver did not provide this
+    /// breakdown, then this returns an empty vector.
+    std::vector<std::string> getObjectiveTermNames() const;
+
+    /// Get the value of a term in the objective by name. See
+    /// getObjectiveTermNames().
+    /// The value includes the weight on the term.
+    double getObjectiveTerm(const std::string& name) const;
+
+    /// Get the value of a term in the objective, using an index. The order of
+    /// terms is the same as in getObjectiveTermNames().
+    /// The value includes the weight on the term.
+    double getObjectiveTermByIndex(int index) const;
+
+    /// Print to the console the terms in the objective and their values.
+    void printObjectiveBreakdown() const;
+    /// @}
 
     /// @name Access control
     /// @{
@@ -757,6 +833,10 @@ private:
         m_success = success;
     }
     void setObjective(double objective) { m_objective = objective; }
+    void setObjectiveBreakdown(
+            std::vector<std::pair<std::string, double>> breakdown) {
+        m_objectiveBreakdown = std::move(breakdown);
+    }
     void setStatus(std::string status) { m_status = std::move(status); }
     void setNumIterations(int numIterations) {
         m_numIterations = numIterations;
@@ -765,6 +845,7 @@ private:
     void convertToTableImpl(TimeSeriesTable&) const override;
     bool m_success = true;
     double m_objective = -1;
+    std::vector<std::pair<std::string, double>> m_objectiveBreakdown;
     std::string m_status;
     int m_numIterations = -1;
     double m_solverDuration = -1;

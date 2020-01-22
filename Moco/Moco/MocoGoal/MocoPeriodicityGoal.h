@@ -101,8 +101,8 @@ class OSIMMOCO_API MocoPeriodicityGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoPeriodicityGoal, MocoGoal);
 
 public:
-    OpenSim_DECLARE_LIST_PROPERTY(
-            state_pairs, MocoPeriodicityGoalPair, "Periodic pairs of states.");
+    OpenSim_DECLARE_LIST_PROPERTY(state_pairs, MocoPeriodicityGoalPair, 
+            "Periodic pairs of states.");
     OpenSim_DECLARE_LIST_PROPERTY(control_pairs, MocoPeriodicityGoalPair,
             "Periodic pairs of controls.");
 

@@ -238,7 +238,7 @@ void MocoTrack::configureMarkerTracking(MocoProblem& problem, Model& model) {
     TimeSeriesTable markersFlat =
             get_markers_reference().process(getDocumentDirectory(), &model);
     TimeSeriesTable_<SimTK::Vec3> markers = markersFlat.pack<SimTK::Vec3>();
-    MarkersReference markersRef(markers);
+    MarkersReference markersRef(markers, Set<MarkerWeight>());
 
     // If the user provided marker weights, append them to the markers
     // reference.
@@ -254,7 +254,7 @@ void MocoTrack::configureMarkerTracking(MocoProblem& problem, Model& model) {
 
     // Add marker tracking cost to the MocoProblem.
     auto* markerTracking = problem.addGoal<MocoMarkerTrackingGoal>(
-            "marking_tracking", get_markers_global_tracking_weight());
+            "marker_tracking", get_markers_global_tracking_weight());
     markerTracking->setMarkersReference(markersRef);
     markerTracking->setAllowUnusedReferences(get_allow_unused_references());
 
@@ -268,7 +268,7 @@ void MocoTrack::configureMarkerTracking(MocoProblem& problem, Model& model) {
 }
 
 void MocoTrack::applyStatesToGuess(
-        const TimeSeriesTable& states, MocoTrajectory& guess) {
+        const TimeSeriesTable& states, MocoTrajectory& guess) const {
 
     guess.resampleWithNumTimes((int)states.getNumRows());
     std::vector<std::string> names = guess.getStateNames();

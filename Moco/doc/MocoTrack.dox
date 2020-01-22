@@ -28,12 +28,10 @@ time window is consistent with all data sets, filling in missing coordinate spee
 states to track if only coordinate values are available, and appending tracking
 data to the problem initial guess. 
 
-Example:
-- `Moco/Examples/C++/exampleMocoTrack/exampleMocoTrack.cpp` (C++) 
-- `Moco/Bindings/Java/Matlab/Examples/exampleMocoTrack/exampleMocoTrack.m` 
-(Matlab)
-- `Moco/Bindings/Python/examples/exampleMocoTrack/exampleMocoTrack.py` 
-(Python)
+Examples in the Moco distribution:
+- MATLAB: [Resources/Code/Matlab/exampleMocoTrack/exampleMocoTrack.m](@ref exampleMocoTrack.m)
+- Python: [Resources/Code/Python/exampleMocoTrack/exampleMocoTrack.py](@ref exampleMocoTrack.py)
+- C++: [Resources/Code/CPP/exampleMocoTrack/exampleMocoTrack.cpp](@ref exampleMocoTrack.cpp)
 
 
 [1] Lin Y., Pandy M., 2017, Three-dimensional data-tracking dynamic optimization

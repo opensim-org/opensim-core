@@ -1,3 +1,4 @@
+
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: RegisterTypes_osimMoco.cpp                                   *
  * -------------------------------------------------------------------------- *
@@ -26,20 +27,23 @@
 #include "Components/PositionMotion.h"
 #include "Components/SmoothSphereHalfSpaceForce.h"
 #include "Components/StationPlaneContactForce.h"
-#include "Components/MultivariatePolynomialFunction.h"
 #include "MocoBounds.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoControlBoundConstraint.h"
+#include "MocoFrameDistanceConstraint.h"
+#include "MocoGoal/MocoAccelerationTrackingGoal.h"
+#include "MocoGoal/MocoAngularVelocityTrackingGoal.h"
 #include "MocoGoal/MocoControlGoal.h"
 #include "MocoGoal/MocoControlTrackingGoal.h"
 #include "MocoGoal/MocoGoal.h"
 #include "MocoGoal/MocoInitialActivationGoal.h"
-#include "MocoGoal/MocoInitialVelocityEquilibriumDGFGoal.h"
 #include "MocoGoal/MocoInitialForceEquilibriumGoal.h"
+#include "MocoGoal/MocoInitialVelocityEquilibriumDGFGoal.h"
 #include "MocoGoal/MocoJointReactionGoal.h"
 #include "MocoGoal/MocoMarkerFinalGoal.h"
 #include "MocoGoal/MocoMarkerTrackingGoal.h"
 #include "MocoGoal/MocoOrientationTrackingGoal.h"
+#include "MocoGoal/MocoOutputGoal.h"
 #include "MocoGoal/MocoPeriodicityGoal.h"
 #include "MocoGoal/MocoStateTrackingGoal.h"
 #include "MocoGoal/MocoSumSquaredStateGoal.h"
@@ -78,8 +82,11 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(MocoJointReactionGoal());
         Object::registerType(MocoOrientationTrackingGoal());
         Object::registerType(MocoTranslationTrackingGoal());
+        Object::registerType(MocoAngularVelocityTrackingGoal());
+        Object::registerType(MocoAccelerationTrackingGoal());
         Object::registerType(MocoPeriodicityGoalPair());
         Object::registerType(MocoPeriodicityGoal());
+        Object::registerType(MocoOutputGoal());
         Object::registerType(MocoBounds());
         Object::registerType(MocoInitialBounds());
         Object::registerType(MocoFinalBounds());
@@ -95,6 +102,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(MocoTropterSolver());
 
         Object::registerType(MocoControlBoundConstraint());
+        Object::registerType(MocoFrameDistanceConstraint());
 
         Object::registerType(MocoCasADiSolver());
 
@@ -103,6 +111,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(TableProcessor());
 
         Object::registerType(TabOpLowPassFilter());
+        Object::registerType(TabOpUseAbsoluteStateNames());
 
         Object::registerType(ModelProcessor());
         Object::registerType(ModOpReplaceMusclesWithDeGrooteFregly2016());

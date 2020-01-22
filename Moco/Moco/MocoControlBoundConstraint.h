@@ -38,6 +38,7 @@ class MocoProblemInfo;
 /// constrain any control signals, even if you have provided control paths.
 ///
 /// @note This class can only constrain control signals for ScalarActuator%s.
+/// @ingroup mocopathcon
 class OSIMMOCO_API MocoControlBoundConstraint : public MocoPathConstraint {
     OpenSim_DECLARE_CONCRETE_OBJECT(
             MocoControlBoundConstraint, MocoPathConstraint);

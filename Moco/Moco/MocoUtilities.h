@@ -18,6 +18,14 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+/// The utilities in this file are categorized as follows:
+///   - generic utilities (Doxygen group mocogenutil),
+///   - string and logging utilities (mocologutil),
+///   - numeric and data utilities (moconumutil), and
+///   - model and trajectory utilities (mocomodelutil).
+/// When adding a new function to this file, make sure to add it to one of the
+/// groups above.
+
 #include "MocoTrajectory.h"
 #include "osimMocoDLL.h"
 #include <Common/Reporter.h>
@@ -41,6 +49,7 @@ class MocoProblem;
 
 /// Since Moco does not require C++14 (which contains std::make_unique()),
 /// here is an implementation of make_unique().
+/// @ingroup mocogenutil
 template <typename T, typename... Args>
 std::unique_ptr<T> make_unique(Args&&... args) {
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
@@ -52,11 +61,14 @@ std::unique_ptr<T> make_unique(Args&&... args) {
 /// If you specify "ISO", then we use the ISO 8601 extended datetime format
 /// %Y-%m-%dT%H:%M:%S.
 /// See https://en.cppreference.com/w/cpp/io/manip/put_time.
-OSIMMOCO_API std::string getFormattedDateTime(bool appendMicroseconds = false,
+/// @ingroup mocogenutil
+OSIMMOCO_API std::string getMocoFormattedDateTime(
+        bool appendMicroseconds = false,
         std::string format = "%Y-%m-%dT%H%M%S");
 
 /// Determine if `string` starts with the substring `start`.
 /// https://stackoverflow.com/questions/874134/find-if-string-ends-with-another-string-in-c
+/// @ingroup mocogenutil
 inline bool startsWith(const std::string& string, const std::string& start) {
     if (string.length() >= start.length()) {
         return string.compare(0, start.length(), start) == 0;
@@ -66,6 +78,7 @@ inline bool startsWith(const std::string& string, const std::string& start) {
 
 /// Determine if `string` ends with the substring `ending`.
 /// https://stackoverflow.com/questions/874134/find-if-string-ends-with-another-string-in-c
+/// @ingroup mocogenutil
 inline bool endsWith(const std::string& string, const std::string& ending) {
     if (string.length() >= ending.length()) {
         return string.compare(string.length() - ending.length(),
@@ -79,19 +92,23 @@ inline bool endsWith(const std::string& string, const std::string& ending) {
 
 #ifndef SWIG
 /// Return type for make_printable()
+/// @ingroup mocologutil
 template <typename T> struct make_printable_return { typedef T type; };
 /// Convert to types that can be printed with sprintf() (vsnprintf()).
 /// The generic template does not alter the type.
+/// @ingroup mocologutil
 template <typename T>
 inline typename make_printable_return<T>::type make_printable(const T& x) {
     return x;
 }
 
 /// Specialization for std::string.
+/// @ingroup mocologutil
 template <> struct make_printable_return<std::string> {
     typedef const char* type;
 };
 /// Specialization for std::string.
+/// @ingroup mocologutil
 template <>
 inline typename make_printable_return<std::string>::type make_printable(
         const std::string& x) {
@@ -99,11 +116,13 @@ inline typename make_printable_return<std::string>::type make_printable(
 }
 
 /// Format a char array using (C interface; mainly for internal use).
+/// @ingroup mocologutil
 OSIMMOCO_API std::string format_c(const char*, ...);
 
 /// Format a string in the style of sprintf. For example, the code
 /// `format("%s %d and %d yields %d", "adding", 2, 2, 4)` will produce
 /// "adding 2 and 2 yields 4".
+/// @ingroup mocologutil
 template <typename... Types>
 std::string format(const std::string& formatString, Types... args) {
     return format_c(formatString.c_str(), make_printable(args)...);
@@ -111,6 +130,7 @@ std::string format(const std::string& formatString, Types... args) {
 
 /// Print a formatted string to std::cout. A newline is not included, but the
 /// stream is flushed.
+/// @ingroup mocologutil
 template <typename... Types>
 void printMessage(const std::string& formatString, Types... args) {
     std::cout << format(formatString, args...);
@@ -123,6 +143,7 @@ void printMessage(const std::string& formatString, Types... args) {
 
 /// This class stores the formatting of a stream and restores that format
 /// when the StreamFormat is destructed.
+/// @ingroup mocologutil
 class StreamFormat {
 public:
     StreamFormat(std::ostream& stream) : m_stream(stream) {
@@ -137,11 +158,13 @@ private:
 
 /// Create a SimTK::Vector with the provided length whose elements are
 /// linearly spaced between start and end.
+/// @ingroup moconumutil
 OSIMMOCO_API
 SimTK::Vector createVectorLinspace(int length, double start, double end);
 
 #ifndef SWIG
 /// Create a SimTK::Vector using modern C++ syntax.
+/// @ingroup moconumutil
 OSIMMOCO_API
 SimTK::Vector createVector(std::initializer_list<SimTK::Real> elements);
 #endif
@@ -152,11 +175,13 @@ SimTK::Vector createVector(std::initializer_list<SimTK::Real> elements);
 /// does not necessarily prevent NaN values from being returned in 'newX', which
 /// will have NaN for any values of newX outside of the range of x.
 /// @throws Exception if x and y are different sizes, or x or y is empty.
+/// @ingroup moconumutil
 OSIMMOCO_API
 SimTK::Vector interpolate(const SimTK::Vector& x, const SimTK::Vector& y,
         const SimTK::Vector& newX, const bool ignoreNaNs = false);
 
 #ifndef SWIG
+/// @ingroup moconumutil
 template <typename FunctionType>
 std::unique_ptr<FunctionSet> createFunctionSet(const TimeSeriesTable& table) {
     auto set = make_unique<FunctionSet>();
@@ -170,6 +195,7 @@ std::unique_ptr<FunctionSet> createFunctionSet(const TimeSeriesTable& table) {
     return set;
 }
 
+/// @ingroup moconumutil
 template <>
 inline std::unique_ptr<FunctionSet> createFunctionSet<GCVSpline>(
         const TimeSeriesTable& table) {
@@ -187,12 +213,13 @@ inline std::unique_ptr<FunctionSet> createFunctionSet<GCVSpline>(
 /// @throws Exception if new times are
 /// not within existing initial and final times, if the new times are
 /// decreasing, or if getNumTimes() < 2.
+/// @ingroup moconumutil
 template <typename TimeVector, typename FunctionType = GCVSpline>
 TimeSeriesTable resample(const TimeSeriesTable& in, const TimeVector& newTime) {
 
     const auto& time = in.getIndependentColumn();
 
-    OPENSIM_THROW_IF(newTime.size() < 2, Exception,
+    OPENSIM_THROW_IF(time.size() < 2, Exception,
             "Cannot resample if number of times is 0 or 1.");
     OPENSIM_THROW_IF(newTime[0] < time[0], Exception,
             format("New initial time (%f) cannot be less than existing "
@@ -237,60 +264,46 @@ TimeSeriesTable resample(const TimeSeriesTable& in, const TimeVector& newTime) {
 /// reduced in future versions of OpenSim. However, Storage supports some
 /// operations not supported by TimeSeriesTable (e.g., filtering, resampling).
 // TODO move to the Storage class.
+/// @ingroup moconumutil
 OSIMMOCO_API Storage convertTableToStorage(const TimeSeriesTable&);
+
+/// Update a vector of state labels (in place) to use post-4.0 state paths
+/// instead of pre-4.0 state names. For example, this converts labels as
+/// follows:
+///   - `pelvis_tilt` -> `/jointset/ground_pelvis/pelvis_tilt/value`
+///   - `pelvis_tilt_u` -> `/jointset/ground_pelvis/pelvis_tilt/speed`
+///   - `soleus.activation` -> `/forceset/soleus/activation`
+///   - `soleus.fiber_length` -> `/forceset/soleus/fiber_length`
+/// This can also be used to update the column labels of an Inverse Kinematics
+/// Tool solution MOT file so that the data can be used as states. If a label
+/// does not identify a state in the model, the column label is not changed.
+/// @throws Exception if labels are not unique.
+OSIMMOCO_API void updateStateLabels40(
+        const Model& model, std::vector<std::string>& labels);
 
 /// Lowpass filter the data in a TimeSeriesTable at a provided cutoff frequency.
 /// The table is converted to a Storage object to use the lowpassIIR() method
 /// to filter, and then converted back to TimeSeriesTable.
+/// @ingroup moconumutil
 OSIMMOCO_API TimeSeriesTable filterLowpass(
         const TimeSeriesTable& table, double cutoffFreq, bool padData = false);
 
-/// Read in a table of type TimeSeriesTable_<T> from file, where T is the type
-/// of the elements contained in the table's columns. The `filepath` argument
-/// should refer to a STO or CSV file (or other file types for which there is a
-/// FileAdapter). This function assumes that only one table is contained in the
-/// file, and will throw an exception otherwise.
-template <typename T>
-TimeSeriesTable_<T> readTableFromFileT(const std::string& filepath) {
-    auto tablesFromFile = FileAdapter::readFile(filepath);
-    // There should only be one table.
-    OPENSIM_THROW_IF(tablesFromFile.size() != 1, Exception,
-            format("Expected file '%s' to contain 1 table, but "
-                   "it contains %i tables.",
-                    filepath, tablesFromFile.size()));
-    // Get the first table.
-    auto* firstTable = dynamic_cast<TimeSeriesTable_<T>*>(
-            tablesFromFile.begin()->second.get());
-    OPENSIM_THROW_IF(!firstTable, Exception,
-            "Expected file to contain a TimeSeriesTable_<T> where T is "
-            "the type specified in the template argument, but it contains a "
-            "different type of table.");
-
-    return *firstTable;
-}
-
-/// Read in a TimeSeriesTable from file containing scalar elements. The
-/// `filepath` argument should refer to a STO or CSV file (or other file types
-/// for which there is a FileAdapter). This function assumes that only one table
-/// is contained in the file, and will throw an exception otherwise.
-OSIMMOCO_API inline TimeSeriesTable readTableFromFile(
-        const std::string& filepath) {
-    return readTableFromFileT<double>(filepath);
-}
-
 /// Write a single TimeSeriesTable to a file, using the FileAdapter associated
 /// with the provided file extension.
+/// @ingroup moconumutil
 OSIMMOCO_API void writeTableToFile(const TimeSeriesTable&, const std::string&);
 
 /// Play back a motion (from the Storage) in the simbody-visuailzer. The Storage
 /// should contain all generalized coordinates. The visualizer window allows the
 /// user to control playback speed.
 /// This function blocks until the user exits the simbody-visualizer window.
+/// @ingroup mocomodelutil
 // TODO handle degrees.
 OSIMMOCO_API void visualize(Model, Storage);
 
 /// This function is the same as visualize(Model, Storage), except that
 /// the states are provided in a TimeSeriesTable.
+/// @ingroup mocomodelutil
 OSIMMOCO_API void visualize(Model, TimeSeriesTable);
 
 /// Calculate the requested outputs using the model in the problem and the
@@ -301,9 +314,11 @@ OSIMMOCO_API void visualize(Model, TimeSeriesTable);
 /// PositionMotion) is.
 /// The output paths must correspond to outputs that match the type provided in
 /// the template argument, otherwise they are not included in the report.
-/// @note Parameters in the MocoTrajectory are **not** applied to the model.
+/// @note Parameters and Lagrange multipliers in the MocoTrajectory are **not**
+///       applied to the model.
+/// @ingroup mocomodelutil
 template <typename T>
-TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& iterate,
+TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& trajectory,
         std::vector<std::string> outputPaths) {
 
     // Initialize the system so we can access the outputs.
@@ -339,7 +354,7 @@ TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& iterate,
     model.initSystem();
 
     // Get states trajectory.
-    Storage storage = iterate.exportToStatesStorage();
+    Storage storage = trajectory.exportToStatesStorage();
     auto statesTraj = StatesTrajectory::createFromStatesStorage(model, storage);
 
     // Loop through the states trajectory to create the report.
@@ -351,7 +366,8 @@ TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& iterate,
         model.getSystem().prescribe(state);
 
         // Create a SimTK::Vector of the control values for the current state.
-        SimTK::RowVector controlsRow = iterate.getControlsTrajectory().row(i);
+        SimTK::RowVector controlsRow =
+                trajectory.getControlsTrajectory().row(i);
         SimTK::Vector controls(controlsRow.size(),
                 controlsRow.getContiguousScalarData(), true);
 
@@ -372,21 +388,24 @@ TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& iterate,
 /// model quantities that require realization to the Dynamics stage or later.
 /// The function used to fit the controls can either be GCVSpline or
 /// PiecewiseLinearFunction.
-OSIMMOCO_API void prescribeControlsToModel(const MocoTrajectory& iterate,
+/// @ingroup mocomodelutil
+OSIMMOCO_API void prescribeControlsToModel(const MocoTrajectory& trajectory,
         Model& model, std::string functionType = "GCVSpline");
 
-/// Use the controls and initial state in the provided iterate to simulate the
-/// model using an ODE time stepping integrator (OpenSim::Manager), and return
-/// the resulting states and controls. We return a MocoTrajectory (rather than a
-/// StatesTrajectory) to facilitate comparing optimal control solutions with
-/// time stepping. Use integratorAccuracy to override the default setting.
-OSIMMOCO_API MocoTrajectory simulateIterateWithTimeStepping(
-        const MocoTrajectory& iterate, Model model,
+/// Use the controls and initial state in the provided trajectory to simulate
+/// the model using an ODE time stepping integrator (OpenSim::Manager), and
+/// return the resulting states and controls. We return a MocoTrajectory (rather
+/// than a StatesTrajectory) to facilitate comparing optimal control solutions
+/// with time stepping. Use integratorAccuracy to override the default setting.
+/// @ingroup mocomodelutil
+OSIMMOCO_API MocoTrajectory simulateTrajectoryWithTimeStepping(
+        const MocoTrajectory& trajectory, Model model,
         double integratorAccuracy = -1);
 
 /// The map provides the index of each state variable in
 /// SimTK::State::getY() from its each state variable path string.
 /// Empty slots in Y (e.g., for quaternions) are ignored.
+/// @ingroup mocomodelutil
 OSIMMOCO_API
 std::vector<std::string> createStateVariableNamesInSystemOrder(
         const Model& model);
@@ -395,12 +414,14 @@ std::vector<std::string> createStateVariableNamesInSystemOrder(
 /// Same as above, but you can obtain a map from the returned state variable
 /// names to the index in SimTK::State::getY() that accounts for empty slots
 /// in Y.
+/// @ingroup mocomodelutil
 OSIMMOCO_API
 std::vector<std::string> createStateVariableNamesInSystemOrder(
         const Model& model, std::unordered_map<int, int>& yIndexMap);
 
 /// The map provides the index of each state variable in
 /// SimTK::State::getY() from its state variable path string.
+/// @ingroup mocomodelutil
 OSIMMOCO_API
 std::unordered_map<std::string, int> createSystemYIndexMap(const Model& model);
 #endif
@@ -413,26 +434,36 @@ std::unordered_map<std::string, int> createSystemYIndexMap(const Model& model);
 /// to the number of controls associated with actuators that apply a force
 /// (appliesForce == True). Its elements are the indices of the controls in the
 /// Model::updControls() that are associated with actuators that apply a force.
+/// @ingroup mocomodelutil
 OSIMMOCO_API
 std::vector<std::string> createControlNamesFromModel(
         const Model& model, std::vector<int>& modelControlIndices);
 /// Same as above, but when there is no mapping to the modelControlIndices.
+/// @ingroup mocomodelutil
 OSIMMOCO_API
 std::vector<std::string> createControlNamesFromModel(const Model& model);
 /// The map provides the index of each control variable in the SimTK::Vector
 /// return by OpenSim::Model::getControls() from its control name.
+/// @ingroup mocomodelutil
 OSIMMOCO_API
 std::unordered_map<std::string, int> createSystemControlIndexMap(
         const Model& model);
 
 /// Throws an exception if the order of the controls in the model is not the
 /// same as the order of the actuators in the model.
+/// @ingroup mocomodelutil
 OSIMMOCO_API void checkOrderSystemControls(const Model& model);
 
 /// Throws an exception if the same label appears twice in the list of labels.
 /// The argument copies the provided labels since we need to sort them to check
 /// for redundancies.
+/// @ingroup mocomodelutil
 OSIMMOCO_API void checkRedundantLabels(std::vector<std::string> labels);
+
+/// Throws an exception if any label in the provided list does not match any
+/// state variable names in the model.
+OSIMMOCO_API void checkLabelsMatchModelStates(const Model& model,
+        const std::vector<std::string>& labels);
 
 /// Get a list of reference pointers to all outputs whose names (not paths)
 /// match a substring defined by a provided regex string pattern. The regex
@@ -440,6 +471,7 @@ OSIMMOCO_API void checkRedundantLabels(std::vector<std::string> labels);
 /// match the template argument type will be returned (double is the default
 /// type). Set the argument 'includeDescendents' to true to include outputs
 /// from all descendents from the provided component.
+/// @ingroup mocomodelutil
 template <typename T = double>
 std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(
         const Component& component, const std::string& pattern,
@@ -450,7 +482,7 @@ std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(
     // Initialize outputs array.
     std::vector<SimTK::ReferencePtr<const Output<T>>> outputs;
 
-    std::function<void(const Component&, const std::regex&, bool, 
+    std::function<void(const Component&, const std::regex&, bool,
             std::vector<SimTK::ReferencePtr<const Output<T>>>&)> helper;
     helper = [&helper](const Component& component, const std::regex& regex,
             bool includeDescendents,
@@ -477,7 +509,7 @@ std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(
             }
         }
     };
-    
+
     helper(component, regex, includeDescendents, outputs);
     return outputs;
 }
@@ -496,8 +528,12 @@ std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(
 /// half of the period for that column is (first_half_trajectory +
 /// half_period_value - initial_value).
 /// @param negatePatterns If a column label matches a negatePattern, then the
-/// second half of the period for that column is (-first_half_trajectory + 2 *
-/// half_period_value). This is usually relevant for only 3D models.
+/// second half of the period for that column is (-first_half_trajectory).
+/// This is usually relevant for only 3D models.
+/// @param negateAndShiftPatterns If a column label matches a
+/// negateAndShiftPattern, then the second half of the period for that column is
+/// (-first_half_trajectory + 2 * half_period_value). This is usually relevant
+/// for only 3D models.
 /// @param symmetryPatterns This argument is a list of pairs, where the first
 /// element of the pair is a pattern to match, and the second is a substitution
 /// to convert the column label into the opposite column label of the symmetric
@@ -507,26 +543,40 @@ std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(
 ///
 /// The default values for the patterns are intended to handle the column labels
 /// for typical 2D or 3D OpenSim gait models.
-/// The default value for symmetryPatterns warrants an explanation. R"()" is a
-/// string literal that permits us to not escape backslash characters. The regex
-/// "_r(\/|$)" matches "_r" followed by either a forward slash
-/// (which is escaped) OR the end of the string ($). Since the forward slash
-/// and end of the string are within parentheses, whatever matches this is
-/// captured and is available in the substitution (the second element of the
-/// pair) as $1. The default symmetry patterns cause the following replacements:
+/// The default values for negatePatterns and symmetryPatterns warrant an
+/// explanation. The string pattern before the regex "(?!/value)" is followed by
+/// anything except "/value" since it is contained in the negative lookahead
+/// "(?!...)".  R"()" is a string literal that permits us to not escape
+/// backslash characters. The regex "_r(\/|_|$)" matches "_r" followed by either
+/// a forward slash (which is escaped), an underscore, OR the end of the string
+/// ($). Since the forward slash and end of the string are within parentheses,
+/// whatever matches this is captured and is available in the substitution (the
+/// second element of the pair) as $1. The default symmetry patterns cause the
+/// following replacements:
 /// - "/jointset/hip_r/hip_flexion_r/value" becomes "/jointset/hip_l/hip_flexion_l/value"
 /// - "/forceset/soleus_r" becomes "/forceset/soleus_l"
+/// @ingroup mocomodelutil
 OSIMMOCO_API MocoTrajectory createPeriodicTrajectory(
         const MocoTrajectory& halfPeriodTrajectory,
         std::vector<std::string> addPatterns = {".*pelvis_tx/value"},
-        std::vector<std::string> negatePatterns = {".*pelvis_list.*",
-                                                   ".*pelvis_rotation.*",
-                                                   ".*pelvis_tz.*"},
+        std::vector<std::string> negatePatterns = {
+                                            ".*pelvis_list(?!/value).*",
+                                            ".*pelvis_rotation(?!/value).*",
+                                            ".*pelvis_tz(?!/value).*",
+                                            ".*lumbar_bending(?!/value).*",
+                                            ".*lumbar_rotation(?!/value).*"},
+        std::vector<std::string> negateAndShiftPatterns = {
+                                                   ".*pelvis_list/value",
+                                                   ".*pelvis_rotation/value",
+                                                   ".*pelvis_tz/value",
+                                                   ".*lumbar_bending/value",
+                                                   ".*lumbar_rotation/value"},
         std::vector<std::pair<std::string, std::string>> symmetryPatterns =
-                {{R"(_r(\/|$))", "_l$1"}, {R"(_l(\/|$))", "_r$1"}});
+                {{R"(_r(\/|_|$))", "_l$1"}, {R"(_l(\/|_|$))", "_r$1"}});
 
 /// Throw an exception if the property's value is not in the provided set.
 /// We assume that `p` is a single-value property.
+/// @ingroup mocogenutil
 template <typename T>
 void checkPropertyInSet(
         const Object& obj, const Property<T>& p, const std::set<T>& set) {
@@ -551,6 +601,7 @@ void checkPropertyInSet(
 
 /// Throw an exception if the property's value is not positive.
 /// We assume that `p` is a single-value property.
+/// @ingroup mocogenutil
 template <typename T>
 void checkPropertyIsPositive(const Object& obj, const Property<T>& p) {
     const auto& value = p.getValue();
@@ -569,6 +620,7 @@ void checkPropertyIsPositive(const Object& obj, const Property<T>& p) {
 /// Throw an exception if the property's value is neither in the provided
 /// range nor in the provided set.
 /// We assume that `p` is a single-value property.
+/// @ingroup mocogenutil
 template <typename T>
 void checkPropertyInRangeOrSet(const Object& obj, const Property<T>& p,
         const T& lower, const T& upper, const std::set<T>& set) {
@@ -593,6 +645,7 @@ void checkPropertyInRangeOrSet(const Object& obj, const Property<T>& p,
 }
 
 /// Record and report elapsed real time ("clock" or "wall" time) in seconds.
+/// @ingroup mocogenutil
 class Stopwatch {
 public:
     /// This stores the start time as the current time.
@@ -665,10 +718,12 @@ private:
 /// or how the parallelization is achieved. Moco may even ignore or override
 /// the setting from the environment variable. See documentation elsewhere
 /// (e.g., from a specific MocoSolver) for more information.
+/// @ingroup mocogenutil
 OSIMMOCO_API int getMocoParallelEnvironmentVariable();
 
 /// This class lets you store objects of a single type for reuse by multiple
 /// threads, ensuring threadsafe access to each of those objects.
+/// @ingroup mocogenutil
 // TODO: Find a way to always give the same thread the same object.
 template <typename T> class ThreadsafeJar {
 public:
@@ -708,6 +763,7 @@ private:
 };
 
 /// Thrown by FileDeletionThrower::throwIfDeleted().
+/// @ingroup mocogenutil
 class FileDeletionThrowerException : public Exception {
 public:
     FileDeletionThrowerException(const std::string& file, size_t line,
@@ -722,12 +778,13 @@ public:
 /// file is deleted (by a user) before the object is destructed. If the file
 /// could not be written by the constructor, then throwIfDeleted() does not
 /// throw an exception.
+/// @ingroup mocogenutil
 class FileDeletionThrower {
 public:
     FileDeletionThrower()
             : FileDeletionThrower(
                       "OpenSimMoco_delete_this_to_throw_exception_" +
-                      getFormattedDateTime() + ".txt") {}
+                      getMocoFormattedDateTime() + ".txt") {}
     FileDeletionThrower(std::string filepath)
             : m_filepath(std::move(filepath)) {
         std::ofstream f(m_filepath);
@@ -767,11 +824,26 @@ private:
 /// getRecordValues(); this order is of use for, for example, the
 /// SmoothSphereHalfSpaceForce contact model but might have a different meaning
 /// for different contact models.
+/// @ingroup mocomodelutil
 OSIMMOCO_API
 TimeSeriesTable createExternalLoadsTableForGait(Model model,
         const MocoTrajectory& trajectory,
         const std::vector<std::string>& forceNamesRightFoot,
         const std::vector<std::string>& forceNamesLeftFoot);
+
+/// Solve for the root of a scalar function using the bisection method.
+/// @param calcResidual a function that computes the error
+/// @param left lower bound on the root
+/// @param right upper bound on the root
+/// @param tolerance convergence requires that the bisection's "left" and
+///     "right" are less than tolerance apart.
+/// @param maxIterations abort after this many iterations.
+/// @ingroup mocogenutil
+OSIMMOCO_API
+SimTK::Real solveBisection(
+        std::function<double(const double&)> calcResidual,
+        double left, double right, const double& xTolerance = 1e-6,
+        int maxIterations = 1000);
 
 } // namespace OpenSim
 

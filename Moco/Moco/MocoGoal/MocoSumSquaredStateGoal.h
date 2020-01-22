@@ -18,16 +18,16 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "../MocoWeightSet.h"
 #include "MocoGoal.h"
 
 namespace OpenSim {
 
-/// Minimize the sum of squared states, integrated over the phase. This
-/// can be used to minimize muscle activations (if those are the only states
-/// in the system), as is done in MocoInverse.
-/// @underdevelopment
-/// In the future, this class will allow you to select which states to
-/// minimize.
+/// Minimize the sum of squared states, integrated over the phase. For example, 
+/// this can be used to minimize muscle activations, as is done in MocoInverse.
+/// This class also allows you to select which states to minimize by using
+/// a regex pattern with `setPattern()` and to provide weights for each
+/// state through `setWeightSet()` and `setWeightForState()`.
 class OSIMMOCO_API MocoSumSquaredStateGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoSumSquaredStateGoal, MocoGoal);
 
@@ -41,6 +41,35 @@ public:
         constructProperties();
     }
 
+    /// Provide a MocoWeightSet to weight the state variables in the cost.
+    /// Replaces the weight set if it already exists.
+    void setWeightSet(const MocoWeightSet& weightSet) {
+        upd_state_weights() = weightSet;
+    }
+
+    /// Set the weight for an individual state variable. If a weight is
+    /// already set for the requested state, then the provided weight
+    /// replaces the previous weight. An exception is thrown if a weight
+    /// for an unknown state is provided.
+    void setWeightForState(const std::string& stateName, const double& weight) {
+        if (get_state_weights().contains(stateName)) {
+            upd_state_weights().get(stateName).setWeight(weight);
+        } else {
+            upd_state_weights().cloneAndAppend({stateName, weight});
+        }
+    }
+
+    /// Only state paths matching the regular expression are included. The
+    /// regular expression must match the entire state path for a state path to
+    /// be included (that is, we use std::regex_match, not std::regex_search).
+    /// To include only generalized coordinates, use `.*value$`.
+    /// To include generalized coordinates and speeds, use `.*(value|speed)$`.
+    /// To include only activations, use `.*activation$`.
+    void setPattern(std::string pattern) { set_pattern(pattern); }
+    /// Unset the pattern, which causes all states to be matched.
+    void clearPattern() { updProperty_pattern().clear(); }
+    std::string getPattern() const { return get_pattern(); }
+
 protected:
     void initializeOnModelImpl(const Model&) const override;
     void calcIntegrandImpl(
@@ -49,9 +78,32 @@ protected:
             const GoalInput& input, SimTK::Vector& cost) const override {
         cost[0] = input.integral;
     }
+    void printDescriptionImpl(std::ostream& stream = std::cout) const override;
 
 private:
-    void constructProperties();
+    OpenSim_DECLARE_PROPERTY(state_weights, MocoWeightSet,
+            "Set of weight objects to weight the individual "
+            "state variables in the cost.");
+
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(pattern, std::string,
+            "If provided, only states matching this regular expression are "
+            "included (default: no pattern). If no pattern is provided, then "
+            "all states are used.");
+
+    void constructProperties() {
+        constructProperty_state_weights(MocoWeightSet());
+        constructProperty_pattern();
+    }
+
+    /// Return the corresponding weight to a given stateName in the
+    /// state_weights set. If it doesn't exist, return 1.0.
+    double getStateWeight(const std::string& stateName) const;
+
+    /// The indices in Y corresponding to the provided reference
+    /// coordinates.
+    mutable std::vector<int> m_sysYIndices;
+    mutable std::vector<double> m_state_weights;
+    mutable std::vector<std::string> m_state_names;
 };
 
 } // namespace OpenSim

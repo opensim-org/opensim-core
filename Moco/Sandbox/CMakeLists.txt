@@ -16,6 +16,7 @@ function(MocoAddSandboxExecutable)
     file(COPY ${MOCOSAND_RESOURCES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 endfunction()
 
+MocoAddSandboxExecutable(NAME sandboxSandbox LIB_DEPENDS osimMoco)
 
 MocoAddSandboxExecutable(NAME sandboxTendonForceState
         LIB_DEPENDS osimMoco tropter)
@@ -44,6 +45,6 @@ add_subdirectory(sandboxMarkerTrackingWholeBody)
 add_subdirectory(sandboxJointReaction)
 add_subdirectory(sandboxOneLegCouplerKnee)
 add_subdirectory(sandboxMarkerTrackingContactWholeBody)
-add_subdirectory(sandboxSitToStand)
+add_subdirectory(sandboxSquatToStand)
 add_subdirectory(sandboxMocoTrack)
 add_subdirectory(sandboxMocoUserControlCost)

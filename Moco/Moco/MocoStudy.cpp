@@ -82,16 +82,16 @@ MocoSolution MocoStudy::solve() const {
 
     // Temporarily disable printing of negative muscle force warnings so the
     // output stream isn't flooded while computing finite differences.
-    bool oldWarningFlag = Muscle::getPrintWarnings();
-    Muscle::setPrintWarnings(false);
+    int oldDebugLevel = Object::getDebugLevel();
+    Object::setDebugLevel(-1);
     MocoSolution solution;
     try {
         solution = get_solver().solve();
     } catch (const Exception&) {
-        Muscle::setPrintWarnings(oldWarningFlag);
+        Object::setDebugLevel(oldDebugLevel);
         throw;
     }
-    Muscle::setPrintWarnings(oldWarningFlag);
+    Object::setDebugLevel(oldDebugLevel);
 
     bool originallySealed = solution.isSealed();
     if (get_write_solution() != "false") {
@@ -119,8 +119,8 @@ void MocoStudy::visualize(const MocoTrajectory& it) const {
     OpenSim::visualize(model, it.exportToStatesStorage());
 }
 
-TimeSeriesTable MocoStudy::analyze(const MocoTrajectory& iterate,
+TimeSeriesTable MocoStudy::analyze(const MocoTrajectory& trajectory,
         std::vector<std::string> outputPaths) const {
     return OpenSim::analyze<double>(get_problem().createRep().getModelBase(),
-        iterate, outputPaths);
+        trajectory, outputPaths);
 }

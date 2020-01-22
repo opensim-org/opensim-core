@@ -105,7 +105,8 @@ void SmoothSphereHalfSpaceForce::extendAddToSystem(
 
     force.setContactHalfSpaceBody(contactHalfSpaceFrame.getMobilizedBody());
 
-    SimTK::Transform halfSpaceFrame = getHalfSpaceTransformInHalfSpaceFrame();
+    const SimTK::Transform halfSpaceFrame =
+            getHalfSpaceTransformInHalfSpaceFrame();
 
     force.setContactHalfSpaceFrame(
             contactHalfSpaceFrame.findTransformInBaseFrame() * halfSpaceFrame);
@@ -113,6 +114,19 @@ void SmoothSphereHalfSpaceForce::extendAddToSystem(
     SmoothSphereHalfSpaceForce* mutableThis =
             const_cast<SmoothSphereHalfSpaceForce*>(this);
     mutableThis->_index = force.getForceIndex();
+}
+
+void OpenSim::SmoothSphereHalfSpaceForce::extendRealizeInstance(
+        const SimTK::State& state) const {
+    Super::extendRealizeInstance(state);
+    if (!getProperty_force_visualization_scale_factor().empty()) {
+        m_forceVizScaleFactor = get_force_visualization_scale_factor();
+    } else {
+        const Model& model = getModel();
+        const double mass = model.getTotalMass(state);
+        const double weight = mass * model.getGravity().norm();
+        m_forceVizScaleFactor = 1 / weight;
+    }
 }
 
 void SmoothSphereHalfSpaceForce::constructProperties() {
@@ -130,6 +144,8 @@ void SmoothSphereHalfSpaceForce::constructProperties() {
     constructProperty_constant_contact_force(1e-5);
     constructProperty_hertz_smoothing(300.0);
     constructProperty_hunt_crossley_smoothing(50.0);
+    constructProperty_force_visualization_radius(0.01);
+    constructProperty_force_visualization_scale_factor();
 
     Appearance defaultAppearance;
     defaultAppearance.set_color(SimTK::Cyan);
@@ -213,7 +229,56 @@ void SmoothSphereHalfSpaceForce::generateDecorations(bool fixed,
         const ModelDisplayHints& hints, const SimTK::State& state,
         SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const {
     Super::generateDecorations(fixed, hints, state, geometry);
-    if (!fixed) return;
+
+    if (!fixed && (state.getSystemStage() >= SimTK::Stage::Dynamics) &&
+            hints.get_show_forces()) {
+        // Get the underlying SimTK force element.
+        const Model& model = getModel();
+        const auto& forceSubsystem = model.getForceSubsystem();
+        const SimTK::Force& abstractForce = forceSubsystem.getForce(_index);
+        const auto& simtkForce =
+                static_cast<const SimTK::SmoothSphereHalfSpaceForce&>(
+                        abstractForce);
+
+        // Compute the body forces.
+        SimTK::Vector_<SimTK::SpatialVec> bodyForces(0);
+        SimTK::Vector_<SimTK::Vec3> particleForces(0);
+        SimTK::Vector mobilityForces(0);
+        simtkForce.calcForceContribution(
+                state, bodyForces, particleForces, mobilityForces);
+
+        // Get the index to the associated contact sphere.
+        const PhysicalFrame& contactSphereFrame =
+                getConnectee<PhysicalFrame>("sphere_frame");
+        const SimTK::MobilizedBodyIndex& contactSphereIdx =
+                contactSphereFrame.getMobilizedBody();
+
+        // Get the translational force for the contact sphere associated with
+        // this force element.
+        const auto& contactSphereForce = bodyForces(contactSphereIdx)[1];
+
+        // Scale the contact force vector and compute the cylinder length.
+        const auto& scaledContactForce =
+                m_forceVizScaleFactor * contactSphereForce;
+        const SimTK::Real length(scaledContactForce.norm());
+
+        // Compute the force visualization transform.
+        const SimTK::Vec3 contactSpherePosition =
+                contactSphereFrame.findStationLocationInGround(
+                        state, get_contact_sphere_location());
+        const SimTK::Transform forceVizTransform(
+                SimTK::Rotation(SimTK::UnitVec3(scaledContactForce),
+                        SimTK::YAxis),
+                contactSpherePosition + scaledContactForce / 2.0);
+
+        // Construct the force decoration and add it to the list of geometries.
+        SimTK::DecorativeCylinder forceViz(get_force_visualization_radius(),
+                0.5 * length);
+        forceViz.setTransform(forceVizTransform);
+        forceViz.setColor(SimTK::Vec3(0.0, 0.6, 0.0));
+        geometry.push_back(forceViz);
+    }
+
     if (!hints.get_show_contact_geometry()) return;
 
     {

@@ -42,10 +42,19 @@ public:
     /// This is a convenience for `createNLinkPendulum(2)`.
     static Model createDoublePendulum() { return createNLinkPendulum(2); }
     /// This model contains:
+    /// - 1 body: mass 1.0 kg, `/bodyset/body`.
+    /// - 1 joint: SliderJoint along x axis, `/jointset/slider`, with
+    ///            coordinate `/jointset/slider/position`.
+    /// - 1 actuator: CoordinateActuator, controls [-10, 10], `/actuator`.
+    /// Gravity is default; that is, (0, -g, 0).
+    static Model createSlidingPointMass();
+    /// This model contains:
     /// - 2 bodies: a massless body "intermed", and "body" with mass 1.
     /// - 2 slider joints: "tx" and "ty" (coordinates "tx" and "ty").
     /// - 2 coordinate actuators: "force_x" and "force_y".
+    /// Gravity is default; that is, (0, -g, 0).
     static Model createPlanarPointMass();
+
 
     /// @}
 

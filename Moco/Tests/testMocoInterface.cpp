@@ -884,7 +884,7 @@ TEMPLATE_TEST_CASE("State tracking", "", MocoTropterSolver, MocoCasADiSolver) {
         auto moco = makeTool();
         MocoProblem& mp = moco.updProblem();
         auto tracking = mp.addGoal<MocoStateTrackingGoal>();
-        tracking->setReference(STOFileAdapter::read(fname));
+        tracking->setReference(TimeSeriesTable(fname));
         auto& ms = moco.template initSolver<TestType>();
         ms.set_num_mesh_intervals(5);
         ms.set_optim_hessian_approximation("exact");
@@ -1218,8 +1218,7 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
     {
         MocoTrajectory explicitGuess = ms.createGuess();
         ms.set_multibody_dynamics_mode("implicit");
-        ms.setGuess(explicitGuess);
-        CHECK_THROWS_WITH(study.solve(),
+        CHECK_THROWS_WITH(ms.setGuess(explicitGuess),
             Catch::Contains(
                 "'multibody_dynamics_mode' set to 'implicit' and coordinate states "
                 "exist in the guess, but no coordinate accelerations were "
@@ -1290,13 +1289,13 @@ TEMPLATE_TEST_CASE(
         auto labels = controlsTable.getColumnLabels();
         for (auto& label : labels) { label = "/forceset/" + label; }
         controlsTable.setColumnLabels(labels);
-        const auto iterateFromManager =
+        const auto trajectoryFromManager =
                 MocoTrajectory::createFromStatesControlsTables(
                         study.getProblem().createRep(),
                         manager.getStatesTable(),
                         controlsTable);
         SimTK_TEST(solutionSim.compareContinuousVariablesRMS(
-                           iterateFromManager) < 1e-2);
+                           trajectoryFromManager) < 1e-2);
     }
 
     // Ensure the forward simulation guess uses the correct time bounds.
@@ -1363,26 +1362,26 @@ TEST_CASE("MocoTrajectory") {
             void setSealedD(bool sealed) { MocoTrajectory::setSealed(sealed); }
             bool isSealedD() const { return MocoTrajectory::isSealed(); }
         };
-        MocoTrajectoryDerived iterate;
-        SimTK_TEST(!iterate.isSealedD());
-        iterate.setSealedD(true);
-        SimTK_TEST(iterate.isSealedD());
+        MocoTrajectoryDerived trajectory;
+        SimTK_TEST(!trajectory.isSealedD());
+        trajectory.setSealedD(true);
+        SimTK_TEST(trajectory.isSealedD());
         SimTK_TEST_MUST_THROW_EXC(
-                iterate.getNumTimes(), MocoTrajectoryIsSealed);
-        SimTK_TEST_MUST_THROW_EXC(iterate.getTime(), MocoTrajectoryIsSealed);
+                trajectory.getNumTimes(), MocoTrajectoryIsSealed);
+        SimTK_TEST_MUST_THROW_EXC(trajectory.getTime(), MocoTrajectoryIsSealed);
         SimTK_TEST_MUST_THROW_EXC(
-                iterate.getStateNames(), MocoTrajectoryIsSealed);
+                trajectory.getStateNames(), MocoTrajectoryIsSealed);
         SimTK_TEST_MUST_THROW_EXC(
-                iterate.getControlNames(), MocoTrajectoryIsSealed);
+                trajectory.getControlNames(), MocoTrajectoryIsSealed);
         SimTK_TEST_MUST_THROW_EXC(
-                iterate.getControlNames(), MocoTrajectoryIsSealed);
+                trajectory.getControlNames(), MocoTrajectoryIsSealed);
 
         // The clone() function doesn't call ensureSealed(), but the clone
         // should preserve the value of m_sealed.
-        std::unique_ptr<MocoTrajectoryDerived> ptr(iterate.clone());
+        std::unique_ptr<MocoTrajectoryDerived> ptr(trajectory.clone());
         SimTK_TEST(ptr->isSealedD());
         SimTK_TEST_MUST_THROW_EXC(
-                iterate.getNumTimes(), MocoTrajectoryIsSealed);
+                trajectory.getNumTimes(), MocoTrajectoryIsSealed);
     }
 
     // getInitialTime(), getFinalTime()
@@ -1546,6 +1545,55 @@ TEST_CASE("MocoTrajectory") {
     testCompareParametersRMS(100, 0.5);
 }
 
+TEST_CASE("MocoTrajectory isCompatible") {
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    std::cout.rdbuf(LogManager::cout.rdbuf());
+    MocoProblem problem;
+    problem.setModel(createSlidingMassModel());
+    problem.setTimeBounds(MocoInitialBounds(0), MocoFinalBounds(0, 10));
+    problem.setStateInfo("/slider/position/value", MocoBounds(0, 1),
+            MocoInitialBounds(0), MocoFinalBounds(1));
+    problem.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
+
+    MocoProblemRep rep = problem.createRep();
+
+    CHECK(MocoTrajectory({"/slider/position/value", "/slider/position/speed"},
+            {"/actuator"}, {}, {}).isCompatible(rep, false, true));
+    CHECK(!MocoTrajectory({"/slider/position/value", "/slider/position/speed"},
+            {"/actuator"}, {}, {}).isCompatible(rep, true));
+
+    CHECK(MocoTrajectory({"/slider/position/value", "/slider/position/speed"},
+            {"/actuator"}, {}, {"/slider/position/accel"}, {}).isCompatible(rep, true));
+
+    CHECK(!MocoTrajectory({}, {}, {}, {}).isCompatible(rep));
+    CHECK(!MocoTrajectory({"/slider/position/value", "/slider/position/speed",
+                          "nonexistent"},
+            {"/actuator"}, {}, {}).isCompatible(rep));
+    CHECK(!MocoTrajectory({"/slider/position/value", "/slider/position/speed"},
+            {"/actuator"}, {"nonexistent"}, {}).isCompatible(rep));
+
+    CHECK_THROWS_WITH(
+            MocoTrajectory({"/slider/position/value",
+                             "/slider/position/speed"},
+                              {"/actuator"}, {}, {})
+                               .isCompatible(rep, true, true),
+            Catch::Contains("accel"));
+    CHECK_THROWS_WITH(
+            MocoTrajectory({}, {}, {}, {}).isCompatible(rep, false, true),
+            Catch::Contains("position"));
+    CHECK_THROWS_WITH(
+            MocoTrajectory({"/slider/position/value", "/slider/position/speed",
+                             "nonexistent"},
+                    {"/actuator"}, {}, {})
+                     .isCompatible(rep, false, true),
+            Catch::Contains("nonexistent"));
+    CHECK_THROWS_WITH(
+            MocoTrajectory({"/slider/position/value", "/slider/position/speed"}, {"/actuator"},
+            {"nonexistent"}, {})
+                               .isCompatible(rep, false, true),
+            Catch::Contains("nonexistent"));
+}
+
 TEST_CASE("MocoTrajectory randomize") {
     SimTK::Vector time(3);
     time[0] = 0;
@@ -1668,7 +1716,7 @@ TEMPLATE_TEST_CASE("Sliding mass", "", MocoTropterSolver, MocoCasADiSolver) {
     int numStates = 2;
     int numControls = 1;
 
-// Check dimensions and metadata of the solution.
+    // Check dimensions and metadata of the solution.
     SimTK_TEST((solution.getStateNames() ==
                 std::vector<std::string>{
                         "/slider/position/value", "/slider/position/speed"}));
@@ -1881,6 +1929,76 @@ TEST_CASE("MocoPhase::bound_activation_from_excitation") {
                 Catch::Contains(
                         "No info available for state '/muscle/activation'."));
     }
+}
+
+TEST_CASE("updateStateLabels40") {
+    auto model = ModelFactory::createPendulum();
+    model.initSystem();
+    std::vector<std::string> labels = {
+            "q0",
+            "q0_u",
+            "nonexistent",
+    };
+    updateStateLabels40(model, labels);
+    CHECK(labels[0] == "/jointset/j0/q0/value");
+    CHECK(labels[1] == "/jointset/j0/q0/speed");
+    CHECK(labels[2] == "nonexistent");
+}
+
+TEST_CASE("solveBisection()") {
+
+    auto calcResidual = [](const SimTK::Real& x) { return x - 3.78; };
+    {
+        const auto root = solveBisection(calcResidual, -5, 5, 1e-6);
+        SimTK_TEST_EQ_TOL(root, 3.78, 1e-6);
+        // Make sure the tolerance has an effect.
+        SimTK_TEST_NOTEQ_TOL(root, 3.78, 1e-10);
+    }
+    {
+        const auto root = solveBisection(calcResidual, -5, 5, 1e-10);
+        SimTK_TEST_EQ_TOL(root, 3.78, 1e-10);
+    }
+
+    // Multiple roots.
+    {
+        auto parabola = [](const SimTK::Real& x) {
+            return SimTK::square(x - 2.5);
+        };
+        REQUIRE_THROWS_AS(solveBisection(parabola, -5, 5), Exception);
+    }
+}
+
+TEST_CASE("Objective breakdown") {
+    class MocoConstantGoal : public MocoGoal {
+        OpenSim_DECLARE_CONCRETE_OBJECT(MocoConstantGoal, MocoGoal);
+    public:
+        MocoConstantGoal() {}
+        MocoConstantGoal(std::string name, double weight, double constant)
+                : MocoGoal(std::move(name), weight), m_constant(constant) {}
+
+    protected:
+        void initializeOnModelImpl(const Model&) const override {
+            setNumIntegralsAndOutputs(0, 1);
+        }
+        void calcGoalImpl(
+                const GoalInput& input, SimTK::Vector& cost) const override {
+            cost[0] = m_constant;
+        }
+    private:
+        double m_constant = 0;
+    };
+
+    MocoStudy study;
+    auto& problem = study.updProblem();
+    problem.addGoal<MocoConstantGoal>("goal_a", 1.5, 5.2);
+    problem.addGoal<MocoConstantGoal>("goal_b", 0.01, 7.3);
+
+    MocoSolution solution = study.solve();
+    CHECK(solution.getNumObjectiveTerms() == 2);
+    CHECK(solution.getObjectiveTermByIndex(0) == Approx(1.5 * 5.2));
+    CHECK(solution.getObjectiveTermByIndex(1) == Approx(0.01 * 7.3));
+    CHECK(solution.getObjectiveTerm("goal_a") == Approx(1.5 * 5.2));
+    CHECK(solution.getObjectiveTerm("goal_b") == Approx(0.01 * 7.3));
 }
 
 

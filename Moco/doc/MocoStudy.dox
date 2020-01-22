@@ -8,12 +8,16 @@ namespace OpenSim {
 MocoStudy allows one to solve a generic optimal control problem, where the
 costs, constraints, and solver settings are fully defined by the user.
 
+Solving a custom optimal control problem with direct collocation requires
+substantial tuning of the direct collocation method's settings. Use the more
+specific interfaces MocoInverse and MocoTrack if possible.
+
 For a mathematical description, see @ref mocoocp.
 
 In Moco, "goals", such as tracking marker data or effort, can be
 enforced either as cost terms to minimize or endpoint constraints.
 
-@section Overview
+@section mocostudyoverview Overview
 
 A MocoStudy contains a MocoProblem and a MocoSolver.
 
@@ -246,8 +250,8 @@ Public License 3.0 places requirements on how CasADi is redistributed.
 @section tips Tips for solving a custom problem
 
 1. Make sure every variable has bounds.
-2. Create a dynamically-consistent initial guess by solving a feasibility problem
-(i.e. no cost terms).
+2. Create a dynamically-consistent initial guess by solving a feasibility problem.
+   That is, solve a MocoStudy without any cost terms.
 3. Actuators should only be as strong as they need to be. Problems tend to
 converge slower if some actuator controls are very small compared to those of
 other actuators in the model due to unecessarily large max force settings.

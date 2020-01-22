@@ -43,13 +43,13 @@ def getLabelFromMotionType(motionTypeEnum, level):
     label = ''
     if motionTypeEnum == 1:
         if level == 'value': label = 'angle (rad)'
-        elif level == 'speed': label = 'ang. vel. (rad/s)'
-        elif level == 'accel': label = 'ang. accel. (rad/s^2)'
+        elif level == 'speed': label = 'speed (rad/s)'
+        elif level == 'accel': label = 'accel. (rad/s^2)'
         else: label = 'rotate'
         return label
     elif motionTypeEnum == 2:
         if level == 'value': label = 'position (m)'
-        elif level == 'speed': label = 'velocity (m/s)'
+        elif level == 'speed': label = 'speed (m/s)'
         elif level == 'accel': label = 'accel. (m/s^s)'
         else: label = 'translate'
         return label
@@ -123,12 +123,13 @@ class Report(object):
         self.bilateral = bilateral
         self.ref_files = ref_files
         self.colormap = colormap
+        trajectory_fname = ntpath.basename(self.trajectory_filepath)
+        trajectory_fname = trajectory_fname.replace('.sto', '')
+        trajectory_fname = trajectory_fname.replace('.mot', '')
+        self.trajectory_fname = trajectory_fname
         if output:
             self.output = output
         else:
-            trajectory_fname = ntpath.basename(self.trajectory_filepath)
-            trajectory_fname = trajectory_fname.replace('.sto', '')
-            trajectory_fname = trajectory_fname.replace('.mot', '')
             self.output = trajectory_fname + '_report.pdf'
 
         # Get any reference files provided by the user and create a list of NumPy
@@ -143,15 +144,15 @@ class Report(object):
                 # a new file to be used for plotting.
                 # TODO: don't write the extra file permanently
                 if file_ext == '.sto' or file_ext == '.mot':
-                    sto_adapter = osim.STOFileAdapter()
-                    ref = sto_adapter.read(ref_file)
+                    ref = osim.TimeSeriesTable(ref_file)
                     if (ref.hasTableMetaDataKey('inDegrees') and 
                             ref.getTableMetaDataAsString('inDegrees') == 'yes'):
                         simbodyEngine = self.model.getSimbodyEngine()
                         simbodyEngine.convertDegreesToRadians(ref)
                         ref_file = ref_file.replace(file_ext, 
                                 '_radians' + file_ext)
-                        sto_adapter.write(ref, ref_file)                        
+                        sto_adapter = osim.STOFileAdapter()
+                        sto_adapter.write(ref, ref_file)
 
                 num_header_rows = 1
                 with open(ref_file) as f:
@@ -181,18 +182,21 @@ class Report(object):
         all_files = list()
         if ref_files != None: all_files += ref_files
         all_files.append(trajectory_filepath)
+        lw = 8 / len(self.cmap_samples)
+        if lw < 0.5: lw = 0.5
+        if lw > 2: lw = 2
         for sample, file in zip(self.cmap_samples, all_files):
             color = self.cmap(sample)
             import matplotlib.lines as mlines
             if bilateral:
-                r = mlines.Line2D([], [], ls='-', color=color, linewidth=3)
+                r = mlines.Line2D([], [], ls='-', color=color, linewidth=lw)
                 self.legend_handles.append(r)
                 self.legend_labels.append(file + ' (right leg)')
-                l = mlines.Line2D([], [], ls='--', color=color, linewidth=3)
+                l = mlines.Line2D([], [], ls='--', color=color, linewidth=lw)
                 self.legend_handles.append(l)
                 self.legend_labels.append(file + ' (left leg)')
             else:
-                h = mlines.Line2D([], [], ls='-', color=color, linewidth=3)
+                h = mlines.Line2D([], [], ls='-', color=color, linewidth=lw)
                 self.legend_handles.append(h)
                 self.legend_labels.append(file)
 
@@ -258,8 +262,8 @@ class Report(object):
             ymax = -np.inf
             for path, ls in zip(var_dict[key], ls_dict[key]):
                 var = self.getVariable(var_type, path)
-                ymin = np.min(var)
-                ymax = np.max(var)
+                ymin = np.minimum(ymin, np.min(var))
+                ymax = np.maximum(ymax, np.max(var))
                 # If any reference data was provided, that has columns matching
                 # the current variable path, then plot them first.
                 for r, ref in enumerate(self.refs):
@@ -307,10 +311,14 @@ class Report(object):
             # figure as a new page to the PDF. Otherwise, increment the plot
             # counter and keep going.
             if (p % self.plots_per_page == 0) or (i == len(var_dict.keys())-1):
+                legfontsize = 64 / len(self.legend_handles)
+                if legfontsize > 10: legfontsize = 10
                 fig.tight_layout()
                 plt.figlegend(self.legend_handles, self.legend_labels,
-                              loc='upper center', bbox_to_anchor=(0.5, 0.97),
-                              fancybox=True, shadow=True)
+                              loc='lower center',
+                              bbox_to_anchor=(0.5, 0.85),
+                              fancybox=True, shadow=True,
+                              prop={'size': legfontsize})
                 self.pdf.savefig(fig)
                 plt.close()
                 p = 1
@@ -532,21 +540,24 @@ class Report(object):
                 ax = plt.axes()
 
                 cell_text = []
-                parameters = convert(trajectory.getParameters())
+                parameters = convert(self.trajectory.getParameters())
                 cell_text.append(['%10.5f' % p for p in parameters])
 
-                print('trajectory name', trajectory_fname)
                 plt.table(cellText=cell_text, rowLabels=parameter_names,
-                          colLabels=[trajectory_fname], loc='center')
+                          colLabels=[self.trajectory_fname], loc='center')
                 ax.axis('off')
                 ax.axis('tight')
 
                 plt.subplots_adjust(left=0.2, right=0.8)
 
-                plt.figlegend(legend_handles, legend_labels,
-                    loc='upper center', bbox_to_anchor=(0.5, 0.97),
-                    fancybox=True, shadow=True)
-                pdf.savefig(fig)
+                legfontsize = 64 / len(self.legend_handles)
+                if legfontsize > 10: legfontsize = 10
+                plt.figlegend(self.legend_handles, self.legend_labels,
+                              loc='lower center',
+                              bbox_to_anchor=(0.5, 0.85),
+                              fancybox=True, shadow=True,
+                              prop={'size': legfontsize})
+                self.pdf.savefig(fig)
                 plt.close()
 
             # Slacks

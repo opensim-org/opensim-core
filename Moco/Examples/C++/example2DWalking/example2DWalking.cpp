@@ -32,17 +32,14 @@
 /// replaced the moving knee flexion axis by a fixed flexion axis, replaced the
 /// Millard2012EquilibriumMuscles by DeGrooteFregly2016Muscles, and added
 /// SmoothSphereHalfSpaceForces (two contact spheres per foot) to model the
-/// contact interactions between the feet and the ground. We also added
-/// polynomial approximations of muscle path lengths. We optimized the
-/// polynomial coefficients using custom MATLAB code to fit muscle-tendon
-/// lengths and moment arms (maximal root mean square deviation: 3 mm) obtained
-/// from OpenSim using a wide range of coordinate values.
+/// contact interactions between the feet and the ground.
 ///
 /// Data
 /// ----
 /// The coordinate data included in the 'referenceCoordinates.sto' comes from
 /// predictive simulations generated in Falisse et al. 2019.
 
+#include <Moco/MocoGoal/MocoOutputGoal.h>
 #include <Moco/osimMoco.h>
 
 using namespace OpenSim;
@@ -52,10 +49,8 @@ using namespace OpenSim;
 // as well as to minimize an effort cost (squared controls). The provided data
 // represents half a gait cycle. Endpoint constraints enforce periodicity of
 // the coordinate values (except for pelvis tx) and speeds, coordinate
-// actuator controls, and muscle activations. The tracking problem is solved
-// using polynomial approximations of muscle path lengths if true is passed as
-// an input argument, whereas geometry paths are used with the argument false.
-MocoSolution gaitTracking(const bool& setPathLengthApproximation) {
+// actuator controls, and muscle activations.
+MocoSolution gaitTracking() {
 
     using SimTK::Pi;
 
@@ -64,9 +59,7 @@ MocoSolution gaitTracking(const bool& setPathLengthApproximation) {
 
     // Define the optimal control problem.
     // ===================================
-    ModelProcessor modelprocessor =
-            ModelProcessor("2D_gait.osim") |
-            ModOpSetPathLengthApproximation(setPathLengthApproximation);
+    ModelProcessor modelprocessor = ModelProcessor("2D_gait.osim");
     track.setModel(modelprocessor);
     track.setStatesReference(
             TableProcessor("referenceCoordinates.sto") | TabOpLowPassFilter(6));
@@ -180,13 +173,8 @@ MocoSolution gaitTracking(const bool& setPathLengthApproximation) {
 // controls) over distance traveled while enforcing symmetry of the walking
 // cycle and a prescribed average gait speed through endpoint constraints. The
 // solution of the coordinate tracking problem is passed as an input argument
-// and used as an initial guess for the prediction. The predictive problem is
-// solved using polynomial approximations of muscle path lengths if true is
-// passed as an input argument, whereas geometry paths are used with the
-// argument false. Polynomial approximations should improve the computation
-// speeds by about 25% for this problem.
-void gaitPrediction(const MocoSolution& gaitTrackingSolution,
-        const bool& setPathLengthApproximation) {
+// and used as an initial guess for the prediction.
+void gaitPrediction(const MocoSolution& gaitTrackingSolution) {
 
     using SimTK::Pi;
 
@@ -197,8 +185,7 @@ void gaitPrediction(const MocoSolution& gaitTrackingSolution,
     // ===================================
     MocoProblem& problem = study.updProblem();
     ModelProcessor modelprocessor =
-            ModelProcessor("2D_gait.osim") |
-            ModOpSetPathLengthApproximation(setPathLengthApproximation);
+            ModelProcessor("2D_gait.osim");
     problem.setModelProcessor(modelprocessor);
 
     // Goals.
@@ -316,10 +303,8 @@ void gaitPrediction(const MocoSolution& gaitTrackingSolution,
 
 int main() {
     try {
-        // Use polynomial approximations of muscle path lengths (set false to
-        // use GeometryPath).
-        const MocoSolution gaitTrackingSolution = gaitTracking(false);
-        gaitPrediction(gaitTrackingSolution, false);
+        const MocoSolution gaitTrackingSolution = gaitTracking();
+        gaitPrediction(gaitTrackingSolution);
     } catch (const std::exception& e) { std::cout << e.what() << std::endl; }
     return EXIT_SUCCESS;
 }

@@ -1,0 +1,19 @@
+cmake_minimum_required(VERSION 3.2)
+project(OpenSimMoco_@_example_name@)
+
+set(CMAKE_CXX_STANDARD 11)
+
+find_package(OpenSimMoco REQUIRED HINTS
+    "${CMAKE_SOURCE_DIR}/@_moco_install_hint@")
+include("${OpenSimMoco_USE_FILE}")
+
+foreach(exe @_example_executables@)
+    add_executable(${exe} ${exe}.cpp)
+    target_link_libraries(${exe} osimMoco)
+
+    # For Windows: make sure DLLs for dependencies are available.
+    MocoCopyDLLs(DEP_NAME OpenSimMoco DEP_BIN_DIR "${OpenSimMoco_BIN_DIR}")
+    if(WIN32)
+        add_dependencies(${exe} Copy_OpenSimMoco_DLLs)
+    endif()
+endforeach()

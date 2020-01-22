@@ -38,7 +38,7 @@ MocoAddTest(NAME testConstraints)
 
 MocoAddTest(NAME testContact)
 
-MocoAddTest(NAME testDeGrooteFregly2016Muscle)
+MocoAddTest(NAME testMocoActuators)
 
 MocoAddTest(NAME testMocoInverse RESOURCES
         subject_walk_armless_18musc.osim
@@ -47,7 +47,7 @@ MocoAddTest(NAME testMocoInverse RESOURCES
         subject_walk_armless_external_loads.xml
         std_testMocoInverse_subject_18musc_solution.sto
         )
-        
+
 MocoAddTest(NAME testMocoTrack RESOURCES
         ../Archive/Tests/testGait10dof18musc_subject01.osim
         walk_gait1018_state_reference.mot
@@ -55,7 +55,7 @@ MocoAddTest(NAME testMocoTrack RESOURCES
         walk_gait1018_subject01_grf.mot
         std_testMocoTrackGait10dof18musc_solution.sto
         )
-        
-MocoAddTest(NAME testMultivariatePolynomial)
+
+# MocoAddTest(NAME testMultivariatePolynomial)
 
 MocoAddTest(NAME testMocoAnalytic)

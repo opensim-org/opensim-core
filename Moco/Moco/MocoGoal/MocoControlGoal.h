@@ -68,9 +68,19 @@ public:
     /// weight is already set for the requested state, then the provided
     /// weight replaces the previous weight. Only controls with non-zero weights
     /// that are associated with actuators for which appliesForce is True are
-    /// included in the cost function.
+    /// included in the cost function. Weights set here take precedence over
+    /// weights specified with a regular expression.
     void setWeightForControl(
             const std::string& controlName, const double& weight);
+
+    /// Set weights for all controls whose entire path matches the provided
+    /// regular expression pattern.
+    /// Multiple pairs of patterns and weights can be provided by calling this
+    /// function multiple times.
+    /// If a control matches multiple patterns, the weight associated with the
+    /// last pattern is used.
+    void setWeightForControlPattern(
+            const std::string& pattern, const double& weight);
 
     /// Set the exponent on the control signals.
     void setExponent(int exponent) { set_exponent(exponent); }
@@ -96,6 +106,9 @@ private:
     OpenSim_DECLARE_PROPERTY(control_weights, MocoWeightSet,
             "The weights for each control; "
             "the weight for unspecified controls is 1.");
+    OpenSim_DECLARE_PROPERTY(control_weights_pattern, MocoWeightSet,
+            "Set control weights for all controls matching a regular "
+            "expression.")
     OpenSim_DECLARE_PROPERTY(
             exponent, int, "The exponent on controls; greater than or equal to "
                            "2 (default: 2).");

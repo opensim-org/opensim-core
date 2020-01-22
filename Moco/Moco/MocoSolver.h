@@ -75,7 +75,7 @@ public:
     ///  - default value is not within the initial bounds: use midpoint of
     ///    initial bounds.
     ///
-    /// The number of times in the iterate is the number of successful
+    /// The number of times in the trajectory is the number of successful
     /// integration steps.
     ///
     /// @note This function does not yet support problems with parameters.
@@ -97,7 +97,9 @@ protected:
     static void setSolutionStats(MocoSolution&,
             bool success, double objective,
             const std::string& status, int numIterations,
-            double duration);
+            double duration,
+            std::vector<std::pair<std::string, double>> objectiveBreakdown =
+                    {});
 
     const MocoProblemRep& getProblemRep() const {
         return m_problemRep;

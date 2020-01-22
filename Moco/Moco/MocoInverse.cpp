@@ -18,7 +18,6 @@
 
 #include "MocoInverse.h"
 
-#include "Components/ModelFactory.h"
 #include "Components/PositionMotion.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoGoal/MocoControlGoal.h"
@@ -28,18 +27,16 @@
 #include "MocoStudy.h"
 #include "MocoUtilities.h"
 
-#include <OpenSim/Tools/InverseDynamicsTool.h>
-#include <OpenSim/Actuators/CoordinateActuator.h>
-
 using namespace OpenSim;
 
 void MocoInverse::constructProperties() {
 
     constructProperty_kinematics(TableProcessor());
     constructProperty_kinematics_allow_extra_columns(false);
-    constructProperty_minimize_sum_squared_states(false);
+    constructProperty_minimize_sum_squared_activations(false);
     constructProperty_max_iterations();
-    constructProperty_tolerance(1e-3);
+    constructProperty_convergence_tolerance(1e-3);
+    constructProperty_constraint_tolerance(1e-3);
     constructProperty_output_paths();
     constructProperty_reserves_weight(1.0);
 }
@@ -53,7 +50,7 @@ std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
     Model model = get_model().process(getDocumentDirectory());
     model.initSystem();
 
-    TimeSeriesTable kinematics = 
+    TimeSeriesTable kinematics =
             get_kinematics().process(getDocumentDirectory(), &model);
 
     // Prescribe the kinematics.
@@ -90,37 +87,26 @@ std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
 
     // TODO: Allow users to specify costs flexibly.
     auto* effort = problem.addGoal<MocoControlGoal>("excitation_effort");
-    for (const auto& actu : model.getComponentList<CoordinateActuator>()) {
-        auto name = actu.getName();
-        if (std::regex_match(name, std::regex("^reserve_.*"))) {
-            effort->setWeightForControl(actu.getAbsolutePathString(), 
-                    get_reserves_weight());
-        }
-    }
+    effort->setWeightForControlPattern(".*/reserve_.*", get_reserves_weight());
 
     // Prevent "free" activation at the beginning of the motion.
     problem.addGoal<MocoInitialActivationGoal>("initial_activation");
 
-    if (get_minimize_sum_squared_states()) {
-        problem.addGoal<MocoSumSquaredStateGoal>("activation_effort");
+    if (get_minimize_sum_squared_activations()) {
+        auto* act_goal =
+            problem.addGoal<MocoSumSquaredStateGoal>("activation_effort");
+        act_goal->setPattern(".*activation$");
     }
 
     // Configure the MocoSolver.
     // -------------------------
     auto& solver = study.initCasADiSolver();
     solver.set_multibody_dynamics_mode("implicit");
-    OPENSIM_THROW_IF_FRMOBJ(get_tolerance() <= 0, Exception,
-            format("Tolerance must be positive, but got %g.", get_tolerance()));
-    solver.set_optim_convergence_tolerance(get_tolerance());
-    solver.set_optim_constraint_tolerance(get_tolerance());
-    solver.set_transcription_scheme("trapezoidal");
-    if (model.getWorkingState().getNMultipliers()) {
-        solver.set_transcription_scheme("hermite-simpson");
-        solver.set_enforce_constraint_derivatives(true);
-        solver.set_interpolate_control_midpoints(false);
-    }
+    solver.set_interpolate_control_midpoints(false);
     solver.set_minimize_implicit_auxiliary_derivatives(true);
     solver.set_implicit_auxiliary_derivatives_weight(0.01);
+    solver.set_optim_convergence_tolerance(get_convergence_tolerance());
+    solver.set_optim_constraint_tolerance(get_constraint_tolerance());
     // The sparsity detection works fine with DeGrooteFregly2016Muscle.
     solver.set_optim_sparsity_detection("random");
     // Forward is 3x faster than central.
@@ -129,7 +115,6 @@ std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
     if (!getProperty_max_iterations().empty()) {
         solver.set_optim_max_iterations(get_max_iterations());
     }
-
     return std::make_pair(
             study, posmotPtr->exportToTable(kinematics.getIndependentColumn()));
 }

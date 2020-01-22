@@ -98,6 +98,25 @@ public:
     }
 };
 
+/// Set the tendon compliance dynamics mode to "implicit" for all 
+/// DeGrooteFregly2016Muscle%s in the model.
+class OSIMMOCO_API ModOpUseImplicitTendonComplianceDynamicsDGF
+        : public ModelOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+        ModOpUseImplicitTendonComplianceDynamicsDGF, ModelOperator);
+
+public:
+    void operate(Model& model, const std::string&) const override {
+        model.finalizeFromProperties();
+        for (auto& muscle :
+                model.updComponentList<DeGrooteFregly2016Muscle>()) {
+            if (!muscle.get_ignore_tendon_compliance()) {
+                muscle.set_tendon_compliance_dynamics_mode("implicit");
+            }
+        }
+    }
+};
+
 /// Turn off passive fiber forces for all DeGrooteFregly2016Muscle%s in the
 /// model.
 class OSIMMOCO_API ModOpIgnorePassiveFiberForcesDGF : public ModelOperator {
@@ -135,6 +154,27 @@ public:
         for (auto& muscle :
                 model.updComponentList<DeGrooteFregly2016Muscle>()) {
             muscle.set_active_force_width_scale(get_scale_factor());
+        }
+    }
+};
+
+/// Set the fiber damping for all DeGrooteFregly2016Muscle%s in the model.
+class OSIMMOCO_API ModOpFiberDampingDGF : public ModelOperator {
+OpenSim_DECLARE_CONCRETE_OBJECT(ModOpFiberDampingDGF, ModelOperator);
+    OpenSim_DECLARE_PROPERTY(fiber_damping, double,
+            "The linear damping of the fiber (default: 0.0).")
+public:
+    ModOpFiberDampingDGF() {
+        constructProperty_fiber_damping(0);
+    }
+    ModOpFiberDampingDGF(double fiberDamping) : ModOpFiberDampingDGF() {
+        set_fiber_damping(fiberDamping);
+    }
+    void operate(Model& model, const std::string&) const override {
+        model.finalizeFromProperties();
+        for (auto& muscle :
+                model.updComponentList<DeGrooteFregly2016Muscle>()) {
+            muscle.set_fiber_damping(get_fiber_damping());
         }
     }
 };
@@ -252,31 +292,6 @@ public:
         model.initSystem();
         for (int i = 0; i < getProperty_joint_paths().size(); ++i) {
             ModelFactory::replaceJointWithWeldJoint(model, get_joint_paths(i));
-        }
-    }
-};
-
-/// Turn on or off path length approximation for all GeometryPath components in
-/// the model.
-class OSIMMOCO_API ModOpSetPathLengthApproximation : public ModelOperator {
-    OpenSim_DECLARE_CONCRETE_OBJECT(
-            ModOpSetPathLengthApproximation, ModelOperator);
-    OpenSim_DECLARE_PROPERTY(use_approximation, bool, "Whether or not to use "
-            "path length approximation for GeometryPath components. "
-            "Default: false.")
-
-public:
-    ModOpSetPathLengthApproximation() {
-        constructProperty_use_approximation(false);
-    }
-    ModOpSetPathLengthApproximation(bool useApproximation)
-            : ModOpSetPathLengthApproximation() {
-        set_use_approximation(useApproximation);
-    }
-    void operate(Model& model, const std::string&) const override {
-        model.finalizeFromProperties();
-        for (auto& geometryPath  : model.updComponentList<GeometryPath>()) {
-            geometryPath.set_use_approximation(get_use_approximation());
         }
     }
 };

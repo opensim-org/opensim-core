@@ -190,7 +190,7 @@ TEST_CASE("First order minimum effort.", "[analytic]")
                 T& cost) const override {
             cost = in.integral;
         }
-        void calc_cost_integrand(int cost_index, const Input<T>& in, 
+        void calc_cost_integrand(int cost_index, const Input<T>& in,
                 T& integrand) const override {
             integrand = in.controls[0] * in.controls[0];
         }

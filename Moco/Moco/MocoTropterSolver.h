@@ -72,7 +72,7 @@ public:
             "by the solver, or 'exact' for Jacobian calculations by "
             "tropter (default).");
     OpenSim_DECLARE_PROPERTY(optim_sparsity_detection, std::string,
-            "Iterate used to detect sparsity pattern of Jacobian/Hessian; "
+            "Trajectory used to detect sparsity pattern of Jacobian/Hessian; "
             "'random' (default) or 'initial-guess'");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(exact_hessian_block_sparsity_mode,
             std::string,
@@ -107,9 +107,13 @@ public:
     MocoTrajectory createGuess(const std::string& type = "bounds") const;
 
     // TODO document; any validation?
-    /// The number of time points in the iterate does *not* need to match
-    /// `num_mesh_intervals`; the iterate will be interpolated to the correct size.
-    /// This clears the `guess_file`, if any.
+    /// The number of time points in the trajectory does *not* need to match
+    /// `num_mesh_intervals`; the trajectory will be interpolated to the correct
+    /// size.
+    /// If you have updated the problem since the solver was initialized, you
+    /// may need to invoke MocoSolver::resetProblem() for the provided guess to
+    /// be recognized as compatible with the problem.
+    /// This clears the `guess_file`, if one exists.
     void setGuess(MocoTrajectory guess);
     /// Use this convenience function if you want to choose the type of guess
     /// used, but do not want to modify it first.
@@ -155,6 +159,10 @@ protected:
 
     // TODO ensure that user-provided guess is within bounds.
     MocoSolution solveImpl() const override;
+
+    /// Check that the provided guess is compatible with the problem and this
+    /// solver.
+    void checkGuess(const MocoTrajectory& guess) const;
 
 private:
     void constructProperties();

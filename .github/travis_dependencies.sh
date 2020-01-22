@@ -35,7 +35,8 @@ zip --symlinks --recurse-paths --quiet ~/to_deploy/$ZIPNAME moco_dependencies_in
 cd $TRAVIS_BUILD_DIR
 if [[ "$DEPLOY" = "yes" ]]; then PREP_SOURCEFORGE_SSH=0; else PREP_SOURCEFORGE_SSH=1; fi
 # Decrypt the private key stored in the repository to the tmp dir.
-if [ $PREP_SOURCEFORGE_SSH = "0" ]; then openssl aes-256-cbc -K $encrypted_115b27a55ea5_key -iv $encrypted_115b27a55ea5_iv -in .github/.deploy_myosin_sourceforge_rsa.enc -out /tmp/deploy_myosin_sourceforge_rsa -d; fi
+if [ $PREP_SOURCEFORGE_SSH = "0" ]; then openssl aes-256-cbc -K $encrypted_3d3280d08c79_key -iv $encrypted_3d3280d08c79_iv -in .github/.deploy_myosin_sourceforge_rsa.enc -out /tmp/deploy_myosin_sourceforge_rsa -d; fi
+
 # Start the ssh agent.
 if [ $PREP_SOURCEFORGE_SSH = "0" ]; then eval "$(ssh-agent -s)"; fi
 # Register this private key with this client (the travis machine).

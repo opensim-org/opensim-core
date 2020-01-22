@@ -5,45 +5,67 @@
 namespace OpenSim {
 /** @mainpage
 
-Moco is a module of OpenSim for solving optimal control problems for
-musculoskeletal systems defined as OpenSim models.
+Moco is a part of %OpenSim for solving optimal control problems for
+musculoskeletal systems defined as %OpenSim models.
 The package has Python, MATLAB, and XML (command-line) interfaces; the core
-library is written in C++. Here are some problems you can solve with Moco:
+library is written in C++.
 
-1. Solve for the muscle activity that tracks a known motion.
-2. Solve for a new motion that optimizes some cost (e.g., effort).
-3. Solve for mass properties that minimize residual (unrealistic) forces.
+@image html WhatIsMoco.png height=250px
 
-The optimal control problems are solved using the direct collocation method.
-Direct collocation itself is beyond the scope of this documentation; see
-the following excellent material:
+Here are some problems you can solve with Moco:
 
-  - Short paper: Kelly, M. (2017). An introduction to trajectory optimization:
-    how to do your own direct collocation. SIAM Review, 59(4), 849-904.
-    https://doi.org/10.1137/16M1062569
-  - Textbook: Betts, J. T. (2010). Practical methods for optimal control and
-    estimation using nonlinear programming (Vol. 19). Siam.
+- Solve for the muscle activity that tracks a known motion.
+- Solve for a new motion that optimizes some cost (e.g., effort).
+- Solve for mass properties that minimize residual (unrealistic) forces.
 
-Moco can solve specific classes of problems, such as motion tracking and muscle
-redundancy, and has a generic interface for solving custom optimal control
-problems. Solving a custom optimal control problem with direct collocation
-requires substantial tuning of the direct collocation method's settings. Use the
-more specific interfaces if possible.
-
-Where to start?
- - @ref mocotool "Solving for muscle activity that tracks an observed motion"
- - @ref mocostudy "Defining a custom optimization problem"
+Sections of the documentation:
+ - @ref gettingstarted
  - @ref mocouserguide "User Guide: Learning how to use Moco"
+    - @ref mocotool "Solving for muscle activity that tracks an observed motion"
+    - @ref mocostudy "Defining a custom optimization problem"
  - @ref mocotheoryguide "Theory Guide: Learning how Moco solves optimal control problems"
  - @ref mocodevguide "Developer Guide: Learning the Moco codebase and how to contribute"
- - @ref mocoapiref "Interface Reference"
+ - @ref mocoapiref "Interface (API) Reference"
+ - @ref mococheatsheet "Printable cheat sheet"
+ - @ref mocoexamples "List of examples"
 
+Other resources:
+ - [SimTK: downloads, user forum, and mailing lists](https://simtk.org/projects/opensim-moco)
+ - [GitHub: source code, bug reporting, and feature requests](https://github.com/opensim-org/opensim-moco)
+ - [bioRxiv preprint](https://www.biorxiv.org/content/10.1101/839381v1)
+ - [Webinar recording](https://opensim.stanford.edu/support/event_details.php?id=236&title=Webinar-OpenSim-Moco-Software-to-optimize-the-motion-and-control-of-OpenSim-models)
 
 @defgroup mocogoal Available goals
 
 These are the available goals you can use in your cost functional or as endpoint
 constraints. If none of these satisfy your needs, you can define your own using
 a plugin.
+
+
+@defgroup mocomodelutil Model and trajectory utilities
+
+These are utilities for visualizing model, editing a
+MocoTrajectory, and more.
+To use these utilities in MATLAB, prepend the function
+names with "opensimMoco."; for example, `opensimMoco.visualize()` or
+`org.opensim.modeling.opensimMoco.visualize()`.
+In Python, use `opensim.visualize()`.
+
+@defgroup moconumutil Numeric and data utilities
+
+Interpolate or resample data, and read/write tables.
+To use these utilities in MATLAB, prepend the function
+names with "opensimMoco."; for example, `opensimMoco.interpolate()` or
+`org.opensim.modeling.opensimMoco.interpolate()`.
+In Python, use `opensim.interpolate()`.
+
+@defgroup mocologutil String and logging utilities
+
+Easily format and log messages; intended for internal use by Moco.
+
+@defgroup mocogenutil Generic utilities
+
+Utilities for parallelism, strings, date/time, and error-checking.
 
 */
 

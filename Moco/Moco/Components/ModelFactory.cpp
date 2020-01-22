@@ -27,8 +27,8 @@
 
 using namespace OpenSim;
 
-using SimTK::Vec3;
 using SimTK::Inertia;
+using SimTK::Vec3;
 
 Model ModelFactory::createNLinkPendulum(int numLinks) {
     Model model;
@@ -97,14 +97,16 @@ Model ModelFactory::createPlanarPointMass() {
     auto* body = new Body("body", 1, Vec3(0), Inertia(0));
     model.addBody(body);
 
+    body->attachGeometry(new Sphere(0.05));
+
     auto* jointX = new SliderJoint("tx", model.getGround(), *intermed);
     auto& coordX = jointX->updCoordinate(SliderJoint::Coord::TranslationX);
     coordX.setName("tx");
     model.addJoint(jointX);
 
     // The joint's x axis must point in the global "+y" direction.
-    auto* jointY = new SliderJoint("ty",
-            *intermed, Vec3(0), Vec3(0, 0, 0.5 * SimTK::Pi),
+    auto* jointY = new SliderJoint("ty", 
+            *intermed, Vec3(0), Vec3(0, 0, 0.5 * SimTK::Pi), 
             *body, Vec3(0), Vec3(0, 0, .5 * SimTK::Pi));
     auto& coordY = jointY->updCoordinate(SliderJoint::Coord::TranslationX);
     coordY.setName("ty");
@@ -124,6 +126,32 @@ Model ModelFactory::createPlanarPointMass() {
         model.addForce(forceY);
     }
 
+    model.finalizeConnections();
+
+    return model;
+}
+
+Model ModelFactory::createSlidingPointMass() {
+    Model model;
+    model.setName("sliding_mass");
+    auto* body = new Body("body", 1.0, SimTK::Vec3(0), SimTK::Inertia(0));
+    model.addComponent(body);
+
+    // Allows translation along x.
+    auto* joint = new SliderJoint("slider", model.getGround(), *body);
+    auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
+    coord.setName("position");
+    model.addComponent(joint);
+
+    auto* actu = new CoordinateActuator();
+    actu->setName("actuator");
+    actu->setCoordinate(&coord);
+    actu->setOptimalForce(1);
+    actu->setMinControl(-10);
+    actu->setMaxControl(10);
+    model.addForce(actu);
+
+    model.finalizeConnections();
     return model;
 }
 
@@ -133,8 +161,8 @@ void ModelFactory::replaceMusclesWithPathActuators(OpenSim::Model &model) {
     // a list of pointers of the muscles to delete.
     std::vector<Muscle*> musclesToDelete;
     auto& muscleSet = model.updMuscles();
-    for (int i = 0; i < muscleSet.getSize(); ++i) {
-        auto& musc = muscleSet.get(i);
+    for (int im = 0; im < muscleSet.getSize(); ++im) {
+        auto& musc = muscleSet.get(im);
         auto* actu = new PathActuator();
         actu->setName(musc.getName());
         musc.setName(musc.getName() + "_delete");
@@ -142,20 +170,24 @@ void ModelFactory::replaceMusclesWithPathActuators(OpenSim::Model &model) {
         actu->setMinControl(musc.getMinControl());
         actu->setMaxControl(musc.getMaxControl());
 
+        model.addForce(actu);
+
+        // For the connectee names in the PathPoints to be correct, we must add
+        // the path points after adding the PathActuator to the model.
         const auto& pathPointSet = musc.getGeometryPath().getPathPointSet();
         auto& geomPath = actu->updGeometryPath();
-        for (int i = 0; i < pathPointSet.getSize(); ++i) {
-            auto* pathPoint = pathPointSet.get(i).clone();
+        for (int ip = 0; ip < pathPointSet.getSize(); ++ip) {
+            auto* pathPoint = pathPointSet.get(ip).clone();
             const auto& socketNames = pathPoint->getSocketNames();
             for (const auto& socketName : socketNames) {
                 pathPoint->updSocket(socketName)
-                        .connect(pathPointSet.get(i)
-                                         .getSocket(socketName)
-                                         .getConnecteeAsObject());
+                        .connect(pathPointSet.get(ip)
+                                .getSocket(socketName)
+                                .getConnecteeAsObject());
             }
             geomPath.updPathPointSet().adoptAndAppend(pathPoint);
         }
-        model.addComponent(actu);
+
         musclesToDelete.push_back(&musc);
     }
 
@@ -253,7 +285,7 @@ void ModelFactory::createReserveActuators(Model& model, double optimalForce,
         // Don't add a reserve if a CoordinateActuator already exists.
         bool skipCoord = false;
         if (skipCoordinatesWithExistingActuators) {
-            for (const auto& coordAct : 
+            for (const auto& coordAct :
                     modelCopy.getComponentList<CoordinateActuator>()) {
                 if (coordAct.getCoordinate() == &coord) {
                     skipCoord = true;

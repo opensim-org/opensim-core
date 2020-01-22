@@ -39,7 +39,7 @@
 
 using namespace OpenSim;
 
-std::string OpenSim::getFormattedDateTime(
+std::string OpenSim::getMocoFormattedDateTime(
         bool appendMicroseconds, std::string format) {
     using namespace std::chrono;
     auto now = system_clock::now();
@@ -51,8 +51,20 @@ std::string OpenSim::getFormattedDateTime(
     localtime_r(&time_now, &buf);
 #endif
     if (format == "ISO") { format = "%Y-%m-%dT%H:%M:%S"; }
+
+    // To get the date/time in the desired format, we would ideally use
+    // std::put_time, but that is not available in GCC < 5.
+    // https://stackoverflow.com/questions/30269657/what-is-an-intelligent-way-to-determine-max-size-of-a-strftime-char-array
+    int size = 32;
+    std::unique_ptr<char[]> formatted(new char[size]);
+    while (strftime(formatted.get(), size - 1, format.c_str(), &buf) == 0) {
+        size *= 2;
+        formatted.reset(new char[size]);
+    }
+
     std::stringstream ss;
-    ss << std::put_time(&buf, format.c_str());
+    ss << formatted.get();
+
     if (appendMicroseconds) {
         // Get number of microseconds since last second.
         auto microsec =
@@ -103,7 +115,6 @@ SimTK::Vector OpenSim::interpolate(const SimTK::Vector& x,
     OPENSIM_THROW_IF(x_no_nans.empty(), Exception,
             "Input vectors are empty (perhaps after removing NaNs).");
 
-
     PiecewiseLinearFunction function(
             (int)x_no_nans.size(), &x_no_nans[0], &y_no_nans[0]);
     SimTK::Vector newY(newX.size(), SimTK::NaN);
@@ -138,6 +149,37 @@ Storage OpenSim::convertTableToStorage(const TimeSeriesTable& table) {
                 row.size() ? row.getContiguousScalarData() : &unused);
     }
     return sto;
+}
+
+void OpenSim::updateStateLabels40(const Model& model,
+        std::vector<std::string>& labels) {
+
+    checkRedundantLabels(labels);
+
+    // Storage::getStateIndex() holds the logic for converting between
+    // new-style state names and old-style state names. When opensim-core is
+    // updated to put the conversion logic in a better place, we should update
+    // the implementation here.
+    Array<std::string> osimLabels;
+    osimLabels.append("time");
+    for (const auto& label : labels) {
+        osimLabels.append(label);
+    }
+    Storage sto;
+    sto.setColumnLabels(osimLabels);
+
+    const Array<std::string> stateNames = model.getStateVariableNames();
+    for (int isv = 0; isv < stateNames.size(); ++isv) {
+        int isto = sto.getStateIndex(stateNames[isv]);
+        if (isto == -1) continue;
+
+        // Skip over time.
+        osimLabels[isto + 1] = stateNames[isv];
+    }
+
+    for (int i = 1; i < osimLabels.size(); ++i) {
+        labels[i - 1] = osimLabels[i];
+    }
 }
 
 TimeSeriesTable OpenSim::filterLowpass(
@@ -202,7 +244,7 @@ void OpenSim::visualize(Model model, Storage statesSto) {
     std::string title = "Visualizing model '" + modelName + "'";
     if (!statesSto.getName().empty() && statesSto.getName() != "UNKNOWN")
         title += " with motion '" + statesSto.getName() + "'";
-    title += " (" + getFormattedDateTime(false, "ISO") + ")";
+    title += " (" + getMocoFormattedDateTime(false, "ISO") + ")";
     viz.setWindowTitle(title);
     viz.setMode(SimTK::Visualizer::RealTime);
     // Buffering causes issues when the user adjusts the "Speed" slider.
@@ -340,7 +382,7 @@ std::unique_ptr<Function> createFunction<GCVSpline>(
 } // anonymous namespace
 
 void OpenSim::prescribeControlsToModel(
-        const MocoTrajectory& iterate, Model& model, std::string functionType) {
+        const MocoTrajectory& trajectory, Model& model, std::string functionType) {
     // Get actuator names.
     model.initSystem();
     OpenSim::Array<std::string> actuNames;
@@ -352,11 +394,11 @@ void OpenSim::prescribeControlsToModel(
     // Add prescribed controllers to actuators in the model, where the control
     // functions are splined versions of the actuator controls from the OCP
     // solution.
-    const SimTK::Vector& time = iterate.getTime();
+    const SimTK::Vector& time = trajectory.getTime();
     auto* controller = new PrescribedController();
     controller->setName("prescribed_controller");
     for (int i = 0; i < actuNames.size(); ++i) {
-        const auto control = iterate.getControl(actuNames[i]);
+        const auto control = trajectory.getControl(actuNames[i]);
         std::unique_ptr<Function> function;
         if (functionType == "GCVSpline") {
             function = createFunction<GCVSpline>(time, control);
@@ -374,10 +416,11 @@ void OpenSim::prescribeControlsToModel(
     model.addController(controller);
 }
 
-MocoTrajectory OpenSim::simulateIterateWithTimeStepping(
-        const MocoTrajectory& iterate, Model model, double integratorAccuracy) {
+MocoTrajectory OpenSim::simulateTrajectoryWithTimeStepping(
+        const MocoTrajectory& trajectory, Model model,
+        double integratorAccuracy) {
 
-    prescribeControlsToModel(iterate, model, "PiecewiseLinearFunction");
+    prescribeControlsToModel(trajectory, model, "PiecewiseLinearFunction");
 
     // Add states reporter to the model.
     auto* statesRep = new StatesTrajectoryReporter();
@@ -386,18 +429,18 @@ MocoTrajectory OpenSim::simulateIterateWithTimeStepping(
     model.addComponent(statesRep);
 
     // Simulate!
-    const SimTK::Vector& time = iterate.getTime();
+    const SimTK::Vector& time = trajectory.getTime();
     SimTK::State state = model.initSystem();
     state.setTime(time[0]);
     Manager manager(model);
 
     // Set the initial state.
     {
-        const auto& matrix = iterate.getStatesTrajectory();
+        const auto& matrix = trajectory.getStatesTrajectory();
         TimeSeriesTable initialStateTable(
-                std::vector<double>{iterate.getInitialTime()},
+                std::vector<double>{trajectory.getInitialTime()},
                 SimTK::Matrix(matrix.block(0, 0, 1, matrix.ncol())),
-                iterate.getStateNames());
+                trajectory.getStateNames());
         auto statesTraj = StatesTrajectory::createFromStatesStorage(
                 model, convertTableToStorage(initialStateTable));
         state.setY(statesTraj.front().getY());
@@ -409,7 +452,7 @@ MocoTrajectory OpenSim::simulateIterateWithTimeStepping(
     manager.initialize(state);
     state = manager.integrate(time[time.size() - 1]);
 
-    // Export results from states reporter to a TimeSeries Table
+    // Export results from states reporter to a TimeSeriesTable
     TimeSeriesTable states = statesRep->getStates().exportToTable(model);
 
     const auto& statesTimes = states.getIndependentColumn();
@@ -581,13 +624,24 @@ void OpenSim::checkRedundantLabels(std::vector<std::string> labels) {
     std::sort(labels.begin(), labels.end());
     auto it = std::adjacent_find(labels.begin(), labels.end());
     OPENSIM_THROW_IF(it != labels.end(), Exception,
-            format("Multiple reference data provided for the variable %s.",
-                    *it));
+            format("Label '%s' appears more than once.", *it));
+}
+
+void OpenSim::checkLabelsMatchModelStates(const Model& model,
+        const std::vector<std::string>& labels) {
+    const auto modelStateNames = model.getStateVariableNames();
+    for (const auto& label : labels) {
+        OPENSIM_THROW_IF(modelStateNames.rfindIndex(label) == -1, Exception,
+            format("Expected the provided labels to match the model state "
+                   "names, but label %s does not correspond to any model "
+                    "state.", label));
+    }
 }
 
 MocoTrajectory OpenSim::createPeriodicTrajectory(
         const MocoTrajectory& in, std::vector<std::string> addPatterns,
         std::vector<std::string> negatePatterns,
+        std::vector<std::string> negateAndShiftPatterns,
         std::vector<std::pair<std::string, std::string>> symmetryPatterns) {
 
     const int oldN = in.getNumTimes();
@@ -632,8 +686,19 @@ MocoTrajectory OpenSim::createPeriodicTrajectory(
                 if (std::regex_match(name, regex)) {
                     matched = true;
                     const double& oldFinal = oldTraj.getElt(oldN - 1, i);
-                    newTraj.updBlock(oldN, i, oldN - 1, 1) =
-                            SimTK::Matrix(oldTraj.block(1, i, oldN - 1, 1).negate());
+                    newTraj.updBlock(oldN, i, oldN - 1, 1) = SimTK::Matrix(
+                            oldTraj.block(1, i, oldN - 1, 1).negate());
+                    break;
+                }
+            }
+
+            for (const auto& pattern : negateAndShiftPatterns) {
+                const auto regex = std::regex(pattern);
+                if (std::regex_match(name, regex)) {
+                    matched = true;
+                    const double& oldFinal = oldTraj.getElt(oldN - 1, i);
+                    newTraj.updBlock(oldN, i, oldN - 1, 1) = SimTK::Matrix(
+                            oldTraj.block(1, i, oldN - 1, 1).negate());
                     newTraj.updBlock(oldN, i, oldN - 1, 1).updCol(0) +=
                             2 * oldFinal;
                     break;
@@ -777,4 +842,52 @@ TimeSeriesTable OpenSim::createExternalLoadsTableForGait(Model model,
             externalForcesTable.flatten({"x", "y", "z"});
 
     return externalForcesTableFlat;
+}
+
+SimTK::Real OpenSim::solveBisection(
+        std::function<SimTK::Real(const SimTK::Real&)> calcResidual,
+        SimTK::Real left, SimTK::Real right, const SimTK::Real& tolerance,
+        int maxIterations) {
+    SimTK::Real midpoint = left;
+
+    OPENSIM_THROW_IF(maxIterations < 0, Exception,
+            format("Expected maxIterations to be positive, but got %i.",
+                    maxIterations));
+
+    const bool sameSign = calcResidual(left) * calcResidual(right) >= 0;
+    if (sameSign) {
+        const auto x = createVectorLinspace(1000, left, right);
+        TimeSeriesTable table;
+        table.setColumnLabels({"residual"});
+        SimTK::RowVector row(1);
+        for (int i = 0; i < x.nrow(); ++i) {
+            row[0] = calcResidual(x[i]);
+            table.appendRow(x[i], row);
+        }
+        // writeTableToFile(table, "DEBUG_solveBisection_residual.sto");
+    }
+    OPENSIM_THROW_IF(sameSign, Exception,
+            format("Function has same sign at bounds of %f and %f.", left,
+                    right));
+
+    SimTK::Real residualMidpoint;
+    SimTK::Real residualLeft = calcResidual(left);
+    int iterCount = 0;
+    while (iterCount < maxIterations && (right - left) > tolerance) {
+        midpoint = 0.5 * (left + right);
+        residualMidpoint = calcResidual(midpoint);
+        if (residualMidpoint * residualLeft < 0) {
+            // The solution is to the left of the current midpoint.
+            right = midpoint;
+        } else {
+            left = midpoint;
+            residualLeft = calcResidual(left);
+        }
+        ++iterCount;
+    }
+    if (iterCount == maxIterations) {
+        printMessage("Warning: bisection reached max iterations "
+                     "at x = %g.\n", midpoint);
+    }
+    return midpoint;
 }

@@ -74,7 +74,7 @@ MocoTrajectory MocoCasADiSolver::createGuess(const std::string& type) const {
 
 void MocoCasADiSolver::setGuess(MocoTrajectory guess) {
     // Ensure the guess is compatible with this solver/problem.
-    guess.isCompatible(getProblemRep(), true);
+    checkGuess(guess);
     clearGuess();
     m_guessFromAPI = std::move(guess);
 }
@@ -82,6 +82,22 @@ void MocoCasADiSolver::setGuessFile(const std::string& file) {
     clearGuess();
     set_guess_file(file);
 }
+
+void MocoCasADiSolver::checkGuess(const MocoTrajectory& guess) const {
+    OPENSIM_THROW_IF(get_multibody_dynamics_mode() == "implicit" &&
+            guess.hasCoordinateStates() &&
+            guess.getDerivativeNames().empty(),
+            Exception,
+            "'multibody_dynamics_mode' set to 'implicit' and coordinate states "
+            "exist in the guess, but no coordinate accelerations were found in "
+            "the guess. Consider using "
+            "MocoTrajectory::generateAccelerationsFromValues() or "
+            "MocoTrajectory::generateAccelerationsFromSpeeds() to construct an "
+            "appropriate guess.");
+    guess.isCompatible(
+            getProblemRep(), get_multibody_dynamics_mode() == "implicit", true);
+}
+
 void MocoCasADiSolver::clearGuess() {
     m_guessFromAPI = MocoTrajectory();
     m_guessFromFile = MocoTrajectory();
@@ -96,7 +112,7 @@ const MocoTrajectory& MocoCasADiSolver::getGuess() const {
             assert(m_guessFromAPI.empty());
             // No need to load from file again if we've already loaded it.
             MocoTrajectory guessFromFile(get_guess_file());
-            guessFromFile.isCompatible(getProblemRep(), true);
+            checkGuess(guessFromFile);
             m_guessFromFile = guessFromFile;
             m_guessToUse.reset(&m_guessFromFile);
         } else {
@@ -275,7 +291,7 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     OPENSIM_THROW_IF(get_implicit_multibody_accelerations_weight() < 0,
             Exception, format(
                 "Property implicit_multibody_accelerations_weight must be "
-                "non-negative, but it is set to %f.", 
+                "non-negative, but it is set to %f.",
                 get_implicit_multibody_accelerations_weight()));
     casSolver->setImplicitMultibodyAccelerationsWeight(
             get_implicit_multibody_accelerations_weight());
@@ -308,7 +324,8 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
 
     if (get_verbosity()) {
         std::cout << std::string(79, '=') << "\n";
-        std::cout << "MocoCasADiSolver starting.\n";
+        std::cout << "MocoCasADiSolver starting. ";
+        std::cout << getMocoFormattedDateTime(false, "%c") << "\n";
         std::cout << std::string(79, '-') << std::endl;
         getProblemRep().printDescription();
     }
@@ -324,18 +341,6 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     if (guess.empty()) {
         casGuess = casSolver->createInitialGuessFromBounds();
     } else {
-        OPENSIM_THROW_IF(get_multibody_dynamics_mode() == "implicit" &&
-                                 guess.hasCoordinateStates() &&
-                                 guess.getDerivativeNames().empty(),
-                Exception,
-                "'multibody_dynamics_mode' set to 'implicit' and coordinate states exist "
-                "in "
-                "the guess, but no coordinate accelerations were found in the "
-                "guess. Consider using "
-                "MocoTrajectory::generateAccelerationsFromValues() or "
-                "MocoTrajectory::generateAccelerationsFromSpeeds() to "
-                "construct an "
-                "appropriate guess.")
         casGuess = convertToCasOCIterate(guess);
     }
     CasOC::Solution casSolution = casSolver->solve(casGuess);
@@ -394,17 +399,19 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     const long long elapsed = stopwatch.getElapsedTimeInNs();
     setSolutionStats(mocoSolution, casSolution.stats.at("success"),
             casSolution.objective, casSolution.stats.at("return_status"),
-            casSolution.stats.at("iter_count"), SimTK::nsToSec(elapsed));
+            casSolution.stats.at("iter_count"), SimTK::nsToSec(elapsed),
+            casSolution.objective_breakdown);
 
     if (get_verbosity()) {
         std::cout << std::string(79, '-') << "\n";
         std::cout << "Elapsed real time: " << stopwatch.formatNs(elapsed)
                   << ".\n";
+        std::cout << getMocoFormattedDateTime(false, "%c") << "\n";
         if (mocoSolution) {
             std::cout << "MocoCasADiSolver succeeded!\n";
         } else {
-            std::cerr << "MocoCasADiSolver did NOT succeed:\n";
-            std::cerr << "  " << mocoSolution.getStatus() << "\n";
+            std::cout << "MocoCasADiSolver did NOT succeed:\n";
+            std::cout << "  " << mocoSolution.getStatus() << "\n";
         }
         std::cout << std::string(79, '=') << std::endl;
     }

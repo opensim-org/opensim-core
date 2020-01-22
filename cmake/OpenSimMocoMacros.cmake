@@ -45,38 +45,110 @@ function(MocoCopyDLLs)
 endfunction()
 
 # Add a target to the Moco project for building an example with the given
-# NAME. The example must be within a source file named ${NAME}.cpp.
-# This function also installs the example file with a CMakeLists that can find
-# the Moco installation and build the example.
+# NAME. The example must be within a source file named ${NAME}.cpp, or could
+# contain multiple executable files, listed via the EXECUTABLES argument
+# (omitting the .cpp extension). This function also installs the example files
+# with a CMakeLists that can find the Moco installation and build the example.
 #
 # This function can only be used from the source distribution of Moco
-# (e.g., not via the UseMoco.cmake file in a binary distribution).
+# (e.g., not via the UseOpenSimMoco.cmake file in a binary distribution).
 function(MocoAddExampleCXX)
     set(options)
     set(oneValueArgs NAME)
-    set(multiValueArgs RESOURCES)
+    set(multiValueArgs RESOURCES EXECUTABLES)
     cmake_parse_arguments(MOCOEX
             "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-    add_executable(${MOCOEX_NAME} ${MOCOEX_NAME}.cpp)
-    set_target_properties(${MOCOEX_NAME} PROPERTIES
-            FOLDER "Moco/Examples")
-    target_link_libraries(${MOCOEX_NAME} osimMoco)
+    if(NOT MOCOEX_EXECUTABLES)
+        set(MOCOEX_EXECUTABLES ${MOCOEX_NAME})
+    endif()
+
+    # Build the example in the build tree.
+    foreach(exe ${MOCOEX_EXECUTABLES})
+        add_executable(${exe} ${exe}.cpp)
+        set_target_properties(${exe} PROPERTIES FOLDER "Moco/Examples")
+        target_link_libraries(${exe} osimMoco)
+    endforeach()
     file(COPY ${MOCOEX_RESOURCES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 
+    # Install files so that users can build the example.
+    # We do not install pre-built binaries of the examples.
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
             DESTINATION ${MOCO_INSTALL_CPPEXDIR}
             PATTERN "CMakeLists.txt" EXCLUDE)
 
     set(_example_install_dir ${MOCO_INSTALL_CPPEXDIR}/${MOCOEX_NAME})
     # These next two variables are to be configured below (they are not used
-    # here, but within CMakeListsToInstall.txt.in).
+    # here, but within ExampleCMakeListsToInstall.txt.in).
+    set(_example_name ${MOCOEX_NAME})
+    set(_example_executables ${MOCOEX_EXECUTABLES})
+    file(RELATIVE_PATH _moco_install_hint
+            "${CMAKE_INSTALL_PREFIX}/${_example_install_dir}"
+            "${CMAKE_INSTALL_PREFIX}")
+    configure_file(
+            "${CMAKE_SOURCE_DIR}/Moco/Examples/C++/ExampleCMakeListsToInstall.txt.in"
+            "${CMAKE_CURRENT_BINARY_DIR}/CMakeListsToInstall.txt"
+            @ONLY)
+
+    install(FILES
+            "${CMAKE_CURRENT_BINARY_DIR}/CMakeListsToInstall.txt"
+            DESTINATION ${_example_install_dir}
+            RENAME CMakeLists.txt)
+endfunction()
+
+# Add a target to the Moco project for building an example containing a plugin
+# library and an executable.
+# The directory containing the CMakeLists.txt invoking this macro must have 3
+# source files: <MAIN>.h and <MAIN>.cpp are used to create the plugin, and
+# and exampleMAIN.cpp is compiled into an executable that uses the plugin.
+# This function also installs the example file with a CMakeLists that can find
+# the Moco installation and build the example.
+#
+# This function can only be used from the source distribution of Moco
+# (e.g., not via the UseOpenSimMoco.cmake file in a binary distribution).
+function(MocoAddPluginExampleCXX)
+    set(options)
+    set(oneValueArgs NAME)
+    set(multiValueArgs RESOURCES)
+    cmake_parse_arguments(MOCOEX
+            "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    add_library(osim${MOCOEX_NAME} SHARED
+            ${MOCOEX_NAME}.h
+            ${MOCOEX_NAME}.cpp
+            osim${MOCOEX_NAME}DLL.h
+            RegisterTypes_osim${MOCOEX_NAME}.h
+            RegisterTypes_osim${MOCOEX_NAME}.cpp
+            )
+    set_target_properties(osim${MOCOEX_NAME} PROPERTIES
+            FOLDER "Moco/Examples")
+    target_link_libraries(osim${MOCOEX_NAME} osimMoco)
+
+    string(TOUPPER ${MOCOEX_NAME} _example_name_upper)
+    set_target_properties(osim${MOCOEX_NAME} PROPERTIES
+            DEFINE_SYMBOL OSIM${_example_name_upper}_EXPORTS
+            )
+
+    add_executable(example${MOCOEX_NAME} example${MOCOEX_NAME}.cpp)
+    set_target_properties(example${MOCOEX_NAME} PROPERTIES
+            FOLDER "Moco/Examples")
+    target_link_libraries(example${MOCOEX_NAME} osim${MOCOEX_NAME})
+    file(COPY ${MOCOEX_RESOURCES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+            DESTINATION ${MOCO_INSTALL_CPPEXDIR}/Plugins
+            PATTERN "CMakeLists.txt" EXCLUDE)
+
+    set(_example_install_dir
+            ${MOCO_INSTALL_CPPEXDIR}/Plugins/example${MOCOEX_NAME})
+    # These next two variables are to be configured below (they are not used
+    # here, but within ExampleCMakeListsToInstall.txt.in).
     set(_example_name ${MOCOEX_NAME})
     file(RELATIVE_PATH _moco_install_hint
             "${CMAKE_INSTALL_PREFIX}/${_example_install_dir}"
             "${CMAKE_INSTALL_PREFIX}")
     configure_file(
-            "${CMAKE_SOURCE_DIR}/Moco/Examples/C++/CMakeListsToInstall.txt.in"
+            "${CMAKE_SOURCE_DIR}/Moco/Examples/C++/PluginExampleCMakeListsToInstall.txt.in"
             "${CMAKE_CURRENT_BINARY_DIR}/CMakeListsToInstall.txt"
             @ONLY)
 

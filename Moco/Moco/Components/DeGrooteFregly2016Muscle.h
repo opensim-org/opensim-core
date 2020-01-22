@@ -102,7 +102,7 @@ public:
             "Larger values make the curve wider. "
             "(default: 1.0).");
     OpenSim_DECLARE_PROPERTY(fiber_damping, double,
-            "The linear damping of the fiber (default: 0.01).");
+            "The linear damping of the fiber (default: 0).");
     OpenSim_DECLARE_PROPERTY(tendon_strain_at_one_norm_force, double,
             "Tendon strain at a tension of 1 normalized force.");
     OpenSim_DECLARE_PROPERTY(ignore_passive_fiber_force, bool,
@@ -619,14 +619,7 @@ public:
 
     /// @name Utilities
     /// @{
-    /// Given a residual lambda function and domain initial guess to the left
-    /// and right of a root, use bisection to find a root value.
-    SimTK::Real solveBisection(
-            std::function<SimTK::Real(const SimTK::Real&)> calcResidual,
-            SimTK::Real left, SimTK::Real right,
-            const SimTK::Real& xTolerance = 1e-6,
-            const SimTK::Real& yTolerance = 1e-6,
-            int maxIterations = 1000) const;
+
     /// Export the active force-length multiplier and passive force multiplier
     /// curves to a DataTable. If the normFiberLengths argument is omitted, we
     /// use createVectorLinspace(200, minNormFiberLength, maxNormFiberLength).
@@ -666,7 +659,7 @@ private:
     void constructProperties();
 
     void calcMuscleLengthInfoHelper(const SimTK::Real& muscleTendonLength,
-            const bool& ignoreTendonCompliance, MuscleLengthInfo& mli, 
+            const bool& ignoreTendonCompliance, MuscleLengthInfo& mli,
             const SimTK::Real& normTendonForce) const;
     void calcFiberVelocityInfoHelper(const SimTK::Real& muscleTendonVelocity,
             const SimTK::Real& activation, const bool& ignoreTendonCompliance,
@@ -676,8 +669,8 @@ private:
             const SimTK::Real& normTendonForceDerivative) const;
     void calcMuscleDynamicsInfoHelper(const SimTK::Real& activation,
             const SimTK::Real& muscleTendonVelocity,
-            const bool& ignoreTendonCompliance, const MuscleLengthInfo& mli, 
-            const FiberVelocityInfo& fvi, MuscleDynamicsInfo& mdi, 
+            const bool& ignoreTendonCompliance, const MuscleLengthInfo& mli,
+            const FiberVelocityInfo& fvi, MuscleDynamicsInfo& mdi,
             const SimTK::Real& normTendonForce) const;
     void calcMusclePotentialEnergyInfoHelper(const bool& ignoreTendonCompliance,
             const MuscleLengthInfo& mli, MusclePotentialEnergyInfo& mpei) const;

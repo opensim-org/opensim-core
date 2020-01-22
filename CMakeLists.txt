@@ -1,44 +1,47 @@
 cmake_minimum_required(VERSION 3.2)
-project(OpenSimMoco VERSION 0.1.0)
+project(OpenSimMoco VERSION 0.3.0)
 
 # Version.
 # --------
-set(VERSION_SUFFIX "")
+set(FULL_VERSION "")
 find_package(Git)
 if(Git_FOUND)
     # This command provides the annotated tag for the current commit, if it
     # exists, and returns an error if a tag does not exist.
     execute_process(
-            COMMAND git describe --exact-match
+            COMMAND "${GIT_EXECUTABLE}" describe --exact-match
             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
             RESULT_VARIABLE GIT_DESCRIBE_EXACT_MATCH_RETVAL
             OUTPUT_VARIABLE GIT_TAG
             OUTPUT_STRIP_TRAILING_WHITESPACE
-            OUTPUT_QUIET
             ERROR_QUIET
     )
     if(${GIT_DESCRIBE_EXACT_MATCH_RETVAL} EQUAL 0)
         # A tag exists.
+        set(FULL_VERSION ${GIT_TAG})
         # Do not add anything to the version.
     else()
         execute_process(
-                COMMAND git log -1 --format=%h
+                COMMAND "${GIT_EXECUTABLE}" log -1 --format=%h
                 WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                 OUTPUT_VARIABLE GIT_COMMIT_HASH
                 OUTPUT_STRIP_TRAILING_WHITESPACE
         )
         # Prepend date for sorting.
         execute_process(
-                COMMAND git show -s --format=%cd --date=short HEAD
+                COMMAND "${GIT_EXECUTABLE}" show -s --format=%cd --date=short HEAD
                 WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                 OUTPUT_VARIABLE GIT_COMMIT_DATE
                 OUTPUT_STRIP_TRAILING_WHITESPACE
         )
-        set(VERSION_SUFFIX "-${GIT_COMMIT_DATE}-${GIT_COMMIT_HASH}")
+        set(FULL_VERSION
+                "${PROJECT_VERSION}-${GIT_COMMIT_DATE}-${GIT_COMMIT_HASH}")
     endif()
 else()
-    set(VERSION_SUFFIX "?")
+    set(FULL_VERSION "${PROJECT_VERSION}?")
 endif()
+set(MOCO_FULL_VERSION "${FULL_VERSION}" CACHE STRING
+        "Full version string, containing git commit date/hash suffix." FORCE)
 
 # Moco settings.
 # --------------
@@ -147,7 +150,7 @@ if(${MOCO_INSTALL_UNIX_FHS})
     # Now set variables that depend on those set by GNUInstallDirs.
 
     set(MOCO_INSTALL_ARCHIVEDIR "${CMAKE_INSTALL_LIBDIR}")
-    set(MOCO_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/Moco")
+    set(MOCO_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/OpenSimMoco")
     # Location of the opensim python package in the installation.
     # On Ubuntu/Debian (apt-get), would want lib/python2.7/dist-packages.
     # We replace VERSION with the correct version once we know it (in
@@ -162,6 +165,7 @@ if(${MOCO_INSTALL_UNIX_FHS})
     set(MOCO_INSTALL_APIEXDIR "${CMAKE_INSTALL_DOCDIR}/Code")
     # Actually determined by OpenSim's OPENSIM_INSTALL_UNIX_FHS:
     set(MOCO_INSTALL_SIMBODYDIR ".")
+    set(MOCO_INSTALL_CASADIDIR ".")
 
 else()
 
@@ -182,6 +186,7 @@ else()
     set(MOCO_INSTALL_JAVASRCDIR sdk/Java)
     set(MOCO_INSTALL_APIEXDIR Resources/Code)
     set(MOCO_INSTALL_SIMBODYDIR sdk/Simbody)
+    set(MOCO_INSTALL_CASADIDIR sdk)
 
 endif()
 
@@ -243,8 +248,16 @@ set_package_properties(casadi PROPERTIES
         TYPE REQUIRED
         PURPOSE "Differentiation and optimizer interface.")
 get_filename_component(CASADI_BIN_DIR "${casadi_DIR}/../" ABSOLUTE)
+# Copy CasADi into our installation.
 MocoCopyDLLs(DEP_NAME casadi
         DEP_BIN_DIR "${CASADI_BIN_DIR}" INSTALL_DLLS "${CMAKE_INSTALL_BINDIR}")
+if(NOT WIN32)
+    # MocoCopyDLLs() only copies DLLs for Windows, but we still need
+    # the CasADi shared libraries on other platforms.
+    install(DIRECTORY "${CASADI_CMAKE_DIR}/../../../"
+            DESTINATION "${CMAKE_INSTALL_PREFIX}/${MOCO_INSTALL_CASADIDIR}"
+            USE_SOURCE_PERMISSIONS)
+endif()
 
 add_subdirectory(Moco)
 
