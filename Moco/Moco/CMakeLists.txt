@@ -120,7 +120,6 @@ set(MOCO_SOURCES
         MocoStudyFactory.cpp
         )
 if (MOCO_WITH_TROPTER)
-if(MOCO_WITH_TROPTER)
     list(APPEND MOCO_SOURCES
             tropter/TropterProblem.h
             tropter/TropterProblem.cpp
