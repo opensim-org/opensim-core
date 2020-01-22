@@ -425,6 +425,7 @@ TEST_CASE("Test MocoSumSquaredStateGoal") {
     std::string q1_str = q1.getAbsolutePathString() + "/value";
 
     SimTK::State state = model.initSystem();
+    MocoGoal::IntegrandInput input {0, state, {}};
     q0.setValue(state, 1.0);
     q1.setValue(state, 0.5);
 
@@ -436,7 +437,7 @@ TEST_CASE("Test MocoSumSquaredStateGoal") {
     // 1.00 + 0.25 = 1.25
     auto* goal = mp.addGoal<MocoSumSquaredStateGoal>();
     goal->initializeOnModel(model);
-    CHECK(goal->calcIntegrand(state) == Approx(1.25).margin(1e-6));
+    CHECK(goal->calcIntegrand(input) == Approx(1.25).margin(1e-6));
 
     // If one state weight given, use that state weight, but then also
     // set weight to all other states as 1.0.
@@ -444,7 +445,7 @@ TEST_CASE("Test MocoSumSquaredStateGoal") {
     auto* goal2 = mp.addGoal<MocoSumSquaredStateGoal>();
     goal2->setWeightForState(q1_str, 10.0);
     goal2->initializeOnModel(model);
-    CHECK(goal2->calcIntegrand(state) == Approx(3.5).margin(1e-6));
+    CHECK(goal2->calcIntegrand(input) == Approx(3.5).margin(1e-6));
 
     MocoWeightSet moco_weight_set;
     moco_weight_set.cloneAndAppend({q0_str, 0.5});
@@ -454,14 +455,14 @@ TEST_CASE("Test MocoSumSquaredStateGoal") {
     auto* goal3 = mp.addGoal<MocoSumSquaredStateGoal>();
     goal3->setWeightSet(moco_weight_set);
     goal3->initializeOnModel(model);
-    CHECK(goal3->calcIntegrand(state) == Approx(3.0).margin(1e-6));
+    CHECK(goal3->calcIntegrand(input) == Approx(3.0).margin(1e-6));
 
     // 0.5 * 1.00 + 10.0 * 0.25 = 3.0
     auto* goal4 = mp.addGoal<MocoSumSquaredStateGoal>();
     goal4->setWeightSet(moco_weight_set);
     goal4->setPattern(".*value$");
     goal4->initializeOnModel(model);
-    CHECK(goal4->calcIntegrand(state) == Approx(3.0).margin(1e-6));
+    CHECK(goal4->calcIntegrand(input) == Approx(3.0).margin(1e-6));
 
     // Throws since weight set has some names that don't match pattern.
     auto* goal5 = mp.addGoal<MocoSumSquaredStateGoal>();

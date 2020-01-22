@@ -1978,7 +1978,7 @@ TEST_CASE("Objective breakdown") {
 
     protected:
         void initializeOnModelImpl(const Model&) const override {
-            setNumIntegralsAndOutputs(0, 1);
+            setRequirements(0, 1);
         }
         void calcGoalImpl(
                 const GoalInput& input, SimTK::Vector& cost) const override {

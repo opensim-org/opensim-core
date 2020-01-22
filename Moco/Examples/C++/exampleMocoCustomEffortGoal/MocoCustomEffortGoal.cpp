@@ -21,13 +21,13 @@
 using namespace OpenSim;
 
 void MocoCustomEffortGoal::initializeOnModelImpl(const Model&) const {
-    setNumIntegralsAndOutputs(1, 1);
+    setRequirements(1, 1);
 }
 
 void MocoCustomEffortGoal::calcIntegrandImpl(
-        const SimTK::State& state, double& integrand) const {
-    getModel().realizeVelocity(state);
-    const auto& controls = getModel().getControls(state);
+        const IntegrandInput& input, double& integrand) const {
+    getModel().realizeVelocity(input.state);
+    const auto& controls = getModel().getControls(input.state);
     integrand = controls.normSqr();
 }
 

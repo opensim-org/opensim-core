@@ -86,12 +86,12 @@ protected:
     Mode getDefaultModeImpl() const override { return Mode::Cost; }
     bool getSupportsEndpointConstraintImpl() const override { return true; }
     void initializeOnModelImpl(const Model&) const override {
-        setNumIntegralsAndOutputs(1, 1);
+        setRequirements(1, 1);
     }
     void calcIntegrandImpl(
-            const SimTK::State& state, double& integrand) const override {
-        getModel().realizeVelocity(state);
-        const auto& controls = getModel().getControls(state);
+            const IntegrandInput& input, double& integrand) const override {
+        getModel().realizeVelocity(input.state);
+        const auto& controls = getModel().getControls(input.state);
         integrand = controls.normSqr();
     }
     void calcGoalImpl(

@@ -53,7 +53,7 @@ MocoStudy MocoStudyFactory::createLinearTangentSteeringStudy(
     public:
         OpenSim_DECLARE_CONCRETE_OBJECT(LinearTangentFinalSpeed, MocoGoal);
         void initializeOnModelImpl(const Model&) const override {
-            setNumIntegralsAndOutputs(0, 1);
+            setRequirements(0, 1);
         }
         void calcGoalImpl(
                 const GoalInput& input, SimTK::Vector& cost) const override {
