@@ -91,11 +91,12 @@ void MocoAccelerationTrackingGoal::initializeOnModelImpl(
     m_ref_splines = GCVSplineSet(accelerationTable.flatten(
         {"/acceleration_x", "/acceleration_y", "/acceleration_z"}));
 
-    setNumIntegralsAndOutputs(1, 1);
+    setRequirements(1, 1);
 }
 
-void MocoAccelerationTrackingGoal::calcIntegrandImpl(const SimTK::State& state, 
-        double& integrand) const {
+void MocoAccelerationTrackingGoal::calcIntegrandImpl(
+        const IntegrandInput& input, double& integrand) const {
+    const auto& state = input.state;
     const auto& time = state.getTime();
     getModel().realizeAcceleration(state);
     SimTK::Vector timeVec(1, time);

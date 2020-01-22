@@ -133,11 +133,12 @@ void MocoAngularVelocityTrackingGoal::initializeOnModelImpl(
     m_ref_splines = GCVSplineSet(angularVelocityTable.flatten(
         {"/angular_velocity_x", "/angular_velocity_y", "/angular_velocity_z"}));
 
-    setNumIntegralsAndOutputs(1, 1);
+    setRequirements(1, 1, SimTK::Stage::Velocity);
 }
 
 void MocoAngularVelocityTrackingGoal::calcIntegrandImpl(
-        const SimTK::State& state, double& integrand) const {
+        const IntegrandInput& input, double& integrand) const {
+    const auto& state = input.state;
     const auto& time = state.getTime();
     getModel().realizeVelocity(state);
     SimTK::Vector timeVec(1, time);
