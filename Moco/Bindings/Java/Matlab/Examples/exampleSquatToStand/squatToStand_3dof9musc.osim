@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <OpenSimDocument Version="40000">
-	<Model name="sitToStand">
+	<Model name="squatToStand">
 		<defaults>
 			<ControlLinear name="default">
 				<is_model_control>true</is_model_control>

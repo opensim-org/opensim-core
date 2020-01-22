@@ -119,7 +119,7 @@ inverse.setKinematics(tableProcessor);
 % Part 4c: Set the time range, mesh interval, and convergence tolerance.
 inverse.set_initial_time(0);
 inverse.set_final_time(1);
-inverse.set_mesh_interval(0.02);
+inverse.set_mesh_interval(0.05);
 inverse.set_convergence_tolerance(1e-4);
 inverse.set_constraint_tolerance(1e-4);
 

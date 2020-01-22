@@ -153,7 +153,7 @@ int main() {
     MocoSolution musclePredictSolutionNoCost = mocoMusclePredict.solve();
 
 
-    problemMusclePredict.addCost<MocoControlCost>();
+    problemMusclePredict.addGoal<MocoControlGoal>();
     solverMusclePredict.resetProblem(problemMusclePredict);
     solverMusclePredict.setGuess(musclePredictSolutionNoCost);
 
