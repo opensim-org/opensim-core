@@ -174,10 +174,8 @@
 					<dynamic_friction>0.3</dynamic_friction>
 					<viscous_friction>0.3</viscous_friction>
 					<transition_velocity>0.1</transition_velocity>
-                    <contact_sphere_radius>0.5</contact_sphere_radius>
-					<socket_sphere_frame>/bodyset/ball</socket_sphere_frame>
-					<contact_half_space_orientation>0 0 -1.5707963300000001</contact_half_space_orientation>
-					<socket_half_space_frame>/ground</socket_half_space_frame>
+					<socket_sphere>/contactgeometryset/sphere</socket_sphere>
+					<socket_half_space>/contactgeometryset/floor</socket_half_space>
 				</SmoothSphereHalfSpaceForce>
 			</objects>
 			<groups />
@@ -187,5 +185,21 @@
 			<objects />
 			<groups />
 		</MarkerSet>
+		<ContactGeometrySet name="contactgeometryset">
+			<objects>
+				<ContactHalfSpace name="floor">
+					<socket_frame> /ground </socket_frame>
+					<location>       0.00000000       0.00000000       0.00000000 </location>
+					<orientation>       0.00000000       0.00000000      -1.57079633 </orientation>
+				</ContactHalfSpace>
+				<ContactSphere name="sphere">
+					<socket_frame> /bodyset/ball </socket_frame>
+					<location>       0.00000000       0.00000000       0.00000000 </location>
+					<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+					<radius>       0.50000000 </radius>
+				</ContactSphere>
+			</objects>
+			<groups/>
+		</ContactGeometrySet>
 	</Model>
 </OpenSimDocument>

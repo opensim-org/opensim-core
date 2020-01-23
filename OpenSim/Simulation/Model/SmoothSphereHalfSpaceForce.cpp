@@ -38,37 +38,19 @@ SmoothSphereHalfSpaceForce::SmoothSphereHalfSpaceForce() {
 
 // Take over ownership of supplied object.
 SmoothSphereHalfSpaceForce::SmoothSphereHalfSpaceForce(const std::string& name,
-        const Frame& contactSphereBodyFrame, SimTK::Vec3 contactSphereLocation,
-        double contactSphereRadius, const Frame& contactHalfSpaceBodyFrame,
-        SimTK::Vec3 contactHalfSpaceLocation,
-        SimTK::Vec3 contactHalfSpaceOrientation) {
+        const ContactSphere& contactSphere,
+        const ContactHalfSpace& contactHalfSpace) {
     this->setName(name);
-    this->connectSocket_sphere_frame(contactSphereBodyFrame);
-    this->connectSocket_half_space_frame(contactHalfSpaceBodyFrame);
+    this->connectSocket_sphere(contactSphere);
+    this->connectSocket_half_space(contactHalfSpace);
 
     constructProperties();
-    set_contact_sphere_location(contactSphereLocation);
-    set_contact_sphere_radius(contactSphereRadius);
-    set_contact_half_space_location(contactHalfSpaceLocation);
-    set_contact_half_space_orientation(contactHalfSpaceOrientation);
-}
-
-SimTK::Transform
-SmoothSphereHalfSpaceForce::getHalfSpaceTransformInHalfSpaceFrame() const {
-    return {SimTK::Rotation(SimTK::BodyRotationSequence,
-                    get_contact_half_space_orientation()[0], SimTK::XAxis,
-                    get_contact_half_space_orientation()[1], SimTK::YAxis,
-                    get_contact_half_space_orientation()[2], SimTK::ZAxis),
-            get_contact_half_space_location()};
 }
 
 void SmoothSphereHalfSpaceForce::extendAddToSystem(
         SimTK::MultibodySystem& system) const {
 
     Super::extendAddToSystem(system);
-
-    const SimTK::Vec3& contactSphereLocation = get_contact_sphere_location();
-    const double& contactSphereRadius = get_contact_sphere_radius();
 
     double stiffness = get_stiffness();
     double dissipation = get_dissipation();
@@ -82,10 +64,8 @@ void SmoothSphereHalfSpaceForce::extendAddToSystem(
 
     SimTK::SmoothSphereHalfSpaceForce force(_model->updForceSubsystem());
 
-    const PhysicalFrame& contactSphereFrame =
-            getConnectee<PhysicalFrame>("sphere_frame");
-    const PhysicalFrame& contactHalfSpaceFrame =
-            getConnectee<PhysicalFrame>("half_space_frame");
+    const auto& sphere = getConnectee<ContactSphere>("sphere");
+    const auto& halfSpace = getConnectee<ContactHalfSpace>("half_space");
 
     force.setStiffness(stiffness);
     force.setDissipation(dissipation);
@@ -97,22 +77,19 @@ void SmoothSphereHalfSpaceForce::extendAddToSystem(
     force.setHertzSmoothing(bd);
     force.setHuntCrossleySmoothing(bv);
 
-    force.setContactSphereBody(contactSphereFrame.getMobilizedBody());
+    force.setContactSphereBody(sphere.getFrame().getMobilizedBody());
     force.setContactSphereLocationInBody(
-            contactSphereFrame.findTransformInBaseFrame() *
-            contactSphereLocation);
-    force.setContactSphereRadius(contactSphereRadius);
+            sphere.getFrame().findTransformInBaseFrame() *
+            sphere.get_location());
+    force.setContactSphereRadius(sphere.getRadius());
 
-    force.setContactHalfSpaceBody(contactHalfSpaceFrame.getMobilizedBody());
-
-    const SimTK::Transform halfSpaceFrame =
-            getHalfSpaceTransformInHalfSpaceFrame();
+    force.setContactHalfSpaceBody(halfSpace.getFrame().getMobilizedBody());
 
     force.setContactHalfSpaceFrame(
-            contactHalfSpaceFrame.findTransformInBaseFrame() * halfSpaceFrame);
+            halfSpace.getFrame().findTransformInBaseFrame() *
+            halfSpace.getTransform());
 
-    SmoothSphereHalfSpaceForce* mutableThis =
-            const_cast<SmoothSphereHalfSpaceForce*>(this);
+    auto* mutableThis = const_cast<SmoothSphereHalfSpaceForce*>(this);
     mutableThis->_index = force.getForceIndex();
 }
 
@@ -130,11 +107,6 @@ void OpenSim::SmoothSphereHalfSpaceForce::extendRealizeInstance(
 }
 
 void SmoothSphereHalfSpaceForce::constructProperties() {
-    constructProperty_contact_sphere_location(SimTK::Vec3(0));
-    constructProperty_contact_sphere_radius(0.0);
-    constructProperty_contact_half_space_location(SimTK::Vec3(0));
-    constructProperty_contact_half_space_orientation(
-            SimTK::Vec3(0, 0, -0.5 * SimTK::Pi));
     constructProperty_stiffness(1.0);
     constructProperty_dissipation(0.0);
     constructProperty_static_friction(0.0);
@@ -146,11 +118,6 @@ void SmoothSphereHalfSpaceForce::constructProperties() {
     constructProperty_hunt_crossley_smoothing(50.0);
     constructProperty_force_visualization_radius(0.01);
     constructProperty_force_visualization_scale_factor();
-
-    Appearance defaultAppearance;
-    defaultAppearance.set_color(SimTK::Cyan);
-    defaultAppearance.set_representation(VisualRepresentation::DrawWireframe);
-    constructProperty_Appearance(defaultAppearance);
 }
 
 //=============================================================================
@@ -184,15 +151,11 @@ OpenSim::Array<double> SmoothSphereHalfSpaceForce::getRecordValues(
 
     OpenSim::Array<double> values(1);
 
-    const PhysicalFrame& contactSphereFrame =
-            getConnectee<PhysicalFrame>("sphere_frame");
-    SimTK::MobilizedBodyIndex contactSphereIdx =
-            contactSphereFrame.getMobilizedBody();
+    const auto& sphere = getConnectee<ContactSphere>("sphere");
+    const auto sphereIdx = sphere.getFrame().getMobilizedBodyIndex();
 
-    const PhysicalFrame& contactHalfSpaceFrame =
-            getConnectee<PhysicalFrame>("half_space_frame");
-    SimTK::MobilizedBodyIndex contactHalfSpaceIdx =
-            contactHalfSpaceFrame.getMobilizedBody();
+    const auto& halfSpace = getConnectee<ContactHalfSpace>("half_space");
+    const auto halfSpaceIdx = halfSpace.getFrame().getMobilizedBodyIndex();
 
     const Model& model = getModel();
     const auto& forceSubsys = model.getForceSubsystem();
@@ -209,14 +172,14 @@ OpenSim::Array<double> SmoothSphereHalfSpaceForce::getRecordValues(
             state, bodyForces, particleForces, mobilityForces);
 
     // On sphere
-    const auto& thisBodyForce1 = bodyForces(contactSphereIdx);
+    const auto& thisBodyForce1 = bodyForces(sphereIdx);
     SimTK::Vec3 forces1 = thisBodyForce1[1];
     SimTK::Vec3 torques1 = thisBodyForce1[0];
     values.append(3, &forces1[0]);
     values.append(3, &torques1[0]);
 
     // On plane
-    const auto& thisBodyForce2 = bodyForces(contactHalfSpaceIdx);
+    const auto& thisBodyForce2 = bodyForces(halfSpaceIdx);
     SimTK::Vec3 forces2 = thisBodyForce2[1];
     SimTK::Vec3 torques2 = thisBodyForce2[0];
     values.append(3, &forces2[0]);
@@ -248,24 +211,22 @@ void SmoothSphereHalfSpaceForce::generateDecorations(bool fixed,
                 state, bodyForces, particleForces, mobilityForces);
 
         // Get the index to the associated contact sphere.
-        const PhysicalFrame& contactSphereFrame =
-                getConnectee<PhysicalFrame>("sphere_frame");
-        const SimTK::MobilizedBodyIndex& contactSphereIdx =
-                contactSphereFrame.getMobilizedBody();
+        const auto& sphere = getConnectee<ContactSphere>("sphere");
+        const auto& sphereIdx = sphere.getFrame().getMobilizedBodyIndex();
 
         // Get the translational force for the contact sphere associated with
         // this force element.
-        const auto& contactSphereForce = bodyForces(contactSphereIdx)[1];
+        const auto& sphereForce = bodyForces(sphereIdx)[1];
 
         // Scale the contact force vector and compute the cylinder length.
         const auto& scaledContactForce =
-                m_forceVizScaleFactor * contactSphereForce;
+                m_forceVizScaleFactor * sphereForce;
         const SimTK::Real length(scaledContactForce.norm());
 
         // Compute the force visualization transform.
         const SimTK::Vec3 contactSpherePosition =
-                contactSphereFrame.findStationLocationInGround(
-                        state, get_contact_sphere_location());
+                sphere.getFrame().findStationLocationInGround(
+                        state, sphere.get_location());
         const SimTK::Transform forceVizTransform(
                 SimTK::Rotation(SimTK::UnitVec3(scaledContactForce),
                         SimTK::YAxis),
@@ -277,54 +238,5 @@ void SmoothSphereHalfSpaceForce::generateDecorations(bool fixed,
         forceViz.setTransform(forceVizTransform);
         forceViz.setColor(SimTK::Vec3(0.0, 0.6, 0.0));
         geometry.push_back(forceViz);
-    }
-
-    if (!hints.get_show_contact_geometry()) return;
-
-    {
-        const PhysicalFrame& contactSphereFrame =
-                getConnectee<PhysicalFrame>("sphere_frame");
-        const auto sphereLocationInSphereMobod =
-                contactSphereFrame.findTransformInBaseFrame() *
-                get_contact_sphere_location();
-
-        geometry.push_back(
-                SimTK::DecorativeSphere(get_contact_sphere_radius())
-                        .setTransform(sphereLocationInSphereMobod)
-                        .setScale(1)
-                        .setRepresentation(
-                                get_Appearance().get_representation())
-                        .setBodyId(contactSphereFrame.getMobilizedBodyIndex())
-                        .setColor(get_Appearance().get_color())
-                        .setOpacity(get_Appearance().get_opacity()));
-    }
-    {
-
-        static const double brickHalfThickness = 0.0005;
-
-        const PhysicalFrame& contactHalfSpaceFrame =
-                getConnectee<PhysicalFrame>("half_space_frame");
-        // B: base Frame (Body or Ground)
-        // F: PhysicalFrame that the half-space is connected to
-        // P: the frame defined relative to F by the location and orientation
-        //    properties.
-        const auto& X_BF = contactHalfSpaceFrame.findTransformInBaseFrame();
-        const auto& X_FP = getHalfSpaceTransformInHalfSpaceFrame();
-        const auto X_BP = X_BF * X_FP;
-        // The brick is centered on the origin. To ensure the
-        // decorative geometry is within the contact geometry,
-        // we must offset by half the thickness of the brick.
-        SimTK::Transform X_within(SimTK::Vec3(brickHalfThickness, 0, 0));
-        geometry.push_back(
-                SimTK::DecorativeBrick(
-                        SimTK::Vec3(brickHalfThickness, 0.5, 0.5))
-                        .setTransform(X_BP * X_within)
-                        .setScale(1)
-                        .setRepresentation(
-                                get_Appearance().get_representation())
-                        .setBodyId(
-                                contactHalfSpaceFrame.getMobilizedBodyIndex())
-                        .setColor(get_Appearance().get_color())
-                        .setOpacity(get_Appearance().get_opacity()));
     }
 }
