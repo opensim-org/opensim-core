@@ -30,7 +30,7 @@ namespace OpenSim {
 /// the gravity acceleration vector (Model::get_gravity()) is non-zero, then the
 /// goal is normalized by the model's weight; otherwise, the goal is normalized
 /// by the model's mass. We assume the system's mass is constant (that is,
-/// MocoParmeters do not affect mass).
+/// MocoParameters do not affect mass).
 ///
 /// In addition to specifying the joint and reaction measures, the user may
 /// also specify the frame the loads are computed from ("parent" or "child"),

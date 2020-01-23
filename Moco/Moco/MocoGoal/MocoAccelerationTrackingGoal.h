@@ -25,6 +25,7 @@
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/Model/Frame.h>
+
 namespace OpenSim {
 
 /// The squared difference between a model frame origin's linear acceleration 

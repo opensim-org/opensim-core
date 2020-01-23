@@ -1,7 +1,7 @@
 Change Log
 ==========
 
-0.3.0 (in development)
+0.4.0 (in development)
 ----------------------
 - 2020-01-21: Introduce MocoGoal::getStageDependency() to improve efficiency of 
               goals.
@@ -10,7 +10,14 @@ Change Log
               Instead, Moco adds a DiscreteController to the model and the 
               solvers modify the DiscreteController's control signals.
               This change allows Moco to support synergies in the future.
-              
+
+
+0.3.0 
+-----
+- 2020-01-15: MocoContactTrackingGoal allows minimizing the error between
+              compliant contact forces and experimentally measured contact 
+              forces.
+
 - 2020-01-10: MocoSolution now provides a breakdown of terms in the cost 
               (only when using MocoCasADiSolver).
 
