@@ -1,8 +1,8 @@
 Change Log
 ==========
 
-0.3.0 (in development)
-----------------------
+0.3.0 
+-----
 - 2020-01-15: MocoContactTrackingGoal allows minimizing the error between
               compliant contact forces and experimentally measured contact 
               forces.
