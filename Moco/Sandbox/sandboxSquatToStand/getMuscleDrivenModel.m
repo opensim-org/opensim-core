@@ -38,10 +38,11 @@ for m = 0:model.getMuscles().getSize()-1
     musc = model.updMuscles().get(m);
     musc.setMinControl(0);
     musc.set_ignore_activation_dynamics(ignore_act_dyn);
-    musc.set_ignore_tendon_compliance(true);
+    musc.set_ignore_tendon_compliance(false);
     musc.set_max_isometric_force(2 * musc.get_max_isometric_force());
     dgf = DeGrooteFregly2016Muscle.safeDownCast(musc);
     dgf.set_active_force_width_scale(1.5);
+    dgf.set_tendon_compliance_dynamics_mode('implicit');
     if strcmp(char(musc.getName()), 'soleus_r')
         % Soleus has a very long tendon, so modeling its tendon as rigid
         % causes the fiber to be unrealistically long and generate
