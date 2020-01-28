@@ -36,10 +36,16 @@ public:
             "forces are summed and compared to an single ExternalForce.");
     OpenSim_DECLARE_PROPERTY(external_force_name, std::string,
             "The name of an ExternalForce object in the ExternalLoads set.");
+    OpenSim_DECLARE_LIST_PROPERTY(alternative_frame_paths, std::string,
+            "Paths to PhysicalFrames TODO.");
     MocoContactTrackingGoalGroup();
     MocoContactTrackingGoalGroup(
             const std::vector<std::string>& contactForcePaths,
             const std::string& externalForceName);
+    MocoContactTrackingGoalGroup(
+            const std::vector<std::string>& contactForcePaths,
+            const std::string& externalForceName,
+            const std::vector<std::string>& altFramePaths);
 private:
     void constructProperties();
 };
@@ -209,6 +215,9 @@ private:
             "ground. The vector can have any length.");
 
     void constructProperties();
+
+    int findRecordOffset(const MocoContactTrackingGoalGroup& group,
+            const std::string& appliedToBody) const;
 
     enum class ProjectionType {
         None,
