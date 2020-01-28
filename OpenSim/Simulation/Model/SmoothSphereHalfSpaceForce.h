@@ -35,6 +35,13 @@ component models contact between a single sphere and a single half space.
 This force does NOT use ContactGeometry objects; the description of the
 contact geometries is done through properties of this component.
 
+### Constant contact force
+
+This force applies a constant contact force even when the sphere and half-space
+are not contacting. This constant force is set with the constant_contact_force
+property. Its default value is appropriate for walking; the value may need to
+be adjusted for different contact scenarios or models with a very light mass.
+
 @see SimTK::SmoothSphereHalfSpaceForce
 
 The graph below compares the smooth approximation of the Hertz force to that
@@ -80,7 +87,7 @@ public:
             "The transition velocity, default is 0.01 (m/s).");
     OpenSim_DECLARE_PROPERTY(constant_contact_force, double,
             "The constant that enforces non-null derivatives, "
-            "default is 1e-5.");
+            "default is 1e-5 (N).");
     OpenSim_DECLARE_PROPERTY(hertz_smoothing, double,
             "The parameter that determines the smoothness of the transition "
             "of the tanh used to smooth the Hertz force. The larger the "

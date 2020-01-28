@@ -40,9 +40,9 @@ SmoothSphereHalfSpaceForce::SmoothSphereHalfSpaceForce() {
 SmoothSphereHalfSpaceForce::SmoothSphereHalfSpaceForce(const std::string& name,
         const ContactSphere& contactSphere,
         const ContactHalfSpace& contactHalfSpace) {
-    this->setName(name);
-    this->connectSocket_sphere(contactSphere);
-    this->connectSocket_half_space(contactHalfSpace);
+    setName(name);
+    connectSocket_sphere(contactSphere);
+    connectSocket_half_space(contactHalfSpace);
 
     constructProperties();
 }
