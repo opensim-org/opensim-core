@@ -86,6 +86,23 @@ void MocoFrameDistanceConstraint::initializeOnModelImpl(
         bounds.emplace_back(SimTK::square(minimum), SimTK::square(maximum));
     }
 
+    // Should the distances be projected onto a plane or vector?
+    if (get_projection() == "vector") {
+        m_projectionType = ProjectionType::Vector;
+    } else if (get_projection() == "plane") {
+        m_projectionType = ProjectionType::Plane;
+    } else if (get_projection() != "none") {
+        OPENSIM_THROW_FRMOBJ(
+                Exception, format("Expected 'projection' to be 'none', "
+                                  "'vector', or 'plane', but got '%s'.",
+                get_projection()));
+    }
+    if (m_projectionType != ProjectionType::None) {
+        OPENSIM_THROW_IF_FRMOBJ(getProperty_projection_vector().empty(),
+                Exception, "Must provide a value for 'projection_vector'.");
+        m_projectionVector = SimTK::UnitVec3(get_projection_vector());
+    }
+
     setNumEquations(nFramePairs);
     info.setBounds(bounds);
     const_cast<MocoFrameDistanceConstraint*>(this)->setConstraintInfo(info);
@@ -100,10 +117,23 @@ void MocoFrameDistanceConstraint::calcPathConstraintErrorsImpl(
         const auto& frame1_pos = frame_pair.first->getPositionInGround(state);
         const auto& frame2_pos = frame_pair.second->getPositionInGround(state);
         relative_position = frame2_pos - frame1_pos;
-        errors[iconstr++] = relative_position.normSqr();
+        SimTK::Vec3 projected;
+        if (m_projectionType == ProjectionType::None) {
+            projected = relative_position;
+        } else if (m_projectionType == ProjectionType::Vector) {
+            projected = SimTK::dot(relative_position, m_projectionVector) *
+                    m_projectionVector;
+        } else {
+            projected = relative_position -
+                        SimTK::dot(relative_position, m_projectionVector) *
+                                m_projectionVector;
+        }
+        errors[iconstr++] = projected.normSqr();
     }
 }
 
 void MocoFrameDistanceConstraint::constructProperties() { 
-    constructProperty_frame_pairs(); 
+    constructProperty_frame_pairs();
+    constructProperty_projection("none");
+    constructProperty_projection_vector();
 }
