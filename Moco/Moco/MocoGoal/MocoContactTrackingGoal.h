@@ -27,6 +27,23 @@ namespace OpenSim {
 /// A contact group is a single ExternalForce and a list of contact force
 /// components in the model whose forces are summed and compared to the
 /// ExternalForce.
+///
+/// ### Alternative frame paths
+///
+/// Contact force elements that correspond to a single ExternalForce are
+/// typically attached to the same single body/frame. However, it is possible
+/// that these contact force elements are spread over multiple bodies. For
+/// example, the ground reaction force for the left foot may be modeled by
+/// contact force elements on separate calcaneus and toe body segments.
+/// The "applied_to_body" property of the associated ExternalForce will match
+/// only one of these multiple bodies (e.g., only the calcaneus), causing Moco
+/// to give an error, saying one of the contact elements does not seem to be
+/// associated with the ExternalForce. To handle this situation, specify the
+/// *other* body (e.g., the toes) under alternative_frame_paths. Without
+/// specifying these alternative frames, Moco does not know which force to use
+/// (the force on the sphere or the force on the half-space) when summing the
+/// contact forces across contact force elements.
+///
 /// @see MocoContactTrackingGoal
 class OSIMMOCO_API MocoContactTrackingGoalGroup : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoContactTrackingGoalGroup, Object);
@@ -37,7 +54,9 @@ public:
     OpenSim_DECLARE_PROPERTY(external_force_name, std::string,
             "The name of an ExternalForce object in the ExternalLoads set.");
     OpenSim_DECLARE_LIST_PROPERTY(alternative_frame_paths, std::string,
-            "Paths to PhysicalFrames TODO.");
+            "If neither of the two bodies/frames of a contact force match "
+            "ExternalForce's applied_to_body, then one of the bodies/frames "
+            "must match one of these alternative frame paths.");
     MocoContactTrackingGoalGroup();
     MocoContactTrackingGoalGroup(
             const std::vector<std::string>& contactForcePaths,
@@ -165,6 +184,11 @@ public:
     }
     /// Add a group of contact forces whose sum should track the force data from
     /// a single ExternalForce.
+    /// If the contact force elements associated with a single ExternalForce are
+    /// distributed across multiple bodies use this function instead of the
+    /// easier-to-use addContactGroup(), and set the group's
+    /// alternative_frame_paths property accordingly. See
+    /// MocoContactTrackingGoalGroup for more information.
     void addContactGroup(MocoContactTrackingGoalGroup group) {
         append_contact_groups(std::move(group));
     }
@@ -216,7 +240,11 @@ private:
 
     void constructProperties();
 
-    int findRecordOffset(const MocoContactTrackingGoalGroup& group,
+    /// For a given contact force, find the starting index of the forces from
+    /// SmoothSphereHalfSpaceForce::getRecordValues().
+    int findRecordOffset(
+            const MocoContactTrackingGoalGroup& group,
+            const SmoothSphereHalfSpaceForce& contactForce,
             const std::string& appliedToBody) const;
 
     enum class ProjectionType {

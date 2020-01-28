@@ -1,7 +1,10 @@
 Change Log
 ==========
+
 0.4.0 (in development) 
 ----------------------
+- 2020-01-27: MocoContactTrackingGoal now handles scenarios where contact 
+              spheres are distributed across multiple bodies.
 
 
 0.3.0 
