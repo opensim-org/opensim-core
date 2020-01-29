@@ -56,6 +56,7 @@ void DeGrooteFregly2016Muscle::constructProperties() {
     constructProperty_default_normalized_tendon_force(0.5);
     constructProperty_active_force_width_scale(1.0);
     constructProperty_fiber_damping(0.0);
+    constructProperty_passive_fiber_strain_at_one_norm_force(0.6);
     constructProperty_tendon_strain_at_one_norm_force(0.049);
     constructProperty_ignore_passive_fiber_force(false);
     constructProperty_tendon_compliance_dynamics_mode("explicit");
@@ -108,6 +109,12 @@ void DeGrooteFregly2016Muscle::extendFinalizeFromProperties() {
             "%s: fiber_damping must be greater than or equal to zero, "
             "but it is %g.",
             getName().c_str(), get_fiber_damping());
+
+    SimTK_ERRCHK2_ALWAYS(get_passive_fiber_strain_at_one_norm_force() > 0,
+            "DeGrooteFregly2016Muscle::extendFinalizeFromProperties",
+            "%s: passive_fiber_strain_at_one_norm_force must be greater "
+            "than zero, but it is %g.",
+            getName().c_str(), get_passive_fiber_strain_at_one_norm_force());
 
     SimTK_ERRCHK2_ALWAYS(get_tendon_strain_at_one_norm_force() > 0,
             "DeGrooteFregly2016Muscle::extendFinalizeFromProperties",
@@ -911,6 +918,9 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
             actu->set_deactivation_time_constant(
                     musc->get_deactivation_time_constant());
             actu->set_fiber_damping(musc->get_fiber_damping());
+            actu->set_passive_fiber_strain_at_one_norm_force(
+                    musc->get_FiberForceLengthCurve()
+                            .get_strain_at_one_norm_force());
             actu->set_tendon_strain_at_one_norm_force(
                     musc->get_TendonForceLengthCurve()
                             .get_strain_at_one_norm_force());
@@ -925,6 +935,9 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
             // Fiber damping needs to be hardcoded at zero since it is not a
             // property of the Thelen2003 muscle.
             actu->set_fiber_damping(0);
+            actu->set_passive_fiber_strain_at_one_norm_force(
+                    musc->get_FmaxMuscleStrain());
+
             actu->set_tendon_strain_at_one_norm_force(
                     musc->get_FmaxTendonStrain());
 
