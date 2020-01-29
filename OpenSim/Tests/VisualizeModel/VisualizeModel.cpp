@@ -56,6 +56,11 @@ int main(int argc, char **argv)
         Model osimModel(modelFile);
         osimModel.print("updated_" + modelFile);
         osimModel.setUseVisualizer(true);
+        // If Geometry located in folders other than where .osim file is located or 
+        // or in Geometry folder neath the model file, then
+        // set additionalGeometrySearchPath to the folder containing mesh files 
+        // and uncomment the line below
+        //ModelVisualizer::addDirToGeometrySearchPaths(additionalGeometrySearchPath);
         osimModel.updDisplayHints().set_show_frames(false);
         SimTK::State& si = osimModel.initSystem();
         osimModel.equilibrateMuscles(si);
