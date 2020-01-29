@@ -123,15 +123,15 @@ private:
             "minimum and maximum bounds.");
 
     OpenSim_DECLARE_PROPERTY(projection, std::string,
-            "'none' (default): use full 3-D force error; "
-            "'vector': project force error onto projection_vector; "
-            "'plane': project force error onto the plane perpendicular "
+            "'none' (default): use full 3-D distance; "
+            "'vector': project distance onto projection_vector; "
+            "'plane': project distance onto the plane perpendicular "
             "to projection_vector.");
 
     OpenSim_DECLARE_OPTIONAL_PROPERTY(projection_vector, SimTK::Vec3,
-            "(optional) If provided, the force error is projected onto the "
+            "(optional) If provided, the distance is projected onto the "
             "plane perpendicular to this vector. The vector is expressed in "
-            "ground. The vector can have any length.");
+            "ground and can have any length.");
 
     void constructProperties();
 
