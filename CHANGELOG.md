@@ -2,7 +2,7 @@ Change Log
 ==========
 0.4.0 (in development) 
 ----------------------
-
+- 2020-01-28: Added a projection setting to MocoFrameDistanceConstraint.
 
 0.3.0 
 -----
