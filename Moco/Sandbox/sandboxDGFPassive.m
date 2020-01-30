@@ -27,8 +27,9 @@ fprintf('fn(1 + FmaxStrain): %f\n', passive_new(1 + FmaxStrain));
 
 syms k c x xm;
 y = (exp(k*(x - 1)/c) - exp(k*(xm - 1)/c)) / (exp(k) - exp(k*(xm - 1)/c))
-yint = simplify(int(y))
-simplify(diff(yint, x))
+yint = simplify(int(y));
+pretty(yint)
+pretty(simplify(diff(yint, x)))
 
 end
 
