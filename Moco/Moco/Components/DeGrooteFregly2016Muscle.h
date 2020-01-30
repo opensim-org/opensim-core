@@ -99,14 +99,17 @@ public:
             "initSystem().");
     OpenSim_DECLARE_PROPERTY(active_force_width_scale, double,
             "Scale factor for the width of the active force-length curve. "
-            "Larger values make the curve wider. "
-            "(default: 1.0).");
+            "Larger values make the curve wider. Default: 1.0.");
     OpenSim_DECLARE_PROPERTY(fiber_damping, double,
-            "The linear damping of the fiber (default: 0).");
-    OpenSim_DECLARE_PROPERTY(tendon_strain_at_one_norm_force, double,
-            "Tendon strain at a tension of 1 normalized force.");
+            "The linear damping of the fiber. Default: 0.");
     OpenSim_DECLARE_PROPERTY(ignore_passive_fiber_force, bool,
-            "Make the passive fiber force 0 (default: false).");
+            "Make the passive fiber force 0. Default: false.");
+    OpenSim_DECLARE_PROPERTY(passive_fiber_strain_at_one_norm_force, double,
+            "Fiber strain when the passive fiber force is 1 normalized force. "
+            "Default: 0.6.");
+    OpenSim_DECLARE_PROPERTY(tendon_strain_at_one_norm_force, double,
+            "Tendon strain at a tension of 1 normalized force. "
+            "Default: 0.049.");
     OpenSim_DECLARE_PROPERTY(tendon_compliance_dynamics_mode, std::string,
             "The dynamics method used to enforce tendon compliance dynamics. "
             "Options: 'explicit' or 'implicit'. Default: 'explicit'. ");
@@ -357,21 +360,26 @@ public:
 
     /// This is the passive force-length curve. The curve becomes negative below
     /// the minNormFiberLength.
+    ///
+    /// We modified this equation from that in the supplementary materials of De
+    /// Groote et al., 2016, which is the same function used in
+    /// Thelen2003Muscle. The version in the supplementary materials passes
+    /// through y = 0 at x = 1.0 and allows for negative forces. We do not want
+    /// negative forces within the allowed range of fiber lengths, so we
+    /// modified the equation to pass through y = 0 at x = 0.2. (This is not an
+    /// issue for Thelen2003Muscle because the curve is not smooth, and returns
+    /// 0 for lengths less than optimal fiber length.)
     SimTK::Real calcPassiveForceMultiplier(
             const SimTK::Real& normFiberLength) const {
-        // Passive force-length curve.
-
-        static const double denom = exp(kPE) - 1.0;
-        static const double numer_offset =
-                exp(kPE * (m_minNormFiberLength - 1.0) / e0);
-        // The version of this equation in the supplementary materials of De
-        // Groote et al., 2016 has an error. The correct equation passes
-        // through y = 0 at x = 0.2, and therefore is never negative within
-        // the allowed range of the fiber length. The version in the
-        // supplementary materials allows for negative forces.
-
         if (get_ignore_passive_fiber_force()) return 0;
-        return (exp(kPE * (normFiberLength - 1.0) / e0) - numer_offset) / denom;
+
+        const double& e0 = get_passive_fiber_strain_at_one_norm_force();
+
+        const double offset =
+                exp(kPE * (m_minNormFiberLength - 1.0) / e0);
+        const double denom = exp(kPE) - offset;
+
+        return (exp(kPE * (normFiberLength - 1.0) / e0) - offset) / denom;
     }
 
     /// This is the derivative of the passive force-length curve with respect to
@@ -380,8 +388,13 @@ public:
             const SimTK::Real& normFiberLength) const {
 
         if (get_ignore_passive_fiber_force()) return 0;
+
+        const double& e0 = get_passive_fiber_strain_at_one_norm_force();
+
+        const double offset = exp(kPE * (m_minNormFiberLength - 1) / e0);
+
         return (kPE * exp((kPE * (normFiberLength - 1)) / e0)) /
-               (e0 * (exp(kPE) - 1));
+               (e0 * (exp(kPE) - offset));
     }
 
     /// This is the integral of the passive force-length curve with respect to
@@ -391,10 +404,12 @@ public:
 
         if (get_ignore_passive_fiber_force()) return 0;
 
-        const auto temp1 = exp(-kPE) * SimTK::E * exp(-kPE / e0);
-        const auto temp2 = exp((kPE * normFiberLength) / e0);
-        const auto temp3 = e0 - kPE * normFiberLength;
-        return (temp1 * temp2 * temp3) / kPE;
+        const double& e0 = get_passive_fiber_strain_at_one_norm_force();
+
+        const double temp1 = exp(kPE * m_minNormFiberLength / e0);
+        const double denom = exp(kPE * (1.0 + 1.0 / e0)) - temp1;
+        const double temp2 = kPE / e0 * normFiberLength;
+        return (e0 / kPE * exp(temp2) - normFiberLength * temp1) / denom;
     }
 
     /// The normalized tendon force as a function of normalized tendon length.
@@ -746,8 +761,6 @@ private:
     // ---------------------------------------------------
     // Exponential shape factor.
     constexpr static double kPE = 4.0;
-    // Passive muscle strain due to max isometric force.
-    constexpr static double e0 = 0.6;
 
     // Parameters for the tendon force curve.
     // --------------------------------------
