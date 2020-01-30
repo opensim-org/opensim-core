@@ -96,16 +96,10 @@ private:
 /// @endcode
 /// This is an endpoint constraint goal by default.
 /// @ingroup mocogoal
-///
 class OSIMMOCO_API MocoPeriodicityGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoPeriodicityGoal, MocoGoal);
 
 public:
-    OpenSim_DECLARE_LIST_PROPERTY(state_pairs, MocoPeriodicityGoalPair, 
-            "Periodic pairs of states.");
-    OpenSim_DECLARE_LIST_PROPERTY(control_pairs, MocoPeriodicityGoalPair,
-            "Periodic pairs of controls.");
-
     MocoPeriodicityGoal();
     MocoPeriodicityGoal(std::string name) : MocoGoal(std::move(name)) {
         constructProperties();
@@ -137,6 +131,10 @@ protected:
     void printDescriptionImpl(std::ostream& stream = std::cout) const override;
 
 private:
+    OpenSim_DECLARE_LIST_PROPERTY(state_pairs, MocoPeriodicityGoalPair,
+            "Periodic pairs of states.");
+    OpenSim_DECLARE_LIST_PROPERTY(control_pairs, MocoPeriodicityGoalPair,
+            "Periodic pairs of controls.");
     void constructProperties();
     mutable std::vector<std::tuple<int, int, int>> m_indices_states;
     mutable std::vector<std::tuple<int, int, int>> m_indices_controls;

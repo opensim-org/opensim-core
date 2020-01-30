@@ -51,7 +51,7 @@ private:
 /// Any model component derived from Frame is valid to be included in a frame 
 /// pair, and any number of frame pairs may be append to this constraint via 
 /// addFramePair().
-/// 
+///
 /// This constraint can be used as a simple method for preventing bodies in your
 /// model from intersecting during an optimization. For example, the
 /// following prevents feet from intersecting during a walking optimization:
@@ -64,7 +64,10 @@ private:
 /// distance.addFramePair('/bodyset/calcn_l', '/bodyset/toes_r', 0.1, inf);
 /// distance.addFramePair('/bodyset/toes_l', '/bodyset/calcn_r', 0.1, inf);
 /// @endcode
-/// 
+///
+/// To project the frame distance onto a vector or plane before ensuring its
+/// within the provided bounds, use setProjection() and setProjectionVector().
+///
 /// @note This class represents a path constraint, *not* a model kinematic 
 /// constraint. Therefore, there are no Lagrange multipliers or constraint
 /// forces associated with this constraint. The model's force elements 
@@ -89,6 +92,24 @@ public:
             frame2_path, minimum_distance, maximum_distance));
     }
 
+    /// Set if each distance should be projected onto either a vector or
+    /// plane. Possible values: "none" (default), "vector", and "plane".
+    void setProjection(std::string projection) {
+        set_projection(std::move(projection));
+    }
+    std::string getProjection() const { return get_projection(); }
+
+    /// Set the vector to use for projecting each distance.
+    /// If the projection type is "vector", the distance is projected onto
+    /// the vector provided here. If the projection type is "plane", the
+    /// distance is projected onto the plane perpendicular to this vector.
+    void setProjectionVector(SimTK::Vec3 normal) {
+        set_projection_vector(std::move(normal));
+    }
+    /// Unset the projection vector.
+    void clearProjectionVector() { updProperty_projection_vector().clear(); }
+    SimTK::Vec3 getProjectionVector() const { return get_projection_vector(); }
+
 protected:
     void initializeOnModelImpl(
             const Model& model, const MocoProblemInfo&) const override;
@@ -98,10 +119,30 @@ protected:
 private:
     OpenSim_DECLARE_LIST_PROPERTY(frame_pairs, 
             MocoFrameDistanceConstraintPair, 
-            "Pairs of frames whose origins are constrained to be within minimum "
-            "and maximum bounds.");
+            "Pairs of frames whose origins are constrained to be within "
+            "minimum and maximum bounds.");
+
+    OpenSim_DECLARE_PROPERTY(projection, std::string,
+            "'none' (default): use full 3-D distance; "
+            "'vector': project distance onto projection_vector; "
+            "'plane': project distance onto the plane perpendicular "
+            "to projection_vector.");
+
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(projection_vector, SimTK::Vec3,
+            "(optional) If provided, the distance is projected onto the "
+            "plane perpendicular to this vector. The vector is expressed in "
+            "ground and can have any length.");
 
     void constructProperties();
+
+    enum class ProjectionType {
+        None,
+        Vector,
+        Plane
+    };
+    mutable ProjectionType m_projectionType = ProjectionType::None;
+    mutable SimTK::UnitVec3 m_projectionVector;
+
     mutable std::vector<std::pair<SimTK::ReferencePtr<const Frame>,
             SimTK::ReferencePtr<const Frame>>> m_frame_pairs;
 };
