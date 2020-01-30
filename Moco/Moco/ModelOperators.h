@@ -133,7 +133,7 @@ public:
     }
 };
 
-/// Set passive fiber stiffness for all DeGrooteFregly2016Muscle$%s in the
+/// Set passive fiber stiffness for all DeGrooteFregly2016Muscle%s in the
 /// model.
 class OSIMMOCO_API ModOpPassiveFiberStrainAtOneNormForceDGF
         : public ModelOperator {
