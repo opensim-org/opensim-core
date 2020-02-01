@@ -182,7 +182,7 @@ void MocoContactTrackingGoal::initializeOnModelImpl(const Model& model) const {
         m_groups.push_back(groupInfo);
     }
 
-    // Should the contact force errors be projected onto a plane?
+    // Should the contact force errors be projected onto a plane or vector?
     if (get_projection() == "vector") {
         m_projectionType = ProjectionType::Vector;
     } else if (get_projection() == "plane") {

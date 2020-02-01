@@ -3,6 +3,14 @@ Change Log
 
 0.4.0 (in development)
 ----------------------
+- 2020-01-29: DeGrooteFregly2016Muscle's passive force multiplier now has a
+              stiffness parameter. To support this change, the curve was 
+              tweaked slightly. This may have a minor effect on solutions
+              relying on passive fiber forces. The maximum difference between
+              the new and old passive force-length curves is 0.07 (unitless).
+
+- 2020-01-28: Added a projection setting to MocoFrameDistanceConstraint.
+
 - 2020-01-21: Introduce MocoGoal::getStageDependency() to improve efficiency of 
               goals.
               

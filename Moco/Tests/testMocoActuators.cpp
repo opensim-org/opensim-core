@@ -187,14 +187,31 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             REQUIRE_THROWS_AS(musc.finalizeFromProperties(),
                     SimTK::Exception::ErrorCheck);
         }
+        SECTION("passive_fiber_strain_at_one_norm_force") {
+            musc.set_passive_fiber_strain_at_one_norm_force(0);
+            REQUIRE_THROWS_AS(musc.finalizeFromProperties(),
+                    SimTK::Exception::ErrorCheck);
+        }
     }
 
     SECTION("printCurvesToSTOFiles") { muscle.printCurvesToSTOFiles(); }
 
     SECTION("Curve values") {
         CHECK(muscle.calcTendonForceMultiplier(1) == 0);
+
+        CHECK(muscle.calcTendonForceMultiplier(
+                      1 + muscle.get_tendon_strain_at_one_norm_force()) ==
+                Approx(1).epsilon(1e-10));
+
         CHECK(muscle.calcPassiveForceMultiplier(1) ==
-                Approx(0.018567).epsilon(1e-4));
+                Approx(0.0182288).epsilon(1e-4));
+        CHECK(muscle.calcPassiveForceMultiplier(0.2) ==
+                Approx(0).epsilon(1e-4));
+        CHECK(muscle.calcPassiveForceMultiplier(
+                      1 +
+                      muscle.get_passive_fiber_strain_at_one_norm_force()) ==
+                Approx(1).epsilon(1e-4));
+
         CHECK(muscle.calcActiveForceLengthMultiplier(1) == Approx(1));
         CHECK(muscle.calcForceVelocityMultiplier(-1) == 0);
         CHECK(muscle.calcForceVelocityMultiplier(0) == Approx(1));
@@ -814,7 +831,7 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
                     muscle.calcActiveForceLengthMultiplier(normFiberLength);
 
             CHECK(muscle.getFiberLength(state) == Approx(fiberLength));
-            CHECK(muscle.getNormalizedFiberLength(state) == Approx(0.930485));
+            CHECK(muscle.getNormalizedFiberLength(state) == Approx(0.9305004));
             CHECK(muscle.getPennationAngle(state) == Approx(pennationAngle));
             CHECK(muscle.getCosPennationAngle(state) ==
                     Approx(cosPennationAngle));
