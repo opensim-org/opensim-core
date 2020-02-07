@@ -67,9 +67,9 @@ track.setName('gaitTracking');
 %
 % Note: If GRFTrackingWeight is set to 0 then GRFs will not be tracked. Setting
 % GRFTrackingWeight to 1 will cause the total tracking error (states + GRF) to
-% have about the same magintude as control effort in the final objective value.
+% have about the same magnitude as control effort in the final objective value.
 controlEffortWeight = 10;
-stateTracingkWeight = 1;
+stateTrackingWeight = 1;
 GRFTrackingWeight   = 1;
 
 
@@ -80,7 +80,7 @@ tableProcessor.append(TabOpLowPassFilter(6));
 modelProcessor = ModelProcessor('2D_gait.osim');
 track.setModel(modelProcessor);
 track.setStatesReference(tableProcessor);
-track.set_states_global_tracking_weight(stateTracingkWeight);
+track.set_states_global_tracking_weight(stateTrackingWeight);
 track.set_allow_unused_references(true);
 track.set_track_reference_position_derivatives(true);
 track.set_apply_tracked_states_to_guess(true);

@@ -53,7 +53,8 @@ using namespace OpenSim;
 ///
 /// If GRFTrackingWeight is set to 0 then GRFs will not be tracked. Setting
 /// GRFTrackingWeight to 1 will cause the total tracking error (states + GRF) to
-/// have about the same magintude as control effort in the final objective value.
+/// have about the same magnitude as control effort in the final objective
+/// value.
 MocoSolution gaitTracking(double controlEffortWeight = 10,
         double stateTrackingWeight = 1,
         double GRFTrackingWeight = 1) {
