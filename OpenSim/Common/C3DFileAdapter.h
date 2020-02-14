@@ -73,7 +73,7 @@ public:
         <b>Python example</b>
         \code{.py}
         import opensim
-        C3DFileAdapter c3dFileAdapter;
+        c3dFileAdapter = opensim.C3DFileAdapter()
         c3dFileAdapter.setLocationForForceExpression(opensim.C3DFileAdapter.ForceLocation_CenterOfPressure);
         tables = c3dFileAdapter.read("myData.c3d")
         \endcode
