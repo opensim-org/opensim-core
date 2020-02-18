@@ -362,7 +362,7 @@ bool InverseKinematicsTool::run()
         for (int i = start_ix; i <= final_ix; ++i) {
             s.updTime() = times[i];
             ikSolver.track(s);
-            if (std::remainder(i - start_ix, 1000) == 0 && i != start_ix)
+            if (std::remainder(i - start_ix, 1000) == 0 && i != start_ix) // show progress line every 1000 frames
                 cout << "Solved " << i - start_ix << " frames.." << std::endl;
             if(_reportErrors){
                 Array<double> markerErrors(0.0, 3);
