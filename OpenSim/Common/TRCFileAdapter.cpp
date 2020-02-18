@@ -167,7 +167,8 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
     }
     
     const size_t expected{ column_labels.size() * 3 + 2 };
-    // Will read into in memory matrix, then create table from matrix
+    // Will first store data in a SimTK::Matrix to avoid expensive calls 
+    // to the table's appendRow() which reallocates and copies the whole table.
     int rowNumber = 0;
     int last_size = 1024; 
     SimTK::Matrix_<SimTK::Vec3> markerData{last_size, static_cast<int>(num_markers_expected)};
@@ -202,7 +203,7 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
         // Column 1 is time.
         times[rowNumber] = std::stod(row.at(1));
         rowNumber++;
-        if (std::remainder(rowNumber, last_size) == 0) {
+        if (rowNumber== last_size) {
             // resize all Data/Matrices, double the size  while keeping data
             int newSize = last_size * 2;
             times.resize(newSize);
@@ -224,11 +225,7 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
     auto table = std::make_shared<TimeSeriesTableVec3>(
             times, markerData, labels);
     table->updTableMetaData() = metaData;
-    /*
-    TimeSeriesTableVec3::DependentsMetaData dep_metadata{};
-    dep_metadata.setValueArrayForKey("labels", value_array);
-    table->setDependentsMetaData(dep_metadata);
-    */
+
     OutputTables output_tables{};
     output_tables.emplace(_markers, table);
 
