@@ -37,8 +37,8 @@ int main() {
     C3DFileAdapter c3d_adapter{};
     auto tables = c3d_adapter.read(filename);
 
-    auto& marker_table = c3d_adapter.getMarkersTable(tables);
-    auto& force_table = c3d_adapter.getForcesTable(tables);
+    auto marker_table = c3d_adapter.getMarkersTable(tables);
+    auto force_table = c3d_adapter.getForcesTable(tables);
 
     if(marker_table->getNumRows() != 0) {
         std::cout << "--------------Markers-----------------" << std::endl;
