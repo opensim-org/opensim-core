@@ -47,7 +47,6 @@ int main() {
     // DataTable and so both support the same operations. Below code 
     // demonstrates operations on only table1 but they are applicable to table2
     // as well. 
-    // table1 is an AbstractDataTable while table2 is TimeSeriesTableVec3
 
     // Metadata of the table.
     std::cout << table1.

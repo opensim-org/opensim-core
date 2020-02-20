@@ -32,7 +32,7 @@
 int main() {
     using namespace OpenSim;
 
-    std::string filename{"OpenSim/Tests/shared/walking5.c3d"};
+    std::string filename{"walking2.c3d"};
 
     C3DFileAdapter c3d_adapter{};
     auto tables = c3d_adapter.read(filename);
