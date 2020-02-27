@@ -274,7 +274,6 @@ bool InverseDynamicsTool::run()
                     << _lowpassCutoffFrequency << "..." << endl << endl;
                 _coordinateValues->pad(_coordinateValues->getSize()/2);
                 _coordinateValues->lowpassIIR(_lowpassCutoffFrequency);
-                if (getVerboseLevel()==Debug) _coordinateValues->print("coordinateDataFiltered.sto");
             }
             // Convert degrees to radian if indicated
             if(_coordinateValues->isInDegrees()){
