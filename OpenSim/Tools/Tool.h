@@ -53,10 +53,6 @@ OpenSim_DECLARE_ABSTRACT_OBJECT(Tool, Object);
 //=============================================================================
 protected:
     
-    /** Directory for reading inputs (model, settings, etc...) from. */
-    PropertyStr _inputsDirProp;
-    std::string &_inputsDir;
-    
     /** Directory for writing results (new model, states, etc...) to. */
     PropertyStr _resultsDirProp;
     std::string &_resultsDir;
@@ -77,8 +73,7 @@ public:
     /**
     * Default constructor.
     */
-    Tool() : _inputsDir(_inputsDirProp.getValueStr()),
-        _resultsDir(_resultsDirProp.getValueStr())
+    Tool() :_resultsDir(_resultsDirProp.getValueStr())
         { setNull(); };
     
     /**
@@ -91,7 +86,7 @@ public:
     * @param aUpdateFromXMLNode
     */
     Tool(const std::string &aFileName, bool aUpdateFromXMLNode = true):
-        Object(aFileName, true), _inputsDir(_inputsDirProp.getValueStr()),
+        Object(aFileName, true), 
         _resultsDir(_resultsDirProp.getValueStr()) {
             setNull();
             if(aUpdateFromXMLNode) updateFromXMLDocument();
@@ -102,8 +97,7 @@ public:
     *
     * @param aTool to be copied.
     */
-    Tool(const Tool &aTool) : _inputsDir(_inputsDirProp.getValueStr()),
-        _resultsDir(_resultsDirProp.getValueStr())
+    Tool(const Tool &aTool) : _resultsDir(_resultsDirProp.getValueStr())
         {setNull(); *this = aTool; };
 
 
@@ -114,7 +108,6 @@ private:
     void setNull() {
         setupProperties();
         _resultsDir = "./"; 
-        _inputsDir = "";
     };
     
     /**
@@ -127,11 +120,6 @@ private:
         _resultsDirProp.setComment(comment);
         _resultsDirProp.setName("results_directory");
         _propertySet.append( &_resultsDirProp );
-
-        comment = "Directory for input files";
-        _inputsDirProp.setComment(comment);
-        _inputsDirProp.setName("input_directory");
-        _propertySet.append( &_inputsDirProp );
     };
     
 
@@ -151,7 +139,6 @@ public:
         if (&source != this) {
             Super::operator=(source);   
             _resultsDir   = source._resultsDir; 
-            _inputsDir    = source._inputsDir;
         }
         return *this;
     }
@@ -175,11 +162,6 @@ public:
     //--------------------------------------------------------------------------
     // GET AND SET
     //--------------------------------------------------------------------------
-    /** 
-    * Get/set Inputs Directory
-    */
-    const std::string& getInputsDir() const { return _inputsDir; }
-    void setInputsDir(const std::string& aString) { _inputsDir = aString; }
     /** 
     * Get/set Results Directory
     */
