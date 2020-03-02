@@ -48,6 +48,7 @@
 #include "Model/CoordinateSet.h"
 #include "Model/ElasticFoundationForce.h"
 #include "Model/HuntCrossleyForce.h"
+#include "Model/SmoothSphereHalfSpaceForce.h"
 #include "Model/Ligament.h"
 #include "Model/Blankevoort1991Ligament.h"
 #include "Model/JointSet.h"
@@ -228,6 +229,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( ContactMesh() );
     Object::registerType( ContactSphere() );
     Object::registerType( CoordinateLimitForce() );
+    Object::registerType( SmoothSphereHalfSpaceForce() );
     Object::registerType( HuntCrossleyForce() );
     Object::registerType( ElasticFoundationForce() );
     Object::registerType( HuntCrossleyForce::ContactParameters() );

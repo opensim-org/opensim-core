@@ -41,8 +41,7 @@ class Model;
  * to line up the base IMU by its label in the orientation_file_for_calibration
  * e.g. 'pelvis imu' and its heading axis as +/- 'x', 'y', or 'z', are used to 
  * align all the IMU data so that base imu's heading (forward) is in the X direction 
- * of OpenSim's ground frame. If the base_imu_label is provided but no axis is provided,  
- * then the 'z' axis of the base IMU is used to perform the heading correction.
+ * of OpenSim's ground frame. 
  *
  * @author Ayman Habib, Ajay Seth
  */
@@ -60,17 +59,16 @@ public:
     OpenSim_DECLARE_PROPERTY(base_imu_label, std::string,
             "The label of the base IMU in the orientation_file_for_calibration used to account "
             "for the heading difference between the sensor data and the forward "
-            "direction of the model. Leave blank if no heading correction is applied."
-            "Default to pelvis_imu.");
+            "direction of the model. Leave blank if no heading correction is desired.");
 
     OpenSim_DECLARE_PROPERTY(base_heading_axis, std::string,
             "The axis of the base IMU that corresponds to its heading "
-            "direction. Options are 'x', '-x', 'y', '-y', 'z' or '-z'."
-            "Default to z.");
+            "direction. Options are 'x', '-x', 'y', '-y', 'z' or '-z'. "
+            "Leave blank if no heading correction is desired.");
 
     OpenSim_DECLARE_PROPERTY(sensor_to_opensim_rotations, SimTK::Vec3,
-            "Space fixed Euler angles (XYZ order) from IMU Space to OpenSim"
-            "Default (from Z up) to OpenSim (Y up, X forward).");
+            "Space fixed Euler angles (XYZ order) from IMU Space to OpenSim. "
+            "Default (0, 0, 0).");
 
     OpenSim_DECLARE_PROPERTY(orientation_file_for_calibration, std::string,
             "Name/path to a .sto file of sensor frame orientations as "

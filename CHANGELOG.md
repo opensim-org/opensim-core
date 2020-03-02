@@ -6,6 +6,10 @@ request related to the change, then we may provide the commit.
 
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
 
+v4.2
+====
+- 
+
 v4.1
 ====
 - Added `OrientationsReference` as the frame orientation analog to the location of experimental markers. Enables experimentally measured orientations from wearable sensors (e.g. from IMUs) to be tracked by reference frames in the model. A correspondence between the experimental (IMU frame) orientation column label and that of the virtual frame on the `Model` is expected. The `InverseKinematicsSolver` was extended to simultaneously track the `OrientationsReference` if provided. (PR #2412)
@@ -21,6 +25,9 @@ v4.1
 - Updated the docopt.cpp dependency so that OpenSim can be compiled with Visual C++ from Visual Studio 2019.
 - Added `Blankevoort1991Ligament` force component which represents ligament fibers as non-linear path springs. The force-strain curve has a quadratic toe region at low strains and a linear stiffness region at high strains. (PR #2632)  
 - Updated Simbody to 3.7 to fix an issue with the simbody-visualizer on macOS 10.15 Catalina.
+- On Mac and Linux, we include a shell script opensim-install-command-line.sh to make OpenSim's command-line tools easily accessible.
+- Added the compliant SmoothSphereHalfSpaceForce component, for use with direct collocation and Moco.
+ 
 
 Converting from v4.0 to v4.1
 ----------------------------

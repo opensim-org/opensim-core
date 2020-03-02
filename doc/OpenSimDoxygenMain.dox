@@ -95,7 +95,7 @@ model components, such as body, constraint, or joint.
         <td rowspan="2">
             <img src="images/DoxygenFrontPage_small_07.gif" width="3" height="101" alt=""></td>
         <td colspan="3">
-            <a href="https://simtk.org/api_docs/simbody/api_docs33/Simbody/html/classSimTK_1_1Optimizer.html"
+            <a href="https://simbody.github.io/3.7.0/classSimTK_1_1Optimizer.html"
                 onmouseover="window.status='SimTK::Optimizer';  return true;"
                 onmouseout="window.status='';  return true;">
                 <img src="images/Optimizer.gif" width="259" height="97" border="0" alt="SimTK::Optimizer"></a></td>
@@ -163,7 +163,7 @@ model components, such as body, constraint, or joint.
     </tr>
     <tr>
         <td colspan="10">
-            <a href="https://simtk.org/api_docs/simbody/api_docs33/Simbody/html/"
+            <a href="https://simbody.github.io/3.7.0/"
                 onmouseover="window.status='SimTK::System';  return true;"
                 onmouseout="window.status='';  return true;"
                 target = "_blank">
