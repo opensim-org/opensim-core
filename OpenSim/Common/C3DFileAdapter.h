@@ -96,7 +96,7 @@ public:
         \code{.m}
          c3dFileAdapter = C3DFileAdapter();
          c3dFileAdapter.setLocationForForceExpression(1);
-         tables = c3dFileAdapter.read("myData.c3d");
+         tables = c3dFileAdapter.read('myData.c3d');
          markersTable = c3dFileAdapter.getMarkersTable(tables);
          forcesTable = c3dFileAdapter.getForcesTable(tables);
         \endcode
