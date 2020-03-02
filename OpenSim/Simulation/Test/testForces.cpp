@@ -2256,21 +2256,25 @@ void testBlankevoort1991Ligament() {
 
     //Check that potential energy and spring and damping forces are zero
     //when the ligament is slack
-    ASSERT(results.getDependentColumn("strain")(0) < 0.0, __FILE__, __LINE__,
+    ASSERT(results.getDependentColumn("strain").getElt(0, 0) < 0.0,
+            __FILE__, __LINE__,
         "Expected Blankevoort1991Ligament to be slack at first time step of "
         "test case.");
 
-    ASSERT_EQUAL(results.getDependentColumn("potential_energy")(0), 0.0, 1e-3,
+    ASSERT_EQUAL(results.getDependentColumn("potential_energy").getElt(0, 0),
+            0.0, 1e-3,
         __FILE__, __LINE__,
         "Expected potential energy in Blankevoort1991Ligament to be "
         "equal to zero when the ligament is slack");
 
-    ASSERT_EQUAL(results.getDependentColumn("spring_force")(0), 0.0, 1e-3,
+    ASSERT_EQUAL(results.getDependentColumn("spring_force").getElt(0, 0),
+            0.0, 1e-3,
         __FILE__, __LINE__,
         "Expected spring_force in Blankevoort1991Ligament to be"
         "equal to zero when the ligament is slack");
 
-    ASSERT_EQUAL(results.getDependentColumn("damping_force")(0), 0.0, 1e-3,
+    ASSERT_EQUAL(results.getDependentColumn("damping_force").getElt(0, 0),
+            0.0, 1e-3,
         __FILE__, __LINE__,
         "Expected damping_force in Blankevoort1991Ligament to be"
         "equal to zero when the ligament is slack");
@@ -2283,24 +2287,26 @@ void testBlankevoort1991Ligament() {
 
     double transition_strain = lig->get_transition_strain();
 
-    ASSERT(results.getDependentColumn("strain")(toe_index) <
+    ASSERT(results.getDependentColumn("strain").getElt(toe_index, 0) <
         transition_strain, __FILE__, __LINE__,
         "Expected strain at the toe_index to be less than the "
         "transition_strain property in Blankevoort1991Ligament test.");
 
-    ASSERT(results.getDependentColumn("strain")(linear_index) >
+    ASSERT(results.getDependentColumn("strain").getElt(linear_index, 0) >
         transition_strain, __FILE__, __LINE__,
         "Expected strain at the linear_index to be greater than the "
         "transition_strain property in Blankevoort1991Ligament test.");
 
-    ASSERT(results.getDependentColumn("potential_energy")(linear_index) >
-        results.getDependentColumn("potential_energy")(toe_index),
+    ASSERT(results.getDependentColumn("potential_energy")
+                   .getElt(linear_index, 0) >
+                   results.getDependentColumn("potential_energy")
+                           .getElt(toe_index, 0),
         __FILE__, __LINE__,
         "Expexted potential_energy in the Blankevoort1991Ligament to be "
         "greater in the linear region compared to the toe region");
 
-    ASSERT(results.getDependentColumn("spring_force")(linear_index) >
-        results.getDependentColumn("spring_force")(toe_index),
+    ASSERT(results.getDependentColumn("spring_force").getElt(linear_index, 0) >
+        results.getDependentColumn("spring_force").getElt(toe_index, 0),
         __FILE__, __LINE__,
         "Expected the spring_force in the Blankevoort1991Ligament to be "
         " greater in the linear region compared to the toe region");
@@ -2375,4 +2381,4 @@ void testBlankevoort1991Ligament() {
         "Expected the strain in the Blankevoort1991Ligament at the input "
         "reference state be equal to the strain value input "
         "to setSlackLengthFromReferenceStrain().");
-    }
+}
