@@ -133,6 +133,35 @@ public:
     }
 };
 
+/// Set passive fiber stiffness for all DeGrooteFregly2016Muscle%s in the
+/// model.
+class OSIMMOCO_API ModOpPassiveFiberStrainAtOneNormForceDGF
+        : public ModelOperator {
+OpenSim_DECLARE_CONCRETE_OBJECT(
+        ModOpPassiveFiberStrainAtOneNormForceDGF, ModelOperator);
+    OpenSim_DECLARE_PROPERTY(passive_fiber_strain_at_one_norm_force, double,
+            "Fiber strain when the passive fiber force is 1 normalized force. "
+            "Default: 0.6.");
+
+public:
+    ModOpPassiveFiberStrainAtOneNormForceDGF() {
+        constructProperty_passive_fiber_strain_at_one_norm_force(0.6);
+    }
+    ModOpPassiveFiberStrainAtOneNormForceDGF(double value) :
+            ModOpPassiveFiberStrainAtOneNormForceDGF() {
+        set_passive_fiber_strain_at_one_norm_force(value);
+    }
+
+    void operate(Model& model, const std::string&) const override {
+        model.finalizeFromProperties();
+        for (auto& muscle :
+                model.updComponentList<DeGrooteFregly2016Muscle>()) {
+            muscle.set_passive_fiber_strain_at_one_norm_force(
+                    get_passive_fiber_strain_at_one_norm_force());
+        }
+    }
+};
+
 /// Scale the active fiber force curve width for all DeGrooteFregly2016Muscle%s
 /// in the model.
 class OSIMMOCO_API ModOpScaleActiveFiberForceCurveWidthDGF :
