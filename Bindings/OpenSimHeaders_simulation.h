@@ -109,6 +109,7 @@
 #include <OpenSim/Simulation/Model/PointForceDirection.h>
 #include <OpenSim/Simulation/Model/GeometryPath.h>
 #include <OpenSim/Simulation/Model/Ligament.h>
+#include <OpenSim/Simulation/Model/Blankevoort1991Ligament.h>
 
 #include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
 #include <OpenSim/Simulation/Model/ConstraintSet.h>
