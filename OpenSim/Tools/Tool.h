@@ -51,13 +51,13 @@ OpenSim_DECLARE_ABSTRACT_OBJECT(Tool, Object);
 //=============================================================================
 // DATA
 //=============================================================================
-protected:
+public:
     
-    /** Directory for writing results (new model, states, etc...) to. */
-    PropertyStr _resultsDirProp;
-    std::string &_resultsDir;
-    
-//=============================================================================
+    OpenSim_DECLARE_PROPERTY(results_directory, std::string,
+            "Name of the directory where results are written. Be default this "
+            "is the directory in which the setup file is be  executed.");
+
+    //=============================================================================
 // METHODS
 //=============================================================================
     //--------------------------------------------------------------------------
@@ -73,8 +73,8 @@ public:
     /**
     * Default constructor.
     */
-    Tool() :_resultsDir(_resultsDirProp.getValueStr())
-        { setNull(); };
+    Tool() { constructProperties();
+    };
     
     /**
     * Construct from file
@@ -86,66 +86,17 @@ public:
     * @param aUpdateFromXMLNode
     */
     Tool(const std::string &aFileName, bool aUpdateFromXMLNode = true):
-        Object(aFileName, true), 
-        _resultsDir(_resultsDirProp.getValueStr()) {
-            setNull();
-            if(aUpdateFromXMLNode) updateFromXMLDocument();
+        Object(aFileName, true) {
+            constructProperties();
+            updateFromXMLDocument();
         };
     
-    /**
-    * Copy constructor.
-    *
-    * @param aTool to be copied.
-    */
-    Tool(const Tool &aTool) : _resultsDir(_resultsDirProp.getValueStr())
-        {setNull(); *this = aTool; };
-
-
 private:
-    /**
-    * %Set all member variables to their null or default values.
-    */
-    void setNull() {
-        setupProperties();
-        _resultsDir = "./"; 
-    };
-    
-    /**
-    * Connect properties to local pointers.
-    */
-    void setupProperties()
-    {
-        std::string comment;
-        comment = "Directory used for writing results.";
-        _resultsDirProp.setComment(comment);
-        _resultsDirProp.setName("results_directory");
-        _propertySet.append( &_resultsDirProp );
-    };
-    
-
-
-    //--------------------------------------------------------------------------
-    // OPERATORS
-    //--------------------------------------------------------------------------
-public:
-#ifndef SWIG
-    
-    /**
-    * Assignment operator.
-    *
-    * @return Reference to this object.
-    */
-    Tool& operator=(const Tool& source) {
-        if (&source != this) {
-            Super::operator=(source);   
-            _resultsDir   = source._resultsDir; 
-        }
-        return *this;
+    void constructProperties() { 
+        constructProperty_results_directory("./");
     }
 
-#endif
-
-
+public:
     //--------------------------------------------------------------------------
     // INTERFACE
     //--------------------------------------------------------------------------
@@ -163,10 +114,10 @@ public:
     // GET AND SET
     //--------------------------------------------------------------------------
     /** 
-    * Get/set Results Directory
+    * Get/set Results Directory, will replace with Property accessors eventually
     */
-    const std::string& getResultsDir() const { return _resultsDir; }
-    void setResultsDir(const std::string& aString) { _resultsDir = aString; }
+    const std::string& getResultsDir() const { return get_results_directory(); }
+    void setResultsDir(const std::string& aString) { set_results_directory(aString); }
 
 //=============================================================================
 };  // END of class Tool
