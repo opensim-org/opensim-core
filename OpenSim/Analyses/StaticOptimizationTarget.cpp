@@ -38,7 +38,7 @@ using SimTK::Vector;
 using SimTK::Matrix;
 using SimTK::Real;
 
-#define USE_LINEAR_CONSTRAINT_MATRIX
+//#define USE_LINEAR_CONSTRAINT_MATRIX
 
 const double StaticOptimizationTarget::SMALLDX = 1.0e-14;
 //const double StaticOptimizationTarget::_activationExponent = 2.0;
@@ -89,9 +89,11 @@ StaticOptimizationTarget(const SimTK::State& s, Model *aModel,int aNP,int aNC, b
 bool StaticOptimizationTarget::
 prepareToOptimize(SimTK::State& s, double *x)
 {
-    // COMPUTE MAX ISOMETRIC FORCE
     const ForceSet& fSet = _model->getForceSet();
+#ifdef USE_LINEAR_CONSTRAINT_MATRIX
+    // COMPUTE MAX ISOMETRIC FORCE
     
+    int imus(0);
     for(int i=0, j=0;i<fSet.getSize();i++) {
         ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet.get(i));
          if( act ) {
@@ -101,11 +103,12 @@ prepareToOptimize(SimTK::State& s, double *x)
                 //ActivationFiberLengthMuscle *aflmus = dynamic_cast<ActivationFiberLengthMuscle*>(mus);
                 if(mus && _useMusclePhysiology) {
                     _model->setAllControllersEnabled(true);
-                    fOpt = mus->calcInextensibleTendonActiveFiberForce(s, 1.0);
+                    fOpt = mus->calcInextensibleTendonActiveFiberForce(s, x[imus]) / x[imus];
                     _model->setAllControllersEnabled(false);
                 } else {
                     fOpt = mus->getMaxIsometricForce();
                 }
+                imus++;
              } else {
                   fOpt = act->getOptimalForce();
              }
@@ -113,7 +116,6 @@ prepareToOptimize(SimTK::State& s, double *x)
          }
     }
 
-#ifdef USE_LINEAR_CONSTRAINT_MATRIX
     //cout<<"Computing linear constraint matrix..."<<endl;
     int np = getNumParameters();
     int nc = getNumConstraints();
@@ -130,9 +132,18 @@ prepareToOptimize(SimTK::State& s, double *x)
     for(int p=0; p<np; p++) {
         pVector[p] = 1;
         computeConstraintVector(s, pVector, cVector);
-        for(int c=0; c<nc; c++) _constraintMatrix(c,p) = (cVector[c] - _constraintVector[c]);
+        for(int c=0; c<nc; c++) _constraintMatrix(c,p) = cVector[c];
         pVector[p] = 0;
     }
+#else
+    // Set modeling options for Actuators to be overridden
+    for(int i=0; i<fSet.getSize(); i++) {
+        ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet.get(i));
+        if( act ) {
+            act->overrideActuation(s, false);
+        }
+    }
+
 #endif
 
     // return false to indicate that we still need to proceed with optimization
@@ -543,17 +554,14 @@ constraintFunc(const SimTK::Vector &parameters, const bool new_parameters, SimTK
     //QueryPerformanceFrequency(&frequency);
     //QueryPerformanceCounter(&start);
 
-#ifndef USE_LINEAR_CONSTRAINT_MATRIX
-
-    // Evaluate constraint function for all constraints and pick the appropriate component
-    computeConstraintVector(parameters,constraints);
-
-#else
-
+#ifdef USE_LINEAR_CONSTRAINT_MATRIX
     // Use precomputed constraint matrix
     //cout<<"Computing constraints assuming linear dependence..."<<endl;
     constraints = _constraintMatrix * parameters + _constraintVector;
-
+#else
+    // Evaluate constraint function for all constraints and pick the appropriate component
+    SimTK::State state(*this->getCurrentState());
+    computeConstraintVector(state, parameters,constraints);
 #endif
 
     //QueryPerformanceCounter(&stop);
@@ -631,17 +639,13 @@ constraintJacobian(const SimTK::Vector &parameters, const bool new_parameters, S
     //QueryPerformanceFrequency(&frequency);
     //QueryPerformanceCounter(&start);
 
-#ifndef USE_LINEAR_CONSTRAINT_MATRIX
-
-    // Compute gradient 
-    StaticOptimizationTarget::CentralDifferencesConstraint(this,&_dx[0],parameters,jac);
-
-#else
-
+#ifdef USE_LINEAR_CONSTRAINT_MATRIX
     // Use precomputed constraint matrix (works if constraint is linear)
     //cout<<"Computing constraint gradient assuming linear dependence..."<<endl;
     jac = _constraintMatrix;
-
+#else
+    // Compute gradient
+    StaticOptimizationTarget::CentralDifferencesConstraint(this,&_dx[0],parameters,jac);
 #endif
 
     //QueryPerformanceCounter(&stop);
@@ -660,9 +664,9 @@ void StaticOptimizationTarget::
 computeAcceleration(SimTK::State& s, const SimTK::Vector &parameters,SimTK::Vector &rAccel) const
 {
     // double time = s.getTime();
-    
 
     const ForceSet& fs = _model->getForceSet();
+#ifdef USE_LINEAR_CONSTRAINT_MATRIX
     for(int i=0,j=0;i<fs.getSize();i++)  {
         ScalarActuator *act = dynamic_cast<ScalarActuator*>(&fs.get(i));
          if( act ) {
@@ -670,12 +674,36 @@ computeAcceleration(SimTK::State& s, const SimTK::Vector &parameters,SimTK::Vect
              j++;
          }
     }
-
+#else
+    for(int i=0,j=0;i<fs.getSize();i++) {
+        Muscle *mus = dynamic_cast<Muscle*>(&fs.get(i));
+        if (mus){
+            mus->setActivation(s, parameters[j]);
+            ++j;
+        }
+    }
+    try{
+        _model->equilibrateMuscles(s);
+    } catch (const Exception& x) {
+        // If the muscle falls into some weird numerical error, try to just slightly change the activations
+        for(int i=0,j=0;i<fs.getSize();i++) {
+            Muscle *mus = dynamic_cast<Muscle*>(&fs.get(i));
+            if (mus){
+                if (parameters[j] < 1)
+                    mus->setActivation(s, parameters[j]+.001);
+                else
+                    mus->setActivation(s, parameters[j]-.001);
+                ++j;
+            }
+        }
+        _model->equilibrateMuscles(s);
+    }
+#endif
     _model->getMultibodySystem().realize(s,SimTK::Stage::Acceleration);
 
     SimTK::Vector udot = _model->getMatterSubsystem().getUDot(s);
 
-    for(int i=0; i<_accelerationIndices.getSize(); i++) 
+    for(int i=0; i<_accelerationIndices.getSize(); i++)
         rAccel[i] = udot[_accelerationIndices[i]];
 
     //QueryPerformanceCounter(&stop);

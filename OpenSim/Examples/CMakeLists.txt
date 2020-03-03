@@ -11,6 +11,7 @@ if(BUILD_API_EXAMPLES)
         MuscleExample
         CustomActuatorExample
         OptimizationExample_Arm26
+        StaticOptimizationExample
         checkEnvironment
         SimpleOptimizationExample
         SymbolicExpressionReporter
@@ -21,6 +22,7 @@ if(BUILD_API_EXAMPLES)
     add_subdirectory(ExampleHopperDevice)
     add_subdirectory(SymbolicExpressionReporter)
     add_subdirectory(DataTable)
+    add_subdirectory(StaticOptimizationExample)
 
 elseif()
 
