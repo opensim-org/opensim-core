@@ -22,7 +22,7 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-
+#include "Simbody.h"
 #include "osimToolsDLL.h"
 #include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/PropertyDblArray.h>
@@ -63,7 +63,7 @@ OpenSim_DECLARE_CONCRETE_OBJECT(InverseKinematicsTool, Tool);
 private:
     
     /** Pointer to the model being investigated. */
-    Model *_model;
+    SimTK::ReferencePtr<Model> _model;
 
     /** Name of the xml file used to deserialize or construct a model. */
     PropertyStr _modelFileNameProp;

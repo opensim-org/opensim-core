@@ -135,7 +135,6 @@ InverseKinematicsTool::InverseKinematicsTool(const InverseKinematicsTool &aTool)
 void InverseKinematicsTool::setNull()
 {
     setupProperties();
-    _model = NULL;
 }
 //_____________________________________________________________________________
 /**
@@ -274,10 +273,10 @@ bool InverseKinematicsTool::run()
     Kinematics* kinematicsReporter = nullptr;
     try{
         //Load and create the indicated model
-        if (!_model) {
+        if (_model.empty()) { 
             OPENSIM_THROW_IF_FRMOBJ(_modelFileName.empty(), Exception,
-                "No model filename was provided.");
-            _model = new Model(_modelFileName);
+                    "No model filename was provided.");
+            _model.reset(new Model(_modelFileName)); 
         }
         else
             modelFromFile = false;
@@ -472,7 +471,8 @@ bool InverseKinematicsTool::run()
             "please see messages window for details..."));
     }
 
-    if (modelFromFile) delete _model;
+    if (modelFromFile) 
+        _model.reset();
 
     return success;
 }
