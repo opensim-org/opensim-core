@@ -749,6 +749,9 @@ Thelen2003Muscle::initMuscleState(const SimTK::State& s,
     
     double phi    = 0.0; 
     double cosphi = 1.0; 
+    double sinphi = 0.0;
+    double tanphi = 0.;
+
 
     //Normalized quantities
     double tlN  = tl/tsl;
@@ -782,6 +785,15 @@ Thelen2003Muscle::initMuscleState(const SimTK::State& s,
 
     double Ke          = 0;  // Linearized local stiffness of the muscle
 
+    //MM 4 March 2020: additional numerical bounds to prevent
+    //                 cover a few additional nasty cases
+    // eTMin > 0: if the tendon goes slack the tendons force-length gradient
+    //            goes to zero. The Newton method will fail.
+    // fvMin > 0: if the fv multiplier hits zero then the gradient of fiber
+    //            force w.r.t. length goes to zero and the Newton method will
+    //            fail.
+    double eTMin = aSolTolerance*10;
+    double fvMin = aSolTolerance*10;
     //*******************************
     // Helper functions
     //Update position level quantities, only if they won't go singular
@@ -858,7 +870,123 @@ Thelen2003Muscle::initMuscleState(const SimTK::State& s,
         dlceN = dlce / (vmax*ofl);
         // Update the force-velocity multiplier
         fv = calcfvInv(ma, fal, dlceN, aSolTolerance, 100);
+
+        //Ensure that fv is in the allowed range
+        if(fv < fvMin){
+          fv    = fvMin;
+          dlceN = calcdlceN(ma,fal, ma*fal*fv);
+          dlce = dlceN*(vmax*ofl);
+          sinphi = sin(phi);
+          tanphi = sin(phi)/cos(phi);
+          dphi= getPennationModel().calcPennationAngularVelocity(
+                                            tanphi,lce,dlce);
+          dtl    = getPennationModel().calcTendonVelocity(cosphi,sinphi,dphi,
+                                                          lce,dlce,dml);
+        }
     };
+
+
+
+    // MM 4 March 2020
+    // Run the biesection method over tendon strain to get a good initial
+    // condition. To get some appropriately large bounds here we evaluate
+    // the fiber lengths that correspond to a big tendon strain (4!) and zero 
+    // tendon strain.
+    double eTDelta     = 1.0*get_FmaxTendonStrain();    
+    double eTStart     = eTDelta*2; 
+    double eTShortest  = eTStart - 2*eTDelta; //shortest eT in the limit
+    double eTLongest   = eTStart + 2*eTDelta; //longest eT in the limit
+
+    //Shorter than this is a problem: the tendon's force-length gradient
+    //goes to zero which means the Newton iteration will do nothing useful.
+
+
+    eTShortest = std::max(eTMin,eTShortest);
+
+    //Map the tendon lengths over to fiber lengths for the bisection method
+    //Make sure the bounds we are testing within the allowable range. Adjust
+    //the bounds if need be
+    double lceLongest  =
+        getPennationModel().calcFiberLength(ml, tsl*(1.0+eTShortest));
+    double lceShortest =
+        getPennationModel().calcFiberLength(ml, tsl*(1.0+eTLongest));
+
+    if(lceShortest >  getMinimumFiberLength() ){
+        lceShortest = getMinimumFiberLength();
+    }
+
+    double lceDelta  = (lceLongest-lceShortest)/4.0;
+    double lceBest   = 0.5*(lceLongest+lceShortest);
+
+    double lceLeft   = 0.;
+    double lceRight  = 0.;
+
+    double ferrLeft   = 0;
+    double ferrRight  = 0;
+    double ferrBest   = 1e100;
+
+    //Evaluate the initial solution
+    lce = lceBest;
+    positionFunc();
+    multipliersFunc();
+    fv = 1.0;
+    partialsFunc();
+    velocityFunc();
+    ferrFunc();    
+    ferrBest = ferr;
+    //10 Bisection iterations will bring us to a tendon length that is within
+    // 4 / 2^10 = 0.0039 of the true normalized strain. This translates directly
+    // into 0.0039 of the true force at equilibrium
+    unsigned int iterBisection =
+        std::max((unsigned int)(std::ceil(0.5*aMaxIterations)) ,
+                 (unsigned int)5 );
+
+    for(unsigned int i = 0; i<iterBisection; ++i) {
+        //Evaluate the left hand candidate
+        lceLeft = lceBest-lceDelta;
+        lce = lceLeft;
+        positionFunc();
+        multipliersFunc();
+        fv = 1.0;
+        partialsFunc();
+        velocityFunc();
+        ferrFunc();
+        ferrLeft = ferr;
+
+        //Evalute the right hand candidate
+        lceRight = lceBest+lceDelta;
+        lce = lceRight;
+        positionFunc();
+        multipliersFunc();
+        fv = 1.0;
+        partialsFunc();
+        velocityFunc();
+        ferrFunc();
+        ferrRight = ferr;
+
+        //Update the current best solution if one of the candidates is suitable
+        if(     std::abs(ferrLeft) < std::abs(ferrBest)
+            &&  std::abs(ferrLeft) <= std::abs(ferrRight)){
+            lceBest  = lceLeft;
+            ferrBest = ferrLeft;
+        }
+        if(    std::abs(ferrRight) < std::abs(ferrBest)
+            && std::abs(ferrRight) < std::abs(ferrLeft)){
+            lceBest  = lceRight;
+            ferrBest = ferrRight;            
+        }
+
+        //Reduce the step size
+        lceDelta = lceDelta*0.5;
+    }
+
+    double delta_lce_max = lceDelta*2.0;
+
+    //Polish up the root to tolerance using a text-book Newton's method
+    lce = lceBest;
+
+    double ferrPrev = ferrBest;
+    double lcePrev  = lceBest;
 
     //*******************************
     //Initialize the loop
@@ -886,57 +1014,45 @@ Thelen2003Muscle::initMuscleState(const SimTK::State& s,
     // newly estimated fv
     partialsFunc();
 
-    double ferrPrev = ferr;
-    double lcePrev = lce;
+    //MM 4 March 2020
+    //Removing the line search capability of the (original) Newton method
+    //implementation: this is less reliable then simply giving the Newton 
+    //method a very good initial condition by using the bisection method. 
+    //This will be a bit slower, but probably not noticeably so.
 
-    double h = 1.0;
+    //double h = 1.0;
+
+
     while( (abs(ferr) > aSolTolerance)  && (iter < aMaxIterations)) {
-        // Compute the search direction
+
         dferr_d_lce = dFmAT_dlce - dFt_d_lce;
-        h = 1.0;
+        delta_lce = - ferrPrev / dferr_d_lce;
 
-        while (abs(ferr) >= abs(ferrPrev)) {
-             // Compute the Newton step
-            delta_lce = -h*ferrPrev / dferr_d_lce;
-            // Take a Newton Step if the step is nonzero
-            if (abs(delta_lce) > SimTK::SignificantReal)
-                lce = lcePrev + delta_lce;
-            else {
-                // We've stagnated or hit a limit; assume we are hitting local
-                // minimum and attempt to approach from the other direction.
-                lce = lcePrev - sign(delta_lce)*SimTK::SqrtEps;
-                // Force a break, which will update the derivatives of
-                // the muscle force and estimate of the fiber-velocity 
-                h = 0;
-            }
+        lce = lcePrev + delta_lce;
 
-            if (lce < getMinimumFiberLength()) {
-                lce = getMinimumFiberLength();
-            }
-
-            // Update the muscles's position level quantities (lengths, angles)
-            positionFunc();
-
-            // Update the muscle force multipliers
-            multipliersFunc();
-
-            // Compute the force error assuming fiber-velocity is unchanged
-            ferrFunc();
-
-            if (h <= SimTK::SqrtEps ) {
-                break;
-            }
-            else
-                h = 0.5*h;
+        if (lce < getMinimumFiberLength()) {
+            lce = getMinimumFiberLength();
         }
 
-        ferrPrev = ferr;
-        lcePrev = lce;
 
-        // Update the partial derivative of the force error w.r.t. lce
+        //Evaluate the current solution assuming the fiber velocity
+        //does not change from the previous iteration.
+        positionFunc();
+        multipliersFunc();
         partialsFunc();
-        // Update velocity estimate and velocity multiplier
         velocityFunc();
+        ferrFunc();
+
+
+        ferrPrev = ferr;
+        lcePrev  = lce;
+
+        //If the tendon goes slack the tendon's gradient goes to zero
+        //and the Newton method has no hope of recovering.
+        if( tlN < 1.0 ){
+          lce = lceLongest;
+        }
+
 
         iter++;
     }
