@@ -11,6 +11,9 @@ Change Log
 
 - 2020-01-28: Added a projection setting to MocoFrameDistanceConstraint.
 
+- 2020-01-27: MocoContactTrackingGoal now handles scenarios where contact 
+              spheres are distributed across multiple bodies.
+
 
 0.3.0 
 -----
