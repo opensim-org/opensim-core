@@ -64,7 +64,10 @@ private:
 ///             \|\mathrm{proj}_{\hat{n}}(\vec{F}_{m,j} - \vec{F}_{e,j})\|^2 ~dt
 /// \f]
 /// We use the following notation:
-/// - \f$ mg \f$: the total weight of the system.
+/// - \f$ t_i \f$: the initial time of this phase.
+/// - \f$ t_f \f$: the final time of this phase.
+/// - \f$ mg \f$: the total weight of the system; replaced with
+///     \f$ m \f$ if \f$ g = 0 \f$.
 /// - \f$ G \f$: the set of contact groups.
 /// - \f$ \hat{n} \f$: a vector used for projecting the force error.
 /// - \f$ \mathrm{proj}_{\hat{n}}() \f$: this function projects the force error
@@ -74,9 +77,6 @@ private:
 ///     expressed in ground.
 /// - \f$ \vec{F}_{e,j} \f$ the experimental contact force for group \f$ j \f$,
 ///     expressed in ground.
-///
-/// If the model's gravity \f$ g \f$ is 0, then we normalize by the total mass
-/// of the system instead of the total weight.
 ///
 /// ### Tracking a subset of force components
 ///
