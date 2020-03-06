@@ -119,8 +119,6 @@ public:
     InverseKinematicsTool();
     InverseKinematicsTool(const std::string &aFileName, bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
  
-    /* Register types to be used when reading an InverseKinematicsTool object from xml file. */
-    static void registerTypes();
     /* Handle reading older formats/Versioning */
     void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1) override;
 

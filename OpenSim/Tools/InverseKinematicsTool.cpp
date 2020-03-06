@@ -80,7 +80,7 @@ InverseKinematicsTool::InverseKinematicsTool(const string &aFileName, bool aLoad
 
 //_____________________________________________________________________________
 /**
- * Construct properties to local pointers.
+ * Construct properties
  */
 void InverseKinematicsTool::constructProperties()
 {
@@ -98,15 +98,6 @@ void InverseKinematicsTool::constructProperties()
     constructProperty_report_errors(true);
     constructProperty_output_motion_file("");
     constructProperty_report_marker_locations(false);
-}
-
-//_____________________________________________________________________________
-/**
- * Register InverseKinematicsTool and any Object types it may employ internally.
- */
-void InverseKinematicsTool::registerTypes()
-{
-    Object::registerType(InverseKinematicsTool());
 }
 
 //=============================================================================
