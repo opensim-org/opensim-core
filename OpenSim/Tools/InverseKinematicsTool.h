@@ -87,6 +87,9 @@ public:
     OpenSim_DECLARE_PROPERTY(marker_file, std::string,
             "Name/path to a .trc or .sto file of type Vec3 of marker data.");
 
+    OpenSim_DECLARE_PROPERTY(orientations_file, std::string,
+            "Name/path to a .sto file of sensor frame orientations as quaternions.");
+
 
     OpenSim_DECLARE_PROPERTY(coordinate_file, std::string,
             "The name of the storage (.sto or .mot) file containing the time "
