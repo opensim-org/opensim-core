@@ -123,12 +123,6 @@ int main()
         { e.print(cerr); failures.push_back("testDelp1990Muscle"); }
 */
 
-	try { testThelenMuscleEquilibriumInGaitModel();
-        cout << "testThelenMuscleEquilibriumInGaitModel  passed" << endl; }
-	catch (const Exception& e) {
-        e.print(cout);
-        failures.push_back("testThelenMuscleEquilibriumInGaitModel"); }
-
     try { testRigidTendonMuscle();
         cout << "RigidTendonMuscle Test passed" << endl; }
     catch (const Exception& e)
@@ -138,6 +132,12 @@ int main()
         cout << "Thelen2003Muscle Test passed" << endl; }
     catch (const Exception& e)
         { e.print(cout); failures.push_back("testThelen2003Muscle"); }
+
+    try { testThelenMuscleEquilibriumInGaitModel();
+        cout << "testThelenMuscleEquilibriumInGaitModel  passed" << endl; }
+    catch (const Exception& e) {
+        e.print(cout);
+        failures.push_back("testThelenMuscleEquilibriumInGaitModel"); }
 
     try { testMillard2012EquilibriumMuscle();
         cout << "Millard2012EquilibriumMuscle Test passed" << endl; 
@@ -1128,7 +1128,7 @@ void testMuscleEquilibriumSolve(const Model& model, const Storage& statesStore)
     Model and conditions provided by Scott Uhlrich when initializing the
     Lerner et al. knee model during gait. The model has been stripped down to
     the single muscle (tib_post_r) where the failure occurs when activation
-    approaches ~0.8 in specific configuration (angles and velocities). The
+    approaches ~0.08 in specific configuration (angles and velocities). The
     failure does not appear to be due to any approaching singularity in afl or
     fv multipliers.*/
 void testThelenMuscleEquilibriumInGaitModel()
@@ -1144,7 +1144,7 @@ void testThelenMuscleEquilibriumInGaitModel()
     coords.get("subtalar_angle_r").setSpeedValue(state, -1.0344);
     coords.get("ankle_angle_r").setSpeedValue(state, -2.3226);
 
-	double fm = SimTK::NaN, ft = SimTK::NaN;
+    double fm = SimTK::NaN, ft = SimTK::NaN;
 
     for (int i = 1; i < 10; ++i) {
         cout << i << endl;
@@ -1174,7 +1174,7 @@ void testThelenMuscleEquilibriumInGaitModel()
              << " fm =" << fm
              << " ft =" << ft << endl;
 
-		// equilibrium demands tendon and muscle fiber forces are equivalent
+        // equilibrium demands tendon and muscle fiber forces are equivalent
         ASSERT_EQUAL<double>(ft, fm, SimTK::SqrtEps, __FILE__, __LINE__,
                 "testThelenMuscleEquilibriumInGaitModel(): " +
                         muscle.getConcreteClassName() +
