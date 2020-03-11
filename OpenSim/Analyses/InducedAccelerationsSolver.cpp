@@ -332,7 +332,9 @@ Array<bool> InducedAccelerationsSolver::
 {
     Array<bool> constraintOn(false, _replacementConstraints.getSize());
     double t = s.getTime();
-
+	
+    const OpenSim::Ground& ground = getModel().getGround();
+	
     for(int i=0; i<_forcesToReplace.getSize(); i++){
         ExternalForce* exf = dynamic_cast<ExternalForce*>(&_forcesToReplace[i]);
         SimTK::Vec3 point, force, gpoint;
@@ -347,19 +349,52 @@ Array<bool> InducedAccelerationsSolver::
             if(exf->getPointExpressedInBodyName() != exf->getAppliedToBodyName()){
                 int appliedToBodyIndex = getModel().getBodySet().getIndex(exf->getAppliedToBodyName());
                 if(appliedToBodyIndex < 0){
-                    cout << "External force appliedToBody " <<  exf->getAppliedToBodyName() << " not found." << endl;
+                    if(exf->getAppliedToBodyName() == ground.getName())
+                    {
+                        appliedToBodyIndex = -11;
+                        cout << "External force appliedToBody " <<  exf->getAppliedToBodyName() << " !" << endl;
+                    }
+                    else
+                    {
+                        cout << "External force appliedToBody " <<  exf->getAppliedToBodyName() << " not found." << endl;
+                    }
+                    
                 }
 
                 int expressedInBodyIndex = getModel().getBodySet().getIndex(exf->getPointExpressedInBodyName());
                 if(expressedInBodyIndex < 0){
-                    cout << "External force expressedInBody " <<  exf->getPointExpressedInBodyName() << " not found." << endl;
+
+                    if(exf->getPointExpressedInBodyName() == ground.getName())
+                    {
+                        expressedInBodyIndex = -11;
+                        cout << "External force expressedInBody " <<  exf->getPointExpressedInBodyName() << " !" << endl;
+                    }
+                    else
+                    {
+                        cout << "External force expressedInBody " <<  exf->getPointExpressedInBodyName() << " not found." << endl;
+                    }
+
+                    
                 }
 
-                const Body &appliedToBody = getModel().getBodySet().get(appliedToBodyIndex);
-                const Body &expressedInBody = getModel().getBodySet().get(expressedInBodyIndex);
-
                 getModel().getMultibodySystem().realize(s, SimTK::Stage::Velocity);
-                point = expressedInBody.findStationLocationInAnotherFrame(s, point, appliedToBody);
+
+                if(expressedInBodyIndex < -10)
+                {
+                    const Body &appliedToBody = getModel().getBodySet().get(appliedToBodyIndex);
+                    point = ground.findStationLocationInAnotherFrame(s, point, appliedToBody);
+                }
+                else if(appliedToBodyIndex < -10)
+                {
+                    const Body &expressedInBody = getModel().getBodySet().get(expressedInBodyIndex);
+                    point = expressedInBody.findStationLocationInAnotherFrame(s, point, ground);
+                }
+                else
+                {
+                    const Body &appliedToBody = getModel().getBodySet().get(appliedToBodyIndex);
+                    const Body &expressedInBody = getModel().getBodySet().get(expressedInBodyIndex);
+                    point = expressedInBody.findStationLocationInAnotherFrame(s, point, appliedToBody);
+                }
             }
 
             _replacementConstraints[i].setContactPointForInducedAccelerations(s, point);

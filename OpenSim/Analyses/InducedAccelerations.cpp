@@ -951,10 +951,12 @@ Array<bool> InducedAccelerations::applyContactConstraintAccordingToExternalForce
 {
     Array<bool> constraintOn(false, _constraintSet.getSize());
     double t = s.getTime();
-
+    const OpenSim::Ground& ground = _model->getGround();
+	
     for(int i=0; i<_externalForces.getSize(); i++){
-        ExternalForce *exf = _externalForces[i];
-        SimTK::Vec3 point, force, gpoint;
+
+        ExternalForce* exf = _externalForces[i];
+        SimTK::Vec3 point, force;
 
         force = exf->getForceAtTime(t);
         
@@ -962,23 +964,58 @@ Array<bool> InducedAccelerations::applyContactConstraintAccordingToExternalForce
         if (force.norm() > _forceThreshold){
             // get the point of contact from applied external force
             point = exf->getPointAtTime(t);
-            // point should be expressed in the "applied to" body for consistency across all constraints
+            // point should be expressed in the "applied to" body for consistency across all 
+            
             if(exf->getPointExpressedInBodyName() != exf->getAppliedToBodyName()){
+
                 int appliedToBodyIndex = _model->getBodySet().getIndex(exf->getAppliedToBodyName());
                 if(appliedToBodyIndex < 0){
-                    cout << "External force appliedToBody " <<  exf->getAppliedToBodyName() << " not found." << endl;
+                    if(exf->getAppliedToBodyName() == ground.getName())
+                    {
+                        appliedToBodyIndex = -11;
+                        //cout << "External force appliedToBody " <<  exf->getAppliedToBodyName() << " !" << endl;
+                    }
+                    else
+                    {
+                        cout << "External force appliedToBody " <<  exf->getAppliedToBodyName() << " not found." << endl;
+                    }
+                    
                 }
 
                 int expressedInBodyIndex = _model->getBodySet().getIndex(exf->getPointExpressedInBodyName());
                 if(expressedInBodyIndex < 0){
-                    cout << "External force expressedInBody " <<  exf->getPointExpressedInBodyName() << " not found." << endl;
+
+                    if(exf->getPointExpressedInBodyName() == ground.getName())
+                    {
+                        expressedInBodyIndex = -11;
+                        //cout << "External force expressedInBody " <<  exf->getPointExpressedInBodyName() << " !" << endl;
+                    }
+                    else
+                    {
+                        cout << "External force expressedInBody " <<  exf->getPointExpressedInBodyName() << " not found." << endl;
+                    }
+
+                    
                 }
 
-                const Body &appliedToBody = _model->getBodySet().get(appliedToBodyIndex);
-                const Body &expressedInBody = _model->getBodySet().get(expressedInBodyIndex);
-
                 _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
-                point = expressedInBody.findStationLocationInAnotherFrame(s, point, appliedToBody);
+
+                if(expressedInBodyIndex < -10)
+                {
+                    const Body &appliedToBody = _model->getBodySet().get(appliedToBodyIndex);
+                    point = ground.findStationLocationInAnotherFrame(s, point, appliedToBody);
+                }
+                else if(appliedToBodyIndex < -10)
+                {
+                    const Body &expressedInBody = _model->getBodySet().get(expressedInBodyIndex);
+                    point = expressedInBody.findStationLocationInAnotherFrame(s, point, ground);
+                }
+                else
+                {
+                    const Body &appliedToBody = _model->getBodySet().get(appliedToBodyIndex);
+                    const Body &expressedInBody = _model->getBodySet().get(expressedInBodyIndex);
+                    point = expressedInBody.findStationLocationInAnotherFrame(s, point, appliedToBody);
+                }
             }
 
             _constraintSet.get(i).setContactPointForInducedAccelerations(s, point);
