@@ -32,6 +32,8 @@ namespace OpenSim {
 /// \int_{t_i}^{t_f} \sum_{s \in S} w_s y_s(t)^2 ~dt
 /// \f]
 /// We use the following notation:
+/// - \f$ t_i \f$: the initial time of this phase.
+/// - \f$ t_f \f$: the final time of this phase.
 /// - \f$ S \f$: the set of state variables selected for this goal.
 /// - \f$ w_s \f$: the weight for state variable \f$ s \f$.
 /// - \f$ y_s(t) \f$: state variable \f$ s \f$.
