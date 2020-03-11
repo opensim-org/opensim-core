@@ -526,11 +526,11 @@ std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(
 /// Convert a trajectory covering half the period of a symmetric motion into a
 /// trajectory over the full period. This is useful for simulations of half a
 /// gait cycle.
-/// This converts time, states, controls, and derivatives; all other quanties
+/// This converts time, states, controls, and derivatives; all other quantities
 /// from the input trajectory are ignored.
-/// If a column in the trajectory does not match addPatterns, negatePatterns, or
-/// symmetryPatterns, then the second half of the period contains the same
-/// data as the first half.
+/// If a column in the trajectory does not match addPatterns, negatePatterns,
+/// negateAndShiftPatterns, or symmetryPatterns, then the second half of the
+/// period contains the same data as the first half.
 ///
 /// @param halfPeriodTrajectory The input trajectory covering half a period.
 /// @param addPatterns If a column label matches an addPattern, then the second
@@ -552,8 +552,9 @@ std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(
 ///
 /// The default values for the patterns are intended to handle the column labels
 /// for typical 2D or 3D OpenSim gait models.
-/// The default values for negatePatterns and symmetryPatterns warrant an
-/// explanation. The string pattern before the regex "(?!/value)" is followed by
+/// The default values for negatePatterns, negateAndShiftPatterns, and
+/// symmetryPatterns warrant an explanation. The string pattern before the
+/// regex "(?!/value)" is followed by
 /// anything except "/value" since it is contained in the negative lookahead
 /// "(?!...)".  R"()" is a string literal that permits us to not escape
 /// backslash characters. The regex "_r(\/|_|$)" matches "_r" followed by either
@@ -570,16 +571,14 @@ OSIMMOCO_API MocoTrajectory createPeriodicTrajectory(
         std::vector<std::string> addPatterns = {".*pelvis_tx/value"},
         std::vector<std::string> negatePatterns = {
                                             ".*pelvis_list(?!/value).*",
-                                            ".*pelvis_rotation(?!/value).*",
+                                            ".*pelvis_rotation.*",
                                             ".*pelvis_tz(?!/value).*",
                                             ".*lumbar_bending(?!/value).*",
-                                            ".*lumbar_rotation(?!/value).*"},
+                                            ".*lumbar_rotation.*"},
         std::vector<std::string> negateAndShiftPatterns = {
                                                    ".*pelvis_list/value",
-                                                   ".*pelvis_rotation/value",
                                                    ".*pelvis_tz/value",
-                                                   ".*lumbar_bending/value",
-                                                   ".*lumbar_rotation/value"},
+                                                   ".*lumbar_bending/value"},
         std::vector<std::pair<std::string, std::string>> symmetryPatterns =
                 {{R"(_r(\/|_|$))", "_l$1"}, {R"(_l(\/|_|$))", "_r$1"}});
 
