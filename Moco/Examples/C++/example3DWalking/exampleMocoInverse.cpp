@@ -17,16 +17,20 @@
  * -------------------------------------------------------------------------- */
 
 /// This example shows how to use the MocoInverse tool to exactly prescribe a
-/// motion and estimate muscle behavior for walking.
-/// This problem solves in about 5 minutes.
+/// motion and estimate muscle behavior for walking. The first example does not
+/// rely on electromyography data, while the second example penalizes deviation
+/// from electromyography data for a subset of muscles.
 ///
 /// See the README.txt next to this file for more information.
 
 #include <Moco/osimMoco.h>
 
+#include <OpenSim/Common/Adapters.h>
+
 using namespace OpenSim;
 
-int main() {
+/// This problem solves in about 5 minutes.
+void solveMocoInverse() {
 
     // Construct the MocoInverse tool.
     MocoInverse inverse;
@@ -68,6 +72,92 @@ int main() {
     MocoInverseSolution solution = inverse.solve();
     solution.getMocoSolution().write(
             "example3DWalking_MocoInverse_solution.sto");
+
+}
+
+/// This problem penalizes the deviation from electromyography data for a
+/// subset of muscles, and solves in about 30 minutes.
+void solveMocoInverseWithEMG() {
+
+    // Construct the MocoInverse tool.
+    MocoInverse inverse;
+    inverse.setName("example3DWalking_MocoInverseWithEMG");
+
+    // Construct a ModelProcessor and set it on the tool. The default
+    // muscles in the model are replaced with optimization-friendly
+    // DeGrooteFregly2016Muscles, and adjustments are made to the default muscle
+    // parameters.
+    ModelProcessor modelProcessor =
+            ModelProcessor("subject_walk_armless.osim") |
+                    ModOpAddExternalLoads("grf_walk.xml") |
+                    ModOpIgnoreTendonCompliance() |
+                    ModOpReplaceMusclesWithDeGrooteFregly2016() |
+                    // Only valid for DeGrooteFregly2016Muscles.
+                    ModOpIgnorePassiveFiberForcesDGF() |
+                    // Only valid for DeGrooteFregly2016Muscles.
+                    ModOpScaleActiveFiberForceCurveWidthDGF(1.5) |
+                    ModOpAddReserves(1.0);
+    inverse.setModel(modelProcessor);
+
+    // Construct a TableProcessor of the coordinate data and pass it to the
+    // inverse tool. TableProcessors can be used in the same way as
+    // ModelProcessors by appending TableOperators to modify the base table.
+    // A TableProcessor with no operators, as we have here, simply returns the
+    // base table.
+    inverse.setKinematics(TableProcessor("coordinates.sto"));
+
+    // Initial time, final time, and mesh interval.
+    inverse.set_initial_time(0.81);
+    inverse.set_final_time(1.79);
+    inverse.set_mesh_interval(0.02);
+
+    // By default, Moco gives an error if the kinematics contains extra columns.
+    // Here, we tell Moco to allow (and ignore) those extra columns.
+    inverse.set_kinematics_allow_extra_columns(true);
+
+    MocoStudy study = inverse.initialize();
+    MocoProblem& problem = study.updProblem();
+
+    auto* tracking = problem.addGoal<MocoControlTrackingGoal>("emg_tracking");
+    tracking->setWeight(50.0);
+    // The labels in electromyography.sto correspond to electromyography
+    // sensors, but the labels in the MocoControlTrackingGoal reference must
+    // be paths to actuators in the model.
+    // Each column in electromyography.sto is normalized so the maximum value in
+    // each column is 1.0.
+    TimeSeriesTable controlsRef("electromyography.sto");
+    controlsRef.removeColumn("medial_hamstrings");
+    controlsRef.removeColumn("biceps_femoris");
+    controlsRef.removeColumn("vastus_lateralis");
+    controlsRef.removeColumn("vastus_medius");
+    controlsRef.removeColumn("rectus_femoris");
+    controlsRef.removeColumn("gluteus_maximus");
+    controlsRef.removeColumn("gluteus_medius");
+    controlsRef.setColumnLabels(
+            {"/forceset/soleus_r", "/forceset/gasmed_r", "/forceset/tibant_r"});
+    controlsRef.updDependentColumn("/forceset/soleus_r") *= 0.8;
+    controlsRef.updDependentColumn("/forceset/gasmed_r") *= 0.8;
+    controlsRef.updDependentColumn("/forceset/tibant_r") *= 0.8;
+    STOFileAdapter::write(controlsRef, "controls_reference.sto");
+    tracking->setReference(controlsRef);
+
+    // Solve the problem and write the solution to a Storage file.
+    MocoSolution solution = study.solve();
+    solution.write("example3DWalking_MocoInverseWithEMG_solution.sto");
+}
+
+int main() {
+
+    solveMocoInverse();
+
+    solveMocoInverseWithEMG();
+
+    // If you installed the Moco python package, you can compare both solutions
+    // using the following command:
+    //      opensim-moco-generate-report subject_walk_armless.osim \
+    //          example3DWalking_MocoInverse_solution.sto \
+    //          --ref_files example3DWalking_MocoInverseWithEMG_solution.sto \
+    //                      controls_reference.sto
 
     return EXIT_SUCCESS;
 }

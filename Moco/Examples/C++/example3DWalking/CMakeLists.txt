@@ -1,9 +1,10 @@
 set(EXAMPLE_MOCO_TRACK_FILES
+        subject_walk_armless.osim
         coordinates.sto
         grf_walk.mot
         grf_walk.xml
         marker_trajectories.trc
-        subject_walk_armless.osim)
+        electromyography.sto)
 
 MocoAddExampleCXX(NAME example3DWalking
         EXECUTABLES exampleMocoTrack exampleMocoInverse

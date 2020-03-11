@@ -3,6 +3,9 @@ Change Log
 
 0.4.0 (in development) 
 ----------------------
+- 2020-03-10: exampleMocoInverse now employs electromyography data with a 
+              MocoControlTrackingGoal.
+
 - 2020-01-29: DeGrooteFregly2016Muscle's passive force multiplier now has a
               stiffness parameter. To support this change, the curve was 
               tweaked slightly. This may have a minor effect on solutions
