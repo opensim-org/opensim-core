@@ -135,6 +135,8 @@ void solveMocoInverseWithEMG() {
     controlsRef.removeColumn("gluteus_medius");
     controlsRef.setColumnLabels(
             {"/forceset/soleus_r", "/forceset/gasmed_r", "/forceset/tibant_r"});
+    // Scale down the tracked muscle activity to more reasonable levels
+    // (max value is 0.8).
     controlsRef.updDependentColumn("/forceset/soleus_r") *= 0.8;
     controlsRef.updDependentColumn("/forceset/gasmed_r") *= 0.8;
     controlsRef.updDependentColumn("/forceset/tibant_r") *= 0.8;

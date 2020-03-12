@@ -133,6 +133,8 @@ def solveMocoInverseWithEMG():
     soleus = controlsRef.updDependentColumn('/forceset/soleus_r')
     gasmed = controlsRef.updDependentColumn('/forceset/gasmed_r')
     tibant = controlsRef.updDependentColumn('/forceset/tibant_r')
+    # Scale down the tracked muscle activity to more reasonable levels
+    # (max value is 0.8).
     for t in range(0, controlsRef.getNumRows()):
         soleus[t] = 0.8 * soleus[t]
         gasmed[t] = 0.8 * gasmed[t]

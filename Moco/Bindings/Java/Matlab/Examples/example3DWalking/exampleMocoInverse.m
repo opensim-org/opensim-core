@@ -151,6 +151,8 @@ controlsRef.setColumnLabels(columnLabels);
 soleus = controlsRef.updDependentColumn('/forceset/soleus_r');
 gasmed = controlsRef.updDependentColumn('/forceset/gasmed_r');
 tibant = controlsRef.updDependentColumn('/forceset/tibant_r');
+% Scale down the tracked muscle activity to more reasonable levels
+% (max value is 0.8).
 for t = 0:controlsRef.getNumRows() - 1
     soleus.set(t, 0.8 * soleus.get(t));
     gasmed.set(t, 0.8 * gasmed.get(t));
