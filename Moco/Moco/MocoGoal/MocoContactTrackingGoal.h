@@ -85,22 +85,23 @@ private:
 ///
 /// \f[
 /// \frac{1}{mg} \int_{t_i}^{t_f}
-///         \sum_{g \in G} \|\mathrm{proj}_{\hat{n}}(F_{m,g} - F_{e,g})\|^2 ~dt
+///         \sum_{j \in G}
+///             \|\mathrm{proj}_{\hat{n}}(\vec{F}_{m,j} - \vec{F}_{e,j})\|^2 ~dt
 /// \f]
 /// We use the following notation:
-/// - \f$ mg \f$: the total weight of the system.
+/// - \f$ t_i \f$: the initial time of this phase.
+/// - \f$ t_f \f$: the final time of this phase.
+/// - \f$ mg \f$: the total weight of the system; replaced with
+///     \f$ m \f$ if \f$ g = 0 \f$.
 /// - \f$ G \f$: the set of contact groups.
 /// - \f$ \hat{n} \f$: a vector used for projecting the force error.
 /// - \f$ \mathrm{proj}_{\hat{n}}() \f$: this function projects the force error
 ///     either onto \f$ \hat{n} \f$ or onto the plane perpendicular to
 ///     \f$ \hat{n} \f$.
-/// - \f$ F_{m,g} \f$ the sum of the contact forces in group \f$ g \f$,
+/// - \f$ \vec{F}_{m,j} \f$ the sum of the contact forces in group \f$ j \f$,
 ///     expressed in ground.
-/// - \f$ F_{e,g} \f$ the experimental contact force for group \f$ g \f$,
+/// - \f$ \vec{F}_{e,j} \f$ the experimental contact force for group \f$ j \f$,
 ///     expressed in ground.
-///
-/// If the model's gravity $g$ is 0, then we normalize by the total mass of the
-/// system instead of the total weight.
 ///
 /// ### Tracking a subset of force components
 ///
