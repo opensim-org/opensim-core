@@ -25,9 +25,23 @@ namespace OpenSim {
 
 /// Minimize the sum of squared states, integrated over the phase. For example, 
 /// this can be used to minimize muscle activations, as is done in MocoInverse.
-/// This class also allows you to select which states to minimize by using
-/// a regex pattern with `setPattern()` and to provide weights for each
-/// state through `setWeightSet()` and `setWeightForState()`.
+///
+/// This goal is computed as follows:
+///
+/// \f[
+/// \int_{t_i}^{t_f} \sum_{s \in S} w_s y_s(t)^2 ~dt
+/// \f]
+/// We use the following notation:
+/// - \f$ t_i \f$: the initial time of this phase.
+/// - \f$ t_f \f$: the final time of this phase.
+/// - \f$ S \f$: the set of state variables selected for this goal.
+/// - \f$ w_s \f$: the weight for state variable \f$ s \f$.
+/// - \f$ y_s(t) \f$: state variable \f$ s \f$.
+///
+/// Select which states to minimize by using
+/// a regex pattern with `setPattern()`. Provide weights for each
+/// state through `setWeightSet()` or `setWeightForState()`.
+/// @ingroup mocogoal
 class OSIMMOCO_API MocoSumSquaredStateGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoSumSquaredStateGoal, MocoGoal);
 
