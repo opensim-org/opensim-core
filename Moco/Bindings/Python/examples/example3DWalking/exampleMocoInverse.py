@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------------- #
 # OpenSim Moco: exampleMocoInverse.py                                        #
 # -------------------------------------------------------------------------- #
-# Copyright (c) 2019 Stanford University and the Authors                     #
+# Copyright (c) 2020 Stanford University and the Authors                     #
 #                                                                            #
 # Author(s): Christopher Dembia                                              #
 #                                                                            #
@@ -114,12 +114,32 @@ def solveMocoInverseWithEMG():
 
     emgTracking = osim.MocoControlTrackingGoal('emg_tracking')
     emgTracking.setWeight(50.0)
-    # The labels in electromyography.sto correspond to electromyography
-    # sensors, but the labels in the MocoControlTrackingGoal reference must
-    # be paths to actuators in the model.
     # Each column in electromyography.sto is normalized so the maximum value in
     # each column is 1.0.
     controlsRef = osim.TimeSeriesTable('electromyography.sto')
+    # Scale the tracked muscle activity based on peak levels from
+    # "Gait Analysis: Normal and Pathological Function" by
+    # Perry and Burnfield, 2010 (digitized by Carmichael Ong).
+    soleus = controlsRef.updDependentColumn('soleus')
+    gasmed = controlsRef.updDependentColumn('gastrocnemius')
+    tibant = controlsRef.updDependentColumn('tibialis_anterior')
+    for t in range(0, controlsRef.getNumRows()):
+        soleus[t] = 0.77 * soleus[t]
+        gasmed[t] = 0.87 * gasmed[t]
+        tibant[t] = 0.37 * tibant[t]
+    emgTracking.setReference(osim.TableProcessor(controlsRef))
+    # Associate actuators in the model with columns in electromyography.sto.
+    emgTracking.setReferenceLabel('/forceset/soleus_r', 'soleus')
+    emgTracking.setReferenceLabel('/forceset/gasmed_r', 'gastrocnemius')
+    emgTracking.setReferenceLabel('/forceset/gaslat_r', 'gastrocnemius')
+    emgTracking.setReferenceLabel('/forceset/tibant_r', 'tibialis_anterior')
+    problem.addGoal(emgTracking)
+
+    # Solve the problem and write the solution to a Storage file.
+    solution = study.solve()
+    solution.write('example3DWalking_MocoInverseWithEMG_solution.sto')
+
+    # Write the reference data in a way that's easy to compare to the solution.
     controlsRef.removeColumn('medial_hamstrings')
     controlsRef.removeColumn('biceps_femoris')
     controlsRef.removeColumn('vastus_lateralis')
@@ -129,23 +149,8 @@ def solveMocoInverseWithEMG():
     controlsRef.removeColumn('gluteus_medius')
     controlsRef.setColumnLabels(['/forceset/soleus_r', '/forceset/gasmed_r',
                                  '/forceset/tibant_r'])
-
-    soleus = controlsRef.updDependentColumn('/forceset/soleus_r')
-    gasmed = controlsRef.updDependentColumn('/forceset/gasmed_r')
-    tibant = controlsRef.updDependentColumn('/forceset/tibant_r')
-    # Scale down the tracked muscle activity to more reasonable levels
-    # (max value is 0.8).
-    for t in range(0, controlsRef.getNumRows()):
-        soleus[t] = 0.8 * soleus[t]
-        gasmed[t] = 0.8 * gasmed[t]
-        tibant[t] = 0.8 * tibant[t]
+    controlsRef.appendColumn('/forceset/gaslat_r', gasmed)
     osim.STOFileAdapter.write(controlsRef, 'controls_reference.sto')
-    emgTracking.setReference(osim.TableProcessor(controlsRef))
-    problem.addGoal(emgTracking)
-
-    # Solve the problem and write the solution to a Storage file.
-    solution = study.solve()
-    solution.write('example3DWalking_MocoInverseWithEMG_solution.sto')
 
     # Generate a report comparing MocoInverse solutions without and with EMG
     # tracking.
