@@ -75,43 +75,26 @@ def solveMocoInverse():
 
 def solveMocoInverseWithEMG():
 
-    # Construct the MocoInverse tool.
+    # This initial block of code is identical to the code above.
     inverse = osim.MocoInverse()
-
-    # Construct a ModelProcessor and set it on the tool. The default
-    # muscles in the model are replaced with optimization-friendly
-    # DeGrooteFregly2016Muscles, and adjustments are made to the default muscle
-    # parameters.
     modelProcessor = osim.ModelProcessor('subject_walk_armless.osim')
     modelProcessor.append(osim.ModOpAddExternalLoads('grf_walk.xml'))
     modelProcessor.append(osim.ModOpIgnoreTendonCompliance())
     modelProcessor.append(osim.ModOpReplaceMusclesWithDeGrooteFregly2016())
-    # Only valid for DeGrooteFregly2016Muscles.
     modelProcessor.append(osim.ModOpIgnorePassiveFiberForcesDGF())
-    # Only valid for DeGrooteFregly2016Muscles.
     modelProcessor.append(osim.ModOpScaleActiveFiberForceCurveWidthDGF(1.5))
     modelProcessor.append(osim.ModOpAddReserves(1.0))
     inverse.setModel(modelProcessor)
-
-    # Construct a TableProcessor of the coordinate data and pass it to the
-    # inverse tool. TableProcessors can be used in the same way as
-    # ModelProcessors by appending TableOperators to modify the base table.
-    # A TableProcessor with no operators, as we have here, simply returns the
-    # base table.
     inverse.setKinematics(osim.TableProcessor('coordinates.sto'))
-
-    # Initial time, final time, and mesh interval.
     inverse.set_initial_time(0.81)
     inverse.set_final_time(1.79)
     inverse.set_mesh_interval(0.02)
-
-    # By default, Moco gives an error if the kinematics contains extra columns.
-    # Here, we tell Moco to allow (and ignore) those extra columns.
     inverse.set_kinematics_allow_extra_columns(True)
 
     study = inverse.initialize()
     problem = study.updProblem()
 
+    # Add electromyography tracking.
     emgTracking = osim.MocoControlTrackingGoal('emg_tracking')
     emgTracking.setWeight(50.0)
     # Each column in electromyography.sto is normalized so the maximum value in

@@ -79,14 +79,9 @@ void solveMocoInverse() {
 /// subset of muscles, and solves in about 30 minutes.
 void solveMocoInverseWithEMG() {
 
-    // Construct the MocoInverse tool.
+    // This initial block of code is identical to the code above.
     MocoInverse inverse;
     inverse.setName("example3DWalking_MocoInverseWithEMG");
-
-    // Construct a ModelProcessor and set it on the tool. The default
-    // muscles in the model are replaced with optimization-friendly
-    // DeGrooteFregly2016Muscles, and adjustments are made to the default muscle
-    // parameters.
     ModelProcessor modelProcessor =
             ModelProcessor("subject_walk_armless.osim") |
                     ModOpAddExternalLoads("grf_walk.xml") |
@@ -98,26 +93,16 @@ void solveMocoInverseWithEMG() {
                     ModOpScaleActiveFiberForceCurveWidthDGF(1.5) |
                     ModOpAddReserves(1.0);
     inverse.setModel(modelProcessor);
-
-    // Construct a TableProcessor of the coordinate data and pass it to the
-    // inverse tool. TableProcessors can be used in the same way as
-    // ModelProcessors by appending TableOperators to modify the base table.
-    // A TableProcessor with no operators, as we have here, simply returns the
-    // base table.
     inverse.setKinematics(TableProcessor("coordinates.sto"));
-
-    // Initial time, final time, and mesh interval.
     inverse.set_initial_time(0.81);
     inverse.set_final_time(1.79);
     inverse.set_mesh_interval(0.02);
-
-    // By default, Moco gives an error if the kinematics contains extra columns.
-    // Here, we tell Moco to allow (and ignore) those extra columns.
     inverse.set_kinematics_allow_extra_columns(true);
 
     MocoStudy study = inverse.initialize();
     MocoProblem& problem = study.updProblem();
 
+    // Add electromyography tracking.
     auto* tracking = problem.addGoal<MocoControlTrackingGoal>("emg_tracking");
     tracking->setWeight(50.0);
     // Each column in electromyography.sto is normalized so the maximum value in
