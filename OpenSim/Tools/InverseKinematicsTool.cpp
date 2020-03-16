@@ -89,7 +89,6 @@ void InverseKinematicsTool::constructProperties()
     constructProperty_accuracy(1e-5);
     constructProperty_IKTaskSet(IKTaskSet());
     constructProperty_marker_file("");
-    constructProperty_orientations_file("");
     constructProperty_coordinate_file("");
     Array<double> range{Infinity, 2};
     range[0] = -Infinity; // Make range -Infinity to Infinity unless limited by
@@ -145,17 +144,6 @@ bool InverseKinematicsTool::run()
         kinematicsReporter->setInDegrees(true);
         _model->addAnalysis(kinematicsReporter);
 
-        // if only tracking IMU data, we'll lock translational coords
-        if (get_marker_file().empty() && !get_orientations_file().empty()) {
-            auto coordinates = _model->updComponentList<Coordinate>();
-
-            // lock coordinates that are translational since they cannot be
-            for (auto& coord : coordinates) {
-                if (coord.getMotionType() == Coordinate::Translational) {
-                    coord.setDefaultLocked(true);
-                }
-            }
-        }
         cout<<"Running tool "<<getName()<<".\n";
 
         // Get the trial name to label data written to files
