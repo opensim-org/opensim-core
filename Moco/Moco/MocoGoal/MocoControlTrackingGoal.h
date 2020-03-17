@@ -64,10 +64,10 @@ private:
 /// - \f$ x_{m,c}(t) \f$: control signal \f$ c \f$.
 /// - \f$ x_{e,c}(t) \f$: reference data for control signal \f$ c \f$.
 ///
-/// This goal has two modes: 'auto' and 'manual':
+/// This goal has two labeling modes: 'auto' and 'manual':
 /// - 'auto': The column labels of the reference must exactly match the names
 ///           of controls, and all controls with a matching column in the
-///           referece data are tracked. By default, all column labels for the
+///           reference data are tracked. By default, all column labels for the
 ///           reference data must match the name of a control.
 ///           Setting `allow_unused_references` to false allows
 ///           the reference to contain columns whose labels do not match a
@@ -101,7 +101,7 @@ private:
 ///
 /// Tracking problems in direct collocation perform best when tracking smooth
 /// data, so it is recommended to filter the data in the reference you provide
-/// uo the cost.
+/// to the cost.
 /// @ingroup mocogoal
 class OSIMMOCO_API MocoControlTrackingGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoControlTrackingGoal, MocoGoal);
@@ -118,9 +118,10 @@ public:
 
     /// Provide a table containing reference values for the
     /// controls you want to track.
-    /// In 'auto' mode, each column label must be a control variable name.
-    /// In 'manual' mode, the column labels need not be control variable names;
-    /// use setReferenceLabel() to associate controls with columns.
+    /// In 'auto' labeling mode, each column label must be a control variable
+    /// name. In 'manual' labeling mode, the column labels need not be control
+    /// variable names; use setReferenceLabel() to associate controls with
+    /// columns.
     /// The table is not loaded until the MocoProblem is initialized.
     void setReference(const TableProcessor& ref) {
         set_reference(std::move(ref));
@@ -164,16 +165,16 @@ public:
         append_reference_labels({control, label});
     }
     /// Clear the 'reference_labels' property, which ensures this goal is used
-    /// in 'auto' mode.
+    /// in 'auto' labeling mode.
     void clearReferenceLabels() {
         updProperty_reference_labels().clear();
     }
 
     /// Specify whether the reference can have columns not associated with
     /// controls.
-    /// If set true, the such columns will be ignored by the cost.
+    /// If set true, then such columns will be ignored by the cost.
     /// If false, such columns will cause an Exception to be raised.
-    /// Only takes effect in 'auto' mode.
+    /// Only takes effect in 'auto' labeling mode.
     void setAllowUnusedReferences(bool tf) { set_allow_unused_references(tf); }
 
     /// If no reference has been provided, this returns an empty processor.
@@ -222,7 +223,7 @@ private:
     OpenSim_DECLARE_PROPERTY(allow_unused_references, bool,
             "Permit the reference_file to contain columns that do not refer to "
             "controls? Only relevant if reference_labels is empty "
-            "('auto' mode). Default: false.");
+            "('auto' labeling mode). Default: false.");
 
     OpenSim_DECLARE_PROPERTY(control_weights, MocoWeightSet,
             "Weights for individual control terms.");

@@ -57,8 +57,8 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
     std::set<std::string> controlsToTrack;
     std::unordered_map<std::string, std::string> refLabels;
 
-    // If 'manual' mode: only track controls for which the user provided a
-    // reference label.
+    // If 'manual' labeling mode: only track controls for which the user
+    // provided a reference label.
     // Throw exception for controls that do not exist in the model.
     for (int i = 0; i < getProperty_reference_labels().size(); ++i) {
         const auto& controlName = get_reference_labels(i).getName();
@@ -85,7 +85,7 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
     auto allSplines = GCVSplineSet(tableToUse);
 
     if (!controlsToTrack.empty()) {
-        // The goal is in 'manual' mode; perform error-checking.
+        // The goal is in 'manual' labeling mode; perform error-checking.
         for (const auto& control : controlsToTrack) {
             OPENSIM_THROW_IF_FRMOBJ(!allSplines.contains(refLabels[control]),
                     Exception,
@@ -94,7 +94,8 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
                            "label exists.", refLabels[control], control));
         }
     } else {
-        // The goal is in 'auto' mode; populate controlsToTrack, refLabels.
+        // The goal is in 'auto' labeling mode;
+        // populate controlsToTrack, refLabels.
         for (int iref = 0; iref < allSplines.getSize(); ++iref) {
             const auto& refLabel = allSplines[iref].getName();
             if (allControlIndices.count(refLabel) == 0) {
@@ -104,6 +105,7 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
                                "match the name of any control variables.",
                                 refLabel));
             }
+            // In this labeling mode, the refLabel is the control name.
             controlsToTrack.insert(refLabel);
             refLabels[refLabel] = refLabel;
         }
@@ -111,7 +113,6 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
 
     // Populate member variables needed to compute the cost.
     for (const auto& controlToTrack : controlsToTrack) {
-        m_control_indices.push_back(allControlIndices[controlToTrack]);
 
         double weight = 1.0;
         if (get_control_weights().contains(controlToTrack)) {
@@ -120,6 +121,8 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
         if (weight == 0) {
             continue;
         }
+
+        m_control_indices.push_back(allControlIndices[controlToTrack]);
         m_control_weights.push_back(weight);
 
         const auto& refLabel = refLabels[controlToTrack];
