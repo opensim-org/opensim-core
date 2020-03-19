@@ -260,7 +260,7 @@ else()
         # automake, libtool?)
         ExternalProject_Add(adolc
             DEPENDS           colpack
-            GIT_REPOSITORY    https://gitlab.com/adol-c/adol-c.git
+            GIT_REPOSITORY    https://gitlab.com/coin-or/ADOL-C.git
             GIT_TAG           v2.6.3
             #SOURCE_DIR        "${CMAKE_SOURCE_DIR}/adol-c"
             #BINARY_DIR        "${CMAKE_SOURCE_DIR}/adol-c"
