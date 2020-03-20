@@ -87,7 +87,7 @@ public:
     OpenSim_DECLARE_PROPERTY(marker_file, std::string,
             "TRC file (.trc) containing the time history of observations of marker "
             "positions obtained during a motion capture experiment. Markers in this "
-            "file that have a corresponding task and model marker are included."");
+            "file that have a corresponding task and model marker are included.");
 
 
     OpenSim_DECLARE_PROPERTY(coordinate_file, std::string,
