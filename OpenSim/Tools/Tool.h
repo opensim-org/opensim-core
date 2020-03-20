@@ -73,7 +73,8 @@ public:
     /**
     * Default constructor.
     */
-    Tool() { constructProperties();
+    Tool() { 
+        constructProperties();
     };
     
     /**

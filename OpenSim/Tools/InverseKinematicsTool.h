@@ -77,7 +77,7 @@ public:
 
     OpenSim_DECLARE_PROPERTY(accuracy, double,
             "The accuracy of the solution in absolute terms, i.e. the number of "
-            "significant digits to which the solution can be trusted. Default 1e-6.");
+            "significant digits to which the solution can be trusted. Default 1e-5.");
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(
             IKTaskSet, 
@@ -85,7 +85,9 @@ public:
             "The sum of weighted-squared task errors composes the cost function.");
 
     OpenSim_DECLARE_PROPERTY(marker_file, std::string,
-            "Name/path to a .trc or .sto file of type Vec3 of marker data.");
+            "TRC file (.trc) containing the time history of observations of marker "
+            "positions obtained during a motion capture experiment. Markers in this "
+            "file that have a corresponding task and model marker are included."");
 
 
     OpenSim_DECLARE_PROPERTY(coordinate_file, std::string,

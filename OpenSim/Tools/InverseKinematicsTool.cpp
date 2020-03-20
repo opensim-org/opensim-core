@@ -162,11 +162,11 @@ bool InverseKinematicsTool::run()
         // specified then use time from marker reference.
         // Adjust the time range for the tool if the provided range exceeds
         // that of the marker data.
-        SimTK::Vec2 markersValidTimRange = markersReference.getValidTimeRange();
-        double start_time = (markersValidTimRange[0] > get_time_range(0)) ?
-            markersValidTimRange[0] : get_time_range(0);
-        double final_time = (markersValidTimRange[1] < get_time_range(1)) ?
-            markersValidTimRange[1] : get_time_range(1);
+        SimTK::Vec2 markersValidTimeRange = markersReference.getValidTimeRange();
+        double start_time = (markersValidTimeRange[0] > get_time_range(0)) ?
+            markersValidTimeRange[0] : get_time_range(0);
+        double final_time = (markersValidTimeRange[1] < get_time_range(1)) ?
+            markersValidTimeRange[1] : get_time_range(1);
 
         SimTK_ASSERT2_ALWAYS(final_time >= start_time,
             "InverseKinematicsTool final time (%f) is before start time (%f).",
