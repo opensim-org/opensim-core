@@ -91,6 +91,9 @@ public:
             "file that have a corresponding task and model marker are included.");
 
 
+    OpenSim_DECLARE_PROPERTY(orientations_file, std::string,
+            "Name/path to a .sto file of sensor frame orientations as quaternions.");
+
     OpenSim_DECLARE_PROPERTY(coordinate_file, std::string,
             "The name of the storage (.sto or .mot) file containing the time "
             "history of coordinate observations. Coordinate values from this file are "
