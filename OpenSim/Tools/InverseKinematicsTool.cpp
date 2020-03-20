@@ -89,6 +89,7 @@ void InverseKinematicsTool::constructProperties()
     constructProperty_accuracy(1e-5);
     constructProperty_IKTaskSet(IKTaskSet());
     constructProperty_marker_file("");
+    constructProperty_orientations_file("");
     constructProperty_coordinate_file("");
     Array<double> range{Infinity, 2};
     range[0] = -Infinity; // Make range -Infinity to Infinity unless limited by
@@ -144,7 +145,22 @@ bool InverseKinematicsTool::run()
         kinematicsReporter->setInDegrees(true);
         _model->addAnalysis(kinematicsReporter);
 
-        cout<<"Running tool "<<getName()<<".\n";
+        bool trackMarkers = !get_marker_file().empty();
+        bool trackOrientations = !get_orientations_file().empty();
+        bool trackCoordinates = !get_coordinate_file().empty();
+        // if only tracking IMU data, we'll lock translational coords
+        if (trackOrientations && !trackMarkers) {
+            auto coordinates = _model->updComponentList<Coordinate>();
+
+            // lock coordinates that are translational since they cannot be
+            for (auto& coord : coordinates) {
+                if (coord.getMotionType() == Coordinate::Translational) {
+                    coord.setDefaultLocked(true);
+                }
+            }
+        }
+
+        std::cout<<"Running tool "<<getName()<<".\n";
 
         // Get the trial name to label data written to files
         string trialName = getName();
@@ -162,11 +178,15 @@ bool InverseKinematicsTool::run()
         // specified then use time from marker reference.
         // Adjust the time range for the tool if the provided range exceeds
         // that of the marker data.
-        SimTK::Vec2 markersValidTimRange = markersReference.getValidTimeRange();
-        double start_time = (markersValidTimRange[0] > get_time_range(0)) ?
-            markersValidTimRange[0] : get_time_range(0);
-        double final_time = (markersValidTimRange[1] < get_time_range(1)) ?
-            markersValidTimRange[1] : get_time_range(1);
+        double start_time = std::max(0.0, get_time_range(0));
+        double final_time = std::min(SimTK::Infinity,  get_time_range(1));
+
+        if (trackMarkers) {
+            SimTK::Vec2 markersValidTimRange =
+                    markersReference.getValidTimeRange();
+            start_time = std::max(start_time, markersValidTimRange[0]);
+            final_time = std::min(final_time, markersValidTimRange[1]);
+        }
 
         SimTK_ASSERT2_ALWAYS(final_time >= start_time,
             "InverseKinematicsTool final time (%f) is before start time (%f).",
@@ -179,10 +199,25 @@ bool InverseKinematicsTool::run()
             markersTable.getNearestRowIndexForTime(final_time) );
         const int Nframes = final_ix - start_ix + 1;
         const auto& times = markersTable.getIndependentColumn();
+        // if tracking orientions create orientatinReference here
+        OrientationsReference orientationsReference;
+        if (trackOrientations) {
+            TimeSeriesTable_<SimTK::Quaternion> quatTable(get_orientations_file());
+            orientationsReference =
+                    OrientationsReference(get_orientations_file());
+            std::cout << "Loading orientations as quaternions from "
+                      << get_orientations_file() << std::endl;
+            SimTK::Vec2 orientationValidTimRange =
+                    orientationsReference.getValidTimeRange();
+            start_time = std::max(start_time, orientationValidTimRange[0]);
+            final_time = std::min(final_time, orientationValidTimRange[1]);
+            quatTable.trim(getStartTime(), getEndTime());
 
+        }
         // create the solver given the input data
         InverseKinematicsSolver ikSolver(*_model, markersReference,
-            coordinateReferences, get_constraint_weight());
+                orientationsReference,
+                coordinateReferences, get_constraint_weight());
         ikSolver.setAccuracy(get_accuracy());
         s.updTime() = times[start_ix];
         ikSolver.assemble(s);
@@ -471,7 +506,7 @@ void InverseKinematicsTool::populateReferences(MarkersReference& markersReferenc
             }
         }
     }
-
+    if (get_marker_file().empty()) return;
     //Read in the marker data file and set the weights for associated markers.
     //Markers in the model and the marker file but not in the markerWeights are
     //ignored
