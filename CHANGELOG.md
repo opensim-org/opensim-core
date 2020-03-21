@@ -10,6 +10,10 @@ v4.2
 ====
 - 
 
+Bug Fixes
+---------
+- Fixed a critical bug in Induced Accelerations Analysis which prevents analysis to run when external forces are present
+
 v4.1
 ====
 - Added `OrientationsReference` as the frame orientation analog to the location of experimental markers. Enables experimentally measured orientations from wearable sensors (e.g. from IMUs) to be tracked by reference frames in the model. A correspondence between the experimental (IMU frame) orientation column label and that of the virtual frame on the `Model` is expected. The `InverseKinematicsSolver` was extended to simultaneously track the `OrientationsReference` if provided. (PR #2412)
