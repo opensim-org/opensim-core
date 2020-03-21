@@ -964,21 +964,16 @@ Array<bool> InducedAccelerations::applyContactConstraintAccordingToExternalForce
             point = exf->getPointAtTime(t);
             // point should be expressed in the "applied to" body for consistency across all constraints
             if(exf->getPointExpressedInBodyName() != exf->getAppliedToBodyName()){
-                int appliedToBodyIndex = _model->getBodySet().getIndex(exf->getAppliedToBodyName());
-                if(appliedToBodyIndex < 0){
-                    cout << "External force appliedToBody " <<  exf->getAppliedToBodyName() << " not found." << endl;
-                }
+                const PhysicalFrame* appliedToBody = _model->findComponent<PhysicalFrame>(exf->getAppliedToBodyName());
+                const PhysicalFrame* expressedInBody = _model->findComponent<PhysicalFrame>(exf->getPointExpressedInBodyName());
+				
 
-                int expressedInBodyIndex = _model->getBodySet().getIndex(exf->getPointExpressedInBodyName());
-                if(expressedInBodyIndex < 0){
-                    cout << "External force expressedInBody " <<  exf->getPointExpressedInBodyName() << " not found." << endl;
-                }
-
-                const Body &appliedToBody = _model->getBodySet().get(appliedToBodyIndex);
-                const Body &expressedInBody = _model->getBodySet().get(expressedInBodyIndex);
-
+                OPENSIM_THROW_IF_FRMOBJ(appliedToBody == nullptr, Exception, "ExternalForce's appliedToBody " + exf->getAppliedToBodyName() + " not found.");
+                OPENSIM_THROW_IF_FRMOBJ(expressedInBody == nullptr, Exception, "ExternalForce's pointExpressedInBodyName " + exf->getPointExpressedInBodyName() + " not found.");
+                
                 _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
-                point = expressedInBody.findStationLocationInAnotherFrame(s, point, appliedToBody);
+                
+				point = expressedInBody->findStationLocationInAnotherFrame(s, point, *appliedToBody);
             }
 
             _constraintSet.get(i).setContactPointForInducedAccelerations(s, point);
