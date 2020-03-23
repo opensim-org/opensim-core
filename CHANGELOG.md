@@ -3,6 +3,9 @@ Change Log
 
 0.4.0 (in development) 
 ----------------------
+- 2020-03-10: The default parameters for createPeriodicTrajectory() are fixed
+              (pelvis_rotation and lumbar_rotation are now properly negated).
+
 - 2020-02-06: example2DWalking now includes a MocoContactTrackingGoal 
               (thanks to Brian Umberger and Antoine Falisse).
 
@@ -13,6 +16,9 @@ Change Log
               the new and old passive force-length curves is 0.07 (unitless).
 
 - 2020-01-28: Added a projection setting to MocoFrameDistanceConstraint.
+
+- 2020-01-27: MocoContactTrackingGoal now handles scenarios where contact 
+              spheres are distributed across multiple bodies.
 
 
 0.3.0 

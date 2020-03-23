@@ -27,6 +27,23 @@ namespace OpenSim {
 /// A contact group is a single ExternalForce and a list of contact force
 /// components in the model whose forces are summed and compared to the
 /// ExternalForce.
+///
+/// ### Alternative frame paths
+///
+/// Contact force elements that correspond to a single ExternalForce are
+/// typically attached to the same single body/frame. However, it is possible
+/// that these contact force elements are spread over multiple bodies. For
+/// example, the ground reaction force for the left foot may be modeled by
+/// contact force elements on separate calcaneus and toe body segments.
+/// The "applied_to_body" property of the associated ExternalForce will match
+/// only one of these multiple bodies (e.g., only the calcaneus), causing Moco
+/// to give an error, saying one of the contact elements does not seem to be
+/// associated with the ExternalForce. To handle this situation, specify the
+/// *other* body (e.g., the toes) under alternative_frame_paths. Without
+/// specifying these alternative frames, Moco does not know which force to use
+/// (the force on the sphere or the force on the half-space) when summing the
+/// contact forces across contact force elements.
+///
 /// @see MocoContactTrackingGoal
 class OSIMMOCO_API MocoContactTrackingGoalGroup : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoContactTrackingGoalGroup, Object);
@@ -36,10 +53,18 @@ public:
             "forces are summed and compared to an single ExternalForce.");
     OpenSim_DECLARE_PROPERTY(external_force_name, std::string,
             "The name of an ExternalForce object in the ExternalLoads set.");
+    OpenSim_DECLARE_LIST_PROPERTY(alternative_frame_paths, std::string,
+            "If neither of the two bodies/frames of a contact force match "
+            "ExternalForce's applied_to_body, then one of the bodies/frames "
+            "must match one of these alternative frame paths.");
     MocoContactTrackingGoalGroup();
     MocoContactTrackingGoalGroup(
             const std::vector<std::string>& contactForcePaths,
             const std::string& externalForceName);
+    MocoContactTrackingGoalGroup(
+            const std::vector<std::string>& contactForcePaths,
+            const std::string& externalForceName,
+            const std::vector<std::string>& altFramePaths);
 private:
     void constructProperties();
 };
@@ -60,22 +85,23 @@ private:
 ///
 /// \f[
 /// \frac{1}{mg} \int_{t_i}^{t_f}
-///         \sum_{g \in G} \|\mathrm{proj}_{\hat{n}}(F_{m,g} - F_{e,g})\|^2 ~dt
+///         \sum_{j \in G}
+///             \|\mathrm{proj}_{\hat{n}}(\vec{F}_{m,j} - \vec{F}_{e,j})\|^2 ~dt
 /// \f]
 /// We use the following notation:
-/// - \f$ mg \f$: the total weight of the system.
+/// - \f$ t_i \f$: the initial time of this phase.
+/// - \f$ t_f \f$: the final time of this phase.
+/// - \f$ mg \f$: the total weight of the system; replaced with
+///     \f$ m \f$ if \f$ g = 0 \f$.
 /// - \f$ G \f$: the set of contact groups.
 /// - \f$ \hat{n} \f$: a vector used for projecting the force error.
 /// - \f$ \mathrm{proj}_{\hat{n}}() \f$: this function projects the force error
 ///     either onto \f$ \hat{n} \f$ or onto the plane perpendicular to
 ///     \f$ \hat{n} \f$.
-/// - \f$ F_{m,g} \f$ the sum of the contact forces in group \f$ g \f$,
+/// - \f$ \vec{F}_{m,j} \f$ the sum of the contact forces in group \f$ j \f$,
 ///     expressed in ground.
-/// - \f$ F_{e,g} \f$ the experimental contact force for group \f$ g \f$,
+/// - \f$ \vec{F}_{e,j} \f$ the experimental contact force for group \f$ j \f$,
 ///     expressed in ground.
-///
-/// If the model's gravity $g$ is 0, then we normalize by the total mass of the
-/// system instead of the total weight.
 ///
 /// ### Tracking a subset of force components
 ///
@@ -159,6 +185,11 @@ public:
     }
     /// Add a group of contact forces whose sum should track the force data from
     /// a single ExternalForce.
+    /// If the contact force elements associated with a single ExternalForce are
+    /// distributed across multiple bodies use this function instead of the
+    /// easier-to-use addContactGroup(), and set the group's
+    /// alternative_frame_paths property accordingly. See
+    /// MocoContactTrackingGoalGroup for more information.
     void addContactGroup(MocoContactTrackingGoalGroup group) {
         append_contact_groups(std::move(group));
     }
@@ -209,6 +240,13 @@ private:
             "ground. The vector can have any length.");
 
     void constructProperties();
+
+    /// For a given contact force, find the starting index of the forces from
+    /// SmoothSphereHalfSpaceForce::getRecordValues().
+    int findRecordOffset(
+            const MocoContactTrackingGoalGroup& group,
+            const SmoothSphereHalfSpaceForce& contactForce,
+            const std::string& appliedToBody) const;
 
     enum class ProjectionType {
         None,

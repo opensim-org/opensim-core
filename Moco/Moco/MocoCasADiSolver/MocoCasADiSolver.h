@@ -151,7 +151,7 @@ public:
             "Default: 1.0.");
     OpenSim_DECLARE_PROPERTY(minimize_implicit_auxiliary_derivatives, bool,
             "Minimize the integral of the squared derivative continuous "
-            "variables for components with implicit multibody dynamics. "
+            "variables for components with implicit auxiliary dynamics. "
             "Default: false.");
     OpenSim_DECLARE_PROPERTY(implicit_auxiliary_derivatives_weight, double,
             "The weight on the cost term added if "

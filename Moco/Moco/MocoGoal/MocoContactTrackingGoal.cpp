@@ -34,9 +34,20 @@ MocoContactTrackingGoalGroup::MocoContactTrackingGoalGroup(
     set_external_force_name(externalForceName);
 }
 
+MocoContactTrackingGoalGroup::MocoContactTrackingGoalGroup(
+        const std::vector<std::string>& contactForcePaths,
+        const std::string& externalForceName,
+        const std::vector<std::string>& altFramePaths) :
+        MocoContactTrackingGoalGroup(contactForcePaths, externalForceName) {
+    for (const auto& path : altFramePaths) {
+        append_alternative_frame_paths(path);
+    }
+}
+
 void MocoContactTrackingGoalGroup::constructProperties() {
     constructProperty_contact_force_paths();
     constructProperty_external_force_name("");
+    constructProperty_alternative_frame_paths();
 }
 
 
@@ -106,7 +117,6 @@ void MocoContactTrackingGoal::initializeOnModelImpl(const Model& model) const {
                         group.get_external_force_name()));
         const auto& extForce =
                 extLoads->get(group.get_external_force_name());
-        const std::string& appliedToBody = extForce.get_applied_to_body();
 
         GroupInfo groupInfo;
         for (int ic = 0; ic < group.getProperty_contact_force_paths().size();
@@ -115,36 +125,9 @@ void MocoContactTrackingGoal::initializeOnModelImpl(const Model& model) const {
             const auto& contactForce =
                     model.getComponent<SmoothSphereHalfSpaceForce>(path);
 
-            // First, assume we want the first 3 entries in
-            // SmoothSphereHalfSpaceForce::getRecordValues(), which contain
-            // forces on the sphere.
-            int recordOffset = 0;
-            const std::string& sphereBaseName =
-                    contactForce.getConnectee<PhysicalFrame>("sphere_frame")
-                            .findBaseFrame()
-                            .getName();
-            if (sphereBaseName != appliedToBody) {
-                // The ExternalForce is not applied to the sphere's body.
-                const std::string& halfSpaceBaseName =
-                        contactForce
-                                .getConnectee<PhysicalFrame>("half_space_frame")
-                                .findBaseFrame()
-                                .getName();
-                OPENSIM_THROW_IF_FRMOBJ(halfSpaceBaseName != appliedToBody,
-                        Exception,
-                        format("Contact force '%s' has sphere base frame '%s' "
-                               "and half space base frame '%s'; one of these "
-                               "frames should match the applied_to_body "
-                               "setting ('%s') of ExternalForce '%s'.",
-                                contactForce.getAbsolutePathString(),
-                                sphereBaseName, halfSpaceBaseName,
-                                appliedToBody,
-                                group.get_external_force_name()));
-                // We want the forces applied to the half space, which are
-                // entries 6, 7, 8 in
-                // SmoothSphereHalfSpaceForce::getRecordValues().
-                recordOffset = 6;
-            }
+            int recordOffset = findRecordOffset(group, contactForce,
+                    extForce.get_applied_to_body());
+
             groupInfo.contacts.push_back(
                     std::make_pair(&contactForce, recordOffset));
         }
@@ -200,6 +183,59 @@ void MocoContactTrackingGoal::initializeOnModelImpl(const Model& model) const {
     }
 
     setNumIntegralsAndOutputs(1, 1);
+}
+
+int MocoContactTrackingGoal::findRecordOffset(
+        const MocoContactTrackingGoalGroup& group,
+        const SmoothSphereHalfSpaceForce& contactForce,
+        const std::string& appliedToBody) const {
+
+    // Is the ExternalForce applied to the sphere's body?
+    const auto& sphereBase =
+            contactForce.getConnectee<PhysicalFrame>("sphere_frame")
+                    .findBaseFrame();
+    const std::string& sphereBaseName = sphereBase.getName();
+    if (sphereBaseName == appliedToBody) {
+        // We want the first 3 entries in
+        // SmoothSphereHalfSpaceForce::getRecordValues(), which contain
+        // forces on the sphere.
+        return 0;
+    }
+
+    // Is the ExternalForce applied to the half space's body?
+    const auto& halfSpaceBase =
+            contactForce.getConnectee<PhysicalFrame>("half_space_frame")
+                    .findBaseFrame();
+    const std::string& halfSpaceBaseName = halfSpaceBase.getName();
+    if (halfSpaceBaseName == appliedToBody) {
+        // We want the forces applied to the half space, which are
+        // entries 6, 7, 8 in
+        // SmoothSphereHalfSpaceForce::getRecordValues().
+        return 6;
+    }
+
+    // Check the group's alternative frames.
+    // Check each alternative frame path in the order provided. As soon as one
+    // of these paths matches the name of the sphere base frame or
+    // half space base frame, use the contact forces applied to that base frame.
+    const auto& sphereBasePath = sphereBase.getAbsolutePathString();
+    const auto& halfSpaceBasePath = halfSpaceBase.getAbsolutePathString();
+    for (int ia = 0; ia < group.getProperty_alternative_frame_paths().size();
+            ++ia) {
+        const auto& path = group.get_alternative_frame_paths(ia);
+        if (path == sphereBasePath) { return 0; }
+        if (path == halfSpaceBasePath) { return 6; }
+    }
+
+    OPENSIM_THROW_FRMOBJ(Exception,
+            format("Contact force '%s' has sphere base frame '%s' "
+                  "and half space base frame '%s'. One of these "
+                   "frames should match the applied_to_body "
+                   "setting ('%s') of ExternalForce '%s', or match one of "
+                   "the alternative_frame_paths, but no match found.",
+                    contactForce.getAbsolutePathString(),
+                    sphereBaseName, halfSpaceBaseName, appliedToBody,
+                    group.get_external_force_name()));
 }
 
 void MocoContactTrackingGoal::calcIntegrandImpl(
