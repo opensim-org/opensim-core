@@ -1,9 +1,10 @@
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoControlTrackingGoal.h                                    *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2019 Stanford University and the Authors                     *
+ * Copyright (c) 2020 Stanford University and the Authors                     *
  *                                                                            *
  * Author(s): Nicholas Bianco                                                 *
+ * Contributor(s): Christopher Dembia                                         *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -24,16 +25,18 @@
 
 using namespace OpenSim;
 
+MocoControlTrackingGoalReference::MocoControlTrackingGoalReference() {
+    constructProperty_reference("");
+}
+
+MocoControlTrackingGoalReference::MocoControlTrackingGoalReference(
+        std::string name, std::string reference)
+        : MocoControlTrackingGoalReference() {
+    setName(std::move(name));
+    set_reference(std::move(reference));
+}
+
 void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
-
-    // TODO: set relativeToDirectory properly.
-    TimeSeriesTable tableToUse = get_reference().process();
-
-    // Check that there are no redundant columns in the reference data.
-    checkRedundantLabels(tableToUse.getColumnLabels());
-
-    // Convert data table to spline set.
-    auto allSplines = GCVSplineSet(tableToUse);
 
     // Get a map between control names and their indices in the model. This also
     // checks that the model controls are in the correct order.
@@ -44,32 +47,96 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
         const auto& weightName = get_control_weights().get(i).getName();
         if (allControlIndices.count(weightName) == 0) {
             OPENSIM_THROW_FRMOBJ(Exception,
-                "Weight provided with name '" + weightName + "' but this is "
-                "not a recognized control.");
+                    format("Weight provided with name '%s' but this is "
+                           "not a recognized control.", weightName));
         }
     }
 
-    // Populate member variables needed to compute the cost. Unless the property
-    // allow_unused_references is set to true, an exception is thrown for
-    // names in the references that don't correspond to a control variable.
-    for (int iref = 0; iref < allSplines.getSize(); ++iref) {
-        const auto& refName = allSplines[iref].getName();
-        if (allControlIndices.count(refName) == 0) {
-            if (get_allow_unused_references()) {
-                continue;
-            }
+    // We will populate these variables differently depending on whether the
+    // goal is in 'auto' or 'manual' mode.
+    std::set<std::string> controlsToTrack;
+    std::unordered_map<std::string, std::string> refLabels;
+
+    // If 'manual' labeling mode: only track controls for which the user
+    // provided a reference label.
+    // Throw exception for controls that do not exist in the model.
+    for (int i = 0; i < getProperty_reference_labels().size(); ++i) {
+        const auto& controlName = get_reference_labels(i).getName();
+        if (allControlIndices.count(controlName) == 0) {
             OPENSIM_THROW_FRMOBJ(Exception,
-                "Control reference '" + refName + "' unrecognized.");
+                format("Control '%s' does not exist in the model.",
+                        controlName));
+        }
+        OPENSIM_THROW_IF_FRMOBJ(controlsToTrack.count(controlName), Exception,
+                format("Expected control '%s' to be provided no more than once,"
+                       "but it is provided more than once.",
+                        controlName));
+        controlsToTrack.insert(controlName);
+        refLabels[controlName] = get_reference_labels(i).get_reference();
+    }
+
+    // TODO: set relativeToDirectory properly.
+    TimeSeriesTable tableToUse = get_reference().process();
+
+    // Check that there are no redundant columns in the reference data.
+    checkRedundantLabels(tableToUse.getColumnLabels());
+
+    // Convert data table to spline set.
+    auto allSplines = GCVSplineSet(tableToUse);
+
+    if (!controlsToTrack.empty()) {
+        // The goal is in 'manual' labeling mode; perform error-checking.
+        for (const auto& control : controlsToTrack) {
+            OPENSIM_THROW_IF_FRMOBJ(!allSplines.contains(refLabels[control]),
+                    Exception,
+                    format("Expected reference to contain label '%s', which "
+                           "was associated with control '%s', but no such "
+                           "label exists.", refLabels[control], control));
+        }
+    } else {
+        // The goal is in 'auto' labeling mode;
+        // populate controlsToTrack, refLabels.
+        for (int iref = 0; iref < allSplines.getSize(); ++iref) {
+            const auto& refLabel = allSplines[iref].getName();
+            if (allControlIndices.count(refLabel) == 0) {
+                if (get_allow_unused_references()) { continue; }
+                OPENSIM_THROW_FRMOBJ(Exception,
+                        format("Reference contains column '%s' which does not "
+                               "match the name of any control variables.",
+                                refLabel));
+            }
+            // In this labeling mode, the refLabel is the control name.
+            controlsToTrack.insert(refLabel);
+            refLabels[refLabel] = refLabel;
+        }
+    }
+
+    // Populate member variables needed to compute the cost.
+    for (const auto& controlToTrack : controlsToTrack) {
+
+        double weight = 1.0;
+        if (get_control_weights().contains(controlToTrack)) {
+            weight = get_control_weights().get(controlToTrack).getWeight();
+        }
+        if (weight == 0) {
+            continue;
         }
 
-        m_control_indices.push_back(allControlIndices[refName]);
-        double refWeight = 1.0;
-        if (get_control_weights().contains(refName)) {
-            refWeight = get_control_weights().get(refName).getWeight();
+        m_control_indices.push_back(allControlIndices[controlToTrack]);
+        m_control_weights.push_back(weight);
+
+        const auto& refLabel = refLabels[controlToTrack];
+        // Make sure m_ref_splines contains the reference data for this control.
+        if (!m_ref_splines.contains(refLabel)) {
+            m_ref_splines.cloneAndAppend(allSplines.get(refLabel));
         }
-        m_control_weights.push_back(refWeight);
-        m_ref_splines.cloneAndAppend(allSplines[iref]);
-        m_control_names.push_back(refName);
+        // Find the index of the reference spline associated with this control
+        // (the same reference may be used for multiple controls).
+        m_ref_indices.push_back(m_ref_splines.getIndex(refLabel));
+
+        // For use in printDescriptionImpl().
+        m_control_names.push_back(controlToTrack);
+        m_ref_labels.push_back(refLabel);
     }
 
     setNumIntegralsAndOutputs(1, 1);
@@ -82,21 +149,21 @@ void MocoControlTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
     SimTK::Vector timeVec(1, time);
     const auto& controls = getModel().getControls(state);
 
-    // TODO cache the reference coordinate values at the mesh points, 
-    // rather than evaluating the spline.
     integrand = 0;
-    for (int iref = 0; iref < m_ref_splines.getSize(); ++iref) {
-        const auto& modelValue = controls[m_control_indices[iref]];
-        const auto& refValue = m_ref_splines[iref].calcValue(timeVec);
-        integrand += m_control_weights[iref] * pow(modelValue - refValue, 2);
+    for (int i = 0; i < (int)m_control_indices.size(); ++i) {
+        const auto& modelValue = controls[m_control_indices[i]];
+        const auto& refValue =
+                m_ref_splines[m_ref_indices[i]].calcValue(timeVec);
+        integrand += m_control_weights[i] * pow(modelValue - refValue, 2);
     }
 }
 
 void MocoControlTrackingGoal::printDescriptionImpl(std::ostream& stream) const {
-    for (int i = 0; i < (int) m_control_names.size(); i++) {
+    for (int i = 0; i < (int)m_control_names.size(); i++) {
         stream << "        ";
         stream << "control: " << m_control_names[i]
-               << ", weight: " << m_control_weights[i] << std::endl;
+                << ", reference label: " << m_ref_labels[i]
+                << ", weight: " << m_control_weights[i] << std::endl;
     }
 }
 

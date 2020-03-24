@@ -94,7 +94,7 @@ classdef osimMocoTrajectoryReport < handle
                 self.output = sprintf('%s_report.pdf', ...
                     self.trajectoryFname);
             else
-                if ~endsWith(args.Result.outputFilepath, '.pdf')
+                if ~endsWith(args.Results.outputFilepath, '.pdf')
                     error('Expected output to end with .pdf');
                 end
                 self.output = args.Results.outputFilepath;
@@ -122,7 +122,7 @@ classdef osimMocoTrajectoryReport < handle
             for ir = 1:length(self.refFiles)
                 refFile = self.refFiles{ir};
                 [~, ~, ext] = fileparts(refFile);
-                refTable = STOFileAdapter().read(refFile);
+                refTable = TimeSeriesTable(refFile);
                 ext = lower(ext);
                 if strcmp(ext, '.sto') || strcmp(ext, '.mot')
                     if (refTable.hasTableMetaDataKey('inDegrees') && ...
