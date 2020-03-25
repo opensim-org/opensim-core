@@ -229,7 +229,7 @@ public:
     /* SimTK_SimTKCOMMON_EXPORT */ Vec3  convertThreeAxesRotationToThreeAngles( BodyOrSpaceType bodyOrSpace, const CoordinateAxis& axis1, const CoordinateAxis& axis2, const CoordinateAxis& axis3 ) const;
     /// Converts rotation matrix to a quaternion.
 
-    /* SimTK_SimTKCOMMON_EXPORT */ Quaternion convertRotationToQuaternion() const;
+    /* SimTK_SimTKCOMMON_EXPORT */ Quaternion_<double> convertRotationToQuaternion() const;
 
     /// Converts rotation matrix to angle-axis form.
     Vec4  convertRotationToAngleAxis() const  { return convertRotationToQuaternion().convertQuaternionToAngleAxis(); }
