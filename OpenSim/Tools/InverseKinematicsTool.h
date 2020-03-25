@@ -22,7 +22,7 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include "Simbody.h"
+#include <SimTKcommon/internal/ReferencePtr.h> 
 #include "osimToolsDLL.h"
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Tools/IKTaskSet.h>
@@ -127,16 +127,24 @@ public:
     //---- Setters and getters for various attributes
     void setModel(Model& aModel) { _model = &aModel; };
     void setStartTime(double d) { upd_time_range(0) = d; };
-    double getStartTime() const {return  get_time_range(0); };
+    double getStartTime() const { return get_time_range(0); };
 
     void setEndTime(double d) { upd_time_range(1) = d; };
     double getEndTime() const { return get_time_range(1); };
 
-    void setMarkerDataFileName(const std::string& markerDataFileName) { upd_marker_file() =markerDataFileName;};
-    const std::string& getMarkerDataFileName() const { return  get_marker_file();};
+    void setMarkerDataFileName(const std::string& markerDataFileName) {
+        upd_marker_file() = markerDataFileName;
+    };
+    const std::string& getMarkerDataFileName() const {
+        return get_marker_file();
+    };
 
-    void setCoordinateFileName(const std::string& coordDataFileName) { upd_coordinate_file()=coordDataFileName;};
-    const std::string& getCoordinateFileName() const { return  get_coordinate_file();};
+    void setCoordinateFileName(const std::string& coordDataFileName) {
+        upd_coordinate_file() = coordDataFileName;
+    };
+    const std::string& getCoordinateFileName() const {
+        return get_coordinate_file();
+    };
     
 private:
     void constructProperties();
@@ -152,7 +160,7 @@ public:
     void setOutputMotionFileName(const std::string aOutputMotionFileName) {
         upd_output_motion_file() = aOutputMotionFileName;
     }
-    std::string getOutputMotionFileName() { return get_output_motion_file();}
+    std::string getOutputMotionFileName() { return get_output_motion_file(); }
     IKTaskSet& getIKTaskSet() { return upd_IKTaskSet(); }
 
     //--------------------------------------------------------------------------
