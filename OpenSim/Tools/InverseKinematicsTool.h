@@ -22,11 +22,12 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include <SimTKcommon/internal/ReferencePtr.h> 
+
 #include "osimToolsDLL.h"
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Tools/IKTaskSet.h>
 #include "Tool.h"
+#include <SimTKcommon/internal/ReferencePtr.h> 
 
 #ifdef SWIG
     #ifdef OSIMTOOLS_API
