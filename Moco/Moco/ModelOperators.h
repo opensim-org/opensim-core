@@ -237,6 +237,7 @@ class OSIMMOCO_API ModOpRemoveMuscles : public ModelOperator {
 
 public:
     void operate(Model& model, const std::string&) const override {
+        model.finalizeFromProperties();
         model.finalizeConnections();
         ModelFactory::removeMuscles(model);
     }
