@@ -3,6 +3,8 @@ Change Log
 
 0.4.0 (in development) 
 ----------------------
+- 2020-03-25: Fixed an error that occurs when using ModOpRemoveMuscles.
+
 - 2020-03-10: The default parameters for createPeriodicTrajectory() are fixed
               (pelvis_rotation and lumbar_rotation are now properly negated).
               
