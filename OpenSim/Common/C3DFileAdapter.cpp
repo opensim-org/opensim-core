@@ -1,12 +1,14 @@
 #include "C3DFileAdapter.h"
-
+#ifndef WITH_EZC3D
 #include "btkAcquisitionFileReader.h"
 #include "btkAcquisition.h"
 #include "btkForcePlatformsExtractor.h"
 #include "btkGroundReactionWrenchFilter.h"
+#endif
 
 namespace {
 
+#ifndef WITH_EZC3D
 // Function to convert Eigen matrix to SimTK matrix. This can become a lambda
 // funciton inside extendRead in future.
 template<typename _Scalar, int _Rows, int _Cols>
@@ -22,8 +24,9 @@ convertToSimtkMatrix(const Eigen::Matrix<_Scalar, _Rows, _Cols>&
 
     return simtkMat;
 }
-
+#endif
 } // anonymous namespace
+
 
 namespace OpenSim {
 
@@ -51,6 +54,7 @@ C3DFileAdapter::write(const C3DFileAdapter::Tables& tables,
 
 C3DFileAdapter::OutputTables
 C3DFileAdapter::extendRead(const std::string& fileName) const {
+#ifndef WITH_EZC3D
     auto reader = btk::AcquisitionFileReader::New();
     reader->SetFilename(fileName);
     reader->Update();
@@ -294,6 +298,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
     }
 
     return tables;
+#endif
 }
 
 void
