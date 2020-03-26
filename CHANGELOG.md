@@ -5,6 +5,12 @@ Change Log
 ----------------------
 - 2020-03-25: Fixed an error that occurs when using ModOpRemoveMuscles.
 
+- 2020-03-15: exampleMocoInverse now employs electromyography data with a 
+              MocoControlTrackingGoal.
+              
+- 2020-03-15: MocoContactTrackingGoal provides more flexibility when associating
+              control signals with reference data.
+
 - 2020-03-10: The default parameters for createPeriodicTrajectory() are fixed
               (pelvis_rotation and lumbar_rotation are now properly negated).
               
