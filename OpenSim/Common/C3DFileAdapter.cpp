@@ -104,7 +104,12 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
 #endif
     OutputTables tables{};
 
-#ifndef WITH_EZC3D
+#ifdef WITH_EZC3D
+    int nbFrames(static_cast<int>(c3d.data().nbFrames()));
+    int nbMarkers(c3d.parameters().group("POINT").parameter("USED").valuesAsInt()[0]);
+    double pointFrequency(static_cast<double>(
+                              c3d.parameters().group("POINT").parameter("RATE").valuesAsFloat()[0]));
+#else
     auto marker_pts = btk::PointCollection::New();
 
     for(auto it = acquisition->BeginPoint();
@@ -114,32 +119,52 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         if(pt->GetType() == btk::Point::Marker)
                marker_pts->InsertItem(pt);
     }
+    int nbFrames(marker_pts->GetFrontItem()->GetFrameNumber());
+    int nbMarkers(marker_pts->GetItemNumber());
+    double pointFrequency(acquisition->GetPointFrequency());
+#endif
 
-    if(marker_pts->GetItemNumber() != 0) {
+    if(nbMarkers != 0) {
 
-        int marker_nrow = marker_pts->GetFrontItem()->GetFrameNumber();
-        int marker_ncol = marker_pts->GetItemNumber();
+        int marker_nrow = nbFrames;
+        int marker_ncol = nbMarkers;
 
         std::vector<double> marker_times(marker_nrow);
         SimTK::Matrix_<SimTK::Vec3> marker_matrix(marker_nrow, marker_ncol);
 
         std::vector<std::string> marker_labels{};
+#ifdef WITH_EZC3D
+        for (auto label : c3d.parameters().group("POINT").parameter("LABELS").valuesAsString()) {
+            marker_labels.push_back(SimTK::Value<std::string>(label));
+        }
+#else
         for (auto it = marker_pts->Begin(); it != marker_pts->End(); ++it) {
             marker_labels.push_back(SimTK::Value<std::string>((*it)->GetLabel()));
         }
+#endif
 
-        double time_step{1.0 / acquisition->GetPointFrequency()};
+        double time_step{1.0 / pointFrequency};
         for(int f = 0; f < marker_nrow; ++f) {
-            SimTK::RowVector_<SimTK::Vec3> row{ marker_pts->GetItemNumber(), 
+            SimTK::RowVector_<SimTK::Vec3> row{ nbMarkers,
                                                 SimTK::Vec3(SimTK::NaN) };
             int m{0};
+            // C3D standard is to read empty values as zero, but sets a
+            // "residual" value to -1 and it is how it knows to export these
+            // values as blank, instead of 0,  when exporting to .trc
+            // See: C3D documention 3D Point Residuals
+            // Read in value if it is not zero or residual is not -1
+#ifdef WITH_EZC3D
+            for(auto pt : c3d.data().frame(f).points().points()) {
+                if (!pt.isempty() ) {//residual is not -1
+                    row[m] = SimTK::Vec3{ static_cast<double>(pt.x()),
+                                          static_cast<double>(pt.y()),
+                                          static_cast<double>(pt.z()) };
+                }
+                ++m;
+            }
+#else
             for(auto it = marker_pts->Begin();  it != marker_pts->End(); ++it) {
                 auto pt = *it;
-                // BTK reads empty values as zero, but sets a "residual" value
-                // to -1 and it is how it knows to export these values as 
-                // blank, instead of 0,  when exporting to .trc
-                // See: BTKCore/Code/IO/btkTRCFileIO.cpp#L359-L360
-                // Read in value if it is not zero or residual is not -1
                 if (!pt->GetValues().row(f).isZero() ||    //not precisely zero
                     (pt->GetResiduals().coeff(f) != -1) ) {//residual is not -1
                     row[m] = SimTK::Vec3{ pt->GetValues().coeff(f, 0),
@@ -148,6 +173,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
                 }
                 ++m;
             }
+#endif
 
             marker_matrix.updRow(f) = row;
             marker_times[f] = 0 + f * time_step; //TODO: 0 should be start_time
@@ -162,12 +188,17 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         marker_table->
             updTableMetaData().
             setValueForKey("DataRate",
-                std::to_string(acquisition->GetPointFrequency()));
+                std::to_string(pointFrequency));
 
         marker_table->
             updTableMetaData().
             setValueForKey("Units",
-                acquisition->GetPointUnit());
+#ifdef WITH_EZC3D
+                c3d.parameters().group("POINT").parameter("UNITS").valuesAsString()[0]
+#else
+                acquisition->GetPointUnit()
+#endif
+            );
 
         marker_table->updTableMetaData().setValueForKey("events", event_table);
 
@@ -180,6 +211,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         auto emptyMarkersTable = std::make_shared<TimeSeriesTableVec3>(emptyTimes, noData, emptyLabels);
         tables.emplace(_markers, emptyMarkersTable);
     }
+#ifndef WITH_EZC3D
     // This is probably the right way to get the raw forces data from force 
     // platforms. Extract the collection of force platforms.
     auto force_platforms_extractor = btk::ForcePlatformsExtractor::New();
@@ -327,9 +359,8 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         auto emptyforcesTable = std::make_shared<TimeSeriesTableVec3>(emptyTimes, noData, emptyLabels);
         tables.emplace(_forces, emptyforcesTable);
     }
-
-    return tables;
 #endif
+    return tables;
 }
 
 void
