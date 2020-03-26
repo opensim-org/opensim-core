@@ -1,5 +1,11 @@
 #include "C3DFileAdapter.h"
-#ifndef WITH_EZC3D
+
+#ifdef WITH_EZC3D
+// TODO manage the header into one include
+#include "../ezc3d/Header.h"
+#include "../ezc3d/Parameters.h"
+#include "../ezc3d/Data.h"
+#else
 #include "btkAcquisitionFileReader.h"
 #include "btkAcquisition.h"
 #include "btkForcePlatformsExtractor.h"
@@ -8,7 +14,7 @@
 
 namespace {
 
-#ifndef WITH_EZC3D
+#ifdef WITH_BTK
 // Function to convert Eigen matrix to SimTK matrix. This can become a lambda
 // funciton inside extendRead in future.
 template<typename _Scalar, int _Rows, int _Cols>
@@ -54,13 +60,37 @@ C3DFileAdapter::write(const C3DFileAdapter::Tables& tables,
 
 C3DFileAdapter::OutputTables
 C3DFileAdapter::extendRead(const std::string& fileName) const {
-#ifndef WITH_EZC3D
+#ifdef WITH_EZC3D
+    auto c3d = ezc3d::c3d(fileName);
+#else
     auto reader = btk::AcquisitionFileReader::New();
     reader->SetFilename(fileName);
     reader->Update();
     auto acquisition = reader->GetOutput();
+#endif
 
     EventTable event_table{};
+#ifdef WITH_EZC3D
+    for (size_t i=0;
+         i<c3d.header().eventsTime().size();
+         ++i) {
+
+        std::string eventDescriptionStr("");
+        if (c3d.parameters().isGroup("EVENT") && c3d.parameters().group("EVENT").isParameter("DESCRIPTION")){
+            const auto& eventDescription(c3d.parameters().group("EVENT").parameter("DESCRIPTION").valuesAsString());
+            if (eventDescription.size() >= i){
+                eventDescriptionStr = eventDescription[i];
+            }
+        }
+        event_table.push_back(
+        {
+            c3d.header().eventsLabel(i),
+            static_cast<double>(c3d.header().eventsTime(i)),
+            static_cast<int>(c3d.header().eventsTime(i) / c3d.header().frameRate()),
+            eventDescriptionStr
+        });
+    }
+#else
     auto events = acquisition->GetEvents();
     for (auto it = events->Begin();
         it != events->End();
@@ -71,9 +101,10 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
             et->GetFrame(),
             et->GetDescription() });
     }
-
+#endif
     OutputTables tables{};
 
+#ifndef WITH_EZC3D
     auto marker_pts = btk::PointCollection::New();
 
     for(auto it = acquisition->BeginPoint();
