@@ -13,7 +13,10 @@ Change Log
 
 - 2020-03-10: The default parameters for createPeriodicTrajectory() are fixed
               (pelvis_rotation and lumbar_rotation are now properly negated).
-              
+
+- 2020-02-06: example2DWalking now includes a MocoContactTrackingGoal 
+              (thanks to Brian Umberger and Antoine Falisse).
+
 - 2020-01-29: DeGrooteFregly2016Muscle's passive force multiplier now has a
               stiffness parameter. To support this change, the curve was 
               tweaked slightly. This may have a minor effect on solutions

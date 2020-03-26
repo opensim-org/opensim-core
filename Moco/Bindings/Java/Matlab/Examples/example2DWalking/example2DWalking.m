@@ -41,7 +41,8 @@
 % Data
 % ----
 % The coordinate data included in the 'referenceCoordinates.sto' comes from
-% predictive simulations generated in Falisse et al. 2019.
+% predictive simulations generated in Falisse et al. 2019.  As such,
+% they deviate slightly from typical experimental gait data.
 
 clear;
 
@@ -50,17 +51,27 @@ import org.opensim.modeling.*;
 
 % ---------------------------------------------------------------------------
 % Set up a coordinate tracking problem where the goal is to minimize the
-% difference between provided and simulated coordinate values and speeds,
-% as well as to minimize an effort cost (squared controls). The provided data
-% represents half a gait cycle. Endpoint constraints enforce periodicity of
-% the coordinate values (except for pelvis tx) and speeds, coordinate
-% actuator controls, and muscle activations.
+% difference between provided and simulated coordinate values and speeds (and
+% ground reaction forces), as well as to minimize an effort cost (squared
+% controls). The provided data represents half a gait cycle. Endpoint
+% constraints enforce periodicity of the coordinate values (except for
+% pelvis tx) and speeds, coordinate actuator controls, and muscle activations.
 
 
 % Define the optimal control problem
 % ==================================
 track = MocoTrack();
 track.setName('gaitTracking');
+
+% Set the weights for the terms in the objective function.
+%
+% Note: If GRFTrackingWeight is set to 0 then GRFs will not be tracked. Setting
+% GRFTrackingWeight to 1 will cause the total tracking error (states + GRF) to
+% have about the same magnitude as control effort in the final objective value.
+controlEffortWeight = 10;
+stateTrackingWeight = 1;
+GRFTrackingWeight   = 1;
+
 
 % Reference data for tracking problem
 tableProcessor = TableProcessor('referenceCoordinates.sto');
@@ -69,7 +80,7 @@ tableProcessor.append(TabOpLowPassFilter(6));
 modelProcessor = ModelProcessor('2D_gait.osim');
 track.setModel(modelProcessor);
 track.setStatesReference(tableProcessor);
-track.set_states_global_tracking_weight(10.0);
+track.set_states_global_tracking_weight(stateTrackingWeight);
 track.set_allow_unused_references(true);
 track.set_track_reference_position_derivatives(true);
 track.set_apply_tracked_states_to_guess(true);
@@ -134,7 +145,25 @@ symmetryGoal.addControlPair(MocoPeriodicityGoalPair('/lumbarAct'));
 % Get a reference to the MocoControlGoal that is added to every MocoTrack
 % problem by default and change the weight
 effort = MocoControlGoal.safeDownCast(problem.updGoal('control_effort'));
-effort.setWeight(10);
+effort.setWeight(controlEffortWeight);
+
+% Optionally, add a contact tracking goal.
+if GRFTrackingWeight ~= 0
+    % Track the right and left vertical and fore-aft ground reaction forces.
+    contactTracking = MocoContactTrackingGoal('contact', GRFTrackingWeight);
+    contactTracking.setExternalLoadsFile('referenceGRF.xml');
+    forceNamesRightFoot = StdVectorString();
+    forceNamesRightFoot.add('contactSphereHeel_r');
+    forceNamesRightFoot.add('contactSphereFront_r');
+    contactTracking.addContactGroup(forceNamesRightFoot, 'Right_GRF');
+    forceNamesLeftFoot = StdVectorString();
+    forceNamesLeftFoot.add('contactSphereHeel_l');
+    forceNamesLeftFoot.add('contactSphereFront_l');
+    contactTracking.addContactGroup(forceNamesLeftFoot, 'Left_GRF');
+    contactTracking.setProjection('plane');
+    contactTracking.setProjectionVector(Vec3(0, 0, 1));
+    problem.addGoal(contactTracking);
+end
 
 
 % Bounds
@@ -178,7 +207,7 @@ contactSpheres_l.add('contactSphereFront_l');
 externalForcesTableFlat = opensimMoco.createExternalLoadsTableForGait(model, ...
                                  fullStride,contactSpheres_r,contactSpheres_l);
 opensimMoco.writeTableToFile(externalForcesTableFlat, ...
-                             'gaitTracking_solution_fullStride_GRF.sto');
+                             'gaitTracking_solutionGRF_fullStride.sto');
 
 
 % Uncomment next line to terminate after solving only the tracking problem
@@ -328,7 +357,7 @@ contactSpheres_l.add('contactSphereFront_l');
 externalForcesTableFlat = opensimMoco.createExternalLoadsTableForGait(model, ...
                              fullStride, contactSpheres_r, contactSpheres_l);
 opensimMoco.writeTableToFile(externalForcesTableFlat, ...
-                             'gaitPrediction_solution_fullStride_GRF.sto');
+                             'gaitPrediction_solutionGRF_fullStride.sto');
 
 
 
