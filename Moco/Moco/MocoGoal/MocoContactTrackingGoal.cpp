@@ -17,6 +17,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoContactTrackingGoal.h"
+#include "OpenSim/Simulation/Model/SmoothSphereHalfSpaceForce.h"
 
 using namespace OpenSim;
 
@@ -192,7 +193,8 @@ int MocoContactTrackingGoal::findRecordOffset(
 
     // Is the ExternalForce applied to the sphere's body?
     const auto& sphereBase =
-            contactForce.getConnectee<PhysicalFrame>("sphere_frame")
+            contactForce.getConnectee<ContactSphere>("sphere")
+                    .getConnectee<PhysicalFrame>("frame")
                     .findBaseFrame();
     const std::string& sphereBaseName = sphereBase.getName();
     if (sphereBaseName == appliedToBody) {
@@ -204,7 +206,8 @@ int MocoContactTrackingGoal::findRecordOffset(
 
     // Is the ExternalForce applied to the half space's body?
     const auto& halfSpaceBase =
-            contactForce.getConnectee<PhysicalFrame>("half_space_frame")
+            contactForce.getConnectee<ContactHalfSpace>("half_space")
+                    .getConnectee<PhysicalFrame>("frame")
                     .findBaseFrame();
     const std::string& halfSpaceBaseName = halfSpaceBase.getName();
     if (halfSpaceBaseName == appliedToBody) {

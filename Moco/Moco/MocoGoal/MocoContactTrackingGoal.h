@@ -20,9 +20,10 @@
 
 #include "MocoGoal.h"
 #include <OpenSim/Simulation/Model/ExternalLoads.h>
-#include "../Components/SmoothSphereHalfSpaceForce.h"
 
 namespace OpenSim {
+
+class SmoothSphereHalfSpaceForce;
 
 /// A contact group is a single ExternalForce and a list of contact force
 /// components in the model whose forces are summed and compared to the

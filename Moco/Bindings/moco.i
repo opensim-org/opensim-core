@@ -221,7 +221,6 @@ moco_unique_ptr(OpenSim::PositionMotion);
 %template(analyzeSpatialVec) OpenSim::analyze<SimTK::SpatialVec>;
 
 %include <Moco/Components/ModelFactory.h>
-%include <Moco/Components/SmoothSphereHalfSpaceForce.h>
 %include <Moco/Components/MultivariatePolynomialFunction.h>
 
 %include <Moco/ModelOperators.h>
