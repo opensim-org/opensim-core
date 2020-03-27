@@ -584,21 +584,27 @@ set(OPENSIM_DEPENDENCIES_DIR
     "Directory containing installed binaries of OpenSim dependencies. Set this
      only if you used the Superbuild procedure to install dependencies. ")
 
-set(C3D_PARSER ezc3d CACHE STRING "Compile OpenSim with a C3D parser ? ezc3d or BTK provide C3D reading.")
+set(C3D_PARSER ezc3d CACHE STRING
+    "Compile OpenSim with a C3D parser ? ezc3d or BTK provide C3D reading.")
 set_property(CACHE C3D_PARSER PROPERTY STRINGS "ezc3d" "BTK" "None")
 if(${C3D_PARSER} STREQUAL "ezc3d")
     set(WITH_EZC3D true)
     set(WITH_BTK false)
     find_package(ezc3d
-                 REQUIRED)
+                 REQUIRED
+                 HINTS "${OPENSIM_DEPENDENCIES_DIR}/BTK/share/ezc3dConfig.cmake"
+                 )
     add_definitions(-DWITH_EZC3D)
-#    OpenSimCopyDependencyDLLsForWin(ezc3d ${CMAKE_INSTALL_PREFIX})
-#    if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
-#        OpenSimInstallDependencyLibraries(ezc3d "${CMAKE_INSTALL_PREFIX}"
-#            "${ezc3d_LIBRARY}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
-#    endif()
+    OpenSimCopyDependencyDLLsForWin(ezc3d ${CMAKE_INSTALL_PREFIX})
+    if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
+        OpenSimInstallDependencyLibraries(ezc3d "${CMAKE_INSTALL_PREFIX}"
+            "${ezc3d_LIBRARY_DIR}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
+    endif()
 elseif(${C3D_PARSER} STREQUAL "BTK")
     set(WITH_EZC3D false)
+    unset(ezc3d_LIBRARY_DIR CACHE)
+    unset(ezc3d_LIBRARY CACHE)
+    unset(ezc3d_INCLUDE_DIR CACHE)
     set(WITH_BTK true)
 
     # If compiling with BTK, find and use it.
@@ -697,11 +703,7 @@ endif()
 # -----------------------------------------------------------
 # TODO no longer necessary; Simbody's library targets provide the 
 # include directories.
-if (WITH_EZC3D)
-    include_directories("${Simbody_INCLUDE_DIR}" ${ezc3d_INCLUDE_DIR})
-else()
-    include_directories("${Simbody_INCLUDE_DIR}")
-endif()
+include_directories("${Simbody_INCLUDE_DIR}" ${ezc3d_INCLUDE_DIR})
 
 # Installing dependencies into OpenSim's installation.
 # ----------------------------------------------------

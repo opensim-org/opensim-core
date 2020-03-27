@@ -7,11 +7,14 @@ if(NOT WITH_EZC3D AND NOT WITH_BTK)
     file(GLOB C3D_SOURCE *C3DFileAdapter.cpp)
     list(REMOVE_ITEM INCLUDES ${C3D_HEADER})
     list(REMOVE_ITEM SOURCES  ${C3D_SOURCE})
-    unset(ezc3d_LIBRARY)
+endif()
+if (NOT WITH_EZC3D)
+    unset(ezc3d_LIBRARY CACHE)
+endif()
+if (NOT WITH_BTK)
     unset(BTK_LIBRARIES)
 endif()
 
-if (WITH_EZC3D)
 OpenSimAddLibrary(
     KIT Common
     AUTHORS "Clay_Anderson-Ayman_Habib-Peter_Loan"
@@ -21,17 +24,6 @@ OpenSimAddLibrary(
     SOURCES ${SOURCES}
     TESTDIRS "Test"
     )
-else()
-    OpenSimAddLibrary(
-        KIT Common
-        AUTHORS "Clay_Anderson-Ayman_Habib-Peter_Loan"
-        # Clients of osimCommon need not link to BTK.
-        LINKLIBS PUBLIC ${Simbody_LIBRARIES} PRIVATE ${BTK_LIBRARIES}
-        INCLUDES ${INCLUDES}
-        SOURCES ${SOURCES}
-        TESTDIRS "Test"
-        )
-endif()
 
 option(OPENSIM_LOG_TO_FILE
     "Redirect output to both the terminal and an output file."

@@ -1,10 +1,7 @@
 #include "C3DFileAdapter.h"
 
 #ifdef WITH_EZC3D
-// TODO manage the header into one include
-#include "../ezc3d/Header.h"
-#include "../ezc3d/Parameters.h"
-#include "../ezc3d/Data.h"
+#include "ezc3d_all.h"
 #else
 #include "btkAcquisitionFileReader.h"
 #include "btkAcquisition.h"
@@ -71,13 +68,13 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
 
     EventTable event_table{};
 #ifdef WITH_EZC3D
-    for (size_t i=0;
-         i<c3d.header().eventsTime().size();
-         ++i) {
-
+    for (size_t i=0; i<c3d.header().eventsTime().size();++i) {
         std::string eventDescriptionStr("");
-        if (c3d.parameters().isGroup("EVENT") && c3d.parameters().group("EVENT").isParameter("DESCRIPTION")){
-            const auto& eventDescription(c3d.parameters().group("EVENT").parameter("DESCRIPTION").valuesAsString());
+        if (c3d.parameters().isGroup("EVENT")
+                && c3d.parameters().group("EVENT").isParameter("DESCRIPTION")){
+            const auto& eventDescription(
+                        c3d.parameters().group("EVENT")
+                        .parameter("DESCRIPTION").valuesAsString());
             if (eventDescription.size() >= i){
                 eventDescriptionStr = eventDescription[i];
             }
@@ -86,7 +83,8 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         {
             c3d.header().eventsLabel(i),
             static_cast<double>(c3d.header().eventsTime(i)),
-            static_cast<int>(c3d.header().eventsTime(i) / c3d.header().frameRate()),
+            static_cast<int>(
+                        c3d.header().eventsTime(i) / c3d.header().frameRate()),
             eventDescriptionStr
         });
     }
@@ -105,10 +103,13 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
     OutputTables tables{};
 
 #ifdef WITH_EZC3D
-    int nbFrames(static_cast<int>(c3d.data().nbFrames()));
-    int nbMarkers(c3d.parameters().group("POINT").parameter("USED").valuesAsInt()[0]);
-    double pointFrequency(static_cast<double>(
-                              c3d.parameters().group("POINT").parameter("RATE").valuesAsFloat()[0]));
+    int numFrames(static_cast<int>(c3d.data().nbFrames()));
+    int numMarkers(c3d.parameters().group("POINT")
+                  .parameter("USED").valuesAsInt()[0]);
+    double pointFrequency(
+                static_cast<double>(
+                    c3d.parameters().group("POINT")
+                    .parameter("RATE").valuesAsDouble()[0]));
 #else
     auto marker_pts = btk::PointCollection::New();
 
@@ -119,22 +120,23 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         if(pt->GetType() == btk::Point::Marker)
                marker_pts->InsertItem(pt);
     }
-    int nbFrames(marker_pts->GetFrontItem()->GetFrameNumber());
-    int nbMarkers(marker_pts->GetItemNumber());
+    int numFrames(marker_pts->GetFrontItem()->GetFrameNumber());
+    int numMarkers(marker_pts->GetItemNumber());
     double pointFrequency(acquisition->GetPointFrequency());
 #endif
 
-    if(nbMarkers != 0) {
+    if(numMarkers != 0) {
 
-        int marker_nrow = nbFrames;
-        int marker_ncol = nbMarkers;
+        int marker_nrow = numFrames;
+        int marker_ncol = numMarkers;
 
         std::vector<double> marker_times(marker_nrow);
         SimTK::Matrix_<SimTK::Vec3> marker_matrix(marker_nrow, marker_ncol);
 
         std::vector<std::string> marker_labels{};
 #ifdef WITH_EZC3D
-        for (auto label : c3d.parameters().group("POINT").parameter("LABELS").valuesAsString()) {
+        for (auto label : c3d.parameters().group("POINT")
+                          .parameter("LABELS").valuesAsString()) {
             marker_labels.push_back(SimTK::Value<std::string>(label));
         }
 #else
@@ -145,7 +147,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
 
         double time_step{1.0 / pointFrequency};
         for(int f = 0; f < marker_nrow; ++f) {
-            SimTK::RowVector_<SimTK::Vec3> row{ nbMarkers,
+            SimTK::RowVector_<SimTK::Vec3> row{ numMarkers,
                                                 SimTK::Vec3(SimTK::NaN) };
             int m{0};
             // C3D standard is to read empty values as zero, but sets a
@@ -190,15 +192,20 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
             setValueForKey("DataRate",
                 std::to_string(pointFrequency));
 
-        marker_table->
-            updTableMetaData().
-            setValueForKey("Units",
 #ifdef WITH_EZC3D
-                c3d.parameters().group("POINT").parameter("UNITS").valuesAsString()[0]
+        const auto& units_param = c3d.parameters().group("POINT")
+                .parameter("UNITS").valuesAsString();
+        std::string units;
+        if (units_param.size() > 0){
+            units = units_param[0];
+        }
+        else {
+            units = "";
+        }
 #else
-                acquisition->GetPointUnit()
+        std::string units = acquisition->GetPointUnit();
 #endif
-            );
+        marker_table->updTableMetaData().setValueForKey("Units", units);
 
         marker_table->updTableMetaData().setValueForKey("events", event_table);
 
@@ -208,7 +215,9 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         std::vector<double> emptyTimes;
         std::vector<std::string> emptyLabels;
         SimTK::Matrix_<SimTK::Vec3> noData;
-        auto emptyMarkersTable = std::make_shared<TimeSeriesTableVec3>(emptyTimes, noData, emptyLabels);
+        auto emptyMarkersTable =
+                std::make_shared<TimeSeriesTableVec3>(
+                    emptyTimes, noData, emptyLabels);
         tables.emplace(_markers, emptyMarkersTable);
     }
 #ifndef WITH_EZC3D
