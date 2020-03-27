@@ -559,7 +559,7 @@ TEMPLATE_TEST_CASE("MocoPeriodicityGoal", "", MocoCasADiSolver) {
 
     MocoStudy study;
     auto& problem = study.updProblem();
-    problem.setModelCopy(ModelFactory::createDoublePendulum());
+    problem.setModelCopy(ModelFactory::createPendulum());
 
     problem.setTimeBounds(0, 1);
     problem.setStateInfo("/jointset/j0/q0/value", {-1.0, 1.0}, 0.1);
