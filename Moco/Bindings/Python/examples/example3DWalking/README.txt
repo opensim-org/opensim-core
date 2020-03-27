@@ -21,3 +21,11 @@ The coordinate and marker data included in the 'coordinates.sto' and
 'marker_trajectories.trc' files also come from the Rajagopal et al. 2016
 model distribution. The coordinates were computed using inverse kinematics
 and modified via the Residual Reduction Algorithm (RRA).
+
+The electromyography data in 'electromyography.sto' is based on the file
+emg_walk_raw.anc from the Rajagopal et al. 2016 model distribution. The data
+is bandpassed filtered (50 Hz to 500 Hz; 6th order Butterworth), rectified,
+lowpass filtered (7.5 Hz; 4th order Butterworth),
+and then filtered with a critically damped filter (15 Hz; 4th order).
+Finally, each column is normalized so its maximum value is 1.0.
+

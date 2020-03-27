@@ -237,6 +237,9 @@ class OSIMMOCO_API ModOpRemoveMuscles : public ModelOperator {
 
 public:
     void operate(Model& model, const std::string&) const override {
+        // Without finalizeFromProperties(), an exception is raised
+        // about the model not having any subcomponents.
+        model.finalizeFromProperties();
         model.finalizeConnections();
         ModelFactory::removeMuscles(model);
     }
