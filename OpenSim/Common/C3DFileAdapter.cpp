@@ -83,7 +83,7 @@ C3DFileAdapter::clone() const {
 void
 C3DFileAdapter::write(const C3DFileAdapter::Tables& tables,
                       const std::string& fileName) {
-    throw Exception{"Writing C3D not supported yet."};
+    OPENSIM_THROW(Exception, "Writing C3D not supported yet.");
 }
 
 C3DFileAdapter::OutputTables
@@ -399,9 +399,9 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
                                            pf_ref[i].moments()[f](2)};
                     ++col;
                 } else {
-                    throw std::runtime_error(
-                                "The selected force location is not implemented "
-                                "for ezc3d files");
+                    OPENSIM_THROW(Exception,
+                                  "The selected force location is not "
+                                  "implemented for ezc3d files");
                 }
             }
 #else
@@ -479,7 +479,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
 void
 C3DFileAdapter::extendWrite(const InputTables& absTables,
                             const std::string& fileName) const {
-    throw Exception{"Writing to C3D not supported yet."};
+    OPENSIM_THROW(Exception, "Writing to C3D not supported yet.");
 }
 
 } // namespace OpenSim
