@@ -11,9 +11,40 @@
 
 namespace {
 
-#ifdef WITH_BTK
+#ifdef WITH_EZC3D
+// Function to convert ezc3d matrix to SimTK matrix. This can become a lambda
+// function inside extendRead in future.
+SimTK::Matrix_<double>
+convertToSimtkMatrix(const ezc3d::Matrix& mat) {
+    SimTK::Matrix_<double> simtkMat{static_cast<int>(mat.nbRows()),
+                                    static_cast<int>(mat.nbCols())};
+
+    for(int r = 0; r < mat.nbRows(); ++r)
+        for(int c = 0; c < mat.nbCols(); ++c)
+            simtkMat(r, c) = mat(r, c);
+
+    return simtkMat;
+}
+
+// Function to convert a collection of ezc3d Vector3d to SimTK matrix.
+// This can become a lambda function inside extendRead in future.
+SimTK::Matrix_<double>
+convertToSimtkMatrix(const std::vector<ezc3d::Vector3d>& all_vec) {
+    SimTK::Matrix_<double> simtkMat{static_cast<int>(all_vec.size()), 3};
+
+    for(int r = 0; r < all_vec.size(); ++r){
+        const ezc3d::Vector3d& vec(all_vec[r]);
+        for(int c = 0; c < 3; ++c){
+            simtkMat(r, c) = vec(c);
+        }
+    }
+
+    return simtkMat;
+}
+
+#else
 // Function to convert Eigen matrix to SimTK matrix. This can become a lambda
-// funciton inside extendRead in future.
+// function inside extendRead in future.
 template<typename _Scalar, int _Rows, int _Cols>
 SimTK::Matrix_<double>
 convertToSimtkMatrix(const Eigen::Matrix<_Scalar, _Rows, _Cols>&
@@ -77,9 +108,8 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
 
     for (size_t i=0; i<c3d.header().eventsTime().size();++i) {
         std::string eventDescriptionStr("");
-        if (eventDescription.size() >= i){
+        if (eventDescription.size() > i){
             eventDescriptionStr = eventDescription[i];
-
         }
         event_table.push_back(
         {
@@ -223,7 +253,25 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
                     emptyTimes, noData, emptyLabels);
         tables.emplace(_markers, emptyMarkersTable);
     }
-#ifndef WITH_EZC3D
+
+    std::vector<SimTK::Matrix_<double>> fpCalMatrices{};
+    std::vector<SimTK::Matrix_<double>> fpCorners{};
+    std::vector<SimTK::Matrix_<double>> fpOrigins{};
+    std::vector<unsigned>               fpTypes{};
+#ifdef WITH_EZC3D
+    const auto& force_platforms_extractor = ezc3d::Modules::ForcePlatforms(c3d);
+
+    ForceLocation forceLocation(getLocationForForceExpression());
+    auto numPlatform(static_cast<int>(
+                         force_platforms_extractor.forcePlatforms().size()));
+
+    for (const auto& platform : force_platforms_extractor.forcePlatforms()){
+
+        const auto& calMatrix = platform.calMatrix();
+        const auto& corners   = platform.corners();
+        const auto& origins   = platform.origin();
+        auto type = platform.type();
+#else
     // This is probably the right way to get the raw forces data from force 
     // platforms. Extract the collection of force platforms.
     auto force_platforms_extractor = btk::ForcePlatformsExtractor::New();
@@ -231,24 +279,25 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
     auto force_platform_collection = force_platforms_extractor->GetOutput();
     force_platforms_extractor->Update();
 
-    std::vector<SimTK::Matrix_<double>> fpCalMatrices{};
-    std::vector<SimTK::Matrix_<double>> fpCorners{};
-    std::vector<SimTK::Matrix_<double>> fpOrigins{};
-    std::vector<unsigned>               fpTypes{};
     auto    fp_force_pts = btk::PointCollection::New();
     auto   fp_moment_pts = btk::PointCollection::New();
     auto fp_position_pts = btk::PointCollection::New();
-    for(auto platform = force_platform_collection->Begin(); 
-        platform != force_platform_collection->End(); 
+
+    for(auto platform = force_platform_collection->Begin();
+        platform != force_platform_collection->End();
         ++platform) {
         const auto& calMatrix = (*platform)->GetCalMatrix();
         const auto& corners   = (*platform)->GetCorners();
         const auto& origins   = (*platform)->GetOrigin();
+        auto type = (*platform)->GetType();
+#endif
+
         fpCalMatrices.push_back(convertToSimtkMatrix(calMatrix));
         fpCorners.push_back(convertToSimtkMatrix(corners));
         fpOrigins.push_back(convertToSimtkMatrix(origins));
-        fpTypes.push_back(static_cast<unsigned>((*platform)->GetType()));
+        fpTypes.push_back(static_cast<unsigned>(type));
 
+#ifdef WITH_BTK
         // Get ground reaction wrenches for the force platform.
         auto ground_reaction_wrench_filter = 
             btk::GroundReactionWrenchFilter::New();
@@ -268,42 +317,94 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
             // Position time series.
             fp_position_pts->InsertItem((*wrench)->GetPosition());
         }
+#endif
     }
+#ifdef WITH_BTK
+    auto numPlatform(fp_force_pts->GetItemNumber());
+#endif
 
-    if(fp_force_pts->GetItemNumber() != 0) {
-
+    if(numPlatform != 0) {
         std::vector<std::string> labels{};
         ValueArray<std::string> units{};
-        for(int fp = 1; fp <= fp_force_pts->GetItemNumber(); ++fp) {
+        for(int fp = 1; fp <= numPlatform; ++fp) {
             auto fp_str = std::to_string(fp);
 
-            labels.push_back(SimTK::Value<std::string>("f" + fp_str));
+#ifdef WITH_EZC3D
+            auto force_unit =
+                    force_platforms_extractor.forcePlatform(fp-1).forceUnit();
+            auto position_unit =
+                    force_platforms_extractor.forcePlatform(fp-1).positionUnit();
+            auto moment_unit =
+                    force_platforms_extractor.forcePlatform(fp-1).momentUnit();
+#else
             auto force_unit = acquisition->GetPointUnits().
-                at(_unit_index.at("force"));
+                    at(_unit_index.at("force"));
+            auto position_unit = acquisition->GetPointUnits().
+                at(_unit_index.at("marker"));
+            auto moment_unit = acquisition->GetPointUnits().
+                at(_unit_index.at("moment"));
+#endif
+
+            labels.push_back(SimTK::Value<std::string>("f" + fp_str));
             units.upd().push_back(SimTK::Value<std::string>(force_unit));
 
             labels.push_back(SimTK::Value<std::string>("p" + fp_str));
-            auto position_unit = acquisition->GetPointUnits().
-                at(_unit_index.at("marker"));
             units.upd().push_back(SimTK::Value<std::string>(position_unit));
 
             labels.push_back(SimTK::Value<std::string>("m" + fp_str));
-            auto moment_unit = acquisition->GetPointUnits().
-                at(_unit_index.at("moment"));
             units.upd().push_back(SimTK::Value<std::string>(moment_unit));
         }
 
+#ifdef WITH_EZC3D
+        const int nf = force_platforms_extractor.forcePlatform(0).nbFrames();
+        auto analogFrequency = static_cast<double>(c3d.header().frameRate()
+                                            * c3d.header().nbAnalogByFrame());
+        const auto& pf_ref(force_platforms_extractor.forcePlatforms());
+#else
         const int nf = fp_force_pts->GetFrontItem()->GetFrameNumber();
+        auto analogFrequency = acquisition->GetAnalogFrequency();
+#endif
         
         std::vector<double> force_times(nf);
         SimTK::Matrix_<SimTK::Vec3> force_matrix(nf, (int)labels.size());
 
-        double time_step{1.0 / acquisition->GetAnalogFrequency()};
+        double time_step{1.0 / analogFrequency};
 
         for(int f = 0; f < nf;  ++f) {
             SimTK::RowVector_<SimTK::Vec3> 
-                row{fp_force_pts->GetItemNumber() * 3};
+                row{numPlatform * 3};
             int col{0};
+#ifdef WITH_EZC3D
+            for (size_t i=0; i<numPlatform; ++i){
+                row[col] = SimTK::Vec3{pf_ref[i].forces()[f](0),
+                                       pf_ref[i].forces()[f](1),
+                                       pf_ref[i].forces()[f](2)};
+                ++col;
+                if (forceLocation == ForceLocation::CenterOfPressure){
+                    row[col] = SimTK::Vec3{pf_ref[i].CoP()[f](0),
+                                           pf_ref[i].CoP()[f](1),
+                                           pf_ref[i].CoP()[f](2)};
+                    ++col;
+                    row[col] = SimTK::Vec3{pf_ref[i].Tz()[f](0),
+                                           pf_ref[i].Tz()[f](1),
+                                           pf_ref[i].Tz()[f](2)};
+                    ++col;
+                } else if (forceLocation == ForceLocation::OriginOfForcePlate){
+                    row[col] = SimTK::Vec3{pf_ref[i].meanCorners()(0),
+                                           pf_ref[i].meanCorners()(1),
+                                           pf_ref[i].meanCorners()(2)};
+                    ++col;
+                    row[col] = SimTK::Vec3{pf_ref[i].moments()[f](0),
+                                           pf_ref[i].moments()[f](1),
+                                           pf_ref[i].moments()[f](2)};
+                    ++col;
+                } else {
+                    throw std::runtime_error(
+                                "The selected force location is not implemented "
+                                "for ezc3d files");
+                }
+            }
+#else
             for(auto fit = fp_force_pts->Begin(),
                 mit =     fp_moment_pts->Begin(),
                 pit =   fp_position_pts->Begin();
@@ -324,6 +425,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
                                        (*mit)->GetValues().coeff(f, 2)};
                 ++col;
             }
+#endif
             force_matrix.updRow(f) = row;
             force_times[f] = 0 + f * time_step; //TODO: 0 should be start_time
         }
@@ -357,7 +459,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         force_table.
             updTableMetaData().
             setValueForKey("DataRate",
-                std::to_string(acquisition->GetAnalogFrequency()));
+                std::to_string(analogFrequency));
 
         tables.emplace(_forces,
             std::shared_ptr<TimeSeriesTableVec3>(&force_table));
@@ -371,7 +473,6 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         auto emptyforcesTable = std::make_shared<TimeSeriesTableVec3>(emptyTimes, noData, emptyLabels);
         tables.emplace(_forces, emptyforcesTable);
     }
-#endif
     return tables;
 }
 
