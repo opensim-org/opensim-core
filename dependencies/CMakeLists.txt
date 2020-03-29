@@ -143,7 +143,7 @@ SetDefaultCMakeBuildType()
 
 AddDependency(NAME       ezc3d
               URL        https://github.com/pariterre/ezc3d.git
-              TAG        3629c23a700f49c4bd10aee8e5b73975dab2f468
+              TAG        15d041c9915d71d2843b00e165d65d4683e31b50
               CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF)
 
 AddDependency(NAME       BTK

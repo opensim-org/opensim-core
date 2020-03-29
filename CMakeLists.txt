@@ -592,7 +592,7 @@ if(${C3D_PARSER} STREQUAL "ezc3d")
     set(WITH_BTK false)
     find_package(ezc3d
                  REQUIRED
-                 HINTS "${OPENSIM_DEPENDENCIES_DIR}/BTK/share/ezc3dConfig.cmake"
+                 HINTS "${OPENSIM_DEPENDENCIES_DIR}/ezc3d/lib/ezc3d/cmake"
                  )
     add_definitions(-DWITH_EZC3D)
     OpenSimCopyDependencyDLLsForWin(ezc3d ${CMAKE_INSTALL_PREFIX})

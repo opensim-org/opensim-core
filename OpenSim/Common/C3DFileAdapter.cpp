@@ -68,16 +68,18 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
 
     EventTable event_table{};
 #ifdef WITH_EZC3D
+    std::vector<std::string> eventDescription;
+    if (c3d.parameters().isGroup("EVENT")
+            && c3d.parameters().group("EVENT").isParameter("DESCRIPTION")){
+        eventDescription = c3d.parameters().group("EVENT")
+                .parameter("DESCRIPTION").valuesAsString();
+    }
+
     for (size_t i=0; i<c3d.header().eventsTime().size();++i) {
         std::string eventDescriptionStr("");
-        if (c3d.parameters().isGroup("EVENT")
-                && c3d.parameters().group("EVENT").isParameter("DESCRIPTION")){
-            const auto& eventDescription(
-                        c3d.parameters().group("EVENT")
-                        .parameter("DESCRIPTION").valuesAsString());
-            if (eventDescription.size() >= i){
-                eventDescriptionStr = eventDescription[i];
-            }
+        if (eventDescription.size() >= i){
+            eventDescriptionStr = eventDescription[i];
+
         }
         event_table.push_back(
         {
@@ -157,7 +159,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
             // Read in value if it is not zero or residual is not -1
 #ifdef WITH_EZC3D
             for(auto pt : c3d.data().frame(f).points().points()) {
-                if (!pt.isempty() ) {//residual is not -1
+                if (!pt.isEmpty() ) {//residual is not -1
                     row[m] = SimTK::Vec3{ static_cast<double>(pt.x()),
                                           static_cast<double>(pt.y()),
                                           static_cast<double>(pt.z()) };
@@ -166,6 +168,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
             }
 #else
             for(auto it = marker_pts->Begin();  it != marker_pts->End(); ++it) {
+                // See: BTKCore/Code/IO/btkTRCFileIO.cpp#L359-L360
                 auto pt = *it;
                 if (!pt->GetValues().row(f).isZero() ||    //not precisely zero
                     (pt->GetResiduals().coeff(f) != -1) ) {//residual is not -1
