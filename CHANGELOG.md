@@ -3,6 +3,9 @@ Change Log
 
 0.4.0 (in development) 
 ----------------------
+- 2020-03-27: Fix bug in MocoPeriodicityGoal that prevented convergence when
+              constraining control variables.
+              
 - 2020-03-25: Fixed an error that occurs when using ModOpRemoveMuscles.
 
 - 2020-03-15: exampleMocoInverse now employs electromyography data with a 
