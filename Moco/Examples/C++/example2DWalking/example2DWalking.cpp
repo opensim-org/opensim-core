@@ -141,9 +141,9 @@ MocoSolution gaitTracking(double controlEffortWeight = 10,
                 "contact", GRFTrackingWeight);
         contactTracking->setExternalLoadsFile("referenceGRF.xml");
         contactTracking->addContactGroup(
-                {"contactSphereHeel_r", "contactSphereFront_r"},"Right_GRF");
+                {"contactHeel_r", "contactFront_r"},"Right_GRF");
         contactTracking->addContactGroup(
-                {"contactSphereHeel_l", "contactSphereFront_l"}, "Left_GRF");
+                {"contactHeel_l", "contactFront_l"}, "Left_GRF");
         contactTracking->setProjection("plane");
         contactTracking->setProjectionVector(SimTK::Vec3(0, 0, 1));
     }
@@ -187,14 +187,14 @@ MocoSolution gaitTracking(double controlEffortWeight = 10,
 
     // Extract ground reaction forces.
     // ===============================
-    std::vector<std::string> contactSpheres_r;
-    std::vector<std::string> contactSpheres_l;
-    contactSpheres_r.push_back("contactSphereHeel_r");
-    contactSpheres_r.push_back("contactSphereFront_r");
-    contactSpheres_l.push_back("contactSphereHeel_l");
-    contactSpheres_l.push_back("contactSphereFront_l");
+    std::vector<std::string> contact_r;
+    std::vector<std::string> contact_l;
+    contact_r.push_back("contactHeel_r");
+    contact_r.push_back("contactFront_r");
+    contact_l.push_back("contactHeel_l");
+    contact_l.push_back("contactFront_l");
     TimeSeriesTable externalForcesTableFlat = createExternalLoadsTableForGait(
-            model, full, contactSpheres_r, contactSpheres_l);
+            model, full, contact_r, contact_l);
     writeTableToFile(externalForcesTableFlat,
             "gaitTracking_solutionGRF_fullcycle.sto");
 

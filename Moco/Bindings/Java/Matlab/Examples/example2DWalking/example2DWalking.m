@@ -153,12 +153,12 @@ if GRFTrackingWeight ~= 0
     contactTracking = MocoContactTrackingGoal('contact', GRFTrackingWeight);
     contactTracking.setExternalLoadsFile('referenceGRF.xml');
     forceNamesRightFoot = StdVectorString();
-    forceNamesRightFoot.add('contactSphereHeel_r');
-    forceNamesRightFoot.add('contactSphereFront_r');
+    forceNamesRightFoot.add('contactHeel_r');
+    forceNamesRightFoot.add('contactFront_r');
     contactTracking.addContactGroup(forceNamesRightFoot, 'Right_GRF');
     forceNamesLeftFoot = StdVectorString();
-    forceNamesLeftFoot.add('contactSphereHeel_l');
-    forceNamesLeftFoot.add('contactSphereFront_l');
+    forceNamesLeftFoot.add('contactHeel_l');
+    forceNamesLeftFoot.add('contactFront_l');
     contactTracking.addContactGroup(forceNamesLeftFoot, 'Left_GRF');
     contactTracking.setProjection('plane');
     contactTracking.setProjectionVector(Vec3(0, 0, 1));
