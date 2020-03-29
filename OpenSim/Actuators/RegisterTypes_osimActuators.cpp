@@ -27,6 +27,7 @@
 #include "RegisterTypes_osimActuators.h"
 
 #include "CoordinateActuator.h"
+#include "ActivationCoordinateActuator.h"
 #include "PointActuator.h"
 #include "TorqueActuator.h"
 #include "BodyActuator.h"
@@ -78,6 +79,7 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
   try {
 
     Object::registerType( CoordinateActuator() );
+    Object::registerType( ActivationCoordinateActuator() );
     Object::registerType( PointActuator() );
     Object::registerType( TorqueActuator() );
     Object::registerType( BodyActuator() );
