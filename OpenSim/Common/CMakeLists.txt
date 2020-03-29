@@ -9,7 +9,7 @@ if(NOT WITH_EZC3D AND NOT WITH_BTK)
     list(REMOVE_ITEM SOURCES  ${C3D_SOURCE})
 endif()
 if (NOT WITH_EZC3D)
-    unset(ezc3d_LIBRARY CACHE)
+    unset(ezc3d_LIBRARY)
 endif()
 if (NOT WITH_BTK)
     unset(BTK_LIBRARIES)
@@ -18,8 +18,9 @@ endif()
 OpenSimAddLibrary(
     KIT Common
     AUTHORS "Clay_Anderson-Ayman_Habib-Peter_Loan"
-    # Clients of osimCommon need not link to BTK.
-    LINKLIBS PUBLIC ${Simbody_LIBRARIES} PRIVATE ${BTK_LIBRARIES} ${ezc3d_LIBRARY}
+    # Clients of osimCommon need not link to BTK or ezc3d.
+    LINKLIBS PUBLIC ${Simbody_LIBRARIES}
+             PRIVATE ${BTK_LIBRARIES} ${ezc3d_LIBRARY}
     INCLUDES ${INCLUDES}
     SOURCES ${SOURCES}
     TESTDIRS "Test"

@@ -157,7 +157,6 @@ AddDependency(NAME       simbody
               TAG        Simbody-3.7
               CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF 
                          -DBUILD_TESTING:BOOL=OFF)
-                     
 
 AddDependency(NAME       docopt
               URL        https://github.com/docopt/docopt.cpp.git
