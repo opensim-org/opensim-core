@@ -562,7 +562,7 @@ TEMPLATE_TEST_CASE("MocoPeriodicityGoal", "", MocoCasADiSolver) {
     problem.setModelCopy(ModelFactory::createPendulum());
 
     problem.setTimeBounds(0, 1);
-    problem.setStateInfo("/jointset/j0/q0/value", {-0.3, 0.3});
+    problem.setStateInfo("/jointset/j0/q0/value", {-1.0, 1.0}, 0.1);
 
     auto* periodic = problem.addGoal<MocoPeriodicityGoal>("periodic");
     MocoPeriodicityGoalPair pair_q0_value;
@@ -577,6 +577,7 @@ TEMPLATE_TEST_CASE("MocoPeriodicityGoal", "", MocoCasADiSolver) {
 
     SECTION("Perodic constraint is satisfied.") {
         MocoSolution solution = study.solve();
+        solution.write("testMocoGoals_MocoPeriodicityGoal_solution.sto");
         const int N = solution.getNumTimes();
         CHECK(solution.getState("/jointset/j0/q0/value")[N - 1] ==
                 solution.getState("/jointset/j0/q0/value")[0]);

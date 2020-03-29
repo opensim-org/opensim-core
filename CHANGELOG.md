@@ -3,13 +3,16 @@ Change Log
 
 0.4.0 (in development) 
 ----------------------
-- 2020-03-26: (backwards-incompatible) Updated opensim-core to a version that 
+- 2020-03-29: (backwards-incompatible) Updated opensim-core to a version that 
               includes SmoothSphereHalfSpaceForce. Therefore, 
               SmoothSphereHalfSpaceForce was removed from Moco.
               The interface of this class has been updated
               to use OpenSim's ContactSphere and ContactHalfSpace classes. 
               See the following link for how to update your models:
               https://github.com/opensim-org/opensim-moco/commit/ccd39f82acba5f23ebc3423eb40d2197d6d41d8b#diff-eb627df1f2a265a84a30b7c6b4f92999
+              
+- 2020-03-27: Fix bug in MocoPeriodicityGoal that prevented convergence when
+              constraining control variables.
 
 - 2020-03-25: Fixed an error that occurs when using ModOpRemoveMuscles.
 

@@ -88,9 +88,9 @@ void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
                 format("Could not find control '%s'.", path2));
         int controlIndex1 = systemControlIndexMap[path1];
         int controlIndex2 = systemControlIndexMap[path2];
-        m_indices_states.emplace_back(controlIndex1, controlIndex2,
-                get_state_pairs(i).get_negate() ? -1 : 1);
         m_control_names.emplace_back(path1, path2);
+        m_indices_controls.emplace_back(controlIndex1, controlIndex2,
+                get_control_pairs(i).get_negate() ? -1 : 1);
     }
 
     setNumIntegralsAndOutputs(
