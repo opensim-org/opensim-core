@@ -584,7 +584,7 @@ set(OPENSIM_DEPENDENCIES_DIR
     "Directory containing installed binaries of OpenSim dependencies. Set this
      only if you used the Superbuild procedure to install dependencies. ")
 
-set(C3D_PARSER ezc3d CACHE STRING
+set(C3D_PARSER None CACHE STRING
     "Compile OpenSim with a C3D parser ? ezc3d or BTK provide C3D reading.")
 set_property(CACHE C3D_PARSER PROPERTY STRINGS "ezc3d" "BTK" "None")
 if(${C3D_PARSER} STREQUAL "ezc3d")
@@ -603,7 +603,7 @@ if(${C3D_PARSER} STREQUAL "ezc3d")
 elseif(${C3D_PARSER} STREQUAL "BTK")
     set(WITH_EZC3D false)
     unset(ezc3d_LIBRARY_DIR CACHE)
-    unset(ezc3d_LIBRARY CACHE)
+    unset(ezc3d_LIBRARY)
     unset(ezc3d_INCLUDE_DIR CACHE)
     set(WITH_BTK true)
 
@@ -622,6 +622,9 @@ elseif(${C3D_PARSER} STREQUAL "BTK")
     endif()
 else()
     set(WITH_EZC3D false)
+    unset(ezc3d_LIBRARY_DIR CACHE)
+    unset(ezc3d_LIBRARY)
+    unset(ezc3d_INCLUDE_DIR CACHE)
     set(WITH_BTK false)
 endif()
 
@@ -703,7 +706,7 @@ endif()
 # -----------------------------------------------------------
 # TODO no longer necessary; Simbody's library targets provide the 
 # include directories.
-include_directories("${Simbody_INCLUDE_DIR}" ${ezc3d_INCLUDE_DIR})
+include_directories("${Simbody_INCLUDE_DIR}")
 
 # Installing dependencies into OpenSim's installation.
 # ----------------------------------------------------
