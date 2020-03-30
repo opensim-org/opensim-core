@@ -143,7 +143,7 @@ SetDefaultCMakeBuildType()
 
 AddDependency(NAME       ezc3d
               URL        https://github.com/pyomeca/ezc3d.git
-              TAG        c222e0722eb9dcc22a6c81b382ae9ac4259b9a6d
+              TAG        Release_1.3.0
               CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF)
 
 AddDependency(NAME       BTK
