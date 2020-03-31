@@ -61,6 +61,14 @@ public:
         constructProperties();
     }
 
+    /// Provide the coordinate name.
+    explicit ActivationCoordinateActuator(const std::string& coordinateName)
+            : ActivationCoordinateActuator() {
+        if (!coordinateName.empty()) {
+            set_coordinate(coordinateName);
+        }
+    }
+
     /// The lower bound on activation is getMinControl() and the upper bound is
     /// getMaxControl().
     /// Whether these bounds are enforced is determined by the solver used.
