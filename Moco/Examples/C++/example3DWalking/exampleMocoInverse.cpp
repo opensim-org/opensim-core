@@ -148,9 +148,9 @@ int main() {
 
     // If you installed the Moco python package, you can compare both solutions
     // using the following command:
-    //      opensim-moco-generate-report subject_walk_armless.osim \
-    //          example3DWalking_MocoInverse_solution.sto --bilateral \
-    //          --ref_files example3DWalking_MocoInverseWithEMG_solution.sto \
+    //      opensim-moco-generate-report subject_walk_armless.osim
+    //          example3DWalking_MocoInverse_solution.sto --bilateral
+    //          --ref_files example3DWalking_MocoInverseWithEMG_solution.sto
     //                      controls_reference.sto
 
     return EXIT_SUCCESS;
