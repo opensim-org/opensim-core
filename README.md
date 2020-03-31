@@ -23,9 +23,9 @@ Moco depends on the following software:
 2. **CasADi**: Algorithmic differentiation and interface to nonlinear solvers.
 3. **Tropter**: C++ library for solving general optimal control problems with
 direct collocation. Currently, Tropter's source code is part of Moco.
-   2. **Eigen**: C++ matrix library.
-   3. **ColPack**: Used to efficiently
-   4. **ADOL-C**: Automatic differentiation.
+   1. **Eigen**: C++ matrix library.
+   2. **ColPack**: Used to efficiently compute derivatives.
+   3. **ADOL-C**: Automatic differentiation.
 4. **Ipopt**: Nonlinear program solver.
 
 Build the dependencies by building the CMake project in the `dependencies`
