@@ -8,7 +8,7 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 
 v4.2
 ====
-- 
+- Add the ActivationCoordinateActuator component, which is a CoordinateActuator with simple activation dynamics (PR #2699).
 
 v4.1
 ====
