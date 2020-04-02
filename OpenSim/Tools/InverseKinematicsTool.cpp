@@ -39,6 +39,7 @@
 #include <OpenSim/Common/XMLDocument.h>
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -192,19 +193,23 @@ bool InverseKinematicsTool::run()
             "InverseKinematicsTool final time (%f) is before start time (%f).",
             final_time, start_time);
 
-        const auto& markersTable = markersReference.getMarkerTable();
-        const int start_ix = int(
-            markersTable.getNearestRowIndexForTime(start_time) );
-        const int final_ix = int(
-            markersTable.getNearestRowIndexForTime(final_time) );
-        const int Nframes = final_ix - start_ix + 1;
-        const auto& times = markersTable.getIndependentColumn();
-        // if tracking orientions create orientatinReference here
+        int start_ix, final_ix;
+        std::vector<double> times;
+        if (trackMarkers) {
+            const auto& markersTable = markersReference.getMarkerTable();
+            start_ix = int(markersTable.getNearestRowIndexForTime(start_time));
+            final_ix = int(markersTable.getNearestRowIndexForTime(final_time));
+            times = markersTable.getIndependentColumn();
+        }
+         // if tracking orientions create orientatinReference here
         OrientationsReference orientationsReference;
         if (trackOrientations) {
             TimeSeriesTable_<SimTK::Quaternion> quatTable(get_orientations_file());
+            OpenSim::TimeSeriesTable_<SimTK::Rotation_<double>> rotTable =
+                    OpenSenseUtilities::convertQuaternionsToRotations(
+                            quatTable);
             orientationsReference =
-                    OrientationsReference(get_orientations_file());
+                    OrientationsReference(rotTable);
             std::cout << "Loading orientations as quaternions from "
                       << get_orientations_file() << std::endl;
             SimTK::Vec2 orientationValidTimRange =
@@ -212,8 +217,13 @@ bool InverseKinematicsTool::run()
             start_time = std::max(start_time, orientationValidTimRange[0]);
             final_time = std::min(final_time, orientationValidTimRange[1]);
             quatTable.trim(getStartTime(), getEndTime());
+            times = quatTable.getIndependentColumn();
+            start_ix = int(quatTable.getNearestRowIndexForTime(start_time));
+            final_ix = int(quatTable.getNearestRowIndexForTime(final_time));
 
         }
+        const int Nframes = final_ix - start_ix + 1;
+
         // create the solver given the input data
         InverseKinematicsSolver ikSolver(*_model, markersReference,
                 orientationsReference,
@@ -228,7 +238,7 @@ bool InverseKinematicsTool::run()
         // Get the actual number of markers the Solver is using, which
         // can be fewer than the number of references if there isn't a
         // corresponding model marker for each reference.
-        int nm = ikSolver.getNumMarkersInUse();
+        int nm = (trackMarkers)?ikSolver.getNumMarkersInUse():0;
         SimTK::Array_<double> squaredMarkerErrors(nm, 0.0);
         SimTK::Array_<Vec3> markerLocations(nm, Vec3(0));
         
@@ -245,6 +255,7 @@ bool InverseKinematicsTool::run()
             // show progress line every 1000 frames so users see progress
             if (std::remainder(i - start_ix, 1000) == 0 && i != start_ix)
                 cout << "Solved " << i - start_ix << " frames..." << std::endl;
+            /**
             if(get_report_errors()){
                 Array<double> markerErrors(0.0, 3);
                 double totalSquaredMarkerError = 0.0;
@@ -284,7 +295,7 @@ bool InverseKinematicsTool::run()
                 modelMarkerLocations->append(s.getTime(), 3*nm, &locations[0]);
 
             }
-
+            **/
             kinematicsReporter->step(s, i);
             analysisSet.step(s, i);
         }
@@ -298,7 +309,7 @@ bool InverseKinematicsTool::run()
         }
         // Remove the analysis we added to the model, this also deletes it
         _model->removeAnalysis(kinematicsReporter);
-
+        /**
         if (modelMarkerErrors) {
             Array<string> labels("", 4);
             labels[0] = "time";
@@ -337,7 +348,7 @@ bool InverseKinematicsTool::run()
 
             delete modelMarkerLocations;
         }
-
+        **/
         IO::chDir(saveWorkingDirectory);
 
         success = true;

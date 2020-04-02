@@ -33,6 +33,7 @@
 #include <OpenSim/Tools/InverseKinematicsTool.h>
 #include <OpenSim/Tools/IKTaskSet.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -87,6 +88,19 @@ int main()
     catch (const std::exception& e) {
         cout << e.what() << endl;
         failures.push_back("testInverseKinematicsGait2354");
+    }
+    Storage standardo("opensense_results.sto");
+    try {
+        InverseKinematicsTool iko("subject01_Setup_InverseKinematics_orientations.xml");
+        iko.run();
+        Storage result1(iko.getOutputMotionFileName());
+        CHECK_STORAGE_AGAINST_STANDARD(result1, standardo,
+                std::vector<double>(39, 0.2), __FILE__, __LINE__,
+                "testInverseKinematicsGait2354 Orientations failed");
+        cout << "testInverseKinematicsGait2354 Orientations passed" << endl;
+    } catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testInverseKinematicsGait2354 Orientations");
     }
 
     try {
