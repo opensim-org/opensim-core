@@ -511,7 +511,7 @@ registerType(const Object& aObject)
         log_error("Object.registerType: no type name has been set.");
         return;
     }
-    log_trace("Object.registerType: {}.", type);
+    log_debug("Object.registerType: {}.", type);
 
     // REPLACE IF A MATCHING TYPE IS ALREADY REGISTERED
     for(int i=0; i <_registeredTypes.size(); ++i) {
