@@ -710,13 +710,13 @@ void Object::readObjectFromXMLNodeOrFile
     // the directory that contained the top-level XML file.
     XMLDocument* newDoc=0;
     try {
-        std::cout << "reading object from file [" << file <<"] cwd =" 
-                  << IO::getCwd() << std::endl;
+        log_info("Reading object from file [{}] cwd ={}.",
+                file, IO::getCwd());
          newDoc = new XMLDocument(file);
         _document = newDoc;
     } catch(const std::exception& ex){
-        std::cout << "failure reading object from file [" << file <<"] cwd =" 
-            << IO::getCwd() << "Error:" << ex.what() << std::endl;
+        log_error("Failure reading object from file [{}] cwd ={} Error:{}",
+                file, IO::getCwd(), ex.what());
         return;
     }
     _inlined=false;
