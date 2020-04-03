@@ -463,6 +463,7 @@ if(${BUILD_PYTHON_WRAPPING})
         message(FATAL_ERROR "OPENSIM_PYTHON_VERSION should be '2' or '3'.")
     endif()
     find_package(PythonInterp ${required_python_version} REQUIRED)
+    find_package(NumPy REQUIRED)
 
     # We update the python install dir to include the python version,
     # now that we know it. We replace the token "VERSION" with the actual python
