@@ -35,7 +35,7 @@
 % modified version of the 'gait10dof18musc.osim' available within OpenSim. We
 % replaced the moving knee flexion axis by a fixed flexion axis, replaced the
 % Millard2012EquilibriumMuscles by DeGrooteFregly2016Muscles, and added
-% SmoothSphereHalfSpaceForces (two contact spheres per foot) to model the
+% SmoothSphereHalfSpaceForces (two contacts per foot) to model the
 % contact interactions between the feet and the ground.
 %
 % Data
@@ -153,12 +153,12 @@ if GRFTrackingWeight ~= 0
     contactTracking = MocoContactTrackingGoal('contact', GRFTrackingWeight);
     contactTracking.setExternalLoadsFile('referenceGRF.xml');
     forceNamesRightFoot = StdVectorString();
-    forceNamesRightFoot.add('contactSphereHeel_r');
-    forceNamesRightFoot.add('contactSphereFront_r');
+    forceNamesRightFoot.add('contactHeel_r');
+    forceNamesRightFoot.add('contactFront_r');
     contactTracking.addContactGroup(forceNamesRightFoot, 'Right_GRF');
     forceNamesLeftFoot = StdVectorString();
-    forceNamesLeftFoot.add('contactSphereHeel_l');
-    forceNamesLeftFoot.add('contactSphereFront_l');
+    forceNamesLeftFoot.add('contactHeel_l');
+    forceNamesLeftFoot.add('contactFront_l');
     contactTracking.addContactGroup(forceNamesLeftFoot, 'Left_GRF');
     contactTracking.setProjection('plane');
     contactTracking.setProjectionVector(Vec3(0, 0, 1));
@@ -197,15 +197,15 @@ fullStride.write('gaitTracking_solution_fullStride.sto');
 
 % Extract ground reaction forces
 % ==============================
-contactSpheres_r = StdVectorString();
-contactSpheres_l = StdVectorString();
-contactSpheres_r.add('contactSphereHeel_r');
-contactSpheres_r.add('contactSphereFront_r');
-contactSpheres_l.add('contactSphereHeel_l');
-contactSpheres_l.add('contactSphereFront_l');
+contact_r = StdVectorString();
+contact_l = StdVectorString();
+contact_r.add('contactHeel_r');
+contact_r.add('contactFront_r');
+contact_l.add('contactHeel_l');
+contact_l.add('contactFront_l');
 
 externalForcesTableFlat = opensimMoco.createExternalLoadsTableForGait(model, ...
-                                 fullStride,contactSpheres_r,contactSpheres_l);
+                                 fullStride,contact_r,contact_l);
 opensimMoco.writeTableToFile(externalForcesTableFlat, ...
                              'gaitTracking_solutionGRF_fullStride.sto');
 
@@ -342,12 +342,12 @@ fullStride.write('gaitPrediction_solution_fullStride.sto');
 
 % Extract ground reaction forces
 % ==============================
-contactSpheres_r = StdVectorString();
-contactSpheres_l = StdVectorString();
-contactSpheres_r.add('contactSphereHeel_r');
-contactSpheres_r.add('contactSphereFront_r');
-contactSpheres_l.add('contactSphereHeel_l');
-contactSpheres_l.add('contactSphereFront_l');
+contact_r = StdVectorString();
+contact_l = StdVectorString();
+contact_r.add('contactHeel_r');
+contact_r.add('contactFront_r');
+contact_l.add('contactHeel_l');
+contact_l.add('contactFront_l');
 
 % Create a conventional ground reaction forces file by summing the contact
 % forces of contact spheres on each foot.
@@ -355,7 +355,7 @@ contactSpheres_l.add('contactSphereFront_l');
 % User Guide > Utilities > Model and trajectory utilities
 % in the Moco Documentation.
 externalForcesTableFlat = opensimMoco.createExternalLoadsTableForGait(model, ...
-                             fullStride, contactSpheres_r, contactSpheres_l);
+                             fullStride, contact_r, contact_l);
 opensimMoco.writeTableToFile(externalForcesTableFlat, ...
                              'gaitPrediction_solutionGRF_fullStride.sto');
 

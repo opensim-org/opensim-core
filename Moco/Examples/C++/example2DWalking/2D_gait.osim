@@ -3,19 +3,9 @@
 	<Model name="2D_gait">
 		<!--List of components that this component owns and serializes.-->
 		<components>
-			<SmoothSphereHalfSpaceForce name="contactSphereHeel_r">
-				<!--Path to a Component that satisfies the Socket 'sphere_frame' of type PhysicalFrame (description: The body to which the contact sphere is attached.).-->
-				<socket_sphere_frame>/bodyset/calcn_r</socket_sphere_frame>
-				<!--Path to a Component that satisfies the Socket 'half_space_frame' of type PhysicalFrame (description: The body to which the contact half space is attached.).-->
-				<socket_half_space_frame>/ground</socket_half_space_frame>
-				<!--The location of the contact sphere in the body frame.-->
-				<contact_sphere_location>0.031307527581931796 0.010435842527310599 0</contact_sphere_location>
-				<!--The radius of the contact sphere.-->
-				<contact_sphere_radius>0.035000000000000003</contact_sphere_radius>
-				<!--The location of the contact half space in the body frame, default is Vec3(0).-->
-				<contact_half_space_location>0 0 0</contact_half_space_location>
-				<!--The orientation of the contact half space in the body frame. (body-fixed XYZ Euler angles), default is Vec3(0).-->
-				<contact_half_space_orientation>0 0 -1.5707963267948966</contact_half_space_orientation>
+			<SmoothSphereHalfSpaceForce name="contactHeel_r">
+				<socket_sphere>/contactgeometryset/heel_r</socket_sphere>
+				<socket_half_space>/contactgeometryset/floor</socket_half_space>
 				<!--The stiffness constant (i.e., plain strain modulus), default is 1 (N/m^2)-->
 				<stiffness>3067776</stiffness>
 				<!--The dissipation coefficient, default is 0 (s/m).-->
@@ -35,19 +25,9 @@
 				<!--The parameter that determines the smoothness of the transition of the tanh used to smooth the Hunt-Crossley force. The larger the steeper the transition but also the more discontinuous-like, default is 50.-->
 				<hunt_crossley_smoothing>50</hunt_crossley_smoothing>
 			</SmoothSphereHalfSpaceForce>
-			<SmoothSphereHalfSpaceForce name="contactSphereHeel_l">
-				<!--Path to a Component that satisfies the Socket 'sphere_frame' of type PhysicalFrame (description: The body to which the contact sphere is attached.).-->
-				<socket_sphere_frame>/bodyset/calcn_l</socket_sphere_frame>
-				<!--Path to a Component that satisfies the Socket 'half_space_frame' of type PhysicalFrame (description: The body to which the contact half space is attached.).-->
-				<socket_half_space_frame>/ground</socket_half_space_frame>
-				<!--The location of the contact sphere in the body frame.-->
-				<contact_sphere_location>0.031307527581931796 0.010435842527310599 0</contact_sphere_location>
-				<!--The radius of the contact sphere.-->
-				<contact_sphere_radius>0.035000000000000003</contact_sphere_radius>
-				<!--The location of the contact half space in the body frame, default is Vec3(0).-->
-				<contact_half_space_location>0 0 0</contact_half_space_location>
-				<!--The orientation of the contact half space in the body frame. (body-fixed XYZ Euler angles), default is Vec3(0).-->
-				<contact_half_space_orientation>0 0 -1.5707963267948966</contact_half_space_orientation>
+			<SmoothSphereHalfSpaceForce name="contactHeel_l">
+				<socket_sphere>/contactgeometryset/heel_l</socket_sphere>
+				<socket_half_space>/contactgeometryset/floor</socket_half_space>
 				<!--The stiffness constant (i.e., plain strain modulus), default is 1 (N/m^2)-->
 				<stiffness>3067776</stiffness>
 				<!--The dissipation coefficient, default is 0 (s/m).-->
@@ -67,19 +47,9 @@
 				<!--The parameter that determines the smoothness of the transition of the tanh used to smooth the Hunt-Crossley force. The larger the steeper the transition but also the more discontinuous-like, default is 50.-->
 				<hunt_crossley_smoothing>50</hunt_crossley_smoothing>
 			</SmoothSphereHalfSpaceForce>
-			<SmoothSphereHalfSpaceForce name="contactSphereFront_r">
-				<!--Path to a Component that satisfies the Socket 'sphere_frame' of type PhysicalFrame (description: The body to which the contact sphere is attached.).-->
-				<socket_sphere_frame>/bodyset/calcn_r</socket_sphere_frame>
-				<!--Path to a Component that satisfies the Socket 'half_space_frame' of type PhysicalFrame (description: The body to which the contact half space is attached.).-->
-				<socket_half_space_frame>/ground</socket_half_space_frame>
-				<!--The location of the contact sphere in the body frame.-->
-				<contact_sphere_location>0.17740932296428019 -0.015653763790965898 0.0052179212636552993</contact_sphere_location>
-				<!--The radius of the contact sphere.-->
-				<contact_sphere_radius>0.014999999999999999</contact_sphere_radius>
-				<!--The location of the contact half space in the body frame, default is Vec3(0).-->
-				<contact_half_space_location>0 0 0</contact_half_space_location>
-				<!--The orientation of the contact half space in the body frame. (body-fixed XYZ Euler angles), default is Vec3(0).-->
-				<contact_half_space_orientation>0 0 -1.5707963267948966</contact_half_space_orientation>
+			<SmoothSphereHalfSpaceForce name="contactFront_r">
+				<socket_sphere>/contactgeometryset/front_r</socket_sphere>
+				<socket_half_space>/contactgeometryset/floor</socket_half_space>
 				<!--The stiffness constant (i.e., plain strain modulus), default is 1 (N/m^2)-->
 				<stiffness>3067776</stiffness>
 				<!--The dissipation coefficient, default is 0 (s/m).-->
@@ -99,19 +69,9 @@
 				<!--The parameter that determines the smoothness of the transition of the tanh used to smooth the Hunt-Crossley force. The larger the steeper the transition but also the more discontinuous-like, default is 50.-->
 				<hunt_crossley_smoothing>50</hunt_crossley_smoothing>
 			</SmoothSphereHalfSpaceForce>
-			<SmoothSphereHalfSpaceForce name="contactSphereFront_l">
-				<!--Path to a Component that satisfies the Socket 'sphere_frame' of type PhysicalFrame (description: The body to which the contact sphere is attached.).-->
-				<socket_sphere_frame>/bodyset/calcn_l</socket_sphere_frame>
-				<!--Path to a Component that satisfies the Socket 'half_space_frame' of type PhysicalFrame (description: The body to which the contact half space is attached.).-->
-				<socket_half_space_frame>/ground</socket_half_space_frame>
-				<!--The location of the contact sphere in the body frame.-->
-				<contact_sphere_location>0.17740932296428019 -0.015653763790965898 -0.0052179212636552993</contact_sphere_location>
-				<!--The radius of the contact sphere.-->
-				<contact_sphere_radius>0.014999999999999999</contact_sphere_radius>
-				<!--The location of the contact half space in the body frame, default is Vec3(0).-->
-				<contact_half_space_location>0 0 0</contact_half_space_location>
-				<!--The orientation of the contact half space in the body frame. (body-fixed XYZ Euler angles), default is Vec3(0).-->
-				<contact_half_space_orientation>0 0 -1.5707963267948966</contact_half_space_orientation>
+			<SmoothSphereHalfSpaceForce name="contactFront_l">
+				<socket_sphere>/contactgeometryset/front_l</socket_sphere>
+				<socket_half_space>/contactgeometryset/floor</socket_half_space>
 				<!--The stiffness constant (i.e., plain strain modulus), default is 1 (N/m^2)-->
 				<stiffness>3067776</stiffness>
 				<!--The dissipation coefficient, default is 0 (s/m).-->
@@ -2850,5 +2810,33 @@
 			<objects />
             <groups />
 		</ForceSet>
+        <ContactGeometrySet name="contactgeometryset">
+            <objects>
+                <ContactSphere name="heel_r">
+                    <socket_frame>/bodyset/calcn_r</socket_frame>
+                    <radius>0.035000000000000003</radius>
+                    <location>0.031307527581931796 0.010435842527310599 0</location>
+                </ContactSphere>
+                <ContactSphere name="heel_l">
+                    <socket_frame>/bodyset/calcn_l</socket_frame>
+                    <radius>0.035000000000000003</radius>
+                    <location>0.031307527581931796 0.010435842527310599 0</location>
+                </ContactSphere>
+                <ContactSphere name="front_r">
+                    <socket_frame>/bodyset/calcn_r</socket_frame>
+                    <radius>0.014999999999999999</radius>
+                    <location>0.17740932296428019 -0.015653763790965898 0.0052179212636552993</location>
+                </ContactSphere>
+                <ContactSphere name="front_l">
+                    <socket_frame>/bodyset/calcn_l</socket_frame>
+                    <radius>0.014999999999999999</radius>
+                    <location>0.17740932296428019 -0.015653763790965898 -0.0052179212636552993</location>
+                </ContactSphere>
+                <ContactHalfSpace name="floor">
+                    <socket_frame>/ground</socket_frame>
+                    <orientation>0 0 -1.5707963267948966</orientation>
+                </ContactHalfSpace>
+            </objects>
+        </ContactGeometrySet>
 	</Model>
 </OpenSimDocument>

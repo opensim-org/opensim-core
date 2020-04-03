@@ -31,7 +31,7 @@
 /// modified version of the 'gait10dof18musc.osim' available within OpenSim. We
 /// replaced the moving knee flexion axis by a fixed flexion axis, replaced the
 /// Millard2012EquilibriumMuscles by DeGrooteFregly2016Muscles, and added
-/// SmoothSphereHalfSpaceForces (two contact spheres per foot) to model the
+/// SmoothSphereHalfSpaceForces (two contacts per foot) to model the
 /// contact interactions between the feet and the ground.
 ///
 /// Data
@@ -141,9 +141,9 @@ MocoSolution gaitTracking(double controlEffortWeight = 10,
                 "contact", GRFTrackingWeight);
         contactTracking->setExternalLoadsFile("referenceGRF.xml");
         contactTracking->addContactGroup(
-                {"contactSphereHeel_r", "contactSphereFront_r"},"Right_GRF");
+                {"contactHeel_r", "contactFront_r"},"Right_GRF");
         contactTracking->addContactGroup(
-                {"contactSphereHeel_l", "contactSphereFront_l"}, "Left_GRF");
+                {"contactHeel_l", "contactFront_l"}, "Left_GRF");
         contactTracking->setProjection("plane");
         contactTracking->setProjectionVector(SimTK::Vec3(0, 0, 1));
     }
@@ -187,14 +187,14 @@ MocoSolution gaitTracking(double controlEffortWeight = 10,
 
     // Extract ground reaction forces.
     // ===============================
-    std::vector<std::string> contactSpheres_r;
-    std::vector<std::string> contactSpheres_l;
-    contactSpheres_r.push_back("contactSphereHeel_r");
-    contactSpheres_r.push_back("contactSphereFront_r");
-    contactSpheres_l.push_back("contactSphereHeel_l");
-    contactSpheres_l.push_back("contactSphereFront_l");
+    std::vector<std::string> contact_r;
+    std::vector<std::string> contact_l;
+    contact_r.push_back("contactHeel_r");
+    contact_r.push_back("contactFront_r");
+    contact_l.push_back("contactHeel_l");
+    contact_l.push_back("contactFront_l");
     TimeSeriesTable externalForcesTableFlat = createExternalLoadsTableForGait(
-            model, full, contactSpheres_r, contactSpheres_l);
+            model, full, contact_r, contact_l);
     writeTableToFile(externalForcesTableFlat,
             "gaitTracking_solutionGRF_fullcycle.sto");
 
@@ -321,14 +321,14 @@ void gaitPrediction(const MocoSolution& gaitTrackingSolution) {
 
     // Extract ground reaction forces.
     // ===============================
-    std::vector<std::string> contactSpheres_r;
-    std::vector<std::string> contactSpheres_l;
-    contactSpheres_r.push_back("contactSphereHeel_r");
-    contactSpheres_r.push_back("contactSphereFront_r");
-    contactSpheres_l.push_back("contactSphereHeel_l");
-    contactSpheres_l.push_back("contactSphereFront_l");
+    std::vector<std::string> contact_r;
+    std::vector<std::string> contact_l;
+    contact_r.push_back("contactHeel_r");
+    contact_r.push_back("contactFront_r");
+    contact_l.push_back("contactHeel_l");
+    contact_l.push_back("contactFront_l");
     TimeSeriesTable externalForcesTableFlat = createExternalLoadsTableForGait(
-            model, full, contactSpheres_r, contactSpheres_l);
+            model, full, contact_r, contact_l);
     writeTableToFile(externalForcesTableFlat,
             "gaitPrediction_solutionGRF_fullcycle.sto");
 
