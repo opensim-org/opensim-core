@@ -42,7 +42,7 @@ convertToSimtkMatrix(const std::vector<ezc3d::Vector3d>& all_vec) {
     return simtkMat;
 }
 
-#else
+#else // WITH_BTK.
 // Function to convert Eigen matrix to SimTK matrix. This can become a lambda
 // function inside extendRead in future.
 template<typename _Scalar, int _Rows, int _Cols>
