@@ -26,8 +26,7 @@
 #include "osimToolsDLL.h"
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Tools/IKTaskSet.h>
-#include "Tool.h"
-#include <SimTKcommon/internal/ReferencePtr.h> 
+#include <OpenSim/Tools/InverseKinematicsToolBase.h>
 
 #ifdef SWIG
     #ifdef OSIMTOOLS_API
@@ -54,31 +53,10 @@ class CoordinateReference;
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMTOOLS_API InverseKinematicsTool: public Tool {
-OpenSim_DECLARE_CONCRETE_OBJECT(InverseKinematicsTool, Tool);
-
-//=============================================================================
-// MEMBER VARIABLES
-//=============================================================================
-private:
-    
-    /** Pointer to the model being investigated. */
-    SimTK::ReferencePtr<Model> _model;
+class OSIMTOOLS_API InverseKinematicsTool : public InverseKinematicsToolBase {
+    OpenSim_DECLARE_CONCRETE_OBJECT(InverseKinematicsTool, InverseKinematicsToolBase);
 
 public:
-    OpenSim_DECLARE_PROPERTY(model_file, std::string,
-            "Name/path to the xml .osim file used to load a model to be analyzed.");
-
-    OpenSim_DECLARE_PROPERTY(constraint_weight, double,
-            "The relative weighting of kinematic constraint errors. By default this "
-            "is Infinity, which means constraints are strictly enforced as part of "
-            "the optimization and are not appended to the objective (cost) function. "
-            "Any other non-zero positive scalar is the penalty factor for "
-            "constraint violations.");
-
-    OpenSim_DECLARE_PROPERTY(accuracy, double,
-            "The accuracy of the solution in absolute terms, i.e. the number of "
-            "significant digits to which the solution can be trusted. Default 1e-5.");
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(
             IKTaskSet, 
@@ -95,17 +73,6 @@ public:
             "The name of the storage (.sto or .mot) file containing the time "
             "history of coordinate observations. Coordinate values from this file are "
             "included if there is a corresponding model coordinate and task. ");
-
-    OpenSim_DECLARE_LIST_PROPERTY_SIZE(
-            time_range, double, 2, "The time range for the study.");
-
-    OpenSim_DECLARE_PROPERTY(report_errors, bool,
-            "Flag (true or false) indicating whether or not to report marker "
-            "errors from the inverse kinematics solution.");
-
-    OpenSim_DECLARE_PROPERTY(output_motion_file, std::string,
-            "Name of the resulting inverse kinematics motion (.mot) file.");
-
 
     OpenSim_DECLARE_PROPERTY(report_marker_locations, bool,
             "Flag indicating whether or not to report model marker locations. "
@@ -126,13 +93,6 @@ public:
     void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1) override;
 
     //---- Setters and getters for various attributes
-    void setModel(Model& aModel) { _model = &aModel; };
-    void setStartTime(double d) { upd_time_range(0) = d; };
-    double getStartTime() const { return get_time_range(0); };
-
-    void setEndTime(double d) { upd_time_range(1) = d; };
-    double getEndTime() const { return get_time_range(1); };
-
     void setMarkerDataFileName(const std::string& markerDataFileName) {
         upd_marker_file() = markerDataFileName;
     };
@@ -158,10 +118,6 @@ public:
     //--------------------------------------------------------------------------
     // GET AND SET
     //--------------------------------------------------------------------------
-    void setOutputMotionFileName(const std::string aOutputMotionFileName) {
-        upd_output_motion_file() = aOutputMotionFileName;
-    }
-    std::string getOutputMotionFileName() { return get_output_motion_file(); }
     IKTaskSet& getIKTaskSet() { return upd_IKTaskSet(); }
 
     //--------------------------------------------------------------------------
