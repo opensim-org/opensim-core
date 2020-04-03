@@ -24,6 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "CoordinateActuator.h"
+#include "ActivationCoordinateActuator.h"
 #include "PointActuator.h"
 #include "TorqueActuator.h"
 #include "BodyActuator.h"

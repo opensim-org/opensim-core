@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Copyright (c) 2005-2020 Stanford University and the Authors                *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -32,13 +32,13 @@
 int main() {
     using namespace OpenSim;
 
-    std::string filename{"OpenSim/Examples/DataAdapter/singleLeglanding_2.c3d"};
+    std::string filename{"walking2.c3d"};
 
     C3DFileAdapter c3d_adapter{};
     auto tables = c3d_adapter.read(filename);
 
-    auto& marker_table = tables.at("markers");
-    auto&  force_table = tables.at("forces");
+    auto marker_table = c3d_adapter.getMarkersTable(tables);
+    auto force_table = c3d_adapter.getForcesTable(tables);
 
     if(marker_table->getNumRows() != 0) {
         std::cout << "--------------Markers-----------------" << std::endl;

@@ -5,6 +5,7 @@
 
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
+#include <OpenSim/Actuators/ActivationCoordinateActuator.h>
 #include <OpenSim/Actuators/PointActuator.h>
 #include <OpenSim/Actuators/TorqueActuator.h>
 #include <OpenSim/Actuators/BodyActuator.h>
