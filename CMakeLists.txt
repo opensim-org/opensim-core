@@ -25,7 +25,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # OpenSim version.
 # ----------------
 set(OPENSIM_MAJOR_VERSION 4)
-set(OPENSIM_MINOR_VERSION 1)
+set(OPENSIM_MINOR_VERSION 2)
 set(OPENSIM_PATCH_VERSION 0)
 
 # Don't include the patch version if it is 0.
@@ -89,7 +89,9 @@ option(OPENSIM_COPY_DEPENDENCIES "Copy Simbody and BTK into the
 OpenSim installation. This should be set to ON when making a relocatable
 distribution, and should be set to OFF when packaging for Homebrew, Debian,
 etc. On Linux and macOS: we use relative RPATHs when ON, and absolute RPATHs
-when OFF." ON)
+when OFF. For most users, this should also be on if BUILD_JAVA_WRAPPING or 
+BUILD_PYTHON_WRAPPING is ON, so if this OFF, a warning is thrown." ON)
+mark_as_advanced(OPENSIM_COPY_DEPENDENCIES)
 
 option(OPENSIM_PYTHON_STANDALONE "Make the Python package standalone, meaning
 the OpenSim (and Simbody and BTK) shared libraries it depends on are copied
@@ -442,6 +444,15 @@ if(${BUILD_JAVA_WRAPPING})
             endif()
         endif()
     endif()
+    # Most users need to copy dependencies if wrapping is on. Warn user
+    # if it isn't on.
+    if (NOT OPENSIM_COPY_DEPENDENCIES)
+        string(CONCAT MSG
+           "BUILD_JAVA_WRAPPING is ON but OPENSIM_COPY_DEPENDENCIES is OFF. "
+           "Wrapping may not work correctly. Consider switching the "
+           "OPENSIM_COPY_DEPENDENCIES flag to ON.")
+        message(WARNING ${MSG})
+    endif()
 endif()
 
 if(${BUILD_PYTHON_WRAPPING})
@@ -490,7 +501,16 @@ if(${BUILD_PYTHON_WRAPPING})
             CACHE FILEPATH "${pylib_desc}")
     endif()
     find_package(PythonLibs ${required_python_version} REQUIRED)
-
+    
+    # Most users need to copy dependencies if wrapping is on. Warn user
+    # if it isn't on.
+    if (NOT OPENSIM_COPY_DEPENDENCIES)
+        string(CONCAT MSG
+           "BUILD_PYTHON_WRAPPING is ON but OPENSIM_COPY_DEPENDENCIES is OFF. "
+           "Wrapping may not work correctly. Consider switching the "
+           "OPENSIM_COPY_DEPENDENCIES flag to ON.")
+        message(WARNING ${MSG})
+    endif()
 endif()
 
 if(WIN32)
@@ -600,7 +620,7 @@ endif()
 # As of Simbody 3.4, Simbody has a SimbodyConfig.cmake file, which is a
 # preferred way to find Simbody over the previous FindSimbody.cmake script.
 # NO_MODULE means we will not allow the use of a FindSimbody.cmake script.
-set(SIMBODY_VERSION_TO_USE 3.6)
+set(SIMBODY_VERSION_TO_USE 3.7)
 
 # Find Simbody freshly by unsetting this CMake-generated variable.
 unset(Simbody_DIR CACHE)

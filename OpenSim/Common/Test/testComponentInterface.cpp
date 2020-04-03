@@ -25,6 +25,7 @@
 #include <OpenSim/Common/Reporter.h>
 #include <OpenSim/Common/TableSource.h>
 #include <OpenSim/Common/STOFileAdapter.h>
+#include <OpenSim/Common/CommonUtilities.h>
 #include <simbody/internal/SimbodyMatterSubsystem.h>
 #include <simbody/internal/GeneralForceSubsystem.h>
 #include <simbody/internal/Force.h>
@@ -2258,6 +2259,12 @@ void testGetAbsolutePathStringSpeed() {
     cout << "getName avgTime = " << avgTime / numTrials << "s" << endl;
 }
 
+void testFormattedDateTime() {
+    std::string withMicroseconds = getFormattedDateTime(true, "%Y");
+    std::string withoutMicroseconds = getFormattedDateTime(false, "%Y");
+    SimTK_TEST(withMicroseconds.find(withoutMicroseconds) == 0);
+}
+
 int main() {
 
     //Register new types for testing deserialization
@@ -2294,6 +2301,8 @@ int main() {
         // any new functionality. Make sure to uncomment to use (and
         // consider commenting other subtests for more stable benchmark).
         //SimTK_SUBTEST(testGetAbsolutePathStringSpeed);
+
+        SimTK_SUBTEST(testFormattedDateTime);
 
     SimTK_END_TEST();
 }

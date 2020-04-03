@@ -1,7 +1,7 @@
-#ifndef OPENSIM_INVERSE_KINEMATICS_STUDY_H_
-#define OPENSIM_INVERSE_KINEMATICS_STUDY_H_
+#ifndef OPENSIM_IMU_INVERSE_KINEMATICS_TOOL_H_
+#define OPENSIM_IMU_INVERSE_KINEMATICS_TOOL_H_
 /* -------------------------------------------------------------------------- *
- *                    OpenSim:  InverseKinematicsStudy.h                      *
+ *                    OpenSim:  IMUInverseKinematicsTool.h                    *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -12,7 +12,7 @@
  * Distribution Statement A – Approved for Public Release; Distribution is    *
  * Unlimited.                                                                 *
  *                                                                            *
- * InverseKinematicsStudy is written in part by AMJR consulting under a       *
+ * IMUInverseKinematicsTool is written in part by AMJR consulting under a     *
  * contract and in a collaborative effort with The Johns Hopkins University   *
  * Applied Physics Laboratory for a project sponsored by the United States    *
  * Army Natick Soldier Research Development and Engineering Center and        *
@@ -58,33 +58,27 @@ class IKTaskSet;
  *
  * @author Ajay Seth
  */
-class OSIMSIMULATION_API InverseKinematicsStudy : public Object {
-OpenSim_DECLARE_CONCRETE_OBJECT(InverseKinematicsStudy, Object);
+class OSIMSIMULATION_API IMUInverseKinematicsTool : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(IMUInverseKinematicsTool, Object);
 public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    OpenSim_DECLARE_PROPERTY(model_file_name, std::string,
+    OpenSim_DECLARE_PROPERTY(model_file, std::string,
         "Name/path to the xml .osim file used to load a model to be analyzed.");
 
-    OpenSim_DECLARE_PROPERTY(marker_file_name, std::string,
+    OpenSim_DECLARE_PROPERTY(marker_file, std::string,
         "Name/path to a .trc or .sto file of type Vec3 of marker data.");
 
-    OpenSim_DECLARE_PROPERTY(orientations_file_name, std::string,
+    OpenSim_DECLARE_PROPERTY(orientations_file, std::string,
         "Name/path to a .sto file of sensor frame orientations as quaternions.");
+
+    OpenSim_DECLARE_PROPERTY(sensor_to_opensim_rotations, SimTK::Vec3,
+            "Space fixed Euler angles (XYZ order) from IMU Space to OpenSim."
+            " Default to (0, 0, 0).");
 
     OpenSim_DECLARE_LIST_PROPERTY_SIZE(time_range, double, 2,
         "The time range for the study.");
-
-    OpenSim_DECLARE_PROPERTY(base_imu_label, std::string,
-        "The label of the base IMU in the orientations_file used to account "
-        "for the heading difference between the sensor data and the forward "
-        "direction of the model. Leave blank if no heading correction is to "
-        "be applied.");
-
-    OpenSim_DECLARE_PROPERTY(base_heading_axis, std::string,
-        "The axis of the base IMU that corresponds to its heading direction."
-        "Options are 'x', 'y' or 'z'.");
 
     OpenSim_DECLARE_PROPERTY(constraint_weight, double,
         "The relative weighting of kinematic constraint errors. By default this "
@@ -113,9 +107,9 @@ private:
     // CONSTRUCTION
     //--------------------------------------------------------------------------
 public:
-    virtual ~InverseKinematicsStudy();
-    InverseKinematicsStudy();
-    InverseKinematicsStudy(const std::string &setupFile);
+    virtual ~IMUInverseKinematicsTool();
+    IMUInverseKinematicsTool();
+    IMUInverseKinematicsTool(const std::string &setupFile);
     //--------------------------------------------------------------------------
     // INTERFACE
     //--------------------------------------------------------------------------
@@ -132,8 +126,6 @@ public:
     static TimeSeriesTable_<SimTK::Vec3>
         loadMarkersFile(const std::string& markerFile);
 
-    SimTK::Array_<int> getTimeRangeInUse(const std::vector<double>& times) const;
-
     void runInverseKinematicsWithOrientationsFromFile(Model& model,
                             const std::string& quaternionStoFileName, bool visualizeResults=false);
 
@@ -144,8 +136,8 @@ private:
         const TimeSeriesTable_<SimTK::Rotation>& orientations) const;
 
 //=============================================================================
-};  // END of class InverseKinematicsStudy
+};  // END of class IMUInverseKinematicsTool
 //=============================================================================
 } // namespace
 
-#endif // OPENSIM_INVERSE_KINEMATICS_STUDY_H_
+#endif // OPENSIM_IMU_INVERSE_KINEMATICS_TOOL_H_

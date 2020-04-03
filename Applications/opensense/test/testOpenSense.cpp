@@ -23,8 +23,10 @@
 
 
 // INCLUDES
+#include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
-#include <OpenSim/Simulation/OpenSense/InverseKinematicsStudy.h>
+#include <OpenSim/Simulation/OpenSense/IMUPlacer.h>
+#include <OpenSim/Simulation/OpenSense/IMUInverseKinematicsTool.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
@@ -34,37 +36,33 @@ using namespace std;
 
 int main()
 {
+
     // Calibrate model and compare result to standard
-    Model model = OpenSenseUtilities::calibrateModelFromOrientations(
-        "subject07.osim",
-        "imuOrientations.sto",
-        "pelvis_imu", SimTK::ZAxis,
-        false);
+    IMUPlacer imuPlacer("imuPlacer.xml");
+    imuPlacer.run();
+    Model model = imuPlacer.getCalibratedModel();
+
     // Previous line produces a model with same name but "calibrated_" prefix.
     Model stdModel{ "std_calibrated_subject07.osim" };
     ASSERT(model == stdModel);
 
     // Calibrate model from two different standing trials facing
     // opposite directions to verify that heading correction is working
-    Model facingX = OpenSenseUtilities::calibrateModelFromOrientations(
-        "subject07.osim",
-        "MT_012005D6_009-quaternions_calibration_trial_Facing_X.sto",
-        "pelvis_imu", SimTK::ZAxis,
-        false);
+    IMUPlacer placerX("imuPlacerFaceX.xml");
+    placerX.run(false);
+    Model facingX = placerX.getCalibratedModel();
     facingX.setName("calibrated_FacingX");
     facingX.finalizeFromProperties();
 
-    InverseKinematicsStudy ik_hjc("setup_track_HJC_trial.xml");
+    IMUInverseKinematicsTool ik_hjc("setup_IMUInverseKinematics_HJC_trial.xml");
     ik_hjc.setModel(facingX);
     ik_hjc.set_results_directory("ik_hjc_" + facingX.getName());
     ik_hjc.run(false);
 
     // Now facing the opposite direction (negative X)
-    Model facingNegX = OpenSenseUtilities::calibrateModelFromOrientations(
-        "subject07.osim",
-        "MT_012005D6_009-quaternions_calibration_trial_Facing_negX.sto",
-        "pelvis_imu", SimTK::ZAxis,
-        false);
+    IMUPlacer placerNegX("imuPlacerFaceNegX.xml");
+    placerNegX.run(false);
+    Model facingNegX = placerNegX.getCalibratedModel();
     facingNegX.setName("calibrated_FacingNegX");
     facingNegX.finalizeFromProperties();
 

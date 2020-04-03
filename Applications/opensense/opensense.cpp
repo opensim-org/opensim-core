@@ -1,7 +1,7 @@
 /* --------------------------------------------------------------------------*
 *                                  opensense                                 *
 * -------------------------------------------------------------------------- *
-* Command line application for running an InverseKinematicsStudy with IMU    *
+* Command line application for running an IMUInverseKinematicsTool with IMU  *
 * supplied as quaternions and registered onto a subject via labeled markers  *
 * OR, by registering IMU rotations on to a model in the calibration pose.    *
 *                                                                            *
@@ -40,7 +40,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/MarkersReference.h>
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
-#include <OpenSim/Simulation/OpenSense/InverseKinematicsStudy.h>
+#include <OpenSim/Simulation/OpenSense/IMUInverseKinematicsTool.h>
 #include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
 
 #include <ctime>  // clock(), clock_t, CLOCKS_PER_SEC
@@ -94,7 +94,7 @@ int main(int argc, char **argv)
                     PrintUsage(argv[0], cout);
                     return 0;
                 }
-                else if ((option == "-ReadX") || (option == "-RX")) {
+                else if ((option == "-ReadXsens") || (option == "-RX")) {
                     if (argc < 4) {
                         cout << "Both the directory containing Xsens data files and the reader settings file are necessary to read Xsens data. Please retry with these inputs." << endl;
                         PrintUsage(argv[0], cout);
@@ -107,7 +107,7 @@ int main(int argc, char **argv)
                     cout << "Done." << endl;
                     return 0;
                 }
-                else if ((option == "-ReadA") || (option == "-RA")) {
+                else if ((option == "-ReadAPDM") || (option == "-RA")) {
                     if (argc < 4) {
                         cout << "Both the data file (.csv) with APDM formatted data and the reader settings file are necessary to read APDM data. Please retry with these inputs." << endl;
                         PrintUsage(argv[0], cout);
@@ -146,39 +146,22 @@ int main(int argc, char **argv)
                     return 0;
                 }
                 else if ((option == "-Calibrate") || (option == "-C")) {
-                    if (argc < 4) {
-                        cout << "Model calibration .osim file,  orientation data .sto file  are needed with an optional heading Axis specification. Please fix and retry." << endl;
+                    if (argc < 3) {
+                        cout << "Calibration specification file is needed. Please fix and retry." << endl;
                         PrintUsage(argv[0], cout);
                         exit(-1);
                     }
-                    std::string modelCalibrationPoseFile{ argv[i + 1] };
-                    std::string calibrationOrientationsFile{ argv[i + 2] };
-                    std::string baseImuName{ "" };
-                    SimTK::CoordinateAxis imuHeading{ SimTK::ZAxis };
-                    if (argc > 4)
-                        baseImuName = std::string{ argv[i + 3] };
-                    
-                    if (argc > 5) {
-                        char axc{ argv[i + 4][0] };
-                        axc = std::tolower(axc);
-                        int axis = (axc == 'x' ? 0 :
-                            ((axc == 'y') ? 1 : 2));
-                        imuHeading = SimTK::CoordinateAxis{ axis };
+                    std::string modelCalibrationSetupFile{ argv[i + 1] };
+                    IMUPlacer imuPlacer{modelCalibrationSetupFile};
+                    imuPlacer.run();
+                    Model model = imuPlacer.getCalibratedModel();
+                    // If output_model was specified it will be written, otherwise preserve model by writing to "calibrated_"
+                    if (imuPlacer.get_output_model_file().empty()) {
+                        auto filename =
+                                model.getName() + "_calibrated" + ".osim";
+                        cout << "Wrote calibrated model to file: '" << filename << "'." << endl;
+                        model.print(filename);
                     }
-                  
-                    if (!baseImuName.empty()) {
-                        cout << "Calibration will perform heading correction using '"
-                            << baseImuName << "'along its '" << imuHeading << "'axis." << endl;
-                    }
-                    Model model = OpenSenseUtilities::calibrateModelFromOrientations(
-                        modelCalibrationPoseFile,
-                        calibrationOrientationsFile,
-                        baseImuName, imuHeading);
-
-                    auto filename = "calibrated_" + model.getName() + ".osim";
-                    cout << "Wrote calibrated model to file: '" << filename << "'." << endl;
-                    model.print(filename);
-
                     cout << "Done." << endl;
                     return 0;
                 }
@@ -192,12 +175,12 @@ int main(int argc, char **argv)
                     break;
                 }
                 else if ((option == "-PrintSetup") || (option == "-PS")) {
-                    InverseKinematicsStudy *study = new InverseKinematicsStudy();
-                    study->setName("new");
+                    IMUInverseKinematicsTool *imuIKTool = new IMUInverseKinematicsTool();
+                    imuIKTool->setName("new");
                     Object::setSerializeAllDefaults(true);
-                    study->print("new_Setup_OpenSense.xml");
+                    imuIKTool->print("new_Setup_IMUInverseKinematicsTool.xml");
                     Object::setSerializeAllDefaults(false);
-                    cout << "Created file new_Setup_OpenSense.xml with default setup." << endl;
+                    cout << "Created file new_Setup_IMUInverseKinematicsTool.xml with default setup." << endl;
                     return 0;
 
                     // PRINT PROPERTY INFO
@@ -237,7 +220,7 @@ int main(int argc, char **argv)
 
         // CONSTRUCT
         cout << "Constructing tool from setup file " << setupFileName << ".\n\n";
-        InverseKinematicsStudy ik(setupFileName);
+        IMUInverseKinematicsTool ik(setupFileName);
 
         // start timing
         std::clock_t startTime = std::clock();
@@ -269,27 +252,26 @@ void PrintUsage(const char *aProgName, ostream &aOStream)
 {
     string progName = IO::GetFileNameFromURI(aProgName);
     aOStream << "\n\n" << progName << ":\n\n";
-    aOStream << "Option             Argument             Action / Notes\n";
-    aOStream << "------             --------             --------------\n";
-    aOStream << "-Help, -H                               Print the command-line options for " << progName << ".\n";
-    aOStream << "-PrintSetup, -PS                        Create a template inverse kinematics settings file that can be customized.\n";
-    aOStream << "-PropertyInfo, -PI                      Print help information for properties in setup files.\n";
-    aOStream << "-ReadX, -RX  directory settings.xml     Parse Xsens exported files from directory using settingsFile.xml.\n";
-    aOStream << "-ReadA, -RA  datafile.csv settings.xml  Parse single csv file provided by APDM using specified settingsFile.xml.\n";
-    aOStream << "-Calibrate, -C modelPoseFile.osim calibrationOrientations.sto. <base_imu_label> <base_heading_axis>\n";
-    aOStream << "                                        Calibrate the modelPoseFile.osim model by registering\n";
-    aOStream << "                                        IMU frames whose orientations in the sensor world frame are\n";
-    aOStream << "                                        specified in calibrationOrientations.sto. and assuming \n";
-    aOStream << "                                        the model's default pose is the calibration pose. The resultant\n";
-    aOStream << "                                        model with IMU frames registered is written to file as\n";
-    aOStream << "                                        calibrated_modelPoseFile.osim. Optional arguments for identifying the\n";
-    aOStream << "                                        base IMU by its label in the calibrationOrientations, e.g. 'pelvis imu'.\n";
-    aOStream << "                                        The base IMU and its heading axis as 'x', 'y', or 'z', are used to\n";
-    aOStream << "                                        align all the IMU data so that base imu's heading (forward) is in the X\n";
-    aOStream << "                                        direction of OpenSim ground. If no base IMU is specified, then the heading\n";
-    aOStream << "                                        correction is not applied. If the base_imu_label is provided but no axis,\n";
-    aOStream << "                                        then the 'z' axis of the base IMU is used to perform the heading correction.\n";
-    aOStream << "-InverseKinematics, -IK ik_settings.xml Run IK using an xml settings file to define the inverse kinematics problem.\n";
+    aOStream << "Option             Argument               Action / Notes\n";
+    aOStream << "------             --------               --------------\n";
+    aOStream << "-Help, -H                                 Print the command-line options for " << progName << ".\n";
+    aOStream << "-PrintSetup, -PS                          Create a template inverse kinematics settings file that can be customized.\n";
+    aOStream << "-PropertyInfo, -PI                        Print help information for properties in setup files.\n";
+    aOStream << "-ReadXsens, -RX directory settings.xml    Parse Xsens exported files from directory using settings.xml.\n";
+    aOStream << "                                          Creates a storage file with the orientation data for each sensor, \n";
+    aOStream << "                                          where each column in the storage file is named\n"; 
+    aOStream << "                                          according to the Frame in the corresponding OpenSim model.\n";
+    aOStream << "-ReadAPDM, -RA datafile.csv settings.xml  Parse single csv file provided by APDM using specified settings.xml.\n";
+    aOStream << "                                          Creates a storage file with the orientation data for each sensor, \n";
+    aOStream << "                                          where each column in the storage file is named\n";
+    aOStream << "                                          according to the Frame in the corresponding OpenSim model.\n";
+    aOStream << "-Calibrate, -C IMUPlacer_setup.xml        Place IMUs on the model that is specified in the IMUPlacer_setup.xml file.\n";
+    aOStream << "                                          The model is positioned in its default pose. IMUs are then registered to the model according to\n ";
+    aOStream << "                                          their orientations in the first frame of the quaternions file that is specified in IMUPlacer_setup.xml.\n";
+    aOStream << "                                          The orientations of the IMUs in the quaternions file are assumed to be in the IMU world frame.\n";
+    aOStream << "                                          The resultant model with IMU frames registered is written to file if output_model_file is specified\n";
+    aOStream << "                                          in IMUPlacer_setup.xml. Additional options can be specified in IMUPlacer_setup.xml to perform heading correction.\n";
+    aOStream << "-InverseKinematics, -IK ik_settings.xml   Run IK using an xml settings file to define the inverse kinematics problem.\n";
     aOStream << endl;
 /** Advanced options for experimental validation. Uncomment if/when ready to make public
     aOStream << "-Transform, -T markerFileWithIMUframes.trc  Transform experimental marker locations that define axes of IMUs, or the plates\n";
@@ -344,7 +326,7 @@ void addImuFramesFromMarkers(const string& modelFile, const string& markersFile)
     model.updForceSet().clearAndDestroy();
 
     TimeSeriesTableVec3 table =
-        InverseKinematicsStudy::loadMarkersFile(markersFile);
+        IMUInverseKinematicsTool::loadMarkersFile(markersFile);
 
     model.setUseVisualizer(true);
 

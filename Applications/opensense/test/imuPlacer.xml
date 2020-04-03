@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="40000">
+	<IMUPlacer>
+		<!--Name/path to the xml .osim file used to load a model to be calibrated.-->
+		<model_file>subject07.osim</model_file>
+		<!--The label of the base IMU in the orientation_file_for_calibration used to account for the heading difference between the sensor data and the forward direction of the model. Leave blank if no heading correction is desired.-->
+		<base_imu_label>pelvis_imu</base_imu_label>
+		<!--The axis of the base IMU that corresponds to its heading direction. Options are 'x', '-x', 'y', '-y', 'z' or '-z'. Leave blank if no heading correction is desired.-->
+		<base_heading_axis>z</base_heading_axis>
+		<!--Space fixed Euler angles (XYZ order) from IMU Space to OpenSimDefault (0, 0, 0).-->
+		<sensor_to_opensim_rotations>-1.5707963 0 0</sensor_to_opensim_rotations>
+		<!--Name/path to a .sto file of sensor frame orientations as quaternions to be used for calibration.-->
+		<orientation_file_for_calibration>imuOrientations.sto</orientation_file_for_calibration>
+		<!--Name of OpenSim model file (.osim) to write when done placing IMUs.-->
+		<output_model_file>calibrated_subject07.osim</output_model_file>
+	</IMUPlacer>
+</OpenSimDocument>

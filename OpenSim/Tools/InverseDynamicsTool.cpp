@@ -25,13 +25,15 @@
 // INCLUDES
 //=============================================================================
 #include "InverseDynamicsTool.h"
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/InverseDynamicsSolver.h>
-#include <OpenSim/Common/XMLDocument.h>
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/FunctionSet.h> 
-#include <OpenSim/Common/GCVSplineSet.h>
+
 #include <OpenSim/Common/Constant.h>
+#include <OpenSim/Common/FunctionSet.h>
+#include <OpenSim/Common/GCVSplineSet.h>
+#include <OpenSim/Common/IO.h>
+#include <OpenSim/Common/Stopwatch.h>
+#include <OpenSim/Common/XMLDocument.h>
+#include <OpenSim/Simulation/InverseDynamicsSolver.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -272,7 +274,6 @@ bool InverseDynamicsTool::run()
                     << _lowpassCutoffFrequency << "..." << endl << endl;
                 _coordinateValues->pad(_coordinateValues->getSize()/2);
                 _coordinateValues->lowpassIIR(_lowpassCutoffFrequency);
-                if (getVerboseLevel()==Debug) _coordinateValues->print("coordinateDataFiltered.sto");
             }
             // Convert degrees to radian if indicated
             if(_coordinateValues->isInDegrees()){
@@ -319,7 +320,7 @@ bool InverseDynamicsTool::run()
         // create the solver given the input data
         InverseDynamicsSolver ivdSolver(*_model);
 
-        const clock_t start = clock();
+        Stopwatch watch;
 
         int nt = final_index-start_index+1;
         
@@ -337,7 +338,7 @@ bool InverseDynamicsTool::run()
         success = true;
 
         cout << "InverseDynamicsTool: " << nt << " time frames in " 
-            << (double)(clock()-start)/CLOCKS_PER_SEC << "s\n" <<endl;
+            << watch.getElapsedTimeFormatted() << "\n" <<endl;
     
         JointSet jointsForEquivalentBodyForces;
         getJointsByName(*_model, _jointsForReportingBodyForces, jointsForEquivalentBodyForces);

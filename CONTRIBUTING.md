@@ -319,6 +319,8 @@ Jeffrey Reinbolt   |              |Static Optimization; Examples; Musculoskeleta
 Shrinidhi Lakshmikanth|@klshrinidhi|Data interface
 Andrew LaPre       |@ankela       |IK error output to file
 Neil Dhir		   |@wagglefoot   |Python API contributions; specifically example usages
+Akshay Patel       |@akshaypatel1811|Python examples
+Colin Smith        |@clnsmith     |Blankevoort1991Ligament
 
 Contributor License Agreement
 -----------------------------

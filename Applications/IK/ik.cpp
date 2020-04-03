@@ -68,9 +68,6 @@ int main(int argc,char **argv)
     )";
     std::cout << deprecationNotice << std::endl;
 
-    // REGISTER TYPES
-    InverseKinematicsTool::registerTypes();
-
     // PARSE COMMAND LINE
     string option = "";
     string setupFileName;

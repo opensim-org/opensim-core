@@ -40,7 +40,9 @@
 #include "Model/CoordinateSet.h"
 #include "Model/ElasticFoundationForce.h"
 #include "Model/HuntCrossleyForce.h"
+#include "Model/SmoothSphereHalfSpaceForce.h"
 #include "Model/Ligament.h"
+#include "Model/Blankevoort1991Ligament.h"
 #include "Model/JointSet.h"
 #include "Model/Marker.h"
 #include "Model/Station.h"
@@ -121,7 +123,7 @@
 #include "StatesTrajectory.h"
 #include "StatesTrajectoryReporter.h"
 #include "OpenSense/OpenSenseUtilities.h"
-#include "OpenSense/InverseKinematicsStudy.h"
+#include "OpenSense/IMUInverseKinematicsTool.h"
 
 #include "SimulationUtilities.h"
 
