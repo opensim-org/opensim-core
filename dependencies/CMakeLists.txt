@@ -149,15 +149,14 @@ AddDependency(NAME       BTK
 
 AddDependency(NAME       simbody
               URL        https://github.com/simbody/simbody.git
-              # simbody-3.6 branch containing fixes for GCC-8 warnings
-              TAG        45654969ef2cf34555bf388472b78bec08ede84f
+              TAG        Simbody-3.7
               CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF 
                          -DBUILD_TESTING:BOOL=OFF)
                      
 
 AddDependency(NAME       docopt
               URL        https://github.com/docopt/docopt.cpp.git
-              TAG        af03fa044ee1eff20819549b534ea86829a24a54)
+              TAG        3dd23e3280f213bacefdf5fcb04857bf52e90917)
 
 
 AddDependency(NAME       spdlog
@@ -167,7 +166,6 @@ AddDependency(NAME       spdlog
                          -DSPDLOG_BUILD_TESTS:BOOL=OFF
                          -DSPDLOG_BUILD_EXAMPLE:BOOL=OFF
                          -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON)
-
 #######################
 
 RemoveDefaultInstallDirIfEmpty("${DEFAULT_CMAKE_INSTALL_PREFIX}")

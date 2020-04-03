@@ -481,7 +481,7 @@ On Windows using Visual Studio
         The C compiler identification is unknown
         The CXX compiler identification is unknown
         ```    
-* **physics engine**: Simbody >= 3.6. Two options:
+* **physics engine**: Simbody >= 3.7. Two options:
     * Let OpenSim get this for you using superbuild (see below).
     * [Build on your own](
       https://github.com/simbody/simbody#windows-using-visual-studio).
@@ -764,7 +764,7 @@ ctest -j8
   [CMake](http://www.cmake.org/cmake/resources/software.html) >= 3.2
 * **compiler / IDE**: [Xcode](https://developer.apple.com/xcode/) >= 7.3 (the latest version), through
   the Mac App Store.
-* **physics engine**: Simbody >= 3.6. Two options:
+* **physics engine**: Simbody >= 3.7. Two options:
   * Let OpenSim get this for you using superbuild (see below).
   * [Build on your own](https://github.com/simbody/simbody#installing).
 * **C3D file support**: Biomechanical-ToolKit Core. Two options:
@@ -957,7 +957,7 @@ specific Ubuntu versions under 'For the impatient' below.
   `cmake-gui`.
 * **compiler**: [gcc](http://gcc.gnu.org) >= 4.9; `g++-4.9`, or
   [Clang](http://clang.llvm.org) >= 3.4; `clang-3.4`.
-* **physics engine**: Simbody >= 3.6. Two options:
+* **physics engine**: Simbody >= 3.7. Two options:
   * Let OpenSim get this for you using superbuild (see below).
   * [Build on your own](https://github.com/simbody/simbody#installing).
 * **C3D file support**: Biomechanical-ToolKit Core. Two options:

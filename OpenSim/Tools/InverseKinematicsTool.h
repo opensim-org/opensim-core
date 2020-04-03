@@ -24,9 +24,10 @@
  * -------------------------------------------------------------------------- */
 
 #include "osimToolsDLL.h"
-#include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Tools/IKTaskSet.h>
 #include "Tool.h"
+#include <SimTKcommon/internal/ReferencePtr.h> 
 
 #ifdef SWIG
     #ifdef OSIMTOOLS_API
@@ -38,7 +39,6 @@
 namespace OpenSim {
 
 class Model;
-class IKTaskSet;
 class MarkersReference;
 class CoordinateReference;
 
@@ -63,51 +63,55 @@ OpenSim_DECLARE_CONCRETE_OBJECT(InverseKinematicsTool, Tool);
 private:
     
     /** Pointer to the model being investigated. */
-    Model *_model;
+    SimTK::ReferencePtr<Model> _model;
 
-    /** Name of the xml file used to deserialize or construct a model. */
-    PropertyStr _modelFileNameProp;
-    std::string &_modelFileName;
+public:
+    OpenSim_DECLARE_PROPERTY(model_file, std::string,
+            "Name/path to the xml .osim file used to load a model to be analyzed.");
 
-    /** The relative weight of the constraints. Infinity is a strictly enforced constraint. 
-        Any other non-zero positive scalar is the penalty factor for constraint violations. */
-    PropertyDbl _constraintWeightProp;
-    double &_constraintWeight;
+    OpenSim_DECLARE_PROPERTY(constraint_weight, double,
+            "The relative weighting of kinematic constraint errors. By default this "
+            "is Infinity, which means constraints are strictly enforced as part of "
+            "the optimization and are not appended to the objective (cost) function. "
+            "Any other non-zero positive scalar is the penalty factor for "
+            "constraint violations.");
 
-    /** The accuracy of the solution in absolute terms, i.e. the number of significant digits
-        to which the solution can be trusted. */
-    PropertyDbl _accuracyProp;
-    double &_accuracy;
+    OpenSim_DECLARE_PROPERTY(accuracy, double,
+            "The accuracy of the solution in absolute terms, i.e. the number of "
+            "significant digits to which the solution can be trusted. Default 1e-5.");
 
-    // Markers and coordinates to be matched and their respective weightings
-    PropertyObj _ikTaskSetProp;
-    IKTaskSet &_ikTaskSet;
+    OpenSim_DECLARE_UNNAMED_PROPERTY(
+            IKTaskSet, 
+            "Markers and coordinates to be considered (tasks) and their weightings. "
+            "The sum of weighted-squared task errors composes the cost function.");
 
-    // name of marker file that contains marker locations for IK solving
-    PropertyStr _markerFileNameProp;
-    std::string &_markerFileName;
+    OpenSim_DECLARE_PROPERTY(marker_file, std::string,
+            "TRC file (.trc) containing the time history of observations of marker "
+            "positions obtained during a motion capture experiment. Markers in this "
+            "file that have a corresponding task and model marker are included.");
 
-    // name of storage file that contains coordinate values for IK solving
-    PropertyStr _coordinateFileNameProp;
-    std::string &_coordinateFileName;
 
-    // range of frames to solve in marker file, specified by time
-    PropertyDblArray _timeRangeProp;
-    Array<double> &_timeRange;
+    OpenSim_DECLARE_PROPERTY(coordinate_file, std::string,
+            "The name of the storage (.sto or .mot) file containing the time "
+            "history of coordinate observations. Coordinate values from this file are "
+            "included if there is a corresponding model coordinate and task. ");
 
-    // flag if inverse kinematics should report marker errors
-    PropertyBool _reportErrorsProp;
-    bool &_reportErrors;
+    OpenSim_DECLARE_LIST_PROPERTY_SIZE(
+            time_range, double, 2, "The time range for the study.");
 
-    // name of motion file with inverse kinematics solution
-    PropertyStr _outputMotionFileNameProp;
-    std::string &_outputMotionFileName;
+    OpenSim_DECLARE_PROPERTY(report_errors, bool,
+            "Flag (true or false) indicating whether or not to report marker "
+            "errors from the inverse kinematics solution.");
 
-    // flag indicating whether or not to resulting marker locations
-    PropertyBool _reportMarkerLocationsProp;
-    bool &_reportMarkerLocations;
+    OpenSim_DECLARE_PROPERTY(output_motion_file, std::string,
+            "Name of the resulting inverse kinematics motion (.mot) file.");
 
-//=============================================================================
+
+    OpenSim_DECLARE_PROPERTY(report_marker_locations, bool,
+            "Flag indicating whether or not to report model marker locations. "
+            "Note, model marker locations are expressed in Ground.");
+
+    //=============================================================================
 // METHODS
 //=============================================================================
     //--------------------------------------------------------------------------
@@ -117,49 +121,48 @@ public:
     virtual ~InverseKinematicsTool();
     InverseKinematicsTool();
     InverseKinematicsTool(const std::string &aFileName, bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
-    InverseKinematicsTool(const InverseKinematicsTool &aObject);
-
-    /* Register types to be used when reading an InverseKinematicsTool object from xml file. */
-    static void registerTypes();
+ 
     /* Handle reading older formats/Versioning */
     void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1) override;
 
     //---- Setters and getters for various attributes
     void setModel(Model& aModel) { _model = &aModel; };
-    void setStartTime(double d) { _timeRange[0] = d; };
-    double getStartTime() const {return  _timeRange[0]; };
+    void setStartTime(double d) { upd_time_range(0) = d; };
+    double getStartTime() const { return get_time_range(0); };
 
-    void setEndTime(double d) { _timeRange[1] = d; };
-    double getEndTime() const {return  _timeRange[1]; };
+    void setEndTime(double d) { upd_time_range(1) = d; };
+    double getEndTime() const { return get_time_range(1); };
 
-    void setMarkerDataFileName(const std::string& markerDataFileName) { _markerFileName=markerDataFileName;};
-    const std::string& getMarkerDataFileName() const { return  _markerFileName;};
+    void setMarkerDataFileName(const std::string& markerDataFileName) {
+        upd_marker_file() = markerDataFileName;
+    };
+    const std::string& getMarkerDataFileName() const {
+        return get_marker_file();
+    };
 
-    void setCoordinateFileName(const std::string& coordDataFileName) { _coordinateFileName=coordDataFileName;};
-    const std::string& getCoordinateFileName() const { return  _coordinateFileName;};
+    void setCoordinateFileName(const std::string& coordDataFileName) {
+        upd_coordinate_file() = coordDataFileName;
+    };
+    const std::string& getCoordinateFileName() const {
+        return get_coordinate_file();
+    };
     
-    //const OpenSim::Storage& getOutputStorage() const;
 private:
-    void setNull();
-    void setupProperties();
+    void constructProperties();
 
+public:
     //--------------------------------------------------------------------------
     // OPERATORS
     //--------------------------------------------------------------------------
-public:
-#ifndef SWIG
-    InverseKinematicsTool&
-        operator=(const InverseKinematicsTool &aInverseKinematicsTool);
-#endif
 
     //--------------------------------------------------------------------------
     // GET AND SET
     //--------------------------------------------------------------------------
     void setOutputMotionFileName(const std::string aOutputMotionFileName) {
-        _outputMotionFileName = aOutputMotionFileName;
+        upd_output_motion_file() = aOutputMotionFileName;
     }
-    std::string getOutputMotionFileName() { return _outputMotionFileName;}
-    IKTaskSet& getIKTaskSet() { return _ikTaskSet; }
+    std::string getOutputMotionFileName() { return get_output_motion_file(); }
+    IKTaskSet& getIKTaskSet() { return upd_IKTaskSet(); }
 
     //--------------------------------------------------------------------------
     // INTERFACE

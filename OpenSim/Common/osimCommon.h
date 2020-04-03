@@ -52,6 +52,7 @@
 #include "Sine.h"
 #include "SmoothSegmentedFunctionFactory.h"
 #include "StepFunction.h"
+#include "Stopwatch.h"
 #include "StorageInterface.h"
 #include "TableSource.h"
 #include "TimeSeriesTable.h"

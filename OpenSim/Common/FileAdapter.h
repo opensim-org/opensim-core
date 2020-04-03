@@ -93,7 +93,7 @@ public:
                           const std::string& expected,
                           const std::string& received) :
         IOError(file, line, func) {
-        std::string msg = "Error reading column Labels in file '" + filename;
+        std::string msg = "Error reading column labels in file '" + filename;
         msg += "'. Unexpected column label. ";
         msg += "Expected = " + expected + ". ";
         msg += "Received = " + received + ". ";

@@ -24,17 +24,28 @@
 import opensim as osim
 
 # Set variables to use
-modelFileName = 'Rajagopal_2015.osim'        # The path to an input model
-orientationsFileName = 'MT_012005D6_009-001_orientations.sto'   # The path to orientation data for calibration
-baseIMUName = 'pelvis_imu'                     # The base IMU is the IMU on the base body of the model that dictates the heading (forward) direction of the model.
-baseIMUHeading = osim.CoordinateAxis(2)        # The Coordinate Axis of the base IMU that points in the heading direction.
-visulizeCalibration = True                     # Boolean to Visualize the Output model
+modelFileName = 'Rajagopal_2015.osim';          # The path to an input model
+orientationsFileName = 'MT_012005D6_009-001_orientations.sto';   # The path to orientation data for calibration 
+sensor_to_opensim_rotations = Vec3(-pi/2, 0, 0);# The rotation of IMU data to the OpenSim world frame 
+baseIMUName = 'pelvis_imu';                     # The base IMU is the IMU on the base body of the model that dictates the heading (forward) direction of the model.
+baseIMUHeading = 'z';                           # The Coordinate Axis of the base IMU that points in the heading direction. 
+visulizeCalibration = true;                     # Boolean to Visualize the Output model
 
-# Instantiate an OpenSenseUtilities object
-ou = osim.OpenSenseUtilities()
+# Instantiate an IMUPlacer object
+imuPlacer = osim.IMUPlacer();
 
-# Generate a model that calibrates the IMU sensors to a model pose.
-model = ou.calibrateModelFromOrientations(modelFileName,orientationsFileName,baseIMUName,baseIMUHeading, visulizeCalibration)
+# Set properties for the IMUPlacer
+imuPlacer.set_model_file(modelFileName);
+imuPlacer.set_orientation_file_for_calibration(orientationsFileName);
+imuPlacer.set_sensor_to_opensim_rotations(sensor_to_opensim_rotations);
+imuPlacer.set_base_imu_label(baseIMUName);
+imuPlacer.set_base_heading_axis(baseIMUHeading);
+
+# Run the IMUPlacer
+imuPlacer.run(visulizeCalibration);
+
+# Get the model with the calibrated IMU
+model = imuPlacer.getCalibratedModel();
 
 # Print the calibrated model to file.
 model.printToXML('calibrated_' + modelFileName)

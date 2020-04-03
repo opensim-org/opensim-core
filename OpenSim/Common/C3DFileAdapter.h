@@ -68,14 +68,18 @@ public:
         C3DFileAdapter c3dFileAdapter;
         c3dFileAdapter.setLocationForForceExpression(C3DFileAdapter::ForceLocation::CenterOfPressure);
         auto tables  =  c3dFileAdapter.read("myData.c3d");
+        auto markersTable = c3dFileAdapter.getMarkersTable(tables);
+        auto forcesTable = c3dFileAdapter.getForcesTable(tables);
         \endcode
 
         <b>Python example</b>
         \code{.py}
         import opensim
-        C3DFileAdapter c3dFileAdapter;
+        c3dFileAdapter = opensim.C3DFileAdapter()
         c3dFileAdapter.setLocationForForceExpression(opensim.C3DFileAdapter.ForceLocation_CenterOfPressure);
         tables = c3dFileAdapter.read("myData.c3d")
+        markersTable = c3dFileAdapter.getMarkersTable(tables)
+        forcesTable = c3dFileAdapter.getForcesTable(tables)
         \endcode
 
         <b>Java example</b>
@@ -83,14 +87,18 @@ public:
         C3DFileAdapter c3dFileAdapter = new C3DFileAdapter();
         c3dFileAdapter.setLocationForForceExpression(C3DFileAdapter.ForceLocation.CenterOfPressure);
         tables = c3dFileAdapter.read("myData.c3d");
-                    
+        TimeSeriesTableVec3 markersTable = c3dFileAdapter.getMarkersTable(tables);
+        TimeSeriesTableVec3 forcesTable = c3dFileAdapter.getForcesTable(tables);
+
         \endcode
 
         <b>MATLAB example</b>
         \code{.m}
-         C3DFileAdapter c3dFileAdapter;
+         c3dFileAdapter = C3DFileAdapter();
          c3dFileAdapter.setLocationForForceExpression(1);
-        tables = C3DFileAdapter.read("myData.c3d");
+         tables = c3dFileAdapter.read('myData.c3d');
+         markersTable = c3dFileAdapter.getMarkersTable(tables);
+         forcesTable = c3dFileAdapter.getForcesTable(tables);
         \endcode
     */
     enum class ForceLocation {

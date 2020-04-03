@@ -53,7 +53,7 @@ std::string OpenSim::getFormattedDateTime(
     }
 
     std::stringstream ss;
-    ss << std::string(formatted.get(), size);
+    ss << formatted.get();
 
     if (appendMicroseconds) {
         // Get number of microseconds since last second.
