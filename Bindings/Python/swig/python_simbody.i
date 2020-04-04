@@ -49,7 +49,6 @@ using namespace SimTK;
 // this.
 // https://docs.scipy.org/doc/numpy/reference/swig.interface-file.html
 // https://scipy-cookbook.readthedocs.io/items/SWIG_NumPy_examples.html
-// For constructor.
 // The Python version of any OpenSim function taking the pair of arguments
 // (int n, double* data) will instead take a single NumPy array.
 %apply (int DIM1, double* IN_ARRAY1) {
@@ -161,15 +160,16 @@ using namespace SimTK;
 
 // Pythonic operators
 // ==================
-%extend SimTK::Vec<3> {
-    SimTK::Vec(int n, double* numpydata) {
+namespace SimTK {
+%extend Vec<3> {
+    Vec(int n, double* numpydata) {
         SimTK_ERRCHK_ALWAYS(n == 3, "Vec3()", "Size of input must be 3.");
-        return new SimTK::Vec<3>(numpydata);
+        return new Vec<3>(numpydata);
     }
-    static SimTK::Vec<3> createFromMat(int n, double* numpydata) {
+    static Vec<3> createFromMat(int n, double* numpydata) {
         SimTK_ERRCHK_ALWAYS(n == 3, "createFromMat()",
                     "Size of input must be 3.");
-        return SimTK::Vec3(numpydata);
+        return Vec3(numpydata);
     }
     double __getitem__(int i) const {
         SimTK_INDEXCHECK_ALWAYS(i, $self->size(), "Vec3.__getitem__()");
@@ -179,7 +179,7 @@ using namespace SimTK;
         SimTK_INDEXCHECK_ALWAYS(i, $self->size(), "Vec3.__setitem__()");
         $self->operator[](i) = value;
     }
-    //SimTK::Vec<3> __add__(const SimTK::Vec<3>& v) const {
+    //Vec<3> __add__(const Vec<3>& v) const {
     //    return *($self) + v;
     //}
     void _getAsMat(int n, double* numpyout) const {
@@ -192,14 +192,28 @@ using namespace SimTK;
     def getAsMat(self):
         return self._getAsMat(self.size())
 %};
-};
+}
 
-%extend SimTK::Vector_<double> {
-    // SimTK::Vector_(int n, double* numpydata) {
-    //     return new SimTK::Vector_<double>(n, data, true);
+%extend VectorBase<double> {
+    void _getAsMat(int n, double* numpyout) const {
+        SimTK_ASSERT1_ALWAYS(n == $self->size(), "Size of input must be %i.",
+                             $self->size());
+        std::copy_n($self->getContiguousScalarData(), n, numpyout);
+    }
+%pythoncode %{
+    def getAsMat(self):
+        return self._getAsMat(self.size())
+%};
+}
+
+// The constructor taking (int, double*) conflicts with existing constructors,
+// so we resort to a static function.
+%extend Vector_<double> {
+    // Vector_(int n, double* numpydata) {
+    //     return new Vector_<double>(n, data, true);
     // }
-    static SimTK::Vector_<double> createFromMat(int n, double* numpydata) {
-        return SimTK::Vector_<double>(n, numpydata, true);
+    static Vector_<double> createFromMat(int n, double* numpydata) {
+        return Vector_<double>(n, numpydata, true);
     }
     double __getitem__(int i) const {
         SimTK_INDEXCHECK_ALWAYS(i, $self->size(), "Vector.__getitem__()");
@@ -209,14 +223,50 @@ using namespace SimTK;
         SimTK_INDEXCHECK_ALWAYS(i, $self->size(), "Vector.__setitem__()");
         $self->operator[](i) = value;
     }
+}
+
+%extend RowVectorBase<double> {
     void _getAsMat(int n, double* numpyout) const {
         SimTK_ASSERT1_ALWAYS(n == $self->size(), "Size of input must be %i.",
-                $self->size());
+                             $self->size());
         std::copy_n($self->getContiguousScalarData(), n, numpyout);
     }
 %pythoncode %{
     def getAsMat(self):
         return self._getAsMat(self.size())
 %};
-};
+}
+
+%extend RowVector_<double> {
+    static RowVector_<double> createFromMat(int n, double* numpydata) {
+        return RowVector_<double>(n, numpydata, true);
+    }
+}
+
+%extend MatrixBase<double> {
+    void _getAsMat(int nrow, int ncol, double* numpyout) const {
+        SimTK_ASSERT1_ALWAYS(nrow == $self->nrow(),
+                "Number of rows must be %i.", $self->nrow());
+        SimTK_ASSERT1_ALWAYS(ncol == $self->ncol(),
+                "Number of columns must be %i.", $self->ncol());
+        std::copy_n($self->getContiguousScalarData(), nrow * ncol, numpyout);
+    }
+%pythoncode %{
+    def getAsMat(self):
+        import numpy as np
+        mat = np.empty([self.nrow(), self.ncol()])
+        self._getAsMat(mat)
+        return mat
+%};
+}
+
+%extend Matrix_<double> {
+    static Matrix_<double> createFromMat(int nrow, int ncol, double* numpydata)
+    {
+        return Matrix_<double>(nrow, ncol, numpydata);
+    }
+}
+
+} // namespace SimTK
+
 

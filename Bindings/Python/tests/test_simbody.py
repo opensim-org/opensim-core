@@ -90,36 +90,48 @@ class TestSimbody(unittest.TestCase):
         v2 = v1.getAsMat()
         assert (npv == v2).all()
 
-#     def test_rowvector_typemaps(self):
-#         npv = np.array([5, 3, 6, 2, 9])
-#         v1 = osim.RowVector(npv)
-#         v2 = v1.getAsMat()
-#         assert npv == v2
-#
-#         npv = np.array([])
-#         v1 = osim.RowVector(npv)
-#         v2 = v1.getAsMat()
-#         assert npv == v2
+    def test_rowvector_typemaps(self):
+        npv = np.array([5, 3, 6, 2, 9])
+        v1 = osim.RowVector.createFromMat(npv)
+        v2 = v1.getAsMat()
+        assert (npv == v2).all()
 
-#     def test_vectorview_typemaps(self):
+        npv = np.array([])
+        v1 = osim.RowVector.createFromMat(npv)
+        v2 = v1.getAsMat()
+        assert (npv == v2).all()
 
-#     def test_rowvectorview_typemaps(self):
+    def test_vectorview_typemaps(self):
+        # Use a TimeSeriesTable to obtain VectorViews.
+        table = osim.TimeSeriesTable()
+        table.setColumnLabels(['a'])
+        table.appendRow(0.0, osim.RowVector([1.5]))
+        table.appendRow(1.0, osim.RowVector([2.5]))
+        column = table.getDependentColumn('a').getAsMat()
+        assert len(column) == 2
+        assert column[0] == 1.5
+        assert column[1] == 2.5
+        row = table.getRowAtIndex(0).getAsMat()
+        assert len(row) == 1
+        assert row[0] == 1.5
+        row = table.getRowAtIndex(1).getAsMat()
+        assert len(row) == 1
+        assert row[0] == 2.5
 
-#     def test_matrix_typemaps(self):
-#         npv = np.array([[5, 3], [3, 6]])
-#         v1 = osim.Matrix(npv)
-#         v2 = v1.getAsMat()
-#         assert npv == v2
-#
-#         npv = np.array([[]])
-#         v1 = osim.Vector(npv)
-#         v2 = v1.getAsMat()
-#         assert npv == v2
-#
-#         npv = np.array([])
-#         v1 = osim.Vector(npv)
-#         v2 = v1.getAsMat()
-#         assert npv == v2
+    def test_matrix_typemaps(self):
+        npm = np.array([[5, 3], [3, 6], [8, 1]])
+        m1 = osim.Matrix.createFromMat(npm)
+        m2 = m1.getAsMat()
+        assert (npm == m2).all()
+
+        npm = np.array([[]])
+        m1 = osim.Matrix.createFromMat(npm)
+        m2 = m1.getAsMat()
+        assert (npm == m2).all()
+
+        npm = np.array([])
+        with self.assertRaises(TypeError):
+            osim.Matrix.createFromMat(npm)
 
     def test_vector_operators(self):
         v = osim.Vector(5, 3)

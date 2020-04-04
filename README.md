@@ -506,6 +506,7 @@ On Windows using Visual Studio
         * Note: Java development kit >= 9 requires CMake >= 3.10.
     * **Python scripting** (optional): Python 2 >= 2.7 or Python 3 >= 3.5
         * [Anaconda](https://store.continuum.io/cshop/anaconda/)
+        * Must provide the NumPy package; this should come with Anaconda.
     * The choice between 32-bit/64-bit must be the same between Java, Python,
       and OpenSim.
 
@@ -781,6 +782,7 @@ ctest -j8
         * Mac OSX comes with Python, but you could also use:
         * [`brew install python`](http://brew.sh),
         * [Anaconda](https://store.continuum.io/cshop/anaconda/)
+        * Must provide the NumPy package; this should come with Anaconda.
 
 You can get most of these dependencies using [Homebrew](http://brew.sh):
 
@@ -964,6 +966,7 @@ specific Ubuntu versions under 'For the impatient' below.
                 'ver' in MATLAB to check MATLAB's JVM version (must be >= 1.7).
         * Note: Java development kit >= 9 requires CMake >= 3.10.
     * **Python scripting** (optional): Python 2 >= 2.7 or Python 3 >= 3.5; `python-dev`.
+        * Must provide the NumPy package; `python-numpy`.
 
 For example, you could get the required dependencies (except Simbody) via:
 
@@ -971,7 +974,7 @@ For example, you could get the required dependencies (except Simbody) via:
 
 And you could get all the optional dependencies via:
 
-    $ sudo apt-get install doxygen git swig openjdk-7-jdk python-dev
+    $ sudo apt-get install doxygen git swig openjdk-7-jdk python-dev python-numpy
 
 #### Download the OpenSim-Core source code
 
