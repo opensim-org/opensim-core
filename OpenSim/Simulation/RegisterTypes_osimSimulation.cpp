@@ -286,9 +286,6 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 
     Object::renameType("MuscleMetabolicPowerProbeUmberger2010_MetabolicMuscleParameterSet",  
         "Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet");
-    // Will remove this before public release but leaving now for testing purposes
-    Object::renameType(
-            "InverseKinematicsStudy", "IMUInverseKinematicsTool");
 
   } catch (const std::exception& e) {
     std::cerr 
