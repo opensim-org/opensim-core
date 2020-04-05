@@ -34,3 +34,4 @@
 %include <OpenSim/Tools/AnalyzeTool.h>
 %include <OpenSim/Tools/InverseKinematicsToolBase.h>
 %include <OpenSim/Tools/InverseKinematicsTool.h>
+%include <OpenSim/Tools/IMUInverseKinematicsTool.h>

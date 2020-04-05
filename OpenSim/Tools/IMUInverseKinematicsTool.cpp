@@ -1,6 +1,6 @@
 
 #include "IMUInverseKinematicsTool.h"
-#include "OpenSenseUtilities.h"
+#include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Common/TableSource.h>
@@ -11,8 +11,6 @@
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
 #include <OpenSim/Simulation/OrientationsReference.h>
-#include "ExperimentalMarker.h"
-#include "ExperimentalFrame.h"
 
 
 using namespace OpenSim;
@@ -21,13 +19,12 @@ using namespace std;
 
 
 IMUInverseKinematicsTool::IMUInverseKinematicsTool()
-{
+        : InverseKinematicsToolBase() {
     constructProperties();
 }
 
 IMUInverseKinematicsTool::IMUInverseKinematicsTool(const std::string& setupFile)
-    : Object(setupFile, true)
-{
+        : InverseKinematicsToolBase(setupFile, true) {
     constructProperties();
     updateFromXMLDocument();
 }
@@ -38,22 +35,11 @@ IMUInverseKinematicsTool::~IMUInverseKinematicsTool()
 
 void IMUInverseKinematicsTool::constructProperties()
 {
-    constructProperty_accuracy(1e-6);
-    constructProperty_constraint_weight(Infinity);
-    Array<double> range{ Infinity, 2};
-    range[0] = -Infinity; // Make range -Infinity to Infinity unless limited by data
-    constructProperty_time_range(range);
-
     constructProperty_sensor_to_opensim_rotations(
             SimTK::Vec3(0));
-
-    constructProperty_model_file("");
-    constructProperty_marker_file("");
     constructProperty_orientations_file("");
-
-    constructProperty_results_directory("");
 }
-
+/**
 void IMUInverseKinematicsTool::
     previewExperimentalData(const TimeSeriesTableVec3& markers,
                 const TimeSeriesTable_<SimTK::Rotation>& orientations) const
@@ -104,7 +90,7 @@ void IMUInverseKinematicsTool::
         previewWorld.getVisualizer().show(state);
     }
 }
-
+*/
 void IMUInverseKinematicsTool::runInverseKinematicsWithOrientationsFromFile(
         Model& model, const std::string& orientationsFileName,
         bool visualizeResults) {
