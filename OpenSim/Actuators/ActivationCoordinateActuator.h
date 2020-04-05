@@ -47,7 +47,7 @@ class OSIMACTUATORS_API ActivationCoordinateActuator
         CoordinateActuator);
 public:
     OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
-        "Larger value means activation can change more rapidly "
+        "Larger value means activation changes more slowly "
         "(units: seconds; default: 0.01 seconds).");
 
     OpenSim_DECLARE_PROPERTY(default_activation, double,
