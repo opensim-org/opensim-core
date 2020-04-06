@@ -281,6 +281,11 @@ using namespace SimTK;
         $self->setMultiplier(name,
                 SimTK::Vector((int)traj.size(), traj.data()));
     }
+    void setDerivative(const std::string& name, const std::vector<double>& traj)
+    {
+        $self->setDerivative(name,
+                SimTK::Vector((int)traj.size(), traj.data()));
+    }
     void _getTimeMat(int n, double* timeOut) const {
         OPENSIM_THROW_IF(n != $self->getNumTimes(), OpenSim::Exception,
                 "n != getNumTimes()");

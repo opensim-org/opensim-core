@@ -3,6 +3,9 @@ Change Log
 
 0.4.0 (in development) 
 ----------------------
+- 2020-04-03: Added missing MATLAB and Python commands for getting/setting 
+              derivative and multiplier variables to the bindings.
+
 - 2020-03-29: (backwards-incompatible) Updated opensim-core to a version that 
               includes SmoothSphereHalfSpaceForce. Therefore, 
               SmoothSphereHalfSpaceForce was removed from Moco.

@@ -124,10 +124,11 @@ class TestSwigAddtlInterface(unittest.TestCase):
         st = osim.Matrix(3, 2)
         ct = osim.Matrix(3, 3)
         mt = osim.Matrix(3, 1)
+        dt = osim.Matrix(3, 1)
         p = osim.RowVector(2, 0.0)
         it = osim.MocoTrajectory(time, ['s0', 's1'], ['c0', 'c1', 'c2'],
-                              ['m0'],
-                              ['p0', 'p1'], st, ct, mt, p)
+                              ['m0'], ['d0'],
+                              ['p0', 'p1'], st, ct, mt, dt, p)
         
         it.setTime([15, 25, 35])
         assert(it.getTime().get(0) == 15)
@@ -161,6 +162,12 @@ class TestSwigAddtlInterface(unittest.TestCase):
         assert(m0traj[0] == 326)
         assert(m0traj[1] == 1)
         assert(m0traj[2] == 42)
+
+        it.setDerivative('d0', [-10, 477, 125])
+        d0traj = it.getDerivative('d0')
+        assert(d0traj[0] == -10)
+        assert(d0traj[1] == 477)
+        assert(d0traj[2] == 125)
 
         it.setParameter('p0', 25)
         it.setParameter('p1', 30)
