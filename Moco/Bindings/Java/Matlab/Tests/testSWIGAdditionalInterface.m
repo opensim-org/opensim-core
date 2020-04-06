@@ -114,14 +114,17 @@ cn.add('c1');
 cn.add('c2');
 mn = StdVectorString();
 mn.add('m0');
+dn = StdVectorString();
+dn.add('d0');
 pn = StdVectorString();
 pn.add('p0');
 pn.add('p1');
 st = Matrix(3, 2);
 ct = Matrix(3, 3);
 mt = Matrix(3, 1);
+dt = Matrix(3, 1);
 p = RowVector(2, 0.0);
-it = MocoTrajectory(time, sn, cn, mn, pn, st, ct, mt, p);
+it = MocoTrajectory(time, sn, cn, mn, dn, pn, st, ct, mt, dt, p);
 
 it.setTime([15, 25, 35]);
 assert(it.getTime().get(0) == 15);
@@ -172,6 +175,16 @@ assert(m0trajMat(1) == 326);
 assert(m0trajMat(2) == 1);
 assert(m0trajMat(3) == 42);
 
+it.setDerivative('d0', [-10, 477, 125]);
+d0traj = it.getDerivative('d0');
+assert(d0traj.get(0) == -10);
+assert(d0traj.get(1) == 477);
+assert(d0traj.get(2) == 125);
+d0trajMat = it.getDerivativeMat('d0');
+assert(d0trajMat(1) == -10);
+assert(d0trajMat(2) == 477);
+assert(d0trajMat(3) == 125);
+
 it.setParameter('p0', 25);
 it.setParameter('p1', 30);
 p = it.getParameters();
@@ -189,6 +202,12 @@ assert(st(3, 2) == 1);
 ct = it.getControlsTrajectoryMat();
 assert(ct(1, 1) == 10);
 assert(ct(3, 3) == -1);
+mt = it.getMultipliersTrajectoryMat();
+assert(mt(1, 1) == 326);
+assert(mt(3, 1) == 42);
+dt = it.getDerivativesTrajectoryMat();
+assert(dt(2, 1) == 477);
+assert(dt(3, 1) == 125);
 
 pr = mp.createRep();
 assert(pr.createStateInfoNames().size() == 2);
