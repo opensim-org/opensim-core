@@ -75,10 +75,10 @@ using namespace SimTK;
 };
 
 // An alternative is to use typemaps to allow OpenSim functions to accept and
-// return Python/NumPy types. For example, passing a list of 3 floats into a
-// function that takes a Vec3 as an argument.
+// return Python/NumPy types. For example, such typemaps allow passing a Python
+// list of 3 floats into an OpenSim function that takes a Vec3.
 // The typemaps below allow this, but we opted not to go this route, because
-// it remove the ability to pass arguments using the C++ types.
+// it removes the ability to pass arguments using the C++ types.
 // For example, with these typemaps, Model::setGravity() can no longer take a
 // Vec3.
 /*
@@ -206,12 +206,10 @@ namespace SimTK {
 %};
 }
 
-// The constructor taking (int, double*) conflicts with existing constructors,
-// so we resort to a static function.
+// Ideally we would add a constructor Vector(int n, double* numpydata),
+// but this conflicts with existing constructors. So we resort to a static
+// function.
 %extend Vector_<double> {
-    // Vector_(int n, double* numpydata) {
-    //     return new Vector_<double>(n, data, true);
-    // }
     static Vector_<double> createFromMat(int n, double* numpydata) {
         return Vector_<double>(n, numpydata, true);
     }
