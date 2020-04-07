@@ -1,5 +1,5 @@
-#ifndef __InverseKinematicsToolBase_h__
-#define __InverseKinematicsToolBase_h__
+#ifndef OPENSIM_INVERSE_KINEMATICS_TOOL_BASE_H_
+#define OPENSIM_INVERSE_KINEMATICS_TOOL_BASE_H_
 /* -------------------------------------------------------------------------- *
  *                     OpenSim:  InverseKinematicsToolBase.h                  *
  * -------------------------------------------------------------------------- *
@@ -24,37 +24,27 @@
  * -------------------------------------------------------------------------- */
 
 #include "osimToolsDLL.h"
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Tools/IKTaskSet.h>
 #include "Tool.h"
 #include <SimTKcommon/internal/ReferencePtr.h> 
-
-#ifdef SWIG
-    #ifdef OSIMTOOLS_API
-        #undef OSIMTOOLS_API
-        #define OSIMTOOLS_API
-    #endif
-#endif
 
 namespace OpenSim {
 
 class Model;
-class MarkersReference;
-class CoordinateReference;
 
 //=============================================================================
 //=============================================================================
 /**
  * A Tool that performs an Inverse Kinematics analysis with a given model.
  * Inverse kinematics is the solution of internal coordinates that poses
- * the model such that the landmark locations (markers), affixed to the model,
- * minimize the weighted least-squares error with observations of markers 
- * in spatial coordinates. Observations of coordinates can also be included.
+ * the model such that the landmark locations (markers), or orientations of
+ * Sensor (IMUs) affixed to the model, minimize the weighted least-squares 
+ * error with observations of markers in spatial coordinates, or Sensor 
+ * (IMU) orientations. 
  *
  * @author Ayman Habib
  * @version 1.0
  */
-class OSIMTOOLS_API InverseKinematicsToolBase: public Tool {
+class OSIMTOOLS_API InverseKinematicsToolBase : public Tool {
     OpenSim_DECLARE_ABSTRACT_OBJECT(InverseKinematicsToolBase, Tool);
 
 //=============================================================================
@@ -67,7 +57,7 @@ protected:
 
 public:
     OpenSim_DECLARE_PROPERTY(model_file, std::string,
-            "Name/path to the xml .osim file used to load a model to be analyzed.");
+            "Name/path to the xml .osim file.");
 
     OpenSim_DECLARE_PROPERTY(constraint_weight, double,
             "The relative weighting of kinematic constraint errors. By default this "
@@ -85,7 +75,7 @@ public:
 
     OpenSim_DECLARE_PROPERTY(report_errors, bool,
             "Flag (true or false) indicating whether or not to report "
-            "errors from the inverse kinematics solution.");
+            "errors from the inverse kinematics solution. Default is true.");
 
     OpenSim_DECLARE_PROPERTY(output_motion_file, std::string,
             "Name of the resulting inverse kinematics motion (.mot) file.");
@@ -114,36 +104,27 @@ public:
 
     void setEndTime(double d) { upd_time_range(1) = d; };
     double getEndTime() const { return get_time_range(1); };
-    
+
+    void setOutputMotionFileName(const std::string aOutputMotionFileName) {
+        upd_output_motion_file() = aOutputMotionFileName;
+    }
+    std::string getOutputMotionFileName() { return get_output_motion_file(); }
+
 private:
     void constructProperties() {
         constructProperty_model_file("");
         constructProperty_constraint_weight(SimTK::Infinity);
         constructProperty_accuracy(1e-5);
         Array<double> range{SimTK::Infinity, 2};
-        range[0] = -SimTK::Infinity; // Make range -Infinity to Infinity unless
-                                     // limited
-                              // by data
+        // Make range -Infinity to Infinity unless limited by data
+        range[0] = -SimTK::Infinity; 
         constructProperty_time_range(range);
         constructProperty_report_errors(true);
     };
-
-public:
-    //--------------------------------------------------------------------------
-    // OPERATORS
-    //--------------------------------------------------------------------------
-
-    //--------------------------------------------------------------------------
-    // GET AND SET
-    //--------------------------------------------------------------------------
-    void setOutputMotionFileName(const std::string aOutputMotionFileName) {
-        upd_output_motion_file() = aOutputMotionFileName;
-    }
-    std::string getOutputMotionFileName() { return get_output_motion_file(); }
 
 //=============================================================================
 };  // END of class InverseKinematicsToolBase
 //=============================================================================
 } // namespace
 
-#endif // __InverseKinematicsToolBase_h__
+#endif // OPENSIM_INVERSE_KINEMATICS_TOOL_BASE_H_

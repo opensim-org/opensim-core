@@ -51,9 +51,9 @@ class Model;
 /**
  * A Study that performs an Inverse Kinematics analysis with a given model.
  * Inverse kinematics is the solution of internal coordinates that poses
- * the model such that the body rotations (as measured by IMUs) affixed to the model minimize the weighted least-
- * squares error with observations of IMU orientations
- * in their spatial coordinates. 
+ * the model such that the body rotations (as measured by IMUs) affixed to the 
+ * model minimize the weighted least-squares error with observations of IMU 
+ * orientations in their spatial coordinates. 
  *
  * @author Ajay Seth
  */
@@ -83,14 +83,10 @@ public:
     //--------------------------------------------------------------------------
     // INTERFACE
     //--------------------------------------------------------------------------
-     //--------------------------------------------------------------------------
-    // INTERFACE
-    //--------------------------------------------------------------------------
     bool run(bool visualizeResults) SWIG_DECLARE_EXCEPTION;
     bool run() override SWIG_DECLARE_EXCEPTION { 
         return run(false);
     };
-    //---- Setters and getters for various attributes
 
     static TimeSeriesTable_<SimTK::Vec3>
         loadMarkersFile(const std::string& markerFile);

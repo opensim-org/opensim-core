@@ -1,5 +1,5 @@
-#ifndef __InverseKinematicsTool_h__
-#define __InverseKinematicsTool_h__
+#ifndef OPENSIM_INVERSE_KINEMATICS_TOOL_H_
+#define OPENSIM_INVERSE_KINEMATICS_TOOL_H_
 /* -------------------------------------------------------------------------- *
  *                     OpenSim:  InverseKinematicsTool.h                      *
  * -------------------------------------------------------------------------- *
@@ -27,13 +27,6 @@
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Tools/IKTaskSet.h>
 #include <OpenSim/Tools/InverseKinematicsToolBase.h>
-
-#ifdef SWIG
-    #ifdef OSIMTOOLS_API
-        #undef OSIMTOOLS_API
-        #define OSIMTOOLS_API
-    #endif
-#endif
 
 namespace OpenSim {
 
@@ -78,7 +71,7 @@ public:
             "Flag indicating whether or not to report model marker locations. "
             "Note, model marker locations are expressed in Ground.");
 
-    //=============================================================================
+//=============================================================================
 // METHODS
 //=============================================================================
     //--------------------------------------------------------------------------
@@ -106,18 +99,7 @@ public:
     const std::string& getCoordinateFileName() const {
         return get_coordinate_file();
     };
-    
-private:
-    void constructProperties();
 
-public:
-    //--------------------------------------------------------------------------
-    // OPERATORS
-    //--------------------------------------------------------------------------
-
-    //--------------------------------------------------------------------------
-    // GET AND SET
-    //--------------------------------------------------------------------------
     IKTaskSet& getIKTaskSet() { return upd_IKTaskSet(); }
 
     //--------------------------------------------------------------------------
@@ -133,9 +115,12 @@ public:
         SimTK::Array_<CoordinateReference>&coordinateReferences) const;
     /** @endcond **/
 
-//=============================================================================
+private:
+    void constructProperties();
+
+    //=============================================================================
 };  // END of class InverseKinematicsTool
 //=============================================================================
 } // namespace
 
-#endif // __InverseKinematicsTool_h__
+#endif // OPENSIM_INVERSE_KINEMATICS_TOOL_H_
