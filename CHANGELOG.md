@@ -24,7 +24,7 @@ Change Log
 - 2020-03-15: exampleMocoInverse now employs electromyography data with a 
               MocoControlTrackingGoal.
               
-- 2020-03-15: MocoContactTrackingGoal provides more flexibility when associating
+- 2020-03-15: MocoControlTrackingGoal provides more flexibility when associating
               control signals with reference data.
 
 - 2020-03-10: The default parameters for createPeriodicTrajectory() are fixed
