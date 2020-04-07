@@ -63,9 +63,9 @@ using namespace SimTK;
 // The typemaps for functions that return matrices is more complicated: we must
 // pass in a NumPy array that already has the correct size. We create a (hidden)
 // C++ function that takes, for example, (int n, double* out)
-// (e.g., _getAsMat()).
+// (e.g., _to_numpy()).
 // Then we create a Python function that invokes the hidden C++ function with
-// a correctly-sized NumPy array (e.g., getAsMat()).
+// a correctly-sized NumPy array (e.g., to_numpy()).
 %apply (int DIM1, double* ARGOUT_ARRAY1) {
     (int n, double* numpyout)
 };
@@ -182,27 +182,27 @@ namespace SimTK {
     //Vec<3> __add__(const Vec<3>& v) const {
     //    return *($self) + v;
     //}
-    void _getAsMat(int n, double* numpyout) const {
+    void _to_numpy(int n, double* numpyout) const {
         SimTK_ASSERT_ALWAYS(n == 3, "Size of input must be 3.");
         for (int i = 0; i < n; ++i) {
             numpyout[i] = $self->operator[](i);
         }
     }
 %pythoncode %{
-    def getAsMat(self):
-        return self._getAsMat(self.size())
+    def to_numpy(self):
+        return self._to_numpy(self.size())
 %};
 }
 
 %extend VectorBase<double> {
-    void _getAsMat(int n, double* numpyout) const {
+    void _to_numpy(int n, double* numpyout) const {
         SimTK_ASSERT1_ALWAYS(n == $self->size(), "Size of input must be %i.",
                              $self->size());
         std::copy_n($self->getContiguousScalarData(), n, numpyout);
     }
 %pythoncode %{
-    def getAsMat(self):
-        return self._getAsMat(self.size())
+    def to_numpy(self):
+        return self._to_numpy(self.size())
 %};
 }
 
@@ -224,14 +224,14 @@ namespace SimTK {
 }
 
 %extend RowVectorBase<double> {
-    void _getAsMat(int n, double* numpyout) const {
+    void _to_numpy(int n, double* numpyout) const {
         SimTK_ASSERT1_ALWAYS(n == $self->size(), "Size of input must be %i.",
                              $self->size());
         std::copy_n($self->getContiguousScalarData(), n, numpyout);
     }
 %pythoncode %{
-    def getAsMat(self):
-        return self._getAsMat(self.size())
+    def to_numpy(self):
+        return self._to_numpy(self.size())
 %};
 }
 
@@ -242,7 +242,7 @@ namespace SimTK {
 }
 
 %extend MatrixBase<double> {
-    void _getAsMat(int nrow, int ncol, double* numpyout) const {
+    void _to_numpy(int nrow, int ncol, double* numpyout) const {
         SimTK_ASSERT1_ALWAYS(nrow == $self->nrow(),
                 "Number of rows must be %i.", $self->nrow());
         SimTK_ASSERT1_ALWAYS(ncol == $self->ncol(),
@@ -250,10 +250,10 @@ namespace SimTK {
         std::copy_n($self->getContiguousScalarData(), nrow * ncol, numpyout);
     }
 %pythoncode %{
-    def getAsMat(self):
+    def to_numpy(self):
         import numpy as np
         mat = np.empty([self.nrow(), self.ncol()])
-        self._getAsMat(mat)
+        self._to_numpy(mat)
         return mat
 %};
 }

@@ -25,6 +25,14 @@
 
 import numpy as np
 
+# Create an OpenSim Vec3 from a NumPy array.
+npArray = np.array([5, 3, 6])
+osimVec3 = osim.Vec3.createFromMat(npArray)
+print(osimVec3)
+# Convert the OpenSim Vec3 back to a NumPy array.
+npArray1 = osimVec3.to_numpy()
+print(npArray1)
+
 import opensim as osim
 
 # Create an OpenSim Vector from a NumPy array.
@@ -32,19 +40,19 @@ npArray = np.array([5, 3, 6, 2, 9])
 osimVector = osim.Vector.createFromMat(npArray)
 print(osimVector)
 # Convert the OpenSim Vector back to a NumPy array.
-npArray2 = osimVector.getAsMat()
+npArray2 = osimVector.to_numpy()
 print(npArray2)
 
 # Same for RowVector.
 osimRowVector = osim.RowVector.createFromMat(npArray)
 print(osimRowVector)
-npArray3 = osimRowVector.getAsMat()
+npArray3 = osimRowVector.to_numpy()
 print(npArray3)
 
 # Same for Matrix.
 npArray2D = np.array([[5, 3], [3, 6], [8, 1]])
 osimMatrix = osim.Matrix.createFromMat(npArray2D)
 print(osimMatrix)
-npArray4 = osimMatrix.getAsMat()
+npArray4 = osimMatrix.to_numpy()
 print(npArray4)
 

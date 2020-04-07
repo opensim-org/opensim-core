@@ -20,7 +20,7 @@ class TestSimbody(unittest.TestCase):
     def test_vec3_typemaps(self):
         npv = np.array([5, 3, 6])
         v1 = osim.Vec3(npv)
-        v2 = v1.getAsMat()
+        v2 = v1.to_numpy()
         assert (npv == v2).all()
 
         # Incorrect size.
@@ -34,7 +34,7 @@ class TestSimbody(unittest.TestCase):
         # createFromMat()
         npv = np.array([1, 6, 8])
         v1 = osim.Vec3.createFromMat(npv)
-        v2 = v1.getAsMat()
+        v2 = v1.to_numpy()
         assert (npv == v2).all()
 
         # Incorrect size.
@@ -82,23 +82,23 @@ class TestSimbody(unittest.TestCase):
     def test_vector_typemaps(self):
         npv = np.array([5, 3, 6, 2, 9])
         v1 = osim.Vector.createFromMat(npv)
-        v2 = v1.getAsMat()
+        v2 = v1.to_numpy()
         assert (npv == v2).all()
 
         npv = np.array([])
         v1 = osim.Vector.createFromMat(npv)
-        v2 = v1.getAsMat()
+        v2 = v1.to_numpy()
         assert (npv == v2).all()
 
     def test_rowvector_typemaps(self):
         npv = np.array([5, 3, 6, 2, 9])
         v1 = osim.RowVector.createFromMat(npv)
-        v2 = v1.getAsMat()
+        v2 = v1.to_numpy()
         assert (npv == v2).all()
 
         npv = np.array([])
         v1 = osim.RowVector.createFromMat(npv)
-        v2 = v1.getAsMat()
+        v2 = v1.to_numpy()
         assert (npv == v2).all()
 
     def test_vectorview_typemaps(self):
@@ -107,26 +107,26 @@ class TestSimbody(unittest.TestCase):
         table.setColumnLabels(['a'])
         table.appendRow(0.0, osim.RowVector([1.5]))
         table.appendRow(1.0, osim.RowVector([2.5]))
-        column = table.getDependentColumn('a').getAsMat()
+        column = table.getDependentColumn('a').to_numpy()
         assert len(column) == 2
         assert column[0] == 1.5
         assert column[1] == 2.5
-        row = table.getRowAtIndex(0).getAsMat()
+        row = table.getRowAtIndex(0).to_numpy()
         assert len(row) == 1
         assert row[0] == 1.5
-        row = table.getRowAtIndex(1).getAsMat()
+        row = table.getRowAtIndex(1).to_numpy()
         assert len(row) == 1
         assert row[0] == 2.5
 
     def test_matrix_typemaps(self):
         npm = np.array([[5, 3], [3, 6], [8, 1]])
         m1 = osim.Matrix.createFromMat(npm)
-        m2 = m1.getAsMat()
+        m2 = m1.to_numpy()
         assert (npm == m2).all()
 
         npm = np.array([[]])
         m1 = osim.Matrix.createFromMat(npm)
-        m2 = m1.getAsMat()
+        m2 = m1.to_numpy()
         assert (npm == m2).all()
 
         npm = np.array([])
