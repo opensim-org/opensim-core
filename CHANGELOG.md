@@ -1,8 +1,10 @@
 Change Log
 ==========
-
-0.4.0 (in development) 
+0.5.0 (in development) 
 ----------------------
+
+0.4.0 
+-----
 - 2020-04-03: Added missing MATLAB and Python commands for getting/setting 
               derivative and multiplier variables to the bindings.
 
