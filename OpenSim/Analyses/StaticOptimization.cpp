@@ -201,7 +201,6 @@ constructColumnLabels()
     if(_model) 
         for (int i = 0; i < _forceSet->getActuators().getSize(); i++) {
             if (ScalarActuator* act = dynamic_cast<ScalarActuator*>(&_forceSet->getActuators().get(i))) {
-                //std::cout << act->dump() << std::endl;
                 if (act->get_appliesForce())
                     labels.append(act->getName());
             }
