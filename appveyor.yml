@@ -75,8 +75,9 @@ install:
   # Chocolatey.
   - IF NOT EXIST C:\ProgramData\chocolatey\bin\swig.exe choco install swig --version 3.0.9 --yes --limit-output #> $null
   
-  ## Install python-nose for python testing.
-  - "%PYTHON_DIR%\\Scripts\\pip install nose"
+  ## Install python packages.
+  # python-nose for python testing and numpy to use SWIG numpy typemaps.
+  - "%PYTHON_DIR%\\Scripts\\pip install nose numpy"
   
   ## Simbody.
   # Simbody's installation is pushed to our Appveyor NuGet account feed.

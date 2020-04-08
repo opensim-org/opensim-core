@@ -86,6 +86,7 @@ addons:
       # python3 as linux and osx are still on python2
       - python3
       - python3-pip
+      - python3-numpy
   # To avoid being prompted when ssh'ing into sourceforge.
   ssh_known_hosts:
       # For uploading doxygen.
