@@ -101,7 +101,7 @@ SimTK::State OpenSim::simulate(Model& model,
 
 
 // Based on code from simtk.org/projects/predictivesim SimbiconExample/main.cpp.
-void OpenSim::visualize(Model model, Storage statesSto) {
+void OpenSim::visualizeModelMotion(Model model, Storage statesSto) {
 
     const SimTK::Real initialTime = statesSto.getFirstTime();
     const SimTK::Real finalTime = statesSto.getLastTime();
