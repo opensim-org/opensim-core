@@ -43,7 +43,7 @@ if(WIN32)
     add_dependencies(osimCommon
         Simbody_CONFIG_check Copy_Simbody_DLLs)
     if(WITH_EZC3D)
-#        add_dependencies(osimCommon Copy_ezc3d_DLLs)
+        add_dependencies(osimCommon Copy_ezc3d_DLLs)
     endif()
     if(WITH_BTK)
         add_dependencies(osimCommon Copy_BTK_DLLs)
