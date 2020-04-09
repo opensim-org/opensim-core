@@ -584,23 +584,33 @@ set(OPENSIM_DEPENDENCIES_DIR
     "Directory containing installed binaries of OpenSim dependencies. Set this
      only if you used the Superbuild procedure to install dependencies. ")
 
-set(C3D_PARSER None CACHE STRING
+set(OPENSIM_C3D_PARSER None CACHE STRING
     "Compile OpenSim with a C3D parser ? ezc3d or BTK provide C3D reading.")
-set_property(CACHE C3D_PARSER PROPERTY STRINGS "ezc3d" "BTK" "None")
-if(${C3D_PARSER} STREQUAL "ezc3d")
+set_property(CACHE OPENSIM_C3D_PARSER PROPERTY STRINGS "ezc3d" "BTK" "None")
+if(${OPENSIM_C3D_PARSER} STREQUAL "ezc3d")
     set(WITH_EZC3D true)
     set(WITH_BTK false)
-    find_package(ezc3d
-                 REQUIRED
-                 HINTS "${OPENSIM_DEPENDENCIES_DIR}/ezc3d/lib/ezc3d/cmake"
-                 )
+    if(WIN32)
+        set(ezc3d_hint "${OPENSIM_DEPENDENCIES_DIR}/ezc3d/lib/cmake")
+    else()
+        set(ezc3d_hint "${OPENSIM_DEPENDENCIES_DIR}/ezc3d/lib/ezc3d/cmake")
+    endif()
+    find_package(ezc3d REQUIRED HINTS "${ezc3d_hint}")
     add_definitions(-DWITH_EZC3D)
-    OpenSimCopyDependencyDLLsForWin(ezc3d ${CMAKE_INSTALL_PREFIX})
+    OpenSimCopyDependencyDLLsForWin(ezc3d "${ezc3d_LIBRARY_DIR}/../")
     if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
-        OpenSimInstallDependencyLibraries(ezc3d "${CMAKE_INSTALL_PREFIX}"
+        OpenSimInstallDependencyLibraries(ezc3d "${ezc3d_LIBRARY_DIR}/../"
             "${ezc3d_LIBRARY_DIR}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
     endif()
-elseif(${C3D_PARSER} STREQUAL "BTK")
+        
+    if(NOT WIN32)
+        # LIB: .so files on Linux, .dylib on macOS
+        file(GLOB ezc3d_desired_lib_files "${ezc3d_LIBRARY_DIR}/*ezc3d*")
+        install(FILES ${ezc3d_desired_lib_files}
+                DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+    endif()
+
+elseif(${OPENSIM_C3D_PARSER} STREQUAL "BTK")
     set(WITH_EZC3D false)
     unset(ezc3d_LIBRARY_DIR CACHE)
     unset(ezc3d_LIBRARY)
@@ -608,17 +618,22 @@ elseif(${C3D_PARSER} STREQUAL "BTK")
     set(WITH_BTK true)
 
     # If compiling with BTK, find and use it.
-    if(WITH_BTK)
-        find_package(BTK
-                     REQUIRED
-                     HINTS "${OPENSIM_DEPENDENCIES_DIR}/BTK/share/btk-0.4dev")
-        include(${BTK_USE_FILE})
-        add_definitions(-DWITH_BTK)
-        OpenSimCopyDependencyDLLsForWin(BTK ${BTK_INSTALL_PREFIX})
-        if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
-            OpenSimInstallDependencyLibraries(BTK "${BTK_INSTALL_PREFIX}"
-                "${BTK_LIBRARY_DIRS}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
-        endif()
+    find_package(BTK
+                 REQUIRED
+                 HINTS "${OPENSIM_DEPENDENCIES_DIR}/BTK/share/btk-0.4dev")
+    include(${BTK_USE_FILE})
+    add_definitions(-DWITH_BTK)
+    OpenSimCopyDependencyDLLsForWin(BTK ${BTK_INSTALL_PREFIX})
+    if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
+        OpenSimInstallDependencyLibraries(BTK "${BTK_INSTALL_PREFIX}"
+            "${BTK_LIBRARY_DIRS}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
+    endif()
+
+    if(NOT WIN32)
+        # LIB: .so files on Linux, .dylib on macOS
+        file(GLOB btk_desired_lib_files "${BTK_LIBRARY_DIRS}/*BTK*")
+        install(FILES ${btk_desired_lib_files}
+                DESTINATION "${CMAKE_INSTALL_LIBDIR}")
     endif()
 else()
     set(WITH_EZC3D false)
@@ -777,30 +792,18 @@ if(${OPENSIM_COPY_DEPENDENCIES})
                 FILES_MATCHING PATTERN "*simbody-visualizer*")
     endif()
 
-#    # EZC3D
-#    # ---
-#    if(WIN32)
-#        file(GLOB ezc3d_desired_dll_files "${EZC3D_INSTALL_DIR}/*ezc3d*.dll")
-#        install(FILES ${ezc3d_desired_dll_files}
-#                DESTINATION "${CMAKE_INSTALL_BINDIR}")
-#        # No need to copy *.lib on Windows, as ezc3d links "privately" to
-#        # osimCommon (clients of osimCommon do not link to ezc3d).
-#    else()
-#        # LIB: .so files on Linux, .dylib on macOS
-#        file(GLOB ezc3d_desired_lib_files "${ezc3d_LIBRARY_DIRS}/*ezc3d*")
-#        install(FILES ${ezc3d_desired_lib_files}
-#                DESTINATION "${CMAKE_INSTALL_LIBDIR}")
-#    endif()
+    # EZC3D
+    # -----
+    if(NOT WIN32)
+        # LIB: .so files on Linux, .dylib on macOS
+        file(GLOB ezc3d_desired_lib_files "${ezc3d_LIBRARY_DIR}/*ezc3d*")
+        install(FILES ${ezc3d_desired_lib_files}
+                DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+    endif()
 
     # BTK
     # ---
-    if(WIN32)
-        file(GLOB btk_desired_dll_files "${BTK_INSTALL_DIR}/*BTK*.dll")
-        install(FILES ${btk_desired_dll_files}
-                DESTINATION "${CMAKE_INSTALL_BINDIR}")
-        # No need to copy *.lib on Windows, as BTK links "privately" to
-        # osimCommon (clients of osimCommon do not link to BTK).
-    else()
+    if(NOT WIN32)
         # LIB: .so files on Linux, .dylib on macOS
         file(GLOB btk_desired_lib_files "${BTK_LIBRARY_DIRS}/*BTK*")
         install(FILES ${btk_desired_lib_files}
