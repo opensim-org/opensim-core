@@ -31,6 +31,7 @@
 //==============================================================================
 //==============================================================================
 #include <OpenSim/Common/IO.h>
+#include <OpenSim/Simulation/SimulationUtilities.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 
@@ -54,20 +55,7 @@ int main(int argc, char **argv)
 
         std::string modelFile = std::string(argv[1]);
         Model osimModel(modelFile);
-        osimModel.print("updated_" + modelFile);
-        osimModel.setUseVisualizer(true);
-        // If Geometry is located in folders other than where the .osim 
-        // file is located or in a Geometry folder adjacent to the model
-        // file, then define the variable additionalGeometrySearchPath 
-        // as the folder containing geometry mesh files 
-        // and uncomment the line below.
-        // ModelVisualizer::addDirToGeometrySearchPaths(additionalGeometrySearchPath);
-        osimModel.updDisplayHints().set_show_frames(false);
-        SimTK::State& si = osimModel.initSystem();
-        osimModel.equilibrateMuscles(si);
-        osimModel.getMultibodySystem().realize(si, Stage::Velocity);
-        osimModel.getVisualizer().show(si);
-        getchar(); // Keep Visualizer from dying until we inspect the visualization window..
+        visualizeModel(osimModel);
     }
 
     catch (const std::exception& ex)

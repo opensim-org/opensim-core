@@ -58,6 +58,8 @@ OSIMSIMULATION_API SimTK::State simulate(Model& model,
 OSIMSIMULATION_API void visualizeModelMotion(Model, Storage);
 /// @}
 
+OSIMSIMULATION_API void visualizeModel(Model);
+
 #ifndef SWIG
 /** Not available through scripting. 
  @returns nullptr if no update is necessary. */

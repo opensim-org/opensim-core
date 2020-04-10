@@ -98,7 +98,22 @@ SimTK::State OpenSim::simulate(Model& model,
 
     return state;
 }
-
+void OpenSim::visualizeModel(Model model) {
+    model.setUseVisualizer(true);
+    // If Geometry is located in folders other than where the .osim
+    // file is located or in a Geometry folder adjacent to the model
+    // file, then define the variable additionalGeometrySearchPath
+    // as the folder containing geometry mesh files
+    // and uncomment the line below.
+    // ModelVisualizer::addDirToGeometrySearchPaths(additionalGeometrySearchPath);
+    model.updDisplayHints().set_show_frames(false);
+    SimTK::State& si = model.initSystem();
+    model.equilibrateMuscles(si);
+    model.getMultibodySystem().realize(si, SimTK::Stage::Velocity);
+    model.getVisualizer().show(si);
+    getchar(); // Keep Visualizer from dying until we inspect the visualization
+               // window..
+}
 
 // Based on code from simtk.org/projects/predictivesim SimbiconExample/main.cpp.
 void OpenSim::visualizeModelMotion(Model model, Storage statesSto) {
