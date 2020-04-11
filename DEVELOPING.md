@@ -52,6 +52,77 @@ void XXX::updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
 }
 ```
 
+Dependencies
+------------
+OpenSim requires on multiple C/C++ software libraries. Developers adding new
+dependencies to OpenSim should ensure the following scenarios are supported on
+Windows, macOS, and Linux:
+
+- Building OpenSim from source
+- Building C++ plug-ins or extensions using OpenSim's binary software
+  development kit (SDK).
+- Using OpenSim's Python package
+
+Some dependencies may be available as static libraries or dynamic/shared
+libraries; typically, we use dynamic libraries, but using static libraries is
+permitted. Most of the following considerations are for dynamic libraries only.
+
+There are two types of dependencies: those exposed through OpenSim's API (e.g.,
+Simbody), and those used internally by OpenSim (e.g., BTK and ezc3d):
+
+- **internal**: OpenSim's binary distribution need only contain the 
+    dynamic/shared libraries
+- **exposed**: 
+
+
+When distributing
+OpenSim, various parts of these dependencies must be copied 
+
+All dependencies should be built with the same CMAKE_BUILD_TYPE (e.g., Release,
+RelWithDebInfo, Debug) as OpenSim.
+
+Dependencies that are not exosed 
+
+### RPATH
+
+### OpenSim's Python package.
+
+OpenSim's Python package `opensim` is built if the CMake option
+`BUILD_PYTHON_WRAPPING` is `on`.
+The Python package may be used from OpenSim's installation or can be installed
+into a user's Python package directory (`OPENSIM_PYTHON_STANDALONE=ON`).
+
+In the former case, the Python package depends on OpenSim's libraries (and the
+libraries that OpenSim depends on) that exist outside of the Python package
+itself. For the Python package to find these OpenSim libraries, on Windows,
+users must set their `PATH` environment variable to include the OpenSim
+installation's `bin` directory. On macOS and Linux, we set the RPATH of the
+shared libraries in the Python package (e.g., `_common.so`) to use relative
+paths that point to the OpenSim distribution's `lib` directory.
+
+In the latter case, all libraries that the Python package depends on are copied
+directly into the Python package.
+
+TODO I think I have this kinda confused...
+and Linux,
+
+- OpenSimInstallDependencyLibraries: To 
+
+### End-user of opensim-core.
+### C++ projects that depend on opensim-core.
+
+On Windows, building C++ code that depends on OpenSim requires that
+osimCommon.lib files are available.
+
+### CMake macros 
+
+OpenSim provides multiple CMake macros to aid with distributing dynamic/shared
+libraries from dependencies. 
+
+- OpenSimCopyDependencyDLLsForWin
+
+See `cmake/OpenSimMacros.cmake` for documentation.
+
 CMake options for packaging a binary distribution
 -------------------------------------------------
 
