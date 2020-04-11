@@ -57,21 +57,16 @@ static const int SimulationTest         = 0;
 static const int InitializationTest     = 1;
 static const int CorrectnessTest        = 2;
 
-static const int InitializationActivationPoints = 11;
-static const int InitializationLengthPoints     = 111;
-static const int InitializationSpeedPoints      = 21;
-
-static const double InitializationMinFiberToPathVelocityRatio = 0.1;
 
 // MUSCLE CONSTANTS
-static const double MaxIsometricForce0  = 100.0, 
-                    OptimalFiberLength0 = 0.1, 
-                    TendonSlackLength0  = 0.2,
-                    TendonSlackLength1  = 0.01,
-                    TendonSlackLength2  = 2.0,
-                    PennationAngle0     = 0.0,
-                    PennationAngle1     = SimTK::Pi/4,
-                    PennationAngle2     = SimTK::Pi/16;
+static const double MaxIsometricForce         = 100.0,
+                    OptimalFiberLength        = 0.1,
+                    TendonSlackLengthMedium   = 0.2,
+                    TendonSlackLengthShort    = 0.01,
+                    TendonSlackLengthLong     = 2.0,
+                    PennationAngleZero        = 0.0,
+                    PennationAngleBig         = SimTK::Pi/4,
+                    PennationAngleSmall       = SimTK::Pi/16;
 
 
 static const double Activation0     = 0.01, 
@@ -80,40 +75,174 @@ static const double Activation0     = 0.01,
                     ShutteDelpActivation2 = 2.5;
 
 
-/**
+//Initialization tests added for the actively supported muscle models
+static const bool testInitializationThelen2003Muscle              = true;
+static const bool testInitializationMillard2012EquilibrumMuscle   = true;
+static const bool testInitializationMillard2012AccelerationMuscle = true;
+
+/*
+@author M.Millard
+@date April 2020
+
+  To-Do: Once the muscle models have been updated and are passing the test
+         increase the number of sample points, particularly in the path
+         lengths tested.
+
+  The parameters in this struct are used to configure the function
+  runMuscleInitializationSweep which initializes a muscle across a range of
+  activations, path lengths, and path speeds. All combinations are tested so
+  the total number of initializations performed is given by the product of
+  activationSamplePoints, pathLengthSamplePoints, and pathSpeedSamplePoints.
+
+
+  @param minNormFiberLengthAlongTendon (recommend default : 0.)
+    The desired normalized length of the fiber along the tendon at the shortest
+    path tested.
+
+  @param maxNormFiberLengthAlongTendon (recommend default : 2.)
+    (Identical meaning as minNormFiberLengthAlongTendon but at the maximum
+    path length tested.)
+
+  @param minNormTendonStrain (recommend default : -0.5)
+    The desired minimum normalized tendon strain at the shortest path length
+    tested. For example if a value of -2.3 is used here it means that the
+    shortest tendon length will be close to ltSlk*(1 + etIso*(2.3)) where
+    ltSlk is the tendon slack length and etIso is the tendon strain at one
+    norm force.
+
+  @param maxNormTendonStrain (recommend default : 2.0)
+    (Identical meaning as minNormTendonStrain but at the maximum path length
+    tested)
+
+  @param normSpeedScaling (recommended default : 2.0)
+    This scales the path speed tested which is covers the range from
+    -maxPathSpeed to maxPathSpeed where
+
+    maxPathSpeed = normSpeedScaling
+                    * optimalFiberLength
+                    * maximumContactionVelocity
+                    * tendonSpeedScaling
+
+    where
+
+    tendonScaling = max( tendonSlackLength/optimalFiberLength, 1)
+
+  @param activationSamplePoints (recommended default : 10)
+    The number activation samples to make between the minimum and maximum
+    activations. Samples are made linearly. In the very least the minimum
+    and maximum values should be tested.
+
+  @param pathLengthSamplePoints (recommended default : 100)
+    The number of path length samples to make between the minimum and
+    maximum values. Since the initialization routine is most dependent on the
+    force-length properties of the muscle model it is critical to have a dense
+    sampling here: if possible increase this value as much as possible.
+
+  @param pathSpeedSamplePoints (recommended default : 11)
+    The number of path speed samples to make between the minimum and maximum
+    path speeds. Here I recommend using an odd number so that the path speed
+    of '0' is included in the values tested. Since good initialization methods
+    should distribute the path speed betweent he fiber and tendon in some way
+    it is a good idea to test a range of speeds here. At the time of this
+    documents writing none of the initialization methods depend on the
+    continuity of the force-velocity curve: increasing the number of sampling
+    points here is probably not of great value.
+
+  @param tolerance (recommended default : 1e-6)
+    The numerical tolerance applied to the tests within the function
+    runMuscleInitializationSweep: this is not the tolerance that is applied
+    to the function that computes the fiber equilibrium.
+
+  @param rejectStaticSolution (recommended default: true)
+    Though it is easy(ier) to solve the initialization problem by assuming
+    that the fiber velocity is zero, or the tendon velocity is zero, this
+    often results in a huge velocity (and then) force transient at the beginning
+    of the simulation. If this flag is set to true then if the speed of either
+    the tendon or the fiber remains within tolerance (on every attempt) then
+    an exception will be raised and the test will fail.
+*/
+struct InitializationTestSettings {
+
+  double minNormFiberLengthAlongTendon;
+  double maxNormFiberLengthAlongTendon;
+  double minNormTendonStrain          ;
+  double maxNormTendonStrain          ;
+  double normSpeedScaling             ;
+  int activationSamplePoints          ;
+  int pathLengthSamplePoints          ;
+  int pathSpeedSamplePoints           ;
+  double tolerance                    ;
+  bool rejectStaticSolution           ;
+
+  InitializationTestSettings():
+    minNormFiberLengthAlongTendon(0),
+    maxNormFiberLengthAlongTendon(2.0),
+    minNormTendonStrain(-0.5),
+    maxNormTendonStrain(2.0),
+    normSpeedScaling(2.0),
+    activationSamplePoints(11),
+    pathLengthSamplePoints(11),
+    pathSpeedSamplePoints(11),
+    tolerance(1e-6),
+    rejectStaticSolution(true){}
+
+};
+
+InitializationTestSettings defaultInitSettings;
+
+/*
+@author M.Millard
+@date April 2020
+
+The function runMuscleInitializationSweep is tested across this array
+of tendon slack lengths. The numerical problems that can arise during
+intialization are sensivite to the tendon slack length, so we have no
+choice but to test a range of tendons from short to long.
+*/
+static const int NumberOfTendonLengthsToTest = 3;
+static const double NormTendonLengths[3] = { TendonSlackLengthShort,
+                                             TendonSlackLengthMedium,
+                                             TendonSlackLengthLong  };
+
+
+/*
+@author M.Millard
+@date April 2020
+
 Similar to simulateMuscle this function creates a test model that consists of a
 ball on a slider joint with a single muscle spanning between ground and the
 ball. In contrast to simulateMuscle this function does not simulate the muscle
 but instead initializes the muscle with a dense sampling across activation,
-length, and velocity. This dense sweep will reach the widest possible range
-of fiber lengths and velocities if the test muscle has a relatively short
-tendon.
+length, and velocity. This dense sweep is configured by default to reach
+the widest possible range of fiber lengths and velocities
 
 The intent of the this dense sweep is to ensure that any initialization
 problem areas get exposed. This has been written after initialization problems
 were noted with the Thelen2003Muscle model at a normalized fiber length of 1.0:
 at this length the passive-force-length curve has a C1 discontinuity which makes
-the Newton method (used in the initial implementation) fail to converge.
+the Newton method (used in the initial implementation) fail to converge. It is
+worth noting that the Newton method fails only when two criteria are met:
+
+- The true solution lies very close, a distance d0, to a discontinuity
+- The the Newton method takes steps, of distance d1, that are relatively large
+  (d1 >> d0) such that the method ends pathologically jumping from one
+  side of the discontiuity to another.
+
+Thus far it has only been possible to reach these conditions with a muscle that
+has a very long tendon: other wise the gradient is too big, the Newton steps
+are too small, and the routine converges.
 
 @param aMuscle  a path actuator
-@param numberOfPoints the number of points to use for each variable sweep:
-       since activation, length, velocity are all swept (from a minimum value
-       to a maximum value) the total number of initializations performed is n^3
 @param minActivation the minimum activation to test
 @param maxActivation the maximum activation to test
 @param tendonStrainAtOneNormForce: the Cauchy strain of the tendon at one norm
        force (usually around 0.04).
-@author M.Millard
-@date 10 April 2020
 */
 void runMuscleInitializationSweep(const Muscle &aMuscle,
-                                  double minFiberToPathSpeedRatio,
-                                  unsigned int numberOfActivationPoints,
-                                  unsigned int numberOfLengthPoints,
-                                  unsigned int numberOfSpeedPoints,
                                   double minActivation,
                                   double maxActivation,
-                                  double tendonStrainAtOneNormForce);
+                                  double tendonStrainAtOneNormForce,
+                                  InitializationTestSettings& settings);
 
 /*
 This function completes a controlled activation, controlled stretch simulation 
@@ -549,16 +678,16 @@ void simulateMuscle(
 void testRigidTendonMuscle()
 {
     RigidTendonMuscle   muscle( "muscle",
-                                MaxIsometricForce0,
-                                OptimalFiberLength0,
-                                TendonSlackLength0,
-                                PennationAngle0);
+                                MaxIsometricForce,
+                                OptimalFiberLength,
+                                TendonSlackLengthMedium,
+                                PennationAngleZero);
 
     double x0 = 0;
     double act0 = 0.5;
     Constant control(act0);
 
-    Sine motion(OptimalFiberLength0, 2.0*SimTK::Pi, 0);
+    Sine motion(OptimalFiberLength, 2.0*SimTK::Pi, 0);
 
     // concentric
     simulateMuscle(muscle, 
@@ -582,10 +711,10 @@ void testRigidTendonMuscle()
 void testThelen2003Muscle_Deprecated()
 {
     Thelen2003Muscle_Deprecated muscle("muscle",
-                                        MaxIsometricForce0,
-                                        OptimalFiberLength0,
-                                        TendonSlackLength0,
-                                        PennationAngle0);
+                                        MaxIsometricForce,
+                                        OptimalFiberLength,
+                                        TendonSlackLengthMedium,
+                                        PennationAngleZero);
 
     muscle.setActivationTimeConstant(Activation0);
     muscle.setDeactivationTimeConstant(Deactivation0);
@@ -607,51 +736,48 @@ void testThelen2003Muscle_Deprecated()
 
 void testThelen2003Muscle()
 {
-  //Densely sweep the initialization routine
-    //Short tendon
-    Thelen2003Muscle muscleInit0("muscle",
-                            MaxIsometricForce0,
-                            OptimalFiberLength0,
-                            TendonSlackLength1,
-                            PennationAngle2);
-    double etIso = muscleInit0.get_FmaxTendonStrain();
-    double minAct = muscleInit0.get_minimum_activation();
-    double maxAct = muscleInit0.get_max_control();
-    runMuscleInitializationSweep(muscleInit0,
-                                 InitializationMinFiberToPathVelocityRatio,
-                                 InitializationActivationPoints,
-                                 InitializationLengthPoints,
-                                 InitializationSpeedPoints,
-                                 minAct,maxAct, etIso);
+  if(testInitializationThelen2003Muscle){
 
-    //Long tendon
-    Thelen2003Muscle muscleInit1("muscle",
-                            MaxIsometricForce0,
-                            OptimalFiberLength0,
-                            TendonSlackLength2,
-                            PennationAngle2);
-    etIso  = muscleInit1.get_FmaxTendonStrain();
-    minAct = muscleInit1.get_minimum_activation();
-    maxAct = muscleInit1.get_max_control();
-    runMuscleInitializationSweep(muscleInit1,
-                                 InitializationMinFiberToPathVelocityRatio,
-                                 InitializationActivationPoints,
-                                 InitializationLengthPoints,
-                                 InitializationSpeedPoints,
-                                 minAct,maxAct, etIso);
+    Thelen2003Muscle muscleInit("muscle",
+                            MaxIsometricForce,
+                            OptimalFiberLength,
+                            TendonSlackLengthShort,
+                            PennationAngleSmall);
 
+    double ltSlk, etIso, minAct, maxAct;
+
+    for(int i =0; i < NumberOfTendonLengthsToTest;++i){
+
+      ltSlk = NormTendonLengths[i];
+      muscleInit.setTendonSlackLength(ltSlk);
+
+      etIso  = muscleInit.get_FmaxTendonStrain();
+      minAct = muscleInit.get_minimum_activation();
+      maxAct = muscleInit.get_max_control();
+
+      runMuscleInitializationSweep(muscleInit,
+                                   minAct, maxAct, etIso,
+                                   defaultInitSettings);
+
+    }
+
+  }else{
+    cout << "\n******************************************************" << endl;
+    cout << "Skipping: Initialization test Thelen2003Muscle"           << endl;
+    cout << "******************************************************"   << endl;
+  }
 
     Thelen2003Muscle muscle("muscle",
-                            MaxIsometricForce0,
-                            OptimalFiberLength0,
-                            TendonSlackLength0,
-                            PennationAngle0);
+                            MaxIsometricForce,
+                            OptimalFiberLength,
+                            TendonSlackLengthMedium,
+                            PennationAngleZero);
 
     Thelen2003Muscle muscle1("muscle",
-                            MaxIsometricForce0,
-                            OptimalFiberLength0,
-                            TendonSlackLength0,
-                            PennationAngle1);
+                            MaxIsometricForce,
+                            OptimalFiberLength,
+                            TendonSlackLengthMedium,
+                            PennationAngleBig);
 
 
     muscle.setActivationTimeConstant(Activation0);
@@ -662,7 +788,7 @@ void testThelen2003Muscle()
 
     Constant control(0.5);
 
-    Sine motion(OptimalFiberLength0, 2.0*SimTK::Pi, 0);
+    Sine motion(OptimalFiberLength, 2.0*SimTK::Pi, 0);
 
 
     simulateMuscle(muscle, 
@@ -769,8 +895,8 @@ void testThelen2003Muscle()
         Model myModel;
         cout << "new Thelen2003Muscle myMuscle" << endl;
         Thelen2003Muscle* myMcl = new Thelen2003Muscle("myMuscle",
-            MaxIsometricForce0, OptimalFiberLength0, TendonSlackLength0,
-            PennationAngle0);
+            MaxIsometricForce, OptimalFiberLength, TendonSlackLengthMedium,
+            PennationAngleZero);
         
         myMcl->addNewPathPoint("p1", myModel.getGround(), SimTK::Vec3(0.0));
         myMcl->addNewPathPoint("p2", myModel.getGround(), SimTK::Vec3(1.0));
@@ -916,55 +1042,44 @@ void testThelen2003Muscle()
 
 void testMillard2012EquilibriumMuscle()
 {
-    //Densely sweep the initialization routine
-    //Short tendon
-    Millard2012EquilibriumMuscle muscleInit0("muscle",
-                            MaxIsometricForce0,
-                            OptimalFiberLength0,
-                            TendonSlackLength1,
-                            PennationAngle2);
+    if(testInitializationMillard2012EquilibrumMuscle){
 
-    muscleInit0.setMuscleConfiguration(false,false,0.01);
-    muscleInit0.setMinimumActivation(0.);
+      Millard2012EquilibriumMuscle muscleInit("muscle",
+                              MaxIsometricForce,
+                              OptimalFiberLength,
+                              TendonSlackLengthShort,
+                              PennationAngleSmall);
 
-    double minAct = 0.;
-    double maxAct = 1.;
+      muscleInit.setMuscleConfiguration(false,false,0.01);
+      muscleInit.setMinimumActivation(0.);
 
-    double etIso = muscleInit0.getTendonForceLengthCurve()
-                              .getStrainAtOneNormForce();
+      double ltSlk, etIso, minAct, maxAct;
 
-    runMuscleInitializationSweep(muscleInit0,
-                                 InitializationMinFiberToPathVelocityRatio,
-                                 InitializationActivationPoints,
-                                 InitializationLengthPoints,
-                                 InitializationSpeedPoints,
-                                 minAct, maxAct, etIso);
-    //Long tendon
-    Millard2012EquilibriumMuscle muscleInit1("muscle",
-                            MaxIsometricForce0,
-                            OptimalFiberLength0,
-                            TendonSlackLength2,
-                            PennationAngle2);
+      for(int i =0; i < NumberOfTendonLengthsToTest;++i){
 
-    muscleInit1.setMuscleConfiguration(false,false,0.01);
-    muscleInit1.setMinimumActivation(0.);
+        ltSlk = NormTendonLengths[i];
+        muscleInit.setTendonSlackLength(ltSlk);
 
-    minAct = 0.;
-    maxAct = 1.;
+        etIso=muscleInit.getTendonForceLengthCurve().getStrainAtOneNormForce();
+        minAct = 0.;
+        maxAct = 1.;
 
-    etIso =muscleInit1.getTendonForceLengthCurve().getStrainAtOneNormForce();
-    runMuscleInitializationSweep(muscleInit1,
-                                 InitializationMinFiberToPathVelocityRatio,
-                                 InitializationActivationPoints,
-                                 InitializationLengthPoints,
-                                 InitializationSpeedPoints,
-                                 minAct, maxAct, etIso);
+        runMuscleInitializationSweep(muscleInit,
+                                     minAct, maxAct, etIso,
+                                     defaultInitSettings);
+      }
+
+    }else{
+      cout << "\n******************************************************" << endl;
+      cout << "Skipping: Initialization test Millard2012EquilibriumMuscle"           << endl;
+      cout << "******************************************************"   << endl;
+    }
 
     Millard2012EquilibriumMuscle muscle("muscle",
-                            MaxIsometricForce0,
-                            OptimalFiberLength0,
-                            TendonSlackLength0,
-                            PennationAngle0);
+                            MaxIsometricForce,
+                            OptimalFiberLength,
+                            TendonSlackLengthMedium,
+                            PennationAngleZero);
 
     muscle.setActivationTimeConstant(Activation0);
     muscle.setDeactivationTimeConstant(Deactivation0);
@@ -974,7 +1089,7 @@ void testMillard2012EquilibriumMuscle()
 
     Constant control(0.5);
 
-    Sine motion(2.0*OptimalFiberLength0, 2*SimTK::Pi, 0);
+    Sine motion(2.0*OptimalFiberLength, 2*SimTK::Pi, 0);
 
     simulateMuscle(muscle, 
         x0, 
@@ -1071,49 +1186,40 @@ void testMillard2012EquilibriumMuscle()
 
 void testMillard2012AccelerationMuscle()
 {
-    //Densely sweep the initialization routine
-    //Short tendon
-    Millard2012AccelerationMuscle muscleInit0("muscle",
-                            MaxIsometricForce0,
-                            OptimalFiberLength0,
-                            TendonSlackLength1,
-                            PennationAngle2);
-    double etIso =muscleInit0.getTendonForceLengthCurve()
-                             .getStrainAtOneNormForce();
+  if(testInitializationMillard2012AccelerationMuscle){
 
-    double minAct = 0.;
-    double maxAct = 1.;
+    Millard2012AccelerationMuscle muscleInit("muscle",
+                            MaxIsometricForce,
+                            OptimalFiberLength,
+                            TendonSlackLengthShort,
+                            PennationAngleSmall);
 
-    runMuscleInitializationSweep(muscleInit0,
-                                 InitializationMinFiberToPathVelocityRatio,
-                                 InitializationActivationPoints,
-                                 InitializationLengthPoints,
-                                 InitializationSpeedPoints,
-                                 minAct, maxAct, etIso);
+    double ltSlk, etIso, minAct, maxAct;
 
-    Millard2012AccelerationMuscle muscleInit1("muscle",
-                            MaxIsometricForce0,
-                            OptimalFiberLength0,
-                            TendonSlackLength2,
-                            PennationAngle2);
-    etIso =muscleInit1.getTendonForceLengthCurve().getStrainAtOneNormForce();
+    for(int i =0; i < NumberOfTendonLengthsToTest;++i){
 
-    minAct = 0.;
-    maxAct = 1.;
+      ltSlk = NormTendonLengths[i];
+      muscleInit.setTendonSlackLength(ltSlk);
 
-    runMuscleInitializationSweep(muscleInit1,
-                                 InitializationMinFiberToPathVelocityRatio,
-                                 InitializationActivationPoints,
-                                 InitializationLengthPoints,
-                                 InitializationSpeedPoints,
-                                 minAct, maxAct, etIso);
+      etIso=muscleInit.getTendonForceLengthCurve().getStrainAtOneNormForce();
+      minAct = 0.;
+      maxAct = 1.;
 
+      runMuscleInitializationSweep(muscleInit,
+                                   minAct, maxAct, etIso,
+                                   defaultInitSettings);
+    }
 
+  }else{
+    cout << "\n******************************************************" << endl;
+    cout << "Skipping: Initialization test Thelen2003Muscle"           << endl;
+    cout << "******************************************************"   << endl;
+  }
     Millard2012AccelerationMuscle muscle("muscle",
-                            MaxIsometricForce0,
-                            OptimalFiberLength0,
-                            TendonSlackLength0,
-                            PennationAngle0);
+                            MaxIsometricForce,
+                            OptimalFiberLength,
+                            TendonSlackLengthMedium,
+                            PennationAngleZero);
 
     //otherwise the simulations are a bit slow ...
     muscle.setMass(muscle.getMass()*10);
@@ -1144,10 +1250,10 @@ void testMillard2012AccelerationMuscle()
 void testSchutte1993Muscle()
 {
     Schutte1993Muscle_Deprecated muscle("muscle",
-                                        MaxIsometricForce0,
-                                        OptimalFiberLength0,
-                                        TendonSlackLength0,
-                                        PennationAngle0);
+                                        MaxIsometricForce,
+                                        OptimalFiberLength,
+                                        TendonSlackLengthMedium,
+                                        PennationAngleZero);
 
     muscle.setActivation1(ShutteDelpActivation1);
     muscle.setActivation2(ShutteDelpActivation2);
@@ -1172,10 +1278,10 @@ void testSchutte1993Muscle()
 void testDelp1990Muscle()
 {
     Delp1990Muscle_Deprecated muscle("muscle",
-                                    MaxIsometricForce0,
-                                    OptimalFiberLength0,
-                                    TendonSlackLength0,
-                                    PennationAngle0);
+                                    MaxIsometricForce,
+                                    OptimalFiberLength,
+                                    TendonSlackLengthMedium,
+                                    PennationAngleZero);
 
     muscle.setActivation1(ShutteDelpActivation1);
     muscle.setActivation2(ShutteDelpActivation2);
@@ -1282,13 +1388,10 @@ void testMuscleEquilibriumSolve(const Model& model, const Storage& statesStore)
 }
 
 void runMuscleInitializationSweep(const Muscle &aMuscModel,
-                                  double minFiberToPathVelocityRatio,
-                                  unsigned int numberOfActivationPoints,
-                                  unsigned int numberOfLengthPoints,
-                                  unsigned int numberOfSpeedPoints,
                                   double minActivation,
                                   double maxActivation,
-                                  double tendonStrainAtOneNormForce)
+                                  double etIso,
+                                  InitializationTestSettings& settings)
 {
 
   cout << "\n******************************************************" << endl;
@@ -1300,16 +1403,15 @@ void runMuscleInitializationSweep(const Muscle &aMuscModel,
   // 0. Define the sweep range
   //==========================================================================
 
-  double optimalFiberLength         = aMuscModel.getOptimalFiberLength();
-  double pennationAngle    = aMuscModel.getPennationAngleAtOptimalFiberLength();
-  double tendonSlackLength          = aMuscModel.getTendonSlackLength();
+  double optimalFiberLength =aMuscModel.getOptimalFiberLength();
+  double pennationAngle     =aMuscModel.getPennationAngleAtOptimalFiberLength();
+  double tendonSlackLength  =aMuscModel.getTendonSlackLength();
   double maxNormContractionVelocity = aMuscModel.getMaxContractionVelocity();
   //==========================================================================
   // 0a. Activation sweep settings
   //==========================================================================
-  //double minActivation = ;
-  //double maxActivation = 1.0;
-  double testActivation=minActivation+(maxActivation-minActivation)*(11.0/23.0);
+  double activationTestInput=
+      minActivation+(maxActivation-minActivation)*(11./23.);
   //==========================================================================
   // 0b. Path length sweep settings
   //==========================================================================
@@ -1317,26 +1419,25 @@ void runMuscleInitializationSweep(const Muscle &aMuscModel,
   //now because, in general, there is no base class for pennation models.
   double pennatedHeight = optimalFiberLength*sin(pennationAngle);
 
-  //Assumption: at lceNAT = 0 the active/passive force length curve is not doing
-  //            anything interesting.
-  double minFiberLength   = pennatedHeight;
-  double minFiberLengthAT = 0.;
+  double minFiberLengthAT   =
+      settings.minNormFiberLengthAlongTendon*optimalFiberLength;
+  double maxFiberLengthAT =
+      settings.maxNormFiberLengthAlongTendon*optimalFiberLength;
 
-  //Assumption: at lceN = 2 the active/passive force length curve is not doing
-  //            anything interesting.
-  double maxFiberLength   = 2.0*optimalFiberLength;
-  double maxFiberLengthAT = std::sqrt(maxFiberLength*maxFiberLength
-                                            + pennatedHeight*pennatedHeight);
+  double minFiberLength   = std::sqrt(pennatedHeight*pennatedHeight
+                                      +minFiberLengthAT*minFiberLengthAT);
+  double maxFiberLength   = std::sqrt(pennatedHeight*pennatedHeight
+                                      +maxFiberLengthAT*maxFiberLengthAT);
 
-  //Assumption: at ltN < 0.9 the tendon curve is not doing anything of interest
-  double minTendonLength = tendonSlackLength*0.9;
-  //Assumpiton: at ltN > 2*(1+eIso) the tendon curve is not doing anything of
-  //interest
-  double maxTendonLength =tendonSlackLength*(1.+2.0*tendonStrainAtOneNormForce);
+  double minTendonLength =
+      tendonSlackLength*(1+settings.minNormTendonStrain*etIso);
+
+  double maxTendonLength =
+      tendonSlackLength*(1+settings.maxNormTendonStrain*etIso);
 
   double minPathLength = minFiberLengthAT + minTendonLength;
   double maxPathLength = maxFiberLengthAT + maxTendonLength;
-  double testPathLength = 0.5*(minPathLength+maxPathLength);
+  double pathLengthTestInput = 0.5*(minPathLength+maxPathLength);
 
   //==========================================================================
   // 0c. Path velocity sweep settings
@@ -1344,9 +1445,14 @@ void runMuscleInitializationSweep(const Muscle &aMuscModel,
   //We want the fiber to experience -vmax to vmax. Because the tendon will
   //end up taking some of this velocity we will extend the range for the
   //entire path
-  double minPathVelocity = -3.0*optimalFiberLength*maxNormContractionVelocity;
-  double maxPathVelocity =  3.0*optimalFiberLength*maxNormContractionVelocity;
-  double testPathVelocity = M_PI;
+  double vmax = optimalFiberLength*maxNormContractionVelocity;
+  double tendonToFiberLengthRatio = tendonSlackLength/optimalFiberLength;
+
+  double vmaxScaled = vmax*std::max(1.0,tendonToFiberLengthRatio);
+
+  double minPathVelocity    = -vmaxScaled*settings.normSpeedScaling;
+  double maxPathVelocity    =  vmaxScaled*settings.normSpeedScaling;
+  double pathSpeedTestInput =  maxPathVelocity*(4.0/11.);
 
   //==========================================================================
   // 1. Create the multibody model
@@ -1383,8 +1489,8 @@ void runMuscleInitializationSweep(const Muscle &aMuscModel,
 
   auto& sliderCoord = slider->updCoordinate();
   sliderCoord.setName("tx");
-  sliderCoord.setDefaultValue(testPathLength);
-  sliderCoord.setDefaultSpeedValue(testPathVelocity);
+  sliderCoord.setDefaultValue(pathLengthTestInput);
+  sliderCoord.setDefaultSpeedValue(pathSpeedTestInput);
 
   model.addBody(ball);
   model.addJoint(slider);
@@ -1415,27 +1521,27 @@ void runMuscleInitializationSweep(const Muscle &aMuscModel,
 //==========================================================================
 
   //Set the path length, velocity, and activation states
-  sliderCoord.setDefaultValue(testPathLength);
-  sliderCoord.setDefaultSpeedValue(testPathVelocity);
+  sliderCoord.setDefaultValue(pathLengthTestInput);
+  sliderCoord.setDefaultSpeedValue(pathSpeedTestInput);
   SimTK::State& si = model.initSystem();
-  aMuscle->setActivation(si,testActivation);
+  aMuscle->setActivation(si,activationTestInput);
 
   model.getMultibodySystem().realize(si,SimTK::Stage::Dynamics);
   model.equilibrateMuscles(si);
 
 
-  double lengthTest     = aMuscle->getLength(si);
-  double speedTest      = aMuscle->getSpeed(si);
-  double activationTest = aMuscle->getActivation(si);
+  double pathLength = aMuscle->getLength(si);
+  double pathSpeed  = aMuscle->getSpeed(si);
+  double activation = aMuscle->getActivation(si);
 
 
-  ASSERT_EQUAL(lengthTest/testPathLength, 1.0, InitializationTestTolerance,
+  ASSERT_EQUAL(pathLength, pathLengthTestInput, settings.tolerance,
     __FILE__, __LINE__,
     "runMuscleInitializationSweep: path length failed to initialize." );
-  ASSERT_EQUAL(speedTest/testPathVelocity, 1.0, InitializationTestTolerance,
+  ASSERT_EQUAL(pathSpeed, pathSpeedTestInput, settings.tolerance,
     __FILE__, __LINE__,
     "runMuscleInitializationSweep: path velocity failed to initialize." );
-  ASSERT_EQUAL(activationTest/testActivation, 1.0, InitializationTestTolerance,
+  ASSERT_EQUAL(activation, activationTestInput, settings.tolerance,
     __FILE__, __LINE__,
     "runMuscleInitializationSweep: activation failed to initialize." );
 
@@ -1443,20 +1549,28 @@ void runMuscleInitializationSweep(const Muscle &aMuscModel,
   // 4. Perform Initialization Sweep
   //==========================================================================
 
-  double activationInit = 0.;
-  double lengthInit     = 0.;
-  double velocityInit   = 0.;
+  double activationSetting = 0.;
+  double pathLengthSetting = 0.;
+  double pathSpeedSetting  = 0.;
 
   double activationDelta  = (maxActivation-minActivation)
-                             /(numberOfActivationPoints-1);
+                             /(settings.activationSamplePoints-1);
   double lengthDelta      = (maxPathLength-minPathLength)
-                             /(numberOfLengthPoints-1);
+                             /(settings.pathLengthSamplePoints-1);
   double velocityDelta    = (maxPathVelocity-minPathVelocity)
-                             /(numberOfSpeedPoints-1);
+                             /(settings.pathSpeedSamplePoints-1);
 
-  double tendonForceTest = 0.;
-  double fiberForceTest = 0.;
 
+  double tendonForce = 0.;
+  double fiberForce = 0.;
+
+  //The range of the fiber length and speed tested is relevant, varies with
+  //the tendon length, and is not under the direct control of a generic test
+  //routine like this.
+  //
+  //If the test passes this range information is printed to the screen
+  //so that who ever is working with this code can make a judgement call
+  //if enough of the fiber length and speed range has been tested.
   double minFiberLengthTested = 1e10;
   double maxFiberLengthTested = -1e10;
   double minFiberSpeedTested  = 1e10;
@@ -1470,41 +1584,43 @@ void runMuscleInitializationSweep(const Muscle &aMuscModel,
   double tendonSpeed = 0.;
 
   double mtLength = 0;
-  double mtSpeed = 0;
+  double mtSpeed  = 0;
 
-  double fiberSpeedLowerBound = 0.;
-  double fiberForceLowerBound = aMuscle->getMaxIsometricForce()*0.05;
+  //Set to false at the first occurance of a solution with a non-zero
+  //fiber/tendon velocity.
+  bool isTendonSolutionStatic = true;
+  bool isFiberSolutionStatic = true;
 
-  for(unsigned int i=0; i<numberOfActivationPoints; ++i){
-    activationInit = minActivation + i*activationDelta;
-    for(unsigned int j=0; j<numberOfLengthPoints; ++j){
-      lengthInit = minPathLength + j*lengthDelta;
-      for(unsigned int k=0; k<numberOfSpeedPoints; ++k){
-        velocityInit = minPathVelocity + k*velocityDelta;
+  for(int i=0; i<settings.activationSamplePoints; ++i){
+    activationSetting = minActivation + i*activationDelta;
 
+    for(int j=0; j<settings.pathLengthSamplePoints; ++j){
+      pathLengthSetting = minPathLength + j*lengthDelta;
+
+      for(int k=0; k<settings.pathSpeedSamplePoints; ++k){
+        pathSpeedSetting = minPathVelocity + k*velocityDelta;
 
         //Set the path length, path speed, and activation
-        sliderCoord.setDefaultValue(lengthInit);
-        sliderCoord.setDefaultSpeedValue(velocityInit);
+        sliderCoord.setDefaultValue(pathLengthSetting);
+        sliderCoord.setDefaultSpeedValue(pathSpeedSetting);
         si = model.initSystem();
-        aMuscle->setActivation(si,activationInit);
+        aMuscle->setActivation(si,activationSetting);
+
+        //Solve the for equilibrium
         model.getMultibodySystem().realize(si,SimTK::Stage::Dynamics);
         model.equilibrateMuscles(si);
 
         //Check to make sure the test conditions were met
-        lengthTest     = aMuscle->getLength(si);
-        speedTest      = aMuscle->getSpeed(si);
-        activationTest = aMuscle->getActivation(si);
+        pathLength     = aMuscle->getLength(si);
+        pathSpeed      = aMuscle->getSpeed(si);
+        activation     = aMuscle->getActivation(si);
 
-        ASSERT_EQUAL(lengthTest, lengthInit, InitializationTestTolerance,
-          __FILE__, __LINE__,
-          "runMuscleInitializationSweep: path length failed to initialize." );
-        ASSERT_EQUAL(speedTest,velocityInit, InitializationTestTolerance,
-          __FILE__, __LINE__,
-          "runMuscleInitializationSweep: path velocity failed to initialize." );
-        ASSERT_EQUAL(activationTest,activationInit, InitializationTestTolerance,
-          __FILE__, __LINE__,
-          "runMuscleInitializationSweep: activation failed to initialize." );
+        ASSERT_EQUAL(pathLength, pathLengthSetting, settings.tolerance,
+          __FILE__, __LINE__,"Desired path length failed to be set." );
+        ASSERT_EQUAL(pathSpeed,pathSpeedSetting,    settings.tolerance,
+          __FILE__, __LINE__,"Desired path speed failed to be set." );
+        ASSERT_EQUAL(activation,activationSetting, settings.tolerance,
+          __FILE__, __LINE__,"Desired activation failed to be set." );
 
         fiberLength             = aMuscle->getFiberLength(si);
         fiberLengthAlongTendon  = aMuscle->getFiberLengthAlongTendon(si);
@@ -1517,14 +1633,12 @@ void runMuscleInitializationSweep(const Muscle &aMuscModel,
         mtLength = fiberLengthAlongTendon + tendonLength;
         mtSpeed  = fiberSpeedAlongTendon + tendonSpeed;
 
-        ASSERT_EQUAL(mtLength, lengthInit, InitializationTestTolerance,
+        ASSERT_EQUAL(mtLength, pathLengthSetting, settings.tolerance,
           __FILE__, __LINE__,
-          "runMuscleInitializationSweep: path length failed to initialize." );
-        ASSERT_EQUAL(mtSpeed,velocityInit, InitializationTestTolerance,
+          "musculotendon length does not match path length." );
+        ASSERT_EQUAL(mtSpeed,pathSpeedSetting, settings.tolerance,
           __FILE__, __LINE__,
-          "runMuscleInitializationSweep: path velocity failed to initialize." );
-
-
+          "musculotendon speed does not match path speed." );
 
         if(fiberLength < minFiberLengthTested){
           minFiberLengthTested = fiberLength;
@@ -1543,27 +1657,21 @@ void runMuscleInitializationSweep(const Muscle &aMuscModel,
         //      since it is initialized s.t. the acceleration on the mass is
         //      very very small.
 
-        tendonForceTest = aMuscle->getTendonForce(si);
-        fiberForceTest = aMuscle->getFiberForceAlongTendon(si);
+        tendonForce = aMuscle->getTendonForce(si);
+        fiberForce  = aMuscle->getFiberForceAlongTendon(si);
 
-        if( std::fabs(fiberForceTest-tendonForceTest)
-              > InitializationTestTolerance){
-          cout << "" << endl;
+
+        ASSERT_EQUAL(fiberForce, tendonForce, settings.tolerance,
+                     __FILE__, __LINE__, "Tendon and fiber-force-along-tendon "
+                    "do not match to desired tolerance." );
+
+        //Check to see if the fiber velocity/tendon velocity is non-zero
+        //to tolerance
+        if(std::fabs(fiberSpeed)>settings.tolerance){
+          isFiberSolutionStatic = false;
         }
-
-        ASSERT_EQUAL(fiberForceTest, tendonForceTest,
-                     InitializationTestTolerance, __FILE__, __LINE__,
-                     "runMuscleInitializationSweep: equilibrate failed: tendon"
-                     " and fiber are not in a force equilibrium." );
-
-        //This is here to ensure that the initialization routine is
-        //distributing the path velocity between the fiber and the tendon.
-        //when there is an active contraction
-        fiberSpeedLowerBound =
-            std::fabs(minFiberToPathVelocityRatio*velocityInit*activationInit);
-        if(fiberLength > pennatedHeight &&
-           fiberForceTest > fiberForceLowerBound){
-          ASSERT(std::fabs(fiberSpeed) >= fiberSpeedLowerBound);
+        if(std::fabs(tendonSpeed)>settings.tolerance){
+          isTendonSolutionStatic = false;
         }
 
       }
@@ -1583,6 +1691,12 @@ void runMuscleInitializationSweep(const Muscle &aMuscModel,
                   /maxNormContractionVelocity
         << "] : Norm. Fiber Speed Range Tested (n.b. 1 = vmax)" << endl;
 
+  if(settings.rejectStaticSolution){
+    ASSERT_EQUAL(isFiberSolutionStatic,false, __FILE__, __LINE__,
+                 "Static-fiber initialization is used." );
+    ASSERT_EQUAL(isTendonSolutionStatic,false, __FILE__, __LINE__,
+                 "Static-tendon initialization is used." );
+  }
 
 }
 
