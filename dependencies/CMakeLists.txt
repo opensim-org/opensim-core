@@ -141,6 +141,11 @@ SetDefaultCMakeBuildType()
 
 ####################### Add dependencies below.
 
+AddDependency(NAME       ezc3d
+              URL        https://github.com/pyomeca/ezc3d.git
+              TAG        Release_1.3.2
+              CMAKE_ARGS -DBUILD_EXAMPLE:BOOL=OFF)
+
 AddDependency(NAME       BTK
               # URL        https://github.com/Biomechanical-ToolKit/BTKCore.git
               URL        https://github.com/opensim-org/BTKCore.git
@@ -152,7 +157,6 @@ AddDependency(NAME       simbody
               TAG        Simbody-3.7
               CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF 
                          -DBUILD_TESTING:BOOL=OFF)
-                     
 
 AddDependency(NAME       docopt
               URL        https://github.com/docopt/docopt.cpp.git
