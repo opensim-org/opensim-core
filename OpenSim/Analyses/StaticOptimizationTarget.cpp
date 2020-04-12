@@ -297,9 +297,8 @@ void StaticOptimizationTarget::
 validatePerturbationSize(double &aSize)
 {
     if(aSize<SMALLDX) {
-        printf("StaticOptimizationTarget.validatePerturbationSize: WARNING- ");
-        printf("dx size too small (%le).\n",aSize);
-        printf("\tResetting dx=%le.\n",SMALLDX);
+        log_warn("StaticOptimizationTarget.validatePerturbationSize: dx size "
+                 "too small ({}). Resetting dx={}.", aSize, SMALLDX);
         aSize = SMALLDX;
     }
 }
