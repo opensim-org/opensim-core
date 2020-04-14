@@ -23,7 +23,9 @@ endforeach(DATA_FILE)
 if(BUILD_TESTING)        
   set(TEST_EXAMPLE_MODEL testExampleModel)       
          
-  add_test(${TEST_EXAMPLE_MODEL}Runs ${EXECUTABLE_OUTPUT_PATH}/${TEST_ENVIRONMENT})          
+  add_test(${TEST_EXAMPLE_MODEL}Runs ${EXECUTABLE_OUTPUT_PATH}/${TEST_ENVIRONMENT}) 
+  set_tests_properties(${TEST_EXAMPLE_MODEL}Runs PROPERTIES 
+    ENVIRONMENT "OPENSIM_USE_VISUALIZER=0") 
 endif(BUILD_TESTING)         
          
 if(OPENSIM_BUILD_INDIVIDUAL_APPS)
