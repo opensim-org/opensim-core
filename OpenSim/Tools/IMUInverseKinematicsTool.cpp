@@ -166,7 +166,7 @@ void IMUInverseKinematicsTool::runInverseKinematicsWithOrientationsFromFile(
     auto& times = oRefs.getTimes();
     Storage* modelOrientationErrors =
             get_report_errors() ? new Storage(times.size(), "ModelOrientationErrors")
-                                : nullptr;
+                                : 0;
     s0.updTime() = times[0];
     ikSolver.assemble(s0);
     // Create place holder for orientation errors, populate based on user pref.
