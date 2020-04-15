@@ -21,7 +21,9 @@ jobs:
     - uses: actions/checkout@v1
       
     - name: Install Chocolatey packages
-      run: choco install swig --version 3.0.9 --yes --limit-output 
+      run: |
+        choco install swig --version 3.0.9 --yes --limit-output
+        choco install numpy 
       
     - name: Build
       run: |
