@@ -164,9 +164,9 @@ void IMUInverseKinematicsTool::runInverseKinematicsWithOrientationsFromFile(
     ikSolver.setAccuracy(accuracy);
 
     auto& times = oRefs.getTimes();
-    TimeSeriesTable* modelOrientationErrors =
+    std::shared_ptr<TimeSeriesTable> modelOrientationErrors(
             get_report_errors() ? new TimeSeriesTable()
-                                : 0;
+                                : nullptr);
     s0.updTime() = times[0];
     ikSolver.assemble(s0);
     // Create place holder for orientation errors, populate based on user pref.
@@ -225,8 +225,6 @@ void IMUInverseKinematicsTool::runInverseKinematicsWithOrientationsFromFile(
     if (get_report_errors()) {
         STOFileAdapter_<double>::write(*modelOrientationErrors,
                 get_results_directory() + "/" + "orientationErrors.sto");
-        delete modelOrientationErrors;
-
     }
     // Results written to file, clear in case we run again
     ikReporter->clearTable();
