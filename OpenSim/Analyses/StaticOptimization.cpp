@@ -394,10 +394,11 @@ record(const SimTK::State& s)
         optimizer->optimize(_parameters);
     }
     catch (const SimTK::Exception::Base& ex) {
-        cout << ex.getMessage() << endl;
-        cout << "OPTIMIZATION FAILED..." << endl;
-        cout << endl;
-        cout << "StaticOptimization.record:  WARN- The optimizer could not find a solution at time = " << s.getTime() << endl;
+        log_warn(ex.getMessage());
+        log_warn("OPTIMIZATION FAILED...");
+        log_warn("StaticOptimization.record: The optimizer could not find a "
+                 "solution at time = {}.",
+                s.getTime());
         cout << endl;
 
         double tolBounds = 1e-1;
@@ -441,7 +442,7 @@ record(const SimTK::State& s)
                 }
             }
         }
-        if(weakModel) cout << msgWeak << endl;
+        if(weakModel) log_warn(msgWeak);
 
         if(!weakModel) {
             double tolConstraints = 1e-6;
@@ -466,7 +467,7 @@ record(const SimTK::State& s)
                 }
             }
             _forceReporter->step(sWorkingCopy, 1);
-            if(incompleteModel) cout << msgIncomplete << endl;
+            if(incompleteModel) log_warn(msgIncomplete);
         }
     }
 
@@ -613,9 +614,8 @@ int StaticOptimization::begin(const SimTK::State& s )
         for(int k=0;k<fs.getSize();k++) {
             ScalarActuator* act = dynamic_cast<ScalarActuator *>(&fs[k]);
             if (act){
-                cout << "Bounds for " << act->getName() << ": "
-                    << act->getMinControl() << " to "
-                    << act->getMaxControl() << endl;
+                log_info("Bounds for '{}': {} to {}.", act->getName(),
+                        act->getMinControl(), act->getMaxControl());
             }
             else{
                 std::string msg = getConcreteClassName();
