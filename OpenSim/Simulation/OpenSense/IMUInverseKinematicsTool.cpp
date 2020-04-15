@@ -93,12 +93,10 @@ void IMUInverseKinematicsTool::
     previewWorld.realizePosition(state);
     previewWorld.getVisualizer().show(state);
 
-    char c;
-    std::cout << "Press any key to visualize experimental marker data ..." << std::endl;
-    std::cin >> c;
 
+    log_info("Visualizing experimental marker data ...");
     for (size_t j =0; j < times.size(); j=j+10) {
-        std::cout << "time: " << times[j] << "s" << std::endl;
+        log_info("time: {} s", times[j]);
         state.setTime(times[j]);
         previewWorld.realizePosition(state);
         previewWorld.getVisualizer().show(state);
@@ -139,8 +137,8 @@ void IMUInverseKinematicsTool::runInverseKinematicsWithOrientationsFromFile(
         model.addComponent(ikReporter);
     }
     TimeSeriesTable_<SimTK::Quaternion> quatTable(orientationsFileName);
-    std::cout << "Loading orientations as quaternions from "
-        << orientationsFileName << std::endl;
+    log_info("Loading orientations as quaternions from '{}'...",
+        orientationsFileName);
     // Will maintain only data in time range specified by the tool
     // If unspecified {-inf, inf} no trimming is done
     quatTable.trim(getStartTime(), getEndTime());
@@ -191,7 +189,7 @@ void IMUInverseKinematicsTool::runInverseKinematicsWithOrientationsFromFile(
         if (visualizeResults)  
             model.getVisualizer().show(s0);
         else
-            cout << "Solved at time: " << time << endl;
+            log_info("Solved at time: {} s", time);
         // realize to report to get reporter to pull values from model
         model.realizeReport(s0);
     }
@@ -212,8 +210,7 @@ void IMUInverseKinematicsTool::runInverseKinematicsWithOrientationsFromFile(
 
     STOFileAdapter_<double>::write(report, outputFile + ".mot");
 
-    std::cout << "Wrote IK with IMU tracking results to: '" <<
-        outputFile << "'." << std::endl;
+    log_info("Wrote IK with IMU tracking results to: '{}'.", outputFile);
 
     // Results written to file, clear in case we run again
     ikReporter->clearTable();
@@ -238,15 +235,15 @@ TimeSeriesTable_<SimTK::Vec3>
     IMUInverseKinematicsTool::loadMarkersFile(const std::string& markerFile)
 {
     TimeSeriesTable_<Vec3> markers(markerFile);
-    std::cout << markerFile << " loaded " << markers.getNumColumns() << " markers "
-        << " and " << markers.getNumRows() << " rows of data." << std::endl;
+    log_info("'{}' loaded {} markers and {} rows of data.", markerFile,
+        markers.getNumColumns(), markers.getNumRows());
 
     if (markers.hasTableMetaDataKey("Units")) {
-        std::cout << markerFile << " has Units meta data." << std::endl;
         auto& value = markers.getTableMetaData().getValueForKey("Units");
-        std::cout << markerFile << " Units are " << value.getValue<std::string>() << std::endl;
+        log_info("'{}' has Units meta data. Units are {}.", markerFile,
+                value.getValue<std::string>());
         if (value.getValue<std::string>() == "mm") {
-            std::cout << "Marker data in mm, converting to m." << std::endl;
+            log_info("Marker data in mm, converting to m.");
             for (size_t i = 0; i < markers.getNumRows(); ++i) {
                 markers.updRowAtIndex(i) *= 0.001;
             }
@@ -255,6 +252,7 @@ TimeSeriesTable_<SimTK::Vec3>
         }
     }
     auto& value = markers.getTableMetaData().getValueForKey("Units");
-    std::cout << markerFile << " Units are " << value.getValue<std::string>() << std::endl;
+    log_info("'{}' Units are {}.", markerFile, value.getValue<std::string>());
+
     return markers;
 }
