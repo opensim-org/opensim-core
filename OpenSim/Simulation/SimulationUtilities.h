@@ -58,6 +58,11 @@ OSIMSIMULATION_API SimTK::State simulate(Model& model,
 OSIMSIMULATION_API void visualizeModelMotion(Model, Storage);
 /// @}
 
+/// @name visualizeModel shows a model using the simbody-visualizer
+/// @{
+
+///  Visualize the passed in model in a simbody-visualizer window.
+///  This function blocks until the user exits the simbody-visualizer window.
 OSIMSIMULATION_API void visualizeModel(Model);
 
 #ifndef SWIG

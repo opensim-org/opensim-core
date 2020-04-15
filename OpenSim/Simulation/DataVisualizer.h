@@ -1,3 +1,5 @@
+#ifndef OPENSIM_DATA_VISUALIZER_H_
+#define OPENSIM_DATA_VISUALIZER_H_
 /* -------------------------------------------------------------------------- *
  *                          OpenSim: DataVisualizer.h                         *
  * -------------------------------------------------------------------------- *
@@ -19,8 +21,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#ifndef OPENSIM_DATA_VISUALIZER_H_
-#define OPENSIM_DATA_VISUALIZER_H_
 
 #include "osimSimulationDLL.h"
 #include <OpenSim/Common/TimeSeriesTable.h>
@@ -28,6 +28,9 @@
 namespace OpenSim {
 class OSIMSIMULATION_API DataVisualizer {
 public:
+    /** Show markers with time histories in the passed in TimeSeriesTableVec3.
+        Visualization is shown in the API visualizer.
+        Function blocks waiting for user to hit any key to start. */
     static void showMarkerData(const TimeSeriesTableVec3&);
 
     //static void showOrientationData(const TimeSeriesTableQuaternion&);

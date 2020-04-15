@@ -43,7 +43,7 @@ void DataVisualizer::showMarkerData(
     // Add the markersSource Component to the model
     previewWorld.addComponent(markersSource);
 
-    // Get the underlying Table backing the the marker Source so we
+    // Get the underlying Table backing the marker Source so we
     // know how many markers we have and their names
     const auto& markerData = markersSource->getTable();
     auto& times = markerData.getIndependentColumn();
