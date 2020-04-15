@@ -224,7 +224,8 @@ void IMUInverseKinematicsTool::runInverseKinematicsWithOrientationsFromFile(
         outputFile << "'." << std::endl;
     if (get_report_errors()) {
         STOFileAdapter_<double>::write(*modelOrientationErrors,
-                get_results_directory() + "/" + "orientationErrors.sto");
+                get_results_directory() + "/" +
+                        getName() + "_orientationErrors.sto");
     }
     // Results written to file, clear in case we run again
     ikReporter->clearTable();
