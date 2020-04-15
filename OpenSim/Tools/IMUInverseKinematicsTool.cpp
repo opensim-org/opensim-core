@@ -164,8 +164,8 @@ void IMUInverseKinematicsTool::runInverseKinematicsWithOrientationsFromFile(
     ikSolver.setAccuracy(accuracy);
 
     auto& times = oRefs.getTimes();
-    Storage* modelOrientationErrors =
-            get_report_errors() ? new Storage(times.size(), "ModelOrientationErrors")
+    TimeSeriesTable* modelOrientationErrors =
+            get_report_errors() ? new TimeSeriesTable()
                                 : 0;
     s0.updTime() = times[0];
     ikSolver.assemble(s0);
@@ -175,15 +175,14 @@ void IMUInverseKinematicsTool::runInverseKinematicsWithOrientationsFromFile(
     SimTK::Array_<double> orientationErrors(nos, 0.0);
 
     if (get_report_errors()) { 
-        Array<string> labels;
-        labels.append("time");
+        SimTK::Array_<string> labels;
         for (int i = 0; i < nos; ++i) {
-            labels.append(ikSolver.getOrientationSensorNameForIndex(i));
+            labels.push_back(ikSolver.getOrientationSensorNameForIndex(i));
         }
         modelOrientationErrors->setColumnLabels(labels);
+        modelOrientationErrors->updTableMetaData().setValueForKey<string>(
+                "name", "OrientationErrors");
         ikSolver.computeCurrentOrientationErrors(orientationErrors);
-        modelOrientationErrors->append(
-                s0.getTime(), nos, &orientationErrors[0]);
     }
     if (visualizeResults) {
         model.getVisualizer().show(s0);
@@ -194,8 +193,8 @@ void IMUInverseKinematicsTool::runInverseKinematicsWithOrientationsFromFile(
         ikSolver.track(s0);
         if (get_report_errors()) {
             ikSolver.computeCurrentOrientationErrors(orientationErrors);
-            modelOrientationErrors->append(
-                    s0.getTime(), nos, &orientationErrors[0]);
+            modelOrientationErrors->appendRow(
+                    s0.getTime(), orientationErrors);
         }
         if (visualizeResults)  
             model.getVisualizer().show(s0);
@@ -224,8 +223,8 @@ void IMUInverseKinematicsTool::runInverseKinematicsWithOrientationsFromFile(
     std::cout << "Wrote IK with IMU tracking results to: '" <<
         outputFile << "'." << std::endl;
     if (get_report_errors()) {
-        Storage::printResult(modelOrientationErrors, "orientationErrors",
-                getResultsDir(), -1, ".sto");
+        STOFileAdapter_<double>::write(*modelOrientationErrors,
+                get_results_directory() + "/" + "orientationErrors.sto");
         delete modelOrientationErrors;
 
     }
