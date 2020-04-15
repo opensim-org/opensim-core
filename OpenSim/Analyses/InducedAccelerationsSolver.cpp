@@ -347,13 +347,13 @@ Array<bool> InducedAccelerationsSolver::
             if(exf->getPointExpressedInBodyName() != exf->getAppliedToBodyName()){
                 int appliedToBodyIndex = getModel().getBodySet().getIndex(exf->getAppliedToBodyName());
                 if(appliedToBodyIndex < 0){
-                    log_warn("External force appliedToBody '{}' not found.",
+                    log_warn("ExternalForce applied_to_body '{}' not found.",
                             exf->getAppliedToBodyName());
                 }
 
                 int expressedInBodyIndex = getModel().getBodySet().getIndex(exf->getPointExpressedInBodyName());
                 if(expressedInBodyIndex < 0) {
-                    log_warn("External force expressedInBody '{}' not found.",
+                    log_warn("ExternalForce point_expressed_in_body '{}' not found.",
                              exf->getPointExpressedInBodyName());
                 }
 
