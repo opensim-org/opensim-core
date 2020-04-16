@@ -365,7 +365,7 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
                  const string &aExtension)
 {
     if(!getOn()) {
-        printf("ProbeReporter.printResults: Off- not printing.\n");
+        log_info("ProbeReporter.printResults: Off- not printing.");
         return 0;
     }
 

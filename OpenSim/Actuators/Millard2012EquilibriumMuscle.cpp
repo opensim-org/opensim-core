@@ -444,9 +444,9 @@ computeFiberEquilibrium(SimTK::State& s, bool solveForVelocity) const
             break;
 
         case StatusFromEstimateMuscleFiberState::Warning_FiberAtLowerBound:
-            printf("\n\nMillard2012EquilibriumMuscle static solution:"
-                   " %s is at its minimum fiber length of %f\n",
-                   getName().c_str(), result.second["fiber_length"]);
+            log_warn("Millard2012EquilibriumMuscle static solution: '{}' is "
+                   "at its minimum fiber length of {}.",
+                   getName(), result.second["fiber_length"]);
             setActuation(s, result.second["tendon_force"]);
             setFiberLength(s, result.second["fiber_length"]);
             break;

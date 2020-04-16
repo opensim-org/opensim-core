@@ -825,8 +825,8 @@ setParameterValues(const Array<double> &aP,const Array<int> *aList)
             Control& control = get(i);
             for(p=0;p<control.getNumParameters();p++,sp++) {
                 if(sp>=aP.getSize()) {
-                    printf("ControlSet.setParameterValues: ERR- incorrect ");
-                    printf("number of parameters.\n");
+                    log_error("ControlSet.setParameterValues: incorrect "
+                              "number of parameters.");
                     return;
                 }
                 control.setParameterValue(p,aP[sp]);
@@ -839,8 +839,8 @@ setParameterValues(const Array<double> &aP,const Array<int> *aList)
         int n = aList->getSize();
         if(n > aP.getSize()) {
             n = aP.getSize();
-            printf("ControlSet.setParameterValues: WARN- aP and aList are ");
-            printf("different sizes.\n");
+            log_warn("ControlSet.setParameterValues: aP and aList are "
+                     "different sizes.");
         }
 
         for(i=0;i<n;i++) {
