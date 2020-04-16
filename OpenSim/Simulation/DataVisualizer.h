@@ -28,12 +28,10 @@
 namespace OpenSim {
 class OSIMSIMULATION_API DataVisualizer {
 public:
-    /** Show markers with time histories in the passed in TimeSeriesTableVec3.
-        Visualization is shown in the API visualizer.
-        Function blocks waiting for user to hit any key to start. */
+    /** Show markers with time histories specified by the passed in 
+        TimeSeriesTableVec3. Visualization is shown in the simbody visualizer.
+        Function blocks waiting for user to hit a key to start. */
     static void showMarkerData(const TimeSeriesTableVec3&);
-
-    //static void showOrientationData(const TimeSeriesTableQuaternion&);
 };
 }
 
