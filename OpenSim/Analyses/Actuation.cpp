@@ -522,8 +522,8 @@ printResults(const string &aBaseName, const string &aDir, double aDT,
 const string &aExtension)
 {
     if (!getOn()) {
-        printf("Actuation.printResults: Off- not printing.\n");
-        return(0);
+        log_info("Actuation.printResults: Off- not printing.");
+        return 0;
     }
 
     std::string prefix = aBaseName + "_" + getName() + "_";

@@ -399,7 +399,6 @@ record(const SimTK::State& s)
         log_warn("StaticOptimization.record: The optimizer could not find a "
                  "solution at time = {}.",
                 s.getTime());
-        cout << endl;
 
         double tolBounds = 1e-1;
         bool weakModel = false;
