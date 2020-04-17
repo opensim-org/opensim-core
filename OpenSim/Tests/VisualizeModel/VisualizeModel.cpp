@@ -31,7 +31,7 @@
 //==============================================================================
 //==============================================================================
 #include <OpenSim/Common/IO.h>
-#include <OpenSim/Simulation/SimulationUtilities.h>
+#include <OpenSim/Simulation/VisualizerUtilities.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 
@@ -55,7 +55,7 @@ int main(int argc, char **argv)
 
         std::string modelFile = std::string(argv[1]);
         Model osimModel(modelFile);
-        visualizeModel(osimModel);
+        VisualizerUtilities::showModel(osimModel);
     }
 
     catch (const std::exception& ex)

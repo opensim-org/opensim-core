@@ -1,5 +1,5 @@
-#ifndef OPENSIM_DATA_VISUALIZER_H_
-#define OPENSIM_DATA_VISUALIZER_H_
+#ifndef OPENSIM_VISUALIZER_UTILITIES_H_
+#define OPENSIM_VISUALIZER_UTILITIES_H_
 /* -------------------------------------------------------------------------- *
  *                          OpenSim: DataVisualizer.h                         *
  * -------------------------------------------------------------------------- *
@@ -24,10 +24,31 @@
 
 #include "osimSimulationDLL.h"
 #include <OpenSim/Common/TimeSeriesTable.h>
+#include "StatesTrajectory.h"
 
 namespace OpenSim {
-class OSIMSIMULATION_API DataVisualizer {
+class OSIMSIMULATION_API VisualizerUtilities {
 public:
+    /// @name Visualize a motion of a model using the simbody-visualizer
+    /// @{
+
+    /// Play back an existing motion (from the Storage) in the
+    /// simbody-visuailzer. The Storage should contain all generalized
+    /// coordinates. The visualizer window allows the user to control playback
+    /// speed. This function blocks until the user exits the simbody-visualizer
+    /// window.
+    // TODO handle degrees.
+    static void showMotion(Model, Storage);
+    /// @}
+
+    /// @name showModel shows a model using the simbody-visualizer
+    /// @{
+
+    ///  Visualize the passed in model in a simbody-visualizer window.
+    ///  This function blocks until the user exits the simbody-visualizer
+    ///  window.
+    static void showModel(Model);
+
     /** Show markers with time histories specified by the passed in 
         TimeSeriesTableVec3. Visualization is shown in the simbody visualizer.
         Function blocks waiting for user to hit a key to start. */
@@ -35,4 +56,4 @@ public:
 };
 }
 
-#endif //OPENSIM_DATA_VISUALIZER_H_
+#endif //OPENSIM_VISUALIZER_UTILITIES_H_
