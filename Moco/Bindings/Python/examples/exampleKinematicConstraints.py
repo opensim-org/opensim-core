@@ -25,6 +25,16 @@
 # Lastly, this example computes the error in the equations of motion, showing
 # how the constraint forces are necessary for satisfying the equations of
 # motion.
+#
+# The constraint ty = tx^2 is represented internally as 0 = tx^2 - ty.
+# The kinematic constraint Jacobian contains the partial derivative of
+# each kinematic constraint (only one constraint in this case) with respect to
+# each degree of freedom:
+#
+#   G = [2*tx, -1]
+#
+# This example is related to an explanation of kinematic constraints in the
+# appendix of the Moco paper.
 
 import opensim as osim
 import numpy as np
