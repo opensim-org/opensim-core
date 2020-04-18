@@ -474,7 +474,9 @@ record(const SimTK::State& s)
     //double duration = (double)(stop.QuadPart-start.QuadPart)/(double)frequency.QuadPart;
     //cout << "optimizer time = " << (duration*1.0e3) << " milliseconds" << endl;
 
-    target.printPerformance(sWorkingCopy, &_parameters[0]);
+    if (Logger::shouldLog(Logger::Level::Info)) {
+        target.printPerformance(sWorkingCopy, &_parameters[0]);
+    }
 
     //update defaults for use in the next step
 

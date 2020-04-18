@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                           OpenSim:  Logger.cpp                                *
+ *                           OpenSim:  Logger.cpp                             *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -25,16 +25,25 @@
 #include "Exception.h"
 #include "IO.h"
 #include "LogSink.h"
-#include "spdlog/sinks/basic_file_sink.h"
+
+#include "spdlog/sinks/stdout_color_sinks.h"
 
 using namespace OpenSim;
 
+std::shared_ptr<spdlog::logger> Logger::m_cout_logger =
+        spdlog::stdout_color_mt("cout");
 std::shared_ptr<Logger> Logger::m_log = Logger::getInstance();
-std::set<std::string> Logger::m_filepaths = {};
+std::shared_ptr<spdlog::sinks::basic_file_sink_mt> Logger::m_filesink = {};
 
 Logger::Logger() {
     spdlog::set_level(spdlog::level::info);
     spdlog::set_pattern("[%l] %v");
+    m_cout_logger->set_level(spdlog::level::info);
+    m_cout_logger->set_pattern("%v");
+    addFileSink();
+    // This ensures log files are updated regularly, instead of only when the
+    // program shuts down.
+    spdlog::flush_on(spdlog::level::info);
 }
 
 void Logger::setLevel(Level level) {
@@ -131,25 +140,48 @@ bool Logger::shouldLog(Level level) {
     return spdlog::default_logger()->should_log(spdlogLevel);
 }
 
-void Logger::addLogFile(const std::string& filepath) {
-    auto sinks = spdlog::default_logger()->sinks();
-    if (m_filepaths.count(filepath)) {
-        warn("Already logging to file '{}'.", filepath);
+void Logger::addFileSink(const std::string& filepath) {
+    if (m_filesink) {
+        warn("Already logging to file '{}'; file sink not added. Call "
+             "removeFileSink() first.", m_filesink->filename());
         return;
     }
-    sinks.push_back(
-            std::make_shared<spdlog::sinks::basic_file_sink_mt>(filepath));
-    m_filepaths.insert(filepath);
+    m_filesink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(filepath);
+    spdlog::default_logger()->sinks().push_back(m_filesink);
+    m_cout_logger->sinks().push_back(m_filesink);
+}
+
+void Logger::removeFileSink() {
+    auto spdlogSink = std::static_pointer_cast<spdlog::sinks::sink>(m_filesink);
+    {
+        auto& sinks = spdlog::default_logger()->sinks();
+        auto to_erase = std::find(sinks.cbegin(), sinks.cend(), spdlogSink);
+        if (to_erase != sinks.cend()) sinks.erase(to_erase);
+    }
+    {
+        auto& sinks = m_cout_logger->sinks();
+        auto to_erase = std::find(sinks.cbegin(), sinks.cend(), spdlogSink);
+        if (to_erase != sinks.cend()) sinks.erase(to_erase);
+    }
+    m_filesink.reset();
 }
 
 void Logger::addSink(const std::shared_ptr<LogSink> sink) {
-    spdlog::default_logger()->sinks().push_back(
-            std::static_pointer_cast<spdlog::sinks::sink>(sink));
+    auto ptr = std::static_pointer_cast<spdlog::sinks::sink>(sink);
+    spdlog::default_logger()->sinks().push_back(ptr);
+    m_cout_logger->sinks().push_back(ptr);
 }
 
 void Logger::removeSink(const std::shared_ptr<LogSink> sink) {
     auto spdlogSink = std::static_pointer_cast<spdlog::sinks::sink>(sink);
-    auto sinks = spdlog::default_logger()->sinks();
-    auto to_erase = std::find(sinks.cbegin(), sinks.cend(), spdlogSink);
-    if (to_erase != sinks.cend()) sinks.erase(to_erase);
+    {
+        auto& sinks = spdlog::default_logger()->sinks();
+        auto to_erase = std::find(sinks.cbegin(), sinks.cend(), spdlogSink);
+        if (to_erase != sinks.cend()) sinks.erase(to_erase);
+    }
+    {
+        auto& sinks = m_cout_logger->sinks();
+        auto to_erase = std::find(sinks.cbegin(), sinks.cend(), spdlogSink);
+        if (to_erase != sinks.cend()) sinks.erase(to_erase);
+    }
 }

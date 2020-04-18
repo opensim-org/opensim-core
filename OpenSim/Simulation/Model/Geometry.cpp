@@ -266,7 +266,7 @@ void Mesh::extendFinalizeFromProperties() {
                 warningGiven = true;
             }
             if (getDebugLevel() <= 0) { return; }
-            std::cout << "The following locations were tried:\n";
+            std::cout << "The following locations were tried:";
             for (unsigned i = 0; i < attempts.size(); ++i)
                 std::cout << "\n  " << attempts[i];
             std::cout << std::endl;
