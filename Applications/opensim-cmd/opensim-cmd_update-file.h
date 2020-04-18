@@ -39,6 +39,7 @@ Usage:
 
 Options:
   -L <path>, --library <path>  Load a plugin.
+  -o <level>, --log <level>  Logging level.
 
 Description:
   In an OpenSim XML file, the XML file format version appears as

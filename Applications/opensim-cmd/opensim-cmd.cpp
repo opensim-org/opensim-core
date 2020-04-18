@@ -38,7 +38,7 @@ static const char HELP[] =
 R"(OpenSim: musculoskeletal modeling and simulation.
 
 Usage:
-  opensim-cmd [--library=<path>]... <command> [<args>...]
+  opensim-cmd [--library=<path>]... [--log=<level>] <command> [<args>...]
   opensim-cmd -h | --help
   opensim-cmd -V | --version
 
@@ -49,6 +49,8 @@ Options:
                  library's extension (e.g., .dll, .so, .dylib). If <path>
                  contains spaces, surround <path> in quotes. You can load
                  multiple plugins by repeating this option.
+  -o <level>, --log <level>  Logging level (off, critical, error, warn, info,
+                 debug, trace). Default: info.
   -h, --help     Show this help description.
   -V, --version  Show the version number.
 
@@ -109,6 +111,12 @@ int main(int argc, const char** argv) {
             // Exit if we couldn't load the library.
             if (!success) return EXIT_FAILURE;
         }
+    }
+
+    // Logging.
+    // --------
+    if (args["--log"]) {
+        Logger::setLevelString(args["--log"].asString());
     }
 
     // Did the user provide a valid command?
