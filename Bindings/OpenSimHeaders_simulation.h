@@ -145,7 +145,7 @@
 #include <OpenSim/Simulation/StatesTrajectoryReporter.h>
 
 #include <OpenSim/Simulation/SimulationUtilities.h>
-#include <OpenSim/Simulation/DataVisualizer.h>
+#include <OpenSim/Simulation/VisualizerUtilities.h>
 
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Actuators/MuscleFixedWidthPennationModel.h>
