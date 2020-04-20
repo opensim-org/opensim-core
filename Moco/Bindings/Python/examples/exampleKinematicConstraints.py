@@ -43,8 +43,9 @@ model = osim.Model()
 model.setName('planar_point_mass')
 g = abs(model.get_gravity()[1])
 
-intermed = osim.Body('intermed', 0, osim.Vec3(0), osim.Inertia(0))
-model.addBody(intermed);
+# We use an intermediate massless body for the X translation degree of freedom.
+massless = osim.Body('massless', 0, osim.Vec3(0), osim.Inertia(0))
+model.addBody(massless);
 mass = 1.0
 body = osim.Body('body', mass, osim.Vec3(0), osim.Inertia(0))
 model.addBody(body)
@@ -59,7 +60,7 @@ model.addJoint(jointX)
 # The joint's x axis must point in the global "+y" direction.
 jointY = osim.SliderJoint('ty',
                           intermed, osim.Vec3(0), osim.Vec3(0, 0, 0.5 * np.pi),
-                          body, osim.Vec3(0), osim.Vec3(0, 0, .5 * np.pi))
+                          body, osim.Vec3(0), osim.Vec3(0, 0, 0.5 * np.pi))
 coordY = jointY.updCoordinate(osim.SliderJoint.Coord_TranslationX)
 coordY.setName('ty')
 model.addJoint(jointY)
@@ -71,8 +72,8 @@ independentCoords.append('tx')
 constraint.setIndependentCoordinateNames(independentCoords)
 constraint.setDependentCoordinateName('ty')
 coefficients = osim.Vector(3, 0) # 3 elements initialized to 0.
-# The polynomial is c(0)*tx^2 + c(1)*tx + c(2).
-coefficients.set(0, 1) # Set the
+# The polynomial is c(0)*tx^2 + c(1)*tx + c(2); set c(0) = 1, c(1) = c(2) = 0.
+coefficients.set(0, 1)
 constraint.setFunction(osim.PolynomialFunction(coefficients))
 model.addConstraint(constraint)
 
@@ -81,6 +82,7 @@ problem = study.updProblem()
 problem.setModel(model)
 
 phase0 = problem.getPhase(0)
+# Setting stricter bounds for the speeds improves convergence.
 phase0.setDefaultSpeedBounds(osim.MocoBounds(-5, 5))
 
 problem.setTimeBounds(0, 0.8)
