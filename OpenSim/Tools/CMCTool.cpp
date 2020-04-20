@@ -733,9 +733,9 @@ bool CMCTool::run()
     }
 
     if(_verbose) { 
-        log_info("Setting cmc controller to use verbose printing.");
+        log_info("Setting cmc controller to use verbose printing.\n");
     } else {
-        log_info("Setting cmc controller to not use verbose printing.");
+        log_info("Setting cmc controller to not use verbose printing.\n");
     }
     controller->setUseVerbosePrinting(_verbose);
 
@@ -763,10 +763,11 @@ bool CMCTool::run()
     struct tm *localTime;
     double elapsedTime;
     if( s.getNZ() > 0) { // If there are actuator states (i.e. muscles dynamics)
-        log_info("Computing initial values for muscles states (activation, length)...");
+        log_info("Computing initial values for muscles states (activation, length)");
         time(&startTime);
         localTime = localtime(&startTime);
-        log_info("    Start time = {}", asctime(localTime));
+        log_info(" -- Start time = {}", asctime(localTime));
+
         try {
         controller->computeInitialStates(s,_ti);
         }
@@ -787,12 +788,12 @@ bool CMCTool::run()
         s.updY() = cmcActSubsystem.getCompleteState().getY();
         log_info("Finished computing initial states: ");
         localTime = localtime(&startTime);
-        log_info("    Start time = {}", asctime(localTime));
+        log_info(" -- Start time = {}", asctime(localTime));
             
         localTime = localtime(&finishTime);
-        log_info("    Finish time = {}", asctime(localTime));
+        log_info(" -- Finish time = {}", asctime(localTime));
         elapsedTime = difftime(finishTime,startTime);
-        log_info("    Elapsed time = {} seconds.", elapsedTime);
+        log_info(" -- Elapsed time = {} seconds.", elapsedTime);
     } else {
         cmcActSubsystem.setCompleteState( s );
         actuatorSystemState.updTime() = _ti; 
@@ -805,12 +806,12 @@ bool CMCTool::run()
 
     // ---- INTEGRATE ----
     log_info("Using CMC to track the specified kinematics...");
-    log_info("    Integrating from {} to {}", _ti, _tf);
+    log_info(" -- Integrating from {} to {}", _ti, _tf);
     s.updTime() = _ti;
     controller->setTargetTime( _ti );
     time(&startTime);
     localTime = localtime(&startTime);
-    log_info("    Start time = {}", asctime(localTime));
+    log_info(" -- Start time = {}", asctime(localTime));
 
     _model->getMultibodySystem().realize(s, Stage::Acceleration );
 
@@ -843,14 +844,14 @@ bool CMCTool::run()
     time(&finishTime);
     log_info("Finished tracking the specified kinematics.");
     if( _verbose ){
-      log_info("    States = {}", s.getY().toString()); 
+      log_info(" -- States = {}", s.getY().toString()); 
     }
     localTime = localtime(&startTime);
-    log_info("    Start time = {}", asctime(localTime));
+    log_info(" -- Start time = {}", asctime(localTime));
     localTime = localtime(&finishTime);
-    log_info("    Finish time = {}", asctime(localTime));
+    log_info(" -- Finish time = {}", asctime(localTime));
     elapsedTime = difftime(finishTime,startTime);
-    log_info("    Elapsed time = {} seconds.", elapsedTime);
+    log_info(" -- Elapsed time = {} seconds.", elapsedTime);
 
     // ---- RESULTS -----
     printResults(getName(),getResultsDir()); // this will create results directory if necessary

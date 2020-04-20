@@ -144,7 +144,7 @@ bool InverseKinematicsTool::run()
         kinematicsReporter->setInDegrees(true);
         _model->addAnalysis(kinematicsReporter);
 
-        log_info("Running tool {}.", getName);
+        log_info("Running tool {}.", getName());
 
         // Get the trial name to label data written to files
         string trialName = getName();
