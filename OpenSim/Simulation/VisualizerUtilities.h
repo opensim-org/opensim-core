@@ -53,6 +53,12 @@ public:
         TimeSeriesTableVec3. Visualization is shown in the simbody visualizer.
         Function blocks waiting for user to hit a key to start. */
     static void showMarkerData(const TimeSeriesTableVec3&);
+    /** Show frames with time histories specified by the passed in 
+        TimeSeriesTableQuaternion. Visualization is shown in the simbody visualizer. layout options:
+        0=default layout frames in a row along X axis with labels
+        Function blocks waiting for user to hit a key to start. */
+    static void showOrientationData(
+            const TimeSeriesTableQuaternion&, int layout = 0);
 };
 }
 
