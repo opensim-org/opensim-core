@@ -52,14 +52,14 @@ model.addBody(body)
 
 body.attachGeometry(osim.Sphere(0.05))
 
-jointX = osim.SliderJoint('tx', model.getGround(), intermed)
+jointX = osim.SliderJoint('tx', model.getGround(), massless)
 coordX = jointX.updCoordinate(osim.SliderJoint.Coord_TranslationX)
 coordX.setName('tx')
 model.addJoint(jointX)
 
 # The joint's x axis must point in the global "+y" direction.
 jointY = osim.SliderJoint('ty',
-                          intermed, osim.Vec3(0), osim.Vec3(0, 0, 0.5 * np.pi),
+                          massless, osim.Vec3(0), osim.Vec3(0, 0, 0.5 * np.pi),
                           body, osim.Vec3(0), osim.Vec3(0, 0, 0.5 * np.pi))
 coordY = jointY.updCoordinate(osim.SliderJoint.Coord_TranslationX)
 coordY.setName('ty')
@@ -72,7 +72,7 @@ independentCoords.append('tx')
 constraint.setIndependentCoordinateNames(independentCoords)
 constraint.setDependentCoordinateName('ty')
 coefficients = osim.Vector(3, 0) # 3 elements initialized to 0.
-# The polynomial is c(0)*tx^2 + c(1)*tx + c(2); set c(0) = 1, c(1) = c(2) = 0.
+# The polynomial is c0*tx^2 + c1*tx + c2; set c0 = 1, c1 = c2 = 0.
 coefficients.set(0, 1)
 constraint.setFunction(osim.PolynomialFunction(coefficients))
 model.addConstraint(constraint)
@@ -93,6 +93,8 @@ problem.setStateInfo('/jointset/ty/ty/value', [-2, 2], 1.0)
 solver = study.initCasADiSolver()
 solution = study.solve()
 
+# If matplotlib is installed, plot the trajectory of the mass and the
+# constraint force applied to the mass throughout the motion.
 has_pylab = False
 try:
     import pylab as pl
@@ -102,17 +104,21 @@ except:
     print('Skipping plotting')
 
 if has_pylab:
+
+    # Create a figure.
     fig = pl.figure()
     ax = fig.add_subplot(1, 1, 1)
     ax.set_xlabel('tx')
     ax.set_ylabel('ty')
 
+    # Extract the trajectory from the solution.
     time = solution.getTimeMat()
     tx = solution.getStateMat('/jointset/tx/tx/value')
     ty = solution.getStateMat('/jointset/ty/ty/value')
     multiplier = -solution.getMultiplierMat(solution.getMultiplierNames()[0])
     print('Number of multipliers: %i' % len(solution.getMultiplierNames()))
 
+    # Plot the trajectory.
     ax.set_aspect('equal')
     pl.plot(tx, ty, color='black')
 
@@ -124,6 +130,7 @@ if has_pylab:
     tySpline = InterpolatedUnivariateSpline(time, ty)
     accely = tySpline(time, 2)
 
+    # Loop through the trajectory and compute the constraint force.
     model.initSystem()
     statesTraj = solution.exportToStatesTrajectory(model)
     matter = model.getMatterSubsystem()
@@ -152,6 +159,8 @@ if has_pylab:
         print(
             'time %f: residuals: %f, %f' % (time[itime], residualx, residualy))
 
+        # We plot the constraint force for every 10th time point in the solution
+        # to avoid cluttering the plot.
         itime += 10
 
     pl.show()
