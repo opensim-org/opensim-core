@@ -42,8 +42,6 @@ public:
     static void showMotion(Model, Storage);
     /// @}
 
-    /// @name showModel shows a model using the simbody-visualizer
-
     ///  Visualize the passed in model in a simbody-visualizer window.
     ///  This function blocks until the user exits the simbody-visualizer
     ///  window.
