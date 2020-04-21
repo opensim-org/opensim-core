@@ -136,6 +136,8 @@ public:
     /// filesink (addFileSink()) and any sinks added via addSink().
     /// The main use case for this function is inside of functions whose intent
     /// is to print information (e.g., Component::printSubcomponentInfo()).
+    /// Besides such use cases, this function should be used sparingly to
+    /// give users control over what gets logged.
     template <typename... Args>
     static void cout(spdlog::string_view_t fmt, const Args&... args) {
         m_cout_logger->log(spdlog::level::info, fmt, args...);
@@ -171,19 +173,23 @@ public:
     /// need to invoke this function. The member functions in this class are
     /// static.
     static const std::shared_ptr<Logger> getInstance() {
-        if (!m_log) {
-            m_log = std::shared_ptr<Logger>(new Logger());
+        if (!m_osimLogger) {
+            m_osimLogger = std::shared_ptr<Logger>(new Logger());
         }
-        return m_log;
+        return m_osimLogger;
     }
 private:
     /// Initialize spdlog.
     Logger();
 
+    static void addSink(std::shared_ptr<spdlog::sinks::sink> sink);
+
+    static void removeSink(const std::shared_ptr<spdlog::sinks::sink> sink);
+
     /// This is the logger used in log_cout.
     static std::shared_ptr<spdlog::logger> m_cout_logger;
 
-    static std::shared_ptr<Logger> m_log;
+    static std::shared_ptr<Logger> m_osimLogger;
 
     /// Keep track of the file sink.
     static std::shared_ptr<spdlog::sinks::basic_file_sink_mt> m_filesink;

@@ -32,7 +32,7 @@ using namespace OpenSim;
 
 std::shared_ptr<spdlog::logger> Logger::m_cout_logger =
         spdlog::stdout_color_mt("cout");
-std::shared_ptr<Logger> Logger::m_log = Logger::getInstance();
+std::shared_ptr<Logger> Logger::m_osimLogger = Logger::getInstance();
 std::shared_ptr<spdlog::sinks::basic_file_sink_mt> Logger::m_filesink = {};
 
 Logger::Logger() {
@@ -147,41 +147,39 @@ void Logger::addFileSink(const std::string& filepath) {
         return;
     }
     m_filesink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(filepath);
-    spdlog::default_logger()->sinks().push_back(m_filesink);
-    m_cout_logger->sinks().push_back(m_filesink);
+    addSink(m_filesink);
 }
 
 void Logger::removeFileSink() {
-    auto spdlogSink = std::static_pointer_cast<spdlog::sinks::sink>(m_filesink);
-    {
-        auto& sinks = spdlog::default_logger()->sinks();
-        auto to_erase = std::find(sinks.cbegin(), sinks.cend(), spdlogSink);
-        if (to_erase != sinks.cend()) sinks.erase(to_erase);
-    }
-    {
-        auto& sinks = m_cout_logger->sinks();
-        auto to_erase = std::find(sinks.cbegin(), sinks.cend(), spdlogSink);
-        if (to_erase != sinks.cend()) sinks.erase(to_erase);
-    }
+    removeSink(std::static_pointer_cast<spdlog::sinks::sink>(m_filesink));
     m_filesink.reset();
 }
 
 void Logger::addSink(const std::shared_ptr<LogSink> sink) {
-    auto ptr = std::static_pointer_cast<spdlog::sinks::sink>(sink);
-    spdlog::default_logger()->sinks().push_back(ptr);
-    m_cout_logger->sinks().push_back(ptr);
+    addSink(std::static_pointer_cast<spdlog::sinks::sink>(sink));
 }
 
 void Logger::removeSink(const std::shared_ptr<LogSink> sink) {
-    auto spdlogSink = std::static_pointer_cast<spdlog::sinks::sink>(sink);
+    removeSink(std::static_pointer_cast<spdlog::sinks::sink>(sink));
+}
+
+void Logger::addSink(std::shared_ptr<spdlog::sinks::sink> sink) {
+    spdlog::default_logger()->sinks().push_back(sink);
+    m_cout_logger->sinks().push_back(sink);
+}
+
+void Logger::removeSink(const std::shared_ptr<spdlog::sinks::sink> sink) {
     {
         auto& sinks = spdlog::default_logger()->sinks();
-        auto to_erase = std::find(sinks.cbegin(), sinks.cend(), spdlogSink);
+        auto to_erase = std::find(sinks.cbegin(), sinks.cend(), sink);
         if (to_erase != sinks.cend()) sinks.erase(to_erase);
     }
     {
         auto& sinks = m_cout_logger->sinks();
-        auto to_erase = std::find(sinks.cbegin(), sinks.cend(), spdlogSink);
+        auto to_erase = std::find(sinks.cbegin(), sinks.cend(), sink);
         if (to_erase != sinks.cend()) sinks.erase(to_erase);
     }
 }
+
+
+

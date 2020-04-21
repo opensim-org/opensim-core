@@ -199,7 +199,7 @@ OpenSim::LoadOpenSimLibraries(int argc,char **argv)
             string libraryName = argv[i+1];
             library = LoadOpenSimLibrary(libraryName.c_str(), true);
             if(library==NULL) {
-                log_error("library {} could not be loaded.", libraryName);
+                log_error("Library {} could not be loaded.", libraryName);
             } else {
                 i++;
             }
