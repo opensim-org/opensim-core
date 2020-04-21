@@ -276,18 +276,21 @@ void VisualizerUtilities::showOrientationData(
     for (size_t i = 0; i < numOrientations; ++i) {
         auto name = quatTable.getColumnLabel(i);
         // remove trailing "_imu"
-        name.replace(name.end()-4, name.end(), "");
+        std::string::size_type pos = name.find("imu");
+        if (pos != string::npos)
+            name = name.substr(0, pos);
         // Create Body
         OpenSim::Body* body = new OpenSim::Body(name, 1, Vec3(0), Inertia(0));
         world.addBody(body);
         bodies.push_back(body);
         // Create FreeJoint
         FreeJoint* free = new FreeJoint(name, world.getGround(), *body);
-        Coordinate& coord = free->updCoordinate(FreeJoint::Coord::TranslationX);
         // Set offset so that frames don't overlap
-        // Default setting spreads frames along X axis
-        coord.set_default_value(0.2 * (i + 1));
-        free->updCoordinate(FreeJoint::Coord::TranslationY).set_default_value(0.2);
+        // Default setting spreads frames along X,Y axis
+        free->updCoordinate(FreeJoint::Coord::TranslationX)
+             .set_default_value(0.2 * (i + 1));
+        free->updCoordinate(FreeJoint::Coord::TranslationY)
+            .set_default_value(0.2 * (i + 1));
         world.addJoint(free);
         joints.push_back(free);
     }
@@ -301,7 +304,7 @@ void VisualizerUtilities::showOrientationData(
         DecorativeText bodyNameText(bodies.getElt(b)->getName());
         bodyNameText.setScale(0.05);
         world.updVisualizer().updSimbodyVisualizer().addDecoration(
-                SimTK::MobilizedBodyIndex(mbi), SimTK::Vec3(0, -.02*b, 0), bodyNameText);
+                SimTK::MobilizedBodyIndex(mbi), SimTK::Vec3(0, -.02, 0), bodyNameText);
     }
     world.realizePosition(state);
     world.getVisualizer().show(state);
