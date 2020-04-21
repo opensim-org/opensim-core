@@ -39,7 +39,6 @@ Usage:
 
 Options:
   -L <path>, --library <path>  Load a plugin.
-  -o <level>, --log <level>  Logging level.
 
 Description:
   The Tool to run is detected from the setup file you provide. Supported tools

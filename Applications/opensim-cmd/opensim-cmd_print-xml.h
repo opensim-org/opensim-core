@@ -39,7 +39,6 @@ Usage:
 
 Options:
   -L <path>, --library <path>  Load a plugin.
-  -o <level>, --log <level>  Logging level.
 
 Description:
   The argument <tool-or-class> can be the name of a Tool
