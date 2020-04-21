@@ -24,7 +24,8 @@
 
 #include "osimSimulationDLL.h"
 #include <OpenSim/Common/TimeSeriesTable.h>
-#include "StatesTrajectory.h"
+#include <OpenSim/Simulation/Model/Model.h>
+
 
 namespace OpenSim {
 class OSIMSIMULATION_API VisualizerUtilities {
@@ -42,7 +43,6 @@ public:
     /// @}
 
     /// @name showModel shows a model using the simbody-visualizer
-    /// @{
 
     ///  Visualize the passed in model in a simbody-visualizer window.
     ///  This function blocks until the user exits the simbody-visualizer

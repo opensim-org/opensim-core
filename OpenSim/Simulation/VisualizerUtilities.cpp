@@ -30,6 +30,7 @@
 #include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Simulation/Model/Model.h> 
 #include <OpenSim/Simulation/OpenSense/ExperimentalMarker.h>
+#include <OpenSim/Simulation/StatesTrajectory.h>
 
 
 using namespace std;
