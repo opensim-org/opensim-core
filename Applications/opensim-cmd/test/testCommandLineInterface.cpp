@@ -255,7 +255,7 @@ void testLoadPluginLibraries(const std::string& subcommand) {
         expectLib = replaceString(expectLib, "/", "\\");
     #endif
     {
-        StartsWith output("Loaded library " + expectLib);
+        StartsWith output("[info] Loaded library " + expectLib);
         testCommand("-L " + lib + " " + cmd, EXIT_SUCCESS, output);
         testCommand("-L" + lib + " " + cmd, EXIT_SUCCESS, output);
         testCommand("--library " + lib + " " + cmd, EXIT_SUCCESS, output);
@@ -268,14 +268,14 @@ void testLoadPluginLibraries(const std::string& subcommand) {
         // Well, in this case, we just load the same library multiple times.
         testCommand("-L " + lib + " --library " + lib + " " + cmd,
                 EXIT_SUCCESS,
-                StartsWith("Loaded library " + expectLib + "\n"
-                           "Loaded library " + expectLib + "\n"));
+                StartsWith("[info] Loaded library " + expectLib + "\n"
+                           "[info] Loaded library " + expectLib + "\n"));
         testCommand("-L" + lib +
                     " --library=" + lib +
                     " -L " + lib + " " + cmd, EXIT_SUCCESS,
-                StartsWith("Loaded library " + expectLib + "\n"
-                           "Loaded library " + expectLib + "\n"
-                           "Loaded library " + expectLib + "\n"));
+                StartsWith("[info] Loaded library " + expectLib + "\n"
+                           "[info] Loaded library " + expectLib + "\n"
+                           "[info] Loaded library " + expectLib + "\n"));
     }
 }
 
@@ -293,7 +293,7 @@ void testRunTool() {
     testCommand("run-tool", EXIT_FAILURE,
             StartsWith("Arguments did not match expected patterns"));
     testCommand("run-tool putes.xml", EXIT_FAILURE,
-            StartsWith("SimTK Exception thrown at"));
+            StartsWith("[error] SimTK Exception thrown at"));
     // We use print-xml to create a setup file that we can try to run.
     // (We are not really trying to test print-xml right now.)
     testCommand("print-xml cmc testruntool_cmc_setup.xml", EXIT_SUCCESS,
