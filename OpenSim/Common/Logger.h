@@ -1,7 +1,7 @@
 #ifndef OPENSIM_LOG_H_
 #define OPENSIM_LOG_H_
 /* -------------------------------------------------------------------------- *
- *                           OpenSim:  Logger.h                                  *
+ *                           OpenSim:  Logger.h                               *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -25,6 +25,7 @@
 #include "osimCommonDLL.h"
 #include <set>
 #include <spdlog/spdlog.h>
+#include <spdlog/sinks/basic_file_sink.h>
 #include <string>
 
 namespace OpenSim {
@@ -130,14 +131,33 @@ public:
         spdlog::trace(fmt, args...);
     }
 
+    /// Use this function to log messages that would normally be sent to
+    /// std::cout. These messages always appear, and are also logged to the
+    /// filesink (addFileSink()) and any sinks added via addSink().
+    /// The main use case for this function is inside of functions whose intent
+    /// is to print information (e.g., Component::printSubcomponentInfo()).
+    /// Besides such use cases, this function should be used sparingly to
+    /// give users control over what gets logged.
+    template <typename... Args>
+    static void cout(spdlog::string_view_t fmt, const Args&... args) {
+        m_cout_logger->log(spdlog::level::info, fmt, args...);
+    }
+
     /// @}
 
     /// Log messages to a file at the level getLevel().
-    /// If we are already logging messages to the provided file, then this
-    /// function issues a warning and returns.
+    /// OpenSim logs messages to the file opensim.log by default.
+    /// If we are already logging messages to a file, then this
+    /// function issues a warning and returns; invoke removeFileSink() first.
     /// @note This function is not thread-safe. Do not invoke this function
     /// concurrently, or concurrently with addSink() or removeSink().
-    static void addLogFile(const std::string& filepath = "opensim.log");
+    static void addFileSink(const std::string& filepath = "opensim.log");
+
+    /// Remove the filesink if it exists.
+    /// If the filesink was already removed, then this does nothing.
+    /// @note This function is not thread-safe. Do not invoke this function
+    /// concurrently, or concurrently with addSink() or removeSink().
+    static void removeFileSink();
 
     /// Start reporting messages to the provided sink.
     /// @note This function is not thread-safe. Do not invoke this function
@@ -153,51 +173,72 @@ public:
     /// need to invoke this function. The member functions in this class are
     /// static.
     static const std::shared_ptr<Logger> getInstance() {
-        if (!m_log) {
-            m_log = std::shared_ptr<Logger>(new Logger());
+        if (!m_osimLogger) {
+            m_osimLogger = std::shared_ptr<Logger>(new Logger());
         }
-        return m_log;
+        return m_osimLogger;
     }
 private:
     /// Initialize spdlog.
     Logger();
-    static std::shared_ptr<Logger> m_log;
 
-    /// Keep track of file sinks.
-    static std::set<std::string> m_filepaths;
+    static void addSink(std::shared_ptr<spdlog::sinks::sink> sink);
+
+    static void removeSink(const std::shared_ptr<spdlog::sinks::sink> sink);
+
+    /// This is the logger used in log_cout.
+    static std::shared_ptr<spdlog::logger> m_cout_logger;
+
+    static std::shared_ptr<Logger> m_osimLogger;
+
+    /// Keep track of the file sink.
+    static std::shared_ptr<spdlog::sinks::basic_file_sink_mt> m_filesink;
 };
 
 /// @name Logging functions
 /// @{
 
+/// @related Logger
 template <typename... Args>
 void log_critical(spdlog::string_view_t fmt, const Args&... args) {
     Logger::critical(fmt, args...);
 }
 
+/// @related Logger
 template <typename... Args>
 void log_error(spdlog::string_view_t fmt, const Args&... args) {
     Logger::error(fmt, args...);
 }
 
+/// @related Logger
 template <typename... Args>
 void log_warn(spdlog::string_view_t fmt, const Args&... args) {
     Logger::warn(fmt, args...);
 }
 
+/// @related Logger
 template <typename... Args>
 void log_info(spdlog::string_view_t fmt, const Args&... args) {
     Logger::info(fmt, args...);
 }
 
+/// @related Logger
 template <typename... Args>
 void log_debug(spdlog::string_view_t fmt, const Args&... args) {
     Logger::debug(fmt, args...);
 }
 
+/// @related Logger
 template <typename... Args>
 void log_trace(spdlog::string_view_t fmt, const Args&... args) {
     Logger::trace(fmt, args...);
+}
+
+/// @copydoc Logger::cout()
+/// @related Logger
+template <typename... Args>
+void log_cout(spdlog::string_view_t fmt, const Args&... args) {
+    Logger::cout(fmt, args...);
 }
 
 /// @}

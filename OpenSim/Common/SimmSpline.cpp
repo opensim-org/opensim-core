@@ -78,14 +78,14 @@ SimmSpline::SimmSpline(int aN,const double *aX,const double *aY,
     // NUMBER OF DATA POINTS
     if(aN < 2)
     {
-        printf("SimmSpline: ERROR- there must be 2 or more data points.\n");
+        log_error("SimmSpline: there must be 2 or more data points.");
         return;
     }
 
     // CHECK DATA
     if((aX==NULL)||(aY==NULL))
     {
-        printf("SimmSpline: ERROR- NULL arrays for data points encountered.\n");
+        log_error("SimmSpline: NULL arrays for data points encountered.");
         return;
     }
 

@@ -27,12 +27,13 @@
 
 
 // INCLUDES
-#include <time.h>
+#include "IO.h"
+
+#include "Logger.h"
+#include <climits>
 #include <math.h>
 #include <string>
-#include <climits>
-
-#include "IO.h"
+#include <time.h>
 #if defined(__linux__) || defined(__APPLE__)
     #include <sys/stat.h>
     #include <sys/types.h>
@@ -434,8 +435,8 @@ OpenFile(const string &aFileName,const string &aMode)
     // OPEN THE FILE
     fp = fopen(aFileName.c_str(),aMode.c_str());
     if(fp==NULL) {
-        printf("IO.OpenFile(const string&,const string&): failed to open %s\n",
-         aFileName.c_str());
+        log_error("IO.OpenFile(const string&,const string&): "
+                  "failed to open {}.", aFileName);
         return(NULL);
     }
 
@@ -450,7 +451,8 @@ OpenInputFile(const string &aFileName,ios_base::openmode mode)
 {
     ifstream *fs = new ifstream(aFileName.c_str(), ios_base::in | mode);
     if(!fs || !(*fs)) {
-        printf("IO.OpenInputFile(const string&,openmode mode): failed to open %s\n", aFileName.c_str());
+        log_error("IO.OpenInputFile(const string&,openmode mode): "
+                  "failed to open {}.", aFileName);
         return(NULL);
     }
 
@@ -461,7 +463,8 @@ OpenOutputFile(const string &aFileName,ios_base::openmode mode)
 {
     ofstream *fs = new ofstream(aFileName.c_str(), ios_base::out | mode);
     if(!fs || !(*fs)) {
-        printf("IO.OpenOutputFile(const string&,openmode mode): failed to open %s\n", aFileName.c_str());
+        log_error("IO.OpenOutputFile(const string&,openmode mode): failed to "
+                  "open {}.", aFileName);
         return(NULL);
     }
 
