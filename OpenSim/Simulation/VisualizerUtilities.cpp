@@ -29,12 +29,14 @@
 #include <OpenSim/Common/TableSource.h>
 #include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Simulation/Model/Model.h> 
+#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/OpenSense/ExperimentalMarker.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
 
 
 using namespace std;
 using namespace OpenSim;
+using namespace SimTK;
 
 void VisualizerUtilities::showModel(Model model) {
     model.setUseVisualizer(true);
@@ -256,5 +258,84 @@ void VisualizerUtilities::showMarkerData(
         state.setTime(times[j]);
         previewWorld.realizePosition(state);
         previewWorld.getVisualizer().show(state);
+    }
+}
+
+void VisualizerUtilities::showOrientationData(
+        const TimeSeriesTableQuaternion& quatTable, int layout) {
+
+    Model world;
+    // Will create a Body for every column of data, connect it to
+    // Ground with a FreeJoint, set translation based on layout,
+    // set rotations based on data.
+    const size_t numOrientations = quatTable.getNumColumns();
+    auto& times = quatTable.getIndependentColumn();
+    SimTK::Array_<FreeJoint*> joints;
+    SimTK::Array_<Body*> bodies;
+    SimTK::Array_<MobilizedBodyIndex> mobis;
+
+    for (size_t i = 0; i < numOrientations; ++i) {
+        auto name = quatTable.getColumnLabel(i);
+        // remove trailing "_imu"
+        std::string::size_type pos = name.find("imu");
+        if (pos != string::npos) name = name.substr(0, pos);
+        // Create Body
+        OpenSim::Body* body = new OpenSim::Body(name, 1, Vec3(0), Inertia(0));
+        world.addBody(body);
+        bodies.push_back(body);
+        // Create FreeJoint
+        FreeJoint* free = new FreeJoint(name, world.getGround(), *body);
+        // Set offset so that frames don't overlap
+        // Default setting spreads frames along X,Y axis
+        free->updCoordinate(FreeJoint::Coord::TranslationX)
+                .set_default_value(0.2 * (i + 1));
+        free->updCoordinate(FreeJoint::Coord::TranslationY)
+                .set_default_value(0.2 * (i + 1));
+        world.addJoint(free);
+        joints.push_back(free);
+    }
+    world.updDisplayHints().set_show_frames(true);
+    world.setUseVisualizer(true);
+    SimTK::State& state = world.initSystem();
+
+    // Will add text on screen corresponding to Body names
+    for (int b = 0; b < bodies.size(); ++b) {
+        MobilizedBodyIndex mbi = bodies.getElt(b)->getMobilizedBodyIndex();
+        DecorativeText bodyNameText(bodies.getElt(b)->getName());
+        bodyNameText.setScale(0.05);
+        world.updVisualizer().updSimbodyVisualizer().addDecoration(
+                SimTK::MobilizedBodyIndex(mbi), SimTK::Vec3(0, -.02, 0),
+                bodyNameText);
+    }
+    world.realizePosition(state);
+    world.getVisualizer().show(state);
+
+    char c;
+    std::cout << "Press any key to visualize orientation data ..." << std::endl;
+    std::cin >> c;
+    auto& dataMatrix = quatTable.getMatrix();
+    std::cout << "Matrix size:" << dataMatrix.nrow() << "By"
+              << dataMatrix.ncol() << std::endl;
+
+    for (int j = 0; j < times.size(); ++j) {
+        std::cout << "time: " << times[j] << "s" << std::endl;
+        state.setTime(times[j]);
+        for (int iOrient = 0; iOrient < numOrientations; ++iOrient) {
+
+            Quaternion quat = dataMatrix(j, iOrient);
+            Rotation rot(quat);
+            Vec3 angles = rot.convertRotationToBodyFixedXYZ();
+            joints.updElt(iOrient)
+                    ->updCoordinate(FreeJoint::Coord::Rotation1X)
+                    .setValue(state, angles[0]);
+            joints.updElt(iOrient)
+                    ->updCoordinate(FreeJoint::Coord::Rotation2Y)
+                    .setValue(state, angles[1]);
+            joints.updElt(iOrient)
+                    ->updCoordinate(FreeJoint::Coord::Rotation3Z)
+                    .setValue(state, angles[2]);
+        }
+        world.realizePosition(state);
+        world.getVisualizer().show(state);
     }
 }
