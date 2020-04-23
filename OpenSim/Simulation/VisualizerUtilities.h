@@ -55,8 +55,8 @@ public:
     /** Show frames with time histories specified by the passed in
         TimeSeriesTableQuaternion. Visualization is shown in the simbody
        visualizer. layout options: 
-       0=default layout frames in a row along X axis
-       1= frames laid out around a cicrle in the X-Y plane
+       0=default layout frames in a row along Z axis
+       1= frames laid out around a half-cicrle in the Y-Z plane
        2= assume naming from Rajagopal_2015 model
        3= Load Rajagopal_2015 model and overlay frames at corresponding segment
        4= Load Ragdagopal_2015_free and orient geometry according to data
@@ -64,6 +64,9 @@ public:
        Function blocks waiting for user to hit a key to start. */
     static void showOrientationData(
             const TimeSeriesTableQuaternion&, int layout = 0);
+
+private:
+    static void addVisualizerControls(ModelVisualizer&, double, double);
 };
 }
 
