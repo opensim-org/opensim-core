@@ -223,46 +223,46 @@ void VisualizerUtilities::showMarkerData(
     previewWorld.addComponent(markersSource);
 
     // Get the underlying Table backing the marker Source so we
-    // know how many markers we have and their names
-    const auto& markerData = markersSource->getTable();
-    auto& times = markerData.getIndependentColumn();
+// know how many markers we have and their names
+const auto& markerData = markersSource->getTable();
+auto& times = markerData.getIndependentColumn();
 
-    // Create an ExperimentalMarker Component for every column in the markerData
-    for (int i = 0; i < int(markerData.getNumColumns()); ++i) {
-        auto marker = new ExperimentalMarker();
-        marker->setName(markerData.getColumnLabel(i));
+// Create an ExperimentalMarker Component for every column in the markerData
+for (int i = 0; i < int(markerData.getNumColumns()); ++i) {
+    auto marker = new ExperimentalMarker();
+    marker->setName(markerData.getColumnLabel(i));
 
-        // markers are owned by the model
-        previewWorld.addComponent(marker);
-        // the time varying location of the marker comes from the markersSource
-        // Component
-        marker->updInput("location_in_ground")
-                .connect(markersSource->getOutput("column").getChannel(
-                        markerData.getColumnLabel(i)));
-    }
+    // markers are owned by the model
+    previewWorld.addComponent(marker);
+    // the time varying location of the marker comes from the markersSource
+    // Component
+    marker->updInput("location_in_ground")
+        .connect(markersSource->getOutput("column").getChannel(
+            markerData.getColumnLabel(i)));
+}
 
-    previewWorld.setUseVisualizer(true);
-    SimTK::State& state = previewWorld.initSystem();
-    state.updTime() = times[0];
+previewWorld.setUseVisualizer(true);
+SimTK::State& state = previewWorld.initSystem();
+state.updTime() = times[0];
 
+previewWorld.realizePosition(state);
+previewWorld.getVisualizer().show(state);
+
+char c;
+std::cout << "Press any key to visualize experimental marker data ..."
+<< std::endl;
+std::cin >> c;
+
+for (size_t j = 0; j < times.size(); j = j + 10) {
+    std::cout << "time: " << times[j] << "s" << std::endl;
+    state.setTime(times[j]);
     previewWorld.realizePosition(state);
     previewWorld.getVisualizer().show(state);
-
-    char c;
-    std::cout << "Press any key to visualize experimental marker data ..."
-              << std::endl;
-    std::cin >> c;
-
-    for (size_t j = 0; j < times.size(); j = j + 10) {
-        std::cout << "time: " << times[j] << "s" << std::endl;
-        state.setTime(times[j]);
-        previewWorld.realizePosition(state);
-        previewWorld.getVisualizer().show(state);
-    }
+}
 }
 
 void VisualizerUtilities::showOrientationData(
-        const TimeSeriesTableQuaternion& quatTable, int layout) {
+    const TimeSeriesTableQuaternion& quatTable, int layout) {
 
     Model world;
     // Will create a Body for every column of data, connect it to
@@ -277,7 +277,7 @@ void VisualizerUtilities::showOrientationData(
     for (size_t i = 0; i < numOrientations; ++i) {
         auto name = quatTable.getColumnLabel(i);
         // remove trailing "_imu"
-        std::string::size_type pos = name.find("imu");
+        std::string::size_type pos = name.find("_imu");
         if (pos != string::npos) name = name.substr(0, pos);
         // Create Body
         OpenSim::Body* body = new OpenSim::Body(name, 1, Vec3(0), Inertia(0));
@@ -285,18 +285,73 @@ void VisualizerUtilities::showOrientationData(
         bodies.push_back(body);
         // Create FreeJoint
         FreeJoint* free = new FreeJoint(name, world.getGround(), *body);
-        // Set offset so that frames don't overlap
-        // Default setting spreads frames along X,Y axis
-        free->updCoordinate(FreeJoint::Coord::TranslationX)
-                .set_default_value(0.2 * (i + 1));
-        free->updCoordinate(FreeJoint::Coord::TranslationY)
-                .set_default_value(0.2 * (i + 1));
         world.addJoint(free);
         joints.push_back(free);
     }
+    auto lambda = [=](auto choice) {
+        int numJoints = joints.size();
+        switch (choice) {
+        case 0:
+        default:
+            for (int i = 0; i < numJoints; i++) {
+                // Spacing 0.25 to avoid overlap
+                joints[i]
+                        ->updCoordinate(FreeJoint::Coord::TranslationZ)
+                        .set_default_value(0.25 * (i + 1));
+                joints[i]
+                        ->updCoordinate(FreeJoint::Coord::TranslationY)
+                        .set_default_value(0.2);
+            }
+            break;
+        case 1:
+            for (int i = 0; i < numJoints; i++) {
+                joints[i]
+                        ->updCoordinate(FreeJoint::Coord::TranslationY)
+                        .set_default_value(
+                                1 + cos((double)i / numJoints * SimTK::Pi));
+                joints[i]
+                        ->updCoordinate(FreeJoint::Coord::TranslationZ)
+                        .set_default_value(
+                                1 + sin((double)i / numJoints * SimTK::Pi));
+            }
+            break;
+        case 2:
+            SimTK::Array_<string> names = {
+                    "pelvis", "femur_r", "femur_l", "tibia_r", "tibia_l"};
+            std::pair<double, double> coordinates[] = {{0.9, 0.},
+                    {0.7, 0.135}, {0.7, -0.135}, {.3, .15}, {.3, -.15}};
+            for (int i = 0; i < numJoints; i++) {
+                for (int j = 0; j < names.size(); ++j) {
+                    auto matchString = joints[i]->getName();
+                    auto pos = names[j].find(matchString, 0);
+
+                    if (pos != std::string::npos) {
+                        joints[i]
+                                ->updCoordinate(FreeJoint::Coord::TranslationY)
+                                .set_default_value(coordinates[j].first);
+                        joints[i]
+                                ->updCoordinate(FreeJoint::Coord::TranslationZ)
+                                .set_default_value(coordinates[j].second);
+                        break;
+                    }
+                }
+            }
+            break;
+        }
+    };
+    lambda(2);
     world.updDisplayHints().set_show_frames(true);
     world.setUseVisualizer(true);
     SimTK::State& state = world.initSystem();
+    // Customize visualizer window
+    const SimTK::Real initialTime = times.front();
+    const SimTK::Real finalTime = times.back();
+    bool pause = false;
+    addVisualizerControls(world.updVisualizer(), initialTime, finalTime);
+    SimTK::DecorativeText pausedText("");
+    pausedText.setIsScreenText(true);
+    const int pausedIndex = world.updVisualizer().updSimbodyVisualizer().addDecoration(
+            SimTK::MobilizedBodyIndex(0), SimTK::Vec3(0), pausedText);
 
     // Will add text on screen corresponding to Body names
     for (int b = 0; b < bodies.size(); ++b) {
@@ -309,33 +364,115 @@ void VisualizerUtilities::showOrientationData(
     }
     world.realizePosition(state);
     world.getVisualizer().show(state);
-
-    char c;
-    std::cout << "Press any key to visualize orientation data ..." << std::endl;
-    std::cin >> c;
+    auto& simbodyVisualizer = world.getVisualizer().getSimbodyVisualizer();
     auto& dataMatrix = quatTable.getMatrix();
-    std::cout << "Matrix size:" << dataMatrix.nrow() << "By"
-              << dataMatrix.ncol() << std::endl;
+    while (true) {
+        for (int frameNumber = 0; frameNumber < times.size(); ++frameNumber) {
+            state.setTime(times[frameNumber]);
+            for (int iOrient = 0; iOrient < numOrientations; ++iOrient) {
 
-    for (int j = 0; j < times.size(); ++j) {
-        std::cout << "time: " << times[j] << "s" << std::endl;
-        state.setTime(times[j]);
-        for (int iOrient = 0; iOrient < numOrientations; ++iOrient) {
+                Quaternion quat = dataMatrix(frameNumber, iOrient);
+                Rotation rot(quat);
+                Vec3 angles = rot.convertRotationToBodyFixedXYZ();
+                joints.updElt(iOrient)
+                        ->updCoordinate(FreeJoint::Coord::Rotation1X)
+                        .setValue(state, angles[0]);
+                joints.updElt(iOrient)
+                        ->updCoordinate(FreeJoint::Coord::Rotation2Y)
+                        .setValue(state, angles[1]);
+                joints.updElt(iOrient)
+                        ->updCoordinate(FreeJoint::Coord::Rotation3Z)
+                        .setValue(state, angles[2]);
+            }
+            world.realizePosition(state);
+            world.getVisualizer().show(state);
+            // Slider input.
+            int timeSliderIndex = 1;
+            int sliderIndex;
+            double sliderValue;
+            auto& silo = world.updVisualizer().updInputSilo();
 
-            Quaternion quat = dataMatrix(j, iOrient);
-            Rotation rot(quat);
-            Vec3 angles = rot.convertRotationToBodyFixedXYZ();
-            joints.updElt(iOrient)
-                    ->updCoordinate(FreeJoint::Coord::Rotation1X)
-                    .setValue(state, angles[0]);
-            joints.updElt(iOrient)
-                    ->updCoordinate(FreeJoint::Coord::Rotation2Y)
-                    .setValue(state, angles[1]);
-            joints.updElt(iOrient)
-                    ->updCoordinate(FreeJoint::Coord::Rotation3Z)
-                    .setValue(state, angles[2]);
+            if (silo.takeSliderMove(sliderIndex, sliderValue)) {
+                if (sliderIndex == timeSliderIndex) {
+                    auto desiredIndex = (sliderValue - initialTime) / (finalTime - initialTime);
+                    frameNumber = (int)desiredIndex*times.size();
+                    // Allow the user to drag this slider to visualize different
+                    // times.
+                    std::cout << "Setting frame number to " << frameNumber
+                              << std::endl;
+                    simbodyVisualizer.drawFrameNow(state);
+                } else {
+                    std::cout << "Internal error: unrecognized slider."
+                              << std::endl;
+                }
+            }
+            // Key input.
+            unsigned key, modifiers;
+            if (silo.takeKeyHit(key, modifiers)) {
+                // Exit.
+                if (key == SimTK::Visualizer::InputListener::KeyEsc) {
+                    std::cout << "Exiting visualization." << std::endl;
+                    return;
+                }
+                // Smart zoom.
+                else if (key == 'r') {
+                    simbodyVisualizer.zoomCameraToShowAllGeometry();
+                }
+                // Pause.
+                else if (key == ' ') {
+                    pause = !pause;
+                    auto& text = static_cast<SimTK::DecorativeText&>(
+                            simbodyVisualizer.updDecoration(pausedIndex));
+                    text.setText(pause ? "Paused (hit Space to resume)" : "");
+                    simbodyVisualizer.drawFrameNow(state);
+                }
+            }
+            if (pause) {
+                std::this_thread::sleep_for(std::chrono::seconds(1));
+            } 
+            simbodyVisualizer.setSliderValue(timeSliderIndex, times[frameNumber]);
         }
-        world.realizePosition(state);
-        world.getVisualizer().show(state);
     }
+}
+
+void VisualizerUtilities::addVisualizerControls(ModelVisualizer& vizualizer, 
+        double initialTime, double finalTime) {
+    auto& simbodyViz = vizualizer.updSimbodyVisualizer();
+    simbodyViz.setMode(SimTK::Visualizer::RealTime);
+    simbodyViz.setDesiredBufferLengthInSec(0);
+    simbodyViz.setDesiredFrameRate(30);
+    simbodyViz.setShowSimTime(true);
+    // viz.setBackgroundType(viz.SolidColor);
+    // viz.setBackgroundColor(SimTK::White);
+    // viz.setShowFrameRate(true);
+    // viz.setShowFrameNumber(true);
+    auto& silo = vizualizer.updInputSilo();
+
+    // BodyWatcher to control camera.
+    // TODO
+
+    // Add slider to control playback.
+
+    const int realTimeScaleSliderIndex = 1;
+    //simbodyViz.addSlider("Speed", realTimeScaleSliderIndex, minRealTimeScale,
+    //        maxRealTimeScale, realTimeScale);
+
+    // TODO this slider results in choppy playback if not paused.
+    const int timeSliderIndex = 1;
+    double time = initialTime;
+    simbodyViz.addSlider("Time", timeSliderIndex, initialTime, finalTime, time);
+
+    SimTK::Array_<std::pair<SimTK::String, int>> keyBindingsMenu;
+    keyBindingsMenu.push_back(std::make_pair(
+            "Available key bindings (clicking these menu items has no effect):",
+            1));
+    keyBindingsMenu.push_back(std::make_pair(
+            "-----------------------------------------------------------------",
+            2));
+    keyBindingsMenu.push_back(std::make_pair("Pause: Space", 3));
+    keyBindingsMenu.push_back(std::make_pair("Zoom to fit: R", 4));
+    keyBindingsMenu.push_back(std::make_pair("Quit: Esc", 5));
+    simbodyViz.addMenu("Key bindings", 1, keyBindingsMenu);
+
+    
 }
