@@ -74,15 +74,17 @@ PiecewiseConstantFunction::PiecewiseConstantFunction(int aN,const double *aX,con
        // NUMBER OF DATA POINTS
        if(aN < 2)
        {
-             printf("PiecewiseConstantFunction: ERROR- there must be 2 or more data points.\n");
-             return;
+           log_error("PiecewiseConstantFunction: there must be 2 or more "
+                     "data points.");
+           return;
        }
 
        // CHECK DATA
        if((aX==NULL)||(aY==NULL))
        {
-             printf("PiecewiseConstantFunction: ERROR- NULL arrays for data points encountered.\n");
-             return;
+           log_error("PiecewiseConstantFunction: NULL arrays for data points "
+                     "encountered.");
+           return;
        }
 
        // INDEPENDENT VALUES (KNOT SEQUENCE)

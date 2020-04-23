@@ -1592,7 +1592,7 @@ makeObjectFromFile(const std::string &aFileName)
     }
 
     catch(const std::exception& x) {
-        cout << x.what() << endl;
+        log_error(x.what());
         return nullptr;
     }
     catch(...){ // Document couldn't be opened, or something went really bad

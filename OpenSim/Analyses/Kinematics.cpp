@@ -203,7 +203,7 @@ updateCoordinatesToRecord()
     _values.setSize(_coordinateIndices.getSize());
 
     if(_values.getSize()==0) {
-         cout << "WARNING: Kinematics analysis has no coordinates to record values for" << endl;
+        log_warn("Kinematics analysis has no coordinates to record values for");
     }
 }
 
@@ -502,8 +502,8 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
                  const string &aExtension)
 {
     if(!getOn()) {
-        printf("Kinematics.printResults: Off- not printing.\n");
-        return(0);
+        log_info("Kinematics.printResults: Off- not printing.");
+        return 0;
     }
 
     // ACCELERATIONS
