@@ -9,6 +9,7 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 v4.2
 ====
 - Add the ActivationCoordinateActuator component, which is a CoordinateActuator with simple activation dynamics (PR #2699).
+- Easily convert Matlab matrices and Python NumPy arrays to and from OpenSim Vectors and Matrices. See Matlab example matrixConversions.m and Python example numpy_conversions.py.
 
 v4.1
 ====

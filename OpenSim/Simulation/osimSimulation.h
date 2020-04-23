@@ -123,7 +123,6 @@
 #include "StatesTrajectory.h"
 #include "StatesTrajectoryReporter.h"
 #include "OpenSense/OpenSenseUtilities.h"
-#include "OpenSense/IMUInverseKinematicsTool.h"
 
 #include "SimulationUtilities.h"
 

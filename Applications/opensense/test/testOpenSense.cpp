@@ -26,8 +26,8 @@
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
 #include <OpenSim/Simulation/OpenSense/IMUPlacer.h>
-#include <OpenSim/Simulation/OpenSense/IMUInverseKinematicsTool.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Tools/IMUInverseKinematicsTool.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
