@@ -25,6 +25,7 @@
 #include "osimSimulationDLL.h"
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include "StatesTrajectory.h"
+#include <OpenSim/Simulation/Model/Model.h>
 
 namespace OpenSim {
 class OSIMSIMULATION_API VisualizerUtilities {
@@ -41,9 +42,6 @@ public:
     static void showMotion(Model, Storage);
     /// @}
 
-    /// @name showModel shows a model using the simbody-visualizer
-    /// @{
-
     ///  Visualize the passed in model in a simbody-visualizer window.
     ///  This function blocks until the user exits the simbody-visualizer
     ///  window.
@@ -53,6 +51,7 @@ public:
         TimeSeriesTableVec3. Visualization is shown in the simbody visualizer.
         Function blocks waiting for user to hit a key to start. */
     static void showMarkerData(const TimeSeriesTableVec3&);
+
     /** Show frames with time histories specified by the passed in 
         TimeSeriesTableQuaternion. Visualization is shown in the simbody visualizer. layout options:
         0=default layout frames in a row along X axis with labels
