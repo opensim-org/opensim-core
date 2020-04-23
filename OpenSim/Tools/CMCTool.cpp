@@ -976,7 +976,7 @@ initializeControlSetUsingConstraints(
             }
             if(control==NULL) continue;
             control->setUseSteps(false);
-            log_info("Set {} to user linear interpolation.", rraControlName);
+            log_info("Set {} to use linear interpolation.", rraControlName);
         }
 #endif
     }   

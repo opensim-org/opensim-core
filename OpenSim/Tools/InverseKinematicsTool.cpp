@@ -209,7 +209,7 @@ bool InverseKinematicsTool::run()
             ikSolver.track(s);
             // show progress line every 1000 frames so users see progress
             if (std::remainder(i - start_ix, 1000) == 0 && i != start_ix)
-                log_info("Solved {} frame...", i - start_ix);
+                log_info("Solved {} frame(s)...", i - start_ix);
             if(get_report_errors()){
                 Array<double> markerErrors(0.0, 3);
                 double totalSquaredMarkerError = 0.0;

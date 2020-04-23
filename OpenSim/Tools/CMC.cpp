@@ -800,7 +800,7 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
             }
         }
         if(_verbose) {
-            log_info("Setting stress term weight to {} (relativeTau was {})...",
+            log_info("Setting stress term weight to {} (relativeTau was {}).",
                 stressTermWeight, relativeTau);
         }
         realTarget->setStressTermWeight(stressTermWeight);

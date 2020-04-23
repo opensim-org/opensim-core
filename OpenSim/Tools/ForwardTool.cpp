@@ -300,7 +300,9 @@ bool ForwardTool::run()
 
     try {
         // INTEGRATE
-        _model->printDetailedInfo(s, std::cout);
+        if (Logger::shouldLog(Logger::Level::Info)) {
+            _model->printDetailedInfo(s, std::cout);
+        }
 
         log_info("Integrating from {} to {}.", _ti, _tf);
         s.setTime(_ti);
