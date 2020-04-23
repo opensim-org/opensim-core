@@ -58,8 +58,7 @@ InverseKinematicsTool::~InverseKinematicsTool()
 /**
  * Default constructor.
  */
-InverseKinematicsTool::InverseKinematicsTool() : Tool()
-{
+InverseKinematicsTool::InverseKinematicsTool() : InverseKinematicsToolBase() {
     constructProperties();
 }
 //_____________________________________________________________________________
@@ -72,7 +71,7 @@ InverseKinematicsTool::InverseKinematicsTool() : Tool()
  * @param aFileName File name of the document.
  */
 InverseKinematicsTool::InverseKinematicsTool(const string &aFileName, bool aLoadModel) :
-    Tool(aFileName, true)
+    InverseKinematicsToolBase(aFileName, true)
 {
     constructProperties();
     updateFromXMLDocument();
@@ -84,18 +83,9 @@ InverseKinematicsTool::InverseKinematicsTool(const string &aFileName, bool aLoad
  */
 void InverseKinematicsTool::constructProperties()
 {
-    constructProperty_model_file("");
-    constructProperty_constraint_weight(Infinity);
-    constructProperty_accuracy(1e-5);
     constructProperty_IKTaskSet(IKTaskSet());
     constructProperty_marker_file("");
     constructProperty_coordinate_file("");
-    Array<double> range{Infinity, 2};
-    range[0] = -Infinity; // Make range -Infinity to Infinity unless limited by
-                          // data
-    constructProperty_time_range(range);
-
-    constructProperty_report_errors(true);
     constructProperty_output_motion_file("");
     constructProperty_report_marker_locations(false);
 }

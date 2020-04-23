@@ -35,70 +35,40 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "osimToolsDLL.h"
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/Model/Point.h>
+#include <OpenSim/Tools/InverseKinematicsToolBase.h>
 
 namespace OpenSim {
 
 class Model;
-class IKTaskSet;
 
 //=============================================================================
 //=============================================================================
 /**
  * A Study that performs an Inverse Kinematics analysis with a given model.
  * Inverse kinematics is the solution of internal coordinates that poses
- * the model such that the landmark locations (markers) and/or body rotations 
- * (as measured by IMUs) affixed to the model minimize the weighted least-
- * squares error with observations of analogous markers and IMU orientations
- * in their spatial coordinates. Observations of coordinates can also be
- * included.
+ * the model such that the body rotations (as measured by IMUs) affixed to the 
+ * model minimize the weighted least-squares error with observations of IMU 
+ * orientations in their spatial coordinates. 
  *
  * @author Ajay Seth
  */
-class OSIMSIMULATION_API IMUInverseKinematicsTool : public Object {
-OpenSim_DECLARE_CONCRETE_OBJECT(IMUInverseKinematicsTool, Object);
+class OSIMTOOLS_API IMUInverseKinematicsTool
+        : public InverseKinematicsToolBase {
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+            IMUInverseKinematicsTool, InverseKinematicsToolBase);
+
 public:
-//==============================================================================
-// PROPERTIES
-//==============================================================================
-    OpenSim_DECLARE_PROPERTY(model_file, std::string,
-        "Name/path to the xml .osim file used to load a model to be analyzed.");
-
-    OpenSim_DECLARE_PROPERTY(marker_file, std::string,
-        "Name/path to a .trc or .sto file of type Vec3 of marker data.");
-
     OpenSim_DECLARE_PROPERTY(orientations_file, std::string,
         "Name/path to a .sto file of sensor frame orientations as quaternions.");
 
     OpenSim_DECLARE_PROPERTY(sensor_to_opensim_rotations, SimTK::Vec3,
             "Space fixed Euler angles (XYZ order) from IMU Space to OpenSim."
             " Default to (0, 0, 0).");
-
-    OpenSim_DECLARE_LIST_PROPERTY_SIZE(time_range, double, 2,
-        "The time range for the study.");
-
-    OpenSim_DECLARE_PROPERTY(constraint_weight, double,
-        "The relative weighting of kinematic constraint errors. By default this "
-        "is Infinity, which means constraints are strictly enforced as part of "
-        "the optimization and are not appended to the objective (cost) function. "
-        "Any other non-zero positive scalar is the penalty factor for constraint "
-        "violations.");
-
-    OpenSim_DECLARE_PROPERTY(accuracy, double,
-        "The accuracy of the solution in absolute terms, i.e. the number of "
-        "significant digits to which the solution can be trusted. Default 1e-6.");
-
-    OpenSim_DECLARE_PROPERTY(results_directory, std::string,
-        "Name of the directory where results are written. Be default this is "
-        "the directory in which the setup file is be  executed.");
-
-private:
-    
-    /** Pointer to the model being investigated. */
-    SimTK::ReferencePtr<Model> _model;
 
 //=============================================================================
 // METHODS
@@ -113,15 +83,10 @@ public:
     //--------------------------------------------------------------------------
     // INTERFACE
     //--------------------------------------------------------------------------
-    bool run(bool visualizeResults=false);
-
-    //---- Setters and getters for various attributes
-    void setModel(Model& aModel) { _model = &aModel; };
-    void setStartTime(double d) { upd_time_range(0) = d; };
-    double getStartTime() const {return  get_time_range(0); };
-
-    void setEndTime(double d) { upd_time_range(1) = d; };
-    double getEndTime() const {return  get_time_range(1); };
+    bool run(bool visualizeResults) SWIG_DECLARE_EXCEPTION;
+    bool run() override SWIG_DECLARE_EXCEPTION { 
+        return run(false);
+    };
 
     static TimeSeriesTable_<SimTK::Vec3>
         loadMarkersFile(const std::string& markerFile);
@@ -131,9 +96,6 @@ public:
 
 private:
     void constructProperties();
-    // Made private to be used as debugging tool until we have a final place for it.
-    void previewExperimentalData(const TimeSeriesTableVec3& markers,
-        const TimeSeriesTable_<SimTK::Rotation>& orientations) const;
 
 //=============================================================================
 };  // END of class IMUInverseKinematicsTool

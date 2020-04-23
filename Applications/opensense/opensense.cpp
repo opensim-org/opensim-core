@@ -40,8 +40,8 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/MarkersReference.h>
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
-#include <OpenSim/Simulation/OpenSense/IMUInverseKinematicsTool.h>
 #include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
+#include <OpenSim/Tools/IMUInverseKinematicsTool.h>
 
 #include <ctime>  // clock(), clock_t, CLOCKS_PER_SEC
 
