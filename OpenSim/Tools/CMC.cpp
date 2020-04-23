@@ -516,10 +516,10 @@ computeInitialStates(SimTK::State& s, double &rTI)
 
     double tiReal = rTI;
     if( _verbose ) {
-        log_info("CMC::computeInitialStates -- guess, ti = {}:", rTI);
-        log_info("  Q = {}", s.getQ().toString());
-        log_info("  U = {}", s.getU().toString());
-        log_info("  Z = {}", s.getZ().toString());
+        log_info("CMC::computeInitialStates, guess (ti = {}):", rTI);
+        log_info(" -- Q = {}", s.getQ().toString());
+        log_info(" -- U = {}", s.getU().toString());
+        log_info(" -- Z = {}", s.getZ().toString());
     }
 
 
@@ -554,20 +554,20 @@ computeInitialStates(SimTK::State& s, double &rTI)
 
     obtainActuatorEquilibrium(s,tiReal,0.200,xmin,true);
     if( _verbose ) {
-        log_info("CMC::computeInitialStates -- actuator equilibrium #1, ti = {}:", rTI);
-        log_info("  Q = {}", s.getQ().toString());
-        log_info("  U = {}", s.getU().toString());
-        log_info("  Z = {}", s.getZ().toString());
+        log_info("CMC::computeInitialStates, actuator equilibrium #1 (ti = {}):", rTI);
+        log_info(" -- Q = {}", s.getQ().toString());
+        log_info(" -- U = {}", s.getU().toString());
+        log_info(" -- Z = {}", s.getZ().toString());
     }
     restoreConfiguration( s, initialState ); // set internal coord,speeds to initial vals. 
 
     // 2
     obtainActuatorEquilibrium(s,tiReal,0.200,xmin,true);
     if( _verbose ) {
-        log_info("CMC::computeInitialStates -- actuator equilibrium #2, ti = {}:", rTI);
-        log_info("  Q = {}", s.getQ().toString());
-        log_info("  U = {}", s.getU().toString());
-        log_info("  Z = {}", s.getZ().toString());
+        log_info("CMC::computeInitialStates, actuator equilibrium #2 (ti = {}):", rTI);
+        log_info(" -- Q = {}", s.getQ().toString());
+        log_info(" -- U = {}", s.getU().toString());
+        log_info(" -- Z = {}", s.getZ().toString());
     }
     restoreConfiguration( s, initialState );
 
@@ -612,10 +612,10 @@ computeInitialStates(SimTK::State& s, double &rTI)
     setTargetDT(oldTargetDT);
     _model->updAnalysisSet().setOn(true);
     if( _verbose ) {
-        log_info("CMC::computeInitialStates -- final, ti = {}:", rTI);
-        log_info("  Q = {}", s.getQ().toString());
-        log_info("  U = {}", s.getU().toString());
-        log_info("  Z = {}", s.getZ().toString());
+        log_info("CMC::computeInitialStates, final (ti = {}):", rTI);
+        log_info(" -- Q = {}", s.getQ().toString());
+        log_info(" -- U = {}", s.getU().toString());
+        log_info(" -- Z = {}", s.getZ().toString());
     }
 }
 
@@ -704,7 +704,7 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
 
     log_info("CMC::computeControls, t = {}:", tiReal);
     if(_verbose) { 
-        log_info("  step size = {}, target time = {}", _targetDT, _tf);
+        log_info(" -- step size = {}, target time = {}", _targetDT, _tf);
     }
 
     // SET CORRECTIONS 
@@ -731,14 +731,14 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
     _predictor->getCMCActSubsys()->setSpeedCorrections(&uCorrection[0]);
 
     if( _verbose ) {
-        log_info("CMC::computeControls -- summary:");
-        log_info("  Q = {}", s.getQ().toString());
-        log_info("  U = {}", s.getU().toString());
-        log_info("  Z = {}", s.getZ().toString());
-        log_info("  Qdesired = {}", qDesired.toString());
-        log_info("  Udesired = {}", uDesired.toString());
-        log_info("  Qcorrection = {}", qCorrection.toString());
-        log_info("  Ucorrection = {}", uCorrection.toString());
+        log_info("CMC::computeControls, summary:");
+        log_info(" -- Q = {}", s.getQ().toString());
+        log_info(" -- U = {}", s.getU().toString());
+        log_info(" -- Z = {}", s.getZ().toString());
+        log_info(" -- Qdesired = {}", qDesired.toString());
+        log_info(" -- Udesired = {}", uDesired.toString());
+        log_info(" -- Qcorrection = {}", qCorrection.toString());
+        log_info(" -- Ucorrection = {}", uCorrection.toString());
     }
 
     // realize to Velocity because some tasks (eg. CMC_Point) need to be
@@ -920,8 +920,8 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
     Array<double> controls(0.0,N);
     controls = rootSolver.solve(s, xmin,xmax,tol);
     if(_verbose) {
-        log_info("CMC::computeControls -- root solve, tFinal = {}", _tf);
-        log_info("  controls = {}", _tf, controls.toString());
+        log_info("CMC::computeControls, root solve (tFinal = {}):", _tf);
+        log_info(" -- controls = {}", _tf, controls.toString());
     }
     
     // FILTER OSCILLATIONS IN CONTROL VALUES
