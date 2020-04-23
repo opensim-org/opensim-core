@@ -85,7 +85,7 @@ from the internet, we turn this option OFF." ON)
 set(SIMBODY_HOME $ENV{SIMBODY_HOME} CACHE
     PATH "The location of the Simbody installation to use; you can change this. Set as empty to let CMake search for Simbody automatically.")
 
-option(OPENSIM_COPY_DEPENDENCIES "Copy Simbody and BTK into the
+option(OPENSIM_COPY_DEPENDENCIES "Copy Simbody, ezc3d and BTK into the
 OpenSim installation. This should be set to ON when making a relocatable
 distribution, and should be set to OFF when packaging for Homebrew, Debian,
 etc. On Linux and macOS: we use relative RPATHs when ON, and absolute RPATHs
@@ -94,7 +94,7 @@ BUILD_PYTHON_WRAPPING is ON, so if this OFF, a warning is thrown." ON)
 mark_as_advanced(OPENSIM_COPY_DEPENDENCIES)
 
 option(OPENSIM_PYTHON_STANDALONE "Make the Python package standalone, meaning
-the OpenSim (and Simbody and BTK) shared libraries it depends on are copied
+the OpenSim (and Simbody, ezc3d and BTK) shared libraries it depends on are copied
 into the package. If you are building OpenSim on the same machine on which you
 plan to use it, you can leave this OFF. If you are distributing OpenSim to
 other computers, you should turn this ON. If macOS, this option affects how
@@ -465,6 +465,7 @@ if(${BUILD_PYTHON_WRAPPING})
         message(FATAL_ERROR "OPENSIM_PYTHON_VERSION should be '2' or '3'.")
     endif()
     find_package(PythonInterp ${required_python_version} REQUIRED)
+    find_package(NumPy REQUIRED)
 
     # We update the python install dir to include the python version,
     # now that we know it. We replace the token "VERSION" with the actual python
@@ -562,9 +563,9 @@ if(UNIX) # Linux and macOS
         # Add the automatically determined parts of the RPATH which point
         # to directories outside the build tree to the install RPATH.
         # If we are copying Simbody into OpenSim's installation, then
-        # there's no need to link to the libraries in Simbody's or BTK's
+        # there's no need to link to the libraries in Simbody's, ezc3d's or BTK's
         # original installations. Furthermore, we may be distributing OpenSim
-        # to other computers that will not have our original Simbody or BTK
+        # to other computers that will not have our original Simbody, ezc3d or BTK
         # installations, and so the RPATH would point to a nonexistant
         # directory on others' computers.
         set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
@@ -586,15 +587,41 @@ set(OPENSIM_DEPENDENCIES_DIR
     "Directory containing installed binaries of OpenSim dependencies. Set this
      only if you used the Superbuild procedure to install dependencies. ")
 
-set(WITH_BTK
-    OFF
-    CACHE
-    BOOL
-    "Compile OpenSim with BTK ? BTK provides C3D reading.")
+set(OPENSIM_C3D_PARSER None CACHE STRING
+    "Compile OpenSim with a C3D parser ? ezc3d or BTK provide C3D reading.")
+set_property(CACHE OPENSIM_C3D_PARSER PROPERTY STRINGS "ezc3d" "BTK" "None")
+if(${OPENSIM_C3D_PARSER} STREQUAL "ezc3d")
+    set(WITH_EZC3D true)
+    set(WITH_BTK false)
+    if(WIN32)
+        set(ezc3d_hint "${OPENSIM_DEPENDENCIES_DIR}/ezc3d/lib/cmake")
+    else()
+        set(ezc3d_hint "${OPENSIM_DEPENDENCIES_DIR}/ezc3d/lib/ezc3d/cmake")
+    endif()
+    find_package(ezc3d REQUIRED HINTS "${ezc3d_hint}")
+    add_definitions(-DWITH_EZC3D)
+    OpenSimCopyDependencyDLLsForWin(ezc3d "${ezc3d_LIBRARY_DIR}/../")
+    if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
+        OpenSimInstallDependencyLibraries(ezc3d "${ezc3d_LIBRARY_DIR}/../"
+            "${ezc3d_LIBRARY_DIR}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
+    endif()
+        
+    if(NOT WIN32)
+        # LIB: .so files on Linux, .dylib on macOS
+        file(GLOB ezc3d_desired_lib_files "${ezc3d_LIBRARY_DIR}/*ezc3d*")
+        install(FILES ${ezc3d_desired_lib_files}
+                DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+    endif()
 
-# If compiling with BTK, find and use it.
-if(WITH_BTK)
-    find_package(BTK 
+elseif(${OPENSIM_C3D_PARSER} STREQUAL "BTK")
+    set(WITH_EZC3D false)
+    unset(ezc3d_LIBRARY_DIR CACHE)
+    unset(ezc3d_LIBRARY)
+    unset(ezc3d_INCLUDE_DIR CACHE)
+    set(WITH_BTK true)
+
+    # If compiling with BTK, find and use it.
+    find_package(BTK
                  REQUIRED
                  HINTS "${OPENSIM_DEPENDENCIES_DIR}/BTK/share/btk-0.4dev")
     include(${BTK_USE_FILE})
@@ -604,6 +631,19 @@ if(WITH_BTK)
         OpenSimInstallDependencyLibraries(BTK "${BTK_INSTALL_PREFIX}"
             "${BTK_LIBRARY_DIRS}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
     endif()
+
+    if(NOT WIN32)
+        # LIB: .so files on Linux, .dylib on macOS
+        file(GLOB btk_desired_lib_files "${BTK_LIBRARY_DIRS}/*BTK*")
+        install(FILES ${btk_desired_lib_files}
+                DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+    endif()
+else()
+    set(WITH_EZC3D false)
+    unset(ezc3d_LIBRARY_DIR CACHE)
+    unset(ezc3d_LIBRARY)
+    unset(ezc3d_INCLUDE_DIR CACHE)
+    set(WITH_BTK false)
 endif()
 
 find_package(spdlog REQUIRED
@@ -759,16 +799,18 @@ if(${OPENSIM_COPY_DEPENDENCIES})
                 FILES_MATCHING PATTERN "*simbody-visualizer*")
     endif()
 
+    # EZC3D
+    # -----
+    if(NOT WIN32)
+        # LIB: .so files on Linux, .dylib on macOS
+        file(GLOB ezc3d_desired_lib_files "${ezc3d_LIBRARY_DIR}/*ezc3d*")
+        install(FILES ${ezc3d_desired_lib_files}
+                DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+    endif()
 
     # BTK
     # ---
-    if(WIN32)
-        file(GLOB btk_desired_dll_files "${BTK_INSTALL_DIR}/*BTK*.dll")
-        install(FILES ${btk_desired_dll_files}
-                DESTINATION "${CMAKE_INSTALL_BINDIR}")
-        # No need to copy *.lib on Windows, as BTK links "privately" to
-        # osimCommon (clients of osimCommon do not link to BTK).
-    else()
+    if(NOT WIN32)
         # LIB: .so files on Linux, .dylib on macOS
         file(GLOB btk_desired_lib_files "${BTK_LIBRARY_DIRS}/*BTK*")
         install(FILES ${btk_desired_lib_files}
