@@ -164,9 +164,26 @@ void IMUInverseKinematicsTool::runInverseKinematicsWithOrientationsFromFile(
     ikSolver.setAccuracy(accuracy);
 
     auto& times = oRefs.getTimes();
-
+    std::shared_ptr<TimeSeriesTable> modelOrientationErrors(
+            get_report_errors() ? new TimeSeriesTable()
+                                : nullptr);
     s0.updTime() = times[0];
     ikSolver.assemble(s0);
+    // Create place holder for orientation errors, populate based on user pref.
+    // according to report_errors property
+    int nos = ikSolver.getNumOrientationSensorsInUse();
+    SimTK::Array_<double> orientationErrors(nos, 0.0);
+
+    if (get_report_errors()) { 
+        SimTK::Array_<string> labels;
+        for (int i = 0; i < nos; ++i) {
+            labels.push_back(ikSolver.getOrientationSensorNameForIndex(i));
+        }
+        modelOrientationErrors->setColumnLabels(labels);
+        modelOrientationErrors->updTableMetaData().setValueForKey<string>(
+                "name", "OrientationErrors");
+        ikSolver.computeCurrentOrientationErrors(orientationErrors);
+    }
     if (visualizeResults) {
         model.getVisualizer().show(s0);
         model.getVisualizer().getSimbodyVisualizer().setShowSimTime(true);
@@ -174,6 +191,11 @@ void IMUInverseKinematicsTool::runInverseKinematicsWithOrientationsFromFile(
     for (auto time : times) {
         s0.updTime() = time;
         ikSolver.track(s0);
+        if (get_report_errors()) {
+            ikSolver.computeCurrentOrientationErrors(orientationErrors);
+            modelOrientationErrors->appendRow(
+                    s0.getTime(), orientationErrors);
+        }
         if (visualizeResults)  
             model.getVisualizer().show(s0);
         else
@@ -200,7 +222,11 @@ void IMUInverseKinematicsTool::runInverseKinematicsWithOrientationsFromFile(
 
     std::cout << "Wrote IK with IMU tracking results to: '" <<
         outputFile << "'." << std::endl;
-
+    if (get_report_errors()) {
+        STOFileAdapter_<double>::write(*modelOrientationErrors,
+                get_results_directory() + "/" +
+                        getName() + "_orientationErrors.sto");
+    }
     // Results written to file, clear in case we run again
     ikReporter->clearTable();
 }
