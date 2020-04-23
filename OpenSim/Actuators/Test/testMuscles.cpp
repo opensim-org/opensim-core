@@ -88,7 +88,8 @@ static const bool testEquilibriumMillard2012AccelerationMuscle = true;
     increase the number of sample points, particularly in the path
     lengths tested.
 
-    The parameters in this struct are used to configure the function
+    The parameters in this struct are used to configure the functions
+    runMuscleEquilibriumArchitectureAndStateSweep and
     runMuscleEquilibriumStateSweep which initializes a muscle across a range of
     activations, path lengths, and path speeds. The default values recommended
     for use in this struct will allow a large sampling of equilibrium tests to
@@ -100,15 +101,12 @@ static const bool testEquilibriumMillard2012AccelerationMuscle = true;
     curves (discontinuities or perhaps areas of high curvature) are identified
     here rather than by a user.
 
-active-force-length-curve, the passive
-    force-length-curve, the tendon-force-length curve, force-velocity
-    curve
-
-All combinations are tested so
-    the total number of equilibrium-initializations performed is given by the
-    product of activationSamplePoints, pathLengthSamplePoints, and
-    pathSpeedSamplePoints.
-
+    In addition, there is a crude test of the
+    quality of the equilibrium to see if the initialization method is trying
+    to distribute the velocity of the path between the tendon and the fiber.
+    This test is important because using a simple initialization method where
+    the fiber or tendon velocity is static results in large muscle state
+    transients at the beginning of of the simulation.
 
     @param minNormFiberLengthAlongTendon (recommend default : 0.)
       The desired normalized length of the fiber along the tendon at the
@@ -170,7 +168,7 @@ All combinations are tested so
 
         For the interested reader:
 
-        The parameter tendonScaling is an internally calculated scale factor
+        The parameter tendonSpeedScaling is an internally calculated scale factor
         that is set to max( tendonSlackLength/optimalFiberLength, 1). This extra
         scale factor is in place so that, no matter the muscle architecture, the
         fiber velocity will be sampled across its full range. If this still
@@ -178,7 +176,7 @@ All combinations are tested so
 
         Since the path speed distribution between fiber and tendon should vary
         as a function of muscle architecture (where longer tendons yield slower
-        fiber velocities) the scale factor tendonScaling is added with the
+        fiber velocities) the scale factor tendonSpeedScaling is added with the
         intent of ensuring the test samples across the minimum and maximum range
         of fiber velocities. Note that we cannot calculate the precise path
         speed required for a given target fiber speed because this calculation
@@ -211,13 +209,21 @@ All combinations are tested so
         runMuscleEquilibriumStateSweep.
 
     @param rejectStaticSolution (recommended default: true)
-        Though it is easier to solve the equilibrium problem by assuming
-        that the fiber velocity is zero, or the tendon velocity is zero, this
-        often results in a huge velocity and force transient at the beginning
-        of the simulation. If this flag is set to true then if the speed of
-        either the tendon or the fiber remains within
-        staticSolutionNormFiberVelocityTolerance (on every attempt) then an
-        exception will be raised and the test will fail.
+
+        This is a crude test of the quality of the equilbrium solution: an
+        initiziation of poor quality is one that results in a large muscle
+        state or force transient at the beginning of the simulation. This
+        typically happens when no effort is made to distribute the path
+        velocity between the fiber and the tendon.
+
+        If this flag is set to true, and every single sweep results in a
+        fiber, or tendon, velocity that is less than
+        staticSolutionNormVelocityTolerance an exception will be raised. If
+        at least one of the equilibrium attempts produces a fiber, or tendon,
+        velocity that is greater than staticSolutionNormVelocityTolerance then
+        this test will pass. This is why it is crude: now that you know how
+        this works do not cheat and set the fiber velocity by default to some
+        small value slightly larger than staticSolutionNormVelocityTolerance.
 
     @param staticSolutionNormVelocityTolerance (recommended default 0.001)
         If the fiber velocity on a single test is equal to or less than this
@@ -1580,11 +1586,11 @@ void runMuscleEquilibriumStateSweep(const Muscle &aMuscleModel,
     double vmax = optimalFiberLength*maxNormContractionVelocity;
     double tendonToFiberLengthRatio = tendonSlackLength/optimalFiberLength;
 
-    double vmaxScaled = vmax*std::max(1.0,tendonToFiberLengthRatio);
+    double tendonSpeedScaling = vmax*std::max(1.0,tendonToFiberLengthRatio);
 
-    double minPathVelocity    = -vmaxScaled*settings.normSpeedScaling;
-    double maxPathVelocity    =  vmaxScaled*settings.normSpeedScaling;
-    double pathSpeedTestInput =  maxPathVelocity*(4.0/11.);
+    double minPathSpeed    = -tendonSpeedScaling*settings.normSpeedScaling;
+    double maxPathSpeed    =  tendonSpeedScaling*settings.normSpeedScaling;
+    double pathSpeedTestInput =  maxPathSpeed*(4.0/11.);
 
     //==========================================================================
     // 1. Create the multibody model
@@ -1702,7 +1708,7 @@ void runMuscleEquilibriumStateSweep(const Muscle &aMuscleModel,
 
     double velocityDelta    =0;
     if(settings.pathSpeedSamplePoints > 1){
-        velocityDelta = (maxPathVelocity-minPathVelocity)
+        velocityDelta = (maxPathSpeed-minPathSpeed)
                         /(settings.pathSpeedSamplePoints-1);
     }
 
@@ -1748,7 +1754,7 @@ void runMuscleEquilibriumStateSweep(const Muscle &aMuscleModel,
             pathLengthSetting = minPathLength + j*lengthDelta;
 
             for(int k=0; k<settings.pathSpeedSamplePoints; ++k){
-                pathSpeedSetting = minPathVelocity + k*velocityDelta;
+                pathSpeedSetting = minPathSpeed + k*velocityDelta;
 
                 //Set the path length, path speed, and activation
                 sliderCoord.setDefaultValue(pathLengthSetting);
