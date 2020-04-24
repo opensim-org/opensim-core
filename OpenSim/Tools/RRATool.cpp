@@ -751,11 +751,15 @@ bool RRATool::run()
     struct tm *localTime;
     double elapsedTime;
     if( s.getNZ() > 0) { // If there are actuator states (i.e. muscles dynamics)
-        log_info("Computing initial values for muscles states (activation, "
-            "length)...");
+        log_info("-----------------------------------------------------------------");
+        log_info("Computing initial values for muscles states (activation, length):");
+        log_info("-----------------------------------------------------------------");
         time(&startTime);
         localTime = localtime(&startTime);
         log_info(" -- Start time = {}", asctime(localTime));
+        log_info("-----------------------------------------------------------------");
+        log_info("");
+
         try {
         controller->computeInitialStates(s,_ti);
         }
@@ -774,13 +778,18 @@ bool RRATool::run()
         time(&finishTime);
         // copy the final states from the last integration 
         s.updY() = cmcActSubsystem.getCompleteState().getY();
-        log_info("Finished computing initial states: ");
+        log_info("----------------------------------");
+        log_info("Finished computing initial states:");
+        log_info("----------------------------------");
         localTime = localtime(&startTime);
         log_info(" -- Start time = {}", asctime(localTime));
         localTime = localtime(&finishTime);
         log_info(" -- Finish time = {}", asctime(localTime));
         elapsedTime = difftime(finishTime,startTime);
         log_info(" -- Elapsed time = {} seconds.\n", elapsedTime);
+        log_info("----------------------------------");
+        log_info("");
+
     } else {
         cmcActSubsystem.setCompleteState( s );
         actuatorSystemState.updTime() = _ti; 
@@ -792,13 +801,17 @@ bool RRATool::run()
     }
 
     // ---- INTEGRATE ----
-    log_info("Using CMC to track the specified kinematics...");
+    log_info("--------------------------------------------");
+    log_info("Using CMC to track the specified kinematics:");
+    log_info("--------------------------------------------");
     log_info(" -- Integrating from {} to {}", _ti, _tf);
     s.updTime() = _ti;
     controller->setTargetTime( _ti );
     time(&startTime);
     localTime = localtime(&startTime);
     log_info(" -- Start time = {}", asctime(localTime));
+    log_info("--------------------------------------------");
+    log_info("");
 
     _model->getMultibodySystem().realize(s, Stage::Acceleration );
 
@@ -829,7 +842,9 @@ bool RRATool::run()
         return false;
     }
     time(&finishTime);
-    log_info("Finished tracking the specified kinematics.");
+    log_info("-------------------------------------------");
+    log_info("Finished tracking the specified kinematics:");
+    log_info("-------------------------------------------");
     if( _verbose ){
       log_info(" -- States = {}", s.getY());
     }
@@ -839,6 +854,8 @@ bool RRATool::run()
     log_info(" -- Finish time = {}", asctime(localTime));
     elapsedTime = difftime(finishTime,startTime);
     log_info(" -- Elapsed time = {} seconds.\n", elapsedTime);
+    log_info("-------------------------------------------");
+    log_info("");
 
     // ---- RESULTS -----
     printResults(getName(),getResultsDir()); // this will create results directory if necessary
@@ -913,18 +930,20 @@ bool RRATool::run()
 void RRATool::writeAdjustedModel() 
 {
     if(_outputModelFile=="") {
-        cerr<<"Warning: A name for the output model was not set.\n";
-        cerr<<"Specify a value for the property "<<_outputModelFileProp.getName();
-        cerr<<" in the setup file.\n";
+        stringstream ss;
+        ss << "Warning: A name for the output model was not set.\n";
+        ss << "Specify a value for the property "
+           << _outputModelFileProp.getName();
+        ss << " in the setup file.\n";
         if (getDocument()){
             string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
             _outputModelFile = directoryOfSetupFile+"adjusted_model.osim";
+        } else {
+            ss << "Writing to adjusted_model.osim ...\n\n";
+            _outputModelFile = "adjusted_model.osim";
         }
-        else{
-        cerr<<"Writing to adjusted_model.osim ...\n\n";
-        _outputModelFile = "adjusted_model.osim";
-    }
-        cerr<<"Writing to " <<_outputModelFile << " ...\n\n";
+        ss << "Writing to " <<_outputModelFile << " ...\n\n";
+        log_error(ss.str());
     }
 
     // Set the model's actuator set back to the original set.  e.g. in RRA1

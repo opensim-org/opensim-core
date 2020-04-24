@@ -516,10 +516,14 @@ computeInitialStates(SimTK::State& s, double &rTI)
 
     double tiReal = rTI;
     if( _verbose ) {
+        log_info("-------------------------------------------");
         log_info("CMC::computeInitialStates, guess (ti = {}):", rTI);
+        log_info("-------------------------------------------");
         log_info(" -- Q = {}", s.getQ());
         log_info(" -- U = {}", s.getU());
         log_info(" -- Z = {}", s.getZ());
+        log_info("-------------------------------------------");
+        log_info("");
     }
 
 
@@ -554,20 +558,28 @@ computeInitialStates(SimTK::State& s, double &rTI)
 
     obtainActuatorEquilibrium(s,tiReal,0.200,xmin,true);
     if( _verbose ) {
+        log_info("------------------------------------------------------------");
         log_info("CMC::computeInitialStates, actuator equilibrium #1 (ti = {}):", rTI);
+        log_info("------------------------------------------------------------");
         log_info(" -- Q = {}", s.getQ());
         log_info(" -- U = {}", s.getU());
         log_info(" -- Z = {}", s.getZ());
+        log_info("------------------------------------------------------------");
+        log_info("");
     }
     restoreConfiguration( s, initialState ); // set internal coord,speeds to initial vals. 
 
     // 2
     obtainActuatorEquilibrium(s,tiReal,0.200,xmin,true);
     if( _verbose ) {
+        log_info("------------------------------------------------------------");
         log_info("CMC::computeInitialStates, actuator equilibrium #2 (ti = {}):", rTI);
+        log_info("------------------------------------------------------------");
         log_info(" -- Q = {}", s.getQ());
         log_info(" -- U = {}", s.getU());
         log_info(" -- Z = {}", s.getZ());
+        log_info("------------------------------------------------------------");
+        log_info("");
     }
     restoreConfiguration( s, initialState );
 
@@ -612,10 +624,14 @@ computeInitialStates(SimTK::State& s, double &rTI)
     setTargetDT(oldTargetDT);
     _model->updAnalysisSet().setOn(true);
     if( _verbose ) {
+        log_info("-------------------------------------------");
         log_info("CMC::computeInitialStates, final (ti = {}):", rTI);
+        log_info("-------------------------------------------");
         log_info(" -- Q = {}", s.getQ());
         log_info(" -- U = {}", s.getU());
         log_info(" -- Z = {}", s.getZ());
+        log_info("-------------------------------------------");
+        log_info("");
     }
 }
 
@@ -706,6 +722,7 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
     if(_verbose) { 
         log_info(" -- step size = {}, target time = {}", _targetDT, _tf);
     }
+    log_info("");
 
     // SET CORRECTIONS 
     int nq = _model->getNumCoordinates();
@@ -731,7 +748,9 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
     _predictor->getCMCActSubsys()->setSpeedCorrections(&uCorrection[0]);
 
     if( _verbose ) {
+        log_info("------------------------------");
         log_info("CMC::computeControls, summary:");
+        log_info("------------------------------");
         log_info(" -- Q = {}", s.getQ());
         log_info(" -- U = {}", s.getU());
         log_info(" -- Z = {}", s.getZ());
@@ -739,6 +758,8 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
         log_info(" -- Udesired = {}", uDesired);
         log_info(" -- Qcorrection = {}", qCorrection);
         log_info(" -- Ucorrection = {}", uCorrection);
+        log_info("------------------------------");
+        log_info("");
     }
 
     // realize to Velocity because some tasks (eg. CMC_Point) need to be
@@ -764,6 +785,7 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
                         pErr[e], vErr[e]);
                 e++;
             }
+            log_info("");
         }
     }
 
@@ -802,6 +824,7 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
         if(_verbose) {
             log_info("Setting stress term weight to {} (relativeTau was {}).",
                 stressTermWeight, relativeTau);
+            log_info("");
         }
         realTarget->setStressTermWeight(stressTermWeight);
 
@@ -821,6 +844,7 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
     if(_verbose) {
         log_info("xmin: {}", xmin);
         log_info("xmax: {}", xmax);
+        log_info("");
     }
 
     // COMPUTE BOUNDS ON MUSCLE FORCES
@@ -838,6 +862,7 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
         log_info("tiReal = {}, tfReal = {}", tiReal, tfReal);
         log_info("Min forces: {}", fmin);
         log_info("Max forces: {}", fmax);
+        log_info("");
     }
 
     // Print actuator force range if range is small
@@ -847,6 +872,7 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
         if(range<1.0) {
             log_warn("CMC::computeControls: small force range for {} ({} to {})",
                 getActuatorSet()[i].getName(), fmin[i], fmax[i]);
+            log_info("");
 
             // if the force range is so small it means the control value, x, 
             // is inconsequential and we might as well choose the smallest control
@@ -896,6 +922,7 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
             msg << "Possible issues: 1. not all model degrees-of-freedom are actuated, " << endl;
             msg << "2. there are tracking tasks for locked coordinates, and/or" << endl;
             msg << "3. there are unnecessary control constraints on reserve/residual actuators." << endl;
+            msg << endl;
                    
             log_error(msg.str());
 
@@ -909,6 +936,7 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
 
     if(_verbose) {
         log_info("Desired actuator forces: {}", _f);
+        log_info("");
     }
 
 
@@ -922,6 +950,7 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
     if(_verbose) {
         log_info("CMC::computeControls, root solve (tFinal = {}):", _tf);
         log_info(" -- controls = {}", _tf, controls);
+        log_info("");
     }
     
     // FILTER OSCILLATIONS IN CONTROL VALUES
@@ -1002,12 +1031,14 @@ FilterControls(const SimTK::State& s, const ControlSet &aControlSet,double aDT,
     if(aDT <= SimTK::Zero) {
         if(aVerbosePrinting) {
             log_info("CMC::filterControls: aDT is practically 0.0, skipping!");
+            log_info("");
         }
         return;
     }
 
     if(aVerbosePrinting) {
         log_info("Filtering controls to limit curvature...");
+        log_info("");
     }
 
     int i;
@@ -1054,6 +1085,7 @@ FilterControls(const SimTK::State& s, const ControlSet &aControlSet,double aDT,
         if(aVerbosePrinting) {
             log_info("ControlSet '{}': old = {}, new = {}", 
                     aControlSet[i].getName(), x2[i], rControls[i]);
+            log_info("");
         }
     }
 }
@@ -1144,8 +1176,6 @@ void CMC::extendAddToSystem( SimTK::MultibodySystem& system)  const
         if(musc){
             control->setUseSteps(true);
             if(xmin < MIN_CMC_CONTROL_VALUE){
-
-
                 log_warn("CMC::extendAddToSystem: CMC cannot compute controls for muscles with muscle controls less than {}.", MIN_CMC_CONTROL_VALUE);
                 log_warn("CMC::extendAddToSystem: The minimum control limit for muscle '{}' has been reset to {}.", musc->getName(), MIN_CMC_CONTROL_VALUE);
                 xmin = MIN_CMC_CONTROL_VALUE;
