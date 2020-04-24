@@ -18,8 +18,8 @@ endif()
 OpenSimAddLibrary(
     KIT Common
     AUTHORS "Clay_Anderson-Ayman_Habib-Peter_Loan"
-    # Clients of osimCommon need not link to BTK.
-    LINKLIBS PUBLIC ${Simbody_LIBRARIES} spdlog::spdlog 
+    # Clients of osimCommon need not link to BTK or ezc3d.
+    LINKLIBS PUBLIC ${Simbody_LIBRARIES} spdlog::spdlog
              PRIVATE ${BTK_LIBRARIES} ${ezc3d_LIBRARY}
     INCLUDES ${INCLUDES}
     SOURCES ${SOURCES}
