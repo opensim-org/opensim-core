@@ -169,6 +169,7 @@ AddDependency(NAME       docopt
 
 
 AddDependency(NAME       spdlog
+              DEFAULT    ON
               URL        https://github.com/gabime/spdlog.git
               TAG        v1.4.1
               CMAKE_ARGS -DSPDLOG_BUILD_BENCH:BOOL=OFF
