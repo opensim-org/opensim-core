@@ -128,6 +128,7 @@ class TestBasics {
       testMuscleList();
       testToyReflexController();
       testScaleToolUtils();
+      testLogSink();
 
       System.out.println("Test finished!");
       // TODO to cause test to fail: System.exit(-1);
