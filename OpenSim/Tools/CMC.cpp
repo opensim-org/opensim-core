@@ -517,9 +517,9 @@ computeInitialStates(SimTK::State& s, double &rTI)
     double tiReal = rTI;
     if( _verbose ) {
         log_info("CMC::computeInitialStates, guess (ti = {}):", rTI);
-        log_info(" -- Q = {}", s.getQ().toString());
-        log_info(" -- U = {}", s.getU().toString());
-        log_info(" -- Z = {}", s.getZ().toString());
+        log_info(" -- Q = {}", s.getQ());
+        log_info(" -- U = {}", s.getU());
+        log_info(" -- Z = {}", s.getZ());
     }
 
 
@@ -555,9 +555,9 @@ computeInitialStates(SimTK::State& s, double &rTI)
     obtainActuatorEquilibrium(s,tiReal,0.200,xmin,true);
     if( _verbose ) {
         log_info("CMC::computeInitialStates, actuator equilibrium #1 (ti = {}):", rTI);
-        log_info(" -- Q = {}", s.getQ().toString());
-        log_info(" -- U = {}", s.getU().toString());
-        log_info(" -- Z = {}", s.getZ().toString());
+        log_info(" -- Q = {}", s.getQ());
+        log_info(" -- U = {}", s.getU());
+        log_info(" -- Z = {}", s.getZ());
     }
     restoreConfiguration( s, initialState ); // set internal coord,speeds to initial vals. 
 
@@ -565,9 +565,9 @@ computeInitialStates(SimTK::State& s, double &rTI)
     obtainActuatorEquilibrium(s,tiReal,0.200,xmin,true);
     if( _verbose ) {
         log_info("CMC::computeInitialStates, actuator equilibrium #2 (ti = {}):", rTI);
-        log_info(" -- Q = {}", s.getQ().toString());
-        log_info(" -- U = {}", s.getU().toString());
-        log_info(" -- Z = {}", s.getZ().toString());
+        log_info(" -- Q = {}", s.getQ());
+        log_info(" -- U = {}", s.getU());
+        log_info(" -- Z = {}", s.getZ());
     }
     restoreConfiguration( s, initialState );
 
@@ -613,9 +613,9 @@ computeInitialStates(SimTK::State& s, double &rTI)
     _model->updAnalysisSet().setOn(true);
     if( _verbose ) {
         log_info("CMC::computeInitialStates, final (ti = {}):", rTI);
-        log_info(" -- Q = {}", s.getQ().toString());
-        log_info(" -- U = {}", s.getU().toString());
-        log_info(" -- Z = {}", s.getZ().toString());
+        log_info(" -- Q = {}", s.getQ());
+        log_info(" -- U = {}", s.getU());
+        log_info(" -- Z = {}", s.getZ());
     }
 }
 
@@ -732,13 +732,13 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
 
     if( _verbose ) {
         log_info("CMC::computeControls, summary:");
-        log_info(" -- Q = {}", s.getQ().toString());
-        log_info(" -- U = {}", s.getU().toString());
-        log_info(" -- Z = {}", s.getZ().toString());
-        log_info(" -- Qdesired = {}", qDesired.toString());
-        log_info(" -- Udesired = {}", uDesired.toString());
-        log_info(" -- Qcorrection = {}", qCorrection.toString());
-        log_info(" -- Ucorrection = {}", uCorrection.toString());
+        log_info(" -- Q = {}", s.getQ());
+        log_info(" -- U = {}", s.getU());
+        log_info(" -- Z = {}", s.getZ());
+        log_info(" -- Qdesired = {}", qDesired);
+        log_info(" -- Udesired = {}", uDesired);
+        log_info(" -- Qcorrection = {}", qCorrection);
+        log_info(" -- Ucorrection = {}", uCorrection);
     }
 
     // realize to Velocity because some tasks (eg. CMC_Point) need to be
@@ -819,8 +819,8 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
     }
 
     if(_verbose) {
-        log_info("xmin: {}", xmin.toString());
-        log_info("xmax: {}", xmax.toString());
+        log_info("xmin: {}", xmin);
+        log_info("xmax: {}", xmax);
     }
 
     // COMPUTE BOUNDS ON MUSCLE FORCES
@@ -836,8 +836,8 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
     
      if(_verbose) {
         log_info("tiReal = {}, tfReal = {}", tiReal, tfReal);
-        log_info("Min forces: {}", fmin.toString());
-        log_info("Max forces: {}", fmax.toString());
+        log_info("Min forces: {}", fmin);
+        log_info("Max forces: {}", fmax);
     }
 
     // Print actuator force range if range is small
@@ -908,7 +908,7 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
     if(_verbose) _target->printPerformance(&_f[0]);
 
     if(_verbose) {
-        log_info("Desired actuator forces: {}", _f.toString());
+        log_info("Desired actuator forces: {}", _f);
     }
 
 
@@ -921,7 +921,7 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
     controls = rootSolver.solve(s, xmin,xmax,tol);
     if(_verbose) {
         log_info("CMC::computeControls, root solve (tFinal = {}):", _tf);
-        log_info(" -- controls = {}", _tf, controls.toString());
+        log_info(" -- controls = {}", _tf, controls);
     }
     
     // FILTER OSCILLATIONS IN CONTROL VALUES

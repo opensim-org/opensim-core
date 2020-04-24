@@ -261,16 +261,6 @@ friend std::ostream& operator<<(std::ostream &aOut,const Array<T> &aArray)
     return(aOut);
 }
 
-/* toString() returns a string representation of the %Array. Please refer
- * to operator<< for details. 
- * Implementation borrowed from SimTK::Vector_.   
- */
-std::string toString() const {
-    std::stringstream stream;
-    stream << (*this);
-    return stream.str();
-}
-
 friend
 std::istream& operator>>(std::istream& in, Array<T>& out) 
 {   

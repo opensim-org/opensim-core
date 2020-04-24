@@ -698,7 +698,7 @@ bool CMCTool::run()
     SimTK::OptimizerAlgorithm algorithm = SimTK::InteriorPoint;
     if(IO::Uppercase(_optimizerAlgorithm) == "CFSQP") {
         if(!SimTK::Optimizer::isAlgorithmAvailable(SimTK::CFSQP)) {
-            log_info("CFSQP optimizer algorithm unavailable. Will try to use "
+            log_warn("CFSQP optimizer algorithm unavailable. Will try to use "
                 "IPOPT instead.");
             algorithm = SimTK::InteriorPoint;
         } else {

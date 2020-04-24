@@ -831,7 +831,7 @@ bool RRATool::run()
     time(&finishTime);
     log_info("Finished tracking the specified kinematics.");
     if( _verbose ){
-      log_info(" -- States = {}", s.getY().toString());
+      log_info(" -- States = {}", s.getY());
     }
     localTime = localtime(&startTime);
     log_info(" -- Start time = {}", asctime(localTime));
