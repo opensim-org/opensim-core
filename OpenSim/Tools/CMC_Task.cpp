@@ -901,8 +901,8 @@ getAcceleration(int aWhich) const
 void CMC_Task::
 computeJacobian()
 {
-    printf("CMC_Task.computeJacobian: ERROR- this method should be ");
-    printf("overridden in derived classes.\n");
+    log_error("CMC_Task::computeJacobian: This method should be overridden in "
+        "derived classes.");
 }
 
 //-----------------------------------------------------------------------------
@@ -915,6 +915,6 @@ computeJacobian()
 void CMC_Task::
 computeEffectiveMassMatrix()
 {
-    printf("CMC_Task.computeEffectiveMassMatrix: ERROR- this method ");
-    printf("should be overridden in derived classes.\n");
+    log_error("CMC_Task::computeEffectiveMassMatrix: This method should be "
+        "overridden in derived classes.");
 }

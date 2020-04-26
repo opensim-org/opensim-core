@@ -27,6 +27,7 @@
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <string>
+#include <spdlog/fmt/ostr.h> 
 
 namespace OpenSim {
 

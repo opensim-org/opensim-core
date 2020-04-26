@@ -31,6 +31,7 @@
 #include "osimCommonDLL.h"
 #include <iostream>
 #include "Logger.h"
+#include <sstream>
 
 static const int Array_CAPMIN = 1;
 
