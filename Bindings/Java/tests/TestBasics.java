@@ -105,7 +105,7 @@ class TestBasics {
         final boolean[] sinkImplInvoked = new boolean[1];
         sinkImplInvoked[0] = false;
         class MyJavaLogSink extends LogSink {
-            protected void sinkImpl(final String msg) {
+            protected void sinkImpl(String msg) {
                 System.out.println("MyJavaLogSink.sinkImpl " + msg);
                 sinkImplInvoked[0] = true;
             }
@@ -128,6 +128,7 @@ class TestBasics {
       testMuscleList();
       testToyReflexController();
       testScaleToolUtils();
+      testLogSink();
 
       System.out.println("Test finished!");
       // TODO to cause test to fail: System.exit(-1);
