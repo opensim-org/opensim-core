@@ -406,7 +406,7 @@ namespace OpenSim {
 %include <OpenSim/Common/CSVFileAdapter.h>
 %include <OpenSim/Common/XsensDataReader.h>
 
-#ifdef WITH_BTK
+#if defined WITH_EZC3D || defined (WITH_BTK)
 %include <OpenSim/Common/C3DFileAdapter.h>
 
 %extend OpenSim::C3DFileAdapter {
