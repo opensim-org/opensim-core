@@ -1,6 +1,5 @@
 
 %feature("director") OpenSim::AnalysisWrapper;
-%feature("director") OpenSim::SimtkLogCallback;
 %feature("director") OpenSim::LogSink;
 %feature("notabstract") ControlLinear;
 
