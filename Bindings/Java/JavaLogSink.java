@@ -31,7 +31,7 @@ import org.opensim.modeling.*;
 Logger.addSink(JavaLogSink());
 */
 public class JavaLogSink extends LogSink {
-  protected void sinkImpl(final String msg) {
+  protected void sinkImpl(String msg) {
     System.out.println(msg);
   }
 }
