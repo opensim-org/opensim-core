@@ -244,16 +244,14 @@ void ControlSetController::extendFinalizeFromProperties()
             //TODO: Should throw a specific "UnaccessibleControlFileException"
             //testSerializeOpenSimObjects should not expect to just add garbage filled
             //objects (components) to a model and expect to serialize- must be changed!
-            log_error("{}", msg);
+            log_error(msg);
         }
     }
 
     if (loadedControlSet && _controlSet) {
         log_warn("ControlSetController::extendFinalizeFromProperties '{}' "
-                 "loaded",
-                _controlsFileName);
-        log_warn("and will replace existing ControlSet '{}'.",
-            _controlSet->getName());
+                 "loaded and will replace existing ControlSet '{}'.",
+                _controlsFileName, _controlSet->getName());
         delete _controlSet;
     }
 

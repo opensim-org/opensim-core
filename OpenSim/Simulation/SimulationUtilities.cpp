@@ -44,7 +44,7 @@ SimTK::State OpenSim::simulate(Model& model,
     // Ensure the final time is in the future.
     const double initialTime = initialState.getTime();
     if (finalTime <= initialTime) {
-        log_error("The final time must be in the future (current time is {} ) simulation aborted.",
+        log_error("The final time must be in the future (current time is {}) simulation aborted.",
             initialTime);
         return state;
     }

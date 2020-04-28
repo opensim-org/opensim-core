@@ -578,9 +578,9 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName,
     catch (const Exception &ex) {
         // Important to catch exceptions here so we can restore current working directory...
         // And then we can re-throw the exception
-        log_error("Error: failed to construct ExternalLoads from file {} ", aExternalLoadsFileName);
-        log_error( ". Please make sure the file exists and that it contains an ExternalLoads");
-        log_error( "object or create a fresh one.");
+        log_error("Failed to construct ExternalLoads from file {}." 
+            " Please make sure the file exists and that it contains an ExternalLoads"
+            " object or create a fresh one.", aExternalLoadsFileName);
         throw(ex);
     }
 
@@ -782,8 +782,8 @@ void AbstractTool::loadQStorage (const std::string& statesFileName, Storage& rQS
         Storage temp(statesFileName);
         _model->formQStorage(temp, rQStore);
 
-        log_info("Found {} q's with time stamps ranging", rQStore.getSize());
-        log_info("from {} to {}.", rQStore.getFirstTime(), rQStore.getLastTime());
+        log_info("Found {} q's with time stamps ranging from {} to {}.", 
+            rQStore.getSize(), rQStore.getFirstTime(), rQStore.getLastTime());
     }
 }
 //_____________________________________________________________________________

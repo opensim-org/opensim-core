@@ -737,7 +737,7 @@ const SimTK::State& Manager::integrate(double finalTime)
         else if (_integ->isSimulationOver() &&
                     _integ->getTerminationReason() !=
                         SimTK::Integrator::ReachedFinalTime) {
-            log_cout ("Integration failed due to the following reason: {}",
+            log_error("Integration failed due to the following reason: {}",
                 _integ->getTerminationReasonString(_integ->getTerminationReason()));
             return getState();
         }

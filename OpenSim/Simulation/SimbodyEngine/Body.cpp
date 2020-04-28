@@ -148,7 +148,7 @@ const SimTK::Inertia& Body::getInertia() const
                 // of the toes Body. We cannot allow failures with our models so 
                 // raise a warning and do something sensible with the values at hand.
                 log_warn("Body {} has invalid inertia. ", getName());
-                log_cout(ex.what());
+                log_error(ex.what());
 
                 // get some aggregate value for the inertia based on existing values
                 double diag = Ivec.getSubVec<3>(0).norm()/sqrt(3.0);

@@ -674,17 +674,16 @@ simplify(const PropertySet &aProperties)
     int order = 50;
     if(order>(n/2)) order = n/2;
     if(order<10) {
-        log_warn("ControlLinear.simplify: WARN- too few data points (n={}) to filter {}.",
+        log_warn("ControlLinear.simplify: too few data points (n={}) to filter {}.",
             n, getName());
     } else {
         if(order<20) {
-            log_warn("ControlLinear.simplify: WARN- order of FIR filter had to be ");
-            log_warn("low due to small number of data points (n={}) in control {}.",
+            log_warn("ControlLinear.simplify:  order of FIR filter had to be"
+                " low due to small number of data points (n={}) in control {}.",
                 n, getName());
         }
         log_info("ControlLinear.simplify: lowpass filtering with a cutoff "
-                 "frequency of {}", cutoffFrequency);
-        log_info(" and order of {}.", order); 
+                 "frequency of {} and order of {}.", cutoffFrequency, order); 
         Signal::LowpassFIR(order,dtMin,cutoffFrequency,n,&x[0],&xFilt[0]);
     }
 
