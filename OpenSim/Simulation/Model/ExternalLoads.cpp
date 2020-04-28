@@ -189,8 +189,8 @@ void ExternalLoads::extendConnectToModel(Model& aModel)
                 forceData = new Storage(this->_dataFileName);
             }
             catch (const std::exception &ex) {
-                cout << "Error: failed to read ExternalLoads data file '"
-                    << this->_dataFileName <<"'." << endl;
+                log_error("Failed to read ExternalLoads data file '{}'.",
+                        this->_dataFileName);
                 if (this->getDocument())
                     IO::chDir(savedCwd);
                 throw(ex);
@@ -270,17 +270,21 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(
         throw Exception("ExternalLoads::transformPointExpressedInGroundToAppliedBody() requires a model with a valid system."); 
 
     if(!exForce._specifiesPoint){ // The external force does not apply a force to a point
-        cout << "ExternalLoads: WARNING ExternalForce '"<< exForce.getName() <<"' does not specify a point of application." << endl;
+        log_warn("ExternalLoads: ExternalForce '{}' does not specify a point of application.",
+            exForce.getName());
         return NULL;
     }
 
     if (exForce.getPointExpressedInBodyName() != getModel().getGround().getName()){
-        cout << "ExternalLoads: WARNING ExternalForce '"<< exForce.getName() <<"' is not expressed in ground and will not be transformed." << endl;
+        log_warn("ExternalLoads: ExternalForce '{}' is not expressed in ground "
+                 "and will not be transformed.",
+                exForce.getName());
         return NULL;
     }
 
     if (exForce.getAppliedToBodyName() == getModel().getGround().getName()){
-        cout << "ExternalLoads: WARNING ExternalForce '"<< exForce.getName() <<"' is applied to a point on ground and will not be transformed." << endl;
+        log_warn("ExternalLoads: ExternalForce '{}' is applied to a point on ground and will not be transformed.",
+            exForce.getName());
         return NULL;
     }
 
@@ -305,8 +309,9 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(
         }
     }
     else{
-        cout << "ExternalLoads: WARNING specified load kinematics contains no coordinate values. " 
-            << "Point of force application cannot be transformed." << endl;
+        log_warn("ExternalLoads: Specified load kinematics contains no "
+                 "coordinate values. "
+                 "Point of force application cannot be transformed.");
         return NULL;
     }
 
@@ -420,8 +425,7 @@ void ExternalLoads::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
 {
     int documentVersion = versionNumber;
     if ( documentVersion < 20301){
-        if (Object::getDebugLevel()>=1)
-            cout << "Updating ExternalLoad object to latest format..." << endl;
+        log_debug("Updating ExternalLoad object to latest format...");
         _dataFileName="";
         SimTK::Xml::element_iterator dataFileElementIter =aNode.element_begin("datafile");
         if(dataFileElementIter!=aNode.element_end()) {
@@ -445,8 +449,8 @@ void ExternalLoads::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
             // Change to directory of Document
             if(!ifstream(_dataFileName.c_str(), ios_base::in).good()) {
             string msg =
-                    "Object: ERR- Could not open file " + _dataFileName+ "IO. It may not exist or you don't have permission to read it.";
-                cout << msg;
+                    "Object: Could not open file " + _dataFileName+ "IO. It may not exist or you don't have permission to read it.";
+                log_error(msg);
                 // Try switching to directory of setup file before aborting
                 if(getDocument()) {
                     savedCwd = IO::getCwd();
@@ -460,7 +464,7 @@ void ExternalLoads::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
             }
             Storage* dataSource = new Storage(_dataFileName, true);
             if (!dataSource->makeStorageLabelsUnique()){
-                cout << "Making labels unique in storage file "<< _dataFileName << endl;
+                log_info("Making labels unique in storage file {}", _dataFileName);
                 dataSource = new Storage(_dataFileName);
                 dataSource->makeStorageLabelsUnique();
                 dataSource->print(_dataFileName);
