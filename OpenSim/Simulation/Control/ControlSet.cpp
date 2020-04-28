@@ -581,7 +581,7 @@ getParameterMins(Array<double> &rMins,const Array<int> *aList) const
             try {
                 c = _ptcMap.get(sp);
             } catch(const Exception& x) {
-                x.print(cout);
+                log_error("Exception: {}", x.getMessage());
                 continue;
             }
             Control& control = get(c);
@@ -632,7 +632,7 @@ getParameterMaxs(Array<double> &rMaxs,const Array<int> *aList) const
             try {
                 c = _ptcMap.get(sp);
             } catch(const Exception& x) {
-                x.print(cout);
+                log_error("Exception: {}", x.getMessage());
                 continue;
             }
             Control& control = get(c);
@@ -686,7 +686,7 @@ getParameterValues(double rP[],const Array<int> *aList) const
             try {
                 c = _ptcMap.get(sp);
             } catch(const Exception& x) {
-                x.print(cout);
+                log_error("Exception: {}", x.getMessage());
                 continue;
             }
             Control& control = get(c);
@@ -737,7 +737,7 @@ getParameterValues(Array<double> &rP,const Array<int> *aList) const
             try {
                 c = _ptcMap.get(sp);
             } catch(const Exception& x) {
-                x.print(cout);
+                log_error("Exception: {}", x.getMessage());
                 continue;
             }
             Control& control = get(c);
@@ -788,7 +788,7 @@ setParameterValues(const double *aP,const Array<int> *aList)
             try {
                 c = _ptcMap.get(sp);
             } catch(const Exception& x) {
-                x.print(cout);
+                log_error("Exception: {}", x.getMessage());
                 continue;
             }
             Control& control = get(c);
@@ -852,7 +852,7 @@ setParameterValues(const Array<double> &aP,const Array<int> *aList)
             try {
                 c = _ptcMap.get(sp);
             } catch(const Exception& x) {
-                x.print(cout);
+                log_error("Exception: {}", x.getMessage());
                 continue;
             }
             Control& control = get(c);
@@ -893,7 +893,7 @@ simplify(const PropertySet &aProperties)
         try {
             control.simplify(aProperties);
         } catch(const Exception& x) {
-            x.print(cout);
+            log_error("Exception: {}", x.getMessage());
         }
     }
 }
@@ -924,7 +924,7 @@ filter(double aT)
                 control.filter(aT);
             }
         } catch(const Exception& x) {
-            x.print(cout);
+            log_error("Exception: {}", x.getMessage());
         }
     }
 }
