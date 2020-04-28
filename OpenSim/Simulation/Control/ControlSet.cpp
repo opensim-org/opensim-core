@@ -117,7 +117,6 @@ ControlSet::ControlSet(const Storage& aStorage, int numControls, int startIndex)
     }
     for(j=0;j<nControls;j++) {
 
-        //cout << "Process column number " << j+startIndex << endl;
         // EXTRACT CONTROL NODE
         control = ExtractControl(aStorage,j+startIndex);
 
@@ -1047,10 +1046,8 @@ ControlSet::ExtractControl(const Storage& storage,int index)
 {
     int i;
 
-    // cout << "index=" << index << endl;
     // NAME ATTRIBUTE
     const Array<std::string> &columnLabels = storage.getColumnLabels();
-    // cout << "colabels size=" << columnLabels.getSize() << endl;
     std::string colName = columnLabels.get(index+1);
 
     // TIME

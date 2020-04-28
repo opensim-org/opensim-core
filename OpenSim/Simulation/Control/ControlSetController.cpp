@@ -186,7 +186,6 @@ double ControlSetController::getFirstTime() const {
     Array<int> controlList;
    SimTK_ASSERT( _controlSet , "ControlSetController::getFirstTime controlSet is NULL");
 
-//    std::cout << " ncontrols= "<< _controlSet->getSize() << std::endl<<std::endl;
     _controlSet->getControlList( "ControlLinear" , controlList );
     
     if( controlList.getSize() < 1 ) {
