@@ -118,7 +118,7 @@ void ExternalForce::setDataSource(const Storage &dataSource)
 { 
     _dataSource = &dataSource;
 
-    log_debug("ExternalForce::{} Data source being set to {}", 
+    log_info("ExternalForce::{} Data source being set to {}", 
         getName(), _dataSource->getName());   
 
     set_data_source_name(_dataSource->getName());

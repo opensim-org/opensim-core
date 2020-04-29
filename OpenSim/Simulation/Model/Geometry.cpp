@@ -275,7 +275,7 @@ void Mesh::extendFinalizeFromProperties() {
             
             if (!isAbsolutePath &&
                 !Pathname::environmentVariableExists("OPENSIM_HOME"))
-                log_debug("Set environment variable OPENSIM_HOME  to search $OPENSIM_HOME/Geometry.");
+                log_debug("Set environment variable OPENSIM_HOME to search $OPENSIM_HOME/Geometry.");
             return;
         }
 
@@ -287,7 +287,7 @@ void Mesh::extendFinalizeFromProperties() {
             // it will be handled downstream 
         }
         catch (const std::exception& e) {
-            log_warn("Visualizer couldn't open {}  because: {}",
+            log_warn("Visualizer couldn't open {} because: {}",
                 attempts.back(), e.what());
             return;
         }
