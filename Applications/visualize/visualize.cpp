@@ -38,6 +38,8 @@
 using namespace OpenSim;
 using namespace SimTK;
 using namespace std;
+
+static void PrintUsage(const char* aProgName, ostream& aOStream);
 //______________________________________________________________________________
 /**
  * First exercise: create a model that does nothing. 
@@ -52,12 +54,44 @@ int main(int argc, char **argv)
             cout << "Filename needs to be specified or passed in.\n\n";
             return 1;
         }
+        string option = "";
+        for (int i = 1; i <= (argc - 1); i++) {
+            option = argv[i];
+            if ((option == "-help") || (option == "-h") ||
+                    (option == "-Help") || (option == "-H") ||
+                    (option == "-usage") || (option == "-u") ||
+                    (option == "-Usage") || (option == "-U")) {
+                PrintUsage(argv[0], cout);
+                return 0;
+            } else if ((option == "-M") || (option == "-Model")) {
+                // Check we're not out of range of argc before indexing
+                auto modelFile = argv[i + 1];
+                std::string geomertySearchPath = "";
+                if (argc >= 5) {
+                    string nextArg(argv[i + 2]);
+                    if (nextArg == "-G") {
+                        geomertySearchPath = string(argv[i + 3]);
+                    }
+                }
+                Model m(modelFile);
+                VisualizerUtilities::showModel(m, geomertySearchPath);
+                return 0;
+            }
+            /*
+            std::string modelFile = std::string(argv[1]);
+            Model model(modelFile);
+            std::string resultFile = std::string(argv[2]);
+            Storage sto(resultFile);
+            VisualizerUtilities::showMotion(model, sto);
+            */
 
-        std::string modelFile = std::string(argv[1]);
-        Model osimModel(modelFile);
-        VisualizerUtilities::showModel(osimModel);
+            std::string orientationsFile = std::string(argv[1]);
+            TimeSeriesTableQuaternion quatTable(orientationsFile);
+            int layout = 2;
+            if (argc == 3) layout = std::stoi(argv[2]);
+            VisualizerUtilities::showOrientationData(quatTable, layout);
+        }
     }
-
     catch (const std::exception& ex)
     {
         std::cout << ex.what() << std::endl;
@@ -70,4 +104,18 @@ int main(int argc, char **argv)
     }
 
     return 0;
+}
+//_____________________________________________________________________________
+/**
+ * Print the usage for this application
+ */
+void PrintUsage(const char* aProgName, ostream& aOStream) {
+    string progName = IO::GetFileNameFromURI(aProgName);
+    aOStream << "\n\n" << progName << ":\n\n";
+    aOStream << "Option             Argument               Action / Notes\n";
+    aOStream << "------             --------               --------------\n";
+    aOStream << "-Help, -H                                 "
+                "Print the command-line options for " << progName << ".\n";
+    aOStream << "-Model, -M model.osim -G searchPath                               "
+                "Visualize model from file, with optional geometry search path.\n";
 }

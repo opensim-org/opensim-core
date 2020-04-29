@@ -38,22 +38,28 @@ using namespace std;
 using namespace OpenSim;
 using namespace SimTK;
 
-void VisualizerUtilities::showModel(Model model) {
+void VisualizerUtilities::showModel(
+        Model& model, const std::string additionalGeometrySearchPath) {
     model.setUseVisualizer(true);
     // If Geometry is located in folders other than where the .osim
     // file is located or in a Geometry folder adjacent to the model
-    // file, then define the variable additionalGeometrySearchPath
-    // as the folder containing geometry mesh files
-    // and uncomment the line below.
-    // ModelVisualizer::addDirToGeometrySearchPaths(additionalGeometrySearchPath);
+    // file, use additionalGeometrySearchPathfor the folder containing 
+    // geometry mesh files
+    if (additionalGeometrySearchPath!="")
+        ModelVisualizer::addDirToGeometrySearchPaths(additionalGeometrySearchPath);
+    // Avoid excessive display of Frames for all Bodies, Ground and additional Frames
     model.updDisplayHints().set_show_frames(false);
     SimTK::State& si = model.initSystem();
+    // This line is to avoid muscles starting at undefined initialState
     model.equilibrateMuscles(si);
     model.getMultibodySystem().realize(si, SimTK::Stage::Velocity);
     model.getVisualizer().show(si);
-    getchar(); // Keep Visualizer from dying until we inspect the visualization
-               // window..
-}
+    // Keep Visualizer from dying until we inspect the visualization
+    // window..
+    char c;
+    std::cout << "Press any character to exit..." << std::endl;
+    std::cin >> c;
+ }
 
 // Based on code from simtk.org/projects/predictivesim SimbiconExample/main.cpp.
 void VisualizerUtilities::showMotion(Model model, Storage statesSto) {
