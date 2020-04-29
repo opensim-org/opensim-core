@@ -367,7 +367,7 @@ void VisualizerUtilities::showOrientationData(
     auto& dataMatrix = quatTable.getMatrix();
     while (true) {
         for (int frameNumber = 0; frameNumber < times.size(); ++frameNumber) {
-            auto& applyFrame =
+            auto applyFrame =
                     [&](int frameI) {
                         state.setTime(times[frameI]);
                         for (int iOrient = 0; iOrient < numOrientations;
