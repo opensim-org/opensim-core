@@ -48,6 +48,26 @@ private:
     void flush_() override final { flushImpl(); }
 };
 
+/// This sink stores all messages in a string. This is useful for testing the
+/// content of logs.
+class OSIMCOMMON_API StringLogSink : public LogSink {
+public:
+    /// Clear the contents of the string.
+    void clear() {
+        m_messages.clear();
+    }
+    /// Obtain the string.
+    const std::string& getString() const {
+        return m_messages;
+    }
+protected:
+    void sinkImpl(const std::string& msg) override {
+        m_messages += msg + "\n";
+    }
+private:
+    std::string m_messages;
+};
+
 } // namespace OpenSim
 
 #endif // OPENSIM_LOGSINK_H_
