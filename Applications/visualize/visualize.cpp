@@ -71,10 +71,17 @@ int main(int argc, char **argv)
                     string nextArg(argv[i + 2]);
                     if (nextArg == "-G") {
                         geomertySearchPath = string(argv[i + 3]);
+                        // If Geometry is located in folders other than where
+                        // the .osim
+                        // file is located or in a Geometry folder adjacent to
+                        // the model file, use additional geomertySearchPath for
+                        // the folder containing geometry mesh files
+                        ModelVisualizer::addDirToGeometrySearchPaths(
+                                geomertySearchPath);
                     }
                 }
                 Model m(modelFile);
-                VisualizerUtilities::showModel(m, geomertySearchPath);
+                VisualizerUtilities::showModel(m);
                 return 0;
             }
             /*

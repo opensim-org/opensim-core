@@ -44,8 +44,8 @@ public:
 
     ///  Visualize the passed in model in a simbody-visualizer window.
     ///  This function blocks until the user exits the simbody-visualizer
-    ///  window. Optionally pass in serach path for Geometry
-    static void showModel(Model&, const std::string="");
+    ///  window. 
+    static void showModel(Model&);
 
     /** Show markers with time histories specified by the passed in 
         TimeSeriesTableVec3. Visualization is shown in the simbody visualizer.
