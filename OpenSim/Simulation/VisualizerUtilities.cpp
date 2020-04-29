@@ -294,7 +294,7 @@ void VisualizerUtilities::showOrientationData(
         world.addJoint(free);
         joints.push_back(free);
     }
-    auto applyLayout = [=](auto choice) {
+    auto applyLayout = [=](int choice) {
         int numJoints = joints.size();
         switch (choice) {
         case 0:
@@ -375,7 +375,7 @@ void VisualizerUtilities::showOrientationData(
     while (true) {
         for (int frameNumber = 0; frameNumber < times.size(); ++frameNumber) {
             auto& applyFrame =
-                    [&](auto frameI) {
+                    [&](int frameI) {
                         state.setTime(times[frameI]);
                         for (int iOrient = 0; iOrient < numOrientations;
                                 ++iOrient) {
