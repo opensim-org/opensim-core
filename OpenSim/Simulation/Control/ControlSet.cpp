@@ -117,7 +117,6 @@ ControlSet::ControlSet(const Storage& aStorage, int numControls, int startIndex)
     }
     for(j=0;j<nControls;j++) {
 
-        //cout << "Process column number " << j+startIndex << endl;
         // EXTRACT CONTROL NODE
         control = ExtractControl(aStorage,j+startIndex);
 
@@ -582,7 +581,7 @@ getParameterMins(Array<double> &rMins,const Array<int> *aList) const
             try {
                 c = _ptcMap.get(sp);
             } catch(const Exception& x) {
-                x.print(cout);
+                log_error("Exception: {}", x.getMessage());
                 continue;
             }
             Control& control = get(c);
@@ -633,7 +632,7 @@ getParameterMaxs(Array<double> &rMaxs,const Array<int> *aList) const
             try {
                 c = _ptcMap.get(sp);
             } catch(const Exception& x) {
-                x.print(cout);
+                log_error("Exception: {}", x.getMessage());
                 continue;
             }
             Control& control = get(c);
@@ -687,7 +686,7 @@ getParameterValues(double rP[],const Array<int> *aList) const
             try {
                 c = _ptcMap.get(sp);
             } catch(const Exception& x) {
-                x.print(cout);
+                log_error("Exception: {}", x.getMessage());
                 continue;
             }
             Control& control = get(c);
@@ -738,7 +737,7 @@ getParameterValues(Array<double> &rP,const Array<int> *aList) const
             try {
                 c = _ptcMap.get(sp);
             } catch(const Exception& x) {
-                x.print(cout);
+                log_error("Exception: {}", x.getMessage());
                 continue;
             }
             Control& control = get(c);
@@ -789,7 +788,7 @@ setParameterValues(const double *aP,const Array<int> *aList)
             try {
                 c = _ptcMap.get(sp);
             } catch(const Exception& x) {
-                x.print(cout);
+                log_error("Exception: {}", x.getMessage());
                 continue;
             }
             Control& control = get(c);
@@ -853,7 +852,7 @@ setParameterValues(const Array<double> &aP,const Array<int> *aList)
             try {
                 c = _ptcMap.get(sp);
             } catch(const Exception& x) {
-                x.print(cout);
+                log_error("Exception: {}", x.getMessage());
                 continue;
             }
             Control& control = get(c);
@@ -894,7 +893,7 @@ simplify(const PropertySet &aProperties)
         try {
             control.simplify(aProperties);
         } catch(const Exception& x) {
-            x.print(cout);
+            log_error("Exception: {}", x.getMessage());
         }
     }
 }
@@ -925,7 +924,7 @@ filter(double aT)
                 control.filter(aT);
             }
         } catch(const Exception& x) {
-            x.print(cout);
+            log_error("Exception: {}", x.getMessage());
         }
     }
 }
@@ -1047,10 +1046,8 @@ ControlSet::ExtractControl(const Storage& storage,int index)
 {
     int i;
 
-    // cout << "index=" << index << endl;
     // NAME ATTRIBUTE
     const Array<std::string> &columnLabels = storage.getColumnLabels();
-    // cout << "colabels size=" << columnLabels.getSize() << endl;
     std::string colName = columnLabels.get(index+1);
 
     // TIME

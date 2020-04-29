@@ -115,10 +115,11 @@ Model::Model(const string &aFileName) :
         finalizeFromProperties();
     }
     catch(const InvalidPropertyValue& err) {
-        cout << "WARNING: Model was unable to finalizeFromProperties.\n" <<
-            "Update the model file and reload OR update the property and call "
-            "finalizeFromProperties() on the model.\n" <<
-            "(details: " << err.what() << ")." << endl;
+        log_error("Model was unable to finalizeFromProperties."
+                  "Update the model file and reload OR update the property and "
+                  "call finalizeFromProperties() on the model."
+                  "(details: {}).",
+                err.what());
     }
 }
 
@@ -131,10 +132,11 @@ Model* Model::clone() const
         clone->finalizeFromProperties();
     }
     catch (const InvalidPropertyValue& err) {
-        cout << "WARNING: clone() was unable to finalizeFromProperties.\n" <<
-            "Update the model and call clone() again OR update the clone's "
-            "property and call finalizeFromProperties() on it.\n"
-            "(details: " << err.what() << ")." << endl;
+        log_error(
+                "clone() was unable to finalizeFromProperties."
+                "Update the model and call clone() again OR update the clone's "
+                " property and call finalizeFromProperties() on it. (details: {}).",
+                err.what());
     }
 
     return clone;
@@ -149,8 +151,8 @@ Model* Model::clone() const
 void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
     if (versionNumber < XMLDocument::getLatestVersion()){
-        cout << "Updating Model file from " << versionNumber 
-            << " to latest format..." << endl;
+        log_info("Updating Model file from {} to latest format...",
+                versionNumber);
         // Version has to be 1.6 or later, otherwise assert
         if (versionNumber == 10600){
             // Get node for DynamicsEngine
@@ -526,16 +528,17 @@ void Model::assemble(SimTK::State& s, const Coordinate *coord, double weight)
         }
         catch (const std::exception& ex){
             // Constraints are probably infeasible so try again relaxing constraints
-            cout << "Model unable to assemble: " << ex.what() << endl;
-            cout << "Model relaxing constraints and trying again." << endl;
-
+            log_error("Model unable to assemble: {}."
+                      "Model relaxing constraints and trying again.",
+                    ex.what());
             try{
                 // Try to satisfy with constraints as errors weighted heavily.
                 _assemblySolver->setConstraintWeight(20.0);
                 _assemblySolver->assemble(s);
             }
             catch (const std::exception& ex){
-                cout << "Model unable to assemble with relaxed constraints: " << ex.what() << endl;
+                log_error("Model unable to assemble with relaxed constraints: {}", 
+                    ex.what());
             }
         }
     }
@@ -788,9 +791,8 @@ void Model::extendConnectToModel(Model &model)
     Super::extendConnectToModel(model);
 
     if (&model != this){
-        cout << "Model::" << getName() <<
-            " is being connected to model " <<
-            model.getName() << "." << endl;
+        log_info("Model:: {} is being connected to model {}.", getName(),
+                model.getName());
         // if part of another Model, that Model is in charge
         // of creating a valid Multibody tree that includes
         // Components of this Model. 
@@ -857,8 +859,9 @@ void Model::extendConnectToModel(Model &model)
         if (mob.isAddedBaseMobilizer()){
             // create and add the base joint to enable these dofs
             Body* child = static_cast<Body*>(mob.getOutboardBodyRef());
-            cout << "Body '" << child->getName() << "' not connected by a Joint.\n"
-                << "A FreeJoint will be added to connect it to ground." << endl;
+            log_warn("Body '{}' not connected by a Joint."
+                "A FreeJoint will be added to connect it to ground.", 
+                child->getName());
             Ground* ground = static_cast<Ground*>(mob.getInboardBodyRef());
 
             std::string jname = "free_" + child->getName();
@@ -1437,7 +1440,7 @@ void Model::removeAnalysis(Analysis *aAnalysis, bool deleteIt)
 {
     // CHECK FOR NULL
     if(aAnalysis==NULL) {
-        cout << "Model.removeAnalysis:  ERROR- NULL analysis.\n" << endl;
+        log_error("Model.removeAnalysis:  NULL analysis");
     }
     if (!deleteIt){
         bool saveStatus = _analysisSet.getMemoryOwner();
@@ -1459,7 +1462,7 @@ void Model::removeController(Controller *aController)
 {
     // CHECK FOR NULL
     if(aController==NULL) {
-        cout << "Model.removeController:  ERROR- NULL controller.\n" << endl;
+        log_error("Model.removeController:  NULL controller.");
     }
 
     upd_ControllerSet().remove(aController);
@@ -1762,7 +1765,7 @@ void Model::updateMarkerSet(MarkerSet& newMarkerSet)
         addMarker(updatingMarker.clone());
     }
 
-    cout << "Updated markers in model " << getName() << endl;
+    log_info("Updated markers in model {}", getName());
 }
 
 //_____________________________________________________________________________
@@ -1794,7 +1797,7 @@ int Model::deleteUnusedMarkers(const OpenSim::Array<string>& aMarkerNames)
         }
     }
 
-    cout << "Deleted " << numDeleted << " unused markers from model " << getName() << endl;
+    log_info("Deleted {} unused markers from model {}.", numDeleted, getName());
 
     return numDeleted;
 }
@@ -1962,8 +1965,9 @@ void Model::formStateStorage(const Storage& originalStorage,
     int numStates = getNumStateVariables();
     // make sure same size, otherwise warn
     if (originalStorage.getSmallestNumberOfStates() != rStateNames.getSize() && warnUnspecifiedStates){
-        cout << "Number of columns does not match in formStateStorage. Found "
-            << originalStorage.getSmallestNumberOfStates() << " Expected  " << rStateNames.getSize() << "." << endl;
+        log_warn("Number of columns does not match in formStateStorage. Found {}"
+            " Expected  {}.", 
+            originalStorage.getSmallestNumberOfStates(), rStateNames.getSize());
     }
 
     OPENSIM_THROW_IF_FRMOBJ(originalStorage.isInDegrees(), Exception,
@@ -1980,10 +1984,9 @@ void Model::formStateStorage(const Storage& originalStorage,
         int fix = originalStorage.getStateIndex(rStateNames[i]);
         mapColumns[i] = fix;
         if (fix==-1 && warnUnspecifiedStates){
-            cout << "Column "<< rStateNames[i] << 
-                " not found by Model::formStateStorage(). "
-                "Assuming its default value of "
-                << defaultStateValues[i] << endl;
+            log_warn("Column {} not found by Model::formStateStorage(). "
+                "Assuming its default value of {}",
+                rStateNames[i], defaultStateValues[i]);
         }
     }
     // Now cycle through each state (row of Storage) and form the Model consistent
@@ -2024,8 +2027,9 @@ void Model::formQStorage(const Storage& originalStorage, Storage& qStorage) {
     for(int i=0; i< nq; i++){
         // the index is -1 if not found, >=1 otherwise since time has index 0 by defn.
         mapColumns[i] = originalStorage.getColumnLabels().findIndex(qNames[i]);
-        if (mapColumns[i]==-1)
-            cout << "\n Column "<< qNames[i] << " not found in formQStorage, assuming 0.\n" << endl;
+        if (mapColumns[i] == -1)
+            log_warn("Column {} not found in formQStorage, assuming 0.",
+                    qNames[i]);
     }
 
 
