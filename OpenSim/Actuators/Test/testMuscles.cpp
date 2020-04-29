@@ -90,11 +90,11 @@ static const bool testEquilibriumMillard2012AccelerationMuscle = true;
 
     The parameters in this struct are used to configure the functions
     runMuscleEquilibriumArchitectureAndStateSweep and
-    runMuscleEquilibriumStateSweep which initializes a muscle across a range of
+    runMuscleEquilibriumStateSweep which equilibrates a muscle across a range of
     activations, path lengths, and path speeds. The default values recommended
     for use in this struct will allow a large sampling of equilibrium tests to
     be conducted across the full range of states, activations, and muscle
-    architectures that might be used so that problems related to initialization
+    architectures that might be used so that problems related to equilibration
     are caught here rather than elsewhere. Particular attention is paid to
     sweeping across the full domain of the muscle curves length and velocity so
     that any numerical problems during equilibrium-solving related to the
@@ -102,9 +102,9 @@ static const bool testEquilibriumMillard2012AccelerationMuscle = true;
     here rather than by a user.
 
     In addition, there is a crude test of the
-    quality of the equilibrium to see if the initialization method is trying
+    quality of the equilibrium to see if the equilibrate method is trying
     to distribute the velocity of the path between the tendon and the fiber.
-    This test is important because using a simple initialization method where
+    This test is important because using a simple equilibrate method where
     the fiber or tendon velocity is static results in large muscle state
     transients at the beginning of of the simulation.
 
@@ -140,14 +140,17 @@ static const bool testEquilibriumMillard2012AccelerationMuscle = true;
         minTendonSlackLengthToFiberLengthRatio and
         maxTendonSlackLengthToFiberLengthRatio.
 
-    @param minPennationAngle (recommedned default 0.)
-        The minimum pennation angle that will be tested which should be zero.
+    @param minPennationAngle (recommended default 0.)
+        The minimum pennation-angle-at-the-optimal-fiber-length that will be
+        tested which should be zero.
 
     @param maxPennationAngle (recommended default M_PI/16)
-        The maximum pennation angle tested. This should be a non-zero value that
-        is small enough such that lceOpt*sin(alphaOpt) < 0.4 * lceOpt: this will
-        ensure that the shortest parts of the active-force-length curve are
-        all touched in the initialization parameter sweep.
+        The maximum pennation-angle-angle-at-the-optimal-fiber-length that
+        will tested. This should be a non-zero value that s small enough such
+        that
+        optimalFiberLength*sin(maxPennationAngle) < 0.4 * optimalFiberLength
+        : this will ensure that the shortest parts of the active-force-length
+        curve are all touched in the equilibration parameter sweep.
 
     @param numberOfPennationAnglesToTest (recommended default 2)
         The number of pennation angles to test between minPennationAngle
@@ -158,7 +161,7 @@ static const bool testEquilibriumMillard2012AccelerationMuscle = true;
         get touched during the sampling
 
     @param normSpeedScaling (recommended default : 2.0)
-        This scales the path speed tested which is covers the range from
+        This scales the path speed tested which covers the range from
         -maxPathSpeed to maxPathSpeed where
 
         maxPathSpeed = normSpeedScaling
@@ -211,7 +214,7 @@ static const bool testEquilibriumMillard2012AccelerationMuscle = true;
     @param rejectStaticSolution (recommended default: true)
 
         This is a crude test of the quality of the equilbrium solution: an
-        initiziation of poor quality is one that results in a large muscle
+        equilibrium of poor quality is one that results in a large muscle
         state or force transient at the beginning of the simulation. This
         typically happens when no effort is made to distribute the path
         velocity between the fiber and the tendon.
@@ -270,10 +273,6 @@ struct EquilibriumTestSettings {
 
 };
 
-EquilibriumTestSettings defaultEqTestSettings;
-
-
-
 /*
 @author M.Millard
 @date April 2020
@@ -281,7 +280,7 @@ EquilibriumTestSettings defaultEqTestSettings;
 Similar to simulateMuscle this function creates a test model that consists of a
 ball on a slider joint with a single muscle spanning between ground and the
 ball. In contrast to simulateMuscle this function does not simulate the muscle
-but instead initializes the muscle with a dense sampling across the states a
+but instead equilibrates the muscle with a dense sampling across the states a
 muscle of a muscle: activation,length, and velocity. This dense sweep is
 configured by default to sample the full domain of the active-force-length,
 passive-force-length, tendon-force-length, and force-velocity curves.
@@ -323,12 +322,12 @@ void runMuscleEquilibriumStateSweep(const Muscle &aMuscleModel,
                                   double minActivation,
                                   double maxActivation,
                                   double tendonStrainAtOneNormForce,
-                                  EquilibriumTestSettings& settings);
+                                  const EquilibriumTestSettings& settings={});
 
 /**
 This function serves as an outer loop to runMuscleEquilibriumStateSweep varying
 parameters of muscle architecture prior to running
-runMuscleEquilibriumStateSweep. At the present time the parametes tendon slack
+runMuscleEquilibriumStateSweep. At the present time the parameters tendon slack
 length and pennation angle are varied: tendon slack is known to have an effect
 on the convergence properties of muscle-equilibrium methods; pennation is varied
 simply for completeness.
@@ -344,7 +343,7 @@ void runMuscleEquilibriumArchitectureAndStateSweep(const Muscle &aMuscleModel,
                                   double minActivation,
                                   double maxActivation,
                                   double tendonStrainAtOneNormForce,
-                                  EquilibriumTestSettings& settings);
+                                  const EquilibriumTestSettings& settings={});
 
 
 /*
@@ -479,8 +478,7 @@ void simulateMuscle(
     double tendonSlackLength  = aMuscleModel.getTendonSlackLength();
 
     // Use a copy of the muscle model passed in to add path points later
-    PathActuator *aMuscle = aMuscleModel.clone();
-    *aMuscle = aMuscleModel;
+    Muscle *aMuscle(aMuscleModel.clone());
 
     // Get a reference to the model's ground body
     Ground& ground = model.updGround();
@@ -528,16 +526,18 @@ void simulateMuscle(
     aMuscle->addNewPathPoint("muscle-box", ground, Vec3(anchorWidth/2,0,0));
     aMuscle->addNewPathPoint("muscle-ball", *ball, Vec3(-ballRadius,0,0));
     
-    ActivationFiberLengthMuscle_Deprecated *aflMuscle 
-        = dynamic_cast<ActivationFiberLengthMuscle_Deprecated *>(aMuscle);
+    std::unique_ptr<ActivationFiberLengthMuscle_Deprecated> aflMuscle(
+        dynamic_cast<ActivationFiberLengthMuscle_Deprecated *>(
+          aMuscle));
+
     if(aflMuscle){
         // Define the default states for the muscle that has 
         //activation and fiber-length states
         aflMuscle->setDefaultActivation(act0);
         aflMuscle->setDefaultFiberLength(aflMuscle->getOptimalFiberLength());
     }else{
-        ActivationFiberLengthMuscle *aflMuscle2 
-            = dynamic_cast<ActivationFiberLengthMuscle *>(aMuscle);
+        std::unique_ptr< ActivationFiberLengthMuscle> aflMuscle2(
+            dynamic_cast<ActivationFiberLengthMuscle *>(aMuscle));
         if(aflMuscle2){
             // Define the default states for the muscle 
             //that has activation and fiber-length states
@@ -622,7 +622,7 @@ void simulateMuscle(
 // 3. SIMULATION Initialization
 //==========================================================================
 
-    // Initialize the system and get the default state    
+    // Equilibrate the system and get the default state
     SimTK::State& si = model.initSystem();
     model.getMultibodySystem().realize(si,SimTK::Stage::Dynamics);
     model.equilibrateMuscles(si);
@@ -644,7 +644,7 @@ void simulateMuscle(
     
     ASSERT_EQUAL(length/trueLength, 1.0, EquilibriumTestTolerance,
                 __FILE__, __LINE__,
-                "testMuscles: path failed to initialize to correct length." );
+                "testMuscles: path failed to equilibrate to correct length." );
 
     model.getMultibodySystem().realize(si, SimTK::Stage::Acceleration);
 
@@ -852,7 +852,7 @@ void testThelen2003Muscle()
         double maxAct = muscleInit.get_max_control();
 
         runMuscleEquilibriumArchitectureAndStateSweep(muscleInit,minAct,maxAct,
-                                                   etIso,defaultEqTestSettings);
+                                                      etIso);
     }else{
       cout << "\n******************************************************"<< endl;
       cout << "Skipping: Equilibrium test Thelen2003Muscle"           << endl;
@@ -1067,7 +1067,7 @@ void testThelen2003Muscle()
             "minimum_activation was not set in activation model");
     }
 
-    // Test exception when muscle cannot be initialized.
+    // Test exception when muscle cannot be equilibrated.
     {
         Model model;
 
@@ -1152,7 +1152,7 @@ void testMillard2012EquilibriumMuscle()
         double maxAct = 1.;
 
         runMuscleEquilibriumArchitectureAndStateSweep(muscleInit,minAct,maxAct,
-                                                  etIso,defaultEqTestSettings);
+                                                      etIso);
 
     }else{
       cout << "\n******************************************************"<<endl;
@@ -1186,7 +1186,7 @@ void testMillard2012EquilibriumMuscle()
 
 
 
-    // Test extremely short fiber where muscle should still initialize.
+    // Test extremely short fiber where muscle should still equilibrate.
     {
         Model model;
 
@@ -1204,7 +1204,8 @@ void testMillard2012EquilibriumMuscle()
         muscle->computeInitialFiberEquilibrium(state);
     }
 
-    // Test extremely short (but stretched) fiber, which should still initialize.
+    // Test extremely short (but stretched) fiber, which should still
+    // equilibrate.
     {
         Model model;
 
@@ -1285,7 +1286,7 @@ void testMillard2012AccelerationMuscle()
         double maxAct = 1.;
 
         runMuscleEquilibriumArchitectureAndStateSweep(muscleInit,minAct,maxAct,
-                                                   etIso,defaultEqTestSettings);
+                                                     etIso);
 
 
     }else{
@@ -1469,11 +1470,10 @@ void runMuscleEquilibriumArchitectureAndStateSweep(const Muscle &aMuscleModel,
                                   double minActivation,
                                   double maxActivation,
                                   double tendonStrainAtOneNormForce,
-                                  EquilibriumTestSettings& settings)
+                                  const EquilibriumTestSettings& settings)
 {
     // Use a copy of the muscle model passed in to add path points later
-    Muscle *aMuscle = aMuscleModel.clone();
-
+    Muscle *aMuscle(aMuscleModel.clone());
 
     double optimalFiberLength = aMuscle->getOptimalFiberLength();
 
@@ -1508,8 +1508,8 @@ void runMuscleEquilibriumArchitectureAndStateSweep(const Muscle &aMuscleModel,
             pennationAngle = settings.minPennationAngle +j*pennationAngleDelta;
             aMuscle->setPennationAngleAtOptimalFiberLength(pennationAngle);
 
-            runMuscleEquilibriumStateSweep(*aMuscle,minActivation,maxActivation,
-                                           tendonStrainAtOneNormForce,settings);
+            runMuscleEquilibriumStateSweep(*aMuscle,minActivation,
+                maxActivation,tendonStrainAtOneNormForce,settings);
         }
     }
 
@@ -1519,7 +1519,7 @@ void runMuscleEquilibriumStateSweep(const Muscle &aMuscleModel,
                                   double minActivation,
                                   double maxActivation,
                                   double etIso,
-                                  EquilibriumTestSettings& settings)
+                                  const EquilibriumTestSettings& settings)
 {
 
     cout << "\n******************************************************" << endl;
@@ -1604,8 +1604,8 @@ void runMuscleEquilibriumStateSweep(const Muscle &aMuscleModel,
     double ballRadius = 0.05;
 
     // Use a copy of the muscle model passed in to add path points later
-    Muscle *aMuscle = aMuscleModel.clone();
-
+    Muscle *aMuscle(aMuscleModel.clone());
+    //std::unique_ptr<Muscle> aMuscle(aMuscleModel.clone());
 
     // Get a reference to the model's ground body
     Ground& ground = model.updGround();
@@ -1644,6 +1644,7 @@ void runMuscleEquilibriumStateSweep(const Muscle &aMuscleModel,
     aMuscle->addNewPathPoint("muscle-ball", *ball, Vec3(0));
 
     model.addForce(aMuscle);
+    //model.addForce(aMuscle.get());
     model.finalizeConnections();
 
 //  ==========================================================================
@@ -1664,27 +1665,28 @@ void runMuscleEquilibriumStateSweep(const Muscle &aMuscleModel,
     }else{
         activationTestInput += 0.1;
     }
-
     aMuscle->setActivation(si,activationTestInput);
 
+    //Solve for a equilibrium
     model.getMultibodySystem().realize(si,SimTK::Stage::Dynamics);
     model.equilibrateMuscles(si);
 
 
+    //Now check that the settings of the test (path length, speed, and
+    //activation were correctly copied over and applied to the test model
     double pathLength = aMuscle->getLength(si);
     double pathSpeed  = aMuscle->getSpeed(si);
     double activation = aMuscle->getActivation(si);
 
-
     ASSERT_EQUAL(pathLength, pathLengthTestInput, settings.tolerance,
       __FILE__, __LINE__,
-      "runMuscleEquilibriumStateSweep: path length failed to initialize." );
+      "runMuscleEquilibriumStateSweep: path length failed to equilibrate." );
     ASSERT_EQUAL(pathSpeed, pathSpeedTestInput, settings.tolerance,
       __FILE__, __LINE__,
-      "runMuscleEquilibriumStateSweep: path velocity failed to initialize." );
+      "runMuscleEquilibriumStateSweep: path velocity failed to equilibrate." );
     ASSERT_EQUAL(activation, activationTestInput, settings.tolerance,
       __FILE__, __LINE__,
-      "runMuscleEquilibriumStateSweep: activation failed to initialize." );
+      "runMuscleEquilibriumStateSweep: activation failed to equilibrate." );
 
     //==========================================================================
     // 4. Perform Equilibrium Sweep
@@ -1761,9 +1763,10 @@ void runMuscleEquilibriumStateSweep(const Muscle &aMuscleModel,
                 sliderCoord.setDefaultSpeedValue(pathSpeedSetting);
                 si = model.initSystem();
                 aMuscle->setActivation(si,activationSetting);
+                model.getMultibodySystem().realize(si,SimTK::Stage::Dynamics);
 
                 //Solve the for equilibrium
-                model.getMultibodySystem().realize(si,SimTK::Stage::Dynamics);
+                //  This is the function that this entire test is focused on.
                 model.equilibrateMuscles(si);
 
                 //Check to make sure the test conditions were met
@@ -1812,7 +1815,7 @@ void runMuscleEquilibriumStateSweep(const Muscle &aMuscleModel,
                 //Check to make sure that the force equilibrium has been
                 //satisfied
                 //Note: this test will still work for the
-                //      Millard2012AccelerationMucle since it is initialized
+                //      Millard2012AccelerationMucle since it is equilibrated
                 //      s.t. the acceleration on the mass is very very small.
 
                 tendonForce = aMuscle->getTendonForce(si);
