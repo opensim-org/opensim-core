@@ -1,7 +1,7 @@
 #ifndef OPENSIM_VISUALIZER_UTILITIES_H_
 #define OPENSIM_VISUALIZER_UTILITIES_H_
 /* -------------------------------------------------------------------------- *
- *                          OpenSim: DataVisualizer.h                         *
+ *                          OpenSim: VisualizerUtilities.h                    *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * OpenSim is developed at Stanford University and supported by the US        *
@@ -44,8 +44,8 @@ public:
 
     ///  Visualize the passed in model in a simbody-visualizer window.
     ///  This function blocks until the user exits the simbody-visualizer
-    ///  window.
-    static void showModel(Model);
+    ///  window. Optionally pass in serach path for Geometry
+    static void showModel(Model&, const std::string="");
 
     /** Show markers with time histories specified by the passed in 
         TimeSeriesTableVec3. Visualization is shown in the simbody visualizer.
