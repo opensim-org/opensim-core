@@ -278,9 +278,10 @@ private:
         }
 
         // Find the length of the longest label.
-        int longestLabel = 0;
+        int lengthOfLongestLabel = 0;
         for (auto idx = 0u; idx < input.getNumConnectees(); ++idx) {
-            longestLabel = std::max(longestLabel,
+            lengthOfLongestLabel = std::max(
+                    lengthOfLongestLabel,
                                     (int)input.getLabel(idx).size());
         }
 
@@ -291,7 +292,7 @@ private:
             // Split labels over multiple lines.
             // Round up to the nearest multiple of _width to determine the
             // number of header rows.
-            const int numHeaderRows = (longestLabel-1) / _width + 1;
+            const int numHeaderRows = (lengthOfLongestLabel -1) / _width + 1;
 
             // Display labels in chunks of size _width.
             for (int row = 0; row < numHeaderRows; ++row)
