@@ -13,6 +13,7 @@
 
 %shared_ptr(OpenSim::LogSink);
 %include <OpenSim/Common/LogSink.h>
+%ignore OpenSim::Logger::getInstance();
 %include <OpenSim/Common/Logger.h>
 
 %include <OpenSim/Common/Array.h>
