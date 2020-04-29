@@ -288,7 +288,7 @@ void VisualizerUtilities::showOrientationData(
         world.addJoint(free);
         joints.push_back(free);
     }
-    auto lambda = [=](auto choice) {
+    auto applyLayout = [=](auto choice) {
         int numJoints = joints.size();
         switch (choice) {
         case 0:
@@ -339,7 +339,7 @@ void VisualizerUtilities::showOrientationData(
             break;
         }
     };
-    lambda(2);
+    applyLayout(layout);
     world.updDisplayHints().set_show_frames(true);
     world.setUseVisualizer(true);
     SimTK::State& state = world.initSystem();
@@ -368,24 +368,32 @@ void VisualizerUtilities::showOrientationData(
     auto& dataMatrix = quatTable.getMatrix();
     while (true) {
         for (int frameNumber = 0; frameNumber < times.size(); ++frameNumber) {
-            state.setTime(times[frameNumber]);
-            for (int iOrient = 0; iOrient < numOrientations; ++iOrient) {
+            auto& applyFrame =
+                    [&](auto frameI) {
+                        state.setTime(times[frameI]);
+                        for (int iOrient = 0; iOrient < numOrientations;
+                                ++iOrient) {
 
-                Quaternion quat = dataMatrix(frameNumber, iOrient);
-                Rotation rot(quat);
-                Vec3 angles = rot.convertRotationToBodyFixedXYZ();
-                joints.updElt(iOrient)
-                        ->updCoordinate(FreeJoint::Coord::Rotation1X)
-                        .setValue(state, angles[0]);
-                joints.updElt(iOrient)
-                        ->updCoordinate(FreeJoint::Coord::Rotation2Y)
-                        .setValue(state, angles[1]);
-                joints.updElt(iOrient)
-                        ->updCoordinate(FreeJoint::Coord::Rotation3Z)
-                        .setValue(state, angles[2]);
-            }
-            world.realizePosition(state);
-            world.getVisualizer().show(state);
+                            Quaternion quat = dataMatrix(frameI, iOrient);
+                            Rotation rot(quat);
+                            Vec3 angles = rot.convertRotationToBodyFixedXYZ();
+                            joints.updElt(iOrient)
+                                    ->updCoordinate(
+                                            FreeJoint::Coord::Rotation1X)
+                                    .setValue(state, angles[0]);
+                            joints.updElt(iOrient)
+                                    ->updCoordinate(
+                                            FreeJoint::Coord::Rotation2Y)
+                                    .setValue(state, angles[1]);
+                            joints.updElt(iOrient)
+                                    ->updCoordinate(
+                                            FreeJoint::Coord::Rotation3Z)
+                                    .setValue(state, angles[2]);
+                        }
+                        world.realizePosition(state);
+                        world.getVisualizer().show(state);
+                    };
+            applyFrame(frameNumber);
             // Slider input.
             int timeSliderIndex = 1;
             int sliderIndex;
@@ -400,7 +408,7 @@ void VisualizerUtilities::showOrientationData(
                     // times.
                     std::cout << "Setting frame number to " << frameNumber
                               << std::endl;
-                    simbodyVisualizer.drawFrameNow(state);
+                    applyFrame(frameNumber);
                 } else {
                     std::cout << "Internal error: unrecognized slider."
                               << std::endl;
@@ -423,12 +431,12 @@ void VisualizerUtilities::showOrientationData(
                     pause = !pause;
                     auto& text = static_cast<SimTK::DecorativeText&>(
                             simbodyVisualizer.updDecoration(pausedIndex));
-                    text.setText(pause ? "Paused (hit Space to resume)" : "");
+                    text.setText(pause ? "Paused for 3 secs (hit Space to resume)" : "");
                     simbodyVisualizer.drawFrameNow(state);
                 }
             }
             if (pause) {
-                std::this_thread::sleep_for(std::chrono::seconds(1));
+                std::this_thread::sleep_for(std::chrono::seconds(3));
             } 
             simbodyVisualizer.setSliderValue(timeSliderIndex, times[frameNumber]);
         }

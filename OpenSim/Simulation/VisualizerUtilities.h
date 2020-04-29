@@ -63,7 +63,7 @@ public:
 
        Function blocks waiting for user to hit a key to start. */
     static void showOrientationData(
-            const TimeSeriesTableQuaternion&, int layout = 0);
+            const TimeSeriesTableQuaternion&, int layout = 2);
 
 private:
     static void addVisualizerControls(ModelVisualizer&, double, double);
