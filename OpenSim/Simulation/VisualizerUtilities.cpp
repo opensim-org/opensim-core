@@ -222,42 +222,46 @@ void VisualizerUtilities::showMarkerData(
     previewWorld.addComponent(markersSource);
 
     // Get the underlying Table backing the marker Source so we
-// know how many markers we have and their names
-const auto& markerData = markersSource->getTable();
-auto& times = markerData.getIndependentColumn();
+    // know how many markers we have and their names
+    const auto& markerData = markersSource->getTable();
+    auto& times = markerData.getIndependentColumn();
 
-// Create an ExperimentalMarker Component for every column in the markerData
-for (int i = 0; i < int(markerData.getNumColumns()); ++i) {
-    auto marker = new ExperimentalMarker();
-    marker->setName(markerData.getColumnLabel(i));
+    // Create an ExperimentalMarker Component for every column in the markerData
+    for (int i = 0; i < int(markerData.getNumColumns()); ++i) {
+        auto marker = new ExperimentalMarker();
+        marker->setName(markerData.getColumnLabel(i));
 
-    // markers are owned by the model
-    previewWorld.addComponent(marker);
-    // the time varying location of the marker comes from the markersSource
-    // Component
-    marker->updInput("location_in_ground")
-        .connect(markersSource->getOutput("column").getChannel(
-            markerData.getColumnLabel(i)));
-}
+        // markers are owned by the model
+        previewWorld.addComponent(marker);
+        // the time varying location of the marker comes from the markersSource
+        // Component
+        marker->updInput("location_in_ground")
+                .connect(markersSource->getOutput("column").getChannel(
+                        markerData.getColumnLabel(i)));
+    }
 
-previewWorld.setUseVisualizer(true);
-SimTK::State& state = previewWorld.initSystem();
-state.updTime() = times[0];
-
-previewWorld.realizePosition(state);
-previewWorld.getVisualizer().show(state);
-
-char c;
-std::cout << "Press any key to visualize experimental marker data ..."
-<< std::endl;
-std::cin >> c;
-
-for (size_t j = 0; j < times.size(); j = j + 10) {
-    std::cout << "time: " << times[j] << "s" << std::endl;
-    state.setTime(times[j]);
+    previewWorld.setUseVisualizer(true);
+    SimTK::State& state = previewWorld.initSystem();
+    state.updTime() = times[0];
+    const SimTK::Real initialTime = times.front();
+    const SimTK::Real finalTime = times.back();
+    bool pause = false;
+    addVisualizerControls(previewWorld.updVisualizer(), initialTime, finalTime);
     previewWorld.realizePosition(state);
     previewWorld.getVisualizer().show(state);
-}
+
+    char c;
+    std::cout << "Press any key to visualize experimental marker data ..."
+              << std::endl;
+    std::cin >> c;
+    while (true) {
+        for (size_t j = 0; j < times.size(); ++j) {
+            std::cout << "time: " << times[j] << "s" << std::endl;
+            state.setTime(times[j]);
+            previewWorld.realizePosition(state);
+            previewWorld.getVisualizer().show(state);
+        }
+    }
 }
 
 void VisualizerUtilities::showOrientationData(
@@ -316,9 +320,9 @@ void VisualizerUtilities::showOrientationData(
             break;
         case 2:
             SimTK::Array_<string> names = {
-                    "pelvis", "femur_r", "femur_l", "tibia_r", "tibia_l"};
-            std::pair<double, double> coordinates[] = {{0.9, 0.},
-                    {0.7, 0.135}, {0.7, -0.135}, {.3, .15}, {.3, -.15}};
+                    "torso", "pelvis", "femur_r", "femur_l", "tibia_r", "tibia_l", "calcn_r", "calcn_l"};
+            std::pair<double, double> coordinates[] = {{1.1, 0.} , {0.9, 0.},
+                    {0.7, 0.135},{0.7, -0.135}, {.3, .15}, {.3, -.15}, {0, .15}, {0, -.15}};
             for (int i = 0; i < numJoints; i++) {
                 for (int j = 0; j < names.size(); ++j) {
                     auto matchString = joints[i]->getName();
@@ -365,34 +369,29 @@ void VisualizerUtilities::showOrientationData(
     world.getVisualizer().show(state);
     auto& simbodyVisualizer = world.getVisualizer().getSimbodyVisualizer();
     auto& dataMatrix = quatTable.getMatrix();
+    auto applyFrame = [&](int frameI) {
+        state.setTime(times[frameI]);
+        for (int iOrient = 0; iOrient < numOrientations; ++iOrient) {
+
+            Quaternion quat = dataMatrix(frameI, iOrient);
+            Rotation rot(quat);
+            Vec3 angles = rot.convertRotationToBodyFixedXYZ();
+            joints.updElt(iOrient)
+                    ->updCoordinate(FreeJoint::Coord::Rotation1X)
+                    .setValue(state, angles[0]);
+            joints.updElt(iOrient)
+                    ->updCoordinate(FreeJoint::Coord::Rotation2Y)
+                    .setValue(state, angles[1]);
+            joints.updElt(iOrient)
+                    ->updCoordinate(FreeJoint::Coord::Rotation3Z)
+                    .setValue(state, angles[2]);
+        }
+        world.realizePosition(state);
+        world.getVisualizer().show(state);
+    };
     while (true) {
         for (int frameNumber = 0; frameNumber < times.size(); ++frameNumber) {
-            auto applyFrame =
-                    [&](int frameI) {
-                        state.setTime(times[frameI]);
-                        for (int iOrient = 0; iOrient < numOrientations;
-                                ++iOrient) {
-
-                            Quaternion quat = dataMatrix(frameI, iOrient);
-                            Rotation rot(quat);
-                            Vec3 angles = rot.convertRotationToBodyFixedXYZ();
-                            joints.updElt(iOrient)
-                                    ->updCoordinate(
-                                            FreeJoint::Coord::Rotation1X)
-                                    .setValue(state, angles[0]);
-                            joints.updElt(iOrient)
-                                    ->updCoordinate(
-                                            FreeJoint::Coord::Rotation2Y)
-                                    .setValue(state, angles[1]);
-                            joints.updElt(iOrient)
-                                    ->updCoordinate(
-                                            FreeJoint::Coord::Rotation3Z)
-                                    .setValue(state, angles[2]);
-                        }
-                        world.realizePosition(state);
-                        world.getVisualizer().show(state);
-                    };
-            applyFrame(frameNumber);
+              applyFrame(frameNumber);
             // Slider input.
             int timeSliderIndex = 1;
             int sliderIndex;
