@@ -119,7 +119,7 @@ static const bool testEquilibriumMillard2012AccelerationMuscle = true;
     @param minNormTendonStrain (recommend default : -0.5)
         The desired minimum normalized tendon strain at the shortest path length
         tested. For example if a value of -2.3 is used here it means that the
-        shortest tendon length will be close to ltSlk*(1 + etIso*(2.3)) where
+        shortest tendon length will be close to ltSlk*(1 + etIso*(-2.3)) where
         ltSlk is the tendon slack length and etIso is the tendon strain at one
         norm force.
 
@@ -1473,7 +1473,7 @@ void runMuscleEquilibriumArchitectureAndStateSweep(const Muscle &aMuscleModel,
                                   const EquilibriumTestSettings& settings)
 {
     // Use a copy of the muscle model passed in to add path points later
-    Muscle *aMuscle(aMuscleModel.clone());
+    std::unique_ptr<Muscle> aMuscle(aMuscleModel.clone());
 
     double optimalFiberLength = aMuscle->getOptimalFiberLength();
 
@@ -1508,7 +1508,7 @@ void runMuscleEquilibriumArchitectureAndStateSweep(const Muscle &aMuscleModel,
             pennationAngle = settings.minPennationAngle +j*pennationAngleDelta;
             aMuscle->setPennationAngleAtOptimalFiberLength(pennationAngle);
 
-            runMuscleEquilibriumStateSweep(*aMuscle,minActivation,
+            runMuscleEquilibriumStateSweep(*aMuscle.get(),minActivation,
                 maxActivation,tendonStrainAtOneNormForce,settings);
         }
     }
