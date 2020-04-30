@@ -403,10 +403,6 @@ void VisualizerUtilities::showOrientationData(
                 if (sliderIndex == timeSliderIndex) {
                     auto desiredIndex = (sliderValue - initialTime) / (finalTime - initialTime);
                     frameNumber = (int)desiredIndex*times.size();
-                    // Allow the user to drag this slider to visualize different
-                    // times.
-                    std::cout << "Setting frame number to " << frameNumber
-                              << std::endl;
                     applyFrame(frameNumber);
                 } else {
                     std::cout << "Internal error: unrecognized slider."
@@ -445,11 +441,11 @@ void VisualizerUtilities::showOrientationData(
 void VisualizerUtilities::addVisualizerControls(ModelVisualizer& vizualizer, 
         double initialTime, double finalTime) {
     auto& simbodyViz = vizualizer.updSimbodyVisualizer();
-    simbodyViz.setMode(SimTK::Visualizer::RealTime);
+    //simbodyViz.setMode(SimTK::Visualizer::RealTime);
     simbodyViz.setDesiredBufferLengthInSec(0);
     simbodyViz.setDesiredFrameRate(30);
     simbodyViz.setShowSimTime(true);
-    // viz.setBackgroundType(viz.SolidColor);
+    //viz.setBackgroundType(viz.SolidColor);
     // viz.setBackgroundColor(SimTK::White);
     // viz.setShowFrameRate(true);
     // viz.setShowFrameNumber(true);
