@@ -44,8 +44,7 @@ static void PrintUsage(const char* aProgName, ostream& aOStream);
 /**
  * First exercise: create a model that does nothing. 
  */
-int main(int argc, char **argv)
-{
+int main(int argc, char** argv) {
     LoadOpenSimLibrary("osimActuators");
     try {
         // Create an OpenSim model and set its name
@@ -54,49 +53,109 @@ int main(int argc, char **argv)
             cout << "Filename needs to be specified or passed in.\n\n";
             return 1;
         }
-        string option = "";
-        for (int i = 1; i <= (argc - 1); i++) {
-            option = argv[i];
-            if ((option == "-help") || (option == "-h") ||
-                    (option == "-Help") || (option == "-H") ||
-                    (option == "-usage") || (option == "-u") ||
-                    (option == "-Usage") || (option == "-U")) {
-                PrintUsage(argv[0], cout);
-                return 0;
-            } else if ((option == "-M") || (option == "-Model")) {
-                // Check we're not out of range of argc before indexing
-                auto modelFile = argv[i + 1];
-                std::string geomertySearchPath = "";
-                if (argc >= 5) {
-                    string nextArg(argv[i + 2]);
-                    if (nextArg == "-G") {
-                        geomertySearchPath = string(argv[i + 3]);
-                        // If Geometry is located in folders other than where
-                        // the .osim
-                        // file is located or in a Geometry folder adjacent to
-                        // the model file, use additional geomertySearchPath for
-                        // the folder containing geometry mesh files
-                        ModelVisualizer::addDirToGeometrySearchPaths(
-                                geomertySearchPath);
+        string option = argv[1];
+        if ((option == "-help") || (option == "-h") || (option == "-Help") ||
+                (option == "-H") || (option == "-usage") || (option == "-u") ||
+                (option == "-Usage") || (option == "-U")) {
+            PrintUsage(argv[0], cout);
+            return 0;
+        } else {
+            string modelFileName = "";
+            string geomertySearchPath = "";
+            string dataFileName = "";
+            string statesFileName = "";
+            for (int i = 1; i <= (argc - 1); i++) {
+                option = argv[i];
+                if (option == "-M" || option == "-Model") {
+                    if (argc < i + 2) {
+                        cout << "No model file specified after option -M";
+                        PrintUsage(argv[0], cout);
+                        exit(-1);
                     }
+                    modelFileName = string(argv[i + 1]);
                 }
-                Model m(modelFile);
-                VisualizerUtilities::showModel(m);
-                return 0;
+                else if (option == "-G" || option == "-Geom") {
+                    if (argc < i + 2) {
+                        cout << "No Geometry search path specified after option -G";
+                        PrintUsage(argv[0], cout);
+                        exit(-1);
+                    }
+                    geomertySearchPath = string(argv[i + 1]);
+                }
+                else if (option == "-S") { 
+                     if (argc < i + 2) {
+                        cout << "No sto file specified after option -S";
+                        PrintUsage(argv[0], cout);
+                        exit(-1);
+                    }
+                    statesFileName = string(argv[i + 1]); 
+                }
+                else if (option == "-D") { 
+                      if (argc < i + 2) {
+                        cout << "No data file specified after option -D";
+                        PrintUsage(argv[0], cout);
+                        exit(-1);
+                    }
+                    dataFileName = string(argv[i + 1]); 
+                }
             }
-            /*
-            std::string modelFile = std::string(argv[1]);
-            Model model(modelFile);
-            std::string resultFile = std::string(argv[2]);
-            Storage sto(resultFile);
-            VisualizerUtilities::showMotion(model, sto);
-            */
+            option = argv[1];
+            // Based on first argv will decide operation
+            if (option == "-VM" || option == "-ViewModel") {
 
-            std::string orientationsFile = std::string(argv[1]);
-            TimeSeriesTableQuaternion quatTable(orientationsFile);
-            int layout = 2;
-            if (argc == 3) layout = std::stoi(argv[2]);
-            VisualizerUtilities::showOrientationData(quatTable, layout);
+                // If Geometry is located in folders other than
+                // where the .osim file is located or in a Geometry
+                // folder adjacent to the model file, use additional
+                // geomertySearchPath for the folder containing
+                // geometry mesh files
+                if (geomertySearchPath != "")
+                    ModelVisualizer::addDirToGeometrySearchPaths(
+                            geomertySearchPath);
+                Model m(modelFileName);
+                VisualizerUtilities::showModel(m);
+
+            } else if (option == "-VS"){
+
+                if (geomertySearchPath != "")
+                    ModelVisualizer::addDirToGeometrySearchPaths(
+                            geomertySearchPath);
+                Model m(modelFileName);
+                Storage storage(statesFileName);
+                VisualizerUtilities::showMotion(m, storage);
+                
+            } else if ((option == "-VD") || (option == "-ViewData")) {
+
+                std::string::size_type extSep = dataFileName.rfind(".");
+                if (extSep == std::string::npos) {
+                    throw OpenSim::Exception("Input file '" +
+                                             string(dataFileName) +
+                                             "' does not have an extension.");
+                }
+                std::string extension = dataFileName.substr(extSep);
+                if (extension == ".sto") {
+
+                    TimeSeriesTableQuaternion quatTable(dataFileName);
+                    int layout = 2;
+                    VisualizerUtilities::showOrientationData(quatTable, layout);
+
+                } else if (extension == ".trc") {
+
+                    TimeSeriesTableVec3 markerData(dataFileName);
+                    VisualizerUtilities::showMarkerData(markerData);
+
+                } else {
+                    cout << "Unrecognized data file " << dataFileName
+                         << "on command line... Ignored" << endl;
+                    PrintUsage(argv[0], cout);
+                    return (0);
+                }
+
+            } else {
+                cout << "Unrecognized option " << option
+                     << " on command line... Ignored" << endl;
+                PrintUsage(argv[0], cout);
+                return (0);
+            }
         }
     }
     catch (const std::exception& ex)
@@ -119,10 +178,16 @@ int main(int argc, char **argv)
 void PrintUsage(const char* aProgName, ostream& aOStream) {
     string progName = IO::GetFileNameFromURI(aProgName);
     aOStream << "\n\n" << progName << ":\n\n";
-    aOStream << "Option             Argument               Action / Notes\n";
-    aOStream << "------             --------               --------------\n";
-    aOStream << "-Help, -H                                 "
+    aOStream << "Option             Argument                            Action / Notes\n";
+    aOStream << "------             --------                            --------------\n";
+    aOStream << "-Help, -H                                              "
                 "Print the command-line options for " << progName << ".\n";
-    aOStream << "-Model, -M model.osim -G searchPath                               "
+    aOStream << "-VM,-ViewModel -M model.osim -G geomSearchPath         "
                 "Visualize model from file, with optional geometry search path.\n";
+    aOStream << "-VS -M model.osim -G geomSearchPath -S states.sto      "
+                "Visualize model with optional geometry search path, \n"
+                "                                                       "
+                "and apply states from the specified states.sto file.\n";
+    aOStream << "-VD,-ViewData -D datafile.{sto,trc}                    "
+                "Visualize data from mocap (.trc) or orientations(.sto)\n";
 }
