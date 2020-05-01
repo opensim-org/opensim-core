@@ -266,11 +266,12 @@ void VisualizerUtilities::showMarkerData(
 }
 
 void VisualizerUtilities::showOrientationData(
-    const TimeSeriesTableQuaternion& quatTable, std::string layoutString) {
+    const TimeSeriesTableQuaternion& quatTable, std::string layoutString, 
+    std::string modelFileForPose) {
 
     Model world;
     std::map<std::string, int> mapOfLayouts = {
-            {"line", 0}, {"circle", 1}, {"opensense", 2}, {"model", 3}};
+            {"line", 0}, {"circle", 1}, {"model", 2}};
     int layout = 0; 
     if (mapOfLayouts.find(layoutString) == mapOfLayouts.end()) {
         cout << "Warning: layout option " << layoutString
@@ -328,24 +329,34 @@ void VisualizerUtilities::showOrientationData(
             }
             break;
         case 2:
-            SimTK::Array_<string> names = {
-                    "torso", "pelvis", "femur_r", "femur_l", "tibia_r", "tibia_l", "calcn_r", "calcn_l"};
-            std::pair<double, double> coordinates[] = {{1.1, 0.} , {0.9, 0.},
-                    {0.7, 0.135},{0.7, -0.135}, {.3, .15}, {.3, -.15}, {0, .15}, {0, -.15}};
+            Model modelForPose(modelFileForPose);
+            State& s = modelForPose.initSystem();
+            OpenSim::Array<std::string> bNames;
+            modelForPose.getBodySet().getNames(bNames);
             for (int i = 0; i < numJoints; i++) {
-                for (int j = 0; j < names.size(); ++j) {
-                    auto matchString = joints[i]->getName();
-                    auto pos = names[j].find(matchString, 0);
-
-                    if (pos != std::string::npos) {
+                bool nameFound = false;
+                auto nameFromData = joints[i]->getName();
+                for (int j = 0; j < bNames.size() && !nameFound; ++j) {
+                    if (nameFromData == bNames[j]) { 
+                        const Body& bod = modelForPose.getComponent<OpenSim::Body>("/bodyset/"+bNames[j]);
+                        auto pos = bod.getPositionInGround(s);
+                        joints[i]
+                                ->updCoordinate(FreeJoint::Coord::TranslationX)
+                                .set_default_value(pos[0]);
                         joints[i]
                                 ->updCoordinate(FreeJoint::Coord::TranslationY)
-                                .set_default_value(coordinates[j].first);
+                                .set_default_value(pos[1]);
                         joints[i]
                                 ->updCoordinate(FreeJoint::Coord::TranslationZ)
-                                .set_default_value(coordinates[j].second);
+                                .set_default_value(pos[2]);
+                        nameFound = true;
                         break;
                     }
+                }
+                if (!nameFound) {
+                    cout << "No body with name " << nameFromData
+                         << " was found in model."
+                         << " Data for this orientation will be displayed at origin";
                 }
             }
             break;
