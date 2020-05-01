@@ -265,9 +265,17 @@ void VisualizerUtilities::showMarkerData(
 }
 
 void VisualizerUtilities::showOrientationData(
-    const TimeSeriesTableQuaternion& quatTable, int layout) {
+    const TimeSeriesTableQuaternion& quatTable, std::string layoutString) {
 
     Model world;
+    std::map<std::string, int> mapOfLayouts = {
+            {"line", 0}, {"circle", 1}, {"opensense", 2}, {"model", 3}};
+    int layout = 0; 
+    if (mapOfLayouts.find(layoutString) == mapOfLayouts.end()) {
+        cout << "Warning: layout option " << layoutString
+             << " not found, ignoring and assuming line layout.." << endl;
+    } else
+        layout = mapOfLayouts.at(layoutString);
     // Will create a Body for every column of data, connect it to
     // Ground with a FreeJoint, set translation based on layout,
     // set rotations based on data.
