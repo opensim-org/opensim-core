@@ -135,8 +135,9 @@ int main(int argc, char** argv) {
                 if (extension == ".sto") {
 
                     TimeSeriesTableQuaternion quatTable(dataFileName);
-                    auto layout = "opensense";
-                    VisualizerUtilities::showOrientationData(quatTable, layout);
+                    auto layout = "model";
+                    VisualizerUtilities::showOrientationData(
+                            quatTable, layout, modelFileName);
 
                 } else if (extension == ".trc") {
 
@@ -188,6 +189,8 @@ void PrintUsage(const char* aProgName, ostream& aOStream) {
                 "Visualize model with optional geometry search path, \n"
                 "                                                       "
                 "and apply states from the specified states.sto file.\n";
-    aOStream << "-VD,-ViewData -D datafile.{sto,trc}                    "
-                "Visualize data from mocap (.trc) or orientations(.sto)\n";
+    aOStream << "-VD,-ViewData -M model.osim -D datafile.{sto,trc}      "
+                "Visualize data from mocap (.trc) or orientations(.sto)";
+                "                                                       "
+                "If model is specified, it's used to layout data on screen.\n";
 }

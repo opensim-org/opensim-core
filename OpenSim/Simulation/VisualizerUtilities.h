@@ -58,13 +58,13 @@ public:
        - layout options: 
             -'line' default layout frames in a row along Z axis
             -'circle' frames laid out around a half-cicrle in the Y-Z plane
-            -'opensense' assume naming from Rajagopal_2015 model and use it for initial placement
             -'model' Load passed in model and overlay frames at origins of corresponding
        segments at default pose.
 
        Function blocks waiting for user to hit a key to start. */
     static void showOrientationData(
-            const TimeSeriesTableQuaternion&, std::string layout = "opensense");
+            const TimeSeriesTableQuaternion&, std::string layout = "line", 
+            std::string modelFileForPose="");
 
 private:
     static void addVisualizerControls(ModelVisualizer&, double, double);
