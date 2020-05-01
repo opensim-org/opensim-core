@@ -56,15 +56,15 @@ public:
         TimeSeriesTableQuaternion. Visualization is shown in the simbody
        visualizer. 
        - layout options: 
-            0. default layout frames in a row along Z axis
-            1. frames laid out around a half-cicrle in the Y-Z plane
-            2. assume naming from Rajagopal_2015 model and use it for initial placement
-            3. Load passed in model and overlay frames at origins of corresponding
+            -'line' default layout frames in a row along Z axis
+            -'circle' frames laid out around a half-cicrle in the Y-Z plane
+            -'opensense' assume naming from Rajagopal_2015 model and use it for initial placement
+            -'model' Load passed in model and overlay frames at origins of corresponding
        segments at default pose.
 
        Function blocks waiting for user to hit a key to start. */
     static void showOrientationData(
-            const TimeSeriesTableQuaternion&, int layout = 2);
+            const TimeSeriesTableQuaternion&, std::string layout = "opensense");
 
 private:
     static void addVisualizerControls(ModelVisualizer&, double, double);
