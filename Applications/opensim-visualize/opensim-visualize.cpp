@@ -190,7 +190,7 @@ void PrintUsage(const char* aProgName, ostream& aOStream) {
                 "                                                       "
                 "and apply states from the specified states.sto file.\n";
     aOStream << "-VD,-ViewData -M model.osim -D datafile.{sto,trc}      "
-                "Visualize data from mocap (.trc) or orientations(.sto)";
+                "Visualize data from mocap (.trc) or orientations(.sto)"
                 "                                                       "
                 "If model is specified, it's used to layout data on screen.\n";
 }
