@@ -377,7 +377,7 @@ void VisualizerUtilities::showOrientationData(
             SimTK::MobilizedBodyIndex(0), SimTK::Vec3(0), pausedText);
 
     // Will add text on screen corresponding to Body names
-    for (int b = 0; b < bodies.size(); ++b) {
+    for (unsigned b = 0; b < bodies.size(); ++b) {
         MobilizedBodyIndex mbi = bodies.getElt(b)->getMobilizedBodyIndex();
         DecorativeText bodyNameText(bodies.getElt(b)->getName());
         bodyNameText.setScale(0.05);
@@ -421,7 +421,7 @@ void VisualizerUtilities::showOrientationData(
             if (silo.takeSliderMove(sliderIndex, sliderValue)) {
                 if (sliderIndex == timeSliderIndex) {
                     auto desiredIndex = (sliderValue - initialTime) / (finalTime - initialTime);
-                    frameNumber = (int)desiredIndex*times.size();
+                    frameNumber = static_cast<int>(desiredIndex*times.size());
                     applyFrame(frameNumber);
                 } else {
                     std::cout << "Internal error: unrecognized slider."
