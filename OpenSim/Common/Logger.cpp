@@ -147,28 +147,30 @@ void Logger::addFileSink(const std::string& filepath) {
         return;
     }
     m_filesink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(filepath);
-    addSink(m_filesink);
+    addSinkInternal(m_filesink);
 }
 
 void Logger::removeFileSink() {
-    removeSink(std::static_pointer_cast<spdlog::sinks::sink>(m_filesink));
+    removeSinkInternal(
+            std::static_pointer_cast<spdlog::sinks::sink>(m_filesink));
     m_filesink.reset();
 }
 
 void Logger::addSink(const std::shared_ptr<LogSink> sink) {
-    addSink(std::static_pointer_cast<spdlog::sinks::sink>(sink));
+    addSinkInternal(std::static_pointer_cast<spdlog::sinks::sink>(sink));
 }
 
 void Logger::removeSink(const std::shared_ptr<LogSink> sink) {
-    removeSink(std::static_pointer_cast<spdlog::sinks::sink>(sink));
+    removeSinkInternal(std::static_pointer_cast<spdlog::sinks::sink>(sink));
 }
 
-void Logger::addSink(std::shared_ptr<spdlog::sinks::sink> sink) {
+void Logger::addSinkInternal(std::shared_ptr<spdlog::sinks::sink> sink) {
     spdlog::default_logger()->sinks().push_back(sink);
     m_cout_logger->sinks().push_back(sink);
 }
 
-void Logger::removeSink(const std::shared_ptr<spdlog::sinks::sink> sink) {
+void Logger::removeSinkInternal(const std::shared_ptr<spdlog::sinks::sink> sink)
+{
     {
         auto& sinks = spdlog::default_logger()->sinks();
         auto to_erase = std::find(sinks.cbegin(), sinks.cend(), sink);

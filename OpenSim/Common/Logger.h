@@ -183,9 +183,10 @@ private:
     /// Initialize spdlog.
     Logger();
 
-    static void addSink(std::shared_ptr<spdlog::sinks::sink> sink);
+    static void addSinkInternal(std::shared_ptr<spdlog::sinks::sink> sink);
 
-    static void removeSink(const std::shared_ptr<spdlog::sinks::sink> sink);
+    static void removeSinkInternal(
+            const std::shared_ptr<spdlog::sinks::sink> sink);
 
     /// This is the logger used in log_cout.
     static std::shared_ptr<spdlog::logger> m_cout_logger;
