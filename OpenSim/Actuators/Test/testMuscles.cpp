@@ -132,13 +132,42 @@ static const bool testEquilibriumMillard2012AccelerationMuscle = true;
         minTendonSlackLengthToFiberLengthRatio
 
     @param maxTendonSlackLengthToFiberLengthRatio (recommended default 20)
-        The shortest tendon slack length tested will adopt this
-        maxTendonSlackLengthToFiberLengthRatio
+        The longest tendon slack length tested will adopt this
+        maxTendonSlackLengthToFiberLengthRatio. A very long length is
+        recommended (like 20) since some initialization failures (e.g. pairing
+        a muscle model that does not have C2 continuous curves with a
+        Newton method) are unlikely to be caught with shorter tendons.
 
     @param numberOfTendonSlackLengthsToTest (recommended default 3)
         The number of tendon slack lengths to test between
         minTendonSlackLengthToFiberLengthRatio and
         maxTendonSlackLengthToFiberLengthRatio.
+
+        Note: Tendon slack lengths between
+        minTendonSlackLengthToFiberLengthRatio and
+        maxTendonSlackLengthToFiberLengthRatio are spaced exponentially
+        (using base 10). For example if
+
+        - the minimum value is 0.1
+        - the maximum is 20
+        - and 3 samples are taken
+
+        then the middle value will be 1.4, not 10.05. This
+        spacing is intended to meet two aims:
+
+        1. To cover the range of tendon-slack-length-to-fiber-length ratios
+           that typically occur in most living creatures: 0.1-10.
+
+        2. To also cover some extreme lengths that are useful to trigger certain
+           initialization problems. For example if the muscle model has curves
+           that are not C2 continuous (and this has not been handled by the
+           initialization routine) it is easiest to observe an initialization
+           failure with a very long tendon. Briefly, a very long tendon will
+           lead to a larger Newton step. If a discontinuity exists, this large
+           step is more likely to lead to cycling over the disconinuity without
+           convergence. Without a long tendon, this type of failure is unlikely
+           to be observed as it will depend on having a very specific initial
+           condition.
 
     @param minPennationAngle (recommended default 0.)
         The minimum pennation-angle-at-the-optimal-fiber-length that will be
@@ -1477,15 +1506,28 @@ void runMuscleEquilibriumArchitectureAndStateSweep(const Muscle &aMuscleModel,
 
     double optimalFiberLength = aMuscle->getOptimalFiberLength();
 
-    double ltSlk, ltSlkNorm, ltSlkNormDelta;
+    double ltSlk, ltSlkNormExp, ltSlkNormMinExp, ltSlkNormMaxExp,
+           ltSlkNormDeltaExp;
 
-    ltSlkNormDelta = 0;
+    ltSlkNormDeltaExp = 0.;
+
+    //An exponential spacing is used for tendon slack lengths so that
+    //very short, medium, and very long tendons can be tested without
+    //an enormous number of samples. It is necessary to test such a huge
+    //range of tendon slack lengths to both cover a range of tendon lengths
+    //typical of living creatures ( with tendon-slack-length-to-fiber-length
+    //ratios ranging from 0.1 to 10) and also to trigger certain numerical
+    //problems. For example if C2 discontinuity is broken in one of the muscle
+    //curves you are unlikely to see the initialization routine fail unless
+    //you are using a very long tendon or are very lucky.
+    ltSlkNormMinExp=std::log10(settings.minTendonSlackLengthToFiberLengthRatio);
+    ltSlkNormMaxExp=std::log10(settings.maxTendonSlackLengthToFiberLengthRatio);
 
     assert(settings.numberOfTendonSlackLengthsToTest > 0);
     if(settings.numberOfTendonSlackLengthsToTest > 1){
-        ltSlkNormDelta = ( settings.maxTendonSlackLengthToFiberLengthRatio
-                          -settings.minTendonSlackLengthToFiberLengthRatio
-                          )/(settings.numberOfTendonSlackLengthsToTest-1);
+
+        ltSlkNormDeltaExp = (ltSlkNormMaxExp-ltSlkNormMinExp
+                             )/(settings.numberOfTendonSlackLengthsToTest-1);
     }
 
     double pennationAngle, pennationAngleDelta;
@@ -1499,9 +1541,10 @@ void runMuscleEquilibriumArchitectureAndStateSweep(const Muscle &aMuscleModel,
     }
 
     for(int i=0; i<settings.numberOfTendonSlackLengthsToTest;++i){
-        ltSlkNorm = settings.minTendonSlackLengthToFiberLengthRatio
-                    + i*ltSlkNormDelta;
-        ltSlk = ltSlkNorm*optimalFiberLength;
+
+        ltSlkNormExp = std::pow( 10., ltSlkNormMinExp + i*ltSlkNormDeltaExp);
+
+        ltSlk = ltSlkNormExp*optimalFiberLength;
         aMuscle->setTendonSlackLength(ltSlk);
 
         for(int j=0; j<settings.numberOfPennationAnglesToTest;++j){
