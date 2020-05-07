@@ -1,7 +1,11 @@
 Change Log
 ==========
+
 0.5.0 (in development) 
 ----------------------
+- 2020-05-07: Add outputs to DeGrooteFregly2016Muscle for passive elastic and 
+              damping forces.
+
 
 0.4.0 
 -----
