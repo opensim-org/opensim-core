@@ -57,6 +57,10 @@ to vertical, and then tracks the resulting trajectory.
 @example exampleSlidingMass.py
 This is Moco's simplest example.
 
+@example exampleKinematicConstraints.py
+This example demonstrates how Moco solves problems with kinematic constraints
+and includes a visualization of the Lagrange multipliers that Moco solves for.
+
 
 
 @example example2DWalking.cpp
@@ -117,6 +121,7 @@ Tracking | double pendulum | Using MocoStateTrackingGoal | [C++](@ref exampleTra
 MarkerTracking | double pendulum | Using MocoMarkerTrackingGoal | [C++](@ref exampleMarkerTracking.cpp)
 OptimizeMass | point mass | Parameter optimization with MocoMarkerFinalGoal and MocoParameter | [MATLAB](@ref exampleOptimizeMass.m), [Python](@ref exampleOptimizeMass.py)
 MinimizeJointReaction | pendulum | MocoJointReactionGoal, MocoControlGoal, prescribeControlsToModel | [MATLAB](@ref exampleMinimizeJointReaction.m)
+exampleKinematicConstraints | point mass | Point mass constrained to a parabola | [Python](@ref exampleKinematicConstraints.py)
 
 @section Intermediate
 
