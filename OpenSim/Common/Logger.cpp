@@ -30,14 +30,18 @@
 
 using namespace OpenSim;
 
-std::shared_ptr<spdlog::logger> Logger::m_cout_logger =
+std::shared_ptr<spdlog::logger> Logger::m_cout_logger = 
         spdlog::stdout_color_mt("cout");
-std::shared_ptr<Logger> Logger::m_osimLogger = Logger::getInstance();
 std::shared_ptr<spdlog::sinks::basic_file_sink_mt> Logger::m_filesink = {};
+std::shared_ptr<spdlog::logger> Logger::m_default_logger;
+
+// Force creation of the Logger instane to initialize spdlog::loggers
+std::shared_ptr<OpenSim::Logger> Logger::m_osimLogger = Logger::getInstance();
 
 Logger::Logger() {
-    spdlog::set_level(spdlog::level::info);
-    spdlog::set_pattern("[%l] %v");
+    m_default_logger = spdlog::default_logger();
+    m_default_logger->set_level(spdlog::level::info);
+    m_default_logger->set_pattern("[%l] %v");
     m_cout_logger->set_level(spdlog::level::info);
     m_cout_logger->set_pattern("%v");
     addFileSink();
@@ -76,7 +80,7 @@ void Logger::setLevel(Level level) {
 }
 
 Logger::Level Logger::getLevel() {
-    const auto level = spdlog::default_logger()->level();
+    const auto level = m_default_logger->level();
     switch (level) {
     case spdlog::level::off: return Level::Off;
     case spdlog::level::critical: return Level::Critical;
@@ -137,7 +141,7 @@ bool Logger::shouldLog(Level level) {
     default:
         OPENSIM_THROW(Exception, "Internal error.");
     }
-    return spdlog::default_logger()->should_log(spdlogLevel);
+    return m_default_logger->should_log(spdlogLevel);
 }
 
 void Logger::addFileSink(const std::string& filepath) {
@@ -165,14 +169,14 @@ void Logger::removeSink(const std::shared_ptr<LogSink> sink) {
 }
 
 void Logger::addSinkInternal(std::shared_ptr<spdlog::sinks::sink> sink) {
-    spdlog::default_logger()->sinks().push_back(sink);
+    m_default_logger->sinks().push_back(sink);
     m_cout_logger->sinks().push_back(sink);
 }
 
 void Logger::removeSinkInternal(const std::shared_ptr<spdlog::sinks::sink> sink)
 {
     {
-        auto& sinks = spdlog::default_logger()->sinks();
+        auto& sinks = m_default_logger->sinks();
         auto to_erase = std::find(sinks.cbegin(), sinks.cend(), sink);
         if (to_erase != sinks.cend()) sinks.erase(to_erase);
     }
