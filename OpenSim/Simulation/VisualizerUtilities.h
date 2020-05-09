@@ -24,7 +24,6 @@
 
 #include "osimSimulationDLL.h"
 #include <OpenSim/Common/TimeSeriesTable.h>
-#include "StatesTrajectory.h"
 #include <OpenSim/Simulation/Model/Model.h>
 
 namespace OpenSim {
