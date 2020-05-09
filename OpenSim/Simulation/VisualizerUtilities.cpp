@@ -274,7 +274,7 @@ void VisualizerUtilities::showOrientationData(
     SimTK::Array_<Body*> bodies;
     SimTK::Array_<MobilizedBodyIndex> mobis;
 
-    for (size_t i = 0; i < numOrientations; ++i) {
+    for (int i = 0; i < numOrientations; ++i) {
         auto name = quatTable.getColumnLabel(i);
         // remove trailing "_imu"
         std::string::size_type pos = name.find("imu");
