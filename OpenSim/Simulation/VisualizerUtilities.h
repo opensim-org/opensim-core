@@ -63,7 +63,8 @@ public:
 
        Function blocks waiting for user to hit a key to start. */
     static void showOrientationData(
-            const TimeSeriesTableQuaternion&, std::string layout = "line", 
+            const TimeSeriesTable_<SimTK::Quaternion_<double>>&,
+            std::string layout = "line", 
             std::string modelFileForPose="");
 
 private:
