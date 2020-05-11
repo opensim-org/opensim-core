@@ -45,7 +45,7 @@ public:
     ///  Visualize the passed in model in a simbody-visualizer window.
     ///  This function blocks until the user exits the simbody-visualizer
     ///  window. 
-    static void showModel(Model&);
+    static void showModel(Model);
 
     /** Show markers with time histories specified by the passed in 
         TimeSeriesTableVec3. Visualization is shown in the simbody visualizer.
@@ -58,8 +58,8 @@ public:
        - layout options: 
             -'line' default layout frames in a row along Z axis
             -'circle' frames laid out around a half-cicrle in the Y-Z plane
-            -'model' Load passed in model and overlay frames at origins of corresponding
-       segments at default pose.
+            -'model' Load passed in model and overlay frames at origins of 
+                corresponding segments at default pose.
 
        Function blocks waiting for user to hit a key to start. */
     static void showOrientationData(
