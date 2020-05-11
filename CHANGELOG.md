@@ -1,7 +1,10 @@
 Change Log
 ==========
+
 0.5.0 (in development) 
 ----------------------
+- 2020-05-11: Fix an updated function name in exampleSquatToStand.m.
+
 
 0.4.0 
 -----
