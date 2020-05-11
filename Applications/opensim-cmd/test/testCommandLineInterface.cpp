@@ -156,7 +156,6 @@ void testCommand(const std::string& arguments,
                  const T& expectedOutput) {
     CommandOutput out = system_output(COMMAND + " " + arguments);
 
-    std::cout << out.output << std::endl;
     checkCommandOutput(arguments, out.output, expectedOutput);
 
     const bool returnCodeIsCorrect = (out.returncode == expectedReturnCode);
