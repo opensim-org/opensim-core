@@ -57,7 +57,7 @@ public:
        visualizer. 
        - layout options: 
             -'line' default layout frames in a row along Z axis
-            -'circle' frames laid out around a half-cicrle in the Y-Z plane
+            -'circle' frames laid out around a half-circle in the Y-Z plane
             -'model' Load passed in model and overlay frames at origins of corresponding
        segments at default pose.
 

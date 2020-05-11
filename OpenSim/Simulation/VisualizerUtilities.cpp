@@ -411,7 +411,7 @@ void VisualizerUtilities::showOrientationData(
     };
     while (true) {
         for (int frameNumber = 0; frameNumber < times.size(); ++frameNumber) {
-              applyFrame(frameNumber);
+            applyFrame(frameNumber);
             // Slider input.
             int timeSliderIndex = 1;
             int sliderIndex;
