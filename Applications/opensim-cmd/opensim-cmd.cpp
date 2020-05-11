@@ -21,13 +21,14 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#define _REGEX_MAX_STACK_COUNT 20000000
+
 #include "opensim-cmd_run-tool.h"
 #include "opensim-cmd_print-xml.h"
 #include "opensim-cmd_info.h"
 #include "opensim-cmd_update-file.h"
 
 #include <iostream>
-
 #include <docopt.h>
 #include "parse_arguments.h"
 
@@ -38,7 +39,7 @@ static const char HELP[] =
 R"(OpenSim: musculoskeletal modeling and simulation.
 
 Usage:
-  opensim-cmd [--library=<path>]... <command> [<args>...]
+  opensim-cmd [--library=<path>]... [--log=<level>] <command> [<args>...]
   opensim-cmd -h | --help
   opensim-cmd -V | --version
 
@@ -49,6 +50,8 @@ Options:
                  library's extension (e.g., .dll, .so, .dylib). If <path>
                  contains spaces, surround <path> in quotes. You can load
                  multiple plugins by repeating this option.
+  -o <level>, --log <level>  Logging level (off, critical, error, warn, info,
+                 debug, trace). Default: info.
   -h, --help     Show this help description.
   -V, --version  Show the version number.
 
@@ -67,7 +70,7 @@ Examples:
   opensim-cmd update-file lowerlimb_v3.3.osim lowerlimb_updated.osim
   opensim-cmd -L C:\Plugins\osimMyCustomForce.dll run-tool CMC_setup.xml
   opensim-cmd --library ../plugins/libosimMyPlugin.so print-xml MyCustomTool
-  opensim-cmd --library=libosimMyCustomForce.dylib info MyCustomForce
+  opensim-cmd --library=libosimMyCustomForce.dylib --log=debug info MyCustomForce
 
 )";
 
@@ -109,6 +112,12 @@ int main(int argc, const char** argv) {
             // Exit if we couldn't load the library.
             if (!success) return EXIT_FAILURE;
         }
+    }
+    
+    // Logging.
+    // --------
+    if (args["--log"]) {
+        Logger::setLevelString(args["--log"].asString());
     }
 
     // Did the user provide a valid command?

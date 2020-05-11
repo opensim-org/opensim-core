@@ -156,6 +156,7 @@ void testCommand(const std::string& arguments,
                  const T& expectedOutput) {
     CommandOutput out = system_output(COMMAND + " " + arguments);
 
+    std::cout << out.output << std::endl;
     checkCommandOutput(arguments, out.output, expectedOutput);
 
     const bool returnCodeIsCorrect = (out.returncode == expectedReturnCode);
@@ -175,7 +176,7 @@ void testNoCommand() {
                           "Pass -h or --help" + RE_ANY);
         testCommand("", EXIT_SUCCESS, output);
         testCommand("-h", EXIT_SUCCESS, output);
-        testCommand("-help", EXIT_SUCCESS, output);
+        testCommand("--help", EXIT_SUCCESS, output);
     }
 
     // Version.
