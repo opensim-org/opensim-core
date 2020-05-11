@@ -49,8 +49,7 @@ int main(int argc, char** argv) {
     try {
         // Create an OpenSim model and set its name
         if (argc < 2) {
-            string progName = IO::GetFileNameFromURI(argv[0]);
-            cout << "Filename needs to be specified or passed in.\n\n";
+            PrintUsage(argv[0], cout);
             return 1;
         }
         string option = argv[1];
@@ -190,7 +189,7 @@ void PrintUsage(const char* aProgName, ostream& aOStream) {
                 "                                                       "
                 "and apply states from the specified states.sto file.\n";
     aOStream << "-VD,-ViewData -M model.osim -D datafile.{sto,trc}      "
-                "Visualize data from mocap (.trc) or orientations(.sto)"
+                "Visualize data from mocap (.trc) or orientations(.sto)\n"
                 "                                                       "
                 "If model is specified, it's used to layout data on screen.\n";
 }
