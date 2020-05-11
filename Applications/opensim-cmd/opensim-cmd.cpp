@@ -21,8 +21,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#define _REGEX_MAX_STACK_COUNT 20000000
-
 #include "opensim-cmd_run-tool.h"
 #include "opensim-cmd_print-xml.h"
 #include "opensim-cmd_info.h"
@@ -44,14 +42,8 @@ Usage:
   opensim-cmd -V | --version
 
 Options:
-  -L <path>, --library <path>  Load a plugin before executing the requested
-                 command. The <path> to the library can be absolute, or
-                 relative to the current directory. Make sure to include the
-                 library's extension (e.g., .dll, .so, .dylib). If <path>
-                 contains spaces, surround <path> in quotes. You can load
-                 multiple plugins by repeating this option.
-  -o <level>, --log <level>  Logging level (off, critical, error, warn, info,
-                 debug, trace). Default: info.
+  -L <path>, --library <path>  Load a plugin.
+  -o <level>, --log <level>  Logging level.
   -h, --help     Show this help description.
   -V, --version  Show the version number.
 
@@ -62,6 +54,17 @@ Available commands:
   update-file  Update an .xml file (.osim or setup) to this version's format.
 
   Pass -h or --help to any of these commands to learn how to use them.
+
+Description of options:
+  L, library  Load a plugin before executing the requested
+              command. The <path> to the library can be absolute, or
+              relative to the current directory. Make sure to include the
+              library's extension (e.g., .dll, .so, .dylib). If <path>
+              contains spaces, surround <path> in quotes. You can load
+              multiple plugins by repeating this option.
+  o, log      Control the verbosity of OpenSim's console output.
+              Levels: off, critical, error, warn, info, debug, trace.
+              Default: info.
 
 Examples:
   opensim-cmd run-tool InverseDynamics_Setup.xml
