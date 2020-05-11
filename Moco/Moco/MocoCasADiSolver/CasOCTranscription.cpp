@@ -1104,7 +1104,7 @@ void Transcription::printObjectiveBreakdown(const Iterate& it,
         std::ostream& stream) const {
     stream << "Breakdown of objective (including weights):";
     if (objectiveTerms.numel() == 0) {
-        stream << " no terms";
+        stream << " no terms\n";
     } else {
         stream << "\n";
         for (int io = 0; io < (int)m_objectiveTermNames.size(); ++io) {

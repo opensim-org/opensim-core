@@ -5,6 +5,9 @@ Change Log
 ----------------------
 - 2020-05-11: Fix an updated function name in exampleSquatToStand.m.
 
+- 2020-04-16: Added exampleKinematicConstraints.py to visualize how Moco handles
+              kinematic constraints for a simple planar point mass.
+
 
 0.4.0 
 -----
