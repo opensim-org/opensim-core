@@ -38,7 +38,7 @@ using namespace std;
 using namespace OpenSim;
 using namespace SimTK;
 
-void VisualizerUtilities::showModel(Model& model) {
+void VisualizerUtilities::showModel(Model model) {
     model.setUseVisualizer(true);
 
     // Avoid excessive display of Frames for all Bodies, Ground and additional Frames
@@ -338,7 +338,9 @@ void VisualizerUtilities::showOrientationData(
                 auto nameFromData = joints[i]->getName();
                 for (int j = 0; j < bNames.size() && !nameFound; ++j) {
                     if (nameFromData == bNames[j]) { 
-                        const Body& bod = modelForPose.getComponent<OpenSim::Body>("/bodyset/"+bNames[j]);
+                        const Body& bod =
+                                modelForPose.getComponent<OpenSim::Body>(
+                                        "/bodyset/" + bNames[j]);
                         auto pos = bod.getPositionInGround(s);
                         joints[i]
                                 ->updCoordinate(FreeJoint::Coord::TranslationX)
@@ -373,14 +375,16 @@ void VisualizerUtilities::showOrientationData(
     addVisualizerControls(world.updVisualizer(), initialTime, finalTime);
     SimTK::DecorativeText pausedText("");
     pausedText.setIsScreenText(true);
-    const int pausedIndex = world.updVisualizer().updSimbodyVisualizer().addDecoration(
-            SimTK::MobilizedBodyIndex(0), SimTK::Vec3(0), pausedText);
+    const int pausedIndex =
+            world.updVisualizer().updSimbodyVisualizer().addDecoration(
+                    SimTK::MobilizedBodyIndex(0), SimTK::Vec3(0), pausedText);
 
     // Will add text on screen corresponding to Body names
     for (unsigned b = 0; b < bodies.size(); ++b) {
         MobilizedBodyIndex mbi = bodies.getElt(b)->getMobilizedBodyIndex();
         DecorativeText bodyNameText(bodies.getElt(b)->getName());
         bodyNameText.setScale(0.05);
+        bodyNameText.setColor(SimTK::Blue);
         world.updVisualizer().updSimbodyVisualizer().addDecoration(
                 SimTK::MobilizedBodyIndex(mbi), SimTK::Vec3(0, -.02, 0),
                 bodyNameText);
@@ -420,7 +424,8 @@ void VisualizerUtilities::showOrientationData(
 
             if (silo.takeSliderMove(sliderIndex, sliderValue)) {
                 if (sliderIndex == timeSliderIndex) {
-                    auto desiredIndex = (sliderValue - initialTime) / (finalTime - initialTime);
+                    auto desiredIndex = (sliderValue - initialTime) /
+                                        (finalTime - initialTime);
                     frameNumber = static_cast<int>(desiredIndex*times.size());
                     applyFrame(frameNumber);
                 } else {
@@ -445,7 +450,9 @@ void VisualizerUtilities::showOrientationData(
                     pause = !pause;
                     auto& text = static_cast<SimTK::DecorativeText&>(
                             simbodyVisualizer.updDecoration(pausedIndex));
-                    text.setText(pause ? "Paused for 3 secs (hit Space to resume)" : "");
+                    text.setText(
+                            pause ? "Paused for 3 secs (hit Space to resume)"
+                                  : "");
                     simbodyVisualizer.drawFrameNow(state);
                 }
             }
