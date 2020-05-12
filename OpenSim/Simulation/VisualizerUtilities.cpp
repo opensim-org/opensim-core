@@ -328,11 +328,11 @@ void VisualizerUtilities::showOrientationData(
                 joints[i]
                         ->updCoordinate(FreeJoint::Coord::TranslationY)
                         .set_default_value(
-                                1 + cos((double)i / numJoints * SimTK::Pi));
+                                1 + sin((double)i / (numJoints-1) * SimTK::Pi));
                 joints[i]
                         ->updCoordinate(FreeJoint::Coord::TranslationZ)
                         .set_default_value(
-                                1 + sin((double)i / numJoints * SimTK::Pi));
+                                1 + cos((double)i / (numJoints-1) * SimTK::Pi));
             }
             break;
         case 2:
