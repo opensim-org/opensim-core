@@ -141,7 +141,7 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
     musclePtr->addNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
     musclePtr->addNewPathPoint("insertion", *body, SimTK::Vec3(0));
     model.addComponent(musclePtr);
-    auto& muscle = model.getComponent<DeGrooteFregly2016Muscle>("muscle");
+    auto& muscle = model.updComponent<DeGrooteFregly2016Muscle>("muscle");
 
     SECTION("Property value bounds") {
         DeGrooteFregly2016Muscle musc = muscle;
@@ -274,6 +274,12 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             CHECK(muscle.getPassiveFiberForce(state) == Approx(Fmax * fpass));
             CHECK(muscle.getPassiveFiberForceAlongTendon(state) ==
                     Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberElasticForce(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberElasticForceAlongTendon(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberDampingForce(state) == 0);
+            CHECK(muscle.getPassiveFiberDampingForceAlongTendon(state) == 0);
             const auto fiberForce = Fmax * (1 + fpass);
             CHECK(muscle.getFiberForce(state) == Approx(fiberForce));
             CHECK(muscle.getFiberForceAlongTendon(state) ==
@@ -384,6 +390,12 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             CHECK(muscle.getFiberForce(state) == Approx(Fmax * (fl + fpass)));
             CHECK(muscle.getFiberForceAlongTendon(state) ==
                     Approx(Fmax * (fl + fpass)));
+            CHECK(muscle.getPassiveFiberElasticForce(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberElasticForceAlongTendon(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberDampingForce(state) == 0);
+            CHECK(muscle.getPassiveFiberDampingForceAlongTendon(state) == 0);
             CHECK(muscle.getTendonForce(state) == Approx(Fmax * (fl + fpass)));
 
             FiberForceFunction fiberForceFunc(muscle, state, false);
@@ -467,6 +479,12 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             CHECK(muscle.getPassiveFiberForce(state) == Approx(Fmax * fpass));
             CHECK(muscle.getPassiveFiberForceAlongTendon(state) ==
                     Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberElasticForce(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberElasticForceAlongTendon(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberDampingForce(state) == 0);
+            CHECK(muscle.getPassiveFiberDampingForceAlongTendon(state) == 0);
             CHECK(muscle.getFiberForce(state) == Approx(Fmax * (fv + fpass)));
             CHECK(muscle.getFiberForceAlongTendon(state) ==
                     Approx(Fmax * (fv + fpass)));
@@ -511,12 +529,28 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             CHECK(muscle.getPassiveFiberForce(state) == Approx(Fmax * fpass));
             CHECK(muscle.getPassiveFiberForceAlongTendon(state) ==
                     Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberElasticForce(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberElasticForceAlongTendon(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberDampingForce(state) == 0);
+            CHECK(muscle.getPassiveFiberDampingForceAlongTendon(state) == 0);
             CHECK(muscle.getFiberForce(state) ==
                     Approx(Fmax * (a * fv + fpass)));
             CHECK(muscle.getFiberForceAlongTendon(state) ==
                     Approx(Fmax * (a * fv + fpass)));
             CHECK(muscle.getTendonForce(state) ==
                     Approx(Fmax * (a * fv + fpass)));
+
+            double damping = 0.03;
+            muscle.set_fiber_damping(damping);
+            auto stateDamped = model.initSystem();
+            stateDamped.updY() = state.getY();
+            model.realizeDynamics(stateDamped);
+            CHECK(muscle.getPassiveFiberDampingForce(stateDamped) ==
+                    Approx(Fmax * damping * 0.21));
+            CHECK(muscle.getPassiveFiberDampingForceAlongTendon(stateDamped) ==
+                    Approx(Fmax * damping * 0.21));
         }
 
         SECTION("(normalized fiber velocity) = -1") {
@@ -568,6 +602,12 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             CHECK(muscle.getPassiveFiberForce(state) == Approx(Fmax * fpass));
             CHECK(muscle.getPassiveFiberForceAlongTendon(state) ==
                     Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberElasticForce(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberElasticForceAlongTendon(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberDampingForce(state) == 0);
+            CHECK(muscle.getPassiveFiberDampingForceAlongTendon(state) == 0);
             CHECK(muscle.getFiberForce(state) == Approx(Fmax * fpass));
             CHECK(muscle.getFiberForceAlongTendon(state) ==
                     Approx(Fmax * fpass));
@@ -600,6 +640,16 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             CHECK(muscle.getTendonPower(state) == Approx(0.0));
             CHECK(muscle.getMusclePower(state) == Approx(Vmax * Fmax * fpass));
             CHECK(muscle.getStress(state) == Approx(fpass));
+
+            double damping = 0.03;
+            muscle.set_fiber_damping(damping);
+            auto stateDamped = model.initSystem();
+            stateDamped.updY() = state.getY();
+            model.realizeDynamics(stateDamped);
+            CHECK(muscle.getPassiveFiberDampingForce(stateDamped) ==
+                    Approx(Fmax * damping * -1.0));
+            CHECK(muscle.getPassiveFiberDampingForceAlongTendon(stateDamped) ==
+                    Approx(Fmax * damping * -1.0));
         }
 
         SECTION("(active force width scale) = 1.2") {
@@ -626,6 +676,12 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             CHECK(muscle.getPassiveFiberForce(state) == Approx(Fmax * fpass));
             CHECK(muscle.getPassiveFiberForceAlongTendon(state) ==
                     Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberElasticForce(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberElasticForceAlongTendon(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberDampingForce(state) == 0);
+            CHECK(muscle.getPassiveFiberDampingForceAlongTendon(state) == 0);
             CHECK(muscle.getFiberForce(state) == Approx(Fmax * (fal + fpass)));
             CHECK(muscle.getFiberForceAlongTendon(state) ==
                     Approx(Fmax * (fal + fpass)));
@@ -720,6 +776,12 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             CHECK(muscle.getPassiveFiberForce(state) == Approx(Fmax * fpass));
             CHECK(muscle.getPassiveFiberForceAlongTendon(state) ==
                     Approx(Fmax * fpass * cosPenn));
+            CHECK(muscle.getPassiveFiberElasticForce(state) ==
+                    Approx(Fmax * fpass));
+            CHECK(muscle.getPassiveFiberElasticForceAlongTendon(state) ==
+                    Approx(Fmax * fpass * cosPenn));
+            CHECK(muscle.getPassiveFiberDampingForce(state) == 0);
+            CHECK(muscle.getPassiveFiberDampingForceAlongTendon(state) == 0);
             CHECK(muscle.getFiberForce(state) == Approx(Fmax * (fv + fpass)));
             CHECK(muscle.getFiberForceAlongTendon(state) ==
                     Approx(Fmax * (fv + fpass) * cosPenn));
@@ -755,6 +817,16 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             CHECK(muscle.getMusclePower(state) ==
                     Approx(Vmax * cosPenn * Fmax * (fv + fpass)));
             CHECK(muscle.getStress(state) == Approx((fv + fpass) * cosPenn));
+
+            double damping = 0.015;
+            muscle.set_fiber_damping(damping);
+            auto stateDamped = model.initSystem();
+            stateDamped.updY() = state.getY();
+            model.realizeDynamics(stateDamped);
+            CHECK(muscle.getPassiveFiberDampingForce(stateDamped) ==
+                    Approx(Fmax * damping * -cosPenn));
+            CHECK(muscle.getPassiveFiberDampingForceAlongTendon(stateDamped) ==
+                    Approx(Fmax * damping * -cosPenn * cosPenn));
         }
 
         SECTION("initial equilibrium") {
@@ -892,6 +964,12 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
                     Approx(passiveFiberForce));
             CHECK(muscle.getPassiveFiberForceAlongTendon(state) ==
                     Approx(passiveFiberForce * cosPennationAngle));
+            CHECK(muscle.getPassiveFiberElasticForce(state) ==
+                    Approx(passiveFiberForce));
+            CHECK(muscle.getPassiveFiberElasticForceAlongTendon(state) ==
+                    Approx(passiveFiberForce * cosPennationAngle));
+            CHECK(muscle.getPassiveFiberDampingForce(state) == 0);
+            CHECK(muscle.getPassiveFiberDampingForceAlongTendon(state) == 0);
             CHECK(muscle.getFiberForce(state) == Approx(fiberForce));
             CHECK(muscle.getFiberForceAlongTendon(state) ==
                     Approx(fiberForceAlongTendon));
@@ -932,6 +1010,16 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             CHECK(muscle.getMusclePower(state) ==
                     Approx(-tendonForce * muscleTendonVelocity));
             CHECK(muscle.getStress(state) == Approx(tendonForce / Fmax));
+
+            double damping = 0.012;
+            muscle.set_fiber_damping(damping);
+            auto stateDamped = model.initSystem();
+            stateDamped.updY() = state.getY();
+            model.realizeDynamics(stateDamped);
+            CHECK(muscle.getPassiveFiberDampingForce(stateDamped) ==
+                    Approx(Fmax * damping * normFiberVelocity));
+            CHECK(muscle.getPassiveFiberDampingForceAlongTendon(stateDamped) ==
+                    Approx(Fmax * damping * normFiberVelocity * cosPennationAngle));
         }
     }
 
