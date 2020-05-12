@@ -110,7 +110,7 @@ inverse.set_tolerance( );
 
 % Allow extra (unused) columns in the kinematics and minimize activations.
 inverse.set_kinematics_allow_extra_columns(true);
-inverse.set_minimize_sum_squared_states(true);
+inverse.set_minimize_sum_squared_activations(true);
 
 % Append additional outputs path for quantities that are calculated
 % post-hoc using the inverse problem solution.
