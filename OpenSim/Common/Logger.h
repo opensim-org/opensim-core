@@ -104,32 +104,32 @@ public:
 
     template <typename... Args>
     static void critical(spdlog::string_view_t fmt, const Args&... args) {
-        spdlog::critical(fmt, args...);
+        m_default_logger->critical(fmt, args...);
     }
 
     template <typename... Args>
     static void error(spdlog::string_view_t fmt, const Args&... args) {
-        spdlog::error(fmt, args...);
+        m_default_logger->error(fmt, args...);
     }
 
     template <typename... Args>
     static void warn(spdlog::string_view_t fmt, const Args&... args) {
-        spdlog::warn(fmt, args...);
+        m_default_logger->warn(fmt, args...);
     }
 
     template <typename... Args>
     static void info(spdlog::string_view_t fmt, const Args&... args) {
-        spdlog::info(fmt, args...);
+        m_default_logger->info(fmt, args...);
     }
 
     template <typename... Args>
     static void debug(spdlog::string_view_t fmt, const Args&... args) {
-        spdlog::debug(fmt, args...);
+        m_default_logger->debug(fmt, args...);
     }
 
     template <typename... Args>
     static void trace(spdlog::string_view_t fmt, const Args&... args) {
-        spdlog::trace(fmt, args...);
+        m_default_logger->trace(fmt, args...);
     }
 
     /// Use this function to log messages that would normally be sent to
@@ -173,9 +173,10 @@ public:
     /// This returns the singleton instance of the Log class, but users never
     /// need to invoke this function. The member functions in this class are
     /// static.
-    static const std::shared_ptr<Logger> getInstance() {
+    static const std::shared_ptr<OpenSim::Logger> getInstance() {
         if (!m_osimLogger) {
-            m_osimLogger = std::shared_ptr<Logger>(new Logger());
+            m_osimLogger =
+                    std::shared_ptr<OpenSim::Logger>(new OpenSim::Logger());
         }
         return m_osimLogger;
     }
@@ -191,7 +192,10 @@ private:
     /// This is the logger used in log_cout.
     static std::shared_ptr<spdlog::logger> m_cout_logger;
 
-    static std::shared_ptr<Logger> m_osimLogger;
+    /// This is the singleton OpenSim::Logger
+    static std::shared_ptr<OpenSim::Logger> m_osimLogger;
+
+    static std::shared_ptr<spdlog::logger> m_default_logger;
 
     /// Keep track of the file sink.
     static std::shared_ptr<spdlog::sinks::basic_file_sink_mt> m_filesink;
