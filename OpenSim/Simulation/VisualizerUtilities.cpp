@@ -42,17 +42,24 @@ void VisualizerUtilities::showModel(Model model) {
     model.setUseVisualizer(true);
 
     // Avoid excessive display of Frames for all Bodies, Ground and additional Frames
-    model.updDisplayHints().set_show_frames(false);
     SimTK::State& si = model.initSystem();
+    auto silo = &model.updVisualizer().updInputSilo();
+ 
+    SimTK::DecorativeText help("Press any key to quit.");
+    help.setIsScreenText(true);
+    auto simtkVisualizer = model.updVisualizer().updSimbodyVisualizer();
+    simtkVisualizer.addDecoration(
+            SimTK::MobilizedBodyIndex(0), SimTK::Vec3(0), help);
+    simtkVisualizer.setShutdownWhenDestructed(true);
     // This line is to avoid muscles starting at undefined initialState
     model.equilibrateMuscles(si);
     model.getMultibodySystem().realize(si, SimTK::Stage::Velocity);
     model.getVisualizer().show(si);
-    // Keep Visualizer from dying until we inspect the visualization
-    // window..
-    char c;
-    std::cout << "Press any character to exit..." << std::endl;
-    std::cin >> c;
+
+    // exit gracefully on key press
+    silo->clear(); // Ignore any previous key presses.
+    unsigned key, modifiers;
+    silo->waitForKeyHit(key, modifiers);
  }
 
 // Based on code from simtk.org/projects/predictivesim SimbiconExample/main.cpp.
