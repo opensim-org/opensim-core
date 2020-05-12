@@ -5,6 +5,9 @@ Change Log
 ----------------------
 - 2020-05-11: Update names of mesh files in 2D_gait.osim.
 
+- 2020-05-11: Add outputs to DeGrooteFregly2016Muscle for passive elastic and 
+              damping forces.
+
 - 2020-05-11: Fix an updated function name in exampleSquatToStand.m.
 
 - 2020-04-16: Added exampleKinematicConstraints.py to visualize how Moco handles
