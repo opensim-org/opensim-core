@@ -63,6 +63,7 @@ int main(int argc, char** argv) {
             string geomertySearchPath = "";
             string dataFileName = "";
             string statesFileName = "";
+            string layout = "model";
             for (int i = 1; i <= (argc - 1); i++) {
                 option = argv[i];
                 if (option == "-M" || option == "-Model") {
@@ -96,6 +97,13 @@ int main(int argc, char** argv) {
                         exit(-1);
                     }
                     dataFileName = string(argv[i + 1]); 
+                } else if (option == "-A") {
+                    if (argc < i + 2) {
+                        cout << "No layout specified after option -A";
+                        PrintUsage(argv[0], cout);
+                        exit(-1);
+                    }
+                    layout = string(argv[i + 1]);
                 }
             }
             option = argv[1];
@@ -134,7 +142,6 @@ int main(int argc, char** argv) {
                 if (extension == ".sto") {
 
                     TimeSeriesTableQuaternion quatTable(dataFileName);
-                    auto layout = "model";
                     VisualizerUtilities::showOrientationData(
                             quatTable, layout, modelFileName);
 
@@ -188,8 +195,10 @@ void PrintUsage(const char* aProgName, ostream& aOStream) {
                 "Visualize model with optional geometry search path, \n"
                 "                                                       "
                 "and apply states from the specified states.sto file.\n";
-    aOStream << "-VD,-ViewData -M model.osim -D datafile.{sto,trc}      "
+    aOStream << "-VD,-ViewData -M mdl.osim -A layout -D file.{sto,trc}  "
                 "Visualize data from mocap (.trc) or orientations(.sto)\n"
                 "                                                       "
-                "If model is specified, it's used to layout data on screen.\n";
+                "layout is one of {line, circle, model}, If model      \n"
+                "                                                       "
+                "is specified, it's used to layout data on screen.     \n";
 }
