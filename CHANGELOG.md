@@ -3,6 +3,8 @@ Change Log
 
 0.5.0 (in development) 
 ----------------------
+- 2020-05-11: Update names of mesh files in 2D_gait.osim.
+
 - 2020-05-11: Fix an updated function name in exampleSquatToStand.m.
 
 - 2020-04-16: Added exampleKinematicConstraints.py to visualize how Moco handles
