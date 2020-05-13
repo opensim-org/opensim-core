@@ -65,8 +65,9 @@ using namespace std;
 // 30515 for WrapObject color, display_preference, VisibleObject -> Appearance
 // 30516 for GeometryPath default_color -> Appearance
 // 30517 for removal of _connectee_name suffix to shorten XML for socket, input
-// 40000 for OpenSim 4.0 release
-const int XMLDocument::LatestVersion = 40000;
+// 40000 for OpenSim 4.0 release 40000
+// 40200 for ExternalLoads retire kinematics for external loads options
+const int XMLDocument::LatestVersion = 40200;
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTOR(S)
 //=============================================================================
