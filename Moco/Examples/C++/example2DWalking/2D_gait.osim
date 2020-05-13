@@ -1844,7 +1844,7 @@
 								<color>1 1 1</color>
 							</Appearance>
 							<!--Name of geometry file.-->
-							<mesh_file>l_femur.vtp</mesh_file>
+							<mesh_file>femur_l.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--The mass of the body (kg)-->
@@ -1877,7 +1877,7 @@
 								<color>1 1 1</color>
 							</Appearance>
 							<!--Name of geometry file.-->
-							<mesh_file>r_femur.vtp</mesh_file>
+							<mesh_file>femur_r.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--The mass of the body (kg)-->
@@ -1910,7 +1910,7 @@
 								<color>1 1 1</color>
 							</Appearance>
 							<!--Name of geometry file.-->
-							<mesh_file>l_tibia.vtp</mesh_file>
+							<mesh_file>tibia_l.vtp</mesh_file>
 						</Mesh>
                         <Mesh name="fibula_l_geom_1">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
@@ -1958,7 +1958,7 @@
 								<color>1 1 1</color>
 							</Appearance>
 							<!--Name of geometry file.-->
-							<mesh_file>r_tibia.vtp</mesh_file>
+							<mesh_file>tibia_r.vtp</mesh_file>
 						</Mesh>
                         <Mesh name="fibula_r_geom_1">
 							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
