@@ -114,7 +114,7 @@ int main(int argc, const char** argv) {
     // Did the user provide a valid command?
     // -------------------------------------
     if (!args["<command>"]) {
-        std::cout << "No command provided." << std::endl;
+        log_error("No command provided.");
         return EXIT_FAILURE;
     }
 
@@ -122,8 +122,8 @@ int main(int argc, const char** argv) {
     const auto& command = args["<command>"].asString();
 
     if (commands.count(command) == 0) {
-        std::cout << "'" << command << "' is not an opensim-cmd command. "
-            << "See 'opensim-cmd --help'." << std::endl;
+        log_error("'{}' is not an opensim-cmd command. "
+                  "See 'opensim-cmd --help'.", command);
         return EXIT_FAILURE;
     }
 
@@ -134,7 +134,7 @@ int main(int argc, const char** argv) {
 
 
     } catch (const std::exception& e) {
-        std::cerr << e.what() << std::endl;
+        log_error(e.what());
         return EXIT_FAILURE;
     }
 

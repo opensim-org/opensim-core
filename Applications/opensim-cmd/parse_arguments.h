@@ -25,6 +25,8 @@
 
 #include <docopt.h>
 
+#include <OpenSim/OpenSim.h>
+
 namespace OpenSim {
 
 // This implementation was copied from docopt.cpp; the only difference is that
@@ -41,18 +43,18 @@ parse_arguments(std::string const& doc,
     try {
         return docopt_parse(doc, argv, help, !version.empty(), options_first);
     } catch (DocoptExitHelp const&) {
-        std::cout << doc << std::endl;
+        log_cout(doc);
         std::exit(0);
     } catch (DocoptExitVersion const&) {
-        std::cout << version << std::endl;
+        log_cout(version);
         std::exit(0);
     } catch (DocoptLanguageError const& error) {
-        std::cerr << "Docopt usage string could not be parsed." << std::endl;
-        std::cerr << error.what() << std::endl;
+        log_error("Docopt usage string could not be parsed.");
+        log_error(error.what());
         std::exit(-1);
     } catch (DocoptArgumentError const& error) {
-        std::cerr << error.what() << "." << std::endl;
-        std::cerr << "Use --help to get more information." << std::endl;
+        log_error(error.what());
+        log_error("Use --help to get more information.");
         std::exit(-1);
     }
 }
