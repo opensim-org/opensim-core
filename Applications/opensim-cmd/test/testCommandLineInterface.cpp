@@ -175,7 +175,7 @@ void testNoCommand() {
                           "Pass -h or --help" + RE_ANY);
         testCommand("", EXIT_SUCCESS, output);
         testCommand("-h", EXIT_SUCCESS, output);
-        testCommand("-help", EXIT_SUCCESS, output);
+        testCommand("--help", EXIT_SUCCESS, output);
     }
 
     // Version.
