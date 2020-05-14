@@ -33,6 +33,11 @@
 #include <OpenSim/OpenSim.h>
 #include <OpenSim/version.h>
 
+// The initial descriptions of the options should not exceed one line.
+// This is to avoid regex errors with MSVC, where parsing HELP with
+// MSVC's regex library causes a stack error if the description for an
+// option is too long.
+
 static const char HELP[] =
 R"(OpenSim: musculoskeletal modeling and simulation.
 
