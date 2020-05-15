@@ -62,8 +62,7 @@ int main(int argc,char **argv)
     outputFileName = (argc == 2)?(outputFileName=inputFileName): string(argv[2]);
     // ERROR CHECK
     if(inputFileName=="") {
-        log_error("versionUpdate.exe: ERROR- An input file must be "
-                  "specified.");
+        log_error("versionUpdate.exe: An input file must be specified.");
         PrintUsage(argv[0], cout);
         return(-1);
     }
@@ -71,7 +70,7 @@ int main(int argc,char **argv)
     string::size_type extSep = inputFileName.rfind(".");
 
     if (extSep == string::npos) {
-        log_error("versionUpdate.exe: ERROR- Unknown file type encountered. "
+        log_error("versionUpdate.exe: Unknown file type encountered. "
                   "File extension must be specified.");
         PrintUsage(argv[0], cout);
         return 1;// if '_fileName' contains path information...
@@ -83,7 +82,7 @@ int main(int argc,char **argv)
         return (0);
     }
     if (extension != ".xml" && extension != ".osim") {
-        log_error("versionUpdate.exe: ERROR- Unknown file type encountered. "
+        log_error("versionUpdate.exe: Unknown file type encountered. "
                   "Only .xml, .osim and .sto files are supported.");
         PrintUsage(argv[0], cout);
         return 1;// if '_fileName' contains path information...

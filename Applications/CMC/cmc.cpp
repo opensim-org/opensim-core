@@ -115,7 +115,7 @@ int main(int argc,char **argv)
 
     // ERROR CHECK
     if(setupFileName=="") {
-        log_error("{}: ERROR- A setup file must be specified.", argv[0]);
+        log_error("{}: A setup file must be specified.", argv[0]);
         PrintUsage(argv[0], cout);
         return(-1);
     }

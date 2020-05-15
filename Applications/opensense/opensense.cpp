@@ -228,7 +228,7 @@ int main(int argc, char **argv)
 
         // ERROR CHECK
         if (setupFileName == "") {
-            log_error("opensense.exe: ERROR- A setup file must be specified.");
+            log_error("opensense.exe: A setup file must be specified.");
             PrintUsage(argv[0], cout);
             return(-1);
         }

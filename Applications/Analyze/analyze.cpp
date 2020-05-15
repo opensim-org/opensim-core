@@ -118,7 +118,7 @@ int main(int argc,char **argv)
 
     // ERROR CHECK
     if(setupFileName=="") {
-        log_error("analyze.exe: ERROR- A setup file must be specified.", argv[0]);
+        log_error("analyze.exe: A setup file must be specified.", argv[0]);
         PrintUsage(argv[0], cout);
         return(-1);
     }
