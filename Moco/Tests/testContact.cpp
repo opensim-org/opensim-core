@@ -281,9 +281,13 @@ Model createBallHalfSpaceModel(double frictionCoefficient = FRICTION_COEFFICIENT
     Vec3 halfSpaceLocation(0);
     // Set the plane parallel to the ground.
     Vec3 halfSpaceOrientation(0, 0, -0.5 * SimTK::Pi);
+    auto* sphere = new ContactSphere(radius, sphereLocation, *ball, "sphere");
+    model.addContactGeometry(sphere);
+    auto* halfSpace = new ContactHalfSpace(halfSpaceLocation,
+            halfSpaceOrientation, model.getGround(), "floor");
+    model.addContactGeometry(halfSpace);
     auto* contactBallHalfSpace = new SmoothSphereHalfSpaceForce(
-        "contactBallHalfSpace", *ball, sphereLocation, radius,
-        model.getGround(), halfSpaceLocation, halfSpaceOrientation);
+        "contactBallHalfSpace", *sphere, *halfSpace);
     contactBallHalfSpace->set_stiffness(stiffness);
     contactBallHalfSpace->set_dissipation(dissipation);
     contactBallHalfSpace->set_static_friction(staticFriction);

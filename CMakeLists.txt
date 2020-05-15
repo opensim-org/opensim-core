@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.2)
-project(OpenSimMoco VERSION 0.4.0)
+project(OpenSimMoco VERSION 0.5.0)
 
 # Version.
 # --------

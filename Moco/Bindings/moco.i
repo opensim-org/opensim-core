@@ -33,6 +33,7 @@ namespace OpenSim {
 %include <Moco/MocoGoal/MocoMarkerFinalGoal.h>
 %include <Moco/MocoGoal/MocoContactTrackingGoal.h>
 %include <Moco/MocoGoal/MocoControlGoal.h>
+%include <Moco/MocoGoal/MocoControlTrackingGoal.h>
 %include <Moco/MocoGoal/MocoInitialActivationGoal.h>
 %include <Moco/MocoGoal/MocoJointReactionGoal.h>
 %include <Moco/MocoGoal/MocoSumSquaredStateGoal.h>
@@ -221,7 +222,6 @@ moco_unique_ptr(OpenSim::PositionMotion);
 %template(analyzeSpatialVec) OpenSim::analyze<SimTK::SpatialVec>;
 
 %include <Moco/Components/ModelFactory.h>
-%include <Moco/Components/SmoothSphereHalfSpaceForce.h>
 %include <Moco/Components/MultivariatePolynomialFunction.h>
 
 %include <Moco/ModelOperators.h>
