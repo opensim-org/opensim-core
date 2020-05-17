@@ -78,7 +78,7 @@ int update_file(int argc, const char** argv) {
                     "Could not make object from file '" + inputFile + "'.\n"
                     "Did you intend to load a plugin (with --library)?");
         }
-        log_info("Printing updated file to '{}.", outputFile);
+        log_info("Printing updated file to '{}'.", outputFile);
         obj->print(outputFile);
         return EXIT_SUCCESS;
     }
@@ -87,7 +87,7 @@ int update_file(int argc, const char** argv) {
     if (extension == ".sto") {
         log_info("Loading input file '{}'.", inputFile);
         Storage stg(inputFile);
-        log_info("Printing updated file to '{}.", outputFile);
+        log_info("Printing updated file to '{}'.", outputFile);
         stg.print(outputFile);
         return EXIT_SUCCESS;
     }
