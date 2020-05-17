@@ -1,8 +1,57 @@
 Change Log
 ==========
 
-0.4.0 (in development)
+0.5.0 (in development)
 ----------------------
+- 2020-05-17: Introduce MocoGoal::getStageDependency() to improve efficiency of 
+              goals.
+              
+- 2020-05-17: MocoSolvers no longer directly set the model's control cache. 
+              Instead, Moco adds a DiscreteController to the model and the 
+              solvers modify the DiscreteController's control signals.
+              This change allows Moco to support synergies in the future.
+              
+- 2020-05-11: Update names of mesh files in 2D_gait.osim.
+
+- 2020-05-11: Add outputs to DeGrooteFregly2016Muscle for passive elastic and 
+              damping forces.
+
+- 2020-05-11: Fix an updated function name in exampleSquatToStand.m.
+
+- 2020-04-16: Added exampleKinematicConstraints.py to visualize how Moco handles
+              kinematic constraints for a simple planar point mass.
+
+
+0.4.0 
+-----
+- 2020-04-03: Added missing MATLAB and Python commands for getting/setting 
+              derivative and multiplier variables to the bindings.
+
+- 2020-03-29: (backwards-incompatible) Updated opensim-core to a version that 
+              includes SmoothSphereHalfSpaceForce. Therefore, 
+              SmoothSphereHalfSpaceForce was removed from Moco.
+              The interface of this class has been updated
+              to use OpenSim's ContactSphere and ContactHalfSpace classes. 
+              See the following link for how to update your models:
+              https://github.com/opensim-org/opensim-moco/commit/ccd39f82acba5f23ebc3423eb40d2197d6d41d8b#diff-eb627df1f2a265a84a30b7c6b4f92999
+              
+- 2020-03-27: Fix bug in MocoPeriodicityGoal that prevented convergence when
+              constraining control variables.
+
+- 2020-03-25: Fixed an error that occurs when using ModOpRemoveMuscles.
+
+- 2020-03-15: exampleMocoInverse now employs electromyography data with a 
+              MocoControlTrackingGoal.
+              
+- 2020-03-15: MocoControlTrackingGoal provides more flexibility when associating
+              control signals with reference data.
+
+- 2020-03-10: The default parameters for createPeriodicTrajectory() are fixed
+              (pelvis_rotation and lumbar_rotation are now properly negated).
+
+- 2020-02-06: example2DWalking now includes a MocoContactTrackingGoal 
+              (thanks to Brian Umberger and Antoine Falisse).
+
 - 2020-01-29: DeGrooteFregly2016Muscle's passive force multiplier now has a
               stiffness parameter. To support this change, the curve was 
               tweaked slightly. This may have a minor effect on solutions
@@ -11,13 +60,8 @@ Change Log
 
 - 2020-01-28: Added a projection setting to MocoFrameDistanceConstraint.
 
-- 2020-01-21: Introduce MocoGoal::getStageDependency() to improve efficiency of 
-              goals.
-              
-- 2020-01-21: MocoSolvers no longer directly set the model's control cache. 
-              Instead, Moco adds a DiscreteController to the model and the 
-              solvers modify the DiscreteController's control signals.
-              This change allows Moco to support synergies in the future.
+- 2020-01-27: MocoContactTrackingGoal now handles scenarios where contact 
+              spheres are distributed across multiple bodies.
 
 
 0.3.0 

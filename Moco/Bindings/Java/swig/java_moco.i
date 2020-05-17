@@ -372,6 +372,12 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
         for (int i = 0; i < traj.length; ++i) { v.set(i, traj[i]); }
         setMultiplier(name, v);
     }
+    public void setDerivative(String name, double[] traj) {
+        Vector v = new Vector();
+        v.resize(traj.length);
+        for (int i = 0; i < traj.length; ++i) { v.set(i, traj[i]); }
+        setDerivative(name, v);
+    }
     public double[] getTimeMat() {
         Vector time = getTime();
         double[] ret = new double[time.size()];
@@ -396,6 +402,12 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
         for (int i = 0; i < mult.size(); ++i) { ret[i] = mult.get(i); };
         return ret;
     }
+    public double[] getDerivativeMat(String name) {
+        VectorView deriv = getDerivative(name);
+        double[] ret = new double[deriv.size()];
+        for (int i = 0; i < deriv.size(); ++i) { ret[i] = deriv.get(i); };
+        return ret;
+    }
     public double[] getParametersMat() {
         RowVector params = getParameters();
         double[] ret = new double[params.size()];
@@ -415,11 +427,31 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
     public double[][] getControlsTrajectoryMat() {
         Matrix matrix = getControlsTrajectory();
         double[][] ret = new double[matrix.nrow()][matrix.ncol()];
-            for (int i = 0; i < matrix.nrow(); ++i) {
-                for (int j = 0; j < matrix.ncol(); ++j) {
-                    ret[i][j] = matrix.getElt(i, j);
-                }
+        for (int i = 0; i < matrix.nrow(); ++i) {
+            for (int j = 0; j < matrix.ncol(); ++j) {
+                ret[i][j] = matrix.getElt(i, j);
             }
+        }
+        return ret;
+    }
+    public double[][] getMultipliersTrajectoryMat() {
+        Matrix matrix = getMultipliersTrajectory();
+        double[][] ret = new double[matrix.nrow()][matrix.ncol()];
+        for (int i = 0; i < matrix.nrow(); ++i) {
+            for (int j = 0; j < matrix.ncol(); ++j) {
+                ret[i][j] = matrix.getElt(i, j);
+            }
+        }
+        return ret;
+    }
+    public double[][] getDerivativesTrajectoryMat() {
+        Matrix matrix = getDerivativesTrajectory();
+        double[][] ret = new double[matrix.nrow()][matrix.ncol()];
+        for (int i = 0; i < matrix.nrow(); ++i) {
+            for (int j = 0; j < matrix.ncol(); ++j) {
+                ret[i][j] = matrix.getElt(i, j);
+            }
+        }
         return ret;
     }
 %}

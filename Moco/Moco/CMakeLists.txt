@@ -76,8 +76,6 @@ set(MOCO_SOURCES
         Components/DeGrooteFregly2016Muscle.cpp
         Components/DiscreteController.cpp
         Components/DiscreteController.h
-        Components/SmoothSphereHalfSpaceForce.h
-        Components/SmoothSphereHalfSpaceForce.cpp
         Components/ActivationCoordinateActuator.h
         Components/StationPlaneContactForce.h
         Components/StationPlaneContactForce.cpp

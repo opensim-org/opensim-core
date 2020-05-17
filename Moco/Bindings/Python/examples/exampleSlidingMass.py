@@ -82,7 +82,7 @@ study.printToXML('sliding_mass.omoco')
 
 # Solve the problem.
 # ==================
-solution = study.solve();
+solution = study.solve()
 
 solution.write('sliding_mass_solution.sto')
 

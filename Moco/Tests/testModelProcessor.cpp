@@ -19,9 +19,12 @@
 #define CATCH_CONFIG_MAIN
 #include "Testing.h"
 #include <Moco/ModelProcessor.h>
+#include <Moco/osimMoco.h>
 
+#include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 #include <OpenSim/Analyses/MuscleAnalysis.h>
 #include <OpenSim/Common/LogManager.h>
+#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 
 using namespace OpenSim;
 
@@ -75,4 +78,33 @@ TEST_CASE("ModelProcessor") {
             CHECK(modelDeserialized.getAnalysisSet().getSize() == 1);
         }
     }
+}
+
+TEST_CASE("ModOpRemoveMuscles") {
+    Model model;
+    using SimTK::Vec3;
+    using SimTK::Inertia;
+    auto* body = new OpenSim::Body("body", 1, Vec3(0), Inertia(0));
+    auto* joint = new PinJoint("joint",
+            model.getGround(), Vec3(0), Vec3(0),
+            *body, Vec3(0, 1, 0), Vec3(0));
+
+    // Add a muscle that flexes the elbow.
+    auto* biceps = new
+            Millard2012EquilibriumMuscle("biceps", 200, 0.6, 0.55, 0);
+    biceps->addNewPathPoint("origin", model.getGround(), Vec3(0, 0.8, 0));
+    biceps->addNewPathPoint("insertion", *body,  Vec3(0, 0.7, 0));
+
+    model.addBody(body);
+    model.addJoint(joint);
+    model.addForce(biceps);
+    model.finalizeConnections();
+
+    ModelProcessor proc(model);
+    proc.append(ModOpRemoveMuscles());
+    Model processedModel = proc.process();
+    processedModel.finalizeFromProperties();
+
+    CHECK(processedModel.countNumComponents<Millard2012EquilibriumMuscle>() ==
+            0);
 }

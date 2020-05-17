@@ -397,12 +397,6 @@ void DeGrooteFregly2016Muscle::calcMuscleDynamicsInfoHelper(
                     mli.fiberLength, mli.sinPennationAngle,
                     mli.cosPennationAngle);
 
-    mdi.userDefinedDynamicsExtras = SimTK::Vector(3);
-    mdi.userDefinedDynamicsExtras[0] = partialPennationAnglePartialFiberLength;
-    mdi.userDefinedDynamicsExtras[1] =
-            partialFiberForceAlongTendonPartialFiberLength;
-    mdi.userDefinedDynamicsExtras[2] = partialTendonForcePartialFiberLength;
-
     // Compute power entries.
     // ----------------------
     // In order for the fiberPassivePower to be zero work, the non-conservative
@@ -414,6 +408,20 @@ void DeGrooteFregly2016Muscle::calcMuscleDynamicsInfoHelper(
     mdi.fiberPassivePower = -conPassiveFiberForce * fvi.fiberVelocity;
     mdi.tendonPower = -mdi.tendonForce * fvi.tendonVelocity;
     mdi.musclePower = -mdi.tendonForce * muscleTendonVelocity;
+
+    mdi.userDefinedDynamicsExtras.resize(5);
+    mdi.userDefinedDynamicsExtras[m_mdi_passiveFiberElasticForce] =
+            conPassiveFiberForce;
+    mdi.userDefinedDynamicsExtras[m_mdi_passiveFiberDampingForce] =
+            nonConPassiveFiberForce;
+    mdi.userDefinedDynamicsExtras[
+                    m_mdi_partialPennationAnglePartialFiberLength] =
+            partialPennationAnglePartialFiberLength;
+    mdi.userDefinedDynamicsExtras[
+            m_mdi_partialFiberForceAlongTendonPartialFiberLength] =
+            partialFiberForceAlongTendonPartialFiberLength;
+    mdi.userDefinedDynamicsExtras[m_mdi_partialTendonForcePartialFiberLength] =
+            partialTendonForcePartialFiberLength;
 }
 
 void DeGrooteFregly2016Muscle::calcMusclePotentialEnergyInfoHelper(
@@ -660,8 +668,10 @@ DeGrooteFregly2016Muscle::estimateMuscleFiberState(const double activation,
                 mli, fvi, mdi, normTendonForce);
 
         partialFiberForceAlongTendonPartialFiberLength =
-                mdi.userDefinedDynamicsExtras[1];
-        partialTendonForcePartialFiberLength = mdi.userDefinedDynamicsExtras[2];
+                mdi.userDefinedDynamicsExtras[
+                        m_mdi_partialFiberForceAlongTendonPartialFiberLength];
+        partialTendonForcePartialFiberLength = mdi.userDefinedDynamicsExtras[
+                m_mdi_partialTendonForcePartialFiberLength];
 
         residual = calcEquilibriumResidual(
                 mdi.tendonForce, mdi.fiberForceAlongTendon);
@@ -782,6 +792,29 @@ DeGrooteFregly2016Muscle::estimateMuscleFiberState(const double activation,
     return std::pair<StatusFromEstimateMuscleFiberState,
             ValuesFromEstimateMuscleFiberState>(
             Failure_MaxIterationsReached, resultValues);
+}
+
+double DeGrooteFregly2016Muscle::getPassiveFiberElasticForce(
+        const SimTK::State& s) const {
+    return getMuscleDynamicsInfo(s)
+            .userDefinedDynamicsExtras[m_mdi_passiveFiberElasticForce];
+}
+double DeGrooteFregly2016Muscle::getPassiveFiberElasticForceAlongTendon(
+        const SimTK::State& s) const {
+    return getMuscleDynamicsInfo(s)
+                   .userDefinedDynamicsExtras[m_mdi_passiveFiberElasticForce] *
+           getMuscleLengthInfo(s).cosPennationAngle;
+}
+double DeGrooteFregly2016Muscle::getPassiveFiberDampingForce(
+        const SimTK::State& s) const {
+    return getMuscleDynamicsInfo(s)
+            .userDefinedDynamicsExtras[m_mdi_passiveFiberDampingForce];
+}
+double DeGrooteFregly2016Muscle::getPassiveFiberDampingForceAlongTendon(
+        const SimTK::State& s) const {
+    return getMuscleDynamicsInfo(s)
+                   .userDefinedDynamicsExtras[m_mdi_passiveFiberDampingForce] *
+           getMuscleLengthInfo(s).cosPennationAngle;
 }
 
 double DeGrooteFregly2016Muscle::getImplicitResidualNormalizedTendonForce(

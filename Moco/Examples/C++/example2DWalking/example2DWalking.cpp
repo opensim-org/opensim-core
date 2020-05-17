@@ -31,7 +31,7 @@
 /// modified version of the 'gait10dof18musc.osim' available within OpenSim. We
 /// replaced the moving knee flexion axis by a fixed flexion axis, replaced the
 /// Millard2012EquilibriumMuscles by DeGrooteFregly2016Muscles, and added
-/// SmoothSphereHalfSpaceForces (two contact spheres per foot) to model the
+/// SmoothSphereHalfSpaceForces (two contacts per foot) to model the
 /// contact interactions between the feet and the ground.
 ///
 /// Data
@@ -44,13 +44,20 @@
 
 using namespace OpenSim;
 
-// Set a coordinate tracking problem where the goal is to minimize the
-// difference between provided and simulated coordinate values and speeds
-// as well as to minimize an effort cost (squared controls). The provided data
-// represents half a gait cycle. Endpoint constraints enforce periodicity of
-// the coordinate values (except for pelvis tx) and speeds, coordinate
-// actuator controls, and muscle activations.
-MocoSolution gaitTracking() {
+/// Set a coordinate tracking problem where the goal is to minimize the
+/// difference between provided and simulated coordinate values and speeds
+/// (and ground reaction forces) as well as to minimize an effort cost (squared
+/// controls). The provided data represents half a gait cycle. Endpoint
+/// constraints enforce periodicity of the coordinate values (except for pelvis
+/// tx) and speeds, coordinate actuator controls, and muscle activations.
+///
+/// If GRFTrackingWeight is set to 0 then GRFs will not be tracked. Setting
+/// GRFTrackingWeight to 1 will cause the total tracking error (states + GRF) to
+/// have about the same magnitude as control effort in the final objective
+/// value.
+MocoSolution gaitTracking(double controlEffortWeight = 10,
+        double stateTrackingWeight = 1,
+        double GRFTrackingWeight = 1) {
 
     using SimTK::Pi;
 
@@ -63,7 +70,7 @@ MocoSolution gaitTracking() {
     track.setModel(modelprocessor);
     track.setStatesReference(
             TableProcessor("referenceCoordinates.sto") | TabOpLowPassFilter(6));
-    track.set_states_global_tracking_weight(10.0);
+    track.set_states_global_tracking_weight(stateTrackingWeight);
     track.set_allow_unused_references(true);
     track.set_track_reference_position_derivatives(true);
     track.set_apply_tracked_states_to_guess(true);
@@ -125,7 +132,21 @@ MocoSolution gaitTracking() {
     // MocoTrack problem by default.
     MocoControlGoal& effort =
             dynamic_cast<MocoControlGoal&>(problem.updGoal("control_effort"));
-    effort.setWeight(10);
+    effort.setWeight(controlEffortWeight);
+
+    // Optionally, add a contact tracking goal.
+    if (GRFTrackingWeight != 0) {
+        // Track the right and left vertical and fore-aft ground reaction forces.
+        auto* contactTracking = problem.addGoal<MocoContactTrackingGoal>(
+                "contact", GRFTrackingWeight);
+        contactTracking->setExternalLoadsFile("referenceGRF.xml");
+        contactTracking->addContactGroup(
+                {"contactHeel_r", "contactFront_r"},"Right_GRF");
+        contactTracking->addContactGroup(
+                {"contactHeel_l", "contactFront_l"}, "Left_GRF");
+        contactTracking->setProjection("plane");
+        contactTracking->setProjectionVector(SimTK::Vec3(0, 0, 1));
+    }
 
     // Bounds.
     // =======
@@ -163,6 +184,19 @@ MocoSolution gaitTracking() {
     MocoSolution solution = study.solve();
     auto full = createPeriodicTrajectory(solution);
     full.write("gaitTracking_solution_fullcycle.sto");
+
+    // Extract ground reaction forces.
+    // ===============================
+    std::vector<std::string> contact_r;
+    std::vector<std::string> contact_l;
+    contact_r.push_back("contactHeel_r");
+    contact_r.push_back("contactFront_r");
+    contact_l.push_back("contactHeel_l");
+    contact_l.push_back("contactFront_l");
+    TimeSeriesTable externalForcesTableFlat = createExternalLoadsTableForGait(
+            model, full, contact_r, contact_l);
+    writeTableToFile(externalForcesTableFlat,
+            "gaitTracking_solutionGRF_fullcycle.sto");
 
     // moco.visualize(solution);
 
@@ -287,14 +321,14 @@ void gaitPrediction(const MocoSolution& gaitTrackingSolution) {
 
     // Extract ground reaction forces.
     // ===============================
-    std::vector<std::string> contactSpheres_r;
-    std::vector<std::string> contactSpheres_l;
-    contactSpheres_r.push_back("contactSphereHeel_r");
-    contactSpheres_r.push_back("contactSphereFront_r");
-    contactSpheres_l.push_back("contactSphereHeel_l");
-    contactSpheres_l.push_back("contactSphereFront_l");
+    std::vector<std::string> contact_r;
+    std::vector<std::string> contact_l;
+    contact_r.push_back("contactHeel_r");
+    contact_r.push_back("contactFront_r");
+    contact_l.push_back("contactHeel_l");
+    contact_l.push_back("contactFront_l");
     TimeSeriesTable externalForcesTableFlat = createExternalLoadsTableForGait(
-            model, full, contactSpheres_r, contactSpheres_l);
+            model, full, contact_r, contact_l);
     writeTableToFile(externalForcesTableFlat,
             "gaitPrediction_solutionGRF_fullcycle.sto");
 
