@@ -3,6 +3,9 @@ Change Log
 
 0.5.0 (in development) 
 ----------------------
+- 2020-05-16: Moved ActivationCoordinateActuator from opensim-moco to
+              opensim-core.
+
 - 2020-05-11: Update names of mesh files in 2D_gait.osim.
 
 - 2020-05-11: Add outputs to DeGrooteFregly2016Muscle for passive elastic and 
