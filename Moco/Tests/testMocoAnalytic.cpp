@@ -21,6 +21,7 @@
 #include <Moco/osimMoco.h>
 
 #include <OpenSim/Actuators/SpringGeneralizedForce.h>
+#include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Common/LogManager.h>
 
 using namespace OpenSim;

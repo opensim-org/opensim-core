@@ -76,7 +76,6 @@ set(MOCO_SOURCES
         Components/DeGrooteFregly2016Muscle.cpp
         Components/DiscreteController.cpp
         Components/DiscreteController.h
-        Components/ActivationCoordinateActuator.h
         Components/StationPlaneContactForce.h
         Components/StationPlaneContactForce.cpp
         Components/PositionMotion.h

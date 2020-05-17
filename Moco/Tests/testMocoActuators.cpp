@@ -21,6 +21,7 @@
 
 #include <Moco/osimMoco.h>
 
+#include <OpenSim/Actuators/ActivationCoordinateActuator.h>
 #include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Common/LogManager.h>
 #include <OpenSim/Simulation/Model/Model.h>

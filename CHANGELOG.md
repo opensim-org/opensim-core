@@ -11,6 +11,9 @@ Change Log
               solvers modify the DiscreteController's control signals.
               This change allows Moco to support synergies in the future.
               
+- 2020-05-16: Moved ActivationCoordinateActuator from opensim-moco to
+              opensim-core.
+
 - 2020-05-11: Update names of mesh files in 2D_gait.osim.
 
 - 2020-05-11: Add outputs to DeGrooteFregly2016Muscle for passive elastic and 
