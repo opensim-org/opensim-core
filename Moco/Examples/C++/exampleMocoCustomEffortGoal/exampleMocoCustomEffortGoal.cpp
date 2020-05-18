@@ -17,6 +17,7 @@
  * -------------------------------------------------------------------------- */
 
 #include <Moco/osimMoco.h>
+#include <OpenSim/Actuators/ActivationCoordinateActuator.h>
 #include "MocoCustomEffortGoal.h"
 
 using namespace OpenSim;

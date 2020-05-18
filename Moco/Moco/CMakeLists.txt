@@ -74,7 +74,6 @@ set(MOCO_SOURCES
         MocoFrameDistanceConstraint.cpp
         Components/DeGrooteFregly2016Muscle.h
         Components/DeGrooteFregly2016Muscle.cpp
-        Components/ActivationCoordinateActuator.h
         Components/StationPlaneContactForce.h
         Components/StationPlaneContactForce.cpp
         Components/PositionMotion.h

@@ -20,7 +20,6 @@
 
 #include "Common/TableProcessor.h"
 #include "Components/AccelerationMotion.h"
-#include "Components/ActivationCoordinateActuator.h"
 #include "Components/DeGrooteFregly2016Muscle.h"
 #include "Components/DiscreteForces.h"
 #include "Components/MultivariatePolynomialFunction.h"
@@ -106,8 +105,6 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(MocoFrameDistanceConstraint());
 
         Object::registerType(MocoCasADiSolver());
-
-        Object::registerType(ActivationCoordinateActuator());
 
         Object::registerType(TableProcessor());
 
