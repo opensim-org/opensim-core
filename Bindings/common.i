@@ -405,6 +405,8 @@ namespace OpenSim {
 
 %include <OpenSim/Common/CSVFileAdapter.h>
 %include <OpenSim/Common/XsensDataReader.h>
+
+#if defined WITH_EZC3D || defined (WITH_BTK)
 %include <OpenSim/Common/C3DFileAdapter.h>
 
 %extend OpenSim::C3DFileAdapter {
@@ -427,6 +429,7 @@ namespace OpenSim {
         $self->setLocationForForceExpression(location);
     };
 };
+#endif
 
 namespace OpenSim {
     %ignore TableSource_::TableSource_(TableSource_ &&);

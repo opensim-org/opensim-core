@@ -129,7 +129,9 @@ macro(OpenSimAddPythonModule)
 
     add_library(${_libname} SHARED ${_output_cxx_file} ${_output_header_file})
 
-    target_include_directories(${_libname} PRIVATE ${PYTHON_INCLUDE_PATH})
+    target_include_directories(${_libname} PRIVATE
+            "${PYTHON_INCLUDE_PATH}"
+            "${PYTHON_NUMPY_INCLUDE_DIR}")
     
     target_link_libraries(${_libname}
         osimTools osimExampleComponents ${PYTHON_LIBRARIES})

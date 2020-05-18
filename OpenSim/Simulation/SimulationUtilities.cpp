@@ -23,8 +23,9 @@
 
 #include "SimulationUtilities.h"
 
-#include "Model/Model.h"
 #include "Manager/Manager.h"
+#include "Model/Model.h"
+
 #include <simbody/internal/Visualizer_InputListener.h>
 
 using namespace OpenSim;

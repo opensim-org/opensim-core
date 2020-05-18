@@ -34,6 +34,8 @@
 //#include "PerturbationTool.h"
 #include "AnalyzeTool.h"
 #include "InverseKinematicsTool.h"
+#include "IMUInverseKinematicsTool.h"
+
 #include "InverseDynamicsTool.h"
 
 #include "GenericModelMaker.h"
@@ -101,6 +103,7 @@ OSIMTOOLS_API void RegisterTypes_osimTools()
 
     Object::registerType( SMC_Joint() );
     Object::registerType( InverseKinematicsTool() );
+    Object::registerType( IMUInverseKinematicsTool());
     Object::registerType( InverseDynamicsTool() );
     // Old versions
     Object::RenameType("rdCMC_Joint",   "CMC_Joint");

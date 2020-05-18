@@ -75,8 +75,9 @@ install:
   # Chocolatey.
   - IF NOT EXIST C:\ProgramData\chocolatey\bin\swig.exe choco install swig --version 3.0.9 --yes --limit-output #> $null
   
-  ## Install python-nose for python testing.
-  - "%PYTHON_DIR%\\Scripts\\pip install nose"
+  ## Install python packages.
+  # python-nose for python testing and numpy to use SWIG numpy typemaps.
+  - "%PYTHON_DIR%\\Scripts\\pip install nose numpy"
   
   ## Simbody.
   # Simbody's installation is pushed to our Appveyor NuGet account feed.
@@ -94,7 +95,7 @@ build_script:
   ## Superbuild dependencies. 
   - mkdir %OPENSIM_DEPENDENCIES_BUILD_DIR%
   - cd %OPENSIM_DEPENDENCIES_BUILD_DIR%
-  - cmake %OPENSIM_DEPENDENCIES_SOURCE_DIR% -G"%CMAKE_GENERATOR%" -T"%CMAKE_TOOLSET%" -DCMAKE_INSTALL_PREFIX=%OPENSIM_DEPENDENCIES_INSTALL_DIR% -DSUPERBUILD_simbody=OFF
+  - cmake %OPENSIM_DEPENDENCIES_SOURCE_DIR% -G"%CMAKE_GENERATOR%" -T"%CMAKE_TOOLSET%" -DCMAKE_INSTALL_PREFIX=%OPENSIM_DEPENDENCIES_INSTALL_DIR% -DSUPERBUILD_simbody=OFF -DSUPERBUILD_ezc3d=ON
   - cmake --build . --config Release -- /maxcpucount:4 /verbosity:quiet
   - mkdir %OPENSIM_BUILD_DIR%
   ## Configure and build OpenSim.
@@ -104,7 +105,7 @@ build_script:
   # Configure. # TODO -DBUILD_SIMM_TRANSLATOR=ON
   # Set the CXXFLAGS environment variable to turn warnings into errors.
   # Skip timing test section included by default
-  - cmake -E env CXXFLAGS="/WX -DSKIP_TIMING" cmake %OPENSIM_SOURCE_DIR% -G"%CMAKE_GENERATOR%" -T"%CMAKE_TOOLSET%" -DSIMBODY_HOME=C:\simbody%NUGET_PACKAGE_ID_SUFFIX% -DOPENSIM_DEPENDENCIES_DIR=%OPENSIM_DEPENDENCIES_INSTALL_DIR% -DCMAKE_INSTALL_PREFIX=%OPENSIM_INSTALL_DIR% -DBUILD_JAVA_WRAPPING=ON -DBUILD_PYTHON_WRAPPING=ON -DWITH_BTK:BOOL=ON
+  - cmake -E env CXXFLAGS="/WX -DSKIP_TIMING" cmake %OPENSIM_SOURCE_DIR% -G"%CMAKE_GENERATOR%" -T"%CMAKE_TOOLSET%" -DSIMBODY_HOME=C:\simbody%NUGET_PACKAGE_ID_SUFFIX% -DOPENSIM_DEPENDENCIES_DIR=%OPENSIM_DEPENDENCIES_INSTALL_DIR% -DCMAKE_INSTALL_PREFIX=%OPENSIM_INSTALL_DIR% -DBUILD_JAVA_WRAPPING=ON -DBUILD_PYTHON_WRAPPING=ON -DOPENSIM_C3D_PARSER=ezc3d
 
   # Build.
   - cmake --build . --config Release -- /maxcpucount:4 /verbosity:quiet #/p:TreatWarningsAsErrors="true"
