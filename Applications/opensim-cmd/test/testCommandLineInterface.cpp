@@ -105,20 +105,20 @@ CommandOutput system_output(std::string command) {
 
 class StartsWith {
 public:
-    StartsWith(std::string prefix) : prefix(prefix) {}
+    StartsWith(std::string prefix) : prefixStr(prefix) {}
     bool check(const std::string& str) const {
-        return std::equal(prefix.begin(), prefix.end(), str.begin());
+        return std::equal(prefixStr.begin(), prefixStr.end(), str.begin());
     }
-    const std::string prefix;
+    const std::string prefixStr;
 };
 
 class ContainsSubstring {
 public:
-    ContainsSubstring(std::string substr) : substr(substr) {}
+    ContainsSubstring(std::string substr) : substring(substr) {}
     bool check(const std::string& str) const {
-        return str.find(substr) != std::string::npos;
+        return str.find(substring) != std::string::npos;
     }
-    const std::string substr;
+    const std::string substring;
 };
 
 // Checks that the command produces exactly the expected output.
@@ -143,7 +143,8 @@ void checkCommandOutput(const std::string& arguments,
     if (!expectedOutput.check(output)) {
         std::string msg = "When testing arguments '" + arguments +
             "' got the following output:\n" + output +
-            "\nExpected it to start with:\n" + expectedOutput.prefix;
+                          "\nExpected it to start with:\n" +
+                          expectedOutput.prefixStr;
         throw std::runtime_error(msg);
     }
 }
@@ -156,7 +157,7 @@ void checkCommandOutput(const std::string& arguments,
         std::string msg = "When testing arguments '" + arguments +
                           "' got the following output:\n" + output +
                           "\nExpected it to contain:\n" +
-                          expectedOutput.substr;
+                          expectedOutput.substring;
         throw std::runtime_error(msg);
     }
 }
