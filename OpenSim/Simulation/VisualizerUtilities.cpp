@@ -380,7 +380,7 @@ void VisualizerUtilities::showOrientationData(
     const SimTK::Real finalTime = times.back();
     bool pause = false;
     addVisualizerControls(world.updVisualizer(), initialTime, finalTime);
-    SimTK::DecorativeText pausedText("");
+    SimTK::DecorativeText pausedText("(hit Esc. to exit)");
     pausedText.setIsScreenText(true);
     const int pausedIndex =
             world.updVisualizer().updSimbodyVisualizer().addDecoration(
@@ -458,13 +458,14 @@ void VisualizerUtilities::showOrientationData(
                     auto& text = static_cast<SimTK::DecorativeText&>(
                             simbodyVisualizer.updDecoration(pausedIndex));
                     text.setText(
-                            pause ? "Paused for 3 secs (hit Space to resume)"
-                                  : "");
+                            pause ? "Paused (hit Space to resume)"
+                                  : "(hit Esc. to exit)");
                     simbodyVisualizer.drawFrameNow(state);
                 }
             }
             if (pause) {
                 std::this_thread::sleep_for(std::chrono::seconds(3));
+                if (frameNumber>0) frameNumber--;
             } 
             simbodyVisualizer.setSliderValue(timeSliderIndex, times[frameNumber]);
         }
