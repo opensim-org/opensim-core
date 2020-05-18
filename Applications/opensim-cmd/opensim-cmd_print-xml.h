@@ -28,8 +28,6 @@
 #include <docopt.h>
 #include "parse_arguments.h"
 
-#include <OpenSim/OpenSim.h>
-
 static const char HELP_PRINT_XML[] =
 R"(Print a template XML file for a Tool or class.
 
@@ -120,7 +118,7 @@ int print_xml(int argc, const char** argv) {
                 "Did you intend to load a plugin (with --library)?");
     }
 
-    std::cout << "Printing '" << outputFile << "'." << std::endl;
+    log_info("Printing '{}'.", outputFile);
     Object::setSerializeAllDefaults(true);
     obj->print(outputFile);
     Object::setSerializeAllDefaults(false);

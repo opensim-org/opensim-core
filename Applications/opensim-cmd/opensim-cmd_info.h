@@ -28,8 +28,6 @@
 #include <docopt.h>
 #include "parse_arguments.h"
 
-#include <OpenSim/OpenSim.h>
-
 static const char HELP_INFO[] =
 R"(Show description of properties in an OpenSim class.
 

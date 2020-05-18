@@ -1428,19 +1428,28 @@ PrintPropertyInfo(ostream &aOStream,
                   const string &aClassName, const string &aPropertyName,
                   bool printFlagInfo)
 {
+    std::stringstream ss;
+
     if(aClassName=="") {
         // NO CLASS
         int size = _registeredTypes.getSize();
-        aOStream<<"REGISTERED CLASSES ("<<size<<")\n";
+        ss<<"REGISTERED CLASSES ("<<size<<")\n";
         Object *obj;
         for(int i=0;i<size;i++) {
             obj = _registeredTypes.get(i);
             if(obj==NULL) continue;
-            aOStream<<obj->getConcreteClassName()<<endl;
+            ss<<obj->getConcreteClassName()<<endl;
         }
         if (printFlagInfo) {
-            aOStream<<"\n\nUse '-PropertyInfo ClassName' to list the properties of a particular class.\n\n";
+            ss<<"\n\nUse '-PropertyInfo ClassName' to list the properties of a particular class.\n\n";
         }
+
+        if (aOStream.rdbuf() == std::cout.rdbuf()) {
+            log_cout(ss.str());
+        } else {
+            aOStream << ss.str() << std::endl;
+        }
+
         return true;
     }
 
@@ -1448,9 +1457,16 @@ PrintPropertyInfo(ostream &aOStream,
     const Object* object = getDefaultInstanceOfType(aClassName);
     if(object==NULL) {
         if (printFlagInfo) {
-            aOStream<<"\nA class with the name '"<<aClassName<<"' was not found.\n";
-            aOStream<<"\nUse '-PropertyInfo' without specifying a class name to print a listing of all registered classes.\n";
+            ss<<"\nA class with the name '"<<aClassName<<"' was not found.\n";
+            ss<<"\nUse '-PropertyInfo' without specifying a class name to print a listing of all registered classes.\n";
         }
+
+        if (aOStream.rdbuf() == std::cout.rdbuf()) {
+            log_cout(ss.str());
+        } else {
+            aOStream << ss.str() << std::endl;
+        }
+
         return false;
     }
 
@@ -1462,7 +1478,7 @@ PrintPropertyInfo(ostream &aOStream,
         int propertySetSize = propertySet.getSize();
         int propertyTableSize = object->_propertyTable.getNumProperties();
         int size = propertySetSize + propertyTableSize;
-        aOStream<<"\nPROPERTIES FOR "<<aClassName<<" ("<<size<<")\n";
+        ss<<"\nPROPERTIES FOR "<<aClassName<<" ("<<size<<")\n";
         string comment;
         int i;
         for(i=0;i<propertyTableSize;i++) {
@@ -1470,13 +1486,13 @@ PrintPropertyInfo(ostream &aOStream,
                 &object->_propertyTable.getAbstractPropertyByIndex(i);
             if(abstractProperty==NULL) continue;
             if(aPropertyName=="") {
-                aOStream<<i+1<<". "<<abstractProperty->getName()<<endl;
+                ss<<i+1<<". "<<abstractProperty->getName()<<endl;
             } else {
-                aOStream<<"\n"<<i+1<<". "<<abstractProperty->getName()<<"\n";
+                ss<<"\n"<<i+1<<". "<<abstractProperty->getName()<<"\n";
                 comment = abstractProperty->getComment();
                 if(!comment.empty()) {
                     string formattedComment = IO::formatText(comment,"\t",80);
-                    aOStream<<"\t"<<formattedComment<<"\n";
+                    ss<<"\t"<<formattedComment<<"\n";
                 }
             }
         }
@@ -1485,25 +1501,32 @@ PrintPropertyInfo(ostream &aOStream,
             prop = object->_propertySet.get(i-propertyTableSize);
             if(prop==NULL) continue;
             if(aPropertyName=="") {
-                aOStream<<i+1<<". "<<prop->getName()<<endl;
+                ss<<i+1<<". "<<prop->getName()<<endl;
             } else {
-                aOStream<<"\n"<<i+1<<". "<<prop->getName()<<"\n";
+                ss<<"\n"<<i+1<<". "<<prop->getName()<<"\n";
                 comment = prop->getComment();
                 if(!comment.empty()) {
                     string formattedComment = IO::formatText(comment,"\t",80);
-                    aOStream<<"\t"<<formattedComment<<"\n";
+                    ss<<"\t"<<formattedComment<<"\n";
                 }
             }
         }
 
         if (printFlagInfo) {
-            aOStream << "\n\nUse '-PropertyInfo ClassName.PropertyName' to print "
+            ss << "\n\nUse '-PropertyInfo ClassName.PropertyName' to print "
                 "info for a particular property.\n";
             if(aPropertyName!="*") {
-                aOStream << "Use '-PropertyInfo ClassName.*' to print info for all "
+                ss << "Use '-PropertyInfo ClassName.*' to print info for all "
                     "properties in a class.\n";
             }
         }
+
+        if (aOStream.rdbuf() == std::cout.rdbuf()) {
+            log_cout(ss.str());
+        } else {
+            aOStream << ss.str() << std::endl;
+        }
+
         return true;
     }
 
@@ -1511,9 +1534,15 @@ PrintPropertyInfo(ostream &aOStream,
     try {
         prop = propertySet.get(aPropertyName);
         // OUTPUT
-        //aOStream<<"\nPROPERTY INFO FOR "<<aClassName<<"\n";
-        aOStream << "\n" << aClassName << "." << aPropertyName << "\n"
+        ss << "\n" << aClassName << "." << aPropertyName << "\n"
                  << prop->getComment() << "\n";
+
+        if (aOStream.rdbuf() == std::cout.rdbuf()) {
+            log_cout(ss.str());
+        } else {
+            aOStream << ss.str() << std::endl;
+        }
+
         return true;
     } catch(...) {
         try {
@@ -1523,18 +1552,31 @@ PrintPropertyInfo(ostream &aOStream,
                         "' class '" + aClassName + "'.");
             }
             // OUTPUT
-            //aOStream<<"\nPROPERTY INFO FOR "<<aClassName<<"\n";
-            aOStream << "\n" <<aClassName << "." << aPropertyName <<"\n"
+            ss << "\n" <<aClassName << "." << aPropertyName <<"\n"
                      << abstractProperty->getComment()<<"\n";
+
+            if (aOStream.rdbuf() == std::cout.rdbuf()) {
+                log_cout(ss.str());
+            } else {
+                aOStream << ss.str() << std::endl;
+            }
+
             return true;
         } catch (...) {
             if (printFlagInfo) {
-                aOStream << "\nPrintPropertyInfo: no property with the name "
+                ss << "\nPrintPropertyInfo: no property with the name "
                     << aPropertyName;
-                aOStream << " was found in class " << aClassName << ".\n";
-                aOStream << "Omit the property name to get a listing of all "
+                ss << " was found in class " << aClassName << ".\n";
+                ss << "Omit the property name to get a listing of all "
                     "properties in a class.\n";
             }
+
+            if (aOStream.rdbuf() == std::cout.rdbuf()) {
+                log_cout(ss.str());
+            } else {
+                aOStream << ss.str() << std::endl;
+            }
+
             return false;
         }
     }
