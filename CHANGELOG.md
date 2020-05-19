@@ -10,7 +10,7 @@ v4.2
 ====
 - Add the ActivationCoordinateActuator component, which is a CoordinateActuator with simple activation dynamics (PR #2699).
 - Easily convert Matlab matrices and Python NumPy arrays to and from OpenSim Vectors and Matrices. See Matlab example matrixConversions.m and Python example numpy_conversions.py.
-- Expose PRopertyHelper class to python bindings to allow editing of objects using the propetries interface (useful for editing objects defined in plugins) in python (consistent with Java/Matlab).
+- Expose PropertyHelper class to python bindings to allow editing of objects using the properties interface (useful for editing objects defined in plugins) in python (consistent with Java/Matlab).
 
 v4.1
 ====
