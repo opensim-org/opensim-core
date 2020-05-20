@@ -63,11 +63,10 @@ from dependencies. The variables to set depend on how opensim-core is being
 distributed. Currently, opensim-core binaries are distributed through the
 OpenSim GUI distribution. In this case, the following settings should be used:
 
-    WITH_BTK=ON                                 non-default
+    OPENSIM_C3D_PARSER=ezc3d                    non-default
     OPENSIM_COPY_DEPENDENCIES=ON                default
     OPENSIM_PYTHON_STANDALONE=OFF               default
-    on Windows: OPENSIM_INSTALL_UNIX_FHS=OFF    default
-    on UNIX:    OPENSIM_INSTALL_UNIX_FHS=ON     default
+    OPENSIM_INSTALL_UNIX_FHS=OFF                default on Windows, not on UNIX
     OPENSIM_SIMBODY_DOXYGEN_LOCATION=https://simtk.org/api_docs/simbody/<version>/
 
 The last variable causes OpenSim's doxygen documentation to link to Simbody's
@@ -92,7 +91,8 @@ The layout of the distribution on Windows is as follows:
     - `python/` OpenSim Python bindings.
     - `OpenSim_buildinfo.txt` Describes the compiler used to build OpenSim.
 
-The layout of the distribution on macOS (and Linux) is as follows:
+The layout of the distribution on macOS (and Linux), 
+if `OPENSIM_INSTALL_UNIX_FHS` is `ON`, as follows:
 
   - `bin/` opensim-cmd
   - `etc/OpenSim_buildinfo.txt` Describes the compiler used to build OpenSim.
@@ -117,11 +117,11 @@ We hope to distribute opensim-core binaries through common package managers
 cases, the dependencies should be installed via their own packages so that the
 OpenSim installation does not need to contain the dependencies.
 
-    WITH_BTK=ON                                 non-default
+    OPENSIM_C3D_PARSER=ezc3d                    non-default
     OPENSIM_COPY_DEPENDENCIES=OFF               non-default
     OPENSIM_PYTHON_STANDALONE=OFF               default
-    on Windows: OPENSIM_INSTALL_UNIX_FHS=OFF    default
-    on UNIX:    OPENSIM_INSTALL_UNIX_FHS=ON     default
+    OPENSIM_INSTALL_UNIX_FHS=ON                 default on UNIX, not on Windows
+
 
 Adding dependencies
 -------------------
@@ -149,9 +149,6 @@ Simbody), and those used internally by OpenSim (e.g., BTK and ezc3d):
   dynamic libraries, CMake Config files, and header files, and Windows library
   (.lib files).
 
-When distributing
-OpenSim, various parts of these dependencies must be copied 
-
 ### RPATH on UNIX systems
 
 UNIX systems (macOS and Linux) provide mechanisms for shared libraries and
@@ -159,51 +156,19 @@ executables to contain file system paths to help locate the shared libraries
 they need. This information is called an RPATH. By properly embedding RPATHs
 in OpenSim's shared libraries and executables, we avoid requiring the user from
 setting the DYLD_LIBRARY_PATH environment variable.
+See https://gitlab.kitware.com/cmake/community/-/wikis/doc/cmake/RPATH-handling 
+for details.
+
+OpenSim provides the following CMake macros to set RPATHs:
+- `OpenSimAddInstallRPATH()`
+- `OpenSimAddInstallRPATHSelf()`
+- `OpenSimAddInstallRPATHSimbody()`
+
+See `cmake/OpenSimMacros.cmake` for details.
 
 Windows does not support RPATHs; it is for this reason that Windows users 
 of OpenSim must set their Windows PATH environment variable to include OpenSim's
 `bin` directory.
-
-### OpenSim's Python package.
-
-OpenSim's Python package `opensim` is built if the CMake option
-`BUILD_PYTHON_WRAPPING` is `on`.
-The Python package may be used from OpenSim's installation or can be installed
-into a user's Python package directory (`OPENSIM_PYTHON_STANDALONE=ON`).
-
-In the former case, the Python package depends on OpenSim's libraries (and the
-libraries that OpenSim depends on) that exist outside of the Python package
-itself. For the Python package to find these OpenSim libraries, on Windows,
-users must set their `PATH` environment variable to include the OpenSim
-installation's `bin` directory. On macOS and Linux, we set the RPATH of the
-shared libraries in the Python package (e.g., `_common.so`) to use relative
-paths that point to the OpenSim distribution's `lib` directory.
-
-In the latter case, all libraries that the Python package depends on are copied
-directly into the Python package.
-
-TODO I think I have this kinda confused...
-and Linux,
-
-- OpenSimInstallDependencyLibraries: To 
-
-### End-user of opensim-core.
-### C++ projects that depend on opensim-core.
-
-On Windows, building C++ code that depends on OpenSim requires that
-osimCommon.lib files are available.
-
-TODO copying dependencies.
-
-### CMake macros 
-
-OpenSim provides multiple CMake macros to aid with distributing dynamic/shared
-libraries from dependencies. 
-
-- **OpenSimCopyDependencyDLLsForWin()** 
-- **OpenSimInstallDependencyLibraries()**
-
-See `cmake/OpenSimMacros.cmake` for documentation.
 
 ### Steps for adding a dependency to this repository
 
@@ -211,31 +176,42 @@ See `cmake/OpenSimMacros.cmake` for documentation.
    dependency uses modern CMake practices to export its targets in its Package
    Configuration file; see
    https://cmake.org/cmake/help/latest/manual/cmake-packages.7.html.
-2. Ensure the layout of the dependency's installation conforms to OpenSim's
-   layout as described in the section "CMake options for packaging a binary
-   distribution" above.
-3. Ensure the dependency provides a open-source license that is consistent with
+2. Ensure the dependency provides a open-source license that is consistent with
    OpenSim's Apache License 2.0. If the license is not as permissive as 
    Apache License 2.0, the dependency must be optional.
-4. In `README.md`, add a description of the dependency to each 
+3. Ensure the layout of the dependency's installation conforms to OpenSim's
+   layout as described in the section "CMake options for packaging a binary
+   distribution" above.
+4. This step is for Linux and macOS. Ensure the dependency specifies an RPATH 
+   for its shared libraries (see description of RPATH above).
+5. In `README.md`, add a description of the dependency to each 
    "Get the dependencies" section.
-5. Add to `dependencies/CMakeLists.txt` a new call to `AddDependency()` to 
+6. Add to `dependencies/CMakeLists.txt` a new call to `AddDependency()` to 
    download, build, and install the dependency. Pass any necessary CMake flags,
    and attempt to reduce the time required to build the dependency by disabling
    examples, etc.
-6. If the dependency is optional, add a CMake option to `CMakeLists.txt` to
+7. If the dependency is optional, add a CMake option to `CMakeLists.txt` to
    control whether the dependency is used (e.g., `OPENSIM_C3D_PARSER`).
-7. Add to `CMakeLists.txt` a call to `find_package()`. Provide a hint (`HINTS`)
+8. Add to `CMakeLists.txt` a call to `find_package()`. Provide a hint (`HINTS`)
    that will help `find_package()` find the dependency if it was built with the
    superbuild (`dependencies/CMakeLists.txt`).
-8. Copy shared libraries into the installed OpenSim Python package,
-   if `BUILD_PYTHON_WRAPPING` and `OPENSIM_PYTHON_STANDALONE`). If these
-   options are true, then we guarantee for the user that they can use the
-   installed OpenSim Python package without relying on any other files. Use
-   the CMake macro `OpenSimInstallDependencyLibraries()` to facilitate this.
-9. Install the dependency's Windows library (.lib) files in OpenSim's 
-   `CMAKE_INSTALL_LIBDIR`. These files are needed to build C++ projects that 
-   depend on OpenSim. TODO where does this happen?
+9. If linking to the dependency using dynamic (shared) libraries,
+   copy the dynamic libraries.
+   1. Windows: Copy the dependency's dynamic libraries (DLLs) 
+      into OpenSim's build directory; this must be done so tests/examples that are
+      run while building OpenSim can find the necessary DLLs.
+      If `OPENSIM_COPY_DEPENDENCIES` is `ON`, ensure the DLLs 
+      will be installed in OpenSim's installation. Use the CMake macro
+      `OpenSimCopyDependencyDLLsForWin()` to achieve copying into the build 
+      directory and the installation.
+   2. UNIX: The shared libraries need not be copied into the build directory,
+      but must be copied into OpenSim's installation if 
+      `OPENSIM_COPY_DEPENDENCIES` is `ON`. 
+10. Copy shared libraries into the installed OpenSim Python package,
+   if `BUILD_PYTHON_WRAPPING` and `OPENSIM_PYTHON_STANDALONE` are `ON`. If these
+   options are on, then we guarantee for the user that they can use the
+   installed OpenSim Python package without relying on any other OpenSim files. 
+   Use the CMake macro `OpenSimInstallDependencyLibraries()` to facilitate this.
 
 Perform the additional steps for a **public** dependency:
 
@@ -243,6 +219,11 @@ Perform the additional steps for a **public** dependency:
    using either `find_package()` or `find_dependency()`, depending on the value
    of `OPENSIM_COPY_DEPENDENCIES`. See how `cmake/OpenSimConfig.cmake.in` 
    handles Simbody for an example.
+2. If `OPENSIM_COPY_DEPENDENCIES` is `ON`, ensure the dependency's headers 
+   and CMake Configuration files are copied into OpenSim's installation. On
+   Windows, ensure library (.lib) files are installed. Ideally, the dependency's
+   installation layout matches OpenSim's, so you can just copy the whole project
+   into OpenSim's installation.
 
 
 ### Miscellaneous notes
@@ -253,3 +234,5 @@ building OpenSim and its dependencies, not through CMakeLists.txt.
 - Dependencies should be optional, if possible. Dependencies make OpenSim
 much harder to build for those new to the project, and we can make the lives of
 newcomers easier by reducing the number of required dependencies.
+- For an example of adding a dependency to OpenSim, refer to the pull request
+that introduced ezc3d: https://github.com/opensim-org/opensim-core/pull/2728/files
