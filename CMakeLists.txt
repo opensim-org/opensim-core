@@ -603,13 +603,6 @@ if(${OPENSIM_C3D_PARSER} STREQUAL "ezc3d")
         OpenSimInstallDependencyLibraries(ezc3d "${ezc3d_LIBRARY_DIR}/../"
             "${ezc3d_LIBRARY_DIR}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
     endif()
-        
-    if(NOT WIN32)
-        # LIB: .so files on Linux, .dylib on macOS
-        file(GLOB ezc3d_desired_lib_files "${ezc3d_LIBRARY_DIR}/*ezc3d*")
-        install(FILES ${ezc3d_desired_lib_files}
-                DESTINATION "${CMAKE_INSTALL_LIBDIR}")
-    endif()
 
 elseif(${OPENSIM_C3D_PARSER} STREQUAL "BTK")
     set(WITH_EZC3D false)
@@ -630,12 +623,6 @@ elseif(${OPENSIM_C3D_PARSER} STREQUAL "BTK")
             "${BTK_LIBRARY_DIRS}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
     endif()
 
-    if(NOT WIN32)
-        # LIB: .so files on Linux, .dylib on macOS
-        file(GLOB btk_desired_lib_files "${BTK_LIBRARY_DIRS}/*BTK*")
-        install(FILES ${btk_desired_lib_files}
-                DESTINATION "${CMAKE_INSTALL_LIBDIR}")
-    endif()
 else()
     set(WITH_EZC3D false)
     unset(ezc3d_LIBRARY_DIR CACHE)
