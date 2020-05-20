@@ -970,15 +970,18 @@ Array<bool> InducedAccelerations::applyContactConstraintAccordingToExternalForce
                 }
 
                 int expressedInBodyIndex = _model->getBodySet().getIndex(exf->getPointExpressedInBodyName());
-                if(expressedInBodyIndex < 0){
+                if (expressedInBodyIndex < 0 &&
+                        exf->getPointExpressedInBodyName() != "ground") {
                     cout << "External force expressedInBody " <<  exf->getPointExpressedInBodyName() << " not found." << endl;
                 }
 
                 const Body &appliedToBody = _model->getBodySet().get(appliedToBodyIndex);
-                const Body &expressedInBody = _model->getBodySet().get(expressedInBodyIndex);
+                const Frame* expressedInBody =
+                        _model->findComponent<Frame>(
+                                exf->getPointExpressedInBodyName());
 
                 _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
-                point = expressedInBody.findStationLocationInAnotherFrame(s, point, appliedToBody);
+                point = expressedInBody->findStationLocationInAnotherFrame(s, point, appliedToBody);
             }
 
             _constraintSet.get(i).setContactPointForInducedAccelerations(s, point);
