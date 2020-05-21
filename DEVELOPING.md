@@ -125,14 +125,23 @@ OpenSim installation does not need to contain the dependencies.
 
 Adding dependencies
 -------------------
-OpenSim depends on multiple C/C++ software libraries. Developers adding new
-dependencies to OpenSim should ensure the following scenarios are supported on
-Windows, macOS, and Linux:
+OpenSim depends on multiple C/C++ software libraries. These libraries can be
+copied into this repository (Catch2) or built separately. This section mostly 
+pertains to dependencies built separately. The number of dependencies should be
+reduced to avoid unnecessarily complicating the process of building OpenSim.
+Whether a dependency should be copied into the repository or built separately
+is a complex decision, and depends on the size of the dependency and the 
+difficulty of building the dependency separately.
+
+Developers adding new dependencies to OpenSim should ensure the following
+scenarios are supported on Windows, macOS, and Linux:
 
 - Building OpenSim from source
 - Building C++ plug-ins or extensions using OpenSim's binary software
   development kit (SDK).
-- Using OpenSim's Python package
+- Using OpenSim through Matlab
+- Using OpenSim's Python package (this requires special consideration because
+  the Python package is often installed outside of OpenSim's installation).
 
 Some dependencies may be used as static libraries or dynamic/shared
 libraries; typically, we use dynamic libraries, but using static libraries is
@@ -176,9 +185,12 @@ of OpenSim must set their Windows PATH environment variable to include OpenSim's
    dependency uses modern CMake practices to export its targets in its Package
    Configuration file; see
    https://cmake.org/cmake/help/latest/manual/cmake-packages.7.html.
-2. Ensure the dependency provides a open-source license that is consistent with
+   Note: it's preferable that the dependency provides a CMake *Config* file 
+   instead of a *Module* file.
+2. Ensure the dependency provides an open-source license that is consistent with
    OpenSim's Apache License 2.0. If the license is not as permissive as 
-   Apache License 2.0, the dependency must be optional.
+   Apache License 2.0, the dependency must be optional 
+   (see https://choosealicense.com).
 3. Ensure the layout of the dependency's installation conforms to OpenSim's
    layout as described in the section "CMake options for packaging a binary
    distribution" above.
@@ -212,6 +224,9 @@ of OpenSim must set their Windows PATH environment variable to include OpenSim's
    options are on, then we guarantee for the user that they can use the
    installed OpenSim Python package without relying on any other OpenSim files. 
    Use the CMake macro `OpenSimInstallDependencyLibraries()` to facilitate this.
+11. Add tests to ensure the functionality of the dependency can be accessed
+   through the Java, Matlab, and Python interfaces, if such functionality should
+   be exposed.
 
 Perform the additional steps for a **public** dependency:
 
