@@ -45,7 +45,7 @@ void VisualizerUtilities::showModel(Model model) {
     SimTK::State& si = model.initSystem();
     auto silo = &model.updVisualizer().updInputSilo();
  
-    SimTK::DecorativeText help("Press any key to quit.");
+    SimTK::DecorativeText help("(hit Esc. to exit)");
     help.setIsScreenText(true);
     auto simtkVisualizer = model.updVisualizer().updSimbodyVisualizer();
     simtkVisualizer.addDecoration(
@@ -59,7 +59,13 @@ void VisualizerUtilities::showModel(Model model) {
     // exit gracefully on key press
     silo->clear(); // Ignore any previous key presses.
     unsigned key, modifiers;
-    silo->waitForKeyHit(key, modifiers);
+    if (silo->takeKeyHit(key, modifiers)) {
+        // Exit.
+        if (key == SimTK::Visualizer::InputListener::KeyEsc) {
+            std::cout << "Exiting visualization." << std::endl;
+            return;
+        }
+    }
  }
 
 // Based on code from simtk.org/projects/predictivesim SimbiconExample/main.cpp.
@@ -262,10 +268,6 @@ void VisualizerUtilities::showMarkerData(
     previewWorld.realizePosition(state);
     previewWorld.getVisualizer().show(state);
 
-    char c;
-    std::cout << "Press any key to visualize experimental marker data ..."
-              << std::endl;
-    std::cin >> c;
     while (true) {
         for (size_t j = 0; j < times.size(); ++j) {
             std::cout << "time: " << times[j] << "s" << std::endl;
@@ -385,7 +387,7 @@ void VisualizerUtilities::showOrientationData(
     const SimTK::Real finalTime = times.back();
     bool pause = false;
     addVisualizerControls(world.updVisualizer(), initialTime, finalTime);
-    SimTK::DecorativeText pausedText("(hit Esc. to exit)");
+    SimTK::DecorativeText pausedText("(hit Esc. to exit, Space to pause)");
     pausedText.setIsScreenText(true);
     const int pausedIndex =
             world.updVisualizer().updSimbodyVisualizer().addDecoration(
@@ -464,12 +466,12 @@ void VisualizerUtilities::showOrientationData(
                             simbodyVisualizer.updDecoration(pausedIndex));
                     text.setText(
                             pause ? "Paused (hit Space to resume)"
-                                  : "(hit Esc. to exit)");
+                                  : "(hit Esc. to exit, Space to pause)");
                     simbodyVisualizer.drawFrameNow(state);
                 }
             }
             if (pause) {
-                std::this_thread::sleep_for(std::chrono::seconds(3));
+                std::this_thread::sleep_for(std::chrono::milliseconds(5));
                 if (frameNumber>0) frameNumber--;
             } 
             simbodyVisualizer.setSliderValue(timeSliderIndex, times[frameNumber]);
