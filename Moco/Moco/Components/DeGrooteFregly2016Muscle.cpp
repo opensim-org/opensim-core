@@ -491,6 +491,12 @@ void DeGrooteFregly2016Muscle::calcFiberVelocityInfo(
     calcFiberVelocityInfoHelper(muscleTendonVelocity, activation,
             get_ignore_tendon_compliance(), m_isTendonDynamicsExplicit, mli,
             fvi, normTendonForce, normTendonForceDerivative);
+
+    if (fvi.normFiberVelocity < -1.0 && getDebugLevel() > 0) {
+        std::cout << "Warning: DeGrooteFregly2016Muscle '" << getName()
+                << "' is exceeding maximum contraction velocity at time "
+                << s.getTime() << " s." << std::endl;
+    }
 }
 
 void DeGrooteFregly2016Muscle::calcMuscleDynamicsInfo(
