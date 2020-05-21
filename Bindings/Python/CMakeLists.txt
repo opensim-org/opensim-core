@@ -133,8 +133,28 @@ macro(OpenSimAddPythonModule)
             "${PYTHON_INCLUDE_PATH}"
             "${PYTHON_NUMPY_INCLUDE_DIR}")
     
-    target_link_libraries(${_libname}
-        osimTools osimExampleComponents ${PYTHON_LIBRARIES})
+    # On macOS, the python interpreter might link to the python library 
+    # statically, in which case we do not want to link dynamically to the
+    # python library. This situation occurs with Anaconda's python.
+    # In this situation, we must add a linker flag to mark all undefined
+    # symbols as having to be looked up at runtime, and we ignore
+    # PYTHON_LIBRARIES.
+    # https://github.com/opensim-org/opensim-core/issues/2771
+    # https://stackoverflow.com/questions/25421479/clang-and-undefined-symbols-when-building-a-library
+    # https://github.com/lisitsyn/shogun/commit/961f6109c2a8abab4941bcdde1a19dfe70c440f1
+    # https://github.com/shogun-toolbox/shogun/issues/4068
+    execute_process(COMMAND "${PYTHON_EXECUTABLE}" -c
+        "import sysconfig; print(sysconfig.get_config_var('LDSHARED'))"
+        OUTPUT_VARIABLE PYTHON_LDSHARED
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if("${PYTHON_LDSHARED}" MATCHES "dynamic_lookup")
+        set_target_properties(${_libname} PROPERTIES LINK_FLAGS
+            "-undefined dynamic_lookup")
+    else()
+        target_link_libraries(${_libname} ${PYTHON_LIBRARIES})
+    endif()
+
+    target_link_libraries(${_libname} osimTools osimExampleComponents)
     
     # Set target properties for various platforms.
     # --------------------------------------------
