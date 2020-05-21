@@ -189,7 +189,7 @@ of OpenSim must set their Windows PATH environment variable to include OpenSim's
    instead of a *Module* file.
 2. Ensure the dependency provides an open-source license that is consistent with
    OpenSim's Apache License 2.0. If the license is not as permissive as 
-   Apache License 2.0, the dependency must be optional 
+   Apache License 2.0, the dependency must be optional and disabled by default
    (see https://choosealicense.com).
 3. Ensure the layout of the dependency's installation conforms to OpenSim's
    layout as described in the section "CMake options for packaging a binary
