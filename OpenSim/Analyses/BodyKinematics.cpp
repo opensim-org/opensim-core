@@ -184,25 +184,23 @@ constructDescription()
     char descrip[1024];
     char tmp[MAXLEN];
 
-    strcpy(descrip,"\nThis file contains the kinematics ");
-    strcat(descrip,"(positions and orientations,\n");
-    strcat(descrip,"velocities and angular velocities, or");
-    strcat(descrip," accelerations and angular accelerations)\n");
-    strcat(descrip,"of the centers of mass");
-    sprintf(tmp," of the body segments in model %s.\n",
+    strcpy(descrip, "\nThis file contains the kinematics ");
+    strcat(descrip, "(positions and orientations,\n");
+    strcat(descrip, "velocities and angular velocities, or");
+    strcat(descrip, " accelerations and angular accelerations)\n");
+    strcat(descrip, "of the centers of mass");
+    sprintf(tmp, " of the body segments in model %s.\n",
         _model->getName().c_str());
-    strcat(descrip,tmp);
-    strcat(descrip,"\nBody segment orientations are described using");
-    strcat(descrip," body-fixed X-Y-Z Euler angles.\n");
-    strcat(descrip,"\nAngular velocities and accelerations are given about");
-    strcat(descrip," the body-local axes.\n");
-    strcat(descrip,"\nUnits are S.I. units (seconds, meters, Newtons, ...)");
-    if(getInDegrees()) {
-        strcat(descrip,"\nAngles are in degrees.");
-    } else {
-        strcat(descrip,"\nAngles are in radians.");
-    }
-    strcat(descrip,"\n\n");
+    strcat(descrip, tmp);
+    strcat(descrip, "\nBody segment orientations are described using");
+    strcat(descrip, " body-fixed X-Y-Z Euler angles.\n");
+    strcat(descrip, "\nAngular velocities and accelerations are given about");
+    strcat(descrip, " the body-local axes.\n");
+    strcat(descrip, "\nUnits are S.I. units (seconds, meters, Newtons, ...)");
+    strcat(descrip, "\nIf header above indicates 'inDegrees=yes' above, ");
+    strcat(descrip, "then angles are in degrees, ");
+    strcat(descrip, "otherwise angles are in radians.");
+    strcat(descrip, "\n\n");
 
     setDescription(descrip);
 }

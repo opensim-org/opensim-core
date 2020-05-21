@@ -95,11 +95,9 @@ constructDescription()
 
     descrip = "\nThis file contains body positions (of origin) and orientations.\n";
     descrip += "\nUnits are S.I. units (seconds, meters, Newtons, ...)";
-    if(getInDegrees()) {
-        descrip += "\nAngles are in degrees.";
-    } else {
-        descrip += "\nAngles are in radians.";
-    }
+    descrip += "\nIf header above indicates 'inDegrees=yes' above, ";
+    descrip += "then angles are in degrees, ";
+    descrip += "otherwise angles are in radians.";
     descrip += "\n\n";
 
     setDescription(descrip);

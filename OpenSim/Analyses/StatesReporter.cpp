@@ -156,15 +156,13 @@ constructDescription()
 {
     char descrip[1024];
 
-    strcpy(descrip,"\nThis file contains the states of a model ");
-    strcat(descrip,"during a simulation.\n");
-    strcat(descrip,"\nUnits are S.I. units (second, meters, Newtons, ...)");
-    if(getInDegrees()) {
-        strcat(descrip,"\nAngles are in degrees.");
-    } else {
-        strcat(descrip,"\nAngles are in radians.");
-    }
-    strcat(descrip,"\n\n");
+    strcpy(descrip, "\nThis file contains the states of a model ");
+    strcat(descrip, "during a simulation.\n");
+    strcat(descrip, "\nUnits are S.I. units (second, meters, Newtons, ...)");
+    strcat(descrip, "\nIf header above indicates 'inDegrees=yes' above, ");
+    strcat(descrip, "then angles are in degrees, ");
+    strcat(descrip, "otherwise angles are in radians.");
+    strcat(descrip, "\n\n");
 
     setDescription(descrip);
 }

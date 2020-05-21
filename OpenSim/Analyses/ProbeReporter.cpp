@@ -163,17 +163,15 @@ void ProbeReporter::constructDescription()
 {
     char descrip[1024];
 
-    strcpy(descrip,"\nThis file contains the probes on a model ");
-    strcat(descrip,"during a simulation.\n");
+    strcpy(descrip, "\nThis file contains the probes on a model ");
+    strcat(descrip, "during a simulation.\n");
 
-    strcat(descrip,"\nThe units used are dependent on the type of probe component");
+    strcat(descrip, "\nThe units used are dependent on the type of probe component");
 
-    if(getInDegrees()) {
-        strcat(descrip,"\nAngles are in degrees.");
-    } else {
-        strcat(descrip,"\nAngles are in radians.");
-    }
-    strcat(descrip,"\n\n");
+    strcat(descrip, "\nIf header above indicates 'inDegrees=yes' above, ");
+    strcat(descrip, "then angles are in degrees, ");
+    strcat(descrip, "otherwise angles are in radians.");
+    strcat(descrip, "\n\n");
 
     setDescription(descrip);
 }

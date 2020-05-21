@@ -176,19 +176,17 @@ void ForceReporter::constructDescription()
 {
     char descrip[1024];
 
-    strcpy(descrip,"\nThis file contains the forces exerted on a model ");
-    strcat(descrip,"during a simulation.\n");
+    strcpy(descrip, "\nThis file contains the forces exerted on a model ");
+    strcat(descrip, "during a simulation.\n");
 
-    strcat(descrip,"\nA force is a generalized force, meaning that");
-    strcat(descrip," it can be either a force (N) or a torque (Nm).\n");
+    strcat(descrip, "\nA force is a generalized force, meaning that");
+    strcat(descrip, " it can be either a force (N) or a torque (Nm).\n");
 
-    strcat(descrip,"\nUnits are S.I. units (second, meters, Newtons, ...)");
-    if(getInDegrees()) {
-        strcat(descrip,"\nAngles are in degrees.");
-    } else {
-        strcat(descrip,"\nAngles are in radians.");
-    }
-    strcat(descrip,"\n\n");
+    strcat(descrip, "\nUnits are S.I. units (second, meters, Newtons, ...)");
+    strcat(descrip, "\nIf header above indicates 'inDegrees=yes' above, ");
+    strcat(descrip, "then angles are in degrees, ");
+    strcat(descrip, "otherwise angles are in radians.");
+    strcat(descrip, "\n\n");
 
     setDescription(descrip);
 }

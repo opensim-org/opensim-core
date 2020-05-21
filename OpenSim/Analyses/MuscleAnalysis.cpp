@@ -177,17 +177,15 @@ void MuscleAnalysis::constructDescription()
 {
     char descrip[1024];
 
-    strcpy(descrip,"\nThis analysis gathers basic information about muscles ");
-    strcat(descrip,"during a simulation (e.g., forces, tendon lengths,"
+    strcpy(descrip, "\nThis analysis gathers basic information about muscles ");
+    strcat(descrip, "during a simulation (e.g., forces, tendon lengths,"
         " moment arms, etc).");
 
-    strcat(descrip,"\nUnits are S.I. units (second, meters, Newtons, ...)");
-    if(getInDegrees()) {
-        strcat(descrip,"\nAngles are in degrees.");
-    } else {
-        strcat(descrip,"\nAngles are in radians.");
-    }
-    strcat(descrip,"\n\n");
+    strcat(descrip, "\nUnits are S.I. units (second, meters, Newtons, ...)");
+    strcat(descrip, "\nIf header above indicates 'inDegrees=yes' above, ");
+    strcat(descrip, "then angles are in degrees, ");
+    strcat(descrip, "otherwise angles are in radians.");
+    strcat(descrip, "\n\n");
     setDescription(descrip);
 }
 //_____________________________________________________________________________
