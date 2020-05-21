@@ -34,10 +34,18 @@
 #include <OpenSim/Simulation/VisualizerUtilities.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
+#include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
 
 using namespace OpenSim;
 using namespace SimTK;
 using namespace std;
+
+SimTK::Vec3 parseRotationsString(const std::string& rotationString) {
+    Vec3 returnVec3{0};
+    std::stringstream ss(rotationString);
+    ss >> returnVec3;
+    return returnVec3;
+}
 
 static void PrintUsage(const char* aProgName, ostream& aOStream);
 //______________________________________________________________________________
@@ -64,6 +72,7 @@ int main(int argc, char** argv) {
             string dataFileName = "";
             string statesFileName = "";
             string layout = "model";
+            string rotationString = "";
             for (int i = 1; i <= (argc - 1); i++) {
                 option = argv[i];
                 if (option == "-M" || option == "-Model") {
@@ -105,6 +114,14 @@ int main(int argc, char** argv) {
                     }
                     layout = string(argv[i + 1]);
                 }
+                if (option == "-R") {
+                    if (argc < i + 2) {
+                        cout << "No Rotation specified after option -R";
+                        PrintUsage(argv[0], cout);
+                        exit(-1);
+                    }
+                    rotationString = string(argv[i + 1]);
+                }
             }
             option = argv[1];
             // Based on first argv will decide operation
@@ -142,6 +159,18 @@ int main(int argc, char** argv) {
                 if (extension == ".sto") {
 
                     TimeSeriesTableQuaternion quatTable(dataFileName);
+                    if (rotationString != "") { 
+                        const SimTK::Vec3& sensor_to_opensim_rotations =
+                                parseRotationsString(rotationString);
+                        SimTK::Rotation sensorToOpenSim = SimTK::Rotation(
+                                SimTK::BodyOrSpaceType::SpaceRotationSequence,
+                                sensor_to_opensim_rotations[0], SimTK::XAxis,
+                                sensor_to_opensim_rotations[1], SimTK::YAxis,
+                                sensor_to_opensim_rotations[2], SimTK::ZAxis);
+                        // Rotate data so Y-Axis is up
+                        OpenSenseUtilities::rotateOrientationTable(
+                                quatTable, sensorToOpenSim);
+                    }
                     VisualizerUtilities::showOrientationData(
                             quatTable, layout, modelFileName);
 
