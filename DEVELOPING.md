@@ -221,12 +221,15 @@ of OpenSim must set their Windows PATH environment variable to include OpenSim's
       `OPENSIM_COPY_DEPENDENCIES` is `ON`. 
 10. Copy shared libraries into the installed OpenSim Python package,
    if `BUILD_PYTHON_WRAPPING` and `OPENSIM_PYTHON_STANDALONE` are `ON`. If these
-   options are on, then we guarantee for the user that they can use the
+   options are on, then we want the user to be able to use the
    installed OpenSim Python package without relying on any other OpenSim files. 
    Use the CMake macro `OpenSimInstallDependencyLibraries()` to facilitate this.
 11. Add tests to ensure the functionality of the dependency can be accessed
    through the Java, Matlab, and Python interfaces, if such functionality should
    be exposed.
+   
+Note: the `OPENSIM_PYTHON_STANDALONE=ON` setting is experimental and is not
+tested regularly.
 
 Perform the additional steps for a **public** dependency:
 
