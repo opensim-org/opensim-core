@@ -149,8 +149,9 @@ permitted. Most of the following considerations are for dynamic libraries only;
 we use the terms "dynamic" (Windows) and "shared" (UNIX) somewhat 
 interchangeably.
 
-There are two types of dependencies: those exposed through OpenSim's API (e.g.,
-Simbody), and those used internally by OpenSim (e.g., BTK and ezc3d):
+There are two types of dependencies: public, or those exposed through OpenSim's 
+API (e.g., Simbody), and private, or those used internally by OpenSim 
+(e.g., BTK and ezc3d):
 
 - **private**: OpenSim's binary distribution need only contain the 
   dependency's dynamic libraries.
