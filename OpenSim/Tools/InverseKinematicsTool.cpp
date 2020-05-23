@@ -223,7 +223,7 @@ bool InverseKinematicsTool::run()
 
                 log_info("Frame {} (t = {}):\t total squared error = {}, "
                          "marker error: RMS = {}, max = {} ({})", 
-                    i, s.getTime(), totalSquaredMarkerError, 
+                    i, s.getTime(), totalSquaredMarkerError, rms,
                     sqrt(maxSquaredMarkerError), 
                     ikSolver.getMarkerNameForIndex(worst));
             }

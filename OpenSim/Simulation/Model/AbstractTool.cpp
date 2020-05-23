@@ -935,3 +935,11 @@ std::string AbstractTool::createExternalLoadsFile(const std::string& oldFile,
     }
     if(getDocument()) IO::chDir(savedCwd);
 }
+
+std::string AbstractTool::getTimeString(const time_t& t) const {
+    const auto time = localtime(&t);
+    std::string str(asctime(time));
+    // Remove newline.
+    str.pop_back();
+    return str;
+}

@@ -760,15 +760,13 @@ bool CMCTool::run()
 
     // Initial auxiliary states
     time_t startTime,finishTime;
-    struct tm *localTime;
     double elapsedTime;
     if( s.getNZ() > 0) { // If there are actuator states (i.e. muscles dynamics)
         log_info("-----------------------------------------------------------------");
         log_info("Computing initial values for muscles states (activation, length):");
         log_info("-----------------------------------------------------------------");
         time(&startTime);
-        localTime = localtime(&startTime);
-        log_info(" -- Start time = {}", asctime(localTime));
+        log_info(" -- Start time = {}", getTimeString(startTime));
         log_info("-----------------------------------------------------------------");
         log_info("");
 
@@ -793,11 +791,9 @@ bool CMCTool::run()
         log_info("----------------------------------");
         log_info("Finished computing initial states:");
         log_info("----------------------------------");
-        localTime = localtime(&startTime);
-        log_info(" -- Start time = {}", asctime(localTime));            
-        localTime = localtime(&finishTime);
-        log_info(" -- Finish time = {}", asctime(localTime));
-        elapsedTime = difftime(finishTime,startTime);
+        log_info(" -- Start time = {}", getTimeString(startTime));
+        log_info(" -- Finish time = {}", getTimeString(finishTime));
+        elapsedTime = difftime(finishTime, startTime);
         log_info(" -- Elapsed time = {} seconds.", elapsedTime);
         log_info("----------------------------------");
         log_info("");
@@ -819,8 +815,7 @@ bool CMCTool::run()
     s.updTime() = _ti;
     controller->setTargetTime( _ti );
     time(&startTime);
-    localTime = localtime(&startTime);
-    log_info(" -- Start time = {}", asctime(localTime));
+    log_info(" -- Start time = {}", getTimeString(startTime));
     log_info("--------------------------------------------");
     log_info("");
 
@@ -859,11 +854,9 @@ bool CMCTool::run()
     if( _verbose ){
       log_info(" -- States = {}", s.getY()); 
     }
-    localTime = localtime(&startTime);
-    log_info(" -- Start time = {}", asctime(localTime));
-    localTime = localtime(&finishTime);
-    log_info(" -- Finish time = {}", asctime(localTime));
-    elapsedTime = difftime(finishTime,startTime);
+    log_info(" -- Start time = {}", getTimeString(startTime));
+    log_info(" -- Finish time = {}", getTimeString(finishTime));
+    elapsedTime = difftime(finishTime, startTime);
     log_info(" -- Elapsed time = {} seconds.", elapsedTime);
     log_info("-------------------------------------------");
     log_info("");
