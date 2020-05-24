@@ -3,6 +3,8 @@ Change Log
 
 0.5.0 (in development) 
 ----------------------
+- 2020-05-24: Expose MocoAccelerationTrackingGoal in Matlab and Python.
+
 - 2020-05-16: Moved ActivationCoordinateActuator from opensim-moco to
               opensim-core.
 
