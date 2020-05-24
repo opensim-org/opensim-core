@@ -34,11 +34,10 @@ public:
     /// @{
 
     /// Play back an existing motion (from the Storage) in the
-    /// simbody-visuailzer. The Storage should contain all generalized
+    /// simbody-visualizer. The Storage should contain all generalized
     /// coordinates. The visualizer window allows the user to control playback
     /// speed. This function blocks until the user exits the simbody-visualizer
     /// window.
-    // TODO handle degrees.
     static void showMotion(Model, Storage);
     /// @}
 
@@ -59,17 +58,19 @@ public:
             -'line' default layout frames in a row along Z axis
             -'circle' frames laid out around a half-circle in the Y-Z plane
             -'model' Load passed in model and overlay frames at origins of 
-                corresponding segments at default pose.
+                corresponding bodies at default pose. Must have invoked
+                initSystem() on the model.
 
        Function blocks waiting for user to hit a key to start. */
     static void showOrientationData(
             const TimeSeriesTable_<SimTK::Quaternion_<double>>&,
             std::string layout = "line", 
-            std::string modelFileForPose="");
+            const Model* modelForPose = nullptr);
 
 private:
     static void addVisualizerControls(ModelVisualizer&, double, double);
 };
-}
+
+} // namespace OpenSim
 
 #endif //OPENSIM_VISUALIZER_UTILITIES_H_
