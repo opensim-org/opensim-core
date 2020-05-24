@@ -39,6 +39,7 @@ namespace OpenSim {
 %include <Moco/MocoGoal/MocoSumSquaredStateGoal.h>
 %include <Moco/MocoGoal/MocoOrientationTrackingGoal.h>
 %include <Moco/MocoGoal/MocoTranslationTrackingGoal.h>
+%include <Moco/MocoGoal/MocoAccelerationTrackingGoal.h>
 %include <Moco/MocoGoal/MocoOutputGoal.h>
 %include <Moco/MocoGoal/MocoPeriodicityGoal.h>
 %include <Moco/MocoGoal/MocoInitialForceEquilibriumGoal.h>
