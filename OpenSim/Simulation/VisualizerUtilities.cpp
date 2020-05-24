@@ -79,11 +79,16 @@ void VisualizerUtilities::showMotion(Model model, Storage statesSto) {
     // Prepare data.
     // -------------
     statesSto.resample(1.0 / dataRate, 4 /* degree */);
+    if (statesSto.isInDegrees()) {
+        model.setUseVisualizer(false);
+        model.initSystem();
+        model.getSimbodyEngine().convertDegreesToRadians(statesSto);
+    }
     auto statesTraj = StatesTrajectory::createFromStatesStorage(
             model, statesSto, true, true, false);
     const int numStates = (int)statesTraj.getSize();
 
-    // Must setUseVisualizer() *after* createFromStatesStorage(), otherwise
+    // Must setUseVisualizer(true) *after* createFromStatesStorage(), otherwise
     // createFromStatesStorage() spawns a visualizer.
     model.setUseVisualizer(true);
     model.initSystem();
@@ -273,7 +278,7 @@ void VisualizerUtilities::showMarkerData(
 
 void VisualizerUtilities::showOrientationData(
     const TimeSeriesTableQuaternion& quatTable, std::string layoutString, 
-    std::string modelFileForPose) {
+    const Model* modelForPose) {
 
     Model world;
     std::map<std::string, int> mapOfLayouts = {
@@ -335,17 +340,18 @@ void VisualizerUtilities::showOrientationData(
             }
             break;
         case 2:
-            Model modelForPose(modelFileForPose);
-            State& s = modelForPose.initSystem();
+            OPENSIM_THROW_IF(!modelForPose, Exception,
+                    "Expected a model for layout 'model', but none provided.");
+            State s = modelForPose->getWorkingState();
             OpenSim::Array<std::string> bNames;
-            modelForPose.getBodySet().getNames(bNames);
+            modelForPose->getBodySet().getNames(bNames);
             for (int i = 0; i < numJoints; i++) {
                 bool nameFound = false;
                 auto nameFromData = joints[i]->getName();
                 for (int j = 0; j < bNames.size() && !nameFound; ++j) {
                     if (nameFromData == bNames[j]) { 
                         const Body& bod =
-                                modelForPose.getComponent<OpenSim::Body>(
+                                modelForPose->getComponent<OpenSim::Body>(
                                         "/bodyset/" + bNames[j]);
                         auto pos = bod.getPositionInGround(s);
                         joints[i]
