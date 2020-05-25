@@ -168,9 +168,9 @@ void ProbeReporter::constructDescription()
 
     strcat(descrip, "\nThe units used are dependent on the type of probe component");
 
-    strcat(descrip, "\nIf header above indicates 'inDegrees=yes' above, ");
-    strcat(descrip, "then angles are in degrees, ");
-    strcat(descrip, "otherwise angles are in radians.");
+    strcat(descrip, "\nIf the header above contains a line with ");
+    strcat(descrip, "'inDegrees', this indicates whether rotational values ");
+    strcat(descrip, "are in degrees (yes) or radians (no).");
     strcat(descrip, "\n\n");
 
     setDescription(descrip);
