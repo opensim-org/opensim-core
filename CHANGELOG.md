@@ -10,6 +10,7 @@ v4.2
 ====
 - Add the ActivationCoordinateActuator component, which is a CoordinateActuator with simple activation dynamics (PR #2699).
 - Easily convert Matlab matrices and Python NumPy arrays to and from OpenSim Vectors and Matrices. See Matlab example matrixConversions.m and Python example numpy_conversions.py.
+- Users have more control over which messages are logged. Messages are now logged to opensim.log instead of out.log and err.log. Users can control logging levels via `Logger::setLevel()`.
 
 v4.1
 ====

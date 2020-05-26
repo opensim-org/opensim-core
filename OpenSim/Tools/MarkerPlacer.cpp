@@ -369,7 +369,9 @@ bool MarkerPlacer::processModel(Model* aModel,
     }
     log_info("Frame at (t = {}):\t total squared error = {}, "
              "marker error: RMS = {}, max = {} ({})",
-            s.getTime(), totalSquaredMarkerError, sqrt(maxSquaredMarkerError),
+            s.getTime(), totalSquaredMarkerError,
+            sqrt(totalSquaredMarkerError/nm),
+            sqrt(maxSquaredMarkerError),
             ikSol.getMarkerNameForIndex(worst));
     /* Now move the non-fixed markers on the model so that they are coincident
      * with the measured markers in the static pose. The model is already in

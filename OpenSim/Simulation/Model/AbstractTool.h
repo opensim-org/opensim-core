@@ -374,6 +374,13 @@ public:
 
     void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
     virtual void loadQStorage (const std::string& statesFileName, Storage& rQStore) const;
+
+protected:
+
+    /// Obtain a string of the provided time using asctime(). This function
+    /// removes the newline that asctime() includes at the end of the string.
+    std::string getTimeString(const time_t& t) const;
+
 //=============================================================================
 };  // END of class AbstractTool
 

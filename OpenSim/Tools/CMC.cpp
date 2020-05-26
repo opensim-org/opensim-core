@@ -718,11 +718,10 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
     double tiReal = s.getTime(); 
     double tfReal = _tf; 
 
-    log_info("CMC::computeControls, t = {}:", tiReal);
+    log_info("CMC::computeControls, t = {}", tiReal);
     if(_verbose) { 
         log_info(" -- step size = {}, target time = {}", _targetDT, _tf);
     }
-    log_info("");
 
     // SET CORRECTIONS 
     int nq = _model->getNumCoordinates();
