@@ -24,6 +24,7 @@
 #include <Moco/MocoGoal/MocoMarkerFinalGoal.h>
 #include <Moco/MocoGoal/MocoMarkerTrackingGoal.h>
 #include <Moco/MocoGoal/MocoOrientationTrackingGoal.h>
+#include <Moco/MocoGoal/MocoAccelerationTrackingGoal.h>
 #include <Moco/MocoGoal/MocoOutputGoal.h>
 #include <Moco/MocoGoal/MocoPeriodicityGoal.h>
 #include <Moco/MocoGoal/MocoStateTrackingGoal.h>
