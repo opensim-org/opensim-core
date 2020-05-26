@@ -236,8 +236,10 @@ int main()
                                       "tugOfWar_fatigue_forces.sto");
 
         // Save the muscle analysis results
-        IO::makeDir("MuscleAnalysisResults");
-        muscAnalysis->printResults("fatigue", "MuscleAnalysisResults");
+        const std::string dirName = "MuscleAnalysisResults";
+        IO::makeDir(dirName);
+        OPENSIM_THROW_IF(errno == ENOENT, UnableToCreateDirectory, dirName);
+        muscAnalysis->printResults("fatigue", dirName);
 
         // To print (serialize) the latest connections of the model, it is 
         // necessary to finalizeConnections() first.

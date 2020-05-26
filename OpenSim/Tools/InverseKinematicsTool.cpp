@@ -264,7 +264,11 @@ bool InverseKinematicsTool::run()
             modelMarkerErrors->setColumnLabels(labels);
             modelMarkerErrors->setName("Model Marker Errors from IK");
 
-            IO::makeDir(getResultsDir());
+            if (!getResultsDir().empty()) {
+                IO::makeDir(getResultsDir());
+                OPENSIM_THROW_IF(errno == ENOENT, UnableToCreateDirectory,
+                                 getResultsDir());
+            }
             string errorFileName = trialName + "_ik_marker_errors";
             Storage::printResult(modelMarkerErrors, errorFileName,
                                  getResultsDir(), -1, ".sto");
@@ -284,8 +288,13 @@ bool InverseKinematicsTool::run()
             }
             modelMarkerLocations->setColumnLabels(labels);
             modelMarkerLocations->setName("Model Marker Locations from IK");
-    
-            IO::makeDir(getResultsDir());
+
+            if (!getResultsDir().empty()) {
+                IO::makeDir(getResultsDir());
+                OPENSIM_THROW_IF(errno == ENOENT, UnableToCreateDirectory,
+                                 getResultsDir());
+            }
+
             string markerFileName = trialName + "_ik_model_marker_locations";
             Storage::printResult(modelMarkerLocations, markerFileName,
                                  getResultsDir(), -1, ".sto");

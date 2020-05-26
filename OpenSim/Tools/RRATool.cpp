@@ -808,7 +808,13 @@ bool RRATool::run()
     cmcActSubsystem.setCompleteState( s );
 
     // Set output file names so that files are flushed regularly in case we fail
-    IO::makeDir(getResultsDir());   // Create directory for output in case it doesn't exist
+    // Create directory for output in case it doesn't exist
+    if (!getResultsDir().empty()) {
+        IO::makeDir(getResultsDir());
+        OPENSIM_THROW_IF(errno == ENOENT, UnableToCreateDirectory,
+                         getResultsDir());
+    }
+
     manager.getStateStorage().setOutputFileName(getResultsDir() + "/" + getName() + "_states.sto");
     try {
         manager.initialize(s);

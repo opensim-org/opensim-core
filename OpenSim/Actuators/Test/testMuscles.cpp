@@ -427,8 +427,9 @@ void simulateMuscle(
 
     //An analysis only writes to a dir that exists, so create here.
     if(printResults){
-        IO::makeDir("testMuscleResults");
-        muscleAnalysis->printResults(actuatorType, "testMuscleResults");
+        const std::string dirName = "testMuscleResults";
+        OPENSIM_THROW_IF(errno == ENOENT, UnableToCreateDirectory, dirName);
+        muscleAnalysis->printResults(actuatorType, dirName);
     }
 
     double muscleWork = muscWorkProbe->getProbeOutputs(si)(0);

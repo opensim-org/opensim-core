@@ -2756,7 +2756,9 @@ print(const string &aFileName,const string &aMode, const string& aComment) const
 {
     // OPEN THE FILE
     FILE *fp = IO::OpenFile(aFileName,aMode);
-    if(fp==NULL) return(false);
+    OPENSIM_THROW_IF(fp==NULL, Exception,
+        "Storage: Failed to open file '" + aFileName + "' for writing.\n"
+        + "Verify that the destination directory is writable.");
 
     // WRITE THE HEADER
     int n=0,nTotal=0;
@@ -2834,7 +2836,9 @@ print(const string &aFileName,double aDT,const string &aMode) const
     if (_fp!= NULL) fclose(_fp);
     // OPEN THE FILE
     FILE *fp = IO::OpenFile(aFileName,aMode);
-    if(fp==NULL) return(-1);
+    OPENSIM_THROW_IF(fp==NULL, Exception,
+        "Storage: Failed to open file '" + aFileName + "' for writing.\n"
+        + "Verify that the destination directory is writable.");
 
     // HOW MANY TIME STEPS?
     double ti = getFirstTime();
