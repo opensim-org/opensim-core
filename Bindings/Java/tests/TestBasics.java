@@ -99,12 +99,33 @@ class TestBasics {
        ModelScaler ms = new ModelScaler();
        Scale s = new Scale();
        ms.addScale(s);
-    }  
+    } 
+
+    public static void testAnalyses() {
+        // Get all the Analyses
+        AnalysisSet availableAnalyses = new AnalysisSet();
+        AnalysisSet.getAvailableAnalyses(availableAnalyses);
+
+        for (int i = 0; i < availableAnalyses.getSize(); ++i) {
+            Analysis analysis = availableAnalyses.get(i);
+
+            OpenSimObject clone = analysis.clone();
+
+            // restore analysis to its unedited state
+            analysis.assign( clone );
+
+            System.out.println(analysis.dump());
+            System.out.println(clone.dump()); 
+        }
+}
+
+
   public static void main(String[] args) {
       testBasics();
       testMuscleList();
       testToyReflexController();
       testScaleToolUtils();
+      testAnalyses();
 
       System.out.println("Test finished!");
       // TODO to cause test to fail: System.exit(-1);
