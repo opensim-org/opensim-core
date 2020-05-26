@@ -228,11 +228,10 @@ void InducedAccelerations::constructDescription()
 
     descrip = "\nThis file contains accelerations of coordinates or bodies.\n";
     descrip += "\nUnits are S.I. units (seconds, meters, Newtons, ...)";
-    if(getInDegrees()) {
-        descrip += "\nAngles are in degrees.";
-    } else {
-        descrip += "\nAngles are in radians.";
-    }
+    descrip += "\nIf the header above contains a line with ";
+    descrip += "'inDegrees', this indicates whether rotational values ";
+    descrip +=  "are in degrees (yes) or radians (no).";
+
     descrip += "\n\n";
 
     setDescription(descrip);

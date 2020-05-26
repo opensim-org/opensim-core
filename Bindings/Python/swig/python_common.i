@@ -11,6 +11,7 @@
 %{
 #define SWIG_FILE_WITH_INIT
 #include <Bindings/OpenSimHeaders_common.h>
+#include <Bindings/PropertyHelper.h>
 %}
 
 %{

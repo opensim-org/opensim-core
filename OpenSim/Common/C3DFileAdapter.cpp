@@ -30,12 +30,12 @@ convertToSimtkMatrix(const ezc3d::Matrix& mat) {
 // This can become a lambda function inside extendRead in future.
 SimTK::Matrix_<double>
 convertToSimtkMatrix(const std::vector<ezc3d::Vector3d>& all_vec) {
-    SimTK::Matrix_<double> simtkMat{static_cast<int>(all_vec.size()), 3};
+    SimTK::Matrix_<double> simtkMat{3, static_cast<int>(all_vec.size())};
 
     for(int r = 0; r < all_vec.size(); ++r){
         const ezc3d::Vector3d& vec(all_vec[r]);
         for(int c = 0; c < 3; ++c){
-            simtkMat(r, c) = vec(c);
+            simtkMat(c, r) = vec(c);
         }
     }
 
@@ -243,7 +243,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
             units.upd().push_back(SimTK::Value<std::string>(moment_unit));
         }
 
-        const int nf = force_platforms_extractor.forcePlatform(0).nbFrames();
+        const int nf = static_cast<const int>(force_platforms_extractor.forcePlatform(0).nbFrames());
         auto analogFrequency = static_cast<double>(c3d.header().frameRate()
                                                    * c3d.header().nbAnalogByFrame());
         const auto& pf_ref(force_platforms_extractor.forcePlatforms());

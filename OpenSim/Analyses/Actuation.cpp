@@ -235,12 +235,9 @@ constructDescription()
     strcat(descrip, "from the model.\n");
 
     strcat(descrip, "\nUnits are S.I. units (second, meters, Newtons, ...)");
-    if (getInDegrees()) {
-        strcat(descrip, "\nAngles are in degrees.");
-    }
-    else {
-        strcat(descrip, "\nAngles are in radians.");
-    }
+    strcat(descrip, "\nIf the header above contains a line with ");
+    strcat(descrip, "'inDegrees', this indicates whether rotational values ");
+    strcat(descrip, "are in degrees (yes) or radians (no).");
     strcat(descrip, "\n\n");
 
     setDescription(descrip);

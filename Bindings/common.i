@@ -27,7 +27,7 @@
 %template (PropertyString) OpenSim::Property<std::string>;
 %include <OpenSim/Common/Object.h>
 %include <OpenSim/Common/ObjectGroup.h>
-
+%include <Bindings/PropertyHelper.h>
 %include <OpenSim/Common/Set.h>
 %template(OpenSimObjectSet) OpenSim::Set<OpenSim::Object, OpenSim::Object>;
 %include <OpenSim/Common/StateVector.h>
@@ -413,7 +413,7 @@ namespace OpenSim {
 %include <OpenSim/Common/CSVFileAdapter.h>
 %include <OpenSim/Common/XsensDataReader.h>
 
-#ifdef WITH_BTK
+#if defined WITH_EZC3D || defined (WITH_BTK)
 %include <OpenSim/Common/C3DFileAdapter.h>
 
 %extend OpenSim::C3DFileAdapter {
