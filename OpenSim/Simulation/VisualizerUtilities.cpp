@@ -229,9 +229,19 @@ void VisualizerUtilities::showMarkerData(
         const TimeSeriesTableVec3& markerTimeSeries) {
     Model previewWorld;
 
+    TimeSeriesTableVec3 markerTimeSeriesInMeters(markerTimeSeries);
+    // if units are in mm, convert to meters first
+    if (markerTimeSeriesInMeters.getTableMetaData().hasKey("Units")){
+        auto unitsString = markerTimeSeriesInMeters.getTableMetaData().getValueAsString("Units");
+        if (unitsString == "mm") {
+            for (auto column : markerTimeSeriesInMeters.getColumnLabels())
+                markerTimeSeriesInMeters.updDependentColumn(column) /= 1000;
+        }
+    }
     // Load the marker data into a TableSource that has markers
     // as its output which each markers occupying its own channel
-    TableSourceVec3* markersSource = new TableSourceVec3(markerTimeSeries);
+    TableSourceVec3* markersSource =
+            new TableSourceVec3(markerTimeSeriesInMeters);
     // Add the markersSource Component to the model
     previewWorld.addComponent(markersSource);
 
@@ -259,14 +269,16 @@ void VisualizerUtilities::showMarkerData(
     state.updTime() = times[0];
     const SimTK::Real initialTime = times.front();
     const SimTK::Real finalTime = times.back();
-    bool pause = false;
-    addVisualizerControls(previewWorld.updVisualizer(), initialTime, finalTime);
+    
+    previewWorld.updVisualizer().updSimbodyVisualizer().setBackgroundType(SimTK::Visualizer::SolidColor);
+    previewWorld.updVisualizer().updSimbodyVisualizer().setBackgroundColor(
+            SimTK::Black);
     previewWorld.realizePosition(state);
     previewWorld.getVisualizer().show(state);
 
     while (true) {
         for (size_t j = 0; j < times.size(); ++j) {
-            std::cout << "time: " << times[j] << "s" << std::endl;
+            //std::cout << "time: " << times[j] << "s" << std::endl;
             state.setTime(times[j]);
             previewWorld.realizePosition(state);
             previewWorld.getVisualizer().show(state);
