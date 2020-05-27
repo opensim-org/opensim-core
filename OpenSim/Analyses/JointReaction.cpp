@@ -233,15 +233,15 @@ void JointReaction::setupReactionList()
 {
     /* check length of property arrays.  if one is empty, set it to default*/
     if(_jointNames.getSize() == 0) {
-        cout << "\nNo joints are specified in joint_names.  Setting to ALL\n";
+        log_info("No joints are specified in joint_names. Setting to ALL");
         _jointNames.setSize(1);
         _jointNames[0] = "ALL";}
     if(_onBody.getSize() == 0) {
-        cout << "\nNo bodies are specified in apply_on_bodies.  Setting to child\n";
+        log_info("No bodies are specified in apply_on_bodies. Setting to child");
         _onBody.setSize(1);
         _onBody[0] = "child";}
     if(_inFrame.getSize() == 0) {
-        cout << "\nNo bodies are specified in express_in_frame.  Setting to ground\n";
+        log_info("No bodies are specified in express_in_frame. Setting to ground");
         _inFrame.setSize(1);
         _inFrame[0] = "ground";}
 
@@ -336,8 +336,8 @@ void JointReaction::setupReactionList()
             _reactionList.append(currentKey);
         }
         else {
-            cout << "\nWARNING: " << _jointNames[i] << " is not a valid joint. "
-                "Ignoring this entry.\n";
+            log_warn("'{}' is not a valid joint. Ignoring this entry.",
+                     _jointNames[i]);
         }
     }
 }
@@ -417,18 +417,19 @@ void JointReaction::loadForcesFromFile()
     // check if the forces storage file name is valid and, if so, load the file into storage
     if(_forcesFileNameProp.isValidFileName()) {
         
-        cout << "\nLoading actuator forces from file " << _forcesFileName << "." << endl;
+        log_info("Loading actuator forces from file {}.", _forcesFileName);
         _storeActuation = new Storage(_forcesFileName);
         int storeSize = _storeActuation->getSmallestNumberOfStates();
-        
-        cout << "Found " << storeSize << " actuator forces with time stamps ranging from "
-            << _storeActuation->getFirstTime() << " to " << _storeActuation->getLastTime() << "." << endl;
+
+        log_info("Found {} actuator forces with time stamps ranging from {}"
+                 "to {}.", storeSize, _storeActuation->getFirstTime(),
+                 _storeActuation->getLastTime());
 
         // check if actuator set and forces file have the same actuators
         bool _containsAllActuators = true;
         int actuatorSetSize = _model->getActuators().getSize();
         if(actuatorSetSize > storeSize){
-            cout << "The forces file does not contain enough actuators." << endl;
+            log_warn("The forces file does not contain enough actuators.");
             _containsAllActuators = false;
         }
         else {
@@ -437,27 +438,36 @@ void JointReaction::loadForcesFromFile()
                 std::string actuatorName = _model->getActuators().get(actuatorIndex).getName();
                 int storageIndex = _storeActuation->getStateIndex(actuatorName,0);
                 if(storageIndex == -1) {
-                    cout << "\nThe actuator " << actuatorName << " was not found in the forces file." << endl;
+                    log_warn("The actuator '{}' was not found in the forces "
+                             "file.",
+                            actuatorName);
+
                     _containsAllActuators = false;
                 }
             }
         }
 
         if(_containsAllActuators) {
-            if(storeSize> actuatorSetSize) cout << "\nWARNING:  The forces file contains actuators that are not in the model's actuator set." << endl;
+            if(storeSize> actuatorSetSize) {
+                log_warn("The forces file contains actuators that are not in "
+                         "the model's actuator set.");
+            }
             _useForceStorage = true;
-            cout << "WARNING:  Ignoring fiber lengths and activations from the states since " << _forcesFileNameProp.getName() << " is also set." << endl;
-            cout << "Actuator forces will be constructed from " << _forcesFileName << "." << endl;
+            log_warn("Ignoring fiber lengths and activations from the states "
+                     "since {} is also set. Actuator forces will be "
+                     "constructed from {}.",
+                    _forcesFileNameProp.getName(), _forcesFileName);
         }
         else {
             _useForceStorage = false;
-            cout << "Actuator forces will be constructed from the states." << endl;
+            log_info("Actuator forces will be constructed from the states.");
         }
     }
 
     else {
-        cout << "WARNING:  " << _forcesFileNameProp.getName() << " is not a valid file name." << endl;
-        cout << "Actuator forces will be constructed from the states." << endl;
+        log_warn("'{}' is not a valid file name. Actuator forces will be "
+                 "constructed from the states.",
+                _forcesFileNameProp.getName());
         _useForceStorage = false;
     }
 }
@@ -552,7 +562,8 @@ record(const SimTK::State& s)
             std::string actuatorName = actuatorSet.get(actuatorIndex).getName();
             storageIndex = _storeActuation->getStateIndex(actuatorName, 0);
             if(storageIndex == -1){
-                cout << "The actuator, " << actuatorName << ", was not found in the forces file." << endl;
+                log_warn("The actuator '{}' was not found in the forces file.",
+                        actuatorName);
                 break;
             }
             const ScalarActuator* act = dynamic_cast<const ScalarActuator*>(&actuatorSet[actuatorIndex]);
@@ -717,7 +728,9 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
                  const string &aExtension)
 {
     // Reaction Loads
-    Storage::printResult(&_storeReactionLoads,aBaseName+"_"+getName()+"_ReactionLoads",aDir,aDT,aExtension);
+    Storage::printResult(&_storeReactionLoads,
+            aBaseName + "_" + getName() + "_ReactionLoads", aDir, aDT,
+            aExtension);
 
     return(0);
 }

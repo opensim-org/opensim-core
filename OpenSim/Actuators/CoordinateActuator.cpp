@@ -199,7 +199,7 @@ void CoordinateActuator::computeForce( const SimTK::State& s,
     if(isCoordinateValid()){
         applyGeneralizedForce(s, *_coord, getActuation(s), mobilityForces);
     } else {
-       std::cout << "CoordinateActuator::computeForce  Invalid coordinate " << std::endl;
+        log_warn("CoordinateActuator::computeForce: Invalid coordinate");
     }
 }
 

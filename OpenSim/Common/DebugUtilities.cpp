@@ -20,22 +20,24 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #include "DebugUtilities.h"
-#include <sstream>
-#include <fstream>
-#include <iostream>
+
+#include "Logger.h"
 #include <cassert>
 #include <cstdlib>
+#include <fstream>
+#include <iostream>
+#include <sstream>
 #include <stdexcept>
 
 namespace OpenSim {
 namespace DebugUtilities {
 
-void Fatal_Error(const char *msg, const char *function, const char *file, unsigned int line)
-{
-    std::ostringstream string_stream;
-    string_stream << "Fatal Error: " << msg << " (function = " << function << ", file = " << file << ", line = " << line << ")";
-    std::cerr << string_stream.str() << std::endl;
-    throw std::runtime_error(string_stream.str());
+void Fatal_Error(const char* msg, const char* function, const char* file,
+        unsigned int line) {
+    std::string str = fmt::format("Fatal Error: {} (function = {}, file = {}, "
+                                  "line = {})", msg, function, file, line);
+    log_critical(str);
+    throw std::runtime_error(str);
     assert(false);
     exit(1);
 }
@@ -55,7 +57,7 @@ void AddEnvironmentVariablesFromFile(const std::string &aFileName)
     while (getline(input,line)) {
         if(line.find("export") != std::string::npos) {
             std::string env=line.substr(7);
-            std::cout << "Setting environment '" << env << "'" << std::endl;
+            log_info("Setting environment '{}'", env);
 #ifdef _WIN32
             _putenv(env.c_str());
 #else

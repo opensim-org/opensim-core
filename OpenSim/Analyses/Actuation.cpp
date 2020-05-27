@@ -167,7 +167,8 @@ void Actuation::setModel(Model& aModel)
         _na = 0;
 
     if (_na <= 0){
-        cout << "WARNING: Actuation analysis canceled. There are no Actuators in the model." << endl;
+        log_warn("Actuation analysis canceled. There are no Actuators in the "
+                 "model.");
         return;
     }
 
@@ -518,8 +519,8 @@ printResults(const string &aBaseName, const string &aDir, double aDT,
 const string &aExtension)
 {
     if (!getOn()) {
-        printf("Actuation.printResults: Off- not printing.\n");
-        return(0);
+        log_info("Actuation.printResults: Off- not printing.");
+        return 0;
     }
 
     std::string prefix = aBaseName + "_" + getName() + "_";

@@ -199,6 +199,24 @@ using namespace SimTK;
   }
 %}
 
+%typemap(javacode) OpenSim::LogSink %{
+  public void markAdopted() {
+      if (swigCPtr != 0) {
+          if (swigCMemOwn) swigCMemOwn = false;
+      }
+  }
+%}
+// This method takes ownership of the passed-in object; make sure the bindings
+// don't try to handle ownership.
+%javamethodmodifiers OpenSim::Logger::addSink "private";
+%rename OpenSim::Logger::addSink private_addSink;
+%typemap(javacode) OpenSim::Logger %{
+  public static void addSink(LogSink sink) {
+      sink.markAdopted();
+      private_addSink(sink);
+  }
+%}
+
 %import "java_simbody.i"
 
 %include <Bindings/common.i>

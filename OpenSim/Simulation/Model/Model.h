@@ -973,7 +973,9 @@ public:
     /**
      * Print some basic information about the model.
      *
-     * @param aOStream Output stream.
+     * @param aOStream Output stream. If this is std::cout, then the info is
+     * logged using OpenSim's Logger so that the info is printed to all log
+     * sinks.
      */
     void printBasicInfo(std::ostream& aOStream = std::cout) const;
 
@@ -981,7 +983,9 @@ public:
      * Print detailed information about the model.
      *
      * @param s        the system State.
-     * @param aOStream Output stream.
+     * @param aOStream Output stream. If this is std::cout, then the info is
+     * logged using OpenSim's Logger so that the info is printed to all log
+     * sinks.
      */
     void printDetailedInfo(const SimTK::State& s,
                            std::ostream& aOStream = std::cout) const;

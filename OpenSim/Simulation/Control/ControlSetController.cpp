@@ -186,7 +186,6 @@ double ControlSetController::getFirstTime() const {
     Array<int> controlList;
    SimTK_ASSERT( _controlSet , "ControlSetController::getFirstTime controlSet is NULL");
 
-//    std::cout << " ncontrols= "<< _controlSet->getSize() << std::endl<<std::endl;
     _controlSet->getControlList( "ControlLinear" , controlList );
     
     if( controlList.getSize() < 1 ) {
@@ -218,11 +217,11 @@ void ControlSetController::extendFinalizeFromProperties()
 
     // The result of default constructing and adding  this to a model
     if (_controlSet == nullptr &&  !hasFile) {
-        std::cout << "ControlSetController::extendFinalizeFromProperties '";
-        std::cout << _controlsFileNameProp.getName() << "' unassigned.\n";
-        std::cout << "No ControlSet loaded or set. Use ControSetController::";
-        std::cout << "setControlSetFileName() to\n specify file and try again."
-                  << std::endl;
+        log_warn("ControlSetController::extendFinalizeFromProperties '{}' unassigned.", 
+            _controlsFileNameProp.getName());
+        log_warn("No ControlSet loaded or set. Use "
+                 "ControSetController::setControlSetFileName()"
+                 "to specify file and try again.");
         setEnabled(false);
         return;
     }
@@ -245,15 +244,14 @@ void ControlSetController::extendFinalizeFromProperties()
             //TODO: Should throw a specific "UnaccessibleControlFileException"
             //testSerializeOpenSimObjects should not expect to just add garbage filled
             //objects (components) to a model and expect to serialize- must be changed!
-            std::cout << msg << std::endl;
+            log_error(msg);
         }
     }
 
     if (loadedControlSet && _controlSet) {
-        std::cout << "ControlSetController::extendFinalizeFromProperties '";
-        std::cout << _controlsFileName << "' loaded\n";
-        std::cout << "and will replace existing ControlSet '";
-        std::cout << _controlSet->getName() << "'." << std::endl;
+        log_warn("ControlSetController::extendFinalizeFromProperties '{}' "
+                 "loaded and will replace existing ControlSet '{}'.",
+                _controlsFileName, _controlSet->getName());
         delete _controlSet;
     }
 

@@ -392,8 +392,8 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
                  const string &aExtension)
 {
     if(!getOn()) {
-        printf("ForceReporter.printResults: Off- not printing.\n");
-        return(0);
+        log_info("ForceReporter.printResults: Off- not printing.");
+        return 0;
     }
 
     std::string prefix=aBaseName+"_"+getName()+"_";
@@ -427,7 +427,7 @@ void ForceReporter::tidyForceNames()
             string newName(pad);
             _model->updForceSet()[i].setName(newName);
             forceNames.set(i, newName);
-            cout << "Changing blank name for force to " << newName << endl;
+            log_info("Changing blank name for force to {}.", newName);
         }
     }
 }

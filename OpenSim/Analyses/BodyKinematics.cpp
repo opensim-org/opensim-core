@@ -309,7 +309,10 @@ updateBodiesToRecord()
     }
     _kin.setSize(6*_bodyIndices.getSize()+(_recordCenterOfMass?3:0));
 
-    if(_kin.getSize()==0) cout << "WARNING: BodyKinematics analysis has no bodies to record kinematics for" << endl;
+    if(_kin.getSize()==0) {
+        log_warn("BodyKinematics analysis has no bodies to record kinematics "
+                 "for");
+    }
 }
 
 

@@ -236,7 +236,7 @@ bool MarkerPlacer::processModel(Model* aModel,
 
     if(!getApply()) return false;
 
-    cout << endl << "Step 3: Placing markers on model" << endl;
+    log_info("Step 3: Placing markers on model");
 
     if (_timeRange.getSize()<2) 
         throw Exception("MarkerPlacer::processModel, time_range is unspecified.");
@@ -367,10 +367,12 @@ bool MarkerPlacer::processModel(Model* aModel,
             worst = j;
         }
     }
-    cout << "Frame at (t=" << s.getTime() << "):\t";
-    cout << "total squared error = " << totalSquaredMarkerError;
-    cout << ", marker error: RMS=" << sqrt(totalSquaredMarkerError/nm);
-    cout << ", max=" << sqrt(maxSquaredMarkerError) << " (" << ikSol.getMarkerNameForIndex(worst) << ")" << endl;
+    log_info("Frame at (t = {}):\t total squared error = {}, "
+             "marker error: RMS = {}, max = {} ({})",
+            s.getTime(), totalSquaredMarkerError,
+            sqrt(totalSquaredMarkerError/nm),
+            sqrt(maxSquaredMarkerError),
+            ikSol.getMarkerNameForIndex(worst));
     /* Now move the non-fixed markers on the model so that they are coincident
      * with the measured markers in the static pose. The model is already in
      * the proper configuration so the coordinates do not need to be changed.
@@ -394,14 +396,14 @@ bool MarkerPlacer::processModel(Model* aModel,
         try { // writing can throw an exception
             if (_outputModelFileNameProp.isValidFileName()) {
                 aModel->print(aPathToSubject + _outputModelFileName);
-                cout << "Wrote model file " << _outputModelFileName <<
-                    " from model " << aModel->getName() << endl;
+                log_info("Wrote model file '{}' from model {}.", 
+                    _outputModelFileName, aModel->getName());
             }
 
             if (_outputMarkerFileNameProp.isValidFileName()) {
                 aModel->writeMarkerFile(aPathToSubject + _outputMarkerFileName);
-                cout << "Wrote marker file " << _outputMarkerFileName <<
-                    " from model " << aModel->getName() << endl;
+                log_info("Wrote marker file '{}' from model {}.", 
+                    _outputMarkerFileName, aModel->getName());
             }
 
             if (_outputMotionFileNameProp.isValidFileName()) {
@@ -461,14 +463,17 @@ void MarkerPlacer::moveModelMarkersToPose(SimTK::State& s, Model& aModel,
                 }
                 else
                 {
-                    cout << "___WARNING___: marker " << modelMarker.getName() << " does not have valid coordinates in " << aPose.getFileName() << endl;
-                    cout << "               It will not be moved to match location in marker file." << endl;
+                    log_warn("Marker {} does not have valid coordinates in "
+                             "'{}'. It will not be moved to match location in "
+                             "marker file.", 
+                        modelMarker.getName(), aPose.getFileName());
                 }
             }
         }
     }
 
-    cout << "Moved markers in model " << aModel.getName() << " to match locations in marker file " << aPose.getFileName() << endl;
+    log_info("Moved markers in model {} to match locations in marker file "
+             "'{}'.", aModel.getName(), aPose.getFileName());
 }
 
 Storage* MarkerPlacer::getOutputStorage() 

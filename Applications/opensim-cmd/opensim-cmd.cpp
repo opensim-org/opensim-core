@@ -27,28 +27,28 @@
 #include "opensim-cmd_update-file.h"
 
 #include <iostream>
-
 #include <docopt.h>
 #include "parse_arguments.h"
 
 #include <OpenSim/OpenSim.h>
 #include <OpenSim/version.h>
 
-static const char HELP[] = 
+// The initial descriptions of the options should not exceed one line.
+// This is to avoid regex errors with MSVC, where parsing HELP with
+// MSVC's regex library causes a stack error if the description for an
+// option is too long.
+
+static const char HELP[] =
 R"(OpenSim: musculoskeletal modeling and simulation.
 
 Usage:
-  opensim-cmd [--library=<path>]... <command> [<args>...]
+  opensim-cmd [--library=<path>]... [--log=<level>] <command> [<args>...]
   opensim-cmd -h | --help
   opensim-cmd -V | --version
 
 Options:
-  -L <path>, --library <path>  Load a plugin before executing the requested
-                 command. The <path> to the library can be absolute, or
-                 relative to the current directory. Make sure to include the
-                 library's extension (e.g., .dll, .so, .dylib). If <path>
-                 contains spaces, surround <path> in quotes. You can load
-                 multiple plugins by repeating this option.
+  -L <path>, --library <path>  Load a plugin.
+  -o <level>, --log <level>  Logging level.
   -h, --help     Show this help description.
   -V, --version  Show the version number.
 
@@ -60,6 +60,17 @@ Available commands:
 
   Pass -h or --help to any of these commands to learn how to use them.
 
+Description of options:
+  L, library  Load a plugin before executing the requested
+              command. The <path> to the library can be absolute, or
+              relative to the current directory. Make sure to include the
+              library's extension (e.g., .dll, .so, .dylib). If <path>
+              contains spaces, surround <path> in quotes. You can load
+              multiple plugins by repeating this option.
+  o, log      Control the verbosity of OpenSim's console output.
+              Levels: off, critical, error, warn, info, debug, trace.
+              Default: info.
+
 Examples:
   opensim-cmd run-tool InverseDynamics_Setup.xml
   opensim-cmd print-xml cmc
@@ -67,7 +78,7 @@ Examples:
   opensim-cmd update-file lowerlimb_v3.3.osim lowerlimb_updated.osim
   opensim-cmd -L C:\Plugins\osimMyCustomForce.dll run-tool CMC_setup.xml
   opensim-cmd --library ../plugins/libosimMyPlugin.so print-xml MyCustomTool
-  opensim-cmd --library=libosimMyCustomForce.dylib info MyCustomForce
+  opensim-cmd --library=libosimMyCustomForce.dylib --log=debug info MyCustomForce
 
 )";
 
@@ -110,11 +121,17 @@ int main(int argc, const char** argv) {
             if (!success) return EXIT_FAILURE;
         }
     }
+    
+    // Logging.
+    // --------
+    if (args["--log"]) {
+        Logger::setLevelString(args["--log"].asString());
+    }
 
     // Did the user provide a valid command?
     // -------------------------------------
     if (!args["<command>"]) {
-        std::cout << "No command provided." << std::endl;
+        log_error("No command provided.");
         return EXIT_FAILURE;
     }
 
@@ -122,8 +139,8 @@ int main(int argc, const char** argv) {
     const auto& command = args["<command>"].asString();
 
     if (commands.count(command) == 0) {
-        std::cout << "'" << command << "' is not an opensim-cmd command. "
-            << "See 'opensim-cmd --help'." << std::endl;
+        log_error("'{}' is not an opensim-cmd command. "
+                  "See 'opensim-cmd --help'.", command);
         return EXIT_FAILURE;
     }
 
@@ -134,13 +151,10 @@ int main(int argc, const char** argv) {
 
 
     } catch (const std::exception& e) {
-        std::cerr << e.what() << std::endl;
+        log_error(e.what());
         return EXIT_FAILURE;
     }
 
     // We shouldn't ever get here, so we can consider this a failure.
     return EXIT_FAILURE;
 }
-
-
-

@@ -75,10 +75,8 @@ void ToyReflexController::extendConnectToModel(Model &model)
         const Muscle *musc = dynamic_cast<const Muscle*>(&actuators[cnt]);
         // control muscles only
         if(!musc){
-            cout << "ToyReflexController:: WARNING- controller assigned a "
-                    "non-muscle actuator ";
-            cout << actuators[cnt].getName() << " which will be ignored."
-                 << endl;
+            log_warn("ToyReflexController assigned a non-muscle actuator '{}', "
+                     "which will be ignored.", actuators[cnt].getName());
             actuators.remove(cnt);
         }else
             cnt++;
