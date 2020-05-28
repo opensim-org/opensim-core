@@ -48,7 +48,7 @@ problem.setStateInfoPattern('/jointset/.*/speed', );
 
 
 % Part 1e: Configure the solver.
-solver = moco.initCasADiSolver();
+solver = study.initCasADiSolver();
 solver.set_num_mesh_intervals( );
 solver.set_optim_convergence_tolerance( );
 solver.set_optim_constraint_tolerance( );
@@ -106,7 +106,8 @@ mocoPlotTrajectory('predictSolution.sto', 'trackingSolution.sto', ...
 inverse.set_initial_time( );
 inverse.set_final_time( );
 inverse.set_mesh_interval( );
-inverse.set_tolerance( );
+inverse.set_convergence_tolerance( );
+inverse.set_constraint_tolerance( );
 
 % Allow extra (unused) columns in the kinematics and minimize activations.
 inverse.set_kinematics_allow_extra_columns(true);
