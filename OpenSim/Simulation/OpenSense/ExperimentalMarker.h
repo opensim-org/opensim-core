@@ -59,7 +59,7 @@ public:
 
 private:
     void constructProperties() {
-        constructProperty_radius(0.005);
+        constructProperty_radius(0.02);
         constructProperty_color(SimTK::Vec3(0.9, 0.9, 0.2));
     }
 

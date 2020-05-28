@@ -5,6 +5,7 @@
 
 %{
 #include <Bindings/OpenSimHeaders_common.h>
+#include <Bindings/PropertyHelper.h>
 #include <Bindings/Java/OpenSimJNI/OpenSimContext.h>
 
 using namespace OpenSim;

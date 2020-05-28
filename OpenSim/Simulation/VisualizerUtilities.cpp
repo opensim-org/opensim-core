@@ -45,7 +45,7 @@ void VisualizerUtilities::showModel(Model model) {
     SimTK::State& si = model.initSystem();
     auto silo = &model.updVisualizer().updInputSilo();
  
-    SimTK::DecorativeText help("Press any key to quit.");
+    SimTK::DecorativeText help("(hit Esc. to exit)");
     help.setIsScreenText(true);
     auto simtkVisualizer = model.updVisualizer().updSimbodyVisualizer();
     simtkVisualizer.addDecoration(
@@ -59,7 +59,13 @@ void VisualizerUtilities::showModel(Model model) {
     // exit gracefully on key press
     silo->clear(); // Ignore any previous key presses.
     unsigned key, modifiers;
-    silo->waitForKeyHit(key, modifiers);
+    if (silo->takeKeyHit(key, modifiers)) {
+        // Exit.
+        if (key == SimTK::Visualizer::InputListener::KeyEsc) {
+            std::cout << "Exiting visualization." << std::endl;
+            return;
+        }
+    }
  }
 
 // Based on code from simtk.org/projects/predictivesim SimbiconExample/main.cpp.
@@ -228,9 +234,19 @@ void VisualizerUtilities::showMarkerData(
         const TimeSeriesTableVec3& markerTimeSeries) {
     Model previewWorld;
 
+    TimeSeriesTableVec3 markerTimeSeriesInMeters(markerTimeSeries);
+    // if units are in mm, convert to meters first
+    if (markerTimeSeriesInMeters.getTableMetaData().hasKey("Units")){
+        auto unitsString = markerTimeSeriesInMeters.getTableMetaData().getValueAsString("Units");
+        if (unitsString == "mm") {
+            for (auto column : markerTimeSeriesInMeters.getColumnLabels())
+                markerTimeSeriesInMeters.updDependentColumn(column) /= 1000;
+        }
+    }
     // Load the marker data into a TableSource that has markers
     // as its output which each markers occupying its own channel
-    TableSourceVec3* markersSource = new TableSourceVec3(markerTimeSeries);
+    TableSourceVec3* markersSource =
+            new TableSourceVec3(markerTimeSeriesInMeters);
     // Add the markersSource Component to the model
     previewWorld.addComponent(markersSource);
 
@@ -258,18 +274,16 @@ void VisualizerUtilities::showMarkerData(
     state.updTime() = times[0];
     const SimTK::Real initialTime = times.front();
     const SimTK::Real finalTime = times.back();
-    bool pause = false;
-    addVisualizerControls(previewWorld.updVisualizer(), initialTime, finalTime);
+    
+    previewWorld.updVisualizer().updSimbodyVisualizer().setBackgroundType(SimTK::Visualizer::SolidColor);
+    previewWorld.updVisualizer().updSimbodyVisualizer().setBackgroundColor(
+            SimTK::Black);
     previewWorld.realizePosition(state);
     previewWorld.getVisualizer().show(state);
 
-    char c;
-    std::cout << "Press any key to visualize experimental marker data ..."
-              << std::endl;
-    std::cin >> c;
     while (true) {
         for (size_t j = 0; j < times.size(); ++j) {
-            std::cout << "time: " << times[j] << "s" << std::endl;
+            //std::cout << "time: " << times[j] << "s" << std::endl;
             state.setTime(times[j]);
             previewWorld.realizePosition(state);
             previewWorld.getVisualizer().show(state);
@@ -386,7 +400,7 @@ void VisualizerUtilities::showOrientationData(
     const SimTK::Real finalTime = times.back();
     bool pause = false;
     addVisualizerControls(world.updVisualizer(), initialTime, finalTime);
-    SimTK::DecorativeText pausedText("");
+    SimTK::DecorativeText pausedText("(hit Esc. to exit, Space to pause)");
     pausedText.setIsScreenText(true);
     const int pausedIndex =
             world.updVisualizer().updSimbodyVisualizer().addDecoration(
@@ -464,13 +478,14 @@ void VisualizerUtilities::showOrientationData(
                     auto& text = static_cast<SimTK::DecorativeText&>(
                             simbodyVisualizer.updDecoration(pausedIndex));
                     text.setText(
-                            pause ? "Paused for 3 secs (hit Space to resume)"
-                                  : "");
+                            pause ? "Paused (hit Space to resume)"
+                                  : "(hit Esc. to exit, Space to pause)");
                     simbodyVisualizer.drawFrameNow(state);
                 }
             }
             if (pause) {
-                std::this_thread::sleep_for(std::chrono::seconds(3));
+                std::this_thread::sleep_for(std::chrono::milliseconds(5));
+                if (frameNumber>0) frameNumber--;
             } 
             simbodyVisualizer.setSliderValue(timeSliderIndex, times[frameNumber]);
         }

@@ -27,11 +27,14 @@
 
 #include "ComponentsForTesting.h"
 
+#define CATCH_CONFIG_MAIN
+#include <OpenSim/Auxiliary/catch.hpp>
+
 using namespace OpenSim;
 using namespace SimTK;
 
 
-void testSignalGenerator() {
+TEST_CASE("SignalGenerator") {
     // Feed a SignalGenerator's output into a TableReporter, and make sure the
     // reported value is correct.
 
@@ -65,18 +68,11 @@ void testSignalGenerator() {
 
     // Check that the SignalGenerator produced the correct values.
     const TimeSeriesTable_<Real>& results = reporter->getTable();
-    SimTK_TEST_EQ((int)results.getNumRows(), numTimePoints);
+    REQUIRE(results.getNumRows() == numTimePoints);
     for (int i = 0; i < numTimePoints; ++i) {
         const double time = 0.1 * i;
         system.realize(s, Stage::Report);
-        SimTK_TEST_EQ(results.getRowAtIndex(i)[0],
-                amplitude * std::sin(omega * time + phase) + offset);
+        CHECK(results.getRowAtIndex(i)[0] ==
+                Approx(amplitude * std::sin(omega * time + phase) + offset));
     }
-}
-
-int main() {
-
-    SimTK_START_TEST("testSignalGenerator");
-        SimTK_SUBTEST(testSignalGenerator);
-    SimTK_END_TEST();
 }
