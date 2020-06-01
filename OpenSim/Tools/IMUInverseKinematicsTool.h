@@ -38,8 +38,10 @@
 #include "osimToolsDLL.h"
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
+#include <OpenSim/Common/Set.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/Model/Point.h>
+#include <OpenSim/Simulation/OrientationsReference.h>
 #include <OpenSim/Tools/InverseKinematicsToolBase.h>
 
 namespace OpenSim {
@@ -69,8 +71,11 @@ public:
     OpenSim_DECLARE_PROPERTY(sensor_to_opensim_rotations, SimTK::Vec3,
             "Space fixed Euler angles (XYZ order) from IMU Space to OpenSim."
             " Default to (0, 0, 0).");
+    OpenSim_DECLARE_PROPERTY(orientation_weights, Set<OrientationWeight>,
+            "Set of orientation weights identified by orientation name with "
+            "weight being a positive scalar.");
 
-//=============================================================================
+    //=============================================================================
 // METHODS
 //=============================================================================
     //--------------------------------------------------------------------------
