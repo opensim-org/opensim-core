@@ -3,13 +3,15 @@ Change Log
 
 0.5.0 (in development)
 ----------------------
-- 2020-05-17: Introduce MocoGoal::getStageDependency() to improve efficiency of 
+- 2020-06-01: Introduce MocoGoal::getStageDependency() to improve efficiency of 
               goals.
               
-- 2020-05-17: MocoSolvers no longer directly set the model's control cache. 
+- 2020-06-01: MocoSolvers no longer directly set the model's control cache. 
               Instead, Moco adds a DiscreteController to the model and the 
               solvers modify the DiscreteController's control signals.
               This change allows Moco to support synergies in the future.
+              
+- 2020-05-24: Expose MocoAccelerationTrackingGoal in Matlab and Python.
               
 - 2020-05-16: Moved ActivationCoordinateActuator from opensim-moco to
               opensim-core.
