@@ -123,7 +123,7 @@
 #include "SimbodyEngine/Coordinate.h"
 #include "SimbodyEngine/SpatialTransform.h"
 #include "OpenSense/IMUPlacer.h"
-
+#include "OrientationsReference.h"
 #include "StatesTrajectoryReporter.h"
 
 #include <string>
@@ -262,6 +262,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( Bhargava2004MuscleMetabolicsProbe() );
     Object::registerType( Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet() );
     Object::registerType( Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter() );
+    Object::registerType(OrientationWeight());
 
     Object::registerType( IMUPlacer());
     
