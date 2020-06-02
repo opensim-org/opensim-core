@@ -308,7 +308,8 @@ private:
 
         // Update the model and state.
         applyParametersToModelProperties(parameters, *mocoProblemRep);
-        convertToSimTKState(SimTK::Stage::Velocity, time, multibody_states,
+        convertStatesToSimTKState(
+                SimTK::Stage::Velocity, time, multibody_states,
                 modelBase, simtkStateBase, false);
         modelBase.realizeVelocity(simtkStateBase);
 
@@ -463,7 +464,9 @@ private:
     void calcPathConstraint(int constraintIndex, const ContinuousInput& input,
             casadi::DM& path_constraint) const override {
         auto mocoProblemRep = m_jar->take();
-        // TODO: Not all path constraints require realizing to Acceleration.
+        // Not all path constraints require realizing to Acceleration. We could
+        // add a stage dependency for path constraints, but we have yet to
+        // conduct profiling to indicate that such an optimization is necessary.
         applyInput(SimTK::Stage::Acceleration,
                 input.time, input.states, input.controls, input.multipliers,
                 input.derivatives, input.parameters, mocoProblemRep);
@@ -515,7 +518,7 @@ private:
     /// slots in Simbody's Y vector.
     /// It's fine for the size of `states` to be less than the size of Y; only
     /// the first states.size1() values are copied.
-    void convertToSimTKState(SimTK::Stage stageDep, const double& time,
+    void convertStatesToSimTKState(SimTK::Stage stageDep, const double& time,
             const casadi::DM& states, const Model& model,
             SimTK::State& simtkState, bool copyAuxStates) const {
         if (stageDep >= SimTK::Stage::Time) {
@@ -539,14 +542,19 @@ private:
         }
     }
 
-    void convertToSimTKState(SimTK::Stage stageDep, const double& time,
+    /// Invoke convertStatesControlsToSimTKState() and also
+    /// copy values from `controls` into the discrete state variable managed
+    /// by the `discreteController`. We assume that if we need the controls
+    /// copied over, we likely are going to compute forces with the resulting
+    /// state, and so we should also copy over the auxiliary states.
+    void convertStatesControlsToSimTKState(SimTK::Stage stageDep,
+            const double& time,
             const casadi::DM& states, const casadi::DM& controls,
             const Model& model, SimTK::State& simtkState,
-            const DiscreteController& discreteController,
-            bool copyAuxStates) const {
+            const DiscreteController& discreteController) const {
         if (stageDep >= SimTK::Stage::Model) {
-            convertToSimTKState(
-                    stageDep, time, states, model, simtkState, copyAuxStates);
+            convertStatesToSimTKState(
+                    stageDep, time, states, model, simtkState, true);
             SimTK::Vector& simtkControls =
                     discreteController.updDiscreteControls(simtkState);
             for (int ic = 0; ic < getNumControls(); ++ic) {
@@ -555,6 +563,9 @@ private:
             }
         }
     }
+    /// Apply variables from the optimizer to the MocoProblemRep's model and
+    /// state. The `stageDep` determines which information from the optimizer
+    /// must be carried over to the model/state.
     void applyInput(SimTK::Stage stageDep, const double& time,
             const casadi::DM& states, const casadi::DM& controls,
             const casadi::DM& multipliers, const casadi::DM& derivatives,
@@ -585,7 +596,15 @@ private:
             accel.setUDot(simtkStateDisabledConstraints, udot);
         }
 
-        // TODO: What is the correct stage dependency here?
+        // Set discrete variables that represent state derivatives in implicit
+        // auxiliary dynamics.
+        // Such discrete variables likely only affect force calculations, so
+        // we could perhaps use `stageDep >= SimTK::Stage::Dynamics`, but we
+        // use SimTK::Stage::Model to be safe here. Continuous state
+        // variables are available at SimTK::Stage::Model, so it's consistent
+        // for the discrete variables to be available at SimTK::Stage::Model
+        // also. Lastly, goals might be a direct function of these state
+        // derivatives.
         if (stageDep >= SimTK::Stage::Model &&
                 getNumAuxiliaryResidualEquations()) {
             const auto& implicitRefs =
@@ -599,22 +618,21 @@ private:
             }
         }
 
-        // TODO!
-        // TODO do not need copyAuxiliary flag: just put it in the long-form
-        // convertToSimTKState().
-        // TODO explain why this is only needed for such stage.
-        if (stageDep >= SimTK::Stage::Dynamics) {
-            convertToSimTKState(
-                    stageDep, time, states, modelBase, simtkStateBase, false);
-        }
-        convertToSimTKState(stageDep, time, states, controls,
+        convertStatesControlsToSimTKState(stageDep, time, states, controls,
                 modelDisabledConstraints, simtkStateDisabledConstraints,
-                mocoProblemRep->getDiscreteControllerDisabledConstraints(),
-                true);
+                mocoProblemRep->getDiscreteControllerDisabledConstraints());
+
         // If enabled constraints exist in the model, compute constraint forces
         // based on Lagrange multipliers. This also updates the associated
         // discrete variables in the state.
         if (stageDep >= SimTK::Stage::Dynamics && getNumMultipliers()) {
+            // The base model is used only to compute constraint forces, so
+            // we only need to update it if there are kinematic constraints.
+            // We pass copyAuxStates as false: we use the base model for its
+            // constraint Jacobian, which depends only on kinematics and cannot
+            // depend on auxiliary states.
+            convertStatesToSimTKState(
+                    stageDep, time, states, modelBase, simtkStateBase, false);
             calcKinematicConstraintForces(multipliers, simtkStateBase,
                     modelBase, mocoProblemRep->getConstraintForces(),
                     simtkStateDisabledConstraints);
@@ -663,8 +681,8 @@ private:
         const auto& qerr = stateBase.getQErr();
 
         if (getEnforceConstraintDerivatives() || total_ma) {
-            // Calculuate udoterr. We cannot use State::getUDotErr()
-            // because that uses Simbody's multiplilers and UDot,
+            // Calculate udoterr. We cannot use State::getUDotErr()
+            // because that uses Simbody's multipliers and UDot,
             // whereas we have our own multipliers and UDot. Here, we use
             // the udot computed from the model with disabled constraints
             // since we cannot use (nor do we have available) udot computed

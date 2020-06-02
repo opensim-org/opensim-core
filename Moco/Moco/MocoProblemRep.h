@@ -69,7 +69,8 @@ public:
     const Model& getModelBase() const { return m_model_base; }
     /// This is a state object that solvers can use along with ModelBase.
     SimTK::State& updStateBase() const { return m_state_base; }
-    /// TODO
+    /// This is a component inside ModelBase that you can use to
+    /// set the value of control signals.
     const DiscreteController& getDiscreteControllerBase() const {
         return m_discrete_controller_base.getRef();
     }
@@ -96,7 +97,8 @@ public:
         assert(index <= 1);
         return m_state_disabled_constraints[index];
     }
-    /// TODO
+    /// This is a component inside ModelDisabledConstraints that you can use to
+    /// set the value of control signals.
     const DiscreteController& getDiscreteControllerDisabledConstraints() const {
         return m_discrete_controller_disabled_constraints.getRef();
     }

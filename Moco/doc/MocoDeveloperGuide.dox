@@ -332,27 +332,22 @@ integrand:
 
 - SimTK::Stage::Topology: set MocoGoal::IntegrandInput::time.
 - SimTK::Stage::Model: set MocoGoal::IntegrandInput::controls to the raw
-    controls from the optimizer. Implicit auxiliary dynamics derivatives are
-    set.
-- SimTK::Stage::Instance: apply MocoParametes to the model.
+    controls from the optimizer. Provide implicit auxiliary dynamics
+    derivatives.
+- SimTK::Stage::Instance: apply MocoParameters to the model.
 - SimTK::Stage::Time: set SimTK::State::updTime(), update SimTK::State::updY(),
-    and prescribe kinematics. If no motion were prescribed, then updating the
+    and prescribe kinematics. (If no motion were prescribed, then updating the
     state variables could occur for a stage dependency SimTK::Stage::Model.
     However, prescribing the kinematics requires setting time, and we do not
-    want goals to behave differently whether or not kinematics are prescribed.
+    want goals to behave differently whether or not kinematics are prescribed.)
 - SimTK::Stage::Dynamics: Update the state of the base model; not just the model
     with disabled constraints. Use the base model to compute kinematic
     constraint forces and apply them to the model with disabled constraints.
 - SimTK::Stage::Acceleration: Prescribe generalized accelerations (if using
     implicit multibody dynamics).
 
-Computing a goal value (that is, setting a MocoGoal::GoalInfo) follows the same
+Computing a goal value (that is, setting a MocoGoal::GoalInput) follows the same
 rules, except they are repeated for initial and final time, state, and controls.
-
-
-
-TODO time is required for state variables for prescribed motion.
-TODO connect to sections about implicit and constraints.
 
 [1] M. Posa, S. Kuindersma, and R. Tedrake, “Optimization and stabilization of
 trajectories for constrained dynamical systems,” in Proceedings of the

@@ -136,8 +136,6 @@ private:
 // MocoPathConstraint
 // ============================================================================
 
-// TODO: Move this class to its own file.
-// TODO: Add getStageDependency().
 /// A path constraint to be enforced in the optimal control problem.
 /// The use of 'path' here is unrelated to muscle paths, GeometryPath,
 /// or file system paths (e.g., Path).

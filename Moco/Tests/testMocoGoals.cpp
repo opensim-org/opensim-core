@@ -723,3 +723,55 @@ TEST_CASE("MocoOutputGoal") {
 
     CHECK(solutionControl.isNumericallyEqual(solutionOutput, 1e-5));
 }
+
+/// This goal violates the rule that calcIntegrandImpl() and calcGoalImpl()
+/// cannot realize the state's stage beyond the stage dependency.
+class MocoStageTestingGoal : public MocoGoal {
+OpenSim_DECLARE_CONCRETE_OBJECT(MocoStageTestingGoal, MocoGoal);
+public:
+    MocoStageTestingGoal() = default;
+    void setRealizeInitialState(bool tf) { m_realizeInitialState = tf; }
+protected:
+    void initializeOnModelImpl(const Model&) const override {
+        setRequirements(1, 1, SimTK::Stage::Position);
+    }
+    void calcIntegrandImpl(const IntegrandInput& input,
+            SimTK::Real& integrand) const override {
+        getModel().realizeVelocity(input.state);
+    }
+    void calcGoalImpl(
+            const GoalInput& in, SimTK::Vector& values) const override {
+        if (m_realizeInitialState) {
+            getModel().realizeVelocity(in.initial_state);
+        } else {
+            getModel().realizeVelocity(in.final_state);
+        }
+    }
+private:
+    bool m_realizeInitialState = true;
+};
+
+// Ensure that goals do not internally realize beyond the stage they say
+// they depend on.
+TEST_CASE("MocoGoal stage dependency") {
+    Model model;
+    SimTK::State state = model.initSystem();
+    MocoStageTestingGoal goal;
+    goal.initializeOnModel(model);
+    state.invalidateAll(SimTK::Stage::Instance);
+    CHECK_THROWS_WITH(goal.calcIntegrand({0, state, SimTK::Vector()}),
+            Catch::Contains("calcIntegrand()"));
+
+    goal.setRealizeInitialState(true);
+    state.invalidateAll(SimTK::Stage::Instance);
+    auto initialState = state;
+    auto finalState = state;
+    MocoGoal::GoalInput input {0, initialState, SimTK::Vector(), 0, finalState,
+                               SimTK::Vector(), 0};
+    SimTK::Vector goalValue;
+    CHECK_THROWS_WITH(goal.calcGoal(input, goalValue),
+            Catch::Contains("calcGoal()") && Catch::Contains("initial state"));
+    goal.setRealizeInitialState(false);
+    CHECK_THROWS_WITH(goal.calcGoal(input, goalValue),
+            Catch::Contains("calcGoal()") && Catch::Contains("final state"));
+}

@@ -63,9 +63,9 @@ class Model;
 ///     to compute velocity-dependent quantities.
 /// - SimTK::Stage::Dynamics: state, initial_state, and final_state can be used
 ///     to compute force-dependent quantities.
-/// - SimTK::Stage::Dynamics: state, initial_state, and final_state can be used
-///     to compute acceleration-dependent quantities, such as body accelerations
-///     and joint reactions.
+/// - SimTK::Stage::Acceleration: state, initial_state, and final_state can be
+///     used to compute acceleration-dependent quantities, such as body
+///     accelerations and joint reactions.
 ///
 /// @par For developers
 /// Every time the problem is solved, a copy of this goal is used. An individual
@@ -147,7 +147,6 @@ public:
         return m_numIntegrals;
     }
 
-
     /// Obtain the stage that this goal depends on. Solvers can use this to
     /// more efficiently decide how to set the IntegrandInput and GoalInput.
     /// See the MocoGoal class description for details about the different
@@ -180,7 +179,19 @@ public:
     SimTK::Real calcIntegrand(const IntegrandInput& input) const {
         double integrand = 0;
         if (!get_enabled()) { return integrand; }
+        const SimTK::Stage stageBefore = input.state.getSystemStage();
+
         calcIntegrandImpl(input, integrand);
+
+        if (input.state.getSystemStage() > stageBefore) {
+            SimTK_ERRCHK2_ALWAYS(
+                    input.state.getSystemStage() <= m_stageDependency,
+                    (getConcreteClassName() + "::calcIntegrand()").c_str(),
+                    "This goal has a stage dependency of %s, but "
+                    "calcIntegrandImpl() realized the state to stage %s.",
+                    m_stageDependency.getName().c_str(),
+                    input.state.getSystemStage().getName().c_str());
+        }
         return integrand;
     }
 
@@ -204,7 +215,31 @@ public:
         goal.resize(getNumOutputs());
         goal = 0;
         if (!get_enabled()) { return; }
+        const SimTK::Stage initialStageBefore =
+                input.initial_state.getSystemStage();
+        const SimTK::Stage finalStageBefore =
+                input.final_state.getSystemStage();
+
         calcGoalImpl(input, goal);
+
+        if (input.initial_state.getSystemStage() > initialStageBefore) {
+            SimTK_ERRCHK2_ALWAYS(
+                    input.initial_state.getSystemStage() <= m_stageDependency,
+                    (getConcreteClassName() + "::calcGoal()").c_str(),
+                    "This goal has a stage dependency of %s, but "
+                    "calcGoalImpl() realized the initial state to stage %s.",
+                    m_stageDependency.getName().c_str(),
+                    input.initial_state.getSystemStage().getName().c_str());
+        }
+        if (input.final_state.getSystemStage() > finalStageBefore) {
+            SimTK_ERRCHK2_ALWAYS(
+                    input.final_state.getSystemStage() <= m_stageDependency,
+                    (getConcreteClassName() + "::calcGoal()").c_str(),
+                    "This goal has a stage dependency of %s, but "
+                    "calcGoalImpl() realized the final state to stage %s.",
+                    m_stageDependency.getName().c_str(),
+                    input.final_state.getSystemStage().getName().c_str());
+        }
         goal *= m_weightToUse;
     }
     /// For use by solvers. This also performs error checks on the Problem.
@@ -286,13 +321,15 @@ protected:
     virtual bool getSupportsEndpointConstraintImpl() const { return false; }
     /// You may need to realize the state to the stage required for your
     /// calculations.
-    /// Do NOT realize to a stage higher than the goal's stage dependency.
+    /// Do NOT realize to a stage higher than the goal's stage dependency;
+    /// doing so will cause an exception to be thrown.
     /// The Lagrange multipliers for kinematic constraints are not available.
     virtual void calcIntegrandImpl(
             const IntegrandInput& input, SimTK::Real& integrand) const;
     /// You may need to realize the state to the stage required for your
     /// calculations.
-    /// Do NOT realize to a stage higher than the goal's stage dependency.
+    /// Do NOT realize to a stage higher than the goal's stage dependency;
+    /// doing so will cause an exception to be thrown.
     /// The Lagrange multipliers for kinematic constraints are not available.
     virtual void calcGoalImpl(
             const GoalInput& input, SimTK::Vector& goal) const = 0;
