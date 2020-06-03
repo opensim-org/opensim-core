@@ -99,6 +99,7 @@ OSIMTOOLS_API void RegisterTypes_osimTools()
     Object::registerType( CMC_TaskSet() );
 
     Object::registerType( SMC_Joint() );
+    Object::registerType( OrientationWeightSet());
     Object::registerType( InverseKinematicsTool() );
     Object::registerType( IMUInverseKinematicsTool());
     Object::registerType( InverseDynamicsTool() );

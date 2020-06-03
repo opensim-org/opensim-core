@@ -38,7 +38,7 @@ void IMUInverseKinematicsTool::constructProperties()
     constructProperty_sensor_to_opensim_rotations(
             SimTK::Vec3(0));
     constructProperty_orientations_file("");
-    Set<OrientationWeight> orientationWeights;
+    OrientationWeightSet orientationWeights;
     constructProperty_orientation_weights(orientationWeights);
 }
 /**
@@ -145,8 +145,7 @@ void IMUInverseKinematicsTool::runInverseKinematicsWithOrientationsFromFile(
     TimeSeriesTable_<SimTK::Rotation> orientationsData =
         OpenSenseUtilities::convertQuaternionsToRotations(quatTable);
 
-    OrientationsReference oRefs(orientationsData);
-    oRefs.updOrientationWeightSet() = get_orientation_weights();
+    OrientationsReference oRefs(orientationsData, &get_orientation_weights());
     MarkersReference mRefs{};
 
     SimTK::Array_<CoordinateReference> coordinateReferences;
