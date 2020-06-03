@@ -974,6 +974,15 @@ void Model::extendConnectToModel(Model &model)
 
     // TODO: Get rid of the SimbodyEngine
     updSimbodyEngine().connectSimbodyEngineToModel(*this);
+
+    // Now that the model is fully connected, cache controllers
+    // locally to reduce the runtime cost of Model::computeControls()
+    this->_enabledControllers.clear();
+    for (const Controller& controller : getComponentList<Controller>()) {
+        if (controller.isEnabled()) {
+            this->_enabledControllers.emplace_back(controller);
+        }
+    }
 }
 
 
@@ -1916,10 +1925,13 @@ const Vector& Model::getControls(const SimTK::State &s) const
 /** Compute the controls the model */
 void Model::computeControls(const SimTK::State& s, SimTK::Vector &controls) const
 {
-    for (auto& controller : getComponentList<Controller>()) {
-        if (controller.isEnabled()) {
-            controller.computeControls(s, controls);
-        }
+    if (not this->getAllControllersEnabled()) {
+        return;
+    }
+
+    for (const auto& controllerRefWrapper : this->_enabledControllers) {
+        const Controller& controller = controllerRefWrapper.get();
+        controller.computeControls(s, controls);
     }
 }
 
