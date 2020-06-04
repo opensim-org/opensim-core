@@ -228,7 +228,8 @@ public:
                     input.initial_state.getSystemStage() <= m_stageDependency,
                     (getConcreteClassName() + "::calcGoal()").c_str(),
                     "This goal has a stage dependency of %s, but "
-                    "calcGoalImpl() exceeded this stage by realizing to %s.",
+                    "calcGoalImpl() exceeded this stage by realizing "
+                    "initial_state to %s.",
                     m_stageDependency.getName().c_str(),
                     input.initial_state.getSystemStage().getName().c_str());
         }
@@ -237,7 +238,8 @@ public:
                     input.final_state.getSystemStage() <= m_stageDependency,
                     (getConcreteClassName() + "::calcGoal()").c_str(),
                     "This goal has a stage dependency of %s, but "
-                    "calcGoalImpl() exceeded this stage by realizing to %s.",
+                    "calcGoalImpl() exceeded this stage by realizing "
+                    "final_state to %s.",
                     m_stageDependency.getName().c_str(),
                     input.final_state.getSystemStage().getName().c_str());
         }
