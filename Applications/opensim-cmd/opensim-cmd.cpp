@@ -21,16 +21,14 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "opensim-cmd_run-tool.h"
-#include "opensim-cmd_print-xml.h"
 #include "opensim-cmd_info.h"
+#include "opensim-cmd_print-xml.h"
+#include "opensim-cmd_run-tool.h"
 #include "opensim-cmd_update-file.h"
-#include "opensim-cmd_visualize.h"
-
-#include <iostream>
-
-#include <docopt.h>
+#include "opensim-cmd_viz.h"
 #include "parse_arguments.h"
+#include <docopt.h>
+#include <iostream>
 
 #include <OpenSim/OpenSim.h>
 #include <OpenSim/version.h>
@@ -58,7 +56,7 @@ Available commands:
   print-xml    Print a template XML file for a Tool or class.
   info         Show description of properties in an OpenSim class.
   update-file  Update an .xml file (.osim or setup) to this version's format.
-  visualize    Show a model, motion, or data with the Simbody Visualizer.
+  viz          Show a model, motion, or data with the Simbody Visualizer.
 
   Pass -h or --help to any of these commands to learn how to use them.
 
@@ -87,7 +85,7 @@ int main(int argc, const char** argv) {
     commands["run-tool"] = run_tool;
     commands["info"] = info;
     commands["update-file"] = update_file;
-    commands["visualize"] = visualize;
+    commands["viz"] = viz;
 
     // If no arguments are provided; just print the help text.
     // -------------------------------------------------------
