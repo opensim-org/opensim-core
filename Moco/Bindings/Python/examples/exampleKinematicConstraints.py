@@ -36,6 +36,7 @@
 # This example is related to an explanation of kinematic constraints in the
 # appendix of the Moco paper.
 
+import os
 import opensim as osim
 import numpy as np
 
@@ -95,15 +96,16 @@ solution = study.solve()
 
 # If matplotlib is installed, plot the trajectory of the mass and the
 # constraint force applied to the mass throughout the motion.
-has_pylab = False
-try:
-    import pylab as pl
-    from scipy.interpolate import InterpolatedUnivariateSpline
-    has_pylab = True
-except:
-    print('Skipping plotting')
+plot = False
+if os.getenv('OPENSIM_USE_VISUALIZER') != '0':
+    try:
+        import pylab as pl
+        from scipy.interpolate import InterpolatedUnivariateSpline
+        plot = True
+    except:
+        print('Skipping plotting')
 
-if has_pylab:
+if plot:
 
     # Create a figure.
     fig = pl.figure()
