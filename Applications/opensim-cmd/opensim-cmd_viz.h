@@ -1,7 +1,7 @@
-#ifndef OPENSIM_CMD_VISUALIZE_H_
-#define OPENSIM_CMD_VISUALIZE_H_
+#ifndef OPENSIM_CMD_VIZ_H_
+#define OPENSIM_CMD_VIZ_H_
 /* -------------------------------------------------------------------------- *
- *                      OpenSim:  opensim-cmd_visualize.h                     *
+ *                      OpenSim:  opensim-cmd_viz.h                           *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -30,44 +30,43 @@
 #include <OpenSim/OpenSim.h>
 #include <OpenSim/Simulation/VisualizerUtilities.h>
 
-static const char HELP_VISUALIZE[] =
+static const char HELP_VIZ[] =
 R"(Show a model, motion, or marker/orientation data with the Simbody Visualizer.
 
 Usage:
-  opensim-cmd [options]... visualize [--geometry=<path>]
+  opensim-cmd [options]... viz [--geometry=<path>]
                                 model <model-file> [<states-file>]
-  opensim-cmd [options]... visualize [--geometry=<path>]
-                                markers <data-file>
-  opensim-cmd [options]... visualize [--geometry=<path>]
-                                orientations <data-file> [--layout=<layout>]
-  opensim-cmd visualize -h | --help
+  opensim-cmd [options]... viz [--geometry=<path>]
+                                data <data-file> [--model=<model-file>]
+                                [--layout=<layout>]
+  opensim-cmd viz -h | --help
 
 Options:
   -L <path>, --library <path>  Load a plugin.
   -g <path>, --geometry <path> Search for geometry mesh files in this path.
-  -a <layout>, --layout <layout> TODO.
+  -m <path>, --model <model-file> Visualize data based on a model.
+  -a <layout>, --layout <layout> Visualize orientations in a circle, line, etc.
 
 Description:
-  TODO
+  TODO supports reading the markers table from C3D files.
 
 Examples:
-  opensim-cmd visualize model lowerlimb.osim
-  opensim-cmd visualize --geometry C:/MyGeometry model lowerlimb.osim
-  opensim-cmd visualize model lowerlimb.osim states.sto
-  opensim-cmd visualize markers markers.trc
-  opensim-cmd visualize markers markers.c3d
-  opensim-cmd visualize orientations orientations.sto -a line
-  opensim-cmd visualize -g C:/MyGeometry
-                    orientations orientations.sto -a model.osim
-  opensim-cmd --library C:\Plugins\osimMyCustomForce.dll visualize arm.osim
+  opensim-cmd viz model lowerlimb.osim
+  opensim-cmd viz --geometry C:/MyGeometry model lowerlimb.osim
+  opensim-cmd viz model lowerlimb.osim states.sto
+  opensim-cmd viz data markers.trc
+  opensim-cmd viz data markers.c3d
+  opensim-cmd viz data orientations.sto -a line
+  opensim-cmd viz -g C:/MyGeometry data orientations.sto -m arm.osim
+  opensim-cmd --library C:\Plugins\osimMyCustomForce.dll viz model arm.osim
 )";
 
-int visualize(int argc, const char** argv) {
+int viz(int argc, const char** argv) {
 
     using namespace OpenSim;
 
     std::map<std::string, docopt::value> args = OpenSim::parse_arguments(
-            HELP_VISUALIZE, { argv + 1, argv + argc },
+            HELP_VIZ, { argv + 1, argv + argc },
             true); // show help if requested
 
     if (args["--geometry"]) {
@@ -84,12 +83,12 @@ int visualize(int argc, const char** argv) {
             VisualizerUtilities::showModel(model);
         }
 
-    } else if (args["markers"].asBool()) {
+    } else if (args["data"].asBool()) {
+
         const std::string dataFileName = args["<data-file>"].asString();
         auto tables = FileAdapter::createAdapterFromExtension(dataFileName)
                 ->read(dataFileName);
 
-        // This ideally supports reading markers from C3D files.
         OPENSIM_THROW_IF(tables.size() < 1, Exception,
                          "<data-file> provided zero tables.");
 
@@ -100,28 +99,53 @@ int visualize(int argc, const char** argv) {
             table = tables.begin()->second;
         }
 
-        auto tableVec3 = std::dynamic_pointer_cast<TimeSeriesTableVec3>(table);
-        OPENSIM_THROW_IF(!tableVec3, Exception,
-                      "Could not load <data-file> as TimeSeriesTableVec3.");
 
-        VisualizerUtilities::showMarkerData(*tableVec3);
-
-    } else if (args["orientations"].asBool()) {
-
-        TimeSeriesTableQuaternion table(args["<data-file>"].asString());
-
-        std::unique_ptr<Model> model;
-
-        std::string layout = "line";
-        if (args["--layout"]) {
-            layout = args["--layout"].asString();
-            if (IO::GetSuffix(layout, 5) == ".osim") {
-                model.reset(new Model(layout));
-                layout = "model";
+        using TableVec3 = TimeSeriesTableVec3;
+        using TableQuat = TimeSeriesTableQuaternion;
+        if (auto tableVec3 = std::dynamic_pointer_cast<TableVec3>(table)) {
+            log_info("Detected TableSeriesTableVec3...visualizing as "
+                     "marker data.");
+            if (args["--layout"]) {
+                log_warn("Argument --layout ignored when visualizing marker "
+                         "data.");
             }
-        }
+            if (args["--model"]) {
+                log_warn("Argument --model ignored when visualizing marker "
+                         "data.");
+            }
+            VisualizerUtilities::showMarkerData(*tableVec3);
 
-        VisualizerUtilities::showOrientationData(table, layout, model.get());
+        } else if (auto tableQuat = std::dynamic_pointer_cast<TableQuat>(table))
+        {
+            log_info("Detected TableSeriesTableQuaternion...visualizing as "
+                     "orientation data.");
+            std::unique_ptr<Model> model;
+
+            if (args["--model"]) {
+                OPENSIM_THROW_IF(
+                        !args["--layout"] ||
+                                args["--layout"].asString() != "model",
+                        Exception,
+                        "Model provided but --layout=model not provided.");
+            }
+
+            std::string layout = "line";
+            if (args["--layout"]) {
+                layout = args["--layout"].asString();
+            }
+            if (layout == "model") {
+                OPENSIM_THROW_IF(!args["--model"], Exception,
+                        "Expected --model argument if --layout=model, but "
+                        "--model was not provided.");
+                model.reset(new Model(args["--model"].asString()));
+            }
+
+            VisualizerUtilities::showOrientationData(
+                    *tableQuat, layout, model.get());
+        } else {
+            OPENSIM_THROW(Exception,
+                          "TODO <data-file> as TimeSeriesTableVec3.");
+        }
 
     } else {
         OPENSIM_THROW(Exception, "Subcommand 'model' or 'data' not provided.");
@@ -130,4 +154,4 @@ int visualize(int argc, const char** argv) {
 }
 
 
-#endif // OPENSIM_CMD_VISUALIZE_H_
+#endif // OPENSIM_CMD_VIZ_H_
