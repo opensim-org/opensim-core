@@ -766,8 +766,8 @@ TEST_CASE("MocoGoal stage dependency") {
     state.invalidateAll(SimTK::Stage::Instance);
     auto initialState = state;
     auto finalState = state;
-    MocoGoal::GoalInput input {0, initialState, SimTK::Vector(), 0, finalState,
-                               SimTK::Vector(), 0};
+    MocoGoal::GoalInput input{0, initialState, SimTK::Vector(), 0, finalState,
+            SimTK::Vector(), 0};
     SimTK::Vector goalValue;
     CHECK_THROWS_WITH(goal.calcGoal(input, goalValue),
             Catch::Contains("calcGoal()") && Catch::Contains("initial state"));

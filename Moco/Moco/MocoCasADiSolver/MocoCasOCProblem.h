@@ -542,11 +542,12 @@ private:
         }
     }
 
-    /// Invoke convertStatesControlsToSimTKState() and also
+    /// Invoke convertStatesToSimTKState() and also
     /// copy values from `controls` into the discrete state variable managed
     /// by the `discreteController`. We assume that if we need the controls
     /// copied over, we likely are going to compute forces with the resulting
-    /// state, and so we should also copy over the auxiliary states.
+    /// state, and so we should also copy over the auxiliary states; we pass
+    /// true for the copyAuxStates parameter of convertStatesToSimTKState().
     void convertStatesControlsToSimTKState(SimTK::Stage stageDep,
             const double& time,
             const casadi::DM& states, const casadi::DM& controls,
