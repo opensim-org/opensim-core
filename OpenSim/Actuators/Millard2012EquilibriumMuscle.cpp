@@ -135,10 +135,18 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
                               0.0, eccSlopeNearVmax, eccForceMax);
     }
 
-    if (conSlopeAtVmax < 0.1 || eccSlopeAtVmax < 0.1) {
-        conSlopeAtVmax = 0.1;
-        eccSlopeAtVmax = 0.1;
+    if (conSlopeAtVmax < 0.5*conSlopeNearVmax ) {
+        //Using this update preserves the shape of the rest of the force
+        //velocity curve and guarantees that the condition that
+        //conSlopeAtVmax < conSlopeNearVmax is satisfied
+        conSlopeAtVmax = 0.5*conSlopeNearVmax; 
     }
+    if (eccSlopeAtVmax < 0.5*eccSlopeNearVmax ) {
+        //ditto
+        eccSlopeAtVmax = 0.5*eccSlopeNearVmax; 
+    }
+
+
     fvInvCurve = ForceVelocityInverseCurve(conSlopeAtVmax, conSlopeNearVmax,
                                            isometricSlope, eccSlopeAtVmax,
                                            eccSlopeNearVmax, eccForceMax,
