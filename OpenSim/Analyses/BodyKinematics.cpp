@@ -184,25 +184,23 @@ constructDescription()
     char descrip[1024];
     char tmp[MAXLEN];
 
-    strcpy(descrip,"\nThis file contains the kinematics ");
-    strcat(descrip,"(positions and orientations,\n");
-    strcat(descrip,"velocities and angular velocities, or");
-    strcat(descrip," accelerations and angular accelerations)\n");
-    strcat(descrip,"of the centers of mass");
-    sprintf(tmp," of the body segments in model %s.\n",
+    strcpy(descrip, "\nThis file contains the kinematics ");
+    strcat(descrip, "(positions and orientations,\n");
+    strcat(descrip, "velocities and angular velocities, or");
+    strcat(descrip, " accelerations and angular accelerations)\n");
+    strcat(descrip, "of the centers of mass");
+    sprintf(tmp, " of the body segments in model %s.\n",
         _model->getName().c_str());
-    strcat(descrip,tmp);
-    strcat(descrip,"\nBody segment orientations are described using");
-    strcat(descrip," body-fixed X-Y-Z Euler angles.\n");
-    strcat(descrip,"\nAngular velocities and accelerations are given about");
-    strcat(descrip," the body-local axes.\n");
-    strcat(descrip,"\nUnits are S.I. units (seconds, meters, Newtons, ...)");
-    if(getInDegrees()) {
-        strcat(descrip,"\nAngles are in degrees.");
-    } else {
-        strcat(descrip,"\nAngles are in radians.");
-    }
-    strcat(descrip,"\n\n");
+    strcat(descrip, tmp);
+    strcat(descrip, "\nBody segment orientations are described using");
+    strcat(descrip, " body-fixed X-Y-Z Euler angles.\n");
+    strcat(descrip, "\nAngular velocities and accelerations are given about");
+    strcat(descrip, " the body-local axes.\n");
+    strcat(descrip, "\nUnits are S.I. units (seconds, meters, Newtons, ...)");
+    strcat(descrip, "\nIf the header above contains a line with ");
+    strcat(descrip, "'inDegrees', this indicates whether rotational values ");
+    strcat(descrip, "are in degrees (yes) or radians (no).");
+    strcat(descrip, "\n\n");
 
     setDescription(descrip);
 }
@@ -311,7 +309,10 @@ updateBodiesToRecord()
     }
     _kin.setSize(6*_bodyIndices.getSize()+(_recordCenterOfMass?3:0));
 
-    if(_kin.getSize()==0) cout << "WARNING: BodyKinematics analysis has no bodies to record kinematics for" << endl;
+    if(_kin.getSize()==0) {
+        log_warn("BodyKinematics analysis has no bodies to record kinematics "
+                 "for");
+    }
 }
 
 

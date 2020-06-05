@@ -171,6 +171,7 @@ if(${OPENSIM_INSTALL_UNIX_FHS})
     set(OPENSIM_INSTALL_JAVASRCDIR "${CMAKE_INSTALL_DATAROOTDIR}/OpenSim/java")
     set(OPENSIM_INSTALL_APIEXDIR "${CMAKE_INSTALL_DOCDIR}/Code")
     set(OPENSIM_INSTALL_SIMBODYDIR ".")
+    set(OPENSIM_INSTALL_SPDLOGDIR ".")
 
 else()
 
@@ -191,6 +192,7 @@ else()
     set(OPENSIM_INSTALL_JAVASRCDIR sdk/Java)
     set(OPENSIM_INSTALL_APIEXDIR Resources/Code)
     set(OPENSIM_INSTALL_SIMBODYDIR sdk/Simbody)
+    set(OPENSIM_INSTALL_SPDLOGDIR sdk/spdlog)
 
 endif()
 
@@ -603,13 +605,6 @@ if(${OPENSIM_C3D_PARSER} STREQUAL "ezc3d")
         OpenSimInstallDependencyLibraries(ezc3d "${ezc3d_LIBRARY_DIR}/../"
             "${ezc3d_LIBRARY_DIR}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
     endif()
-        
-    if(NOT WIN32)
-        # LIB: .so files on Linux, .dylib on macOS
-        file(GLOB ezc3d_desired_lib_files "${ezc3d_LIBRARY_DIR}/*ezc3d*")
-        install(FILES ${ezc3d_desired_lib_files}
-                DESTINATION "${CMAKE_INSTALL_LIBDIR}")
-    endif()
 
 elseif(${OPENSIM_C3D_PARSER} STREQUAL "BTK")
     set(WITH_EZC3D false)
@@ -630,12 +625,6 @@ elseif(${OPENSIM_C3D_PARSER} STREQUAL "BTK")
             "${BTK_LIBRARY_DIRS}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
     endif()
 
-    if(NOT WIN32)
-        # LIB: .so files on Linux, .dylib on macOS
-        file(GLOB btk_desired_lib_files "${BTK_LIBRARY_DIRS}/*BTK*")
-        install(FILES ${btk_desired_lib_files}
-                DESTINATION "${CMAKE_INSTALL_LIBDIR}")
-    endif()
 else()
     set(WITH_EZC3D false)
     unset(ezc3d_LIBRARY_DIR CACHE)
@@ -643,6 +632,10 @@ else()
     unset(ezc3d_INCLUDE_DIR CACHE)
     set(WITH_BTK false)
 endif()
+
+find_package(spdlog REQUIRED
+        HINTS "${OPENSIM_DEPENDENCIES_DIR}/spdlog")
+
 
 if(NOT SIMBODY_HOME AND OPENSIM_DEPENDENCIES_DIR)
     set(SIMBODY_HOME "${OPENSIM_DEPENDENCIES_DIR}/simbody")
@@ -811,6 +804,10 @@ if(${OPENSIM_COPY_DEPENDENCIES})
                 DESTINATION "${CMAKE_INSTALL_LIBDIR}")
     endif()
 
+    # spdlog
+    # ------
+    install(DIRECTORY "${spdlog_DIR}/../../../"
+            DESTINATION "${OPENSIM_INSTALL_SPDLOGDIR}")
 endif()
 
 if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)

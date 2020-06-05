@@ -142,7 +142,6 @@ int WrapSphereObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK:
 {
     SimTK::Vec3& aPointP = aPoint1;     double R=0.8*get_radius();
     SimTK::Vec3& aPointS = aPoint2;     double Qx,Qy, Tx,Ty;
-//  cout << aPointP << " " << aPointS << "\n";
 
     // Initialize return values
     aFlag = false;

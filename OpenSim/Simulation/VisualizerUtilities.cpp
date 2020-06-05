@@ -184,8 +184,7 @@ void VisualizerUtilities::showMotion(Model model, Storage statesSto) {
                 // times.
                 viz.drawFrameNow(statesTraj[istate]);
             } else {
-                std::cout << "Internal error: unrecognized slider."
-                          << std::endl;
+                log_cout("Internal error: unrecognized slider.");
             }
         }
 
@@ -194,7 +193,7 @@ void VisualizerUtilities::showMotion(Model model, Storage statesSto) {
         if (silo.takeKeyHit(key, modifiers)) {
             // Exit.
             if (key == SimTK::Visualizer::InputListener::KeyEsc) {
-                std::cout << "Exiting visualization." << std::endl;
+                log_cout("Exiting visualization.");
                 return;
             }
             // Smart zoom.
@@ -278,7 +277,7 @@ void VisualizerUtilities::showMarkerData(
 
     while (true) {
         for (size_t j = 0; j < times.size(); ++j) {
-            //std::cout << "time: " << times[j] << "s" << std::endl;
+            // log_cout("time: {} s", times[j]);
             state.setTime(times[j]);
             previewWorld.realizePosition(state);
             previewWorld.getVisualizer().show(state);

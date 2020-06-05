@@ -157,8 +157,8 @@ void Bhargava2004MuscleMetabolicsProbe::connectIndividualMetabolicMuscle(
 
     int k = aModel.getMuscles().getIndex(mm.getName());
     if( k < 0 ) {
-        cout << "WARNING: Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter: "
-            "Muscle '" << mm.getName() << "' not found in model. Ignoring..." << endl;
+        log_warn("Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter: "
+            "Muscle '{}' not found in model. Ignoring...", mm.getName());
         setEnabled(false);
         return;
 
@@ -180,7 +180,7 @@ void Bhargava2004MuscleMetabolicsProbe::connectIndividualMetabolicMuscle(
             errorMessage << "ERROR: Negative <provided_muscle_mass> specified for " 
                 << mm.getName() 
                 << ". <provided_muscle_mass> must be a positive number (kg)." << endl;
-             std::cout << "WARNING: " << errorMessage.str() << "Probe will be disabled." << std::endl;
+             log_warn("{} Probe will be disabled.", errorMessage.str());
              setEnabled(false);
             //throw (Exception(errorMessage.c_str()));
         }
@@ -188,7 +188,7 @@ void Bhargava2004MuscleMetabolicsProbe::connectIndividualMetabolicMuscle(
             errorMessage << "ERROR: No <provided_muscle_mass> specified for " 
                 << mm.getName() 
                 << ". <provided_muscle_mass> must be a positive number (kg)." << endl;
-             std::cout << "WARNING: " << errorMessage.str() << "Probe will be disabled." << std::endl;
+             log_warn("{} Probe will be disabled.", errorMessage.str());
              setEnabled(false);
             //throw (Exception(errorMessage.c_str()));
         }
@@ -201,7 +201,7 @@ void Bhargava2004MuscleMetabolicsProbe::connectIndividualMetabolicMuscle(
             errorMessage << "ERROR: Negative <specific_tension> specified for " 
                 << mm.getName() 
                 << ". <specific_tension> must be a positive number (N/m^2)." << endl;
-            std::cout << "WARNING: " << errorMessage.str() << "Probe will be disabled." << std::endl;
+            log_warn("{} Probe will be disabled.", errorMessage.str());
             setEnabled(false);
             //throw (Exception(errorMessage.c_str()));
 
@@ -210,7 +210,7 @@ void Bhargava2004MuscleMetabolicsProbe::connectIndividualMetabolicMuscle(
             errorMessage << "ERROR: Negative <density> specified for " 
                 << mm.getName() 
                 << ". <density> must be a positive number (kg/m^3)." << endl;
-            std::cout << "WARNING: " << errorMessage.str() << "Probe will be disabled." << std::endl;
+            log_warn("{} Probe will be disabled.", errorMessage.str());
             setEnabled(false);
         }
     }
@@ -222,7 +222,7 @@ void Bhargava2004MuscleMetabolicsProbe::connectIndividualMetabolicMuscle(
     if (mm.get_ratio_slow_twitch_fibers() < 0 || mm.get_ratio_slow_twitch_fibers() > 1) {
         errorMessage << "MetabolicMuscleParameter: Invalid ratio_slow_twitch_fibers for muscle: " 
             << getName() << ". ratio_slow_twitch_fibers must be between 0 and 1." << endl;
-        std::cout << "WARNING: " << errorMessage.str() << "Probe will be disabled." << std::endl;
+        log_warn("{} Probe will be disabled.", errorMessage.str());
         setEnabled(false);
     }
 
@@ -262,8 +262,8 @@ computeProbeInputs(const State& s) const
     if (get_basal_rate_on()) {
         Bdot = get_basal_coefficient() 
             * pow(_model->getMatterSubsystem().calcSystemMass(s), get_basal_exponent());
-        if (isNaN(Bdot))
-            cout << "WARNING::" << getName() << ": Bdot = NaN!" << endl;
+        if (isNaN(Bdot)) 
+            log_warn("{}: Bdot = NaN!", getName());
     }
     EdotOutput(0) += Bdot;       // TOTAL metabolic power storage
     
@@ -308,9 +308,9 @@ computeProbeInputs(const State& s) const
 
         // Warnings
         if (fiber_length_normalized < 0)
-            cout << "WARNING: " << getName() << "  (t = " << s.getTime() 
-            << "), muscle '" << m->getName() 
-            << "' has negative normalized fiber-length." << endl; 
+            log_warn(
+                    "{}  (t = {}), muscle '{}' has negative normalized fiber-length.",
+                    getName(), s.getTime(), m->getName()); 
 
 
 
@@ -379,13 +379,13 @@ computeProbeInputs(const State& s) const
         // NAN CHECKING
         // ------------------------------------------
         if (isNaN(Adot))
-            cout << "WARNING::" << getName() << ": Adot (" << m->getName() << ") = NaN!" << endl;
+            log_warn("{} : Adot ({}) = NaN!", getName(), m->getName());
         if (isNaN(Mdot))
-            cout << "WARNING::" << getName() << ": Mdot (" << m->getName() << ") = NaN!" << endl;
+            log_warn("{} : Mdot ({}) = NaN!", getName(), m->getName());
         if (isNaN(Sdot))
-            cout << "WARNING::" << getName() << ": Sdot (" << m->getName() << ") = NaN!" << endl;
+            log_warn("{} : Sdot ({}) = NaN!", getName(), m->getName());
         if (isNaN(Wdot))
-            cout << "WARNING::" << getName() << ": Wdot (" << m->getName() << ") = NaN!" << endl;
+            log_warn("{} : Wdot ({}) = NaN!", getName(), m->getName());
 
 
         // If necessary, increase the shortening heat rate so that the total
@@ -611,8 +611,8 @@ void Bhargava2004MuscleMetabolicsProbe::
         get_Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet()
         .getIndex(muscleName);
     if (k<0) {
-        cout << "WARNING: MetabolicMuscleParameter: Invalid muscle '" 
-            << muscleName << "' specified. No metabolic muscles removed." << endl;
+        log_warn("MetabolicMuscleParameter: Invalid muscle '{}' specified. No metabolic muscles removed.",
+             muscleName);
         return;
     }
     upd_Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet()

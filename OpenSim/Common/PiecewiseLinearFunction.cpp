@@ -77,14 +77,16 @@ PiecewiseLinearFunction::PiecewiseLinearFunction(int aN,const double *aX,const d
     // NUMBER OF DATA POINTS
     if(aN < 2)
     {
-        printf("PiecewiseLinearFunction: ERROR- there must be 2 or more data points.\n");
+        log_error("PiecewiseLinearFunction: there must be 2 or more data "
+                  "points.");
         return;
     }
 
     // CHECK DATA
     if((aX==NULL)||(aY==NULL))
     {
-        printf("PiecewiseLinearFunction: ERROR- NULL arrays for data points encountered.\n");
+        log_error("PiecewiseLinearFunction: NULL arrays for data points "
+                  "encountered.");
         return;
     }
 

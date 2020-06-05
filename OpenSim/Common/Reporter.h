@@ -277,29 +277,33 @@ private:
             const_cast<ConsoleReporter_<T>*>(this)->_printCount = 0;
         }
 
+        // Find the length of the longest label.
+        int lengthOfLongestLabel = 0;
+        for (auto idx = 0u; idx < input.getNumConnectees(); ++idx) {
+            lengthOfLongestLabel = std::max(
+                    lengthOfLongestLabel,
+                                    (int)input.getLabel(idx).size());
+        }
+
         // Periodically display column headers.
         if (_printCount % 40 == 0) {
-            std::cout << "[" << this->getName() << "]" << "\n";
+            log_cout("[{}]", this->getName());
 
-            // Split labels over multiple lines. First, find the length of the
-            // longest label.
-            int longestLabel = 0;
-            for (auto idx = 0u; idx < input.getNumConnectees(); ++idx)
-                longestLabel = std::max(longestLabel,
-                                        (int)input.getLabel(idx).size());
-
+            // Split labels over multiple lines.
             // Round up to the nearest multiple of _width to determine the
             // number of header rows.
-            const int numHeaderRows = (longestLabel-1) / _width + 1;
+            const int numHeaderRows = (lengthOfLongestLabel -1) / _width + 1;
 
             // Display labels in chunks of size _width.
             for (int row = 0; row < numHeaderRows; ++row)
             {
+                std::string msg;
+
                 // Time column.
                 if (row == numHeaderRows-1)
-                    std::cout << std::setw(_width) << "time" << "| ";
+                    msg += fmt::format("{:>{}}| ", "time", _width);
                 else
-                    std::cout << std::setw(_width+2) << "| ";
+                    msg += fmt::format("{:>{}}| ", "", _width);
 
                 // Data columns.
                 for (auto idx = 0u; idx < input.getNumConnectees(); ++idx) {
@@ -307,27 +311,29 @@ private:
                     const std::string lbl =
                         std::string(numHeaderRows*_width - outName.size(), ' ')
                         + outName;
-                    std::cout << lbl.substr(_width*row, _width) << "| ";
+                    msg += fmt::format("{}| ", lbl.substr(_width*row, _width));
                 }
-                std::cout << "\n";
+                log_cout(msg);
             }
 
             // Horizontal rule.
+            std::string msg;
             for (auto idx = 0u; idx <= input.getNumConnectees(); ++idx)
-                std::cout << std::string(_width, '-') << "| ";
-            std::cout << "\n";
+                msg += std::string(_width, '-') + "| ";
+            log_cout(msg);
         }
 
         // TODO set width based on number of significant digits.
-        std::cout << std::setw(_width) << std::scientific
-                  << state.getTime() << "| ";
+        std::string msg;
+        msg += fmt::format("{:>{}}| ", state.getTime(), _width);
         for (const auto& chan : input.getChannels()) {
             const auto& value = chan->getValue(state);
             const auto& nSigFigs = chan->getOutput().getNumberOfSignificantDigits();
-            std::cout << std::setw(_width) << std::scientific
-                      << std::setprecision(nSigFigs) << value << "| ";
+            // Print `value` right-justified in a column with width `_width`,
+            // using `nSigFigs`: {:>{_width}.{nSigFigs}g}
+            msg += fmt::format("{:>{}.{}g}| ", value, _width, nSigFigs);
         }
-        std::cout << std::endl;
+        log_cout(msg);
 
         const_cast<ConsoleReporter_<T>*>(this)->_printCount++;
     }
