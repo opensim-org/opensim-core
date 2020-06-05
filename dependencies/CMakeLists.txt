@@ -166,7 +166,16 @@ AddDependency(NAME       docopt
               DEFAULT    ON
               URL        https://github.com/docopt/docopt.cpp.git
               TAG        3dd23e3280f213bacefdf5fcb04857bf52e90917)
- 
+
+
+AddDependency(NAME       spdlog
+              DEFAULT    ON
+              URL        https://github.com/gabime/spdlog.git
+              TAG        v1.4.1
+              CMAKE_ARGS -DSPDLOG_BUILD_BENCH:BOOL=OFF
+                         -DSPDLOG_BUILD_TESTS:BOOL=OFF
+                         -DSPDLOG_BUILD_EXAMPLE:BOOL=OFF
+                         -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON)
 #######################
 
 RemoveDefaultInstallDirIfEmpty("${DEFAULT_CMAKE_INSTALL_PREFIX}")

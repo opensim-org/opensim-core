@@ -288,8 +288,7 @@ void VectorFunctionForActuators::
 evaluate(const SimTK::State& s,  OpenSim::Array<double> &rF,
             const OpenSim::Array<int> &aDerivWRT)
 {
-    cout<<"\n\nVectorFunctionForActuators.evaluate:  ";
-    cout<<"Unimplemented method\n\n";
+    log_warn("VectorFunctionForActuators::evaluate: Unimplemented method.");
 }
 
 //_____________________________________________________________________________

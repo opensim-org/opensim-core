@@ -148,8 +148,8 @@ void PrescribedController::extendConnectToModel(Model& model)
                     }
                 }
                 else{
-                    cout << "PrescribedController::extendConnectToModel() could not "
-                        "find actuator '" << actName << "' in the model." <<endl;
+                    log_warn("PrescribedController::extendConnectToModel() could not find actuator {} in the model.",
+                        actName);
                 }
             }// if found in functions, it has already been prescribed
         }// end looping through columns

@@ -353,7 +353,7 @@ void PointKinematics::setBody(const PhysicalFrame* aBody)
 {
     // CHECK
     if (aBody==NULL) {
-        printf("PointKinematics.setBody:  WARN- invalid body pointer %p.\n", aBody);
+        log_warn("PointKinematics.setBody: null body pointer.");
         _body = NULL;
         return;
     }
@@ -361,13 +361,13 @@ void PointKinematics::setBody(const PhysicalFrame* aBody)
     // SET
     _body = aBody;
     _bodyName = _body->getName();
-    cout<<"PointKinematics.setBody: set body to "<<_bodyName<<endl;
+    log_info("PointKinematics.setBody: set body to {}.", _bodyName);
 }
 void PointKinematics::setRelativeToBody(const PhysicalFrame* aBody)
 {
     // CHECK
     if (aBody==NULL) {
-        printf("PointKinematics.setRelativeToBody:  WARN- invalid body pointer %p.\n", aBody);
+        log_warn("PointKinematics.setRelativeToBody: null body pointer.");
         _body = NULL;
         return;
     }
@@ -375,7 +375,8 @@ void PointKinematics::setRelativeToBody(const PhysicalFrame* aBody)
     // SET
     _relativeToBody = aBody;
     _relativeToBodyName = aBody->getName();
-    cout<<"PointKinematics.setRelativeToBody: set relative-to body to "<<_bodyName<<endl;
+    log_info("PointKinematics.setRelativeToBody: set relative-to body to {}.",
+            _bodyName);
 }
 
 //_____________________________________________________________________________
@@ -627,8 +628,8 @@ end( const SimTK::State& s)
 {
     if(!proceed()) return(0);
     record(s);
-    cout<<"PointKinematics.end: Finalizing analysis "<<getName()<<".\n";
-    return(0);
+    log_info("PointKinematics.end: Finalizing analysis {}.", getName());
+    return 0 ;
 }
 
 

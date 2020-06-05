@@ -176,8 +176,8 @@ OpenSenseUtilities::createOrientationsFileFromMarkers(const std::string& markers
             dp = markerData.getElt(row, imuIndices[i][3]);
 
             if (op.isNaN() || xp.isNaN() || yp.isNaN()) {
-                cout << "marker(s) for IMU '" << imuLabels[i] <<
-                    "' is NaN and orientation will also be NaN." << endl;
+                log_warn("marker(s) for IMU '{}' is NaN and orientation will also be NaN.",
+                    imuLabels[i]);
             }
             else {
                 // Transform of the IMU formed from markers expressed in Ground
@@ -243,9 +243,8 @@ SimTK::Vec3 OpenSenseUtilities::computeHeadingCorrection(
             angularDifference *= -1; 
         }
         
-        std::cout << "Heading correction computed to be "
-                  << angularDifference * SimTK_RADIAN_TO_DEGREE
-                  << "degs about ground Y" << std::endl;
+        log_info("Heading correction computed to be {} degs about ground Y.",
+            angularDifference * SimTK_RADIAN_TO_DEGREE);
 
         rotations = SimTK::Vec3( 0, angularDifference,  0);
 
