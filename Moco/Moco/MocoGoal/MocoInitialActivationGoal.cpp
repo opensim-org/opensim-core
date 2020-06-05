@@ -35,12 +35,12 @@ void MocoInitialActivationGoal::initializeOnModelImpl(
         }
     }
 
-    setNumIntegralsAndOutputs(0, (int)m_indices.size());
+    setRequirements(0, (int)m_indices.size(), SimTK::Stage::Time);
 }
 
 void MocoInitialActivationGoal::calcGoalImpl(
         const GoalInput& input, SimTK::Vector& goal) const {
-    const auto& controls = getModel().getControls(input.initial_state);
+    const auto& controls = input.initial_controls;
     const auto& states = input.initial_state.getY();
     int i = 0;
     if (!getModeIsCost()) {

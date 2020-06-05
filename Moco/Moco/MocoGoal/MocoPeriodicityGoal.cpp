@@ -93,8 +93,9 @@ void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
                 get_control_pairs(i).get_negate() ? -1 : 1);
     }
 
-    setNumIntegralsAndOutputs(
-            0, (int)m_indices_states.size() + (int)m_indices_controls.size());
+    setRequirements(
+            0, (int)m_indices_states.size() + (int)m_indices_controls.size(),
+            SimTK::Stage::Time);
 }
 
 void MocoPeriodicityGoal::calcGoalImpl(
@@ -111,8 +112,8 @@ void MocoPeriodicityGoal::calcGoalImpl(
         ++i;
     }
 
-    const auto& initialControls = getModel().getControls(input.initial_state);
-    const auto& finalControls = getModel().getControls(input.final_state);
+    const auto& initialControls = input.initial_controls;
+    const auto& finalControls = input.final_controls;
     int j = 0;
     for (const auto& index_control : m_indices_controls) {
         goal[i + j] = (initialControls[std::get<0>(index_control)] *

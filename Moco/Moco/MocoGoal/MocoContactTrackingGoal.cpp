@@ -183,7 +183,7 @@ void MocoContactTrackingGoal::initializeOnModelImpl(const Model& model) const {
         m_projectionVector = SimTK::UnitVec3(get_projection_vector());
     }
 
-    setNumIntegralsAndOutputs(1, 1);
+    setRequirements(1, 1, SimTK::Stage::Velocity);
 }
 
 int MocoContactTrackingGoal::findRecordOffset(
@@ -242,7 +242,8 @@ int MocoContactTrackingGoal::findRecordOffset(
 }
 
 void MocoContactTrackingGoal::calcIntegrandImpl(
-        const SimTK::State& state, double& integrand) const {
+        const IntegrandInput& input, double& integrand) const {
+    const auto& state = input.state;
     const auto& time = state.getTime();
     getModel().realizeVelocity(state);
     SimTK::Vector timeVec(1, time);

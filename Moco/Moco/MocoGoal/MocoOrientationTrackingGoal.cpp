@@ -162,13 +162,13 @@ void MocoOrientationTrackingGoal::initializeOnModelImpl(const Model& model)
 
     m_ref_splines = GCVSplineSet(flatTable);
 
-    setNumIntegralsAndOutputs(1, 1);
+    setRequirements(1, 1, SimTK::Stage::Position);
 }
 
-void MocoOrientationTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
-        double& integrand) const {
-    const auto& time = state.getTime();
-    getModel().realizePosition(state);
+void MocoOrientationTrackingGoal::calcIntegrandImpl(
+        const IntegrandInput& input, SimTK::Real& integrand) const {
+    const auto& time = input.state.getTime();
+    getModel().realizePosition(input.state);
     SimTK::Vector timeVec(1, time);
 
     // Rotation frame symbols: 
@@ -178,7 +178,7 @@ void MocoOrientationTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
     integrand = 0;
     for (int iframe = 0; iframe < (int)m_model_frames.size(); ++iframe) {
         const auto& R_GM =
-            m_model_frames[iframe]->getRotationInGround(state);
+            m_model_frames[iframe]->getRotationInGround(input.state);
 
         // Construct a new quaternion object from the splined quaternion data.
         // This constructor normalizes the provided values to ensure that a 

@@ -30,6 +30,7 @@
 namespace OpenSim {
 
 class MocoProblem;
+class DiscreteController;
 class DiscreteForces;
 class PositionMotion;
 class AccelerationMotion;
@@ -68,6 +69,11 @@ public:
     const Model& getModelBase() const { return m_model_base; }
     /// This is a state object that solvers can use along with ModelBase.
     SimTK::State& updStateBase() const { return m_state_base; }
+    /// This is a component inside ModelBase that you can use to
+    /// set the value of control signals.
+    const DiscreteController& getDiscreteControllerBase() const {
+        return m_discrete_controller_base.getRef();
+    }
     /// Get a reference to a copy of the model being used by this
     /// MocoProblemRep, but with all constraints disabled and an additional
     /// DiscreteForces component. This new component can be used to apply
@@ -90,6 +96,11 @@ public:
     SimTK::State& updStateDisabledConstraints(int index = 0) const {
         assert(index <= 1);
         return m_state_disabled_constraints[index];
+    }
+    /// This is a component inside ModelDisabledConstraints that you can use to
+    /// set the value of control signals.
+    const DiscreteController& getDiscreteControllerDisabledConstraints() const {
+        return m_discrete_controller_disabled_constraints.getRef();
     }
     /// This is a component inside ModelDisabledConstraints that you can use
     /// to set the value of discrete forces, intended to hold the constraint
@@ -309,9 +320,13 @@ private:
 
     Model m_model_base;
     mutable SimTK::State m_state_base;
+    SimTK::ReferencePtr<const DiscreteController> m_discrete_controller_base;
     SimTK::ReferencePtr<const PositionMotion> m_position_motion_base;
+
     Model m_model_disabled_constraints;
     mutable std::array<SimTK::State, 2> m_state_disabled_constraints;
+    SimTK::ReferencePtr<const DiscreteController>
+            m_discrete_controller_disabled_constraints;
     SimTK::ReferencePtr<const PositionMotion>
             m_position_motion_disabled_constraints;
     SimTK::ReferencePtr<DiscreteForces> m_constraint_forces;

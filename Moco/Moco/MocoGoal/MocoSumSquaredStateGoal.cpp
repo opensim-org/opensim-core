@@ -88,13 +88,13 @@ void MocoSumSquaredStateGoal::initializeOnModelImpl(const Model& model) const {
         }
     }
 
-    setNumIntegralsAndOutputs(1, 1);
+    setRequirements(1, 1, SimTK::Stage::Time);
 }
 
 void MocoSumSquaredStateGoal::calcIntegrandImpl(
-        const SimTK::State& state, double& integrand) const {
+        const IntegrandInput& input, SimTK::Real& integrand) const {
     for (int i = 0; i < (int)m_state_weights.size(); ++i) {
-        const auto& value = state.getY()[m_sysYIndices[i]];
+        const auto& value = input.state.getY()[m_sysYIndices[i]];
         integrand += m_state_weights[i] * value * value;
     }
 }

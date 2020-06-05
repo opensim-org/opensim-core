@@ -180,6 +180,7 @@ TEMPLATE_TEST_CASE("Combining implicit dynamics mode with path constraints",
         }
         void calcPathConstraintErrorsImpl(const SimTK::State& state,
                 SimTK::Vector& errors) const override {
+            getModel().realizeVelocity(state);
             errors = getModel().getControls(state);
         }
     };

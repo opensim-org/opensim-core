@@ -54,15 +54,15 @@ protected:
     void calcCostImpl(const GoalInput& input, double& cost) const override {
         cost = input.integral;
     }
-    void calcIntegrandImpl(const SimTK::State& state, double& integrand)
-            const override {
-        getModel().realizeVelocity(state);
+    void calcIntegrandImpl(const IntegrandInput& input,
+            SimTK::Real& integrand) const override {
+        getModel().realizeVelocity(input.state);
         SimTK::Vec3 netForce(0);
         SimTK::Vec3 ref(0);
         for (const auto& force : m_forces) {
-            netForce += force->calcContactForceOnStation(state);
+            netForce += force->calcContactForceOnStation(input.state);
         }
-        SimTK::Vector timeVec(1, state.getTime());
+        SimTK::Vector timeVec(1, input.state.getTime());
         ref[0] = m_refspline_x.calcValue(timeVec);
         ref[1] = m_refspline_y.calcValue(timeVec);
 

@@ -19,6 +19,7 @@
 #include "MocoProblemRep.h"
 
 #include "Components/AccelerationMotion.h"
+#include "Components/DiscreteController.h"
 #include "Components/DiscreteForces.h"
 #include "Components/PositionMotion.h"
 #include "MocoProblem.h"
@@ -62,7 +63,13 @@ void MocoProblemRep::initialize() {
     const auto& ph0 = m_problem->getPhase(0);
     // TODO: Provide directory from which to load model file.
     m_model_base = ph0.getModelProcessor().process();
+
+    auto discreteControllerBaseUPtr = make_unique<DiscreteController>();
+    m_discrete_controller_base.reset(discreteControllerBaseUPtr.get());
+    m_model_base.addController(discreteControllerBaseUPtr.release());
+
     m_model_base.finalizeFromProperties();
+
     int countMotion = 0;
     for (const auto& comp : m_model_base.getComponentList<PositionMotion>()) {
         // Next line exists only to avoid an "unused variable" compiler warning.
@@ -94,6 +101,7 @@ void MocoProblemRep::initialize() {
         m_position_motion_base->setEnabled(m_state_base, true);
     }
 
+
     // We would like to eventually compute the model accelerations through
     // realizing to Stage::Acceleration. However, if the model has constraints,
     // realizing to Stage::Acceleration will cause Simbody to compute it's own
@@ -113,6 +121,11 @@ void MocoProblemRep::initialize() {
     constraintForcesUPtr->setName("constraint_forces");
     m_constraint_forces.reset(constraintForcesUPtr.get());
     m_model_disabled_constraints.addComponent(constraintForcesUPtr.release());
+
+    m_model_disabled_constraints.finalizeFromProperties();
+    m_discrete_controller_disabled_constraints.reset(
+            &*m_model_disabled_constraints.getComponentList<DiscreteController>().begin());
+
 
     if (!m_prescribedKinematics) {
         // The Acceleration motion is always added if there is no

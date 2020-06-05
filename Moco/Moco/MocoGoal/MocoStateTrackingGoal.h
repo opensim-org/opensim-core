@@ -117,7 +117,7 @@ protected:
     // TODO check that the reference covers the entire possible time range.
     void initializeOnModelImpl(const Model&) const override;
     void calcIntegrandImpl(
-            const SimTK::State& state, double& integrand) const override;
+            const IntegrandInput& input, SimTK::Real& integrand) const override;
     void calcGoalImpl(
             const GoalInput& input, SimTK::Vector& cost) const override {
         cost[0] = input.integral;
