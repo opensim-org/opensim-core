@@ -357,6 +357,7 @@ void VisualizerUtilities::showOrientationData(
             OPENSIM_THROW_IF(!modelForPose, Exception,
                     "Expected a model for layout 'model', but none provided.");
             State s = modelForPose->getWorkingState();
+            modelForPose->realizePosition(s);
             OpenSim::Array<std::string> bNames;
             modelForPose->getBodySet().getNames(bNames);
             for (int i = 0; i < numJoints; i++) {
