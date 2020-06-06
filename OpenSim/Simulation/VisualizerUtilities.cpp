@@ -273,7 +273,7 @@ void VisualizerUtilities::showMarkerData(
     state.updTime() = times[0];
     const SimTK::Real initialTime = times.front();
     const SimTK::Real finalTime = times.back();
-    
+
     previewWorld.updVisualizer().updSimbodyVisualizer().setBackgroundType(SimTK::Visualizer::SolidColor);
     previewWorld.updVisualizer().updSimbodyVisualizer().setBackgroundColor(
             SimTK::Black);
@@ -282,7 +282,7 @@ void VisualizerUtilities::showMarkerData(
 
     while (true) {
         for (size_t j = 0; j < times.size(); ++j) {
-            //std::cout << "time: " << times[j] << "s" << std::endl;
+            // log_cout("time: {} s", times[j]);
             state.setTime(times[j]);
             previewWorld.realizePosition(state);
             previewWorld.getVisualizer().show(state);
@@ -364,7 +364,7 @@ void VisualizerUtilities::showOrientationData(
                 bool nameFound = false;
                 auto nameFromData = joints[i]->getName();
                 for (int j = 0; j < bNames.size() && !nameFound; ++j) {
-                    if (nameFromData == bNames[j]) { 
+                    if (nameFromData == bNames[j]) {
                         const Body& bod =
                                 modelForPose->getComponent<OpenSim::Body>(
                                         "/bodyset/" + bNames[j]);
@@ -486,13 +486,13 @@ void VisualizerUtilities::showOrientationData(
             if (pause) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(5));
                 if (frameNumber>0) frameNumber--;
-            } 
+            }
             simbodyVisualizer.setSliderValue(timeSliderIndex, times[frameNumber]);
         }
     }
 }
 
-void VisualizerUtilities::addVisualizerControls(ModelVisualizer& vizualizer, 
+void VisualizerUtilities::addVisualizerControls(ModelVisualizer& vizualizer,
         double initialTime, double finalTime) {
     auto& simbodyViz = vizualizer.updSimbodyVisualizer();
     //simbodyViz.setMode(SimTK::Visualizer::RealTime);
@@ -531,5 +531,5 @@ void VisualizerUtilities::addVisualizerControls(ModelVisualizer& vizualizer,
     keyBindingsMenu.push_back(std::make_pair("Quit: Esc", 5));
     simbodyViz.addMenu("Key bindings", 1, keyBindingsMenu);
 
-    
+
 }

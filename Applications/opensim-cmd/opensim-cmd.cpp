@@ -122,7 +122,7 @@ int main(int argc, const char** argv) {
             if (!success) return EXIT_FAILURE;
         }
     }
-    
+
     // Logging.
     // --------
     if (args["--log"]) {
