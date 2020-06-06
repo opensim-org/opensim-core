@@ -10,7 +10,6 @@ add_subdirectory(CMC)
 add_subdirectory(RRA)
 add_subdirectory(opensense)
 add_subdirectory(versionUpdate)
-add_subdirectory(opensim-visualize)
 
 add_subdirectory(opensim-cmd)
 
