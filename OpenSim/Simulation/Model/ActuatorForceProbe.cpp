@@ -182,7 +182,7 @@ void ActuatorForceProbe::extendConnectToModel(Model& model)
         const int k = model.getActuators().getIndex(actName);
         if (k<0) {
             string errorMessage = getConcreteClassName() + ": Invalid Actuator '" + actName + "' specified in <actuator_names>.";
-            std::cout << "WARNING: " << errorMessage << "Probe will be disabled." << std::endl;
+            log_warn("{} Probe will be disabled.", errorMessage);
             setEnabled(false);
             //throw (Exception(errorMessage.c_str()));
         }

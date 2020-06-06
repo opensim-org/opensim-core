@@ -55,8 +55,7 @@ Muscle::Muscle()
 void Muscle::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
     if ( versionNumber < XMLDocument::getLatestVersion()) {
-        if (Object::getDebugLevel()>=1)
-            cout << "Updating Muscle object to latest format..." << endl;
+        log_debug("Updating Muscle object to latest format...");
         
         if (versionNumber <= 20301){
             SimTK::Xml::element_iterator pathIter = 
@@ -670,7 +669,7 @@ void Muscle::computeForce(const SimTK::State& s,
     if (!isActuationOverridden(s) && (getActuation(s) < -SimTK::SqrtEps)) {
         string msg = getConcreteClassName()
             + "::computeForce, muscle "+ getName() + " force < 0";
-        cout << msg << " at time = " << s.getTime() << endl;
+        log_debug("{}  at time = ", msg, s.getTime());
         //throw Exception(msg);
     }
 }

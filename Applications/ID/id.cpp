@@ -62,7 +62,7 @@ int main(int argc,char **argv)
       id -S SetupFileName -> opensim-cmd run-tool SetupFileName
       id -PS              -> opensim-cmd print-xml id
     )";
-    std::cout << deprecationNotice << std::endl;
+    log_warn(deprecationNotice);
 
 
     // PARSE COMMAND LINE
@@ -92,7 +92,8 @@ int main(int argc,char **argv)
             Object::setSerializeAllDefaults(true);
             tool->print("default_Setup_InverseDynamics.xml");
             Object::setSerializeAllDefaults(false);
-            cout << "Created file default_Setup_InverseDynamics.xml with default setup" << endl;
+            log_info("Created file default_Setup_InverseDynamics.xml with "
+                     "default setup");
             return(0);
 
         // IDENTIFY SETUP FILE
@@ -120,19 +121,18 @@ int main(int argc,char **argv)
     }
     // ERROR CHECK
     if(setupFileName=="") {
-        cout<<"\n\nid.exe: ERROR- A setup file must be specified.\n";
+        log_error("id.exe: A setup file must be specified.");
         PrintUsage(argv[0], cout);
         return(-1);
     }
     // CONSTRUCT
-    cout<<"Constructing tool from setup file "<<setupFileName<<".\n\n";
+    log_info("Constructing tool from setup file {}", setupFileName);
     InverseDynamicsTool id(setupFileName);
 
 
-    cout<<"-----------------------------------------------------------------------"<<endl;
-    cout<<"Starting Inverse Dynamics\n";
-    cout<<"-----------------------------------------------------------------------"<<endl;
-    cout<<"-----------------------------------------------------------------------"<<endl<<endl;
+    log_info("--------------------------------------------------------------");
+    log_info("Starting Inverse Dynamics");
+    log_info("--------------------------------------------------------------");
 
     // start timing
     std::clock_t startTime = std::clock();
@@ -140,13 +140,14 @@ int main(int argc,char **argv)
     // RUN
     id.run();
 
-    std::cout << "Inverse dynamics compute time = " << 1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n" << endl;
+    auto timeInMilliseconds = 1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC;
+    log_info("Inverse dynamics compute time = {} ms", timeInMilliseconds);
 
     //----------------------------
     // Catch any thrown exceptions
     //----------------------------
     } catch(const std::exception& x) {
-        cout << "Exception in ID: " << x.what() << endl;
+        log_error("Exception in ID: {}", x.what());
         return -1;
     }
     //----------------------------

@@ -48,7 +48,7 @@ int main(int argc,char **argv)
     DEPRECATED:    versionUpdate inputFileName outputFileName
     REPLACED WITH: opensim-cmd update-file inputFileName outputFileName
     )";
-    std::cout << deprecationNotice << std::endl;
+    log_warn(deprecationNotice);
 
     // PARSE COMMAND LINE
     string option = "";
@@ -62,7 +62,7 @@ int main(int argc,char **argv)
     outputFileName = (argc == 2)?(outputFileName=inputFileName): string(argv[2]);
     // ERROR CHECK
     if(inputFileName=="") {
-        cout<<"\n\versionUpdate.exe: ERROR- An input file must be specified.\n";
+        log_error("versionUpdate.exe: An input file must be specified.");
         PrintUsage(argv[0], cout);
         return(-1);
     }
@@ -70,7 +70,8 @@ int main(int argc,char **argv)
     string::size_type extSep = inputFileName.rfind(".");
 
     if (extSep == string::npos) {
-        cout<<"\n\versionUpdate.exe: ERROR- Unknown file type encountered. File extension must be specified.\n";
+        log_error("versionUpdate.exe: Unknown file type encountered. "
+                  "File extension must be specified.");
         PrintUsage(argv[0], cout);
         return 1;// if '_fileName' contains path information...
     }
@@ -81,7 +82,8 @@ int main(int argc,char **argv)
         return (0);
     }
     if (extension != ".xml" && extension != ".osim") {
-        cout<<"\n\versionUpdate.exe: ERROR- Unknown file type encountered. Only .xml, .osim and .sto files are supported.\n";
+        log_error("versionUpdate.exe: Unknown file type encountered. "
+                  "Only .xml, .osim and .sto files are supported.");
         PrintUsage(argv[0], cout);
         return 1;// if '_fileName' contains path information...
     }

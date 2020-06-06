@@ -42,16 +42,17 @@
  */
 
 // INCLUDES
-#include <OpenSim/Common/osimCommonDLL.h>
-#include "OpenSim/Common/Object.h"
-#include "OpenSim/Common/ComponentSocket.h"
-#include "OpenSim/Common/ComponentOutput.h"
-#include "OpenSim/Common/Array.h"
 #include "ComponentList.h"
 #include "ComponentPath.h"
+#include "Logger.h"
+#include "OpenSim/Common/Array.h"
+#include "OpenSim/Common/ComponentOutput.h"
+#include "OpenSim/Common/ComponentSocket.h"
+#include "OpenSim/Common/Object.h"
+#include "simbody/internal/MultibodySystem.h"
 #include <functional>
 
-#include "simbody/internal/MultibodySystem.h"
+#include <OpenSim/Common/osimCommonDLL.h>
 
 namespace OpenSim {
 
@@ -1609,11 +1610,10 @@ public:
         }
 
         if (numSubcomponents == 0) {
-            std::cout << "Component '" << getName()
-                      << "' has no subcomponents." << std::endl;
+            log_cout("Component '{}' has no subcomponents.", getName());
             return;
         }
-        maxlen += 4; //padding
+        maxlen += 6; //padding
 
         std::string className = SimTK::NiceTypeName<C>::namestr();
         // Remove "OpenSim::", etc. if it exists.
@@ -1622,24 +1622,24 @@ public:
             className = className.substr(colonPos+1,
                                          className.length()-colonPos);
 
-        std::cout << "Class name and absolute path name for descendants of '"
-                  << getName() << "' that are of type " << className << ":\n"
-                  << std::endl;
+        log_cout("Class name and absolute path name for descendants of '{}'"
+                 "that are of type {}:\n", getName(), className);
 
-        std::cout << std::string(maxlen-concreteClassName.length(), ' ')
-                  << "[" << concreteClassName << "]"
-                  << "  " << getAbsolutePathString() << std::endl;
+        log_cout("{:>{}}  {}", concreteClassName, maxlen,
+                getAbsolutePathString());
 
         // Step through compList again to print.
         for (const C& thisComp : compList) {
             const std::string thisClass = thisComp.getConcreteClassName();
-            std::cout << std::string(maxlen-thisClass.length(), ' ') << "["
-                      << thisClass << "]  ";
             auto path = thisComp.getAbsolutePath();
-            std::cout << std::string((path.getNumPathLevels() - 1) * 4, ' ')
-                      << "/" << path.getComponentName() << std::endl;
+            log_cout(fmt::format(
+                    "{:>{}}  {}/{}",
+                    fmt::format("[{}]", thisClass),
+                    maxlen,
+                    std::string((path.getNumPathLevels() - 1) * 4, ' '),
+                    path.getComponentName()));
         }
-        std::cout << std::endl;
+        log_cout("");
     }
 
     /** Print outputs of this component and optionally, those of all
@@ -2287,14 +2287,11 @@ public:
                 foundCs.push_back(&comp);
                 // TODO Revisit why the exact match isn't found when
                 // when what appears to be the complete path.
-                if (comp.getDebugLevel() > 0) {
-                    std::string details = msg + " Found '" + compAbsPath.toString() +
-                        "' as a match for:\n Component '" + name + "' of type " +
-                        comp.getConcreteClassName() + ", but it "
-                        "is not on specified path.\n";
-                    //throw Exception(details, __FILE__, __LINE__);
-                    std::cout << details << std::endl;
-                }
+                log_debug("{} Found '{}' as a match for: Component '{}' of "
+                          "type {}, but it is not on the specified path.",
+                          msg, compAbsPath.toString(),
+                          comp.getConcreteClassName());
+                //throw Exception(details, __FILE__, __LINE__);
             }
         }
 

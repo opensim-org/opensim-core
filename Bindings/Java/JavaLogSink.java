@@ -1,7 +1,5 @@
-#ifndef _LogCallback_h_
-#define _LogCallback_h_
 /* -------------------------------------------------------------------------- *
- *                          OpenSim:  LogCallback.h                           *
+ *                         OpenSim:  JavaLogSink.java                         *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -9,7 +7,8 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Copyright (c) 2005-2019 Stanford University and the Authors                *
+ * Author(s): Christopher Dembia                                              *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -21,21 +20,18 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
+package org.opensim.modeling;
 
-#include "osimCommonDLL.h"
-#include <string>
+/** Use this class to log OpenSim's messages in Java. This is particularly
+useful for Windows Matlab users, for whom OpenSim's messages often do not
+appear in Matlab's Command Window. If you have this problem, run the following
+code in Matlab:
 
-namespace OpenSim {
-
-// Excluding this from Doxygen until it has better documentation! -Sam Hamner
-/// @cond
-class OSIMCOMMON_API LogCallback
-{
-public:
-    virtual ~LogCallback() {}
-    virtual void log(const std::string &str) = 0;
-};
-/// @endcond
+import org.opensim.modeling.*;
+Logger.addSink(JavaLogSink());
+*/
+public class JavaLogSink extends LogSink {
+  protected void sinkImpl(String msg) {
+    System.out.println(msg);
+  }
 }
-
-#endif

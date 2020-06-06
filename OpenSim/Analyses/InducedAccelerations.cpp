@@ -228,11 +228,10 @@ void InducedAccelerations::constructDescription()
 
     descrip = "\nThis file contains accelerations of coordinates or bodies.\n";
     descrip += "\nUnits are S.I. units (seconds, meters, Newtons, ...)";
-    if(getInDegrees()) {
-        descrip += "\nAngles are in degrees.";
-    } else {
-        descrip += "\nAngles are in radians.";
-    }
+    descrip += "\nIf the header above contains a line with ";
+    descrip += "'inDegrees', this indicates whether rotational values ";
+    descrip +=  "are in degrees (yes) or radians (no).";
+
     descrip += "\n\n";
 
     setDescription(descrip);
@@ -501,7 +500,7 @@ int InducedAccelerations::record(const SimTK::State& s)
 {
     int nu = _model->getNumSpeeds();
     double aT = s.getTime();
-    cout << "time = " << aT << endl;
+    log_info("time = {}", aT);
 
     SimTK::Vector Q = s.getQ();
 
@@ -853,7 +852,7 @@ int InducedAccelerations::begin(const SimTK::State &s)
         _storeInducedAccelerations[i]->reset(s.getTime());
     }
 
-    cout << "Performing Induced Accelerations Analysis" << endl;
+    log_info("Performing Induced Accelerations Analysis");
 
     // RECORD
     int status = 0;
@@ -966,12 +965,14 @@ Array<bool> InducedAccelerations::applyContactConstraintAccordingToExternalForce
             if(exf->getPointExpressedInBodyName() != exf->getAppliedToBodyName()){
                 int appliedToBodyIndex = _model->getBodySet().getIndex(exf->getAppliedToBodyName());
                 if(appliedToBodyIndex < 0){
-                    cout << "External force appliedToBody " <<  exf->getAppliedToBodyName() << " not found." << endl;
+                    log_warn("ExternalForce applied_to_body '{}' not found.",
+                             exf->getAppliedToBodyName());
                 }
 
                 int expressedInBodyIndex = _model->getBodySet().getIndex(exf->getPointExpressedInBodyName());
                 if(expressedInBodyIndex < 0){
-                    cout << "External force expressedInBody " <<  exf->getPointExpressedInBodyName() << " not found." << endl;
+                    log_warn("ExternalForce point_expressed_in_body '{}' not found.",
+                             exf->getPointExpressedInBodyName());
                 }
 
                 const Body &appliedToBody = _model->getBodySet().get(appliedToBodyIndex);

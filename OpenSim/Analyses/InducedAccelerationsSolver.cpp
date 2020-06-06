@@ -211,8 +211,8 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
         // light up the one Force who's contribution we are looking for
         int ai = _modelCopy.getForceSet().getIndex(forceName);
         if(ai<0){
-            cout << "Force '"<< forceName << "' not found in model '" <<
-                _modelCopy.getName() << "'." << endl;
+            log_warn("Force '{}' not found in model '{}'.", forceName,
+                    _modelCopy.getName());
         }
         Force &force = _modelCopy.getForceSet().get(ai);
         force.setAppliesForce(s_solver, true);
@@ -347,12 +347,14 @@ Array<bool> InducedAccelerationsSolver::
             if(exf->getPointExpressedInBodyName() != exf->getAppliedToBodyName()){
                 int appliedToBodyIndex = getModel().getBodySet().getIndex(exf->getAppliedToBodyName());
                 if(appliedToBodyIndex < 0){
-                    cout << "External force appliedToBody " <<  exf->getAppliedToBodyName() << " not found." << endl;
+                    log_warn("ExternalForce applied_to_body '{}' not found.",
+                            exf->getAppliedToBodyName());
                 }
 
                 int expressedInBodyIndex = getModel().getBodySet().getIndex(exf->getPointExpressedInBodyName());
-                if(expressedInBodyIndex < 0){
-                    cout << "External force expressedInBody " <<  exf->getPointExpressedInBodyName() << " not found." << endl;
+                if(expressedInBodyIndex < 0) {
+                    log_warn("ExternalForce point_expressed_in_body '{}' not found.",
+                             exf->getPointExpressedInBodyName());
                 }
 
                 const Body &appliedToBody = getModel().getBodySet().get(appliedToBodyIndex);
