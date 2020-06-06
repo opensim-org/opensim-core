@@ -171,8 +171,10 @@ int main(int argc, char** argv) {
                         OpenSenseUtilities::rotateOrientationTable(
                                 quatTable, sensorToOpenSim);
                     }
+                    Model model(modelFileName);
+                    model.initSystem();
                     VisualizerUtilities::showOrientationData(
-                            quatTable, layout, modelFileName);
+                            quatTable, layout, &model);
 
                 } else if (extension == ".trc") {
 
