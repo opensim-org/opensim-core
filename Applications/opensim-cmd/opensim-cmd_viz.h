@@ -38,7 +38,7 @@ Usage:
                                 model <model-file> [<states-file>]
   opensim-cmd [options]... viz [--geometry=<path>]
                                 data <data-file> [--model=<model-file>]
-                                [--layout=<layout>]
+                                [--layout=<layout>] [--r=<rotationString>]
   opensim-cmd viz -h | --help
 
 Options:
@@ -76,10 +76,18 @@ Examples:
   opensim-cmd viz model lowerlimb.osim states.sto
   opensim-cmd viz data markers.trc
   opensim-cmd viz data markers.c3d
-  opensim-cmd viz data orientations.sto -a circle
+  opensim-cmd viz data orientations.sto -a circle --r x,y,z
   opensim-cmd viz -g C:/MyGeometry data orientations.sto -m arm.osim
   opensim-cmd --library C:\Plugins\osimMyCustomForce.dll viz model arm.osim
 )";
+
+
+SimTK::Vec3 parseRotationsString(const std::string& rotationString) {
+    SimTK::Vec3 returnVec3{0};
+    std::stringstream ss(rotationString);
+    ss >> returnVec3;
+    return returnVec3;
+}
 
 int viz(int argc, const char** argv) {
 
@@ -151,6 +159,20 @@ int viz(int argc, const char** argv) {
             std::string layout = "line";
             if (args["--layout"]) {
                 layout = args["--layout"].asString();
+            }
+            if (args["--r"]) {
+                std::string rotationString = "";
+                rotationString = args["--r"].asString();
+                const SimTK::Vec3& sensor_to_opensim_rotations =
+                        parseRotationsString(rotationString);
+                SimTK::Rotation sensorToOpenSim = SimTK::Rotation(
+                        SimTK::BodyOrSpaceType::SpaceRotationSequence,
+                        sensor_to_opensim_rotations[0], SimTK::XAxis,
+                        sensor_to_opensim_rotations[1], SimTK::YAxis,
+                        sensor_to_opensim_rotations[2], SimTK::ZAxis);
+                // Rotate data
+                OpenSenseUtilities::rotateOrientationTable(
+                        *tableQuat, sensorToOpenSim);
             }
             if (layout == "model") {
                 OPENSIM_THROW_IF(!args["--model"], Exception,
