@@ -20,13 +20,9 @@
 #include "Testing.h"
 #include <Moco/Common/TableProcessor.h>
 
-#include <OpenSim/Common/LogManager.h>
-
 using namespace OpenSim;
 
 TEST_CASE("TableProcessor") {
-    std::cout.rdbuf(LogManager::cout.rdbuf());
-    std::cerr.rdbuf(LogManager::cerr.rdbuf());
 
     class MyTableOperator : public TableOperator {
         OpenSim_DECLARE_CONCRETE_OBJECT(MyTableOperator, TableOperator);

@@ -196,7 +196,7 @@ public:
             }
         }
         OPENSIM_THROW_FRMOBJ(Exception,
-                format("No reference label provided for control '%s'.",
+                fmt::format("No reference label provided for control '{}'.",
                         control));
     }
 

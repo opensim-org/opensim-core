@@ -17,7 +17,6 @@
  * -------------------------------------------------------------------------- */
 
 
-#include <OpenSim/Common/LogManager.h>
 #include <OpenSim/Common/osimCommon.h>
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Actuators/osimActuators.h>
@@ -754,9 +753,6 @@ void toyCMAES() {
 }
 
 int main() {
-
-    std::cout.rdbuf(LogManager::cout.rdbuf());
-    std::cerr.rdbuf(LogManager::cerr.rdbuf());
 
     // calibrateBall();
 

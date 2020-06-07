@@ -62,8 +62,8 @@ public:
     SimTKMultivariatePolynomial(const SimTK::Vector_<T>& coefficients,
             const int& dimension, const int& order) :
             coefficients(coefficients), dimension(dimension), order(order) {
-        OPENSIM_THROW_IF(dimension < 0 || dimension > 4, Exception, format(
-                "Expected dimension >= 0 && <=4 but got %i.", dimension));
+        OPENSIM_THROW_IF(dimension < 0 || dimension > 4, Exception, fmt::format(
+                "Expected dimension >= 0 && <=4 but got {}.", dimension));
         std::array<int, 4> nq {{0, 0, 0, 0}};
         int coeff_nr = 0;
         for (nq[0] = 0; nq[0] < order + 1; ++nq[0]) {
@@ -85,9 +85,8 @@ public:
             }
         }
         OPENSIM_THROW_IF(coefficients.size() != coeff_nr, Exception,
-                format("Expected %i coefficients but got %i.",
-                        coeff_nr, coefficients.size()));
-
+                fmt::format("Expected {} coefficients but got {}.", coeff_nr,
+                        coefficients.size()));
     }
     T calcValue(const SimTK::Vector& x) const override {
         std::array<int, 4> nq {{0, 0, 0, 0}};

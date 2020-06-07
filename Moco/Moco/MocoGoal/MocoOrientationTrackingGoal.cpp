@@ -62,9 +62,9 @@ void MocoOrientationTrackingGoal::initializeOnModelImpl(const Model& model)
                     std::find(labels.begin(), labels.end(), path) ==
                         labels.end(),
                     Exception,
-                    format("Expected frame_paths to match one of the "
+                    fmt::format("Expected frame_paths to match one of the "
                         "column labels in the rotation reference, but frame "
-                        "path '%s' not found in the reference labels.", path));
+                        "path '{}' not found in the reference labels.", path));
                 m_frame_paths.push_back(path);
                 rotationTable.appendColumn(path,
                     rotationTableToUse.getDependentColumn(path));
@@ -152,7 +152,8 @@ void MocoOrientationTrackingGoal::initializeOnModelImpl(const Model& model)
             for (int ie = 0; ie < e.size(); ++ie) {
                 mat.updElt(irow, icol++) = e[ie];
                 if (!irow) {
-                    colLabels.push_back(format("%s/quaternion_e%i", label, ie));
+                    colLabels.push_back(
+                            fmt::format("%s/quaternion_e{}", label, ie));
                 }
             }
         }

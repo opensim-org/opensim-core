@@ -90,10 +90,10 @@ MocoTropterSolver::createTropterSolver(
         OPENSIM_THROW_IF(get_transcription_scheme() != "hermite-simpson" &&
                                  get_enforce_constraint_derivatives(),
                 Exception,
-                format("If enforcing derivatives of model kinematic "
+                fmt::format("If enforcing derivatives of model kinematic "
                        "constraints, then the property 'transcription_scheme' "
                        "must be set to 'hermite-simpson'. "
-                       "Currently, it is set to '%s'.",
+                       "Currently, it is set to '{}'.",
                         get_transcription_scheme()));
     }
     OPENSIM_THROW_IF_FRMOBJ(
@@ -108,11 +108,9 @@ MocoTropterSolver::createTropterSolver(
                     !getProperty_exact_hessian_block_sparsity_mode().empty(),
             Exception,
             "A value for solver property 'exact_hessian_block_sparsity_mode' "
-            "was "
-            "provided, but is unused when using a 'limited-memory' Hessian "
+            "was provided, but is unused when using a 'limited-memory' Hessian "
             "approximation. Set solver property 'optim_hessian_approximation' "
-            "to "
-            "'exact' for Hessian block sparsity to take effect.");
+            "to 'exact' for Hessian block sparsity to take effect.");
     if (!getProperty_exact_hessian_block_sparsity_mode().empty()) {
         checkPropertyInSet(*this,
                 getProperty_exact_hessian_block_sparsity_mode(),
@@ -217,9 +215,8 @@ MocoTrajectory MocoTropterSolver::createGuess(const std::string& type) const {
     OPENSIM_THROW_IF_FRMOBJ(
             type != "bounds" && type != "random" && type != "time-stepping",
             Exception,
-            format("Unexpected guess type '%s'; supported types are "
-                   "'bounds', "
-                   "'random', and 'time-stepping'.",
+            fmt::format("Unexpected guess type '{}'; supported types are "
+                   "'bounds', 'random', and 'time-stepping'.",
                     type));
 
     if (type == "time-stepping") { return createGuessTimeStepping(); }
@@ -301,8 +298,7 @@ void MocoTropterSolver::printOptimizationSolverOptions(std::string solver) {
     if (solver == "ipopt") {
         tropter::optimization::IPOPTSolver::print_available_options();
     } else {
-        std::cout << "No info available for " << solver << " options."
-                  << std::endl;
+        log_info("No info available for {} options.", solver);
     }
 #else
     OPENSIM_THROW(MocoTropterSolverNotAvailable);

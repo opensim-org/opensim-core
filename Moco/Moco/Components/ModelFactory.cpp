@@ -195,13 +195,13 @@ void ModelFactory::replaceMusclesWithPathActuators(OpenSim::Model &model) {
     for (const auto* musc : musclesToDelete) {
         int index = model.getForceSet().getIndex(musc, 0);
         OPENSIM_THROW_IF(index == -1, Exception,
-                         format("Muscle with name %s not found in ForceSet.",
-                                musc->getName()));
+                fmt::format("Muscle with name {} not found in ForceSet.",
+                        musc->getName()));
         bool success = model.updForceSet().remove(index);
         OPENSIM_THROW_IF(!success, Exception,
-                         format("Attempt to remove muscle with "
-                                "name %s was unsuccessful.",
-                                musc->getName()));
+                fmt::format("Attempt to remove muscle with "
+                            "name {} was unsuccessful.",
+                        musc->getName()));
     }
 }
 
@@ -259,8 +259,8 @@ void ModelFactory::removeMuscles(Model& model) {
     for (const auto* musc : musclesToDelete) {
         int index = model.getForceSet().getIndex(musc, 0);
         OPENSIM_THROW_IF(index == -1, Exception,
-                         format("Muscle with name %s not found in ForceSet.",
-                                musc->getName()));
+                fmt::format("Muscle with name {} not found in ForceSet.",
+                        musc->getName()));
         model.updForceSet().remove(index);
     }
 }
@@ -269,12 +269,12 @@ void ModelFactory::createReserveActuators(Model& model, double optimalForce,
         double bound,
         bool skipCoordinatesWithExistingActuators) {
     OPENSIM_THROW_IF(optimalForce <= 0, Exception,
-            format("Invalid value (%g) for create_reserve_actuators; "
+            fmt::format("Invalid value ({}) for create_reserve_actuators; "
                    "should be -1 or positive.",
                     optimalForce));
 
-    std::cout << "Adding reserve actuators with an optimal force of "
-              << optimalForce << "..." << std::endl;
+    log_info("Adding reserve actuators with an optimal force of {}...",
+            optimalForce);
 
     Model modelCopy(model);
     auto state = modelCopy.initSystem();
@@ -306,7 +306,7 @@ void ModelFactory::createReserveActuators(Model& model, double optimalForce,
             actu->setOptimalForce(optimalForce);
             if (!SimTK::isNaN(bound)) {
                 OPENSIM_THROW_IF(bound < 0, Exception,
-                        format("Expected a non-negative bound but got %d.",
+                        fmt::format("Expected a non-negative bound but got {}.",
                                 bound));
                 actu->setMinControl(-bound);
                 actu->setMaxControl(bound);
@@ -316,12 +316,10 @@ void ModelFactory::createReserveActuators(Model& model, double optimalForce,
     }
     // Re-make the system, since there are new actuators.
     model.initSystem();
-    std::cout << "Added " << coordPaths.size()
-              << " reserve actuator(s), "
-                 "for each of the following coordinates:"
-              << std::endl;
+    log_info("Added {} reserve actuator(s), for each of the following "
+             "coordinates:", coordPaths.size());
     for (const auto& name : coordPaths) {
-        std::cout << "  " << name << std::endl;
+        log_info("  {}", name);
     }
 }
 

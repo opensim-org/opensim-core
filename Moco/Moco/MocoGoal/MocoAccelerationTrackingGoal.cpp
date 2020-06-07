@@ -56,19 +56,19 @@ void MocoAccelerationTrackingGoal::initializeOnModelImpl(
             const auto& labels = accelerationTableToUse.getColumnLabels();
             for (int i = 0; i < getProperty_frame_paths().size(); ++i) {
                 const auto& path = get_frame_paths(i);
-                OPENSIM_THROW_IF_FRMOBJ(
-                    std::find(labels.begin(), labels.end(), path) == 
-                        labels.end(),
-                    Exception,
-                    format("Expected frame_paths to match one of the "
-                       "column labels in the acceleration reference, but frame "
-                       "path '%s' not found in the reference labels.", path));
+                OPENSIM_THROW_IF_FRMOBJ(std::find(labels.begin(), labels.end(),
+                                                path) == labels.end(),
+                        Exception,
+                        fmt::format("Expected frame_paths to match one of the "
+                                    "column labels in the acceleration "
+                                    "reference, but frame path '{}' not found "
+                                    "in the reference labels.",
+                                path));
                 m_frame_paths.push_back(path);
                 accelerationTable.appendColumn(path, 
                     accelerationTableToUse.getDependentColumn(path));
             }
         }
-
     }
 
     // Check that there are no redundant columns in the reference data.

@@ -18,8 +18,6 @@
 
 #include <Moco/osimMoco.h>
 
-#include <OpenSim/Common/LogManager.h>
-
 #define CATCH_CONFIG_MAIN
 #include "Testing.h"
 
@@ -118,8 +116,6 @@ TEST_CASE("PrescribedKinematics direct collocation auxiliary dynamics") {
 }
 
 TEST_CASE("MocoInverse Rajagopal2016, 18 muscles") {
-    std::cout.rdbuf(LogManager::cout.rdbuf());
-    std::cerr.rdbuf(LogManager::cerr.rdbuf());
 
     MocoInverse inverse;
     ModelProcessor modelProcessor =

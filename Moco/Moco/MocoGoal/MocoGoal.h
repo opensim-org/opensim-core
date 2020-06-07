@@ -253,8 +253,9 @@ private:
     void checkMode(const std::string& mode) const {
         OPENSIM_THROW_IF_FRMOBJ(mode != "cost" && mode != "endpoint_constraint",
                 Exception,
-                format("Expected mode to be 'cost' or 'endpoint_constraint' "
-                       "but got %s.",
+                fmt::format(
+                        "Expected mode to be 'cost' or 'endpoint_constraint' "
+                        "but got {}.",
                         mode));
     }
 

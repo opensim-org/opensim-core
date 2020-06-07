@@ -46,14 +46,14 @@ void MocoStateTrackingGoal::initializeOnModelImpl(const Model& model) const {
         const auto& weightName = get_state_weights().get(i).getName();
         if (allSysYIndices.count(weightName) == 0) {
             OPENSIM_THROW_FRMOBJ(Exception,
-                "Weight provided with name '" + weightName + "' but this is "
-                "not a recognized state.");
+                fmt::format("Weight provided with name '{}' but this is "
+                    "not a recognized state.", weightName));
         }
         if (getProperty_pattern().size() &&
                 !std::regex_match(weightName, regex)) {
             OPENSIM_THROW_FRMOBJ(Exception,
-                    format("Weight provided with name '%s' but this name does "
-                           "not match the pattern '%s'.",
+                    fmt::format("Weight provided with name '{}' but this name "
+                                "does not match the pattern '{}'.",
                             weightName, get_pattern()));
         }
     }
@@ -68,7 +68,7 @@ void MocoStateTrackingGoal::initializeOnModelImpl(const Model& model) const {
                 continue;
             }
             OPENSIM_THROW_FRMOBJ(Exception,
-                 "State reference '" + refName + "' unrecognized.");
+                 fmt::format("State reference '{}' unrecognized.", refName));
         }
         if (getProperty_pattern().size() &&
                 !std::regex_match(refName, regex)) {
@@ -76,9 +76,10 @@ void MocoStateTrackingGoal::initializeOnModelImpl(const Model& model) const {
                 continue;
             }
             OPENSIM_THROW_FRMOBJ(
-                    Exception, format("State reference '%s' does not match the "
-                                      "pattern '%s'.",
-                                       refName, get_pattern()));
+                    Exception,
+                    fmt::format("State reference '{}' does not match the "
+                                "pattern '{}'.",
+                            refName, get_pattern()));
         }
 
         m_sysYIndices.push_back(allSysYIndices[refName]);

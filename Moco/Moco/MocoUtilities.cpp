@@ -106,8 +106,9 @@ SimTK::Vector OpenSim::interpolate(const SimTK::Vector& x,
         const bool ignoreNaNs) {
 
     OPENSIM_THROW_IF(x.size() != y.size(), Exception,
-            format("Expected size of x to equal size of y, but size of x "
-                      "is %i and size of y is %i.", x.size(), y.size()));
+            fmt::format("Expected size of x to equal size of y, but size of x "
+                        "is {} and size of y is {}.",
+                    x.size(), y.size()));
 
     // Create vectors of non-NaN values if user set 'ignoreNaNs' argument to
     // 'true', otherwise throw an exception. If no NaN's are present in the
@@ -198,7 +199,7 @@ void OpenSim::updateStateLabels40(const Model& model,
 TimeSeriesTable OpenSim::filterLowpass(
         const TimeSeriesTable& table, double cutoffFreq, bool padData) {
     OPENSIM_THROW_IF(cutoffFreq < 0, Exception,
-            format("Cutoff frequency must be non-negative; got %g.",
+            fmt::format("Cutoff frequency must be non-negative; got {}.",
                     cutoffFreq));
     auto storage = convertTableToStorage(table);
     if (padData) { storage.pad((int)table.getNumRows() / 2); }
@@ -332,8 +333,7 @@ void OpenSim::visualize(Model model, Storage statesSto) {
                 // times.
                 viz.drawFrameNow(statesTraj[istate]);
             } else {
-                std::cout << "Internal error: unrecognized slider."
-                          << std::endl;
+                log_error("Internal error: unrecognized slider.");
             }
         }
 
@@ -342,7 +342,7 @@ void OpenSim::visualize(Model model, Storage statesSto) {
         if (silo.takeKeyHit(key, modifiers)) {
             // Exit.
             if (key == SimTK::Visualizer::InputListener::KeyEsc) {
-                std::cout << "Exiting visualization." << std::endl;
+                log_info("Exiting visualization.");
                 return;
             }
             // Smart zoom.
@@ -419,7 +419,7 @@ void OpenSim::prescribeControlsToModel(
             function = createFunction<PiecewiseLinearFunction>(time, control);
         } else {
             OPENSIM_THROW(Exception,
-                    format("Unexpected function type %s.", functionType));
+                    fmt::format("Unexpected function type {}.", functionType));
         }
         const auto& actu = model.getComponent<Actuator>(actuNames[i]);
         controller->addActuator(actu);
@@ -620,7 +620,7 @@ std::unordered_map<std::string, int> OpenSim::createSystemControlIndexMap(
             if (nc == 1) {
                 controlIndices[actuPath] = i;
             } else {
-                controlIndices[format("%s_%i", actuPath, j)] = i;
+                controlIndices[fmt::format("{}_{}", actuPath, j)] = i;
             }
             ++i;
         }
@@ -637,7 +637,7 @@ void OpenSim::checkRedundantLabels(std::vector<std::string> labels) {
     std::sort(labels.begin(), labels.end());
     auto it = std::adjacent_find(labels.begin(), labels.end());
     OPENSIM_THROW_IF(it != labels.end(), Exception,
-            format("Label '%s' appears more than once.", *it));
+            fmt::format("Label '{}' appears more than once.", *it));
 }
 
 void OpenSim::checkLabelsMatchModelStates(const Model& model,
@@ -645,9 +645,11 @@ void OpenSim::checkLabelsMatchModelStates(const Model& model,
     const auto modelStateNames = model.getStateVariableNames();
     for (const auto& label : labels) {
         OPENSIM_THROW_IF(modelStateNames.rfindIndex(label) == -1, Exception,
-            format("Expected the provided labels to match the model state "
-                   "names, but label %s does not correspond to any model "
-                    "state.", label));
+                fmt::format(
+                        "Expected the provided labels to match the model state "
+                        "names, but label {} does not correspond to any model "
+                        "state.",
+                        label));
     }
 }
 
@@ -728,9 +730,9 @@ MocoTrajectory OpenSim::createPeriodicTrajectory(
                             std::regex_replace(name, regex, pattern.second);
                     const auto it = find(names, opposite);
                     OPENSIM_THROW_IF(it == names.end(), Exception,
-                            format("Could not find %s %s, which is supposed "
-                                   "to "
-                                   "be opposite of %s.",
+                            fmt::format(
+                                    "Could not find {} {}, which is supposed "
+                                    "to be opposite of {}.",
                                     vartype, opposite, name));
                     const int iopp = (int)std::distance(names.cbegin(), it);
                     newTraj.updBlock(oldN, iopp, oldN - 1, 1) =
@@ -762,20 +764,6 @@ MocoTrajectory OpenSim::createPeriodicTrajectory(
                     {"derivatives", {in.getDerivativeNames(), derivatives}}});
 }
 
-std::string OpenSim::format_c(const char* format, ...) {
-    // Get buffer size.
-    va_list args;
-    va_start(args, format);
-    int bufsize = vsnprintf(nullptr, 0, format, args) + 1; // +1 for '\0'
-    va_end(args);
-
-    // Create formatted string.
-    std::unique_ptr<char[]> buf(new char[bufsize]);
-    va_start(args, format);
-    vsnprintf(buf.get(), bufsize, format, args);
-    va_end(args);
-    return std::string(buf.get());
-}
 
 int OpenSim::getMocoParallelEnvironmentVariable() {
     const std::string varName = "OPENSIM_MOCO_PARALLEL";
@@ -783,12 +771,9 @@ int OpenSim::getMocoParallelEnvironmentVariable() {
         std::string parallel = SimTK::Pathname::getEnvironmentVariable(varName);
         int num = std::atoi(parallel.c_str());
         if (num < 0) {
-            std::cout << "[Moco] Warning: OPENSIM_MOCO_PARALLEL "
-                         "environment variable set to incorrect value '"
-                      << parallel
-                      << "'; must be an integer >= 0. "
-                         "Ignoring."
-                      << std::endl;
+            log_warn("OPENSIM_MOCO_PARALLEL environment variable set to "
+                     "incorrect value '{}'; must be an integer >= 0. "
+                     "Ignoring.", parallel);
         } else {
             return num;
         }
@@ -865,7 +850,7 @@ SimTK::Real OpenSim::solveBisection(
     SimTK::Real midpoint = left;
 
     OPENSIM_THROW_IF(maxIterations < 0, Exception,
-            format("Expected maxIterations to be positive, but got %i.",
+            fmt::format("Expected maxIterations to be positive, but got {}.",
                     maxIterations));
 
     const bool sameSign = calcResidual(left) * calcResidual(right) >= 0;
@@ -881,7 +866,7 @@ SimTK::Real OpenSim::solveBisection(
         // writeTableToFile(table, "DEBUG_solveBisection_residual.sto");
     }
     OPENSIM_THROW_IF(sameSign, Exception,
-            format("Function has same sign at bounds of %f and %f.", left,
+            fmt::format("Function has same sign at bounds of {} and {}.", left,
                     right));
 
     SimTK::Real residualMidpoint;
@@ -900,8 +885,7 @@ SimTK::Real OpenSim::solveBisection(
         ++iterCount;
     }
     if (iterCount == maxIterations) {
-        printMessage("Warning: bisection reached max iterations "
-                     "at x = %g.\n", midpoint);
+        log_warn("Bisection reached max iterations at x = {}.", midpoint);
     }
     return midpoint;
 }

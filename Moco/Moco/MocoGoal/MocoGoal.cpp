@@ -48,6 +48,7 @@ void MocoGoal::printDescription(std::ostream& stream) const {
 
 double MocoGoal::calcSystemDisplacement(const SimTK::State& initialState,
         const SimTK::State& finalState) const {
+    log_info("hi");
     const SimTK::Vec3 comInitial =
             getModel().calcMassCenterPosition(initialState);
     const SimTK::Vec3 comFinal =

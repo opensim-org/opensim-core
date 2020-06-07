@@ -60,9 +60,10 @@ void MocoMarkerTrackingGoal::initializeOnModelImpl(const Model& model) const {
         } else {
             if (!get_allow_unused_references()) {
                 OPENSIM_THROW_FRMOBJ(
-                        Exception, format("Marker '%s' unrecognized by the "
-                                          "specified model.",
-                                           markRefNames[i]));
+                        Exception,
+                        fmt::format("Marker '{}' unrecognized by "
+                                    "the specified model.",
+                                markRefNames[i]));
             }
         }
     }

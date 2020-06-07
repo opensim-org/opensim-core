@@ -47,10 +47,8 @@ void MocoControlBoundConstraint::initializeOnModelImpl(
     m_hasLower = !getProperty_lower_bound().empty();
     m_hasUpper = !getProperty_upper_bound().empty();
     if (getProperty_control_paths().size() && !m_hasLower && !m_hasUpper) {
-        std::cout << "Warning: In MocoControlBoundConstraint '" << getName()
-                  << "', control paths are specified but no bounds "
-                     "are provided."
-                  << std::endl;
+        log_warn("In MocoControlBoundConstraint '{}', control paths are "
+                 "specified but no bounds are provided.", getName());
     }
     // Make sure there are no nonexistent controls.
     if (m_hasLower || m_hasUpper) {
@@ -59,8 +57,8 @@ void MocoControlBoundConstraint::initializeOnModelImpl(
             const auto& thisName = get_control_paths(i);
             OPENSIM_THROW_IF_FRMOBJ(systemControlIndexMap.count(thisName) == 0,
                     Exception,
-                    format("Control path '%s' was provided but no such control "
-                           "exists in the model.", thisName));
+                    fmt::format("Control path '{}' was provided but no such "
+                                "control exists in the model.", thisName));
             m_controlIndices.push_back(systemControlIndexMap[thisName]);
         }
     }
@@ -75,15 +73,15 @@ void MocoControlBoundConstraint::initializeOnModelImpl(
         if (auto* spline = dynamic_cast<const GCVSpline*>(&f)) {
             OPENSIM_THROW_IF_FRMOBJ(
                     spline->getMinX() > problemInfo.minInitialTime, Exception,
-                    format("The function's minimum domain value (%f) must "
+                    fmt::format("The function's minimum domain value ({}) must "
                            "be less than or equal to the minimum possible "
-                           "initial time (%f).",
+                           "initial time ({}).",
                             spline->getMinX(), problemInfo.minInitialTime));
             OPENSIM_THROW_IF_FRMOBJ(
                     spline->getMaxX() < problemInfo.maxFinalTime, Exception,
-                    format("The function's maximum domain value (%f) must "
+                    fmt::format("The function's maximum domain value ({}) must "
                            "be greater than or equal to the maximum possible "
-                           "final time (%f).",
+                           "final time ({}).",
                             spline->getMaxX(), problemInfo.maxFinalTime));
         }
     };

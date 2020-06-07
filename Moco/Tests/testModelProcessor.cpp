@@ -23,14 +23,11 @@
 
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 #include <OpenSim/Analyses/MuscleAnalysis.h>
-#include <OpenSim/Common/LogManager.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 
 using namespace OpenSim;
 
 TEST_CASE("ModelProcessor") {
-    std::cout.rdbuf(LogManager::cout.rdbuf());
-    std::cerr.rdbuf(LogManager::cerr.rdbuf());
 
     class MyModelOperator : public ModelOperator {
         OpenSim_DECLARE_CONCRETE_OBJECT(MyModelOperator, ModelOperator);

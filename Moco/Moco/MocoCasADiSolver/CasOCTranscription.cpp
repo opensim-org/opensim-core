@@ -622,8 +622,8 @@ Solution Transcription::solve(const Iterate& guessOrig) {
         // were removed.
         OPENSIM_THROW_IF(slacks.size2() != m_numMeshInteriorPoints,
                 OpenSim::Exception,
-                OpenSim::format("Expected slack variables to be length %i, "
-                                "but they are length %i.",
+                fmt::format("Expected slack variables to be length {}, "
+                            "but they are length {}.",
                         m_numMeshInteriorPoints, slacks.size2()));
     }
 
@@ -706,7 +706,6 @@ Solution Transcription::solve(const Iterate& guessOrig) {
     solution.stats = nlpFunc.stats();
 
     // Print breakdown of objective.
-    std::cout << "\n";
     printObjectiveBreakdown(solution, objectiveOut[0]);
 
     if (!solution.stats.at("success")) {
@@ -1067,8 +1066,7 @@ void Transcription::printConstraintValues(const Iterate& it,
                     const double L1 = max;
                     const double time_of_max = it.times(argmax).scalar();
 
-                    std::string label =
-                            OpenSim::format("%s_%02i", pc.name, ieq);
+                    std::string label = fmt::format("{}_{:02i}", pc.name, ieq);
                     std::cout << std::setfill('0') << std::setw(2) << ipc << ":"
                               << std::setfill(' ') << std::setw(maxNameLength)
                               << label << spacer << std::setprecision(2)

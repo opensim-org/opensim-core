@@ -104,8 +104,7 @@ MocoSolution MocoStudy::solve() const {
         try {
             solution.write(filename);
         } catch (const TimestampGreaterThanEqualToNext&) {
-            std::cout << "Could not write solution to file...skipping."
-                      << std::endl;
+            log_warn("Could not write solution to file...skipping.");
         }
         if (originallySealed) solution.seal();
     }

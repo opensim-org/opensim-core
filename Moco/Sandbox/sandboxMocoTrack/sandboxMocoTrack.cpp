@@ -18,7 +18,6 @@
 
 #include <algorithm>
 #include <Moco/osimMoco.h>
-#include <OpenSim/Common/LogManager.h>
 
 #include <OpenSim/OpenSim.h>
 
@@ -301,9 +300,6 @@ Model createModel(bool removeMuscles = false, bool addAnkleExo = false) {
 
 void smoothSolutionControls(Model model, std::string statesFile, 
         const std::string& guessFile) {
-
-    std::cout.rdbuf(LogManager::cout.rdbuf());
-    std::cerr.rdbuf(LogManager::cerr.rdbuf());
 
     MocoTrack track;
     track.setName("smoothed");
@@ -796,9 +792,6 @@ MocoSolution runExoskeletonProblem(const std::string& trackedIterateFile,
 }
 
 int main() {
-
-    std::cout.rdbuf(LogManager::cout.rdbuf());
-    std::cerr.rdbuf(LogManager::cerr.rdbuf());
 
     // Baseline tracking problem w/o muscles.
     // --------------------------------------

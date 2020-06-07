@@ -58,16 +58,17 @@ void run_tool(std::string setupFile, bool visualize) {
     auto obj = std::unique_ptr<Object>(Object::makeObjectFromFile(setupFile));
 
     OPENSIM_THROW_IF(obj == nullptr, Exception,
-            format("A problem occurred when trying to load file '%s'.",
+            fmt::format("A problem occurred when trying to load file '{}'.",
                     setupFile));
 
     if (const auto* moco = dynamic_cast<const MocoStudy*>(obj.get())) {
         auto solution = moco->solve();
         if (visualize) moco->visualize(solution);
     } else {
-        throw Exception("The provided file '" + setupFile + "' yields a '" +
-                        obj->getConcreteClassName() +
-                        "' but a MocoStudy was expected.");
+        throw Exception(
+                fmt::format("The provided file '{}' yields a '{}' but a "
+                            "MocoStudy was expected.",
+                        setupFile, obj->getConcreteClassName()));
     }
 }
 
@@ -141,8 +142,8 @@ int main(int argc, char* argv[]) {
 
             std::string arg2(argv[2 + offset]);
             OPENSIM_THROW_IF(argc == 4 && arg2 != "--visualize", Exception,
-                    format("Unrecognized option '%s'; did you mean "
-                           "'--visualize'?",
+                    fmt::format("Unrecognized option '{}'; did you mean "
+                                "'--visualize'?",
                             arg2));
             std::string setupFile;
             bool visualize = false;

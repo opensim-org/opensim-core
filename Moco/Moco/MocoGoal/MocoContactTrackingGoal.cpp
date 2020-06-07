@@ -112,9 +112,8 @@ void MocoContactTrackingGoal::initializeOnModelImpl(const Model& model) const {
         const auto& group = get_contact_groups(ig);
 
         OPENSIM_THROW_IF_FRMOBJ(
-                !extLoads->contains(group.get_external_force_name()),
-                Exception,
-                format("External force '%s' not found.",
+                !extLoads->contains(group.get_external_force_name()), Exception,
+                fmt::format("External force '{}' not found.",
                         group.get_external_force_name()));
         const auto& extForce =
                 extLoads->get(group.get_external_force_name());
@@ -156,10 +155,10 @@ void MocoContactTrackingGoal::initializeOnModelImpl(const Model& model) const {
                         &model.getComponent<PhysicalFrame>(
                                 "./bodyset/" + forceExpressedInBody);
             } else {
-                OPENSIM_THROW_FRMOBJ(
-                        Exception, format("Could not find '%s' in the model or "
-                                          "the BodySet.",
-                                           forceExpressedInBody));
+                OPENSIM_THROW_FRMOBJ(Exception,
+                        fmt::format("Could not find '{}' in the model or "
+                                    "the BodySet.",
+                                forceExpressedInBody));
             }
         }
 
@@ -173,8 +172,8 @@ void MocoContactTrackingGoal::initializeOnModelImpl(const Model& model) const {
         m_projectionType = ProjectionType::Plane;
     } else if (get_projection() != "none") {
         OPENSIM_THROW_FRMOBJ(
-                Exception, format("Expected 'projection' to be 'none', "
-                                  "'vector', or 'plane', but got '%s'.",
+                Exception, fmt::format("Expected 'projection' to be 'none', "
+                                       "'vector', or 'plane', but got '{}'.",
                                    get_projection()));
     }
     if (m_projectionType != ProjectionType::None) {
@@ -231,10 +230,10 @@ int MocoContactTrackingGoal::findRecordOffset(
     }
 
     OPENSIM_THROW_FRMOBJ(Exception,
-            format("Contact force '%s' has sphere base frame '%s' "
-                  "and half space base frame '%s'. One of these "
+            fmt::format("Contact force '{}' has sphere base frame '{}' "
+                  "and half space base frame '{}'. One of these "
                    "frames should match the applied_to_body "
-                   "setting ('%s') of ExternalForce '%s', or match one of "
+                   "setting ('{}') of ExternalForce '{}', or match one of "
                    "the alternative_frame_paths, but no match found.",
                     contactForce.getAbsolutePathString(),
                     sphereBaseName, halfSpaceBaseName, appliedToBody,

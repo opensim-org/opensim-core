@@ -80,7 +80,7 @@ void MocoJointReactionGoal::initializeOnModelImpl(const Model& model) const {
                         get_reaction_measures(i)) == allowedMeasures.end()) {
 
                 OPENSIM_THROW_FRMOBJ(Exception,
-                        format("Reaction measure '%s' not recognized.",
+                        fmt::format("Reaction measure '{}' not recognized.",
                                 get_reaction_measures(i)));
             }
             reactionMeasures.push_back(get_reaction_measures(i));
