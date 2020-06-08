@@ -71,7 +71,7 @@ Description of options:
                'circle', or according to the default pose of a 'model'. If the
                value is 'model', then the --model option must be provided.
   r, rotate    If visualizing orientation data, this option specifies the space
-               fixed Euler angles to apply to data specified in radians
+               fixed Euler angles to apply to data specified in radians.
 Examples:
   opensim-cmd viz model lowerlimb.osim
   opensim-cmd viz --geometry C:/MyGeometry model lowerlimb.osim
