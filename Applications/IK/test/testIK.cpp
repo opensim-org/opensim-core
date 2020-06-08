@@ -133,7 +133,7 @@ void testMarkerWeightAssignments(const std::string& ikSetupFile)
     InverseKinematicsTool ik(ikSetupFile);
 
     // Get a copy of the IK tasks
-    IKTaskSet tasks = ik.getIKTaskSet();
+    IKTaskSet tasks = ik.upd_IKTaskSet();
 
     // assign different weightings so we can verify the assignments
     int nt = tasks.getSize();
@@ -143,7 +143,7 @@ void testMarkerWeightAssignments(const std::string& ikSetupFile)
 
     cout << tasks.dump() << endl;
     // update tasks used by the IK tool
-    ik.getIKTaskSet() = tasks;
+    ik.upd_IKTaskSet() = tasks;
 
     // perform the check
     checkMarkersReferenceConsistencyFromTool(ik);
@@ -158,7 +158,7 @@ void testMarkerWeightAssignments(const std::string& ikSetupFile)
     }
 
     cout << tasks2.dump() << endl;
-    ik.getIKTaskSet() = tasks2;
+    ik.upd_IKTaskSet() = tasks2;
 
     // perform the check
     checkMarkersReferenceConsistencyFromTool(ik);
@@ -183,7 +183,7 @@ void testMarkerWeightAssignments(const std::string& ikSetupFile)
 
     cout << tasks.dump() << endl;
     // update the tasks of the IK Tool
-    ik.getIKTaskSet() = tasks;
+    ik.upd_IKTaskSet() = tasks;
 
     // perform the check: superfluous tasks should also be ignored
     checkMarkersReferenceConsistencyFromTool(ik);
@@ -195,7 +195,7 @@ void checkMarkersReferenceConsistencyFromTool(InverseKinematicsTool& ik)
     SimTK::Array_<CoordinateReference> coordinateReferences;
 
     ik.populateReferences(markersReference, coordinateReferences);
-    const IKTaskSet& tasks = ik.getIKTaskSet();
+    const IKTaskSet& tasks = ik.get_IKTaskSet();
 
     // Need a model to get a state, doesn't matter which model.
     Model model;
