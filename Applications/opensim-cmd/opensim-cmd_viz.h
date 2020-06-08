@@ -38,7 +38,7 @@ Usage:
                                 model <model-file> [<states-file>]
   opensim-cmd [options]... viz [--geometry=<path>]
                                 data <data-file> [--model=<model-file>]
-                                [--layout=<layout>] [--rotate=<rotationString>]
+                                [--layout=<layout>] [--rotate=<rotations>]
   opensim-cmd viz -h | --help
 
 Options:
@@ -47,7 +47,7 @@ Options:
   -g <path>, --geometry <path> Search for geometry mesh files in this path.
   -m <path>, --model <model-file> Visualize data based on a model.
   -a <layout>, --layout <layout> Visualize orientations in a circle, line, etc.
-  -r <rotations>, --rotate <rotations> rotate orientations using specified angles
+  -r <rotations>, --rotate <rotations> Rotate orientations using specified angles.
 
 Description of subcommands:
   model  Visualize a model, and optionally, animate the model using the provided
