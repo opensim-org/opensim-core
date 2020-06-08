@@ -83,7 +83,7 @@ public:
             " Default to (0, 0, 0).");
     OpenSim_DECLARE_PROPERTY(orientation_weights, OrientationWeightSet,
             "Set of orientation weights identified by orientation name with "
-            "weight being a positive scalar.");
+            "weight being a positive scalar, default to 1 to track all IMU data.");
 
     //=============================================================================
 // METHODS

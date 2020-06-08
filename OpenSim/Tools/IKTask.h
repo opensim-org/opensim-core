@@ -39,10 +39,10 @@ OpenSim_DECLARE_ABSTRACT_OBJECT(IKTask, Object);
 
 protected:
     OpenSim_DECLARE_PROPERTY(apply, bool,
-        "Whether or not this task will be used during inverse kinematics solve.");
+        "Whether or not this task will be used during inverse kinematics solve, default is true.");
 
     OpenSim_DECLARE_PROPERTY(weight, double,
-            "Weight given to the task when solving inverse kinematics problems.");
+            "Weight given to the task when solving inverse kinematics problems, default is 0.");
 public:
     IKTask() { 
         constructProperties();
