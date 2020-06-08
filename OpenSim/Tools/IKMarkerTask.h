@@ -1,5 +1,5 @@
-#ifndef OPENSIM_IKMarkerTask_H_
-#define OPENSIM_IKMarkerTask_H_
+#ifndef OPENSIM_IK_MARKER_TASK_H_
+#define OPENSIM_IK_MARKER_TASK_H_
 /* -------------------------------------------------------------------------- *
  *                          OpenSim:  IKMarkerTask.h                          *
  * -------------------------------------------------------------------------- *
@@ -48,4 +48,4 @@ public:
 
 } // end of namespace OpenSim
 
-#endif // OPENSIM_IKMarkerTask_H_
+#endif // OPENSIM_IK_MARKER_TASK_H_
