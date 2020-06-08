@@ -1,5 +1,5 @@
-#ifndef OPENSIM_IKTask_H_
-#define OPENSIM_IKTask_H_
+#ifndef OPENSIM_IKTASK_H_
+#define OPENSIM_IKTASK_H_
 /* -------------------------------------------------------------------------- *
  *                             OpenSim:  IKTask.h                             *
  * -------------------------------------------------------------------------- *
@@ -39,7 +39,7 @@ OpenSim_DECLARE_ABSTRACT_OBJECT(IKTask, Object);
 
 protected:
     OpenSim_DECLARE_PROPERTY(apply, bool,
-        "Whether or not this task will be used during inverse kinematics solve."); // whether or not this task will be used
+        "Whether or not this task will be used during inverse kinematics solve.");
 
     OpenSim_DECLARE_PROPERTY(weight, double,
             "Weight given to the task when solving inverse kinematics problems.");
@@ -66,4 +66,4 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // OPENSIM_IKTask_H_
+#endif // OPENSIM_IKTASK_H_

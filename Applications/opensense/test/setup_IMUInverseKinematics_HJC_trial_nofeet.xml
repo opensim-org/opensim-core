@@ -17,17 +17,17 @@
 		<orientations_file>MT_012005D6_009-quaternions_RHJCSwinger.sto</orientations_file>
 		<!--Name of the directory where results are written. Be default this is the directory in which the setup file is be  executed.-->
 		<results_directory></results_directory>
-      		<OrientationWeightSet name="orientation_weights">
-          <objects>
-            <OrientationWeight name="calcn_r_imu">
-              <!--Orientation reference weight.-->
-              <weight>0</weight>
-            </OrientationWeight>
-            <OrientationWeight name="calcn_l_imu">
-              <!--Orientation reference weight.-->
-              <weight>0</weight>
-            </OrientationWeight>
-          </objects>
+		<OrientationWeightSet name="orientation_weights">
+		  <objects>
+			<OrientationWeight name="calcn_r_imu">
+			  <!--Orientation reference weight.-->
+			  <weight>0</weight>
+			</OrientationWeight>
+			<OrientationWeight name="calcn_l_imu">
+			  <!--Orientation reference weight.-->
+			  <weight>0</weight>
+			</OrientationWeight>
+		  </objects>
 		</OrientationWeightSet>
 	</IMUInverseKinematicsTool>
 </OpenSimDocument>
