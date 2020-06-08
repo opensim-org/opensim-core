@@ -462,10 +462,10 @@ void DeGrooteFregly2016Muscle::calcMuscleLengthInfo(
     calcMuscleLengthInfoHelper(muscleTendonLength,
             get_ignore_tendon_compliance(), mli, normTendonForce);
 
-    if (mli.tendonLength < get_tendon_slack_length() && getDebugLevel() > 0) {
+    if (mli.tendonLength < get_tendon_slack_length()) {
         // TODO the Millard model sets fiber velocity to zero when the
         //       tendon is buckling, but this may create a discontinuity.
-        log_warn("DeGrooteFregly2016Muscle '{}' is buckling (length < "
+        log_info("DeGrooteFregly2016Muscle '{}' is buckling (length < "
                  "tendon_slack_length) at time {} s.",
                 getName(), s.getTime());
     }
@@ -492,8 +492,8 @@ void DeGrooteFregly2016Muscle::calcFiberVelocityInfo(
             get_ignore_tendon_compliance(), m_isTendonDynamicsExplicit, mli,
             fvi, normTendonForce, normTendonForceDerivative);
 
-    if (fvi.normFiberVelocity < -1.0 && getDebugLevel() > 0) {
-        log_warn("DeGrooteFregly2016Muscle '{}' is exceeding maximum "
+    if (fvi.normFiberVelocity < -1.0) {
+        log_info("DeGrooteFregly2016Muscle '{}' is exceeding maximum "
                  "contraction velocity at time {} s.",
                 getName(), s.getTime());
     }

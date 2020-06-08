@@ -4,7 +4,7 @@
 # will invalidate its cached opensim-core installation if we change the commit.
 # This commented commit hash is not actually used in the superbuild.
 # opensim-core commit:
-# 840bfac5d28a70a16335f441950bf669407031e2
+# 82ec3d1c74af1ff1893d9c5453ef6c52fe2e2fc9
 
 AddDependency(NAME       opensim-core
               URL        ${CMAKE_SOURCE_DIR}/../opensim-core

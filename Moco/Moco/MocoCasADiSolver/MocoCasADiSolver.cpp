@@ -133,15 +133,6 @@ std::unique_ptr<MocoCasOCProblem> MocoCasADiSolver::createCasOCProblem() const {
     } else if (parallelEV != -1) {
         parallel = parallelEV;
     }
-    // if (m_runningInPython && parallel) {
-    //    std::cout << "Warning: "
-    //                 "Cannot use parallelism in Python due to its "
-    //                 "Global Interpreter Lock. "
-    //                 "Set the environment variable OPENSIM_MOCO_PARALLEL or "
-    //                 "MocoCasADiSolver's 'parallel' property to 0, "
-    //                 "or use the command-line or Matlab interfaces."
-    //              << std::endl;
-    //}
     int numThreads;
     if (parallel == 0) {
         numThreads = 1;
@@ -323,17 +314,16 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     const Stopwatch stopwatch;
 
     if (get_verbosity()) {
-        std::cout << std::string(79, '=') << "\n";
-        std::cout << "MocoCasADiSolver starting. ";
-        std::cout << getMocoFormattedDateTime(false, "%c") << "\n";
-        std::cout << std::string(79, '-') << std::endl;
+        log_info(std::string(72, '='));
+        log_info("MocoCasADiSolver starting.");
+        log_info(getMocoFormattedDateTime(false, "%c"));
+        log_info(std::string(72, '-'));
         getProblemRep().printDescription();
     }
     auto casProblem = createCasOCProblem();
     auto casSolver = createCasOCSolver(*casProblem);
     if (get_verbosity()) {
-        std::cout << "Number of threads: " << casProblem->getJarSize()
-                  << std::endl;
+        log_info("Number of threads: {}", casProblem->getJarSize());
     }
 
     MocoTrajectory guess = getGuess();
@@ -343,7 +333,19 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     } else {
         casGuess = convertToCasOCIterate(guess);
     }
-    CasOC::Solution casSolution = casSolver->solve(casGuess);
+
+    // Temporarily disable printing of negative muscle force warnings so the
+    // log isn't flooded while computing finite differences.
+    Logger::Level origLoggerLevel = Logger::getLevel();
+    Logger::setLevel(Logger::Level::Warn);
+    CasOC::Solution casSolution;
+    try {
+        casSolution = casSolver->solve(casGuess);
+    } catch (...) {
+        OpenSim::Logger::setLevel(origLoggerLevel);
+    }
+    OpenSim::Logger::setLevel(origLoggerLevel);
+
     MocoSolution mocoSolution =
             convertToMocoTrajectory<MocoSolution>(casSolution);
 
@@ -376,23 +378,19 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
         }
 
         if (!isJacobianFullRank) {
-            std::cout << std::endl;
-            std::cout << "---------------------------------------------------"
-                      << "--\n";
-            std::cout << "WARNING: rank-deficient constraint Jacobian "
-                      << "detected.\n";
-            std::cout << "---------------------------------------------------"
-                      << "--\n";
-            std::cout << "The model constraint Jacobian has "
-                      << std::to_string(G.nrow()) + " row(s) but is only rank "
-                      << std::to_string(rank) + ".\nTry removing "
-                      << "redundant constraints from the model or enable \n"
-                      << "minimization of Lagrange multipliers by utilizing "
-                      << "the solver \nproperties "
-                      << "'minimize_lagrange_multipliers' and \n"
-                      << "'lagrange_multiplier_weight'.\n";
-            std::cout << "---------------------------------------------------"
-                      << "--\n\n";
+            const std::string dashes(52, '-');
+            log_warn(dashes);
+            log_warn("Rank-deficient constraint Jacobian detected.");
+            log_warn(dashes);
+            log_warn("The model constraint Jacobian has {} row(s) but is only "
+                     "rank {}. ", G.nrow(), rank);
+            log_warn("Try removing redundant constraints from the model or "
+                     "enable");
+            log_warn("minimization of Lagrange multipliers by utilizing the "
+                     "solver ");
+            log_warn("properties 'minimize_lagrange_multipliers' and");
+            log_warn("'lagrange_multiplier_weight'.");
+            log_warn(dashes);
         }
     }
 
@@ -403,17 +401,16 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
             casSolution.objective_breakdown);
 
     if (get_verbosity()) {
-        std::cout << std::string(79, '-') << "\n";
-        std::cout << "Elapsed real time: " << stopwatch.formatNs(elapsed)
-                  << ".\n";
-        std::cout << getMocoFormattedDateTime(false, "%c") << "\n";
+        log_info(std::string(72, '-'));
+        log_info("Elapsed real time: {}.", stopwatch.formatNs(elapsed));
+        log_info(getMocoFormattedDateTime(false, "%c"));
         if (mocoSolution) {
-            std::cout << "MocoCasADiSolver succeeded!\n";
+            log_info("MocoCasADiSolver succeeded!");
         } else {
-            std::cout << "MocoCasADiSolver did NOT succeed:\n";
-            std::cout << "  " << mocoSolution.getStatus() << "\n";
+            log_warn("MocoCasADiSolver did NOT succeed:");
+            log_warn("  {}", mocoSolution.getStatus());
         }
-        std::cout << std::string(79, '=') << std::endl;
+        log_info(std::string(72, '='));
     }
     return mocoSolution;
 }

@@ -39,6 +39,7 @@
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
 #include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/Logger.h>
 
 namespace OpenSim {
 

@@ -321,16 +321,25 @@ MocoSolution MocoTropterSolver::solveImpl() const {
     checkPropertyInSet(*this, getProperty_verbosity(), {0, 1, 2});
     // Problem print information is verbosity 1 or 2.
     if (get_verbosity()) {
-        std::cout << std::string(79, '=') << "\n";
-        std::cout << "MocoTropterSolver starting. ";
-        std::cout << getMocoFormattedDateTime(false, "%c") << "\n";
-        std::cout << std::string(79, '-') << std::endl;
+        log_info(std::string(72, '='));
+        log_info("MocoTropterSolver starting.");
+        log_info(getMocoFormattedDateTime(false, "%c"));
+        log_info(std::string(72, '-'));
         getProblemRep().printDescription();
     }
     auto dircol = createTropterSolver(ocp);
     MocoTrajectory guess = getGuess();
     tropter::Iterate tropIterate = ocp->convertToTropterIterate(guess);
-    tropter::Solution tropSolution = dircol->solve(tropIterate);
+
+    Logger::Level origLoggerLevel = Logger::getLevel();
+    Logger::setLevel(Logger::Level::Warn);
+    tropter::Solution tropSolution;
+    try {
+        tropSolution = dircol->solve(tropIterate);
+    } catch (...) {
+        OpenSim::Logger::setLevel(origLoggerLevel);
+    }
+    OpenSim::Logger::setLevel(origLoggerLevel);
 
     if (get_verbosity()) { dircol->print_constraint_values(tropSolution); }
 
@@ -366,23 +375,19 @@ MocoSolution MocoTropterSolver::solveImpl() const {
         }
 
         if (!isJacobianFullRank) {
-            std::cout << std::endl;
-            std::cout << "---------------------------------------------------"
-                      << "--\n";
-            std::cout << "WARNING: rank-deficient constraint Jacobian "
-                      << "detected.\n";
-            std::cout << "---------------------------------------------------"
-                      << "--\n";
-            std::cout << "The model constraint Jacobian has "
-                      << std::to_string(G.nrow()) + " row(s) but is only rank "
-                      << std::to_string(rank) + ".\nTry removing "
-                      << "redundant constraints from the model or enable \n"
-                      << "minimization of Lagrange multipliers by utilizing "
-                      << "the solver \nproperties "
-                      << "'minimize_lagrange_multipliers' and \n"
-                      << "'lagrange_multiplier_weight'.\n";
-            std::cout << "---------------------------------------------------"
-                      << "--\n\n";
+            const std::string dashes(53, '-');
+            log_warn(dashes);
+            log_warn("Rank-deficient constraint Jacobian detected.");
+            log_warn(dashes);
+            log_warn("The model constraint Jacobian has {} row(s) but is only "
+                     "rank {}. ", G.nrow(), rank);
+            log_warn("Try removing redundant constraints from the model or "
+                     "enable");
+            log_warn("minimization of Lagrange multipliers by utilizing the "
+                     "solver ");
+            log_warn("properties 'minimize_lagrange_multipliers' and");
+            log_warn("'lagrange_multiplier_weight'.");
+            log_warn(dashes);
         }
     }
 
@@ -393,17 +398,16 @@ MocoSolution MocoTropterSolver::solveImpl() const {
             tropSolution.num_iterations, SimTK::nsToSec(elapsed));
 
     if (get_verbosity()) {
-        std::cout << std::string(79, '-') << "\n";
-        std::cout << "Elapsed real time: " << stopwatch.formatNs(elapsed)
-                  << ".\n";
-        std::cout << getMocoFormattedDateTime(false, "%c") << "\n";
+        log_info(std::string(72, '-'));
+        log_info("Elapsed real time: {}", stopwatch.formatNs(elapsed));
+        log_info(getMocoFormattedDateTime(false, "%c"));
         if (mocoSolution) {
-            std::cout << "MocoTropterSolver succeeded!\n";
+            log_info("MocoTropterSolver succeeded!");
         } else {
-            std::cout << "MocoTropterSolver did NOT succeed:\n";
-            std::cout << "  " << mocoSolution.getStatus() << "\n";
+            log_warn("MocoTropterSolver did NOT succeed:");
+            log_warn("  {}", mocoSolution.getStatus());
         }
-        std::cout << std::string(79, '=') << std::endl;
+        log_info(std::string(72, '='));
     }
 
     return mocoSolution;

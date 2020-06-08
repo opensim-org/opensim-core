@@ -985,16 +985,16 @@ bool MocoTrajectory::isCompatible(const MocoProblemRep& mp,
     // Slack variables might be solver dependent, so we can't include them in
     // the compatibility check.
 
-    const int debugLevel = Object::getDebugLevel();
-
-    auto compare = [&throwOnError, &debugLevel](
+    auto compare = [&throwOnError](
             std::string varType, std::vector<std::string> trajNames,
             std::vector<std::string> probNames,
             std::string message = "") {
         std::sort(trajNames.begin(), trajNames.end());
         std::sort(probNames.begin(), probNames.end());
         if (trajNames == probNames) return true;
-        if (!throwOnError && debugLevel <= 0) return false;
+        if (!throwOnError && !Logger::shouldLog(Logger::Level::Debug)) {
+            return false;
+        }
 
         int sum = (int)trajNames.size() + (int)probNames.size();
 
@@ -1033,11 +1033,11 @@ bool MocoTrajectory::isCompatible(const MocoProblemRep& mp,
         }
         ss << message << "\n";
 
-        if (debugLevel <= 0) {
+        if (throwOnError) {
             throw Exception(__FILE__, __LINE__,
                     "MocoTrajectory::isCompatible()", ss.str());
         }
-        std::cout << ss.str() << std::flush;
+        log_debug(ss.str());
         return false;
     };
 
