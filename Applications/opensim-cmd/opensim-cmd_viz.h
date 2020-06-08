@@ -38,7 +38,7 @@ Usage:
                                 model <model-file> [<states-file>]
   opensim-cmd [options]... viz [--geometry=<path>]
                                 data <data-file> [--model=<model-file>]
-                                [--layout=<layout>] [--r=<rotationString>]
+                                [--layout=<layout>] [--rotate=<rotationString>]
   opensim-cmd viz -h | --help
 
 Options:
@@ -47,6 +47,7 @@ Options:
   -g <path>, --geometry <path> Search for geometry mesh files in this path.
   -m <path>, --model <model-file> Visualize data based on a model.
   -a <layout>, --layout <layout> Visualize orientations in a circle, line, etc.
+  -r <rotations>, --rotate <rotations> rotate orientations using specified angles
 
 Description of subcommands:
   model  Visualize a model, and optionally, animate the model using the provided
@@ -69,14 +70,15 @@ Description of options:
                of x-y-z triads as either in a 'line' (the default), in a
                'circle', or according to the default pose of a 'model'. If the
                value is 'model', then the --model option must be provided.
-
+  r, rotate    If visualizing orientation data, this option specifies the space
+               fixed Euler angles to apply to data specified in radians
 Examples:
   opensim-cmd viz model lowerlimb.osim
   opensim-cmd viz --geometry C:/MyGeometry model lowerlimb.osim
   opensim-cmd viz model lowerlimb.osim states.sto
   opensim-cmd viz data markers.trc
   opensim-cmd viz data markers.c3d
-  opensim-cmd viz data orientations.sto -a circle --r x,y,z
+  opensim-cmd viz data orientations.sto -a circle --r 1.57,0,0
   opensim-cmd viz -g C:/MyGeometry data orientations.sto -m arm.osim
   opensim-cmd --library C:\Plugins\osimMyCustomForce.dll viz model arm.osim
 )";
@@ -160,9 +162,9 @@ int viz(int argc, const char** argv) {
             if (args["--layout"]) {
                 layout = args["--layout"].asString();
             }
-            if (args["--r"]) {
+            if (args["--rotate"]) {
                 std::string rotationString = "";
-                rotationString = args["--r"].asString();
+                rotationString = args["--rotate"].asString();
                 const SimTK::Vec3& sensor_to_opensim_rotations =
                         parseRotationsString(rotationString);
                 SimTK::Rotation sensorToOpenSim = SimTK::Rotation(
