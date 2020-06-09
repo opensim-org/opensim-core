@@ -28,19 +28,16 @@
 #include "TimeSeriesTable.h"
 #include "Event.h"
 
-template<typename> class shrik;
-
 namespace OpenSim {
-    /** C3DFileAdapter reads a C3D file into markers and forces tables of type
-    TimeSeriesTableVec3. The markers table has each column labeled by its
-    corresponding marker name. For the forces table, the data are grouped
-    by sensor (force-plate #) in force, point and moment order, with the
-    respective *f#*, *p#* and *m#* column labels. C3DFileAdpater provides
-    options for expressing the force-plate measurements either as the
-    net force and moments expressed at the ForcePlateOrigin, the
-    CenterOfPressure, or the PointOfWrenchApplication.
-    */
 
+/** C3DFileAdapter reads a C3D file into markers and forces tables of type
+TimeSeriesTableVec3. The markers table has each column labeled by its
+corresponding marker name. For the forces table, the data are grouped
+by sensor (force-plate #) in force, point and moment order, with the
+respective *f#*, *p#* and *m#* column labels. C3DFileAdpater provides
+options for expressing the force-plate measurements either as the
+net force and moments expressed at the ForcePlateOrigin, the
+CenterOfPressure, or the PointOfWrenchApplication. */
 class OSIMCOMMON_API C3DFileAdapter : public FileAdapter {
 public:
     typedef std::vector<Event>                         EventTable; 
