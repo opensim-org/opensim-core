@@ -150,6 +150,16 @@ void Logger::addFileSink(const std::string& filepath) {
              "removeFileSink() first.", m_filesink->filename());
         return;
     }
+    // verify if file can be opened in current folder
+    std::ifstream ifs(filepath);
+
+    if (ifs.is_open()) {
+        ifs.close();
+    } else {
+        // show message:
+        std::cout << "Can't open file " << filepath << "Log will not be created." << std::endl;
+        return;
+    }
     m_filesink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(filepath);
     addSinkInternal(m_filesink);
 }
