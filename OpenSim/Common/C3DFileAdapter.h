@@ -107,13 +107,6 @@ public:
         PointOfWrenchApplication = 2    ///< 2 : PWA as defined by Shimba, 1984
     };
 
-    C3DFileAdapter()                                 = default;
-    C3DFileAdapter(const C3DFileAdapter&)            = default;
-    C3DFileAdapter(C3DFileAdapter&&)                 = default;
-    C3DFileAdapter& operator=(const C3DFileAdapter&) = default;
-    C3DFileAdapter& operator=(C3DFileAdapter&&)      = default;
-    ~C3DFileAdapter()                                = default;
-
     C3DFileAdapter* clone() const override;
     /**  C3DFileAdpater provides options for expressing the force-plate 
         measurements either as the net force and moments expressed at the 
