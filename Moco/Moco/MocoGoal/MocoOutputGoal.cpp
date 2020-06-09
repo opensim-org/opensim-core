@@ -38,13 +38,13 @@ void MocoOutputGoal::initializeOnModelImpl(const Model& output) const {
     const auto& component = getModel().getComponent(componentPath);
     const auto& abstractOutput = component.getOutput(outputName);
     m_output.reset(&dynamic_cast<const Output<double>&>(abstractOutput));
-    setNumIntegralsAndOutputs(1, 1);
+    setRequirements(1, 1, m_output->getDependsOnStage());
 }
 
 void MocoOutputGoal::calcIntegrandImpl(
-        const SimTK::State& state, double& integrand) const {
-    getModel().getSystem().realize(state, m_output->getDependsOnStage());
-    integrand = m_output->getValue(state);
+        const IntegrandInput& input, double& integrand) const {
+    getModel().getSystem().realize(input.state, m_output->getDependsOnStage());
+    integrand = m_output->getValue(input.state);
 }
 
 void MocoOutputGoal::calcGoalImpl(

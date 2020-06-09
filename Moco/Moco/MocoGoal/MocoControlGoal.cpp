@@ -113,13 +113,14 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
         };
     }
 
-    setNumIntegralsAndOutputs(1, 1);
+    setRequirements(1, 1,
+            get_divide_by_displacement() ? SimTK::Stage::Position
+                                         : SimTK::Stage::Model);
 }
 
 void MocoControlGoal::calcIntegrandImpl(
-        const SimTK::State& state, double& integrand) const {
-    getModel().realizeVelocity(state); // TODO would avoid this, ideally.
-    const auto& controls = getModel().getControls(state);
+        const IntegrandInput& input, SimTK::Real& integrand) const {
+    const auto& controls = input.controls;
     integrand = 0;
     int iweight = 0;
     for (const auto& icontrol : m_controlIndices) {

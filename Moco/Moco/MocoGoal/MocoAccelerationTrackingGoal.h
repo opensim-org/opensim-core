@@ -109,7 +109,7 @@ public:
 protected:
     void initializeOnModelImpl(const Model& model) const override;
     void calcIntegrandImpl(
-            const SimTK::State& state, double& integrand) const override;
+            const IntegrandInput& input, double& integrand) const override;
     void calcGoalImpl(
             const GoalInput& input, SimTK::Vector& goal) const override {
             goal[0] = input.integral;

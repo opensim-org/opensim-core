@@ -1,7 +1,9 @@
+#ifndef MOCO_DISCRETECONTROLLER_H
+#define MOCO_DISCRETECONTROLLER_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoCustomEffortGoal.cpp                                     *
+ * OpenSim Moco: DiscreteController.h                                         *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2019 Stanford University and the Authors                     *
+ * Copyright (c) 2020 Stanford University and the Authors                     *
  *                                                                            *
  * Author(s): Christopher Dembia                                              *
  *                                                                            *
@@ -16,22 +18,31 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoCustomEffortGoal.h"
+#include "../osimMocoDLL.h"
 
-using namespace OpenSim;
+#include <OpenSim/Simulation/Control/Controller.h>
 
-void MocoCustomEffortGoal::initializeOnModelImpl(const Model&) const {
-    setRequirements(1, 1);
-}
+namespace OpenSim {
 
-void MocoCustomEffortGoal::calcIntegrandImpl(
-        const IntegrandInput& input, double& integrand) const {
-    getModel().realizeVelocity(input.state);
-    const auto& controls = getModel().getControls(input.state);
-    integrand = controls.normSqr();
-}
+/// This component is used internally by Moco for passing a solver's control
+/// variables to a Model.
+class DiscreteController : public Controller {
+    OpenSim_DECLARE_CONCRETE_OBJECT(DiscreteController, Controller);
+public:
+    DiscreteController() = default;
+    void setDiscreteControls(SimTK::State& s,
+            const SimTK::Vector& controls) const;
+    SimTK::Vector& updDiscreteControls(SimTK::State& s) const;
+    const SimTK::Vector& getDiscreteControls(const SimTK::State& s) const;
+    void computeControls(
+            const SimTK::State& s, SimTK::Vector& controls) const override;
+protected:
+    void extendRealizeTopology(SimTK::State&) const override;
+    mutable SimTK::DiscreteVariableIndex m_discreteVarIndex;
 
-void MocoCustomEffortGoal::calcGoalImpl(
-        const GoalInput& input, SimTK::Vector& cost) const {
-    cost[0] = input.integral;
-}
+};
+
+} // namespace OpenSim
+
+
+#endif // MOCO_DISCRETECONTROLLER_H

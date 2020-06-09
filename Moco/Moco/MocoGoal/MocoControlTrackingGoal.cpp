@@ -141,15 +141,15 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
         m_ref_labels.push_back(refLabel);
     }
 
-    setNumIntegralsAndOutputs(1, 1);
+    setRequirements(1, 1, SimTK::Stage::Model);
 }
 
-void MocoControlTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
-    double& integrand) const {
+void MocoControlTrackingGoal::calcIntegrandImpl(
+        const IntegrandInput& input, SimTK::Real& integrand) const {
 
-    const auto& time = state.getTime();
+    const auto& time = input.time;
     SimTK::Vector timeVec(1, time);
-    const auto& controls = getModel().getControls(state);
+    const auto& controls = input.controls;
 
     integrand = 0;
     for (int i = 0; i < (int)m_control_indices.size(); ++i) {

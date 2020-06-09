@@ -111,22 +111,22 @@ void MocoJointReactionGoal::initializeOnModelImpl(const Model& model) const {
         m_measureWeights.push_back(compWeight);
     }
 
-    setNumIntegralsAndOutputs(1, 1);
+    setRequirements(1, 1);
 }
 
 void MocoJointReactionGoal::calcIntegrandImpl(
-        const SimTK::State& state, double& integrand) const {
+        const IntegrandInput& input, SimTK::Real& integrand) const {
 
-    getModel().realizeAcceleration(state);
+    getModel().realizeAcceleration(input.state);
     const auto& ground = getModel().getGround();
 
     // Compute the reaction loads on the parent or child frame.
     SimTK::SpatialVec reactionInGround;
     if (m_isParentFrame) {
         reactionInGround =
-                m_joint->calcReactionOnParentExpressedInGround(state);
+                m_joint->calcReactionOnParentExpressedInGround(input.state);
     } else {
-        reactionInGround = m_joint->calcReactionOnChildExpressedInGround(state);
+        reactionInGround = m_joint->calcReactionOnChildExpressedInGround(input.state);
     }
 
     // Re-express the reactions into the proper frame and repackage into a new
@@ -138,9 +138,9 @@ void MocoJointReactionGoal::calcIntegrandImpl(
         force = reactionInGround[1];
     } else {
         moment = ground.expressVectorInAnotherFrame(
-                state, reactionInGround[0], *m_frame);
+                input.state, reactionInGround[0], *m_frame);
         force = ground.expressVectorInAnotherFrame(
-                state, reactionInGround[1], *m_frame);
+                input.state, reactionInGround[1], *m_frame);
     }
     SimTK::SpatialVec reaction(moment, force);
 

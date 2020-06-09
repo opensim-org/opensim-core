@@ -61,7 +61,7 @@ class FinalPositionGoal : public MocoGoal {
 OpenSim_DECLARE_CONCRETE_OBJECT(FinalPositionGoal, MocoGoal);
 protected:
     void initializeOnModelImpl(const Model&) const override {
-        setNumIntegralsAndOutputs(0, 1);
+        setRequirements(0, 1);
     }
     void calcGoalImpl(const GoalInput& input,
             SimTK::Vector& cost) const override {
@@ -193,14 +193,14 @@ class RotationalAccelerationGoal : public MocoGoal {
 OpenSim_DECLARE_CONCRETE_OBJECT(RotationalAccelerationGoal, MocoGoal);
 protected:
     void initializeOnModelImpl(const Model&) const override {
-        setNumIntegralsAndOutputs(1, 1);
+        setRequirements(1, 1);
     }
-    void calcIntegrandImpl(const SimTK::State& state,
-        SimTK::Real& integrand) const override {
+    void calcIntegrandImpl(const IntegrandInput& input,
+            SimTK::Real& integrand) const override {
 
-        getModel().realizeAcceleration(state); // TODO would avoid this, ideally.
+        getModel().realizeAcceleration(input.state);
         const auto& accel = getModel().getStateVariableDerivativeValue(
-            state, "pin/rotation/speed");
+            input.state, "pin/rotation/speed");
 
         integrand = accel * accel;
     }

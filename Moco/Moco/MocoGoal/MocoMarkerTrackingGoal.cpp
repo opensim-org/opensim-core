@@ -81,18 +81,19 @@ void MocoMarkerTrackingGoal::initializeOnModelImpl(const Model& model) const {
     m_refsplines =
             GCVSplineSet(get_markers_reference().getMarkerTable().flatten());
 
-    setNumIntegralsAndOutputs(1, 1);
+    setRequirements(1, 1, SimTK::Stage::Position);
 }
 
- void MocoMarkerTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
-        double& integrand) const {
-     const auto& time = state.getTime();
-     getModel().realizePosition(state);
+void MocoMarkerTrackingGoal::calcIntegrandImpl(
+        const IntegrandInput& input, SimTK::Real& integrand) const {
+     const auto& time = input.state.getTime();
+     getModel().realizePosition(input.state);
      SimTK::Vector timeVec(1, time);
 
     for (int i = 0; i < (int)m_model_markers.size(); ++i) {
-        const auto& modelValue = m_model_markers[i]->getLocationInGround(state);
-        SimTK::Vec3 refValue;
+         const auto& modelValue =
+                 m_model_markers[i]->getLocationInGround(input.state);
+         SimTK::Vec3 refValue;
 
         // Get the markers reference index corresponding to the current
         // model marker and get the reference value.

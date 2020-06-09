@@ -19,6 +19,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "../Components/AccelerationMotion.h"
+#include "../Components/DiscreteController.h"
 #include "../Components/DiscreteForces.h"
 #include "../MocoBounds.h"
 #include "../MocoProblemRep.h"
@@ -213,8 +214,9 @@ private:
         auto& simtkStateDisabledConstraints =
                 mocoProblemRep->updStateDisabledConstraints();
 
-        applyInput(input.time, input.states, input.controls, input.multipliers,
-                input.derivatives, input.parameters, mocoProblemRep);
+        applyInput(SimTK::Stage::Acceleration, input.time, input.states,
+                input.controls, input.multipliers, input.derivatives,
+                input.parameters, mocoProblemRep);
 
         // Compute the accelerations.
         modelDisabledConstraints.realizeAcceleration(
@@ -258,8 +260,9 @@ private:
         auto& simtkStateDisabledConstraints =
                 mocoProblemRep->updStateDisabledConstraints();
 
-        applyInput(input.time, input.states, input.controls, input.multipliers,
-                input.derivatives, input.parameters, mocoProblemRep);
+        applyInput(SimTK::Stage::Acceleration, input.time, input.states,
+                input.controls, input.multipliers, input.derivatives,
+                input.parameters, mocoProblemRep);
 
         modelDisabledConstraints.realizeAcceleration(
                 simtkStateDisabledConstraints);
@@ -305,8 +308,9 @@ private:
 
         // Update the model and state.
         applyParametersToModelProperties(parameters, *mocoProblemRep);
-        convertToSimTKState(
-                time, multibody_states, modelBase, simtkStateBase, false);
+        convertStatesToSimTKState(
+                SimTK::Stage::Velocity, time, multibody_states,
+                modelBase, simtkStateBase, false);
         modelBase.realizeVelocity(simtkStateBase);
 
         // Apply velocity correction to qdot if at a mesh interval midpoint.
@@ -330,14 +334,24 @@ private:
     void calcCostIntegrand(int index, const ContinuousInput& input,
             double& integrand) const override {
         auto mocoProblemRep = m_jar->take();
-        applyInput(input.time, input.states, input.controls, input.multipliers,
-                input.derivatives, input.parameters, mocoProblemRep);
+
+        const auto& mocoCost = mocoProblemRep->getCostByIndex(index);
+        const auto stageDep = mocoCost.getStageDependency();
+
+        applyInput(stageDep, input.time, input.states, input.controls,
+                input.multipliers, input.derivatives, input.parameters,
+                mocoProblemRep);
 
         auto& simtkStateDisabledConstraints =
                 mocoProblemRep->updStateDisabledConstraints();
 
-        const auto& mocoCost = mocoProblemRep->getCostByIndex(index);
-        integrand = mocoCost.calcIntegrand(simtkStateDisabledConstraints);
+        const auto& discreteController =
+                mocoProblemRep->getDiscreteControllerDisabledConstraints();
+        const auto& rawControls = discreteController.getDiscreteControls(
+                simtkStateDisabledConstraints);
+
+        integrand = mocoCost.calcIntegrand(
+                {input.time, simtkStateDisabledConstraints, rawControls});
 
         m_jar->leave(std::move(mocoProblemRep));
     }
@@ -345,26 +359,37 @@ private:
             casadi::DM& cost) const override {
         auto mocoProblemRep = m_jar->take();
 
-        applyInput(input.initial_time, input.initial_states,
+        const auto& mocoCost = mocoProblemRep->getCostByIndex(index);
+        const auto stageDep = mocoCost.getStageDependency();
+
+        applyInput(stageDep, input.initial_time, input.initial_states,
                 input.initial_controls, input.initial_multipliers,
                 input.initial_derivatives, input.parameters, mocoProblemRep, 0);
 
         auto& simtkStateDisabledConstraintsInitial =
                 mocoProblemRep->updStateDisabledConstraints(0);
 
-        applyInput(input.final_time, input.final_states, input.final_controls,
-                input.final_multipliers, input.final_derivatives,
-                input.parameters, mocoProblemRep, 1);
+        applyInput(stageDep, input.final_time, input.final_states,
+                input.final_controls, input.final_multipliers,
+                input.final_derivatives, input.parameters, mocoProblemRep, 1);
 
         auto& simtkStateDisabledConstraintsFinal =
                 mocoProblemRep->updStateDisabledConstraints(1);
 
+        const auto& discreteController =
+                mocoProblemRep->getDiscreteControllerDisabledConstraints();
+        const auto& rawControlsInitial = discreteController.getDiscreteControls(
+                simtkStateDisabledConstraintsInitial);
+        const auto& rawControlsFinal = discreteController.getDiscreteControls(
+                simtkStateDisabledConstraintsFinal);
+
         // Compute the cost for this cost term.
-        const auto& mocoCost = mocoProblemRep->getCostByIndex(index);
         SimTK::Vector simtkCost((int)cost.rows(), cost.ptr(), true);
         mocoCost.calcGoal(
-                {simtkStateDisabledConstraintsInitial,
-                        simtkStateDisabledConstraintsFinal, input.integral},
+                {input.initial_time, simtkStateDisabledConstraintsInitial,
+                        rawControlsInitial, input.final_time,
+                        simtkStateDisabledConstraintsFinal, rawControlsFinal,
+                        input.integral},
                 simtkCost);
 
         m_jar->leave(std::move(mocoProblemRep));
@@ -373,15 +398,25 @@ private:
     void calcEndpointConstraintIntegrand(int index,
             const ContinuousInput& input, double& integrand) const override {
         auto mocoProblemRep = m_jar->take();
-        applyInput(input.time, input.states, input.controls, input.multipliers,
-                input.derivatives, input.parameters, mocoProblemRep);
+
+        const auto& mocoEC =
+                mocoProblemRep->getEndpointConstraintByIndex(index);
+        const auto stageDep = mocoEC.getStageDependency();
+
+        applyInput(stageDep, input.time, input.states, input.controls,
+                input.multipliers, input.derivatives, input.parameters,
+                mocoProblemRep);
 
         auto& simtkStateDisabledConstraints =
                 mocoProblemRep->updStateDisabledConstraints();
 
-        const auto& mocoEC =
-                mocoProblemRep->getEndpointConstraintByIndex(index);
-        integrand = mocoEC.calcIntegrand(simtkStateDisabledConstraints);
+        const auto& discreteController =
+                mocoProblemRep->getDiscreteControllerDisabledConstraints();
+        const auto& rawControls = discreteController.getDiscreteControls(
+                simtkStateDisabledConstraints);
+
+        integrand = mocoEC.calcIntegrand(
+                {input.time, simtkStateDisabledConstraints, rawControls});
 
         m_jar->leave(std::move(mocoProblemRep));
     }
@@ -389,27 +424,38 @@ private:
             casadi::DM& values) const override {
         auto mocoProblemRep = m_jar->take();
 
-        applyInput(input.initial_time, input.initial_states,
+        const auto& mocoEC =
+                mocoProblemRep->getEndpointConstraintByIndex(index);
+        const auto stageDep = mocoEC.getStageDependency();
+
+        applyInput(stageDep, input.initial_time, input.initial_states,
                 input.initial_controls, input.initial_multipliers,
                 input.initial_derivatives, input.parameters, mocoProblemRep, 0);
 
         auto& simtkStateDisabledConstraintsInitial =
                 mocoProblemRep->updStateDisabledConstraints(0);
 
-        applyInput(input.final_time, input.final_states, input.final_controls,
-                input.final_multipliers, input.final_derivatives,
-                input.parameters, mocoProblemRep, 1);
+        applyInput(stageDep, input.final_time, input.final_states,
+                input.final_controls, input.final_multipliers,
+                input.final_derivatives, input.parameters, mocoProblemRep, 1);
 
         auto& simtkStateDisabledConstraintsFinal =
                 mocoProblemRep->updStateDisabledConstraints(1);
 
+        const auto& discreteController =
+                mocoProblemRep->getDiscreteControllerDisabledConstraints();
+        const auto& rawControlsInitial = discreteController.getDiscreteControls(
+                simtkStateDisabledConstraintsInitial);
+        const auto& rawControlsFinal = discreteController.getDiscreteControls(
+                simtkStateDisabledConstraintsFinal);
+
         // Compute the cost for this cost term.
-        const auto& mocoEC =
-                mocoProblemRep->getEndpointConstraintByIndex(index);
         SimTK::Vector simtkValues((int)values.rows(), values.ptr(), true);
         mocoEC.calcGoal(
-                {simtkStateDisabledConstraintsInitial,
-                        simtkStateDisabledConstraintsFinal, input.integral},
+                {input.initial_time, simtkStateDisabledConstraintsInitial,
+                        rawControlsInitial, input.final_time,
+                        simtkStateDisabledConstraintsFinal, rawControlsFinal,
+                        input.integral},
                 simtkValues);
 
         m_jar->leave(std::move(mocoProblemRep));
@@ -418,7 +464,11 @@ private:
     void calcPathConstraint(int constraintIndex, const ContinuousInput& input,
             casadi::DM& path_constraint) const override {
         auto mocoProblemRep = m_jar->take();
-        applyInput(input.time, input.states, input.controls, input.multipliers,
+        // Not all path constraints require realizing to Acceleration. We could
+        // add a stage dependency for path constraints, but we have yet to
+        // conduct profiling to indicate that such an optimization is necessary.
+        applyInput(SimTK::Stage::Acceleration,
+                input.time, input.states, input.controls, input.multipliers,
                 input.derivatives, input.parameters, mocoProblemRep);
         auto& simtkStateDisabledConstraints =
                 mocoProblemRep->updStateDisabledConstraints();
@@ -469,44 +519,59 @@ private:
     /// slots in Simbody's Y vector.
     /// It's fine for the size of `states` to be less than the size of Y; only
     /// the first states.size1() values are copied.
-    inline void convertToSimTKState(const double& time,
+    void convertStatesToSimTKState(SimTK::Stage stageDep, const double& time,
             const casadi::DM& states, const Model& model,
             SimTK::State& simtkState, bool copyAuxStates) const {
-        simtkState.setTime(time);
-        // Assign the generalized coordinates. We know we have NU generalized
-        // speeds because we do not yet support quaternions.
-        for (int isv = 0; isv < getNumCoordinates(); ++isv) {
-            simtkState.updQ()[m_yIndexMap.at(isv)] = *(states.ptr() + isv);
-        }
-        std::copy_n(states.ptr() + getNumCoordinates(), getNumSpeeds(),
-                simtkState.updY().updContiguousScalarData() +
-                        simtkState.getNQ());
-        if (copyAuxStates) {
-            std::copy_n(states.ptr() + getNumCoordinates() + getNumSpeeds(),
-                    getNumAuxiliaryStates(),
+        if (stageDep >= SimTK::Stage::Time) {
+            simtkState.setTime(time);
+            // Assign the generalized coordinates. We know we have NU
+            // generalized speeds because we do not yet support quaternions.
+            for (int isv = 0; isv < getNumCoordinates(); ++isv) {
+                simtkState.updQ()[m_yIndexMap.at(isv)] = *(states.ptr() + isv);
+            }
+            std::copy_n(states.ptr() + getNumCoordinates(), getNumSpeeds(),
                     simtkState.updY().updContiguousScalarData() +
-                            simtkState.getNQ() + simtkState.getNU());
+                            simtkState.getNQ());
+            if (copyAuxStates) {
+                std::copy_n(states.ptr() + getNumCoordinates() + getNumSpeeds(),
+                        getNumAuxiliaryStates(),
+                        simtkState.updY().updContiguousScalarData() +
+                                simtkState.getNQ() + simtkState.getNU());
+            }
+            // Prescribing motion requires that time is updated.
+            model.getSystem().prescribe(simtkState);
         }
-        model.getSystem().prescribe(simtkState);
     }
 
-    void convertToSimTKState(const double& time, const casadi::DM& states,
-            const casadi::DM& controls, const Model& model,
-            SimTK::State& simtkState, bool copyAuxStates) const {
-        convertToSimTKState(time, states, model, simtkState, copyAuxStates);
-        model.realizeVelocity(simtkState);
-
-        auto& simtkControls = model.updControls(simtkState);
-
-        for (int ic = 0; ic < getNumControls(); ++ic) {
-            simtkControls[m_modelControlIndices[ic]] = *(controls.ptr() + ic);
+    /// Invoke convertStatesToSimTKState() and also
+    /// copy values from `controls` into the discrete state variable managed
+    /// by the `discreteController`. We assume that if we need the controls
+    /// copied over, we likely are going to compute forces with the resulting
+    /// state, and so we should also copy over the auxiliary states; we pass
+    /// true for the copyAuxStates parameter of convertStatesToSimTKState().
+    void convertStatesControlsToSimTKState(SimTK::Stage stageDep,
+            const double& time,
+            const casadi::DM& states, const casadi::DM& controls,
+            const Model& model, SimTK::State& simtkState,
+            const DiscreteController& discreteController) const {
+        if (stageDep >= SimTK::Stage::Model) {
+            convertStatesToSimTKState(
+                    stageDep, time, states, model, simtkState, true);
+            SimTK::Vector& simtkControls =
+                    discreteController.updDiscreteControls(simtkState);
+            for (int ic = 0; ic < getNumControls(); ++ic) {
+                simtkControls[m_modelControlIndices[ic]] =
+                        *(controls.ptr() + ic);
+            }
         }
-        model.realizeVelocity(simtkState);
-        model.setControls(simtkState, simtkControls);
     }
-    void applyInput(const double& time, const casadi::DM& states,
-            const casadi::DM& controls, const casadi::DM& multipliers,
-            const casadi::DM& derivatives, const casadi::DM& parameters,
+    /// Apply variables from the optimizer to the MocoProblemRep's model and
+    /// state. The `stageDep` determines which information from the optimizer
+    /// must be carried over to the model/state.
+    void applyInput(SimTK::Stage stageDep, const double& time,
+            const casadi::DM& states, const casadi::DM& controls,
+            const casadi::DM& multipliers, const casadi::DM& derivatives,
+            const casadi::DM& parameters,
             const std::unique_ptr<const MocoProblemRep>& mocoProblemRep,
             int stateDisConIndex = 0) const {
         // Original model and its associated state. These are used to calculate
@@ -522,19 +587,28 @@ private:
                 mocoProblemRep->updStateDisabledConstraints(stateDisConIndex);
 
         // Update the model and state.
-        applyParametersToModelProperties(parameters, *mocoProblemRep);
-        modelBase.getSystem().prescribe(simtkStateBase);
-        modelDisabledConstraints.getSystem().prescribe(
-                simtkStateDisabledConstraints);
+        if (stageDep >= SimTK::Stage::Instance) {
+            applyParametersToModelProperties(parameters, *mocoProblemRep);
+        }
 
-        if (getNumAccelerations()) {
+        if (stageDep >= SimTK::Stage::Acceleration && getNumAccelerations()) {
             auto& accel = mocoProblemRep->getAccelerationMotion();
             accel.setEnabled(simtkStateDisabledConstraints, true);
             SimTK::Vector udot(getNumAccelerations(), derivatives.ptr(), true);
             accel.setUDot(simtkStateDisabledConstraints, udot);
         }
 
-        if (getNumAuxiliaryResidualEquations()) {
+        // Set discrete variables that represent state derivatives in implicit
+        // auxiliary dynamics.
+        // Such discrete variables likely only affect force calculations, so
+        // we could perhaps use `stageDep >= SimTK::Stage::Dynamics`, but we
+        // use SimTK::Stage::Model to be safe here. Continuous state
+        // variables are available at SimTK::Stage::Model, so it's consistent
+        // for the discrete variables to be available at SimTK::Stage::Model
+        // also. Lastly, goals might be a direct function of these state
+        // derivatives.
+        if (stageDep >= SimTK::Stage::Model &&
+                getNumAuxiliaryResidualEquations()) {
             const auto& implicitRefs =
                     mocoProblemRep->getImplicitComponentReferencePtrs();
             const int numAccels = getNumAccelerations();
@@ -546,14 +620,21 @@ private:
             }
         }
 
-        convertToSimTKState(
-                time, states, controls, modelBase, simtkStateBase, true);
-        convertToSimTKState(time, states, controls, modelDisabledConstraints,
-                simtkStateDisabledConstraints, true);
+        convertStatesControlsToSimTKState(stageDep, time, states, controls,
+                modelDisabledConstraints, simtkStateDisabledConstraints,
+                mocoProblemRep->getDiscreteControllerDisabledConstraints());
+
         // If enabled constraints exist in the model, compute constraint forces
         // based on Lagrange multipliers. This also updates the associated
         // discrete variables in the state.
-        if (getNumMultipliers()) {
+        if (stageDep >= SimTK::Stage::Dynamics && getNumMultipliers()) {
+            // The base model is used only to compute constraint forces, so
+            // we only need to update it if there are kinematic constraints.
+            // We pass copyAuxStates as false: we use the base model for its
+            // constraint Jacobian, which depends only on kinematics and cannot
+            // depend on auxiliary states.
+            convertStatesToSimTKState(
+                    stageDep, time, states, modelBase, simtkStateBase, false);
             calcKinematicConstraintForces(multipliers, simtkStateBase,
                     modelBase, mocoProblemRep->getConstraintForces(),
                     simtkStateDisabledConstraints);
@@ -602,8 +683,8 @@ private:
         const auto& qerr = stateBase.getQErr();
 
         if (getEnforceConstraintDerivatives() || total_ma) {
-            // Calculuate udoterr. We cannot use State::getUDotErr()
-            // because that uses Simbody's multiplilers and UDot,
+            // Calculate udoterr. We cannot use State::getUDotErr()
+            // because that uses Simbody's multipliers and UDot,
             // whereas we have our own multipliers and UDot. Here, we use
             // the udot computed from the model with disabled constraints
             // since we cannot use (nor do we have available) udot computed
