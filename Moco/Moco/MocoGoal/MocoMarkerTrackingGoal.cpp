@@ -107,17 +107,15 @@ void MocoMarkerTrackingGoal::initializeOnModelImpl(const Model& model) const {
     }
 }
 
-void MocoMarkerTrackingGoal::printDescriptionImpl(std::ostream& stream) const {
-    stream << "        ";
-    stream << "allow unused references: "
-           << get_allow_unused_references() << std::endl;
-    stream << "        ";
-    stream << "tracked marker(s): " << std::endl;
+void MocoMarkerTrackingGoal::printDescriptionImpl() const {
+    log_cout(
+            "        allow unused references: ", get_allow_unused_references());
+    log_cout("        tracked marker(s):");
     int weightIndex = 0;
-    for (auto name : m_marker_names) {
-       stream << "            ";
-       stream << name << ", weight: " << m_marker_weights[weightIndex] << std::endl;
-       weightIndex++;
+    for (const auto& name : m_marker_names) {
+        log_cout("            {}, weight: {}", name,
+                m_marker_weights[weightIndex]);
+        weightIndex++;
     }
 
 }

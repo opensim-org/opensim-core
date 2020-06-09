@@ -763,85 +763,53 @@ void MocoProblemRep::applyParametersToModelProperties(
     }
 }
 
-void MocoProblemRep::printDescription(std::ostream& stream) const {
-    stream << "Costs:";
-    if (m_costs.empty())
-        stream << " none";
-    else
-        stream << " (total: " << m_costs.size() << ")";
-    stream << "\n";
+void MocoProblemRep::printDescription() const {
+
+    auto printHeaderLine = [&](const std::string& label, size_t size) {
+        std::stringstream ss;
+        ss << label << ": ";
+        if (size == 0) {
+            ss << "none";
+        } else {
+            ss << "(total: " << size << ")";
+        }
+        log_cout(ss.str());
+    };
+
+    printHeaderLine("Costs", m_costs.size());
     for (const auto& cost : m_costs) {
-        stream << "  ";
-        cost->printDescription(stream);
+        cost->printDescription();
     }
 
-    stream << "Endpoint constraints:";
-    if (m_endpoint_constraints.empty())
-        stream << " none";
-    else
-        stream << " (total: " << m_endpoint_constraints.size() << ")";
-    stream << "\n";
+    printHeaderLine("Endpoint constraints", m_endpoint_constraints.size());
     for (const auto& endpoint_constraint : m_endpoint_constraints) {
-        stream << "  ";
-        endpoint_constraint->printDescription(stream);
+        endpoint_constraint->printDescription();
     }
 
-    stream << "Kinematic constraints:";
-    if (m_kinematic_constraints.empty())
-        stream << " none";
-    else
-        stream << " (total: " << m_kinematic_constraints.size() << ")";
-    stream << "\n";
+    printHeaderLine("Kinematic constraints", m_kinematic_constraints.size());
     for (int i = 0; i < (int)m_kinematic_constraints.size(); ++i) {
-        stream << "  ";
-        m_kinematic_constraints[i].getConstraintInfo().printDescription(stream);
+        m_kinematic_constraints[i].getConstraintInfo().printDescription();
     }
 
-    stream << "Path constraints:";
-    if (m_path_constraints.empty())
-        stream << " none";
-    else
-        stream << " (total: " << m_path_constraints.size() << ")";
-    stream << "\n";
+    printHeaderLine("Path constraints", m_path_constraints.size());
     for (const auto& pc : m_path_constraints) {
-        stream << "  ";
-        pc->getConstraintInfo().printDescription(stream);
+        pc->getConstraintInfo().printDescription();
     }
 
-    stream << "States:";
-    if (m_state_infos.empty())
-        stream << " none";
-    else
-        stream << " (total: " << m_state_infos.size() << ")";
-    stream << "\n";
+    printHeaderLine("States", m_state_infos.size());
     // TODO want to loop through the model's state variables and controls,
     // not just the infos.
     for (const auto& info : m_state_infos) {
-        stream << "  ";
-        info.second.printDescription(stream);
+        info.second.printDescription();
     }
 
-    stream << "Controls:";
-    if (m_control_infos.empty())
-        stream << " none";
-    else
-        stream << " (total: " << m_control_infos.size() << "):";
-    stream << "\n";
+    printHeaderLine("Controls", m_control_infos.size());
     for (const auto& info : m_control_infos) {
-        stream << "  ";
-        info.second.printDescription(stream);
+        info.second.printDescription();
     }
 
-    stream << "Parameters:";
-    if (m_parameters.empty())
-        stream << " none";
-    else
-        stream << " (total: " << m_parameters.size() << "):";
-    stream << "\n";
+    printHeaderLine("Parameters", m_parameters.size());
     for (const auto& param : m_parameters) {
-        stream << "  ";
-        param->printDescription(stream);
+        param->printDescription();
     }
-
-    stream.flush();
 }

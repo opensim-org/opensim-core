@@ -205,15 +205,12 @@ void MocoOrientationTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
     }
 }
 
-void MocoOrientationTrackingGoal::printDescriptionImpl(std::ostream& stream) const {
-    stream << "        ";
-    stream << "rotation reference file: "
-           << get_rotation_reference_file()
-           << std::endl;
+void MocoOrientationTrackingGoal::printDescriptionImpl() const {
+    log_cout("        rotation reference file: {}",
+            get_rotation_reference_file());
     for (int i = 0; i < (int)m_frame_paths.size(); i++) {
-        stream << "        ";
-        stream << "frame " << i << ": " << m_frame_paths[i] << ", ";
-        stream << "weight: " << m_rotation_weights[i] << std::endl;
+        log_cout("        frame {}: {}, weight: {}",
+                i, m_frame_paths[i], m_rotation_weights[i]);
     }
 }
 

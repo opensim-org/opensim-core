@@ -100,11 +100,10 @@ void MocoSumSquaredStateGoal::calcIntegrandImpl(
     }
 }
 
-void MocoSumSquaredStateGoal::printDescriptionImpl(std::ostream& stream) const {
+void MocoSumSquaredStateGoal::printDescriptionImpl() const {
     for (int i = 0; i < (int)m_state_names.size(); i++) {
-        stream << "        ";
-        stream << "state: " << m_state_names[i] << ", "
-               << "weight: " << m_state_weights[i] << std::endl;
+        log_cout("        state: {}, weight: {}", m_state_names[i],
+                m_state_weights[i]);
     }
 }
 

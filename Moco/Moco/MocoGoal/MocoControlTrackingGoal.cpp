@@ -160,12 +160,10 @@ void MocoControlTrackingGoal::calcIntegrandImpl(const SimTK::State& state,
     }
 }
 
-void MocoControlTrackingGoal::printDescriptionImpl(std::ostream& stream) const {
+void MocoControlTrackingGoal::printDescriptionImpl() const {
     for (int i = 0; i < (int)m_control_names.size(); i++) {
-        stream << "        ";
-        stream << "control: " << m_control_names[i]
-                << ", reference label: " << m_ref_labels[i]
-                << ", weight: " << m_control_weights[i] << std::endl;
+        log_cout("        control: {}, reference label: {}, weight: {}",
+                m_control_names[i], m_ref_labels[i], m_control_weights[i]);
     }
 }
 

@@ -60,12 +60,5 @@ void MocoBounds::constructProperties() {
     constructProperty_bounds();
 }
 
-void MocoBounds::printDescription(std::ostream& stream) const {
-    if (isEquality()) {
-        stream << getLower();
-    }
-    else {
-        stream << "[" << getLower() << ", " << getUpper() << "]";
-    }
-    stream.flush();
-}
+
+

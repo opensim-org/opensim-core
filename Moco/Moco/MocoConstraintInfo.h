@@ -91,7 +91,7 @@ public:
 
     /// Print the name, type, number of scalar equations, and bounds for this
     /// constraint.
-    void printDescription(std::ostream& stream = std::cout) const;
+    void printDescription() const;
 
 private:
     OpenSim_DECLARE_LIST_PROPERTY(bounds, MocoBounds,

@@ -63,21 +63,18 @@ void MocoVariableInfo::validate() const {
                     n, fb.getUpper(), b.getUpper()));
 }
 
-void MocoVariableInfo::printDescription(std::ostream& stream) const {
+void MocoVariableInfo::printDescription() const {
     const auto bounds = getBounds();
-    stream << getName() << ". bounds: ";
-    bounds.printDescription(stream);
+    std::string str = fmt::format("  {}. bounds: {}", getName(), bounds);
     const auto initial = getInitialBounds();
     if (initial.isSet()) {
-        stream << " initial: ";
-        initial.printDescription(stream);
+        str += fmt::format(" initial: {}", initial);
     }
     const auto final = getFinalBounds();
     if (final.isSet()) {
-        stream << " final: ";
-        final.printDescription(stream);
+        str += fmt::format(" final: {}", final);
     }
-    stream << std::endl;
+    log_cout(str);
 }
 
 void MocoVariableInfo::constructProperties() {

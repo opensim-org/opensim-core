@@ -78,7 +78,7 @@ protected:
             const GoalInput& input, SimTK::Vector& cost) const override {
         cost[0] = input.integral;
     }
-    void printDescriptionImpl(std::ostream& stream = std::cout) const override;
+    void printDescriptionImpl() const override;
 
     OpenSim_DECLARE_PROPERTY(markers_reference, MarkersReference,
             "MarkersReference object containing the marker trajectories to be "

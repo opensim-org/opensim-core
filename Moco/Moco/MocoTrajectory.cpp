@@ -1390,7 +1390,6 @@ void MocoSolution::printObjectiveBreakdown() const {
     for (const auto& entry : m_objectiveBreakdown) {
         log_cout("{}: {}", entry.first, entry.second);
     }
-    std::cout << std::flush;
 }
 
 void MocoSolution::convertToTableImpl(TimeSeriesTable& table) const {

@@ -288,25 +288,19 @@ void MocoContactTrackingGoal::calcIntegrandImpl(
     }
 }
 
-void MocoContactTrackingGoal::printDescriptionImpl(std::ostream& stream) const {
-    stream << "        ";
-    stream << "projection type: " << get_projection() << std::endl;
+void MocoContactTrackingGoal::printDescriptionImpl() const {
+    log_cout("        projection type: {}", get_projection());
     if (m_projectionType != ProjectionType::None) {
-        stream << "        ";
-        stream << "projection vector: " << get_projection_vector() << std::endl;
+        log_cout("        projection vector: {}", get_projection_vector());
     }
     for (int ig = 0; ig < getProperty_contact_groups().size(); ++ig) {
         const auto& group = get_contact_groups(ig);
-        stream << "        ";
-        stream << "group " << ig
-               << ": ExternalForce: " << group.get_external_force_name()
-               << std::endl;
-        stream << "            ";
-        stream << "forces: " << std::endl;
+        log_cout("        group {}: ExternalForce: {}",
+                ig, group.get_external_force_name());
+        log_cout("            forces:");
         for (int ic = 0; ic < group.getProperty_contact_force_paths().size();
                 ++ic) {
-            stream << "                ";
-            stream << group.get_contact_force_paths(ic) << std::endl;
+            log_cout("                {}", group.get_contact_force_paths(ic));
         }
     }
 }

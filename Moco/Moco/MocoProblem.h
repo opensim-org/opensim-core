@@ -149,7 +149,7 @@ public:
             const MocoBounds& bounds, const MocoInitialBounds& init = {},
             const MocoFinalBounds& final = {});
     /// Find and print the names of all control variables containing a substring.
-    void printControlNamesWithSubstring (const std::string& name);
+    void printControlNamesWithSubstring(const std::string& name);
     /// Set information about a single control variable in this phase.
     /// Similar to setStateInfo(). The name for a control is the path to the
     /// associated actuator (e.g., "/forceset/soleus_r"). If setting a control
