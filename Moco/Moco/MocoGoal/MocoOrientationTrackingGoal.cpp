@@ -153,7 +153,7 @@ void MocoOrientationTrackingGoal::initializeOnModelImpl(const Model& model)
                 mat.updElt(irow, icol++) = e[ie];
                 if (!irow) {
                     colLabels.push_back(
-                            fmt::format("%s/quaternion_e{}", label, ie));
+                            fmt::format("{}/quaternion_e{}", label, ie));
                 }
             }
         }
