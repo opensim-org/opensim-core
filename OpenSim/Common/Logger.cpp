@@ -150,7 +150,7 @@ void Logger::addFileSink(const std::string& filepath) {
              "removeFileSink() first.", m_filesink->filename());
         return;
     }
-    // verify if file can be opened in current folder
+    // verify if file can be opened at the specified path
     std::ifstream ifs(filepath);
 
     if (ifs.is_open()) {
