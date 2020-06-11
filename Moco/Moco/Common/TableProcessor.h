@@ -72,7 +72,7 @@ public:
         set_filepath(std::move(filepath));
     }
     /// Process and obtain the table. If a filepath is provided, it will be
-    /// evaluated relative `relativeToDirectory`.
+    /// evaluated relative to `relativeToDirectory`.
     /// If a model is provided, it is used to convert columns from degrees to
     /// radians (if the table has a header with inDegrees=yes) before any
     /// operations are performed. This model is accessible by any
@@ -100,8 +100,10 @@ public:
             table = TimeSeriesTable(path);
         }
 
-        if (table.hasTableMetaDataKey("inDegrees") &&
+        if (model && table.hasTableMetaDataKey("inDegrees") &&
                 table.getTableMetaDataAsString("inDegrees") == "yes") {
+            OPENSIM_THROW_IF(
+                    !model->hasSystem(), ModelHasNoSystem, model->getName());
             model->getSimbodyEngine().convertDegreesToRadians(table);
         }
 

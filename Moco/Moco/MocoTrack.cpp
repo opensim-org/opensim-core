@@ -225,7 +225,7 @@ TimeSeriesTable MocoTrack::configureStateTracking(
             states.getIndependentColumn().back(), m_timeInfo);
 
     // Write tracked states to file in case any label updates or filtering
-    // occured.
+    // occurred.
     writeTableToFile(states, getName() + "_tracked_states.sto");
 
     // Return tracked states to possibly include in the guess.
