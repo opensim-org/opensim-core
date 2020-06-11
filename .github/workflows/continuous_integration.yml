@@ -81,8 +81,7 @@ jobs:
       id: commithash
       shell: bash
       # https://stackoverflow.com/questions/58886293/getting-current-branch-and-commit-hash-in-github-action
-      run: |
-        echo "::set-output name=hash::$(git rev-parse --short HEAD)"
+      run: echo "::set-output name=hash::$(git rev-parse --short HEAD)"
 
     - name: Install opensim-core
       run: |
@@ -189,8 +188,7 @@ jobs:
     - name: Obtain short git commit hash
       id: commithash
       shell: bash
-      run: |
-        echo "::set-output name=hash::$(git rev-parse --short HEAD)"
+      run: echo "::set-output name=hash::$(git rev-parse --short HEAD)"
 
     - name: Install opensim-core
       run: |
@@ -288,8 +286,7 @@ jobs:
     - name: Obtain short git commit hash
       id: commithash
       shell: bash
-      run: |
-        echo "::set-output name=hash::$(git rev-parse --short HEAD)"
+      run: echo "::set-output name=hash::$(git rev-parse --short HEAD)"
 
     - name: Install opensim-core
       run: |
