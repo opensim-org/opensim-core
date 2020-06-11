@@ -65,10 +65,10 @@ void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
     for (int i = 0; i < nStatePairs; ++i) {
         const auto path1 = get_state_pairs(i).get_initial_variable();
         OPENSIM_THROW_IF(allSysYIndices.count(path1) == 0, Exception,
-                format("Could not find state '%s'.", path1));
+                fmt::format("Could not find state '{}'.", path1));
         const auto path2 = get_state_pairs(i).get_final_variable();
         OPENSIM_THROW_IF(allSysYIndices.count(path2) == 0, Exception,
-                format("Could not find state '%s'.", path2));
+                fmt::format("Could not find state '{}'.", path2));
         int stateIndex1 = allSysYIndices[path1];
         int stateIndex2 = allSysYIndices[path2];
         m_state_names.emplace_back(path1, path2);
@@ -82,10 +82,10 @@ void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
     for (int i = 0; i < nControlPairs; ++i) {
         const auto path1 = get_control_pairs(i).get_initial_variable();
         OPENSIM_THROW_IF(systemControlIndexMap.count(path1) == 0, Exception,
-                format("Could not find control '%s'.", path1));
+                fmt::format("Could not find control '{}'.", path1));
         const auto path2 = get_control_pairs(i).get_final_variable();
         OPENSIM_THROW_IF(systemControlIndexMap.count(path2) == 0, Exception,
-                format("Could not find control '%s'.", path2));
+                fmt::format("Could not find control '{}'.", path2));
         int controlIndex1 = systemControlIndexMap[path1];
         int controlIndex2 = systemControlIndexMap[path2];
         m_control_names.emplace_back(path1, path2);
@@ -124,19 +124,15 @@ void MocoPeriodicityGoal::calcGoalImpl(
     }
 }
 
-void MocoPeriodicityGoal::printDescriptionImpl(std::ostream& stream) const {
-    stream << "        ";
-    stream << "state periodicity pairs: " << std::endl;
+void MocoPeriodicityGoal::printDescriptionImpl() const {
+    log_cout("        state periodicity pairs:");
     for (const auto& pair : m_state_names) {
-        stream << "                ";
-        stream << "initial: " << pair.first
-               << ", final: " << pair.second << std::endl;
+        log_cout("                initial: {}, final: {}", pair.first,
+                pair.second);
     }
-    stream << "        ";
-    stream << "control periodicity pairs: " << std::endl;
+    log_cout("        control periodicity pairs:");
     for (const auto& pair : m_control_names) {
-        stream << "                ";
-        stream << "initial: " << pair.first
-               << ", final: " << pair.second << std::endl;
+        log_cout("                initial: {}, final: {}", pair.first,
+                pair.second);
     }
 }

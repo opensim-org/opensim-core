@@ -230,9 +230,8 @@ public:
     }
 
     /// Print a description of this problem, including costs and variable
-    /// bounds. By default, the description is printed to the console (cout),
-    /// but you can provide your own stream.
-    void printDescription(std::ostream& stream = std::cout) const;
+    /// bounds. Printing is done using OpenSim::log_cout().
+    void printDescription() const;
 
     /// @name Interface for solvers
     /// These functions are for use by MocoSolver%s, but can also be called

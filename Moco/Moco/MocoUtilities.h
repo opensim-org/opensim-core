@@ -39,6 +39,7 @@
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
 #include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/Logger.h>
 
 namespace OpenSim {
 
@@ -95,60 +96,6 @@ OSIMMOCO_API
 std::string getAbsolutePathnameFromXMLDocument(
         const std::string& documentFileName,
         const std::string& pathnameRelativeToDocument);
-
-/// @name Filling in a string with variables.
-/// @{
-
-#ifndef SWIG
-/// Return type for make_printable()
-/// @ingroup mocologutil
-template <typename T> struct make_printable_return { typedef T type; };
-/// Convert to types that can be printed with sprintf() (vsnprintf()).
-/// The generic template does not alter the type.
-/// @ingroup mocologutil
-template <typename T>
-inline typename make_printable_return<T>::type make_printable(const T& x) {
-    return x;
-}
-
-/// Specialization for std::string.
-/// @ingroup mocologutil
-template <> struct make_printable_return<std::string> {
-    typedef const char* type;
-};
-/// Specialization for std::string.
-/// @ingroup mocologutil
-template <>
-inline typename make_printable_return<std::string>::type make_printable(
-        const std::string& x) {
-    return x.c_str();
-}
-
-/// Format a char array using (C interface; mainly for internal use).
-/// @ingroup mocologutil
-OSIMMOCO_API std::string format_c(const char*, ...);
-
-/// Format a string in the style of sprintf. For example, the code
-/// `format("%s %d and %d yields %d", "adding", 2, 2, 4)` will produce
-/// "adding 2 and 2 yields 4".
-/// @ingroup mocologutil
-template <typename... Types>
-std::string format(const std::string& formatString, Types... args) {
-    return format_c(formatString.c_str(), make_printable(args)...);
-}
-
-/// Print a formatted string to std::cout. A newline is not included, but the
-/// stream is flushed.
-/// @ingroup mocologutil
-template <typename... Types>
-void printMessage(const std::string& formatString, Types... args) {
-    std::cout << format(formatString, args...);
-    std::cout.flush();
-}
-
-#endif // SWIG
-
-/// @}
 
 /// This class stores the formatting of a stream and restores that format
 /// when the StreamFormat is destructed.
@@ -231,18 +178,18 @@ TimeSeriesTable resample(const TimeSeriesTable& in, const TimeVector& newTime) {
     OPENSIM_THROW_IF(time.size() < 2, Exception,
             "Cannot resample if number of times is 0 or 1.");
     OPENSIM_THROW_IF(newTime[0] < time[0], Exception,
-            format("New initial time (%f) cannot be less than existing "
-                   "initial time (%f)",
+            fmt::format("New initial time ({}) cannot be less than existing "
+                   "initial time ({})",
                     newTime[0], time[0]));
     OPENSIM_THROW_IF(newTime[newTime.size() - 1] > time[time.size() - 1],
             Exception,
-            format("New final time (%f) cannot be greater than existing final "
-                   "time (%f)",
+            fmt::format("New final time ({}) cannot be greater than existing "
+                        "final time ({})",
                     newTime[newTime.size() - 1], time[time.size() - 1]));
     for (int itime = 1; itime < (int)newTime.size(); ++itime) {
         OPENSIM_THROW_IF(newTime[itime] < newTime[itime - 1], Exception,
-                format("New times must be non-decreasing, but "
-                       "time[%i] < time[%i] (%f < %f).",
+                fmt::format("New times must be non-decreasing, but "
+                       "time[{}] < time[{}] ({} < {}).",
                         itime, itime - 1, newTime[itime], newTime[itime - 1]));
     }
 
@@ -349,11 +296,8 @@ TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& trajectory,
                     if (dynamic_cast<const Output<T>*>(&output)) {
                         reporter->addToReport(output);
                     } else {
-                        std::cout << format("Warning: ignoring output %s of "
-                                            "type %s.",
-                                             output.getPathName(),
-                                             output.getTypeName())
-                                  << std::endl;
+                        log_warn("Ignoring output {} of type {}.",
+                                output.getPathName(), output.getTypeName());
                     }
                 }
             }
@@ -670,7 +614,7 @@ public:
     long long getElapsedTimeInNs() const {
         return SimTK::realTimeInNs() - m_startTime;
     }
-    /// This provides the elapsed time as a formatted string (using format()).
+    /// This provides the elapsed time as a formatted string (using formatNs()).
     std::string getElapsedTimeFormatted() const {
         return formatNs(getElapsedTimeInNs());
     }

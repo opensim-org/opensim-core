@@ -22,7 +22,6 @@
 
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Actuators/PointActuator.h>
-#include <OpenSim/Common/LogManager.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 
@@ -192,8 +191,6 @@ TEMPLATE_TEST_CASE(
 }
 
 TEST_CASE("Enabled Goals", "") {
-    std::cout.rdbuf(LogManager::cout.rdbuf());
-    std::cout.rdbuf(LogManager::cout.rdbuf());
     double x = 23920;
     MocoFinalTimeGoal cost;
     Model model;
@@ -260,8 +257,6 @@ void testDoublePendulumTracking(MocoStudy study,
 
 TEMPLATE_TEST_CASE("Test tracking goals", "", MocoTropterSolver,
         MocoCasADiSolver) {
-    std::cout.rdbuf(LogManager::cout.rdbuf());
-    std::cout.rdbuf(LogManager::cout.rdbuf());
 
     // Start with double pendulum problem to minimize control effort to create
     // a controls trajectory to track.
@@ -501,8 +496,6 @@ public:
 
 TEMPLATE_TEST_CASE("Endpoint constraints", "", MocoCasADiSolver) {
     // TODO test with Tropter.
-    std::cout.rdbuf(LogManager::cout.rdbuf());
-    std::cout.rdbuf(LogManager::cout.rdbuf());
 
     MocoStudy study;
     auto& problem = study.updProblem();
@@ -556,8 +549,6 @@ TEMPLATE_TEST_CASE("Endpoint constraints", "", MocoCasADiSolver) {
 }
 
 TEMPLATE_TEST_CASE("MocoPeriodicityGoal", "", MocoCasADiSolver) {
-    std::cout.rdbuf(LogManager::cout.rdbuf());
-    std::cout.rdbuf(LogManager::cout.rdbuf());
 
     MocoStudy study;
     auto& problem = study.updProblem();

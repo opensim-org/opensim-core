@@ -39,10 +39,7 @@ void MocoMarkerFinalGoal::constructProperties() {
     constructProperty_reference_location(SimTK::Vec3(0));
 }
 
-void MocoMarkerFinalGoal::printDescriptionImpl(std::ostream& stream) const {
-    stream << "        ";
-    stream << "point name: " << get_point_name() << std::endl;
-    stream << "        ";
-    stream << "reference location: "
-           << get_reference_location() << std::endl;
+void MocoMarkerFinalGoal::printDescriptionImpl() const {
+    log_cout("        point name: {}", get_point_name());
+    log_cout("        reference location: {}", get_reference_location());
 }

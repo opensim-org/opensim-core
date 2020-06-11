@@ -23,7 +23,6 @@
 #include "Testing.h"
 #include <Moco/osimMoco.h>
 
-#include <OpenSim/Common/LogManager.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 
 const double FRICTION_COEFFICIENT = 0.7;
@@ -414,8 +413,6 @@ SimTK::Real testSmoothSphereHalfSpaceForce_NormalForce()
 // of the mass (from testSmoothSphereHalfSpaceForce_NormalForce()).
 void testSmoothSphereHalfSpaceForce_FrictionForce(
     const SimTK::Real& equilibriumHeight) {
-    std::cout.rdbuf(LogManager::cout.rdbuf());
-    std::cout.rdbuf(LogManager::cout.rdbuf());
 
     Model model(createBallHalfSpaceModel());
 
@@ -547,8 +544,6 @@ TEST_CASE("testSmoothSphereHalfSpaceForce") {
 
 
 TEST_CASE("MocoContactTrackingGoal") {
-    std::cout.rdbuf(LogManager::cout.rdbuf());
-    std::cout.rdbuf(LogManager::cout.rdbuf());
 
     // We drop a ball from a prescribed initial height, record the contact
     // force, then solve a trajectory optimization that tracks the recorded

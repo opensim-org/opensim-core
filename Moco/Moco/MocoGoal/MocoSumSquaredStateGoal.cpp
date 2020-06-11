@@ -39,15 +39,16 @@ void MocoSumSquaredStateGoal::initializeOnModelImpl(const Model& model) const {
             const auto& weightName = get_state_weights().get(i).getName();
             if (allSysYIndices.count(weightName) == 0) {
                 OPENSIM_THROW_FRMOBJ(Exception,
-                        "Weight provided with name '" + weightName +
-                        "' but this is not a recognized state.");
+                        fmt::format("Weight provided with name '{}' "
+                        "but this is not a recognized state.", weightName));
             }
 
             if (getProperty_pattern().size()) {
                 if (!std::regex_match(weightName, regex)) {
                     OPENSIM_THROW_FRMOBJ(Exception,
-                            format("Weight provided with name '%s' but this "
-                                   "name does not match the pattern '%s'.",
+                            fmt::format("Weight provided with name '{}' but "
+                                        "this name does not match the "
+                                        "pattern '{}'.",
                                     weightName, get_pattern()));
                 }
             }
@@ -70,7 +71,7 @@ void MocoSumSquaredStateGoal::initializeOnModelImpl(const Model& model) const {
         // Pattern must match at least one state.
         if (m_sysYIndices.size() == 0) {
             OPENSIM_THROW_FRMOBJ(Exception,
-                    format("Pattern '%s' given but no state variables "
+                    fmt::format("Pattern '{}' given but no state variables "
                            "matched the pattern.", get_pattern()));
         }
     }
@@ -99,11 +100,10 @@ void MocoSumSquaredStateGoal::calcIntegrandImpl(
     }
 }
 
-void MocoSumSquaredStateGoal::printDescriptionImpl(std::ostream& stream) const {
+void MocoSumSquaredStateGoal::printDescriptionImpl() const {
     for (int i = 0; i < (int)m_state_names.size(); i++) {
-        stream << "        ";
-        stream << "state: " << m_state_names[i] << ", "
-               << "weight: " << m_state_weights[i] << std::endl;
+        log_cout("        state: {}, weight: {}", m_state_names[i],
+                m_state_weights[i]);
     }
 }
 

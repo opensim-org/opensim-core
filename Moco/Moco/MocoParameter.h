@@ -149,7 +149,7 @@ public:
 
     /// Print the name, property name, component paths, property element (if it
     /// exists), and bounds for this parameter.
-    void printDescription(std::ostream& stream = std::cout) const;
+    void printDescription() const;
 
 private:
     OpenSim_DECLARE_UNNAMED_PROPERTY(MocoBounds,

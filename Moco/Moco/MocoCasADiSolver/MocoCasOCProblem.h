@@ -103,8 +103,8 @@ template <typename VectorType = SimTK::Vector>
 VectorType convertToSimTKVector(const casadi::DM& casVector) {
     OPENSIM_THROW_IF(casVector.columns() != 1 && casVector.rows() != 1,
             Exception,
-            format("casVector should be 1-dimensional, but has size %i x "
-                   "%i.",
+            fmt::format("casVector should be 1-dimensional, but has size {} x "
+                        "{}.",
                     casVector.rows(), casVector.columns()));
     VectorType simtkVector((int)casVector.numel());
     for (int i = 0; i < casVector.numel(); ++i) {
@@ -496,8 +496,9 @@ private:
     }
     void intermediateCallbackWithIterateImpl(
             const CasOC::Iterate& iterate) const override {
-        std::string filename = format("MocoCasADiSolver_%s_trajectory%06i.sto",
-                m_formattedTimeString, iterate.iteration);
+        std::string filename =
+                fmt::format("MocoCasADiSolver_{}_trajectory{:06i}.sto",
+                        m_formattedTimeString, iterate.iteration);
         convertToMocoTrajectory(iterate).write(filename);
     }
 

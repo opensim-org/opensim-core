@@ -87,8 +87,6 @@ public:
         return vec;
     }
 
-    void printDescription(std::ostream& stream) const;
-
 protected:
     /// Used internally to create Bounds from a list property.
     /// The list property must have either 0, 1 or 2 elements.
@@ -106,6 +104,17 @@ private:
     void constructProperties();
 
 };
+
+inline std::ostream& operator<<(
+        std::ostream& stream, const MocoBounds& bounds) {
+    if (bounds.isEquality()) {
+        stream << bounds.getLower();
+    } else {
+        stream << "[" << bounds.getLower() << ", " << bounds.getUpper() << "]";
+    }
+    return stream;
+}
+
 /// Used for specifying the bounds on a variable at the start of a phase.
 class OSIMMOCO_API MocoInitialBounds : public MocoBounds {
 OpenSim_DECLARE_CONCRETE_OBJECT(MocoInitialBounds, MocoBounds);

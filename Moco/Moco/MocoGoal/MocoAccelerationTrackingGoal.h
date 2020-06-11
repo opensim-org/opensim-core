@@ -114,7 +114,7 @@ protected:
             const GoalInput& input, SimTK::Vector& goal) const override {
             goal[0] = input.integral;
     }
-    void printDescriptionImpl(std::ostream& stream = std::cout) const override;
+    void printDescriptionImpl() const override;
 
 private:
     OpenSim_DECLARE_PROPERTY(acceleration_reference_file, std::string,

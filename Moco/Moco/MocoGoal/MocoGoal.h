@@ -279,7 +279,7 @@ public:
 
     /// Print the name type and mode of this goal. In cost mode, this prints the
     /// weight.
-    void printDescription(std::ostream& stream = std::cout) const;
+    void printDescription() const;
 
 protected:
     /// Perform any caching before the problem is solved.
@@ -337,8 +337,7 @@ protected:
     virtual void calcGoalImpl(
             const GoalInput& input, SimTK::Vector& goal) const = 0;
     /// Print a more detailed description unique to each goal.
-    virtual void printDescriptionImpl(
-            std::ostream& stream = std::cout) const {};
+    virtual void printDescriptionImpl() const {};
     /// For use within virtual function implementations.
     const Model& getModel() const {
         OPENSIM_THROW_IF_FRMOBJ(!m_model, Exception,
@@ -367,8 +366,9 @@ private:
     void checkMode(const std::string& mode) const {
         OPENSIM_THROW_IF_FRMOBJ(mode != "cost" && mode != "endpoint_constraint",
                 Exception,
-                format("Expected mode to be 'cost' or 'endpoint_constraint' "
-                       "but got %s.",
+                fmt::format(
+                        "Expected mode to be 'cost' or 'endpoint_constraint' "
+                        "but got {}.",
                         mode));
     }
 

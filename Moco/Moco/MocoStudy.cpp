@@ -80,18 +80,7 @@ MocoSolution MocoStudy::solve() const {
     // TODO avoid const_cast.
     const_cast<Self*>(this)->initSolverInternal();
 
-    // Temporarily disable printing of negative muscle force warnings so the
-    // output stream isn't flooded while computing finite differences.
-    int oldDebugLevel = Object::getDebugLevel();
-    Object::setDebugLevel(-1);
-    MocoSolution solution;
-    try {
-        solution = get_solver().solve();
-    } catch (const Exception&) {
-        Object::setDebugLevel(oldDebugLevel);
-        throw;
-    }
-    Object::setDebugLevel(oldDebugLevel);
+    MocoSolution solution = get_solver().solve();
 
     bool originallySealed = solution.isSealed();
     if (get_write_solution() != "false") {
@@ -104,8 +93,7 @@ MocoSolution MocoStudy::solve() const {
         try {
             solution.write(filename);
         } catch (const TimestampGreaterThanEqualToNext&) {
-            std::cout << "Could not write solution to file...skipping."
-                      << std::endl;
+            log_warn("Could not write solution to file...skipping.");
         }
         if (originallySealed) solution.seal();
     }

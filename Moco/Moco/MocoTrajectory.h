@@ -510,9 +510,9 @@ public:
     /// requireAccelerations to true.
     /// To throw an exception with a detailed message if the problem is not
     /// compatible, pass throwOnError as true. To get the detailed message
-    /// without an exception, set the Object debug level to a level greater than
-    /// 0 (e.g., `Object::setDebugLevel(1)` in C++, and
-    /// `OpenSimObject.setDebugLevel(1)` in MATLAB/Python).
+    /// without an exception, set the Logger level to Debug or a more verbose
+    /// setting (e.g., `Logger::setLevel(Logger::Level::Debug)` in C++, and
+    /// `Logger.setLevel(Logger.Level_Debug)` in MATLAB/Python).
     bool isCompatible(const MocoProblemRep&, bool requireAccelerations = false,
             bool throwOnError = false) const;
     /// Check if this trajectory is numerically equal to another trajectory.

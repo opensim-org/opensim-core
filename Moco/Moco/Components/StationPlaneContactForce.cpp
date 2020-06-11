@@ -37,7 +37,6 @@ void StationPlaneContactForce::generateDecorations(
         const auto& pt = getConnectee<Station>("station");
         const auto pt1 = pt.getLocationInGround(s);
         const SimTK::Vec3 force = calcContactForceOnStation(s);
-        // std::cout << "DEBUGgd force " << force << std::endl;
         const SimTK::Vec3 pt2 = pt1 + force * arrowLengthPerForce; // mg;
         SimTK::DecorativeLine line(pt1, pt2);
         line.setColor(SimTK::Green);

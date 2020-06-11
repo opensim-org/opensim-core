@@ -622,8 +622,8 @@ Solution Transcription::solve(const Iterate& guessOrig) {
         // were removed.
         OPENSIM_THROW_IF(slacks.size2() != m_numMeshInteriorPoints,
                 OpenSim::Exception,
-                OpenSim::format("Expected slack variables to be length %i, "
-                                "but they are length %i.",
+                fmt::format("Expected slack variables to be length {}, "
+                            "but they are length {}.",
                         m_numMeshInteriorPoints, slacks.size2()));
     }
 
@@ -706,7 +706,6 @@ Solution Transcription::solve(const Iterate& guessOrig) {
     solution.stats = nlpFunc.stats();
 
     // Print breakdown of objective.
-    std::cout << "\n";
     printObjectiveBreakdown(solution, objectiveOut[0]);
 
     if (!solution.stats.at("success")) {
@@ -725,8 +724,7 @@ void Transcription::printConstraintValues(const Iterate& it,
         const Constraints<casadi::DM>& constraints,
         std::ostream& stream) const {
 
-    // We want to be able to restore the stream's original formatting.
-    OpenSim::StreamFormat streamFormat(stream);
+    std::stringstream ss;
 
     // Find the longest state, control, multiplier, derivative, or slack name.
     auto compareSize = [](const std::string& a, const std::string& b) {
@@ -747,21 +745,21 @@ void Transcription::printConstraintValues(const Iterate& it,
     updateMaxNameLength(it.derivative_names);
     updateMaxNameLength(it.slack_names);
 
-    stream << "\nActive or violated continuous variable bounds" << std::endl;
-    stream << "L and U indicate which bound is active; "
+    ss << "\nActive or violated continuous variable bounds" << std::endl;
+    ss << "L and U indicate which bound is active; "
               "'*' indicates a bound is violated. "
            << std::endl;
-    stream << "The case of lower==upper==value is ignored." << std::endl;
+    ss << "The case of lower==upper==value is ignored." << std::endl;
 
     // Bounds on time-varying variables.
     // ---------------------------------
-    auto print_bounds = [&stream, maxNameLength](const std::string& description,
+    auto print_bounds = [&ss, maxNameLength](const std::string& description,
                                 const std::vector<std::string>& names,
                                 const casadi::DM& times,
                                 const casadi::DM& values,
                                 const casadi::DM& lower,
                                 const casadi::DM& upper) {
-        stream << "\n" << description << ": ";
+        ss << "\n" << description << ": ";
 
         bool boundsActive = false;
         bool boundsViolated = false;
@@ -782,17 +780,17 @@ void Transcription::printConstraintValues(const Iterate& it,
         }
 
         if (!boundsActive && !boundsViolated) {
-            stream << "no bounds active or violated" << std::endl;
+            ss << "no bounds active or violated" << std::endl;
             return;
         }
 
         if (!boundsViolated) {
-            stream << "some bounds active but no bounds violated";
+            ss << "some bounds active but no bounds violated";
         } else {
-            stream << "some bounds active or violated";
+            ss << "some bounds active or violated";
         }
 
-        stream << "\n"
+        ss << "\n"
                << std::setw(maxNameLength) << "  " << std::setw(9) << "time "
                << "  " << std::setw(9) << "lower"
                << "    " << std::setw(9) << "value"
@@ -809,22 +807,22 @@ void Transcription::printConstraintValues(const Iterate& it,
                     // issue; ignore.
                     if (V == L && L == U) continue;
                     const auto& time = times(itime);
-                    stream << std::setw(maxNameLength) << names[ivar] << "  "
+                    ss << std::setw(maxNameLength) << names[ivar] << "  "
                            << std::setprecision(2) << std::scientific
                            << std::setw(9) << time << "  " << std::setw(9) << L
                            << " <= " << std::setw(9) << V
                            << " <= " << std::setw(9) << U << " ";
                     // Show if the constraint is violated.
                     if (V <= L)
-                        stream << "L";
+                        ss << "L";
                     else
-                        stream << " ";
+                        ss << " ";
                     if (V >= U)
-                        stream << "U";
+                        ss << "U";
                     else
-                        stream << " ";
-                    if (V < L || V > U) stream << "*";
-                    stream << std::endl;
+                        ss << " ";
+                    if (V < L || V > U) ss << "*";
+                    ss << std::endl;
                 }
             }
         }
@@ -851,19 +849,19 @@ void Transcription::printConstraintValues(const Iterate& it,
     std::vector<std::string> time_names = {"initial_time", "final_time"};
     updateMaxNameLength(time_names);
 
-    stream << "\nActive or violated parameter bounds" << std::endl;
-    stream << "L and U indicate which bound is active; "
+    ss << "\nActive or violated parameter bounds" << std::endl;
+    ss << "L and U indicate which bound is active; "
               "'*' indicates a bound is violated. "
            << std::endl;
-    stream << "The case of lower==upper==value is ignored." << std::endl;
+    ss << "The case of lower==upper==value is ignored." << std::endl;
 
-    auto printParameterBounds = [&stream, maxNameLength](
+    auto printParameterBounds = [&ss, maxNameLength](
                                         const std::string& description,
                                         const std::vector<std::string>& names,
                                         const casadi::DM& values,
                                         const casadi::DM& lower,
                                         const casadi::DM& upper) {
-        stream << "\n" << description << ": ";
+        ss << "\n" << description << ": ";
 
         bool boundsActive = false;
         bool boundsViolated = false;
@@ -882,17 +880,17 @@ void Transcription::printConstraintValues(const Iterate& it,
         }
 
         if (!boundsActive && !boundsViolated) {
-            stream << "no bounds active or violated" << std::endl;
+            ss << "no bounds active or violated" << std::endl;
             return;
         }
 
         if (!boundsViolated) {
-            stream << "some bounds active but no bounds violated";
+            ss << "some bounds active but no bounds violated";
         } else {
-            stream << "some bounds active or violated";
+            ss << "some bounds active or violated";
         }
 
-        stream << "\n"
+        ss << "\n"
                << std::setw(maxNameLength) << "  " << std::setw(9) << "lower"
                << "    " << std::setw(9) << "value"
                << "    " << std::setw(9) << "upper"
@@ -906,21 +904,21 @@ void Transcription::printConstraintValues(const Iterate& it,
                 // In the case where lower==upper==value, there is no
                 // issue; ignore.
                 if (V == L && L == U) continue;
-                stream << std::setw(maxNameLength) << names[ivar] << "  "
+                ss << std::setw(maxNameLength) << names[ivar] << "  "
                        << std::setprecision(2) << std::scientific
                        << std::setw(9) << L << " <= " << std::setw(9) << V
                        << " <= " << std::setw(9) << U << " ";
                 // Show if the constraint is violated.
                 if (V <= L)
-                    stream << "L";
+                    ss << "L";
                 else
-                    stream << " ";
+                    ss << " ";
                 if (V >= U)
-                    stream << "U";
+                    ss << "U";
                 else
-                    stream << " ";
-                if (V < L || V > U) stream << "*";
-                stream << std::endl;
+                    ss << " ";
+                if (V < L || V > U) ss << "*";
+                ss << std::endl;
             }
         }
     };
@@ -943,12 +941,12 @@ void Transcription::printConstraintValues(const Iterate& it,
 
     // Constraints.
     // ============
-    stream << "\nTotal number of constraints: " << m_numConstraints << "."
+    ss << "\nTotal number of constraints: " << m_numConstraints << "."
            << std::endl;
 
     // Differential equation defects.
     // ------------------------------
-    stream << "\nDifferential equation defects:"
+    ss << "\nDifferential equation defects:"
            << "\n  L2 norm across mesh, max abs value (L1 norm), time of max "
               "abs"
            << std::endl;
@@ -975,7 +973,7 @@ void Transcription::printConstraintValues(const Iterate& it,
         const double L1 = max;
         const double time_of_max = it.times(argmax).scalar();
 
-        stream << std::setw(maxNameLength) << it.state_names[istate] << spacer
+        ss << std::setw(maxNameLength) << it.state_names[istate] << spacer
                << std::setprecision(2) << std::scientific << std::setw(9) << L2
                << spacer << L1 << spacer << std::setprecision(6) << std::fixed
                << time_of_max << std::endl;
@@ -983,15 +981,15 @@ void Transcription::printConstraintValues(const Iterate& it,
 
     // Kinematic constraints.
     // ----------------------
-    stream << "\nKinematic constraints:";
+    ss << "\nKinematic constraints:";
     std::vector<std::string> kinconNames =
             m_problem.createKinematicConstraintEquationNames();
     if (kinconNames.empty()) {
-        stream << " none" << std::endl;
+        ss << " none" << std::endl;
     } else {
         maxNameLength = 0;
         updateMaxNameLength(kinconNames);
-        stream << "\n  L2 norm across mesh, max abs value (L1 norm), time of "
+        ss << "\n  L2 norm across mesh, max abs value (L1 norm), time of "
                   "max "
                   "abs"
                << std::endl;
@@ -1006,54 +1004,53 @@ void Transcription::printConstraintValues(const Iterate& it,
                 const double time_of_max = it.times(argmax).scalar();
 
                 std::string label = kinconNames.at(ikc);
-                std::cout << std::setfill('0') << std::setw(2) << ikc << ":"
-                          << std::setfill(' ') << std::setw(maxNameLength)
-                          << label << spacer << std::setprecision(2)
-                          << std::scientific << std::setw(9) << L2 << spacer
-                          << L1 << spacer << std::setprecision(6) << std::fixed
-                          << time_of_max << std::endl;
+                ss << std::setfill('0') << std::setw(2) << ikc << ":"
+                       << std::setfill(' ') << std::setw(maxNameLength) << label
+                       << spacer << std::setprecision(2) << std::scientific
+                       << std::setw(9) << L2 << spacer << L1 << spacer
+                       << std::setprecision(6) << std::fixed << time_of_max
+                       << std::endl;
             }
         }
-        stream << "Kinematic constraint values at each mesh point:"
+        ss << "Kinematic constraint values at each mesh point:"
                << std::endl;
-        stream << "      time  ";
+        ss << "      time  ";
         for (int ipc = 0; ipc < (int)kinconNames.size(); ++ipc) {
-            stream << std::setw(9) << ipc << "  ";
+            ss << std::setw(9) << ipc << "  ";
         }
-        stream << std::endl;
+        ss << std::endl;
         for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
-            stream << std::setfill('0') << std::setw(3) << imesh << "  ";
-            stream.fill(' ');
-            stream << std::setw(9) << it.times(imesh).scalar() << "  ";
+            ss << std::setfill('0') << std::setw(3) << imesh << "  ";
+            ss.fill(' ');
+            ss << std::setw(9) << it.times(imesh).scalar() << "  ";
             for (int ikc = 0; ikc < (int)kinconNames.size(); ++ikc) {
                 const auto& value = constraints.kinematic(ikc, imesh).scalar();
-                stream << std::setprecision(2) << std::scientific
+                ss << std::setprecision(2) << std::scientific
                        << std::setw(9) << value << "  ";
             }
-            stream << std::endl;
+            ss << std::endl;
         }
     }
 
     // Path constraints.
     // -----------------
-    stream << "\nPath constraints:";
+    ss << "\nPath constraints:";
     std::vector<std::string> pathconNames;
     for (const auto& pc : m_problem.getPathConstraintInfos()) {
         pathconNames.push_back(pc.name);
     }
 
     if (pathconNames.empty()) {
-        stream << " none" << std::endl;
+        ss << " none" << std::endl;
     } else {
-        stream << std::endl;
+        ss << std::endl;
 
         maxNameLength = 0;
         updateMaxNameLength(pathconNames);
         // To make space for indices.
         maxNameLength += 3;
-        stream << "\n  L2 norm across mesh, max abs value (L1 norm), time of "
-                  "max "
-                  "abs"
+        ss << "\n  L2 norm across mesh, max abs value (L1 norm), time of "
+                  "max abs"
                << std::endl;
         row.resize(1, m_numMeshPoints);
         {
@@ -1067,52 +1064,60 @@ void Transcription::printConstraintValues(const Iterate& it,
                     const double L1 = max;
                     const double time_of_max = it.times(argmax).scalar();
 
-                    std::string label =
-                            OpenSim::format("%s_%02i", pc.name, ieq);
-                    std::cout << std::setfill('0') << std::setw(2) << ipc << ":"
-                              << std::setfill(' ') << std::setw(maxNameLength)
-                              << label << spacer << std::setprecision(2)
-                              << std::scientific << std::setw(9) << L2 << spacer
-                              << L1 << spacer << std::setprecision(6)
-                              << std::fixed << time_of_max << std::endl;
+                    std::string label = fmt::format("{}_{:02i}", pc.name, ieq);
+                    ss << std::setfill('0') << std::setw(2) << ipc << ":"
+                           << std::setfill(' ') << std::setw(maxNameLength)
+                           << label << spacer << std::setprecision(2)
+                           << std::scientific << std::setw(9) << L2 << spacer
+                           << L1 << spacer << std::setprecision(6) << std::fixed
+                           << time_of_max << std::endl;
                 }
                 ++ipc;
             }
         }
-        stream << "Path constraint values at each mesh point:" << std::endl;
-        stream << "      time  ";
+        ss << "Path constraint values at each mesh point:" << std::endl;
+        ss << "      time  ";
         for (int ipc = 0; ipc < (int)pathconNames.size(); ++ipc) {
-            stream << std::setw(9) << ipc << "  ";
+            ss << std::setw(9) << ipc << "  ";
         }
-        stream << std::endl;
+        ss << std::endl;
         for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
-            stream << std::setfill('0') << std::setw(3) << imesh << "  ";
-            stream.fill(' ');
-            stream << std::setw(9) << it.times(imesh).scalar() << "  ";
+            ss << std::setfill('0') << std::setw(3) << imesh << "  ";
+            ss.fill(' ');
+            ss << std::setw(9) << it.times(imesh).scalar() << "  ";
             for (int ipc = 0; ipc < (int)pathconNames.size(); ++ipc) {
                 const auto& value = constraints.path[ipc](imesh).scalar();
-                stream << std::setprecision(2) << std::scientific
+                ss << std::setprecision(2) << std::scientific
                        << std::setw(9) << value << "  ";
             }
-            stream << std::endl;
+            ss << std::endl;
         }
+    }
+    if (stream.rdbuf() == std::cout.rdbuf()) {
+        OpenSim::log_cout(ss.str());
+    } else {
+        stream << ss.str() << std::endl;
     }
 }
 
 void Transcription::printObjectiveBreakdown(const Iterate& it,
         const casadi::DM& objectiveTerms,
         std::ostream& stream) const {
-    stream << "Breakdown of objective (including weights):";
+    std::stringstream ss;
+    ss << "Breakdown of objective (including weights):";
     if (objectiveTerms.numel() == 0) {
-        stream << " no terms\n";
+        ss << " no terms";
     } else {
-        stream << "\n";
         for (int io = 0; io < (int)m_objectiveTermNames.size(); ++io) {
-            stream << "  " << m_objectiveTermNames[io] << ": "
-                   << objectiveTerms(io).scalar() << "\n";
+            ss << "\n  " << m_objectiveTermNames[io] << ": "
+                   << objectiveTerms(io).scalar();
         }
     }
-    stream << std::flush;
+    if (stream.rdbuf() == std::cout.rdbuf()) {
+        OpenSim::log_cout(ss.str());
+    } else {
+        stream << ss.str() << std::endl;
+    }
 }
 
 Iterate Transcription::createInitialGuessFromBounds() const {

@@ -80,7 +80,7 @@ void MocoJointReactionGoal::initializeOnModelImpl(const Model& model) const {
                         get_reaction_measures(i)) == allowedMeasures.end()) {
 
                 OPENSIM_THROW_FRMOBJ(Exception,
-                        format("Reaction measure '%s' not recognized.",
+                        fmt::format("Reaction measure '{}' not recognized.",
                                 get_reaction_measures(i)));
             }
             reactionMeasures.push_back(get_reaction_measures(i));
@@ -153,25 +153,16 @@ void MocoJointReactionGoal::calcIntegrandImpl(
     }
 }
 
-void MocoJointReactionGoal::printDescriptionImpl(std::ostream& stream) const {
-    stream << "        ";
-    stream << "joint path: " << get_joint_path() << std::endl;
-    stream << "        ";
-    stream << "loads frame: " << get_loads_frame() << std::endl;
-    stream << "        ";
-    stream << "expressed: " << get_expressed_in_frame_path() << std::endl;
-    stream << "        ";
-    stream << "reaction measures: ";
-    for (int i = 0; i < getProperty_reaction_measures().size(); i++) {
-        stream << get_reaction_measures(i);
-        if (i < getProperty_reaction_measures().size() - 1) { stream << ", "; }
+void MocoJointReactionGoal::printDescriptionImpl() const {
+    log_cout("        joint path: ", get_joint_path());
+    log_cout("        loads frame: ", get_loads_frame());
+    log_cout("        expressed: ", get_expressed_in_frame_path());
+
+    std::vector<std::string> measures(getProperty_reaction_measures().size());
+    for (int i = 0; i < (int)measures.size(); i++) {
+        measures[i] = get_reaction_measures(i);
     }
-    stream << std::endl;
-    stream << "        ";
-    stream << "reaction weights: ";
-    for (int i = 0; i < (int)m_measureWeights.size(); ++i) {
-        stream << m_measureWeights[i];
-        if (i < (int)m_measureWeights.size() - 1) { stream << ", "; }
-    }
-    stream << std::endl;
+    log_cout("        reaction measures: {}", fmt::join(measures, ", "));
+
+    log_cout("        reaction weights: {}", fmt::join(m_measureWeights, ", "));
 }

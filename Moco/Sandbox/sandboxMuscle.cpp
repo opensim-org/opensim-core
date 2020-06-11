@@ -24,7 +24,6 @@
 
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 #include <OpenSim/Common/GCVSpline.h>
-#include <OpenSim/Common/LogManager.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 
@@ -463,8 +462,6 @@ void testHangingMuscleMinimumTime(
 
 int main() {
 
-    std::cout.rdbuf(LogManager::cout.rdbuf());
-    std::cerr.rdbuf(LogManager::cerr.rdbuf());
     testDeGrooteFregly2016Muscle();
 
     testHangingMuscleMinimumTime<MocoCasADiSolver>(true, true);

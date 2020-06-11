@@ -102,20 +102,25 @@ void MocoParameter::initializeOnModel(Model& model) const {
                 Exception, "Must specify a property element for "
                 "non-scalar propeties.");
             OPENSIM_THROW_IF_FRMOBJ(get_property_element() < 0, Exception,
-                format("Expected property element to be non-negative, "
-                       "but %i was provided.", get_property_element()));
+                    fmt::format("Expected property element to be non-negative, "
+                                "but {} was provided.",
+                            get_property_element()));
             if (dynamic_cast<Property<SimTK::Vec3>*>(ap)) {
                 OPENSIM_THROW_IF_FRMOBJ(get_property_element() > 2, Exception,
-                        format("The property element for a Vec3 property must "
-                               "be between 0 and 2, but the value %i was "
-                               "provided.", get_property_element()));
+                        fmt::format(
+                                "The property element for a Vec3 property must "
+                                "be between 0 and 2, but the value {} was "
+                                "provided.",
+                                get_property_element()));
                 m_data_type = Type_Vec3;
             }
             else if (dynamic_cast<Property<SimTK::Vec6>*>(ap)) {
                 OPENSIM_THROW_IF_FRMOBJ(get_property_element() > 5, Exception,
-                        format("The property element for a Vec6 property must "
-                               "be between 0 and 5, but the value %i was "
-                               "provided.", get_property_element()));
+                        fmt::format(
+                                "The property element for a Vec6 property must "
+                                "be between 0 and 5, but the value {} was "
+                                "provided.",
+                                get_property_element()));
                 m_data_type = Type_Vec6;
             }
             else {
@@ -128,28 +133,21 @@ void MocoParameter::initializeOnModel(Model& model) const {
     }
 }
 
-void MocoParameter::printDescription(std::ostream& stream) const {
-    stream << getName();
-    stream << ". model property name: " << getPropertyName();
-    stream << ". component paths: ";
+void MocoParameter::printDescription() const {
     const std::vector<std::string> componentPaths = getComponentPaths();
-    for (int i = 0; i < (int)componentPaths.size(); ++i) {
-        stream << componentPaths[i];
-        if (i < (int)componentPaths.size()-1) {
-           stream << ", ";
-        } else {
-           stream << ". ";
-        }   
-    }
-    stream << "property element: ";
+
+    std::string propertyElementStr;
     if (getProperty_property_element().empty()) {
-        stream << "n/a";
+        propertyElementStr = "n/a";
     } else {
-        stream << getProperty_property_element().getValue();
+        propertyElementStr =
+                fmt::format("{}", getProperty_property_element().getValue());
     }
-    stream << ". bounds: ";
-    getBounds().printDescription(stream);
-    stream << std::endl;
+
+    log_cout("  {}. model property name: {}. component paths: {}. "
+             "property element: {}. bounds: {}",
+            getName(), getPropertyName(), fmt::join(componentPaths, ", "),
+            propertyElementStr, getBounds());
 }
 
 void MocoParameter::applyParameterToModelProperties(const double& value) const {

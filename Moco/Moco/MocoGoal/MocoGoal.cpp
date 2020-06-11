@@ -35,15 +35,15 @@ MocoGoal::MocoGoal(std::string name, double weight)
 }
 
 
-void MocoGoal::printDescription(std::ostream& stream) const {
+void MocoGoal::printDescription() const {
     const auto mode = getModeAsString();
-    stream << getName() << ". " << getConcreteClassName() <<
-            ", enabled: " << get_enabled() << ", mode: " << mode;
+    std::string str = fmt::format("  {}. {}, enabled: {}, mode: {}",
+            getName(), getConcreteClassName(), get_enabled(), mode);
     if (mode == "cost") {
-        stream << ", weight: " << get_weight();
+        str += fmt::format(", weight: {}", get_weight());
     }
-    stream << std::endl;
-    printDescriptionImpl(stream);
+    log_cout(str);
+    printDescriptionImpl();
 }
 
 double MocoGoal::calcSystemDisplacement(const SimTK::State& initialState,

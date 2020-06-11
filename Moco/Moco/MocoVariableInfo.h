@@ -63,7 +63,7 @@ public:
     void validate() const;
 
     /// Print the bounds on this variable.
-    void printDescription(std::ostream& stream = std::cout) const;
+    void printDescription() const;
 
 protected:
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST(bounds, double, 2,

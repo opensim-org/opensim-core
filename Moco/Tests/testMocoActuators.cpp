@@ -23,7 +23,6 @@
 
 #include <OpenSim/Actuators/ActivationCoordinateActuator.h>
 #include <OpenSim/Common/GCVSpline.h>
-#include <OpenSim/Common/LogManager.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 
@@ -1093,9 +1092,6 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
 
     // TODO: Some problem has a bad initial guess and the constraint violation
     // goes to 1e+14. Maybe the bounds on the coordinate should be tighter.
-
-    std::cout.rdbuf(LogManager::cout.rdbuf());
-    std::cout.rdbuf(LogManager::cout.rdbuf());
 
     CAPTURE(ignoreActivationDynamics);
     CAPTURE(ignoreTendonCompliance);

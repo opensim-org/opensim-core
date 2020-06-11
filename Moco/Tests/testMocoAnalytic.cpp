@@ -22,7 +22,6 @@
 
 #include <OpenSim/Actuators/SpringGeneralizedForce.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
-#include <OpenSim/Common/LogManager.h>
 
 using namespace OpenSim;
 
@@ -103,8 +102,6 @@ TEMPLATE_TEST_CASE("Second order linear min effort", "", MocoTropterSolver,
 /// and Control. New York‐London‐Sydney‐Toronto. John Wiley & Sons. 1975.
 TEMPLATE_TEST_CASE("Linear tangent steering", "", /*MocoTropterSolver, TODO*/
         MocoCasADiSolver) {
-    std::cout.rdbuf(LogManager::cout.rdbuf());
-    std::cout.rdbuf(LogManager::cout.rdbuf());
     // The problem is parameterized by a, T, and h, with 0 < 4h/(aT^2) < 1.
     const double a = 5;
     const double finalTime = 1; // "T"

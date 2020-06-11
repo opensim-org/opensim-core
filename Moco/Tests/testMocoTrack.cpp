@@ -18,8 +18,6 @@
 
 #include <Moco/osimMoco.h>
 
-#include <OpenSim/Common/LogManager.h>
-
 #define CATCH_CONFIG_MAIN
 #include "Testing.h"
 
@@ -46,8 +44,6 @@ TEST_CASE("MocoTrack interface") {
 }
 
 TEST_CASE("MocoTrack gait10dof18musc") {
-    std::cout.rdbuf(LogManager::cout.rdbuf());
-    std::cerr.rdbuf(LogManager::cerr.rdbuf());
 
     MocoTrack track;
 

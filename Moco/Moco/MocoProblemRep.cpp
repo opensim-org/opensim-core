@@ -57,7 +57,7 @@ void MocoProblemRep::initialize() {
     m_implicit_residual_refs.clear();
 
     if (!getTimeInitialBounds().isSet() && !getTimeFinalBounds().isSet()) {
-        std::cout << "Warning: no time bounds set." << std::endl;
+        log_warn("No time bounds set.");
     }
 
     const auto& ph0 = m_problem->getPhase(0);
@@ -207,21 +207,21 @@ void MocoProblemRep::initialize() {
             // TODO how to name multiplier variables?
             std::vector<MocoVariableInfo> multInfos;
             for (int i = 0; i < mp; ++i) {
-                std::string name = format("cid%i_p%i", cid, i);
+                std::string name = fmt::format("cid{}_p{}", cid, i);
                 kc_perr_names.push_back(name);
                 MocoVariableInfo info("lambda_" + name, multBounds,
                         multInitBounds, multFinalBounds);
                 multInfos.push_back(info);
             }
             for (int i = 0; i < mv; ++i) {
-                std::string name = format("cid%i_v%i", cid, i);
+                std::string name = fmt::format("cid{}_v{}", cid, i);
                 MocoVariableInfo info("lambda_" + name, multBounds,
                         multInitBounds, multFinalBounds);
                 kc_verr_names.push_back(name);
                 multInfos.push_back(info);
             }
             for (int i = 0; i < ma; ++i) {
-                std::string name = format("cid%i_a%i", cid, i);
+                std::string name = fmt::format("cid{}_a{}", cid, i);
                 MocoVariableInfo info("lambda_" + name, multBounds,
                         multInitBounds, multFinalBounds);
                 kc_aerr_names.push_back(name);
@@ -292,7 +292,7 @@ void MocoProblemRep::initialize() {
     for (int i = 0; i < ph0.getProperty_state_infos().size(); ++i) {
         const auto& name = ph0.get_state_infos(i).getName();
         OPENSIM_THROW_IF(stateNames.findIndex(name) == -1, Exception,
-                format("State info provided for nonexistent state '%s'.",
+                fmt::format("State info provided for nonexistent state '{}'.",
                         name));
     }
 
@@ -312,9 +312,8 @@ void MocoProblemRep::initialize() {
         for (const auto& output : outputsBound) {
             const auto nameStart = output->getName().find("_") + 1;
             const auto stateName = output->getName().substr(nameStart);
-            const auto statePath = format("%s/%s",
-                    component.getAbsolutePathString(),
-                    stateName);
+            const auto statePath = fmt::format(
+                    "{}/{}", component.getAbsolutePathString(), stateName);
             // If this is indeed a state and no info has been provided for it,
             // use the state bounds from the output.
             if (stateNames.findIndex(statePath) != -1) {
@@ -381,8 +380,8 @@ void MocoProblemRep::initialize() {
         const auto& name = ph0.get_control_infos(i).getName();
         auto it = std::find(controlNames.begin(), controlNames.end(), name);
         OPENSIM_THROW_IF(it == controlNames.end(), Exception,
-                format("Control info provided for nonexistent or disabled "
-                       "actuator '%s'.",
+                fmt::format("Control info provided for nonexistent or disabled "
+                            "actuator '{}'.",
                         name));
     }
 
@@ -472,7 +471,7 @@ void MocoProblemRep::initialize() {
         OPENSIM_THROW_IF(param.getName().empty(), Exception,
                 "All parameters must have a name.");
         OPENSIM_THROW_IF(paramNames.count(param.getName()), Exception,
-                format("A parameter with name '%s' already exists.",
+                fmt::format("A parameter with name '{}' already exists.",
                         param.getName()));
         paramNames.insert(param.getName());
         m_parameters[i] = std::unique_ptr<MocoParameter>(param.clone());
@@ -494,7 +493,7 @@ void MocoProblemRep::initialize() {
         OPENSIM_THROW_IF(goal.getName().empty(), Exception,
                 "All goals must have a name.");
         OPENSIM_THROW_IF(goalNames.count(goal.getName()), Exception,
-                format("A goal with name '%s' already exists.",
+                fmt::format("A goal with name '{}' already exists.",
                         goal.getName()));
         goalNames.insert(goal.getName());
         if (goal.getEnabled()) {
@@ -522,7 +521,7 @@ void MocoProblemRep::initialize() {
         OPENSIM_THROW_IF(pc.getName().empty(), Exception,
                 "All path constraints must have a name.");
         OPENSIM_THROW_IF(pcNames.count(pc.getName()), Exception,
-                format("A path constraint with name '%s' already exists.",
+                fmt::format("A path constraint with name '{}' already exists.",
                         pc.getName()));
         pcNames.insert(pc.getName());
         m_path_constraints[i] = std::unique_ptr<MocoPathConstraint>(pc.clone());
@@ -639,13 +638,13 @@ std::vector<std::string> MocoProblemRep::createPathConstraintNames() const {
 const MocoVariableInfo& MocoProblemRep::getStateInfo(
         const std::string& name) const {
     OPENSIM_THROW_IF(m_state_infos.count(name) == 0, Exception,
-            format("No info available for state '%s'.", name));
+            fmt::format("No info available for state '{}'.", name));
     return m_state_infos.at(name);
 }
 const MocoVariableInfo& MocoProblemRep::getControlInfo(
         const std::string& name) const {
     OPENSIM_THROW_IF(m_control_infos.count(name) == 0, Exception,
-            format("No info available for control '%s'.", name));
+            fmt::format("No info available for control '{}'.", name));
     return m_control_infos.at(name);
 }
 const MocoParameter& MocoProblemRep::getParameter(
@@ -655,14 +654,15 @@ const MocoParameter& MocoProblemRep::getParameter(
         if (param->getName() == name) { return *param.get(); }
     }
     OPENSIM_THROW(
-            Exception, format("No parameter with name '%s' found.", name));
+            Exception, fmt::format("No parameter with name '{}' found.", name));
 }
 const MocoGoal& MocoProblemRep::getCost(const std::string& name) const {
 
     for (const auto& c : m_costs) {
         if (c->getName() == name) { return *c.get(); }
     }
-    OPENSIM_THROW(Exception, format("No cost with name '%s' found.", name));
+    OPENSIM_THROW(
+            Exception, fmt::format("No cost with name '{}' found.", name));
 }
 const MocoGoal& MocoProblemRep::getCostByIndex(int index) const {
     return *m_costs[index];
@@ -674,7 +674,7 @@ const MocoGoal& MocoProblemRep::getEndpointConstraint(
         if (c->getName() == name) { return *c.get(); }
     }
     OPENSIM_THROW(Exception,
-            format("No endpoint constraint with name '%s' found.", name));
+            fmt::format("No endpoint constraint with name '{}' found.", name));
 }
 const MocoGoal& MocoProblemRep::getEndpointConstraintByIndex(int index) const {
     return *m_endpoint_constraints[index];
@@ -686,7 +686,7 @@ const MocoPathConstraint& MocoProblemRep::getPathConstraint(
         if (pc->getName() == name) { return *pc.get(); }
     }
     OPENSIM_THROW(Exception,
-            format("No path constraint with name '%s' found.", name));
+            fmt::format("No path constraint with name '{}' found.", name));
 }
 const MocoPathConstraint& MocoProblemRep::getPathConstraintByIndex(
         int index) const {
@@ -701,7 +701,7 @@ const MocoKinematicConstraint& MocoProblemRep::getKinematicConstraint(
         if (kc.getConstraintInfo().getName() == name) { return kc; }
     }
     OPENSIM_THROW(Exception,
-            format("No kinematic constraint with name '%s' found.", name));
+            fmt::format("No kinematic constraint with name '{}' found.", name));
 }
 const std::vector<MocoVariableInfo>& MocoProblemRep::getMultiplierInfos(
         const std::string& kinematicConstraintInfoName) const {
@@ -710,9 +710,9 @@ const std::vector<MocoVariableInfo>& MocoProblemRep::getMultiplierInfos(
     if (search != m_multiplier_infos_map.end()) {
         return m_multiplier_infos_map.at(kinematicConstraintInfoName);
     } else {
-        OPENSIM_THROW(Exception, format("No variable infos for kinematic "
-                                        "constraint info with "
-                                        "name '%s' found.",
+        OPENSIM_THROW(Exception, fmt::format("No variable infos for kinematic "
+                                             "constraint info with "
+                                             "name '{}' found.",
                                          kinematicConstraintInfoName));
     }
 }
@@ -722,8 +722,8 @@ void MocoProblemRep::applyParametersToModelProperties(
         bool initSystemAndDisableConstraints) const {
     OPENSIM_THROW_IF(parameterValues.size() != (int)m_parameters.size(),
             Exception,
-            format("There are %i parameters in "
-                   "this MocoProblem, but %i values were provided.",
+            fmt::format("There are {} parameters in "
+                        "this MocoProblem, but {} values were provided.",
                     m_parameters.size(), parameterValues.size()));
     for (int i = 0; i < (int)m_parameters.size(); ++i) {
         m_parameters[i]->applyParameterToModelProperties(parameterValues(i));
@@ -776,85 +776,53 @@ void MocoProblemRep::applyParametersToModelProperties(
     }
 }
 
-void MocoProblemRep::printDescription(std::ostream& stream) const {
-    stream << "Costs:";
-    if (m_costs.empty())
-        stream << " none";
-    else
-        stream << " (total: " << m_costs.size() << ")";
-    stream << "\n";
+void MocoProblemRep::printDescription() const {
+
+    auto printHeaderLine = [&](const std::string& label, size_t size) {
+        std::stringstream ss;
+        ss << label << ": ";
+        if (size == 0) {
+            ss << "none";
+        } else {
+            ss << "(total: " << size << ")";
+        }
+        log_cout(ss.str());
+    };
+
+    printHeaderLine("Costs", m_costs.size());
     for (const auto& cost : m_costs) {
-        stream << "  ";
-        cost->printDescription(stream);
+        cost->printDescription();
     }
 
-    stream << "Endpoint constraints:";
-    if (m_endpoint_constraints.empty())
-        stream << " none";
-    else
-        stream << " (total: " << m_endpoint_constraints.size() << ")";
-    stream << "\n";
+    printHeaderLine("Endpoint constraints", m_endpoint_constraints.size());
     for (const auto& endpoint_constraint : m_endpoint_constraints) {
-        stream << "  ";
-        endpoint_constraint->printDescription(stream);
+        endpoint_constraint->printDescription();
     }
 
-    stream << "Kinematic constraints:";
-    if (m_kinematic_constraints.empty())
-        stream << " none";
-    else
-        stream << " (total: " << m_kinematic_constraints.size() << ")";
-    stream << "\n";
+    printHeaderLine("Kinematic constraints", m_kinematic_constraints.size());
     for (int i = 0; i < (int)m_kinematic_constraints.size(); ++i) {
-        stream << "  ";
-        m_kinematic_constraints[i].getConstraintInfo().printDescription(stream);
+        m_kinematic_constraints[i].getConstraintInfo().printDescription();
     }
 
-    stream << "Path constraints:";
-    if (m_path_constraints.empty())
-        stream << " none";
-    else
-        stream << " (total: " << m_path_constraints.size() << ")";
-    stream << "\n";
+    printHeaderLine("Path constraints", m_path_constraints.size());
     for (const auto& pc : m_path_constraints) {
-        stream << "  ";
-        pc->getConstraintInfo().printDescription(stream);
+        pc->getConstraintInfo().printDescription();
     }
 
-    stream << "States:";
-    if (m_state_infos.empty())
-        stream << " none";
-    else
-        stream << " (total: " << m_state_infos.size() << ")";
-    stream << "\n";
+    printHeaderLine("States", m_state_infos.size());
     // TODO want to loop through the model's state variables and controls,
     // not just the infos.
     for (const auto& info : m_state_infos) {
-        stream << "  ";
-        info.second.printDescription(stream);
+        info.second.printDescription();
     }
 
-    stream << "Controls:";
-    if (m_control_infos.empty())
-        stream << " none";
-    else
-        stream << " (total: " << m_control_infos.size() << "):";
-    stream << "\n";
+    printHeaderLine("Controls", m_control_infos.size());
     for (const auto& info : m_control_infos) {
-        stream << "  ";
-        info.second.printDescription(stream);
+        info.second.printDescription();
     }
 
-    stream << "Parameters:";
-    if (m_parameters.empty())
-        stream << " none";
-    else
-        stream << " (total: " << m_parameters.size() << "):";
-    stream << "\n";
+    printHeaderLine("Parameters", m_parameters.size());
     for (const auto& param : m_parameters) {
-        stream << "  ";
-        param->printDescription(stream);
+        param->printDescription();
     }
-
-    stream.flush();
 }

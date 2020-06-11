@@ -128,7 +128,7 @@ protected:
     void initializeOnModelImpl(const Model& model) const override;
     void calcGoalImpl(
             const GoalInput& input, SimTK::Vector& goal) const override;
-    void printDescriptionImpl(std::ostream& stream = std::cout) const override;
+    void printDescriptionImpl() const override;
 
 private:
     OpenSim_DECLARE_LIST_PROPERTY(state_pairs, MocoPeriodicityGoalPair,

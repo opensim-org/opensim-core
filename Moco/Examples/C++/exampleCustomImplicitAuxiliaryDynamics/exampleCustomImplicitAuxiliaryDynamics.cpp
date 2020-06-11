@@ -97,8 +97,8 @@ private:
         OPENSIM_THROW_IF_FRMOBJ(get_foo_dynamics_mode() != "implicit" &&
                                         get_foo_dynamics_mode() != "explicit",
                 Exception,
-                format("Expected foo_dynamics_mode to be 'implicit' or "
-                       "'explicit', but got '%s'.",
+                fmt::format("Expected foo_dynamics_mode to be 'implicit' or "
+                            "'explicit', but got '{}'.",
                         get_foo_dynamics_mode()));
         m_foo_dynamics_mode_implicit = get_foo_dynamics_mode() == "implicit";
     }

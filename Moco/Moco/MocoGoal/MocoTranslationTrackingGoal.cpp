@@ -57,13 +57,15 @@ void MocoTranslationTrackingGoal::initializeOnModelImpl(const Model& model)
             const auto& labels = translationTableToUse.getColumnLabels();
             for (int i = 0; i < getProperty_frame_paths().size(); ++i) {
                 const auto& path = get_frame_paths(i);
-                OPENSIM_THROW_IF_FRMOBJ(
-                    std::find(labels.begin(), labels.end(), path) ==
-                        labels.end(),
-                    Exception,
-                    format("Expected frame_paths to match one of the "
-                        "column labels in the translation reference, but frame "
-                        "path '%s' not found in the reference labels.", path));
+                OPENSIM_THROW_IF_FRMOBJ(std::find(labels.begin(), labels.end(),
+                                                path) == labels.end(),
+                        Exception,
+                        fmt::format(
+                                "Expected frame_paths to match one of the "
+                                "column labels in the translation reference, "
+                                "but frame path '{}' not found in the "
+                                "reference labels.",
+                                path));
                 m_frame_paths.push_back(path);
                 translationTable.appendColumn(path,
                     translationTableToUse.getDependentColumn(path));
@@ -158,13 +160,11 @@ void MocoTranslationTrackingGoal::calcIntegrandImpl(
     }
 }
 
-void MocoTranslationTrackingGoal::printDescriptionImpl(std::ostream& stream) const {
-    stream << "        ";
-    stream << "translation reference file: "
-           << get_translation_reference_file() << std::endl;
+void MocoTranslationTrackingGoal::printDescriptionImpl() const {
+    log_cout("        translation reference file: {}",
+             get_translation_reference_file());
     for (int i = 0; i < (int)m_frame_paths.size(); i++) {
-        stream << "        ";
-        stream << "frame " << i << ": " << m_frame_paths[i] << ", ";
-        stream << "weight: " << m_translation_weights[i] << std::endl;
+        log_cout("        frame {}: {}, weight: {}", i, m_frame_paths[i],
+                m_translation_weights[i]);
     }
 }

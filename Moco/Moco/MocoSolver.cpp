@@ -28,9 +28,9 @@ MocoTrajectory MocoSolver::createGuessTimeStepping() const {
     const auto& initialTime = probrep.getTimeInitialBounds().getUpper();
     const auto& finalTime = probrep.getTimeFinalBounds().getLower();
     OPENSIM_THROW_IF_FRMOBJ(finalTime <= initialTime, Exception,
-            format("Expected lower bound on final time to be greater than "
-                   "upper bound on initial time, but "
-                   "final_time.lower: %g; initial_time.upper: %g.",
+            fmt::format("Expected lower bound on final time to be greater than "
+                        "upper bound on initial time, but "
+                        "final_time.lower: {}; initial_time.upper: {}.",
                     finalTime, initialTime));
     Model model(probrep.getModelBase());
 

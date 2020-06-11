@@ -4,7 +4,7 @@
 # will invalidate its cached opensim-core installation if we change the commit.
 # This commented commit hash is not actually used in the superbuild.
 # opensim-core commit:
-# 2f5d4b09722e57359e2ff1787328527050a4d34e
+# 82ec3d1c74af1ff1893d9c5453ef6c52fe2e2fc9
 
 AddDependency(NAME       opensim-core
               URL        ${CMAKE_SOURCE_DIR}/../opensim-core
@@ -38,7 +38,16 @@ if(SUPERBUILD_opensim-core)
                   GIT_TAG    3dd23e3280f213bacefdf5fcb04857bf52e90917
                   CMAKE_ARGS -DCMAKE_DEBUG_POSTFIX:STRING=_d)
 
-    add_dependencies(opensim-core BTK simbody docopt)
+    AddDependency(NAME       spdlog
+                  DEFAULT    ON
+                  GIT_URL    https://github.com/gabime/spdlog.git
+                  GIT_TAG    v1.4.1
+                  CMAKE_ARGS -DSPDLOG_BUILD_BENCH:BOOL=OFF
+                             -DSPDLOG_BUILD_TESTS:BOOL=OFF
+                             -DSPDLOG_BUILD_EXAMPLE:BOOL=OFF
+                             -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON)
+
+    add_dependencies(opensim-core BTK simbody docopt spdlog)
 endif()
 
 

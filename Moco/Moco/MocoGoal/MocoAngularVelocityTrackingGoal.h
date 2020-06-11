@@ -142,7 +142,7 @@ protected:
             const GoalInput& input, SimTK::Vector& cost) const override {
         cost[0] = input.integral;
     }
-    void printDescriptionImpl(std::ostream& stream = std::cout) const override;
+    void printDescriptionImpl() const override;
 
 private:
     OpenSim_DECLARE_PROPERTY(states_reference, TableProcessor,

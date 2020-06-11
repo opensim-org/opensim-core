@@ -3,6 +3,8 @@ Change Log
 
 0.5.0 (in development)
 ----------------------
+- 2020-06-08: Moco uses OpenSim's new message logging system.
+
 - 2020-06-01: Introduce MocoGoal::getStageDependency() to improve efficiency of 
               goals.
               
@@ -10,7 +12,7 @@ Change Log
               Instead, Moco adds a DiscreteController to the model and the 
               solvers modify the DiscreteController's control signals.
               This change allows Moco to support synergies in the future.
-              
+
 - 2020-05-24: Expose MocoAccelerationTrackingGoal in Matlab and Python.
               
 - 2020-05-16: Moved ActivationCoordinateActuator from opensim-moco to

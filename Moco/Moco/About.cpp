@@ -22,8 +22,9 @@
 
 #include "About.h"
 
-#include "MocoUtilities.h"
 #include <stdio.h>
+
+#include <OpenSim/Common/Logger.h>
 
 #define STR(var) #var
 #define MAKE_VERSION_STRING(maj, min, build) STR(maj.min.build)
@@ -44,8 +45,8 @@ namespace OpenSim {
 static const char* OpenSimMocoVersion = GET_OPENSIM_MOCO_VERSION_STRING;
 
 std::string GetMocoVersionAndDate() {
-    return format("version %s, build date %s %s", OpenSimMocoVersion, __TIME__,
-            __DATE__);
+    return fmt::format("version {}, build date {} {}", OpenSimMocoVersion,
+            __TIME__, __DATE__);
 }
 
 std::string GetMocoVersion() { return OpenSimMocoVersion; }

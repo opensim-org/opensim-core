@@ -63,26 +63,28 @@ void MocoFrameDistanceConstraint::initializeOnModelImpl(
     for (int i = 0; i < nFramePairs; ++i) {
         const auto frame1_path = get_frame_pairs(i).get_frame1_path();
         OPENSIM_THROW_IF(!model.hasComponent<Frame>(frame1_path), Exception,
-                format("Could not find frame '%s'.", frame1_path));
+                fmt::format("Could not find frame '{}'.", frame1_path));
         auto& frame1 = model.getComponent<Frame>(frame1_path);
         const auto frame2_path = get_frame_pairs(i).get_frame2_path();
         OPENSIM_THROW_IF(!model.hasComponent<Frame>(frame2_path), Exception,
-                format("Could not find frame '%s'.", frame2_path));
+                fmt::format("Could not find frame '{}'.", frame2_path));
         auto& frame2 = model.getComponent<Frame>(frame2_path);
         m_frame_pairs.emplace_back(&frame1, &frame2);
 
         const double& minimum = get_frame_pairs(i).get_minimum_distance();
         const double& maximum = get_frame_pairs(i).get_maximum_distance();
-        OPENSIM_THROW_IF(minimum < 0, Exception, 
-                format("Expected the minimum distance for this frame pair to " 
-                    "non-negative, but it is %d.", minimum));
+        OPENSIM_THROW_IF(minimum < 0, Exception,
+                fmt::format("Expected the minimum distance for this frame pair "
+                            "to non-negative, but it is {}.",
+                        minimum));
         OPENSIM_THROW_IF(maximum < 0, Exception,
-                format("Expected the maximum distance for this frame pair to "
-                       "non-negative, but it is %d.", maximum));
+                fmt::format("Expected the maximum distance for this frame pair "
+                            "to non-negative, but it is {}.", maximum));
         OPENSIM_THROW_IF(minimum > maximum, Exception,
-                format("Expected the minimum distance for this frame pair to "
-                       "be less than or equal to the maximum distance, but "
-                       "they are %d and %d, respectively.", minimum, maximum));
+                fmt::format("Expected the minimum distance for this frame pair "
+                            "to be less than or equal to the maximum distance, "
+                            "but they are {} and {}, respectively.",
+                        minimum, maximum));
         bounds.emplace_back(SimTK::square(minimum), SimTK::square(maximum));
     }
 
@@ -93,9 +95,9 @@ void MocoFrameDistanceConstraint::initializeOnModelImpl(
         m_projectionType = ProjectionType::Plane;
     } else if (get_projection() != "none") {
         OPENSIM_THROW_FRMOBJ(
-                Exception, format("Expected 'projection' to be 'none', "
-                                  "'vector', or 'plane', but got '%s'.",
-                get_projection()));
+                Exception, fmt::format("Expected 'projection' to be 'none', "
+                                       "'vector', or 'plane', but got '{}'.",
+                                   get_projection()));
     }
     if (m_projectionType != ProjectionType::None) {
         OPENSIM_THROW_IF_FRMOBJ(getProperty_projection_vector().empty(),

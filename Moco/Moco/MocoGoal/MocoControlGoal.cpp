@@ -139,10 +139,9 @@ void MocoControlGoal::calcGoalImpl(
     }
 }
 
-void MocoControlGoal::printDescriptionImpl(std::ostream& stream) const {
+void MocoControlGoal::printDescriptionImpl() const {
     for (int i = 0; i < (int) m_controlNames.size(); i++) {
-        stream << "        ";
-        stream << "control: " << m_controlNames[i]
-               << ", weight: " << m_weights[i] << std::endl;
+        log_cout("        control: {}, weight: {}", m_controlNames[i],
+                m_weights[i]);
     }
 }

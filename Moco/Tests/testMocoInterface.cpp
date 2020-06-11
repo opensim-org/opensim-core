@@ -23,7 +23,6 @@
 
 #include <OpenSim/Actuators/BodyActuator.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
-#include <OpenSim/Common/LogManager.h>
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
@@ -87,8 +86,6 @@ TEMPLATE_TEST_CASE(
         "Non-uniform mesh", "", MocoTropterSolver, MocoCasADiSolver) {
     auto transcriptionScheme =
             GENERATE(as<std::string>{}, "trapezoidal", "hermite-simpson");
-    std::cout.rdbuf(LogManager::cout.rdbuf());
-    std::cout.rdbuf(LogManager::cout.rdbuf());
     MocoStudy study;
     double finalTime = 5.0;
     study.setName("sliding_mass");
@@ -786,8 +783,6 @@ TEMPLATE_TEST_CASE("Set infos with regular expression", "", MocoCasADiSolver,
 }
 TEMPLATE_TEST_CASE(
         "Disable Actuators", "", MocoCasADiSolver, MocoTropterSolver) {
-    std::cout.rdbuf(LogManager::cout.rdbuf());
-    std::cout.rdbuf(LogManager::cout.rdbuf());
 
     MocoSolution solution;
     MocoSolution solution2;
@@ -930,8 +925,6 @@ TEMPLATE_TEST_CASE("State tracking", "", MocoTropterSolver, MocoCasADiSolver) {
 }
 
 TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
-    std::cout.rdbuf(LogManager::cout.rdbuf());
-    std::cout.rdbuf(LogManager::cout.rdbuf());
 
     MocoStudy study = createSlidingMassMocoStudy<TestType>();
     auto& ms = study.initSolver<TestType>();
@@ -1546,8 +1539,6 @@ TEST_CASE("MocoTrajectory") {
 }
 
 TEST_CASE("MocoTrajectory isCompatible") {
-    std::cout.rdbuf(LogManager::cout.rdbuf());
-    std::cout.rdbuf(LogManager::cout.rdbuf());
     MocoProblem problem;
     problem.setModel(createSlidingMassModel());
     problem.setTimeBounds(MocoInitialBounds(0), MocoFinalBounds(0, 10));
@@ -1708,8 +1699,6 @@ TEST_CASE("Interpolate", "") {
 }
 
 TEMPLATE_TEST_CASE("Sliding mass", "", MocoTropterSolver, MocoCasADiSolver) {
-    std::cout.rdbuf(LogManager::cout.rdbuf());
-    std::cout.rdbuf(LogManager::cout.rdbuf());
     MocoStudy study = createSlidingMassMocoStudy<TestType>();
     MocoSolution solution = study.solve();
     int numTimes = 20;
@@ -1852,8 +1841,6 @@ void testSkippingOverQuaternionSlots(
 }
 
 TEST_CASE("Skip over empty quaternion slots", "") {
-    std::cout.rdbuf(LogManager::cout.rdbuf());
-    std::cout.rdbuf(LogManager::cout.rdbuf());
 
     testSkippingOverQuaternionSlots<MocoTropterSolver>(
             false, false, "explicit");

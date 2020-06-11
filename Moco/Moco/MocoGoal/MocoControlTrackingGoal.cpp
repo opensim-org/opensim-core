@@ -47,7 +47,7 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
         const auto& weightName = get_control_weights().get(i).getName();
         if (allControlIndices.count(weightName) == 0) {
             OPENSIM_THROW_FRMOBJ(Exception,
-                    format("Weight provided with name '%s' but this is "
+                    fmt::format("Weight provided with name '{}' but this is "
                            "not a recognized control.", weightName));
         }
     }
@@ -64,12 +64,12 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
         const auto& controlName = get_reference_labels(i).getName();
         if (allControlIndices.count(controlName) == 0) {
             OPENSIM_THROW_FRMOBJ(Exception,
-                format("Control '%s' does not exist in the model.",
+                fmt::format("Control '{}' does not exist in the model.",
                         controlName));
         }
         OPENSIM_THROW_IF_FRMOBJ(controlsToTrack.count(controlName), Exception,
-                format("Expected control '%s' to be provided no more than once,"
-                       "but it is provided more than once.",
+                fmt::format("Expected control '{}' to be provided no more "
+                            "than once, but it is provided more than once.",
                         controlName));
         controlsToTrack.insert(controlName);
         refLabels[controlName] = get_reference_labels(i).get_reference();
@@ -89,9 +89,10 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
         for (const auto& control : controlsToTrack) {
             OPENSIM_THROW_IF_FRMOBJ(!allSplines.contains(refLabels[control]),
                     Exception,
-                    format("Expected reference to contain label '%s', which "
-                           "was associated with control '%s', but no such "
-                           "label exists.", refLabels[control], control));
+                    fmt::format("Expected reference to contain label '{}', "
+                                "which was associated with control '{}', but "
+                                "no such label exists.",
+                            refLabels[control], control));
         }
     } else {
         // The goal is in 'auto' labeling mode;
@@ -101,8 +102,9 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
             if (allControlIndices.count(refLabel) == 0) {
                 if (get_allow_unused_references()) { continue; }
                 OPENSIM_THROW_FRMOBJ(Exception,
-                        format("Reference contains column '%s' which does not "
-                               "match the name of any control variables.",
+                        fmt::format("Reference contains column '{}' which does "
+                                    "not match the name of any control "
+                                    "variables.",
                                 refLabel));
             }
             // In this labeling mode, the refLabel is the control name.
@@ -158,12 +160,10 @@ void MocoControlTrackingGoal::calcIntegrandImpl(
     }
 }
 
-void MocoControlTrackingGoal::printDescriptionImpl(std::ostream& stream) const {
+void MocoControlTrackingGoal::printDescriptionImpl() const {
     for (int i = 0; i < (int)m_control_names.size(); i++) {
-        stream << "        ";
-        stream << "control: " << m_control_names[i]
-                << ", reference label: " << m_ref_labels[i]
-                << ", weight: " << m_control_weights[i] << std::endl;
+        log_cout("        control: {}, reference label: {}, weight: {}",
+                m_control_names[i], m_ref_labels[i], m_control_weights[i]);
     }
 }
 

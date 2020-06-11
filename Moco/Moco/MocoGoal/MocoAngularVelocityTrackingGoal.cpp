@@ -61,11 +61,12 @@ void MocoAngularVelocityTrackingGoal::initializeOnModelImpl(
                 OPENSIM_THROW_IF_FRMOBJ(std::find(labels.begin(), labels.end(),
                                                 path) == labels.end(),
                         Exception,
-                        format("Expected frame_paths to match one of the "
-                               "column labels in the angular velocity "
-                               "reference, but "
-                               "frame path '%s' not found in the reference "
-                               "labels.",
+                        fmt::format(
+                                "Expected frame_paths to match one of the "
+                                "column labels in the angular velocity "
+                                "reference, but "
+                                "frame path '{}' not found in the reference "
+                                "labels.",
                                 path));
                 m_frame_paths.push_back(path);
                 angularVelocityTable.appendColumn(path,
@@ -162,14 +163,11 @@ void MocoAngularVelocityTrackingGoal::calcIntegrandImpl(
     }
 }
 
-void MocoAngularVelocityTrackingGoal::printDescriptionImpl(
-        std::ostream& stream) const {
-    stream << "        ";
-    stream << "angular velocity reference file: "
-           << get_angular_velocity_reference_file() << std::endl;
+void MocoAngularVelocityTrackingGoal::printDescriptionImpl() const {
+    log_cout("        angular velocity reference file: {}",
+            get_angular_velocity_reference_file());
     for (int i = 0; i < (int)m_frame_paths.size(); i++) {
-        stream << "        ";
-        stream << "frame " << i << ": " << m_frame_paths[i] << ", ";
-        stream << "weight: " << m_angular_velocity_weights[i] << std::endl;
+        log_cout("        frame {}: {}, weight: {}", i, m_frame_paths[i],
+                m_angular_velocity_weights[i]);
     }
 }

@@ -49,10 +49,10 @@ public:
         const auto shape = meshIndices.size();
         OPENSIM_THROW_IF(shape.first != 1 || shape.second != m_numGridPoints,
                 OpenSim::Exception,
-                OpenSim::format(
+                fmt::format(
                         "createMeshIndicesImpl() must return a "
-                        "row vector of shape length [1, %i], but a matrix of "
-                        "shape [%i, %i] was returned.",
+                        "row vector of shape length [1, {}], but a matrix of "
+                        "shape [{}, {}] was returned.",
                         m_numGridPoints, shape.first, shape.second));
         OPENSIM_THROW_IF(!SimTK::isNumericallyEqual(
                                  casadi::DM::sum2(meshIndices).scalar(),

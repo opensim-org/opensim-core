@@ -86,8 +86,8 @@ MocoStudy MocoTrack::initialize() {
     // ----------------------------
     if (get_minimize_control_effort()) {
         OPENSIM_THROW_IF(get_control_effort_weight() < 0, Exception,
-                format("Expected a non-negative control effort weight, but "
-                       "got a weight with value %d.",
+                fmt::format("Expected a non-negative control effort weight, "
+                            "but got a weight with value {}.",
                         get_control_effort_weight()));
 
         auto* effort = problem.addGoal<MocoControlGoal>("control_effort");
@@ -280,9 +280,8 @@ void MocoTrack::applyStatesToGuess(
             guess.setState(label, col);
         } else {
             OPENSIM_THROW_IF(!get_allow_unused_references(), Exception,
-                    format("Tried to apply data for state '%s' to guess, but "
-                           "this "
-                           "state does not exist in the model.",
+                    fmt::format("Tried to apply data for state '{}' to guess, "
+                                "but this state does not exist in the model.",
                             label));
         }
     }

@@ -21,7 +21,6 @@
 #include <Moco/osimMoco.h>
 
 #include <OpenSim/Actuators/CoordinateActuator.h>
-#include <OpenSim/Common/LogManager.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 
@@ -114,8 +113,6 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
 
 TEMPLATE_TEST_CASE("Similar solutions between implicit and explicit dynamics",
         "[implicit]", MocoTropterSolver, MocoCasADiSolver) {
-    std::cout.rdbuf(LogManager::cout.rdbuf());
-    std::cerr.rdbuf(LogManager::cerr.rdbuf());
     GIVEN("solutions to implicit and explicit problems") {
 
         auto solutionImplicit =
@@ -170,8 +167,6 @@ TEMPLATE_TEST_CASE("Similar solutions between implicit and explicit dynamics",
 
 TEMPLATE_TEST_CASE("Combining implicit dynamics mode with path constraints",
         "[implicit]", MocoTropterSolver, MocoCasADiSolver) {
-    std::cout.rdbuf(LogManager::cout.rdbuf());
-    std::cerr.rdbuf(LogManager::cerr.rdbuf());
     class MyPathConstraint : public MocoPathConstraint {
         OpenSim_DECLARE_CONCRETE_OBJECT(MyPathConstraint, MocoPathConstraint);
         void initializeOnModelImpl(
@@ -211,8 +206,6 @@ TEMPLATE_TEST_CASE("Combining implicit dynamics mode with path constraints",
 
 TEMPLATE_TEST_CASE("Combining implicit dynamics with kinematic constraints",
         "[implicit]", /*MocoTropterSolver,*/ MocoCasADiSolver) {
-    std::cout.rdbuf(LogManager::cout.rdbuf());
-    std::cerr.rdbuf(LogManager::cerr.rdbuf());
     GIVEN("MocoProblem with a kinematic constraint") {
         MocoStudy study;
         auto& prob = study.updProblem();

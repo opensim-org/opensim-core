@@ -92,7 +92,7 @@ protected:
 
         std::string formattedTimeString(getMocoFormattedDateTime(true));
         m_fileDeletionThrower = OpenSim::make_unique<FileDeletionThrower>(
-                format("delete_this_to_stop_optimization_%s_%s.txt",
+                fmt::format("delete_this_to_stop_optimization_{}_{}.txt",
                         m_mocoProbRep.getName(), formattedTimeString));
     }
 
@@ -174,22 +174,18 @@ protected:
             // constraint derivatives? For now, disallow enforcing derivatives
             // if non-holonomic or acceleration constraints present.
             OPENSIM_THROW_IF(enforceConstraintDerivs && mv != 0, Exception,
-                    format("Enforcing constraint derivatives is supported only "
-                           "for "
-                           "holonomic (position-level) constraints. "
-                           "There are %i velocity-level "
-                           "scalar constraints associated with the model "
-                           "Constraint "
-                           "at ConstraintIndex %i.",
+                    fmt::format("Enforcing constraint derivatives is supported "
+                                "only for holonomic (position-level) "
+                                "constraints. There are {} velocity-level "
+                                "scalar constraints associated with the model "
+                                "Constraint at ConstraintIndex {}.",
                             mv, cid));
             OPENSIM_THROW_IF(enforceConstraintDerivs && ma != 0, Exception,
-                    format("Enforcing constraint derivatives is supported only "
-                           "for "
-                           "holonomic (position-level) constraints. "
-                           "There are %i acceleration-level "
-                           "scalar constraints associated with the model "
-                           "Constraint "
-                           "at ConstraintIndex %i.",
+                    fmt::format("Enforcing constraint derivatives is supported "
+                                "only for holonomic (position-level) "
+                                "constraints. There are {} acceleration-level "
+                                "scalar constraints associated with the model "
+                                "Constraint at ConstraintIndex {}.",
                             ma, cid));
 
             m_total_mp += mp;
@@ -233,10 +229,9 @@ protected:
                         OPENSIM_THROW_IF(
                                 multInfo.getName().substr(0, 6) != "lambda",
                                 Exception,
-                                format("Expected the multiplier name for this "
-                                       "constraint to begin with 'lambda' but "
-                                       "it "
-                                       "begins with '%s'.",
+                                fmt::format("Expected the multiplier name for "
+                                            "this constraint to begin with "
+                                            "'lambda' but it begins with '{}'.",
                                         multInfo.getName().substr(0, 6)));
                         this->add_diffuse(std::string(multInfo.getName())
                                                   .replace(0, 6, "gamma"),
