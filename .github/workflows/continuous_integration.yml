@@ -56,6 +56,7 @@ jobs:
         chdir $env:GITHUB_WORKSPACE\\build_deps
         # /W0 disables warnings.
         # https://msdn.microsoft.com/en-us/library/19z1t1wy.aspx
+        # TODO: CMake provides /W3, which overrides our /W0
         cmake -E env CXXFLAGS="/W0" cmake $env:GITHUB_WORKSPACE/dependencies -LAH -G"Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install -DSUPERBUILD_ezc3d=ON
         cmake --build . --config Release -- /maxcpucount:4
 
@@ -65,7 +66,7 @@ jobs:
         chdir $env:GITHUB_WORKSPACE\\build
         # TODO: Can remove /WX when we use that in CMakeLists.txt.
         # Set the CXXFLAGS environment variable to turn warnings into errors.
-        # Skip timing test section included by default
+        # Skip timing test section included by default.
         cmake -E env CXXFLAGS="/WX -DSKIP_TIMING" cmake $env:GITHUB_WORKSPACE -LAH -G"Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install -DOPENSIM_C3D_PARSER=ezc3d -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on
 
     - name: Build opensim-core
@@ -176,7 +177,7 @@ jobs:
         printf '%s\n' "${OSIM_CMAKE_ARGS[@]}"
         cmake "${OSIM_CMAKE_ARGS[@]}"
 
-    - name: Buid opensim-core
+    - name: Build opensim-core
       run: |
         cd $GITHUB_WORKSPACE/../build
         make --jobs 4
@@ -271,7 +272,7 @@ jobs:
         printf '%s\n' "${OSIM_CMAKE_ARGS[@]}"
         cmake "${OSIM_CMAKE_ARGS[@]}"
 
-    - name: Buid opensim-core
+    - name: Build opensim-core
       run: |
         cd $GITHUB_WORKSPACE/../build
         make --jobs 4
