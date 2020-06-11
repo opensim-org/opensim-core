@@ -21,10 +21,15 @@
  * -------------------------------------------------------------------------- */
 
 #include "OpenSim/Common/Adapters.h"
-
-#include <unordered_set>
-#include <fstream>
+#include "OpenSim/Common/CommonUtilities.h"
 #include <cstdio>
+#include <fstream>
+#include <unordered_set>
+
+#define CATCH_CONFIG_MAIN
+#include <OpenSim/Auxiliary/catch.hpp>
+
+using namespace OpenSim;
 
 std::string getNextToken(std::istream& stream, 
                          const std::string& delims) {
@@ -58,17 +63,15 @@ void testFailed(const std::string& filename,
                     "Copied token = " + copiedtoken + "."};
 }
 
-void compareHeaders(std::ifstream& filenameA,
-                    std::ifstream& filenameB) {
+void compareHeaders(std::ifstream& fileA,
+                    std::ifstream& fileB) {
     using namespace OpenSim;
 
     std::unordered_set<std::string> headerA{}, headerB{};
 
     std::string line{};
-    while(std::getline(filenameA, line)) {
-        // Get rid of the extra \r if parsing a file with CRLF line endings.
-        if (!line.empty() && line.back() == '\r') 
-            line.pop_back();
+    while(std::getline(fileA, line)) {
+        IO::TrimWhitespace(line);
 
         if(line.find("endheader") != std::string::npos)
             break;
@@ -84,17 +87,15 @@ void compareHeaders(std::ifstream& filenameA,
         // Ignore the key-value pair specifying the version number. Old files
         // will have older version number.
         if(line.find("version") != std::string::npos)
-          continue;
+            continue;
 
         if(line.find("OpenSimVersion") != std::string::npos)
             continue;
 
         headerA.insert(line);
     }
-    while(std::getline(filenameB, line)) {
-        // Get rid of the extra \r if parsing a file with CRLF line endings.
-        if (!line.empty() && line.back() == '\r') 
-            line.pop_back();
+    while(std::getline(fileB, line)) {
+        IO::TrimWhitespace(line);
 
         if(line.find("endheader") != std::string::npos)
             break;
@@ -119,8 +120,8 @@ void compareHeaders(std::ifstream& filenameA,
     }
 
     if(headerA != headerB)
-        throw Exception{"Test failed: Original and copied headers do not "
-                        "match."};
+        throw Exception{
+                "Test failed: Original and copied headers do not match."};
 }
 
 void compareFiles(const std::string& filenameA, 
@@ -228,11 +229,9 @@ void testReadingWriting() {
     }
 }
 
-int main() {
-    using namespace OpenSim;
+TEST_CASE("STOFileAdapter") {
 
-    std::cout << "Testing reading/writing STOFileAdapter_<double>"
-              << std::endl;
+    std::cout << "Testing reading/writing STOFileAdapter_<double>" << std::endl;
     std::vector<std::string> filenames{};
     filenames.push_back("std_subject01_walk1_ik.mot");
     filenames.push_back("gait10dof18musc_subject01_walk_grf.mot");
@@ -245,7 +244,7 @@ int main() {
 
     std::cout << "Testing STOFileAdapter::read() and STOFileAdapter::write()"
               << std::endl;
-    for(const auto& filename : filenames) {
+    for (const auto& filename : filenames) {
         std::cout << "  " << filename << std::endl;
         STOFileAdapter_<double> stofileadapter{};
         TimeSeriesTable table(filename);
@@ -255,9 +254,11 @@ int main() {
 
     std::cout << "Testing FileAdapter::read() and FileAdapter::writeFile()"
               << std::endl;
-    for(const auto& filename : filenames) {
+    for (const auto& filename : filenames) {
         std::cout << "  " << filename << std::endl;
-        auto table = FileAdapter::createAdapterFromExtension(filename)->read(filename).at("table");
+        auto table = FileAdapter::createAdapterFromExtension(filename)
+                             ->read(filename)
+                             .at("table");
         DataAdapter::InputTables tables{};
         tables.emplace(std::string{"table"}, table.get());
         FileAdapter::writeFile(tables, tmpfile);
@@ -266,7 +267,7 @@ int main() {
 
     std::cout << "Testing TimeSeriesTable and STOFileAdapter::write()"
               << std::endl;
-    for(const auto& filename : filenames) {
+    for (const auto& filename : filenames) {
         std::cout << "  " << filename << std::endl;
         TimeSeriesTable table{filename};
         STOFileAdapter_<double>::write(table, tmpfile);
@@ -277,19 +278,19 @@ int main() {
 
     // test detection of invalid column labels
     TimeSeriesTable table{};
-    SimTK_TEST_MUST_THROW_EXC(table.setColumnLabels({ "c1", "c2", "", "c4" }),
-        InvalidColumnLabel);
-    SimTK_TEST_MUST_THROW_EXC(table.setColumnLabels({ "c1", "  ", "c3", "\t" }),
-        InvalidColumnLabel);
-    table.setColumnLabels({ "c1", "c2", "c3", "c4" });
-    SimTK_TEST_MUST_THROW_EXC(table.setColumnLabel(3, " \n hi"),
-        InvalidColumnLabel);
-    SimTK_TEST_MUST_THROW_EXC(table.setColumnLabel(2, "hel\rlo"),
-        InvalidColumnLabel);
-    SimTK_TEST_MUST_THROW_EXC(table.setColumnLabel(1, "ABC\tDEF"),
-        InvalidColumnLabel);
-    SimTK_TEST_MUST_THROW_EXC(table.setColumnLabel(0, "   ABC DEF   "),
-        InvalidColumnLabel);
+    SimTK_TEST_MUST_THROW_EXC(
+            table.setColumnLabels({"c1", "c2", "", "c4"}), InvalidColumnLabel);
+    SimTK_TEST_MUST_THROW_EXC(table.setColumnLabels({"c1", "  ", "c3", "\t"}),
+            InvalidColumnLabel);
+    table.setColumnLabels({"c1", "c2", "c3", "c4"});
+    SimTK_TEST_MUST_THROW_EXC(
+            table.setColumnLabel(3, " \n hi"), InvalidColumnLabel);
+    SimTK_TEST_MUST_THROW_EXC(
+            table.setColumnLabel(2, "hel\rlo"), InvalidColumnLabel);
+    SimTK_TEST_MUST_THROW_EXC(
+            table.setColumnLabel(1, "ABC\tDEF"), InvalidColumnLabel);
+    SimTK_TEST_MUST_THROW_EXC(
+            table.setColumnLabel(0, "   ABC DEF   "), InvalidColumnLabel);
     // space within the label should be OK
     table.setColumnLabel(1, "ABC DEF");
 
@@ -318,15 +319,17 @@ int main() {
               << std::endl;
     testReadingWriting<SimTK::SpatialVec>();
 
-    std::cout << "Testing exception for reading an empty file"
-              << std::endl;
+    std::cout << "Testing exception for reading an empty file" << std::endl;
     std::string emptyFileName("testSTOFileAdapter_empty.sto");
+    FileRemover fileRemover(emptyFileName);
     std::ofstream emptyFile(emptyFileName);
-    SimTK_TEST_MUST_THROW_EXC(FileAdapter::createAdapterFromExtension(emptyFileName)->read(emptyFileName), FileIsEmpty);
-    std::remove(emptyFileName.c_str());
+    SimTK_TEST_MUST_THROW_EXC(
+            FileAdapter::createAdapterFromExtension(emptyFileName)
+                    ->read(emptyFileName),
+            FileIsEmpty);
+}
 
-    std::cout << "Testing reading STO version 1.0 using "
-              << "FileAdapter::read()." << std::endl;
+TEST_CASE("Reading STO version 1.0 using FileAdapter::read()") {
     // There was a bug where the FileAdapter::read() could not handle
     // version-1.0 STO files because the "DataType" metadata was required to
     // determine the template argument for STOFileAdapter (Issue #1725).
@@ -334,11 +337,19 @@ int main() {
     auto outputTables = FileAdapter::createAdapterFromExtension("test.sto")->read("test.sto");
     SimTK_TEST(outputTables["table"]->getNumRows() == 2);
     SimTK_TEST(outputTables["table"]->getNumColumns() == 2);
-
-    std::cout << "\nAll tests passed!" << std::endl;
-
-    return 0;
 }
+
+TEST_CASE("Trimming whitespace in metadata values") {
+    const std::string filename = "testing_metadata_whitespace.sto";
+    {
+        TimeSeriesTable table;
+        table.addTableMetaData("inDegrees", std::string("yes\t\t\t"));
+        STOFileAdapter::write(table, filename);
+    }
+    TimeSeriesTable table(filename);
+    CHECK(table.getTableMetaDataAsString("inDegrees") == "yes");
+}
+
 
 
 
