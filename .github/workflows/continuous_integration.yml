@@ -117,7 +117,7 @@ jobs:
 
     - name: Install Homebrew and Python packages
       run: |
-        brew install cmake doxygen swig@3
+        brew install cmake autoconf libtool automake doxygen swig@3
         pip3 install numpy
 
     - name: Cache SWIG
