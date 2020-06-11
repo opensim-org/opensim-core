@@ -331,6 +331,8 @@ MocoSolution MocoTropterSolver::solveImpl() const {
     MocoTrajectory guess = getGuess();
     tropter::Iterate tropIterate = ocp->convertToTropterIterate(guess);
 
+    // Temporarily disable printing of negative muscle force warnings so the
+    // output stream isn't flooded while computing finite differences.
     Logger::Level origLoggerLevel = Logger::getLevel();
     Logger::setLevel(Logger::Level::Warn);
     tropter::Solution tropSolution;
