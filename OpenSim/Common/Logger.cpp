@@ -145,7 +145,7 @@ bool Logger::shouldLog(Level level) {
 
 void Logger::addFileSink(const std::string& filepath) {
     if (m_filesink) {
-        warn("Already logging to file '{}'; file sink not added. Call "
+        warn("Already logging to file '{}'; log file not added. Call "
              "removeFileSink() first.", m_filesink->filename());
         return;
     }
