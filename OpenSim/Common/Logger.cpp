@@ -156,7 +156,7 @@ void Logger::addFileSink(const std::string& filepath) {
         ifs.close();
     } else {
         // show message:
-         warn("Can't open file {} for writing. Log will not be created.", 
+         warn("Can't open file {} for writing. Log file will not be created.", 
              filepath);
         return;
     }
