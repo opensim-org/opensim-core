@@ -92,7 +92,6 @@ jobs:
         cmake --build . --config Release --target install -- /maxcpucount:4 /verbosity:quiet
         chdir $env:GITHUB_WORKSPACE
         Copy-Item -Path "~/opensim-core-install" -Destination "opensim-core-${{ steps.commithash.outputs.hash }}" -Recurse
-        move ~/opensim-core-install
 
     - name: Test Python bindings
       run: |
@@ -199,8 +198,9 @@ jobs:
         make doxygen
         make install
         cd $GITHUB_WORKSPACE
-        cp -r $GITHUB_WORKSPACE/../opensim-core-install opensim-core-${{ steps.commithash.outputs.hash }}
+        mv $GITHUB_WORKSPACE/../opensim-core-install opensim-core-${{ steps.commithash.outputs.hash }}
         zip --symlinks --recurse-paths --quiet opensim-core-${{ steps.commithash.outputs.hash }}.zip opensim-core-${{ steps.commithash.outputs.hash }}
+        mv opensim-core-${{ steps.commithash.outputs.hash }} $GITHUB_WORKSPACE/../opensim-core-install
 
     - name: Test Python bindings
       run: |
@@ -288,8 +288,9 @@ jobs:
         make doxygen
         make install
         cd $GITHUB_WORKSPACE
-        cp -r $GITHUB_WORKSPACE/../opensim-core-install opensim-core-${{ steps.commithash.outputs.hash }}
+        mv $GITHUB_WORKSPACE/../opensim-core-install opensim-core-${{ steps.commithash.outputs.hash }}
         zip --symlinks --recurse-paths --quiet opensim-core-${{ steps.commithash.outputs.hash }}.zip opensim-core-${{ steps.commithash.outputs.hash }}
+        mv opensim-core-${{ steps.commithash.outputs.hash }} $GITHUB_WORKSPACE/../opensim-core-install
 
     - name: Test Python bindings
       run: |
