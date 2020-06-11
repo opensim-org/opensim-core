@@ -188,7 +188,7 @@ public:
             : Exception{file, line, func, fmt::format(fmt, args...)} {}
 
     /** The message created by this constructor will contain the class name and
-    instance name of the provided Object, and also accepts a message formattted
+    instance name of the provided Object, and also accepts a message formatted
     using fmt::format() syntax. Use this when throwing an Exception directly.
     Use OPENSIM_THROW_FRMOBJ and OPENSIM_THROW_IF_FRMOBJ macros at throw sites.
     */
