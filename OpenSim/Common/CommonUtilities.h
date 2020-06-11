@@ -38,6 +38,25 @@ OSIMCOMMON_API std::string getFormattedDateTime(
         bool appendMicroseconds = false,
         std::string format = "%Y-%m-%dT%H%M%S");
 
+/// When an instance of this class is destructed, it removes (deletes)
+/// the file at the path provided in the constructor. You can also manually
+/// cause removal of the file by invoking `remove()`.
+class OSIMCOMMON_API FileRemover {
+public:
+    FileRemover(std::string filepath)
+            : m_filepath(std::move(filepath)) {}
+    /// Remove the file at the path provided in the constructor.
+    void remove() const {
+        std::remove(m_filepath.c_str());
+    }
+    /// This invokes remove().
+    ~FileRemover() {
+        remove();
+    }
+private:
+    std::string m_filepath;
+};
+
 } // namespace OpenSim
 
 #endif // OPENSIM_COMMONUTILITIES_H_

@@ -21,6 +21,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "OpenSim/Common/Adapters.h"
+#include "OpenSim/Common/CommonUtilities.h"
 #include <cstdio>
 #include <fstream>
 #include <unordered_set>
@@ -320,12 +321,12 @@ TEST_CASE("STOFileAdapter") {
 
     std::cout << "Testing exception for reading an empty file" << std::endl;
     std::string emptyFileName("testSTOFileAdapter_empty.sto");
+    FileRemover fileRemover(emptyFileName);
     std::ofstream emptyFile(emptyFileName);
     SimTK_TEST_MUST_THROW_EXC(
             FileAdapter::createAdapterFromExtension(emptyFileName)
                     ->read(emptyFileName),
             FileIsEmpty);
-    std::remove(emptyFileName.c_str());
 }
 
 TEST_CASE("Reading STO version 1.0 using FileAdapter::read()") {
