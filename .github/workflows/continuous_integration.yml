@@ -223,8 +223,8 @@ jobs:
         path: opensim-core-${{ steps.commithash.outputs.hash }}.zip
 
 
-  linux:
-    name: Linux
+  ubuntu:
+    name: Ubuntu
 
     runs-on: ubuntu-18.04
 
