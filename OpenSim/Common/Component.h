@@ -2789,6 +2789,8 @@ private:
 
     // propertiesTable maintained by Object
 
+    // WIP: the `std::map`s below are what this PR investigates
+
     // Table of Component's structural Sockets indexed by name.
     std::map<std::string, SimTK::ClonePtr<AbstractSocket>> _socketsTable;
 
@@ -2935,6 +2937,8 @@ private:
     // why it is const!
     // The setting of the variable indices is not in the public interface and is
     // not polymorphic.
+
+    // WIP: the `std::map`s below are also what this PR investigates
 
     mutable std::map<std::string, ModelingOptionInfo> _namedModelingOptionInfo;
     // Map names of continuous state variables of the Component to their
