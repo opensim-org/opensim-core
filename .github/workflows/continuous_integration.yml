@@ -92,6 +92,7 @@ jobs:
         cmake --build . --config Release --target install -- /maxcpucount:4 /verbosity:quiet
         chdir $env:GITHUB_WORKSPACE
         Copy-Item -Path "~/opensim-core-install" -Destination "opensim-core-${{ steps.commithash.outputs.hash }}" -Recurse
+        7z a "opensim-core-${{ steps.commithash.outputs.hash }}.zip" "opensim-core-${{ steps.commithash.outputs.hash }}"
 
     # - name: Test Python bindings
     #   run: |
@@ -106,7 +107,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: opensim-core-${{ steps.commithash.outputs.hash }}-win
-        path: opensim-core-${{ steps.commithash.outputs.hash }}
+        path: opensim-core-${{ steps.commithash.outputs.hash }}.zip
 
 
   mac:
@@ -287,7 +288,7 @@ jobs:
       run: |
         cd $GITHUB_WORKSPACE/../build
         make doxygen
-        make install
+        make --jobs 4 install
         cd $GITHUB_WORKSPACE
         mv $GITHUB_WORKSPACE/../opensim-core-install opensim-core-${{ steps.commithash.outputs.hash }}
         zip --symlinks --recurse-paths --quiet opensim-core-${{ steps.commithash.outputs.hash }}.zip opensim-core-${{ steps.commithash.outputs.hash }}
