@@ -102,25 +102,21 @@ void MocoParameter::initializeOnModel(Model& model) const {
                 Exception, "Must specify a property element for "
                 "non-scalar propeties.");
             OPENSIM_THROW_IF_FRMOBJ(get_property_element() < 0, Exception,
-                    fmt::format("Expected property element to be non-negative, "
-                                "but {} was provided.",
-                            get_property_element()));
+                    "Expected property element to be non-negative, but {} was "
+                    "provided.",
+                    get_property_element());
             if (dynamic_cast<Property<SimTK::Vec3>*>(ap)) {
                 OPENSIM_THROW_IF_FRMOBJ(get_property_element() > 2, Exception,
-                        fmt::format(
-                                "The property element for a Vec3 property must "
-                                "be between 0 and 2, but the value {} was "
-                                "provided.",
-                                get_property_element()));
+                        "The property element for a Vec3 property must be "
+                        "between 0 and 2, but the value {} was provided.",
+                        get_property_element());
                 m_data_type = Type_Vec3;
             }
             else if (dynamic_cast<Property<SimTK::Vec6>*>(ap)) {
                 OPENSIM_THROW_IF_FRMOBJ(get_property_element() > 5, Exception,
-                        fmt::format(
-                                "The property element for a Vec6 property must "
-                                "be between 0 and 5, but the value {} was "
-                                "provided.",
-                                get_property_element()));
+                        "The property element for a Vec6 property must be "
+                        "between 0 and 5, but the value {} was provided.",
+                        get_property_element());
                 m_data_type = Type_Vec6;
             }
             else {

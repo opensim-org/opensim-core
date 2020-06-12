@@ -21,6 +21,17 @@
 
 #include <Moco/osimMoco.h>
 
+using namespace OpenSim;
+
 int main() {
+    // TODO Logger::setLevel(Logger::Level::Debug);
+    MocoTrack track;
+    ModelProcessor modelProcessor("DeMers_mod_noarms_welds_4.0.osim");
+    modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
+    modelProcessor.append(ModOpIgnoreTendonCompliance());
+    track.setModel(modelProcessor);
+    track.setStatesReference({"r_SLD_mean_coords.sto"});
+    track.set_allow_unused_references(true);
+    MocoSolution solution = track.solve();
     return EXIT_SUCCESS;
 }

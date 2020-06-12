@@ -97,9 +97,9 @@ private:
         OPENSIM_THROW_IF_FRMOBJ(get_foo_dynamics_mode() != "implicit" &&
                                         get_foo_dynamics_mode() != "explicit",
                 Exception,
-                fmt::format("Expected foo_dynamics_mode to be 'implicit' or "
-                            "'explicit', but got '{}'.",
-                        get_foo_dynamics_mode()));
+                "Expected foo_dynamics_mode to be 'implicit' or "
+                "'explicit', but got '{}'.",
+                get_foo_dynamics_mode());
         m_foo_dynamics_mode_implicit = get_foo_dynamics_mode() == "implicit";
     }
     void extendInitStateFromProperties(SimTK::State& s) const override {

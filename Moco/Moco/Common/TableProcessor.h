@@ -165,9 +165,8 @@ public:
             const override {
         if (get_cutoff_frequency() != -1) {
             OPENSIM_THROW_IF(get_cutoff_frequency() <= 0, Exception,
-                    fmt::format("Expected cutoff frequency to be positive, "
-                                "but got {}.",
-                            get_cutoff_frequency()));
+                    "Expected cutoff frequency to be positive, but got {}.",
+                    get_cutoff_frequency());
 
             table = filterLowpass(table, get_cutoff_frequency(), true);
         }

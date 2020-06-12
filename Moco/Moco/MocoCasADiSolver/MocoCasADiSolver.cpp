@@ -179,11 +179,11 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
         OPENSIM_THROW_IF(get_transcription_scheme() != "hermite-simpson" &&
                                  get_enforce_constraint_derivatives(),
                 Exception,
-                fmt::format("If enforcing derivatives of model kinematic "
-                       "constraints, then the property 'transcription_scheme' "
-                       "must be set to 'hermite-simpson'. "
-                       "Currently, it is set to '{}'.",
-                        get_transcription_scheme()));
+                "If enforcing derivatives of model kinematic "
+                "constraints, then the property 'transcription_scheme' "
+                "must be set to 'hermite-simpson'. "
+                "Currently, it is set to '{}'.",
+                get_transcription_scheme());
     }
 
     checkPropertyInRangeOrSet(*this, getProperty_num_mesh_intervals(), 0,
@@ -280,10 +280,10 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     casSolver->setMinimizeImplicitMultibodyAccelerations(
             get_minimize_implicit_multibody_accelerations());
     OPENSIM_THROW_IF(get_implicit_multibody_accelerations_weight() < 0,
-            Exception, fmt::format(
-                "Property implicit_multibody_accelerations_weight must be "
-                "non-negative, but it is set to {}.",
-                get_implicit_multibody_accelerations_weight()));
+            Exception,
+            "Property implicit_multibody_accelerations_weight must be "
+            "non-negative, but it is set to {}.",
+            get_implicit_multibody_accelerations_weight());
     casSolver->setImplicitMultibodyAccelerationsWeight(
             get_implicit_multibody_accelerations_weight());
 
@@ -291,11 +291,10 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
             convertBounds(get_implicit_auxiliary_derivative_bounds()));
     casSolver->setMinimizeImplicitAuxiliaryDerivatives(
             get_minimize_implicit_auxiliary_derivatives());
-    OPENSIM_THROW_IF(get_implicit_auxiliary_derivatives_weight() < 0,
-            Exception, fmt::format(
-                    "Property implicit_auxiliary_derivatives_weight must be "
-                    "non-negative, but it is set to {}.",
-                    get_implicit_auxiliary_derivatives_weight()));
+    OPENSIM_THROW_IF(get_implicit_auxiliary_derivatives_weight() < 0, Exception,
+            "Property implicit_auxiliary_derivatives_weight must be "
+            "non-negative, but it is set to {}.",
+            get_implicit_auxiliary_derivatives_weight());
     casSolver->setImplicitAuxiliaryDerivativesWeight(
             get_implicit_auxiliary_derivatives_weight());
 

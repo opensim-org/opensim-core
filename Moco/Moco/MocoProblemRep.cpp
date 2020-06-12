@@ -292,8 +292,7 @@ void MocoProblemRep::initialize() {
     for (int i = 0; i < ph0.getProperty_state_infos().size(); ++i) {
         const auto& name = ph0.get_state_infos(i).getName();
         OPENSIM_THROW_IF(stateNames.findIndex(name) == -1, Exception,
-                fmt::format("State info provided for nonexistent state '{}'.",
-                        name));
+                "State info provided for nonexistent state '{}'.", name);
     }
 
     // Create internal record of state and control infos, automatically
@@ -380,9 +379,9 @@ void MocoProblemRep::initialize() {
         const auto& name = ph0.get_control_infos(i).getName();
         auto it = std::find(controlNames.begin(), controlNames.end(), name);
         OPENSIM_THROW_IF(it == controlNames.end(), Exception,
-                fmt::format("Control info provided for nonexistent or disabled "
-                            "actuator '{}'.",
-                        name));
+                "Control info provided for nonexistent or disabled actuator "
+                "'{}'.",
+                name);
     }
 
     for (int i = 0; i < ph0.getProperty_control_infos().size(); ++i) {
@@ -471,8 +470,7 @@ void MocoProblemRep::initialize() {
         OPENSIM_THROW_IF(param.getName().empty(), Exception,
                 "All parameters must have a name.");
         OPENSIM_THROW_IF(paramNames.count(param.getName()), Exception,
-                fmt::format("A parameter with name '{}' already exists.",
-                        param.getName()));
+                "A parameter with name '{}' already exists.", param.getName());
         paramNames.insert(param.getName());
         m_parameters[i] = std::unique_ptr<MocoParameter>(param.clone());
         // We must initialize on both models so that they are consistent
@@ -493,8 +491,7 @@ void MocoProblemRep::initialize() {
         OPENSIM_THROW_IF(goal.getName().empty(), Exception,
                 "All goals must have a name.");
         OPENSIM_THROW_IF(goalNames.count(goal.getName()), Exception,
-                fmt::format("A goal with name '{}' already exists.",
-                        goal.getName()));
+                "A goal with name '{}' already exists.", goal.getName());
         goalNames.insert(goal.getName());
         if (goal.getEnabled()) {
             std::unique_ptr<MocoGoal> item(goal.clone());
@@ -521,8 +518,8 @@ void MocoProblemRep::initialize() {
         OPENSIM_THROW_IF(pc.getName().empty(), Exception,
                 "All path constraints must have a name.");
         OPENSIM_THROW_IF(pcNames.count(pc.getName()), Exception,
-                fmt::format("A path constraint with name '{}' already exists.",
-                        pc.getName()));
+                "A path constraint with name '{}' already exists.",
+                pc.getName());
         pcNames.insert(pc.getName());
         m_path_constraints[i] = std::unique_ptr<MocoPathConstraint>(pc.clone());
         m_path_constraints[i]->initializeOnModel(m_model_disabled_constraints,
@@ -638,13 +635,13 @@ std::vector<std::string> MocoProblemRep::createPathConstraintNames() const {
 const MocoVariableInfo& MocoProblemRep::getStateInfo(
         const std::string& name) const {
     OPENSIM_THROW_IF(m_state_infos.count(name) == 0, Exception,
-            fmt::format("No info available for state '{}'.", name));
+            "No info available for state '{}'.", name);
     return m_state_infos.at(name);
 }
 const MocoVariableInfo& MocoProblemRep::getControlInfo(
         const std::string& name) const {
     OPENSIM_THROW_IF(m_control_infos.count(name) == 0, Exception,
-            fmt::format("No info available for control '{}'.", name));
+            "No info available for control '{}'.", name);
     return m_control_infos.at(name);
 }
 const MocoParameter& MocoProblemRep::getParameter(
@@ -653,16 +650,14 @@ const MocoParameter& MocoProblemRep::getParameter(
     for (const auto& param : m_parameters) {
         if (param->getName() == name) { return *param.get(); }
     }
-    OPENSIM_THROW(
-            Exception, fmt::format("No parameter with name '{}' found.", name));
+    OPENSIM_THROW(Exception, "No parameter with name '{}' found.", name);
 }
 const MocoGoal& MocoProblemRep::getCost(const std::string& name) const {
 
     for (const auto& c : m_costs) {
         if (c->getName() == name) { return *c.get(); }
     }
-    OPENSIM_THROW(
-            Exception, fmt::format("No cost with name '{}' found.", name));
+    OPENSIM_THROW(Exception, "No cost with name '{}' found.", name);
 }
 const MocoGoal& MocoProblemRep::getCostByIndex(int index) const {
     return *m_costs[index];
@@ -673,8 +668,8 @@ const MocoGoal& MocoProblemRep::getEndpointConstraint(
     for (const auto& c : m_endpoint_constraints) {
         if (c->getName() == name) { return *c.get(); }
     }
-    OPENSIM_THROW(Exception,
-            fmt::format("No endpoint constraint with name '{}' found.", name));
+    OPENSIM_THROW(
+            Exception, "No endpoint constraint with name '{}' found.", name);
 }
 const MocoGoal& MocoProblemRep::getEndpointConstraintByIndex(int index) const {
     return *m_endpoint_constraints[index];
@@ -685,8 +680,7 @@ const MocoPathConstraint& MocoProblemRep::getPathConstraint(
     for (const auto& pc : m_path_constraints) {
         if (pc->getName() == name) { return *pc.get(); }
     }
-    OPENSIM_THROW(Exception,
-            fmt::format("No path constraint with name '{}' found.", name));
+    OPENSIM_THROW(Exception, "No path constraint with name '{}' found.", name);
 }
 const MocoPathConstraint& MocoProblemRep::getPathConstraintByIndex(
         int index) const {
@@ -700,8 +694,8 @@ const MocoKinematicConstraint& MocoProblemRep::getKinematicConstraint(
     for (const auto& kc : m_kinematic_constraints) {
         if (kc.getConstraintInfo().getName() == name) { return kc; }
     }
-    OPENSIM_THROW(Exception,
-            fmt::format("No kinematic constraint with name '{}' found.", name));
+    OPENSIM_THROW(
+            Exception, "No kinematic constraint with name '{}' found.", name);
 }
 const std::vector<MocoVariableInfo>& MocoProblemRep::getMultiplierInfos(
         const std::string& kinematicConstraintInfoName) const {
@@ -710,10 +704,10 @@ const std::vector<MocoVariableInfo>& MocoProblemRep::getMultiplierInfos(
     if (search != m_multiplier_infos_map.end()) {
         return m_multiplier_infos_map.at(kinematicConstraintInfoName);
     } else {
-        OPENSIM_THROW(Exception, fmt::format("No variable infos for kinematic "
-                                             "constraint info with "
-                                             "name '{}' found.",
-                                         kinematicConstraintInfoName));
+        OPENSIM_THROW(Exception,
+                "No variable infos for kinematic constraint info with name "
+                "'{}' found.",
+                kinematicConstraintInfoName);
     }
 }
 
@@ -722,9 +716,9 @@ void MocoProblemRep::applyParametersToModelProperties(
         bool initSystemAndDisableConstraints) const {
     OPENSIM_THROW_IF(parameterValues.size() != (int)m_parameters.size(),
             Exception,
-            fmt::format("There are {} parameters in "
-                        "this MocoProblem, but {} values were provided.",
-                    m_parameters.size(), parameterValues.size()));
+            "There are {} parameters in this MocoProblem, but {} values were "
+            "provided.",
+            m_parameters.size(), parameterValues.size());
     for (int i = 0; i < (int)m_parameters.size(); ++i) {
         m_parameters[i]->applyParameterToModelProperties(parameterValues(i));
     }

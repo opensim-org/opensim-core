@@ -57,8 +57,9 @@ void MocoControlBoundConstraint::initializeOnModelImpl(
             const auto& thisName = get_control_paths(i);
             OPENSIM_THROW_IF_FRMOBJ(systemControlIndexMap.count(thisName) == 0,
                     Exception,
-                    fmt::format("Control path '{}' was provided but no such "
-                                "control exists in the model.", thisName));
+                    "Control path '{}' was provided but no such "
+                    "control exists in the model.",
+                    thisName);
             m_controlIndices.push_back(systemControlIndexMap[thisName]);
         }
     }
@@ -73,16 +74,16 @@ void MocoControlBoundConstraint::initializeOnModelImpl(
         if (auto* spline = dynamic_cast<const GCVSpline*>(&f)) {
             OPENSIM_THROW_IF_FRMOBJ(
                     spline->getMinX() > problemInfo.minInitialTime, Exception,
-                    fmt::format("The function's minimum domain value ({}) must "
-                           "be less than or equal to the minimum possible "
-                           "initial time ({}).",
-                            spline->getMinX(), problemInfo.minInitialTime));
+                    "The function's minimum domain value ({}) must "
+                    "be less than or equal to the minimum possible "
+                    "initial time ({}).",
+                    spline->getMinX(), problemInfo.minInitialTime);
             OPENSIM_THROW_IF_FRMOBJ(
                     spline->getMaxX() < problemInfo.maxFinalTime, Exception,
-                    fmt::format("The function's maximum domain value ({}) must "
-                           "be greater than or equal to the maximum possible "
-                           "final time ({}).",
-                            spline->getMaxX(), problemInfo.maxFinalTime));
+                    "The function's maximum domain value ({}) must "
+                    "be greater than or equal to the maximum possible "
+                    "final time ({}).",
+                    spline->getMaxX(), problemInfo.maxFinalTime);
         }
     };
     if (m_hasLower) checkTimeRange(get_lower_bound());

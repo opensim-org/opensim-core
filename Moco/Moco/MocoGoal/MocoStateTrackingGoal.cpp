@@ -46,15 +46,16 @@ void MocoStateTrackingGoal::initializeOnModelImpl(const Model& model) const {
         const auto& weightName = get_state_weights().get(i).getName();
         if (allSysYIndices.count(weightName) == 0) {
             OPENSIM_THROW_FRMOBJ(Exception,
-                fmt::format("Weight provided with name '{}' but this is "
-                    "not a recognized state.", weightName));
+                    "Weight provided with name '{}' but this is "
+                    "not a recognized state.",
+                    weightName);
         }
         if (getProperty_pattern().size() &&
                 !std::regex_match(weightName, regex)) {
             OPENSIM_THROW_FRMOBJ(Exception,
-                    fmt::format("Weight provided with name '{}' but this name "
-                                "does not match the pattern '{}'.",
-                            weightName, get_pattern()));
+                    "Weight provided with name '{}' but this name "
+                    "does not match the pattern '{}'.",
+                    weightName, get_pattern());
         }
     }
 
@@ -67,19 +68,17 @@ void MocoStateTrackingGoal::initializeOnModelImpl(const Model& model) const {
             if (get_allow_unused_references()) {
                 continue;
             }
-            OPENSIM_THROW_FRMOBJ(Exception,
-                 fmt::format("State reference '{}' unrecognized.", refName));
+            OPENSIM_THROW_FRMOBJ(
+                    Exception, "State reference '{}' unrecognized.", refName);
         }
         if (getProperty_pattern().size() &&
                 !std::regex_match(refName, regex)) {
             if (get_allow_unused_references()) {
                 continue;
             }
-            OPENSIM_THROW_FRMOBJ(
-                    Exception,
-                    fmt::format("State reference '{}' does not match the "
-                                "pattern '{}'.",
-                            refName, get_pattern()));
+            OPENSIM_THROW_FRMOBJ(Exception,
+                    "State reference '{}' does not match the pattern '{}'.",
+                    refName, get_pattern());
         }
 
         m_sysYIndices.push_back(allSysYIndices[refName]);

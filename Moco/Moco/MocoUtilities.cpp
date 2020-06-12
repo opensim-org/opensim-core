@@ -106,9 +106,9 @@ SimTK::Vector OpenSim::interpolate(const SimTK::Vector& x,
         const bool ignoreNaNs) {
 
     OPENSIM_THROW_IF(x.size() != y.size(), Exception,
-            fmt::format("Expected size of x to equal size of y, but size of x "
-                        "is {} and size of y is {}.",
-                    x.size(), y.size()));
+            "Expected size of x to equal size of y, but size of x "
+            "is {} and size of y is {}.",
+            x.size(), y.size());
 
     // Create vectors of non-NaN values if user set 'ignoreNaNs' argument to
     // 'true', otherwise throw an exception. If no NaN's are present in the
@@ -199,8 +199,7 @@ void OpenSim::updateStateLabels40(const Model& model,
 TimeSeriesTable OpenSim::filterLowpass(
         const TimeSeriesTable& table, double cutoffFreq, bool padData) {
     OPENSIM_THROW_IF(cutoffFreq < 0, Exception,
-            fmt::format("Cutoff frequency must be non-negative; got {}.",
-                    cutoffFreq));
+            "Cutoff frequency must be non-negative; got {}.", cutoffFreq);
     auto storage = convertTableToStorage(table);
     if (padData) { storage.pad((int)table.getNumRows() / 2); }
     storage.lowpassIIR(cutoffFreq);
@@ -418,8 +417,8 @@ void OpenSim::prescribeControlsToModel(
         } else if (functionType == "PiecewiseLinearFunction") {
             function = createFunction<PiecewiseLinearFunction>(time, control);
         } else {
-            OPENSIM_THROW(Exception,
-                    fmt::format("Unexpected function type {}.", functionType));
+            OPENSIM_THROW(
+                    Exception, "Unexpected function type {}.", functionType);
         }
         const auto& actu = model.getComponent<Actuator>(actuNames[i]);
         controller->addActuator(actu);
@@ -637,7 +636,7 @@ void OpenSim::checkRedundantLabels(std::vector<std::string> labels) {
     std::sort(labels.begin(), labels.end());
     auto it = std::adjacent_find(labels.begin(), labels.end());
     OPENSIM_THROW_IF(it != labels.end(), Exception,
-            fmt::format("Label '{}' appears more than once.", *it));
+            "Label '{}' appears more than once.", *it);
 }
 
 void OpenSim::checkLabelsMatchModelStates(const Model& model,
@@ -645,11 +644,10 @@ void OpenSim::checkLabelsMatchModelStates(const Model& model,
     const auto modelStateNames = model.getStateVariableNames();
     for (const auto& label : labels) {
         OPENSIM_THROW_IF(modelStateNames.rfindIndex(label) == -1, Exception,
-                fmt::format(
-                        "Expected the provided labels to match the model state "
-                        "names, but label {} does not correspond to any model "
-                        "state.",
-                        label));
+                "Expected the provided labels to match the model state "
+                "names, but label {} does not correspond to any model "
+                "state.",
+                label);
     }
 }
 
@@ -730,10 +728,9 @@ MocoTrajectory OpenSim::createPeriodicTrajectory(
                             std::regex_replace(name, regex, pattern.second);
                     const auto it = find(names, opposite);
                     OPENSIM_THROW_IF(it == names.end(), Exception,
-                            fmt::format(
                                     "Could not find {} {}, which is supposed "
                                     "to be opposite of {}.",
-                                    vartype, opposite, name));
+                                    vartype, opposite, name);
                     const int iopp = (int)std::distance(names.cbegin(), it);
                     newTraj.updBlock(oldN, iopp, oldN - 1, 1) =
                             oldTraj.block(1, i, oldN - 1, 1);
@@ -850,8 +847,8 @@ SimTK::Real OpenSim::solveBisection(
     SimTK::Real midpoint = left;
 
     OPENSIM_THROW_IF(maxIterations < 0, Exception,
-            fmt::format("Expected maxIterations to be positive, but got {}.",
-                    maxIterations));
+            "Expected maxIterations to be positive, but got {}.",
+            maxIterations);
 
     const bool sameSign = calcResidual(left) * calcResidual(right) >= 0;
     if (sameSign) {
@@ -866,8 +863,7 @@ SimTK::Real OpenSim::solveBisection(
         // writeTableToFile(table, "DEBUG_solveBisection_residual.sto");
     }
     OPENSIM_THROW_IF(sameSign, Exception,
-            fmt::format("Function has same sign at bounds of {} and {}.", left,
-                    right));
+            "Function has same sign at bounds of {} and {}.", left, right);
 
     SimTK::Real residualMidpoint;
     SimTK::Real residualLeft = calcResidual(left);

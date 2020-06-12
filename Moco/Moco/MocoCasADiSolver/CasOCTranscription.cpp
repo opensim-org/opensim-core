@@ -622,9 +622,9 @@ Solution Transcription::solve(const Iterate& guessOrig) {
         // were removed.
         OPENSIM_THROW_IF(slacks.size2() != m_numMeshInteriorPoints,
                 OpenSim::Exception,
-                fmt::format("Expected slack variables to be length {}, "
-                            "but they are length {}.",
-                        m_numMeshInteriorPoints, slacks.size2()));
+                "Expected slack variables to be length {}, but they are length "
+                "{}.",
+                m_numMeshInteriorPoints, slacks.size2());
     }
 
     // Create the CasADi NLP function.

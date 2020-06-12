@@ -58,8 +58,7 @@ void run_tool(std::string setupFile, bool visualize) {
     auto obj = std::unique_ptr<Object>(Object::makeObjectFromFile(setupFile));
 
     OPENSIM_THROW_IF(obj == nullptr, Exception,
-            fmt::format("A problem occurred when trying to load file '{}'.",
-                    setupFile));
+            "A problem occurred when trying to load file '{}'.", setupFile);
 
     if (const auto* moco = dynamic_cast<const MocoStudy*>(obj.get())) {
         auto solution = moco->solve();

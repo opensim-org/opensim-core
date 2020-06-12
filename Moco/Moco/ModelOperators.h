@@ -83,10 +83,10 @@ public:
     ModOpTendonComplianceDynamicsModeDGF(std::string mode) : 
             ModOpTendonComplianceDynamicsModeDGF() {
         OPENSIM_THROW_IF(mode != "explicit" && mode != "implicit", Exception,
-                fmt::format("The tendon compliance dynamics mode must be "
-                            "either 'explicit' or 'implicit', but {} was "
-                            "provided.",
-                        mode));
+                "The tendon compliance dynamics mode must be "
+                "either 'explicit' or 'implicit', but {} was "
+                "provided.",
+                mode);
         set_mode(std::move(mode));
     }
     void operate(Model& model, const std::string&) const override {

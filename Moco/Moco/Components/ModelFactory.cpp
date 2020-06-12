@@ -195,13 +195,11 @@ void ModelFactory::replaceMusclesWithPathActuators(OpenSim::Model &model) {
     for (const auto* musc : musclesToDelete) {
         int index = model.getForceSet().getIndex(musc, 0);
         OPENSIM_THROW_IF(index == -1, Exception,
-                fmt::format("Muscle with name {} not found in ForceSet.",
-                        musc->getName()));
+                "Muscle with name {} not found in ForceSet.", musc->getName());
         bool success = model.updForceSet().remove(index);
         OPENSIM_THROW_IF(!success, Exception,
-                fmt::format("Attempt to remove muscle with "
-                            "name {} was unsuccessful.",
-                        musc->getName()));
+                "Attempt to remove muscle with name {} was unsuccessful.",
+                musc->getName());
     }
 }
 
@@ -259,8 +257,7 @@ void ModelFactory::removeMuscles(Model& model) {
     for (const auto* musc : musclesToDelete) {
         int index = model.getForceSet().getIndex(musc, 0);
         OPENSIM_THROW_IF(index == -1, Exception,
-                fmt::format("Muscle with name {} not found in ForceSet.",
-                        musc->getName()));
+                "Muscle with name {} not found in ForceSet.", musc->getName());
         model.updForceSet().remove(index);
     }
 }
@@ -269,9 +266,9 @@ void ModelFactory::createReserveActuators(Model& model, double optimalForce,
         double bound,
         bool skipCoordinatesWithExistingActuators) {
     OPENSIM_THROW_IF(optimalForce <= 0, Exception,
-            fmt::format("Invalid value ({}) for create_reserve_actuators; "
-                   "should be -1 or positive.",
-                    optimalForce));
+            "Invalid value ({}) for create_reserve_actuators; should be -1 or "
+            "positive.",
+            optimalForce);
 
     log_info("Adding reserve actuators with an optimal force of {}...",
             optimalForce);
@@ -306,8 +303,7 @@ void ModelFactory::createReserveActuators(Model& model, double optimalForce,
             actu->setOptimalForce(optimalForce);
             if (!SimTK::isNaN(bound)) {
                 OPENSIM_THROW_IF(bound < 0, Exception,
-                        fmt::format("Expected a non-negative bound but got {}.",
-                                bound));
+                        "Expected a non-negative bound but got {}.", bound);
                 actu->setMinControl(-bound);
                 actu->setMaxControl(bound);
             }
