@@ -86,6 +86,8 @@ jobs:
       run: echo "::set-output name=hash::$(git rev-parse --short HEAD)"
 
     - name: Install opensim-core
+      # TODO: Bindings are rebuilt at this stage because of a bug on Windows
+      # in the macro OpenSimFindSwigFileDependencies().
       run: |
         chdir $env:GITHUB_WORKSPACE\\build
         cmake --build . --config Release --target doxygen -- /maxcpucount:4
