@@ -106,9 +106,9 @@ void Logger::setLevelString(std::string str) {
     else if (str == "trace") level = Level::Trace;
     else {
         OPENSIM_THROW(Exception,
-                fmt::format("Expected log level to be Off, Critical, Error, "
-                            "Warn, Info, Debug, or Trace; got {}.",
-                        str));
+                "Expected log level to be Off, Critical, Error, "
+                "Warn, Info, Debug, or Trace; got {}.",
+                str);
     }
     setLevel(level);
 }
