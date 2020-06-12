@@ -254,10 +254,8 @@ Array<std::string> Constraint::getRecordLabels() const
         labels.append(prefix+"_Mz");
     }
 
-    char c[2] = "";
     for(int i=0; i<ncm; ++i){
-        sprintf(c, "%d", i);
-        labels.append(getName()+"_mobility_F"+c);
+        labels.append(fmt::format("{}_mobility_F{}", getName(), i));
     }
     
     return labels;
