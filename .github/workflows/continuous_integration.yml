@@ -93,13 +93,14 @@ jobs:
         chdir $env:GITHUB_WORKSPACE
         Copy-Item -Path "~/opensim-core-install" -Destination "opensim-core-${{ steps.commithash.outputs.hash }}" -Recurse
 
-    - name: Test Python bindings
-      run: |
-        $env:PATH = "$env:HOME/opensim-core-install/bin;$env:PATH"
-        # Move to the installed location of the python package.
-        cd ~/opensim-core-install/sdk/python
-        # Run python tests.
-        python -m unittest discover --start-directory opensim/tests --verbose
+    # - name: Test Python bindings
+    #   run: |
+    #     $env:PATH = "$env:HOME/opensim-core-install/bin;$env:PATH"
+    #     $env:PATH
+    #     # Move to the installed location of the python package.
+    #     cd ~/opensim-core-install/sdk/python
+    #     # Run python tests.
+    #     python -m unittest discover --start-directory opensim/tests --verbose
 
     - name: Upload opensim-core
       uses: actions/upload-artifact@v2
@@ -292,12 +293,12 @@ jobs:
         zip --symlinks --recurse-paths --quiet opensim-core-${{ steps.commithash.outputs.hash }}.zip opensim-core-${{ steps.commithash.outputs.hash }}
         mv opensim-core-${{ steps.commithash.outputs.hash }} $GITHUB_WORKSPACE/../opensim-core-install
 
-    - name: Test Python bindings
-      run: |
-        echo "TODO: Skipping Python tests."
-        # cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
-        # Run the python tests, verbosely.
-        # python3 -m unittest discover --start-directory opensim/tests --verbose
+    # - name: Test Python bindings
+    #   run: |
+    #     echo "TODO: Skipping Python tests."
+    #     # cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
+    #     # Run the python tests, verbosely.
+    #     # python3 -m unittest discover --start-directory opensim/tests --verbose
 
     - name: Upload opensim-core
       uses: actions/upload-artifact@v2
