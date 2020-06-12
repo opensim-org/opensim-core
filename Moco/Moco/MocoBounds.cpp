@@ -36,8 +36,8 @@ MocoBounds::MocoBounds(double lower, double upper) : MocoBounds() {
     OPENSIM_THROW_IF(SimTK::isNaN(lower) || SimTK::isNaN(upper), Exception, 
         "NaN value detected. Please provide a non-NaN values for the bounds.");
     OPENSIM_THROW_IF(lower > upper, Exception,
-        fmt::format("Expected lower <= upper, but lower={} and upper={}.",
-                lower, upper));
+            "Expected lower <= upper, but lower={} and upper={}.", lower,
+            upper);
     append_bounds(lower);
     append_bounds(upper);
 }

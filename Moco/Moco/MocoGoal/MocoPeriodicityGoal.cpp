@@ -65,10 +65,10 @@ void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
     for (int i = 0; i < nStatePairs; ++i) {
         const auto path1 = get_state_pairs(i).get_initial_variable();
         OPENSIM_THROW_IF(allSysYIndices.count(path1) == 0, Exception,
-                fmt::format("Could not find state '{}'.", path1));
+                "Could not find state '{}'.", path1);
         const auto path2 = get_state_pairs(i).get_final_variable();
         OPENSIM_THROW_IF(allSysYIndices.count(path2) == 0, Exception,
-                fmt::format("Could not find state '{}'.", path2));
+                "Could not find state '{}'.", path2);
         int stateIndex1 = allSysYIndices[path1];
         int stateIndex2 = allSysYIndices[path2];
         m_state_names.emplace_back(path1, path2);
@@ -82,10 +82,10 @@ void MocoPeriodicityGoal::initializeOnModelImpl(const Model& model) const {
     for (int i = 0; i < nControlPairs; ++i) {
         const auto path1 = get_control_pairs(i).get_initial_variable();
         OPENSIM_THROW_IF(systemControlIndexMap.count(path1) == 0, Exception,
-                fmt::format("Could not find control '{}'.", path1));
+                "Could not find control '{}'.", path1);
         const auto path2 = get_control_pairs(i).get_final_variable();
         OPENSIM_THROW_IF(systemControlIndexMap.count(path2) == 0, Exception,
-                fmt::format("Could not find control '{}'.", path2));
+                "Could not find control '{}'.", path2);
         int controlIndex1 = systemControlIndexMap[path1];
         int controlIndex2 = systemControlIndexMap[path2];
         m_control_names.emplace_back(path1, path2);

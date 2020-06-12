@@ -982,10 +982,9 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
 
         } else {
             OPENSIM_THROW_IF(!allowUnsupportedMuscles, Exception,
-                    fmt::format("Muscle '{}' of type {} is unsupported and "
-                                "allowUnsupportedMuscles=false.",
-                            muscBase.getName(),
-                            muscBase.getConcreteClassName()));
+                    "Muscle '{}' of type {} is unsupported and "
+                    "allowUnsupportedMuscles=false.",
+                    muscBase.getName(), muscBase.getConcreteClassName());
             continue;
         }
 
@@ -1043,13 +1042,11 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
     for (const auto* musc : musclesToDelete) {
         int index = model.getForceSet().getIndex(musc, 0);
         OPENSIM_THROW_IF(index == -1, Exception,
-                fmt::format("Muscle with name {} not found in ForceSet.",
-                        musc->getName()));
+                "Muscle with name {} not found in ForceSet.", musc->getName());
         bool success = model.updForceSet().remove(index);
         OPENSIM_THROW_IF(!success, Exception,
-                fmt::format("Attempt to remove muscle with "
-                            "name {} was unsuccessful.",
-                        musc->getName()));
+                "Attempt to remove muscle with name {} was unsuccessful.",
+                musc->getName());
     }
 
     model.finalizeFromProperties();

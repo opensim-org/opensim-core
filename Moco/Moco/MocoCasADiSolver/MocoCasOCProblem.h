@@ -103,9 +103,8 @@ template <typename VectorType = SimTK::Vector>
 VectorType convertToSimTKVector(const casadi::DM& casVector) {
     OPENSIM_THROW_IF(casVector.columns() != 1 && casVector.rows() != 1,
             Exception,
-            fmt::format("casVector should be 1-dimensional, but has size {} x "
-                        "{}.",
-                    casVector.rows(), casVector.columns()));
+            "casVector should be 1-dimensional, but has size {} x {}.",
+            casVector.rows(), casVector.columns());
     VectorType simtkVector((int)casVector.numel());
     for (int i = 0; i < casVector.numel(); ++i) {
         simtkVector[i] = double(casVector(i));

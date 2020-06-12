@@ -32,9 +32,8 @@ std::unique_ptr<Transcription> Solver::createTranscription() const {
     } else if (m_transcriptionScheme == "hermite-simpson") {
         transcription = OpenSim::make_unique<HermiteSimpson>(*this, m_problem);
     } else {
-        OPENSIM_THROW(
-                Exception, fmt::format("Unknown transcription scheme '{}'.",
-                                   m_transcriptionScheme));
+        OPENSIM_THROW(Exception, "Unknown transcription scheme '{}'.",
+                m_transcriptionScheme);
     }
     return transcription;
 }
@@ -64,7 +63,7 @@ void Solver::setSparsityDetectionRandomCount(int count) {
 void Solver::setParallelism(std::string parallelism, int numThreads) {
     m_parallelism = parallelism;
     OPENSIM_THROW_IF(numThreads < 1, OpenSim::Exception,
-            fmt::format("Expected numThreads >= 1 but got {}.", numThreads));
+            "Expected numThreads >= 1 but got {}.", numThreads);
     m_numThreads = numThreads;
 }
 

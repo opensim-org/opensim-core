@@ -153,7 +153,7 @@ const MocoVariableInfo& MocoPhase::getStateInfo(const std::string& name) const {
 
     int idx = getProperty_state_infos().findIndexForName(name);
     OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
-            fmt::format("No info available for state '{}'.", name));
+            "No info available for state '{}'.", name);
     return get_state_infos(idx);
 }
 const MocoVariableInfo& MocoPhase::getControlInfo(
@@ -161,35 +161,35 @@ const MocoVariableInfo& MocoPhase::getControlInfo(
 
     int idx = getProperty_control_infos().findIndexForName(name);
     OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
-            fmt::format("No info available for control '{}'.", name));
+            "No info available for control '{}'.", name);
     return get_control_infos(idx);
 }
 const MocoParameter& MocoPhase::getParameter(const std::string& name) const {
 
     int idx = getProperty_parameters().findIndexForName(name);
     OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
-            fmt::format("No parameter with name '{}' found.", name));
+            "No parameter with name '{}' found.", name);
     return get_parameters(idx);
 }
 MocoParameter& MocoPhase::updParameter(const std::string& name) {
 
     int idx = getProperty_parameters().findIndexForName(name);
     OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
-            fmt::format("No parameter with name '{}' found.", name));
+            "No parameter with name '{}' found.", name);
     return upd_parameters(idx);
 }
 const MocoGoal& MocoPhase::getGoal(const std::string& name) const {
 
     int idx = getProperty_goals().findIndexForName(name);
     OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
-            fmt::format("No goal with name '{}' found.", name));
+            "No goal with name '{}' found.", name);
     return get_goals(idx);
 }
 MocoGoal& MocoPhase::updGoal(const std::string& name) {
 
     int idx = updProperty_goals().findIndexForName(name);
     OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
-            fmt::format("No goal with name '{}' found.", name));
+            "No goal with name '{}' found.", name);
     return upd_goals(idx);
 }
 const MocoPathConstraint& MocoPhase::getPathConstraint(
@@ -197,14 +197,14 @@ const MocoPathConstraint& MocoPhase::getPathConstraint(
 
     int idx = getProperty_path_constraints().findIndexForName(name);
     OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
-            fmt::format("No path constraint with name '{}' found.", name));
+            "No path constraint with name '{}' found.", name);
     return get_path_constraints(idx);
 }
 MocoPathConstraint& MocoPhase::updPathConstraint(const std::string& name) {
 
     int idx = updProperty_path_constraints().findIndexForName(name);
     OPENSIM_THROW_IF_FRMOBJ(idx == -1, Exception,
-            fmt::format("No path constraint with name '{}' found.", name));
+            "No path constraint with name '{}' found.", name);
     return upd_path_constraints(idx);
 }
 

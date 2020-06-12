@@ -36,30 +36,30 @@ void MocoTool::updateTimeInfo(const std::string& dataLabel,
     double final;
     if (!getProperty_initial_time().empty()) {
         OPENSIM_THROW_IF_FRMOBJ(get_initial_time() < dataInitial, Exception,
-                fmt::format("Provided initial time of {} is less than what is "
-                            "available from {} data, which starts at {}.",
-                        get_initial_time(), dataLabel, dataInitial));
+                "Provided initial time of {} is less than what is "
+                "available from {} data, which starts at {}.",
+                get_initial_time(), dataLabel, dataInitial);
         initial = get_initial_time();
     } else {
         initial = std::max(info.initial, dataInitial);
     }
     if (!getProperty_final_time().empty()) {
         OPENSIM_THROW_IF_FRMOBJ(get_final_time() > dataFinal, Exception,
-                fmt::format("Provided final time of {} is greater than what "
-                            "is available from {} data, which ends at {}.",
-                        get_final_time(), dataLabel, dataFinal));
+                "Provided final time of {} is greater than what "
+                "is available from {} data, which ends at {}.",
+                get_final_time(), dataLabel, dataFinal);
         final = get_final_time();
     } else {
         final = std::min(info.final, dataFinal);
     }
 
     OPENSIM_THROW_IF_FRMOBJ(final < initial, Exception,
-            fmt::format("Initial time of {} is greater than final time of {}.",
-                    initial, final));
+            "Initial time of {} is greater than final time of {}.", initial,
+            final);
 
     OPENSIM_THROW_IF_FRMOBJ(get_mesh_interval() <= 0, Exception,
-            fmt::format("Expected mesh_interval to be positive but got {}.",
-                    get_mesh_interval()));
+            "Expected mesh_interval to be positive but got {}.",
+            get_mesh_interval());
 
     info.initial = initial;
     info.final = final;

@@ -126,9 +126,9 @@ private:
     void checkPropertySize(const AbstractProperty& prop) {
         if (!prop.empty()) {
             OPENSIM_THROW_IF(m_num_equations != prop.size(), Exception,
-                    fmt::format("Size of property {} is not consistent with "
-                           "current number of constraint equations.",
-                            prop.getName()));
+                    "Size of property {} is not consistent with "
+                    "current number of constraint equations.",
+                    prop.getName());
         }
     }
 };

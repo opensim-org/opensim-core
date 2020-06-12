@@ -136,8 +136,7 @@ std::unique_ptr<PositionMotion> PositionMotion::createFromTable(
         } else {
             OPENSIM_THROW_IF(!model.findComponent<Component>(coordPath) &&
                                      !allowExtraColumns,
-                    Exception,
-                    fmt::format("Column '{}' is not a coordinate.", label));
+                    Exception, "Column '{}' is not a coordinate.", label);
         }
     }
     return posmot;
@@ -193,7 +192,7 @@ void PositionMotion::extendRealizeTopology(SimTK::State& state) const {
     for (const auto& coord : coords) {
         const auto& path = coord.getAbsolutePathString();
         OPENSIM_THROW_IF(!get_functions().contains(path), Exception,
-                fmt::format("No function provided for coordinate '{}'.", path));
+                "No function provided for coordinate '{}'.", path);
     }
 
     // Create a mapping from SimTK position DOFs to OpenSim Coordinates.

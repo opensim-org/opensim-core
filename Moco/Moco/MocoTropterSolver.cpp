@@ -90,11 +90,10 @@ MocoTropterSolver::createTropterSolver(
         OPENSIM_THROW_IF(get_transcription_scheme() != "hermite-simpson" &&
                                  get_enforce_constraint_derivatives(),
                 Exception,
-                fmt::format("If enforcing derivatives of model kinematic "
-                       "constraints, then the property 'transcription_scheme' "
-                       "must be set to 'hermite-simpson'. "
-                       "Currently, it is set to '{}'.",
-                        get_transcription_scheme()));
+                "If enforcing derivatives of model kinematic constraints, then "
+                "the property 'transcription_scheme' must be set to "
+                "'hermite-simpson'. Currently, it is set to '{}'.",
+                get_transcription_scheme());
     }
     OPENSIM_THROW_IF_FRMOBJ(
             getProblemRep().getNumImplicitAuxiliaryResiduals(),
@@ -215,9 +214,9 @@ MocoTrajectory MocoTropterSolver::createGuess(const std::string& type) const {
     OPENSIM_THROW_IF_FRMOBJ(
             type != "bounds" && type != "random" && type != "time-stepping",
             Exception,
-            fmt::format("Unexpected guess type '{}'; supported types are "
-                   "'bounds', 'random', and 'time-stepping'.",
-                    type));
+            "Unexpected guess type '{}'; supported types are "
+            "'bounds', 'random', and 'time-stepping'.",
+            type);
 
     if (type == "time-stepping") { return createGuessTimeStepping(); }
 

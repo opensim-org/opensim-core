@@ -42,25 +42,25 @@ void MocoVariableInfo::validate() const {
     const auto fb = getFinalBounds();
 
     OPENSIM_THROW_IF(ib.isSet() && ib.getLower() < b.getLower(), Exception,
-            fmt::format("For variable {}, expected "
-                   "[initial value lower bound] >= [lower bound], but "
-                   "intial value lower bound={}, lower bound={}.",
-                    n, ib.getLower(), b.getLower()));
+            "For variable {}, expected "
+            "[initial value lower bound] >= [lower bound], but "
+            "intial value lower bound={}, lower bound={}.",
+            n, ib.getLower(), b.getLower());
     OPENSIM_THROW_IF(fb.isSet() && fb.getLower() < b.getLower(), Exception,
-            fmt::format("For variable {}, expected "
-                   "[final value lower bound] >= [lower bound], but "
-                   "final value lower bound={}, lower bound={}.",
-                    n, fb.getLower(), b.getLower()));
+            "For variable {}, expected "
+            "[final value lower bound] >= [lower bound], but "
+            "final value lower bound={}, lower bound={}.",
+            n, fb.getLower(), b.getLower());
     OPENSIM_THROW_IF(ib.isSet() && ib.getUpper() > b.getUpper(), Exception,
-            fmt::format("For variable {}, expected "
-                   "[initial value upper bound] >= [upper bound], but "
-                   "initial value upper bound={}, upper bound={}.",
-                    n, ib.getUpper(), b.getUpper()));
+            "For variable {}, expected "
+            "[initial value upper bound] >= [upper bound], but "
+            "initial value upper bound={}, upper bound={}.",
+            n, ib.getUpper(), b.getUpper());
     OPENSIM_THROW_IF(fb.isSet() && fb.getUpper() > b.getUpper(), Exception,
-            fmt::format("For variable {}, expected "
-                   "[final value upper bound] >= [upper bound], but "
-                   "final value upper bound={}, upper bound={}.",
-                    n, fb.getUpper(), b.getUpper()));
+            "For variable {}, expected "
+            "[final value upper bound] >= [upper bound], but "
+            "final value upper bound={}, upper bound={}.",
+            n, fb.getUpper(), b.getUpper());
 }
 
 void MocoVariableInfo::printDescription() const {
