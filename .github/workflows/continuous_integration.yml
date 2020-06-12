@@ -1,8 +1,10 @@
 name: continuous-integration
 
-# TODO: build master branch after PRs are merged.
 # syntax https://help.github.com/en/articles/workflow-syntax-for-github-actions
 on:
+  # Run at 2am every night.
+  schedule:
+    - cron: '0 2 * * *'
   pull_request:
     branches:
       - '*'
