@@ -149,19 +149,18 @@ void Logger::addFileSink(const std::string& filepath) {
              "removeFileSink() first.", m_filesink->filename());
         return;
     }
-    // verify if file can be opened at the specified path
-    std::ifstream ifs(filepath);
-
-    if (ifs.is_open()) {
-        ifs.close();
-    } else {
-        // show message:
-         warn("Can't open file '{}' for writing. Log file will not be created. "
-             "Check that you have write permissions to the specified path.", 
-             filepath);
+    // check if file can be opened at the specified path if not return meaningful
+    // warning rather than bubble the exception up.
+    try {
+        m_filesink =
+                std::make_shared<spdlog::sinks::basic_file_sink_mt>(filepath);
+    }
+    catch (...) {
+        warn("Can't open file '{}' for writing. Log file will not be created. "
+             "Check that you have write permissions to the specified path.",
+                filepath);
         return;
     }
-    m_filesink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(filepath);
     addSinkInternal(m_filesink);
 }
 
