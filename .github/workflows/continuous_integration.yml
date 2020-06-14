@@ -88,8 +88,6 @@ jobs:
       run: echo "::set-output name=hash::$(git rev-parse --short HEAD)"
 
     - name: Install opensim-core
-      # TODO: Bindings are rebuilt at this stage because of a bug on Windows
-      # in the macro OpenSimFindSwigFileDependencies().
       run: |
         chdir $env:GITHUB_WORKSPACE\\build
         cmake --build . --config Release --target doxygen -- /maxcpucount:4
@@ -98,14 +96,14 @@ jobs:
         Copy-Item -Path "~/opensim-core-install" -Destination "opensim-core-${{ steps.commithash.outputs.hash }}" -Recurse
         7z a "opensim-core-${{ steps.commithash.outputs.hash }}.zip" "opensim-core-${{ steps.commithash.outputs.hash }}"
 
-    # - name: Test Python bindings
-    #   run: |
-    #     $env:PATH = "$env:HOME/opensim-core-install/bin;$env:PATH"
-    #     $env:PATH
-    #     # Move to the installed location of the python package.
-    #     cd ~/opensim-core-install/sdk/python
-    #     # Run python tests.
-    #     python -m unittest discover --start-directory opensim/tests --verbose
+    - name: Test Python bindings
+      run: |
+        $env:PATH += ";$env:HOME/opensim-core-install/bin"
+        $env:PATH
+        # Move to the installed location of the python package.
+        cd ~/opensim-core-install/sdk/python
+        # Run python tests.
+        python -m unittest discover --start-directory opensim/tests --verbose
 
     - name: Upload opensim-core
       uses: actions/upload-artifact@v2
