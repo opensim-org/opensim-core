@@ -91,14 +91,14 @@ jobs:
       run: |
         chdir $env:GITHUB_WORKSPACE\\build
         cmake --build . --config Release --target doxygen -- /maxcpucount:4
-        cmake --build . --config Release --target install -- /maxcpucount:4 /verbosity:quiet
+        cmake --build . --config Release --target install -- /maxcpucount:4
         chdir $env:GITHUB_WORKSPACE
         Copy-Item -Path "~/opensim-core-install" -Destination "opensim-core-${{ steps.commithash.outputs.hash }}" -Recurse
         7z a "opensim-core-${{ steps.commithash.outputs.hash }}.zip" "opensim-core-${{ steps.commithash.outputs.hash }}"
 
     - name: Test Python bindings
       run: |
-        $env:PATH += ";$env:HOME/opensim-core-install/bin"
+        $env:PATH += ";$env:USERPROFILE/opensim-core-install/bin"
         $env:PATH
         # Move to the installed location of the python package.
         cd ~/opensim-core-install/sdk/python
