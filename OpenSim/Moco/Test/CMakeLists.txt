@@ -34,7 +34,7 @@ MocoAddTest(NAME testMocoParameters)
 
 MocoAddTest(NAME testImplicit)
 
-MocoAddTest(NAME testConstraints)
+MocoAddTest(NAME testMocoConstraints)
 
 MocoAddTest(NAME testContact)
 

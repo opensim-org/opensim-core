@@ -6,6 +6,11 @@
 #       True if search for libraries and headers succeeds.
 #   @CMAKE_PROJECT_NAME@_ROOT_DIR
 #       The installation directory.
+#   @CMAKE_PROJECT_NAME@_USE_FILE
+#       A file containing CMake macros and functions that may be useful for 
+#       client projects. 
+#   @CMAKE_PROJECT_NAME@_BIN_DIR
+#       The directory containing executables (and DLLs on Windows).
 #   @CMAKE_PROJECT_NAME@_LIB_DIR
 #       The directory containing libraries. Suitable for link_directories().
 #   @CMAKE_PROJECT_NAME@_INCLUDE_DIRS
@@ -38,6 +43,13 @@
 @PACKAGE_INIT@
 
 set_and_check(@CMAKE_PROJECT_NAME@_ROOT_DIR "@PACKAGE_CMAKE_INSTALL_PREFIX@")
+        
+set_and_check(@CMAKE_PROJECT_NAME@_USE_FILE
+    "@PACKAGE_OPENSIM_INSTALL_CMAKEDIR@/Use@CMAKE_PROJECT_NAME@.cmake")
+
+# BIN_DIR
+# -------
+set_and_check(@CMAKE_PROJECT_NAME@_BIN_DIR "@PACKAGE_CMAKE_INSTALL_BINDIR@")
 
 # LIB_DIR
 # -------

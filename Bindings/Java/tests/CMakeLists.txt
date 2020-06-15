@@ -146,6 +146,7 @@ endif()
 OpenSimAddJavaTest(TestReporter)
 OpenSimAddJavaTest(TestXsensDataReader)
 
+MocoAddJavaTest(TestSlidingMass)
 
 # This line must appear after all tests are added.
 # This variable at the end has been accumulated from within the

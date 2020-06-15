@@ -64,6 +64,11 @@ OpenSimGenerateJavaWrapper(examplecomponents
     ${SWIG_JAVA_EXAMPLECOMPONENTS_CXX_FILE}
     ${SWIG_JAVA_EXAMPLECOMPONENTS_H_FILE})
 
+OpenSimGenerateJavaWrapper(moco
+    ${SWIG_JAVA_MOCO_INTERFACE_FILE}
+    ${SWIG_JAVA_MOCO_CXX_FILE}
+    ${SWIG_JAVA_MOCO_H_FILE})
+
 set(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
 add_library(osim${KIT} 
@@ -78,13 +83,15 @@ add_library(osim${KIT}
     ${SWIG_JAVA_ACTUATORS_H_FILE}
     ${SWIG_JAVA_EXAMPLECOMPONENTS_CXX_FILE}
     ${SWIG_JAVA_EXAMPLECOMPONENTS_H_FILE}
+    ${SWIG_JAVA_MOCO_CXX_FILE}
+    ${SWIG_JAVA_MOCO_H_FILE}
     OpenSimContext.cpp
     OpenSimContext.h)
 
 target_include_directories(osim${KIT} PRIVATE
                            ${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2})
 
-target_link_libraries(osim${KIT} osimTools osimExampleComponents)
+target_link_libraries(osim${KIT} osimTools osimExampleComponents osimMoco)
     
 set_target_properties(osim${KIT} PROPERTIES
    DEFINE_SYMBOL ${EXPORT_MACRO}

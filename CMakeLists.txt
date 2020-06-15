@@ -85,8 +85,6 @@ set(OPENSIMCORE_QUALIFIED_VERSION "${QUALIFIED_VERSION}" CACHE STRING
 # ------------------
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 include(OpenSimMacros)
-# TODO: Merge with OpenSimMacros.
-include(OpenSimMocoMacros)
 
 # Directory in which to install.
 # ------------------------------
@@ -171,21 +169,10 @@ mark_as_advanced(OPENSIM_BUILD_INDIVIDUAL_APPS)
 
 # Moco settings.
 # --------------
-
-# TODO
-# option(MOCO_JAVA_BINDINGS "Build Java/MATLAB interface." OFF)
-# 
-# option(MOCO_PYTHON_BINDINGS "Build Python interface." OFF)
-# set(MOCO_PYTHON_VERSION 3 CACHE STRING
-#     "The major Python version (2 or 3) for which to build the wrapping.")
-# # To create a drop-down in the CMake GUI:
-# set_property(CACHE MOCO_PYTHON_VERSION PROPERTY STRINGS "2" "3")
-# 
-option(MOCO_BUILD_EXECUTABLE
-    "Build the opensim-moco executable." ON)
 option(MOCO_BUILD_EXAMPLES
     "Build, test, and install Moco C++ examples." ON)
 
+# TODO Rename to OPENSIM_WITH_TROPTER.
 option(MOCO_WITH_TROPTER
     "Build the tropter optimal control library." ON)
 if(NOT MOCO_WITH_TROPTER)
@@ -676,8 +663,7 @@ if(UNIX) # Linux and macOS
 endif()
 
 set(OPENSIM_DEPENDENCIES_DIR 
-    "${CMAKE_SOURCE_DIR}/../opensim_dependencies_install" CACHE PATH
-    "The install prefix for the dependencies CMake project.")
+    "${CMAKE_SOURCE_DIR}/../opensim_dependencies_install"
     CACHE 
     PATH
     "Directory containing installed binaries of OpenSim dependencies. Set this

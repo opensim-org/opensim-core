@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-﻿Guidelines for Contributing to OpenSim-Core
+Guidelines for Contributing to OpenSim-Core
 ===========================================
 OpenSim is a community resource that is housed in the OpenSim-Core repository.
 We encourage everyone to contribute to the OpenSim project. This could be adding new code for a feature, improving an algorithm, or letting us know about a bug or making a feature request. The purpose of our contribution policy is to ensure that all code in OpenSim-Core has undergone real scrutiny, thereby reducing the likelihood of errors.

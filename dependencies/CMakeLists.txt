@@ -70,7 +70,7 @@ endfunction()
 # You must provide either URL or GIT_URL and GIT_TAG, but not all 3.
 function(AddDependency)
     set(onevalueargs NAME DEFAULT URL GIT_URL GIT_TAG)
-    set(multiValueArgs CMAKE_ARGS)
+    set(multiValueArgs DEPENDS CMAKE_ARGS)
     cmake_parse_arguments(DEP "" "${onevalueargs}" "${multiValueArgs}" ${ARGN})
 
     # Check for presence of required arguments.
@@ -134,6 +134,7 @@ function(AddDependency)
 
         if(DEP_GIT_URL)
             ExternalProject_Add(${DEP_NAME}
+                DEPENDS          ${DEP_DEPENDS}
                 TMP_DIR          ${BINARY_DIR}/tmp
                 STAMP_DIR        ${BINARY_DIR}/stamp
                 GIT_REPOSITORY   ${DEP_GIT_URL}
@@ -144,6 +145,7 @@ function(AddDependency)
                 INSTALL_DIR      ${INSTALL_DIR})
         else()
             ExternalProject_Add(${DEP_NAME}
+                DEPENDS          ${DEP_DEPENDS}
                 TMP_DIR          ${BINARY_DIR}/tmp
                 STAMP_DIR        ${BINARY_DIR}/stamp
                 URL              ${DEP_URL}
@@ -203,8 +205,13 @@ AddDependency(NAME    eigen
               DEFAULT ON
               URL     https://bitbucket.org/eigen/eigen/get/3.3.7.zip)
 
-include(colpack.cmake)
-
+AddDependency(NAME colpack
+              DEFAULT ON
+              GIT_URL https://github.com/chrisdembia/colpack.git
+              GIT_TAG master
+              CMAKE_ARGS -DCMAKE_DEBUG_POSTFIX:STRING=_d
+                         -DENABLE_EXAMPLES:BOOL=OFF
+                         -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON)
 
 set(SUPERBUILD_adolc ON CACHE BOOL 
     "Automatically download, configure, build and install adolc")

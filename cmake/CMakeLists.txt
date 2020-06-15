@@ -14,6 +14,7 @@ configure_package_config_file(
     PATH_VARS # Variables to edit in OpenSimConfig.cmake.in.
         CMAKE_INSTALL_PREFIX
         CMAKE_INSTALL_INCLUDEDIR
+        CMAKE_INSTALL_BINDIR
         CMAKE_INSTALL_LIBDIR
         OPENSIM_INSTALL_CMAKEDIR
         OPENSIM_INSTALL_SIMBODYDIR
@@ -23,7 +24,7 @@ configure_package_config_file(
 # Version file.
 write_basic_config_version_file(
     "${CMAKE_CURRENT_BINARY_DIR}/OpenSimConfigVersion.cmake"
-    VERSION "${OPENSIM_VERSION}"
+    VERSION "${OPENSIM_RELEASE_VERSION}"
     COMPATIBILITY SameMajorVersion)
 
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/OpenSimConfigToInstall.cmake"
@@ -38,6 +39,10 @@ install(
     DESTINATION
         "${OPENSIM_INSTALL_CMAKEDIR}"
         )
+
+install(FILES OpenSimMacros.cmake
+    DESTINATION "${OPENSIM_INSTALL_CMAKEDIR}"
+    RENAME UseOpenSim.cmake)
 
 install(EXPORT OpenSimTargets DESTINATION "${OPENSIM_INSTALL_CMAKEDIR}")
 
@@ -60,25 +65,3 @@ if(OPENSIM_COPY_DEPENDENCIES AND APPLE)
     install(SCRIPT "${script}")
 
 endif()
-
-# TODO configure_package_config_file(
-# TODO         OpenSimMocoConfig.cmake.in
-# TODO         "${CMAKE_CURRENT_BINARY_DIR}/OpenSimMocoConfigToInstall.cmake"
-# TODO         INSTALL_DESTINATION "${MOCO_INSTALL_CMAKEDIR}"
-# TODO         PATH_VARS
-# TODO             CMAKE_INSTALL_PREFIX
-# TODO             CMAKE_INSTALL_LIBDIR
-# TODO             CMAKE_INSTALL_BINDIR
-# TODO             CMAKE_INSTALL_INCLUDEDIR
-# TODO             MOCO_INSTALL_CMAKEDIR
-# TODO )
-# TODO 
-# TODO install(FILES "${CMAKE_CURRENT_BINARY_DIR}/OpenSimMocoConfigToInstall.cmake"
-# TODO         DESTINATION "${MOCO_INSTALL_CMAKEDIR}"
-# TODO         RENAME OpenSimMocoConfig.cmake)
-# TODO 
-# TODO install(FILES OpenSimMocoMacros.cmake
-# TODO         DESTINATION "${MOCO_INSTALL_CMAKEDIR}"
-# TODO         RENAME UseOpenSimMoco.cmake)
-# TODO 
-# TODO install(EXPORT OpenSimMocoTargets DESTINATION "${MOCO_INSTALL_CMAKEDIR}")

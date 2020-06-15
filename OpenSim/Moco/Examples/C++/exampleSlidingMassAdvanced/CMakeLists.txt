@@ -1,1 +1,0 @@
-MocoAddExampleCXX(NAME exampleSlidingMassAdvanced)

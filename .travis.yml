@@ -95,7 +95,6 @@ addons:
       - shell.sourceforge.net
       # For uploading binaries.
       - frs.sourceforge.net
-<<<<<<< HEAD
 
 before_install:
   # If the Mac builds take too long when building bindings, then we can have the bindings 

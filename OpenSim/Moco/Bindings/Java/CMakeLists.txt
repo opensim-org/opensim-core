@@ -1,6 +1,6 @@
 
 set(SWIG_JAVA_MOCO_INTERFACE_FILE 
-    "${CMAKE_CURRENT_SOURCE_DIR}/swig/java_moco.i")
+    "../../../../Bindings/Java/swig/java_moco.i")
 set(SWIG_JAVA_MOCO_CXX_FILE 
     "${CMAKE_CURRENT_BINARY_DIR}/java_moco.cxx")
 set(SWIG_JAVA_MOCO_H_FILE   

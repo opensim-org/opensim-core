@@ -154,7 +154,7 @@ macro(OpenSimAddPythonModule)
         target_link_libraries(${_libname} ${PYTHON_LIBRARIES})
     endif()
 
-    target_link_libraries(${_libname} osimTools osimExampleComponents)
+    target_link_libraries(${_libname} osimTools osimExampleComponents osimMoco)
     
     # Set target properties for various platforms.
     # --------------------------------------------
@@ -358,10 +358,3 @@ install(DIRECTORY ../Java/Matlab/OpenSenseExample
         PATTERN "*.m" EXCLUDE)
 install(DIRECTORY OpenSenseExample
         DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}")
-
-# TODO Place these files elsewhere in the repository?
-install(FILES
-    "${CMAKE_SOURCE_DIR}/OpenSim/Moco/plot_trajectory.py"
-    "${CMAKE_SOURCE_DIR}/OpenSim/Moco/plot_casadi_sparsity.py"
-    DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}"
-    )
