@@ -1,0 +1,83 @@
+
+set(bindir "@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_BINDIR@")
+set(libdir "@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@")
+message(STATUS "Editing RPATH of Moco dependency libraries")
+
+macro(install_name_tool_change lib dep_name dep_oldpath)
+    execute_process(COMMAND install_name_tool
+            -change ${dep_oldpath}/lib${dep_name}.dylib
+            @rpath/lib${dep_name}.dylib
+            "${libdir}/lib${lib}.dylib")
+endmacro()
+
+macro(install_name_tool_id lib)
+    execute_process(COMMAND install_name_tool
+            -id @rpath/lib${lib}.dylib
+            "${libdir}/lib${lib}.dylib")
+endmacro()
+
+macro(install_name_tool_add_rpath lib)
+    execute_process(COMMAND install_name_tool
+            -add_rpath "@loader_path/"
+            "${libdir}/lib${lib}.dylib")
+endmacro()
+
+macro(install_name_tool_delete_rpath lib rpath)
+    execute_process(COMMAND install_name_tool
+            -delete_rpath ${rpath}
+            "${libdir}/lib${lib}.dylib")
+endmacro()
+
+
+# See tropter_install_mac_dependency_libraries.cmake.
+macro(install_name_tool_change_gfortran lib)
+    execute_process(COMMAND bash "-c"
+        "otool -L ${libdir}/lib${lib}.dylib | grep 'libgfortran.*version' | perl -pe 's/^\\s+(.*)\\/libg.*/\\1/gc'"
+        OUTPUT_VARIABLE libgfortran_dir
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+    execute_process(COMMAND bash "-c"
+        "otool -L ${libdir}/lib${lib}.dylib | grep 'libgfortran.*version' | perl -pe 's/.*lib(.*).dylib.*/\\1/gc'"
+        OUTPUT_VARIABLE libgfortran_name
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+    install_name_tool_change(${lib} "${libgfortran_name}" "${libgfortran_dir}")
+endmacro()
+
+macro(install_name_tool_change_quadmath lib)
+execute_process(COMMAND bash "-c"
+    "otool -L ${libdir}/lib${lib}.dylib | grep 'libquadmath' | perl -pe 's/^\\s+(.*)\\/libq.*/\\1/gc'"
+    OUTPUT_VARIABLE libquadmath_dir
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+execute_process(COMMAND bash "-c"
+    "otool -L ${libdir}/lib${lib}.dylib | grep 'libquadmath' | perl -pe 's/.*lib(.*).dylib.*/\\1/gc'"
+    OUTPUT_VARIABLE libquadmath_name
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+    install_name_tool_change(${lib} "${libquadmath_name}" "${libquadmath_dir}")
+endmacro()
+
+
+
+install_name_tool_change(osimMoco adolc.2 "@ADOLC_DIR@/lib64")
+
+install_name_tool_add_rpath(casadi.3.5)
+get_filename_component(CASADI_LIBDIR "@CASADI_LIBRARY_DIRS@" ABSOLUTE)
+install_name_tool_delete_rpath(casadi.3.5 "${CASADI_LIBDIR}")
+
+
+install_name_tool_delete_rpath(casadi_nlpsol_ipopt.3.5 "${libquadmath_dir}")
+# The library may still have an RPATH like /usr/local/Cellar/gcc/9.1.0/lib/gcc/9/gcc/x86_64-apple-darwin18/9.1.0
+# but it's hard to detect this, and it should be fine to leave it.
+# install_name_tool_delete_rpath(casadi_nlpsol_ipopt.3.5 /usr/local/Cellar/gcc/8.2.0/lib/gcc/8/gcc/x86_64-apple-darwin18.0.0/8.2.0)
+
+
+install_name_tool_change(casadi_nlpsol_ipopt.3.5 ipopt.1 "@IPOPT_LIBDIR@")
+install_name_tool_change(casadi_nlpsol_ipopt.3.5 coinmumps.1 "@IPOPT_LIBDIR@")
+install_name_tool_change(casadi_nlpsol_ipopt.3.5 coinmetis.1 "@IPOPT_LIBDIR@")
+install_name_tool_change_gfortran(casadi_nlpsol_ipopt.3.5)
+install_name_tool_change_quadmath(casadi_nlpsol_ipopt.3.5)
+install_name_tool_add_rpath(casadi_nlpsol_ipopt.3.5)
+install_name_tool_delete_rpath(casadi_nlpsol_ipopt.3.5 "${CASADI_LIBDIR}")
+install_name_tool_delete_rpath(casadi_nlpsol_ipopt.3.5 "@IPOPT_LIBDIR@")
+
+
+

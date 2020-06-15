@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="30512">
+	<GlobalStaticOptimization>
+		<model_file>test2Muscles2DOFsDeGrooteFregly2016.osim</model_file>
+		<kinematics_file>
+			test2Muscles2DOFsDeGrooteFregly2016_GSO_kinematics.csv
+		</kinematics_file>
+		<!--The frequency (Hz) at which to filter inverse dynamics joint moments, which are computed internally from the kinematics (default is -1, which means no filtering; for walking, consider 6 Hz).-->
+		<lowpass_cutoff_frequency_for_joint_moments>80</lowpass_cutoff_frequency_for_joint_moments>
+		<!--Create a reserve actuator (CoordinateActuator) for each unconstrained coordinate in the model, and add each to the model. Each actuator will have the specified `optimal_force`, which should be set low to discourage the use of the reserve actuators. (default is -1, which means no reserves are created)-->
+		<create_reserve_actuators>0.001</create_reserve_actuators>
+	</GlobalStaticOptimization>
+</OpenSimDocument>

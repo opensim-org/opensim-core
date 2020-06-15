@@ -1,0 +1,372 @@
+function configureMoco()
+% configureMoco() adds OpenSim Moco library paths to MATLAB path files.
+%    Once run, you will have access to the OpenSim Moco API in MATLAB:
+%
+%        >> import org.opensim.modeling.*;
+%        >> model = Model();
+%
+%    Windows users must ensure Moco's bin directory is on the operating
+%    system's PATH (search for "environment" in the Windows start menu). 
+%
+%    Linux users must ensure Moco's lib directory on the library path
+%    (LD_LIBRRAY_PATH), and may need to replace MATLAB's libstdc++ 
+%    (see https://github.com/opensim-org/opensim-core/issues/1397).
+%
+%    Depending on your operating system, this function may require
+%    administrator (or sudo) privileges to succeed.
+%
+%    For this function to work, it must be located in its original place 
+%    in the Moco installation: @MOCO_INSTALL_MATLABEXDIR@
+%
+% What this function does:
+%    This function adds (a) the location of org-opensim-modeling.jar 
+%    (the OpenSim Java bindings) to MATLAB's Java class path 
+%    (javaclasspath.txt), (b) the location of OpenSim's shared
+%    libraries (.dll on Windows, .so on Linux, .dylib on macOS) to
+%    MATLAB's Java library path (javalibrarypath.txt), and (c) the location of
+%    OpenSim's MATLAB Utilities to the MATLAB path (e.g., addpath).
+%
+% Removing existing OpenSim paths:
+%    This function tries to detect any OpenSim or Moco (or OpenSense beta)
+%    installations you may have previously configured with MATLAB, and
+%    removes them from the Java class path, Java library path, and MATLAB
+%    path (all 3 items above).
+%  
+% MATLAB versions older than 2012b:
+%    If your MATLAB version is older than 2012b, we must use an older mechanism
+%    for setting the Java class path and Java library path. This older
+%    mechanism likely requires administrator (sudo) privileges, as it involves
+%    editing files within the MATLAB installation.
+%
+%    This function requires MATLAB 2008a or later to run.
+
+% ----------------------------------------------------------------------- %
+% The OpenSim API is a toolkit for musculoskeletal modeling and           %
+% simulation. See http://opensim.stanford.edu and the NOTICE file         %
+% for more information. OpenSim is developed at Stanford University       %
+% and supported by the US National Institutes of Health (U54 GM072970,    %
+% R24 HD065690) and by DARPA through the Warrior Web program.             %
+%                                                                         %   
+% Copyright (c) 2005-2017 Stanford University and the Authors             %
+%                                                                         %   
+% Licensed under the Apache License, Version 2.0 (the "License");         %
+% you may not use this file except in compliance with the License.        %
+% You may obtain a copy of the License at                                 %
+% http://www.apache.org/licenses/LICENSE-2.0.                             %
+%                                                                         % 
+% Unless required by applicable law or agreed to in writing, software     %
+% distributed under the License is distributed on an "AS IS" BASIS,       %
+% WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or         %
+% implied. See the License for the specific language governing            %
+% permissions and limitations under the License.                          %
+% ----------------------------------------------------------------------- %
+
+try
+%% Determine the Moco install location.
+    thisFolder = fileparts(mfilename('fullpath'));
+    % Number of directories between this file and the Moco install root.
+    numDirs = length(strfind('@matlabexdir_to_install_dir@', '..'));
+    % Back up numDir times from this folder.
+    mocoRoot = thisFolder;
+    for i = 1:numDirs
+        % This function returns all but the leaf element of the provided path.
+        mocoRoot = fileparts(mocoRoot);
+    end
+    % For this to be an Moco installation, there must be a buildinfo file.
+    buildInfoFile = fullfile(mocoRoot, '@CMAKE_INSTALL_SYSCONFDIR@', ...
+                'OpenSim_buildinfo.txt');
+    if ~exist(buildInfoFile)
+        showMessage(['Cannot find the Moco installation. Did you move ' ...
+                    'configureMoco.m to a different location?'], ...
+                    'Error', true);
+    end
+
+%% Check if Matlab and OpenSim are compatible (64 vs 32 bit)
+    checkSystemInfo(buildInfoFile);
+
+%% Edit the Java class path (need full path for print)
+    toolboxLocal = fullfile(matlabroot, 'toolbox', 'local');
+    % Create the string names used
+    % TODO GUI distribution might put this file elsewhere.
+    jarPath =  fullfile(mocoRoot, ...
+            '@MOCO_INSTALL_JAVAJARDIR@', '@SWIG_JAVA_JAR_NAME@');
+    classFileTool = fullfile(toolboxLocal, 'classpath.txt');
+    % Keep track of if (1) we detected existing OpenSim
+    % and (2) if we had issues removing existing OpenSim entries.
+    rmPrev = [false false];
+    % The verLessThan function was introduced in MATLAB 2007a.
+    matlabOlderThan2012b = verLessThan('matlab', '8.0');
+    if matlabOlderThan2012b 
+        % The prefdir mechanism doesn't exist yet; only check and use the
+        % pre-2012b mechanism.
+        % Must use single | to avoid short-circuit behavior of ||.
+        rmPrev = rmPrev | editPathTxtFile(classFileTool, jarPath);
+    else
+        % Previous versions of this script only used the pre-2012b mechanism,
+        % so even if the user has 2012b or later, we must check the pre-2012b
+        % mechanism. But we won't try to add the jar path to the file in the
+        % toolbox directory.
+        rmPrev = rmPrev | editPathTxtFile(classFileTool, '');
+        % We will only add the jar path using the prefdir mechanism.
+        classFilePref = fullfile(prefdir, 'javaclasspath.txt');
+        rmPrev = rmPrev | editPathTxtFile(classFilePref, jarPath);
+    end
+
+%% Edit the Java library path.
+    % Create the string names used
+    libPath  = fullfile(mocoRoot, '@MOCO_INSTALL_SHAREDLIBDIR@');
+    libraryFileTool = fullfile(toolboxLocal, 'librarypath.txt');
+    if matlabOlderThan2012b
+        rmPrev = rmPrev | editPathTxtFile(libraryFileTool, libPath);
+    else
+        rmPrev = rmPrev | editPathTxtFile(libraryFileTool, '');
+        libraryFilePref = fullfile(prefdir, 'javalibrarypath.txt');
+        rmPrev = rmPrev | editPathTxtFile(libraryFilePref, libPath);
+    end
+
+%% Edit MATLAB path
+    cleanMatlabSearchPath();
+    utilitiesPath = fullfile(thisFolder, 'Utilities');
+    if exist(utilitiesPath, 'dir')
+        addpath(utilitiesPath);
+        fprintf('-- Added %s to the MATLAB path.\n\n', utilitiesPath);
+        status = savepath;
+        if status ~= 0 % Status is 0 for success (see doc savepath).
+            fprintf(['-- Could not save changes to the MATLAB path. ' ...
+            'Therefore, you will not have access to OpenSim-related '...
+            'MATLAB utilities like osimTableToStruct(). ' ...
+            'Restart MATLAB as administrator (or with sudo, on UNIX) '...
+            'and re-run configureOpenSim.m.'])
+        end
+    else
+        fprintf(['-- Could not find Utilities folder; ' ...
+                'not adding to MATLAB path.\n\n']);
+    end
+
+%% Display final message.
+    msg = ['Paths have been successfully updated for the copy of Moco '...
+            'installed at ' mocoRoot '.'];
+    if rmPrev(1) && rmPrev(2) 
+        % We detected previous OpenSim entries and couldn't remove them.
+        msg = [msg ' However, we were unable to fully remove existing '...
+                'installations of OpenSim/Moco from MATLAB. '...
+                'Either remove them manually (see Command Window for '...
+                'details), or restart ' ...
+                'MATLAB as administrator (or with sudo, on UNIX) ' ...
+                ' and re-run configureMoco.m.'];
+    end
+    if ispc && rmPrev(1) 
+        msg = [msg ' Make sure your Windows PATH (search for ' ...
+                   '"environment" in the Windows start menu) ' ...
+                   'contains ' libPath '.'];
+        % If the user does not have a pre-existing OpenSim installation,
+        % we assume the OpenSim installer successfully edited the PATH;
+        % no need for a message.
+    end
+    msg = [msg ' To complete setup, restart MATLAB. To test your set up, ' ...
+           'type: `model = org.opensim.modeling.Model();`'];
+    showMessage(msg, 'OpenSim Moco successfully added', false);
+catch ME
+    % Introduced in version 2007b (7.4).
+    throwAsCaller(ME); % Avoid a stacktrace.
+end % try...catch
+end % function
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function rmPrev = editPathTxtFile(txtname, spath)
+    % Edits Java path .txt files. Deletes old entries and adds the new path
+    % spath if spath is not empty.
+    % return value:
+    % (1): have we detected existing OpenSim/Moco entries?
+    % (2): did we have trouble removing existing OpenSim/Moco entries.
+    rmPrev = [false false];
+    
+    % If the file does not exist then there are no old entries to delete; if
+    % we are not adding an entry, then there is nothing to do.
+    if ~exist(txtname, 'file') && isempty(spath)
+        return
+    end
+
+    % If the file exists, then check if it has existing OpenSim entries.
+    entries = cell(0);
+    if exist(txtname, 'file')
+        fileIDread = fopen(txtname, 'r');
+        if fileIDread == -1
+            if isempty(spath)
+                % This branch is unlikely.
+                fprintf(['-- Unable check for existing OpenSim/Moco ' ...
+                        'entries in %s. Check this file manually.\n'], txtname);
+                % If spath is not empty, then we intend to write to the file,
+                % and we will give a more useful message in the next few lines.
+            end
+        else
+            C = textscan(fileIDread,'%s', 'delimiter','\n');
+            [entries, rmPrev(1)] = searchForOpenSimMoco(C, txtname);
+        end
+        fclose(fileIDread);
+    end
+
+    % If we detected previous OpenSim/Moco entries or if want to add an
+    % entry, then we need to be able to write to the file.
+    if rmPrev(1) || ~isempty(spath)
+        fileIDwrite = fopen(txtname, 'w');
+        if fileIDwrite == -1
+            if isempty(spath)
+                % If we weren't trying to add an entry, then we don't need to
+                % generate an error; just notify the user.
+                fprintf(['-- Unable to remove existing OpenSim entries in ' ...
+                        '%s.\n'], txtname);
+                rmPrev(2) = true;
+                return;
+            else
+                showMessage(['Unable to add OpenSim to ' txtname '. ' ...
+                    'Restart MATLAB as administrator (or with sudo, ' ...
+                    'on UNIX) and re-run configureOpenSim.m.'], ...
+                        'Error', true);
+            end
+        end
+
+        % Add the spath entry.
+        entries = [entries, {spath}];
+        for i = 1:length(entries)
+            fprintf(fileIDwrite, '%s\n', entries{i});
+        end
+        fclose(fileIDwrite);
+        if ispc
+            msg = ['-- Added ' strrep(spath, '\', '\\') ' to ' ...
+                    strrep(txtname, '\', '\\')];
+        else
+            msg = ['-- Added ' spath ' to ' txtname];
+        end
+        if rmPrev(1)
+            msg = [msg ' and commented out pre-existing OpenSim/Moco entries'];
+        end
+        msg = [msg '.\n\n'];
+        fprintf(msg);
+    end
+
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function [newC, foundExisting] = searchForOpenSimMoco(C, txtname)
+    % Return a new cell array with all the same entries as C, except that
+    % entries containing opensim, opensense, or moco are commented out.
+    timeStr = datestr(now, 30);
+    newC = cell(0);
+    foundExisting = false;
+    [Cnrows, Cncols] = cellfun(@size, C, 'UniformOutput', false);
+    for i = 1:Cnrows{1}
+        has_opensim = ~isempty(strfind(lower(C{1}{i}), 'opensim'));
+        has_opensense = ~isempty(strfind(lower(C{1}{i}), 'opensense'));
+        has_moco = ~isempty(strfind(lower(C{1}{i}), 'moco'));
+        commented_out = any(regexpi(C{1}{i}, '^\s*#') == 1);
+        if (has_opensim || has_opensense || has_moco) && ~commented_out
+            commentedOutLine = ['# removed by configureMoco.m ' ...
+                     timeStr ' ' C{1}{i, 1}];
+            foundExisting = true;
+            newC = [newC, {commentedOutLine}];
+            fprintf('-- Detected existing %s in %s.\n', C{1}{i, 1}, txtname);
+        else
+            % Copy over the line as-is.
+            newC = [newC, C{1}{i, 1}];
+        end
+    end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function checkSystemInfo(buildInfoFile)
+    % check to see if the buildinfo.txt file is present. This file will give
+    % us install type info that determines compatability between MATLAB and
+    % opensim (both 64 bit?)
+    fileID = fopen(buildInfoFile);
+    OpenSimInstallInfo = textscan(fileID,'%s');
+    fclose(fileID);
+    platformID=char(OpenSimInstallInfo{1,1}{end,1});
+    OpenSimIs64bit = not(isempty(strfind(platformID, '64')));
+    MatlabIs64bit = not(isempty(strfind(mexext, '64')));
+    if MatlabIs64bit && not(OpenSimIs64bit)
+        showMessage(['Matlab is 64 bit. OpenSim is 32 bit.'], 'Error', true);
+    elseif not(MatlabIs64bit) && OpenSimIs64bit
+        showMessage(['Matlab is 32 bit. OpenSim is 64 bit. '], 'Error', true);
+    end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function cleanMatlabSearchPath()
+    % goes through the matlab search path and removes any folders that have
+    % the strings opensense or opensim in them.
+    
+    % get the matlab path    
+    matlabPath         = path;
+    % matlab path is just 1 long string, so index location of ';' or ':'
+    if ispc
+        pathSep = ';';
+    else
+        pathSep = ':';
+    end
+    matLabFoldersIndex = strfind(matlabPath, pathSep);
+    matLabFoldersIndex = [0 matLabFoldersIndex];
+    % How many folders?
+    nFoldersInPath     = length(matLabFoldersIndex); 
+
+    attemptedBackup = false;
+    timeStr = datestr(now, 30);
+
+    % for each folder
+    for i = 1:nFoldersInPath-1
+        % get the start and end index for each folder name
+        startString = matLabFoldersIndex(i);
+        finishString = matLabFoldersIndex(i+1);
+        % ouput the folder string
+        folderName = matlabPath(startString+1 : finishString-1);
+
+        % Check to see if the folder string contains opensim or opensense.
+        % No need to check for 'moco' because this script never adds a path
+        % to the MATLAB PATH.
+        has_opensim = ~isempty(strfind(lower(folderName), 'opensim'));
+        has_opensense = ~isempty(strfind(lower(folderName), 'opensense'));
+        if has_opensim || has_opensense
+            if ~attemptedBackup
+                backup = fullfile(prefdir, ['pathdef_backup_' timeStr '.m']);
+                status = savepath(backup);
+                if status == 0 % Status is 0 for success (see doc savepath).
+                    fprintf('-- Saved a backup MATLAB path to %s.\n', backup);
+                else
+                    fprintf(['-- Attempted to save a backup MATLAB path ' ...
+                            'but failed.\n']);
+                end
+                attemptedBackup = true;
+            end
+            rmpath(folderName);
+            fprintf('-- Removing pre-existing %s from MATLAB path.\n', ...
+                    folderName);
+        end     
+    end
+
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function showMessage(msg, title, isError)
+    % If the user started MATLAB without a display, then show messages on the
+    % command line.
+    % http://stackoverflow.com/questions/6754430/determine-if-matlab-has-a-display-available
+    if usejava('jvm') && ~feature('ShowFigureWindows')
+        if isError
+            error([title ': ' msg]);
+        else
+            disp(['-- ' title ': ' msg]);
+        end
+    else
+        h = msgbox(msg, title);
+        uiwait(h);
+        if isError
+            error([title ': ' msg]);
+        end
+    end
+end
+

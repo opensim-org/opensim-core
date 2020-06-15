@@ -1,0 +1,5 @@
+if(TROPTER_WITH_SNOPT)
+    add_subdirectory(snopt-interface)
+endif()
+#add_subdirectory(fmt)
+add_subdirectory(optional-lite)

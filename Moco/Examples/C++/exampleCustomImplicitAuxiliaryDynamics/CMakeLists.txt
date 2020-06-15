@@ -1,0 +1,1 @@
+MocoAddExampleCXX(NAME exampleCustomImplicitAuxiliaryDynamics)

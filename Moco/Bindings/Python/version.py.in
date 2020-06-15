@@ -1,0 +1,1 @@
+__version__ = "@MOCO_FULL_VERSION@"

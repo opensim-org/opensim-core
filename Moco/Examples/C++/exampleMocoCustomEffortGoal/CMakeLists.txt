@@ -1,0 +1,1 @@
+MocoAddPluginExampleCXX(NAME MocoCustomEffortGoal)

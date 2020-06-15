@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="30512">
+	<INDYGO name="testGait10dof18musc_INDYGO">
+		<model_file>testGait10dof18musc_subject01.osim</model_file>
+		<kinematics_file>testGait10dof18musc_kinematics.mot</kinematics_file>
+		<lowpass_cutoff_frequency_for_kinematics>6</lowpass_cutoff_frequency_for_kinematics>
+		<lowpass_cutoff_frequency_for_joint_moments>6
+			</lowpass_cutoff_frequency_for_joint_moments>
+        <net_generalized_forces_file>testGait10dof18musc_netgeneralizedforces.mot</net_generalized_forces_file>
+		<!--Create a reserve actuator (CoordinateActuator) for each unconstrained coordinate in the model, and add each to the model. Each actuator will have the specified `optimal_force`, which should be set low to discourage the use of the reserve actuators. (default is -1, which means no reserves are created)-->
+		<create_reserve_actuators>0.001</create_reserve_actuators>
+        <initial_time>0.46</initial_time>
+        <final_time>1.81</final_time>
+		<coordinates_to_include>
+			/jointset/ankle_r/ankle_angle_r
+		</coordinates_to_include>
+		<actuators_to_include>
+			/forceset/gastroc_r
+			/forceset/soleus_r
+			/forceset/tib_ant_r
+		</actuators_to_include>
+	</INDYGO>
+</OpenSimDocument>

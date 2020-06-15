@@ -1,0 +1,73 @@
+/** The Moco interface is contained within the OpenSim namespace.
+*/
+// We must document the OpenSim namespace for free functions within the
+// namespace to appear in Doxygen.
+namespace OpenSim {
+/** @mainpage
+
+Moco is a part of %OpenSim for solving optimal control problems for
+musculoskeletal systems defined as %OpenSim models.
+The package has Python, MATLAB, and XML (command-line) interfaces; the core
+library is written in C++.
+
+@image html WhatIsMoco.png height=250px
+
+Here are some problems you can solve with Moco:
+
+- Solve for the muscle activity that tracks a known motion.
+- Solve for a new motion that optimizes some cost (e.g., effort).
+- Solve for mass properties that minimize residual (unrealistic) forces.
+
+Sections of the documentation:
+ - @ref gettingstarted
+ - @ref mocouserguide "User Guide: Learning how to use Moco"
+    - @ref mocotool "Solving for muscle activity that tracks an observed motion"
+    - @ref mocostudy "Defining a custom optimization problem"
+ - @ref mocotheoryguide "Theory Guide: Learning how Moco solves optimal control problems"
+ - @ref mocodevguide "Developer Guide: Learning the Moco codebase and how to contribute"
+ - @ref mocoapiref "Interface (API) Reference"
+ - @ref mococheatsheet "Printable cheat sheet"
+ - @ref mocoexamples "List of examples"
+
+Other resources:
+ - [SimTK: downloads, user forum, and mailing lists](https://simtk.org/projects/opensim-moco)
+ - [GitHub: source code, bug reporting, and feature requests](https://github.com/opensim-org/opensim-moco)
+ - [bioRxiv preprint](https://www.biorxiv.org/content/10.1101/839381v1)
+ - [Webinar recording](https://opensim.stanford.edu/support/event_details.php?id=236&title=Webinar-OpenSim-Moco-Software-to-optimize-the-motion-and-control-of-OpenSim-models)
+
+@defgroup mocogoal Available goals
+
+These are the available goals you can use in your cost functional or as endpoint
+constraints. If none of these satisfy your needs, you can define your own using
+a plugin.
+
+
+@defgroup mocomodelutil Model and trajectory utilities
+
+These are utilities for visualizing model, editing a
+MocoTrajectory, and more.
+To use these utilities in MATLAB, prepend the function
+names with "opensimMoco."; for example, `opensimMoco.visualize()` or
+`org.opensim.modeling.opensimMoco.visualize()`.
+In Python, use `opensim.visualize()`.
+
+@defgroup moconumutil Numeric and data utilities
+
+Interpolate or resample data, and read/write tables.
+To use these utilities in MATLAB, prepend the function
+names with "opensimMoco."; for example, `opensimMoco.interpolate()` or
+`org.opensim.modeling.opensimMoco.interpolate()`.
+In Python, use `opensim.interpolate()`.
+
+@defgroup mocologutil String and logging utilities
+
+Easily format and log messages; intended for internal use by Moco.
+
+@defgroup mocogenutil Generic utilities
+
+Utilities for parallelism, strings, date/time, and error-checking.
+
+*/
+
+} // namespace OpenSim
+

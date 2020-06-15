@@ -1,0 +1,8 @@
+add_subdirectory(exampleSlidingMass)
+add_subdirectory(exampleSlidingMassAdvanced)
+add_subdirectory(exampleTracking)
+add_subdirectory(exampleMarkerTracking)
+add_subdirectory(example2DWalking)
+add_subdirectory(example3DWalking)
+add_subdirectory(exampleMocoCustomEffortGoal)
+add_subdirectory(exampleCustomImplicitAuxiliaryDynamics)
