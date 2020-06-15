@@ -74,10 +74,10 @@ function(MocoAddExampleCXX)
     # Install files so that users can build the example.
     # We do not install pre-built binaries of the examples.
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-            DESTINATION ${MOCO_INSTALL_CPPEXDIR}
+            DESTINATION ${OPENSIM_INSTALL_CPPEXDIR}
             PATTERN "CMakeLists.txt" EXCLUDE)
 
-    set(_example_install_dir ${MOCO_INSTALL_CPPEXDIR}/${MOCOEX_NAME})
+    set(_example_install_dir ${OPENSIM_INSTALL_CPPEXDIR}/${MOCOEX_NAME})
     # These next two variables are to be configured below (they are not used
     # here, but within ExampleCMakeListsToInstall.txt.in).
     set(_example_name ${MOCOEX_NAME})
@@ -136,11 +136,11 @@ function(MocoAddPluginExampleCXX)
     file(COPY ${MOCOEX_RESOURCES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-            DESTINATION ${MOCO_INSTALL_CPPEXDIR}/Plugins
+            DESTINATION ${OPENSIM_INSTALL_CPPEXDIR}/Plugins
             PATTERN "CMakeLists.txt" EXCLUDE)
 
     set(_example_install_dir
-            ${MOCO_INSTALL_CPPEXDIR}/Plugins/example${MOCOEX_NAME})
+            ${OPENSIM_INSTALL_CPPEXDIR}/Plugins/example${MOCOEX_NAME})
     # These next two variables are to be configured below (they are not used
     # here, but within ExampleCMakeListsToInstall.txt.in).
     set(_example_name ${MOCOEX_NAME})
@@ -217,9 +217,9 @@ endfunction()
 
 # Similar to MocoAddInstallRPATH, but specifically for adding a run-path to
 # the Simbody libraries copied into the Moco installation. If Simbody is not
-# copied into the Moco installation (MOCO_COPY_DEPENDENCIES=OFF) or the
+# copied into the Moco installation (OPENSIM_COPY_DEPENDENCIES=OFF) or the
 # copied Simbody libraries are installed to the same folder as the Moco
-# libraries (MOCO_INSTALL_UNIX_FHS=ON), then this function does nothing.
+# libraries (OPENSIM_INSTALL_UNIX_FHS=ON), then this function does nothing.
 #
 # TARGET: The CMake target to which the run-path should be added.
 # ABSOLUTE: Add an absolute run-path to the Simbody libraries in the Moco
@@ -242,14 +242,14 @@ function(MocoAddInstallRPATHSimbody)
                 "Cannot specify both ABSOLUTE and FROM, EXECUTABLE, or LOADER.")
     endif()
 
-    if(NOT MOCO_COPY_DEPENDENCIES OR MOCO_INSTALL_UNIX_FHS)
+    if(NOT OPENSIM_COPY_DEPENDENCIES OR OPENSIM_INSTALL_UNIX_FHS)
         return()
     endif()
 
     file(RELATIVE_PATH simbody_root_to_simbody_lib_dir
             "${Simbody_ROOT_DIR}" "${Simbody_LIB_DIR}")
     set(root_to_simbody_lib_dir
-            "${MOCO_INSTALL_SIMBODYDIR}/${simbody_root_to_simbody_lib_dir}")
+            "${OPENSIM_INSTALL_SIMBODYDIR}/${simbody_root_to_simbody_lib_dir}")
 
     if(MOCORP_ABSOLUTE)
         set_property(TARGET ${MOCORP_TARGET} APPEND PROPERTY INSTALL_RPATH

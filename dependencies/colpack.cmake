@@ -1,6 +1,7 @@
 # This file is included by the CMakeLists.txt in this directory.
 
 AddDependency(NAME colpack
+              DEFAULT ON
               GIT_URL https://github.com/chrisdembia/colpack.git
               GIT_TAG master
               CMAKE_ARGS -DCMAKE_DEBUG_POSTFIX:STRING=_d

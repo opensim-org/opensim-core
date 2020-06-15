@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿Guidelines for Contributing to OpenSim-Core
 ===========================================
 OpenSim is a community resource that is housed in the OpenSim-Core repository.
@@ -95,6 +96,7 @@ Coding Standards
 - [Throw and return are not functions](#throw-and-return-are-not-functions)
 - [Always use pre-increment and pre-decrement operators when you have a choice](#always-use-pre-increment-and-pre-decrement-operators-when-you-have-a-choice)
 - [Place pointer and reference symbols with the type](#place-pointer-and-reference-symbols-with-the-type)
+- [Setters and pass-by-value](#setters-and-pass-by-value)
 - [Removing methods](#removing-methods)
 
 ### Header guards
@@ -276,6 +278,14 @@ Therefore, you should place the ``*`` and ``&`` next to the type, not the variab
 
 /*NO*/  f(int I, string &name, char *something);
 ```
+
+### Setters and pass-by-value
+
+Setter functions usually make a copy of the passed-in argument, and therefore
+it is often preferable to use pass-by-value and then `std::move` the argument
+into a member variable (rather than to pass-by-reference).
+
+https://stackoverflow.com/questions/270408/is-it-better-in-c-to-pass-by-value-or-pass-by-constant-reference
 
 ### Removing methods
 

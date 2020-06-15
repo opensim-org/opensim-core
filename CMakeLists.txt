@@ -19,8 +19,11 @@ message(STATUS "NOTICE: Make sure all OpenSim dependencies are built with the \
 same CMAKE_BUILD_TYPE (Linux) or CONFIGURATION (Xcode/MSVC) as OpenSim to \
 avoid mysterious runtime errors.")
 
-# To create a folder hierarchy within Visual Studio.
+# To allow a folder hierarchy within Visual Studio's Solution Explorer.
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+# This is used to provide the user with information about config. options.
+include(FeatureSummary)
 
 # OpenSim version.
 # ----------------
@@ -34,10 +37,49 @@ if(OPENSIM_PATCH_VERSION)
     set(PATCH_VERSION_STRING ".${OPENSIM_PATCH_VERSION}")
 endif()
 
-set(OPENSIM_VERSION
+set(OPENSIM_RELEASE_VERSION
     "${OPENSIM_MAJOR_VERSION}.${OPENSIM_MINOR_VERSION}${PATCH_VERSION_STRING}"
     )
 
+set(QUALIFIED_VERSION "")
+find_package(Git)
+if(Git_FOUND)
+    # This command provides the annotated tag for the current commit, if it
+    # exists, and returns an error if a tag does not exist.
+    execute_process(
+            COMMAND "${GIT_EXECUTABLE}" describe --exact-match
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            RESULT_VARIABLE GIT_DESCRIBE_EXACT_MATCH_RETVAL
+            OUTPUT_VARIABLE GIT_TAG
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+    )
+    if(${GIT_DESCRIBE_EXACT_MATCH_RETVAL} EQUAL 0)
+        # A tag exists.
+        set(QUALIFIED_VERSION ${GIT_TAG})
+        # Do not add anything to the version.
+    else()
+        execute_process(
+                COMMAND "${GIT_EXECUTABLE}" log -1 --format=%h
+                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                OUTPUT_VARIABLE GIT_COMMIT_HASH
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        # Prepend date for sorting.
+        execute_process(
+                COMMAND "${GIT_EXECUTABLE}" show -s --format=%cd --date=short HEAD
+                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                OUTPUT_VARIABLE GIT_COMMIT_DATE
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        set(QUAILFIED_VERSION
+                "${PROJECT_VERSION}-${GIT_COMMIT_DATE}-${GIT_COMMIT_HASH}")
+    endif()
+else()
+    set(QUALIFIED_VERSION "${OPENSIM_RELEASE_VERSION}?")
+endif()
+set(OPENSIMCORE_QUALIFIED_VERSION "${QUALIFIED_VERSION}" CACHE STRING
+        "Qualified version string, containing git commit date/hash suffix." FORCE)
 
 # CMake module path.
 # ------------------
@@ -69,7 +111,9 @@ link_directories(${CMAKE_BINARY_DIR})
 # ----------------
 
 # Specify number of cores to run tests.
-set(PROCESSOR_COUNT 8 CACHE STRING
+include(ProcessorCount)
+ProcessorCount(PROCESSOR_COUNT)
+set(PROCESSOR_COUNT "${PROCESSOR_COUNT}" CACHE STRING
     "Number of concurrent jobs when running tests via RUN_TESTS_PARALLEL target.")
 mark_as_advanced(PROCESSOR_COUNT)
 
@@ -123,6 +167,51 @@ option(OPENSIM_BUILD_INDIVIDUAL_APPS
 mark_as_advanced(OPENSIM_BUILD_INDIVIDUAL_APPS)
 
 
+# Moco settings.
+# --------------
+
+# TODO
+# option(MOCO_JAVA_BINDINGS "Build Java/MATLAB interface." OFF)
+# 
+# option(MOCO_PYTHON_BINDINGS "Build Python interface." OFF)
+# set(MOCO_PYTHON_VERSION 3 CACHE STRING
+#     "The major Python version (2 or 3) for which to build the wrapping.")
+# # To create a drop-down in the CMake GUI:
+# set_property(CACHE MOCO_PYTHON_VERSION PROPERTY STRINGS "2" "3")
+# 
+# option(MOCO_BUILD_EXECUTABLE
+#     "Build the opensim-moco executable." ON)
+# option(MOCO_BUILD_EXAMPLES
+#     "Build, test, and install Moco C++ examples." ON)
+
+option(MOCO_WITH_TROPTER
+    "Build the tropter optimal control library." ON)
+if(NOT MOCO_WITH_TROPTER)
+    # TODO
+    message(WARNING "MOCO_WITH_TROPTER=OFF is not supported yet.")
+endif()
+
+# Default paths for finding dependencies.
+get_filename_component(OPENSIM_DEPENDENCIES_ABSDIR "${OPENSIM_DEPENDENCIES_DIR}"
+        ABSOLUTE)
+if(NOT CMAKE_PREFIX_PATH
+        AND NOT ADOLC_DIR AND NOT "$ENV{ADOLC_DIR}"
+        AND NOT IPOPT_DIR AND NOT "$ENV{IPOPT_DIR}"
+        AND EXISTS "${OPENSIM_DEPENDENCIES_ABSDIR}")
+    message(STATUS
+        "Attempting to use dependencies from ${OPENSIM_DEPENDENCIES_ABSDIR}")
+    set(dep_install_dirs)
+    foreach(dep colpack ipopt eigen casadi)
+        list(APPEND dep_install_dirs "${OPENSIM_DEPENDENCIES_ABSDIR}/${dep}")
+    endforeach()
+    set(CMAKE_PREFIX_PATH "${dep_install_dirs}" CACHE PATH
+            "Directories containing dependencies.")
+    set(ADOLC_DIR "${OPENSIM_DEPENDENCIES_ABSDIR}/adol-c" CACHE PATH
+            "Path to ADOL-C install directory.")
+endif()
+
+
+
 # Configure installation directories across platforms.
 # ----------------------------------------------------
 
@@ -172,6 +261,7 @@ if(${OPENSIM_INSTALL_UNIX_FHS})
     set(OPENSIM_INSTALL_APIEXDIR "${CMAKE_INSTALL_DOCDIR}/Code")
     set(OPENSIM_INSTALL_SIMBODYDIR ".")
     set(OPENSIM_INSTALL_SPDLOGDIR ".")
+    set(OPENSIM_INSTALL_CASADIDIR ".")
 
 else()
 
@@ -193,6 +283,7 @@ else()
     set(OPENSIM_INSTALL_APIEXDIR Resources/Code)
     set(OPENSIM_INSTALL_SIMBODYDIR sdk/Simbody)
     set(OPENSIM_INSTALL_SPDLOGDIR sdk/spdlog)
+    set(OPENSIM_INSTALL_CASADIDIR sdk)
 
 endif()
 
@@ -309,7 +400,6 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
     execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion
                     OUTPUT_VARIABLE GCC_VERSION)
 
-
     # Testing with Clang 3.3 on Ubuntu 14.04 shows a 5% decrease
     # in the runtime of the tests when we enable loop unrolling.
     set(GCC_OPT_ENABLE "-funroll-loops")
@@ -341,11 +431,30 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
       CACHE STRING "gcc RelWithDebInfo build compile flags" FORCE)
     set(CMAKE_C_FLAGS_MINSIZEREL       "-DNDEBUG -Os ${GCC_INST_SET}"
       CACHE STRING "gcc MinSizeRel build compile flags" FORCE)
+    
+    # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything")
+    add_compile_options(-Wall -Wextra -Werror)
+    # -Wshorten-64-to-32 helps us catch default warnings from Visual C++.
+    if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
+        add_compile_options(-Wshorten-64-to-32)
+        # TODO Find clang/gcc equivalent to C4267; -Wconversion gives way too
+        # many warnings.
+    endif()
+    # The assert() macro is omitted in Release, causing "unused-variable"
+    # warnings. It is sufficient to just catch such warnings in Debug.
+    add_compile_options($<$<NOT:$<CONFIG:Debug>>:-Wno-unused-variable>
+                        $<$<NOT:$<CONFIG:Debug>>:-Wno-unused-parameter>)
+    
+    if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
+        add_compile_options(-Wno-unused-local-typedef)
+    endif()
 
 endif()
 
 ## When building in any of the Release modes, tell VC++ cl compiler to use intrinsics
 ## (i.e. sqrt instruction rather than sqrt subroutine) with flag /Oi.
+    
+# TODO: add /WX flag (warnings as errors) for MSVC.
 
 if(WIN32 AND ${CMAKE_C_COMPILER} MATCHES "cl")
     if(inst_set_to_use)
@@ -522,25 +631,9 @@ include(InstallRequiredSystemLibraries)
 
 # C++11
 # -----
-# In revision 8629, we started using std::unique_ptr, which requires
-# C++11 features to be enabled when using GCC or Clang.
-if(${CMAKE_C_COMPILER} MATCHES "cc" OR ${CMAKE_C_COMPILER} MATCHES "clang")
-    # Using C++11 on OSX requires using libc++ instead of libstd++.
-    # libc++ is an implementation of the C++ standard library for OSX.
-    if(APPLE)
-        if(XCODE)
-            set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
-            set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
-        else()
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-            if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-            endif()
-        endif()
-    else() # not APPLE
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-    endif()
-endif()
+set(CMAKE_CXX_STANDARD 11)
+# Using c++11 is not optional.
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
 ## RPATH 
@@ -581,7 +674,8 @@ if(UNIX) # Linux and macOS
 endif()
 
 set(OPENSIM_DEPENDENCIES_DIR 
-    "" 
+    "${CMAKE_SOURCE_DIR}/../opensim_dependencies_install" CACHE PATH
+    "The install prefix for the dependencies CMake project.")
     CACHE 
     PATH
     "Directory containing installed binaries of OpenSim dependencies. Set this
@@ -838,7 +932,6 @@ add_custom_target(RUN_TESTS_PARALLEL
                                    --output-on-failure
                                    )
 
-
 # Create buildinfo.txt file and place under sdk to include product version,
 # platform and compiler for troubleshooting purposes
 set(VERSION_FILE_PATH ${CMAKE_BINARY_DIR}/OpenSim_buildinfo.txt)
@@ -892,5 +985,32 @@ if(NOT BUILD_API_ONLY)
 endif()
 add_subdirectory(Bindings)
 
+if(MOCO_WITH_TROPTER)
+    add_subdirectory(tropter)
+endif()
+
+find_package(casadi 3.4.4 REQUIRED)
+set_package_properties(casadi PROPERTIES
+        URL https://web.casadi.org
+        TYPE REQUIRED
+        PURPOSE "Differentiation and optimizer interface.")
+get_filename_component(CASADI_BIN_DIR "${casadi_DIR}/../" ABSOLUTE)
+# Copy CasADi into our installation.
+MocoCopyDLLs(DEP_NAME casadi
+        DEP_BIN_DIR "${CASADI_BIN_DIR}" INSTALL_DLLS "${CMAKE_INSTALL_BINDIR}")
+if(NOT WIN32)
+    # MocoCopyDLLs() only copies DLLs for Windows, but we still need
+    # the CasADi shared libraries on other platforms.
+    install(DIRECTORY "${CASADI_CMAKE_DIR}/../../../"
+            DESTINATION "${CMAKE_INSTALL_PREFIX}/${MOCO_INSTALL_CASADIDIR}"
+            USE_SOURCE_PERMISSIONS)
+endif()
+
+add_subdirectory(Moco)
+
 add_subdirectory(cmake)
 add_subdirectory(doc)
+
+# Print a list of the dependencies that were found, and the features the user
+# chose.
+feature_summary(WHAT ALL)

@@ -40,3 +40,45 @@ install(
         )
 
 install(EXPORT OpenSimTargets DESTINATION "${OPENSIM_INSTALL_CMAKEDIR}")
+
+if(OPENSIM_COPY_DEPENDENCIES AND APPLE)
+    # Temporary hack to package dependencies on Macs.
+    # TODO if we're building a standalone binary distribution, we should
+    # use superbuild to build the dependencies.
+    # TODO install(FILES
+    # TODO         /usr/local/opt/llvm/lib/libc++.1.dylib
+    # TODO         DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+    # This command must be invoked from the cmake subdirectory so that the
+    # editing of libtropter's link libraries is done after libtropter.dylib
+    # is installed (add_subdirectory(cmake) must be after
+    # add_subdirectory(Moco)).
+    set(script
+        ${CMAKE_CURRENT_BINARY_DIR}/OpenSimMocoInstallMacDependencyLibraries.cmake)
+    configure_file(OpenSimMocoInstallMacDependencyLibraries.cmake.in
+            "${script}" @ONLY)
+    install(SCRIPT "${script}")
+
+endif()
+
+# TODO configure_package_config_file(
+# TODO         OpenSimMocoConfig.cmake.in
+# TODO         "${CMAKE_CURRENT_BINARY_DIR}/OpenSimMocoConfigToInstall.cmake"
+# TODO         INSTALL_DESTINATION "${MOCO_INSTALL_CMAKEDIR}"
+# TODO         PATH_VARS
+# TODO             CMAKE_INSTALL_PREFIX
+# TODO             CMAKE_INSTALL_LIBDIR
+# TODO             CMAKE_INSTALL_BINDIR
+# TODO             CMAKE_INSTALL_INCLUDEDIR
+# TODO             MOCO_INSTALL_CMAKEDIR
+# TODO )
+# TODO 
+# TODO install(FILES "${CMAKE_CURRENT_BINARY_DIR}/OpenSimMocoConfigToInstall.cmake"
+# TODO         DESTINATION "${MOCO_INSTALL_CMAKEDIR}"
+# TODO         RENAME OpenSimMocoConfig.cmake)
+# TODO 
+# TODO install(FILES OpenSimMocoMacros.cmake
+# TODO         DESTINATION "${MOCO_INSTALL_CMAKEDIR}"
+# TODO         RENAME UseOpenSimMoco.cmake)
+# TODO 
+# TODO install(EXPORT OpenSimMocoTargets DESTINATION "${MOCO_INSTALL_CMAKEDIR}")
