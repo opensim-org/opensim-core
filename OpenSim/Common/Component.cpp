@@ -1349,8 +1349,15 @@ getDiscreteVariableIndex(const std::string& name) const
 const SimTK::CacheEntryIndex Component::
 getCacheVariableIndex(const std::string& name) const
 {
-    std::map<std::string, CacheInfo>::const_iterator it;
-    it = _namedCacheVariableInfo.find(name);
+    auto it = _namedCacheVariableInfo.find(name);
+
+    if (it == _namedCacheVariableInfo.end()) {
+        std::stringstream msg;
+        msg << "Component::getCacheVariableIndex: ERR- name not found.\n "
+            << "for component '"<< getName() << "' of type "
+            << getConcreteClassName();
+        throw Exception(msg.str(), __FILE__, __LINE__);
+    }
 
     return it->second.index;
 }
@@ -1384,62 +1391,36 @@ getStateVariableNamesAddedByComponent() const
 void Component::extendRealizeTopology(SimTK::State& s) const
 {
     const SimTK::Subsystem& subSys = getSystem().getDefaultSubsystem();
-    
-    Component *mutableThis = const_cast<Component*>(this);
 
     // Allocate Modeling Option
-    if(_namedModelingOptionInfo.size()>0){
-        std::map<std::string, ModelingOptionInfo>::iterator it;
-        for (it = (mutableThis->_namedModelingOptionInfo).begin(); 
-             it !=_namedModelingOptionInfo.end(); ++it)
-        {
-            ModelingOptionInfo& moi = it->second;
-            moi.index = subSys.allocateDiscreteVariable
-               (s, SimTK::Stage::Instance, new SimTK::Value<int>(0));
-        }
+    for (auto& p : this->_namedModelingOptionInfo) {
+        ModelingOptionInfo& moi = p.second;
+        moi.index = subSys.allocateDiscreteVariable(s, SimTK::Stage::Instance, new SimTK::Value<int>(0));
     }
 
     // Allocate Continuous State Variables
-    if(_namedStateVariableInfo.size()>0){
-        SimTK::Vector zInit(1, 0.0);
-        std::map<std::string, StateVariableInfo>::iterator it;
-        for (it = (mutableThis->_namedStateVariableInfo).begin(); 
-             it != _namedStateVariableInfo.end(); ++it)
-        {
-            const StateVariable& sv = *it->second.stateVariable;
-            const AddedStateVariable* asv 
-                = dynamic_cast<const AddedStateVariable *>(&sv);
+    for (auto& p : this->_namedStateVariableInfo) {
+        const StateVariable& sv = *p.second.stateVariable;
+        const auto* asv = dynamic_cast<const AddedStateVariable*>(&sv);
 
-            if(asv){// add index information for added state variables
-                // make mutable just to update system allocated index ONLY!
-                AddedStateVariable* masv = const_cast<AddedStateVariable*>(asv);
-                masv->setVarIndex(subSys.allocateZ(s, zInit));
-                masv->setSubsystemIndex(getDefaultSubsystem().getMySubsystemIndex());
-            }
+        if (asv != nullptr) {// add index information for added state variables
+            // make mutable just to update system allocated index ONLY!
+            auto& masv = const_cast<AddedStateVariable&>(*asv);
+            masv.setVarIndex(subSys.allocateZ(s, SimTK::Vector{1, 0.0}));
+            masv.setSubsystemIndex(subSys.getMySubsystemIndex());
         }
     }
 
     // Allocate Discrete State Variables
-    if(_namedDiscreteVariableInfo.size()>0){
-        std::map<std::string, DiscreteVariableInfo>::iterator it;
-        for (it = (mutableThis->_namedDiscreteVariableInfo).begin(); 
-             it != _namedDiscreteVariableInfo.end(); ++it)
-        {
-            DiscreteVariableInfo& dvi = it->second;
-            dvi.index = subSys.allocateDiscreteVariable
-               (s, dvi.invalidatesStage, new SimTK::Value<double>(0.0));
-        }
+    for (auto& p : this->_namedDiscreteVariableInfo) {
+        DiscreteVariableInfo& dvi = p.second;
+        dvi.index = subSys.allocateDiscreteVariable(s, dvi.invalidatesStage, new SimTK::Value<double>(0.0));
     }
 
     // Allocate Cache Entry in the State
-    if(_namedCacheVariableInfo.size()>0){
-        std::map<std::string, CacheInfo>::iterator it;
-        for (it = (mutableThis->_namedCacheVariableInfo).begin(); 
-             it != _namedCacheVariableInfo.end(); ++it){
-            CacheInfo& ci = it->second;
-            ci.index = subSys.allocateLazyCacheEntry
-               (s, ci.dependsOnStage, ci.prototype->clone());
-        }
+    for (auto& p : this->_namedCacheVariableInfo) {
+        CacheInfo& ci = p.second;
+        ci.index = subSys.allocateLazyCacheEntry(s, ci.dependsOnStage, ci.prototype->clone());
     }
 }
 

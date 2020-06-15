@@ -51,6 +51,7 @@
 #include "OpenSim/Common/Object.h"
 #include "simbody/internal/MultibodySystem.h"
 #include <functional>
+#include <unordered_map>
 
 #include <OpenSim/Common/osimCommonDLL.h>
 
@@ -1494,8 +1495,7 @@ public:
      * @throws ComponentHasNoSystem if this Component has not been added to a
      *         System (i.e., if initSystem has not been called)
      */
-    void markCacheVariableInvalid(const SimTK::State& state,
-                                  const std::string& name) const
+    void markCacheVariableInvalid(const SimTK::State& state, const std::string& name) const
     {
         // Getting the default subsystem *also* asserts that initSystem() has been called
         // *before* trying to look up a cache variable.
@@ -2170,17 +2170,22 @@ protected:
         This is the highest computational stage on which this cache entry's
         value computation depends. State changes at this level or lower will
         invalidate the cache entry. **/
-    template <class T> void
-    addCacheVariable(const std::string&     cacheVariableName,
-                     const T&               variablePrototype,
-                     SimTK::Stage           dependsOnStage) const
+    template <class T>
+    void addCacheVariable(
+            std::string cacheVariableName,
+            const T& variablePrototype,
+            SimTK::Stage dependsOnStage) const
     {
-        // Note, cache index is invalid until the actual allocation occurs
-        // during realizeTopology.
-        _namedCacheVariableInfo[cacheVariableName] =
-            CacheInfo(new SimTK::Value<T>(variablePrototype), dependsOnStage);
-    }
+        // The SimTK::Value<T> must be heap-allocated because it has a type-dependent size
+        auto* val = new SimTK::Value<T>(variablePrototype);
 
+        // Note, the CacheInfo constructed by this emplacement has an invalid CacheInfo::index
+        // until the actual allocation occurs during realizeTopology.
+        _namedCacheVariableInfo.emplace(
+                std::piecewise_construct,
+                std::make_tuple(std::move(cacheVariableName)),
+                std::make_tuple(val, dependsOnStage));
+    }
 
     /**
      * Get writable reference to the MultibodySystem that this component is
@@ -2967,7 +2972,7 @@ private:
     mutable std::map<std::string, DiscreteVariableInfo> _namedDiscreteVariableInfo;
     // Map names of cache entries of the Component to their individual
     // cache information.
-    mutable std::map<std::string, CacheInfo>            _namedCacheVariableInfo;
+    mutable std::map<std::string, CacheInfo> _namedCacheVariableInfo;
 
     // Check that the list of _allStateVariables is valid
     bool isAllStatesVariablesListValid() const;
