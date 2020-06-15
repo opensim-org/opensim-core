@@ -1,1 +1,1 @@
-__version__ = @OPENSIM_VERSION@
+__version__ = @OPENSIM_QUALIFIED_VERSION@

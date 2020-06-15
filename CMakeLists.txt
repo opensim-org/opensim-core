@@ -85,6 +85,8 @@ set(OPENSIMCORE_QUALIFIED_VERSION "${QUALIFIED_VERSION}" CACHE STRING
 # ------------------
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 include(OpenSimMacros)
+# TODO: Merge with OpenSimMacros.
+include(OpenSimMocoMacros)
 
 # Directory in which to install.
 # ------------------------------
@@ -179,10 +181,10 @@ mark_as_advanced(OPENSIM_BUILD_INDIVIDUAL_APPS)
 # # To create a drop-down in the CMake GUI:
 # set_property(CACHE MOCO_PYTHON_VERSION PROPERTY STRINGS "2" "3")
 # 
-# option(MOCO_BUILD_EXECUTABLE
-#     "Build the opensim-moco executable." ON)
-# option(MOCO_BUILD_EXAMPLES
-#     "Build, test, and install Moco C++ examples." ON)
+option(MOCO_BUILD_EXECUTABLE
+    "Build the opensim-moco executable." ON)
+option(MOCO_BUILD_EXAMPLES
+    "Build, test, and install Moco C++ examples." ON)
 
 option(MOCO_WITH_TROPTER
     "Build the tropter optimal control library." ON)
@@ -811,6 +813,27 @@ endif()
 # include directories.
 include_directories("${Simbody_INCLUDE_DIR}")
 
+
+# CasADi
+# ------
+find_package(casadi 3.4.4 REQUIRED)
+set_package_properties(casadi PROPERTIES
+        URL https://web.casadi.org
+        TYPE REQUIRED
+        PURPOSE "Differentiation and optimizer interface.")
+get_filename_component(CASADI_BIN_DIR "${casadi_DIR}/../" ABSOLUTE)
+# Copy CasADi into our installation.
+MocoCopyDLLs(DEP_NAME casadi
+        DEP_BIN_DIR "${CASADI_BIN_DIR}" INSTALL_DLLS "${CMAKE_INSTALL_BINDIR}")
+if(NOT WIN32)
+    # MocoCopyDLLs() only copies DLLs for Windows, but we still need
+    # the CasADi shared libraries on other platforms.
+    install(DIRECTORY "${CASADI_CMAKE_DIR}/../../../"
+            DESTINATION "${CMAKE_INSTALL_PREFIX}/${MOCO_INSTALL_CASADIDIR}"
+            USE_SOURCE_PERMISSIONS)
+endif()
+
+
 # Installing dependencies into OpenSim's installation.
 # ----------------------------------------------------
 if(${OPENSIM_COPY_DEPENDENCIES})
@@ -979,34 +1002,12 @@ add_definitions(-DOSIM_SYS_INFO=${OPENSIM_SYSTEM_INFO}
 set(OPENSIM_SHARED_TEST_FILES_DIR "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared")
 
 add_subdirectory(Vendors)
+
 add_subdirectory(OpenSim)
 if(NOT BUILD_API_ONLY)
     add_subdirectory(Applications)
 endif()
 add_subdirectory(Bindings)
-
-if(MOCO_WITH_TROPTER)
-    add_subdirectory(tropter)
-endif()
-
-find_package(casadi 3.4.4 REQUIRED)
-set_package_properties(casadi PROPERTIES
-        URL https://web.casadi.org
-        TYPE REQUIRED
-        PURPOSE "Differentiation and optimizer interface.")
-get_filename_component(CASADI_BIN_DIR "${casadi_DIR}/../" ABSOLUTE)
-# Copy CasADi into our installation.
-MocoCopyDLLs(DEP_NAME casadi
-        DEP_BIN_DIR "${CASADI_BIN_DIR}" INSTALL_DLLS "${CMAKE_INSTALL_BINDIR}")
-if(NOT WIN32)
-    # MocoCopyDLLs() only copies DLLs for Windows, but we still need
-    # the CasADi shared libraries on other platforms.
-    install(DIRECTORY "${CASADI_CMAKE_DIR}/../../../"
-            DESTINATION "${CMAKE_INSTALL_PREFIX}/${MOCO_INSTALL_CASADIDIR}"
-            USE_SOURCE_PERMISSIONS)
-endif()
-
-add_subdirectory(Moco)
 
 add_subdirectory(cmake)
 add_subdirectory(doc)
