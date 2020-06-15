@@ -1376,27 +1376,31 @@ public:
      * @throws ComponentHasNoSystem if this Component has not been added to a
      *         System (i.e., if initSystem has not been called)
      */
-    template<typename T> const T&
-    getCacheVariableValue(const SimTK::State& state, const std::string& name) const
+    template<typename T>
+    const T& getCacheVariableValue(const SimTK::State& state, const std::string& name) const
     {
-        // Must have already called initSystem.
-        OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+        // Getting the default subsystem *also* asserts that initSystem() has been called
+        // *before* trying to look up a cache variable.
+        const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
 
-        std::map<std::string, CacheInfo>::const_iterator it;
-        it = _namedCacheVariableInfo.find(name);
+        // TODO: expensive (#1)
+        const auto it = _namedCacheVariableInfo.find(name);
 
-        if(it != _namedCacheVariableInfo.end()) {
-            SimTK::CacheEntryIndex ceIndex = it->second.index;
-            return SimTK::Value<T>::downcast(
-                getDefaultSubsystem().getCacheEntry(state, ceIndex)).get();
-        } else {
+        if (it == _namedCacheVariableInfo.end()) {
             std::stringstream msg;
             msg << "Component::getCacheVariable: ERR- name not found.\n "
                 << "for component '"<< getName() << "' of type "
                 << getConcreteClassName();
-            throw Exception(msg.str(),__FILE__,__LINE__);
+            throw Exception(msg.str(), __FILE__, __LINE__);
         }
+
+        const CacheInfo& cacheInfo = it->second;
+        const SimTK::AbstractValue& val = subsystem.getCacheEntry(state, cacheInfo.index);
+
+        // TODO: expensive (#2)
+        return SimTK::Value<T>::downcast(val).get();
     }
+
     /**
      * Obtain a writable cache variable value allocated by this Component by
      * name. Do not forget to mark the cache value as valid after updating,
@@ -1409,28 +1413,31 @@ public:
      * @throws ComponentHasNoSystem if this Component has not been added to a
      *         System (i.e., if initSystem has not been called)
      */
-    template<typename T> T&
-    updCacheVariableValue(const SimTK::State& state, const std::string& name) const
+    template<typename T>
+    T& updCacheVariableValue(const SimTK::State& state, const std::string& name) const
     {
-        // Must have already called initSystem.
-        OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+        // Getting the default subsystem *also* asserts that initSystem() has been called
+        // *before* trying to look up a cache variable.
+        const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
 
-        std::map<std::string, CacheInfo>::const_iterator it;
-        it = _namedCacheVariableInfo.find(name);
+        // TODO: expensive (#1)
+        const auto it = _namedCacheVariableInfo.find(name);
 
-        if(it != _namedCacheVariableInfo.end()) {
-            SimTK::CacheEntryIndex ceIndex = it->second.index;
-            return SimTK::Value<T>::downcast(
-                getDefaultSubsystem().updCacheEntry(state, ceIndex)).upd();
-        }
-        else{
+        if (it == _namedCacheVariableInfo.end()) {
             std::stringstream msg;
             msg << "Component::updCacheVariable: ERR- '" << name
                 << "' name not found.\n "
                 << "for component '"<< getName() << "' of type "
                 << getConcreteClassName();
-            throw Exception(msg.str(),__FILE__,__LINE__);
+            throw Exception(msg.str(), __FILE__, __LINE__);
         }
+
+        const CacheInfo& cacheInfo = it->second;
+        const SimTK::CacheEntryIndex ceIndex = cacheInfo.index;
+        SimTK::AbstractValue& val = subsystem.updCacheEntry(state, ceIndex);
+
+        // TODO: expensive (#2), and dirties the update flag
+        return SimTK::Value<T>::downcast(val).upd();
     }
 
     /**
@@ -1448,23 +1455,25 @@ public:
      */
     void markCacheVariableValid(const SimTK::State& state, const std::string& name) const
     {
-        // Must have already called initSystem.
-        OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+        // Getting the default subsystem *also* asserts that initSystem() has been called
+        // *before* trying to look up a cache variable.
+        const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
 
-        std::map<std::string, CacheInfo>::const_iterator it;
-        it = _namedCacheVariableInfo.find(name);
+        // TODO: expensive (#1)
+        const auto it = _namedCacheVariableInfo.find(name);
 
-        if(it != _namedCacheVariableInfo.end()) {
-            SimTK::CacheEntryIndex ceIndex = it->second.index;
-            getDefaultSubsystem().markCacheValueRealized(state, ceIndex);
-        }
-        else{
+        if (it == _namedCacheVariableInfo.end()) {
             std::stringstream msg;
             msg << "Component::markCacheVariableValid: ERR- name not found.\n "
                 << "for component '"<< getName() << "' of type "
                 << getConcreteClassName();
-            throw Exception(msg.str(),__FILE__,__LINE__);
+            throw Exception(msg.str(), __FILE__, __LINE__);
         }
+
+        const CacheInfo& cacheInfo = it->second;
+        const SimTK::CacheEntryIndex ceIndex = cacheInfo.index;
+
+        subsystem.markCacheValueRealized(state, ceIndex);
     }
 
     /**
@@ -1488,23 +1497,25 @@ public:
     void markCacheVariableInvalid(const SimTK::State& state,
                                   const std::string& name) const
     {
-        // Must have already called initSystem.
-        OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+        // Getting the default subsystem *also* asserts that initSystem() has been called
+        // *before* trying to look up a cache variable.
+        const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
 
-        std::map<std::string, CacheInfo>::const_iterator it;
-        it = _namedCacheVariableInfo.find(name);
+        // TODO: Expensive (#1)
+        const auto it = _namedCacheVariableInfo.find(name);
 
-        if(it != _namedCacheVariableInfo.end()) {
-            SimTK::CacheEntryIndex ceIndex = it->second.index;
-            getDefaultSubsystem().markCacheValueNotRealized(state, ceIndex);
-        }
-        else{
+        if (it == _namedCacheVariableInfo.end()) {
             std::stringstream msg;
             msg << "Component::markCacheVariableInvalid: ERR- name not found.\n"
                 << "for component '"<< getName() << "' of type "
                 << getConcreteClassName();
-            throw Exception(msg.str(),__FILE__,__LINE__);
+            throw Exception(msg.str(), __FILE__, __LINE__);
         }
+
+        const CacheInfo& cacheInfo = it->second;
+        const SimTK::CacheEntryIndex ceIndex = cacheInfo.index;
+
+        subsystem.markCacheValueNotRealized(state, ceIndex);
     }
 
     /**
@@ -1521,23 +1532,25 @@ public:
      */
     bool isCacheVariableValid(const SimTK::State& state, const std::string& name) const
     {
-        // Must have already called initSystem.
-        OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+        // Getting the default subsystem *also* asserts that initSystem() has been called
+        // *before* trying to look up a cache variable.
+        const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
 
-        std::map<std::string, CacheInfo>::const_iterator it;
-        it = _namedCacheVariableInfo.find(name);
+        // TODO: Expensive (#1)
+        const auto it = _namedCacheVariableInfo.find(name);
 
-        if(it != _namedCacheVariableInfo.end()) {
-            SimTK::CacheEntryIndex ceIndex = it->second.index;
-            return getDefaultSubsystem().isCacheValueRealized(state, ceIndex);
-        }
-        else{
+        if (it == _namedCacheVariableInfo.end()) {
             std::stringstream msg;
             msg << "Component::isCacheVariableValid: ERR- name not found.\n "
                 << "for component '"<< getName() << "' of type "
                 << getConcreteClassName();
-            throw Exception(msg.str(),__FILE__,__LINE__);
+            throw Exception(msg.str(), __FILE__, __LINE__);
         }
+
+        const CacheInfo& cacheInfo = it->second;
+        const SimTK::CacheEntryIndex ceIndex = cacheInfo.index;
+
+        return subsystem.isCacheValueRealized(state, ceIndex);
     }
 
     /**
@@ -1551,30 +1564,35 @@ public:
      * @throws ComponentHasNoSystem if this Component has not been added to a
      *         System (i.e., if initSystem has not been called)
      */
-    template<typename T> void
-    setCacheVariableValue(const SimTK::State& state, const std::string& name,
-                     const T& value) const
+    template<typename T>
+    void setCacheVariableValue(const SimTK::State& state, const std::string& name, const T& value) const
     {
-        // Must have already called initSystem.
-        OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+        // Getting the default subsystem *also* asserts that initSystem() has been called
+        // *before* trying to look up a cache variable.
+        const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
 
-        std::map<std::string, CacheInfo>::const_iterator it;
-        it = _namedCacheVariableInfo.find(name);
+        // TODO: Expensive (#1)
+        const auto it = _namedCacheVariableInfo.find(name);
 
-        if(it != _namedCacheVariableInfo.end()) {
-            SimTK::CacheEntryIndex ceIndex = it->second.index;
-            SimTK::Value<T>::downcast(
-                getDefaultSubsystem().updCacheEntry( state, ceIndex)).upd()
-                = value;
-            getDefaultSubsystem().markCacheValueRealized(state, ceIndex);
-        }
-        else{
+        if (it == _namedCacheVariableInfo.end()) {
             std::stringstream msg;
             msg << "Component::setCacheVariable: ERR- name not found.\n "
                 << "for component '"<< getName() << "' of type "
                 << getConcreteClassName();
-            throw Exception(msg.str(),__FILE__,__LINE__);
+            throw Exception(msg.str(), __FILE__, __LINE__);
         }
+
+        const CacheInfo& cacheInfo = it->second;
+        const SimTK::CacheEntryIndex ceIndex = cacheInfo.index;
+        SimTK::AbstractValue& valWrapper = subsystem.updCacheEntry(state, ceIndex);
+
+        // TODO: Expensive (#2), and dirties the update flag
+        T& currentVal = SimTK::Value<T>::downcast(valWrapper).upd();
+
+        currentVal = value;
+
+        subsystem.markCacheValueRealized(state, ceIndex);
+
     }
     // End of Model Component State Accessors.
     //@}
