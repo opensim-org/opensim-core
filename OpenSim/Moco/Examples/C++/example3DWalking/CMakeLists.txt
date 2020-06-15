@@ -17,7 +17,7 @@ file(COPY ${GEOMETRY}
         DESTINATION
         "${CMAKE_BINARY_DIR}/Moco/Examples/C++/example3DWalking/Geometry")
 install(FILES ${GEOMETRY}
-        DESTINATION "${MOCO_INSTALL_CPPEXDIR}/example3DWalking/Geometry")
+        DESTINATION "${OPENSIM_INSTALL_CPPEXDIR}/example3DWalking/Geometry")
 
 file(COPY ${EXAMPLE_MOCO_TRACK_FILES}
         DESTINATION "${CMAKE_BINARY_DIR}/Moco/Sandbox/sandboxMocoTrack")
@@ -26,14 +26,14 @@ file(COPY ${EXAMPLE_MOCO_TRACK_FILES}
         DESTINATION
         "${CMAKE_BINARY_DIR}/Moco/Bindings/Java/Matlab/Examples/example3DWalking")
 install(FILES ${EXAMPLE_MOCO_TRACK_FILES}
-        DESTINATION "${MOCO_INSTALL_MATLABEXDIR}/example3DWalking")
+        DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}/example3DWalking")
 install(FILES ${GEOMETRY}
-        DESTINATION "${MOCO_INSTALL_MATLABEXDIR}/example3DWalking/Geometry")
+        DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}/example3DWalking/Geometry")
 
 file(COPY ${EXAMPLE_MOCO_TRACK_FILES}
         DESTINATION
         "${CMAKE_BINARY_DIR}/Moco/Bindings/Python/examples/example3DWalking")
 install(FILES ${EXAMPLE_MOCO_TRACK_FILES}
-        DESTINATION "${MOCO_INSTALL_PYTHONEXDIR}/example3DWalking")
+        DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}/example3DWalking")
 install(FILES ${GEOMETRY}
-        DESTINATION "${MOCO_INSTALL_PYTHONEXDIR}/example3DWalking/Geometry")
+        DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}/example3DWalking/Geometry")

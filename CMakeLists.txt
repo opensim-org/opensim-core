@@ -829,7 +829,7 @@ if(NOT WIN32)
     # MocoCopyDLLs() only copies DLLs for Windows, but we still need
     # the CasADi shared libraries on other platforms.
     install(DIRECTORY "${CASADI_CMAKE_DIR}/../../../"
-            DESTINATION "${CMAKE_INSTALL_PREFIX}/${MOCO_INSTALL_CASADIDIR}"
+        DESTINATION "${CMAKE_INSTALL_PREFIX}/${OPENSIM_INSTALL_CASADIDIR}"
             USE_SOURCE_PERMISSIONS)
 endif()
 
