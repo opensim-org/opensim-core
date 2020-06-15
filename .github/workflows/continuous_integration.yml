@@ -72,9 +72,11 @@ jobs:
         cmake -E env CXXFLAGS="/WX -DSKIP_TIMING" cmake $env:GITHUB_WORKSPACE -LAH -G"Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install -DOPENSIM_C3D_PARSER=ezc3d -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on
 
     - name: Build opensim-core
+      # Install now to avoid building bindings twice (issue when using Visual Studio 2019).
       run: |
         chdir $env:GITHUB_WORKSPACE\\build
-        cmake --build . --config Release -- /maxcpucount:4
+        cmake --build . --config Release --target doxygen -- /maxcpucount:4
+        cmake --build . --config Release --target install -- /maxcpucount:4
 
     - name: Test opensim-core
       run: |
@@ -88,24 +90,21 @@ jobs:
       run: echo "::set-output name=hash::$(git rev-parse --short HEAD)"
 
     - name: Install opensim-core
-      # TODO: Bindings are rebuilt at this stage because of a bug on Windows
-      # in the macro OpenSimFindSwigFileDependencies().
+      # TODO: This is where we wish to do the installing, but it's done above for now.
       run: |
         chdir $env:GITHUB_WORKSPACE\\build
-        cmake --build . --config Release --target doxygen -- /maxcpucount:4
-        cmake --build . --config Release --target install -- /maxcpucount:4 /verbosity:quiet
         chdir $env:GITHUB_WORKSPACE
         Copy-Item -Path "~/opensim-core-install" -Destination "opensim-core-${{ steps.commithash.outputs.hash }}" -Recurse
         7z a "opensim-core-${{ steps.commithash.outputs.hash }}.zip" "opensim-core-${{ steps.commithash.outputs.hash }}"
 
-    # - name: Test Python bindings
-    #   run: |
-    #     $env:PATH = "$env:HOME/opensim-core-install/bin;$env:PATH"
-    #     $env:PATH
-    #     # Move to the installed location of the python package.
-    #     cd ~/opensim-core-install/sdk/python
-    #     # Run python tests.
-    #     python -m unittest discover --start-directory opensim/tests --verbose
+    - name: Test Python bindings
+      run: |
+        $env:PATH += ";$env:USERPROFILE/opensim-core-install/bin"
+        $env:PATH
+        # Move to the installed location of the python package.
+        cd ~/opensim-core-install/sdk/python
+        # Run python tests.
+        python -m unittest discover --start-directory opensim/tests --verbose
 
     - name: Upload opensim-core
       uses: actions/upload-artifact@v2

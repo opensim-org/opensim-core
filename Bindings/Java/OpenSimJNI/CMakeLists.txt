@@ -16,7 +16,7 @@ function(OpenSimGenerateJavaWrapper
             ${INPUT_INTERFACE_FILE}
             )
 
-    OpenSimFindSwigFileDependencies(_${NAME}_dependencies ${NAME}
+    OpenSimFindSwigFileDependencies(_${NAME}_dependencies "${NAME} (Java)"
         "${_swig_common_args}"
         )
 
