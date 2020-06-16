@@ -904,11 +904,11 @@ try {
                 {
                     ++iter;
                 }
-                if (iter != aNode.element_end())
+                if (iter != aNode.element_end()) {
                     object.readObjectFromXMLNodeOrFile(*iter, versionNumber);
                     property->setValueIsDefault(false);
                 }
-            else {
+            } else {
                 object.readObjectFromXMLNodeOrFile(*iter, versionNumber);
                 property->setValueIsDefault(false);
             }

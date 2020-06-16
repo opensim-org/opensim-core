@@ -19,8 +19,8 @@ convertToSimtkMatrix(const ezc3d::Matrix& mat) {
     SimTK::Matrix_<double> simtkMat{static_cast<int>(mat.nbRows()),
                                     static_cast<int>(mat.nbCols())};
 
-    for(int r = 0; r < mat.nbRows(); ++r)
-        for(int c = 0; c < mat.nbCols(); ++c)
+    for(int r = 0; r < (int)mat.nbRows(); ++r)
+        for(int c = 0; c < (int)mat.nbCols(); ++c)
             simtkMat(r, c) = mat(r, c);
 
     return simtkMat;
@@ -32,7 +32,7 @@ SimTK::Matrix_<double>
 convertToSimtkMatrix(const std::vector<ezc3d::Vector3d>& all_vec) {
     SimTK::Matrix_<double> simtkMat{3, static_cast<int>(all_vec.size())};
 
-    for(int r = 0; r < all_vec.size(); ++r){
+    for(int r = 0; r < (int)all_vec.size(); ++r){
         const ezc3d::Vector3d& vec(all_vec[r]);
         for(int c = 0; c < 3; ++c){
             simtkMat(c, r) = vec(c);
@@ -257,7 +257,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
             SimTK::RowVector_<SimTK::Vec3>
                     row{numPlatform * 3};
             int col{0};
-            for (size_t i=0; i<numPlatform; ++i){
+            for (size_t i = 0; i < (size_t)numPlatform; ++i){
                 row[col] = SimTK::Vec3{pf_ref[i].forces()[f](0),
                                        pf_ref[i].forces()[f](1),
                                        pf_ref[i].forces()[f](2)};
