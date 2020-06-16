@@ -28,9 +28,9 @@
 
 #include "MocoTrajectory.h"
 #include "osimMocoDLL.h"
-#include <Common/Reporter.h>
-#include <Simulation/Model/Model.h>
-#include <Simulation/StatesTrajectory.h>
+#include <OpenSim/Common/Reporter.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/StatesTrajectory.h>
 #include <condition_variable>
 #include <regex>
 #include <set>
