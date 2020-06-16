@@ -23,10 +23,10 @@
 
 using namespace OpenSim;
 
-MocoUserControlCost::MocoUserControlCost() { 	
-	user_control_cost_fun_ptr = nullptr;
+MocoUserControlCost::MocoUserControlCost() {
+    user_control_cost_fun_ptr = nullptr;
     utility_vector = std::vector<double>();
-	constructProperties(); 
+    constructProperties();
 }
 
 void MocoUserControlCost::constructProperties() {

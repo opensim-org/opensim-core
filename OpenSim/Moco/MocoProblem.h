@@ -362,7 +362,7 @@ protected: // Protected so that doxygen shows the properties.
     OpenSim_DECLARE_PROPERTY(default_speed_bounds, MocoBounds,
             "Bounds for coordinate speeds if not specified in "
             "state_infos (default: [-50, 50]).");
-    OpenSim_DECLARE_PROPERTY(bound_activation_from_excitation, bool,	    
+    OpenSim_DECLARE_PROPERTY(bound_activation_from_excitation, bool,
             "For muscles without explicit activation bounds, set the bounds "
             "for muscle activation (if activation dynamics are enabled) from " 
             "the bounds for muscle control (excitation), using "             
