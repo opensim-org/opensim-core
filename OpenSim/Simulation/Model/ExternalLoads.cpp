@@ -484,7 +484,7 @@ void ExternalLoads::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
         }
     else 
         if (documentVersion < 40200) {
-            // Warn on depreacted external_loads_kinematics_specification
+            // Warn on removed external_loads_kinematics_specification
             SimTK::Xml::element_iterator kinFileNode =
                     aNode.element_begin("external_loads_model_kinematics_file");
             if (kinFileNode != aNode.element_end()) {
