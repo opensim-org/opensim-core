@@ -242,10 +242,10 @@ TRCFileAdapter::extendWrite(const InputTables& absTables,
     try {
         auto abs_table = absTables.at(_markers);
         table = dynamic_cast<const TimeSeriesTableVec3*>(abs_table);
-    } catch(std::out_of_range) {
+    } catch(const std::out_of_range&) {
         OPENSIM_THROW(KeyMissing,
                       _markers);
-    } catch(std::bad_cast&) {
+    } catch(const std::bad_cast&) {
         OPENSIM_THROW(IncorrectTableType);
     }
 

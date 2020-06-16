@@ -159,13 +159,11 @@ Storage* GCVSplineSet::constructStorage(int aDerivOrder,double aDX) {
     }
 
     // CONSTRUCT STORAGE OBJECT
-    std::string name="";
-    if(aDerivOrder==0) {
-        name=getName()+"_GCVSpline";
+    std::string name = "";
+    if(aDerivOrder == 0) {
+        name = getName() + "_GCVSpline";
     } else {
-        char temp[10];
-        sprintf(temp, "%d", aDerivOrder);
-        name=getName()+"_GCVSpline_Deriv_"+std::string(temp);
+	name = fmt::format("{}_GCVSpline_Deriv_{}", getName(), aDerivOrder);
     }
     Storage *store = new Storage(nSteps,name);
 

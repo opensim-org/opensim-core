@@ -85,6 +85,7 @@ StepFunction::StepFunction(double startTime, double endTime, double startValue, 
  * @param aStepFunction StepFunction object to be copied.
  */
 StepFunction::StepFunction(const StepFunction &aStepFunction) :
+    Function(aStepFunction),
     _startTime(_startTimeProp.getValueDbl()), 
     _endTime(_endTimeProp.getValueDbl()),
     _startValue(_startValueProp.getValueDbl()),

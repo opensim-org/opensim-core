@@ -67,8 +67,6 @@ public:
 public:
     WrapResult();
     virtual ~WrapResult();
-    void copyData(const WrapResult& aWrapResult);
-    WrapResult& operator=(const WrapResult& aWrapResult);
 
 //=============================================================================
 };  // END of class WrapResult
