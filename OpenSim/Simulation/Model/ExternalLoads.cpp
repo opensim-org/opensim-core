@@ -413,7 +413,8 @@ void ExternalLoads::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
         if (kinFileNode != aNode.element_end()){
             SimTK::String transcoded = kinFileNode->getValueAs<SimTK::String>();
                     if (transcoded.length()>0)
-                        log_warn("ExternalLoads: external_loads_model_kinematics_file option is not supported anymore.");
+                        log_warn("ExternalLoads: external_loads_model_kinematics_file option is not supported anymore."
+                            "Results may change.");
                 }
         SimTK::Xml::element_iterator kinFilterNode = aNode.element_begin("lowpass_cutoff_frequency_for_load_kinematics");
         if (kinFilterNode != aNode.element_end()){
@@ -491,11 +492,10 @@ void ExternalLoads::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
                 SimTK::String transcoded =
                         kinFileNode->getValueAs<SimTK::String>();
                 if (transcoded.length() > 0)
-                    std::cout << "Warn: external_loads_model_kinematics_file "
-                                 "option is not supported anymore"
-                              << " result could change, please inspect and "
-                                 "update accordingly"
-                              << std::endl;
+                    log_warn("ExternalLoades: "
+                             "external_loads_model_kinematics_file "
+                             "option is not supported anymore. Results may "
+                             "change.");
             }
         }
         // Call base class now assuming _node has been corrected for current version
