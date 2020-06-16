@@ -1,7 +1,5 @@
 %module(directors="1") opensimMoco
 
-%include java_preliminaries.i
-
 %{
 #include <Bindings/OpenSimHeaders_common.h>
 #include <Bindings/OpenSimHeaders_simulation.h>
@@ -12,6 +10,8 @@
 using namespace OpenSim;
 using namespace SimTK;
 %}
+
+%include "java_preliminaries.i";
 
 // Any time const SimTK::Vector& appears as an argument or a return type,
 // use a Java double array instead.
@@ -66,49 +66,6 @@ using namespace SimTK;
 //     $result = JCALL1(NewDoubleArray, jenv, $1->size());
 //     JCALL4(SetDoubleArrayRegion, jenv, $result, 0, $1->size(), &(*$1)[0]);
 // }
-
-/* Load the required libraries when this module is loaded.                    */
-/* TODO be more clever about detecting location of library. */
-%pragma(java) jniclassclassmodifiers="public class"
-SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
-%pragma(java) jniclassimports="import javax.swing.JOptionPane;import java.awt.GraphicsEnvironment;"
-%pragma(java) jniclasscode=%{
-  static {
-      try{
-          // All OpenSim classes required for GUI operation.
-          System.loadLibrary("osimMocoJavaJNI");
-      }
-      catch(UnsatisfiedLinkError e){
-          String OS = System.getProperty("os.name").toLowerCase();
-          String tip = "";
-          if (OS.indexOf("win") >= 0) {
-              tip = "\nMake sure Moco's bin directory is on your PATH.";
-          } else if (OS.indexOf("mac") >= 0) {
-              // Nothing for now; our use of RPATH means we were probably able
-              // to locate the OpenSim dynamic libraries.
-          } else /* linux */ {
-              // Nothing for now; our use of RPATH means we were probably able
-              // to locate the OpenSim dynamic libraries.
-          }
-          String msg = new String(
-                  "Failed to load one or more dynamic libraries for Moco.\n"
-                  + e + tip);
-
-          String javaHome = System.getProperties().getProperty("java.home");
-          boolean inMatlab = javaHome.toLowerCase().indexOf("matlab") >= 0;
-          if (inMatlab) {
-              msg +=  "\nSee https://simtk-confluence.stanford.edu/display/OpenSim/Scripting+with+Matlab";
-          }
-
-          System.out.println(msg);
-          String title = "Error: Failed to load OpenSim Moco libraries";
-          if (!GraphicsEnvironment.isHeadless()) {
-              new JOptionPane(msg, JOptionPane.ERROR_MESSAGE)
-                    .createDialog(null, title).setVisible(true);
-          }
-      }
-  }
-%}
 
 // Memory management
 // =================

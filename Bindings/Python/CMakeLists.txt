@@ -311,6 +311,10 @@ set(PYTHON_EXAMPLES_UNITTEST_ARGS
         extend_OpenSim_Vec3_class
         posthoc_StatesTrajectory_example
         wiring_inputs_and_outputs_with_TableReporter
+        Moco.exampleKinematicConstraints
+        Moco.exampleOptimizeMass
+        Moco.examplePredictAndTrack
+        Moco.exampleSlidingMass
         )
 # Similar as above, but for the example files. These files aren't named as
 # test_*.py, so we must specify a more general search pattern.
@@ -321,7 +325,12 @@ add_test(NAME python_examples
                 --verbose
     )
 set_tests_properties(python_examples PROPERTIES
-        ENVIRONMENT PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR}/examples)
+        ENVIRONMENT "PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR}/examples")
+
+foreach(folder tests examples)
+    set_property(TEST python_${folder} APPEND PROPERTY ENVIRONMENT
+        "OPENSIM_USE_VISUALIZER=0")
+endforeach()
 
 if(WIN32)
     # On Windows, CMake cannot use RPATH to hard code the location of libraries
