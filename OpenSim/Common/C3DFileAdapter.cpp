@@ -257,7 +257,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
             SimTK::RowVector_<SimTK::Vec3>
                     row{numPlatform * 3};
             int col{0};
-            for (size_t i = 0; i < (int)numPlatform; ++i){
+            for (size_t i = 0; i < (size_t)numPlatform; ++i){
                 row[col] = SimTK::Vec3{pf_ref[i].forces()[f](0),
                                        pf_ref[i].forces()[f](1),
                                        pf_ref[i].forces()[f](2)};
