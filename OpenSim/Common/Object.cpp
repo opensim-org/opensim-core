@@ -1721,9 +1721,9 @@ void Object::setDebugLevel(int newLevel) {
         break;
     default:
         OPENSIM_THROW(
-                Exception, fmt::format("Expected newLevel to be -4, -3, "
-                                       "-2, -1, 0, 1, 2, or 3; but got {}.",
-                                   newLevel));
+                Exception, "Expected newLevel to be -4, -3, "
+                           "-2, -1, 0, 1, 2, or 3; but got {}.",
+                newLevel);
     }
 }
 

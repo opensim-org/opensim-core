@@ -256,7 +256,7 @@ public:
     void setReplaceForceSet(bool aReplace) { _replaceForceSet = aReplace; }
 
     std::string getNextAvailableForceName(const std::string prefix="Force") const;
-    
+
     const ExternalLoads& getExternalLoads() const { return _externalLoads; }
     ExternalLoads& updExternalLoads() { return _externalLoads; }
     void setExternalLoads(ExternalLoads& el) { _externalLoads = el; }

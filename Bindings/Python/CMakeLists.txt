@@ -78,7 +78,7 @@ macro(OpenSimAddPythonModule)
     # configure step and fills the first argument with a list of the
     # dependencies.
     OpenSimFindSwigFileDependencies(_${OSIMSWIGPY_MODULE}_dependencies
-        ${OSIMSWIGPY_MODULE} "${_swig_common_args}")
+        "${OSIMSWIGPY_MODULE} (Python)" "${_swig_common_args}")
 
     # Run swig.
     add_custom_command(
@@ -192,24 +192,24 @@ macro(OpenSimAddPythonModule)
 
     # Copy files into the build tree python package.
     # ----------------------------------------------
-    # Copy the library file.
     add_custom_command(TARGET ${_libname} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:${_libname}>"
             "${OPENSIM_PYTHON_BINARY_DIR}/opensim/$<TARGET_FILE_NAME:${_libname}>"
-        COMMENT "Copying ${_libname} library to python package in build directory."
+        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${OSIMSWIGPY_MODULE}.py"
+            "${OPENSIM_PYTHON_BINARY_DIR}/opensim/${OSIMSWIGPY_MODULE}.py"
+        COMMENT "Copying ${OSIMSWIGPY_MODULE}.py and ${_libname} to python package in build directory."
         VERBATIM
         )
 
-    # Copy the generated .py file to the per-config python package dir.
-    OpenSimPutFileInPythonPackage(
-        "${CMAKE_CURRENT_BINARY_DIR}/${OSIMSWIGPY_MODULE}.py" opensim)
-
-    # Install the library.
-    # --------------------
-    # It's important that we use install(TARGETS) 
+    # Install the python module and compiled library.
+    # -----------------------------------------------
+    # For the shared library, it's important that we use install(TARGETS)
     # because this causes CMake to remove the build-tree RPATH from the library
     # (which is set temporarily for libraries in the build tree).
     install(TARGETS ${_libname} DESTINATION "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
+
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${OSIMSWIGPY_MODULE}.py"
+        DESTINATION "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
 
 endmacro()
 

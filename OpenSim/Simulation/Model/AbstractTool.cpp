@@ -849,14 +849,12 @@ bool AbstractTool::verifyUniqueColumnLabels(const Storage& aStore) const
  */
 std::string AbstractTool::getNextAvailableForceName(const std::string prefix) const
 {
-    int candidate=0;
-    char pad[3];
+    int candidate = 0;
     std::string candidateName;
     bool found = false;
     while (!found) {
         candidate++;
-        sprintf(pad, "%d", candidate);
-        candidateName = prefix +"_"+string(pad);
+        candidateName = fmt::format("{}_{}", prefix, candidate);
         if (_model) {
             if (_model->getForceSet().contains(candidateName))
                 continue;
