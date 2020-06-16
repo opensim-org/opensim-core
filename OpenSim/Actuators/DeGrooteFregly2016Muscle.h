@@ -35,7 +35,8 @@ namespace OpenSim {
 //       might be slow.
 // TODO prohibit fiber length from going below 0.2.
 
-/// This muscle model was published in De Groote et al. 2016.
+/// This muscle model was published in De Groote et al. 2016. 
+/// 
 /// The parameters of the active force-length and force-velocity curves have
 /// been slightly modified from what was published to ensure the curves go
 /// through key points:
@@ -45,21 +46,31 @@ namespace OpenSim {
 /// Groote et al., 2016: the curve is parameterized by the strain at 1 norm
 /// force (rather than "kT"), and the default value for this parameter is
 /// 0.049 (same as in TendonForceLengthCurve) rather than 0.0474.
+/// 
+/// This implementation introduces the property 'active_force_width_scale' as 
+/// an addition to the original model, which allows users to effectively make 
+/// the active force-length curve wider. This property may be useful for 
+/// improving the force-generating capacity of a muscle without increasing 
+/// maximum isometric force. This property works by scaling the normalized
+/// fiber length when the active force-length curve is computed. For example, 
+/// a scale factor of 2 means that the fiber muscle traverses half as far 
+/// along the force-length curve in either direction.
 ///
-/// The fiber damping helps with numerically solving for fiber velocity at low
-/// activations or with low force-length multipliers, and is likely to be more
-/// useful with explicit fiber dynamics than implicit fiber dynamics (when
-/// support for fiber dynamics is added).
+/// This implementation adds fiber damping to the model, which helps with 
+/// numerically solving for fiber velocity at low activations or with 
+/// low force-length multipliers, and is likely to be more useful with 
+/// explicit fiber dynamics than implicit fiber dynamics.
 ///
 /// This class supports tendon compliance dynamics in both explicit and implicit 
-/// form. Both forms of the dynamics use normalized tendon force as the state
-/// variable (rather than the typical fiber length state). The explicit form is 
-/// handled through the usual Component dynamics interface. The implicit form 
-/// introduces an additional discrete and cache SimTK::State variable for the
-/// derivative of normalized tendon force and muscle-tendon equilibrium residual
-/// respectively. The implicit form is only for use with solvers that support
-/// implicit dynamics (i.e. Moco) and cannot be used to perform a time-stepping
-/// forward simulation with Manager; use explicit mode for time-stepping.
+/// form (formulations 1 and 3 from De Groote et al. 2016). Both forms of the 
+/// dynamics use normalized tendon force as the state variable (rather than the 
+/// typical fiber length state). The explicit form is handled through the usual 
+/// Component dynamics interface. The implicit form introduces an additional 
+/// discrete and cache SimTK::State variable for the derivative of normalized 
+/// tendon force and muscle-tendon equilibrium residual respectively. The 
+/// implicit form is only for use with solvers that support implicit dynamics 
+/// (i.e. Moco) and cannot be used to perform a time-stepping forward simulation 
+/// with Manager; use explicit mode for time-stepping.
 /// 
 /// @note Normalized tendon force is bounded in the range [0, 5] in this class.
 ///       The methods getMinNormalizedTendonForce() and 
@@ -90,17 +101,17 @@ class OSIMACTUATORS_API DeGrooteFregly2016Muscle : public Muscle {
 
 public:
     OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
-            "Smaller value means activation can change more rapidly (units: "
-            "seconds).");
+            "Smaller value means activation can increase more rapidly. "
+            "Default: 0.015 seconds.");
     OpenSim_DECLARE_PROPERTY(deactivation_time_constant, double,
-            "Smaller value means activation can decrease more rapidly "
-            "(units: seconds).");
+            "Smaller value means activation can decrease more rapidly. "
+            "Default: 0.060 seconds.");
     OpenSim_DECLARE_PROPERTY(default_activation, double,
             "Value of activation in the default state returned by "
-            "initSystem().");
+            "initSystem(). Default: 0.5.");
     OpenSim_DECLARE_PROPERTY(default_normalized_tendon_force, double,
             "Value of normalized tendon force in the default state returned by "
-            "initSystem().");
+            "initSystem(). Default: 0.5.");
     OpenSim_DECLARE_PROPERTY(active_force_width_scale, double,
             "Scale factor for the width of the active force-length curve. "
             "Larger values make the curve wider. Default: 1.0.");
@@ -223,14 +234,22 @@ public:
     /// element only, projected onto the tendon direction (N).
     double getPassiveFiberDampingForceAlongTendon(const SimTK::State& s) const;
 
-    /// We don't need the state, but the state parameter is a requirement of
-    /// Output functions.
+    /// Get whether fiber dynamics is in implicit dynamics mode when using 
+    /// normalized tendon force as the state. This is useful to indicate to 
+    /// solvers handle the normalized tendon force derivative and muscle-tendon
+    /// equilibrium variables, which are added to the State as discrete and 
+    /// cache variables, respectively.
+    /// This function is intended primarily for the model Output 
+    /// 'implicitenabled_normalized_tendon_force'. We don't need the state, but 
+    /// the state parameter is a requirement of Output functions.
     bool getImplicitEnabledNormalizedTendonForce(const SimTK::State&) const {
         return !get_ignore_tendon_compliance() && !m_isTendonDynamicsExplicit;
     }
     /// Compute the muscle-tendon force equilibrium residual value when using
     /// implicit contraction dynamics with normalized tendon force as the
     /// state.
+    /// This function is intended primarily for the model Output 
+    /// 'implicitresidual_normalized_tendon_force'. 
     double getImplicitResidualNormalizedTendonForce(
             const SimTK::State& s) const;
 
@@ -244,22 +263,20 @@ public:
         }
     }
 
-    /// If integration_mode is 'implicit', this gets the discrete variable
+    /// If ignore_tendon_compliance is false, this returns zero. If 
+    /// integration_mode is 'implicit', this gets the discrete variable
     /// tendon force derivative value. If integration_mode is 'explicit', this
     /// gets the value returned by getStateVariableDerivativeValue() for the
-    /// 'normalized_tendon_force' state. If ignore_tendon_compliance is false,
-    /// this returns zero.
+    /// 'normalized_tendon_force' state. 
     double getNormalizedTendonForceDerivative(const SimTK::State& s) const {
-        if (get_ignore_tendon_compliance()) {
-            return 0.0;
+        if (get_ignore_tendon_compliance()) { return 0.0; }
+
+        if (m_isTendonDynamicsExplicit) {
+            return getStateVariableDerivativeValue(
+                s, STATE_NORMALIZED_TENDON_FORCE_NAME);
         } else {
-            if (m_isTendonDynamicsExplicit) {
-                return getStateVariableDerivativeValue(
-                        s, STATE_NORMALIZED_TENDON_FORCE_NAME);
-            } else {
-                return getDiscreteVariableValue(
-                        s, DERIVATIVE_NORMALIZED_TENDON_FORCE_NAME);
-            }
+            return getDiscreteVariableValue(
+                s, DERIVATIVE_NORMALIZED_TENDON_FORCE_NAME);
         }
     }
 
@@ -303,8 +320,9 @@ public:
     static double getMaxNormalizedTendonForce() { return m_maxNormTendonForce; }
     /// The first element of the Vec2 is the lower bound, and the second is the
     /// upper bound.
-    /// We don't need the state, but the state parameter is a requirement of
-    /// Output functions.
+    /// This function is intended primarily for the model Output 
+    /// 'statebounds_normalized_tendon_force'. We don't need the state, but the 
+    /// state parameter is a requirement of Output functions.
     SimTK::Vec2 getBoundsNormalizedTendonForce(const SimTK::State&) const
     { return {getMinNormalizedTendonForce(), getMaxNormalizedTendonForce()}; }
     /// @}
@@ -331,7 +349,7 @@ public:
     /// @{
 
     /// The active force-length curve is the sum of 3 Gaussian-like curves. The
-    /// width of the curve can be adjusted via the active_force_width_scale
+    /// width of the curve can be adjusted via the 'active_force_width_scale'
     /// property.
     SimTK::Real calcActiveForceLengthMultiplier(
             const SimTK::Real& normFiberLength) const {
@@ -347,7 +365,7 @@ public:
     /// The derivative of the active force-length curve with respect to
     /// normalized fiber length. This curve is based on the derivative of the
     /// Gaussian-like curve used in calcActiveForceLengthMultiplier(). The
-    /// active_force_width_scale property also affects the value of the
+    /// 'active_force_width_scale' property also affects the value of the
     /// derivative curve.
     SimTK::Real calcActiveForceLengthMultiplierDerivative(
             const SimTK::Real& normFiberLength) const {
@@ -365,6 +383,9 @@ public:
     /// static.
     /// Domain: [-1, 1]
     /// Range: [0, 1.794]
+    /// @note It is upon the user to check that the muscle fiber is acting 
+    ///       in the specified domain. Force computations outside this range
+    ///       may be incorrect.
     static SimTK::Real calcForceVelocityMultiplier(
             const SimTK::Real& normFiberVelocity) {
         using SimTK::square;
@@ -392,9 +413,9 @@ public:
     /// Thelen2003Muscle. The version in the supplementary materials passes
     /// through y = 0 at x = 1.0 and allows for negative forces. We do not want
     /// negative forces within the allowed range of fiber lengths, so we
-    /// modified the equation to pass through y = 0 at x = 0.2. (This is not an
-    /// issue for Thelen2003Muscle because the curve is not smooth, and returns
-    /// 0 for lengths less than optimal fiber length.)
+    /// modified the equation to pass through y = 0 at x = minNormFiberLength. 
+    /// (This is not an issue for Thelen2003Muscle because the curve is not 
+    /// smooth and returns 0 for lengths less than optimal fiber length.)
     SimTK::Real calcPassiveForceMultiplier(
             const SimTK::Real& normFiberLength) const {
         if (get_ignore_passive_fiber_force()) return 0;
@@ -469,9 +490,9 @@ public:
         return log((1.0 / c1) * (normTendonForce + c3)) / m_kT + c2;
     }
 
-    /// This is the derivative of the inverse tendon-force length. Given the
-    /// derivative of normalized tendon force and normalized tendon length, this
-    /// returns normalized tendon velocity.
+    /// This is the derivative of the inverse tendon-force length with respect
+    /// to time. Given the derivative of normalized tendon force and normalized 
+    /// tendon length, this returns normalized tendon velocity.
     SimTK::Real calcTendonForceLengthInverseCurveDerivative(
             const SimTK::Real& derivNormTendonForce,
             const SimTK::Real& normTendonLength) const {
@@ -487,7 +508,8 @@ public:
             const SimTK::Real& activeForceLengthMultiplier,
             const SimTK::Real& forceVelocityMultiplier,
             const SimTK::Real& normPassiveFiberForce,
-            const SimTK::Real& normFiberVelocity, SimTK::Real& activeFiberForce,
+            const SimTK::Real& normFiberVelocity, 
+            SimTK::Real& activeFiberForce,
             SimTK::Real& conPassiveFiberForce,
             SimTK::Real& nonConPassiveFiberForce,
             SimTK::Real& totalFiberForce) const {
@@ -547,7 +569,7 @@ public:
 
         if (get_ignore_tendon_compliance()) return fiberStiffnessAlongTendon;
         // TODO Millard2012EquilibriumMuscle includes additional checks that
-        // the stiffness is non-negative and that the denomenator is non-zero.
+        // the stiffness is non-negative and that the denominator is non-zero.
         return (fiberStiffnessAlongTendon * tendonStiffness) /
                (fiberStiffnessAlongTendon + tendonStiffness);
     }
@@ -687,8 +709,12 @@ public:
 
     /// Replace muscles of other types in the model with muscles of this type.
     /// Currently, only Millard2012EquilibriumMuscles and Thelen2003Muscles
-    /// are replaced. If the model has muscles of other types, an exception is
-    /// thrown unless allowUnsupportedMuscles is true.
+    /// are replaced. For these two muscle classes, we copy property values into
+    /// equivalent properties of the newly created DeGrooteFregly2016Muscle. 
+    /// If the model has muscles of other types, an exception is
+    /// thrown unless allowUnsupportedMuscles is true, in which a
+    /// DeGrooteFregly2016Muscle is created using only the base Muscle class 
+    /// property values. 
     /// Since the DeGrooteFregly2016Muscle implements tendon compliance dynamics
     /// with normalized tendon force as the state variable, this function
     /// ignores the 'default_fiber_length' property in replaced muscles.

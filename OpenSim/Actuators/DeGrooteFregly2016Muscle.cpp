@@ -94,12 +94,14 @@ void DeGrooteFregly2016Muscle::extendFinalizeFromProperties() {
 
     SimTK_ERRCHK2_ALWAYS(get_default_normalized_tendon_force() >= 0,
             "DeGrooteFregly2016Muscle::extendFinalizeFromProperties",
-            "%s: default_normalized_tendon_force must be >= 0, but it is %g.",
+            "%s: default_normalized_tendon_force must be greater than or equal "
+            "to zero, but it is %g.",
             getName().c_str(), get_default_normalized_tendon_force());
 
     SimTK_ERRCHK2_ALWAYS(get_default_normalized_tendon_force() <= 5,
             "DeGrooteFregly2016Muscle::extendFinalizeFromProperties",
-            "%s: default_normalized_tendon_force must be <= 5, but it is %g.",
+            "%s: default_normalized_tendon_force must be less than or equal to "
+            "5.0, but it is %g.",
             getName().c_str(), get_default_normalized_tendon_force());
 
     SimTK_ERRCHK2_ALWAYS(get_active_force_width_scale() >= 1,
