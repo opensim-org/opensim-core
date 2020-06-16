@@ -36,9 +36,9 @@ set(SWIG_JAVA_EXAMPLECOMPONENTS_H_FILE
 set(SWIG_JAVA_MOCO_INTERFACE_FILE
     "${CMAKE_CURRENT_SOURCE_DIR}/swig/java_moco.i")
 set(SWIG_JAVA_MOCO_CXX_FILE
-    "${CMAKE_CURRENT_BINARY_DIR}/java_moco.cxx")
+    "${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/java_moco.cxx")
 set(SWIG_JAVA_MOCO_H_FILE
-    "${CMAKE_CURRENT_BINARY_DIR}/java_moco.h")
+    "${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/java_moco.h")
 
 set(OPENSIM_JAVA_WRAPPING_PACKAGE "org.opensim.modeling"
     CACHE STRING
@@ -100,6 +100,7 @@ add_custom_command(
             ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/src/examplecomponents
+            ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/src/moco
             ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
