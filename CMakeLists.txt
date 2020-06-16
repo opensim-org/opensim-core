@@ -342,7 +342,7 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
     set(CMAKE_C_FLAGS_MINSIZEREL       "-DNDEBUG -Os ${GCC_INST_SET}"
       CACHE STRING "gcc MinSizeRel build compile flags" FORCE)
 
-    add_compile_options(-Wall -Wextra -Werror)
+    add_compile_options(-Wall -Wextra) # -Werror
     # -Wshorten-64-to-32 helps us catch default warnings from Visual C++.
     if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
         add_compile_options(-Wshorten-64-to-32)
