@@ -431,7 +431,8 @@ endfunction()
 # NAME. The example must be within a source file named ${NAME}.cpp, or could
 # contain multiple executable files, listed via the EXECUTABLES argument
 # (omitting the .cpp extension). This function also installs the example files
-# with a CMakeLists that can find the Moco installation and build the example.
+# with a CMakeLists that can find the OpenSim installation and build the
+# example.
 #
 # This function can only be used from the source distribution of OpenSim
 # (e.g., not via the UseOpenSim.cmake file in a binary distribution).
@@ -449,8 +450,8 @@ function(OpenSimAddExampleCXX)
     # Build the example in the build tree.
     foreach(exe ${OSIMEX_EXECUTABLES})
         add_executable(${exe} ${exe}.cpp)
-        set_target_properties(${exe} PROPERTIES FOLDER "Moco/Examples")
-        target_link_libraries(${exe} osimMoco)
+        set_target_properties(${exe} PROPERTIES FOLDER "Examples")
+        target_link_libraries(${exe} osimTools osimExampleComponents osimMoco)
     endforeach()
     file(COPY ${OSIMEX_RESOURCES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 
@@ -486,7 +487,7 @@ endfunction()
 # source files: <MAIN>.h and <MAIN>.cpp are used to create the plugin, and
 # and exampleMAIN.cpp is compiled into an executable that uses the plugin.
 # This function also installs the example file with a CMakeLists that can find
-# the Moco installation and build the example.
+# the OpenSim installation and build the example.
 #
 # This function can only be used from the source distribution of OpenSim
 # (e.g., not via the UseOpenSim.cmake file in a binary distribution).
@@ -505,8 +506,9 @@ function(OpenSimAddPluginExampleCXX)
             RegisterTypes_osim${OSIMEX_NAME}.cpp
             )
     set_target_properties(osim${OSIMEX_NAME} PROPERTIES
-            FOLDER "Moco/Examples")
-    target_link_libraries(osim${OSIMEX_NAME} osimMoco)
+            FOLDER "Examples")
+    target_link_libraries(osim${OSIMEX_NAME} osimTools osimExampleComponents
+            osimMoco)
 
     string(TOUPPER ${OSIMEX_NAME} _example_name_upper)
     set_target_properties(osim${OSIMEX_NAME} PROPERTIES
@@ -515,7 +517,7 @@ function(OpenSimAddPluginExampleCXX)
 
     add_executable(example${OSIMEX_NAME} example${OSIMEX_NAME}.cpp)
     set_target_properties(example${OSIMEX_NAME} PROPERTIES
-            FOLDER "Moco/Examples")
+            FOLDER "Examples")
     target_link_libraries(example${OSIMEX_NAME} osim${OSIMEX_NAME})
     file(COPY ${OSIMEX_RESOURCES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 

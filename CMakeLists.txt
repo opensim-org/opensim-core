@@ -400,23 +400,6 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
       CACHE STRING "gcc RelWithDebInfo build compile flags" FORCE)
     set(CMAKE_C_FLAGS_MINSIZEREL       "-DNDEBUG -Os ${GCC_INST_SET}"
       CACHE STRING "gcc MinSizeRel build compile flags" FORCE)
-    
-    # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything")
-    add_compile_options(-Wall -Wextra -Werror)
-    # -Wshorten-64-to-32 helps us catch default warnings from Visual C++.
-    if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
-        add_compile_options(-Wshorten-64-to-32)
-        # TODO Find clang/gcc equivalent to C4267; -Wconversion gives way too
-        # many warnings.
-    endif()
-    # The assert() macro is omitted in Release, causing "unused-variable"
-    # warnings. It is sufficient to just catch such warnings in Debug.
-    add_compile_options($<$<NOT:$<CONFIG:Debug>>:-Wno-unused-variable>
-                        $<$<NOT:$<CONFIG:Debug>>:-Wno-unused-parameter>)
-    
-    if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
-        add_compile_options(-Wno-unused-local-typedef)
-    endif()
 
     add_compile_options(-Wall -Wextra -Werror)
     # -Wshorten-64-to-32 helps us catch default warnings from Visual C++.
