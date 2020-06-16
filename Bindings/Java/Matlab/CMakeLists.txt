@@ -61,16 +61,16 @@ endforeach()
 # Copy example model and data files to use in Sandbox.
 set(SANDBOX_MARKER_TRACKING_DIR
         "${CMAKE_BINARY_DIR}/Sandbox/Moco/sandboxMarkerTrackingWholeBody")
-file(COPY "Examples/exampleMarkerTracking10DOF/marker_trajectories.trc"
-        "Examples/exampleMarkerTracking10DOF/subject01.osim"
-        "Examples/exampleMarkerTracking10DOF/state_reference.mot"
+file(COPY "examples/Moco/exampleMarkerTracking10DOF/marker_trajectories.trc"
+        "examples/Moco/exampleMarkerTracking10DOF/subject01.osim"
+        "examples/Moco/exampleMarkerTracking10DOF/state_reference.mot"
         DESTINATION "${SANDBOX_MARKER_TRACKING_DIR}")
-file(COPY "Examples/exampleSquatToStand/squatToStand_3dof9musc.osim"
+file(COPY "examples/Moco/exampleSquatToStand/squatToStand_3dof9musc.osim"
         DESTINATION
         "${CMAKE_BINARY_DIR}/Sandbox/Moco/sandboxSquatToStand")
 
 # Copy example model and data files to use in Examples.
-file(COPY "Examples/exampleSquatToStand/squatToStand_3dof9musc.osim"
+file(COPY "examples/Moco/exampleSquatToStand/squatToStand_3dof9musc.osim"
         DESTINATION
         "${CMAKE_BINARY_DIR}/Examples/Moco/exampleSquatToStand")
 

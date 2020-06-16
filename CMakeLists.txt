@@ -180,26 +180,6 @@ if(NOT MOCO_WITH_TROPTER)
     message(WARNING "MOCO_WITH_TROPTER=OFF is not supported yet.")
 endif()
 
-# Default paths for finding dependencies.
-get_filename_component(OPENSIM_DEPENDENCIES_ABSDIR "${OPENSIM_DEPENDENCIES_DIR}"
-        ABSOLUTE)
-if(NOT CMAKE_PREFIX_PATH
-        AND NOT ADOLC_DIR AND NOT "$ENV{ADOLC_DIR}"
-        AND NOT IPOPT_DIR AND NOT "$ENV{IPOPT_DIR}"
-        AND EXISTS "${OPENSIM_DEPENDENCIES_ABSDIR}")
-    message(STATUS
-        "Attempting to use dependencies from ${OPENSIM_DEPENDENCIES_ABSDIR}")
-    set(dep_install_dirs)
-    foreach(dep colpack ipopt eigen casadi)
-        list(APPEND dep_install_dirs "${OPENSIM_DEPENDENCIES_ABSDIR}/${dep}")
-    endforeach()
-    set(CMAKE_PREFIX_PATH "${dep_install_dirs}" CACHE PATH
-            "Directories containing dependencies.")
-    set(ADOLC_DIR "${OPENSIM_DEPENDENCIES_ABSDIR}/adol-c" CACHE PATH
-            "Path to ADOL-C install directory.")
-endif()
-
-
 
 # Configure installation directories across platforms.
 # ----------------------------------------------------
@@ -684,6 +664,27 @@ set(OPENSIM_DEPENDENCIES_DIR
     PATH
     "Directory containing installed binaries of OpenSim dependencies. Set this
      only if you used the Superbuild procedure to install dependencies. ")
+
+
+# Default paths for finding dependencies.
+get_filename_component(OPENSIM_DEPENDENCIES_ABSDIR "${OPENSIM_DEPENDENCIES_DIR}"
+        ABSOLUTE)
+if(NOT CMAKE_PREFIX_PATH
+        AND NOT ADOLC_DIR AND NOT "$ENV{ADOLC_DIR}"
+        AND NOT IPOPT_DIR AND NOT "$ENV{IPOPT_DIR}"
+        AND EXISTS "${OPENSIM_DEPENDENCIES_ABSDIR}")
+    message(STATUS
+            "Attempting to use dependencies from ${OPENSIM_DEPENDENCIES_ABSDIR}")
+    set(dep_install_dirs)
+    foreach(dep colpack ipopt eigen casadi)
+        list(APPEND dep_install_dirs "${OPENSIM_DEPENDENCIES_ABSDIR}/${dep}")
+    endforeach()
+    set(CMAKE_PREFIX_PATH "${dep_install_dirs}" CACHE PATH
+            "Directories containing dependencies.")
+    set(ADOLC_DIR "${OPENSIM_DEPENDENCIES_ABSDIR}/adol-c" CACHE PATH
+            "Path to ADOL-C install directory.")
+endif()
+
 
 set(OPENSIM_C3D_PARSER None CACHE STRING
     "Compile OpenSim with a C3D parser ? ezc3d or BTK provide C3D reading.")
