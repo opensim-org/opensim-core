@@ -135,7 +135,7 @@ if (MOCO_WITH_TROPTER)
 endif ()
 
 target_include_directories(osimMoco INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/Moco>
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
 set_target_properties(osimMoco PROPERTIES
@@ -146,7 +146,7 @@ set_target_properties(osimMoco PROPERTIES
 if (MOCO_WITH_TROPTER)
     target_compile_definitions(osimMoco PUBLIC MOCO_WITH_TROPTER)
 endif ()
-# TODO
+# TODO: Remove the concept of a separate Moco version.
 target_compile_definitions(osimMoco PRIVATE
     OPENSIM_MOCO_VERSION=${OPENSIM_QUALIFIED_VERSION}
     )
@@ -162,8 +162,12 @@ install(TARGETS osimMoco EXPORT OpenSimTargets
 
 # TODO do not install InverseMuscleSolverMotionData.h b/c it uses Eigen.
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/Moco
-        FILES_MATCHING PATTERN "*.h*")
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/OpenSim/Moco
+        FILES_MATCHING PATTERN "*.h*"
+        PATTERN "Archive" EXCLUDE
+        PATTERN "doc" EXCLUDE
+        PATTERN "Test" EXCLUDE
+        )
 
 
 
