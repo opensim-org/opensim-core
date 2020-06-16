@@ -91,6 +91,7 @@ public:
 public:
     PropertySet();
     PropertySet(const PropertySet &aSet);
+    PropertySet& operator=(const PropertySet& aSet);
     virtual ~PropertySet() { _array.setSize(0); };
 
     //--------------------------------------------------------------------------
