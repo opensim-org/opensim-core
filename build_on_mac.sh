@@ -11,14 +11,14 @@
 
 git submodule update --init
 cd ..
-mkdir moco_dependencies_build
-cd moco_dependencies_build
-cmake ../opensim-moco/dependencies
+mkdir opensim_dependencies_build
+cd opensim_dependencies_build
+cmake ../opensim-core/dependencies
 make -j8
 cd ..
 mkdir build
 cd build
-cmake ../opensim-moco
+cmake ../opensim-core
 make -j8
 ctest -j8
 make -j8 install

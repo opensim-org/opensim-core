@@ -18,12 +18,12 @@
 
 #define CATCH_CONFIG_MAIN
 #include "Testing.h"
-#include <Moco/osimMoco.h>
-#include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
-#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
-#include <OpenSim/Actuators/SpringGeneralizedForce.h>
-using namespace OpenSim;
 
+#include <OpenSim/Actuators/SpringGeneralizedForce.h>
+#include <OpenSim/Moco/osimMoco.h>
+#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
+using namespace OpenSim;
 
 TEST_CASE("(Dummy test to support discovery in Resharper)")
 {

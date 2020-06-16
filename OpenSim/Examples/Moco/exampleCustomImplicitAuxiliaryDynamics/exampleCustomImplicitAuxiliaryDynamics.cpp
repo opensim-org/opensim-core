@@ -16,7 +16,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <Moco/osimMoco.h>
+#include <OpenSim/Moco/osimMoco.h>
 
 using namespace OpenSim;
 

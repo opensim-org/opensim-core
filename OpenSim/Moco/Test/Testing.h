@@ -20,7 +20,10 @@
 
 #include <OpenSim/Common/osimCommon.h>
 
-#include <catch.hpp>
+// TODO: The more recent version of catch has issues with Approx() being
+// ambiguous.
+// TODO #include <OpenSim/Auxiliary/catch.hpp>
+#include <Vendors/tropter/external/catch/catch.hpp>
 
 
 // Helper functions for comparing vectors.

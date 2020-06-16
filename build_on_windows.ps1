@@ -6,14 +6,14 @@
 # The script will make multiple directories adjacent to the directory
 # containing this script.
 git submodule update --init
-mkdir ..\moco_dependencies_build
-cd ..\moco_dependencies_build
-cmake ..\opensim-moco\dependencies `
+mkdir ..\opensim_dependencies_build
+cd ..\opensim_dependencies_build
+cmake ..\opensim-core\dependencies `
     -G"Visual Studio 16 2019 Win64"
 cmake --build . --config RelWithDebInfo -- /maxcpucount:8
 mkdir ..\build
 cd ..\build
-cmake ..\opensim-moco `
+cmake ..\opensim-core `
     -G"Visual Studio 16 2019 Win64"
 cmake --build . --config RelWithDebInfo -- /maxcpucount:8
 ctest --build-config RelWithDebInfo --parallel 8

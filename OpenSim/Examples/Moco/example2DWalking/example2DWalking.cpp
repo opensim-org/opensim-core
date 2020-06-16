@@ -39,8 +39,8 @@
 /// The coordinate data included in the 'referenceCoordinates.sto' comes from
 /// predictive simulations generated in Falisse et al. 2019.
 
-#include <Moco/MocoGoal/MocoOutputGoal.h>
-#include <Moco/osimMoco.h>
+#include <OpenSim/Moco/MocoGoal/MocoOutputGoal.h>
+#include <OpenSim/Moco/osimMoco.h>
 
 using namespace OpenSim;
 

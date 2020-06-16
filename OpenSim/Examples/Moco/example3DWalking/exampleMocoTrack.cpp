@@ -25,8 +25,8 @@
 ///
 /// See the README.txt next to this file for more information.
 
-#include <Moco/osimMoco.h>
-#include <Actuators/CoordinateActuator.h>
+#include <OpenSim/Moco/osimMoco.h>
+#include <OpenSim/Actuators/CoordinateActuator.h>
 
 using namespace OpenSim;
 

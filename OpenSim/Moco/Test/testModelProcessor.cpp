@@ -18,11 +18,10 @@
 
 #define CATCH_CONFIG_MAIN
 #include "Testing.h"
-#include <Moco/ModelProcessor.h>
-#include <Moco/osimMoco.h>
 
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 #include <OpenSim/Analyses/MuscleAnalysis.h>
+#include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 
 using namespace OpenSim;

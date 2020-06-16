@@ -23,7 +23,7 @@
 ///
 /// See the README.txt next to this file for more information.
 
-#include <Moco/osimMoco.h>
+#include <OpenSim/Moco/osimMoco.h>
 
 #include <OpenSim/Common/Adapters.h>
 

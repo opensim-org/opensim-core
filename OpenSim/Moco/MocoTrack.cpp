@@ -20,7 +20,6 @@
 
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoGoal/MocoControlGoal.h"
-#include "MocoGoal/MocoControlTrackingGoal.h"
 #include "MocoGoal/MocoMarkerTrackingGoal.h"
 #include "MocoGoal/MocoStateTrackingGoal.h"
 #include "MocoProblem.h"

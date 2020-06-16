@@ -19,7 +19,7 @@
  * -------------------------------------------------------------------------- */
 
 
-#include <Moco/osimMoco.h>
+#include <OpenSim/Moco/osimMoco.h>
 #include "osimMocoCustomEffortGoalDLL.h"
 
 namespace OpenSim {

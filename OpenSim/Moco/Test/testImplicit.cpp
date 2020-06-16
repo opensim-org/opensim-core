@@ -17,10 +17,10 @@
  * -------------------------------------------------------------------------- */
 #define CATCH_CONFIG_MAIN
 #include "Testing.h"
-#include <Moco/Components/AccelerationMotion.h>
-#include <Moco/osimMoco.h>
 
 #include <OpenSim/Actuators/CoordinateActuator.h>
+#include <OpenSim/Moco/Components/AccelerationMotion.h>
+#include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 

@@ -18,10 +18,10 @@
 
 #define CATCH_CONFIG_MAIN
 #include "Testing.h"
-#include <Moco/osimMoco.h>
 
-#include <OpenSim/Actuators/SpringGeneralizedForce.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
+#include <OpenSim/Actuators/SpringGeneralizedForce.h>
+#include <OpenSim/Moco/osimMoco.h>
 
 using namespace OpenSim;
 

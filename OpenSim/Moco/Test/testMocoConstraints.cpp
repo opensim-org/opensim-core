@@ -19,8 +19,6 @@
 #define CATCH_CONFIG_MAIN
 #include "Testing.h"
 using Catch::Contains;
-#include <Moco/osimMoco.h>
-
 #include <simbody/internal/Constraint.h>
 #include <simbody/internal/Constraint_Ball.h>
 
@@ -31,6 +29,7 @@ using Catch::Contains;
 #include <OpenSim/Common/LinearFunction.h>
 #include <OpenSim/Common/Sine.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
+#include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/osimSimulation.h>
 
 using namespace OpenSim;

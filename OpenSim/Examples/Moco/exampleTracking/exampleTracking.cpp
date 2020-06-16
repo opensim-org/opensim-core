@@ -21,7 +21,7 @@
 
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
-#include <Moco/osimMoco.h>
+#include <OpenSim/Moco/osimMoco.h>
 
 using namespace OpenSim;
 

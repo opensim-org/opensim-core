@@ -21,7 +21,7 @@
 
 #define CATCH_CONFIG_MAIN
 #include "Testing.h"
-#include <Moco/osimMoco.h>
+#include <OpenSim/Moco/osimMoco.h>
 
 #include <OpenSim/Simulation/Manager/Manager.h>
 

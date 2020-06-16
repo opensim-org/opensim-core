@@ -18,7 +18,7 @@
 
 #define CATCH_CONFIG_MAIN
 #include "Testing.h"
-#include <Moco/Common/TableProcessor.h>
+#include <OpenSim/Moco/Common/TableProcessor.h>
 
 using namespace OpenSim;
 

@@ -35,9 +35,8 @@
 /// constants  m       mass
 /// @endverbatim
 
-#include <Moco/osimMoco.h>
-
 #include <OpenSim/Actuators/CoordinateActuator.h>
+#include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 
 using namespace OpenSim;

@@ -18,12 +18,12 @@
 
 #define CATCH_CONFIG_MAIN
 #include "Testing.h"
-#include <Moco/osimMoco.h>
 #include <fstream>
 
 #include <OpenSim/Actuators/BodyActuator.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Common/STOFileAdapter.h>
+#include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>

@@ -16,9 +16,10 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <Moco/osimMoco.h>
-#include <OpenSim/Actuators/ActivationCoordinateActuator.h>
 #include "MocoCustomEffortGoal.h"
+
+#include <OpenSim/Actuators/ActivationCoordinateActuator.h>
+#include <OpenSim/Moco/osimMoco.h>
 
 using namespace OpenSim;
 

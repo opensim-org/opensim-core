@@ -19,10 +19,9 @@
 // Some of this code is based on testSingleMuscle,
 // testSingleMuscleDeGrooteFregly2016.
 
-#include <Moco/osimMoco.h>
-
 #include <OpenSim/Actuators/ActivationCoordinateActuator.h>
 #include <OpenSim/Common/GCVSpline.h>
+#include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 

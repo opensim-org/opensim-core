@@ -36,7 +36,7 @@
 
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
-#include <Moco/osimMoco.h>
+#include <OpenSim/Moco/osimMoco.h>
 
 using namespace OpenSim;
 

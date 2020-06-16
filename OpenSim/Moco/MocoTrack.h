@@ -18,7 +18,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "Common/TRCFileAdapter.h"
 #include "Common/TableProcessor.h"
 #include "MocoStudy.h"
 #include "MocoTool.h"
