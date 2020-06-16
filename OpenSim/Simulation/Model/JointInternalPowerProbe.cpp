@@ -94,7 +94,7 @@ const Property<string>& JointInternalPowerProbe::getJointNames() const
  * Returns whether to report sum of all joint powers together
    or report the joint powers individually.
  */
-const bool JointInternalPowerProbe::getSumPowersTogether() const
+bool JointInternalPowerProbe::getSumPowersTogether() const
 {
     return get_sum_powers_together();
 }
@@ -103,7 +103,7 @@ const bool JointInternalPowerProbe::getSumPowersTogether() const
 /**
  * Returns the exponent to apply to each joint power.
  */
-const double JointInternalPowerProbe::getExponent() const
+double JointInternalPowerProbe::getExponent() const
 {
     return get_exponent();
 }

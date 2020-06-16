@@ -909,7 +909,7 @@ bool Component::isAllStatesVariablesListValid() const
     // variables associated with the Model and force the list to be rebuilt.
     bool valid = //isObjectUpToDateWithProperties() &&                  // 1.
         !_statesAssociatedSystem.empty() &&                             // 2.
-        _allStateVariables.size() == nsv &&                             // 3.
+        (int)_allStateVariables.size() == nsv &&                        // 3.
         getSystem().isSameSystem(_statesAssociatedSystem.getRef());     // 4.
 
     return valid;
@@ -1288,7 +1288,7 @@ size_t Component::getNumAdoptedSubcomponents() const
 
 
 
-const int Component::getStateIndex(const std::string& name) const
+int Component::getStateIndex(const std::string& name) const
 {
     std::map<std::string, StateVariableInfo>::const_iterator it;
     it = _namedStateVariableInfo.find(name);

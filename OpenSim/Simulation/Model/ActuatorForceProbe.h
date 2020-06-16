@@ -85,10 +85,10 @@ public:
 
     /** Returns whether to report sum of all Actuator forces together
     or report the forces individually. */
-    const bool getSumForcesTogether() const;
+    bool getSumForcesTogether() const;
 
     /** Returns the exponent to apply to each Actuator force. */
-    const double getExponent() const;
+    double getExponent() const;
 
     /** Sets the name(s) of the Actuator forces being probed. */
     void setActuatorNames(const Array<std::string>& actuatorNames);

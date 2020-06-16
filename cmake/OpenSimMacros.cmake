@@ -672,12 +672,18 @@ macro(OpenSimFindSwigFileDependencies OSIMSWIGDEP_RETURNVAL
         OUTPUT_VARIABLE _dependencies_makefile
         RESULT_VARIABLE _successfully_got_dependencies
             )
+    # On Windows, _dependencies_makefile now contains something like this:
+    # C:\opensim-core\Bindings\Python\swig\python_simbody_wrap.cxx: \
+    #   C:\opensim-core\Bindings\Python\swig\python_simbody.i \
+    #   C:\opensim-core\Bindings\Python\swig\numpy.i \
+    #   ...<more header files and SWIG interface files>
+    # Note: SWIG does not depend on cpp files.
     # Clean up the output, since it's in the form of a makefile
     # (and we just want a list of file paths).
     if(${_successfully_got_dependencies} EQUAL 0) # return code 0 is success.
-        # '^.*:' matches the first line of the makefile (the output file path).
+        # '^.*cxx:' matches the first line of the makefile (the output file path).
         # '\\\\' matches a single \ (escape for CMake, and escape for regex).
-        string(REGEX REPLACE "(^.*:|\\\\\n)" "" ${OSIMSWIGDEP_RETURNVAL}
+        string(REGEX REPLACE "(^.*cxx:|\\\\\n)" "" ${OSIMSWIGDEP_RETURNVAL}
             ${_dependencies_makefile})
         # Replace spaces with semicolons to create a list of file paths.
         separate_arguments(${OSIMSWIGDEP_RETURNVAL})

@@ -279,8 +279,7 @@ public:
 
     ShowStuff(const MultibodySystem& mbs,
               Real interval)
-    :   PeriodicEventReporter(interval),
-        mbs(mbs) {}
+    :   PeriodicEventReporter(interval) {}
 
     static void showHeading(std::ostream& o) {
         printf("%8s %10s %10s %10s %10s %10s %10s %10s %10s %12s\n",
@@ -317,7 +316,6 @@ public:
         saveStates.push_back(state);
     }
 private:
-    const MultibodySystem&  mbs;
 //    MyCableSpring           cable1;
 };
 
