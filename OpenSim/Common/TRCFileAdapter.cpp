@@ -95,7 +95,7 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
     for(std::size_t i = 0; i < keys.size(); ++i)
         metaData.setValueForKey(keys[i], values[i]);
 
-    auto num_markers_expected = 
+    auto num_markers_expected =
         std::stoul(metaData.
                    getValueForKey(_numMarkersLabel).
                    template getValue<std::string>());
@@ -208,7 +208,7 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
             int newSize = last_size * 2;
             times.resize(newSize);
             // Repeat for Data matrices in use
-            markerData.resizeKeep(newSize, num_markers_expected);
+            markerData.resizeKeep(newSize, (int)num_markers_expected);
             last_size = newSize;
         }
         row = nextLine();
@@ -216,7 +216,7 @@ TRCFileAdapter::extendRead(const std::string& fileName) const {
     }
     // Trim Matrices in use to actual data and move into tables
     times.resize(rowNumber);
-    markerData.resizeKeep(rowNumber, num_markers_expected);
+    markerData.resizeKeep(rowNumber, (int)num_markers_expected);
 
     // Set the column labels of the table.
     std::vector<std::string> labels{};

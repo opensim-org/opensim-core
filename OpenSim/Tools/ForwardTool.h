@@ -126,7 +126,9 @@ public:
     // INTERFACE
     //--------------------------------------------------------------------------
     bool run() override SWIG_DECLARE_EXCEPTION;
-    void printResults();
+private:
+    void printResultsInternal();
+public:
 
     //--------------------------------------------------------------------------
     // UTILITY

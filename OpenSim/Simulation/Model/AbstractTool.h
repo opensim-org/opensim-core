@@ -345,7 +345,7 @@ public:
     void removeControllerSetFromModel();
     void removeAnalysisSetFromModel();
     void setToolOwnsModel(const bool trueFalse) { _toolOwnsModel=trueFalse; };
-    const bool getToolOwnsModel() const { return _toolOwnsModel; };
+    bool getToolOwnsModel() const { return _toolOwnsModel; };
 
     // Interface to build controller from a ControlSet file
     std::string getControlsFileName() const;

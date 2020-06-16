@@ -113,7 +113,7 @@ public:
         _location = location;
     }
     /** Retrieve the option for location for force expression */
-    const ForceLocation getLocationForForceExpression() const {
+    ForceLocation getLocationForForceExpression() const {
         return _location;
     }
 

@@ -226,7 +226,8 @@ void APDMDataReader::find_start_column(std::vector<std::string> tokens,
         found_index = static_cast<int>(std::distance(tokens.begin(), it));
         // now check the following indices for match with remaining search_labels 
         bool match = true;
-        for (int remaining = 1; remaining < search_labels.size() && match; remaining++) {
+        for (int remaining = 1; remaining < (int)search_labels.size() && match;
+                remaining++) {
             match = tokens[found_index + remaining].
                 compare(sensorName + search_labels[remaining]) == 0;
         }
