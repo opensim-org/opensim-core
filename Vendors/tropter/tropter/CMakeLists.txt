@@ -124,7 +124,7 @@ endif()
 # should use.
 target_include_directories(tropter PUBLIC
         # Used by other targets in this project:
-        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/tropter>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
         # Used by client projects using an installed version of tropter.
         $<INSTALL_INTERFACE:${TROPTER_INSTALL_INCLUDEDIR}>)
 
