@@ -78,7 +78,7 @@ if(Git_FOUND)
 else()
     set(QUALIFIED_VERSION "${OPENSIM_RELEASE_VERSION}?")
 endif()
-set(OPENSIMCORE_QUALIFIED_VERSION "${QUALIFIED_VERSION}" CACHE STRING
+set(OPENSIM_QUALIFIED_VERSION "${QUALIFIED_VERSION}" CACHE STRING
         "Qualified version string, containing git commit date/hash suffix." FORCE)
 
 # CMake module path.

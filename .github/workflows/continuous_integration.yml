@@ -74,7 +74,7 @@ jobs:
         # Set the CXXFLAGS environment variable to turn warnings into errors.
         # Skip timing test section included by default.
         cmake -E env CXXFLAGS="/WX -DSKIP_TIMING" cmake $env:GITHUB_WORKSPACE -LAH -G"Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install -DOPENSIM_C3D_PARSER=ezc3d -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on
-        $env:match = cmake -L . | Select-String -Pattern OPENSIMCORE_QUALIFIED_VERSION
+        $env:match = cmake -L . | Select-String -Pattern OPENSIM_QUALIFIED_VERSION
         $version = $env:match.split('=')[1]
         echo $version
         echo "::set-env name=VERSION::$version"
@@ -229,7 +229,7 @@ jobs:
         OSIM_CMAKE_ARGS+=(-DCMAKE_CXX_FLAGS="-Werror")
         printf '%s\n' "${OSIM_CMAKE_ARGS[@]}"
         cmake "${OSIM_CMAKE_ARGS[@]}"
-        VERSION=`cmake -L . | grep OPENSIMCORE_QUALIFIED_VERSION | cut -d "=" -f2`
+        VERSION=`cmake -L . | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
         echo $VERSION
         echo "::set-env name=VERSION::$VERSION"
         echo "::set-output name=version::$VERSION"
@@ -344,7 +344,7 @@ jobs:
         OSIM_CMAKE_ARGS+=(-DCMAKE_CXX_FLAGS="-Werror")
         printf '%s\n' "${OSIM_CMAKE_ARGS[@]}"
         cmake "${OSIM_CMAKE_ARGS[@]}"
-        VERSION=`cmake -L . | grep OPENSIMCORE_QUALIFIED_VERSION | cut -d "=" -f2`
+        VERSION=`cmake -L . | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
         echo $VERSION
         echo "::set-env name=VERSION::$VERSION"
         echo "::set-output name=version::$VERSION"
