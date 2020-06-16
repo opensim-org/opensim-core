@@ -20,7 +20,7 @@ set_target_properties(exampleHopperDeviceAnswers PROPERTIES FOLDER "Examples")
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR
         CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     target_compile_options(exampleHopperDeviceAnswers PUBLIC
-	    -Wno-unknown-pragmas)
+            -Wno-unknown-pragmas)
 endif()
 add_test(NAME    exampleHopperDeviceAnswers
          COMMAND exampleHopperDeviceAnswers noVisualizer)

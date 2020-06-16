@@ -65,8 +65,8 @@ PropertySet::PropertySet(const PropertySet &aSet)
 PropertySet& PropertySet::operator=(const PropertySet& aSet)
 {
    if (this != &aSet) {
-        _array = aSet._array;
-	_array.setMemoryOwner(false);
+       _array = aSet._array;
+       _array.setMemoryOwner(false);
    }
    return *this;
 }
