@@ -75,7 +75,7 @@ public:
         s = manager.integrate(finalTime);
 
         /* Calculate the scalar quantity we want to minimize or maximize. 
-        *  In this case, we�re maximizing forward velocity of the 
+        *  In this case, we're maximizing forward velocity of the
         *  forearm/hand mass center, so to maximize, compute velocity 
         *  and multiply it by -1.
         */
