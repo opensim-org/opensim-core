@@ -40,9 +40,9 @@ namespace OpenSim {
 /// The F_vel curve is described with a single parameter, qdot_max, as 
 /// described in Blake Ashby's thesis (2004). For positive excitations, 
 /// the function returns:
-///	    0,                                             for qdot > qdot_max
-///		1.5,                          for qdot < (-0.35678917232)*qdot_max
-///	    1 - (1.01750751592)*atan(1.5*qdot/qdot_max),             otherwise
+///     0,                                             for qdot > qdot_max
+///     1.5,                          for qdot < (-0.35678917232)*qdot_max
+///     1 - (1.01750751592)*atan(1.5*qdot/qdot_max),             otherwise
 /// For negative excitations, the inequalities flip and the sign for qdot_max 
 /// flips.
 ///
