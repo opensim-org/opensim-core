@@ -56,10 +56,15 @@ namespace OpenSim {
 /// a scale factor of 2 means that the fiber muscle traverses half as far 
 /// along the force-length curve in either direction.
 ///
-/// This implementation adds fiber damping to the model, which helps with 
-/// numerically solving for fiber velocity at low activations or with 
-/// low force-length multipliers, and is likely to be more useful with 
-/// explicit fiber dynamics than implicit fiber dynamics.
+/// This implementation adds fiber damping as an addition to the original model. 
+/// Users can specify this via the 'fiber_damping' property, and damping force
+/// along the fiber is computed by multiplying the property value by the 
+/// normalized fiber velocity and max isometric force. If using this muscle for
+/// optimization, fiber damping is recommended as it can improve convergence.
+/// 
+/// @note If converting from Thelen2003Muscles via replaceMuscles(), fiber 
+///       damping will be set to zero since there is no damping in that muscle
+///       model.
 ///
 /// This class supports tendon compliance dynamics in both explicit and implicit 
 /// form (formulations 1 and 3 from De Groote et al. 2016). Both forms of the 
@@ -67,10 +72,12 @@ namespace OpenSim {
 /// typical fiber length state). The explicit form is handled through the usual 
 /// Component dynamics interface. The implicit form introduces an additional 
 /// discrete and cache SimTK::State variable for the derivative of normalized 
-/// tendon force and muscle-tendon equilibrium residual respectively. The 
-/// implicit form is only for use with solvers that support implicit dynamics 
-/// (i.e. Moco) and cannot be used to perform a time-stepping forward simulation 
-/// with Manager; use explicit mode for time-stepping.
+/// tendon force and muscle-tendon equilibrium residual respectively. In
+/// general, it is preferable to use the implicit form in optimization since it 
+/// can be robust to arbitrary initial guesses (see De Groote et al. 2016). 
+/// However, the implicit form is only for use with solvers that support 
+/// implicit dynamics (i.e. Moco) and cannot be used to perform a time-stepping 
+/// forward simulation with Manager; use explicit mode for time-stepping.
 /// 
 /// @note Normalized tendon force is bounded in the range [0, 5] in this class.
 ///       The methods getMinNormalizedTendonForce() and 
@@ -116,7 +123,10 @@ public:
             "Scale factor for the width of the active force-length curve. "
             "Larger values make the curve wider. Default: 1.0.");
     OpenSim_DECLARE_PROPERTY(fiber_damping, double,
-            "The linear damping of the fiber. Default: 0.");
+            "Use this property to define the linear damping force that is "
+            "added to the total muscle fiber force. It is computed by "
+            "multiplying this damping parameter by the normalized fiber "
+            "velocity and the max isometric force. Default: 0.");
     OpenSim_DECLARE_PROPERTY(ignore_passive_fiber_force, bool,
             "Make the passive fiber force 0. Default: false.");
     OpenSim_DECLARE_PROPERTY(passive_fiber_strain_at_one_norm_force, double,
@@ -384,7 +394,7 @@ public:
     /// Domain: [-1, 1]
     /// Range: [0, 1.794]
     /// @note It is upon the user to check that the muscle fiber is acting 
-    ///       in the specified domain. Force computations outside this range
+    ///       within the specified domain. Force computations outside this range
     ///       may be incorrect.
     static SimTK::Real calcForceVelocityMultiplier(
             const SimTK::Real& normFiberVelocity) {

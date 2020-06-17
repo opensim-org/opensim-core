@@ -1028,19 +1028,6 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
         std::string actname = actu->getName();
         model.addForce(actu.release());
 
-        // Workaround for a bug in prependComponentPathToConnecteePath().
-        for (auto& comp : model.updComponentList()) {
-            const auto& socketNames = comp.getSocketNames();
-            for (const auto& socketName : socketNames) {
-                auto& socket = comp.updSocket(socketName);
-                auto connecteePath = socket.getConnecteePath();
-                std::string prefix = "/forceset/" + actname;
-                if (startsWith(connecteePath, prefix)) {
-                    connecteePath = connecteePath.substr(prefix.length());
-                    socket.setConnecteePath(connecteePath);
-                }
-            }
-        }
         musclesToDelete.push_back(&muscBase);
     }
 
