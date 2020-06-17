@@ -319,6 +319,12 @@ else()
 
 endif()
 
+# Here's the diff between our commit of casadi and casadi's master branch:
+# https://github.com/casadi/casadi/compare/master...stanfordnmbl:1555e79ea59cbd25d05894f2e9b351d92bacf348
+# Differences:
+# - threadsafe SharedObject
+# - user-defined sparsity patterns
+# - altered FindIPOPT.cmake
 if(SUPERBUILD_casadi)
     AddDependency(NAME       casadi
                   DEFAULT    ON
