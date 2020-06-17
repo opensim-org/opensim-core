@@ -305,10 +305,6 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
         set(GCC_INST_SET)
     endif()
 
-    # Get the gcc version number in major.minor.build format
-    execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion
-                    OUTPUT_VARIABLE COMPILER_VERSION)
-
 
     # Testing with Clang 3.3 on Ubuntu 14.04 shows a 5% decrease
     # in the runtime of the tests when we enable loop unrolling.
@@ -356,9 +352,9 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
 
     # Avoid warnings for Object::Self and Object::Super typedefs.
     # This warning exists in GCC and Clang >=4.0.
-    message(STATUS "DEBUG compiler version ${COMPILER_VERSION}")
+    message(STATUS "DEBUG compiler version ${CMAKE_CXX_COMPILER_VERSION}")
     if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
-            NOT (${COMPILER_VERSION} VERSION_LESS "4.0.0"))
+            NOT (${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS "5.0.0"))
         message(STATUS "DEBUG adding flag")
         add_compile_options(-Wno-unused-local-typedefs)
     endif()
