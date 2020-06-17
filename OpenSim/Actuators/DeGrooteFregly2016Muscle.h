@@ -766,27 +766,27 @@ private:
                cube(b3 + b4 * x);
     }
 
-    enum StatusFromEstimateMuscleFiberState {
-        Success_Converged,
-        Warning_FiberAtLowerBound,
-        Warning_FiberAtUpperBound,
-        Failure_MaxIterationsReached
-    };
+    //enum StatusFromEstimateMuscleFiberState {
+    //    Success_Converged,
+    //    Warning_FiberAtLowerBound,
+    //    Warning_FiberAtUpperBound,
+    //    Failure_MaxIterationsReached
+    //};
 
-    struct ValuesFromEstimateMuscleFiberState {
-        int iterations;
-        double solution_error;
-        double fiber_length;
-        double fiber_velocity;
-        double normalized_tendon_force;
-    };
+    //struct ValuesFromEstimateMuscleFiberState {
+    //    int iterations;
+    //    double solution_error;
+    //    double fiber_length;
+    //    double fiber_velocity;
+    //    double normalized_tendon_force;
+    //};
 
-    std::pair<StatusFromEstimateMuscleFiberState,
-            ValuesFromEstimateMuscleFiberState>
-    estimateMuscleFiberState(const double activation, 
-            const double muscleTendonLength, const double muscleTendonVelocity, 
-            const double normTendonForceDerivative, const double tolerance,
-            const int maxIterations) const;
+    //std::pair<StatusFromEstimateMuscleFiberState,
+    //        ValuesFromEstimateMuscleFiberState>
+    //estimateMuscleFiberState(const double activation, 
+    //        const double muscleTendonLength, const double muscleTendonVelocity, 
+    //        const double normTendonForceDerivative, const double tolerance,
+    //        const int maxIterations) const;
 
     // Curve parameters.
     // Notation comes from De Groote et al., 2016 (supplement).
