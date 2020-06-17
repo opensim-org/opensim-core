@@ -1369,6 +1369,52 @@ public:
                                   double value) const;
 
     /**
+     * Add a state cache entry belonging to this Component to hold
+     * calculated values that must be automatically invalidated when certain
+     * state values change. Cache entries contain values whose computations depend
+     * on state variables and provide convenience and/or efficiency by holding on
+     * to them in memory (cache) to avoid recomputation. Once the state changes,
+     * the cache values automatically become invalid and has to be
+     * recomputed based on the current state before it can be referenced again.
+     * Any attempt to reference an invalid cache entry results in an exception
+     * being thrown.
+     *
+     * Cache entry validity is managed by computation Stage, rather than by
+     * dependence on individual state variables. Changing a variables whose
+     * "invalidates" stage is the same or lower as the one specified as the
+     * "depends on" stage here cause the cache entry to be invalidated. For
+     * example, a body's momentum, which is dependent on position and velocity
+     * states, should have Stage::Velocity as its \a dependsOnStage. Then if a
+     * Velocity stage variable or lower (e.g. Position stage) changes, then the
+     * cache is invalidated. But, if a Dynamics stage variable (or above) is
+     * changed, the velocity remains valid so the cache entry does not have to be
+     * recomputed.
+     *
+     * @param[in]      cacheVariableName
+     *   The name you are assigning to this cache entry. Must be unique within
+     *   this model component.
+     *
+     * @param[in]      variablePrototype
+     *   An object defining the type of value, and a default value of that type,
+     *   to be held in this cache entry. Can be a simple int or an elaborate
+     *   class, as long as it has deep copy semantics.
+     * @param[in]      dependsOnStage
+     *   This is the highest computational stage on which this cache entry's
+     *   value computation depends. State changes at this level or lower will
+     *   invalidate the cache entry.
+     */
+    template <class T>
+    void addCacheVariable(std::string cacheVariableName, const T& variablePrototype, SimTK::Stage dependsOnStage) const
+    {
+        SimTK::ClonePtr<CacheVariable> cv{new CacheVariable{
+                new SimTK::Value<T>(variablePrototype),
+                dependsOnStage
+        }};
+
+        _namedCacheVariableInfo.insert({std::move(cacheVariableName), std::move(cv)});
+    }
+
+    /**
      * Get the value of a cache variable allocated by this Component by name.
      *
      * @param state  the State from which to get the value
@@ -1380,8 +1426,6 @@ public:
     template<typename T>
     const T& getCacheVariableValue(const SimTK::State& state, const std::string& name) const
     {
-        // Getting the default subsystem *also* asserts that initSystem() has been called
-        // *before* trying to look up a cache variable.
         const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
 
         // TODO: expensive (#1)
@@ -1395,11 +1439,37 @@ public:
             throw Exception(msg.str(), __FILE__, __LINE__);
         }
 
-        const CacheInfo& cacheInfo = it->second;
-        const SimTK::AbstractValue& val = subsystem.getCacheEntry(state, cacheInfo.index);
+        return it->second->get<T>(subsystem, state);
+    }
 
-        // TODO: expensive (#2)
-        return SimTK::Value<T>::downcast(val).get();
+    /**
+     * Set cache variable value allocated by this Component by name. All cache
+     * entries are lazily evaluated (on a need basis) so a set also marks the
+     * cache as valid.
+     *
+     * @param state  the State in which to store the new value
+     * @param name   the name of the cache variable
+     * @param value  the new value for this cache variable
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
+     */
+    template<typename T>
+    void setCacheVariableValue(const SimTK::State& state, const std::string& name, const T& value) const
+    {
+        const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
+
+        // TODO: Expensive (#1)
+        const auto it = _namedCacheVariableInfo.find(name);
+
+        if (it == _namedCacheVariableInfo.end()) {
+            std::stringstream msg;
+            msg << "Component::setCacheVariable: ERR- name not found.\n "
+                << "for component '"<< getName() << "' of type "
+                << getConcreteClassName();
+            throw Exception(msg.str(), __FILE__, __LINE__);
+        }
+
+        it->second->set(subsystem, state, value);
     }
 
     /**
@@ -1417,8 +1487,6 @@ public:
     template<typename T>
     T& updCacheVariableValue(const SimTK::State& state, const std::string& name) const
     {
-        // Getting the default subsystem *also* asserts that initSystem() has been called
-        // *before* trying to look up a cache variable.
         const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
 
         // TODO: expensive (#1)
@@ -1433,12 +1501,37 @@ public:
             throw Exception(msg.str(), __FILE__, __LINE__);
         }
 
-        const CacheInfo& cacheInfo = it->second;
-        const SimTK::CacheEntryIndex ceIndex = cacheInfo.index;
-        SimTK::AbstractValue& val = subsystem.updCacheEntry(state, ceIndex);
+        return it->second->upd<T>(subsystem, state);
+    }
 
-        // TODO: expensive (#2), and dirties the update flag
-        return SimTK::Value<T>::downcast(val).upd();
+    /**
+     * Enables the user to monitor the validity of the cache variable value
+     * using the returned flag. For components performing a costly evaluation,
+     * use this method to force a re-evaluation of a cache variable value only
+     * when necessary (i.e., returns false).
+     *
+     * @param state  the State in which the cache value resides
+     * @param name   the name of the cache variable
+     * @return bool  whether the cache variable value is valid or not
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
+     */
+    bool isCacheVariableValid(const SimTK::State& state, const std::string& name) const
+    {
+        const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
+
+        // TODO: Expensive (#1)
+        const auto it = _namedCacheVariableInfo.find(name);
+
+        if (it == _namedCacheVariableInfo.end()) {
+            std::stringstream msg;
+            msg << "Component::isCacheVariableValid: ERR- name not found.\n "
+                << "for component '"<< getName() << "' of type "
+                << getConcreteClassName();
+            throw Exception(msg.str(), __FILE__, __LINE__);
+        }
+
+        return it->second->isValid(subsystem, state);
     }
 
     /**
@@ -1456,8 +1549,6 @@ public:
      */
     void markCacheVariableValid(const SimTK::State& state, const std::string& name) const
     {
-        // Getting the default subsystem *also* asserts that initSystem() has been called
-        // *before* trying to look up a cache variable.
         const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
 
         // TODO: expensive (#1)
@@ -1471,10 +1562,7 @@ public:
             throw Exception(msg.str(), __FILE__, __LINE__);
         }
 
-        const CacheInfo& cacheInfo = it->second;
-        const SimTK::CacheEntryIndex ceIndex = cacheInfo.index;
-
-        subsystem.markCacheValueRealized(state, ceIndex);
+        it->second->markValid(subsystem, state);
     }
 
     /**
@@ -1497,8 +1585,6 @@ public:
      */
     void markCacheVariableInvalid(const SimTK::State& state, const std::string& name) const
     {
-        // Getting the default subsystem *also* asserts that initSystem() has been called
-        // *before* trying to look up a cache variable.
         const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
 
         // TODO: Expensive (#1)
@@ -1512,88 +1598,9 @@ public:
             throw Exception(msg.str(), __FILE__, __LINE__);
         }
 
-        const CacheInfo& cacheInfo = it->second;
-        const SimTK::CacheEntryIndex ceIndex = cacheInfo.index;
-
-        subsystem.markCacheValueNotRealized(state, ceIndex);
+        it->second->markInvalid(subsystem, state);
     }
 
-    /**
-     * Enables the user to monitor the validity of the cache variable value
-     * using the returned flag. For components performing a costly evaluation,
-     * use this method to force a re-evaluation of a cache variable value only
-     * when necessary (i.e., returns false).
-     *
-     * @param state  the State in which the cache value resides
-     * @param name   the name of the cache variable
-     * @return bool  whether the cache variable value is valid or not
-     * @throws ComponentHasNoSystem if this Component has not been added to a
-     *         System (i.e., if initSystem has not been called)
-     */
-    bool isCacheVariableValid(const SimTK::State& state, const std::string& name) const
-    {
-        // Getting the default subsystem *also* asserts that initSystem() has been called
-        // *before* trying to look up a cache variable.
-        const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
-
-        // TODO: Expensive (#1)
-        const auto it = _namedCacheVariableInfo.find(name);
-
-        if (it == _namedCacheVariableInfo.end()) {
-            std::stringstream msg;
-            msg << "Component::isCacheVariableValid: ERR- name not found.\n "
-                << "for component '"<< getName() << "' of type "
-                << getConcreteClassName();
-            throw Exception(msg.str(), __FILE__, __LINE__);
-        }
-
-        const CacheInfo& cacheInfo = it->second;
-        const SimTK::CacheEntryIndex ceIndex = cacheInfo.index;
-
-        return subsystem.isCacheValueRealized(state, ceIndex);
-    }
-
-    /**
-     * %Set cache variable value allocated by this Component by name. All cache
-     * entries are lazily evaluated (on a need basis) so a set also marks the
-     * cache as valid.
-     *
-     * @param state  the State in which to store the new value
-     * @param name   the name of the cache variable
-     * @param value  the new value for this cache variable
-     * @throws ComponentHasNoSystem if this Component has not been added to a
-     *         System (i.e., if initSystem has not been called)
-     */
-    template<typename T>
-    void setCacheVariableValue(const SimTK::State& state, const std::string& name, const T& value) const
-    {
-        // Getting the default subsystem *also* asserts that initSystem() has been called
-        // *before* trying to look up a cache variable.
-        const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
-
-        // TODO: Expensive (#1)
-        const auto it = _namedCacheVariableInfo.find(name);
-
-        if (it == _namedCacheVariableInfo.end()) {
-            std::stringstream msg;
-            msg << "Component::setCacheVariable: ERR- name not found.\n "
-                << "for component '"<< getName() << "' of type "
-                << getConcreteClassName();
-            throw Exception(msg.str(), __FILE__, __LINE__);
-        }
-
-        const CacheInfo& cacheInfo = it->second;
-        const SimTK::CacheEntryIndex ceIndex = cacheInfo.index;
-        SimTK::AbstractValue& valWrapper = subsystem.updCacheEntry(state, ceIndex);
-
-        // TODO: Expensive (#2), and dirties the update flag
-        T& currentVal = SimTK::Value<T>::downcast(valWrapper).upd();
-
-        currentVal = value;
-
-        subsystem.markCacheValueRealized(state, ceIndex);
-
-    }
     // End of Model Component State Accessors.
     //@}
 
@@ -2137,55 +2144,6 @@ protected:
     should be invalidated if this variable's value is changed. **/
     void addDiscreteVariable(const std::string& discreteVariableName,
                              SimTK::Stage       invalidatesStage) const;
-
-    /** Add a state cache entry belonging to this Component to hold
-    calculated values that must be automatically invalidated when certain
-    state values change. Cache entries contain values whose computations depend
-    on state variables and provide convenience and/or efficiency by holding on
-    to them in memory (cache) to avoid recomputation. Once the state changes,
-    the cache values automatically become invalid and has to be
-    recomputed based on the current state before it can be referenced again.
-    Any attempt to reference an invalid cache entry results in an exception
-    being thrown.
-
-    Cache entry validity is managed by computation Stage, rather than by
-    dependence on individual state variables. Changing a variables whose
-    "invalidates" stage is the same or lower as the one specified as the
-    "depends on" stage here cause the cache entry to be invalidated. For
-    example, a body's momentum, which is dependent on position and velocity
-    states, should have Stage::Velocity as its \a dependsOnStage. Then if a
-    Velocity stage variable or lower (e.g. Position stage) changes, then the
-    cache is invalidated. But, if a Dynamics stage variable (or above) is
-    changed, the velocity remains valid so the cache entry does not have to be
-    recomputed.
-
-    @param[in]      cacheVariableName
-        The name you are assigning to this cache entry. Must be unique within
-        this model component.
-    @param[in]      variablePrototype
-        An object defining the type of value, and a default value of that type,
-        to be held in this cache entry. Can be a simple int or an elaborate
-        class, as long as it has deep copy semantics.
-    @param[in]      dependsOnStage
-        This is the highest computational stage on which this cache entry's
-        value computation depends. State changes at this level or lower will
-        invalidate the cache entry. **/
-    template <class T>
-    void addCacheVariable(
-            std::string cacheVariableName,
-            const T& variablePrototype,
-            SimTK::Stage dependsOnStage) const
-    {
-        // The SimTK::Value<T> must be heap-allocated because it has a type-dependent size
-        auto* val = new SimTK::Value<T>(variablePrototype);
-
-        // Note, the CacheInfo constructed by this emplacement has an invalid CacheInfo::index
-        // until the actual allocation occurs during realizeTopology.
-        _namedCacheVariableInfo.emplace(
-                std::piecewise_construct,
-                std::make_tuple(std::move(cacheVariableName)),
-                std::make_tuple(val, dependsOnStage));
-    }
 
     /**
      * Get writable reference to the MultibodySystem that this component is
@@ -2935,17 +2893,80 @@ private:
         SimTK::DiscreteVariableIndex    index;
     };
 
-    // Structure to hold related info about cache variables
-    struct CacheInfo {
-        CacheInfo() {}
-        CacheInfo(SimTK::AbstractValue* proto,
-                  SimTK::Stage          dependsOn)
-        :   prototype(proto), dependsOnStage(dependsOn) {}
-        // Model
-        SimTK::ClonePtr<SimTK::AbstractValue>   prototype;
-        SimTK::Stage                            dependsOnStage;
-        // System
-        SimTK::CacheEntryIndex                  index;
+    /**
+     * A cache variable, as stored internally by Component.
+     *
+     * - This class should not be exposed to downstream users of Component. It is
+     *   an internal storage class.
+     *
+     * - The underlying SimBody cache variable may not be initialized when this class
+     *   is initialized. This wrapper will throw an exception if it believes that is
+     *   the case when a client tries to use any getters/mutators.
+     */
+    class CacheVariable {
+    private:
+        SimTK::ClonePtr<SimTK::AbstractValue> value;
+        SimTK::Stage dependsOnStage;
+        SimTK::CacheEntryIndex maybeUninitIndex{SimTK::InvalidIndex};
+
+        // So that component init methods can call allocateLazyCacheEntry
+        friend class Component;
+
+        void allocateLazyCacheEntry(SimTK::State& s, const SimTK::Subsystem& subsys) {
+            this->maybeUninitIndex = subsys.allocateLazyCacheEntry(s, this->dependsOnStage, this->value->clone());
+        }
+
+    public:
+        CacheVariable(
+                SimTK::AbstractValue* _value,
+                SimTK::Stage _dependsOnStage) :
+                value{_value},
+                dependsOnStage{_dependsOnStage} {
+        }
+
+        CacheVariable* clone() const {
+            return new CacheVariable{value->clone(), dependsOnStage};
+        }
+
+        SimTK::CacheEntryIndex index() const {
+            if (this->maybeUninitIndex != SimTK::InvalidIndex) {
+                return this->maybeUninitIndex;
+            } else {
+                const char* msg = "CacheVariable::get: failed because this->index == SimTK::InvalidIndex: this can happen if Component::extendRealizeTopology has not been called";
+                throw Exception{msg, __FILE__, __LINE__};
+            }
+        }
+
+        template<typename T>
+        const T& get(const SimTK::DefaultSystemSubsystem& subsystem, const SimTK::State& state) const {
+            const SimTK::AbstractValue& v = subsystem.getCacheEntry(state, this->index());
+            return SimTK::Value<T>::downcast(v).get();
+        }
+
+        template<typename T>
+        T& upd(const SimTK::DefaultSystemSubsystem& subsystem, const SimTK::State& state) {
+            SimTK::AbstractValue& valWrapper = subsystem.updCacheEntry(state, this->index());
+            return SimTK::Value<T>::downcast(valWrapper).upd();
+        }
+
+        template<typename T>
+        void set(const SimTK::DefaultSystemSubsystem& subsystem, const SimTK::State& state, const T& v) {
+            T& currentVal = this->upd<T>(subsystem, state);
+            currentVal = v;
+            subsystem.markCacheValueRealized(state, this->index());
+        }
+
+        void markInvalid(const SimTK::DefaultSystemSubsystem& subsystem, const SimTK::State& state) {
+            subsystem.markCacheValueNotRealized(state, this->index());
+        }
+
+        void markValid(const SimTK::DefaultSystemSubsystem& subsystem, const SimTK::State& state) {
+            subsystem.markCacheValueRealized(state, this->index());
+        }
+
+        bool isValid(const SimTK::DefaultSystemSubsystem& subsystem, const SimTK::State& state) {
+            return subsystem.isCacheValueRealized(state, this->index());
+        }
     };
 
     // Map names of modeling options for the Component to their underlying
@@ -2972,7 +2993,7 @@ private:
     mutable std::map<std::string, DiscreteVariableInfo> _namedDiscreteVariableInfo;
     // Map names of cache entries of the Component to their individual
     // cache information.
-    mutable std::map<std::string, CacheInfo> _namedCacheVariableInfo;
+    mutable std::map<std::string, SimTK::ClonePtr<CacheVariable>> _namedCacheVariableInfo;
 
     // Check that the list of _allStateVariables is valid
     bool isAllStatesVariablesListValid() const;

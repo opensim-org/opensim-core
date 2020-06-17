@@ -1359,7 +1359,7 @@ getCacheVariableIndex(const std::string& name) const
         throw Exception(msg.str(), __FILE__, __LINE__);
     }
 
-    return it->second.index;
+    return it->second->index();
 }
 
 Array<std::string> Component::
@@ -1417,10 +1417,8 @@ void Component::extendRealizeTopology(SimTK::State& s) const
         dvi.index = subSys.allocateDiscreteVariable(s, dvi.invalidatesStage, new SimTK::Value<double>(0.0));
     }
 
-    // Allocate Cache Entry in the State
     for (auto& p : this->_namedCacheVariableInfo) {
-        CacheInfo& ci = p.second;
-        ci.index = subSys.allocateLazyCacheEntry(s, ci.dependsOnStage, ci.prototype->clone());
+        p.second->allocateLazyCacheEntry(s, subSys);
     }
 }
 
