@@ -1346,22 +1346,6 @@ getDiscreteVariableIndex(const std::string& name) const
     return it->second.index;
 }
 
-const SimTK::CacheEntryIndex Component::
-getCacheVariableIndex(const std::string& name) const
-{
-    auto it = _namedCacheVariableInfo.find(name);
-
-    if (it == _namedCacheVariableInfo.end()) {
-        std::stringstream msg;
-        msg << "Component::getCacheVariableIndex: ERR- name not found.\n "
-            << "for component '"<< getName() << "' of type "
-            << getConcreteClassName();
-        throw Exception(msg.str(), __FILE__, __LINE__);
-    }
-
-    return it->second->index();
-}
-
 Array<std::string> Component::
 getStateVariableNamesAddedByComponent() const
 {
@@ -1418,7 +1402,7 @@ void Component::extendRealizeTopology(SimTK::State& s) const
     }
 
     for (auto& p : this->_namedCacheVariableInfo) {
-        p.second->allocateLazyCacheEntry(s, subSys);
+        p.second.allocateLazyCacheEntry(s, subSys);
     }
 }
 

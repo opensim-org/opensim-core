@@ -816,15 +816,14 @@ extendPostScale(const SimTK::State& s, const ScaleSet& scaleSet)
  */
 void GeometryPath::computePath(const SimTK::State& s) const
 {
-    //const SimTK::Stage& sg = s.getSystemStage();
-    
-    if (isCacheVariableValid(s, "current_path"))  {
+    auto cv = this->getCacheVariable<Array<AbstractPathPoint*>>(s, "current_path");
+
+    if (cv.isValid()) {
         return;
     }
 
     // Clear the current path.
-    Array<AbstractPathPoint*>& currentPath = 
-        updCacheVariableValue<Array<AbstractPathPoint*> >(s, "current_path");
+    Array<AbstractPathPoint*>& currentPath = cv.upd();
     currentPath.setSize(0);
 
     // Add the active fixed and moving via points to the path.
@@ -838,7 +837,7 @@ void GeometryPath::computePath(const SimTK::State& s) const
     applyWrapObjects(s, currentPath);
     calcLengthAfterPathComputation(s, currentPath);
 
-    markCacheVariableValid(s, "current_path");
+    cv.markValid();
 }
 
 //_____________________________________________________________________________
