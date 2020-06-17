@@ -356,8 +356,10 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
 
     # Avoid warnings for Object::Self and Object::Super typedefs.
     # This warning exists in GCC and Clang >=4.0.
+    message(STATUS "DEBUG compiler version ${COMPILER_VERSION}")
     if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
             NOT (${COMPILER_VERSION} VERSION_LESS "4.0.0"))
+        message(STATUS "DEBUG adding flag")
         add_compile_options(-Wno-unused-local-typedefs)
     endif()
 endif()
