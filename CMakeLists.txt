@@ -307,7 +307,7 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
 
     # Get the gcc version number in major.minor.build format
     execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion
-                    OUTPUT_VARIABLE GCC_VERSION)
+                    OUTPUT_VARIABLE COMPILER_VERSION)
 
 
     # Testing with Clang 3.3 on Ubuntu 14.04 shows a 5% decrease
@@ -354,9 +354,10 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
     add_compile_options($<$<NOT:$<CONFIG:Debug>>:-Wno-unused-variable>
             $<$<NOT:$<CONFIG:Debug>>:-Wno-unused-parameter>)
 
-    if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
-        add_compile_options(-Wno-unused-local-typedef)
-    else()
+    # Avoid warnings for Object::Self and Object::Super typedefs.
+    # This warning exists in GCC and Clang >=4.0.
+    if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
+            NOT (${COMPILER_VERSION} VERSION_LESS "4.0.0"))
         add_compile_options(-Wno-unused-local-typedefs)
     endif()
 endif()
