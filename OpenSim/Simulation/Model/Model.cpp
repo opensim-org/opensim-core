@@ -1925,12 +1925,11 @@ const Vector& Model::getControls(const SimTK::State &s) const
 /** Compute the controls the model */
 void Model::computeControls(const SimTK::State& s, SimTK::Vector &controls) const
 {
-    if (not this->getAllControllersEnabled()) {
+    if (!this->getAllControllersEnabled()) {
         return;
     }
 
-    for (const auto& controllerRefWrapper : this->_enabledControllers) {
-        const Controller& controller = controllerRefWrapper.get();
+    for (const Controller& controller : this->_enabledControllers) {
         controller.computeControls(s, controls);
     }
 }
