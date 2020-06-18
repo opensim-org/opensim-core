@@ -246,9 +246,9 @@ public:
 
     /// Get whether fiber dynamics is in implicit dynamics mode when using 
     /// normalized tendon force as the state. This is useful to indicate to 
-    /// solvers handle the normalized tendon force derivative and muscle-tendon
-    /// equilibrium variables, which are added to the State as discrete and 
-    /// cache variables, respectively.
+    /// solvers to handle the normalized tendon force derivative and 
+    /// muscle-tendon equilibrium variables, which are added to the State as 
+    /// discrete and cache variables, respectively.
     /// This function is intended primarily for the model Output 
     /// 'implicitenabled_normalized_tendon_force'. We don't need the state, but 
     /// the state parameter is a requirement of Output functions.
@@ -500,9 +500,11 @@ public:
         return log((1.0 / c1) * (normTendonForce + c3)) / m_kT + c2;
     }
 
-    /// This is the derivative of the inverse tendon-force length with respect
-    /// to time. Given the derivative of normalized tendon force and normalized 
-    /// tendon length, this returns normalized tendon velocity.
+    /// This returns normalized tendon velocity given the derivative of 
+    /// normalized tendon force and normalized tendon length. This is derived
+    /// by taking the derivative of the tendon force multiplier curve with 
+    /// respect to time and then solving for normalized fiber velocity (see
+    /// supplementary information for De Groote et al. 2016).
     SimTK::Real calcTendonForceLengthInverseCurveDerivative(
             const SimTK::Real& derivNormTendonForce,
             const SimTK::Real& normTendonLength) const {
