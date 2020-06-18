@@ -158,60 +158,57 @@ double Blankevoort1991Ligament::getLengtheningSpeed(
 }
 
 double Blankevoort1991Ligament::getStrain(const SimTK::State& state) const {
-    CacheVariable<double> cv = this->getCacheVariable<double>(state, "strain_rate");
+    CacheVariable<double> cv = this->getCacheVariable<double>(state, "strain");
 
-    if (not cv.isValid()) {
-        double length = getLength(state);
-        double strain = length / get_slack_length() -1;
-        return cv.set(strain);
-    } else {
+    if (cv.isValid()) {
         return cv.get();
+    } else {
+        double length = getLength(state);
+        double strain = length/get_slack_length() - 1;
+        return cv.set(strain);
     }
 }
 
 double Blankevoort1991Ligament::getStrainRate(const SimTK::State& state) const {
     CacheVariable<double> cv = this->getCacheVariable<double>(state, "strain_rate");
 
-    if (not cv.isValid()) {
+    if (cv.isValid()) {
+        return cv.get();
+    } else {
         double lengthening_speed = getLengtheningSpeed(state);
         double strain_rate = lengthening_speed / get_slack_length();
 
         return cv.set(strain_rate);
-    } else {
-        return cv.get();
     }
 }
 
 double Blankevoort1991Ligament::getSpringForce(const SimTK::State& state) const {
     CacheVariable<double> cv = this->getCacheVariable<double>(state, "force_spring");
 
-    if (not cv.isValid()) {
-        double force = calcSpringForce(state);
-        return cv.set(force);
-    } else {
+    if (cv.isValid()) {
         return cv.get();
+    } else {
+        return cv.set(calcSpringForce(state));
     }
 }
 
 double Blankevoort1991Ligament::getDampingForce(const SimTK::State& state) const {
     CacheVariable<double> cv = this->getCacheVariable<double>(state, "force_damping");
 
-    if (not cv.isValid()) {
-        double force = calcDampingForce(state);
-        return cv.set(force);
-    } else {
+    if (cv.isValid()) {
         return cv.get();
+    } else {
+        return cv.set(calcDampingForce(state));
     }
 }
 
 double Blankevoort1991Ligament::getTotalForce(const SimTK::State& state) const {
     CacheVariable<double> cv = this->getCacheVariable<double>(state, "force_total");
 
-    if (not cv.isValid()) {
-        double force = calcTotalForce(state);
-        return cv.set(force);
-    } else {
+    if (cv.isValid()) {
         return cv.get();
+    } else {
+        return cv.set(calcTotalForce(state));
     }
 }
 

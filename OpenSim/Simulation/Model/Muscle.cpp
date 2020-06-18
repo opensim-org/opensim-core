@@ -513,13 +513,13 @@ const Muscle::MuscleLengthInfo& Muscle::getMuscleLengthInfo(const SimTK::State& 
 {
     auto cv = this->getCacheVariable<MuscleLengthInfo>(s, "lengthInfo");
 
-    if (not cv.isValid()) {
-        MuscleLengthInfo &umli = cv.upd();
+    if (cv.isValid()) {
+        return cv.get();
+    } else {
+        MuscleLengthInfo& umli = cv.upd();
         calcMuscleLengthInfo(s, umli);
         cv.markValid();
         return umli;
-    } else {
-        return cv.get();
     }
 }
 
@@ -533,13 +533,13 @@ getFiberVelocityInfo(const SimTK::State& s) const
 {
     auto cv = this->getCacheVariable<FiberVelocityInfo>(s, "velInfo");
 
-    if (not cv.isValid()) {
+    if (cv.isValid()) {
+        return cv.get();
+    } else {
         FiberVelocityInfo& ufvi = cv.upd();
         calcFiberVelocityInfo(s, ufvi);
         cv.markValid();
         return ufvi;
-    } else {
-        return cv.get();
     }
 }
 
@@ -554,13 +554,13 @@ getMuscleDynamicsInfo(const SimTK::State& s) const
 {
     auto cv = this->getCacheVariable<MuscleDynamicsInfo>(s, "dynamicsInfo");
 
-    if (not cv.isValid()) {
+    if (cv.isValid()) {
+        return cv.get();
+    } else {
         MuscleDynamicsInfo& umdi = cv.upd();
         calcMuscleDynamicsInfo(s, umdi);
         cv.markValid();
         return umdi;
-    } else {
-        return cv.get();
     }
 }
 Muscle::MuscleDynamicsInfo& Muscle::
@@ -574,13 +574,13 @@ getMusclePotentialEnergyInfo(const SimTK::State& s) const
 {
     auto cv = this->getCacheVariable<MusclePotentialEnergyInfo>(s, "dynamicsInfo");
 
-    if (not cv.isValid()) {
+    if (cv.isValid()) {
+        return cv.get();
+    } else {
         MusclePotentialEnergyInfo& umpei = cv.upd();
         calcMusclePotentialEnergyInfo(s, umpei);
         cv.markValid();
         return umpei;
-    } else {
-        return cv.get();
     }
 }
 

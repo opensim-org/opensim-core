@@ -313,7 +313,7 @@ public:
 template<class T>
 class CacheVariable {
 private:
-    const Component& component;
+    const SimTK::DefaultSystemSubsystem& subsystem;
     const StoredCacheVariable& cv;
     const SimTK::State& state;
 
@@ -3015,7 +3015,7 @@ private:
 // CacheVariable (implementation)
 template<class T>
 CacheVariable<T>::CacheVariable(const Component& _component, const StoredCacheVariable& _cv, const SimTK::State& _state) :
-    component{_component}, cv{_cv}, state{_state} {}
+    subsystem{_component.getSystem().getDefaultSubsystem()}, cv{_cv}, state{_state} {}
 
 template<class T>
 SimTK::CacheEntryIndex CacheVariable<T>::index() const {
@@ -3024,32 +3024,32 @@ SimTK::CacheEntryIndex CacheVariable<T>::index() const {
 
 template<class T>
 const T& CacheVariable<T>::get() const {
-    return cv.get<T>(component.getSystem().getDefaultSubsystem(), state);
+    return cv.get<T>(subsystem, state);
 }
 
 template<class T>
 T& CacheVariable<T>::upd() const {
-    return cv.upd<T>(component.getSystem().getDefaultSubsystem(), state);
+    return cv.upd<T>(subsystem, state);
 }
 
 template<class T>
 const T& CacheVariable<T>::set(const T& v) const {
-    return cv.set(component.getSystem().getDefaultSubsystem(), state, v);
+    return cv.set(subsystem, state, v);
 }
 
 template<class T>
 void CacheVariable<T>::markInvalid() const {
-    cv.markInvalid(component.getSystem().getDefaultSubsystem(), state);
+    cv.markInvalid(subsystem, state);
 }
 
 template<class T>
 void CacheVariable<T>::markValid() const {
-    cv.markValid(component.getSystem().getDefaultSubsystem(), state);
+    cv.markValid(subsystem, state);
 }
 
 template<class T>
 bool CacheVariable<T>::isValid() const {
-    return cv.isValid(component.getSystem().getDefaultSubsystem(), state);
+    return cv.isValid(subsystem, state);
 }
 
 // Implement methods for ComponentListIterator
