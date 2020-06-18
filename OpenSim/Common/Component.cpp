@@ -1375,33 +1375,54 @@ getStateVariableNamesAddedByComponent() const
 void Component::extendRealizeTopology(SimTK::State& s) const
 {
     const SimTK::Subsystem& subSys = getSystem().getDefaultSubsystem();
+    
+    Component *mutableThis = const_cast<Component*>(this);
 
     // Allocate Modeling Option
-    for (auto& p : this->_namedModelingOptionInfo) {
-        ModelingOptionInfo& moi = p.second;
-        moi.index = subSys.allocateDiscreteVariable(s, SimTK::Stage::Instance, new SimTK::Value<int>(0));
+    if(_namedModelingOptionInfo.size()>0){
+        std::map<std::string, ModelingOptionInfo>::iterator it;
+        for (it = (mutableThis->_namedModelingOptionInfo).begin(); 
+             it !=_namedModelingOptionInfo.end(); ++it)
+        {
+            ModelingOptionInfo& moi = it->second;
+            moi.index = subSys.allocateDiscreteVariable
+               (s, SimTK::Stage::Instance, new SimTK::Value<int>(0));
+        }
     }
 
     // Allocate Continuous State Variables
-    for (auto& p : this->_namedStateVariableInfo) {
-        const StateVariable& sv = *p.second.stateVariable;
-        const auto* asv = dynamic_cast<const AddedStateVariable*>(&sv);
+    if(_namedStateVariableInfo.size()>0){
+        SimTK::Vector zInit(1, 0.0);
+        std::map<std::string, StateVariableInfo>::iterator it;
+        for (it = (mutableThis->_namedStateVariableInfo).begin(); 
+             it != _namedStateVariableInfo.end(); ++it)
+        {
+            const StateVariable& sv = *it->second.stateVariable;
+            const AddedStateVariable* asv 
+                = dynamic_cast<const AddedStateVariable *>(&sv);
 
-        if (asv != nullptr) {// add index information for added state variables
-            // make mutable just to update system allocated index ONLY!
-            auto& masv = const_cast<AddedStateVariable&>(*asv);
-            masv.setVarIndex(subSys.allocateZ(s, SimTK::Vector{1, 0.0}));
-            masv.setSubsystemIndex(subSys.getMySubsystemIndex());
+            if(asv){// add index information for added state variables
+                // make mutable just to update system allocated index ONLY!
+                AddedStateVariable* masv = const_cast<AddedStateVariable*>(asv);
+                masv->setVarIndex(subSys.allocateZ(s, zInit));
+                masv->setSubsystemIndex(getDefaultSubsystem().getMySubsystemIndex());
+            }
         }
     }
 
     // Allocate Discrete State Variables
-    for (auto& p : this->_namedDiscreteVariableInfo) {
-        DiscreteVariableInfo& dvi = p.second;
-        dvi.index = subSys.allocateDiscreteVariable(s, dvi.invalidatesStage, new SimTK::Value<double>(0.0));
+    if(_namedDiscreteVariableInfo.size()>0){
+        std::map<std::string, DiscreteVariableInfo>::iterator it;
+        for (it = (mutableThis->_namedDiscreteVariableInfo).begin(); 
+             it != _namedDiscreteVariableInfo.end(); ++it)
+        {
+            DiscreteVariableInfo& dvi = it->second;
+            dvi.index = subSys.allocateDiscreteVariable
+               (s, dvi.invalidatesStage, new SimTK::Value<double>(0.0));
+        }
     }
 
-    for (auto& p : this->_namedCacheVariableInfo) {
+    for (auto& p : this->_namedCacheVariables) {
         p.second.allocateLazyCacheEntry(s, subSys);
     }
 }
@@ -1718,7 +1739,7 @@ void Component::clearStateAllocations()
     _namedModelingOptionInfo.clear();
     _namedStateVariableInfo.clear();
     _namedDiscreteVariableInfo.clear();
-    _namedCacheVariableInfo.clear();
+    _namedCacheVariables.clear();
 }
 
 void Component::reset()

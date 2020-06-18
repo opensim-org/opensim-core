@@ -79,12 +79,6 @@ class ScaleSet;
  * @author Ajay Seth, Michael Sherman
  */
 
-// Thomas's PR
-// (https://github.com/tgeijten/opensim32/commit/56f825c4d014826ee073d4025a257ce6e58ebd44)
-// modified the cache variable lookups in `ModelComponent` in
-// OpenSim3. It looks like they've been moved into `Component.h`,
-// which is what this OpenSim4 PR will investigate.
-
 class OSIMSIMULATION_API ModelComponent : public Component {
 OpenSim_DECLARE_ABSTRACT_OBJECT(ModelComponent, Component);
 //==============================================================================

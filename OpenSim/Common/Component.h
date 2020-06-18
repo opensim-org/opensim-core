@@ -51,7 +51,6 @@
 #include "OpenSim/Common/Object.h"
 #include "simbody/internal/MultibodySystem.h"
 #include <functional>
-#include <unordered_map>
 
 #include <OpenSim/Common/osimCommonDLL.h>
 
@@ -317,28 +316,49 @@ private:
     const StoredCacheVariable& cv;
     const SimTK::State& state;
 
-    friend class Component;
-    CacheVariable(const Component&, const StoredCacheVariable&, const SimTK::State&);
 public:
-    // Disallow these operations to prevent downstream implementors from trying to store
-    // this data. At the moment, the implementation contains potentially volatile references
-    // that have not been lifetime-verified: the variable should just be used locally.
+    CacheVariable(const SimTK::DefaultSystemSubsystem& _subsystem,
+                  const StoredCacheVariable& _cv,
+                  const SimTK::State& _state) :
+        subsystem{_subsystem},
+        cv{_cv},
+        state{_state} {
+    }
+
     CacheVariable() = delete;
     CacheVariable(const CacheVariable&) = delete;
     CacheVariable& operator=(const CacheVariable&) = delete;
-
-    // Allow move assignment so that function calls work as expected. These should be deleted
-    // in C++17, which has guaranteed copy-ellison.
+    // C++ < C++17 does not have copy-ellison guarantees
     CacheVariable(CacheVariable&&) = default;
     CacheVariable& operator=(CacheVariable&&) = default;
 
-    SimTK::CacheEntryIndex index() const;
-    const T& get() const;
-    T& upd() const;
-    const T& set(const T& v) const;
-    void markInvalid() const;
-    void markValid() const;
-    bool isValid() const;
+    SimTK::CacheEntryIndex index() const {
+        return this->cv.index();
+    }
+
+    const T& get() const {
+        return this->cv.get<T>(this->subsystem, this->state);
+    }
+
+    T& upd() const {
+        return this->cv.upd<T>(this->subsystem, this->state);
+    }
+
+    const T& set(const T& v) const {
+        return this->cv.set(this->subsystem, this->state, v);
+    }
+
+    void markInvalid() const {
+        this->cv.markInvalid(this->subsystem, this->state);
+    }
+
+    void markValid() const {
+        this->cv.markValid(this->subsystem, this->state);
+    }
+
+    bool isValid() const {
+        return this->cv.isValid(subsystem, state);
+    }
 };
 
 //==============================================================================
@@ -1514,9 +1534,11 @@ public:
      *   invalidate the cache entry.
      */
     template <class T>
-    void addCacheVariable(std::string cacheVariableName, const T& variablePrototype, SimTK::Stage dependsOnStage) const
+    void addCacheVariable(std::string cacheVariableName,
+                          const T& variablePrototype,
+                          SimTK::Stage dependsOnStage) const
     {
-        _namedCacheVariableInfo.emplace(
+        this->_namedCacheVariables.emplace(
                 std::piecewise_construct,
                 std::make_tuple(std::move(cacheVariableName)),
                 std::make_tuple(
@@ -1534,10 +1556,10 @@ public:
      */
      template<class T>
      CacheVariable<T> getCacheVariable(const SimTK::State& state, const std::string& name) const {
-         const Component& component = *this;
-         const StoredCacheVariable& cv = lookupVar(this->_namedCacheVariableInfo, name, "Component::getCacheVariable");
+         const SimTK::DefaultSystemSubsystem& subsystem = this->getSystem().getDefaultSubsystem();
+         const StoredCacheVariable& cv = this->lookupCacheVariable(name, "Component::getCacheVariable");
 
-         return {component, cv, state};
+         return CacheVariable<T>{subsystem, cv, state};
      }
 
     /**
@@ -1547,7 +1569,7 @@ public:
      */
     SimTK::CacheEntryIndex getCacheVariableIndex(const std::string& name) const
     {
-        const StoredCacheVariable& cv = lookupVar(this->_namedCacheVariableInfo, name, "Component::getCacheVariableIndex");
+        const StoredCacheVariable& cv = this->lookupCacheVariable(name, "Component::getCacheVariableIndex");
         return cv.index();
     }
 
@@ -1564,7 +1586,7 @@ public:
     const T& getCacheVariableValue(const SimTK::State& state, const std::string& name) const
     {
         const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
-        const StoredCacheVariable& cv = lookupVar(this->_namedCacheVariableInfo, name, "Component::getCacheVariableValue");
+        const StoredCacheVariable& cv = this->lookupCacheVariable(name, "Component::getCacheVariableValue");
         return cv.get<T>(subsystem, state);
     }
 
@@ -1583,7 +1605,7 @@ public:
     void setCacheVariableValue(const SimTK::State& state, const std::string& name, const T& value) const
     {
         const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
-        const StoredCacheVariable& cv = lookupVar(this->_namedCacheVariableInfo, name, "Component::setCacheVariableValue");
+        const StoredCacheVariable& cv = this->lookupCacheVariable(name, "Component::setCacheVariableValue");
         cv.set(subsystem, state, value);
     }
 
@@ -1603,7 +1625,7 @@ public:
     T& updCacheVariableValue(const SimTK::State& state, const std::string& name) const
     {
         const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
-        const StoredCacheVariable& cv = lookupVar(this->_namedCacheVariableInfo, name, "Component::updCacheVariableValue");
+        const StoredCacheVariable& cv = this->lookupCacheVariable(name, "Component::updCacheVariableValue");
         return cv.upd<T>(subsystem, state);
     }
 
@@ -1622,7 +1644,7 @@ public:
     bool isCacheVariableValid(const SimTK::State& state, const std::string& name) const
     {
         const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
-        const StoredCacheVariable& cv = lookupVar(this->_namedCacheVariableInfo, name, "Component::isCacheVariableValid");
+        const StoredCacheVariable& cv = this->lookupCacheVariable(name, "Component::isCacheVariableValid");
         return cv.isValid(subsystem, state);
     }
 
@@ -1642,7 +1664,7 @@ public:
     void markCacheVariableValid(const SimTK::State& state, const std::string& name) const
     {
         const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
-        const StoredCacheVariable& cv = lookupVar(this->_namedCacheVariableInfo, name, "Component::markCacheVariableValid");
+        const StoredCacheVariable& cv = this->lookupCacheVariable(name, "Component::markCacheVariableValid");
         cv.markValid(subsystem, state);
     }
 
@@ -1667,7 +1689,7 @@ public:
     void markCacheVariableInvalid(const SimTK::State& state, const std::string& name) const
     {
         const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
-        const StoredCacheVariable& cv = lookupVar(this->_namedCacheVariableInfo, name, "Component::markCacheVariableInvalid");
+        const StoredCacheVariable& cv = this->lookupCacheVariable(name, "Component::markCacheVariableInvalid");
         cv.markInvalid(subsystem, state);
     }
 
@@ -2643,19 +2665,19 @@ protected:
 
 private:
 
-    template<class K, class V>
-    const V& lookupVar(const std::map<K, V>& m, const K& k, const char* caller) const {
-        auto it = m.find(k);
+    const StoredCacheVariable& lookupCacheVariable(const std::string& k, const char* caller) const {
+        auto it = this->_namedCacheVariables.find(k);
 
-        if (it == m.end()) {
-            std::stringstream msg;
-            msg << caller << ": ERR - name not found.\n "
-                << "for component '" << getName() << "' of type "
-                << getConcreteClassName();
-            throw Exception(msg.str(), __FILE__, __LINE__);
+        if (it != this->_namedCacheVariables.end()) {
+            return it->second;
         }
 
-        return it->second;
+        std::stringstream msg;
+        msg << caller << ": ERR - name not found." << std::endl
+            << "for component '" << this->getName() << "' of type "
+            << this->getConcreteClassName();
+
+        throw Exception(msg.str(), __FILE__, __LINE__);
     }
 
     //Mark components that are properties of this Component as subcomponents of
@@ -2849,8 +2871,6 @@ private:
 
     // propertiesTable maintained by Object
 
-    // WIP: the `std::map`s below are what this PR investigates
-
     // Table of Component's structural Sockets indexed by name.
     std::map<std::string, SimTK::ClonePtr<AbstractSocket>> _socketsTable;
 
@@ -2996,7 +3016,7 @@ private:
     mutable std::map<std::string, DiscreteVariableInfo> _namedDiscreteVariableInfo;
     // Map names of cache entries of the Component to their individual
     // cache information.
-    mutable std::map<std::string, StoredCacheVariable> _namedCacheVariableInfo;
+    mutable std::map<std::string, StoredCacheVariable> _namedCacheVariables;
 
     // Check that the list of _allStateVariables is valid
     bool isAllStatesVariablesListValid() const;
@@ -3011,46 +3031,6 @@ private:
 };  // END of class Component
 //==============================================================================
 //==============================================================================
-
-// CacheVariable (implementation)
-template<class T>
-CacheVariable<T>::CacheVariable(const Component& _component, const StoredCacheVariable& _cv, const SimTK::State& _state) :
-    subsystem{_component.getSystem().getDefaultSubsystem()}, cv{_cv}, state{_state} {}
-
-template<class T>
-SimTK::CacheEntryIndex CacheVariable<T>::index() const {
-    return cv.index();
-}
-
-template<class T>
-const T& CacheVariable<T>::get() const {
-    return cv.get<T>(subsystem, state);
-}
-
-template<class T>
-T& CacheVariable<T>::upd() const {
-    return cv.upd<T>(subsystem, state);
-}
-
-template<class T>
-const T& CacheVariable<T>::set(const T& v) const {
-    return cv.set(subsystem, state, v);
-}
-
-template<class T>
-void CacheVariable<T>::markInvalid() const {
-    cv.markInvalid(subsystem, state);
-}
-
-template<class T>
-void CacheVariable<T>::markValid() const {
-    cv.markValid(subsystem, state);
-}
-
-template<class T>
-bool CacheVariable<T>::isValid() const {
-    return cv.isValid(subsystem, state);
-}
 
 // Implement methods for ComponentListIterator
 /// ComponentListIterator<T> pre-increment operator, advances the iterator to
