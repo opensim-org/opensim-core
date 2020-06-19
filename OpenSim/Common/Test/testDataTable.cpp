@@ -816,16 +816,21 @@ TEST_CASE("TableUtilities::isInDegrees") {
 
 TEST_CASE("TableUtilities::findStateLabelIndex") {
     CHECK(TableUtilities::findStateLabelIndex(
-                  {"hip_flexion"}, "/jointset/hip/hip_flexion/value") == 0);
+                  std::vector<std::string>{"hip_flexion"},
+                  "/jointset/hip/hip_flexion/value") == 0);
     CHECK(TableUtilities::findStateLabelIndex(
-                  {"hip_flexion_u"}, "/jointset/hip/hip_flexion/speed") == 0);
+                  std::vector<std::string>{"hip_flexion_u"},
+                  "/jointset/hip/hip_flexion/speed") == 0);
     CHECK(TableUtilities::findStateLabelIndex(
-                  {"vasti.activation"}, "/forceset/vasti/activation") == 0);
+                  std::vector<std::string>{"vasti.activation"},
+                  "/forceset/vasti/activation") == 0);
     CHECK(TableUtilities::findStateLabelIndex(
-                  {"vasti.fiber_length"}, "/forceset/vasti/fiber_length") == 0);
+                  std::vector<std::string>{"vasti.fiber_length"},
+                  "/forceset/vasti/fiber_length") == 0);
 
     CHECK(TableUtilities::findStateLabelIndex(
-            {"hip_flexin"}, "/jointset/hip/hip_flexion/value") == -1);
+                  std::vector<std::string>{"hip_flexin"},
+                  "/jointset/hip/hip_flexion/value") == -1);
 }
 
 TEST_CASE("TableUtilities::filterLowpass") {

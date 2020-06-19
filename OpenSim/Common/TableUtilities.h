@@ -53,11 +53,11 @@ public:
     /// `<muscle>/activation` and it is not found, then this function looks for
     /// `<muscle>.activation`. This function returns -1 if the desired label is
     /// not found.
-    static int OSIMCOMMON_API findStateLabelIndex(
+    static int findStateLabelIndex(
             const Array<std::string>& labels, const std::string& desired);
 
     /// @copydoc findStateLabelIndex()
-    static int OSIMCOMMON_API findStateLabelIndex(
+    static int findStateLabelIndex(
             const std::vector<std::string>& labels, const std::string& desired);
 
     /// Lowpass filter the data in a TimeSeriesTable at a provided cutoff

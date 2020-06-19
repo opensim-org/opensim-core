@@ -167,7 +167,7 @@ void TableUtilities::pad(
             numRowsToPrependAndAppend);
 
     table._indData = Signal::Pad(numRowsToPrependAndAppend,
-            table._indData.size(), table._indData.data());
+            (int)table._indData.size(), table._indData.data());
 
     size_t numColumns = table.getNumColumns();
 
@@ -202,7 +202,7 @@ template <>
 inline std::unique_ptr<FunctionSet> createFunctionSet<GCVSpline>(
         const TimeSeriesTable& table) {
     const auto& time = table.getIndependentColumn();
-    return make_unique<GCVSplineSet>(table, std::vector<std::string>{},
+    return OpenSim::make_unique<GCVSplineSet>(table, std::vector<std::string>{},
             std::min((int)time.size() - 1, 5));
 }
 } // namespace
