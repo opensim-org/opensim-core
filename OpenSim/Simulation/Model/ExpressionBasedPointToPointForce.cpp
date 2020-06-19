@@ -148,7 +148,7 @@ extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);    // Base class first.
 
-    addCacheVariable<double>("force_magnitude", 0.0, SimTK::Stage::Velocity);
+    this->forceMagnitudeCV = addCacheVariable<double>("force_magnitude", 0.0, SimTK::Stage::Velocity);
 
     // Beyond the const Component get access to underlying SimTK elements
     ExpressionBasedPointToPointForce* mutableThis =
@@ -192,7 +192,7 @@ void ExpressionBasedPointToPointForce::computeForce(const SimTK::State& s,
     forceVars["ddot"] = ddot;
 
     double forceMag = _forceProg.evaluate(forceVars);
-    setCacheVariableValue<double>(s, "force_magnitude", forceMag);
+    this->setCacheVariableValue(s, this->forceMagnitudeCV, forceMag);
 
     const Vec3 f1_G = (forceMag/d) * r_G;
 
@@ -204,7 +204,7 @@ void ExpressionBasedPointToPointForce::computeForce(const SimTK::State& s,
 const double& ExpressionBasedPointToPointForce::
     getForceMagnitude(const SimTK::State& s)
 {
-    return getCacheVariableValue<double>(s, "force_magnitude");
+    return this->getCacheVariableValue(s, this->forceMagnitudeCV);
 }
 
 

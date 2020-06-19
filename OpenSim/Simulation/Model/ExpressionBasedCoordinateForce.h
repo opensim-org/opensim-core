@@ -133,6 +133,8 @@ private:
     // is applied.
     SimTK::ReferencePtr<Coordinate> _coord;
 
+    mutable CacheVariable<double> forceMagnitudeCV;
+
 }; //  class ExpressionBasedCoordinateForce
 
 }; // namespace OpenSim

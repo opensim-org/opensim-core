@@ -70,46 +70,37 @@ void Frame::extendAddToSystem(SimTK::MultibodySystem& system) const
     SpatialVec v;
     // If the properties, topology or coordinate values change, 
     // Stage::Position and above will be invalid.
-    addCacheVariable("transform_in_g", x, SimTK::Stage::Position);
+    this->transformCV = addCacheVariable("transform_in_g", x, SimTK::Stage::Position);
     // if a speed (u) changes then Stage::Velocity will also be invalid
-    addCacheVariable("velocity_in_g", v, SimTK::Stage::Velocity);
+    this->velocityCV = addCacheVariable("velocity_in_g", v, SimTK::Stage::Velocity);
     // if a force changes then Stage::Acceleration will also be invalid
-    addCacheVariable("acceleration_in_g", v, SimTK::Stage::Acceleration);
+    this->accelerationCV = addCacheVariable("acceleration_in_g", v, SimTK::Stage::Acceleration);
 }
 
 const SimTK::Transform& Frame::getTransformInGround(const State& s) const
 {
-    if (!getSystem().getDefaultSubsystem().
-            isCacheValueRealized(s, _transformIndex)){
-        //cache is not valid so calculate the transform
-        SimTK::Value<SimTK::Transform>::downcast(
-            getSystem().getDefaultSubsystem().updCacheEntry(s, _transformIndex))
-            .upd() = calcTransformInGround(s);
-        // mark cache as up-to-date
-        getSystem().getDefaultSubsystem().
-            markCacheValueRealized(s, _transformIndex);
+    if (this->isCacheVariableValid(s, this->transformCV)) {
+        return this->getCacheVariableValue(s, this->transformCV);
     }
-    return SimTK::Value<SimTK::Transform>::downcast(
-        getSystem().getDefaultSubsystem().
-            getCacheEntry(s, _transformIndex)).get();
+
+    SimTK::Transform& t = this->updCacheVariableValue(s, this->transformCV);
+    t = calcTransformInGround(s);
+    this->markCacheVariableValid(s, this->transformCV);
+
+    return t;
 }
 
 const SimTK::SpatialVec& Frame::getVelocityInGround(const State& s) const
 {
-    if (!getSystem().getDefaultSubsystem().
-        isCacheValueRealized(s, _velocityIndex)) {
-        //cache is not valid so calculate the transform
-        SimTK::Value<SpatialVec>::downcast(
-            getSystem().getDefaultSubsystem().
-            updCacheEntry(s, _velocityIndex)).upd()
-            = calcVelocityInGround(s);
-        // mark cache as up-to-date
-        getSystem().getDefaultSubsystem().
-            markCacheValueRealized(s, _velocityIndex);
+    if (this->isCacheVariableValid(s, this->velocityCV)) {
+        return this->getCacheVariableValue(s, this->velocityCV);
     }
-    return SimTK::Value<SpatialVec>::downcast(
-        getSystem().getDefaultSubsystem().
-        getCacheEntry(s, _velocityIndex)).get();
+
+    SimTK::SpatialVec& v = this->updCacheVariableValue(s, this->velocityCV);
+    v = calcVelocityInGround(s);
+    this->markCacheVariableValid(s, this->velocityCV);
+
+    return v;
 }
 
 const SimTK::Vec3& Frame::getAngularVelocityInGround(const State& s) const
@@ -124,20 +115,14 @@ const SimTK::Vec3& Frame::getLinearVelocityInGround(const State& s) const
 
 const SimTK::SpatialVec& Frame::getAccelerationInGround(const State& s) const
 {
-    if (!getSystem().getDefaultSubsystem().
-        isCacheValueRealized(s, _accelerationIndex)) {
-        //cache is not valid so calculate the transform
-        SimTK::Value<SpatialVec>::downcast(
-            getSystem().getDefaultSubsystem().
-            updCacheEntry(s, _accelerationIndex)).upd()
-            = calcAccelerationInGround(s);
-        // mark cache as up-to-date
-        getSystem().getDefaultSubsystem().
-            markCacheValueRealized(s, _accelerationIndex);
+    if (this->isCacheVariableValid(s, this->accelerationCV)) {
+        return this->getCacheVariableValue(s, this->accelerationCV);
     }
-    return SimTK::Value<SpatialVec>::downcast(
-        getSystem().getDefaultSubsystem().
-        getCacheEntry(s, _accelerationIndex)).get();
+
+    SimTK::SpatialVec& acceleration = this->updCacheVariableValue(s, this->accelerationCV);
+    acceleration = calcAccelerationInGround(s);
+    this->markCacheVariableValid(s, this->accelerationCV);
+    return acceleration;
 }
 
 const SimTK::Vec3& Frame::getAngularAccelerationInGround(const State& s) const
@@ -271,18 +256,4 @@ const Frame& Frame::findBaseFrame() const
 SimTK::Transform Frame::findTransformInBaseFrame() const
 {
     return extendFindTransformInBaseFrame();
-}
-
-void Frame::extendRealizeTopology(SimTK::State& s) const
-{
-    Super::extendRealizeTopology(s);
-
-    const_cast<Self*>(this)->_transformIndex =
-        getCacheVariableIndex("transform_in_g");
-
-    const_cast<Self*>(this)->_velocityIndex =
-        getCacheVariableIndex("velocity_in_g");
-
-    const_cast<Self*>(this)->_accelerationIndex =
-        getCacheVariableIndex("acceleration_in_g");
 }

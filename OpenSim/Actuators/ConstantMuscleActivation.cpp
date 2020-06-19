@@ -27,9 +27,6 @@ using namespace std;
 using namespace OpenSim;
 using namespace SimTK;
 
-const std::string ConstantMuscleActivation::
-                  CACHE_NAME_ACTIVATION = "activation";
-
 //==============================================================================
 // CONSTRUCTORS
 //==============================================================================
@@ -53,7 +50,7 @@ MuscleActivationDynamics(name, getter)
 void ConstantMuscleActivation::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
-    addCacheVariable<double>(CACHE_NAME_ACTIVATION, getDefaultActivation(),
+    this->activationCV = addCacheVariable<double>("activation", getDefaultActivation(),
                              SimTK::Stage::Topology);
 }
 
@@ -74,15 +71,13 @@ void ConstantMuscleActivation::extendSetPropertiesFromState(const SimTK::State& 
 //==============================================================================
 double ConstantMuscleActivation::getActivation(const SimTK::State& s) const
 {
-    return clampToValidInterval(
-        getCacheVariableValue<double>(s, CACHE_NAME_ACTIVATION));
+    return clampToValidInterval(this->getCacheVariableValue(s, this->activationCV));
 }
 
 void ConstantMuscleActivation::
 setActivation(SimTK::State& s, double activation) const
 {
-    setCacheVariableValue<double>(s, CACHE_NAME_ACTIVATION,
-                             clampToValidInterval(activation));
+    this->setCacheVariableValue(s, this->activationCV, clampToValidInterval(activation));
 }
 
 //==============================================================================

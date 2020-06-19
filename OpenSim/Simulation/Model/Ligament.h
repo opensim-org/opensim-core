@@ -165,6 +165,9 @@ protected:
 private:
     void constructProperties();
 
+    mutable CacheVariable<double> tensionCV;
+    mutable CacheVariable<double> strainCV;
+
 //=============================================================================
 };  // END of class Ligament
 //=============================================================================

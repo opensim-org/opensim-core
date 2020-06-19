@@ -54,63 +54,45 @@ void Point::extendAddToSystem(SimTK::MultibodySystem& system) const
     SimTK::Vec3 v(SimTK::NaN);
     // If the properties, topology or coordinate values change, 
     // Stage::Position will be invalid.
-    addCacheVariable("location", v, SimTK::Stage::Position);
-    addCacheVariable("velocity", v, SimTK::Stage::Velocity);
-    addCacheVariable("acceleration", v, SimTK::Stage::Acceleration);
+    this->locationCV = addCacheVariable("location", v, SimTK::Stage::Position);
+    this->velocityCV = addCacheVariable("velocity", v, SimTK::Stage::Velocity);
+    this->accelerationCV = addCacheVariable("acceleration", v, SimTK::Stage::Acceleration);
 }
 
 const SimTK::Vec3& Point::getLocationInGround(const SimTK::State& s) const
 {
-    if (!getSystem().getDefaultSubsystem().
-        isCacheValueRealized(s, _locationIndex)){
-        //cache is not valid so calculate the transform
-        SimTK::Value<SimTK::Vec3>::downcast(
-            getSystem().getDefaultSubsystem().
-            updCacheEntry(s, _locationIndex)).upd()
-                = calcLocationInGround(s);
-        // mark cache as up-to-date
-        getSystem().getDefaultSubsystem().
-            markCacheValueRealized(s, _locationIndex);
+    if (this->isCacheVariableValid(s, this->locationCV)) {
+        return this->getCacheVariableValue(s, this->locationCV);
     }
-    return SimTK::Value<SimTK::Vec3>::downcast(
-        getSystem().getDefaultSubsystem().
-        getCacheEntry(s, _locationIndex)).get();
+
+    SimTK::Vec3& location = this->updCacheVariableValue(s, this->locationCV);
+    location = calcLocationInGround(s);
+    this->markCacheVariableValid(s, this->locationCV);
+    return location;
 }
 
 const SimTK::Vec3& Point::getVelocityInGround(const SimTK::State& s) const
 {
-    if (!getSystem().getDefaultSubsystem().
-        isCacheValueRealized(s, _velocityIndex)) {
-        //cache is not valid so calculate the transform
-        SimTK::Value<SimTK::Vec3>::downcast(
-            getSystem().getDefaultSubsystem().
-            updCacheEntry(s, _velocityIndex)).upd()
-            = calcVelocityInGround(s);
-        // mark cache as up-to-date
-        getSystem().getDefaultSubsystem().
-            markCacheValueRealized(s, _velocityIndex);
+    if (this->isCacheVariableValid(s, this->velocityCV)) {
+        return this->getCacheVariableValue(s, this->velocityCV);
     }
-    return SimTK::Value<SimTK::Vec3>::downcast(
-        getSystem().getDefaultSubsystem().
-        getCacheEntry(s, _velocityIndex)).get();
+
+    SimTK::Vec3& velocity = this->updCacheVariableValue(s, this->velocityCV);
+    velocity = calcVelocityInGround(s);
+    this->markCacheVariableValid(s, this->velocityCV);
+    return velocity;
 }
 
 const SimTK::Vec3& Point::getAccelerationInGround(const SimTK::State& s) const
 {
-    if (!getSystem().getDefaultSubsystem().
-        isCacheValueRealized(s, _accelerationIndex)) {
-        //cache is not valid so calculate the transform
-        SimTK::Value<SimTK::Vec3>::downcast(
-            getSystem().getDefaultSubsystem().
-            updCacheEntry(s, _accelerationIndex)).upd()
-            = calcAccelerationInGround(s);
-        // mark cache as up-to-date
-        getSystem().getDefaultSubsystem().
-            markCacheValueRealized(s, _accelerationIndex);
+    if (this->isCacheVariableValid(s, this->accelerationCV)) {
+        return this->getCacheVariableValue(s, this->accelerationCV);
     }
-    return SimTK::Value<SimTK::Vec3>::downcast(
-        getSystem().getDefaultSubsystem().
-        getCacheEntry(s, _accelerationIndex)).get();
+
+    SimTK::Vec3& acceleration = this->updCacheVariableValue(s, this->accelerationCV);
+    acceleration = calcAccelerationInGround(s);
+    this->markCacheVariableValid(s, this->accelerationCV);
+    return acceleration;
 }
 
 //=============================================================================
@@ -137,15 +119,4 @@ double Point::calcSpeedBetween(const SimTK::State& s, const Point& o) const
     else // speed is the projection of relative velocity, v, onto the 
          // displacement unit vector, r_hat = r/d; 
         return dot(v, r/d);
-}
-
-//=============================================================================
-// Component level realizations
-//=============================================================================
-void Point::extendRealizeTopology(SimTK::State& s) const
-{
-    Super::extendRealizeTopology(s);
-    _locationIndex = getCacheVariableIndex("location");
-    _velocityIndex = getCacheVariableIndex("velocity");
-    _accelerationIndex = getCacheVariableIndex("acceleration");
 }

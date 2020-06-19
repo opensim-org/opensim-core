@@ -94,8 +94,7 @@ public:
 private:
     void setNull();
 
-    static const std::string CACHE_NAME_ACTIVATION;
-
+    mutable CacheVariable<double> activationCV;
 }; // end of class ConstantMuscleActivation
 }  // end of namespace OpenSim
 

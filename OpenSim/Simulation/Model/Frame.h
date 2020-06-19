@@ -377,7 +377,6 @@ protected:
     /**@{**/
     void extendConnectToModel(Model& model) override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-    void extendRealizeTopology(SimTK::State& s) const override;
 
     /**@}**/
 
@@ -386,9 +385,9 @@ private:
     virtual const Frame& extendFindBaseFrame() const = 0;
     virtual SimTK::Transform extendFindTransformInBaseFrame() const = 0;
 
-    SimTK::ResetOnCopy<SimTK::CacheEntryIndex> _transformIndex;
-    SimTK::ResetOnCopy<SimTK::CacheEntryIndex> _velocityIndex;
-    SimTK::ResetOnCopy<SimTK::CacheEntryIndex> _accelerationIndex;
+    mutable CacheVariable<SimTK::Transform> transformCV;
+    mutable CacheVariable<SimTK::SpatialVec> velocityCV;
+    mutable CacheVariable<SimTK::SpatialVec> accelerationCV;
 //=============================================================================
 };  // END of class Frame
 //=============================================================================
