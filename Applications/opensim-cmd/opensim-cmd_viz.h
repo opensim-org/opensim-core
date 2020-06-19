@@ -34,11 +34,8 @@ static const char HELP_VIZ[] =
 R"(Show a model, motion, or marker/orientation data with the Simbody Visualizer.
 
 Usage:
-  opensim-cmd [options]... viz [--geometry=<path>]
-                                model <model-file> [<states-file>]
-  opensim-cmd [options]... viz [--geometry=<path>]
-                                data <data-file> [--model=<model-file>]
-                                [--layout=<layout>] [--rotate=<rotations>]
+  opensim-cmd [options]... viz [--geometry=<path>] model <model-file> [<states-file>]
+  opensim-cmd [options]... viz [--geometry=<path>] data <data-file> [--model=<model-file>] [--layout=<layout>] [--rotate=<rotations>]
   opensim-cmd viz -h | --help
 
 Options:
@@ -60,18 +57,6 @@ Description of subcommands:
          TimeSeriesTableQuaternion, then the data are visualized as body
          orientations using x-y-z triads, and the --model and --layout
          flags can be used.
-
-Description of options:
-  g, geometry  Search for geometry mesh files in this path.
-  m, model     If visualizing orientation data and --layout is 'model',
-               the orientation data will be visualized according to the default
-               pose of this model.
-  a, layout    If visualizing orientation data, this option specifies the layout
-               of x-y-z triads as either in a 'line' (the default), in a
-               'circle', or according to the default pose of a 'model'. If the
-               value is 'model', then the --model option must be provided.
-  r, rotate    If visualizing orientation data, this option specifies the space
-               fixed Euler angles to apply to data specified in radians.
 Examples:
   opensim-cmd viz model lowerlimb.osim
   opensim-cmd viz --geometry C:/MyGeometry model lowerlimb.osim
