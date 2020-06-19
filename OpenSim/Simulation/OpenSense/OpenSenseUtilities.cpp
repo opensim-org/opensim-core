@@ -202,6 +202,7 @@ OpenSenseUtilities::createOrientationsFileFromMarkers(const std::string& markers
 
 SimTK::Vec3 OpenSenseUtilities::computeHeadingCorrection(
         Model& model,
+        const SimTK::State& state,
             OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>&
                     quaternionsTable,
             const std::string& baseImuName,
@@ -235,11 +236,17 @@ SimTK::Vec3 OpenSenseUtilities::computeHeadingCorrection(
         if (baseHeadingDirection.getDirection() < 0)
             pelvisHeading = pelvisHeading.negate();
 
-        UnitVec3 groundX = UnitVec3(1, 0, 0);
-        SimTK::Real angularDifference = acos(~pelvisHeading * groundX);
+        const PhysicalFrame& baseFrame = model.getBodySet().get(0);
+        // Traverse up the tree of PhysicalFrames until parent is ground
+        Vec3 baseFrameX = UnitVec3(1, 0, 0);
+        const SimTK::Transform& baseXform =
+                baseFrame.getTransformInGround(state);
+        Vec3 baseFrameXInGround = baseXform.xformFrameVecToBase(baseFrameX);
+        SimTK::Real angularDifference =
+                acos(~pelvisHeading * baseFrameXInGround);
         // Compute the sign of the angular correction.
-        SimTK::Vec3 xproduct = (groundX % pelvisHeading);
-        if (xproduct.get(2) > 0) { 
+        SimTK::Vec3 xproduct = (baseFrameXInGround % pelvisHeading);
+        if (xproduct.get(1) > 0) { 
             angularDifference *= -1; 
         }
         

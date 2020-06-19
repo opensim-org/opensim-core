@@ -56,6 +56,7 @@ public:
     */
     static SimTK::Vec3 computeHeadingCorrection(
             OpenSim::Model& model,
+            const SimTK::State& state,
             OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>&
                     quatTimeSeries, 
             const std::string& baseIMU, 
