@@ -873,8 +873,8 @@ TEST_CASE("TableUtilities::pad") {
             paddedSto.getIndependentColumn());
     REQUIRE(paddedTable.getNumRows() == paddedSto.getNumRows());
     REQUIRE(paddedTable.getNumColumns() == paddedSto.getNumColumns());
-    for (size_t irow = 0; irow < paddedTable.getNumRows(); ++irow) {
-        for (size_t icol = 0; icol < paddedTable.getNumColumns(); ++icol) {
+    for (int irow = 0; irow < (int)paddedTable.getNumRows(); ++irow) {
+        for (int icol = 0; icol < (int)paddedTable.getNumColumns(); ++icol) {
             CHECK(paddedTable.getMatrix().getElt(irow, icol) ==
                     paddedSto.getMatrix().getElt(irow, icol));
         }

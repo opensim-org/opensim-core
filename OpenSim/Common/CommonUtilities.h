@@ -100,7 +100,7 @@ std::string getAbsolutePathnameFromXMLDocument(
 /// Solve for the root of a scalar function using the bisection method.
 /// If the values of calcResidual(left) and calcResidual(right) have the same
 /// sign and Logger::shouldLog(Logger::Level::Debug), then
-/// this function writes a file `solveBisection_residual_<timestamp>.sto
+/// this function writes a file `solveBisection_residual_<timestamp>.sto`
 /// containing the residual function.
 /// @param calcResidual a function that computes the error
 /// @param left lower bound on the root
