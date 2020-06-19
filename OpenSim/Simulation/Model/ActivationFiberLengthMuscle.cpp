@@ -161,9 +161,9 @@ void ActivationFiberLengthMuscle::setFiberLength(SimTK::State& s, double fiberLe
     // fiber length as a Dynamics stage dependent state variable.
     // In order to force the recalculation of the length cache we have to 
     // invalidate the length info whenever fiber length is set.
-    markCacheVariableInvalid(s,"lengthInfo");
-    markCacheVariableInvalid(s,"velInfo");
-    markCacheVariableInvalid(s,"dynamicsInfo");
+    this->markCacheVariableInvalid(s, this->lengthInfoCV);
+    this->markCacheVariableInvalid(s, this->velInfoCV);
+    this->markCacheVariableInvalid(s, this->dynamicsInfoCV);
 }
 
 double ActivationFiberLengthMuscle::getActivationRate(const SimTK::State& s) const

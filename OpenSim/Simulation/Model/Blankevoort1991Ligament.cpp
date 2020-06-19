@@ -117,11 +117,11 @@ void Blankevoort1991Ligament::extendAddToSystem(
         SimTK::MultibodySystem& system) const {
     Super::extendAddToSystem(system);
 
-    addCacheVariable<double>("strain", 0.0, SimTK::Stage::Position);
-    addCacheVariable<double>("strain_rate", 0.0, SimTK::Stage::Velocity);
-    addCacheVariable<double>("force_spring", 0.0, SimTK::Stage::Position);
-    addCacheVariable<double>("force_damping", 0.0, SimTK::Stage::Velocity);
-    addCacheVariable<double>("force_total", 0.0, SimTK::Stage::Velocity);
+    this->strainCV = addCacheVariable<double>("strain", 0.0, SimTK::Stage::Position);
+    this->strainRateCV = addCacheVariable<double>("strain_rate", 0.0, SimTK::Stage::Velocity);
+    this->forceSpringCV = addCacheVariable<double>("force_spring", 0.0, SimTK::Stage::Position);
+    this->forceDampingCV = addCacheVariable<double>("force_damping", 0.0, SimTK::Stage::Velocity);
+    this->forceTotalCV = addCacheVariable<double>("force_total", 0.0, SimTK::Stage::Velocity);
 }
 
 //=============================================================================
@@ -158,58 +158,53 @@ double Blankevoort1991Ligament::getLengtheningSpeed(
 }
 
 double Blankevoort1991Ligament::getStrain(const SimTK::State& state) const {
-    CacheVariable<double> cv = this->getCacheVariable<double>(state, "strain");
-
-    if (cv.isValid()) {
-        return cv.get();
-    } else {
-        double length = getLength(state);
-        double strain = length/get_slack_length() - 1;
-        return cv.set(strain);
+    if (this->isCacheVariableValid(state, this->strainCV)) {
+        return this->getCacheVariableValue(state, this->strainCV);
     }
+
+    double length = getLength(state);
+    double strain = length/get_slack_length() - 1;
+    return this->setCacheVariableValue(state, this->strainCV, strain);
 }
 
 double Blankevoort1991Ligament::getStrainRate(const SimTK::State& state) const {
-    CacheVariable<double> cv = this->getCacheVariable<double>(state, "strain_rate");
-
-    if (cv.isValid()) {
-        return cv.get();
-    } else {
-        double lengthening_speed = getLengtheningSpeed(state);
-        double strain_rate = lengthening_speed / get_slack_length();
-
-        return cv.set(strain_rate);
+    if (this->isCacheVariableValid(state, this->strainRateCV)) {
+        return this->getCacheVariableValue(state, this->strainRateCV);
     }
+
+    double lengthening_speed = getLengtheningSpeed(state);
+    double strain_rate = lengthening_speed / get_slack_length();
+    return this->setCacheVariableValue(state, this->strainRateCV, strain_rate);
 }
 
 double Blankevoort1991Ligament::getSpringForce(const SimTK::State& state) const {
-    CacheVariable<double> cv = this->getCacheVariable<double>(state, "force_spring");
-
-    if (cv.isValid()) {
-        return cv.get();
-    } else {
-        return cv.set(calcSpringForce(state));
+    if (this->isCacheVariableValid(state, this->forceSpringCV)) {
+        return this->getCacheVariableValue(state, this->forceSpringCV);
     }
+
+    double spring_force = this->calcSpringForce(state);
+
+    return this->setCacheVariableValue(state, this->forceSpringCV, spring_force);
 }
 
 double Blankevoort1991Ligament::getDampingForce(const SimTK::State& state) const {
-    CacheVariable<double> cv = this->getCacheVariable<double>(state, "force_damping");
-
-    if (cv.isValid()) {
-        return cv.get();
-    } else {
-        return cv.set(calcDampingForce(state));
+    if (this->isCacheVariableValid(state, this->forceDampingCV)) {
+        return this->getCacheVariableValue(state, this->forceDampingCV);
     }
+
+    double damping_force = this->calcDampingForce(state);
+
+    return this->setCacheVariableValue(state, this->forceDampingCV, damping_force);
 }
 
 double Blankevoort1991Ligament::getTotalForce(const SimTK::State& state) const {
-    CacheVariable<double> cv = this->getCacheVariable<double>(state, "force_total");
-
-    if (cv.isValid()) {
-        return cv.get();
-    } else {
-        return cv.set(calcTotalForce(state));
+    if (this->isCacheVariableValid(state, this->forceTotalCV)) {
+        return this->getCacheVariableValue(state, this->forceTotalCV);
     }
+
+    double force_total = calcTotalForce(state);
+
+    return this->setCacheVariableValue(state, this->forceTotalCV, force_total);
 }
 
 double Blankevoort1991Ligament::getLinearStiffnessForcePerLength() const {

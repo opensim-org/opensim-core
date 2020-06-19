@@ -1423,7 +1423,8 @@ void Component::extendRealizeTopology(SimTK::State& s) const
     }
 
     for (auto& p : this->_namedCacheVariables) {
-        p.second.allocateLazyCacheEntry(s, subSys);
+        StoredCacheVariable& cv = p.second;
+        cv.maybeUninitIndex = subSys.allocateLazyCacheEntry(s, cv.dependsOnStage, cv.value->clone());
     }
 }
 
@@ -1528,7 +1529,7 @@ double Component::AddedStateVariable::
 void Component::AddedStateVariable::
     setDerivative(const SimTK::State& state, double deriv) const
 {
-    return getOwner().setCacheVariableValue<double>(state, getName()+"_deriv", deriv);
+    getOwner().setCacheVariableValue<double>(state, getName()+"_deriv", deriv);
 }
 
 

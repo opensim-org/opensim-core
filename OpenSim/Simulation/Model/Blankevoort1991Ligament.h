@@ -210,6 +210,13 @@ public:
     OpenSim_DECLARE_OUTPUT(lengthening_speed, double, getLengtheningSpeed,
         SimTK::Stage::Velocity);
 
+private:
+    mutable CacheVariable<double> strainCV;
+    mutable CacheVariable<double> strainRateCV;
+    mutable CacheVariable<double> forceSpringCV;
+    mutable CacheVariable<double> forceDampingCV;
+    mutable CacheVariable<double> forceTotalCV;
+
 //=============================================================================
 // METHODS
 //=============================================================================

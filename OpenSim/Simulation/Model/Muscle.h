@@ -863,6 +863,11 @@ protected:
     double _pennationAngleAtOptimal;
     double _tendonSlackLength;
 
+    mutable CacheVariable<Muscle::MuscleLengthInfo> lengthInfoCV;
+    mutable CacheVariable<Muscle::FiberVelocityInfo> velInfoCV;
+    mutable CacheVariable<MuscleDynamicsInfo> dynamicsInfoCV;
+    mutable CacheVariable<Muscle::MusclePotentialEnergyInfo> potentialEnergyInfoCV;
+
 //=============================================================================
 };  // END of class Muscle
 //=============================================================================
