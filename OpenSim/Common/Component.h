@@ -272,7 +272,7 @@ struct StoredCacheVariable {
 class CacheVariableDetails {
 private:
     std::string name;
-    mutable SimTK::CacheEntryIndex maybeUninitIndex;
+    mutable SimTK::ResetOnCopy<SimTK::CacheEntryIndex> maybeUninitIndex;
 
     friend class Component;
 
@@ -1744,6 +1744,58 @@ public:
         const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
         const SimTK::CacheEntryIndex idx = this->getCacheVariableIndex(name);
         subsystem.markCacheValueNotRealized(state, idx);
+    }
+
+    /**
+     * Returns the value of a cache variable after possibly applying an update to it (if it was invalid).
+     *
+     * The updater function is only called if the cache variable is invalid.
+     *
+     * This function is effectively sugar for:
+     *
+     *    if (isCacheVariableValid(state, cv)) {
+     *        return getCacheVariableValue(state, cv);
+     *    }
+     *
+     *    T& v = updCacheVariableValue(state, cv);
+     *    updater(v);
+     *    markCacheVariableValid(state, cv);
+     *
+     *    return v;
+     *
+     *  Which is a common pattern for updating cache variables at runtime. The reason you should use this
+     *  implementation, rather than each of the functions above, is because this implementation *may* be
+     *  able to optimize out intermediate steps (apart from that, it should be identical).
+     *
+     * @tparam T
+     *   Type of value held in the CacheVariable
+     * @tparam Updater
+     *   Type of a function with signature void(T&), which *may* be called with the cache variable if it is invalid
+     * @param state
+     *   SimTK::State
+     * @param cv
+     *   The cache variable to get the value of (after *maybe* applying it to `updater`)
+     * @param updater
+     *   The updater function
+     * @return
+     *   The CacheVariable's value after possibly applying `updater` to it
+     */
+    template<class T, class Updater>
+    const T& applyUpdateIfInvalid(const SimTK::State& state, const CacheVariable<T> cv, Updater updater) {
+        const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
+        const SimTK::CacheEntryIndex idx = this->getCacheVariableIndex(cv);
+
+        if (subsystem.isCacheValueRealized(state, idx)) {
+            const SimTK::AbstractValue& v = subsystem.getCacheEntry(state, idx);
+            return SimTK::Value<T>::downcast(v).get();
+        }
+
+        SimTK::AbstractValue& valWrapper = subsystem.updCacheEntry(state, idx);
+        T& v = SimTK::Value<T>::downcast(valWrapper).upd();
+        updater(v);
+        subsystem.markCacheValueRealized(state, idx);
+
+        return v;
     }
 
     // End of Model Component State Accessors.
