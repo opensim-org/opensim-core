@@ -291,28 +291,28 @@ TimeSeriesTable TableUtilities::resampleWithIntervalBounded(
 
 // Explicit template instantiations.
 namespace OpenSim {
-template TimeSeriesTable TableUtilities::resample<SimTK::Vector, GCVSpline>(
+template OSIMCOMMON_API TimeSeriesTable TableUtilities::resample<SimTK::Vector, GCVSpline>(
         const TimeSeriesTable&, const SimTK::Vector&);
-template TimeSeriesTable
+template OSIMCOMMON_API TimeSeriesTable
 TableUtilities::resample<SimTK::Vector, PiecewiseLinearFunction>(
         const TimeSeriesTable&, const SimTK::Vector&);
 
-template TimeSeriesTable
+template OSIMCOMMON_API TimeSeriesTable
 TableUtilities::resample<std::vector<double>, GCVSpline>(
         const TimeSeriesTable&, const std::vector<double>&);
-template TimeSeriesTable
+template OSIMCOMMON_API TimeSeriesTable
 TableUtilities::resample<std::vector<double>, PiecewiseLinearFunction>(
         const TimeSeriesTable&, const std::vector<double>&);
 
-template TimeSeriesTable TableUtilities::resampleWithInterval<GCVSpline>(
+template OSIMCOMMON_API TimeSeriesTable TableUtilities::resampleWithInterval<GCVSpline>(
         const TimeSeriesTable&, double);
-template TimeSeriesTable
+template OSIMCOMMON_API TimeSeriesTable
 TableUtilities::resampleWithInterval<PiecewiseLinearFunction>(
         const TimeSeriesTable&, double);
 
-template TimeSeriesTable TableUtilities::resampleWithIntervalBounded<GCVSpline>(
+template OSIMCOMMON_API TimeSeriesTable TableUtilities::resampleWithIntervalBounded<GCVSpline>(
         const TimeSeriesTable&, double);
-template TimeSeriesTable
+template OSIMCOMMON_API TimeSeriesTable
 TableUtilities::resampleWithIntervalBounded<PiecewiseLinearFunction>(
         const TimeSeriesTable&, double);
 } // namespace OpenSim
