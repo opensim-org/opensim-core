@@ -335,6 +335,17 @@ public:
     /// state parameter is a requirement of Output functions.
     SimTK::Vec2 getBoundsNormalizedTendonForce(const SimTK::State&) const
     { return {getMinNormalizedTendonForce(), getMaxNormalizedTendonForce()}; }
+
+    static double getMinNormalizedFiberLength() { return m_minNormFiberLength; }
+    static double getMaxNormalizedFiberLength() { return m_maxNormFiberLength; }
+    /// The first element of the Vec2 is the lower bound, and the second is the
+    /// upper bound.
+    /// Note that since fiber length is not used as a state variable, these
+    /// bounds cannot be enforced directly. It is upon the user to ensure the
+    /// muscle fiber is operating within the specified domain.
+    SimTK::Vec2 getBoundsNormalizedFiberLength() const {
+        return {getMinNormalizedTendonForce(), getMaxNormalizedTendonForce()};
+    }
     /// @}
 
     /// @name Set methods.
@@ -443,7 +454,6 @@ public:
     /// the normalized fiber length.
     SimTK::Real calcPassiveForceMultiplierDerivative(
             const SimTK::Real& normFiberLength) const {
-
         if (get_ignore_passive_fiber_force()) return 0;
 
         const double& e0 = get_passive_fiber_strain_at_one_norm_force();
@@ -455,18 +465,22 @@ public:
     }
 
     /// This is the integral of the passive force-length curve with respect to
-    /// the normalized fiber length.
+    /// the normalized fiber length over the domain
+    /// [minNormFiberLength normFiberLength], where minNormFiberLength is the
+    /// value return by getMinNormalizedFiberLength().
     SimTK::Real calcPassiveForceMultiplierIntegral(
             const SimTK::Real& normFiberLength) const {
-
         if (get_ignore_passive_fiber_force()) return 0;
 
         const double& e0 = get_passive_fiber_strain_at_one_norm_force();
 
-        const double temp1 = exp(kPE * m_minNormFiberLength / e0);
-        const double denom = exp(kPE * (1.0 + 1.0 / e0)) - temp1;
-        const double temp2 = kPE / e0 * normFiberLength;
-        return (e0 / kPE * exp(temp2) - normFiberLength * temp1) / denom;
+        const double temp1 = 
+                e0 + kPE * normFiberLength - kPE * m_minNormFiberLength;
+        const double temp2 = exp(kPE * (normFiberLength - 1.0) / e0);
+        const double temp3 = exp(kPE * (m_minNormFiberLength - 1.0) / e0);
+        const double numer = exp(kPE) * temp1 - e0 * temp2;
+        const double denom = kPE * (temp3 - exp(kPE));
+        return (temp1 / kPE) + (numer / denom);
     }
 
     /// The normalized tendon force as a function of normalized tendon length.
@@ -486,11 +500,19 @@ public:
     }
 
     /// This is the integral of the tendon-force length curve with respect to
-    /// normalized tendon length.
+    /// normalized tendon length over the domain
+    /// [minNormTendonLength normTendonLength]. The lower bound on the domain
+    /// is computed by passing the value return by getMinNormalizedTendonForce()
+    /// to calcTendonForceLengthInverseCurve(). 
     SimTK::Real calcTendonForceMultiplierIntegral(
             const SimTK::Real& normTendonLength) const {
-        return (c1 * exp(-m_kT * (c2 - normTendonLength))) / m_kT -
-               c3 * normTendonLength;
+        const double minNormTendonLength =
+                calcTendonForceLengthInverseCurve(m_minNormTendonForce);
+        const double temp1 =
+                exp(m_kT * normTendonLength) - exp(m_kT * minNormTendonLength);
+        const double temp2 = c1 * exp(-c2 * m_kT) / m_kT;
+        const double temp3 = c3 * (normTendonLength - minNormTendonLength);
+        return temp1 * temp2 - temp3;
     }
 
     /// This is the inverse of the tendon force-length curve, and returns the
