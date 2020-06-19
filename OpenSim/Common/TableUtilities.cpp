@@ -172,13 +172,13 @@ void TableUtilities::pad(
     size_t numColumns = table.getNumColumns();
 
     // _indData.size() is now the number of rows after padding.
-    SimTK::Matrix newMatrix(table._indData.size(), numColumns);
+    SimTK::Matrix newMatrix((int)table._indData.size(), (int)numColumns);
     for (size_t icol = 0; icol < numColumns; ++icol) {
         SimTK::Vector column = table.getDependentColumnAtIndex(icol);
         const std::vector<double> newColumn =
                 Signal::Pad(numRowsToPrependAndAppend, column.size(),
                         column.getContiguousScalarData());
-        newMatrix.updCol(icol) =
+        newMatrix.updCol((int)icol) =
                 SimTK::Vector((int)newColumn.size(), newColumn.data(), true);
     }
     table.updMatrix() = newMatrix;
