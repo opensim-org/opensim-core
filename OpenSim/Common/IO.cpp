@@ -653,6 +653,21 @@ Uppercase(const std::string &aStr)
     return result;
 }
 
+bool IO::StartsWith(const std::string& string, const std::string& start) {
+    if (string.length() >= start.length()) {
+        return string.compare(0, start.length(), start) == 0;
+    }
+    return false;
+}
+
+bool IO::EndsWith(const std::string& string, const std::string& ending) {
+    if (string.length() >= ending.length()) {
+        return string.compare(string.length() - ending.length(),
+                              ending.length(), ending) == 0;
+    }
+    return false;
+}
+
 void IO::eraseEmptyElements(std::vector<std::string>& list)
 {
     std::vector<std::string>::iterator it = list.begin();

@@ -23,8 +23,10 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "osimCommonDLL.h"
+
 /// Record and report elapsed real time ("clock" or "wall" time) in seconds.
-class Stopwatch {
+class OSIMCOMMON_API Stopwatch {
 public:
     /// This stores the start time as the current time.
     Stopwatch() { reset(); }

@@ -249,7 +249,7 @@ public:
      * equivalent to the state index.  For example, for the first column in a
      * storage (usually time) -1 would be returned.  For the second column in a
      * storage (the first state) 0 would be returned. */
-    const int getStateIndex(const std::string &aColumnName, int startIndex=0) const;
+    int getStateIndex(const std::string &aColumnName, int startIndex=0) const;
     void setColumnLabels(const Array<std::string>& aColumnLabels);
     const Array<std::string>& getColumnLabels() const;
     //--------------------------------------------------------------------------

@@ -26,7 +26,16 @@
 #include "osimCommonDLL.h"
 #include <iostream>
 
+#include <SimTKcommon/internal/BigMatrix.h>
+
 namespace OpenSim {
+
+/// Since OpenSim does not require C++14 (which contains std::make_unique()),
+/// here is an implementation of make_unique().
+template <typename T, typename... Args>
+std::unique_ptr<T> make_unique(Args&&... args) {
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
 
 /// Get a string with the current date and time formatted as %Y-%m-%dT%H%M%S
 /// (year, month, day, "T", hour, minute, second). You can change the datetime
@@ -56,6 +65,51 @@ public:
 private:
     std::string m_filepath;
 };
+
+/// Create a SimTK::Vector with the provided length whose elements are
+/// linearly spaced between start and end.
+OSIMCOMMON_API
+SimTK::Vector createVectorLinspace(int length, double start, double end);
+
+#ifndef SWIG
+/// Create a SimTK::Vector using modern C++ syntax.
+OSIMCOMMON_API
+SimTK::Vector createVector(std::initializer_list<SimTK::Real> elements);
+#endif
+
+/// Linearly interpolate y(x) at new values of x. The optional 'ignoreNaNs'
+/// argument will ignore any NaN values contained in the input vectors and
+/// create the interpolant from the non-NaN values only. Note that this option
+/// does not necessarily prevent NaN values from being returned in 'newX', which
+/// will have NaN for any values of newX outside of the range of x.
+/// @throws Exception if x and y are different sizes, or x or y is empty.
+OSIMCOMMON_API
+SimTK::Vector interpolate(const SimTK::Vector& x, const SimTK::Vector& y,
+        const SimTK::Vector& newX, const bool ignoreNaNs = false);
+
+/// An OpenSim XML file may contain file paths that are relative to the
+/// directory containing the XML file; use this function to convert that
+/// relative path into an absolute path.
+OSIMCOMMON_API
+std::string getAbsolutePathnameFromXMLDocument(
+        const std::string& documentFileName,
+        const std::string& pathnameRelativeToDocument);
+
+/// Solve for the root of a scalar function using the bisection method.
+/// If the values of calcResidual(left) and calcResidual(right) have the same
+/// sign and Logger::shouldLog(Logger::Level::Debug), then
+/// this function writes a file `solveBisection_residual_<timestamp>.sto
+/// containing the residual function.
+/// @param calcResidual a function that computes the error
+/// @param left lower bound on the root
+/// @param right upper bound on the root
+/// @param tolerance convergence requires that the bisection's "left" and
+///     "right" are less than tolerance apart.
+/// @param maxIterations abort after this many iterations.
+OSIMCOMMON_API
+SimTK::Real solveBisection(std::function<double(const double&)> calcResidual,
+        double left, double right, const double& tolerance = 1e-6,
+        int maxIterations = 1000);
 
 } // namespace OpenSim
 

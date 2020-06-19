@@ -107,7 +107,7 @@ int viz(int argc, const char** argv) {
     if (args["model"].asBool()) {
         Model model(args["<model-file>"].asString());
         if (args["<states-file>"]) {
-            Storage states(args["<states-file>"].asString());
+            TimeSeriesTable states(args["<states-file>"].asString());
             VisualizerUtilities::showMotion(model, states);
         } else {
             VisualizerUtilities::showModel(model);

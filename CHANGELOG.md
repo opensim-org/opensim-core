@@ -14,6 +14,22 @@ v4.2
 - Fix a segfault that occurs when using OpenSim's Python Package with Anaconda's Python on a Mac.
 - Expose PropertyHelper class to python bindings to allow editing of objects using the properties interface (useful for editing objects defined in plugins) in python (consistent with Java/Matlab).
 - Whitespace is trimmed when reading table metadata for STO, MOT, and CSV files.
+- Introduce the following utility functions:
+  - make_unique()
+  - createVector() (using a C++ initializer list)
+  - createVectorLinspace()
+  - interpolate()
+  - updateStateLabels40() to update column labels from v3.3 to v4.0 syntax.
+  - solveBisection()
+- Introduce the following utilities for TimeSeriesTable
+  - TableUtilities::checkNonUniqueLabels()
+  - TableUtilities::isInDegrees()
+  - TableUtilities::findStateLabelIndex()
+  - TableUtilities::filterLowpass()
+  - TableUtilities::pad()
+  - TableUtilities::resample()
+  - TableUtilities::resampleWithInterval()
+- StatesTrajectories can now be created from a TimeSeriesTable of states.
 
 
 v4.1
