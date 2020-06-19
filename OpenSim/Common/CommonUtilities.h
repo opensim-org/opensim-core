@@ -24,7 +24,9 @@
  * -------------------------------------------------------------------------- */
 
 #include "osimCommonDLL.h"
+#include <functional>
 #include <iostream>
+#include <memory>
 
 #include <SimTKcommon/internal/BigMatrix.h>
 
