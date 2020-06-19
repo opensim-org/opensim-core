@@ -26,7 +26,7 @@
 #include "osimCommonDLL.h"
 
 /// Record and report elapsed real time ("clock" or "wall" time) in seconds.
-class OSIMCOMMON_API Stopwatch {
+class Stopwatch {
 public:
     /// This stores the start time as the current time.
     Stopwatch() { reset(); }
