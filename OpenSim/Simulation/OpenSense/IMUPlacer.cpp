@@ -104,6 +104,7 @@ bool IMUPlacer::run(bool visualizeResults) {
     OpenSenseUtilities::rotateOrientationTable(quatTable, sensorToOpenSim);
     // Heading correction requires initSystem is already called. Do it now.
     SimTK::State& s0 = _model->initSystem();
+    _model->realizePosition(s0);
     // Check consistent heading correction specification
     // both base_heading_axis and base_imu_label should be specified
     // finer error checking is done downstream

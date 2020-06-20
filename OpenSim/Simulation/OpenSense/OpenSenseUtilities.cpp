@@ -235,12 +235,23 @@ SimTK::Vec3 OpenSenseUtilities::computeHeadingCorrection(
         UnitVec3 pelvisHeading = base_R(baseHeadingDirection.getAxis());
         if (baseHeadingDirection.getDirection() < 0)
             pelvisHeading = pelvisHeading.negate();
+        bool baseFrameFound = false;
 
-        const PhysicalFrame& baseFrame = model.getBodySet().get(0);
-        // Traverse up the tree of PhysicalFrames until parent is ground
+        const Frame* baseFrame = nullptr;
+        for (int j = 0; j < model.getNumJoints(); j++) {
+            auto& jnt = model.getJointSet().get(j);
+            // Look for joint whose parent is Ground, child will be baseFrame
+            if (jnt.getParentFrame().findBaseFrame() == model.getGround()) { 
+                baseFrame = &(jnt.getChildFrame().findBaseFrame());
+                baseFrameFound = true;
+                break;
+            }
+        }
+        assert(baseFrameFound);
+       
         Vec3 baseFrameX = UnitVec3(1, 0, 0);
         const SimTK::Transform& baseXform =
-                baseFrame.getTransformInGround(state);
+                baseFrame->getTransformInGround(state);
         Vec3 baseFrameXInGround = baseXform.xformFrameVecToBase(baseFrameX);
         SimTK::Real angularDifference =
                 acos(~pelvisHeading * baseFrameXInGround);
