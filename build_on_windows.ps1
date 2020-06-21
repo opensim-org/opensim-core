@@ -1,8 +1,8 @@
 # This is a PowerShell script that performs the following steps:
-# 1. Obtain/build Moco's dependencies.
-# 2. Build Moco.
-# 3. Test Moco.
-# 4. Install Moco.
+# 1. Obtain/build OpenSim's dependencies.
+# 2. Build OpenSim.
+# 3. Test OpenSim.
+# 4. Install OpenSim.
 # The script will make multiple directories adjacent to the directory
 # containing this script.
 git submodule update --init
