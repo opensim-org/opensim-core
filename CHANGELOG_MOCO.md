@@ -3,6 +3,9 @@ Moco Change Log
 
 0.5.0 (in development)
 ----------------------
+- 2020-06-20: Use a more recent commit of CasADi from github.com/casadi (instead
+              of using our own fork).
+
 - 2020-06-08: Moco uses OpenSim's new message logging system.
 
 - 2020-06-01: Introduce MocoGoal::getStageDependency() to improve efficiency of 
