@@ -14,6 +14,7 @@ v4.2
 - Fix a segfault that occurs when using OpenSim's Python Package with Anaconda's Python on a Mac.
 - Expose PropertyHelper class to python bindings to allow editing of objects using the properties interface (useful for editing objects defined in plugins) in python (consistent with Java/Matlab).
 - Whitespace is trimmed when reading table metadata for STO, MOT, and CSV files.
+- Fix OpenSense calibration algorithm to handle models facing arbitrary direction, and handle angle sign correctly in all scenarios.
 
 
 v4.1
