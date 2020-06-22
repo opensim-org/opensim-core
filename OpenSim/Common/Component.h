@@ -50,7 +50,7 @@
 #include "OpenSim/Common/ComponentSocket.h"
 #include "OpenSim/Common/Object.h"
 #include "simbody/internal/MultibodySystem.h"
-#include <functional>
+#include <unordered_map>
 
 #include <OpenSim/Common/osimCommonDLL.h>
 
@@ -243,7 +243,7 @@ public:
 struct StoredCacheVariable {
     SimTK::ClonePtr<SimTK::AbstractValue> value;
     SimTK::Stage dependsOnStage;
-    SimTK::CacheEntryIndex maybeUninitIndex{SimTK::InvalidIndex};
+    SimTK::ResetOnCopy<SimTK::CacheEntryIndex> maybeUninitIndex{SimTK::InvalidIndex};
 
     StoredCacheVariable(
             SimTK::AbstractValue* _value,
@@ -3105,7 +3105,7 @@ private:
     mutable std::map<std::string, DiscreteVariableInfo> _namedDiscreteVariableInfo;
     // Map names of cache entries of the Component to their individual
     // cache information.
-    mutable std::map<std::string, StoredCacheVariable> _namedCacheVariables;
+    mutable std::unordered_map<std::string, StoredCacheVariable> _namedCacheVariables;
 
     // Check that the list of _allStateVariables is valid
     bool isAllStatesVariablesListValid() const;

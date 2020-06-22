@@ -1422,9 +1422,35 @@ void Component::extendRealizeTopology(SimTK::State& s) const
         }
     }
 
-    for (auto& p : this->_namedCacheVariables) {
-        StoredCacheVariable& cv = p.second;
-        cv.maybeUninitIndex = subSys.allocateLazyCacheEntry(s, cv.dependsOnStage, cv.value->clone());
+    // DRAGON: the cache variables *must* be inserted into the SimTK::state
+    //         in a deterministic order that is not affected by the iteration
+    //         order of the container (e.g. unordered_map may iterate
+    //         differently based on how it stores the entries in memory).
+    //
+    //         The reason this is necessary is because some of the tests take
+    //         copies of the Model's state and then reconstruct a new state (e.g.
+    //         with Model::initSystem) with the assumption that the indices from
+    //         the copy can be used with the Model's. However, if the copy allocates
+    //         SimTK cache entries in a different order, then you can end up with
+    //         alsorts of bizzare segfaults in the tests.
+    //
+    //         The solution to this is to sort the keys, so that things are always
+    //         allocated in SimTK in alphabetical order, which means that state copies
+    //         are usually the same. Yes, this is dumb, and should be fixed.
+    {
+        std::vector<std::reference_wrapper<const std::string>> keys;
+        for (auto& p : this->_namedCacheVariables) {
+            keys.emplace_back(p.first);
+        }
+
+        std::sort(keys.begin(), keys.end(), [](const std::string& a, const std::string& b) {
+            return a < b;
+        });
+
+        for (const std::string& k : keys) {
+            StoredCacheVariable& cv = this->_namedCacheVariables.at(k);
+            cv.maybeUninitIndex = subSys.allocateLazyCacheEntry(s, cv.dependsOnStage, cv.value->clone());
+        }
     }
 }
 
