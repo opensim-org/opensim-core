@@ -66,15 +66,14 @@ void Frame::extendConnectToModel(Model& model)
 void Frame::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
-    SimTK::Transform x;
-    SpatialVec v;
+
     // If the properties, topology or coordinate values change, 
     // Stage::Position and above will be invalid.
-    this->transformCV = addCacheVariable("transform_in_g", x, SimTK::Stage::Position);
+    this->transformCV = addCacheVariable("transform_in_g", SimTK::Transform{}, SimTK::Stage::Position);
     // if a speed (u) changes then Stage::Velocity will also be invalid
-    this->velocityCV = addCacheVariable("velocity_in_g", v, SimTK::Stage::Velocity);
+    this->velocityCV = addCacheVariable("velocity_in_g", SpatialVec{}, SimTK::Stage::Velocity);
     // if a force changes then Stage::Acceleration will also be invalid
-    this->accelerationCV = addCacheVariable("acceleration_in_g", v, SimTK::Stage::Acceleration);
+    this->accelerationCV = addCacheVariable("acceleration_in_g", SpatialVec{}, SimTK::Stage::Acceleration);
 }
 
 const SimTK::Transform& Frame::getTransformInGround(const State& s) const

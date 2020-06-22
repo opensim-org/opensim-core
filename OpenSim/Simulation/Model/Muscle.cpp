@@ -224,14 +224,10 @@ void Muscle::extendConnectToModel(Model& aModel)
     //              both the position and velocity of the multibody system and
     //              the muscles path before solving for the fiber length and
     //              velocity in the reduced model.
-    this->lengthInfoCV = addCacheVariable<Muscle::MuscleLengthInfo>
-       ("lengthInfo", MuscleLengthInfo(), SimTK::Stage::Velocity);
-    this->velInfoCV = addCacheVariable<Muscle::FiberVelocityInfo>
-       ("velInfo", FiberVelocityInfo(), SimTK::Stage::Velocity);
-    this->dynamicsInfoCV = addCacheVariable<Muscle::MuscleDynamicsInfo>
-       ("dynamicsInfo", MuscleDynamicsInfo(), SimTK::Stage::Dynamics);
-    this->potentialEnergyInfoCV = addCacheVariable<Muscle::MusclePotentialEnergyInfo>
-       ("potentialEnergyInfo", MusclePotentialEnergyInfo(), SimTK::Stage::Velocity);
+    this->lengthInfoCV = addCacheVariable("lengthInfo", MuscleLengthInfo(), SimTK::Stage::Velocity);
+    this->velInfoCV = addCacheVariable("velInfo", FiberVelocityInfo(), SimTK::Stage::Velocity);
+    this->dynamicsInfoCV = addCacheVariable("dynamicsInfo", MuscleDynamicsInfo(), SimTK::Stage::Dynamics);
+    this->potentialEnergyInfoCV = addCacheVariable("potentialEnergyInfo", MusclePotentialEnergyInfo(), SimTK::Stage::Velocity);
  }
 
 void Muscle::extendSetPropertiesFromState(const SimTK::State& state)

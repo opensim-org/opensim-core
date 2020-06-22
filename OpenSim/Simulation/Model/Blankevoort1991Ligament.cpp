@@ -117,11 +117,11 @@ void Blankevoort1991Ligament::extendAddToSystem(
         SimTK::MultibodySystem& system) const {
     Super::extendAddToSystem(system);
 
-    this->strainCV = addCacheVariable<double>("strain", 0.0, SimTK::Stage::Position);
-    this->strainRateCV = addCacheVariable<double>("strain_rate", 0.0, SimTK::Stage::Velocity);
-    this->forceSpringCV = addCacheVariable<double>("force_spring", 0.0, SimTK::Stage::Position);
-    this->forceDampingCV = addCacheVariable<double>("force_damping", 0.0, SimTK::Stage::Velocity);
-    this->forceTotalCV = addCacheVariable<double>("force_total", 0.0, SimTK::Stage::Velocity);
+    this->strainCV = addCacheVariable("strain", 0.0, SimTK::Stage::Position);
+    this->strainRateCV = addCacheVariable("strain_rate", 0.0, SimTK::Stage::Velocity);
+    this->forceSpringCV = addCacheVariable("force_spring", 0.0, SimTK::Stage::Position);
+    this->forceDampingCV = addCacheVariable("force_damping", 0.0, SimTK::Stage::Velocity);
+    this->forceTotalCV = addCacheVariable("force_total", 0.0, SimTK::Stage::Velocity);
 }
 
 //=============================================================================

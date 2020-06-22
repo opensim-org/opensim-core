@@ -148,7 +148,7 @@ extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);    // Base class first.
 
-    this->forceMagnitudeCV = addCacheVariable<double>("force_magnitude", 0.0, SimTK::Stage::Velocity);
+    this->forceMagnitudeCV = addCacheVariable("force_magnitude", 0.0, SimTK::Stage::Velocity);
 
     // Beyond the const Component get access to underlying SimTK elements
     ExpressionBasedPointToPointForce* mutableThis =

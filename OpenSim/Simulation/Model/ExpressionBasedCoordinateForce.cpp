@@ -117,7 +117,7 @@ void ExpressionBasedCoordinateForce::
     extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);    // Base class first.
-    this->forceMagnitudeCV = addCacheVariable<double>("force_magnitude", 0.0, SimTK::Stage::Velocity);
+    this->forceMagnitudeCV = addCacheVariable("force_magnitude", 0.0, SimTK::Stage::Velocity);
 }
 
 //=============================================================================

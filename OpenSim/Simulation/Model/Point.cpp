@@ -51,12 +51,12 @@ Point::Point() : ModelComponent()
 void Point::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
-    SimTK::Vec3 v(SimTK::NaN);
+
     // If the properties, topology or coordinate values change, 
     // Stage::Position will be invalid.
-    this->locationCV = addCacheVariable("location", v, SimTK::Stage::Position);
-    this->velocityCV = addCacheVariable("velocity", v, SimTK::Stage::Velocity);
-    this->accelerationCV = addCacheVariable("acceleration", v, SimTK::Stage::Acceleration);
+    this->locationCV = addCacheVariable("location", SimTK::Vec3{SimTK::NaN}, SimTK::Stage::Position);
+    this->velocityCV = addCacheVariable("velocity", SimTK::Vec3{SimTK::NaN}, SimTK::Stage::Velocity);
+    this->accelerationCV = addCacheVariable("acceleration", SimTK::Vec3{SimTK::NaN}, SimTK::Stage::Acceleration);
 }
 
 const SimTK::Vec3& Point::getLocationInGround(const SimTK::State& s) const

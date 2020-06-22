@@ -1492,7 +1492,7 @@ public:
      */
     template <class T>
     CacheVariable<T> addCacheVariable(std::string cacheVariableName,
-                                      const T& variablePrototype,
+                                      T variablePrototype,
                                       SimTK::Stage dependsOnStage) const
     {
         if (cacheVariableName.empty()) {
@@ -1505,7 +1505,7 @@ public:
                 std::piecewise_construct,
                 std::make_tuple(cacheVariableName),
                 std::make_tuple(
-                        new SimTK::Value<T>(variablePrototype),
+                        new SimTK::Value<T>(std::move(variablePrototype)),
                         dependsOnStage
                 ));
 
@@ -1592,7 +1592,6 @@ public:
         const SimTK::AbstractValue& v = subsystem.getCacheEntry(state, idx);
         return SimTK::Value<T>::downcast(v).get();
     }
-
 
     /**
      * Set cache variable value allocated by this Component by name. All cache
@@ -1747,25 +1746,25 @@ public:
     }
 
     /**
-     * Returns the value of a cache variable after possibly applying an update to it (if it was invalid).
+     * Returns the value of a cache variable - after possibly applying an update to it.
      *
-     * The updater function is only called if the cache variable is invalid.
+     * - `Updater` may be called with `T&`, which should mutate `T` to "update" it (e.g. apply a computation)
+     * - The `Updater` function is only called if the cache variable is invalid (`isCacheVariableValid(state, cv) == false`).
+     * - This function is effectively sugar for a common update pattern in OpenSim:
      *
-     * This function is effectively sugar for:
+     *      if (isCacheVariableValid(state, cv)) {
+     *          return getCacheVariableValue(state, cv);
+     *      }
      *
-     *    if (isCacheVariableValid(state, cv)) {
-     *        return getCacheVariableValue(state, cv);
-     *    }
+     *      T& v = updCacheVariableValue(state, cv);
+     *      updater(v);
+     *      markCacheVariableValid(state, cv);
      *
-     *    T& v = updCacheVariableValue(state, cv);
-     *    updater(v);
-     *    markCacheVariableValid(state, cv);
+     *      return v;
      *
-     *    return v;
-     *
-     *  Which is a common pattern for updating cache variables at runtime. The reason you should use this
-     *  implementation, rather than each of the functions above, is because this implementation *may* be
-     *  able to optimize out intermediate steps (apart from that, it should be identical).
+     *  One reason you should use this implementation, rather than just writing the above pattern, is
+     *  because this implementation can skip some of the internal steps that the separate function calls
+     *  cannot, so it *may* be faster.
      *
      * @tparam T
      *   Type of value held in the CacheVariable

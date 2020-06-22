@@ -98,18 +98,15 @@ void GeometryPath::extendConnectToModel(Model& aModel)
     // Allocate cache entries to save the current length and speed(=d/dt length)
     // of the path in the cache. Length depends only on q's so will be valid
     // after Position stage, speed requires u's also so valid at Velocity stage.
-    this->lengthCV = addCacheVariable<double>("length", 0.0, SimTK::Stage::Position);
-    this->speedCV = addCacheVariable<double>("speed", 0.0, SimTK::Stage::Velocity);
-    // Cache the set of points currently defining this path.
+    this->lengthCV = addCacheVariable("length", 0.0, SimTK::Stage::Position);
+    this->speedCV = addCacheVariable("speed", 0.0, SimTK::Stage::Velocity);
 
-    Array<AbstractPathPoint *> pathPrototype;
-    this->currentPathCV = addCacheVariable<Array<AbstractPathPoint *> >
-        ("current_path", pathPrototype, SimTK::Stage::Position);
+    // Cache the set of points currently defining this path.
+    this->currentPathCV = addCacheVariable("current_path", Array<AbstractPathPoint*>{}, SimTK::Stage::Position);
 
     // We consider this cache entry valid any time after it has been created
     // and first marked valid, and we won't ever invalidate it.
-    this->colorCV = addCacheVariable<SimTK::Vec3>("color", get_Appearance().get_color(),
-                                  SimTK::Stage::Topology);
+    this->colorCV = addCacheVariable("color", get_Appearance().get_color(), SimTK::Stage::Topology);
 }
 
  void GeometryPath::extendInitStateFromProperties(SimTK::State& s) const

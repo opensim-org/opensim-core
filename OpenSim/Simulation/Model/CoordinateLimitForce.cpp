@@ -234,7 +234,7 @@ void CoordinateLimitForce::extendAddToSystem(SimTK::MultibodySystem& system) con
 {
     Super::extendAddToSystem(system);
 
-    this->dissipationPowerCV = addCacheVariable<double>("dissipationPower", 0.0, SimTK::Stage::Dynamics);
+    this->dissipationPowerCV = addCacheVariable("dissipationPower", 0.0, SimTK::Stage::Dynamics);
 
     if(isComputingDissipationEnergy()){
         addStateVariable("dissipatedEnergy");

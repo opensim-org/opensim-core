@@ -125,8 +125,8 @@ SimTK::Vec3 Ligament::computePathColor(const SimTK::State& state) const {
     Super::extendAddToSystem(system);
     // Cache the computed tension and strain of the ligament
 
-    this->tensionCV = addCacheVariable<double>("tension", 0.0, SimTK::Stage::Velocity);
-    this->strainCV = addCacheVariable<double>("strain", 0.0, SimTK::Stage::Velocity);
+    this->tensionCV = addCacheVariable("tension", 0.0, SimTK::Stage::Velocity);
+    this->strainCV = addCacheVariable("strain", 0.0, SimTK::Stage::Velocity);
 }
 
 
