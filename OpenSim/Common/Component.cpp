@@ -1076,7 +1076,7 @@ SimTK::CacheEntryIndex Component::getCacheVariableIndex(const std::string& name)
     }
 
     std::stringstream msg;
-    msg << "Component::lookupCacheVariable: ERR - name not found." << std::endl
+    msg << "Component::getCacheVariableIndex: ERR - '" << name << "' not found." << std::endl
         << "for component '" << this->getName() << "' of type "
         << this->getConcreteClassName();
 

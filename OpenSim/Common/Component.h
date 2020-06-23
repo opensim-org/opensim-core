@@ -2996,7 +2996,6 @@ private:
     // The setting of the variable indices is not in the public interface and is
     // not polymorphic.
 
-    // WIP: the `std::map`s below are also what this PR investigates
 
     mutable std::map<std::string, ModelingOptionInfo> _namedModelingOptionInfo;
     // Map names of continuous state variables of the Component to their

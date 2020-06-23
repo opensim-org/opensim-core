@@ -2265,6 +2265,103 @@ void testFormattedDateTime() {
     SimTK_TEST(withMicroseconds.find(withoutMicroseconds) == 0);
 }
 
+struct ComponentThatExposesCacheVarMethods : public Component {
+    ComponentThatExposesCacheVarMethods() = default;
+
+    ComponentThatExposesCacheVarMethods* clone() const override {
+        return new ComponentThatExposesCacheVarMethods{*this};
+    }
+
+    const std::string& getConcreteClassName() const override {
+        static const std::string name{"doesnotmatter"};
+        return name;
+    }
+
+    MemberSubcomponentIndex intSubix{ constructSubcomponent<Sub>("internalSub") };
+};
+
+void testCacheVariableInterface() {
+    // can default-initialize without throwing an exception
+    {
+        CacheVariable<double> cv;
+    }
+
+    // can value-initialize without throwing an exception
+    {
+        CacheVariable<double>cv{};
+    }
+
+    // can be rvalue-initialized via `Component::addCacheVariable`
+    // without throwing an exception.
+    {
+        ComponentThatExposesCacheVarMethods c{};
+        CacheVariable<double> cv{
+            c.addCacheVariable("name", 0.0, SimTK::Stage::Velocity)
+        };
+    }
+
+    // can be rvalue-assigned via Component::addCacheVariable without exception
+    {
+        ComponentThatExposesCacheVarMethods c{};
+        CacheVariable<double> cv =
+                c.addCacheVariable("name", 0.0, SimTK::Stage::Velocity);
+    }
+
+    // can be copy-initialized without exception
+    {
+        ComponentThatExposesCacheVarMethods c{};
+        CacheVariable<double> cv =
+                c.addCacheVariable("name", 0.0, SimTK::Stage::Velocity);
+
+        CacheVariable<double> cv2{cv};
+    }
+
+    // can be copy-assigned without exception
+    {
+        ComponentThatExposesCacheVarMethods c{};
+        CacheVariable<double> cv = c.addCacheVariable("name", 0.0, SimTK::Stage::Velocity);
+        CacheVariable<double> cv2 = cv;
+    }
+
+    // A fully-initialized CacheVariable<T> (as in, initialized by `Component::extendRealizeTopology`)
+    // should allow all cache-variable related methods to be called without throwing an exception.
+    {
+        ComponentThatExposesCacheVarMethods c{};
+        const std::string k = "name";
+        double v = 1337.0;
+
+        SimTK::MultibodySystem sys;
+        SimbodyMatterSubsystem matter{sys};
+        GeneralForceSubsystem forces{sys};
+        c.finalizeFromProperties();
+        c.finalizeConnections(c);
+        c.addToSystem(sys);
+        CacheVariable<double> cv = c.addCacheVariable(k, v, SimTK::Stage::Velocity);
+
+        SimTK::State s = sys.realizeTopology();
+
+        c.markCacheVariableValid(s, k);
+        c.getCacheVariableIndex(k);
+        c.getCacheVariableIndex(cv);
+        c.getCacheVariableValue<double>(s, k);
+        c.getCacheVariableValue(s, cv);
+        c.setCacheVariableValue<double>(s, k, v);
+        c.setCacheVariableValue(s, k, cv);
+        c.updCacheVariableValue<double>(s, k);
+        c.updCacheVariableValue(s, cv);
+        c.isCacheVariableValid(s, k);
+        c.isCacheVariableValid(s, cv);
+        c.markCacheVariableValid(s, k);
+        c.markCacheVariableValid(s, cv);
+        c.markCacheVariableInvalid(s, k);
+        c.markCacheVariableInvalid(s, cv);
+    }
+
+    // TODO: clarify copy behavior.
+
+    // TODO: actual method side-effects
+}
+
 int main() {
 
     //Register new types for testing deserialization
@@ -2303,6 +2400,7 @@ int main() {
         //SimTK_SUBTEST(testGetAbsolutePathStringSpeed);
 
         SimTK_SUBTEST(testFormattedDateTime);
+        SimTK_SUBTEST(testCacheVariableInterface);
 
     SimTK_END_TEST();
 }
