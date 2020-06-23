@@ -3,6 +3,10 @@ Moco Change Log
 
 0.5.0 (in development)
 ----------------------
+- 2020-06-22: Moco can be built without CasADi, and the functions
+              MocoCasADiSolver::isAvailable() and 
+              MocoTropterSolver::isAvailable() are added.
+
 - 2020-06-08: Moco uses OpenSim's new message logging system.
 
 - 2020-06-01: Introduce MocoGoal::getStageDependency() to improve efficiency of 
