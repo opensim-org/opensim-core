@@ -32,21 +32,47 @@
 using namespace std;
 using namespace OpenSim;
 
-//=============================================================================
-// CONSTRUCTOR(S) AND DESTRUCTOR
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Default constructor.
- */
-WrapResult::WrapResult()
-{
+WrapResult::WrapResult(const WrapResult& other) {
+    copyData(other);
 }
 
 //_____________________________________________________________________________
 /**
- * Destructor.
+ * Copy data members from one WrapResult to another.
+ *
+ * @param aWrapResult WrapResult to be copied.
  */
-WrapResult::~WrapResult()
-{
+void WrapResult::copyData(const WrapResult& aWrapResult) {
+    wrap_pts = aWrapResult.wrap_pts;
+    wrap_path_length = aWrapResult.wrap_path_length;
+
+    startPoint = aWrapResult.startPoint;
+    endPoint = aWrapResult.endPoint;
+
+    int i;
+    for (i = 0; i < 3; i++) {
+        r1[i] = aWrapResult.r1[i];
+        r2[i] = aWrapResult.r2[i];
+        c1[i] = aWrapResult.c1[i];
+        sv[i] = aWrapResult.sv[i];
+    }
+
+    // TODO: Should factor be omitted from the copy?
+}
+
+//=============================================================================
+// OPERATORS
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Assignment operator.
+ *
+ * @return Reference to this object.
+ */
+WrapResult& WrapResult::operator=(const WrapResult& aWrapResult) {
+    if (this != &aWrapResult) {
+        copyData(aWrapResult);
+    }
+
+    return *this;
 }
