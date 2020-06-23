@@ -1044,6 +1044,87 @@ setDiscreteVariableValue(SimTK::State& s, const std::string& name, double value)
     }
 }
 
+SimTK::CacheEntryIndex Component::getCacheVariableIndex(const CacheVariableDetails& cv) const
+{
+    // cheap: index previously initialized, just return that
+    if (cv.maybeUninitIndex != SimTK::InvalidIndex) {
+        return cv.maybeUninitIndex;
+    }
+
+    // expensive: perform index lookup and initialize it
+
+    if (cv.name.empty()) {
+        std::stringstream msg;
+        msg << "Component::getCacheVariableIndex(CacheVariable<T>&): cannot get cache variable index: the cache variable has no name: has it been initialized with Component::addCacheVariable? (class = " << getClassName() << ", concrete class name = " << getConcreteClassName() << ")";
+        throw Exception{msg.str(), __FILE__, __LINE__};
+    }
+
+    // getCacheVariableIndex asserts whether the returned index is valid or not,
+    // so this assignment will set the index to something valid, making subsequent
+    // calls use the cheap path (above).
+    cv.maybeUninitIndex = this->getCacheVariableIndex(cv.name);
+
+    return cv.maybeUninitIndex;
+}
+
+SimTK::CacheEntryIndex Component::getCacheVariableIndex(const std::string& name) const
+{
+    auto it = this->_namedCacheVariables.find(name);
+
+    if (it != this->_namedCacheVariables.end()) {
+        return it->second.index();
+    }
+
+    std::stringstream msg;
+    msg << "Component::lookupCacheVariable: ERR - name not found." << std::endl
+        << "for component '" << this->getName() << "' of type "
+        << this->getConcreteClassName();
+
+    throw Exception(msg.str(), __FILE__, __LINE__);
+}
+
+bool Component::isCacheVariableValid(const SimTK::State& state, const std::string& k) const
+{
+    const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
+    const SimTK::CacheEntryIndex idx = this->getCacheVariableIndex(k);
+    return subsystem.isCacheValueRealized(state, idx);
+}
+
+bool Component::isCacheVariableValid(const SimTK::State& state, const CacheVariableDetails& k) const
+{
+    const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
+    const SimTK::CacheEntryIndex idx = this->getCacheVariableIndex(k);
+    return subsystem.isCacheValueRealized(state, idx);
+}
+
+void Component::markCacheVariableValid(const SimTK::State& state, const std::string& name) const
+{
+    const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
+    const SimTK::CacheEntryIndex idx = this->getCacheVariableIndex(name);
+    subsystem.markCacheValueRealized(state, idx);
+}
+
+void Component::markCacheVariableValid(const SimTK::State& state, const CacheVariableDetails& name) const
+{
+    const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
+    const SimTK::CacheEntryIndex idx = this->getCacheVariableIndex(name);
+    subsystem.markCacheValueRealized(state, idx);
+}
+
+void Component::markCacheVariableInvalid(const SimTK::State& state, const std::string& name) const
+{
+    const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
+    const SimTK::CacheEntryIndex idx = this->getCacheVariableIndex(name);
+    subsystem.markCacheValueNotRealized(state, idx);
+}
+
+void Component::markCacheVariableInvalid(const SimTK::State& state, const CacheVariableDetails& name) const
+{
+    const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
+    const SimTK::CacheEntryIndex idx = this->getCacheVariableIndex(name);
+    subsystem.markCacheValueNotRealized(state, idx);
+}
+
 bool Component::constructOutputForStateVariable(const std::string& name)
 {
     auto func = [name](const Component* comp,

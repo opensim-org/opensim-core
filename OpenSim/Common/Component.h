@@ -231,23 +231,15 @@ public:
 };
 
 /**
- * A cache variable, as stored internally by Component.
- *
- * - This class should not be exposed to downstream users of Component. It is
- *   an internal storage class.
- *
- * - The underlying SimBody cache variable may not be initialized when this class
- *   is initialized. This wrapper will throw an exception if it believes that is
- *   the case when a client tries to get an uninitialized index.
+ * A cache variable, as stored internally by Component (internal).
  */
 struct StoredCacheVariable {
     SimTK::ClonePtr<SimTK::AbstractValue> value;
     SimTK::Stage dependsOnStage;
     SimTK::ResetOnCopy<SimTK::CacheEntryIndex> maybeUninitIndex{SimTK::InvalidIndex};
 
-    StoredCacheVariable(
-            SimTK::AbstractValue* _value,
-            SimTK::Stage _dependsOnStage) :
+    StoredCacheVariable(SimTK::AbstractValue* _value,
+                        SimTK::Stage _dependsOnStage) :
             value{_value},
             dependsOnStage{_dependsOnStage} {
     }
@@ -263,45 +255,45 @@ struct StoredCacheVariable {
 };
 
 /**
- * Generic implementation of CacheVariable<T>.
+ * Type-erased interface for a CacheVariable<T>.
  *
- * This is necessary for methods that are non-templated.
- *
- * @tparam T
+ * - This is necessary for methods/containers that cannot be templated, or
+ *   need to store a generic collection over many types.
  */
 class CacheVariableDetails {
 private:
     std::string name;
-    mutable SimTK::ResetOnCopy<SimTK::CacheEntryIndex> maybeUninitIndex;
+    mutable SimTK::ResetOnCopy<SimTK::CacheEntryIndex> maybeUninitIndex{SimTK::InvalidIndex};
 
     friend class Component;
 
 protected:
-    CacheVariableDetails(std::string _name) : name{std::move(_name)} {
+    explicit CacheVariableDetails(std::string _name) :
+        name{std::move(_name)} {
     }
 
-    CacheVariableDetails() {
-        // A default constructor is required for user-facing impl. because
-        // downstream classes might not be able to fully initialize an instance
-        // at construction time (e.g. member initialization).
-        //
-        // Usage of a partially-initialized CacheVariable is invalid. The way
-        // that this is dealt with is by checking things at runtime:
-        //
-        // - This will default-initialize with a name of "", which is disallowed
-        //   and should produce an appropriate warning (e.g. 'are you sure you
-        //   called `Component::createCacheVariable`?)
-        //
-        // - The index is default-initialized, and copy constructed, with a
-        //   SimTK::NaN, so downstream classes can't easily alias cache variables
-        //   by copying this class around
-    }
+    // A default constructor is required for user-facing impl. because
+    // downstream classes might not be able to fully initialize an instance
+    // at construction time (e.g. via member initialization).
+    //
+    // Usage of a partially-initialized CacheVariable is invalid. The way
+    // that this is dealt with is by checking things at runtime:
+    //
+    // - This will default-initialize with a name of "", which is disallowed
+    //   and should produce an appropriate warning (e.g. 'are you sure you
+    //   called `Component::createCacheVariable`?)
+    //
+    // - The index is default-initialized, and copy constructed, with a
+    //   SimTK::NaN, so downstream classes can't alias cache variables by
+    //   copying this class around.
+    CacheVariableDetails() = default;
 };
 
 /**
- * User-facing representation of a cache variable.
+ * A cache variable containing a value of type T.
  *
- * Most important aspect of this class is that it is *API-stable*.
+ * - This is created via Component::addCacheVariable
+ * - The Component:: base class contains methods for manipulating this (e.g. Component::getCacheVariableValue)
  *
  * @tparam T
  *   Type of data held in the cache variable
@@ -310,12 +302,16 @@ template<class T>
 class CacheVariable : public CacheVariableDetails {
 private:
     friend class Component;
-    CacheVariable(std::string _name) : CacheVariableDetails{std::move(_name)} {
+
+    explicit CacheVariable(std::string _name) : CacheVariableDetails{std::move(_name)} {
     }
 
 public:
-    CacheVariable() : CacheVariableDetails{} {
-    }
+    // See default construction justification in `CacheVariableDetails`. In effect,
+    // public default construction must be allowed so that downstream users can declare
+    // a `CacheVariable<T>` in their class without having to fully initialize it upon
+    // construction of that class.
+    CacheVariable() = default;
 };
 
 //==============================================================================
@@ -1520,51 +1516,34 @@ public:
      * @param cv
      *   A CacheVariable<T>, as allocated by Component::addCacheVariable
      * @return
-     *   A valid SimTK::CacheEntryIndex, which callers can use with the various simbody methods.
+     *   A valid SimTK::CacheEntryIndex, which callers can use with simbody methods
+     *   (e.g. markCacheValueRealized)
      */
-    SimTK::CacheEntryIndex getCacheVariableIndex(const CacheVariableDetails& cv) const
-    {
-        // cheap: get cached value
-        if (cv.maybeUninitIndex != SimTK::InvalidIndex) {
-            return cv.maybeUninitIndex;
-        }
-
-        // expensive: perform lookup and cache value
-
-        if (cv.name.empty()) {
-            std::stringstream msg;
-            msg << "Component::getCacheVariableIndex(CacheVariable<T>&): cannot get cache variable index: the cache variable has no name: has it been initialized with Component::addCacheVariable? (class = " << getClassName() << ", concrete class name = " << getConcreteClassName() << ")";
-            throw Exception{msg.str(), __FILE__, __LINE__};
-        }
-
-        // getCacheVariableIndex asserts whether the returned index is valid or not
-        // so this assignment will set the index to something valid, making subsequent
-        // calls use the cache
-        cv.maybeUninitIndex = this->getCacheVariableIndex(cv.name);
-
-        return cv.maybeUninitIndex;
-    }
+    SimTK::CacheEntryIndex getCacheVariableIndex(const CacheVariableDetails& cv) const;
 
     /**
      * Get the index of a Component's cache variable in the Subsystem for allocations.
-     * This method is intended for derived Components that may need direct access
-     * to its underlying Subsystem.
+     *
+     * @tparam T
+     *   Type of value held in the cache variable
+     * @param name
+     *   Name of the cache variable, as provided to Component::addCacheVariable
+     * @return
+     *   A valid SimTK::CacheEntryIndex, which callers can use with simbody methods
+     *   (e.g. markCacheValueRealized)
      */
-    SimTK::CacheEntryIndex getCacheVariableIndex(const std::string& name) const
+    SimTK::CacheEntryIndex getCacheVariableIndex(const std::string& name) const;
+
+private:
+    template<class T, class K>
+    const T& getCacheVariableValueGeneric(const SimTK::State& state, const K& k) const
     {
-        auto it = this->_namedCacheVariables.find(name);
-
-        if (it != this->_namedCacheVariables.end()) {
-            return it->second.index();
-        }
-
-        std::stringstream msg;
-        msg << "Component::lookupCacheVariable: ERR - name not found." << std::endl
-            << "for component '" << this->getName() << "' of type "
-            << this->getConcreteClassName();
-
-        throw Exception(msg.str(), __FILE__, __LINE__);
+        const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
+        const SimTK::CacheEntryIndex idx = this->getCacheVariableIndex(k);
+        const SimTK::AbstractValue& v = subsystem.getCacheEntry(state, idx);
+        return SimTK::Value<T>::downcast(v).get();
     }
+public:
 
     /**
      * Get the value of a cache variable allocated by this Component by name.
@@ -1578,20 +1557,38 @@ public:
     template<class T>
     const T& getCacheVariableValue(const SimTK::State& state, const std::string& k) const
     {
-        const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
-        const SimTK::CacheEntryIndex idx = this->getCacheVariableIndex(k);
-        const SimTK::AbstractValue& v = subsystem.getCacheEntry(state, idx);
-        return SimTK::Value<T>::downcast(v).get();
+        return getCacheVariableValueGeneric<T>(state, k);
     }
 
+    /**
+     * Get the value of a cache variable allocated by this Component by name.
+     *
+     * @param state  the State from which to get the value
+     * @param name   the name of the cache variable
+     * @return T     const reference to the cache variable's value
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
+     */
     template<class T>
     const T& getCacheVariableValue(const SimTK::State& state, const CacheVariable<T>& k) const
     {
+        return getCacheVariableValueGeneric<T>(state, k);
+    }
+
+private:
+    template<typename T, typename K>
+    const T& setCacheVariableValueGeneric(const SimTK::State& state, const K& k, const T& value) const
+    {
         const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
         const SimTK::CacheEntryIndex idx = this->getCacheVariableIndex(k);
-        const SimTK::AbstractValue& v = subsystem.getCacheEntry(state, idx);
-        return SimTK::Value<T>::downcast(v).get();
+        SimTK::AbstractValue& valWrapper = subsystem.updCacheEntry(state, idx);
+
+        T& currentVal = SimTK::Value<T>::downcast(valWrapper).upd();
+        currentVal = value;
+        subsystem.markCacheValueRealized(state, idx);
+        return currentVal;
     }
+public:
 
     /**
      * Set cache variable value allocated by this Component by name. All cache
@@ -1607,28 +1604,24 @@ public:
     template<typename T>
     const T& setCacheVariableValue(const SimTK::State& state, const std::string& k, const T& value) const
     {
-        const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
-        const SimTK::CacheEntryIndex idx = this->getCacheVariableIndex(k);
-        SimTK::AbstractValue& valWrapper = subsystem.updCacheEntry(state, idx);
-
-        T& currentVal = SimTK::Value<T>::downcast(valWrapper).upd();
-        currentVal = value;
-        subsystem.markCacheValueRealized(state, idx);
-        return currentVal;
+        return setCacheVariableValueGeneric<T>(state, k, value);
     }
 
     template<typename T>
     const T& setCacheVariableValue(const SimTK::State& state, const CacheVariable<T>& k, const T& value) const
     {
+        return setCacheVariableValueGeneric<T>(state, k, value);
+    }
+
+private:
+    template<typename T, typename K>
+    T& updCacheVariableValueGeneric(const SimTK::State& state, const K& k) const {
         const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
         const SimTK::CacheEntryIndex idx = this->getCacheVariableIndex(k);
         SimTK::AbstractValue& valWrapper = subsystem.updCacheEntry(state, idx);
-
-        T& currentVal = SimTK::Value<T>::downcast(valWrapper).upd();
-        currentVal = value;
-        subsystem.markCacheValueRealized(state, idx);
-        return currentVal;
+        return SimTK::Value<T>::downcast(valWrapper).upd();
     }
+public:
 
     /**
      * Obtain a writable cache variable value allocated by this Component by
@@ -1645,19 +1638,13 @@ public:
     template<typename T>
     T& updCacheVariableValue(const SimTK::State& state, const std::string& k) const
     {
-        const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
-        const SimTK::CacheEntryIndex idx = this->getCacheVariableIndex(k);
-        SimTK::AbstractValue& valWrapper = subsystem.updCacheEntry(state, idx);
-        return SimTK::Value<T>::downcast(valWrapper).upd();
+        return updCacheVariableValueGeneric<T>(state, k);
     }
 
     template<typename T>
     T& updCacheVariableValue(const SimTK::State& state, const CacheVariable<T>& k) const
     {
-        const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
-        const SimTK::CacheEntryIndex idx = this->getCacheVariableIndex(k);
-        SimTK::AbstractValue& valWrapper = subsystem.updCacheEntry(state, idx);
-        return SimTK::Value<T>::downcast(valWrapper).upd();
+        return updCacheVariableValueGeneric<T>(state, k);
     }
 
     /**
@@ -1672,19 +1659,8 @@ public:
      * @throws ComponentHasNoSystem if this Component has not been added to a
      *         System (i.e., if initSystem has not been called)
      */
-    bool isCacheVariableValid(const SimTK::State& state, const std::string& k) const
-    {
-        const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
-        const SimTK::CacheEntryIndex idx = this->getCacheVariableIndex(k);
-        return subsystem.isCacheValueRealized(state, idx);
-    }
-
-    bool isCacheVariableValid(const SimTK::State& state, const CacheVariableDetails& k) const
-    {
-        const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
-        const SimTK::CacheEntryIndex idx = this->getCacheVariableIndex(k);
-        return subsystem.isCacheValueRealized(state, idx);
-    }
+    bool isCacheVariableValid(const SimTK::State& state, const std::string& k) const;
+    bool isCacheVariableValid(const SimTK::State& state, const CacheVariableDetails& k) const;
 
     /**
      * After updating a cache variable value allocated by this Component, you
@@ -1699,19 +1675,8 @@ public:
      * @throws ComponentHasNoSystem if this Component has not been added to a
      *         System (i.e., if initSystem has not been called)
      */
-    void markCacheVariableValid(const SimTK::State& state, const std::string& name) const
-    {
-        const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
-        const SimTK::CacheEntryIndex idx = this->getCacheVariableIndex(name);
-        subsystem.markCacheValueRealized(state, idx);
-    }
-
-    void markCacheVariableValid(const SimTK::State& state, const CacheVariableDetails& name) const
-    {
-        const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
-        const SimTK::CacheEntryIndex idx = this->getCacheVariableIndex(name);
-        subsystem.markCacheValueRealized(state, idx);
-    }
+    void markCacheVariableValid(const SimTK::State& state, const std::string& name) const;
+    void markCacheVariableValid(const SimTK::State& state, const CacheVariableDetails& name) const;
 
     /**
      * Mark a cache variable value allocated by this Component as invalid. When
@@ -1731,26 +1696,16 @@ public:
      * @throws ComponentHasNoSystem if this Component has not been added to a
      *         System (i.e., if initSystem has not been called)
      */
-    void markCacheVariableInvalid(const SimTK::State& state, const std::string& name) const
-    {
-        const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
-        const SimTK::CacheEntryIndex idx = this->getCacheVariableIndex(name);
-        subsystem.markCacheValueNotRealized(state, idx);
-    }
-
-    void markCacheVariableInvalid(const SimTK::State& state, const CacheVariableDetails& name) const
-    {
-        const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
-        const SimTK::CacheEntryIndex idx = this->getCacheVariableIndex(name);
-        subsystem.markCacheValueNotRealized(state, idx);
-    }
+    void markCacheVariableInvalid(const SimTK::State& state, const std::string& name) const;
+    void markCacheVariableInvalid(const SimTK::State& state, const CacheVariableDetails& name) const;
 
     /**
-     * Returns the value of a cache variable - after possibly applying an update to it.
+     * Returns the value of a cache valid variable - after possibly applying an update to make it valid.
      *
      * - `Updater` may be called with `T&`, which should mutate `T` to "update" it (e.g. apply a computation)
      * - The `Updater` function is only called if the cache variable is invalid (`isCacheVariableValid(state, cv) == false`).
-     * - This function is effectively sugar for a common update pattern in OpenSim:
+     *
+     * This function is sugar for this (common) update pattern:
      *
      *      if (isCacheVariableValid(state, cv)) {
      *          return getCacheVariableValue(state, cv);
@@ -1762,9 +1717,8 @@ public:
      *
      *      return v;
      *
-     *  One reason you should use this implementation, rather than just writing the above pattern, is
-     *  because this implementation can skip some of the internal steps that the separate function calls
-     *  cannot, so it *may* be faster.
+     *  The main reason to use this implementation, rather than just writing the above pattern, is because this
+     *  implementation *may* be able to skip some internal steps, so it *may* be faster.
      *
      * @tparam T
      *   Type of value held in the CacheVariable
@@ -1780,7 +1734,7 @@ public:
      *   The CacheVariable's value after possibly applying `updater` to it
      */
     template<class T, class Updater>
-    const T& applyUpdateIfInvalid(const SimTK::State& state, const CacheVariable<T> cv, Updater updater) {
+    const T& updateCacheVariableIfInvalid(const SimTK::State& state, const CacheVariable<T> cv, Updater updater) const {
         const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
         const SimTK::CacheEntryIndex idx = this->getCacheVariableIndex(cv);
 
