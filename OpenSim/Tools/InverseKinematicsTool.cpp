@@ -398,8 +398,6 @@ void InverseKinematicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int ve
                     setDocument(new XMLDocument(newFileName));
                     aNode = updDocument()->getRootDataElement();
                 }
-                else
-                ;   // Something wrong! bail out
             }
         }
     }

@@ -230,7 +230,6 @@ record(const SimTK::State& s)
     for(int i=0;i<_bodyIndices.getSize();i++) {
 
         const Body& body = bodySet.get(_bodyIndices[i]);
-        SimTK::Vec3 com = body.getMassCenter();
 
         // GET POSITIONS AND EULER ANGLES
         vec = body.getPositionInGround(s);

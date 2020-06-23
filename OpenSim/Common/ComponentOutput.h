@@ -104,7 +104,8 @@ public:
     AbstractOutput(const std::string& name, SimTK::Stage dependsOnStage,
                    bool isList) :
         name(name), dependsOnStage(dependsOnStage), _isList(isList) {}
-    virtual ~AbstractOutput() { }
+    AbstractOutput(const AbstractOutput& other) = default;
+    virtual ~AbstractOutput() = default;
 
     /** Output's name */
     const std::string& getName() const { return name; }

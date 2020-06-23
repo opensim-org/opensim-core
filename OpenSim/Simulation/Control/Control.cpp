@@ -246,14 +246,14 @@ getFilterOn() const
 
 // Convenience methods
 //_____________________________________________________________________________
-const double Control::getFirstTime() const
+double Control::getFirstTime() const
 {
     string msg = "Control.getFirstTime: This method must be overridden.";
     throw(Exception(msg,__FILE__,__LINE__));
     return 0;
 }
 //_____________________________________________________________________________
-const double Control::getLastTime() const
+double Control::getLastTime() const
 {
     string msg = "Control.getLastTime: This method must be overridden.";
     throw(Exception(msg,__FILE__,__LINE__));

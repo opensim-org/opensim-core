@@ -519,7 +519,7 @@ getHeaderToken() const
 //_____________________________________________________________________________
 // added a default Parameter for startIndex. -Ayman
 // TODO startIndex is being ignored.
-const int Storage::
+int Storage::
 getStateIndex(const std::string &aColumnName, int startIndex) const
 {
     int thisColumnIndex = -1;
