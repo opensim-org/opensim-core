@@ -327,6 +327,11 @@ bool ForwardTool::run()
     removeAnalysisSetFromModel();
     return completed;
 }
+
+void ForwardTool::printResults() {
+    log_warn("ForwardTool::printResults() does nothing; use "
+             "ForwardTool::setPrintResultFiles(true) before run().");
+}
 //=============================================================================
 // PRINT RESULTS. 
 // This method needs to be private since it shouldn't be called except from 

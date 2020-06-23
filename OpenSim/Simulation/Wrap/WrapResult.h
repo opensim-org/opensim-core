@@ -56,7 +56,11 @@ public:
     SimTK::Vec3 r2;              // wrap tangent point nearest to p2
     SimTK::Vec3 c1;              // intermediate point used by some wrap objects
     SimTK::Vec3 sv;              // intermediate point used by some wrap objects
-    double factor;             // scale factor used to normalize parameters
+    // TODO(chrisdembia): This member variable is not copied by the copy
+    // constructor or copy assignment operator, so I've initialized it to NaN
+    // so we can more easily detect any bugs caused by not copying this
+    // variable.
+    double factor = SimTK::NaN;  // scale factor used to normalize parameters
 
 //=============================================================================
 // METHODS
@@ -65,8 +69,13 @@ public:
     // CONSTRUCTION
     //--------------------------------------------------------------------------
 public:
-    WrapResult();
-    virtual ~WrapResult();
+    WrapResult() = default;
+    virtual ~WrapResult() = default;
+    WrapResult(const WrapResult& other);
+    WrapResult& operator=(const WrapResult& aWrapResult);
+
+private:
+    void copyData(const WrapResult& aWrapResult);
 
 //=============================================================================
 };  // END of class WrapResult
