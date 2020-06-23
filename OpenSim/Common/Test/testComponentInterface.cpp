@@ -2324,6 +2324,36 @@ void testCacheVariableInterface() {
     }
 
     // A fully-initialized CacheVariable<T> (as in, initialized by `Component::extendRealizeTopology`)
+    // should throw an exception for all the methods because it hasn't been initialized in Simbody.
+    {
+        ComponentThatExposesCacheVarMethods c{};
+        const std::string k = "name";
+        double v = 1337.0;
+        CacheVariable<double> cv = c.addCacheVariable("name", v, SimTK::Stage::Velocity);
+        c.finalizeFromProperties();
+
+        SimTK::State s;  // note: no initialization of the component
+
+        ASSERT_THROW(std::exception,
+        {
+            c.getCacheVariableIndex(k);
+            c.getCacheVariableIndex(cv);
+            c.getCacheVariableValue<double>(s, k);
+            c.getCacheVariableValue(s, cv);
+            c.setCacheVariableValue<double>(s, k, v);
+            c.setCacheVariableValue(s, k, cv);
+            c.updCacheVariableValue<double>(s, k);
+            c.updCacheVariableValue(s, cv);
+            c.isCacheVariableValid(s, k);
+            c.isCacheVariableValid(s, cv);
+            c.markCacheVariableValid(s, k);
+            c.markCacheVariableValid(s, cv);
+            c.markCacheVariableInvalid(s, k);
+            c.markCacheVariableInvalid(s, cv);
+        });
+    }
+
+    // A fully-initialized CacheVariable<T> (as in, initialized by `Component::extendRealizeTopology`)
     // should allow all cache-variable related methods to be called without throwing an exception.
     {
         ComponentThatExposesCacheVarMethods c{};
