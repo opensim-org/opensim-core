@@ -315,13 +315,13 @@ set(PYTHON_EXAMPLES_UNITTEST_ARGS
 if(OPENSIM_WITH_CASADI)
     list(APPEND PYTHON_EXAMPLES_UNITTEST_ARGS
             Moco.exampleKinematicConstraints
-            Moco.examplePredictAndTrack
             Moco.exampleSlidingMass
             )
 endif()
 if(OPENSIM_WITH_TROPTER)
     list(APPEND PYTHON_EXAMPLES_UNITTEST_ARGS
             Moco.exampleOptimizeMass
+            Moco.examplePredictAndTrack
             )
 endif()
 # Similar as above, but for the example files. These files aren't named as

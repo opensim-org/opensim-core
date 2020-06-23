@@ -138,7 +138,7 @@ def solvePrediction():
 
 
     # Configure the solver.
-    solver = study.initCasADiSolver()
+    solver = study.initTropterSolver()
     solver.set_num_mesh_intervals(100)
     solver.set_verbosity(2)
     solver.set_optim_solver("ipopt")
@@ -159,11 +159,11 @@ def solvePrediction():
     study.printToXML("examplePredictAndTrack_predict.omoco")
 
     # Solve the problem.
-    solution = study.solve();
-    solution.write("examplePredictAndTrack_predict_solution.sto");
+    solution = study.solve()
+    solution.write("examplePredictAndTrack_predict_solution.sto")
 
     if visualize:
-        study.visualize(solution);
+        study.visualize(solution)
     return solution
     
 
@@ -232,7 +232,7 @@ def solveStateTracking(stateRef):
     # TODO problem.addGoal(effort)
 
     # Configure the solver.
-    solver = study.initCasADiSolver()
+    solver = study.initTropterSolver()
     solver.set_num_mesh_intervals(50)
     solver.set_verbosity(2)
     solver.set_optim_solver("ipopt")
@@ -287,7 +287,7 @@ def solveMarkerTracking(markersRef, guess):
     # problem.addGoal(effort)
 
     # Configure the solver.
-    solver = study.initCasADiSolver()
+    solver = study.initTropterSolver()
     solver.set_num_mesh_intervals(50)
     solver.set_verbosity(2)
     solver.set_optim_solver("ipopt")
