@@ -32,11 +32,11 @@ MocoAddTest(NAME testMocoGoals)
 
 MocoAddTest(NAME testMocoParameters)
 
-MocoAddTest(NAME testImplicit)
+MocoAddTest(NAME testMocoImplicit)
 
 MocoAddTest(NAME testMocoConstraints)
 
-MocoAddTest(NAME testContact)
+MocoAddTest(NAME testMocoContact)
 
 MocoAddTest(NAME testMocoActuators)
 

@@ -17,8 +17,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-// TODO add 3D tests (contact models are currently only 2D).
-
 #define CATCH_CONFIG_MAIN
 #include "Testing.h"
 #include <OpenSim/Moco/osimMoco.h>
@@ -523,26 +521,34 @@ MeyerFregly2016Force* createMeyerFregly() {
     return contact;
 }
 
+#ifdef OPENSIM_WITH_TROPTER
 TEST_CASE("testStationPlaneContactForce AckermannVanDenBogert2010Force") {
     testStationPlaneContactForce(createAVDB);
 }
+#endif
 
+#ifdef OPENSIM_WITH_TROPTER
 TEST_CASE("testStationPlaneContactForce EspositoMiller2018Force") {
     testStationPlaneContactForce(createEspositoMiller);
 }
+#endif
 
 // TODO does not pass:
+// #ifdef OPENSIM_WITH_TROPTER
 // TEST_CASE("testStationPlaneContactForce MeyerFregly2016Force") {
 //     testStationPlaneContactForce(createMeyerFregly);
 // }
+// # endif
 
+#ifdef OPENSIM_WITH_CASADI
 TEST_CASE("testSmoothSphereHalfSpaceForce") {
     const SimTK::Real equilibriumHeight =
         testSmoothSphereHalfSpaceForce_NormalForce();
     testSmoothSphereHalfSpaceForce_FrictionForce(equilibriumHeight);
 }
+#endif
 
-
+#ifdef OPENSIM_WITH_CASADI
 TEST_CASE("MocoContactTrackingGoal") {
 
     // We drop a ball from a prescribed initial height, record the contact
@@ -634,3 +640,4 @@ TEST_CASE("MocoContactTrackingGoal") {
             externalLoadsTimeStepping, "ground_force_r_vy",
             0.5);
 }
+#endif

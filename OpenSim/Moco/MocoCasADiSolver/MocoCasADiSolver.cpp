@@ -19,16 +19,19 @@
 #include "MocoCasADiSolver.h"
 
 #include "../MocoUtilities.h"
-#include "CasOCSolver.h"
-#include "MocoCasOCProblem.h"
-#include <casadi/casadi.hpp>
 
-using casadi::Callback;
-using casadi::Dict;
-using casadi::DM;
-using casadi::MX;
-using casadi::Slice;
-using casadi::Sparsity;
+#ifdef OPENSIM_WITH_CASADI
+    #include "CasOCSolver.h"
+    #include "MocoCasOCProblem.h"
+    #include <casadi/casadi.hpp>
+
+    using casadi::Callback;
+    using casadi::Dict;
+    using casadi::DM;
+    using casadi::MX;
+    using casadi::Slice;
+    using casadi::Sparsity;
+#endif
 
 using namespace OpenSim;
 
@@ -49,6 +52,7 @@ void MocoCasADiSolver::constructProperties() {
 }
 
 MocoTrajectory MocoCasADiSolver::createGuess(const std::string& type) const {
+#ifdef OPENSIM_WITH_CASADI
     OPENSIM_THROW_IF_FRMOBJ(
             type != "bounds" && type != "random" && type != "time-stepping",
             Exception,
@@ -70,6 +74,9 @@ MocoTrajectory MocoCasADiSolver::createGuess(const std::string& type) const {
     } else {
         OPENSIM_THROW(Exception, "Internal error.");
     }
+#else
+    OPENSIM_THROW(MocoCasADiSolverNotAvailable);
+#endif
 }
 
 void MocoCasADiSolver::setGuess(MocoTrajectory guess) {
@@ -125,6 +132,7 @@ const MocoTrajectory& MocoCasADiSolver::getGuess() const {
 }
 
 std::unique_ptr<MocoCasOCProblem> MocoCasADiSolver::createCasOCProblem() const {
+#ifdef OPENSIM_WITH_CASADI
     const auto& problemRep = getProblemRep();
     int parallel = 1;
     int parallelEV = getMocoParallelEnvironmentVariable();
@@ -156,10 +164,14 @@ std::unique_ptr<MocoCasOCProblem> MocoCasADiSolver::createCasOCProblem() const {
             Exception, "Quaternions are not supported.");
     return OpenSim::make_unique<MocoCasOCProblem>(*this, problemRep,
             createProblemRepJar(numThreads), get_multibody_dynamics_mode());
+#else
+    OPENSIM_THROW(MocoCasADiSolverNotAvailable);
+#endif
 }
 
 std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
         const MocoCasOCProblem& casProblem) const {
+#ifdef OPENSIM_WITH_CASADI
     auto casSolver = OpenSim::make_unique<CasOC::Solver>(casProblem);
 
     // Set solver options.
@@ -307,9 +319,13 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     casSolver->setPluginOptions(pluginOptions);
     casSolver->setSolverOptions(solverOptions);
     return casSolver;
+#else
+    OPENSIM_THROW(MocoCasADiSolverNotAvailable);
+#endif
 }
 
 MocoSolution MocoCasADiSolver::solveImpl() const {
+#ifdef OPENSIM_WITH_CASADI
     const Stopwatch stopwatch;
 
     if (get_verbosity()) {
@@ -412,4 +428,7 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
         log_info(std::string(72, '='));
     }
     return mocoSolution;
+#else
+    OPENSIM_THROW(MocoCasADiSolverNotAvailable);
+#endif
 }

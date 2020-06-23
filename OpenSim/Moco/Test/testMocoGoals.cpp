@@ -51,7 +51,7 @@ std::unique_ptr<Model> createSlidingMassModel() {
 
 /// Test the result of a sliding mass minimum effort problem.
 TEMPLATE_TEST_CASE(
-        "Test MocoControlGoal", "", MocoTropterSolver, MocoCasADiSolver) {
+        "Test MocoControlGoal", "", OPENSIM_TEST_CASADI_TROPTER) {
     const int N = 9;          // mesh intervals
     const int Nc = 2 * N + 1; // collocation points (Hermite-Simpson)
     MocoSolution sol1;
@@ -255,8 +255,7 @@ void testDoublePendulumTracking(MocoStudy study,
             solutionTracking.getStatesTrajectory(), 1e-1);
 }
 
-TEMPLATE_TEST_CASE("Test tracking goals", "", MocoTropterSolver,
-        MocoCasADiSolver) {
+TEMPLATE_TEST_CASE("Test tracking goals", "", OPENSIM_TEST_CASADI_TROPTER) {
 
     // Start with double pendulum problem to minimize control effort to create
     // a controls trajectory to track.
@@ -362,7 +361,7 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoTropterSolver,
 }
 
 TEMPLATE_TEST_CASE(
-        "Test MocoJointReactionGoal", "", MocoTropterSolver, MocoCasADiSolver) {
+        "Test MocoJointReactionGoal", "", OPENSIM_TEST_CASADI_TROPTER) {
 
     using SimTK::Inertia;
     using SimTK::Vec3;
@@ -494,6 +493,7 @@ public:
     }
 };
 
+#ifdef OPENSIM_WITH_CASADI
 TEMPLATE_TEST_CASE("Endpoint constraints", "", MocoCasADiSolver) {
     // TODO test with Tropter.
 
@@ -547,7 +547,9 @@ TEMPLATE_TEST_CASE("Endpoint constraints", "", MocoCasADiSolver) {
                 Approx(0).margin(1e-6));
     }
 }
+#endif
 
+#ifdef OPENSIM_WITH_CASADI
 TEMPLATE_TEST_CASE("MocoPeriodicityGoal", "", MocoCasADiSolver) {
 
     MocoStudy study;
@@ -597,6 +599,7 @@ TEMPLATE_TEST_CASE("MocoPeriodicityGoal", "", MocoCasADiSolver) {
                 Approx(solution.getControl("/tau0")[0]).margin(1e-6));
     }
 }
+#endif
 
 class MocoControlGoalWithEndpointConstraint : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(
@@ -622,7 +625,9 @@ public:
     }
 };
 
-TEMPLATE_TEST_CASE("Endpoint constraint with integral", "", MocoCasADiSolver) {
+#ifdef OPENSIM_WITH_CASADI
+TEMPLATE_TEST_CASE(
+        "Endpoint constraint with integral", "", MocoCasADiSolver) {
 
     Model model;
     const double mass = 1.3169;
@@ -648,7 +653,7 @@ TEMPLATE_TEST_CASE("Endpoint constraint with integral", "", MocoCasADiSolver) {
     auto* goal = problem.addGoal<MocoControlGoalWithEndpointConstraint>();
     goal->setMode("endpoint_constraint");
 
-    auto& solver = study.initCasADiSolver();
+    auto& solver = study.initSolver<TestType>();
     solver.set_num_mesh_intervals(5);
     auto guess = solver.createGuess();
     guess.randomizeReplace();
@@ -660,6 +665,7 @@ TEMPLATE_TEST_CASE("Endpoint constraint with integral", "", MocoCasADiSolver) {
     // over the motion must be 0.
     CHECK(solution.getControlsTrajectory().norm() < 1e-3);
 }
+#endif
 
 class MySumSquaredControls : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT(MySumSquaredControls, ModelComponent);
@@ -671,7 +677,7 @@ public:
         return getModel().getControls(state).normSqr();
     }
 };
-TEST_CASE("MocoOutputGoal") {
+TEMPLATE_TEST_CASE("MocoOutputGoal", "", OPENSIM_TEST_CASADI_TROPTER) {
     auto createStudy = []() {
         MocoStudy study;
         study.setName("sliding_mass");
@@ -688,8 +694,8 @@ TEST_CASE("MocoOutputGoal") {
     {
         auto study = createStudy();
         auto& problem = study.updProblem();
-        problem.addGoal<MocoControlGoal>();
-        auto& solver = study.initCasADiSolver();
+        problem.template addGoal<MocoControlGoal>();
+        auto& solver = study.template initSolver<TestType>();
         solver.set_num_mesh_intervals(10);
         solutionControl = study.solve();
     }
@@ -704,10 +710,10 @@ TEST_CASE("MocoOutputGoal") {
         model->addComponent(component);
         problem.setModel(std::move(model));
 
-        auto* goal = problem.addGoal<MocoOutputGoal>();
+        auto* goal = problem.template addGoal<MocoOutputGoal>();
         goal->setOutputPath("/mysumsquaredcontrols|sum_squared_controls");
 
-        auto& solver = study.initCasADiSolver();
+        auto& solver = study.template initSolver<TestType>();
         solver.set_num_mesh_intervals(10);
         solutionOutput = study.solve();
     }

@@ -20,8 +20,8 @@
 #include "MocoProblemRep.h"
 #include "MocoUtilities.h"
 
-#ifdef MOCO_WITH_TROPTER
-#    include "tropter/TropterProblem.h"
+#ifdef OPENSIM_WITH_TROPTER
+    #include "tropter/TropterProblem.h"
 #endif
 
 using namespace OpenSim;
@@ -36,7 +36,7 @@ void MocoTropterSolver::constructProperties() {
 
 std::shared_ptr<const MocoTropterSolver::TropterProblemBase<double>>
 MocoTropterSolver::createTropterProblem() const {
-#ifdef MOCO_WITH_TROPTER
+#ifdef OPENSIM_WITH_TROPTER
     checkPropertyInSet(
             *this, getProperty_multibody_dynamics_mode(),
             {"explicit", "implicit"});
@@ -55,7 +55,7 @@ std::unique_ptr<tropter::DirectCollocationSolver<double>>
 MocoTropterSolver::createTropterSolver(
         std::shared_ptr<const MocoTropterSolver::TropterProblemBase<double>>
                 ocp) const {
-#ifdef MOCO_WITH_TROPTER
+#ifdef OPENSIM_WITH_TROPTER
     // Check that a non-negative number of mesh points was provided.
     checkPropertyInRangeOrSet(*this, getProperty_num_mesh_intervals(), 0,
             std::numeric_limits<int>::max(), {});
@@ -210,7 +210,7 @@ MocoTropterSolver::createTropterSolver(
 }
 
 MocoTrajectory MocoTropterSolver::createGuess(const std::string& type) const {
-#ifdef MOCO_WITH_TROPTER
+#ifdef OPENSIM_WITH_TROPTER
     OPENSIM_THROW_IF_FRMOBJ(
             type != "bounds" && type != "random" && type != "time-stepping",
             Exception,
@@ -293,7 +293,7 @@ const MocoTrajectory& MocoTropterSolver::getGuess() const {
 }
 
 void MocoTropterSolver::printOptimizationSolverOptions(std::string solver) {
-#ifdef MOCO_WITH_TROPTER
+#ifdef OPENSIM_WITH_TROPTER
     if (solver == "ipopt") {
         tropter::optimization::IPOPTSolver::print_available_options();
     } else {
@@ -305,7 +305,7 @@ void MocoTropterSolver::printOptimizationSolverOptions(std::string solver) {
 }
 
 MocoSolution MocoTropterSolver::solveImpl() const {
-#ifdef MOCO_WITH_TROPTER
+#ifdef OPENSIM_WITH_TROPTER
     const Stopwatch stopwatch;
 
     OPENSIM_THROW_IF_FRMOBJ(getProblemRep().isPrescribedKinematics(), Exception,

@@ -83,7 +83,7 @@ MocoStudy createSlidingMassMocoStudy() {
 }
 
 TEMPLATE_TEST_CASE(
-        "Non-uniform mesh", "", MocoTropterSolver, MocoCasADiSolver) {
+        "Non-uniform mesh", "", OPENSIM_TEST_CASADI_TROPTER) {
     auto transcriptionScheme =
             GENERATE(as<std::string>{}, "trapezoidal", "hermite-simpson");
     MocoStudy study;
@@ -207,7 +207,7 @@ std::unique_ptr<Model> createPendulumModel() {
     return model;
 }
 
-TEMPLATE_TEST_CASE("Solver options", "", MocoTropterSolver, MocoCasADiSolver) {
+TEMPLATE_TEST_CASE("Solver options", "", OPENSIM_TEST_CASADI_TROPTER) {
     MocoStudy study = createSlidingMassMocoStudy<TestType>();
     auto& ms = study.initSolver<TestType>();
     MocoSolution solDefault = study.solve();
@@ -426,7 +426,7 @@ TEST_CASE("Building a problem", "") {
     }
 }
 
-TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
+TEMPLATE_TEST_CASE("Workflow", "", OPENSIM_TEST_CASADI_TROPTER) {
 
     // Default bounds.
     SECTION("Default bounds") {
@@ -736,8 +736,8 @@ TEMPLATE_TEST_CASE("Workflow", "", MocoTropterSolver, MocoCasADiSolver) {
     //     }
     // }
 }
-TEMPLATE_TEST_CASE("Set infos with regular expression", "", MocoCasADiSolver,
-        MocoTropterSolver) {
+TEMPLATE_TEST_CASE("Set infos with regular expression", "",
+        OPENSIM_TEST_CASADI_TROPTER) {
     MocoStudy study;
     MocoProblem& problem = study.updProblem();
     problem.setModelCopy(OpenSim::ModelFactory::createDoublePendulum());
@@ -782,7 +782,7 @@ TEMPLATE_TEST_CASE("Set infos with regular expression", "", MocoCasADiSolver,
             4);
 }
 TEMPLATE_TEST_CASE(
-        "Disable Actuators", "", MocoCasADiSolver, MocoTropterSolver) {
+        "Disable Actuators", "", OPENSIM_TEST_CASADI_TROPTER) {
 
     MocoSolution solution;
     MocoSolution solution2;
@@ -845,7 +845,7 @@ TEMPLATE_TEST_CASE(
     CHECK(solution2.getObjective() != Approx(solution.getObjective()));
 }
 
-TEMPLATE_TEST_CASE("State tracking", "", MocoTropterSolver, MocoCasADiSolver) {
+TEMPLATE_TEST_CASE("State tracking", "", OPENSIM_TEST_CASADI_TROPTER) {
     // TODO move to another test file?
     auto makeTool = []() {
         MocoStudy study;
@@ -924,7 +924,7 @@ TEMPLATE_TEST_CASE("State tracking", "", MocoTropterSolver, MocoCasADiSolver) {
     // TODO error if data does not cover time window.
 }
 
-TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
+TEMPLATE_TEST_CASE("Guess", "", OPENSIM_TEST_CASADI_TROPTER) {
 
     MocoStudy study = createSlidingMassMocoStudy<TestType>();
     auto& ms = study.initSolver<TestType>();
@@ -1235,6 +1235,7 @@ TEMPLATE_TEST_CASE("Guess", "", MocoTropterSolver, MocoCasADiSolver) {
     // after they get the mutable reference.
 }
 
+#ifdef OPENSIM_WITH_TROPTER
 TEMPLATE_TEST_CASE(
         "Guess time-stepping", "", MocoTropterSolver /*, MocoCasADiSolver*/) {
     // This problem is just a simulation (there are no costs), and so the
@@ -1300,6 +1301,7 @@ TEMPLATE_TEST_CASE(
         SimTK_TEST(guess.getTime()[guess.getNumTimes() - 1] == 6);
     }
 }
+#endif
 
 TEST_CASE("MocoTrajectory") {
     // Reading and writing.
@@ -1698,7 +1700,7 @@ TEST_CASE("Interpolate", "") {
     SimTK_TEST(SimTK::isNaN(newY[3]));
 }
 
-TEMPLATE_TEST_CASE("Sliding mass", "", MocoTropterSolver, MocoCasADiSolver) {
+TEMPLATE_TEST_CASE("Sliding mass", "", OPENSIM_TEST_CASADI_TROPTER) {
     MocoStudy study = createSlidingMassMocoStudy<TestType>();
     MocoSolution solution = study.solve();
     int numTimes = 20;
@@ -1741,8 +1743,8 @@ TEMPLATE_TEST_CASE("Sliding mass", "", MocoTropterSolver, MocoCasADiSolver) {
     }
 }
 
-TEMPLATE_TEST_CASE("Solving an empty MocoProblem", "", MocoTropterSolver,
-        MocoCasADiSolver) {
+TEMPLATE_TEST_CASE("Solving an empty MocoProblem", "",
+        OPENSIM_TEST_CASADI_TROPTER) {
     MocoStudy study;
     auto& solver = study.initSolver<TestType>();
     THEN("problem solves without error, solution trajectories are empty.") {
@@ -1842,19 +1844,23 @@ void testSkippingOverQuaternionSlots(
 
 TEST_CASE("Skip over empty quaternion slots", "") {
 
+#ifdef OPENSIM_WITH_TROPTER
     testSkippingOverQuaternionSlots<MocoTropterSolver>(
             false, false, "explicit");
     testSkippingOverQuaternionSlots<MocoTropterSolver>(true, false, "explicit");
     testSkippingOverQuaternionSlots<MocoTropterSolver>(true, true, "explicit");
     testSkippingOverQuaternionSlots<MocoTropterSolver>(
             false, false, "implicit");
+#endif
 
+#ifdef OPENSIM_WITH_CASADI
     testSkippingOverQuaternionSlots<MocoCasADiSolver>(false, false, "explicit");
     testSkippingOverQuaternionSlots<MocoCasADiSolver>(true, false, "explicit");
     testSkippingOverQuaternionSlots<MocoCasADiSolver>(true, true, "explicit");
     testSkippingOverQuaternionSlots<MocoCasADiSolver>(false, false, "implicit");
     testSkippingOverQuaternionSlots<MocoCasADiSolver>(true, false, "implicit");
     testSkippingOverQuaternionSlots<MocoCasADiSolver>(true, true, "implicit");
+#endif
 }
 
 TEST_CASE("MocoPhase::bound_activation_from_excitation") {
@@ -1991,7 +1997,7 @@ TEST_CASE("Objective breakdown") {
 
 /*
 TEMPLATE_TEST_CASE("Controllers in the model", "",
-        MocoCasADiSolver, MocoTropterSolver) {
+        OPENSIM_TEST_CASADI_TROPTER) {
     MocoStudy study;
     auto& problem = study.updProblem();
     auto model = createSlidingMassModel();

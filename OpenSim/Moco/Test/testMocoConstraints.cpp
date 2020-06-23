@@ -840,7 +840,7 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
 }
 
 TEMPLATE_TEST_CASE("DoublePendulum with and without constraint derivatives",
-        "[explicit]", MocoTropterSolver, MocoCasADiSolver) {
+        "[explicit]", OPENSIM_TEST_CASADI_TROPTER) {
     SECTION("DoublePendulum without constraint derivatives") {
         MocoSolution couplerSol;
         testDoublePendulumCoordinateCoupler<TestType>(
@@ -858,6 +858,7 @@ TEMPLATE_TEST_CASE("DoublePendulum with and without constraint derivatives",
     }
 }
 
+#ifdef OPENSIM_WITH_CASADI
 TEST_CASE("DoublePendulum with and without constraint derivatives",
         "[implicit]") {
     SECTION("DoublePendulum without constraint derivatives") {
@@ -876,26 +877,31 @@ TEST_CASE("DoublePendulum with and without constraint derivatives",
                 couplerSol, true, "implicit");
     }
 }
+#endif
 
 TEMPLATE_TEST_CASE("DoublePendulumPointOnLine without constraint derivatives",
-        "[explicit]", MocoTropterSolver, MocoCasADiSolver) {
+        "[explicit]", OPENSIM_TEST_CASADI_TROPTER) {
     testDoublePendulumPointOnLine<TestType>(false, "explicit");
 }
 
 TEMPLATE_TEST_CASE("DoublePendulumPointOnLine with constraint derivatives",
-        "[explicit]", MocoTropterSolver, MocoCasADiSolver) {
+        "[explicit]", OPENSIM_TEST_CASADI_TROPTER) {
     testDoublePendulumPointOnLine<TestType>(true, "explicit");
 }
 
+#ifdef OPENSIM_WITH_CASADI
 TEST_CASE("DoublePendulumPointOnLine without constraint derivatives",
         "[implicit]") {
     testDoublePendulumPointOnLine<MocoCasADiSolver>(false, "implicit");
 }
+#endif
 
+#ifdef OPENSIM_WITH_CASADI
 TEST_CASE(
         "DoublePendulumPointOnLine with constraint derivatives", "[implicit]") {
     testDoublePendulumPointOnLine<MocoCasADiSolver>(true, "implicit");
 }
+#endif
 
 class EqualControlConstraint : public MocoPathConstraint {
     OpenSim_DECLARE_CONCRETE_OBJECT(EqualControlConstraint, MocoPathConstraint);
@@ -928,7 +934,7 @@ protected:
 /// specified final configuration while subject to a constraint that its
 /// actuators must produce an equal control trajectory.
 TEMPLATE_TEST_CASE(
-        "DoublePendulumEqualControl", "", MocoTropterSolver, MocoCasADiSolver) {
+        "DoublePendulumEqualControl", "", OPENSIM_TEST_CASADI_TROPTER) {
     OpenSim::Object::registerType(EqualControlConstraint());
     MocoStudy study;
     study.setName("double_pendulum_equal_control");
@@ -993,6 +999,7 @@ TEMPLATE_TEST_CASE(
 // solving for the mass that allows the point mass to obey the constraint
 // of staying in place. This checks that the parameters are applied to both
 // ModelBase and ModelDisabledConstraints.
+#ifdef OPENSIM_WITH_TROPTER
 TEMPLATE_TEST_CASE(
         "Parameters are set properly for Base and DisabledConstraints", "",
         MocoTropterSolver /*, too damn slow: MocoCasADiSolver*/) {
@@ -1018,6 +1025,7 @@ TEMPLATE_TEST_CASE(
     MocoSolution solution = study.solve();
     CHECK(solution.getParameter("mass") == Approx(1.0).epsilon(1e-3));
 }
+#endif
 
 class MocoJointReactionComponentGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoJointReactionComponentGoal, MocoGoal);
@@ -1106,15 +1114,17 @@ void testDoublePendulumJointReactionGoal(std::string dynamics_mode) {
 
 TEMPLATE_TEST_CASE(
         "DoublePendulumPointJointReactionGoal with constraint derivatives",
-        "[explicit]", MocoTropterSolver, MocoCasADiSolver) {
+        "[explicit]", OPENSIM_TEST_CASADI_TROPTER) {
     testDoublePendulumJointReactionGoal<TestType>("explicit");
 }
 
+#ifdef OPENSIM_WITH_CASADI
 TEMPLATE_TEST_CASE("DoublePendulumJointReactionGoal implicit with "
                    "constraint derivatives",
         "[implicit]", MocoCasADiSolver) {
     testDoublePendulumJointReactionGoal<TestType>("implicit");
 }
+#endif
 
 struct AccelerationsAndJointReaction {
     SimTK::Vector udot;
@@ -1155,6 +1165,7 @@ private:
 // separate multipliers. When using implicit dynamics, we provide separate
 // accelerations. This test ensures that these accelerations and multipliers are
 // those that Moco specified, not what Simbody computes.
+#ifdef OPENSIM_WITH_CASADI
 TEST_CASE("Goals use Moco-defined accelerations and multipliers") {
     MocoStudy study;
     study.setName("mass_welded");
@@ -1308,8 +1319,9 @@ TEST_CASE("Goals use Moco-defined accelerations and multipliers") {
     CHECK(Ry == Approx(testData->reaction[1][1]));
     CHECK(Rz == Approx(testData->reaction[1][2]));
 }
+#endif
 
-
+#ifdef OPENSIM_WITH_CASADI
 TEST_CASE("Multipliers are correct", "") {
     SECTION("Body welded to ground") {
         auto dynamics_mode =
@@ -1410,10 +1422,12 @@ TEST_CASE("Multipliers are correct", "") {
         OpenSim_CHECK_MATRIX_TOL(lambda, 0.5 * (Fx - Fy), 1e-5);
     }
 }
+#endif
 
 // Ensure that we correctly handle the combination of prescribed kinematics
 // (PositionMotion) and kinematic constraints. This test is similar to the one
 // above except that we prescribe motions for tx and ty.
+#ifdef OPENSIM_WITH_CASADI
 TEST_CASE("Prescribed kinematics with kinematic constraints", "") {
     Model model = ModelFactory::createPlanarPointMass();
     model.set_gravity(Vec3(0));
@@ -1454,9 +1468,10 @@ TEST_CASE("Prescribed kinematics with kinematic constraints", "") {
 
     OpenSim_CHECK_MATRIX_TOL(lambda, 0.5 * (Fx - Fy), 1e-5);
 }
+#endif
 
 TEMPLATE_TEST_CASE(
-        "MocoControlBoundConstraint", "", MocoTropterSolver, MocoCasADiSolver) {
+        "MocoControlBoundConstraint", "", OPENSIM_TEST_CASADI_TROPTER) {
     SECTION("Lower bound only") {
         MocoStudy study;
         auto& problem = study.updProblem();
@@ -1587,8 +1602,8 @@ TEMPLATE_TEST_CASE(
     }
 }
 
-TEMPLATE_TEST_CASE("MocoFrameDistanceConstraint", "", MocoTropterSolver, 
-        MocoCasADiSolver) {
+TEMPLATE_TEST_CASE("MocoFrameDistanceConstraint", "",
+        OPENSIM_TEST_CASADI_TROPTER) {
     using SimTK::Pi;
 
     // Create a 3D pendulum model with a single body and a marker at the 

@@ -54,8 +54,8 @@ SimTK::Matrix expectedSolution(const SimTK::Vector& time) {
     return expectedStatesTrajectory;
 }
 
-TEMPLATE_TEST_CASE("Second order linear min effort", "", MocoTropterSolver,
-        MocoCasADiSolver) {
+TEMPLATE_TEST_CASE("Second order linear min effort", "",
+        OPENSIM_TEST_CASADI_TROPTER) {
     // Kirk 1998, Example 5.1-1, page 198.
 
     Model model;

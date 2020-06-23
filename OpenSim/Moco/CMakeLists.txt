@@ -92,21 +92,6 @@ set(MOCO_SOURCES
         Components/MultivariatePolynomialFunction.h
         MocoCasADiSolver/MocoCasADiSolver.h
         MocoCasADiSolver/MocoCasADiSolver.cpp
-        MocoCasADiSolver/MocoCasOCProblem.h
-        MocoCasADiSolver/MocoCasOCProblem.cpp
-        MocoCasADiSolver/CasOCProblem.h
-        MocoCasADiSolver/CasOCProblem.cpp
-        MocoCasADiSolver/CasOCSolver.h
-        MocoCasADiSolver/CasOCSolver.cpp
-        MocoCasADiSolver/CasOCFunction.h
-        MocoCasADiSolver/CasOCFunction.cpp
-        MocoCasADiSolver/CasOCTranscription.h
-        MocoCasADiSolver/CasOCTranscription.cpp
-        MocoCasADiSolver/CasOCTrapezoidal.h
-        MocoCasADiSolver/CasOCTrapezoidal.cpp
-        MocoCasADiSolver/CasOCHermiteSimpson.h
-        MocoCasADiSolver/CasOCHermiteSimpson.cpp
-        MocoCasADiSolver/CasOCIterate.h
         MocoInverse.cpp
         MocoInverse.h
         MocoTrack.h
@@ -121,16 +106,37 @@ set(MOCO_SOURCES
         MocoStudyFactory.h
         MocoStudyFactory.cpp
         )
-if (MOCO_WITH_TROPTER)
+if(OPENSIM_WITH_CASADI)
+    list(APPEND MOCO_SOURCES
+            MocoCasADiSolver/CasOCProblem.h
+            MocoCasADiSolver/CasOCProblem.cpp
+            MocoCasADiSolver/CasOCSolver.h
+            MocoCasADiSolver/CasOCSolver.cpp
+            MocoCasADiSolver/CasOCFunction.h
+            MocoCasADiSolver/CasOCFunction.cpp
+            MocoCasADiSolver/CasOCTranscription.h
+            MocoCasADiSolver/CasOCTranscription.cpp
+            MocoCasADiSolver/CasOCTrapezoidal.h
+            MocoCasADiSolver/CasOCTrapezoidal.cpp
+            MocoCasADiSolver/CasOCHermiteSimpson.h
+            MocoCasADiSolver/CasOCHermiteSimpson.cpp
+            MocoCasADiSolver/CasOCIterate.h
+            MocoCasADiSolver/MocoCasOCProblem.h
+            MocoCasADiSolver/MocoCasOCProblem.cpp
+            )
+endif()
+if(OPENSIM_WITH_TROPTER)
     list(APPEND MOCO_SOURCES
             tropter/TropterProblem.h
             tropter/TropterProblem.cpp
             )
 endif ()
 add_library(osimMoco SHARED ${MOCO_SOURCES})
-target_link_libraries(osimMoco PUBLIC osimTools
-        PRIVATE casadi)
-if (MOCO_WITH_TROPTER)
+target_link_libraries(osimMoco PUBLIC osimTools)
+if (OPENSIM_WITH_CASADI)
+    target_link_libraries(osimMoco PRIVATE casadi)
+endif()
+if (OPENSIM_WITH_TROPTER)
     target_link_libraries(osimMoco PRIVATE tropter)
 endif ()
 
@@ -141,10 +147,13 @@ target_include_directories(osimMoco INTERFACE
 set_target_properties(osimMoco PROPERTIES
         DEFINE_SYMBOL OSIMMOCO_EXPORTS
         PROJECT_LABEL "Library - osimMoco"
-        FOLDER "Moco"
+        FOLDER "Libraries"
         )
-if (MOCO_WITH_TROPTER)
-    target_compile_definitions(osimMoco PUBLIC MOCO_WITH_TROPTER)
+if (OPENSIM_WITH_CASADI)
+    target_compile_definitions(osimMoco PUBLIC OPENSIM_WITH_CASADI)
+endif ()
+if (OPENSIM_WITH_TROPTER)
+    target_compile_definitions(osimMoco PUBLIC OPENSIM_WITH_TROPTER)
 endif ()
 # TODO: Remove the concept of a separate Moco version.
 target_compile_definitions(osimMoco PRIVATE

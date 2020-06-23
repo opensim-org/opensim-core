@@ -62,6 +62,7 @@ TEST_CASE("PrescribedKinematics prescribe() and realize()") {
     CHECK(ydot[1] == Approx(2 * c2));
 }
 
+#ifdef OPENSIM_WITH_CASADI
 TEST_CASE("PrescribedKinematics direct collocation auxiliary dynamics") {
 
     // Make sure that custom dynamics are still handled properly even when
@@ -114,7 +115,9 @@ TEST_CASE("PrescribedKinematics direct collocation auxiliary dynamics") {
     OpenSim_CHECK_MATRIX_TOL(solution.getState("/customdynamics/s"),
             0.2 * SimTK::exp(solution.getTime()), 1e-4);
 }
+#endif
 
+#ifdef OPENSIM_WITH_CASADI
 TEST_CASE("MocoInverse Rajagopal2016, 18 muscles") {
 
     MocoInverse inverse;
@@ -145,3 +148,4 @@ TEST_CASE("MocoInverse Rajagopal2016, 18 muscles") {
             {{"controls", {}}}) < 1e-2);
     CHECK(std.compareContinuousVariablesRMS(solution, {{"states", {}}}) < 1e-2);
 }
+#endif
