@@ -14,7 +14,14 @@ function(MocoAddTest)
     target_link_libraries(${MOCOTEST_NAME} osimMoco ${MOCOTEST_LIB_DEPENDS})
     target_include_directories(${MOCOTEST_NAME}
             PRIVATE "${CMAKE_SOURCE_DIR}/tropter/external/catch")
-    add_test(NAME ${MOCOTEST_NAME} COMMAND ${MOCOTEST_NAME})
+    # Skip tests relying on MocoCasADiSolver if CasADi is not available.
+    if(NOT OPENSIM_WITH_CASADI)
+        set(test_args "${test_args} ~[casadi]")
+    endif()
+    if(NOT OPENSIM_WITH_TROPTER)
+        set(test_args "${test_args} ~[tropter]")
+    endif()
+    add_test(NAME ${MOCOTEST_NAME} COMMAND ${MOCOTEST_NAME} ${test_args})
     # Tests likely run faster if we parallelize the tests rather than the
     # individual problems.
     set_property(TEST ${MOCOTEST_NAME} APPEND PROPERTY

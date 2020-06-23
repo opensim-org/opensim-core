@@ -12,6 +12,7 @@ Contents:
 - [Ways to Contribute](#ways-to-contribute)
 - [Making a Pull Request](#making-a-pull-request-pr)
 - [Writing tests](#writing-tests)
+- [Running Moco tests](#running-moco-tests)
 - [Checking for Memory Leaks through GitHub](#checking-for-memory-leaks-through-github)
 - [Coding Standards](#coding-standards)
 - [List of Contributors](#list-of-contributors)
@@ -76,6 +77,20 @@ go into the `OpenSim/Tests/shared` directory. You can then use the
 copy the necessary shared files to the proper build directory. *DO NOT CHANGE* files
 that are already in `OpenSim/Tests/shared`; you could inadvertently weaken tests
 that rely on some obscure aspect of the files.
+
+
+Running Moco tests
+------------------
+In general, Moco's tests depend on the CasADi and Tropter libraries, whose use
+is determined by the `OPENSIM_WITH_CASADI` and `OPENSIM_WITH_TROPTER` CMake
+variables. The CTests are designed to succeed regardless of the value of these
+CMake variables, through the use of Catch2 tags `[casadi]` and `[tropter]`. For
+example, Moco CTests are run with the argument `~[casadi]` if
+`OPENSIM_WITH_CASADI` is OFF. If the test executables are run without CTest,
+the tests will fail if either `OPENSIM_WITH_CASADI` or `OPENSIM_WITH_TROPTER`
+is false; for the tests to pass, provide the argument(s) `~[casadi]` and/or
+`~[tropter]` (depending on which libraries are available).
+
 
 Checking for Memory Leaks through GitHub
 ----------------------------------------

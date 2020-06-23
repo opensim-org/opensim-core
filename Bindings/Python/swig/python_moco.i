@@ -420,12 +420,6 @@ using namespace SimTK;
     ptr._markAdopted()
 %}
 
-%pythonprepend OpenSim::MocoStudy::solve %{
-    if MocoCasADiSolver.safeDownCast(self.updSolver()):
-        solver = MocoCasADiSolver.safeDownCast(self.updSolver())
-        solver.setRunningInPython(True)
-%}
-
 
 // Include all the OpenSim code.
 // =============================

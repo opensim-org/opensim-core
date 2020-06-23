@@ -1084,8 +1084,8 @@ Model createHangingMuscleModel(
     return model;
 }
 
-#ifdef OPENSIM_WITH_CASADI
-TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
+TEMPLATE_TEST_CASE(
+        "Hanging muscle minimum time", "[casadi]", MocoCasADiSolver) {
     auto ignoreActivationDynamics = GENERATE(true, false);
     auto ignoreTendonCompliance = GENERATE(true, false);
     auto isTendonDynamicsExplicit = GENERATE(false);
@@ -1262,7 +1262,6 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
         CHECK(error < 0.015);
     }
 }
-#endif
 
 TEST_CASE("ActivationCoordinateActuator") {
     // Create a problem with ACA and ensure the activation bounds are

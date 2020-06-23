@@ -91,6 +91,10 @@ public:
 
     MocoTropterSolver();
 
+    /// Returns true if Moco was compiled with the Tropter library; returns
+    /// false otherwise.
+    static bool isAvailable();
+
     /// @name Specifying an initial guess
     /// @{
 

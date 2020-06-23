@@ -169,6 +169,10 @@ public:
 
     MocoCasADiSolver();
 
+    /// Returns true if Moco was compiled with the CasADi library; returns false
+    /// otherwise.
+    static bool isAvailable();
+
     /// @name Specifying an initial guess
     /// @{
 

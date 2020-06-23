@@ -25,28 +25,6 @@
 // TODO #include <OpenSim/Auxiliary/catch.hpp>
 #include <Vendors/tropter/external/catch/catch.hpp>
 
-#if defined(OPENSIM_WITH_CASADI) && defined(OPENSIM_WITH_TROPTER)
-    #define TEST_CASE_CASADI_TROPTER(Name, Tags) TEMPLATE_TEST_CASE(Name, Tags, MocoCasADiSolver, MocoTropterSolver)
-#elif defined(OPENSIM_WITH_CASADI)
-    #define TEST_CASE_CASADI_TROPTER(Name, Tags) TEMPLATE_TEST_CASE(Name, Tags, MocoCasADiSolver)
-#elif defined(OPENSIM_WITH_TROPTER)
-    #define TEST_CASE_CASADI_TROPTER(Name, Tags) TEMPLATE_TEST_CASE(Name, Tags, MocoTropterSolver)
-#else
-    #define TEST_CASE_CASADI_TROPTER(Name, Tags) TEMPLATE_TEST_CASE(Name, Tags, MocoTropterSolver)
-#endif
-
-
-/// TODO
-#if defined(OPENSIM_WITH_CASADI) && defined(OPENSIM_WITH_TROPTER)
-    #define OPENSIM_TEST_CASADI_TROPTER MocoCasADiSolver, MocoTropterSolver
-#elif defined(OPENSIM_WITH_CASADI)
-    #define OPENSIM_TEST_CASADI_TROPTER MocoCasADiSolver
-#elif defined(OPENSIM_WITH_TROPTER)
-    #define OPENSIM_TEST_CASADI_TROPTER MocoTropterSolver
-#else
-    #define OPENSIM_TEST_CASADI_TROPTER
-#endif
-
 
 // Helper functions for comparing vectors.
 // ---------------------------------------

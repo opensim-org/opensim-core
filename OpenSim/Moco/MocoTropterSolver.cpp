@@ -34,6 +34,14 @@ void MocoTropterSolver::constructProperties() {
     constructProperty_exact_hessian_block_sparsity_mode();
 }
 
+bool MocoTropterSolver::isAvailable() {
+#ifdef OPENSIM_WITH_TROPTER
+    return true;
+#else
+    return false;
+#endif
+}
+
 std::shared_ptr<const MocoTropterSolver::TropterProblemBase<double>>
 MocoTropterSolver::createTropterProblem() const {
 #ifdef OPENSIM_WITH_TROPTER

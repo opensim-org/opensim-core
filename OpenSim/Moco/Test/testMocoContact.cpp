@@ -521,35 +521,27 @@ MeyerFregly2016Force* createMeyerFregly() {
     return contact;
 }
 
-#ifdef OPENSIM_WITH_TROPTER
-TEST_CASE("testStationPlaneContactForce AckermannVanDenBogert2010Force") {
+TEST_CASE("testStationPlaneContactForce AckermannVanDenBogert2010Force",
+        "[tropter]") {
     testStationPlaneContactForce(createAVDB);
 }
-#endif
 
-#ifdef OPENSIM_WITH_TROPTER
-TEST_CASE("testStationPlaneContactForce EspositoMiller2018Force") {
+TEST_CASE("testStationPlaneContactForce EspositoMiller2018Force", "[tropter]") {
     testStationPlaneContactForce(createEspositoMiller);
 }
-#endif
 
 // TODO does not pass:
-// #ifdef OPENSIM_WITH_TROPTER
-// TEST_CASE("testStationPlaneContactForce MeyerFregly2016Force") {
+// TEST_CASE("testStationPlaneContactForce MeyerFregly2016Force", "[tropter]") {
 //     testStationPlaneContactForce(createMeyerFregly);
 // }
-// # endif
 
-#ifdef OPENSIM_WITH_CASADI
-TEST_CASE("testSmoothSphereHalfSpaceForce") {
+TEST_CASE("testSmoothSphereHalfSpaceForce", "[casadi]") {
     const SimTK::Real equilibriumHeight =
         testSmoothSphereHalfSpaceForce_NormalForce();
     testSmoothSphereHalfSpaceForce_FrictionForce(equilibriumHeight);
 }
-#endif
 
-#ifdef OPENSIM_WITH_CASADI
-TEST_CASE("MocoContactTrackingGoal") {
+TEST_CASE("MocoContactTrackingGoal", "[casadi]") {
 
     // We drop a ball from a prescribed initial height, record the contact
     // force, then solve a trajectory optimization that tracks the recorded
@@ -640,4 +632,3 @@ TEST_CASE("MocoContactTrackingGoal") {
             externalLoadsTimeStepping, "ground_force_r_vy",
             0.5);
 }
-#endif

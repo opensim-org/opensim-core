@@ -43,8 +43,7 @@ TEST_CASE("MocoTrack interface") {
     }
 }
 
-#ifdef OPENSIM_WITH_CASADI
-TEST_CASE("MocoTrack gait10dof18musc") {
+TEST_CASE("MocoTrack gait10dof18musc", "[casadi]") {
 
     MocoTrack track;
 
@@ -67,4 +66,3 @@ TEST_CASE("MocoTrack gait10dof18musc") {
     CHECK(std.compareContinuousVariablesRMS(
             solution, {{"controls",{}}}) < 1e-2);
 }
-#endif

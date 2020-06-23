@@ -62,8 +62,8 @@ TEST_CASE("PrescribedKinematics prescribe() and realize()") {
     CHECK(ydot[1] == Approx(2 * c2));
 }
 
-#ifdef OPENSIM_WITH_CASADI
-TEST_CASE("PrescribedKinematics direct collocation auxiliary dynamics") {
+TEST_CASE("PrescribedKinematics direct collocation auxiliary dynamics",
+        "[casadi]") {
 
     // Make sure that custom dynamics are still handled properly even when
     // we are skipping over the kinematic/multibody states. That is, this test
@@ -115,10 +115,8 @@ TEST_CASE("PrescribedKinematics direct collocation auxiliary dynamics") {
     OpenSim_CHECK_MATRIX_TOL(solution.getState("/customdynamics/s"),
             0.2 * SimTK::exp(solution.getTime()), 1e-4);
 }
-#endif
 
-#ifdef OPENSIM_WITH_CASADI
-TEST_CASE("MocoInverse Rajagopal2016, 18 muscles") {
+TEST_CASE("MocoInverse Rajagopal2016, 18 muscles", "[casadi]") {
 
     MocoInverse inverse;
     ModelProcessor modelProcessor =
@@ -148,4 +146,3 @@ TEST_CASE("MocoInverse Rajagopal2016, 18 muscles") {
             {{"controls", {}}}) < 1e-2);
     CHECK(std.compareContinuousVariablesRMS(solution, {{"states", {}}}) < 1e-2);
 }
-#endif

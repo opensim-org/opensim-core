@@ -51,6 +51,14 @@ void MocoCasADiSolver::constructProperties() {
     constructProperty_implicit_auxiliary_derivatives_weight(1.0);
 }
 
+bool MocoCasADiSolver::isAvailable() {
+#ifdef OPENSIM_WITH_CASADI
+    return true;
+#else
+    return false;
+#endif
+}
+
 MocoTrajectory MocoCasADiSolver::createGuess(const std::string& type) const {
 #ifdef OPENSIM_WITH_CASADI
     OPENSIM_THROW_IF_FRMOBJ(

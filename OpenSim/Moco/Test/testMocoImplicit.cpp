@@ -112,7 +112,7 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
 }
 
 TEMPLATE_TEST_CASE("Similar solutions between implicit and explicit dynamics",
-        "[implicit]", OPENSIM_TEST_CASADI_TROPTER) {
+        "[implicit][casadi][tropter]", MocoCasADiSolver, MocoTropterSolver) {
     GIVEN("solutions to implicit and explicit problems") {
 
         auto solutionImplicit =
@@ -166,7 +166,7 @@ TEMPLATE_TEST_CASE("Similar solutions between implicit and explicit dynamics",
 }
 
 TEMPLATE_TEST_CASE("Combining implicit dynamics mode with path constraints",
-        "[implicit]", OPENSIM_TEST_CASADI_TROPTER) {
+        "[implicit][casadi][tropter]", MocoCasADiSolver, MocoTropterSolver) {
     class MyPathConstraint : public MocoPathConstraint {
         OpenSim_DECLARE_CONCRETE_OBJECT(MyPathConstraint, MocoPathConstraint);
         void initializeOnModelImpl(
@@ -204,9 +204,8 @@ TEMPLATE_TEST_CASE("Combining implicit dynamics mode with path constraints",
     }
 }
 
-#ifdef OPENSIM_WITH_CASADI
 TEMPLATE_TEST_CASE("Combining implicit dynamics with kinematic constraints",
-        "[implicit]", /*MocoTropterSolver,*/ MocoCasADiSolver) {
+        "[implicit][casadi]", /*MocoTropterSolver,*/ MocoCasADiSolver) {
     GIVEN("MocoProblem with a kinematic constraint") {
         MocoStudy study;
         auto& prob = study.updProblem();
@@ -235,7 +234,6 @@ TEMPLATE_TEST_CASE("Combining implicit dynamics with kinematic constraints",
         }
     }
 }
-#endif
 
 SCENARIO("Using MocoTrajectory with the implicit dynamics mode",
         "[implicit][trajectory]") {

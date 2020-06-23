@@ -50,8 +50,8 @@ std::unique_ptr<Model> createSlidingMassModel() {
 }
 
 /// Test the result of a sliding mass minimum effort problem.
-TEMPLATE_TEST_CASE(
-        "Test MocoControlGoal", "", OPENSIM_TEST_CASADI_TROPTER) {
+TEMPLATE_TEST_CASE("Test MocoControlGoal", "[casadi][tropter]",
+        MocoCasADiSolver, MocoTropterSolver) {
     const int N = 9;          // mesh intervals
     const int Nc = 2 * N + 1; // collocation points (Hermite-Simpson)
     MocoSolution sol1;
@@ -255,7 +255,8 @@ void testDoublePendulumTracking(MocoStudy study,
             solutionTracking.getStatesTrajectory(), 1e-1);
 }
 
-TEMPLATE_TEST_CASE("Test tracking goals", "", OPENSIM_TEST_CASADI_TROPTER) {
+TEMPLATE_TEST_CASE("Test tracking goals", "[casadi][tropter]", MocoCasADiSolver,
+        MocoTropterSolver) {
 
     // Start with double pendulum problem to minimize control effort to create
     // a controls trajectory to track.
@@ -360,8 +361,8 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", OPENSIM_TEST_CASADI_TROPTER) {
     }
 }
 
-TEMPLATE_TEST_CASE(
-        "Test MocoJointReactionGoal", "", OPENSIM_TEST_CASADI_TROPTER) {
+TEMPLATE_TEST_CASE("Test MocoJointReactionGoal", "[casadi][tropter]",
+        MocoCasADiSolver, MocoTropterSolver) {
 
     using SimTK::Inertia;
     using SimTK::Vec3;
@@ -493,8 +494,7 @@ public:
     }
 };
 
-#ifdef OPENSIM_WITH_CASADI
-TEMPLATE_TEST_CASE("Endpoint constraints", "", MocoCasADiSolver) {
+TEMPLATE_TEST_CASE("Endpoint constraints", "[casadi]", MocoCasADiSolver) {
     // TODO test with Tropter.
 
     MocoStudy study;
@@ -547,10 +547,8 @@ TEMPLATE_TEST_CASE("Endpoint constraints", "", MocoCasADiSolver) {
                 Approx(0).margin(1e-6));
     }
 }
-#endif
 
-#ifdef OPENSIM_WITH_CASADI
-TEMPLATE_TEST_CASE("MocoPeriodicityGoal", "", MocoCasADiSolver) {
+TEMPLATE_TEST_CASE("MocoPeriodicityGoal", "[casadi]", MocoCasADiSolver) {
 
     MocoStudy study;
     auto& problem = study.updProblem();
@@ -599,7 +597,6 @@ TEMPLATE_TEST_CASE("MocoPeriodicityGoal", "", MocoCasADiSolver) {
                 Approx(solution.getControl("/tau0")[0]).margin(1e-6));
     }
 }
-#endif
 
 class MocoControlGoalWithEndpointConstraint : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(
@@ -625,9 +622,8 @@ public:
     }
 };
 
-#ifdef OPENSIM_WITH_CASADI
 TEMPLATE_TEST_CASE(
-        "Endpoint constraint with integral", "", MocoCasADiSolver) {
+        "Endpoint constraint with integral", "[casadi]", MocoCasADiSolver) {
 
     Model model;
     const double mass = 1.3169;
@@ -665,7 +661,6 @@ TEMPLATE_TEST_CASE(
     // over the motion must be 0.
     CHECK(solution.getControlsTrajectory().norm() < 1e-3);
 }
-#endif
 
 class MySumSquaredControls : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT(MySumSquaredControls, ModelComponent);
@@ -677,7 +672,8 @@ public:
         return getModel().getControls(state).normSqr();
     }
 };
-TEMPLATE_TEST_CASE("MocoOutputGoal", "", OPENSIM_TEST_CASADI_TROPTER) {
+TEMPLATE_TEST_CASE("MocoOutputGoal", "[casadi][tropter]", MocoCasADiSolver,
+        MocoTropterSolver) {
     auto createStudy = []() {
         MocoStudy study;
         study.setName("sliding_mass");

@@ -54,8 +54,8 @@ SimTK::Matrix expectedSolution(const SimTK::Vector& time) {
     return expectedStatesTrajectory;
 }
 
-TEMPLATE_TEST_CASE("Second order linear min effort", "",
-        OPENSIM_TEST_CASADI_TROPTER) {
+TEMPLATE_TEST_CASE("Second order linear min effort", "[casadi][tropter]",
+        MocoCasADiSolver, MocoTropterSolver) {
     // Kirk 1998, Example 5.1-1, page 198.
 
     Model model;
@@ -100,7 +100,8 @@ TEMPLATE_TEST_CASE("Second order linear min effort", "",
 /// Section 2.4 of Bryson and Ho [1].
 /// Bryson, A. E., Ho, Y.‐C., Applied Optimal Control, Optimization, Estimation,
 /// and Control. New York‐London‐Sydney‐Toronto. John Wiley & Sons. 1975.
-TEMPLATE_TEST_CASE("Linear tangent steering", "", /*MocoTropterSolver, TODO*/
+TEMPLATE_TEST_CASE("Linear tangent steering",
+        "[casadi]", /*MocoTropterSolver, TODO*/
         MocoCasADiSolver) {
     // The problem is parameterized by a, T, and h, with 0 < 4h/(aT^2) < 1.
     const double a = 5;
