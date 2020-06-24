@@ -25,6 +25,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 
 #define CATCH_CONFIG_MAIN
+#include <OpenSim/Auxiliary/catch.hpp>
 
 using namespace OpenSim;
 
