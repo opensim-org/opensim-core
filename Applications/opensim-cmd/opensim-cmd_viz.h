@@ -57,6 +57,7 @@ Description of subcommands:
          TimeSeriesTableQuaternion, then the data are visualized as body
          orientations using x-y-z triads, and the --model and --layout
          flags can be used.
+
 Examples:
   opensim-cmd viz model lowerlimb.osim
   opensim-cmd viz --geometry C:/MyGeometry model lowerlimb.osim
