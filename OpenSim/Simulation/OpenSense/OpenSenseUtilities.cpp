@@ -238,7 +238,7 @@ SimTK::Vec3 OpenSenseUtilities::computeHeadingCorrection(
         bool baseFrameFound = false;
 
         const Frame* baseFrame = nullptr;
-        for (int j = 0; j < model.getNumJoints(); j++) {
+        for (int j = 0; j < model.getNumJoints() && !baseFrameFound; j++) {
             auto& jnt = model.getJointSet().get(j);
             // Look for joint whose parent is Ground, child will be baseFrame
             if (jnt.getParentFrame().findBaseFrame() == model.getGround()) { 
