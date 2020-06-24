@@ -104,7 +104,7 @@ const Property<string>& ActuatorForceProbe::getActuatorNames() const
 * Returns whether to report sum of all Actuator forces together
 or report the forces individually.
 */
-const bool ActuatorForceProbe::getSumForcesTogether() const
+bool ActuatorForceProbe::getSumForcesTogether() const
 {
     return get_sum_forces_together();
 }
@@ -113,7 +113,7 @@ const bool ActuatorForceProbe::getSumForcesTogether() const
 /**
 * Returns the exponent to apply to each Actuator force.
 */
-const double ActuatorForceProbe::getExponent() const
+double ActuatorForceProbe::getExponent() const
 {
     return get_exponent();
 }

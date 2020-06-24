@@ -89,7 +89,7 @@ public:
     {
         return _value;
     }
-    const double getValue() const { return _value; }
+    double getValue() const { return _value; }
     SimTK::Function* createSimTKFunction() const override;
 //=============================================================================
 };  // END class Constant

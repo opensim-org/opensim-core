@@ -152,6 +152,7 @@ public:
     /// function issues a warning and returns; invoke removeFileSink() first.
     /// @note This function is not thread-safe. Do not invoke this function
     /// concurrently, or concurrently with addSink() or removeSink().
+    /// @note If filepath can't be opened, no log file is created.
     static void addFileSink(const std::string& filepath = "opensim.log");
 
     /// Remove the filesink if it exists.
@@ -177,6 +178,7 @@ public:
         if (!m_osimLogger) {
             m_osimLogger =
                     std::shared_ptr<OpenSim::Logger>(new OpenSim::Logger());
+            addFileSink();
         }
         return m_osimLogger;
     }

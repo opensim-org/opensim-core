@@ -12,7 +12,7 @@
 %include <OpenSim/Common/Exception.h>
 
 %shared_ptr(OpenSim::LogSink);
-%ignore OpenSim::StringLogSink;
+%shared_ptr(OpenSim::StringLogSink);
 %include <OpenSim/Common/LogSink.h>
 %ignore OpenSim::Logger::getInstance();
 %include <OpenSim/Common/Logger.h>

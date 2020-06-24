@@ -1258,7 +1258,7 @@ Example: If opensim_install is in your home directory:
 [travisci]: https://travis-ci.org/opensim-org/opensim-core
 [buildstatus_image_appveyor]: https://ci.appveyor.com/api/projects/status/i4wxnmx9jlk69kge/branch/master?svg=true
 [appveyorci]: https://ci.appveyor.com/project/opensim-org/opensim-core/branch/master
-[zenhub_image]: https://raw.githubusercontent.com/ZenHubIO/support/master/zenhub-badge.png
+[zenhub_image]: https://dxssrr2j0sq4w.cloudfront.net/3.2.0/img/external/zenhub-badge.png
 [zenhub]: https://zenhub.com
 
 [running_gif]: doc/images/opensim_running.gif

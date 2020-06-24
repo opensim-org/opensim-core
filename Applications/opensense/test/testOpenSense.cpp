@@ -59,6 +59,11 @@ int main()
     ik_hjc.set_results_directory("ik_hjc_" + facingX.getName());
     ik_hjc.run(false);
 
+    IMUInverseKinematicsTool ik_hjc_nf("setup_IMUInverseKinematics_HJC_trial_nofeet.xml");
+    ik_hjc_nf.setModel(facingX);
+    ik_hjc_nf.set_results_directory("ik_hjc_nf_" + facingX.getName());
+    ik_hjc_nf.run(false);
+
     // Now facing the opposite direction (negative X)
     IMUPlacer placerNegX("imuPlacerFaceNegX.xml");
     placerNegX.run(false);

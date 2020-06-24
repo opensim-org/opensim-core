@@ -44,9 +44,7 @@ void addLoadToStorage(Storage &forceStore, SimTK::Vec3 force, SimTK::Vec3 point,
 {
     int nLoads = forceStore.getColumnLabels().getSize()/9;
     string labels[9] = { "forceX", "forceY", "forceZ", "pointX", "pointY", "pointZ","torqueX", "torqueY", "torqueZ"};
-    char suffix[2];
-    sprintf(suffix, "%d", nLoads); 
-    
+
     Array<string> col_labels;
     col_labels.append("time");
     StateVector dataRow;

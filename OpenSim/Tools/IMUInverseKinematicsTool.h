@@ -38,15 +38,27 @@
 #include "osimToolsDLL.h"
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
+#include <OpenSim/Common/Set.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/Model/Point.h>
+#include <OpenSim/Simulation/OrientationsReference.h>
 #include <OpenSim/Tools/InverseKinematicsToolBase.h>
 
 namespace OpenSim {
 
 class Model;
+// Only reason for this class to exist is to have nicer name in XML
+class OSIMTOOLS_API OrientationWeightSet : public Set<OrientationWeight> {
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+            OrientationWeightSet, Set<OrientationWeight>);
 
-//=============================================================================
+public:
+    /** Use Super's constructors. */
+    using Super::Super;
+    // default copy, assignment operator, and destructor
+    //=============================================================================
+}; 
+        //=============================================================================
 //=============================================================================
 /**
  * A Study that performs an Inverse Kinematics analysis with a given model.
@@ -69,8 +81,12 @@ public:
     OpenSim_DECLARE_PROPERTY(sensor_to_opensim_rotations, SimTK::Vec3,
             "Space fixed Euler angles (XYZ order) from IMU Space to OpenSim."
             " Default to (0, 0, 0).");
+    OpenSim_DECLARE_PROPERTY(orientation_weights, OrientationWeightSet,
+            "Set of orientation weights identified by orientation name with "
+            "weight being a positive scalar. If not provided, all IMU "
+            "orientations are tracked with weight 1.0.");
 
-//=============================================================================
+    //=============================================================================
 // METHODS
 //=============================================================================
     //--------------------------------------------------------------------------

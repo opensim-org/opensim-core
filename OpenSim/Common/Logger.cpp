@@ -44,7 +44,6 @@ Logger::Logger() {
     m_default_logger->set_pattern("[%l] %v");
     m_cout_logger->set_level(spdlog::level::info);
     m_cout_logger->set_pattern("%v");
-    addFileSink();
     // This ensures log files are updated regularly, instead of only when the
     // program shuts down.
     spdlog::flush_on(spdlog::level::info);
@@ -106,9 +105,9 @@ void Logger::setLevelString(std::string str) {
     else if (str == "trace") level = Level::Trace;
     else {
         OPENSIM_THROW(Exception,
-                fmt::format("Expected log level to be Off, Critical, Error, "
-                            "Warn, Info, Debug, or Trace; got {}.",
-                        str));
+                "Expected log level to be Off, Critical, Error, "
+                "Warn, Info, Debug, or Trace; got {}.",
+                str);
     }
     setLevel(level);
 }
@@ -146,11 +145,22 @@ bool Logger::shouldLog(Level level) {
 
 void Logger::addFileSink(const std::string& filepath) {
     if (m_filesink) {
-        warn("Already logging to file '{}'; file sink not added. Call "
+        warn("Already logging to file '{}'; log file not added. Call "
              "removeFileSink() first.", m_filesink->filename());
         return;
     }
-    m_filesink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(filepath);
+    // check if file can be opened at the specified path if not return meaningful
+    // warning rather than bubble the exception up.
+    try {
+        m_filesink =
+                std::make_shared<spdlog::sinks::basic_file_sink_mt>(filepath);
+    }
+    catch (...) {
+        warn("Can't open file '{}' for writing. Log file will not be created. "
+             "Check that you have write permissions to the specified path.",
+                filepath);
+        return;
+    }
     addSinkInternal(m_filesink);
 }
 

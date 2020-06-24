@@ -1,6 +1,5 @@
 #ifndef OPENSIM_XSENS_DATA_READER_SETTINGS_H_
 #define OPENSIM_XSENS_DATA_READER_SETTINGS_H_
-
 /* -------------------------------------------------------------------------- *
  *                          OpenSim:  XsensDataReaderSettings.h               *
  * -------------------------------------------------------------------------- *
@@ -26,13 +25,15 @@
 #include "Object.h"
 #include "ExperimentalSensor.h"
 /** @file
-* This file defines class for configuring the reading data files from IMU maker Xsens.
-*/
+ * This file defines class for configuring the reading data files from IMU maker
+ * Xsens.
+ */
 
 namespace OpenSim {
 
-/** XsensDataReaderSettings is a class that reads files produced by IMU manufacturer Xsens
-    and produces datatables from them. This is intended to help consume IMU outputs.*/
+/** XsensDataReaderSettings is a class that reads files produced by IMU
+   manufacturer Xsens and produces datatables from them. This is intended to
+   help consume IMU outputs.*/
 class OSIMCOMMON_API XsensDataReaderSettings : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(XsensDataReaderSettings, Object);
 public:
@@ -54,11 +55,7 @@ public:
         updateFromXMLDocument();
     };
 
-    XsensDataReaderSettings(const XsensDataReaderSettings&)            = default;
-    XsensDataReaderSettings(XsensDataReaderSettings&&)                 = default;
-    XsensDataReaderSettings& operator=(const XsensDataReaderSettings&) = default;
-    XsensDataReaderSettings& operator=(XsensDataReaderSettings&&)      = default;
-    virtual ~XsensDataReaderSettings()                   = default;
+    virtual ~XsensDataReaderSettings() = default;
     
 private:
     void constructProperties() {

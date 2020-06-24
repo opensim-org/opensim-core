@@ -904,11 +904,11 @@ try {
                 {
                     ++iter;
                 }
-                if (iter != aNode.element_end())
+                if (iter != aNode.element_end()) {
                     object.readObjectFromXMLNodeOrFile(*iter, versionNumber);
                     property->setValueIsDefault(false);
                 }
-            else {
+            } else {
                 object.readObjectFromXMLNodeOrFile(*iter, versionNumber);
                 property->setValueIsDefault(false);
             }
@@ -1695,7 +1695,7 @@ std::string Object::dump() const {
     updateXMLNode(elem);
     Object::setSerializeAllDefaults(false);
     doc.getRootElement().node_begin()->writeToString(outString);
-    return outString;
+    return std::move(outString);
 }
 
 
@@ -1721,9 +1721,9 @@ void Object::setDebugLevel(int newLevel) {
         break;
     default:
         OPENSIM_THROW(
-                Exception, fmt::format("Expected newLevel to be -4, -3, "
-                                       "-2, -1, 0, 1, 2, or 3; but got {}.",
-                                   newLevel));
+                Exception, "Expected newLevel to be -4, -3, "
+                           "-2, -1, 0, 1, 2, or 3; but got {}.",
+                newLevel);
     }
 }
 

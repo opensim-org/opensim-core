@@ -256,7 +256,7 @@ public:
     void setReplaceForceSet(bool aReplace) { _replaceForceSet = aReplace; }
 
     std::string getNextAvailableForceName(const std::string prefix="Force") const;
-    
+
     const ExternalLoads& getExternalLoads() const { return _externalLoads; }
     ExternalLoads& updExternalLoads() { return _externalLoads; }
     void setExternalLoads(ExternalLoads& el) { _externalLoads = el; }
@@ -345,7 +345,7 @@ public:
     void removeControllerSetFromModel();
     void removeAnalysisSetFromModel();
     void setToolOwnsModel(const bool trueFalse) { _toolOwnsModel=trueFalse; };
-    const bool getToolOwnsModel() const { return _toolOwnsModel; };
+    bool getToolOwnsModel() const { return _toolOwnsModel; };
 
     // Interface to build controller from a ControlSet file
     std::string getControlsFileName() const;
@@ -365,7 +365,7 @@ public:
     * without interpolation.
     * @param aExtension Extension for written files.
     */
-    virtual void printResults(const std::string &aBaseName,const std::string &aDir="",
+    void printResults(const std::string &aBaseName,const std::string &aDir="",
         double aDT=-1.0,const std::string &aExtension=".sto");
 
     bool createExternalLoads( const std::string& externalLoadsFileName,
