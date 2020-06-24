@@ -213,36 +213,36 @@ APDMDataReader::extendRead(const std::string& fileName) const {
     return tables;
 }
 
-void APDMDataReader::find_start_column(std::vector<std::string> tokens, 
-    std::vector<std::string> search_labels,
-    const std::string& sensorName,
-    std::vector<int>& indices, bool newFromat) const {
+void APDMDataReader::find_start_column(std::vector<std::string> tokens,
+                                       std::vector<std::string> search_labels, const std::string& sensorName,
+                                       std::vector<int>& indices, bool newFormat) const {
     // Search for "sensorName/{search_labels} in tokens, append result to indices if found"
     std::string firstLabel = sensorName + search_labels[0];
     // look for first label, when found check/confirm the rest. Out of order is not supported
     int found_index = -1;
-    std::vector<std::string>::iterator it = std::find(tokens.begin(), tokens.end(), firstLabel);
+    std::vector<std::string>::iterator it =
+            std::find(tokens.begin(), tokens.end(), firstLabel);
     if (it != tokens.end()) {
         found_index = static_cast<int>(std::distance(tokens.begin(), it));
-        // now check the following indices for match with remaining search_labels 
+        // now check the following indices for match with remaining search_labels
         bool match = true;
-        for (int remaining = 1; remaining < search_labels.size() && match; remaining++) {
-            match = tokens[found_index + remaining].
-                compare(sensorName + search_labels[remaining]) == 0;
+        for (int remaining = 1; remaining < (int)search_labels.size() && match;
+             remaining++) {
+            match = tokens[found_index + remaining].compare(
+                    sensorName + search_labels[remaining]) == 0;
         }
         if (match) {
-            if (newFromat)
-                indices.push_back(found_index - 3); // Three extra  comma separated fields in header before imu name
-            else
+            if (newFormat) {
+                // Three extra comma separated fields in header before imu name
+                indices.push_back(found_index - 3);
+            } else {
                 indices.push_back(found_index);
-                return;
             }
-            else { // first label found but the remaining didn't. Throw
-                throw Exception{ "Expected labels for sensor " + sensorName + 
-                    " were not found." };
-            }
+        } else { // first label found but the remaining didn't. Throw
+            throw Exception{"Expected labels for sensor " + sensorName +
+                            " were not found."};
         }
-    return; // not found
     }
 }
 
+} // namespace OpenSim

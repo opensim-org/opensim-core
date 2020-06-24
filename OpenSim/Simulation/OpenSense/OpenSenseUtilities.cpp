@@ -69,7 +69,7 @@ TimeSeriesTable_<SimTK::Rotation> OpenSenseUtilities::
 void OpenSim::OpenSenseUtilities::rotateOrientationTable(
         OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>&
                 quaternionsTable,
-        const SimTK::Rotation_<double>& rotationMatrix) 
+        const SimTK::Rotation_<double>& rotationMatrix)
 {
     SimTK::Rotation R_XG = rotationMatrix;
 
@@ -112,7 +112,7 @@ OpenSenseUtilities::createOrientationsFileFromMarkers(const std::string& markers
 {
     TimeSeriesTableVec3 table{ markersFile };
 
-    // labels of markers including those <bodyName>O,X,Y that identify the 
+    // labels of markers including those <bodyName>O,X,Y that identify the
     // IMU sensor placement/alignment on the body expressed in Ground
     auto labels = table.getColumnLabels();
 
@@ -206,13 +206,13 @@ SimTK::Vec3 OpenSenseUtilities::computeHeadingCorrection(
             OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>&
                     quaternionsTable,
             const std::string& baseImuName,
-            const SimTK::CoordinateDirection baseHeadingDirection) 
+            const SimTK::CoordinateDirection baseHeadingDirection)
 {
      SimTK::Vec3 rotations{0};
- 
+
     // if a base imu is specified, perform heading correction, otherwise skip
     if (!baseImuName.empty()) {
-        
+
         // Base will rotate to match <base>_imu, so we must first remove the
         // base rotation from the other IMUs to get their orientation with
         // respect to individual model bodies and thereby compute correct
@@ -226,7 +226,7 @@ SimTK::Vec3 OpenSenseUtilities::computeHeadingCorrection(
             OPENSIM_THROW(Exception, "No column with base IMU name '" +
                                              baseImuName + "' found.");
         }
-        
+
         auto startRow = quaternionsTable.getRowAtIndex(0);
         Rotation base_R = Rotation(startRow.getElt(0, int(pix)));
 
@@ -260,13 +260,13 @@ SimTK::Vec3 OpenSenseUtilities::computeHeadingCorrection(
         if (xproduct.get(1) > 0) { 
             angularDifference *= -1; 
         }
-        
+
         log_info("Heading correction computed to be {} degs about ground Y.",
             angularDifference * SimTK_RADIAN_TO_DEGREE);
 
         rotations = SimTK::Vec3( 0, angularDifference,  0);
 
-    } 
+    }
     else
         OPENSIM_THROW(Exception,
                 "Heading correction attempted without base imu specification. Aborting.'");

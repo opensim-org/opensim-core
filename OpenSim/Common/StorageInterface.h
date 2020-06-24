@@ -48,16 +48,8 @@ OpenSim_DECLARE_ABSTRACT_OBJECT(StorageInterface, Object);
 //=============================================================================
 public:
     explicit StorageInterface(const std::string &aFileName) SWIG_DECLARE_EXCEPTION{};
-    StorageInterface(const StorageInterface& aStorageInterface) {};
-    virtual ~StorageInterface() {}
+    virtual ~StorageInterface() = default;
 
-#ifndef SWIG
-    StorageInterface& operator=(const StorageInterface &aStorageInterface)
-    {
-        Object::operator=(aStorageInterface);
-        return(*this);
-    }
-#endif
     //--------------------------------------------------------------------------
     // GET AND SET
     //--------------------------------------------------------------------------
@@ -100,7 +92,7 @@ public:
 //=============================================================================
 };  // END of class StorageInterface
 
-}; //namespace
+} //namespace
 //=============================================================================
 //=============================================================================
 
