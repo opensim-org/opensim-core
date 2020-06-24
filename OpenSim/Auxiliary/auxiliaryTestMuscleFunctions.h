@@ -61,7 +61,7 @@ void reportTendonAndFiberForcesAcrossFiberLengths(const T& muscle,
 
     // Variables
     double fiberLength = SimTK::NaN;
-    double vmt = SimTK::NaN;
+    // double vmt = SimTK::NaN;
     double tendonForce = SimTK::NaN;
     double activeFiberForce = SimTK::NaN;
     double passiveFiberForce = SimTK::NaN;
@@ -76,7 +76,7 @@ void reportTendonAndFiberForcesAcrossFiberLengths(const T& muscle,
         muscle.setFiberLength(s, fiberLength);
         muscle.getModel().realizeDynamics(s);
 
-        vmt = muscle.getSpeed(s);
+        // vmt = muscle.getSpeed(s);
 
         tendonForce = muscle.getTendonForce(s);
 

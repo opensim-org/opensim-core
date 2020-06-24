@@ -1141,6 +1141,18 @@ private:
     // initializeState() or initSystem() is called.
     SimTK::State _workingState;
 
+    // A cached list of `Controller`s that were enabled in the model
+    // when `Model::extendConnectToModel(Model&)` was called.
+    //
+    // This only exists to improve performance. At runtime,
+    // `Model::computeControls(...)` may be called many times. Without
+    // this cache, the implementation must repeatably call
+    // `getComponentList<Controller>`, which is expensive because it
+    // uses runtime `dynamic_cast`s to iterate over, and downcast, a
+    // sequence of `Component`s. For controller-heavy models,
+    // pre-caching controllers into this vector can improve perf by
+    // >5%.
+    std::vector<std::reference_wrapper<const Controller>> _enabledControllers{};
 
     //--------------------------------------------------------------------------
     //                              RUN TIME 

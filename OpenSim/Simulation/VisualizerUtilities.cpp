@@ -315,7 +315,7 @@ void VisualizerUtilities::showOrientationData(
     SimTK::Array_<Body*> bodies;
     SimTK::Array_<MobilizedBodyIndex> mobis;
 
-    for (int i = 0; i < numOrientations; ++i) {
+    for (int i = 0; i < (int)numOrientations; ++i) {
         auto name = quatTable.getColumnLabel(i);
         // remove trailing "_imu"
         std::string::size_type pos = name.find("_imu");
@@ -426,7 +426,7 @@ void VisualizerUtilities::showOrientationData(
     auto& dataMatrix = quatTable.getMatrix();
     auto applyFrame = [&](int frameI) {
         state.setTime(times[frameI]);
-        for (int iOrient = 0; iOrient < numOrientations; ++iOrient) {
+        for (int iOrient = 0; iOrient < (int)numOrientations; ++iOrient) {
 
             Quaternion quat = dataMatrix(frameI, iOrient);
             Rotation rot(quat);
@@ -445,7 +445,8 @@ void VisualizerUtilities::showOrientationData(
         world.getVisualizer().show(state);
     };
     while (true) {
-        for (int frameNumber = 0; frameNumber < times.size(); ++frameNumber) {
+        for (int frameNumber = 0; frameNumber < (int)times.size();
+                ++frameNumber) {
             applyFrame(frameNumber);
             // Slider input.
             int timeSliderIndex = 1;

@@ -39,7 +39,6 @@ SimTK::State OpenSim::simulate(Model& model,
 {
     // Returned state begins as a copy of the initial state
     SimTK::State state = initialState;
-    SimTK::Visualizer::InputSilo* silo;
 
     bool simulateOnce = true;
 
@@ -54,8 +53,6 @@ SimTK::State OpenSim::simulate(Model& model,
     // Configure the visualizer.
     if (model.getUseVisualizer()) {
         SimTK::Visualizer& viz = model.updVisualizer().updSimbodyVisualizer();
-        // We use the input silo to get key presses.
-        silo = &model.updVisualizer().updInputSilo();
 
         SimTK::DecorativeText help("Press any key to start a new simulation; "
             "ESC to quit.");
@@ -75,9 +72,10 @@ SimTK::State OpenSim::simulate(Model& model,
     do {
         if (model.getUseVisualizer()) {
             // Get a key press.
-            silo->clear(); // Ignore any previous key presses.
+            auto& silo = model.updVisualizer().updInputSilo();
+            silo.clear(); // Ignore any previous key presses.
             unsigned key, modifiers;
-            silo->waitForKeyHit(key, modifiers);
+            silo.waitForKeyHit(key, modifiers);
             if (key == SimTK::Visualizer::InputListener::KeyEsc) { break; }
         }
 

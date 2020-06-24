@@ -376,14 +376,14 @@ public:
      *
      * @return 0.
      */
-    virtual const double getFirstTime() const;
+    virtual double getFirstTime() const;
     /**
      * Gets the last time for which a parameter is specified. Should be overridden
      * by derived classes that have a defined max time.
      *
      * @return 0.
      */
-    virtual const double getLastTime() const;
+    virtual double getLastTime() const;
 
     // UTILITY
     /**

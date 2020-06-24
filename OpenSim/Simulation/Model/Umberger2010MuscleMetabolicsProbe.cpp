@@ -548,7 +548,7 @@ Array<string> Umberger2010MuscleMetabolicsProbe::getProbeOutputLabels() const
 /** 
 * Get the number of muscles being analyzed in the metabolic analysis. 
 */
-const int Umberger2010MuscleMetabolicsProbe::
+int Umberger2010MuscleMetabolicsProbe::
     getNumMetabolicMuscles() const  
 { 
     return get_Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet().getSize(); 
@@ -670,7 +670,7 @@ bool Umberger2010MuscleMetabolicsProbe::
 /**
  * Get the muscle mass used in the metabolic analysis. 
  */
-const double Umberger2010MuscleMetabolicsProbe::
+double Umberger2010MuscleMetabolicsProbe::
     getMuscleMass(const std::string& muscleName) const 
 { 
     return getMetabolicParameters(muscleName)->getMuscleMass();
@@ -681,7 +681,7 @@ const double Umberger2010MuscleMetabolicsProbe::
 /**
  * Get the ratio of slow twitch fibers for an existing muscle. 
  */
-const double Umberger2010MuscleMetabolicsProbe::
+double Umberger2010MuscleMetabolicsProbe::
     getRatioSlowTwitchFibers(const std::string& muscleName) const 
 { 
     return getMetabolicParameters(muscleName)->get_ratio_slow_twitch_fibers();
@@ -703,7 +703,7 @@ void Umberger2010MuscleMetabolicsProbe::
 /**
  * Get the density for an existing muscle (kg/m^3).. 
  */
-const double Umberger2010MuscleMetabolicsProbe::
+double Umberger2010MuscleMetabolicsProbe::
     getDensity(const std::string& muscleName) const 
 { 
     return getMetabolicParameters(muscleName)->get_density();
@@ -725,7 +725,7 @@ void Umberger2010MuscleMetabolicsProbe::
 /**
  * Get the specific tension for an existing muscle (Pascals (N/m^2)). 
  */
-const double Umberger2010MuscleMetabolicsProbe::
+double Umberger2010MuscleMetabolicsProbe::
     getSpecificTension(const std::string& muscleName) const 
 { 
     return getMetabolicParameters(muscleName)->get_specific_tension();

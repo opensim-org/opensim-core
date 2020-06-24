@@ -17,6 +17,10 @@ v4.2
 - Introduce utilities for creating SimTK::Vectors, linear interpolation, updating table column labels from v3.3 to v4.0 syntax, solving for a function's root using bisection (OpenSim/Common/CommonUtilities.h) ([PR #2808](https://github.com/opensim-org/opensim-core/pull/2808)).
 - Introduce utilities for querying, filtering, and resampling TimeSeriesTables (OpenSim/Common/TableUtilities.h) ([PR #2808](https://github.com/opensim-org/opensim-core/pull/2808)).
 - StatesTrajectories can now be created from a TimeSeriesTable of states.
+- Minor performance improvements (5-10 %) for controller-heavy models (PR #2806)
+- `Controller::isEnabled` will now only return whether the particular controller is enabled
+  - Previously, it would return `false` if its parent `Model`'s `Model::getAllControllersEnabled` returned `false`
+  - The previous behavior would mean that `Controller::setEnabled(true); return Controller::isEnabled();` could return `false`
 
 
 v4.1

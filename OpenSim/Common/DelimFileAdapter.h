@@ -434,7 +434,7 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
 
         auto row_vector = readElems(row);
 
-        OPENSIM_THROW_IF(row_vector.size() != column_labels.size(),
+        OPENSIM_THROW_IF(row_vector.size() != (int)column_labels.size(),
             RowLengthMismatch,
             fileName,
             line_num,

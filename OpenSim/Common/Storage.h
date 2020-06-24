@@ -182,7 +182,7 @@ public:
     void addKeyValuePair(const std::string& aKey, const std::string& aValue);
     void getValueForKey(const std::string& aKey, std::string& rValue) const;
     bool hasKey(const std::string& aKey) const;
-    const bool isInDegrees() const { return _inDegrees; };
+    bool isInDegrees() const { return _inDegrees; };
     void setInDegrees(const bool isInDegrees) { _inDegrees = isInDegrees; };
     // DATA
     int getData(int aTimeIndex,int aStateIndex,double &rValue) const;

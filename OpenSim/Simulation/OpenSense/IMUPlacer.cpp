@@ -185,10 +185,10 @@ bool IMUPlacer::run(bool visualizeResults) {
     for (auto& imuName : imuLabels) {
         log_info("Processing {}", imuName);
         if (imuBodiesInGround.find(imuName) != imuBodiesInGround.end()) {
-            log_info("Computed offset for ", imuName);
+            log_info("Computed offset for {}", imuName);
             SimTK::Rotation R_FB =
                     ~imuBodiesInGround[imuName] * rotations[int(imuix)];
-            log_info("Offset is ", R_FB);
+            log_info("Offset is {}", R_FB);
             PhysicalOffsetFrame* imuOffset = nullptr;
             const PhysicalOffsetFrame* mo = nullptr;
             if ((mo = _model->findComponent<PhysicalOffsetFrame>(imuName))) {
@@ -197,7 +197,7 @@ bool IMUPlacer::run(bool visualizeResults) {
                 X.updR() = R_FB;
                 imuOffset->setOffsetTransform(X);
             } else {
-                log_info("Creating offset frame for ", imuName);
+                log_info("Creating offset frame for {}", imuName);
                 OpenSim::Body* body =
                         dynamic_cast<OpenSim::Body*>(bodies[imuix]);
                 SimTK::Vec3 p_FB(0);
