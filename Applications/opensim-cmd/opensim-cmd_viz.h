@@ -67,7 +67,20 @@ Examples:
   opensim-cmd viz -g C:/MyGeometry data orientations.sto -m arm.osim
   opensim-cmd --library C:\Plugins\osimMyCustomForce.dll viz model arm.osim
 )";
+/* Block below was removed from help text to address bug in VisualStudio handling of regular expressions opensim-core issue #2807
 
+Description of options:
+  g, geometry  Search for geometry mesh files in this path.
+  m, model     If visualizing orientation data and --layout is 'model',
+               the orientation data will be visualized according to the default
+               pose of this model.
+  a, layout    If visualizing orientation data, this option specifies the layout
+               of x-y-z triads as either in a 'line' (the default), in a
+               'circle', or according to the default pose of a 'model'. If the
+               value is 'model', then the --model option must be provided.
+  r, rotate    If visualizing orientation data, this option specifies the space
+               fixed Euler angles to apply to data specified in radians.
+*/
 
 SimTK::Vec3 parseRotationsString(const std::string& rotationString) {
     SimTK::Vec3 returnVec3{0};
