@@ -1,6 +1,6 @@
 include(CMakeParseArguments)
 
-# Create an exectuable for the file ${TEST_NAME}.cpp, which depends on
+# Create an executable for the file ${TEST_NAME}.cpp, which depends on
 # libraries ${LIB_DEPENDENCIES}. Also create a CTest test for this executable.
 function(MocoAddTest)
     set(options)
@@ -16,10 +16,12 @@ function(MocoAddTest)
             PRIVATE "${CMAKE_SOURCE_DIR}/tropter/external/catch")
     # Skip tests relying on MocoCasADiSolver if CasADi is not available.
     if(NOT OPENSIM_WITH_CASADI)
-        set(test_args "${test_args} ~[casadi]")
+        list(APPEND test_args "exclude:*MocoCasADiSolver*")
+        list(APPEND test_args "exclude:[casadi]")
     endif()
     if(NOT OPENSIM_WITH_TROPTER)
-        set(test_args "${test_args} ~[tropter]")
+        list(APPEND test_args "exclude:*MocoTropterSolver*")
+        list(APPEND test_args "exclude:[tropter]")
     endif()
     add_test(NAME ${MOCOTEST_NAME} COMMAND ${MOCOTEST_NAME} ${test_args})
     # Tests likely run faster if we parallelize the tests rather than the

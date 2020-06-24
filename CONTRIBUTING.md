@@ -84,12 +84,16 @@ Running Moco tests
 In general, Moco's tests depend on the CasADi and Tropter libraries, whose use
 is determined by the `OPENSIM_WITH_CASADI` and `OPENSIM_WITH_TROPTER` CMake
 variables. The CTests are designed to succeed regardless of the value of these
-CMake variables, through the use of Catch2 tags `[casadi]` and `[tropter]`. For
-example, Moco CTests are run with the argument `~[casadi]` if
-`OPENSIM_WITH_CASADI` is OFF. If the test executables are run without CTest,
-the tests will fail if either `OPENSIM_WITH_CASADI` or `OPENSIM_WITH_TROPTER`
-is false; for the tests to pass, provide the argument(s) `~[casadi]` and/or
-`~[tropter]` (depending on which libraries are available).
+CMake variables: if `OPENSIM_WITH_CASADI` is off, Moco's C++ tests are run with
+arguments `"exclude:*MocoCasADiSolver*" "exclude:[casadi]"`,
+which excludes Catch2 templatized tests using MocoCasADiSolver and other tests
+that are tagged as relying on CasADi (likewise for Tropter).
+If the test executables are run without CTest (e.g., debugging a project in
+Visual Studio), the tests will fail if either `OPENSIM_WITH_CASADI` or
+`OPENSIM_WITH_TROPTER` is false; for the tests to pass, provide the argument(s)
+`"exclude:*MocoCasADiSolver*" "exclude:[casadi]"` and/or
+`"exclude:*MocoTropterSolver*" "exclude:[tropter]"` (depending on which
+libraries are available).
 
 
 Checking for Memory Leaks through GitHub

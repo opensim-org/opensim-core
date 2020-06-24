@@ -72,7 +72,7 @@ protected:
 /// correct trajectory specified by the state bounds and the FinalPositionCost.
 /// This tests the ability for MocoParameter to optimize a simple scalar model
 /// property value.
-TEMPLATE_TEST_CASE("Oscillator mass", "[casadi][tropter]", MocoCasADiSolver,
+TEMPLATE_TEST_CASE("Oscillator mass", "", MocoCasADiSolver,
         MocoTropterSolver) {
     int N = 25;
 
@@ -133,7 +133,7 @@ std::unique_ptr<Model> createOscillatorTwoSpringsModel() {
 /// equivalent stiffness of a single spring that would produce the same 
 /// oscillation trajectory. This tests the ability for MocoParameter to optimize
 /// the value of a model property for two different components.
-TEMPLATE_TEST_CASE("One parameter two springs", "[casadi][tropter]",
+TEMPLATE_TEST_CASE("One parameter two springs", "",
         MocoCasADiSolver, MocoTropterSolver) {
     int N = 25;
 
@@ -212,7 +212,7 @@ protected:
 /// that the body comes to rest, i.e. the body's center of mass becomes aligned
 /// with the pin joint rotation point. This tests the ability of MocoParameter
 /// to optimize an element of a non-scalar model property.
-TEMPLATE_TEST_CASE("See-saw center of mass", "[casadi][tropter]",
+TEMPLATE_TEST_CASE("See-saw center of mass", "",
         MocoCasADiSolver, MocoTropterSolver) {
     int N = 25;
 

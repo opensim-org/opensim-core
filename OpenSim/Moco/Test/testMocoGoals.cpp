@@ -50,7 +50,7 @@ std::unique_ptr<Model> createSlidingMassModel() {
 }
 
 /// Test the result of a sliding mass minimum effort problem.
-TEMPLATE_TEST_CASE("Test MocoControlGoal", "[casadi][tropter]",
+TEMPLATE_TEST_CASE("Test MocoControlGoal", "",
         MocoCasADiSolver, MocoTropterSolver) {
     const int N = 9;          // mesh intervals
     const int Nc = 2 * N + 1; // collocation points (Hermite-Simpson)
@@ -255,7 +255,7 @@ void testDoublePendulumTracking(MocoStudy study,
             solutionTracking.getStatesTrajectory(), 1e-1);
 }
 
-TEMPLATE_TEST_CASE("Test tracking goals", "[casadi][tropter]", MocoCasADiSolver,
+TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
         MocoTropterSolver) {
 
     // Start with double pendulum problem to minimize control effort to create
@@ -361,7 +361,7 @@ TEMPLATE_TEST_CASE("Test tracking goals", "[casadi][tropter]", MocoCasADiSolver,
     }
 }
 
-TEMPLATE_TEST_CASE("Test MocoJointReactionGoal", "[casadi][tropter]",
+TEMPLATE_TEST_CASE("Test MocoJointReactionGoal", "",
         MocoCasADiSolver, MocoTropterSolver) {
 
     using SimTK::Inertia;
@@ -672,7 +672,7 @@ public:
         return getModel().getControls(state).normSqr();
     }
 };
-TEMPLATE_TEST_CASE("MocoOutputGoal", "[casadi][tropter]", MocoCasADiSolver,
+TEMPLATE_TEST_CASE("MocoOutputGoal", "", MocoCasADiSolver,
         MocoTropterSolver) {
     auto createStudy = []() {
         MocoStudy study;

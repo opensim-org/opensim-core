@@ -840,7 +840,7 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
 }
 
 TEMPLATE_TEST_CASE("DoublePendulum with and without constraint derivatives",
-        "[explicit][casadi][tropter]", MocoCasADiSolver, MocoTropterSolver) {
+        "[explicit]", MocoCasADiSolver, MocoTropterSolver) {
     SECTION("DoublePendulum without constraint derivatives") {
         MocoSolution couplerSol;
         testDoublePendulumCoordinateCoupler<TestType>(
@@ -878,12 +878,12 @@ TEST_CASE("DoublePendulum with and without constraint derivatives",
 }
 
 TEMPLATE_TEST_CASE("DoublePendulumPointOnLine without constraint derivatives",
-        "[explicit][casadi][tropter]", MocoCasADiSolver, MocoTropterSolver) {
+        "[explicit]", MocoCasADiSolver, MocoTropterSolver) {
     testDoublePendulumPointOnLine<TestType>(false, "explicit");
 }
 
 TEMPLATE_TEST_CASE("DoublePendulumPointOnLine with constraint derivatives",
-        "[explicit][casadi][tropter]", MocoCasADiSolver, MocoTropterSolver) {
+        "[explicit]", MocoCasADiSolver, MocoTropterSolver) {
     testDoublePendulumPointOnLine<TestType>(true, "explicit");
 }
 
@@ -927,7 +927,7 @@ protected:
 /// Solve an optimal control problem where a double pendulum must reach a
 /// specified final configuration while subject to a constraint that its
 /// actuators must produce an equal control trajectory.
-TEMPLATE_TEST_CASE("DoublePendulumEqualControl", "[casadi][tropter]",
+TEMPLATE_TEST_CASE("DoublePendulumEqualControl", "",
         MocoCasADiSolver, MocoTropterSolver) {
     OpenSim::Object::registerType(EqualControlConstraint());
     MocoStudy study;
@@ -1106,7 +1106,7 @@ void testDoublePendulumJointReactionGoal(std::string dynamics_mode) {
 
 TEMPLATE_TEST_CASE(
         "DoublePendulumPointJointReactionGoal with constraint derivatives",
-        "[explicit][casadi][tropter]", MocoCasADiSolver, MocoTropterSolver) {
+        "[explicit]", MocoCasADiSolver, MocoTropterSolver) {
     testDoublePendulumJointReactionGoal<TestType>("explicit");
 }
 
@@ -1454,7 +1454,7 @@ TEST_CASE("Prescribed kinematics with kinematic constraints", "[casadi]") {
     OpenSim_CHECK_MATRIX_TOL(lambda, 0.5 * (Fx - Fy), 1e-5);
 }
 
-TEMPLATE_TEST_CASE("MocoControlBoundConstraint", "[casadi][tropter]",
+TEMPLATE_TEST_CASE("MocoControlBoundConstraint", "",
         MocoCasADiSolver, MocoTropterSolver) {
     SECTION("Lower bound only") {
         MocoStudy study;
@@ -1580,13 +1580,14 @@ TEMPLATE_TEST_CASE("MocoControlBoundConstraint", "[casadi][tropter]",
         problem.setControlInfo("/tau0", {-5, 5});
         problem.addGoal<MocoControlGoal>();
         auto* constr = problem.addPathConstraint<MocoControlBoundConstraint>();
+        study.initSolver<TestType>();
         study.solve();
         constr->addControlPath("/tau0");
         study.solve();
     }
 }
 
-TEMPLATE_TEST_CASE("MocoFrameDistanceConstraint", "[casadi][tropter]",
+TEMPLATE_TEST_CASE("MocoFrameDistanceConstraint", "",
         MocoCasADiSolver, MocoTropterSolver) {
     using SimTK::Pi;
 
