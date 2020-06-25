@@ -1,5 +1,5 @@
-#ifndef MOCO_INDYGOPROBLEMINTERNAL_H
-#define MOCO_INDYGOPROBLEMINTERNAL_H
+#ifndef OPENSIM_INDYGOPROBLEMINTERNAL_H
+#define OPENSIM_INDYGOPROBLEMINTERNAL_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: INDYGOProblemInternal.cpp                                    *
  * -------------------------------------------------------------------------- *
@@ -637,4 +637,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_INDYGOPROBLEMINTERNAL_H
+#endif // OPENSIM_INDYGOPROBLEMINTERNAL_H

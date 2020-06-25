@@ -1,5 +1,5 @@
-#ifndef MOCO_MOCOANGULARVELOCITYTRACKINGGOAL_H
-#define MOCO_MOCOANGULARVELOCITYTRACKINGGOAL_H
+#ifndef OPENSIM_MOCOANGULARVELOCITYTRACKINGGOAL_H
+#define OPENSIM_MOCOANGULARVELOCITYTRACKINGGOAL_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoAngularVelocityTrackingGoal.h                            *
  * -------------------------------------------------------------------------- *
@@ -177,4 +177,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOANGULARVELOCITYTRACKINGGOAL_H
+#endif // OPENSIM_MOCOANGULARVELOCITYTRACKINGGOAL_H

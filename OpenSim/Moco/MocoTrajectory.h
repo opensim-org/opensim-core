@@ -1,5 +1,5 @@
-#ifndef MOCO_MOCOTRAJECTORY_H
-#define MOCO_MOCOTRAJECTORY_H
+#ifndef OPENSIM_MOCOTRAJECTORY_H
+#define OPENSIM_MOCOTRAJECTORY_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoTrajectory.h                                             *
  * -------------------------------------------------------------------------- *
@@ -855,4 +855,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOTRAJECTORY_H
+#endif // OPENSIM_MOCOTRAJECTORY_H

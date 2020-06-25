@@ -1,5 +1,5 @@
-#ifndef MOCO_MOCOWEIGHTSET_H
-#define MOCO_MOCOWEIGHTSET_H
+#ifndef OPENSIM_MOCOWEIGHTSET_H
+#define OPENSIM_MOCOWEIGHTSET_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoWeightSet.h                                              *
  * -------------------------------------------------------------------------- *
@@ -62,4 +62,4 @@ public:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOWEIGHTSET_H
+#endif // OPENSIM_MOCOWEIGHTSET_H

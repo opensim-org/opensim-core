@@ -1,5 +1,5 @@
-#ifndef MOCO_MOCODIRECTCOLLOCATIONSOLVER_H
-#define MOCO_MOCODIRECTCOLLOCATIONSOLVER_H
+#ifndef OPENSIM_MOCODIRECTCOLLOCATIONSOLVER_H
+#define OPENSIM_MOCODIRECTCOLLOCATIONSOLVER_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoDirectCollocationSolver.h                                *
  * -------------------------------------------------------------------------- *
@@ -171,4 +171,4 @@ protected:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCODIRECTCOLLOCATIONSOLVER_H
+#endif // OPENSIM_MOCODIRECTCOLLOCATIONSOLVER_H

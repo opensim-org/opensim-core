@@ -1,5 +1,5 @@
-#ifndef MOCO_MODELOPERATORS_H
-#define MOCO_MODELOPERATORS_H
+#ifndef OPENSIM_MODELOPERATORS_H
+#define OPENSIM_MODELOPERATORS_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: ModelOperators.h                                             *
  * -------------------------------------------------------------------------- *
@@ -332,4 +332,4 @@ public:
 
 } // namespace OpenSim
 
-#endif // MOCO_MODELOPERATORS_H
+#endif // OPENSIM_MODELOPERATORS_H

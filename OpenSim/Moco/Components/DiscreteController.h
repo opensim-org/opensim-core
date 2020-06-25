@@ -1,5 +1,5 @@
-#ifndef MOCO_DISCRETECONTROLLER_H
-#define MOCO_DISCRETECONTROLLER_H
+#ifndef OPENSIM_DISCRETECONTROLLER_H
+#define OPENSIM_DISCRETECONTROLLER_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: DiscreteController.h                                         *
  * -------------------------------------------------------------------------- *
@@ -45,4 +45,4 @@ protected:
 } // namespace OpenSim
 
 
-#endif // MOCO_DISCRETECONTROLLER_H
+#endif // OPENSIM_DISCRETECONTROLLER_H

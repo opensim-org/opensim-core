@@ -1,5 +1,5 @@
-#ifndef MOCO_MOCOCASADISOLVER_H
-#define MOCO_MOCOCASADISOLVER_H
+#ifndef OPENSIM_MOCOCASADISOLVER_H
+#define OPENSIM_MOCOCASADISOLVER_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoCasADiSolver.h                                           *
  * -------------------------------------------------------------------------- *
@@ -233,4 +233,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOCASADISOLVER_H
+#endif // OPENSIM_MOCOCASADISOLVER_H

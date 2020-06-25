@@ -1,5 +1,5 @@
-#ifndef MOCO_MOCOVARIABLEINFO_H
-#define MOCO_MOCOVARIABLEINFO_H
+#ifndef OPENSIM_MOCOVARIABLEINFO_H
+#define OPENSIM_MOCOVARIABLEINFO_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoProblem.h                                                *
  * -------------------------------------------------------------------------- *
@@ -82,4 +82,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOVARIABLEINFO_H
+#endif // OPENSIM_MOCOVARIABLEINFO_H

@@ -1,5 +1,5 @@
-#ifndef MOCO_MOCOCONSTRAINT_H
-#define MOCO_MOCOCONSTRAINT_H
+#ifndef OPENSIM_MOCOCONSTRAINT_H
+#define OPENSIM_MOCOCONSTRAINT_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoConstraint.h                                             *
  * -------------------------------------------------------------------------- *
@@ -238,4 +238,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOCONSTRAINT_H
+#endif // OPENSIM_MOCOCONSTRAINT_H

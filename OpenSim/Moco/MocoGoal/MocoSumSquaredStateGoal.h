@@ -1,5 +1,5 @@
-#ifndef MOCO_MOCOSUMSQUAREDSTATEGOAL_H
-#define MOCO_MOCOSUMSQUAREDSTATEGOAL_H
+#ifndef OPENSIM_MOCOSUMSQUAREDSTATEGOAL_H
+#define OPENSIM_MOCOSUMSQUAREDSTATEGOAL_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoSumSquaredStateGoal.h                                    *
  * -------------------------------------------------------------------------- *
@@ -122,4 +122,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOSUMSQUAREDSTATEGOAL_H
+#endif // OPENSIM_MOCOSUMSQUAREDSTATEGOAL_H

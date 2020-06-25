@@ -1,5 +1,5 @@
-#ifndef MOCO_MOCOCONTACTTRACKINGGOAL_H
-#define MOCO_MOCOCONTACTTRACKINGGOAL_H
+#ifndef OPENSIM_MOCOCONTACTTRACKINGGOAL_H
+#define OPENSIM_MOCOCONTACTTRACKINGGOAL_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoContactTrackingGoal.h                                    *
  * -------------------------------------------------------------------------- *
@@ -272,4 +272,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOCONTACTTRACKINGGOAL_H
+#endif // OPENSIM_MOCOCONTACTTRACKINGGOAL_H

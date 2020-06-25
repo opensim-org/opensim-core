@@ -1,5 +1,5 @@
-#ifndef MOCO_MOCOUSERCONTROLCOST_H
-#define MOCO_MOCOUSERCONTROLCOST_H
+#ifndef OPENSIM_MOCOUSERCONTROLCOST_H
+#define OPENSIM_MOCOUSERCONTROLCOST_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoUserControlCost.h                                        *
  * -------------------------------------------------------------------------- *
@@ -87,4 +87,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOUSERCONTROLCOST_H
+#endif // OPENSIM_MOCOUSERCONTROLCOST_H

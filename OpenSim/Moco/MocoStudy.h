@@ -1,5 +1,5 @@
-#ifndef MOCO_MOCOSTUDY_H
-#define MOCO_MOCOSTUDY_H
+#ifndef OPENSIM_MOCOSTUDY_H
+#define OPENSIM_MOCOSTUDY_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoStudy.h                                                   *
  * -------------------------------------------------------------------------- *
@@ -179,4 +179,4 @@ OSIMMOCO_API MocoCasADiSolver& MocoStudy::initSolver<MocoCasADiSolver>();
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOSTUDY_H
+#endif // OPENSIM_MOCOSTUDY_H

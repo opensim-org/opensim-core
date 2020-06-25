@@ -1,5 +1,5 @@
-#ifndef MOCO_STATIONPLANECONTACTFORCE_H
-#define MOCO_STATIONPLANECONTACTFORCE_H
+#ifndef OPENSIM_STATIONPLANECONTACTFORCE_H
+#define OPENSIM_STATIONPLANECONTACTFORCE_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: StationPlaneContactForce.h                                   *
  * -------------------------------------------------------------------------- *
@@ -312,4 +312,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_STATIONPLANECONTACTFORCE_H
+#endif // OPENSIM_STATIONPLANECONTACTFORCE_H

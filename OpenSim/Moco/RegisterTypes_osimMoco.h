@@ -1,5 +1,5 @@
-#ifndef MOCO_REGISTERTYPES_OSIMMOCO_H
-#define MOCO_REGISTERTYPES_OSIMMOCO_H
+#ifndef OPENSIM_REGISTERTYPES_OSIMMOCO_H
+#define OPENSIM_REGISTERTYPES_OSIMMOCO_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: RegisterTypes_osimMoco.h                                     *
  * -------------------------------------------------------------------------- *
@@ -33,4 +33,4 @@ private:
     void registerDllClasses();
 };
 
-#endif // MOCO_REGISTERTYPES_OSIMMOCO_H
+#endif // OPENSIM_REGISTERTYPES_OSIMMOCO_H

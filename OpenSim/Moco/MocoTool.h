@@ -1,5 +1,5 @@
-#ifndef MOCO_MOCOTOOL_H
-#define MOCO_MOCOTOOL_H
+#ifndef OPENSIM_MOCOTOOL_H
+#define OPENSIM_MOCOTOOL_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoTool.h                                                   *
  * -------------------------------------------------------------------------- *
@@ -111,4 +111,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOTOOL_H
+#endif // OPENSIM_MOCOTOOL_H

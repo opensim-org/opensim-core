@@ -1,5 +1,5 @@
-#ifndef MOCO_ACCELERATIONMOTION_H
-#define MOCO_ACCELERATIONMOTION_H
+#ifndef OPENSIM_ACCELERATIONMOTION_H
+#define OPENSIM_ACCELERATIONMOTION_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: AccelerationMotion.h                                         *
  * -------------------------------------------------------------------------- *
@@ -65,4 +65,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_ACCELERATIONMOTION_H
+#endif // OPENSIM_ACCELERATIONMOTION_H

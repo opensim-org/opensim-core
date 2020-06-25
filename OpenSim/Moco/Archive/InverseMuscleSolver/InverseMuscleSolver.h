@@ -1,5 +1,5 @@
-#ifndef MOCO_INVERSEMUSCLESOLVER_H
-#define MOCO_INVERSEMUSCLESOLVER_H
+#ifndef OPENSIM_INVERSEMUSCLESOLVER_H
+#define OPENSIM_INVERSEMUSCLESOLVER_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: InverseMuscleSolver.h                                        *
  * -------------------------------------------------------------------------- *
@@ -240,4 +240,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_INVERSEMUSCLESOLVER_H
+#endif // OPENSIM_INVERSEMUSCLESOLVER_H

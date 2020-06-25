@@ -1,5 +1,5 @@
-#ifndef MOCO_MODELPROCESSOR_H
-#define MOCO_MODELPROCESSOR_H
+#ifndef OPENSIM_MODELPROCESSOR_H
+#define OPENSIM_MODELPROCESSOR_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: ModelProcessor.h                                             *
  * -------------------------------------------------------------------------- *
@@ -156,4 +156,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MODELPROCESSOR_H
+#endif // OPENSIM_MODELPROCESSOR_H

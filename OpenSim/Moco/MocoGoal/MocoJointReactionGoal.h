@@ -1,5 +1,5 @@
-#ifndef MOCO_MOCOJOINTREACTIONGOAL_H
-#define MOCO_MOCOJOINTREACTIONGOAL_H
+#ifndef OPENSIM_MOCOJOINTREACTIONGOAL_H
+#define OPENSIM_MOCOJOINTREACTIONGOAL_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoJointReactionGoal.h                                      *
  * -------------------------------------------------------------------------- *
@@ -140,4 +140,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOJOINTREACTIONGOAL_H
+#endif // OPENSIM_MOCOJOINTREACTIONGOAL_H

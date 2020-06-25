@@ -1,5 +1,5 @@
-#ifndef MOCO_POSITIONMOTION_H
-#define MOCO_POSITIONMOTION_H
+#ifndef OPENSIM_POSITIONMOTION_H
+#define OPENSIM_POSITIONMOTION_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: PositionMotion.h                                             *
  * -------------------------------------------------------------------------- *
@@ -105,4 +105,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_PRESCRIBEDPOSITIONMOTION_H
+#endif // OPENSIM_PRESCRIBEDPOSITIONMOTION_H

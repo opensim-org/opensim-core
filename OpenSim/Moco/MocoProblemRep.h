@@ -1,5 +1,5 @@
-#ifndef MOCO_MOCOPROBLEMREP_H
-#define MOCO_MOCOPROBLEMREP_H
+#ifndef OPENSIM_MOCOPROBLEMREP_H
+#define OPENSIM_MOCOPROBLEMREP_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoProblemRep.h                                             *
  * -------------------------------------------------------------------------- *
@@ -356,4 +356,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOPROBLEMREP_H
+#endif // OPENSIM_MOCOPROBLEMREP_H

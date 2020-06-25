@@ -1,5 +1,5 @@
-#ifndef MOCO_CASOCSOLVER_H
-#define MOCO_CASOCSOLVER_H
+#ifndef OPENSIM_CASOCSOLVER_H
+#define OPENSIM_CASOCSOLVER_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoCasOCSolver.h                                            *
  * -------------------------------------------------------------------------- *
@@ -200,4 +200,4 @@ private:
 
 } // namespace CasOC
 
-#endif // MOCO_CASOCSOLVER_H
+#endif // OPENSIM_CASOCSOLVER_H

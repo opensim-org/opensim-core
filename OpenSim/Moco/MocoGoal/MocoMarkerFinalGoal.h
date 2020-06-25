@@ -1,5 +1,5 @@
-#ifndef MOCO_MOCOMARKERFINALGOAL_H
-#define MOCO_MOCOMARKERFINALGOAL_H
+#ifndef OPENSIM_MOCOMARKERFINALGOAL_H
+#define OPENSIM_MOCOMARKERFINALGOAL_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoMarkerFinalGoal.h                                        *
  * -------------------------------------------------------------------------- *
@@ -70,4 +70,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOMARKERFINALGOAL_H
+#endif // OPENSIM_MOCOMARKERFINALGOAL_H

@@ -1,5 +1,5 @@
-#ifndef MOCO_MOCOCUSTOMEFFORTGOAL_H
-#define MOCO_MOCOCUSTOMEFFORTGOAL_H
+#ifndef OPENSIM_MOCOCUSTOMEFFORTGOAL_H
+#define OPENSIM_MOCOCUSTOMEFFORTGOAL_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoCustomEffortGoal.h                                       *
  * -------------------------------------------------------------------------- *
@@ -45,4 +45,4 @@ protected:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOCUSTOMEFFORTGOAL_H
+#endif // OPENSIM_MOCOCUSTOMEFFORTGOAL_H

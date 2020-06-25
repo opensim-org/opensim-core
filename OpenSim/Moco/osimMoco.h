@@ -1,5 +1,5 @@
-#ifndef MOCO_OSIMMOCO_H
-#define MOCO_OSIMMOCO_H
+#ifndef OPENSIM_OSIMMOCO_H
+#define OPENSIM_OSIMMOCO_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: osimMoco.h                                                   *
  * -------------------------------------------------------------------------- *
@@ -63,4 +63,4 @@
 #include "ModelProcessor.h"
 #include "RegisterTypes_osimMoco.h"
 
-#endif // MOCO_OSIMMOCO_H
+#endif // OPENSIM_OSIMMOCO_H

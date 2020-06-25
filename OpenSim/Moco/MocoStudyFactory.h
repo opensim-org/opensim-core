@@ -1,5 +1,5 @@
-#ifndef MOCO_MOCOSTUDYUTILITIES_H
-#define MOCO_MOCOSTUDYUTILITIES_H
+#ifndef OPENSIM_MOCOSTUDYUTILITIES_H
+#define OPENSIM_MOCOSTUDYUTILITIES_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoStudyFactory.h                                           *
  * -------------------------------------------------------------------------- *
@@ -40,4 +40,4 @@ public:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOSTUDYUTILITIES_H
+#endif // OPENSIM_MOCOSTUDYUTILITIES_H

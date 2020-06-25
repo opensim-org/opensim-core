@@ -1,5 +1,5 @@
-#ifndef MOCO_OSIMMOCODLL_H
-#define MOCO_OSIMMOCODLL_H
+#ifndef OPENSIM_OSIMMOCODLL_H
+#define OPENSIM_OSIMMOCODLL_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: osimMocoDLL.h                                                *
  * -------------------------------------------------------------------------- *
@@ -28,4 +28,4 @@
     #endif
 #endif
 
-#endif // MOCO_OSIMMOCODLL_H
+#endif // OPENSIM_OSIMMOCODLL_H

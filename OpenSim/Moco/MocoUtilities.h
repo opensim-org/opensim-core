@@ -1,5 +1,5 @@
-#ifndef MOCO_MOCOUTILITIES_H
-#define MOCO_MOCOUTILITIES_H
+#ifndef OPENSIM_MOCOUTILITIES_H
+#define OPENSIM_MOCOUTILITIES_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoUtilities.h                                              *
  * -------------------------------------------------------------------------- *
@@ -807,4 +807,4 @@ SimTK::Real solveBisection(
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOUTILITIES_H
+#endif // OPENSIM_MOCOUTILITIES_H

@@ -1,5 +1,5 @@
-#ifndef MOCO_MODELFACTORY_H
-#define MOCO_MODELFACTORY_H
+#ifndef OPENSIM_MODELFACTORY_H
+#define OPENSIM_MODELFACTORY_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: ModelFactory.h                                               *
  * -------------------------------------------------------------------------- *
@@ -96,4 +96,4 @@ public:
 
 } // namespace OpenSim
 
-#endif // MOCO_MODELFACTORY_H
+#endif // OPENSIM_MODELFACTORY_H

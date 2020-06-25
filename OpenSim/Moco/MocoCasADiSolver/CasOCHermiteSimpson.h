@@ -1,5 +1,5 @@
-#ifndef MOCO_CASOCHERMITESIMPSON_H
-#define MOCO_CASOCHERMITESIMPSON_H
+#ifndef OPENSIM_CASOCHERMITESIMPSON_H
+#define OPENSIM_CASOCHERMITESIMPSON_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: CasOCHermiteSimpson.h                                        *
  * -------------------------------------------------------------------------- *
@@ -78,4 +78,4 @@ private:
 
 } // namespace CasOC
 
-#endif // MOCO_CASOCHERMITESIMPSON_H
+#endif // OPENSIM_CASOCHERMITESIMPSON_H

@@ -1,5 +1,5 @@
-#ifndef MOCO_TROPTERPROBLEM_H
-#define MOCO_TROPTERPROBLEM_H
+#ifndef OPENSIM_TROPTERPROBLEM_H
+#define OPENSIM_TROPTERPROBLEM_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: TropterProblem.h                                             *
  * -------------------------------------------------------------------------- *
@@ -734,4 +734,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_TROPTERPROBLEM_H
+#endif // OPENSIM_TROPTERPROBLEM_H

@@ -1,5 +1,5 @@
-#ifndef MOCO_MOCOINITIALACTIVATIONGOAL_H
-#define MOCO_MOCOINITIALACTIVATIONGOAL_H
+#ifndef OPENSIM_MOCOINITIALACTIVATIONGOAL_H
+#define OPENSIM_MOCOINITIALACTIVATIONGOAL_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoInitialActivationGoal.h                                  *
  * -------------------------------------------------------------------------- *
@@ -53,4 +53,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOINITIALACTIVATIONGOAL_H
+#endif // OPENSIM_MOCOINITIALACTIVATIONGOAL_H

@@ -1,5 +1,5 @@
-#ifndef MOCO_MOCOTRACK_H
-#define MOCO_MOCOTRACK_H
+#ifndef OPENSIM_MOCOTRACK_H
+#define OPENSIM_MOCOTRACK_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoTrack.h                                                  *
  * -------------------------------------------------------------------------- *
@@ -284,4 +284,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOTRACK_H
+#endif // OPENSIM_MOCOTRACK_H

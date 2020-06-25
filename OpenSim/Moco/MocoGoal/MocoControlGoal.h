@@ -1,5 +1,5 @@
-#ifndef MOCO_MOCOCONTROLGOAL_H
-#define MOCO_MOCOCONTROLGOAL_H
+#ifndef OPENSIM_MOCOCONTROLGOAL_H
+#define OPENSIM_MOCOCONTROLGOAL_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoControlGoal.h                                            *
  * -------------------------------------------------------------------------- *
@@ -123,4 +123,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOCONTROLGOAL_H
+#endif // OPENSIM_MOCOCONTROLGOAL_H

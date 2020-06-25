@@ -1,5 +1,5 @@
-#ifndef MOCO_MOCOFRAMEDISTANCECONSTRAINT_H
-#define MOCO_MOCOFRAMEDISTANCECONSTRAINT_H
+#ifndef OPENSIM_MOCOFRAMEDISTANCECONSTRAINT_H
+#define OPENSIM_MOCOFRAMEDISTANCECONSTRAINT_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoFrameDistanceConstraint.h                                *
  * -------------------------------------------------------------------------- *
@@ -149,4 +149,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOFRAMEDISTANCECONSTRAINT_H
+#endif // OPENSIM_MOCOFRAMEDISTANCECONSTRAINT_H

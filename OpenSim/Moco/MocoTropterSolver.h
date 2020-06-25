@@ -1,5 +1,5 @@
-#ifndef MOCO_MOCOTROPTERSOLVER_H
-#define MOCO_MOCOTROPTERSOLVER_H
+#ifndef OPENSIM_MOCOTROPTERSOLVER_H
+#define OPENSIM_MOCOTROPTERSOLVER_H
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoTropterSolver.h                                          *
  * -------------------------------------------------------------------------- *
@@ -176,4 +176,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOTROPTERSOLVER_H
+#endif // OPENSIM_MOCOTROPTERSOLVER_H
