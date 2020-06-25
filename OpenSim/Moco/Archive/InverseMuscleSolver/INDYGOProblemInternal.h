@@ -1,7 +1,7 @@
-#ifndef MOCO_INDYGOPROBLEMINTERNAL_H
-#define MOCO_INDYGOPROBLEMINTERNAL_H
+#ifndef OPENSIM_INDYGOPROBLEMINTERNAL_H
+#define OPENSIM_INDYGOPROBLEMINTERNAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: INDYGOProblemInternal.cpp                                    *
+ * OpenSim: INDYGOProblemInternal.cpp                                         *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -637,4 +637,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_INDYGOPROBLEMINTERNAL_H
+#endif // OPENSIM_INDYGOPROBLEMINTERNAL_H

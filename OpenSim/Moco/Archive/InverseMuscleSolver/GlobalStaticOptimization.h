@@ -1,7 +1,7 @@
-#ifndef MOCO_GLOBALSTATICOPTIMIZATION_H
-#define MOCO_GLOBALSTATICOPTIMIZATION_H
+#ifndef OPENSIM_GLOBALSTATICOPTIMIZATION_H
+#define OPENSIM_GLOBALSTATICOPTIMIZATION_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: GlobalStaticOptimization.h                                   *
+ * OpenSim: GlobalStaticOptimization.h                                        *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -84,4 +84,4 @@ public:
 
 } // namespace OpenSim
 
-#endif // MOCO_GLOBALSTATICOPTIMIZATION_H
+#endif // OPENSIM_GLOBALSTATICOPTIMIZATION_H

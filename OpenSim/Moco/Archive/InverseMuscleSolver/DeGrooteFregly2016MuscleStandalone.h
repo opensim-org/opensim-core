@@ -1,7 +1,7 @@
-#ifndef MOCO_DEGROOTEFREGLY2016MUSCLESTANDALONE_H_
-#define MOCO_DEGROOTEFREGLY2016MUSCLESTANDALONE_H_
+#ifndef OPENSIM_DEGROOTEFREGLY2016MUSCLESTANDALONE_H_
+#define OPENSIM_DEGROOTEFREGLY2016MUSCLESTANDALONE_H_
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: DeGrooteFregly2016MuscleStandalone.h                         *
+ * OpenSim: DeGrooteFregly2016MuscleStandalone.h                              *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -348,4 +348,4 @@ private:
     double _fiber_width = NaN;
 };
 
-#endif // MOCO_DEGROOTEFREGLY2016MUSCLESTANDALONE_H_
+#endif // OPENSIM_DEGROOTEFREGLY2016MUSCLESTANDALONE_H_

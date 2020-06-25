@@ -1,7 +1,7 @@
-#ifndef MOCO_INDYGO_H
-#define MOCO_INDYGO_H
+#ifndef OPENSIM_INDYGO_H
+#define OPENSIM_INDYGO_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: INDYGO.h                                                     *
+ * OpenSim: INDYGO.h                                                          *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -237,4 +237,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_INDYGO_H
+#endif // OPENSIM_INDYGO_H

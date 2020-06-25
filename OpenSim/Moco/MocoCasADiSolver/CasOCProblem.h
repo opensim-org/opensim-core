@@ -1,7 +1,7 @@
-#ifndef MOCO_CASOCPROBLEM_H
-#define MOCO_CASOCPROBLEM_H
+#ifndef OPENSIM_CASOCPROBLEM_H
+#define OPENSIM_CASOCPROBLEM_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: CasOCProblem.h                                               *
+ * OpenSim: CasOCProblem.h                                                    *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2018 Stanford University and the Authors                     *
  *                                                                            *
@@ -640,4 +640,4 @@ private:
 
 } // namespace CasOC
 
-#endif // MOCO_CASOCPROBLEM_H
+#endif // OPENSIM_CASOCPROBLEM_H

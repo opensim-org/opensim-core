@@ -1,7 +1,7 @@
-#ifndef MOCO_MOCOCONTROLGOAL_H
-#define MOCO_MOCOCONTROLGOAL_H
+#ifndef OPENSIM_MOCOCONTROLGOAL_H
+#define OPENSIM_MOCOCONTROLGOAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoControlGoal.h                                            *
+ * OpenSim: MocoControlGoal.h                                                 *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -123,4 +123,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOCONTROLGOAL_H
+#endif // OPENSIM_MOCOCONTROLGOAL_H

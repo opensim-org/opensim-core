@@ -1,7 +1,7 @@
-#ifndef MOCO_MOCOTRANSLATIONTRACKINGGOAL_H
-#define MOCO_MOCOTRANSLATIONTRACKINGGOAL_H
+#ifndef OPENSIM_MOCOTRANSLATIONTRACKINGGOAL_H
+#define OPENSIM_MOCOTRANSLATIONTRACKINGGOAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoTranslationTrackingGoal.h                                *
+ * OpenSim: MocoTranslationTrackingGoal.h                                     *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -175,4 +175,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOTRANSLATIONTRACKINGGOAL_H
+#endif // OPENSIM_MOCOTRANSLATIONTRACKINGGOAL_H

@@ -1,7 +1,7 @@
-#ifndef MOCO_MOCOCONTROLBOUNDCONSTRAINT_H
-#define MOCO_MOCOCONTROLBOUNDCONSTRAINT_H
+#ifndef OPENSIM_MOCOCONTROLBOUNDCONSTRAINT_H
+#define OPENSIM_MOCOCONTROLBOUNDCONSTRAINT_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoControlBoundConstraint.h                                 *
+ * OpenSim: MocoControlBoundConstraint.h                                      *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -112,4 +112,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOCONTROLBOUNDCONSTRAINT_H
+#endif // OPENSIM_MOCOCONTROLBOUNDCONSTRAINT_H
