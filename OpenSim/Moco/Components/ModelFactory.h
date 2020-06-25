@@ -1,7 +1,7 @@
 #ifndef OPENSIM_MODELFACTORY_H
 #define OPENSIM_MODELFACTORY_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: ModelFactory.h                                               *
+ * OpenSim: ModelFactory.h                                                    *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2018 Stanford University and the Authors                     *
  *                                                                            *

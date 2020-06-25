@@ -1,7 +1,7 @@
 #ifndef OPENSIM_TROPTERPROBLEM_H
 #define OPENSIM_TROPTERPROBLEM_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: TropterProblem.h                                             *
+ * OpenSim: TropterProblem.h                                                  *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2018 Stanford University and the Authors                     *
  *                                                                            *

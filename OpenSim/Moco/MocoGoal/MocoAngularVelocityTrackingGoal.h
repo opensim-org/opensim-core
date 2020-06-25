@@ -1,7 +1,7 @@
 #ifndef OPENSIM_MOCOANGULARVELOCITYTRACKINGGOAL_H
 #define OPENSIM_MOCOANGULARVELOCITYTRACKINGGOAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoAngularVelocityTrackingGoal.h                            *
+ * OpenSim: MocoAngularVelocityTrackingGoal.h                                 *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *

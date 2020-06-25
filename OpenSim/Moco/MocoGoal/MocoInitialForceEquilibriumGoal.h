@@ -1,7 +1,7 @@
 #ifndef OPENSIM_MOCOINITIALFORCEEQUILIBRIUMGOAL_H
 #define OPENSIM_MOCOINITIALFORCEEQUILIBRIUMGOAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoInitialForceEquilibriumGoal.h                            *
+ * OpenSim: MocoInitialForceEquilibriumGoal.h                                 *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *

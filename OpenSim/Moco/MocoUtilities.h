@@ -1,7 +1,7 @@
 #ifndef OPENSIM_MOCOUTILITIES_H
 #define OPENSIM_MOCOUTILITIES_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoUtilities.h                                              *
+ * OpenSim: MocoUtilities.h                                                   *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *

@@ -1,7 +1,7 @@
 #ifndef OPENSIM_MOCODIRECTCOLLOCATIONSOLVER_H
 #define OPENSIM_MOCODIRECTCOLLOCATIONSOLVER_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoDirectCollocationSolver.h                                *
+ * OpenSim: MocoDirectCollocationSolver.h                                     *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *

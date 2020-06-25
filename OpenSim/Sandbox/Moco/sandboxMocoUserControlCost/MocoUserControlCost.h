@@ -1,7 +1,7 @@
 #ifndef OPENSIM_MOCOUSERCONTROLCOST_H
 #define OPENSIM_MOCOUSERCONTROLCOST_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoUserControlCost.h                                        *
+ * OpenSim: MocoUserControlCost.h                                             *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *

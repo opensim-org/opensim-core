@@ -1,7 +1,7 @@
 #ifndef OPENSIM_CASOCITERATE_H
 #define OPENSIM_CASOCITERATE_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: CasOCIterate.h                                               *
+ * OpenSim: CasOCIterate.h                                                    *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *

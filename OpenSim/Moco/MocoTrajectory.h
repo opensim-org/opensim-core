@@ -1,7 +1,7 @@
 #ifndef OPENSIM_MOCOTRAJECTORY_H
 #define OPENSIM_MOCOTRAJECTORY_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoTrajectory.h                                             *
+ * OpenSim: MocoTrajectory.h                                                  *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *

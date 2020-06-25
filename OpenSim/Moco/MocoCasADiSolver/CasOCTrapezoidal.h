@@ -1,7 +1,7 @@
 #ifndef OPENSIM_CASOCTRAPEZOIDAL_H
 #define OPENSIM_CASOCTRAPEZOIDAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: CasOCTrapezoidal.h                                           *
+ * OpenSim: CasOCTrapezoidal.h                                                *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2018 Stanford University and the Authors                     *
  *                                                                            *

@@ -1,7 +1,7 @@
 #ifndef OPENSIM_MOCOMARKERFINALGOAL_H
 #define OPENSIM_MOCOMARKERFINALGOAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoMarkerFinalGoal.h                                        *
+ * OpenSim: MocoMarkerFinalGoal.h                                             *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *

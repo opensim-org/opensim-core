@@ -1,7 +1,7 @@
 #ifndef OPENSIM_MOCOINITIALACTIVATIONGOAL_H
 #define OPENSIM_MOCOINITIALACTIVATIONGOAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoInitialActivationGoal.h                                  *
+ * OpenSim: MocoInitialActivationGoal.h                                       *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *

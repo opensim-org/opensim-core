@@ -1,7 +1,7 @@
 #ifndef OPENSIM_OSIMMOCODLL_H
 #define OPENSIM_OSIMMOCODLL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: osimMocoDLL.h                                                *
+ * OpenSim: osimMocoDLL.h                                                     *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *

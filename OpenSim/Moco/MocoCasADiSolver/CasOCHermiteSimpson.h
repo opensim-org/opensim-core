@@ -1,7 +1,7 @@
 #ifndef OPENSIM_CASOCHERMITESIMPSON_H
 #define OPENSIM_CASOCHERMITESIMPSON_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: CasOCHermiteSimpson.h                                        *
+ * OpenSim: CasOCHermiteSimpson.h                                             *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *

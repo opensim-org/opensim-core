@@ -1,7 +1,7 @@
 #ifndef OPENSIM_MOCOSTUDY_H
 #define OPENSIM_MOCOSTUDY_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoStudy.h                                                   *
+ * OpenSim: MocoStudy.h                                                       *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *

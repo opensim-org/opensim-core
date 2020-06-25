@@ -1,7 +1,7 @@
 #ifndef OPENSIM_REGISTERTYPES_OSIMMOCO_H
 #define OPENSIM_REGISTERTYPES_OSIMMOCO_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: RegisterTypes_osimMoco.h                                     *
+ * OpenSim: RegisterTypes_osimMoco.h                                          *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *

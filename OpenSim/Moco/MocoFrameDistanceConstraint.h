@@ -1,7 +1,7 @@
 #ifndef OPENSIM_MOCOFRAMEDISTANCECONSTRAINT_H
 #define OPENSIM_MOCOFRAMEDISTANCECONSTRAINT_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoFrameDistanceConstraint.h                                *
+ * OpenSim: MocoFrameDistanceConstraint.h                                     *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *

@@ -1,7 +1,7 @@
 #ifndef OPENSIM_POSITIONMOTION_H
 #define OPENSIM_POSITIONMOTION_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: PositionMotion.h                                             *
+ * OpenSim: PositionMotion.h                                                  *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *

@@ -1,7 +1,7 @@
 #ifndef OPENSIM_MOCOCASOCPROBLEM_H
 #define OPENSIM_MOCOCASOCPROBLEM_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoCasOCProblem.h                                           *
+ * OpenSim: MocoCasOCProblem.h                                                *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2018 Stanford University and the Authors                     *
  *                                                                            *

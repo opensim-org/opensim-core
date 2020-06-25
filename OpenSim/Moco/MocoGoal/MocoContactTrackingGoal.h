@@ -1,7 +1,7 @@
 #ifndef OPENSIM_MOCOCONTACTTRACKINGGOAL_H
 #define OPENSIM_MOCOCONTACTTRACKINGGOAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoContactTrackingGoal.h                                    *
+ * OpenSim: MocoContactTrackingGoal.h                                         *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2020 Stanford University and the Authors                     *
  *                                                                            *

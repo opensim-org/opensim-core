@@ -1,7 +1,7 @@
 #ifndef OPENSIM_MOCOSTATETRACKINGGOAL_H
 #define OPENSIM_MOCOSTATETRACKINGGOAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoStateTrackingGoal.h                                      *
+ * OpenSim: MocoStateTrackingGoal.h                                           *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *

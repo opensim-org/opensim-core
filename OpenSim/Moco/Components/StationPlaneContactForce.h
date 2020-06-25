@@ -1,7 +1,7 @@
 #ifndef OPENSIM_STATIONPLANECONTACTFORCE_H
 #define OPENSIM_STATIONPLANECONTACTFORCE_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: StationPlaneContactForce.h                                   *
+ * OpenSim: StationPlaneContactForce.h                                        *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *

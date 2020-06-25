@@ -1,7 +1,7 @@
 #ifndef OPENSIM_CASOCSOLVER_H
 #define OPENSIM_CASOCSOLVER_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoCasOCSolver.h                                            *
+ * OpenSim: MocoCasOCSolver.h                                                 *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2018 Stanford University and the Authors                     *
  *                                                                            *

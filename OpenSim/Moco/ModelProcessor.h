@@ -1,7 +1,7 @@
 #ifndef OPENSIM_MODELPROCESSOR_H
 #define OPENSIM_MODELPROCESSOR_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: ModelProcessor.h                                             *
+ * OpenSim: ModelProcessor.h                                                  *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *

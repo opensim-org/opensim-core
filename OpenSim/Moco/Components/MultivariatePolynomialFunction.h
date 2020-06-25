@@ -1,7 +1,7 @@
 #ifndef OPENSIM_MULTIVARIATEPOLYNOMIAL_FUNCTION_H_
 #define OPENSIM_MULTIVARIATEPOLYNOMIAL_FUNCTION_H_
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MultivariatePolynomialFunction.h                             *
+ * OpenSim: MultivariatePolynomialFunction.h                                  *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017-19 Stanford University and the Authors                  *
  *                                                                            *

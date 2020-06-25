@@ -1,7 +1,7 @@
 #ifndef OPENSIM_MODELOPERATORS_H
 #define OPENSIM_MODELOPERATORS_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: ModelOperators.h                                             *
+ * OpenSim: ModelOperators.h                                                  *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *

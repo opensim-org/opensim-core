@@ -1,7 +1,7 @@
 #ifndef OPENSIM_MOCOINITIALVELOCITYEQUILIBRIUMDGFGOAL_H
 #define OPENSIM_MOCOINITIALVELOCITYEQUILIBRIUMDGFGOAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoInitialVelocityEquilibriumDGFGoal.h                      *
+ * OpenSim: MocoInitialVelocityEquilibriumDGFGoal.h                           *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *

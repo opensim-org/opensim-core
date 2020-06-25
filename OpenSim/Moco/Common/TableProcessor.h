@@ -1,7 +1,7 @@
 #ifndef OPENSIM_TABLEPROCESSOR_H
 #define OPENSIM_TABLEPROCESSOR_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: TableProcessor.h                                             *
+ * OpenSim: TableProcessor.h                                                  *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *

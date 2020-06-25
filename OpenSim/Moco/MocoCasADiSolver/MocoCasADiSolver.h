@@ -1,7 +1,7 @@
 #ifndef OPENSIM_MOCOCASADISOLVER_H
 #define OPENSIM_MOCOCASADISOLVER_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoCasADiSolver.h                                           *
+ * OpenSim: MocoCasADiSolver.h                                                *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *

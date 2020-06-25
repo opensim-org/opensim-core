@@ -1,7 +1,7 @@
 #ifndef OPENSIM_REGISTERTYPES_OSIMMOCOCUSTOMEFFORTGOAL_H
 #define OPENSIM_REGISTERTYPES_OSIMMOCOCUSTOMEFFORTGOAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: RegisterTypes_osimMocoCustomEffortGoal.h                     *
+ * OpenSim: RegisterTypes_osimMocoCustomEffortGoal.h                          *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *

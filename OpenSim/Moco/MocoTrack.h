@@ -1,7 +1,7 @@
 #ifndef OPENSIM_MOCOTRACK_H
 #define OPENSIM_MOCOTRACK_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoTrack.h                                                  *
+ * OpenSim: MocoTrack.h                                                       *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *

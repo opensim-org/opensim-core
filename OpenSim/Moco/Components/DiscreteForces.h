@@ -1,7 +1,7 @@
 #ifndef OPENSIM_DISCRETEFORCES_H
 #define OPENSIM_DISCRETEFORCES_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: DiscreteForces.h                                             *
+ * OpenSim: DiscreteForces.h                                                  *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *

@@ -1,7 +1,7 @@
 #ifndef OPENSIM_ACCELERATIONMOTION_H
 #define OPENSIM_ACCELERATIONMOTION_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: AccelerationMotion.h                                         *
+ * OpenSim: AccelerationMotion.h                                              *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *

@@ -1,7 +1,7 @@
 #ifndef OPENSIM_MOCOCUSTOMEFFORTGOAL_H
 #define OPENSIM_MOCOCUSTOMEFFORTGOAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoCustomEffortGoal.h                                       *
+ * OpenSim: MocoCustomEffortGoal.h                                            *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *

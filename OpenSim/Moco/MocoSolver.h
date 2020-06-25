@@ -1,7 +1,7 @@
 #ifndef OPENSIM_MOCOSOLVER_H
 #define OPENSIM_MOCOSOLVER_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoSolver.h                                                 *
+ * OpenSim: MocoSolver.h                                                      *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *

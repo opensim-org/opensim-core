@@ -1,7 +1,7 @@
 #ifndef OPENSIM_MOCOBOUNDS_H
 #define OPENSIM_MOCOBOUNDS_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoBounds.h                                                 *
+ * OpenSim: MocoBounds.h                                                      *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *

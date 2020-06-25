@@ -1,7 +1,7 @@
 #ifndef OPENSIM_DISCRETECONTROLLER_H
 #define OPENSIM_DISCRETECONTROLLER_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: DiscreteController.h                                         *
+ * OpenSim: DiscreteController.h                                              *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2020 Stanford University and the Authors                     *
  *                                                                            *

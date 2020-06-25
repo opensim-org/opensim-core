@@ -1,7 +1,7 @@
 #ifndef OPENSIM_CASOCFUNCTION_H
 #define OPENSIM_CASOCFUNCTION_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoCasOCFunction.h                                          *
+ * OpenSim: MocoCasOCFunction.h                                               *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2018 Stanford University and the Authors                     *
  *                                                                            *
