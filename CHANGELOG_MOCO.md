@@ -3,6 +3,9 @@ Moco Change Log
 
 0.5.0 (in development)
 ----------------------
+- 2020-06-24: A MocoProblem's control variables are decoupled from a Model's
+              actuator controls.
+
 - 2020-06-20: Use a more recent commit of CasADi from github.com/casadi (instead
               of using our own fork).
 

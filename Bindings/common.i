@@ -119,6 +119,7 @@ namespace OpenSim {
 %template(ComponentIterator) OpenSim::ComponentListIterator<const OpenSim::Component>;
 %template(getComponentsList) OpenSim::Component::getComponentList<OpenSim::Component>;
 
+%include <OpenSim/Common/SignalGenerator.h>
 
 %include <OpenSim/Common/Scale.h>
 %template(SetScales) OpenSim::Set<OpenSim::Scale, OpenSim::Object>;

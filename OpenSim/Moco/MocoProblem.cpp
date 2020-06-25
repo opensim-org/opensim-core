@@ -102,6 +102,13 @@ void MocoPhase::setStateInfoPattern(const std::string& pattern,
     else
         upd_state_infos_pattern(idx) = info;
 }
+void MocoPhase::setAddControlsForActuators(bool tf) {
+    set_add_controls_for_actuators(tf);
+}
+void MocoPhase::addControl(const std::string& name, const MocoBounds& bounds,
+        const MocoInitialBounds& initial, const MocoFinalBounds& final) {
+    // TODO
+}
 void MocoPhase::printControlNamesWithSubstring(const std::string& substring) {
     std::vector<std::string> foundNames;
     Model model = get_model().process();
@@ -233,6 +240,13 @@ void MocoProblem::setStateInfo(const std::string& name,
         const MocoBounds& bounds, const MocoInitialBounds& initial,
         const MocoFinalBounds& final) {
     upd_phases(0).setStateInfo(name, bounds, initial, final);
+}
+void MocoProblem::setAddControlsForActuators(bool tf) {
+    upd_phases(0).setAddControlsForActuators(tf);
+}
+void MocoProblem::addControl(const std::string& name, const MocoBounds& bounds,
+        const MocoInitialBounds& initial, const MocoFinalBounds& final) {
+    upd_phases(0).addControl(name, bounds, initial, final);
 }
 void MocoProblem::printControlNamesWithSubstring(const std::string& name) {
     upd_phases(0).printControlNamesWithSubstring(name);

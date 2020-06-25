@@ -148,6 +148,11 @@ public:
     void setStateInfoPattern(const std::string& pattern,
             const MocoBounds& bounds, const MocoInitialBounds& init = {},
             const MocoFinalBounds& final = {});
+    /// Set whether Moco control variables should be automatically created for
+    /// all actuators in the model. Default: true
+    void setAddControlsForActuators(bool tf);
+    void addControl(const std::string& name, const MocoBounds&,
+            const MocoInitialBounds& = {}, const MocoFinalBounds& = {});
     /// Find and print the names of all control variables containing a substring.
     void printControlNamesWithSubstring(const std::string& name);
     /// Set information about a single control variable in this phase.
@@ -373,6 +378,9 @@ protected: // Protected so that doxygen shows the properties.
     OpenSim_DECLARE_LIST_PROPERTY(state_infos_pattern, MocoVariableInfo,
             "Set state variable bounds for all states matching a regular "
             "expression.");
+    OpenSim_DECLARE_PROPERTY(add_controls_for_actuators, bool,
+            "Automatically create a Moco control variable for each actuator in"
+            "the model (default: true).");
     OpenSim_DECLARE_LIST_PROPERTY(
             control_infos, MocoVariableInfo, "The control variables' bounds.");
     OpenSim_DECLARE_LIST_PROPERTY(control_infos_pattern, MocoVariableInfo,
@@ -457,7 +465,15 @@ public:
     void setStateInfoPattern(const std::string& pattern,
             const MocoBounds& bounds, const MocoInitialBounds& init = {},
             const MocoFinalBounds& final = {});
-    /// Find and print the names of all state variables containing a substring.
+    /// Set whether Moco control variables should be automatically created for
+    /// all actuators in the model. This applies only to phase 0.
+    /// Default: true
+    void setAddControlsForActuators(bool tf);
+    void addControl(const std::string& name, const MocoBounds&,
+            const MocoInitialBounds& = {}, const MocoFinalBounds& = {});
+    /// Find and print the names of all actuator control variables containing a
+    /// substring.
+    /// TODO this must be renamed; printActuatorControlNamesWithSubstring()?
     void printControlNamesWithSubstring(const std::string& name);
     /// Set bounds for a control variable for phase 0.
     void setControlInfo(const std::string& name, const MocoBounds&,

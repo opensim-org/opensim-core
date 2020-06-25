@@ -11,6 +11,7 @@ on:
   push:
     branches:
       - master
+      - moco_model_controllers
     tags:
       - '*'
 

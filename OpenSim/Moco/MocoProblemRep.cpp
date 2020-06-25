@@ -362,18 +362,21 @@ void MocoProblemRep::initialize() {
 
     // Control infos.
     // --------------
-    auto controlNames = createControlNamesFromModel(m_model_base);
-    for (int i = 0; i < ph0.getProperty_control_infos_pattern().size(); ++i) {
-        const auto& pattern = ph0.get_control_infos_pattern(i).getName();
-        auto regexPattern = std::regex(pattern);
-        for (int j = 0; j < (int)controlNames.size(); ++j) {
-            if (std::regex_match(controlNames[j], regexPattern)) {
-                m_control_infos[controlNames[j]] =
-                        ph0.get_control_infos_pattern(i);
-                m_control_infos[controlNames[j]].setName(controlNames[j]);
+    // TODO if (ph0.getAddControlsForActuators()) {
+        auto controlNames = createControlNamesFromModel(m_model_base);
+        for (int i = 0; i < ph0.getProperty_control_infos_pattern().size();
+                ++i) {
+            const auto& pattern = ph0.get_control_infos_pattern(i).getName();
+            auto regexPattern = std::regex(pattern);
+            for (int j = 0; j < (int)controlNames.size(); ++j) {
+                if (std::regex_match(controlNames[j], regexPattern)) {
+                    m_control_infos[controlNames[j]] =
+                            ph0.get_control_infos_pattern(i);
+                    m_control_infos[controlNames[j]].setName(controlNames[j]);
+                }
             }
         }
-    }
+    // }
 
     for (int i = 0; i < ph0.getProperty_control_infos().size(); ++i) {
         const auto& name = ph0.get_control_infos(i).getName();

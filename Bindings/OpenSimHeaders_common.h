@@ -47,6 +47,7 @@
 #include <OpenSim/Common/Scale.h>
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Common/Set.h>
+#include <OpenSim/Common/SignalGenerator.h>
 #include <OpenSim/Common/SimmSpline.h>
 #include <OpenSim/Common/Sine.h>
 #include <OpenSim/Common/SmoothSegmentedFunction.h>
