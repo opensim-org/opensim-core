@@ -28,6 +28,15 @@ namespace OpenSim {
 
 class MocoCasOCProblem;
 
+class MocoCasADiSolverNotAvailable : public Exception {
+public:
+    MocoCasADiSolverNotAvailable(
+            const std::string& file, int line, const std::string& func)
+            : Exception(file, line, func) {
+        addMessage("MocoCasADiSolver is not available.");
+    }
+};
+
 /// This solver uses the CasADi library (https://casadi.org) to convert the
 /// MocoProblem into a generic nonlinear programming problem. CasADi efficiently
 /// calculcates the derivatives required to solve MocoProblem%s, and may
@@ -160,6 +169,10 @@ public:
 
     MocoCasADiSolver();
 
+    /// Returns true if Moco was compiled with the CasADi library; returns false
+    /// otherwise.
+    static bool isAvailable();
+
     /// @name Specifying an initial guess
     /// @{
 
@@ -203,11 +216,6 @@ public:
 
     /// @}
 
-    /// @cond
-    /// This is used to generate a warning.
-    void setRunningInPython(bool value) const { m_runningInPython = value; }
-    /// @endcond
-
 protected:
     MocoSolution solveImpl() const override;
 
@@ -227,8 +235,6 @@ private:
     MocoTrajectory m_guessFromAPI;
     mutable SimTK::ResetOnCopy<MocoTrajectory> m_guessFromFile;
     mutable SimTK::ReferencePtr<const MocoTrajectory> m_guessToUse;
-
-    mutable bool m_runningInPython = false;
 };
 
 } // namespace OpenSim

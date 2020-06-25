@@ -1084,7 +1084,8 @@ Model createHangingMuscleModel(
     return model;
 }
 
-TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
+TEMPLATE_TEST_CASE(
+        "Hanging muscle minimum time", "[casadi]", MocoCasADiSolver) {
     auto ignoreActivationDynamics = GENERATE(true, false);
     auto ignoreTendonCompliance = GENERATE(true, false);
     auto isTendonDynamicsExplicit = GENERATE(false);
@@ -1263,7 +1264,7 @@ TEMPLATE_TEST_CASE("Hanging muscle minimum time", "", MocoCasADiSolver) {
 }
 
 TEST_CASE("ActivationCoordinateActuator") {
-    // TODO create a problem with ACA and ensure the activation bounds are
+    // Create a problem with ACA and ensure the activation bounds are
     // set as expected.
     auto model = ModelFactory::createSlidingPointMass();
     auto* actu = new ActivationCoordinateActuator();

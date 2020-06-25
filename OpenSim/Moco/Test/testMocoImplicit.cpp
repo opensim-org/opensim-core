@@ -112,7 +112,7 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
 }
 
 TEMPLATE_TEST_CASE("Similar solutions between implicit and explicit dynamics",
-        "[implicit]", MocoTropterSolver, MocoCasADiSolver) {
+        "[implicit]", MocoCasADiSolver, MocoTropterSolver) {
     GIVEN("solutions to implicit and explicit problems") {
 
         auto solutionImplicit =
@@ -166,7 +166,7 @@ TEMPLATE_TEST_CASE("Similar solutions between implicit and explicit dynamics",
 }
 
 TEMPLATE_TEST_CASE("Combining implicit dynamics mode with path constraints",
-        "[implicit]", MocoTropterSolver, MocoCasADiSolver) {
+        "[implicit]", MocoCasADiSolver, MocoTropterSolver) {
     class MyPathConstraint : public MocoPathConstraint {
         OpenSim_DECLARE_CONCRETE_OBJECT(MyPathConstraint, MocoPathConstraint);
         void initializeOnModelImpl(
@@ -205,7 +205,7 @@ TEMPLATE_TEST_CASE("Combining implicit dynamics mode with path constraints",
 }
 
 TEMPLATE_TEST_CASE("Combining implicit dynamics with kinematic constraints",
-        "[implicit]", /*MocoTropterSolver,*/ MocoCasADiSolver) {
+        "[implicit][casadi]", /*MocoTropterSolver,*/ MocoCasADiSolver) {
     GIVEN("MocoProblem with a kinematic constraint") {
         MocoStudy study;
         auto& prob = study.updProblem();
@@ -403,6 +403,7 @@ TEST_CASE("Implicit auxiliary dynamics") {
         }
     }
 
+#ifdef OPENISM_WITH_CASADI
     SECTION("Direct collocation implicit") {
        MocoStudy study;
        auto& problem = study.updProblem();
@@ -417,6 +418,7 @@ TEST_CASE("Implicit auxiliary dynamics") {
        // Correct answer obtained from Matlab with ode45.
        CHECK(final == Approx(1.732).margin(1e-3));
     }
+#endif
 
     SECTION("MocoTropterSolver does not support implicit auxiliary dynamics") {
         MocoStudy study;

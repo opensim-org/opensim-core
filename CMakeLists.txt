@@ -169,16 +169,10 @@ mark_as_advanced(OPENSIM_BUILD_INDIVIDUAL_APPS)
 
 # Moco settings.
 # --------------
-option(MOCO_BUILD_EXAMPLES
-    "Build, test, and install Moco C++ examples." ON)
-
-# TODO Rename to OPENSIM_WITH_TROPTER.
-option(MOCO_WITH_TROPTER
-    "Build the tropter optimal control library." ON)
-if(NOT MOCO_WITH_TROPTER)
-    # TODO
-    message(WARNING "MOCO_WITH_TROPTER=OFF is not supported yet.")
-endif()
+option(OPENSIM_WITH_CASADI
+        "Build CasADi support for Moco (MocoCasADiSolver)." ON)
+option(OPENSIM_WITH_TROPTER
+        "Build the tropter optimal control library, for use in MocoTropterSolver." ON)
 
 
 # Configure installation directories across platforms.

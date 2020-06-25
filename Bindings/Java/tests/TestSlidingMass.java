@@ -78,17 +78,19 @@ class TestSlidingMass {
 
     // Configure the solver.
     // =====================
-    MocoTropterSolver ms = study.initTropterSolver();
-    ms.set_num_mesh_intervals(100);
+    if (MocoCasADiSolver.isAvailable()) {
+      MocoCasADiSolver ms = study.initCasADiSolver();
+      ms.set_num_mesh_intervals(100);
 
-    // Now that we've finished setting up the tool, print it to a file.
-    study.print("sliding_mass.omoco");
+      // Now that we've finished setting up the tool, print it to a file.
+      study.print("sliding_mass.omoco");
 
-    // Solve the problem.
-    // ==================
-    MocoSolution solution = study.solve();
+      // Solve the problem.
+      // ==================
+      MocoSolution solution = study.solve();
 
-    solution.write("sliding_mass_solution.sto");
+      solution.write("sliding_mass_solution.sto");
+    }
   }
   public static void main(String[] args) {
     try {
