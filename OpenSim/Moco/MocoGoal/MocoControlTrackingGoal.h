@@ -1,7 +1,7 @@
-#ifndef MOCO_MOCOCONTROLTRACKINGGOAL_H
-#define MOCO_MOCOCONTROLTRACKINGGOAL_H
+#ifndef OPENSIM_MOCOCONTROLTRACKINGGOAL_H
+#define OPENSIM_MOCOCONTROLTRACKINGGOAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoControlTrackingGoal.h                                    *
+ * OpenSim: MocoControlTrackingGoal.h                                         *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2020 Stanford University and the Authors                     *
  *                                                                            *
@@ -248,4 +248,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOCONTROLTRACKINGGOAL_H
+#endif // OPENSIM_MOCOCONTROLTRACKINGGOAL_H

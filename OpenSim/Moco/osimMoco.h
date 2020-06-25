@@ -1,7 +1,7 @@
-#ifndef MOCO_OSIMMOCO_H
-#define MOCO_OSIMMOCO_H
+#ifndef OPENSIM_OSIMMOCO_H
+#define OPENSIM_OSIMMOCO_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: osimMoco.h                                                   *
+ * OpenSim: osimMoco.h                                                        *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -62,4 +62,4 @@
 #include "ModelProcessor.h"
 #include "RegisterTypes_osimMoco.h"
 
-#endif // MOCO_OSIMMOCO_H
+#endif // OPENSIM_OSIMMOCO_H

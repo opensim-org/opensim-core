@@ -50,8 +50,8 @@ std::unique_ptr<Model> createSlidingMassModel() {
 }
 
 /// Test the result of a sliding mass minimum effort problem.
-TEMPLATE_TEST_CASE(
-        "Test MocoControlGoal", "", MocoTropterSolver, MocoCasADiSolver) {
+TEMPLATE_TEST_CASE("Test MocoControlGoal", "",
+        MocoCasADiSolver, MocoTropterSolver) {
     const int N = 9;          // mesh intervals
     const int Nc = 2 * N + 1; // collocation points (Hermite-Simpson)
     MocoSolution sol1;
@@ -255,8 +255,8 @@ void testDoublePendulumTracking(MocoStudy study,
             solutionTracking.getStatesTrajectory(), 1e-1);
 }
 
-TEMPLATE_TEST_CASE("Test tracking goals", "", MocoTropterSolver,
-        MocoCasADiSolver) {
+TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
+        MocoTropterSolver) {
 
     // Start with double pendulum problem to minimize control effort to create
     // a controls trajectory to track.
@@ -361,8 +361,8 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoTropterSolver,
     }
 }
 
-TEMPLATE_TEST_CASE(
-        "Test MocoJointReactionGoal", "", MocoTropterSolver, MocoCasADiSolver) {
+TEMPLATE_TEST_CASE("Test MocoJointReactionGoal", "",
+        MocoCasADiSolver, MocoTropterSolver) {
 
     using SimTK::Inertia;
     using SimTK::Vec3;
@@ -494,7 +494,7 @@ public:
     }
 };
 
-TEMPLATE_TEST_CASE("Endpoint constraints", "", MocoCasADiSolver) {
+TEMPLATE_TEST_CASE("Endpoint constraints", "[casadi]", MocoCasADiSolver) {
     // TODO test with Tropter.
 
     MocoStudy study;
@@ -548,7 +548,7 @@ TEMPLATE_TEST_CASE("Endpoint constraints", "", MocoCasADiSolver) {
     }
 }
 
-TEMPLATE_TEST_CASE("MocoPeriodicityGoal", "", MocoCasADiSolver) {
+TEMPLATE_TEST_CASE("MocoPeriodicityGoal", "[casadi]", MocoCasADiSolver) {
 
     MocoStudy study;
     auto& problem = study.updProblem();
@@ -622,7 +622,8 @@ public:
     }
 };
 
-TEMPLATE_TEST_CASE("Endpoint constraint with integral", "", MocoCasADiSolver) {
+TEMPLATE_TEST_CASE(
+        "Endpoint constraint with integral", "[casadi]", MocoCasADiSolver) {
 
     Model model;
     const double mass = 1.3169;
@@ -648,7 +649,7 @@ TEMPLATE_TEST_CASE("Endpoint constraint with integral", "", MocoCasADiSolver) {
     auto* goal = problem.addGoal<MocoControlGoalWithEndpointConstraint>();
     goal->setMode("endpoint_constraint");
 
-    auto& solver = study.initCasADiSolver();
+    auto& solver = study.initSolver<TestType>();
     solver.set_num_mesh_intervals(5);
     auto guess = solver.createGuess();
     guess.randomizeReplace();
@@ -671,7 +672,8 @@ public:
         return getModel().getControls(state).normSqr();
     }
 };
-TEST_CASE("MocoOutputGoal") {
+TEMPLATE_TEST_CASE("MocoOutputGoal", "", MocoCasADiSolver,
+        MocoTropterSolver) {
     auto createStudy = []() {
         MocoStudy study;
         study.setName("sliding_mass");
@@ -688,8 +690,8 @@ TEST_CASE("MocoOutputGoal") {
     {
         auto study = createStudy();
         auto& problem = study.updProblem();
-        problem.addGoal<MocoControlGoal>();
-        auto& solver = study.initCasADiSolver();
+        problem.template addGoal<MocoControlGoal>();
+        auto& solver = study.template initSolver<TestType>();
         solver.set_num_mesh_intervals(10);
         solutionControl = study.solve();
     }
@@ -704,10 +706,10 @@ TEST_CASE("MocoOutputGoal") {
         model->addComponent(component);
         problem.setModel(std::move(model));
 
-        auto* goal = problem.addGoal<MocoOutputGoal>();
+        auto* goal = problem.template addGoal<MocoOutputGoal>();
         goal->setOutputPath("/mysumsquaredcontrols|sum_squared_controls");
 
-        auto& solver = study.initCasADiSolver();
+        auto& solver = study.template initSolver<TestType>();
         solver.set_num_mesh_intervals(10);
         solutionOutput = study.solve();
     }

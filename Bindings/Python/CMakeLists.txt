@@ -311,11 +311,19 @@ set(PYTHON_EXAMPLES_UNITTEST_ARGS
         extend_OpenSim_Vec3_class
         posthoc_StatesTrajectory_example
         wiring_inputs_and_outputs_with_TableReporter
-        Moco.exampleKinematicConstraints
-        Moco.exampleOptimizeMass
-        Moco.examplePredictAndTrack
-        Moco.exampleSlidingMass
         )
+if(OPENSIM_WITH_CASADI)
+    list(APPEND PYTHON_EXAMPLES_UNITTEST_ARGS
+            Moco.exampleKinematicConstraints
+            Moco.exampleSlidingMass
+            )
+endif()
+if(OPENSIM_WITH_TROPTER)
+    list(APPEND PYTHON_EXAMPLES_UNITTEST_ARGS
+            Moco.exampleOptimizeMass
+            Moco.examplePredictAndTrack
+            )
+endif()
 # Similar as above, but for the example files. These files aren't named as
 # test_*.py, so we must specify a more general search pattern.
 add_test(NAME python_examples

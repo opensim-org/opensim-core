@@ -1,7 +1,7 @@
-#ifndef MOCO_CASOCTRANSCRIPTION_H
-#define MOCO_CASOCTRANSCRIPTION_H
+#ifndef OPENSIM_CASOCTRANSCRIPTION_H
+#define OPENSIM_CASOCTRANSCRIPTION_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: CasOCTranscription.h                                         *
+ * OpenSim: CasOCTranscription.h                                              *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2018 Stanford University and the Authors                     *
  *                                                                            *
@@ -401,4 +401,4 @@ private:
 
 } // namespace CasOC
 
-#endif // MOCO_CASOCTRANSCRIPTION_H
+#endif // OPENSIM_CASOCTRANSCRIPTION_H

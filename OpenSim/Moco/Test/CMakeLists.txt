@@ -1,6 +1,6 @@
 include(CMakeParseArguments)
 
-# Create an exectuable for the file ${TEST_NAME}.cpp, which depends on
+# Create an executable for the file ${TEST_NAME}.cpp, which depends on
 # libraries ${LIB_DEPENDENCIES}. Also create a CTest test for this executable.
 function(MocoAddTest)
     set(options)
@@ -14,7 +14,16 @@ function(MocoAddTest)
     target_link_libraries(${MOCOTEST_NAME} osimMoco ${MOCOTEST_LIB_DEPENDS})
     target_include_directories(${MOCOTEST_NAME}
             PRIVATE "${CMAKE_SOURCE_DIR}/tropter/external/catch")
-    add_test(NAME ${MOCOTEST_NAME} COMMAND ${MOCOTEST_NAME})
+    # Skip tests relying on MocoCasADiSolver if CasADi is not available.
+    if(NOT OPENSIM_WITH_CASADI)
+        list(APPEND test_args "exclude:*MocoCasADiSolver*")
+        list(APPEND test_args "exclude:[casadi]")
+    endif()
+    if(NOT OPENSIM_WITH_TROPTER)
+        list(APPEND test_args "exclude:*MocoTropterSolver*")
+        list(APPEND test_args "exclude:[tropter]")
+    endif()
+    add_test(NAME ${MOCOTEST_NAME} COMMAND ${MOCOTEST_NAME} ${test_args})
     # Tests likely run faster if we parallelize the tests rather than the
     # individual problems.
     set_property(TEST ${MOCOTEST_NAME} APPEND PROPERTY
@@ -32,11 +41,11 @@ MocoAddTest(NAME testMocoGoals)
 
 MocoAddTest(NAME testMocoParameters)
 
-MocoAddTest(NAME testImplicit)
+MocoAddTest(NAME testMocoImplicit)
 
 MocoAddTest(NAME testMocoConstraints)
 
-MocoAddTest(NAME testContact)
+MocoAddTest(NAME testMocoContact)
 
 MocoAddTest(NAME testMocoActuators)
 

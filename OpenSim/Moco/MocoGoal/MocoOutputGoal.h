@@ -1,7 +1,7 @@
-#ifndef MOCO_MOCOOUTPUTGOAL_H
-#define MOCO_MOCOOUTPUTGOAL_H
+#ifndef OPENSIM_MOCOOUTPUTGOAL_H
+#define OPENSIM_MOCOOUTPUTGOAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoOutputGoal.h                                             *
+ * OpenSim: MocoOutputGoal.h                                                  *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -79,4 +79,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOOUTPUTGOAL_H
+#endif // OPENSIM_MOCOOUTPUTGOAL_H

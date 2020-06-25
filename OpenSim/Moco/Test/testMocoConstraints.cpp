@@ -840,7 +840,7 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
 }
 
 TEMPLATE_TEST_CASE("DoublePendulum with and without constraint derivatives",
-        "[explicit]", MocoTropterSolver, MocoCasADiSolver) {
+        "[explicit]", MocoCasADiSolver, MocoTropterSolver) {
     SECTION("DoublePendulum without constraint derivatives") {
         MocoSolution couplerSol;
         testDoublePendulumCoordinateCoupler<TestType>(
@@ -859,7 +859,7 @@ TEMPLATE_TEST_CASE("DoublePendulum with and without constraint derivatives",
 }
 
 TEST_CASE("DoublePendulum with and without constraint derivatives",
-        "[implicit]") {
+        "[implicit][casadi]") {
     SECTION("DoublePendulum without constraint derivatives") {
         MocoSolution couplerSol;
         testDoublePendulumCoordinateCoupler<MocoCasADiSolver>(
@@ -878,22 +878,22 @@ TEST_CASE("DoublePendulum with and without constraint derivatives",
 }
 
 TEMPLATE_TEST_CASE("DoublePendulumPointOnLine without constraint derivatives",
-        "[explicit]", MocoTropterSolver, MocoCasADiSolver) {
+        "[explicit]", MocoCasADiSolver, MocoTropterSolver) {
     testDoublePendulumPointOnLine<TestType>(false, "explicit");
 }
 
 TEMPLATE_TEST_CASE("DoublePendulumPointOnLine with constraint derivatives",
-        "[explicit]", MocoTropterSolver, MocoCasADiSolver) {
+        "[explicit]", MocoCasADiSolver, MocoTropterSolver) {
     testDoublePendulumPointOnLine<TestType>(true, "explicit");
 }
 
 TEST_CASE("DoublePendulumPointOnLine without constraint derivatives",
-        "[implicit]") {
+        "[implicit][casadi]") {
     testDoublePendulumPointOnLine<MocoCasADiSolver>(false, "implicit");
 }
 
-TEST_CASE(
-        "DoublePendulumPointOnLine with constraint derivatives", "[implicit]") {
+TEST_CASE("DoublePendulumPointOnLine with constraint derivatives",
+        "[implicit][casadi]") {
     testDoublePendulumPointOnLine<MocoCasADiSolver>(true, "implicit");
 }
 
@@ -927,8 +927,8 @@ protected:
 /// Solve an optimal control problem where a double pendulum must reach a
 /// specified final configuration while subject to a constraint that its
 /// actuators must produce an equal control trajectory.
-TEMPLATE_TEST_CASE(
-        "DoublePendulumEqualControl", "", MocoTropterSolver, MocoCasADiSolver) {
+TEMPLATE_TEST_CASE("DoublePendulumEqualControl", "",
+        MocoCasADiSolver, MocoTropterSolver) {
     OpenSim::Object::registerType(EqualControlConstraint());
     MocoStudy study;
     study.setName("double_pendulum_equal_control");
@@ -994,8 +994,8 @@ TEMPLATE_TEST_CASE(
 // of staying in place. This checks that the parameters are applied to both
 // ModelBase and ModelDisabledConstraints.
 TEMPLATE_TEST_CASE(
-        "Parameters are set properly for Base and DisabledConstraints", "",
-        MocoTropterSolver /*, too damn slow: MocoCasADiSolver*/) {
+        "Parameters are set properly for Base and DisabledConstraints",
+        "[tropter]", MocoTropterSolver /*, too damn slow: MocoCasADiSolver*/) {
     Model model;
     auto* body = new Body("b", 0.7, SimTK::Vec3(0), SimTK::Inertia(1));
     model.addBody(body);
@@ -1106,13 +1106,13 @@ void testDoublePendulumJointReactionGoal(std::string dynamics_mode) {
 
 TEMPLATE_TEST_CASE(
         "DoublePendulumPointJointReactionGoal with constraint derivatives",
-        "[explicit]", MocoTropterSolver, MocoCasADiSolver) {
+        "[explicit]", MocoCasADiSolver, MocoTropterSolver) {
     testDoublePendulumJointReactionGoal<TestType>("explicit");
 }
 
 TEMPLATE_TEST_CASE("DoublePendulumJointReactionGoal implicit with "
                    "constraint derivatives",
-        "[implicit]", MocoCasADiSolver) {
+        "[implicit][casadi]", MocoCasADiSolver) {
     testDoublePendulumJointReactionGoal<TestType>("implicit");
 }
 
@@ -1155,7 +1155,7 @@ private:
 // separate multipliers. When using implicit dynamics, we provide separate
 // accelerations. This test ensures that these accelerations and multipliers are
 // those that Moco specified, not what Simbody computes.
-TEST_CASE("Goals use Moco-defined accelerations and multipliers") {
+TEST_CASE("Goals use Moco-defined accelerations and multipliers", "[casadi]") {
     MocoStudy study;
     study.setName("mass_welded");
     MocoProblem& problem = study.updProblem();
@@ -1309,8 +1309,7 @@ TEST_CASE("Goals use Moco-defined accelerations and multipliers") {
     CHECK(Rz == Approx(testData->reaction[1][2]));
 }
 
-
-TEST_CASE("Multipliers are correct", "") {
+TEST_CASE("Multipliers are correct", "[casadi]") {
     SECTION("Body welded to ground") {
         auto dynamics_mode =
                 GENERATE(as<std::string>{}, "implicit", "explicit");
@@ -1414,7 +1413,7 @@ TEST_CASE("Multipliers are correct", "") {
 // Ensure that we correctly handle the combination of prescribed kinematics
 // (PositionMotion) and kinematic constraints. This test is similar to the one
 // above except that we prescribe motions for tx and ty.
-TEST_CASE("Prescribed kinematics with kinematic constraints", "") {
+TEST_CASE("Prescribed kinematics with kinematic constraints", "[casadi]") {
     Model model = ModelFactory::createPlanarPointMass();
     model.set_gravity(Vec3(0));
     CoordinateCouplerConstraint* constraint = new CoordinateCouplerConstraint();
@@ -1455,8 +1454,8 @@ TEST_CASE("Prescribed kinematics with kinematic constraints", "") {
     OpenSim_CHECK_MATRIX_TOL(lambda, 0.5 * (Fx - Fy), 1e-5);
 }
 
-TEMPLATE_TEST_CASE(
-        "MocoControlBoundConstraint", "", MocoTropterSolver, MocoCasADiSolver) {
+TEMPLATE_TEST_CASE("MocoControlBoundConstraint", "",
+        MocoCasADiSolver, MocoTropterSolver) {
     SECTION("Lower bound only") {
         MocoStudy study;
         auto& problem = study.updProblem();
@@ -1581,14 +1580,15 @@ TEMPLATE_TEST_CASE(
         problem.setControlInfo("/tau0", {-5, 5});
         problem.addGoal<MocoControlGoal>();
         auto* constr = problem.addPathConstraint<MocoControlBoundConstraint>();
+        study.initSolver<TestType>();
         study.solve();
         constr->addControlPath("/tau0");
         study.solve();
     }
 }
 
-TEMPLATE_TEST_CASE("MocoFrameDistanceConstraint", "", MocoTropterSolver, 
-        MocoCasADiSolver) {
+TEMPLATE_TEST_CASE("MocoFrameDistanceConstraint", "",
+        MocoCasADiSolver, MocoTropterSolver) {
     using SimTK::Pi;
 
     // Create a 3D pendulum model with a single body and a marker at the 

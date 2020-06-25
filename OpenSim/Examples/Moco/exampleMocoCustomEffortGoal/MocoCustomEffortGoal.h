@@ -1,7 +1,7 @@
-#ifndef MOCO_MOCOCUSTOMEFFORTGOAL_H
-#define MOCO_MOCOCUSTOMEFFORTGOAL_H
+#ifndef OPENSIM_MOCOCUSTOMEFFORTGOAL_H
+#define OPENSIM_MOCOCUSTOMEFFORTGOAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoCustomEffortGoal.h                                       *
+ * OpenSim: MocoCustomEffortGoal.h                                            *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -45,4 +45,4 @@ protected:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOCUSTOMEFFORTGOAL_H
+#endif // OPENSIM_MOCOCUSTOMEFFORTGOAL_H

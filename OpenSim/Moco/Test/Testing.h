@@ -1,7 +1,7 @@
-#ifndef MOCO_TESTING_H
-#define MOCO_TESTING_H
+#ifndef OPENSIM_MOCO_TESTING_H
+#define OPENSIM_MOCO_TESTING_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: testing.h                                                    *
+ * OpenSim: testing.h                                                         *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -144,4 +144,4 @@ do {                                                                         \
     OpenSim_CATCH_MATRIX_INTERNAL(CHECK, actual, expected, tol, margin);     \
 } while (0)
 
-#endif // MOCO_TESTING_H
+#endif // OPENSIM_MOCO_TESTING_H

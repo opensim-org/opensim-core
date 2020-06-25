@@ -1,7 +1,7 @@
-#ifndef MOCO_CASOCITERATE_H
-#define MOCO_CASOCITERATE_H
+#ifndef OPENSIM_CASOCITERATE_H
+#define OPENSIM_CASOCITERATE_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: CasOCIterate.h                                               *
+ * OpenSim: CasOCIterate.h                                                    *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -78,4 +78,4 @@ struct Solution : public Iterate {
 
 } // namespace CasOC
 
-#endif // MOCO_CASOCITERATE_H
+#endif // OPENSIM_CASOCITERATE_H

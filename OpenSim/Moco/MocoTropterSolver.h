@@ -1,7 +1,7 @@
-#ifndef MOCO_MOCOTROPTERSOLVER_H
-#define MOCO_MOCOTROPTERSOLVER_H
+#ifndef OPENSIM_MOCOTROPTERSOLVER_H
+#define OPENSIM_MOCOTROPTERSOLVER_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoTropterSolver.h                                          *
+ * OpenSim: MocoTropterSolver.h                                               *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -91,6 +91,10 @@ public:
 
     MocoTropterSolver();
 
+    /// Returns true if Moco was compiled with the Tropter library; returns
+    /// false otherwise.
+    static bool isAvailable();
+
     /// @name Specifying an initial guess
     /// @{
 
@@ -176,4 +180,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOTROPTERSOLVER_H
+#endif // OPENSIM_MOCOTROPTERSOLVER_H

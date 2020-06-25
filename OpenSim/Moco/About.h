@@ -1,7 +1,7 @@
 #ifndef OPENSIM_MOCO_ABOUT_H_
 #define OPENSIM_MOCO_ABOUT_H_
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: About.h                                                      *
+ * OpenSim: About.h                                                           *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
