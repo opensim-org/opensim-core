@@ -251,9 +251,9 @@ jobs:
         make doxygen
         make install
         cd $GITHUB_WORKSPACE
-        mv $GITHUB_WORKSPACE/../opensim-core-install opensim-core-${{ steps.configure-moco.outputs.version }}
-        zip --symlinks --recurse-paths --quiet opensim-core-${{ steps.configure-moco.outputs.version }}.zip opensim-core-${{ steps.configure-moco.outputs.version }}
-        mv opensim-core-${{ steps.configure-moco.outputs.version }} $GITHUB_WORKSPACE/../opensim-core-install
+        mv $GITHUB_WORKSPACE/../opensim-core-install opensim-core-${{ steps.configure.outputs.version }}
+        zip --symlinks --recurse-paths --quiet opensim-core-${{ steps.configure.outputs.version }}.zip opensim-core-${{ steps.configure.outputs.version }}
+        mv opensim-core-${{ steps.configure.outputs.version }} $GITHUB_WORKSPACE/../opensim-core-install
 
     - name: Test Python bindings
       run: |
@@ -266,8 +266,8 @@ jobs:
       with:
         # The upload-artifact zipping does not preserve symlinks or executable
         # bits. So we zip ourselves, even though this causes a double-zip.
-        name: opensim-core-${{ steps.configure-moco.outputs.version }}-mac
-        path: opensim-core-${{ steps.configure-moco.outputs.version }}.zip
+        name: opensim-core-${{ steps.configure.outputs.version }}-mac
+        path: opensim-core-${{ steps.configure.outputs.version }}.zip
 
     # - name: Create release
     #   id: create-release
