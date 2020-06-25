@@ -70,6 +70,7 @@ TEST_CASE("ModelProcessor") {
             std::unique_ptr<Object> obj(Object::makeObjectFromFile(
                     "testModelProcessor_ModelProcessor.xml"));
             auto* proc = dynamic_cast<ModelProcessor*>(obj.get());
+            REQUIRE(proc);
             Model modelDeserialized = proc->process();
             CHECK(modelDeserialized.getAnalysisSet().getSize() == 1);
         }
