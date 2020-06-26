@@ -38,7 +38,7 @@ namespace OpenSim {
  *
  * @author Ayman Habib
  */
-template<class T> class DataQueue_ {
+template<class T> class DataQueue_ 
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -53,9 +53,29 @@ public:
     //--------------------------------------------------------------------------
     // DataQueue Interface
     //--------------------------------------------------------------------------
+    void push_back(const double time, const SimTK::Array_<T> data) { 
+        std::unique_lock<std::mutex> mlock(m_mutex);
+        m_data_queue.push_back(std::tuple<time, data>);
+        mlock.unlock();     // unlock before notificiation to minimize mutex con
+        m_cond.notify_one(); 
+    }
+    void pop_front(double& time, SimTK::Array_<T>& data) { 
+        std::unique_lock<std::mutex> mlock(m_mutex);
+        while (empty()) { m_cond.wait(mlock); }
+        auto frontEntry = m_data_queue.pop_front();
+        time = frontEntry.first();
+        data = frontEntry.second();
+    }
+    bool empty() const { 
+        return m_data_queue.empty(); 
+    }
 
 private:
+    // As of now we use std::queue but other data structures could be used as well
     std::queue<std::tuple<double, SimTK::Array_<T>>> m_data_queue;
+    std::mutex m_mutex;
+    std::condition_variable m_cond;
+
     //=============================================================================
 };  // END of class templatized DataQueue_<T>
 //=============================================================================
