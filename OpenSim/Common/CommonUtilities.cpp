@@ -122,9 +122,9 @@ SimTK::Vector OpenSim::interpolate(const SimTK::Vector& x,
     return newY;
 }
 
-std::string OpenSim::getAbsolutePathnameFromXMLDocument(
+std::string OpenSim::convertRelativeFilePathToAbsoluteFromXMLDocument(
         const std::string& documentFileName,
-        const std::string& pathnameRelativeToDocument) {
+        const std::string& filePathRelativeToDocument) {
     // Get the directory containing the XML file.
     std::string directory;
     bool dontApplySearchPath;
@@ -132,7 +132,7 @@ std::string OpenSim::getAbsolutePathnameFromXMLDocument(
     SimTK::Pathname::deconstructPathname(documentFileName, dontApplySearchPath,
                                          directory, fileName, extension);
     return SimTK::Pathname::getAbsolutePathnameUsingSpecifiedWorkingDirectory(
-            directory, pathnameRelativeToDocument);
+            directory, filePathRelativeToDocument);
 }
 
 SimTK::Real OpenSim::solveBisection(
@@ -147,14 +147,15 @@ SimTK::Real OpenSim::solveBisection(
 
     const bool sameSign = calcResidual(left) * calcResidual(right) >= 0;
     if (sameSign && Logger::shouldLog(Logger::Level::Debug)) {
-        const auto x = createVectorLinspace(1000, left, right);
-        TimeSeriesTable table;
-        table.setColumnLabels({"residual"});
-        SimTK::RowVector row(1);
-        for (int i = 0; i < x.nrow(); ++i) {
-            row[0] = calcResidual(x[i]);
-            table.appendRow(x[i], row);
+        const int numRows = 1000;
+        const auto x = createVectorLinspace(numRows, left, right);
+        SimTK::Matrix residual(numRows, 1);
+        for (int i = 0; i < numRows; ++i) {
+            residual(i, 0) = calcResidual(x[i]);
         }
+        TimeSeriesTable table(std::vector<double>(x.getContiguousScalarData(),
+                                      x.getContiguousScalarData() + x.size()),
+                residual, {"residual"});
         STOFileAdapter::write(
                 table, fmt::format("solveBisection_residual_{}.sto",
                                getFormattedDateTime()));

@@ -121,11 +121,17 @@ public:
     static std::string Lowercase(const std::string &aStr);
     static std::string Uppercase(const std::string &aStr);
     /// Determine if `string` starts with the substring `start`.
-    /// https://stackoverflow.com/questions/874134/find-if-string-ends-with-another-string-in-c
     static bool StartsWith(const std::string& string, const std::string& start);
     /// Determine if `string` ends with the substring `ending`.
-    /// https://stackoverflow.com/questions/874134/find-if-string-ends-with-another-string-in-c
     static bool EndsWith(const std::string& string, const std::string& ending);
+    /// Same as StartsWith() except both arguments are first converted to
+    /// lowercase before performing the check.
+    static bool StartsWithIgnoringCase(
+            const std::string& string, const std::string& start);
+    /// Same as EndsWith() except both arguments are first converted to
+    /// lowercase before performing the check.
+    static bool EndsWithIgnoringCase(
+            const std::string& string, const std::string& ending);
     static void eraseEmptyElements(std::vector<std::string>& list);
 //=============================================================================
 };  // END CLASS IO

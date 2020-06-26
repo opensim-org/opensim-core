@@ -69,7 +69,7 @@ private:
 };
 
 /// Create a SimTK::Vector with the provided length whose elements are
-/// linearly spaced between start and end.
+/// uniformly spaced between start and end (same as Matlab's linspace()).
 OSIMCOMMON_API
 SimTK::Vector createVectorLinspace(int length, double start, double end);
 
@@ -93,15 +93,15 @@ SimTK::Vector interpolate(const SimTK::Vector& x, const SimTK::Vector& y,
 /// directory containing the XML file; use this function to convert that
 /// relative path into an absolute path.
 OSIMCOMMON_API
-std::string getAbsolutePathnameFromXMLDocument(
+std::string convertRelativeFilePathToAbsoluteFromXMLDocument(
         const std::string& documentFileName,
-        const std::string& pathnameRelativeToDocument);
+        const std::string& filePathRelativeToDirectoryContainingDocument);
 
 /// Solve for the root of a scalar function using the bisection method.
 /// If the values of calcResidual(left) and calcResidual(right) have the same
-/// sign and Logger::shouldLog(Logger::Level::Debug), then
-/// this function writes a file `solveBisection_residual_<timestamp>.sto`
-/// containing the residual function.
+/// sign and the logger level is Debug (or more verbose), then this function
+/// writes a file `solveBisection_residual_<timestamp>.sto` containing the
+/// residual function.
 /// @param calcResidual a function that computes the error
 /// @param left lower bound on the root
 /// @param right upper bound on the root
