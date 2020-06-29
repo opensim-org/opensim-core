@@ -18,7 +18,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "Components/ModelFactory.h"
+#include <OpenSim/Actuators/ModelFactory.h>
 #include "osimMocoDLL.h"
 
 #include <OpenSim/Simulation/Model/Model.h>

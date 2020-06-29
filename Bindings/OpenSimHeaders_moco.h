@@ -6,7 +6,6 @@
 #include <OpenSim/Moco/About.h>
 #include <OpenSim/Moco/Common/TableProcessor.h>
 #include <OpenSim/Moco/Components/DeGrooteFregly2016Muscle.h>
-#include <OpenSim/Moco/Components/ModelFactory.h>
 #include <OpenSim/Moco/Components/MultivariatePolynomialFunction.h>
 #include <OpenSim/Moco/Components/PositionMotion.h>
 #include <OpenSim/Moco/MocoBounds.h>

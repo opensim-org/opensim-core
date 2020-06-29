@@ -18,14 +18,14 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "../osimMocoDLL.h"
+#include "osimActuatorsDLL.h"
 
 #include <OpenSim/Simulation/Model/Model.h>
 
 namespace OpenSim {
 
 /// This class provides utilities for creating OpenSim models.
-class OSIMMOCO_API ModelFactory {
+class OSIMACTUATORS_API ModelFactory {
 public:
     /// @name Create a model
     /// @{
