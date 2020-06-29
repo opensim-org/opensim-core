@@ -28,6 +28,8 @@ using namespace OpenSim;
 
 TEST_CASE("ModelProcessor") {
 
+    Object::registerType(ModelProcessor());
+
     class MyModelOperator : public ModelOperator {
         OpenSim_DECLARE_CONCRETE_OBJECT(MyModelOperator, ModelOperator);
 
