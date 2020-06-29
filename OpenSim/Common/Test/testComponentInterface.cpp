@@ -2459,17 +2459,6 @@ void testCacheVariableInterface() {
         // component that was memberwise-copied (default behavior), so the *copied* component
         // must also re-initialize its cache variables via `copiedComponent.addCacheVariable(...)`
         ASSERT_THROW(std::exception, c2.getCacheVariableValue(s, c2.cv));
-
-        // But initializing the copy against some component *before* performing CacheVariable operations
-        // *and* realizing topology *does* work, because then it's fully initialized, correctly, within
-        // OpenSim's usual initialization semantics.
-        double v2 = generate_random_double();
-        c2.cv = c2.addCacheVariable("copy", v2, SimTK::Stage::Model);
-
-        SimTK::State s2 = sys.realizeTopology();
-
-        ASSERT(c2.getCacheVariableValue(s2, c2.cv) == v2);
-
     }
 }
 
