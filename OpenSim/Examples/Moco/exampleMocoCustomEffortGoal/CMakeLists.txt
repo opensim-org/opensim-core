@@ -1,1 +1,1 @@
-OpenSimAddPluginExampleCXX(NAME MocoCustomEffortGoal)
+OpenSimAddPluginExampleCXX(NAME MocoCustomEffortGoal SUBDIR Moco)

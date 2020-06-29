@@ -1,1 +1,1 @@
-OpenSimAddExampleCXX(NAME exampleSlidingMassAdvanced)
+OpenSimAddExampleCXX(NAME exampleSlidingMassAdvanced SUBDIR Moco)

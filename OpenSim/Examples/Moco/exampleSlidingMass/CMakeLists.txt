@@ -1,2 +1,2 @@
-OpenSimAddExampleCXX(NAME exampleSlidingMass)
+OpenSimAddExampleCXX(NAME exampleSlidingMass SUBDIR Moco)
 

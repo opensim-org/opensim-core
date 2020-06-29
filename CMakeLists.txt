@@ -672,7 +672,9 @@ if(${OPENSIM_C3D_PARSER} STREQUAL "ezc3d")
     endif()
     find_package(ezc3d REQUIRED HINTS "${ezc3d_hint}")
     add_definitions(-DWITH_EZC3D)
-    OpenSimCopyDependencyDLLsForWin(ezc3d "${ezc3d_LIBRARY_DIR}/../")
+    OpenSimCopyDependencyDLLsForWin(DEP_NAME ezc3d
+            DEP_BIN_DIR"${ezc3d_LIBRARY_DIR}/../bin"
+            )
     if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
         OpenSimInstallDependencyLibraries(ezc3d "${ezc3d_LIBRARY_DIR}/../"
             "${ezc3d_LIBRARY_DIR}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
@@ -691,7 +693,8 @@ elseif(${OPENSIM_C3D_PARSER} STREQUAL "BTK")
                  HINTS "${OPENSIM_DEPENDENCIES_DIR}/BTK/share/btk-0.4dev")
     include(${BTK_USE_FILE})
     add_definitions(-DWITH_BTK)
-    OpenSimCopyDependencyDLLsForWin(BTK ${BTK_INSTALL_PREFIX})
+    OpenSimCopyDependencyDLLsForWin(DEP_NAME BTK
+            DEP_BIN_DIR ${BTK_INSTALL_PREFIX}/bin)
     if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
         OpenSimInstallDependencyLibraries(BTK "${BTK_INSTALL_PREFIX}"
             "${BTK_LIBRARY_DIRS}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
@@ -777,7 +780,8 @@ endif()
 # so that the tests and examples can run without modifying the PATH
 # (that is, put Simbody's dll's in the same directory as OpenSim's
 # executables and libraries).
-OpenSimCopyDependencyDLLsForWin(Simbody "${Simbody_BIN_DIR}")
+OpenSimCopyDependencyDLLsForWin(DEP_NAME Simbody
+        DEP_BIN_DIR "${Simbody_BIN_DIR}")
 if(WIN32)
     add_dependencies(Copy_Simbody_DLLs Simbody_CONFIG_check)
 endif()
@@ -799,9 +803,8 @@ set_package_properties(casadi PROPERTIES
         PURPOSE "Differentiation and optimizer interface.")
 get_filename_component(CASADI_BIN_DIR "${casadi_DIR}/../" ABSOLUTE)
 # Copy CasADi into our installation.
-MocoCopyDLLs(DEP_NAME casadi
-        DEP_BIN_DIR "${CASADI_BIN_DIR}" INSTALL_DLLS "${CMAKE_INSTALL_BINDIR}")
-if(NOT WIN32)
+OpenSimCopyDependencyDLLsForWin(DEP_NAME casadi DEP_BIN_DIR "${CASADI_BIN_DIR}")
+if(OPENSIM_COPY_DEPENDENCIES AND NOT WIN32)
     # MocoCopyDLLs() only copies DLLs for Windows, but we still need
     # the CasADi shared libraries on other platforms.
     install(DIRECTORY "${CASADI_CMAKE_DIR}/../../../"
