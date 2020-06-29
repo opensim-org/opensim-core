@@ -29,6 +29,7 @@
 // INCLUDES
 #include "Storage.h"
 
+#include "CommonUtilities.h"
 #include "GCVSpline.h"
 #include "GCVSplineSet.h"
 #include "IO.h"
@@ -38,6 +39,7 @@
 #include "SimTKcommon.h"
 #include "SimmMacros.h"
 #include "StateVector.h"
+#include "TableUtilities.h"
 #include "TimeSeriesTable.h"
 #include <iostream>
 
@@ -522,71 +524,11 @@ getHeaderToken() const
 int Storage::
 getStateIndex(const std::string &aColumnName, int startIndex) const
 {
-    int thisColumnIndex = -1;
-
-    // This uses the `do while(false)` idiom to run common code if one of a
-    // number of conditions succeeds (much like what a goto would be used for).
-    do {
-        thisColumnIndex = _columnLabels.findIndex(aColumnName);
-        if (thisColumnIndex != -1) break;
-
-        // 4.0 and its beta versions differ slightly in the absolute path but
-        // the <joint>/<coordinate>/value (or speed) will be common to both.
-        // Likewise, for muscle states <muscle>/activation (or fiber_length)
-        // must be common to the state variable (path) name and column label.
-        std::string shortPath = aColumnName;
-        std::string::size_type front = shortPath.find("/");
-        while (thisColumnIndex < 0 && front < std::string::npos) {
-            shortPath = shortPath.substr(front + 1, aColumnName.length());
-            thisColumnIndex = _columnLabels.findIndex(shortPath);
-            front = shortPath.find("/");
-        }
-        if (thisColumnIndex != -1) break;
-
-        // Assume column labels follow pre-v4.0 state variable labeling.
-        // Redo search with what the pre-v4.0 label might have been.
-
-        // First, try just the last element of the path.
-        std::string::size_type back = aColumnName.rfind("/");
-        std::string prefix = aColumnName.substr(0, back);
-        std::string shortName = aColumnName.substr(back + 1,
-            aColumnName.length() - back);
-        thisColumnIndex = _columnLabels.findIndex(shortName);
-        if (thisColumnIndex != -1) break;
-
-        // If that didn't work, specifically check for coordinate state names
-        // (<coord_name>/value and <coord_name>/speed) and muscle state names
-        // (<muscle_name>/activation <muscle_name>/fiber_length).
-        if (shortName == "value") {
-            // pre-v4.0 did not have "/value" so remove it if here
-            back = prefix.rfind("/");
-            shortName = prefix.substr(back + 1, prefix.length());
-            thisColumnIndex = _columnLabels.findIndex(shortName);
-        }
-        else if (shortName == "speed") {
-            // replace "/speed" (the v4.0 labeling for speeds) with "_u"
-            back = prefix.rfind("/");
-            shortName =
-                prefix.substr(back + 1, prefix.length() - back) + "_u";
-            thisColumnIndex = _columnLabels.findIndex(shortName);
-        }
-        else if (back < aColumnName.length()) {
-            // try replacing the '/' with '.' in the last segment
-            shortName = aColumnName;
-            shortName.replace(back, 1, ".");
-            back = shortName.rfind("/");
-            shortName = shortName.substr(back + 1,
-                shortName.length() - back);
-            thisColumnIndex = _columnLabels.findIndex(shortName);
-        }
-        if (thisColumnIndex != -1) break;
-
-        // If all of the above checks failed, return -1.
+    int thisColumnIndex =
+            TableUtilities::findStateLabelIndex(_columnLabels, aColumnName);
+    if (thisColumnIndex == -1) {
         return -1;
-
-    } while (false);
-
-    // If we get here, we successfully found a column.
+    }
     // Subtract 1 because time is included in the labels but not
     // in the "state vector".
     return thisColumnIndex - 1;
@@ -1399,8 +1341,10 @@ TimeSeriesTable Storage::exportToTable() const {
 
     // Exclude the first column label. It is 'time'. Time is a separate column
     // in TimeSeriesTable and column label is optional.
-    table.setColumnLabels(_columnLabels.get() + 1,
-                          _columnLabels.get() + _columnLabels.getSize());
+    if (_columnLabels.size() > 1) {
+        table.setColumnLabels(_columnLabels.get() + 1,
+                _columnLabels.get() + _columnLabels.getSize());
+    }
 
     for(int i = 0; i < _storage.getSize(); ++i) {
         const auto& row = getStateVector(i)->getData();

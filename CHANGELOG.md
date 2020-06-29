@@ -14,6 +14,9 @@ v4.2
 - Fix a segfault that occurs when using OpenSim's Python Package with Anaconda's Python on a Mac.
 - Expose PropertyHelper class to python bindings to allow editing of objects using the properties interface (useful for editing objects defined in plugins) in python (consistent with Java/Matlab).
 - Whitespace is trimmed when reading table metadata for STO, MOT, and CSV files.
+- Introduce utilities for creating SimTK::Vectors, linear interpolation, updating table column labels from v3.3 to v4.0 syntax, solving for a function's root using bisection (OpenSim/Common/CommonUtilities.h) ([PR #2808](https://github.com/opensim-org/opensim-core/pull/2808)).
+- Introduce utilities for querying, filtering, and resampling TimeSeriesTables (OpenSim/Common/TableUtilities.h) ([PR #2808](https://github.com/opensim-org/opensim-core/pull/2808)).
+- StatesTrajectories can now be created from a TimeSeriesTable of states.
 - Minor performance improvements (5-10 %) for controller-heavy models (PR #2806)
 - `Controller::isEnabled` will now only return whether the particular controller is enabled
   - Previously, it would return `false` if its parent `Model`'s `Model::getAllControllersEnabled` returned `false`
