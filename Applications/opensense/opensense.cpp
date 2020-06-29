@@ -450,7 +450,7 @@ void addImuFramesFromMarkers(const string& modelFile, const string& markersFile)
     // store joint initial pose from marker IK as default pose for the model. 
     model.setPropertiesFromState(s);
 
-    for (int i = 0; i < offsets.size(); ++i) {
+    for (int i = 0; i < (int)offsets.size(); ++i) {
         // add imu offset frames to the model with model taking ownership
         bodies[i]->addComponent(offsets[i]);
     }

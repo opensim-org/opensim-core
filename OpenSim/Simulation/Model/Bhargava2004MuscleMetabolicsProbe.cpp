@@ -527,7 +527,7 @@ Array<string> Bhargava2004MuscleMetabolicsProbe::getProbeOutputLabels() const
 /** 
 * Get the number of muscles being analyzed in the metabolic analysis. 
 */
-const int Bhargava2004MuscleMetabolicsProbe::
+int Bhargava2004MuscleMetabolicsProbe::
     getNumMetabolicMuscles() const  
 { 
     return get_Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet()
@@ -670,7 +670,7 @@ bool Bhargava2004MuscleMetabolicsProbe::
 /**
  * Get the muscle mass used in the metabolic analysis. 
  */
-const double Bhargava2004MuscleMetabolicsProbe::
+double Bhargava2004MuscleMetabolicsProbe::
     getMuscleMass(const std::string& muscleName) const 
 { 
     return getMetabolicParameters(muscleName)->getMuscleMass();
@@ -681,7 +681,7 @@ const double Bhargava2004MuscleMetabolicsProbe::
 /**
  * Get the ratio of slow twitch fibers for an existing muscle. 
  */
-const double Bhargava2004MuscleMetabolicsProbe::
+double Bhargava2004MuscleMetabolicsProbe::
     getRatioSlowTwitchFibers(const std::string& muscleName) const 
 { 
     return getMetabolicParameters(muscleName)->get_ratio_slow_twitch_fibers();
@@ -703,7 +703,7 @@ void Bhargava2004MuscleMetabolicsProbe::
 /**
  * Get the density for an existing muscle (kg/m^3).. 
  */
-const double Bhargava2004MuscleMetabolicsProbe::
+double Bhargava2004MuscleMetabolicsProbe::
     getDensity(const std::string& muscleName) const 
 { 
     return getMetabolicParameters(muscleName)->get_density();
@@ -725,7 +725,7 @@ void Bhargava2004MuscleMetabolicsProbe::
 /**
  * Get the specific tension for an existing muscle (Pascals (N/m^2)). 
  */
-const double Bhargava2004MuscleMetabolicsProbe::
+double Bhargava2004MuscleMetabolicsProbe::
     getSpecificTension(const std::string& muscleName) const 
 { 
     return getMetabolicParameters(muscleName)->get_specific_tension();
@@ -747,7 +747,7 @@ void Bhargava2004MuscleMetabolicsProbe::
 /** 
  * Get the activation constant for slow twitch fibers for an existing muscle. 
  */
-const double Bhargava2004MuscleMetabolicsProbe::
+double Bhargava2004MuscleMetabolicsProbe::
     getActivationConstantSlowTwitch(const std::string& muscleName) const
 { 
     return getMetabolicParameters(muscleName)->get_activation_constant_slow_twitch(); 
@@ -769,7 +769,7 @@ void Bhargava2004MuscleMetabolicsProbe::
 /** 
  * Get the activation constant for fast twitch fibers for an existing muscle. 
  */
-const double Bhargava2004MuscleMetabolicsProbe::
+double Bhargava2004MuscleMetabolicsProbe::
     getActivationConstantFastTwitch(const std::string& muscleName) const 
 { 
     return getMetabolicParameters(muscleName)->get_activation_constant_fast_twitch(); 
@@ -791,7 +791,7 @@ void Bhargava2004MuscleMetabolicsProbe::
 /** 
  * Get the maintenance constant for slow twitch fibers for an existing muscle. 
  */
-const double Bhargava2004MuscleMetabolicsProbe::
+double Bhargava2004MuscleMetabolicsProbe::
     getMaintenanceConstantSlowTwitch(const std::string& muscleName) const 
 { 
     return getMetabolicParameters(muscleName)->get_maintenance_constant_slow_twitch(); 
@@ -813,7 +813,7 @@ void Bhargava2004MuscleMetabolicsProbe::
 /** 
  * Get the maintenance constant for fast twitch fibers for an existing muscle. 
  */
-const double Bhargava2004MuscleMetabolicsProbe::
+double Bhargava2004MuscleMetabolicsProbe::
     getMaintenanceConstantFastTwitch(const std::string& muscleName) const 
 { 
     return getMetabolicParameters(muscleName)->get_maintenance_constant_fast_twitch(); 

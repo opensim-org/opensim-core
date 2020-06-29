@@ -34,11 +34,8 @@ static const char HELP_VIZ[] =
 R"(Show a model, motion, or marker/orientation data with the Simbody Visualizer.
 
 Usage:
-  opensim-cmd [options]... viz [--geometry=<path>]
-                                model <model-file> [<states-file>]
-  opensim-cmd [options]... viz [--geometry=<path>]
-                                data <data-file> [--model=<model-file>]
-                                [--layout=<layout>] [--rotate=<rotations>]
+  opensim-cmd [options]... viz [--geometry=<path>] model <model-file> [<states-file>]
+  opensim-cmd [options]... viz [--geometry=<path>] data <data-file> [--model=<model-file>] [--layout=<layout>] [--rotate=<rotations>]
   opensim-cmd viz -h | --help
 
 Options:
@@ -61,6 +58,18 @@ Description of subcommands:
          orientations using x-y-z triads, and the --model and --layout
          flags can be used.
 
+Examples:
+  opensim-cmd viz model lowerlimb.osim
+  opensim-cmd viz --geometry C:/MyGeometry model lowerlimb.osim
+  opensim-cmd viz model lowerlimb.osim states.sto
+  opensim-cmd viz data markers.trc
+  opensim-cmd viz data markers.c3d
+  opensim-cmd viz data orientations.sto -a circle --r 1.57,0,0
+  opensim-cmd viz -g C:/MyGeometry data orientations.sto -m arm.osim
+  opensim-cmd --library C:\Plugins\osimMyCustomForce.dll viz model arm.osim
+)";
+/* Block below was removed from help text to address bug in VisualStudio handling of regular expressions opensim-core issue #2807
+
 Description of options:
   g, geometry  Search for geometry mesh files in this path.
   m, model     If visualizing orientation data and --layout is 'model',
@@ -72,17 +81,7 @@ Description of options:
                value is 'model', then the --model option must be provided.
   r, rotate    If visualizing orientation data, this option specifies the space
                fixed Euler angles to apply to data specified in radians.
-Examples:
-  opensim-cmd viz model lowerlimb.osim
-  opensim-cmd viz --geometry C:/MyGeometry model lowerlimb.osim
-  opensim-cmd viz model lowerlimb.osim states.sto
-  opensim-cmd viz data markers.trc
-  opensim-cmd viz data markers.c3d
-  opensim-cmd viz data orientations.sto -a circle --r 1.57,0,0
-  opensim-cmd viz -g C:/MyGeometry data orientations.sto -m arm.osim
-  opensim-cmd --library C:\Plugins\osimMyCustomForce.dll viz model arm.osim
-)";
-
+*/
 
 SimTK::Vec3 parseRotationsString(const std::string& rotationString) {
     SimTK::Vec3 returnVec3{0};

@@ -328,11 +328,11 @@ public:
     /**
      * The time corresponding to the first ControlLinearNode.
      */
-    const double getFirstTime() const override;
+    double getFirstTime() const override;
     /**
      * The time corresponding to the last ControlLinearNode
      */
-    const double getLastTime() const override;
+    double getLastTime() const override;
 
     // SIMPLIFY
     /**

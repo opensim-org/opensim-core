@@ -10,6 +10,13 @@ else()
         "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
 endif()
 
+
+# Avoid excessive compiler warnings.
+# ==================================
+# We set these COMPILE_OPTIONS in the root CMakeLists.txt.
+set_directory_properties(PROPERTIES COMPILE_OPTIONS "")
+
+
 # Helper macros.
 # ==============
 

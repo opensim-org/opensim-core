@@ -195,7 +195,6 @@ void GeometryPath::constructProperties()
 
     constructProperty_PathWrapSet(PathWrapSet());
     
-    Vec3 defaultColor = SimTK::Gray;
     Appearance appearance;
     appearance.set_color(SimTK::Gray);
     constructProperty_Appearance(appearance);

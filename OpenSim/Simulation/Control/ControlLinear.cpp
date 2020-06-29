@@ -612,13 +612,13 @@ clearControlNodes()
     _xNodes.setSize(0);
 }
 //_____________________________________________________________________________
-const double ControlLinear::getFirstTime() const
+double ControlLinear::getFirstTime() const
 {
     const ControlLinearNode *node=_xNodes.get(0);
     return node->getTime();
 }
 //_____________________________________________________________________________
-const double ControlLinear::getLastTime() const
+double ControlLinear::getLastTime() const
 {
     const ControlLinearNode *node=_xNodes.getLast();
     return node->getTime();

@@ -2252,7 +2252,7 @@ protected:
     /** Get the index of a Component's continuous state variable in the Subsystem for
         allocations. This method is intended for derived Components that may need direct
         access to its underlying Subsystem.*/
-    const int getStateIndex(const std::string& name) const;
+    int getStateIndex(const std::string& name) const;
 
    /**
      * Get the System Index of a state variable allocated by this Component.
