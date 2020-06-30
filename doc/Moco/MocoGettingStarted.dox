@@ -28,24 +28,24 @@ not distribute binaries (e.g., Linux), then you must build Moco from source.
 Developing your own cost module does not require building Moco from source.
 
 For instructions, visit the source code repository at
-https://github.com/opensim-org/opensim-moco and consult the README.md file.
+https://github.com/opensim-org/opensim-core and consult the README.md file.
 
 @section usingmatlab Using Moco in MATLAB
 
-Start Matlab, change your current directory to
-`<OpenSim-Moco-Install>/Resources/Code/Matlab` and run `configureMoco.m`.
+Follow the instructions for configuring Matlab to use OpenSim:
+https://simtk-confluence.stanford.edu:8443/display/OpenSim/Scripting+with+Matlab
 
-Restart Matlab and test that Matlab is properly configured to use Moco by
+Restart Matlab and test that Matlab is properly configured to use OpenSim by
 running:
 
 ```
->> org.opensim.modeling.opensimMoco.GetMocoVersionAndDate();
+>> org.opensim.modeling.opensimCommon.GetVersionAndDate();
 ```
 
-Make sure the output is consistent with the version of Moco you intend to use.
+Make sure the output is consistent with the version of OpenSim you intend to use.
 
-The Moco distribution contains Matlab examples in the folder
-`Resources/Code/Matlab`. Start with `exampleSlidingMass.m`.
+The OpenSim distribution contains Matlab examples in the folder
+`Resources/Code/Matlab/Moco`. Start with `exampleSlidingMass.m`.
 
 @section usingpython Using Moco in Python
 
@@ -54,8 +54,8 @@ the same Python distribution with which Moco was built. For Windows, this is the
 Python 3 distribution from python.org. For Mac, this is the Python 3
 package from Homebrew.
 
-The Moco distribution contains Python examples in the folder
-`Resources/Code/Python`. Start with `exampleSlidingMass.py`.
+The OpenSim distribution contains Moco Python examples in the folder
+`Resources/Code/Python/Moco`. Start with `exampleSlidingMass.py`.
 
 If you would prefer to use Python 2 instead of Python 3, let us know.
 
@@ -64,8 +64,12 @@ distributing it through the Conda package manager.
 
 @section usingxml Using Moco with XML files and the command line
 
+<!--
 Moco provides a command-line tool, `bin/opensim-moco`, through which you can
 solve studies saved as XML files, using the `.omoco` file extension.
+-->
+
+@note The command-line tool for Moco has been temporarily removed.
 
 The command-line interface allows generating a template XML `.omoco` file and
 for visualizing a solution.
