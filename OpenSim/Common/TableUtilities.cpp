@@ -289,6 +289,12 @@ TimeSeriesTable TableUtilities::resampleWithIntervalBounded(
     return resampleWithInterval<FunctionType>(in, interval);
 }
 
+void TableUtilities::writeTableToFile(
+        const TimeSeriesTable& table, const std::string& filepath) {
+    DataAdapter::InputTables tables = {{"table", &table}};
+    FileAdapter::writeFile(tables, filepath);
+}
+
 // Explicit template instantiations.
 namespace OpenSim {
 template OSIMCOMMON_API TimeSeriesTable TableUtilities::resample<SimTK::Vector, GCVSpline>(

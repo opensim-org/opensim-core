@@ -26,6 +26,8 @@
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 #include <OpenSim/Actuators/Thelen2003Muscle.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Common/CommonUtilities.h>
+#include <OpenSim/Common/TableUtilities.h>
 
 using namespace OpenSim;
 
@@ -927,11 +929,11 @@ void DeGrooteFregly2016Muscle::printCurvesToSTOFiles(
         const std::string& directory) const {
     std::string prefix =
             directory + SimTK::Pathname::getPathSeparator() + getName();
-    writeTableToFile(exportFiberLengthCurvesToTable(),
+    TableUtilities::writeTableToFile(exportFiberLengthCurvesToTable(),
             prefix + "_fiber_length_curves.sto");
-    writeTableToFile(exportFiberVelocityMultiplierToTable(),
+    TableUtilities::writeTableToFile(exportFiberVelocityMultiplierToTable(),
             prefix + "_fiber_velocity_multiplier.sto");
-    writeTableToFile(exportTendonForceMultiplierToTable(),
+    TableUtilities::writeTableToFile(exportTendonForceMultiplierToTable(),
             prefix + "_tendon_force_multiplier.sto");
 }
 

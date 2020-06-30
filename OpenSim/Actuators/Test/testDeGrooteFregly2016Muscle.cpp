@@ -23,6 +23,8 @@
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
+#include <OpenSim/Actuators/DeGrooteFregly2016Muscle.h>
+#include <OpenSim/Common/CommonUtilities.h>
 
 #define CATCH_CONFIG_MAIN
 #include <OpenSim/Auxiliary/catch.hpp>
