@@ -226,6 +226,7 @@ jobs:
         OSIM_CMAKE_ARGS+=(-DOPENSIM_DOXYGEN_USE_MATHJAX=off)
         # TODO: Update to simbody.github.io/latest
         OSIM_CMAKE_ARGS+=(-DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simbody.github.io/simtk.org/api_docs/simbody/latest/")
+        OSIM_CMAKE_ARGS+=(-DCMAKE_CXX_FLAGS="-Werror")
         printf '%s\n' "${OSIM_CMAKE_ARGS[@]}"
         cmake "${OSIM_CMAKE_ARGS[@]}"
         VERSION=`cmake -L . | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
@@ -249,9 +250,9 @@ jobs:
         make doxygen
         make install
         cd $GITHUB_WORKSPACE
-        mv $GITHUB_WORKSPACE/../opensim-core-install opensim-core-${{ steps.configure-moco.outputs.version }}
-        zip --symlinks --recurse-paths --quiet opensim-core-${{ steps.configure-moco.outputs.version }}.zip opensim-core-${{ steps.configure-moco.outputs.version }}
-        mv opensim-core-${{ steps.configure-moco.outputs.version }} $GITHUB_WORKSPACE/../opensim-core-install
+        mv $GITHUB_WORKSPACE/../opensim-core-install opensim-core-${{ steps.configure.outputs.version }}
+        zip --symlinks --recurse-paths --quiet opensim-core-${{ steps.configure.outputs.version }}.zip opensim-core-${{ steps.configure.outputs.version }}
+        mv opensim-core-${{ steps.configure.outputs.version }} $GITHUB_WORKSPACE/../opensim-core-install
 
     - name: Test Python bindings
       run: |
@@ -264,8 +265,8 @@ jobs:
       with:
         # The upload-artifact zipping does not preserve symlinks or executable
         # bits. So we zip ourselves, even though this causes a double-zip.
-        name: opensim-core-${{ steps.configure-moco.outputs.version }}-mac
-        path: opensim-core-${{ steps.configure-moco.outputs.version }}.zip
+        name: opensim-core-${{ steps.configure.outputs.version }}-mac
+        path: opensim-core-${{ steps.configure.outputs.version }}.zip
 
     # - name: Create release
     #   id: create-release
@@ -340,6 +341,7 @@ jobs:
         OSIM_CMAKE_ARGS+=(-DOPENSIM_DOXYGEN_USE_MATHJAX=off)
         # TODO: Update to simbody.github.io/latest
         OSIM_CMAKE_ARGS+=(-DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simbody.github.io/simtk.org/api_docs/simbody/latest/")
+        OSIM_CMAKE_ARGS+=(-DCMAKE_CXX_FLAGS="-Werror")
         printf '%s\n' "${OSIM_CMAKE_ARGS[@]}"
         cmake "${OSIM_CMAKE_ARGS[@]}"
         VERSION=`cmake -L . | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`

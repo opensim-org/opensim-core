@@ -319,19 +319,13 @@ else()
 
 endif()
 
-# Here's the diff between our commit of casadi and casadi's master branch:
-# https://github.com/casadi/casadi/compare/master...stanfordnmbl:1555e79ea59cbd25d05894f2e9b351d92bacf348
-# Differences:
-# - threadsafe SharedObject
-# - user-defined sparsity patterns
-# - altered FindIPOPT.cmake
 if(SUPERBUILD_casadi)
     AddDependency(NAME       casadi
                   DEFAULT    ON
                   DEPENDS    ipopt
-                  GIT_URL    https://github.com/stanfordnmbl/casadi.git
-                  # Include threadsafe SharedObject.
-                  GIT_TAG    1555e79ea59cbd25d05894f2e9b351d92bacf348
+                  GIT_URL    https://github.com/casadi/casadi.git
+                  # This commit is from casadi's develop branch, 2020-06-20
+                  GIT_TAG    d074c221e22bd754f240f3597371418733e5efd4
                   CMAKE_ARGS -DWITH_IPOPT:BOOL=ON
                              -DWITH_THREAD:BOOL=ON
                              -DWITH_EXAMPLES:BOOL=OFF

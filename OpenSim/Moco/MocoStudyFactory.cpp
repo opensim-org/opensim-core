@@ -18,8 +18,9 @@
 
 #include "MocoStudyFactory.h"
 
-#include "Components/ModelFactory.h"
 #include "MocoProblem.h"
+
+#include <OpenSim/Actuators/ModelFactory.h>
 
 using namespace OpenSim;
 

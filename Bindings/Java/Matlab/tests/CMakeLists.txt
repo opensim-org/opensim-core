@@ -98,7 +98,9 @@ endif()
 OpenSimAddMatlabTest(testOsimList2MatlabCell testOsimList2MatlabCell.m)
 OpenSimAddMatlabTest(testWalkerScripts testWalkerScripts.m)
 
-OpenSimAddMatlabTest(SlidingMass ../Examples/Moco/exampleSlidingMass.m)
+if(OPENSIM_WITH_CASADI)
+    OpenSimAddMatlabTest(SlidingMass ../Examples/Moco/exampleSlidingMass.m)
+endif()
 OpenSimAddMatlabTest(MocoSWIGAdditionalInterface
     testMocoSWIGAdditionalInterface.m)
 OpenSimAddMatlabTest(MocoWorkflow testMocoWorkflow.m)

@@ -1,12 +1,11 @@
-#ifndef MOCO_OPENSIM_HEADERS_MOCO_H_
-#define MOCO_OPENSIM_HEADERS_MOCO_H_
+#ifndef OPENSIM_OPENSIM_HEADERS_MOCO_H_
+#define OPENSIM_OPENSIM_HEADERS_MOCO_H_
 /* This header is only used with SWIG to create bindings.
  */
 
 #include <OpenSim/Moco/About.h>
 #include <OpenSim/Moco/Common/TableProcessor.h>
 #include <OpenSim/Moco/Components/DeGrooteFregly2016Muscle.h>
-#include <OpenSim/Moco/Components/ModelFactory.h>
 #include <OpenSim/Moco/Components/MultivariatePolynomialFunction.h>
 #include <OpenSim/Moco/Components/PositionMotion.h>
 #include <OpenSim/Moco/MocoBounds.h>
@@ -43,4 +42,4 @@
 #include <OpenSim/Moco/ModelOperators.h>
 #include <OpenSim/Moco/osimMocoDLL.h>
 
-#endif // MOCO_OPENSIM_HEADERS_MOCO_H_
+#endif // OPENSIM_OPENSIM_HEADERS_MOCO_H_

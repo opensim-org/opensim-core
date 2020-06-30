@@ -1,7 +1,7 @@
-#ifndef MOCO_REGISTERTYPES_OSIMMOCOCUSTOMEFFORTGOAL_H
-#define MOCO_REGISTERTYPES_OSIMMOCOCUSTOMEFFORTGOAL_H
+#ifndef OPENSIM_REGISTERTYPES_OSIMMOCOCUSTOMEFFORTGOAL_H
+#define OPENSIM_REGISTERTYPES_OSIMMOCOCUSTOMEFFORTGOAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: RegisterTypes_osimMocoCustomEffortGoal.h                     *
+ * OpenSim: RegisterTypes_osimMocoCustomEffortGoal.h                          *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -33,4 +33,4 @@ private:
     void registerDllClasses();
 };
 
-#endif // MOCO_REGISTERTYPES_OSIMMOCOCUSTOMEFFORTGOAL_H
+#endif // OPENSIM_REGISTERTYPES_OSIMMOCOCUSTOMEFFORTGOAL_H

@@ -25,10 +25,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 using namespace OpenSim;
 
-TEST_CASE("(Dummy test to support discovery in Resharper)")
-{
-    REQUIRE(true);
-}
+TEST_CASE("(Dummy test to support discovery in Resharper)") { REQUIRE(true); }
 
 const double STIFFNESS = 100.0; // N/m
 const double MASS = 5.0; // kg
@@ -75,7 +72,8 @@ protected:
 /// correct trajectory specified by the state bounds and the FinalPositionCost.
 /// This tests the ability for MocoParameter to optimize a simple scalar model
 /// property value.
-TEMPLATE_TEST_CASE("Oscillator mass", "", MocoTropterSolver, MocoCasADiSolver) {
+TEMPLATE_TEST_CASE("Oscillator mass", "", MocoCasADiSolver,
+        MocoTropterSolver) {
     int N = 25;
 
     MocoStudy study;
@@ -136,7 +134,7 @@ std::unique_ptr<Model> createOscillatorTwoSpringsModel() {
 /// oscillation trajectory. This tests the ability for MocoParameter to optimize
 /// the value of a model property for two different components.
 TEMPLATE_TEST_CASE("One parameter two springs", "",
-        MocoTropterSolver, MocoCasADiSolver) {
+        MocoCasADiSolver, MocoTropterSolver) {
     int N = 25;
 
     MocoStudy study;
@@ -215,7 +213,7 @@ protected:
 /// with the pin joint rotation point. This tests the ability of MocoParameter
 /// to optimize an element of a non-scalar model property.
 TEMPLATE_TEST_CASE("See-saw center of mass", "",
-        MocoTropterSolver, MocoCasADiSolver) {
+        MocoCasADiSolver, MocoTropterSolver) {
     int N = 25;
 
     MocoStudy study;

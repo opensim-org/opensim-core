@@ -1,7 +1,7 @@
-#ifndef MOCO_MOCOINITIALACTIVATIONGOAL_H
-#define MOCO_MOCOINITIALACTIVATIONGOAL_H
+#ifndef OPENSIM_MOCOINITIALACTIVATIONGOAL_H
+#define OPENSIM_MOCOINITIALACTIVATIONGOAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoInitialActivationGoal.h                                  *
+ * OpenSim: MocoInitialActivationGoal.h                                       *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -53,4 +53,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOINITIALACTIVATIONGOAL_H
+#endif // OPENSIM_MOCOINITIALACTIVATIONGOAL_H

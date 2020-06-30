@@ -169,16 +169,10 @@ mark_as_advanced(OPENSIM_BUILD_INDIVIDUAL_APPS)
 
 # Moco settings.
 # --------------
-option(MOCO_BUILD_EXAMPLES
-    "Build, test, and install Moco C++ examples." ON)
-
-# TODO Rename to OPENSIM_WITH_TROPTER.
-option(MOCO_WITH_TROPTER
-    "Build the tropter optimal control library." ON)
-if(NOT MOCO_WITH_TROPTER)
-    # TODO
-    message(WARNING "MOCO_WITH_TROPTER=OFF is not supported yet.")
-endif()
+option(OPENSIM_WITH_CASADI
+        "Build CasADi support for Moco (MocoCasADiSolver)." ON)
+option(OPENSIM_WITH_TROPTER
+        "Build the tropter optimal control library, for use in MocoTropterSolver." ON)
 
 
 # Configure installation directories across platforms.
@@ -365,10 +359,6 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
         set(GCC_INST_SET)
     endif()
 
-    # Get the gcc version number in major.minor.build format
-    execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion
-                    OUTPUT_VARIABLE GCC_VERSION)
-
     # Testing with Clang 3.3 on Ubuntu 14.04 shows a 5% decrease
     # in the runtime of the tests when we enable loop unrolling.
     set(GCC_OPT_ENABLE "-funroll-loops")
@@ -401,7 +391,7 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
     set(CMAKE_C_FLAGS_MINSIZEREL       "-DNDEBUG -Os ${GCC_INST_SET}"
       CACHE STRING "gcc MinSizeRel build compile flags" FORCE)
 
-    add_compile_options(-Wall -Wextra -Werror)
+    add_compile_options(-Wall -Wextra) # -Werror
     # -Wshorten-64-to-32 helps us catch default warnings from Visual C++.
     if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
         add_compile_options(-Wshorten-64-to-32)
@@ -413,17 +403,16 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
     add_compile_options($<$<NOT:$<CONFIG:Debug>>:-Wno-unused-variable>
             $<$<NOT:$<CONFIG:Debug>>:-Wno-unused-parameter>)
 
-    if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
-        add_compile_options(-Wno-unused-local-typedef)
-    else()
+    # Avoid warnings for Object::Self and Object::Super typedefs.
+    # This warning exists in GCC and Clang >=4.0.
+    if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
+            NOT (${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS "5.0.0"))
         add_compile_options(-Wno-unused-local-typedefs)
     endif()
 endif()
 
 ## When building in any of the Release modes, tell VC++ cl compiler to use intrinsics
 ## (i.e. sqrt instruction rather than sqrt subroutine) with flag /Oi.
-    
-# TODO: add /WX flag (warnings as errors) for MSVC.
 
 if(WIN32 AND ${CMAKE_C_COMPILER} MATCHES "cl")
     if(inst_set_to_use)

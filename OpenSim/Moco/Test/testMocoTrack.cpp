@@ -43,7 +43,7 @@ TEST_CASE("MocoTrack interface") {
     }
 }
 
-TEST_CASE("MocoTrack gait10dof18musc") {
+TEST_CASE("MocoTrack gait10dof18musc", "[casadi]") {
 
     MocoTrack track;
 

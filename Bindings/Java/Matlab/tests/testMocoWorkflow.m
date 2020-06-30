@@ -103,21 +103,23 @@ function testChangingTimeBounds(testCase)
     problem.setControlInfo('/actuator', [-10, 10]);
     problem.addGoal(MocoFinalTimeGoal());
 
-    solver = study.initTropterSolver();
-    solver.set_transcription_scheme('trapezoidal')
-    solver.set_num_mesh_intervals(19);
-    guess = solver.createGuess('random');
-    guess.setTime(opensimMoco.createVectorLinspace(20, 0.0, 3.0));
-    solver.setGuess(guess);
-    solution0 = study.solve();
+    if MocoTropterSolver.isAvailable()
+        solver = study.initTropterSolver();
+        solver.set_transcription_scheme('trapezoidal')
+        solver.set_num_mesh_intervals(19);
+        guess = solver.createGuess('random');
+        guess.setTime(opensimMoco.createVectorLinspace(20, 0.0, 3.0));
+        solver.setGuess(guess);
+        solution0 = study.solve();
 
-    problem.setTimeBounds(0, [5.8, 10]);
-    % Editing the problem does not affect information in the Solver; the
-    % guess still exists.
-    assert(~solver.getGuess().empty());
+        problem.setTimeBounds(0, [5.8, 10]);
+        % Editing the problem does not affect information in the Solver; the
+        % guess still exists.
+        assert(~solver.getGuess().empty());
 
-    solution = study.solve();
-    testCase.assertEqual(solution.getFinalTime(), 5.8);
+        solution = study.solve();
+        testCase.assertEqual(solution.getFinalTime(), 5.8);
+    end
 
 end
 
@@ -131,16 +133,18 @@ function testChangingModel(testCase)
     problem.setStateInfo('/slider/position/value', [0, 1], 0, 1);
     problem.setStateInfo('/slider/position/speed', [-100, 100], 0, 0);
     problem.addGoal(MocoFinalTimeGoal());
-    solver = study.initTropterSolver();
-    solver.set_num_mesh_intervals(20);
-    finalTime0 = study.solve().getFinalTime();
+    if MocoTropterSolver.isAvailable()
+        solver = study.initTropterSolver();
+        solver.set_num_mesh_intervals(20);
+        finalTime0 = study.solve().getFinalTime();
 
-    testCase.assertEqual(finalTime0, 2.00, 'AbsTol', 0.01);
+        testCase.assertEqual(finalTime0, 2.00, 'AbsTol', 0.01);
 
-    body = Body.safeDownCast(model.updComponent('body'));
-    body.setMass(2 * body.getMass());
-    finalTime1 = study.solve().getFinalTime();
-    assert(finalTime1 > 1.1 * finalTime0);
+        body = Body.safeDownCast(model.updComponent('body'));
+        body.setMass(2 * body.getMass());
+        finalTime1 = study.solve().getFinalTime();
+        assert(finalTime1 > 1.1 * finalTime0);
+    end
 end
 
 function testOrder(testCase)
@@ -153,11 +157,13 @@ function testOrder(testCase)
     problem.setStateInfo('/slider/position/speed', [-100, 100], 0, 0);
     problem.addGoal(MocoFinalTimeGoal());
     problem.setModel(createSlidingMassModel());
-    solver = study.initTropterSolver();
-    solver.set_num_mesh_intervals(20);
-    finalTime =  study.solve().getFinalTime();
+    if MocoTropterSolver.isAvailable()
+        solver = study.initTropterSolver();
+        solver.set_num_mesh_intervals(20);
+        finalTime =  study.solve().getFinalTime();
 
-    testCase.assertEqual(finalTime, 2.0, 'AbsTol', 0.01);
+        testCase.assertEqual(finalTime, 2.0, 'AbsTol', 0.01);
+    end
 end
 
 function testChangingGoals(testCase)
@@ -172,9 +178,11 @@ function testChangingGoals(testCase)
     problem.updPhase().addGoal(MocoFinalTimeGoal());
     effort = MocoControlGoal('effort');
     problem.updPhase().addGoal(effort);
-    finalTime0 = study.solve().getFinalTime();
+    if MocoCasADiSolver.isAvailable()
+        finalTime0 = study.solve().getFinalTime();
 
-    % Change the weights of the costs.
-    effort.setWeight(0.1);
-    assert(study.solve().getFinalTime() < 0.8 * finalTime0);
+        % Change the weights of the costs.
+        effort.setWeight(0.1);
+        assert(study.solve().getFinalTime() < 0.8 * finalTime0);
+    end
 end

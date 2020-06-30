@@ -1,7 +1,7 @@
-#ifndef MOCO_MOCOINVERSE_H
-#define MOCO_MOCOINVERSE_H
+#ifndef OPENSIM_MOCOINVERSE_H
+#define OPENSIM_MOCOINVERSE_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoInverse.h                                                *
+ * OpenSim: MocoInverse.h                                                     *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -149,4 +149,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOINVERSE_H
+#endif // OPENSIM_MOCOINVERSE_H

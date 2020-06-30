@@ -1,7 +1,7 @@
-#ifndef MOCO_MOCOCONSTRAINTINFO_H
-#define MOCO_MOCOCONSTRAINTINFO_H
+#ifndef OPENSIM_MOCOCONSTRAINTINFO_H
+#define OPENSIM_MOCOCONSTRAINTINFO_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoConstraintInfo.h                                         *
+ * OpenSim: MocoConstraintInfo.h                                              *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -135,4 +135,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOCONSTRAINTINFO_H
+#endif // OPENSIM_MOCOCONSTRAINTINFO_H

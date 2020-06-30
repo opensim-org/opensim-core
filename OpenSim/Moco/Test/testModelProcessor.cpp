@@ -28,6 +28,8 @@ using namespace OpenSim;
 
 TEST_CASE("ModelProcessor") {
 
+    Object::registerType(ModelProcessor());
+
     class MyModelOperator : public ModelOperator {
         OpenSim_DECLARE_CONCRETE_OBJECT(MyModelOperator, ModelOperator);
 
@@ -70,6 +72,7 @@ TEST_CASE("ModelProcessor") {
             std::unique_ptr<Object> obj(Object::makeObjectFromFile(
                     "testModelProcessor_ModelProcessor.xml"));
             auto* proc = dynamic_cast<ModelProcessor*>(obj.get());
+            REQUIRE(proc);
             Model modelDeserialized = proc->process();
             CHECK(modelDeserialized.getAnalysisSet().getSize() == 1);
         }

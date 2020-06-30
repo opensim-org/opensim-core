@@ -1,7 +1,7 @@
-#ifndef MOCO_MOCOPERIODICITYGOAL_H
-#define MOCO_MOCOPERIODICITYGOAL_H
+#ifndef OPENSIM_MOCOPERIODICITYGOAL_H
+#define OPENSIM_MOCOPERIODICITYGOAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoPeriodicityGoal.h                                        *
+ * OpenSim: MocoPeriodicityGoal.h                                             *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017-19 Stanford University and the Authors                  *
  *                                                                            *
@@ -144,4 +144,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOPERIODICITYGOAL_H
+#endif // OPENSIM_MOCOPERIODICITYGOAL_H

@@ -1,7 +1,7 @@
-#ifndef MOCO_MOCOBOUNDS_H
-#define MOCO_MOCOBOUNDS_H
+#ifndef OPENSIM_MOCOBOUNDS_H
+#define OPENSIM_MOCOBOUNDS_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoBounds.h                                                 *
+ * OpenSim: MocoBounds.h                                                      *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -132,4 +132,4 @@ OpenSim_DECLARE_CONCRETE_OBJECT(MocoFinalBounds, MocoBounds);
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOBOUNDS_H
+#endif // OPENSIM_MOCOBOUNDS_H

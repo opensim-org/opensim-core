@@ -18,8 +18,6 @@
 
 #include "ModelFactory.h"
 
-#include "../MocoUtilities.h"
-
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>

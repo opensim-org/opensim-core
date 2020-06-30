@@ -1,7 +1,7 @@
-#ifndef MOCO_MOCOPROBLEM_H
-#define MOCO_MOCOPROBLEM_H
+#ifndef OPENSIM_MOCOPROBLEM_H
+#define OPENSIM_MOCOPROBLEM_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoProblem.h                                                *
+ * OpenSim: MocoProblem.h                                                     *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -544,4 +544,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOPROBLEM_H
+#endif // OPENSIM_MOCOPROBLEM_H

@@ -1,7 +1,7 @@
-#ifndef MOCO_CASOCFUNCTION_H
-#define MOCO_CASOCFUNCTION_H
+#ifndef OPENSIM_CASOCFUNCTION_H
+#define OPENSIM_CASOCFUNCTION_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoCasOCFunction.h                                          *
+ * OpenSim: MocoCasOCFunction.h                                               *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2018 Stanford University and the Authors                     *
  *                                                                            *
@@ -315,4 +315,4 @@ class MultibodySystemImplicit : public Function {
 
 } // namespace CasOC
 
-#endif // MOCO_CASOCFUNCTION_H
+#endif // OPENSIM_CASOCFUNCTION_H

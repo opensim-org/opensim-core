@@ -1,7 +1,7 @@
-#ifndef MOCO_MODELFACTORY_H
-#define MOCO_MODELFACTORY_H
+#ifndef OPENSIM_MODELFACTORY_H
+#define OPENSIM_MODELFACTORY_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: ModelFactory.h                                               *
+ * OpenSim: ModelFactory.h                                                    *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2018 Stanford University and the Authors                     *
  *                                                                            *
@@ -18,14 +18,14 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "../osimMocoDLL.h"
+#include "osimActuatorsDLL.h"
 
 #include <OpenSim/Simulation/Model/Model.h>
 
 namespace OpenSim {
 
 /// This class provides utilities for creating OpenSim models.
-class OSIMMOCO_API ModelFactory {
+class OSIMACTUATORS_API ModelFactory {
 public:
     /// @name Create a model
     /// @{
@@ -96,4 +96,4 @@ public:
 
 } // namespace OpenSim
 
-#endif // MOCO_MODELFACTORY_H
+#endif // OPENSIM_MODELFACTORY_H

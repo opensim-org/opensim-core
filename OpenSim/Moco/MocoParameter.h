@@ -1,7 +1,7 @@
-#ifndef MOCO_MOCOPARAMETER_H
-#define MOCO_MOCOPARAMETER_H
+#ifndef OPENSIM_MOCOPARAMETER_H
+#define OPENSIM_MOCOPARAMETER_H
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoParameter.h                                              *
+ * OpenSim: MocoParameter.h                                                   *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -175,4 +175,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // MOCO_MOCOPARAMETER_H
+#endif // OPENSIM_MOCOPARAMETER_H

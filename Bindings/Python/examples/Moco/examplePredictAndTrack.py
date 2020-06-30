@@ -159,11 +159,11 @@ def solvePrediction():
     study.printToXML("examplePredictAndTrack_predict.omoco")
 
     # Solve the problem.
-    solution = study.solve();
-    solution.write("examplePredictAndTrack_predict_solution.sto");
+    solution = study.solve()
+    solution.write("examplePredictAndTrack_predict_solution.sto")
 
     if visualize:
-        study.visualize(solution);
+        study.visualize(solution)
     return solution
     
 

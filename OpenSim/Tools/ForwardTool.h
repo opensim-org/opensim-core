@@ -126,6 +126,9 @@ public:
     // INTERFACE
     //--------------------------------------------------------------------------
     bool run() override SWIG_DECLARE_EXCEPTION;
+    /// <b>(Deprecated)</b> Use setPrintResultFiles(true) and run() instead.
+    DEPRECATED_14("Use setPrintResultFiles(true) and run() instead.")
+    void printResults();
 private:
     void printResultsInternal();
 public:

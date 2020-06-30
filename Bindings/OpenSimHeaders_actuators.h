@@ -16,4 +16,6 @@
 #include <OpenSim/Actuators/Millard2012AccelerationMuscle.h>
 #include <OpenSim/Actuators/McKibbenActuator.h>
 
+#include <OpenSim/Actuators/ModelFactory.h>
+
 #endif // OPENSIM_OPENSIM_HEADERS_ACTUATORS_H_
