@@ -317,6 +317,11 @@ public:
     }
 };
 
+class NonUniqueLabels : public OpenSim::Exception {
+public:
+    using Exception::Exception;
+};
+
 }; //namespace
 //=============================================================================
 //=============================================================================

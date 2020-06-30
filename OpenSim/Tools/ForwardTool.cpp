@@ -320,19 +320,24 @@ bool ForwardTool::run()
     }
     // PRINT RESULTS
     string fileName;
-    if(_printResultFiles) printResults();
+    if(_printResultFiles) printResultsInternal();
 
     IO::chDir(saveWorkingDirectory);
 
     removeAnalysisSetFromModel();
     return completed;
 }
+
+void ForwardTool::printResults() {
+    log_warn("ForwardTool::printResults() does nothing; use "
+             "ForwardTool::setPrintResultFiles(true) before run().");
+}
 //=============================================================================
 // PRINT RESULTS. 
 // This method needs to be private since it shouldn't be called except from 
 // within tool::run() otherwise will crash because Manager is out of scope
 //=============================================================================
-void ForwardTool::printResults() 
+void ForwardTool::printResultsInternal()
 {
     // Do the maneuver to change then restore working directory 
     // so that the parsing code behaves properly if called from a different directory.

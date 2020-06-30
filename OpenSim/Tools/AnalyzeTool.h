@@ -119,7 +119,7 @@ public:
     void setSpeedsFileName(const std::string &aFileName) { _speedsFileName = aFileName; }
     double getLowpassCutoffFrequency() const { return _lowpassCutoffFrequency; }
     void setLowpassCutoffFrequency(double aLowpassCutoffFrequency) { _lowpassCutoffFrequency = aLowpassCutoffFrequency; }
-    const bool getLoadModelAndInput() const { return _loadModelAndInput; }
+    bool getLoadModelAndInput() const { return _loadModelAndInput; }
     void setLoadModelAndInput(bool b) { _loadModelAndInput = b; }
 
     //--------------------------------------------------------------------------

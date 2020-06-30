@@ -33,12 +33,12 @@ public:
     /// @name Visualize a motion of a model using the simbody-visualizer
     /// @{
 
-    /// Play back an existing motion (from the Storage) in the
+    /// Play back an existing motion (from the table) in the
     /// simbody-visualizer. The Storage should contain all generalized
     /// coordinates. The visualizer window allows the user to control playback
     /// speed. This function blocks until the user exits the simbody-visualizer
     /// window.
-    static void showMotion(Model, Storage);
+    static void showMotion(Model, TimeSeriesTable);
     /// @}
 
     ///  Visualize the passed in model in a simbody-visualizer window.

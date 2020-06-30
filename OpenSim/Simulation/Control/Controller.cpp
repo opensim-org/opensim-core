@@ -105,11 +105,7 @@ void Controller::updateFromXMLNode(SimTK::Xml::Element& node,
  */
 bool Controller::isEnabled() const
 {
-    if( getModel().getAllControllersEnabled() ) {
-       return( get_enabled() );
-    } else {
-       return( false );
-    }
+    return get_enabled();
 }
 //_____________________________________________________________________________
 /**
