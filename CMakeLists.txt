@@ -673,7 +673,7 @@ if(${OPENSIM_C3D_PARSER} STREQUAL "ezc3d")
     find_package(ezc3d REQUIRED HINTS "${ezc3d_hint}")
     add_definitions(-DWITH_EZC3D)
     OpenSimCopyDependencyDLLsForWin(DEP_NAME ezc3d
-            DEP_BIN_DIR"${ezc3d_LIBRARY_DIR}/../bin"
+            DEP_BIN_DIR "${ezc3d_LIBRARY_DIR}/../bin"
             )
     if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
         OpenSimInstallDependencyLibraries(ezc3d "${ezc3d_LIBRARY_DIR}/../"
