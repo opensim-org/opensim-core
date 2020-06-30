@@ -10,7 +10,7 @@ musculoskeletal systems defined as %OpenSim models.
 The package has Python, MATLAB, and XML (command-line) interfaces; the core
 library is written in C++.
 
-@image html WhatIsMoco.png height=250px
+@image html OverviewOfMoco.png width=500px
 
 Here are some problems you can solve with Moco:
 
