@@ -32,7 +32,7 @@ A simple parameter optimization example.
 
 @example examplePrototypeCustomGoal.m
 This is an example of how to prototype a custom goal in Matlab. See
-@ref customgoal.
+@ref mococustomgoal.
 
 @example exampleSlidingMass.m
 This is Moco's simplest example.
@@ -88,7 +88,7 @@ This is Moco's simplest example.
 @example exampleSlidingMassAdvanced.cpp
 This example shows setting solver settings, customizing an initial guess,
 and defining a custom goal (cost term).
-See @ref customgoal.
+See @ref mococustomgoal.
 
 @example exampleTracking.cpp
 This is a simple example of how to use a MocoStateTrackingGoal.
@@ -97,10 +97,10 @@ This is a simple example of how to use a MocoStateTrackingGoal.
 This example shows creating a custom goal in a plugin library, which allows
 you to use the custom goal in C++, the command-line, Matlab, Python, and the
 GUI.
-See @ref customgoal.
+See @ref mococustomgoal.
 
 
-@page mocoexamples Examples
+@page mocoexamples Moco Examples
 
 Moco's examples are categorized as beginner, intermediate, and advanced.
 Some examples are available from multiple interfaces. Use the links in the

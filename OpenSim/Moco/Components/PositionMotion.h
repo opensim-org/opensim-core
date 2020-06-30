@@ -32,14 +32,14 @@ class Function;
 class Coordinate;
 class StatesTrajectory;
 
-/// This class prescribes the value, speed, and acceleration of all coordinates
-/// in the model using SimTK::Motion. SimTK::Motion%s remove degrees of freedom
-/// from the system rather than add constraints. This is an alternative to
-/// prescribing kinematics using Coordinate's prescribed_function, which uses a
-/// kinematic constraint. When prescribing motion, the system must compute
-/// constraint forces to apply to enforce the prescribed motion;
-/// such forces are available via SimbodyMatterSubsystem::findMotionForces().
-/// @note This class requires that *all* coordinates are prescribed.
+/** This class prescribes the value, speed, and acceleration of all coordinates
+in the model using SimTK::Motion. SimTK::Motion%s remove degrees of freedom
+from the system rather than add constraints. This is an alternative to
+prescribing kinematics using Coordinate's prescribed_function, which uses a
+kinematic constraint. When prescribing motion, the system must compute
+constraint forces to apply to enforce the prescribed motion;
+such forces are available via SimbodyMatterSubsystem::findMotionForces().
+@note This class requires that *all* coordinates are prescribed. */
 class OSIMMOCO_API PositionMotion : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT(PositionMotion, ModelComponent);
 

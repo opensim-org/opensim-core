@@ -32,48 +32,48 @@ class Model;
 
 // TODO give option to specify gradient and Hessian analytically.
 
-/// A goal is term in the cost functional to be minimized, or a set of endpoint
-/// constraints that must lie within provided bounds. Goals depend on the
-/// phase's initial and final states and controls, and optionally on the
-/// integral of a quantity over the phase.
-/// Not all goals support endpoint constraint mode; see
-/// getSupportsEndpointConstraint(). If a goal does support endpoint constraint
-/// mode, then the default mode is available via getMode(). Use endpoint
-/// constraint mode if you require the goal to be met strictly and do not want
-/// to allow a trade-off between this goal and other goals.
-/// The calculation of the goal may differ between cost and endpoint constraint
-/// modes; cost mode may require that outputs are squared, for example.
-///
-/// # Stage dependency
-/// Some goals require less of IntegrandInput and GoalInput than others. To
-/// ensure goals are computed efficiently, goals can specify a stage dependency,
-/// which tells solvers what to do when preparing IntegrandInput and GoalInput.
-/// Here are the expectations for each SimTK::Stage:
-///
-/// - SimTK::Stage::Topology: the time field of IntegrandInput and
-///     initial_time and final_time fields of GoalInput are available.
-/// - SimTK::Stage::Model: controls fields of IntegrandInput and
-///     GoalInput are available.
-/// - SimTK::Stage::Instance: MocoParameters are applied to the model.
-/// - SimTK::Stage::Time: state variables (SimTK::State::getY(), etc.) are
-///     available, and SimTK::Stage::getTime() is updated.
-/// - SimTK::Stage::Position: state, initial_state, and final_state can be used
-///     to compute position-dependent quantities.
-/// - SimTK::Stage::Velocity: state, initial_state, and final_state can be used
-///     to compute velocity-dependent quantities.
-/// - SimTK::Stage::Dynamics: state, initial_state, and final_state can be used
-///     to compute force-dependent quantities.
-/// - SimTK::Stage::Acceleration: state, initial_state, and final_state can be
-///     used to compute acceleration-dependent quantities, such as body
-///     accelerations and joint reactions.
-///
-/// @par For developers
-/// Every time the problem is solved, a copy of this goal is used. An individual
-/// instance of a goal is only ever used in a single problem. Therefore, there
-/// is no need to clear cache variables that you create in initializeImpl().
-/// Also, information stored in this goal does not persist across multiple
-/// solves.
-/// @ingroup mocogoal
+/** A goal is term in the cost functional to be minimized, or a set of endpoint
+constraints that must lie within provided bounds. Goals depend on the
+phase's initial and final states and controls, and optionally on the
+integral of a quantity over the phase.
+Not all goals support endpoint constraint mode; see
+getSupportsEndpointConstraint(). If a goal does support endpoint constraint
+mode, then the default mode is available via getMode(). Use endpoint
+constraint mode if you require the goal to be met strictly and do not want
+to allow a trade-off between this goal and other goals.
+The calculation of the goal may differ between cost and endpoint constraint
+modes; cost mode may require that outputs are squared, for example.
+
+# Stage dependency
+Some goals require less of IntegrandInput and GoalInput than others. To
+ensure goals are computed efficiently, goals can specify a stage dependency,
+which tells solvers what to do when preparing IntegrandInput and GoalInput.
+Here are the expectations for each SimTK::Stage:
+
+- SimTK::Stage::Topology: the time field of IntegrandInput and
+    initial_time and final_time fields of GoalInput are available.
+- SimTK::Stage::Model: controls fields of IntegrandInput and
+    GoalInput are available.
+- SimTK::Stage::Instance: MocoParameters are applied to the model.
+- SimTK::Stage::Time: state variables (SimTK::State::getY(), etc.) are
+    available, and SimTK::Stage::getTime() is updated.
+- SimTK::Stage::Position: state, initial_state, and final_state can be used
+    to compute position-dependent quantities.
+- SimTK::Stage::Velocity: state, initial_state, and final_state can be used
+    to compute velocity-dependent quantities.
+- SimTK::Stage::Dynamics: state, initial_state, and final_state can be used
+    to compute force-dependent quantities.
+- SimTK::Stage::Acceleration: state, initial_state, and final_state can be
+    used to compute acceleration-dependent quantities, such as body
+    accelerations and joint reactions.
+
+@par For developers
+Every time the problem is solved, a copy of this goal is used. An individual
+instance of a goal is only ever used in a single problem. Therefore, there
+is no need to clear cache variables that you create in initializeImpl().
+Also, information stored in this goal does not persist across multiple
+solves.
+@ingroup mocogoal */
 class OSIMMOCO_API MocoGoal : public Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(MocoGoal, Object);
 
@@ -382,8 +382,8 @@ private:
 inline void MocoGoal::calcIntegrandImpl(
         const IntegrandInput&, SimTK::Real&) const {}
 
-/// Endpoint cost for final time.
-/// @ingroup mocogoal
+/** Endpoint cost for final time.
+@ingroup mocogoal */
 class OSIMMOCO_API MocoFinalTimeGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoFinalTimeGoal, MocoGoal);
 
@@ -403,10 +403,10 @@ protected:
     }
 };
 
-/// This goal requires the average speed of the system to match a desired
-/// average speed. The average speed of the system is the displacement of the
-/// system's center of mass divided by the duration of the phase.
-/// @ingroup mocogoal
+/** This goal requires the average speed of the system to match a desired
+average speed. The average speed of the system is the displacement of the
+system's center of mass divided by the duration of the phase.
+@ingroup mocogoal */
 class MocoAverageSpeedGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoAverageSpeedGoal, MocoGoal);
 

@@ -65,9 +65,9 @@ public:
     }
 };
 
-/// For DeGrooteFregly2016Muscle muscles whose 'ignore_tendon_compliance' 
-/// property is false, set the tendon compliance dynamics mode to either 
-/// 'explicit' or 'implicit'.
+/** For DeGrooteFregly2016Muscle muscles whose 'ignore_tendon_compliance'
+property is false, set the tendon compliance dynamics mode to either
+'explicit' or 'implicit'. */
 class OSIMMOCO_API ModOpTendonComplianceDynamicsModeDGF 
         : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(
@@ -100,8 +100,8 @@ public:
     }
 };
 
-/// Set the tendon compliance dynamics mode to "implicit" for all 
-/// DeGrooteFregly2016Muscle%s in the model.
+/** Set the tendon compliance dynamics mode to "implicit" for all
+DeGrooteFregly2016Muscle%s in the model. */
 class OSIMMOCO_API ModOpUseImplicitTendonComplianceDynamicsDGF
         : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(
@@ -119,8 +119,8 @@ public:
     }
 };
 
-/// Turn off passive fiber forces for all DeGrooteFregly2016Muscle%s in the
-/// model.
+/** Turn off passive fiber forces for all DeGrooteFregly2016Muscle%s in the
+model. */
 class OSIMMOCO_API ModOpIgnorePassiveFiberForcesDGF : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(
             ModOpIgnorePassiveFiberForcesDGF, ModelOperator);
@@ -135,8 +135,8 @@ public:
     }
 };
 
-/// Set passive fiber stiffness for all DeGrooteFregly2016Muscle%s in the
-/// model.
+/** Set passive fiber stiffness for all DeGrooteFregly2016Muscle%s in the
+model. */
 class OSIMMOCO_API ModOpPassiveFiberStrainAtOneNormForceDGF
         : public ModelOperator {
 OpenSim_DECLARE_CONCRETE_OBJECT(
@@ -164,8 +164,8 @@ public:
     }
 };
 
-/// Scale the active fiber force curve width for all DeGrooteFregly2016Muscle%s
-/// in the model.
+/** Scale the active fiber force curve width for all DeGrooteFregly2016Muscle%s
+in the model. */
 class OSIMMOCO_API ModOpScaleActiveFiberForceCurveWidthDGF :
         public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(
@@ -189,7 +189,7 @@ public:
     }
 };
 
-/// Set the fiber damping for all DeGrooteFregly2016Muscle%s in the model.
+/** Set the fiber damping for all DeGrooteFregly2016Muscle%s in the model. */
 class OSIMMOCO_API ModOpFiberDampingDGF : public ModelOperator {
 OpenSim_DECLARE_CONCRETE_OBJECT(ModOpFiberDampingDGF, ModelOperator);
     OpenSim_DECLARE_PROPERTY(fiber_damping, double,
@@ -210,7 +210,7 @@ public:
     }
 };
 
-/// Scale the max isometric force for all muscles in the model.
+/** Scale the max isometric force for all muscles in the model. */
 class OSIMMOCO_API ModOpScaleMaxIsometricForce : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(ModOpScaleMaxIsometricForce, ModelOperator);
     OpenSim_DECLARE_PROPERTY(scale_factor, double,
@@ -233,7 +233,7 @@ public:
     }
 };
 
-/// Remove all muscles contained in the model's ForceSet.
+/** Remove all muscles contained in the model's ForceSet. */
 class OSIMMOCO_API ModOpRemoveMuscles : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(ModOpRemoveMuscles, ModelOperator);
 
@@ -247,8 +247,8 @@ public:
     }
 };
 
-/// Add reserve actuators to the model using
-/// ModelFactory::createReserveActuators.
+/** Add reserve actuators to the model using
+ModelFactory::createReserveActuators. */
 class OSIMMOCO_API ModOpAddReserves : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(ModOpAddReserves, ModelOperator);
     OpenSim_DECLARE_PROPERTY(optimal_force, double,
@@ -285,8 +285,8 @@ public:
     }
 };
 
-/// Add external loads (e.g., ground reaction forces) to the model from a
-/// XML file.
+/** Add external loads (e.g., ground reaction forces) to the model from a
+XML file. */
 class OSIMMOCO_API ModOpAddExternalLoads : public ModelOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(ModOpAddExternalLoads, ModelOperator);
     OpenSim_DECLARE_PROPERTY(filepath, std::string,

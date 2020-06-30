@@ -45,36 +45,36 @@ private:
     void constructProperties();
 };
 
-/// This path constraint enforces that the distance between the origins of pairs 
-/// of model frames is kept between minimum and maximum bounds. Frame pairs and 
-/// their bounds are specified via a MocoFrameDistancConstraintPair. 
-/// Any model component derived from Frame is valid to be included in a frame 
-/// pair, and any number of frame pairs may be append to this constraint via 
-/// addFramePair().
-///
-/// This constraint can be used as a simple method for preventing bodies in your
-/// model from intersecting during an optimization. For example, the
-/// following prevents feet from intersecting during a walking optimization:
-/// @code
-/// distance = problem.addPathConstraint<MocoFrameDistanceConstraint>();
-/// distance.setName("minimum_distance");
-/// SimTK::Real inf = SimTK::Infinity;
-/// distance.addFramePair('/bodyset/calcn_l', '/bodyset/calcn_r', 0.1, inf);
-/// distance.addFramePair('/bodyset/toes_l', '/bodyset/toes_r', 0.1, inf);
-/// distance.addFramePair('/bodyset/calcn_l', '/bodyset/toes_r', 0.1, inf);
-/// distance.addFramePair('/bodyset/toes_l', '/bodyset/calcn_r', 0.1, inf);
-/// @endcode
-///
-/// To project the frame distance onto a vector or plane before ensuring its
-/// within the provided bounds, use setProjection() and setProjectionVector().
-///
-/// @note This class represents a path constraint, *not* a model kinematic 
-/// constraint. Therefore, there are no Lagrange multipliers or constraint
-/// forces associated with this constraint. The model's force elements 
-/// (including actuators) must generate the forces necessary for satisfying this 
-/// constraint.
-///       
-/// @ingroup mocopathcon
+/** This path constraint enforces that the distance between the origins of pairs
+of model frames is kept between minimum and maximum bounds. Frame pairs and
+their bounds are specified via a MocoFrameDistancConstraintPair.
+Any model component derived from Frame is valid to be included in a frame
+pair, and any number of frame pairs may be append to this constraint via
+addFramePair().
+
+This constraint can be used as a simple method for preventing bodies in your
+model from intersecting during an optimization. For example, the
+following prevents feet from intersecting during a walking optimization:
+@code
+distance = problem.addPathConstraint<MocoFrameDistanceConstraint>();
+distance.setName("minimum_distance");
+SimTK::Real inf = SimTK::Infinity;
+distance.addFramePair('/bodyset/calcn_l', '/bodyset/calcn_r', 0.1, inf);
+distance.addFramePair('/bodyset/toes_l', '/bodyset/toes_r', 0.1, inf);
+distance.addFramePair('/bodyset/calcn_l', '/bodyset/toes_r', 0.1, inf);
+distance.addFramePair('/bodyset/toes_l', '/bodyset/calcn_r', 0.1, inf);
+@endcode
+
+To project the frame distance onto a vector or plane before ensuring its
+within the provided bounds, use setProjection() and setProjectionVector().
+
+@note This class represents a path constraint, *not* a model kinematic
+constraint. Therefore, there are no Lagrange multipliers or constraint
+forces associated with this constraint. The model's force elements
+(including actuators) must generate the forces necessary for satisfying this
+constraint.
+
+@ingroup mocopathcon */
 class OSIMMOCO_API MocoFrameDistanceConstraint : public MocoPathConstraint {
     OpenSim_DECLARE_CONCRETE_OBJECT(
             MocoFrameDistanceConstraint, MocoPathConstraint);

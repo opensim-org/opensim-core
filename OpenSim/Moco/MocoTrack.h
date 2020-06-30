@@ -32,127 +32,129 @@ class MocoWeightSet;
 class MocoProblem;
 class MocoTrajectory;
 
-/// MocoTrack
-/// ---------
-/// This tool constructs problems in which state and/or marker trajectory data
-/// are tracked while solving for model kinematics and actuator controls.
-/// "Tracking" refers to cost terms that minimize the error between provided
-/// reference data and the associated model quantities (joint angles, joint
-/// velocities, marker positions, etc).
-///
-/// State and marker tracking
-/// -------------------------
-/// State reference data (joint angles and velocities), marker reference data
-/// (x/y/z marker motion capture trajectories), or both may be provided via the
-/// `states_reference` and `markers_reference` properties. For each set of
-/// reference data provided, a tracking cost term is added to the internal
-/// MocoProblem.
-///
-/// setMarkersReference() only accepts a scalar TimeSeriesTable (either
-/// directly or via a TableProcessor) containing x/y/x marker position values.
-/// A TimeSeriesTableVec3 of markers is not accepted, but you may use the
-/// flatten() method to convert to a scalar TimeSeriesTable:
-///
-/// @code
-/// MocoTrack track;
-///
-/// TimeSeriesTableVec3 markers = TRCFileAdapter("marker_trajectories.trc");
-/// TimeSeriesTable markersFlat(markers.flatten());
-/// track.setMarkersReference(TableProcessor(markersFlat));
-/// @endcode
-///
-/// If you wish to set the markers reference directly from a TRC file, use
-/// setMarkersReferenceFromTRC().
-///
-/// The `states_global_tracking_weight` and `markers_global_tracking_weight`
-/// properties apply a cost function weight to all tracking error associated
-/// provided reference data. The `states_weight_set` and `markers_weight_set`
-/// properties give you finer control over the tracking costs, letting you set
-/// weights for individual reference data tracking errors.
-///
-/// Control effort minimization
-/// ---------------------------
-/// By default, a MocoControlCost term is added to the underlying problem with
-/// a weight of 0.001. Control effort terms often help smooth the problem
-/// solution controls, and minimally affect the states tracking solution with a
-/// sufficiently low weight. Use the `minimize_control_effort` and
-/// `control_effort_weight` properties to customize these settings.
-///
-/// Problem configuration options
-/// -----------------------------
-/// A time range that is compatible with all reference data may be provided.
-/// If no time range is set, the widest time range that is compatible will all
-/// reference data will be used.
-///
-/// If you would like to track joint velocities but only have joint angles in
-/// your states reference, enable the `track_reference_position_derivatives`
-/// property. When enabled, the provided position-level states reference data
-/// will be splined in order to compute derivatives. If some velocity-level
-/// information exists in the reference, this option will fill in the missing
-/// data with position derivatives and leave the existing velocity data intact.
-/// This is not enabled by default, but is recommended for improving tracking
-/// performance and reducing convergence times.
-///
-/// Since the data in the provided references may be altered by TableProcessor
-/// operations or appended to by `track_reference_position_derivatives`, the
-/// tracked data is printed to file in addition to the problem solution. The
-/// tracked data files have the following format
-/// "<tool_name>_tracked_<data_type>.sto" (e.g. "MocoTool_tracked_states.sto").
-///
-/// Default solver settings
-/// -----------------------
-/// - solver: MocoCasADiSolver
-/// - multibody_dynamics_mode: explicit
-/// - transcription_scheme: Hermite-Simpson
-/// - optim_convergence_tolerance: 1e-2
-/// - optim_constraint_tolerance: 1e-2
-/// - optim_sparsity_detection: random
-/// - optim_finite_difference_scheme: 'forward'
-///
-/// Basic example
-/// -------------
-/// Construct a tracking problem by setting property values and calling solve():
-///
-/// @code
-/// MocoTrack track;
-/// track.setName("states_tracking_with_reserves");
-/// track.setModel(ModelProcessor("model_file.xml") |
-///                ModOpAddExternalLoads() |
-///                ModOpAddReserves(1000));
-/// track.setStatesReference("states_reference_file.sto");
-/// track.set_track_reference_position_derivatives(true);
-/// track.set_control_effort_weight(0.1);
-/// MocoSolution solution = track.solve();
-/// @endcode
-///
-/// Customizing a tracking problem
-/// ------------------------------
-/// If you wish to further customize the underlying MocoProblem before solving,
-/// instead of calling solve(), call initialize() which returns a pre-configured
-/// MocoStudy object:
-///
-/// @code
-/// MocoTrack track;
-/// track.setName("track_and_minimize_hip_compressive_force");
-/// track.setModel(ModelProcessor("model_file.xml") |
-///                ModOpAddExternalLoads());
-/// track.setStatesReference("states_reference_file.sto");
-///
-/// MocoStudy study = track.initialize();
-///
-/// auto& problem = study.updProblem();
-/// auto* hipForceCost = problem.addGoal<MocoJointReactionCost>("hip_force");
-/// hipForceCost->set_weight(10);
-/// hipForceCost->setJointPath("/jointset/hip_r");
-/// hipForceCost->setReactionMeasures({"force-y"});
-///
-/// auto& solver = study.updSolver<MocoCasADiSolver>();
-/// solver.set_multibody_dynamics_mode("implicit");
-///
-/// MocoSolution solution = study.solve();
-/// @endcode
-///
-/// @underdevelopment
+/**
+
+MocoTrack
+---------
+This tool constructs problems in which state and/or marker trajectory data
+are tracked while solving for model kinematics and actuator controls.
+"Tracking" refers to cost terms that minimize the error between provided
+reference data and the associated model quantities (joint angles, joint
+velocities, marker positions, etc).
+
+State and marker tracking
+-------------------------
+State reference data (joint angles and velocities), marker reference data
+(x/y/z marker motion capture trajectories), or both may be provided via the
+`states_reference` and `markers_reference` properties. For each set of
+reference data provided, a tracking cost term is added to the internal
+MocoProblem.
+
+setMarkersReference() only accepts a scalar TimeSeriesTable (either
+directly or via a TableProcessor) containing x/y/x marker position values.
+A TimeSeriesTableVec3 of markers is not accepted, but you may use the
+flatten() method to convert to a scalar TimeSeriesTable:
+
+@code
+MocoTrack track;
+
+TimeSeriesTableVec3 markers = TRCFileAdapter("marker_trajectories.trc");
+TimeSeriesTable markersFlat(markers.flatten());
+track.setMarkersReference(TableProcessor(markersFlat));
+@endcode
+
+If you wish to set the markers reference directly from a TRC file, use
+setMarkersReferenceFromTRC().
+
+The `states_global_tracking_weight` and `markers_global_tracking_weight`
+properties apply a cost function weight to all tracking error associated
+provided reference data. The `states_weight_set` and `markers_weight_set`
+properties give you finer control over the tracking costs, letting you set
+weights for individual reference data tracking errors.
+
+Control effort minimization
+---------------------------
+By default, a MocoControlCost term is added to the underlying problem with
+a weight of 0.001. Control effort terms often help smooth the problem
+solution controls, and minimally affect the states tracking solution with a
+sufficiently low weight. Use the `minimize_control_effort` and
+`control_effort_weight` properties to customize these settings.
+
+Problem configuration options
+-----------------------------
+A time range that is compatible with all reference data may be provided.
+If no time range is set, the widest time range that is compatible will all
+reference data will be used.
+
+If you would like to track joint velocities but only have joint angles in
+your states reference, enable the `track_reference_position_derivatives`
+property. When enabled, the provided position-level states reference data
+will be splined in order to compute derivatives. If some velocity-level
+information exists in the reference, this option will fill in the missing
+data with position derivatives and leave the existing velocity data intact.
+This is not enabled by default, but is recommended for improving tracking
+performance and reducing convergence times.
+
+Since the data in the provided references may be altered by TableProcessor
+operations or appended to by `track_reference_position_derivatives`, the
+tracked data is printed to file in addition to the problem solution. The
+tracked data files have the following format
+"<tool_name>_tracked_<data_type>.sto" (e.g. "MocoTool_tracked_states.sto").
+
+Default solver settings
+-----------------------
+- solver: MocoCasADiSolver
+- multibody_dynamics_mode: explicit
+- transcription_scheme: Hermite-Simpson
+- optim_convergence_tolerance: 1e-2
+- optim_constraint_tolerance: 1e-2
+- optim_sparsity_detection: random
+- optim_finite_difference_scheme: 'forward'
+
+Basic example
+-------------
+Construct a tracking problem by setting property values and calling solve():
+
+@code
+MocoTrack track;
+track.setName("states_tracking_with_reserves");
+track.setModel(ModelProcessor("model_file.xml") |
+               ModOpAddExternalLoads() |
+               ModOpAddReserves(1000));
+track.setStatesReference("states_reference_file.sto");
+track.set_track_reference_position_derivatives(true);
+track.set_control_effort_weight(0.1);
+MocoSolution solution = track.solve();
+@endcode
+
+Customizing a tracking problem
+------------------------------
+If you wish to further customize the underlying MocoProblem before solving,
+instead of calling solve(), call initialize() which returns a pre-configured
+MocoStudy object:
+
+@code
+MocoTrack track;
+track.setName("track_and_minimize_hip_compressive_force");
+track.setModel(ModelProcessor("model_file.xml") |
+               ModOpAddExternalLoads());
+track.setStatesReference("states_reference_file.sto");
+
+MocoStudy study = track.initialize();
+
+auto& problem = study.updProblem();
+auto* hipForceCost = problem.addGoal<MocoJointReactionCost>("hip_force");
+hipForceCost->set_weight(10);
+hipForceCost->setJointPath("/jointset/hip_r");
+hipForceCost->setReactionMeasures({"force-y"});
+
+auto& solver = study.updSolver<MocoCasADiSolver>();
+solver.set_multibody_dynamics_mode("implicit");
+
+MocoSolution solution = study.solve();
+@endcode
+
+@underdevelopment */
 class OSIMMOCO_API MocoTrack : public MocoTool {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoTrack, MocoTool);
 

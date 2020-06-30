@@ -22,9 +22,9 @@
 
 namespace OpenSim {
 
-/// This goal allows you to use any (double, or scalar) Output in the model
-/// as the integrand of a goal.
-/// @ingroup mocogoal
+/** This goal allows you to use any (double, or scalar) Output in the model
+as the integrand of a goal.
+@ingroup mocogoal */
 class OSIMMOCO_API MocoOutputGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoOutputGoal, MocoGoal);
 
@@ -38,19 +38,19 @@ public:
         constructProperties();
     }
 
-    /// Set the absolute path to the output in the model to use as the integrand
-    /// for this goal. The format is "/path/to/component|output_name".
+    /** Set the absolute path to the output in the model to use as the integrand
+    for this goal. The format is "/path/to/component|output_name". */
     void setOutputPath(std::string path) { set_output_path(std::move(path)); }
     const std::string& getOutputPath() const { return get_output_path(); }
 
-    /// Set if the goal should be divided by the displacement of the system's
-    /// center of mass over the phase.
+    /** Set if the goal should be divided by the displacement of the system's
+    center of mass over the phase. */
     void setDivideByDisplacement(bool tf) { set_divide_by_displacement(tf); }
     bool getDivideByDisplacement() const {
         return get_divide_by_displacement();
     }
 
-    /// Set if the goal should be divided by the total mass of the model.
+    /** Set if the goal should be divided by the total mass of the model. */
     void setDivideByMass(bool tf) { set_divide_by_mass(tf); }
     bool getDivideByMass() const {
         return get_divide_by_mass();

@@ -26,39 +26,39 @@ namespace OpenSim {
 template <class T>
 class SimTKMultivariatePolynomial : public SimTK::Function_<T> {
 public:
-    /// Create a SimTKMultivariatePolynomial object.
-    /// This implementation assumes a maximum of four dimensions and allows
-    /// computation of order one derivatives only.
-    /// @param coefficients the polynomial coefficients in order of ascending
-    /// powers starting from the last dependent component.
-    /// For a polynomial of third order dependent on three components
-    /// (X, Y, Z), the order is a follows:
-    /// <pre>
-    /// Index | X  Y  Z
-    /// 0     | 0  0  0
-    /// 1     | 0  0  1
-    /// 2     | 0  0  2
-    /// 3     | 0  0  3
-    /// 4     | 0  1  0
-    /// 5     | 0  1  1
-    /// 6     | 0  1  2
-    /// 7     | 0  2  0
-    /// 8     | 0  2  1
-    /// 9     | 0  3  0
-    /// 10    | 1  0  0
-    /// 11    | 1  0  1
-    /// 12    | 1  0  2
-    /// 13    | 1  1  0
-    /// 14    | 1  1  1
-    /// 15    | 1  2  0
-    /// 16    | 2  0  0
-    /// 17    | 2  0  1
-    /// 18    | 2  1  0
-    /// 19    | 3  0  0
-    /// </pre>
-    /// Assuming c6 the index 6 coefficient, the corresponding term is Y Z^2.
-    /// @param dimension the number of dependent components
-    /// @param order the polynomial order
+    /** Create a SimTKMultivariatePolynomial object.
+    This implementation assumes a maximum of four dimensions and allows
+    computation of order one derivatives only.
+    @param coefficients the polynomial coefficients in order of ascending
+    powers starting from the last dependent component.
+    For a polynomial of third order dependent on three components
+    (X, Y, Z), the order is a follows:
+    <pre>
+    Index | X  Y  Z
+    0     | 0  0  0
+    1     | 0  0  1
+    2     | 0  0  2
+    3     | 0  0  3
+    4     | 0  1  0
+    5     | 0  1  1
+    6     | 0  1  2
+    7     | 0  2  0
+    8     | 0  2  1
+    9     | 0  3  0
+    10    | 1  0  0
+    11    | 1  0  1
+    12    | 1  0  2
+    13    | 1  1  0
+    14    | 1  1  1
+    15    | 1  2  0
+    16    | 2  0  0
+    17    | 2  0  1
+    18    | 2  1  0
+    19    | 3  0  0
+    </pre>
+    Assuming c6 the index 6 coefficient, the corresponding term is Y Z^2.
+    @param dimension the number of dependent components
+    @param order the polynomial order */
     SimTKMultivariatePolynomial(const SimTK::Vector_<T>& coefficients,
             const int& dimension, const int& order) :
             coefficients(coefficients), dimension(dimension), order(order) {

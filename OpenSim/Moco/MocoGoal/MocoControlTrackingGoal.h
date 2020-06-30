@@ -28,7 +28,7 @@
 
 namespace OpenSim {
 
-/// Associate a control variable with a column from the reference data.
+/** Associate a control variable with a column from the reference data. */
 class OSIMMOCO_API MocoControlTrackingGoalReference : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(MocoControlTrackingGoalReference, Object);
 
@@ -37,72 +37,72 @@ public:
             reference, std::string, "Column label from reference table.");
 
     MocoControlTrackingGoalReference();
-    /// Provide the name of a control and the label of the column from the
-    /// reference that this control should track.
+    /** Provide the name of a control and the label of the column from the
+    reference that this control should track. */
     MocoControlTrackingGoalReference(std::string name, std::string reference);
 
 private:
     void constructProperties();
 };
 
-/// The squared difference between a control variable value and a reference
-/// control variable value, summed over the control variables for which a
-/// reference is provided, and integrated over the phase. This can be used to
-/// track actuator controls, muscle excitations, etc.
-///
-/// This goal is computed as follows:
-///
-/// \f[
-/// \int_{t_i}^{t_f}
-///         \sum_{c \in C} w_c \|x_{m,c}(t) - x_{e,c})\|^2 ~dt
-/// \f]
-/// We use the following notation:
-/// - \f$ t_i \f$: the initial time of this phase.
-/// - \f$ t_f \f$: the final time of this phase.
-/// - \f$ C \f$: the set of control variables being tracked.
-/// - \f$ w_c \f$: the weight for control \f$ c \f$.
-/// - \f$ x_{m,c}(t) \f$: control signal \f$ c \f$.
-/// - \f$ x_{e,c}(t) \f$: reference data for control signal \f$ c \f$.
-///
-/// This goal has two labeling modes: 'auto' and 'manual':
-/// - 'auto': The column labels of the reference must exactly match the names
-///           of controls, and all controls with a matching column in the
-///           reference data are tracked. By default, all column labels for the
-///           reference data must match the name of a control.
-///           Setting `allow_unused_references` to false allows
-///           the reference to contain columns whose labels do not match a
-///           control; such columns are then ignored.
-/// - 'manual': The association between controls and columns of the reference
-///             data is manually specified via the `reference_labels` property.
-///             Only the controls for which a reference label is specified are
-///             tracked.
-///             Enter this mode by providing reference labels through
-///             the `reference_labels` property or the `setReferenceLabel()`
-///             function.
-///             The `allow_unused_references` property does not apply in this
-///             mode.
-///
-/// ### Control variable names
-///
-/// Control variable names are based on paths to actuators,
-/// e.g., `/forceset/soleus_r`. For non-scalar actuators, the control variable
-/// name includes the index for the actuator control;
-/// e.g., `/forceset/body_actuator_0`, where
-/// 'body_actuator' is the name of the actuator and `_0` specifies the
-/// control index.
-///
-/// ### Reference data
-///
-/// The reference can be provided as a file name to a STO or CSV file (or
-/// other file types for which there is a FileAdapter), or programmatically
-/// as a TimeSeriesTable.
-///
-/// ### Helpful tips
-///
-/// Tracking problems in direct collocation perform best when tracking smooth
-/// data, so it is recommended to filter the data in the reference you provide
-/// to the cost.
-/// @ingroup mocogoal
+/** The squared difference between a control variable value and a reference
+control variable value, summed over the control variables for which a
+reference is provided, and integrated over the phase. This can be used to
+track actuator controls, muscle excitations, etc.
+
+This goal is computed as follows:
+
+\f[
+\int_{t_i}^{t_f}
+        \sum_{c \in C} w_c \|x_{m,c}(t) - x_{e,c})\|^2 ~dt
+\f]
+We use the following notation:
+- \f$ t_i \f$: the initial time of this phase.
+- \f$ t_f \f$: the final time of this phase.
+- \f$ C \f$: the set of control variables being tracked.
+- \f$ w_c \f$: the weight for control \f$ c \f$.
+- \f$ x_{m,c}(t) \f$: control signal \f$ c \f$.
+- \f$ x_{e,c}(t) \f$: reference data for control signal \f$ c \f$.
+
+This goal has two labeling modes: 'auto' and 'manual':
+- 'auto': The column labels of the reference must exactly match the names
+          of controls, and all controls with a matching column in the
+          reference data are tracked. By default, all column labels for the
+          reference data must match the name of a control.
+          Setting `allow_unused_references` to false allows
+          the reference to contain columns whose labels do not match a
+          control; such columns are then ignored.
+- 'manual': The association between controls and columns of the reference
+            data is manually specified via the `reference_labels` property.
+            Only the controls for which a reference label is specified are
+            tracked.
+            Enter this mode by providing reference labels through
+            the `reference_labels` property or the `setReferenceLabel()`
+            function.
+            The `allow_unused_references` property does not apply in this
+            mode.
+
+### Control variable names
+
+Control variable names are based on paths to actuators,
+e.g., `/forceset/soleus_r`. For non-scalar actuators, the control variable
+name includes the index for the actuator control;
+e.g., `/forceset/body_actuator_0`, where
+'body_actuator' is the name of the actuator and `_0` specifies the
+control index.
+
+### Reference data
+
+The reference can be provided as a file name to a STO or CSV file (or
+other file types for which there is a FileAdapter), or programmatically
+as a TimeSeriesTable.
+
+### Helpful tips
+
+Tracking problems in direct collocation perform best when tracking smooth
+data, so it is recommended to filter the data in the reference you provide
+to the cost.
+@ingroup mocogoal */
 class OSIMMOCO_API MocoControlTrackingGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoControlTrackingGoal, MocoGoal);
 

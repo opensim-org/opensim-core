@@ -24,9 +24,9 @@ namespace OpenSim {
 
 class Point;
 
-/// The squared distance between a single model point location and reference
-/// location in the final state.
-/// @ingroup mocogoal
+/** The squared distance between a single model point location and reference
+location in the final state.
+@ingroup mocogoal */
 class OSIMMOCO_API MocoMarkerFinalGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoMarkerFinalGoal, MocoGoal);
 public:

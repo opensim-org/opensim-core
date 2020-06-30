@@ -27,20 +27,20 @@ namespace OpenSim {
 // MocoPhase
 // ============================================================================
 
-/// The states, controls, dynamics, parameters, goals, and constraints for a
-/// phase of the problem.
-/// The dynamics are provided by the %OpenSim Model.
-///
-/// This class allows you to define your problem, but does not let you do
-/// anything with your problem (this class only contains user input).
-/// Use MocoProblem::createRep() to create an instance of MocoProblemRep,
-/// which provides additional functionality.
-///
-/// Supported %Model Component%s
-/// ----------------------------
-/// Moco does not support all types of models. Specifically, the
-/// following components are not supported:
-///   - Actuator%s with multiple controls (non-ScalarActuator%s).
+/** The states, controls, dynamics, parameters, goals, and constraints for a
+phase of the problem.
+The dynamics are provided by the %OpenSim Model.
+
+This class allows you to define your problem, but does not let you do
+anything with your problem (this class only contains user input).
+Use MocoProblem::createRep() to create an instance of MocoProblemRep,
+which provides additional functionality.
+
+Supported %Model Component%s
+----------------------------
+Moco does not support all types of models. Specifically, the
+following components are not supported:
+  - Actuator%s with multiple controls (non-ScalarActuator%s). */
 class OSIMMOCO_API MocoPhase : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoPhase, Object);
 
@@ -406,21 +406,21 @@ private:
 // MocoProblem
 // ============================================================================
 
-/// A description of an optimal control problem, backed by %OpenSim Model%s.
-/// A MocoProblem is a series of phases, each of which contains the following:
-///   - OpenSim Model
-///   - state and control variable info (e.g., bounds)
-///   - parameter variables (model properties)
-///   - goals (costs and endpoint constraints)
-///   - path constraints
-///
-/// Currently, only single-phase problems are supported.
-/// This class has convenience methods to configure the first (0-th) phase.
-///
-/// This class allows you to define your problem, but does not let you do
-/// anything with your problem (this class only contains user input).
-/// Use createRep() to create an instance of MocoProblemRep,
-/// which provides additional functionality.
+/** A description of an optimal control problem, backed by %OpenSim Model%s.
+A MocoProblem is a series of phases, each of which contains the following:
+  - OpenSim Model
+  - state and control variable info (e.g., bounds)
+  - parameter variables (model properties)
+  - goals (costs and endpoint constraints)
+  - path constraints
+
+Currently, only single-phase problems are supported.
+This class has convenience methods to configure the first (0-th) phase.
+
+This class allows you to define your problem, but does not let you do
+anything with your problem (this class only contains user input).
+Use createRep() to create an instance of MocoProblemRep,
+which provides additional functionality. */
 class OSIMMOCO_API MocoProblem : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoProblem, Object);
 

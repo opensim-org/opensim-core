@@ -28,66 +28,66 @@ namespace OpenSim {
 
 class Model;
 
-/// A MocoParameter allows you to optimize property values in an OpenSim Model.
-/// To describe this parameter, you must provide the name of the property you
-/// want to optimize and the path to the component in the model where the
-/// property exists. If the property is not a scalar, then you must also provide
-/// the element index of the property you want to optimize. To optimize multiple
-/// elements of a non-scalar property, use multiple MocoParameters.
-/// By specifying multiple component paths, you can optimize the same property
-/// in multiple components (each property will have the same value, as
-/// determined by this parameter).
-/// The following property types are currently supported:
-///  - double
-///  - Vec3
-///  - Vec6
-///
-/// List properties are not currently supported.
-///
-/// The name you give to a MocoParameter does not need to match the
-/// name of its model property.
-///
-/// Create a MocoParameter from a property in the model:
-/// @code
-/// MocoParameter p0;
-/// p0.setName("torso_mass");
-/// p0.appendComponentPath("torso");
-/// p0.setParameterName("mass");
-/// MocoBounds massBounds(60, 80);
-/// p0.setBounds(massBounds);
-/// @endcode
-///
-/// Using the convenience constructor:
-/// @code
-/// MocoParameter p0("torso_mass", "torso", "mass", MocoBounds(60, 80));
-/// @endcode
-///
-/// Here is a Matlab example of optimizing the optimal fiber length of a muscle:
-/// @code
-/// study = MocoStudy();
-/// problem = study.updProblem();
-/// param = MocoParameter('my_param_name', /forceset/soleus_r', 'optimal_fiber_length', ...
-/// MocoBounds(0.04, 0.06));
-/// problem.addParameter(param);
-/// @endcode
-///
-/// The generic constructor can be used for more complex MocoParameter 
-/// assignments. Here, we create a MocoParameter for the y-position of the mass
-/// center of three different rigid bodies in the model:
-/// @code
-/// int propertyElt = 1; // y-position is the second element of the mass_center
-/// std::vector<std::string> componentPaths = {"pelvis", "thigh", "shank"};
-/// MocoParameter y_com("y_com", componentPaths, "mass_center", 
-///         MocoBounds(-0.05, 0.05), propertyElt);
-/// @endcode
-/// @par For developers
-/// Every time the problem is solved, a copy of this parameter is used.
-/// An individual instance of a parameter is only ever used in a single problem.
-/// Therefore, there is no need to clear cache variables that you create in
-/// initializeImpl(). Also, information stored in this parameter does not
-/// persist across multiple solves. Lastly, a MocoParameter may be applied to 
-/// multiple models at once, as long as the value described in the MocoParameter
-/// exists and initializeOnModel() is called on all models of interest. 
+/** A MocoParameter allows you to optimize property values in an OpenSim Model.
+To describe this parameter, you must provide the name of the property you
+want to optimize and the path to the component in the model where the
+property exists. If the property is not a scalar, then you must also provide
+the element index of the property you want to optimize. To optimize multiple
+elements of a non-scalar property, use multiple MocoParameters.
+By specifying multiple component paths, you can optimize the same property
+in multiple components (each property will have the same value, as
+determined by this parameter).
+The following property types are currently supported:
+ - double
+ - Vec3
+ - Vec6
+
+List properties are not currently supported.
+
+The name you give to a MocoParameter does not need to match the
+name of its model property.
+
+Create a MocoParameter from a property in the model:
+@code
+MocoParameter p0;
+p0.setName("torso_mass");
+p0.appendComponentPath("torso");
+p0.setParameterName("mass");
+MocoBounds massBounds(60, 80);
+p0.setBounds(massBounds);
+@endcode
+
+Using the convenience constructor:
+@code
+MocoParameter p0("torso_mass", "torso", "mass", MocoBounds(60, 80));
+@endcode
+
+Here is a Matlab example of optimizing the optimal fiber length of a muscle:
+@code
+study = MocoStudy();
+problem = study.updProblem();
+param = MocoParameter('my_param_name', /forceset/soleus_r', 'optimal_fiber_length', ...
+MocoBounds(0.04, 0.06));
+problem.addParameter(param);
+@endcode
+
+The generic constructor can be used for more complex MocoParameter
+assignments. Here, we create a MocoParameter for the y-position of the mass
+center of three different rigid bodies in the model:
+@code
+int propertyElt = 1; // y-position is the second element of the mass_center
+std::vector<std::string> componentPaths = {"pelvis", "thigh", "shank"};
+MocoParameter y_com("y_com", componentPaths, "mass_center",
+        MocoBounds(-0.05, 0.05), propertyElt);
+@endcode
+@par For developers
+Every time the problem is solved, a copy of this parameter is used.
+An individual instance of a parameter is only ever used in a single problem.
+Therefore, there is no need to clear cache variables that you create in
+initializeImpl(). Also, information stored in this parameter does not
+persist across multiple solves. Lastly, a MocoParameter may be applied to
+multiple models at once, as long as the value described in the MocoParameter
+exists and initializeOnModel() is called on all models of interest. */
 class OSIMMOCO_API MocoParameter : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoParameter, Object);
 public:
@@ -112,8 +112,8 @@ public:
         const std::string& propertyName, const MocoBounds&);
 
     // Get and set methods.
-    /// @details Note: the return value is constructed fresh on every call from
-    /// the internal property. Avoid repeated calls to this function.
+    /*** @details Note: the return value is constructed fresh on every call from
+    the internal property. Avoid repeated calls to this function. */
     MocoBounds getBounds() const
     {   return get_MocoBounds(); }
     std::string getPropertyName() const
@@ -134,21 +134,21 @@ public:
     void appendComponentPath(const std::string& componentPath)
     {   append_component_paths(componentPath); }
 
-    /// For use by solvers. This performs error checks and caches information
-    /// about the model that is useful during the optimization.
-    /// This method takes a non-const reference to the model because parameters
-    /// need to be able to alter the model.
-    /// If it is desired to apply this MocoParameter to multiple models, this 
-    /// should be called on all models of interest. The property references from
-    /// each model will be append to this MocoParameter's internal property
-    /// reference list.
+    /** For use by solvers. This performs error checks and caches information
+    about the model that is useful during the optimization.
+    This method takes a non-const reference to the model because parameters
+    need to be able to alter the model.
+    If it is desired to apply this MocoParameter to multiple models, this
+    should be called on all models of interest. The property references from
+    each model will be append to this MocoParameter's internal property
+    reference list. */
     void initializeOnModel(Model& model) const;
-    /// Set the value of the stored model properties, which may include
-    /// properties from multiple models.
+    /** Set the value of the stored model properties, which may include
+    properties from multiple models. */
     void applyParameterToModelProperties(const double& value) const;
 
-    /// Print the name, property name, component paths, property element (if it
-    /// exists), and bounds for this parameter.
+    /** Print the name, property name, component paths, property element (if it
+    exists), and bounds for this parameter. */
     void printDescription() const;
 
 private:

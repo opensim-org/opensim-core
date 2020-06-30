@@ -30,7 +30,7 @@ class MocoPhase;
 class MocoVariableInfo;
 class MocoParameter;
 
-/// Small struct to handle bounds.
+/** Small struct-like class to handle bounds. */
 class OSIMMOCO_API MocoBounds : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(MocoBounds, Object);
 public:
@@ -74,10 +74,10 @@ public:
             return get_bounds(1);
         }
     }
-    /// The returned array has either 0, 1, or 2 elements.
-    /// - 0 elements: bounds are not set.
-    /// - 1 element: equality constraint
-    /// - 2 elements: range (inequality constraint).
+    /** The returned array has either 0, 1, or 2 elements.
+    - 0 elements: bounds are not set.
+    - 1 element: equality constraint
+    - 2 elements: range (inequality constraint). */
     Array<double> getAsArray() const {
         Array<double> vec;
         if (isSet()) {
@@ -88,8 +88,8 @@ public:
     }
 
 protected:
-    /// Used internally to create Bounds from a list property.
-    /// The list property must have either 0, 1 or 2 elements.
+    /** Used internally to create Bounds from a list property.
+    The list property must have either 0, 1 or 2 elements. */
     MocoBounds(const Property<double>& p);
 
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST(bounds, double, 2,

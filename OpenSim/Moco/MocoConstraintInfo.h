@@ -26,9 +26,9 @@
 
 namespace OpenSim {
 
-/// Information for a given constraint in the optimal control problem. The name
-/// should correspond to a MocoPathConstraint in the problem.
-/// @ingroup mococonstraint
+/** Information for a given constraint in the optimal control problem. The name
+should correspond to a MocoPathConstraint in the problem.
+@ingroup mococonstraint */
 class OSIMMOCO_API MocoConstraintInfo : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(MocoConstraintInfo, Object);
 
@@ -82,15 +82,15 @@ public:
         }
         updateNumEquationsFromProperty(getProperty_suffixes());
     }
-    /// Get a list of constraint labels based on the constraint name and, if
-    /// specified, the list of suffixes. If no suffixes have been specified,
-    /// zero-indexed, numeric suffixes will be applied as a default. The length
-    /// of the returned vector is equal to the value returned by
-    /// getNumEquations().
+    /** Get a list of constraint labels based on the constraint name and, if
+    specified, the list of suffixes. If no suffixes have been specified,
+    zero-indexed, numeric suffixes will be applied as a default. The length
+    of the returned vector is equal to the value returned by
+    getNumEquations(). */
     std::vector<std::string> getConstraintLabels() const;
 
-    /// Print the name, type, number of scalar equations, and bounds for this
-    /// constraint.
+    /** Print the name, type, number of scalar equations, and bounds for this
+    constraint. */
     void printDescription() const;
 
 private:

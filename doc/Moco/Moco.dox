@@ -3,7 +3,7 @@
 // We must document the OpenSim namespace for free functions within the
 // namespace to appear in Doxygen.
 namespace OpenSim {
-/** @mainpage
+/** @page mocomainpage Moco
 
 Moco is a part of %OpenSim for solving optimal control problems for
 musculoskeletal systems defined as %OpenSim models.
@@ -19,15 +19,15 @@ Here are some problems you can solve with Moco:
 - Solve for mass properties that minimize residual (unrealistic) forces.
 
 Sections of the documentation:
- - @ref gettingstarted
- - @ref mocouserguide "User Guide: Learning how to use Moco"
+ - @ref mocogettingstarted
+ - @subpage mocouserguide "User Guide: Learning how to use Moco"
     - @ref mocotool "Solving for muscle activity that tracks an observed motion"
     - @ref mocostudy "Defining a custom optimization problem"
- - @ref mocotheoryguide "Theory Guide: Learning how Moco solves optimal control problems"
- - @ref mocodevguide "Developer Guide: Learning the Moco codebase and how to contribute"
- - @ref mocoapiref "Interface (API) Reference"
+ - @subpage mocotheoryguide "Theory Guide: Learning how Moco solves optimal control problems"
+ - @subpage mocodevguide "Developer Guide: Learning the Moco codebase and how to contribute"
+ - @subpage mocoapiref "Moco Interface (API) Reference"
  - @ref mococheatsheet "Printable cheat sheet"
- - @ref mocoexamples "List of examples"
+ - @subpage mocoexamples "List of examples"
 
 Other resources:
  - [SimTK: downloads, user forum, and mailing lists](https://simtk.org/projects/opensim-moco)
@@ -37,9 +37,9 @@ Other resources:
 
 @defgroup mocogoal Available goals
 
-These are the available goals you can use in your cost functional or as endpoint
-constraints. If none of these satisfy your needs, you can define your own using
-a plugin.
+These are the goals available in Moco for use in your cost functional or as
+endpoint constraints. If none of these satisfy your needs, you can define your
+own using a plugin.
 
 
 @defgroup mocomodelutil Model and trajectory utilities
