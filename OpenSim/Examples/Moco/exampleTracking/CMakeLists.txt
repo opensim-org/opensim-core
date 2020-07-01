@@ -1,1 +1,1 @@
-OpenSimAddExampleCXX(NAME exampleTracking)
+OpenSimAddExampleCXX(NAME exampleTracking SUBDIR Moco)

@@ -1,1 +1,1 @@
-OpenSimAddExampleCXX(NAME exampleCustomImplicitAuxiliaryDynamics)
+OpenSimAddExampleCXX(NAME exampleCustomImplicitAuxiliaryDynamics SUBDIR Moco)

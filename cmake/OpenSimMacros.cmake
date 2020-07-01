@@ -434,11 +434,14 @@ endfunction()
 # with a CMakeLists that can find the OpenSim installation and build the
 # example.
 #
+# If SUBDIR is provided, the example is installed into this subdirectory of the
+# C++ Examples folder.
+#
 # This function can only be used from the source distribution of OpenSim
 # (e.g., not via the UseOpenSim.cmake file in a binary distribution).
 function(OpenSimAddExampleCXX)
     set(options)
-    set(oneValueArgs NAME)
+    set(oneValueArgs NAME SUBDIR)
     set(multiValueArgs RESOURCES EXECUTABLES)
     cmake_parse_arguments(OSIMEX
             "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -457,16 +460,17 @@ function(OpenSimAddExampleCXX)
 
     # Install files so that users can build the example.
     # We do not install pre-built binaries of the examples.
-    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-            DESTINATION ${OPENSIM_INSTALL_CPPEXDIR}
+    set(_example_install_dir
+            ${OPENSIM_INSTALL_CPPEXDIR}/${OSIMEX_SUBDIR}/${OSIMEX_NAME})
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+            DESTINATION "${_example_install_dir}"
             PATTERN "CMakeLists.txt" EXCLUDE)
 
-    set(_example_install_dir ${OPENSIM_INSTALL_CPPEXDIR}/${OSIMEX_NAME})
     # These next two variables are to be configured below (they are not used
     # here, but within ExampleCMakeListsToInstall.txt.in).
     set(_example_name ${OSIMEX_NAME})
     set(_example_executables ${OSIMEX_EXECUTABLES})
-    file(RELATIVE_PATH _moco_install_hint
+    file(RELATIVE_PATH _opensim_install_hint
             "${CMAKE_INSTALL_PREFIX}/${_example_install_dir}"
             "${CMAKE_INSTALL_PREFIX}")
     configure_file(
@@ -484,16 +488,19 @@ endfunction()
 # Add a target to the OpenSim project for building an example containing a
 # plugin library and an executable.
 # The directory containing the CMakeLists.txt invoking this macro must have 3
-# source files: <MAIN>.h and <MAIN>.cpp are used to create the plugin, and
-# and exampleMAIN.cpp is compiled into an executable that uses the plugin.
+# source files: ${NAME}.h and ${NAME}.cpp are used to create the plugin, and
+# and example${NAME}.cpp is compiled into an executable that uses the plugin.
 # This function also installs the example file with a CMakeLists that can find
 # the OpenSim installation and build the example.
+#
+# If SUBDIR is provided, the example is installed into this subdirectory of the
+# C++ Examples folder.
 #
 # This function can only be used from the source distribution of OpenSim
 # (e.g., not via the UseOpenSim.cmake file in a binary distribution).
 function(OpenSimAddPluginExampleCXX)
     set(options)
-    set(oneValueArgs NAME)
+    set(oneValueArgs NAME SUBDIR)
     set(multiValueArgs RESOURCES)
     cmake_parse_arguments(OSIMEX
             "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -521,16 +528,16 @@ function(OpenSimAddPluginExampleCXX)
     target_link_libraries(example${OSIMEX_NAME} osim${OSIMEX_NAME})
     file(COPY ${OSIMEX_RESOURCES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 
-    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-            DESTINATION ${OPENSIM_INSTALL_CPPEXDIR}/Plugins
+    set(_example_install_dir
+            ${OPENSIM_INSTALL_CPPEXDIR}/${OSIMEX_SUBDIR}/Plugins/example${OSIMEX_NAME})
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+            DESTINATION "${_example_install_dir}"
             PATTERN "CMakeLists.txt" EXCLUDE)
 
-    set(_example_install_dir
-            ${OPENSIM_INSTALL_CPPEXDIR}/Plugins/example${OSIMEX_NAME})
     # These next two variables are to be configured below (they are not used
     # here, but within ExampleCMakeListsToInstall.txt.in).
     set(_example_name ${OSIMEX_NAME})
-    file(RELATIVE_PATH _moco_install_hint
+    file(RELATIVE_PATH _opensim_install_hint
             "${CMAKE_INSTALL_PREFIX}/${_example_install_dir}"
             "${CMAKE_INSTALL_PREFIX}")
     configure_file(
@@ -577,60 +584,26 @@ function(OpenSimInstallDependencyLibraries PREFIX DEP_LIBS_DIR_WIN
 endfunction()
 
 
-# Function to copy DLL files from dependency install directory into OpenSim 
-# build and install directories. This is a Windows specific function enabled 
-# only for Windows platform. Intention is to allow runtime loader to find all 
-# the required DLLs without need for editing PATH variable.
-function(OpenSimCopyDependencyDLLsForWin DEP_NAME DEP_INSTALL_DIR)
-    # On Windows, copy dlls into OpenSim binary directory.
-    if(WIN32)
-        file(GLOB_RECURSE DLLS ${DEP_INSTALL_DIR}/*.dll)
-        if(NOT DLLS)
-            message(FATAL_ERROR "Zero DLLs found in directory "
-                                "${DEP_INSTALL_DIR}.")
-        endif()
-        set(DEST_DIR "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
-        foreach(DLL IN LISTS DLLS)
-            get_filename_component(DLL_NAME ${DLL} NAME)
-            list(APPEND DLLS_DEST "${DEST_DIR}/${DLL_NAME}")
-            add_custom_command(OUTPUT "${DEST_DIR}/${DLL_NAME}"
-                COMMAND ${CMAKE_COMMAND} -E make_directory ${DEST_DIR}
-                COMMAND ${CMAKE_COMMAND} -E copy ${DLL} ${DEST_DIR}
-                DEPENDS ${DLL}
-                COMMENT "Copying DLL from ${DEP_INSTALL_DIR}/${DLL_NAME} to ${DEST_DIR}.")
-        endforeach()
-        add_custom_target(Copy_${DEP_NAME}_DLLs ALL DEPENDS ${DLLS_DEST})
-        set_target_properties(Copy_${DEP_NAME}_DLLs PROPERTIES
-            PROJECT_LABEL "Copy ${DEP_NAME} DLLs")
-        if(OPENSIM_COPY_DEPENDENCIES)
-            install(FILES ${DLLS} DESTINATION ${CMAKE_INSTALL_BINDIR})
-        endif()
-    endif()
-endfunction()
-
 # Copy DLL files from a dependency's installation into the
-# build directory. This is a Windows-specific function enabled 
+# build and install directories. This is a Windows-specific function enabled
 # only on Windows. The intention is to allow the runtime loader to find all 
 # the required DLLs without editing the PATH environment variable.
 # Arguments:
 #   DEP_NAME: Name of the dependency (used to name a custom target)
 #   DEP_BIN_DIR: The directory in the dependency containing DLLs to copy.
-#   INSTALL_DLLS (optional): If provided, then the dependency's DLLs are
-#     installed into ${INSTALL_DLLS}.
 # This is based on a similar function in OpenSimMacros.cmake.
-# TODO: Combine with the function above.
-function(MocoCopyDLLs)
-    # On Windows, copy dlls into the Tropter binary directory.
+function(OpenSimCopyDependencyDLLsForWin)
+    # On Windows, copy dlls into the OpenSim binary directory.
     set(options)
-    set(oneValueArgs DEP_NAME DEP_BIN_DIR INSTALL_DLLS)
+    set(oneValueArgs DEP_NAME DEP_BIN_DIR)
     set(multiValueArgs)
-    cmake_parse_arguments(MOCOCOPY
+    cmake_parse_arguments(OSIMCOPY
             "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
     if(WIN32)
-        file(GLOB DLLS ${MOCOCOPY_DEP_BIN_DIR}/*.dll)
+        file(GLOB DLLS ${OSIMCOPY_DEP_BIN_DIR}/*.dll)
         if(NOT DLLS)
             message(FATAL_ERROR "Zero DLLs found in directory "
-                                "${MOCOCOPY_DEP_BIN_DIR}.")
+                                "${OSIMCOPY_DEP_BIN_DIR}.")
         endif()
         set(DEST_DIR "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
         foreach(DLL IN LISTS DLLS)
@@ -640,13 +613,13 @@ function(MocoCopyDLLs)
                 COMMAND ${CMAKE_COMMAND} -E make_directory ${DEST_DIR}
                 COMMAND ${CMAKE_COMMAND} -E copy ${DLL} ${DEST_DIR}
                 DEPENDS ${DLL}
-                COMMENT "Copying ${DLL_NAME} from ${MOCOCOPY_DEP_BIN_DIR} to ${DEST_DIR}.")
+                COMMENT "Copying ${DLL_NAME} from ${OSIMCOPY_DEP_BIN_DIR} to ${DEST_DIR}.")
         endforeach()
-        add_custom_target(Copy_${MOCOCOPY_DEP_NAME}_DLLs ALL DEPENDS ${DLLS_DEST})
-        set_target_properties(Copy_${MOCOCOPY_DEP_NAME}_DLLs PROPERTIES
-            PROJECT_LABEL "Copy ${MOCOCOPY_DEP_NAME} DLLs" FOLDER "Moco")
-        if(MOCOCOPY_INSTALL_DLLS)
-            install(FILES ${DLLS} DESTINATION ${MOCOCOPY_INSTALL_DLLS})
+        add_custom_target(Copy_${OSIMCOPY_DEP_NAME}_DLLs ALL DEPENDS ${DLLS_DEST})
+        set_target_properties(Copy_${OSIMCOPY_DEP_NAME}_DLLs PROPERTIES
+            PROJECT_LABEL "Copy ${OSIMCOPY_DEP_NAME} DLLs")
+        if(OPENSIM_COPY_DEPENDENCIES)
+            install(FILES ${DLLS} DESTINATION ${CMAKE_INSTALL_BINDIR})
         endif()
     endif()
 endfunction()
