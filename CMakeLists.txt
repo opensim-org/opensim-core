@@ -648,8 +648,18 @@ if(NOT CMAKE_PREFIX_PATH
         AND EXISTS "${OPENSIM_DEPENDENCIES_ABSDIR}")
     message(STATUS
             "Attempting to use dependencies from ${OPENSIM_DEPENDENCIES_ABSDIR}")
+    set(deps_to_find)
+    if(OPENSIM_WITH_TROPTER)
+        list(APPEND deps_to_find colpack eigen)
+    endif()
+    if(OPENSIM_WITH_CASADI)
+        list(APPEND deps_to_find casadi)
+    endif()
+    if(OPENSIM_WITH_TROPTER OR OPENSIM_WITH_CASADI)
+        list(APPEND deps_to_find ipopt)
+    endif()
     set(dep_install_dirs)
-    foreach(dep colpack ipopt eigen casadi)
+    foreach(dep ${deps_to_find})
         list(APPEND dep_install_dirs "${OPENSIM_DEPENDENCIES_ABSDIR}/${dep}")
     endforeach()
     set(CMAKE_PREFIX_PATH "${dep_install_dirs}" CACHE PATH
@@ -796,20 +806,23 @@ include_directories("${Simbody_INCLUDE_DIR}")
 
 # CasADi
 # ------
-find_package(casadi 3.4.4 REQUIRED)
-set_package_properties(casadi PROPERTIES
-        URL https://web.casadi.org
-        TYPE REQUIRED
-        PURPOSE "Differentiation and optimizer interface.")
-get_filename_component(CASADI_BIN_DIR "${casadi_DIR}/../" ABSOLUTE)
-# Copy CasADi into our installation.
-OpenSimCopyDependencyDLLsForWin(DEP_NAME casadi DEP_BIN_DIR "${CASADI_BIN_DIR}")
-if(OPENSIM_COPY_DEPENDENCIES AND NOT WIN32)
-    # MocoCopyDLLs() only copies DLLs for Windows, but we still need
-    # the CasADi shared libraries on other platforms.
-    install(DIRECTORY "${CASADI_CMAKE_DIR}/../../../"
-        DESTINATION "${CMAKE_INSTALL_PREFIX}/${OPENSIM_INSTALL_CASADIDIR}"
-            USE_SOURCE_PERMISSIONS)
+if(OPENSIM_WITH_CASADI)
+    find_package(casadi 3.4.4 REQUIRED)
+    set_package_properties(casadi PROPERTIES
+            URL https://web.casadi.org
+            TYPE REQUIRED
+            PURPOSE "Differentiation and optimizer interface.")
+    get_filename_component(CASADI_BIN_DIR "${casadi_DIR}/../" ABSOLUTE)
+    # Copy CasADi into our installation.
+    OpenSimCopyDependencyDLLsForWin(DEP_NAME casadi
+            DEP_BIN_DIR "${CASADI_BIN_DIR}")
+    if(OPENSIM_COPY_DEPENDENCIES AND NOT WIN32)
+        # MocoCopyDLLs() only copies DLLs for Windows, but we still need
+        # the CasADi shared libraries on other platforms.
+        install(DIRECTORY "${CASADI_CMAKE_DIR}/../../../"
+            DESTINATION "${CMAKE_INSTALL_PREFIX}/${OPENSIM_INSTALL_CASADIDIR}"
+                USE_SOURCE_PERMISSIONS)
+    endif()
 endif()
 
 
