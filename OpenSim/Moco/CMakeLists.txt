@@ -1,5 +1,4 @@
 
-add_subdirectory(doc)
 
 # TODO: Use OpenSimAddLibrary() macro.
 set(MOCO_SOURCES

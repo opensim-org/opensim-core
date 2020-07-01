@@ -22,14 +22,14 @@
 
 namespace OpenSim {
 
-/// For all Muscle components with explicit tendon compliance dynamics, 
-/// constrain (or minimize) the error computed from the muscle-tendon force 
-/// equilibrium equation.
-/// This goal ensures that the initial normalized tendon force state variable
-/// is chosen such that equilibrium is satisfied; otherwise, the initial state
-/// may not be valid.
-/// This is an endpoint constraint goal by default.
-/// @ingroup mocogoal
+/** For all Muscle components with explicit tendon compliance dynamics,
+constrain (or minimize) the error computed from the muscle-tendon force
+equilibrium equation.
+This goal ensures that the initial normalized tendon force state variable
+is chosen such that equilibrium is satisfied; otherwise, the initial state
+may not be valid.
+This is an endpoint constraint goal by default.
+@ingroup mocogoal */
 class OSIMMOCO_API MocoInitialForceEquilibriumGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoInitialForceEquilibriumGoal, MocoGoal);
 

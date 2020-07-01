@@ -23,33 +23,33 @@
 
 namespace OpenSim {
 
-/// Minimize the sum of the absolute value of the controls raised to a given
-/// exponent, integrated over the phase. The default weight for each control is
-/// 1.0; this can be changed by calling setWeight() or editing the
-/// `control_weights` property in XML.
-/// The exponent must be an integer greater than or equal to 2,
-/// and is 2 by default.
-/// If conducting a predictive simulation, you likely want to set
-/// `divide_by_displacement` to true; otherwise, this cost is minimized by not
-/// moving. Dividing by displacement leads to a quantity similar to cost of
-/// transport.
-///
-/// This goal is computed as follows:
-///
-/// \f[
-/// \frac{1}{d} \int_{t_i}^{t_f} \sum_{c \in C} w_c |x_c(t)|^p ~dt
-/// \f]
-/// We use the following notation:
-/// - \f$ d \f$: displacement of the system, if `divide_by_displacement` is
-///   true; 1 otherwise.
-/// - \f$ C \f$: the set of control signals.
-/// - \f$ w_c \f$: the weight for control \f$ c \f$.
-/// - \f$ x_c(t) \f$: control signal \f$ c \f$.
-/// - \f$ p \f$: the `exponent`.
-///
-/// If `p > 2`, we first the absolute value of the control; this is to properly
-/// handle odd exponents.
-/// @ingroup mocogoal
+/** Minimize the sum of the absolute value of the controls raised to a given
+exponent, integrated over the phase. The default weight for each control is
+1.0; this can be changed by calling setWeight() or editing the
+`control_weights` property in XML.
+The exponent must be an integer greater than or equal to 2,
+and is 2 by default.
+If conducting a predictive simulation, you likely want to set
+`divide_by_displacement` to true; otherwise, this cost is minimized by not
+moving. Dividing by displacement leads to a quantity similar to cost of
+transport.
+
+This goal is computed as follows:
+
+\f[
+\frac{1}{d} \int_{t_i}^{t_f} \sum_{c \in C} w_c |x_c(t)|^p ~dt
+\f]
+We use the following notation:
+- \f$ d \f$: displacement of the system, if `divide_by_displacement` is
+  true; 1 otherwise.
+- \f$ C \f$: the set of control signals.
+- \f$ w_c \f$: the weight for control \f$ c \f$.
+- \f$ x_c(t) \f$: control signal \f$ c \f$.
+- \f$ p \f$: the `exponent`.
+
+If `p > 2`, we first the absolute value of the control; this is to properly
+handle odd exponents.
+@ingroup mocogoal */
 class OSIMMOCO_API MocoControlGoal : public MocoGoal {
 OpenSim_DECLARE_CONCRETE_OBJECT(MocoControlGoal, MocoGoal);
 
@@ -86,8 +86,8 @@ public:
     void setExponent(int exponent) { set_exponent(exponent); }
     double getExponent() const { return get_exponent(); }
 
-    /// Set if the goal should be divided by the displacement of the system's
-    /// center of mass over the phase.
+    /** Set if the goal should be divided by the displacement of the system's
+    center of mass over the phase. */
     void setDivideByDisplacement(bool tf) { set_divide_by_displacement(tf); }
     bool getDivideByDisplacement() const {
         return get_divide_by_displacement();

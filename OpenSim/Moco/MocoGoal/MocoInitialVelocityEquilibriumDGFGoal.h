@@ -23,17 +23,17 @@
 
 namespace OpenSim {
 
-/// For DeGrooteFregly2016Muscle components with implicit tendon compliance 
-/// dynamics, the initial tendon and fiber velocities are determined based the 
-/// derivative of the linearized muscle-tendon equilibrium equation described 
-/// in Millard et al. 2013 (Appendix, equation A6).
-/// Without this goal, the derivative of normalized tendon force, which is a 
-/// control variable in implicit tendon compliance dynamics, may undesirably
-/// start at a very large value if not constrained or minimized (which it is
-/// not by default).
-/// This is an endpoint constraint goal by default.
-/// @note This goal only applies to DeGrooteFregly2016Muscles.
-/// @ingroup mocogoal
+/** For DeGrooteFregly2016Muscle components with implicit tendon compliance
+dynamics, the initial tendon and fiber velocities are determined based the
+derivative of the linearized muscle-tendon equilibrium equation described
+in Millard et al. 2013 (Appendix, equation A6).
+Without this goal, the derivative of normalized tendon force, which is a
+control variable in implicit tendon compliance dynamics, may undesirably
+start at a very large value if not constrained or minimized (which it is
+not by default).
+This is an endpoint constraint goal by default.
+@note This goal only applies to DeGrooteFregly2016Muscles.
+@ingroup mocogoal */
 class OSIMMOCO_API MocoInitialVelocityEquilibriumDGFGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(
             MocoInitialVelocityEquilibriumDGFGoal, MocoGoal);

@@ -24,10 +24,10 @@
 
 namespace OpenSim {
 
-/// This class contains a single property that holds a weighting factor to be
-/// used in a MocoGoal. The meaning of the name given to this object depends on
-/// where the weight is used. In a MocoStateTrackingCost, the name is the name
-/// (path) of a state variable.
+/** This class contains a single property that holds a weighting factor to be
+used in a MocoGoal. The meaning of the name given to this object depends on
+where the weight is used. In a MocoStateTrackingCost, the name is the name
+(path) of a state variable. */
 class OSIMMOCO_API MocoWeight : public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(MocoWeight, Object);
 private:
@@ -50,9 +50,9 @@ private:
     }
 };
 
-/// A container for %Moco weights. The meaning of the weights depends upon
-/// where they are used. This container can be written to and read from an
-/// XML file.
+/** A container for %Moco weights. The meaning of the weights depends upon
+where they are used. This container can be written to and read from an
+XML file. */
 class OSIMMOCO_API MocoWeightSet : public Set<MocoWeight> {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoWeightSet, Set<MocoWeight>);
 public:

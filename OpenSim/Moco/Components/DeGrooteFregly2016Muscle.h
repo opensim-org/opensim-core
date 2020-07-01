@@ -31,56 +31,56 @@ namespace OpenSim {
 //       might be slow.
 // TODO prohibit fiber length from going below 0.2.
 
-/// This muscle model was published in De Groote et al. 2016.
-/// The parameters of the active force-length and force-velocity curves have
-/// been slightly modified from what was published to ensure the curves go
-/// through key points:
-///   - Active force-length curve goes through (1, 1).
-///   - Force-velocity curve goes through (-1, 0) and (0, 1).
-/// The default tendon force curve parameters are modified from that in De
-/// Groote et al., 2016: the curve is parameterized by the strain at 1 norm
-/// force (rather than "kT"), and the default value for this parameter is
-/// 0.049 (same as in TendonForceLengthCurve) rather than 0.0474.
-///
-/// The fiber damping helps with numerically solving for fiber velocity at low
-/// activations or with low force-length multipliers, and is likely to be more
-/// useful with explicit fiber dynamics than implicit fiber dynamics (when
-/// support for fiber dynamics is added).
-///
-/// This class supports tendon compliance dynamics in both explicit and implicit 
-/// form. Both forms of the dynamics use normalized tendon force as the state
-/// variable (rather than the typical fiber length state). The explicit form is 
-/// handled through the usual Component dynamics interface. The implicit form 
-/// introduces an additional discrete and cache SimTK::State variable for the
-/// derivative of normalized tendon force and muscle-tendon equilibrium residual
-/// respectively. The implicit form is only for use with solvers that support
-/// implicit dynamics (i.e. Moco) and cannot be used to perform a time-stepping
-/// forward simulation with Manager; use explicit mode for time-stepping.
-/// 
-/// @note Normalized tendon force is bounded in the range [0, 5] in this class.
-///       The methods getMinNormalizedTendonForce() and 
-///       getMaxNormalizedTendonForce() are available to access these bounds for
-///       use in custom solvers.
-///
-/// @underdevelopment
-///
-/// @section departures Departures from the Muscle base class
-///
-/// The documentation for Muscle::MuscleLengthInfo states that the
-/// optimalFiberLength of a muscle is also its resting length, but this is not
-/// true for this muscle: there is a non-zero passive fiber force at the
-/// optimal fiber length.
-///
-/// In the Muscle class, setIgnoreTendonCompliance() and
-/// setIngoreActivationDynamics() control modeling options, meaning these
-/// settings could theoretically be changed. However, for this class, the
-/// modeling option is ignored and the values of the ignore_tendon_compliance
-/// and ignore_activation_dynamics properties are used directly.
-///
-/// De Groote, F., Kinney, A. L., Rao, A. V., & Fregly, B. J. (2016). Evaluation
-/// of Direct Collocation Optimal Control Problem Formulations for Solving the
-/// Muscle Redundancy Problem. Annals of Biomedical Engineering, 44(10), 1–15.
-/// http://doi.org/10.1007/s10439-016-1591-9
+/** This muscle model was published in De Groote et al. 2016.
+The parameters of the active force-length and force-velocity curves have
+been slightly modified from what was published to ensure the curves go
+through key points:
+  - Active force-length curve goes through (1, 1).
+  - Force-velocity curve goes through (-1, 0) and (0, 1).
+The default tendon force curve parameters are modified from that in De
+Groote et al., 2016: the curve is parameterized by the strain at 1 norm
+force (rather than "kT"), and the default value for this parameter is
+0.049 (same as in TendonForceLengthCurve) rather than 0.0474.
+
+The fiber damping helps with numerically solving for fiber velocity at low
+activations or with low force-length multipliers, and is likely to be more
+useful with explicit fiber dynamics than implicit fiber dynamics (when
+support for fiber dynamics is added).
+
+This class supports tendon compliance dynamics in both explicit and implicit
+form. Both forms of the dynamics use normalized tendon force as the state
+variable (rather than the typical fiber length state). The explicit form is
+handled through the usual Component dynamics interface. The implicit form
+introduces an additional discrete and cache SimTK::State variable for the
+derivative of normalized tendon force and muscle-tendon equilibrium residual
+respectively. The implicit form is only for use with solvers that support
+implicit dynamics (i.e. Moco) and cannot be used to perform a time-stepping
+forward simulation with Manager; use explicit mode for time-stepping.
+
+@note Normalized tendon force is bounded in the range [0, 5] in this class.
+      The methods getMinNormalizedTendonForce() and
+      getMaxNormalizedTendonForce() are available to access these bounds for
+      use in custom solvers.
+
+@underdevelopment
+
+@section departures Departures from the Muscle base class
+
+The documentation for Muscle::MuscleLengthInfo states that the
+optimalFiberLength of a muscle is also its resting length, but this is not
+true for this muscle: there is a non-zero passive fiber force at the
+optimal fiber length.
+
+In the Muscle class, setIgnoreTendonCompliance() and
+setIngoreActivationDynamics() control modeling options, meaning these
+settings could theoretically be changed. However, for this class, the
+modeling option is ignored and the values of the ignore_tendon_compliance
+and ignore_activation_dynamics properties are used directly.
+
+De Groote, F., Kinney, A. L., Rao, A. V., & Fregly, B. J. (2016). Evaluation
+of Direct Collocation Optimal Control Problem Formulations for Solving the
+Muscle Redundancy Problem. Annals of Biomedical Engineering, 44(10), 1–15.
+http://doi.org/10.1007/s10439-016-1591-9 */
 class OSIMMOCO_API DeGrooteFregly2016Muscle : public Muscle {
     OpenSim_DECLARE_CONCRETE_OBJECT(DeGrooteFregly2016Muscle, Muscle);
 

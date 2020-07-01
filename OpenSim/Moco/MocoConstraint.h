@@ -136,16 +136,16 @@ private:
 // MocoPathConstraint
 // ============================================================================
 
-/// A path constraint to be enforced in the optimal control problem.
-/// The use of 'path' here is unrelated to muscle paths, GeometryPath,
-/// or file system paths (e.g., Path).
-/// @par For developers
-/// Every time the problem is solved, a copy of this constraint is used. An
-/// individual instance of a constraint is only ever used in a single problem.
-/// Therefore, there is no need to clear cache variables that you create in
-/// initializeImpl(). Also, information stored in this constraint does not
-/// persist across multiple solves.
-/// @ingroup mocopathcon
+/** A path constraint to be enforced in the optimal control problem.
+The use of 'path' here is unrelated to muscle paths, GeometryPath,
+or file system paths (e.g., Path).
+@par For developers
+Every time the problem is solved, a copy of this constraint is used. An
+individual instance of a constraint is only ever used in a single problem.
+Therefore, there is no need to clear cache variables that you create in
+initializeImpl(). Also, information stored in this constraint does not
+persist across multiple solves.
+@ingroup mocopathcon */
 class OSIMMOCO_API MocoPathConstraint : public Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(MocoPathConstraint, Object);
 

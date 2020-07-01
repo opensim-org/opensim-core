@@ -27,27 +27,27 @@
 #include <OpenSim/Simulation/Model/Frame.h>
 namespace OpenSim {
 
-/// The squared difference between a model frame's origin position and a
-/// reference position value, summed over the frames for which a reference is
-/// provided, and integrated over the phase. This can be used to track position
-/// quantities in the model that don't correspond to model degrees of freedom.
-/// The reference can be provided as a trajectory of SimTK::Vec3%s
-/// representing the translation reference data, or as a states trajectory from
-/// which the tracked translation reference is computed. Both translation and
-/// states references can be provided as a file name to a STO or CSV file (or
-/// other file types for which there is a FileAdapter), or programmatically as
-/// a TimeSeriesTableVec3 (for the translation reference) or as a scalar
-/// TimeSeriesTable (for the states reference).
-///
-/// Technically, a cost function with the same effect could be achieved with the
-/// MocoMarkerTrackingCost class. However, this class avoids the need for adding
-/// markers to the frame origins and provides the convenient
-/// setStatesReference() and setStatesReferenceFile() methods which let the user
-/// set up a tracking cost given only a states trajectory.
-///
-/// This cost requires realization to SimTK::Stage::Position.
-///
-/// @ingroup mocogoal
+/** The squared difference between a model frame's origin position and a
+reference position value, summed over the frames for which a reference is
+provided, and integrated over the phase. This can be used to track position
+quantities in the model that don't correspond to model degrees of freedom.
+The reference can be provided as a trajectory of SimTK::Vec3%s
+representing the translation reference data, or as a states trajectory from
+which the tracked translation reference is computed. Both translation and
+states references can be provided as a file name to a STO or CSV file (or
+other file types for which there is a FileAdapter), or programmatically as
+a TimeSeriesTableVec3 (for the translation reference) or as a scalar
+TimeSeriesTable (for the states reference).
+
+Technically, a cost function with the same effect could be achieved with the
+MocoMarkerTrackingCost class. However, this class avoids the need for adding
+markers to the frame origins and provides the convenient
+setStatesReference() and setStatesReferenceFile() methods which let the user
+set up a tracking cost given only a states trajectory.
+
+This cost requires realization to SimTK::Stage::Position.
+
+@ingroup mocogoal */
 class OSIMMOCO_API MocoTranslationTrackingGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoTranslationTrackingGoal, MocoGoal);
 
@@ -61,54 +61,54 @@ public:
         constructProperties();
     }
 
-    /// Set the translation of individual frames in ground to be
-    /// tracked in the cost. The column labels of the provided reference must
-    /// be paths to frames in the model, e.g. `/bodyset/torso`. If the
-    /// frame_paths property is empty, all frames with data in this reference
-    /// will be tracked. Otherwise, only the frames specified via
-    /// setFramePaths() will be tracked. Calling this function clears the values
-    /// provided via setStatesReference(), setTranslationReference(), or the
-    /// `states_reference_file` property, if any.
+    /** Set the translation of individual frames in ground to be
+    tracked in the cost. The column labels of the provided reference must
+    be paths to frames in the model, e.g. `/bodyset/torso`. If the
+    frame_paths property is empty, all frames with data in this reference
+    will be tracked. Otherwise, only the frames specified via
+    setFramePaths() will be tracked. Calling this function clears the values
+    provided via setStatesReference(), setTranslationReference(), or the
+    `states_reference_file` property, if any. */
     void setTranslationReferenceFile(const std::string& filepath) {
         set_states_reference(TableProcessor());
         m_translation_table = TimeSeriesTableVec3();
         set_translation_reference_file(filepath);
     }
-    /// Each column label must be the path of a valid frame path (see
-    /// setTranslationReferenceFile()). Calling this function clears the
-    /// `states_reference_file` and `translation_reference_file` properties or
-    /// the table provided via setStatesReference(), if any.
+    /** Each column label must be the path of a valid frame path (see
+    setTranslationReferenceFile()). Calling this function clears the
+    `states_reference_file` and `translation_reference_file` properties or
+    the table provided via setStatesReference(), if any. */
     void setTranslationReference(const TimeSeriesTableVec3& ref) {
         set_states_reference(TableProcessor());
         set_translation_reference_file("");
         m_translation_table = ref;
     }
-    /// Provide a table containing values of model state
-    /// variables. These data are used to create a StatesTrajectory internally,
-    /// from which the translation data for the frames specified in
-    /// setFramePaths() are computed. Each column label in the reference must be
-    /// the path of a state variable, e.g., `/jointset/ankle_angle_r/value`.
-    /// Calling this function clears the table provided via
-    /// setTranslationReference(), or the
-    /// `translation_reference_file` property, if any. The table is not loaded
-    /// until the MocoProblem is initialized.
+    /** Provide a table containing values of model state
+    variables. These data are used to create a StatesTrajectory internally,
+    from which the translation data for the frames specified in
+    setFramePaths() are computed. Each column label in the reference must be
+    the path of a state variable, e.g., `/jointset/ankle_angle_r/value`.
+    Calling this function clears the table provided via
+    setTranslationReference(), or the
+    `translation_reference_file` property, if any. The table is not loaded
+    until the MocoProblem is initialized. */
     void setStatesReference(const TableProcessor& ref) {
         set_translation_reference_file("");
         m_translation_table = TimeSeriesTableVec3();
         set_states_reference(std::move(ref));
     }
-    /// Set the paths to frames in the model that this cost term will track. The
-    /// names set here must correspond to OpenSim::Component%s that derive from
-    /// OpenSim::Frame, which includes 'position' (SimTK::Vec3) as an output.
-    /// Replaces the frame path set if it already exists.
+    /** Set the paths to frames in the model that this cost term will track. The
+    names set here must correspond to OpenSim::Component%s that derive from
+    OpenSim::Frame, which includes 'position' (SimTK::Vec3) as an output.
+    Replaces the frame path set if it already exists. */
     void setFramePaths(const std::vector<std::string>& paths) {
         updProperty_frame_paths().clear();
         for (const auto& path : paths) { append_frame_paths(path); }
     }
-    /// Set the weight for an individual frame's translation tracking. If a
-    /// weight is already set for the requested frame, then the provided weight
-    /// replaces the previous weight. An exception is thrown if a weight
-    /// for an unknown frame is provided.
+    /** Set the weight for an individual frame's translation tracking. If a
+    weight is already set for the requested frame, then the provided weight
+    replaces the previous weight. An exception is thrown if a weight
+    for an unknown frame is provided. */
     void setWeightForFrame(const std::string& frameName, const double& weight) {
         if (get_translation_weights().contains(frameName)) {
             upd_translation_weights().get(frameName).setWeight(weight);
@@ -116,18 +116,18 @@ public:
             upd_translation_weights().cloneAndAppend({frameName, weight});
         }
     }
-    /// Provide a MocoWeightSet to weight frame translation tracking in the
-    /// cost. Replaces the weight set if it already exists.
+    /** Provide a MocoWeightSet to weight frame translation tracking in the
+    cost. Replaces the weight set if it already exists. */
     void setWeightSet(const MocoWeightSet& weightSet) {
         upd_translation_weights() = weightSet;
     }
-    /// If no states reference has been provided, this returns an empty
-    /// processor.
+    /** If no states reference has been provided, this returns an empty
+    processor. */
     const TableProcessor& getStatesReference() const {
         return get_states_reference();
     }
-    /// If no translation reference file has been provided, this returns an
-    /// empty string.
+    /** If no translation reference file has been provided, this returns an
+    empty string. */
     std::string getTranslationReferenceFile() const {
         return get_translation_reference_file();
     }

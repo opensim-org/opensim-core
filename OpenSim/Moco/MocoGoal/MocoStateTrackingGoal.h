@@ -27,22 +27,21 @@
 
 namespace OpenSim {
 
-// TODO can we track generalized speeds too?
 // TODO allow raising error to different powers (cubed).
 // TODO allow a "deadband."
 
-/// The squared difference between a state variable value and a reference
-/// state variable value, summed over the state variables for which a
-/// reference is provided, and integrated over the phase. This can be used to
-/// track joint angles, activations, etc.
-/// The reference can be provided as a file name to a STO or CSV file (or
-/// other file types for which there is a FileAdapter), or programmatically
-/// as a TimeSeriesTable. If columns for rotational coordinates are in degrees,
-/// those columns will be converted to radians.
-/// Tracking problems in direct collocation perform best when tracking smooth
-/// data, so it is recommended to filter the data in the reference you provide
-/// to the cost.
-/// @ingroup mocogoal
+/** The squared difference between a state variable value and a reference
+state variable value, summed over the state variables for which a
+reference is provided, and integrated over the phase. This can be used to
+track joint angles, activations, etc.
+The reference can be provided as a file name to a STO or CSV file (or
+other file types for which there is a FileAdapter), or programmatically
+as a TimeSeriesTable. If columns for rotational coordinates are in degrees,
+those columns will be converted to radians.
+Tracking problems in direct collocation perform best when tracking smooth
+data, so it is recommended to filter the data in the reference you provide
+to the cost.
+@ingroup mocogoal */
 class OSIMMOCO_API MocoStateTrackingGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoStateTrackingGoal, MocoGoal);
 

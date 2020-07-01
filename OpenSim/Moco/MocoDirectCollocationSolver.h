@@ -24,74 +24,72 @@
 
 namespace OpenSim {
 
-/// This is a base class for solvers that use direct collocation to convert
-/// an optimal control problem into a generic nonlinear programming problem.
-/// The best resource for learning about direct collocation is the Betts
-/// textbook:
-///
-/// Betts, John T. Practical methods for optimal control and estimation using
-/// nonlinear programming. Vol. 19. Siam, 2010.
-///
-/// Transcription scheme
-/// --------------------
-/// The `transcription_scheme` setting allows you to choose between
-/// 'trapezoidal' and 'hermite-simpson' transcription schemes. The 'trapezoidal'
-/// option replaces the dynamics differential constraints with finite
-/// differences based on trapezoidal rule integration. The 'hermite-simpson'
-/// option uses a Hermite interpolant and Simpson integration to construct the
-/// finite differences. The 'hermite-simpson' option uses the separated
-/// Hermite-Simpson transcription approach, which allows control values at mesh
-/// interval midpoints to be free variables (see Betts textbook for more
-/// details). The setting `interpolate_control_midpoints` constrains control
-/// midpoint variables to be linearly interpolated from the mesh interval
-/// endpoint values (default and recommended setting). If solving problems
-/// including model kinematic constraints, the 'hermite-simpson' option is
-/// required (see Kinematic constraints section below).
-///
-/// Path constraints on controls with Hermite-Simpson transcription
-/// ---------------------------------------------------------------
-/// For Hermite-Simpson transcription, the direct collocation solvers enforce
-/// the path constraints (e.g., MocoPathConstraint) at only the mesh interval
-/// endpoints (not midpoints), but control signal variables exist at both mesh
-/// interval endpoints and midpoints. Keep this in mind when using path
-/// constraints on controls (e.g., MocoControlBoundConstraint). If
-/// `interpolate_control_midpoints` is false, the values of a control at
-/// midpoints may differ greatly from the values at mesh interval endpoints.
-///
-/// Multibody dynamics mode
-/// -----------------------
-/// The `multibody_dynamics_mode` setting allows you to choose between
-/// expressing multibody dynamics as explicit differential equations (e.g., \f$
-/// \dot{y} = f(y) \f$) or implicit differential equations (e.g., \f$ 0 = f(y,
-/// \dot{y}) \f$, or inverse dynamics). Whether auxiliary dynamics (e.g.,
-/// muscle fiber and activation dynamics) are implicit or explicit depends on
-/// the model component implementing those dynamics.
-///
-/// Kinematic constraints
-/// ---------------------
-/// All kinematic constraints included as OpenSim model constraints are
-/// supported with the 'hermite-simpson' transcription scheme setting. Kinematic
-/// constraints are automatically detected if present in the model and are
-/// converted to path constraints in the optimal control problem based on the
-/// method presented in Posa et al. 2016, 'Optimization and stabilization of
-/// trajectories for constrained dynamical systems'; see @ref implkincon. The
-/// `minimize_lagrange_multipliers` and `lagrange_multiplier_weight` settings
-/// allow you to enable and set the weight for the minimization of all
-/// Lagrange multipliers associated with kinematic constraints in the problem.
-/// The `velocity_correction_bounds` setting allows you to set the bounds on the
-/// velocity correction variables that project state variables onto the
-/// constraint manifold when necessary to properly enforce defect constraints
-/// (see Posa et al. 2016 for details).
+/** This is a base class for solvers that use direct collocation to convert
+an optimal control problem into a generic nonlinear programming problem.
+The best resource for learning about direct collocation is the Betts
+textbook:
 
+Betts, John T. Practical methods for optimal control and estimation using
+nonlinear programming. Vol. 19. Siam, 2010.
+
+Transcription scheme
+--------------------
+The `transcription_scheme` setting allows you to choose between
+'trapezoidal' and 'hermite-simpson' transcription schemes. The 'trapezoidal'
+option replaces the dynamics differential constraints with finite
+differences based on trapezoidal rule integration. The 'hermite-simpson'
+option uses a Hermite interpolant and Simpson integration to construct the
+finite differences. The 'hermite-simpson' option uses the separated
+Hermite-Simpson transcription approach, which allows control values at mesh
+interval midpoints to be free variables (see Betts textbook for more
+details). The setting `interpolate_control_midpoints` constrains control
+midpoint variables to be linearly interpolated from the mesh interval
+endpoint values (default and recommended setting). If solving problems
+including model kinematic constraints, the 'hermite-simpson' option is
+required (see Kinematic constraints section below).
+
+Path constraints on controls with Hermite-Simpson transcription
+---------------------------------------------------------------
+For Hermite-Simpson transcription, the direct collocation solvers enforce
+the path constraints (e.g., MocoPathConstraint) at only the mesh interval
+endpoints (not midpoints), but control signal variables exist at both mesh
+interval endpoints and midpoints. Keep this in mind when using path
+constraints on controls (e.g., MocoControlBoundConstraint). If
+`interpolate_control_midpoints` is false, the values of a control at
+midpoints may differ greatly from the values at mesh interval endpoints.
+
+Multibody dynamics mode
+-----------------------
+The `multibody_dynamics_mode` setting allows you to choose between
+expressing multibody dynamics as explicit differential equations (e.g., \f$
+\dot{y} = f(y) \f$) or implicit differential equations (e.g., \f$ 0 = f(y,
+\dot{y}) \f$, or inverse dynamics). Whether auxiliary dynamics (e.g.,
+muscle fiber and activation dynamics) are implicit or explicit depends on
+the model component implementing those dynamics.
+
+Kinematic constraints
+---------------------
+All kinematic constraints included as OpenSim model constraints are
+supported with the 'hermite-simpson' transcription scheme setting. Kinematic
+constraints are automatically detected if present in the model and are
+converted to path constraints in the optimal control problem based on the
+method presented in Posa et al. 2016, 'Optimization and stabilization of
+trajectories for constrained dynamical systems'; see @ref implkincon. The
+`minimize_lagrange_multipliers` and `lagrange_multiplier_weight` settings
+allow you to enable and set the weight for the minimization of all
+Lagrange multipliers associated with kinematic constraints in the problem.
+The `velocity_correction_bounds` setting allows you to set the bounds on the
+velocity correction variables that project state variables onto the
+constraint manifold when necessary to properly enforce defect constraints
+(see Posa et al. 2016 for details). */
 class OSIMMOCO_API MocoDirectCollocationSolver : public MocoSolver {
     OpenSim_DECLARE_ABSTRACT_OBJECT(MocoDirectCollocationSolver, MocoSolver);
 
 public:
     OpenSim_DECLARE_PROPERTY(num_mesh_intervals, int,
             "The number of uniformly-sized mesh intervals for the problem "
-            "(default: "
-            "100). If a non-uniform mesh exists, the non-uniform mesh is used "
-            "instead.");
+            "(default: 100). If a non-uniform mesh exists, the non-uniform "
+            "mesh is used instead.");
 
     OpenSim_DECLARE_PROPERTY(verbosity, int,
             "0 for silent. 1 for only Moco's own output. "
@@ -154,10 +152,10 @@ public:
 
     MocoDirectCollocationSolver() { constructProperties(); }
 
-    /// Sets the mesh to a, usually non-uniform, user-defined list of mesh
-    /// points to sample. Takes precedence over uniform mesh with
-    /// num_mesh_intervals. The user-defined mesh must start with 0, be strictly
-    /// increasing (no duplicate times), and end with 1.
+    /** Sets the mesh to a, usually non-uniform, user-defined list of mesh
+    points to sample. Takes precedence over uniform mesh with
+    num_mesh_intervals. The user-defined mesh must start with 0, be strictly
+    increasing (no duplicate times), and end with 1. */
     void setMesh(const std::vector<double>& mesh);
 
 protected:

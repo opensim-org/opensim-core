@@ -29,45 +29,45 @@ class MocoProblem;
 class MocoTropterSolver;
 class MocoCasADiSolver;
 
-/// The top-level class for solving a custom optimal control problem.
-///
-/// This class consists of a MocoProblem, which describes the optimal control
-/// problem, and a MocoSolver, which describes the numerical method for
-/// solving the problem.
-///
-/// Workflow
-/// --------
-/// When building a MocoStudy programmatically (e.g., in C++), the workflow is
-/// as follows:
-///
-/// 1. Build the MocoProblem (set the model, constraints, etc.).
-/// 2. Call MocoStudy::initSolver(), which returns a reference to the
-/// MocoSolver.
-///    After this, you cannot edit the MocoProblem.
-/// 3. Edit the settings of the MocoSolver (returned by initSolver()).
-/// 4. Call MocoStudy::solve(). This returns the MocoSolution.
-/// 5. (Optional) Postprocess the solution, perhaps using
-/// MocoStudy::visualize().
-///
-/// After calling solve(), you can edit the MocoProblem and/or the MocoSolver.
-/// You can then call solve() again, if you wish.
-///
-/// Saving the study setup to a file
-/// --------------------------------
-/// You can save the MocoStudy to a file by calling MocoStudy::print(), and you
-/// can load the setup using MocoStudy(const std::string& omocoFile).
-/// MocoStudy setup files have a `.omoco` extension.
-///
-/// Solver
-/// ------
-/// The default solver uses the **tropter** direct
-/// collocation library. We also provide the **CasADi** solver, which
-/// depends on the **CasADi** automatic differentiation and optimization
-/// library. If you want to use CasADi programmatically, call initCasADiSolver()
-/// before solve(). We would like to support users plugging in their own
-/// solvers, but there is no timeline for this. If you require additional
-/// features or enhancements to the solver, please consider contributing to
-/// **tropter**.
+/** The top-level class for solving a custom optimal control problem.
+
+This class consists of a MocoProblem, which describes the optimal control
+problem, and a MocoSolver, which describes the numerical method for
+solving the problem.
+
+Workflow
+--------
+When building a MocoStudy programmatically (e.g., in C++), the workflow is
+as follows:
+
+1. Build the MocoProblem (set the model, constraints, etc.).
+2. Call MocoStudy::initSolver(), which returns a reference to the
+MocoSolver.
+   After this, you cannot edit the MocoProblem.
+3. Edit the settings of the MocoSolver (returned by initSolver()).
+4. Call MocoStudy::solve(). This returns the MocoSolution.
+5. (Optional) Postprocess the solution, perhaps using
+MocoStudy::visualize().
+
+After calling solve(), you can edit the MocoProblem and/or the MocoSolver.
+You can then call solve() again, if you wish.
+
+Saving the study setup to a file
+--------------------------------
+You can save the MocoStudy to a file by calling MocoStudy::print(), and you
+can load the setup using MocoStudy(const std::string& omocoFile).
+MocoStudy setup files have a `.omoco` extension.
+
+Solver
+------
+The default solver uses the **tropter** direct
+collocation library. We also provide the **CasADi** solver, which
+depends on the **CasADi** automatic differentiation and optimization
+library. If you want to use CasADi programmatically, call initCasADiSolver()
+before solve(). We would like to support users plugging in their own
+solvers, but there is no timeline for this. If you require additional
+features or enhancements to the solver, please consider contributing to
+**tropter**. */
 class OSIMMOCO_API MocoStudy : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoStudy, Object);
 

@@ -25,20 +25,20 @@ namespace OpenSim {
 
 class MocoProblemInfo;
 
-/// This class constrains any number of control signals from ScalarActautor%s to
-/// be between two time-based functions. It is possible to constrain the control
-/// signal to be exactly to a provided function; see the equality_with_lower
-/// property.
-///
-/// If a function is a GCVSpline, we ensure that the spline covers the entire
-/// possible time range in the problem (using the problem's time bounds). We do
-/// not perform such a check for other types of functions.
-///
-/// @note If you omit the lower and upper bounds, then this class will not
-/// constrain any control signals, even if you have provided control paths.
-///
-/// @note This class can only constrain control signals for ScalarActuator%s.
-/// @ingroup mocopathcon
+/** This class constrains any number of control signals from ScalarActautor%s to
+be between two time-based functions. It is possible to constrain the control
+signal to be exactly to a provided function; see the equality_with_lower
+property.
+
+If a function is a GCVSpline, we ensure that the spline covers the entire
+possible time range in the problem (using the problem's time bounds). We do
+not perform such a check for other types of functions.
+
+@note If you omit the lower and upper bounds, then this class will not
+constrain any control signals, even if you have provided control paths.
+
+@note This class can only constrain control signals for ScalarActuator%s.
+@ingroup mocopathcon */
 class OSIMMOCO_API MocoControlBoundConstraint : public MocoPathConstraint {
     OpenSim_DECLARE_CONCRETE_OBJECT(
             MocoControlBoundConstraint, MocoPathConstraint);

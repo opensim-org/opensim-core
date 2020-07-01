@@ -28,23 +28,23 @@
 
 namespace OpenSim {
 
-/// The squared difference between a model frame origin's linear acceleration 
-/// and a reference acceleration value, summed over the frames for which a
-/// reference is provided, and integrated over the phase. The reference is 
-/// a trajectory of SimTK::Vec3%s representing the acceleration reference data. 
-/// You must provide either a file name to a STO or CSV file (or other file 
-/// types for which there is a FileAdapter) or a TimeSeriesTableVec3 directly.
-/// 
-/// Errors for this cost are computed assuming that the provided reference
-/// acceleration data is the derivative of a position vector with respect to the 
-/// ground frame and expressed in the ground frame. This cost is not yet 
-/// suitable for tracking acceleration signals from an inertial measurement unit 
-/// (IMU) as it does not account for gravitational acceleration and does not 
-/// re-express body accelerations into a different (e.g., IMU) frame. 
-///
-/// This cost requires realization to SimTK::Stage::Acceleration.
-///
-/// @ingroup mocogoal
+/** The squared difference between a model frame origin's linear acceleration
+and a reference acceleration value, summed over the frames for which a
+reference is provided, and integrated over the phase. The reference is
+a trajectory of SimTK::Vec3%s representing the acceleration reference data.
+You must provide either a file name to a STO or CSV file (or other file
+types for which there is a FileAdapter) or a TimeSeriesTableVec3 directly.
+
+Errors for this cost are computed assuming that the provided reference
+acceleration data is the derivative of a position vector with respect to the
+ground frame and expressed in the ground frame. This cost is not yet
+suitable for tracking acceleration signals from an inertial measurement unit
+(IMU) as it does not account for gravitational acceleration and does not
+re-express body accelerations into a different (e.g., IMU) frame.
+
+This cost requires realization to SimTK::Stage::Acceleration.
+
+@ingroup mocogoal */
 class OSIMMOCO_API MocoAccelerationTrackingGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoAccelerationTrackingGoal, MocoGoal);
 
@@ -58,36 +58,36 @@ public:
         constructProperties();
     }
 
-    /// Set the acceleration of individual frames in ground to be tracked in the 
-    /// cost. The column labels of the provided reference must be paths to 
-    /// frames in the model, e.g. `/bodyset/torso`. If the frame_paths property 
-    /// is empty, all frames with data in this reference will be tracked. 
-    /// Otherwise, only the frames specified via setFramePaths() will be 
-    /// tracked. Calling this function clears the table set by 
-    /// setAccelerationReference() if it exists.
+    /** Set the acceleration of individual frames in ground to be tracked in the
+    cost. The column labels of the provided reference must be paths to
+    frames in the model, e.g. `/bodyset/torso`. If the frame_paths property
+    is empty, all frames with data in this reference will be tracked.
+    Otherwise, only the frames specified via setFramePaths() will be
+    tracked. Calling this function clears the table set by
+    setAccelerationReference() if it exists. */
     void setAccelerationReferenceFile(const std::string& filepath) {
         m_acceleration_table = TimeSeriesTableVec3();
         set_acceleration_reference_file(filepath);
     }
-    /// Each column label must be the path of a valid frame path (see
-    /// setAccelerationReferenceFile()). Calling this function clears the
-    /// `acceleration_reference_file` property.
+    /** Each column label must be the path of a valid frame path (see
+    setAccelerationReferenceFile()). Calling this function clears the
+    `acceleration_reference_file` property. */
     void setAccelerationReference(const TimeSeriesTableVec3& ref) {
         set_acceleration_reference_file("");
         m_acceleration_table = ref;
     }
-    /// Set the paths to frames in the model that this cost term will track. The
-    /// names set here must correspond to OpenSim::Component%s that derive from
-    /// OpenSim::Frame, which includes 'linear_acceleration' (SimTK::Vec3) as an 
-    /// output. Replaces the frame path set if it already exists.
+    /** Set the paths to frames in the model that this cost term will track. The
+    names set here must correspond to OpenSim::Component%s that derive from
+    OpenSim::Frame, which includes 'linear_acceleration' (SimTK::Vec3) as an
+    output. Replaces the frame path set if it already exists. */
     void setFramePaths(const std::vector<std::string>& paths) {
         updProperty_frame_paths().clear();
         for (const auto& path : paths) { append_frame_paths(path); }
     }
-    /// Set the weight for an individual frame's acceleration tracking. If a
-    /// weight is already set for the requested frame, then the provided weight
-    /// replaces the previous weight. An exception is thrown if a weight
-    /// for an unknown frame is provided.
+    /** Set the weight for an individual frame's acceleration tracking. If a
+    weight is already set for the requested frame, then the provided weight
+    replaces the previous weight. An exception is thrown if a weight
+    for an unknown frame is provided. */
     void setWeightForFrame(const std::string& frameName, const double& weight) {
         if (get_acceleration_weights().contains(frameName)) {
             upd_acceleration_weights().get(frameName).setWeight(weight);
@@ -95,13 +95,13 @@ public:
             upd_acceleration_weights().cloneAndAppend({frameName, weight});
         }
     }
-    /// Provide a MocoWeightSet to weight frame acceleration tracking in the
-    /// cost. Replaces the weight set if it already exists.
+    /** Provide a MocoWeightSet to weight frame acceleration tracking in the
+    cost. Replaces the weight set if it already exists. */
     void setWeightSet(const MocoWeightSet& weightSet) {
         upd_acceleration_weights() = weightSet;
     }
-    /// If no acceleration reference file has been provided, this returns an
-    /// empty string.
+    /** If no acceleration reference file has been provided, this returns an
+    empty string. */
     std::string getAccelerationReferenceFile() const {
         return get_acceleration_reference_file();
     }

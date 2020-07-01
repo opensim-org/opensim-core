@@ -44,23 +44,23 @@ public:
     }
 };
 
-/// Solve the MocoProblem using the **tropter** direct collocation library.
-/// **tropter** is a free and open-source C++ library that supports computing
-/// the Jacobian and Hessian via either automatic differentiation or finite
-/// differences, and uses IPOPT for solving the nonlinear optimization problem.
-///
-/// This class allows you to configure tropter's settings.
-///
-/// Supported optimization solvers
-/// ==============================
-/// The following optimization solvers can be specified for the optim_solver
-/// property:
-/// - ipopt
-/// - snopt
-///
-/// Using this solver in C++ requires that a tropter shared library is
-/// available, but tropter header files are not required. No tropter symbols
-/// are exposed in Moco's interface.
+/** Solve the MocoProblem using the **tropter** direct collocation library.
+**tropter** is a free and open-source C++ library that supports computing
+the Jacobian and Hessian via either automatic differentiation or finite
+differences, and uses IPOPT for solving the nonlinear optimization problem.
+
+This class allows you to configure tropter's settings.
+
+Supported optimization solvers
+==============================
+The following optimization solvers can be specified for the optim_solver
+property:
+- ipopt
+- snopt
+
+Using this solver in C++ requires that a tropter shared library is
+available, but tropter header files are not required. No tropter symbols
+are exposed in Moco's interface. */
 class OSIMMOCO_API MocoTropterSolver : public MocoDirectCollocationSolver {
     OpenSim_DECLARE_CONCRETE_OBJECT(
             MocoTropterSolver, MocoDirectCollocationSolver);

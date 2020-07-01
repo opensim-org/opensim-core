@@ -11,7 +11,7 @@ This guide shows the various ways of using Moco.
 
 To learn how to download, install, and run your first Moco example, see the
 following page:
-- @subpage gettingstarted
+- @subpage mocogettingstarted
 
 @section mocotool MocoTools
 
@@ -30,7 +30,7 @@ custom optimal control problem using the MocoStudy class.
 
 @subpage mocostudy
 
-@section choosingmodel Choosing a Model
+@section mocochoosingmodel Choosing a Model
 
 Moco supports most OpenSim models, including those with kinematic constraints,
 auxiliary (muscle) dynamics, and passive force components.
@@ -53,7 +53,7 @@ and replacing your contact forces with SmoothSphereHalfSpaceForce%s. These
 components are designed for use with direct collocation.
 
 
-@section customgoal Defining a custom goal or cost
+@section mococustomgoal Defining a custom goal or cost
 
 Moco allows you to compose your cost from multiple existing cost terms. This
 gives you flexibility and means that you usually do not need to write your
@@ -90,7 +90,7 @@ mocogenutil pages.
 
 @section faqsection Frequently Asked Questions
 
-See @subpage faq.
+See @subpage mocofaq.
 
 @section mococheatsheet Cheat sheet
 

@@ -43,9 +43,9 @@ public:
 
 // TODO what's the desired behavior upon copy?
 
-/// Once the solver is created, you should not make any edits to the
-/// MocoProblem. If you do, you must call resetProblem(const MocoProblem&
-/// problem).
+/** Once the solver is created, you should not make any edits to the
+MocoProblem. If you do, you must call resetProblem(const MocoProblem&
+problem). */
 class OSIMMOCO_API MocoSolver : public Object {
 OpenSim_DECLARE_ABSTRACT_OBJECT(MocoSolver, Object);
 public:

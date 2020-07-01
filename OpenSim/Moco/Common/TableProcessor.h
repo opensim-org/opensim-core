@@ -26,24 +26,24 @@
 
 namespace OpenSim {
 
-/// This abstract class describes *any* operation that consumes a
-/// modifies a TimeSeriesTable as part of a TableProcessor.
+/** This abstract class describes *any* operation that consumes a
+modifies a TimeSeriesTable as part of a TableProcessor. */
 class OSIMMOCO_API TableOperator : public Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(TableOperator, Object);
 
 public:
-    /// This function may or may not be provided with a model. If the operation
-    /// requires a model and model == nullptr, an exception is thrown.
+    /** This function may or may not be provided with a model. If the operation
+    requires a model and model == nullptr, an exception is thrown. */
     virtual void operate(TimeSeriesTable& table, const Model* model) const = 0;
 };
 
-/// This class describes a workflow for processing a table using
-/// TableOperator%s. The user must provide a source table either as a filepath
-/// to a table or an in-memory TimeSeriesTable. In C++, one can easily chain
-/// together the operators in a processor using the C++ pipe operator:
-/// @code
-/// TableProcessor proc = TableProcessor("file.sto") | TabOpLowPassFilter(6);
-/// @endcode
+/** This class describes a workflow for processing a table using
+TableOperator%s. The user must provide a source table either as a filepath
+to a table or an in-memory TimeSeriesTable. In C++, one can easily chain
+together the operators in a processor using the C++ pipe operator:
+@code
+TableProcessor proc = TableProcessor("file.sto") | TabOpLowPassFilter(6);
+@endcode */
 class OSIMMOCO_API TableProcessor : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(TableProcessor, Object);
 
@@ -173,17 +173,17 @@ public:
     }
 };
 
-/// Update table column labels to use post-4.0 state paths instead of pre-4.0
-/// state names. For example, this converts column labels as follows:
-///   - `pelvis_tilt` -> `/jointset/ground_pelvis/pelvis_tilt/value`
-///   - `pelvis_tilt_u` -> `/jointset/ground_pelvis/pelvis_tilt/speed`
-///   - `soleus.activation` -> `/forceset/soleus/activation`
-///   - `soleus.fiber_length` -> `/forceset/soleus/fiber_length`
-/// This can also be used to convert an Inverse Kinematics Tool solution MOT
-/// file to be used as a states file (with only coordinate values).
-/// If a column label does not identify a state in the model,
-/// the column label is not changed. Column labels must be unique.
-/// This operator is implemented using updateStateLabels40().
+/** Update table column labels to use post-4.0 state paths instead of pre-4.0
+state names. For example, this converts column labels as follows:
+  - `pelvis_tilt` -> `/jointset/ground_pelvis/pelvis_tilt/value`
+  - `pelvis_tilt_u` -> `/jointset/ground_pelvis/pelvis_tilt/speed`
+  - `soleus.activation` -> `/forceset/soleus/activation`
+  - `soleus.fiber_length` -> `/forceset/soleus/fiber_length`
+This can also be used to convert an Inverse Kinematics Tool solution MOT
+file to be used as a states file (with only coordinate values).
+If a column label does not identify a state in the model,
+the column label is not changed. Column labels must be unique.
+This operator is implemented using updateStateLabels40(). */
 class OSIMMOCO_API TabOpUseAbsoluteStateNames : public TableOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(TabOpUseAbsoluteStateNames, TableOperator);
 

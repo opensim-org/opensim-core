@@ -24,29 +24,29 @@
 
 namespace OpenSim {
 
-/// This is a base class for solving problems that depend on an observed motion
-/// using Moco's optimal control methods.
-///
-/// Mesh interval
-/// -------------
-/// A smaller mesh interval increases the convergence time, but is necessary
-/// for fast motions or problems with stiff differential equations (e.g.,
-/// stiff tendons).
-/// For gait, consider using a mesh interval between 0.01 and 0.05 seconds.
-/// Try solving your problem with decreasing mesh intervals and choose a mesh
-/// interval at which the solution stops changing noticeably.
-///
-/// Reserve actuators
-/// -----------------
-/// Sometimes it is not possible to achieve the desired motion using
-/// muscles alone. There are multiple possible causes for this:
-///   - the muscles are not strong enough to achieve the required
-///     net joint moments,
-///   - the net joint moments change more rapidly than activation and
-///     deactivation time constants allow,
-///   - the filtering of the data causes unrealistic desired net joint moments.
-/// You may want to add "reserve" actuators to your model.
-/// This can be done with the ModOpAddReserves model operator.
+/** This is a base class for solving problems that depend on an observed motion
+using Moco's optimal control methods.
+
+Mesh interval
+-------------
+A smaller mesh interval increases the convergence time, but is necessary
+for fast motions or problems with stiff differential equations (e.g.,
+stiff tendons).
+For gait, consider using a mesh interval between 0.01 and 0.05 seconds.
+Try solving your problem with decreasing mesh intervals and choose a mesh
+interval at which the solution stops changing noticeably.
+
+Reserve actuators
+-----------------
+Sometimes it is not possible to achieve the desired motion using
+muscles alone. There are multiple possible causes for this:
+  - the muscles are not strong enough to achieve the required
+    net joint moments,
+  - the net joint moments change more rapidly than activation and
+    deactivation time constants allow,
+  - the filtering of the data causes unrealistic desired net joint moments.
+You may want to add "reserve" actuators to your model.
+This can be done with the ModOpAddReserves model operator. */
 class MocoTool : public Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(MocoTool, Object);
 

@@ -30,7 +30,7 @@ namespace OpenSim {
 
 class MocoInverse;
 
-/// This class holds the solution from MocoInverse.
+/** This class holds the solution from MocoInverse. */
 class MocoInverseSolution {
 public:
     const MocoSolution& getMocoSolution() const { return m_mocoSolution; }
@@ -47,57 +47,55 @@ private:
     friend class MocoInverse;
 };
 
-/// This tool solves problems in which the kinematics are prescribed and you
-/// seek the actuator (e.g., muscle) behavior that may have given rise to the
-/// provided kinematics. The term "inverse" describes methods that estimate
-/// quantities from an observation; on the other hand, "forward" methods attempt
-/// to predict (unobserved) behavior. In this case, "inverse" refers to the
-/// multibody systems. This class can still be used to simulate muscles in a
-/// "forward" or predictive sense.
-///
-/// The kinematics file must provide values for all coordinates (even those
-/// labeled as dependent in a CoordinateCouplerConstraint); missing coordinates
-/// are set to NaN.
-///
-/// The provided trajectory is altered to satisfy any enabled kinematic
-/// constraints in the model.
-///
-/// Cost
-/// ----
-/// By default, MocoInverse minimizes the sum of squared controls and
-/// constrains initial activation to be equal to initial excitation (to avoid
-/// initial activation spikes). To customize the cost, invoke initialize(), add
-/// costs manually, and solve the problem using the solver directly. Note,
-/// however, that kinematic states are not included in the solution if you use
-/// the solver directly.
-///
-/// Default solver settings
-/// -----------------------
-/// - solver: MocoCasADiSolver
-/// - multibody_dynamics_mode: implicit
-/// - interpolate_control_midpoints: false
-/// - minimize_implicit_auxiliary_derivatives: true
-/// - implicit_auxiliary_derivatives_weight: 0.01
-/// - optim_convergence_tolerance: 1e-3
-/// - optim_constraint_tolerance: 1e-3
-/// - optim_sparsity_detection: random
-/// - optim_finite_difference_scheme: forward
-///
-/// MocoInverse minimizes the sum of squared controls and, optionally, the sum
-/// of squared activations. Currently, the costs used by MocoInverse cannot be
-/// customized. As MocoInverse becomes more mature and general, the costs will
-/// become more flexible.
-///
-/// Mesh interval
-/// -------------
-/// A smaller mesh interval increases the convergence time, but is necessary
-/// for fast motions or problems with stiff differential equations (e.g.,
-/// stiff tendons).
-/// For gait, consider using a mesh interval between 0.01 and 0.05 seconds.
-/// Try solving your problem with decreasing mesh intervals and choose a mesh
-/// interval at which the solution stops changing noticeably.
-///
-/// @underdevelopment
+/** This tool solves problems in which the kinematics are prescribed and you
+seek the actuator (e.g., muscle) behavior that may have given rise to the
+provided kinematics. The term "inverse" describes methods that estimate
+quantities from an observation; on the other hand, "forward" methods attempt
+to predict (unobserved) behavior. In this case, "inverse" refers to the
+multibody systems. This class can still be used to simulate muscles in a
+"forward" or predictive sense.
+
+The kinematics file must provide values for all coordinates (even those
+labeled as dependent in a CoordinateCouplerConstraint); missing coordinates
+are set to NaN.
+
+The provided trajectory is altered to satisfy any enabled kinematic
+constraints in the model.
+
+Cost
+----
+By default, MocoInverse minimizes the sum of squared controls and
+constrains initial activation to be equal to initial excitation (to avoid
+initial activation spikes). To customize the cost, invoke initialize(), add
+costs manually, and solve the problem using the solver directly. Note,
+however, that kinematic states are not included in the solution if you use
+the solver directly.
+
+Default solver settings
+-----------------------
+- solver: MocoCasADiSolver
+- multibody_dynamics_mode: implicit
+- interpolate_control_midpoints: false
+- minimize_implicit_auxiliary_derivatives: true
+- implicit_auxiliary_derivatives_weight: 0.01
+- optim_convergence_tolerance: 1e-3
+- optim_constraint_tolerance: 1e-3
+- optim_sparsity_detection: random
+- optim_finite_difference_scheme: forward
+
+MocoInverse minimizes the sum of squared controls and, optionally, the sum
+of squared activations. Currently, the costs used by MocoInverse cannot be
+customized. As MocoInverse becomes more mature and general, the costs will
+become more flexible.
+
+Mesh interval
+-------------
+A smaller mesh interval increases the convergence time, but is necessary
+for fast motions or problems with stiff differential equations (e.g.,
+stiff tendons).
+For gait, consider using a mesh interval between 0.01 and 0.05 seconds.
+Try solving your problem with decreasing mesh intervals and choose a mesh
+interval at which the solution stops changing noticeably. */
 class OSIMMOCO_API MocoInverse : public MocoTool {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoInverse, MocoTool);
 

@@ -24,8 +24,8 @@
 
 namespace OpenSim {
 
-/// This component is used internally by Moco for passing a solver's control
-/// variables to a Model.
+/** This component is used internally by Moco for passing a solver's control
+variables to a Model. */
 class DiscreteController : public Controller {
     OpenSim_DECLARE_CONCRETE_OBJECT(DiscreteController, Controller);
 public:

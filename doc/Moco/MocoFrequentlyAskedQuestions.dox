@@ -1,6 +1,6 @@
 namespace OpenSim {
 /**
-@page faq Frequently Asked Questions
+@page mocofaq Frequently Asked Questions
 
 @section faqpagesection Frequently Asked Questions
 
@@ -12,7 +12,7 @@ question that is not answered here, contact the OpenSim Moco team.
 If Moco does not contain a cost term you need, you can create your own in C++ by
 deriving from the MocoGoal class. If you do not want to use C++, you can draft
 your goal in Matlab, send us your Matlab code, and we will consider implementing
-it in C++ for you. See @ref customgoal for more information.
+it in C++ for you. See @ref mococustomgoal for more information.
 
 @subsection faqinterrupt How do I interrupt an optimization in MATLAB?
 
