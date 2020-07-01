@@ -1,6 +1,11 @@
+# This Dockerfile can be used with the adjacent docker-compose.yml file to
+# use the CLion IDE on any platform (including Windows and Mac) to build/test
+# opensim-core on Linux.
+# This Dockerfile is experimental and may require tweaking for CLion remote
+# Ubuntu development to work properly.
 # https://github.com/shuhaoliu/docker-clion-dev/blob/master/Dockerfile
 # Password for user 'debugger' is pwd.
-# We assume the build context is the .../opensim-moco/dependencies directory.
+# We assume the build context is the .../opensim-core/dependencies directory.
 
 FROM ubuntu
 
@@ -49,18 +54,18 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
         python3 python3-dev python3-numpy python3-matplotlib python3-setuptools \
         swig
 
-COPY opensim-core /opensim-core
-COPY dependencies/CMakeLists.txt dependencies/*.cmake /dependencies/
+COPY CMakeLists.txt *.cmake /dependencies/
 
-RUN mkdir /moco_dependencies_build \
-        && cd /moco_dependencies_build \
-        && cmake /dependencies -DOPENSIM_PYTHON_WRAPPING=on -DCMAKE_BUILD_TYPE=$BTYPE \
-        && make --jobs $(nproc) ipopt \
+RUN mkdir /opensim_dependencies_build \
+        && cd /opensim_dependencies_build \
+        && cmake /dependencies \
+            -DCMAKE_BUILD_TYPE=$BTYPE \
+            -DSUPERBUILD_ezc3d=on \
         && make --jobs $(nproc) \
-        && echo "/moco_dependencies_install/adol-c/lib64" >> /etc/ld.so.conf.d/moco.conf \
-        && echo "/moco_dependencies_install/ipopt/lib" >> /etc/ld.so.conf.d/moco.conf \
+        && echo "/opensim_dependencies_install/adol-c/lib64" >> /etc/ld.so.conf.d/opensim.conf \
+        && echo "/opensim_dependencies_install/ipopt/lib" >> /etc/ld.so.conf.d/opensim.conf \
         && ldconfig \
-        && rm -r /moco_dependencies_build
+        && rm -r /opensim_dependencies_build
 
 ########################################################
 
