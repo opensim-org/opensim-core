@@ -595,7 +595,7 @@ endfunction()
 function(OpenSimCopyDependencyDLLsForWin)
     # On Windows, copy dlls into the OpenSim binary directory.
     set(options)
-    set(oneValueArgs DEP_NAME DEP_BIN_DIR INSTALL_DLLS)
+    set(oneValueArgs DEP_NAME DEP_BIN_DIR)
     set(multiValueArgs)
     cmake_parse_arguments(OSIMCOPY
             "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})

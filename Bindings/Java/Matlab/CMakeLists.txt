@@ -74,14 +74,6 @@ file(COPY "examples/Moco/exampleSquatToStand/squatToStand_3dof9musc.osim"
         DESTINATION
         "${CMAKE_BINARY_DIR}/Examples/Moco/exampleSquatToStand")
 
-# file(GLOB GEOMETRY "${CMAKE_SOURCE_DIR}/opensim-models/Geometry/*"
-#         "${CMAKE_SOURCE_DIR}/opensim-models/Models/RajagopalModel/Geometry/*")
-# install(FILES ${GEOMETRY}
-#         DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}/Moco/exampleSquatToStand/Geometry")
-# install(FILES ${GEOMETRY}
-#         DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}/Moco/exampleMarkerTracking10DOF/Geometry")
-
-
 # The configureOpenSim.m script contains paths into the OpenSim installation
 # that may be different on different platforms, so we configure it with CMake
 # variables.
