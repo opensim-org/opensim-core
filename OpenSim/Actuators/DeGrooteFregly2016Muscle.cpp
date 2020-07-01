@@ -55,6 +55,18 @@ constexpr double DeGrooteFregly2016Muscle::b13;
 constexpr double DeGrooteFregly2016Muscle::b23;
 constexpr double DeGrooteFregly2016Muscle::b33;
 constexpr double DeGrooteFregly2016Muscle::b43;
+constexpr double DeGrooteFregly2016Muscle::m_minNormFiberLength;
+constexpr double DeGrooteFregly2016Muscle::m_maxNormFiberLength;
+constexpr double DeGrooteFregly2016Muscle::m_minNormTendonForce;
+constexpr double DeGrooteFregly2016Muscle::m_maxNormTendonForce;
+constexpr int DeGrooteFregly2016Muscle::m_mdi_passiveFiberElasticForce;
+constexpr int DeGrooteFregly2016Muscle::m_mdi_passiveFiberDampingForce;
+constexpr int
+        DeGrooteFregly2016Muscle::m_mdi_partialPennationAnglePartialFiberLength;
+constexpr int DeGrooteFregly2016Muscle::
+        m_mdi_partialFiberForceAlongTendonPartialFiberLength;
+constexpr int
+        DeGrooteFregly2016Muscle::m_mdi_partialTendonForcePartialFiberLength;
 
 void DeGrooteFregly2016Muscle::constructProperties() {
     constructProperty_activation_time_constant(0.015);
