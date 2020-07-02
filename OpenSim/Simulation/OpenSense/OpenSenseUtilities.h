@@ -49,10 +49,13 @@ public:
         convertQuaternionsToRotations(
             const OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>& qauternionsTable);
 
-    /** Compute a SimTK::Vec3 of Space-fixed XYZ Euler angles that aligns the specified 
-        baseIMU and CoordinateDirection combination with the positive X (=forward) direction 
-        in OpenSim based on the first frame of the passed in table of quaternions
-        quatTimeSeries. 
+    /** Compute a SimTK::Vec3 of Space-fixed XYZ Euler angles that aligns the
+       specified baseIMU and CoordinateDirection combination with the positive
+       X-axis (= typically forward) direction of the base segment in OpenSim
+       model. Base segment is typically the segment attached directly to Ground.
+       baseIMU is assumed to be placed on Base segment. Passed in state places
+       the model in the same configuration as the first frame of the
+       passed in table of quaternions quatTimeSeries.
     */
     static SimTK::Vec3 computeHeadingCorrection(
             OpenSim::Model& model,

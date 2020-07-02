@@ -213,10 +213,6 @@ SimTK::Vec3 OpenSenseUtilities::computeHeadingCorrection(
     // if a base imu is specified, perform heading correction, otherwise skip
     if (!baseImuName.empty()) {
 
-        // Base will rotate to match <base>_imu, so we must first remove the
-        // base rotation from the other IMUs to get their orientation with
-        // respect to individual model bodies and thereby compute correct
-        // offsets unbiased by the initial base orientation.
         auto imuLabels = quaternionsTable.getColumnLabels();
         auto pix = distance(imuLabels.begin(),
                 std::find(imuLabels.begin(), imuLabels.end(), baseImuName));
@@ -232,9 +228,9 @@ SimTK::Vec3 OpenSenseUtilities::computeHeadingCorrection(
 
         // Heading direction of the base IMU in this case the pelvis_imu heading
         // is its ZAxis
-        UnitVec3 pelvisHeading = base_R(baseHeadingDirection.getAxis());
+        UnitVec3 baseSegmentXHeading = base_R(baseHeadingDirection.getAxis());
         if (baseHeadingDirection.getDirection() < 0)
-            pelvisHeading = pelvisHeading.negate();
+            baseSegmentXHeading = baseSegmentXHeading.negate();
         bool baseFrameFound = false;
 
         const Frame* baseFrame = nullptr;
@@ -247,16 +243,17 @@ SimTK::Vec3 OpenSenseUtilities::computeHeadingCorrection(
                 break;
             }
         }
-        assert(baseFrameFound);
+        OPENSIM_THROW_IF(!baseFrameFound, Exception,
+                "No base segment was found, disable heading correction and retry.");
        
         Vec3 baseFrameX = UnitVec3(1, 0, 0);
         const SimTK::Transform& baseXform =
                 baseFrame->getTransformInGround(state);
         Vec3 baseFrameXInGround = baseXform.xformFrameVecToBase(baseFrameX);
         SimTK::Real angularDifference =
-                acos(~pelvisHeading * baseFrameXInGround);
+                acos(~baseSegmentXHeading * baseFrameXInGround);
         // Compute the sign of the angular correction.
-        SimTK::Vec3 xproduct = (baseFrameXInGround % pelvisHeading);
+        SimTK::Vec3 xproduct = (baseFrameXInGround % baseSegmentXHeading);
         if (xproduct.get(1) > 0) { 
             angularDifference *= -1; 
         }
