@@ -18,6 +18,7 @@ v4.2
 - `Controller::isEnabled` will now only return whether the particular controller is enabled
   - Previously, it would return `false` if its parent `Model`'s `Model::getAllControllersEnabled` returned `false`
   - The previous behavior would mean that `Controller::setEnabled(true); return Controller::isEnabled();` could return `false`
+- When building from source, CMake now outputs more detailed information about dependencies.
 
 
 v4.1

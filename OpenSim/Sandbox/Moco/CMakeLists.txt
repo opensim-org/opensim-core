@@ -9,10 +9,10 @@ function(MocoAddSandboxExecutable)
     add_executable(${MOCOSAND_NAME} EXCLUDE_FROM_ALL ${MOCOSAND_NAME}.cpp 
             ${MOCOSAND_SOURCE_FILES})
     set_target_properties(${MOCOSAND_NAME} PROPERTIES
-            FOLDER "Moco/Sandbox")
+            FOLDER "Sandbox/Moco")
     target_link_libraries(${MOCOSAND_NAME} ${MOCOSAND_LIB_DEPENDS})
     target_include_directories(${MOCOSAND_NAME} PRIVATE
-            ${CMAKE_SOURCE_DIR}/Moco/Sandbox/shared)
+            ${CMAKE_SOURCE_DIR}/Sandbox/Moco/shared)
     file(COPY ${MOCOSAND_RESOURCES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 endfunction()
 

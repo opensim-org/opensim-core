@@ -12,7 +12,7 @@ include(CMakeParseArguments)
 # Set the default for CMAKE_INSTALL_PREFIX.
 function(SetDefaultCMakeInstallPrefix)
     get_filename_component(BASE_DIR ${CMAKE_SOURCE_DIR} DIRECTORY)
-    # Move one directory up to (adjacent to the moco folder).
+    # Move one directory up to the folder adjacent to the opensim-core folder.
     get_filename_component(BASE_DIR ${BASE_DIR} DIRECTORY)
     # Default install prefix for OpenSim dependencies. If user changes
     # CMAKE_INSTALL_PREFIX, this directory will be removed.
@@ -207,8 +207,8 @@ AddDependency(NAME    eigen
 
 AddDependency(NAME colpack
               DEFAULT ON
-              GIT_URL https://github.com/chrisdembia/colpack.git
-              GIT_TAG master
+              GIT_URL https://github.com/opensim-org/colpack.git
+              GIT_TAG 72f691e91d59e8eb2123f258e67a4ddc72d105ee
               CMAKE_ARGS -DCMAKE_DEBUG_POSTFIX:STRING=_d
                          -DENABLE_EXAMPLES:BOOL=OFF
                          -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON)
@@ -242,7 +242,8 @@ if (WIN32)
     
         # Ipopt: Download pre-built binaries built by chrisdembia.
         # This binary distribution comes with MUMPS and OpenBLAS.
-        # Compiled with clang-cl 5.0 and flang, using conda.   
+        # Compiled with clang-cl 5.0 and flang, using conda.
+        # Unfortunately, we do not have scripts to recreate this binary :(.
         set(IPOPT_INSTALL_CMD "${CMAKE_COMMAND}" -E copy_directory
             "${CMAKE_BINARY_DIR}/ipopt-prefix/src/ipopt"
             "${CMAKE_INSTALL_PREFIX}/ipopt")
@@ -251,11 +252,11 @@ if (WIN32)
             CONFIGURE_COMMAND ""
             BUILD_COMMAND ""
             INSTALL_COMMAND ${IPOPT_INSTALL_CMD})
-            
+
+        # Previously attempted option:
         # Ipopt: Download pre-built binaries from the YARP/iCub project.
         # This binary distribution comes with MUMPS (which contains Fortran
         # code compiled with the proprietary Intel Fortran compiler).
-        # TODO obtain from Microsoft's VCPKG package manager.
         # set(IPOPT_INSTALL_CMD "${CMAKE_COMMAND}" -E copy_directory
             # "${CMAKE_BINARY_DIR}/ipopt-prefix/src/ipopt"
             # "${CMAKE_INSTALL_PREFIX}/ipopt")
@@ -264,6 +265,11 @@ if (WIN32)
             # CONFIGURE_COMMAND ""
             # BUILD_COMMAND ""
             # INSTALL_COMMAND ${IPOPT_INSTALL_CMD})
+
+        # COIN-OR may make binaries available on GitHub (see release 3.13.2),
+        # likely using Intel Fortran.
+        # https://github.com/coin-or/Ipopt/releases
+
     endif()
 else()
 

@@ -57,18 +57,6 @@ foreach(fname RunHopper RunHopperWithDevice)
             DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}/Hopper_Device")
 endforeach()
 
-
-# Copy example model and data files to use in Sandbox.
-set(SANDBOX_MARKER_TRACKING_DIR
-        "${CMAKE_BINARY_DIR}/Sandbox/Moco/sandboxMarkerTrackingWholeBody")
-file(COPY "examples/Moco/exampleMarkerTracking10DOF/marker_trajectories.trc"
-        "examples/Moco/exampleMarkerTracking10DOF/subject01.osim"
-        "examples/Moco/exampleMarkerTracking10DOF/state_reference.mot"
-        DESTINATION "${SANDBOX_MARKER_TRACKING_DIR}")
-file(COPY "examples/Moco/exampleSquatToStand/squatToStand_3dof9musc.osim"
-        DESTINATION
-        "${CMAKE_BINARY_DIR}/Sandbox/Moco/sandboxSquatToStand")
-
 # Copy example model and data files to use in Examples.
 file(COPY "examples/Moco/exampleSquatToStand/squatToStand_3dof9musc.osim"
         DESTINATION

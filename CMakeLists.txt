@@ -41,6 +41,12 @@ set(OPENSIM_RELEASE_VERSION
     "${OPENSIM_MAJOR_VERSION}.${OPENSIM_MINOR_VERSION}${PATCH_VERSION_STRING}"
     )
 
+# The OPENSIM_QUALIFIED_VERSION is more granular than OPENSIM_RELEASE_VERSION.
+# If git is not found, we simply append "?" to the release version.
+# If the checked-out commit is tagged, the qualified version is the tag name.
+# If the checked-out commit is not tagged, the qualified version is
+#   <release-version>-<git-commit-date>-<git-commit-short-hash>
+#   For example: 4.2-2020-07-01-5c10b4176
 set(QUALIFIED_VERSION "")
 find_package(Git)
 if(Git_FOUND)

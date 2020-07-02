@@ -27,7 +27,7 @@
 # This script takes three arguments: the Developer ID identity (-s), the
 # Apple ID associated with the Developer ID (-i) and the ZIP to
 # sign and notarize.
-#
+
 # Example:
 # ./mac_sign_and_notarize.sh -s ABC0123456 -i <Apple-ID> -f opensim-core.zip
 #
@@ -50,11 +50,12 @@
 # ".zip"s or plain executables. So, for now, users will need access to
 # the internet for their Gatekeeper to determine if the software is notarized.
 #
-# While Apple's documentation says that macOS requires software to be signed
-# AND notarized, testing indicates that it is sufficient for software to be only
-# signed (not notarized) for Gatekeeper to allow the user to run the software.
-# This may change over time.
-# 
+# Although this script appears to successfully notarizes software, initial
+# testing shows that attempting to use the software produced by this
+# script on a macOS 10.15 Catalina machine (after downloading from a website)
+# causes macOS to generate a notarization-related error message and prevent
+# running the software. Therefore, this script is a work-in-progress.
+
 # https://developer.apple.com/documentation/xcode/notarizing_macos_software_before_distribution
 # https://scriptingosx.com/2019/09/notarize-a-command-line-tool/
 #
