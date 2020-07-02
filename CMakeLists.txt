@@ -177,8 +177,12 @@ mark_as_advanced(OPENSIM_BUILD_INDIVIDUAL_APPS)
 # --------------
 option(OPENSIM_WITH_CASADI
         "Build CasADi support for Moco (MocoCasADiSolver)." ON)
+add_feature_info(WITH_CASADI OPENSIM_WITH_CASADI
+        "Build CasADi support for Moco (OPENSIM_WITH_CASADI)")
 option(OPENSIM_WITH_TROPTER
         "Build the tropter optimal control library, for use in MocoTropterSolver." ON)
+add_feature_info(WITH_TROPTER OPENSIM_WITH_TROPTER
+        "Build the tropter optimal control library (OPENSIM_WITH_TROPTER)")
 
 
 # Configure installation directories across platforms.
