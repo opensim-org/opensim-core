@@ -98,11 +98,6 @@ public:
     template <typename FunctionType = GCVSpline>
     static TimeSeriesTable resampleWithIntervalBounded(
             const TimeSeriesTable& in, double interval);
-
-    /// Write a single TimeSeriesTable to a file, using the FileAdapter
-    /// associated with the provided file extension.
-    static void writeTableToFile(const TimeSeriesTable&, const std::string&);
-
 private:
     static int findStateLabelIndexInternal(const std::string* begin,
             const std::string* end, const std::string& desired);
