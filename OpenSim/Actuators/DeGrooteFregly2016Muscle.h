@@ -638,7 +638,7 @@ public:
         // The stiffness of the fiber along the direction of the tendon. For
         // small changes in length parallel to the fiber, this quantity is
         // d_fiberForceAlongTendon / d_fiberLength =
-        //      d/d_fiberLength(fiberForce * cosPenneationAngle)
+        //      d/d_fiberLength(fiberForce * cosPennationAngle)
         return fiberStiffness * cosPennationAngle +
                fiberForce * partialCosPennationAnglePartialFiberLength;
     }
