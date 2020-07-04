@@ -28,6 +28,8 @@
 
 #include <simbody/internal/Visualizer_InputListener.h>
 
+#include <OpenSim/Common/TableUtilities.h>
+
 using namespace OpenSim;
 
 SimTK::State OpenSim::simulate(Model& model,
@@ -92,6 +94,19 @@ SimTK::State OpenSim::simulate(Model& model,
     } while (!simulateOnce);
 
     return state;
+}
+
+void OpenSim::updateStateLabels40(const Model& model,
+                                  std::vector<std::string>& labels) {
+
+    TableUtilities::checkNonUniqueLabels(labels);
+
+    const Array<std::string> stateNames = model.getStateVariableNames();
+    for (int isv = 0; isv < stateNames.size(); ++isv) {
+        int i = TableUtilities::findStateLabelIndex(labels, stateNames[isv]);
+        if (i == -1) continue;
+        labels[i] = stateNames[isv];
+    }
 }
 
 std::unique_ptr<Storage>

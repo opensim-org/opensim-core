@@ -75,19 +75,20 @@ PiecewiseLinearFunction::PiecewiseLinearFunction(int aN,const double *aX,const d
     setName(aName);
 
     // NUMBER OF DATA POINTS
-    if(aN < 2)
-    {
-        log_error("PiecewiseLinearFunction: there must be 2 or more data "
-                  "points.");
-        return;
-    }
+    OPENSIM_THROW_IF_FRMOBJ(aN < 2, Exception,
+            "PiecewiseLinearFunction: there must be 2 or more data "
+            "points, but got {} data points.",
+            aN);
 
     // CHECK DATA
-    if((aX==NULL)||(aY==NULL))
-    {
-        log_error("PiecewiseLinearFunction: NULL arrays for data points "
-                  "encountered.");
-        return;
+    OPENSIM_THROW_IF_FRMOBJ(aX == nullptr || aY == nullptr, Exception,
+        "x and/or y data is null.");
+
+    for (int i = 1; i < aN; ++i) {
+        OPENSIM_THROW_IF_FRMOBJ(aX[i] < aX[i - 1], Exception,
+                "Expected independent variable to be non-decreasing, but x[{}] "
+                "= {} is less than x[{}] = {}",
+                i, aX[i], i - 1, aX[i - 1]);
     }
 
     // INDEPENDENT VALUES (KNOT SEQUENCE)
