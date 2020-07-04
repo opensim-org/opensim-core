@@ -494,6 +494,17 @@ On Windows using Visual Studio
 * **logging**: spdlog. Two options:
     * Let OpenSim get this for you using superbuild (see below); much easier!
     * [Build on your own](https://github.com/gabime/spdlog).
+* **Moco optimal control solvers**: Solving optimal control problems with 
+    OpenSim's Moco module requires either CasADi or Tropter. Use superbuild for
+    all these dependencies (except for Tropter, which is part of this
+    repository).
+    * **MocoCasADiSolver** (optional): [CasADi](https://web.casadi.org) (LGPL).
+    * **MocoTropterSolver** (optional): Tropter.
+        * **matrix library**: [Eigen](http://eigen.tuxfamily.org) >= 3.3.7
+        * **sparse matrix algorithms**: [ColPack](https://github.com/CSCsw/ColPack).
+        * **automatic differentiation**: [ADOL-C](https://github.com/coin-or/ADOL-C) >= 2.6.3.
+    * **nonlinear optimizer** (required if building with CasADi or Tropter): 
+        [IPOPT](https://github.com/coin-or/Ipopt) >= 3.12.8.
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6
 * **version control** (optional): git. There are many options:
@@ -629,6 +640,8 @@ On Windows using Visual Studio
     * `OPENSIM_PYTHON_VERSION` to choose if the Python wrapping is built for
       Python 2 or Python 3.
     * `BUILD_API_ONLY` if you don't want to build the command-line applications.
+    * `OPENSIM_WITH_CASADI` if you want support for MocoCasADiSolver.
+    * `OPENSIM_WITH_TROPTER` if you want support for MocoTropterSolver.
 8. Click the **Configure** button again. Then, click **Generate** to make
    Visual Studio project files in the build directory.
 
@@ -732,7 +745,7 @@ If you already have **Xcode**, update it to 7.3, or the latest version.
 Then, in **Terminal**, copy and paste commands below, line by line, one at a time. The first line installs the Homebrew package manager; omit this line if you already have Homebrew. Be sure the output doesn't contain errors.
 ```shell
 /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-brew install cmake swig
+brew install cmake swig gcc pkgconfig autoconf libtool automake wget doxygen
 brew cask install java
 git clone https://github.com/opensim-org/opensim-core.git
 mkdir opensim_dependencies_build
@@ -777,6 +790,17 @@ ctest -j8
 * **logging**: spdlog. Two options:
     * Let OpenSim get this for you using superbuild (see below); much easier!
     * [Build on your own](https://github.com/gabime/spdlog).
+* **Moco optimal control solvers**: Solving optimal control problems with 
+    OpenSim's Moco module requires either CasADi or Tropter. Use superbuild for
+    all these dependencies (except for Tropter, which is part of this
+    repository).
+    * **MocoCasADiSolver** (optional): [CasADi](https://web.casadi.org) (LGPL).
+    * **MocoTropterSolver** (optional): Tropter.
+        * **matrix library**: [Eigen](http://eigen.tuxfamily.org) >= 3.3.7
+        * **sparse matrix algorithms**: [ColPack](https://github.com/CSCsw/ColPack).
+        * **automatic differentiation**: [ADOL-C](https://github.com/coin-or/ADOL-C) >= 2.6.3.
+    * **nonlinear optimizer** (required if building with CasADi or Tropter): 
+        [IPOPT](https://github.com/coin-or/Ipopt) >= 3.12.8.
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6
 * **version control** (optional): git.
@@ -971,6 +995,17 @@ specific Ubuntu versions under 'For the impatient' below.
 * **logging**: spdlog. Two options:
     * Let OpenSim get this for you using superbuild (see below); much easier!
     * [Build on your own](https://github.com/gabime/spdlog).
+* **Moco optimal control solvers**: Solving optimal control problems with 
+    OpenSim's Moco module requires either CasADi or Tropter. Use superbuild for
+    all these dependencies (except for Tropter, which is part of this
+    repository).
+    * **MocoCasADiSolver** (optional): [CasADi](https://web.casadi.org) (LGPL).
+    * **MocoTropterSolver** (optional): Tropter.
+        * **matrix library**: [Eigen](http://eigen.tuxfamily.org) >= 3.3.7
+        * **sparse matrix algorithms**: [ColPack](https://github.com/CSCsw/ColPack).
+        * **automatic differentiation**: [ADOL-C](https://github.com/coin-or/ADOL-C) >= 2.6.3.
+    * **nonlinear optimizer** (required if building with CasADi or Tropter): 
+        [IPOPT](https://github.com/coin-or/Ipopt) >= 3.12.8.
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6;
   `doxygen`.
@@ -990,7 +1025,7 @@ For example, you could get the required dependencies (except Simbody) via:
 
 And you could get all the optional dependencies via:
 
-    $ sudo apt-get install doxygen git swig openjdk-7-jdk python-dev python-numpy
+    $ sudo apt-get install doxygen git swig openjdk-7-jdk python-dev python-numpy wget build-essential libtool autoconf pkg-config gfortran
 
 #### Download the OpenSim-Core source code
 
