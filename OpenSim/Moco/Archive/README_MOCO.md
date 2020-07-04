@@ -7,11 +7,15 @@ Design goals
 
    1. Solving for muscle activity from a known motion should be faster than
       using OpenSim Computed Muscle Control.
+      
+   2. Muscle activity estimated for a known motion should be smoother and more
+      accurate (better match with EMG) than that obtained with OpenSim Computed
+      Muscle Control.
 
-   2. Users should be able to solve for mass properties that minimize
+   3. Users should be able to solve for mass properties that minimize
       residual forces.
 
-   3. Advanced users can construct optimal control problems programmatically in
+   4. Advanced users can construct optimal control problems programmatically in
       C++.
 
 2. Advanced users can create plugins to create custom cost terms and
