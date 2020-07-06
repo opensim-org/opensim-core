@@ -27,6 +27,7 @@
 #include <OpenSim/Actuators/Thelen2003Muscle.h>
 #include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include "OpenSim/Common/STOFileAdapter.h"
 
 using namespace OpenSim;
 
@@ -941,13 +942,13 @@ DataTable DeGrooteFregly2016Muscle::exportFiberVelocityMultiplierToTable(
 
 void DeGrooteFregly2016Muscle::printCurvesToSTOFiles(
         const std::string& directory) const {
-    std::string prefix =
+    const std::string prefix =
             directory + SimTK::Pathname::getPathSeparator() + getName();
-    FileAdapter::writeFile({{"table", &exportFiberLengthCurvesToTable()}},
+    STOFileAdapter::write(exportFiberLengthCurvesToTable(),
             prefix + "_fiber_length_curves.sto");
-    FileAdapter::writeFile({{"table", &exportFiberVelocityMultiplierToTable()}},
+    STOFileAdapter::write(exportFiberVelocityMultiplierToTable(),
             prefix + "_fiber_velocity_multiplier.sto");
-    FileAdapter::writeFile({{"table", &exportTendonForceMultiplierToTable()}},
+    STOFileAdapter::write(exportTendonForceMultiplierToTable(),
             prefix + "_tendon_force_multiplier.sto");
 }
 
