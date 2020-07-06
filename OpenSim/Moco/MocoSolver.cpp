@@ -64,7 +64,7 @@ MocoTrajectory MocoSolver::createGuessTimeStepping() const {
     const auto& statesTable = manager.getStatesTable();
     auto controlsTable = model.getControlsTable();
 
-    // Fix column labels.
+    // Covert column labels from actuator names to actuator paths.
     auto labels = controlsTable.getColumnLabels();
     for (auto& label : labels) { label = "/forceset/" + label; }
     controlsTable.setColumnLabels(labels);

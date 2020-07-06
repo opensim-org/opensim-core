@@ -60,23 +60,21 @@ MocoStudy setup files have a `.omoco` extension.
 
 Solver
 ------
-The default solver uses the **tropter** direct
-collocation library. We also provide the **CasADi** solver, which
-depends on the **CasADi** automatic differentiation and optimization
-library. If you want to use CasADi programmatically, call initCasADiSolver()
-before solve(). We would like to support users plugging in their own
-solvers, but there is no timeline for this. If you require additional
-features or enhancements to the solver, please consider contributing to
-**tropter**. */
+The default solver, MocoCasADiSolver, uses the **CasADi** automatic
+differentiation and optimization library. Moco also provides the
+MocoTropterSolver, which uses the **tropter** optimal control library that is
+part of the OpenSim project. If you want to use MocoTropterSolver instead of
+MocoCasADiSolver, call initTropterSolver() before solve(). We would like to
+support users plugging in their own solvers, but there is no timeline for this.
+*/
 class OSIMMOCO_API MocoStudy : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoStudy, Object);
 
 public:
     OpenSim_DECLARE_PROPERTY(write_solution, std::string,
             "Provide the folder path (relative to working directory) to which "
-            "the "
-            "solution files should be written. Set to 'false' to not write the "
-            "solution to disk.");
+            "the solution files should be written. Set to 'false' to not write "
+            "the solution to disk.");
 
     MocoStudy();
 

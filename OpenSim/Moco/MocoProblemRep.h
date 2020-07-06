@@ -81,7 +81,7 @@ public:
     /// updates the discrete variables in the state associated with these
     /// forces. You should use this model to compute accelerations via
     /// getModelDisabledConstraints().realizeAccleration(state), making sure to
-    /// add any constraint forces to the model preceeding the realization. This
+    /// add any constraint forces to the model preceding the realization. This
     /// model is the same instance as that given to MocoGoal and
     /// MocoPathConstraint, ensuring that realizing to Stage::Acceleration
     /// in these classes produces the same accelerations computed by the solver.
@@ -210,14 +210,10 @@ public:
     }
     /// Given a kinematic constraint name, get a vector of MocoVariableInfos
     /// corresponding to the Lagrange multipliers for that kinematic constraint.
-    /// Note: Since these are created directly from model constraint
-    /// information, this should only be called after initialization. TODO
     const std::vector<MocoVariableInfo>& getMultiplierInfos(
             const std::string& kinematicConstraintInfoName) const;
     /// Get a MocoKinematicConstraint from this MocoPhase. Note: this does not
-    /// include MocoPathConstraints, use getPathConstraint() instead. Since
-    /// these are created directly from model information, this should only be
-    /// called after initialization. TODO
+    /// include MocoPathConstraints, use getPathConstraint() instead.
     const MocoKinematicConstraint& getKinematicConstraint(
             const std::string& name) const;
     /// Get the number of scalar kinematic constraints in the MocoProblem. This

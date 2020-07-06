@@ -59,9 +59,11 @@ problem.setModel(model)
 # Initial time must be 0, final time can be within [0, 5].
 problem.setTimeBounds(osim.MocoInitialBounds(0.), osim.MocoFinalBounds(0., 5.))
 
+# Position must be within [-5, 5] throughout the motion.
 # Initial position must be 0, final position must be 1.
 problem.setStateInfo('/slider/position/value', osim.MocoBounds(-5, 5),
                      osim.MocoInitialBounds(0), osim.MocoFinalBounds(1))
+# Speed must be within [-50, 50] throughout the motion.
 # Initial and final speed must be 0. Use compact syntax.
 problem.setStateInfo('/slider/position/speed', [-50, 50], [0], [0])
 

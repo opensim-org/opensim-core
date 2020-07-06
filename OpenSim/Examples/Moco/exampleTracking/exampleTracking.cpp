@@ -27,6 +27,8 @@ using namespace OpenSim;
 
 /// This model is torque-actuated.
 std::unique_ptr<Model> createDoublePendulumModel() {
+    // This function is similar to ModelFactory::createNLinkPendulum().
+
     auto model = make_unique<Model>();
     model->setName("double_pendulum");
 
@@ -122,6 +124,9 @@ int main() {
     auto* tracking = problem.addGoal<MocoStateTrackingGoal>();
     TimeSeriesTable ref;
     ref.setColumnLabels({"/jointset/j0/q0/value", "/jointset/j1/q1/value"});
+    // We supply a reference whose time range is a superset of the problem's
+    // time bounds: Moco performs finite differences internally, which may
+    // require sampling outside the problem's time bounds.
     for (double time = -0.05; time < finalTime + 0.05; time += 0.01) {
         ref.appendRow(time, {
                 0.5 * SimTK::Pi * time,

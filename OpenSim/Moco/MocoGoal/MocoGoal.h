@@ -89,7 +89,8 @@ public:
     bool getEnabled() const { return get_enabled(); }
 
     /// In cost mode, the goal is multiplied by this weight. Use the weight to
-    /// control the relative importance of terms in the cost functional.
+    /// control the relative importance of terms in the cost functional. The
+    /// weight is ignored (e.g., set to 1) in endpoint constraint mode.
     void setWeight(double weight) { set_weight(weight); }
     double getWeight() const { return get_weight(); }
 
@@ -123,8 +124,9 @@ public:
         return getSupportsEndpointConstraintImpl();
     }
 
-    /// Get bounds for the constraints when using this goal in endpoint
-    /// constraint mode.
+    /// Get bounds for the constraints that are enforced when using this goal in
+    /// endpoint constraint mode.
+    /// This info is ignored if getSupportsEndpointConstraint() is false.
     const MocoConstraintInfo& getConstraintInfo() const {
         return get_MocoConstraintInfo();
     }
@@ -147,12 +149,14 @@ public:
         return m_numIntegrals;
     }
 
-    /// Obtain the stage that this goal depends on. Solvers can use this to
-    /// more efficiently decide how to set the IntegrandInput and GoalInput.
-    /// See the MocoGoal class description for details about the different
-    /// stages.
+    /// Obtain the stage that this goal depends on. Solvers can use this to more
+    /// efficiently decide how to set the IntegrandInput and GoalInput. See the
+    /// MocoGoal class description for details about the different stages. The
+    /// stage dependency is the same for both modes of the goal (cost and
+    /// endpoint constraint).
     // TODO: create separate getIntegrandStageDependency() and
-    // getEndpointStageDependency().
+    // getEndpointStageDependency() rather than using the same stage dependency
+    // for both (as is the case now).
     SimTK::Stage getStageDependency() const {
         return m_stageDependency;
     }
@@ -406,6 +410,20 @@ protected:
 /** This goal requires the average speed of the system to match a desired
 average speed. The average speed of the system is the displacement of the
 system's center of mass divided by the duration of the phase.
+
+In endpoint constraint mode, the goal is computed as follows:
+
+\f[
+ v_\mathrm{des} - \frac{r_\mathrm{com}(t_f) - r_\mathrm{com}(t_i)}{t_f - t_i}
+\f]
+
+We use the following notation:
+- \f$ v_\mathrm{des} \f$: desired average speed.
+- \f$ r_\mathrm{com}(t) \f$: mass center position.
+- \f$ t_i \f$: initial time.
+- \f$ t_f \f$: final time.
+
+In cost mode, the value of the goal is the above quantity squared.
 @ingroup mocogoal */
 class MocoAverageSpeedGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoAverageSpeedGoal, MocoGoal);

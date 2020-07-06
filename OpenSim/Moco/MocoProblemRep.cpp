@@ -237,6 +237,8 @@ void MocoProblemRep::initialize() {
     }
 
     // Create kinematic constraint equation names.
+    // Solvers use "..._without_derivatives" when not enforcing constraint
+    // derivatives, and use "..._with_derivatives" otherwise.
     if (!m_prescribedKinematics) {
         for (const auto& name : kc_perr_names) {
             m_kinematic_constraint_eq_names_without_derivatives.push_back(name);
@@ -295,9 +297,9 @@ void MocoProblemRep::initialize() {
                 "State info provided for nonexistent state '{}'.", name);
     }
 
-    // Create internal record of state and control infos, automatically
-    // populated from coordinates and actuators. This could override state infos
-    // set using a regex pattern above.
+    // Create internal record of state infos, automatically populated from
+    // coordinates and actuators. This could override state infos set using a
+    // regex pattern above.
     for (int i = 0; i < ph0.getProperty_state_infos().size(); ++i) {
         const auto& name = ph0.get_state_infos(i).getName();
         m_state_infos[name] = ph0.get_state_infos(i);

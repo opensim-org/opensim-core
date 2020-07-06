@@ -69,19 +69,21 @@ the model component implementing those dynamics.
 
 Kinematic constraints
 ---------------------
-All kinematic constraints included as OpenSim model constraints are
-supported with the 'hermite-simpson' transcription scheme setting. Kinematic
-constraints are automatically detected if present in the model and are
-converted to path constraints in the optimal control problem based on the
-method presented in Posa et al. 2016, 'Optimization and stabilization of
-trajectories for constrained dynamical systems'; see @ref implkincon. The
-`minimize_lagrange_multipliers` and `lagrange_multiplier_weight` settings
-allow you to enable and set the weight for the minimization of all
-Lagrange multipliers associated with kinematic constraints in the problem.
-The `velocity_correction_bounds` setting allows you to set the bounds on the
-velocity correction variables that project state variables onto the
-constraint manifold when necessary to properly enforce defect constraints
-(see Posa et al. 2016 for details). */
+All holonomic kinematic constraints included as OpenSim model constraints are
+supported. Both the 'trapezoidal' and 'hermite-simpson' transcription schemes
+support kinematic constraints, but the 'hermite-transcription' scheme handles
+kinematic constraints much more robustly; in practice, the 'trapezoidal' scheme
+is not used for models with kinematic constraints. Kinematic constraints are
+automatically detected if present in the model and are converted to path
+constraints in the optimal control problem based on the method presented in Posa
+et al. 2016, 'Optimization and stabilization of trajectories for constrained
+dynamical systems'; see @ref implkincon. The `minimize_lagrange_multipliers` and
+`lagrange_multiplier_weight` settings allow you to enable and set the weight for
+the minimization of all Lagrange multipliers associated with kinematic
+constraints in the problem. The `velocity_correction_bounds` setting allows you
+to set the bounds on the velocity correction variables that project state
+variables onto the constraint manifold when necessary to properly enforce defect
+constraints (see Posa et al. 2016 for details). */
 class OSIMMOCO_API MocoDirectCollocationSolver : public MocoSolver {
     OpenSim_DECLARE_ABSTRACT_OBJECT(MocoDirectCollocationSolver, MocoSolver);
 
@@ -152,10 +154,10 @@ public:
 
     MocoDirectCollocationSolver() { constructProperties(); }
 
-    /** Sets the mesh to a, usually non-uniform, user-defined list of mesh
-    points to sample. Takes precedence over uniform mesh with
-    num_mesh_intervals. The user-defined mesh must start with 0, be strictly
-    increasing (no duplicate times), and end with 1. */
+    /** %Set the mesh to a user-defined list of mesh points to sample. This
+     * takes precedence over the uniform mesh that would be specified with
+     * num_mesh_intervals. The user-defined mesh must start with 0, be strictly
+     * increasing (no duplicate entries), and end with 1. */
     void setMesh(const std::vector<double>& mesh);
 
 protected:

@@ -34,13 +34,7 @@ The dynamics are provided by the %OpenSim Model.
 This class allows you to define your problem, but does not let you do
 anything with your problem (this class only contains user input).
 Use MocoProblem::createRep() to create an instance of MocoProblemRep,
-which provides additional functionality.
-
-Supported %Model Component%s
-----------------------------
-Moco does not support all types of models. Specifically, the
-following components are not supported:
-  - Actuator%s with multiple controls (non-ScalarActuator%s). */
+which provides additional functionality. */
 class OSIMMOCO_API MocoPhase : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoPhase, Object);
 
@@ -181,8 +175,8 @@ public:
     /// muscle activation (if activation dynamics are enabled) from the bounds
     /// for muscle control (excitation), using min/max control if explicit
     /// control bounds are not provided. Default: true.
-    void setBoundActivationFromExcitation(bool value) {
-        set_bound_activation_from_excitation(value);
+    void setBoundActivationFromExcitation(bool tf) {
+        set_bound_activation_from_excitation(tf);
     }
     /// Set the bounds on *all* of the kinematic constraint equations in this
     /// phase. When creating a MocoProblemRep, these bounds are used to create
