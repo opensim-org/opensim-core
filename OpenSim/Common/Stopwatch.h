@@ -23,6 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+namespace OpenSim {
+
 /// Record and report elapsed real time ("clock" or "wall" time) in seconds.
 class Stopwatch {
 public:
@@ -85,5 +87,6 @@ private:
     long long m_startTime;
 };
 
+} // namespace OpenSim
 
 #endif // OPENSIM_STOPWATCH_H_

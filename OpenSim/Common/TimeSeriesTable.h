@@ -493,7 +493,7 @@ protected:
                              DT::_indData[rowIndex + 1]);
         }
     }
-    /** trim table to rows ebtween start_index and last_index incluslively
+    /** trim table to rows between start_index and last_index inclusively
      */
     void trimToIndices(const size_t& start_index, const size_t& last_index) {
         // This uses the rather invasive but efficient mechanism to copy a
@@ -510,6 +510,8 @@ protected:
                 this->getIndependentColumn().begin() + last_index + 1);
         this->_indData = newIndependentVector;
     }
+
+    friend class TableUtilities;
 
 }; // TimeSeriesTable_
 

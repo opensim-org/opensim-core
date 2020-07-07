@@ -61,7 +61,6 @@ private:
 public:
     MarkerFrame();
     MarkerFrame(int aNumMarkers, int aFrameNumber, double aTime, Units& aUnits);
-    MarkerFrame(const MarkerFrame& aFrame);
     virtual ~MarkerFrame();
 
     void addMarker(const SimTK::Vec3& aCoords);

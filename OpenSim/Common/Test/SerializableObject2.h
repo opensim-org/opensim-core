@@ -131,7 +131,8 @@ public:
         setupSerializedMembers();
         updateFromXMLDocument();
     }
-    SerializableObject3(const SerializableObject3 &aObject){
+    SerializableObject3(const SerializableObject3 &aObject) :
+        Object(aObject) {
         setNull();
         setupSerializedMembers();
         *this = aObject;

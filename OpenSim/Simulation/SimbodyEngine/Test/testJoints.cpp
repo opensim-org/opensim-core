@@ -960,7 +960,7 @@ void testWeldJoint(bool randomizeBodyOrder)
         cout << " Randomizing Bodies to exercise model's multibody graph maker " << endl;
         cout << "================================================================" << endl;
         Random::Uniform randomOrder(0, 4);
-        randomOrder.setSeed(clock());
+        randomOrder.setSeed((int)clock());
 
         int bx =-1, jx=-1;
         bool duplicate = false;
