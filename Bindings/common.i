@@ -337,6 +337,7 @@ DATATABLE_CLONE(double, SimTK::Rotation_<double>)
 %include <OpenSim/Common/AbstractDataTable.h>
 %include <OpenSim/Common/DataTable.h>
 %include <OpenSim/Common/TimeSeriesTable.h>
+%include <OpenSim/Common/TableUtilities.h>
 
 %template(DataTable)           OpenSim::DataTable_<double, double>;
 %template(DataTableVec3)       OpenSim::DataTable_<double, SimTK::Vec3>;

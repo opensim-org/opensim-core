@@ -653,6 +653,33 @@ Uppercase(const std::string &aStr)
     return result;
 }
 
+bool IO::StartsWith(const std::string& string, const std::string& start) {
+    // https://stackoverflow.com/questions/874134/find-if-string-ends-with-another-string-in-c
+    if (string.length() >= start.length()) {
+        return string.compare(0, start.length(), start) == 0;
+    }
+    return false;
+}
+
+bool IO::EndsWith(const std::string& string, const std::string& ending) {
+    // https://stackoverflow.com/questions/874134/find-if-string-ends-with-another-string-in-c
+    if (string.length() >= ending.length()) {
+        return string.compare(string.length() - ending.length(),
+                              ending.length(), ending) == 0;
+    }
+    return false;
+}
+
+bool IO::StartsWithIgnoringCase(
+        const std::string& string, const std::string& start) {
+    return StartsWith(IO::Lowercase(string), IO::Lowercase(start));
+}
+
+bool IO::EndsWithIgnoringCase(
+        const std::string& string, const std::string& ending) {
+    return EndsWith(IO::Lowercase(string), IO::Lowercase(ending));
+}
+
 void IO::eraseEmptyElements(std::vector<std::string>& list)
 {
     std::vector<std::string>::iterator it = list.begin();
