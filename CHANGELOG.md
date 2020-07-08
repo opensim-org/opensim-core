@@ -18,7 +18,7 @@ v4.2
 - `Controller::isEnabled` will now only return whether the particular controller is enabled
   - Previously, it would return `false` if its parent `Model`'s `Model::getAllControllersEnabled` returned `false`
   - The previous behavior would mean that `Controller::setEnabled(true); return Controller::isEnabled();` could return `false`
-- Fix OpenSense calibration algorithm to handle models with arbitrary pelvis_rotation, and handle angle sign correctly in all scenarios.
+- Fix OpenSense calibration algorithm to handle models facing an arbitrary direction. The calibration algorithm now aligns one axis of the provided Orientation Sensor data with the x-axis of the base segment (e.g. pelvis) of the model in default pose.
 
 
 v4.1
