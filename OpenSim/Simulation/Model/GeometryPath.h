@@ -87,10 +87,10 @@ private:
     // cleared on copy.
     SimTK::ResetOnCopy<std::unique_ptr<MomentArmSolver> > _maSolver;
 
-    mutable CacheVariable<double> lengthCV;
-    mutable CacheVariable<double> speedCV;
-    mutable CacheVariable<Array<AbstractPathPoint*>> currentPathCV;
-    mutable CacheVariable<SimTK::Vec3> colorCV;
+    mutable CacheVariable<double> _lengthCV;
+    mutable CacheVariable<double> _speedCV;
+    mutable CacheVariable<Array<AbstractPathPoint*>> _currentPathCV;
+    mutable CacheVariable<SimTK::Vec3> _colorCV;
     
 //=============================================================================
 // METHODS

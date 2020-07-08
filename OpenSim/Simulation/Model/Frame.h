@@ -385,9 +385,9 @@ private:
     virtual const Frame& extendFindBaseFrame() const = 0;
     virtual SimTK::Transform extendFindTransformInBaseFrame() const = 0;
 
-    mutable CacheVariable<SimTK::Transform> transformCV;
-    mutable CacheVariable<SimTK::SpatialVec> velocityCV;
-    mutable CacheVariable<SimTK::SpatialVec> accelerationCV;
+    mutable CacheVariable<SimTK::Transform> _transformCV;
+    mutable CacheVariable<SimTK::SpatialVec> _velocityCV;
+    mutable CacheVariable<SimTK::SpatialVec> _accelerationCV;
 //=============================================================================
 };  // END of class Frame
 //=============================================================================

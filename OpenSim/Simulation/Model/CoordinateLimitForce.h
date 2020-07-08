@@ -253,7 +253,7 @@ private:
     // is applied.
     SimTK::ReferencePtr<Coordinate> _coord;
 
-    mutable CacheVariable<double> dissipationPowerCV;
+    mutable CacheVariable<double> _dissipationPowerCV;
 
 //=============================================================================
 };  // END of class CoordinateLimitForce

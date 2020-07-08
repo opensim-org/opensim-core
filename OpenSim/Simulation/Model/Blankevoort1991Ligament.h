@@ -211,11 +211,11 @@ public:
         SimTK::Stage::Velocity);
 
 private:
-    mutable CacheVariable<double> strainCV;
-    mutable CacheVariable<double> strainRateCV;
-    mutable CacheVariable<double> forceSpringCV;
-    mutable CacheVariable<double> forceDampingCV;
-    mutable CacheVariable<double> forceTotalCV;
+    mutable CacheVariable<double> _strainCV;
+    mutable CacheVariable<double> _strainRateCV;
+    mutable CacheVariable<double> _forceSpringCV;
+    mutable CacheVariable<double> _forceDampingCV;
+    mutable CacheVariable<double> _forceTotalCV;
 
 //=============================================================================
 // METHODS

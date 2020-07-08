@@ -149,9 +149,9 @@ protected:
 
 private:
 
-    mutable CacheVariable<SimTK::Vec3> locationCV;
-    mutable CacheVariable<SimTK::Vec3> velocityCV;
-    mutable CacheVariable<SimTK::Vec3> accelerationCV;
+    mutable CacheVariable<SimTK::Vec3> _locationCV;
+    mutable CacheVariable<SimTK::Vec3> _velocityCV;
+    mutable CacheVariable<SimTK::Vec3> _accelerationCV;
 
 //=============================================================================
 };  // END of class Point

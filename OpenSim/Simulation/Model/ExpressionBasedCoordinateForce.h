@@ -133,7 +133,7 @@ private:
     // is applied.
     SimTK::ReferencePtr<Coordinate> _coord;
 
-    mutable CacheVariable<double> forceMagnitudeCV;
+    mutable CacheVariable<double> _forceMagnitudeCV;
 
 }; //  class ExpressionBasedCoordinateForce
 

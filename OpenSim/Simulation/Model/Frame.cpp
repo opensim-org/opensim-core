@@ -69,35 +69,35 @@ void Frame::extendAddToSystem(SimTK::MultibodySystem& system) const
 
     // If the properties, topology or coordinate values change, 
     // Stage::Position and above will be invalid.
-    this->transformCV = addCacheVariable("transform_in_g", SimTK::Transform{}, SimTK::Stage::Position);
+    this->_transformCV = addCacheVariable("transform_in_g", SimTK::Transform{}, SimTK::Stage::Position);
     // if a speed (u) changes then Stage::Velocity will also be invalid
-    this->velocityCV = addCacheVariable("velocity_in_g", SpatialVec{}, SimTK::Stage::Velocity);
+    this->_velocityCV = addCacheVariable("velocity_in_g", SpatialVec{}, SimTK::Stage::Velocity);
     // if a force changes then Stage::Acceleration will also be invalid
-    this->accelerationCV = addCacheVariable("acceleration_in_g", SpatialVec{}, SimTK::Stage::Acceleration);
+    this->_accelerationCV = addCacheVariable("acceleration_in_g", SpatialVec{}, SimTK::Stage::Acceleration);
 }
 
 const SimTK::Transform& Frame::getTransformInGround(const State& s) const
 {
-    if (this->isCacheVariableValid(s, this->transformCV)) {
-        return this->getCacheVariableValue(s, this->transformCV);
+    if (this->isCacheVariableValid(s, _transformCV)) {
+        return this->getCacheVariableValue(s, _transformCV);
     }
 
-    SimTK::Transform& t = this->updCacheVariableValue(s, this->transformCV);
+    SimTK::Transform& t = this->updCacheVariableValue(s, _transformCV);
     t = calcTransformInGround(s);
-    this->markCacheVariableValid(s, this->transformCV);
+    this->markCacheVariableValid(s, _transformCV);
 
     return t;
 }
 
 const SimTK::SpatialVec& Frame::getVelocityInGround(const State& s) const
 {
-    if (this->isCacheVariableValid(s, this->velocityCV)) {
-        return this->getCacheVariableValue(s, this->velocityCV);
+    if (this->isCacheVariableValid(s, _velocityCV)) {
+        return this->getCacheVariableValue(s, _velocityCV);
     }
 
-    SimTK::SpatialVec& v = this->updCacheVariableValue(s, this->velocityCV);
+    SimTK::SpatialVec& v = this->updCacheVariableValue(s, _velocityCV);
     v = calcVelocityInGround(s);
-    this->markCacheVariableValid(s, this->velocityCV);
+    this->markCacheVariableValid(s, _velocityCV);
 
     return v;
 }
@@ -114,13 +114,13 @@ const SimTK::Vec3& Frame::getLinearVelocityInGround(const State& s) const
 
 const SimTK::SpatialVec& Frame::getAccelerationInGround(const State& s) const
 {
-    if (this->isCacheVariableValid(s, this->accelerationCV)) {
-        return this->getCacheVariableValue(s, this->accelerationCV);
+    if (this->isCacheVariableValid(s, _accelerationCV)) {
+        return this->getCacheVariableValue(s, _accelerationCV);
     }
 
-    SimTK::SpatialVec& acceleration = this->updCacheVariableValue(s, this->accelerationCV);
+    SimTK::SpatialVec& acceleration = this->updCacheVariableValue(s, _accelerationCV);
     acceleration = calcAccelerationInGround(s);
-    this->markCacheVariableValid(s, this->accelerationCV);
+    this->markCacheVariableValid(s, _accelerationCV);
     return acceleration;
 }
 

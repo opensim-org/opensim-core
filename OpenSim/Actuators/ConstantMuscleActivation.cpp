@@ -50,7 +50,7 @@ MuscleActivationDynamics(name, getter)
 void ConstantMuscleActivation::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
-    this->activationCV = addCacheVariable("activation", getDefaultActivation(), SimTK::Stage::Topology);
+    this->_activationCV = addCacheVariable("activation", getDefaultActivation(), SimTK::Stage::Topology);
 }
 
 void ConstantMuscleActivation::extendInitStateFromProperties(SimTK::State& s) const
@@ -70,13 +70,13 @@ void ConstantMuscleActivation::extendSetPropertiesFromState(const SimTK::State& 
 //==============================================================================
 double ConstantMuscleActivation::getActivation(const SimTK::State& s) const
 {
-    return clampToValidInterval(this->getCacheVariableValue(s, this->activationCV));
+    return clampToValidInterval(this->getCacheVariableValue(s, _activationCV));
 }
 
 void ConstantMuscleActivation::
 setActivation(SimTK::State& s, double activation) const
 {
-    this->setCacheVariableValue(s, this->activationCV, clampToValidInterval(activation));
+    this->setCacheVariableValue(s, _activationCV, clampToValidInterval(activation));
 }
 
 //==============================================================================

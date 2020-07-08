@@ -165,7 +165,7 @@ protected:
 private:
     void constructProperties();
 
-    mutable CacheVariable<double> tensionCV;
+    mutable CacheVariable<double> _tensionCV;
     mutable CacheVariable<double> strainCV;
 
 //=============================================================================

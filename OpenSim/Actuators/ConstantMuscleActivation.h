@@ -94,7 +94,7 @@ public:
 private:
     void setNull();
 
-    mutable CacheVariable<double> activationCV;
+    mutable CacheVariable<double> _activationCV;
 }; // end of class ConstantMuscleActivation
 }  // end of namespace OpenSim
 

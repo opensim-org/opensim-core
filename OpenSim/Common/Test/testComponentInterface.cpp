@@ -2266,8 +2266,8 @@ void testFormattedDateTime() {
     SimTK_TEST(withMicroseconds.find(withoutMicroseconds) == 0);
 }
 
-struct ComponentThatExposesCacheVarMethods : public Component {
-    OpenSim_DECLARE_CONCRETE_OBJECT(ComponentThatExposesCacheVarMethods, Component);
+struct ComponentWithCacheVariable : public Component {
+    OpenSim_DECLARE_CONCRETE_OBJECT(ComponentWithCacheVariable, Component);
 public:
     CacheVariable<double> cv;
 };
@@ -2286,7 +2286,7 @@ void testCacheVariableInterface() {
     // can be rvalue-initialized via `Component::addCacheVariable`
     // without throwing an exception.
     {
-        ComponentThatExposesCacheVarMethods c{};
+        ComponentWithCacheVariable c{};
         CacheVariable<double> cv{
             c.addCacheVariable("name", 0.0, SimTK::Stage::Velocity)
         };
@@ -2294,14 +2294,14 @@ void testCacheVariableInterface() {
 
     // can be rvalue-assigned via Component::addCacheVariable without exception
     {
-        ComponentThatExposesCacheVarMethods c{};
+        ComponentWithCacheVariable c{};
         CacheVariable<double> cv =
                 c.addCacheVariable("name", 0.0, SimTK::Stage::Velocity);
     }
 
     // can be copy-initialized without exception
     {
-        ComponentThatExposesCacheVarMethods c{};
+        ComponentWithCacheVariable c{};
         CacheVariable<double> cv =
                 c.addCacheVariable("name", 0.0, SimTK::Stage::Velocity);
 
@@ -2310,7 +2310,7 @@ void testCacheVariableInterface() {
 
     // can be copy-assigned without exception
     {
-        ComponentThatExposesCacheVarMethods c{};
+        ComponentWithCacheVariable c{};
         CacheVariable<double> cv = c.addCacheVariable("name", 0.0, SimTK::Stage::Velocity);
         CacheVariable<double> cv2 = cv;
     }
@@ -2318,7 +2318,7 @@ void testCacheVariableInterface() {
     // A fully-initialized CacheVariable<T> (as in, initialized by `Component::extendRealizeTopology`)
     // should throw an exception for all the methods because it hasn't been initialized in Simbody.
     {
-        ComponentThatExposesCacheVarMethods c{};
+        ComponentWithCacheVariable c{};
         const std::string k = "name";
         double v = 1337.0;
         CacheVariable<double> cv = c.addCacheVariable("name", v, SimTK::Stage::Time);
@@ -2357,7 +2357,7 @@ void testCacheVariableInterface() {
         SimbodyMatterSubsystem matter{sys};
         GeneralForceSubsystem forces{sys};
 
-        ComponentThatExposesCacheVarMethods c{};
+        ComponentWithCacheVariable c{};
         c.finalizeFromProperties();
         c.finalizeConnections(c);
         c.addToSystem(sys);
@@ -2432,7 +2432,7 @@ void testCacheVariableInterface() {
         SimbodyMatterSubsystem matter{sys};
         GeneralForceSubsystem forces{sys};
 
-        ComponentThatExposesCacheVarMethods c{};
+        ComponentWithCacheVariable c{};
         c.finalizeFromProperties();
         c.finalizeConnections(c);
         c.addToSystem(sys);
@@ -2447,7 +2447,7 @@ void testCacheVariableInterface() {
         c.markCacheVariableValid(s, cv);
         ASSERT(c.getCacheVariableValue(s, cv) == v);
 
-        ComponentThatExposesCacheVarMethods c2 = c;
+        ComponentWithCacheVariable c2 = c;
         c2.finalizeFromProperties();
         c2.finalizeConnections(c2);
         c2.addToSystem(sys);

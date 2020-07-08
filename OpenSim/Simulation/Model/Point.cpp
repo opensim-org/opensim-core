@@ -54,44 +54,44 @@ void Point::extendAddToSystem(SimTK::MultibodySystem& system) const
 
     // If the properties, topology or coordinate values change, 
     // Stage::Position will be invalid.
-    this->locationCV = addCacheVariable("location", SimTK::Vec3{SimTK::NaN}, SimTK::Stage::Position);
-    this->velocityCV = addCacheVariable("velocity", SimTK::Vec3{SimTK::NaN}, SimTK::Stage::Velocity);
-    this->accelerationCV = addCacheVariable("acceleration", SimTK::Vec3{SimTK::NaN}, SimTK::Stage::Acceleration);
+    this->_locationCV = addCacheVariable("location", SimTK::Vec3{SimTK::NaN}, SimTK::Stage::Position);
+    this->_velocityCV = addCacheVariable("velocity", SimTK::Vec3{SimTK::NaN}, SimTK::Stage::Velocity);
+    this->_accelerationCV = addCacheVariable("acceleration", SimTK::Vec3{SimTK::NaN}, SimTK::Stage::Acceleration);
 }
 
 const SimTK::Vec3& Point::getLocationInGround(const SimTK::State& s) const
 {
-    if (this->isCacheVariableValid(s, this->locationCV)) {
-        return this->getCacheVariableValue(s, this->locationCV);
+    if (this->isCacheVariableValid(s, _locationCV)) {
+        return this->getCacheVariableValue(s, _locationCV);
     }
 
-    SimTK::Vec3& location = this->updCacheVariableValue(s, this->locationCV);
+    SimTK::Vec3& location = this->updCacheVariableValue(s, _locationCV);
     location = calcLocationInGround(s);
-    this->markCacheVariableValid(s, this->locationCV);
+    this->markCacheVariableValid(s, _locationCV);
     return location;
 }
 
 const SimTK::Vec3& Point::getVelocityInGround(const SimTK::State& s) const
 {
-    if (this->isCacheVariableValid(s, this->velocityCV)) {
-        return this->getCacheVariableValue(s, this->velocityCV);
+    if (this->isCacheVariableValid(s, _velocityCV)) {
+        return this->getCacheVariableValue(s, _velocityCV);
     }
 
-    SimTK::Vec3& velocity = this->updCacheVariableValue(s, this->velocityCV);
+    SimTK::Vec3& velocity = this->updCacheVariableValue(s, _velocityCV);
     velocity = calcVelocityInGround(s);
-    this->markCacheVariableValid(s, this->velocityCV);
+    this->markCacheVariableValid(s, _velocityCV);
     return velocity;
 }
 
 const SimTK::Vec3& Point::getAccelerationInGround(const SimTK::State& s) const
 {
-    if (this->isCacheVariableValid(s, this->accelerationCV)) {
-        return this->getCacheVariableValue(s, this->accelerationCV);
+    if (this->isCacheVariableValid(s, _accelerationCV)) {
+        return this->getCacheVariableValue(s, _accelerationCV);
     }
 
-    SimTK::Vec3& acceleration = this->updCacheVariableValue(s, this->accelerationCV);
+    SimTK::Vec3& acceleration = this->updCacheVariableValue(s, _accelerationCV);
     acceleration = calcAccelerationInGround(s);
-    this->markCacheVariableValid(s, this->accelerationCV);
+    this->markCacheVariableValid(s, _accelerationCV);
     return acceleration;
 }
 

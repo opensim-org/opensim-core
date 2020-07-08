@@ -224,10 +224,10 @@ void Muscle::extendConnectToModel(Model& aModel)
     //              both the position and velocity of the multibody system and
     //              the muscles path before solving for the fiber length and
     //              velocity in the reduced model.
-    this->lengthInfoCV = addCacheVariable("lengthInfo", MuscleLengthInfo(), SimTK::Stage::Velocity);
-    this->velInfoCV = addCacheVariable("velInfo", FiberVelocityInfo(), SimTK::Stage::Velocity);
-    this->dynamicsInfoCV = addCacheVariable("dynamicsInfo", MuscleDynamicsInfo(), SimTK::Stage::Dynamics);
-    this->potentialEnergyInfoCV = addCacheVariable("potentialEnergyInfo", MusclePotentialEnergyInfo(), SimTK::Stage::Velocity);
+    this->_lengthInfoCV = addCacheVariable("lengthInfo", MuscleLengthInfo(), SimTK::Stage::Velocity);
+    this->_velInfoCV = addCacheVariable("velInfo", FiberVelocityInfo(), SimTK::Stage::Velocity);
+    this->_dynamicsInfoCV = addCacheVariable("dynamicsInfo", MuscleDynamicsInfo(), SimTK::Stage::Dynamics);
+    this->_potentialEnergyInfoCV = addCacheVariable("potentialEnergyInfo", MusclePotentialEnergyInfo(), SimTK::Stage::Velocity);
  }
 
 void Muscle::extendSetPropertiesFromState(const SimTK::State& state)
@@ -507,75 +507,75 @@ void Muscle::setExcitation(SimTK::State& s, double excitation) const
 /* Access to muscle calculation data structures */
 const Muscle::MuscleLengthInfo& Muscle::getMuscleLengthInfo(const SimTK::State& s) const
 {
-    if (this->isCacheVariableValid(s, this->lengthInfoCV)) {
-        return this->getCacheVariableValue(s, this->lengthInfoCV);
+    if (this->isCacheVariableValid(s, _lengthInfoCV)) {
+        return this->getCacheVariableValue(s, _lengthInfoCV);
     }
 
-    MuscleLengthInfo& umli = this->updCacheVariableValue(s, this->lengthInfoCV);
+    MuscleLengthInfo& umli = this->updCacheVariableValue(s, _lengthInfoCV);
     calcMuscleLengthInfo(s, umli);
-    this->markCacheVariableValid(s, this->lengthInfoCV);
+    this->markCacheVariableValid(s, _lengthInfoCV);
     return umli;
 }
 
 Muscle::MuscleLengthInfo& Muscle::updMuscleLengthInfo(const SimTK::State& s) const
 {
-    return this->updCacheVariableValue(s, this->lengthInfoCV);
+    return this->updCacheVariableValue(s, _lengthInfoCV);
 }
 
 const Muscle::FiberVelocityInfo& Muscle::
 getFiberVelocityInfo(const SimTK::State& s) const
 {
-    if (this->isCacheVariableValid(s, this->velInfoCV)) {
-        return this->getCacheVariableValue(s, this->velInfoCV);
+    if (this->isCacheVariableValid(s, _velInfoCV)) {
+        return this->getCacheVariableValue(s, _velInfoCV);
     }
 
-    FiberVelocityInfo& ufvi = this->updCacheVariableValue(s, this->velInfoCV);
+    FiberVelocityInfo& ufvi = this->updCacheVariableValue(s, _velInfoCV);
     calcFiberVelocityInfo(s, ufvi);
-    this->markCacheVariableValid(s, this->velInfoCV);
+    this->markCacheVariableValid(s, _velInfoCV);
     return ufvi;
 }
 
 Muscle::FiberVelocityInfo& Muscle::
 updFiberVelocityInfo(const SimTK::State& s) const
 {
-    return this->updCacheVariableValue(s, this->velInfoCV);
+    return this->updCacheVariableValue(s, _velInfoCV);
 }
 
 const Muscle::MuscleDynamicsInfo& Muscle::
 getMuscleDynamicsInfo(const SimTK::State& s) const
 {
-    if (this->isCacheVariableValid(s, this->dynamicsInfoCV)) {
-        return this->getCacheVariableValue(s, this->dynamicsInfoCV);
+    if (this->isCacheVariableValid(s, _dynamicsInfoCV)) {
+        return this->getCacheVariableValue(s, _dynamicsInfoCV);
     }
 
-    MuscleDynamicsInfo& umdi = this->updCacheVariableValue(s, this->dynamicsInfoCV);
+    MuscleDynamicsInfo& umdi = this->updCacheVariableValue(s, _dynamicsInfoCV);
     calcMuscleDynamicsInfo(s, umdi);
-    this->markCacheVariableValid(s, this->dynamicsInfoCV);
+    this->markCacheVariableValid(s, _dynamicsInfoCV);
     return umdi;
 }
 Muscle::MuscleDynamicsInfo& Muscle::
 updMuscleDynamicsInfo(const SimTK::State& s) const
 {
-    return this->updCacheVariableValue(s, this->dynamicsInfoCV);
+    return this->updCacheVariableValue(s, _dynamicsInfoCV);
 }
 
 const Muscle::MusclePotentialEnergyInfo& Muscle::
 getMusclePotentialEnergyInfo(const SimTK::State& s) const
 {
-    if (this->isCacheVariableValid(s, this->potentialEnergyInfoCV)) {
-        return this->getCacheVariableValue(s, this->potentialEnergyInfoCV);
+    if (this->isCacheVariableValid(s, _potentialEnergyInfoCV)) {
+        return this->getCacheVariableValue(s, _potentialEnergyInfoCV);
     }
 
-    MusclePotentialEnergyInfo& umpei = this->updCacheVariableValue(s, this->potentialEnergyInfoCV);
+    MusclePotentialEnergyInfo& umpei = this->updCacheVariableValue(s, _potentialEnergyInfoCV);
     calcMusclePotentialEnergyInfo(s, umpei);
-    this->markCacheVariableValid(s, this->potentialEnergyInfoCV);
+    this->markCacheVariableValid(s, _potentialEnergyInfoCV);
     return umpei;
 }
 
 Muscle::MusclePotentialEnergyInfo& Muscle::
 updMusclePotentialEnergyInfo(const SimTK::State& s) const
 {
-    return this->updCacheVariableValue(s, this->potentialEnergyInfoCV);
+    return this->updCacheVariableValue(s, _potentialEnergyInfoCV);
 }
 
 

@@ -249,8 +249,8 @@ protected:
 private:
     void constructProperties();
 
-    mutable CacheVariable<double> actuationCV;
-    mutable CacheVariable<double> speedCV;
+    mutable CacheVariable<double> _actuationCV;
+    mutable CacheVariable<double> _speedCV;
 
 //=============================================================================
 };  // END of class ScalarActuator
