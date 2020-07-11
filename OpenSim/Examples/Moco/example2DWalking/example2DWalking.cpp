@@ -39,7 +39,7 @@
 /// The coordinate data included in the 'referenceCoordinates.sto' comes from
 /// predictive simulations generated in Falisse et al. 2019.
 
-#include <OpenSim/Moco/MocoGoal/MocoOutputGoal.h>
+#include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Moco/osimMoco.h>
 
 using namespace OpenSim;
@@ -87,7 +87,7 @@ MocoSolution gaitTracking(double controlEffortWeight = 10,
     model.initSystem();
     // Symmetric coordinate values (except for pelvis_tx) and speeds.
     for (const auto& coord : model.getComponentList<Coordinate>()) {
-        if (endsWith(coord.getName(), "_r")) {
+        if (IO::EndsWith(coord.getName(), "_r")) {
             symmetryGoal->addStatePair({coord.getStateVariableNames()[0],
                     std::regex_replace(coord.getStateVariableNames()[0],
                             std::regex("_r"), "_l")});
@@ -95,7 +95,7 @@ MocoSolution gaitTracking(double controlEffortWeight = 10,
                     std::regex_replace(coord.getStateVariableNames()[1],
                             std::regex("_r"), "_l")});
         }
-        if (endsWith(coord.getName(), "_l")) {
+        if (IO::EndsWith(coord.getName(), "_l")) {
             symmetryGoal->addStatePair({coord.getStateVariableNames()[0],
                     std::regex_replace(coord.getStateVariableNames()[0],
                             std::regex("_l"), "_r")});
@@ -103,9 +103,9 @@ MocoSolution gaitTracking(double controlEffortWeight = 10,
                     std::regex_replace(coord.getStateVariableNames()[1],
                             std::regex("_l"), "_r")});
         }
-        if (!endsWith(coord.getName(), "_l") &&
-                !endsWith(coord.getName(), "_r") &&
-                !endsWith(coord.getName(), "_tx")) {
+        if (!IO::EndsWith(coord.getName(), "_l") &&
+                !IO::EndsWith(coord.getName(), "_r") &&
+                !IO::EndsWith(coord.getName(), "_tx")) {
             symmetryGoal->addStatePair({coord.getStateVariableNames()[0],
                     coord.getStateVariableNames()[0]});
             symmetryGoal->addStatePair({coord.getStateVariableNames()[1],
@@ -117,12 +117,12 @@ MocoSolution gaitTracking(double controlEffortWeight = 10,
     symmetryGoal->addControlPair({"/lumbarAct"});
     // Symmetric muscle activations.
     for (const auto& muscle : model.getComponentList<Muscle>()) {
-        if (endsWith(muscle.getName(), "_r")) {
+        if (IO::EndsWith(muscle.getName(), "_r")) {
             symmetryGoal->addStatePair({muscle.getStateVariableNames()[0],
                     std::regex_replace(muscle.getStateVariableNames()[0],
                             std::regex("_r"), "_l")});
         }
-        if (endsWith(muscle.getName(), "_l")) {
+        if (IO::EndsWith(muscle.getName(), "_l")) {
             symmetryGoal->addStatePair({muscle.getStateVariableNames()[0],
                     std::regex_replace(muscle.getStateVariableNames()[0],
                             std::regex("_l"), "_r")});
@@ -195,7 +195,7 @@ MocoSolution gaitTracking(double controlEffortWeight = 10,
     contact_l.push_back("contactFront_l");
     TimeSeriesTable externalForcesTableFlat = createExternalLoadsTableForGait(
             model, full, contact_r, contact_l);
-    writeTableToFile(externalForcesTableFlat,
+    STOFileAdapter::write(externalForcesTableFlat,
             "gaitTracking_solutionGRF_fullcycle.sto");
 
     // moco.visualize(solution);
@@ -230,7 +230,7 @@ void gaitPrediction(const MocoSolution& gaitTrackingSolution) {
     model.initSystem();
     // Symmetric coordinate values (except for pelvis_tx) and speeds.
     for (const auto& coord : model.getComponentList<Coordinate>()) {
-        if (endsWith(coord.getName(), "_r")) {
+        if (IO::EndsWith(coord.getName(), "_r")) {
             symmetryGoal->addStatePair({coord.getStateVariableNames()[0],
                     std::regex_replace(coord.getStateVariableNames()[0],
                             std::regex("_r"), "_l")});
@@ -238,7 +238,7 @@ void gaitPrediction(const MocoSolution& gaitTrackingSolution) {
                     std::regex_replace(coord.getStateVariableNames()[1],
                             std::regex("_r"), "_l")});
         }
-        if (endsWith(coord.getName(), "_l")) {
+        if (IO::EndsWith(coord.getName(), "_l")) {
             symmetryGoal->addStatePair({coord.getStateVariableNames()[0],
                     std::regex_replace(coord.getStateVariableNames()[0],
                             std::regex("_l"), "_r")});
@@ -246,9 +246,9 @@ void gaitPrediction(const MocoSolution& gaitTrackingSolution) {
                     std::regex_replace(coord.getStateVariableNames()[1],
                             std::regex("_l"), "_r")});
         }
-        if (!endsWith(coord.getName(), "_l") &&
-                !endsWith(coord.getName(), "_r") &&
-                !endsWith(coord.getName(), "_tx")) {
+        if (!IO::EndsWith(coord.getName(), "_l") &&
+                !IO::EndsWith(coord.getName(), "_r") &&
+                !IO::EndsWith(coord.getName(), "_tx")) {
             symmetryGoal->addStatePair({coord.getStateVariableNames()[0],
                     coord.getStateVariableNames()[0]});
             symmetryGoal->addStatePair({coord.getStateVariableNames()[1],
@@ -260,12 +260,12 @@ void gaitPrediction(const MocoSolution& gaitTrackingSolution) {
     symmetryGoal->addControlPair({"/lumbarAct"});
     // Symmetric muscle activations.
     for (const auto& muscle : model.getComponentList<Muscle>()) {
-        if (endsWith(muscle.getName(), "_r")) {
+        if (IO::EndsWith(muscle.getName(), "_r")) {
             symmetryGoal->addStatePair({muscle.getStateVariableNames()[0],
                     std::regex_replace(muscle.getStateVariableNames()[0],
                             std::regex("_r"), "_l")});
         }
-        if (endsWith(muscle.getName(), "_l")) {
+        if (IO::EndsWith(muscle.getName(), "_l")) {
             symmetryGoal->addStatePair({muscle.getStateVariableNames()[0],
                     std::regex_replace(muscle.getStateVariableNames()[0],
                             std::regex("_l"), "_r")});
@@ -329,7 +329,7 @@ void gaitPrediction(const MocoSolution& gaitTrackingSolution) {
     contact_l.push_back("contactFront_l");
     TimeSeriesTable externalForcesTableFlat = createExternalLoadsTableForGait(
             model, full, contact_r, contact_l);
-    writeTableToFile(externalForcesTableFlat,
+    STOFileAdapter::write(externalForcesTableFlat,
             "gaitPrediction_solutionGRF_fullcycle.sto");
 
     study.visualize(full);

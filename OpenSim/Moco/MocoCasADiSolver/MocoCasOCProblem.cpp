@@ -34,7 +34,7 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
         : m_jar(std::move(jar)),
           m_paramsRequireInitSystem(
                   mocoCasADiSolver.get_parameters_require_initsystem()),
-          m_formattedTimeString(getMocoFormattedDateTime(true)) {
+          m_formattedTimeString(getFormattedDateTime(true)) {
 
     setDynamicsMode(dynamicsMode);
     const auto& model = problemRep.getModelBase();
@@ -62,9 +62,9 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
     for (const auto& stateName : stateNames) {
         const auto& info = problemRep.getStateInfo(stateName);
         CasOC::StateType stateType;
-        if (endsWith(stateName, "/value"))
+        if (IO::EndsWith(stateName, "/value"))
             stateType = CasOC::StateType::Coordinate;
-        else if (endsWith(stateName, "/speed"))
+        else if (IO::EndsWith(stateName, "/speed"))
             stateType = CasOC::StateType::Speed;
         else
             stateType = CasOC::StateType::Auxiliary;

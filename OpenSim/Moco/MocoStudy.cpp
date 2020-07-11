@@ -27,6 +27,7 @@
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/Reporter.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
+#include <OpenSim/Simulation/VisualizerUtilities.h>
 
 using namespace OpenSim;
 
@@ -104,7 +105,7 @@ void MocoStudy::visualize(const MocoTrajectory& it) const {
     // TODO this does not need the Solver at all, so this could be moved to
     // MocoProblem.
     const auto& model = get_problem().getPhase(0).getModelProcessor().process();
-    OpenSim::visualize(model, it.exportToStatesStorage());
+    VisualizerUtilities::showMotion(model, it.exportToStatesTable());
 }
 
 TimeSeriesTable MocoStudy::analyze(const MocoTrajectory& trajectory,

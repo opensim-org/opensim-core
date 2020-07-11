@@ -20,6 +20,8 @@
 #include "MocoProblemRep.h"
 #include "MocoUtilities.h"
 
+#include <OpenSim/Common/Stopwatch.h>
+
 #ifdef OPENSIM_WITH_TROPTER
     #include "tropter/TropterProblem.h"
 #endif
@@ -330,7 +332,7 @@ MocoSolution MocoTropterSolver::solveImpl() const {
     if (get_verbosity()) {
         log_info(std::string(72, '='));
         log_info("MocoTropterSolver starting.");
-        log_info(getMocoFormattedDateTime(false, "%c"));
+        log_info(getFormattedDateTime(false, "%c"));
         log_info(std::string(72, '-'));
         getProblemRep().printDescription();
     }
@@ -409,7 +411,7 @@ MocoSolution MocoTropterSolver::solveImpl() const {
     if (get_verbosity()) {
         log_info(std::string(72, '-'));
         log_info("Elapsed real time: {}", stopwatch.formatNs(elapsed));
-        log_info(getMocoFormattedDateTime(false, "%c"));
+        log_info(getFormattedDateTime(false, "%c"));
         if (mocoSolution) {
             log_info("MocoTropterSolver succeeded!");
         } else {

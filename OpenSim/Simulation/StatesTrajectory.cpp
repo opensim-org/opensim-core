@@ -212,9 +212,6 @@ StatesTrajectory StatesTrajectory::createFromStatesTable(
     // Also, assemble the indices of the states that we will actually set in the
     // trajectory.
     std::map<int, int> statesToFillUp;
-    for (const auto& label : tableLabels) {
-        log_info("DEBUG {}", label);
-    }
     for (int is = 0; is < modelStateNames.getSize(); ++is) {
         // getStateIndex() will check for pre-4.0 column names.
         const int stateIndex = TableUtilities::findStateLabelIndex(

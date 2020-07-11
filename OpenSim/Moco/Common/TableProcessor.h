@@ -21,8 +21,10 @@
 #include "../MocoUtilities.h"
 #include <algorithm>
 
+#include <OpenSim/Common/TableUtilities.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/SimulationUtilities.h>
 
 namespace OpenSim {
 
@@ -168,7 +170,8 @@ public:
                     "Expected cutoff frequency to be positive, but got {}.",
                     get_cutoff_frequency());
 
-            table = filterLowpass(table, get_cutoff_frequency(), true);
+            TableUtilities::filterLowpass(
+                    table, get_cutoff_frequency(), true);
         }
     }
 };

@@ -57,7 +57,7 @@ TEST_CASE("TableProcessor") {
     }
 
     SECTION("Serialization") {
-        writeTableToFile(table, "testTableProcessor_table.sto");
+        STOFileAdapter::write(table, "testTableProcessor_table.sto");
         {
             TableProcessor proc =
                     TableProcessor("testTableProcessor_table.sto") |
