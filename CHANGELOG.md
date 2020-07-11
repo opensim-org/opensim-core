@@ -22,6 +22,7 @@ v4.2
   - Previously, it would return `false` if its parent `Model`'s `Model::getAllControllersEnabled` returned `false`
   - The previous behavior would mean that `Controller::setEnabled(true); return Controller::isEnabled();` could return `false`
 - When building from source, CMake now outputs more detailed information about dependencies.
+- The new Matlab examplePointMass.m shows how to build and simulate a point-mass model.
 
 
 v4.1
