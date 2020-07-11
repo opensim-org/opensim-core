@@ -23,6 +23,7 @@
 using namespace OpenSim;
 
 TEST_CASE("TableProcessor") {
+    Object::registerType(TableProcessor());
 
     class MyTableOperator : public TableOperator {
         OpenSim_DECLARE_CONCRETE_OBJECT(MyTableOperator, TableOperator);
