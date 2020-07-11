@@ -58,6 +58,9 @@ if(OPENSIM_COPY_DEPENDENCIES AND APPLE)
     # editing of libtropter's link libraries is done after libtropter.dylib
     # is installed (add_subdirectory(cmake) must be after
     # add_subdirectory(Moco)).
+
+    get_target_property(CASADI_LIBRARY_LOCATION casadi LOCATION)
+    get_filename_component(CASADI_LIBDIR "${CASADI_LIBRARY_LOCATION}" DIRECTORY)
     set(script
         ${CMAKE_CURRENT_BINARY_DIR}/OpenSimMocoInstallMacDependencyLibraries.cmake)
     configure_file(OpenSimMocoInstallMacDependencyLibraries.cmake.in
