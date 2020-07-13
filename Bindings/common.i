@@ -11,6 +11,8 @@
 %include <OpenSim/Common/About.h>
 %include <OpenSim/Common/Exception.h>
 
+%include <OpenSim/Common/CommonUtilities.h>
+
 %shared_ptr(OpenSim::LogSink);
 %shared_ptr(OpenSim::StringLogSink);
 %include <OpenSim/Common/LogSink.h>

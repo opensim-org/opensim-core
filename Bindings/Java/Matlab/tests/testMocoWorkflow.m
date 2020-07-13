@@ -108,7 +108,7 @@ function testChangingTimeBounds(testCase)
         solver.set_transcription_scheme('trapezoidal')
         solver.set_num_mesh_intervals(19);
         guess = solver.createGuess('random');
-        guess.setTime(opensimMoco.createVectorLinspace(20, 0.0, 3.0));
+        guess.setTime(opensimCommon.createVectorLinspace(20, 0.0, 3.0));
         solver.setGuess(guess);
         solution0 = study.solve();
 

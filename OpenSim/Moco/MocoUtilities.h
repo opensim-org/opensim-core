@@ -28,18 +28,19 @@
 
 #include "MocoTrajectory.h"
 #include "osimMocoDLL.h"
-#include <OpenSim/Common/Reporter.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/StatesTrajectory.h>
 #include <condition_variable>
 #include <regex>
 #include <set>
 #include <stack>
 
 #include <OpenSim/Common/GCVSplineSet.h>
-#include <OpenSim/Common/PiecewiseLinearFunction.h>
-#include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/Logger.h>
+#include <OpenSim/Common/PiecewiseLinearFunction.h>
+#include <OpenSim/Common/Reporter.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/CommonUtilities.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/StatesTrajectory.h>
 
 namespace OpenSim {
 
@@ -47,55 +48,6 @@ class StatesTrajectory;
 class Model;
 class MocoTrajectory;
 class MocoProblem;
-
-/// Since Moco does not require C++14 (which contains std::make_unique()),
-/// here is an implementation of make_unique().
-/// @ingroup mocogenutil
-template <typename T, typename... Args>
-std::unique_ptr<T> make_unique(Args&&... args) {
-    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
-}
-
-/// Get a string with the current date and time formatted as %Y-%m-%dT%H%M%S
-/// (year, month, day, "T", hour, minute, second). You can change the datetime
-/// format via the `format` parameter.
-/// If you specify "ISO", then we use the ISO 8601 extended datetime format
-/// %Y-%m-%dT%H:%M:%S.
-/// See https://en.cppreference.com/w/cpp/io/manip/put_time.
-/// @ingroup mocogenutil
-OSIMMOCO_API std::string getMocoFormattedDateTime(
-        bool appendMicroseconds = false,
-        std::string format = "%Y-%m-%dT%H%M%S");
-
-/// Determine if `string` starts with the substring `start`.
-/// https://stackoverflow.com/questions/874134/find-if-string-ends-with-another-string-in-c
-/// @ingroup mocogenutil
-inline bool startsWith(const std::string& string, const std::string& start) {
-    if (string.length() >= start.length()) {
-        return string.compare(0, start.length(), start) == 0;
-    }
-    return false;
-}
-
-/// Determine if `string` ends with the substring `ending`.
-/// https://stackoverflow.com/questions/874134/find-if-string-ends-with-another-string-in-c
-/// @ingroup mocogenutil
-inline bool endsWith(const std::string& string, const std::string& ending) {
-    if (string.length() >= ending.length()) {
-        return string.compare(string.length() - ending.length(),
-                       ending.length(), ending) == 0;
-    }
-    return false;
-}
-
-/// An OpenSim XML file may contain file paths that are relative to the
-/// directory containing the XML file; use this function to convert that
-/// relative path into an absolute path.
-/// @ingroup mocogenutil
-OSIMMOCO_API
-std::string getAbsolutePathnameFromXMLDocument(
-        const std::string& documentFileName,
-        const std::string& pathnameRelativeToDocument);
 
 /// This class stores the formatting of a stream and restores that format
 /// when the StreamFormat is destructed.
@@ -112,108 +64,6 @@ private:
     std::ios m_format{nullptr};
 }; // StreamFormat
 
-/// Create a SimTK::Vector with the provided length whose elements are
-/// linearly spaced between start and end.
-/// @ingroup moconumutil
-OSIMMOCO_API
-SimTK::Vector createVectorLinspace(int length, double start, double end);
-
-#ifndef SWIG
-/// Create a SimTK::Vector using modern C++ syntax.
-/// @ingroup moconumutil
-OSIMMOCO_API
-SimTK::Vector createVector(std::initializer_list<SimTK::Real> elements);
-#endif
-
-/// Linearly interpolate y(x) at new values of x. The optional 'ignoreNaNs'
-/// argument will ignore any NaN values contained in the input vectors and
-/// create the interpolant from the non-NaN values only. Note that this option
-/// does not necessarily prevent NaN values from being returned in 'newX', which
-/// will have NaN for any values of newX outside of the range of x.
-/// @throws Exception if x and y are different sizes, or x or y is empty.
-/// @ingroup moconumutil
-OSIMMOCO_API
-SimTK::Vector interpolate(const SimTK::Vector& x, const SimTK::Vector& y,
-        const SimTK::Vector& newX, const bool ignoreNaNs = false);
-
-#ifndef SWIG
-/// @ingroup moconumutil
-template <typename FunctionType>
-std::unique_ptr<FunctionSet> createFunctionSet(const TimeSeriesTable& table) {
-    auto set = make_unique<FunctionSet>();
-    const auto& time = table.getIndependentColumn();
-    const auto numRows = (int)table.getNumRows();
-    for (int icol = 0; icol < (int)table.getNumColumns(); ++icol) {
-        const double* y =
-                table.getDependentColumnAtIndex(icol).getContiguousScalarData();
-        set->adoptAndAppend(new FunctionType(numRows, time.data(), y));
-    }
-    return set;
-}
-
-/// @ingroup moconumutil
-template <>
-inline std::unique_ptr<FunctionSet> createFunctionSet<GCVSpline>(
-        const TimeSeriesTable& table) {
-    const auto& time = table.getIndependentColumn();
-    return std::unique_ptr<GCVSplineSet>(new GCVSplineSet(table,
-            std::vector<std::string>{}, std::min((int)time.size() - 1, 5)));
-}
-#endif // SWIG
-
-/// Resample (interpolate) the table at the provided times. In general, a
-/// 5th-order GCVSpline is used as the interpolant; a lower order is used if the
-/// table has too few points for a 5th-order spline. Alternatively, you can
-/// provide a different function type as a template argument (e.g.,
-/// PiecewiseLinearFunction).
-/// @throws Exception if new times are
-/// not within existing initial and final times, if the new times are
-/// decreasing, or if getNumTimes() < 2.
-/// @ingroup moconumutil
-template <typename TimeVector, typename FunctionType = GCVSpline>
-TimeSeriesTable resample(const TimeSeriesTable& in, const TimeVector& newTime) {
-
-    const auto& time = in.getIndependentColumn();
-
-    OPENSIM_THROW_IF(time.size() < 2, Exception,
-            "Cannot resample if number of times is 0 or 1.");
-    OPENSIM_THROW_IF(newTime[0] < time[0], Exception,
-            fmt::format("New initial time ({}) cannot be less than existing "
-                   "initial time ({})",
-                    newTime[0], time[0]));
-    OPENSIM_THROW_IF(newTime[newTime.size() - 1] > time[time.size() - 1],
-            Exception,
-            fmt::format("New final time ({}) cannot be greater than existing "
-                        "final time ({})",
-                    newTime[newTime.size() - 1], time[time.size() - 1]));
-    for (int itime = 1; itime < (int)newTime.size(); ++itime) {
-        OPENSIM_THROW_IF(newTime[itime] < newTime[itime - 1], Exception,
-                fmt::format("New times must be non-decreasing, but "
-                       "time[{}] < time[{}] ({} < {}).",
-                        itime, itime - 1, newTime[itime], newTime[itime - 1]));
-    }
-
-    // Copy over metadata.
-    TimeSeriesTable out = in;
-    for (int irow = (int)out.getNumRows() - 1; irow >= 0; --irow) {
-        out.removeRowAtIndex(irow);
-    }
-
-    std::unique_ptr<FunctionSet> functions =
-            createFunctionSet<FunctionType>(in);
-    SimTK::Vector curTime(1);
-    SimTK::RowVector row(functions->getSize());
-    for (int itime = 0; itime < (int)newTime.size(); ++itime) {
-        curTime[0] = newTime[itime];
-        for (int icol = 0; icol < functions->getSize(); ++icol) {
-            row(icol) = functions->get(icol).calcValue(curTime);
-        }
-        // Not efficient!
-        out.appendRow(curTime[0], row);
-    }
-    return out;
-}
-
 /// Create a Storage from a TimeSeriesTable. Metadata from the
 /// TimeSeriesTable is *not* copied to the Storage.
 /// You should use TimeSeriesTable if possible, as support for Storage may be
@@ -222,45 +72,6 @@ TimeSeriesTable resample(const TimeSeriesTable& in, const TimeVector& newTime) {
 // TODO move to the Storage class.
 /// @ingroup moconumutil
 OSIMMOCO_API Storage convertTableToStorage(const TimeSeriesTable&);
-
-/// Update a vector of state labels (in place) to use post-4.0 state paths
-/// instead of pre-4.0 state names. For example, this converts labels as
-/// follows:
-///   - `pelvis_tilt` -> `/jointset/ground_pelvis/pelvis_tilt/value`
-///   - `pelvis_tilt_u` -> `/jointset/ground_pelvis/pelvis_tilt/speed`
-///   - `soleus.activation` -> `/forceset/soleus/activation`
-///   - `soleus.fiber_length` -> `/forceset/soleus/fiber_length`
-/// This can also be used to update the column labels of an Inverse Kinematics
-/// Tool solution MOT file so that the data can be used as states. If a label
-/// does not identify a state in the model, the column label is not changed.
-/// @throws Exception if labels are not unique.
-OSIMMOCO_API void updateStateLabels40(
-        const Model& model, std::vector<std::string>& labels);
-
-/// Lowpass filter the data in a TimeSeriesTable at a provided cutoff frequency.
-/// The table is converted to a Storage object to use the lowpassIIR() method
-/// to filter, and then converted back to TimeSeriesTable.
-/// @ingroup moconumutil
-OSIMMOCO_API TimeSeriesTable filterLowpass(
-        const TimeSeriesTable& table, double cutoffFreq, bool padData = false);
-
-/// Write a single TimeSeriesTable to a file, using the FileAdapter associated
-/// with the provided file extension.
-/// @ingroup moconumutil
-OSIMMOCO_API void writeTableToFile(const TimeSeriesTable&, const std::string&);
-
-/// Play back a motion (from the Storage) in the simbody-visuailzer. The Storage
-/// should contain all generalized coordinates. The visualizer window allows the
-/// user to control playback speed.
-/// This function blocks until the user exits the simbody-visualizer window.
-/// @ingroup mocomodelutil
-// TODO handle degrees.
-OSIMMOCO_API void visualize(Model, Storage);
-
-/// This function is the same as visualize(Model, Storage), except that
-/// the states are provided in a TimeSeriesTable.
-/// @ingroup mocomodelutil
-OSIMMOCO_API void visualize(Model, TimeSeriesTable);
 
 /// Calculate the requested outputs using the model in the problem and the
 /// states and controls in the MocoTrajectory.
@@ -596,69 +407,6 @@ void checkPropertyInRangeOrSet(const Object& obj, const Property<T>& p,
     }
 }
 
-/// Record and report elapsed real time ("clock" or "wall" time) in seconds.
-/// @ingroup mocogenutil
-class Stopwatch {
-public:
-    /// This stores the start time as the current time.
-    Stopwatch() { reset(); }
-    /// Reset the start time to the current time.
-    void reset() { m_startTime = SimTK::realTimeInNs(); }
-    /// Return the amount of time that has elapsed since this object was
-    /// constructed or since reset() has been called.
-    double getElapsedTime() const {
-        return SimTK::realTime() - SimTK::nsToSec(m_startTime);
-    }
-    /// Get elapsed time in nanoseconds. See SimTK::realTimeInNs() for more
-    /// information.
-    long long getElapsedTimeInNs() const {
-        return SimTK::realTimeInNs() - m_startTime;
-    }
-    /// This provides the elapsed time as a formatted string (using formatNs()).
-    std::string getElapsedTimeFormatted() const {
-        return formatNs(getElapsedTimeInNs());
-    }
-    /// Format the provided elapsed time in nanoseconds into a string.
-    /// The time may be converted into seconds, milliseconds, or microseconds.
-    /// Additionally, if the time is greater or equal to 60 seconds, the time in
-    /// hours and/or minutes is also added to the string.
-    /// Usually, you can call getElapsedTimeFormatted() instead of calling this
-    /// function directly. If you call this function directly, use
-    /// getElapsedTimeInNs() to get a time in nanoseconds (rather than
-    /// getElapsedTime()).
-    static std::string formatNs(const long long& nanoseconds) {
-        std::stringstream ss;
-        double seconds = SimTK::nsToSec(nanoseconds);
-        int secRounded = (int)std::round(seconds);
-        if (seconds > 1)
-            ss << secRounded << " second(s)";
-        else if (nanoseconds >= 1000000)
-            ss << nanoseconds / 1000000 << " millisecond(s)";
-        else if (nanoseconds >= 1000)
-            ss << nanoseconds / 1000 << " microsecond(s)";
-        else
-            ss << nanoseconds << " nanosecond(s)";
-        int minutes = secRounded / 60;
-        int hours = minutes / 60;
-        if (minutes || hours) {
-            ss << " (";
-            if (hours) {
-                ss << hours << " hour(s), ";
-                ss << minutes % 60 << " minute(s), ";
-                ss << secRounded % 60 << " second(s)";
-            } else {
-                ss << minutes % 60 << " minute(s), ";
-                ss << secRounded % 60 << " second(s)";
-            }
-            ss << ")";
-        }
-        return ss.str();
-    }
-
-private:
-    long long m_startTime;
-};
-
 /// This obtains the value of the OPENSIM_MOCO_PARALLEL environment variable.
 /// The value has the following meanings:
 /// - 0: run in series (not parallel).
@@ -736,7 +484,7 @@ public:
     FileDeletionThrower()
             : FileDeletionThrower(
                       "OpenSimMoco_delete_this_to_throw_exception_" +
-                      getMocoFormattedDateTime() + ".txt") {}
+                      getFormattedDateTime() + ".txt") {}
     FileDeletionThrower(std::string filepath)
             : m_filepath(std::move(filepath)) {
         std::ofstream f(m_filepath);
@@ -790,20 +538,6 @@ TimeSeriesTable createExternalLoadsTableForGait(Model model,
         const MocoTrajectory& trajectory,
         const std::vector<std::string>& forcePathsRightFoot,
         const std::vector<std::string>& forcePathsLeftFoot);
-
-/// Solve for the root of a scalar function using the bisection method.
-/// @param calcResidual a function that computes the error
-/// @param left lower bound on the root
-/// @param right upper bound on the root
-/// @param tolerance convergence requires that the bisection's "left" and
-///     "right" are less than tolerance apart.
-/// @param maxIterations abort after this many iterations.
-/// @ingroup mocogenutil
-OSIMMOCO_API
-SimTK::Real solveBisection(
-        std::function<double(const double&)> calcResidual,
-        double left, double right, const double& tolerance = 1e-6,
-        int maxIterations = 1000);
 
 } // namespace OpenSim
 

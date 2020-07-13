@@ -127,7 +127,7 @@ std::unique_ptr<PositionMotion> PositionMotion::createFromTable(
     GCVSplineSet splines(table);
     for (auto label : labels) {
         std::string coordPath = label;
-        if (endsWith(label, "/value")) {
+        if (IO::EndsWith(label, "/value")) {
             // This assumes that the coordinate is not named "value".
             coordPath = label.substr(0, label.find("/value"));
             const auto& coord = model.getComponent<Coordinate>(coordPath);

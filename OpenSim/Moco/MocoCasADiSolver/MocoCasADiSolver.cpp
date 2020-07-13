@@ -21,11 +21,13 @@
 #include "../MocoUtilities.h"
 
 #ifdef OPENSIM_WITH_CASADI
-    #include "CasOCSolver.h"
-    #include "MocoCasOCProblem.h"
-    #include <casadi/casadi.hpp>
+#    include "CasOCSolver.h"
+#    include "MocoCasOCProblem.h"
+#    include <casadi/casadi.hpp>
 
-    using casadi::Callback;
+#    include <OpenSim/Common/Stopwatch.h>
+
+using casadi::Callback;
     using casadi::Dict;
     using casadi::DM;
     using casadi::MX;
@@ -339,7 +341,7 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     if (get_verbosity()) {
         log_info(std::string(72, '='));
         log_info("MocoCasADiSolver starting.");
-        log_info(getMocoFormattedDateTime(false, "%c"));
+        log_info(getFormattedDateTime(false, "%c"));
         log_info(std::string(72, '-'));
         getProblemRep().printDescription();
     }
@@ -426,7 +428,7 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     if (get_verbosity()) {
         log_info(std::string(72, '-'));
         log_info("Elapsed real time: {}.", stopwatch.formatNs(elapsed));
-        log_info(getMocoFormattedDateTime(false, "%c"));
+        log_info(getFormattedDateTime(false, "%c"));
         if (mocoSolution) {
             log_info("MocoCasADiSolver succeeded!");
         } else {

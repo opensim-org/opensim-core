@@ -547,8 +547,8 @@ std::vector<std::string> MocoProblemRep::createStateVariableNamesInSystemOrder(
     auto out = stateNames;
     if (m_prescribedKinematics) {
         for (int i = 0; i < (int)stateNames.size(); ++i) {
-            if (endsWith(stateNames[i], "/value") ||
-                    endsWith(stateNames[i], "/speed")) {
+            if (IO::EndsWith(stateNames[i], "/value") ||
+                    IO::EndsWith(stateNames[i], "/speed")) {
                 out.erase(std::find(out.begin(), out.end(), stateNames[i]));
             }
         }

@@ -23,6 +23,7 @@
 using namespace OpenSim;
 
 TEST_CASE("TableProcessor") {
+    Object::registerType(TableProcessor());
 
     class MyTableOperator : public TableOperator {
         OpenSim_DECLARE_CONCRETE_OBJECT(MyTableOperator, TableOperator);
@@ -57,7 +58,7 @@ TEST_CASE("TableProcessor") {
     }
 
     SECTION("Serialization") {
-        writeTableToFile(table, "testTableProcessor_table.sto");
+        STOFileAdapter::write(table, "testTableProcessor_table.sto");
         {
             TableProcessor proc =
                     TableProcessor("testTableProcessor_table.sto") |

@@ -98,8 +98,10 @@ void MocoContactTrackingGoal::initializeOnModelImpl(const Model& model) const {
     }
 
     // Spline the data.
-    const std::string dataFilePath = getAbsolutePathnameFromXMLDocument(
-            extLoads->getDocumentFileName(), extLoads->getDataFileName());
+    const std::string dataFilePath =
+            convertRelativeFilePathToAbsoluteFromXMLDocument(
+                    extLoads->getDocumentFileName(),
+                    extLoads->getDataFileName());
     TimeSeriesTable data(dataFilePath);
     GCVSplineSet allRefSplines(data);
 

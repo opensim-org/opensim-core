@@ -20,6 +20,7 @@
 
 #include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 #include <OpenSim/Actuators/Thelen2003Muscle.h>
+#include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 using namespace OpenSim;
@@ -922,11 +923,11 @@ void DeGrooteFregly2016Muscle::printCurvesToSTOFiles(
         const std::string& directory) const {
     std::string prefix =
             directory + SimTK::Pathname::getPathSeparator() + getName();
-    writeTableToFile(exportFiberLengthCurvesToTable(),
+    STOFileAdapter::write(exportFiberLengthCurvesToTable(),
             prefix + "_fiber_length_curves.sto");
-    writeTableToFile(exportFiberVelocityMultiplierToTable(),
+    STOFileAdapter::write(exportFiberVelocityMultiplierToTable(),
             prefix + "_fiber_velocity_multiplier.sto");
-    writeTableToFile(exportTendonForceMultiplierToTable(),
+    STOFileAdapter::write(exportTendonForceMultiplierToTable(),
             prefix + "_tendon_force_multiplier.sto");
 }
 
@@ -1029,7 +1030,7 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
                 auto& socket = comp.updSocket(socketName);
                 auto connecteePath = socket.getConnecteePath();
                 std::string prefix = "/forceset/" + actname;
-                if (startsWith(connecteePath, prefix)) {
+                if (IO::StartsWith(connecteePath, prefix)) {
                     connecteePath = connecteePath.substr(prefix.length());
                     socket.setConnecteePath(connecteePath);
                 }

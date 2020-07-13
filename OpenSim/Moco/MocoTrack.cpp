@@ -27,7 +27,7 @@
 #include "MocoUtilities.h"
 #include "MocoWeightSet.h"
 
-#include <OpenSim/Common/FileAdapter.h>
+#include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Simulation/MarkersReference.h>
@@ -225,7 +225,7 @@ TimeSeriesTable MocoTrack::configureStateTracking(
 
     // Write tracked states to file in case any label updates or filtering
     // occurred.
-    writeTableToFile(states, getName() + "_tracked_states.sto");
+    STOFileAdapter::write(states, getName() + "_tracked_states.sto");
 
     // Return tracked states to possibly include in the guess.
     return states;
@@ -262,8 +262,9 @@ void MocoTrack::configureMarkerTracking(MocoProblem& problem, Model& model) {
             markers.getIndependentColumn().back(), m_timeInfo);
 
     // Write tracked markers to file in case any label updates or filtering
-    // occured.
-    writeTableToFile(markers.flatten(), getName() + "_tracked_markers.sto");
+    // occurred.
+    STOFileAdapter::write(markers.flatten(),
+            getName() + "_tracked_markers.sto");
 }
 
 void MocoTrack::applyStatesToGuess(
