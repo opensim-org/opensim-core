@@ -20,9 +20,10 @@
 #include "Testing.h"
 using Catch::Contains;
 #include <simbody/internal/Constraint.h>
-#include <simbody/internal/Constraint_Ball.h>
 
 #include <OpenSim/Actuators/CoordinateActuator.h>
+#include <OpenSim/Actuators/ModelFactory.h>
+#include <OpenSim/Actuators/ModelOperators.h>
 #include <OpenSim/Actuators/PointActuator.h>
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/GCVSpline.h>

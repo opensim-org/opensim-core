@@ -43,6 +43,7 @@
 #include "McKibbenActuator.h"
 
 #include "ModelFactory.h"
+#include "ModelProcessor.h"
 
 #include "RegisterTypes_osimActuators.h"    // to expose RegisterTypes_osimActuators
 

@@ -20,6 +20,7 @@
 // testSingleMuscleDeGrooteFregly2016.
 
 #include <OpenSim/Actuators/ActivationCoordinateActuator.h>
+#include <OpenSim/Actuators/ModelFactory.h>
 #include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/Model/Model.h>

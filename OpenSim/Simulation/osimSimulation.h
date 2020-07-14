@@ -123,6 +123,7 @@
 #include "Solver.h"
 #include "StatesTrajectory.h"
 #include "StatesTrajectoryReporter.h"
+#include "TableProcessor.h"
 #include "OpenSense/OpenSenseUtilities.h"
 
 #include "SimulationUtilities.h"

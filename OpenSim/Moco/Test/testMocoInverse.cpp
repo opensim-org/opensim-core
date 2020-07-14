@@ -16,6 +16,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include <OpenSim/Actuators/ModelFactory.h>
+#include <OpenSim/Actuators/ModelOperators.h>
 #include <OpenSim/Moco/osimMoco.h>
 
 #define CATCH_CONFIG_MAIN

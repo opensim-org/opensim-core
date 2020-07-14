@@ -13,3 +13,16 @@
 %include <OpenSim/Actuators/McKibbenActuator.h>
 
 %include <OpenSim/Actuators/ModelFactory.h>
+
+namespace OpenSim {
+    %ignore ModelProcessor::setModel(std::unique_ptr<Model>);
+}
+
+%extend OpenSim::ModelProcessor {
+    void setModel(Model* model) {
+        $self->setModel(std::unique_ptr<Model>(model));
+    }
+};
+
+%include <OpenSim/Actuators/ModelProcessor.h>
+%include <OpenSim/Actuators/ModelOperators.h>

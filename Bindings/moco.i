@@ -7,20 +7,6 @@ typedef SimTK::RowVector_<double> RowVector;
 
 %include <OpenSim/Moco/About.h>
 
-%include <OpenSim/Moco/Common/TableProcessor.h>
-
-
-namespace OpenSim {
-    %ignore ModelProcessor::setModel(std::unique_ptr<Model>);
-}
-
-%extend OpenSim::ModelProcessor {
-    void setModel(Model* model) {
-        $self->setModel(std::unique_ptr<Model>(model));
-    }
-};
-%include <OpenSim/Moco/ModelProcessor.h>
-
 namespace OpenSim {
     %ignore MocoGoal::IntegrandInput;
     %ignore MocoGoal::calcIntegrand;
@@ -126,18 +112,11 @@ moco_unique_ptr(OpenSim::MocoProblemRep);
 %rename(createRep) OpenSim::MocoProblem::createRepHeap;
 
 namespace OpenSim {
-    %ignore ModelProcessor::setModel(std::unique_ptr<Model>);
     %ignore MocoPhase::setModel(Model);
     %ignore MocoPhase::setModel(std::unique_ptr<Model>);
     %ignore MocoProblem::setModel(Model);
     %ignore MocoProblem::setModel(std::unique_ptr<Model>);
 }
-
-%extend OpenSim::ModelProcessor {
-    void setModel(Model* model) {
-        $self->setModel(std::unique_ptr<Model>(model));
-    }
-};
 
 %extend OpenSim::MocoPhase {
     void setModel(Model* model) {
@@ -225,4 +204,4 @@ moco_unique_ptr(OpenSim::PositionMotion);
 
 %include <OpenSim/Moco/Components/MultivariatePolynomialFunction.h>
 
-%include <OpenSim/Moco/ModelOperators.h>
+%include <OpenSim/Moco/ModelOperatorsDGF.h>

@@ -18,4 +18,6 @@
 
 #include <OpenSim/Actuators/ModelFactory.h>
 
+#include <OpenSim/Actuators/ModelOperators.h>
+
 #endif // OPENSIM_OPENSIM_HEADERS_ACTUATORS_H_

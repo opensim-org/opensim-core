@@ -18,8 +18,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Actuators/ModelFactory.h>
-#include "osimMocoDLL.h"
+#include "osimActuatorsDLL.h"
 
 #include <OpenSim/Simulation/Model/Model.h>
 
@@ -27,7 +26,7 @@ namespace OpenSim {
 
 /** This abstract base class describes *any* operation that modifies a Model
 as part of a ModelProcessor. */
-class OSIMMOCO_API ModelOperator : public Object {
+class OSIMACTUATORS_API ModelOperator : public Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(ModelOperator, Object);
 
 public:
@@ -44,7 +43,7 @@ the operators in a processor using the C++ pipe operator:
 @code
 ModelProcessor proc = ModelProcessor("model.osim") | ModOpAddReserves();
 @endcode */
-class OSIMMOCO_API ModelProcessor : public Object {
+class OSIMACTUATORS_API ModelProcessor : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(ModelProcessor, Object);
 
 public:

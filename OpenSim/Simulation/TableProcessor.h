@@ -18,19 +18,18 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "../MocoUtilities.h"
+#include "SimulationUtilities.h"
 #include <algorithm>
 
 #include <OpenSim/Common/TableUtilities.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimulationUtilities.h>
 
 namespace OpenSim {
 
 /** This abstract class describes *any* operation that consumes a
 modifies a TimeSeriesTable as part of a TableProcessor. */
-class OSIMMOCO_API TableOperator : public Object {
+class OSIMSIMULATION_API TableOperator : public Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(TableOperator, Object);
 
 public:
@@ -46,7 +45,7 @@ together the operators in a processor using the C++ pipe operator:
 @code
 TableProcessor proc = TableProcessor("file.sto") | TabOpLowPassFilter(6);
 @endcode */
-class OSIMMOCO_API TableProcessor : public Object {
+class OSIMSIMULATION_API TableProcessor : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(TableProcessor, Object);
 
 public:
@@ -152,7 +151,7 @@ private:
 };
 
 /// Apply a low-pass filter to the trajectory.
-class OSIMMOCO_API TabOpLowPassFilter : public TableOperator {
+class OSIMSIMULATION_API TabOpLowPassFilter : public TableOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(TabOpLowPassFilter, TableOperator);
 
 public:
@@ -187,7 +186,7 @@ file to be used as a states file (with only coordinate values).
 If a column label does not identify a state in the model,
 the column label is not changed. Column labels must be unique.
 This operator is implemented using updateStateLabels40(). */
-class OSIMMOCO_API TabOpUseAbsoluteStateNames : public TableOperator {
+class OSIMSIMULATION_API TabOpUseAbsoluteStateNames : public TableOperator {
     OpenSim_DECLARE_CONCRETE_OBJECT(TabOpUseAbsoluteStateNames, TableOperator);
 
 public:

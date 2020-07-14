@@ -19,9 +19,9 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "../Common/TableProcessor.h"
 #include "../MocoWeightSet.h"
 #include "MocoGoal.h"
+#include "OpenSim/Simulation/TableProcessor.h"
 
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/TimeSeriesTable.h>

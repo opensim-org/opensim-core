@@ -19,7 +19,6 @@
  * -------------------------------------------------------------------------- */
 
 #include "About.h"
-#include "Common/TableProcessor.h"
 #include "Components/DeGrooteFregly2016Muscle.h"
 #include "Components/DiscreteForces.h"
 #include "Components/MultivariatePolynomialFunction.h"
@@ -58,8 +57,7 @@
 #include "MocoTropterSolver.h"
 #include "MocoUtilities.h"
 #include "MocoWeightSet.h"
-#include "ModelOperators.h"
-#include "ModelProcessor.h"
+#include "ModelOperatorsDGF.h"
 #include "RegisterTypes_osimMoco.h"
 
 #endif // OPENSIM_OSIMMOCO_H
