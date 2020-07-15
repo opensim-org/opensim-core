@@ -56,8 +56,9 @@ public:
     /** (Optional) prescribed controls from a storage file  */
     OpenSim_DECLARE_OPTIONAL_PROPERTY(controls_file, std::string,
         "Controls storage (.sto) file containing controls for individual "
-        "actuators in the model. Column labels must match actuator names or "
-        "absolute paths.");
+        "actuators in the model. Each column label must be either the name "
+        "of an actuator in the model's ForceSet or the absolute path to an "
+        "actuator anywhere in the model.");
 
     /** (Optional) interpolation method for controls in storage.  */
     OpenSim_DECLARE_OPTIONAL_PROPERTY(interpolation_method, int,
