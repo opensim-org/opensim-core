@@ -57,6 +57,11 @@ to vertical, and then tracks the resulting trajectory.
 @example exampleSlidingMass.py
 This is Moco's simplest example.
 
+@example exampleHangingMuscle.py
+This example optimizes the motion of a point mass actuated by a single muscle
+and shows you how to use the AnalyzeTool and a metabolic probe with a
+MocoSolution.
+
 @example exampleKinematicConstraints.py
 This example demonstrates how Moco solves problems with kinematic constraints
 and includes a visualization of the Lagrange multipliers that Moco solves for.
@@ -93,6 +98,11 @@ See @ref mococustomgoal.
 @example exampleTracking.cpp
 This is a simple example of how to use a MocoStateTrackingGoal.
 
+@example exampleHangingMuscle.cpp
+This example optimizes the motion of a point mass actuated by a single muscle
+and shows you how to use the AnalyzeTool and a metabolic probe with a
+MocoSolution.
+
 @example exampleMocoCustomEffortGoal.cpp
 This example shows creating a custom goal in a plugin library, which allows
 you to use the custom goal in C++, the command-line, Matlab, Python, and the
@@ -104,7 +114,7 @@ See @ref mococustomgoal.
 
 Moco's examples are categorized as beginner, intermediate, and advanced.
 Some examples are available from multiple interfaces. Use the links in the
-<b>Interfaces</b> column to view the code. In the Moco distribution, all
+<b>Interfaces</b> column to view the code. In the OpenSim distribution, all
 examples are in the `Resources/Code/` folder.
 
 @note The intent of all examples is to demonstrate Moco's interface. We do not
@@ -119,6 +129,7 @@ SlidingMass | point mass | Moco's simplest example; MocoFinalTimeGoal | [MATLAB]
 SlidingMassAdvanced | point mass | MocoFinalTimeGoal, Setting solver settings, customizing the initial guess | [C++](@ref exampleSlidingMassAdvanced.cpp)
 Tracking | double pendulum | Using MocoStateTrackingGoal | [C++](@ref exampleTracking.cpp)
 MarkerTracking | double pendulum | Using MocoMarkerTrackingGoal | [C++](@ref exampleMarkerTracking.cpp)
+HangingMuscle | point mass with muscle | DeGrooteFregly2016Muscle, Umberger2010MuscleMetabolicsProbe, AnalyzeTool, MocoInitialActivationGoal, MocoInitialVelocityEquilibriumDGFGoal, plotting a TimeSeriesTable | [Python](@ref exampleHangingMuscle.py), [C++](@ref exampleHangingMuscle.cpp)
 OptimizeMass | point mass | Parameter optimization with MocoMarkerFinalGoal and MocoParameter | [MATLAB](@ref exampleOptimizeMass.m), [Python](@ref exampleOptimizeMass.py)
 MinimizeJointReaction | pendulum | MocoJointReactionGoal, MocoControlGoal, prescribeControlsToModel | [MATLAB](@ref exampleMinimizeJointReaction.m)
 exampleKinematicConstraints | point mass | Point mass constrained to a parabola | [Python](@ref exampleKinematicConstraints.py)
