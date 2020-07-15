@@ -20,7 +20,7 @@
 #include "MocoProblem.h"
 #include "MocoUtilities.h"
 
-#include <OpenSim/Common/FileAdapter.h>
+#include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
@@ -779,9 +779,7 @@ MocoTrajectory::MocoTrajectory(const std::string& filepath) {
 
 void MocoTrajectory::write(const std::string& filepath) const {
     ensureUnsealed();
-    TimeSeriesTable table0 = convertToTable();
-    DataAdapter::InputTables tables = {{"table", &table0}};
-    FileAdapter::writeFile(tables, filepath);
+    STOFileAdapter::write(convertToTable(), filepath);
 }
 
 TimeSeriesTable MocoTrajectory::convertToTable() const {
@@ -1091,6 +1089,7 @@ bool MocoTrajectory::isNumericallyEqual(
                       m_parameters, other.m_parameters, 1, tol);
 }
 
+namespace {
 using VecStr = std::vector<std::string>;
 
 // Check that two different vectors of strings have the same contents.
@@ -1100,8 +1099,7 @@ bool sameContents(VecStr v1, VecStr v2) {
     return v1 == v2;
 }
 
-// Check that two different vectors of string ("b", "c") contain the same subset
-// vector of strings ("a").
+// Check that `a` is a subset of both `b` and `c`.
 void checkContains(std::string type, VecStr a, VecStr b, VecStr c) {
     // set_difference requires sorted containers.
     std::sort(a.begin(), a.end());
@@ -1128,6 +1126,8 @@ void checkContains(std::string type, VecStr a, VecStr b, VecStr c) {
     }
 }
 
+} // anonymous namespace
+
 double MocoTrajectory::compareContinuousVariablesRMSInternal(
         const MocoTrajectory& other, std::vector<std::string> stateNames,
         std::vector<std::string> controlNames,
@@ -1146,7 +1146,6 @@ double MocoTrajectory::compareContinuousVariablesRMSInternal(
     } else if (stateNames.size() == 1 && stateNames[0] == "none") {
         stateNames.clear();
     } else {
-        // Will hold elements of stateNames that are not in m_state_names, etc.
         checkContains("state", stateNames, m_state_names, other.m_state_names);
     }
     if (controlNames.empty()) {
@@ -1323,8 +1322,6 @@ double MocoTrajectory::compareParametersRMS(const MocoTrajectory& other,
                 "specifying the parameters to compare.");
         parameterNames = m_parameter_names;
     } else {
-        // Will hold elements of parameterNames that are not in
-        // m_parameter_names, etc.
         checkContains("parameter", parameterNames, m_parameter_names,
                 other.m_parameter_names);
     }

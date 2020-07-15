@@ -67,9 +67,11 @@ problem.setModel(model);
 % Initial time must be 0, final time is FINAL_TIME.
 problem.setTimeBounds(0, final_time);
 
+% Position must be within [-5, 5] throughout the motion.
 % Initial position must be -0.5, final position must be in [0.25, 0.75].
 problem.setStateInfo('/slider/position/value', [-5.0, 5.0], -0.5, [0.25, 0.75]);
 
+% Speed must be within [-20, 20] throughout the motion.
 % Initial and final speed must be 0. Use compact syntax.
 problem.setStateInfo('/slider/position/speed', [-20, 20], [0], [0]);
 

@@ -44,14 +44,14 @@ public:
 This can be used for specifying an initial guess, or holding the solution
 returned by a solver.
 
-The file format for reading and writing a MocoTrajectory is comprised of a
-file header followed by a row of column names and the stored data. The file
-header contains the number of states, controls, Lagrange multipliers (for
-kinematic constraints), derivatives (non-zero if the dynamics mode is implict),
-slacks (for special solver implmentations), and parameters (order does
-not matter). Order does matter for the column names and corresponding data
-columns. The columns *must* follow this order: time, states, controls,
-multipliers, derivatives, slacks, parameters.
+A MocoTrajectory can be written to and read from an STO (".sto") file. The file
+format is comprised of a file header followed by a row of column names and the
+stored data. The file header contains the number of states, controls, Lagrange
+multipliers (for kinematic constraints), derivatives (non-zero if the dynamics
+mode is implicit), slacks (for special solver implementations), and parameters
+(order does not matter). Order does matter for the column names and
+corresponding data columns. The columns *must* follow this order: time, states,
+controls, multipliers, derivatives, slacks, parameters.
 @note Slack columns may contain real number or NaN values, depending on their
 use. For example, values for velocity correction variables used in problems
 with model kinematic constraints are defined only at the midpoint of a Hermite-
@@ -74,7 +74,6 @@ time,<state-0-name>,...,<control-0-name>,...,<multiplier-0-name>,..., \
  : , : ,..., : ,..., : ,..., : ,...,    :     ,...,  :  ,...
 <#>,<#>,...,<#>,...,<#>,...,<#>,...,<#-or-NaN>,...,<NaN>,...
 @endsamplefile
-(If stored in a STO file, the delimiters are tabs, not commas.)
 
 Column labels starting with "lambda" are Lagrange multipliers, and columns
 starting with "gamma" are slack variables (probably velocity corrections at
@@ -146,8 +145,8 @@ public:
                     continuousVars,
             const NamesAndData<SimTK::RowVector>& parameters = {});
 #endif
-    /// Read a MocoTrajectory from a data file (e.g., STO, CSV). See output of
-    /// write() for the correct format.
+    /// Read a MocoTrajectory from an STO file (see STOFileAdapter). See output
+    /// of write() for the correct format.
     explicit MocoTrajectory(const std::string& filepath);
 
     virtual ~MocoTrajectory() = default;
@@ -528,8 +527,8 @@ public:
     /// states,
     /// controls,
     /// Lagrange multipliers, and
-    /// derivatives and dividing by the number of columns and the larger of the
-    /// two time ranges. The calculation can be expressed as follows:
+    /// derivatives and dividing by the number of columns and the time duration.
+    /// The calculation can be expressed as follows:
     /// \f[
     ///     \epsilon_{\textrm{RMS}} =
     ///     \sqrt{\frac{1}{N(t_f - t_i)} \int_{t_i}^{t_f} \left(
@@ -539,15 +538,23 @@ public:
     ///         \sum_{ i \in \textrm{deriv} } \epsilon_i(t)^2
     ///     \right) dt  },
     /// \f]
-    /// where \f$N\f$ is the number of columns and \f$ \epsilon \f$ indicates
-    /// an error.
+    /// where \f$ N \f$ is the number of columns, \f$ t_i \f$ is the minimum of
+    /// the two initial times, \f$ t_f \f$ is the maximum of the two final
+    /// times, and \f$ \epsilon \f$ indicates an error.
     ///
-    /// When one trajectory does not cover the same time range as
-    /// the other, we assume values of 0 for the trajectory with "missing" time.
-    /// Numerical integration is performed using the trapezoidal rule. By
-    /// default, all states, controls, and multipliers are compared, and it is
-    /// expected that both trajectories have the same states, controls, and
-    /// multipliers. Alternatively, you can specify the specific
+    /// When the two trajectories do not cover the same time range, we assume
+    /// values of 0 for the trajectory with "missing" time (we do NOT assume
+    /// that the error is 0 over the non-overlapping time range).
+    ///
+    /// First, the trajectories are splined and sampled. The number of sampling
+    /// points is taken to be the number of times in the trajectory with the
+    /// greater number of times. Numerical integration is performed on the
+    /// sampled points using the trapezoidal rule.
+    ///
+    /// By default, all states, controls, and multipliers are
+    /// compared, and it is expected that both trajectories have the same
+    /// states, controls, and multipliers. Alternatively, you can specify the
+    /// specific
     /// states,
     /// controls,
     /// multipliers, and
@@ -570,7 +577,7 @@ public:
     double compareContinuousVariablesRMSPattern(const MocoTrajectory& other,
             std::string columnType, std::string pattern) const;
     /// Compute the root-mean-square error between the parameters in this
-    /// trajectory and another. The RMS is computed by dividing the the sum of
+    /// trajectory and another. The RMS is computed by dividing the sum of
     /// the squared errors between corresponding parameters and then dividing by
     /// the number of parameters compared.
     /// By default, all parameters are compared, and it is expected that both
@@ -583,7 +590,7 @@ public:
     /// @name Convert to other formats
     /// @{
 
-    /// Save the trajectory to file(s). Use a ".sto" file extension.
+    /// Save the trajectory to a STO file. Use the ."sto" file extension.
     void write(const std::string& filepath) const;
 
     /// The Storage can be used in the OpenSim GUI to visualize a motion, or

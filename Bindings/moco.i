@@ -1,7 +1,6 @@
 %newobject *::clone;
 
 /* To recognize SimTK::RowVector in header files (TODO: move to simbody.i) */
-typedef SimTK::RowVector_<double> RowVector;
 
 %include <OpenSim/Moco/osimMocoDLL.h>
 
@@ -48,12 +47,8 @@ namespace OpenSim {
 %include <OpenSim/Moco/MocoGoal/MocoInitialVelocityEquilibriumDGFGoal.h>
 
 
-// %template(MocoBoundsVector) std::vector<OpenSim::MocoBounds>;
-
 %include <OpenSim/Moco/MocoBounds.h>
 %include <OpenSim/Moco/MocoVariableInfo.h>
-
-// %template(MocoVariableInfoVector) std::vector<OpenSim::MocoVariableInfo>;
 
 %ignore OpenSim::MocoMultibodyConstraint::getKinematicLevels;
 %ignore OpenSim::MocoConstraintInfo::getBounds;
@@ -65,59 +60,6 @@ namespace OpenSim {
 %include <OpenSim/Moco/MocoControlBoundConstraint.h>
 %include <OpenSim/Moco/MocoFrameDistanceConstraint.h>
 
-// unique_ptr
-// ----------
-// https://stackoverflow.com/questions/27693812/how-to-handle-unique-ptrs-with-swig
-namespace std {
-%feature("novaluewrapper") unique_ptr;
-template <typename Type>
-struct unique_ptr {
-    typedef Type* pointer;
-    explicit unique_ptr( pointer Ptr );
-    unique_ptr (unique_ptr&& Right);
-    template<class Type2, Class Del2> unique_ptr( unique_ptr<Type2, Del2>&& Right );
-    unique_ptr( const unique_ptr& Right) = delete;
-    pointer operator-> () const;
-    pointer release ();
-    void reset (pointer __p=pointer());
-    void swap (unique_ptr &__u);
-    pointer get () const;
-    operator bool () const;
-    ~unique_ptr();
-};
-}
-
-// https://github.com/swig/swig/blob/master/Lib/python/std_auto_ptr.i
-#if SWIGPYTHON
-%define moco_unique_ptr(TYPE)
-    %template() std::unique_ptr<TYPE>;
-    %newobject std::unique_ptr<TYPE>::release;
-    %typemap(out) std::unique_ptr<TYPE> %{
-        %set_output(SWIG_NewPointerObj($1.release(), $descriptor(TYPE *), SWIG_POINTER_OWN | %newpointer_flags));
-    %}
-%enddef
-#endif
-
-// https://github.com/swig/swig/blob/master/Lib/java/std_auto_ptr.i
-#if SWIGJAVA
-%define moco_unique_ptr(TYPE)
-    %template() std::unique_ptr<TYPE>;
-    %typemap(jni) std::unique_ptr<TYPE> "jlong"
-    %typemap(jtype) std::unique_ptr<TYPE> "long"
-    %typemap(jstype) std::unique_ptr<TYPE> "$typemap(jstype, TYPE)"
-    %typemap(out) std::unique_ptr<TYPE> %{
-        jlong lpp = 0;
-        *(TYPE**) &lpp = $1.release();
-        $result = lpp;
-    %}
-    %typemap(javaout) std::unique_ptr<TYPE> {
-        long cPtr = $jnicall;
-        return (cPtr == 0) ? null : new $typemap(jstype, TYPE)(cPtr, true);
-    }
-%enddef
-#endif
-
-moco_unique_ptr(OpenSim::MocoProblemRep);
 
 %include <OpenSim/Moco/MocoProblemRep.h>
 
@@ -215,7 +157,6 @@ namespace OpenSim {
 %include <OpenSim/Moco/MocoTrack.h>
 
 %include <OpenSim/Moco/Components/DeGrooteFregly2016Muscle.h>
-moco_unique_ptr(OpenSim::PositionMotion);
 %include <OpenSim/Moco/Components/PositionMotion.h>
 
 %include <OpenSim/Moco/MocoUtilities.h>

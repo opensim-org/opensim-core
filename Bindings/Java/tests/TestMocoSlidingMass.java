@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: TestSlidingMass.java                                         *
+ * OpenSim: TestMocoSlidingMass.java                                          *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2017 Stanford University and the Authors                     *
  *                                                                            *
@@ -17,7 +17,9 @@
  * -------------------------------------------------------------------------- */
 import org.opensim.modeling.*;
 
-class TestSlidingMass {
+/** Test the SWIG bindings for Java. Here, we do not check the result; we just
+want to ensure the essential classes are wrapped properly. */
+class TestMocoSlidingMass {
 
   public static Model createSlidingMassModel() {
     Model model = new Model();
@@ -43,7 +45,7 @@ class TestSlidingMass {
     return model;
   }
 
-  public static void testSlidingMass() throws Exception {
+  public static void testMocoSlidingMass() throws Exception {
 
     MocoStudy study = new MocoStudy();
     study.setName("sliding_mass");
@@ -94,7 +96,7 @@ class TestSlidingMass {
   }
   public static void main(String[] args) {
     try {
-      testSlidingMass();
+      testMocoSlidingMass();
       System.out.println("Test finished!");
     } catch (Exception e) {
       System.out.println("Exception: " + e);

@@ -24,6 +24,8 @@ using namespace SimTK;
     import_array();
 %}
 
+
+%include <Bindings/preliminaries.i>
 %include "python_preliminaries.i"
 
 // Tell SWIG about the modules we depend on.
@@ -423,7 +425,8 @@ using namespace SimTK;
 
 // Include all the OpenSim code.
 // =============================
-%include <Bindings/preliminaries.i>
-%include <Bindings/moco.i>
 
-// %thread OpenSim::MocoStudy::solve;
+moco_unique_ptr(OpenSim::MocoProblemRep);
+moco_unique_ptr(OpenSim::PositionMotion);
+
+%include <Bindings/moco.i>

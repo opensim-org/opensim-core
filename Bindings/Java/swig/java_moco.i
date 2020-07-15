@@ -11,10 +11,20 @@ using namespace OpenSim;
 using namespace SimTK;
 %}
 
+%include <Bindings/preliminaries.i>
 %include "java_preliminaries.i";
 
-// Any time const SimTK::Vector& appears as an argument or a return type,
-// use a Java double array instead.
+// In this file, we add functions suffixed with "...Mat"
+// to the interface that take double[] arguments.
+// This allows Matlab users to directly pass Matlab arrays to Moco's "...Mat"
+// functions.
+
+// An alternative to introducing the additional "...Mat" functions is to permit
+// Moco's existing functions to take double[] arguments instead of their
+// original SimTK::Vector arguments, using SWIG typemaps. These commented
+// typemaps are an attempt at this alternative. However, we are not using this
+// alternative because it would get rid of the possibility of passing
+// SimTK::Vector, etc. to Moco's existing functions.
 // %typemap(jtype) (const SimTK::Vector&) "double[]"
 // %typemap(jstype) (const SimTK::Vector&) "double[]"
 // %typemap(jni) (const SimTK::Vector&) "jdoubleArray"
@@ -412,6 +422,9 @@ using namespace SimTK;
         return ret;
     }
 %}
+
+moco_unique_ptr(OpenSim::MocoProblemRep);
+moco_unique_ptr(OpenSim::PositionMotion);
 
 %import "java_actuators.i"
 
