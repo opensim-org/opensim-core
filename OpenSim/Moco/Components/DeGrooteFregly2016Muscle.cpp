@@ -235,6 +235,7 @@ void DeGrooteFregly2016Muscle::computeStateVariableDerivatives(
 
 double DeGrooteFregly2016Muscle::computeActuation(const SimTK::State& s) const {
     const auto& mdi = getMuscleDynamicsInfo(s);
+    setActuation(s, mdi.tendonForce);
     return mdi.tendonForce;
 }
 

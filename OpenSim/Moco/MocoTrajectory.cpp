@@ -869,6 +869,8 @@ TimeSeriesTable MocoTrajectory::convertToTable() const {
             "num_slacks", std::to_string(numSlacks));
     table.updTableMetaData().setValueForKey(
             "num_parameters", std::to_string(numParameters));
+    table.updTableMetaData().setValueForKey(
+            "inDegrees", std::string("no"));
     convertToTableImpl(table);
     return table;
 }
@@ -880,8 +882,11 @@ Storage MocoTrajectory::exportToStatesStorage() const {
 
 TimeSeriesTable MocoTrajectory::exportToStatesTable() const {
     ensureUnsealed();
-    return {std::vector<double>(&m_time[0], &m_time[0] + m_time.size()),
-            m_states, m_state_names};
+    TimeSeriesTable states(
+            std::vector<double>(&m_time[0], &m_time[0] + m_time.size()),
+            m_states, m_state_names);
+    states.addTableMetaData("inDegrees", std::string("no"));
+    return states;
 }
 
 TimeSeriesTable MocoTrajectory::exportToControlsTable() const {

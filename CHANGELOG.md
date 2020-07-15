@@ -23,7 +23,7 @@ v4.2
   - The previous behavior would mean that `Controller::setEnabled(true); return Controller::isEnabled();` could return `false`
 - When building from source, CMake now outputs more detailed information about dependencies.
 - The new Matlab examplePointMass.m shows how to build and simulate a point-mass model.
-
+- For PrescribedController, the controls_file column labels can now be absolute paths to actuators (previously, the column labels were required to be actuator names).
 
 v4.1
 ====

@@ -318,7 +318,9 @@ else()
                   COMMAND cd <SOURCE_DIR>/ThirdParty/Metis && ./get.Metis
                   COMMAND cd <SOURCE_DIR>/ThirdParty/Mumps && patch < ${CMAKE_SOURCE_DIR}/get.Mumps.patch
                   COMMAND cd <SOURCE_DIR>/ThirdParty/Mumps && ./get.Mumps
-            CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
+            # GCC 10 generates a warning when compling MUMPS that we must suppress using
+            # -fallow-argument-mismatch.
+            CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> ADD_FFLAGS=-fallow-argument-mismatch
             BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
     endif()
