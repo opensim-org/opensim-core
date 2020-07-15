@@ -1,7 +1,5 @@
 #ifndef OPENSIM_PRESCRIBED_CONTROLLER_H_
 #define OPENSIM_PRESCRIBED_CONTROLLER_H_
-
-
 /* -------------------------------------------------------------------------- *
  *                      OpenSim:  PrescribedController.h                      *
  * -------------------------------------------------------------------------- *
@@ -58,7 +56,8 @@ public:
     /** (Optional) prescribed controls from a storage file  */
     OpenSim_DECLARE_OPTIONAL_PROPERTY(controls_file, std::string,
         "Controls storage (.sto) file containing controls for individual "
-        "actuators in the model. Column labels must match actuator names.");
+        "actuators in the model. Column labels must match actuator names or "
+        "absolute paths.");
 
     /** (Optional) interpolation method for controls in storage.  */
     OpenSim_DECLARE_OPTIONAL_PROPERTY(interpolation_method, int,
