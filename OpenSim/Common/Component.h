@@ -1475,6 +1475,16 @@ public:
             throw Exception{msg.str(), __FILE__, __LINE__};
         }
 
+        // edge-case: there is already a cache variable with the same name allocated.
+        //            This is disallowed--and probably a development error--because it
+        //            might result in horrible edge cases such as two cachevars indirectly
+        //            aliasing eachover at run-time.
+        if (this->_namedCacheVariables.find(cacheVariableName) != this->_namedCacheVariables.end()) {
+            std::stringstream msg;
+            msg << "Component::addCacheVariable(...): cannot create a cache variable with the name '" << cacheVariableName << "' because another cache variable with that name already exists (class = " << getClassName() << ", concrete class name = " << getConcreteClassName() << ")";
+            throw Exception{msg.str(), __FILE__, __LINE__};
+        }
+
         this->_namedCacheVariables.emplace(
                 std::piecewise_construct,
                 std::make_tuple(cacheVariableName),

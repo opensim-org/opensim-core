@@ -2460,6 +2460,19 @@ void testCacheVariableInterface() {
         // must also re-initialize its cache variables via `copiedComponent.addCacheVariable(...)`
         ASSERT_THROW(std::exception, c2.getCacheVariableValue(s, c2.cv));
     }
+
+    // Component::addCacheVariable cannot be called with the same name twice because
+    // doing so could cause confusing run-time errors. Therefore, when callers (wrongly)
+    // provide a duplicate key, the implementation should fail fast and tell the
+    // developer that duplicate names are not supported.
+    {
+        ComponentWithCacheVariable c{};
+        const std::string key = "duplicateKey";
+        double v1 = 1.0;
+        unsigned v2 = 2;  // it doesn't matter if the values/types differ: they still have the same key
+        CacheVariable<double> cv1 = c.addCacheVariable(key, v1, SimTK::Stage::Model);
+        ASSERT_THROW(std::exception, c.addCacheVariable(key, v2, SimTK::Stage::Model));
+    }
 }
 
 int main() {
