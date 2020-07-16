@@ -93,9 +93,7 @@ set(MOCO_SOURCES
         MocoInverse.h
         MocoTrack.h
         MocoTrack.cpp
-        Common/TableProcessor.h
-        ModelProcessor.h
-        ModelOperators.h
+        ModelOperatorsDGF.h
         MocoTool.h
         MocoTool.cpp
         MocoConstraintInfo.h

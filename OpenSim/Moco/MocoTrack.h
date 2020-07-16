@@ -18,10 +18,10 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "Common/TableProcessor.h"
 #include "MocoStudy.h"
 #include "MocoTool.h"
-#include "ModelOperators.h"
+#include "ModelOperatorsDGF.h"
+#include "OpenSim/Simulation/TableProcessor.h"
 #include "osimMocoDLL.h"
 
 #include <OpenSim/Simulation/Model/Model.h>

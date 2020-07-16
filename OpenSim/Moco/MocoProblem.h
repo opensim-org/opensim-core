@@ -19,7 +19,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoProblemRep.h"
-#include "ModelProcessor.h"
+#include "OpenSim/Actuators/ModelProcessor.h"
 
 namespace OpenSim {
 

@@ -18,7 +18,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "ModelProcessor.h"
+#include "OpenSim/Actuators/ModelProcessor.h"
 
 #include <OpenSim/Common/Object.h>
 

@@ -33,10 +33,6 @@ endfunction()
 
 MocoAddTest(NAME testMocoInterface)
 
-MocoAddTest(NAME testTableProcessor)
-
-MocoAddTest(NAME testModelProcessor)
-
 MocoAddTest(NAME testMocoGoals)
 
 MocoAddTest(NAME testMocoParameters)

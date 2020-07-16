@@ -23,9 +23,9 @@
 ///
 /// See the README.txt next to this file for more information.
 
-#include <OpenSim/Moco/osimMoco.h>
-
+#include <OpenSim/Actuators/ModelOperators.h>
 #include <OpenSim/Common/Adapters.h>
+#include <OpenSim/Moco/osimMoco.h>
 
 using namespace OpenSim;
 

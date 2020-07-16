@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: testTableProcessor.cpp                                       *
+ * OpenSim: testTableProcessor.cpp                                            *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *
@@ -17,8 +17,10 @@
  * -------------------------------------------------------------------------- */
 
 #define CATCH_CONFIG_MAIN
-#include "Testing.h"
-#include <OpenSim/Moco/Common/TableProcessor.h>
+#include <OpenSim/Auxiliary/catch.hpp>
+#include <OpenSim/Common/CommonUtilities.h>
+#include <OpenSim/Common/STOFileAdapter.h>
+#include <OpenSim/Simulation/TableProcessor.h>
 
 using namespace OpenSim;
 
@@ -30,8 +32,8 @@ TEST_CASE("TableProcessor") {
 
     public:
         void operate(TimeSeriesTable& table, const Model*) const override {
-            table.appendRow(10.0,
-                    ~createVectorLinspace((int)table.getNumColumns(), 0, 1));
+            table.appendRow(10.0, ~createVectorLinspace(
+                                          (int)table.getNumColumns(), 0, 1));
         }
     };
     Object::registerType(MyTableOperator());

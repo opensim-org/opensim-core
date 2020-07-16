@@ -284,7 +284,7 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName,
         if (temp && externalLoads->getLowpassCutoffFrequencyForLoadKinematics() >= 0) {
             log_info("Low-pass filtering coordinates data with a cutoff "
                      "frequency of {:0.1f}.", 
-                _externalLoads.getLowpassCutoffFrequencyForLoadKinematics());
+                externalLoads->getLowpassCutoffFrequencyForLoadKinematics());
             temp->pad(temp->getSize() / 2);
             temp->lowpassIIR(externalLoads->getLowpassCutoffFrequencyForLoadKinematics());
         }

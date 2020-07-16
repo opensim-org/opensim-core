@@ -22,6 +22,7 @@
 
 #include <OpenSim/Actuators/BodyActuator.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
+#include <OpenSim/Actuators/ModelFactory.h>
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
@@ -743,7 +744,7 @@ TEMPLATE_TEST_CASE("Set infos with regular expression", "",
         MocoCasADiSolver, MocoTropterSolver) {
     MocoStudy study;
     MocoProblem& problem = study.updProblem();
-    problem.setModelCopy(OpenSim::ModelFactory::createDoublePendulum());
+    problem.setModelCopy(ModelFactory::createDoublePendulum());
     problem.setTimeBounds(0, 10);
     problem.setStateInfoPattern(".*/value", {2, 10});
     problem.setStateInfoPattern(".*/speed", {3, 10});
@@ -794,7 +795,7 @@ TEMPLATE_TEST_CASE("Disable Actuators", "", MocoCasADiSolver,
         study.setName("double_pendulum");
 
         MocoProblem& mp = study.updProblem();
-        auto model = OpenSim::ModelFactory::createDoublePendulum();
+        auto model = ModelFactory::createDoublePendulum();
 
         auto* tau2 = new CoordinateActuator("q1");
         tau2->setName("tau2");
@@ -822,7 +823,7 @@ TEMPLATE_TEST_CASE("Disable Actuators", "", MocoCasADiSolver,
         study2.setName("double_pendulum");
 
         MocoProblem& mp2 = study2.updProblem();
-        OpenSim::Model model2 = OpenSim::ModelFactory::createDoublePendulum();
+        OpenSim::Model model2 = ModelFactory::createDoublePendulum();
 
         auto* tau2 = new CoordinateActuator("q1");
         tau2->setName("tau2");

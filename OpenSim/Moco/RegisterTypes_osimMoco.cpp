@@ -18,7 +18,6 @@
  * -------------------------------------------------------------------------- */
 #include "RegisterTypes_osimMoco.h"
 
-#include "Common/TableProcessor.h"
 #include "Components/AccelerationMotion.h"
 #include "Components/DeGrooteFregly2016Muscle.h"
 #include "Components/DiscreteForces.h"
@@ -54,7 +53,7 @@
 #include "MocoTrack.h"
 #include "MocoTropterSolver.h"
 #include "MocoWeightSet.h"
-#include "ModelOperators.h"
+#include "ModelOperatorsDGF.h"
 #include <exception>
 #include <iostream>
 
@@ -106,22 +105,10 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
 
         Object::registerType(MocoCasADiSolver());
 
-        Object::registerType(TableProcessor());
-
-        Object::registerType(TabOpLowPassFilter());
-        Object::registerType(TabOpUseAbsoluteStateNames());
-
-        Object::registerType(ModelProcessor());
         Object::registerType(ModOpReplaceMusclesWithDeGrooteFregly2016());
-        Object::registerType(ModOpIgnoreActivationDynamics());
-        Object::registerType(ModOpIgnoreTendonCompliance());
         Object::registerType(ModOpTendonComplianceDynamicsModeDGF());
-        Object::registerType(ModOpAddReserves());
-        Object::registerType(ModOpAddExternalLoads());
         Object::registerType(ModOpIgnorePassiveFiberForcesDGF());
         Object::registerType(ModOpScaleActiveFiberForceCurveWidthDGF());
-        Object::registerType(ModOpReplaceJointsWithWelds());
-        Object::registerType(ModOpScaleMaxIsometricForce());
 
         Object::registerType(AckermannVanDenBogert2010Force());
         Object::registerType(MeyerFregly2016Force());

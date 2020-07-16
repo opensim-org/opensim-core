@@ -233,6 +233,8 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/SimulationUtilities.h>
 %include <OpenSim/Simulation/VisualizerUtilities.h>
 
+%include <OpenSim/Simulation/TableProcessor.h>
+
 // Iterators.
 %template(FrameList) OpenSim::ComponentList<const OpenSim::Frame>;
 %template(FrameIterator) OpenSim::ComponentListIterator<const OpenSim::Frame>;
@@ -362,3 +364,4 @@ EXPOSE_SET_CONSTRUCTORS_HELPER(ProbeSet);
 EXPOSE_SET_CONSTRUCTORS_HELPER(MarkerSet);
 EXPOSE_SET_CONSTRUCTORS_HELPER(WrapObjectSet);
 EXPOSE_SET_CONSTRUCTORS_HELPER(CoordinateSet);
+
