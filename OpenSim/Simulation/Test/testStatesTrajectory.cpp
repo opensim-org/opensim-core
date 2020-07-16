@@ -326,18 +326,18 @@ void testFromStatesStorageInconsistentModel(const std::string &stoFilepath) {
         // Test that an exception is thrown.
         SimTK_TEST_MUST_THROW_EXC(
                 StatesTrajectory::createFromStatesStorage(model, stoMissingCols),
-                StatesTrajectory::MissingColumnsInStatesStorage
+                StatesTrajectory::MissingColumns
                 );
         // Check some other similar calls.
         SimTK_TEST_MUST_THROW_EXC(
                 StatesTrajectory::createFromStatesStorage(model, stoMissingCols,
                     false, true),
-                StatesTrajectory::MissingColumnsInStatesStorage
+                StatesTrajectory::MissingColumns
                 );
         SimTK_TEST_MUST_THROW_EXC(
                 StatesTrajectory::createFromStatesStorage(model, stoMissingCols,
                     false, false),
-                StatesTrajectory::MissingColumnsInStatesStorage
+                StatesTrajectory::MissingColumns
                 );
 
         // No exception if allowing missing columns.
@@ -375,17 +375,17 @@ void testFromStatesStorageInconsistentModel(const std::string &stoFilepath) {
         model.initSystem();
         SimTK_TEST_MUST_THROW_EXC(
                 StatesTrajectory::createFromStatesStorage(model, sto),
-                StatesTrajectory::ExtraColumnsInStatesStorage
+                StatesTrajectory::ExtraColumns
                 );
         SimTK_TEST_MUST_THROW_EXC(
                 StatesTrajectory::createFromStatesStorage(model, sto,
                     true, false),
-                StatesTrajectory::ExtraColumnsInStatesStorage
+                StatesTrajectory::ExtraColumns
                 );
         SimTK_TEST_MUST_THROW_EXC(
                 StatesTrajectory::createFromStatesStorage(model, sto,
                     false, false),
-                StatesTrajectory::ExtraColumnsInStatesStorage
+                StatesTrajectory::ExtraColumns
                 );
 
         // No exception if allowing extra columns, and behavior is
@@ -403,23 +403,23 @@ void testFromStatesStorageUniqueColumnLabels() {
     // Edit column labels so that they are not unique.
     auto labels = sto.getColumnLabels();
     labels[10] = labels[7];
-    sto.setColumnLabels(labels); 
-   
+    sto.setColumnLabels(labels);
+
     SimTK_TEST_MUST_THROW_EXC(
             StatesTrajectory::createFromStatesStorage(model, sto),
-            StatesTrajectory::NonUniqueColumnsInStatesStorage);
+            NonUniqueLabels);
     SimTK_TEST_MUST_THROW_EXC(
             StatesTrajectory::createFromStatesStorage(model, sto, true, true),
-            StatesTrajectory::NonUniqueColumnsInStatesStorage);
+            NonUniqueLabels);
     SimTK_TEST_MUST_THROW_EXC(
             StatesTrajectory::createFromStatesStorage(model, sto, true, false),
-            StatesTrajectory::NonUniqueColumnsInStatesStorage);
+            NonUniqueLabels);
     SimTK_TEST_MUST_THROW_EXC(
             StatesTrajectory::createFromStatesStorage(model, sto, false, true),
-            StatesTrajectory::NonUniqueColumnsInStatesStorage);
+            NonUniqueLabels);
     SimTK_TEST_MUST_THROW_EXC(
             StatesTrajectory::createFromStatesStorage(model, sto, false, false),
-            StatesTrajectory::NonUniqueColumnsInStatesStorage);
+            NonUniqueLabels);
 
     // TODO unique even considering old and new formats for state variable
     // names (/value and /speed) in the same file.
@@ -509,24 +509,6 @@ void testFromStatesStoragePre40CorrectStates() {
 
         itime++;
     }
-}
-
-void testFromStatesStorageAllRowsHaveSameLength() {
-    // Missing data in individual rows leads to an incorrect StatesTrajectory
-    // and could really confuse users.
-    Model model("gait2354_simbody.osim");
-    model.initSystem();
-
-    const auto stateNames = model.getStateVariableNames();
-    Storage sto(statesStoFname);
-    // Append a too-short state vector.
-    SimTK::Vector_<double> v(model.getNumStateVariables() - 10, 1.0);
-    StateVector sv{25.0, v};
-    sto.append(sv);
-
-    SimTK_TEST_MUST_THROW_EXC(
-            StatesTrajectory::createFromStatesStorage(model, sto),
-            StatesTrajectory::VaryingNumberOfStatesPerRow);
 }
 
 
@@ -817,7 +799,6 @@ int main() {
         SimTK_SUBTEST(testFromStatesStorageGivesCorrectStates);
         SimTK_SUBTEST1(testFromStatesStorageInconsistentModel, statesStoFname);
         SimTK_SUBTEST(testFromStatesStorageUniqueColumnLabels);
-        SimTK_SUBTEST(testFromStatesStorageAllRowsHaveSameLength);
 
         // Export to data table.
         SimTK_SUBTEST(testExport);
