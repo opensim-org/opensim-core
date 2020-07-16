@@ -234,7 +234,7 @@ void Ligament::computeForce(const SimTK::State& s,
     double force = 0;
 
     if (path.getLength(s) <= restingLength){
-        setCacheVariableValue(s, _tensionCV, 0.0);
+        setCacheVariableValue(s, _tensionCV, force);
         return;
     }
     
