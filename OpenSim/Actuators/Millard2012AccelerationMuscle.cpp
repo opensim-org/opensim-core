@@ -364,7 +364,7 @@ void Millard2012AccelerationMuscle::
     setActivation(SimTK::State& s, double activation) const
 {
     setStateVariableValue(s, STATE_ACTIVATION_NAME, activation);
-    this->markCacheVariableInvalid(s, _dynamicsInfoCV);
+    markCacheVariableInvalid(s, _dynamicsInfoCV);
     
 }
 
@@ -372,9 +372,9 @@ void Millard2012AccelerationMuscle::
     setFiberLength(SimTK::State& s, double fiberLength) const
 {
     setStateVariableValue(s, STATE_FIBER_LENGTH_NAME, fiberLength);
-    this->markCacheVariableInvalid(s, _lengthInfoCV);
-    this->markCacheVariableInvalid(s, _velInfoCV);
-    this->markCacheVariableInvalid(s, _dynamicsInfoCV);
+    markCacheVariableInvalid(s, _lengthInfoCV);
+    markCacheVariableInvalid(s, _velInfoCV);
+    markCacheVariableInvalid(s, _dynamicsInfoCV);
     
 }
 
@@ -382,8 +382,8 @@ void Millard2012AccelerationMuscle::
     setFiberVelocity(SimTK::State& s, double fiberVelocity) const
 {
     setStateVariableValue(s, STATE_FIBER_VELOCITY_NAME, fiberVelocity);
-    this->markCacheVariableInvalid(s, _velInfoCV);
-    this->markCacheVariableInvalid(s, _dynamicsInfoCV);
+    markCacheVariableInvalid(s, _velInfoCV);
+    markCacheVariableInvalid(s, _dynamicsInfoCV);
     
 }
 

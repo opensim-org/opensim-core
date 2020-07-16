@@ -348,8 +348,8 @@ setActivation(SimTK::State& s, double activation) const
         setStateVariableValue(s, STATE_ACTIVATION_NAME,
                               getActivationModel().clampActivation(activation));
     }
-    this->markCacheVariableInvalid(s, _velInfoCV);
-    this->markCacheVariableInvalid(s, _dynamicsInfoCV);
+    markCacheVariableInvalid(s, _velInfoCV);
+    markCacheVariableInvalid(s, _dynamicsInfoCV);
 }
 
 void Millard2012EquilibriumMuscle::setDefaultFiberLength(double fiberLength)
@@ -389,9 +389,9 @@ setFiberLength(SimTK::State& s, double fiberLength) const
     if (!get_ignore_tendon_compliance()) {
         setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,
                               clampFiberLength(fiberLength));
-        this->markCacheVariableInvalid(s, _lengthInfoCV);
-        this->markCacheVariableInvalid(s, _velInfoCV);
-        this->markCacheVariableInvalid(s, _dynamicsInfoCV);
+        markCacheVariableInvalid(s, _lengthInfoCV);
+        markCacheVariableInvalid(s, _velInfoCV);
+        markCacheVariableInvalid(s, _dynamicsInfoCV);
     }
 }
 

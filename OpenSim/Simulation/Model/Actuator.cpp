@@ -177,8 +177,8 @@ void ScalarActuator::extendAddToSystem(SimTK::MultibodySystem& system) const
     addModelingOption("override_actuation", 1);
 
     // Cache the computed actuation and speed of the scalar valued actuator
-    this->_actuationCV = addCacheVariable("actuation", 0.0, Stage::Velocity);
-    this->_speedCV = addCacheVariable("speed", 0.0, Stage::Velocity);
+    _actuationCV = addCacheVariable("actuation", 0.0, Stage::Velocity);
+    _speedCV = addCacheVariable("speed", 0.0, Stage::Velocity);
 
     // Discrete state variable is the override actuation value if in override mode
     addDiscreteVariable("override_actuation", Stage::Time);
@@ -201,8 +201,8 @@ double ScalarActuator::getOptimalForce() const
 
 double ScalarActuator::getActuation(const State &s) const
 {
-    if (this->appliesForce(s)) {
-        return this->getCacheVariableValue(s, _actuationCV);
+    if (appliesForce(s)) {
+        return getCacheVariableValue(s, _actuationCV);
     } else {
         return 0.0;
     }
@@ -210,17 +210,17 @@ double ScalarActuator::getActuation(const State &s) const
 
 void ScalarActuator::setActuation(const State& s, double aActuation) const
 {
-    this->setCacheVariableValue(s, _actuationCV, aActuation);
+    setCacheVariableValue(s, _actuationCV, aActuation);
 }
 
 double ScalarActuator::getSpeed(const State& s) const
 {
-    return this->getCacheVariableValue(s, _speedCV);
+    return getCacheVariableValue(s, _speedCV);
 }
 
 void ScalarActuator::setSpeed(const State &s, double speed) const
 {
-    this->setCacheVariableValue(s, _speedCV, speed);
+    setCacheVariableValue(s, _speedCV, speed);
 }
 
 void ScalarActuator::overrideActuation(SimTK::State& s, bool flag) const

@@ -78,26 +78,26 @@ void Frame::extendAddToSystem(SimTK::MultibodySystem& system) const
 
 const SimTK::Transform& Frame::getTransformInGround(const State& s) const
 {
-    if (this->isCacheVariableValid(s, _transformCV)) {
-        return this->getCacheVariableValue(s, _transformCV);
+    if (isCacheVariableValid(s, _transformCV)) {
+        return getCacheVariableValue(s, _transformCV);
     }
 
-    SimTK::Transform& t = this->updCacheVariableValue(s, _transformCV);
+    SimTK::Transform& t = updCacheVariableValue(s, _transformCV);
     t = calcTransformInGround(s);
-    this->markCacheVariableValid(s, _transformCV);
+    markCacheVariableValid(s, _transformCV);
 
     return t;
 }
 
 const SimTK::SpatialVec& Frame::getVelocityInGround(const State& s) const
 {
-    if (this->isCacheVariableValid(s, _velocityCV)) {
-        return this->getCacheVariableValue(s, _velocityCV);
+    if (isCacheVariableValid(s, _velocityCV)) {
+        return getCacheVariableValue(s, _velocityCV);
     }
 
-    SimTK::SpatialVec& v = this->updCacheVariableValue(s, _velocityCV);
+    SimTK::SpatialVec& v = updCacheVariableValue(s, _velocityCV);
     v = calcVelocityInGround(s);
-    this->markCacheVariableValid(s, _velocityCV);
+    markCacheVariableValid(s, _velocityCV);
 
     return v;
 }
@@ -114,13 +114,13 @@ const SimTK::Vec3& Frame::getLinearVelocityInGround(const State& s) const
 
 const SimTK::SpatialVec& Frame::getAccelerationInGround(const State& s) const
 {
-    if (this->isCacheVariableValid(s, _accelerationCV)) {
-        return this->getCacheVariableValue(s, _accelerationCV);
+    if (isCacheVariableValid(s, _accelerationCV)) {
+        return getCacheVariableValue(s, _accelerationCV);
     }
 
-    SimTK::SpatialVec& acceleration = this->updCacheVariableValue(s, _accelerationCV);
+    SimTK::SpatialVec& acceleration = updCacheVariableValue(s, _accelerationCV);
     acceleration = calcAccelerationInGround(s);
-    this->markCacheVariableValid(s, _accelerationCV);
+    markCacheVariableValid(s, _accelerationCV);
     return acceleration;
 }
 

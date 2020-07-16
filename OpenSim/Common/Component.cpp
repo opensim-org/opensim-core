@@ -1460,22 +1460,27 @@ void Component::extendRealizeTopology(SimTK::State& s) const
     }
 
     // DRAGON: the cache variables *must* be inserted into the SimTK::state
-    //         in a deterministic order that is not affected by the iteration
-    //         order of the container (e.g. unordered_map may iterate
-    //         differently based on how it stores the entries in memory).
+    //         in a deterministic order.
     //
-    //         The reason this is necessary is because some of the tests take
-    //         copies of the Model's state and then reconstruct a new state (e.g.
-    //         with Model::initSystem) with the assumption that the indices from
-    //         the copy can be used with the Model's. However, if the copy allocates
-    //         SimTK cache entries in a different order, then you can end up with
-    //         alsorts of bizzare segfaults in the tests.
+    //         The reason this is necessary is because some API callers (e.g
+    //         the tests) take copies of one Model's SimTK::State and then
+    //         construct a new SimTK::State for that model (e.g.
+    //         with Model::initSystem) but use indices from the resulting two states
+    //         interchangably with the assumption that the indices from one
+    //         state can be safely used with the other. This assumption is not true,
+    //         because the OpenSim API doesn't explicitly guarantee so, because it
+    //         *may* (actually, in the case of map vs. unordered_map, *is*) faster
+    //         to iterate and allocate out-of-order. However, the differing allocation
+    //         order means that using indexes interchangably between two SimTK::States
+    //         causes runtime mis-casting and mis-indexing, resulting in segfaults.
     //
-    //         The solution to this is to sort the keys, so that things are always
-    //         allocated in SimTK in alphabetical order, which means that state copies
-    //         are usually the same. Yes, this is dumb, and should be fixed.
+    //         Rather than fix downstream implementations to not use SimTK::States
+    //         in this way--which is the *correct* solution--this sorting step just
+    //         ensures that allocations are deterministic in order to shield downstream
+    //         from runtime segfault--a *practical* solution.
     {
         std::vector<std::reference_wrapper<const std::string>> keys;
+	keys.reserve(this->_namedCacheVariables.size());
         for (auto& p : this->_namedCacheVariables) {
             keys.emplace_back(p.first);
         }

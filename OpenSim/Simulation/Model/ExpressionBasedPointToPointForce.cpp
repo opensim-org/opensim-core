@@ -192,7 +192,7 @@ void ExpressionBasedPointToPointForce::computeForce(const SimTK::State& s,
     forceVars["ddot"] = ddot;
 
     double forceMag = _forceProg.evaluate(forceVars);
-    this->setCacheVariableValue(s, _forceMagnitudeCV, forceMag);
+    setCacheVariableValue(s, _forceMagnitudeCV, forceMag);
 
     const Vec3 f1_G = (forceMag/d) * r_G;
 
@@ -204,7 +204,7 @@ void ExpressionBasedPointToPointForce::computeForce(const SimTK::State& s,
 const double& ExpressionBasedPointToPointForce::
     getForceMagnitude(const SimTK::State& s)
 {
-    return this->getCacheVariableValue(s, _forceMagnitudeCV);
+    return getCacheVariableValue(s, _forceMagnitudeCV);
 }
 
 

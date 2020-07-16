@@ -112,7 +112,7 @@ void GeometryPath::extendConnectToModel(Model& aModel)
  void GeometryPath::extendInitStateFromProperties(SimTK::State& s) const
 {
     Super::extendInitStateFromProperties(s);
-    this->markCacheVariableValid(s, _colorCV);  // it is OK at its default value
+    markCacheVariableValid(s, _colorCV);  // it is OK at its default value
 }
 
 //------------------------------------------------------------------------------
@@ -449,22 +449,22 @@ void GeometryPath::updateGeometry(const SimTK::State& s) const
 double GeometryPath::getLength( const SimTK::State& s) const
 {
     computePath(s);  // compute checks if path needs to be recomputed
-    return this->getCacheVariableValue(s, _lengthCV);
+    return getCacheVariableValue(s, _lengthCV);
 }
 
 void GeometryPath::setLength( const SimTK::State& s, double length ) const
 {
-    this->setCacheVariableValue(s, _lengthCV, length);
+    setCacheVariableValue(s, _lengthCV, length);
 }
 
 void GeometryPath::setColor(const SimTK::State& s, const SimTK::Vec3& color) const
 {
-    this->setCacheVariableValue(s, _colorCV, color);
+    setCacheVariableValue(s, _colorCV, color);
 }
 
 Vec3 GeometryPath::getColor(const SimTK::State& s) const
 {
-    return this->getCacheVariableValue(s, _colorCV);
+    return getCacheVariableValue(s, _colorCV);
 }
 
 //_____________________________________________________________________________
@@ -476,11 +476,11 @@ Vec3 GeometryPath::getColor(const SimTK::State& s) const
 double GeometryPath::getLengtheningSpeed( const SimTK::State& s) const
 {
     computeLengtheningSpeed(s);
-    return this->getCacheVariableValue(s, _speedCV);
+    return getCacheVariableValue(s, _speedCV);
 }
 void GeometryPath::setLengtheningSpeed( const SimTK::State& s, double speed ) const
 {
-    this->setCacheVariableValue(s, _speedCV, speed);
+    setCacheVariableValue(s, _speedCV, speed);
 }
 
 void GeometryPath::setPreScaleLength( const SimTK::State& s, double length ) {
@@ -813,12 +813,12 @@ extendPostScale(const SimTK::State& s, const ScaleSet& scaleSet)
  */
 void GeometryPath::computePath(const SimTK::State& s) const
 {
-    if (this->isCacheVariableValid(s, _currentPathCV)) {
+    if (isCacheVariableValid(s, _currentPathCV)) {
         return;
     }
 
     // Clear the current path.
-    Array<AbstractPathPoint*>& currentPath = this->updCacheVariableValue(s, _currentPathCV);
+    Array<AbstractPathPoint*>& currentPath = updCacheVariableValue(s, _currentPathCV);
     currentPath.setSize(0);
 
     // Add the active fixed and moving via points to the path.
@@ -832,7 +832,7 @@ void GeometryPath::computePath(const SimTK::State& s) const
     applyWrapObjects(s, currentPath);
     calcLengthAfterPathComputation(s, currentPath);
 
-    this->markCacheVariableValid(s, _currentPathCV);
+    markCacheVariableValid(s, _currentPathCV);
 }
 
 //_____________________________________________________________________________
@@ -841,7 +841,7 @@ void GeometryPath::computePath(const SimTK::State& s) const
  */
 void GeometryPath::computeLengtheningSpeed(const SimTK::State& s) const
 {
-    if (this->isCacheVariableValid(s, _speedCV)) {
+    if (isCacheVariableValid(s, _speedCV)) {
         return;
     }
 
