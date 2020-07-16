@@ -126,30 +126,34 @@ void PrescribedController::extendConnectToModel(Model& model)
 
         for(int i=0; i<ncols; ++i){
             if(i == tcol) continue;
-            const string& actName = columns[i];
-            int found = controlFuncs.getIndex(actName);
+            const string& columnLabel = columns[i];
             // if the columns is for a control already part of the set,
             // or is time, ignore it.
-            if(found < 0){  // not found in the controllers set of functions
+            if(!controlFuncs.contains(columnLabel)){ // not found in the controllers set of functions
                 // find a corresponding actuator in the model
-                found = modelActuators.getIndex(actName);
-                if(found >= 0){ // found a corresponding actuator
-                    controls.getDataColumn(controls.getStateIndex(actName), 
-                                            data);
-                    Function* pfunc=createFunctionFromData(actName, time, data);
-                    //if not already assigned to this controller, assign it
-                    int inC = controllerActuators.getIndex(actName);
-                    if(inC >= 0)
-                        prescribeControlForActuator(inC, pfunc);
-                    else{ // add the actuator to the controller's list
-                        updProperty_actuator_list().appendValue(actName);
-                        controllerActuators.adoptAndAppend(&modelActuators[found]);
-                        prescribeControlForActuator(actName, pfunc);
-                    }
+                const Actuator* actuator;
+                int foundByName = modelActuators.getIndex(columnLabel);
+                if (foundByName >= 0) {
+                    actuator = &modelActuators.get(foundByName);
+                } else if (getModel().hasComponent<Actuator>(columnLabel)) {
+                    // The column label is an actuator path.
+                    actuator = &getModel().getComponent<Actuator>(columnLabel);
+                } else {
+                    log_warn("PrescribedController::extendConnectToModel() "
+                             "could not find actuator {} in the model.",
+                            columnLabel);
+                    continue;
                 }
-                else{
-                    log_warn("PrescribedController::extendConnectToModel() could not find actuator {} in the model.",
-                        actName);
+                controls.getDataColumn(controls.getStateIndex(columnLabel), data);
+                Function* pfunc=createFunctionFromData(columnLabel, time, data);
+                //if not already assigned to this controller, assign it
+                int inC = controllerActuators.getIndex(actuator->getName());
+                if(inC >= 0)
+                    prescribeControlForActuator(inC, pfunc);
+                else{ // add the actuator to the controller's list
+                    updProperty_actuator_list().appendValue(actuator->getName());
+                    controllerActuators.adoptAndAppend(actuator);
+                    prescribeControlForActuator(actuator->getName(), pfunc);
                 }
             }// if found in functions, it has already been prescribed
         }// end looping through columns
