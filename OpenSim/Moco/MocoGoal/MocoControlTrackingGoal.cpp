@@ -155,7 +155,8 @@ void MocoControlTrackingGoal::calcIntegrandImpl(
         const auto& modelValue = controls[m_control_indices[i]];
         const auto& refValue =
                 m_ref_splines[m_ref_indices[i]].calcValue(timeVec);
-        integrand += m_control_weights[i] * pow(modelValue - refValue, 2);
+        integrand +=
+                m_control_weights[i] * SimTK::square(modelValue - refValue);
     }
 }
 

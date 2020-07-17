@@ -38,6 +38,9 @@
 % SmoothSphereHalfSpaceForces (two contacts per foot) to model the
 % contact interactions between the feet and the ground.
 %
+% Do not use this model for research. The path of the gastroc muscle contains
+% an error--the path does not cross the knee joint.
+%
 % Data
 % ----
 % The coordinate data included in the 'referenceCoordinates.sto' comes from

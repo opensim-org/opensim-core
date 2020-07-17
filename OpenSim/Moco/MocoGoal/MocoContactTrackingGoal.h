@@ -25,9 +25,10 @@ namespace OpenSim {
 
 class SmoothSphereHalfSpaceForce;
 
-/** A contact group is a single ExternalForce and a list of contact force
-components in the model whose forces are summed and compared to the
-ExternalForce.
+/** A contact group consists of the name of a single ExternalForce and a list of
+contact force component paths in the model. The MocoContactTrackingGoal
+calculates the difference between the data from the ExternalForce and the sum of
+the forces from the contact force components.
 
 ### Alternative frame paths
 
@@ -51,7 +52,8 @@ class OSIMMOCO_API MocoContactTrackingGoalGroup : public Object {
 public:
     OpenSim_DECLARE_LIST_PROPERTY(contact_force_paths, std::string,
             "Paths to SmoothSphereHalfSpaceForce objects in the model whose "
-            "forces are summed and compared to an single ExternalForce.");
+            "forces are summed and compared the data from a single "
+            "ExternalForce.");
     OpenSim_DECLARE_PROPERTY(external_force_name, std::string,
             "The name of an ExternalForce object in the ExternalLoads set.");
     OpenSim_DECLARE_LIST_PROPERTY(alternative_frame_paths, std::string,

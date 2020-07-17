@@ -112,7 +112,8 @@ void MocoStateTrackingGoal::calcIntegrandImpl(
     for (int iref = 0; iref < m_refsplines.getSize(); ++iref) {
         const auto& modelValue = input.state.getY()[m_sysYIndices[iref]];
         const auto& refValue = m_refsplines[iref].calcValue(timeVec);
-        integrand += m_state_weights[iref] * pow(modelValue - refValue, 2);
+        integrand +=
+                m_state_weights[iref] * SimTK::square(modelValue - refValue);
     }
 }
 

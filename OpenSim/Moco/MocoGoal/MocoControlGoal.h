@@ -47,7 +47,7 @@ We use the following notation:
 - \f$ x_c(t) \f$: control signal \f$ c \f$.
 - \f$ p \f$: the `exponent`.
 
-If `p > 2`, we first the absolute value of the control; this is to properly
+If `p > 2`, we first take the absolute value of the control; this is to properly
 handle odd exponents.
 @ingroup mocogoal */
 class OSIMMOCO_API MocoControlGoal : public MocoGoal {

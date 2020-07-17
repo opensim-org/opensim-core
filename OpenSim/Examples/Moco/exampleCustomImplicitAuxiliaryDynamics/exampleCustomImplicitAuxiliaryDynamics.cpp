@@ -23,19 +23,22 @@ using namespace OpenSim;
 /// This class implements a custom component with simple dynamics in implicit
 /// and explicit form. The dynamics are defined by the differential
 /// equation y y' - 1 = 0. The explicit form is y' = 1 / y.
-/// To implement implicit auxiliary dynamics, take the following steps:
+/// To implement a state variable with implicit auxiliary dynamics, take the
+/// following steps:
+/// - add a state variable in extendAddToSystem() by invoking
+///   addStateVariable();
 /// - add an output statebounds_<state-name> to be used by Moco as the default
 ///   bounds on the state variable (optional);
 /// - add an output implicitresidual_<state-name> that provides the value of
 ///   the implicit differential equation;
 /// - add an output implicitenabled_<state-name> that indicates whether implicit
 ///   dynamics mode is enabled or disabled for this state variable;
-/// - add a discrete state variable implicitderiv_<state-name> to store the
-///   derivative of the state variable, which must be used within the implicit
-///   differential equation (Moco is responsible for setting the value of this
-///   variable);
+/// - add a discrete state variable implicitderiv_<state-name> in
+///   extendAddToSystem() to store the derivative of the state variable, which
+///   must be used within the implicit differential equation (Moco is
+///   responsible for setting the value of this variable);
 /// - add a cache variable to store the value of the implicit residual;
-/// - implement the implicit residual output function;
+/// - implement the implicit residual output function (see extendAddToSystem());
 /// - and implement computeStateVariableDerivatives() for both implicit and
 ///   explicit modes.
 class MyImplicitAuxiliaryDynamics : public Component {

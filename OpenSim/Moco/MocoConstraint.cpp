@@ -109,7 +109,7 @@ void MocoKinematicConstraint::calcKinematicConstraintErrors(
         m_num_position_eqs,
         errors.begin());
     // Derivative of position-level and velocity-level constraint errors.
-    std::copy_n(constraint.getPositionErrorsAsVector(state).begin(), 
+    std::copy_n(constraint.getVelocityErrorsAsVector(state).begin(),
         m_num_position_eqs + m_num_velocity_eqs,
         errors.begin() + m_num_position_eqs);
     // Second derivative of position-level, derivative of velocity-level,

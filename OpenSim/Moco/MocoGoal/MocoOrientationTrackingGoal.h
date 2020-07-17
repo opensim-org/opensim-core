@@ -79,7 +79,7 @@ public:
         set_rotation_reference_file(filepath);
     }
     /** Each column label must be the path of a valid frame path (see
-    seeRotationReferenceFile()). Calling this function clears the
+    setRotationReferenceFile()). Calling this function clears the
     `states_reference_file` and `rotation_reference_file` properties or the
     table provided via setStatesReference(), if any. */
     void setRotationReference(const TimeSeriesTable_<Rotation>& ref) {
