@@ -133,6 +133,36 @@ public:
     static bool EndsWithIgnoringCase(
             const std::string& string, const std::string& ending);
     static void eraseEmptyElements(std::vector<std::string>& list);
+
+    // A class that, on construction, switches the calling process's current
+    // working directory to the supplied directory. On destruction, it switches
+    // the calling process's working directory back to its original directory.
+    class CwdChanger final {
+        std::string _existingDir;
+    public:
+        static CwdChanger noop() {
+            return CwdChanger{};
+        }
+        CwdChanger() {
+            // noop ctor: enables conditional directory switching:
+            //    CwdChanger c = changeDir ? CwdChanger{"new/dir"} : CwdChanger{};
+        }
+        CwdChanger(const std::string& newDir) : _existingDir{IO::getCwd()} {
+            chDir(newDir);
+        }
+        CwdChanger(const CwdChanger&) = delete;
+        CwdChanger(CwdChanger&& tmp) {
+	    std::swap(_existingDir, tmp._existingDir);
+	    tmp._existingDir.clear();
+        }
+        CwdChanger& operator=(const CwdChanger&) = delete;
+        CwdChanger& operator=(CwdChanger&&) = delete;
+        ~CwdChanger() noexcept {
+            if (!_existingDir.empty()) {
+                chDir(_existingDir);
+            }
+        }
+    };
 //=============================================================================
 };  // END CLASS IO
 
