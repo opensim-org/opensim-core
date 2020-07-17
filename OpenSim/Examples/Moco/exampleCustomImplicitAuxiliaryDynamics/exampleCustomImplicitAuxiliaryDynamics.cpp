@@ -37,9 +37,10 @@ using namespace OpenSim;
 ///   extendAddToSystem() to store the derivative of the state variable, which
 ///   must be used within the implicit differential equation (Moco is
 ///   responsible for setting the value of this variable);
-/// - add a cache variable to store the value of the implicit residual;
-/// - implement the implicit residual output function (see extendAddToSystem());
-/// - and implement computeStateVariableDerivatives() for both implicit and
+/// - add a cache variable in extendAddToSystem() to store the value of the
+///   implicit residual;
+/// - implement the implicit residual output function; and
+/// - implement computeStateVariableDerivatives() for both implicit and
 ///   explicit modes.
 class MyImplicitAuxiliaryDynamics : public Component {
     OpenSim_DECLARE_CONCRETE_OBJECT(MyImplicitAuxiliaryDynamics, Component);
