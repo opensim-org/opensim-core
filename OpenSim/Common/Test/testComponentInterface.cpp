@@ -2458,25 +2458,25 @@ void testCacheVariableInterface() {
         c2.finalizeFromProperties();
         c2.finalizeConnections(c2);
 
-	// this should throw because the CacheVariable in `c2` has only
-	// been copy-constructed, not initialized (via `addCacheVariable`)
-	//
-	// note: I'm recycling the state here too, which causes different issues,
-	//       but I can't continue without a state
-	ASSERT_THROW(std::exception, c2.getCacheVariableValue(s, c2.cv));
-
-        c2.addToSystem(sys);
-	c2.cv = c2.addCacheVariable(k, v, SimTK::Stage::Model);
-
-	// this should throw because the CacheVariable in `c2` has only been
-	// partially initialized (indirectly, via `addCacheVariable`)
+        // this should throw because the CacheVariable in `c2` has only
+        // been copy-constructed, not initialized (via `addCacheVariable`)
+        //
+        // note: I'm recycling the state here too, which causes different issues,
+        //       but I can't continue without a state
         ASSERT_THROW(std::exception, c2.getCacheVariableValue(s, c2.cv));
 
-	SimTK::State s2 = sys.realizeTopology();
+        c2.addToSystem(sys);
+        c2.cv = c2.addCacheVariable(k, v, SimTK::Stage::Model);
 
-	// this should not throw because everything is correctly initialized in
-	// the copy
-	c2.getCacheVariableValue(s2, c2.cv);
+        // this should throw because the CacheVariable in `c2` has only been
+        // partially initialized (indirectly, via `addCacheVariable`)
+        ASSERT_THROW(std::exception, c2.getCacheVariableValue(s, c2.cv));
+
+        SimTK::State s2 = sys.realizeTopology();
+
+        // this should not throw because everything is correctly initialized in
+        // the copy
+        c2.getCacheVariableValue(s2, c2.cv);
     }
 
     // Component::addCacheVariable cannot be called with the same name twice because
