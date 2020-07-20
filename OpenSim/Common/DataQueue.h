@@ -22,7 +22,8 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-
+#include <queue>
+#include <SimTKcommon.h>
 #include <OpenSim/Common/osimCommonDLL.h>
 
 namespace OpenSim {
@@ -38,7 +39,29 @@ namespace OpenSim {
  *
  * @author Ayman Habib
  */
-template<class T> class DataQueue_ 
+/** Template class to conatin Queue Entries */
+template <class U> 
+class DataQueueEntry_ {
+public:
+    DataQueueEntry_(double timeStamp, const SimTK::RowVectorView_<U>& data)
+            : _timeStamp(timeStamp), _data(data){};
+    DataQueueEntry_(const DataQueueEntry_& other): _data(other._data)
+    {
+        _timeStamp = other.getTimeStamp();
+    };
+    DataQueueEntry_(DataQueueEntry_&&){};
+    DataQueueEntry_& operator=(const DataQueueEntry_&) { return (*this); };
+    virtual ~DataQueueEntry_(){};
+
+    double getTimeStamp() const { return _timeStamp; };
+    SimTK::RowVectorView_<U>& getData() const { return _data; };
+
+private:
+    double _timeStamp;
+    SimTK::RowVectorView_<U> _data;
+};
+
+template<class T> class DataQueue_ {
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -48,23 +71,28 @@ public:
     //--------------------------------------------------------------------------
     virtual ~DataQueue_() {}
     
-    DataQueue_() = default;
+    DataQueue_()                                = default;
+    DataQueue_(const DataQueue_&){};
+    DataQueue_(DataQueue_&&){};
+    DataQueue_& operator=(const DataQueue_&) { 
+        return (*this);
+    };
 
     //--------------------------------------------------------------------------
     // DataQueue Interface
     //--------------------------------------------------------------------------
-    void push_back(const double time, const SimTK::Array_<T> data) { 
+    void push_back(const double time, const SimTK::RowVectorView_<T>& data) { 
         std::unique_lock<std::mutex> mlock(m_mutex);
-        m_data_queue.push_back(std::tuple<time, data>);
+        m_data_queue.push(*new DataQueueEntry_<T>(time, data));
         mlock.unlock();     // unlock before notificiation to minimize mutex con
         m_cond.notify_one(); 
     }
-    void pop_front(double& time, SimTK::Array_<T>& data) { 
+    void pop_front(double& time, SimTK::RowVectorView_<T>& data) { 
         std::unique_lock<std::mutex> mlock(m_mutex);
         while (empty()) { m_cond.wait(mlock); }
         auto frontEntry = m_data_queue.pop_front();
-        time = frontEntry.first();
-        data = frontEntry.second();
+        time = frontEntry.getTimeStamp();
+        data = frontEntry.getData();
     }
     bool empty() const { 
         return m_data_queue.empty(); 
@@ -72,7 +100,7 @@ public:
 
 private:
     // As of now we use std::queue but other data structures could be used as well
-    std::queue<std::tuple<double, SimTK::Array_<T>>> m_data_queue;
+    std::queue<DataQueueEntry_<T>> m_data_queue;
     std::mutex m_mutex;
     std::condition_variable m_cond;
 

@@ -83,7 +83,7 @@ public:
 
     InverseKinematicsSolver(const Model& model,
                         const MarkersReference& markersReference,
-                        const OrientationsReference& orientationsReference,
+                        OrientationsReference& orientationsReference,
                         SimTK::Array_<CoordinateReference> &coordinateReferences,
                         double constraintWeight = SimTK::Infinity);
     
@@ -225,7 +225,7 @@ private:
     MarkersReference _markersReference;
 
     // The orientation reference values and weightings
-    OrientationsReference _orientationsReference;
+    SimTK::ReferencePtr<OrientationsReference> _orientationsReference;
 
     // Non-accessible cache of the marker values to be matched at a given state
     SimTK::Array_<SimTK::Vec3> _markerValues;
