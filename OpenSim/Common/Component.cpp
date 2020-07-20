@@ -1459,7 +1459,9 @@ void Component::extendRealizeTopology(SimTK::State& s) const
         }
     }
 
-    // DRAGON: the cache variables *must* be inserted into the SimTK::state
+    // allocate cache entry in the state
+    //
+    // BEWARE: the cache variables *must* be inserted into the SimTK::state
     //         in a deterministic order.
     //
     //         The reason this is necessary is because some API callers (e.g

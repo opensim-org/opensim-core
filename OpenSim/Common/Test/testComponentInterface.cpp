@@ -2270,7 +2270,13 @@ struct ComponentWithCacheVariable : public Component {
     OpenSim_DECLARE_CONCRETE_OBJECT(ComponentWithCacheVariable, Component);
 public:
     CacheVariable<double> cv;
+
+    using Component::addCacheVariable;
+
 };
+
+template<class T>
+using CacheVariable = Component::CacheVariable<T>;
 
 void testCacheVariableInterface() {
     // can default-initialize without throwing an exception
@@ -2280,7 +2286,7 @@ void testCacheVariableInterface() {
 
     // can value-initialize without throwing an exception
     {
-        CacheVariable<double>cv{};
+        CacheVariable<double> cv{};
     }
 
     // can be rvalue-initialized via `Component::addCacheVariable`
@@ -2315,8 +2321,8 @@ void testCacheVariableInterface() {
         CacheVariable<double> cv2 = cv;
     }
 
-    // A fully-initialized CacheVariable<T> (as in, initialized by `Component::extendRealizeTopology`)
-    // should throw an exception for all the methods because it hasn't been initialized in Simbody.
+    // the Component's cache variable value methods (e.g. Component::getCacheVariableValue)
+    // should throw if `Component::realizeTopology` has not yet been called
     {
         ComponentWithCacheVariable c{};
         const std::string k = "name";
@@ -2345,13 +2351,13 @@ void testCacheVariableInterface() {
 
     // C++ rng for doubles for these tests
     std::uniform_real_distribution<double> dist{};
-    std::default_random_engine engine(std::chrono::system_clock::now().time_since_epoch().count());
+    std::default_random_engine engine(static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count()));
     auto generate_random_double = [&]() {
         return dist(engine);
     };
 
-    // A fully-initialized CacheVariable<T> (as in, initialized by `Component::extendRealizeTopology`)
-    // should allow all cache-variable related methods to be called without throwing an exception.
+    // the component's cache variable value methods (e.g. Component::getCacheVariableValue)
+    // should work after `Component::realizeTopology` has been called
     {
         SimTK::MultibodySystem sys;
         SimbodyMatterSubsystem matter{sys};
@@ -2366,7 +2372,7 @@ void testCacheVariableInterface() {
         const double v = generate_random_double();
         c.cv = c.addCacheVariable(k, v, SimTK::Stage::Model);
 
-        SimTK::State s = sys.realizeTopology();
+        SimTK::State s = sys.realizeTopology();  // note: this initializes the value in SimTK
 
         c.markCacheVariableValid(s, k);
         ASSERT(c.isCacheVariableValid(s, c.cv) == true);
@@ -2424,9 +2430,10 @@ void testCacheVariableInterface() {
         }
     }
 
-    // When a CacheVariable is copy-constructed from an already-initialized CacheVariable,
-    // the copy cannot get/update cache variable values from the original and must be
-    // reinitialized via the rvalue returned by `addCacheVariable`.
+    // when a CacheVariable is copy-constructed from an already-initialized CacheVariable,
+    // the copy cannot get/update cache variable values from the original. The variable
+    // must be reinitialized (with `Component::addCacheVariable` followed by
+    // `Component::realizeTopology`)
     {
         SimTK::MultibodySystem sys;
         SimbodyMatterSubsystem matter{sys};
@@ -2450,15 +2457,26 @@ void testCacheVariableInterface() {
         ComponentWithCacheVariable c2 = c;
         c2.finalizeFromProperties();
         c2.finalizeConnections(c2);
-        c2.addToSystem(sys);
 
-        // The *copy* cannot perform any of these operations, because it was not
-        // initialized against a component (via addCacheVariable).
-        //
-        // Note: this would also be the behavior if `CacheVariable` was a member of some
-        // component that was memberwise-copied (default behavior), so the *copied* component
-        // must also re-initialize its cache variables via `copiedComponent.addCacheVariable(...)`
+	// this should throw because the CacheVariable in `c2` has only
+	// been copy-constructed, not initialized (via `addCacheVariable`)
+	//
+	// note: I'm recycling the state here too, which causes different issues,
+	//       but I can't continue without a state
+	ASSERT_THROW(std::exception, c2.getCacheVariableValue(s, c2.cv));
+
+        c2.addToSystem(sys);
+	c2.cv = c2.addCacheVariable(k, v, SimTK::Stage::Model);
+
+	// this should throw because the CacheVariable in `c2` has only been
+	// partially initialized (indirectly, via `addCacheVariable`)
         ASSERT_THROW(std::exception, c2.getCacheVariableValue(s, c2.cv));
+
+	SimTK::State s2 = sys.realizeTopology();
+
+	// this should not throw because everything is correctly initialized in
+	// the copy
+	c2.getCacheVariableValue(s2, c2.cv);
     }
 
     // Component::addCacheVariable cannot be called with the same name twice because

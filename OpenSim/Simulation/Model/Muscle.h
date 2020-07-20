@@ -865,7 +865,7 @@ protected:
 
     mutable CacheVariable<Muscle::MuscleLengthInfo> _lengthInfoCV;
     mutable CacheVariable<Muscle::FiberVelocityInfo> _velInfoCV;
-    mutable CacheVariable<MuscleDynamicsInfo> _dynamicsInfoCV;
+    mutable CacheVariable<Muscle::MuscleDynamicsInfo> _dynamicsInfoCV;
     mutable CacheVariable<Muscle::MusclePotentialEnergyInfo> _potentialEnergyInfoCV;
 
 //=============================================================================
