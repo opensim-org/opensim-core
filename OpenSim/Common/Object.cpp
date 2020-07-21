@@ -1657,7 +1657,9 @@ void Object::updateFromXMLDocument()
     assert(_document != nullptr);
 
     SimTK::Xml::Element e = _document->getRootDataElement();
-    IO::CwdChanger cwdInDirOfXMLFile{IO::getParentDirectory(_document->getFileName())};
+    IO::CwdChanger cwdInDirOfXMLFile{
+        IO::getParentDirectory(_document->getFileName())
+    };
     updateFromXMLNode(e, _document->getDocumentVersion());
 }
 
