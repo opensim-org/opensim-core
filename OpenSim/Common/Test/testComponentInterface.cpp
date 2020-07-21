@@ -2391,12 +2391,11 @@ void testCacheVariableInterface() {
         ASSERT(c.getCacheVariableValue<double>(s, k) == v);
         ASSERT(c.getCacheVariableValue(s, c.cv) == v);
 
-        // Setting the value via key returns the new value. It also causes
-        // subsequent `get` methods (both string key + CacheVariable ones)
-        // to return the new value
+        // Setting the value via key causes subsequent `get` methods
+        // (both string key + CacheVariable ones) to return the new value.
         {
             double v2 = generate_random_double();
-            ASSERT(c.setCacheVariableValue<double>(s, k, v2) == v2);
+            c.setCacheVariableValue<double>(s, k, v2);
             ASSERT(c.getCacheVariableValue<double>(s, k) == v2);
             ASSERT(c.getCacheVariableValue(s, c.cv) == v2);
         }
@@ -2404,7 +2403,7 @@ void testCacheVariableInterface() {
         // Same as above, but setting via a CacheVariable<T>.
         {
             double v2 = generate_random_double();
-            ASSERT(c.setCacheVariableValue<double>(s, c.cv, v2) == v2);
+            c.setCacheVariableValue<double>(s, c.cv, v2);
             ASSERT(c.getCacheVariableValue<double>(s, k) == v2);
             ASSERT(c.getCacheVariableValue(s, c.cv) == v2);
         }

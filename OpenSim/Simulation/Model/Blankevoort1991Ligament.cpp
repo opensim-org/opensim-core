@@ -164,7 +164,8 @@ double Blankevoort1991Ligament::getStrain(const SimTK::State& state) const {
 
     double length = getLength(state);
     double strain = length/get_slack_length() - 1;
-    return setCacheVariableValue(state, _strainCV, strain);
+    setCacheVariableValue(state, _strainCV, strain);
+    return strain;
 }
 
 double Blankevoort1991Ligament::getStrainRate(const SimTK::State& state) const {
@@ -174,7 +175,8 @@ double Blankevoort1991Ligament::getStrainRate(const SimTK::State& state) const {
 
     double lengthening_speed = getLengtheningSpeed(state);
     double strain_rate = lengthening_speed / get_slack_length();
-    return setCacheVariableValue(state, _strainRateCV, strain_rate);
+    setCacheVariableValue(state, _strainRateCV, strain_rate);
+    return strain_rate;
 }
 
 double Blankevoort1991Ligament::getSpringForce(const SimTK::State& state) const {
@@ -183,7 +185,8 @@ double Blankevoort1991Ligament::getSpringForce(const SimTK::State& state) const 
     }
 
     double spring_force = calcSpringForce(state);
-    return setCacheVariableValue(state, _forceSpringCV, spring_force);
+    setCacheVariableValue(state, _forceSpringCV, spring_force);
+    return spring_force;
 }
 
 double Blankevoort1991Ligament::getDampingForce(const SimTK::State& state) const {
@@ -192,7 +195,8 @@ double Blankevoort1991Ligament::getDampingForce(const SimTK::State& state) const
     }
 
     double damping_force = calcDampingForce(state);
-    return setCacheVariableValue(state, _forceDampingCV, damping_force);
+    setCacheVariableValue(state, _forceDampingCV, damping_force);
+    return damping_force;
 }
 
 double Blankevoort1991Ligament::getTotalForce(const SimTK::State& state) const {
@@ -201,7 +205,8 @@ double Blankevoort1991Ligament::getTotalForce(const SimTK::State& state) const {
     }
 
     double force_total = calcTotalForce(state);
-    return setCacheVariableValue(state, _forceTotalCV, force_total);
+    setCacheVariableValue(state, _forceTotalCV, force_total);
+    return force_total;
 }
 
 double Blankevoort1991Ligament::getLinearStiffnessForcePerLength() const {
