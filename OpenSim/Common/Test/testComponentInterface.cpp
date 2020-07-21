@@ -2469,7 +2469,7 @@ void testCacheVariableInterface() {
         c2.cv = c2.addCacheVariable(k, v, SimTK::Stage::Model);
 
         // this should throw because the CacheVariable in `c2` has only been
-        // partially initialized (indirectly, via `addCacheVariable`)
+        // partially initialized (with `Component::addCacheVariable`)
         ASSERT_THROW(std::exception, c2.getCacheVariableValue(s, c2.cv));
 
         SimTK::State s2 = sys.realizeTopology();

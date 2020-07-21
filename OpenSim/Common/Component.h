@@ -1371,7 +1371,8 @@ public:
      * A cache variable containing a value of type T.
      *
      * - Initialized with Component::addCacheVariable
-     * - See also: cache variable methods in Component (e.g. Component::getCacheVariableValue)
+     * - See also: cache variable methods in Component (e.g.
+     *   Component::getCacheVariableValue)
      *
      * @tparam T
      *   Type of data held in the cache variable
@@ -1452,9 +1453,7 @@ protected:
                                       SimTK::Stage dependsOnStage) const
     {
         if (cacheVariableName.empty()) {
-            std::stringstream msg;
-            msg << "Component::addCacheVariable(...): cannot create a cache variable with an empty name (class = " << getClassName() << ", concrete class name = " << getConcreteClassName() << ")";
-            OPENSIM_THROW(Exception, msg.str());
+            OPENSIM_THROW_FRMOBJ(Exception, "cannot create a cache variable with an empty name");
         }
 
         // edge-case: there is already a cache variable with the same name allocated.
@@ -1463,8 +1462,8 @@ protected:
         //            aliasing eachother at run-time.
         if (this->_namedCacheVariables.find(cacheVariableName) != this->_namedCacheVariables.end()) {
             std::stringstream msg;
-            msg << "Component::addCacheVariable(...): cannot create a cache variable with the name '" << cacheVariableName << "' because another cache variable with that name already exists (class = " << getClassName() << ", concrete class name = " << getConcreteClassName() << ")";
-            OPENSIM_THROW(Exception, msg.str());
+            msg << "cannot create a cache variable with the name '" << cacheVariableName << "' because another cache variable with that name already exists";
+            OPENSIM_THROW_FRMOBJ(Exception, msg.str());
         }
 
         this->_namedCacheVariables.emplace(
@@ -1642,9 +1641,9 @@ public:
     /**
      * Returns a mutable reference to the value of a cache variable identified by `name`.
      *
-     * Note: do not forget to mark the cache variable as valid after updating. Otherwise,
-     *       it will force a re-evaluation of the value if the evaluation method is monitoring
-     *       the validity of the cache value.
+     * Note: do not forget to mark the cache variable as valid after updating.
+     *       Otherwise, it will force a re-computation of the value if the
+     *       computation method is monitoring the validity of the cache value.
      *
      * @param state
      *     the State in which to set the value
@@ -1664,9 +1663,9 @@ public:
     /**
      * Returns a mutable reference to the value of a cache variable.
      *
-     * Note: do not forget to mark the cache variable as valid after updating. Otherwise,
-     *       it will force a re-evaluation of the value if the evaluation method is monitoring
-     *       the validity of the cache value.
+     * Note: do not forget to mark the cache variable as valid after updating.
+     *       Otherwise, it will force a re-computation of the value if the
+     *       computation method is monitoring the validity of the cache value.
      *
      * @param state
      *     the State in which to set the value
@@ -1687,9 +1686,9 @@ public:
      * Returns true if the cache variable, identified by `name`, is valid.
      *
      * This method enables callers to monitor the validity of the cache variable,
-     * letting them decide whether to update the cache variable's value (or not).
-     * When evaluating an update is costly, use this method to check whether
-     * re-evaluation is necessary.
+     * which enables the caller to decide whether to update the cache variable's
+     * value (or not). When computing an update is costly, use this method to check
+     * whether computing the value is necessary.
      *
      * @param state
      *     the State in which the cache variable's value resides
@@ -1697,7 +1696,7 @@ public:
      *     the name of the cache variable
      * @return bool
      *     whether the cache variable's value is valid or not
-     * @throws ComponentHasNoSystem 
+     * @throws ComponentHasNoSystem
      *     if this Component has not been added to a System (i.e., if initSystem has not been called)
      */
     bool isCacheVariableValid(const SimTK::State& state, const std::string& name) const;
@@ -1706,9 +1705,9 @@ public:
      * Returns true if the cache variable is valid.
      *
      * This method enables callers to monitor the validity of the cache variable,
-     * letting them decide whether to update the cache variable's value (or not).
-     * When evaluating an update is costly, use this method to check whether
-     * re-evaluation is necessary.
+     * which enables the caller to decide whether to update the cache variable's
+     * value (or not). When computing an update is costly, use this method to check
+     * whether computing the value is necessary.
      *
      * @param state
      *     the State in which the cache variable's value resides
@@ -1732,16 +1731,18 @@ public:
      * Upon marking a cache variable's value as valid, the cache variable will remain
      * valid until either:
      *
-     * - the realization stage falls below the minimum realization stage set when the
-     *   cache variable was initialized with `Component::addCacheVariable`
+     * - the realization stage falls below the minimum realization stage set
+     *   when the cache variable was initialized with `Component::addCacheVariable`
      *
      * - the cache variable is explicitly invalidated by calling
      *   `Component::markCacheVariableInvalid`
      *
-     * This method causes `Component::isCacheVariableValid`, which is commonly used
-     * by evaluation methods to decide on when to re-evaluate values, to return true.
-     * Therefore, if a cache variable is not marked as valid then the evaluation method
-     * may re-evaluate a cache variable's value more than necessary, which may be costly.
+     * This method causes `Component::isCacheVariableValid` to return true.
+     * `Component::isCacheVariableValid` is commonly used by value-getting
+     * methods to decide on whether to return the value as-is or recompute the
+     * value. Therefore, if a cache variable is not marked as valid then the
+     * cache variable's value may be recomputed more than necessary, which may
+     * be costly.
      *
      * @param state
      *     the State in which the cache variable's value resides
@@ -1758,16 +1759,18 @@ public:
      * Upon marking a cache variable's value as valid, the cache variable will remain
      * valid until either:
      *
-     * - the realization stage falls below the minimum realization stage set when the
-     *   cache variable was initialized with `Component::addCacheVariable`
+     * - the realization stage falls below the minimum realization stage set
+     *   when the cache variable was initialized with `Component::addCacheVariable`
      *
      * - the cache variable is explicitly invalidated by calling
      *   `Component::markCacheVariableInvalid`
      *
-     * This method causes `Component::isCacheVariableValid`, which is commonly used
-     * by evaluation methods to decide on when to re-evaluate values, to return true.
-     * Therefore, if a cache variable is not marked as valid then the evaluation method
-     * may re-evaluate a cache variable's value more than necessary, which may be costly.
+     * This method causes `Component::isCacheVariableValid` to return true.
+     * `Component::isCacheVariableValid` is commonly used by value-getting
+     * methods to decide on whether to return the value as-is or recompute the
+     * value. Therefore, if a cache variable is not marked as valid then the
+     * cache variable's value may be recomputed more than necessary, which may
+     * be costly.
      *
      * @param state
      *     the State in which the cache variable's value resides
@@ -1787,12 +1790,12 @@ public:
     /**
      * Marks the value of a cache variable, identified by `name`, as invalid.
      *
-     * Upon marking a cache variable's value as invalid, it will remain invalid until
-     * `Component::markCacheVariableValid` is called (or a method which uses that, such
-     * as `Component::setCacheVariableValue`, is called).
+     * Upon marking a cache variable's value as invalid, it will remain invalid
+     * until `Component::markCacheVariableValid` is called (or a method which
+     * uses that, such as `Component::setCacheVariableValue`, is called).
      *
      * - Cache variables are automatically marked as invalid when the realization stage
-     *   falls below the minimum realization stage set when the cache variable was 
+     *   falls below the minimum realization stage set when the cache variable was
      *   initialized with `Component::addCacheVariable`.
      *
      * - Cache variables *may* be indirectly marked as invalid by other methods. For
@@ -1800,8 +1803,9 @@ public:
      *   a lower stage. Concretely:
      *
      *   - A (hypothetical) component has a `length` state variable
-     *   - There are cache variables that are computed from `length` (e.g. `velocity`)
-     *   - So changing the `length` may invalidate `velocity` indirectly (depending on
+     *   - There are cache variables that are computed from `length` (e.g.
+     *   `strain`)
+     *   - So changing the `length` may invalidate the `strain` indirectly (depending on
      *     how the state variable is handled)
      *
      * @param state
@@ -1816,9 +1820,9 @@ public:
     /**
      * Marks the value of a cache variable as invalid.
      *
-     * Upon marking a cache variable's value as invalid, it will remain invalid until
-     * `Component::markCacheVariableValid` is called (or a method which uses that, such
-     * as `Component::setCacheVariableValue`, is called).
+     * Upon marking a cache variable's value as invalid, it will remain invalid
+     * until `Component::markCacheVariableValid` is called (or a method which
+     * uses that, such as `Component::setCacheVariableValue`, is called).
      *
      * - Cache variables are automatically marked as invalid when the realization stage
      *   falls below the minimum realization stage set when the cache variable was
@@ -1829,8 +1833,9 @@ public:
      *   a lower stage. Concretely:
      *
      *   - A (hypothetical) component has a `length` state variable
-     *   - There are cache variables that are computed from `length` (e.g. `velocity`)
-     *   - So changing the `length` may invalidate `velocity` indirectly (depending on
+     *   - There are cache variables that are computed from `length` (e.g.
+     *   `strain`)
+     *   - So changing the `length` may invalidate the `strain` indirectly (depending on
      *     how the state variable is handled)
      *
      * @param state
@@ -3138,10 +3143,10 @@ private:
         SimTK::ClonePtr<SimTK::AbstractValue> value;
         SimTK::Stage dependsOnStage;
 
-	// initialized by Component::extendRealizeTopology
+        // initialized by Component::extendRealizeTopology
         SimTK::ResetOnCopy<SimTK::CacheEntryIndex> maybeUninitIndex{
-	    SimTK::InvalidIndex
-	};
+            SimTK::InvalidIndex
+        };
 
         StoredCacheVariable(SimTK::AbstractValue* _value,
                             SimTK::Stage _dependsOnStage) :
@@ -3153,7 +3158,7 @@ private:
            if (this->maybeUninitIndex != SimTK::InvalidIndex) {
                return this->maybeUninitIndex;
            } else {
-	       OPENSIM_THROW(Exception, "StoredCacheVariable::get: failed because this->index == SimTK::InvalidIndex: this can happen if Component::extendRealizeTopology has not been called");
+               OPENSIM_THROW(Exception, "StoredCacheVariable::get: failed because this->index == SimTK::InvalidIndex: this can happen if Component::extendRealizeTopology has not been called");
            }
        }
     };
