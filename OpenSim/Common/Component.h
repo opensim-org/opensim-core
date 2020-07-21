@@ -3181,7 +3181,7 @@ private:
     mutable std::map<std::string, DiscreteVariableInfo> _namedDiscreteVariableInfo;
     // Map names of cache entries of the Component to their individual
     // cache information.
-    mutable std::unordered_map<std::string, StoredCacheVariable> _namedCacheVariables;
+    mutable SimTK::ResetOnCopy<std::unordered_map<std::string, StoredCacheVariable>> _namedCacheVariables;
 
     // Check that the list of _allStateVariables is valid
     bool isAllStatesVariablesListValid() const;

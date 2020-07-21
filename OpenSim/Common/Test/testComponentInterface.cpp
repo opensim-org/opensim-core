@@ -2439,44 +2439,53 @@ void testCacheVariableInterface() {
         SimbodyMatterSubsystem matter{sys};
         GeneralForceSubsystem forces{sys};
 
-        ComponentWithCacheVariable c{};
-        c.finalizeFromProperties();
-        c.finalizeConnections(c);
-        c.addToSystem(sys);
+        ComponentWithCacheVariable c1{};
+        c1.finalizeFromProperties();
+        c1.finalizeConnections(c1);
+        c1.addToSystem(sys);
 
         const std::string k = "name";
         const double v = generate_random_double();
-        CacheVariable<double> cv = c.addCacheVariable(k, v, SimTK::Stage::Model);
+        c1.cv = c1.addCacheVariable(k, v, SimTK::Stage::Model);
 
         SimTK::State s = sys.realizeTopology();
 
         // Normal usage with no copies works as expected
-        c.markCacheVariableValid(s, cv);
-        ASSERT(c.getCacheVariableValue(s, cv) == v);
+        c1.markCacheVariableValid(s, c1.cv);
+        ASSERT(c1.getCacheVariableValue(s, c1.cv) == v);
 
-        ComponentWithCacheVariable c2 = c;
+        // create a copy via standard C++ semantics
+        ComponentWithCacheVariable c2 = c1;
+
+        // c2.cv is only copy-initialized, it must be allocated with
+        // `Component::addCacheVariable`
+        ASSERT_THROW(std::exception, c2.getCacheVariableValue(s, c2.cv));
+
+        // calling `Component::addToSystem` usually allocates the cache variable
+        // in `Component` (in standard implementations, `extendAddToSystem`
+        // handles that). Here, the allocation step is performed explicitly.
         c2.finalizeFromProperties();
         c2.finalizeConnections(c2);
-
-        // this should throw because the CacheVariable in `c2` has only
-        // been copy-constructed, not initialized (via `addCacheVariable`)
-        //
-        // note: I'm recycling the state here too, which causes different issues,
-        //       but I can't continue without a state
-        ASSERT_THROW(std::exception, c2.getCacheVariableValue(s, c2.cv));
-
         c2.addToSystem(sys);
-        c2.cv = c2.addCacheVariable(k, v, SimTK::Stage::Model);
 
-        // this should throw because the CacheVariable in `c2` has only been
-        // partially initialized (indirectly, via `addCacheVariable`)
+        // throws, because `ComponentWithCacheVariable` does not actually
+        // declare a `extendAddToSystem` in which `addCacheVariable` is called,
+        // so the cache variable is still in the copy-initialized state.
         ASSERT_THROW(std::exception, c2.getCacheVariableValue(s, c2.cv));
 
-        SimTK::State s2 = sys.realizeTopology();
+        c2.addCacheVariable(k, v, SimTK::Stage::Model);
 
-        // this should not throw because everything is correctly initialized in
-        // the copy
-        c2.getCacheVariableValue(s2, c2.cv);
+        // throws because `Component::addCacheVariable` only allocates the
+        // variable in the `Component`, not SimTK.
+        ASSERT_THROW(std::exception, c2.getCacheVariableValue(s, c2.cv));
+
+        // calling `SimTK::System::realizeTopology` is what actually initializes
+        // the value in a *newly created* `SimTK::State`, so this does not throw
+        SimTK::State s2 = sys.realizeTopology();
+        c2.markCacheVariableValid(s2, c2.cv);
+
+        // works without throwing
+        ASSERT(c2.getCacheVariableValue(s2, c2.cv) == v);
     }
 
     // Component::addCacheVariable cannot be called with the same name twice because
