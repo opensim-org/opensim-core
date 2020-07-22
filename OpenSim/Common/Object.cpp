@@ -115,7 +115,7 @@ Object::Object(const string &aFileName, bool aUpdateFromXMLNode)
     // relative to that directory. Make sure we switch back properly in case
     // of an exception.
     if (aUpdateFromXMLNode) {
-        IO::CwdChanger cwdInXMLDir{IO::getParentDirectory(aFileName)};
+        IO::CwdChanger cwd = IO::CwdChanger::changeToParentOf(aFileName);
         updateFromXMLNode(myNode, _document->getDocumentVersion());
     }
 }
@@ -1364,7 +1364,7 @@ print(const string &aFileName) const
     {
         // Temporarily change current directory so that inlined files
         // are written to correct relative directory
-        IO::CwdChanger cwdInXMLDir{IO::getParentDirectory(aFileName)};
+        IO::CwdChanger cwd = IO::CwdChanger::changeToParentOf(aFileName);
         std::unique_ptr<XMLDocument> newDoc{new XMLDocument()};
         if (_document != nullptr) {
             newDoc->copyDefaultObjects(*_document);
@@ -1603,7 +1603,7 @@ makeObjectFromFile(const std::string &aFileName)
         // Here file is deemed legit, chdir to where the file lives
         // here and restore at the end so offline objects are handled
         // properly
-        IO::CwdChanger cwdInXmlDir{IO::getParentDirectory(aFileName)};
+        IO::CwdChanger cwd = IO::CwdChanger::changeToParentOf(aFileName);
         newObject->_document = doc;
         if (newFormat) {
             newObject->updateFromXMLNode(*doc->getRootElement().element_begin(), doc->getDocumentVersion());
@@ -1657,9 +1657,7 @@ void Object::updateFromXMLDocument()
     assert(_document != nullptr);
 
     SimTK::Xml::Element e = _document->getRootDataElement();
-    IO::CwdChanger cwdInDirOfXMLFile{
-        IO::getParentDirectory(_document->getFileName())
-    };
+    IO::CwdChanger cwd = IO::CwdChanger::changeToParentOf(_document->getFileName());
     updateFromXMLNode(e, _document->getDocumentVersion());
 }
 

@@ -134,47 +134,71 @@ public:
             const std::string& string, const std::string& ending);
     static void eraseEmptyElements(std::vector<std::string>& list);
 
-    // A class that, on construction, switches the calling process's current
-    // working directory to the supplied directory. On destruction, it switches
-    // the calling process's working directory back to its original directory.
+    /**
+     * A class that:
+     *
+     * - On construction: switches the calling process's current working
+     *   directory to the supplied directory
+     *
+     * - On destruction: switches the calling process's working directory
+     *   back to its original directory.
+     */
     class CwdChanger final {
         std::string _existingDir;
+
+        /**
+         * Constructs a CwdChanger that does nothing.
+         */
+        CwdChanger();
+
+        /**
+         * Constructs a CwdChanger that, during construction, switches the
+         * calling process's working directory to `newDir`.
+         */
+        CwdChanger(const std::string& newDir);
+
     public:
-        static CwdChanger noop() {
-            return CwdChanger{};
-        }
-        CwdChanger() {
-            // default (noop) ctor that enables conditional directory switching:
-            //    CwdChanger c = changeDir ? CwdChanger{"new/dir"} : CwdChanger{};
-        }
-        CwdChanger(const std::string& newDir) : _existingDir{IO::getCwd()} {
-            chDir(newDir);
-        }
+        /**
+         * Returns a CwdChanger that does nothing.
+         *
+         * This is useful for conditional directory changing:
+         *
+         *     CwdChanger c = shouldSwitch ? CwdChanger::changeTo(p) : CwdChanger::noop();
+         */
+        static CwdChanger noop();
+
+        /**
+         * Returns a CwdChanger that changes to `newDir`.
+         */
+        static CwdChanger changeTo(const std::string& newDir);
+
+        /**
+         * Returns a CwdChanger that changes to the parent of `path`.
+         *
+         * This is useful when changing into a file's parent dir:
+         *
+         *     CwdChanger::changeToParentOf(xmlFile);
+         */
+        static CwdChanger changeToParentOf(const std::string& path);
+
         CwdChanger(const CwdChanger&) = delete;
-
-        // a custom move constructor is necessary because the default move
-        // constructor, which effectively calls `this->_existingDir{std::move(tmp._existingDir)}`
-        // is specified to leave `tmp._existingDir` in an unspecified state:
-        //
-        // from: https://en.cppreference.com/w/cpp/string/basic_string/basic_string
-        //
-        // > Move constructor. Constructs the string with the contents of
-        // > other using move semantics. other is left in valid, but
-        // > unspecified state
-        //
-        // `~CwdChanger` requires that `tmp._existingDir.empty() == true`; otherwise,
-        // destruction of the temporary will cause a directory change.
-        CwdChanger(CwdChanger&& tmp) : _existingDir{} {
-            std::swap(this->_existingDir, tmp._existingDir);
-        }
-
+        CwdChanger(CwdChanger&& tmp);
         CwdChanger& operator=(const CwdChanger&) = delete;
         CwdChanger& operator=(CwdChanger&&) = delete;
-        ~CwdChanger() noexcept {
-            if (!_existingDir.empty()) {
-                chDir(_existingDir);
-            }
-        }
+
+        /**
+         * Destructs a CwdChanger instance.
+         *
+         * The destructor switches the calling process's current working
+         * directory back to whatever it was before constructing the instance,
+         * unless:
+         *
+         * - The instance was constructed with `noop()`: in this case, it does
+         *   nothing
+         *
+         * - The instance is an rvalue temporary: does nothing
+         */
+        ~CwdChanger() noexcept;
     };
 //=============================================================================
 };  // END CLASS IO
