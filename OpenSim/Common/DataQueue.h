@@ -31,7 +31,7 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * This base (abstract) class defines the interface for a DataQueue. A data structure
+ * This base class defines the interface for a DataQueue. A data structure
  * to maintain a queue of data to be passed between computations that are potentially
  * different in processing speeds, decoupling the producers (e.g. File or live stream)
  * from consumers. Synchronization mechanism will be implmented to allow handling of 
@@ -39,7 +39,7 @@ namespace OpenSim {
  *
  * @author Ayman Habib
  */
-/** Template class to conatin Queue Entries */
+/** Template class to contain Queue Entries, typically timestamped */
 template <class U> 
 class DataQueueEntry_ {
 public:
@@ -61,7 +61,11 @@ private:
     double _timeStamp;
     SimTK::RowVectorView_<U> _data;
 };
-
+/**
+ * DataQueue is a wrapper around the std::queue customized to handle data processing
+ * and synchronization, and limiting the interface to only the subset of operations 
+ * needed for this use case. Synchronization is experimental as of now.
+ */
 template<class T> class DataQueue_ {
 //=============================================================================
 // METHODS

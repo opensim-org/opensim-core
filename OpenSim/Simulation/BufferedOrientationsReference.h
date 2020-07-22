@@ -32,11 +32,10 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * Reference values for the Orientations of model frames that will be used to
- * to compute tracking errors. An Orientation is specified by a Rotation
- * matrix describing the frame orientation with respect to Ground. The 
- * reference also contains weightings that identifies the relative importance
- * of achieving one orientation's reference value over another.
+ * Subclass of @OrientationsReference that handles live data by providing a DataQueue
+ * that allows clients to push data into and allows the InverseKinematicsSolver to 
+ * draw data from for solving.
+ * Ideally this would be templatized, allowing for all Reference classes to leverage it.
  *
  * @author Ayman Habib
  */
@@ -69,11 +68,12 @@ public:
         return SimTK::Vec2(-SimTK::Infinity, SimTK::Infinity);
     };
 
-    /** get the value of the OrientationsReference */
+    /** get the values from either the base OrientationsReference, or from
+     * the client provided data that was queued earlier using putValues call. */
     void getValues(const SimTK::State& s,
             SimTK::Array_<SimTK::Rotation_<double>>& values) const override;
 
-    /** add passed in values to OrientationReference */
+    /** add passed in values to data procesing Queue */
     void putValues(double time, const SimTK::RowVector_<SimTK::Rotation>& dataRow);
 
 private:
