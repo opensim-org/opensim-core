@@ -49,12 +49,13 @@ public:
     {
         _timeStamp = other.getTimeStamp();
     };
-    DataQueueEntry_(DataQueueEntry_&&){};
+    DataQueueEntry_(DataQueueEntry_&&) = default;
+
     DataQueueEntry_& operator=(const DataQueueEntry_&) { return (*this); };
     virtual ~DataQueueEntry_(){};
 
     double getTimeStamp() const { return _timeStamp; };
-    SimTK::RowVectorView_<U>& getData() const { return _data; };
+    SimTK::RowVectorView_<U> getData() const { return _data; };
 
 private:
     double _timeStamp;
@@ -83,14 +84,16 @@ public:
     //--------------------------------------------------------------------------
     void push_back(const double time, const SimTK::RowVectorView_<T>& data) { 
         std::unique_lock<std::mutex> mlock(m_mutex);
-        m_data_queue.push(*new DataQueueEntry_<T>(time, data));
+        m_data_queue.push(DataQueueEntry_<T>(time, data));
         mlock.unlock();     // unlock before notificiation to minimize mutex con
         m_cond.notify_one(); 
     }
-    void pop_front(double& time, SimTK::RowVectorView_<T>& data) { 
+    void pop_front(double& time, SimTK::RowVector_<T>& data) { 
         std::unique_lock<std::mutex> mlock(m_mutex);
         while (empty()) { m_cond.wait(mlock); }
-        auto frontEntry = m_data_queue.pop_front();
+        DataQueueEntry_<SimTK::Rotation> frontEntry = m_data_queue.front();
+        m_data_queue.pop();
+        mlock.unlock(); 
         time = frontEntry.getTimeStamp();
         data = frontEntry.getData();
     }

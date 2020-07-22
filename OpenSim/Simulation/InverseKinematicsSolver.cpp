@@ -49,14 +49,14 @@ InverseKinematicsSolver::InverseKinematicsSolver(const Model& model,
 
 InverseKinematicsSolver::InverseKinematicsSolver(const Model& model,
     const MarkersReference& markersReference,
-    OrientationsReference& orientationsReference,
+    const OrientationsReference& orientationsReference,
     SimTK::Array_<CoordinateReference>& coordinateReferences,
-    double constraintWeight ) :
+        double constraintWeight): 
+        _orientationsReference(orientationsReference),
         AssemblySolver(model, coordinateReferences, constraintWeight)
 {
     // InverseKinematicsSolver has its own internal copy of the References to track
     _markersReference = markersReference;
-    _orientationsReference = &orientationsReference;
 
     setAuthors("Ajay Seth");
     
@@ -144,7 +144,7 @@ int InverseKinematicsSolver::getNumOrientationSensorsInUse() const
 track is called next. Update an orientation sensor's weight by name. */
 void InverseKinematicsSolver::updateOrientationWeight(const std::string& orientationName, double value)
 {
-    const Array_<std::string> &names = _orientationsReference->getNames();
+    const Array_<std::string> &names = _orientationsReference.getNames();
     SimTK::Array_<const std::string>::iterator p = std::find(names.begin(), names.end(), orientationName);
     int index = (int)std::distance(names.begin(), p);
     updateOrientationWeight(index, value);
@@ -153,8 +153,8 @@ void InverseKinematicsSolver::updateOrientationWeight(const std::string& orienta
 /* Update an orientation sensor's weight by its index. */
 void InverseKinematicsSolver::updateOrientationWeight(int orientationIndex, double value)
 {
-    if (orientationIndex >= 0 && orientationIndex < _orientationsReference->updOrientationWeightSet().getSize()) {
-        _orientationsReference->updOrientationWeightSet()[orientationIndex].setWeight(value);
+    if (orientationIndex >= 0 && orientationIndex < _orientationsReference.updOrientationWeightSet().getSize()) {
+        _orientationsReference.updOrientationWeightSet()[orientationIndex].setWeight(value);
         _orientationAssemblyCondition->changeOSensorWeight(
             SimTK::OrientationSensors::OSensorIx(orientationIndex), value );
     }
@@ -166,10 +166,10 @@ void InverseKinematicsSolver::updateOrientationWeight(int orientationIndex, doub
 construct the solver. */
 void InverseKinematicsSolver::updateOrientationWeights(const SimTK::Array_<double> &weights)
 {
-    if (static_cast<unsigned>(_orientationsReference->updOrientationWeightSet().getSize())
+    if (static_cast<unsigned>(_orientationsReference.updOrientationWeightSet().getSize())
         == weights.size()) {
         for (unsigned int i = 0; i<weights.size(); i++) {
-            _orientationsReference->updOrientationWeightSet()[i].setWeight(weights[i]);
+            _orientationsReference.updOrientationWeightSet()[i].setWeight(weights[i]);
             _orientationAssemblyCondition->changeOSensorWeight(
                 SimTK::OrientationSensors::OSensorIx(i), weights[i] );
         }
@@ -270,7 +270,7 @@ std::string InverseKinematicsSolver::getMarkerNameForIndex(int markerIndex) cons
 SimTK::Rotation InverseKinematicsSolver::
     computeCurrentSensorOrientation(const std::string& osensorName)
 {
-    const Array_<std::string>& names = _orientationsReference->getNames();
+    const Array_<std::string>& names = _orientationsReference.getNames();
     SimTK::Array_<const std::string>::iterator p = std::find(names.begin(), names.end(), osensorName);
     int index = (int)std::distance(names.begin(), p);
     return computeCurrentSensorOrientation(index);
@@ -300,7 +300,7 @@ void InverseKinematicsSolver::computeCurrentSensorOrientations(
 double InverseKinematicsSolver::
     computeCurrentOrientationError(const std::string& osensorName)
 {
-    const Array_<std::string>& names = _orientationsReference->getNames();
+    const Array_<std::string>& names = _orientationsReference.getNames();
     SimTK::Array_<const std::string>::iterator p = std::find(names.begin(), names.end(), osensorName);
     int index = (int)std::distance(names.begin(), p);
     return computeCurrentOrientationError(index);
@@ -402,21 +402,21 @@ void InverseKinematicsSolver::setupMarkersGoal(SimTK::State &s)
 void InverseKinematicsSolver::setupOrientationsGoal(SimTK::State &s)
 {
     // If we have no orientations reference to track, then return.
-    if (_orientationsReference.empty() || _orientationsReference->getNumRefs() < 1) {
+    if (_orientationsReference.getNumRefs() < 1) {
         return;
     }
 
     // Setup orientations tracking goal
     // Get list of orientations by name  
     const SimTK::Array_<SimTK::String> &osensorNames =
-        _orientationsReference->getNames();
+        _orientationsReference.getNames();
 
     std::unique_ptr<SimTK::OrientationSensors> 
         condOwner(new SimTK::OrientationSensors());
     _orientationAssemblyCondition.reset(condOwner.get());
 
     SimTK::Array_<double> orientationWeights;
-    _orientationsReference->getWeights(s, orientationWeights);
+    _orientationsReference.getWeights(s, orientationWeights);
     // get orientation sensors defined by the model 
     const auto onFrames = getModel().getComponentList<PhysicalFrame>();
 
@@ -455,8 +455,8 @@ void InverseKinematicsSolver::updateGoals(const SimTK::State &s)
     }
 
     // specify the orientation observations to be matched
-    if (!_orientationsReference.empty() && _orientationsReference->getNumRefs() > 0) {
-        _orientationsReference->getValues(s, _orientationValues);
+    if (_orientationsReference.getNumRefs() > 0) {
+        _orientationsReference.getValues(s, _orientationValues);
         _orientationAssemblyCondition->moveAllObservations(_orientationValues);
     }
 }

@@ -25,7 +25,7 @@
 
 #include "AssemblySolver.h"
 #include "MarkersReference.h"
-#include "OrientationsReference.h"
+#include "BufferedOrientationsReference.h"
 
 namespace SimTK {
 class Markers;
@@ -83,7 +83,7 @@ public:
 
     InverseKinematicsSolver(const Model& model,
                         const MarkersReference& markersReference,
-                        OrientationsReference& orientationsReference,
+                        const OrientationsReference& orientationsReference,
                         SimTK::Array_<CoordinateReference> &coordinateReferences,
                         double constraintWeight = SimTK::Infinity);
     
@@ -204,6 +204,11 @@ public:
     orientations returned by the solver. */
     std::string getOrientationSensorNameForIndex(int osensorIndex) const;
 
+    void addOrientationValuesToTrack(
+            double time, SimTK::RowVector_<SimTK::Rotation_<double>>& data){
+        _orientationsReference.putValues(time, data);
+    };
+
 protected:
     /** Override to include point of interest matching (Marker tracking)
         as well ad Frame orientation (OSensor) tracking.
@@ -225,7 +230,7 @@ private:
     MarkersReference _markersReference;
 
     // The orientation reference values and weightings
-    SimTK::ReferencePtr<OrientationsReference> _orientationsReference;
+    BufferedOrientationsReference _orientationsReference;
 
     // Non-accessible cache of the marker values to be matched at a given state
     SimTK::Array_<SimTK::Vec3> _markerValues;

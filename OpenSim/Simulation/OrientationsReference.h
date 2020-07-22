@@ -146,9 +146,11 @@ private:
     void constructProperties();
     void populateFromOrientationData();
 
-private:
+protected:
     // Use a specialized data structure for holding the orientation data
     TimeSeriesTable_<SimTK::Rotation> _orientationData;
+
+private:
     // orientation names inside the orientation data
     SimTK::Array_<std::string> _orientationNames;
     // corresponding list of weights guaranteed to be in the same order as names above

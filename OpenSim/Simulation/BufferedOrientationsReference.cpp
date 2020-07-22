@@ -36,37 +36,40 @@ BufferedOrientationsReference::BufferedOrientationsReference()
     setAuthors("Ayman Habib");
 }
 
-BufferedOrientationsReference::BufferedOrientationsReference(const std::string& orientationFile, Units modelUnits)
-        : OrientationsReference(orientationFile, modelUnits) {
-}
-
-
 BufferedOrientationsReference::BufferedOrientationsReference(
-        const TimeSeriesTable_<Rotation>& orientationData,
-        const Set<OrientationWeight>* orientationWeightSet)
-        : OrientationsReference(orientationData, orientationWeightSet) {
-    // Copy data from TimeSeriesTable into Queue for future reference
-    auto times = orientationData.getIndependentColumn();
-    for (int i = 0; i < orientationData.getNumRows(); ++i) {
-        _orientationDataQueue.push_back(times[i], orientationData.getRowAtIndex(i));
-    }
+        const OrientationsReference& orientationsRef)
+    : OrientationsReference(orientationsRef) {
+    // populate Queue from Table, solver will draw from the queue
+    /*
+    const std::vector<double>& times = orientationsRef.getTimes();
+    for (int i = 0; i < times.size(); ++i) {
+        _orientationDataQueue.push_back(times[i], _orientationData.getRowAtIndex(i));
+    }*/
 }
 /** get the values of the OrientationsReference */
 void BufferedOrientationsReference::getValues(
         const SimTK::State& s,
     SimTK::Array_<Rotation> &values) const
 {
-    double time =  s.getTime();
-    /**
-    // get values for time
-    SimTK::RowVector_<Rotation> row = _orientationData.getRow(time);
+    auto& times = _orientationData.getIndependentColumn();
+    double time = s.getTime();
+    SimTK::RowVector_<SimTK::Rotation> nextRow;
 
-    int n = row.size();
+    if (s.getTime() >= times.front() && s.getTime() <= times.back()) {
+        nextRow = _orientationData.getRow(time);
+    } else {
+        _orientationDataQueue.pop_front(time, nextRow);
+    }
+    int n = nextRow.size();
     values.resize(n);
 
-    for (int i = 0; i < n; ++i) {
-        values[i] = row[i];
-    }*/
+    for (int i = 0; i < n; ++i) { 
+        values[i] = nextRow[i];
+    }
 }
 
+void BufferedOrientationsReference::putValues(
+        double time, const SimTK::RowVector_<SimTK::Rotation>& dataRow) {
+    _orientationDataQueue.push_back(time, dataRow);
+}
 } // end of namespace OpenSim

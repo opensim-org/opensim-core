@@ -45,8 +45,6 @@ void testMarkersReference();
 // Set of OrientationWeights used to construct the OrientationsReference
 void testOrientationsReference();
 
-void testBufferedOrientationsReference();
-
 // Utility function to build a simple pendulum with markers attached
 Model* constructPendulumWithMarkers();
 // Using a model with markers and trajectory of states, create synthetic
@@ -104,12 +102,6 @@ int main()
     catch (const std::exception& e) {
         cout << e.what() << endl;
         failures.push_back("testOrientationsReference");
-    }
-    try {
-        testBufferedOrientationsReference();
-    } catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testBufferedOrientationsReference");
     }
     
     try { testAccuracy(); }
@@ -244,73 +236,6 @@ void testOrientationsReference() {
     std::cout << orientationWeights.dump() << std::endl;
 
     OrientationsReference orientationsRef(orientationData, &orientationWeights);
-
-    Model model;
-    SimTK::State& s = model.initSystem();
-    s.updTime() = 0.0;
-
-    SimTK::Array_<string> names = orientationsRef.getNames();
-
-    SimTK::Array_<double> weights;
-    orientationsRef.getWeights(s, weights);
-
-    SimTK_ASSERT_ALWAYS(names.size() == weights.size(),
-            "Number of markers does not match number of weights.");
-
-    for (unsigned int i{0}; i < names.size(); ++i) {
-        std::cout << names[i] << ": " << weights[i] << std::endl;
-        SimTK_ASSERT_ALWAYS(
-                weights[i] == double(i), "Mismatched weight to marker.");
-    }
-
-    // Add marker weights for markers not present in the data
-    orientationWeights.adoptAndAppend(new OrientationWeight("X", 0.1));
-    orientationWeights.insert(0, new OrientationWeight("Y", 0.01));
-
-    OrientationsReference orientationsRef2(
-            orientationData, &orientationWeights);
-
-    auto& oWeightSet = orientationsRef2.get_orientation_weights();
-
-    // verify that internal weight set was updated
-    std::cout << oWeightSet.dump() << std::endl;
-
-    names = orientationsRef2.getNames();
-    orientationsRef2.getWeights(s, weights);
-
-    SimTK_ASSERT_ALWAYS(names.size() == weights.size(),
-            "Number of orientation sensors does not match number of weights.");
-
-    for (unsigned int i = 0; i < names.size(); ++i) {
-        std::cout << names[i] << ": " << weights[i] << std::endl;
-        SimTK_ASSERT_ALWAYS(weights[i] == double(i),
-                "Mismatched weight to orientation sensor.");
-    }
-}
-void testBufferedOrientationsReference() {
-    // column labels for orientation sensor data
-    vector<std::string> labels{"A", "B", "C", "D", "E", "F"};
-    // for testing construct a set of marker weights in a different order
-    vector<int> order = {3, 5, 1, 4, 0, 2};
-
-    size_t nc = labels.size(); // number of columns of orientation data
-    size_t nr = 5;             // number of rows of orientation data
-
-    TimeSeriesTable_<SimTK::Rotation> orientationData;
-    orientationData.setColumnLabels(labels);
-    for (size_t r{0}; r < nr; ++r) {
-        SimTK::RowVector_<SimTK::Rotation> row{int(nc), SimTK::Rotation()};
-        orientationData.appendRow(0.1 * r, row);
-    }
-
-    Set<OrientationWeight> orientationWeights;
-    for (size_t m{0}; m < nc; ++m)
-        orientationWeights.adoptAndAppend(
-                new OrientationWeight(labels[order[m]], double(order[m])));
-
-    std::cout << orientationWeights.dump() << std::endl;
-
-    BufferedOrientationsReference orientationsRef(orientationData, &orientationWeights);
 
     Model model;
     SimTK::State& s = model.initSystem();

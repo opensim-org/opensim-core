@@ -56,18 +56,7 @@ public:
     BufferedOrientationsReference(BufferedOrientationsReference&&) = default;
     BufferedOrientationsReference& operator=(
             const BufferedOrientationsReference&) = default;
-
-    /** Convenience load Orientations data from a file in the form of XYZ 
-        body-fixed Euler angles. Units default to Radians.*/
-    BufferedOrientationsReference(const std::string& orientationFileName,
-                     Units modelUnits=Units(Units::Radians));
-    /** Form a Reference from TimeSeriesTable of Rotations and corresponding
-    orientation weights. The input orientatonWeightSet is used to initialize
-    Reference weightings for individual Orientations. Weights are associated
-    to Orientations by name.*/
-    BufferedOrientationsReference(
-            const TimeSeriesTable_<SimTK::Rotation_<double>>& orientationData,
-        const Set<OrientationWeight>* orientationWeightSet=nullptr);
+    BufferedOrientationsReference(const OrientationsReference& orientationsRef);
 
     virtual ~BufferedOrientationsReference() {}
 
@@ -84,9 +73,12 @@ public:
     void getValues(const SimTK::State& s,
             SimTK::Array_<SimTK::Rotation_<double>>& values) const override;
 
+    /** add passed in values to OrientationReference */
+    void putValues(double time, const SimTK::RowVector_<SimTK::Rotation>& dataRow);
+
 private:
     // Use a specialized data structure for holding the orientation data
-    DataQueue_<SimTK::Rotation> _orientationDataQueue;
+    mutable DataQueue_<SimTK::Rotation> _orientationDataQueue;
 
 //=============================================================================
 };  // END of class OrientationsReference
