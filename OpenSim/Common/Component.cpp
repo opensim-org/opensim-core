@@ -1480,7 +1480,7 @@ void Component::extendRealizeTopology(SimTK::State& s) const
     //         from runtime segfault--a *practical* solution.
     {
         std::vector<std::reference_wrapper<const std::string>> keys;
-	keys.reserve(this->_namedCacheVariables.size());
+        keys.reserve(this->_namedCacheVariables.size());
         for (auto& p : this->_namedCacheVariables) {
             keys.emplace_back(p.first);
         }
