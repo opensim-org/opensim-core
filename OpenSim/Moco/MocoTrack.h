@@ -51,7 +51,7 @@ reference data provided, a tracking cost term is added to the internal
 MocoProblem.
 
 setMarkersReference() only accepts a scalar TimeSeriesTable (either
-directly or via a TableProcessor) containing x/y/x marker position values.
+directly or via a TableProcessor) containing x/y/z marker position values.
 A TimeSeriesTableVec3 of markers is not accepted, but you may use the
 flatten() method to convert to a scalar TimeSeriesTable:
 
@@ -83,7 +83,7 @@ sufficiently low weight. Use the `minimize_control_effort` and
 Problem configuration options
 -----------------------------
 A time range that is compatible with all reference data may be provided.
-If no time range is set, the widest time range that is compatible will all
+If no time range is set, the widest time range that is compatible with all
 reference data will be used.
 
 If you would like to track joint velocities but only have joint angles in
@@ -110,6 +110,9 @@ Default solver settings
 - optim_constraint_tolerance: 1e-2
 - optim_sparsity_detection: random
 - optim_finite_difference_scheme: 'forward'
+
+If you would like to use settings other than these defaults, see
+"Customizing a tracking problem" below.
 
 Basic example
 -------------
@@ -162,11 +165,11 @@ public:
     OpenSim_DECLARE_PROPERTY(states_reference, TableProcessor,
             "States reference data to be tracked. If provided, a "
             "MocoStateTrackingGoal term is created and added to the internal "
-            "MocoProblem. ");
+            "MocoProblem.");
 
     OpenSim_DECLARE_PROPERTY(states_global_tracking_weight, double,
             "The weight for the MocoStateTrackingGoal that applies to tracking "
-            "errors for all states in the reference.");
+            "errors for all states in the reference. Default: 1.");
 
     OpenSim_DECLARE_PROPERTY(states_weight_set, MocoWeightSet,
             "A set of tracking weights for individual state variables. The "
@@ -178,21 +181,20 @@ public:
             "value, of each reference quantity to scale the weight "
             "for the associated tracking error in the cost. The scale is "
             "computed by the inverse of the range, so a reference quantity "
-            "that changes less across the trajectory has a larger weight. ");
+            "that changes less across the trajectory has a larger weight. "
+            "Default: false.");
 
     OpenSim_DECLARE_PROPERTY(track_reference_position_derivatives, bool,
             "Option to track the derivative of position-level state reference "
             "data if no velocity-level state reference data was included in "
             "the `states_reference`. If velocity-reference reference data was "
             "provided for some coordinates but not others, this option will "
-            "only "
-            "apply to the coordinates without speed reference data. "
-            "(default: false)");
+            "only apply to the coordinates without speed reference data. "
+            "Default: false.");
 
     OpenSim_DECLARE_PROPERTY(markers_reference, TableProcessor,
             "Motion capture marker reference data to be tracked. The columns "
-            "in "
-            "the table should correspond to scalar x/y/z marker position "
+            "in the table should correspond to scalar x/y/z marker position "
             "values and the columns labels should have consistent suffixes "
             "appended to the model marker names. If provided, a "
             "MocoMarkerTrackingGoal term is created and added to the internal "
@@ -200,8 +202,7 @@ public:
 
     OpenSim_DECLARE_PROPERTY(markers_global_tracking_weight, double,
             "The weight for the MocoMarkerTrackingGoal that applies to "
-            "tracking "
-            "errors for all markers in the reference.");
+            "tracking errors for all markers in the reference. Default: 1.");
 
     OpenSim_DECLARE_PROPERTY(markers_weight_set, MocoWeightSet,
             "A set of tracking weights for individual marker positions. The "
@@ -210,23 +211,20 @@ public:
 
     OpenSim_DECLARE_PROPERTY(allow_unused_references, bool,
             "Allow references to contain data not associated with any "
-            "components "
-            "in the model (such data would be ignored). Default: false.");
+            "components in the model (such data would be ignored). "
+            "Default: false.");
 
     OpenSim_DECLARE_PROPERTY(guess_file, std::string,
             "Path to a STO file containing a guess for the problem. The path "
-            "can "
-            "be absolute or relative to the setup file. If no file is "
-            "provided, "
-            "then a guess constructed from the variable bounds midpoints will "
-            "be "
-            "used.");
+            "can be absolute or relative to the setup file. If no file is "
+            "provided, then a guess constructed from the variable bounds "
+            "midpoints will be used.");
 
     OpenSim_DECLARE_PROPERTY(apply_tracked_states_to_guess, bool,
             "If a `states_reference` has been provided, use this setting to "
             "replace the states in the guess with the states reference data. "
-            "This "
-            "will override any guess information provided via `guess_file`.");
+            "This will override any guess information provided via "
+            "`guess_file`. Default: false.");
 
     OpenSim_DECLARE_PROPERTY(minimize_control_effort, bool,
             "Whether or not to minimize actuator control effort in the problem."

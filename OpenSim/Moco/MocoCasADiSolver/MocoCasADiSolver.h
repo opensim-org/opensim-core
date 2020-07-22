@@ -79,24 +79,24 @@ This should work fine for almost all models, but if you have custom model
 components, ensure they are threadsafe. Make sure that threads do not
 access shared resources like files or global variables at the same time.
 
-You can turn off or change the number of cores used for individual problems
-via either the OPENSIM_MOCO_PARALLEL environment variable (see
+You can turn off or change the number of parallel jobs used for individual
+problems via either the OPENSIM_MOCO_PARALLEL environment variable (see
 getMocoParallelEnvironmentVariable()) or the `parallel` property of this
 class. For example, if you plan to solve two problems at the same time on
-a machine with 4 cores, you could set OPENSIM_MOCO_PARALLEL to 2 to use
-all 4 cores.
+a machine with 4 processor cores, you could set OPENSIM_MOCO_PARALLEL to 2 to
+use all 4 cores.
 
 Note that there is overhead in the parallelization; if you plan to solve
 many problems, it is better to turn off parallelization here and parallelize
-the solving of your multiple problems using your system (e.g., invoke the
-opensim-moco command-line tool in multiple Terminals or Command Prompts).
+the solving of your multiple problems using your system (e.g., invoke Moco in
+multiple Terminals or Command Prompts).
 
 Note that the `parallel` property overrides the environment variable,
 allowing more granular control over parallelization. However, the
 parallelization setting does not logically belong as a property, as it does
 not affect the solution. We encourage you to use the environment variable
-instead, as this allows different users to solve the same problem in their
-preferred way.
+instead, as this allows different users to solve the same problem with the
+parallelization they prefer.
 
 Parameter variables
 ===================
@@ -142,7 +142,7 @@ public:
             "Evaluate integral costs and the differential-algebraic "
             "equations in parallel across grid points? "
             "0: not parallel; 1: use all cores (default); greater than 1: use"
-            "this number of threads. This overrides the OPENSIM_MOCO_PARALLEL "
+            "this number of parallel jobs. This overrides the OPENSIM_MOCO_PARALLEL "
             "environment variable.");
     OpenSim_DECLARE_PROPERTY(output_interval, int,
             "Write intermediate trajectories to file. 0, the default, "

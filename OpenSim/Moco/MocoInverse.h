@@ -129,7 +129,7 @@ public:
             "The weight applied to the controls whose name includes "
             "'/reserve_'. This can be used with "
             "the model operator ModOpAddReserves, which names each appended "
-            "actuator in this format. Default weight: 1.")
+            "actuator in this format. Default weight: 1.");
 
     MocoInverse() { constructProperties(); }
 

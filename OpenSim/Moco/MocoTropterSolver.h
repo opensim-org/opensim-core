@@ -84,10 +84,6 @@ public:
             "property must be set. Note: this option only takes effect when "
             "using "
             "IPOPT.");
-    // TODO OpenSim_DECLARE_LIST_PROPERTY(enforce_constraint_kinematic_levels,
-    //   std::string, "");
-    // TODO must make more general for multiple phases, mesh refinement.
-    // TODO mesh_point_frequency if time is fixed.
 
     MocoTropterSolver();
 
@@ -146,7 +142,6 @@ protected:
     template <typename T>
     class OCProblem;
 
-    // TODO
     template <typename T>
     class TropterProblemBase;
     template <typename T>
@@ -161,7 +156,6 @@ protected:
             std::shared_ptr<const TropterProblemBase<double>>
                     ocp) const;
 
-    // TODO ensure that user-provided guess is within bounds.
     MocoSolution solveImpl() const override;
 
     /// Check that the provided guess is compatible with the problem and this

@@ -411,7 +411,7 @@ void checkPropertyInRangeOrSet(const Object& obj, const Property<T>& p,
 /// The value has the following meanings:
 /// - 0: run in series (not parallel).
 /// - 1: run in parallel using all cores.
-/// - greater than 1: run in parallel with this number of threads.
+/// - greater than 1: run in parallel with this number of parallel jobs.
 /// If the environment variable is not set, this function returns -1.
 ///
 /// This variable does not indicate which calculations are parallelized
