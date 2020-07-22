@@ -1370,9 +1370,18 @@ public:
     /**
      * A cache variable containing a value of type T.
      *
-     * - Initialized with Component::addCacheVariable
-     * - See also: cache variable methods in Component (e.g.
-     *   Component::getCacheVariableValue)
+     * - A `CacheVariable` is a handle to the cache variable's value and
+     *   validity
+     *
+     * - Derived classes may declare `CacheVariable` members (ideally,
+     *   as `private` members), which grants them strongly-typed access
+     *   to cache variable values
+     *
+     * - `CacheVariable` should be initialized with
+     *   `Component::addCacheVariable`; usually, in the
+     *   `Component::extendAddToSystem` method. A cache variable's value
+     *   will not be valid until after `Component::realizeTopology` is
+     *   called
      *
      * @tparam T
      *   Type of data held in the cache variable
@@ -1434,7 +1443,7 @@ protected:
      * changed, the velocity remains valid so the cache entry does not have to be
      * recomputed.
      *
-     * @param[in]      cacheVariableName
+     * @param[in]      name
      *   The name you are assigning to this cache entry. Must be unique within
      *   this model component.
      *
@@ -1448,32 +1457,32 @@ protected:
      *   invalidate the cache entry.
      */
     template <class T>
-    CacheVariable<T> addCacheVariable(std::string cacheVariableName,
+    CacheVariable<T> addCacheVariable(std::string name,
                                       T variablePrototype,
                                       SimTK::Stage dependsOnStage) const
     {
-        if (cacheVariableName.empty()) {
-            OPENSIM_THROW_FRMOBJ(Exception, "cannot create a cache variable with an empty name");
+        if (name.empty()) {
+            OPENSIM_THROW_FRMOBJ(Exception, "Cannot create a cache variable with an empty name");
         }
 
         // edge-case: there is already a cache variable with the same name allocated.
         //            This is disallowed--and probably a development error--because it
         //            might result in horrible edge cases such as two cachevars indirectly
         //            aliasing eachother at run-time.
-        if (this->_namedCacheVariables.find(cacheVariableName) != this->_namedCacheVariables.end()) {
+        if (this->_namedCacheVariables.find(name) != this->_namedCacheVariables.end()) {
             std::stringstream msg;
-            msg << "cannot create a cache variable with the name '" << cacheVariableName << "' because another cache variable with that name already exists";
+            msg << "Cannot create a cache variable with the name '" << name << "' because another cache variable with that name already exists";
             OPENSIM_THROW_FRMOBJ(Exception, msg.str());
         }
 
         this->_namedCacheVariables.emplace(
-                cacheVariableName,
+                name,
                 StoredCacheVariable{
                     new SimTK::Value<T>(std::move(variablePrototype)),
                     dependsOnStage
                 });
 
-        return CacheVariable<T>{std::move(cacheVariableName)};
+        return CacheVariable<T>{std::move(name)};
     }
 
 public:
@@ -1498,9 +1507,7 @@ public:
         // expensive: perform index lookup and initialize it
 
         if (cv.name.empty()) {
-            std::stringstream msg;
-            msg << "Component::getCacheVariableIndex(CacheVariable<T>&): cannot get cache variable index: the cache variable has no name: has it been initialized with Component::addCacheVariable? (class = " << getClassName() << ", concrete class name = " << getConcreteClassName() << ")";
-            OPENSIM_THROW(Exception, msg.str());
+            OPENSIM_THROW_FRMOBJ(Exception, "Cannot get cache variable index: the cache variable has no name: has it been initialized with Component::addCacheVariable?");
         }
 
         // getCacheVariableIndex asserts whether the returned index is valid or not,
@@ -1602,9 +1609,9 @@ public:
      *     if this Component has not been added to a System (i.e., if initSystem has not been called)
      */
     template<typename T>
-    const T& setCacheVariableValue(const SimTK::State& state, const std::string& k, T value) const
+    const T& setCacheVariableValue(const SimTK::State& state, const std::string& name, T value) const
     {
-        return setCacheVariableValueGeneric<T>(state, k, std::move(value));
+        return setCacheVariableValueGeneric<T>(state, name, std::move(value));
     }
 
     /**
@@ -1805,8 +1812,8 @@ public:
      *   - A (hypothetical) component has a `length` state variable
      *   - There are cache variables that are computed from `length` (e.g.
      *   `strain`)
-     *   - So changing the `length` may invalidate the `strain` indirectly (depending on
-     *     how the state variable is handled)
+     *   - So changing the `length` may invalidate the `strain` indirectly
+     *     (depending on how the state variable is handled)
      *
      * @param state
      *     the State in which the cache variable's value resides

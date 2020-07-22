@@ -1053,17 +1053,15 @@ SimTK::CacheEntryIndex Component::getCacheVariableIndex(const std::string& name)
     }
 
     std::stringstream msg;
-    msg << "Component::getCacheVariableIndex: ERR - '" << name << "' not found." << std::endl
-        << "for component '" << this->getName() << "' of type "
-        << this->getConcreteClassName();
+    msg << "Cache variable with name '" << name << "' not found: maybe the cache variable was not allocated with `Component::addCacheVariable`?";
 
-    throw Exception(msg.str(), __FILE__, __LINE__);
+    OPENSIM_THROW_FRMOBJ(Exception, msg.str());
 }
 
-bool Component::isCacheVariableValid(const SimTK::State& state, const std::string& k) const
+bool Component::isCacheVariableValid(const SimTK::State& state, const std::string& name) const
 {
     const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
-    const SimTK::CacheEntryIndex idx = this->getCacheVariableIndex(k);
+    const SimTK::CacheEntryIndex idx = this->getCacheVariableIndex(name);
     return subsystem.isCacheValueRealized(state, idx);
 }
 
