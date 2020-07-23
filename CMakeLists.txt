@@ -27,9 +27,13 @@ include(FeatureSummary)
 
 # OpenSim version.
 # ----------------
+# This is a temporary option that allows creat
 set(OPENSIM_MAJOR_VERSION 4)
 set(OPENSIM_MINOR_VERSION 2)
 set(OPENSIM_PATCH_VERSION 0)
+
+option(OPENSIM_RELEASE_MOCO "Create a release for Moco instead of for OpenSim."
+        OFF)
 
 # Don't include the patch version if it is 0.
 set(PATCH_VERSION_STRING)
