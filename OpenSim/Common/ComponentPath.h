@@ -43,8 +43,33 @@ namespace OpenSim {
 */
 
 class OSIMCOMMON_API ComponentPath : public Path {
-
 public:
+    /**
+     * Split `path` into a pair, `(head, tail)`, where `tail` is the last
+     * pathname component and `head` is everything leading up to that.
+     *
+     * - The `tail` will never contain a `/` (component list separator)
+     * - If `path` ends in a slash, then `tail` will be empty
+     * - If there is no `/` in `path` then `head` will be empty
+     * - If `path` is empty, both `head` and `tail` will be empty
+     * - Trailing slashes are stripped from `head`, unless it is the root
+     *
+     * Examples:
+     *
+     *     auto [head1, tail1]& = ComponentPath::split("some/path/to/var");
+     *     assert(head1 == "some/path/to" and tail1 == "statevar");
+     *
+     *     auto [head2, tail2]& = ComponentPath::split("/var");
+     *     assert(head2 == "/" and tail2 == "var");
+     *
+     *     auto [head3, tail3]& = ComponentPath::split("var");
+     *     assert(head3 == "" and tail3 == "var");
+     *
+     *     auto [head4, tail4]& = ComponentPath::split("");
+     *     assert(head4 == "" and tail4 == "");
+     */
+    static std::pair<std::string, std::string> split(std::string path);
+
     // Constructors
     /// The default-constructed path is empty (an empty string).
     ComponentPath();

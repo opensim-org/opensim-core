@@ -30,6 +30,10 @@ using namespace std;
 const char ComponentPath::separator = '/';
 const std::string ComponentPath::invalidChars = "\\/*+ \t\n";
 
+std::pair<std::string, std::string> ComponentPath::split(std::string path) {
+    return {"todo", "todo"};
+}
+
 ComponentPath::ComponentPath() :
     Path(getSeparator(), getInvalidChars())
 {}

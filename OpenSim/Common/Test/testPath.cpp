@@ -176,6 +176,36 @@ void testComponentPath() {
     for (size_t ind = 0; ind < levels.size(); ++ind) {
         ASSERT(numberedRelPath.getSubcomponentNameAtLevel(ind) == levels[ind]);
     }
+
+    // ComponentPath::split
+    {
+        auto testSplit = [](
+                std::string input,
+                std::string expectedHead,
+                std::string expectedTail) {
+            auto p = ComponentPath::split(input);
+
+            if (p.first != expectedHead || p.second != expectedTail) {
+                std::stringstream msg;
+                msg << "invalid output for input '" << input << "':" << std::endl;
+                msg << "    expected head = " << expectedHead << std::endl;
+                msg << "      actual head = " << p.first << std::endl;
+                msg << "    expected tail = " << expectedTail << std::endl;
+                msg << "      actual tail = " << p.second << std::endl;
+                throw std::runtime_error{msg.str()};
+            }
+        };
+
+        testSplit("some/path/to/var", "some/path/to", "var");
+        testSplit("/var", "/", "var");
+        testSplit("var", "", "var");
+        testSplit("", "", "");
+
+        // '.' and '..' elements are not automatically handled by this function.
+        // If needed, a separate function (e.g. 'abspath') should be used to
+        // handle de-relativizing the elements
+        testSplit("../var", "var");
+    }
 }
 
 int main()
