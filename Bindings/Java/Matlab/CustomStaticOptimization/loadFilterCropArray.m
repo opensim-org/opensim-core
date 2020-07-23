@@ -20,7 +20,8 @@ function [array, names, time] = loadFilterCropArray(filepath, lowpassFreq, ...
 import org.opensim.modeling.*;
 
 % Load the data and convert it to a MATLAB array. You must have the OpenSim
-% MATLAB utilities in your MATLAB path to use 'osimTableToStruct()'.
+% MATLAB utilities (found in <your-OpenSim-resources-path>\Code\Matlab\Utilities)  
+% in your MATLAB path to use 'osimTableToStruct()'.
 dataStruct = osimTableToStruct(TimeSeriesTable(filepath));
 time = dataStruct.time;
 dataStruct = rmfield(dataStruct, 'time');
