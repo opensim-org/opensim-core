@@ -1462,22 +1462,34 @@ void Component::extendRealizeTopology(SimTK::State& s) const
     // BEWARE: the cache variables *must* be inserted into the SimTK::state
     //         in a deterministic order.
     //
-    //         The reason this is necessary is because some API callers (e.g
-    //         the tests) take copies of one Model's SimTK::State and then
-    //         construct a new SimTK::State for that model (e.g.
-    //         with Model::initSystem) but use indices from the resulting two states
-    //         interchangably with the assumption that the indices from one
-    //         state can be safely used with the other. This assumption is not true,
-    //         because the OpenSim API doesn't explicitly guarantee so, because it
-    //         *may* (actually, in the case of map vs. unordered_map, *is*) faster
-    //         to iterate and allocate out-of-order. However, the differing allocation
-    //         order means that using indexes interchangably between two SimTK::States
-    //         causes runtime mis-casting and mis-indexing, resulting in segfaults.
+    //         The reason this is important is because:
     //
-    //         Rather than fix downstream implementations to not use SimTK::States
-    //         in this way--which is the *correct* solution--this sorting step just
-    //         ensures that allocations are deterministic in order to shield downstream
-    //         from runtime segfault--a *practical* solution.
+    //         - some downstream code will take copies of the `SimTK::State`
+    //           and expect indicies into the new state to also be able to
+    //           index into the copy (they shouldn't do this, but do, and
+    //           this code hardens against it)
+    //
+    //         - to callers, it *feels* like the copy should be interchangable
+    //           if the component is *logically* the same - the same component
+    //           with the same cache vars etc. *should* produce the same state,
+    //           right?
+    //
+    //         - but `unordered_map` has no iteration order guarantees, so even
+    //           the exact same component, at the same memory address, that is
+    //           merely re-initialized, and calls `addCacheVariable` in the
+    //           exact same order can still iterate the cache variables in
+    //           a different order and (ultimately) produce an incompatible
+    //           SimTK::State
+    //
+    //         - this is because re-initialization does not necessarily
+    //           reconstruct the backing containers. They may only have been
+    //           `.clear()`ed, which *may* hold onto memory, which *may* affect
+    //           (internal) insertion logic
+    //
+    //         - the safest thing to assume is that the iteration order of
+    //           `unordered_map` is non-deterministic. It isn't, but *essentially*
+    //           is, because there are plenty of non-obvious ways to affect its
+    //           iteration order
     {
         std::vector<std::reference_wrapper<const std::string>> keys;
         keys.reserve(this->_namedCacheVariables.size());
