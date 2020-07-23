@@ -40,31 +40,6 @@
 
 using namespace OpenSim;
 
-Storage OpenSim::convertTableToStorage(const TimeSeriesTable& table) {
-
-    Storage sto;
-    if (table.hasTableMetaDataKey("inDegrees") &&
-            table.getTableMetaDataAsString("inDegrees") == "yes") {
-        sto.setInDegrees(true);
-    }
-
-    OpenSim::Array<std::string> labels("", (int)table.getNumColumns() + 1);
-    labels[0] = "time";
-    for (int i = 0; i < (int)table.getNumColumns(); ++i) {
-        labels[i + 1] = table.getColumnLabel(i);
-    }
-    sto.setColumnLabels(labels);
-    const auto& times = table.getIndependentColumn();
-    for (unsigned i_time = 0; i_time < table.getNumRows(); ++i_time) {
-        SimTK::Vector row(table.getRowAtIndex(i_time).transpose());
-        // This is a hack to allow creating a Storage with 0 columns.
-        double unused;
-        sto.append(times[i_time], row.size(),
-                row.size() ? row.getContiguousScalarData() : &unused);
-    }
-    return sto;
-}
-
 namespace {
 template <typename FunctionType>
 std::unique_ptr<Function> createFunction(
@@ -142,8 +117,9 @@ MocoTrajectory OpenSim::simulateTrajectoryWithTimeStepping(
                 std::vector<double>{trajectory.getInitialTime()},
                 SimTK::Matrix(matrix.block(0, 0, 1, matrix.ncol())),
                 trajectory.getStateNames());
-        auto statesTraj = StatesTrajectory::createFromStatesStorage(
-                model, convertTableToStorage(initialStateTable));
+        initialStateTable.addTableMetaData("inDegrees", std::string("no"));
+        auto statesTraj = StatesTrajectory::createFromStatesTable(
+                model, initialStateTable);
         state.setY(statesTraj.front().getY());
     }
 

@@ -82,8 +82,8 @@ void MocoAngularVelocityTrackingGoal::initializeOnModelImpl(
         checkLabelsMatchModelStates(model, statesTableToUse.getColumnLabels());
 
         // Create the StatesTrajectory.
-        Storage sto = convertTableToStorage(statesTableToUse);
-        auto statesTraj = StatesTrajectory::createFromStatesStorage(model, sto);
+        auto statesTraj = StatesTrajectory::createFromStatesTable(
+                model, statesTableToUse);
 
         // Use all paths provided in frame_paths.
         OPENSIM_THROW_IF_FRMOBJ(getProperty_frame_paths().empty(), Exception,

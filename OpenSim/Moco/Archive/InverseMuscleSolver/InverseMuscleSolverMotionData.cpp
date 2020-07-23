@@ -189,11 +189,10 @@ InverseMuscleSolverMotionData::InverseMuscleSolverMotionData(
         // We have to filter the net generalized forces, but the filtering
         // ability is on Storage, not on TimeSeriesTable. Convert to a
         // Storage, filter, then convert back.
-        auto netGenForcesSto = convertTableToStorage(netGeneralizedForcesData);
-        netGenForcesSto.pad(netGenForcesSto.getSize() / 2);
-        netGenForcesSto.lowpassIIR(lowpassCutoffJointMoments);
+        netGenForcesTableIfFiltering = netGeneralizedForcesData;
+        TableUtilities::filterLowpass(
+                netGenForcesTableIfFiltering, lowpassCutoffJointMoments, true);
         // TODO _netGeneralizedForces = GCVSplineSet(5, &forceTrajectorySto);
-        netGenForcesTableIfFiltering = netGenForcesSto.exportToTable();
         netGenForcesTable = &netGenForcesTableIfFiltering;
     }
 

@@ -382,10 +382,10 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
             !get_minimize_lagrange_multipliers()) {
         const auto& model = getProblemRep().getModelBase();
         const auto& matter = model.getMatterSubsystem();
-        Storage storage = mocoSolution.exportToStatesStorage();
+        TimeSeriesTable states = mocoSolution.exportToStatesTable();
         // TODO update when we support multiple phases.
         auto statesTraj =
-                StatesTrajectory::createFromStatesStorage(model, storage);
+                StatesTrajectory::createFromStatesTable(model, states);
         SimTK::Matrix G;
         SimTK::FactorQTZ G_qtz;
         bool isJacobianFullRank = true;

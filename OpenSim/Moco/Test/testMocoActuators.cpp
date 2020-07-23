@@ -1232,7 +1232,7 @@ TEMPLATE_TEST_CASE(
         auto* tracking = problem.addGoal<MocoStateTrackingGoal>();
         tracking->setName("tracking");
 
-        auto states = solutionTrajOpt.exportToStatesStorage().exportToTable();
+        auto states = solutionTrajOpt.exportToStatesTable();
         TimeSeriesTable ref(states.getIndependentColumn());
         ref.appendColumn("/joint/height/value",
                 states.getDependentColumn("/joint/height/value"));

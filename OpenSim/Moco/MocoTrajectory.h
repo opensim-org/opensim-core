@@ -593,12 +593,11 @@ public:
     /// Save the trajectory to a STO file. Use the ."sto" file extension.
     void write(const std::string& filepath) const;
 
-    /// The Storage can be used in the OpenSim GUI to visualize a motion, or
-    /// as input to OpenSim's conventional tools (e.g., AnalyzeTool).
+    /// This table can be saved as a Storage file that can be used in the
+    /// OpenSim GUI to visualize a motion, or as input to OpenSim's conventional
+    /// tools (e.g., AnalyzeTool).
     ///
     /// Controls are not carried over to the states storage.
-    Storage exportToStatesStorage() const;
-    /// Same as exportToStatesStorage() except using TimeSeriesTable.
     TimeSeriesTable exportToStatesTable() const;
     /// Export the controls trajectory to a TimeSeriesTable.
     TimeSeriesTable exportToControlsTable() const;

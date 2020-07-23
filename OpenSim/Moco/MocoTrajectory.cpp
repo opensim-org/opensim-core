@@ -875,11 +875,6 @@ TimeSeriesTable MocoTrajectory::convertToTable() const {
     return table;
 }
 
-Storage MocoTrajectory::exportToStatesStorage() const {
-    ensureUnsealed();
-    return convertTableToStorage(exportToStatesTable());
-}
-
 TimeSeriesTable MocoTrajectory::exportToStatesTable() const {
     ensureUnsealed();
     TimeSeriesTable states(
@@ -906,9 +901,9 @@ StatesTrajectory MocoTrajectory::exportToStatesTrajectory(
 StatesTrajectory MocoTrajectory::exportToStatesTrajectory(
         const Model& model) const {
     ensureUnsealed();
-    Storage storage = exportToStatesStorage();
+    TimeSeriesTable states = exportToStatesTable();
     // TODO update when we support multiple phases.
-    return StatesTrajectory::createFromStatesStorage(model, storage, true);
+    return StatesTrajectory::createFromStatesTable(model, states, true);
 }
 
 namespace {

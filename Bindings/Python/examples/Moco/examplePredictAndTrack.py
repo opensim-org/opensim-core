@@ -170,14 +170,9 @@ def solvePrediction():
 def computeMarkersReference(predictedSolution):
     model = createDoublePendulumModel()
     model.initSystem()
-    states = predictedSolution.exportToStatesStorage()
-    
-    # Workaround for a bug in Storage::operator=().
-    columnLabels = model.getStateVariableNames()
-    columnLabels.insert(0, "time")
-    states.setColumnLabels(columnLabels)
-    
-    statesTraj = osim.StatesTrajectory.createFromStatesStorage(model, states)
+    states = predictedSolution.exportToStatesTable()
+
+    statesTraj = osim.StatesTrajectory.createFromStatesTable(model, states)
     
     markerTrajectories = osim.TimeSeriesTableVec3()
     markerTrajectories.setColumnLabels(["/markerset/m0", "/markerset/m1"])

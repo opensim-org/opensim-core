@@ -41,10 +41,8 @@ def animate_iterations(modelIn, traj_prefix):
         if file.startswith(prefix):
             model = osim.Model(modelIn)
             trajectory = osim.MocoTrajectory(os.path.join(dir, file))
-            statesSto = trajectory.exportToStatesStorage()
             statesTab = trajectory.exportToStatesTable()
             osim.STOFileAdapter.write(statesTab, 'statestabTODO.sto')
-            statesSto.printToFile('statesTODO.sto', 'w')
             states_traj = osim.StatesTrajectory.createFromStatesStorage(model,
                                                                         'statestabTODO.sto')
 

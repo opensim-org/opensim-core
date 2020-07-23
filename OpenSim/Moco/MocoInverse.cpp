@@ -58,9 +58,8 @@ std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
     // allowMissingColumns = true: we only need kinematics.
     // allowExtraColumns = user-specified.
     // assemble = true: we must obey the kinematic constraints.
-    auto statesTraj = StatesTrajectory::createFromStatesStorage(model,
-            convertTableToStorage(kinematics), true,
-            get_kinematics_allow_extra_columns(), true);
+    auto statesTraj = StatesTrajectory::createFromStatesTable(model, kinematics,
+            true, get_kinematics_allow_extra_columns(), true);
 
     auto posmot = PositionMotion::createFromStatesTrajectory(model, statesTraj);
     posmot->setName("position_motion");

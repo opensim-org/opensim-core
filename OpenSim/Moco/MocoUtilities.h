@@ -64,15 +64,6 @@ private:
     std::ios m_format{nullptr};
 }; // StreamFormat
 
-/// Create a Storage from a TimeSeriesTable. Metadata from the
-/// TimeSeriesTable is *not* copied to the Storage.
-/// You should use TimeSeriesTable if possible, as support for Storage may be
-/// reduced in future versions of OpenSim. However, Storage supports some
-/// operations not supported by TimeSeriesTable (e.g., filtering, resampling).
-// TODO move to the Storage class.
-/// @ingroup moconumutil
-OSIMMOCO_API Storage convertTableToStorage(const TimeSeriesTable&);
-
 /// Calculate the requested outputs using the model in the problem and the
 /// states and controls in the MocoTrajectory.
 /// The output paths can be regular expressions. For example,
@@ -118,8 +109,8 @@ TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& trajectory,
     model.initSystem();
 
     // Get states trajectory.
-    Storage storage = trajectory.exportToStatesStorage();
-    auto statesTraj = StatesTrajectory::createFromStatesStorage(model, storage);
+    TimeSeriesTable states = trajectory.exportToStatesTable();
+    auto statesTraj = StatesTrajectory::createFromStatesTable(model, states);
 
     // Loop through the states trajectory to create the report.
     for (int i = 0; i < (int)statesTraj.getSize(); ++i) {
@@ -148,7 +139,7 @@ TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& trajectory,
 
 /// Given a MocoTrajectory and the associated OpenSim model, return the model
 /// with a prescribed controller appended that will compute the control values
-/// from the MocoSolution. This can be useful when computing state-dependent
+/// from the MocoTrajectory. This can be useful when computing state-dependent
 /// model quantities that require realization to the Dynamics stage or later.
 /// The function used to fit the controls can either be GCVSpline or
 /// PiecewiseLinearFunction.
