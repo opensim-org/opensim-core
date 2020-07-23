@@ -3,6 +3,13 @@ Moco Change Log
 
 0.5.0 (in development)
 ----------------------
+- 2020-07-15: Add exampleHangingMuscle.cpp and exampleHangingMuscle.py that 
+              show how to use MuscleAnalysis and metabolic probes with a Moco
+              solution.
+              
+- 2020-07-15: Fix an issue with the DeGrooteFregly2016Muscle that caused
+              MuscleAnalysis to produce NaNs for certain quantities.
+              
 - 2020-06-22: Moco can be built without CasADi, and the functions
               MocoCasADiSolver::isAvailable() and 
               MocoTropterSolver::isAvailable() are added.
