@@ -68,10 +68,19 @@ private:
 /// states and controls in the MocoTrajectory.
 /// The output paths can be regular expressions. For example,
 /// ".*activation" gives the activation of all muscles.
-/// Constraints are not enforced but prescribed motion (e.g.,
-/// PositionMotion) is.
+///
 /// The output paths must correspond to outputs that match the type provided in
 /// the template argument, otherwise they are not included in the report.
+///
+/// @note The provided trajectory is not modified to satisfy kinematic
+/// constraints, but SimTK::Motions in the Model (e.g., PositionMotion) are
+/// applied. Therefore, this function expects that you've provided a trajectory
+/// that already satisfies kinematic constraints. If your provided trajectory
+/// does not satisfy kinematic constraints, many outputs will be incorrect.
+/// For example, in a model with a patella whose location is determined by a
+/// CoordinateCouplerConstraint, the length of a muscle that crosses the patella
+/// will be incorrect.
+///
 /// @note Parameters and Lagrange multipliers in the MocoTrajectory are **not**
 ///       applied to the model.
 /// @ingroup mocomodelutil
@@ -152,6 +161,9 @@ OSIMMOCO_API void prescribeControlsToModel(const MocoTrajectory& trajectory,
 /// return the resulting states and controls. We return a MocoTrajectory (rather
 /// than a StatesTrajectory) to facilitate comparing optimal control solutions
 /// with time stepping. Use integratorAccuracy to override the default setting.
+///
+/// @note This function expects all Actuator%s in the model are in the Model's
+/// ForceSet.
 /// @ingroup mocomodelutil
 OSIMMOCO_API MocoTrajectory simulateTrajectoryWithTimeStepping(
         const MocoTrajectory& trajectory, Model model,
@@ -198,7 +210,12 @@ std::vector<std::string> createControlNamesFromModel(
 OSIMMOCO_API
 std::vector<std::string> createControlNamesFromModel(const Model& model);
 /// The map provides the index of each control variable in the SimTK::Vector
-/// return by OpenSim::Model::getControls() from its control name.
+/// returned by Model::getControls(), using the control name as the
+/// key.
+/// @throws Exception if the order of actuators in the model does not match
+///     the order of controls in Model::getControls(). This is an internal
+///     error, but you may be able to avoid the error by ensuring all Actuator%s
+///     are in the Model's ForceSet.
 /// @ingroup mocomodelutil
 OSIMMOCO_API
 std::unordered_map<std::string, int> createSystemControlIndexMap(

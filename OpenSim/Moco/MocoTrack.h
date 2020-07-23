@@ -121,9 +121,9 @@ Construct a tracking problem by setting property values and calling solve():
 @code
 MocoTrack track;
 track.setName("states_tracking_with_reserves");
-track.setModel(ModelProcessor("model_file.xml") |
-               ModOpAddExternalLoads() |
-               ModOpAddReserves(1000));
+track.setModel(ModelProcessor("model_file.osim") |
+               ModOpAddExternalLoads("external_loads.xml") |
+               ModOpAddReserves());
 track.setStatesReference("states_reference_file.sto");
 track.set_track_reference_position_derivatives(true);
 track.set_control_effort_weight(0.1);

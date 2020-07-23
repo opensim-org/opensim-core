@@ -83,10 +83,12 @@ Default solver settings
 - optim_sparsity_detection: random
 - optim_finite_difference_scheme: forward
 
+If you would like to use settings other than these defaults, see "Customizing
+a problem" below.
+
 MocoInverse minimizes the sum of squared controls and, optionally, the sum
-of squared activations. Currently, the costs used by MocoInverse cannot be
-customized. As MocoInverse becomes more mature and general, the costs will
-become more flexible.
+of squared activations. As MocoInverse becomes more mature and general, the
+costs will become more flexible.
 
 Mesh interval
 -------------
@@ -95,7 +97,52 @@ for fast motions or problems with stiff differential equations (e.g.,
 stiff tendons).
 For gait, consider using a mesh interval between 0.01 and 0.05 seconds.
 Try solving your problem with decreasing mesh intervals and choose a mesh
-interval at which the solution stops changing noticeably. */
+interval at which the solution stops changing noticeably.
+
+Basic example
+-------------
+
+This example shows how to use MocoInverse in C++:
+
+@code
+MocoInverse inverse;
+inverse.setName("prescribed_motion");
+inverse.setModel(ModelProcessor("model_file.osim") |
+                 ModOpAddExternalLoads("external_loads.xml") |
+                 ModOpAddReserves());
+inverse.setKinematics(TableProcessor("states_reference_file.sto"));
+inverse.set_mesh_interval(0.02);
+MocoInverseSolution solution = inverse.solve();
+solution.getMocoSolution().write("MocoInverse_solution.sto");
+@endcode
+
+Customizing the tool
+--------------------
+The example below shows how you can customize the MocoInverse tool by obtaining
+the underlying MocoStudy. You can change the "Default solver settings" above
+and add additional goals.
+
+@code
+MocoInverse inverse;
+inverse.setName("prescribed_motion");
+inverse.setModel(ModelProcessor("model_file.osim") |
+                 ModOpAddExternalLoads("external_loads.xml") |
+                 ModOpAddReserves(1));
+inverse.setKinematics(TableProcessor("states_reference_file.sto"));
+inverse.set_mesh_interval(0.02);
+MocoStudy study = inverse.initialize();
+MocoProblem& problem = study.updProblem();
+auto* emg_tracking = problem.addGoal<MocoControlTrackingGoal>("emg_tracking");
+<Configure emg_tracking goal>
+auto& solver = study.updSolver<MocoCasADiSolver>();
+solver.set_optim_convergence_tolerance(1e-4);
+MocoSolution solution = study.solve();
+solution.write("MocoInverse_solution.sto");
+@endcode
+
+Do NOT change the multibody_dynamics_mode solver setting, as setting this to
+"implicit" is vital to how MocoInverse works.
+ */
 class OSIMMOCO_API MocoInverse : public MocoTool {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoInverse, MocoTool);
 
