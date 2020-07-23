@@ -145,14 +145,13 @@ protected:
         Point types override these Component methods. */
     /**@{**/
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-    void extendRealizeTopology(SimTK::State& s) const override;
     /**@}**/
 
 private:
 
-    mutable SimTK::ResetOnCopy<SimTK::CacheEntryIndex> _locationIndex;
-    mutable SimTK::ResetOnCopy<SimTK::CacheEntryIndex> _velocityIndex;
-    mutable SimTK::ResetOnCopy<SimTK::CacheEntryIndex> _accelerationIndex;
+    mutable CacheVariable<SimTK::Vec3> _locationCV;
+    mutable CacheVariable<SimTK::Vec3> _velocityCV;
+    mutable CacheVariable<SimTK::Vec3> _accelerationCV;
 
 //=============================================================================
 };  // END of class Point
