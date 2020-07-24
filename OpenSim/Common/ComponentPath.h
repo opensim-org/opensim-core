@@ -45,8 +45,26 @@ namespace OpenSim {
 class OSIMCOMMON_API ComponentPath : public Path {
 public:
     /**
-     * Split `path` into a pair, `(head, tail)`, where `tail` is the last
-     * pathname component and `head` is everything leading up to that.
+     * Returns a normalized form of `path`. A normalized path is guaranteed to:
+     *
+     * - Not contain any relative elements (e.g. 'a/../b')
+     * - Not contain any invalid characters
+     * - Not contain any repeated separators (e.g. 'a///b' --> 'a/b')
+     * - Contain no trailing slashes, unless it resolved to root
+     *
+     * Any attempt to step above the root of the expression with '..' will
+     * result in an exception being thrown (e.g. 'a/../..' will throw).
+     *
+     * This method is useful for path traversal and path manipulation methods,
+     * because the above guarantees ensure that (e.g.) paths can be concatenated
+     * and split into individual elements using basic string manipulation
+     * techniques.
+     */
+    static std::string normalize(std::string path);
+
+    /**
+     * Returns a pair, `(head, tail)`, where `tail` is the last component in
+     * `path` and `head` is everything leading up to `tail`.
      *
      * - The `tail` will never contain a `/` (component list separator)
      * - If `path` ends in a slash, then `tail` will be empty
@@ -54,19 +72,8 @@ public:
      * - If `path` is empty, both `head` and `tail` will be empty
      * - Trailing slashes are stripped from `head`, unless it is the root
      *
-     * Examples:
-     *
-     *     auto [head1, tail1]& = ComponentPath::split("some/path/to/var");
-     *     assert(head1 == "some/path/to" and tail1 == "statevar");
-     *
-     *     auto [head2, tail2]& = ComponentPath::split("/var");
-     *     assert(head2 == "/" and tail2 == "var");
-     *
-     *     auto [head3, tail3]& = ComponentPath::split("var");
-     *     assert(head3 == "" and tail3 == "var");
-     *
-     *     auto [head4, tail4]& = ComponentPath::split("");
-     *     assert(head4 == "" and tail4 == "");
+     * This method does not resolve relative path elements, or check for invalid
+     * path characters. See `ComponentPath::normalize` for that.
      */
     static std::pair<std::string, std::string> split(std::string path);
 

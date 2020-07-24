@@ -177,6 +177,75 @@ void testComponentPath() {
         ASSERT(numberedRelPath.getSubcomponentNameAtLevel(ind) == levels[ind]);
     }
 
+    // ComponentPath::normalize
+    {
+        static const std::pair<std::string, std::string> shouldPass[] = {
+            { "",                "" },
+            { "/",               "/" },
+            { "a/b/c",           "a/b/c" },
+            { "a/..",            "" },
+            { "a/../",           "" },
+            { "a/../c",          "c" },
+            { "a/../c/",         "c" },
+            { "/a/../c",         "/c" },
+            { "/a/b/../../c",    "/c" },
+            { "a/b/../../c",     "c" },
+            { "/./././c",        "/c" },
+            { "./././c",         "c" },
+            { "./",              "" },
+            { ".",               "" },
+            { "./.",             "" },
+            { "./a/.",           "a" },
+            { "./a/./",          "a" },
+            { "a//b/.///",       "a/b" },
+            { "///",             "/" },
+            { ".///",            "/" },
+            { "a///b",           "a/b" },
+            { "a/b/c/",          "a/b/c" },
+            { "a/b/c//",         "a/b/c" },
+        };
+
+        for (const auto& tc : shouldPass) {
+            std::cerr << "input = " << tc.first << std::endl;
+            std::string output = ComponentPath::normalize(tc.first);
+            if (output != tc.second) {
+                std::stringstream msg;
+                msg << "ComponentPath::resolveRelativeElements: invalid output:" << std::endl;
+                msg << "              input = " << tc.first << std::endl;
+                msg << "             output = " << output << std::endl;
+                msg << "    expected output = " << tc.second << std::endl;
+                throw std::runtime_error{msg.str()};
+            }
+        }
+
+        static const std::string shouldThrow[] = {
+            // step above the root
+            "..",
+            "/..",
+            "../",
+            "/a/../..",
+            "/./../",
+            "./../",
+            "/a/./.././..",
+
+            // contain invalid chars
+            "foo\\bar",
+            "a/foo\\bar/c",
+            "foo*bar",
+            "a/foo*bar*/c",
+            "foo+bar",
+            "a/foo+bar",
+            "foo\tbar",
+            "a/b/c/foo\tbar/d",
+            "foo\nbar",
+            "/a/foo\nbar",
+        };
+
+        for (const std::string& tc : shouldThrow) {
+            ASSERT_THROW(std::exception, ComponentPath::normalize(tc));
+        }
+    }
+
     // ComponentPath::split
     {
         auto testSplit = [](
@@ -187,7 +256,7 @@ void testComponentPath() {
 
             if (p.first != expectedHead || p.second != expectedTail) {
                 std::stringstream msg;
-                msg << "invalid output for input '" << input << "':" << std::endl;
+                msg << "ComponentPath::split: invalid output for input '" << input << "':" << std::endl;
                 msg << "    expected head = " << expectedHead << std::endl;
                 msg << "      actual head = " << p.first << std::endl;
                 msg << "    expected tail = " << expectedTail << std::endl;
@@ -200,11 +269,11 @@ void testComponentPath() {
         testSplit("/var", "/", "var");
         testSplit("var", "", "var");
         testSplit("", "", "");
+        testSplit("a/b/c/", "a/b/c", "");
+        testSplit("/", "/", "");
 
         // '.' and '..' elements are not automatically handled by this function.
-        // If needed, a separate function (e.g. 'abspath') should be used to
-        // handle de-relativizing the elements
-        testSplit("../var", "var");
+        testSplit("../var", "..", "var");
     }
 }
 
