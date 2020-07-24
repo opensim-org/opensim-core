@@ -78,7 +78,7 @@ public:
     virtual ~DataQueue_() {}
     
     DataQueue_()                                = default;
-	// using compiler generated methods is problematic due to mutex 
+    // using compiler generated methods here is problematic due to mutex 
     DataQueue_(const DataQueue_& other){ 
         m_data_queue = other.m_data_queue;
     };
