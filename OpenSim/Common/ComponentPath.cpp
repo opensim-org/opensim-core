@@ -126,19 +126,13 @@ std::string ComponentPath::normalize(std::string path) {
     // relative elements, such that the [start, cur) loop invariant is
     // maintained.
     while (cur[0] != '\0') {
-        std::cerr << path << std::endl;
         if (cur[0] == '.') {
             if (cur[1] == '\0' || cur[1] == '/') {
                 // it's a '.'
-
-                size_t n = cur[1] == '/' ? 2 : 1;
+                shift(cur, 2);
                 if (cur != start) {
-                    // rewind over previous '/'
                     --cur;
-                    ++n;
                 }
-
-                shift(cur, n);
                 continue;
             }
 
@@ -149,22 +143,13 @@ std::string ComponentPath::normalize(std::string path) {
                     throw std::runtime_error{path + ": cannot handle '..' element in string: would hop above the root of the path"};
                 }
 
-                // shifting at least 3 characters: /..
-                // rewind over previous '/'
-                size_t n = cur[2] == '/' ? 4 : 3;
-                --cur;
-
-                char* prevElStart = rfind(start, cur);
+                char* prevElEnd = cur-1;
+                char* prevElStart = rfind(start, prevElEnd);
                 if (prevElStart == nullptr) {
                     prevElStart = start;
                 }
-
-                // shifting off the previous element, which may be '/el' or 'el'
-                // e.g. 'a/el/..' --> 'a'
-                size_t prevElLen = cur - prevElStart;
-                cur -= prevElLen;
-                n += prevElLen;
-
+                size_t n = (prevElEnd - prevElStart) + (cur[2] == '/' ? 4 : 3); // '/a/..'
+                cur = prevElStart;
                 shift(cur, n);
                 continue;
             }
@@ -182,9 +167,13 @@ std::string ComponentPath::normalize(std::string path) {
             }
         }
     }
-    // edge-case: trailing slash should be removed, unless the string only
+    // edge-case: trailing slashes should be removed, unless the string only
     // contains a slash
     if (path.size() > 1 && path.back() == '/') {
+        path.pop_back();
+    }
+
+    if (!isAbsolute && path.size() == 1 && path.back() == '/') {
         path.pop_back();
     }
 
