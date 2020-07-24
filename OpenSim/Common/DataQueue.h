@@ -78,9 +78,15 @@ public:
     virtual ~DataQueue_() {}
     
     DataQueue_()                                = default;
-    DataQueue_(const DataQueue_&){};
-    DataQueue_(DataQueue_&&){};
-    DataQueue_& operator=(const DataQueue_&) { 
+	// using compiler generated methods is problematic due to mutex 
+    DataQueue_(const DataQueue_& other){ 
+        m_data_queue = other.m_data_queue;
+    };
+    DataQueue_(DataQueue_&& other){ 
+        m_data_queue = other.m_data_queue;
+    };
+    DataQueue_& operator=(const DataQueue_& other) { 
+        m_data_queue = other.m_data_queue;
         return (*this);
     };
 
@@ -88,8 +94,11 @@ public:
     // DataQueue Interface
     //--------------------------------------------------------------------------
     void push_back(const double time, const SimTK::RowVectorView_<T>& data) { 
+        // Need actual place to hold data.
+        // @TODO Verify no leak on pop_front
+        SimTK::RowVector_<T>* deepCopy = new SimTK::RowVector_<T>(data);
         std::unique_lock<std::mutex> mlock(m_mutex);
-        m_data_queue.push(DataQueueEntry_<T>(time, data));
+        m_data_queue.push(DataQueueEntry_<T>(time, *deepCopy));
         mlock.unlock();     // unlock before notificiation to minimize mutex con
         m_cond.notify_one(); 
     }
