@@ -82,19 +82,40 @@ std::string ComponentPath::normalize(std::string path) {
 
     // setup loop invariants:
     //
-    // - skip starting slash
+    // - skip starting slash (absolute paths)
     //
-    // - remove any starting relative elements './././a/b' --> 'a/b'
+    // - skip starting '..' elements, unless it is an absolute path, then throw
+    //   an error
     //
-    // - so that the remainder of this algorithm can assume that any slashes in
-    //   [start, cur) *must* delimit a real previous element
+    // - remove any starting '.' relative elements './././a/b' --> 'a/b'
+    //
+    // - after this setup phase, the remainder of the algorithm can assume
+    //   that any slashes in [start, cur) delimit a real previous element
+    //   (effectively, the alg can ignore the prefix)
 
+    bool isAbsolute = false;
     if (start[0] == '/') {
         ++start;
+        isAbsolute = true;
     }
 
-    while (start[0] == '.' && start[1] == '/' && start[2] != '\0') {
-        shift(start, 2);
+    // skip/shift leading relative elements
+    while (start[0] == '.') {
+        if (start[1] == '/') {
+            shift(start, 2);
+        } else if (start[1] == '\0') {
+            shift(start, 1);
+        } else if (start[1] == '.' && (start[2] == '/' || start[2] == '\0')) {
+            if (isAbsolute) {
+                throw std::runtime_error{path + ": invalid path: is absolute, but starts with relative elements"};
+            }
+            // skip leading '..' elements
+            if (start[2] == '/') {
+                start += 3;
+            } else {
+                start += 2;
+            }
+        }
     }
 
     // [start, cur) delimits a fully-resolved path string that contains no
@@ -144,9 +165,7 @@ std::string ComponentPath::normalize(std::string path) {
                 cur -= prevElLen;
                 n += prevElLen;
 
-                std::cerr<< "shift " << path << "n = " << n << " cur = " << cur << std::endl;
                 shift(cur, n);
-                std::cerr << "postshift " << path << std::endl;
                 continue;
             }
         }

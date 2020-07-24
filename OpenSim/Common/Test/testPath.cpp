@@ -184,6 +184,14 @@ void testComponentPath() {
             { "../a/b",          "../a/b" },
             { "../a/b/",         "../a/b" },
             { "./../a/../",      ".." },
+            { "/a/b/c/d",        "/a/b/c/d" },
+            { "/a/b/e/f/g/h",    "/a/b/e/f/g/h" },
+            { "/a/b",            "/a/b" },
+            { "c/d",             "c/d" },
+            { "e/f/g/h",         "e/f/g/h" },
+            { "/a/././b/c/..//d/.././", "/a/b" },
+            { "../../../../c/d", "../../../../c/d" },
+            { "/a/b/c/d/../..", "/a/b" },
         };
 
         for (const auto& tc : shouldPass) {
@@ -206,8 +214,9 @@ void testComponentPath() {
             "/./..",
             "/a/../..",
             "/./../",
-            "./../",
             "/a/./.././..",
+            "/../b/c/d",
+            "/a/../../c/d",
 
             // contain invalid chars
             "foo\\bar",
@@ -223,7 +232,18 @@ void testComponentPath() {
         };
 
         for (const std::string& tc : shouldThrow) {
-            ASSERT_THROW(std::exception, ComponentPath::normalize(tc));
+            std::string maybeError;
+            try {
+                std::string p = ComponentPath::normalize(tc);
+                std::stringstream msg;
+                msg << tc << ": did not throw an exception: instead, it output: " << p;
+                maybeError = msg.str();
+            } catch (...) {
+                // good
+            }
+            if (!maybeError.empty()) {
+                throw std::runtime_error{maybeError};
+            }
         }
     }
 
