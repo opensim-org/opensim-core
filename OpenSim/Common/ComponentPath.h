@@ -47,10 +47,15 @@ public:
     /**
      * Returns a normalized form of `path`. A normalized path is guaranteed to:
      *
-     * - Not contain any relative elements (e.g. 'a/../b')
-     * - Not contain any invalid characters
+     * - Not contain any internal or trailing relative elements (e.g. 'a/../b')
+     *   - It may start with relative elements (e.g. '../a/b')
+     *   - It cannot start with relative elements if the path is absolute (e.g.
+     *     '/../a/b' is invalid)
+     * - Not contain any invalid characters (e.g. '\\', '*')
      * - Not contain any repeated separators (e.g. 'a///b' --> 'a/b')
      * - Contain no trailing slashes, unless it resolved to root
+     *   - e.g. 'a/b/c/' is normalized to 'a/b/c', but '/./a/../' is normalized
+     *     to '/'
      *
      * Any attempt to step above the root of the expression with '..' will
      * result in an exception being thrown (e.g. 'a/../..' will throw).
