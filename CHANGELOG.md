@@ -22,6 +22,7 @@ v4.2
   - Previously, it would return `false` if its parent `Model`'s `Model::getAllControllersEnabled` returned `false`
   - The previous behavior would mean that `Controller::setEnabled(true); return Controller::isEnabled();` could return `false`
 - The new Matlab examplePointMass.m shows how to build and simulate a point-mass model.
+- Fix OpenSense calibration algorithm to handle models facing an arbitrary direction. The calibration algorithm now aligns one axis of the provided Orientation Sensor data with the x-axis of the base segment (e.g. pelvis) of the model in default pose.
 - For PrescribedController, the controls_file column labels can now be absolute paths to actuators (previously, the column labels were required to be actuator names).
 
 v4.1
