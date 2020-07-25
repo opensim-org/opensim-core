@@ -46,13 +46,9 @@ class DataQueueEntry_ {
 public:
     DataQueueEntry_(double timeStamp, const SimTK::RowVectorView_<U>& data)
             : _timeStamp(timeStamp), _data(data){};
-    DataQueueEntry_(const DataQueueEntry_& other): _data(other._data)
-    {
-        _timeStamp = other.getTimeStamp();
-    };
-    DataQueueEntry_(DataQueueEntry_&&) = default;
-
-    DataQueueEntry_& operator=(const DataQueueEntry_&) { return (*this); };
+    DataQueueEntry_(const DataQueueEntry_& other)       = default;
+    DataQueueEntry_(DataQueueEntry_&&)                  = default;
+    DataQueueEntry_& operator=(const DataQueueEntry_&)  = default;
     virtual ~DataQueueEntry_(){};
 
     double getTimeStamp() const { return _timeStamp; };
