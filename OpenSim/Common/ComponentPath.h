@@ -69,8 +69,8 @@ public:
     }
 
     // Override virtual functions
-    const char getSeparator() const override { return separator; };
-    const std::string getInvalidChars() const override { return invalidChars; };
+    char getSeparator() const override { return separator; };
+    std::string getInvalidChars() const override { return invalidChars; };
 
     /// Get an absolute path by resolving it relative to a given otherPath.
     /// If the current Path is already absolute, return the same Path.

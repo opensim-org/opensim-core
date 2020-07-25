@@ -50,23 +50,23 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
 int main()
 {
     try {
-        cout << "Testing ControlSetController" << endl; 
+        log_info("Testing ControlSetController"); 
         testControlSetControllerOnBlock();
-        cout << "Testing PrescribedController" << endl; 
+        log_info("Testing PrescribedController"); 
         testPrescribedControllerOnBlock(true);
         testPrescribedControllerOnBlock(false);
-        cout << "Testing CorrectionController" << endl; 
+        log_info("Testing CorrectionController"); 
         testCorrectionControllerOnBlock();
-        cout << "Testing PrescribedController from File" << endl;
+        log_info("Testing PrescribedController from File");
         testPrescribedControllerFromFile("arm26.osim", "arm26_Reserve_Actuators.xml",
                                          "arm26_controls.xml");
     }   
     catch (const std::exception& e) {
-        cout << "TestControllers failed due to the following error(s):" << endl;
-        cout << e.what() << endl;
+        log_error("TestControllers failed due to the following error(s): {}",
+            e.what());
         return 1;
     }
-    cout << "TestControllers passed." << endl;
+    log_info("TestControllers passed.");
     return 0;
 }
 
@@ -149,7 +149,8 @@ void testControlSetControllerOnBlock()
     // Integrate from initial time to final time
     si.setTime(initialTime);
     manager.initialize(si);
-    std::cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
+    log_info("");
+    log_info("Integrating from {} to {}", initialTime, finalTime);
     si = manager.integrate(finalTime);
 
     si.getQ().dump("Final position:");
@@ -242,7 +243,8 @@ void testPrescribedControllerOnBlock(bool enabled)
     // Integrate from initial time to final time
     si.setTime(initialTime);
     manager.initialize(si);
-    std::cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
+    log_info("");
+    log_info("Integrating from {} to {}", initialTime, finalTime);
     si = manager.integrate(finalTime);
 
     si.getQ().dump("Final position:");
@@ -328,7 +330,7 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
         osimModel.updForceSet().append(*forceSet);
     }
     catch(const std::exception& e){
-        cout << "Actuators not loaded: " << e.what() << endl;
+        log_error("Actuators not loaded: {}", e.what());
     }
 
     ControlSetController csc;
@@ -348,7 +350,8 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
     // Integrate from initial time to final time
     si.setTime(initialTime);
     manager.initialize(si);
-    cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
+    log_info("");
+    log_info("Integrating from {} to {}", initialTime, finalTime);
     si = manager.integrate(finalTime);
 
     string modelName = osimModel.getName();
@@ -367,9 +370,8 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
 
     // remove previous controllers
     osimModel.updControllerSet().remove(0);
-    cout << "Number of Controllers should be 0 is ";
-        cout << osimModel.getControllerSet().getSize() << endl;
-    
+    log_info("Number of Controllers should be 0 is {}", 
+        osimModel.getControllerSet().getSize());
     
     //************* Rerun with a PrescribedController ***********************/
 
@@ -389,7 +391,8 @@ void testPrescribedControllerFromFile(const std::string& modelFile,
     // Integrate from initial time to final time
     s2.setTime(initialTime);
     manager2.initialize(s2);
-    cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
+    log_info("");
+    log_info("Integrating from {} to {}", initialTime, finalTime);
     s2 = manager2.integrate(finalTime);
 
     // Save the simulation results

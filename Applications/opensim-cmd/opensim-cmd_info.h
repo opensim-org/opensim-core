@@ -28,8 +28,6 @@
 #include <docopt.h>
 #include "parse_arguments.h"
 
-#include <OpenSim/OpenSim.h>
-
 static const char HELP_INFO[] =
 R"(Show description of properties in an OpenSim class.
 
@@ -39,6 +37,7 @@ Usage:
 
 Options:
   -L <path>, --library <path>  Load a plugin.
+  -o <level>, --log <level>  Logging level.
 
 Description:
   If you do not supply any arguments, you get a list of all registered

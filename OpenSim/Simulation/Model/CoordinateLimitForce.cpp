@@ -234,7 +234,8 @@ void CoordinateLimitForce::extendAddToSystem(SimTK::MultibodySystem& system) con
 {
     Super::extendAddToSystem(system);
 
-    addCacheVariable<double>("dissipationPower", 0.0, SimTK::Stage::Dynamics);
+    this->_dissipationPowerCV =
+        addCacheVariable("dissipationPower", 0.0, SimTK::Stage::Dynamics);
 
     if(isComputingDissipationEnergy()){
         addStateVariable("dissipatedEnergy");
@@ -273,8 +274,8 @@ double CoordinateLimitForce::calcLimitForce( const SimTK::State& s) const
 
     // dissipative power is negative power but is already implied by "dissipation"
     // so negate power so that dissipation power is a positive number
-    double dissPower = -qdot*f_damp;
-    setCacheVariableValue<double>(s, "dissipationPower", dissPower);
+    double dissPower = -qdot * f_damp;
+    setCacheVariableValue(s, _dissipationPowerCV, dissPower);
 
     double f_limit = f_up + f_low + f_damp;
 
@@ -321,7 +322,7 @@ double CoordinateLimitForce::computePotentialEnergy(const SimTK::State& s) const
 // power dissipated by the damping term of the coordinate limit force
 double CoordinateLimitForce::getPowerDissipation(const SimTK::State& s) const
 {
-    return  getCacheVariableValue<double>(s, "dissipationPower");
+    return  getCacheVariableValue(s, _dissipationPowerCV);
 }
 
 // energy dissipated by the damping term of the coordinate limit force

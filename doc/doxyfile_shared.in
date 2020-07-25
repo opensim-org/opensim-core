@@ -204,7 +204,11 @@ TAB_SIZE               = 4
 # will result in a user-defined paragraph with heading "Side Effects:".
 # You can put \n's in the value part of an alias to insert newlines.
 
-ALIASES = 
+ALIASES                = "precondition=@par Precondition(s):^^" \
+                         "postcondition=@par Postcondition(s):^^" \
+                         "samplefile=^^Sample file:^^@verbatim^^" \
+                         "endsamplefile=@endverbatim" \
+                         "underdevelopment=@note This class is still under active development and should be used with caution."
 
 # This tag can be used to specify a number of word-keyword mappings (TCL only).
 # A mapping has the form "name=value". For example adding
@@ -747,7 +751,8 @@ EXCLUDE_PATTERNS       = *.svn \
                          */Matlab/* \
                          */Utilities/* \
                          */Applications/* \
-                         */Sandbox/*
+                         */Sandbox/* \
+                         */Auxiliary/*
 
 # The EXCLUDE_SYMBOLS tag can be used to specify one or more symbol names
 # (namespaces, classes, functions, etc.) that should be excluded from the

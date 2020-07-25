@@ -92,24 +92,24 @@ void ControllerSet::setDesiredStates( Storage* yStore)
 
 void ControllerSet::printInfo() const 
 {
-    std::cout << " Number of controllers = " << getSize() << std::endl;
+    log_cout(" Number of controllers = {}");
 
     for(int i=0;i<getSize(); i++ ) {
       Controller& c = get(i);
       if( c.isEnabled() ) {
-          printf(" controller %d =%llx %s model=%llx \n", 
+          log_cout(" controller {} ={} {} model={}", 
               i+1, (unsigned long long)&c, c.getName().c_str(), 
               (unsigned long long)&c.getModel() );
 
           const Set<const Actuator>& actSet = c.getActuatorSet();
           if( actSet.getSize() > 0 ) {
-               std::cout << "Actuators" << std::endl;
+               log_cout("Actuators");
                for(int j=0;j<get(i).getActuatorSet().getSize(); j++ ) {
-                   std::cout <<get(i).getActuatorSet().get(j).getName() << std::endl;
+                   log_cout("{}", get(i).getActuatorSet().get(j).getName());
                }
            }
       } else { 
-         printf(" controller %d =%llx %s model=%llx DISABLED \n", 
+         log_cout(" controller {} ={} {} model={} DISABLED", 
              i+1, (unsigned long long)&c, c.getName().c_str(), 
              (unsigned long long)&c.getModel() );
       }
@@ -119,7 +119,7 @@ void ControllerSet::printInfo() const
 
 void ControllerSet::computeControls(const SimTK::State& s, SimTK::Vector &controls) const
 {
-    std::cout << "IN ControllerSet::computeControls()" << std::endl;
+    log_trace("IN ControllerSet::computeControls()");
     /**
     for(int i=0;i<getSize(); i++ ) {
         if(!get(i).isDisabled() )

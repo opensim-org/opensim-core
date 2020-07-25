@@ -65,21 +65,6 @@ MarkerFrame::MarkerFrame(int aNumMarkers, int aFrameNumber, double aTime, Units&
     setNull();
 }
 
-/**
- * Copy constructor.
- */
-MarkerFrame::MarkerFrame(const MarkerFrame& aFrame) :
-   Object(aFrame)
-{
-    setNull();
-
-    _numMarkers = aFrame._numMarkers;
-    _frameNumber = aFrame._frameNumber;
-    _frameTime = aFrame._frameTime;
-    _units = aFrame._units;
-    _markers = aFrame._markers;
-}
-
 //_____________________________________________________________________________
 /**
  * Destructor.

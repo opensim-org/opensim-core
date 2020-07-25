@@ -938,7 +938,7 @@ public:
                          InvalidArgument,
                          "Column-label '" + columnLabel + "' already exists in "
                          "the DataTable.");
-        OPENSIM_THROW_IF(depCol.nrow() != getNumRows(),
+        OPENSIM_THROW_IF(depCol.nrow() != (int)getNumRows(),
                          IncorrectNumRows,
                          static_cast<size_t>(getNumRows()),
                          static_cast<size_t>(depCol.nrow()));
@@ -1223,10 +1223,10 @@ protected:
     DataTable_(const std::vector<ETX>& indVec,
         const SimTK::Matrix_<ETY>& depData,
         const std::vector<std::string>& labels) {
-        OPENSIM_THROW_IF(indVec.size() != depData.nrow(), InvalidArgument,
+        OPENSIM_THROW_IF((int)indVec.size() != depData.nrow(), InvalidArgument,
             "Length of independent column does not match number of rows of "
             "dependent data.");
-        OPENSIM_THROW_IF(labels.size() != depData.ncol(), InvalidArgument,
+        OPENSIM_THROW_IF((int)labels.size() != depData.ncol(), InvalidArgument,
             "Number of labels does not match number of columns of "
             "dependent data.");
 

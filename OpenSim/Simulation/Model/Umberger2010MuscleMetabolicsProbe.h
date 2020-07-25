@@ -364,7 +364,7 @@ public:
     obtained if the metabolic probe is already 'connected' to the model.
     */
     /** Get the number of muscles being analyzed in the metabolic analysis. */
-    const int getNumMetabolicMuscles() const;  
+    int getNumMetabolicMuscles() const;
 
     /** Add a muscle and its parameters so that it can be included in the metabolic analysis. */
     void addMuscle(const std::string& muscleName, 
@@ -394,22 +394,22 @@ public:
         (i.e. isUsingProvidedMass = true), or if it is being automatically
         calculated from muscle data already present in the model
         (i.e. isUsingProvidedMass = true). */
-    const double getMuscleMass(const std::string& muscleName) const;
+    double getMuscleMass(const std::string& muscleName) const;
 
     /** Get the ratio of slow twitch fibers for an existing muscle. */
-    const double getRatioSlowTwitchFibers(const std::string& muscleName) const;
+    double getRatioSlowTwitchFibers(const std::string& muscleName) const;
 
     /** %Set the ratio of slow twitch fibers for an existing muscle. */
     void setRatioSlowTwitchFibers(const std::string& muscleName, const double& ratio);
 
     /** Get the density for an existing muscle (kg/m^3). */
-    const double getDensity(const std::string& muscleName) const;
+    double getDensity(const std::string& muscleName) const;
 
     /** %Set the density for an existing muscle (kg/m^3). */
     void setDensity(const std::string& muscleName, const double& density);
 
     /** Get the specific tension for an existing muscle (Pascals (N/m^2)). */
-    const double getSpecificTension(const std::string& muscleName) const;
+    double getSpecificTension(const std::string& muscleName) const;
 
     /** %Set the specific tension for an existing muscle (Pascals (N/m^2)). */
     void setSpecificTension(const std::string& muscleName, const double& specificTension);

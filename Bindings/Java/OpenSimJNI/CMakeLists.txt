@@ -4,6 +4,10 @@ set(UKIT JAVAJNI)
 # For building C++ wrapper.
 find_package(JNI 1.7 REQUIRED)
 
+# Avoid excessive compiler warnings. We set these COMPILE_OPTIONS in the root
+# CMakeLists.txt.
+set_directory_properties(PROPERTIES COMPILE_OPTIONS "")
+
 function(OpenSimGenerateJavaWrapper
         NAME INPUT_INTERFACE_FILE OUTPUT_CXX_FILE OUTPUT_H_FILE)
 
@@ -16,7 +20,7 @@ function(OpenSimGenerateJavaWrapper
             ${INPUT_INTERFACE_FILE}
             )
 
-    OpenSimFindSwigFileDependencies(_${NAME}_dependencies ${NAME}
+    OpenSimFindSwigFileDependencies(_${NAME}_dependencies "${NAME} (Java)"
         "${_swig_common_args}"
         )
 

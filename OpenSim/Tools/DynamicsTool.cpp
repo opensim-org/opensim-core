@@ -212,9 +212,10 @@ void DynamicsTool::disableModelForces(Model &model, SimTK::State &s, const Array
             }
         }
         // No force or group was found
-        if(k < 0)
-            cout << "\nWARNING: Tool could not find force or group named '" << forcesByNameOrGroup[i] << "' to be excluded." << endl;
-
+        if(k < 0) {
+            log_warn("Could not find force or group named '{}' to be excluded.", 
+                forcesByNameOrGroup[i]);
+        }
     }
 }
 
@@ -225,8 +226,9 @@ void DynamicsTool::disableModelForces(Model &model, SimTK::State &s, const Array
 bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName,
                                         Model& aModel)
 {
-    if(aExternalLoadsFileName==""||aExternalLoadsFileName=="Unassigned") {
-        cout<<"No external loads will be applied (external loads file not specified)."<<endl;
+    if(aExternalLoadsFileName == "" || aExternalLoadsFileName == "Unassigned") {
+        log_info("No external loads will be applied (external loads file not "
+                 "specified).");
         return false;
     }
 
@@ -245,9 +247,10 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName,
     catch (const Exception &ex) {
         // Important to catch exceptions here so we can restore current working directory...
         // And then we can re-throw the exception
-        cout << "Error: failed to construct ExternalLoads from file " << aExternalLoadsFileName;
-        cout << ". Please make sure the file exists and that it contains an ExternalLoads";
-        cout << "object or create a fresh one." << endl;
+        log_error("Failed to construct ExternalLoads from file '{}'. Please "
+                  "make sure the file exists and that it contains an "
+                  "ExternalLoads object or create a fresh one.", 
+            aExternalLoadsFileName);
         throw(ex);
     }
 
@@ -279,8 +282,9 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName,
         }
         // if loading the data, do whatever filtering operations are also specified
         if (temp && externalLoads->getLowpassCutoffFrequencyForLoadKinematics() >= 0) {
-            cout << "\n\nLow-pass filtering coordinates data with a cutoff frequency of "
-                << _externalLoads.getLowpassCutoffFrequencyForLoadKinematics() << "." << endl;
+            log_info("Low-pass filtering coordinates data with a cutoff "
+                     "frequency of {:0.1f}.", 
+                _externalLoads.getLowpassCutoffFrequencyForLoadKinematics());
             temp->pad(temp->getSize() / 2);
             temp->lowpassIIR(externalLoads->getLowpassCutoffFrequencyForLoadKinematics());
         }

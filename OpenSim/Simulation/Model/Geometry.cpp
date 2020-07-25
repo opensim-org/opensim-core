@@ -218,7 +218,8 @@ void Mesh::extendFinalizeFromProperties() {
     if (!isObjectUpToDateWithProperties()) {
         const Component* rootModel = nullptr;
         if (!hasOwner()) {
-            std::cout << "Mesh " << get_mesh_file() << " not connected to model..ignoring" << std::endl;
+            log_error("Mesh {} not connected to model...ignoring",
+                    get_mesh_file());
             return;   // Orphan Mesh not part of a model yet
         }
         const Component* owner = &getOwner();
@@ -234,7 +235,8 @@ void Mesh::extendFinalizeFromProperties() {
         }
 
         if (rootModel == nullptr) {
-            std::cout << "Mesh " << get_mesh_file() << " not connected to model..ignoring" << std::endl;
+            log_error("Mesh {} not connected to model...ignoring",
+                    get_mesh_file());
             return;   // Orphan Mesh not descendant of a model
         }
 
@@ -250,8 +252,9 @@ void Mesh::extendFinalizeFromProperties() {
             isAbsolutePath, directory, fileName, extension);
         const string lowerExtension = SimTK::String::toLower(extension);
         if (lowerExtension != ".vtp" && lowerExtension != ".obj" && lowerExtension != ".stl") {
-            std::cout << "ModelVisualizer ignoring '" << file
-                << "'; only .vtp, .stl, and .obj files currently supported." << std::endl;
+            log_error("ModelVisualizer ignoring '{}'; only .vtp, .stl, and "
+                      ".obj files currently supported.",
+                    file);
             return;
         }
 
@@ -262,18 +265,17 @@ void Mesh::extendFinalizeFromProperties() {
 
         if (!foundIt) {
             if (!warningGiven) {
-                std::cout << "Couldn't find file '" << file << "'." << std::endl;
+                log_warn("Couldn't find file '{}'.", file);
                 warningGiven = true;
             }
-            if (getDebugLevel() <= 0) { return; }
-            std::cout << "The following locations were tried:\n";
+            
+            log_debug( "The following locations were tried:");
             for (unsigned i = 0; i < attempts.size(); ++i)
-                std::cout << "\n  " << attempts[i];
-            std::cout << std::endl;
+                log_debug(attempts[i]);
+            
             if (!isAbsolutePath &&
                 !Pathname::environmentVariableExists("OPENSIM_HOME"))
-                std::cout << "Set environment variable OPENSIM_HOME "
-                << "to search $OPENSIM_HOME/Geometry." << std::endl;
+                log_debug("Set environment variable OPENSIM_HOME to search $OPENSIM_HOME/Geometry.");
             return;
         }
 
@@ -285,9 +287,8 @@ void Mesh::extendFinalizeFromProperties() {
             // it will be handled downstream 
         }
         catch (const std::exception& e) {
-            std::cout << "Visualizer couldn't open "
-                << attempts.back() << " because:\n"
-                << e.what() << std::endl;
+            log_warn("Visualizer couldn't open {} because: {}",
+                attempts.back(), e.what());
             return;
         }
 
@@ -306,9 +307,8 @@ void Mesh::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeom
             // it's expensive to repeatedly load meshes.
             cachedMesh->getMesh();
         } catch (const std::exception& e) {
-            std::cout << "Visualizer couldn't open "
-                << get_mesh_file() << " because:\n"
-                << e.what() << std::endl;
+            log_warn("Visualizer couldn't open {} because: {}",
+                get_mesh_file(), e.what());
             // No longer try to visualize this mesh.
             cachedMesh.reset();
             return;

@@ -45,7 +45,7 @@ void AbstractSocket::prependComponentPathToConnecteePath(
         ComponentPath path(getConnecteePath(iConn));
         if (path.isAbsolute()) {
             ComponentPath newPath(pathToPrepend);
-            for (int iPath = 0; iPath < path.getNumPathLevels();
+            for (int iPath = 0; iPath < (int)path.getNumPathLevels();
                  ++iPath) {
                 newPath.pushBack(
                         path.getSubcomponentNameAtLevel(iPath));
@@ -71,7 +71,7 @@ void AbstractInput::prependComponentPathToConnecteePath(
         ComponentPath path(componentPath);
         if (path.isAbsolute()) {
             ComponentPath newPath(pathToPrepend);
-            for (int iPath = 0; iPath < path.getNumPathLevels();
+            for (int iPath = 0; iPath < (int)path.getNumPathLevels();
                  ++iPath) {
                 newPath.pushBack(
                         path.getSubcomponentNameAtLevel(iPath));

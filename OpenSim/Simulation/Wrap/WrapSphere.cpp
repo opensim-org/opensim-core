@@ -417,7 +417,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
          for (i = 0; i < 3; i++)
             sum_musc[i] = (origin[i] - aPoint1[i]) + (origin[i] - aPoint2[i]);
 
-            Mtx::Normalize(3, sum_musc, sum_musc);
+         Mtx::Normalize(3, sum_musc, sum_musc);
 
             if (Mtx::DotProduct(3, r1am, sum_musc) > Mtx::DotProduct(3, r1bm, sum_musc))
          {
@@ -449,7 +449,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
          for (i = 0; i < 3; i++)
             sum_musc[i] = (aWrapResult.r1[i] - aPoint1[i]) + (aWrapResult.r2[i] - aPoint2[i]);
 
-            Mtx::Normalize(3, sum_musc, sum_musc);
+         Mtx::Normalize(3, sum_musc, sum_musc);
 
             if (Mtx::DotProduct(3, sum_musc, wrapaxis) < 0.0)
          {

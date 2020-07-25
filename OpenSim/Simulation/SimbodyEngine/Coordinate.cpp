@@ -329,7 +329,8 @@ void Coordinate::setValue(SimTK::State& s, double aValue , bool enforceConstrain
     // Otherwise, set the value to aValue.
     if (getLocked(s)) {
         if (aValue != getValue(s) && !_lockedWarningGiven){
-            cout<<"Coordinate.setValue: WARN- coordinate "<<getName()<<" is locked. Unable to change its value." << endl;
+            log_warn("Coordinate.setValue:  coordinate {} is locked. Unable to change its value.",
+                getName());
             _lockedWarningGiven=true;
         }
     } else {

@@ -118,10 +118,8 @@ void ExternalForce::setDataSource(const Storage &dataSource)
 { 
     _dataSource = &dataSource;
 
-    if (getDebugLevel() >= 0) {
-        cout << "ExternalForce::" << getName() << endl;
-        cout << "Data source being set to " << _dataSource->getName() << endl;   
-    }
+    log_info("ExternalForce::{} Data source being set to {}", 
+        getName(), _dataSource->getName());   
 
     set_data_source_name(_dataSource->getName());
 }
@@ -190,14 +188,15 @@ void ExternalForce::extendConnectToModel(Model& model)
             "' to apply force to." ));
     }
     if(!_forceExpressedInBody) {
-        cout << "WARNING::ExternalForce could not find body '" +
-            forceExpressedInBodyName + "' that force is expressed in-"
-                "  ground is being assumed." << endl;
+        log_warn("ExternalForce could not find body '{}' that force is "
+                 "expressed in-ground is being assumed.",
+                forceExpressedInBodyName);
         _forceExpressedInBody = &_model->getGround();
     }
     if(_specifiesPoint && !_pointExpressedInBody){
-        cout << "WARNING::ExternalForce could not find body '"+get_point_expressed_in_body()+"' that point is expressed in-"
-                "  ground is being assumed." << endl;
+        log_warn("ExternalForce could not find body '{}' that point is "
+                 "expressed in-ground is being assumed.",
+                get_point_expressed_in_body());
         _pointExpressedInBody = &_model->getGround();
     }
 

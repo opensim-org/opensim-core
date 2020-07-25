@@ -64,6 +64,7 @@ ControlLinearNode(double aT,double aValue) :
  * @param aControl Control to copy.
  */
 ControlLinearNode::ControlLinearNode(const ControlLinearNode &aControl) :
+    Object(aControl),
     _t(_propT.getValueDbl()),
     _value(_propValue.getValueDbl())
 {

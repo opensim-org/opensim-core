@@ -113,7 +113,8 @@ MarkerData::MarkerData(const string& aFileName) :
 
    _fileName = aFileName;
 
-    cout << "Loaded marker file " << _fileName << " (" << _numMarkers << " markers, " << _numFrames << " frames)" << endl;
+   log_info("Loaded marker file {} ({} markers, {} frames)",
+           _fileName, _numMarkers, _numFrames);
 }
 
 //_____________________________________________________________________________
@@ -767,8 +768,9 @@ void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEnd
 
             if (pt.isNaN())
             {
-                cout << "___WARNING___: marker " << _markerNames[i] << " is missing in frames " << startUserIndex
-                      << " to " << endUserIndex << ". Coordinates will be set to NAN." << endl;
+                log_warn("Marker {} is missing in frames {} to {}. Coordinate "
+                         "will be set to NAN.", _markerNames[i], startUserIndex,
+                        endUserIndex);
             }
             else if (maxX[i] - minX[i] > aThreshold ||
                       maxY[i] - minY[i] > aThreshold ||
@@ -777,14 +779,14 @@ void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEnd
                 double maxDim = maxX[i] - minX[i];
                 maxDim = MAX(maxDim, (maxY[i] - minY[i]));
                 maxDim = MAX(maxDim, (maxZ[i] - minZ[i]));
-                cout << "___WARNING___: movement of marker " << _markerNames[i] << " in " << _fileName
-                      << " is " << maxDim << " (threshold = " << aThreshold << ")" << endl;
+                log_warn("Movement of marker {} in {} is {} (threshold = {})",
+                        _markerNames[i], _fileName, maxDim, aThreshold);
             }
         }
     }
 
-    cout << "Averaged frames from time " << aStartTime << " to " << aEndTime << " in " << _fileName
-          << " (frames " << startUserIndex << " to " << endUserIndex << ")" << endl;
+    log_info("Averaged frames from time {} to {} in {} (frames {} to {})",
+            aStartTime, aEndTime, _fileName, startUserIndex, endUserIndex);
 
     if (aThreshold > 0.0)
     {

@@ -36,9 +36,10 @@
 
 namespace OpenSim {
 
-/** XsensDataReader is a class that reads files produced by IMU manufacturer Xsens
-    and produces datatables from them. This is intended to help consume IMU outputs.*/
-class OSIMCOMMON_API XsensDataReader : public IMUDataReader{
+/** XsensDataReader is a class that reads files produced by IMU manufacturer
+   Xsens and produces datatables from them. This is intended to help consume IMU
+   outputs.*/
+class OSIMCOMMON_API XsensDataReader : public IMUDataReader {
 public:
     // Default Constructor
     XsensDataReader() = default;
@@ -46,11 +47,7 @@ public:
     XsensDataReader(const XsensDataReaderSettings& settings) {
         _settings = settings;
     }
-    XsensDataReader(const XsensDataReader&)            = default;
-    XsensDataReader(XsensDataReader&&)                 = default;
-    XsensDataReader& operator=(const XsensDataReader&) = default;
-    XsensDataReader& operator=(XsensDataReader&&)      = default;
-    virtual ~XsensDataReader()                   = default;
+    virtual ~XsensDataReader() = default;
 
     XsensDataReader* clone() const override;
 protected:

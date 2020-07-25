@@ -67,6 +67,7 @@ FunctionThresholdCondition::~FunctionThresholdCondition()
  * @param aCondition FunctionThresholdCondition to be copied.
  */
 FunctionThresholdCondition::FunctionThresholdCondition(const FunctionThresholdCondition &aCondition) :
+    Condition(aCondition),
     _function(_functionProp.getValueObjPtrRef()),
     _threshold( _thresholdProp.getValueDbl())
 {

@@ -117,13 +117,13 @@
 #include "InverseDynamicsSolver.h"
 #include "InverseKinematicsSolver.h"
 #include "MarkersReference.h"
+#include "OrientationsReference.h"
 #include "MomentArmSolver.h"
 #include "Reference.h"
 #include "Solver.h"
 #include "StatesTrajectory.h"
 #include "StatesTrajectoryReporter.h"
 #include "OpenSense/OpenSenseUtilities.h"
-#include "OpenSense/IMUInverseKinematicsTool.h"
 
 #include "SimulationUtilities.h"
 

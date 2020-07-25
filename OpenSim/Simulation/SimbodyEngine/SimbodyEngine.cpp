@@ -826,10 +826,8 @@ formCompleteStorages( const SimTK::State& s, const OpenSim::Storage &aQIn,
 
         index[i] = fix;
         if(index[i]<0) {
-            string msg = "Model::formCompleteStorages(): WARNING- Did not find column ";
-            msg += coordStateNames[0];
-            msg += " in storage object.\n";
-            cout << msg << endl;
+            log_warn("Model::formCompleteStorages():  Did not find column {} in storage object.",
+                coordStateNames[0]);
         }
     }
 

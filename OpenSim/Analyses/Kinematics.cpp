@@ -203,7 +203,7 @@ updateCoordinatesToRecord()
     _values.setSize(_coordinateIndices.getSize());
 
     if(_values.getSize()==0) {
-         cout << "WARNING: Kinematics analysis has no coordinates to record values for" << endl;
+        log_warn("Kinematics analysis has no coordinates to record values for");
     }
 }
 
@@ -222,13 +222,11 @@ constructDescription()
 {
     char descrip[1024];
 
-    strcpy(descrip,"\nUnits are S.I. units (second, meters, Newtons, ...)");
-    if(getInDegrees()) {
-        strcat(descrip,"\nAngles are in degrees.");
-    } else {
-        strcat(descrip,"\nAngles are in radians.");
-    }
-    strcat(descrip,"\n\n");
+    strcpy(descrip, "\nUnits are S.I. units (second, meters, Newtons, ...)");
+    strcat(descrip, "\nIf the header above contains a line with ");
+    strcat(descrip, "'inDegrees', this indicates whether rotational values ");
+    strcat(descrip, "are in degrees (yes) or radians (no).");
+    strcat(descrip, "\n\n");
 
     setDescription(descrip);
 }
@@ -502,8 +500,8 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
                  const string &aExtension)
 {
     if(!getOn()) {
-        printf("Kinematics.printResults: Off- not printing.\n");
-        return(0);
+        log_info("Kinematics.printResults: Off- not printing.");
+        return 0;
     }
 
     // ACCELERATIONS

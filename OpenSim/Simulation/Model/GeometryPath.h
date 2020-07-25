@@ -86,6 +86,11 @@ private:
     // but we cannot simply use a unique_ptr because we want the pointer to be
     // cleared on copy.
     SimTK::ResetOnCopy<std::unique_ptr<MomentArmSolver> > _maSolver;
+
+    mutable CacheVariable<double> _lengthCV;
+    mutable CacheVariable<double> _speedCV;
+    mutable CacheVariable<Array<AbstractPathPoint*>> _currentPathCV;
+    mutable CacheVariable<SimTK::Vec3> _colorCV;
     
 //=============================================================================
 // METHODS

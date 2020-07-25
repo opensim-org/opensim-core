@@ -149,8 +149,8 @@ public:
             delete _coordinateValues;
             _coordinateValues = NULL;
         }
-    };
-    const double getLowpassCutoffFrequency() const {
+    }
+    double getLowpassCutoffFrequency() const {
         return _lowpassCutoffFrequency;
     };
     void setLowpassCutoffFrequency(double aFrequency) {

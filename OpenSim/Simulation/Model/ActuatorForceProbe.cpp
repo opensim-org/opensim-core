@@ -104,7 +104,7 @@ const Property<string>& ActuatorForceProbe::getActuatorNames() const
 * Returns whether to report sum of all Actuator forces together
 or report the forces individually.
 */
-const bool ActuatorForceProbe::getSumForcesTogether() const
+bool ActuatorForceProbe::getSumForcesTogether() const
 {
     return get_sum_forces_together();
 }
@@ -113,7 +113,7 @@ const bool ActuatorForceProbe::getSumForcesTogether() const
 /**
 * Returns the exponent to apply to each Actuator force.
 */
-const double ActuatorForceProbe::getExponent() const
+double ActuatorForceProbe::getExponent() const
 {
     return get_exponent();
 }
@@ -182,7 +182,7 @@ void ActuatorForceProbe::extendConnectToModel(Model& model)
         const int k = model.getActuators().getIndex(actName);
         if (k<0) {
             string errorMessage = getConcreteClassName() + ": Invalid Actuator '" + actName + "' specified in <actuator_names>.";
-            std::cout << "WARNING: " << errorMessage << "Probe will be disabled." << std::endl;
+            log_warn("{} Probe will be disabled.", errorMessage);
             setEnabled(false);
             //throw (Exception(errorMessage.c_str()));
         }

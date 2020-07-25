@@ -318,19 +318,19 @@ public:
     };
 #endif
 
-    /** Thrown when trying to create a StatesTrajectory from a states Storage,
-     * and the Storage does not contain a column for every continuous state
+    /** Thrown when trying to create a StatesTrajectory from states data,
+     * and the data does not contain a column for every continuous state
      * variable. */
-    class MissingColumnsInStatesStorage : public OpenSim::Exception {
+    class MissingColumns : public OpenSim::Exception {
     public:
-        MissingColumnsInStatesStorage(const std::string& file, size_t line,
+        MissingColumns(const std::string& file, size_t line,
                 const std::string& func,
                 const std::string& modelName,
                 std::vector<std::string> missingStates) :
                 OpenSim::Exception(file, line, func) {
             std::string msg = "The following ";
             msg += std::to_string(missingStates.size()) + " states from Model '";
-            msg += modelName + "' are missing from the states Storage:\n";
+            msg += modelName + "' are missing from the data:\n";
             for (unsigned i = 0; i < (missingStates.size() - 1); ++i) {
                 msg += "    " + missingStates[i] + "\n";
             }
@@ -340,13 +340,12 @@ public:
         }
     };
     
-    /** Thrown when trying to create a StatesTrajectory from a states Storage, and
-     * the Storage contains columns that do not correspond to continuous state
-     * variables.
-     * */
-    class ExtraColumnsInStatesStorage : public OpenSim::Exception {
+    /** Thrown when trying to create a StatesTrajectory from states data, and
+     * the data contains columns that do not correspond to continuous state
+     * variables. */
+    class ExtraColumns : public OpenSim::Exception {
     public:
-        ExtraColumnsInStatesStorage(
+        ExtraColumns(
                 const std::string& file, size_t line,
                 const std::string& func,
                 const std::string& modelName,
@@ -363,20 +362,11 @@ public:
             addMessage(msg);
         }
     };
-    
+
     /** Thrown by createFromStatesStorage(). */
-    class NonUniqueColumnsInStatesStorage : public OpenSim::Exception {
+    class DataIsInDegrees : public OpenSim::Exception {
     public:
-        NonUniqueColumnsInStatesStorage(const std::string& file, size_t line,
-                const std::string& func) : OpenSim::Exception(file, line, func) {
-            addMessage("States Storage column labels are not unique.");
-        }
-    };
-    
-    /** Thrown by createFromStatesStorage(). */
-    class StatesStorageIsInDegrees : public OpenSim::Exception {
-    public:
-        StatesStorageIsInDegrees(const std::string& file, size_t line,
+        DataIsInDegrees(const std::string& file, size_t line,
                 const std::string& func) : OpenSim::Exception(file, line, func) {
             addMessage("States Storage is in degrees, but this is inappropriate "
                     "for creating a StatesTrajectory. Edit the Storage so that "
@@ -384,29 +374,33 @@ public:
                     "no in the header.");
         }
     };
-    
-    /** Thrown by createFromStatesStorage(). */
-    class VaryingNumberOfStatesPerRow : public OpenSim::Exception {
-    public:
-        VaryingNumberOfStatesPerRow(const std::string& file, size_t line,
-                const std::string& func,
-                int numDepColumns, int smallestNumStates) :
-                    OpenSim::Exception(file, line, func) {
-            std::string msg = "States Storage has varying number of entries ";
-            msg += "per row (from " + std::to_string(smallestNumStates) + " to ";
-            msg += std::to_string(numDepColumns) + "). You must provide a ";
-            msg += "States Storage that has the same number ";
-            msg += "of entries in every row.";
-            addMessage(msg);
-        }
-    };
 
-    /// @name Create partial trajectory from a states Storage
+    /// @name Create partial trajectory from a states table
     /// @{
-    /** Create a partial trajectory of States from a states Storage
-     * object. The resulting StatesTrajectory will restore continuous state
+
+    /**
+     * This function is identical to createFromStatesTable() except that this
+     * function accepts a Storage instead of a TimeSeriesTable.
+     */
+    // TODO When OSTATES support is complete, add the following blurb to
+    // the doxygen block above.
+    /* #### History
+     * Before OpenSim 4.0, the only way to save states to a file was as
+     * a Storage file, typically called a states storage file and named
+     * `*_states.sto`. You can use this function to create a StatesTrajectory
+     * from such a Storage file. OpenSim 4.0 introduced the ability to save and
+     * read a complete StatesTrajectory to/from an OSTATES file, and so this
+     * function should only be used when you are stuck with pre-4.0 files. */
+    static StatesTrajectory createFromStatesStorage(const Model& model,
+            const Storage& sto,
+            bool allowMissingColumns = false,
+            bool allowExtraColumns = false,
+            bool assemble = false);
+
+    /** Create a partial trajectory of States from a states table.
+     * The resulting StatesTrajectory will restore continuous state
      * variable values, but not discrete state variable values, modeling
-     * option values, etc. Also, keep in mind that states Storage files usually
+     * option values, etc. Also, keep in mind that states files usually
      * do not contain the state values to full precision, and thus cannot
      * exactly reproduce results from the initial state trajectory. Lastly,
      * this function optionally modifies each state to obey any constraints in
@@ -421,19 +415,19 @@ public:
      * @note The naming convention for state variables changed in OpenSim v4.0;
      * `ankle_r/ankle_angle_r/speed` used to be `ankle_angle_r_u`,
      * `soleus_r/activation` used to be `soleus_r.activation`, etc. This
-     * function can handle %Storage column labels that use the pre-v4.0 naming
+     * function can handle column labels that use the pre-v4.0 naming
      * convention.
-     * 
+     *
      * @param model The Model to which the states belong. A Model is necessary
-     *      since the storage file lists the state variables by name.
-     * @param sto The Storage object containing state values.
+     *      because the data file lists the state variables by name.
+     * @param table The table containing state values.
      * @param allowMissingColumns If false, throws exception if there are
      *      continuous state variables in the Model for which there is no
-     *      column in the Storage. If true, no exception is thrown but such
+     *      column in the table. If true, no exception is thrown but such
      *      state variables are set to NaN.
      * @param allowExtraColumns If false, throws exception if there are
-     *      columns in the Storage that do not correspond to continuous state
-     *      variables in the Model. If true, such columns of the Storage are
+     *      columns in the table that do not correspond to continuous state
+     *      variables in the Model. If true, such columns of the table are
      *      ignored.
      * @param assemble Modify state variable values to satisfy
      *      kinematic constraints (by calling Model::assemble()).
@@ -452,39 +446,27 @@ public:
      * @code{.py}
      * import opensim
      * model = opensim.Model("subject01.osim")
-     * sto = opensim.Storage("subject01_states.sto")
-     * states = opensim.StatesTrajectory.createFromStatesStorage(model, sto)
+     * table = opensim.TimeSeriesTable("subject01_states.sto")
+     * states = opensim.StatesTrajectory.createFromStatesTable(model, table)
      * print(states[0].getTime())
      * print(model.getStateVariableValue(states[0], "knee/flexion/value"))
      * @endcode
-     * 
-     * @throws MissingColumnsInStatesStorage See the description of the
+     *
+     * @throws MissingColumns See the description of the
      *      `allowMissingColumns` argument.
-     * 
-     * @throws ExtraColumnsInStatesStorage See the description of the
+     *
+     * @throws ExtraColumns See the description of the
      *      `allowExtraColumns` argument.
      *
-     * @throws NonUniqueColumnsInStatesStorage Thrown if multiple columns in
-     *      the Storage have the same name.
-     * 
-     * @throws StatesStorageIsInDegrees Thrown if the Storage is in degrees
+     * @throws NonUniqueLabels Thrown if multiple columns in
+     *      the table have the same name.
+     *
+     * @throws DataIsInDegrees Thrown if the table is in degrees
      *      (inDegrees=yes); angular quantities must use radians to properly
      *      create the trajectory.
-     *
-     * @throws VaryingNumberOfStatesPerRow Thrown if the rows of the storage
-     *      don't all have the same number of entries.
      */
-    // TODO When OSTATES support is complete, add the following blurb to
-    // the doxygen block above.
-    /* #### History
-     * Before OpenSim 4.0, the only way to save states to a file was as
-     * a Storage file, typically called a states storage file and named
-     * `*_states.sto`. You can use this function to create a StatesTrajectory
-     * from such a Storage file. OpenSim 4.0 introduced the ability to save and
-     * read a complete StatesTrajectory to/from an OSTATES file, and so this
-     * function should only be used when you are stuck with pre-4.0 files. */
-    static StatesTrajectory createFromStatesStorage(const Model& model,
-            const Storage& sto,
+    static StatesTrajectory createFromStatesTable(const Model& model,
+            const TimeSeriesTable& table,
             bool allowMissingColumns = false,
             bool allowExtraColumns = false,
             bool assemble = false);

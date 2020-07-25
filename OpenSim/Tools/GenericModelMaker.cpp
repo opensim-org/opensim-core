@@ -155,7 +155,7 @@ Model* GenericModelMaker::processModel(const string& aPathToSubject) const
 {
     Model* model = NULL;
 
-    cout << endl << "Step 1: Loading generic model" << endl;
+    log_info("Step 1: Loading generic model");
 
     try
     {
@@ -163,14 +163,15 @@ Model* GenericModelMaker::processModel(const string& aPathToSubject) const
         model->initSystem();
 
         if (!_markerSetFileNameProp.getValueIsDefault() && _markerSetFileName !="Unassigned") {
-            cout << "Loading marker set from '" << aPathToSubject+_markerSetFileName+"'" << endl;
+            log_info("Loading marker set from '{}'.", 
+                aPathToSubject + _markerSetFileName);
             MarkerSet *markerSet = new MarkerSet(aPathToSubject + _markerSetFileName);
             model->updateMarkerSet(*markerSet);
         }
     }
     catch (const Exception& x)
     {
-        x.print(cout);
+        log_error(x.what());
         return NULL;
     }
 

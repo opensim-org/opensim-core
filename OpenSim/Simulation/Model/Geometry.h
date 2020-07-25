@@ -122,7 +122,7 @@ public:
         upd_Appearance().set_opacity(opacity); 
     };
     /// Convenient access to get Appearance/Opacity
-    const double getOpacity() { 
+    double getOpacity() {
         return get_Appearance().get_opacity(); 
     };
 

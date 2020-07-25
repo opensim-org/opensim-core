@@ -10,7 +10,6 @@
 #include <Bindings/OpenSimHeaders_analyses.h>
 #include <Bindings/OpenSimHeaders_tools.h>
 
-#include <Bindings/Java/OpenSimJNI/Hooks/SimtkLogCallback.h>
 #include <Bindings/Java/OpenSimJNI/OpenSimContext.h>
 
 using namespace OpenSim;
@@ -52,6 +51,4 @@ using namespace SimTK;
 
 %include <Bindings/tools.i>
 %include <Bindings/Java/OpenSimJNI/OpenSimContext.h>
-
-%include <Bindings/Java/OpenSimJNI/Hooks/SimtkLogCallback.h>
 

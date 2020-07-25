@@ -28,8 +28,6 @@
 #include <docopt.h>
 #include "parse_arguments.h"
 
-#include <OpenSim/OpenSim.h>
-
 static const char HELP_UPDATE_FILE[] =
 R"(Update an .osim, .xml (e.g., setup) or .sto file to this version's format.
 
@@ -39,6 +37,7 @@ Usage:
 
 Options:
   -L <path>, --library <path>  Load a plugin.
+  -o <level>, --log <level>  Logging level.
 
 Description:
   In an OpenSim XML file, the XML file format version appears as
@@ -73,25 +72,23 @@ int update_file(int argc, const char** argv) {
 
     // .osim or .xml file.
     if (extension == ".osim" || extension == ".xml") {
-        std::cout << "Loading input file '" << inputFile << "'." << std::endl;
+        log_info("Loading input file '{}'.", inputFile);
         const auto* obj = Object::makeObjectFromFile(inputFile);
         if (!obj) {
             throw Exception(
                     "Could not make object from file '" + inputFile + "'.\n"
                     "Did you intend to load a plugin (with --library)?");
         }
-        std::cout << "Printing updated file to '" << outputFile << "'."
-                  << std::endl;
+        log_info("Printing updated file to '{}'.", outputFile);
         obj->print(outputFile);
         return EXIT_SUCCESS;
     }
 
     // .sto file.
     if (extension == ".sto") {
-        std::cout << "Loading input file '" << inputFile << "'." << std::endl;
+        log_info("Loading input file '{}'.", inputFile);
         Storage stg(inputFile);
-        std::cout << "Printing updated file to '" << outputFile << "'."
-                  << std::endl;
+        log_info("Printing updated file to '{}'.", outputFile);
         stg.print(outputFile);
         return EXIT_SUCCESS;
     }

@@ -92,10 +92,10 @@ public:
     }
 
     /// Pure virtual function that returns a char for the designated separator.
-    virtual const char getSeparator() const = 0;
+    virtual char getSeparator() const = 0;
 
     /// Pure virtual function that returns a string of invalid characters.
-    virtual const std::string getInvalidChars() const = 0;
+    virtual std::string getInvalidChars() const = 0;
 
     /// Return true if pathElement does not contain any chars from the list
     /// of getInvalidChars()

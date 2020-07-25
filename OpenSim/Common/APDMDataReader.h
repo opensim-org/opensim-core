@@ -46,11 +46,7 @@ public:
     APDMDataReader(const APDMDataReaderSettings& settings) {
         _settings = settings;
     }
-    APDMDataReader(const APDMDataReader&)            = default;
-    APDMDataReader(APDMDataReader&&)                 = default;
-    APDMDataReader& operator=(const APDMDataReader&) = default;
-    APDMDataReader& operator=(APDMDataReader&&)      = default;
-    virtual ~APDMDataReader()                   = default;
+    virtual ~APDMDataReader() = default;
 
     APDMDataReader* clone() const override;
 

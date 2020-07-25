@@ -133,7 +133,7 @@ void ASSERT_EQUAL( const Container& vecA,
         throw OpenSim::Exception(message, file, line);
     }
     else {
-        for (auto i = 0; i < vecA.size(); ++i) {
+        for (int i = 0; i < (int)vecA.size(); ++i) {
             // if both values are NaN treat them as being equivalent
             if ( SimTK::isNaN(vecA[i]) && SimTK::isNaN(vecB[i]) )
                 continue;

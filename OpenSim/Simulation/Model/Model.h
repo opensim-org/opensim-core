@@ -973,7 +973,9 @@ public:
     /**
      * Print some basic information about the model.
      *
-     * @param aOStream Output stream.
+     * @param aOStream Output stream. If this is std::cout, then the info is
+     * logged using OpenSim's Logger so that the info is printed to all log
+     * sinks.
      */
     void printBasicInfo(std::ostream& aOStream = std::cout) const;
 
@@ -981,7 +983,9 @@ public:
      * Print detailed information about the model.
      *
      * @param s        the system State.
-     * @param aOStream Output stream.
+     * @param aOStream Output stream. If this is std::cout, then the info is
+     * logged using OpenSim's Logger so that the info is printed to all log
+     * sinks.
      */
     void printDetailedInfo(const SimTK::State& s,
                            std::ostream& aOStream = std::cout) const;
@@ -1137,6 +1141,18 @@ private:
     // initializeState() or initSystem() is called.
     SimTK::State _workingState;
 
+    // A cached list of `Controller`s that were enabled in the model
+    // when `Model::extendConnectToModel(Model&)` was called.
+    //
+    // This only exists to improve performance. At runtime,
+    // `Model::computeControls(...)` may be called many times. Without
+    // this cache, the implementation must repeatably call
+    // `getComponentList<Controller>`, which is expensive because it
+    // uses runtime `dynamic_cast`s to iterate over, and downcast, a
+    // sequence of `Component`s. For controller-heavy models,
+    // pre-caching controllers into this vector can improve perf by
+    // >5%.
+    std::vector<std::reference_wrapper<const Controller>> _enabledControllers{};
 
     //--------------------------------------------------------------------------
     //                              RUN TIME 

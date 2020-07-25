@@ -93,10 +93,10 @@ public:
 
     /** Returns whether to report sum of all joint powers together
         or report the joint powers individually. */
-    const bool getSumPowersTogether() const;
+    bool getSumPowersTogether() const;
 
     /** Returns the exponent to apply to each joint power. */
-    const double getExponent() const;
+    double getExponent() const;
 
     /** Sets the names of the Joints being probed. */
     void setJointNames(const Array<std::string>& aJointNames);

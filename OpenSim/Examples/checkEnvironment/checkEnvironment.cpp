@@ -203,8 +203,11 @@ int main()
         //////////////////////////
         // PERFORM A SIMULATION //
         /////////////////////////
-        
-        //osimModel.setUseVisualizer(true);
+        const char* env_p = std::getenv("OPENSIM_USE_VISUALIZER");
+        // if environment variable OPENSIM_USE_VISUALIZER is unset or not 0
+        // then turn on visualization
+        if (!env_p || *env_p!='0')
+            osimModel.setUseVisualizer(true);
 
         // Initialize the system and get the default state
         SimTK::State& si = osimModel.initSystem();

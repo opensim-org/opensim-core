@@ -21,17 +21,21 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Common/Sine.h>
-#include <OpenSim/Common/SignalGenerator.h>
-#include <OpenSim/Common/Reporter.h>
-
 #include "ComponentsForTesting.h"
+
+#include <OpenSim/Common/CommonUtilities.h>
+#include <OpenSim/Common/Reporter.h>
+#include <OpenSim/Common/SignalGenerator.h>
+#include <OpenSim/Common/Sine.h>
+
+#define CATCH_CONFIG_MAIN
+#include <OpenSim/Auxiliary/catch.hpp>
 
 using namespace OpenSim;
 using namespace SimTK;
 
 
-void testSignalGenerator() {
+TEST_CASE("SignalGenerator") {
     // Feed a SignalGenerator's output into a TableReporter, and make sure the
     // reported value is correct.
 
@@ -65,18 +69,46 @@ void testSignalGenerator() {
 
     // Check that the SignalGenerator produced the correct values.
     const TimeSeriesTable_<Real>& results = reporter->getTable();
-    SimTK_TEST_EQ((int)results.getNumRows(), numTimePoints);
+    REQUIRE(results.getNumRows() == numTimePoints);
     for (int i = 0; i < numTimePoints; ++i) {
         const double time = 0.1 * i;
         system.realize(s, Stage::Report);
-        SimTK_TEST_EQ(results.getRowAtIndex(i)[0],
-                amplitude * std::sin(omega * time + phase) + offset);
+        CHECK(results.getRowAtIndex(i)[0] ==
+                Approx(amplitude * std::sin(omega * time + phase) + offset));
     }
 }
 
-int main() {
+TEST_CASE("Interpolate using PiecewiseLinearFunction") {
+    SimTK::Vector x = createVector({0, 1});
+    SimTK::Vector y = createVector({1, 0});
+    SimTK::Vector newX = createVector({-1, 0.25, 0.75, 1.5});
+    SimTK::Vector newY = OpenSim::interpolate(x, y, newX);
 
-    SimTK_START_TEST("testSignalGenerator");
-        SimTK_SUBTEST(testSignalGenerator);
-    SimTK_END_TEST();
+    SimTK_TEST(SimTK::isNaN(newY[0]));
+    SimTK_TEST_EQ(newY[1], 0.75);
+    SimTK_TEST_EQ(newY[2], 0.25);
+    SimTK_TEST(SimTK::isNaN(newY[3]));
+}
+
+TEST_CASE("solveBisection()") {
+
+    auto calcResidual = [](const SimTK::Real& x) { return x - 3.78; };
+    {
+        const auto root = solveBisection(calcResidual, -5, 5, 1e-6);
+        SimTK_TEST_EQ_TOL(root, 3.78, 1e-6);
+        // Make sure the tolerance has an effect.
+        SimTK_TEST_NOTEQ_TOL(root, 3.78, 1e-10);
+    }
+    {
+        const auto root = solveBisection(calcResidual, -5, 5, 1e-10);
+        SimTK_TEST_EQ_TOL(root, 3.78, 1e-10);
+    }
+
+    // Multiple roots.
+    {
+        auto parabola = [](const SimTK::Real& x) {
+            return SimTK::square(x - 2.5);
+        };
+        REQUIRE_THROWS_AS(solveBisection(parabola, -5, 5), OpenSim::Exception);
+    }
 }

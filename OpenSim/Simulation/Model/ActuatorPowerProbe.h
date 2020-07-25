@@ -90,10 +90,10 @@ public:
 
     /** Returns whether to report sum of all actuator powers together
     or report the actuator powers individually. */
-    const bool getSumPowersTogether() const;
+    bool getSumPowersTogether() const;
 
     /** Returns the exponent to apply to each actuator power. */
-    const double getExponent() const;
+    double getExponent() const;
 
     /** Sets the names of the Actuators being probed. */
     void setActuatorNames(const Array<std::string>& actuatorNames);

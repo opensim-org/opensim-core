@@ -69,7 +69,6 @@ private:
     //--------------------------------------------------------------------------
 public:
     Units();
-    Units(const Units& aUnits);
     Units(const std::string aString);
     Units(UnitType aType);
     virtual ~Units();

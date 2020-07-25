@@ -120,3 +120,10 @@ class TestBasics(unittest.TestCase):
                 False, # loadModel
                 )
 
+    def test_property_helper(self):
+        muscle = osim.Thelen2003Muscle()
+        # set max_isometric_force property using PropertyHelper
+        # then retrieve using get_max_isometric_force native method
+        property = muscle.getPropertyByName('max_isometric_force')
+        osim.PropertyHelper.setValueDouble(200, property);
+        assert muscle.get_max_isometric_force()==200

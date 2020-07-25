@@ -125,7 +125,7 @@ public:
         std::string msg = "Error reading column labels in file '" + filename;
         msg += "'. Unexpected number of column labels. ";
         msg += "Expected = " + std::to_string(expected) + ". ";
-        msg += "Recieved = " + std::to_string(received) + ".";
+        msg += "Received = " + std::to_string(received) + ".";
 
         addMessage(msg);
     }

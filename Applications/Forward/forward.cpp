@@ -65,7 +65,7 @@ int main(int argc,char **argv)
       forward -S SetupFileName -> opensim-cmd run-tool SetupFileName
       forward -PS              -> opensim-cmd print-xml forward
     )";
-    std::cout << deprecationNotice << std::endl;
+    log_warn(deprecationNotice);
 
 
     // PARSE COMMAND LINE
@@ -95,7 +95,8 @@ int main(int argc,char **argv)
             Object::setSerializeAllDefaults(true);
             tool.print("default_Setup_Forward.xml");
             Object::setSerializeAllDefaults(false);
-            cout << "Created file default_Setup_Forward.xml with default setup" << endl;
+            log_info("Created file default_Setup_Forward.xml with default "
+                     "setup");
             return(0);
 
         // IDENTIFY SETUP FILE
@@ -123,7 +124,7 @@ int main(int argc,char **argv)
     }
     // ERROR CHECK
     if(setupFileName=="") {
-        cout<<"\n\nforward.exe: ERROR- A setup file must be specified.\n";
+        log_error("forward.exe: A setup file must be specified.");
         PrintUsage(argv[0], cout);
         return(-1);
     }
@@ -134,13 +135,13 @@ int main(int argc,char **argv)
     LoadOpenSimLibrary("osimActuators");
 
     // CONSTRUCT
-    cout<<"Constructing tool from setup file "<<setupFileName<<".\n\n";
+    log_info("Constructing tool from setup file {}", setupFileName);
     ForwardTool forward(setupFileName);
 
     // PRINT MODEL INFORMATION
     // Model& model = forward.getModel();
 
-    cout<<"-----------------------------------------------------------------------"<<endl;
+    log_info("--------------------------------------------------------------");
 
     // start timing
     std::clock_t startTime = std::clock();
@@ -148,13 +149,14 @@ int main(int argc,char **argv)
     // RUN
     forward.run();
 
-    std::cout << "Forward simulation time = " << 1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n" << endl;
+    auto timeInMilliseconds = 1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC;
+    log_info("Forward simulation time = {} ms", timeInMilliseconds);
 
     //----------------------------
     // Catch any thrown exceptions
     //----------------------------
     } catch(const std::exception& x) {
-        cout << "Exception in forward: " << x.what() << endl;
+        log_error("Exception in forward: {}", x.what());
         return -1;
     }
     //----------------------------

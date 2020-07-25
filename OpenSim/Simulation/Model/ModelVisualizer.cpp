@@ -31,7 +31,7 @@
 #include <string>
 using std::string;
 #include <iostream>
-using std::cout; using std::cerr; using std::clog; using std::endl;
+using std::cerr; using std::clog; using std::endl;
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -303,7 +303,6 @@ void ModelVisualizer::collectFixedGeometry(const State& state) const {
 
     for (unsigned i=0; i < fixedGeometry.size(); ++i) {
         const DecorativeGeometry& dgeo = fixedGeometry[i];
-        //cout << dgeo.getBodyId() << dgeo.getTransform() << endl;
         _viz->addDecoration(MobilizedBodyIndex(dgeo.getBodyId()), 
                             Transform(), dgeo);
     }

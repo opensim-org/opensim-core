@@ -78,7 +78,7 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 
     return TRUE;
 }
-#elif defined(__linux__)
+#elif defined(__GNUC__)
 static void __attribute__((constructor)) Shared_Object_Constructor()
 {
    Plugin_Attach();
@@ -87,4 +87,6 @@ static void __attribute__((destructor)) Shared_Object_Destructor()
 {
    Plugin_Detach();
 }
+#else
+    #error "Unsupported compiler."
 #endif

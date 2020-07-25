@@ -363,8 +363,8 @@ void Millard2012AccelerationMuscle::
 void Millard2012AccelerationMuscle::
     setActivation(SimTK::State& s, double activation) const
 {
-    setStateVariableValue(s, STATE_ACTIVATION_NAME, activation);    
-    markCacheVariableInvalid(s,"dynamicsInfo");
+    setStateVariableValue(s, STATE_ACTIVATION_NAME, activation);
+    markCacheVariableInvalid(s, _dynamicsInfoCV);
     
 }
 
@@ -372,9 +372,9 @@ void Millard2012AccelerationMuscle::
     setFiberLength(SimTK::State& s, double fiberLength) const
 {
     setStateVariableValue(s, STATE_FIBER_LENGTH_NAME, fiberLength);
-    markCacheVariableInvalid(s,"lengthInfo");
-    markCacheVariableInvalid(s,"velInfo");
-    markCacheVariableInvalid(s,"dynamicsInfo");
+    markCacheVariableInvalid(s, _lengthInfoCV);
+    markCacheVariableInvalid(s, _velInfoCV);
+    markCacheVariableInvalid(s, _dynamicsInfoCV);
     
 }
 
@@ -382,8 +382,8 @@ void Millard2012AccelerationMuscle::
     setFiberVelocity(SimTK::State& s, double fiberVelocity) const
 {
     setStateVariableValue(s, STATE_FIBER_VELOCITY_NAME, fiberVelocity);
-    markCacheVariableInvalid(s,"velInfo");
-    markCacheVariableInvalid(s,"dynamicsInfo");
+    markCacheVariableInvalid(s, _velInfoCV);
+    markCacheVariableInvalid(s, _dynamicsInfoCV);
     
 }
 
@@ -726,9 +726,9 @@ void Millard2012AccelerationMuscle::
         break;
 
     case StatusFromInitMuscleState::Warning_FiberAtLowerBound:
-        printf("\n\nMillard2012AccelerationMuscle initialization:"
-               " %s is at its minimum fiber length of %f\n",
-               getName().c_str(), result.second["fiber_length"]);
+        log_warn("Millard2012AccelerationMuscle initialization: '{}' is at its "
+               "minimum fiber length of {}.",
+               getName(), result.second["fiber_length"]);
         setActuation(s, result.second["tendon_force"]);
         setFiberLength(s, result.second["fiber_length"]);
         setFiberVelocity(s, result.second["fiber_velocity"]);

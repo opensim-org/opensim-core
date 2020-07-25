@@ -24,46 +24,37 @@
  * -------------------------------------------------------------------------- */
 
 #include "About.h"
+#include "Adapters.h"
 #include "CommonUtilities.h"
-#include "Object.h"
-#include "RegisterTypes_osimCommon.h"
-#include "FunctionSet.h"
-#include "GCVSplineSet.h"
-#include "ScaleSet.h"
-#include "GCVSpline.h"
-#include "IO.h"
-
-#include "Stopwatch.h"
-
-#include "Scale.h"
-#include "SimmSpline.h"
 #include "Constant.h"
-#include "Sine.h"
-#include "StepFunction.h"
+#include "DataTable.h"
+#include "FunctionSet.h"
+#include "GCVSpline.h"
+#include "GCVSplineSet.h"
+#include "IO.h"
 #include "LinearFunction.h"
+#include "LoadOpenSimLibrary.h"
+#include "Logger.h"
+#include "ModelDisplayHints.h"
+#include "MultiplierFunction.h"
+#include "Object.h"
+#include "ObjectGroup.h"
 #include "PiecewiseConstantFunction.h"
 #include "PiecewiseLinearFunction.h"
-
-#include "MultiplierFunction.h"
 #include "PolynomialFunction.h"
-
-#include "SignalGenerator.h"
-
-#include "ObjectGroup.h"
-#include "StorageInterface.h"
-#include "LoadOpenSimLibrary.h"
-#include "RegisterTypes_osimCommon.h"   // to expose RegisterTypes_osimCommon
-#include "SmoothSegmentedFunctionFactory.h"
-
-#include "DataTable.h"
-#include "TimeSeriesTable.h"
-
-#include "Adapters.h"
-
-#include "TableSource.h"
-
+#include "RegisterTypes_osimCommon.h" // to expose RegisterTypes_osimCommon
 #include "Reporter.h"
-
-#include "ModelDisplayHints.h"
+#include "Scale.h"
+#include "ScaleSet.h"
+#include "SignalGenerator.h"
+#include "SimmSpline.h"
+#include "Sine.h"
+#include "SmoothSegmentedFunctionFactory.h"
+#include "StepFunction.h"
+#include "Stopwatch.h"
+#include "StorageInterface.h"
+#include "TableSource.h"
+#include "TableUtilities.h"
+#include "TimeSeriesTable.h"
 
 #endif // OPENSIM_OSIMCOMMON_H_

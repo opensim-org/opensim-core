@@ -42,7 +42,7 @@ int main() {
         std::vector<std::string> imu_names{ "shank", "thigh" };
         std::vector<std::string> file_names{ "000_00B421AF", "000_00B4227B" };
         // Programmatically add items to Map, write to xml
-        for (int index = 0; index < imu_names.size(); ++index) {
+        for (int index = 0; index < (int)imu_names.size(); ++index) {
             ExperimentalSensor  nextSensor(file_names[index], imu_names[index]);
             readerSettings.append_ExperimentalSensors(nextSensor);
         }

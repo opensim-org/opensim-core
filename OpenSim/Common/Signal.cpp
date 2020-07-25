@@ -130,8 +130,9 @@ SmoothSpline(int degree,double T,double fc,int N,double *times,double *sig,doubl
     //cout << "Requested smoothing parameter = " << p << endl;
     //cout << "Actual smoothing parameter    = " << pActual << endl;
     if(p!=pActual) {
-        printf("Signal.SmoothSpline:  ERROR- The cutoff frequency (%lf)",fc);
-        printf(" produced a smoothing parameter (%le) beyond its bound (%le).\n",p,pActual);
+        log_error("Signal.SmoothSpline: The cutoff frequency ({}) produced a "
+                  "smoothing parameter ({}) beyond its bound ({}).",
+                  fc, p, pActual);
         return(-1);
     }
 
@@ -157,7 +158,7 @@ SmoothSpline(int degree,double T,double fc,int N,double *times,double *sig,doubl
  * @return 0 on success, and -1 on failure.
  */
 int Signal::
-LowpassIIR(double T,double fc,int N,double *sig,double *sigf)
+LowpassIIR(double T,double fc,int N,const double *sig,double *sigf)
 {
 int i,j;
 double fs/*,ws*/,wc,wa,wa2,wa3;
@@ -173,10 +174,10 @@ double *sigr;
     // CHECK THAT THE CUTOFF FREQUENCY IS LESS THAN HALF THE SAMPLE FREQUENCY
     fs = 1 / T;
     if (fc >= 0.5 * fs) {
-        printf("\nCutoff frequency should be less than half sample frequency.");
-        printf("\nchanging the cutoff frequency to 0.49*(Sample Frequency)...");
         fc = 0.49 * fs;
-        printf("\ncutoff = %lf\n\n",fc);
+        log_warn("Cutoff frequency should be less than half sample frequency. "
+                 "Changing the cutoff frequency to 0.49*(Sample Frequency)..."
+                 "cutoff = {}", fc);
     }
 
     // INITIALIZE SOME VARIABLES
@@ -202,7 +203,7 @@ double *sigr;
     // ALLOCATE MEMORY FOR sigr[]
     sigr = new double[N];
     if(sigr==NULL) {
-        printf("\nSignal.lowpassIIR: ERROR- Not enough memory.\n");
+        log_error("Signal.lowpassIIR: Not enough memory.");
         return(-1);
     }
 
@@ -267,14 +268,14 @@ LowpassFIR(int M,double T,double f,int N,double *sig,double *sigf)
 
     // CHECK THAT M IS NOT TOO LARGE RELATIVE TO N
     if((M+M)>N) {
-        printf("rdSingal.lowpassFIR:  ERROR- The number of data points (%d)",N);
-        printf(" should be at least twice the order of the filter (%d).\n",M);
+        log_error("rdSingal.lowpassFIR: The number of data points ({}) "
+                  "should be at least twice the order of the filter ({}).",
+                N, M);
         return(-1);
     }
 
     // PAD THE SIGNAL SO FILTERING CAN BEGIN AT THE FIRST DATA POINT
-    double *s = Pad(M,N,sig);
-    if(s==NULL) return(-1);
+    std::vector<double> s = Pad(M,N,sig);
 
     // CALCULATE THE ANGULAR CUTOFF FREQUENCY
     w = 2.0*SimTK_PI*f;
@@ -311,10 +312,7 @@ LowpassFIR(int M,double T,double f,int N,double *sig,double *sigf)
     //  sigf[n] = sigf[n] / sum_coef;
     //}
 
-    // CLEANUP
-  delete[] s;
-
-  return(0);
+  return 0;
 }
 
 
@@ -350,16 +348,18 @@ double *s;
 
     // CHECK THAT M IS NOT TOO LARGE RELATIVE TO N
     if((M+M)>N) {
-    printf("\n\nThe number of data points (%d) should be at least twice\n",N);
-    printf("the order of the filter (%d).\n\n",M);
-    return(-1);
+        log_error("The number of data points ({}) "
+                  "should be at least twice the order of the filter ({}).",
+                N, M);
+        return(-1);
     }
 
     // ALLOCATE MEMORY FOR s
     size = N + M + M;
     s = (double *) calloc(size,sizeof(double));
     if (s == NULL) {
-        printf("\n\nlowpass() -> Not enough memory to process your sampled data.");
+        log_error(
+                "lowpass() -> Not enough memory to process your sampled data.");
         return(-1);
     }
 
@@ -394,40 +394,23 @@ double *s;
   return(0);
 }
 
-//_____________________________________________________________________________
-/**
- * Pad a signal with a specified number of data points.
- *
- * The signal is prepended and appended with a reflected and negated
- * portion of the signal of the appropriate size so as to preserve the value
- * and slope of the signal.
- *
- * PARAMETERS
- *  @param aPad Size of the pad-- number of points to prepend and append.
- *  @param aN Number of data points in the signal.
- *  @param aSignal Signal to be padded.
- *  @return Padded signal.  The size is aN + 2*aPad.  NULL is returned
- * on an error.  The caller is responsible for deleting the returned
- * array.
- */
-double* Signal::
+std::vector<double> Signal::
 Pad(int aPad,int aN,const double aSignal[])
 {
-    if(aPad<=0) return(NULL);
+    if (aPad == 0) return std::vector<double>(aSignal, aSignal + aN);
+    OPENSIM_THROW_IF(aPad < 0, Exception,
+            "Expected aPad to be non-negative, but got {}.",
+            aPad);
 
     // COMPUTE FINAL SIZE
     int size = aN + 2*aPad;
-    if(aPad>aN) {
-        cout<<"\nSignal.Pad(double[]): ERROR- requested pad size ("<<aPad<<") is greater than the number of points ("<<aN<<").\n";
-        return(NULL);
-    }
+    OPENSIM_THROW_IF(aPad > aN, Exception,
+            "Signal.Pad: requested pad size ({}) is greater than the "
+            "number of points ({}).",
+            aPad, aN);
 
     // ALLOCATE
-    double *s = new double[size];
-    if (s == NULL) {
-        printf("\n\nSignal.Pad: Failed to allocate memory.\n");
-        return(NULL);
-    }
+    std::vector<double> s(size);
 
     // PREPEND
     int i,j;
@@ -441,7 +424,7 @@ Pad(int aPad,int aN,const double aSignal[])
     for(i=aPad+aN,j=aN-2;i<aPad+aPad+aN;i++,j--)  s[i] = aSignal[j];
     for(i=aPad+aN;i<aPad+aPad+aN;i++)  s[i] = 2.0*aSignal[aN-1] - s[i];
  
-    return(s);
+    return s;
 }
 //_____________________________________________________________________________
 /**
@@ -458,41 +441,9 @@ Pad(int aPad,int aN,const double aSignal[])
 void Signal::
 Pad(int aPad,Array<double> &rSignal)
 {
-    if(aPad<=0) return;
-
-    // COMPUTE NEW SIZE
-    int size = rSignal.getSize();
-    int newSize = size + 2*aPad;
-
-    // HANDLE PAD GREATER THAN SIZE
-    if(aPad>=size) {
-        int pad = size - 1;
-        while(size<newSize) {
-            Pad(pad,rSignal);
-            size = rSignal.getSize();
-            pad = (newSize - size) / 2;
-            if(pad>=size) pad = size - 1;
-        }
-        return;
-    }
-
-    // ALLOCATE
-    Array<double> s(0.0,newSize);
-
-    // PREPEND
-    int i,j;
-    for(i=0,j=aPad;i<aPad;i++,j--)  s[i] = rSignal[j];
-    for(i=0;i<aPad;i++)  s[i] = 2.0*rSignal[0] - s[i];
-
-    // SIGNAL
-    for(i=aPad,j=0;i<aPad+size;i++,j++)  s[i] = rSignal[j];
-
-    // APPEND
-    for(i=aPad+size,j=size-2;i<aPad+aPad+size;i++,j--)  s[i] = rSignal[j];
-    for(i=aPad+size;i<aPad+aPad+size;i++)  s[i] = 2.0*rSignal[size-1] - s[i];
-
-    // ALTER SIGNAL
-    rSignal = s;
+    std::vector<double> padded = Pad(aPad, rSignal.getSize(), rSignal.get());
+    rSignal.setSize((int)padded.size());
+    std::copy_n(padded.data(), padded.size(), rSignal.get());
 }
 
 
@@ -519,8 +470,8 @@ ReduceNumberOfPoints(double aDistance,
     int size = rTime.getSize();
     int sizeSignal = rSignal.getSize();
     if(size!=sizeSignal) {
-        cout<<"\n\nSignal.ReduceNumberOfPoints:: quitting.  The time and signal ";
-        cout<<"arrays have different numbers of points.\n\n";
+        log_error("Signal.ReduceNumberOfPoints:: quitting.  The time and "
+                  "signal arrays have different numbers of points.");
         return(0);
     }
 

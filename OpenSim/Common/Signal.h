@@ -27,9 +27,8 @@
  * Author: Frank C. Anderson 
  */
 
-
 #include "osimCommonDLL.h"
-
+#include <vector>
 
 namespace OpenSim {
 
@@ -64,7 +63,7 @@ public:
         int aN,double *aTimes,double *aSignal,double *rFilteredSignal);
     static int
         LowpassIIR(double aDeltaT,double aCutOffFrequency,
-        int aN,double *aSignal,double *rFilteredSignal);
+        int aN,const double *aSignal,double *rFilteredSignal);
     static int
         LowpassFIR(int aOrder,double aDeltaT,double aCutoffFrequency,
         int aN,double *aSignal,double *rFilteredSignal);
@@ -76,10 +75,18 @@ public:
     //--------------------------------------------------------------------------
     // PADDING
     //--------------------------------------------------------------------------
-    static double*
-        Pad(int aPad,int aN,const double aSignal[]);
-    static void
-        Pad(int aPad,OpenSim::Array<double> &aSignal);
+    /// Pad a signal with a specified number of data points.
+    ///
+    /// The signal is prepended and appended with a reflected and negated
+    /// portion of the signal of the appropriate size so as to preserve the
+    /// value and slope of the signal.
+    ///
+    /// @param aPad Size of the pad-- number of points to prepend and append.
+    /// @param aN Number of data points in the signal.
+    /// @param aSignal Signal to be padded.
+    /// @return Padded signal. The size is aN + 2*aPad.
+    static std::vector<double> Pad(int aPad, int aN, const double aSignal[]);
+    static void Pad(int aPad, OpenSim::Array<double>& aSignal);
 
     //--------------------------------------------------------------------------
     // POINT REDUCTION

@@ -204,13 +204,13 @@ prepareToOptimize(SimTK::State& s, double *x)
     // Test lapack solution
     //
     SimTK::Vector answer(nf, b);
-    std::cout << "Result from dgglse: " << info << ", rank " << rank << ": " << std::endl << answer << std::endl;
+    log_info("Result from dgglse: {}, rank {}: {}", info, rank, answer);
     double p = (_accelPerformanceMatrix * answer + _accelPerformanceVector).normSqr() + (_forcePerformanceMatrix * answer + _forcePerformanceVector).normSqr();
-    std::cout << "Performance: " << p << std::endl;
-    std::cout << "Violated bounds:\n";
+    log_info("Performance: {}", p);
+    log_warn("Violated bounds: ");
     ForceSet& Force = model->getForceSet();
     for(int i=0; i<nf; i++) if(answer[i]<_lowerBounds[i] || answer[i]>_upperBounds[i])
-        std::cout << i << " (" << fSet.get(i).getName() << ") got " << answer[i] << ", bounds are (" << _lowerBounds[i] << "," << _upperBounds[i] << ")" << std::endl;
+        log_warn("{} ({}) got {}, bounds are ({},{})", i, fSet.get(i).getName(), answer[i], _lowerBounds[i], _upperBounds[i]);
 #endif
 
 #endif

@@ -530,8 +530,8 @@ double Schutte1993Muscle_Deprecated::computeIsometricForce(SimTK::State& s, doub
          tendon_force = 0.0;
       else
          tendon_force = getTendonForceLengthCurve().calcValue(SimTK::Vector(1, tendon_strain)) * _maxIsometricForce;
-         setActuation(s, tendon_force);
-         setTendonForce(s, tendon_force);
+      setActuation(s, tendon_force);
+      setTendonForce(s, tendon_force);
 
       old_error_force = error_force;
  

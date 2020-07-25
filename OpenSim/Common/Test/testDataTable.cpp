@@ -20,14 +20,22 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#include <OpenSim/Common/TimeSeriesTable.h>
 #include <iostream>
 
-int main() {
-    using namespace SimTK;
-    using namespace OpenSim;
-    using OpenSim::Exception;
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#define CATCH_CONFIG_MAIN
+#include <OpenSim/Auxiliary/catch.hpp>
+#include <OpenSim/Common/CommonUtilities.h>
+#include <OpenSim/Common/PiecewiseLinearFunction.h>
+#include <OpenSim/Common/TableUtilities.h>
+#include <OpenSim/Common/STOFileAdapter.h>
+#include <OpenSim/Common/TimeSeriesTable.h>
+
+using namespace SimTK;
+using namespace OpenSim;
+using OpenSim::Exception;
+
+TEST_CASE("DataTable") {
 
     // Default construct, add metadata to columns, append rows one at a time.
 
@@ -68,13 +76,13 @@ int main() {
         const auto& labels = table.getColumnLabels();
         for(size_t i = 0; i < labels.size(); ++i)
             if(labels.at(i) != std::to_string(i))
-                throw Exception{"Test failed: labels.at(i) != "
-                                "std::to_string(i)"};
+                throw OpenSim::Exception{"Test failed: labels.at(i) != "
+                                         "std::to_string(i)"};
 
         for(size_t i = 0; i < labels.size(); ++i)
             if(table.getColumnIndex(labels.at(i)) != i)
-                throw Exception{"Test failed: "
-                                "table.getColumnIndex(labels.at(i)) != i"};
+                throw OpenSim::Exception{
+                        "Test failed: table.getColumnIndex(labels.at(i)) != i"};
     }
 
     // Test exceptions (table should be empty here).
@@ -114,7 +122,7 @@ int main() {
     const auto& avgRow = table.averageRow(0.2, 0.8);
     for(int i = 0; i < avgRow.ncol(); ++i)
         OPENSIM_THROW_IF(std::abs(avgRow[i] - 2) > 1e-8/*epsilon*/,
-                         Exception,
+                         OpenSim::Exception,
                          "Test failed: averageRow() failed.");
 
     const auto& nearRow = table.getNearestRow(0.55);
@@ -143,44 +151,32 @@ int main() {
     std::cout << table.toString({-1, -2}, {"1", "4"});
 
     // Retrieve added metadata and rows to check.
-    if(table.getNumRows() != unsigned{5})
-        throw Exception{"Test Failed: table.getNumRows() != unsigned{5}"};
+    REQUIRE(table.getNumRows() == unsigned{5});
 
-    if(table.getNumColumns() != unsigned{5})
-        throw Exception{"Test Failed: table.getNumColumns() != unsigned{5}"};
+    REQUIRE(table.getNumColumns() == unsigned{5});
 
     const auto& dep_metadata_ref = table.getDependentsMetaData();
 
     const auto& labels_ref = dep_metadata_ref.getValueArrayForKey("labels");
     for(unsigned i = 0; i < 5; ++i)
-        if(labels_ref[i].getValue<std::string>() != std::to_string(i + 1))
-            throw Exception{"Test failed: labels_ref[i].getValue<std::string>()"
-                    " != std::to_string(i + 1)"};
+        CHECK(labels_ref[i].getValue<std::string>() == std::to_string(i + 1));
     {
-    const auto& labels = table.getColumnLabels();
-    for(unsigned i = 0; i < 5; ++i)
-        if(labels.at(i) != std::to_string(i + 1))
-            throw Exception{"Test failed: labels[i].getValue<std::string>()"
-                    " != std::to_string(i + 1)"};
+        const auto& labels = table.getColumnLabels();
+        for(unsigned i = 0; i < 5; ++i)
+            CHECK(labels.at(i) == std::to_string(i + 1));
     }
 
     const auto& col_index_ref
         = dep_metadata_ref.getValueArrayForKey("column-index");
     for(unsigned i = 0; i < 5; ++i)
-        if(col_index_ref[i].getValue<unsigned>() != i + 1)
-            throw Exception{"Test failed: col_index_ref[i].getValue<unsigned>()"
-                    " != i + 1"};
+        CHECK(col_index_ref[i].getValue<unsigned>() == i + 1);
 
     const auto& ind_metadata_ref = table.getIndependentMetaData();
 
-    if(ind_metadata_ref.getValueForKey("labels").getValue<std::string>()
-       != std::string{"0"})
-        throw Exception{"Test failed: ind_metadata_ref.getValueForKey"
-                "(\"labels\").getValue<std::string>() != std::string{\"0\"}"};
-    if(ind_metadata_ref.getValueForKey("column-index").getValue<unsigned>()
-       != unsigned{0})
-        throw Exception{"Test failed: ind_metadata_ref.getValueForKey"
-                "(\"column-index\").getValue<unsigned>() != unsigned{0}"};
+    CHECK(ind_metadata_ref.getValueForKey("labels").getValue<std::string>() ==
+            std::string{"0"});
+    CHECK(ind_metadata_ref.getValueForKey("column-index")
+                    .getValue<unsigned>() == unsigned{0});
 
     table.updDependentColumnAtIndex(0) += 2;
     table.updDependentColumnAtIndex(2) += 2;
@@ -190,17 +186,13 @@ int main() {
     for(unsigned i = 0; i < 5; ++i) {
         for(unsigned j = 0; j < 5; ++j) {
             const auto row_i_1 = table.getRowAtIndex(i);
-            if(row_i_1[j] != (row + i)[j])
-                throw Exception{"Test failed: row_i_1[j] != (row + i)[j]"};
+            CHECK(row_i_1[j] == (row + i)[j]);
 
             const auto row_i_2 = table.getRow(0 + 0.25 * i);
-            if(row_i_2[j] != (row + i)[j])
-                throw Exception{"Test failed: row_i_2[j] != (row + i)[j]"};
+            CHECK(row_i_2[j] == (row + i)[j]);
 
             const auto col_i = table.getDependentColumnAtIndex(i);
-            if(col_i[j] != j)
-                throw Exception{"Test failed: table.getDependentColumnAtIndex"
-                        "(i)[j] != j"};
+            CHECK(col_i[j] == j);
         }
     }
 
@@ -212,15 +204,9 @@ int main() {
     // ASSERT(table.getNumRows() == 5 && table.getNumColumns() == 7);
 
     const auto& tab_metadata_ref = table.getTableMetaData();
-    if(tab_metadata_ref.getValueForKey("DataRate").getValue<int>()
-       != 600)
-        throw Exception{"Test failed: tab_metadata_ref.getValueForKey"
-                "(\"DataRate\").getValue<int>() != 600"};
-    if(tab_metadata_ref.getValueForKey("Filename").getValue<std::string>()
-       != std::string{"/path/to/file"})
-        throw Exception{"Test failed: tab_metadata_ref.getValueForKey"
-                "(\"Filename\").getValue<std::string>() != std::string"
-                "{\"/path/to/file\"}"};
+    CHECK(tab_metadata_ref.getValueForKey("DataRate").getValue<int>() == 600);
+    CHECK(tab_metadata_ref.getValueForKey("Filename").getValue<std::string>() ==
+            std::string{"/path/to/file"});
 
     {
     std::cout << "Test feeding rows of one table to another [double]."
@@ -396,7 +382,7 @@ int main() {
         const auto& avgRowVec3 = tableVec3.averageRow(0.1, 0.2);
         for(int i = 0; i < 3; ++i)
             OPENSIM_THROW_IF(std::abs(avgRowVec3[0][i] - 2) > 1e-8/*epsilon*/,
-                             Exception,
+                             OpenSim::Exception,
                              "Test failed: averageRow() failed.");
 
         const auto& nearRowVec3 = tableVec3.getNearestRow(0.29);
@@ -463,7 +449,7 @@ int main() {
         const auto& avgRowQuat = tableQuat.averageRow(0.1, 0.2);
         for(int i = 0; i < 4; ++i) {
             OPENSIM_THROW_IF(std::abs(avgRowQuat[0][i] - 0.5) > 1e-8/*epsilon*/,
-                             Exception,
+                             OpenSim::Exception,
                              "Test failed: averageRow() failed.");
         }
 
@@ -514,7 +500,7 @@ int main() {
         const auto& avgRowSVec = tableSpatialVec.averageRow(0.1, 0.2);
         for(int i = 0; i < 3; ++i) {
             OPENSIM_THROW_IF(std::abs(avgRowSVec[0][0][i] - 2) > 1e-8/*eps*/,
-                             Exception,
+                             OpenSim::Exception,
                              "Test failed: averageRow() failed.");
         }
 
@@ -776,7 +762,7 @@ int main() {
         }
         for (int r = 0; r < nr; ++r)
             indColumn[r] = 0.001*r;
-    
+
         TimeSeriesTable table{ indColumn, huge, labels };
 
         std::clock_t t0 = std::clock();
@@ -784,7 +770,7 @@ int main() {
             table.removeColumnAtIndex(1);
 
         double dTc = 1.e3*(std::clock() - t0) / CLOCKS_PER_SEC;
-       
+
         std::cout << "\tRemoving columns took:"   << dTc << "ms" << std::endl;
 
         TimeSeriesTable table2{ indColumn, huge, labels };
@@ -797,6 +783,134 @@ int main() {
 
         std::cout << "\tRemoving rows took:" << dTr << "ms" << std::endl;
     }
+}
 
-    return 0;
+TEST_CASE("TableUtilities::checkNonUniqueLabels") {
+    CHECK_THROWS_AS(TableUtilities::checkNonUniqueLabels({"a", "a"}),
+                    NonUniqueLabels);
+}
+
+TEST_CASE("TableUtilities::isInDegrees") {
+    SECTION("no inDegrees metadata") {
+        CHECK_THROWS_WITH(TableUtilities::isInDegrees(TimeSeriesTable()),
+                Catch::Contains("Table does not have 'inDegrees' metadata."));
+    }
+    SECTION("inDegrees=invalid") {
+        TimeSeriesTable table;
+        table.addTableMetaData("inDegrees", std::string("invalid"));
+        CHECK_THROWS_WITH(!TableUtilities::isInDegrees(table),
+                Catch::Contains("Expected table's 'inDegrees' metadata"));
+    }
+    Storage sto;
+    SECTION("inDegrees=yes") {
+        sto.setInDegrees(true);
+        TimeSeriesTable table = sto.exportToTable();
+        CHECK(TableUtilities::isInDegrees(table));
+    }
+    SECTION("inDegrees=no") {
+        sto.setInDegrees(false);
+        TimeSeriesTable table = sto.exportToTable();
+        CHECK(!TableUtilities::isInDegrees(table));
+    }
+}
+
+TEST_CASE("TableUtilities::findStateLabelIndex") {
+    CHECK(TableUtilities::findStateLabelIndex(
+                  std::vector<std::string>{"hip_flexion"},
+                  "/jointset/hip/hip_flexion/value") == 0);
+    CHECK(TableUtilities::findStateLabelIndex(
+                  std::vector<std::string>{"hip_flexion_u"},
+                  "/jointset/hip/hip_flexion/speed") == 0);
+    CHECK(TableUtilities::findStateLabelIndex(
+                  std::vector<std::string>{"vasti.activation"},
+                  "/forceset/vasti/activation") == 0);
+    CHECK(TableUtilities::findStateLabelIndex(
+                  std::vector<std::string>{"vasti.fiber_length"},
+                  "/forceset/vasti/fiber_length") == 0);
+
+    CHECK(TableUtilities::findStateLabelIndex(
+                  std::vector<std::string>{"hip_flexin"},
+                  "/jointset/hip/hip_flexion/value") == -1);
+}
+
+TEST_CASE("TableUtilities::filterLowpass") {
+    const int numRows = 100;
+
+    // Create a table with random values, and write the table to a file.
+    std::vector<double> time(numRows);
+    SimTK::Vector timeVec = createVectorLinspace(numRows, 0, 1);
+    std::copy_n(timeVec.getContiguousScalarData(), numRows, time.data());
+    TimeSeriesTable table(time);
+    table.appendColumn("a", SimTK::Test::randVector(numRows));
+    STOFileAdapter::write(table, "testFilterLowpass.sto");
+
+    // Filter the table.
+    TableUtilities::filterLowpass(table, 6.0);
+
+    // Load the original table as a storage, and filter the storage.
+    Storage sto("testFilterLowpass.sto");
+    sto.lowpassIIR(6.0);
+
+    // The filtered table and storage should match.
+    SimTK::Vector filteredStorageColumn(numRows);
+    double* columnData = filteredStorageColumn.updContiguousScalarData();
+    sto.getDataColumn("a", columnData);
+    const auto& filteredTableColumn = table.getDependentColumnAtIndex(0);
+    for (int i = 0; i < numRows; ++i) {
+        CHECK(filteredStorageColumn[i] == Approx(filteredTableColumn[i]));
+    }
+}
+
+TEST_CASE("TableUtilities::pad") {
+    Storage sto("test.sto");
+    TimeSeriesTable paddedTable = sto.exportToTable();
+    TableUtilities::pad(paddedTable, 1);
+
+    sto.pad(1);
+    TimeSeriesTable paddedSto = sto.exportToTable();
+
+    CHECK(paddedTable.getIndependentColumn() ==
+            paddedSto.getIndependentColumn());
+    REQUIRE(paddedTable.getNumRows() == paddedSto.getNumRows());
+    REQUIRE(paddedTable.getNumColumns() == paddedSto.getNumColumns());
+    for (int irow = 0; irow < (int)paddedTable.getNumRows(); ++irow) {
+        for (int icol = 0; icol < (int)paddedTable.getNumColumns(); ++icol) {
+            CHECK(paddedTable.getMatrix().getElt(irow, icol) ==
+                    paddedSto.getMatrix().getElt(irow, icol));
+        }
+    }
+}
+
+TEST_CASE("TableUtilities::resample") {
+    TimeSeriesTable table(std::vector<double>{0.0, 1, 2});
+    table.appendColumn("a", {1.0, 0.5, 0.0});
+    {
+        TimeSeriesTable resampled =
+                TableUtilities::resample(table, createVector({0.5}));
+        REQUIRE(resampled.getNumRows() == 1);
+        REQUIRE(resampled.getNumColumns() == 1);
+        CHECK(resampled.getIndependentColumn()[0] == 0.5);
+        CHECK(resampled.getDependentColumnAtIndex(0)[0] == Approx(0.75));
+    }
+    {
+        TimeSeriesTable resampled = TableUtilities::resampleWithInterval(table,
+                0.4);
+        REQUIRE(resampled.getNumRows() == 6);
+        REQUIRE(resampled.getNumColumns() == 1);
+        const auto& time = resampled.getIndependentColumn();
+        CHECK(time[0] == Approx(0).margin(1e-10));
+        CHECK(time[1] == Approx(0.4));
+        CHECK(time[2] == Approx(0.8));
+        CHECK(time[3] == Approx(1.2));
+        CHECK(time[4] == Approx(1.6));
+        CHECK(time[5] == Approx(2.0));
+
+        const auto& column = resampled.getDependentColumnAtIndex(0);
+        CHECK(column[0] == Approx(1.0));
+        CHECK(column[1] == Approx(0.8));
+        CHECK(column[2] == Approx(0.6));
+        CHECK(column[3] == Approx(0.4));
+        CHECK(column[4] == Approx(0.2));
+        CHECK(column[5] == Approx(0.0).margin(1e-10));
+    }
 }

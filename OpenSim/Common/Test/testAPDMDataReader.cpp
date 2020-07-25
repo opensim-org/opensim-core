@@ -36,8 +36,8 @@ int main() {
         std::vector<std::string> imu_names{ "torso", "pelvis", "shank" };
         std::vector<std::string> names_in_experiment{ "Static", "Upper", "Middle" };
         // Programmatically add items to name mapping, write to xml
-        for (int index = 0; index < imu_names.size(); ++index) {
-            ExperimentalSensor  nextSensor(names_in_experiment[index], imu_names[index]);
+        for (int index = 0; index < (int)imu_names.size(); ++index) {
+            ExperimentalSensor nextSensor(names_in_experiment[index], imu_names[index]);
             readerSettings.append_ExperimentalSensors(nextSensor);
         }
         readerSettings.print("apdm_reader.xml");
@@ -113,7 +113,7 @@ void testAPDMFormat7() {
     std::vector<std::string> imu_names{ "imu1", "imu2", "imu4" };
     std::vector<std::string> names_in_experiment{ "Lumbar", "Right Ankle", "Right Foot" };
     // Programmatically add items to name mapping, write to xml
-    for (int index = 0; index < imu_names.size(); ++index) {
+    for (int index = 0; index < (int)imu_names.size(); ++index) {
         ExperimentalSensor  nextSensor(names_in_experiment[index], imu_names[index]);
         readerSettings.append_ExperimentalSensors(nextSensor);
     }

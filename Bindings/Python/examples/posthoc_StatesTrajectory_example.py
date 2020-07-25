@@ -61,9 +61,7 @@ manager.integrate(1.0)
 
 # Analyze the simulation.
 # -----------------------
-# Retrieve the StatesTrajectory from the reporter. Alternately, we could load a
-# StatesTrajectory from a STO file using
-# StatesTrajectory.createFromStatesStorage().
+# Retrieve the StatesTrajectory from the reporter.
 statesTraj = reporter.getStates()
 
 for itime in range(statesTraj.getSize()):
@@ -84,3 +82,14 @@ for itime in range(statesTraj.getSize()):
     # abstractOutput = joint.getOutput('reaction_on_parent')
     # output = osim.OutputSpatialVec.safeDownCast(abstractOutput)
     # outputValue = output.getValue(s)
+
+# Alternately, we could load a StatesTrajectory from a TimeSeriesTable file
+# using StatesTrajectory.createFromStatesTable().
+statesTable = manager.getStatesTable()
+statesTraj2 = osim.StatesTrajectory.createFromStatesTable(model, statesTable)
+
+for itime in range(statesTraj2.getSize()):
+    state = statesTraj2[itime]
+    time = state.getTime()
+    u = model.getStateVariableValue(state, 'joint/q/speed')
+    print('time: %f s.  u: %f rad/s.' % (time, u))

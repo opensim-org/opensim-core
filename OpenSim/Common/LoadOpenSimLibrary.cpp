@@ -22,9 +22,11 @@
  * -------------------------------------------------------------------------- */
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-#include <iostream>
-#include "IO.h"
 #include "LoadOpenSimLibrary.h"
+
+#include "IO.h"
+#include "Logger.h"
+#include <iostream>
 
 using namespace OpenSim;
 using namespace std;
@@ -52,7 +54,7 @@ static void *LoadLibrary(const std::string &name, std::string &actualNameLoaded)
     }
     return lib;
 }
-#define LoadLibraryError() { char* err=dlerror(); if(err) cout<<"dlerror: "<<err<<endl; }
+#define LoadLibraryError() { char* err=dlerror(); if(err) log_error("dlerror: {}", err); }
 
 #else
 
@@ -105,12 +107,12 @@ OpenSim::LoadOpenSimLibrary(const std::string &lpLibFileName, bool verbose)
     bool tryDebugThenRelease = false;
 #ifndef NDEBUG
     if(!hasDebugSuffix) {
-        if(verbose) cout << "Will try loading debug library first" << endl;
+        if(verbose) log_info("Will try loading debug library first");
         tryDebugThenRelease = true;
     }
 #else
     if(hasDebugSuffix) {
-        if(verbose) cout << "WARNING: Trying to load a debug library into release osimSimulation" << endl;
+        if(verbose) log_warn("Trying to load a debug library into release osimSimulation");
         tryDebugThenRelease = true;
     }
 #endif
@@ -120,23 +122,29 @@ OpenSim::LoadOpenSimLibrary(const std::string &lpLibFileName, bool verbose)
         string debugLibFileName = fixedLibFileName + debugSuffix + libraryExtension;
         string releaseLibFileName = fixedLibFileName + libraryExtension;
         if ((libraryHandle = LoadLibrary(debugLibFileName,actualNameLoaded))) {
-            if(verbose) cout << "Loaded library " << actualNameLoaded << endl;
+            if(verbose) log_info("Loaded library {}", actualNameLoaded);
         } else {
             LoadLibraryError();
-            if(verbose) cout << "Loading of debug library " << debugLibFileName << " Failed. Trying " << releaseLibFileName << endl;
+            if(verbose) {
+                log_error("Loading of debug library {} failed. Trying {}.",
+                        debugLibFileName, releaseLibFileName);
+            }
             if ((libraryHandle = LoadLibrary(releaseLibFileName,actualNameLoaded))) {
-                if(verbose) cout << "Loaded library " << actualNameLoaded << endl;
+                if(verbose) log_info("Loaded library {}", actualNameLoaded);
             } else {
                 LoadLibraryError();
-                if(verbose) cout << "Failed to load either debug or release library " << releaseLibFileName << endl;
+                if(verbose)
+                    log_error("Failed to load either debug or release "
+                              "library {}.", releaseLibFileName);
             }
         }
     } else {
         if ((libraryHandle = LoadLibrary(actualLibFileName,actualNameLoaded))) {
-            if(verbose) cout << "Loaded library " << actualNameLoaded << endl;
+            if(verbose) log_info("Loaded library {}", actualNameLoaded);
         } else {
             LoadLibraryError();
-            if(verbose) cout << "Failed to load library " << actualLibFileName << endl;
+            if (verbose)
+                log_error("Failed to load library {}", actualLibFileName);
         }
     }
 
@@ -156,12 +164,12 @@ OpenSim::LoadOpenSimLibraryExact(const std::string& exactPath,
     OPENSIM_PORTABLE_HINSTANCE library = LoadLibrary(fixedPath.c_str());
     if (library) {
         if (verbose) {
-            cout << "Loaded library " << fixedPath << endl;
+            log_info("Loaded library {}", fixedPath);
         }
         return true;
     } else {
         if (verbose) {
-            cout << "Failed to load library " << fixedPath << endl;
+            log_error("Failed to load library {}", fixedPath);
         }
         return false;
     }
@@ -191,7 +199,7 @@ OpenSim::LoadOpenSimLibraries(int argc,char **argv)
             string libraryName = argv[i+1];
             library = LoadOpenSimLibrary(libraryName.c_str(), true);
             if(library==NULL) {
-                cout<<"ERROR- library "<<libraryName<<" could not be loaded.\n" << endl;
+                log_error("Library {} could not be loaded.", libraryName);
             } else {
                 i++;
             }

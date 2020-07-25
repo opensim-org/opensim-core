@@ -59,7 +59,7 @@ int main(int argc,char **argv)
       cmc -S SetupFileName -> opensim-cmd run-tool SetupFileName
       cmc -PS              -> opensim-cmd print-xml cmc
     )";
-    std::cout << deprecationNotice << std::endl;
+    log_warn(deprecationNotice);
 
     // PARSE COMMAND LINE
     int i;
@@ -88,7 +88,7 @@ int main(int argc,char **argv)
             Object::setSerializeAllDefaults(true);
             investigation->print("default_Setup_CMC.xml");
             Object::setSerializeAllDefaults(false);
-            cout << "Created file default_Setup_CMC.xml with default setup" << endl;
+            log_info("Created file default_Setup_CMC.xml with default setup");
             return(0);
 
         // IDENTIFY SETUP FILE
@@ -115,23 +115,22 @@ int main(int argc,char **argv)
 
     // ERROR CHECK
     if(setupFileName=="") {
-        cout<<"\n\n"<<argv[0]<<": ERROR- A setup file must be specified.\n";
+        log_error("{}: A setup file must be specified.", argv[0]);
         PrintUsage(argv[0], cout);
         return(-1);
     }
 
     // CONSTRUCT
-    cout<<"Constructing investigation from setup file "<<setupFileName<<".\n"<<endl;
+    log_info("Constructing investigation from setup file {}", setupFileName);
     CMCTool cmcgait(setupFileName);
 
     // PRINT MODEL INFORMATION
     Model& model = cmcgait.getModel();
-    cout<<"-----------------------------------------------------------------------\n";
-    cout<<"Loaded library\n";
-    cout<<"-----------------------------------------------------------------------\n";
+    log_info("--------------------------------------------------------------");
+    log_info("Loaded library");
+    log_info("--------------------------------------------------------------");
     model.finalizeFromProperties();
     model.printBasicInfo();
-    cout<<"-----------------------------------------------------------------------\n\n";
 
 
     // RUN
@@ -142,7 +141,7 @@ int main(int argc,char **argv)
     // Catch any thrown exceptions
     //----------------------------
     } catch(const std::exception& x) {
-        cout << "Exception in CMC: " << x.what() << endl;
+        log_error("Exception in CMC: {}", x.what());
         return -1;
     }
     //----------------------------

@@ -68,6 +68,7 @@ Property_Deprecated(PropertyType aType, const string &aName)
  * @param aProperty Property_Deprecated to be copied.
  */
 Property_Deprecated::Property_Deprecated(const Property_Deprecated &aProperty)
+:   AbstractProperty(aProperty)
 {
     setNull();
     *this = aProperty;

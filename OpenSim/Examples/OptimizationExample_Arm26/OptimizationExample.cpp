@@ -51,7 +51,6 @@ public:
     /* Constructor class. Parameters passed are accessed in the objectiveFunc() class. */
     ExampleOptimizationSystem(int numParameters, State& s, Model& aModel): 
         OptimizerSystem(numParameters), 
-        numControls(numParameters), 
         si(s),
         osimModel(aModel)
     {}
@@ -76,7 +75,7 @@ public:
         s = manager.integrate(finalTime);
 
         /* Calculate the scalar quantity we want to minimize or maximize. 
-        *  In this case, we’re maximizing forward velocity of the 
+        *  In this case, we're maximizing forward velocity of the
         *  forearm/hand mass center, so to maximize, compute velocity 
         *  and multiply it by -1.
         */
@@ -100,7 +99,6 @@ public:
    }    
 
 private:
-    int numControls;
     State& si;
     Model& osimModel;
     SimTK::ReferencePtr<RungeKuttaMersonIntegrator> p_integrator;

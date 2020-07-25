@@ -54,10 +54,6 @@ public:
     ScaleSet();
     ScaleSet(const std::string& scalesFileName);
     ~ScaleSet(void);
-
-#ifndef SWIG
-    ScaleSet& operator=(const ScaleSet &aScaleSet);
-#endif
 };
 
 }; //namespace

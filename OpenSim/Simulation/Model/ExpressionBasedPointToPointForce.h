@@ -178,6 +178,8 @@ private:
     SimTK::ReferencePtr<const SimTK::MobilizedBody> _b1; 
     SimTK::ReferencePtr<const SimTK::MobilizedBody> _b2;
 
+    mutable CacheVariable<double> _forceMagnitudeCV;
+
 //==============================================================================
 };  // END of class override
 

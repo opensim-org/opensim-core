@@ -344,6 +344,7 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
         if(std::regex_match(line, matchRes, keyvalue)) {
             auto key = matchRes[1].str();
             auto value = matchRes[2].str();
+            IO::TrimWhitespace(value);
             if(!key.empty() && !value.empty()) {
                 const auto trimmed_key = trim(key);
                 if(trimmed_key == _dataTypeString) {
@@ -433,7 +434,7 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
 
         auto row_vector = readElems(row);
 
-        OPENSIM_THROW_IF(row_vector.size() != column_labels.size(),
+        OPENSIM_THROW_IF(row_vector.size() != (int)column_labels.size(),
             RowLengthMismatch,
             fileName,
             line_num,

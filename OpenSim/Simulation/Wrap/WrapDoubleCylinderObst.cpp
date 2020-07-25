@@ -326,7 +326,7 @@ static int quick_solve_linear(int N,double A[],double X[],double B[]) {
     /*== COPY A INTO MTX(NxN), B INTO MTX(N+1), AND LOAD POINTER VECTOR ==*/
     /*====================================================================*/
     for(r=0,Mrj=MTX,Mij=A,Br=B;r<N;r++) {
-        for(j=0;j<N;j++) *(Mrj++) = *(Mij++);   *(Mrj++) = *(Br++); }
+        for(j=0;j<N;j++) { *(Mrj++) = *(Mij++); }  *(Mrj++) = *(Br++); }
     for(r=0,Mr=Mtx;r<N;r++) *(Mr++)=MTX+r*(N+1);
     /*====================================================================*/
 
@@ -340,7 +340,7 @@ static int quick_solve_linear(int N,double A[],double X[],double B[]) {
             Mrj=Mtx[r]; Mtx[r]=Mtx[i];  Mtx[i]=Mrj; Mrj=Mtx[r]+r;
         }
         for(i=r+1;i<N;i++) {
-            if(ZERO(*(Mij=Mtx[i]+r))) continue; Mrj=Mtx[r]+r;
+            if(ZERO(*(Mij=Mtx[i]+r))) { continue; } Mrj=Mtx[r]+r;
             d = (*Mij)/(*Mrj);  *(Mij++)=0.0;   Mrj++;
             for(j=r+1;j<=N;j++) *(Mij++) -= *(Mrj++)*d;
         }
@@ -659,7 +659,7 @@ static int double_cylinder(double U[3],double Ru,double V[3],double Rv,double M[
         quick_mul_vec_by_mtx(x,M,TnU);  quick_add_vec_to_vec(TnU,V,TnU);
         /*===============================================================*/
         Td=TnU[0]*TnU[0]+TnU[1]*TnU[1]; Trt=Td-Ru*Ru;   Td=Ru/Td;
-        if(Trt<0.0) return(-1); Trt=sqrt(Trt);
+        if(Trt<0.0) { return(-1); } Trt=sqrt(Trt);
         Q[0]=(Ru*TnU[0]+Trt*TnU[1])*Td; Q[1]=(Ru*TnU[1]-Trt*TnU[0])*Td;
         /*===============================================================*/
         *QT=sqrt((TnU[0]-Q[0])*(TnU[0]-Q[0])+(TnU[1]-Q[1])*(TnU[1]-Q[1]));
@@ -673,7 +673,7 @@ static int double_cylinder(double U[3],double Ru,double V[3],double Rv,double M[
         quick_mul_vec_by_mtxT(Q,M,QnV); quick_add_vec_to_vec(QnV,U,QnV);
         /*===============================================================*/
         Qd=QnV[0]*QnV[0]+QnV[1]*QnV[1]; Qrt=Qd-Rv*Rv;   Qd=Rv/Qd;
-        if(Qrt<0.0) return(-1); Qrt=sqrt(Qrt);
+        if(Qrt<0.0) { return(-1); } Qrt=sqrt(Qrt);
         T[0]=(Rv*QnV[0]-Qrt*QnV[1])*Qd; T[1]=(Rv*QnV[1]+Qrt*QnV[0])*Qd;
         /*===============================================================*/
         TQ=sqrt((T[0]-QnV[0])*(T[0]-QnV[0])+(T[1]-QnV[1])*(T[1]-QnV[1]));

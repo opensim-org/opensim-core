@@ -1,5 +1,5 @@
-#ifndef __IKMarkerTask_h__
-#define __IKMarkerTask_h__
+#ifndef OPENSIM_IK_MARKER_TASK_H_
+#define OPENSIM_IK_MARKER_TASK_H_
 /* -------------------------------------------------------------------------- *
  *                          OpenSim:  IKMarkerTask.h                          *
  * -------------------------------------------------------------------------- *
@@ -31,7 +31,7 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * @authors Eran Guendelman
+ * @authors Eran Guendelman, Ayman Habib
  * @version 1.0
  */
 
@@ -39,12 +39,7 @@ class OSIMTOOLS_API IKMarkerTask : public IKTask {
 OpenSim_DECLARE_CONCRETE_OBJECT(IKMarkerTask, IKTask);
 
 public:
-    IKMarkerTask();
-    IKMarkerTask(const IKMarkerTask &aIKMarkerTask);
-
-#ifndef SWIG
-    IKMarkerTask& operator=(const IKMarkerTask &aIKMarkerTask);
-#endif
+    IKMarkerTask() = default;
 
 //=============================================================================
 };  // END of class IKMarkerTask
@@ -53,4 +48,4 @@ public:
 
 } // end of namespace OpenSim
 
-#endif // __IKMarkerTask_h__
+#endif // OPENSIM_IK_MARKER_TASK_H_
