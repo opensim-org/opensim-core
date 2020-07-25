@@ -6,6 +6,11 @@ request related to the change, then we may provide the commit.
 
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
 
+====
+Bug Fixes
+---------
+- Fixed a critical bug in Induced Accelerations Analysis which prevents analysis to run when external forces are present
+
 v4.2
 ====
 - Add the ActivationCoordinateActuator component, which is a CoordinateActuator with simple activation dynamics (PR #2699).
