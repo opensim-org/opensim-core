@@ -6,6 +6,7 @@ request related to the change, then we may provide the commit.
 
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
 
+
 v4.2
 ====
 - Add the ActivationCoordinateActuator component, which is a CoordinateActuator with simple activation dynamics (PR #2699).
@@ -24,6 +25,7 @@ v4.2
 - The new Matlab examplePointMass.m shows how to build and simulate a point-mass model.
 - Fix OpenSense calibration algorithm to handle models facing an arbitrary direction. The calibration algorithm now aligns one axis of the provided Orientation Sensor data with the x-axis of the base segment (e.g. pelvis) of the model in default pose.
 - For PrescribedController, the controls_file column labels can now be absolute paths to actuators (previously, the column labels were required to be actuator names).
+- Fixed a critical bug in Induced Accelerations Analysis which prevents analysis to run when external forces are present ([PR #2847](https://github.com/opensim-org/opensim-core/pull/2808)).
 
 v4.1
 ====
