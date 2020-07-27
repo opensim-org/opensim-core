@@ -28,145 +28,124 @@ using namespace std;
 
 // Set static member variables.
 const char ComponentPath::separator = '/';
-static const char invalidCharGlyphs[] = { '\\', '*', '+', ' ', '\t', '\n' };
 const std::string ComponentPath::invalidChars = "\\/*+ \t\n";
-
-static bool isValid(const std::string& path) {
-    for (char c : invalidCharGlyphs) {
-        if (path.find(c) != std::string::npos) {
-            return false;
-        }
-    }
-    return true;
-}
+static const std::string newInvalidChars = "\\*+ \t\n";
 
 std::string ComponentPath::normalize(std::string path) {
-    // TODO: this is gruesome, and needs tidying up, but it has some handy
-    // properties:
+    // note: this implementation is fairly low-level and involves mutating `path` quite a bit.
+    //       the test suite is heavily relied on for developing this kind of tricky code.
     //
-    // - Pure function with an input and an output (easy to test)
-    // - Has tests
-    // - Is only reliant on standard library and raw language features, so the
-    //   entire implementation is very standalone
-    // - No allocations
-    // - Extremely cache-friendly
+    //       the reason it's done this way is because profiling shown that `ComponentPath` was
+    //       accounting for ~6-10 % of OpenSim's CPU usage for component-heavy sims. The reason
+    //       this was so high was because `ComponentPath` used a simpler algorithm that split
+    //       the path into a std::vector.
+    //
+    //       usually, that alg. wouldn't be a problem, but path normalization can happen millions
+    //       of times during a simulation, all those vector allocations can thrash the allocator and
+    //       increase L1 misses
 
-    if (!isValid(path)) {
+    // ensure `path` contains no invalid chars
+    if (path.find_first_of(newInvalidChars) != std::string::npos) {
         throw std::runtime_error{path + ": path contains invalid characters"};
     }
 
-    // shifts a C-string `s` leftwards `n` places, such that `s` then
-    // points to the characters that were at `s+n`
-    // TODO: replace with something like std::rotate
-    auto shift = [&](char* s, size_t n) {
-        size_t len = path.size() - (path.c_str() - s);
-        size_t to_move = len-n;
-        for (size_t i = 0; i < to_move; ++i) {
-            s[i] = s[i+n];
-        }
+    // helper: shift chars starting at `offset+n` `n` characters left
+    auto shift = [&](size_t offset, size_t n) {
+        std::copy(path.begin() + offset + n, path.end(), path.begin() + offset);
         path.resize(path.size() - n);
     };
 
-    // searches for '/' rightwards in the range [start, end) backwards,
-    // returns `nullptr` if '/' is not found in [start, end)
-    auto rfind = [](char* start, char* end) {
-        while (--end >= start) {
-            if (*end == '/') {
-                return end;
-            }
-        }
-        return static_cast<char*>(nullptr);
-    };
-
-    char* start = &path[0];
-
-    // setup loop invariants:
-    //
-    // - skip starting slash (absolute paths)
-    //
-    // - skip starting '..' elements, unless it is an absolute path, then throw
-    //   an error
-    //
-    // - remove any starting '.' relative elements './././a/b' --> 'a/b'
-    //
-    // - after this setup phase, the remainder of the algorithm can assume
-    //   that any slashes in [start, cur) delimit a real previous element
-    //   (effectively, the alg can ignore the prefix)
-
-    bool isAbsolute = false;
-    if (start[0] == '/') {
-        ++start;
-        isAbsolute = true;
-    }
-
-    // skip/shift leading relative elements
-    while (start[0] == '.') {
-        if (start[1] == '/') {
-            shift(start, 2);
-        } else if (start[1] == '\0') {
-            shift(start, 1);
-        } else if (start[1] == '.' && (start[2] == '/' || start[2] == '\0')) {
-            if (isAbsolute) {
-                throw std::runtime_error{path + ": invalid path: is absolute, but starts with relative elements"};
-            }
-            // skip leading '..' elements
-            if (start[2] == '/') {
-                start += 3;
-            } else {
-                start += 2;
-            }
+    // remove duplicate adjacent slashes
+    for (size_t i = 0; i < path.size(); ++i) {
+        if (path[i] == '/' && path[i+1] == '/') {
+            shift(i, 1);
+            --i;
         }
     }
 
-    // [start, cur) delimits a fully-resolved path string that contains no
-    // leading slash and no relative elements.
-    char* cur = start;
+    // skip absolute slash
+    bool isAbsolute = path.front() == '/';
+    size_t contentStart = isAbsolute ? 1 : 0;
 
-    // iterate through the string, with `cur` as the cursor, and resolve any
-    // relative elements, such that the [start, cur) loop invariant is
-    // maintained.
-    while (cur[0] != '\0') {
-        if (cur[0] == '.') {
-            if (cur[1] == '\0' || cur[1] == '/') {
-                // it's a '.'
-                shift(cur, 2);
-                if (cur != start) {
-                    --cur;
-                }
-                continue;
-            }
+    // skip/dereference relative elements at the start of a path
+    while (path[contentStart] == '.') {
+        switch (path[contentStart + 1]) {
+            case '/':
+                shift(contentStart, 2);
+                break;
+            case '\0':
+                shift(contentStart, 1);
+                break;
+            case '.': {
+                char c2 = path[contentStart + 2];
+                if (c2 == '/' || c2 == '\0') {
+                    // starts with '..' element: only allowed if the path is relative
+                    if (isAbsolute) {
+                        OPENSIM_THROW(Exception,
+                                      path + ": invalid path: is absolute, but starts with relative elements");
+                    }
 
-            if (cur[1] == '.' && (cur[2] == '\0' || cur[2] == '/')) {
-                // it's a '..'
-
-                if (cur == start) {
-                    throw std::runtime_error{path + ": cannot handle '..' element in string: would hop above the root of the path"};
-                }
-
-                char* prevElEnd = cur-1;
-                char* prevElStart = rfind(start, prevElEnd);
-                if (prevElStart == nullptr) {
-                    prevElStart = start;
-                }
-                size_t n = (prevElEnd - prevElStart) + (cur[2] == '/' ? 4 : 3); // '/a/..'
-                cur = prevElStart;
-                shift(cur, n);
-                continue;
-            }
-        }
-
-        // relative elements handled: skip to the next element in the input, or
-        // the end of the input
-        while (cur[0] != '\0') {
-            if (*cur++ == '/') {
-                // consecutive slashes are combined into one slash
-                while (cur[0] == '/') {
-                    shift(cur, 1);
+                    // if not absolute, then make sure `contentStart` skips past these
+                    // elements because the alg can't reduce them down
+                    if (c2 == '/') {
+                        contentStart += 3;
+                    } else {
+                        contentStart += 2;
+                    }
+                } else {
+                    // normal element that starts with '..'
+                    ++contentStart;
                 }
                 break;
             }
+            default:
+                // normal element that starts with '..'
+                ++contentStart;
+                break;
         }
     }
+
+    size_t offset = contentStart;
+
+    while (offset < path.size()) {
+        // this parser has a <= 2-char lookahead
+        char c0 = path[offset];
+        char c1 = c0 != '\0' ? path[offset+1] : '\0';
+        char c2 = c1 != '\0' ? path[offset+2] : '\0';
+
+        // handle '.' (if found)
+        if (c0 == '.' && (c1 == '\0' || c1 == '/')) {
+            shift(offset, c1 == '/' ? 2 : 1);
+            if (offset != contentStart) {
+                --offset;
+            }
+            continue;
+        }
+
+        // handle '..' (if found)
+        if (c0 == '.' && c1 == '.' && (c2 == '\0' || c2 == '/')) {
+            if (offset == contentStart) {
+                throw std::runtime_error{path + ": cannot handle '..' element in string: would hop above the root of the path"};
+            }
+            auto contentStartIt = path.rend() - contentStart;
+            size_t prevEnd = offset - 1;
+            size_t prevEndReverseOffset = path.size() - prevEnd;
+            auto it = std::find(path.rbegin() + prevEndReverseOffset, contentStartIt, '/');
+            size_t prevStart = it == contentStartIt ? contentStart : std::distance(it, path.rend());
+            size_t n = (prevEnd - prevStart) + (c2 == '/' ? 4 : 3);
+            offset = prevStart;
+            shift(offset, n);
+            continue;
+        }
+
+        offset = path.find('/', offset);
+        if (offset == std::string::npos) {
+            break;  // end of input
+        } else {
+            ++offset;  // skip the slash
+        }
+    }
+
     // edge-case: trailing slashes should be removed, unless the string only
     // contains a slash
     if (path.size() > 1 && path.back() == '/') {
