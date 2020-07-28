@@ -58,6 +58,12 @@ void testComponentPath() {
     ASSERT(CP{"/a/b"} != CP{"/a/b/c/d"});
     ASSERT(CP{"/c/d"} != CP{"c/d"});
 
+    // test vector ctor
+    ASSERT_THROW(Exception, CP(std::vector<std::string>{"in+valid"}, true));
+    ASSERT_THROW(Exception, CP(std::vector<std::string>{"in+valid"}, false));
+    ASSERT_THROW(Exception, CP(std::vector<std::string>{"a", "in+valid"}, true));
+    ASSERT_THROW(Exception, CP(std::vector<std::string>{"b", "in+valid"}, false));
+
     /* Test formAbsolutePath(). Test a variety of paths. The argument 
      * in formAbsolutePath() must be an absolute path itself. */
     // Test without any ".."
@@ -124,6 +130,14 @@ void testComponentPath() {
         ASSERT_THROW(Exception, path1.pushBack("a+b*"));
         ASSERT_THROW(Exception, path1.pushBack("test/this"));
         ASSERT_THROW(Exception, path1.pushBack(""));
+
+        CP cp2{""};
+        cp2.pushBack("a");
+        ASSERT(cp2.toString() == "a");
+
+        CP cp3{"/"};
+        cp3.pushBack("a");
+        ASSERT(cp3.toString() == "/a");
     }
 
     /* Test functions for getting certain parts of ComponentPath. */
@@ -137,6 +151,21 @@ void testComponentPath() {
     ASSERT(numberedAbsPath.getParentPath() == numberedAbsPathParent);
     // Test if getParentPathStr() returns correct string
     ASSERT(numberedAbsPath.getParentPathString() == numberedAbsPathParentStr);
+
+    ASSERT(CP{""}.getNumPathLevels() == 0);
+    ASSERT(CP{"/"}.getNumPathLevels() == 0);
+    ASSERT(CP{"/a"}.getNumPathLevels() == 1);
+    ASSERT(CP{"/a/"}.getNumPathLevels() == 1);
+    ASSERT(CP{"/a/b"}.getNumPathLevels() == 2);
+    ASSERT(CP{"/a/b/"}.getNumPathLevels() == 2);
+    ASSERT(CP{"/a/b/c"}.getNumPathLevels() == 3);
+    ASSERT(CP{"a"}.getNumPathLevels() == 1);
+    ASSERT(CP{"a/b"}.getNumPathLevels() == 2);
+    ASSERT(CP{"../"}.getNumPathLevels() == 1);
+    ASSERT(CP{".."}.getNumPathLevels() == 1);
+    ASSERT(CP{"a/.."}.getNumPathLevels() == 0);
+    ASSERT(CP{"/a/.."}.getNumPathLevels() == 0);
+
     // Loop through all levels of the subtree and see if names match
     for (size_t ind = 0; ind < levels.size(); ++ind) {
         ASSERT(numberedAbsPath.getSubcomponentNameAtLevel(ind) == levels[ind]);

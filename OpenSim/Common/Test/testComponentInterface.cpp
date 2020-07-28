@@ -983,7 +983,7 @@ void testComponentPathNames()
     ASSERT(CWrtOtherTop == "A/B/C");
 
     std::string OtherTopWrtC = otherTop.getRelativePathString(*C);
-    ASSERT(OtherTopWrtC == "../../../");
+    ASSERT(OtherTopWrtC == "../../..");
 
     // Must specify a unique path to E
     ASSERT_THROW(OpenSim::ComponentNotFoundOnSpecifiedPath,
@@ -2292,7 +2292,7 @@ int main() {
         SimTK_SUBTEST(testTableSource);
         SimTK_SUBTEST(testTableReporter);
         SimTK_SUBTEST(testAliasesAndLabels);
-    
+
         writeTimeSeriesTableForInputConnecteeSerialization();
         SimTK_SUBTEST(testListInputConnecteeSerialization);
         SimTK_SUBTEST(testSingleValueInputConnecteeSerialization);
