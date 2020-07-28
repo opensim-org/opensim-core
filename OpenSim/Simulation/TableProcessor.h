@@ -27,8 +27,8 @@
 
 namespace OpenSim {
 
-/** This abstract class describes *any* operation that consumes a
-modifies a TimeSeriesTable as part of a TableProcessor. */
+/** This abstract class describes *any* operation that consumes and modifies a
+TimeSeriesTable as part of a TableProcessor. */
 class OSIMSIMULATION_API TableOperator : public Object {
     OpenSim_DECLARE_ABSTRACT_OBJECT(TableOperator, Object);
 
