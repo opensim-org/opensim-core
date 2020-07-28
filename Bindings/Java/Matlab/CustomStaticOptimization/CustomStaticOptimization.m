@@ -1,8 +1,9 @@
 % CustomStaticOptimization
 % ------------------------
 %   This script provides a framework for you to build your own custom code to 
-%   solve the static optimization problem. Visit the companion Confluence page
-%   for more information and suggestions on how to complete this code: 
+%   solve the static optimization problem. Fill in the sections labeled "TODO". 
+%   Visit the companion Confluence page for suggestions on how to complete this 
+%   code using a sample data set: 
 %   simtk-confluence.stanford.edu/display/OpenSim/Custom+Static+Optimization+in+MATLAB
 
 %-----------------------------------------------------------------------%
@@ -32,8 +33,14 @@ close all; clear all; clc; beep off;
 %% Import the OpenSim libraries.
 import org.opensim.modeling.*;
 
+%% Set filenames
+% TODO {
+modelFile = 
+coordinatesFile = 
+% }
+
 %% Load model and get initial state.
-model = Model('subject_walk_adjusted.osim');
+model = Model(modelFile);
 state = model.initSystem();
 
 %% Use OpenSim tools to generate data for optimization.
@@ -42,7 +49,7 @@ if ~exist('analyze_Kinematics_q.sto', 'file')
     fprintf('Running kinematics analysis...\n\n');
     analyze = AnalyzeTool(model);
     analyze.setName('analyze');
-    analyze.setCoordinatesFileName('coordinates.mot');
+    analyze.setCoordinatesFileName(coordinatesFile);
     analyze.loadStatesFromFile(state);
     analyze.setStartTime(0);
     analyze.setFinalTime(2.37);
