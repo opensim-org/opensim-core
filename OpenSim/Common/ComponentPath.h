@@ -52,33 +52,6 @@ private:
 
 public:
     /**
-     * Returns a normalized form of `path`. A normalized path string is guaranteed to:
-     *
-     * - Not contain any *internal* or *trailing* relative elements (e.g. 'a/../b')
-     *
-     *   - It may *start* with relative elements (e.g. '../a/b'), but only if the
-     *     path is non-absolute (e.g. "/../a/b" is invalid)
-     *
-     * - Not contain any invalid characters (e.g. '\\', '*')
-     *
-     * - Not contain any repeated separators (e.g. 'a///b' --> 'a/b')
-     *
-     * - Not contain any trailing slashes, unless it is resolved to root
-     *
-     *   - e.g. "a/b/c" is normalized to "a/b/c" but "/./a/../" is normalized to
-     *     '/'
-     *
-     * Any attempt to step above the root of the expression with '..' will
-     * result in an exception being thrown (e.g. "a/../.." will throw).
-     *
-     * This method is useful for path traversal and path manipulation methods,
-     * because the above guarantees ensure that (e.g.) paths can be concatenated
-     * and split into individual elements using basic string manipulation
-     * techniques.
-     */
-    static std::string normalize(std::string path);
-
-    /**
      * Default constructor that constructs an empty path ("")
      */
     ComponentPath();

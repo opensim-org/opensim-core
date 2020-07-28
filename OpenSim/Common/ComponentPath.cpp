@@ -66,134 +66,156 @@ namespace {
 
         return it;
     }
-}
+    /**
+     * Returns a normalized form of `path`. A normalized path string is guaranteed to:
+     *
+     * - Not contain any *internal* or *trailing* relative elements (e.g. 'a/../b')
+     *
+     *     - It may *start* with relative elements (e.g. '../a/b'), but only if the
+     *       path is non-absolute (e.g. "/../a/b" is invalid)
+     *
+     * - Not contain any invalid characters (e.g. '\\', '*')
+     *
+     * - Not contain any repeated separators (e.g. 'a///b' --> 'a/b')
+     *
+     *     - e.g. "a/b/c" is normalized to "a/b/c" but "/./a/../" is normalized to
+     *       '/'
+     *
+     * Any attempt to step above the root of the expression with '..' will
+     * result in an exception being thrown (e.g. "a/../.." will throw).
+     *
+     * This method is useful for path traversal and path manipulation methods,
+     * because the above guarantees ensure that (e.g.) paths can be concatenated
+     * and split into individual elements using basic string manipulation
+     * techniques.
+     */
+    std::string normalize(std::string path) {
+        // note: this implementation is fairly low-level and involves mutating `path` quite a bit.
+        //       the test suite is heavily relied on for developing this kind of tricky code.
+        //
+        //       the reason it's done this way is because profiling shown that `ComponentPath` was
+        //       accounting for ~6-10 % of OpenSim's CPU usage for component-heavy sims. The reason
+        //       this was so high was because `ComponentPath` used a simpler algorithm that split
+        //       the path into a std::vector.
+        //
+        //       usually, that alg. wouldn't be a problem, but path normalization can happen millions
+        //       of times during a simulation, all those vector allocations can thrash the allocator and
+        //       increase L1 misses
 
-std::string ComponentPath::normalize(std::string path) {
-    // note: this implementation is fairly low-level and involves mutating `path` quite a bit.
-    //       the test suite is heavily relied on for developing this kind of tricky code.
-    //
-    //       the reason it's done this way is because profiling shown that `ComponentPath` was
-    //       accounting for ~6-10 % of OpenSim's CPU usage for component-heavy sims. The reason
-    //       this was so high was because `ComponentPath` used a simpler algorithm that split
-    //       the path into a std::vector.
-    //
-    //       usually, that alg. wouldn't be a problem, but path normalization can happen millions
-    //       of times during a simulation, all those vector allocations can thrash the allocator and
-    //       increase L1 misses
-
-    // ensure `path` contains no invalid chars
-    if (path.find_first_of(newInvalidChars) != std::string::npos) {
-        OPENSIM_THROW(Exception, path + ": path contains invalid characters");
-    }
-
-    // helper: shift chars starting at `offset+n` `n` characters left
-    auto shift = [&](size_t offset, size_t n) {
-        std::copy(path.begin() + offset + n, path.end(), path.begin() + offset);
-        path.resize(path.size() - n);
-    };
-
-    // remove duplicate adjacent separators
-    for (size_t i = 0; i < path.size(); ++i) {
-        if (path[i] == separator && path[i+1] == separator) {
-            shift(i, 1);
-            --i;
+        // ensure `path` contains no invalid chars
+        if (path.find_first_of(newInvalidChars) != std::string::npos) {
+            OPENSIM_THROW(OpenSim::Exception, path + ": path contains invalid characters");
         }
-    }
 
-    // skip absolute slash
-    bool isAbsolute = path.front() == separator;
-    size_t contentStart = isAbsolute ? 1 : 0;
+        // helper: shift chars starting at `offset+n` `n` characters left
+        auto shift = [&](size_t offset, size_t n) {
+            std::copy(path.begin() + offset + n, path.end(), path.begin() + offset);
+            path.resize(path.size() - n);
+        };
 
-    // skip/dereference relative elements at the start of a path
-    while (path[contentStart] == '.') {
-        switch (path[contentStart + 1]) {
-            case separator:
-                shift(contentStart, 2);
-                break;
-            case '\0':
-                shift(contentStart, 1);
-                break;
-            case '.': {
-                char c2 = path[contentStart + 2];
-                if (c2 == separator || c2 == '\0') {
-                    // starts with '..' element: only allowed if the path is relative
-                    if (isAbsolute) {
-                        OPENSIM_THROW(Exception,
-                                      path + ": invalid path: is absolute, but starts with relative elements");
-                    }
+        // remove duplicate adjacent separators
+        for (size_t i = 0; i < path.size(); ++i) {
+            if (path[i] == separator && path[i+1] == separator) {
+                shift(i, 1);
+                --i;
+            }
+        }
 
-                    // if not absolute, then make sure `contentStart` skips past these
-                    // elements because the alg can't reduce them down
-                    if (c2 == separator) {
-                        contentStart += 3;
+        // skip absolute slash
+        bool isAbsolute = path.front() == separator;
+        size_t contentStart = isAbsolute ? 1 : 0;
+
+        // skip/dereference relative elements at the start of a path
+        while (path[contentStart] == '.') {
+            switch (path[contentStart + 1]) {
+                case separator:
+                    shift(contentStart, 2);
+                    break;
+                case '\0':
+                    shift(contentStart, 1);
+                    break;
+                case '.': {
+                    char c2 = path[contentStart + 2];
+                    if (c2 == separator || c2 == '\0') {
+                        // starts with '..' element: only allowed if the path is relative
+                        if (isAbsolute) {
+                            OPENSIM_THROW(OpenSim::Exception,
+                                          path + ": invalid path: is absolute, but starts with relative elements");
+                        }
+
+                        // if not absolute, then make sure `contentStart` skips past these
+                        // elements because the alg can't reduce them down
+                        if (c2 == separator) {
+                            contentStart += 3;
+                        } else {
+                            contentStart += 2;
+                        }
                     } else {
-                        contentStart += 2;
+                        // normal element that starts with '..'
+                        ++contentStart;
                     }
-                } else {
+                    break;
+                }
+                default:
                     // normal element that starts with '..'
                     ++contentStart;
+                    break;
+            }
+        }
+
+        size_t offset = contentStart;
+
+        while (offset < path.size()) {
+            // this parser has a <= 2-char lookahead
+            char c0 = path[offset];
+            char c1 = c0 != '\0' ? path[offset+1] : '\0';
+            char c2 = c1 != '\0' ? path[offset+2] : '\0';
+
+            // handle '.' (if found)
+            if (c0 == '.' && (c1 == '\0' || c1 == separator)) {
+                shift(offset, c1 == separator ? 2 : 1);
+                if (offset != contentStart) {
+                    --offset;
                 }
-                break;
+                continue;
             }
-            default:
-                // normal element that starts with '..'
-                ++contentStart;
-                break;
-        }
-    }
 
-    size_t offset = contentStart;
-
-    while (offset < path.size()) {
-        // this parser has a <= 2-char lookahead
-        char c0 = path[offset];
-        char c1 = c0 != '\0' ? path[offset+1] : '\0';
-        char c2 = c1 != '\0' ? path[offset+2] : '\0';
-
-        // handle '.' (if found)
-        if (c0 == '.' && (c1 == '\0' || c1 == separator)) {
-            shift(offset, c1 == separator ? 2 : 1);
-            if (offset != contentStart) {
-                --offset;
+            // handle '..' (if found)
+            if (c0 == '.' && c1 == '.' && (c2 == '\0' || c2 == separator)) {
+                if (offset == contentStart) {
+                    OPENSIM_THROW(OpenSim::Exception, path + ": cannot handle '..' element in string: would hop above the root of the path");
+                }
+                auto contentStartIt = path.rend() - contentStart;
+                size_t prevEnd = offset - 1;
+                size_t prevEndReverseOffset = path.size() - prevEnd;
+                auto it = std::find(path.rbegin() + prevEndReverseOffset, contentStartIt, '/');
+                size_t prevStart = it == contentStartIt ? contentStart : std::distance(it, path.rend());
+                size_t n = (prevEnd - prevStart) + (c2 == '/' ? 4 : 3);
+                offset = prevStart;
+                shift(offset, n);
+                continue;
             }
-            continue;
-        }
 
-        // handle '..' (if found)
-        if (c0 == '.' && c1 == '.' && (c2 == '\0' || c2 == separator)) {
-            if (offset == contentStart) {
-                OPENSIM_THROW(Exception, path + ": cannot handle '..' element in string: would hop above the root of the path");
+            offset = path.find('/', offset);
+            if (offset == std::string::npos) {
+                break;  // end of input
+            } else {
+                ++offset;  // skip the slash
             }
-            auto contentStartIt = path.rend() - contentStart;
-            size_t prevEnd = offset - 1;
-            size_t prevEndReverseOffset = path.size() - prevEnd;
-            auto it = std::find(path.rbegin() + prevEndReverseOffset, contentStartIt, '/');
-            size_t prevStart = it == contentStartIt ? contentStart : std::distance(it, path.rend());
-            size_t n = (prevEnd - prevStart) + (c2 == '/' ? 4 : 3);
-            offset = prevStart;
-            shift(offset, n);
-            continue;
         }
 
-        offset = path.find('/', offset);
-        if (offset == std::string::npos) {
-            break;  // end of input
-        } else {
-            ++offset;  // skip the slash
+        // edge-case: trailing slashes should be removed, unless the string only
+        // contains a slash
+        if (path.size() > 1 && path.back() == separator) {
+            path.pop_back();
         }
-    }
 
-    // edge-case: trailing slashes should be removed, unless the string only
-    // contains a slash
-    if (path.size() > 1 && path.back() == separator) {
-        path.pop_back();
-    }
+        if (!isAbsolute && path.size() == 1 && path.back() == separator) {
+            path.pop_back();
+        }
 
-    if (!isAbsolute && path.size() == 1 && path.back() == separator) {
-        path.pop_back();
+        return path;
     }
-
-    return path;
 }
 
 ComponentPath::ComponentPath() = default;

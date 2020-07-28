@@ -184,7 +184,7 @@ void testComponentPath() {
         ASSERT(numberedRelPath.getSubcomponentNameAtLevel(ind) == levels[ind]);
     }
 
-    // ComponentPath::normalize
+    // general tests to ensure it normalizes a variety of paths correctly
     {
         static const std::pair<std::string, std::string> shouldPass[] = {
             { "",                "" },
@@ -225,7 +225,7 @@ void testComponentPath() {
 
         for (const auto& tc : shouldPass) {
             std::cerr << "input = " << tc.first << std::endl;
-            std::string output = ComponentPath::normalize(tc.first);
+            std::string output = ComponentPath{tc.first}.toString();
             if (output != tc.second) {
                 std::stringstream msg;
                 msg << "ComponentPath::resolveRelativeElements: invalid output:" << std::endl;
@@ -263,7 +263,7 @@ void testComponentPath() {
         for (const std::string& tc : shouldThrow) {
             std::string maybeError;
             try {
-                std::string p = ComponentPath::normalize(tc);
+                std::string p = ComponentPath{tc}.toString();
                 std::stringstream msg;
                 msg << tc << ": did not throw an exception: instead, it output: " << p;
                 maybeError = msg.str();
