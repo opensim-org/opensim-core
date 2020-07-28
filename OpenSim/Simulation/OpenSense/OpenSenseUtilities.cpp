@@ -202,6 +202,7 @@ OpenSenseUtilities::createOrientationsFileFromMarkers(const std::string& markers
 
 SimTK::Vec3 OpenSenseUtilities::computeHeadingCorrection(
         Model& model,
+        const SimTK::State& state,
             OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>&
                     quaternionsTable,
             const std::string& baseImuName,
@@ -212,10 +213,6 @@ SimTK::Vec3 OpenSenseUtilities::computeHeadingCorrection(
     // if a base imu is specified, perform heading correction, otherwise skip
     if (!baseImuName.empty()) {
 
-        // Base will rotate to match <base>_imu, so we must first remove the
-        // base rotation from the other IMUs to get their orientation with
-        // respect to individual model bodies and thereby compute correct
-        // offsets unbiased by the initial base orientation.
         auto imuLabels = quaternionsTable.getColumnLabels();
         auto pix = distance(imuLabels.begin(),
                 std::find(imuLabels.begin(), imuLabels.end(), baseImuName));
@@ -231,16 +228,34 @@ SimTK::Vec3 OpenSenseUtilities::computeHeadingCorrection(
 
         // Heading direction of the base IMU in this case the pelvis_imu heading
         // is its ZAxis
-        UnitVec3 pelvisHeading = base_R(baseHeadingDirection.getAxis());
+        UnitVec3 baseSegmentXHeading = base_R(baseHeadingDirection.getAxis());
         if (baseHeadingDirection.getDirection() < 0)
-            pelvisHeading = pelvisHeading.negate();
+            baseSegmentXHeading = baseSegmentXHeading.negate();
+        bool baseFrameFound = false;
 
-        UnitVec3 groundX = UnitVec3(1, 0, 0);
-        SimTK::Real angularDifference = acos(~pelvisHeading * groundX);
+        const Frame* baseFrame = nullptr;
+        for (int j = 0; j < model.getNumJoints() && !baseFrameFound; j++) {
+            auto& jnt = model.getJointSet().get(j);
+            // Look for joint whose parent is Ground, child will be baseFrame
+            if (jnt.getParentFrame().findBaseFrame() == model.getGround()) { 
+                baseFrame = &(jnt.getChildFrame().findBaseFrame());
+                baseFrameFound = true;
+                break;
+            }
+        }
+        OPENSIM_THROW_IF(!baseFrameFound, Exception,
+                "No base segment was found, disable heading correction and retry.");
+       
+        Vec3 baseFrameX = UnitVec3(1, 0, 0);
+        const SimTK::Transform& baseXform =
+                baseFrame->getTransformInGround(state);
+        Vec3 baseFrameXInGround = baseXform.xformFrameVecToBase(baseFrameX);
+        SimTK::Real angularDifference =
+                acos(~baseSegmentXHeading * baseFrameXInGround);
         // Compute the sign of the angular correction.
-        SimTK::Vec3 xproduct = (groundX % pelvisHeading);
-        if (xproduct.get(2) > 0) {
-            angularDifference *= -1;
+        SimTK::Vec3 xproduct = (baseFrameXInGround % baseSegmentXHeading);
+        if (xproduct.get(1) > 0) { 
+            angularDifference *= -1; 
         }
 
         log_info("Heading correction computed to be {} degs about ground Y.",
