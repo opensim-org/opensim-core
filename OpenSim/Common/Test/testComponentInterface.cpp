@@ -2292,7 +2292,7 @@ int main() {
         SimTK_SUBTEST(testTableSource);
         SimTK_SUBTEST(testTableReporter);
         SimTK_SUBTEST(testAliasesAndLabels);
-
+    
         writeTimeSeriesTableForInputConnecteeSerialization();
         SimTK_SUBTEST(testListInputConnecteeSerialization);
         SimTK_SUBTEST(testSingleValueInputConnecteeSerialization);
