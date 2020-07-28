@@ -36,6 +36,7 @@
 #include <OpenSim/Common/MarkerData.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
 #include <OpenSim/Common/MultiplierFunction.h>
+#include <OpenSim/Common/MultivariatePolynomialFunction.h>
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/ObjectGroup.h>
 #include <OpenSim/Common/PiecewiseConstantFunction.h>

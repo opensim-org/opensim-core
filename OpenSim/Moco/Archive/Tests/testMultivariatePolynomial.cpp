@@ -17,8 +17,7 @@
  * -------------------------------------------------------------------------- */
 
 #define CATCH_CONFIG_MAIN
-#include "Testing.h"
-
+#include "../../Test/Testing.h"
 #include <Moco/osimMoco.h>
 
 using namespace OpenSim;

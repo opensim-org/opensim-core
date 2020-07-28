@@ -21,7 +21,6 @@
 #include "Components/AccelerationMotion.h"
 #include "Components/DeGrooteFregly2016Muscle.h"
 #include "Components/DiscreteForces.h"
-#include "Components/MultivariatePolynomialFunction.h"
 #include "Components/PositionMotion.h"
 #include "Components/StationPlaneContactForce.h"
 #include "MocoBounds.h"
@@ -115,7 +114,6 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(EspositoMiller2018Force());
         Object::registerType(PositionMotion());
         Object::registerType(DeGrooteFregly2016Muscle());
-        Object::registerType(MultivariatePolynomialFunction());
 
         Object::registerType(DiscreteForces());
         Object::registerType(AccelerationMotion());
