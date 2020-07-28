@@ -766,33 +766,25 @@ const Component::StateVariable* Component::
     // Must have already called initSystem.
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
-    std::string path = ComponentPath::normalize(pathName);
-    size_t sepLoc = path.find('/');
+    ComponentPath svPath(pathName);
 
-    if (sepLoc == std::string::npos) {
-        // simple case: the path is just a simple string containing no path
-        // separators (post-normalization), which means that the state variable
-        // resides on this component
-        auto it = _namedStateVariableInfo.find(path);
+    const StateVariable* found = nullptr;
+    if (svPath.getNumPathLevels() == 1) {
+        // There was no slash. The state variable should be in this component.
+        auto it = _namedStateVariableInfo.find(pathName);
         if (it != _namedStateVariableInfo.end()) {
             return it->second.stateVariable.get();
-        } else {
-            return nullptr;
         }
-    } else {
-        // complex (and expensive) case: the path contains separators, so the
-        // component tree needs to be traversed to retrieve the state variable
-        ComponentPath svPath(pathName);
+    } else if (svPath.getNumPathLevels() > 1) {
         const auto& compPath = svPath.getParentPath();
         const Component* comp = traversePathToComponent<Component>(compPath);
         if (comp) {
             // This is the leaf of the path:
             const auto& varName = svPath.getComponentName();
-            return comp->traverseToStateVariable(varName);
-        } else {
-            return nullptr;
+            found = comp->traverseToStateVariable(varName);
         }
     }
+    return found;
 }
 
 // Get the names of "continuous" state variables maintained by the Component and
