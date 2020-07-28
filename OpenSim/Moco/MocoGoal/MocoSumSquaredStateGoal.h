@@ -18,8 +18,9 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "../MocoWeightSet.h"
 #include "MocoGoal.h"
+
+#include <OpenSim/Moco/MocoWeightSet.h>
 
 namespace OpenSim {
 

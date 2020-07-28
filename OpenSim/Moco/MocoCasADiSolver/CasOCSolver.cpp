@@ -15,11 +15,12 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "../MocoUtilities.h"
 #include "CasOCHermiteSimpson.h"
 #include "CasOCProblem.h"
 #include "CasOCTranscription.h"
 #include "CasOCTrapezoidal.h"
+
+#include <OpenSim/Moco/MocoUtilities.h>
 
 using OpenSim::Exception;
 

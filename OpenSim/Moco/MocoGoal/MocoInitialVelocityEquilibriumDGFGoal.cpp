@@ -18,6 +18,8 @@
 
 #include "MocoInitialVelocityEquilibriumDGFGoal.h"
 
+#include <OpenSim/Moco/Components/DeGrooteFregly2016Muscle.h>
+
 using namespace OpenSim;
 
 void MocoInitialVelocityEquilibriumDGFGoal::initializeOnModelImpl(

@@ -18,7 +18,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "../MocoUtilities.h"
+#include <OpenSim/Moco/MocoUtilities.h>
 #include "CasOCFunction.h"
 #include <casadi/casadi.hpp>
 #include <string>

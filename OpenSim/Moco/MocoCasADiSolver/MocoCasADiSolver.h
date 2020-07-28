@@ -18,7 +18,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "../MocoDirectCollocationSolver.h"
+#include <OpenSim/Moco/MocoDirectCollocationSolver.h>
 
 namespace CasOC {
 class Solver;

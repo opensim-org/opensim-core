@@ -22,7 +22,7 @@
 
 #include <simbody/internal/Motion.h>
 
-#include "../osimMocoDLL.h"
+#include <OpenSim/Moco/osimMocoDLL.h>
 
 namespace OpenSim {
 

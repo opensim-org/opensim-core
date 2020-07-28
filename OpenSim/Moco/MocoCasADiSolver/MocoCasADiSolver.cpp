@@ -18,16 +18,16 @@
 
 #include "MocoCasADiSolver.h"
 
-#include "../MocoUtilities.h"
+#include <OpenSim/Moco/MocoUtilities.h>
 
 #ifdef OPENSIM_WITH_CASADI
-#    include "CasOCSolver.h"
-#    include "MocoCasOCProblem.h"
-#    include <casadi/casadi.hpp>
+    #include "CasOCSolver.h"
+    #include "MocoCasOCProblem.h"
+    #include <casadi/casadi.hpp>
 
-#    include <OpenSim/Common/Stopwatch.h>
+    #include <OpenSim/Common/Stopwatch.h>
 
-using casadi::Callback;
+    using casadi::Callback;
     using casadi::Dict;
     using casadi::DM;
     using casadi::MX;

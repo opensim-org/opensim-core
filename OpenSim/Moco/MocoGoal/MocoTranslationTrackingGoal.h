@@ -18,13 +18,14 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "../MocoWeightSet.h"
 #include "MocoGoal.h"
-#include "OpenSim/Simulation/TableProcessor.h"
 
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
+#include <OpenSim/Moco/MocoWeightSet.h>
 #include <OpenSim/Simulation/Model/Frame.h>
+#include <OpenSim/Simulation/TableProcessor.h>
+
 namespace OpenSim {
 
 /** The squared difference between a model frame's origin position and a

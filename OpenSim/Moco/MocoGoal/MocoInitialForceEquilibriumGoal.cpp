@@ -17,7 +17,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoInitialForceEquilibriumGoal.h"
-#include "../Components/DeGrooteFregly2016Muscle.h"
+#include <OpenSim/Moco/Components/DeGrooteFregly2016Muscle.h>
 
 using namespace OpenSim;
 

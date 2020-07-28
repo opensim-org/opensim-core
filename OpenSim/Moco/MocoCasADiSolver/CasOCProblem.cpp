@@ -18,13 +18,13 @@
 
 #include "CasOCProblem.h"
 
-#include "../MocoUtilities.h"
+#include <OpenSim/Moco/MocoUtilities.h>
 #include "CasOCTranscription.h"
 #include "CasOCTrapezoidal.h"
 
 // Shhh...we shouldn't depend on these but MocoTrajectory has a handy resample()
 // function.
-#include "../MocoTrajectory.h"
+#include <OpenSim/Moco/MocoTrajectory.h>
 #include "MocoCasOCProblem.h"
 
 using OpenSim::Exception;

@@ -19,9 +19,10 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoGoal.h"
-#include "../Components/DeGrooteFregly2016Muscle.h"
 
 namespace OpenSim {
+
+class DeGrooteFregly2016Muscle;
 
 /** For DeGrooteFregly2016Muscle components with implicit tendon compliance
 dynamics, the initial tendon and fiber velocities are determined based the

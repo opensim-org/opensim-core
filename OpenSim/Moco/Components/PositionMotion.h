@@ -18,12 +18,11 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "../osimMocoDLL.h"
-
 #include <simbody/internal/Motion.h>
 
 #include <OpenSim/Common/FunctionSet.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
+#include <OpenSim/Moco/osimMocoDLL.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 
 namespace OpenSim {

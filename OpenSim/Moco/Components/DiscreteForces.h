@@ -21,7 +21,7 @@
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <simbody/internal/Force_DiscreteForces.h>
 
-#include "../osimMocoDLL.h"
+#include <OpenSim/Moco/osimMocoDLL.h>
 
 namespace OpenSim {
 

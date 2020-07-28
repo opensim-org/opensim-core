@@ -18,8 +18,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "../MocoUtilities.h"
-#include "../osimMocoDLL.h"
+#include <OpenSim/Moco/MocoUtilities.h>
+#include <OpenSim/Moco/osimMocoDLL.h>
 
 #include <OpenSim/Common/DataTable.h>
 #include <OpenSim/Simulation/Model/Model.h>

@@ -70,7 +70,7 @@ std::unique_ptr<Model> createDoublePendulumModel() {
     tau0->setOptimalForce(1);
     tau0->setMinControl(-40);
     tau0->setMaxControl(40);
-    model->addComponent(tau0);
+    model->addForce(tau0);
 
     auto* tau1 = new CoordinateActuator();
     tau1->setCoordinate(&j1->updCoordinate());
@@ -78,7 +78,7 @@ std::unique_ptr<Model> createDoublePendulumModel() {
     tau1->setOptimalForce(1);
     tau1->setMinControl(-40);
     tau1->setMaxControl(40);
-    model->addComponent(tau1);
+    model->addForce(tau1);
 
     // Add display geometry.
     Ellipsoid bodyGeometry(0.5, 0.1, 0.1);
@@ -116,8 +116,8 @@ int main() {
     problem.setStateInfo("/jointset/j0/q0/speed", {-50, 50});
     problem.setStateInfo("/jointset/j1/q1/value", {-10, 10});
     problem.setStateInfo("/jointset/j1/q1/speed", {-50, 50});
-    problem.setControlInfo("/tau0", {-40, 40});
-    problem.setControlInfo("/tau1", {-40, 40});
+    problem.setControlInfo("/forceset/tau0", {-40, 40});
+    problem.setControlInfo("/forceset/tau1", {-40, 40});
 
     // Cost.
     // -----

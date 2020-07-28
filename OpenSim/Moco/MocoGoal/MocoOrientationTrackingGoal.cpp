@@ -18,7 +18,7 @@
 
 #include "MocoOrientationTrackingGoal.h"
 
-#include "../MocoUtilities.h"
+#include <OpenSim/Moco/MocoUtilities.h>
 
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/Model/Frame.h>

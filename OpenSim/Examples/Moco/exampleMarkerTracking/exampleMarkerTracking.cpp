@@ -28,6 +28,7 @@ using namespace OpenSim;
 
 /// This model is torque-actuated.
 std::unique_ptr<Model> createDoublePendulumModel() {
+    // This function is similar to ModelFactory::createNLinkPendulum().
     auto model = make_unique<Model>();
     model->setName("double_pendulum");
 
@@ -69,7 +70,7 @@ std::unique_ptr<Model> createDoublePendulumModel() {
     tau0->setOptimalForce(1);
     tau0->setMinControl(-40);
     tau0->setMaxControl(40);
-    model->addComponent(tau0);
+    model->addForce(tau0);
 
     auto* tau1 = new CoordinateActuator();
     tau1->setCoordinate(&j1->updCoordinate());
@@ -77,7 +78,7 @@ std::unique_ptr<Model> createDoublePendulumModel() {
     tau1->setOptimalForce(1);
     tau1->setMinControl(-40);
     tau1->setMaxControl(40);
-    model->addComponent(tau1);
+    model->addForce(tau1);
 
     // Add display geometry.
     Ellipsoid bodyGeometry(0.5, 0.1, 0.1);
@@ -144,6 +145,9 @@ int main() {
     auto& solver = study.initCasADiSolver();
     solver.set_num_mesh_intervals(50);
     solver.set_verbosity(2);
+    // Use a full Newton optimization algorithm (compute the entire Hessian)
+    // rather than a quasi-Newton algorithm (approximating the Hessian from
+    // successive gradients).
     solver.set_optim_hessian_approximation("exact");
 
     // Solve the problem.

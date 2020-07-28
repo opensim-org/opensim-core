@@ -17,7 +17,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoContactTrackingGoal.h"
-#include "OpenSim/Simulation/Model/SmoothSphereHalfSpaceForce.h"
+#include <OpenSim/Simulation/Model/SmoothSphereHalfSpaceForce.h>
 
 using namespace OpenSim;
 

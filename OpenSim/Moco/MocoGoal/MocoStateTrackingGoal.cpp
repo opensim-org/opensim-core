@@ -18,7 +18,7 @@
 
 #include "MocoStateTrackingGoal.h"
 
-#include "../MocoUtilities.h"
+#include <OpenSim/Moco/MocoUtilities.h>
 
 #include <OpenSim/Simulation/Model/Model.h>
 

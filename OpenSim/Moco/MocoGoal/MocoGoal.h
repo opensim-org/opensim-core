@@ -18,13 +18,12 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "../MocoBounds.h"
-#include "../MocoConstraintInfo.h"
-#include "../osimMocoDLL.h"
-
 #include <SimTKcommon/internal/State.h>
 
 #include <OpenSim/Common/Object.h>
+#include <OpenSim/Moco/MocoBounds.h>
+#include <OpenSim/Moco/MocoConstraintInfo.h>
+#include <OpenSim/Moco/osimMocoDLL.h>
 
 namespace OpenSim {
 

@@ -18,13 +18,14 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "../Components/AccelerationMotion.h"
-#include "../Components/DiscreteController.h"
-#include "../Components/DiscreteForces.h"
-#include "../MocoBounds.h"
-#include "../MocoProblemRep.h"
 #include "CasOCProblem.h"
 #include "MocoCasADiSolver.h"
+
+#include <OpenSim/Moco/Components/AccelerationMotion.h>
+#include <OpenSim/Moco/Components/DiscreteController.h>
+#include <OpenSim/Moco/Components/DiscreteForces.h>
+#include <OpenSim/Moco/MocoBounds.h>
+#include <OpenSim/Moco/MocoProblemRep.h>
 
 namespace OpenSim {
 
