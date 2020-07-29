@@ -36,9 +36,6 @@ jobs:
 
     - name: Install SWIG
       run: choco install swig --version 3.0.12 --yes --limit-output
- 
-    - name: Update submodules
-      run: git submodule update --init
 
     - name: Cache dependencies
       id: cache-dependencies
@@ -119,9 +116,9 @@ jobs:
     # - name: Upload opensim-moco dependencies
     #   uses: actions/upload-artifact@v1.0.0
     #   with:
-    #     name: opensim-core-dependencies 
+    #     name: opensim-core-dependencies
     #     path: opensim_dependencies_install.zip
-        
+
     # - name: Create release
     #   id: create-release
     #   uses: actions/create-release@v1.0.0
@@ -138,7 +135,7 @@ jobs:
     #     7z a opensim-core-$VERSION.zip opensim-core-${VERSION}
 
     # - name: Upload release asset
-    #   id: upload-release-asset 
+    #   id: upload-release-asset
     #   uses: actions/upload-release-asset@v1.0.1
     #   env:
     #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -181,9 +178,6 @@ jobs:
         tar xzf rel-3.0.12.tar.gz && cd swig-rel-3.0.12
         sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache
         make && make -j4 install
-
-    - name: Update submodules
-      run: git submodule update --init
 
     - name: Cache dependencies
       id: cache-dependencies
@@ -284,7 +278,7 @@ jobs:
     #     zip --symlinks --recurse-paths --quiet opensim-core-$VERSION.zip opensim-core-${VERSION}
 
     # - name: Upload release asset
-    #   id: upload-release-asset 
+    #   id: upload-release-asset
     #   uses: actions/upload-release-asset@v1.0.1
     #   env:
     #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
