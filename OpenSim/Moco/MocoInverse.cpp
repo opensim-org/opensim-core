@@ -51,7 +51,7 @@ std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
     model.initSystem();
 
     TimeSeriesTable kinematics =
-            get_kinematics().process(getDocumentDirectory(), &model);
+            get_kinematics().processRadians(getDocumentDirectory(), model);
 
     // Prescribe the kinematics.
     // -------------------------

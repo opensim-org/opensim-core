@@ -1234,6 +1234,7 @@ TEMPLATE_TEST_CASE(
 
         auto states = solutionTrajOpt.exportToStatesTable();
         TimeSeriesTable ref(states.getIndependentColumn());
+        ref.addTableMetaData("inDegrees", std::string("no"));
         ref.appendColumn("/joint/height/value",
                 states.getDependentColumn("/joint/height/value"));
         // Tracking speed has a huge effect on getting a good solution for the

@@ -3,6 +3,10 @@ Moco Change Log
 
 0.5.0 (in development)
 ----------------------
+- 2020-07-28: TableProcessor no longer automatically coverts tables from 
+              degrees to radians. Use TableProcessor::processRadians() or
+              TabOpConvertDegreesToRadians instead.
+
 - 2020-07-15: Add exampleHangingMuscle.cpp and exampleHangingMuscle.py that 
               show how to use MuscleAnalysis and metabolic probes with a Moco
               solution.

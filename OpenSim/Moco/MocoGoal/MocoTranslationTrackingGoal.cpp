@@ -76,8 +76,8 @@ void MocoTranslationTrackingGoal::initializeOnModelImpl(const Model& model)
         assert(get_translation_reference_file() != "");
         assert(m_translation_table.getNumColumns() == 0);
         // TODO: set relativeToDirectory properly.
-        TimeSeriesTable statesTableToUse = get_states_reference().process("",
-            &model);
+        TimeSeriesTable statesTableToUse =
+                get_states_reference().processRadians(model);
 
         // Check that the reference state names match the model state names.
         checkLabelsMatchModelStates(model, statesTableToUse.getColumnLabels());

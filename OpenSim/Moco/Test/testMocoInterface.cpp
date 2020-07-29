@@ -875,6 +875,7 @@ TEMPLATE_TEST_CASE("State tracking", "", MocoCasADiSolver,
             // Move at constant speed from x=0 to x=1. Really basic stuff.
             ref.appendRow(time, {1.0 * time});
         }
+        ref.addTableMetaData("inDegrees", std::string("no"));
         STOFileAdapter::write(ref, fname);
     }
 

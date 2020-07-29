@@ -74,10 +74,10 @@ public:
     }
     /// Process and obtain the table. If a filepath is provided, it will be
     /// evaluated relative to `relativeToDirectory`.
-    /// If a model is provided, it is used to convert columns from degrees to
-    /// radians (if the table has a header with inDegrees=yes) before any
-    /// operations are performed. This model is accessible by any
-    /// TableOperator%s that require it.
+    /// Certain TableOperator%s require a Model (e.g.,
+    /// TabOpConvertDegreesToRadians, TabOpUseAbsoluteStateNames). If you use
+    /// such an operator, make sure to pass a model to this function (otherwise,
+    /// the relevant operator will throw an exception).
     TimeSeriesTable process(std::string relativeToDirectory,
             const Model* model = nullptr) const {
         TimeSeriesTable table;
@@ -101,13 +101,6 @@ public:
             table = TimeSeriesTable(path);
         }
 
-        if (model && table.hasTableMetaDataKey("inDegrees") &&
-                table.getTableMetaDataAsString("inDegrees") == "yes") {
-            OPENSIM_THROW_IF(
-                    !model->hasSystem(), ModelHasNoSystem, model->getName());
-            model->getSimbodyEngine().convertDegreesToRadians(table);
-        }
-
         for (int i = 0; i < getProperty_operators().size(); ++i) {
             get_operators(i).operate(table, model);
         }
@@ -117,6 +110,23 @@ public:
     /// working directory.
     TimeSeriesTable process(const Model* model = nullptr) const {
         return process({}, model);
+    }
+    /// Same as process(), but the columns of processed table are converted from
+    /// degrees to radians, if applicable. This conversion requires a model.
+    TimeSeriesTable processRadians(std::string relativeToDirectory,
+            const Model& model) const {
+        TimeSeriesTable table = process(relativeToDirectory, &model);
+        if (TableUtilities::isInDegrees(table)) {
+            OPENSIM_THROW_IF(
+                    !model.hasSystem(), ModelHasNoSystem, model.getName());
+            model.getSimbodyEngine().convertDegreesToRadians(table);
+        }
+        return table;
+    }
+    /// Same as above, but paths are evaluated with respect to the current
+    /// working directory.
+    TimeSeriesTable processRadians(const Model& model) const {
+        return processRadians({}, model);
     }
     /// Returns true if neither a filepath nor an in-memory table have been
     /// provided.
@@ -148,6 +158,21 @@ public:
 private:
     bool m_tableProvided = false;
     TimeSeriesTable m_table;
+};
+
+class OSIMSIMULATION_API TabOpConvertDegreesToRadians : public TableOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(TabOpConvertDegreesToRadians,
+            TableOperator);
+    void operate(TimeSeriesTable& table,
+            const Model* model = nullptr) const override {
+        OPENSIM_THROW_IF(!model, Exception,
+                "Expected a model, but no model was provided.");
+        if (TableUtilities::isInDegrees(table)) {
+            OPENSIM_THROW_IF(
+                    !model->hasSystem(), ModelHasNoSystem, model->getName());
+            model->getSimbodyEngine().convertDegreesToRadians(table);
+        }
+    }
 };
 
 /// Apply a low-pass filter to the trajectory.

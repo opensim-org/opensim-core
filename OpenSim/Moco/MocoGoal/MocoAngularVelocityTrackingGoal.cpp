@@ -76,7 +76,7 @@ void MocoAngularVelocityTrackingGoal::initializeOnModelImpl(
         assert(m_angular_velocity_table.getNumColumns() == 0);
         // TODO: set relativeToDirectory properly.
         TimeSeriesTable statesTableToUse =
-                get_states_reference().process("", &model);
+                get_states_reference().processRadians(model);
 
         // Check that the reference state names match the model state names.
         checkLabelsMatchModelStates(model, statesTableToUse.getColumnLabels());

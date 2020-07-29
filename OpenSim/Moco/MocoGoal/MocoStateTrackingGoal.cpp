@@ -27,7 +27,7 @@ using namespace OpenSim;
 void MocoStateTrackingGoal::initializeOnModelImpl(const Model& model) const {
 
     // TODO: set relativeToDirectory properly.
-    TimeSeriesTable tableToUse = get_reference().process("", &model);
+    TimeSeriesTable tableToUse = get_reference().processRadians(model);
 
     auto allSplines = GCVSplineSet(tableToUse);
 
