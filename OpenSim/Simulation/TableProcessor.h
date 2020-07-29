@@ -53,31 +53,31 @@ public:
             filepath, std::string, "File path to a TimeSeriesTable.");
     OpenSim_DECLARE_LIST_PROPERTY(operators, TableOperator,
             "Operators to apply to the source table of this processor.");
-    /// This constructor is only for use when reading (deserializing) from an
-    /// XML file.
+    /** This constructor is only for use when reading (deserializing) from an
+    XML file. */
     TableProcessor() {
         constructProperty_filepath("");
         constructProperty_operators();
     }
-    /// Use an in-memory TimeSeriesTable as the source table.
-    /// Since this constructor is not explicit, you can provide a
-    /// TimeSeriesTable to any function that takes a TableProcessor (in C++).
+    /** Use an in-memory TimeSeriesTable as the source table.
+    Since this constructor is not explicit, you can provide a
+    TimeSeriesTable to any function that takes a TableProcessor (in C++). */
     TableProcessor(TimeSeriesTable table) : TableProcessor() {
         m_tableProvided = true;
         m_table = std::move(table);
     }
-    /// Use a filepath as the source table.
-    /// Since this constructor is not explicit, you can provide a string
-    /// filepath to any function that takes a TableProcessor.
+    /** Use a filepath as the source table.
+    Since this constructor is not explicit, you can provide a string
+    filepath to any function that takes a TableProcessor. */
     TableProcessor(std::string filepath) : TableProcessor() {
         set_filepath(std::move(filepath));
     }
-    /// Process and obtain the table. If a filepath is provided, it will be
-    /// evaluated relative to `relativeToDirectory`.
-    /// Certain TableOperator%s require a Model (e.g.,
-    /// TabOpConvertDegreesToRadians, TabOpUseAbsoluteStateNames). If you use
-    /// such an operator, make sure to pass a model to this function (otherwise,
-    /// the relevant operator will throw an exception).
+    /** Process and obtain the table. If a filepath is provided, it will be
+    evaluated relative to `relativeToDirectory`.
+    Certain TableOperator%s require a Model (e.g.,
+    TabOpConvertDegreesToRadians, TabOpUseAbsoluteStateNames). If you use
+    such an operator, make sure to pass a model to this function (otherwise,
+    the relevant operator will throw an exception). */
     TimeSeriesTable process(std::string relativeToDirectory,
             const Model* model = nullptr) const {
         TimeSeriesTable table;
@@ -106,13 +106,13 @@ public:
         }
         return table;
     }
-    /// Same as above, but paths are evaluated with respect to the current
-    /// working directory.
+    /** Same as above, but paths are evaluated with respect to the current
+    working directory. */
     TimeSeriesTable process(const Model* model = nullptr) const {
         return process({}, model);
     }
-    /// Same as process(), but the columns of processed table are converted from
-    /// degrees to radians, if applicable. This conversion requires a model.
+    /** Same as process(), but the columns of processed table are converted from
+    degrees to radians, if applicable. This conversion requires a model. */
     TimeSeriesTable processRadians(std::string relativeToDirectory,
             const Model& model) const {
         TimeSeriesTable table = process(relativeToDirectory, &model);
@@ -123,34 +123,34 @@ public:
         }
         return table;
     }
-    /// Same as above, but paths are evaluated with respect to the current
-    /// working directory.
+    /** Same as above, but paths are evaluated with respect to the current
+    working directory. */
     TimeSeriesTable processRadians(const Model& model) const {
         return processRadians({}, model);
     }
-    /// Returns true if neither a filepath nor an in-memory table have been
-    /// provided.
+    /** Returns true if neither a filepath nor an in-memory table have been
+    provided. */
     bool empty() const {
         return !m_tableProvided && get_filepath().empty();
     }
-    /// Append an operation to the end of the operations in this processor.
+    /** Append an operation to the end of the operations in this processor. */
     TableProcessor& append(const TableOperator& op) {
         append_operators(op);
         return *this;
     }
-    /// Append all operations in another processor to this processor.
-    /// The source table of the provided trajectory is ignored.
+    /** Append all operations in another processor to this processor.
+    The source table of the provided trajectory is ignored. */
     TableProcessor& append(const TableProcessor& traj) {
         for (int i = 0; i < traj.getProperty_operators().size(); ++i) {
             append_operators(traj.get_operators(i));
         }
         return *this;
     }
-    /// This operator allows one to write the following code in C++:
-    /// @code
-    /// TableProcessor proc = TableProcessor("file.sto") |
-    ///         TabOpLowPassFilter(6);
-    /// @endcode
+    /** This operator allows one to write the following code in C++:
+    @code
+    TableProcessor proc = TableProcessor("file.sto") |
+            TabOpLowPassFilter(6);
+    @endcode */
     TableProcessor& operator|(const TableOperator& right) {
         return append(right);
     }

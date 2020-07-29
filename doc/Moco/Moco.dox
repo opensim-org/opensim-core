@@ -35,7 +35,7 @@ Other resources:
  - [bioRxiv preprint](https://www.biorxiv.org/content/10.1101/839381v1)
  - [Webinar recording](https://opensim.stanford.edu/support/event_details.php?id=236&title=Webinar-OpenSim-Moco-Software-to-optimize-the-motion-and-control-of-OpenSim-models)
 
-@defgroup mocogoal Available goals
+@defgroup mocogoal Moco: Available goals
 
 These are the goals available in Moco for use in your cost functional or as
 endpoint constraints. If none of these satisfy your needs, you can define your

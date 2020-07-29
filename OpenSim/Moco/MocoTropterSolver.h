@@ -22,14 +22,14 @@
 
 #include <SimTKcommon/internal/ResetOnCopy.h>
 
+/** @cond */
 namespace tropter {
 template <typename T>
 class Problem;
 template <typename T>
 class DirectCollocationSolver;
 }
-
-
+/** @endcond */
 
 namespace OpenSim {
 
