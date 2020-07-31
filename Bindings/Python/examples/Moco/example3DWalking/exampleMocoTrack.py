@@ -88,8 +88,8 @@ def torqueDrivenMarkerTracking():
     track.set_final_time(1.65)
     track.set_mesh_interval(0.05)
 
-    # Solve! The boolean argument indicates to visualize the solution.
-    solution = track.solve(True)
+    # Solve! Use track.solve() to skip visualizing.
+    solution = track.solveAndVisualize()
 
 def muscleDrivenStateTracking():
 

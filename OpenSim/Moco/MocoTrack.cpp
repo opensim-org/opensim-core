@@ -130,7 +130,7 @@ MocoStudy MocoTrack::initialize() {
     return study;
 }
 
-MocoSolution MocoTrack::solve(bool visualize) {
+MocoSolution MocoTrack::solveInternal(bool visualize) {
     // Generate the base MocoStudy.
     MocoStudy study = initialize();
 

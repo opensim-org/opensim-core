@@ -43,34 +43,12 @@ import org.opensim.modeling.*;
 
 % Create the inverted pendulum model.
 % ===================================
-model = Model();
-model.setName('inverted_pendulum');
-body = Body('body', 1.0, Vec3(0), Inertia(1));
-model.addComponent(body);
-
-joint = PinJoint('pin', model.getGround(), Vec3(0), Vec3(0), ... 
-                        body,              Vec3(-1, 0, 0), Vec3(0));
-coord = joint.updCoordinate();
-coord.setName('angle');
-model.addComponent(joint);
-
-actu = CoordinateActuator();
-actu.setCoordinate(coord);
-actu.setName('actuator');
-actu.setOptimalForce(1);
-model.addForce(actu);
-
-geom = Ellipsoid(0.5, 0.1, 0.1);
-transform = Transform(Vec3(-0.5, 0, 0));
-body_center = PhysicalOffsetFrame('body_center', body, transform);
-body.addComponent(body_center);
-body_center.attachGeometry(geom);
-
-model.finalizeConnections();
+model = createInvertedPendulumModel();
 
 % Create MocoStudy.
 % ================
 study = MocoStudy();
+% The name of the study is used as part of the file name for the solution.
 study.setName(name);
 
 % Define the optimal control problem.
@@ -174,6 +152,37 @@ plot(time, jointReactionNorm)
 integralJointReactionNorm = trapz(time, jointReactionNorm)
 xlabel('time (s)')
 ylabel('norm reaction loads')
+
+end
+
+function model = createInvertedPendulumModel()
+
+import org.opensim.modeling.*;
+
+model = Model();
+model.setName('inverted_pendulum');
+body = Body('body', 1.0, Vec3(0), Inertia(1));
+model.addComponent(body);
+
+joint = PinJoint('pin', model.getGround(), Vec3(0), Vec3(0), ...
+                        body,              Vec3(-1, 0, 0), Vec3(0));
+coord = joint.updCoordinate();
+coord.setName('angle');
+model.addComponent(joint);
+
+actu = CoordinateActuator();
+actu.setCoordinate(coord);
+actu.setName('actuator');
+actu.setOptimalForce(1);
+model.addForce(actu);
+
+geom = Ellipsoid(0.5, 0.1, 0.1);
+transform = Transform(Vec3(-0.5, 0, 0));
+body_center = PhysicalOffsetFrame('body_center', body, transform);
+body.addComponent(body_center);
+body_center.attachGeometry(geom);
+
+model.finalizeConnections();
 
 end
 

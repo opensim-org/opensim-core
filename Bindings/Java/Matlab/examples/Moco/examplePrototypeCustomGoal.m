@@ -18,12 +18,13 @@
 
 function value = examplePrototypeCustomGoal
 % This example allows Matlab users of Moco to prototype custom costs/goals
-% to send to Moco developers for implementing in C++.
+% to send to OpenSim/Moco developers for implementing in C++.
 % If you can write your goal in the "...GoalIntegrand" and "...GoalValue"
 % functions below and you can invoke evaluateCustomGoal() (shown below)
-% without error, then Moco developers can probably easily convert your goal
-% into a proper C++ goal for you. Once your prototype works, create an issue
-% on GitHub.
+% without error, then OpenSim/Moco developers may be able to convert your goal
+% into a proper C++ goal. Once your prototype works, create an issue
+% on GitHub. We cannot guarantee that OpenSim/Moco developers will have the
+% time to prioritize creating this goal in C++.
 %
 % In C++, MocoGoals can be in cost mode or endpoint constraint mode. In this
 % example, we expect that your goal is in cost mode.

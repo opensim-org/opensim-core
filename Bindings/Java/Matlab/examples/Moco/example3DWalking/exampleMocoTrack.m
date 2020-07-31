@@ -105,8 +105,8 @@ track.set_initial_time(0.81);
 track.set_final_time(1.65);
 track.set_mesh_interval(0.05);
 
-% Solve! The boolean argument indicates to visualize the solution.
-solution = track.solve(true);
+% Solve! Use track.solve() to skip visualizing.
+solution = track.solveAndVisualize();
 
 solution.write('exampleMocoTrack_markertracking_solution.sto');
 

@@ -147,6 +147,7 @@ MocoSolution gaitTracking(double controlEffortWeight = 10,
                 {"contactHeel_r", "contactFront_r"},"Right_GRF");
         contactTracking->addContactGroup(
                 {"contactHeel_l", "contactFront_l"}, "Left_GRF");
+        // Project the error onto the plane perpendicular to the +Z vector.
         contactTracking->setProjection("plane");
         contactTracking->setProjectionVector(SimTK::Vec3(0, 0, 1));
     }

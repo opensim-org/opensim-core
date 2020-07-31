@@ -265,7 +265,11 @@ public:
     }
 
     MocoStudy initialize();
-    MocoSolution solve(bool visualize = false);
+    /// Solve the MocoTrack problem and obtain the solution.
+    MocoSolution solve() { return solveInternal(false); }
+    /// Solve the MocoTrack problem, visualize the solution, then obtain the
+    /// solution.
+    MocoSolution solveAndVisualize() { return solveInternal(true); }
 
 private:
     Model m_model;
@@ -280,6 +284,8 @@ private:
     // problem guess.
     void applyStatesToGuess(
             const TimeSeriesTable& states, MocoTrajectory& guess) const;
+
+    MocoSolution solveInternal(bool visualize);
 };
 
 } // namespace OpenSim

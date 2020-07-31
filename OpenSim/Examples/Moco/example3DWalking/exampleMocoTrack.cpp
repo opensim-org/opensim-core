@@ -94,8 +94,8 @@ void torqueDrivenMarkerTracking() {
     track.set_final_time(1.65);
     track.set_mesh_interval(0.05);
 
-    // Solve! The boolean argument indicates to visualize the solution.
-    MocoSolution solution = track.solve(true);
+    // Solve! Use track.solve() to skip visualizing.
+    MocoSolution solution = track.solveAndVisualize();
 }
 
 void muscleDrivenStateTracking() {
