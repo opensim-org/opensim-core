@@ -44,7 +44,9 @@ model = Model(modelFile);
 state = model.initSystem();
 
 %% Use OpenSim tools to generate data for optimization.
-% Use the AnalyzeTool to compute coordinate speeds.
+% Use the AnalyzeTool to compute coordinate speeds. The tool automatically
+% generates the files 'analyze_Kinematics_q.sto' and 'analyze_Kinematics_u.sto'
+% which we'll use below to load the coordinate values and speeds.
 if ~exist('analyze_Kinematics_q.sto', 'file')
     fprintf('Running kinematics analysis...\n\n');
     analyze = AnalyzeTool(model);
