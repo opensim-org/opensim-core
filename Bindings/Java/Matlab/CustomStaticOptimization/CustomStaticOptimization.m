@@ -90,7 +90,8 @@ timeRange = [0.81 1.96]; % Full gait cycle based on left-leg heelstrikes.
 [genForces, forceNames, ~] = ...
         loadFilterCropArray(genForcesFile, lowpassFreq, timeRange);
 
-% Part 2: Plot and inspect the generalized forces from inverse dynamics.
+% Part 2: Plot and inspect the generalized forces from inverse dynamics, to
+% ensure they resemble typical walking joint moments.
 % TODO: Plot forces here {
 
 % }
