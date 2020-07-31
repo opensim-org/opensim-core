@@ -22,7 +22,6 @@ using namespace OpenSim;
 
 MocoConstraintInfo::MocoConstraintInfo() {
     constructProperties();
-    if (getName().empty()) setName("constraint");
 }
 
 std::vector<std::string> MocoConstraintInfo::getConstraintLabels() const {
