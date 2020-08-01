@@ -26,8 +26,7 @@ install(DIRECTORY Dynamic_Walking_Tutorials/Dynamic_Walker_Challenge
         PATTERN "OpenSimPlantControlsFunction.m" EXCLUDE
         PATTERN "OpenSimPlantFunction.m" EXCLUDE
         PATTERN "Simulation_using_Matlab_Integration.m" EXCLUDE)
-
-
+install(DIRECTORY CustomStaticOptimization DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}")
 
 # Remove parts from the hopper device example that the tutorial audience is
 # expected to fill in.
