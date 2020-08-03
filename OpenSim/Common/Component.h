@@ -1500,7 +1500,7 @@ public:
     template<class T>
     SimTK::CacheEntryIndex getCacheVariableIndex(const CacheVariable<T>& cv) const {
         // cheap: index previously initialized, just return that
-        if (cv.maybeUninitIndex != SimTK::InvalidIndex) {
+        if (cv.maybeUninitIndex.isValid()) {
             return cv.maybeUninitIndex;
         }
 
@@ -3161,7 +3161,7 @@ private:
        }
 
        SimTK::CacheEntryIndex index() const {
-           if (this->maybeUninitIndex != SimTK::InvalidIndex) {
+           if (this->maybeUninitIndex.isValid()) {
                return this->maybeUninitIndex;
            } else {
                OPENSIM_THROW(Exception, "StoredCacheVariable::get: failed because this->index == SimTK::InvalidIndex: this can happen if Component::extendRealizeTopology has not been called");
