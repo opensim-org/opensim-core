@@ -858,7 +858,8 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
 
             mutMuscle.set_tendon_compliance_dynamics_mode("implicit");
             model.realizeDynamics(state);
-            CHECK(muscle.getEquilibriumResidual(state) == Approx(0.0));
+            CHECK(muscle.getEquilibriumResidual(state) == 
+                    Approx(0.0).margin(1e-6));
         }
 
         SECTION("tendon compliance") {
@@ -1047,9 +1048,9 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
     }
 }
 
-Model createHangingMuscleModel(
-        bool ignoreActivationDynamics, bool ignoreTendonCompliance, 
-        bool isTendonDynamicsExplicit) {
+Model createHangingMuscleModel(double optimalFiberLength,
+        double tendonSlackLength, bool ignoreActivationDynamics, 
+        bool ignoreTendonCompliance, bool isTendonDynamicsExplicit) {
     Model model;
     model.setName("isometric_muscle");
     model.set_gravity(SimTK::Vec3(9.81, 0, 0));
@@ -1064,9 +1065,9 @@ Model createHangingMuscleModel(
 
     auto* actu = new DeGrooteFregly2016Muscle();
     actu->setName("actuator");
-    actu->set_max_isometric_force(30.0);
-    actu->set_optimal_fiber_length(0.10);
-    actu->set_tendon_slack_length(0.05);
+    actu->set_max_isometric_force(100.0);
+    actu->set_optimal_fiber_length(optimalFiberLength);
+    actu->set_tendon_slack_length(tendonSlackLength);
     actu->set_tendon_strain_at_one_norm_force(0.10);
     actu->set_ignore_activation_dynamics(ignoreActivationDynamics);
     actu->set_ignore_tendon_compliance(ignoreTendonCompliance);
@@ -1075,7 +1076,7 @@ Model createHangingMuscleModel(
         actu->set_tendon_compliance_dynamics_mode("implicit");
     }
     actu->set_max_contraction_velocity(10);
-    actu->set_pennation_angle_at_optimal(0.10);
+    actu->set_pennation_angle_at_optimal(0);
     actu->addNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
     actu->addNewPathPoint("insertion", *body, SimTK::Vec3(0));
     model.addForce(actu);
@@ -1098,11 +1099,16 @@ TEMPLATE_TEST_CASE(
     CAPTURE(ignoreTendonCompliance);
     CAPTURE(isTendonDynamicsExplicit);
 
-    SimTK::Real initHeight = 0.15;
-    SimTK::Real finalHeight = 0.14;
+    const double optimalFiberLength = 0.1;
+    const double tendonSlackLength = 0.05;
+    SimTK::Real initHeight = 0.165;
+    SimTK::Real finalHeight = 0.155;
+    MocoBounds heightBounds(0.14, 0.17);
+    MocoBounds speedBounds(-10, 10);
+    MocoBounds actuBounds(0.01, 1);
 
-    Model model = createHangingMuscleModel(
-            ignoreActivationDynamics, ignoreTendonCompliance,
+    Model model = createHangingMuscleModel(optimalFiberLength,
+            tendonSlackLength, ignoreActivationDynamics, ignoreTendonCompliance,
             isTendonDynamicsExplicit);
 
     SimTK::State state = model.initSystem();
@@ -1115,48 +1121,39 @@ TEMPLATE_TEST_CASE(
         MocoStudy study;
         MocoProblem& problem = study.updProblem();
         problem.setModelCopy(model);
-        problem.setTimeBounds(0, {0.05, 1.0});
+        problem.setTimeBounds(0, {0.1, 1});
         problem.setStateInfo(
-                "/joint/height/value", {0.14, 0.16}, initHeight, finalHeight);
-        problem.setStateInfo("/joint/height/speed", {-1, 1}, 0, 0);
-        problem.setControlInfo("/forceset/actuator", {0.01, 1});
+                "/joint/height/value", heightBounds, initHeight, finalHeight);
+        problem.setStateInfo("/joint/height/speed", speedBounds, 0, 0);
+        problem.setControlInfo("/forceset/actuator", actuBounds);
 
-        // Initial state constraints/costs.
-        if (!ignoreActivationDynamics) {
-            auto* initial_activation =
-                    problem.addGoal<MocoInitialActivationGoal>();
-            initial_activation->setName("initial_activation");
-        }
-        if (!ignoreTendonCompliance) {
-            if (isTendonDynamicsExplicit) {
-                auto* initial_equilibrium = 
-                    problem.addGoal<MocoInitialForceEquilibriumGoal>();
-                initial_equilibrium->setName("initial_force_equilibrium");
-                // problem.setStateInfo("/forceset/actuator/normalized_tendon_force",
-                // {0, 2});
-            } else {
-                // The problem performs better when this is in cost mode.
-                auto* initial_equilibrium = problem.addGoal<
-                        MocoInitialVelocityEquilibriumDGFGoal>();
-                initial_equilibrium->setName("initial_velocity_equilibrium");
-                initial_equilibrium->setMode("cost");
-                initial_equilibrium->setWeight(0.001);
-            }
-        }
+        auto* initial_equilibrium =
+                problem.addGoal<MocoInitialForceEquilibriumDGFGoal>();
+        initial_equilibrium->setName("initial_equilibrium");
 
-        problem.addGoal<MocoFinalTimeGoal>();
+        problem.addGoal<MocoFinalTimeGoal>("final_time");
 
         auto& solver = study.initSolver<TestType>();
-        solver.set_num_mesh_intervals(25);
-        solver.set_multibody_dynamics_mode("implicit");
+        solver.set_num_mesh_intervals(30);
+        solver.set_multibody_dynamics_mode("explicit");
         solver.set_optim_convergence_tolerance(1e-4);
         solver.set_optim_constraint_tolerance(1e-4);
+        solver.set_minimize_implicit_auxiliary_derivatives(true);
 
         solutionTrajOpt = study.solve();
         std::string solutionFilename = "testDeGrooteFregly2016Muscle_solution";
         if (!ignoreActivationDynamics) solutionFilename += "_actdyn";
         if (ignoreTendonCompliance) solutionFilename += "_rigidtendon";
         if (isTendonDynamicsExplicit) solutionFilename += "_exptendyn";
+
+        std::vector<std::string> outputPaths;
+        outputPaths.emplace_back(".*tendon_force.*");
+        outputPaths.emplace_back(".*fiber_force_along_tendon.*");
+        outputPaths.emplace_back(".*length.*");
+        outputPaths.emplace_back(".*velocity.*");
+        auto table = study.analyze(solutionTrajOpt, outputPaths);
+        STOFileAdapter::write(table, solutionFilename + "_outputs.sto");
+
         solutionFilename += ".sto";
         solutionTrajOpt.write(solutionFilename);
     }
@@ -1183,7 +1180,7 @@ TEMPLATE_TEST_CASE(
 
         const double error = trajSim.compareContinuousVariablesRMS(
                 solutionTrajOpt, {{"states", {}}, {"controls", {}}});
-        CHECK(error < 0.05);
+        CHECK(error < 0.01);
         if (!ignoreTendonCompliance && !isTendonDynamicsExplicit) {
             mutableDGFMuscle->set_tendon_compliance_dynamics_mode("implicit");
         }
@@ -1204,33 +1201,15 @@ TEMPLATE_TEST_CASE(
                 solutionTrajOpt.getTime()[solutionTrajOpt.getNumTimes() - 1];
         problem.setTimeBounds(0, finalTime);
         problem.setStateInfo(
-                "/joint/height/value", {0.14, 0.16}, initHeight, finalHeight);
-        problem.setStateInfo("/joint/height/speed", {-1, 1}, 0, 0);
-        problem.setControlInfo("/forceset/actuator", {0.01, 1});
+                "/joint/height/value", heightBounds, initHeight, finalHeight);
+        problem.setStateInfo("/joint/height/speed", speedBounds, 0, 0);
+        problem.setControlInfo("/forceset/actuator", actuBounds);
 
-        // Initial state constraints/costs.
-        if (!ignoreActivationDynamics) {
-            auto* initial_activation =
-                    problem.addGoal<MocoInitialActivationGoal>();
-            initial_activation->setName("initial_activation");
-        }
-        if (!ignoreTendonCompliance) {
-            if (isTendonDynamicsExplicit) {
-                auto* initial_equilibrium =
-                        problem.addGoal<MocoInitialForceEquilibriumGoal>();
-                initial_equilibrium->setName("initial_force_equilibrium");
-            } else {
-                // The problem performs better when this is in cost mode.
-                auto* initial_equilibrium = problem.addGoal<
-                        MocoInitialVelocityEquilibriumDGFGoal>();
-                initial_equilibrium->setName("initial_velocity_equilibrium");
-                initial_equilibrium->setMode("cost");
-                initial_equilibrium->setWeight(0.001);
-            }
-        }
+         auto* initial_equilibrium =
+                problem.addGoal<MocoInitialForceEquilibriumDGFGoal>();
+         initial_equilibrium->setName("initial_equilibrium");
 
-        auto* tracking = problem.addGoal<MocoStateTrackingGoal>();
-        tracking->setName("tracking");
+        auto* tracking = problem.addGoal<MocoStateTrackingGoal>("tracking");
 
         auto states = solutionTrajOpt.exportToStatesTable();
         TimeSeriesTable ref(states.getIndependentColumn());
@@ -1248,8 +1227,8 @@ TEMPLATE_TEST_CASE(
         tracking->setAllowUnusedReferences(true);
 
         auto& solver = study.initSolver<TestType>();
-        solver.set_num_mesh_intervals(25);
-        solver.set_multibody_dynamics_mode("implicit");
+        solver.set_num_mesh_intervals(30);
+        solver.set_minimize_implicit_auxiliary_derivatives(true);
 
         MocoSolution solutionTrack = study.solve();
         std::string solutionFilename =
@@ -1261,7 +1240,7 @@ TEMPLATE_TEST_CASE(
         solutionTrack.write(solutionFilename);
         double error =
                 solutionTrack.compareContinuousVariablesRMS(solutionTrajOpt);
-        CHECK(error < 0.015);
+        CHECK(error < 0.01);
     }
 }
 

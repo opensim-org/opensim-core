@@ -16,7 +16,7 @@
 #include <OpenSim/Moco/MocoGoal/MocoControlTrackingGoal.h>
 #include <OpenSim/Moco/MocoGoal/MocoGoal.h>
 #include <OpenSim/Moco/MocoGoal/MocoInitialActivationGoal.h>
-#include <OpenSim/Moco/MocoGoal/MocoInitialForceEquilibriumGoal.h>
+#include <OpenSim/Moco/MocoGoal/MocoInitialForceEquilibriumDGFGoal.h>
 #include <OpenSim/Moco/MocoGoal/MocoInitialVelocityEquilibriumDGFGoal.h>
 #include <OpenSim/Moco/MocoGoal/MocoJointReactionGoal.h>
 #include <OpenSim/Moco/MocoGoal/MocoMarkerFinalGoal.h>
