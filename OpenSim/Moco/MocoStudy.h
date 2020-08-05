@@ -81,11 +81,17 @@ public:
     /// Load a MocoStudy setup file.
     MocoStudy(const std::string& omocoFile);
 
+    /// Access the MocoProblem within this study.
     const MocoProblem& getProblem() const;
 
+    /// Access the MocoProblem within this study. This function allows you to
+    /// modify the MocoProblem.
     /// If using this method in C++, make sure to include the "&" in the
     /// return type; otherwise, you'll make a copy of the problem, and the copy
-    /// will have no effect on this MocoStudy.
+    /// will have no effect on this MocoStudy. See this example:
+    /// @code{.cpp}
+    /// MocoProblem& problem = study.updProblem();
+    /// @endcode
     MocoProblem& updProblem();
 
     /// Call this method once you have finished setting up your MocoProblem.
@@ -118,6 +124,11 @@ public:
     ///     You must have finished setting up both the problem and solver.
     /// This reinitializes the solver so that any changes you have made will
     /// hold.
+    ///
+    /// Use MocoSolution::success() on the returned solution to detect if the
+    /// solver succeeded. If the solver did not succeed the solution will be
+    /// sealed: you will not be able to use the failed solution
+    /// until you acknowledge the failure by invoking MocoSolution::unseal().
     MocoSolution solve() const;
 
     /// Interactively visualize a trajectory using the simbody-visualizer. The
@@ -135,8 +146,8 @@ public:
     /// PositionMotion) is.
     /// @see OpenSim::analyze()
     /// @note Parameters in the MocoTrajectory are **not** applied to the model.
-    TimeSeriesTable analyze(
-            const MocoTrajectory& it, std::vector<std::string> outputPaths) const;
+    TimeSeriesTable analyze(const MocoTrajectory& it,
+            std::vector<std::string> outputPaths) const;
 
     /// @name Using other solvers
     /// @{

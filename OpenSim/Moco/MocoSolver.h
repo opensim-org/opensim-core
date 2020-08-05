@@ -29,20 +29,6 @@ namespace OpenSim {
 
 class MocoStudy;
 
-// TODO create typed versions?
-/*
-class MocoSolverOption : public Object {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoSolverOption, Object);
-public:
-    OpenSim_DECLARE_PROPERTY(value, std::string, "TODO");
-    MocoSolverOption() {
-        constructProperties();
-    }
-};
- */
-
-// TODO what's the desired behavior upon copy?
-
 /** Once the solver is created, you should not make any edits to the
 MocoProblem. If you do, you must call resetProblem(const MocoProblem&
 problem). */
@@ -79,6 +65,8 @@ public:
     /// integration steps.
     ///
     /// @note This function does not yet support problems with parameters.
+    ///
+    /// @note This function assumes all actuators are in the model's ForceSet.
     ///
     /// @throws Exception If the lower bound on the final time is less than or
     /// equal to the upper bound on the initial time. This situation is okay in

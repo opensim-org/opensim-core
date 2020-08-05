@@ -118,7 +118,7 @@ public:
     /// as a cost or endpoint constraint.
     Mode getDefaultMode() const { return getDefaultModeImpl(); }
 
-    /// Can this constraint be used in endpoint constraint mode?
+    /// Can this goal be used in endpoint constraint mode?
     bool getSupportsEndpointConstraint() const {
         return getSupportsEndpointConstraintImpl();
     }

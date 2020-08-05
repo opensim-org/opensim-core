@@ -518,12 +518,11 @@ public:
     /// This function will check your problem for various errors.
     MocoProblemRep createRep() const { return MocoProblemRep(*this); }
 #endif
-    /// @cond
-    /// For internal use. You must manage the memory for the returned pointer.
+    /// Use this variant of createRep() if you require the MocoProblemRep to be
+    /// dynamically-allocated MocoProblemRep.
     std::unique_ptr<MocoProblemRep> createRepHeap() const {
         return std::unique_ptr<MocoProblemRep>(new MocoProblemRep(*this));
     }
-    /// @endcond
 
     friend MocoProblemRep;
 
