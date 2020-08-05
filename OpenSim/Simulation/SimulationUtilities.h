@@ -47,6 +47,21 @@ OSIMSIMULATION_API SimTK::State simulate(Model& model,
     bool saveStatesFile = false);
 /// @}
 
+/// Update a vector of state labels (in place) to use post-4.0 state paths
+/// instead of pre-4.0 state names. For example, this converts labels as
+/// follows:
+///   - `pelvis_tilt` -> `/jointset/ground_pelvis/pelvis_tilt/value`
+///   - `pelvis_tilt_u` -> `/jointset/ground_pelvis/pelvis_tilt/speed`
+///   - `soleus.activation` -> `/forceset/soleus/activation`
+///   - `soleus.fiber_length` -> `/forceset/soleus/fiber_length`
+/// This can also be used to update the column labels of an Inverse
+/// Kinematics Tool solution MOT file so that the data can be used as
+/// states. If a label does not identify a state in the model, the column
+/// label is not changed.
+/// @throws Exception if labels are not unique.
+OSIMSIMULATION_API void updateStateLabels40(
+        const Model& model, std::vector<std::string>& labels);
+
 #ifndef SWIG
 /** Not available through scripting. 
  @returns nullptr if no update is necessary. */

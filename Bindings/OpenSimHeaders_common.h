@@ -57,6 +57,7 @@
 #include <OpenSim/Common/StorageInterface.h>
 #include <OpenSim/Common/TRCFileAdapter.h>
 #include <OpenSim/Common/TableSource.h>
+#include <OpenSim/Common/TableUtilities.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Common/Units.h>
 #include <OpenSim/Common/XYFunctionInterface.h>

@@ -124,8 +124,9 @@ SimTK::Vec3 Ligament::computePathColor(const SimTK::State& state) const {
 {
     Super::extendAddToSystem(system);
     // Cache the computed tension and strain of the ligament
-    addCacheVariable<double>("tension", 0.0, SimTK::Stage::Velocity);
-    addCacheVariable<double>("strain", 0.0, SimTK::Stage::Velocity);
+
+    this->_tensionCV = addCacheVariable("tension", 0.0, SimTK::Stage::Velocity);
+    this->_strainCV = addCacheVariable("strain", 0.0, SimTK::Stage::Velocity);
 }
 
 
@@ -205,7 +206,7 @@ void Ligament::extendPostScale(const SimTK::State& s, const ScaleSet& scaleSet)
 
 const double& Ligament::getTension(const SimTK::State& s) const
 {
-    return getCacheVariableValue<double>(s, "tension"); 
+    return getCacheVariableValue(s, _tensionCV);
 }
 
 
@@ -233,14 +234,14 @@ void Ligament::computeForce(const SimTK::State& s,
     double force = 0;
 
     if (path.getLength(s) <= restingLength){
-        setCacheVariableValue<double>(s, "tension", force);
+        setCacheVariableValue(s, _tensionCV, force);
         return;
     }
     
     // evaluate normalized tendon force length curve
     force = getForceLengthCurve().calcValue(
         SimTK::Vector(1, path.getLength(s)/restingLength))* pcsaForce;
-    setCacheVariableValue<double>(s, "tension", force);
+    setCacheVariableValue(s, _tensionCV, force);
 
     OpenSim::Array<PointForceDirection*> PFDs;
     path.getPointForceDirections(s, &PFDs);

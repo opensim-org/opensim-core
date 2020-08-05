@@ -6,6 +6,7 @@ request related to the change, then we may provide the commit.
 
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
 
+
 v4.2
 ====
 - Add the ActivationCoordinateActuator component, which is a CoordinateActuator with simple activation dynamics (PR #2699).
@@ -14,10 +15,18 @@ v4.2
 - Fix a segfault that occurs when using OpenSim's Python Package with Anaconda's Python on a Mac.
 - Expose PropertyHelper class to python bindings to allow editing of objects using the properties interface (useful for editing objects defined in plugins) in python (consistent with Java/Matlab).
 - Whitespace is trimmed when reading table metadata for STO, MOT, and CSV files.
+- Introduce utilities for creating SimTK::Vectors, linear interpolation, updating table column labels from v3.3 to v4.0 syntax, solving for a function's root using bisection (OpenSim/Common/CommonUtilities.h) ([PR #2808](https://github.com/opensim-org/opensim-core/pull/2808)).
+- Introduce utilities for querying, filtering, and resampling TimeSeriesTables (OpenSim/Common/TableUtilities.h) ([PR #2808](https://github.com/opensim-org/opensim-core/pull/2808)).
+- StatesTrajectories can now be created from a TimeSeriesTable of states.
 - Minor performance improvements (5-10 %) for controller-heavy models (PR #2806)
 - `Controller::isEnabled` will now only return whether the particular controller is enabled
   - Previously, it would return `false` if its parent `Model`'s `Model::getAllControllersEnabled` returned `false`
   - The previous behavior would mean that `Controller::setEnabled(true); return Controller::isEnabled();` could return `false`
+- The new Matlab examplePointMass.m shows how to build and simulate a point-mass model.
+- Fix OpenSense calibration algorithm to handle models facing an arbitrary direction. The calibration algorithm now aligns one axis of the provided Orientation Sensor data with the x-axis of the base segment (e.g. pelvis) of the model in default pose.
+- For PrescribedController, the controls_file column labels can now be absolute paths to actuators (previously, the column labels were required to be actuator names).
+- Fixed a critical bug in Induced Accelerations Analysis which prevents analysis to run when external forces are present ([PR #2847](https://github.com/opensim-org/opensim-core/pull/2808)).
+- The new Matlab CustomStaticOptimization.m guides the user to build their own custom static optimization code. 
 
 
 v4.1

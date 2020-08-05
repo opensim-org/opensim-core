@@ -90,6 +90,30 @@ int main()
         std::vector<double>(nc, 10.0), __FILE__, __LINE__,
         "testOpenSense::IK solutions differed due to heading.");
 
+    // Test a case where model pelvis rotation is non-zero so pelvis-x is different from ground-x
+    IMUPlacer imuPlacer_rot("calibrate_rotated.xml");
+    imuPlacer_rot.run();
+    Model model_rotated = imuPlacer_rot.getCalibratedModel();
+    // This has been validated visually
+    Model std_model_rotated{"std_calibrated_pelvis_rot.osim"};
+    ASSERT(model_rotated == std_model_rotated);
+
+    const SimTK::State& rotatedModelState = model_rotated.initSystem();
+    // Verify pelvis_imu z-axis and pelvis x-axis are aligned when projected to x-z plane
+    const Body& pelvis = model_rotated.getBodySet().get("pelvis");
+    const PhysicalOffsetFrame* pelvis_imu =
+            model_rotated.findComponent<PhysicalOffsetFrame>("pelvis_imu");
+    auto pelvisXInGround = pelvis.expressVectorInGround(
+            rotatedModelState, SimTK::Vec3{1, 0, 0});
+    pelvisXInGround.set(1, 0);
+    pelvisXInGround.normalize();
+    auto pelvisIMUZInGround = pelvis_imu->expressVectorInGround(
+            rotatedModelState, SimTK::Vec3{0, 0, 1});
+    pelvisIMUZInGround.set(1, 0);
+    pelvisIMUZInGround.normalize();
+    SimTK::Real angularDifference = acos(~pelvisXInGround * pelvisIMUZInGround);
+    // Angle less than 30 would be reasonable goal to maintain  
+    assert(angularDifference < SimTK::Pi/6);
     std::cout << "Done. All testOpensense cases passed." << endl;
     return 0;
 }

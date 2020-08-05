@@ -26,13 +26,13 @@
 //=============================================================================
 #include "VisualizerUtilities.h"
 
-#include <OpenSim/Common/TableSource.h>
 #include <OpenSim/Common/CommonUtilities.h>
-#include <OpenSim/Simulation/Model/Model.h> 
-#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
+#include <OpenSim/Common/TableSource.h>
+#include <OpenSim/Common/TableUtilities.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/OpenSense/ExperimentalMarker.h>
+#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
-
 
 using namespace std;
 using namespace OpenSim;
@@ -41,10 +41,11 @@ using namespace SimTK;
 void VisualizerUtilities::showModel(Model model) {
     model.setUseVisualizer(true);
 
-    // Avoid excessive display of Frames for all Bodies, Ground and additional Frames
+    // Avoid excessive display of Frames for all Bodies, Ground and additional
+    // Frames
     SimTK::State& si = model.initSystem();
     auto silo = &model.updVisualizer().updInputSilo();
- 
+
     SimTK::DecorativeText help("(hit Esc. to exit)");
     help.setIsScreenText(true);
     auto simtkVisualizer = model.updVisualizer().updSimbodyVisualizer();
@@ -66,13 +67,13 @@ void VisualizerUtilities::showModel(Model model) {
             return;
         }
     }
- }
+}
 
 // Based on code from simtk.org/projects/predictivesim SimbiconExample/main.cpp.
-void VisualizerUtilities::showMotion(Model model, Storage statesSto) {
+void VisualizerUtilities::showMotion(Model model, TimeSeriesTable statesTable) {
 
-    const SimTK::Real initialTime = statesSto.getFirstTime();
-    const SimTK::Real finalTime = statesSto.getLastTime();
+    const SimTK::Real initialTime = statesTable.getIndependentColumn().front();
+    const SimTK::Real finalTime = statesTable.getIndependentColumn().back();
     const SimTK::Real duration = finalTime - initialTime;
 
     // A data rate of 300 Hz means we can maintain 30 fps down to
@@ -84,14 +85,15 @@ void VisualizerUtilities::showMotion(Model model, Storage statesSto) {
 
     // Prepare data.
     // -------------
-    statesSto.resample(1.0 / dataRate, 4 /* degree */);
-    if (statesSto.isInDegrees()) {
+    statesTable =
+            TableUtilities::resampleWithInterval(statesTable, 1.0 / dataRate);
+    if (TableUtilities::isInDegrees(statesTable)) {
         model.setUseVisualizer(false);
         model.initSystem();
-        model.getSimbodyEngine().convertDegreesToRadians(statesSto);
+        model.getSimbodyEngine().convertDegreesToRadians(statesTable);
     }
-    auto statesTraj = StatesTrajectory::createFromStatesStorage(
-            model, statesSto, true, true, false);
+    auto statesTraj = StatesTrajectory::createFromStatesTable(
+            model, statesTable, true, true, false);
     const int numStates = (int)statesTraj.getSize();
 
     // Must setUseVisualizer(true) *after* createFromStatesStorage(), otherwise
@@ -112,8 +114,6 @@ void VisualizerUtilities::showMotion(Model model, Storage statesSto) {
     std::string modelName =
             model.getName().empty() ? "<unnamed>" : model.getName();
     std::string title = "Visualizing model '" + modelName + "'";
-    if (!statesSto.getName().empty() && statesSto.getName() != "UNKNOWN")
-        title += " with motion '" + statesSto.getName() + "'";
     title += " (" + getFormattedDateTime(false, "ISO") + ")";
     viz.setWindowTitle(title);
     viz.setMode(SimTK::Visualizer::RealTime);
@@ -235,8 +235,10 @@ void VisualizerUtilities::showMarkerData(
 
     TimeSeriesTableVec3 markerTimeSeriesInMeters(markerTimeSeries);
     // if units are in mm, convert to meters first
-    if (markerTimeSeriesInMeters.getTableMetaData().hasKey("Units")){
-        auto unitsString = markerTimeSeriesInMeters.getTableMetaData().getValueAsString("Units");
+    if (markerTimeSeriesInMeters.getTableMetaData().hasKey("Units")) {
+        auto unitsString =
+                markerTimeSeriesInMeters.getTableMetaData().getValueAsString(
+                        "Units");
         if (unitsString == "mm") {
             for (auto column : markerTimeSeriesInMeters.getColumnLabels())
                 markerTimeSeriesInMeters.updDependentColumn(column) /= 1000;
@@ -274,7 +276,8 @@ void VisualizerUtilities::showMarkerData(
     const SimTK::Real initialTime = times.front();
     const SimTK::Real finalTime = times.back();
 
-    previewWorld.updVisualizer().updSimbodyVisualizer().setBackgroundType(SimTK::Visualizer::SolidColor);
+    previewWorld.updVisualizer().updSimbodyVisualizer().setBackgroundType(
+            SimTK::Visualizer::SolidColor);
     previewWorld.updVisualizer().updSimbodyVisualizer().setBackgroundColor(
             SimTK::Black);
     previewWorld.realizePosition(state);
@@ -291,13 +294,13 @@ void VisualizerUtilities::showMarkerData(
 }
 
 void VisualizerUtilities::showOrientationData(
-    const TimeSeriesTableQuaternion& quatTable, std::string layoutString, 
-    const Model* modelForPose) {
+        const TimeSeriesTableQuaternion& quatTable, std::string layoutString,
+        const Model* modelForPose) {
 
     Model world;
     std::map<std::string, int> mapOfLayouts = {
             {"line", 0}, {"circle", 1}, {"model", 2}};
-    int layout = 0; 
+    int layout = 0;
     if (mapOfLayouts.find(layoutString) == mapOfLayouts.end()) {
         cout << "Warning: layout option " << layoutString
              << " not found, ignoring and assuming line layout.." << endl;
@@ -345,12 +348,12 @@ void VisualizerUtilities::showOrientationData(
             for (int i = 0; i < numJoints; i++) {
                 joints[i]
                         ->updCoordinate(FreeJoint::Coord::TranslationY)
-                        .set_default_value(
-                                1 + sin((double)i / (numJoints-1) * SimTK::Pi));
+                        .set_default_value(1 + sin((double)i / (numJoints - 1) *
+                                                       SimTK::Pi));
                 joints[i]
                         ->updCoordinate(FreeJoint::Coord::TranslationZ)
-                        .set_default_value(
-                                1 + cos((double)i / (numJoints-1) * SimTK::Pi));
+                        .set_default_value(1 + cos((double)i / (numJoints - 1) *
+                                                       SimTK::Pi));
             }
             break;
         case 2:
@@ -385,7 +388,8 @@ void VisualizerUtilities::showOrientationData(
                 if (!nameFound) {
                     cout << "No body with name " << nameFromData
                          << " was found in model."
-                         << " Data for this orientation will be displayed at origin";
+                         << " Data for this orientation will be displayed at "
+                            "origin";
                 }
             }
             break;
@@ -454,7 +458,7 @@ void VisualizerUtilities::showOrientationData(
                 if (sliderIndex == timeSliderIndex) {
                     auto desiredIndex = (sliderValue - initialTime) /
                                         (finalTime - initialTime);
-                    frameNumber = static_cast<int>(desiredIndex*times.size());
+                    frameNumber = static_cast<int>(desiredIndex * times.size());
                     applyFrame(frameNumber);
                 } else {
                     std::cout << "Internal error: unrecognized slider."
@@ -478,29 +482,29 @@ void VisualizerUtilities::showOrientationData(
                     pause = !pause;
                     auto& text = static_cast<SimTK::DecorativeText&>(
                             simbodyVisualizer.updDecoration(pausedIndex));
-                    text.setText(
-                            pause ? "Paused (hit Space to resume)"
-                                  : "(hit Esc. to exit, Space to pause)");
+                    text.setText(pause ? "Paused (hit Space to resume)"
+                                       : "(hit Esc. to exit, Space to pause)");
                     simbodyVisualizer.drawFrameNow(state);
                 }
             }
             if (pause) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(5));
-                if (frameNumber>0) frameNumber--;
+                if (frameNumber > 0) frameNumber--;
             }
-            simbodyVisualizer.setSliderValue(timeSliderIndex, times[frameNumber]);
+            simbodyVisualizer.setSliderValue(
+                    timeSliderIndex, times[frameNumber]);
         }
     }
 }
 
-void VisualizerUtilities::addVisualizerControls(ModelVisualizer& vizualizer,
-        double initialTime, double finalTime) {
+void VisualizerUtilities::addVisualizerControls(
+        ModelVisualizer& vizualizer, double initialTime, double finalTime) {
     auto& simbodyViz = vizualizer.updSimbodyVisualizer();
-    //simbodyViz.setMode(SimTK::Visualizer::RealTime);
+    // simbodyViz.setMode(SimTK::Visualizer::RealTime);
     simbodyViz.setDesiredBufferLengthInSec(0);
     simbodyViz.setDesiredFrameRate(30);
     simbodyViz.setShowSimTime(true);
-    //viz.setBackgroundType(viz.SolidColor);
+    // viz.setBackgroundType(viz.SolidColor);
     // viz.setBackgroundColor(SimTK::White);
     // viz.setShowFrameRate(true);
     // viz.setShowFrameNumber(true);
@@ -512,7 +516,7 @@ void VisualizerUtilities::addVisualizerControls(ModelVisualizer& vizualizer,
     // Add slider to control playback.
 
     const int realTimeScaleSliderIndex = 1;
-    //simbodyViz.addSlider("Speed", realTimeScaleSliderIndex, minRealTimeScale,
+    // simbodyViz.addSlider("Speed", realTimeScaleSliderIndex, minRealTimeScale,
     //        maxRealTimeScale, realTimeScale);
 
     // TODO this slider results in choppy playback if not paused.
@@ -531,6 +535,4 @@ void VisualizerUtilities::addVisualizerControls(ModelVisualizer& vizualizer,
     keyBindingsMenu.push_back(std::make_pair("Zoom to fit: R", 4));
     keyBindingsMenu.push_back(std::make_pair("Quit: Esc", 5));
     simbodyViz.addMenu("Key bindings", 1, keyBindingsMenu);
-
-
 }
