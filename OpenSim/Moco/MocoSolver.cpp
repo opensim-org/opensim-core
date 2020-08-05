@@ -75,7 +75,7 @@ MocoTrajectory MocoSolver::createGuessTimeStepping() const {
             probrep, statesTable, controlsTable);
 }
 
-void MocoSolver::resetProblem(const MocoProblem& problem) {
+void MocoSolver::resetProblem(const MocoProblem& problem) const {
     m_problem.reset(&problem);
     m_problemRep = problem.createRep();
 }

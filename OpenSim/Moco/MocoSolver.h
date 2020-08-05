@@ -58,11 +58,11 @@ public:
     virtual ~MocoSolver() = default;
 
     /// Call this to prepare the solver for use on the provided problem.
-    // TODO can only call once?
-    // TODO @precondition The problem is well-posed (MocoProblem::isWellPosed
-    // ()). Move isWellPosed() to Solver, since evaluating this might require
-    // creating the solver.
-    void resetProblem(const MocoProblem& problem);
+    /// The solver creates and stores a MocoProblemRep using the provided
+    /// problem.
+    // This function is const because we do not consider the reference to the
+    // problem to be logically part of the solver.
+    void resetProblem(const MocoProblem& problem) const;
 
     /// (Experimental) Run a forward simulation (using the OpenSim Manager,
     /// which uses a SimTK::Integrator), using the default controls for
@@ -121,7 +121,7 @@ private:
     /// This is the meat of a solver: solve the problem and return the solution.
     virtual MocoSolution solveImpl() const = 0;
 
-    SimTK::ReferencePtr<const MocoProblem> m_problem;
+    mutable SimTK::ReferencePtr<const MocoProblem> m_problem;
     mutable SimTK::ResetOnCopy<MocoProblemRep> m_problemRep;
 
 };

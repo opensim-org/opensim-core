@@ -48,22 +48,23 @@ const MocoProblem& MocoStudy::getProblem() const { return get_problem(); }
 
 MocoProblem& MocoStudy::updProblem() { return upd_problem(); }
 
-MocoSolver& MocoStudy::initSolverInternal() {
+void MocoStudy::initSolverInternal() const {
     // TODO what to do if we already have a solver (from cloning?)
-    upd_solver().resetProblem(get_problem());
-    return upd_solver();
+    get_solver().resetProblem(get_problem());
 }
 
 template <>
 MocoTropterSolver& MocoStudy::initSolver<MocoTropterSolver>() {
     set_solver(MocoTropterSolver());
-    return dynamic_cast<MocoTropterSolver&>(initSolverInternal());
+    initSolverInternal();
+    return dynamic_cast<MocoTropterSolver&>(upd_solver());
 }
 
 template <>
 MocoCasADiSolver& MocoStudy::initSolver<MocoCasADiSolver>() {
     set_solver(MocoCasADiSolver());
-    return dynamic_cast<MocoCasADiSolver&>(initSolverInternal());
+    initSolverInternal();
+    return dynamic_cast<MocoCasADiSolver&>(upd_solver());
 }
 
 MocoTropterSolver& MocoStudy::initTropterSolver() {
@@ -78,8 +79,7 @@ MocoCasADiSolver& MocoStudy::initCasADiSolver() {
 MocoSolver& MocoStudy::updSolver() { return updSolver<MocoSolver>(); }
 
 MocoSolution MocoStudy::solve() const {
-    // TODO avoid const_cast.
-    const_cast<Self*>(this)->initSolverInternal();
+    initSolverInternal();
 
     MocoSolution solution = get_solver().solve();
 

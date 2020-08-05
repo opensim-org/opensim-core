@@ -165,7 +165,7 @@ protected:
             "The optimal control algorithm for solving the problem.");
 
 private:
-    MocoSolver& initSolverInternal();
+    void initSolverInternal() const;
     void constructProperties();
 };
 
