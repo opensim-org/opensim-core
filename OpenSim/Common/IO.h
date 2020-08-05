@@ -134,7 +134,6 @@ public:
             const std::string& string, const std::string& ending);
     static void eraseEmptyElements(std::vector<std::string>& list);
 
-#ifndef SWIG
     /**
      * A class that:
      *
@@ -201,7 +200,6 @@ public:
          */
         ~CwdChanger() noexcept;
     };
-#endif
 //=============================================================================
 };  // END CLASS IO
 
