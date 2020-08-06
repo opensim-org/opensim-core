@@ -146,7 +146,6 @@ void IMUInverseKinematicsTool::runInverseKinematicsWithOrientationsFromFile(
         OpenSenseUtilities::convertQuaternionsToRotations(quatTable);
 
     OrientationsReference oRefs(orientationsData, &get_orientation_weights());
-    MarkersReference mRefs{};
 
     SimTK::Array_<CoordinateReference> coordinateReferences;
 
@@ -159,7 +158,8 @@ void IMUInverseKinematicsTool::runInverseKinematicsWithOrientationsFromFile(
 
     // create the solver given the input data
     const double accuracy = 1e-4;
-    InverseKinematicsSolver ikSolver(model, mRefs, oRefs,
+    InverseKinematicsSolver ikSolver(model, nullptr,
+            std::make_shared<OrientationsReference>(oRefs),
         coordinateReferences);
     ikSolver.setAccuracy(accuracy);
 

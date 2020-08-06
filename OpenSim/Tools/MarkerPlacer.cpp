@@ -345,7 +345,8 @@ bool MarkerPlacer::processModel(Model* aModel,
     }
     double constraintWeight = std::numeric_limits<SimTK::Real>::infinity();
 
-    InverseKinematicsSolver ikSol(*aModel, markersReference,
+    InverseKinematicsSolver ikSol(*aModel,
+                                  std::make_shared<MarkersReference>(markersReference),
                                   coordinateReferences, constraintWeight);
     ikSol.assemble(s);
 

@@ -77,13 +77,13 @@ public:
     virtual ~InverseKinematicsSolver() {}
 
     InverseKinematicsSolver(const Model& model, 
-                        const MarkersReference& markersReference,
+                        std::shared_ptr<MarkersReference> markersReference,
                         SimTK::Array_<CoordinateReference>& coordinateReferences,
                         double constraintWeight = SimTK::Infinity);
 
     InverseKinematicsSolver(const Model& model,
-                        const MarkersReference& markersReference,
-                        const OrientationsReference& orientationsReference,
+                        std::shared_ptr<MarkersReference> markersReference,
+                        std::shared_ptr<OrientationsReference> orientationsReference,
                         SimTK::Array_<CoordinateReference> &coordinateReferences,
                         double constraintWeight = SimTK::Infinity);
     
@@ -203,12 +203,12 @@ public:
     corresponding orientation sensor name for an index in the list of
     orientations returned by the solver. */
     std::string getOrientationSensorNameForIndex(int osensorIndex) const;
-
+    /*
     void addOrientationValuesToTrack(
             double time, SimTK::RowVector_<SimTK::Rotation_<double>>& data){
-        _orientationsReference.putValues(time, data);
+        _orientationsReference->putValues(time, data);
     };
-
+    */
 protected:
     /** Override to include point of interest matching (Marker tracking)
         as well ad Frame orientation (OSensor) tracking.
@@ -227,10 +227,10 @@ private:
     void setupOrientationsGoal(SimTK::State &s);
 
     // The marker reference values and weightings
-    MarkersReference _markersReference;
+    std::shared_ptr<MarkersReference> _markersReference;
 
     // The orientation reference values and weightings
-    BufferedOrientationsReference _orientationsReference;
+    std::shared_ptr<OrientationsReference> _orientationsReference;
 
     // Non-accessible cache of the marker values to be matched at a given state
     SimTK::Array_<SimTK::Vec3> _markerValues;

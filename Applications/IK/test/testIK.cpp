@@ -378,8 +378,6 @@ void testInverseKinematicsSolverWithOrientations()
 
     const std::vector<double>& times = oRefs.getTimes();
 
-    MarkersReference mRefs{};
-
     SimTK::Array_<CoordinateReference> coordinateRefs;
 
     // Add a reporter to get IK computed coordinate values out
@@ -397,7 +395,8 @@ void testInverseKinematicsSolverWithOrientations()
     SimTK::State& s0 = model.initSystem();
 
     // create the solver given the input data
-    InverseKinematicsSolver ikSolver(model, mRefs, oRefs, coordinateRefs);
+    InverseKinematicsSolver ikSolver(model, nullptr,
+            make_shared <OrientationsReference>(oRefs), coordinateRefs);
     ikSolver.setAccuracy(1e-4);
 
     auto timeRange = oRefs.getValidTimeRange();
@@ -443,13 +442,13 @@ void testInverseKinematicsSolverWithEulerAnglesFromFile()
 
     SimTK::State& s0 = model.initSystem();
 
-    MarkersReference mRefs{};
     OrientationsReference oRefs("subject1_walk_euler_angles.sto");
     SimTK::Array_<CoordinateReference> coordRefs{};
 
     // create the solver given the input data
     const double accuracy = 1e-4;
-    InverseKinematicsSolver ikSolver(model, mRefs, oRefs, coordRefs);
+    InverseKinematicsSolver ikSolver(model, nullptr,
+            make_shared<OrientationsReference>(oRefs), coordRefs);
     ikSolver.setAccuracy(accuracy);
 
     auto& times = oRefs.getTimes();

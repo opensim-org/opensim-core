@@ -357,7 +357,8 @@ void addImuFramesFromMarkers(const string& modelFile, const string& markersFile)
     // create the IK solver based on markers only to get the static pose
     SimTK::Array_<CoordinateReference> coordinateReferences;
 
-    InverseKinematicsSolver ikSolver(model, markersRef,
+    InverseKinematicsSolver ikSolver(model,
+        std::make_shared<MarkersReference> (markersRef),
         coordinateReferences);
  
     s.updTime() = times[0];

@@ -85,7 +85,7 @@ void compareMotionTables(
     }
 }
 
-void producer(InverseKinematicsSolver& solver,
+void producer(std::shared_ptr<BufferedOrientationsReference> oRef,
         TimeSeriesTable_<SimTK::Rotation>& dataSource); 
 
 int main() {
@@ -103,12 +103,11 @@ int main() {
         // Create solver using trimmedOrientationData, then spawn a separate
         // thread to push the remaining data to solver, while main thread
         // waits for input and stops after fixed number of frames/iterations
-        OrientationsReference oRefs(trimmedOrientationData);
-        oRefs.set_default_weight(1.0);
+        std::shared_ptr<BufferedOrientationsReference> oRefs(
+                new BufferedOrientationsReference(trimmedOrientationData));
+        oRefs->set_default_weight(1.0);
 
-        const std::vector<double>& times = oRefs.getTimes();
-
-        MarkersReference mRefs{};
+        const std::vector<double>& times = oRefs->getTimes();
 
         SimTK::Array_<CoordinateReference> coordinateRefs;
 
@@ -126,18 +125,17 @@ int main() {
         SimTK::State& s0 = model.initSystem();
 
         // create the solver given the input data
-        InverseKinematicsSolver ikSolver(model, mRefs, oRefs, coordinateRefs);
+        InverseKinematicsSolver ikSolver(model, nullptr, oRefs, coordinateRefs);
         ikSolver.setAccuracy(1e-4);
 
-        auto timeRange = oRefs.getValidTimeRange();
+        auto timeRange = oRefs->getValidTimeRange();
         cout << "Time range from: " << timeRange[0] << " to " << timeRange[1]
              << "s." << endl;
         //OpenSim::Logger::setLevelString("Debug");
         s0.updTime() = timeRange[0];
         ikSolver.assemble(s0);
         model.realizeReport(s0);
-        thread thread1(
-                producer, std::ref(ikSolver), std::ref(orientationsData));
+        thread thread1(producer, oRefs, std::ref(orientationsData));
         thread1.join();
         auto remainingTimes = orientationsData.getIndependentColumn();
         for (auto time : remainingTimes) {
@@ -269,8 +267,6 @@ void testInverseKinematicsSolverWithOrientations()
 
     const std::vector<double>& times = oRefs.getTimes();
 
-    MarkersReference mRefs{};
-
     SimTK::Array_<CoordinateReference> coordinateRefs;
 
     // Add a reporter to get IK computed coordinate values out
@@ -288,7 +284,8 @@ void testInverseKinematicsSolverWithOrientations()
     SimTK::State& s0 = model.initSystem();
 
     // create the solver given the input data
-    InverseKinematicsSolver ikSolver(model, mRefs, oRefs, coordinateRefs);
+    InverseKinematicsSolver ikSolver(model, nullptr,
+            make_shared<OrientationsReference>(oRefs), coordinateRefs);
     ikSolver.setAccuracy(1e-4);
 
     auto timeRange = oRefs.getValidTimeRange();
@@ -334,16 +331,16 @@ void testInverseKinematicsSolverWithEulerAnglesFromFile()
 
     SimTK::State& s0 = model.initSystem();
 
-    MarkersReference mRefs{};
-    OrientationsReference oRefs("subject1_walk_euler_angles.sto");
+    std::shared_ptr<OrientationsReference> oRefs(
+            new OrientationsReference("subject1_walk_euler_angles.sto"));
     SimTK::Array_<CoordinateReference> coordRefs{};
 
     // create the solver given the input data
     const double accuracy = 1e-4;
-    InverseKinematicsSolver ikSolver(model, mRefs, oRefs, coordRefs);
+    InverseKinematicsSolver ikSolver(model, nullptr, oRefs, coordRefs);
     ikSolver.setAccuracy(accuracy);
 
-    auto& times = oRefs.getTimes();
+    auto& times = oRefs->getTimes();
 
     s0.updTime() = times[0];
     ikSolver.assemble(s0);
@@ -363,10 +360,10 @@ void testInverseKinematicsSolverWithEulerAnglesFromFile()
     const TimeSeriesTable standard("std_subject01_walk1_ik.mot");
     compareMotionTables(report, standard);
 }
-void producer(InverseKinematicsSolver& solver,
+void producer(std::shared_ptr<BufferedOrientationsReference> oRef,
         TimeSeriesTable_<SimTK::Rotation>& dataSource) {
     auto times = dataSource.getIndependentColumn();
     for (auto t : times) { 
-        solver.addOrientationValuesToTrack(t, dataSource.getNearestRow(t));
+        oRef->putValues(t, dataSource.getNearestRow(t));
     }
 }

@@ -317,7 +317,8 @@ void testAccuracy()
 
     // Reset the initial coordinate value
     coord.setValue(state, 0.0);
-    InverseKinematicsSolver ikSolver(*pendulum, markersRef, coordRefs);
+    InverseKinematicsSolver ikSolver(*pendulum,
+            std::make_shared<MarkersReference>(markersRef), coordRefs);
     ikSolver.setAccuracy(looseAccuracy);
     ikSolver.assemble(state);
 
@@ -426,7 +427,8 @@ void testUpdateMarkerWeights()
     SimTK::Array_<CoordinateReference> coordRefs;
     // Reset the initial coordinate value
     coord.setValue(state, 0.0);
-    InverseKinematicsSolver ikSolver(*pendulum, markersRef, coordRefs);
+    InverseKinematicsSolver ikSolver(*pendulum,
+            std::make_shared<MarkersReference>(markersRef), coordRefs);
     ikSolver.setAccuracy(1.0e-8);
     ikSolver.assemble(state);
 
@@ -537,7 +539,8 @@ void testTrackWithUpdateMarkerWeights()
     SimTK::Array_<CoordinateReference> coordRefs;
     // Reset the initial coordinate value
     coord.setValue(state, 0.0);
-    InverseKinematicsSolver ikSolver(*pendulum, markersRef, coordRefs);
+    InverseKinematicsSolver ikSolver(*pendulum,
+            std::make_shared<MarkersReference>(markersRef), coordRefs);
     ikSolver.setAccuracy(1e-6);
     ikSolver.assemble(state);
 
@@ -644,7 +647,8 @@ void testNumberOfMarkersMismatch()
     SimTK::Array_<CoordinateReference> coordRefs;
     // Reset the initial coordinate value
     coord.setValue(state, 0.0);
-    InverseKinematicsSolver ikSolver(*pendulum, markersRef, coordRefs);
+    InverseKinematicsSolver ikSolver(*pendulum,
+            std::make_shared<MarkersReference>(markersRef), coordRefs);
     double tol = 1e-4;
     ikSolver.setAccuracy(tol);
     ikSolver.assemble(state);
@@ -756,11 +760,11 @@ void testNumberOfOrientationsMismatch()
     auto& osNames = orientationsRef.getNames();
     cout << osNames << endl;
 
-    MarkersReference mRefs{};
     SimTK::Array_<CoordinateReference> coordRefs;
     // Reset the initial coordinate value
     coord.setValue(state, 0.0);
-    InverseKinematicsSolver ikSolver(*leg, mRefs, orientationsRef, coordRefs);
+    InverseKinematicsSolver ikSolver(*leg, nullptr,
+            std::make_shared<OrientationsReference>(orientationsRef), coordRefs);
     double tol = 1e-4;
     ikSolver.setAccuracy(tol);
     ikSolver.assemble(state);
