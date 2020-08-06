@@ -64,7 +64,7 @@ problem.setModel(model);
 
 % Bounds.
 % -------
-% Initial time must be 0, final time is FINAL_TIME.
+% Initial time must be 0, final time is final_time.
 problem.setTimeBounds(0, final_time);
 
 % Position must be within [-5, 5] throughout the motion.
@@ -75,7 +75,8 @@ problem.setStateInfo('/slider/position/value', [-5.0, 5.0], -0.5, [0.25, 0.75]);
 % Initial and final speed must be 0. Use compact syntax.
 problem.setStateInfo('/slider/position/speed', [-20, 20], [0], [0]);
 
-% Add Parameter.
+% Add Parameter. The default initial guess for a parameter is the midpoint of
+% its bounds, *not* the value of the property in the model.
 problem.addParameter(MocoParameter('oscillator_mass', 'body', 'mass',... 
     MocoBounds(0, 10)));
 

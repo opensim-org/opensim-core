@@ -84,7 +84,8 @@ problem.setStateInfo('/slider/position/value', osim.MocoBounds(-5., 5.),
 # Initial and final speed must be 0. Use compact syntax.
 problem.setStateInfo('/slider/position/speed', [-20, 20], [0], [0])
 
-# Add Parameter.
+# Add Parameter. The default initial guess for a parameter is the midpoint of
+# its bounds, *not* the value of a property in the model.
 problem.addParameter(osim.MocoParameter('oscillator_mass', 'body', 'mass',
                                         osim.MocoBounds(0, 10)))
 

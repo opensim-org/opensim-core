@@ -126,13 +126,13 @@ validating their results before making any scientific claims.
 name | model/motion | description | interfaces
 ---- | ------------ | ----------- | ----------
 SlidingMass | point mass | Moco's simplest example; MocoFinalTimeGoal | [MATLAB](@ref exampleSlidingMass.m), [Python](@ref exampleSlidingMass.py), [C++](@ref exampleSlidingMass.cpp)
-SlidingMassAdvanced | point mass | MocoFinalTimeGoal, Setting solver settings, customizing the initial guess | [C++](@ref exampleSlidingMassAdvanced.cpp)
+SlidingMassAdvanced | point mass | MocoFinalTimeGoal, solver settings, customizing the initial guess | [C++](@ref exampleSlidingMassAdvanced.cpp)
 Tracking | double pendulum | Using MocoStateTrackingGoal | [C++](@ref exampleTracking.cpp)
 MarkerTracking | double pendulum | Using MocoMarkerTrackingGoal | [C++](@ref exampleMarkerTracking.cpp)
 HangingMuscle | point mass with muscle | DeGrooteFregly2016Muscle, Umberger2010MuscleMetabolicsProbe, AnalyzeTool, MocoInitialActivationGoal, MocoInitialVelocityEquilibriumDGFGoal, plotting a TimeSeriesTable | [Python](@ref exampleHangingMuscle.py), [C++](@ref exampleHangingMuscle.cpp)
 OptimizeMass | point mass | Parameter optimization with MocoMarkerFinalGoal and MocoParameter | [MATLAB](@ref exampleOptimizeMass.m), [Python](@ref exampleOptimizeMass.py)
 MinimizeJointReaction | pendulum | MocoJointReactionGoal, MocoControlGoal, prescribeControlsToModel | [MATLAB](@ref exampleMinimizeJointReaction.m)
-exampleKinematicConstraints | point mass | Point mass constrained to a parabola | [Python](@ref exampleKinematicConstraints.py)
+exampleKinematicConstraints | point mass | %Point mass constrained to a parabola | [Python](@ref exampleKinematicConstraints.py)
 
 @section Intermediate
 
@@ -140,7 +140,7 @@ name | model/motion | description | interfaces
 ---- | ------------ | ----------- | ----------
 MocoTrack | lower-limb | Using the MocoTrack tool for walking with marker tracking and state tracking; generating a PDF report | [MATLAB](@ref exampleMocoTrack.m), [Python](@ref exampleMocoTrack.py), [C++](@ref exampleMocoTrack.cpp)
 MocoInverse | lower-limb | Using the MocoInverse tool for walking; MocoControlTrackingGoal; generating a PDF report | [MATLAB](@ref exampleMocoInverse.m), [Python](@ref exampleMocoInverse.py), [C++](@ref exampleMocoInverse.cpp)
-2DWalking | walking | MocoTrack, MocoStudy prediction, MocoControlGoal, MocoAverageSpeedGoal, MocoPerodicityGoal, MocoContactTrackingGoal, createPeriodicSolution | [C++](@ref example2DWalking.cpp)
+2DWalking | walking | MocoTrack, MocoStudy prediction, MocoControlGoal, MocoAverageSpeedGoal, MocoPeriodicityGoal, MocoContactTrackingGoal, createPeriodicSolution | [C++](@ref example2DWalking.cpp)
 MarkerTracking10DOF | walking | MocoControlGoal, MocoMarkerTrackingGoal | [MATLAB](@ref exampleMarkerTracking10DOF.m)
 SquatToStand | torque-driven single leg | MocoStudy motion prediction, MocoInverse | [MATLAB](@ref exampleSquatToStand_answers.m)
 PredictAndTrack | double pendulum | MocoMarkerFinalGoal, MocoFinalTimeGoal, MocoMarkerTrackingGoal, MocoStateTrackingGoal | [Python](@ref examplePredictAndTrack.py)
