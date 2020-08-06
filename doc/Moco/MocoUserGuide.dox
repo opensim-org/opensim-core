@@ -3,8 +3,6 @@ namespace OpenSim {
 
 @page mocouserguide Moco User Guide
 
-This guide shows the various ways of using Moco.
-
 @tableofcontents
 
 @section gettingstartedsection Getting started

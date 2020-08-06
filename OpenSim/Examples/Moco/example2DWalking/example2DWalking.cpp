@@ -58,6 +58,8 @@ using namespace OpenSim;
 /// GRFTrackingWeight to 1 will cause the total tracking error (states + GRF) to
 /// have about the same magnitude as control effort in the final objective
 /// value.
+///
+/// The default values for the weights were obtained by trial and error.
 MocoSolution gaitTracking(double controlEffortWeight = 10,
         double stateTrackingWeight = 1,
         double GRFTrackingWeight = 1) {
@@ -222,8 +224,7 @@ void gaitPrediction(const MocoSolution& gaitTrackingSolution) {
     // Define the optimal control problem.
     // ===================================
     MocoProblem& problem = study.updProblem();
-    ModelProcessor modelprocessor =
-            ModelProcessor("2D_gait.osim");
+    ModelProcessor modelprocessor = ModelProcessor("2D_gait.osim");
     problem.setModelProcessor(modelprocessor);
 
     // Goals.

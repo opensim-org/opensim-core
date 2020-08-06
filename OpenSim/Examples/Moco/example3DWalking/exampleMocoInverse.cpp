@@ -40,16 +40,15 @@ void solveMocoInverse() {
     // muscles in the model are replaced with optimization-friendly
     // DeGrooteFregly2016Muscles, and adjustments are made to the default muscle
     // parameters.
-    ModelProcessor modelProcessor =
-            ModelProcessor("subject_walk_armless.osim") |
-                    ModOpAddExternalLoads("grf_walk.xml") |
-                    ModOpIgnoreTendonCompliance() |
-                    ModOpReplaceMusclesWithDeGrooteFregly2016() |
-                    // Only valid for DeGrooteFregly2016Muscles.
-                    ModOpIgnorePassiveFiberForcesDGF() |
-                    // Only valid for DeGrooteFregly2016Muscles.
-                    ModOpScaleActiveFiberForceCurveWidthDGF(1.5) |
-                    ModOpAddReserves(1.0);
+    ModelProcessor modelProcessor("subject_walk_armless.osim");
+    modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
+    modelProcessor.append(ModOpIgnoreTendonCompliance());
+    modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
+    // Only valid for DeGrooteFregly2016Muscles.
+    modelProcessor.append(ModOpIgnorePassiveFiberForcesDGF());
+    // Only valid for DeGrooteFregly2016Muscles.
+    modelProcessor.append(ModOpScaleActiveFiberForceCurveWidthDGF(1.5));
+    modelProcessor.append(ModOpAddReserves(1.0)):
     inverse.setModel(modelProcessor);
 
     // Construct a TableProcessor of the coordinate data and pass it to the
@@ -82,16 +81,15 @@ void solveMocoInverseWithEMG() {
     // This initial block of code is identical to the code above.
     MocoInverse inverse;
     inverse.setName("example3DWalking_MocoInverseWithEMG");
-    ModelProcessor modelProcessor =
-            ModelProcessor("subject_walk_armless.osim") |
-                    ModOpAddExternalLoads("grf_walk.xml") |
-                    ModOpIgnoreTendonCompliance() |
-                    ModOpReplaceMusclesWithDeGrooteFregly2016() |
-                    // Only valid for DeGrooteFregly2016Muscles.
-                    ModOpIgnorePassiveFiberForcesDGF() |
-                    // Only valid for DeGrooteFregly2016Muscles.
-                    ModOpScaleActiveFiberForceCurveWidthDGF(1.5) |
-                    ModOpAddReserves(1.0);
+    ModelProcessor modelProcessor("subject_walk_armless.osim");
+    modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
+    modelProcessor.append(ModOpIgnoreTendonCompliance());
+    modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
+    // Only valid for DeGrooteFregly2016Muscles.
+    modelProcessor.append(ModOpIgnorePassiveFiberForcesDGF());
+    // Only valid for DeGrooteFregly2016Muscles.
+    modelProcessor.append(ModOpScaleActiveFiberForceCurveWidthDGF(1.5));
+    modelProcessor.append(ModOpAddReserves(1.0));
     inverse.setModel(modelProcessor);
     inverse.setKinematics(TableProcessor("coordinates.sto"));
     inverse.set_initial_time(0.81);
