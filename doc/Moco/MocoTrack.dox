@@ -13,7 +13,7 @@ adding an cost term that computes the error between experimental data and
 the associated model quantities. While tracking problems have been historically 
 either difficult to pose or computationally burdensome, recent methods using 
 direct collocation for solving tracking problems in biomechanics have proven 
-this now to be a viable tool [1,2].
+this now to be a viable tool [1, 2].
 
 In Moco, you can use the MocoTrack tool to solve tracking optimization problems.
 The MocoTrack tool accepts both marker trajectory and model coordinate kinematic
