@@ -25,6 +25,7 @@
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
+#include <OpenSim/Tools/CMCTool.h>
 
 #define CATCH_CONFIG_MAIN
 #include "Testing.h"
@@ -658,9 +659,9 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             mutMuscle.set_active_force_width_scale(1.2);
             muscle.setActivation(state, 1.0);
             const double normFiberLength = 0.8;
-            coord.setValue(state, 
-                    normFiberLength * muscle.get_optimal_fiber_length() +
-                                      muscle.get_tendon_slack_length());
+            coord.setValue(
+                    state, normFiberLength * muscle.get_optimal_fiber_length() +
+                                   muscle.get_tendon_slack_length());
             coord.setSpeedValue(state, 0.0);
             model.realizePosition(state);
 
@@ -690,7 +691,7 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             FiberForceFunction fiberForceFunc(muscle, state, false);
             SimTK::Differentiator diffFiberStiffness(fiberForceFunc);
             SimTK::Real fiberStiffness = diffFiberStiffness.calcDerivative(
-                   normFiberLength * muscle.get_optimal_fiber_length());
+                    normFiberLength * muscle.get_optimal_fiber_length());
             CHECK(muscle.getFiberStiffness(state) == Approx(fiberStiffness));
 
             FiberForceFunction fiberForceFuncAlongTendon(muscle, state, true);
@@ -698,7 +699,8 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
                     fiberForceFuncAlongTendon);
             SimTK::Real fiberStiffnessAlongTendon =
                     diffFiberStiffnessAlongTendon.calcDerivative(
-                        normFiberLength * muscle.get_optimal_fiber_length());
+                            normFiberLength *
+                            muscle.get_optimal_fiber_length());
             CHECK(muscle.getFiberStiffnessAlongTendon(state) ==
                     Approx(fiberStiffnessAlongTendon));
 
@@ -853,12 +855,12 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             muscle.computeInitialFiberEquilibrium(state);
 
             model.realizeDynamics(state);
-            CHECK(muscle.getNormalizedTendonForceDerivative(state) == 
+            CHECK(muscle.getNormalizedTendonForceDerivative(state) ==
                     Approx(0.0).margin(1e-6));
 
             mutMuscle.set_tendon_compliance_dynamics_mode("implicit");
             model.realizeDynamics(state);
-            CHECK(muscle.getEquilibriumResidual(state) == 
+            CHECK(muscle.getEquilibriumResidual(state) ==
                     Approx(0.0).margin(1e-6));
         }
 
@@ -1020,7 +1022,8 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             CHECK(muscle.getPassiveFiberDampingForce(stateDamped) ==
                     Approx(Fmax * damping * normFiberVelocity));
             CHECK(muscle.getPassiveFiberDampingForceAlongTendon(stateDamped) ==
-                    Approx(Fmax * damping * normFiberVelocity * cosPennationAngle));
+                    Approx(Fmax * damping * normFiberVelocity *
+                            cosPennationAngle));
         }
     }
 
@@ -1049,7 +1052,7 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
 }
 
 Model createHangingMuscleModel(double optimalFiberLength,
-        double tendonSlackLength, bool ignoreActivationDynamics, 
+        double tendonSlackLength, bool ignoreActivationDynamics,
         bool ignoreTendonCompliance, bool isTendonDynamicsExplicit) {
     Model model;
     model.setName("isometric_muscle");
@@ -1064,7 +1067,7 @@ Model createHangingMuscleModel(double optimalFiberLength,
     model.addComponent(joint);
 
     auto* actu = new DeGrooteFregly2016Muscle();
-    actu->setName("actuator");
+    actu->setName("muscle");
     actu->set_max_isometric_force(100.0);
     actu->set_optimal_fiber_length(optimalFiberLength);
     actu->set_tendon_slack_length(tendonSlackLength);
@@ -1088,9 +1091,9 @@ Model createHangingMuscleModel(double optimalFiberLength,
 
 TEMPLATE_TEST_CASE(
         "Hanging muscle minimum time", "[casadi]", MocoCasADiSolver) {
-    auto ignoreActivationDynamics = GENERATE(true, false);
-    auto ignoreTendonCompliance = GENERATE(true, false);
-    auto isTendonDynamicsExplicit = GENERATE(false);
+    auto ignoreActivationDynamics = GENERATE(false);
+    auto ignoreTendonCompliance = GENERATE(false);
+    auto isTendonDynamicsExplicit = GENERATE(true);
 
     // TODO: Some problem has a bad initial guess and the constraint violation
     // goes to 1e+14. Maybe the bounds on the coordinate should be tighter.
@@ -1105,7 +1108,7 @@ TEMPLATE_TEST_CASE(
     SimTK::Real finalHeight = 0.155;
     MocoBounds heightBounds(0.14, 0.17);
     MocoBounds speedBounds(-10, 10);
-    MocoBounds actuBounds(0.01, 1);
+    MocoBounds actuBounds(0.02, 1);
 
     Model model = createHangingMuscleModel(optimalFiberLength,
             tendonSlackLength, ignoreActivationDynamics, ignoreTendonCompliance,
@@ -1117,21 +1120,22 @@ TEMPLATE_TEST_CASE(
     // -------------------------------------
     const auto svn = model.getStateVariableNames();
     MocoSolution solutionTrajOpt;
+    std::string solutionFilename;
     {
         MocoStudy study;
         MocoProblem& problem = study.updProblem();
         problem.setModelCopy(model);
-        problem.setTimeBounds(0, {0.1, 1});
+        problem.setTimeBounds(0, 0.5);
         problem.setStateInfo(
                 "/joint/height/value", heightBounds, initHeight, finalHeight);
         problem.setStateInfo("/joint/height/speed", speedBounds, 0, 0);
-        problem.setControlInfo("/forceset/actuator", actuBounds);
+        problem.setControlInfo("/forceset/muscle", actuBounds);
 
         auto* initial_equilibrium =
                 problem.addGoal<MocoInitialForceEquilibriumDGFGoal>();
         initial_equilibrium->setName("initial_equilibrium");
 
-        problem.addGoal<MocoFinalTimeGoal>("final_time");
+        problem.addGoal<MocoControlGoal>("effort");
 
         auto& solver = study.initSolver<TestType>();
         solver.set_num_mesh_intervals(30);
@@ -1141,7 +1145,7 @@ TEMPLATE_TEST_CASE(
         solver.set_minimize_implicit_auxiliary_derivatives(true);
 
         solutionTrajOpt = study.solve();
-        std::string solutionFilename = "testDeGrooteFregly2016Muscle_solution";
+        solutionFilename = "testDeGrooteFregly2016Muscle_solution";
         if (!ignoreActivationDynamics) solutionFilename += "_actdyn";
         if (ignoreTendonCompliance) solutionFilename += "_rigidtendon";
         if (isTendonDynamicsExplicit) solutionFilename += "_exptendyn";
@@ -1165,16 +1169,16 @@ TEMPLATE_TEST_CASE(
         // We need to temporarily switch the muscle in the model to explicit
         // tendon compliance dynamics mode to perform time stepping.
         auto* mutableDGFMuscle = dynamic_cast<DeGrooteFregly2016Muscle*>(
-                &model.updComponent("forceset/actuator"));
+                &model.updComponent("forceset/muscle"));
         if (!ignoreTendonCompliance && !isTendonDynamicsExplicit) {
             mutableDGFMuscle->set_tendon_compliance_dynamics_mode("explicit");
         }
         const auto trajSim =
                 simulateTrajectoryWithTimeStepping(solutionTrajOpt, model);
-        std::string trajFilename =
-                "testDeGrooteFregly2016Muscle_timestepping";
+        std::string trajFilename = "testDeGrooteFregly2016Muscle_timestepping";
         if (!ignoreActivationDynamics) trajFilename += "_actdyn";
         if (ignoreTendonCompliance) trajFilename += "_rigidtendon";
+        if (isTendonDynamicsExplicit) trajFilename += "_exptendyn";
         trajFilename += ".sto";
         trajSim.write(trajFilename);
 
@@ -1184,6 +1188,56 @@ TEMPLATE_TEST_CASE(
         if (!ignoreTendonCompliance && !isTendonDynamicsExplicit) {
             mutableDGFMuscle->set_tendon_compliance_dynamics_mode("implicit");
         }
+    }
+
+    // CMC
+    // ---
+    {
+        Model modelCMC = createHangingMuscleModel(optimalFiberLength,
+                tendonSlackLength, ignoreActivationDynamics,
+                ignoreTendonCompliance, true);
+
+        modelCMC.updCoordinateSet().get("height").setDefaultValue(
+                solutionTrajOpt.getState("/joint/height/value")[0]);
+        modelCMC.updCoordinateSet().get("height").setDefaultSpeedValue(
+                solutionTrajOpt.getState("/joint/height/speed")[0]);
+        auto* mutableDGFMuscleCMC = dynamic_cast<DeGrooteFregly2016Muscle*>(
+                &modelCMC.updComponent("forceset/muscle"));
+        mutableDGFMuscleCMC->set_default_normalized_tendon_force(
+                solutionTrajOpt.getState(
+                        "/forceset/muscle/normalized_tendon_force")[0]);
+        mutableDGFMuscleCMC->set_default_activation(
+                solutionTrajOpt.getState("/forceset/muscle/activation")[0]);
+        //mutableDGFMuscleCMC->set_max_isometric_force(100);
+
+        auto* actu = new CoordinateActuator();
+        actu->setName("actuator");
+        actu->setOptimalForce(1);
+        actu->setMinControl(-1);
+        actu->setMaxControl(1);
+        actu->setCoordinate(&modelCMC.getCoordinateSet().get(0));
+        modelCMC.addForce(actu);
+        modelCMC.finalizeConnections();
+        modelCMC.initSystem();
+
+        CMCTool cmc;
+        std::string cmcFilename = "testDeGrooteFregly2016Muscle_cmc";
+        if (!ignoreActivationDynamics) cmcFilename += "_actdyn";
+        if (ignoreTendonCompliance) cmcFilename += "_rigidtendon";
+        if (isTendonDynamicsExplicit) cmcFilename += "_exptendyn";
+        cmc.setName(cmcFilename);
+        cmc.setModel(modelCMC);
+        cmc.setInitialTime(0);
+        const double finalTime =
+                solutionTrajOpt.getTime()[solutionTrajOpt.getNumTimes() - 1];
+        cmc.setFinalTime(finalTime);
+        cmc.setDesiredKinematicsFileName(solutionFilename);
+        cmc.setTaskSetFileName("testDeGrooteFregly2016Muscle_CMC_Tasks.xml");
+        cmc.setSolveForEquilibrium(false);
+        cmc.setTimeWindow(0.01);
+        cmc.setUseFastTarget(true);
+        cmc.setResultsDir("testDeGrooteFregly2016Muscle_cmc");
+        cmc.run();
     }
 
     // Track the kinematics from the trajectory optimization.
@@ -1205,9 +1259,9 @@ TEMPLATE_TEST_CASE(
         problem.setStateInfo("/joint/height/speed", speedBounds, 0, 0);
         problem.setControlInfo("/forceset/actuator", actuBounds);
 
-         auto* initial_equilibrium =
+        auto* initial_equilibrium =
                 problem.addGoal<MocoInitialForceEquilibriumDGFGoal>();
-         initial_equilibrium->setName("initial_equilibrium");
+        initial_equilibrium->setName("initial_equilibrium");
 
         auto* tracking = problem.addGoal<MocoStateTrackingGoal>("tracking");
 
