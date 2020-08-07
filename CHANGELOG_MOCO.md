@@ -3,6 +3,9 @@ Moco Change Log
 
 0.5.0 (in development)
 ----------------------
+- 2020-08-07: MocoStudy::setModelCopy() and MocoPhase::setModelCopy() are 
+              renamed as setModelAsCopy()
+
 - 2020-07-30: MocoTrack::solve() no longer takes a boolean argument for 
               visualizing the solution. Use MocoTrack::solveAndVisualize()
               instead.
