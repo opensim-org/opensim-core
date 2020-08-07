@@ -232,15 +232,9 @@ private:
     // The orientation reference values and weightings
     std::shared_ptr<OrientationsReference> _orientationsReference;
 
-    // Non-accessible cache of the marker values to be matched at a given state
-    SimTK::Array_<SimTK::Vec3> _markerValues;
-
     // Markers collectively form a single assembly condition for the 
     // SimTK::Assembler and the memory is managed by the Assembler
     SimTK::ReferencePtr<SimTK::Markers> _markerAssemblyCondition;
-
-    // Private cache of the orientation values to be matched at a given state
-    SimTK::Array_<SimTK::Rotation> _orientationValues;
 
     // OrientationSensors collectively form a single assembly condition for
     // the SimTK::Assembler and the memory is managed by the Assembler
