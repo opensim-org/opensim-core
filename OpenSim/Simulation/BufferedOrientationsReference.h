@@ -65,7 +65,8 @@ public:
     /** get the time range for which the OrientationsReference values are valid,
         based on the loaded orientation data.*/
     SimTK::Vec2 getValidTimeRange() const override{
-        return SimTK::Vec2(-SimTK::Infinity, SimTK::Infinity);
+        SimTK::Vec2 tableRange = Super::getValidTimeRange();
+        return SimTK::Vec2(tableRange[0], SimTK::Infinity);
     };
 
     /** get the values from either the base OrientationsReference, or from
