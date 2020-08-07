@@ -1114,7 +1114,7 @@ TEMPLATE_TEST_CASE(
     {
         MocoStudy study;
         MocoProblem& problem = study.updProblem();
-        problem.setModelCopy(model);
+        problem.setModelAsCopy(model);
         problem.setTimeBounds(0, {0.05, 1.0});
         problem.setStateInfo(
                 "/joint/height/value", {0.14, 0.16}, initHeight, finalHeight);
@@ -1197,7 +1197,7 @@ TEMPLATE_TEST_CASE(
                   << std::endl;
         MocoStudy study;
         MocoProblem& problem = study.updProblem();
-        problem.setModelCopy(model);
+        problem.setModelAsCopy(model);
         // Using an equality constraint for the time bounds was essential for
         // recovering the correct excitation.
         const double finalTime =
@@ -1277,7 +1277,7 @@ TEST_CASE("ActivationCoordinateActuator") {
     model.addForce(actu);
     MocoStudy study;
     auto& problem = study.updProblem();
-    problem.setModelCopy(model);
+    problem.setModelAsCopy(model);
     auto rep = problem.createRep();
     CHECK(rep.getStateInfo("/forceset/aca/activation").getBounds().getLower() ==
             Approx(-0.31));

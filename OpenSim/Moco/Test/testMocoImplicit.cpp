@@ -57,7 +57,7 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
     start.setColor(SimTK::Green);
     startframe->attachGeometry(start.clone());
     model.finalizeConnections();
-    mp.setModelCopy(model);
+    mp.setModelAsCopy(model);
 
     // Bounds.
     // -------
@@ -185,7 +185,7 @@ TEMPLATE_TEST_CASE("Combining implicit dynamics mode with path constraints",
         auto& prob = study.updProblem();
         auto model = ModelFactory::createPendulum();
         prob.setTimeBounds(0, 1);
-        prob.setModelCopy(model);
+        prob.setModelAsCopy(model);
         prob.addGoal<MocoControlGoal>();
         auto* pc = prob.addPathConstraint<MyPathConstraint>();
         MocoConstraintInfo info;
@@ -220,7 +220,7 @@ TEMPLATE_TEST_CASE("Combining implicit dynamics with kinematic constraints",
         LinearFunction func(1.0, 0.0);
         constraint->setFunction(func);
         model.addConstraint(constraint);
-        prob.setModelCopy(model);
+        prob.setModelAsCopy(model);
         auto& solver = study.initSolver<TestType>();
         solver.set_multibody_dynamics_mode("implicit");
         solver.set_num_mesh_intervals(5);

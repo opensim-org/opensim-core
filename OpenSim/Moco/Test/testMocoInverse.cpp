@@ -105,7 +105,7 @@ TEST_CASE("PrescribedKinematics direct collocation auxiliary dynamics",
 
     MocoStudy study;
     auto& problem = study.updProblem();
-    problem.setModelCopy(model);
+    problem.setModelAsCopy(model);
     problem.setTimeBounds(0, 1);
     const double init_s = 0.2;
     problem.setStateInfo("/customdynamics/s", {0, 100}, init_s);
