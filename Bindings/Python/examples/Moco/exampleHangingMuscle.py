@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and        #
 # limitations under the License.                                             #
 # -------------------------------------------------------------------------- #
-# This example includes a point mass hanging by a muscle. (+x is downward),
+# This example includes a point mass hanging by a muscle (+x is downward),
 # and shows how to use MocoStudy with a model that includes a muscle.
 # Additionally, this example shows how to use OpenSim's Analyses with a
 # MocoSolution.

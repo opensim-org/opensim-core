@@ -38,22 +38,22 @@ void torqueDrivenMarkerTracking() {
     track.setName("torque_driven_marker_tracking");
 
     // Construct a ModelProcessor and add it to the tool. ModelProcessors
-    // accept a base model and allow you to easily modify the model by appending
-    // ModelOperators. Operations are performed in the order that they are
-    // appended to the model. In C++, you may use the pipe operator '|' to 
-    // append ModelOperators.
-    track.setModel(
-            // Create the base Model by passing in the model file.
-            ModelProcessor("subject_walk_armless.osim") |
-            // Add ground reaction external loads in lieu of a ground-contact
-            // model.
-            ModOpAddExternalLoads("grf_walk.xml") |
-            // Remove all the muscles in the model's ForceSet.
-            ModOpRemoveMuscles() |
-            // Add CoordinateActuators to the model degrees-of-freedom. This
-            // ignores the pelvis coordinates which already have residual 
-            // CoordinateActuators.
-            ModOpAddReserves(250));
+    // accept a base model (or model file) and allow you to easily modify the
+    // model by appending ModelOperators. Operations are performed in the order
+    // that they are appended to the model.
+    ModelProcessor modelProcessor("subject_walk_armless.osim");
+    // Add ground reaction external loads in lieu of a ground-contact model.
+    modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml") );
+    // Remove all the muscles in the model's ForceSet.
+    modelProcessor.append(ModOpRemoveMuscles());
+    // Add CoordinateActuators to the model degrees-of-freedom. This
+    // ignores the pelvis coordinates which already have residual
+    // CoordinateActuators.
+    modelProcessor.append(ModOpAddReserves(250));
+    track.setModel(modelProcessor);
+    // In C++, you could alternatively use the pipe operator '|' to
+    // append ModelOperators:
+    //   track.setModel(ModelProcessor("model.osim") | ModOpAddReserves(250));
 
     // Use this convenience function to set the MocoTrack markers reference
     // directly from a TRC file. By default, the markers data is filtered at
@@ -108,15 +108,14 @@ void muscleDrivenStateTracking() {
     // muscles in the model are replaced with optimization-friendly
     // DeGrooteFregly2016Muscles, and adjustments are made to the default muscle
     // parameters.
-    ModelProcessor modelProcessor =
-            ModelProcessor("subject_walk_armless.osim") |
-            ModOpAddExternalLoads("grf_walk.xml") |
-            ModOpIgnoreTendonCompliance() |
-            ModOpReplaceMusclesWithDeGrooteFregly2016() |
-            // Only valid for DeGrooteFregly2016Muscles.
-            ModOpIgnorePassiveFiberForcesDGF() |
-            // Only valid for DeGrooteFregly2016Muscles.
-            ModOpScaleActiveFiberForceCurveWidthDGF(1.5);
+    ModelProcessor modelProcessor("subject_walk_armless.osim");
+    modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
+    modelProcessor.append(ModOpIgnoreTendonCompliance());
+    modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
+    // Only valid for DeGrooteFregly2016Muscles.
+    modelProcessor.append(ModOpIgnorePassiveFiberForcesDGF());
+    // Only valid for DeGrooteFregly2016Muscles.
+    modelProcessor.append(ModOpScaleActiveFiberForceCurveWidthDGF(1.5));
     track.setModel(modelProcessor);
 
     // Construct a TableProcessor of the coordinate data and pass it to the 
