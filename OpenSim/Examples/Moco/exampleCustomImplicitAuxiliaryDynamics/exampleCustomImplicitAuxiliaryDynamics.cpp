@@ -139,8 +139,8 @@ private:
 
 int main() {
     try {
-        double finalFooManager;
-        double finalFooMoco;
+        double finalFooTimeStepping;
+        double finalFooDircol;
         // Simulate the differential equation in explicit mode using one of
         // OpenSim's time-stepping integrators.
         {
@@ -150,7 +150,7 @@ int main() {
             model.setStateVariableValue(state, "/implicit_auxdyn/foo", 1.0);
             Manager manager(model, state);
             state = manager.integrate(1.0);
-            finalFooManager =
+            finalFooTimeStepping =
                     model.getStateVariableValue(state, "/implicit_auxdyn/foo");
         }
         // Simulate the differential equation in implicit mode using Moco.
@@ -166,10 +166,10 @@ int main() {
             problem.setStateInfo("/implicit_auxdyn/foo", {0, 3}, 1.0);
             MocoSolution solution = study.solve();
             const int N = solution.getNumTimes();
-            finalFooMoco = solution.getStatesTrajectory().getElt(N - 1, 0);
+            finalFooDircol = solution.getStatesTrajectory().getElt(N - 1, 0);
         }
-        std::cout << "Final foo with Manager: " << finalFooManager << "\n"
-                  << "Final foo with Moco: " << finalFooMoco << std::endl;
+        std::cout << "Final foo with time-stepping: " << finalFooTimeStepping
+                  << "\nFinal foo with Moco: " << finalFooDircol << std::endl;
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
         return EXIT_FAILURE;
