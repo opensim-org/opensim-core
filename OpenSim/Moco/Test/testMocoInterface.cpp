@@ -744,7 +744,7 @@ TEMPLATE_TEST_CASE("Set infos with regular expression", "",
         MocoCasADiSolver, MocoTropterSolver) {
     MocoStudy study;
     MocoProblem& problem = study.updProblem();
-    problem.setModelCopy(ModelFactory::createDoublePendulum());
+    problem.setModelAsCopy(ModelFactory::createDoublePendulum());
     problem.setTimeBounds(0, 10);
     problem.setStateInfoPattern(".*/value", {2, 10});
     problem.setStateInfoPattern(".*/speed", {3, 10});
@@ -802,7 +802,7 @@ TEMPLATE_TEST_CASE("Disable Actuators", "", MocoCasADiSolver,
         tau2->setOptimalForce(1);
         model.addComponent(tau2);
 
-        mp.setModelCopy(model);
+        mp.setModelAsCopy(model);
 
         mp.setTimeBounds(0, {0, 5});
         mp.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0, SimTK::Pi);
@@ -832,7 +832,7 @@ TEMPLATE_TEST_CASE("Disable Actuators", "", MocoCasADiSolver,
 
         SimTK::State state = model2.initSystem();
         model2.updComponent<Force>("tau1").set_appliesForce(false);
-        mp2.setModelCopy(model2);
+        mp2.setModelAsCopy(model2);
         mp2.setTimeBounds(0, {0, 5});
         mp2.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0, SimTK::Pi);
         mp2.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0);
@@ -1816,7 +1816,7 @@ void testSkippingOverQuaternionSlots(
 
     MocoStudy study;
     auto& problem = study.updProblem();
-    problem.setModelCopy(model);
+    problem.setModelAsCopy(model);
     const double duration = 1.0;
     problem.setTimeBounds(0, duration);
     problem.setStateInfo(

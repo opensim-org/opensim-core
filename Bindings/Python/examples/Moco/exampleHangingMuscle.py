@@ -117,7 +117,7 @@ model.printToXML("hanging_muscle.osim")
 
 study = osim.MocoStudy()
 problem = study.updProblem()
-problem.setModelCopy(model)
+problem.setModelAsCopy(model)
 problem.setTimeBounds(0, [0.05, 1.0])
 problem.setStateInfo("/joint/height/value", [0.14, 0.16], 0.15, 0.14)
 problem.setStateInfo("/joint/height/speed", [-1, 1], 0, 0)

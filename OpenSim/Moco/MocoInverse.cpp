@@ -73,7 +73,7 @@ std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
 
     MocoStudy study;
     auto& problem = study.updProblem();
-    problem.setModelCopy(model);
+    problem.setModelAsCopy(model);
 
     TimeInfo timeInfo;
     updateTimeInfo("kinematics", kinematics.getIndependentColumn().front(),

@@ -556,7 +556,7 @@ void testDoublePendulumPointOnLine(
                     Vec3(0), b1, endeff.get_location());
     model->addConstraint(constraint);
     model->finalizeConnections();
-    mp.setModelCopy(*model);
+    mp.setModelAsCopy(*model);
 
     mp.setTimeBounds(0, 1);
     // Coordinate value state boundary conditions are consistent with the
@@ -646,7 +646,7 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
     model->finalizeConnections();
 
     MocoProblem& mp = study.updProblem();
-    mp.setModelCopy(*model);
+    mp.setModelAsCopy(*model);
     mp.setTimeBounds(0, 1);
     // Boundary conditions are only enforced for the first coordinate, so we can
     // test that the second coordinate is properly coupled.
@@ -707,7 +707,7 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     // need to call initSystem() and set the model here in order to convert the
     // solution from the previous problem to a StatesTrajectory.
     model->initSystem();
-    mp.setModelCopy(*model);
+    mp.setModelAsCopy(*model);
 
     TimeSeriesTable statesTrajCoupler =
             couplerSolution.exportToStatesTrajectory(mp).exportToTable(*model);
@@ -721,7 +721,7 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     q1.setPrescribedFunction(statesSpline.get("/jointset/j1/q1/value"));
     q1.setDefaultIsPrescribed(true);
     // Set the model again after implementing the constraints.
-    mp.setModelCopy(*model);
+    mp.setModelAsCopy(*model);
 
     mp.setTimeBounds(0, 1);
     // No bounds here, since the problem is already highly constrained by the
@@ -936,7 +936,7 @@ TEMPLATE_TEST_CASE("DoublePendulumEqualControl", "",
     MocoProblem& mp = study.updProblem();
     auto model = createDoublePendulumModel();
     model->finalizeConnections();
-    mp.setModelCopy(*model);
+    mp.setModelAsCopy(*model);
 
     auto* equalControlConstraint =
             mp.addPathConstraint<EqualControlConstraint>();
@@ -1011,7 +1011,7 @@ TEMPLATE_TEST_CASE(
 
     MocoStudy study;
     auto& problem = study.updProblem();
-    problem.setModelCopy(model);
+    problem.setModelAsCopy(model);
     problem.setTimeBounds(0, 1);
     problem.addParameter("mass", "/bodyset/b", "mass", MocoBounds(0.5, 1.5));
     auto& solver = study.initSolver<TestType>();
@@ -1066,7 +1066,7 @@ void testDoublePendulumJointReactionGoal(std::string dynamics_mode) {
     model->addComponent(actuator);
 
     model->finalizeConnections();
-    mp.setModelCopy(*model);
+    mp.setModelAsCopy(*model);
 
     mp.setTimeBounds(0, 1);
     mp.setStateInfo("/jointset/j0/q0/value", {-0.6 * pi, 0.6 * pi});
@@ -1176,7 +1176,7 @@ TEST_CASE("Goals use Moco-defined accelerations and multipliers", "[casadi]") {
             SimTK::Transform(), *body, SimTK::Transform());
     model.addConstraint(constr);
     model.finalizeConnections();
-    problem.setModelCopy(model);
+    problem.setModelAsCopy(model);
 
     problem.setTimeBounds(0, 1);
 
@@ -1330,7 +1330,7 @@ TEST_CASE("Multipliers are correct", "[casadi]") {
 
         MocoStudy study;
         auto& problem = study.updProblem();
-        problem.setModelCopy(model);
+        problem.setModelAsCopy(model);
 
         problem.setTimeBounds(0, 0.5);
 
@@ -1388,7 +1388,7 @@ TEST_CASE("Multipliers are correct", "[casadi]") {
 
         MocoStudy study;
         auto& problem = study.updProblem();
-        problem.setModelCopy(model);
+        problem.setModelAsCopy(model);
 
         problem.setTimeBounds(0, 1);
         problem.setStateInfo("/jointset/tx/tx/value", {-5, 5}, 0, 3);
@@ -1436,7 +1436,7 @@ TEST_CASE("Prescribed kinematics with kinematic constraints", "[casadi]") {
 
     MocoStudy study;
     auto& problem = study.updProblem();
-    problem.setModelCopy(model);
+    problem.setModelAsCopy(model);
 
     problem.setTimeBounds(0, 3);
     problem.setControlInfo("/forceset/force_x", 0.5);
@@ -1460,7 +1460,7 @@ TEMPLATE_TEST_CASE("MocoControlBoundConstraint", "",
     SECTION("Lower bound only") {
         MocoStudy study;
         auto& problem = study.updProblem();
-        problem.setModelCopy(ModelFactory::createPendulum());
+        problem.setModelAsCopy(ModelFactory::createPendulum());
         problem.setTimeBounds(0, 1);
         problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0);
         problem.setStateInfo("/jointset/j0/q0/speed", {-10, 10}, 0);
@@ -1482,7 +1482,7 @@ TEMPLATE_TEST_CASE("MocoControlBoundConstraint", "",
     SECTION("Upper bound only") {
         MocoStudy study;
         auto& problem = study.updProblem();
-        problem.setModelCopy(ModelFactory::createPendulum());
+        problem.setModelAsCopy(ModelFactory::createPendulum());
         problem.setTimeBounds(0, {0.1, 10});
         problem.setStateInfo("/jointset/j0/q0/value", {0, 1}, 0, 0.53);
         problem.setStateInfo("/jointset/j0/q0/speed", {-10, 10}, 0, 0);
@@ -1506,7 +1506,7 @@ TEMPLATE_TEST_CASE("MocoControlBoundConstraint", "",
     SECTION("Upper and lower bounds are the same") {
         MocoStudy study;
         auto& problem = study.updProblem();
-        problem.setModelCopy(ModelFactory::createPendulum());
+        problem.setModelAsCopy(ModelFactory::createPendulum());
         problem.setTimeBounds(0, 1);
         problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0);
         problem.setStateInfo("/jointset/j0/q0/speed", {-10, 10}, 0);
@@ -1539,7 +1539,7 @@ TEMPLATE_TEST_CASE("MocoControlBoundConstraint", "",
     SECTION("Time range of bounds function is too small.") {
         MocoStudy study;
         auto& problem = study.updProblem();
-        problem.setModelCopy(ModelFactory::createPendulum());
+        problem.setModelAsCopy(ModelFactory::createPendulum());
         problem.setTimeBounds({-31, 0}, {1, 50});
         problem.addGoal<MocoControlGoal>();
         GCVSpline violateLower;
@@ -1574,7 +1574,7 @@ TEMPLATE_TEST_CASE("MocoControlBoundConstraint", "",
     SECTION("Can omit both bounds.") {
         MocoStudy study;
         auto& problem = study.updProblem();
-        problem.setModelCopy(ModelFactory::createPendulum());
+        problem.setModelAsCopy(ModelFactory::createPendulum());
         problem.setTimeBounds(0, 1);
         problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0);
         problem.setStateInfo("/jointset/j0/q0/speed", {-10, 10}, 0);

@@ -117,7 +117,7 @@ SimTK::Real testNormalForce(CreateContactFunction createContact) {
     {
         MocoStudy study;
         MocoProblem& mp = study.updProblem();
-        mp.setModelCopy(model);
+        mp.setModelAsCopy(model);
         mp.setTimeBounds(0, finalTime);
         mp.setStateInfo("/tx/tx/value", {-1, 1}, 0);
         mp.setStateInfo("/ty/ty/value", {-0.5, 1}, y0);
@@ -211,7 +211,7 @@ void testFrictionForce(CreateContactFunction createContact,
     {
         MocoStudy study;
         MocoProblem& mp = study.updProblem();
-        mp.setModelCopy(model);
+        mp.setModelAsCopy(model);
         mp.setTimeBounds(0, finalTime);
         mp.setStateInfo("/tx/tx/value", {-1, 1}, 0);
         mp.setStateInfo("/ty/ty/value", {-0.5, 1}, y0);
@@ -359,7 +359,7 @@ SimTK::Real testSmoothSphereHalfSpaceForce_NormalForce()
     {
         MocoStudy study;
         MocoProblem& mp = study.updProblem();
-        mp.setModelCopy(model);
+        mp.setModelAsCopy(model);
         mp.setTimeBounds(0, finalTime);
         mp.setStateInfo("/groundBall/groundBall_coord_0/value", {-1, 1}, 0);
         mp.setStateInfo("/groundBall/groundBall_coord_1/value", {-1, 1}, 0);
@@ -465,7 +465,7 @@ void testSmoothSphereHalfSpaceForce_FrictionForce(
     {
         MocoStudy study;
         MocoProblem& mp = study.updProblem();
-        mp.setModelCopy(model);
+        mp.setModelAsCopy(model);
         mp.setTimeBounds(0, finalTime);
         mp.setStateInfo("/groundBall/groundBall_coord_0/value", {-1, 1}, 0);
         mp.setStateInfo("/groundBall/groundBall_coord_1/value", {-1, 1}, 0);
@@ -579,7 +579,7 @@ TEST_CASE("MocoContactTrackingGoal", "[casadi]") {
     {
         MocoStudy study;
         MocoProblem& problem = study.updProblem();
-        problem.setModelCopy(model);
+        problem.setModelAsCopy(model);
         problem.setTimeBounds(0, finalTime);
         problem.setStateInfo(
                 "/groundBall/groundBall_coord_0/value", {-1, 1}, 0);

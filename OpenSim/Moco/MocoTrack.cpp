@@ -79,7 +79,7 @@ MocoStudy MocoTrack::initialize() {
     }
 
     // Set the model on the MocoProblem, now that we're done configuring costs.
-    problem.setModelCopy(model);
+    problem.setModelAsCopy(model);
 
     // Control effort minimization.
     // ----------------------------

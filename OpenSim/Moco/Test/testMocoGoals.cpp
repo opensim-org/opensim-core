@@ -214,7 +214,7 @@ MocoStudy setupMocoStudyDoublePendulumMinimizeEffort() {
 
     MocoStudy study;
     auto& problem = study.updProblem();
-    problem.setModelCopy(doublePendulum);
+    problem.setModelAsCopy(doublePendulum);
     problem.addGoal<MocoControlGoal>("effort");
     problem.setTimeBounds(0, 2);
     problem.setControlInfo("/tau0", {-100, 100});
@@ -387,7 +387,7 @@ TEMPLATE_TEST_CASE("Test MocoJointReactionGoal", "",
     MocoStudy study;
     study.setName("counteract_gravity");
     MocoProblem& mp = study.updProblem();
-    mp.setModelCopy(model);
+    mp.setModelAsCopy(model);
 
     mp.setTimeBounds(0, 1);
     mp.setControlInfo("/actu", {-20, 20});
@@ -426,7 +426,7 @@ TEST_CASE("Test MocoSumSquaredStateGoal") {
     q1.setValue(state, 0.5);
 
     MocoProblem mp;
-    mp.setModelCopy(model);
+    mp.setModelAsCopy(model);
 
     // If no state weights are given, should return sum squared state values
     // with weight of 1.0 for each state
@@ -500,7 +500,7 @@ TEMPLATE_TEST_CASE("Endpoint constraints", "[casadi]", MocoCasADiSolver) {
 
     MocoStudy study;
     auto& problem = study.updProblem();
-    problem.setModelCopy(ModelFactory::createPendulum());
+    problem.setModelAsCopy(ModelFactory::createPendulum());
 
     problem.setTimeBounds(0, 1);
     problem.setStateInfo("/jointset/j0/q0/value", {-0.3, 0.3}, -0.3);
@@ -553,7 +553,7 @@ TEMPLATE_TEST_CASE("MocoPeriodicityGoal", "[casadi]", MocoCasADiSolver) {
 
     MocoStudy study;
     auto& problem = study.updProblem();
-    problem.setModelCopy(ModelFactory::createPendulum());
+    problem.setModelAsCopy(ModelFactory::createPendulum());
 
     problem.setTimeBounds(0, 1);
     problem.setStateInfo("/jointset/j0/q0/value", {-1.0, 1.0}, 0.1);
@@ -643,7 +643,7 @@ TEMPLATE_TEST_CASE(
 
     MocoStudy study;
     auto& problem = study.updProblem();
-    problem.setModelCopy(model);
+    problem.setModelAsCopy(model);
 
     problem.setTimeBounds(0, 0.5);
 
