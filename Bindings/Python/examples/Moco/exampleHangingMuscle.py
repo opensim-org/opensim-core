@@ -39,6 +39,8 @@ def createHangingMuscleModel(ignore_activation_dynamics,
     model.addComponent(joint)
 
     # The point mass is supported by a muscle.
+    # The DeGrooteFregly2016Muscle is the only muscle model in OpenSim that
+    # has been tested with Moco.
     actu = osim.DeGrooteFregly2016Muscle()
     actu.setName("muscle")
     actu.set_max_isometric_force(30.0)
@@ -48,6 +50,9 @@ def createHangingMuscleModel(ignore_activation_dynamics,
     actu.set_ignore_activation_dynamics(ignore_activation_dynamics)
     actu.set_ignore_tendon_compliance(ignore_tendon_compliance)
     actu.set_fiber_damping(0.01)
+    # The DeGrooteFregly2016Muscle is the only muscle model in OpenSim that
+    # can express its tendon compliance dynamics using an implicit
+    # differential equation.
     actu.set_tendon_compliance_dynamics_mode("implicit")
     actu.set_max_contraction_velocity(10)
     actu.set_pennation_angle_at_optimal(0.10)
@@ -124,10 +129,10 @@ if not ignore_activation_dynamics:
     problem.addGoal(initial_activation)
     initial_activation.setName("initial_activation")
 if not ignore_tendon_compliance:
-    # The problem performs better when this goal is in cost mode.
     initial_equilibrium = osim.MocoInitialVelocityEquilibriumDGFGoal()
     problem.addGoal(initial_equilibrium)
     initial_equilibrium.setName("initial_velocity_equilibrium")
+    # The problem converges in fewer iterations when this goal is in cost mode.
     initial_equilibrium.setMode("cost")
     initial_equilibrium.setWeight(0.001)
 

@@ -46,7 +46,8 @@ Model createHangingMuscleModel(bool ignoreActivationDynamics,
     coord.setName("height");
     model.addComponent(joint);
 
-    // The point mass is supported by a muscle.
+    // The point mass is supported by a muscle. The DeGrooteFregly2016Muscle
+    // is the only muscle model in OpenSim that has been tested with Moco.
     auto* actu = new DeGrooteFregly2016Muscle();
     actu->setName("muscle");
     actu->set_max_isometric_force(30.0);
@@ -56,6 +57,9 @@ Model createHangingMuscleModel(bool ignoreActivationDynamics,
     actu->set_ignore_activation_dynamics(ignoreActivationDynamics);
     actu->set_ignore_tendon_compliance(ignoreTendonCompliance);
     actu->set_fiber_damping(0.01);
+    // The DeGrooteFregly2016Muscle is the only muscle model in OpenSim that
+    // can express its tendon compliance dynamics using an implicit
+    // differential equation.
     actu->set_tendon_compliance_dynamics_mode("implicit");
     actu->set_max_contraction_velocity(10);
     actu->set_pennation_angle_at_optimal(0.10);
@@ -141,10 +145,11 @@ int main() {
         initial_activation->setName("initial_activation");
     }
     if (!ignoreTendonCompliance) {
-        // The problem performs better when this goal is in cost mode.
         auto* initial_equilibrium =
                 problem.addGoal<MocoInitialVelocityEquilibriumDGFGoal>();
         initial_equilibrium->setName("initial_velocity_equilibrium");
+        // The problem converges in fewer iterations when this goal is in cost
+        // mode.
         initial_equilibrium->setMode("cost");
         initial_equilibrium->setWeight(0.001);
     }
