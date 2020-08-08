@@ -549,6 +549,8 @@ void DeGrooteFregly2016Muscle::computeInitialFiberEquilibrium(
     const auto& muscleTendonVelocity = getLengtheningSpeed(s);
     const auto& activation = getActivation(s);
 
+    std::cout << "activation: " << activation << std::endl;
+
     // We have to use the implicit form of the model since the explicit form
     // will produce a zero residual for any guess of normalized tendon force.
     // The implicit form requires a value for normalized tendon force

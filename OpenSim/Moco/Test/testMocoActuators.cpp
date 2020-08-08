@@ -1074,7 +1074,7 @@ Model createHangingMuscleModel(double optimalFiberLength,
     actu->set_tendon_strain_at_one_norm_force(0.10);
     actu->set_ignore_activation_dynamics(ignoreActivationDynamics);
     actu->set_ignore_tendon_compliance(ignoreTendonCompliance);
-    actu->set_fiber_damping(0.01);
+    actu->set_fiber_damping(0);
     if (!isTendonDynamicsExplicit) {
         actu->set_tendon_compliance_dynamics_mode("implicit");
     }
@@ -1091,12 +1091,9 @@ Model createHangingMuscleModel(double optimalFiberLength,
 
 TEMPLATE_TEST_CASE(
         "Hanging muscle minimum time", "[casadi]", MocoCasADiSolver) {
-    auto ignoreActivationDynamics = GENERATE(false);
+    auto ignoreActivationDynamics = GENERATE(true);
     auto ignoreTendonCompliance = GENERATE(false);
     auto isTendonDynamicsExplicit = GENERATE(true);
-
-    // TODO: Some problem has a bad initial guess and the constraint violation
-    // goes to 1e+14. Maybe the bounds on the coordinate should be tighter.
 
     CAPTURE(ignoreActivationDynamics);
     CAPTURE(ignoreTendonCompliance);
@@ -1190,38 +1187,55 @@ TEMPLATE_TEST_CASE(
         }
     }
 
-    // CMC
-    // ---
+    // Solve problem again using CMC. 
+    // ------------------------------
+    // See if we get the correct muscle activity.
     {
         Model modelCMC = createHangingMuscleModel(optimalFiberLength,
                 tendonSlackLength, ignoreActivationDynamics,
                 ignoreTendonCompliance, true);
 
+        // Need to set the default kinematic state of the model so that the
+        // initial equilibrium solve converges.
         modelCMC.updCoordinateSet().get("height").setDefaultValue(
                 solutionTrajOpt.getState("/joint/height/value")[0]);
         modelCMC.updCoordinateSet().get("height").setDefaultSpeedValue(
                 solutionTrajOpt.getState("/joint/height/speed")[0]);
         auto* mutableDGFMuscleCMC = dynamic_cast<DeGrooteFregly2016Muscle*>(
                 &modelCMC.updComponent("forceset/muscle"));
-        mutableDGFMuscleCMC->set_default_normalized_tendon_force(
-                solutionTrajOpt.getState(
+        const SimTK::Vector control(
+                1, solutionTrajOpt.getControl("/forceset/muscle")[0]);
+        modelCMC.setDefaultControls(control);
+        if (ignoreActivationDynamics) {
+        } else {
+            mutableDGFMuscleCMC->set_default_activation(
+                    solutionTrajOpt.getState("/forceset/muscle/activation")[0]);
+           
+        }
+        if (!ignoreTendonCompliance) {
+            mutableDGFMuscleCMC->set_default_normalized_tendon_force(
+                    solutionTrajOpt.getState(
                         "/forceset/muscle/normalized_tendon_force")[0]);
-        mutableDGFMuscleCMC->set_default_activation(
-                solutionTrajOpt.getState("/forceset/muscle/activation")[0]);
-        //mutableDGFMuscleCMC->set_max_isometric_force(100);
+        }
 
+        // Need a reserve for CMC to solve. 
         auto* actu = new CoordinateActuator();
         actu->setName("actuator");
-        actu->setOptimalForce(1);
-        actu->setMinControl(-1);
-        actu->setMaxControl(1);
+        actu->setOptimalForce(0.1);
+        actu->setMinControl(-100);
+        actu->setMaxControl(100);
         actu->setCoordinate(&modelCMC.getCoordinateSet().get(0));
         modelCMC.addForce(actu);
         modelCMC.finalizeConnections();
-        modelCMC.initSystem();
+        auto& cmcState = modelCMC.initSystem();
+        mutableDGFMuscleCMC->setControls(
+                control, modelCMC.updControls(cmcState));
+        modelCMC.realizeVelocity(cmcState);
 
+        Logger::setLevelString("debug");
         CMCTool cmc;
         std::string cmcFilename = "testDeGrooteFregly2016Muscle_cmc";
+        cmc.setResultsDir(cmcFilename);
         if (!ignoreActivationDynamics) cmcFilename += "_actdyn";
         if (ignoreTendonCompliance) cmcFilename += "_rigidtendon";
         if (isTendonDynamicsExplicit) cmcFilename += "_exptendyn";
@@ -1236,8 +1250,42 @@ TEMPLATE_TEST_CASE(
         cmc.setSolveForEquilibrium(false);
         cmc.setTimeWindow(0.01);
         cmc.setUseFastTarget(true);
-        cmc.setResultsDir("testDeGrooteFregly2016Muscle_cmc");
         cmc.run();
+
+        // Create a MocoTrajectory from the CMC solution.
+        TimeSeriesTable cmcStates;
+        std::vector<std::string> stateColumnLabels;
+        cmcStates = TimeSeriesTable("testDeGrooteFregly2016Muscle_cmc/" +
+                                  cmcFilename + "_states.sto");
+        stateColumnLabels = cmcStates.getColumnLabels();
+        
+        TimeSeriesTable cmcControls(
+            "testDeGrooteFregly2016Muscle_cmc/" + cmcFilename + "_controls.sto");
+        const auto& stdTime = cmcControls.getIndependentColumn();
+        SimTK::Vector time((int)stdTime.size());
+        for (int i = 0; i < time.size(); i++) {
+            time[i] = stdTime[i];
+        }
+        std::vector<std::string> controlNames{"/forceset/muscle"};
+        MocoTrajectory cmcTraj(time, stateColumnLabels, 
+            controlNames, {}, {}, cmcStates.getMatrix(), 
+            cmcControls.getMatrixBlock(0, 0, cmcControls.getNumRows(), 1), 
+            SimTK::Matrix(), SimTK::RowVector());
+        cmcTraj.write(
+            "testDeGrooteFregly2016Muscle_cmc/" + cmcFilename + ".sto");
+
+        // Compare CMC solution to the Moco solution.
+        std::vector<std::string> states;
+        if (!ignoreActivationDynamics) {
+            states.push_back("/forceset/muscle/activation");
+        }
+        if (!ignoreTendonCompliance) {
+            states.push_back("/forceset/muscle/normalized_tendon_force");
+        }
+        std::vector<std::string> controls{"/forceset/muscle"};
+        const double error = cmcTraj.compareContinuousVariablesRMS(
+                solutionTrajOpt, {{"states", states}, {"controls", controls}});
+        CHECK(error < 0.05);        
     }
 
     // Track the kinematics from the trajectory optimization.
@@ -1257,7 +1305,7 @@ TEMPLATE_TEST_CASE(
         problem.setStateInfo(
                 "/joint/height/value", heightBounds, initHeight, finalHeight);
         problem.setStateInfo("/joint/height/speed", speedBounds, 0, 0);
-        problem.setControlInfo("/forceset/actuator", actuBounds);
+        problem.setControlInfo("/forceset/muscle", actuBounds);
 
         auto* initial_equilibrium =
                 problem.addGoal<MocoInitialForceEquilibriumDGFGoal>();
