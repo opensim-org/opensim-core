@@ -52,9 +52,9 @@ InverseKinematicsSolver::InverseKinematicsSolver(const Model& model,
     std::shared_ptr<OrientationsReference> orientationsReference,
     SimTK::Array_<CoordinateReference>& coordinateReferences,
         double constraintWeight):
-          AssemblySolver(model, coordinateReferences, constraintWeight),
-          _orientationsReference(orientationsReference), 
-          _markersReference(markersReference) {
+          AssemblySolver(model, coordinateReferences, constraintWeight), 
+          _markersReference(markersReference), 
+          _orientationsReference(orientationsReference) {
 
     setAuthors("Ajay Seth, Ayman Habib");
     
