@@ -39,7 +39,8 @@ MocoStudy::MocoStudy(const std::string& omocoFile) : Object(omocoFile) {
 }
 
 void MocoStudy::constructProperties() {
-    constructProperty_write_solution("./");
+    constructProperty_write_solution(false);
+    constructProperty_results_directory("./");
     constructProperty_problem(MocoProblem());
     constructProperty_solver(MocoCasADiSolver());
 }
@@ -84,11 +85,11 @@ MocoSolution MocoStudy::solve() const {
     MocoSolution solution = get_solver().solve();
 
     bool originallySealed = solution.isSealed();
-    if (get_write_solution() != "false") {
-        OpenSim::IO::makeDir(get_write_solution());
+    if (get_write_solution()) {
+        OpenSim::IO::makeDir(get_results_directory());
         std::string prefix = getName().empty() ? "MocoStudy" : getName();
         solution.unseal();
-        const std::string filename = get_write_solution() +
+        const std::string filename = get_results_directory() +
                                      SimTK::Pathname::getPathSeparator() +
                                      prefix + "_solution.sto";
         try {

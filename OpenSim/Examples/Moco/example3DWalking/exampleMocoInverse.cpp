@@ -48,7 +48,7 @@ void solveMocoInverse() {
     modelProcessor.append(ModOpIgnorePassiveFiberForcesDGF());
     // Only valid for DeGrooteFregly2016Muscles.
     modelProcessor.append(ModOpScaleActiveFiberForceCurveWidthDGF(1.5));
-    modelProcessor.append(ModOpAddReserves(1.0)):
+    modelProcessor.append(ModOpAddReserves(1.0));
     inverse.setModel(modelProcessor);
 
     // Construct a TableProcessor of the coordinate data and pass it to the
