@@ -30,7 +30,7 @@
 
 static const std::string newInvalidChars{"\\*+ \t\n"};
 static const char separator = '/';
-static const std::string legacyInvalidChars = newInvalidChars + '/';
+static const std::string legacyInvalidChars = newInvalidChars + separator;
 
 
 using OpenSim::ComponentPath;
@@ -39,14 +39,15 @@ namespace {
     // helper: joins the supplied vector of path components to form a single path string
     std::string stringifyPath(const std::vector<std::string>& pathVec, bool isAbsolute) {
         std::string ret;
+
         if (isAbsolute) {
-            ret += '/';
+            ret += separator;
         }
         if (pathVec.empty()) {
             return ret;
         }
         for (size_t i = 0; i < (pathVec.size()-1); ++i) {
-            ret += pathVec[i] + '/';
+            ret += pathVec[i] + separator;
         }
         ret += pathVec.back();
         return ret;
@@ -60,12 +61,13 @@ namespace {
         }
 
         auto it = normalizedPath.begin();
-        if (normalizedPath[0] == '/') {
+        if (normalizedPath[0] == separator) {
             ++it;
         }
 
         return it;
     }
+
     /**
      * Returns a normalized form of `path`. A normalized path string is guaranteed to:
      *
@@ -157,13 +159,22 @@ namespace {
                     break;
                 }
                 default:
-                    // normal element that starts with '..'
+                    // normal element that starts with '.'
                     ++contentStart;
                     break;
             }
         }
 
         size_t offset = contentStart;
+
+        // invariants:
+        //
+        // - the root path element (if any) has been skipped
+        // - `contentStart` points to the start of the non-relative content of
+        //   the supplied path string
+        // - `path` contains no duplicate adjacent separators
+        // - `[0..offset]` is normalized path string, but may contain a trailing slash
+        // - `[contentStart..offset] is the normalized *content* of the path string
 
         while (offset < path.size()) {
             // this parser has a <= 2-char lookahead
@@ -188,15 +199,15 @@ namespace {
                 auto contentStartIt = path.rend() - contentStart;
                 size_t prevEnd = offset - 1;
                 size_t prevEndReverseOffset = path.size() - prevEnd;
-                auto it = std::find(path.rbegin() + prevEndReverseOffset, contentStartIt, '/');
+                auto it = std::find(path.rbegin() + prevEndReverseOffset, contentStartIt, separator);
                 size_t prevStart = it == contentStartIt ? contentStart : std::distance(it, path.rend());
-                size_t n = (prevEnd - prevStart) + (c2 == '/' ? 4 : 3);
+                size_t n = (prevEnd - prevStart) + (c2 == separator ? 4 : 3);
                 offset = prevStart;
                 shift(offset, n);
                 continue;
             }
 
-            offset = path.find('/', offset);
+            offset = path.find(separator, offset);
             if (offset == std::string::npos) {
                 break;  // end of input
             } else {
@@ -292,7 +303,7 @@ OpenSim::ComponentPath OpenSim::ComponentPath::formRelativePath(const ComponentP
 
     // for readability: we are going FROM p1 and TO p2 by stepping up in P1 to the common
     //                  root and then stepping down into p2
-    const std::string p1 = otherPath._path;
+    const std::string& p1 = otherPath._path;
     const std::string& p2 = this->_path;
 
     // find the point at which (if any) that p1 and p2 lexographically mismatch

@@ -46,7 +46,6 @@ namespace OpenSim {
  * @author Carmichael Ong
  */
 class OSIMCOMMON_API ComponentPath {
-// data
 private:
     std::string _path;
 
@@ -158,7 +157,5 @@ public:
         // noop: here for legacy purposes: the path is always internally normalized
     }
 };
-
-
 } // end of namespace OpenSim
 #endif // OPENSIM_COMPONENT_PATH_H_
