@@ -1091,9 +1091,9 @@ Model createHangingMuscleModel(double optimalFiberLength,
 
 TEMPLATE_TEST_CASE(
         "Hanging muscle minimum time", "[casadi]", MocoCasADiSolver) {
-    auto ignoreActivationDynamics = GENERATE(true);
-    auto ignoreTendonCompliance = GENERATE(false);
-    auto isTendonDynamicsExplicit = GENERATE(true);
+    auto ignoreActivationDynamics = GENERATE(false, true);
+    auto ignoreTendonCompliance = GENERATE(false, true);
+    auto isTendonDynamicsExplicit = GENERATE(false, true);
 
     CAPTURE(ignoreActivationDynamics);
     CAPTURE(ignoreTendonCompliance);
@@ -1116,7 +1116,7 @@ TEMPLATE_TEST_CASE(
     // Minimum time trajectory optimization.
     // -------------------------------------
     const auto svn = model.getStateVariableNames();
-    MocoSolution solutionTrajOpt;
+    MocoTrajectory solutionTrajOpt;
     std::string solutionFilename;
     {
         MocoStudy study;
@@ -1157,6 +1157,8 @@ TEMPLATE_TEST_CASE(
 
         solutionFilename += ".sto";
         solutionTrajOpt.write(solutionFilename);
+
+        //solutionTrajOpt = MocoTrajectory(solutionFilename);
     }
 
     // Perform time stepping forward simulation using optimized controls.
@@ -1195,7 +1197,17 @@ TEMPLATE_TEST_CASE(
                 tendonSlackLength, ignoreActivationDynamics,
                 ignoreTendonCompliance, true);
 
-        // Need to set the default kinematic state of the model so that the
+        // Need a reserve for CMC to solve.
+        auto* actu = new CoordinateActuator();
+        actu->setName("actuator");
+        actu->setOptimalForce(0.1);
+        actu->setMinControl(-100);
+        actu->setMaxControl(100);
+        actu->setCoordinate(&modelCMC.getCoordinateSet().get(0));
+        modelCMC.addForce(actu);
+        modelCMC.finalizeConnections();
+
+        // Need to set the initial state of the model so that the
         // initial equilibrium solve converges.
         modelCMC.updCoordinateSet().get("height").setDefaultValue(
                 solutionTrajOpt.getState("/joint/height/value")[0]);
@@ -1203,11 +1215,7 @@ TEMPLATE_TEST_CASE(
                 solutionTrajOpt.getState("/joint/height/speed")[0]);
         auto* mutableDGFMuscleCMC = dynamic_cast<DeGrooteFregly2016Muscle*>(
                 &modelCMC.updComponent("forceset/muscle"));
-        const SimTK::Vector control(
-                1, solutionTrajOpt.getControl("/forceset/muscle")[0]);
-        modelCMC.setDefaultControls(control);
-        if (ignoreActivationDynamics) {
-        } else {
+        if (!ignoreActivationDynamics) {
             mutableDGFMuscleCMC->set_default_activation(
                     solutionTrajOpt.getState("/forceset/muscle/activation")[0]);
            
@@ -1218,21 +1226,8 @@ TEMPLATE_TEST_CASE(
                         "/forceset/muscle/normalized_tendon_force")[0]);
         }
 
-        // Need a reserve for CMC to solve. 
-        auto* actu = new CoordinateActuator();
-        actu->setName("actuator");
-        actu->setOptimalForce(0.1);
-        actu->setMinControl(-100);
-        actu->setMaxControl(100);
-        actu->setCoordinate(&modelCMC.getCoordinateSet().get(0));
-        modelCMC.addForce(actu);
-        modelCMC.finalizeConnections();
-        auto& cmcState = modelCMC.initSystem();
-        mutableDGFMuscleCMC->setControls(
-                control, modelCMC.updControls(cmcState));
-        modelCMC.realizeVelocity(cmcState);
-
-        Logger::setLevelString("debug");
+        // Run CMC
+        // -------
         CMCTool cmc;
         std::string cmcFilename = "testDeGrooteFregly2016Muscle_cmc";
         cmc.setResultsDir(cmcFilename);
