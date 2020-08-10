@@ -154,8 +154,10 @@ int main() {
                     model.getStateVariableValue(state, "/implicit_auxdyn/foo");
         }
         // Simulate the differential equation in implicit mode using Moco.
-        // Here, we use Moco to solve an initial value problem, not an optimal
-        // control problem (there is no objective).
+        // Because this problem does not have any cost terms or control
+        // variables, Moco is solving an initial value problem (integrating
+        // forward in time from a given initial state), not an optimal control
+        // problem.
         {
             MocoStudy study;
             auto& problem = study.updProblem();

@@ -58,6 +58,9 @@
     <tab type="globals" visible="yes" title="Global Functions" intro=""/>
     <!-- <tab type="dirs" visible="yes" title="" intro=""/> -->
     <tab type="examples" visible="yes" title="" intro=""/>
+    <!--
+    These following navigation bar items cause a duplicate entry "Moco" in the
+    sidebar.
     <tab type="usergroup" url="@ref mocomainpage" visible="yes" title="Moco" intro="">
       <tab type="user" url="@ref mocogettingstarted" visible="yes" title="Getting started" intro=""/>
       <tab type="usergroup" url="@ref mocouserguide" visible="yes" title="User Guide" intro="">
@@ -72,6 +75,7 @@
       <tab type="user" url="@ref mocoapiref" visible="yes" title="Interface Reference" intro=""/>
       <tab type="user" url="@ref mocoexamples" visible="yes" title="Examples" intro=""/>
     </tab>
+    -->
   </navindex>
 
   <!-- Layout definition for a class page -->

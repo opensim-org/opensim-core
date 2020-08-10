@@ -68,6 +68,16 @@ and we can help convert it to C++. See the Matlab example
 In the future, Moco could allow you to define custom cost terms in Python. If
 this is of interest to you, please let the Moco developers know (on GitHub).
 
+@section mocosealed Sealed solutions or trajectories
+
+Moco uses the MocoTrajectory and MocoSolution classes to hold initial guesses
+and solutions to optimal control problems. Solving a problem
+(MocoStudy::solve()) returns a MocoSolution.
+If the solver failed to converge, the solution will be sealed
+(MocoTrajectory::isSealed()), which means that you cannot do anything with the
+it (read, edit, or write) until you call MocoTrajectory::unseal(). The
+sealing forces you to acknowledge that the solver failed.
+
 @section utilities Utilities
 
 Moco contains utilities for creating models, modifying models,

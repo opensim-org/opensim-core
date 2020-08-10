@@ -92,7 +92,15 @@ trajectory.getStatesTrajectoryMat()
 @par Implicit dynamics model
 If the solver uses an implicit dynamics mode, then there are "control"
 variables ("adjunct" variables in tropter's terminology) for the generalized
-accelerations. These are stored in the trajectory as derivative variables. */
+accelerations. These are stored in the trajectory as derivative variables.
+
+@par Sealed trajectories
+If the trajectory is obtained as the failed solution to a problem,
+the trajectory will be sealed (MocoTrajectory::isSealed()), which means
+that you cannot do anything with the trajectory (read, edit, or write) until you
+call MocoTrajectory::unseal(). The sealing forces you to acknowledge that the
+solver failed.
+ */
 // Not using three-slash doxygen comments because that messes up verbatim.
 class OSIMMOCO_API MocoTrajectory {
 public:
