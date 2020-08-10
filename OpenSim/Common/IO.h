@@ -133,6 +133,73 @@ public:
     static bool EndsWithIgnoringCase(
             const std::string& string, const std::string& ending);
     static void eraseEmptyElements(std::vector<std::string>& list);
+
+    /**
+     * A class that:
+     *
+     * - On construction: switches the calling process's current working
+     *   directory to the supplied directory
+     *
+     * - On destruction: switches the calling process's working directory
+     *   back to its original directory.
+     */
+    class CwdChanger final {
+        std::string _existingDir;
+
+        /**
+         * Constructs a CwdChanger that does nothing.
+         */
+        CwdChanger();
+
+        /**
+         * Constructs a CwdChanger that, during construction, switches the
+         * calling process's working directory to `newDir`.
+         */
+        CwdChanger(const std::string& newDir);
+
+    public:
+        /**
+         * Returns a CwdChanger that does nothing.
+         *
+         * This is useful for conditional directory changing:
+         *
+         *     CwdChanger c = shouldSwitch ? CwdChanger::changeTo(p) : CwdChanger::noop();
+         */
+        static CwdChanger noop();
+
+        /**
+         * Returns a CwdChanger that changes to `newDir`.
+         */
+        static CwdChanger changeTo(const std::string& newDir);
+
+        /**
+         * Returns a CwdChanger that changes to the parent of `path`.
+         *
+         * This is useful when changing into a file's parent dir:
+         *
+         *     CwdChanger::changeToParentOf(xmlFile);
+         */
+        static CwdChanger changeToParentOf(const std::string& path);
+
+        CwdChanger(const CwdChanger&) = delete;
+        CwdChanger(CwdChanger&& tmp);
+        CwdChanger& operator=(const CwdChanger&) = delete;
+        CwdChanger& operator=(CwdChanger&&) = delete;
+
+        /**
+         * Destructs a CwdChanger instance.
+         *
+         * The destructor switches the calling process's current working
+         * directory back to whatever it was before constructing the instance,
+         * unless:
+         *
+         * - The instance was constructed with `noop()`: in this case, it does
+         *   nothing
+         *
+         * - The instance is an rvalue temporary: does nothing
+         */
+        ~CwdChanger() noexcept;
+    };
 //=============================================================================
 };  // END CLASS IO
 
