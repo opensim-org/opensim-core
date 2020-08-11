@@ -50,8 +50,8 @@ std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
     Model model = get_model().process(getDocumentDirectory());
     model.initSystem();
 
-    TimeSeriesTable kinematics =
-            get_kinematics().processRadians(getDocumentDirectory(), model);
+    TimeSeriesTable kinematics = get_kinematics().processAndConvertToRadians(
+            getDocumentDirectory(), model);
 
     // Prescribe the kinematics.
     // -------------------------
@@ -73,7 +73,7 @@ std::pair<MocoStudy, TimeSeriesTable> MocoInverse::initializeInternal() const {
 
     MocoStudy study;
     auto& problem = study.updProblem();
-    problem.setModelCopy(model);
+    problem.setModelAsCopy(model);
 
     TimeInfo timeInfo;
     updateTimeInfo("kinematics", kinematics.getIndependentColumn().front(),

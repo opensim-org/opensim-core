@@ -50,7 +50,7 @@ public:
     /// passed-in model will have no effect on this MocoPhase.
     /// This function returns a pointer to the model stored in the phase
     /// (the copy).
-    Model* setModelCopy(Model model);
+    Model* setModelAsCopy(Model model);
     /// Set a model processor for creating the model for this phase. Use this
     /// to provide a model as a .osim file.
     void setModelProcessor(ModelProcessor model);
@@ -430,8 +430,8 @@ public:
     /// @see MocoPhase::setModel().
     Model* setModel(std::unique_ptr<Model> model);
     /// Set the model to use for phase 0.
-    /// @see MocoPhase::setModelCopy().
-    Model* setModelCopy(Model model);
+    /// @see MocoPhase::setModelAsCopy().
+    Model* setModelAsCopy(Model model);
     /// Update the model in phase 0.
     Model& updModel() { return upd_phases(0).updModel(); }
     /// Set a model processor for phase 0.
@@ -518,12 +518,11 @@ public:
     /// This function will check your problem for various errors.
     MocoProblemRep createRep() const { return MocoProblemRep(*this); }
 #endif
-    /// @cond
-    /// For internal use. You must manage the memory for the returned pointer.
+    /// Use this variant of createRep() if you require the MocoProblemRep to be
+    /// dynamically-allocated MocoProblemRep.
     std::unique_ptr<MocoProblemRep> createRepHeap() const {
         return std::unique_ptr<MocoProblemRep>(new MocoProblemRep(*this));
     }
-    /// @endcond
 
     friend MocoProblemRep;
 

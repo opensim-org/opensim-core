@@ -39,7 +39,8 @@ MocoStudy::MocoStudy(const std::string& omocoFile) : Object(omocoFile) {
 }
 
 void MocoStudy::constructProperties() {
-    constructProperty_write_solution("./");
+    constructProperty_write_solution(false);
+    constructProperty_results_directory("./");
     constructProperty_problem(MocoProblem());
     constructProperty_solver(MocoCasADiSolver());
 }
@@ -48,22 +49,23 @@ const MocoProblem& MocoStudy::getProblem() const { return get_problem(); }
 
 MocoProblem& MocoStudy::updProblem() { return upd_problem(); }
 
-MocoSolver& MocoStudy::initSolverInternal() {
+void MocoStudy::initSolverInternal() const {
     // TODO what to do if we already have a solver (from cloning?)
-    upd_solver().resetProblem(get_problem());
-    return upd_solver();
+    get_solver().resetProblem(get_problem());
 }
 
 template <>
 MocoTropterSolver& MocoStudy::initSolver<MocoTropterSolver>() {
     set_solver(MocoTropterSolver());
-    return dynamic_cast<MocoTropterSolver&>(initSolverInternal());
+    initSolverInternal();
+    return dynamic_cast<MocoTropterSolver&>(upd_solver());
 }
 
 template <>
 MocoCasADiSolver& MocoStudy::initSolver<MocoCasADiSolver>() {
     set_solver(MocoCasADiSolver());
-    return dynamic_cast<MocoCasADiSolver&>(initSolverInternal());
+    initSolverInternal();
+    return dynamic_cast<MocoCasADiSolver&>(upd_solver());
 }
 
 MocoTropterSolver& MocoStudy::initTropterSolver() {
@@ -78,17 +80,16 @@ MocoCasADiSolver& MocoStudy::initCasADiSolver() {
 MocoSolver& MocoStudy::updSolver() { return updSolver<MocoSolver>(); }
 
 MocoSolution MocoStudy::solve() const {
-    // TODO avoid const_cast.
-    const_cast<Self*>(this)->initSolverInternal();
+    initSolverInternal();
 
     MocoSolution solution = get_solver().solve();
 
     bool originallySealed = solution.isSealed();
-    if (get_write_solution() != "false") {
-        OpenSim::IO::makeDir(get_write_solution());
+    if (get_write_solution()) {
+        OpenSim::IO::makeDir(get_results_directory());
         std::string prefix = getName().empty() ? "MocoStudy" : getName();
         solution.unseal();
-        const std::string filename = get_write_solution() +
+        const std::string filename = get_results_directory() +
                                      SimTK::Pathname::getPathSeparator() +
                                      prefix + "_solution.sto";
         try {

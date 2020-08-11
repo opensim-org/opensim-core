@@ -47,7 +47,7 @@ Model* MocoPhase::setModel(std::unique_ptr<Model> model) {
     model->finalizeConnections();
     return upd_model().setModel(std::move(model));
 }
-Model* MocoPhase::setModelCopy(Model model) {
+Model* MocoPhase::setModelAsCopy(Model model) {
     set_model(ModelProcessor(std::move(model)));
     return &upd_model().updModel();
 }
@@ -216,8 +216,8 @@ MocoProblem::MocoProblem() { constructProperties(); }
 Model* MocoProblem::setModel(std::unique_ptr<Model> model) {
     return upd_phases(0).setModel(std::move(model));
 }
-Model* MocoProblem::setModelCopy(Model model) {
-    return upd_phases(0).setModelCopy(std::move(model));
+Model* MocoProblem::setModelAsCopy(Model model) {
+    return upd_phases(0).setModelAsCopy(std::move(model));
 }
 void MocoProblem::setModelProcessor(ModelProcessor model) {
     upd_phases(0).setModelProcessor(std::move(model));

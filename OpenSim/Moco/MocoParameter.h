@@ -47,6 +47,10 @@ List properties are not currently supported.
 The name you give to a MocoParameter does not need to match the
 name of its model property.
 
+The default initial guess for a parameter depends on the solver you use. Most
+likely, the default initial guess is the midpoint of the bounds on the
+parameter (NOT the value of the property in the model).
+
 Create a MocoParameter from a property in the model:
 @code
 MocoParameter p0;

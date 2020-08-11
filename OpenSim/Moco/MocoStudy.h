@@ -52,6 +52,22 @@ MocoStudy::visualize().
 After calling solve(), you can edit the MocoProblem and/or the MocoSolver.
 You can then call solve() again, if you wish.
 
+Obtaining the solution
+----------------------
+The most common way to obtain the MocoStudy is in code, using the MocoSolution
+object returned by solve(). This norm differs from the behavior of OpenSim's
+other tools, which do not make their results available in code and instead write
+their results to file. If you want MocoStudy to write the solution to file at
+the end of solve(), use set_write_solution() and set_results_directory(). The
+name of the solution file is "<study-name>_solution.sto" or
+"MocoStudy_solution.sto" if the MocoStudy object has no name. Alternatively, you
+can write the solution to file yourself:
+
+@code
+MocoSolution solution = study.solve();
+solution.write("solution.sto");
+@endcode
+
 Saving the study setup to a file
 --------------------------------
 You can save the MocoStudy to a file by calling MocoStudy::print(), and you
@@ -71,21 +87,29 @@ class OSIMMOCO_API MocoStudy : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoStudy, Object);
 
 public:
-    OpenSim_DECLARE_PROPERTY(write_solution, std::string,
+    OpenSim_DECLARE_PROPERTY(write_solution, bool,
+            "Should the solution be written to a file at the end of solving "
+            "the problem? Default: false.");
+    OpenSim_DECLARE_PROPERTY(results_directory, std::string,
             "Provide the folder path (relative to working directory) to which "
-            "the solution files should be written. Set to 'false' to not write "
-            "the solution to disk.");
+            "the solution file should be written. Default: './'.");
 
     MocoStudy();
 
     /// Load a MocoStudy setup file.
     MocoStudy(const std::string& omocoFile);
 
+    /// Access the MocoProblem within this study.
     const MocoProblem& getProblem() const;
 
+    /// Access the MocoProblem within this study. This function allows you to
+    /// modify the MocoProblem.
     /// If using this method in C++, make sure to include the "&" in the
     /// return type; otherwise, you'll make a copy of the problem, and the copy
-    /// will have no effect on this MocoStudy.
+    /// will have no effect on this MocoStudy. See this example:
+    /// @code{.cpp}
+    /// MocoProblem& problem = study.updProblem();
+    /// @endcode
     MocoProblem& updProblem();
 
     /// Call this method once you have finished setting up your MocoProblem.
@@ -110,14 +134,19 @@ public:
     /// will have no effect on this MocoStudy.
     MocoSolver& updSolver();
 
-    /// Solve the provided MocoProblem using the provided MocoSolver, and
-    /// obtain the solution to the problem. If the write_solution property
-    /// contains a file path (that is, it's not "false"), then the solution is
-    /// also written to disk.
+    /// Solve the provided MocoProblem using the provided MocoSolver, and obtain
+    /// the solution to the problem. If the write_solution property is true,
+    /// then the solution is also written to disk in the directory specified in
+    /// the results_directory property.
     /// @precondition
     ///     You must have finished setting up both the problem and solver.
     /// This reinitializes the solver so that any changes you have made will
     /// hold.
+    ///
+    /// Use MocoSolution::success() on the returned solution to detect if the
+    /// solver succeeded. If the solver did not succeed the solution will be
+    /// sealed: you will not be able to use the failed solution
+    /// until you acknowledge the failure by invoking MocoSolution::unseal().
     MocoSolution solve() const;
 
     /// Interactively visualize a trajectory using the simbody-visualizer. The
@@ -135,8 +164,8 @@ public:
     /// PositionMotion) is.
     /// @see OpenSim::analyze()
     /// @note Parameters in the MocoTrajectory are **not** applied to the model.
-    TimeSeriesTable analyze(
-            const MocoTrajectory& it, std::vector<std::string> outputPaths) const;
+    TimeSeriesTable analyze(const MocoTrajectory& it,
+            std::vector<std::string> outputPaths) const;
 
     /// @name Using other solvers
     /// @{
@@ -165,7 +194,7 @@ protected:
             "The optimal control algorithm for solving the problem.");
 
 private:
-    MocoSolver& initSolverInternal();
+    void initSolverInternal() const;
     void constructProperties();
 };
 

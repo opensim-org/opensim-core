@@ -159,10 +159,10 @@ public:
     void setConstraintInfo(const MocoConstraintInfo& cInfo) {
         set_MocoConstraintInfo(cInfo);
     }
-    /// For use by solvers. This index is the location of this
-    /// MocoPathConstraint's first error in the MocoProblem's full path
-    /// constraint errors vector. Since it is set by the MocoProblem, it is only
-    /// available after initialization.
+    /** For use by solvers. This index is the location of this
+    MocoPathConstraint's first error in the MocoProblem's full path
+    constraint errors vector. Since it is set by the MocoProblem, it is only
+    available after initialization. */
     int getPathConstraintIndex() const {
         OPENSIM_THROW_IF(m_path_constraint_index == -1, Exception,
                 "Path constraint index is not available until after "
@@ -170,11 +170,12 @@ public:
         return m_path_constraint_index;
     }
 
-    /// Calculate errors in the path constraint equations. The *errors* argument
-    /// represents the concatenated error vector for all path constraints in the
-    /// MocoProblem. This method creates a view into *errors* to access the
-    /// elements for this MocoPathConstraint and passes this view to
-    /// calcPathConstraintErrorsImpl().
+    /** Calculate errors in the path constraint equations. The *errors* argument
+    represents the concatenated error vector for all path constraints in the
+    MocoProblem. This method creates a view into *errors* to access the
+    elements for this MocoPathConstraint and passes this view to
+    calcPathConstraintErrorsImpl().
+    @precondition initializeOnModel() has been invoked. */
     void calcPathConstraintErrors(
             const SimTK::State& state, SimTK::Vector& errors) const {
 
@@ -187,14 +188,17 @@ public:
         calcPathConstraintErrorsImpl(state, theseErrors);
     }
 
-    /// For use by solvers. This also performs error checks on the Problem.
+    /** Perform error checks on user input for this constraint, and cache
+    quantities needed when computing the constraint errors.
+    to efficiently evaluate the constraint.
+    This function must be invoked before invoking
+    calcPathConstraintErrors(). */
     void initializeOnModel(const Model& model, const MocoProblemInfo&,
             const int& pathConstraintIndex) const;
 
 protected:
     OpenSim_DECLARE_UNNAMED_PROPERTY(MocoConstraintInfo,
-            "The bounds and "
-            "labels for this MocoPathConstraint.");
+            "The bounds and labels for this MocoPathConstraint.");
 
     /// Perform any caching.
     /// The number of scalar constraint equations this MocoPathConstraint

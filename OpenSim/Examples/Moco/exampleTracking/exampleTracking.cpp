@@ -81,14 +81,13 @@ std::unique_ptr<Model> createDoublePendulumModel() {
     model->addForce(tau1);
 
     // Add display geometry.
-    Ellipsoid bodyGeometry(0.5, 0.1, 0.1);
     SimTK::Transform transform(SimTK::Vec3(-0.5, 0, 0));
     auto* b0Center = new PhysicalOffsetFrame("b0_center", *b0, transform);
     b0->addComponent(b0Center);
-    b0Center->attachGeometry(bodyGeometry.clone());
+    b0Center->attachGeometry(new Ellipsoid(0.5, 0.1, 0.1));
     auto* b1Center = new PhysicalOffsetFrame("b1_center", *b1, transform);
     b1->addComponent(b1Center);
-    b1Center->attachGeometry(bodyGeometry.clone());
+    b1Center->attachGeometry(new Ellipsoid(0.5, 0.1, 0.1));
 
     model->finalizeConnections();
 

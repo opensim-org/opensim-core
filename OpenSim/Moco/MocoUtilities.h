@@ -49,21 +49,6 @@ class Model;
 class MocoTrajectory;
 class MocoProblem;
 
-/// This class stores the formatting of a stream and restores that format
-/// when the StreamFormat is destructed.
-/// @ingroup mocologutil
-class StreamFormat {
-public:
-    StreamFormat(std::ostream& stream) : m_stream(stream) {
-        m_format.copyfmt(stream);
-    }
-    ~StreamFormat() { m_stream.copyfmt(m_format); }
-
-private:
-    std::ostream& m_stream;
-    std::ios m_format{nullptr};
-}; // StreamFormat
-
 /// Calculate the requested outputs using the model in the problem and the
 /// states and controls in the MocoTrajectory.
 /// The output paths can be regular expressions. For example,

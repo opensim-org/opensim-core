@@ -10,7 +10,8 @@ schemes are implemented using an OpenSim model.
 
 @section implorg Organization of classes
 
-Moco is organized as pairs of Problem and Solver classes.
+Moco is organized as multiple pairs of "problem" and "solver" classes at
+different abstraction levels.
 
 @image html MocoImplementationDiagram.svg width=700px
 
@@ -21,10 +22,11 @@ MocoProblem describes a direct collocation problem using an OpenSim Model, and
 MocoSolver is an abstract class for solving MocoProblems. Moco provides two
 MocoSolvers: MocoTropterSolver and MocoCasADiSolver. MocoTropterSolver contains
 a problem-solver pair for optimal control problems: TropterProblem (which
-derives from tropter::Problem) and tropter::DirectCollocation. To solve the
-optimal control problem, tropter::DirectCollocation employs a problem-solver
-pair for generic nonlinear optimization: tropter::Transcription (which derives
-from tropter::optimization::Problem) and tropter::optimization::Solver. The
+derives from tropter::Problem) and tropter::DirectCollocation (tropter is not
+exposed in Doxygen). To solve the optimal control problem,
+tropter::DirectCollocation employs a problem-solver pair for generic nonlinear
+optimization: tropter::Transcription (which derives from
+tropter::optimization::Problem) and tropter::optimization::Solver. The
 MocoCasADiSolver employs the problem-solver pair of MocoCasOCProblem (deriving
 from CasOC::Problem) and CasOC::Solver.
 
@@ -243,7 +245,7 @@ provides a container of Component%s and the names of the appropriate discrete
 state variables. For (2), MocoProblemRep provides a container of Output%s that
 provide the residuals.
 
-To satisfy the Model Component interface, components must implement
+To satisfy the %Model %Component interface, components must implement
 Component::computeStateVariableDerivatives() to provide the explicit form of the
 differential equations; this is still true for components supporting an implicit
 mode. Components supporting implicit mode must also support explicit mode so
@@ -323,7 +325,7 @@ In this scenario, we do not include path constraints for the kinematic
 constraint errors: the generalized coordinates, speeds, and accelerations are no
 longer variables in the problem, and so the constraint errors are constant.
 
-@section MocoGoal stage dependency
+@section implstagedep MocoGoal stage dependency
 
 MocoGoals can declare the SimTK::Stage upon which they depend.
 This allows solvers to decide how to efficiently prepare the inputs for a

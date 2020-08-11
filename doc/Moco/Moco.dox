@@ -7,10 +7,10 @@ namespace OpenSim {
 
 Moco is a part of %OpenSim for solving optimal control problems for
 musculoskeletal systems defined as %OpenSim models.
-The package has Python, MATLAB, and XML (command-line) interfaces; the core
+The package has Python, MATLAB, and XML interfaces; the core
 library is written in C++.
 
-@image html OverviewOfMoco.png width=500px
+@image html OverviewOfMoco.png width=400px
 
 Here are some problems you can solve with Moco:
 
@@ -20,14 +20,17 @@ Here are some problems you can solve with Moco:
 
 Sections of the documentation:
  - @ref mocogettingstarted
- - @subpage mocouserguide "User Guide: Learning how to use Moco"
-    - @ref mocotool "Solving for muscle activity that tracks an observed motion"
-    - @ref mocostudy "Defining a custom optimization problem"
- - @subpage mocotheoryguide "Theory Guide: Learning how Moco solves optimal control problems"
- - @subpage mocodevguide "Developer Guide: Learning the Moco codebase and how to contribute"
+ - @subpage mocouserguide "User Guide: How to use Moco"
+    - @ref mocoinverse "MocoInverse: Prescribing a motion"
+    - @ref mocoinverse "MocoTrack: Tracking a motion"
+    - @ref mocostudy "MocoStudy: Defining a custom problem"
+    - @ref mocogoal "MocoGoals: available cost terms and endpoint constraints"
+    - @ref mocofaq "Frequently asked questions"
+ - @subpage mocotheoryguide "Theory Guide: How Moco solves optimal control problems"
+ - @subpage mocodevguide "Developer Guide: The Moco codebase and how to contribute"
  - @subpage mocoapiref "Moco Interface (API) Reference"
  - @ref mococheatsheet "Printable cheat sheet"
- - @subpage mocoexamples "List of examples"
+ - @subpage mocoexamples "Examples"
 
 Other resources:
  - [SimTK: downloads, user forum, and mailing lists](https://simtk.org/projects/opensim-moco)

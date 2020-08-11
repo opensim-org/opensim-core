@@ -302,17 +302,18 @@ solution.unseal(); % Access a failed solution.
          & \textcolor{dblue}{t_0 \in [t_{0,L}, t_{0,U}] \quad\quad  t_f \in [t_{f,L}, t_{f,U}]} && \texttt{\textcolor{dblue}{problem.setTimeBounds()}} \\
          & {p \in [p_{L}, p_{U}]} && \texttt{{problem.addParameter()}} \\
     \end{align*}
-
+\vspace{-40pt}
 \begin{center}
     \begin{tabular}{c l|c l|c l}
-    $ t    $     & time                                                 & $ w_j $               & weight for the $j$-th cost              & $ \phi $                     & position-level constraints \\
-    $ q(t) $     & generalized coordinates                              & $ J_j $               & the $j$-th cost                         & $ \nu    $                   & velocity-level constraints \\
-    $ u(t) $     & generalized speeds                                   & $ s_{c,j} $           & integrand used in the $j$-th cost       & $ \alpha    $                & acceleration-level constraints\\
-    $ z(t) $     & auxiliary states                                     & $ M $                 & mass matrix                             & $ g $                        & path constraints \\
-    $ y(t) $     & $ (q(t),u(t),z(t)) $                                 & $ f_{\textrm{bias}} $ & centripetal and coriolis forces         & $ V_k $                      & the $k$-th endpoint constraint \\
-    $ x(t) $     & controls                                             & $ G $                 & kinematic constraint Jacobian           & $ K $                        & number of endpoint constraints \\
-    $ p    $     & constant parameters                                  & $ f_{\textrm{app}} $  & applied forces                          & $ (\enspace)_{U}   $     & an upper bound \\
-    $ \lambda $  & kinematic constraint multipliers                     & $ f_{\textrm{aux}} $  & auxiliary dynamics (explicit \& implicit) & $ (\enspace)_{L}   $     & a lower bound \\
+    $ t    $     & time                             & $ w_j $               & weight for the $j$-th cost                       & $ \phi $                & position-level constraints \\
+    $ q(t) $     & generalized coordinates          & $ J_j $               & the $j$-th cost                                  & $ \nu    $             & velocity-level constraints \\
+    $ u(t) $     & generalized speeds               & $ s_{c,j} $           & integrand used in the $j$-th cost                & $ \alpha    $             & acceleration-level constraints\\
+    $ z(t) $     & auxiliary states                 & $ M $                 & mass matrix                                      & $ g $                & path constraints \\
+    $ y(t) $     & $ (q(t),u(t),z(t)) $             & $ f_{\textrm{bias}} $ & centripetal and coriolis forces                  & $ V_k $              & the $k$-th endpoint constraint \\
+    $ x(t) $     & controls                         & $ G $                 & kinematic constraint Jacobian                    & $ K $                & number of endpoint constraints \\
+    $ p    $     & constant parameters              & $ f_{\textrm{app}} $  & applied forces                                   & $ s_{e,k} $          & integrand in $k$-th endpoint con. \\
+    $ \lambda $  & kinematic constraint multipliers & $ f_{\textrm{aux}} $  & auxiliary dynamics (explicit \& implicit)        & $ (\enspace)_{U}   $ & an upper bound \\
+                 &                                  &                       &                                                  & $ (\enspace)_{L}   $ & a lower bound \\
 \end{tabular}
 \end{center}
 

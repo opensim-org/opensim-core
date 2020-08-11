@@ -118,7 +118,7 @@ public:
     /// as a cost or endpoint constraint.
     Mode getDefaultMode() const { return getDefaultModeImpl(); }
 
-    /// Can this constraint be used in endpoint constraint mode?
+    /// Can this goal be used in endpoint constraint mode?
     bool getSupportsEndpointConstraint() const {
         return getSupportsEndpointConstraintImpl();
     }
@@ -140,7 +140,7 @@ public:
 
     /// Get the number of integrals required by this cost.
     /// This returns either 0 (for a strictly-endpoint cost) or 1.
-    /// @precondition This goal must be initialized.
+    /// @precondition initializeOnModel() has been invoked.
     int getNumIntegrals() const {
         OPENSIM_THROW_IF_FRMOBJ(m_numIntegrals == -1, Exception,
                 "The goal must be initialized for the number of integrals to "
@@ -179,6 +179,7 @@ public:
     };
     /// Calculate the integrand that should be integrated and passed to
     /// calcCost(). If getNumIntegrals() is not zero, this must be implemented.
+    /// @precondition initializeOnModel() has been invoked.
     SimTK::Real calcIntegrand(const IntegrandInput& input) const {
         double integrand = 0;
         if (!get_enabled()) { return integrand; }
@@ -215,6 +216,7 @@ public:
     /// cost. In endpoint constraint mode, each element of the vector is a
     /// different scalar equation to enforce as a constraint.
     /// The length of the returned vector is getNumOutputs().
+    /// @precondition initializeOnModel() has been invoked.
     void calcGoal(const GoalInput& input, SimTK::Vector& goal) const {
         goal.resize(getNumOutputs());
         goal = 0;
@@ -248,7 +250,11 @@ public:
         }
         goal *= m_weightToUse;
     }
-    /// For use by solvers. This also performs error checks on the Problem.
+
+    /// Perform error checks on user input for this goal, and cache
+    /// quantities needed when computing the goal value.
+    /// This function must be invoked before invoking calcIntegrand() or
+    /// calcGoal().
     void initializeOnModel(const Model& model) const {
         m_model.reset(&model);
         if (!get_enabled()) { return; }

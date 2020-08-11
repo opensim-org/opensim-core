@@ -3,6 +3,16 @@ Moco Change Log
 
 0.5.0 (in development)
 ----------------------
+- 2020-08-11: TableProcessor::processRadians() is renamed to 
+              processAndConvertToRadians().
+              
+- 2020-08-10: The MocoStudy property write_solution was split into separate
+              write_solution (bool) and results_directory properties. MocoStudy 
+              no longer write the solution to file by default.
+
+- 2020-08-07: MocoStudy::setModelCopy() and MocoPhase::setModelCopy() are 
+              renamed as setModelAsCopy()
+
 - 2020-07-30: MocoTrack::solve() no longer takes a boolean argument for 
               visualizing the solution. Use MocoTrack::solveAndVisualize()
               instead.

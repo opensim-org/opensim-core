@@ -107,7 +107,7 @@ void MocoProblemRep::initialize() {
     // realizing to Stage::Acceleration will cause Simbody to compute it's own
     // Lagrange multipliers which will not necessarily be consistent with the
     // multipliers provided by a solver. Therefore, we'll create a copy of the
-    // original model, disable the its constraints, and apply the constraint
+    // original model, disable its constraints, and apply the constraint
     // forces equivalent to the solver's Lagrange multipliers before computing
     // the accelerations.
     // If there's a PrescribedMotion in the model, it's disabled by default
