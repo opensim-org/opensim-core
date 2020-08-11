@@ -80,17 +80,16 @@ public:
     the relevant operator will throw an exception). */
     TimeSeriesTable process(std::string relativeToDirectory,
             const Model* model = nullptr) const {
+        OPENSIM_THROW_IF_FRMOBJ(get_filepath().empty() && !m_tableProvided,
+                Exception, "No source table.");
+        OPENSIM_THROW_IF_FRMOBJ(!get_filepath().empty() && m_tableProvided,
+                Exception,
+                "Expected either an in-memory table or a filepath, but "
+                "both were provided.");
         TimeSeriesTable table;
-        if (get_filepath().empty()) {
-            if (m_tableProvided) {
-                table = m_table;
-            } else {
-                OPENSIM_THROW_FRMOBJ(Exception, "No source table.");
-            }
+        if (m_tableProvided) {
+            table = m_table;
         } else {
-            OPENSIM_THROW_IF_FRMOBJ(m_tableProvided, Exception,
-                    "Expected either an in-memory table or a filepath, but "
-                    "both were provided.");
             std::string path = get_filepath();
             if (!relativeToDirectory.empty()) {
                 using SimTK::Pathname;
@@ -113,7 +112,7 @@ public:
     }
     /** Same as process(), but the columns of processed table are converted from
     degrees to radians, if applicable. This conversion requires a model. */
-    TimeSeriesTable processRadians(std::string relativeToDirectory,
+    TimeSeriesTable processAndConvertToRadians(std::string relativeToDirectory,
             const Model& model) const {
         TimeSeriesTable table = process(relativeToDirectory, &model);
         if (TableUtilities::isInDegrees(table)) {
@@ -125,8 +124,8 @@ public:
     }
     /** Same as above, but paths are evaluated with respect to the current
     working directory. */
-    TimeSeriesTable processRadians(const Model& model) const {
-        return processRadians({}, model);
+    TimeSeriesTable processAndConvertToRadians(const Model& model) const {
+        return processAndConvertToRadians({}, model);
     }
     /** Returns true if neither a filepath nor an in-memory table have been
     provided. */

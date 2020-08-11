@@ -3,6 +3,9 @@ Moco Change Log
 
 0.5.0 (in development)
 ----------------------
+- 2020-08-11: TableProcessor::processRadians() is renamed to 
+              processAndConvertToRadians().
+              
 - 2020-08-10: The MocoStudy property write_solution was split into separate
               write_solution (bool) and results_directory properties. MocoStudy 
               no longer write the solution to file by default.
