@@ -28,21 +28,35 @@ std::vector<double> linspace(double start, double end, int length);
 
 /// This class stores the formatting of a stream and restores that format
 /// when the StreamFormat is destructed.
+/// This is useful when you want to make temporary changes to the formatting of
+/// the stream.
+///
+/// @code
+/// std::stringstream ss;
+/// double x = 5.0;
+/// ss << x << std::endl; // '5'
+/// {
+///   StreamFormat format(ss);
+///   ss << std::scientific << std::setprecision(1) << x << std::endl; // '5.0e+00'
+///   ss << x << std::endl; // '5.0e+00'
+/// }
+/// ss << x << std::endl; // '5'
+/// @endcode
 class StreamFormat {
 public:
     StreamFormat(std::ostream& stream)
             : m_stream(stream), m_format_flags(stream.flags()) {
-        // m_format.copyfmt(stream);
+        m_format.copyfmt(stream);
     }
     ~StreamFormat() {
         m_stream.flags(m_format_flags);
-        // m_stream.copyfmt(m_format);
+        m_stream.copyfmt(m_format);
     }
 
 private:
     std::ostream& m_stream;
     std::ios_base::fmtflags m_format_flags;
-    // std::ios m_format{nullptr};
+    std::ios m_format{nullptr};
 }; // StreamFormat
 
 } // namespace tropter
