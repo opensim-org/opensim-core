@@ -98,7 +98,6 @@ public:
     template <typename FunctionType = GCVSpline>
     static TimeSeriesTable resampleWithIntervalBounded(
             const TimeSeriesTable& in, double interval);
-
 private:
     static int findStateLabelIndexInternal(const std::string* begin,
             const std::string* end, const std::string& desired);

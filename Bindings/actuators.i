@@ -11,6 +11,7 @@
 %include <OpenSim/Actuators/RigidTendonMuscle.h>
 %include <OpenSim/Actuators/Millard2012AccelerationMuscle.h>
 %include <OpenSim/Actuators/McKibbenActuator.h>
+%include <OpenSim/Actuators/DeGrooteFregly2016Muscle.h>
 
 %include <OpenSim/Actuators/ModelFactory.h>
 
