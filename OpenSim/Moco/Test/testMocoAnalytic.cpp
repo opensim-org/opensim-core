@@ -77,7 +77,7 @@ TEMPLATE_TEST_CASE("Second order linear min effort", "",
     MocoStudy moco;
     auto& problem = moco.updProblem();
 
-    problem.setModelCopy(model);
+    problem.setModelAsCopy(model);
     problem.setTimeBounds(0, 2);
     problem.setStateInfo("/jointset/j/coord/value", {-10, 10}, 0, 5);
     problem.setStateInfo("/jointset/j/coord/speed", {-10, 10}, 0, 2);

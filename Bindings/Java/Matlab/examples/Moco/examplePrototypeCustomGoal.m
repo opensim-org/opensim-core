@@ -24,7 +24,9 @@ function value = examplePrototypeCustomGoal
 % without error, then OpenSim/Moco developers may be able to convert your goal
 % into a proper C++ goal. Once your prototype works, create an issue
 % on GitHub. We cannot guarantee that OpenSim/Moco developers will have the
-% time to prioritize creating this goal in C++.
+% time to prioritize creating this goal in C++. See the C++ Moco example
+% exampleMocoCustomEffortGoal to see how you could create a C++ plugin for a
+% custom goal on your own.
 %
 % In C++, MocoGoals can be in cost mode or endpoint constraint mode. In this
 % example, we expect that your goal is in cost mode.

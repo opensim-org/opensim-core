@@ -70,7 +70,7 @@ Setting bounds for state and control variables is an important but often tedious
 process. To help, Moco sets some variable bounds automatically. See
 MocoPhase::setStateInfo() and MocoPhase::setControlInfo() for details.
 
-Although we support setting initial and final bounds for controls, such
+Although Moco supports setting initial and final bounds for controls, such
 functionality is not too useful: the initial and final values of a control have
 little influence on the value of the control at nearby times.
 
@@ -95,8 +95,8 @@ to a force balance: applied forces must match the net generalized forces
 determined by the kinematics (that is, inverse dynamics).
 
 To prescribe motion in the "reduce-DOF" way, add a PositionMotion component
-to your model. PositionMotion requires that all DOFs are prescribed; we do not
-support prescribing a subset of the degrees of freedom.
+to your model. PositionMotion requires that all DOFs are prescribed; Moco does
+not support prescribing a subset of the degrees of freedom.
 
 See @ref mocoinverse and @ref implpreskin for more information.
 
@@ -185,8 +185,8 @@ derivatives or minimize Lagrange multipliers in the problem.
 
 @code{.cpp}
 MocoTropterSolver& solver = moco.initTropterSolver();
-ms.set_enforce_constraint_derivatives(true);
-ms.set_lagrange_multiplier_weight(10);
+solver.set_enforce_constraint_derivatives(true);
+solver.set_lagrange_multiplier_weight(10);
 @endcode
 
 If constraint derivatives are enforced, velocity correction variables are added
@@ -204,7 +204,7 @@ variables:
 
 @code{.cpp}
 // Default bounds: [-0.1, 0.1]
-ms.set_velocity_correction_bounds({-0.25, 0.25});
+solver.set_velocity_correction_bounds({-0.25, 0.25});
 @endcode
 
 If constraint derivatives are not enforced or if the multibody constraint
@@ -212,9 +212,9 @@ Jacobian is rank-deficient, it is recommended that the Lagrange multiplier
 minimization term is added to the problem to impose uniqueness for
 these variables.
 
-Even though OpenSim supports non-holonomic constraints (that is,
-\f$ \nu(q, u, p) = 0 \f$), we only support holonomic constraints; that is,
-\f$ \phi(q) = 0 \f$.
+Even though OpenSim Models can contain non-holonomic constraints (that is,
+\f$ \nu(q, u, p) = 0 \f$), Moco solvers support only holonomic constraints; that
+is, \f$ \phi(q) = 0 \f$.
 
 By default, the controls at mesh interval midpoints are constrained by linear
 interpolation of control mesh endpoint values and is the recommended setting.
@@ -222,7 +222,7 @@ However, you may disable this behavior in the solver:
 
 \code{.cpp}
 MocoCasADiSolver& solver = moco.initCasADiSolver();
-ms.set_interpolate_control_midpoints(false);
+solver.set_interpolate_control_midpoints(false);
 \endcode
 
 @section casadivstropter MocoCasADiSolver versus MocoTropterSolver
@@ -231,7 +231,7 @@ Moco provides two direct collocation solvers that transcribe continuous optimal
 control problems into finite-dimensional NLPs that are passed to
 well-established derivative-based NLP solvers. MocoCasADiSolver uses the
 third-party CasADi library, and MocoTropterSolver uses a
-direct collocation solver we developed named Tropter. CasADi is an
+direct collocation solver developed internally named Tropter. CasADi is an
 open-source package for algorithmic differentiation and is a bridge to NLP
 solvers IPOPT, SNOPT, and others.
 

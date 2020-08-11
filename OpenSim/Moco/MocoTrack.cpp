@@ -79,7 +79,7 @@ MocoStudy MocoTrack::initialize() {
     }
 
     // Set the model on the MocoProblem, now that we're done configuring costs.
-    problem.setModelCopy(model);
+    problem.setModelAsCopy(model);
 
     // Control effort minimization.
     // ----------------------------
@@ -147,7 +147,7 @@ TimeSeriesTable MocoTrack::configureStateTracking(
 
     // Read in the states reference data and spline.
     // TODO convert Degrees to Radians.
-    TimeSeriesTable states = get_states_reference().processRadians(
+    TimeSeriesTable states = get_states_reference().processAndConvertToRadians(
             getDocumentDirectory(), model);
     auto stateSplines = GCVSplineSet(states, states.getColumnLabels());
 

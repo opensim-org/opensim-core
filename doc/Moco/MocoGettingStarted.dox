@@ -1,7 +1,7 @@
 namespace OpenSim {
 
 /**
-@page mocogettingstarted Getting started
+@page mocogettingstarted Getting started with Moco
 
 @section obtaining Obtaining Moco
 
@@ -57,17 +57,21 @@ package from Homebrew.
 The OpenSim distribution contains Moco Python examples in the folder
 `Resources/Code/Python/Moco`. Start with `exampleSlidingMass.py`.
 
-If you would prefer to use Python 2 instead of Python 3, let us know.
+If you would prefer to use Python 2 instead of Python 3, you must build from
+source using the instructions in the README.md file of the opensim-core source
+code repository (https://github.com/opensim-org/opensim-core/blob/master/README.md).
 
 In the future, we hope to make the Python package easier to install by
 distributing it through the Conda package manager.
 
+<!--
+(Most users use Moco through Matlab or Python, so we removed the command line
+tool when moving the code from the opensim-moco repository to opensim-core.)
+
 @section usingxml Using Moco with XML files and the command line
 
-<!--
 Moco provides a command-line tool, `bin/opensim-moco`, through which you can
 solve studies saved as XML files, using the `.omoco` file extension.
--->
 
 @note The command-line tool for Moco has been temporarily removed.
 
@@ -77,6 +81,7 @@ for visualizing a solution.
 Unfortunately, Moco does not yet provide any examples of XML files for use with
 the command-line interface. However, the MATLAB/Python examples can generate XML
 files that you can then use through the command-line interface.
+-->
 
 @section usingcpp Using Moco in C++
 

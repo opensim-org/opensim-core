@@ -43,6 +43,22 @@ class AccelerationMotion;
 /// This interface currently supports only single-phase problems.
 /// This class stores a reference (not a copy) to the original MocoProblem
 /// from which it was created.
+///
+/// @par ModelBase and ModelDisabledConstraints
+/// This class provides access to two models: ModelBase is obtained by
+/// processing the ModelProcessor that the user gives to MocoProblem.
+/// ModelDisabledConstraints is a copy of ModelBase in which all kinematic
+/// constraints are disabled.
+/// ModelDisabledConstraints contains a DiscreteForces component, which
+/// is used to apply constraint forces computed using ModelBase.
+/// If kinematics are not prescribed (with PositionMotion),
+/// ModelDisabledConstraints also contains an AccelerationMotion component,
+/// which is used by solvers that rely on implicit multibody dynamics.
+/// The initialize() function adds a DiscreteController
+/// to both models; this controller is used by a solver to set the control
+/// signals for actuators to use.
+/// To learn the need for and use of these two models, see @ref impldiverse.
+
 class OSIMMOCO_API MocoProblemRep {
 public:
     MocoProblemRep() = default;
@@ -61,11 +77,12 @@ public:
     const std::string& getName() const;
 
     /// Get a reference to the copy of the model being used by this
-    /// MocoProblemRep. This model is *not* the model given to MocoGoal or
-    /// MocoPathConstraint, but can be used within solvers to compute constraint
-    /// forces and constraint errors (see getModelDisabledConstraints() for more
-    /// details). Any parameter updates via a MocoParameter added to the problem
-    /// will be applied to this model.
+    /// MocoProblemRep. This model is obtained by processing the ModelProcessor
+    /// the user gives to MocoProblem. This model is *not* the model given to
+    /// MocoGoal or MocoPathConstraint, but can be used within solvers to
+    /// compute constraint forces and constraint errors (see
+    /// getModelDisabledConstraints() for more details). Any parameter updates
+    /// via a MocoParameter added to the problem will be applied to this model.
     const Model& getModelBase() const { return m_model_base; }
     /// This is a state object that solvers can use along with ModelBase.
     SimTK::State& updStateBase() const { return m_state_base; }

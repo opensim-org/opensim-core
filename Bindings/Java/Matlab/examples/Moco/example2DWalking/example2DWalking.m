@@ -66,7 +66,8 @@ import org.opensim.modeling.*;
 track = MocoTrack();
 track.setName('gaitTracking');
 
-% Set the weights for the terms in the objective function.
+% Set the weights for the terms in the objective function. The values below were
+% obtained by trial and error.
 %
 % Note: If GRFTrackingWeight is set to 0 then GRFs will not be tracked. Setting
 % GRFTrackingWeight to 1 will cause the total tracking error (states + GRF) to
