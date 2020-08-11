@@ -43,6 +43,7 @@
 #include <OpenSim/Analyses/osimAnalyses.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Auxiliary/auxiliaryTestMuscleFunctions.h>
+#include "OpenSim/Moco/Components/DeGrooteFregly2016Muscle.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -96,6 +97,7 @@ void testThelen2003Muscle_Deprecated();
 void testThelen2003Muscle();
 void testMillard2012EquilibriumMuscle();
 void testMillard2012AccelerationMuscle();
+void testDeGrooteFregly2016Muscle();
 void testSchutte1993Muscle();
 void testDelp1990Muscle();
 
@@ -142,6 +144,12 @@ int main()
     }catch (const Exception& e){ 
         e.print(cout);
         failures.push_back("testMillard2012AccelerationMuscle");
+    }
+    try { testDeGrooteFregly2016Muscle();
+        cout << "testDeGrooteFregly2016Muscle Test passed" << endl; 
+    }catch (const Exception& e){ 
+        e.print(cout);
+        failures.push_back("testDeGrooteFregly2016Muscle");
     }
 
     printf("\n\n");
@@ -967,6 +975,35 @@ void testMillard2012AccelerationMuscle()
     // Note that simulateMuscle will call testMuscleEquilibriumSolve() but it
     // will ignore the Millard2012AccelerationMuscle because it is not an
     // equilibrium-based muscle model.
+    simulateMuscle(muscle, 
+        x0, 
+        act0, 
+        &motion, 
+        &control,
+        false);
+}
+
+void testDeGrooteFregly2016Muscle()
+{
+    DeGrooteFregly2016Muscle muscle;
+    muscle.setName("muscle");
+    muscle.set_max_isometric_force(MaxIsometricForce0);
+    muscle.set_optimal_fiber_length(OptimalFiberLength0);
+    muscle.set_tendon_slack_length(TendonSlackLength0);
+    muscle.set_pennation_angle_at_optimal(PennationAngle0);
+    muscle.set_activation_time_constant(Activation0);
+    muscle.set_deactivation_time_constant(Deactivation0);
+    muscle.set_tendon_compliance_dynamics_mode("explicit");
+    muscle.set_ignore_tendon_compliance(false);
+    muscle.set_ignore_activation_dynamics(false);
+
+    double x0 = 0;
+    double act0 = 0.2;
+
+    Constant control(0.5);
+
+    Sine motion(0.1, SimTK::Pi, 0);
+
     simulateMuscle(muscle, 
         x0, 
         act0, 
