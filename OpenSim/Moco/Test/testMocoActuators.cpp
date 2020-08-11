@@ -1074,7 +1074,7 @@ Model createHangingMuscleModel(double optimalFiberLength,
     actu->set_tendon_strain_at_one_norm_force(0.10);
     actu->set_ignore_activation_dynamics(ignoreActivationDynamics);
     actu->set_ignore_tendon_compliance(ignoreTendonCompliance);
-    actu->set_fiber_damping(0);
+    actu->set_fiber_damping(0.01);
     if (!isTendonDynamicsExplicit) {
         actu->set_tendon_compliance_dynamics_mode("implicit");
     }
@@ -1157,8 +1157,6 @@ TEMPLATE_TEST_CASE(
 
         solutionFilename += ".sto";
         solutionTrajOpt.write(solutionFilename);
-
-        //solutionTrajOpt = MocoTrajectory(solutionFilename);
     }
 
     // Perform time stepping forward simulation using optimized controls.

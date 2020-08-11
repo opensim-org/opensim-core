@@ -199,7 +199,14 @@ protected:
             MusclePotentialEnergyInfo& mpei) const override;
 
 public:
-    /// Fiber velocity is assumed to be 0.
+    /// In this method, calcEquilibriumResidual() is used to find a value of the
+    /// normalized tendon force state variable that produces muscle-tendon 
+    /// equilibrium. This relies on the implicit form of tendon compliance since 
+    /// the explicit form uses the normalized tendon force state variable 
+    /// directly to compute fiber force, which always produces a zero 
+    /// muscle-tendon equilibrium residual. The derivative of normalized tendon 
+    /// force is set to zero since a value is required for the implicit form of 
+    /// the model.  
     void computeInitialFiberEquilibrium(SimTK::State& s) const override;
     /// @}
 
@@ -262,8 +269,9 @@ public:
     /// The residual (i.e. error) in the muscle-tendon equilibrium equation:
     ///         residual = tendonForce - fiberForce * cosPennationAngle
     /// This is always computed using implicit form of the model since the
-    /// explicit form will produce a zero residual for any guess of normalized
-    /// tendon force.
+    /// explicit form uses the normalized tendon force state variable directly 
+    /// to compute fiber force, which always produces a zero muscle-tendon 
+    /// equilibrium residual. 
     double getEquilibriumResidual(const SimTK::State& s) const {
         return calcEquilibriumResidual(getLength(s), getLengtheningSpeed(s),
                 getActivation(s), getNormalizedTendonForce(s),
