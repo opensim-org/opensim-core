@@ -19,7 +19,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoGoal.h"
-#include "../Components/DeGrooteFregly2016Muscle.h"
+#include <Opensim/Actuators/DeGrooteFregly2016Muscle.h>
 
 namespace OpenSim {
 

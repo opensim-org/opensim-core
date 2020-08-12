@@ -1121,7 +1121,7 @@ TEMPLATE_TEST_CASE(
     {
         MocoStudy study;
         MocoProblem& problem = study.updProblem();
-        problem.setModelCopy(model);
+        problem.setModelAsCopy(model);
         problem.setTimeBounds(0, 0.5);
         problem.setStateInfo(
                 "/joint/height/value", heightBounds, initHeight, finalHeight);

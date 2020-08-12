@@ -44,7 +44,6 @@
 #include <OpenSim/Analyses/osimAnalyses.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Auxiliary/auxiliaryTestMuscleFunctions.h>
-#include "OpenSim/Moco/Components/DeGrooteFregly2016Muscle.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -146,13 +145,12 @@ int main()
         e.print(cout);
         failures.push_back("testMillard2012AccelerationMuscle");
     }
-    // TODO does not work yet.
-    //try { testDeGrooteFregly2016Muscle();
-    //    cout << "DeGrooteFregly2016Muscle Test passed" << endl;
-    //} catch (const Exception& e) {
-    //    e.print(cout);
-    //    failures.push_back("testDeGrooteFregly2016Muscle");
-    //}
+    try { testDeGrooteFregly2016Muscle();
+        cout << "DeGrooteFregly2016Muscle Test passed" << endl;
+    } catch (const Exception& e) {
+        e.print(cout);
+        failures.push_back("testDeGrooteFregly2016Muscle");
+    }
 
     printf("\n\n");
     cout <<"************************************************************"<<endl;
@@ -994,21 +992,23 @@ void testDeGrooteFregly2016Muscle() {
     muscle.set_tendon_slack_length(TendonSlackLength0);
     muscle.set_pennation_angle_at_optimal(PennationAngle0);
     muscle.set_tendon_compliance_dynamics_mode("explicit");
+    muscle.set_fiber_damping(0.01);
 
     muscle.set_activation_time_constant(Activation0);
     muscle.set_deactivation_time_constant(Deactivation0);
+    muscle.set_default_normalized_tendon_force(0.5);
 
     double x0 = 0;
     double act0 = 0.2;
 
     Constant control(0.5);
 
-    Sine motion(2.0 * OptimalFiberLength0, 2 * SimTK::Pi, 0);
+    Sine motion(0.1, SimTK::Pi, 0);
 
     simulateMuscle(muscle, 
         x0, 
         act0, 
-        &motion, 
+        &motion,  
         &control, 
         false);
 }

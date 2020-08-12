@@ -362,7 +362,7 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     // Temporarily disable printing of negative muscle force warnings so the
     // log isn't flooded while computing finite differences.
     Logger::Level origLoggerLevel = Logger::getLevel();
-    Logger::setLevel(Logger::Level::Warn);
+    Logger::setLevel(Logger::Level::Error);
     CasOC::Solution casSolution;
     try {
         casSolution = casSolver->solve(casGuess);

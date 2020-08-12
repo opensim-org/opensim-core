@@ -19,7 +19,6 @@
  * -------------------------------------------------------------------------- */
 
 #include "About.h"
-#include "Components/DeGrooteFregly2016Muscle.h"
 #include "Components/DiscreteForces.h"
 #include "Components/PositionMotion.h"
 #include "Components/StationPlaneContactForce.h"

@@ -255,6 +255,7 @@ void DeGrooteFregly2016Muscle::computeStateVariableDerivatives(
 
 double DeGrooteFregly2016Muscle::computeActuation(const SimTK::State& s) const {
     const auto& mdi = getMuscleDynamicsInfo(s);
+    setActuation(s, mdi.tendonForce);
     return mdi.tendonForce;
 }
 
@@ -578,23 +579,13 @@ void DeGrooteFregly2016Muscle::computeInitialFiberEquilibrium(
     // derivative, so we'll set it to zero for simplicity.
     const SimTK::Real normTendonForceDerivative = 0.0;
 
-    MuscleLengthInfo mli;
-    FiberVelocityInfo fvi;
-    MuscleDynamicsInfo mdi;
-
-    auto calcResidual = [this, &muscleTendonLength, &muscleTendonVelocity,
-                                &normTendonForceDerivative, &activation, &mli,
-                                &fvi,
-                                &mdi](const SimTK::Real& normTendonForce) {
-        calcMuscleLengthInfoHelper(
-                muscleTendonLength, false, mli, normTendonForce);
-        calcFiberVelocityInfoHelper(muscleTendonVelocity, activation, false,
-                false, mli, fvi, normTendonForce, normTendonForceDerivative);
-        calcMuscleDynamicsInfoHelper(activation, muscleTendonVelocity, false,
-                mli, fvi, mdi, normTendonForce);
-
-        return calcEquilibriumResidual(
-                mdi.tendonForce, mdi.fiberForceAlongTendon);
+    // Wrap residual function so it is a function of normalized tendon force
+    // only.
+    const auto calcResidual = [this, &muscleTendonLength, &muscleTendonVelocity,
+                                      &normTendonForceDerivative, &activation](
+                                      const SimTK::Real& normTendonForce) {
+        return calcEquilibriumResidual(muscleTendonLength, muscleTendonVelocity,
+                activation, normTendonForce, normTendonForceDerivative);
     };
 
     const auto equilNormTendonForce = solveBisection(calcResidual,

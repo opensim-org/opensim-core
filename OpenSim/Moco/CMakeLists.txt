@@ -74,8 +74,6 @@ set(MOCO_SOURCES
         MocoControlBoundConstraint.h
         MocoFrameDistanceConstraint.h
         MocoFrameDistanceConstraint.cpp
-        Components/DeGrooteFregly2016Muscle.h
-        Components/DeGrooteFregly2016Muscle.cpp
         Components/DiscreteController.cpp
         Components/DiscreteController.h
         Components/StationPlaneContactForce.h
