@@ -71,7 +71,7 @@ public:
 
     /** get the values from either the base OrientationsReference, or from
      * the client provided data that was queued earlier using putValues call. */
-    void getValues(const SimTK::State& s,
+    void getValues(double& time,
             SimTK::Array_<SimTK::Rotation_<double>>& values) const override;
 
     /** add passed in values to data procesing Queue */

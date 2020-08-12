@@ -76,8 +76,8 @@ public:
     }
     /** get the name(s) of the reference or its referettes */
     virtual const SimTK::Array_<std::string>& getNames() const = 0;
-    /** get the values of the Reference signals as a function of the state */
-    virtual void getValues(const SimTK::State &s, 
+    /** get the values of the Reference signals and corresponding time */
+    virtual void getValues(double& time, 
                            SimTK::Array_<T> &values) const = 0;
     /** get the weighting (importance) of meeting this Reference */
     virtual void getWeights(const SimTK::State &s, 
@@ -87,9 +87,9 @@ public:
     // Convenience Interface
     //--------------------------------------------------------------------------
     /* getValues as above, but a copy is returned, which may be costly */
-    virtual SimTK::Array_<T> getValues(const SimTK::State &s) const {
+    virtual SimTK::Array_<T> getValues(double& time) const {
         SimTK::Array_<T> values(getNumRefs());
-        getValues(s, values);
+        getValues(time, values);
         return values;
     }
     /* getWeights as above, but a copy is returned, which may be costly */

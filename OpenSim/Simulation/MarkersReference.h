@@ -142,7 +142,7 @@ public:
     /** get the names of the markers serving as references */
     const SimTK::Array_<std::string>& getNames() const override;
     /** get the value of the MarkersReference */
-    void getValues(const SimTK::State &s,
+    void getValues(double& time,
         SimTK::Array_<SimTK::Vec3> &values) const override;
     // The following two methods are commented out as they are not implemented
     // and we don't want users to think it *is* implemented when viewing

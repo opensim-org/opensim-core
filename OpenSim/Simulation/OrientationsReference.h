@@ -121,7 +121,7 @@ public:
     /** get the names of the Orientations serving as references */
     const SimTK::Array_<std::string>& getNames() const override;
     /** get the value of the OrientationsReference */
-    void getValues(const SimTK::State& s,
+    void getValues(double& time,
         SimTK::Array_<SimTK::Rotation_<double>>& values) const override;
     /** get the weighting (importance) of meeting this OrientationsReference in the
         same order as names*/

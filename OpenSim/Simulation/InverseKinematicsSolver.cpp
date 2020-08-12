@@ -446,17 +446,18 @@ void InverseKinematicsSolver::updateGoals(const SimTK::State &s)
     // update coordinates performed by the base class
     AssemblySolver::updateGoals(s);
 
+    double nextTime = s.getTime();
     // specify the marker observations to be matched
     if (_markersReference && _markersReference->getNumRefs() > 0) {
         SimTK::Array_<SimTK::Vec3> markerValues;
-        _markersReference->getValues(s, markerValues);
+        _markersReference->getValues(nextTime, markerValues);
         _markerAssemblyCondition->moveAllObservations(markerValues);
     }
 
     // specify the orientation observations to be matched
     if (_orientationsReference && _orientationsReference->getNumRefs() > 0) {
         SimTK::Array_<SimTK::Rotation> orientationValues;
-        _orientationsReference->getValues(s, orientationValues);
+        _orientationsReference->getValues(nextTime, orientationValues);
         _orientationAssemblyCondition->moveAllObservations(orientationValues);
     }
 }

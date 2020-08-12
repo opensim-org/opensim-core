@@ -89,9 +89,9 @@ const SimTK::Array_<std::string>& CoordinateReference::getNames() const
 
 
 /** get the values of the CoordinateReference */
-void CoordinateReference::getValues(const SimTK::State &s, SimTK::Array_<double> &values) const
+void CoordinateReference::getValues(double& time, SimTK::Array_<double> &values) const
 {
-    SimTK::Vector t(1, s.getTime());
+    SimTK::Vector t(1, time);
     values.resize(getNumRefs());
     values[0] = _coordinateValueFunction->calcValue(t);
 }

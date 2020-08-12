@@ -48,14 +48,13 @@ BufferedOrientationsReference::BufferedOrientationsReference(
 }
 /** get the values of the OrientationsReference */
 void BufferedOrientationsReference::getValues(
-        const SimTK::State& s,
+        double& time,
     SimTK::Array_<Rotation> &values) const
 {
     auto& times = _orientationData.getIndependentColumn();
-    double time = s.getTime();
     SimTK::RowVector_<SimTK::Rotation> nextRow;
 
-    if (s.getTime() >= times.front() && s.getTime() <= times.back()) {
+    if (time >= times.front() && time <= times.back()) {
         nextRow = _orientationData.getRow(time);
     } else {
         _orientationDataQueue.pop_front(time, nextRow);

@@ -232,7 +232,6 @@ bool IMUPlacer::run(bool visualizeResults) {
         s.updTime() = times[0];
 
         // create the solver given the input data
-        MarkersReference mRefs{};
         OrientationsReference oRefs(orientationsData);
         SimTK::Array_<CoordinateReference> coordRefs{};
 

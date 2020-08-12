@@ -90,7 +90,7 @@ public:
     /** get the name(s) of the reference or its referettes */
     const SimTK::Array_<std::string>& getNames() const override;
     /** get the value of the Reference as a function of the state */
-    void getValues(const SimTK::State &s, SimTK::Array_<double> &values) const override;
+    void getValues(double& time, SimTK::Array_<double>& values) const override;
     /** get the weighting (importance) of meeting this Reference */
     void getWeights(const SimTK::State &s, SimTK::Array_<double>& weights) const override;
 
