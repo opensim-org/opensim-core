@@ -569,6 +569,8 @@ void DeGrooteFregly2016Muscle::computeInitialFiberEquilibrium(
         SimTK::State& s) const {
     if (get_ignore_tendon_compliance()) return;
 
+    getModel().realizeVelocity(s);
+
     const auto& muscleTendonLength = getLength(s);
     const auto& muscleTendonVelocity = getLengtheningSpeed(s);
     const auto& activation = getActivation(s);

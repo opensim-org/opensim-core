@@ -367,9 +367,9 @@ void simulateMuscle(
     SimTK::State initialState(si);
 
     // Check muscle is setup correctly 
-    const PathActuator &muscle 
+    const PathActuator &actu 
         = dynamic_cast<const PathActuator&>(model.updActuators().get("muscle"));
-    double length = muscle.getLength(si);
+    double length = actu.getLength(si);
     double trueLength = startX + xSinG - anchorWidth/2;
     
     ASSERT_EQUAL(length/trueLength, 1.0, InitializationTestTolerance,
@@ -413,7 +413,6 @@ void simulateMuscle(
     StatesTrajectory statesTraj =
         StatesTrajectory::createFromStatesStorage(model, states);
 
-
 //==========================================================================
 // 5. SIMULATION Reporting
 //==========================================================================
@@ -445,6 +444,14 @@ void simulateMuscle(
 //==========================================================================
 // 6. SIMULATION Tests
 //==========================================================================
+    auto& muscle = model.updMuscles()[0];
+    // The DeGrooteFregly2016Muscle needs to use the implict form of tendon
+    // compliance for the equilbrium tests so values of tendon and fiber force
+    // are computed properly.
+    if (auto* dgf = dynamic_cast<DeGrooteFregly2016Muscle*>(&muscle)) {
+        dgf->set_tendon_compliance_dynamics_mode("implicit");
+        model.initSystem();
+    }
     testMuscleEquilibriumSolve(model, states);
 
 
@@ -992,18 +999,15 @@ void testDeGrooteFregly2016Muscle() {
     muscle.set_tendon_slack_length(TendonSlackLength0);
     muscle.set_pennation_angle_at_optimal(PennationAngle0);
     muscle.set_tendon_compliance_dynamics_mode("explicit");
-    muscle.set_fiber_damping(0.01);
-
     muscle.set_activation_time_constant(Activation0);
     muscle.set_deactivation_time_constant(Deactivation0);
-    muscle.set_default_normalized_tendon_force(0.5);
 
     double x0 = 0;
     double act0 = 0.2;
 
     Constant control(0.5);
 
-    Sine motion(0.1, SimTK::Pi, 0);
+    Sine motion(OptimalFiberLength0, SimTK::Pi, 0);
 
     simulateMuscle(muscle, 
         x0, 

@@ -207,8 +207,8 @@ public:
         } else {
             setStateVariableValue(s, STATE_ACTIVATION_NAME, activation);
         }
-        //markCacheVariableInvalid(s, "velInfo");
-        //markCacheVariableInvalid(s, "dynamicsInfo");
+        markCacheVariableInvalid(s, "velInfo");
+        markCacheVariableInvalid(s, "dynamicsInfo");
     }
 
 protected:
