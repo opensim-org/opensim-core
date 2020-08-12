@@ -62,7 +62,6 @@ void OpenSim::prescribeControlsToModel(
     // Get actuator names.
     model.initSystem();
     OpenSim::Array<std::string> actuNames;
-    const auto modelPath = model.getAbsolutePath();
     for (const auto& actu : model.getComponentList<Actuator>()) {
         actuNames.append(actu.getAbsolutePathString());
     }
@@ -123,7 +122,7 @@ MocoTrajectory OpenSim::simulateTrajectoryWithTimeStepping(
         state.setY(statesTraj.front().getY());
     }
 
-    if (integratorAccuracy != -1) {
+    if (!SimTK::isNaN(integratorAccuracy)) {
         manager.getIntegrator().setAccuracy(integratorAccuracy);
     }
     manager.initialize(state);

@@ -27,6 +27,7 @@
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <stack>
 
 #include <SimTKcommon/internal/BigMatrix.h>
 
@@ -112,6 +113,46 @@ OSIMCOMMON_API
 SimTK::Real solveBisection(std::function<double(const double&)> calcResidual,
         double left, double right, const double& tolerance = 1e-6,
         int maxIterations = 1000);
+
+/// This class lets you store objects of a single type for reuse by multiple
+/// threads, ensuring threadsafe access to each of those objects.
+// TODO: Find a way to always give the same thread the same object.
+template <typename T> class ThreadsafeJar {
+public:
+    /// Request an object for your exclusive use on your thread. This function
+    /// blocks the thread until an object is available. Make sure to return
+    /// (leave()) the object when you're done!
+    std::unique_ptr<T> take() {
+        // Only one thread can lock the mutex at a time, so only one thread
+        // at a time can be in any of the functions of this class.
+        std::unique_lock<std::mutex> lock(m_mutex);
+        // Block this thread until the condition variable is woken up
+        // (by a notify_...()) and the lambda function returns true.
+        m_inventoryMonitor.wait(lock, [this] { return m_entries.size() > 0; });
+        std::unique_ptr<T> top = std::move(m_entries.top());
+        m_entries.pop();
+        return top;
+    }
+    /// Add or return an object so that another thread can use it. You will need
+    /// to std::move() the entry, ensuring that you will no longer have access
+    /// to the entry in your code (the pointer will now be null).
+    void leave(std::unique_ptr<T> entry) {
+        std::unique_lock<std::mutex> lock(m_mutex);
+        m_entries.push(std::move(entry));
+        lock.unlock();
+        m_inventoryMonitor.notify_one();
+    }
+    /// Obtain the number of entries that can be taken.
+    int size() const {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        return (int)m_entries.size();
+    }
+
+private:
+    std::stack<std::unique_ptr<T>> m_entries;
+    mutable std::mutex m_mutex;
+    std::condition_variable m_inventoryMonitor;
+};
 
 } // namespace OpenSim
 

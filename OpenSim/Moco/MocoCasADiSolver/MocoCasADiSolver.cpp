@@ -160,8 +160,8 @@ std::unique_ptr<MocoCasOCProblem> MocoCasADiSolver::createCasOCProblem() const {
         numThreads = parallel;
     }
 
-    checkPropertyInSet(
-            *this, getProperty_multibody_dynamics_mode(), {"explicit", "implicit"});
+    checkPropertyValueIsInSet(
+            getProperty_multibody_dynamics_mode(), {"explicit", "implicit"});
     if (problemRep.isPrescribedKinematics()) {
         OPENSIM_THROW_IF(get_multibody_dynamics_mode() != "implicit", Exception,
                 "Prescribed kinematics (PositionMotion) requires implicit "
@@ -187,8 +187,8 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     // Set solver options.
     // -------------------
     Dict solverOptions;
-    checkPropertyInSet(*this, getProperty_optim_solver(), {"ipopt", "snopt"});
-    checkPropertyInSet(*this, getProperty_transcription_scheme(),
+    checkPropertyValueIsInSet(getProperty_optim_solver(), {"ipopt", "snopt"});
+    checkPropertyValueIsInSet(getProperty_transcription_scheme(),
             {"trapezoidal", "hermite-simpson"});
     OPENSIM_THROW_IF(casProblem.getNumKinematicConstraintEquations() != 0 &&
                              get_transcription_scheme() == "trapezoidal",
@@ -208,7 +208,7 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
                 get_transcription_scheme());
     }
 
-    checkPropertyInRangeOrSet(*this, getProperty_num_mesh_intervals(), 0,
+    checkPropertyValueIsInRangeOrSet(getProperty_num_mesh_intervals(), 0,
             std::numeric_limits<int>::max(), {});
 
     if (getProperty_mesh().size() > 0) {
@@ -230,13 +230,13 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
                 "point must be one.");
     }
 
-    checkPropertyInRangeOrSet(*this, getProperty_optim_max_iterations(), 0,
+    checkPropertyValueIsInRangeOrSet(getProperty_optim_max_iterations(), 0,
             std::numeric_limits<int>::max(), {-1});
-    checkPropertyInRangeOrSet(*this, getProperty_optim_convergence_tolerance(),
+    checkPropertyValueIsInRangeOrSet(getProperty_optim_convergence_tolerance(),
             0.0, SimTK::NTraits<double>::getInfinity(), {-1.0});
-    checkPropertyInRangeOrSet(*this, getProperty_optim_constraint_tolerance(),
+    checkPropertyValueIsInRangeOrSet(getProperty_optim_constraint_tolerance(),
             0.0, SimTK::NTraits<double>::getInfinity(), {-1.0});
-    checkPropertyInSet(*this, getProperty_verbosity(), {0, 1, 2});
+    checkPropertyValueIsInSet(getProperty_verbosity(), {0, 1, 2});
     if (get_optim_solver() == "ipopt") {
         solverOptions["print_user_options"] = "yes";
         if (get_verbosity() < 2) {
@@ -267,14 +267,14 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
         }
     }
 
-    checkPropertyInSet(*this, getProperty_optim_sparsity_detection(),
+    checkPropertyValueIsInSet(getProperty_optim_sparsity_detection(),
             {"none", "random", "initial-guess"});
     casSolver->setSparsityDetection(get_optim_sparsity_detection());
     casSolver->setSparsityDetectionRandomCount(3);
 
     casSolver->setWriteSparsity(get_optim_write_sparsity());
 
-    checkPropertyInSet(*this, getProperty_optim_finite_difference_scheme(),
+    checkPropertyValueIsInSet(getProperty_optim_finite_difference_scheme(),
             {"central", "forward", "backward"});
     casSolver->setFiniteDifferenceScheme(get_optim_finite_difference_scheme());
 

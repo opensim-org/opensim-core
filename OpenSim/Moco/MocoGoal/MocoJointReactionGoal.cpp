@@ -48,7 +48,7 @@ void MocoJointReactionGoal::initializeOnModelImpl(const Model& model) const {
     }
 
     // Get the frame from which the loads are computed.
-    checkPropertyInSet(*this, getProperty_loads_frame(), {"parent", "child"});
+    checkPropertyValueIsInSet(getProperty_loads_frame(), {"parent", "child"});
     if (get_loads_frame() == "parent") {
         m_isParentFrame = true;
     } else if (get_loads_frame() == "child") {

@@ -54,18 +54,6 @@ names with "opensimMoco."; for example, `opensimMoco.visualize()` or
 `org.opensim.modeling.opensimMoco.visualize()`.
 In Python, use `opensim.visualize()`.
 
-@defgroup moconumutil Numeric and data utilities
-
-Interpolate or resample data, and read/write tables.
-To use these utilities in MATLAB, prepend the function
-names with "opensimMoco."; for example, `opensimMoco.interpolate()` or
-`org.opensim.modeling.opensimMoco.interpolate()`.
-In Python, use `opensim.interpolate()`.
-
-@defgroup mocologutil String and logging utilities
-
-Easily format and log messages; intended for internal use by Moco.
-
 @defgroup mocogenutil Generic utilities
 
 Utilities for parallelism, strings, date/time, and error-checking.

@@ -47,9 +47,8 @@ bool MocoTropterSolver::isAvailable() {
 std::shared_ptr<const MocoTropterSolver::TropterProblemBase<double>>
 MocoTropterSolver::createTropterProblem() const {
 #ifdef OPENSIM_WITH_TROPTER
-    checkPropertyInSet(
-            *this, getProperty_multibody_dynamics_mode(),
-            {"explicit", "implicit"});
+    checkPropertyValueIsInSet(
+            getProperty_multibody_dynamics_mode(), {"explicit", "implicit"});
     if (get_multibody_dynamics_mode() == "explicit") {
         return std::make_shared<ExplicitTropterProblem<double>>(*this);
     } else if (get_multibody_dynamics_mode() == "implicit") {
@@ -67,7 +66,7 @@ MocoTropterSolver::createTropterSolver(
                 ocp) const {
 #ifdef OPENSIM_WITH_TROPTER
     // Check that a non-negative number of mesh points was provided.
-    checkPropertyInRangeOrSet(*this, getProperty_num_mesh_intervals(), 0,
+    checkPropertyValueIsInRangeOrSet(getProperty_num_mesh_intervals(), 0,
             std::numeric_limits<int>::max(), {});
 
     if (getProperty_mesh().size() > 0) {
@@ -89,9 +88,9 @@ MocoTropterSolver::createTropterSolver(
                 "point must be one.");
     }
     // Check that a valid optimization solver was specified.
-    checkPropertyInSet(*this, getProperty_optim_solver(), {"ipopt", "snopt"});
+    checkPropertyValueIsInSet(getProperty_optim_solver(), {"ipopt", "snopt"});
     // Check that a valid transcription scheme was specified.
-    checkPropertyInSet(*this, getProperty_transcription_scheme(),
+    checkPropertyValueIsInSet(getProperty_transcription_scheme(),
             {"trapezoidal", "hermite-simpson"});
     // Enforcing constraint derivatives is only supported when Hermite-Simpson
     // is set as the transcription scheme.
@@ -121,7 +120,7 @@ MocoTropterSolver::createTropterSolver(
             "approximation. Set solver property 'optim_hessian_approximation' "
             "to 'exact' for Hessian block sparsity to take effect.");
     if (!getProperty_exact_hessian_block_sparsity_mode().empty()) {
-        checkPropertyInSet(*this,
+        checkPropertyValueIsInSet(
                 getProperty_exact_hessian_block_sparsity_mode(),
                 {"dense", "sparse"});
     }
@@ -135,7 +134,7 @@ MocoTropterSolver::createTropterSolver(
             "Hessian information.");
 
     // Check that the Lagrange multiplier weight is positive
-    checkPropertyIsPositive(*this, getProperty_lagrange_multiplier_weight());
+    checkPropertyValueIsPositive(getProperty_lagrange_multiplier_weight());
 
     // Create direct collocation solver.
     // ---------------------------------
@@ -167,17 +166,17 @@ MocoTropterSolver::createTropterSolver(
     auto& optsolver = dircol->get_opt_solver();
 
     // Check that number of max iterations is valid.
-    checkPropertyInRangeOrSet(*this, getProperty_optim_max_iterations(), 0,
+    checkPropertyValueIsInRangeOrSet(getProperty_optim_max_iterations(), 0,
             std::numeric_limits<int>::max(), {-1});
     if (get_optim_max_iterations() != -1)
         optsolver.set_max_iterations(get_optim_max_iterations());
     // Check that convergence tolerance is valid.
-    checkPropertyInRangeOrSet(*this, getProperty_optim_convergence_tolerance(),
+    checkPropertyValueIsInRangeOrSet(getProperty_optim_convergence_tolerance(),
             0.0, SimTK::NTraits<double>::getInfinity(), {-1.0});
     if (get_optim_convergence_tolerance() != -1)
         optsolver.set_convergence_tolerance(get_optim_convergence_tolerance());
     // Check that constraint tolerance is valid.
-    checkPropertyInRangeOrSet(*this, getProperty_optim_constraint_tolerance(),
+    checkPropertyValueIsInRangeOrSet(getProperty_optim_constraint_tolerance(),
             0.0, SimTK::NTraits<double>::getInfinity(), {-1.0});
     if (get_optim_constraint_tolerance() != -1)
         optsolver.set_constraint_tolerance(get_optim_constraint_tolerance());
@@ -187,8 +186,8 @@ MocoTropterSolver::createTropterSolver(
 
     if (get_optim_solver() == "ipopt") {
         // Check that IPOPT print level is valid.
-        checkPropertyInRangeOrSet(
-                *this, getProperty_optim_ipopt_print_level(), 0, 12, {-1});
+        checkPropertyValueIsInRangeOrSet(
+                getProperty_optim_ipopt_print_level(), 0, 12, {-1});
         if (get_verbosity() < 2) {
             optsolver.set_advanced_option_int("print_level", 0);
         } else {
@@ -199,7 +198,7 @@ MocoTropterSolver::createTropterSolver(
         }
     }
     // Check that sparsity detection mode is valid.
-    checkPropertyInSet(*this, getProperty_optim_sparsity_detection(),
+    checkPropertyValueIsInSet(getProperty_optim_sparsity_detection(),
             {"random", "initial-guess"});
     optsolver.set_sparsity_detection(get_optim_sparsity_detection());
 
@@ -327,7 +326,7 @@ MocoSolution MocoTropterSolver::solveImpl() const {
     // Apply settings/options.
     // -----------------------
     // Check that a valid verbosity level was provided.
-    checkPropertyInSet(*this, getProperty_verbosity(), {0, 1, 2});
+    checkPropertyValueIsInSet(getProperty_verbosity(), {0, 1, 2});
     // Problem print information is verbosity 1 or 2.
     if (get_verbosity()) {
         log_info(std::string(72, '='));
