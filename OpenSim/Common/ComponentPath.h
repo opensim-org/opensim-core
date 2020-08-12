@@ -33,15 +33,17 @@ namespace OpenSim {
 /**
  * A representation of a path within a Component tree.
  *
- * This class is effectively a wrapper around a normalized path string. A path string is a sequence of path
- * components interspersed with '/' as a separator. Path components cannot contain:
+ * This class is effectively a wrapper around a normalized path string. A path
+ * string is a sequence of path elements interspersed with '/' as a separator.
+ * path elements cannot contain:
  *
  * - back-slash ('\\')
  * - forward-slash ('/')
  * - asterisk ('*')
  * - plus-sign ('+')
  *
- * An empty path, "", is allowed. Adjacent separators in a path (e.g. "//") are combined into one separator.
+ * An empty path, "", is allowed. Adjacent separators in a path (e.g. "//") are
+ * combined into one separator.
  *
  * @author Carmichael Ong
  */
@@ -51,14 +53,12 @@ private:
 
 public:
     /**
-     * Default constructor that constructs an empty path ("")
+     * Default constructor that constructs an empty path ("").
      */
     ComponentPath();
 
     /**
-     * Construct a ComponentPath from a path string (e.g. "/a/b/component")
-     *
-     * Note: this will `normalize` the path. See: `normalize` for details.
+     * Construct a ComponentPath from a path string (e.g. "/a/b/component").
      */
     ComponentPath(std::string path);
 
@@ -82,10 +82,12 @@ public:
     /**
      * Returns a path that is the result of resolving `this` from `otherPath`.
      *
-     * - `otherPath` must be an absolute path; otherwise, an exception will be thrown
+     * - `otherPath` must be an absolute path; otherwise, an exception will be
+     *   thrown
      * - if `this` is absolute, then this function just returns a copy of `this`
      *
      * Examples:
+     *
      *     ComponentPath{"b/c"}.formAbsolutePath("/a") == "/a/b/c"
      *     ComponentPath{"/b/c"}.formAbsolutePath("/a") == "/b/c"
      *     ComponentPath{"b/c"}.formAbsolutePath("a")  // throws
@@ -100,44 +102,49 @@ public:
     ComponentPath formRelativePath(const ComponentPath& otherPath) const;
 
     /**
-     * Returns the sub-path that contains all subdirectory levels except for the last one.
+     * Returns the sub-path that contains all subdirectory levels except for
+     * the last one.
      */
     ComponentPath getParentPath() const;
 
     /**
-     * Returns the parent path as a string
+     * Returns the parent path as a string.
      */
     std::string getParentPathString() const;
 
     /**
-     * Returns the name of a subdirectory in the path at the specified level (0-indexed).
+     * Returns the name of a subdirectory in the path at the specified level
+     * (0-indexed).
      */
     std::string getSubcomponentNameAtLevel(size_t index) const;
 
     /**
-     * Returns the name of the Component in the path (effectively, the last element in the path).
+     * Returns the name of the Component in the path (effectively, the last
+     * element in the path).
      */
     std::string getComponentName() const;
 
     /**
-     * Returns a string representation of the ComponentPath (e.g. "/a/b/component")
+     * Returns a string representation of the ComponentPath
+     * (e.g. "/a/b/component").
      */
     std::string toString() const;
 
     /**
-     * Returns true if the is absolute (effectively, if it begins with '/')
+     * Returns true if the path is absolute (effectively, if it begins
+     * with '/').
      */
     bool isAbsolute() const;
 
     /**
-     * Returns the number of levels in the path (e.g. "/a/b/c" == 3)
+     * Returns the number of levels in the path (e.g. "/a/b/c" == 3).
      */
     size_t getNumPathLevels() const;
 
     /**
      * Push a string onto the end of the path.
      *
-     * Throws if the argument contains invalid characters
+     * Throws if the argument contains invalid characters.
      */
     void pushBack(const std::string& pathElement);
 
@@ -147,14 +154,15 @@ public:
     bool isLegalPathElement(const std::string& pathElement) const;
 
     /**
-     * Resolves '.' and ".." elements in the path if possible. Leading ".." elements are allowed
-     * only in relative paths (throws if found at the start of an absolute path). Also checks for
-     * invalid characters.
+     * Resolves '.' and ".." elements in the path if possible. Leading ".."
+     * elements are allowed only in relative paths (throws if found at the
+     * start of an absolute path). Also checks for invalid characters.
      *
      * Effectively, this is the same as internally `normalize`ing the path.
      */
     void trimDotAndDotDotElements() {
-        // noop: here for legacy purposes: the path is always internally normalized
+        // noop: here for legacy purposes: the path is always
+        // internally normalized
     }
 };
 } // end of namespace OpenSim

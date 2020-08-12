@@ -28,16 +28,19 @@
 #include <sstream>
 
 
-static const std::string newInvalidChars{"\\*+ \t\n"};
-static const char separator = '/';
-static const std::string legacyInvalidChars = newInvalidChars + separator;
-
-
 using OpenSim::ComponentPath;
 
 namespace {
-    // helper: joins the supplied vector of path components to form a single path string
-    std::string stringifyPath(const std::vector<std::string>& pathVec, bool isAbsolute) {
+    const std::string newInvalidChars{"\\*+ \t\n"};
+    const char separator = '/';
+    const std::string legacyInvalidChars = newInvalidChars + separator;
+
+    /**
+     * helper: joins the supplied vector of path components to form a single
+     * path string.
+     */
+    std::string stringifyPath(const std::vector<std::string>& pathVec,
+                              bool isAbsolute) {
         std::string ret;
 
         if (isAbsolute) {
@@ -53,9 +56,12 @@ namespace {
         return ret;
     }
 
-    // helper: returns a string iterator that points to the first component (i.e. non-separator)
-    // in a normalized path string. Points to `.end()` if the path contains no components
-    auto firstComponent(const std::string& normalizedPath) -> decltype(normalizedPath.begin()) {
+    /**
+     * helper: returns a string iterator that points to the first component
+     * (i.e. non-separator) in a normalized path string. Points to `.end()`
+     * if the path contains no components.
+     */
+    std::string::const_iterator firstComponent(const std::string& normalizedPath) {
         if (normalizedPath.empty()) {
             return normalizedPath.end();
         }
@@ -69,51 +75,58 @@ namespace {
     }
 
     /**
-     * Returns a normalized form of `path`. A normalized path string is guaranteed to:
+     * Returns a normalized form of `path`. A normalized path string is
+     * guaranteed to:
      *
-     * - Not contain any *internal* or *trailing* relative elements (e.g. 'a/../b')
+     * - Not contain any *internal* or *trailing* relative elements (e.g.
+     *   'a/../b').
      *
-     *     - It may *start* with relative elements (e.g. '../a/b'), but only if the
-     *       path is non-absolute (e.g. "/../a/b" is invalid)
+     *     - It may *start* with relative elements (e.g. '../a/b'), but only
+     *       if the path is non-absolute (e.g. "/../a/b" is invalid)
      *
      * - Not contain any invalid characters (e.g. '\\', '*')
      *
      * - Not contain any repeated separators (e.g. 'a///b' --> 'a/b')
      *
-     *     - e.g. "a/b/c" is normalized to "a/b/c" but "/./a/../" is normalized to
-     *       '/'
-     *
      * Any attempt to step above the root of the expression with '..' will
      * result in an exception being thrown (e.g. "a/../.." will throw).
      *
      * This method is useful for path traversal and path manipulation methods,
-     * because the above guarantees ensure that (e.g.) paths can be concatenated
+     * because the above engues that (e.g.) paths can be concatenated
      * and split into individual elements using basic string manipulation
      * techniques.
      */
     std::string normalize(std::string path) {
-        // note: this implementation is fairly low-level and involves mutating `path` quite a bit.
-        //       the test suite is heavily relied on for developing this kind of tricky code.
+        // note: this implementation is fairly low-level and involves mutating
+        //       `path` quite a bit. The test suite is heavily relied on for
+        //       developing this kind of tricky code.
         //
-        //       the reason it's done this way is because profiling shown that `ComponentPath` was
-        //       accounting for ~6-10 % of OpenSim's CPU usage for component-heavy sims. The reason
-        //       this was so high was because `ComponentPath` used a simpler algorithm that split
-        //       the path into a std::vector.
+        //       the reason it's done this way is because profiling shown that
+        //       `ComponentPath` was accounting for ~6-10 % of OpenSim's CPU
+        //       usage for component-heavy sims. The reason this was so high
+        //       was because `ComponentPath` used a simpler algorithm that
+        //       split the path into a std::vector.
         //
-        //       usually, that alg. wouldn't be a problem, but path normalization can happen millions
-        //       of times during a simulation, all those vector allocations can thrash the allocator and
-        //       increase L1 misses
-
-        // ensure `path` contains no invalid chars
-        if (path.find_first_of(newInvalidChars) != std::string::npos) {
-            OPENSIM_THROW(OpenSim::Exception, path + ": path contains invalid characters");
-        }
+        //       usually, that alg. wouldn't be a problem, but path
+        //       normalization can happen millions of times during a simulation,
+        //       all those vector allocations can thrash the allocator and
+        //       increase L1 misses.
 
         // helper: shift chars starting at `offset+n` `n` characters left
         auto shift = [&](size_t offset, size_t n) {
-            std::copy(path.begin() + offset + n, path.end(), path.begin() + offset);
+            auto src_start = path.begin() + offset + n;
+            auto src_end = path.end();
+            auto dest_start = path.begin() + offset;
+
+            std::copy(src_start, src_end, dest_start);
+
             path.resize(path.size() - n);
         };
+
+        // assert that `path` contains no invalid chars
+        if (path.find_first_of(newInvalidChars) != std::string::npos) {
+            OPENSIM_THROW(OpenSim::Exception, path + ": The supplied path contains invalid characters.");
+        }
 
         // remove duplicate adjacent separators
         for (size_t i = 0; i < path.size(); ++i) {
@@ -123,11 +136,11 @@ namespace {
             }
         }
 
-        // skip absolute slash
+        // skip past absolute separator (if any)
         bool isAbsolute = path.front() == separator;
         size_t contentStart = isAbsolute ? 1 : 0;
 
-        // skip/dereference relative elements at the start of a path
+        // skip/dereference relative elements *at the start of a path*
         while (path[contentStart] == '.') {
             switch (path[contentStart + 1]) {
                 case separator:
@@ -139,14 +152,16 @@ namespace {
                 case '.': {
                     char c2 = path[contentStart + 2];
                     if (c2 == separator || c2 == '\0') {
-                        // starts with '..' element: only allowed if the path is relative
+                        // starts with '..' element: only allowed if the path
+                        // is relative
                         if (isAbsolute) {
                             OPENSIM_THROW(OpenSim::Exception,
                                           path + ": invalid path: is absolute, but starts with relative elements");
                         }
 
-                        // if not absolute, then make sure `contentStart` skips past these
-                        // elements because the alg can't reduce them down
+                        // if not absolute, then make sure `contentStart` skips
+                        // past these elements because the alg can't reduce
+                        // them down
                         if (c2 == separator) {
                             contentStart += 3;
                         } else {
@@ -173,8 +188,10 @@ namespace {
         // - `contentStart` points to the start of the non-relative content of
         //   the supplied path string
         // - `path` contains no duplicate adjacent separators
-        // - `[0..offset]` is normalized path string, but may contain a trailing slash
-        // - `[contentStart..offset] is the normalized *content* of the path string
+        // - `[0..offset]` is normalized path string, but may contain a
+        //   trailing slash
+        // - `[contentStart..offset] is the normalized *content* of the path
+        //   string
 
         while (offset < path.size()) {
             // this parser has a <= 2-char lookahead
@@ -215,8 +232,8 @@ namespace {
             }
         }
 
-        // edge-case: trailing slashes should be removed, unless the string only
-        // contains a slash
+        // edge-case: trailing slashes should be removed, unless the string
+        // only contains a slash
         if (path.size() > 1 && path.back() == separator) {
             path.pop_back();
         }
@@ -231,10 +248,12 @@ namespace {
 
 ComponentPath::ComponentPath() = default;
 
-ComponentPath::ComponentPath(std::string path) : _path{normalize(std::move(path))} {
+ComponentPath::ComponentPath(std::string path) :
+    _path{normalize(std::move(path))} {
 }
 
-ComponentPath::ComponentPath(const std::vector<std::string>& pathVec, bool isAbsolute) :
+ComponentPath::ComponentPath(const std::vector<std::string>& pathVec,
+                             bool isAbsolute) :
     _path{normalize(stringifyPath(pathVec, isAbsolute))} {
 }
 
@@ -266,7 +285,7 @@ ComponentPath ComponentPath::formAbsolutePath(const ComponentPath& otherPath) co
     return ComponentPath{otherPath._path + separator + _path};
 }
 
-OpenSim::ComponentPath OpenSim::ComponentPath::formRelativePath(const ComponentPath& otherPath) const {
+ComponentPath ComponentPath::formRelativePath(const ComponentPath& otherPath) const {
     // helper: find a separator to the left of s.begin() + offset
     static auto offsetOfSeparator = [](const std::string& s, size_t offset) {
         auto offsetFromEnd = std::find_if(s.rend() - (offset + 1), s.rend(), [](const char c) {
@@ -324,7 +343,8 @@ OpenSim::ComponentPath OpenSim::ComponentPath::formRelativePath(const ComponentP
 
     std::string rv;
     for (size_t i = 0; i < stepUps; ++i) {
-        rv += "../";
+        rv += "..";
+        rv += separator;
     }
     if (p2Start < p2.size()) {
         rv += p2.substr(p2Start + 1);
@@ -342,8 +362,7 @@ std::string ComponentPath::getParentPathString() const {
     auto it = std::find(_path.rbegin(), end, separator);
 
     if (it == end) {
-        // no parent: emulate existing behavior
-        return "";
+        return "";  // no parent
     }
 
     it++;  // skip past the found slash
@@ -432,6 +451,6 @@ void ComponentPath::pushBack(const std::string& pathElement) {
     _path += pathElement;
 }
 
-bool ComponentPath::isLegalPathElement(const std::string &pathElement) const {
+bool ComponentPath::isLegalPathElement(const std::string& pathElement) const {
     return pathElement.find_first_of(legacyInvalidChars) == std::string::npos;
 }
