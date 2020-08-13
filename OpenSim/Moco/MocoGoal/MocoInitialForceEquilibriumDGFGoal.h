@@ -19,9 +19,10 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoGoal.h"
-#include <Opensim/Actuators/DeGrooteFregly2016Muscle.h>
 
 namespace OpenSim {
+
+class DeGrooteFregly2016Muscle;
 
 /** For all DeGrooteFregly2016Muscle%s with explicit tendon compliance dynamics,
 constrain (or minimize) the error computed from the muscle-tendon force

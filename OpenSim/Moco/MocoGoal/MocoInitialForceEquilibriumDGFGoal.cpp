@@ -17,6 +17,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoInitialForceEquilibriumDGFGoal.h"
+#include "OpenSim/Actuators/DeGrooteFregly2016Muscle.h"
 
 using namespace OpenSim;
 
