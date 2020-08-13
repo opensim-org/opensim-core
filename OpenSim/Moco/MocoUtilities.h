@@ -20,7 +20,6 @@
 
 #include "MocoTrajectory.h"
 #include "osimMocoDLL.h"
-#include <mutex>
 #include <condition_variable>
 #include <regex>
 
