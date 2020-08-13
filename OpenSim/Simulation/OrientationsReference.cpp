@@ -31,8 +31,8 @@ using namespace SimTK;
 
 namespace OpenSim {
 
-OrientationsReference::OrientationsReference() : Reference_<SimTK::Rotation>()
-{
+OrientationsReference::OrientationsReference()
+        : DiscreteTimeReference_<SimTK::Rotation>() {
     constructProperties();
     setAuthors("Ajay Seth");
 }
@@ -155,8 +155,8 @@ const SimTK::Array_<std::string>& OrientationsReference::getNames() const
 }
 
 /** get the values of the OrientationsReference */
-void  OrientationsReference::getValues(double& time,
-    SimTK::Array_<Rotation> &values) const
+void OrientationsReference::getValuesAtTime(
+        double time, SimTK::Array_<Rotation> &values) const
 {
 
     // get values for time

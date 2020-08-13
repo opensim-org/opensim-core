@@ -47,9 +47,8 @@ BufferedOrientationsReference::BufferedOrientationsReference(
     }*/
 }
 /** get the values of the OrientationsReference */
-void BufferedOrientationsReference::getValues(
-        double& time,
-    SimTK::Array_<Rotation> &values) const
+void BufferedOrientationsReference::getValuesAtTime(
+        double time, SimTK::Array_<Rotation> &values) const
 {
     auto& times = _orientationData.getIndependentColumn();
     SimTK::RowVector_<SimTK::Rotation> nextRow;
@@ -65,6 +64,17 @@ void BufferedOrientationsReference::getValues(
     for (int i = 0; i < n; ++i) { 
         values[i] = nextRow[i];
     }
+}
+
+void BufferedOrientationsReference::getNextValuesAndTime(
+        double& time, SimTK::Array_<SimTK::Rotation_<double>>& values) {
+
+    SimTK::RowVector_<SimTK::Rotation> nextRow;
+    _orientationDataQueue.pop_front(time, nextRow);
+    int n = nextRow.size();
+    values.resize(n);
+
+    for (int i = 0; i < n; ++i) { values[i] = nextRow[i]; }
 }
 
 void BufferedOrientationsReference::putValues(

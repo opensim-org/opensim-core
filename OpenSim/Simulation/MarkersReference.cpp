@@ -30,8 +30,7 @@ using namespace SimTK;
 
 namespace OpenSim {
 
-MarkersReference::MarkersReference() :
-    Reference_<SimTK::Vec3>() {
+MarkersReference::MarkersReference() : DiscreteTimeReference_<SimTK::Vec3>() {
     constructProperties();
     setAuthors("Ajay Seth");
 }
@@ -155,7 +154,7 @@ const SimTK::Array_<std::string>& MarkersReference::getNames() const {
     return _markerNames;
 }
 
-void MarkersReference::getValues(double& time,
+void MarkersReference::getValuesAtTime(double time,
                                   SimTK::Array_<Vec3>& values) const {
     const auto rowView = _markerTable.getNearestRow(time);
     values.clear();

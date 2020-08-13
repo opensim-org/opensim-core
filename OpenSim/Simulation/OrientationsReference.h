@@ -65,9 +65,11 @@ private:
  *
  * @author Ajay Seth
  */
-class OSIMSIMULATION_API OrientationsReference : public Reference_<SimTK::Rotation_<double>> {
-    OpenSim_DECLARE_CONCRETE_OBJECT(OrientationsReference, Reference_<SimTK::Rotation>);
-//=============================================================================
+class OSIMSIMULATION_API OrientationsReference
+        : public DiscreteTimeReference_<SimTK::Rotation_<double>> {
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+            OrientationsReference, DiscreteTimeReference_<SimTK::Rotation>);
+    //=============================================================================
 // Properties
 //=============================================================================
 public:
@@ -121,7 +123,7 @@ public:
     /** get the names of the Orientations serving as references */
     const SimTK::Array_<std::string>& getNames() const override;
     /** get the value of the OrientationsReference */
-    void getValues(double& time,
+    void getValuesAtTime(double time,
         SimTK::Array_<SimTK::Rotation_<double>>& values) const override;
     /** get the weighting (importance) of meeting this OrientationsReference in the
         same order as names*/

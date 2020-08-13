@@ -69,19 +69,27 @@ public:
         return SimTK::Vec2(tableRange[0], SimTK::Infinity);
     };
 
-    /** get the values from either the base OrientationsReference, or from
+    /** get the values from the base OrientationsReference, or from
      * the client provided data that was queued earlier using putValues call. */
-    void getValues(double& time,
+    void getValuesAtTime(double time,
             SimTK::Array_<SimTK::Rotation_<double>>& values) const override;
 
     /** add passed in values to data procesing Queue */
     void putValues(double time, const SimTK::RowVector_<SimTK::Rotation>& dataRow);
 
+    void getNextValuesAndTime(double& time,
+            SimTK::Array_<SimTK::Rotation_<double>>& values) override;
+
+    virtual bool hasNext() const override { return !_finished; };
+
+    void setFinished(bool finished) { 
+        _finished = finished;
+    };
 private:
     // Use a specialized data structure for holding the orientation data
     mutable DataQueue_<SimTK::Rotation> _orientationDataQueue;
-
-//=============================================================================
+    bool _finished{false};
+    //=============================================================================
 };  // END of class OrientationsReference
 //=============================================================================
 } // namespace

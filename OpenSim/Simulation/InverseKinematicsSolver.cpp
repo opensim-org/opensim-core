@@ -450,14 +450,14 @@ void InverseKinematicsSolver::updateGoals(const SimTK::State &s)
     // specify the marker observations to be matched
     if (_markersReference && _markersReference->getNumRefs() > 0) {
         SimTK::Array_<SimTK::Vec3> markerValues;
-        _markersReference->getValues(nextTime, markerValues);
+        _markersReference->getValuesAtTime(nextTime, markerValues);
         _markerAssemblyCondition->moveAllObservations(markerValues);
     }
 
     // specify the orientation observations to be matched
     if (_orientationsReference && _orientationsReference->getNumRefs() > 0) {
         SimTK::Array_<SimTK::Rotation> orientationValues;
-        _orientationsReference->getValues(nextTime, orientationValues);
+        _orientationsReference->getValuesAtTime(nextTime, orientationValues);
         _orientationAssemblyCondition->moveAllObservations(orientationValues);
     }
 }

@@ -48,20 +48,21 @@ namespace OpenSim {
  *
  * @author Ajay Seth
  */
-template<class T> class Reference_ : public Object {
-OpenSim_DECLARE_ABSTRACT_OBJECT_T(Reference_, T, Object);
-//=============================================================================
-// METHODS
-//=============================================================================
+template <class T> class Reference_ : public Object {
+    OpenSim_DECLARE_ABSTRACT_OBJECT_T(Reference_, T, Object);
+    //=============================================================================
+    // METHODS
+    //=============================================================================
 public:
     //--------------------------------------------------------------------------
     // CONSTRUCTION
     //--------------------------------------------------------------------------
     virtual ~Reference_() {}
-    
+
     Reference_() : Object() {}
     Reference_(std::string name) : Reference_() { setName(name); }
 
+    virtual bool isContinuous() const = 0;
     //--------------------------------------------------------------------------
     // Reference Interface
     //--------------------------------------------------------------------------
@@ -76,31 +77,61 @@ public:
     }
     /** get the name(s) of the reference or its referettes */
     virtual const SimTK::Array_<std::string>& getNames() const = 0;
-    /** get the values of the Reference signals and corresponding time */
-    virtual void getValues(double& time, 
-                           SimTK::Array_<T> &values) const = 0;
+
     /** get the weighting (importance) of meeting this Reference */
-    virtual void getWeights(const SimTK::State &s, 
-                            SimTK::Array_<double>& weights) const = 0;
+    virtual void getWeights(
+            const SimTK::State& s, SimTK::Array_<double>& weights) const = 0;
 
     //--------------------------------------------------------------------------
     // Convenience Interface
     //--------------------------------------------------------------------------
-    /* getValues as above, but a copy is returned, which may be costly */
-    virtual SimTK::Array_<T> getValues(double& time) const {
-        SimTK::Array_<T> values(getNumRefs());
-        getValues(time, values);
-        return values;
-    }
     /* getWeights as above, but a copy is returned, which may be costly */
-    virtual SimTK::Array_<double> getWeights(const SimTK::State &s) const {
+    virtual SimTK::Array_<double> getWeights(const SimTK::State& s) const {
         SimTK::Array_<double> weights(getNumRefs());
         getWeights(s, weights);
         return weights;
     }
-    
-//=============================================================================
-};  // END of class templatized Reference_<T>
+};
+// Subclass for continuous time Reference signals
+// For this subclass, Reference can be evaluated at any time
+template <class T> class ContinuousTimeReference_ : public Reference_<T> {
+    OpenSim_DECLARE_ABSTRACT_OBJECT_T(ContinuousTimeReference_, T, Reference_);
+public:
+    using Reference_::Reference_;
+    /** get the values of the Reference signals as a function 
+        of the passed in time */
+    virtual void getValuesAtTime(
+            double time, SimTK::Array_<T>& values) const = 0;
+    /* getValues as above, but a copy is returned, which may be costly */
+    virtual SimTK::Array_<T> getValues(double time) const {
+        SimTK::Array_<T> values(getNumRefs());
+        getValuesAtTime(time, values);
+        return values;
+    }
+    virtual bool isContinuous() const { return true; };
+};
+// Subclass for discrete time Reference signals
+// This can support streaming and adding data on te fly
+// The concept of getting "Next" values and corresponding
+// time makes sense.
+template <class T> class DiscreteTimeReference_ : public Reference_<T> {
+    OpenSim_DECLARE_ABSTRACT_OBJECT_T(DiscreteTimeReference_, T, Reference_);
+
+    using Reference_::Reference_;
+public:
+    // Optionally support continuous time reference interface
+    virtual void getValuesAtTime(
+            double time, SimTK::Array_<T>& values) const {};
+    // Streaming mode where data can be added and used
+    virtual void getNextValuesAndTime(
+            double& time, SimTK::Array_<T>& values) {
+        throw(Exception("getValuesAtTime method is not supported for this reference {}.", getName()));
+    };
+    // indicate whether to stop or wait for more data
+    virtual bool hasNext() const { return false; };
+    virtual bool isContinuous() const { return false; };
+};
+  // END of class templatized Reference_<T>
 //=============================================================================
 }
 
