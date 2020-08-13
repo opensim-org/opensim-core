@@ -52,7 +52,7 @@ class OSIMMOCO_API MocoContactTrackingGoalGroup : public Object {
 public:
     OpenSim_DECLARE_LIST_PROPERTY(contact_force_paths, std::string,
             "Paths to SmoothSphereHalfSpaceForce objects in the model whose "
-            "forces are summed and compared the data from a single "
+            "forces are summed and compared to the data from a single "
             "ExternalForce.");
     OpenSim_DECLARE_PROPERTY(external_force_name, std::string,
             "The name of an ExternalForce object in the ExternalLoads set.");

@@ -75,9 +75,9 @@ public:
     /** Process and obtain the table. If a filepath is provided, it will be
     evaluated relative to `relativeToDirectory`.
     Certain TableOperator%s require a Model (e.g.,
-    TabOpConvertDegreesToRadians, TabOpUseAbsoluteStateNames). If you use
-    such an operator, make sure to pass a model to this function (otherwise,
-    the relevant operator will throw an exception). */
+    TabOpConvertDegreesToRadians, TabOpUseAbsoluteStateNames). If this processor
+    contains such an operator, then the operator will throw an exception
+    if you do not provide a model when invoking this function. */
     TimeSeriesTable process(std::string relativeToDirectory,
             const Model* model = nullptr) const {
         OPENSIM_THROW_IF_FRMOBJ(get_filepath().empty() && !m_tableProvided,

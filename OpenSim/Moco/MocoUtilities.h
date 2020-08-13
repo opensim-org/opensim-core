@@ -18,12 +18,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/// The utilities in this file are categorized as follows:
-///   - generic utilities (Doxygen group mocogenutil),
-///   - model and trajectory utilities (mocomodelutil).
-/// When adding a new function to this file, make sure to add it to one of the
-/// groups above.
-
 #include "MocoTrajectory.h"
 #include "osimMocoDLL.h"
 #include <regex>
@@ -63,7 +57,7 @@ class MocoProblem;
 ///
 /// @note Parameters and Lagrange multipliers in the MocoTrajectory are **not**
 ///       applied to the model.
-/// @ingroup mocomodelutil
+/// @ingroup mocoutil
 template <typename T>
 TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& trajectory,
         std::vector<std::string> outputPaths) {
@@ -134,7 +128,7 @@ TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& trajectory,
 /// model quantities that require realization to the Dynamics stage or later.
 /// The function used to fit the controls can either be GCVSpline or
 /// PiecewiseLinearFunction.
-/// @ingroup mocomodelutil
+/// @ingroup mocoutil
 OSIMMOCO_API void prescribeControlsToModel(const MocoTrajectory& trajectory,
         Model& model, std::string functionType = "GCVSpline");
 
@@ -146,7 +140,7 @@ OSIMMOCO_API void prescribeControlsToModel(const MocoTrajectory& trajectory,
 ///
 /// @note This function expects all Actuator%s in the model to be in the Model's
 /// ForceSet.
-/// @ingroup mocomodelutil
+/// @ingroup mocoutil
 OSIMMOCO_API MocoTrajectory simulateTrajectoryWithTimeStepping(
         const MocoTrajectory& trajectory, Model model,
         double integratorAccuracy = SimTK::NaN);
@@ -154,7 +148,7 @@ OSIMMOCO_API MocoTrajectory simulateTrajectoryWithTimeStepping(
 /// The map provides the index of each state variable in
 /// SimTK::State::getY() from its each state variable path string.
 /// Empty slots in Y (e.g., for quaternions) are ignored.
-/// @ingroup mocomodelutil
+/// @ingroup mocoutil
 OSIMMOCO_API
 std::vector<std::string> createStateVariableNamesInSystemOrder(
         const Model& model);
@@ -163,14 +157,14 @@ std::vector<std::string> createStateVariableNamesInSystemOrder(
 /// Same as above, but you can obtain a map from the returned state variable
 /// names to the index in SimTK::State::getY() that accounts for empty slots
 /// in Y.
-/// @ingroup mocomodelutil
+/// @ingroup mocoutil
 OSIMMOCO_API
 std::vector<std::string> createStateVariableNamesInSystemOrder(
         const Model& model, std::unordered_map<int, int>& yIndexMap);
 
 /// The map provides the index of each state variable in
 /// SimTK::State::getY() from its state variable path string.
-/// @ingroup mocomodelutil
+/// @ingroup mocoutil
 OSIMMOCO_API
 std::unordered_map<std::string, int> createSystemYIndexMap(const Model& model);
 #endif
@@ -183,12 +177,12 @@ std::unordered_map<std::string, int> createSystemYIndexMap(const Model& model);
 /// to the number of controls associated with actuators that apply a force
 /// (appliesForce == True). Its elements are the indices of the controls in the
 /// Model::updControls() that are associated with actuators that apply a force.
-/// @ingroup mocomodelutil
+/// @ingroup mocoutil
 OSIMMOCO_API
 std::vector<std::string> createControlNamesFromModel(
         const Model& model, std::vector<int>& modelControlIndices);
 /// Same as above, but when there is no mapping to the modelControlIndices.
-/// @ingroup mocomodelutil
+/// @ingroup mocoutil
 OSIMMOCO_API
 std::vector<std::string> createControlNamesFromModel(const Model& model);
 /// The map provides the index of each control variable in the SimTK::Vector
@@ -198,20 +192,20 @@ std::vector<std::string> createControlNamesFromModel(const Model& model);
 ///     the order of controls in Model::getControls(). This is an internal
 ///     error, but you may be able to avoid the error by ensuring all Actuator%s
 ///     are in the Model's ForceSet.
-/// @ingroup mocomodelutil
+/// @ingroup mocoutil
 OSIMMOCO_API
 std::unordered_map<std::string, int> createSystemControlIndexMap(
         const Model& model);
 
 /// Throws an exception if the order of the controls in the model is not the
 /// same as the order of the actuators in the model.
-/// @ingroup mocomodelutil
+/// @ingroup mocoutil
 OSIMMOCO_API void checkOrderSystemControls(const Model& model);
 
 /// Throws an exception if the same label appears twice in the list of labels.
 /// The argument copies the provided labels since we need to sort them to check
 /// for redundancies.
-/// @ingroup mocomodelutil
+/// @ingroup mocoutil
 OSIMMOCO_API void checkRedundantLabels(std::vector<std::string> labels);
 
 /// Throws an exception if any label in the provided list does not match any
@@ -261,7 +255,7 @@ OSIMMOCO_API void checkLabelsMatchModelStates(const Model& model,
 /// following replacements:
 /// - "/jointset/hip_r/hip_flexion_r/value" becomes "/jointset/hip_l/hip_flexion_l/value"
 /// - "/forceset/soleus_r" becomes "/forceset/soleus_l"
-/// @ingroup mocomodelutil
+/// @ingroup mocoutil
 OSIMMOCO_API MocoTrajectory createPeriodicTrajectory(
         const MocoTrajectory& halfPeriodTrajectory,
         std::vector<std::string> addPatterns = {".*pelvis_tx/value"},
@@ -289,11 +283,11 @@ OSIMMOCO_API MocoTrajectory createPeriodicTrajectory(
 /// or how the parallelization is achieved. Moco may even ignore or override
 /// the setting from the environment variable. See documentation elsewhere
 /// (e.g., from a specific MocoSolver) for more information.
-/// @ingroup mocogenutil
+/// @ingroup mocoutil
 OSIMMOCO_API int getMocoParallelEnvironmentVariable();
 
 /// Thrown by FileDeletionThrower::throwIfDeleted().
-/// @ingroup mocogenutil
+/// @ingroup mocoutil
 class FileDeletionThrowerException : public Exception {
 public:
     FileDeletionThrowerException(const std::string& file, size_t line,
@@ -308,7 +302,7 @@ public:
 /// file is deleted (by a user) before the object is destructed. If the file
 /// could not be written by the constructor, then throwIfDeleted() does not
 /// throw an exception.
-/// @ingroup mocogenutil
+/// @ingroup mocoutil
 class FileDeletionThrower {
 public:
     FileDeletionThrower()
@@ -354,7 +348,7 @@ private:
 /// getRecordValues(); this order is of use for, for example, the
 /// SmoothSphereHalfSpaceForce contact model but might have a different meaning
 /// for different contact models.
-/// @ingroup mocomodelutil
+/// @ingroup mocoutil
 OSIMMOCO_API
 TimeSeriesTable createExternalLoadsTableForGait(Model model,
         const StatesTrajectory& trajectory,
@@ -362,7 +356,7 @@ TimeSeriesTable createExternalLoadsTableForGait(Model model,
         const std::vector<std::string>& forcePathsLeftFoot);
 
 /// Same as above, but with a MocoTrajectory instead of a StatesTrajectory.
-/// @ingroup mocomodelutil
+/// @ingroup mocoutil
 OSIMMOCO_API
 TimeSeriesTable createExternalLoadsTableForGait(Model model,
         const MocoTrajectory& trajectory,

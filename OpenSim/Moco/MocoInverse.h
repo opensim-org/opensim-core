@@ -133,7 +133,7 @@ inverse.set_mesh_interval(0.02);
 MocoStudy study = inverse.initialize();
 MocoProblem& problem = study.updProblem();
 auto* emg_tracking = problem.addGoal<MocoControlTrackingGoal>("emg_tracking");
-<Configure emg_tracking goal>
+emg_tracking->setReference(TimeSeriesTable("electromyography.sto"));
 auto& solver = study.updSolver<MocoCasADiSolver>();
 solver.set_optim_convergence_tolerance(1e-4);
 MocoSolution solution = study.solve();

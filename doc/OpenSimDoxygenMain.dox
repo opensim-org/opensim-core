@@ -35,6 +35,15 @@ OpenSim source and it is not installed with OpenSim. **/
  * of these reporters to either save the quantities to a DataTable_ (that you
  * could then print to file) or print the quantities to the console. All
  * Reporters have a single list Input named "inputs".
+ *
+ * @defgroup commonutil Common Utilities
+ * These are free functions and utility classes in the Common library.
+ *
+ * @defgroup simulationutil Simulation Utilities
+ * These are free functions and utility classes in the Simulation library.
+ *
+ * @defgroup mocoutil Moco Utilities
+ * These are free functions and utility classes in the Moco library.
  */
 
 /** @mainpage Overview

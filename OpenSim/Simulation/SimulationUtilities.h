@@ -33,19 +33,17 @@ namespace OpenSim {
 
 class Model;
 
-/// @name General-purpose simulation driver for OpenSim models
-/// @{
 /** Simulate a model from an initial state and return the final state.
     If the model's useVisualizer flag is true, the user is repeatedly prompted
     to either begin simulating or quit. The provided state is not updated but
     the final state is returned at the end of the simulation, when finalTime is
     reached. %Set saveStatesFile=true to save the states to a storage file as:
-    "<model_name>_states.sto". */
+    "<model_name>_states.sto".
+    @ingroup simulationutil */
 OSIMSIMULATION_API SimTK::State simulate(Model& model,
     const SimTK::State& initialState,
     double finalTime,
     bool saveStatesFile = false);
-/// @}
 
 /// Update a vector of state labels (in place) to use post-4.0 state paths
 /// instead of pre-4.0 state names. For example, this converts labels as
@@ -59,12 +57,14 @@ OSIMSIMULATION_API SimTK::State simulate(Model& model,
 /// states. If a label does not identify a state in the model, the column
 /// label is not changed.
 /// @throws Exception if labels are not unique.
+/// @ingroup simulationutil
 OSIMSIMULATION_API void updateStateLabels40(
         const Model& model, std::vector<std::string>& labels);
 
 #ifndef SWIG
 /** Not available through scripting. 
- @returns nullptr if no update is necessary. */
+ @returns nullptr if no update is necessary.
+ @ingroup simulationutil */
 OSIMSIMULATION_API std::unique_ptr<Storage>
 updatePre40KinematicsStorageFor40MotionType(const Model& pre40Model,
         const Storage &kinematics);
@@ -103,7 +103,8 @@ updatePre40KinematicsStorageFor40MotionType(const Model& pre40Model,
     and is not classified as Rotational. Use this utility to remove any unit
     conversions from Coordinates that were incorrectly labeled
     as Rotational in the past. For these Coordinates only, the utility will undo
-    the incorrect radians to degrees conversion. */
+    the incorrect radians to degrees conversion.
+    @ingroup simulationutil */
 OSIMSIMULATION_API
 void updatePre40KinematicsFilesFor40MotionType(const Model& model,
         const std::vector<std::string>& filePaths,
@@ -120,6 +121,7 @@ void updatePre40KinematicsFilesFor40MotionType(const Model& model,
  *
  * This method is intended for use with models loaded from version-30516 XML
  * files to bring them up to date with the 4.0 interface.
+ * @ingroup simulationutil
  * */
 OSIMSIMULATION_API
 void updateSocketConnecteesBySearch(Model& model);

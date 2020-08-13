@@ -44,20 +44,6 @@ These are the goals available in Moco for use in your cost functional or as
 endpoint constraints. If none of these satisfy your needs, you can define your
 own using a plugin.
 
-
-@defgroup mocomodelutil Model and trajectory utilities
-
-These are utilities for visualizing model, editing a
-MocoTrajectory, and more.
-To use these utilities in MATLAB, prepend the function
-names with "opensimMoco."; for example, `opensimMoco.visualize()` or
-`org.opensim.modeling.opensimMoco.visualize()`.
-In Python, use `opensim.visualize()`.
-
-@defgroup mocogenutil Generic utilities
-
-Utilities for parallelism, strings, date/time, and error-checking.
-
 */
 
 } // namespace OpenSim

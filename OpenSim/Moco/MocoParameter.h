@@ -70,8 +70,8 @@ Here is a Matlab example of optimizing the optimal fiber length of a muscle:
 @code
 study = MocoStudy();
 problem = study.updProblem();
-param = MocoParameter('my_param_name', /forceset/soleus_r', 'optimal_fiber_length', ...
-MocoBounds(0.04, 0.06));
+param = MocoParameter('my_param_name', '/forceset/soleus_r', ...
+        'optimal_fiber_length', MocoBounds(0.04, 0.06));
 problem.addParameter(param);
 @endcode
 
@@ -80,7 +80,11 @@ assignments. Here, we create a MocoParameter for the y-position of the mass
 center of three different rigid bodies in the model:
 @code
 int propertyElt = 1; // y-position is the second element of the mass_center
-std::vector<std::string> componentPaths = {"pelvis", "thigh", "shank"};
+std::vector<std::string> componentPaths = {
+    "/bodyset/pelvis",
+    "/bodyset/thigh",
+    "/bodyset/shank"
+};
 MocoParameter y_com("y_com", componentPaths, "mass_center",
         MocoBounds(-0.05, 0.05), propertyElt);
 @endcode
@@ -144,7 +148,7 @@ public:
     need to be able to alter the model.
     If it is desired to apply this MocoParameter to multiple models, this
     should be called on all models of interest. The property references from
-    each model will be append to this MocoParameter's internal property
+    each model will be appended to this MocoParameter's internal property
     reference list. */
     void initializeOnModel(Model& model) const;
     /** Set the value of the stored model properties, which may include
