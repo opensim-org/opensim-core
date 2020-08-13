@@ -4,7 +4,6 @@
  */
 
 #include <OpenSim/Moco/About.h>
-#include <OpenSim/Moco/Components/DeGrooteFregly2016Muscle.h>
 #include <OpenSim/Moco/Components/PositionMotion.h>
 #include <OpenSim/Moco/MocoBounds.h>
 #include <OpenSim/Moco/MocoCasADiSolver/MocoCasADiSolver.h>
