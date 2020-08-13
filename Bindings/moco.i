@@ -135,7 +135,6 @@ namespace OpenSim {
 %include <OpenSim/Moco/MocoInverse.h>
 %include <OpenSim/Moco/MocoTrack.h>
 
-%include <OpenSim/Moco/Components/DeGrooteFregly2016Muscle.h>
 %include <OpenSim/Moco/Components/PositionMotion.h>
 
 %include <OpenSim/Moco/MocoUtilities.h>
