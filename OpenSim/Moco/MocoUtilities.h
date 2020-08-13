@@ -18,21 +18,11 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/// The utilities in this file are categorized as follows:
-///   - generic utilities (Doxygen group mocogenutil),
-///   - string and logging utilities (mocologutil),
-///   - numeric and data utilities (moconumutil), and
-///   - model and trajectory utilities (mocomodelutil).
-/// When adding a new function to this file, make sure to add it to one of the
-/// groups above.
-
 #include "MocoTrajectory.h"
 #include "osimMocoDLL.h"
 #include <mutex>
 #include <condition_variable>
 #include <regex>
-#include <set>
-#include <stack>
 
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/Logger.h>
@@ -67,7 +57,7 @@ class MocoProblem;
 ///
 /// @note Parameters and Lagrange multipliers in the MocoTrajectory are **not**
 ///       applied to the model.
-/// @ingroup mocomodelutil
+/// @ingroup mocoutil
 template <typename T>
 TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& trajectory,
         std::vector<std::string> outputPaths) {
@@ -89,6 +79,8 @@ TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& trajectory,
                             thisOutputPath, std::regex(outputPathArg))) {
                     // Make sure the output type agrees with the template.
                     if (dynamic_cast<const Output<T>*>(&output)) {
+                        log_debug("Adding output {} of type {}.",
+                                output.getPathName(), output.getTypeName());
                         reporter->addToReport(output);
                     } else {
                         log_warn("Ignoring output {} of type {}.",
@@ -136,7 +128,7 @@ TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& trajectory,
 /// model quantities that require realization to the Dynamics stage or later.
 /// The function used to fit the controls can either be GCVSpline or
 /// PiecewiseLinearFunction.
-/// @ingroup mocomodelutil
+/// @ingroup mocoutil
 OSIMMOCO_API void prescribeControlsToModel(const MocoTrajectory& trajectory,
         Model& model, std::string functionType = "GCVSpline");
 
@@ -146,17 +138,17 @@ OSIMMOCO_API void prescribeControlsToModel(const MocoTrajectory& trajectory,
 /// than a StatesTrajectory) to facilitate comparing optimal control solutions
 /// with time stepping. Use integratorAccuracy to override the default setting.
 ///
-/// @note This function expects all Actuator%s in the model are in the Model's
+/// @note This function expects all Actuator%s in the model to be in the Model's
 /// ForceSet.
-/// @ingroup mocomodelutil
+/// @ingroup mocoutil
 OSIMMOCO_API MocoTrajectory simulateTrajectoryWithTimeStepping(
         const MocoTrajectory& trajectory, Model model,
-        double integratorAccuracy = -1);
+        double integratorAccuracy = SimTK::NaN);
 
 /// The map provides the index of each state variable in
 /// SimTK::State::getY() from its each state variable path string.
 /// Empty slots in Y (e.g., for quaternions) are ignored.
-/// @ingroup mocomodelutil
+/// @ingroup mocoutil
 OSIMMOCO_API
 std::vector<std::string> createStateVariableNamesInSystemOrder(
         const Model& model);
@@ -165,14 +157,14 @@ std::vector<std::string> createStateVariableNamesInSystemOrder(
 /// Same as above, but you can obtain a map from the returned state variable
 /// names to the index in SimTK::State::getY() that accounts for empty slots
 /// in Y.
-/// @ingroup mocomodelutil
+/// @ingroup mocoutil
 OSIMMOCO_API
 std::vector<std::string> createStateVariableNamesInSystemOrder(
         const Model& model, std::unordered_map<int, int>& yIndexMap);
 
 /// The map provides the index of each state variable in
 /// SimTK::State::getY() from its state variable path string.
-/// @ingroup mocomodelutil
+/// @ingroup mocoutil
 OSIMMOCO_API
 std::unordered_map<std::string, int> createSystemYIndexMap(const Model& model);
 #endif
@@ -185,12 +177,12 @@ std::unordered_map<std::string, int> createSystemYIndexMap(const Model& model);
 /// to the number of controls associated with actuators that apply a force
 /// (appliesForce == True). Its elements are the indices of the controls in the
 /// Model::updControls() that are associated with actuators that apply a force.
-/// @ingroup mocomodelutil
+/// @ingroup mocoutil
 OSIMMOCO_API
 std::vector<std::string> createControlNamesFromModel(
         const Model& model, std::vector<int>& modelControlIndices);
 /// Same as above, but when there is no mapping to the modelControlIndices.
-/// @ingroup mocomodelutil
+/// @ingroup mocoutil
 OSIMMOCO_API
 std::vector<std::string> createControlNamesFromModel(const Model& model);
 /// The map provides the index of each control variable in the SimTK::Vector
@@ -200,75 +192,26 @@ std::vector<std::string> createControlNamesFromModel(const Model& model);
 ///     the order of controls in Model::getControls(). This is an internal
 ///     error, but you may be able to avoid the error by ensuring all Actuator%s
 ///     are in the Model's ForceSet.
-/// @ingroup mocomodelutil
+/// @ingroup mocoutil
 OSIMMOCO_API
 std::unordered_map<std::string, int> createSystemControlIndexMap(
         const Model& model);
 
 /// Throws an exception if the order of the controls in the model is not the
 /// same as the order of the actuators in the model.
-/// @ingroup mocomodelutil
+/// @ingroup mocoutil
 OSIMMOCO_API void checkOrderSystemControls(const Model& model);
 
 /// Throws an exception if the same label appears twice in the list of labels.
 /// The argument copies the provided labels since we need to sort them to check
 /// for redundancies.
-/// @ingroup mocomodelutil
+/// @ingroup mocoutil
 OSIMMOCO_API void checkRedundantLabels(std::vector<std::string> labels);
 
 /// Throws an exception if any label in the provided list does not match any
 /// state variable names in the model.
 OSIMMOCO_API void checkLabelsMatchModelStates(const Model& model,
         const std::vector<std::string>& labels);
-
-/// Get a list of reference pointers to all outputs whose names (not paths)
-/// match a substring defined by a provided regex string pattern. The regex
-/// string pattern could be the full name of the output. Only Output%s that
-/// match the template argument type will be returned (double is the default
-/// type). Set the argument 'includeDescendents' to true to include outputs
-/// from all descendents from the provided component.
-/// @ingroup mocomodelutil
-template <typename T = double>
-std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(
-        const Component& component, const std::string& pattern,
-        bool includeDescendents = false) {
-
-    // Create regex.
-    std::regex regex(pattern);
-    // Initialize outputs array.
-    std::vector<SimTK::ReferencePtr<const Output<T>>> outputs;
-
-    std::function<void(const Component&, const std::regex&, bool,
-            std::vector<SimTK::ReferencePtr<const Output<T>>>&)> helper;
-    helper = [&helper](const Component& component, const std::regex& regex,
-            bool includeDescendents,
-            std::vector<SimTK::ReferencePtr<const Output<T>>>& outputs) {
-        // Store a reference to outputs that match the template
-        // parameter type and whose names contain the provided
-        // substring.
-        for (const auto& entry : component.getOutputs()) {
-            const std::string& name = entry.first;
-            const auto foundSubstring = std::regex_match(name, regex);
-            const auto* output =
-                    dynamic_cast<const Output<T>*>(entry.second.get());
-            if (output && foundSubstring) {
-                outputs.emplace_back(output);
-            }
-        }
-
-        // Repeat for all subcomponents.
-        if (includeDescendents) {
-            for (const Component& thisComp :
-                    component.getComponentList<Component>()) {
-                if (&thisComp == &component) { continue; }
-                helper(thisComp, regex, false, outputs);
-            }
-        }
-    };
-
-    helper(component, regex, includeDescendents, outputs);
-    return outputs;
-}
 
 /// Convert a trajectory covering half the period of a symmetric motion into a
 /// trajectory over the full period. This is useful for simulations of half a
@@ -312,7 +255,7 @@ std::vector<SimTK::ReferencePtr<const Output<T>>> getModelOutputReferencePtrs(
 /// following replacements:
 /// - "/jointset/hip_r/hip_flexion_r/value" becomes "/jointset/hip_l/hip_flexion_l/value"
 /// - "/forceset/soleus_r" becomes "/forceset/soleus_l"
-/// @ingroup mocomodelutil
+/// @ingroup mocoutil
 OSIMMOCO_API MocoTrajectory createPeriodicTrajectory(
         const MocoTrajectory& halfPeriodTrajectory,
         std::vector<std::string> addPatterns = {".*pelvis_tx/value"},
@@ -329,76 +272,6 @@ OSIMMOCO_API MocoTrajectory createPeriodicTrajectory(
         std::vector<std::pair<std::string, std::string>> symmetryPatterns =
                 {{R"(_r(\/|_|$))", "_l$1"}, {R"(_l(\/|_|$))", "_r$1"}});
 
-/// Throw an exception if the property's value is not in the provided set.
-/// We assume that `p` is a single-value property.
-/// @ingroup mocogenutil
-template <typename T>
-void checkPropertyInSet(
-        const Object& obj, const Property<T>& p, const std::set<T>& set) {
-    const auto& value = p.getValue();
-    if (set.find(value) == set.end()) {
-        std::stringstream msg;
-        msg << "Property '" << p.getName() << "' (in ";
-        if (!obj.getName().empty()) {
-            msg << "object '" << obj.getName() << "' of type ";
-        }
-        msg << obj.getConcreteClassName() << ") has invalid value " << value
-            << "; expected one of the following:";
-        std::string separator(" ");
-        for (const auto& s : set) {
-            msg << separator << " " << s;
-            if (separator.empty()) separator = ", ";
-        }
-        msg << ".";
-        OPENSIM_THROW(Exception, msg.str());
-    }
-}
-
-/// Throw an exception if the property's value is not positive.
-/// We assume that `p` is a single-value property.
-/// @ingroup mocogenutil
-template <typename T>
-void checkPropertyIsPositive(const Object& obj, const Property<T>& p) {
-    const auto& value = p.getValue();
-    if (value <= 0) {
-        std::stringstream msg;
-        msg << "Property '" << p.getName() << "' (in ";
-        if (!obj.getName().empty()) {
-            msg << "object '" << obj.getName() << "' of type ";
-        }
-        msg << obj.getConcreteClassName() << ") must be positive, but is "
-            << value << ".";
-        OPENSIM_THROW(Exception, msg.str());
-    }
-}
-
-/// Throw an exception if the property's value is neither in the provided
-/// range nor in the provided set.
-/// We assume that `p` is a single-value property.
-/// @ingroup mocogenutil
-template <typename T>
-void checkPropertyInRangeOrSet(const Object& obj, const Property<T>& p,
-        const T& lower, const T& upper, const std::set<T>& set) {
-    const auto& value = p.getValue();
-    if ((value < lower || value > upper) && set.find(value) == set.end()) {
-        std::stringstream msg;
-        msg << "Property '" << p.getName() << "' (in ";
-        if (!obj.getName().empty()) {
-            msg << "object '" << obj.getName() << "' of type ";
-        }
-        msg << obj.getConcreteClassName() << ") has invalid value " << value
-            << "; expected value to be in range " << lower << "," << upper
-            << ", or one of the following:";
-        std::string separator("");
-        for (const auto& s : set) {
-            msg << " " << separator << s;
-            if (separator.empty()) separator = ",";
-        }
-        msg << ".";
-        OPENSIM_THROW(Exception, msg.str());
-    }
-}
-
 /// This obtains the value of the OPENSIM_MOCO_PARALLEL environment variable.
 /// The value has the following meanings:
 /// - 0: run in series (not parallel).
@@ -410,52 +283,11 @@ void checkPropertyInRangeOrSet(const Object& obj, const Property<T>& p,
 /// or how the parallelization is achieved. Moco may even ignore or override
 /// the setting from the environment variable. See documentation elsewhere
 /// (e.g., from a specific MocoSolver) for more information.
-/// @ingroup mocogenutil
+/// @ingroup mocoutil
 OSIMMOCO_API int getMocoParallelEnvironmentVariable();
 
-/// This class lets you store objects of a single type for reuse by multiple
-/// threads, ensuring threadsafe access to each of those objects.
-/// @ingroup mocogenutil
-// TODO: Find a way to always give the same thread the same object.
-template <typename T> class ThreadsafeJar {
-public:
-    /// Request an object for your exclusive use on your thread. This function
-    /// blocks the thread until an object is available. Make sure to return
-    /// (leave()) the object when you're done!
-    std::unique_ptr<T> take() {
-        // Only one thread can lock the mutex at a time, so only one thread
-        // at a time can be in any of the functions of this class.
-        std::unique_lock<std::mutex> lock(m_mutex);
-        // Block this thread until the condition variable is woken up
-        // (by a notify_...()) and the lambda function returns true.
-        m_inventoryMonitor.wait(lock, [this] { return m_entries.size() > 0; });
-        std::unique_ptr<T> top = std::move(m_entries.top());
-        m_entries.pop();
-        return top;
-    }
-    /// Add or return an object so that another thread can use it. You will need
-    /// to std::move() the entry, ensuring that you will no longer have access
-    /// to the entry in your code (the pointer will now be null).
-    void leave(std::unique_ptr<T> entry) {
-        std::unique_lock<std::mutex> lock(m_mutex);
-        m_entries.push(std::move(entry));
-        lock.unlock();
-        m_inventoryMonitor.notify_one();
-    }
-    /// Obtain the number of entries that can be taken.
-    int size() const {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        return (int)m_entries.size();
-    }
-
-private:
-    std::stack<std::unique_ptr<T>> m_entries;
-    mutable std::mutex m_mutex;
-    std::condition_variable m_inventoryMonitor;
-};
-
 /// Thrown by FileDeletionThrower::throwIfDeleted().
-/// @ingroup mocogenutil
+/// @ingroup mocoutil
 class FileDeletionThrowerException : public Exception {
 public:
     FileDeletionThrowerException(const std::string& file, size_t line,
@@ -470,7 +302,7 @@ public:
 /// file is deleted (by a user) before the object is destructed. If the file
 /// could not be written by the constructor, then throwIfDeleted() does not
 /// throw an exception.
-/// @ingroup mocogenutil
+/// @ingroup mocoutil
 class FileDeletionThrower {
 public:
     FileDeletionThrower()
@@ -516,7 +348,7 @@ private:
 /// getRecordValues(); this order is of use for, for example, the
 /// SmoothSphereHalfSpaceForce contact model but might have a different meaning
 /// for different contact models.
-/// @ingroup mocomodelutil
+/// @ingroup mocoutil
 OSIMMOCO_API
 TimeSeriesTable createExternalLoadsTableForGait(Model model,
         const StatesTrajectory& trajectory,
@@ -524,7 +356,7 @@ TimeSeriesTable createExternalLoadsTableForGait(Model model,
         const std::vector<std::string>& forcePathsLeftFoot);
 
 /// Same as above, but with a MocoTrajectory instead of a StatesTrajectory.
-/// @ingroup mocomodelutil
+/// @ingroup mocoutil
 OSIMMOCO_API
 TimeSeriesTable createExternalLoadsTableForGait(Model model,
         const MocoTrajectory& trajectory,

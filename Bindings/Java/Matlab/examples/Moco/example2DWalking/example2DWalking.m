@@ -189,9 +189,7 @@ problem.setStateInfo('/jointset/lumbar/lumbar/value', [0, 20*pi/180]);
 gaitTrackingSolution = study.solve();
 
 % Create a full stride from the periodic single step solution.
-% For details, navigate to
-% User Guide > Utilities > Model and trajectory utilities
-% in the Moco Documentation.
+% For details, view the Doxygen documentation for createPeriodicTrajectory().
 fullStride = opensimMoco.createPeriodicTrajectory(gaitTrackingSolution);
 fullStride.write('gaitTracking_solution_fullStride.sto');
 
@@ -334,9 +332,7 @@ solver.setGuess(gaitTrackingSolution); % Use tracking solution as initial guess
 gaitPredictionSolution = study.solve();
 
 % Create a full stride from the periodic single step solution.
-% For details, navigate to
-% User Guide > Utilities > Model and trajectory utilities
-% in the Moco Documentation.
+% For details, view the Doxygen documentation for createPeriodicTrajectory().
 fullStride = opensimMoco.createPeriodicTrajectory(gaitPredictionSolution);
 fullStride.write('gaitPrediction_solution_fullStride.sto');
 
@@ -355,9 +351,8 @@ contact_l.add('contactFront_l');
 
 % Create a conventional ground reaction forces file by summing the contact
 % forces of contact spheres on each foot.
-% For details, navigate to
-% User Guide > Utilities > Model and trajectory utilities
-% in the Moco Documentation.
+% For details, view the Doxygen documentation for
+% createExternalLoadsTableForGait().
 externalForcesTableFlat = opensimMoco.createExternalLoadsTableForGait(model, ...
                              fullStride, contact_r, contact_l);
 STOFileAdapter.write(externalForcesTableFlat, ...

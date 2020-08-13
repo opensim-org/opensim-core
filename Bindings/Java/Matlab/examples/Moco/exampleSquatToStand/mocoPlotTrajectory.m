@@ -1,6 +1,8 @@
 function mocoPlotTrajectory(trajA, trajB, nameA, nameB)
 % Plot a MocoTrajectory. Optionally, specify a second trajectory and names
 % for the trajectories.
+% For a generic version of this function, see the utility
+% osimMocoTrajectoryReport.m.
 
 import org.opensim.modeling.*;
 

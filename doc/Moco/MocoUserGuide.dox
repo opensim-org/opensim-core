@@ -80,14 +80,13 @@ sealing forces you to acknowledge that the solver failed.
 
 @section utilities Utilities
 
-Moco contains utilities for creating models, modifying models,
+OpenSim and Moco contain utilities for creating models, modifying models,
 working with data, and postprocessing results.
 
 1. ModelFactory: Create standard models and modify existing models.
 2. ModelProcessor: Create a workflow of operations to perform on a model.
 3. TableProcessor: Create a workflow of operations to perform on a table.
-4. @ref mocomodelutil, including visualizing and analyzing a MocoTrajectory.
-5. @ref moconumutil, including interpolating data and reading/writing tables.
+4. @ref mocoutil, including visualizing and analyzing a MocoTrajectory.
 6. plot_trajectory.py: Plot a MocoTrajectory with the Python Matplotlib plotting
                        library.
 7. report.py: Generate a detailed PDF report about a MocoTrajectory and any

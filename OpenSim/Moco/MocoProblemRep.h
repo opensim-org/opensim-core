@@ -328,6 +328,53 @@ private:
 
     void initialize();
 
+    /// Get a list of reference pointers to all outputs whose names (not paths)
+    /// match a substring defined by a provided regex string pattern. The regex
+    /// string pattern could be the full name of the output. Only Output%s that
+    /// match the template argument type will be returned (double is the default
+    /// type). Set the argument 'includeDescendents' to true to include outputs
+    /// from all descendents (subcomponents) from the provided component.
+    template <typename T = double>
+    std::vector<SimTK::ReferencePtr<const Output<T>>>
+    getModelOutputReferencePtrs(const Component& component,
+            const std::string& pattern, bool includeDescendents = false) {
+        // Create regex.
+        std::regex regex(pattern);
+        // Initialize outputs array.
+        std::vector<SimTK::ReferencePtr<const Output<T>>> outputs;
+
+        std::function<void(const Component&, const std::regex&, bool,
+                std::vector<SimTK::ReferencePtr<const Output<T>>>&)> helper;
+        helper = [&helper](const Component& component, const std::regex& regex,
+                bool includeDescendents,
+                std::vector<SimTK::ReferencePtr<const Output<T>>>& outputs) {
+          // Store a reference to outputs that match the template
+          // parameter type and whose names contain the provided
+          // substring.
+          for (const auto& entry : component.getOutputs()) {
+              const std::string& name = entry.first;
+              const auto foundSubstring = std::regex_match(name, regex);
+              const auto* output =
+                      dynamic_cast<const Output<T>*>(entry.second.get());
+              if (output && foundSubstring) {
+                  outputs.emplace_back(output);
+              }
+          }
+
+          // Repeat for all subcomponents.
+          if (includeDescendents) {
+              for (const Component& thisComp :
+                      component.getComponentList<Component>()) {
+                  if (&thisComp == &component) { continue; }
+                  helper(thisComp, regex, false, outputs);
+              }
+          }
+        };
+
+        helper(component, regex, includeDescendents, outputs);
+        return outputs;
+    }
+
     const MocoProblem* m_problem;
 
     Model m_model_base;

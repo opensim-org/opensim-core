@@ -176,31 +176,40 @@ velocity = table_velocity.getDependentColumn("muscle").to_numpy()
 # Plot the terms of the metabolics model, and compare the metabolics model's
 # mechanical work rate to the mechanical work rate computed using the
 # MuscleAnalysis.
-import pylab as pl
-pl.plot(time, force * -velocity, label='active_fiber_force * fiber_velocity',
-        lw=4)
+plot = False
+if os.getenv('OPENSIM_USE_VISUALIZER') != '0':
+    try:
+        import pylab as pl
+        plot = True
+    except:
+        print('Skipping plotting')
 
-table_metabolics = osim.TimeSeriesTable("analyze_ProbeReporter_probes.sto")
-time = table_metabolics.getIndependentColumn()
-metabolics_total_rate = table_metabolics.getDependentColumn(
-    "metabolics_TOTAL").to_numpy()
-pl.plot(time, metabolics_total_rate, label='total metabolic rate')
+if plot:
+    pl.plot(time, force * -velocity,
+            label='active_fiber_force * fiber_velocity', lw=4)
 
-mech_work_rate = table_metabolics.getDependentColumn(
-    "mechanical_work_rate_TOTAL").to_numpy()
-pl.plot(time, mech_work_rate, label='mechanical work rate')
+    table_metabolics = osim.TimeSeriesTable("analyze_ProbeReporter_probes.sto")
+    time = table_metabolics.getIndependentColumn()
+    metabolics_total_rate = table_metabolics.getDependentColumn(
+        "metabolics_TOTAL").to_numpy()
+    pl.plot(time, metabolics_total_rate, label='total metabolic rate')
 
-activation_maintenance_rate = table_metabolics.getDependentColumn(
-    "activation_maintenance_rate_TOTAL").to_numpy()
-pl.plot(time, activation_maintenance_rate, label='activation maintenance rate')
+    mech_work_rate = table_metabolics.getDependentColumn(
+        "mechanical_work_rate_TOTAL").to_numpy()
+    pl.plot(time, mech_work_rate, label='mechanical work rate')
 
-shortening_rate = table_metabolics.getDependentColumn(
-    "shortening_rate_TOTAL").to_numpy()
-pl.plot(time, shortening_rate, label='shortening rate')
+    activation_maintenance_rate = table_metabolics.getDependentColumn(
+        "activation_maintenance_rate_TOTAL").to_numpy()
+    pl.plot(time, activation_maintenance_rate,
+            label='activation maintenance rate')
 
-basal_rate = table_metabolics.getDependentColumn(
-    "basal_rate_TOTAL").to_numpy()
-pl.plot(time, basal_rate, label='basal rate')
-pl.legend()
-pl.show()
+    shortening_rate = table_metabolics.getDependentColumn(
+        "shortening_rate_TOTAL").to_numpy()
+    pl.plot(time, shortening_rate, label='shortening rate')
+
+    basal_rate = table_metabolics.getDependentColumn(
+        "basal_rate_TOTAL").to_numpy()
+    pl.plot(time, basal_rate, label='basal rate')
+    pl.legend()
+    pl.show()
 
