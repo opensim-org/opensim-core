@@ -1241,7 +1241,7 @@ TEMPLATE_TEST_CASE(
                 solutionTrajOpt.getTime()[solutionTrajOpt.getNumTimes() - 1];
         cmc.setFinalTime(finalTime);
         cmc.setDesiredKinematicsFileName(solutionFilename);
-        cmc.setTaskSetFileName("testDeGrooteFregly2016Muscle_CMC_Tasks.xml");
+        cmc.setTaskSetFileName("hanging_muscle_CMC_Tasks.xml");
         cmc.setSolveForEquilibrium(false);
         cmc.setTimeWindow(0.01);
         cmc.setUseFastTarget(true);

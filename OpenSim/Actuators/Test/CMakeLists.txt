@@ -5,3 +5,6 @@ OpenSimAddTests(
     LINKLIBS osimTools osimMoco
     )
 
+OpenSimCopySharedTestFiles(hanging_muscle_CMC_Tasks.xml)
+
+

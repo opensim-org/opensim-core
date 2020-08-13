@@ -16,14 +16,10 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-// Some of this code is based on testSingleMuscle,
-// testSingleMuscleDeGrooteFregly2016.
-
 #include <OpenSim/Actuators/ActivationCoordinateActuator.h>
 #include <OpenSim/Actuators/ModelFactory.h>
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Tools/CMCTool.h>
 
 #define CATCH_CONFIG_MAIN
 #include "Testing.h"
