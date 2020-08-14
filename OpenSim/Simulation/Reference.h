@@ -95,9 +95,9 @@ public:
 // Subclass for continuous time Reference signals
 // For this subclass, Reference can be evaluated at any time
 template <class T> class ContinuousTimeReference_ : public Reference_<T> {
-    OpenSim_DECLARE_ABSTRACT_OBJECT_T(ContinuousTimeReference_, T, Reference_);
+    OpenSim_DECLARE_ABSTRACT_OBJECT_T(ContinuousTimeReference_, T, Reference_<T>);
 public:
-    using Reference_::Reference_;
+    using Reference_<T>::Reference_;
     /** get the values of the Reference signals as a function 
         of the passed in time */
     virtual void getValuesAtTime(
@@ -108,20 +108,20 @@ public:
         getValuesAtTime(time, values);
         return values;
     }
-    virtual bool isContinuous() const { return true; };
+    virtual bool isContinuous() const override { return true; };
 };
 // Subclass for discrete time Reference signals
 // This can support streaming and adding data on te fly
-// The concept of getting "Next" values and corresponding
-// time makes sense.
+// The concept of getting "Next" set of values and corresponding
+// time makes sense for these References.
 template <class T> class DiscreteTimeReference_ : public Reference_<T> {
-    OpenSim_DECLARE_ABSTRACT_OBJECT_T(DiscreteTimeReference_, T, Reference_);
+    OpenSim_DECLARE_ABSTRACT_OBJECT_T(DiscreteTimeReference_, T, Reference_<T>);
 
-    using Reference_::Reference_;
+    using Reference_<T>::Reference_;
 public:
     // Optionally support continuous time reference interface
     virtual void getValuesAtTime(
-            double time, SimTK::Array_<T>& values) const {};
+            double time, SimTK::Array_<T>& values) const = 0;
     // Streaming mode where data can be added and used
     virtual void getNextValuesAndTime(
             double& time, SimTK::Array_<T>& values) {
@@ -129,7 +129,7 @@ public:
     };
     // indicate whether to stop or wait for more data
     virtual bool hasNext() const { return false; };
-    virtual bool isContinuous() const { return false; };
+    virtual bool isContinuous() const override { return false; };
 };
   // END of class templatized Reference_<T>
 //=============================================================================
