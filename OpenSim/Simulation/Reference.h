@@ -95,7 +95,7 @@ public:
 // Subclass for continuous time Reference signals
 // For this subclass, Reference can be evaluated at any time
 template <class T> class ContinuousTimeReference_ : public Reference_<T> {
-    OpenSim_DECLARE_ABSTRACT_OBJECT_T(ContinuousTimeReference_, T, Reference_);
+    OpenSim_DECLARE_ABSTRACT_OBJECT_T(ContinuousTimeReference_, T, Reference_<T>);
 public:
     using Reference_::Reference_;
     /** get the values of the Reference signals as a function 
@@ -115,7 +115,7 @@ public:
 // The concept of getting "Next" values and corresponding
 // time makes sense.
 template <class T> class DiscreteTimeReference_ : public Reference_<T> {
-    OpenSim_DECLARE_ABSTRACT_OBJECT_T(DiscreteTimeReference_, T, Reference_);
+    OpenSim_DECLARE_ABSTRACT_OBJECT_T(DiscreteTimeReference_, T, Reference_<T>);
 
     using Reference_::Reference_;
 public:
