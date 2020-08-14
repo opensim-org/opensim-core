@@ -79,7 +79,7 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
     TimeSeriesTable tableToUse = get_reference().process();
 
     // Check that there are no redundant columns in the reference data.
-    checkRedundantLabels(tableToUse.getColumnLabels());
+    TableUtilities::checkNonUniqueLabels(tableToUse.getColumnLabels());
 
     // Convert data table to spline set.
     auto allSplines = GCVSplineSet(tableToUse);

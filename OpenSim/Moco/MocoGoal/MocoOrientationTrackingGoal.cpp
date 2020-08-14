@@ -110,7 +110,7 @@ void MocoOrientationTrackingGoal::initializeOnModelImpl(const Model& model)
     }
 
     // Check that there are no redundant columns in the reference data.
-    checkRedundantLabels(rotationTable.getColumnLabels());
+    TableUtilities::checkNonUniqueLabels(rotationTable.getColumnLabels());
 
     // Cache the model frames and rotation weights based on the order of the 
     // rotation table.

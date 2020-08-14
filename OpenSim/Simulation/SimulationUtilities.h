@@ -126,6 +126,69 @@ void updatePre40KinematicsFilesFor40MotionType(const Model& model,
 OSIMSIMULATION_API
 void updateSocketConnecteesBySearch(Model& model);
 
+/// The map provides the index of each state variable in
+/// SimTK::State::getY() from its each state variable path string.
+/// Empty slots in Y (e.g., for quaternions) are ignored.
+/// @ingroup simulationutil
+OSIMSIMULATION_API
+std::vector<std::string> createStateVariableNamesInSystemOrder(
+        const Model& model);
+
+#ifndef SWIG
+/// Same as above, but you can obtain a map from the returned state variable
+/// names to the index in SimTK::State::getY() that accounts for empty slots
+/// in Y.
+/// @ingroup simulationutil
+OSIMSIMULATION_API
+std::vector<std::string> createStateVariableNamesInSystemOrder(
+        const Model& model, std::unordered_map<int, int>& yIndexMap);
+
+/// The map provides the index of each state variable in
+/// SimTK::State::getY() from its state variable path string.
+/// @ingroup simulationutil
+OSIMSIMULATION_API
+std::unordered_map<std::string, int> createSystemYIndexMap(const Model& model);
+#endif
+
+/// Create a vector of control names based on the actuators in the model for
+/// which appliesForce == True. For actuators with one control (e.g.
+/// ScalarActuator) the control name is simply the actuator name. For actuators
+/// with multiple controls, each control name is the actuator name appended by
+/// the control index (e.g. "/actuator_0"); modelControlIndices has length equal
+/// to the number of controls associated with actuators that apply a force
+/// (appliesForce == True). Its elements are the indices of the controls in the
+/// Model::updControls() that are associated with actuators that apply a force.
+/// @ingroup simulationutil
+OSIMSIMULATION_API
+std::vector<std::string> createControlNamesFromModel(
+        const Model& model, std::vector<int>& modelControlIndices);
+/// Same as above, but when there is no mapping to the modelControlIndices.
+/// @ingroup simulationutil
+OSIMSIMULATION_API
+std::vector<std::string> createControlNamesFromModel(const Model& model);
+/// The map provides the index of each control variable in the SimTK::Vector
+/// returned by Model::getControls(), using the control name as the
+/// key.
+/// @throws Exception if the order of actuators in the model does not match
+///     the order of controls in Model::getControls(). This is an internal
+///     error, but you may be able to avoid the error by ensuring all Actuator%s
+///     are in the Model's ForceSet.
+/// @ingroup simulationutil
+OSIMSIMULATION_API
+std::unordered_map<std::string, int> createSystemControlIndexMap(
+        const Model& model);
+
+/// Throws an exception if the order of the controls in the model is not the
+/// same as the order of the actuators in the model.
+/// @ingroup simulationutil
+OSIMSIMULATION_API void checkOrderSystemControls(const Model& model);
+
+/// Throws an exception if any label in the provided list does not match any
+/// state variable names in the model.
+/// @ingroup simulationutil
+OSIMSIMULATION_API void checkLabelsMatchModelStates(
+        const Model& model, const std::vector<std::string>& labels);
+
 } // end of namespace OpenSim
 
 #endif // OPENSIM_SIMULATION_UTILITIES_H_

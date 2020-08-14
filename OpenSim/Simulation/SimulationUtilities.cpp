@@ -228,7 +228,166 @@ void OpenSim::updateSocketConnecteesBySearch(Model& model)
                  "Sockets in Model '{}'.)",
                 numSocketsUpdated, model.getName());
     } else {
-        log_info("OpenSim::updateSocketConnecteesBySearch(): no Sockets updated in Model '{}'.",
-                  model.getName());
+        log_info("OpenSim::updateSocketConnecteesBySearch(): no Sockets "
+                 "updated in Model '{}'.",
+                model.getName());
+    }
+}
+
+std::vector<std::string> OpenSim::createStateVariableNamesInSystemOrder(
+        const Model& model) {
+    std::unordered_map<int, int> yIndexMap;
+    return createStateVariableNamesInSystemOrder(model, yIndexMap);
+}
+
+std::vector<std::string> OpenSim::createStateVariableNamesInSystemOrder(
+        const Model& model, std::unordered_map<int, int>& yIndexMap) {
+    yIndexMap.clear();
+    std::vector<std::string> svNamesInSysOrder;
+    auto s = model.getWorkingState();
+    const auto svNames = model.getStateVariableNames();
+    s.updY() = 0;
+    std::vector<int> yIndices;
+    for (int iy = 0; iy < s.getNY(); ++iy) {
+        s.updY()[iy] = SimTK::NaN;
+        const auto svValues = model.getStateVariableValues(s);
+        for (int isv = 0; isv < svNames.size(); ++isv) {
+            if (SimTK::isNaN(svValues[isv])) {
+                svNamesInSysOrder.push_back(svNames[isv]);
+                yIndices.emplace_back(iy);
+                s.updY()[iy] = 0;
+                break;
+            }
+        }
+        if (SimTK::isNaN(s.updY()[iy])) {
+            // If we reach here, this is an unused slot for a quaternion.
+            s.updY()[iy] = 0;
+        }
+    }
+    int count = 0;
+    for (const auto& iy : yIndices) {
+        yIndexMap.emplace(std::make_pair(count, iy));
+        ++count;
+    }
+    SimTK_ASSERT2_ALWAYS((size_t)svNames.size() == svNamesInSysOrder.size(),
+            "Expected to get %i state names but found %i.", svNames.size(),
+            svNamesInSysOrder.size());
+    return svNamesInSysOrder;
+}
+
+std::unordered_map<std::string, int> OpenSim::createSystemYIndexMap(
+        const Model& model) {
+    std::unordered_map<std::string, int> sysYIndices;
+    auto s = model.getWorkingState();
+    const auto svNames = model.getStateVariableNames();
+    s.updY() = 0;
+    for (int iy = 0; iy < s.getNY(); ++iy) {
+        s.updY()[iy] = SimTK::NaN;
+        const auto svValues = model.getStateVariableValues(s);
+        for (int isv = 0; isv < svNames.size(); ++isv) {
+            if (SimTK::isNaN(svValues[isv])) {
+                sysYIndices[svNames[isv]] = iy;
+                s.updY()[iy] = 0;
+                break;
+            }
+        }
+        if (SimTK::isNaN(s.updY()[iy])) {
+            // If we reach here, this is an unused slot for a quaternion.
+            s.updY()[iy] = 0;
+        }
+    }
+    SimTK_ASSERT2_ALWAYS(svNames.size() == (int)sysYIndices.size(),
+            "Expected to find %i state indices but found %i.", svNames.size(),
+            sysYIndices.size());
+    return sysYIndices;
+}
+
+std::vector<std::string> OpenSim::createControlNamesFromModel(
+        const Model& model, std::vector<int>& modelControlIndices) {
+    std::vector<std::string> controlNames;
+    // Loop through all actuators and create control names. For scalar
+    // actuators, use the actuator name for the control name. For non-scalar
+    // actuators, use the actuator name with a control index appended for the
+    // control name.
+    // TODO update when OpenSim supports named controls.
+    int count = 0;
+    modelControlIndices.clear();
+    for (const auto& actu : model.getComponentList<Actuator>()) {
+        if (!actu.get_appliesForce()) {
+            count += actu.numControls();
+            continue;
+        }
+        std::string actuPath = actu.getAbsolutePathString();
+        if (actu.numControls() == 1) {
+            controlNames.push_back(actuPath);
+            modelControlIndices.push_back(count);
+            count++;
+        } else {
+            for (int i = 0; i < actu.numControls(); ++i) {
+                controlNames.push_back(actuPath + "_" + std::to_string(i));
+                modelControlIndices.push_back(count);
+                count++;
+            }
+        }
+    }
+
+    return controlNames;
+}
+std::vector<std::string> OpenSim::createControlNamesFromModel(
+        const Model& model) {
+    std::vector<int> modelControlIndices;
+    return createControlNamesFromModel(model, modelControlIndices);
+}
+
+std::unordered_map<std::string, int> OpenSim::createSystemControlIndexMap(
+        const Model& model) {
+    // We often assume that control indices in the state are in the same order
+    // as the actuators in the model. However, the control indices are
+    // allocated in the order in which addToSystem() is invoked (not
+    // necessarily the order used by getComponentList()). So until we can be
+    // absolutely sure that the controls are in the same order as actuators,
+    // we can run the following check: in order, set an actuator's control
+    // signal(s) to NaN and ensure the i-th control is NaN.
+    // TODO update when OpenSim supports named controls.
+    std::unordered_map<std::string, int> controlIndices;
+    const SimTK::State state = model.getWorkingState();
+    auto modelControls = model.updControls(state);
+    int i = 0;
+    for (const auto& actu : model.getComponentList<Actuator>()) {
+        int nc = actu.numControls();
+        SimTK::Vector origControls(nc);
+        SimTK::Vector nan(nc, SimTK::NaN);
+        actu.getControls(modelControls, origControls);
+        actu.setControls(nan, modelControls);
+        std::string actuPath = actu.getAbsolutePathString();
+        for (int j = 0; j < nc; ++j) {
+            OPENSIM_THROW_IF(!SimTK::isNaN(modelControls[i]), Exception,
+                    "Internal error: actuators are not in the "
+                    "expected order. Submit a bug report.");
+            if (nc == 1) {
+                controlIndices[actuPath] = i;
+            } else {
+                controlIndices[fmt::format("{}_{}", actuPath, j)] = i;
+            }
+            ++i;
+        }
+        actu.setControls(origControls, modelControls);
+    }
+    return controlIndices;
+}
+
+void OpenSim::checkOrderSystemControls(const Model& model) {
+    createSystemControlIndexMap(model);
+}
+
+void OpenSim::checkLabelsMatchModelStates(const Model& model,
+        const std::vector<std::string>& labels) {
+    const auto modelStateNames = model.getStateVariableNames();
+    for (const auto& label : labels) {
+        OPENSIM_THROW_IF(modelStateNames.rfindIndex(label) == -1, Exception,
+                "Expected the provided labels to match the model state "
+                "names, but label {} does not correspond to any model "
+                "state.",
+                label);
     }
 }

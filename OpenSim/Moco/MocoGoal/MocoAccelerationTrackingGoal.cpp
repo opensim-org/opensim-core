@@ -71,7 +71,7 @@ void MocoAccelerationTrackingGoal::initializeOnModelImpl(
     }
 
     // Check that there are no redundant columns in the reference data.
-    checkRedundantLabels(accelerationTable.getColumnLabels());
+    TableUtilities::checkNonUniqueLabels(accelerationTable.getColumnLabels());
 
     // Cache the model frames and acceleration weights based on the order of the
     // acceleration table.
