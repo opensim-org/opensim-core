@@ -91,10 +91,10 @@ namespace {
      * Any attempt to step above the root of the expression with '..' will
      * result in an exception being thrown (e.g. "a/../.." will throw).
      *
-     * This method is useful for path traversal and path manipulation methods,
-     * because the above engues that (e.g.) paths can be concatenated
-     * and split into individual elements using basic string manipulation
-     * techniques.
+     * This method is useful for path traversal and path manipulation
+     * methods, because the above ensures that (e.g.) paths can be
+     * concatenated and split into individual elements using basic
+     * string manipulation techniques.
      */
     std::string normalize(std::string path) {
         // note: this implementation is fairly low-level and involves mutating
