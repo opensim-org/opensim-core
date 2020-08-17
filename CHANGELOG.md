@@ -31,6 +31,8 @@ v4.2
 - Improved the performance of `ComponentPath` (PR #2844)
   - This improves the performance of component-heavy models by ~5-10 %
   - The behavior and interface of `ComponentPath` should remain the same
+- The new Matlab CustomStaticOptimization.m guides the user to build their own custom static optimization code. 
+
 
 v4.1
 ====

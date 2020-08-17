@@ -36,6 +36,7 @@
 %include <OpenSim/Common/Storage.h>
 %template(ArrayStorage) OpenSim::ArrayPtrs<OpenSim::Storage>;
 %include <OpenSim/Common/Units.h>
+%ignore OpenSim::IO::CwdChanger;
 %include <OpenSim/Common/IO.h>
 %include <OpenSim/Common/Function.h>
 

@@ -690,3 +690,48 @@ void IO::eraseEmptyElements(std::vector<std::string>& list)
             ++it;
     }
 }
+
+IO::CwdChanger::CwdChanger() {
+}
+
+IO::CwdChanger::CwdChanger(const std::string& newDir) :
+    _existingDir{getCwd()} {
+
+    chDir(newDir);
+}
+
+IO::CwdChanger IO::CwdChanger::noop() {
+    return CwdChanger{};
+}
+
+IO::CwdChanger IO::CwdChanger::changeTo(const std::string& newDir) {
+    return CwdChanger{newDir};
+}
+
+IO::CwdChanger IO::CwdChanger::changeToParentOf(const std::string& path) {
+    return changeTo(getParentDirectory(path));
+}
+
+// a custom move constructor is necessary because the default move
+// constructor, which effectively calls `this->_existingDir{std::move(tmp._existingDir)}`
+// is specified to leave `tmp._existingDir` in an unspecified state:
+//
+// from: https://en.cppreference.com/w/cpp/string/basic_string/basic_string
+//
+// > Move constructor. Constructs the string with the contents of
+// > other using move semantics. other is left in valid, but
+// > unspecified state
+//
+// `~CwdChanger` requires that `tmp._existingDir.empty() == true`; otherwise,
+// destruction of the temporary will cause a directory change.
+IO::CwdChanger::CwdChanger(IO::CwdChanger&& tmp) :
+    _existingDir{} {
+
+    std::swap(this->_existingDir, tmp._existingDir);
+}
+
+IO::CwdChanger::~CwdChanger() noexcept {
+    if (!_existingDir.empty()) {
+        chDir(_existingDir);
+    }
+}
