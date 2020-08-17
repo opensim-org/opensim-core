@@ -441,8 +441,32 @@ void InverseKinematicsSolver::setupOrientationsGoal(SimTK::State &s)
 
 /* Internal method to update the time, reference values and/or their weights based
     on the state */
-void InverseKinematicsSolver::updateGoals(const SimTK::State &s)
+void InverseKinematicsSolver::updateGoals(SimTK::State &s)
 {
+    // get time from References and update s time
+    int x = 0;
+
+    if (_advanceTimeFromReference) {
+        double nextTime = NaN;
+        if (_markersReference && _markersReference->getNumRefs() > 0) {
+            SimTK::Array_<SimTK::Vec3> markerValues;
+            _markersReference->getNextValuesAndTime(nextTime, markerValues);
+            s.setTime(nextTime);
+            _markerAssemblyCondition->moveAllObservations(markerValues);
+        }
+        if (_orientationsReference &&
+                _orientationsReference->getNumRefs() > 0) {
+            SimTK::Array_<SimTK::Rotation> orientationValues;
+            _orientationsReference->getNextValuesAndTime(
+                    nextTime, orientationValues);
+            s.setTime(nextTime);
+            _orientationAssemblyCondition->moveAllObservations(
+                    orientationValues);
+        }
+        // update coordinates if any based on new time
+        AssemblySolver::updateGoals(s);
+        return;
+    }
     // update coordinates performed by the base class
     AssemblySolver::updateGoals(s);
 

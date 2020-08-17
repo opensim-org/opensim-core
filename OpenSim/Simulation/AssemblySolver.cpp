@@ -164,7 +164,7 @@ void AssemblySolver::updateCoordinateReference(const std::string &coordName, dou
 
 /* Internal method to update the time, reference values and/or their 
         weights that define the goals, based on the passed in state. */
-void AssemblySolver::updateGoals(const SimTK::State &s)
+void AssemblySolver::updateGoals(SimTK::State &s)
 {
     unsigned int nqrefs = _coordinateReferencesp.size();
     for(unsigned int i=0; i<nqrefs; i++){
@@ -250,6 +250,7 @@ void AssemblySolver::track(SimTK::State &s)
     // and their type (constrained vs. weighted)
 
     if(_assembler && _assembler->isInitialized()){
+        //updateTime(s);
         updateGoals(s);
     }
     else{

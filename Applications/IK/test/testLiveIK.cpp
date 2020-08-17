@@ -137,9 +137,9 @@ int main() {
         model.realizeReport(s0);
         thread thread1(producer, oRefs, std::ref(orientationsData));
         thread1.join();
-        auto remainingTimes = orientationsData.getIndependentColumn();
-        for (auto time : remainingTimes) {
-            s0.updTime() = time;
+        auto lastTime = orientationsData.getIndependentColumn().back();
+        ikSolver.setAdvanceTimeFromReference(true);
+        while (oRefs->hasNext() && s0.getTime() < lastTime) {
             ikSolver.track(s0);
             model.realizeReport(s0);
         }

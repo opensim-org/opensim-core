@@ -203,12 +203,11 @@ public:
     corresponding orientation sensor name for an index in the list of
     orientations returned by the solver. */
     std::string getOrientationSensorNameForIndex(int osensorIndex) const;
-    /*
-    void addOrientationValuesToTrack(
-            double time, SimTK::RowVector_<SimTK::Rotation_<double>>& data){
-        _orientationsReference->putValues(time, data);
+    /** indicate whether time is provided by Reference objects or driver program */
+    void setAdvanceTimeFromReference(bool newValue) {
+        _advanceTimeFromReference = newValue;
     };
-    */
+
 protected:
     /** Override to include point of interest matching (Marker tracking)
         as well ad Frame orientation (OSensor) tracking.
@@ -216,7 +215,7 @@ protected:
     void setupGoals(SimTK::State &s) override;
     /** Internal method to update the time, reference values and/or their 
         weights that define the goals, based on the provided state. */
-    void updateGoals(const SimTK::State &s) override;
+    void updateGoals(SimTK::State &s) override;
 
 private:
     /** Define and apply marker tracking goal to the assembly problem. */
@@ -239,6 +238,8 @@ private:
     // OrientationSensors collectively form a single assembly condition for
     // the SimTK::Assembler and the memory is managed by the Assembler
     SimTK::ReferencePtr<SimTK::OrientationSensors> _orientationAssemblyCondition;
+
+    bool _advanceTimeFromReference{false};
 
 //=============================================================================
 };  // END of class InverseKinematicsSolver
