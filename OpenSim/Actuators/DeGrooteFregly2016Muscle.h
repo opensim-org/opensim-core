@@ -84,8 +84,6 @@ time-stepping.
    The methods getMinNormalizedTendonForce() and 
    getMaxNormalizedTendonForce() provide these bounds for use in custom solvers.
 
-@underdevelopment
-
 @section departures Departures from the Muscle base class
 
 The documentation for Muscle::MuscleLengthInfo states that the

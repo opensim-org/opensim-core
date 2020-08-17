@@ -242,8 +242,7 @@ TEMPLATE_TEST_CASE(
         TimeSeriesTable cmcControls("testDeGrooteFregly2016Muscle_cmc/" +
                                     cmcFilename + "_controls.sto");
         const auto& stdTime = cmcControls.getIndependentColumn();
-        SimTK::Vector time((int)stdTime.size());
-        for (int i = 0; i < time.size(); i++) { time[i] = stdTime[i]; }
+        SimTK::Vector time((int)stdTime.size(), stdTime.data());
         std::vector<std::string> controlNames{"/forceset/muscle"};
         MocoTrajectory cmcTraj(time, stateColumnLabels, controlNames, {}, {},
                 cmcStates.getMatrix(),
