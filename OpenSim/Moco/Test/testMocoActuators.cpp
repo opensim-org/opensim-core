@@ -20,9 +20,12 @@
 #include <OpenSim/Actuators/ModelFactory.h>
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Tools/CMCTool.h>
+#include "OpenSim/Tools/CMC_TaskSet.h"
 
 #define CATCH_CONFIG_MAIN
 #include "Testing.h"
+#include "OpenSim/Tools/CMC_Joint.h"
 
 using namespace OpenSim;
 
@@ -61,14 +64,24 @@ Model createHangingMuscleModel(double optimalFiberLength,
 
     body->attachGeometry(new Sphere(0.05));
 
+    CMC_TaskSet tasks;
+    CMC_Joint task;
+    task.setName(coord.getName());
+    task.setCoordinateName(coord.getName());
+    task.setKP(100, 1, 1);
+    task.setKV(20, 1, 1);
+    task.setActive(true, false, false);
+    tasks.cloneAndAppend(task);
+    tasks.print("hanging_muscle_cmc_tasks.xml");
+
     return model;
 }
 
 TEMPLATE_TEST_CASE(
         "Hanging muscle minimum time", "[casadi]", MocoCasADiSolver) {
-    auto ignoreActivationDynamics = GENERATE(false, true);
-    auto ignoreTendonCompliance = GENERATE(false, true);
-    auto isTendonDynamicsExplicit = GENERATE(false, true);
+    auto ignoreActivationDynamics = GENERATE(true, false);
+    auto ignoreTendonCompliance = GENERATE(true, false);
+    auto isTendonDynamicsExplicit = GENERATE(true, false);
 
     CAPTURE(ignoreActivationDynamics);
     CAPTURE(ignoreTendonCompliance);
@@ -213,7 +226,7 @@ TEMPLATE_TEST_CASE(
                 solutionTrajOpt.getTime()[solutionTrajOpt.getNumTimes() - 1];
         cmc.setFinalTime(finalTime);
         cmc.setDesiredKinematicsFileName(solutionFilename);
-        cmc.setTaskSetFileName("hanging_muscle_CMC_Tasks.xml");
+        cmc.setTaskSetFileName("hanging_muscle_cmc_tasks.xml");
         cmc.setSolveForEquilibrium(false);
         cmc.setTimeWindow(0.01);
         cmc.setUseFastTarget(true);

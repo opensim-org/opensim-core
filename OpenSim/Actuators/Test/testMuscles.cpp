@@ -445,15 +445,7 @@ void simulateMuscle(
 // 6. SIMULATION Tests
 //==========================================================================
     auto& muscle = model.updMuscles()[0];
-    // The DeGrooteFregly2016Muscle needs to use the implict form of tendon
-    // compliance for the equilbrium tests so values of tendon and fiber force
-    // are computed properly.
-    if (auto* dgf = dynamic_cast<DeGrooteFregly2016Muscle*>(&muscle)) {
-        dgf->set_tendon_compliance_dynamics_mode("implicit");
-        model.initSystem();
-    }
     testMuscleEquilibriumSolve(model, states);
-
 
 /*==========================================================================
     7. Correctness test:  d/dt(KE+PE-W) = 0 ?
