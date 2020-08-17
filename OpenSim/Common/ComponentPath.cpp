@@ -156,7 +156,7 @@ namespace {
                         // is relative
                         if (isAbsolute) {
                             OPENSIM_THROW(OpenSim::Exception,
-                                          path + ": invalid path: is absolute, but starts with relative elements");
+                                          path + ": is an invalid path: it is absolute, but starts with relative elements.");
                         }
 
                         // if not absolute, then make sure `contentStart` skips
@@ -211,7 +211,7 @@ namespace {
             // handle '..' (if found)
             if (c0 == '.' && c1 == '.' && (c2 == '\0' || c2 == separator)) {
                 if (offset == contentStart) {
-                    OPENSIM_THROW(OpenSim::Exception, path + ": cannot handle '..' element in string: would hop above the root of the path");
+                    OPENSIM_THROW(OpenSim::Exception, path + ": cannot handle '..' element in a path string: dereferencing this would hop above the root of the path.");
                 }
                 auto contentStartIt = path.rend() - contentStart;
                 size_t prevEnd = offset - 1;
@@ -279,7 +279,7 @@ ComponentPath ComponentPath::formAbsolutePath(const ComponentPath& otherPath) co
     }
 
     if (!otherPath.isAbsolute()) {
-        OPENSIM_THROW(Exception, otherPath._path + ":  must be an absolute path");
+        OPENSIM_THROW(Exception, otherPath._path + ":  must be an absolute path.");
     }
 
     return ComponentPath{otherPath._path + separator + _path};
@@ -313,11 +313,11 @@ ComponentPath ComponentPath::formRelativePath(const ComponentPath& otherPath) co
 
 
     if (!isAbsolute()) {
-        OPENSIM_THROW(Exception, _path + ": is not absolute");
+        OPENSIM_THROW(Exception, _path + ": is not an absolute path.");
     }
 
     if (!otherPath.isAbsolute()) {
-        OPENSIM_THROW(Exception, _path + ": is not absolute");
+        OPENSIM_THROW(Exception, _path + ": is not an absolute path.");
     }
 
     // for readability: we are going FROM p1 and TO p2 by stepping up in P1 to the common
@@ -375,7 +375,7 @@ std::string ComponentPath::getSubcomponentNameAtLevel(size_t index) const {
     auto componentStart = firstComponent(_path);
 
     if (std::distance(componentStart, _path.end()) == 0) {
-        OPENSIM_THROW(Exception, "Cannot index into this path: it is empty");
+        OPENSIM_THROW(Exception, "Cannot index into this path: it is empty.");
     }
 
     size_t i = 0;
@@ -384,7 +384,7 @@ std::string ComponentPath::getSubcomponentNameAtLevel(size_t index) const {
     while (i < index) {
         if (componentEnd == _path.end()) {
             std::stringstream msg;
-            msg << _path << ": invalid index '" << index << "'";
+            msg << _path << ": invalid index '" << index << "' into this path.";
             OPENSIM_THROW(Exception, msg.str());
         }
 
@@ -433,12 +433,12 @@ size_t ComponentPath::getNumPathLevels() const {
 
 void ComponentPath::pushBack(const std::string& pathElement) {
     if (pathElement.empty()) {
-        OPENSIM_THROW(Exception, "cannot append an empty path element to a path");
+        OPENSIM_THROW(Exception, "Cannot pushBack an empty path element to a ComponentPath object.");
     }
 
     // ensure `path` contains no invalid chars
     if (!isLegalPathElement(pathElement)) {
-        OPENSIM_THROW(Exception, pathElement + ": path element contains invalid characters");
+        OPENSIM_THROW(Exception, pathElement + ": provided path element contains invalid characters.");
     }
 
     // an additional separator should be added between the existing path
