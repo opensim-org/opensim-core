@@ -43,7 +43,8 @@ MocoAddTest(NAME testMocoConstraints)
 
 MocoAddTest(NAME testMocoContact)
 
-MocoAddTest(NAME testMocoActuators)
+MocoAddTest(NAME testMocoActuators RESOURCES
+        hanging_muscle_CMC_Tasks.xml)
 
 MocoAddTest(NAME testMocoInverse RESOURCES
         subject_walk_armless_18musc.osim
