@@ -278,11 +278,12 @@ public:
         }
     }
 
-    /// If ignore_tendon_compliance is false, this returns zero. If 
-    /// integration_mode is 'implicit', this gets the discrete variable
-    /// tendon force derivative value. If integration_mode is 'explicit', this
-    /// gets the value returned by getStateVariableDerivativeValue() for the
-    /// 'normalized_tendon_force' state. 
+    /// If ignore_tendon_compliance is false, this returns zero. If
+    /// tendon_compliance_dynamics_model is 'implicit', this gets the discrete
+    /// variable tendon force derivative value. If
+    /// tendon_compliance_dynamics_mode is 'explicit', this gets the value
+    /// returned by getStateVariableDerivativeValue() for the
+    /// 'normalized_tendon_force' state.
     double getNormalizedTendonForceDerivative(const SimTK::State& s) const {
         if (get_ignore_tendon_compliance()) { return 0.0; }
 
