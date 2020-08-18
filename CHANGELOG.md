@@ -28,6 +28,7 @@ v4.2
 - For PrescribedController, the controls_file column labels can now be absolute paths to actuators (previously, the column labels were required to be actuator names).
 - Fixed a critical bug in Induced Accelerations Analysis which prevents analysis to run when external forces are present ([PR #2847](https://github.com/opensim-org/opensim-core/pull/2808)).
 - For PrescribedController, the controls_file column labels can now be absolute paths to actuators (previously, the column labels were required to be actuator names).
+- CMCTool now supports the setSolveForEquilibrium() method inherited by AbstractTool, which allows users to disable a call to Model::equilibrateMuscles() when running CMC. This setting is true by default, so the default behavior remains the same.
 
 v4.1
 ====
