@@ -769,7 +769,7 @@ void testNumberOfOrientationsMismatch()
     int nos = ikSolver.getNumOrientationSensorsInUse();
 
     SimTK::Array_<double> orientationErrors(nos);
-    for (double t : orientationsRef.getTimes()) {
+    for (double t : orientationsRef->getTimes()) {
         state.updTime() = t;
         ikSolver.track(state);
 
