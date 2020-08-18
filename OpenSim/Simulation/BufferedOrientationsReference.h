@@ -32,7 +32,7 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * Subclass of @OrientationsReference that handles live data by providing a DataQueue
+ * Subclass of OrientationsReference that handles live data by providing a DataQueue
  * that allows clients to push data into and allows the InverseKinematicsSolver to 
  * draw data from for solving.
  * Ideally this would be templatized, allowing for all Reference classes to leverage it.
@@ -62,7 +62,7 @@ public:
     //--------------------------------------------------------------------------
     // Reference Interface
     //--------------------------------------------------------------------------
-    /** get the time range for which the OrientationsReference values are valid,
+    /** get the time range for which this OrientationsReference values are valid,
         based on the loaded orientation data.*/
     SimTK::Vec2 getValidTimeRange() const override{
         SimTK::Vec2 tableRange = Super::getValidTimeRange();
@@ -90,7 +90,7 @@ private:
     mutable DataQueue_<SimTK::Rotation> _orientationDataQueue;
     bool _finished{false};
     //=============================================================================
-};  // END of class OrientationsReference
+};  // END of class BufferedOrientationsReference
 //=============================================================================
 } // namespace
 
