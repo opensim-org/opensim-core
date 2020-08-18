@@ -890,7 +890,7 @@ TEST_CASE("TableUtilities::resample") {
         REQUIRE(resampled.getNumRows() == 1);
         REQUIRE(resampled.getNumColumns() == 1);
         CHECK(resampled.getIndependentColumn()[0] == 0.5);
-        CHECK(resampled.getDependentColumnAtIndex(0)[0] == Approx(0.75));
+        CHECK(static_cast<const VectorView>(resampled.getDependentColumnAtIndex(0))[0] == Approx(0.75));
     }
     {
         TimeSeriesTable resampled = TableUtilities::resampleWithInterval(table,
