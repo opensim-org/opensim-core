@@ -31,7 +31,10 @@ This goal ensures that the initial normalized tendon force state variable
 is chosen such that equilibrium is satisfied; otherwise, the initial state
 may not be valid.
 This is an endpoint constraint goal by default.
-@note This goal only applies to DeGrooteFregly2016Muscles.
+@note This goal only applies to DeGrooteFregly2016Muscle%s since it relies on 
+    the method calcEquilibriumResidual() provided by that class. Calls to 
+    calcEquilibriumResidual() set the normalized tendon force derivative
+    argument to zero.
 @ingroup mocogoal */
 class OSIMMOCO_API MocoInitialForceEquilibriumDGFGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(

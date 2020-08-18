@@ -295,23 +295,19 @@ public:
         }
     }
 
-    /// The residual (i.e. error) in the muscle-tendon equilibrium equation:
-    ///         residual = tendonForce - fiberForce * cosPennationAngle
-    /// This is computed using the muscle in implicit mode, since explicit mode 
-    /// uses the normalized tendon force state variable directly
-    /// to compute fiber force, which always produces a zero muscle-tendon
-    /// equilibrium residual. 
+    /// @copydoc calcEquilibriumResidual()
+    /// This calls calcEquilibriumResidual() using values from the provided 
+    /// SimTK::State as arguments. While is computed using implicit mode, the 
+    /// value of normalized tendon force derivative used *is* consistent with 
+    /// the property `tendon_compliance_dynamics_mode` (see
+    /// getNormalizedTendonForceDerivative()).
     double getEquilibriumResidual(const SimTK::State& s) const {
         return calcEquilibriumResidual(getLength(s), getLengtheningSpeed(s),
                 getActivation(s), getNormalizedTendonForce(s),
                 getNormalizedTendonForceDerivative(s));
     }
 
-    /// The residual (i.e. error) in the time derivative of the linearized
-    /// muscle-tendon equilibrium equation (Millard et al. 2013, equation A6):
-    ///     residual = fiberStiffnessAlongTendon * fiberVelocityAlongTendon -
-    ///                tendonStiffness *
-    ///                    (muscleTendonVelocity - fiberVelocityAlongTendon)
+    /// @copydoc calcLinearizedEquilibriumResidualDerivative()
     double getLinearizedEquilibriumResidualDerivative(
             const SimTK::State& s) const {
         return calcLinearizedEquilibriumResidualDerivative(getLength(s),
@@ -700,7 +696,12 @@ public:
         return tendonStiffness * partialTendonLengthPartialFiberLength;
     }
 
-    /// @copydoc getEquilibriumResidual()
+    /// The residual (i.e. error) in the muscle-tendon equilibrium equation:
+    ///         residual = tendonForce - fiberForce * cosPennationAngle
+    /// This is computed using the muscle in implicit mode, since explicit mode
+    /// uses the normalized tendon force state variable directly
+    /// to compute fiber force, which always produces a zero muscle-tendon
+    /// equilibrium residual. 
     SimTK::Real calcEquilibriumResidual(const SimTK::Real& muscleTendonLength,
             const SimTK::Real& muscleTendonVelocity,
             const SimTK::Real& activation, const SimTK::Real& normTendonForce,
@@ -719,7 +720,11 @@ public:
         return mdi.tendonForce - mdi.fiberForceAlongTendon;
     }
 
-    /// @copydoc getLinearizedEquilibriumResidualDerivative()
+    /// The residual (i.e. error) in the time derivative of the linearized
+    /// muscle-tendon equilibrium equation (Millard et al. 2013, equation A6):
+    ///     residual = fiberStiffnessAlongTendon * fiberVelocityAlongTendon -
+    ///                tendonStiffness *
+    ///                    (muscleTendonVelocity - fiberVelocityAlongTendon)
     SimTK::Real calcLinearizedEquilibriumResidualDerivative(
             const SimTK::Real& muscleTendonLength,
             const SimTK::Real& muscleTendonVelocity,
