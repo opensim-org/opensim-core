@@ -300,7 +300,7 @@ bool MarkerPlacer::processModel(Model* aModel,
     Set<MarkerWeight> markerWeightSet;
     _ikTaskSet.createMarkerWeightSet(markerWeightSet); // order in tasks file
     // MarkersReference takes ownership of marker data (staticPose)
-    MarkersReference markersReference(staticPoseTable, markerWeightSet);
+    std::shared_ptr<MarkersReference> markersReference(new MarkersReference(staticPoseTable, markerWeightSet));
     SimTK::Array_<CoordinateReference> coordinateReferences;
 
     // Load the coordinate data
@@ -345,8 +345,7 @@ bool MarkerPlacer::processModel(Model* aModel,
     }
     double constraintWeight = std::numeric_limits<SimTK::Real>::infinity();
 
-    InverseKinematicsSolver ikSol(*aModel,
-                                  std::make_shared<MarkersReference>(markersReference),
+    InverseKinematicsSolver ikSol(*aModel, markersReference,
                                   coordinateReferences, constraintWeight);
     ikSol.assemble(s);
 

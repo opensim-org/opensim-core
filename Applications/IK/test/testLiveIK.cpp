@@ -55,7 +55,7 @@ void compareMotionTables(
     std::vector<int> mapStdToReport;
     // cycle through the coordinates in the model order and store the
     // corresponding column index in the table according to column name
-    for (auto& label : reportLabels) {
+    for (const auto& label : reportLabels) {
         int index = -1;
         auto found = std::find(stdLabels.begin(), stdLabels.end(), label);
         if (found != stdLabels.end()) {
