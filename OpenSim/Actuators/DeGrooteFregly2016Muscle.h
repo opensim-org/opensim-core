@@ -279,7 +279,7 @@ public:
     }
 
     /// If ignore_tendon_compliance is false, this returns zero. If
-    /// tendon_compliance_dynamics_model is 'implicit', this gets the discrete
+    /// tendon_compliance_dynamics_mode is 'implicit', this gets the discrete
     /// variable tendon force derivative value. If
     /// tendon_compliance_dynamics_mode is 'explicit', this gets the value
     /// returned by getStateVariableDerivativeValue() for the
