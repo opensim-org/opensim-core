@@ -550,7 +550,13 @@ public:
      * Throws an Exception if the System has not been created or the Component
      * has not added itself to the System.
      * @see hasSystem().  */
-    const SimTK::MultibodySystem& getSystem() const;
+    const SimTK::MultibodySystem& getSystem() const
+    {
+        // This method is inlined because it is called *a lot* at runtime
+
+        OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+        return _system.getRef();
+    }
 
     /**
     * Check if this component has an underlying MultibodySystem.

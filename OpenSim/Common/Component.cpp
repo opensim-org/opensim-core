@@ -1540,12 +1540,6 @@ void Component::extendRealizeAcceleration(const SimTK::State& s) const
     }
 }
 
-const SimTK::MultibodySystem& Component::getSystem() const
-{
-    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
-    return _system.getRef();
-}
-
 SimTK::MultibodySystem& Component::updSystem() const
 {
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
