@@ -725,6 +725,9 @@ public:
     ///     residual = fiberStiffnessAlongTendon * fiberVelocityAlongTendon -
     ///                tendonStiffness *
     ///                    (muscleTendonVelocity - fiberVelocityAlongTendon)
+    /// This may be useful for finding equilibrium when there is velocity in the
+    /// muscle-tendon actuator. Velocity is divided between the muscle and
+    /// tendon based on their relative stiffnesses. 
     SimTK::Real calcLinearizedEquilibriumResidualDerivative(
             const SimTK::Real& muscleTendonLength,
             const SimTK::Real& muscleTendonVelocity,
