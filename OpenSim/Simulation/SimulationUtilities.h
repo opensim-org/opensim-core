@@ -276,7 +276,6 @@ TimeSeriesTable_<T> analyze(Model model, const TimeSeriesTable& statesTable,
         const auto& controlsRow = controlsTable.getRowAtIndex(itime);
         for (int icontrol = 0; icontrol < (int)controlNames.size();
                 ++icontrol) {
-            std::cout << "DEBUG " << controlNames[icontrol] << std::endl;
             controls[controlMap.at(controlNames[icontrol])] =
                     controlsRow[icontrol];
         }
