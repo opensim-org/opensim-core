@@ -23,11 +23,13 @@
 #include <condition_variable>
 #include <regex>
 
+#include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/Logger.h>
 #include <OpenSim/Common/Reporter.h>
 #include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/SimulationUtilities.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
 
 namespace OpenSim {
@@ -38,7 +40,10 @@ class MocoTrajectory;
 class MocoProblem;
 
 /// Calculate the requested outputs using the model in the problem and the
-/// states and controls in the MocoTrajectory.
+/// provided StatesTrajectory and controls table.
+/// The controls table is used to set the model's controls vector.
+/// We assume the StatesTrajectory and controls table contain the same time
+/// points.
 /// The output paths can be regular expressions. For example,
 /// ".*activation" gives the activation of all muscles.
 ///
@@ -58,67 +63,13 @@ class MocoProblem;
 ///       applied to the model.
 /// @ingroup mocoutil
 template <typename T>
-TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& trajectory,
-        std::vector<std::string> outputPaths) {
-
-    // Initialize the system so we can access the outputs.
-    model.initSystem();
-    // Create the reporter object to which we'll add the output data to create
-    // the report.
-    auto* reporter = new TableReporter_<T>();
-    // Loop through all the outputs for all components in the model, and if
-    // the output path matches one provided in the argument and the output type
-    // agrees with the template argument type, add it to the report.
-    for (const auto& comp : model.getComponentList()) {
-        for (const auto& outputName : comp.getOutputNames()) {
-            const auto& output = comp.getOutput(outputName);
-            auto thisOutputPath = output.getPathName();
-            for (const auto& outputPathArg : outputPaths) {
-                if (std::regex_match(
-                            thisOutputPath, std::regex(outputPathArg))) {
-                    // Make sure the output type agrees with the template.
-                    if (dynamic_cast<const Output<T>*>(&output)) {
-                        log_debug("Adding output {} of type {}.",
-                                output.getPathName(), output.getTypeName());
-                        reporter->addToReport(output);
-                    } else {
-                        log_warn("Ignoring output {} of type {}.",
-                                output.getPathName(), output.getTypeName());
-                    }
-                }
-            }
-        }
-    }
-    model.addComponent(reporter);
-    model.initSystem();
-
-    // Get states trajectory.
-    TimeSeriesTable states = trajectory.exportToStatesTable();
-    auto statesTraj = StatesTrajectory::createFromStatesTable(model, states);
-
-    // Loop through the states trajectory to create the report.
-    for (int i = 0; i < (int)statesTraj.getSize(); ++i) {
-        // Get the current state.
-        auto state = statesTraj[i];
-
-        // Enforce any SimTK::Motion's included in the model.
-        model.getSystem().prescribe(state);
-
-        // Create a SimTK::Vector of the control values for the current state.
-        SimTK::RowVector controlsRow =
-                trajectory.getControlsTrajectory().row(i);
-        SimTK::Vector controls(controlsRow.size(),
-                controlsRow.getContiguousScalarData(), true);
-
-        // Set the controls on the state object.
-        model.realizeVelocity(state);
-        model.setControls(state, controls);
-
-        // Generate report results for the current state.
-        model.realizeReport(state);
-    }
-
-    return reporter->getTable();
+TimeSeriesTable_<T> analyzeMocoTrajectory(
+        Model model, const MocoTrajectory& trajectory,
+        const std::vector<std::string>& outputPaths) {
+    const TimeSeriesTable statesTable = trajectory.exportToStatesTable();
+    const TimeSeriesTable controlsTable = trajectory.exportToControlsTable();
+    return analyze<T>(
+            std::move(model), statesTable, controlsTable, outputPaths);
 }
 
 /// Given a MocoTrajectory and the associated OpenSim model, return the model
@@ -143,74 +94,6 @@ OSIMMOCO_API void prescribeControlsToModel(const MocoTrajectory& trajectory,
 OSIMMOCO_API MocoTrajectory simulateTrajectoryWithTimeStepping(
         const MocoTrajectory& trajectory, Model model,
         double integratorAccuracy = SimTK::NaN);
-
-/// The map provides the index of each state variable in
-/// SimTK::State::getY() from its each state variable path string.
-/// Empty slots in Y (e.g., for quaternions) are ignored.
-/// @ingroup mocoutil
-OSIMMOCO_API
-std::vector<std::string> createStateVariableNamesInSystemOrder(
-        const Model& model);
-
-#ifndef SWIG
-/// Same as above, but you can obtain a map from the returned state variable
-/// names to the index in SimTK::State::getY() that accounts for empty slots
-/// in Y.
-/// @ingroup mocoutil
-OSIMMOCO_API
-std::vector<std::string> createStateVariableNamesInSystemOrder(
-        const Model& model, std::unordered_map<int, int>& yIndexMap);
-
-/// The map provides the index of each state variable in
-/// SimTK::State::getY() from its state variable path string.
-/// @ingroup mocoutil
-OSIMMOCO_API
-std::unordered_map<std::string, int> createSystemYIndexMap(const Model& model);
-#endif
-
-/// Create a vector of control names based on the actuators in the model for
-/// which appliesForce == True. For actuators with one control (e.g.
-/// ScalarActuator) the control name is simply the actuator name. For actuators
-/// with multiple controls, each control name is the actuator name appended by
-/// the control index (e.g. "/actuator_0"); modelControlIndices has length equal
-/// to the number of controls associated with actuators that apply a force
-/// (appliesForce == True). Its elements are the indices of the controls in the
-/// Model::updControls() that are associated with actuators that apply a force.
-/// @ingroup mocoutil
-OSIMMOCO_API
-std::vector<std::string> createControlNamesFromModel(
-        const Model& model, std::vector<int>& modelControlIndices);
-/// Same as above, but when there is no mapping to the modelControlIndices.
-/// @ingroup mocoutil
-OSIMMOCO_API
-std::vector<std::string> createControlNamesFromModel(const Model& model);
-/// The map provides the index of each control variable in the SimTK::Vector
-/// returned by Model::getControls(), using the control name as the
-/// key.
-/// @throws Exception if the order of actuators in the model does not match
-///     the order of controls in Model::getControls(). This is an internal
-///     error, but you may be able to avoid the error by ensuring all Actuator%s
-///     are in the Model's ForceSet.
-/// @ingroup mocoutil
-OSIMMOCO_API
-std::unordered_map<std::string, int> createSystemControlIndexMap(
-        const Model& model);
-
-/// Throws an exception if the order of the controls in the model is not the
-/// same as the order of the actuators in the model.
-/// @ingroup mocoutil
-OSIMMOCO_API void checkOrderSystemControls(const Model& model);
-
-/// Throws an exception if the same label appears twice in the list of labels.
-/// The argument copies the provided labels since we need to sort them to check
-/// for redundancies.
-/// @ingroup mocoutil
-OSIMMOCO_API void checkRedundantLabels(std::vector<std::string> labels);
-
-/// Throws an exception if any label in the provided list does not match any
-/// state variable names in the model.
-OSIMMOCO_API void checkLabelsMatchModelStates(const Model& model,
-        const std::vector<std::string>& labels);
 
 /// Convert a trajectory covering half the period of a symmetric motion into a
 /// trajectory over the full period. This is useful for simulations of half a

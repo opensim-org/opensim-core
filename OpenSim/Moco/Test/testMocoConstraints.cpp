@@ -1621,7 +1621,9 @@ TEMPLATE_TEST_CASE("MocoFrameDistanceConstraint", "",
     // and the marker (coincident with body frame origin).
     MocoStudy study;
     auto& problem = study.updProblem();
-    problem.setModelProcessor(ModelProcessor(model) | ModOpAddReserves(50));
+    ModelProcessor modelProcessor(model);
+    modelProcessor.append(ModOpAddReserves(50));
+    problem.setModelProcessor(modelProcessor);
     problem.setTimeBounds(0, 0.5);
     problem.setStateInfo("/jointset/gimbal/qx/value", {-Pi/3, Pi/3}, 0);
     problem.setStateInfo(
@@ -1646,8 +1648,9 @@ TEMPLATE_TEST_CASE("MocoFrameDistanceConstraint", "",
     MocoSolution solution = study.solve();
     //study.visualize(solution);
 
-    TimeSeriesTableVec3 positionTable = analyze<SimTK::Vec3>(model, solution, 
-            {"/markerset/marker\\|location"});
+    TimeSeriesTableVec3 positionTable =
+            analyzeMocoTrajectory<SimTK::Vec3>(modelProcessor.process(),
+                    solution, {"/markerset/marker\\|location"});
     SimTK::Vec3 position;
     for (int irow = 0; irow < (int)positionTable.getNumRows(); ++irow) {
         position = positionTable.getRowAtIndex(irow)[0];

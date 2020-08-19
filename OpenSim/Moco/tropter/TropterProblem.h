@@ -27,6 +27,7 @@
 #include <OpenSim/Moco/MocoTropterSolver.h>
 #include <OpenSim/Moco/MocoUtilities.h>
 #include <OpenSim/Simulation/InverseDynamicsSolver.h>
+#include <OpenSim/Simulation/SimulationUtilities.h>
 
 #include <tropter/tropter.h>
 

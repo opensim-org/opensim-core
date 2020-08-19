@@ -138,8 +138,8 @@ namespace OpenSim {
 %include <OpenSim/Moco/Components/PositionMotion.h>
 
 %include <OpenSim/Moco/MocoUtilities.h>
-%template(analyze) OpenSim::analyze<double>;
-%template(analyzeVec3) OpenSim::analyze<SimTK::Vec3>;
-%template(analyzeSpatialVec) OpenSim::analyze<SimTK::SpatialVec>;
+%template(analyzeMocoTrajectory) OpenSim::analyze<double>;
+%template(analyzeMocoTrajectoryVec3) OpenSim::analyze<SimTK::Vec3>;
+%template(analyzeMocoTrajectorySpatialVec) OpenSim::analyze<SimTK::SpatialVec>;
 
 %include <OpenSim/Moco/ModelOperatorsDGF.h>
