@@ -22,13 +22,13 @@
 #include "osimMocoDLL.h"
 #include <regex>
 
+#include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/Logger.h>
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
-#include <OpenSim/Common/Reporter.h>
 #include <OpenSim/Common/Storage.h>
-#include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/SimulationUtilities.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
 
 namespace OpenSim {
@@ -39,7 +39,10 @@ class MocoTrajectory;
 class MocoProblem;
 
 /// Calculate the requested outputs using the model in the problem and the
-/// states and controls in the MocoTrajectory.
+/// provided StatesTrajectory and controls table.
+/// The controls table is used to set the model's controls vector.
+/// We assume the StatesTrajectory and controls table contain the same time
+/// points.
 /// The output paths can be regular expressions. For example,
 /// ".*activation" gives the activation of all muscles.
 ///
@@ -59,67 +62,13 @@ class MocoProblem;
 ///       applied to the model.
 /// @ingroup mocoutil
 template <typename T>
-TimeSeriesTable_<T> analyze(Model model, const MocoTrajectory& trajectory,
-        std::vector<std::string> outputPaths) {
-
-    // Initialize the system so we can access the outputs.
-    model.initSystem();
-    // Create the reporter object to which we'll add the output data to create
-    // the report.
-    auto* reporter = new TableReporter_<T>();
-    // Loop through all the outputs for all components in the model, and if
-    // the output path matches one provided in the argument and the output type
-    // agrees with the template argument type, add it to the report.
-    for (const auto& comp : model.getComponentList()) {
-        for (const auto& outputName : comp.getOutputNames()) {
-            const auto& output = comp.getOutput(outputName);
-            auto thisOutputPath = output.getPathName();
-            for (const auto& outputPathArg : outputPaths) {
-                if (std::regex_match(
-                            thisOutputPath, std::regex(outputPathArg))) {
-                    // Make sure the output type agrees with the template.
-                    if (dynamic_cast<const Output<T>*>(&output)) {
-                        log_debug("Adding output {} of type {}.",
-                                output.getPathName(), output.getTypeName());
-                        reporter->addToReport(output);
-                    } else {
-                        log_warn("Ignoring output {} of type {}.",
-                                output.getPathName(), output.getTypeName());
-                    }
-                }
-            }
-        }
-    }
-    model.addComponent(reporter);
-    model.initSystem();
-
-    // Get states trajectory.
-    TimeSeriesTable states = trajectory.exportToStatesTable();
-    auto statesTraj = StatesTrajectory::createFromStatesTable(model, states);
-
-    // Loop through the states trajectory to create the report.
-    for (int i = 0; i < (int)statesTraj.getSize(); ++i) {
-        // Get the current state.
-        auto state = statesTraj[i];
-
-        // Enforce any SimTK::Motion's included in the model.
-        model.getSystem().prescribe(state);
-
-        // Create a SimTK::Vector of the control values for the current state.
-        SimTK::RowVector controlsRow =
-                trajectory.getControlsTrajectory().row(i);
-        SimTK::Vector controls(controlsRow.size(),
-                controlsRow.getContiguousScalarData(), true);
-
-        // Set the controls on the state object.
-        model.realizeVelocity(state);
-        model.setControls(state, controls);
-
-        // Generate report results for the current state.
-        model.realizeReport(state);
-    }
-
-    return reporter->getTable();
+TimeSeriesTable_<T> analyzeMocoTrajectory(
+        Model model, const MocoTrajectory& trajectory,
+        const std::vector<std::string>& outputPaths) {
+    const TimeSeriesTable statesTable = trajectory.exportToStatesTable();
+    const TimeSeriesTable controlsTable = trajectory.exportToControlsTable();
+    return analyze<T>(
+            std::move(model), statesTable, controlsTable, outputPaths);
 }
 
 /// Given a MocoTrajectory and the associated OpenSim model, return the model

@@ -20,6 +20,8 @@
 
 #include "MocoCasADiSolver.h"
 
+#include <OpenSim/Simulation/SimulationUtilities.h>
+
 using namespace OpenSim;
 
 thread_local SimTK::Vector_<SimTK::SpatialVec>

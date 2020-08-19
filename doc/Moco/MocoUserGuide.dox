@@ -92,9 +92,6 @@ working with data, and postprocessing results.
 7. report.py: Generate a detailed PDF report about a MocoTrajectory and any
               reference data (part of the `opensim` Python package).
 
-Some less important utilities are described on the @ref mocologutil and @ref
-mocogenutil pages.
-
 @section faqsection Frequently Asked Questions
 
 See @subpage mocofaq.

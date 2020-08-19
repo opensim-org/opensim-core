@@ -23,15 +23,17 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "StatesTrajectory.h"
 #include "osimSimulationDLL.h"
+#include <regex>
 
 #include <SimTKcommon/internal/State.h>
 
+#include <OpenSim/Common/Reporter.h>
 #include <OpenSim/Common/Storage.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 namespace OpenSim {
-
-class Model;
 
 /** Simulate a model from an initial state and return the final state.
     If the model's useVisualizer flag is true, the user is repeatedly prompted
@@ -188,6 +190,107 @@ OSIMSIMULATION_API void checkOrderSystemControls(const Model& model);
 /// @ingroup simulationutil
 OSIMSIMULATION_API void checkLabelsMatchModelStates(
         const Model& model, const std::vector<std::string>& labels);
+
+/// Calculate the requested outputs using the model in the problem and the
+/// provided states and controls tables
+/// The controls table is used to set the model's controls vector.
+/// We assume the states and controls tables contain the same time points.
+/// The output paths can be regular expressions. For example,
+/// ".*activation" gives the activation of all muscles.
+///
+/// The output paths must correspond to outputs that match the type provided in
+/// the template argument, otherwise they are not included in the report.
+///
+/// Controls missing from the controls table are given a value of 0.
+///
+/// @note The provided trajectory is not modified to satisfy kinematic
+/// constraints, but SimTK::Motions in the Model (e.g., PositionMotion) are
+/// applied. Therefore, this function expects that you've provided a trajectory
+/// that already satisfies kinematic constraints. If your provided trajectory
+/// does not satisfy kinematic constraints, many outputs will be incorrect.
+/// For example, in a model with a patella whose location is determined by a
+/// CoordinateCouplerConstraint, the length of a muscle that crosses the patella
+/// will be incorrect.
+/// @ingroup simulationutil
+template <typename T>
+TimeSeriesTable_<T> analyze(Model model, const TimeSeriesTable& statesTable,
+        const TimeSeriesTable& controlsTable,
+        const std::vector<std::string>& outputPaths) {
+
+    // Initialize the system so we can access the outputs.
+    model.initSystem();
+    // Create the reporter object to which we'll add the output data to create
+    // the report.
+    auto* reporter = new TableReporter_<T>();
+    // Loop through all the outputs for all components in the model, and if
+    // the output path matches one provided in the argument and the output type
+    // agrees with the template argument type, add it to the report.
+    for (const auto& comp : model.getComponentList()) {
+        for (const auto& outputName : comp.getOutputNames()) {
+            const auto& output = comp.getOutput(outputName);
+            auto thisOutputPath = output.getPathName();
+            for (const auto& outputPathArg : outputPaths) {
+                if (std::regex_match(
+                        thisOutputPath, std::regex(outputPathArg))) {
+                    // Make sure the output type agrees with the template.
+                    if (dynamic_cast<const Output<T>*>(&output)) {
+                        log_debug("Adding output {} of type {}.",
+                                output.getPathName(), output.getTypeName());
+                        reporter->addToReport(output);
+                    } else {
+                        log_warn("Ignoring output {} of type {}.",
+                                output.getPathName(), output.getTypeName());
+                    }
+                }
+            }
+        }
+    }
+    model.addComponent(reporter);
+    model.initSystem();
+
+    const auto statesTraj =
+            StatesTrajectory::createFromStatesTable(model, statesTable);
+
+    const std::vector<std::string>& controlNames =
+            controlsTable.getColumnLabels();
+    const std::unordered_map<std::string, int> controlMap =
+            createSystemControlIndexMap(model);
+    SimTK::Vector controls((int)controlsTable.getNumColumns(), 0.0);
+
+    OPENSIM_THROW_IF(statesTable.getNumRows() != controlsTable.getNumRows(),
+            Exception,
+            "Expected statesTable and controlsTable to contain the "
+            "same number of rows, but statesTable contains {} rows "
+            "and controlsTable contains {} rows.",
+            statesTable.getNumRows(), controlsTable.getNumRows());
+
+    // Loop through the states trajectory to create the report.
+    for (int itime = 0; itime < (int)statesTraj.getSize(); ++itime) {
+        // Get the current state.
+        auto state = statesTraj[itime];
+
+        // Enforce any SimTK::Motion's included in the model.
+        model.getSystem().prescribe(state);
+
+        // Create a SimTK::Vector of the control values for the current state.
+        const auto& controlsRow = controlsTable.getRowAtIndex(itime);
+        for (int icontrol = 0; icontrol < (int)controlNames.size();
+                ++icontrol) {
+            std::cout << "DEBUG " << controlNames[icontrol] << std::endl;
+            controls[controlMap.at(controlNames[icontrol])] =
+                    controlsRow[icontrol];
+        }
+
+        // Set the controls on the state object.
+        model.realizeVelocity(state);
+        model.setControls(state, controls);
+
+        // Generate report results for the current state.
+        model.realizeReport(state);
+    }
+
+    return reporter->getTable();
+}
 
 } // end of namespace OpenSim
 
