@@ -27,6 +27,8 @@
 #include <regex>
 #include <unordered_set>
 
+#include <OpenSim/Simulation/SimulationUtilities.h>
+
 using namespace OpenSim;
 
 MocoProblemRep::MocoProblemRep(const MocoProblem& problem)

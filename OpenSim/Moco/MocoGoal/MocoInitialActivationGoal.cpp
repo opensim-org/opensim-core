@@ -18,6 +18,8 @@
 
 #include "MocoInitialActivationGoal.h"
 
+#include <OpenSim/Simulation/SimulationUtilities.h>
+
 using namespace OpenSim;
 
 void MocoInitialActivationGoal::initializeOnModelImpl(

@@ -18,6 +18,7 @@
 #include "MocoSumSquaredStateGoal.h"
 
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/SimulationUtilities.h>
 
 using namespace OpenSim;
 

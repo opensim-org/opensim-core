@@ -18,8 +18,8 @@
 
 #include "MocoMarkerTrackingGoal.h"
 
+#include <OpenSim/Common/TableUtilities.h>
 #include <OpenSim/Moco/MocoUtilities.h>
-
 #include <OpenSim/Simulation/Model/Marker.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
@@ -37,7 +37,7 @@ void MocoMarkerTrackingGoal::initializeOnModelImpl(const Model& model) const {
     }
 
     // Check that there are no redundant columns in the reference data.
-    checkRedundantLabels(
+    TableUtilities::checkNonUniqueLabels(
             get_markers_reference().getMarkerTable().getColumnLabels());
 
     // Cache reference pointers to model markers.

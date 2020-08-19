@@ -343,7 +343,7 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
         // use as a tracking reference. It's fine to use the analyze() utility
         // here, since this model has no kinematic constraints.
         TimeSeriesTableVec3 accelTableEffort =
-                analyze<SimTK::Vec3>(model, solutionEffort,
+                analyzeMocoTrajectory<SimTK::Vec3>(model, solutionEffort,
                         {"/bodyset/b0\\|linear_acceleration",
                                 "/bodyset/b1\\|linear_acceleration"});
         accelTableEffort.setColumnLabels(framePaths);

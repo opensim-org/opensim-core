@@ -33,7 +33,7 @@ void MocoStateTrackingGoal::initializeOnModelImpl(const Model& model) const {
     auto allSplines = GCVSplineSet(tableToUse);
 
     // Check that there are no redundant columns in the reference data.
-    checkRedundantLabels(tableToUse.getColumnLabels());
+    TableUtilities::checkNonUniqueLabels(tableToUse.getColumnLabels());
 
     // Throw exception if a weight is specified for a nonexistent state.
     auto allSysYIndices = createSystemYIndexMap(model);

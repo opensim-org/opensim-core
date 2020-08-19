@@ -231,6 +231,10 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/StatesTrajectoryReporter.h>
 
 %include <OpenSim/Simulation/SimulationUtilities.h>
+%template(analyze) OpenSim::analyze<double>;
+%template(analyzeVec3) OpenSim::analyze<SimTK::Vec3>;
+%template(analyzeSpatialVec) OpenSim::analyze<SimTK::SpatialVec>;
+
 %include <OpenSim/Simulation/VisualizerUtilities.h>
 
 %include <OpenSim/Simulation/TableProcessor.h>
