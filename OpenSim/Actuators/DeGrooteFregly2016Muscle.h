@@ -298,7 +298,8 @@ public:
     }
 
     /// The residual (i.e. error) in the muscle-tendon equilibrium equation:
-    ///         residual = tendonForce - fiberForce * cosPennationAngle
+    ///     residual = normTendonForce - normFiberForce * cosPennationAngle
+    /// The residual is unitless (units of normalized force).
     /// This is computed using the muscle in implicit mode, since explicit mode 
     /// uses the normalized tendon force state variable directly
     /// to compute fiber force, which always produces a zero muscle-tendon
@@ -718,7 +719,8 @@ public:
         calcMuscleDynamicsInfoHelper(activation, muscleTendonVelocity, false,
                 mli, fvi, mdi, normTendonForce);
 
-        return mdi.tendonForce - mdi.fiberForceAlongTendon;
+        return mdi.normTendonForce -
+               mdi.fiberForceAlongTendon / get_max_isometric_force();
     }
 
     /// @copydoc getLinearizedEquilibriumResidualDerivative()
