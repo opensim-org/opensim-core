@@ -25,7 +25,7 @@
 #include "osimMocoDLL.h"
 
 #include <OpenSim/Simulation/Model/Model.h>
-#include "Components/DeGrooteFregly2016Muscle.h"
+#include <OpenSim/Actuators/DeGrooteFregly2016Muscle.h>
 
 namespace OpenSim {
 

@@ -427,8 +427,10 @@ bool CMCTool::run()
     SimTK::State& s = _model->initSystem();
     _model->getMultibodySystem().realize(s, Stage::Position );
      taskSet.setModel(*_model);
-    _model->equilibrateMuscles(s);
-  
+    if (_solveForEquilibriumForAuxiliaryStates) {
+         _model->equilibrateMuscles(s);
+    }
+
     // ---- INPUT ----
     // DESIRED POINTS AND KINEMATICS
     if(_desiredPointsFileName=="" && _desiredKinematicsFileName=="") {
@@ -761,7 +763,7 @@ bool CMCTool::run()
     // Initial auxiliary states
     time_t startTime,finishTime;
     double elapsedTime;
-    if( s.getNZ() > 0) { // If there are actuator states (i.e. muscles dynamics)
+    if(s.getNZ() > 0) { // If there are actuator states (i.e. muscles dynamics)
         log_info("-----------------------------------------------------------------");
         log_info("Computing initial values for muscles states (activation, length):");
         log_info("-----------------------------------------------------------------");

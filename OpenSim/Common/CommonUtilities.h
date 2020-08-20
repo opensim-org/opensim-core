@@ -28,6 +28,7 @@
 #include <iostream>
 #include <memory>
 #include <stack>
+#include <condition_variable>
 
 #include <SimTKcommon/internal/BigMatrix.h>
 

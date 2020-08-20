@@ -4,7 +4,6 @@
  */
 
 #include <OpenSim/Moco/About.h>
-#include <OpenSim/Moco/Components/DeGrooteFregly2016Muscle.h>
 #include <OpenSim/Moco/Components/PositionMotion.h>
 #include <OpenSim/Moco/MocoBounds.h>
 #include <OpenSim/Moco/MocoCasADiSolver/MocoCasADiSolver.h>
@@ -16,7 +15,7 @@
 #include <OpenSim/Moco/MocoGoal/MocoControlTrackingGoal.h>
 #include <OpenSim/Moco/MocoGoal/MocoGoal.h>
 #include <OpenSim/Moco/MocoGoal/MocoInitialActivationGoal.h>
-#include <OpenSim/Moco/MocoGoal/MocoInitialForceEquilibriumGoal.h>
+#include <OpenSim/Moco/MocoGoal/MocoInitialForceEquilibriumDGFGoal.h>
 #include <OpenSim/Moco/MocoGoal/MocoInitialVelocityEquilibriumDGFGoal.h>
 #include <OpenSim/Moco/MocoGoal/MocoJointReactionGoal.h>
 #include <OpenSim/Moco/MocoGoal/MocoMarkerFinalGoal.h>
