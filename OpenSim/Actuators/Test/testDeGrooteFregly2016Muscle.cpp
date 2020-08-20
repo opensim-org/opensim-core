@@ -1031,7 +1031,6 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
 
         SECTION("calcEquilibriumResidual()") {
             // Check the value of the equilibrium residual for a given state.
-            //
             auto& mutMuscle =
                     model.updComponent<DeGrooteFregly2016Muscle>("muscle");
             mutMuscle.set_ignore_tendon_compliance(false);
