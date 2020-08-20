@@ -278,11 +278,13 @@ public:
         }
     }
 
-    /// If ignore_tendon_compliance is false, this returns zero. If 
-    /// integration_mode is 'implicit', this gets the discrete variable
-    /// tendon force derivative value. If integration_mode is 'explicit', this
-    /// gets the value returned by getStateVariableDerivativeValue() for the
-    /// 'normalized_tendon_force' state. 
+    /// Obtain the time derivative of the normalized tendon force.
+    /// - If ignore_tendon_compliance is false, this returns zero.
+    /// - If tendon_compliance_dynamics_mode is 'implicit', this gets the
+    /// discrete variable normalized tendon force derivative value.
+    /// - If tendon_compliance_dynamics_mode is 'explicit', this gets the value
+    /// returned by getStateVariableDerivativeValue() for the
+    /// 'normalized_tendon_force' state.
     double getNormalizedTendonForceDerivative(const SimTK::State& s) const {
         if (get_ignore_tendon_compliance()) { return 0.0; }
 
@@ -697,7 +699,8 @@ public:
     }
 
     /// The residual (i.e. error) in the muscle-tendon equilibrium equation:
-    ///         residual = tendonForce - fiberForce * cosPennationAngle
+    ///     residual = normTendonForce - normFiberForce * cosPennationAngle
+    /// The residual is unitless (units of normalized force).
     /// This is computed using the muscle in implicit mode, since explicit mode
     /// uses the normalized tendon force state variable directly
     /// to compute fiber force, which always produces a zero muscle-tendon
@@ -717,7 +720,8 @@ public:
         calcMuscleDynamicsInfoHelper(activation, muscleTendonVelocity, false,
                 mli, fvi, mdi, normTendonForce);
 
-        return mdi.tendonForce - mdi.fiberForceAlongTendon;
+        return mdi.normTendonForce -
+               mdi.fiberForceAlongTendon / get_max_isometric_force();
     }
 
     /// The residual (i.e. error) in the time derivative of the linearized
@@ -798,18 +802,21 @@ private:
 
     void calcMuscleLengthInfoHelper(const SimTK::Real& muscleTendonLength,
             const bool& ignoreTendonCompliance, MuscleLengthInfo& mli,
-            const SimTK::Real& normTendonForce) const;
+            const SimTK::Real& normTendonForce = SimTK::NaN) const;
+    /// `normTendonForce` is required if and only if `isTendonDynamicsExplicit`
+    /// is true. `normTendonForceDerivative` is required if and only if
+    /// `isTendonDynamicsExplicit` is false.
     void calcFiberVelocityInfoHelper(const SimTK::Real& muscleTendonVelocity,
             const SimTK::Real& activation, const bool& ignoreTendonCompliance,
             const bool& isTendonDynamicsExplicit,
             const MuscleLengthInfo& mli, FiberVelocityInfo& fvi,
-            const SimTK::Real& normTendonForce,
-            const SimTK::Real& normTendonForceDerivative) const;
+            const SimTK::Real& normTendonForce = SimTK::NaN,
+            const SimTK::Real& normTendonForceDerivative = SimTK::NaN) const;
     void calcMuscleDynamicsInfoHelper(const SimTK::Real& activation,
             const SimTK::Real& muscleTendonVelocity,
             const bool& ignoreTendonCompliance, const MuscleLengthInfo& mli,
             const FiberVelocityInfo& fvi, MuscleDynamicsInfo& mdi,
-            const SimTK::Real& normTendonForce) const;
+            const SimTK::Real& normTendonForce = SimTK::NaN) const;
     void calcMusclePotentialEnergyInfoHelper(const bool& ignoreTendonCompliance,
             const MuscleLengthInfo& mli, MusclePotentialEnergyInfo& mpei) const;
 

@@ -3,6 +3,9 @@ Moco Change Log
 
 0.5.0 (in development)
 ----------------------
+- 2020-08-19: DeGrooteFregly2016Muscle now reports the equilibrium residual 
+              as a unitless quantity (normalized by maximum isometric force).
+
 - 2020-08-17: The analyze() utility function has been split into a new 
               analyze() function that takes a StatesTrajectory and an
               analyzeMocoTrajectory() function that takes a MocoTrajectory.

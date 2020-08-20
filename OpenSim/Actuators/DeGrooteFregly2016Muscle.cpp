@@ -262,7 +262,7 @@ double DeGrooteFregly2016Muscle::computeActuation(const SimTK::State& s) const {
 void DeGrooteFregly2016Muscle::calcMuscleLengthInfoHelper(
         const SimTK::Real& muscleTendonLength,
         const bool& ignoreTendonCompliance, MuscleLengthInfo& mli,
-        const SimTK::Real& normTendonForce = SimTK::NaN) const {
+        const SimTK::Real& normTendonForce) const {
 
     // Tendon.
     // -------
@@ -300,8 +300,8 @@ void DeGrooteFregly2016Muscle::calcFiberVelocityInfoHelper(
         const SimTK::Real& muscleTendonVelocity, const SimTK::Real& activation,
         const bool& ignoreTendonCompliance,
         const bool& isTendonDynamicsExplicit, const MuscleLengthInfo& mli,
-        FiberVelocityInfo& fvi, const SimTK::Real& normTendonForce = SimTK::NaN,
-        const SimTK::Real& normTendonForceDerivative = SimTK::NaN) const {
+        FiberVelocityInfo& fvi, const SimTK::Real& normTendonForce,
+        const SimTK::Real& normTendonForceDerivative) const {
 
     if (isTendonDynamicsExplicit && !ignoreTendonCompliance) {
         const auto& normFiberForce = normTendonForce / mli.cosPennationAngle;
@@ -346,7 +346,7 @@ void DeGrooteFregly2016Muscle::calcMuscleDynamicsInfoHelper(
         const SimTK::Real& activation, const SimTK::Real& muscleTendonVelocity,
         const bool& ignoreTendonCompliance, const MuscleLengthInfo& mli,
         const FiberVelocityInfo& fvi, MuscleDynamicsInfo& mdi,
-        const SimTK::Real& normTendonForce = SimTK::NaN) const {
+        const SimTK::Real& normTendonForce) const {
 
     mdi.activation = activation;
 

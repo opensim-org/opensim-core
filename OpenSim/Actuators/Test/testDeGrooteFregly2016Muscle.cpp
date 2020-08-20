@@ -863,7 +863,7 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
 
             mutMuscle.set_tendon_compliance_dynamics_mode("implicit");
             model.realizeDynamics(state);
-            CHECK(muscle.getEquilibriumResidual(state) == 
+            CHECK(muscle.getEquilibriumResidual(state) ==
                     Approx(0.0).margin(1e-6));
         }
 
@@ -1027,6 +1027,38 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
             CHECK(muscle.getPassiveFiberDampingForceAlongTendon(stateDamped) ==
                     Approx(Fmax * damping * normFiberVelocity *
                             cosPennationAngle));
+        }
+
+        SECTION("calcEquilibriumResidual()") {
+            // Check the value of the equilibrium residual for a given state.
+            auto& mutMuscle =
+                    model.updComponent<DeGrooteFregly2016Muscle>("muscle");
+            mutMuscle.set_ignore_tendon_compliance(false);
+            mutMuscle.set_tendon_compliance_dynamics_mode("implicit");
+            const double muscleTendonLength = muscle.getOptimalFiberLength() +
+                            muscle.getTendonSlackLength();
+            const double normTendonForce = 0.7;
+            const double residual = muscle.calcEquilibriumResidual(
+                    muscleTendonLength,
+                    0,   // muscle-tendon lengthening speed
+                    1.0, // activation
+                    normTendonForce,
+                    0    // time derivative of normalized tendon force
+            );
+
+            const double normTendonLength =
+                    muscle.calcTendonForceLengthInverseCurve(normTendonForce);
+            const double fiberLength = muscleTendonLength -
+                    normTendonLength * muscle.get_tendon_slack_length();
+            const double normFiberLength =
+                    fiberLength / muscle.get_optimal_fiber_length();
+            const double normActiveForce =
+                    muscle.calcActiveForceLengthMultiplier(normFiberLength);
+            const double normPassiveForce =
+                    muscle.calcPassiveForceMultiplier(normFiberLength);
+            const double normFiberForce = normActiveForce + normPassiveForce;
+            CHECK(residual ==
+                    Approx(normTendonForce - normFiberForce).margin(1e-6));
         }
     }
 
