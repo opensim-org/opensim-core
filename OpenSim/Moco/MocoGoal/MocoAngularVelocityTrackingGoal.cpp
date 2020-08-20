@@ -112,7 +112,8 @@ void MocoAngularVelocityTrackingGoal::initializeOnModelImpl(
     }
 
     // Check that there are no redundant columns in the reference data.
-    checkRedundantLabels(angularVelocityTable.getColumnLabels());
+    TableUtilities::checkNonUniqueLabels(
+            angularVelocityTable.getColumnLabels());
 
     // Cache the model frames and angular velocity weights based on the order of
     // the angular velocity table.

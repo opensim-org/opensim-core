@@ -18,9 +18,8 @@
 
 #include "MocoControlGoal.h"
 
-#include <OpenSim/Moco/MocoUtilities.h>
-
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/SimulationUtilities.h>
 
 using namespace OpenSim;
 

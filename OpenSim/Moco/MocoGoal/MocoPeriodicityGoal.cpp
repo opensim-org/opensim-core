@@ -18,6 +18,8 @@
 
 #include "MocoPeriodicityGoal.h"
 
+#include <OpenSim/Simulation/SimulationUtilities.h>
+
 using namespace OpenSim;
 
 //=============================================================================
