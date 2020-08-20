@@ -215,7 +215,7 @@ class Report(object):
         self.plots_per_page = 15.0
         self.num_cols = 3
         # Add an extra row to hold the legend and other infromation.
-        self.num_rows = (self.plots_per_page / 3) + 1
+        self.num_rows = (self.plots_per_page / self.num_cols) + 1
 
     def getVariable(self, type, path):
         if type == 'state':
@@ -256,7 +256,8 @@ class Report(object):
             if p % self.plots_per_page == 1:
                 fig = plt.figure(figsize=(8.5, 11))
 
-            plt.subplot(self.num_rows, self.num_cols, p + 3)
+            plt.subplot(int(self.num_rows), int(self.num_cols),
+                        int(p + self.num_cols))
             # Loop through all the state variable paths for this key.
             ymin = np.inf
             ymax = -np.inf

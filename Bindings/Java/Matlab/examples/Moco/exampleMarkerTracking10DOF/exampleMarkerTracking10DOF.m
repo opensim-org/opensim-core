@@ -127,6 +127,7 @@ solution.write('marker_tracking_10dof_solution.sto');
 
 % Visualize.
 % ==========
+% The following environment variable is set during automated testing.
 if ~strcmp(getenv('OPENSIM_USE_VISUALIZER'), '0')
     study.visualize(solution);
 end

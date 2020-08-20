@@ -46,6 +46,7 @@ args = parser.parse_args()
 
 datafiles = args.file
 
+# The following was an attempt to use a GUI to prompt the user for a file.
 # if datafiles is None or len(datafiles) == 0:
 #     try:
 #         import tkinter as tk

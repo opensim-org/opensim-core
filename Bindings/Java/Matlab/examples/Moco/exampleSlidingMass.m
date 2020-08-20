@@ -89,6 +89,7 @@ solution = study.solve();
 
 solution.write('sliding_mass_solution.sto');
 
+% The following environment variable is set during automated testing.
 if ~strcmp(getenv('OPENSIM_USE_VISUALIZER'), '0')
     study.visualize(solution);
     plot(solution.getTimeMat(), solution.getStatesTrajectoryMat());

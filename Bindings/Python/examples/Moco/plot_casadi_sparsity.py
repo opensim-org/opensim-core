@@ -21,6 +21,15 @@ import sys
 import numpy as np
 import pylab as pl
 
+# This command-line utility plots the sparsity pattern from a file. To use this
+# script, first generate a sparsity pattern file using MocoCasADiSolver's
+# optim_write_sparsity property.
+#
+# Usage:
+#       python plot_casadi_sparsity.py <prefix>_constraint_Jacobian_sparsity.mtx
+#
+# In this example, <prefix> is the value of the optim_write_sparsity property.
+
 df = pd.read_csv(sys.argv[1], skiprows=2, sep=' ',
                  names=['row_indices', 'column_indices'])
 

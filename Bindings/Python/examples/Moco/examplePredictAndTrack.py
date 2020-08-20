@@ -31,6 +31,7 @@ double pendulum model:
 """
 
 visualize = True
+# The following environment variable is set during automated testing.
 if os.getenv('OPENSIM_USE_VISUALIZER') == '0':
     visualize = False
 
@@ -94,6 +95,8 @@ def createDoublePendulumModel():
     
 def solvePrediction():
     # Predict the optimal trajectory for a minimum time swing-up.
+    # In the diagram below, + represents the origin, and ---o represents a link
+    # in the double pendulum.
     #
     #                              o
     #                              |

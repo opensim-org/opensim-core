@@ -97,6 +97,7 @@ solution = study.solve()
 # If matplotlib is installed, plot the trajectory of the mass and the
 # constraint force applied to the mass throughout the motion.
 plot = False
+# The following environment variable is set during automated testing.
 if os.getenv('OPENSIM_USE_VISUALIZER') != '0':
     try:
         import pylab as pl

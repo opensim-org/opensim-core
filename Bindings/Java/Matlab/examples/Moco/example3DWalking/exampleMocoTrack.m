@@ -155,7 +155,7 @@ track.set_states_global_tracking_weight(10);
 % reference that don't correspond to model coordinates.
 track.set_allow_unused_references(true);
 
-% Since there is only coordinate position data the states references, this
+% Since there is only coordinate position data in the states references, this
 % setting is enabled to fill in the missing coordinate speed data using
 % the derivative of splined position data.
 track.set_track_reference_position_derivatives(true);

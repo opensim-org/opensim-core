@@ -44,7 +44,7 @@
 % PostScript file with Preview to convert it to a PDF.
 % 
 % We tested this code with MATLAB 2019a. If you manage to make this code work
-% with other versions of MATLAB, please let the Moco developers know!
+% with other versions of MATLAB, please let the OpenSim developers know!
 %
 % This code is based on Moco's report.py Python module. Refer to report.py
 % (located in Moco/Bindings/Python in the source code) for additional 

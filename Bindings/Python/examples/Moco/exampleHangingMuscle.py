@@ -177,6 +177,7 @@ velocity = table_velocity.getDependentColumn("muscle").to_numpy()
 # mechanical work rate to the mechanical work rate computed using the
 # MuscleAnalysis.
 plot = False
+# The following environment variable is set during automated testing.
 if os.getenv('OPENSIM_USE_VISUALIZER') != '0':
     try:
         import pylab as pl

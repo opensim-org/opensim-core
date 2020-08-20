@@ -11,9 +11,9 @@ Model
 The model described in the file 'subject_walk_armless.osim' is a modified
 version of the Rajagopoal et al. 2016 musculoskeletal model. The lumbar,
 subtalar, and mtp coordinates have been replaced with WeldJoints and residual
-actuators have been added to the pelvis (1 N-m for rotational coordinates and 10
-N for translational coordinates). Finally, the arms and all associated
-components have been removed for simplicity.
+actuators have been added to the pelvis ('optimal_force' of 1 N-m for rotational
+coordinates and 10 N for translational coordinates). Finally, the arms and all
+associated components have been removed for simplicity.
 
 Data
 ----
