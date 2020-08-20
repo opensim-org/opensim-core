@@ -75,6 +75,9 @@ public:
     // CONSTRUCTION
     //--------------------------------------------------------------------------
     virtual ~InverseKinematicsSolver() {}
+    // No need for copy constructor or operator
+    InverseKinematicsSolver(const InverseKinematicsSolver& other)            = delete;
+    InverseKinematicsSolver& operator=(const InverseKinematicsSolver& other) = delete;
 
     InverseKinematicsSolver(const Model& model, 
                         std::shared_ptr<MarkersReference> markersReference,
@@ -239,6 +242,8 @@ private:
     // the SimTK::Assembler and the memory is managed by the Assembler
     SimTK::ReferencePtr<SimTK::OrientationSensors> _orientationAssemblyCondition;
 
+    // internal flag indicating whether time is advanced based on live data or
+    // controlled by the driver porgram (typically based on pre-recorded data).
     bool _advanceTimeFromReference{false};
 
 //=============================================================================

@@ -26,6 +26,7 @@
 #include <OpenSim/Common/Storage.h>
 #include "OpenSim/Common/STOFileAdapter.h"
 #include "OpenSim/Common/TRCFileAdapter.h"
+#include <OpenSim/Common/TableUtilities.h>
 #include <OpenSim/Common/Reporter.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/OrientationsReference.h>
@@ -136,7 +137,7 @@ int main() {
         ikSolver.assemble(s0);
         model.realizeReport(s0);
         thread thread1(producer, oRefs, std::ref(orientationsData));
-        thread1.join();
+        //thread1.join();
         auto lastTime = orientationsData.getIndependentColumn().back();
         ikSolver.setAdvanceTimeFromReference(true);
         while (oRefs->hasNext() && s0.getTime() < lastTime) {
@@ -148,7 +149,10 @@ int main() {
         const TimeSeriesTable standard("std_subject01_walk1_ik.mot");
         compareMotionTables(report, standard);
 
-    } catch (const std::exception& e) { cout << e.what() << endl; }
+    } 
+    catch (const std::exception& e) { 
+        cout << e.what() << endl; 
+    }
 }
 TimeSeriesTable_<SimTK::Rotation> convertMotionFileToRotations(
     Model& model,
@@ -230,31 +234,6 @@ TimeSeriesTable_<SimTK::Rotation> convertMotionFileToRotations(
     return rotTable;
 }
 
-TimeSeriesTableVec3 convertRotationsToEulerAngles(
-    const TimeSeriesTable_<SimTK::Rotation>& rotTable)
-{
-    auto labels = rotTable.getColumnLabels();
-    auto& times = rotTable.getIndependentColumn();
-    const auto& rotations = rotTable.getMatrix();
-
-    int nc = int(labels.size());
-    int nt = int(times.size());
-
-    SimTK::Matrix_<SimTK::Vec3> eulerMatrix(nt, nc, SimTK::Vec3(SimTK::NaN));
-
-    for (int i = 0; i < nt; ++i) {
-        for (int j = 0; j < nc; ++j) {
-            eulerMatrix.updElt(i, j) = 
-                rotations(i, j).convertRotationToBodyFixedXYZ();
-        }
-    }
-    TimeSeriesTableVec3 eulerData{ times, eulerMatrix, labels };
-    eulerData.updTableMetaData()
-        .setValueForKey("Units", std::string("Radians"));
-
-    return eulerData;
-}
-
 void testInverseKinematicsSolverWithOrientations()
 {
     Model model("subject01_simbody.osim");
@@ -315,7 +294,7 @@ void testInverseKinematicsSolverWithEulerAnglesFromFile()
     auto orientationsData = convertMotionFileToRotations(
         model, "std_subject01_walk1_ik.mot");
 
-    auto eulerData = convertRotationsToEulerAngles(orientationsData);
+    auto eulerData = TableUtilities::convertRotationsToEulerAngles(orientationsData);
     STOFileAdapter_<SimTK::Vec3>::write(eulerData, "subject1_walk_euler_angles.sto");
 
     // Add a reporter to get IK computed coordinate values out
