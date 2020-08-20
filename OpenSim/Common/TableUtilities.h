@@ -99,6 +99,11 @@ public:
     static TimeSeriesTable resampleWithIntervalBounded(
             const TimeSeriesTable& in, double interval);
 
+    // Utility to convert TimeSeriesTable of Rotations to a 
+    // corresponding TimeSeriesTableVec3 of BodyFixedXYZ Euler angles
+    TimeSeriesTable_<SimTK::Vec3> static convertRotationsToEulerAngles(
+            const TimeSeriesTable_<SimTK::Rotation>& rotTable);
+
 private:
     static int findStateLabelIndexInternal(const std::string* begin,
             const std::string* end, const std::string& desired);
