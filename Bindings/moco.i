@@ -29,7 +29,7 @@ namespace OpenSim {
 %include <OpenSim/Moco/MocoGoal/MocoAccelerationTrackingGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoOutputGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoPeriodicityGoal.h>
-%include <OpenSim/Moco/MocoGoal/MocoInitialForceEquilibriumGoal.h>
+%include <OpenSim/Moco/MocoGoal/MocoInitialForceEquilibriumDGFGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoInitialVelocityEquilibriumDGFGoal.h>
 
 
@@ -135,7 +135,6 @@ namespace OpenSim {
 %include <OpenSim/Moco/MocoInverse.h>
 %include <OpenSim/Moco/MocoTrack.h>
 
-%include <OpenSim/Moco/Components/DeGrooteFregly2016Muscle.h>
 %include <OpenSim/Moco/Components/PositionMotion.h>
 
 %include <OpenSim/Moco/MocoUtilities.h>

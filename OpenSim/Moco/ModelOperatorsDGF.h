@@ -18,7 +18,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "Components/DeGrooteFregly2016Muscle.h"
 #include <OpenSim/Actuators/ModelProcessor.h>
 
 namespace OpenSim {

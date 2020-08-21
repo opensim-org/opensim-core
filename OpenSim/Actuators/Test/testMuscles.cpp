@@ -33,6 +33,7 @@
 //      2. Thelen2003Muscle (Uses the Muscle interface)
 //      3. Millard2012EquilibriumMuscle
 //      4. Millard2012AccelerationMuscle
+//      5. DeGrooteFregly2016Muscle
 //      
 //     Add more test cases to address specific problems with muscle models
 //
@@ -96,6 +97,7 @@ void testThelen2003Muscle_Deprecated();
 void testThelen2003Muscle();
 void testMillard2012EquilibriumMuscle();
 void testMillard2012AccelerationMuscle();
+void testDeGrooteFregly2016Muscle();
 void testSchutte1993Muscle();
 void testDelp1990Muscle();
 
@@ -142,6 +144,12 @@ int main()
     }catch (const Exception& e){ 
         e.print(cout);
         failures.push_back("testMillard2012AccelerationMuscle");
+    }
+    try { testDeGrooteFregly2016Muscle();
+        cout << "DeGrooteFregly2016Muscle Test passed" << endl;
+    } catch (const Exception& e) {
+        e.print(cout);
+        failures.push_back("testDeGrooteFregly2016Muscle");
     }
 
     printf("\n\n");
@@ -359,9 +367,9 @@ void simulateMuscle(
     SimTK::State initialState(si);
 
     // Check muscle is setup correctly 
-    const PathActuator &muscle 
+    const PathActuator &actu 
         = dynamic_cast<const PathActuator&>(model.updActuators().get("muscle"));
-    double length = muscle.getLength(si);
+    double length = actu.getLength(si);
     double trueLength = startX + xSinG - anchorWidth/2;
     
     ASSERT_EQUAL(length/trueLength, 1.0, InitializationTestTolerance,
@@ -405,7 +413,6 @@ void simulateMuscle(
     StatesTrajectory statesTraj =
         StatesTrajectory::createFromStatesStorage(model, states);
 
-
 //==========================================================================
 // 5. SIMULATION Reporting
 //==========================================================================
@@ -437,8 +444,8 @@ void simulateMuscle(
 //==========================================================================
 // 6. SIMULATION Tests
 //==========================================================================
+    auto& muscle = model.updMuscles()[0];
     testMuscleEquilibriumSolve(model, states);
-
 
 /*==========================================================================
     7. Correctness test:  d/dt(KE+PE-W) = 0 ?
@@ -972,6 +979,33 @@ void testMillard2012AccelerationMuscle()
         act0, 
         &motion, 
         &control,
+        false);
+}
+
+void testDeGrooteFregly2016Muscle() {
+
+    DeGrooteFregly2016Muscle muscle;
+    muscle.setName("muscle");
+    muscle.set_max_isometric_force(MaxIsometricForce0);
+    muscle.set_optimal_fiber_length(OptimalFiberLength0);
+    muscle.set_tendon_slack_length(TendonSlackLength0);
+    muscle.set_pennation_angle_at_optimal(PennationAngle0);
+    muscle.set_tendon_compliance_dynamics_mode("explicit");
+    muscle.set_activation_time_constant(Activation0);
+    muscle.set_deactivation_time_constant(Deactivation0);
+
+    double x0 = 0;
+    double act0 = 0.2;
+
+    Constant control(0.5);
+
+    Sine motion(OptimalFiberLength0, SimTK::Pi, 0);
+
+    simulateMuscle(muscle, 
+        x0, 
+        act0, 
+        &motion,  
+        &control, 
         false);
 }
 

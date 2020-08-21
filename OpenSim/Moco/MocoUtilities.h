@@ -20,13 +20,14 @@
 
 #include "MocoTrajectory.h"
 #include "osimMocoDLL.h"
+#include <condition_variable>
 #include <regex>
 
 #include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/Logger.h>
-#include <OpenSim/Common/PiecewiseLinearFunction.h>
-#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/Reporter.h>
+#include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>

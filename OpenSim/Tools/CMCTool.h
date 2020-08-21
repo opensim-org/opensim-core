@@ -192,6 +192,10 @@ public:
     bool getUseFastTarget() const { return _useFastTarget;};         
     void setUseFastTarget(bool useFastTarget) const {  _useFastTarget=useFastTarget; };
 
+    // Verbosity
+    bool getUseVerbosePrinting() const {return _verbose;};
+    void setUseVerbosePrinting(bool verbose) const { _verbose=verbose;};
+
 
     //--------------------------------------------------------------------------
     // INTERFACE

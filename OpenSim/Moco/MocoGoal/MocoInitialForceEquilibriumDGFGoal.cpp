@@ -1,7 +1,7 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoInitialVelocityEquilibriumGoal.cpp                       *
+ * OpenSim Moco: MocoInitialForceEquilibriumDGFGoal.cpp                       *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2019 Stanford University and the Authors                     *
+ * Copyright (c) 2020 Stanford University and the Authors                     *
  *                                                                            *
  * Author(s): Nicholas Bianco                                                 *
  *                                                                            *
@@ -16,42 +16,42 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoInitialVelocityEquilibriumDGFGoal.h"
-
-#include <OpenSim/Actuators/DeGrooteFregly2016Muscle.h>
+#include "MocoInitialForceEquilibriumDGFGoal.h"
+#include "OpenSim/Actuators/DeGrooteFregly2016Muscle.h"
 
 using namespace OpenSim;
 
-void MocoInitialVelocityEquilibriumDGFGoal::initializeOnModelImpl(
+void MocoInitialForceEquilibriumDGFGoal::initializeOnModelImpl(
         const Model& model) const {
 
     for (const auto& dgfmuscle :
             model.getComponentList<DeGrooteFregly2016Muscle>()) {
-        if (!dgfmuscle.get_ignore_tendon_compliance()) {
-            m_dgfMuscleRefs.emplace_back(&dgfmuscle);
+        if (!dgfmuscle.get_ignore_tendon_compliance() &&
+                dgfmuscle.get_tendon_compliance_dynamics_mode() == "explicit") {
+            m_muscleRefs.emplace_back(dgfmuscle);
         }
     }
 
-    setRequirements(0, (int)m_dgfMuscleRefs.size());
+    setRequirements(0, (int)m_muscleRefs.size());
 }
 
-void MocoInitialVelocityEquilibriumDGFGoal::calcGoalImpl(
+void MocoInitialForceEquilibriumDGFGoal::calcGoalImpl(
         const GoalInput& input, SimTK::Vector& goal) const {
     const auto& s = input.initial_state;
     getModel().realizeVelocity(s);
-    if (getModeIsCost()) {
-        for (int i = 0; i < (int)m_dgfMuscleRefs.size(); ++i) {
-            const auto residual =
-                    m_dgfMuscleRefs[i]
-                            ->getLinearizedEquilibriumResidualDerivative(s);
-            goal[i] = residual * residual;
-        }
-    } else {
-        for (int i = 0; i < (int)m_dgfMuscleRefs.size(); ++i) {
-            const auto residual =
-                    m_dgfMuscleRefs[i]
-                            ->getLinearizedEquilibriumResidualDerivative(s);
-            goal[i] = residual;
-        }
+
+    for (int i = 0; i < (int)m_muscleRefs.size(); ++i) {
+        const auto muscleTendonLength = m_muscleRefs[i]->getLength(s);
+        const auto muscleTendonVelocity =
+                m_muscleRefs[i]->getLengtheningSpeed(s);
+        const auto activation = m_muscleRefs[i]->getActivation(s);
+        const auto normTendonForce =
+                m_muscleRefs[i]->getNormalizedTendonForce(s);
+        // Assuming normalized tendon force derivative is zero.
+        const auto residual =
+                m_muscleRefs[i]->calcEquilibriumResidual(muscleTendonLength,
+                        muscleTendonVelocity, activation, normTendonForce, 0);
+        goal[i] = residual;
+        if (getModeIsCost()) { goal[i] *= goal[i]; }
     }
 }

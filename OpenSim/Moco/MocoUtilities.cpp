@@ -20,12 +20,7 @@
 
 #include "MocoProblem.h"
 #include "MocoTrajectory.h"
-#include <cstdarg>
-#include <cstdio>
-#include <iomanip>
 #include <regex>
-
-#include <simbody/internal/Visualizer_InputListener.h>
 
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Common/GCVSpline.h>

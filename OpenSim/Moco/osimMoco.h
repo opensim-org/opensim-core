@@ -19,7 +19,6 @@
  * -------------------------------------------------------------------------- */
 
 #include "About.h"
-#include "Components/DeGrooteFregly2016Muscle.h"
 #include "Components/DiscreteForces.h"
 #include "Components/PositionMotion.h"
 #include "Components/StationPlaneContactForce.h"
@@ -34,7 +33,7 @@
 #include "MocoGoal/MocoControlGoal.h"
 #include "MocoGoal/MocoControlTrackingGoal.h"
 #include "MocoGoal/MocoInitialActivationGoal.h"
-#include "MocoGoal/MocoInitialForceEquilibriumGoal.h"
+#include "MocoGoal/MocoInitialForceEquilibriumDGFGoal.h"
 #include "MocoGoal/MocoInitialVelocityEquilibriumDGFGoal.h"
 #include "MocoGoal/MocoJointReactionGoal.h"
 #include "MocoGoal/MocoMarkerFinalGoal.h"

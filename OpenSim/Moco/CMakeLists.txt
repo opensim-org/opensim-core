@@ -54,8 +54,8 @@ set(MOCO_SOURCES
         MocoGoal/MocoInitialActivationGoal.h
         MocoGoal/MocoInitialVelocityEquilibriumDGFGoal.h
         MocoGoal/MocoInitialVelocityEquilibriumDGFGoal.cpp
-        MocoGoal/MocoInitialForceEquilibriumGoal.h
-        MocoGoal/MocoInitialForceEquilibriumGoal.cpp
+        MocoGoal/MocoInitialForceEquilibriumDGFGoal.h
+        MocoGoal/MocoInitialForceEquilibriumDGFGoal.cpp
         MocoGoal/MocoPeriodicityGoal.h
         MocoGoal/MocoPeriodicityGoal.cpp
         MocoSolver.h
@@ -74,8 +74,6 @@ set(MOCO_SOURCES
         MocoControlBoundConstraint.h
         MocoFrameDistanceConstraint.h
         MocoFrameDistanceConstraint.cpp
-        Components/DeGrooteFregly2016Muscle.h
-        Components/DeGrooteFregly2016Muscle.cpp
         Components/DiscreteController.cpp
         Components/DiscreteController.h
         Components/StationPlaneContactForce.h
