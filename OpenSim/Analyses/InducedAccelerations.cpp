@@ -976,6 +976,9 @@ Array<bool> InducedAccelerations::applyContactConstraintAccordingToExternalForce
                         "ExternalForce's pointExpressedInBodyName " +
                                 exf->getPointExpressedInBodyName() +
                                 " not found.");
+                OPENSIM_THROW_IF_FRMOBJ(appliedToBody == nullptr, Exception, "ExternalForce's appliedToBody " + exf->getAppliedToBodyName() + " not found.");
+                OPENSIM_THROW_IF_FRMOBJ(expressedInBody == nullptr, Exception, "ExternalForce's pointExpressedInBodyName " + exf->getPointExpressedInBodyName() + " not found.");
+
                 _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
                 point = expressedInBody->findStationLocationInAnotherFrame(
                         s, point, *appliedToBody);

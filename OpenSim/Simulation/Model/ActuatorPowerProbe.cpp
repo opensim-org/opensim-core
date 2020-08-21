@@ -92,7 +92,7 @@ const Property<string>& ActuatorPowerProbe::getActuatorNames() const
 * Returns whether to report sum of all actuator powers together
 or report the actuator powers individually.
 */
-const bool ActuatorPowerProbe::getSumPowersTogether() const
+bool ActuatorPowerProbe::getSumPowersTogether() const
 {
     return get_sum_powers_together();
 }
@@ -101,7 +101,7 @@ const bool ActuatorPowerProbe::getSumPowersTogether() const
 /**
 * Returns the exponent to apply to each actuator power.
 */
-const double ActuatorPowerProbe::getExponent() const
+double ActuatorPowerProbe::getExponent() const
 {
     return get_exponent();
 }

@@ -102,6 +102,9 @@ bool IMUPlacer::run(bool visualizeResults) {
                     sensor_to_opensim_rotations[2], SimTK::ZAxis);
     // Rotate data so Y-Axis is up
     OpenSenseUtilities::rotateOrientationTable(quatTable, sensorToOpenSim);
+    // Heading correction requires initSystem is already called. Do it now.
+    SimTK::State& s0 = _model->initSystem();
+    _model->realizePosition(s0);
     // Check consistent heading correction specification
     // both base_heading_axis and base_imu_label should be specified
     // finer error checking is done downstream
@@ -131,7 +134,7 @@ bool IMUPlacer::run(bool visualizeResults) {
         // Compute rotation matrix so that (e.g. "pelvis_imu"+ SimTK::ZAxis)
         // lines up with model forward (+X)
         SimTK::Vec3 headingRotationVec3 =
-                OpenSenseUtilities::computeHeadingCorrection(*_model, quatTable,
+                OpenSenseUtilities::computeHeadingCorrection(*_model, s0, quatTable,
                         get_base_imu_label(), directionOnIMU);
         SimTK::Rotation headingRotation(
                 SimTK::BodyOrSpaceType::SpaceRotationSequence,
@@ -154,7 +157,6 @@ bool IMUPlacer::run(bool visualizeResults) {
     // the labels in the TimerSeriesTable of orientations
     auto rotations = orientationsData.updRowAtIndex(0);
 
-    SimTK::State& s0 = _model->initSystem();
     s0.updTime() = times[0];
 
     // default pose of the model defined by marker-based IK
@@ -185,10 +187,10 @@ bool IMUPlacer::run(bool visualizeResults) {
     for (auto& imuName : imuLabels) {
         log_info("Processing {}", imuName);
         if (imuBodiesInGround.find(imuName) != imuBodiesInGround.end()) {
-            log_info("Computed offset for ", imuName);
+            log_info("Computed offset for {}", imuName);
             SimTK::Rotation R_FB =
                     ~imuBodiesInGround[imuName] * rotations[int(imuix)];
-            log_info("Offset is ", R_FB);
+            log_info("Offset is {}", R_FB);
             PhysicalOffsetFrame* imuOffset = nullptr;
             const PhysicalOffsetFrame* mo = nullptr;
             if ((mo = _model->findComponent<PhysicalOffsetFrame>(imuName))) {
@@ -197,7 +199,7 @@ bool IMUPlacer::run(bool visualizeResults) {
                 X.updR() = R_FB;
                 imuOffset->setOffsetTransform(X);
             } else {
-                log_info("Creating offset frame for ", imuName);
+                log_info("Creating offset frame for {}", imuName);
                 OpenSim::Body* body =
                         dynamic_cast<OpenSim::Body*>(bodies[imuix]);
                 SimTK::Vec3 p_FB(0);

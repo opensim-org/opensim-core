@@ -2244,7 +2244,7 @@ void testBlankevoort1991Ligament() {
         model.realizeReport(state);
 
         ind_col.push_back(time);
-        for (int j = 0; j < outputs.size(); ++j) {
+        for (int j = 0; j < (int)outputs.size(); ++j) {
             output_data(i, j) = lig->getOutputValue<double>(state, outputs[j]);
         }
 
