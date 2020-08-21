@@ -62,7 +62,6 @@ public:
     Reference_() : Object() {}
     Reference_(std::string name) : Reference_() { setName(name); }
 
-    virtual bool isContinuous() const = 0;
     //--------------------------------------------------------------------------
     // Reference Interface
     //--------------------------------------------------------------------------
@@ -108,7 +107,6 @@ public:
         getValuesAtTime(time, values);
         return values;
     }
-    virtual bool isContinuous() const override { return true; };
 };
 // Subclass for discrete time Reference signals
 // This can support streaming and adding data on te fly
@@ -119,17 +117,16 @@ template <class T> class DiscreteTimeReference_ : public Reference_<T> {
 
     using Reference_<T>::Reference_;
 public:
-    // Optionally support continuous time reference interface
+    // Support continuous time reference interface
     virtual void getValuesAtTime(
             double time, SimTK::Array_<T>& values) const = 0;
-    // Streaming mode where data can be added and used
+    // Optionally support streaming mode where data can be added and used
     virtual void getNextValuesAndTime(
             double& time, SimTK::Array_<T>& values) {
-        throw(Exception("getValuesAtTime method is not supported for this reference {}.", this->getName()));
+        throw(Exception("getNextValuesAndTime method is not supported for this reference {}.", this->getName()));
     };
     // indicate whether to stop or wait for more data
     virtual bool hasNext() const { return false; };
-    virtual bool isContinuous() const override { return false; };
 };
   // END of class templatized Reference_<T>
 //=============================================================================
