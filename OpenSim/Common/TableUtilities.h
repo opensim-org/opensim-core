@@ -25,7 +25,6 @@
 
 #include "Array.h"
 #include "GCVSpline.h"
-#include "TableUtilities.h"
 #include "TimeSeriesTable.h"
 #include "osimCommonDLL.h"
 
@@ -101,7 +100,7 @@ public:
 
     // Utility to convert TimeSeriesTable of Rotations to a 
     // corresponding TimeSeriesTableVec3 of BodyFixedXYZ Euler angles
-    TimeSeriesTable_<SimTK::Vec3> static convertRotationsToEulerAngles(
+    static TimeSeriesTable_<SimTK::Vec3> convertRotationsToEulerAngles(
             const TimeSeriesTable_<SimTK::Rotation>& rotTable);
 
 private:
