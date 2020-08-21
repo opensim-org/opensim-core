@@ -27,6 +27,7 @@
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <mutex>
 #include <stack>
 
 #include <SimTKcommon/internal/BigMatrix.h>
