@@ -126,10 +126,13 @@ void MocoFrameDistanceConstraint::calcPathConstraintErrorsImpl(
         } else if (m_projectionType == ProjectionType::Vector) {
             projected = SimTK::dot(relative_position, m_projectionVector) *
                     m_projectionVector;
-        } else {
+        } else if (m_projectionType == ProjectionType::Plane) {
             projected = relative_position -
                         SimTK::dot(relative_position, m_projectionVector) *
                                 m_projectionVector;
+        } else {
+            OPENSIM_THROW(
+                    Exception, "Internal error: Unrecognized projection type.");
         }
         errors[iconstr++] = projected.normSqr();
     }

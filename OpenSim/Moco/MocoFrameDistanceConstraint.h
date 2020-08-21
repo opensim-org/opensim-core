@@ -32,9 +32,11 @@ public:
     OpenSim_DECLARE_PROPERTY(frame2_path, std::string,
             "The second model frame path of the pair.");
     OpenSim_DECLARE_PROPERTY(minimum_distance, double,
-            "The minimum distance apart that the two frame origins can be.");
+            "The minimum distance apart that the two frame origins can be "
+            "(meters).");
     OpenSim_DECLARE_PROPERTY(maximum_distance, double,
-            "The maximum distance apart that the two frame origins can be.")
+            "The maximum distance apart that the two frame origins can be "
+            "(meters).")
 
     MocoFrameDistanceConstraintPair();
     MocoFrameDistanceConstraintPair(std::string firstFramePath,
@@ -103,8 +105,8 @@ public:
     /// If the projection type is "vector", the distance is projected onto
     /// the vector provided here. If the projection type is "plane", the
     /// distance is projected onto the plane perpendicular to this vector.
-    void setProjectionVector(SimTK::Vec3 normal) {
-        set_projection_vector(std::move(normal));
+    void setProjectionVector(SimTK::Vec3 vector) {
+        set_projection_vector(std::move(vector));
     }
     /// Unset the projection vector.
     void clearProjectionVector() { updProperty_projection_vector().clear(); }
