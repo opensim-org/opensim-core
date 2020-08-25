@@ -55,7 +55,9 @@ public:
         OPENSIM_THROW_IF(!SimTK::isNumericallyEqual(
                                  casadi::DM::sum2(meshIndices).scalar(),
                                  m_numMeshPoints),
-                OpenSim::Exception, "Internal error.");
+                OpenSim::Exception,
+                "Internal error: sum of mesh indices should be the number of "
+                "mesh points.");
 
         return meshIndices;
     }
@@ -230,9 +232,9 @@ private:
             }
         };
 
-        // Trapezoidal sparsity pattern for mesh intervals 0, 1 and 2:
-        // Endpoint constraints depend on all time points through their
-        // integral.
+        // Trapezoidal sparsity pattern (mapping between flattened and expanded
+        // constraints) for mesh intervals 0, 1 and 2: Endpoint constraints
+        // depend on all time points through their integral.
         //                   0    1    2    3
         //    endpoint       x    x    x    x
         //    path_0         x
@@ -308,7 +310,8 @@ private:
         copyColumn(constraints.auxiliary_residuals, m_numGridPoints - 1);
 
         OPENSIM_THROW_IF(iflat != m_numConstraints, OpenSim::Exception,
-                "Internal error.");
+                "Internal error: final value of the index into the flatted "
+                "constraints should be equal to the number of constraints.");
         return flat;
     }
 
@@ -382,7 +385,8 @@ private:
         copyColumn(out.auxiliary_residuals, m_numGridPoints - 1);
 
         OPENSIM_THROW_IF(iflat != m_numConstraints, OpenSim::Exception,
-                "Internal error.");
+                "Internal error: final value of the index into the flatted "
+                "constraints should be equal to the number of constraints.");
         return out;
     }
 

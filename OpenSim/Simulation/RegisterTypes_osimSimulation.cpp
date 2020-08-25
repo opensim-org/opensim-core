@@ -79,6 +79,7 @@
 #include "Model/Bhargava2004MuscleMetabolicsProbe.h"
 #include "Model/Appearance.h"
 #include "Model/Geometry.h"
+
 #include "Model/ModelVisualPreferences.h"
 #include "Model/ExpressionBasedCoordinateForce.h"
 
@@ -126,6 +127,7 @@
 #include "OrientationsReference.h"
 #include "StatesTrajectoryReporter.h"
 #include "TableProcessor.h"
+#include "MarkersReference.h"
 
 #include <string>
 #include <iostream>
@@ -168,6 +170,11 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( SurfaceProperties());
     Object::registerType( Appearance());
     Object::registerType( ModelVisualPreferences());
+
+    Object::registerType(MarkersReference());
+    Object::registerType(MarkerWeight());
+    Object::registerType(Set<MarkerWeight>());
+
 
     Object::registerType( Brick());
     Object::registerType( Sphere());

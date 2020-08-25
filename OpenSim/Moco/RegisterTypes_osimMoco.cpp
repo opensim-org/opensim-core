@@ -1,4 +1,3 @@
-
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: RegisterTypes_osimMoco.cpp                                   *
  * -------------------------------------------------------------------------- *
@@ -54,8 +53,6 @@
 #include "ModelOperatorsDGF.h"
 #include <exception>
 #include <iostream>
-
-#include <OpenSim/Simulation/MarkersReference.h>
 
 using namespace OpenSim;
 
@@ -116,10 +113,6 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(DiscreteForces());
         Object::registerType(AccelerationMotion());
 
-        // TODO: Move to osimSimulation.
-        Object::registerType(MarkersReference());
-        Object::registerType(MarkerWeight());
-        Object::registerType(Set<MarkerWeight>());
     } catch (const std::exception& e) {
         std::cerr << "ERROR during osimMoco Object registration:\n"
                   << e.what() << std::endl;

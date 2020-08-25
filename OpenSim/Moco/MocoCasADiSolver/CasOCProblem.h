@@ -278,8 +278,6 @@ protected:
                 std::move(upper));
     }
     /// The size of bounds must match the number of outputs in the function.
-    /// Use variadic template arguments to pass arguments to the constructor of
-    /// FunctionType.
     void addPathConstraint(std::string name, std::vector<Bounds> bounds) {
         casadi::DM lower(bounds.size(), 1);
         casadi::DM upper(bounds.size(), 1);
@@ -469,7 +467,6 @@ public:
 
     /// @name Interface for CasOC::Transcription.
     /// @{
-    // TODO: Skip over empty slots for quaternions.
     int getNumStates() const { return (int)m_stateInfos.size(); }
     int getNumControls() const { return (int)m_controlInfos.size(); }
     int getNumParameters() const { return (int)m_paramInfos.size(); }

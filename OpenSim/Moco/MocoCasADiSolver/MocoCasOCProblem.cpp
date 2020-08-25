@@ -156,7 +156,7 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
             multIndexThisConstraint = 0;
             for (int i = 0; i < kc.getConstraintInfo().getNumEquations(); ++i) {
 
-                // If the index for this path constraint represents an
+                // If the index for this path constraint represents
                 // a non-derivative scalar constraint equation, add a
                 // Lagrange multiplier to the problem.
                 if (kinLevels[i] == KinematicLevel::Position ||
@@ -222,24 +222,21 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
         addParameter(paramName, convertBounds(param.getBounds()));
     }
 
-    {
-        const auto costNames = problemRep.createCostNames();
-        for (const auto& name : costNames) {
-            const auto& cost = problemRep.getCost(name);
-            addCost(name, cost.getNumIntegrals(), cost.getNumOutputs());
-        }
+    const auto costNames = problemRep.createCostNames();
+    for (const auto& name : costNames) {
+        const auto& cost = problemRep.getCost(name);
+        addCost(name, cost.getNumIntegrals(), cost.getNumOutputs());
     }
-    {
-        const auto endpointConNames =
-                problemRep.createEndpointConstraintNames();
-        for (const auto& name : endpointConNames) {
-            const auto& ec = problemRep.getEndpointConstraint(name);
-            std::vector<CasOC::Bounds> casBounds;
-            for (const auto& bounds : ec.getConstraintInfo().getBounds()) {
-                casBounds.push_back(convertBounds(bounds));
-            }
-            addEndpointConstraint(name, ec.getNumIntegrals(), casBounds);
+
+    const auto endpointConNames =
+            problemRep.createEndpointConstraintNames();
+    for (const auto& name : endpointConNames) {
+        const auto& ec = problemRep.getEndpointConstraint(name);
+        std::vector<CasOC::Bounds> casBounds;
+        for (const auto& bounds : ec.getConstraintInfo().getBounds()) {
+            casBounds.push_back(convertBounds(bounds));
         }
+        addEndpointConstraint(name, ec.getNumIntegrals(), casBounds);
     }
 
     const auto pathConstraintNames = problemRep.createPathConstraintNames();
