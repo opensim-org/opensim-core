@@ -203,7 +203,7 @@ AddDependency(NAME       spdlog
 
 AddDependency(NAME    eigen
               DEFAULT ON
-              URL     https://bitbucket.org/eigen/eigen/get/3.3.7.zip)
+              URL     https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.zip)
 
 AddDependency(NAME colpack
               DEFAULT ON
