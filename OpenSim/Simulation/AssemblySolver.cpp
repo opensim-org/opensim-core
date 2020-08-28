@@ -250,7 +250,6 @@ void AssemblySolver::track(SimTK::State &s)
     // and their type (constrained vs. weighted)
 
     if(_assembler && _assembler->isInitialized()){
-        //updateTime(s);
         updateGoals(s);
     }
     else{

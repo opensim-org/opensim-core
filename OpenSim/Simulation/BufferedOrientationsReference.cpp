@@ -36,16 +36,6 @@ BufferedOrientationsReference::BufferedOrientationsReference()
     setAuthors("Ayman Habib");
 }
 
-BufferedOrientationsReference::BufferedOrientationsReference(
-        const OrientationsReference& orientationsRef)
-    : OrientationsReference(orientationsRef) {
-    // populate Queue from Table, solver will draw from the queue
-    /*
-    const std::vector<double>& times = orientationsRef.getTimes();
-    for (int i = 0; i < times.size(); ++i) {
-        _orientationDataQueue.push_back(times[i], _orientationData.getRowAtIndex(i));
-    }*/
-}
 /** get the values of the OrientationsReference */
 void BufferedOrientationsReference::getValuesAtTime(
         double time, SimTK::Array_<Rotation> &values) const

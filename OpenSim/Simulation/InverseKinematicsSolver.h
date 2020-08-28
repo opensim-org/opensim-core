@@ -89,7 +89,27 @@ public:
                         std::shared_ptr<OrientationsReference> orientationsReference,
                         SimTK::Array_<CoordinateReference> &coordinateReferences,
                         double constraintWeight = SimTK::Infinity);
-    
+    // Backward compatible constructors
+    InverseKinematicsSolver(const Model& model,
+            const MarkersReference& markersReference,
+            SimTK::Array_<CoordinateReference>& coordinateReferences,
+            double constraintWeight = SimTK::Infinity): 
+        InverseKinematicsSolver(model,
+                        std::make_shared<MarkersReference>(markersReference),
+                        nullptr,
+                        coordinateReferences, constraintWeight){};
+
+    InverseKinematicsSolver(const Model& model,
+            const MarkersReference& markersReference,
+            const OrientationsReference& orientationsReference,
+            SimTK::Array_<CoordinateReference>& coordinateReferences,
+            double constraintWeight = SimTK::Infinity)
+            : InverseKinematicsSolver(model,
+                      std::make_shared<MarkersReference>(markersReference),
+                      std::make_shared<OrientationsReference>(
+                              orientationsReference),
+                      coordinateReferences, constraintWeight){};
+
     /* Assemble a model configuration that meets the InverseKinematics conditions  
         (desired values and constraints) starting from an initial state that  
         does not have to satisfy the constraints. */

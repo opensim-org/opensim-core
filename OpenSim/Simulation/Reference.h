@@ -80,7 +80,8 @@ public:
     /** get the weighting (importance) of meeting this Reference */
     virtual void getWeights(
             const SimTK::State& s, SimTK::Array_<double>& weights) const = 0;
-
+    /** Indicate whether this Reference can provide discretized data or not */
+    virtual bool hasNext() const = 0;
     //--------------------------------------------------------------------------
     // Convenience Interface
     //--------------------------------------------------------------------------
@@ -107,9 +108,10 @@ public:
         getValuesAtTime(time, values);
         return values;
     }
+    virtual bool hasNext() const override { return false; }
 };
 // Subclass for discrete time Reference signals
-// This can support streaming and adding data on te fly
+// This can support streaming and adding data on the fly
 // The concept of getting "Next" set of values and corresponding
 // time makes sense for these References.
 template <class T> class DiscreteTimeReference_ : public Reference_<T> {
@@ -126,7 +128,7 @@ public:
         throw(Exception("getNextValuesAndTime method is not supported for this reference {}.", this->getName()));
     };
     // indicate whether to stop or wait for more data
-    virtual bool hasNext() const { return false; };
+    virtual bool hasNext() const override { return false; };
 };
   // END of class templatized Reference_<T>
 //=============================================================================

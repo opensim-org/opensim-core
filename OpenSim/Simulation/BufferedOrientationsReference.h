@@ -55,14 +55,16 @@ public:
     BufferedOrientationsReference(BufferedOrientationsReference&&) = default;
     BufferedOrientationsReference& operator=(
             const BufferedOrientationsReference&) = default;
-    BufferedOrientationsReference(const OrientationsReference& orientationsRef);
+
+    // Use OrientationsReference convenience costructor from TimeSeriesTable
+    using OrientationsReference::OrientationsReference;
 
     virtual ~BufferedOrientationsReference() {}
 
     //--------------------------------------------------------------------------
     // Reference Interface
     //--------------------------------------------------------------------------
-    /** get the time range for which this OrientationsReference values are valid,
+    /** get the time range for which this Reference values are valid,
         based on the loaded orientation data.*/
     SimTK::Vec2 getValidTimeRange() const override{
         SimTK::Vec2 tableRange = Super::getValidTimeRange();

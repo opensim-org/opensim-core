@@ -117,7 +117,7 @@ int main() {
         ikReporter->setName("ik_reporter");
         auto coordinates = model.getComponentList<Coordinate>();
         // Hookup reporter inputs to the individual coordinate outputs
-        for (auto& coord : coordinates) {
+        for (const auto& coord : coordinates) {
             ikReporter->updInput("inputs").connect(
                     coord.getOutput("value"), coord.getName());
         }
@@ -137,11 +137,15 @@ int main() {
         ikSolver.assemble(s0);
         model.realizeReport(s0);
         thread thread1(producer, oRefs, std::ref(orientationsData));
+        // we can do without join but this is intended to make sure that data  
+        // "produced" is processed in order by single consumer. If more consumers
+        // are available more work to coordinate/sort will be needed and test case 
+        // beefed up.
         thread1.join();
         auto lastTime = orientationsData.getIndependentColumn().back();
         ikSolver.setAdvanceTimeFromReference(true);
         while (oRefs->hasNext() && s0.getTime() < lastTime) {
-            ikSolver.track(s0);
+            ikSolver.track(s0); // This call advances time in s0 
             model.realizeReport(s0);
         }
 
@@ -179,7 +183,7 @@ TimeSeriesTable_<SimTK::Rotation> convertMotionFileToRotations(
     std::vector<int> mapDataToModel;
     // cycle through the coordinates in the model order and store the
     // corresponding column index in the table according to column name
-    for (auto& coord : coordinates) {
+    for (const auto& coord : coordinates) {
         int index = -1;
         auto found = std::find(coordNames.begin(), coordNames.end(), coord.getName());
         if (found != coordNames.end())
@@ -192,7 +196,7 @@ TimeSeriesTable_<SimTK::Rotation> convertMotionFileToRotations(
     cout << "Num of matched coordinates in model: " << mapDataToModel.size() << endl;
 
     std::vector<std::string> bodyLabels;
-    for (auto& body : bodies) {
+    for (const auto& body : bodies) {
         bodyLabels.push_back(body.getName());
     }
 
@@ -207,7 +211,7 @@ TimeSeriesTable_<SimTK::Rotation> convertMotionFileToRotations(
     for (int i = 0; i < nt; ++i) {
         const auto& values = anglesTable.getRowAtIndex(i);
         int cnt = 0;
-        for (auto& coord : coordinates) {
+        for (const auto& coord : coordinates) {
             if (mapDataToModel[cnt] >= 0) {
                 if (coord.getMotionType() == Coordinate::MotionType::Rotational)
                     coord.setValue(s0,
@@ -253,7 +257,7 @@ void testInverseKinematicsSolverWithOrientations()
     ikReporter->setName("ik_reporter");
     auto coordinates = model.getComponentList<Coordinate>();
     // Hookup reporter inputs to the individual coordinate outputs
-    for (auto& coord : coordinates) {
+    for (const auto& coord : coordinates) {
         ikReporter->updInput("inputs").connect(
             coord.getOutput("value"), coord.getName());
     }
@@ -302,7 +306,7 @@ void testInverseKinematicsSolverWithEulerAnglesFromFile()
     ikReporter->setName("ik_reporter");
     auto coordinates = model.getComponentList<Coordinate>();
     // Hookup reporter inputs to the individual coordinate outputs
-    for (auto& coord : coordinates) {
+    for (const auto& coord : coordinates) {
         ikReporter->updInput("inputs").connect(
             coord.getOutput("value"), coord.getName());
     }

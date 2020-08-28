@@ -33,9 +33,11 @@ namespace OpenSim {
 //=============================================================================
 /**
  * This base class defines the interface for a DataQueue. A data structure
- * to maintain a queue of data to be passed between computations that are potentially
- * different in processing speeds, decoupling the producers (e.g. File or live stream)
- * from consumers. Synchronization mechanism will be implmented to allow handling of 
+ * to maintain a queue of data to be passed between computations that are 
+ * potentially different in processing speeds, decoupling the producers 
+ * (e.g. File or live stream) from consumers. 
+ *
+ * Synchronization mechanism will be implmented later to allow handling of 
  * multiple threads or significant differences in speeds.
  *
  * @author Ayman Habib
@@ -59,10 +61,13 @@ private:
     SimTK::RowVectorView_<U> _data;
 };
 /**
- * DataQueue is a wrapper around the std::queue customized to handle data processing
- * and synchronization, and limiting the interface to only the subset of operations 
- * needed for this use case. Synchronization is experimental as of now.
+ * DataQueue is a wrapper around the std::queue customized to handle data 
+ * processing and synchronization, and limiting the interface to only the 
+ * subset of operations needed for this use case. 
+ * Synchronization is experimental as of now. Client is responsible for 
+ * making sure order is preserved.
  */
+// @TODO Test support of multiple consumers. 
 template<class T> class DataQueue_ {
 //=============================================================================
 // METHODS
@@ -90,7 +95,6 @@ public:
     // DataQueue Interface
     //--------------------------------------------------------------------------
     void push_back(const double time, const SimTK::RowVectorView_<T>& data) { 
-        // Need actual place to hold data.
         // @TODO Verify no leak on pop_front
         SimTK::RowVector_<T>* deepCopy = new SimTK::RowVector_<T>(data);
         std::unique_lock<std::mutex> mlock(m_mutex);
