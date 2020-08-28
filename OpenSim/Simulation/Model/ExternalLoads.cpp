@@ -408,14 +408,14 @@ void ExternalLoads::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
             SimTK::String transcoded = dataFileElementIter->getValueAs<SimTK::String>();
                     if (transcoded.length()>0)
                 _dataFileName =transcoded;
-                }
+        }
         SimTK::Xml::element_iterator kinFileNode = aNode.element_begin("external_loads_model_kinematics_file");
         if (kinFileNode != aNode.element_end()){
             SimTK::String transcoded = kinFileNode->getValueAs<SimTK::String>();
                     if (transcoded.length()>0)
                         log_warn("ExternalLoads: external_loads_model_kinematics_file option is not supported anymore."
                             "Results may change.");
-                }
+        }
         SimTK::Xml::element_iterator kinFilterNode = aNode.element_begin("lowpass_cutoff_frequency_for_load_kinematics");
         if (kinFilterNode != aNode.element_end()){
             // This is now unnecessary since we dropped supoprt for external_loads_model_kinematics_file
@@ -483,8 +483,7 @@ void ExternalLoads::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
             }
             delete dataSource;
         }
-    else 
-        if (documentVersion < 40200) {
+        else if (documentVersion < 40200) {
             // Warn on removed external_loads_kinematics_specification
             SimTK::Xml::element_iterator kinFileNode =
                     aNode.element_begin("external_loads_model_kinematics_file");
