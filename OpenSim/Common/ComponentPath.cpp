@@ -27,17 +27,16 @@
 #include <algorithm>
 #include <sstream>
 
-
 using OpenSim::ComponentPath;
 
 namespace {
     const std::string newInvalidChars{"\\*+ \t\n"};
-    const char separator = '/';
+    constexpr char separator = '/';
     const std::string legacyInvalidChars = newInvalidChars + separator;
+    constexpr std::string::value_type nul = {};
 
     /**
-     * helper: joins the supplied vector of path components to form a single
-     * path string.
+     * Returns all components in `pathVec` joined by the path separator
      */
     std::string stringifyPath(const std::vector<std::string>& pathVec,
                               bool isAbsolute) {
@@ -46,22 +45,26 @@ namespace {
         if (isAbsolute) {
             ret += separator;
         }
+
         if (pathVec.empty()) {
             return ret;
         }
+
         for (size_t i = 0; i < (pathVec.size()-1); ++i) {
-            ret += pathVec[i] + separator;
+            ret += pathVec[i];
+            ret += separator;
         }
         ret += pathVec.back();
+
         return ret;
     }
 
     /**
      * helper: returns a string iterator that points to the first component
-     * (i.e. non-separator) in a normalized path string. Points to `.end()`
+     * (i.e. non-separator) in a normalized path string. Returns `.end()`
      * if the path contains no components.
      */
-    std::string::const_iterator firstComponent(const std::string& normalizedPath) {
+    std::string::const_iterator firstComponentIn(const std::string& normalizedPath) {
         if (normalizedPath.empty()) {
             return normalizedPath.end();
         }
@@ -112,75 +115,90 @@ namespace {
         //       all those vector allocations can thrash the allocator and
         //       increase L1 misses.
 
-        // helper: shift chars starting at `offset+n` `n` characters left
-        auto shift = [&](size_t offset, size_t n) {
-            auto src_start = path.begin() + offset + n;
-            auto src_end = path.end();
-            auto dest_start = path.begin() + offset;
-
-            std::copy(src_start, src_end, dest_start);
-
-            path.resize(path.size() - n);
-        };
-
         // assert that `path` contains no invalid chars
         if (path.find_first_of(newInvalidChars) != std::string::npos) {
             OPENSIM_THROW(OpenSim::Exception, path + ": The supplied path contains invalid characters.");
         }
 
+        // pathEnd is guaranteed to be a NUL terminator in >C++11
+        char* pathBegin = &path[0];
+        char* pathEnd = &path[path.size()];
+
+        // helper: shift n chars starting at newStart+n such
+        // that they start at newStart
+        auto shift = [&](char* newStart, size_t n) {
+            std::copy(newStart + n, pathEnd, newStart);
+            pathEnd -= n;
+        };
+
+        // helper: grab 3 lookahead chars, using NUL as a senteniel to
+        // indicate "past the end of the content".
+        struct Lookahead { char a, b, c; };
+        auto getLookahead = [](char* start, char* end) {
+            return Lookahead{
+                start < end - 0 ? start[0] : nul,
+                start < end - 1 ? start[1] : nul,
+                start < end - 2 ? start[2] : nul,
+            };
+        };
+
+
         // remove duplicate adjacent separators
-        for (size_t i = 0; i < path.size(); ++i) {
-            if (path[i] == separator && path[i+1] == separator) {
-                shift(i, 1);
-                --i;
+        for (char* c = pathBegin; c != pathEnd; ++c) {
+            Lookahead l = getLookahead(c, pathEnd);
+            if (l.a == separator && l.b == separator) {
+                shift(c--, 1);
             }
         }
 
         // skip past absolute separator (if any)
-        bool isAbsolute = path.front() == separator;
-        size_t contentStart = isAbsolute ? 1 : 0;
+        bool isAbsolute = *pathBegin == separator;
+
+        // current position of alg. cursor in the string
+        char* cur = isAbsolute ? pathBegin + 1 : pathBegin;
 
         // skip/dereference relative elements *at the start of a path*
-        while (path[contentStart] == '.') {
-            switch (path[contentStart + 1]) {
-                case separator:
-                    shift(contentStart, 2);
-                    break;
-                case '\0':
-                    shift(contentStart, 1);
-                    break;
-                case '.': {
-                    char c2 = path[contentStart + 2];
-                    if (c2 == separator || c2 == '\0') {
-                        // starts with '..' element: only allowed if the path
-                        // is relative
-                        if (isAbsolute) {
-                            OPENSIM_THROW(OpenSim::Exception,
-                                          path + ": is an invalid path: it is absolute, but starts with relative elements.");
-                        }
+        for (Lookahead l = getLookahead(cur, pathEnd);
+             l.a == '.';
+             l = getLookahead(cur, pathEnd)) {
 
-                        // if not absolute, then make sure `contentStart` skips
-                        // past these elements because the alg can't reduce
-                        // them down
-                        if (c2 == separator) {
-                            contentStart += 3;
-                        } else {
-                            contentStart += 2;
-                        }
-                    } else {
-                        // normal element that starts with '..'
-                        ++contentStart;
+            switch (l.b) {
+            case separator:
+                shift(cur, 2);
+                break;
+            case nul:
+                shift(cur, 1);
+                break;
+            case '.': {
+                if (l.c == separator || l.c == nul) {
+                    // starts with '..' element: only allowed if the path
+                    // is relative
+                    if (isAbsolute) {
+                        OPENSIM_THROW(OpenSim::Exception, path + ": is an invalid path: it is absolute, but starts with relative elements.");
                     }
-                    break;
+
+                    // if not absolute, then make sure `contentStart` skips
+                    // past these elements because the alg can't reduce
+                    // them down
+                    if (l.c == separator) {
+                        cur += 3;
+                    } else {
+                        cur += 2;
+                    }
+                } else {
+                    // normal element that starts with '..'
+                    ++cur;
                 }
-                default:
-                    // normal element that starts with '.'
-                    ++contentStart;
-                    break;
+                break;
+            }
+            default:
+                // normal element that starts with '.'
+                ++cur;
+                break;
             }
         }
 
-        size_t offset = contentStart;
+        char* contentStart = cur;
 
         // invariants:
         //
@@ -193,54 +211,53 @@ namespace {
         // - `[contentStart..offset] is the normalized *content* of the path
         //   string
 
-        while (offset < path.size()) {
-            // this parser has a <= 2-char lookahead
-            char c0 = path[offset];
-            char c1 = c0 != '\0' ? path[offset+1] : '\0';
-            char c2 = c1 != '\0' ? path[offset+2] : '\0';
+        while (cur < pathEnd) {
+            Lookahead l = getLookahead(cur, pathEnd);
 
-            // handle '.' (if found)
-            if (c0 == '.' && (c1 == '\0' || c1 == separator)) {
-                shift(offset, c1 == separator ? 2 : 1);
-                if (offset != contentStart) {
-                    --offset;
-                }
-                continue;
-            }
+            if (l.a == '.' && (l.b == nul || l.b == separator)) {
+                // handle '.' (if found)
+                size_t charsInCurEl = l.b == separator ? 2 : 1;
+                shift(cur, charsInCurEl);
 
-            // handle '..' (if found)
-            if (c0 == '.' && c1 == '.' && (c2 == '\0' || c2 == separator)) {
-                if (offset == contentStart) {
+            } else if (l.a == '.' && l.b == '.' && (l.c == nul || l.c == separator)) {
+                // handle '..' (if found)
+
+                if (cur == contentStart) {
                     OPENSIM_THROW(OpenSim::Exception, path + ": cannot handle '..' element in a path string: dereferencing this would hop above the root of the path.");
                 }
-                auto contentStartIt = path.rend() - contentStart;
-                size_t prevEnd = offset - 1;
-                size_t prevEndReverseOffset = path.size() - prevEnd;
-                auto it = std::find(path.rbegin() + prevEndReverseOffset, contentStartIt, separator);
-                size_t prevStart = it == contentStartIt ? contentStart : std::distance(it, path.rend());
-                size_t n = (prevEnd - prevStart) + (c2 == separator ? 4 : 3);
-                offset = prevStart;
-                shift(offset, n);
-                continue;
-            }
 
-            offset = path.find(separator, offset);
-            if (offset == std::string::npos) {
-                break;  // end of input
+                // search backwards for previous separator
+                char* prevSeparator = cur - 2;
+                while (prevSeparator > contentStart && *prevSeparator != separator) {
+                    --prevSeparator;
+                }
+
+                char* prevStart = prevSeparator <= contentStart ? contentStart : prevSeparator + 1;
+                size_t charsInCurEl = (l.c == separator) ? 3 : 2;
+                size_t charsInPrevEl = cur - prevStart;
+
+                cur = prevStart;
+                shift(cur, charsInPrevEl + charsInCurEl);
+
             } else {
-                ++offset;  // skip the slash
+                // non-relative element: skip past the next separator or end
+                cur = std::find(cur, pathEnd, separator) + 1;
             }
         }
 
-        // edge-case: trailing slashes should be removed, unless the string
-        // only contains a slash
-        if (path.size() > 1 && path.back() == separator) {
-            path.pop_back();
+        // edge case:
+        // - There was a trailing slash in the input and, post reduction, the output
+        //   string is only a slash. However, the input path wasnt initially an
+        //   absolute path, so the output should be "", not "/"
+        {
+            char* beg = isAbsolute ? pathBegin + 1 : pathBegin;
+            if (pathEnd - beg > 0 && pathEnd[-1] == separator) {
+                --pathEnd;
+            }
         }
 
-        if (!isAbsolute && path.size() == 1 && path.back() == separator) {
-            path.pop_back();
-        }
+        // resize output to only contain the normalized range
+        path.resize(pathEnd - pathBegin);
 
         return path;
     }
@@ -286,32 +303,6 @@ ComponentPath ComponentPath::formAbsolutePath(const ComponentPath& otherPath) co
 }
 
 ComponentPath ComponentPath::formRelativePath(const ComponentPath& otherPath) const {
-    // helper: find a separator to the left of s.begin() + offset
-    static auto offsetOfSeparator = [](const std::string& s, size_t offset) {
-        auto offsetFromEnd = std::find_if(s.rend() - (offset + 1), s.rend(), [](const char c) {
-            return c == separator || c == '\0';
-        });
-        assert(offsetFromEnd != s.rend());  // because we know there is a root prefix
-        auto distance = std::distance(offsetFromEnd, s.rend());
-        // in this instance, distance is 1-indexed, so subtract 1 to make it a 0-indexed offset
-        return distance-1;
-    };
-
-    // helper: returns the index of the first character where s1[index] != s2[index]
-    //         returns 0 for empty inputs, s1.size() for identical inputs
-    static auto mismatchOffset = [](const std::string& s1, const std::string& s2) {
-        const size_t shortest = std::min(s1.size(), s2.size());
-        size_t offset = 0;
-        while (offset < shortest) {
-            if (s1[offset] != s2[offset]) {
-                break;
-            }
-            ++offset;
-        }
-        return offset;
-    };
-
-
     if (!isAbsolute()) {
         OPENSIM_THROW(Exception, _path + ": is not an absolute path.");
     }
@@ -320,8 +311,39 @@ ComponentPath ComponentPath::formRelativePath(const ComponentPath& otherPath) co
         OPENSIM_THROW(Exception, _path + ": is not an absolute path.");
     }
 
-    // for readability: we are going FROM p1 and TO p2 by stepping up in P1 to the common
-    //                  root and then stepping down into p2
+
+    // helper: returns the index of the first character where s1[index] !=
+    // s2[index] returns s1.size() for identical inputs
+    auto mismatchOffset = [](const std::string& s1, const std::string& s2) {
+        const size_t shortest = std::min(s1.size(), s2.size());
+
+        size_t offset = 0;
+        while (offset < shortest) {
+            if (s1[offset] != s2[offset]) {
+                break;
+            }
+            ++offset;
+        }
+
+        return offset;
+    };
+
+    // helper: returns the index of the first separator to the left of
+    // `offset` in `s`. If no separator can be found, returns 0.
+    auto rfindDelimiter = [](const std::string& s, size_t offset) {
+        while (offset > 0) {
+            char c = s[offset];
+            if (c == separator || c == nul) {
+                break;
+            }
+            --offset;
+        }
+
+        return offset;
+    };
+
+    // for readability: we are going FROM p1 and TO p2 by stepping UP (..) in P1 to the
+    //                  common root and then stepping DOWN into p2
     const std::string& p1 = otherPath._path;
     const std::string& p2 = this->_path;
 
@@ -329,11 +351,11 @@ ComponentPath ComponentPath::formRelativePath(const ComponentPath& otherPath) co
     const size_t mismatchStart = mismatchOffset(p1, p2);
 
     // `mismatchStart` is now the index of the *string* divergence point between p1 and p2.
-    // Because of the absolute requirement (above), we know that mismatchStart > 0 and that
-    // a reverse search in both strings from `mismatchStart` backwards for the separator
-    // will definitely find a separator (at worst, the root)
-    size_t p1Start = offsetOfSeparator(p1, mismatchStart);
-    size_t p2Start = offsetOfSeparator(p2, mismatchStart);
+    // Because both paths must be absolute requirement (above), we know that
+    // mismatchStart > 0 and that a reverse search in both strings from `mismatchStart`
+    // backwards for the separator will definitely find a separator (at worst, the root)
+    size_t p1Start = rfindDelimiter(p1, mismatchStart);
+    size_t p2Start = rfindDelimiter(p2, mismatchStart);
 
     // `pXstart` is now the index of the *tree* divergence point between p1 and p2. The remaining
     // logic is:
@@ -372,14 +394,14 @@ std::string ComponentPath::getParentPathString() const {
 }
 
 std::string ComponentPath::getSubcomponentNameAtLevel(size_t index) const {
-    auto componentStart = firstComponent(_path);
+    auto firstComponent = firstComponentIn(_path);
 
-    if (std::distance(componentStart, _path.end()) == 0) {
+    if (firstComponent == _path.end()) {
         OPENSIM_THROW(Exception, "Cannot index into this path: it is empty.");
     }
 
     size_t i = 0;
-    auto componentEnd = std::find(componentStart, _path.end(), separator);
+    auto componentEnd = std::find(firstComponent, _path.end(), separator);
 
     while (i < index) {
         if (componentEnd == _path.end()) {
@@ -388,16 +410,16 @@ std::string ComponentPath::getSubcomponentNameAtLevel(size_t index) const {
             OPENSIM_THROW(Exception, msg.str());
         }
 
-        componentStart = componentEnd + 1;  // skip past last found separator
-        componentEnd = std::find(componentStart, _path.end(), separator);
+        firstComponent = componentEnd + 1;  // skip past last found separator
+        componentEnd = std::find(firstComponent, _path.end(), separator);
         ++i;
     }
 
-    return std::string{componentStart, componentEnd};
+    return std::string{firstComponent, componentEnd};
 }
 
 std::string ComponentPath::getComponentName() const {
-    if (std::distance(firstComponent(_path), _path.end()) == 0) {
+    if (firstComponentIn(_path) == _path.end()) {
         return {};
     }
 
@@ -422,13 +444,17 @@ bool ComponentPath::isAbsolute() const {
 
 size_t ComponentPath::getNumPathLevels() const {
     auto begin = _path.begin();
+
     if (isAbsolute()) {
         ++begin;
     }
 
-    return std::distance(begin, _path.end())  > 0 ?
-           std::count(begin, _path.end(), separator) + 1 :
-           0;
+    if (begin != _path.end()) {
+        size_t numSeparators = std::count(begin, _path.end(), separator);
+        return numSeparators + 1;
+    } else {
+        return 0;
+    }
 }
 
 void ComponentPath::pushBack(const std::string& pathElement) {
