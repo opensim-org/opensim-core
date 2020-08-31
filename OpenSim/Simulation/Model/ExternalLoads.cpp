@@ -483,7 +483,7 @@ void ExternalLoads::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
             }
             delete dataSource;
         }
-        else if (documentVersion < 40200) {
+        else {
             // Warn on removed external_loads_kinematics_specification
             SimTK::Xml::element_iterator kinFileNode =
                     aNode.element_begin("external_loads_model_kinematics_file");
