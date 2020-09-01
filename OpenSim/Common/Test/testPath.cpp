@@ -154,7 +154,7 @@ void testComponentPath() {
 
     // test number of path levels behaves sanely
     {
-        static const std::pair<std::string, int> expectedNumPathLevels[] = {
+        static const std::pair<std::string, size_t> expectedNumPathLevels[] = {
                 {"", 0},
                 {"/", 0},
                 {"a", 1},
