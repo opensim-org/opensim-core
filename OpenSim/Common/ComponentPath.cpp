@@ -120,12 +120,12 @@ namespace {
             OPENSIM_THROW(OpenSim::Exception, path + ": The supplied path contains invalid characters.");
         }
 
-        // pathEnd is guaranteed to be a NUL terminator in >C++11
+        // pathEnd is guaranteed to be a NUL terminator since C++11
         char* pathBegin = &path[0];
         char* pathEnd = &path[path.size()];
 
-        // helper: shift n chars starting at newStart+n such
-        // that they start at newStart
+        // helper: shift n chars starting at newStart+n such that, after,
+        // newStart..end is equal to what newStart+n..end was before.
         auto shift = [&](char* newStart, size_t n) {
             std::copy(newStart + n, pathEnd, newStart);
             pathEnd -= n;
@@ -133,6 +133,10 @@ namespace {
 
         // helper: grab 3 lookahead chars, using NUL as a senteniel to
         // indicate "past the end of the content".
+        //
+        // - The maximum lookahead is 3 characters because the parsing
+        //   code below needs to be able to detect the upcoming input 
+        //   pattern "..[/\0]"
         struct Lookahead { char a, b, c; };
         auto getLookahead = [](char* start, char* end) {
             return Lookahead{
@@ -151,23 +155,18 @@ namespace {
             }
         }
 
-        // skip past absolute separator (if any)
         bool isAbsolute = *pathBegin == separator;
-
-        // current position of alg. cursor in the string
-        char* cur = isAbsolute ? pathBegin + 1 : pathBegin;
+        char* cursor = isAbsolute ? pathBegin + 1 : pathBegin;
 
         // skip/dereference relative elements *at the start of a path*
-        for (Lookahead l = getLookahead(cur, pathEnd);
-             l.a == '.';
-             l = getLookahead(cur, pathEnd)) {
-
+        Lookahead l = getLookahead(cursor, pathEnd);
+        while (l.a == '.') {
             switch (l.b) {
             case separator:
-                shift(cur, 2);
+                shift(cursor, 2);
                 break;
             case nul:
-                shift(cur, 1);
+                shift(cursor, 1);
                 break;
             case '.': {
                 if (l.c == separator || l.c == nul) {
@@ -181,24 +180,26 @@ namespace {
                     // past these elements because the alg can't reduce
                     // them down
                     if (l.c == separator) {
-                        cur += 3;
+                        cursor += 3;
                     } else {
-                        cur += 2;
+                        cursor += 2;
                     }
                 } else {
                     // normal element that starts with '..'
-                    ++cur;
+                    ++cursor;
                 }
                 break;
             }
             default:
                 // normal element that starts with '.'
-                ++cur;
+                ++cursor;
                 break;
             }
+
+            l = getLookahead(cursor, pathEnd);
         }
 
-        char* contentStart = cur;
+        char* contentStart = cursor;
 
         // invariants:
         //
@@ -211,37 +212,37 @@ namespace {
         // - `[contentStart..offset] is the normalized *content* of the path
         //   string
 
-        while (cur < pathEnd) {
-            Lookahead l = getLookahead(cur, pathEnd);
+        while (cursor < pathEnd) {
+            Lookahead l = getLookahead(cursor, pathEnd);
 
             if (l.a == '.' && (l.b == nul || l.b == separator)) {
                 // handle '.' (if found)
                 size_t charsInCurEl = l.b == separator ? 2 : 1;
-                shift(cur, charsInCurEl);
+                shift(cursor, charsInCurEl);
 
             } else if (l.a == '.' && l.b == '.' && (l.c == nul || l.c == separator)) {
                 // handle '..' (if found)
 
-                if (cur == contentStart) {
+                if (cursor == contentStart) {
                     OPENSIM_THROW(OpenSim::Exception, path + ": cannot handle '..' element in a path string: dereferencing this would hop above the root of the path.");
                 }
 
                 // search backwards for previous separator
-                char* prevSeparator = cur - 2;
+                char* prevSeparator = cursor - 2;
                 while (prevSeparator > contentStart && *prevSeparator != separator) {
                     --prevSeparator;
                 }
 
                 char* prevStart = prevSeparator <= contentStart ? contentStart : prevSeparator + 1;
                 size_t charsInCurEl = (l.c == separator) ? 3 : 2;
-                size_t charsInPrevEl = cur - prevStart;
+                size_t charsInPrevEl = cursor - prevStart;
 
-                cur = prevStart;
-                shift(cur, charsInPrevEl + charsInCurEl);
+                cursor = prevStart;
+                shift(cursor, charsInPrevEl + charsInCurEl);
 
             } else {
                 // non-relative element: skip past the next separator or end
-                cur = std::find(cur, pathEnd, separator) + 1;
+                cursor = std::find(cursor, pathEnd, separator) + 1;
             }
         }
 
