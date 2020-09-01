@@ -152,19 +152,27 @@ void testComponentPath() {
     // Test if getParentPathStr() returns correct string
     ASSERT(numberedAbsPath.getParentPathString() == numberedAbsPathParentStr);
 
-    ASSERT(CP{""}.getNumPathLevels() == 0);
-    ASSERT(CP{"/"}.getNumPathLevels() == 0);
-    ASSERT(CP{"/a"}.getNumPathLevels() == 1);
-    ASSERT(CP{"/a/"}.getNumPathLevels() == 1);
-    ASSERT(CP{"/a/b"}.getNumPathLevels() == 2);
-    ASSERT(CP{"/a/b/"}.getNumPathLevels() == 2);
-    ASSERT(CP{"/a/b/c"}.getNumPathLevels() == 3);
-    ASSERT(CP{"a"}.getNumPathLevels() == 1);
-    ASSERT(CP{"a/b"}.getNumPathLevels() == 2);
-    ASSERT(CP{"../"}.getNumPathLevels() == 1);
-    ASSERT(CP{".."}.getNumPathLevels() == 1);
-    ASSERT(CP{"a/.."}.getNumPathLevels() == 0);
-    ASSERT(CP{"/a/.."}.getNumPathLevels() == 0);
+    // test number of path levels behaves sanely
+    {
+        static const std::pair<std::string, int> expectedNumPathLevels[] = {
+                {"", 0},
+                {"/", 0},
+                {"a", 1},
+                {"/a", 1},
+                {"/a/", 1},
+                {"a/b", 2},
+                {"/a/b", 2},
+                {"/a/b/", 2},
+                {"/a/b/c", 3},
+                {"../", 1},
+                {"a/..", 0},
+                {"/a/..", 0},
+        };
+
+        for (auto p : expectedNumPathLevels) {
+            ASSERT(CP{p.first}.getNumPathLevels() == p.second);
+        }
+    }
 
     // Loop through all levels of the subtree and see if names match
     for (size_t ind = 0; ind < levels.size(); ++ind) {
@@ -183,6 +191,11 @@ void testComponentPath() {
     for (size_t ind = 0; ind < levels.size(); ++ind) {
         ASSERT(numberedRelPath.getSubcomponentNameAtLevel(ind) == levels[ind]);
     }
+
+    // ensure isAbsolute is sane for vector inputs
+    ASSERT(CP{std::vector<std::string>{}, true}.isAbsolute());
+    ASSERT(CP{std::vector<std::string>{""}, true}.isAbsolute());
+    ASSERT(CP{std::vector<std::string>{"a", "b"}, true}.isAbsolute());
 
     // general tests to ensure it normalizes a variety of paths correctly
     {
