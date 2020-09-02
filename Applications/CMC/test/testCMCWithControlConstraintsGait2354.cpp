@@ -75,7 +75,7 @@ void testGait2354() {
         __FILE__, __LINE__, "testGait2354 tracking failed");
 
     Storage results2("subject01_ResultsCMC/subject01_walk1_states.sto");
-    Storage standard2("std_subject01_walk1_states.sto");
+    Storage standard2("std_subject01_walk1_states_WithControlConstraints.sto");
 
     Array<string> col_labels = standard2.getColumnLabels();
 

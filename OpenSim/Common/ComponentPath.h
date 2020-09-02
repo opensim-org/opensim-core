@@ -23,84 +23,147 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "Path.h"
+#include "osimCommonDLL.h"
+
+#include <string>
+#include <vector>
 
 namespace OpenSim {
 
-//==============================================================================
-//                            OPENSIM COMPONENT PATH
-//==============================================================================
 /**
-* A class for handling Paths for Components, deriving from Path. A ComponentPath
-* uses a forward-slash ('/') as a separator always. It also specifies invalid
-* characters in a Component name:
-* - back-slash ('\\')
-* - forward-slash ('/')
-* - asterisk ('*')
-* - plus-sign ('+')
-*
-* @author Carmichael Ong
-*/
-
-class OSIMCOMMON_API ComponentPath : public Path {
+ * A representation of a path within a Component tree.
+ *
+ * This class is effectively a wrapper around a normalized path string. A path
+ * string is a sequence of path elements interspersed with '/' as a separator.
+ * path elements cannot contain:
+ *
+ * - back-slash ('\\')
+ * - forward-slash ('/')
+ * - asterisk ('*')
+ * - plus-sign ('+')
+ *
+ * An empty path, "", is allowed. Adjacent separators in a path (e.g. "//") are
+ * combined into one separator.
+ *
+ * @author Carmichael Ong
+ */
+class OSIMCOMMON_API ComponentPath {
+private:
+    std::string _path;
 
 public:
-    // Constructors
-    /// The default-constructed path is empty (an empty string).
+    /**
+     * Default constructor that constructs an empty path ("").
+     */
     ComponentPath();
-    
-    /// Construct a ComponentPath from a string. This will clean up the
-    /// path, removing and resolving "." and ".." when possible.
-    ComponentPath(const std::string& path);
 
-    /// Constructor a ComponentPath from a vector that contains all subtree
-    /// node names and a bool that indicates if the path is an absolute path.
+    /**
+     * Construct a ComponentPath from a path string (e.g. "/a/b/component").
+     */
+    ComponentPath(std::string path);
+
+    /**
+     * Construct a ComponentPath from a vector of its elements.
+     *
+     * Throws if any element in `pathVec` contains an invalid character.
+     */
     ComponentPath(const std::vector<std::string>& pathVec, bool isAbsolute);
 
-    // Operators
-    bool operator==(const ComponentPath& other) const
-    {
-        return this->toString() == other.toString();
-    }
+    bool operator==(const ComponentPath&) const;
+    bool operator!=(const ComponentPath&) const;
 
-    bool operator!=(const ComponentPath& other) const
-    {
-        return this->toString() != other.toString();
-    }
+    char getSeparator() const;
 
-    // Override virtual functions
-    char getSeparator() const override { return separator; };
-    std::string getInvalidChars() const override { return invalidChars; };
+    /**
+     * Returns a string containing a sequence of all invalid characters.
+     */
+    const std::string& getInvalidChars() const;
 
-    /// Get an absolute path by resolving it relative to a given otherPath.
-    /// If the current Path is already absolute, return the same Path.
+    /**
+     * Returns a path that is the result of resolving `this` from `otherPath`.
+     *
+     * - `otherPath` must be an absolute path; otherwise, an exception will be
+     *   thrown
+     * - if `this` is absolute, then this function just returns a copy of `this`
+     *
+     * Examples:
+     *
+     *     ComponentPath{"b/c"}.formAbsolutePath("/a") == "/a/b/c"
+     *     ComponentPath{"/b/c"}.formAbsolutePath("/a") == "/b/c"
+     *     ComponentPath{"b/c"}.formAbsolutePath("a")  // throws
+     */
     ComponentPath formAbsolutePath(const ComponentPath& otherPath) const;
 
-    /// Find the relative Path between this Path and another Path (otherPath)
-    /// (i.e. the Path to go FROM otherPath TO this Path). Both Paths must be 
-    /// absolute.
+    /**
+     * Find the relative Path between this Path and another Path (otherPath)
+     * (i.e. the Path to go FROM otherPath TO this Path). Both Paths must be
+     * absolute.
+     */
     ComponentPath formRelativePath(const ComponentPath& otherPath) const;
 
-    /// Return the sub-path that contains all subdirectory levels 
-    /// except for the last one.
+    /**
+     * Returns the sub-path that contains all subdirectory levels except for
+     * the last one.
+     */
     ComponentPath getParentPath() const;
 
-    /// Return the parent path as a string.
+    /**
+     * Returns the parent path as a string.
+     */
     std::string getParentPathString() const;
 
-    /// Return a string of a subdirectory name at a specified level. This is
-    /// 0 indexed.
+    /**
+     * Returns the name of a subdirectory in the path at the specified level
+     * (0-indexed).
+     */
     std::string getSubcomponentNameAtLevel(size_t index) const;
 
-    /// Return a string of the name of the Component related to a 
-    /// ComponentPath. This is just the last level of a ComponentPath.
+    /**
+     * Returns the name of the Component in the path (effectively, the last
+     * element in the path).
+     */
     std::string getComponentName() const;
 
-private:
-    static const char separator;
-    static const std::string invalidChars;
+    /**
+     * Returns a string representation of the ComponentPath
+     * (e.g. "/a/b/component").
+     */
+    std::string toString() const;
+
+    /**
+     * Returns true if the path is absolute (effectively, if it begins
+     * with '/').
+     */
+    bool isAbsolute() const;
+
+    /**
+     * Returns the number of levels in the path (e.g. "/a/b/c" == 3).
+     */
+    size_t getNumPathLevels() const;
+
+    /**
+     * Push a string onto the end of the path.
+     *
+     * Throws if the argument contains invalid characters.
+     */
+    void pushBack(const std::string& pathElement);
+
+    /**
+     * Returns true if the argument does not contain any invalid characters.
+     */
+    bool isLegalPathElement(const std::string& pathElement) const;
+
+    /**
+     * Resolves '.' and ".." elements in the path if possible. Leading ".."
+     * elements are allowed only in relative paths (throws if found at the
+     * start of an absolute path). Also checks for invalid characters.
+     *
+     * Effectively, this is the same as internally `normalize`ing the path.
+     */
+    void trimDotAndDotDotElements() {
+        // noop: here for legacy purposes: the path is always
+        // internally normalized
+    }
 };
-
-
 } // end of namespace OpenSim
 #endif // OPENSIM_COMPONENT_PATH_H_

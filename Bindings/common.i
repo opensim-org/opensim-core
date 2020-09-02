@@ -36,6 +36,7 @@
 %include <OpenSim/Common/Storage.h>
 %template(ArrayStorage) OpenSim::ArrayPtrs<OpenSim::Storage>;
 %include <OpenSim/Common/Units.h>
+%ignore OpenSim::IO::CwdChanger;
 %include <OpenSim/Common/IO.h>
 %include <OpenSim/Common/Function.h>
 
@@ -109,7 +110,6 @@ namespace OpenSim {
 // Can't wrap the return type of this function.
 %ignore OpenSim::Component::getOutputs;
 
-%include <OpenSim/Common/Path.h>
 %include <OpenSim/Common/ComponentPath.h>
 
 %include <OpenSim/Common/Component.h>

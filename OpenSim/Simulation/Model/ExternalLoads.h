@@ -70,15 +70,6 @@ protected:
      *  external forces identify which subsets of the data they will access.*/
     PropertyStr _dataFileNameProp;
     std::string &_dataFileName;
-    /** Name of the file containing the model kinematics corresponding to the
-    external loads. */
-    PropertyStr _externalLoadsModelKinematicsFileNameProp;
-    std::string &_externalLoadsModelKinematicsFileName;
-    /** Low-pass cut-off frequency for filtering the model kinematics corresponding
-    to the external loads. A negative value results in no filtering.
-    The default value is -1.0, so no filtering. */
-    PropertyDbl _lowpassCutoffFrequencyForLoadKinematicsProp;
-    double &_lowpassCutoffFrequencyForLoadKinematics;
 
 private:
     /* If point of applications for external forces must be re-expressed
@@ -119,11 +110,6 @@ public:
 
     const std::string& getDataFileName() const { return _dataFileName;};
     void setDataFileName(const std::string& aNewFile) { _dataFileName = aNewFile; };
-
-    const std::string &getExternalLoadsModelKinematicsFileName() const { return _externalLoadsModelKinematicsFileName; }
-    void setExternalLoadsModelKinematicsFileName(const std::string &aFileName) { _externalLoadsModelKinematicsFileName = aFileName; }
-    double getLowpassCutoffFrequencyForLoadKinematics() const { return _lowpassCutoffFrequencyForLoadKinematics; }
-    void setLowpassCutoffFrequencyForLoadKinematics(double aLowpassCutoffFrequency) { _lowpassCutoffFrequencyForLoadKinematics = aLowpassCutoffFrequency; }
 
     void transformPointsExpressedInGroundToAppliedBodies(const Storage &kinematics, double startTime = -SimTK::Infinity, double endTime = SimTK::Infinity);
     ExternalForce* transformPointExpressedInGroundToAppliedBody(const ExternalForce &exForce, const Storage &kinematics, double startTime, double endTime);
