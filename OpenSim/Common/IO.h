@@ -184,7 +184,25 @@ public:
         CwdChanger(const CwdChanger&) = delete;
         CwdChanger(CwdChanger&& tmp);
         CwdChanger& operator=(const CwdChanger&) = delete;
-        CwdChanger& operator=(CwdChanger&&) = delete;
+        CwdChanger& operator=(CwdChanger&&);
+
+        /**
+         * Prematurely change the current working directory back to its
+         * original location.
+         *
+         * This is functionally equivalent to prematurely destructing the
+         * CwdChanger. After calling CwdChanger::reset(), the now-reset
+         * CwdChanger will become a noop instance that, when it destructs,
+         * will not attempt to change back to the original directory.
+         */
+        void reset();
+
+        /**
+         * Release CwdChanger's control over the current working directory,
+         * such that the CwdChanger instance does not attempt to change
+         * directory on destruction.
+         */
+        void release() noexcept;
 
         /**
          * Destructs a CwdChanger instance.

@@ -730,6 +730,20 @@ IO::CwdChanger::CwdChanger(IO::CwdChanger&& tmp) :
     std::swap(this->_existingDir, tmp._existingDir);
 }
 
+IO::CwdChanger& IO::CwdChanger::operator=(CwdChanger&& tmp) {
+    this->_existingDir.clear();
+    std::swap(this->_existingDir, tmp._existingDir);
+}
+
+void IO::CwdChanger::reset() {
+    chDir(_existingDir);
+    _existingDir.clear();
+}
+
+void IO::CwdChanger::release() noexcept {
+    _existingDir.clear();
+}
+
 IO::CwdChanger::~CwdChanger() noexcept {
     if (!_existingDir.empty()) {
         chDir(_existingDir);
