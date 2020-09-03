@@ -125,7 +125,7 @@ public:
     // Optionally support streaming mode where data can be added and used
     virtual void getNextValuesAndTime(
             double& time, SimTK::Array_<T>& values) {
-        throw(Exception("getNextValuesAndTime method is not supported for this reference {}.", this->getName()));
+        throw Exception("getNextValuesAndTime method is not supported for this reference {}.", this->getName());
     };
     // indicate whether to stop or wait for more data
     virtual bool hasNext() const override { return false; };

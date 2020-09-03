@@ -66,6 +66,8 @@ private:
  * subset of operations needed for this use case. 
  * Synchronization is experimental as of now. Client is responsible for 
  * making sure order is preserved.
+ * timestamp is required to pass in data so that clients can enforce order,
+ * however timestamp is not used/order-enforced internally.
  */
 // @TODO Test support of multiple consumers. 
 template<class T> class DataQueue_ {
@@ -94,27 +96,32 @@ public:
     //--------------------------------------------------------------------------
     // DataQueue Interface
     //--------------------------------------------------------------------------
+    // push data and associated timestamp to the end of the queue
     void push_back(const double time, const SimTK::RowVectorView_<T>& data) { 
-        // @TODO Verify no leak on pop_front
         SimTK::RowVector_<T>* deepCopy = new SimTK::RowVector_<T>(data);
         std::unique_lock<std::mutex> mlock(m_mutex);
         m_data_queue.push(DataQueueEntry_<T>(time, *deepCopy));
         mlock.unlock();     // unlock before notificiation to minimize mutex con
         m_cond.notify_one(); 
     }
+    // pop the front of the queue and return data and associated timestamp
     void pop_front(double& time, SimTK::RowVector_<T>& data) { 
         std::unique_lock<std::mutex> mlock(m_mutex);
-        while (empty()) { m_cond.wait(mlock); }
+        while (m_data_queue.empty()) { m_cond.wait(mlock); }
         DataQueueEntry_<SimTK::Rotation> frontEntry = m_data_queue.front();
         m_data_queue.pop();
         mlock.unlock(); 
         time = frontEntry.getTimeStamp();
         data = frontEntry.getData();
     }
-    bool empty() const { 
-        return m_data_queue.empty(); 
+    // check if the queue is empty
+    bool isEmpty() { 
+        bool status = false;
+        std::unique_lock<std::mutex> mlock(m_mutex);
+        status = m_data_queue.empty();
+        mlock.unlock(); 
+        return status;
     }
-
 private:
     // As of now we use std::queue but other data structures could be used as well
     std::queue<DataQueueEntry_<T>> m_data_queue;
