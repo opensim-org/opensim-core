@@ -137,11 +137,9 @@ int main() {
         ikSolver.assemble(s0);
         model.realizeReport(s0);
         thread thread1(producer, oRefs, std::ref(orientationsData));
-        // we can do without join but this is intended to make sure that data  
-        // "produced" is processed in order by single consumer. If more consumers
-        // are available more work to coordinate/sort will be needed and test case 
-        // beefed up.
-        thread1.join();
+        // we can call join to make sure that all data is produced first
+        // then processed in order. 
+        //thread1.join();
         auto lastTime = orientationsData.getIndependentColumn().back();
         ikSolver.setAdvanceTimeFromReference(true);
         while (oRefs->hasNext() && s0.getTime() < lastTime) {
@@ -152,7 +150,7 @@ int main() {
         auto report = ikReporter->getTable();
         const TimeSeriesTable standard("std_subject01_walk1_ik.mot");
         compareMotionTables(report, standard);
-
+        thread1.detach();
     } 
     catch (const std::exception& e) { 
         cout << e.what() << endl; 
