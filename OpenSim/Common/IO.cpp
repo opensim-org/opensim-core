@@ -733,6 +733,7 @@ IO::CwdChanger::CwdChanger(IO::CwdChanger&& tmp) :
 IO::CwdChanger& IO::CwdChanger::operator=(CwdChanger&& tmp) {
     this->_existingDir.clear();
     std::swap(this->_existingDir, tmp._existingDir);
+    return *this;
 }
 
 void IO::CwdChanger::reset() {
