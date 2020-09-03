@@ -81,6 +81,7 @@
 #include "Model/Geometry.h"
 #include "Model/ModelVisualPreferences.h"
 #include "Model/ExpressionBasedCoordinateForce.h"
+#include "Model/ScapulothoracicJoint.h"
 
 #include "Control/ControlSet.h"
 #include "Control/ControlSetController.h"
@@ -208,6 +209,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( FreeJoint() );
     Object::registerType( BallJoint() );
     Object::registerType( GimbalJoint() );
+    Object::registerType( ScapulothoracicJoint() );
     Object::registerType( UniversalJoint() );
     Object::registerType( PinJoint() );
     Object::registerType( SliderJoint() );
