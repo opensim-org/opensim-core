@@ -310,7 +310,7 @@ private:
         copyColumn(constraints.auxiliary_residuals, m_numGridPoints - 1);
 
         OPENSIM_THROW_IF(iflat != m_numConstraints, OpenSim::Exception,
-                "Internal error: final value of the index into the flatted "
+                "Internal error: final value of the index into the flattened "
                 "constraints should be equal to the number of constraints.");
         return flat;
     }
@@ -385,7 +385,7 @@ private:
         copyColumn(out.auxiliary_residuals, m_numGridPoints - 1);
 
         OPENSIM_THROW_IF(iflat != m_numConstraints, OpenSim::Exception,
-                "Internal error: final value of the index into the flatted "
+                "Internal error: final value of the index into the flattened "
                 "constraints should be equal to the number of constraints.");
         return out;
     }
