@@ -91,6 +91,8 @@ TEMPLATE_TEST_CASE(
     const double tendonSlackLength = 0.05;
     SimTK::Real initHeight = 0.165;
     SimTK::Real finalHeight = 0.155;
+    SimTK::Real initSpeed = 0;
+    SimTK::Real finalSpeed = 0;
     MocoBounds heightBounds(0.14, 0.17);
     MocoBounds speedBounds(-10, 10);
     MocoBounds actuBounds(0.02, 1);
@@ -113,7 +115,8 @@ TEMPLATE_TEST_CASE(
         problem.setTimeBounds(0, 0.5);
         problem.setStateInfo(
                 "/joint/height/value", heightBounds, initHeight, finalHeight);
-        problem.setStateInfo("/joint/height/speed", speedBounds, 0, 0);
+        problem.setStateInfo(
+                "/joint/height/speed", speedBounds, initSpeed, finalSpeed);
         problem.setControlInfo("/forceset/muscle", actuBounds);
 
         auto* initial_equilibrium =
@@ -193,24 +196,6 @@ TEMPLATE_TEST_CASE(
         modelCMC.addForce(actu);
         modelCMC.finalizeConnections();
 
-        // Need to set the initial state of the model so that the
-        // initial equilibrium solve converges.
-        modelCMC.updCoordinateSet().get("height").setDefaultValue(
-                solutionTrajOpt.getState("/joint/height/value")[0]);
-        modelCMC.updCoordinateSet().get("height").setDefaultSpeedValue(
-                solutionTrajOpt.getState("/joint/height/speed")[0]);
-        auto* mutableDGFMuscleCMC = dynamic_cast<DeGrooteFregly2016Muscle*>(
-                &modelCMC.updComponent("forceset/muscle"));
-        if (!ignoreActivationDynamics) {
-            mutableDGFMuscleCMC->set_default_activation(
-                    solutionTrajOpt.getState("/forceset/muscle/activation")[0]);
-        }
-        if (!ignoreTendonCompliance) {
-            mutableDGFMuscleCMC->set_default_normalized_tendon_force(
-                    solutionTrajOpt.getState(
-                            "/forceset/muscle/normalized_tendon_force")[0]);
-        }
-
         // Run CMC
         // -------
         CMCTool cmc;
@@ -281,7 +266,8 @@ TEMPLATE_TEST_CASE(
         problem.setTimeBounds(0, finalTime);
         problem.setStateInfo(
                 "/joint/height/value", heightBounds, initHeight, finalHeight);
-        problem.setStateInfo("/joint/height/speed", speedBounds, 0, 0);
+        problem.setStateInfo(
+                "/joint/height/speed", speedBounds, initSpeed, finalSpeed);
         problem.setControlInfo("/forceset/muscle", actuBounds);
 
         auto* initial_equilibrium =
