@@ -81,9 +81,9 @@ private:
  * @author Ajay Seth
  */
 class OSIMSIMULATION_API MarkersReference
-        : public DiscreteTimeReference_<SimTK::Vec3> {
+        : public Reference_<SimTK::Vec3> {
     OpenSim_DECLARE_CONCRETE_OBJECT(
-            MarkersReference, DiscreteTimeReference_<SimTK::Vec3>);
+            MarkersReference, Reference_<SimTK::Vec3>);
     //=============================================================================
 // Properties
 //=============================================================================

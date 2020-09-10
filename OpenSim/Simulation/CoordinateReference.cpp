@@ -29,7 +29,7 @@ using namespace SimTK;
 namespace OpenSim {
 
 CoordinateReference::CoordinateReference()
-        : ContinuousTimeReference_<double>(),
+        : Reference_<double>(),
     _coordinateValueFunction(_coordinateValueFunctionProp.getValueObjPtrRef()),
     _defaultWeight(_defaultWeightProp.getValueDbl())
 {
@@ -47,7 +47,7 @@ CoordinateReference::CoordinateReference()
  */
 CoordinateReference::CoordinateReference(const std::string name, 
     const Function& referenceFunction)
-        : ContinuousTimeReference_<double>(name),
+        : Reference_<double>(name),
     _coordinateValueFunction(_coordinateValueFunctionProp.getValueObjPtrRef()),
     _defaultWeight(_defaultWeightProp.getValueDbl())
 {

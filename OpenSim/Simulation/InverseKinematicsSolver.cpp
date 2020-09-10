@@ -448,12 +448,6 @@ void InverseKinematicsSolver::updateGoals(SimTK::State &s)
 
     if (_advanceTimeFromReference) {
         double nextTime = NaN;
-        if (_markersReference && _markersReference->getNumRefs() > 0) {
-            SimTK::Array_<SimTK::Vec3> markerValues;
-            _markersReference->getNextValuesAndTime(nextTime, markerValues);
-            s.setTime(nextTime);
-            _markerAssemblyCondition->moveAllObservations(markerValues);
-        }
         if (_orientationsReference &&
                 _orientationsReference->getNumRefs() > 0) {
             SimTK::Array_<SimTK::Rotation> orientationValues;

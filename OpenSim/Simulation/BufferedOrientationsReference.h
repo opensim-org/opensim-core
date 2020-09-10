@@ -39,7 +39,9 @@ namespace OpenSim {
  *
  * @author Ayman Habib
  */
-class OSIMSIMULATION_API BufferedOrientationsReference : public OrientationsReference {
+
+class OSIMSIMULATION_API BufferedOrientationsReference
+        : public OrientationsReference {
     OpenSim_DECLARE_CONCRETE_OBJECT(
             BufferedOrientationsReference, OrientationsReference);
  //=============================================================================

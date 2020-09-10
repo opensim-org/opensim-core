@@ -81,7 +81,7 @@ public:
     virtual void getWeights(
             const SimTK::State& s, SimTK::Array_<double>& weights) const = 0;
     /** Indicate whether this Reference can provide discretized data or not */
-    virtual bool hasNext() const = 0;
+    virtual bool hasNext() const { return false; };
     //--------------------------------------------------------------------------
     // Convenience Interface
     //--------------------------------------------------------------------------
@@ -91,42 +91,30 @@ public:
         getWeights(s, weights);
         return weights;
     }
-};
-// Subclass for continuous time Reference signals
-// For this subclass, Reference can be evaluated at any time
-template <class T> class ContinuousTimeReference_ : public Reference_<T> {
-    OpenSim_DECLARE_ABSTRACT_OBJECT_T(ContinuousTimeReference_, T, Reference_<T>);
-public:
-    using Reference_<T>::Reference_;
-    /** get the values of the Reference signals as a function 
-        of the passed in time */
+    /** get the values of the Reference signals as a function
+    of the passed in time */
     virtual void getValuesAtTime(
             double time, SimTK::Array_<T>& values) const = 0;
-    /* getValues as above, but a copy is returned, which may be costly */
+    /* getValues but a copy is returned, which may be costly */
     virtual SimTK::Array_<T> getValues(double time) const {
         SimTK::Array_<T> values(this->getNumRefs());
         getValuesAtTime(time, values);
         return values;
     }
-    virtual bool hasNext() const override { return false; }
 };
-// Subclass for discrete time Reference signals
-// This can support streaming and adding data on the fly
+
+// Subclass for Streamable Reference signals
+// This can support adding data on the fly
 // The concept of getting "Next" set of values and corresponding
 // time makes sense for these References.
-template <class T> class DiscreteTimeReference_ : public Reference_<T> {
-    OpenSim_DECLARE_ABSTRACT_OBJECT_T(DiscreteTimeReference_, T, Reference_<T>);
+template <class T> class StreamableReference_ : public Reference_<T> {
+    OpenSim_DECLARE_ABSTRACT_OBJECT_T(StreamableReference_, T, Reference_<T>);
 
     using Reference_<T>::Reference_;
 public:
-    // Support continuous time reference interface
-    virtual void getValuesAtTime(
-            double time, SimTK::Array_<T>& values) const = 0;
     // Optionally support streaming mode where data can be added and used
     virtual void getNextValuesAndTime(
-            double& time, SimTK::Array_<T>& values) {
-        throw Exception("getNextValuesAndTime method is not supported for this reference {}.", this->getName());
-    };
+            double& time, SimTK::Array_<T>& values) = 0;
     // indicate whether to stop or wait for more data
     virtual bool hasNext() const override { return false; };
 };

@@ -30,7 +30,7 @@ using namespace SimTK;
 
 namespace OpenSim {
 
-MarkersReference::MarkersReference() : DiscreteTimeReference_<SimTK::Vec3>() {
+MarkersReference::MarkersReference() : Reference_<SimTK::Vec3>() {
     constructProperties();
     setAuthors("Ajay Seth");
 }

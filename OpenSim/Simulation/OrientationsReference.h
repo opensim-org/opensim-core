@@ -66,9 +66,9 @@ private:
  * @author Ajay Seth
  */
 class OSIMSIMULATION_API OrientationsReference
-        : public DiscreteTimeReference_<SimTK::Rotation_<double>> {
+        : public StreamableReference_<SimTK::Rotation_<double>> {
     OpenSim_DECLARE_CONCRETE_OBJECT(
-            OrientationsReference, DiscreteTimeReference_<SimTK::Rotation>);
+            OrientationsReference, StreamableReference_<SimTK::Rotation>);
     //=============================================================================
 // Properties
 //=============================================================================
@@ -125,6 +125,13 @@ public:
     /** get the value of the OrientationsReference */
     void getValuesAtTime(double time,
         SimTK::Array_<SimTK::Rotation_<double>>& values) const override;
+    /** Default implementation does not support streaming */
+    virtual void getNextValuesAndTime(
+            double& time, SimTK::Array_<SimTK::Rotation_<double>>& values) {
+        throw Exception("getNextValuesAndTime method is not supported for this "
+                        "reference {}.",
+                this->getName());
+    };
     /** get the weighting (importance) of meeting this OrientationsReference in the
         same order as names*/
     void getWeights(const SimTK::State& s,

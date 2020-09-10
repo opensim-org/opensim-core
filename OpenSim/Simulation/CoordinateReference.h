@@ -42,9 +42,9 @@ namespace OpenSim {
  * @version 1.0
  */
 class OSIMSIMULATION_API CoordinateReference
-        : public ContinuousTimeReference_<double> {
+        : public Reference_<double> {
     OpenSim_DECLARE_CONCRETE_OBJECT(
-            CoordinateReference, ContinuousTimeReference_<double>);
+            CoordinateReference, Reference_<double>);
 
 //=============================================================================
 // MEMBER VARIABLES
