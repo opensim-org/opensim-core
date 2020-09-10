@@ -247,7 +247,7 @@ getCMCActSubsys()
  * @param aF Array of actuator force differences.
  */
 void VectorFunctionForActuators::
-evaluate( const SimTK::State& s, double *aX, double *rF) 
+evaluate(const SimTK::State& s, const double *aX, double *rF)
 {
     int i;
     int N = getNX();
@@ -284,12 +284,10 @@ evaluate( const SimTK::State& s, double *aX, double *rF)
  * @param s SimTK::State 
  * @param aF Array of actuator force differences.
  */
-void VectorFunctionForActuators::
-evaluate(const SimTK::State& s,  OpenSim::Array<double> &rF,
-            const OpenSim::Array<int> &aDerivWRT)
-{
-    cout<<"\n\nVectorFunctionForActuators.evaluate:  ";
-    cout<<"Unimplemented method\n\n";
+void VectorFunctionForActuators::evaluate(const SimTK::State& s,
+        const OpenSim::Array<double>& aX, OpenSim::Array<double>& rF,
+        const OpenSim::Array<int>& aDerivWRT) {
+    log_warn("VectorFunctionForActuators::evaluate: Unimplemented method.");
 }
 
 //_____________________________________________________________________________
@@ -299,8 +297,7 @@ evaluate(const SimTK::State& s,  OpenSim::Array<double> &rF,
  * @param aX Array of controls.
  * @param aF Array of actuator force differences.
  */
-void VectorFunctionForActuators::
-evaluate( const SimTK::State& s,  const OpenSim::Array<double> &aX, OpenSim::Array<double> &rF)
-{
+void VectorFunctionForActuators::evaluate(const SimTK::State& s,
+        const OpenSim::Array<double>& aX, OpenSim::Array<double>& rF) {
     evaluate( s, &aX[0],&rF[0]);
 }

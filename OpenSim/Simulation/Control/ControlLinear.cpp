@@ -612,13 +612,13 @@ clearControlNodes()
     _xNodes.setSize(0);
 }
 //_____________________________________________________________________________
-const double ControlLinear::getFirstTime() const
+double ControlLinear::getFirstTime() const
 {
     const ControlLinearNode *node=_xNodes.get(0);
     return node->getTime();
 }
 //_____________________________________________________________________________
-const double ControlLinear::getLastTime() const
+double ControlLinear::getLastTime() const
 {
     const ControlLinearNode *node=_xNodes.getLast();
     return node->getTime();
@@ -633,7 +633,7 @@ simplify(const PropertySet &aProperties)
 {
     // INITIAL SIZE
     int size = _xNodes.getSize();
-    cout<<"\nControlLinear.simplify: initial size = "<<size<<".\n";
+    log_info("ControlLinear.simplify: initial size = {}.", size);
     
     // GET THE NODE TIMES
     int i;
@@ -654,14 +654,12 @@ simplify(const PropertySet &aProperties)
             }
         }
     }
-    //cout<<"ControlLinear.simplify: dtMin="<<dtMin<<endl;
 
     // RESAMPLE THE NODE VALUES
     int n = (int)(1.0 + (t[size-1] - t[0])/dtMin);
     double time;
     Array<double> x(0.0,n);
     t.setSize(n);
-    //cout<<"ControlLinear.simplify: resampling using "<<n<<" points.\n";
     for(time=t[0],i=0;i<n;i++,time+=dtMin) {
         t[i] = time;
         x[i] = getControlValue(time);
@@ -676,24 +674,22 @@ simplify(const PropertySet &aProperties)
     int order = 50;
     if(order>(n/2)) order = n/2;
     if(order<10) {
-        cout<<"ControlLinear.simplify: WARN- too few data points ";
-        cout<<"(n="<<n<<") to filter "<<getName()<<".\n";
+        log_warn("ControlLinear.simplify: too few data points (n={}) to filter {}.",
+            n, getName());
     } else {
         if(order<20) {
-            cout<<"ControlLinear.simplify: WARN- order of FIR filter had to be ";
-            cout<<"low due to small number of data points ";
-            cout<<"(n="<<n<<") in control "<<getName()<<".\n";
+            log_warn("ControlLinear.simplify:  order of FIR filter had to be"
+                " low due to small number of data points (n={}) in control {}.",
+                n, getName());
         }
-        cout<<"ControlLinear.simplify: lowpass filtering with a ";
-        cout<<"cutoff frequency of "<<cutoffFrequency<<" and order of ";
-        cout<<order<<".\n"; 
+        log_info("ControlLinear.simplify: lowpass filtering with a cutoff "
+                 "frequency of {} and order of {}.", cutoffFrequency, order); 
         Signal::LowpassFIR(order,dtMin,cutoffFrequency,n,&x[0],&xFilt[0]);
     }
 
     // REMOVE POINTS
     double distance = aProperties.get("distance")->getValueDbl();
-    cout<<"ControlLinear.simplify: reducing points with distance tolerance = ";
-    cout<<distance<<".\n";
+    log_info("ControlLinear.simplify: reducing points with distance tolerance = {}.", distance);
     Signal::ReduceNumberOfPoints(distance,t,xFilt); 
 
     // CLEAR OLD NODES
@@ -711,7 +707,7 @@ simplify(const PropertySet &aProperties)
         _xNodes.append(node);
     }
 
-    cout<<"ControlLinear.simplify: final size = "<<_xNodes.getSize()<<".\n";
+    log_info("ControlLinear.simplify: final size = {}.", _xNodes.getSize());
 }
 
 bool ControlLinear::

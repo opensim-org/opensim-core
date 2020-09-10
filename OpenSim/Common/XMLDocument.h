@@ -164,7 +164,8 @@ public:
     //--------------------------------------------------------------------------
     // IO
     //--------------------------------------------------------------------------
-    bool print(const std::string &aFileName=NULL);
+    /// If the filename is empty, the file is printed to cout.
+    bool print(const std::string& aFileName = {});
 
 //=============================================================================
 };  // END CLASS XMLDocument

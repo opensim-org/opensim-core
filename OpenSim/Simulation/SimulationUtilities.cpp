@@ -23,9 +23,12 @@
 
 #include "SimulationUtilities.h"
 
-#include "Model/Model.h"
 #include "Manager/Manager.h"
+#include "Model/Model.h"
+
 #include <simbody/internal/Visualizer_InputListener.h>
+
+#include <OpenSim/Common/TableUtilities.h>
 
 using namespace OpenSim;
 
@@ -36,23 +39,20 @@ SimTK::State OpenSim::simulate(Model& model,
 {
     // Returned state begins as a copy of the initial state
     SimTK::State state = initialState;
-    SimTK::Visualizer::InputSilo* silo;
 
     bool simulateOnce = true;
 
     // Ensure the final time is in the future.
     const double initialTime = initialState.getTime();
     if (finalTime <= initialTime) {
-        std::cout << "The final time must be in the future (current time is "
-                  << initialTime << "); simulation aborted." << std::endl;
+        log_error("The final time must be in the future (current time is {}) simulation aborted.",
+            initialTime);
         return state;
     }
 
     // Configure the visualizer.
     if (model.getUseVisualizer()) {
         SimTK::Visualizer& viz = model.updVisualizer().updSimbodyVisualizer();
-        // We use the input silo to get key presses.
-        silo = &model.updVisualizer().updInputSilo();
 
         SimTK::DecorativeText help("Press any key to start a new simulation; "
             "ESC to quit.");
@@ -61,7 +61,7 @@ SimTK::State OpenSim::simulate(Model& model,
 
         viz.setShowSimTime(true);
         viz.drawFrameNow(state);
-        std::cout << "A visualizer window has opened." << std::endl;
+        log_cout("A visualizer window has opened.");
 
         // if visualizing enable replay
         simulateOnce = false;
@@ -72,9 +72,10 @@ SimTK::State OpenSim::simulate(Model& model,
     do {
         if (model.getUseVisualizer()) {
             // Get a key press.
-            silo->clear(); // Ignore any previous key presses.
+            auto& silo = model.updVisualizer().updInputSilo();
+            silo.clear(); // Ignore any previous key presses.
             unsigned key, modifiers;
-            silo->waitForKeyHit(key, modifiers);
+            silo.waitForKeyHit(key, modifiers);
             if (key == SimTK::Visualizer::InputListener::KeyEsc) { break; }
         }
 
@@ -93,6 +94,19 @@ SimTK::State OpenSim::simulate(Model& model,
     } while (!simulateOnce);
 
     return state;
+}
+
+void OpenSim::updateStateLabels40(const Model& model,
+                                  std::vector<std::string>& labels) {
+
+    TableUtilities::checkNonUniqueLabels(labels);
+
+    const Array<std::string> stateNames = model.getStateVariableNames();
+    for (int isv = 0; isv < stateNames.size(); ++isv) {
+        int i = TableUtilities::findStateLabelIndex(labels, stateNames[isv]);
+        if (i == -1) continue;
+        labels[i] = stateNames[isv];
+    }
 }
 
 std::unique_ptr<Storage>
@@ -135,9 +149,9 @@ OpenSim::updatePre40KinematicsStorageFor40MotionType(const Model& pre40Model,
         int ix = updatedKinematics->getStateIndex(coord->getName());
         
         if (ix < 0) {
-            std::cout << "updateKinematicsStorageForUpdatedModel(): motion '"
-            << kinematics.getName() << "' does not contain inconsistent "
-            << "coordinate '" << coord->getName() << "'." << std::endl;
+            log_warn("updateKinematicsStorageForUpdatedModel(): motion '{}' "
+                     "does not contain inconsistent coordinate '{}'.)",
+                    kinematics.getName(), coord->getName());
         }
         else {
             // convert this column back to internal values by undoing the
@@ -169,8 +183,8 @@ void OpenSim::updatePre40KinematicsFilesFor40MotionType(const Model& model,
             outFilePath = filePath.substr(0, back) + suffix +
                             filePath.substr(back);
         }
-        std::cout << "Writing converted motion '" << filePath << "' to '"
-            << outFilePath << "'." << std::endl;
+        log_info("Writing converted motion '{}' to '{}'.", filePath,
+                outFilePath);
 
         updatedMotion->print(outFilePath);
     }
@@ -181,7 +195,7 @@ void OpenSim::updateSocketConnecteesBySearch(Model& model)
     int numSocketsUpdated = 0;
     for (auto& comp : model.updComponentList()) {
         const auto socketNames = comp.getSocketNames();
-        for (int i = 0; i < socketNames.size(); ++i) {
+        for (size_t i = 0; i < socketNames.size(); ++i) {
             auto& socket = comp.updSocket(socketNames[i]);
             try {
                 socket.finalizeConnection(model);
@@ -195,29 +209,26 @@ void OpenSim::updateSocketConnecteesBySearch(Model& model)
                         socket.finalizeConnection(model);
                         numSocketsUpdated += 1;
                     } else {
-                        std::cout << "Socket '" << socketNames[i] << "' in "
-                                << "Component " << comp.getAbsolutePathString()
-                                << " needs updating but a connectee with the "
-                                   "specified name could not be found."
-                                << std::endl;
+                        log_warn("Socket '{}' in Component {} needs updating "
+                                "but a connectee with the specified name "
+                                "could not be found.",
+                                socketNames[i], comp.getAbsolutePathString());
                     }
                 }
             } catch (const std::exception& e) {
-                std::cout << "Warning: Caught exception when processing "
-                    "Socket " << socketNames[i] << " in " <<
-                    comp.getConcreteClassName() << " at " <<
-                    comp.getAbsolutePathString() << ": " << e.what() <<
-                    std::endl;
+                log_warn("Caught exception when processing Socket {} in {} at "
+                         "{} : {}.",
+                        socketNames[i], comp.getConcreteClassName(),
+                        comp.getAbsolutePathString(), e.what());
             }
         }
     }
     if (numSocketsUpdated) {
-        std::cout << "OpenSim::updateSocketConnecteesBySearch(): updated "
-                << numSocketsUpdated << " Sockets in Model '"
-                << model.getName() << "'." << std::endl;
+        log_info("OpenSim::updateSocketConnecteesBySearch(): updated {} "
+                 "Sockets in Model '{}'.)",
+                numSocketsUpdated, model.getName());
     } else {
-        std::cout << "OpenSim::updateSocketConnecteesBySearch(): "
-                     "no Sockets updated in Model '"
-                  << model.getName() << "'." << std::endl;
+        log_info("OpenSim::updateSocketConnecteesBySearch(): no Sockets updated in Model '{}'.",
+                  model.getName());
     }
 }

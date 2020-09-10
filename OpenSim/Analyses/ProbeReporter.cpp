@@ -163,17 +163,15 @@ void ProbeReporter::constructDescription()
 {
     char descrip[1024];
 
-    strcpy(descrip,"\nThis file contains the probes on a model ");
-    strcat(descrip,"during a simulation.\n");
+    strcpy(descrip, "\nThis file contains the probes on a model ");
+    strcat(descrip, "during a simulation.\n");
 
-    strcat(descrip,"\nThe units used are dependent on the type of probe component");
+    strcat(descrip, "\nThe units used are dependent on the type of probe component");
 
-    if(getInDegrees()) {
-        strcat(descrip,"\nAngles are in degrees.");
-    } else {
-        strcat(descrip,"\nAngles are in radians.");
-    }
-    strcat(descrip,"\n\n");
+    strcat(descrip, "\nIf the header above contains a line with ");
+    strcat(descrip, "'inDegrees', this indicates whether rotational values ");
+    strcat(descrip, "are in degrees (yes) or radians (no).");
+    strcat(descrip, "\n\n");
 
     setDescription(descrip);
 }
@@ -365,7 +363,7 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
                  const string &aExtension)
 {
     if(!getOn()) {
-        printf("ProbeReporter.printResults: Off- not printing.\n");
+        log_info("ProbeReporter.printResults: Off- not printing.");
         return 0;
     }
 

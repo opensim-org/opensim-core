@@ -76,7 +76,7 @@ public:
 
             msg += "was renamed and is being reset to '" + name
                 + "'.";
-            std::cout << msg << std::endl;
+            log_info(msg);
         }
     }
 

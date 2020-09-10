@@ -29,18 +29,20 @@
 
 namespace OpenSim {
 
-/// Similar to CoordinateActuator (simply produces a generalized force) but
-/// with first-order linear activation dynamics. This actuator has one state
-/// variable, `activation`, with \f$ \dot{a} = (x - a) / \tau \f$, where
-/// \f$ a \f$ is activation, \f$ x \f$ is excitation, and \f$ \tau \f$ is the
-/// activation time constant (there is no separate deactivation time constant).
-/// The statebounds_activation output is used in Moco to set default values for
-/// the activation state variable.
-/// <b>Default %Property Values</b>
-/// @verbatim
-/// activation_time_constant: 0.01
-/// default_activation: 0.5
-/// @endverbatim
+/**
+Similar to CoordinateActuator (simply produces a generalized force) but
+with first-order linear activation dynamics. This actuator has one state
+variable, `activation`, with \f$ \dot{a} = (x - a) / \tau \f$, where
+\f$ a \f$ is activation, \f$ x \f$ is excitation, and \f$ \tau \f$ is the
+activation time constant (there is no separate deactivation time constant).
+The statebounds_activation output is used in Moco to set default values for
+the activation state variable.
+<b>Default %Property Values</b>
+@verbatim
+activation_time_constant: 0.01
+default_activation: 0.5
+@endverbatim
+ */
 class OSIMACTUATORS_API ActivationCoordinateActuator
         : public CoordinateActuator {
     OpenSim_DECLARE_CONCRETE_OBJECT(ActivationCoordinateActuator,
@@ -51,8 +53,7 @@ public:
         "(units: seconds; default: 0.01 seconds).");
 
     OpenSim_DECLARE_PROPERTY(default_activation, double,
-        "Value of activation in the default state returned by initSystem() "
-        "(default: 0.5).");
+        "Value of activation in the default state (default: 0.5).");
 
     OpenSim_DECLARE_OUTPUT(statebounds_activation, SimTK::Vec2,
         getBoundsActivation, SimTK::Stage::Model);

@@ -102,6 +102,9 @@ bool IMUPlacer::run(bool visualizeResults) {
                     sensor_to_opensim_rotations[2], SimTK::ZAxis);
     // Rotate data so Y-Axis is up
     OpenSenseUtilities::rotateOrientationTable(quatTable, sensorToOpenSim);
+    // Heading correction requires initSystem is already called. Do it now.
+    SimTK::State& s0 = _model->initSystem();
+    _model->realizePosition(s0);
     // Check consistent heading correction specification
     // both base_heading_axis and base_imu_label should be specified
     // finer error checking is done downstream
@@ -131,7 +134,7 @@ bool IMUPlacer::run(bool visualizeResults) {
         // Compute rotation matrix so that (e.g. "pelvis_imu"+ SimTK::ZAxis)
         // lines up with model forward (+X)
         SimTK::Vec3 headingRotationVec3 =
-                OpenSenseUtilities::computeHeadingCorrection(*_model, quatTable,
+                OpenSenseUtilities::computeHeadingCorrection(*_model, s0, quatTable,
                         get_base_imu_label(), directionOnIMU);
         SimTK::Rotation headingRotation(
                 SimTK::BodyOrSpaceType::SpaceRotationSequence,
@@ -140,7 +143,7 @@ bool IMUPlacer::run(bool visualizeResults) {
 
         OpenSenseUtilities::rotateOrientationTable(quatTable, headingRotation);
     } else
-        cout << "No heading correction is applied" << endl;
+        log_info("No heading correction is applied.");
 
     // This is now plain conversion, no Rotation or magic underneath
     TimeSeriesTable_<SimTK::Rotation>
@@ -154,7 +157,6 @@ bool IMUPlacer::run(bool visualizeResults) {
     // the labels in the TimerSeriesTable of orientations
     auto rotations = orientationsData.updRowAtIndex(0);
 
-    SimTK::State& s0 = _model->initSystem();
     s0.updTime() = times[0];
 
     // default pose of the model defined by marker-based IK
@@ -183,12 +185,12 @@ bool IMUPlacer::run(bool visualizeResults) {
     // update the modelOffset OR add an offset if none exists
     imuix = 0;
     for (auto& imuName : imuLabels) {
-        cout << "Processing " << imuName << endl;
+        log_info("Processing {}", imuName);
         if (imuBodiesInGround.find(imuName) != imuBodiesInGround.end()) {
-            cout << "Computed offset for " << imuName << endl;
+            log_info("Computed offset for {}", imuName);
             SimTK::Rotation R_FB =
                     ~imuBodiesInGround[imuName] * rotations[int(imuix)];
-            cout << "Offset is " << R_FB << endl;
+            log_info("Offset is {}", R_FB);
             PhysicalOffsetFrame* imuOffset = nullptr;
             const PhysicalOffsetFrame* mo = nullptr;
             if ((mo = _model->findComponent<PhysicalOffsetFrame>(imuName))) {
@@ -197,7 +199,7 @@ bool IMUPlacer::run(bool visualizeResults) {
                 X.updR() = R_FB;
                 imuOffset->setOffsetTransform(X);
             } else {
-                cout << "Creating offset frame for " << imuName << endl;
+                log_info("Creating offset frame for {}", imuName);
                 OpenSim::Body* body =
                         dynamic_cast<OpenSim::Body*>(bodies[imuix]);
                 SimTK::Vec3 p_FB(0);
@@ -209,10 +211,10 @@ bool IMUPlacer::run(bool visualizeResults) {
                 brick->setColor(SimTK::Orange);
                 imuOffset->attachGeometry(brick);
                 bodies[imuix]->addComponent(imuOffset);
-                cout << "Added offset frame for " << imuName << endl;
+                log_info("Added offset frame for {}.", imuName);
             }
-            cout << imuOffset->getName() << " offset computed from " << imuName
-                 << " data from file." << endl;
+            log_info("{} offset computed from {} data from file.",
+                    imuOffset->getName(), imuName);
         }
         imuix++;
     }

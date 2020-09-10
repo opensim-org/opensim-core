@@ -13,3 +13,8 @@ This directory contains all the development proposals for OpenSim.
 5. Submit a pull-request to review the proposal. Make sure to *label* the pull-request with the label ***DevProp***.
 6. Once approved, start work on the implementation of the proposed changes.
 7. Remember to get any significant changes to proposal approved before starting to work on implementation.
+
+## Archiving
+
+This directory should only contain live proposals: implemented, or
+stale, proposals should be moved to `archive/`.

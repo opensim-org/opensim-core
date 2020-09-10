@@ -348,8 +348,8 @@ setActivation(SimTK::State& s, double activation) const
         setStateVariableValue(s, STATE_ACTIVATION_NAME,
                               getActivationModel().clampActivation(activation));
     }
-    markCacheVariableInvalid(s,"velInfo");
-    markCacheVariableInvalid(s,"dynamicsInfo");
+    markCacheVariableInvalid(s, _velInfoCV);
+    markCacheVariableInvalid(s, _dynamicsInfoCV);
 }
 
 void Millard2012EquilibriumMuscle::setDefaultFiberLength(double fiberLength)
@@ -389,9 +389,9 @@ setFiberLength(SimTK::State& s, double fiberLength) const
     if (!get_ignore_tendon_compliance()) {
         setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,
                               clampFiberLength(fiberLength));
-        markCacheVariableInvalid(s,"lengthInfo");
-        markCacheVariableInvalid(s,"velInfo");
-        markCacheVariableInvalid(s,"dynamicsInfo");
+        markCacheVariableInvalid(s, _lengthInfoCV);
+        markCacheVariableInvalid(s, _velInfoCV);
+        markCacheVariableInvalid(s, _dynamicsInfoCV);
     }
 }
 
@@ -444,9 +444,9 @@ computeFiberEquilibrium(SimTK::State& s, bool solveForVelocity) const
             break;
 
         case StatusFromEstimateMuscleFiberState::Warning_FiberAtLowerBound:
-            printf("\n\nMillard2012EquilibriumMuscle static solution:"
-                   " %s is at its minimum fiber length of %f\n",
-                   getName().c_str(), result.second["fiber_length"]);
+            log_warn("Millard2012EquilibriumMuscle static solution: '{}' is "
+                   "at its minimum fiber length of {}.",
+                   getName(), result.second["fiber_length"]);
             setActuation(s, result.second["tendon_force"]);
             setFiberLength(s, result.second["fiber_length"]);
             break;

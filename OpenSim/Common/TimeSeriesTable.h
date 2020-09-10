@@ -30,6 +30,7 @@ provide an in-memory container for data access and manipulation.              */
 
 #include "OpenSim/Common/DataTable.h"
 #include <SimTKsimbody.h>
+#include "Logger.h"
 
 namespace OpenSim {
 
@@ -453,7 +454,7 @@ public:
         trimToIndices(start_index, last_index);
         // If resulting table is empty, throw
         if (this->getNumRows()==0)
-            std::cout << "WARNING: trimming resulted in an Empty Table" << std::endl;
+            log_warn("Trimming resulted in an empty table.");
     }
     /**
      * trim TimeSeriesTable, keeping rows at newStartTime to the end.
@@ -492,7 +493,7 @@ protected:
                              DT::_indData[rowIndex + 1]);
         }
     }
-    /** trim table to rows ebtween start_index and last_index incluslively
+    /** trim table to rows between start_index and last_index inclusively
      */
     void trimToIndices(const size_t& start_index, const size_t& last_index) {
         // This uses the rather invasive but efficient mechanism to copy a
@@ -509,6 +510,8 @@ protected:
                 this->getIndependentColumn().begin() + last_index + 1);
         this->_indData = newIndependentVector;
     }
+
+    friend class TableUtilities;
 
 }; // TimeSeriesTable_
 

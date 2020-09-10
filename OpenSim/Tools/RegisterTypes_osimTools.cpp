@@ -31,7 +31,6 @@
 #include "CMCTool.h"
 #include "RRATool.h"
 #include "ForwardTool.h"
-//#include "PerturbationTool.h"
 #include "AnalyzeTool.h"
 #include "InverseKinematicsTool.h"
 #include "IMUInverseKinematicsTool.h"
@@ -85,8 +84,6 @@ OSIMTOOLS_API void RegisterTypes_osimTools()
     Object::registerType( IKCoordinateTask() );
     Object::registerType( IKMarkerTask() );
     Object::registerType( IKTaskSet() );
-    //Object::registerType( IKTrial() );
-    //Object::registerType( IKTrialSet() );
     Object::registerType( MarkerPair() );
     Object::registerType( MarkerPairSet() );
     Object::registerType( MarkerPlacer() );
@@ -102,6 +99,7 @@ OSIMTOOLS_API void RegisterTypes_osimTools()
     Object::registerType( CMC_TaskSet() );
 
     Object::registerType( SMC_Joint() );
+    Object::registerType( OrientationWeightSet());
     Object::registerType( InverseKinematicsTool() );
     Object::registerType( IMUInverseKinematicsTool());
     Object::registerType( InverseDynamicsTool() );
@@ -113,9 +111,8 @@ OSIMTOOLS_API void RegisterTypes_osimTools()
     Object::RenameType("IKTool", "InverseKinematicsTool");
 
   } catch (const std::exception& e) {
-    std::cerr 
-        << "ERROR during osimTools Object registration:\n"
-        << e.what() << "\n";
+    log_error("Error during osimTools Object registration: {}.", e.what());
+    log_error("");
   }
 }
 

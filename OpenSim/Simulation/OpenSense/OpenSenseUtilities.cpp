@@ -69,7 +69,7 @@ TimeSeriesTable_<SimTK::Rotation> OpenSenseUtilities::
 void OpenSim::OpenSenseUtilities::rotateOrientationTable(
         OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>&
                 quaternionsTable,
-        const SimTK::Rotation_<double>& rotationMatrix) 
+        const SimTK::Rotation_<double>& rotationMatrix)
 {
     SimTK::Rotation R_XG = rotationMatrix;
 
@@ -112,7 +112,7 @@ OpenSenseUtilities::createOrientationsFileFromMarkers(const std::string& markers
 {
     TimeSeriesTableVec3 table{ markersFile };
 
-    // labels of markers including those <bodyName>O,X,Y that identify the 
+    // labels of markers including those <bodyName>O,X,Y that identify the
     // IMU sensor placement/alignment on the body expressed in Ground
     auto labels = table.getColumnLabels();
 
@@ -176,8 +176,8 @@ OpenSenseUtilities::createOrientationsFileFromMarkers(const std::string& markers
             dp = markerData.getElt(row, imuIndices[i][3]);
 
             if (op.isNaN() || xp.isNaN() || yp.isNaN()) {
-                cout << "marker(s) for IMU '" << imuLabels[i] <<
-                    "' is NaN and orientation will also be NaN." << endl;
+                log_warn("marker(s) for IMU '{}' is NaN and orientation will also be NaN.",
+                    imuLabels[i]);
             }
             else {
                 // Transform of the IMU formed from markers expressed in Ground
@@ -202,20 +202,17 @@ OpenSenseUtilities::createOrientationsFileFromMarkers(const std::string& markers
 
 SimTK::Vec3 OpenSenseUtilities::computeHeadingCorrection(
         Model& model,
+        const SimTK::State& state,
             OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>&
                     quaternionsTable,
             const std::string& baseImuName,
-            const SimTK::CoordinateDirection baseHeadingDirection) 
+            const SimTK::CoordinateDirection baseHeadingDirection)
 {
      SimTK::Vec3 rotations{0};
- 
+
     // if a base imu is specified, perform heading correction, otherwise skip
     if (!baseImuName.empty()) {
-        
-        // Base will rotate to match <base>_imu, so we must first remove the
-        // base rotation from the other IMUs to get their orientation with
-        // respect to individual model bodies and thereby compute correct
-        // offsets unbiased by the initial base orientation.
+
         auto imuLabels = quaternionsTable.getColumnLabels();
         auto pix = distance(imuLabels.begin(),
                 std::find(imuLabels.begin(), imuLabels.end(), baseImuName));
@@ -225,31 +222,48 @@ SimTK::Vec3 OpenSenseUtilities::computeHeadingCorrection(
             OPENSIM_THROW(Exception, "No column with base IMU name '" +
                                              baseImuName + "' found.");
         }
-        
+
         auto startRow = quaternionsTable.getRowAtIndex(0);
         Rotation base_R = Rotation(startRow.getElt(0, int(pix)));
 
         // Heading direction of the base IMU in this case the pelvis_imu heading
         // is its ZAxis
-        UnitVec3 pelvisHeading = base_R(baseHeadingDirection.getAxis());
+        UnitVec3 baseSegmentXHeading = base_R(baseHeadingDirection.getAxis());
         if (baseHeadingDirection.getDirection() < 0)
-            pelvisHeading = pelvisHeading.negate();
+            baseSegmentXHeading = baseSegmentXHeading.negate();
+        bool baseFrameFound = false;
 
-        UnitVec3 groundX = UnitVec3(1, 0, 0);
-        SimTK::Real angularDifference = acos(~pelvisHeading * groundX);
+        const Frame* baseFrame = nullptr;
+        for (int j = 0; j < model.getNumJoints() && !baseFrameFound; j++) {
+            auto& jnt = model.getJointSet().get(j);
+            // Look for joint whose parent is Ground, child will be baseFrame
+            if (jnt.getParentFrame().findBaseFrame() == model.getGround()) { 
+                baseFrame = &(jnt.getChildFrame().findBaseFrame());
+                baseFrameFound = true;
+                break;
+            }
+        }
+        OPENSIM_THROW_IF(!baseFrameFound, Exception,
+                "No base segment was found, disable heading correction and retry.");
+       
+        Vec3 baseFrameX = UnitVec3(1, 0, 0);
+        const SimTK::Transform& baseXform =
+                baseFrame->getTransformInGround(state);
+        Vec3 baseFrameXInGround = baseXform.xformFrameVecToBase(baseFrameX);
+        SimTK::Real angularDifference =
+                acos(~baseSegmentXHeading * baseFrameXInGround);
         // Compute the sign of the angular correction.
-        SimTK::Vec3 xproduct = (groundX % pelvisHeading);
-        if (xproduct.get(2) > 0) { 
+        SimTK::Vec3 xproduct = (baseFrameXInGround % baseSegmentXHeading);
+        if (xproduct.get(1) > 0) { 
             angularDifference *= -1; 
         }
-        
-        std::cout << "Heading correction computed to be "
-                  << angularDifference * SimTK_RADIAN_TO_DEGREE
-                  << "degs about ground Y" << std::endl;
+
+        log_info("Heading correction computed to be {} degs about ground Y.",
+            angularDifference * SimTK_RADIAN_TO_DEGREE);
 
         rotations = SimTK::Vec3( 0, angularDifference,  0);
 
-    } 
+    }
     else
         OPENSIM_THROW(Exception,
                 "Heading correction attempted without base imu specification. Aborting.'");

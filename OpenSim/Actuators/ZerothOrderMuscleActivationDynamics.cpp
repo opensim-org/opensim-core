@@ -55,9 +55,9 @@ getActivation(const SimTK::State& s) const
 void ZerothOrderMuscleActivationDynamics::
 setActivation(SimTK::State& s, double activation) const
 {
-    cout << "\nWARNING: attempting to set activation of " << getName()
-         << ", which is of type " << getConcreteClassName()
-         << " and, therefore, has no activation variable to set." << endl;
+    log_warn("Attempting to set activation of '{}', which is of type {}, and, "
+             "therefore, has no activation variable to set.", getName(),
+            getConcreteClassName());
 }
 
 //==============================================================================

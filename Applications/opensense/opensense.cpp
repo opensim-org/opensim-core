@@ -96,7 +96,10 @@ int main(int argc, char **argv)
                 }
                 else if ((option == "-ReadXsens") || (option == "-RX")) {
                     if (argc < 4) {
-                        cout << "Both the directory containing Xsens data files and the reader settings file are necessary to read Xsens data. Please retry with these inputs." << endl;
+                        log_error("Both the directory containing Xsens data "
+                                  "files and the reader settings file are "
+                                  "necessary to read Xsens data. Please retry "
+                                  "with these inputs.");
                         PrintUsage(argv[0], cout);
                         exit(-1);
                     }
@@ -104,12 +107,15 @@ int main(int argc, char **argv)
                     std::string settingsFile{ argv[i + 2] };
                     TimeSeriesTable_<SimTK::Quaternion> rotationsTable =
                                                         readRotationsFromXSensFiles(directory, settingsFile);
-                    cout << "Done." << endl;
+                    log_info("Done.");
                     return 0;
                 }
                 else if ((option == "-ReadAPDM") || (option == "-RA")) {
                     if (argc < 4) {
-                        cout << "Both the data file (.csv) with APDM formatted data and the reader settings file are necessary to read APDM data. Please retry with these inputs." << endl;
+                        log_error("Both the data file (.csv) with APDM "
+                                  "formatted data and the reader settings "
+                                  "file are necessary to read APDM data. "
+                                  "Please retry with these inputs.");
                         PrintUsage(argv[0], cout);
                         exit(-1);
                     }
@@ -117,24 +123,27 @@ int main(int argc, char **argv)
                     std::string settingsFile{ argv[i + 2] };
                     TimeSeriesTable_<SimTK::Quaternion> rotationsTable =
                         readRotationsFromAPDMFile(dataFile, settingsFile);
-                    cout << "Done." << endl;
+                    log_info("Done.");
                     return 0;
                 }
                 else if ((option == "-Transform") || (option == "-T")) {
                     if (argc < 3) {
-                        cout << "Marker file is needed for this option. Please fix and retry." << endl;
+                        log_error("Marker file is needed for this option. "
+                                  "Please fix and retry.");
                         PrintUsage(argv[0], cout);
                         exit(-1);
                     }                   
                     std::string markerFile{ argv[i + 1] };
                     TimeSeriesTable_<SimTK::Quaternion> quaternions =
                         OpenSenseUtilities::createOrientationsFileFromMarkers(markerFile);
-                    cout << "Done." << endl;
+                    log_info("Done.");
                     return 0;
                 }
                 else if ((option == "-AddIMUs") || (option == "-A")) {
                     if (argc < 4) {
-                        cout << "Both a model (.osim) file and marker data (e.g. .trc) file are necessary to add IMU frames to the model based-on marker data." << endl;
+                        log_error("Both a model (.osim) file and marker data "
+                                  "(e.g. .trc) file are necessary to add IMU "
+                                  "frames to the model based-on marker data.");
                         PrintUsage(argv[0], cout);
                         exit(-1);
                     }
@@ -142,12 +151,13 @@ int main(int argc, char **argv)
                     std::string markersFile{ argv[i + 2] };
                     addImuFramesFromMarkers(modelFile, markersFile);
 
-                    cout << "Done." << endl;
+                    log_info("Done.");
                     return 0;
                 }
                 else if ((option == "-Calibrate") || (option == "-C")) {
                     if (argc < 3) {
-                        cout << "Calibration specification file is needed. Please fix and retry." << endl;
+                        log_error("Calibration specification file is needed. "
+                                  "Please fix and retry.");
                         PrintUsage(argv[0], cout);
                         exit(-1);
                     }
@@ -159,15 +169,17 @@ int main(int argc, char **argv)
                     if (imuPlacer.get_output_model_file().empty()) {
                         auto filename =
                                 model.getName() + "_calibrated" + ".osim";
-                        cout << "Wrote calibrated model to file: '" << filename << "'." << endl;
+                        log_info("Wrote calibrated model to file: {}.",
+                                 filename);
                         model.print(filename);
                     }
-                    cout << "Done." << endl;
+                    log_info("Done.");
                     return 0;
                 }
                 else if ((option == "-InverseKinematics") || (option == "-IK")) {
                     if (argc < 3) {
-                        cout << "An inverse kinematics settings (.xml) file was expected but no file was provided." << endl;
+                        log_error("An inverse kinematics settings (.xml) file "
+                                  "was expected but no file was provided.");
                         PrintUsage(argv[0], cout);
                         exit(-1);
                     }
@@ -178,9 +190,11 @@ int main(int argc, char **argv)
                     IMUInverseKinematicsTool *imuIKTool = new IMUInverseKinematicsTool();
                     imuIKTool->setName("new");
                     Object::setSerializeAllDefaults(true);
-                    imuIKTool->print("new_Setup_IMUInverseKinematicsTool.xml");
+                    std::string setupFile = 
+                        "new_Setup_IMUInverseKinematicsTool.xml";
+                    imuIKTool->print(setupFile);
                     Object::setSerializeAllDefaults(false);
-                    cout << "Created file new_Setup_IMUInverseKinematicsTool.xml with default setup." << endl;
+                    log_info("Created file {} with default setup.", setupFile);
                     return 0;
 
                     // PRINT PROPERTY INFO
@@ -204,7 +218,8 @@ int main(int argc, char **argv)
                     // UNRECOGNIZED
                 }
                 else {
-                    cout << "Unrecognized option" << option << "on command line... Ignored" << endl;
+                    log_warn("Unrecognized option {} on command line... "
+                              "Ignored", option);
                     PrintUsage(argv[0], cout);
                     return(0);
                 }
@@ -213,13 +228,13 @@ int main(int argc, char **argv)
 
         // ERROR CHECK
         if (setupFileName == "") {
-            cout << "\n\nopensense.exe: ERROR- A setup file must be specified.\n";
+            log_error("opensense.exe: A setup file must be specified.");
             PrintUsage(argv[0], cout);
             return(-1);
         }
 
         // CONSTRUCT
-        cout << "Constructing tool from setup file " << setupFileName << ".\n\n";
+        log_info("Constructing tool from setup file {}.", setupFileName);
         IMUInverseKinematicsTool ik(setupFileName);
 
         // start timing
@@ -228,15 +243,15 @@ int main(int argc, char **argv)
         // RUN
         ik.run();
 
-        std::cout << "opensense compute time = " << 1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC << "ms\n";
-
+        auto timeInMilliseconds = 1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC;
+        log_info("opensense compute time = {} ms", timeInMilliseconds);
 
         //----------------------------
         // Catch any thrown exceptions
         //----------------------------
     }
     catch (const std::exception& x) {
-        cout << "Exception in opensense: " << x.what() << endl;
+        log_error("Exception in opensense: {}", x.what());
         return -1;
     }
     //----------------------------
@@ -435,7 +450,7 @@ void addImuFramesFromMarkers(const string& modelFile, const string& markersFile)
     // store joint initial pose from marker IK as default pose for the model. 
     model.setPropertiesFromState(s);
 
-    for (int i = 0; i < offsets.size(); ++i) {
+    for (int i = 0; i < (int)offsets.size(); ++i) {
         // add imu offset frames to the model with model taking ownership
         bodies[i]->addComponent(offsets[i]);
     }

@@ -65,14 +65,14 @@ InverseKinematicsSolver::InverseKinematicsSolver(const Model& model,
         const MarkerSet &modelMarkerSet = getModel().getMarkerSet();
 
         if (modelMarkerSet.getSize() < 1) {
-            cout << "InverseKinematicsSolver: Model has no markers!" << endl;
+            log_error("InverseKinematicsSolver: Model has no markers!");
             throw Exception("InverseKinematicsSolver: Model has no markers!");
         }
         const SimTK::Array_<std::string>& markerNames
             = _markersReference.getNames(); // size and content as in trc file
 
         if (markerNames.size() < 1) {
-            cout << "InverseKinematicsSolver: No markers available from data provided." << endl;
+            log_error("InverseKinematicsSolver: No markers available from data provided.");
             throw Exception("InverseKinematicsSolver: No markers available from data provided.");
         }
         int index = 0, cnt = 0;
@@ -84,11 +84,12 @@ InverseKinematicsSolver::InverseKinematicsSolver(const Model& model,
         }
 
         if (cnt < 1) {
-            cout << "InverseKinematicsSolver: Marker data does not correspond to any model markers." << endl;
+            log_error("InverseKinematicsSolver: Marker data does not correspond to any model markers.");
             throw Exception("InverseKinematicsSolver: Marker data does not correspond to any model markers.");
         }
         if (cnt < 4)
-            cout << "WARNING: InverseKinematicsSolver found only " << cnt << " markers to track." << endl;
+            log_warn("WARNING: InverseKinematicsSolver found only {} markers to track.", cnt);
+
     }
 }
 

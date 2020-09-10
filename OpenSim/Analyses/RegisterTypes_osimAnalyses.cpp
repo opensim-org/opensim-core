@@ -58,9 +58,7 @@ OSIMANALYSES_API void RegisterTypes_osimAnalyses()
     Object::RegisterType( OutputReporter() );
 
   } catch (const std::exception& e) {
-    std::cerr 
-        << "ERROR during osimAnalyses Object registration:\n"
-        << e.what() << "\n";
+    log_error("Error during osimAnalyses Object registration: {}", e.what());
   }
 }
 

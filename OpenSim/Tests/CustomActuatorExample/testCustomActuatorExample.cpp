@@ -47,7 +47,8 @@ int main()
 
         CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, tolerances, 
             __FILE__, __LINE__, "spring actuated leg states degrees failed");
-        cout << "spring actuated leg states degrees passed\n";
+        log_info("spring actuated leg states degrees passed");
+        log_info("");
 
         std::vector<double> forceTol(2, 1.0); // piston actuator has a tolerance of 1N
         forceTol[1] = 5.0; // spring has a tolerance of 5N 
@@ -59,12 +60,13 @@ int main()
                 standard2("std_actuator_forces.mot");
         CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, forceTol,
                                        __FILE__, __LINE__, "actuator forces failed");
-        cout << "actuator forces passed\n";
+        log_info("actuator forces passed");
+        log_info("");
     }
     catch (const Exception& e) {
         e.print(cerr);
         return 1;
     }
-    cout << "Done" << endl;
+    log_info("Done");
     return 0;
 }

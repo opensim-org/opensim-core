@@ -298,7 +298,7 @@ SmoothSegmentedFunction* SmoothSegmentedFunctionFactory::
         "%s: dydxE must be greater than or equal to 0"
         "and less than fmaxE-1 (%f)",curveName.c_str(),(fmaxE-1));
     SimTK_ERRCHK2_ALWAYS( (dydxNearE >= dydxE && dydxNearE < (fmaxE-1)), 
-        "SmoothSegmentedFunctionFactory::createFiberForceVelocityCurve",
+        "SmoothSegmentedFunctionFactory::createFiberForceVelocityInverseCurve",
         "%s: dydxNearE must be greater than or equal to dydxE"
         "and less than fmaxE-1 (%f)",curveName.c_str(),(fmaxE-1));
     SimTK_ERRCHK1_ALWAYS( (concCurviness <= 1.0 && concCurviness >= 0), 

@@ -38,6 +38,8 @@ void IMUInverseKinematicsTool::constructProperties()
     constructProperty_sensor_to_opensim_rotations(
             SimTK::Vec3(0));
     constructProperty_orientations_file("");
+    OrientationWeightSet orientationWeights;
+    constructProperty_orientation_weights(orientationWeights);
 }
 /**
 void IMUInverseKinematicsTool::
@@ -79,12 +81,10 @@ void IMUInverseKinematicsTool::
     previewWorld.realizePosition(state);
     previewWorld.getVisualizer().show(state);
 
-    char c;
-    std::cout << "Press any key to visualize experimental marker data ..." << std::endl;
-    std::cin >> c;
 
+    log_info("Visualizing experimental marker data ...");
     for (size_t j =0; j < times.size(); j=j+10) {
-        std::cout << "time: " << times[j] << "s" << std::endl;
+        log_info("time: {} s", times[j]);
         state.setTime(times[j]);
         previewWorld.realizePosition(state);
         previewWorld.getVisualizer().show(state);
@@ -125,8 +125,8 @@ void IMUInverseKinematicsTool::runInverseKinematicsWithOrientationsFromFile(
         model.addComponent(ikReporter);
     }
     TimeSeriesTable_<SimTK::Quaternion> quatTable(orientationsFileName);
-    std::cout << "Loading orientations as quaternions from "
-        << orientationsFileName << std::endl;
+    log_info("Loading orientations as quaternions from '{}'...",
+        orientationsFileName);
     // Will maintain only data in time range specified by the tool
     // If unspecified {-inf, inf} no trimming is done
     quatTable.trim(getStartTime(), getEndTime());
@@ -145,7 +145,7 @@ void IMUInverseKinematicsTool::runInverseKinematicsWithOrientationsFromFile(
     TimeSeriesTable_<SimTK::Rotation> orientationsData =
         OpenSenseUtilities::convertQuaternionsToRotations(quatTable);
 
-    OrientationsReference oRefs(orientationsData);
+    OrientationsReference oRefs(orientationsData, &get_orientation_weights());
     MarkersReference mRefs{};
 
     SimTK::Array_<CoordinateReference> coordinateReferences;
@@ -164,9 +164,26 @@ void IMUInverseKinematicsTool::runInverseKinematicsWithOrientationsFromFile(
     ikSolver.setAccuracy(accuracy);
 
     auto& times = oRefs.getTimes();
-
+    std::shared_ptr<TimeSeriesTable> modelOrientationErrors(
+            get_report_errors() ? new TimeSeriesTable()
+                                : nullptr);
     s0.updTime() = times[0];
     ikSolver.assemble(s0);
+    // Create place holder for orientation errors, populate based on user pref.
+    // according to report_errors property
+    int nos = ikSolver.getNumOrientationSensorsInUse();
+    SimTK::Array_<double> orientationErrors(nos, 0.0);
+
+    if (get_report_errors()) { 
+        SimTK::Array_<string> labels;
+        for (int i = 0; i < nos; ++i) {
+            labels.push_back(ikSolver.getOrientationSensorNameForIndex(i));
+        }
+        modelOrientationErrors->setColumnLabels(labels);
+        modelOrientationErrors->updTableMetaData().setValueForKey<string>(
+                "name", "OrientationErrors");
+        ikSolver.computeCurrentOrientationErrors(orientationErrors);
+    }
     if (visualizeResults) {
         model.getVisualizer().show(s0);
         model.getVisualizer().getSimbodyVisualizer().setShowSimTime(true);
@@ -174,10 +191,15 @@ void IMUInverseKinematicsTool::runInverseKinematicsWithOrientationsFromFile(
     for (auto time : times) {
         s0.updTime() = time;
         ikSolver.track(s0);
+        if (get_report_errors()) {
+            ikSolver.computeCurrentOrientationErrors(orientationErrors);
+            modelOrientationErrors->appendRow(
+                    s0.getTime(), orientationErrors);
+        }
         if (visualizeResults)  
             model.getVisualizer().show(s0);
         else
-            cout << "Solved at time: " << time << endl;
+            log_info("Solved at time: {} s", time);
         // realize to report to get reporter to pull values from model
         model.realizeReport(s0);
     }
@@ -198,9 +220,12 @@ void IMUInverseKinematicsTool::runInverseKinematicsWithOrientationsFromFile(
 
     STOFileAdapter_<double>::write(report, outputFile + ".mot");
 
-    std::cout << "Wrote IK with IMU tracking results to: '" <<
-        outputFile << "'." << std::endl;
-
+    log_info("Wrote IK with IMU tracking results to: '{}'.", outputFile);
+    if (get_report_errors()) {
+        STOFileAdapter_<double>::write(*modelOrientationErrors,
+                get_results_directory() + "/" +
+                        getName() + "_orientationErrors.sto");
+    }
     // Results written to file, clear in case we run again
     ikReporter->clearTable();
 }
@@ -224,15 +249,15 @@ TimeSeriesTable_<SimTK::Vec3>
     IMUInverseKinematicsTool::loadMarkersFile(const std::string& markerFile)
 {
     TimeSeriesTable_<Vec3> markers(markerFile);
-    std::cout << markerFile << " loaded " << markers.getNumColumns() << " markers "
-        << " and " << markers.getNumRows() << " rows of data." << std::endl;
+    log_info("'{}' loaded {} markers and {} rows of data.", markerFile,
+        markers.getNumColumns(), markers.getNumRows());
 
     if (markers.hasTableMetaDataKey("Units")) {
-        std::cout << markerFile << " has Units meta data." << std::endl;
         auto& value = markers.getTableMetaData().getValueForKey("Units");
-        std::cout << markerFile << " Units are " << value.getValue<std::string>() << std::endl;
+        log_info("'{}' has Units meta data. Units are {}.", markerFile,
+                value.getValue<std::string>());
         if (value.getValue<std::string>() == "mm") {
-            std::cout << "Marker data in mm, converting to m." << std::endl;
+            log_info("Marker data in mm, converting to m.");
             for (size_t i = 0; i < markers.getNumRows(); ++i) {
                 markers.updRowAtIndex(i) *= 0.001;
             }
@@ -241,6 +266,7 @@ TimeSeriesTable_<SimTK::Vec3>
         }
     }
     auto& value = markers.getTableMetaData().getValueForKey("Units");
-    std::cout << markerFile << " Units are " << value.getValue<std::string>() << std::endl;
+    log_info("'{}' Units are {}.", markerFile, value.getValue<std::string>());
+
     return markers;
 }

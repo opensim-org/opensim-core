@@ -22,6 +22,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include <OpenSim/Common/LogSink.h>
+#include <OpenSim/Common/Logger.h>
 #include <OpenSim/Common/Reporter.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -55,14 +57,14 @@ void testConsoleReporterLabels() {
     state.setTime(0.0);
     manager.initialize(state);
 
-    // Redirect cout to stringstream so ConsoleReporter output can be tested.
-    stringstream buf;
-    streambuf* oldBuf = cout.rdbuf(buf.rdbuf());
+    // Create a sink to obtain the ConsoleReporter output.
+    auto sink = std::make_shared<StringLogSink>();
+    Logger::addSink(sink);
     manager.integrate(1.0);
 
     // Restore original destination for cout and display ConsoleReporter output.
-    cout.rdbuf(oldBuf);
-    const string output = buf.str();
+    Logger::removeSink(sink);
+    const std::string output = sink->getString();
     cout << output << endl;
 
     // Check column headings reported by ConsoleReporter, which should be

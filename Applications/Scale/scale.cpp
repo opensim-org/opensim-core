@@ -62,7 +62,7 @@ int main(int argc,char **argv)
       scale -S SetupFileName -> opensim-cmd run-tool SetupFileName
       scale -PS              -> opensim-cmd print-xml scale
     )";
-    std::cout << deprecationNotice << std::endl;
+    log_warn(deprecationNotice);
 
     // SET OUTPUT FORMATTING
     IO::SetDigitsPad(4);
@@ -107,7 +107,8 @@ int main(int argc,char **argv)
                     Object::setSerializeAllDefaults(true);
                     subject->print("default_Setup_Scale.xml");
                     Object::setSerializeAllDefaults(false);
-                    cout << "Created file default_Setup_Scale.xml with default setup" << endl;
+                    log_info("Created file default_Setup_Scale.xml with "
+                             "default setup");
                     return(0);
 
                 // PRINT PROPERTY INFO
@@ -127,7 +128,8 @@ int main(int argc,char **argv)
 
                 // Unrecognized
                 } else {
-                    cout << "Unrecognized option " << option << " on command line... Ignored" << endl;
+                    log_error("Unrecognized option {} on command line... "
+                              "Ignored", option);
                     PrintUsage(argv[0], cout);
                     return(0);
                 }

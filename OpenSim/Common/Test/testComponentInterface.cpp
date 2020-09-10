@@ -31,6 +31,7 @@
 #include <simbody/internal/Force.h>
 #include <simbody/internal/MobilizedBody_Pin.h>
 #include <simbody/internal/MobilizedBody_Ground.h>
+#include <random>
 
 using namespace OpenSim;
 using namespace std;
@@ -983,7 +984,7 @@ void testComponentPathNames()
     ASSERT(CWrtOtherTop == "A/B/C");
 
     std::string OtherTopWrtC = otherTop.getRelativePathString(*C);
-    ASSERT(OtherTopWrtC == "../../../");
+    ASSERT(OtherTopWrtC == "../../..");
 
     // Must specify a unique path to E
     ASSERT_THROW(OpenSim::ComponentNotFoundOnSpecifiedPath,
@@ -2265,6 +2266,241 @@ void testFormattedDateTime() {
     SimTK_TEST(withMicroseconds.find(withoutMicroseconds) == 0);
 }
 
+struct ComponentWithCacheVariable : public Component {
+    OpenSim_DECLARE_CONCRETE_OBJECT(ComponentWithCacheVariable, Component);
+public:
+    CacheVariable<double> cv;
+
+    using Component::addCacheVariable;
+
+};
+
+template<class T>
+using CacheVariable = Component::CacheVariable<T>;
+
+void testCacheVariableInterface() {
+    // can default-initialize without throwing an exception
+    {
+        CacheVariable<double> cv;
+    }
+
+    // can value-initialize without throwing an exception
+    {
+        CacheVariable<double> cv{};
+    }
+
+    // can be rvalue-initialized via `Component::addCacheVariable`
+    // without throwing an exception.
+    {
+        ComponentWithCacheVariable c{};
+        CacheVariable<double> cv{
+            c.addCacheVariable("name", 0.0, SimTK::Stage::Velocity)
+        };
+    }
+
+    // can be rvalue-assigned via Component::addCacheVariable without exception
+    {
+        ComponentWithCacheVariable c{};
+        CacheVariable<double> cv =
+                c.addCacheVariable("name", 0.0, SimTK::Stage::Velocity);
+    }
+
+    // can be copy-initialized without exception
+    {
+        ComponentWithCacheVariable c{};
+        CacheVariable<double> cv =
+                c.addCacheVariable("name", 0.0, SimTK::Stage::Velocity);
+
+        CacheVariable<double> cv2{cv};
+    }
+
+    // can be copy-assigned without exception
+    {
+        ComponentWithCacheVariable c{};
+        CacheVariable<double> cv = c.addCacheVariable("name", 0.0, SimTK::Stage::Velocity);
+        CacheVariable<double> cv2 = cv;
+    }
+
+    // the Component's cache variable value methods (e.g. Component::getCacheVariableValue)
+    // should throw if `Component::realizeTopology` has not yet been called
+    {
+        ComponentWithCacheVariable c{};
+        const std::string k = "name";
+        double v = 1337.0;
+        CacheVariable<double> cv = c.addCacheVariable("name", v, SimTK::Stage::Time);
+        c.finalizeFromProperties();
+
+        SimTK::State s;  // note: no initialization of the component
+
+        ASSERT_THROW(std::exception, c.getCacheVariableIndex(k));
+        ASSERT_THROW(std::exception, c.getCacheVariableIndex(cv));
+        ASSERT_THROW(std::exception, c.getCacheVariableValue<double>(s, k));
+        ASSERT_THROW(std::exception, c.getCacheVariableValue(s, cv));
+        ASSERT_THROW(std::exception, c.setCacheVariableValue<double>(s, k, v));
+        ASSERT_THROW(std::exception, c.setCacheVariableValue(s, k, cv));
+        ASSERT_THROW(std::exception, c.updCacheVariableValue<double>(s, k));
+        ASSERT_THROW(std::exception, c.updCacheVariableValue(s, cv));
+        ASSERT_THROW(std::exception, c.updCacheVariableValue(s, cv));
+        ASSERT_THROW(std::exception, c.isCacheVariableValid(s, k));
+        ASSERT_THROW(std::exception, c.isCacheVariableValid(s, cv));
+        ASSERT_THROW(std::exception, c.markCacheVariableValid(s, k));
+        ASSERT_THROW(std::exception, c.markCacheVariableValid(s, cv));
+        ASSERT_THROW(std::exception, c.markCacheVariableInvalid(s, k));
+        ASSERT_THROW(std::exception, c.markCacheVariableInvalid(s, cv));
+    }
+
+    // C++ rng for doubles for these tests
+    std::uniform_real_distribution<double> dist{};
+    std::default_random_engine engine(static_cast<unsigned int>(std::chrono::system_clock::now().time_since_epoch().count()));
+    auto generate_random_double = [&]() {
+        return dist(engine);
+    };
+
+    // the component's cache variable value methods (e.g. Component::getCacheVariableValue)
+    // should work after `Component::realizeTopology` has been called
+    {
+        SimTK::MultibodySystem sys;
+        SimbodyMatterSubsystem matter{sys};
+        GeneralForceSubsystem forces{sys};
+
+        ComponentWithCacheVariable c{};
+        c.finalizeFromProperties();
+        c.finalizeConnections(c);
+        c.addToSystem(sys);
+
+        const std::string k = "name";
+        const double v = generate_random_double();
+        c.cv = c.addCacheVariable(k, v, SimTK::Stage::Model);
+
+        SimTK::State s = sys.realizeTopology();  // note: this initializes the value in SimTK
+
+        c.markCacheVariableValid(s, k);
+        ASSERT(c.isCacheVariableValid(s, c.cv) == true);
+        c.markCacheVariableInvalid(s, k);
+        ASSERT(c.isCacheVariableValid(s, c.cv) == false);
+
+        c.markCacheVariableValid(s, c.cv);
+        ASSERT(c.isCacheVariableValid(s, c.cv) == true);
+        c.markCacheVariableInvalid(s, c.cv);
+        ASSERT(c.isCacheVariableValid(s, c.cv) == false);
+
+        // tests assume cv is valid from now on
+        c.markCacheVariableValid(s, c.cv);
+
+        c.getCacheVariableIndex(k);  // shouldn't throw
+        ASSERT(c.getCacheVariableValue<double>(s, k) == v);
+        ASSERT(c.getCacheVariableValue(s, c.cv) == v);
+
+        // Setting the value via key causes subsequent `get` methods
+        // (both string key + CacheVariable ones) to return the new value.
+        {
+            double v2 = generate_random_double();
+            c.setCacheVariableValue<double>(s, k, v2);
+            ASSERT(c.getCacheVariableValue<double>(s, k) == v2);
+            ASSERT(c.getCacheVariableValue(s, c.cv) == v2);
+        }
+
+        // Same as above, but setting via a CacheVariable<T>.
+        {
+            double v2 = generate_random_double();
+            c.setCacheVariableValue<double>(s, c.cv, v2);
+            ASSERT(c.getCacheVariableValue<double>(s, k) == v2);
+            ASSERT(c.getCacheVariableValue(s, c.cv) == v2);
+        }
+
+        // Updating a value via an `upd` reference, retrieved via a key, causes
+        // subsequent `get` methods (both string key + CacheVariable<T> ones)
+        // to return the updated value
+        {
+            double v2 = generate_random_double();
+            double& v = c.updCacheVariableValue<double>(s, k);
+            v = v2;
+            ASSERT(c.getCacheVariableValue<double>(s, k) == v2);
+            ASSERT(c.getCacheVariableValue(s, c.cv) == v2);
+        }
+
+        // Same as above, but getting the `upd` reference via a CacheVariable<T>
+        {
+            double v2 = generate_random_double();
+            double& v = c.updCacheVariableValue(s, c.cv);
+            v = v2;
+            ASSERT(c.getCacheVariableValue<double>(s, k) == v2);
+            ASSERT(c.getCacheVariableValue(s, c.cv) == v2);
+        }
+    }
+
+    // when a CacheVariable is copy-constructed from an already-initialized CacheVariable,
+    // the copy cannot get/update cache variable values from the original. The variable
+    // must be reinitialized (with `Component::addCacheVariable` followed by
+    // `Component::realizeTopology`)
+    {
+        SimTK::MultibodySystem sys;
+        SimbodyMatterSubsystem matter{sys};
+        GeneralForceSubsystem forces{sys};
+
+        ComponentWithCacheVariable c1{};
+        c1.finalizeFromProperties();
+        c1.finalizeConnections(c1);
+        c1.addToSystem(sys);
+
+        const std::string k = "name";
+        const double v = generate_random_double();
+        c1.cv = c1.addCacheVariable(k, v, SimTK::Stage::Model);
+
+        SimTK::State s = sys.realizeTopology();
+
+        // Normal usage with no copies works as expected
+        c1.markCacheVariableValid(s, c1.cv);
+        ASSERT(c1.getCacheVariableValue(s, c1.cv) == v);
+
+        // create a copy via standard C++ semantics
+        ComponentWithCacheVariable c2 = c1;
+
+        // c2.cv is only copy-initialized, it must be allocated with
+        // `Component::addCacheVariable`
+        ASSERT_THROW(std::exception, c2.getCacheVariableValue(s, c2.cv));
+
+        // calling `Component::addToSystem` usually allocates the cache variable
+        // in `Component` (in standard implementations, `extendAddToSystem`
+        // handles that). Here, the allocation step is performed explicitly.
+        c2.finalizeFromProperties();
+        c2.finalizeConnections(c2);
+        c2.addToSystem(sys);
+
+        // throws, because `ComponentWithCacheVariable` does not actually
+        // declare a `extendAddToSystem` in which `addCacheVariable` is called,
+        // so the cache variable is still in the copy-initialized state.
+        ASSERT_THROW(std::exception, c2.getCacheVariableValue(s, c2.cv));
+
+        c2.addCacheVariable(k, v, SimTK::Stage::Model);
+
+        // throws because `Component::addCacheVariable` only allocates the
+        // variable in the `Component`, not SimTK.
+        ASSERT_THROW(std::exception, c2.getCacheVariableValue(s, c2.cv));
+
+        // calling `SimTK::System::realizeTopology` is what actually initializes
+        // the value in a *newly created* `SimTK::State`, so this does not throw
+        SimTK::State s2 = sys.realizeTopology();
+        c2.markCacheVariableValid(s2, c2.cv);
+
+        // works without throwing
+        ASSERT(c2.getCacheVariableValue(s2, c2.cv) == v);
+    }
+
+    // Component::addCacheVariable cannot be called with the same name twice because
+    // doing so could cause confusing run-time errors. Therefore, when callers (wrongly)
+    // provide a duplicate key, the implementation should fail fast and tell the
+    // developer that duplicate names are not supported.
+    {
+        ComponentWithCacheVariable c{};
+        const std::string key = "duplicateKey";
+        double v1 = 1.0;
+        unsigned v2 = 2;  // it doesn't matter if the values/types differ: they still have the same key
+        CacheVariable<double> cv1 = c.addCacheVariable(key, v1, SimTK::Stage::Model);
+        ASSERT_THROW(std::exception, c.addCacheVariable(key, v2, SimTK::Stage::Model));
+    }
+}
+
 int main() {
 
     //Register new types for testing deserialization
@@ -2303,6 +2539,7 @@ int main() {
         //SimTK_SUBTEST(testGetAbsolutePathStringSpeed);
 
         SimTK_SUBTEST(testFormattedDateTime);
+        SimTK_SUBTEST(testCacheVariableInterface);
 
     SimTK_END_TEST();
 }

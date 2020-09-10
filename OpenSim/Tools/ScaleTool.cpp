@@ -224,7 +224,7 @@ ScaleTool& ScaleTool::operator=(const ScaleTool &aSubject)
  */
 Model* ScaleTool::createModel() const
 {
-    cout << "Processing subject " << getName() << endl;
+    log_info("Processing subject {}...", getName());
 
     /* Make the generic model. */
     if (!_genericModelMakerProp.getValueIsDefault())
@@ -232,7 +232,8 @@ Model* ScaleTool::createModel() const
         Model *model = getGenericModelMaker().processModel(_pathToSubject);
         if (!model)
         {
-            cout << "===ERROR===: Unable to load generic model." << endl;
+            log_error("Unable to load generic model at path {}.", 
+                _pathToSubject);
             return 0;
         }
         else {
@@ -240,7 +241,9 @@ Model* ScaleTool::createModel() const
             return model;
         }
     } else {
-        cout << "ScaleTool.createModel: WARNING- Unscaled model not specified (" << _genericModelMakerProp.getName() << " section missing from setup file)." << endl;
+        log_warn("ScaleTool::createModel: Unscaled model not specified ({} "  
+            "section missing from setup file).", 
+            _genericModelMakerProp.getName());
     }
     return 0;
 }
@@ -249,7 +252,9 @@ bool ScaleTool::run() const {
     std::unique_ptr<Model> model(createModel());
 
     if(model == nullptr) { 
-        throw Exception("scale: ERROR- No model specified.",__FILE__,__LINE__);
+        string msg = "ScaleTool: No model specified.";
+        log_error(msg);
+        throw Exception(msg, __FILE__, __LINE__);
     }
 
     if (!isDefaultModelScaler() && getModelScaler().getApply())
@@ -261,7 +266,8 @@ bool ScaleTool::run() const {
     }
     else
     {
-        cout << "Scaling parameters disabled (apply is false) or not set. Model is not scaled." << endl;
+        log_error("Scaling parameters disabled (apply is false) or not set. "
+            "Model is not scaled.");
     }
 
     if (!isDefaultMarkerPlacer())
@@ -273,7 +279,8 @@ bool ScaleTool::run() const {
     }
     else
     {
-        cout << "Marker placement parameters disabled (apply is false) or not set. No markers have been moved." << endl;
+        log_error("Marker placement parameters disabled (apply is false) or "
+            "not set. No markers have been moved.");
     }
     return true;
 }

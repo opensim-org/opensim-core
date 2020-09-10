@@ -176,19 +176,17 @@ void ForceReporter::constructDescription()
 {
     char descrip[1024];
 
-    strcpy(descrip,"\nThis file contains the forces exerted on a model ");
-    strcat(descrip,"during a simulation.\n");
+    strcpy(descrip, "\nThis file contains the forces exerted on a model ");
+    strcat(descrip, "during a simulation.\n");
 
-    strcat(descrip,"\nA force is a generalized force, meaning that");
-    strcat(descrip," it can be either a force (N) or a torque (Nm).\n");
+    strcat(descrip, "\nA force is a generalized force, meaning that");
+    strcat(descrip, " it can be either a force (N) or a torque (Nm).\n");
 
-    strcat(descrip,"\nUnits are S.I. units (second, meters, Newtons, ...)");
-    if(getInDegrees()) {
-        strcat(descrip,"\nAngles are in degrees.");
-    } else {
-        strcat(descrip,"\nAngles are in radians.");
-    }
-    strcat(descrip,"\n\n");
+    strcat(descrip, "\nUnits are S.I. units (second, meters, Newtons, ...)");
+    strcat(descrip, "\nIf the header above contains a line with ");
+    strcat(descrip, "'inDegrees', this indicates whether rotational values ");
+    strcat(descrip, "are in degrees (yes) or radians (no).");
+    strcat(descrip, "\n\n");
 
     setDescription(descrip);
 }
@@ -394,8 +392,8 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
                  const string &aExtension)
 {
     if(!getOn()) {
-        printf("ForceReporter.printResults: Off- not printing.\n");
-        return(0);
+        log_info("ForceReporter.printResults: Off- not printing.");
+        return 0;
     }
 
     std::string prefix=aBaseName+"_"+getName()+"_";
@@ -429,7 +427,7 @@ void ForceReporter::tidyForceNames()
             string newName(pad);
             _model->updForceSet()[i].setName(newName);
             forceNames.set(i, newName);
-            cout << "Changing blank name for force to " << newName << endl;
+            log_info("Changing blank name for force to {}.", newName);
         }
     }
 }

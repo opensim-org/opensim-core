@@ -41,9 +41,6 @@ using namespace std;
 //
 static void Plugin_Attach()
 {
-    //cout<<"\n-------------------------------------------------------\n";
-    //cout<<"Library osimSimulation...\n";
-    //cout<<"-------------------------------------------------------\n\n";
 }
 
 static void Plugin_Detach()

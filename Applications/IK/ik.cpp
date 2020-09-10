@@ -66,7 +66,7 @@ int main(int argc,char **argv)
       ik -S SetupFileName -> opensim-cmd run-tool SetupFileName
       ik -PS              -> opensim-cmd print-xml ik
     )";
-    std::cout << deprecationNotice << std::endl;
+    log_warn(deprecationNotice);
 
     // PARSE COMMAND LINE
     string option = "";
@@ -101,7 +101,8 @@ int main(int argc,char **argv)
                 Object::setSerializeAllDefaults(true);
                 tool->print("default_Setup_IK.xml");
                 Object::setSerializeAllDefaults(false);
-                cout << "Created file default_Setup_IK.xml with default setup" << endl;
+                log_info("Created file default_Setup_IK.xml with default "
+                         "setup");
                 return 0;
 
             // PRINT PROPERTY INFO
@@ -121,7 +122,8 @@ int main(int argc,char **argv)
 
             // UNRECOGNIZED
             } else {
-                cout << "Unrecognized option" << option << "on command line... Ignored" << endl;
+                log_warn("Unrecognized option {} on command line... Ignored", 
+                         option);
                 PrintUsage(argv[0], cout);
                 return(0);
             }
@@ -130,13 +132,13 @@ int main(int argc,char **argv)
 
     // ERROR CHECK
     if(setupFileName=="") {
-        cout<<"\n\nik.exe: ERROR- A setup file must be specified.\n";
+        log_error("ik.exe: A setup file must be specified.");
         PrintUsage(argv[0], cout);
         return(-1);
     }
 
     // CONSTRUCT
-    cout<<"Constructing tool from setup file "<<setupFileName<<".\n\n";
+    log_info("Constructing tool from setup file {}.", setupFileName);
     InverseKinematicsTool ik(setupFileName);
 
     // start timing
@@ -145,14 +147,14 @@ int main(int argc,char **argv)
     // RUN
     ik.run();
 
-    std::cout << "IK compute time = " << 1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n";
-
+    auto timeInMilliseconds = 1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC;
+    log_info("IK compute time = {} ms", timeInMilliseconds);
 
     //----------------------------
     // Catch any thrown exceptions
     //----------------------------
     } catch(const std::exception& x) {
-        cout << "Exception in IK: " << x.what() << endl;
+        log_error("Exception in IK: {}", x.what());
         return -1;
     }
     //----------------------------

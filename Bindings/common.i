@@ -1,6 +1,6 @@
 
 %feature("director") OpenSim::AnalysisWrapper;
-%feature("director") OpenSim::SimtkLogCallback;
+%feature("director") OpenSim::LogSink;
 %feature("notabstract") ControlLinear;
 
 %rename(OpenSimObject) OpenSim::Object;
@@ -10,6 +10,13 @@
 %include <OpenSim/Common/osimCommonDLL.h>
 %include <OpenSim/Common/About.h>
 %include <OpenSim/Common/Exception.h>
+
+%shared_ptr(OpenSim::LogSink);
+%shared_ptr(OpenSim::StringLogSink);
+%include <OpenSim/Common/LogSink.h>
+%ignore OpenSim::Logger::getInstance();
+%include <OpenSim/Common/Logger.h>
+
 %include <OpenSim/Common/Array.h>
 %include <OpenSim/Common/ArrayPtrs.h>
 %include <OpenSim/Common/AbstractProperty.h>
@@ -20,7 +27,7 @@
 %template (PropertyString) OpenSim::Property<std::string>;
 %include <OpenSim/Common/Object.h>
 %include <OpenSim/Common/ObjectGroup.h>
-
+%include <Bindings/PropertyHelper.h>
 %include <OpenSim/Common/Set.h>
 %template(OpenSimObjectSet) OpenSim::Set<OpenSim::Object, OpenSim::Object>;
 %include <OpenSim/Common/StateVector.h>
@@ -29,6 +36,7 @@
 %include <OpenSim/Common/Storage.h>
 %template(ArrayStorage) OpenSim::ArrayPtrs<OpenSim::Storage>;
 %include <OpenSim/Common/Units.h>
+%ignore OpenSim::IO::CwdChanger;
 %include <OpenSim/Common/IO.h>
 %include <OpenSim/Common/Function.h>
 
@@ -102,7 +110,6 @@ namespace OpenSim {
 // Can't wrap the return type of this function.
 %ignore OpenSim::Component::getOutputs;
 
-%include <OpenSim/Common/Path.h>
 %include <OpenSim/Common/ComponentPath.h>
 
 %include <OpenSim/Common/Component.h>
@@ -330,6 +337,7 @@ DATATABLE_CLONE(double, SimTK::Rotation_<double>)
 %include <OpenSim/Common/AbstractDataTable.h>
 %include <OpenSim/Common/DataTable.h>
 %include <OpenSim/Common/TimeSeriesTable.h>
+%include <OpenSim/Common/TableUtilities.h>
 
 %template(DataTable)           OpenSim::DataTable_<double, double>;
 %template(DataTableVec3)       OpenSim::DataTable_<double, SimTK::Vec3>;

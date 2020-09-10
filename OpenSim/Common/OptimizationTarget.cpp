@@ -139,9 +139,9 @@ void OptimizationTarget::
 validatePerturbationSize(double &aSize)
 {
     if(aSize<SMALLDX) {
-        printf("OptimizationTarget.validatePerturbationSize: WARNING- ");
-        printf("dx size too small (%le).\n",aSize);
-        printf("\tResetting dx=%le.\n",SMALLDX);
+        log_warn("OptimizationTarget.validatePerturbationSize: dx size too "
+                 "small ({}). Resetting dx={}.",
+                aSize, SMALLDX);
         aSize = SMALLDX;
     }
 }
@@ -153,7 +153,7 @@ printPerformance(double *x)
 {
     double p;
     objectiveFunc(SimTK::Vector(getNumParameters(),x,true),true,p);
-    std::cout << "performance = " << p << std::endl;
+    log_cout("performance = {}", p);
 }
 
 //=============================================================================

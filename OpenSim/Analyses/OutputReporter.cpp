@@ -87,9 +87,9 @@ int OutputReporter::begin(const SimTK::State& s)
             inputSpatialVec.appendConnecteePath(path);
         }
         else {
-            cout << "Output '" << out.getPathName() << "' of type "
-                << out.getTypeName() << " is not supported by OutputReporter."
-                << " Consider adding a TableReporter_ to the Model." << endl;
+            log_warn("Output '{}' of type {} is not supported by "
+                     "OutputReporter. Consider adding a TableReporter_ to the "
+                     "Model.", out.getPathName(), out.getTypeName());
         }
 
         if (out.getDependsOnStage() > _minimumStageToRealize) {
@@ -123,10 +123,10 @@ int OutputReporter::end(const SimTK::State& s)
 int OutputReporter::printResults(const std::string& baseName,
     const std::string& dir,  double dT, const std::string& extension)
 {
-    cout << "OutputReporter.printResults: " << endl;
+    log_info("OutputReporter.printResults: ");
 
     if (!getOn()) {
-        printf("OutputReporter.printResults: Off- not printing.\n");
+        log_info("OutputReporter.printResults: Off- not printing.");
         return 0;
     }
 

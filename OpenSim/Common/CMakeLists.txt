@@ -19,21 +19,12 @@ OpenSimAddLibrary(
     KIT Common
     AUTHORS "Clay_Anderson-Ayman_Habib-Peter_Loan"
     # Clients of osimCommon need not link to BTK or ezc3d.
-    LINKLIBS PUBLIC ${Simbody_LIBRARIES}
+    LINKLIBS PUBLIC ${Simbody_LIBRARIES} spdlog::spdlog
              PRIVATE ${BTK_LIBRARIES} ${ezc3d_LIBRARY}
     INCLUDES ${INCLUDES}
     SOURCES ${SOURCES}
     TESTDIRS "Test"
     )
-
-option(OPENSIM_LOG_TO_FILE
-    "Redirect output to both the terminal and an output file."
-    ON)
-
-# Whether cerr & cout shold be redirected to err.log and out.log respectively
-if(OPENSIM_LOG_TO_FILE)
-    target_compile_definitions(osimCommon PRIVATE OPENSIM_LOG_TO_FILE)
-endif()
 
 if(WIN32)
     # On Windows only, debug libraries cannot be mixed with release
