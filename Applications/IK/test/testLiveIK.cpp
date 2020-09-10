@@ -70,7 +70,7 @@ void compareMotionTables(
 
     size_t nt = report.getNumRows();
 
-    // For simplicity, we ignore pelvis coordinates 0-5
+    // For simplicity, we ignore pelvis coordinates (not in map)
     for (size_t i = 0; i < mapStdToReport.size(); ++i) {
         if (mapStdToReport[i] >= 0) {
             auto repVec = report.getDependentColumnAtIndex(i);
