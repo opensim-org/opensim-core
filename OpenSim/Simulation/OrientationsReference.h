@@ -127,7 +127,7 @@ public:
         SimTK::Array_<SimTK::Rotation_<double>>& values) const override;
     /** Default implementation does not support streaming */
     virtual void getNextValuesAndTime(
-            double& time, SimTK::Array_<SimTK::Rotation_<double>>& values) {
+            double& time, SimTK::Array_<SimTK::Rotation_<double>>& values) override {
         throw Exception("getNextValuesAndTime method is not supported for this "
                         "reference {}.",
                 this->getName());
