@@ -61,7 +61,7 @@ void compareMotionTables(
         auto found = std::find(stdLabels.begin(), stdLabels.end(), label);
         if (found != stdLabels.end()) {
             // skip any pelvis translations
-            if (found->find("pelvis_t") == std::string::npos) {
+            if (found->find("pelvis_t") == std::string::npos || label.length()!=9) {
                 index = (int)std::distance(stdLabels.begin(), found);
             }
         }
@@ -70,7 +70,7 @@ void compareMotionTables(
 
     size_t nt = report.getNumRows();
 
-    // For simplicity, we ignore pelvis coordinates (not in map)
+    // For simplicity, we ignore pelvis translations (not in map)
     for (size_t i = 0; i < mapStdToReport.size(); ++i) {
         if (mapStdToReport[i] >= 0) {
             auto repVec = report.getDependentColumnAtIndex(i);

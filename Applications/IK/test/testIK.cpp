@@ -342,7 +342,8 @@ void compareMotionTables(const TimeSeriesTable& report,
         auto found = std::find(stdLabels.begin(), stdLabels.end(), label);
         if (found != stdLabels.end()) {
             // skip any pelvis translations
-            if (found->find("pelvis_t") == std::string::npos) {
+            if (found->find("pelvis_t") == std::string::npos ||
+                    label.length() != 9) {
                 index = (int)std::distance(stdLabels.begin(), found);
             }
         }
