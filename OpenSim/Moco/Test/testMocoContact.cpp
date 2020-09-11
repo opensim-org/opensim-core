@@ -255,7 +255,7 @@ Model createBallHalfSpaceModel(double frictionCoefficient = FRICTION_COEFFICIENT
     auto* ball = new Body("ball", 1, Vec3(0), SimTK::Inertia(1));
     model.addComponent(ball);
     auto* groundBall = new PlanarJoint("groundBall", model.getGround(),
-    Vec3(0), Vec3(0), *ball, Vec3(0), Vec3(0));
+        Vec3(0), Vec3(0), *ball, Vec3(0), Vec3(0));
     auto& rz = groundBall->updCoordinate(PlanarJoint::Coord::RotationZ);
     rz.setPrescribedFunction(Constant(0));
     rz.setDefaultIsPrescribed(true);
