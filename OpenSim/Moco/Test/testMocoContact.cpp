@@ -130,7 +130,7 @@ SimTK::Real testNormalForce(CreateContactFunction createContact) {
         ms.set_transcription_scheme("trapezoidal");
 
         MocoSolution solution = study.solve();
-        solution.write("testContact_solution_testNormalForce.sto");
+        // solution.write("testContact_solution_testNormalForce.sto");
         // moco.visualize(solution);
 
         auto statesTraj = solution.exportToStatesTrajectory(mp);
@@ -224,7 +224,7 @@ void testFrictionForce(CreateContactFunction createContact,
         ms.set_transcription_scheme("trapezoidal");
 
         MocoSolution solution = study.solve();
-        solution.write("testContact_testFrictionForce_solution.sto");
+        // solution.write("testContact_testFrictionForce_solution.sto");
         // study.visualize(solution);
 
         auto statesTraj = solution.exportToStatesTrajectory(mp);
