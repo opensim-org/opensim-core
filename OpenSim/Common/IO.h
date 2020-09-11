@@ -143,7 +143,7 @@ public:
      * - On destruction: switches the calling process's working directory
      *   back to its original directory.
      */
-    class CwdChanger final {
+    class OSIMCOMMON_API CwdChanger final {
         std::string _existingDir;
 
         /**
