@@ -132,6 +132,7 @@ public:
                         "reference {}.",
                 this->getName());
     };
+    virtual bool hasNext() const override { return false; };
     /** get the weighting (importance) of meeting this OrientationsReference in the
         same order as names*/
     void getWeights(const SimTK::State& s,

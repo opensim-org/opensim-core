@@ -60,8 +60,10 @@ void compareMotionTables(
         int index = -1;
         auto found = std::find(stdLabels.begin(), stdLabels.end(), label);
         if (found != stdLabels.end()) {
-            // skip any pelvis translations
-            if (found->find("pelvis_t") == std::string::npos || label.length()!=9) {
+            // skip all pelvis translations pelvis_{tx,ty,tz} 
+            if (found->find("pelvis_tx") == std::string::npos &&
+                    found->find("pelvis_ty") == std::string::npos &&
+                    found->find("pelvis_tz") == std::string::npos) {
                 index = (int)std::distance(stdLabels.begin(), found);
             }
         }

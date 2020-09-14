@@ -116,7 +116,7 @@ public:
     virtual void getNextValuesAndTime(
             double& time, SimTK::Array_<T>& values) = 0;
     // indicate whether to stop or wait for more data
-    virtual bool hasNext() const override { return false; };
+    virtual bool hasNext() const override = 0;
 };
   // END of class templatized Reference_<T>
 //=============================================================================
