@@ -32,6 +32,7 @@ v4.2
   - This improves the performance of component-heavy models by ~5-10 %
   - The behavior and interface of `ComponentPath` should remain the same
 - The new Matlab CustomStaticOptimization.m guides the user to build their own custom static optimization code. 
+- Refactored InverseKinematicsSolver to allow for adding (live) Orientation data to track, introduced BufferedOrientationsReference to queue data (PR #2855)
 
 
 v4.1
