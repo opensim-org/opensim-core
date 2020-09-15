@@ -736,7 +736,7 @@ public:
     MatrixBase& setTo(const ELT& t) {helper.fillWith(reinterpret_cast<const Scalar*>(&t)); return *this;}
     MatrixBase& setToNaN() {helper.fillWithScalar(CNT<StdNumber>::getNaN()); return *this;}
     MatrixBase& setToZero() {helper.fillWithScalar(StdNumber(0)); return *this;}
- #ifndef SWIG
+
     // View creating operators. TODO: these should be DeadMatrixViews  
     inline RowVectorView_<ELT> row(int i) const;   // select a row
     inline RowVectorView_<ELT> updRow(int i);
@@ -747,7 +747,7 @@ public:
     RowVectorView_<ELT> operator[](int i)       {return updRow(i);}
     VectorView_<ELT>    operator()(int j) const {return col(j);}
     VectorView_<ELT>    operator()(int j)       {return updCol(j);}
-     
+#ifndef SWIG     
     // Select a block.
     inline MatrixView_<ELT> block(int i, int j, int m, int n) const;
     inline MatrixView_<ELT> updBlock(int i, int j, int m, int n);
@@ -832,9 +832,8 @@ public:
     /// to guarantee that you can access the value of every element of a matrix, stored or not,
     /// use getAnyElt() instead.
     const ELT& getElt(int i, int j) const { return *reinterpret_cast<const ELT*>(helper.getElt(i,j)); }
-#ifndef SWIG
     ELT&       updElt(int i, int j)       { return *reinterpret_cast<      ELT*>(helper.updElt(i,j)); }
- 
+#ifndef SWIG 
     const ELT& operator()(int i, int j) const {return getElt(i,j);}
     ELT&       operator()(int i, int j)       {return updElt(i,j);}
 
@@ -2275,22 +2274,23 @@ template <class ELT> class RowVector_ : public RowVectorBase<ELT> {
     typedef RowVectorBase<ENeg>             BaseNeg;
 #endif
 public:
-    RowVector_() : Base() {}   // 1x0 reallocatable
+    RowVector_() : RowVectorBase<ELT>() {} // 1x0 reallocatable
     // Uses default destructor.
 
     // Copy constructor is deep.
-    RowVector_(const RowVector_& src) : Base(src) {}
+    RowVector_(const RowVector_& src) : RowVectorBase<ELT>(src) {}
 
-#ifndef SWIG
+
     // Implicit conversions.
-    RowVector_(const Base& src) : Base(src) {}    // e.g., RowVectorView
-    RowVector_(const BaseNeg& src) : Base(src) {}  
+    RowVector_(const RowVectorBase<ELT>& src) : RowVectorBase<ELT>(src) {} // e.g., RowVectorView
+#ifndef SWIG
+    RowVector_(const BaseNeg& src) : RowVectorBase(src) {}  
 #endif
 
     // Copy assignment is deep and can be reallocating if this RowVector
     // has no View.
     RowVector_& operator=(const RowVector_& src) {
-        Base::operator=(src); return*this;
+        RowVectorBase<ELT>::operator=(src); return*this;
     }
 
 

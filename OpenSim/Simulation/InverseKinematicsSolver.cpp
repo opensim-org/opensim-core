@@ -51,12 +51,11 @@ InverseKinematicsSolver::InverseKinematicsSolver(const Model& model,
     const MarkersReference& markersReference,
     const OrientationsReference& orientationsReference,
     SimTK::Array_<CoordinateReference>& coordinateReferences,
-    double constraintWeight ) :
-        AssemblySolver(model, coordinateReferences, constraintWeight)
-{
+        double constraintWeight):
+          AssemblySolver(model, coordinateReferences, constraintWeight),
+          _orientationsReference(orientationsReference) {
     // InverseKinematicsSolver has its own internal copy of the References to track
     _markersReference = markersReference;
-    _orientationsReference = orientationsReference;
 
     setAuthors("Ajay Seth");
     
