@@ -32,10 +32,8 @@
 //=============================================================================
 // STATICS
 //=============================================================================
-using namespace std;
-using namespace SimTK;
 using namespace OpenSim;
-
+using namespace SimTK;
 //=============================================================================
 // CONSTRUCTOR(S)
 //=============================================================================
@@ -43,7 +41,8 @@ using namespace OpenSim;
 /*
 * Default constructor.
 */
-ScapulothoracicJoint::ScapulothoracicJoint() : Super()
+ScapulothoracicJoint::ScapulothoracicJoint()
+    : Super()
 {
     constructProperties();
 }
@@ -52,12 +51,17 @@ ScapulothoracicJoint::ScapulothoracicJoint() : Super()
 /*
  * Convenience Constructor.
  */
-ScapulothoracicJoint::ScapulothoracicJoint(const std::string& name,
+ScapulothoracicJoint::ScapulothoracicJoint(
+    const std::string& name,
     const PhysicalFrame& parent,
     const PhysicalFrame& child,
     const SimTK::Vec3& ellipsoidRadii,
     SimTK::Vec2 wingingOrigin,
-    double wingingDirection) : Super(name, parent, child)
+    double wingingDirection)
+    : Super(
+          name,
+          parent,
+          child)
 {
     constructProperties();
     upd_thoracic_ellipsoid_radii_x_y_z() = ellipsoidRadii;
@@ -67,7 +71,8 @@ ScapulothoracicJoint::ScapulothoracicJoint(const std::string& name,
 }
 
 /** Convenience constructor */
-ScapulothoracicJoint::ScapulothoracicJoint(const std::string& name,
+ScapulothoracicJoint::ScapulothoracicJoint(
+    const std::string& name,
     const PhysicalFrame& parent,
     const SimTK::Vec3& locationInParent,
     const SimTK::Vec3& orientationInParent,
@@ -76,9 +81,15 @@ ScapulothoracicJoint::ScapulothoracicJoint(const std::string& name,
     const SimTK::Vec3& orientationInChild,
     const SimTK::Vec3& ellipsoidRadii,
     SimTK::Vec2 wingingOrigin,
-    double wingingDirection) :
-        Super(name, parent, locationInParent, orientationInParent,
-            child, locationInChild, orientationInChild)
+    double wingingDirection)
+    : Super(
+          name,
+          parent,
+          locationInParent,
+          orientationInParent,
+          child,
+          locationInChild,
+          orientationInChild)
 {
     constructProperties();
     upd_thoracic_ellipsoid_radii_x_y_z() = ellipsoidRadii;
@@ -97,14 +108,9 @@ ScapulothoracicJoint::ScapulothoracicJoint(const std::string& name,
 void ScapulothoracicJoint::constructProperties()
 {
     setAuthors("Ajay Seth");
-    Vec3 radii(NaN);
-    Vector origin(2, 0.0);
-    double dir = 0;
-
-    origin.size();
-    constructProperty_thoracic_ellipsoid_radii_x_y_z(radii);
-    constructProperty_scapula_winging_axis_origin(origin);
-    constructProperty_scapula_winging_axis_direction(dir);
+    constructProperty_thoracic_ellipsoid_radii_x_y_z(Vec3(NaN));
+    constructProperty_scapula_winging_axis_origin(Vector(2, 0.0));
+    constructProperty_scapula_winging_axis_direction(0.0);
 }
 
 
@@ -121,25 +127,27 @@ void ScapulothoracicJoint::constructProperties()
 void ScapulothoracicJoint::extendScale(const SimTK::State& s,
                                        const ScaleSet& scaleSet)
 {
-    Vec3 scaleFactors(1.0);
-
     // Joint knows how to scale locations of the joint in parent and on the body
     Super::extendScale(s, scaleSet);
 
-    // SCALING TO DO WITH THE PARENT BODY -----
-    // Joint kinematics are scaled by the scale factors for the
-    // parent body, so get those body's factors
-    const string& parentName = getParentFrame().getName();
-    for (int i=0; i<scaleSet.getSize(); i++) {
+    const std::string& parentName = getParentFrame().getName();
+
+    // Scaling related to the parent body:
+    //
+    // Joint kinematics are scaled by the scale factors for the parent body,
+    // so get those body's factors
+    Vec3 scaleFactors(1.0);
+    for (int i = 0; i < scaleSet.getSize(); i++) {
         const Scale &scale = scaleSet.get(i);
-        if (scale.getSegmentName()==parentName) {
+
+        if (scale.getSegmentName() == parentName) {
             scale.getScaleFactors(scaleFactors);
             break;
         }
     }
 
+    // Scale the size of the mobilizer
     for (int i=0; i<3; i++) {
-        // Scale the size of the mobilizer
         upd_thoracic_ellipsoid_radii_x_y_z()[i] *= scaleFactors[i];
     }
 }
@@ -151,83 +159,130 @@ void ScapulothoracicJoint::extendScale(const SimTK::State& s,
 void ScapulothoracicJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     Super::extendAddToSystem(system);
+
     // Transform for ellipsoid joint frame in intermediate Scapula massless
-    // body frame such that intermediate frame is aligned with scapula joint
+    // body frame.
+    //
+    // Oriented such that intermediate frame is aligned with scapula joint
     // frame with respect to the scapula body frame as user specified by
     // _location and _orientation
-    //Rotation rotation(BodyRotationSequence, _orientation[0],XAxis, _orientation[1],YAxis,
-    //	_orientation[2]+SimTK::Pi/2, ZAxis);
-    //SimTK::Transform ellipsoidJointFrameInIntermediate(rotation, _location);
-    Rotation rotation(BodyRotationSequence, 0,XAxis, 0,YAxis, Pi/2, ZAxis);
-    SimTK::Transform ellipsoidJointFrameInIntermediate(rotation, Vec3(0.0));
+    Transform ellipsoidJointFrameInIntermediate{
+        Rotation{
+            BodyRotationSequence,
+            0, XAxis,
+            0, YAxis,
+            Pi/2,
+            ZAxis},
+        Vec3(0.0)};
 
-    const SimTK::Transform& parentTransform =
-        getParentFrame().findTransformInBaseFrame();
-    // Transform for Ellipsoid in parent body (Thorax)
-    // Note: Ellipsoid rotated Pi/2 w.r.t. parent (i.e. Thorax) so that abduction and elevation are positive
-    const Vec3 orientationInParent =
-        parentTransform.R().convertRotationToBodyFixedXYZ();
-    Rotation parentRotation(BodyRotationSequence,
-        orientationInParent[0], XAxis,
-        orientationInParent[1], YAxis,
-        orientationInParent[2]+SimTK::Pi/2, ZAxis);
+    // Transform for Ellipsoid in parent body (Thorax).
+    //
+    // Note: Ellipsoid rotated Pi/2 w.r.t. parent (i.e. Thorax) so that
+    //       abduction and elevation are positive.
+    Transform ellipsoidJointFrameInThorax = [&](){
+        Transform parentTransform = getParentFrame().findTransformInBaseFrame();
 
-    SimTK::Transform ellipsoidJointFrameInThorax(parentRotation,
-        parentTransform.p());
+        const Vec3 orientationInParent =
+            parentTransform.R().convertRotationToBodyFixedXYZ();
 
-    // CREATE MOBILIZED BODY
-    // Ellipsoid is rotated Pi/2 for desired rotations, but user's still wants to define Ellipsoid shape w.r.t thorax
-    // Swap ellipsoidRadii X,Y,Z in Thorax body frame to Y, X, Z in rotated joint frame in parent
-    Vec3 ellipsoidRadii(get_thoracic_ellipsoid_radii_x_y_z()[1],
-        get_thoracic_ellipsoid_radii_x_y_z()[0],
-        get_thoracic_ellipsoid_radii_x_y_z()[2]);
+        return Transform{
+            Rotation{
+                BodyRotationSequence,
+                orientationInParent[0], XAxis,
+                orientationInParent[1], YAxis,
+                orientationInParent[2] + Pi/2,
+                ZAxis},
+            parentTransform.p()};
+    }();
 
+    // careful: this is both an in-param and an out-param below
     int coordinateIndexForMobility = 0;
 
-    MobilizedBody::Ellipsoid simtkMasslessBody1 =
-        createMobilizedBody<MobilizedBody::Ellipsoid>(
-        system.updMatterSubsystem().updMobilizedBody(getParentFrame().getMobilizedBodyIndex()),
-        ellipsoidJointFrameInThorax, SimTK::Body::Massless(),
-        ellipsoidJointFrameInIntermediate,
-        coordinateIndexForMobility);
-    simtkMasslessBody1.setDefaultRadii(ellipsoidRadii);
+    // Create mobilized body.
+    //
+    // Ellipsoid is rotated Pi/2 for desired rotations, but user's still wants
+    // to define Ellipsoid shape w.r.t thorax.
+    //
+    // Swap ellipsoidRadii X,Y,Z in Thorax body frame to Y, X, Z in rotated
+    // joint frame in parent.
+    MobilizedBody::Ellipsoid simtkMasslessBody1 = [&]() {
+        const SimTK::MobilizedBodyIndex& parentMobodIndex =
+            getParentFrame().getMobilizedBodyIndex();
 
-    // get unit vector version of direction in the scapula joint frame of the Ellipsoid
-    // where the joint Z-axis is normal to the ellipsoid surface, X-axis is in the
-    // direction of abduction and Y is elevation in the neutral position
-    // winging is orthogonal to upward rotation (about Z) with axis in XY-plane
-    // winging direction for 0 is aligned with intermediate frame Y and rotates
-    // counterclockwise with increasing angles.
-    const double& wingDirection = get_scapula_winging_axis_direction();
-    SimTK::UnitVec3 dir(-sin(wingDirection), cos(wingDirection), 0);
+        MobilizedBody& parentMobod =
+            system.updMatterSubsystem().updMobilizedBody(parentMobodIndex);
 
-    // Find rotation that aligns z-axis of pin mobilizer frame to winging axis
-    // This is in the scapula-ellipsoid (massless body) frame
-    SimTK::Rotation wingOrientationInIntermediateFrame(dir, ZAxis);
+        auto mobod = createMobilizedBody<MobilizedBody::Ellipsoid>(
+            parentMobod,
+            ellipsoidJointFrameInThorax,
+            SimTK::Body::Massless(),
+            ellipsoidJointFrameInIntermediate,
+            coordinateIndexForMobility);
 
-    // origin of the winging axis w.r.t to the scapula joint frame of the ellipsoid
-    SimTK::Vec3 wingOriginInIntermediateFrame(
-        get_scapula_winging_axis_origin(0), get_scapula_winging_axis_origin(1), 0);
-    // winging joint transform in the scapula ellipsoid joint frame
-    SimTK::Transform wingingInIntermediateFrame(
-        wingOrientationInIntermediateFrame,
-        wingOriginInIntermediateFrame);
+        // swizzle radii coordinates appropriately
+        Vec3 ellipsoidRadii{
+            get_thoracic_ellipsoid_radii_x_y_z()[1],
+            get_thoracic_ellipsoid_radii_x_y_z()[0],
+            get_thoracic_ellipsoid_radii_x_y_z()[2]};
+        mobod.setDefaultRadii(ellipsoidRadii);
 
-    MobilizedBody::Pin simtkMasslessBody2 =
-        createMobilizedBody<MobilizedBody::Pin>(simtkMasslessBody1,
-        wingingInIntermediateFrame, SimTK::Body::Massless(),
-        wingingInIntermediateFrame, coordinateIndexForMobility);
+        return mobod;
+    }();
+
+    MobilizedBody::Pin simtkMasslessBody2 = [&]() {
+        // get unit vector version of direction in the scapula joint frame of
+        // the Ellipsoid, where:
+        //
+        // - the joint Z-axis is normal to the ellipsoid surface
+        // - the joint X-axis is in the direction of abduction
+        // - the joint Y-axis is elevation in the neutral position
+        //
+        // winging is orthogonal to upward rotation (about Z) with axis in
+        // XY-plane winging direction for 0 is aligned with intermediate frame
+        // Y and rotates counterclockwise with increasing angles.
+        const double wingDirection = get_scapula_winging_axis_direction();
+        SimTK::UnitVec3 dir(
+            -sin(wingDirection),
+            cos(wingDirection),
+            0);
+
+        // Find rotation that aligns z-axis of pin mobilizer frame to winging
+        // axis. This is in the scapula-ellipsoid (massless body) frame.
+        SimTK::Rotation wingOrientationInIntermediateFrame(dir, ZAxis);
+
+        // origin of the winging axis w.r.t to the scapula joint frame of the
+        // ellipsoid
+        SimTK::Vec3 wingOriginInIntermediateFrame(
+            get_scapula_winging_axis_origin(0),
+            get_scapula_winging_axis_origin(1),
+            0);
+
+        // winging joint transform in the scapula ellipsoid joint frame
+        SimTK::Transform wingingInIntermediateFrame(
+            wingOrientationInIntermediateFrame,
+            wingOriginInIntermediateFrame);
+
+        return createMobilizedBody<MobilizedBody::Pin>(
+            simtkMasslessBody1,
+            wingingInIntermediateFrame,
+            SimTK::Body::Massless(),
+            wingingInIntermediateFrame,
+            coordinateIndexForMobility);
+    }();
 
     // Define the scapular joint frame in w.r.t to the Scapula body frame
     //Rotation rotation2(BodyRotationSequence, orientation[0], XAxis,
     //    orientation[1], YAxis, orientation[2], ZAxis);
     //SimTK::Transform jointInScapula(rotation2, location);
-    MobilizedBody::Weld mobod(simtkMasslessBody2, Transform(),
+    MobilizedBody::Weld mobod(
+        simtkMasslessBody2,
+        Transform(),
         getChildInternalRigidBody(),
         getChildFrame().findTransformInBaseFrame());
 
     coordinateIndexForMobility = assignSystemIndicesToBodyAndCoordinates(
         mobod,
-        &getChildFrame(), 0,
+        &getChildFrame(),
+        0,
         coordinateIndexForMobility);
 }

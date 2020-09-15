@@ -28,44 +28,57 @@
 
 namespace OpenSim {
 
-//=============================================================================
-//=============================================================================
 /**
- * A class implementing a 4dof ScapulothoracicJoint.
- * Motion of the scapula is described by an ellipsoid surface fixed
- * to the thorax upon which the joint frame of scapul rides. The motion on
- * the surface is governed by 2 dofs: up-down and medio-lateral described
- * by latitude and longitudinal angles. Scapula rotation about the normal to
- * the ellipsoid surface is the 3rd dof. The 4th dof is a rotation about a
- * "winging" axis defined by a point and axis direction in the scapula frame.
+ * A class implementing a 4-DOF ScapulothoracicJoint.
+ *
+ * Motion of the scapula is described by an ellipsoid surface fixed to the
+ * thorax upon which the joint frame of scapul rides. The DOFs are:
+ *
+ * - 2 DOFs: up-down/medio-laternal: The motion on the surface. These are
+ *           described by latitude and longitudinal angles.
+ *
+ * - 1 DOF:  scapula rotation about the normal to the ellipsoid surface
+ *
+ * - 1 DOF:  Rotation about a "winging" axis defined by a point and axis
+ *           direction in the scapula frame.
  *
  * @author Ajay Seth
  */
-class OSIMSIMULATION_API ScapulothoracicJoint : public Joint  {
-OpenSim_DECLARE_CONCRETE_OBJECT(ScapulothoracicJoint, Joint);
+class OSIMSIMULATION_API ScapulothoracicJoint : public Joint {
+
+    OpenSim_DECLARE_CONCRETE_OBJECT(ScapulothoracicJoint, Joint);
 
 public:
-//=============================================================================
-// PROPERTIES
-//=============================================================================
-    OpenSim_DECLARE_PROPERTY(thoracic_ellipsoid_radii_x_y_z, SimTK::Vec3,
-        "Radii of the thoracic surface ellipsoid a Vec3(rX, rY, rZ).");
+    OpenSim_DECLARE_PROPERTY(
+        thoracic_ellipsoid_radii_x_y_z,
+        SimTK::Vec3,
+        "A SimTK::Vec3(rX, rY, rZ) representing the radii of the thoracic "
+        "surface ellipsoid");
 
-    OpenSim_DECLARE_LIST_PROPERTY_SIZE(scapula_winging_axis_origin, double, 2,
-        "Winging axis origin (x,y coordinates) in the scapula plane "
-        "(tangent to the thoracic surface).");
+    OpenSim_DECLARE_LIST_PROPERTY_SIZE(
+        scapula_winging_axis_origin,
+        double,
+        2,
+        "x, y coordinates representing the winging axis origin in the scapula "
+        "plane (tangent to the thoracic surface).");
 
-    OpenSim_DECLARE_PROPERTY(scapula_winging_axis_direction, double,
+    OpenSim_DECLARE_PROPERTY(
+        scapula_winging_axis_direction,
+        double,
         "Winging axis orientation (in radians) in the scapula plane.");
-    /** Indices of Coordinates for use as arguments to getCoordinate() and
-    updCoordinate().
 
-    <b>C++ example</b>
-    \code{.cpp}
-    const auto& r1 = scapuloThoracicJoint.getCoordinate(
-                            ScapuloThoracicJoint::Coord::Abduction);
-    \endcode
-    */
+    /**
+     * Enum that represents the indices of Coordinates for use as arguments
+     * to getCoordinate() and updCoordinate().
+     *
+     * <b>C++ example</b>:
+     *
+     * \code{.cpp}
+     * const auto& r1 =
+     *     scapuloThoracicJoint.getCoordinate(
+     *         ScapuloThoracicJoint::Coord::Abduction);
+     * \endcode
+     */
     enum class Coord : unsigned {
         Abduction,
         Elevation,
@@ -74,15 +87,20 @@ public:
     };
 
 private:
-    /** Specify the Coordinates of the BallJoint. */
-    CoordinateIndex rx{ constructCoordinate(Coordinate::MotionType::Rotational,
-        static_cast<unsigned>(Coord::Abduction)) };
-    CoordinateIndex ry{ constructCoordinate(Coordinate::MotionType::Rotational,
-        static_cast<unsigned>(Coord::Elevation)) };
-    CoordinateIndex rz{ constructCoordinate(Coordinate::MotionType::Rotational,
-        static_cast<unsigned>(Coord::UpwardRotation)) };
-    CoordinateIndex ryp{ constructCoordinate(Coordinate::MotionType::Rotational,
-        static_cast<unsigned>(Coord::Winging)) };
+    // indices to the coordinates of the joint. The coordinate itself can be
+    // retrieved via Joint::get_coordinates()
+    CoordinateIndex rx = constructCoordinate(
+        Coordinate::MotionType::Rotational,
+        static_cast<unsigned>(Coord::Abduction));
+    CoordinateIndex ry = constructCoordinate(
+        Coordinate::MotionType::Rotational,
+        static_cast<unsigned>(Coord::Elevation));
+    CoordinateIndex rz = constructCoordinate(
+        Coordinate::MotionType::Rotational,
+        static_cast<unsigned>(Coord::UpwardRotation));
+    CoordinateIndex ryp = constructCoordinate(
+        Coordinate::MotionType::Rotational,
+        static_cast<unsigned>(Coord::Winging));
 
 public:
 //=============================================================================
@@ -91,8 +109,10 @@ public:
     // CONSTRUCTION
     /** Default contructor */
     ScapulothoracicJoint();
-    /** Convenience Joint like Constructor */
-    ScapulothoracicJoint(const std::string& name,
+
+    /** Convenience Joint-like Constructor */
+    ScapulothoracicJoint(
+        const std::string& name,
         const PhysicalFrame& parent,
         const PhysicalFrame& child,
         const SimTK::Vec3& ellipsoidRadii,
@@ -100,7 +120,8 @@ public:
         double wingingDirection);
 
     /** Convenience constructor */
-    ScapulothoracicJoint(const std::string& name,
+    ScapulothoracicJoint(
+        const std::string& name,
         const PhysicalFrame& parent,
         const SimTK::Vec3& locationInParent,
         const SimTK::Vec3& orientationInParent,
@@ -113,22 +134,30 @@ public:
 
     // default destructor, copy constructor, copy assignment
 
-    /** Exposes getCoordinate() method defined in base class (overloaded below).
-    @see Joint */
+    /**
+     * Exposes getCoordinate() method defined in base class (overloaded below).
+     * @see Joint
+     */
     using Joint::getCoordinate;
 
-    /** Exposes updCoordinate() method defined in base class (overloaded below).
-    @see Joint */
+    /**
+     * Exposes updCoordinate() method defined in base class (overloaded below).
+     * @see Joint
+     */
     using Joint::updCoordinate;
 
-    /** Get a const reference to a Coordinate associated with this Joint.
-    @see Coord */
+    /**
+     * Get a const reference to a Coordinate associated with this Joint.
+     * @see Coord
+     */
     const Coordinate& getCoordinate(Coord idx) const {
         return get_coordinates(static_cast<unsigned>(idx));
     }
 
-    /** Get a writable reference to a Coordinate associated with this Joint.
-    @see Coord */
+    /**
+     * Get a writable reference to a Coordinate associated with this Joint.
+     * @see Coord
+     */
     Coordinate& updCoordinate(Coord idx) {
         return upd_coordinates(static_cast<unsigned>(idx));
     }
@@ -136,19 +165,9 @@ public:
     // SCALE
     void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
-
-
 protected:
-    /** ModelComponent Interface */
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
-    // Visual support in SimTK visualizer
-/*    void generateDecorations(
-        bool fixed,
-        const ModelDisplayHints&                    hints,
-        const SimTK::State&                         state,
-        SimTK::Array_<SimTK::DecorativeGeometry>&   geometryArray) const override;
-*/
 private:
     void constructProperties();
 
