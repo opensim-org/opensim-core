@@ -1,4 +1,4 @@
-#ifndef OPENSIM_SCAPULOTHORACIC_JOINT_H_ 
+#ifndef OPENSIM_SCAPULOTHORACIC_JOINT_H_
 #define OPENSIM_SCAPULOTHORACIC_JOINT_H_
 /* -------------------------------------------------------------------------- *
  *                     OpenSim:  ScapulothoracicJoint.h                       *
@@ -36,7 +36,7 @@ namespace OpenSim {
  * to the thorax upon which the joint frame of scapul rides. The motion on
  * the surface is governed by 2 dofs: up-down and medio-lateral described
  * by latitude and longitudinal angles. Scapula rotation about the normal to
- * the ellipsoid surface is the 3rd dof. The 4th dof is a rotation about a 
+ * the ellipsoid surface is the 3rd dof. The 4th dof is a rotation about a
  * "winging" axis defined by a point and axis direction in the scapula frame.
  *
  * @author Ajay Seth
@@ -55,7 +55,7 @@ public:
         "Winging axis origin (x,y coordinates) in the scapula plane "
         "(tangent to the thoracic surface).");
 
-    OpenSim_DECLARE_PROPERTY(scapula_winging_axis_direction, double, 
+    OpenSim_DECLARE_PROPERTY(scapula_winging_axis_direction, double,
         "Winging axis orientation (in radians) in the scapula plane.");
     /** Indices of Coordinates for use as arguments to getCoordinate() and
     updCoordinate().

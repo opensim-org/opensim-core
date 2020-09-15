@@ -37,7 +37,7 @@ using namespace SimTK;
 using namespace OpenSim;
 
 //=============================================================================
-// CONSTRUCTOR(S) 
+// CONSTRUCTOR(S)
 //=============================================================================
 //_____________________________________________________________________________
 /*
@@ -76,7 +76,7 @@ ScapulothoracicJoint::ScapulothoracicJoint(const std::string& name,
     const SimTK::Vec3& orientationInChild,
     const SimTK::Vec3& ellipsoidRadii,
     SimTK::Vec2 wingingOrigin,
-    double wingingDirection) : 
+    double wingingDirection) :
         Super(name, parent, locationInParent, orientationInParent,
             child, locationInChild, orientationInChild)
 {
@@ -138,7 +138,7 @@ void ScapulothoracicJoint::extendScale(const SimTK::State& s,
         }
     }
 
-    for(int i=0; i<3; i++){ 
+    for (int i=0; i<3; i++) {
         // Scale the size of the mobilizer
         upd_thoracic_ellipsoid_radii_x_y_z()[i] *= scaleFactors[i];
     }
@@ -153,9 +153,9 @@ void ScapulothoracicJoint::extendAddToSystem(SimTK::MultibodySystem& system) con
     Super::extendAddToSystem(system);
     // Transform for ellipsoid joint frame in intermediate Scapula massless
     // body frame such that intermediate frame is aligned with scapula joint
-    // frame with respect to the scapula body frame as  user specified by 
-    // _location and _orientation 
-    //Rotation rotation(BodyRotationSequence, _orientation[0],XAxis, _orientation[1],YAxis, 
+    // frame with respect to the scapula body frame as user specified by
+    // _location and _orientation
+    //Rotation rotation(BodyRotationSequence, _orientation[0],XAxis, _orientation[1],YAxis,
     //	_orientation[2]+SimTK::Pi/2, ZAxis);
     //SimTK::Transform ellipsoidJointFrameInIntermediate(rotation, _location);
     Rotation rotation(BodyRotationSequence, 0,XAxis, 0,YAxis, Pi/2, ZAxis);
@@ -168,18 +168,18 @@ void ScapulothoracicJoint::extendAddToSystem(SimTK::MultibodySystem& system) con
     const Vec3 orientationInParent =
         parentTransform.R().convertRotationToBodyFixedXYZ();
     Rotation parentRotation(BodyRotationSequence,
-        orientationInParent[0], XAxis, 
-        orientationInParent[1], YAxis, 
+        orientationInParent[0], XAxis,
+        orientationInParent[1], YAxis,
         orientationInParent[2]+SimTK::Pi/2, ZAxis);
 
     SimTK::Transform ellipsoidJointFrameInThorax(parentRotation,
         parentTransform.p());
-    
+
     // CREATE MOBILIZED BODY
     // Ellipsoid is rotated Pi/2 for desired rotations, but user's still wants to define Ellipsoid shape w.r.t thorax
     // Swap ellipsoidRadii X,Y,Z in Thorax body frame to Y, X, Z in rotated joint frame in parent
-    Vec3 ellipsoidRadii(get_thoracic_ellipsoid_radii_x_y_z()[1], 
-        get_thoracic_ellipsoid_radii_x_y_z()[0], 
+    Vec3 ellipsoidRadii(get_thoracic_ellipsoid_radii_x_y_z()[1],
+        get_thoracic_ellipsoid_radii_x_y_z()[0],
         get_thoracic_ellipsoid_radii_x_y_z()[2]);
 
     int coordinateIndexForMobility = 0;
@@ -187,13 +187,13 @@ void ScapulothoracicJoint::extendAddToSystem(SimTK::MultibodySystem& system) con
     MobilizedBody::Ellipsoid simtkMasslessBody1 =
         createMobilizedBody<MobilizedBody::Ellipsoid>(
         system.updMatterSubsystem().updMobilizedBody(getParentFrame().getMobilizedBodyIndex()),
-        ellipsoidJointFrameInThorax, SimTK::Body::Massless(), 
+        ellipsoidJointFrameInThorax, SimTK::Body::Massless(),
         ellipsoidJointFrameInIntermediate,
         coordinateIndexForMobility);
     simtkMasslessBody1.setDefaultRadii(ellipsoidRadii);
 
-    // get unit vector version of direction in the scapula joint frame of the Ellipsoid 
-    // where the joint Z-axis is normal to the ellipsoid surface, X-axis is in the 
+    // get unit vector version of direction in the scapula joint frame of the Ellipsoid
+    // where the joint Z-axis is normal to the ellipsoid surface, X-axis is in the
     // direction of abduction and Y is elevation in the neutral position
     // winging is orthogonal to upward rotation (about Z) with axis in XY-plane
     // winging direction for 0 is aligned with intermediate frame Y and rotates
@@ -210,16 +210,16 @@ void ScapulothoracicJoint::extendAddToSystem(SimTK::MultibodySystem& system) con
         get_scapula_winging_axis_origin(0), get_scapula_winging_axis_origin(1), 0);
     // winging joint transform in the scapula ellipsoid joint frame
     SimTK::Transform wingingInIntermediateFrame(
-        wingOrientationInIntermediateFrame, 
+        wingOrientationInIntermediateFrame,
         wingOriginInIntermediateFrame);
 
     MobilizedBody::Pin simtkMasslessBody2 =
         createMobilizedBody<MobilizedBody::Pin>(simtkMasslessBody1,
-        wingingInIntermediateFrame, SimTK::Body::Massless(), 
+        wingingInIntermediateFrame, SimTK::Body::Massless(),
         wingingInIntermediateFrame, coordinateIndexForMobility);
 
     // Define the scapular joint frame in w.r.t to the Scapula body frame
-    //Rotation rotation2(BodyRotationSequence, orientation[0], XAxis, 
+    //Rotation rotation2(BodyRotationSequence, orientation[0], XAxis,
     //    orientation[1], YAxis, orientation[2], ZAxis);
     //SimTK::Transform jointInScapula(rotation2, location);
     MobilizedBody::Weld mobod(simtkMasslessBody2, Transform(),
