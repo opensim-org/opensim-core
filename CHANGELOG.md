@@ -33,6 +33,7 @@ v4.2
   - The behavior and interface of `ComponentPath` should remain the same
 - The new Matlab CustomStaticOptimization.m guides the user to build their own custom static optimization code. 
 - Dropped support for separate Kinematics for application of External Loads. ([PR #2770] (https://github.com/opensim-org/opensim-core/pull/2770)). 
+- Refactored InverseKinematicsSolver to allow for adding (live) Orientation data to track, introduced BufferedOrientationsReference to queue data (PR #2855)
 
 v4.1
 ====

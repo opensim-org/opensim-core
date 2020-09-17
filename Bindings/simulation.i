@@ -205,19 +205,28 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/Model/ExpressionBasedBushingForce.h>
 
 %include <OpenSim/Simulation/Solver.h>
-%include <OpenSim/Simulation/Reference.h>
 
+%include <OpenSim/Simulation/Reference.h>
 %template(ReferenceVec3) OpenSim::Reference_<SimTK::Vec3>;
 %template(ReferenceDouble) OpenSim::Reference_<double>;
 %template(ReferenceRotation) OpenSim::Reference_<SimTK::Rotation_<double>>;
+%template(StreamableReferenceRotation) OpenSim::StreamableReference_<SimTK::Rotation_<double>>;
+
 %template(SimTKArrayCoordinateReference) SimTK::Array_<OpenSim::CoordinateReference>;
 
 
+%shared_ptr(OpenSim::Reference_<SimTK::Vec3>);
+%shared_ptr(ReferenceDouble);
+%shared_ptr(OpenSim::Reference_<SimTK::Rotation_<double>>);
 %include <OpenSim/Simulation/MarkersReference.h>
+%shared_ptr(OpenSim::MarkersReference);
 %template(SetMarkerWeights) OpenSim::Set<MarkerWeight, OpenSim::Object>;
 %include <OpenSim/Simulation/CoordinateReference.h>
 %template (SetOientationWeights) OpenSim::Set<OrientationWeight, OpenSim::Object>;
 %include <OpenSim/Simulation/OrientationsReference.h>
+%shared_ptr(OpenSim::OrientationsReference);
+%include <OpenSim/Simulation/BufferedOrientationsReference.h>
+%shared_ptr(OpenSim::BufferedOrientationsReference);
 
 %include <OpenSim/Simulation/AssemblySolver.h>
 %include <OpenSim/Simulation/InverseKinematicsSolver.h>

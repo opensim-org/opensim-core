@@ -300,7 +300,7 @@ bool MarkerPlacer::processModel(Model* aModel,
     Set<MarkerWeight> markerWeightSet;
     _ikTaskSet.createMarkerWeightSet(markerWeightSet); // order in tasks file
     // MarkersReference takes ownership of marker data (staticPose)
-    MarkersReference markersReference(staticPoseTable, markerWeightSet);
+    std::shared_ptr<MarkersReference> markersReference(new MarkersReference(staticPoseTable, markerWeightSet));
     SimTK::Array_<CoordinateReference> coordinateReferences;
 
     // Load the coordinate data

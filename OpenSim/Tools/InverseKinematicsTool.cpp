@@ -171,7 +171,7 @@ bool InverseKinematicsTool::run()
         const auto& times = markersTable.getIndependentColumn();
 
         // create the solver given the input data
-        InverseKinematicsSolver ikSolver(*_model, markersReference,
+        InverseKinematicsSolver ikSolver(*_model, make_shared<MarkersReference>(markersReference),
             coordinateReferences, get_constraint_weight());
         ikSolver.setAccuracy(get_accuracy());
         s.updTime() = times[start_ix];

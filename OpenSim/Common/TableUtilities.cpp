@@ -288,7 +288,29 @@ TimeSeriesTable TableUtilities::resampleWithIntervalBounded(
     }
     return resampleWithInterval<FunctionType>(in, interval);
 }
+TimeSeriesTable_<SimTK::Vec3> TableUtilities::convertRotationsToEulerAngles(
+        const TimeSeriesTable_<SimTK::Rotation>& rotTable) {
+    auto labels = rotTable.getColumnLabels();
+    auto& times = rotTable.getIndependentColumn();
+    const auto& rotations = rotTable.getMatrix();
 
+    int nc = int(labels.size());
+    int nt = int(times.size());
+
+    SimTK::Matrix_<SimTK::Vec3> eulerMatrix(nt, nc, SimTK::Vec3(SimTK::NaN));
+
+    for (int i = 0; i < nt; ++i) {
+        for (int j = 0; j < nc; ++j) {
+            eulerMatrix.updElt(i, j) =
+                    rotations(i, j).convertRotationToBodyFixedXYZ();
+        }
+    }
+    TimeSeriesTable_<SimTK::Vec3> eulerData{times, eulerMatrix, labels};
+    eulerData.updTableMetaData().setValueForKey(
+            "Units", std::string("Radians"));
+
+    return eulerData;
+}
 // Explicit template instantiations.
 namespace OpenSim {
 template OSIMCOMMON_API TimeSeriesTable TableUtilities::resample<SimTK::Vector, GCVSpline>(
