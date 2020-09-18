@@ -32,12 +32,10 @@
 using namespace OpenSim;
 
 // TODO
-// - add setGuess
 // - add documentation. pre/post conditions.
 // - write test cases for exceptions, for calling methods out of order.
 // - model_file vs model.
 // - test problems without controls (including with setting guesses).
-// - test that names for setStateInfo() are actual existing states in the model.
 
 std::unique_ptr<Model> createSlidingMassModel() {
     auto model = make_unique<Model>();
@@ -163,7 +161,7 @@ TEMPLATE_TEST_CASE("Non-uniform mesh", "", MocoCasADiSolver,
                 Catch::Contains("Invalid custom mesh; mesh "
                                 "points must be strictly increasing."));
     }
-    SECTION("Last mesh piont must be 1.") {
+    SECTION("Last mesh point must be 1.") {
         auto& ms = study.initSolver<TestType>();
         ms.set_transcription_scheme(transcriptionScheme);
         std::vector<double> mesh = {0, .4, .8};
@@ -259,15 +257,14 @@ TEMPLATE_TEST_CASE("Solver options", "", MocoCasADiSolver,
     }
 }
 
-/*
-
-TEST_CASE("Ordering of calls") {
+TEMPLATE_TEST_CASE("Ordering of calls", "", MocoCasADiSolver, 
+        MocoTropterSolver) {
 
     // Solve a problem, edit the problem, re-solve.
     {
         // It's fine to
         MocoStudy study = createSlidingMassMocoStudy();
-        auto& solver = study.initTropterSolver();
+        auto& solver = study.initSolver<TestType>();
         study.solve();
         // This flips the "m_solverInitialized" flag:
         study.updProblem();
@@ -278,19 +275,18 @@ TEST_CASE("Ordering of calls") {
     // Solve a problem, edit the problem, ask the solver to do something.
     {
         MocoStudy study = createSlidingMassMocoStudy();
-        auto& solver = study.initTropterSolver();
+        auto& solver = study.initSolver<TestType>();
         study.solve();
         // This resets the problem to null on the solver.
         study.updProblem();
         // The solver can't do anything if you've edited the model.
-        SimTK_TEST_MUST_THROW_EXC(solver.getProblem(), Exception);
-        SimTK_TEST_MUST_THROW_EXC(solver.solve(), Exception);
+        SimTK_TEST_MUST_THROW_EXC(solver.createGuessTimeStepping(), Exception);
     }
 
     // Solve a problem, edit the solver, re-solve.
     {
         MocoStudy study = createSlidingMassMocoStudy();
-        auto& solver = study.initTropterSolver();
+        auto& solver = study.initSolver<TestType>();
         const int initNumMeshPoints = solver.get_num_mesh_intervals();
         MocoSolution sol0 = study.solve();
         solver.set_num_mesh_intervals(2 * initNumMeshPoints);
@@ -307,34 +303,26 @@ TEST_CASE("Ordering of calls") {
 
 /// Test that we can read in a Moco setup file, solve, edit the setup,
 /// re-solve.
-void testOMOCOSerialization() {
+TEST_CASE("Serializing a MocoStudy", "") {
     std::string fname = "testMocoInterface_testOMOCOSerialization.omoco";
-    MocoSolution sol0;
-    MocoSolution sol1;
-    {
-        MocoStudy study = createSlidingMassMocoStudy();
-        sol0 = study.solve();
-        study.print(fname);
-    }
-    {
-        MocoStudy mocoDeserialized(fname);
-        MocoSolution sol1 = mocoDeserialized.solve();
-    }
+    
+    MocoStudy study = createSlidingMassMocoStudy<MocoCasADiSolver>();
+    MocoSolution sol0 = study.solve();
+    study.print(fname);
+    
+    MocoStudy mocoDeserialized(fname);
+    MocoSolution sol1 = mocoDeserialized.solve();
+    
     SimTK_TEST(sol0.isNumericallyEqual(sol1));
 }
 
-void testCopy() {
+TEST_CASE("Copying a MocoStudy", "") {
     MocoStudy study = createSlidingMassMocoStudy();
     MocoSolution solution = study.solve();
     std::unique_ptr<MocoStudy> copy(study.clone());
     MocoSolution solutionFromCopy = copy->solve();
     SimTK_TEST(solution.isNumericallyEqual(solutionFromCopy));
-
-
-    // TODO what happens if just the MocoProblem is copied, or if just the
-    // MocoSolver is copied?
 }
- */
 
 TEST_CASE("Bounds", "") {
     {
@@ -381,7 +369,7 @@ TEST_CASE("Building a problem", "") {
         MocoProblem& mp = study.updProblem();
         mp.setModel(createSlidingMassModel());
 
-        // Goals have the name "cost" by default.
+        // Goals have the name "goal" by default.
         {
             auto c0 = make_unique<MocoFinalTimeGoal>();
             SimTK_TEST(c0->getName() == "goal");
