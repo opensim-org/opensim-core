@@ -81,7 +81,6 @@
 #include "Model/Geometry.h"
 #include "Model/ModelVisualPreferences.h"
 #include "Model/ExpressionBasedCoordinateForce.h"
-#include "Model/ScapulothoracicJoint.h"
 
 #include "Control/ControlSet.h"
 #include "Control/ControlSetController.h"
@@ -120,6 +119,7 @@
 #include "SimbodyEngine/FreeJoint.h"
 #include "SimbodyEngine/CustomJoint.h"
 #include "SimbodyEngine/WeldJoint.h"
+#include "SimbodyEngine/ScapulothoracicJoint.h"
 #include "SimbodyEngine/TransformAxis.h"
 #include "SimbodyEngine/Coordinate.h"
 #include "SimbodyEngine/SpatialTransform.h"
