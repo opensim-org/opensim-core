@@ -262,11 +262,10 @@ TEMPLATE_TEST_CASE("Ordering of calls", "", MocoCasADiSolver,
 
     // Solve a problem, edit the problem, re-solve.
     {
-        // It's fine to
         MocoStudy study = createSlidingMassMocoStudy();
         auto& solver = study.initSolver<TestType>();
         study.solve();
-        // This flips the "m_solverInitialized" flag:
+        // This resets the problem to null on the solver.
         study.updProblem();
         // This will call initSolver() internally:
         study.solve();

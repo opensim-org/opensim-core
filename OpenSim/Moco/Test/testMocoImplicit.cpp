@@ -112,6 +112,7 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
     return solution;
 }
 
+// TODO: does not pass with tropter.
 TEMPLATE_TEST_CASE("Two consecutive problems produce the same solution", "",
         MocoCasADiSolver /*, MocoTropterSolver*/) {
     auto dynamics_mode = GENERATE(as<std::string>{}, "implicit", "explicit");
