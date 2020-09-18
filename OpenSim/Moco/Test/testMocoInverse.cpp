@@ -140,7 +140,7 @@ TEST_CASE("MocoInverse Rajagopal2016, 18 muscles", "[casadi]") {
     inverse.set_mesh_interval(0.05);
 
     MocoSolution solution = inverse.solve().getMocoSolution();
-    solution.write("testMocoInverse_subject_18musc_solution.sto");
+    //solution.write("testMocoInverse_subject_18musc_solution.sto");
 
     MocoTrajectory std("std_testMocoInverse_subject_18musc_solution.sto");
     const auto expected = std.getControlsTrajectory();

@@ -24,7 +24,8 @@
 namespace OpenSim {
 
 /** This class models compliant point contact with a ground plane y=0.
-This class is still under development. */
+
+@underdevelopment */
 class OSIMMOCO_API StationPlaneContactForce : public Force {
 OpenSim_DECLARE_ABSTRACT_OBJECT(StationPlaneContactForce, Force);
 public:
@@ -142,7 +143,9 @@ private:
 Meyer A. J., Eskinazi, I., Jackson, J. N., Rao, A. V., Patten, C., & Fregly,
 B. J. (2016). Muscle Synergies Facilitate Computational Prediction of
 Subject-Specific Walking Motions. Frontiers in Bioengineering and
-Biotechnology, 4, 1055–27. http://doi.org/10.3389/fbioe.2016.00077 */
+Biotechnology, 4, 1055–27. http://doi.org/10.3389/fbioe.2016.00077 
+    
+@underdevelopment */
 class OSIMMOCO_API MeyerFregly2016Force
         : public StationPlaneContactForce {
 OpenSim_DECLARE_CONCRETE_OBJECT(MeyerFregly2016Force,
@@ -230,7 +233,7 @@ Esposito, E. R., & Miller, R. H. (2018). Maintenance of muscle strength
 retains a normal metabolic cost in simulated walking after transtibial limb
 loss. PLoS ONE, 13(1), e0191310. http://doi.org/10.1371/journal.pone.0191310
 
-This class is still under development. */
+@underdevelopment */
 class OSIMMOCO_API EspositoMiller2018Force
         : public StationPlaneContactForce {
 OpenSim_DECLARE_CONCRETE_OBJECT(EspositoMiller2018Force,

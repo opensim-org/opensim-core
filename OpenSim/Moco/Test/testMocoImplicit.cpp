@@ -112,15 +112,35 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
     return solution;
 }
 
+TEMPLATE_TEST_CASE("Two consecutive problems produce the same solution", "",
+        MocoCasADiSolver /*, MocoTropterSolver*/) {
+    auto dynamics_mode = GENERATE(as<std::string>{}, "implicit", "explicit");
+    
+    auto solution1 = solveDoublePendulumSwingup<TestType>(dynamics_mode);
+    auto solution2 = solveDoublePendulumSwingup<TestType>(dynamics_mode);
+
+    const double stateError = solution1.compareContinuousVariablesRMS(
+            solution2, {{"states", {}}});
+
+    const double controlError = solution1.compareContinuousVariablesRMS(
+            solution2, {{"controls", {}}});
+
+    CAPTURE(stateError, controlError);
+
+    // Solutions are approximately equal.
+    CHECK(solution1.getFinalTime() ==
+            Approx(solution2.getFinalTime()).margin(1e-2));
+    CHECK(stateError == Approx(0));
+    CHECK(controlError == Approx(0));   
+}
+
 TEMPLATE_TEST_CASE("Similar solutions between implicit and explicit dynamics",
         "[implicit]", MocoCasADiSolver, MocoTropterSolver) {
+    
     GIVEN("solutions to implicit and explicit problems") {
 
         auto solutionImplicit =
                 solveDoublePendulumSwingup<TestType>("implicit");
-        // TODO: Solving the implicit problem multiple times gives different
-        // results; https://github.com/stanfordnmbl/moco/issues/172.
-        // auto solutionImplicit2 = solveDoublePendulumSwingup("implicit");
         // TODO: The solution to this explicit problem changes every time.
         auto solution = solveDoublePendulumSwingup<TestType>("explicit");
 

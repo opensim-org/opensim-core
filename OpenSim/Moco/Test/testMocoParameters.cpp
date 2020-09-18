@@ -92,7 +92,7 @@ TEMPLATE_TEST_CASE("Oscillator mass", "", MocoCasADiSolver,
     ms.set_num_mesh_intervals(N);
 
     MocoSolution sol = study.solve();
-    sol.write("testMocoParameters_testOscillatorMass_sol.sto");
+    //sol.write("testMocoParameters_testOscillatorMass_sol.sto");
 
     CHECK(sol.getParameter("oscillator_mass") == Approx(MASS).epsilon(0.003));
 }
@@ -156,7 +156,7 @@ TEMPLATE_TEST_CASE("One parameter two springs", "",
     ms.set_num_mesh_intervals(N);
 
     MocoSolution sol = study.solve();
-    sol.write("testMocoParameters_testOscillatorMassTwoSprings_sol.sto");
+    //sol.write("testMocoParameters_testOscillatorMassTwoSprings_sol.sto");
 
     // Since springs add in parallel, both stiffness must be the same value
     // and equal half the original spring stiffness.
@@ -240,7 +240,7 @@ TEMPLATE_TEST_CASE("See-saw center of mass", "",
 
     MocoSolution sol = study.solve();
     const auto& sol_xCOM = sol.getParameter("com_location");
-    sol.write("testMocoParameters_testSeeSawCOM_sol.sto");
+    //sol.write("testMocoParameters_testSeeSawCOM_sol.sto");
     
     // Update problem model with new mass center.
     // TODO: create method for this, or have MocoStudy do it automatically

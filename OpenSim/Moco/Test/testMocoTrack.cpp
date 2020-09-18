@@ -59,7 +59,7 @@ TEST_CASE("MocoTrack gait10dof18musc", "[casadi]") {
     track.print("testMocoTrack_setup.xml");
 
     MocoSolution solution = track.solve();
-    solution.write("testMocoTrackGait10dof18musc_solution.sto");
+    //solution.write("testMocoTrackGait10dof18musc_solution.sto");
 
     const auto actual = solution.getControlsTrajectory();
     MocoTrajectory std("std_testMocoTrackGait10dof18musc_solution.sto");
