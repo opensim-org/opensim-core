@@ -73,8 +73,7 @@ ScapulothoracicJoint::ScapulothoracicJoint(const std::string& name,
 }
 
 /** Convenience constructor */
-ScapulothoracicJoint::ScapulothoracicJoint(
-    const std::string& name,
+ScapulothoracicJoint::ScapulothoracicJoint(const std::string& name,
     const PhysicalFrame& parent,
     const SimTK::Vec3& locationInParent,
     const SimTK::Vec3& orientationInParent,
