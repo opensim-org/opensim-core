@@ -51,15 +51,13 @@ ScapulothoracicJoint::ScapulothoracicJoint()
 /*
  * Convenience Constructor.
  */
-ScapulothoracicJoint::ScapulothoracicJoint(
-    const std::string& name,
+ScapulothoracicJoint::ScapulothoracicJoint(const std::string& name,
     const PhysicalFrame& parent,
     const PhysicalFrame& child,
     const SimTK::Vec3& ellipsoidRadii,
     SimTK::Vec2 wingingOrigin,
     double wingingDirection)
-    : Super(
-          name,
+    : Super(name,
           parent,
           child)
 {
@@ -82,8 +80,7 @@ ScapulothoracicJoint::ScapulothoracicJoint(
     const SimTK::Vec3& ellipsoidRadii,
     SimTK::Vec2 wingingOrigin,
     double wingingDirection)
-    : Super(
-          name,
+    : Super(name,
           parent,
           locationInParent,
           orientationInParent,

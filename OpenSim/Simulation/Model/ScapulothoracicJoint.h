@@ -111,8 +111,7 @@ public:
     ScapulothoracicJoint();
 
     /** Convenience Joint-like Constructor */
-    ScapulothoracicJoint(
-        const std::string& name,
+    ScapulothoracicJoint(const std::string& name,
         const PhysicalFrame& parent,
         const PhysicalFrame& child,
         const SimTK::Vec3& ellipsoidRadii,
@@ -120,8 +119,7 @@ public:
         double wingingDirection);
 
     /** Convenience constructor */
-    ScapulothoracicJoint(
-        const std::string& name,
+    ScapulothoracicJoint(const std::string& name,
         const PhysicalFrame& parent,
         const SimTK::Vec3& locationInParent,
         const SimTK::Vec3& orientationInParent,
