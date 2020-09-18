@@ -5,11 +5,14 @@
  * -------------------------------------------------------------------------- *
  * ScapulothoracicJoint is offered as an addition to the OpenSim API          *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
- * OpenSim is developed at Stanford University and supported by the US        *
- * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
- * through the Warrior Web program.                                           *
  *                                                                            *
-* Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * OpenSim is developed at Stanford University and is supported by:           *
+ *                                                                            *
+ * - The National Institutes of Health (U54 GM072970, R24 HD065690)           *
+ * - DARPA, through the Warrior Web program                                   *
+ * - The Chan Zuckerberg Initiative (CZI 2020-218896)                         *
+ *                                                                            *
+ * Copyright (c) 2005-2020 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -34,13 +37,18 @@ namespace OpenSim {
  * Motion of the scapula is described by an ellipsoid surface fixed to the
  * thorax upon which the joint frame of scapul rides. The DOFs are:
  *
- * - 2 DOFs: up-down/medio-laternal: The motion on the surface. These are
- *           described by latitude and longitudinal angles.
+ * abduction/adduction
+ *     Motion on the surface. described by latitude and longitudinal angles.
  *
- * - 1 DOF:  scapula rotation about the normal to the ellipsoid surface
+ * elevation/depression
+ *     Motion on the surface. described by latitude and longitudinal angles.
  *
- * - 1 DOF:  Rotation about a "winging" axis defined by a point and axis
- *           direction in the scapula frame.
+ * upward rotation
+ *     Rotation about the normal to the ellipsoid surface
+ *
+ * winging
+ *     rotation about and axis fixed to the scapula frame. Defaults to
+ *     scapula-y
  *
  * @author Ajay Seth
  */

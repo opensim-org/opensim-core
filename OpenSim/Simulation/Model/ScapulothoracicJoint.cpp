@@ -1,13 +1,16 @@
 /* -------------------------------------------------------------------------- *
- *                    OpenSim:  ScapulothoracicJoint.cpp                      *
+ *                   OpenSim:  ScapulothoracicJoint.cpp                       *
  * -------------------------------------------------------------------------- *
  * ScapulothoracicJoint is offered as an addition to the OpenSim API          *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
- * OpenSim is developed at Stanford University and supported by the US        *
- * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
- * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2013 Stanford University and the Authors                *
+ * OpenSim is developed at Stanford University and is supported by:           *
+ *                                                                            *
+ * - The National Institutes of Health (U54 GM072970, R24 HD065690)           *
+ * - DARPA, through the Warrior Web program                                   *
+ * - The Chan Zuckerberg Initiative (CZI 2020-218896)                         *
+ *                                                                            *
+ * Copyright (c) 2005-2020 Stanford University and the Authors                *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -20,6 +23,7 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
+
 
 //=============================================================================
 // INCLUDES
