@@ -37,19 +37,16 @@ using namespace OpenSim;
 void MarkerSet::getMarkerNames(Array<string>& markerNamesArray) const
 {
     markerNamesArray.setSize(0);
-    for (int i = 0; i < getSize(); i++)
+    for (Marker& nextMarker : *this)
     {
-        Marker& nextMarker = get(i);
         markerNamesArray.append(nextMarker.getName());
     }
 }
 
 void MarkerSet::addNamePrefix(const string& prefix)
 {
-    int i;
-
     // Cycle through set and add prefix
-    for (i = 0; i < getSize(); i++)
-        get(i).setName(prefix + get(i).getName());
+    for (Marker& m : *this) {
+        m.setName(prefix + m.getName());
+    }
 }
-

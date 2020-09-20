@@ -94,13 +94,17 @@ ActuatorForceTargetFast(SimTK::State& s, int aNX,CMC *aController):
     // COMPUTE ACTUATOR AREAS
     Array<double> f(1.0,na);
     const Set<const Actuator>& fSet = _controller->getActuatorSet();
-    for(int i=0,j=0;i<fSet.getSize();i++) {
-        auto act = dynamic_cast<const ScalarActuator*>(&fSet[i]);
-        auto musc = dynamic_cast<const Muscle *>(act);
-        if(musc)
+
+    int j = 0;
+    for (const Actuator& a : fSet) {
+        auto act = dynamic_cast<const ScalarActuator*>(&a);
+        auto musc = dynamic_cast<const Muscle*>(act);
+
+        if(musc) {
             _recipAreaSquared[j] = f[j]/musc->getMaxIsometricForce();
-        else
+        } else {
             _recipAreaSquared[j] = f[j]/act->getOptimalForce();
+        }
         
         _recipAreaSquared[j] *= _recipAreaSquared[j];
         j++;
@@ -197,20 +201,24 @@ objectiveFunc(const Vector &aF, const bool new_coefficients, Real& rP) const
     const Set<const Actuator>& fSet = _controller->getActuatorSet();
     double p = 0.0;
     const CMC_TaskSet& tset=_controller->getTaskSet();
-    for(int i=0,j=0;i<fSet.getSize();i++) {
-        auto act = dynamic_cast<const ScalarActuator*>(&fSet[i]);
-        auto mus = dynamic_cast<const Muscle*>(act);
-        if(mus) {
-            p +=  aF[j] * aF[j] * _recipOptForceSquared[j];
-        } else {
-            p +=  aF[j] * aF[j] *  _recipAreaSquared[j];
+
+    {
+        int j = 0;
+        for (const Actuator& a : fSet) {
+            auto act = dynamic_cast<const ScalarActuator*>(&a);
+            auto mus = dynamic_cast<const Muscle*>(act);
+            if(mus) {
+                p +=  aF[j] * aF[j] * _recipOptForceSquared[j];
+            } else {
+                p +=  aF[j] * aF[j] *  _recipAreaSquared[j];
+            }
+            j++;
         }
-        j++;
     }
+
     // double pre = p;
     // If tracking states, add in errors from them squared
-    for(int t=0; t<tset.getSize(); t++){
-        TrackingTask& ttask = tset.get(t);
+    for (TrackingTask& ttask : tset){
         StateTrackingTask* stateTask=NULL;
         if ((stateTask=dynamic_cast<StateTrackingTask*>(&ttask))!= NULL){
             double err = stateTask->getTaskError(_saveState);
@@ -237,21 +245,23 @@ gradientFunc(const Vector &x, const bool new_coefficients, Vector &gradient) con
 {
     const Set<const Actuator>& fSet = _controller->getActuatorSet();
     // double p = 0.0;
-    for(int i=0,index=0;i<fSet.getSize();i++) {
-        auto act = dynamic_cast<const ScalarActuator*>(&fSet[i]);
-        auto mus = dynamic_cast<const Muscle*>(act);
-        if(mus) {
-            gradient[index] =  2.0 * x[index] * _recipOptForceSquared[index];
-        } else {
-            gradient[index] =  2.0 * x[index] * _recipAreaSquared[index];
+    {
+        int index = 0;
+        for (const Actuator& a : fSet) {
+            auto act = dynamic_cast<const ScalarActuator*>(&a);
+            auto mus = dynamic_cast<const Muscle*>(act);
+            if(mus) {
+                gradient[index] =  2.0 * x[index] * _recipOptForceSquared[index];
+            } else {
+                gradient[index] =  2.0 * x[index] * _recipAreaSquared[index];
+            }
+            index++;
         }
-        index++;
     }
 //std::cout << "rdActuatorForceTargetFast::gradentFuncgradient =" << gradient << std::endl;
     // Add in the terms for the stateTracking
     const CMC_TaskSet& tset=_controller->getTaskSet();
-    for(int t=0; t<tset.getSize(); t++){
-        TrackingTask& ttask = tset.get(t);
+    for (TrackingTask& ttask : tset){
         StateTrackingTask* stateTask=NULL;
         if ((stateTask=dynamic_cast<StateTrackingTask*>(&ttask))!= NULL){
             Vector errGradient = stateTask->getTaskErrorGradient(_saveState);
@@ -321,8 +331,8 @@ computeConstraintVector(SimTK::State& s, const Vector &x,Vector &c) const
         c[i]=w[i]*(aDes[i]-a[i]);
 
     // reset the actuator control 
-    for(int i=0;i<fSet.getSize();i++) {
-        auto act = dynamic_cast<const ScalarActuator*>(&fSet[i]);
+    for (const Actuator& a : fSet) {
+        auto act = dynamic_cast<const ScalarActuator*>(&a);
         act->overrideActuation(s, false);
     }
 

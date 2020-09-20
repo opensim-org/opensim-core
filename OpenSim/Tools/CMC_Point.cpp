@@ -135,8 +135,7 @@ updateWorkVariables(const SimTK::State& s)
             SimTK::Vec3 pVec,vVec;
             double Mass = 0.0;
             // double rP[3] = { 0.0, 0.0, 0.0 };
-            for(int i=0;i<bs.getSize();i++) {
-                Body& body = bs.get(i);
+            for (Body& body : bs) {
                 const SimTK::Vec3& com = body.get_mass_center();
                 pVec = body.findStationLocationInGround(s, com);
                 if(pVec[0] != pVec[0]) throw Exception("CMC_Point.computeAccelerations: ERROR- point task '" + getName() 
@@ -435,8 +434,7 @@ computeAccelerations(const SimTK::State& s )
 
         SimTK::Vec3 pVec,vVec,aVec,com;
         double Mass = 0.0;
-        for(int i=0;i<bs.getSize();i++) {
-            Body& body = bs.get(i);
+        for (Body& body : bs) {
             com = body.get_mass_center();
             aVec = body.findStationAccelerationInGround(s, com);
             if(aVec[0] != aVec[0]) throw Exception("CMC_Point.computeAccelerations: ERROR- point task '" + getName() 

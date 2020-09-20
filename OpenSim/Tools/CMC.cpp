@@ -128,9 +128,9 @@ CMC::CMC(Model *aModel,CMC_TaskSet *aTaskSet) :
     // STORAGE
     Array<string> labels;
     labels.append("time");
-    for(int i=0;i<_taskSet->getSize();i++) {
-        for(int j=0;j<_taskSet->get(i).getNumTaskFunctions();j++) {
-            labels.append(_taskSet->get(i).getName());
+    for (const TrackingTask& ttask : *_taskSet) {
+        for (int j = 0; j < ttask.getNumTaskFunctions(); j++) {
+            labels.append(ttask.getName());
         }
     }
     _pErrStore.reset(new Storage(1000,"PositionErrors"));
@@ -593,8 +593,8 @@ computeInitialStates(SimTK::State& s, double &rTI)
     for(i=0;i<2;i++) {
 
         // CLEAR ANY PREVIOUS CONTROL NODES
-        for(j=0;j<_controlSet.getSize();j++) {
-            ControlLinear& control = (ControlLinear&)_controlSet.get(j);
+        for (Control& c : _controlSet) {
+            ControlLinear& control = static_cast<ControlLinear&>(c);
             control.clearControlNodes();
         }
 
@@ -774,10 +774,7 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
         log_info("Errors at time {}: ", tiReal);
     }
     int e=0;
-    for(i=0;i<_taskSet->getSize();i++) {
-        
-        TrackingTask& task = _taskSet->get(i);
-
+    for (TrackingTask& task : *_taskSet) {
         if(_verbose) {
             for(j=0;j<task.getNumTaskFunctions();j++) {
                 log_warn("Task '{}': pErr = {}, vErr = {}.", task.getName(),

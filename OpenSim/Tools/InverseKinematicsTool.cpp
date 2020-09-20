@@ -422,9 +422,9 @@ void InverseKinematicsTool::populateReferences(MarkersReference& markersReferenc
     // Loop through old "IKTaskSet" and assign weights to the coordinate and marker references
     // For coordinates, create the functions for coordinate reference values
     int index = 0;
-    for (int i = 0; i < get_IKTaskSet().getSize(); i++) {
-        if (!get_IKTaskSet()[i].getApply()) continue;
-        if (IKCoordinateTask *coordTask = dynamic_cast<IKCoordinateTask *>(&get_IKTaskSet()[i])) {
+    for (IKTask& t : get_IKTaskSet()) {
+        if (!t.getApply()) continue;
+        if (IKCoordinateTask *coordTask = dynamic_cast<IKCoordinateTask *>(&t)) {
             CoordinateReference *coordRef = NULL;
             if (coordTask->getValueType() == IKCoordinateTask::FromFile) {
                 if (!coordFunctions)
@@ -452,7 +452,7 @@ void InverseKinematicsTool::populateReferences(MarkersReference& markersReferenc
 
             coordinateReferences.push_back(*coordRef);
         }
-        else if (IKMarkerTask *markerTask = dynamic_cast<IKMarkerTask *>(&get_IKTaskSet()[i])) {
+        else if (IKMarkerTask *markerTask = dynamic_cast<IKMarkerTask *>(&t)) {
             if (markerTask->getApply()) {
                 // Only track markers that have a task and it is "applied"
                 markerWeights.adoptAndAppend(

@@ -627,8 +627,9 @@ Storage simulateModel(Model& model, double t0, double t1)
     cout << "- initializing" << endl;
     SimTK::State& state = model.initSystem();
 
-    for (int i=0; i<model.getMuscles().getSize(); ++i)
-        model.getMuscles().get(i).setIgnoreActivationDynamics(state, true);
+    for (Muscle& m : model.getMuscles()) {
+        m.setIgnoreActivationDynamics(state, true);
+    }
     model.getMultibodySystem().realize(state, SimTK::Stage::Dynamics);
     model.equilibrateMuscles(state);
 

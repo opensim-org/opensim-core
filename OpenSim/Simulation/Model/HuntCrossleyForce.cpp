@@ -61,9 +61,8 @@ void HuntCrossleyForce::extendAddToSystem(SimTK::MultibodySystem& system) const
     SimTK::ContactSetIndex set = contacts.createContactSet();
     SimTK::HuntCrossleyForce force(_model->updForceSubsystem(), contacts, set);
     force.setTransitionVelocity(transitionVelocity);
-    for (int i = 0; i < contactParametersSet.getSize(); ++i)
+    for (ContactParameters& params : contactParametersSet)
     {
-        ContactParameters& params = contactParametersSet.get(i);
         for (int j = 0; j < params.getGeometry().size(); ++j) {
             // TODO: Dependency of HuntCrossleyForce on ContactGeometry
             // should be handled by Sockets.
@@ -326,9 +325,8 @@ OpenSim::Array<std::string> HuntCrossleyForce::getRecordLabels() const
     const ContactParametersSet& contactParametersSet = 
         get_contact_parameters();
 
-    for (int i = 0; i < contactParametersSet.getSize(); ++i)
+    for (ContactParameters& params : contactParametersSet)
     {
-        ContactParameters& params = contactParametersSet.get(i);
         for (int j = 0; j < params.getGeometry().size(); ++j)
         {
             // TODO: Dependency of HuntCrossleyForce on ContactGeometry
@@ -377,9 +375,8 @@ getRecordValues(const SimTK::State& state) const
     simtkForce.calcForceContribution(state, bodyForces, particleForces, 
                                      mobilityForces);
 
-    for (int i = 0; i < contactParametersSet.getSize(); ++i)
+    for (ContactParameters& params : contactParametersSet)
     {
-        ContactParameters& params = contactParametersSet.get(i);
         for (int j = 0; j < params.getGeometry().size(); ++j)
         {
             // TODO: Dependency of HuntCrossleyForce on ContactGeometry

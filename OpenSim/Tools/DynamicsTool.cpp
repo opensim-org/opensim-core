@@ -171,22 +171,20 @@ void DynamicsTool::disableModelForces(Model &model, SimTK::State &s, const Array
     for(int i=0; i<forcesByNameOrGroup.getSize(); i++){
         //Check for keywords first starting with ALL
         if(IO::Uppercase(forcesByNameOrGroup[i]) == "ALL"){
-            for(int i=0; i<modelForces.getSize(); i++){
-                modelForces[i].setAppliesForce(s, false);
+            for (Force& f : modelForces){
+                f.setAppliesForce(s, false);
             }
             return;
         }
         if(IO::Uppercase(forcesByNameOrGroup[i]) == "ACTUATORS"){
-            Set<Actuator> &acts = model.updActuators();
-            for(int i=0; i<acts.getSize(); i++){
-                acts[i].setAppliesForce(s, false);
+            for (Actuator& a : model.updActuators()){
+                a.setAppliesForce(s, false);
             }
             continue;
         }
         if(IO::Uppercase(forcesByNameOrGroup[i]) == "MUSCLES"){
-            Set<Muscle> &muscles = model.updMuscles();
-            for(int i=0; i<muscles.getSize(); i++){
-                muscles[i].setAppliesForce(s, false);
+            for (Muscle& m : model.updMuscles()) {
+                m.setAppliesForce(s, false);
             }
             continue;
         }

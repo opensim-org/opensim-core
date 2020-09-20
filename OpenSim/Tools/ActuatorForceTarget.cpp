@@ -255,8 +255,8 @@ computePerformanceVectors(SimTK::State& s, const Vector &aF, Vector &rAccelPerfo
     for(int i=0;i<nacc;i++) rAccelPerformanceVector[i] = sqrt(w[i]) * (a[i] - aDes[i]);
 
     // reset the actuator control
-    for(int i=0;i<fSet.getSize();i++) {
-        auto act = dynamic_cast<const ScalarActuator*>(&fSet[i]);
+    for (const Actuator& a : fSet) {
+        auto act = dynamic_cast<const ScalarActuator*>(&a);
         act->overrideActuation(s, false);
     }
 }
@@ -288,8 +288,7 @@ objectiveFunc(const Vector &aF, const bool new_coefficients, Real& rP) const
     rP = (_accelPerformanceMatrix * aF + _accelPerformanceVector).normSqr() + (_forcePerformanceMatrix * aF + _forcePerformanceVector).normSqr();
 #endif
     // If tracking states, add in errors from them squared
-    for(int t=0; t<tset.getSize(); t++){
-        TrackingTask& ttask = tset.get(t);
+    for (TrackingTask& ttask : tset) {
         StateTrackingTask* stateTask=NULL;
         if ((stateTask=dynamic_cast<StateTrackingTask*>(&ttask))!= NULL){
             double err = stateTask->getTaskError(_saveState);

@@ -113,8 +113,8 @@ void testAssembleModelWithConstraints(string modelFile)
     const CoordinateSet &coords = model.getCoordinateSet();
     
     cout << "*********** Coordinates before initSystem ******************** " << endl;
-    for(int i=0; i< coords.getSize(); i++) {
-        cout << "Coordinate " << coords[i].getName() << " default value = " << coords[i].getDefaultValue() << endl;
+    for (const Coordinate& c : coords) {
+        cout << "Coordinate " << c.getName() << " default value = " << c.getDefaultValue() << endl;
     }
 
     //model.setUseVisualizer(true);
@@ -124,8 +124,8 @@ void testAssembleModelWithConstraints(string modelFile)
     model.equilibrateMuscles(state);
 
     cout << "*********** Coordinates after initSystem ******************** "  << endl;
-    for(int i=0; i< coords.getSize(); i++) {
-        cout << "Coordinate " << coords[i].getName() << " get value = " << coords[i].getValue(state) << endl;
+    for(const Coordinate& c : coords) {
+        cout << "Coordinate " << c.getName() << " get value = " << c.getValue(state) << endl;
     }
 
     // Initial coordinates after initial assembly
@@ -148,8 +148,7 @@ void testAssembleModelWithConstraints(string modelFile)
     if (model.hasVisualizer()){
         SimTK::Visualizer& viz = model.updVisualizer().updSimbodyVisualizer();
         const JointSet& js = model.getJointSet();
-        for (int i = 0; i < js.getSize(); ++i){
-            const Joint& j = js[i];
+        for (const Joint& j : js){
             viz.addDecoration(j.getParentFrame().getMobilizedBodyIndex(),
                 j.getParentFrame().findTransformInBaseFrame(),
                 SimTK::DecorativeFrame(0.05));
@@ -184,7 +183,7 @@ void testAssembleModelWithConstraints(string modelFile)
     Vector mobilityForces(0);
     double totalYforce = 0;
     
-    for(int i=0; i< constraints.getSize(); i++) {
+    for (int i=0; i< constraints.getSize(); i++) {
         constraints[i].calcConstraintForces(state, constraintBodyForces, mobilityForces);
         cout << "Constraint " << i << ":  " << constraints[i].getName();
         cout << " Force = " << constraintBodyForces(1)(1)(1) << endl;
@@ -205,8 +204,8 @@ void testAssembleModelWithConstraints(string modelFile)
 
     //const CoordinateSet &coords = model.getCoordinateSet();
     double q_error = 0;
-    for(int i=0; i< coords.getSize(); i++) {
-        q_error += fabs(coords[i].getValue(state)-coords[i].getDefaultValue());
+    for (const Coordinate& c : coords) {
+        q_error += fabs(c.getValue(state) - c.getDefaultValue());
     }
 
     cout << "Average Change in  Default Configuration:" << q_error/coords.getSize() << endl;
@@ -302,10 +301,10 @@ void testAssemblySatisfiesConstraints(string modelFile)
 
     const CoordinateSet &modelcoords = model.getCoordinateSet();
     cout << "*********** Coordinate defaults (before initSystem) ******************** " << endl;
-    for(int i=0; i< modelcoords.getSize(); i++) {
-        cout << "Coordinate " << modelcoords[i].getName() 
-            << " default value = " << modelcoords[i].getDefaultValue() << endl
-            << " is_free to_satisfy_constraints = " << modelcoords[i].get_is_free_to_satisfy_constraints()
+    for(const Coordinate& c : modelcoords) {
+        cout << "Coordinate " << c.getName()
+            << " default value = " << c.getDefaultValue() << endl
+            << " is_free to_satisfy_constraints = " << c.get_is_free_to_satisfy_constraints()
             << endl;
     }
 
@@ -314,9 +313,9 @@ void testAssemblySatisfiesConstraints(string modelFile)
 
     const CoordinateSet &coords = model.getCoordinateSet();
     cout << "***** Coordinate values (after initSystem including Assembly ********* " << endl;
-    for(int i=0; i< coords.getSize(); i++) {
-        cout << "Coordinate " << coords[i].getName() << " value = " 
-            << coords[i].getValue(state) << endl;
+    for (const Coordinate& c : coords) {
+        cout << "Coordinate " << c.getName() << " value = "
+            << c.getValue(state) << endl;
     }
 
     double cerr = SimTK::Infinity;

@@ -108,8 +108,8 @@ void ControllerSet::printInfo() const
           const Set<const Actuator>& actSet = c.getActuatorSet();
           if( actSet.getSize() > 0 ) {
                log_cout("Actuators");
-               for(int j=0;j<get(i).getActuatorSet().getSize(); j++ ) {
-                   log_cout("{}", get(i).getActuatorSet().get(j).getName());
+               for (const Actuator& a : get(i).getActuatorSet()) {
+                   log_cout("{}", a.getName());
                }
            }
       } else { 

@@ -1112,7 +1112,7 @@ void testSerializeDeserialize() {
     const auto& newConstraintSet = newModel.getConstraintSet();
 
     ASSERT(oldConstraintSet.getSize() == newConstraintSet.getSize());
-    for(int i = 0; i < oldConstraintSet.getSize(); ++i) {
+    for (int i = 0; i < oldConstraintSet.getSize(); ++i) {
         ASSERT(oldConstraintSet.get(i).get_isEnforced() ==
                newConstraintSet.get(i).get_isEnforced());
 

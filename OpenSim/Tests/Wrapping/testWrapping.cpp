@@ -427,9 +427,8 @@ void simulateModelWithMusclesNoViz(const string &modelFile, double finalTime, do
     // Initialize the system and get the state representing the state system
     SimTK::State& si = osimModel.initSystem();
 
-    const Set<Muscle>& muscles = osimModel.getMuscles();
-    for (int i=0; i<muscles.getSize(); i++){
-        muscles[i].setActivation(si, activation); //setDisabled(si, true);
+    for (Muscle& m : osimModel.getMuscles()) {
+        m.setActivation(si, activation); //setDisabled(si, true);
     }
     osimModel.equilibrateMuscles(si);
 
@@ -451,9 +450,8 @@ void simulateModelWithPassiveMuscles(const string &modelFile, double finalTime)
     // Initialize the system and get the state representing the state system
     SimTK::State& si = osimModel.initSystem();
 
-    const Set<Muscle>& muscles = osimModel.getMuscles();
-    for (int i=0; i<muscles.getSize(); ++i){
-        muscles[i].setActivation(si, 0); //setDisabled(si, true);
+    for (Muscle& m : osimModel.getMuscles()){
+        m.setActivation(si, 0); //setDisabled(si, true);
     }
     osimModel.equilibrateMuscles(si); 
 
@@ -524,17 +522,17 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
     Array<GeometryPath*> paths;
     Array<String> pathNames;
     int numLigaments = 0, numMuscles = 0;
-    for (int i = 0; i < osimModel.getForceSet().getSize(); ++i) {
-        Ligament* lig = dynamic_cast<Ligament*>(&osimModel.getForceSet()[i]);
-        if (lig != 0) {
+    for (OpenSim::Force& f : osimModel.getForceSet()) {
+        Ligament* lig = dynamic_cast<Ligament*>(&f);
+        if (lig) {
             numLigaments++;
             paths.append(&lig->updGeometryPath());
             pathNames.append(lig->getName());
             continue;
         }
 
-        Muscle* mus = dynamic_cast<Muscle*>(&osimModel.getForceSet()[i]);
-        if (mus != 0) {
+        Muscle* mus = dynamic_cast<Muscle*>(&f);
+        if (mus) {
             numMuscles++;
             paths.append(&mus->updGeometryPath());
             pathNames.append(mus->getName());
@@ -580,8 +578,7 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
         }
 
         // add vias to cableInfo
-        for (int j = 1; j < viaSet.getSize()-1; ++j) { // skip first (origin) and last (insertion) points
-            const AbstractPathPoint& pp = viaSet[j];
+        for (const AbstractPathPoint& pp : viaSet) { // skip first (origin) and last (insertion) points
             ObstacleInfo obs;
             obs.bodyName = pp.getParentFrame().getName();
             obs.X_BS.setP(pp.getLocation(si));
@@ -596,8 +593,7 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
 
         Array<ObstacleInfo*> wrapObs;
         // add surfaces to cableInfo
-        for (int j = 0; j < wrapSet.getSize(); j++) {
-            const PathWrap& wrap = wrapSet[j];
+        for (const PathWrap& wrap : wrapSet) {
             const WrapObject* wrapObj = wrap.getWrapObject();
             ObstacleInfo obs;
             obs.wrapObjectPtr = wrapObj;
@@ -709,9 +705,9 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
         cout << "culling wrap objs from " << osimModel.getBodySet()[i].getName() << ", num wraps = " << wraps.getSize() << endl;
 //        mutableWraps->clearAndDestroy();
         mutableWraps->setMemoryOwner(true);
-        for (int j = 0; j < wraps.getSize(); ++j) {
-            if (wrapObjectsInUse.find(wraps[j].getName()) == wrapObjectsInUse.end()) { // does not contain
-                toRemove.append(&wraps[j]);
+        for (WrapObject& wo : wraps) {
+            if (wrapObjectsInUse.find(wo.getName()) == wrapObjectsInUse.end()) { // does not contain
+                toRemove.append(&wo);
             }
         }
 

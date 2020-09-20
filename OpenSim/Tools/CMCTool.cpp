@@ -600,16 +600,14 @@ bool CMCTool::run()
 
     GCVSplineSet *qAndPosSet=NULL;
     qAndPosSet = new GCVSplineSet();
-    if(desiredPointsFlag) {
-        int nps=posSet->getSize();
-        for(int i=0;i<nps;i++) {
-            qAndPosSet->adoptAndAppend(&posSet->get(i));
+    if (desiredPointsFlag) {
+        for (Function& f : *posSet) {
+            qAndPosSet->adoptAndAppend(&f);
         }
     }
-    if(desiredKinFlag) {
-        int nqs=qSet->getSize();
-        for(int i=0;i<nqs;i++) {
-            qAndPosSet->adoptAndAppend(&qSet->get(i));
+    if (desiredKinFlag) {
+        for (Function& f : *qSet) {
+            qAndPosSet->adoptAndAppend(&f);
         }
     }
     if (taskSet.getDataFileName()!=""){

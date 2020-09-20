@@ -153,10 +153,10 @@ void createStateStorageFile() {
     // Uniform distribution between 0.1 and 0.9.
     std::uniform_real_distribution<double> distribution(0.1, 0.8);
 
-    for (int im = 0; im < model.getMuscles().getSize(); ++im) {
-        controller->addActuator(model.getMuscles()[im]);
+    for (const Muscle& m : model.getMuscles()) {
+        controller->addActuator(m);
         controller->prescribeControlForActuator(
-            model.getMuscles()[im].getName(),
+            m.getName(),
             new Constant(distribution(generator))
             );
     }
@@ -197,8 +197,7 @@ void testFromStatesStorageGivesCorrectStates() {
         SimTK_TEST_EQ(currTime, state.getTime());
 
         // Multibody states.
-        for (int ic = 0; ic < model.getCoordinateSet().getSize(); ++ic) {
-            const auto& coord = model.getCoordinateSet().get(ic);
+        for (const Coordinate& coord : model.getCoordinateSet()) {
             // get value and speed state names for this coordinate
             const auto coordStateNames = coord.getStateVariableNames();
 
@@ -212,8 +211,7 @@ void testFromStatesStorageGivesCorrectStates() {
         }
 
         // Muscle states.
-        for (int im = 0; im < model.getMuscles().getSize(); ++im) {
-            const auto& muscle = model.getMuscles().get(im);
+        for (const Muscle& muscle : model.getMuscles()) {
             // get the activation and fiber_length state names of the muscles
             const auto muscleStateNames = muscle.getStateVariableNames();
 
@@ -237,8 +235,7 @@ void testFromStatesStorageGivesCorrectStates() {
         // These calculations require that the state is realized to velocity.
         model.getMultibodySystem().realize(state, SimTK::Stage::Velocity);
 
-        for (int im = 0; im < model.getMuscles().getSize(); ++im) {
-            const auto& muscle = model.getMuscles().get(im);
+        for (const Muscle& muscle : model.getMuscles()) {
             auto muscleName = muscle.getName();
             SimTK_TEST(!SimTK::isNaN(muscle.getFiberForce(state)));
         }
@@ -450,8 +447,7 @@ void testFromStatesStoragePre40CorrectStates() {
         SimTK_TEST_EQ(currTime, state.getTime());
 
         // Multibody states.
-        for (int ic = 0; ic < model.getCoordinateSet().getSize(); ++ic) {
-            const auto& coord = model.getCoordinateSet().get(ic);
+        for (const Coordinate& coord : model.getCoordinateSet()) {
             auto coordName = coord.getName();
 
             // Coordinate.
@@ -464,8 +460,7 @@ void testFromStatesStoragePre40CorrectStates() {
         }
 
         // Muscle states.
-        for (int im = 0; im < model.getMuscles().getSize(); ++im) {
-            const auto& muscle = model.getMuscles().get(im);
+        for (const Muscle& muscle : model.getMuscles()) {
             auto muscleName = muscle.getName();
 
             // Activation.

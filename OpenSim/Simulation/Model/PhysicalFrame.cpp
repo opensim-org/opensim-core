@@ -107,17 +107,17 @@ void PhysicalFrame::extendConnectToModel(Model& aModel)
 {
     Super::extendConnectToModel(aModel);
 
-    for (int i = 0; i < get_WrapObjectSet().getSize(); i++)
-        get_WrapObjectSet()[i].setFrame(*this);
+    for (WrapObject& wo : get_WrapObjectSet()) {
+        wo.setFrame(*this);
+    }
 }
 
 const WrapObject* PhysicalFrame::getWrapObject(const string& aName) const
 {
-    int i;
-
-    for (i = 0; i < get_WrapObjectSet().getSize(); i++) {
-        if (aName == get_WrapObjectSet()[i].getName())
-            return &get_WrapObjectSet()[i];
+    for (WrapObject& wo : get_WrapObjectSet()) {
+        if (aName == wo.getName()) {
+            return &wo;
+        }
     }
     return nullptr;
 }

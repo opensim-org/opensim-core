@@ -209,8 +209,8 @@ void InverseDynamicsTool::getJointsByName(Model &model, const Array<std::string>
     for(int i=0; i<jointNames.getSize();  ++i){
         //Check for keywords first starting with ALL
         if(IO::Uppercase(jointNames[i]) == "ALL"){
-            for(int j=0; j<modelJoints.getSize(); ++j){
-                joints.adoptAndAppend(&modelJoints[j]);
+            for (Joint& j : modelJoints){
+                joints.adoptAndAppend(&j);
             }
             break;
         } 

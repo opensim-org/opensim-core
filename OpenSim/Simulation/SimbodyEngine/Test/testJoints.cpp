@@ -1973,8 +1973,8 @@ void testEquivalentBodyForceForGenForces(Model& model)
 
     // Construct the system vector of body forces from a Joint's equivalence to
     // generalized force calculations
-    for(int j=0; j < model.getJointSet().getSize(); ++j){
-        Joint &joint = model.getJointSet()[j];
+    for (Joint& joint : model.getJointSet()){
+
         const PhysicalFrame& B = joint.getChildFrame();
         MobilizedBodyIndex mbx = B.getMobilizedBodyIndex();
         const Frame& Bo = B.findBaseFrame();
@@ -2197,9 +2197,8 @@ void testAutomaticJointReversal()
     }
 
     cout << "Constrained Model Coordinates:" << endl;
-    for (int i = 0; i < modelConstrained.getCoordinateSet().getSize(); ++i) {
-        cout << modelConstrained.getCoordinateSet()[i].getName() << " = ";
-        cout << modelConstrained.getCoordinateSet()[i].getValue(sc) << endl;
+    for (const Coordinate& c : modelConstrained.getCoordinateSet()) {
+        cout << c.getName() << " = " << c.getValue(sc) << endl;
     }
 
     //The two systems should yield equivalent model dynamics

@@ -58,10 +58,12 @@ class ExampleOptimizationSystem : public OptimizerSystem {
         // Now equilibrate muscles at this configuration
         const Set<Muscle> &muscleSet = osimModel.getMuscles();
         // Make sure other muscle states are initialized the same with 1.0 activation, 0.1 fiberLength followed by equilibrium computation
-        for(int i=0; i< muscleSet.getSize(); i++ ){
-            muscleSet[i].setActivation(s, 1.0);
-            const ActivationFiberLengthMuscle* afl = ActivationFiberLengthMuscle::safeDownCast(&muscleSet[i]);
-            if (afl) afl->setFiberLength(s, .1);
+        for (Muscle& m : muscleSet){
+            m.setActivation(s, 1.0);
+            const auto* afl = ActivationFiberLengthMuscle::safeDownCast(&m);
+            if (afl) {
+                afl->setFiberLength(s, .1);
+            }
         }
         // Make sure the muscles states are in equilibrium
         osimModel.equilibrateMuscles(s);
@@ -108,10 +110,9 @@ int main()
         coords.get("r_shoulder_elev").setValue(si, 0.0);
 
         // Set the initial muscle activations 
-        const Set<Muscle> &muscleSet = osimModel.getMuscles();
-        for(int i=0; i< muscleSet.getSize(); i++ ){
-            muscleSet[i].setActivation(si, 1.0);
-            const ActivationFiberLengthMuscle* afl = ActivationFiberLengthMuscle::safeDownCast(&muscleSet[i]);
+        for (Muscle& m : osimModel.getMuscles()){
+            m.setActivation(si, 1.0);
+            const auto* afl = ActivationFiberLengthMuscle::safeDownCast(&m);
             afl->setFiberLength(si, .1);
         }
         OpenSim::Coordinate& elbowFlexCoord = osimModel.updCoordinateSet().get("r_elbow_flex");

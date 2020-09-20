@@ -315,8 +315,8 @@ bool MarkerPlacer::processModel(Model* aModel,
     }
     
     int index = 0;
-    for(int i=0; i< _ikTaskSet.getSize(); i++){
-        IKCoordinateTask *coordTask = dynamic_cast<IKCoordinateTask *>(&_ikTaskSet[i]);
+    for (IKTask& t : _ikTaskSet){
+        IKCoordinateTask *coordTask = dynamic_cast<IKCoordinateTask *>(&t);
         if (coordTask && coordTask->getApply()){
             std::unique_ptr<CoordinateReference> coordRef{};
             if(coordTask->getValueType() == IKCoordinateTask::FromFile){
@@ -441,11 +441,8 @@ void MarkerPlacer::moveModelMarkersToPose(SimTK::State& s, Model& aModel,
 
     MarkerSet& markerSet = aModel.updMarkerSet();
 
-    int i;
-    for (i = 0; i < markerSet.getSize(); i++)
+    for (Marker& modelMarker : markerSet)
     {
-        Marker& modelMarker = markerSet.get(i);
-
         if (!modelMarker.get_fixed())
         {
             int index = aPose.getMarkerIndex(modelMarker.getName());

@@ -461,16 +461,17 @@ void Coordinate::setPrescribedFunction(const OpenSim::Function& function)
  */
  bool Coordinate::isDependent(const SimTK::State& s) const
 {
-    if(get_is_free_to_satisfy_constraints())
+    if(get_is_free_to_satisfy_constraints()) {
         return true;
+    }
 
-    for(int i=0; i<_model->getConstraintSet().getSize(); i++){
-        Constraint& constraint = _model->getConstraintSet().get(i);
-        CoordinateCouplerConstraint* couplerp = 
-            dynamic_cast<CoordinateCouplerConstraint*>(&constraint);
+    for (Constraint& constraint : _model->getConstraintSet()) {
+        auto* couplerp =
+                dynamic_cast<CoordinateCouplerConstraint*>(&constraint);
         if(couplerp) {
-            if (couplerp->getDependentCoordinateName() == getName())
+            if (couplerp->getDependentCoordinateName() == getName()) {
                 return couplerp->isEnforced(s);
+            }
         }
     }
     return false;

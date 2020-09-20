@@ -267,19 +267,19 @@ bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject,
                 }
 
                 /* Now take and apply the measurements. */
-                for (int j = 0; j < _measurementSet.getSize(); j++)
+                for (Measurement& m : _measurementSet)
                 {
-                    if (_measurementSet.get(j).getApply())
+                    if (m.getApply())
                     {
                         if(!markerData)
                             throw Exception("ModelScaler.processModel: ERROR- "+_markerFileNameProp.getName()+
                                                 " not set but measurements are used",__FILE__,__LINE__);
-                        double scaleFactor = computeMeasurementScaleFactor(s,*aModel, *markerData, _measurementSet.get(j));
+                        double scaleFactor = computeMeasurementScaleFactor(s,*aModel, *markerData, m);
                         if (!SimTK::isNaN(scaleFactor))
-                            _measurementSet.get(j).applyScaleFactor(scaleFactor, theScaleSet);
+                            m.applyScaleFactor(scaleFactor, theScaleSet);
                         else
                             log_warn("'{}' measurement not used to scale {}", 
-                                _measurementSet.get(j).getName(),
+                                m.getName(),
                                 aModel->getName());
                     }
                 }
@@ -289,13 +289,13 @@ bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject,
              */
             else if (_scalingOrder[i] == "manualScale")
             {
-                for (int j = 0; j < _scaleSet.getSize(); j++)
+                for (Scale& s : _scaleSet)
                 {
-                    if (_scaleSet[j].getApply())
+                    if (s.getApply())
                     {
-                        const string& bodyName = _scaleSet[j].getSegmentName();
+                        const string& bodyName = s.getSegmentName();
                         Vec3 factors(1.0);
-                        _scaleSet[j].getScaleFactors(factors);
+                        s.getScaleFactors(factors);
                         for (int k = 0; k < theScaleSet.getSize(); k++)
                         {
                             if (theScaleSet[k].getSegmentName() == bodyName)

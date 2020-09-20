@@ -166,19 +166,15 @@ Measurement& Measurement::operator=(const Measurement &aMeasurement)
  */
 void Measurement::applyScaleFactor(double aFactor, ScaleSet& aScaleSet)
 {
-    for (int i = 0; i < _bodyScaleSet.getSize(); i++)
-    {
-        const string& bodyName = _bodyScaleSet[i].getName();
-        for (int j = 0; j < aScaleSet.getSize(); j++)
-        {
-            if (aScaleSet[j].getSegmentName() == bodyName)
-            {
-                const Array<std::string>& axisNames = _bodyScaleSet[i].getAxisNames();
+    for (const BodyScale& bs : _bodyScaleSet) {
+        const string& bodyName = bs.getName();
+        for (Scale& s : aScaleSet) {
+            if (s.getSegmentName() == bodyName) {
+                const Array<std::string>& axisNames = bs.getAxisNames();
                 Vec3 factors(1.0);
-                aScaleSet[j].getScaleFactors(factors);
+                s.getScaleFactors(factors);
 
-                for (int k = 0; k < axisNames.getSize(); k++)
-                {
+                for (int k = 0; k < axisNames.getSize(); k++) {
                     if (axisNames[k] == "x" || axisNames[k] == "X")
                         factors[0] = aFactor;
                     else if (axisNames[k] == "y" || axisNames[k] == "Y")
@@ -186,7 +182,7 @@ void Measurement::applyScaleFactor(double aFactor, ScaleSet& aScaleSet)
                     else if (axisNames[k] == "z" || axisNames[k] == "Z")
                         factors[2] = aFactor;
                 }
-                aScaleSet[j].setScaleFactors(factors);
+                s.setScaleFactors(factors);
             }
         }
     }

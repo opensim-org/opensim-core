@@ -221,8 +221,8 @@ void ExternalLoads::transformPointsExpressedInGroundToAppliedBodies(
     const Storage &kinematics, double startTime, double endTime)
 {
     std::vector<ExternalForce*> transformedForces;
-    for(int i=0; i<getSize(); ++i){
-        ExternalForce *transformedExf = transformPointExpressedInGroundToAppliedBody(get(i), kinematics, startTime, endTime);
+    for (const ExternalForce& ef : *this) {
+        ExternalForce *transformedExf = transformPointExpressedInGroundToAppliedBody(ef, kinematics, startTime, endTime);
         transformedForces.push_back(transformedExf);
     }
     // Once we've transformed the forces (done with computation),

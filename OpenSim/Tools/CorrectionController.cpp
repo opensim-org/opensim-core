@@ -257,8 +257,7 @@ void CorrectionController::extendConnectToModel(Model& model)
     const CoordinateSet& cs = _model->getCoordinateSet();
     auto actuators = model.updComponentList<CoordinateActuator>();
 
-    for(int i=0; i<cs.getSize(); i++) {
-        const Coordinate& coord = cs[i];
+    for (Coordinate& coord : cs) {
         const std::string name = coord.getName() + "_corrector";
 
         CoordinateActuator* actuator = nullptr;
@@ -273,7 +272,7 @@ void CorrectionController::extendConnectToModel(Model& model)
         if(!actuator) {
             // create the corrector actuator if it doe not already exist
             actuator = new CoordinateActuator();
-            actuator->setCoordinate(&cs.get(i));
+            actuator->setCoordinate(&coord);
             actuator->setName(name);
             // Since CorrectionController is creating these actuators for its
             // own devices, it should take ownership of them, so that when
