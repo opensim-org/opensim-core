@@ -31,7 +31,44 @@
 #include "ObjectGroup.h"
 #include "PropertyObjArray.h"
 
-namespace OpenSim { 
+namespace OpenSim {
+
+template<bool isConst, class T, class C, template<class, class> class S>
+class SetIterator final {
+    S<T, C>& _data;
+    int _pos;
+public:
+    SetIterator(S<T, C>& data, int pos) :
+        _data{data}, _pos{pos} {
+    }
+
+    // allow an implicit conversion from a non-const iterator to a const one
+    //
+    // see: https://quuxplusone.github.io/blog/2018/12/01/const-iterator-antipatterns/
+    template<bool _isConst = isConst, class = std::enable_if<_isConst>>
+    SetIterator(const SetIterator<false, T, C, S>& other) :
+        _data{other._data}, _pos{other._pos} {
+    }
+
+    template<bool _isConst = isConst>
+    typename std::enable_if<_isConst, T&>::type operator*() {
+        return _data[_pos];
+    }
+
+    template<bool _isConst = isConst>
+    typename std::enable_if<!_isConst, T&>::type operator*() const {
+        return _data[_pos];
+    }
+
+    bool operator!=(const SetIterator<isConst, T, C, S>& other) {
+        return _pos != other._pos || &_data != &other._data;
+    }
+
+    SetIterator<isConst, T, C, S>& operator++() {
+        ++_pos;
+        return *this;
+    }
+};
 
 //=============================================================================
 //=============================================================================
@@ -230,8 +267,8 @@ friend std::ostream& operator<<(std::ostream &aOut,const Set<T, C> &aSet)
 {
     aOut << "Set[" << aSet.getSize() <<"] =";
 
-    for(int i=0;i<aSet.getSize();i++)  {
-        aOut << " " << aSet[i];
+    for (const T& el : aSet)  {
+        aOut << " " << el;
     }
 
     return(aOut);
@@ -399,6 +436,22 @@ virtual bool setSize(int aSize)
 int getSize() const
 {
     return( _objects.getSize() );
+}
+
+SetIterator<false, T, C, Set> begin() {
+    return {*this, 0};
+}
+
+SetIterator<true, T, C, Set> begin() const {
+    return {const_cast<Set&>(*this), 0};
+}
+
+SetIterator<false, T, C, Set> end() {
+    return {*this, getSize()};
+}
+
+SetIterator<true, T, C, Set> end() const {
+    return {const_cast<Set&>(*this), getSize()};
 }
 
 //-----------------------------------------------------------------------------
