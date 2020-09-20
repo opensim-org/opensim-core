@@ -126,31 +126,30 @@ append(Force &aForce)
  * @return True if successful; false otherwise.
  */
 bool ForceSet::append(ForceSet &aForceSet, bool aAllowDuplicateNames)
-{
-    bool success = true;
-    for(int i=0;i<aForceSet.getSize() && success;i++) {
+{    
+    for (Force& f : aForceSet) {
         bool nameExists = false;
-        if(!aAllowDuplicateNames) {
-            std::string name = aForceSet.get(i).getName();
-            for(int j=0;j<getSize();j++) {
-                if(get(j).getName() == name) {
+
+        if (!aAllowDuplicateNames) {
+            std::string name = f.getName();
+            for (const Force& f2 : *this) {
+                if (f2.getName() == name) {
                     nameExists = true;
                     break;
                 }
             }
         }
-        if(!nameExists) {
-            if(!Super::adoptAndAppend(&aForceSet.get(i))) 
-                success = false;
+
+        if (!nameExists) {
+            if (!Super::adoptAndAppend(&f)) {
+                return false;
+            }
         }
     }
 
-    if(success) {
-        updateActuators();
-        updateMuscles();
-    }
-
-    return(success);
+    updateActuators();
+    updateMuscles();
+    return true;
 }
 //_____________________________________________________________________________
 /**
@@ -211,9 +210,11 @@ void ForceSet::updateActuators()
 {
     _actuators.setMemoryOwner(false);
     _actuators.setSize(0);
-    for (int i = 0; i < getSize(); ++i) {
-        Actuator* act = dynamic_cast<Actuator*>(&get(i));
-        if (act)  _actuators.adoptAndAppend(act);
+    for (Force& f : *this) {
+        Actuator* act = dynamic_cast<Actuator*>(&f);
+        if (act) {
+            _actuators.adoptAndAppend(act);
+        }
     }
 }
 
@@ -228,8 +229,10 @@ const Set<Muscle>& ForceSet::getMuscles() const
 }
 Set<Muscle>& ForceSet::updMuscles() 
 {
-    if (_muscles.getSize() == 0)
+    if (_muscles.getSize() == 0) {
         updateMuscles();
+    }
+
     return _muscles;
 }
 //_____________________________________________________________________________
@@ -240,9 +243,12 @@ void ForceSet::updateMuscles()
 {
     _muscles.setMemoryOwner(false);
     _muscles.setSize(0);
-    for (int i = 0; i < getSize(); ++i) {
-        Muscle* m = dynamic_cast<Muscle*>(&get(i));
-        if (m)  _muscles.adoptAndAppend(m);
+
+    for (Force& f : *this) {
+        Muscle* m = dynamic_cast<Muscle*>(&f);
+        if (m) {
+            _muscles.adoptAndAppend(m);
+        }
     }
 }
 
@@ -261,9 +267,8 @@ void ForceSet::updateMuscles()
 void ForceSet::
 getStateVariableNames(OpenSim::Array<std::string> &rNames) const
 {
-    for(int i=0;i<getSize();i++) {
-        ScalarActuator *act = dynamic_cast<ScalarActuator*>(&get(i));
-       
+    for (Force& f : *this) {
+        auto* act = dynamic_cast<ScalarActuator*>(&f);
         if(act) {
             rNames.append(act->getStateVariableNames());
         }
@@ -281,15 +286,16 @@ getStateVariableNames(OpenSim::Array<std::string> &rNames) const
 bool ForceSet::
 check() const
 {
-    bool status=true;
+    bool status = true;
 
     // LOOP THROUGH ACTUATORS
-    ScalarActuator *act;
-    int size = getSize();
-    for(int i=0;i<size;i++) {
-        act = dynamic_cast<ScalarActuator *>(&get(i));
-        if(!act) continue;
+    for (Force& f : *this) {
+        auto* act = dynamic_cast<ScalarActuator*>(&f);
+        if (!act) {
+            continue;
+        }
     }
+    // TODO: this is a bogus method?
 
-    return(status);
+    return status;
 }
