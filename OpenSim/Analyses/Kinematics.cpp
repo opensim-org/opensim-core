@@ -180,7 +180,7 @@ deleteStorage()
 void Kinematics::
 updateCoordinatesToRecord()
 {
-    if(!_model) {
+    if (!_model) {
         _coordinateIndices.setSize(0);
         _values.setSize(0);
         return;
@@ -188,21 +188,24 @@ updateCoordinatesToRecord()
 
     const CoordinateSet& coordSet = _model->getCoordinateSet();
     _coordinateIndices.setSize(getProperty_coordinates().size());
-    for(int i=0; i<getProperty_coordinates().size(); i++) {
-        if(get_coordinates(i) == "all") {
+    for (int i = 0; i < getProperty_coordinates().size(); i++) {
+        if (get_coordinates(i) == "all") {
             _coordinateIndices.setSize(coordSet.getSize());
-            for(int j=0;j<coordSet.getSize();j++) _coordinateIndices[j]=j;
+            for (int j = 0; j < coordSet.getSize(); j++) {
+                _coordinateIndices[j]=j;
+            }
             break;
         }
         
         int index = coordSet.getIndex(get_coordinates(i));
-        if(index<0) 
+        if (index < 0) {
             throw Exception("Kinematics: ERR- Could not find coordinate named '"+get_coordinates(i)+"'",__FILE__,__LINE__);
+        }
         _coordinateIndices[i] = index;
     }
     _values.setSize(_coordinateIndices.getSize());
 
-    if(_values.getSize()==0) {
+    if (_values.getSize() == 0) {
         log_warn("Kinematics analysis has no coordinates to record values for");
     }
 }

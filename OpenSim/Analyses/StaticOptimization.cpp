@@ -198,13 +198,16 @@ constructColumnLabels()
 {
     Array<string> labels;
     labels.append("time");
-    if(_model) 
-        for (int i = 0; i < _forceSet->getActuators().getSize(); i++) {
-            if (ScalarActuator* act = dynamic_cast<ScalarActuator*>(&_forceSet->getActuators().get(i))) {
-                if (act->get_appliesForce())
-                    labels.append(act->getName());
+
+    if (_model) {
+        for (Force& f : _forceSet->getActuators()) {
+            ScalarActuator* act = dynamic_cast<ScalarActuator*>(&f);
+            if (act) {
+                labels.append(act->getName());
             }
         }
+    }
+
     setColumnLabels(labels);
 }
 
@@ -364,13 +367,17 @@ record(const SimTK::State& s)
     }
 
     // Parameter bounds
-    SimTK::Vector lowerBounds(na), upperBounds(na);
-    for(int i=0,j=0;i<fs.getSize();i++) {
-        ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fs.get(i));
-        if (act) {
-            lowerBounds(j) = act->getMinControl();
-            upperBounds(j) = act->getMaxControl();
-            j++;
+    SimTK::Vector lowerBounds(na);
+    SimTK::Vector upperBounds(na);
+    {
+        int j = 0;
+        for (Actuator& a : fs) {
+            ScalarActuator* act = dynamic_cast<ScalarActuator*>(&a);
+            if (act) {
+                lowerBounds(j) = act->getMinControl();
+                upperBounds(j) = act->getMaxControl();
+                j++;
+            }
         }
     }
     
@@ -542,20 +549,22 @@ int StaticOptimization::begin(const SimTK::State& s )
             _ownsForceSet = false;
             _modelWorkingCopy->setAllControllersEnabled(false);
             _numCoordinateActuators = _forceSet->getSize();
+
             // Copy whatever forces that are not muscles back into the model
-            
-            for(int i=0; i<saveForces->getSize(); i++){
-                // const Force& f=saveForces->get(i);
-                if ((dynamic_cast<const Muscle*>(&saveForces->get(i)))==NULL)
-                    as.append(saveForces->get(i).clone());
+            for (const Force& f : *saveForces) {
+                const auto* m = dynamic_cast<const Muscle*>(&f);
+                if (!m) {
+                    as.append(f.clone());
+                }
             }
         }
 
         SimTK::State& sWorkingCopy = _modelWorkingCopy->initSystem();
+
         // Set modeling options for Actuators to be overridden
-        for(int i=0; i<_forceSet->getSize(); i++) {
-            ScalarActuator* act = dynamic_cast<ScalarActuator*>(&_forceSet->get(i));
-            if( act ) {
+        for (Force& f : *_forceSet) {
+            ScalarActuator* act = dynamic_cast<ScalarActuator*>(&f);
+            if (act) {
                 act->overrideActuation(sWorkingCopy, true);
             }
         }
@@ -579,12 +588,10 @@ int StaticOptimization::begin(const SimTK::State& s )
             }
         }
 
-        int na = _forceSet->getSize();
-        int nacc = _accelerationIndices.getSize();
-
-        if(na < nacc) 
+        if (_forceSet->getSize() < _accelerationIndices.getSize()) {
             throw(Exception("StaticOptimization: ERROR- over-constrained "
                 "system -- need at least as many forces as there are degrees of freedom.\n") );
+        }
 
         _forceReporter.reset(new ForceReporter(_modelWorkingCopy));
         _forceReporter->begin(sWorkingCopy);
@@ -609,16 +616,14 @@ int StaticOptimization::begin(const SimTK::State& s )
 
     // RECORD
     int status = 0;
-    if(_activationStorage->getSize()<=0) {
+    if (_activationStorage->getSize() <= 0) {
         status = record(s);
-        const Set<Actuator>& fs = _modelWorkingCopy->getActuators();
-        for(int k=0;k<fs.getSize();k++) {
-            ScalarActuator* act = dynamic_cast<ScalarActuator *>(&fs[k]);
-            if (act){
+        for (Actuator& a : _modelWorkingCopy->getActuators()) {
+            ScalarActuator* act = dynamic_cast<ScalarActuator*>(&a);
+            if (act) {
                 log_info("Bounds for '{}': {} to {}.", act->getName(),
                         act->getMinControl(), act->getMaxControl());
-            }
-            else{
+            } else {
                 std::string msg = getConcreteClassName();
                 msg += "::can only process scalar Actuator types.";
                 throw Exception(msg);
@@ -626,7 +631,7 @@ int StaticOptimization::begin(const SimTK::State& s )
         }
     }
 
-    return(status);
+    return status;
 }
 //_____________________________________________________________________________
 /**

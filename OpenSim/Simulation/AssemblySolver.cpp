@@ -99,8 +99,7 @@ void AssemblySolver::setupGoals(SimTK::State &s)
     const CoordinateSet& modelCoordSet = getModel().getCoordinateSet();
 
     // Restrict solution to set range of any of the coordinates that are clamped
-    for(int i=0; i<modelCoordSet.getSize(); ++i){
-        const Coordinate& coord = modelCoordSet[i];
+    for(const Coordinate& coord : modelCoordSet){
         if(coord.getClamped(s)){
             _assembler->restrictQ(coord.getBodyIndex(), 
                 MobilizerQIndex(coord.getMobilizerQIndex()),
@@ -214,10 +213,11 @@ void AssemblySolver::assemble(SimTK::State &state)
         // Get model coordinates
         const CoordinateSet& modelCoordSet = getModel().getCoordinateSet();
         // Make sure the locks in original state are restored
-        for(int i=0; i< modelCoordSet.getSize(); ++i){
-            bool isLocked = modelCoordSet[i].getLocked(state);
-            if(isLocked)
-                modelCoordSet[i].setLocked(state, isLocked);
+        for (Coordinate& c : modelCoordSet) {
+            bool isLocked = c.getLocked(state);
+            if (isLocked) {
+                c.setLocked(state, isLocked);
+            }
         }
         // TODO: Useful to include through debug message/log in the future
         log_debug("ASSEMBLED CONFIGURATION (acc={} tol={} normerr={}, maxerr={}, cost={})",

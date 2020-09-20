@@ -462,7 +462,7 @@ addAnalysisSetToModel()
 
     int size = _analysisSet.getSize();
     _analysisCopies.setMemoryOwner(false);
-    for(int i=0;i<size;i++) {
+    for (int i = 0; i < size; i++) {
         Analysis *analysis = _analysisSet.get(i).clone();
         _model->addAnalysis(analysis);
         _analysisCopies.adoptAndAppend(analysis);
@@ -488,10 +488,9 @@ addControllerSetToModel()
         throw(Exception(msg,__FILE__,__LINE__));
     }
 
-    int size = _controllerSet.getSize();
     _controllerCopies.setMemoryOwner(false);
-    for(int i=0;i<size;i++) {
-        Controller *controller = _controllerSet.get(i).clone();
+    for (const Controller& src : _controllerSet) {
+        Controller *controller = src.clone();
         _model->addController(controller);
         _controllerCopies.adoptAndAppend(controller);
     }
@@ -740,17 +739,14 @@ void AbstractTool::loadQStorage (const std::string& statesFileName, Storage& rQS
  */
 std::string AbstractTool::getControlsFileName() const
 {
-    int numControllers = _controllerSet.getSize();
-    if (numControllers>=1){ // We have potentially more than one, make sure there's controlset controller
-        for(int i=0; i<numControllers; i++){
-            OpenSim::Controller& controller= _controllerSet.get(i);
-            if (dynamic_cast<OpenSim::ControlSetController *>(&controller)==0)
-                continue;
-            OpenSim::ControlSetController& dController = (OpenSim::ControlSetController&) _controllerSet.get(i);
-            return (dController.getControlSetFileName());
+    for (Controller& c : _controllerSet) {
+        auto* dController = dynamic_cast<OpenSim::ControlSetController*>(&c);
+        if (dController) {
+            return dController->getControlSetFileName();
         }
     }
-    return ("Unassigned");
+
+    return "Unassigned";
 }
 //_____________________________________________________________________________
 /**
@@ -759,17 +755,16 @@ std::string AbstractTool::getControlsFileName() const
  */
 void AbstractTool::setControlsFileName(const std::string& controlsFilename)
 {
-    if (controlsFilename=="" || controlsFilename=="Unassigned") return;
-
-    int numControllers = _controllerSet.getSize();
-
-    for(int i=0; i<numControllers;i++){
-        OpenSim::Controller& controller= _controllerSet.get(i);
-        if (dynamic_cast<OpenSim::ControlSetController *>(&controller)==0)
-            continue;
-        OpenSim::ControlSetController& dController = (OpenSim::ControlSetController&)_controllerSet[i];
-        dController.setControlSetFileName(controlsFilename);
+    if (controlsFilename=="" || controlsFilename=="Unassigned") {
         return;
+    }
+
+    for (Controller& c : _controllerSet) {
+        auto* dController = dynamic_cast<OpenSim::ControlSetController*>(&c);
+        if (dController) {
+            dController->setControlSetFileName(controlsFilename);
+            return;
+        }
     }
     // Create a new controlsetController and add it to the tool
     ControlSetController* csc = new ControlSetController();

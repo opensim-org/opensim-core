@@ -162,22 +162,19 @@ void ControlSetController::computeControls(const SimTK::State& s, SimTK::Vector&
 {
     SimTK_ASSERT( _controlSet , "ControlSetController::computeControls controlSet is NULL");
 
-    std::string actName = "";
-    int index = -1;
+    std::string actName;
+    for (const Actuator& a : getActuatorSet()) {
+        actName = a.getName();
+        int index = _controlSet->getIndex(actName);
 
-    int na = getActuatorSet().getSize();
-
-    for(int i=0; i< na; ++i){
-        actName = getActuatorSet()[i].getName();
-        index = _controlSet->getIndex(actName);
-        if(index < 0){
+        if (index < 0) {
             actName = actName + ".excitation";
             index = _controlSet->getIndex(actName);
         }
 
-        if(index >= 0){
+        if (index >= 0) {
             SimTK::Vector actControls(1, _controlSet->get(index).getControlValue(s.getTime()));
-            getActuatorSet()[i].addInControls(actControls, controls);
+            a.addInControls(actControls, controls);
         }
     }
 }

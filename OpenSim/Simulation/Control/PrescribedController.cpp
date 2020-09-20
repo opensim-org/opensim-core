@@ -167,10 +167,10 @@ void PrescribedController::computeControls(const SimTK::State& s, SimTK::Vector&
     SimTK::Vector actControls(1, 0.0);
     SimTK::Vector time(1, s.getTime());
 
-    for(int i=0; i<getActuatorSet().getSize(); i++){
+    for (int i = 0; i < getActuatorSet().getSize(); i++) {
         actControls[0] = get_ControlFunctions()[i].calcValue(time);
         getActuatorSet()[i].addInControls(actControls, controls);
-    }  
+    }
 }
 
 

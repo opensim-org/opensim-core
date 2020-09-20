@@ -302,11 +302,11 @@ int main()
         osimModel.printDetailedInfo( si, std::cout );
 
         // Print out the initial position and velocity states.
-        for( int i = 0; i < modelCoordinateSet.getSize(); i++ ) {
-            std::cout << "Initial " << modelCoordinateSet[i].getName()
-                << " = " << modelCoordinateSet[i].getValue( si )
+        for (const Coordinate& c : modelCoordinateSet) {
+            std::cout << "Initial " << c.getName()
+                << " = " << c.getValue( si )
                 << ", and speed = "
-                << modelCoordinateSet[i].getSpeedValue( si ) << std::endl;
+                << c.getSpeedValue( si ) << std::endl;
         }
 
         // Integrate from initial time to final time.

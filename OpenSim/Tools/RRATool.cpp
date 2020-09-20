@@ -586,27 +586,28 @@ bool RRATool::run()
     // ANALYSES
     addNecessaryAnalyses();
 
-    GCVSplineSet *qAndPosSet=NULL;
-    qAndPosSet = new GCVSplineSet();
-    if(desiredPointsFlag) {
-        int nps=posSet->getSize();
-        for(int i=0;i<nps;i++) {
-            qAndPosSet->adoptAndAppend(&posSet->get(i));
+    GCVSplineSet* qAndPosSet = new GCVSplineSet();
+
+    if (desiredPointsFlag) {
+        for (Function& f : *posSet) {
+            qAndPosSet->adoptAndAppend(&f);
         }
     }
-    if(desiredKinFlag) {
-        int nqs=qSet->getSize();
-        for(int i=0;i<nqs;i++) {
-            qAndPosSet->adoptAndAppend(&qSet->get(i));
+
+    if (desiredKinFlag) {
+        for (Function& f : *qSet) {
+            qAndPosSet->adoptAndAppend(&f);
         }
     }
-    if (taskSet.getDataFileName()!=""){
+
+    if (taskSet.getDataFileName() != "") {
         // Add functions from data files to track states
         Storage stateStorage(taskSet.getDataFileName());
         GCVSplineSet* stateFuntcions = new GCVSplineSet(3, &stateStorage);
-        for (int i=0; i< stateFuntcions->getSize(); i++)
-            qAndPosSet->cloneAndAppend(stateFuntcions->get(i));
-
+        for (Function& f : *stateFuntcions) {
+            qAndPosSet->cloneAndAppend(f);
+        }
+        // TODO: this leaks, right?
     }
 
     taskSet.setFunctions(*qAndPosSet);

@@ -59,9 +59,8 @@ void ElasticFoundationForce::extendAddToSystem(SimTK::MultibodySystem& system) c
     SimTK::ContactSetIndex set = contacts.createContactSet();
     SimTK::ElasticFoundationForce force(_model->updForceSubsystem(), contacts, set);
     force.setTransitionVelocity(transitionVelocity);
-    for (int i = 0; i < contactParametersSet.getSize(); ++i)
+    for (ContactParameters& params : contactParametersSet)
     {
-        ContactParameters& params = contactParametersSet.get(i);
         for (int j = 0; j < params.getGeometry().size(); ++j) {
             // TODO: Dependency of ElasticFoundationForce on ContactGeometry
             // should be handled by Sockets.
@@ -322,12 +321,8 @@ OpenSim::Array<std::string> ElasticFoundationForce::getRecordLabels() const
 {
     OpenSim::Array<std::string> labels("");
 
-    const ContactParametersSet& contactParametersSet = 
-        get_contact_parameters();
-
-    for (int i = 0; i < contactParametersSet.getSize(); ++i)
+    for (ContactParameters& params : get_contact_parameters())
     {
-        ContactParameters& params = contactParametersSet.get(i);
         for (int j = 0; j < params.getGeometry().size(); ++j)
         {
             // TODO: Dependency of ElasticFoundationForce on ContactGeometry
@@ -374,9 +369,8 @@ OpenSim::Array<double> ElasticFoundationForce::getRecordValues(const SimTK::Stat
     simtkForce.calcForceContribution(state, bodyForces, particleForces,
                                      mobilityForces);
 
-    for (int i = 0; i < contactParametersSet.getSize(); ++i)
+    for (ContactParameters& params : contactParametersSet)
     {
-        ContactParameters& params = contactParametersSet.get(i);
         for (int j = 0; j < params.getGeometry().size(); ++j)
         {
             // TODO: Dependency of ElasticFoundationForce on ContactGeometry

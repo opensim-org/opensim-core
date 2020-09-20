@@ -63,7 +63,7 @@ void CMCActuatorSubsystemRep::setCoordinateTrajectories(FunctionSet *aSet) {
         msg += " ERR- NULL function set.\n";
         throw( Exception(msg,__FILE__,__LINE__) );
     }
-    if(aSet->getSize() != _model->getNumCoordinates()) {
+    if (aSet->getSize() != _model->getNumCoordinates()) {
         string msg = "CMCActuatorSubsystemRep.setCoordinateTrajectories:";
         msg += " ERR- incorrect number of trajectories.\n";
         throw( Exception(msg,__FILE__,__LINE__) );
@@ -78,7 +78,7 @@ void CMCActuatorSubsystemRep::setSpeedTrajectories(FunctionSet *aSet) {
         msg += " ERR- NULL function set.\n";
         throw( Exception(msg,__FILE__,__LINE__) );
     }
-    if(aSet->getSize() != _model->getNumSpeeds()) {
+    if (aSet->getSize() != _model->getNumSpeeds()) {
         string msg = "CMCActuatorSubsystemRep.setSpeedTrajectories:";
         msg += " ERR- incorrect number of trajectories.\n";
         throw( Exception(msg,__FILE__,__LINE__) );

@@ -443,8 +443,9 @@ SimTK::State& Model::initializeState() {
     getMultibodySystem().realize(_workingState, Stage::Position);
 
     // Reset (initialize) all underlying Probe SimTK::Measures
-    for (int i=0; i<getProbeSet().getSize(); ++i)
-        getProbeSet().get(i).reset(_workingState);
+    for (Probe& p : getProbeSet()) {
+        p.reset(_workingState);
+    }
 
     // Do the assembly
     createAssemblySolver(_workingState);
@@ -479,9 +480,8 @@ void Model::assemble(SimTK::State& s, const Coordinate *coord, double weight)
 {
     
     bool constrained = false;
-    const CoordinateSet &coords = getCoordinateSet();
-    for(int i=0; i<coords.getSize(); ++i){
-        constrained = constrained || coords[i].isConstrained(s);
+    for (const Coordinate& coord : getCoordinateSet()) {
+        constrained = constrained || coord.isConstrained(s);
     }
 
     // Don't bother assembling if the model has no constraints
@@ -507,8 +507,8 @@ void Model::assemble(SimTK::State& s, const Coordinate *coord, double weight)
     }
     const Array_<CoordinateReference>& coordRefs = _assemblySolver->getCoordinateReferences();
 
-    for(unsigned int i=0; i<coordRefs.size(); i++){
-        const string &coordName = coordRefs[i].getName();
+    for (const CoordinateReference& cr : coordRefs) {
+        const string &coordName = cr.getName();
         Coordinate& c = _coordinateSet.get(coordName);
         _assemblySolver->updateCoordinateReference(coordName, c.getValue(s));
     }
@@ -1275,13 +1275,13 @@ int Model::getNumContactGeometries() const
 int Model::getNumMuscleStates() const {
 
     int n = 0;
-    for(int i=0;i<get_ForceSet().getSize();i++){
-        Muscle *mus = dynamic_cast<Muscle*>( &get_ForceSet().get(i) );
-        if(mus!=NULL) {
+    for (Force& f : get_ForceSet()) {
+        Muscle *mus = dynamic_cast<Muscle*>(&f);
+        if (mus) {
             n += mus->getNumStateVariables();
         }
     }
-    return(n);
+    return n;
 }
 
 /**
@@ -1293,13 +1293,10 @@ int Model::getNumMuscleStates() const {
 int Model::getNumProbeStates() const {
 
     int n = 0;
-    for(int i=0;i<get_ProbeSet().getSize();i++){
-        Probe *p = dynamic_cast<Probe*>( &get_ProbeSet().get(i) );
-        if(p!=NULL) {
-            n += p->getNumInternalMeasureStates();
-        }
+    for (const Probe& p : get_ProbeSet()) {
+        n += p.getNumInternalMeasureStates();
     }
-    return(n);
+    return n;
 }
 
 //_____________________________________________________________________________
@@ -1694,13 +1691,7 @@ void Model::printDetailedInfo(const SimTK::State& s, std::ostream& aOStream) con
  */
 void Model::applyDefaultConfiguration(SimTK::State& s)
 {
-    int i;
-
-    // Coordinates
-    int ncoords = getCoordinateSet().getSize();
-
-    for(i=0; i<ncoords; i++) {
-        Coordinate& coord = getCoordinateSet().get(i);
+    for (Coordinate& coord : getCoordinateSet()) {
         coord.setValue(s, coord.getDefaultValue(), false);
         coord.setSpeedValue(s, coord.getDefaultSpeedValue());
     }
@@ -1719,12 +1710,12 @@ void Model::createAssemblySolver(const SimTK::State& s)
     // Allocate on stack and pass to AssemblySolver to make working copy.
     SimTK::Array_<CoordinateReference> coordsToTrack;
 
-    for(int i=0; i<getNumCoordinates(); ++i){
-        // Iff a coordinate is dependent on other coordinates for its value, 
+    for (const Coordinate& coordinate : getCoordinateSet()) {
+        // Iff a coordinate is dependent on other coordinates for its value,
         // do not give it a reference/goal.
-        if(!_coordinateSet[i].isDependent(s)){
-            Constant reference(_coordinateSet[i].getValue(s));
-            CoordinateReference coordRef(_coordinateSet[i].getName(), reference);
+        if(!coordinate.isDependent(s)){
+            Constant reference(coordinate.getValue(s));
+            CoordinateReference coordRef(coordinate.getName(), reference);
             coordsToTrack.push_back(coordRef);
         }
     }
@@ -1759,9 +1750,7 @@ void Model::writeMarkerFile(const string& aFileName)
 //_____________________________________________________________________________
 void Model::updateMarkerSet(MarkerSet& newMarkerSet)
 {
-    for (int i = 0; i < newMarkerSet.getSize(); i++) {
-        Marker& updatingMarker = newMarkerSet.get(i);
-
+    for (Marker& updatingMarker : newMarkerSet) {
         /* If there is already a marker in the model with that name,
          * replace it with the updating marker.
          */
@@ -1773,8 +1762,6 @@ void Model::updateMarkerSet(MarkerSet& newMarkerSet)
         // append the marker to the model's Set
         addMarker(updatingMarker.clone());
     }
-
-    log_info("Updated markers in model {}", getName());
 }
 
 //_____________________________________________________________________________
@@ -1990,7 +1977,7 @@ void Model::formStateStorage(const Storage& originalStorage,
 
     // Create a list with entry for each desiredName telling which column in originalStorage has the data
     Array<int> mapColumns(-1, rStateNames.getSize());
-    for(int i=0; i< rStateNames.getSize(); i++){
+    for (int i=0; i< rStateNames.getSize(); i++){
         // the index is -1 if not found, >=1 otherwise since time has index 0 by defn.
         int fix = originalStorage.getStateIndex(rStateNames[i]);
         mapColumns[i] = fix;
@@ -2033,9 +2020,9 @@ void Model::formQStorage(const Storage& originalStorage, Storage& qStorage) {
     Array<string> qNames;
     getCoordinateSet().getNames(qNames);
 
+    std::vector<int> mapColumns(qNames.getSize());
 
-    int* mapColumns = new int[qNames.getSize()];
-    for(int i=0; i< nq; i++){
+    for (int i=0; i < nq; i++) {
         // the index is -1 if not found, >=1 otherwise since time has index 0 by defn.
         mapColumns[i] = originalStorage.getColumnLabels().findIndex(qNames[i]);
         if (mapColumns[i] == -1)
@@ -2079,11 +2066,11 @@ void Model::disownAllComponents()
 }
 
 void Model::overrideAllActuators( SimTK::State& s, bool flag) {
-     Set<Actuator>& as = updActuators();
-
-     for(int i=0;i<as.getSize();i++) {
-         ScalarActuator* act = dynamic_cast<ScalarActuator*>(&as[i]);
-         act->overrideActuation(s, flag);
+     for (Actuator& a : updActuators()) {
+         ScalarActuator* act = dynamic_cast<ScalarActuator*>(&a);
+         if (act) {
+             act->overrideActuation(s, flag);
+         }
      }
 
 }

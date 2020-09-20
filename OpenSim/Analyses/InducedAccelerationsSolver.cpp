@@ -105,7 +105,7 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
         s_solver.updZ() = s.getZ();
 
         //Make sure all the actuators are on!
-        for(int f=0; f<_modelCopy.getActuators().getSize(); f++){
+        for (int f = 0; f< _modelCopy.getActuators().getSize(); f++) {
             _modelCopy.updActuators().get(f).setAppliesForce(s_solver, true);
         }
 
@@ -177,7 +177,7 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
         s_solver.setU(SimTK::Vector(nu,0.0));
 
         // disable other forces
-        for(int f=0; f<_modelCopy.getForceSet().getSize(); f++){
+        for (int f = 0; f < _modelCopy.getForceSet().getSize(); f++){
             _modelCopy.updForceSet()[f].setAppliesForce(s_solver, false);
         }
     }
@@ -189,7 +189,7 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
         s_solver.updU() = s.getU();
             
         // zero actuator forces
-        for(int f=0; f<_modelCopy.getActuators().getSize(); f++){
+        for (int f = 0; f< _modelCopy.getActuators().getSize(); f++) {
             _modelCopy.updActuators().get(f).setAppliesForce(s_solver, false);
         }
         // Set the configuration (gen. coords and speeds) of the model.
@@ -200,7 +200,7 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
         _modelCopy.updForceSubsystem().setForceIsDisabled(s_solver, _modelCopy.getGravityForce().getForceIndex(), true);
 
         // zero actuator forces
-        for(int f=0; f<_modelCopy.getActuators().getSize(); f++){
+        for (int f = 0; f < _modelCopy.getActuators().getSize(); f++) {
             _modelCopy.updActuators().get(f).setAppliesForce(s_solver, false);
         }
 
@@ -333,7 +333,7 @@ Array<bool> InducedAccelerationsSolver::
     Array<bool> constraintOn(false, _replacementConstraints.getSize());
     double t = s.getTime();
 
-    for(int i=0; i<_forcesToReplace.getSize(); i++){
+    for (int i = 0; i < _forcesToReplace.getSize(); i++) {
         ExternalForce* exf = dynamic_cast<ExternalForce*>(&_forcesToReplace[i]);
         SimTK::Vec3 point, force, gpoint;
 

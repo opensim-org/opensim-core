@@ -176,8 +176,8 @@ void Controller::setActuators(const Set<Actuator>& actuators)
     //Rebuild consistent set of actuator lists
     _actuatorSet.setSize(0);
     updProperty_actuator_list().clear();
-    for (int i = 0; i< actuators.getSize(); i++){
-        addActuator(actuators[i]);
+    for (const Actuator& a : actuators) {
+        addActuator(a);
     }
 }
 

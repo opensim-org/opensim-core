@@ -270,10 +270,13 @@ setStorageCapacityIncrements(int aIncrement)
 void InverseDynamics::
 computeAcceleration(SimTK::State& s, double *aF,double *rAccel) const
 {
-    for(int i=0,j=0; i<_forceSet->getSize(); i++) {
-        ScalarActuator* act = dynamic_cast<ScalarActuator*>(&_forceSet->get(i));
-        if( act ) {
-            act->setOverrideActuation(s, aF[j++]);
+    {
+        int j = 0;
+        for (Force& f : *_forceSet) {
+            ScalarActuator* act = dynamic_cast<ScalarActuator*>(&f);
+            if (act) {
+                act->setOverrideActuation(s, aF[j++]);
+            }
         }
     }
 
@@ -283,9 +286,9 @@ computeAcceleration(SimTK::State& s, double *aF,double *rAccel) const
 
     SimTK::Vector udot = _modelWorkingCopy->getMatterSubsystem().getUDot(s);
 
-    for(int i=0; i<_accelerationIndices.getSize(); i++) 
+    for (int i = 0; i < _accelerationIndices.getSize(); i++) {
         rAccel[i] = udot[_accelerationIndices[i]];
-
+    }
 }
 
 //_____________________________________________________________________________
@@ -302,9 +305,9 @@ record(const SimTK::State& s)
     SimTK::State sWorkingCopy = _modelWorkingCopy->getWorkingState();
 
     // Set modeling options for Actuators to be overridden
-    for(int i=0; i<_forceSet->getSize(); i++) {
-        ScalarActuator* act = dynamic_cast<ScalarActuator*>(&_forceSet->get(i));
-        if( act ) {
+    for (Force& f : *_forceSet) {
+        ScalarActuator* act = dynamic_cast<ScalarActuator*>(&f);
+        if (act) {
             act->overrideActuation(sWorkingCopy, true);
         }
     }
@@ -439,10 +442,11 @@ int InverseDynamics::begin(const SimTK::State& s )
             _numCoordinateActuators = _forceSet->getSize();
             // Copy whatever forces that are not muscles back into the model
             
-            for(int i=0; i<saveForces->getSize(); i++){
-                // const Force& f=saveForces->get(i);
-                if ((dynamic_cast<const Muscle*>(&saveForces->get(i)))==NULL)
-                    as.append(saveForces->get(i).clone());
+            for (const Force& f : *saveForces){
+                const auto* muscle = dynamic_cast<const Muscle*>(&f);
+                if (muscle == nullptr) {
+                    as.append(f.clone());
+                }
             }
         }
         _modelWorkingCopy->setAllControllersEnabled(false);

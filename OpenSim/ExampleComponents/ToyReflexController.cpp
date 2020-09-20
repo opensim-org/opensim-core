@@ -108,8 +108,8 @@ void ToyReflexController::computeControls(const State& s,
     //reflex control
     double control = 0;
 
-    for(int i=0; i<actuators.getSize(); ++i){
-        const Muscle *musc = dynamic_cast<const Muscle*>(&actuators[i]);
+    for (const Actuator& a : actuators){
+        const Muscle *musc = dynamic_cast<const Muscle*>(&a);
         speed = musc->getLengtheningSpeed(s);
         // un-normalize muscle's maximum contraction velocity (fib_lengths/sec) 
         max_speed =

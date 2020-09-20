@@ -43,21 +43,23 @@ void ControllerSet::constructStorage()
     _controlStore.reset(new Storage(1023,"controls"));
     columnLabels.append("time");
 
-    for(int i=0;i<_actuatorSet->getSize();i++)
-        columnLabels.append(_actuatorSet->get(i).getName());
+    for (const Actuator& a : *_actuatorSet) {
+        columnLabels.append(a.getName());
+    }
 
     _controlStore->setColumnLabels(columnLabels);
 }
 
 void ControllerSet::storeControls( const SimTK::State& s, int step  )
 {
-    int size = _actuatorSet->getSize();
-    
-    if( size > 0 )
-    {
-        _controlStore->store( step, s.getTime(), getModel().getNumControls(), 
-                              &(getModel().getControls(s)[0]) );
+    if (_actuatorSet->getSize() == 0) {
+        return;
     }
+
+    _controlStore->store(step,
+                         s.getTime(),
+                         getModel().getNumControls(),
+                         &(getModel().getControls(s)[0]));
 }
 
 // write out the controls to disk
@@ -80,14 +82,16 @@ void ControllerSet::setActuators( Set<Actuator>& as)
 
 void ControllerSet::setDesiredStates( Storage* yStore)
 {
-   for(int i=0;i<getSize();i++ ) {
-       if( get(i).isEnabled() ) {
-           TrackingController *controller =
-               dynamic_cast<TrackingController *>(&get(i));
-           if(controller != NULL)
-                controller->setDesiredStatesStorage( yStore );
-       }
-   }
+    for (Controller& c : *this) {
+        if (!c.isEnabled()) {
+            continue;
+        }
+
+        auto* controller = dynamic_cast<TrackingController*>(&c);
+        if (controller) {
+            controller->setDesiredStatesStorage( yStore );
+        }
+    }
 }
 
 void ControllerSet::printInfo() const 

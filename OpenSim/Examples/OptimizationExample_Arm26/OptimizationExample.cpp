@@ -131,10 +131,9 @@ int main()
         coords.get("r_shoulder_elev").setValue(si, -1.57079633);
 
         // Set the initial muscle activations and make all tendons rigid.
-        const Set<Muscle> &muscleSet = osimModel.getMuscles();
-        for(int i=0; i<muscleSet.getSize(); ++i) {
-            muscleSet[i].setActivation(si, 0.01);
-            muscleSet[i].setIgnoreTendonCompliance(si, true);
+        for (Muscle& m : osimModel.getMuscles()) {
+            m.setActivation(si, 0.01);
+            m.setIgnoreTendonCompliance(si, true);
         }
     
         // Make sure the muscles states are in equilibrium
@@ -175,7 +174,7 @@ int main()
         cout << "Elapsed time = " << (std::clock()-startTime)/CLOCKS_PER_SEC << "s" << endl;
         
         const Set<Actuator>& actuators = osimModel.getActuators();
-        for(int i=0; i<actuators.getSize(); ++i){
+        for (int i = 0; i < actuators.getSize(); ++i) {
             cout << actuators[i].getName() << " control value = " << controls[i] << endl;
         }
 
@@ -186,8 +185,9 @@ int main()
         // Dump out optimization results to a text file for testing
         ofstream ofile; 
         ofile.open("Arm26_optimization_result"); 
-        for(int i=0; i<actuators.getSize(); ++i)
+        for (int i = 0; i < actuators.getSize(); ++i) {
             ofile << controls[i] << endl;
+        }
         ofile << -f <<endl;
         ofile.close(); 
 

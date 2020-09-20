@@ -251,8 +251,8 @@ void InducedAccelerations:: assembleContributors()
     const Set<Actuator> &actuatorSet = _model->getActuators();
 
     //Do the analysis on the bodies that are in the indices list
-    for(int i=0; i< actuatorSet.getSize(); i++) {
-        contribs.append(actuatorSet.get(i).getName()) ;
+    for (const Actuator& a : actuatorSet) {
+        contribs.append(a.getName());
     }
  
     contribs.append("gravity");
@@ -337,25 +337,27 @@ Array<string> InducedAccelerations:: constructColumnLabelsForCOM()
  */
 Array<string> InducedAccelerations:: constructColumnLabelsForConstraintReactions()
 {
-    int nc = _constraintSet.getSize();
     // Get the main headings for all the contributors
     Array<string> contributors = constructColumnLabelsForCoordinate();
     Array<string> labels;
     Array< Array<std::string> > constraint_reaction_labels;
 
-    for(int j=0; j<nc; j++){
-        constraint_reaction_labels.append(_constraintSet[j].getRecordLabels());
+    for (const Constraint& c : _constraintSet) {
+        constraint_reaction_labels.append(c.getRecordLabels());
     }
 
     // first label is time not a contributor
     labels.append(contributors[0]);
-    for(int i=1; i<contributors.getSize(); i++) {
-        for(int j=0; j<nc; j++){
-            for(int k=0; k<constraint_reaction_labels[j].getSize(); k++){
+
+    for (int i=1; i < contributors.getSize(); i++) {
+        int numConstraints = _constraintSet.getSize();
+        for (int j = 0; j < numConstraints; j++) {
+            for (int k=0; k<constraint_reaction_labels[j].getSize(); k++) {
                 labels.append(contributors[i] + "_" + (constraint_reaction_labels[j])[k]);
             }
         }
     }
+
     return labels;
 }
 
@@ -378,8 +380,9 @@ void InducedAccelerations::setupStorage()
     _coordSet.setSize(0);
     if(nc && (IO::Uppercase(_coordNames.get(0)) == "ALL")) {
         nc = modelCoordSet.getSize();
-        for(int i=0; i<nc; i++)
-            _coordSet.adoptAndAppend(&modelCoordSet.get(i));
+        for (Coordinate& c : modelCoordSet) {
+            _coordSet.adoptAndAppend(&c);
+        }
     }
     else{
         for(int i=0; i<nc; i++){
@@ -717,7 +720,7 @@ int InducedAccelerations::record(const SimTK::State& s)
         SimTK::Vec3 vec,angVec;
 
         // Get Accelerations for kinematics of bodies
-        for(int i=0;i<_coordSet.getSize();i++) {
+        for (int i=0; i<_coordSet.getSize(); i++) {
             double acc = _coordSet.get(i).getAccelerationValue(s_analysis);
 
             if(getInDegrees()) 
@@ -728,7 +731,7 @@ int InducedAccelerations::record(const SimTK::State& s)
         // cout << "Input Body Names: "<< _bodyNames << endl;
 
         // Get Accelerations for kinematics of bodies
-        for(int i=0;i<_bodySet.getSize();i++) {
+        for (int i=0; i<_bodySet.getSize(); i++) {
             Body &body = _bodySet.get(i);
             // cout << "Body Name: "<< body->getName() << endl;
             const SimTK::Vec3& com = body.get_mass_center();
@@ -756,9 +759,9 @@ int InducedAccelerations::record(const SimTK::State& s)
         }
 
         // Get induced constraint reactions for contributor
-        if(_reportConstraintReactions){
-            for(int j=0; j<_constraintSet.getSize(); j++){
-                _constraintReactions.append(_constraintSet[j].getRecordValues(s_analysis));
+        if (_reportConstraintReactions) {
+            for (const Constraint& c : _constraintSet) {
+                _constraintReactions.append(c.getRecordValues(s_analysis));
             }
         }
 
@@ -766,13 +769,13 @@ int InducedAccelerations::record(const SimTK::State& s)
 
     // Set the accelerations of coordinates into their storages
     int nc = _coordSet.getSize();
-    for(int i=0; i<nc; i++) {
+    for (int i = 0; i < nc; i++) {
         _storeInducedAccelerations[i]->append(aT, _coordIndAccs[i]->getSize(),&(_coordIndAccs[i]->get(0)));
     }
 
     // Set the accelerations of bodies into their storages
     int nb = _bodySet.getSize();
-    for(int i=0; i<nb; i++) {
+    for (int i = 0; i < nb; i++) {
         _storeInducedAccelerations[nc+i]->append(aT, _bodyIndAccs[i]->getSize(),&(_bodyIndAccs[i]->get(0)));
     }
 
@@ -804,10 +807,11 @@ void InducedAccelerations::initialize(const SimTK::State& s)
     _externalForces.setSize(0);
 
     //add constraint to set 
-    for(int i=0; i<_constraintSet.getSize(); i++){
-        Constraint* contactConstraint = &_constraintSet.get(i);
-        if(contactConstraint)
-            _model->updConstraintSet().adoptAndAppend(contactConstraint);
+    for (Constraint& contactConstraint : _constraintSet) {
+        Constraint* ptr = &contactConstraint;
+        if (ptr) {
+            _model->updConstraintSet().adoptAndAppend(ptr);
+        }
     }
 
     // Create a set of constraints used to model contact with the ground

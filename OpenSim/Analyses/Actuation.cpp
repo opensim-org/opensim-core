@@ -258,10 +258,11 @@ constructColumnLabels()
         // ASSIGN
         Array<string> labels;
         labels.append("time");
-        const Set<Actuator>& ai = _model->getActuators();
-        for (int i = 0; i < ai.getSize(); i++)
-            if(ai.get(i).get_appliesForce())
-                labels.append(ai.get(i).getName());
+        for (const Actuator& a : _model->getActuators()) {
+            if (a.get_appliesForce()) {
+                labels.append(a.getName());
+            }
+        }
         setColumnLabels(labels);
     }
     _forceStore->setColumnLabels(getColumnLabels());
@@ -358,40 +359,53 @@ setStorageCapacityIncrements(int aIncrement)
 int Actuation::
 record(const SimTK::State& s)
 {
-    if (_model == NULL) return(-1);
+    if (_model == nullptr) {
+        return -1;
+    }
 
     // MAKE SURE ALL ACTUATION QUANTITIES ARE VALID
     _model->getMultibodySystem().realize(s, SimTK::Stage::Dynamics);
 
     // TIME NORMALIZATION
     double tReal = s.getTime();
+    const Set<Actuator>& fSet = _model->getActuators();
 
     // FORCE
-    const Set<Actuator>& fSet = _model->getActuators();
-    for (int i = 0, iact = 0; i<fSet.getSize(); i++) {
-        ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
-        if(fSet.get(i).get_appliesForce())
-            _fsp[iact++] = act->getActuation(s);
+    {
+        int iact = 0;
+        for (Actuator& a : fSet) {
+            ScalarActuator* act = dynamic_cast<ScalarActuator*>(&a);
+            if (a.get_appliesForce()) {
+                _fsp[iact++] = act->getActuation(s);
+            }
+        }
+        _forceStore->append(tReal, _na, _fsp);
     }
-    _forceStore->append(tReal, _na, _fsp);
+
 
     // SPEED
-    for (int i = 0, iact = 0; i<fSet.getSize(); i++) {
-        ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet[i]);
-        if(fSet.get(i).get_appliesForce())
-            _fsp[iact++] = act->getSpeed(s);
+    {
+        int iact = 0;
+        for (Actuator& a : fSet) {
+            ScalarActuator* act = dynamic_cast<ScalarActuator*>(&a);
+            if (a.get_appliesForce()) {
+                _fsp[iact++] = act->getSpeed(s);
+            }
+        }
+        _speedStore->append(tReal, _na, _fsp);
     }
-    _speedStore->append(tReal, _na, _fsp);
 
     // POWER
-    for (int i = 0, iact = 0; i<fSet.getSize(); i++) {
-        if(fSet.get(i).get_appliesForce())
-            _fsp[iact++] = fSet.get(i).getPower(s);
+    {
+        int iact = 0;
+        for (Actuator& a : fSet) {
+            if(a.get_appliesForce())
+                _fsp[iact++] = a.getPower(s);
+        }
+        _powerStore->append(tReal, _na, _fsp);
     }
-    _powerStore->append(tReal, _na, _fsp);
 
-
-    return(0);
+    return 0;
 }
 //_____________________________________________________________________________
 /**
@@ -541,13 +555,11 @@ const string &aExtension)
 int Actuation::
 getNumEnabledActuators()
 {
-
-    const Set<Actuator>& actuators = _model->getActuators();
-    int numActuators = actuators.getSize();
-    int numEnabled = numActuators;
-    for (int i = 0; i< numActuators; i++)
-        if(!actuators[i].get_appliesForce())
-            numEnabled--;
-
-    return numEnabled;
+    int count = 0;
+    for (const Actuator& a : _model->getActuators()) {
+        if (a.get_appliesForce()) {
+            ++count;
+        }
+    }
+    return count;
 }

@@ -211,8 +211,8 @@ void MuscleAnalysis::allocateStorageObjects()
 
         if(IO::Lowercase(_coordinateList[0]) == "all"){
             _coordinateList.setSize(0);
-            for(int i=0; i < qSet.getSize(); ++i) {
-                _coordinateList.append(qSet[i].getName());
+            for (const Coordinate& c : qSet) {
+                _coordinateList.append(c.getName());
             }
         } 
         else{
@@ -342,12 +342,13 @@ void MuscleAnalysis::allocateStorageObjects()
     ForceSet& fSet = _model->updForceSet();
     _muscleList = _muscleListProp.getValueStrArray();
     int nm = _muscleList.getSize();
-    if((nm==1) && (_muscleList.get(0)=="all")) {
+    if (nm == 1 && _muscleList.get(0) == "all") {
         _muscleList.setSize(0);
-        int nf = fSet.getSize();
-        for(int i=0;i<nf;i++) {
-            Muscle *m = dynamic_cast<Muscle*>(&fSet.get(i));
-            if( m ) _muscleList.append(m->getName());
+        for (Force& f : fSet) {
+            Muscle *m = dynamic_cast<Muscle*>(&f);
+            if (m) {
+                _muscleList.append(m->getName());
+            }
         }
     }
     // POPULATE ACTIVE MUSCLE ARRAY

@@ -89,28 +89,29 @@ StaticOptimizationTarget(const SimTK::State& s, Model *aModel,int aNP,int aNC, b
 bool StaticOptimizationTarget::
 prepareToOptimize(SimTK::State& s, double *x)
 {
-    // COMPUTE MAX ISOMETRIC FORCE
-    const ForceSet& fSet = _model->getForceSet();
-    
-    for(int i=0, j=0;i<fSet.getSize();i++) {
-        ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fSet.get(i));
-         if( act ) {
-             double fOpt;
-             Muscle *mus = dynamic_cast<Muscle*>(&fSet.get(i));
-             if( mus ) {
-                //ActivationFiberLengthMuscle *aflmus = dynamic_cast<ActivationFiberLengthMuscle*>(mus);
-                if(mus && _useMusclePhysiology) {
-                    _model->setAllControllersEnabled(true);
-                    fOpt = mus->calcInextensibleTendonActiveFiberForce(s, 1.0);
-                    _model->setAllControllersEnabled(false);
-                } else {
-                    fOpt = mus->getMaxIsometricForce();
-                }
-             } else {
-                  fOpt = act->getOptimalForce();
-             }
-            _optimalForce[j++] = fOpt;
-         }
+    // COMPUTE MAX ISOMETRIC FORCE    
+    int j = 0;
+    for (Force& f : _model->getForceSet()) {
+        ScalarActuator* act = dynamic_cast<ScalarActuator*>(&f);
+        if (!act) {
+            continue;
+        }
+
+        double fOpt;
+        Muscle *mus = dynamic_cast<Muscle*>(&f);
+
+        if (mus) {
+           if (_useMusclePhysiology) {
+               _model->setAllControllersEnabled(true);
+               fOpt = mus->calcInextensibleTendonActiveFiberForce(s, 1.0);
+               _model->setAllControllersEnabled(false);
+           } else {
+               fOpt = mus->getMaxIsometricForce();
+           }
+        } else {
+             fOpt = act->getOptimalForce();
+        }
+       _optimalForce[j++] = fOpt;
     }
 
 #ifdef USE_LINEAR_CONSTRAINT_MATRIX
@@ -277,13 +278,15 @@ getDXArray()
 void StaticOptimizationTarget::
 getActuation(SimTK::State& s, const SimTK::Vector &parameters, SimTK::Vector &forces)
 {
-    //return(_optimalForce[aIndex]);
-    const ForceSet& fs = _model->getForceSet();
     SimTK::Vector tempAccel(getNumConstraints());
     computeAcceleration(s, parameters, tempAccel);
-    for(int i=0,j=0;i<fs.getSize();i++) {
-        ScalarActuator* act = dynamic_cast<ScalarActuator*>(&fs.get(i));
-        if( act )forces(j++) = act->getActuation(s);
+
+    int j = 0;
+    for (Force& f : _model->getForceSet()) {
+        ScalarActuator* act = dynamic_cast<ScalarActuator*>(&f);
+        if (act) {
+            forces(j++) = act->getActuation(s);
+        }
     }
 }
 //==============================================================================
@@ -321,13 +324,13 @@ printPerformance(const SimTK::State& s, double *parameters)
 /**
  */
 void StaticOptimizationTarget::
-computeActuatorAreas(const SimTK::State& s )
+computeActuatorAreas(const SimTK::State& s)
 {
     // COMPUTE ACTUATOR AREAS
-    ForceSet& forceSet = _model->updForceSet();
-    for(int i=0, j=0;i<forceSet.getSize();i++) {
-        ScalarActuator *act = dynamic_cast<ScalarActuator*>(&forceSet.get(i));
-        if( act ) {
+    int j = 0;
+    for (Force& f : _model->updForceSet()) {
+        ScalarActuator *act = dynamic_cast<ScalarActuator*>(&f);
+        if (act) {
              act->setActuation(s, 1.0);
              _recipAreaSquared[j] = act->getStress(s);
              _recipAreaSquared[j] *= _recipAreaSquared[j];
@@ -467,7 +470,7 @@ objectiveFunc(const Vector &parameters, const bool new_parameters, Real &perform
 
     int na = _model->getActuators().getSize();
     double p = 0.0;
-    for(int i=0;i<na;i++) {
+    for (int i = 0; i < na; i++) {
             p +=  pow(fabs(parameters[i]),_activationExponent);
     }
     performance = p;
@@ -502,11 +505,10 @@ gradientFunc(const Vector &parameters, const bool new_parameters, Vector &gradie
     //QueryPerformanceCounter(&start);
 
     int na = _model->getActuators().getSize();
-    for(int i=0;i<na;i++) {
+    for (int i = 0; i < na; i++) {
         if(parameters[i] < 0) {
             gradient[i] =  -1.0 * _activationExponent * pow(fabs(parameters[i]),_activationExponent-1.0);
-        }
-        else {
+        } else {
             gradient[i] = _activationExponent * pow(fabs(parameters[i]), _activationExponent - 1.0);
         }
     }
@@ -657,24 +659,24 @@ constraintJacobian(const SimTK::Vector &parameters, const bool new_parameters, S
 void StaticOptimizationTarget::
 computeAcceleration(SimTK::State& s, const SimTK::Vector &parameters,SimTK::Vector &rAccel) const
 {
-    // double time = s.getTime();
-    
-
-    const ForceSet& fs = _model->getForceSet();
-    for(int i=0,j=0;i<fs.getSize();i++)  {
-        ScalarActuator *act = dynamic_cast<ScalarActuator*>(&fs.get(i));
-         if( act ) {
-             act->setOverrideActuation(s, parameters[j] * _optimalForce[j]);
-             j++;
-         }
+    {
+        int j = 0;
+        for (Force& f : _model->getForceSet()) {
+            ScalarActuator *act = dynamic_cast<ScalarActuator*>(&f);
+             if (act) {
+                 act->setOverrideActuation(s, parameters[j] * _optimalForce[j]);
+                 j++;
+             }
+        }
     }
 
     _model->getMultibodySystem().realize(s,SimTK::Stage::Acceleration);
 
     SimTK::Vector udot = _model->getMatterSubsystem().getUDot(s);
 
-    for(int i=0; i<_accelerationIndices.getSize(); i++) 
+    for (int i = 0; i < _accelerationIndices.getSize(); i++) {
         rAccel[i] = udot[_accelerationIndices[i]];
+    }
 
     //QueryPerformanceCounter(&stop);
     //double duration = (double)(stop.QuadPart-start.QuadPart)/(double)frequency.QuadPart;

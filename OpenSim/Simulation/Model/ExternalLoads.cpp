@@ -190,8 +190,9 @@ void ExternalLoads::extendConnectToModel(Model& aModel)
                 _dataFileName + "'.");
         }
 
-        for (int i = 0; i < getSize(); ++i)
-            get(i).setDataSource(*forceData);
+        for (ExternalForce& f : *this) {
+            f.setDataSource(*forceData);
+        }
 
         // add loaded storage into list of storages for later garbage collection
         _storages.push_back(shared_ptr<Storage>(forceData));
@@ -453,8 +454,7 @@ void ExternalLoads::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
             // Create Set of Forces from this XML node, which we
             // then reassign to an ExternalForce and add to ExternalLoads
             Set<PrescribedForce> oldForces(getDocument()->getFileName(), true);
-            for(int i=0; i< oldForces.getSize(); i++){
-                PrescribedForce& oldPrescribedForce = oldForces.get(i);
+            for(PrescribedForce& oldPrescribedForce : oldForces) {
                 ExternalForce* newExternalForce = new ExternalForce();
                 newExternalForce->setName(oldPrescribedForce.getName());
                 // In 4.0, PrescribedForce's body_name became a relative path

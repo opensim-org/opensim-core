@@ -735,8 +735,8 @@ void createLuxoJr(OpenSim::Model& model){
 
     // flip the z coordinates of all path points
     PathPointSet& points = kneeExtensorLeft->updGeometryPath().updPathPointSet();
-    for (int i=0; i<points.getSize(); ++i) {
-        dynamic_cast<PathPoint&>(points[i]).upd_location()[2] *= -1;
+    for (AbstractPathPoint& p : points) {
+        dynamic_cast<PathPoint&>(p).upd_location()[2] *= -1;
     }
 
     kneeExtensorLeft->set_ignore_tendon_compliance(true);
@@ -767,8 +767,8 @@ void createLuxoJr(OpenSim::Model& model){
 
     PathPointSet& pointsLeft = backExtensorLeft->updGeometryPath()
         .updPathPointSet();
-    for (int i=0; i<points.getSize(); ++i) {
-        dynamic_cast<PathPoint&>(pointsLeft[i]).upd_location()[2] *= -1;
+    for (AbstractPathPoint& p : pointsLeft) {
+        dynamic_cast<PathPoint&>(p).upd_location()[2] *= -1;
     }
     backExtensorLeft->set_ignore_tendon_compliance(true);
     model.addForce(backExtensorLeft);

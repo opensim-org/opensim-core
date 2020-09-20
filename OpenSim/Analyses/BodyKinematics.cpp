@@ -470,10 +470,9 @@ record(const SimTK::State& s)
         memcpy(&_kin[I+3],&angVec[0],3*sizeof(double));
     }
 
-    if(_recordCenterOfMass) {
+    if (_recordCenterOfMass) {
         double rP[3] = { 0.0, 0.0, 0.0 };
-        for(int i=0;i<bs.getSize();i++) {
-            Body& body = bs.get(i);
+        for (Body& body : bs) {
             const SimTK::Vec3& com = body.get_mass_center();
             vec = body.findStationLocationInGround(s, com);
             // ADD TO WHOLE BODY MASS
@@ -518,10 +517,9 @@ record(const SimTK::State& s)
         memcpy(&_kin[I+3],&angVec[0],3*sizeof(double));
     }
 
-    if(_recordCenterOfMass) {
+    if (_recordCenterOfMass) {
         double rV[3] = { 0.0, 0.0, 0.0 };
-        for(int i=0;i<bs.getSize();i++) {
-            Body& body = bs.get(i);
+        for (Body& body : bs) {
             const SimTK::Vec3& com = body.get_mass_center();
             vec = body.findStationVelocityInGround(s, com);
             rV[0] += body.get_mass() * vec[0];
@@ -567,8 +565,7 @@ record(const SimTK::State& s)
 
     if(_recordCenterOfMass) {
         double rA[3] = { 0.0, 0.0, 0.0 };
-        for(int i=0;i<bs.getSize();i++) {
-            Body& body = bs.get(i);
+        for (Body& body : bs) {
             const SimTK::Vec3& com = body.get_mass_center();
             vec = body.findStationAccelerationInGround(s, com);
             rA[0] += body.get_mass() * vec[0];

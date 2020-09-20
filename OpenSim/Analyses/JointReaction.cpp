@@ -550,23 +550,24 @@ record(const SimTK::State& s)
     SimTK::State s_analysis = s;
 
     _model->updMultibodySystem().realize(s_analysis, s.getSystemStage());
-    if(_useForceStorage){
+    if (_useForceStorage) {
         const auto& actuatorSet = _model->getActuators();
         int nA = actuatorSet.getSize();
         Array<double> forces(0,nA);
         _storeActuation->getDataAtTime(s.getTime(),nA,forces);
         int storageIndex = -1;
-        for(int actuatorIndex=0;actuatorIndex<nA;actuatorIndex++)
-        {
+
+        for (const Actuator& a : actuatorSet) {
             //Actuator* act = dynamic_cast<Actuator*>(&_forceSet->get(actuatorIndex));
-            std::string actuatorName = actuatorSet.get(actuatorIndex).getName();
+            std::string actuatorName = a.getName();
             storageIndex = _storeActuation->getStateIndex(actuatorName, 0);
             if(storageIndex == -1){
                 log_warn("The actuator '{}' was not found in the forces file.",
                         actuatorName);
                 break;
             }
-            const ScalarActuator* act = dynamic_cast<const ScalarActuator*>(&actuatorSet[actuatorIndex]);
+
+            const ScalarActuator* act = dynamic_cast<const ScalarActuator*>(&a);
             if (act){
                 act->overrideActuation(s_analysis, true);
                 act->setOverrideActuation(s_analysis, forces[storageIndex]);

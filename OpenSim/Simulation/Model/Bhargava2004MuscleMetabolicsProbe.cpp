@@ -129,7 +129,10 @@ void Bhargava2004MuscleMetabolicsProbe::constructProperties()
 void Bhargava2004MuscleMetabolicsProbe::extendConnectToModel(Model& aModel)
 {
     Super::extendConnectToModel(aModel);
-    if (!isEnabled()) return;   // Nothing to connect
+
+    if (!isEnabled()) {
+        return;   // Nothing to connect
+    }
 
     const int nM = 
         get_Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet()

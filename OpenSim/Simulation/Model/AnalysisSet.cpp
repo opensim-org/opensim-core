@@ -134,9 +134,8 @@ operator=(const  AnalysisSet &aSet)
 void AnalysisSet::
 setModel(Model& aModel)
 {
-    int i;
     int size = getSize();
-    for(i=0;i<size;i++) {
+    for (int i = 0; i < size; i++) {
         Analysis& analysis = get(i);
         analysis.setModel(aModel);
     }

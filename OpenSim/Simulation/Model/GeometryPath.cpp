@@ -522,13 +522,15 @@ addPathPoint(const SimTK::State& s, int aIndex, const PhysicalFrame& frame)
     // refer to the same path points they did before the new point
     // was added. These indices are 1-based.
     aIndex++;
-    for (int i=0; i<get_PathWrapSet().getSize(); i++) {
-        int startPoint = get_PathWrapSet().get(i).getStartPoint();
-        int endPoint = get_PathWrapSet().get(i).getEndPoint();
-        if (startPoint != -1 && aIndex <= startPoint)
-            get_PathWrapSet().get(i).setStartPoint(s,startPoint + 1);
-        if (endPoint != -1 && aIndex <= endPoint)
-            get_PathWrapSet().get(i).setEndPoint(s,endPoint + 1);
+    for (PathWrap& pw : get_PathWrapSet()) {
+        int startPoint = pw.getStartPoint();
+        int endPoint = pw.getEndPoint();
+        if (startPoint != -1 && aIndex <= startPoint) {
+            pw.setStartPoint(s,startPoint + 1);
+        }
+        if (endPoint != -1 && aIndex <= endPoint) {
+            pw.setEndPoint(s,endPoint + 1);
+        }
     }
 
     return newPoint;
@@ -657,19 +659,22 @@ bool GeometryPath::deletePathPoint(const SimTK::State& s, int aIndex)
     // deleted. These indices are 1-based. If the point deleted is start
     // point or end point, the path wrap range is made smaller by one point.
     aIndex++;
-    for (int i=0; i<get_PathWrapSet().getSize(); i++) {
-        int startPoint = get_PathWrapSet().get(i).getStartPoint();
-        int endPoint   = get_PathWrapSet().get(i).getEndPoint();
+    for (PathWrap& pw : get_PathWrapSet()) {
+        int startPoint = pw.getStartPoint();
+        int endPoint   = pw.getEndPoint();
 
-        if (   (startPoint != -1 && aIndex < startPoint) 
-            || (startPoint > get_PathPointSet().getSize()))
-            get_PathWrapSet().get(i).setStartPoint(s, startPoint - 1);
+        if ((startPoint != -1 && aIndex < startPoint)
+                || (startPoint > get_PathPointSet().getSize())) {
 
-        if (   endPoint > 1 
+            pw.setStartPoint(s, startPoint - 1);
+        }
+
+        if (endPoint > 1
             && aIndex <= endPoint 
-            && (   (endPoint > startPoint) 
-                || (endPoint > get_PathPointSet().getSize())))
-            get_PathWrapSet().get(i).setEndPoint(s, endPoint - 1);
+            && ((endPoint > startPoint)
+                || (endPoint > get_PathPointSet().getSize()))) {
+            pw.setEndPoint(s, endPoint - 1);
+        }
     }
 
     return true;
@@ -698,6 +703,7 @@ replacePathPoint(const SimTK::State& s, AbstractPathPoint* aOldPathPoint,
         ConditionalPathPoint* newVia = 
             dynamic_cast<ConditionalPathPoint*>(aNewPathPoint);
         if (oldVia == NULL && newVia != NULL) {
+
             for (int i=0; i<get_PathPointSet().getSize(); i++) {
                 if (i != index) {
                     if (dynamic_cast<ConditionalPathPoint*>
@@ -822,9 +828,10 @@ void GeometryPath::computePath(const SimTK::State& s) const
     currentPath.setSize(0);
 
     // Add the active fixed and moving via points to the path.
-    for (int i = 0; i < get_PathPointSet().getSize(); i++) {
-        if (get_PathPointSet()[i].isActive(s))
-            currentPath.append(&get_PathPointSet()[i]); // <--- !!!!BAD
+    for (AbstractPathPoint& p : get_PathPointSet()) {
+        if (p.isActive(s)) {
+            currentPath.append(&p); // <--- !!!!BAD
+        }
     }
   
     // Use the current path so far to check for intersection with wrap objects, 
@@ -863,8 +870,9 @@ void GeometryPath::computeLengtheningSpeed(const SimTK::State& s) const
 void GeometryPath::
 applyWrapObjects(const SimTK::State& s, Array<AbstractPathPoint*>& path) const 
 {
-    if (get_PathWrapSet().getSize() < 1)
+    if (get_PathWrapSet().getSize() < 1) {
         return;
+    }
 
     WrapResult best_wrap;
     Array<int> result, order;

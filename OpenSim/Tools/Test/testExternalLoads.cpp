@@ -287,8 +287,9 @@ void testExternalLoadDefaultProperties() {
 
     extLoads->print("testExternalLoadDefaultProperties_ExternalLoads.xml");
 
-    for(int i=0; i<extLoads->getSize(); i++)
-        model.addForce(&(*extLoads)[i]);
+    for (ExternalForce& f : *extLoads) {
+        model.addForce(&f);
+    }
     
     // Ensure that, even when force_expressed_in_body is unspecified, no issues
     // occur when initializing ExternalForce.

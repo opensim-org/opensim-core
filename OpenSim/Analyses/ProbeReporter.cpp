@@ -185,25 +185,25 @@ void ProbeReporter::constructDescription()
  */
 void ProbeReporter::constructColumnLabels(const SimTK::State& s)
 {
-    if (_model)
-    {
-        // ASSIGN
-        Array<string> columnLabels;
-        columnLabels.append("time");
-        int nP=_model->getProbeSet().getSize();
-
-        for(int i=0 ; i<nP ; i++) {
-            Probe& p = _model->getProbeSet().get(i);
-
-            if (!p.isEnabled()) continue; // Skip over disabled probes
-
-            // Get column names for the probe after the operation
-            Array<string> probeLabels = p.getProbeOutputLabels();
-            columnLabels.append(probeLabels);
-        }
-        //cout << "COL SIZE = " << columnLabels.getSize() << endl;
-        _probeStore.setColumnLabels(columnLabels);
+    if (!_model) {
+        return;
     }
+
+    // ASSIGN
+    Array<string> columnLabels;
+    columnLabels.append("time");
+
+    for (Probe& p : _model->getProbeSet()) {
+        if (!p.isEnabled())  {
+            continue; // Skip over disabled probes
+        }
+
+        // Get column names for the probe after the operation
+        Array<string> probeLabels = p.getProbeOutputLabels();
+        columnLabels.append(probeLabels);
+    }
+    //cout << "COL SIZE = " << columnLabels.getSize() << endl;
+    _probeStore.setColumnLabels(columnLabels);
 }
 
 
@@ -228,7 +228,9 @@ void ProbeReporter::deleteStorage()
  */
 int ProbeReporter::record(const SimTK::State& s)
 {
-    if(_model==NULL) return -1;
+    if (_model == nullptr) {
+        return -1;
+    }
 
     // MAKE SURE ALL ProbeReporter QUANTITIES ARE VALID
     _model->getMultibodySystem().realize(s, SimTK::Stage::Report );
@@ -236,18 +238,14 @@ int ProbeReporter::record(const SimTK::State& s)
     StateVector nextRow(s.getTime());
 
     // NUMBER OF Probes
-    const ProbeSet& probes = _model->getProbeSet();
-    int nP = probes.getSize();
+    for (Probe& nextProbe : _model->getProbeSet()) {
+        if (!nextProbe.isEnabled()) {
+            continue;
+        }
 
-    for(int i=0 ; i<nP ; i++) {
-        Probe& nextProbe = (Probe&)probes[i];
-
-        if (nextProbe.isEnabled())
-        {
-            // Get probe values after the probe operation
-            SimTK::Vector values = nextProbe.getProbeOutputs(s);
-            for (int i=0; i<values.size(); i++)
-                nextRow.getData().append(values(i));
+        // Get probe values after the probe operation
+        for (auto value : nextProbe.getProbeOutputs(s)) {
+            nextRow.getData().append(value);
         }
     }
 
