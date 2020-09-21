@@ -10,7 +10,7 @@
  * - DARPA, through the Warrior Web program                                   *
  * - The Chan Zuckerberg Initiative (CZI 2020-218896)                         *
  *                                                                            *
- * Copyright (c) 2005-2020 Stanford University and the Authors                *
+ * Copyright (c) 2005-2020 Stanford University, TU Delft, and the Authors     *
  * Author(s): Ajay Seth                                                       *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
