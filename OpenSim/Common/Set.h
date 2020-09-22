@@ -33,6 +33,7 @@
 
 namespace OpenSim {
 
+#ifndef SWIG
 template<bool isConst, class T, class C, template<class, class> class S>
 class SetIterator final {
     S<T, C>& _data;
@@ -69,6 +70,7 @@ public:
         return *this;
     }
 };
+#endif
 
 //=============================================================================
 //=============================================================================
@@ -293,6 +295,22 @@ void setMemoryOwner(bool aTrueFalse)
     _objects.setMemoryOwner(aTrueFalse);
 }
 
+SetIterator<false, T, C, Set> begin() {
+    return {*this, 0};
+}
+
+SetIterator<true, T, C, Set> begin() const {
+    return {const_cast<Set&>(*this), 0};
+}
+
+SetIterator<false, T, C, Set> end() {
+    return {*this, getSize()};
+}
+
+SetIterator<true, T, C, Set> end() const {
+    return {const_cast<Set&>(*this), getSize()};
+}
+
 #ifndef SWIG
 //_____________________________________________________________________________
 /**
@@ -436,22 +454,6 @@ virtual bool setSize(int aSize)
 int getSize() const
 {
     return( _objects.getSize() );
-}
-
-SetIterator<false, T, C, Set> begin() {
-    return {*this, 0};
-}
-
-SetIterator<true, T, C, Set> begin() const {
-    return {const_cast<Set&>(*this), 0};
-}
-
-SetIterator<false, T, C, Set> end() {
-    return {*this, getSize()};
-}
-
-SetIterator<true, T, C, Set> end() const {
-    return {const_cast<Set&>(*this), getSize()};
 }
 
 //-----------------------------------------------------------------------------
