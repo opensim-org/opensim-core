@@ -508,7 +508,7 @@ void CMC::
 computeInitialStates(SimTK::State& s, double &rTI)
 {
     
-    int i,j;
+    int i;
 
     int N = _predictor->getNX();
     SimTK::State initialState = s;
