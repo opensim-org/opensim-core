@@ -295,22 +295,6 @@ void setMemoryOwner(bool aTrueFalse)
     _objects.setMemoryOwner(aTrueFalse);
 }
 
-SetIterator<false, T, C, Set> begin() {
-    return {*this, 0};
-}
-
-SetIterator<true, T, C, Set> begin() const {
-    return {const_cast<Set&>(*this), 0};
-}
-
-SetIterator<false, T, C, Set> end() {
-    return {*this, getSize()};
-}
-
-SetIterator<true, T, C, Set> end() const {
-    return {const_cast<Set&>(*this), getSize()};
-}
-
 #ifndef SWIG
 //_____________________________________________________________________________
 /**
@@ -722,6 +706,22 @@ T& get(const std::string &aName)
 const T& get(const std::string &aName) const
 {
     return( *_objects.get(aName) );
+}
+
+SetIterator<false, T, C, Set> begin() {
+    return {*this, 0};
+}
+
+SetIterator<true, T, C, Set> begin() const {
+    return {const_cast<Set&>(*this), 0};
+}
+
+SetIterator<false, T, C, Set> end() {
+    return {*this, getSize()};
+}
+
+SetIterator<true, T, C, Set> end() const {
+    return {const_cast<Set&>(*this), getSize()};
 }
 #endif
 //_____________________________________________________________________________
