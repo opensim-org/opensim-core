@@ -342,3 +342,9 @@ namespace SimTK {
 }
 }
 
+// support for SimTK TimeStepper and integrators
+%include <SWIGSimTK/Integrator.h>
+%include <SWIGSimTK/TimeStepper.h>
+%include <SWIGSimTK/RungeKuttaMersonIntegrator.h>
+%include <SWIGSimTK/MultibodySystem.h>
+
