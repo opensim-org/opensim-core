@@ -70,9 +70,8 @@ InverseKinematicsTool::InverseKinematicsTool() : InverseKinematicsToolBase() {
  *
  * @param aFileName File name of the document.
  */
-InverseKinematicsTool::InverseKinematicsTool(const string &aFileName, bool aLoadModel) :
-    InverseKinematicsToolBase(aFileName, true)
-{
+InverseKinematicsTool::InverseKinematicsTool(const string &aFileName, bool aLoadModel) : 
+    InverseKinematicsToolBase(aFileName, aLoadModel) {
     constructProperties();
     updateFromXMLDocument();
 }
@@ -86,7 +85,6 @@ void InverseKinematicsTool::constructProperties()
     constructProperty_IKTaskSet(IKTaskSet());
     constructProperty_marker_file("");
     constructProperty_coordinate_file("");
-    constructProperty_output_motion_file("");
     constructProperty_report_marker_locations(false);
 }
 

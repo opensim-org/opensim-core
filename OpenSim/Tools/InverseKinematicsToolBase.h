@@ -119,6 +119,7 @@ private:
         // Make range -Infinity to Infinity unless limited by data
         range[0] = -SimTK::Infinity; 
         constructProperty_time_range(range);
+        constructProperty_output_motion_file("");
         constructProperty_report_errors(true);
     };
 
