@@ -407,7 +407,7 @@ bool InverseDynamicsTool::run()
 
         IO::makeDir(getResultsDir());
         Storage::printResult(&genForceResults, _outputGenForceFileName, getResultsDir(), -1, ".sto");
-        cwd.reset();
+        cwd.restore();
 
         // if body forces to be reported for specified joints
         if(nj >0){

@@ -309,18 +309,18 @@ bool ForwardTool::run()
     } catch(const std::exception& x) {
         log_error("ForwardTool::run() caught an exception: \n {}", x.what());
         completed = false;
-        cwd.reset();
+        cwd.restore();
     }
     catch (...) { // e.g. may get InterruptedException
         log_error("ForwardTool::run() caught an exception.");
         completed = false;
-        cwd.reset();
+        cwd.restore();
     }
     // PRINT RESULTS
     string fileName;
     if(_printResultFiles) printResultsInternal();
 
-    cwd.reset();
+    cwd.restore();
 
     removeAnalysisSetFromModel();
     return completed;

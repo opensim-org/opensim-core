@@ -191,18 +191,18 @@ public:
          * original location.
          *
          * This is functionally equivalent to prematurely destructing the
-         * CwdChanger. After calling CwdChanger::reset(), the now-reset
+         * CwdChanger. After calling CwdChanger::restore(), the now-restored
          * CwdChanger will become a noop instance that, when it destructs,
          * will not attempt to change back to the original directory.
          */
-        void reset();
+        void restore();
 
         /**
          * Release CwdChanger's control over the current working directory,
-         * such that the CwdChanger instance does not attempt to change
-         * directory on destruction.
+         * such that the CwdChanger instance does not attempt to change back
+         * to its original directory on destruction.
          */
-        void release() noexcept;
+        void stay() noexcept;
 
         /**
          * Destructs a CwdChanger instance.

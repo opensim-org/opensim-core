@@ -736,12 +736,12 @@ IO::CwdChanger& IO::CwdChanger::operator=(CwdChanger&& tmp) {
     return *this;
 }
 
-void IO::CwdChanger::reset() {
+void IO::CwdChanger::restore() {
     chDir(_existingDir);
     _existingDir.clear();
 }
 
-void IO::CwdChanger::release() noexcept {
+void IO::CwdChanger::stay() noexcept {
     _existingDir.clear();
 }
 

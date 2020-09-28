@@ -603,7 +603,7 @@ bool AnalyzeTool::run(bool plotting)
     if (completed && _printResultFiles)
         printResults(getName(),getResultsDir()); // this will create results directory if necessary
 
-    cwd.reset();
+    cwd.restore();
 
     removeExternalLoadsFromModel();
 

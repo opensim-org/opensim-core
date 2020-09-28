@@ -166,9 +166,9 @@ void ExternalLoads::extendConnectToModel(Model& aModel)
                 log_error("Failed to read ExternalLoads data file '{}'.",
                         this->_dataFileName);
                 if (this->getDocument()) {
-                    cwd.reset();
+                    cwd.restore();
                 } else {
-                    cwd.release();
+                    cwd.stay();
                 }
                 throw(ex);
             }

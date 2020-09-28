@@ -817,14 +817,14 @@ bool RRATool::run()
     catch(const Exception& x) {
         // TODO: eventually might want to allow writing of partial results
         log_error(x.what());
-        cwd.reset();
+        cwd.restore();
         // close open files if we die prematurely (e.g. Opt fail)
         manager.getStateStorage().print(getResultsDir() + "/" + getName() + "_states.sto");
         return false;
     }
     catch(...) {
         // TODO: eventually might want to allow writing of partial results
-        cwd.reset();
+        cwd.restore();
         // close open files if we die prematurely (e.g. Opt fail)
         manager.getStateStorage().print(getResultsDir() + "/" + getName() + "_states.sto");
         return false;
