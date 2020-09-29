@@ -536,9 +536,11 @@ bool AnalyzeTool::run(bool plotting)
 
     // Do the maneuver to change then restore working directory 
     // so that the parsing code behaves properly if called from a different directory.
-    string saveWorkingDirectory = IO::getCwd();
-    if (getDocument())  // When the tool is created live from GUI it has no file/document association
-        IO::chDir(IO::getParentDirectory(getDocumentFileName()));
+    // When the tool is created live from GUI it has no file/document association
+    auto cwd = getDocument() != nullptr
+            ? IO::CwdChanger::changeToParentOf(getDocumentFileName())
+            : IO::CwdChanger::noop();
+
     // Use the Dynamics Tool API to handle external loads instead of outdated AbstractTool
     /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model);
 
@@ -593,7 +595,6 @@ bool AnalyzeTool::run(bool plotting)
     } catch (const Exception& x) {
         x.print(cout);
         completed = false;
-        IO::chDir(saveWorkingDirectory);
         throw Exception(x.what(),__FILE__,__LINE__);
     }
 
@@ -602,7 +603,7 @@ bool AnalyzeTool::run(bool plotting)
     if (completed && _printResultFiles)
         printResults(getName(),getResultsDir()); // this will create results directory if necessary
 
-    IO::chDir(saveWorkingDirectory);
+    cwd.restore();
 
     removeExternalLoadsFromModel();
 

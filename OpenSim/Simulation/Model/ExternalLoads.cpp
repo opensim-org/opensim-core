@@ -158,19 +158,20 @@ void ExternalLoads::extendConnectToModel(Model& aModel)
     auto loadDataFromDirectoryAdjacentToFile =
         [this, &forceData](const std::string& filepath) {
             // Change working directory the ExternalLoads location
-            std::string savedCwd = IO::getCwd();
-            IO::chDir(IO::getParentDirectory(filepath));
+            auto cwd = IO::CwdChanger::changeToParentOf(filepath);
             try {
                 forceData = new Storage(this->_dataFileName);
             }
             catch (const std::exception &ex) {
                 log_error("Failed to read ExternalLoads data file '{}'.",
                         this->_dataFileName);
-                if (this->getDocument())
-                    IO::chDir(savedCwd);
+                if (this->getDocument()) {
+                    cwd.restore();
+                } else {
+                    cwd.stay();
+                }
                 throw(ex);
             }
-            IO::chDir(savedCwd);
     };
     if (_dataFileName.length() > 0) {
         if(IO::FileExists(_dataFileName))

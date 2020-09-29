@@ -390,33 +390,25 @@ bool MarkerPlacer::processModel(Model* aModel,
     _outputStorage->getStateVector(0)->setTime(s.getTime());
 
     if(_printResultFiles) {
-        std::string savedCwd = IO::getCwd();
-        IO::chDir(aPathToSubject);
+        auto cwd = IO::CwdChanger::changeTo(aPathToSubject);
 
-        try { // writing can throw an exception
-            if (_outputModelFileNameProp.isValidFileName()) {
-                aModel->print(aPathToSubject + _outputModelFileName);
-                log_info("Wrote model file '{}' from model {}.", 
-                    _outputModelFileName, aModel->getName());
-            }
-
-            if (_outputMarkerFileNameProp.isValidFileName()) {
-                aModel->writeMarkerFile(aPathToSubject + _outputMarkerFileName);
-                log_info("Wrote marker file '{}' from model {}.", 
-                    _outputMarkerFileName, aModel->getName());
-            }
-
-            if (_outputMotionFileNameProp.isValidFileName()) {
-                _outputStorage->print(aPathToSubject + _outputMotionFileName,
-                    "w", "File generated from solving marker data for model "
-                    + aModel->getName());
-            }
-        } // catch the exception so we can reset the working directory
-        catch (std::exception& ex) {
-            IO::chDir(savedCwd);
-            OPENSIM_THROW_FRMOBJ(Exception, ex.what());
+        if (_outputModelFileNameProp.isValidFileName()) {
+            aModel->print(aPathToSubject + _outputModelFileName);
+            log_info("Wrote model file '{}' from model {}.",
+                _outputModelFileName, aModel->getName());
         }
-        IO::chDir(savedCwd);
+
+        if (_outputMarkerFileNameProp.isValidFileName()) {
+            aModel->writeMarkerFile(aPathToSubject + _outputMarkerFileName);
+            log_info("Wrote marker file '{}' from model {}.",
+                _outputMarkerFileName, aModel->getName());
+        }
+
+        if (_outputMotionFileNameProp.isValidFileName()) {
+            _outputStorage->print(aPathToSubject + _outputMotionFileName,
+                "w", "File generated from solving marker data for model "
+                + aModel->getName());
+        }
     }
 
     return true;

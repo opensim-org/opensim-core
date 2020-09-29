@@ -122,9 +122,7 @@ bool InverseKinematicsTool::run()
 
         // Do the maneuver to change then restore working directory so that the
         // parsing code behaves properly if called from a different directory.
-        string saveWorkingDirectory = IO::getCwd();
-        string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
-        IO::chDir(directoryOfSetupFile);
+        auto cwd = IO::CwdChanger::changeToParentOf(getDocumentFileName());
 
         // Define reporter for output
         kinematicsReporter = new Kinematics();
@@ -290,8 +288,6 @@ bool InverseKinematicsTool::run()
 
             delete modelMarkerLocations;
         }
-
-        IO::chDir(saveWorkingDirectory);
 
         success = true;
 
