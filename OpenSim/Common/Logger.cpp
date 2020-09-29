@@ -52,19 +52,20 @@ static bool other_init = []() {
     return true;
 }();
 
-// the file log sink (e.g. `opensim.log`) is *not* necessarily initialized
-// during static initialization time. It is only initialized when the first log
-// message is about to be written. Users *may* disable this functionality
-// before the first log message is written.
+// the file log sink (e.g. `opensim.log`) is lazily initialized -  potentially
+// during static initialization time.
+//
+// it is only initialized when the first log message is about to be written.
+// Users *may* disable this functionality before the first log message is
+// written.
 static std::shared_ptr<spdlog::sinks::basic_file_sink_mt> m_filesink = nullptr;
 
-// if a user calls `Logger::removeFileSink` before m_filesink is initialized, a
-// flag should be set to ensure that the "first use" initialization does not
-// subsequently happen.
+// if a user manually calls `Logger::(remove|add)FileSink`, auto-initialization
+// should be entirely disabled
 static bool filesink_auto_initialization_disabled = false;
 
-// when filesink initialization *may* happen, ensure it only happens exactly
-// once globally by wrapping it in a function-local static.
+// when auto-initialization of the file log *may* happen, ensure that it can
+// only happen exactly once globally
 static bool initFileLoggingAsNeeded() {
 #ifdef OPENSIM_DISABLE_LOG_FILE
 // software builders may want to statically ensure that automatic file logging
@@ -213,6 +214,14 @@ bool Logger::shouldLog(Level level) {
 }
 
 void Logger::addFileSink(const std::string& filepath) {
+    // this method is either called by the file log auto-initializer, which
+    // should now be disabled, or by downstream code trying to manually specify
+    // a file sink
+    //
+    // downstream callers would find it quite surprising if the auto-initializer
+    // runs *after* they manually specify a log, so just disable it
+    filesink_auto_initialization_disabled = true;
+
     if (m_filesink) {
         default_logger->warn("Already logging to file '{}'; log file not added. Call "
              "removeFileSink() first.", m_filesink->filename());
@@ -235,12 +244,16 @@ void Logger::addFileSink(const std::string& filepath) {
 }
 
 void Logger::removeFileSink() {
+    // if this method is called, then we are probably at a point in the
+    // application's lifetime where automatic log allocation is going to cause
+    // confusion.
+    //
+    // callers will be surpised if, after calling this method, auto
+    // initialization happens afterwards and the log file still exists - even
+    // if they called it to remove some manually-specified log
+    filesink_auto_initialization_disabled = true;
+
     if (m_filesink == nullptr) {
-        // the user called `removeFileSink` before any messages passed through
-        // the logger (which would initialize it) and before calling
-        // `addFileSink` themselves (which would also initialize it), so they
-        // *probably* want to completely disable automatic initialization.
-        filesink_auto_initialization_disabled = true;
         return;
     }
 
