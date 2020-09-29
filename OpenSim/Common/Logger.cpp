@@ -65,7 +65,7 @@ static bool filesink_auto_initialization_disabled = false;
 
 // when filesink initialization *may* happen, ensure it only happens exactly
 // once globally by wrapping it in a function-local static.
-static bool _maybeInitFileLogging() {
+static bool initFileLoggingAsNeeded() {
 #ifdef OPENSIM_DISABLE_LOG_FILE
 // software builders may want to statically ensure that automatic file logging
 // *cannot* happen - even during static initialization. This compiler define
@@ -89,14 +89,14 @@ return true;
 // this function is only called when the caller is about to log something, so
 // it should perform lazy initialization of the file sink
 spdlog::logger& Logger::getCoutLogger() {
-    _maybeInitFileLogging();
+    initFileLoggingAsNeeded();
     return *cout_logger;
 }
 
 // this function is only called when the caller is about to log something, so
 // it should perform lazy initialization of the file sink
 spdlog::logger& Logger::getDefaultLogger() {
-    _maybeInitFileLogging();
+    initFileLoggingAsNeeded();
     return *default_logger;
 }
 
