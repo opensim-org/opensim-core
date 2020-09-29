@@ -117,14 +117,7 @@ option(OPENSIM_DISABLE_LOG_FILE
 By default, any application linking to osimCommon will create an
 'opensim.log' file in the current working directory. All log messages
 written by OpenSim (incl. during static initialization) are written to
-both this file and the standard output streams.
-
-Enabling this option disables the automatic creation of
-'opensim.log'. Downstream users can reenable this behavior by calling
-`Logger::addFileSink()`. However, only log messages written after that
-function call will be written. Any log messages written before calling
-that function (e.g. during static initialization) will not be written
-to the log file." OFF)
+both this file and the standard output streams." OFF)
 
 if(OPENSIM_DISABLE_LOG_FILE)
     add_definitions(-DOPENSIM_DISABLE_LOG_FILE=1)
