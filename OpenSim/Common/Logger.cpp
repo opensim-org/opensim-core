@@ -30,9 +30,9 @@
 
 using namespace OpenSim;
 
-static void initializeLogger(spdlog::logger& l) {
+static void initializeLogger(spdlog::logger& l, const char* pattern) {
     l.set_level(spdlog::level::info);
-    l.set_pattern("%v");
+    l.set_pattern(pattern);
 }
 
 // cout logger will be initialized during static initialization time
@@ -46,8 +46,8 @@ static std::shared_ptr<spdlog::logger> defaultLogger =
 // this function returns a dummy value so that it can be used in an assignment
 // expression (below) that *must* be executed in-order at static init time
 static bool initializeLogging() {
-    initializeLogger(*coutLogger);
-    initializeLogger(*defaultLogger);
+    initializeLogger(*coutLogger, "%v");
+    initializeLogger(*defaultLogger, "[%l] %v");
     spdlog::flush_on(spdlog::level::info);
     return true;
 }
