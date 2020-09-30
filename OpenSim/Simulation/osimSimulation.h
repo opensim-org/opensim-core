@@ -25,6 +25,7 @@
 
 #include "Model/AnalysisSet.h"
 #include "Model/Bhargava2004MuscleMetabolicsProbe.h"
+#include "Model/Bhargava2004Metabolics.h"
 #include "Model/Model.h"
 #include "Model/ModelVisualizer.h"
 #include "Model/ForceSet.h"
