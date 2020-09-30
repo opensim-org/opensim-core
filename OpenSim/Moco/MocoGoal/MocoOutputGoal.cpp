@@ -36,15 +36,34 @@ void MocoOutputGoal::initializeOnModelImpl(const Model& output) const {
     AbstractInput::parseConnecteePath(
             get_output_path(), componentPath, outputName, channelName, alias);
     const auto& component = getModel().getComponent(componentPath);
-    const auto& abstractOutput = component.getOutput(outputName);
-    m_output.reset(&dynamic_cast<const Output<double>&>(abstractOutput));
+    const auto* abstractOutput = &component.getOutput(outputName);
+
+    if (dynamic_cast<const Output<double>*>(abstractOutput)) {
+        m_data_type = Type_double;
+    } else if (dynamic_cast<const Output<SimTK::Vec3>*>(abstractOutput)) {
+        m_data_type = Type_Vec3;
+    } else {
+        OPENSIM_THROW_FRMOBJ(Exception,
+                "Data type of specified model output not supported.");
+    }
+
+    m_output.reset(abstractOutput);
     setRequirements(1, 1, m_output->getDependsOnStage());
 }
 
 void MocoOutputGoal::calcIntegrandImpl(
         const IntegrandInput& input, double& integrand) const {
     getModel().getSystem().realize(input.state, m_output->getDependsOnStage());
-    integrand = m_output->getValue(input.state);
+    double value = 0;
+    if (m_data_type == Type_double) {
+        value = static_cast<const Output<double>*>(m_output.get())
+                        ->getValue(input.state);
+    } else if (m_data_type == Type_Vec3) {
+        value = static_cast<const Output<SimTK::Vec3>*>(m_output.get())
+                        ->getValue(input.state).normSqr();
+    }
+
+    integrand = value;
 }
 
 void MocoOutputGoal::calcGoalImpl(
