@@ -30,53 +30,56 @@
 
 using namespace OpenSim;
 
+static void initializeLogger(spdlog::logger& l) {
+    l.set_level(spdlog::level::info);
+    l.set_pattern("%v");
+}
+
 // cout logger will be initialized during static initialization time
-static std::shared_ptr<spdlog::logger> cout_logger = []() {
-    std::shared_ptr<spdlog::logger> logger = spdlog::stdout_color_mt("cout");
-    logger->set_level(spdlog::level::info);
-    logger->set_pattern("%v");
-    return logger;
-}();
+static std::shared_ptr<spdlog::logger> coutLogger =
+        spdlog::stdout_color_mt("cout");
 
 // default logger will be initialized during static initialization time
-static std::shared_ptr<spdlog::logger> default_logger = []() {
-    std::shared_ptr<spdlog::logger> logger = spdlog::default_logger();
-    logger->set_level(spdlog::level::info);
-    logger->set_pattern("[%l] %v");
-    return logger;
-}();
+static std::shared_ptr<spdlog::logger> defaultLogger =
+        spdlog::default_logger();
 
-// this initialization will also happen during static initialization time
-static bool other_init = []() {
+// this function returns a dummy value so that it can be used in an assignment
+// expression (below) that *must* be executed in-order at static init time
+static bool initializeLogging() {
+    initializeLogger(*coutLogger);
+    initializeLogger(*defaultLogger);
     spdlog::flush_on(spdlog::level::info);
     return true;
-}();
+}
 
-// the file log sink (e.g. `opensim.log`) is lazily initialized -  potentially
-// during static initialization time.
+// initialization of this variable will have the side-effect of completing the
+// initialization of logging
+static bool otherStaticInit = initializeLogging();
+
+// the file log sink (e.g. `opensim.log`) is lazily initialized.
 //
-// it is only initialized when the first log message is about to be written.
-// Users *may* disable this functionality before the first log message is
-// written.
+// it is only initialized when the first log message is about to be written to
+// it. Users *may* disable this functionality before the first log message is
+// written (or disable it statically, by setting OPENSIM_DISABLE_LOG_FILE)
 static std::shared_ptr<spdlog::sinks::basic_file_sink_mt> m_filesink = nullptr;
 
 // if a user manually calls `Logger::(remove|add)FileSink`, auto-initialization
-// should be entirely disabled
-static bool filesink_auto_initialization_disabled = false;
+// should be disabled. Manual usage "overrides" lazy auto-initialization.
+static bool fileSinkAutoInitDisabled = false;
 
-// when auto-initialization of the file log *may* happen, ensure that it can
-// only happen exactly once globally
+// attempt to auto-initialize the file log, if applicable
 static bool initFileLoggingAsNeeded() {
 #ifdef OPENSIM_DISABLE_LOG_FILE
 // software builders may want to statically ensure that automatic file logging
 // *cannot* happen - even during static initialization. This compiler define
 // outright disables the behavior, which is important in Windows applications
-// that run multiple instances of OpenSim-linked binaries. There, the logs may
-// collide and cause a "multiple processes cannot open the same file" error).
+// that run multiple instances of OpenSim-linked binaries. In Windows, the
+// logs files collide and cause a "multiple processes cannot open the same
+// file" error).
 return true;
 #else
     static bool initialized = []() {
-        if (filesink_auto_initialization_disabled) {
+        if (fileSinkAutoInitDisabled) {
             return true;
         }
         Logger::addFileSink();
@@ -91,30 +94,30 @@ return true;
 // it should perform lazy initialization of the file sink
 spdlog::logger& Logger::getCoutLogger() {
     initFileLoggingAsNeeded();
-    return *cout_logger;
+    return *coutLogger;
 }
 
 // this function is only called when the caller is about to log something, so
 // it should perform lazy initialization of the file sink
 spdlog::logger& Logger::getDefaultLogger() {
     initFileLoggingAsNeeded();
-    return *default_logger;
+    return *defaultLogger;
 }
 
 static void addSinkInternal(std::shared_ptr<spdlog::sinks::sink> sink) {
-    cout_logger->sinks().push_back(sink);
-    default_logger->sinks().push_back(sink);
+    coutLogger->sinks().push_back(sink);
+    defaultLogger->sinks().push_back(sink);
 }
 
 static void removeSinkInternal(const std::shared_ptr<spdlog::sinks::sink> sink)
 {
     {
-        auto& sinks = default_logger->sinks();
+        auto& sinks = defaultLogger->sinks();
         auto new_end = std::remove(sinks.begin(), sinks.end(), sink);
         sinks.erase(new_end, sinks.end());
     }
     {
-        auto& sinks = cout_logger->sinks();
+        auto& sinks = coutLogger->sinks();
         auto new_end = std::remove(sinks.begin(), sinks.end(), sink);
         sinks.erase(new_end, sinks.end());
     }
@@ -150,7 +153,7 @@ void Logger::setLevel(Level level) {
 }
 
 Logger::Level Logger::getLevel() {
-    switch (default_logger->level()) {
+    switch (defaultLogger->level()) {
     case spdlog::level::off: return Level::Off;
     case spdlog::level::critical: return Level::Critical;
     case spdlog::level::err: return Level::Error;
@@ -210,7 +213,7 @@ bool Logger::shouldLog(Level level) {
     default:
         OPENSIM_THROW(Exception, "Internal error.");
     }
-    return default_logger->should_log(spdlogLevel);
+    return defaultLogger->should_log(spdlogLevel);
 }
 
 void Logger::addFileSink(const std::string& filepath) {
@@ -220,10 +223,10 @@ void Logger::addFileSink(const std::string& filepath) {
     //
     // downstream callers would find it quite surprising if the auto-initializer
     // runs *after* they manually specify a log, so just disable it
-    filesink_auto_initialization_disabled = true;
+    fileSinkAutoInitDisabled = true;
 
     if (m_filesink) {
-        default_logger->warn("Already logging to file '{}'; log file not added. Call "
+        defaultLogger->warn("Already logging to file '{}'; log file not added. Call "
              "removeFileSink() first.", m_filesink->filename());
         return;
     }
@@ -235,7 +238,7 @@ void Logger::addFileSink(const std::string& filepath) {
                 std::make_shared<spdlog::sinks::basic_file_sink_mt>(filepath);
     }
     catch (...) {
-        default_logger->warn("Can't open file '{}' for writing. Log file will not be created. "
+        defaultLogger->warn("Can't open file '{}' for writing. Log file will not be created. "
              "Check that you have write permissions to the specified path.",
                 filepath);
         return;
@@ -251,7 +254,7 @@ void Logger::removeFileSink() {
     // callers will be surpised if, after calling this method, auto
     // initialization happens afterwards and the log file still exists - even
     // if they called it to remove some manually-specified log
-    filesink_auto_initialization_disabled = true;
+    fileSinkAutoInitDisabled = true;
 
     if (m_filesink == nullptr) {
         return;
