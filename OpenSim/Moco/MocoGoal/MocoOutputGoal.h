@@ -22,8 +22,9 @@
 
 namespace OpenSim {
 
+// TODO improve documentation
 /** This goal allows you to use any scalar (double) or Vec3 Output in the model
-as the integrand of a goal. If minimizing a Vec3 Output, the squared norm of the
+as the integrand of a goal. If minimizing a Vec3 Output, the norm of the
 Vec3 is used in the integrand.
 @ingroup mocogoal */
 class OSIMMOCO_API MocoOutputGoal : public MocoGoal {
