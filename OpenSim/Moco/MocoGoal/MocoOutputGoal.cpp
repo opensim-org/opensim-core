@@ -48,6 +48,21 @@ void MocoOutputGoal::initializeOnModelImpl(const Model& output) const {
     }
 
     m_output.reset(abstractOutput);
+
+    OPENSIM_THROW_IF_FRMOBJ(
+            get_exponent() < 1, Exception, "Exponent must be 1 or greater.");
+    int exponent = get_exponent();
+
+    // The pow() function gives slightly different results than x * x. On Mac,
+    // using x * x requires fewer solver iterations.
+    if (exponent == 2) {
+        m_power_function = [](const double& x) { return x * x; };
+    } else {
+        m_power_function = [exponent](const double& x) {
+            return pow(std::abs(x), exponent);
+        };
+    }
+
     setRequirements(1, 1, m_output->getDependsOnStage());
 }
 
@@ -60,10 +75,10 @@ void MocoOutputGoal::calcIntegrandImpl(
                         ->getValue(input.state);
     } else if (m_data_type == Type_Vec3) {
         value = static_cast<const Output<SimTK::Vec3>*>(m_output.get())
-                        ->getValue(input.state).normSqr();
+                        ->getValue(input.state).norm();
     }
 
-    integrand = value;
+    integrand = m_power_function(value);
 }
 
 void MocoOutputGoal::calcGoalImpl(

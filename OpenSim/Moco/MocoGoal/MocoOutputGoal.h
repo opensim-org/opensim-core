@@ -57,6 +57,10 @@ public:
         return get_divide_by_mass();
     }
 
+    /** Set the exponent on the output. */
+    void setExponent(int exponent) { set_exponent(exponent); }
+    double getExponent() const { return get_exponent(); }
+
 protected:
     void initializeOnModelImpl(const Model&) const override;
     void calcIntegrandImpl(
@@ -73,6 +77,10 @@ private:
             "false)");
     OpenSim_DECLARE_PROPERTY(divide_by_mass, bool,
             "Divide by the model's total mass (default: false)");
+    // TODO currently only for scalar (double) outputs
+    OpenSim_DECLARE_PROPERTY(exponent, int,
+            "The exponent on outputs; greater than or equal to "
+            "1 (default: 1).");
     void constructProperties();
 
     enum DataType {
@@ -81,6 +89,7 @@ private:
     };
     mutable DataType m_data_type;
     mutable SimTK::ReferencePtr<const AbstractOutput> m_output;
+    mutable std::function<double(const double&)> m_power_function;
 };
 
 } // namespace OpenSim
