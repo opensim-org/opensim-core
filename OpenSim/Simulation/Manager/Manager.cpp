@@ -790,10 +790,6 @@ void Manager::initializeStorageAndAnalyses(const SimTK::State& s)
         // STORE STARTING CONTROLS
         if (_model->isControlled()){
             _controllerSet->connectToModel(*_model);
-			// Here we call the constructStorage because it possible that the
-			// Model's control storage has already be appended in a previous
-			// simulation [Dimitar Stanev; see Manager memory leak PR].
-            _controllerSet->constructStorage();
         }
 
         OPENSIM_THROW_IF(!hasStateStorage(), Exception,
@@ -805,7 +801,7 @@ void Manager::initializeStorageAndAnalyses(const SimTK::State& s)
 }
 //_____________________________________________________________________________
 /**
-* set and initialize a SimTK::TimeStepper
+* Set and initialize a SimTK::TimeStepper
 */
 void Manager::initialize(const SimTK::State& s)
 {
@@ -826,11 +822,18 @@ void Manager::initialize(const SimTK::State& s)
         _timeStepper->initialize(s);
         _timeStepper->setReportAllSignificantStates(true);
     }
+
+	// Here we call the constructStorage because it is possible that the Model's
+	// control storage has already be appended in a previous simulation [Dimitar
+	// Stanev; see Manager memory leak PR].
+	if( _writeToStorage )
+        if (_model->isControlled())
+            _controllerSet->constructStorage();
 }
 
 void Manager::record(const SimTK::State& s, const int& step)
 {
-    // ANALYSES 
+    // ANALYSES
     if (_performAnalyses) {
         AnalysisSet& analysisSet = _model->updAnalysisSet();
         if (step == 0)
