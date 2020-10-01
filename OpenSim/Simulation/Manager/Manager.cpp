@@ -21,7 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
+/* Note: This code was originally developed by Realistic Dynamics Inc.
  * Author: Frank C. Anderson 
  */
 #include <cstdio>
@@ -54,7 +54,7 @@ Manager::Manager(Model& model) : Manager(model, true)
 }
 
 Manager::Manager(Model& model, const SimTK::State& state)
-        : Manager(model) 
+        : Manager(model)
 {
     initialize(state);
 }
@@ -563,7 +563,7 @@ getIntegrator() const
 }
 
 /**
-  * Set the Integrator's accuracy. 
+  * Set the Integrator's accuracy.
   */
 void Manager::setIntegratorAccuracy(double accuracy)
 {
@@ -618,7 +618,7 @@ setStateStorage(Storage& aStorage)
  * Get the storage buffer for the integration states.
  */
 Storage& Manager::
-getStateStorage() const 
+getStateStorage() const
 {
     if(!_stateStore)
         throw Exception("Manager::getStateStorage(): Storage is not set");
@@ -765,31 +765,35 @@ const SimTK::State& Manager::getState() const
 /**
  * return the step size when the integrator is taking fixed
  * step sizes
- * 
+ *
  * @param tArrayStep Step number
  */
 double Manager::getFixedStepSize(int tArrayStep) const {
-    if( _constantDT ) 
+    if( _constantDT )
         return( _dt );
-    else { 
-        if( tArrayStep >= _dtArray.getSize() ) 
+    else {
+        if( tArrayStep >= _dtArray.getSize() )
              return( _dtArray[ _dtArray.getSize()-1 ] );
-        else 
+        else
             return(_dtArray[tArrayStep]);
     }
 }
 //_____________________________________________________________________________
 /**
- * initialize storages and analyses 
- * 
+ * initialize storages and analyses
+ *
  * @param s system state before integration
  */
 void Manager::initializeStorageAndAnalyses(const SimTK::State& s)
 {
-    if( _writeToStorage && _performAnalyses ) { 
+    if( _writeToStorage ) {
         // STORE STARTING CONTROLS
         if (_model->isControlled()){
             _controllerSet->connectToModel(*_model);
+			// Here we call the constructStorage because it possible that the
+			// Model's control storage has already be appended in a previous
+			// simulation [Dimitar Stanev; see Manager memory leak PR].
+            _controllerSet->constructStorage();
         }
 
         OPENSIM_THROW_IF(!hasStateStorage(), Exception,
@@ -842,7 +846,7 @@ void Manager::record(const SimTK::State& s, const int& step)
         vec.setStates(s.getTime(), stateValues);
         getStateStorage().append(vec);
         if (_model->isControlled())
-            _controllerSet->storeControls(s, 
+            _controllerSet->storeControls(s,
                 (step < 0) ? getStateStorage().getSize() : step);
     }
 }
@@ -881,6 +885,3 @@ bool Manager::checkHalt()
 {
     return _halt;
 }
-
-
-
