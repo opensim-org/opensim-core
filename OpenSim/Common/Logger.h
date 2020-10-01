@@ -37,8 +37,8 @@ class LogSink;
 /// controlling how those messages are presented to the user.
 class OSIMCOMMON_API Logger {
 public:
-    Logger(Logger const&) = delete;
-    Logger& operator=(Logger const&) = delete;
+    ///  This is a static singleton class: there is no way of constructing it
+    Logger() = delete;
 
     /// This enum lists the types of messages that should be logged. These
     /// levels match those of the spdlog logging library that OpenSim uses for
@@ -104,32 +104,44 @@ public:
 
     template <typename... Args>
     static void critical(spdlog::string_view_t fmt, const Args&... args) {
-        m_default_logger->critical(fmt, args...);
+        if (shouldLog(Level::Critical)) {
+            getDefaultLogger().critical(fmt, args...);
+        }
     }
 
     template <typename... Args>
     static void error(spdlog::string_view_t fmt, const Args&... args) {
-        m_default_logger->error(fmt, args...);
+        if (shouldLog(Level::Error)) {
+            getDefaultLogger().error(fmt, args...);
+        }
     }
 
     template <typename... Args>
     static void warn(spdlog::string_view_t fmt, const Args&... args) {
-        m_default_logger->warn(fmt, args...);
+        if (shouldLog(Level::Warn)) {
+            getDefaultLogger().warn(fmt, args...);
+        }
     }
 
     template <typename... Args>
     static void info(spdlog::string_view_t fmt, const Args&... args) {
-        m_default_logger->info(fmt, args...);
+        if (shouldLog(Level::Info)) {
+            getDefaultLogger().info(fmt, args...);
+        }
     }
 
     template <typename... Args>
     static void debug(spdlog::string_view_t fmt, const Args&... args) {
-        m_default_logger->debug(fmt, args...);
+        if (shouldLog(Level::Debug)) {
+            getDefaultLogger().debug(fmt, args...);
+        }
     }
 
     template <typename... Args>
     static void trace(spdlog::string_view_t fmt, const Args&... args) {
-        m_default_logger->trace(fmt, args...);
+        if (shouldLog(Level::Trace)) {
+            getDefaultLogger().trace(fmt, args...);
+        }
     }
 
     /// Use this function to log messages that would normally be sent to
@@ -141,7 +153,7 @@ public:
     /// give users control over what gets logged.
     template <typename... Args>
     static void cout(spdlog::string_view_t fmt, const Args&... args) {
-        m_cout_logger->log(spdlog::level::info, fmt, args...);
+        getCoutLogger().log(spdlog::level::info, fmt, args...);
     }
 
     /// @}
@@ -170,37 +182,9 @@ public:
     /// @note This function is not thread-safe. Do not invoke this function
     /// concurrently, or concurrently with addLogFile() or addSink().
     static void removeSink(const std::shared_ptr<LogSink> sink);
-
-    /// This returns the singleton instance of the Log class, but users never
-    /// need to invoke this function. The member functions in this class are
-    /// static.
-    static const std::shared_ptr<OpenSim::Logger> getInstance() {
-        if (!m_osimLogger) {
-            m_osimLogger =
-                    std::shared_ptr<OpenSim::Logger>(new OpenSim::Logger());
-            addFileSink();
-        }
-        return m_osimLogger;
-    }
 private:
-    /// Initialize spdlog.
-    Logger();
-
-    static void addSinkInternal(std::shared_ptr<spdlog::sinks::sink> sink);
-
-    static void removeSinkInternal(
-            const std::shared_ptr<spdlog::sinks::sink> sink);
-
-    /// This is the logger used in log_cout.
-    static std::shared_ptr<spdlog::logger> m_cout_logger;
-
-    /// This is the singleton OpenSim::Logger
-    static std::shared_ptr<OpenSim::Logger> m_osimLogger;
-
-    static std::shared_ptr<spdlog::logger> m_default_logger;
-
-    /// Keep track of the file sink.
-    static std::shared_ptr<spdlog::sinks::basic_file_sink_mt> m_filesink;
+    static spdlog::logger& getCoutLogger();
+    static spdlog::logger& getDefaultLogger();
 };
 
 /// @name Logging functions
