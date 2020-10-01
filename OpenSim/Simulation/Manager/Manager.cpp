@@ -786,10 +786,12 @@ double Manager::getFixedStepSize(int tArrayStep) const {
  */
 void Manager::initializeStorageAndAnalyses(const SimTK::State& s)
 {
-    if( _writeToStorage && _performAnalyses ) { 
+    if( _writeToStorage ) {
+
         // STORE STARTING CONTROLS
         if (_model->isControlled()){
             _controllerSet->connectToModel(*_model);
+            _controllerSet->constructStorage();
         }
 
         OPENSIM_THROW_IF(!hasStateStorage(), Exception,
@@ -842,7 +844,7 @@ void Manager::record(const SimTK::State& s, const int& step)
         vec.setStates(s.getTime(), stateValues);
         getStateStorage().append(vec);
         if (_model->isControlled())
-            _controllerSet->storeControls(s, 
+            _controllerSet->storeControls(s,
                 (step < 0) ? getStateStorage().getSize() : step);
     }
 }
@@ -881,6 +883,3 @@ bool Manager::checkHalt()
 {
     return _halt;
 }
-
-
-
