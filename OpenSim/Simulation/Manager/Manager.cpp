@@ -823,10 +823,10 @@ void Manager::initialize(const SimTK::State& s)
         _timeStepper->setReportAllSignificantStates(true);
     }
 
-	// Here we call the constructStorage because it is possible that the Model's
-	// control storage has already be appended in a previous simulation [Dimitar
-	// Stanev; see Manager memory leak PR].
-	if( _writeToStorage )
+    // Here we call the constructStorage because it is possible that the Model's
+    // control storage has already be appended in a previous simulation [Dimitar
+    // Stanev; see Manager memory leak PR].
+    if( _writeToStorage )
         if (_model->isControlled())
             _controllerSet->constructStorage();
 }
