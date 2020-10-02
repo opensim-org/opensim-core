@@ -99,12 +99,36 @@ class TestBasics {
        ModelScaler ms = new ModelScaler();
        Scale s = new Scale();
        ms.addScale(s);
-    }  
+    }
+
+    public static void testLogSink() {
+        final boolean[] sinkImplInvoked = new boolean[1];
+        sinkImplInvoked[0] = false;
+        class MyJavaLogSink extends LogSink {
+            protected void sinkImpl(String msg) {
+                System.out.println("MyJavaLogSink.sinkImpl " + msg);
+                sinkImplInvoked[0] = true;
+            }
+        }
+        Logger.addSink(new MyJavaLogSink());
+        Model model0 = new Model();
+        model0.print("default_model.osim");
+
+        // A message is printed when loading a model from file.
+        try {
+            Model model1 = new Model("default_model.osim");
+        } catch (java.io.IOException e) {
+            assert false;
+        }
+
+        assert sinkImplInvoked[0];
+    }
   public static void main(String[] args) {
       testBasics();
       testMuscleList();
       testToyReflexController();
       testScaleToolUtils();
+      testLogSink();
 
       System.out.println("Test finished!");
       // TODO to cause test to fail: System.exit(-1);

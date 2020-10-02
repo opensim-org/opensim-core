@@ -25,6 +25,7 @@
 #include <OpenSim/Simulation/MarkersReference.h>
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
 #include "OpenSenseUtilities.h"
+#include "IMUPlacer.h"
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -32,32 +33,25 @@ using namespace std;
 
 TimeSeriesTable_<SimTK::Rotation> OpenSenseUtilities::
     convertQuaternionsToRotations(
-        const TimeSeriesTableQuaternion& quaternionsTable,
-        const SimTK::Array_<int>& startEnd,
-        const std::string& baseImuName,
-        const SimTK::CoordinateDirection& baseHeadingDirection,
-        const SimTK::Rotation& sensorToOpenSim)
+        const TimeSeriesTableQuaternion& quaternionsTable)
 {
-    // Fixed transform to rotate sensor orientations in world with Z up into the 
-    // OpenSim ground reference frame with Y up and X forward.
-    SimTK::Rotation R_XG = sensorToOpenSim;
 
     int nc = int(quaternionsTable.getNumColumns());
 
     const auto& times = quaternionsTable.getIndependentColumn();
 
-    size_t nt = startEnd[1] - startEnd[0] + 1;
+    size_t nt = int(quaternionsTable.getNumRows());
 
     std::vector<double> newTimes(nt, SimTK::NaN);
     SimTK::Matrix_<SimTK::Rotation> matrix(int(nt), nc, Rotation());
 
     int cnt = 0;
-    for (size_t i = startEnd[0]; i <= startEnd[1]; ++i) {
+    for (size_t i = 0; i < nt; ++i) {
         newTimes[cnt] = times[i];
         const auto& quatRow = quaternionsTable.getRowAtIndex(i);
         for (int j = 0; j < nc; ++j) {
             const Quaternion& quatO = quatRow[j];
-            matrix.updElt(cnt, j) = R_XG*Rotation(quatO);
+            matrix.updElt(cnt, j) = Rotation(quatO);
         }
         cnt++;
     }
@@ -68,185 +62,29 @@ TimeSeriesTable_<SimTK::Rotation> OpenSenseUtilities::
     orientationTable.updTableMetaData() = quaternionsTable.getTableMetaData();
     orientationTable.setDependentsMetaData(quaternionsTable.getDependentsMetaData());
 
-    // if a base imu is specified, perform heading correction, otherwise skip
-    if (!baseImuName.empty()) {
-
-        // Base will rotate to match <base>_imu, so we must first remove the base 
-        // rotation from the other IMUs to get their orientation with respect to 
-        // individual model bodies and thereby compute correct offsets unbiased by the 
-        // initial base orientation.
-        auto imuLabels = orientationTable.getColumnLabels();
-        auto pix = distance(imuLabels.begin(),
-            std::find(imuLabels.begin(), imuLabels.end(), baseImuName));
-
-        // if no base can be found but one was provided, throw.
-        if (pix >= int(imuLabels.size())) {
-            OPENSIM_THROW(Exception, 
-                "No column with base IMU name '"+ baseImuName + "' found.");
-        }
-
-        auto startRow = orientationTable.getRowAtIndex(0);
-        const Rotation& base_R = startRow.getElt(0, int(pix));
-
-        // Heading direction of the base IMU in this case the pelvis_imu heading is its ZAxis
-        UnitVec3 pelvisHeading = base_R(baseHeadingDirection.getAxis());
-        if(baseHeadingDirection.getDirection() < 0) 
-            pelvisHeading = pelvisHeading.negate();
-        UnitVec3 groundX = UnitVec3(1, 0, 0);
-        SimTK::Real angularDifference = acos(~pelvisHeading*groundX);
-
-        std::cout << "Heading correction computed to be "
-            << angularDifference * SimTK_RADIAN_TO_DEGREE
-            << "degs about ground Y" << std::endl;
-
-
-        SimTK::Rotation R_HG = SimTK::Rotation(
-            SimTK::BodyOrSpaceType::SpaceRotationSequence,
-            0, SimTK::XAxis,
-            angularDifference, SimTK::YAxis,
-            0, SimTK::ZAxis
-        );
-
-        for (size_t i = 0; i < orientationTable.getNumRows(); ++i) {
-            RowVectorView_<SimTK::Rotation> rotationsRow = orientationTable.updRowAtIndex(i);
-            for (int j = 0; j < nc; ++j) {
-                rotationsRow[j] = R_HG*rotationsRow[j];
-            }
-        }
-    }
-
     return orientationTable;
 }
 
 
-Model OpenSenseUtilities::calibrateModelFromOrientations(
-    const string& modelCalibrationPoseFile,
-    const string& calibrationOrientationsFile,
-    const std::string& baseImuName,
-    const SimTK::CoordinateDirection& baseHeadingDirection,
-    bool visualizeCalibratedModel)
+void OpenSim::OpenSenseUtilities::rotateOrientationTable(
+        OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>&
+                quaternionsTable,
+        const SimTK::Rotation_<double>& rotationMatrix)
 {
-    Model model(modelCalibrationPoseFile);
+    SimTK::Rotation R_XG = rotationMatrix;
 
-    const SimTK::Array_<int>& startEnd = { 0, 1 };
+    int nc = int(quaternionsTable.getNumColumns());
+    size_t nt = quaternionsTable.getNumRows();
 
-    TimeSeriesTable_<SimTK::Quaternion> quatTable(calibrationOrientationsFile);
-
-
-    TimeSeriesTable_<SimTK::Rotation> orientationsData =
-        OpenSenseUtilities::convertQuaternionsToRotations(quatTable,
-            startEnd, baseImuName, baseHeadingDirection);
-
-    std::cout << "Loaded orientations as quaternions from "
-        << calibrationOrientationsFile << std::endl;
-
-    auto imuLabels = orientationsData.getColumnLabels();
-    auto& times = orientationsData.getIndependentColumn();
-
-    // The rotations of the IMUs at the start time in order
-    // the labels in the TimerSeriesTable of orientations
-    auto rotations = orientationsData.updRowAtIndex(0);
-
-    SimTK::State& s0 = model.initSystem();
-    s0.updTime() = times[0];
-
-    // default pose of the model defined by marker-based IK 
-    model.realizePosition(s0);
-
-    size_t imuix = 0;
-    std::vector<PhysicalFrame*> bodies{ imuLabels.size(), nullptr };
-    std::map<std::string, SimTK::Rotation> imuBodiesInGround;
-
-    // First compute the transform of each of the imu bodies in ground
-    for (auto& imuName : imuLabels) {
-        auto ix = imuName.rfind("_imu");
-        if (ix != std::string::npos) {
-            auto bodyName = imuName.substr(0, ix);
-            auto body = model.findComponent<PhysicalFrame>(bodyName);
-            if (body) {
-                bodies[imuix] = const_cast<PhysicalFrame*>(body);
-                imuBodiesInGround[imuName] =
-                    body->getTransformInGround(s0).R();
-            }
+    for (size_t i = 0; i < nt; ++i) {
+        auto quatRow = quaternionsTable.updRowAtIndex(i);
+        for (int j = 0; j < nc; ++j) {
+            // This can be done completely in Quaternions but this is easier to debug for now
+            Quaternion quatO = (R_XG * Rotation(quatRow[j])).convertRotationToQuaternion();
+            quatRow[j] = quatO;
         }
-        ++imuix;
     }
-
-    // Now cycle through each imu with a body and compute the relative
-    // offset of the IMU measurement relative to the body and
-    // update the modelOffset OR add an offset if none exists
-    imuix = 0;
-    for (auto& imuName : imuLabels) {
-        cout << "Processing " << imuName << endl;
-        if (imuBodiesInGround.find(imuName) != imuBodiesInGround.end()) {
-            cout << "Computed offset for " << imuName << endl;
-            auto R_FB = ~imuBodiesInGround[imuName] * rotations[int(imuix)];
-            cout << "Offset is " << R_FB << endl;
-            PhysicalOffsetFrame* imuOffset = nullptr;
-            const PhysicalOffsetFrame* mo = nullptr;
-            if ((mo = model.findComponent<PhysicalOffsetFrame>(imuName))) {
-                imuOffset = const_cast<PhysicalOffsetFrame*>(mo);
-                auto X = imuOffset->getOffsetTransform();
-                X.updR() = R_FB;
-                imuOffset->setOffsetTransform(X);
-            }
-            else {
-                cout << "Creating offset frame for " << imuName << endl;
-                OpenSim::Body* body = dynamic_cast<OpenSim::Body*>(bodies[imuix]);
-                SimTK::Vec3 p_FB(0);
-                if (body) {
-                    p_FB = body->getMassCenter();
-                }
-
-                imuOffset = new PhysicalOffsetFrame(imuName,
-                    *bodies[imuix], SimTK::Transform(R_FB, p_FB));
-                auto* brick = new Brick(Vec3(0.02, 0.01, 0.005));
-                brick->setColor(SimTK::Orange);
-                imuOffset->attachGeometry(brick);
-                bodies[imuix]->addComponent(imuOffset);
-                cout << "Added offset frame for " << imuName << endl;
-            }
-            cout << imuOffset->getName() << " offset computed from " <<
-                imuName << " data from file." << endl;
-        }
-        imuix++;
-    }
-
-    model.finalizeConnections();
-
-    if (visualizeCalibratedModel) {
-        model.setUseVisualizer(true);
-        SimTK::State& s = model.initSystem();
-
-        s.updTime() = times[0];
-
-        // create the solver given the input data
-        MarkersReference mRefs{};
-        OrientationsReference oRefs(orientationsData);
-        SimTK::Array_<CoordinateReference> coordRefs{};
-
-        const double accuracy = 1e-4;
-        InverseKinematicsSolver ikSolver(model, mRefs, oRefs, coordRefs);
-        ikSolver.setAccuracy(accuracy);
-        
-        SimTK::Visualizer& viz = model.updVisualizer().updSimbodyVisualizer();
-        // We use the input silo to get key presses.
-        auto silo = &model.updVisualizer().updInputSilo();
-        silo->clear(); // Ignore any previous key presses.
-
-        SimTK::DecorativeText help("Press any key to quit.");
-        help.setIsScreenText(true);
-        viz.addDecoration(SimTK::MobilizedBodyIndex(0), SimTK::Vec3(0), help);
-        model.getVisualizer().getSimbodyVisualizer().setShowSimTime(true);
-        ikSolver.assemble(s);
-        model.getVisualizer().show(s);
-
-        unsigned key, modifiers;
-        silo->waitForKeyHit(key, modifiers);
-        viz.shutdown();
-    }
-
-    return model;
+    return;
 }
 
 SimTK::Transform OpenSenseUtilities::formTransformFromPoints(const Vec3& op,
@@ -274,7 +112,7 @@ OpenSenseUtilities::createOrientationsFileFromMarkers(const std::string& markers
 {
     TimeSeriesTableVec3 table{ markersFile };
 
-    // labels of markers including those <bodyName>O,X,Y that identify the 
+    // labels of markers including those <bodyName>O,X,Y that identify the
     // IMU sensor placement/alignment on the body expressed in Ground
     auto labels = table.getColumnLabels();
 
@@ -338,8 +176,8 @@ OpenSenseUtilities::createOrientationsFileFromMarkers(const std::string& markers
             dp = markerData.getElt(row, imuIndices[i][3]);
 
             if (op.isNaN() || xp.isNaN() || yp.isNaN()) {
-                cout << "marker(s) for IMU '" << imuLabels[i] <<
-                    "' is NaN and orientation will also be NaN." << endl;
+                log_warn("marker(s) for IMU '{}' is NaN and orientation will also be NaN.",
+                    imuLabels[i]);
             }
             else {
                 // Transform of the IMU formed from markers expressed in Ground
@@ -360,4 +198,74 @@ OpenSenseUtilities::createOrientationsFileFromMarkers(const std::string& markers
     STOFileAdapter_<SimTK::Quaternion>::write(quaternions, fileName);
 
     return quaternions;
+ }
+
+SimTK::Vec3 OpenSenseUtilities::computeHeadingCorrection(
+        Model& model,
+        const SimTK::State& state,
+            OpenSim::TimeSeriesTable_<SimTK::Quaternion_<double>>&
+                    quaternionsTable,
+            const std::string& baseImuName,
+            const SimTK::CoordinateDirection baseHeadingDirection)
+{
+     SimTK::Vec3 rotations{0};
+
+    // if a base imu is specified, perform heading correction, otherwise skip
+    if (!baseImuName.empty()) {
+
+        auto imuLabels = quaternionsTable.getColumnLabels();
+        auto pix = distance(imuLabels.begin(),
+                std::find(imuLabels.begin(), imuLabels.end(), baseImuName));
+
+        // if no base can be found but one was provided, throw.
+        if (pix >= int(imuLabels.size())) {
+            OPENSIM_THROW(Exception, "No column with base IMU name '" +
+                                             baseImuName + "' found.");
+        }
+
+        auto startRow = quaternionsTable.getRowAtIndex(0);
+        Rotation base_R = Rotation(startRow.getElt(0, int(pix)));
+
+        // Heading direction of the base IMU in this case the pelvis_imu heading
+        // is its ZAxis
+        UnitVec3 baseSegmentXHeading = base_R(baseHeadingDirection.getAxis());
+        if (baseHeadingDirection.getDirection() < 0)
+            baseSegmentXHeading = baseSegmentXHeading.negate();
+        bool baseFrameFound = false;
+
+        const Frame* baseFrame = nullptr;
+        for (int j = 0; j < model.getNumJoints() && !baseFrameFound; j++) {
+            auto& jnt = model.getJointSet().get(j);
+            // Look for joint whose parent is Ground, child will be baseFrame
+            if (jnt.getParentFrame().findBaseFrame() == model.getGround()) { 
+                baseFrame = &(jnt.getChildFrame().findBaseFrame());
+                baseFrameFound = true;
+                break;
+            }
+        }
+        OPENSIM_THROW_IF(!baseFrameFound, Exception,
+                "No base segment was found, disable heading correction and retry.");
+       
+        Vec3 baseFrameX = UnitVec3(1, 0, 0);
+        const SimTK::Transform& baseXform =
+                baseFrame->getTransformInGround(state);
+        Vec3 baseFrameXInGround = baseXform.xformFrameVecToBase(baseFrameX);
+        SimTK::Real angularDifference =
+                acos(~baseSegmentXHeading * baseFrameXInGround);
+        // Compute the sign of the angular correction.
+        SimTK::Vec3 xproduct = (baseFrameXInGround % baseSegmentXHeading);
+        if (xproduct.get(1) > 0) { 
+            angularDifference *= -1; 
+        }
+
+        log_info("Heading correction computed to be {} degs about ground Y.",
+            angularDifference * SimTK_RADIAN_TO_DEGREE);
+
+        rotations = SimTK::Vec3( 0, angularDifference,  0);
+
+    }
+    else
+        OPENSIM_THROW(Exception,
+                "Heading correction attempted without base imu specification. Aborting.'");
+    return rotations;
 }

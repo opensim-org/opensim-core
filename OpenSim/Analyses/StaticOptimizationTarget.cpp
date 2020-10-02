@@ -406,9 +406,8 @@ void StaticOptimizationTarget::
 validatePerturbationSize(double &aSize)
 {
     if(aSize<SMALLDX) {
-        printf("StaticOptimizationTarget.validatePerturbationSize: WARNING- ");
-        printf("dx size too small (%le).\n",aSize);
-        printf("\tResetting dx=%le.\n",SMALLDX);
+        log_warn("StaticOptimizationTarget.validatePerturbationSize: dx size "
+                 "too small ({}). Resetting dx={}.", aSize, SMALLDX);
         aSize = SMALLDX;
     }
 }
@@ -423,9 +422,8 @@ printPerformance(const SimTK::State& s, double *parameters)
     objectiveFunc(SimTK::Vector(getNumParameters(),parameters,true),true,p);
     SimTK::Vector constraints(getNumConstraints());
     constraintFunc(SimTK::Vector(getNumParameters(),parameters,true),true,constraints);
-    cout << endl;
-    cout << "time = " << s.getTime() <<" Performance = " << p << 
-    " Constraint violation = " << sqrt(~constraints*constraints) << endl;
+    log_cout("time = {} Performance = {} Constraint violation = {}",
+            s.getTime(), p, sqrt(~constraints*constraints));
 }
 
 //______________________________________________________________________________

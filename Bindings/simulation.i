@@ -120,6 +120,7 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/Model/ContactSphere.h>
 %include <OpenSim/Simulation/Model/ElasticFoundationForce.h>
 %include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
+%include <OpenSim/Simulation/Model/SmoothSphereHalfSpaceForce.h>
 
 %include <OpenSim/Simulation/Model/Actuator.h>
 %template(SetActuators) OpenSim::Set<OpenSim::Actuator, OpenSim::Object>;
@@ -190,6 +191,7 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 
 %include <OpenSim/Simulation/Model/GeometryPath.h>
 %include <OpenSim/Simulation/Model/Ligament.h>
+%include <OpenSim/Simulation/Model/Blankevoort1991Ligament.h>
 %include <OpenSim/Simulation/Model/PathActuator.h>
 %include <OpenSim/Simulation/Model/Muscle.h>
 %include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
@@ -203,24 +205,33 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/Model/ExpressionBasedBushingForce.h>
 
 %include <OpenSim/Simulation/Solver.h>
-%include <OpenSim/Simulation/Reference.h>
 
+%include <OpenSim/Simulation/Reference.h>
 %template(ReferenceVec3) OpenSim::Reference_<SimTK::Vec3>;
 %template(ReferenceDouble) OpenSim::Reference_<double>;
 %template(ReferenceRotation) OpenSim::Reference_<SimTK::Rotation_<double>>;
+%template(StreamableReferenceRotation) OpenSim::StreamableReference_<SimTK::Rotation_<double>>;
+
 %template(SimTKArrayCoordinateReference) SimTK::Array_<OpenSim::CoordinateReference>;
 
 
+%shared_ptr(OpenSim::Reference_<SimTK::Vec3>);
+%shared_ptr(ReferenceDouble);
+%shared_ptr(OpenSim::Reference_<SimTK::Rotation_<double>>);
 %include <OpenSim/Simulation/MarkersReference.h>
+%shared_ptr(OpenSim::MarkersReference);
 %template(SetMarkerWeights) OpenSim::Set<MarkerWeight, OpenSim::Object>;
 %include <OpenSim/Simulation/CoordinateReference.h>
-%template (SetOientationWeights) OpenSim::Set<OrientationWeight, OpenSim::Object>;
 %include <OpenSim/Simulation/OrientationsReference.h>
+%template (SetOientationWeights) OpenSim::Set<OrientationWeight, OpenSim::Object>;
+%shared_ptr(OpenSim::OrientationsReference);
+%include <OpenSim/Simulation/BufferedOrientationsReference.h>
+%shared_ptr(OpenSim::BufferedOrientationsReference);
 
 %include <OpenSim/Simulation/AssemblySolver.h>
 %include <OpenSim/Simulation/InverseKinematicsSolver.h>
+%include <OpenSim/Simulation/OpenSense/IMUPlacer.h>
 %include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
-%include <OpenSim/Simulation/OpenSense/InverseKinematicsStudy.h>
 
 %include <OpenSim/Simulation/StatesTrajectory.h>
 // This enables iterating using the getBetween() method.
@@ -229,6 +240,7 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/StatesTrajectoryReporter.h>
 
 %include <OpenSim/Simulation/SimulationUtilities.h>
+%include <OpenSim/Simulation/VisualizerUtilities.h>
 
 // Iterators.
 %template(FrameList) OpenSim::ComponentList<const OpenSim::Frame>;

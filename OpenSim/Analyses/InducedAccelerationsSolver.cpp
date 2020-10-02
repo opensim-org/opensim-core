@@ -211,8 +211,8 @@ const SimTK::Vector& InducedAccelerationsSolver::solve(const SimTK::State& s,
         // light up the one Force who's contribution we are looking for
         int ai = _modelCopy.getForceSet().getIndex(forceName);
         if(ai<0){
-            cout << "Force '"<< forceName << "' not found in model '" <<
-                _modelCopy.getName() << "'." << endl;
+            log_warn("Force '{}' not found in model '{}'.", forceName,
+                    _modelCopy.getName());
         }
         Force &force = _modelCopy.getForceSet().get(ai);
         force.setAppliesForce(s_solver, true);
@@ -345,21 +345,24 @@ Array<bool> InducedAccelerationsSolver::
             point = exf->getPointAtTime(t);
             // point should be expressed in the "applied to" body for consistency across all constraints
             if(exf->getPointExpressedInBodyName() != exf->getAppliedToBodyName()){
-                int appliedToBodyIndex = getModel().getBodySet().getIndex(exf->getAppliedToBodyName());
-                if(appliedToBodyIndex < 0){
-                    cout << "External force appliedToBody " <<  exf->getAppliedToBodyName() << " not found." << endl;
-                }
+                const PhysicalFrame* appliedToBody =
+                        getModel().findComponent<PhysicalFrame>(
+                                exf->getAppliedToBodyName());
+                const PhysicalFrame* expressedInBody =
+                        getModel().findComponent<PhysicalFrame>(
+                                exf->getPointExpressedInBodyName());
 
-                int expressedInBodyIndex = getModel().getBodySet().getIndex(exf->getPointExpressedInBodyName());
-                if(expressedInBodyIndex < 0){
-                    cout << "External force expressedInBody " <<  exf->getPointExpressedInBodyName() << " not found." << endl;
-                }
-
-                const Body &appliedToBody = getModel().getBodySet().get(appliedToBodyIndex);
-                const Body &expressedInBody = getModel().getBodySet().get(expressedInBodyIndex);
+                OPENSIM_THROW_IF_FRMOBJ(appliedToBody == nullptr, Exception,
+                        "ExternalForce's appliedToBody " +
+                                exf->getAppliedToBodyName() + " not found.");
+                OPENSIM_THROW_IF_FRMOBJ(expressedInBody == nullptr, Exception,
+                        "ExternalForce's pointExpressedInBodyName " +
+                                exf->getPointExpressedInBodyName() +
+                                " not found.");
 
                 getModel().getMultibodySystem().realize(s, SimTK::Stage::Velocity);
-                point = expressedInBody.findStationLocationInAnotherFrame(s, point, appliedToBody);
+                point = expressedInBody->findStationLocationInAnotherFrame(
+                        s, point, *appliedToBody);
             }
 
             _replacementConstraints[i].setContactPointForInducedAccelerations(s, point);

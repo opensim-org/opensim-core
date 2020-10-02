@@ -134,8 +134,8 @@ const SimTK::Inertia& Body::getInertia() const
         if (std::abs(m) <= SimTK::SignificantReal &&
                 Ivec.norm() > SimTK::SignificantReal) {
             // force zero inertia
-            cout<<"Body '"<<getName()<<"' is massless but nonzero inertia provided.";
-            cout<<" Inertia reset to zero. "<<"Otherwise provide nonzero mass."<< endl;
+            log_warn("Body '{}' is massless but nonzero inertia provided.",getName());
+            log_warn(" Inertia reset to zero. Otherwise provide nonzero mass.");
             _inertia = SimTK::Inertia(0);
         }
         else{
@@ -147,8 +147,8 @@ const SimTK::Inertia& Body::getInertia() const
                 // bad inertias. E.g. early gait23 models had an error in the inertia
                 // of the toes Body. We cannot allow failures with our models so 
                 // raise a warning and do something sensible with the values at hand.
-                cout << "WARNING: Body " + getName() + " has invalid inertia. " << endl;
-                cout << ex.what() << endl;
+                log_warn("Body {} has invalid inertia. ", getName());
+                log_error(ex.what());
 
                 // get some aggregate value for the inertia based on existing values
                 double diag = Ivec.getSubVec<3>(0).norm()/sqrt(3.0);
@@ -156,8 +156,8 @@ const SimTK::Inertia& Body::getInertia() const
                 // and then assume a spherical shape.
                 _inertia = SimTK::Inertia(Vec3(diag), Vec3(0));
                 
-                cout << getName() << " Body's inertia being reset to:" << endl;
-                cout << _inertia << endl;
+                log_warn("{} Body's inertia being reset to: {}",
+                    getName(), _inertia);
             }
         }
     }

@@ -58,7 +58,7 @@ int main(int argc,char **argv)
       analyze -S SetupFileName -> opensim-cmd run-tool SetupFileName
       analyze -PS              -> opensim-cmd print-xml analyze
     )";
-    std::cout << deprecationNotice << std::endl;
+    log_warn(deprecationNotice);
 
     // PARSE COMMAND LINE
     int i;
@@ -88,7 +88,8 @@ int main(int argc,char **argv)
             Object::setSerializeAllDefaults(true);
             tool->print("default_Setup_Analyze.xml");
             Object::setSerializeAllDefaults(false);
-            cout << "Created file default_Setup_Analyze.xml with default setup" << endl;
+            log_info("Created file default_Setup_Analyze.xml with default "
+                     "setup");
             return(0);
 
         // IDENTIFY SETUP FILE
@@ -117,7 +118,7 @@ int main(int argc,char **argv)
 
     // ERROR CHECK
     if(setupFileName=="") {
-        cout<<"\n\nforward.exe: ERROR- A setup file must be specified.\n";
+        log_error("analyze.exe: A setup file must be specified.", argv[0]);
         PrintUsage(argv[0], cout);
         return(-1);
     }
@@ -127,15 +128,14 @@ int main(int argc,char **argv)
     LoadOpenSimLibrary("osimActuators");
 
     // CONSTRUCT
-    cout<<"Constructing tool from setup file "<<setupFileName<<".\n\n";
+    log_info("Constructing tool from setup file {}", setupFileName);
     AnalyzeTool analyze(setupFileName);
 
     // PRINT MODEL INFORMATION
     // Model& model = analyze.getModel();
-    cout<<"-----------------------------------------------------------------------\n";
-    cout<<"Loaded library\n";
-    cout<<"-----------------------------------------------------------------------\n";
-    cout<<"-----------------------------------------------------------------------\n\n";
+    log_info("--------------------------------------------------------------");
+    log_info("Loaded library");
+    log_info("--------------------------------------------------------------");
 
     // start timing
     std::clock_t startTime = std::clock();
@@ -143,13 +143,14 @@ int main(int argc,char **argv)
     // RUN
     analyze.run();
 
-    std::cout << "Analyze compute time = " << 1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n" << endl;
+    auto timeInMilliseconds = 1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC;
+    log_info("Analyze compute time = {} ms", timeInMilliseconds);
 
     //----------------------------
     // Catch any thrown exceptions
     //----------------------------
     } catch(const std::exception& x) {
-        cout << "Exception in analyze: " << x.what() << endl;
+        log_error("Exception in analyze: {}", x.what());
         return -1;
     }
     //----------------------------

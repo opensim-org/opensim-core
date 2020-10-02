@@ -27,7 +27,7 @@
 #include "STOFileAdapter.h"
 #include "CSVFileAdapter.h"
 
-#ifdef WITH_BTK
+#if defined (WITH_EZC3D) || defined (WITH_BTK)
 
 #include "C3DFileAdapter.h"
 

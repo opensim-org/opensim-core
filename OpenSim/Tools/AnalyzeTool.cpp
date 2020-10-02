@@ -366,9 +366,17 @@ loadStatesFromFile(SimTK::State& s)
 {
     delete _statesStore; _statesStore = NULL;
     if(_statesFileNameProp.isValidFileName()) {
-        if(_coordinatesFileNameProp.isValidFileName()) cout << "WARNING: Ignoring " << _coordinatesFileNameProp.getName() << " since " << _statesFileNameProp.getName() << " is also set" << endl;
-        if(_speedsFileNameProp.isValidFileName()) cout << "WARNING: Ignoring " << _speedsFileNameProp.getName() << " since " << _statesFileNameProp.getName() << " is also set" << endl;
-        cout<<"\nLoading states from file "<<_statesFileName<<"."<<endl;
+        if(_coordinatesFileNameProp.isValidFileName()) {
+            log_warn("Ignoring {} since {} is also set.", 
+                _coordinatesFileNameProp.getName(),
+                _statesFileNameProp.getName());
+        }
+        if(_speedsFileNameProp.isValidFileName()) { 
+            log_warn("Ignoring {} since {} is also set.",
+                _speedsFileNameProp.getName(),
+                _statesFileNameProp.getName());
+        }
+        log_info("Loading states from file '{}'.", _statesFileName);
         Storage temp(_statesFileName);
         _statesStore = new Storage();
         _statesStore->setName("states"); // Name appears in GUI
@@ -377,11 +385,12 @@ loadStatesFromFile(SimTK::State& s)
         if(!_coordinatesFileNameProp.isValidFileName()) 
             throw Exception("AnalyzeTool.initializeFromFiles: Either a states file or a coordinates file must be specified.",__FILE__,__LINE__);
 
-        cout<<"\nLoading coordinates from file "<<_coordinatesFileName<<"."<<endl;
+        log_info("Loading coordinates from file '{}'.", _coordinatesFileName);
         Storage coordinatesStore(_coordinatesFileName);
 
         if(_lowpassCutoffFrequency>=0) {
-            cout<<"\n\nLow-pass filtering coordinates data with a cutoff frequency of "<<_lowpassCutoffFrequency<<"..."<<endl<<endl;
+            log_info("Low-pass filtering coordinates data with a cutoff "
+                "frequency of {}...", _lowpassCutoffFrequency);
             //coordinatesStore.pad(60);
             //coordinatesStore.lowpassFIR(50,_lowpassCutoffFrequency);
             //coordinatesStore.smoothSpline(5,_lowpassCutoffFrequency);
@@ -397,7 +406,7 @@ loadStatesFromFile(SimTK::State& s)
 
         if(_speedsFileName!="") {
             delete uStore;
-            cout<<"\nLoading speeds from file "<<_speedsFileName<<"."<<endl;
+            log_info("Loading speeds from file '{}'.", _speedsFileName);
             uStore = new Storage(_speedsFileName);
         }
 
@@ -415,23 +424,23 @@ loadStatesFromFile(SimTK::State& s)
         delete uStore;
     }
 
-    cout<<"Found "<<_statesStore->getSize()<<" state vectors with time stamps ranging "
-         <<"from "<<_statesStore->getFirstTime()<<" to "<<_statesStore->getLastTime()<<"."<<endl;
+    log_info("Found {} state vectors with time stamps ranging from {} to {}.",
+        _statesStore->getSize(), _statesStore->getFirstTime(), 
+        _statesStore->getLastTime());
 }
 
 void AnalyzeTool::
 setStatesFromMotion(const SimTK::State& s, const Storage &aMotion, bool aInDegrees)
 {
-    cout<<endl<<"Creating states from motion storage"<<endl;
-
+    log_info("Creating states from motion storage...");
     // Make a copy in case we need to convert to degrees and/or filter
     Storage motionCopy(aMotion);
 
     if(!aInDegrees) _model->getSimbodyEngine().convertRadiansToDegrees(motionCopy);
 
     if(_lowpassCutoffFrequency>=0) {
-        cout<<"\nLow-pass filtering coordinates data with a cutoff frequency of "<<_lowpassCutoffFrequency<<"..."<<endl;
-
+        log_info("Low-pass filtering coordinates data with a cutoff frequency "
+            "of {}...", _lowpassCutoffFrequency);
         motionCopy.pad(motionCopy.getSize()/2);
         motionCopy.lowpassIIR(_lowpassCutoffFrequency);
     }
@@ -520,16 +529,18 @@ bool AnalyzeTool::run(bool plotting)
 
     // CHECK FOR A MODEL
     if(_model==NULL) {
-        string msg = "ERROR- A model has not been set.";
-        cout<<endl<<msg<<endl;
-        throw(Exception(msg,__FILE__,__LINE__));
+        string msg = "A model has not been set.";
+        log_error(msg);
+        throw(Exception(msg, __FILE__, __LINE__));
     }
 
     // Do the maneuver to change then restore working directory 
     // so that the parsing code behaves properly if called from a different directory.
-    string saveWorkingDirectory = IO::getCwd();
-    if (getDocument())  // When the tool is created live from GUI it has no file/document association
-        IO::chDir(IO::getParentDirectory(getDocumentFileName()));
+    // When the tool is created live from GUI it has no file/document association
+    auto cwd = getDocument() != nullptr
+            ? IO::CwdChanger::changeToParentOf(getDocumentFileName())
+            : IO::CwdChanger::noop();
+
     // Use the Dynamics Tool API to handle external loads instead of outdated AbstractTool
     /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model);
 
@@ -578,13 +589,12 @@ bool AnalyzeTool::run(bool plotting)
     //  _statesStore->getTime(++iInitial,ti);
     //}
 
-    cout<<"Executing the analyses from "<<ti<<" to "<<tf<<"..."<<endl;
+    log_info("Executing the analyses from {} to {}...", ti, tf);
     run(s, *_model, iInitial, iFinal, *_statesStore, _solveForEquilibriumForAuxiliaryStates);
     _model->getMultibodySystem().realize(s, SimTK::Stage::Position );
     } catch (const Exception& x) {
         x.print(cout);
         completed = false;
-        IO::chDir(saveWorkingDirectory);
         throw Exception(x.what(),__FILE__,__LINE__);
     }
 
@@ -593,7 +603,7 @@ bool AnalyzeTool::run(bool plotting)
     if (completed && _printResultFiles)
         printResults(getName(),getResultsDir()); // this will create results directory if necessary
 
-    IO::chDir(saveWorkingDirectory);
+    cwd.restore();
 
     removeExternalLoadsFromModel();
 
@@ -680,9 +690,8 @@ void AnalyzeTool::run(SimTK::State& s, Model &aModel, int iInitial, int iFinal, 
                 aModel.equilibrateMuscles(s);
             }
             catch (const std::exception& e) {
-                cout << "WARNING- AnalyzeTool::run() unable to equilibrate muscles ";
-                cout << "at time = " << t <<"." << endl;
-                cout << "Reason: " << e.what() << endl;
+                log_warn("AnalyzeTool::run() unable to equilibrate muscles at "
+                    "time = {}. Reason: {}.", t, e.what());
             }
         }
         // Make sure model is at least ready to provide kinematics

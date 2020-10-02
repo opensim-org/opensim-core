@@ -93,9 +93,12 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/src/examplecomponents
             ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
-    COMMAND ${JAVA_COMPILE} 
+    COMMAND ${CMAKE_COMMAND} -E copy
+            ${CMAKE_CURRENT_SOURCE_DIR}/JavaLogSink.java
+            ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
+    COMMAND ${JAVA_COMPILE}
             org/opensim/modeling/*.java 
-            -source 1.6 -target 1.6
+            -source 1.7 -target 1.7
     COMMAND ${JAVA_ARCHIVE} -cvf ${SWIG_JAVA_JAR_NAME}
             org/opensim/modeling/*.class
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/src

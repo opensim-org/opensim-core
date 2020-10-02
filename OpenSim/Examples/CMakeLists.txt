@@ -22,6 +22,7 @@ if(BUILD_API_EXAMPLES)
     add_subdirectory(ExampleHopperDevice)
     add_subdirectory(SymbolicExpressionReporter)
     add_subdirectory(DataTable)
+    add_subdirectory(DataAdapter)
     add_subdirectory(StaticOptimizationExample)
 
 elseif()
@@ -33,6 +34,7 @@ elseif()
     add_subdirectory(CustomActuatorExample)
     add_subdirectory(MuscleExample)
     add_subdirectory(checkEnvironment)
+    add_subdirectory(DataAdapter)
 
 endif()
 

@@ -50,11 +50,7 @@ public:
         updateFromXMLDocument();
     };
 
-    APDMDataReaderSettings(const APDMDataReaderSettings&)            = default;
-    APDMDataReaderSettings(APDMDataReaderSettings&&)                 = default;
-    APDMDataReaderSettings& operator=(const APDMDataReaderSettings&) = default;
-    APDMDataReaderSettings& operator=(APDMDataReaderSettings&&)      = default;
-    virtual ~APDMDataReaderSettings()                   = default;
+    virtual ~APDMDataReaderSettings() = default;
     
 private:
     void constructProperties() {

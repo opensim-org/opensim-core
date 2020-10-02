@@ -27,8 +27,8 @@
 #                                            
 # This file will also find Simbody; you do not
 # need to use `find_package(Simbody)` in your own project. If OpenSim's
-# installation does *not* contain Simbody (and BTK), you might need to set
-# CMAKE_PREFIX_PATH to the directory containing Simbody, and make sure that BTK
+# installation does *not* contain Simbody (and ezc3d or BTK), you might need to set
+# CMAKE_PREFIX_PATH to the directory containing Simbody, and make sure that ezc3d or BTK
 # libraries are available during runtime.
 #
 # Adapted from SimbodyConfig.cmake
@@ -74,13 +74,22 @@ set(@CMAKE_PROJECT_NAME@_JAR_FILE
 # Dependencies
 # ------------
 if (@OPENSIM_COPY_DEPENDENCIES@) # OPENSIM_COPY_DEPENDENCIES
-    # Find the copy of Simbody within the OpenSim installation.
+    # Find the copies of Simbody and spdlog within the OpenSim installation.
+    # We define _SIMBODY_PATH and _SPDLOG_PATH before find_package(Simbody)
+    # because finding Simbody redefines the PACKAGE_PREFIX_DIR variable
+    # that appears in this file after configuring, thereby incorrectly
+    # causing CMake to look for spdlog within Simbody's installation.
+    set(_SIMBODY_PATH "@PACKAGE_OPENSIM_INSTALL_SIMBODYDIR@")
+    set(_SPDLOG_PATH "@PACKAGE_OPENSIM_INSTALL_SPDLOGDIR@")
     find_package(Simbody @SIMBODY_VERSION_TO_USE@ REQUIRED
-        PATHS "@PACKAGE_OPENSIM_INSTALL_SIMBODYDIR@" NO_MODULE NO_DEFAULT_PATH)
+        PATHS "${_SIMBODY_PATH}" NO_MODULE NO_DEFAULT_PATH)
+    find_package(spdlog REQUIRED
+        PATHS "${_SPDLOG_PATH}" NO_MODULE NO_DEFAULT_PATH)
 else()
     # Find the correct version anywhere on the machine.
     include(CMakeFindDependencyMacro)
     find_dependency(Simbody @SIMBODY_VERSION_TO_USE@)
+    find_dependency(spdlog)
 endif()
 
 

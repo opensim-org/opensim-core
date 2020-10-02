@@ -32,7 +32,7 @@ class TestDataAdapter(unittest.TestCase):
         try:
             adapter = osim.C3DFileAdapter()
         except AttributeError:
-            # C3D support not available. OpenSim was not compiled with BTK.
+            # C3D support not available. OpenSim was not compiled with ezc3d.
             return
         tables = adapter.read(os.path.join(test_dir, 'walking2.c3d'))
         forces = adapter.getForcesTable(tables)

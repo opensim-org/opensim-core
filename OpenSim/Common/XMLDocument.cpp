@@ -65,7 +65,8 @@ using namespace std;
 // 30515 for WrapObject color, display_preference, VisibleObject -> Appearance
 // 30516 for GeometryPath default_color -> Appearance
 // 30517 for removal of _connectee_name suffix to shorten XML for socket, input
-// 40000 for OpenSim 4.0 release
+// 40000 for OpenSim 4.0 release 40000
+
 const int XMLDocument::LatestVersion = 40000;
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTOR(S)
@@ -179,8 +180,9 @@ print(const string &aFileName)
 {
     // Standard Out
     if(aFileName.empty()) {
-        cout << *this;
-        cout << flush;
+        std::stringstream ss;
+        ss << *this;
+        log_cout(ss.str());
     // File
     } else {
         setIndentString("\t");
@@ -312,7 +314,7 @@ bool XMLDocument::isEqualTo(XMLDocument& aOtherDocument, double toleranceForDoub
     SimTK::Array_<SimTK::Xml::Element> elts1 = root1.getAllElements();
     SimTK::Array_<SimTK::Xml::Element> elts2 = root2.getAllElements();
     if (elts1.size() != elts2.size()){
-        cout << "Different number of children at Top level" << endl;
+        log_info("Different number of children at Top level");
         equal = false;
     }
     if (!equal) return false;
@@ -326,8 +328,8 @@ bool XMLDocument::isEqualTo(XMLDocument& aOtherDocument, double toleranceForDoub
             continue;
         equal = isElementEqual(elts1[it], elts2[it], toleranceForDoubles);
         if (!equal){ 
-            cout << elts1[it].getElementTag() << " is different" << endl;  
-            return false; 
+            log_info("{} is different", elts1[it].getElementTag());
+            return false;
         }
     }
     return true;
@@ -343,7 +345,7 @@ bool XMLDocument::isElementEqual(SimTK::Xml::Element& elt1, SimTK::Xml::Element&
     // Handle different # attributes
     if ( (att1 == elt1.attribute_end() && att2 != elt2.attribute_end()) ||
          (att1 != elt1.attribute_end() && att2 == elt2.attribute_end()) ){
-            cout << "Number of attributes is different, element " << elt1.getElementTag() << endl;
+            log_info("Number of attributes is different, element {}", elt1.getElementTag());
             return false;
     }
     bool equal =true;
@@ -352,8 +354,8 @@ bool XMLDocument::isElementEqual(SimTK::Xml::Element& elt1, SimTK::Xml::Element&
         equal = (att1->getName() == att2->getName());
         equal = equal && (att1->getValue() == att2->getValue());
         if (!equal) {
-            cout << "Attribute " << att1->getName() << " is different " << att1->getValue() << 
-            "vs." << att2->getValue() << endl;
+            log_info("Attribute {} is different {} vs. {}", att1->getName(),
+                    att1->getValue(), att2->getValue());
         }
     }
     if (!equal) return false;
@@ -362,26 +364,28 @@ bool XMLDocument::isElementEqual(SimTK::Xml::Element& elt1, SimTK::Xml::Element&
     SimTK::Array_<SimTK::Xml::Element> elts1 = elt1.getAllElements();
     SimTK::Array_<SimTK::Xml::Element> elts2 = elt2.getAllElements();
     if (elts1.size() != elts2.size()){
-        cout << "Different number of children for Element " << elt1.getElementTag() << endl;
+        log_info("Different number of children for Element {}",
+                elt1.getElementTag());
         equal = false;
     }
     if (!equal) return false;
     // Recursively compare Elements unless Value Elements in that case do direct compare
     for(unsigned it = 0; it < elts1.size() && equal; it++){
         SimTK::String elt1Tag = elts1[it].getElementTag();
-        cout << "Compare " << elt1Tag << endl;
+        log_info("Compare {}", elt1Tag);
         SimTK::Xml::element_iterator elt2_iter = elt2.element_begin(elt1Tag);
         if (elt2_iter==elt2.element_end()){
-            cout << "Element " << elt1Tag << " was not found in reference document" << endl;
+            log_info("Element {} was not found in reference document", elt1Tag);
             equal = false;
             break;
         }
         bool value1 = elts1[it].isValueElement();
         bool value2 = elt2_iter->isValueElement();
         equal = (value1 == value2);
-        if (!equal){ 
-            cout << elts1[it].getElementTag() << " is different. One is Value Element the other isn't" << endl;  
-            return false; 
+        if (!equal){
+            log_info("{} is different. One is Value Element the other isn't",
+                     elts1[it].getElementTag());
+            return false;
         }
         if (value1){
             // We should check if this's a double or array of doubles in that case we can getValueAs<double>
@@ -399,14 +403,14 @@ bool XMLDocument::isElementEqual(SimTK::Xml::Element& elt1, SimTK::Xml::Element&
         else    // recur
             equal = isElementEqual(elts1[it], elts2[it], toleranceForDoubles);
         if (!equal){ 
-            cout << elts1[it].getElementTag() << " is different" << endl;  
+            log_info("{} is different", elts1[it].getElementTag());
             SimTK::String pad;
             elts1[it].writeToString(pad);
-            cout << pad << endl;
-            cout << "------------------- vs. ------" << endl;
+            log_info(pad);
+            log_info("------------------- vs. ------");
             elts2[it].writeToString(pad);
-            cout << pad << endl;
-            return equal; 
+            log_info(pad);
+            return equal;
         }
     }
 

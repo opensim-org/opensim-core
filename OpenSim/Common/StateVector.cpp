@@ -465,7 +465,7 @@ void StateVector::
 divide(double aValue)
 {
     if(aValue==0.0) {
-        printf("StateVector.divide: ERROR- divide by zero\n");
+        log_error("StateVector.divide: divide by zero.");
         return;
     }
 
@@ -537,7 +537,7 @@ print(FILE *fp) const
 {
     // CHECK FILE POINTER
     if(fp==NULL) {
-        printf("StateVector.print(FILE*): null file pointer.\n");
+        log_error("StateVector.print(FILE*): null file pointer.");
         return(-1);
     }
 
@@ -547,7 +547,7 @@ print(FILE *fp) const
     int n=0,nTotal=0;
     n = fprintf(fp,format,_t);
     if(n<0) {
-        printf("StateVector.print(FILE*): error writing to file.\n");
+        log_error("StateVector.print(FILE*): error writing to file.");
         return(n);
     }
     nTotal += n;
@@ -557,7 +557,7 @@ print(FILE *fp) const
     for(int i=0;i<_data.getSize();i++) {
         n = fprintf(fp,format,_data[i]);
         if(n<0) {
-            printf("StateVector.print(FILE*): error writing to file.\n");
+            log_error("StateVector.print(FILE*): error writing to file.");
             return(n);
         }
         nTotal += n;
@@ -566,7 +566,7 @@ print(FILE *fp) const
     // CARRIAGE RETURN
     n = fprintf(fp,"\n");
     if(n<0) {
-        printf("StateVector.print(FILE*): error writing to file.\n");
+        log_error("StateVector.print(FILE*): error writing to file.");
         return(n);
     }
     nTotal += n;

@@ -25,7 +25,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # OpenSim version.
 # ----------------
 set(OPENSIM_MAJOR_VERSION 4)
-set(OPENSIM_MINOR_VERSION 1)
+set(OPENSIM_MINOR_VERSION 2)
 set(OPENSIM_PATCH_VERSION 0)
 
 # Don't include the patch version if it is 0.
@@ -85,7 +85,7 @@ from the internet, we turn this option OFF." ON)
 set(SIMBODY_HOME $ENV{SIMBODY_HOME} CACHE
     PATH "The location of the Simbody installation to use; you can change this. Set as empty to let CMake search for Simbody automatically.")
 
-option(OPENSIM_COPY_DEPENDENCIES "Copy Simbody and BTK into the
+option(OPENSIM_COPY_DEPENDENCIES "Copy Simbody, ezc3d and BTK into the
 OpenSim installation. This should be set to ON when making a relocatable
 distribution, and should be set to OFF when packaging for Homebrew, Debian,
 etc. On Linux and macOS: we use relative RPATHs when ON, and absolute RPATHs
@@ -94,7 +94,7 @@ BUILD_PYTHON_WRAPPING is ON, so if this OFF, a warning is thrown." ON)
 mark_as_advanced(OPENSIM_COPY_DEPENDENCIES)
 
 option(OPENSIM_PYTHON_STANDALONE "Make the Python package standalone, meaning
-the OpenSim (and Simbody and BTK) shared libraries it depends on are copied
+the OpenSim (and Simbody, ezc3d and BTK) shared libraries it depends on are copied
 into the package. If you are building OpenSim on the same machine on which you
 plan to use it, you can leave this OFF. If you are distributing OpenSim to
 other computers, you should turn this ON. If macOS, this option affects how
@@ -111,6 +111,17 @@ mark_as_advanced(OPENSIM_PYTHON_STANDALONE) # Mainly for packagers; not users.
 option(BUILD_API_ONLY "Build/install only headers, libraries,
 wrapping, tests; not applications (opensim, ik, rra, etc.)." OFF)
 
+option(OPENSIM_DISABLE_LOG_FILE
+"Disable OpenSim from automatically creating 'opensim.log'.
+
+By default, any application linking to osimCommon will create an
+'opensim.log' file in the current working directory. All log messages
+written by OpenSim (incl. during static initialization) are written to
+both this file and the standard output streams." OFF)
+
+if(OPENSIM_DISABLE_LOG_FILE)
+    add_definitions(-DOPENSIM_DISABLE_LOG_FILE=1)
+endif()
 
 set(OPENSIM_BUILD_INDIVIDUAL_APPS_DEFAULT OFF)
 if(WIN32)
@@ -171,6 +182,7 @@ if(${OPENSIM_INSTALL_UNIX_FHS})
     set(OPENSIM_INSTALL_JAVASRCDIR "${CMAKE_INSTALL_DATAROOTDIR}/OpenSim/java")
     set(OPENSIM_INSTALL_APIEXDIR "${CMAKE_INSTALL_DOCDIR}/Code")
     set(OPENSIM_INSTALL_SIMBODYDIR ".")
+    set(OPENSIM_INSTALL_SPDLOGDIR ".")
 
 else()
 
@@ -191,6 +203,7 @@ else()
     set(OPENSIM_INSTALL_JAVASRCDIR sdk/Java)
     set(OPENSIM_INSTALL_APIEXDIR Resources/Code)
     set(OPENSIM_INSTALL_SIMBODYDIR sdk/Simbody)
+    set(OPENSIM_INSTALL_SPDLOGDIR sdk/spdlog)
 
 endif()
 
@@ -303,10 +316,6 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
         set(GCC_INST_SET)
     endif()
 
-    # Get the gcc version number in major.minor.build format
-    execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion
-                    OUTPUT_VARIABLE GCC_VERSION)
-
 
     # Testing with Clang 3.3 on Ubuntu 14.04 shows a 5% decrease
     # in the runtime of the tests when we enable loop unrolling.
@@ -340,6 +349,24 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
     set(CMAKE_C_FLAGS_MINSIZEREL       "-DNDEBUG -Os ${GCC_INST_SET}"
       CACHE STRING "gcc MinSizeRel build compile flags" FORCE)
 
+    add_compile_options(-Wall -Wextra) # -Werror
+    # -Wshorten-64-to-32 helps us catch default warnings from Visual C++.
+    if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
+        add_compile_options(-Wshorten-64-to-32)
+        # TODO Find clang/gcc equivalent to C4267; -Wconversion gives way too
+        # many warnings.
+    endif()
+    # The assert() macro is omitted in Release, causing "unused-variable"
+    # warnings. It is sufficient to just catch such warnings in Debug.
+    add_compile_options($<$<NOT:$<CONFIG:Debug>>:-Wno-unused-variable>
+            $<$<NOT:$<CONFIG:Debug>>:-Wno-unused-parameter>)
+
+    # Avoid warnings for Object::Self and Object::Super typedefs.
+    # This warning exists in GCC and Clang >=4.0.
+    if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
+            NOT (${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS "5.0.0"))
+        add_compile_options(-Wno-unused-local-typedefs)
+    endif()
 endif()
 
 ## When building in any of the Release modes, tell VC++ cl compiler to use intrinsics
@@ -463,6 +490,7 @@ if(${BUILD_PYTHON_WRAPPING})
         message(FATAL_ERROR "OPENSIM_PYTHON_VERSION should be '2' or '3'.")
     endif()
     find_package(PythonInterp ${required_python_version} REQUIRED)
+    find_package(NumPy REQUIRED)
 
     # We update the python install dir to include the python version,
     # now that we know it. We replace the token "VERSION" with the actual python
@@ -560,9 +588,9 @@ if(UNIX) # Linux and macOS
         # Add the automatically determined parts of the RPATH which point
         # to directories outside the build tree to the install RPATH.
         # If we are copying Simbody into OpenSim's installation, then
-        # there's no need to link to the libraries in Simbody's or BTK's
+        # there's no need to link to the libraries in Simbody's, ezc3d's or BTK's
         # original installations. Furthermore, we may be distributing OpenSim
-        # to other computers that will not have our original Simbody or BTK
+        # to other computers that will not have our original Simbody, ezc3d or BTK
         # installations, and so the RPATH would point to a nonexistant
         # directory on others' computers.
         set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
@@ -584,15 +612,34 @@ set(OPENSIM_DEPENDENCIES_DIR
     "Directory containing installed binaries of OpenSim dependencies. Set this
      only if you used the Superbuild procedure to install dependencies. ")
 
-set(WITH_BTK
-    OFF
-    CACHE
-    BOOL
-    "Compile OpenSim with BTK ? BTK provides C3D reading.")
+set(OPENSIM_C3D_PARSER None CACHE STRING
+    "Compile OpenSim with a C3D parser ? ezc3d or BTK provide C3D reading.")
+set_property(CACHE OPENSIM_C3D_PARSER PROPERTY STRINGS "ezc3d" "BTK" "None")
+if(${OPENSIM_C3D_PARSER} STREQUAL "ezc3d")
+    set(WITH_EZC3D true)
+    set(WITH_BTK false)
+    if(WIN32)
+        set(ezc3d_hint "${OPENSIM_DEPENDENCIES_DIR}/ezc3d/lib/cmake")
+    else()
+        set(ezc3d_hint "${OPENSIM_DEPENDENCIES_DIR}/ezc3d/lib/ezc3d/cmake")
+    endif()
+    find_package(ezc3d REQUIRED HINTS "${ezc3d_hint}")
+    add_definitions(-DWITH_EZC3D)
+    OpenSimCopyDependencyDLLsForWin(ezc3d "${ezc3d_LIBRARY_DIR}/../")
+    if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
+        OpenSimInstallDependencyLibraries(ezc3d "${ezc3d_LIBRARY_DIR}/../"
+            "${ezc3d_LIBRARY_DIR}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
+    endif()
 
-# If compiling with BTK, find and use it.
-if(WITH_BTK)
-    find_package(BTK 
+elseif(${OPENSIM_C3D_PARSER} STREQUAL "BTK")
+    set(WITH_EZC3D false)
+    unset(ezc3d_LIBRARY_DIR CACHE)
+    unset(ezc3d_LIBRARY)
+    unset(ezc3d_INCLUDE_DIR CACHE)
+    set(WITH_BTK true)
+
+    # If compiling with BTK, find and use it.
+    find_package(BTK
                  REQUIRED
                  HINTS "${OPENSIM_DEPENDENCIES_DIR}/BTK/share/btk-0.4dev")
     include(${BTK_USE_FILE})
@@ -602,7 +649,18 @@ if(WITH_BTK)
         OpenSimInstallDependencyLibraries(BTK "${BTK_INSTALL_PREFIX}"
             "${BTK_LIBRARY_DIRS}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
     endif()
+
+else()
+    set(WITH_EZC3D false)
+    unset(ezc3d_LIBRARY_DIR CACHE)
+    unset(ezc3d_LIBRARY)
+    unset(ezc3d_INCLUDE_DIR CACHE)
+    set(WITH_BTK false)
 endif()
+
+find_package(spdlog REQUIRED
+        HINTS "${OPENSIM_DEPENDENCIES_DIR}/spdlog")
+
 
 if(NOT SIMBODY_HOME AND OPENSIM_DEPENDENCIES_DIR)
     set(SIMBODY_HOME "${OPENSIM_DEPENDENCIES_DIR}/simbody")
@@ -614,7 +672,7 @@ endif()
 # As of Simbody 3.4, Simbody has a SimbodyConfig.cmake file, which is a
 # preferred way to find Simbody over the previous FindSimbody.cmake script.
 # NO_MODULE means we will not allow the use of a FindSimbody.cmake script.
-set(SIMBODY_VERSION_TO_USE 3.6)
+set(SIMBODY_VERSION_TO_USE 3.7)
 
 # Find Simbody freshly by unsetting this CMake-generated variable.
 unset(Simbody_DIR CACHE)
@@ -753,22 +811,28 @@ if(${OPENSIM_COPY_DEPENDENCIES})
                 FILES_MATCHING PATTERN "*simbody-visualizer*")
     endif()
 
+    # EZC3D
+    # -----
+    if(NOT WIN32)
+        # LIB: .so files on Linux, .dylib on macOS
+        file(GLOB ezc3d_desired_lib_files "${ezc3d_LIBRARY_DIR}/*ezc3d*")
+        install(FILES ${ezc3d_desired_lib_files}
+                DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+    endif()
 
     # BTK
     # ---
-    if(WIN32)
-        file(GLOB btk_desired_dll_files "${BTK_INSTALL_DIR}/*BTK*.dll")
-        install(FILES ${btk_desired_dll_files}
-                DESTINATION "${CMAKE_INSTALL_BINDIR}")
-        # No need to copy *.lib on Windows, as BTK links "privately" to
-        # osimCommon (clients of osimCommon do not link to BTK).
-    else()
+    if(NOT WIN32)
         # LIB: .so files on Linux, .dylib on macOS
         file(GLOB btk_desired_lib_files "${BTK_LIBRARY_DIRS}/*BTK*")
         install(FILES ${btk_desired_lib_files}
                 DESTINATION "${CMAKE_INSTALL_LIBDIR}")
     endif()
 
+    # spdlog
+    # ------
+    install(DIRECTORY "${spdlog_DIR}/../../../"
+            DESTINATION "${OPENSIM_INSTALL_SPDLOGDIR}")
 endif()
 
 if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)

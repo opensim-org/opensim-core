@@ -201,7 +201,6 @@ constructColumnLabels()
     if(_model) 
         for (int i = 0; i < _forceSet->getActuators().getSize(); i++) {
             if (ScalarActuator* act = dynamic_cast<ScalarActuator*>(&_forceSet->getActuators().get(i))) {
-                //std::cout << act->dump() << std::endl;
                 if (act->get_appliesForce())
                     labels.append(act->getName());
             }
@@ -393,11 +392,11 @@ record(const SimTK::State& s)
         optimizer->optimize(_parameters);
     }
     catch (const SimTK::Exception::Base& ex) {
-        cout << ex.getMessage() << endl;
-        cout << "OPTIMIZATION FAILED..." << endl;
-        cout << endl;
-        cout << "StaticOptimization.record:  WARN- The optimizer could not find a solution at time = " << s.getTime() << endl;
-        cout << endl;
+        log_warn(ex.getMessage());
+        log_warn("OPTIMIZATION FAILED...");
+        log_warn("StaticOptimization.record: The optimizer could not find a "
+                 "solution at time = {}.",
+                s.getTime());
 
         double tolBounds = 1e-1;
         bool weakModel = false;
@@ -440,7 +439,7 @@ record(const SimTK::State& s)
                 }
             }
         }
-        if(weakModel) cout << msgWeak << endl;
+        if(weakModel) log_warn(msgWeak);
 
         if(!weakModel) {
             double tolConstraints = 1e-6;
@@ -465,7 +464,7 @@ record(const SimTK::State& s)
                 }
             }
             _forceReporter->step(sWorkingCopy, 1);
-            if(incompleteModel) cout << msgIncomplete << endl;
+            if(incompleteModel) log_warn(msgIncomplete);
         }
     }
 
@@ -473,7 +472,9 @@ record(const SimTK::State& s)
     //double duration = (double)(stop.QuadPart-start.QuadPart)/(double)frequency.QuadPart;
     //cout << "optimizer time = " << (duration*1.0e3) << " milliseconds" << endl;
 
-    target.printPerformance(sWorkingCopy, &_parameters[0]);
+    if (Logger::shouldLog(Logger::Level::Info)) {
+        target.printPerformance(sWorkingCopy, &_parameters[0]);
+    }
 
     //update defaults for use in the next step
 
@@ -622,9 +623,8 @@ int StaticOptimization::begin(const SimTK::State& s )
         for(int k=0;k<fs.getSize();k++) {
             ScalarActuator* act = dynamic_cast<ScalarActuator *>(&fs[k]);
             if (act){
-                cout << "Bounds for " << act->getName() << ": "
-                    << act->getMinControl() << " to "
-                    << act->getMaxControl() << endl;
+                log_info("Bounds for '{}': {} to {}.", act->getName(),
+                        act->getMinControl(), act->getMaxControl());
             }
             else{
                 std::string msg = getConcreteClassName();

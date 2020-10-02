@@ -61,21 +61,9 @@ end
 
 %% cycle through columns and rows to make new arrays, then addd then to struct. 
 for iLabel = 0 : nLabels - 1
-    %     
-    if vec3Table == true
-        % If the data is Vec3 type
-        for iRow = 0 : nRows - 1
-            dataArray(iRow+1,1) = osimtable.getDependentColumnAtIndex(iLabel).get(iRow).get(0);
-            dataArray(iRow+1,2) = osimtable.getDependentColumnAtIndex(iLabel).get(iRow).get(1);
-            dataArray(iRow+1,3) = osimtable.getDependentColumnAtIndex(iLabel).get(iRow).get(2);
-        end
-    else
-        % If the data is double type
-        for iRow = 0 : nRows - 1
-            dataArray(iRow+1,1) = osimtable.getDependentColumnAtIndex(iLabel).getElt(iRow,0);
-        end
-    end
-    
+    % This works for both TimeSeriesTable and TimeSeriesTableVec3.
+    dataArray = osimtable.getDependentColumnAtIndex(iLabel).getAsMat();
+
     % Get the osim table column label
     col_label  = char(osimtable.getColumnLabels.get(iLabel));
     disp_label = col_label;

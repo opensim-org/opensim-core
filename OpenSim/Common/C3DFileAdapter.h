@@ -22,25 +22,22 @@
 #ifndef OPENSIM_C3D_FILE_ADAPTER_H_
 #define OPENSIM_C3D_FILE_ADAPTER_H_
 
-#ifdef WITH_BTK
+#if defined (WITH_EZC3D) || defined (WITH_BTK)
 
 #include "FileAdapter.h"
 #include "TimeSeriesTable.h"
 #include "Event.h"
 
-template<typename> class shrik;
-
 namespace OpenSim {
-    /** C3DFileAdapter reads a C3D file into markers and forces tables of type
-    TimeSeriesTableVec3. The markers table has each column labeled by its
-    corresponding marker name. For the forces table, the data are grouped
-    by sensor (force-plate #) in force, point and moment order, with the
-    respective *f#*, *p#* and *m#* column labels. C3DFileAdpater provides
-    options for expressing the force-plate measurements either as the
-    net force and moments expressed at the ForcePlateOrigin, the
-    CenterOfPressure, or the PointOfWrenchApplication.
-    */
 
+/** C3DFileAdapter reads a C3D file into markers and forces tables of type
+TimeSeriesTableVec3. The markers table has each column labeled by its
+corresponding marker name. For the forces table, the data are grouped
+by sensor (force-plate #) in force, point and moment order, with the
+respective *f#*, *p#* and *m#* column labels. C3DFileAdpater provides
+options for expressing the force-plate measurements either as the
+net force and moments expressed at the ForcePlateOrigin, the
+CenterOfPressure, or the PointOfWrenchApplication. */
 class OSIMCOMMON_API C3DFileAdapter : public FileAdapter {
 public:
     typedef std::vector<Event>                         EventTable; 
@@ -68,14 +65,18 @@ public:
         C3DFileAdapter c3dFileAdapter;
         c3dFileAdapter.setLocationForForceExpression(C3DFileAdapter::ForceLocation::CenterOfPressure);
         auto tables  =  c3dFileAdapter.read("myData.c3d");
+        auto markersTable = c3dFileAdapter.getMarkersTable(tables);
+        auto forcesTable = c3dFileAdapter.getForcesTable(tables);
         \endcode
 
         <b>Python example</b>
         \code{.py}
         import opensim
-        C3DFileAdapter c3dFileAdapter;
+        c3dFileAdapter = opensim.C3DFileAdapter()
         c3dFileAdapter.setLocationForForceExpression(opensim.C3DFileAdapter.ForceLocation_CenterOfPressure);
         tables = c3dFileAdapter.read("myData.c3d")
+        markersTable = c3dFileAdapter.getMarkersTable(tables)
+        forcesTable = c3dFileAdapter.getForcesTable(tables)
         \endcode
 
         <b>Java example</b>
@@ -83,14 +84,18 @@ public:
         C3DFileAdapter c3dFileAdapter = new C3DFileAdapter();
         c3dFileAdapter.setLocationForForceExpression(C3DFileAdapter.ForceLocation.CenterOfPressure);
         tables = c3dFileAdapter.read("myData.c3d");
-                    
+        TimeSeriesTableVec3 markersTable = c3dFileAdapter.getMarkersTable(tables);
+        TimeSeriesTableVec3 forcesTable = c3dFileAdapter.getForcesTable(tables);
+
         \endcode
 
         <b>MATLAB example</b>
         \code{.m}
-         C3DFileAdapter c3dFileAdapter;
+         c3dFileAdapter = C3DFileAdapter();
          c3dFileAdapter.setLocationForForceExpression(1);
-        tables = C3DFileAdapter.read("myData.c3d");
+         tables = c3dFileAdapter.read('myData.c3d');
+         markersTable = c3dFileAdapter.getMarkersTable(tables);
+         forcesTable = c3dFileAdapter.getForcesTable(tables);
         \endcode
     */
     enum class ForceLocation {
@@ -98,13 +103,6 @@ public:
         CenterOfPressure         = 1,   ///< 1 : the center of pressure
         PointOfWrenchApplication = 2    ///< 2 : PWA as defined by Shimba, 1984
     };
-
-    C3DFileAdapter()                                 = default;
-    C3DFileAdapter(const C3DFileAdapter&)            = default;
-    C3DFileAdapter(C3DFileAdapter&&)                 = default;
-    C3DFileAdapter& operator=(const C3DFileAdapter&) = default;
-    C3DFileAdapter& operator=(C3DFileAdapter&&)      = default;
-    ~C3DFileAdapter()                                = default;
 
     C3DFileAdapter* clone() const override;
     /**  C3DFileAdpater provides options for expressing the force-plate 
@@ -115,7 +113,7 @@ public:
         _location = location;
     }
     /** Retrieve the option for location for force expression */
-    const ForceLocation getLocationForForceExpression() const {
+    ForceLocation getLocationForForceExpression() const {
         return _location;
     }
 
@@ -151,6 +149,6 @@ private:
 
 } // namespace OpenSim
 
-#endif // WITH_BTK
+#endif // WITH_BTK || WITH_EZC3D
 
 #endif // OPENSIM_C3D_FILE_ADAPTER_H_

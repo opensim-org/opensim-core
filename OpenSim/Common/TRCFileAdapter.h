@@ -122,10 +122,10 @@ public:
                              size_t expected,
                              size_t received) :
         IOError(file, line, func) {
-        std::string msg = "Error reading column Labels in file '" + filename;
+        std::string msg = "Error reading column labels in file '" + filename;
         msg += "'. Unexpected number of column labels. ";
         msg += "Expected = " + std::to_string(expected) + ". ";
-        msg += "Recieved = " + std::to_string(received) + ".";
+        msg += "Received = " + std::to_string(received) + ".";
 
         addMessage(msg);
     }

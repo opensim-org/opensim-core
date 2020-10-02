@@ -6,6 +6,43 @@ request related to the change, then we may provide the commit.
 
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
 
+
+v4.2
+====
+- Add the ActivationCoordinateActuator component, which is a CoordinateActuator with simple activation dynamics (PR #2699).
+- Easily convert Matlab matrices and Python NumPy arrays to and from OpenSim Vectors and Matrices. See Matlab example matrixConversions.m and Python example numpy_conversions.py.
+- Users have more control over which messages are logged. Messages are now logged to opensim.log instead of out.log and err.log. Users can control logging levels via `Logger::setLevel()`.
+- Fix a segfault that occurs when using OpenSim's Python Package with Anaconda's Python on a Mac.
+- Expose PropertyHelper class to python bindings to allow editing of objects using the properties interface (useful for editing objects defined in plugins) in python (consistent with Java/Matlab).
+- Whitespace is trimmed when reading table metadata for STO, MOT, and CSV files.
+- Introduce utilities for creating SimTK::Vectors, linear interpolation, updating table column labels from v3.3 to v4.0 syntax, solving for a function's root using bisection (OpenSim/Common/CommonUtilities.h) ([PR #2808](https://github.com/opensim-org/opensim-core/pull/2808)).
+- Introduce utilities for querying, filtering, and resampling TimeSeriesTables (OpenSim/Common/TableUtilities.h) ([PR #2808](https://github.com/opensim-org/opensim-core/pull/2808)).
+- StatesTrajectories can now be created from a TimeSeriesTable of states.
+- Minor performance improvements (5-10 %) for controller-heavy models (PR #2806)
+- `Controller::isEnabled` will now only return whether the particular controller is enabled
+  - Previously, it would return `false` if its parent `Model`'s `Model::getAllControllersEnabled` returned `false`
+  - The previous behavior would mean that `Controller::setEnabled(true); return Controller::isEnabled();` could return `false`
+- The new Matlab examplePointMass.m shows how to build and simulate a point-mass model.
+- Fix OpenSense calibration algorithm to handle models facing an arbitrary direction. The calibration algorithm now aligns one axis of the provided Orientation Sensor data with the x-axis of the base segment (e.g. pelvis) of the model in default pose.
+- For PrescribedController, the controls_file column labels can now be absolute paths to actuators (previously, the column labels were required to be actuator names).
+- Fixed a critical bug in Induced Accelerations Analysis which prevents analysis to run when external forces are present ([PR #2847](https://github.com/opensim-org/opensim-core/pull/2808)).
+- Removed `Path` abstract base class (PR #2844)
+  - Unused by OpenSim and related projects
+- Improved the performance of `ComponentPath` (PR #2844)
+  - This improves the performance of component-heavy models by ~5-10 %
+  - The behavior and interface of `ComponentPath` should remain the same
+- The new Matlab CustomStaticOptimization.m guides the user to build their own custom static optimization code. 
+- Dropped support for separate Kinematics for application of External Loads. ([PR #2770] (https://github.com/opensim-org/opensim-core/pull/2770)). 
+- Refactored InverseKinematicsSolver to allow for adding (live) Orientation data to track, introduced BufferedOrientationsReference to queue data (PR #2855)
+- `opensim.log` will only be created/opened when the first message is logged to it (PR #2880):
+  - Previously, `opensim.log` would always be created, even if nothing was logged
+- Added a CMake option, `OPENSIM_DISABLE_LOG_FILE` (PR #2880):
+  - When set, disables `opensim.log` from being used by the logger by default when the first message is written to the log
+  - Log messages are still written to the standard output/error streams
+  - Previously, `opensim.log` would always be created - even if nothing was written to it (fixed above)
+  - Setting `OPENSIM_DISABLE_LOG_FILE` only disables the automatic creation of `opensim.log`. File logging can still be manually be enabled by calling `Logger::addFileSink()`
+  - This flag is `OFF` by default. So standard builds will still observe the existing behavior (`opensim.log` is created).
+
 v4.1
 ====
 - Added `OrientationsReference` as the frame orientation analog to the location of experimental markers. Enables experimentally measured orientations from wearable sensors (e.g. from IMUs) to be tracked by reference frames in the model. A correspondence between the experimental (IMU frame) orientation column label and that of the virtual frame on the `Model` is expected. The `InverseKinematicsSolver` was extended to simultaneously track the `OrientationsReference` if provided. (PR #2412)
@@ -17,6 +54,13 @@ v4.1
 - Exposed convertMillimeters2Meters() in osimC3D.m. This function converts COP and moment data from mm to m and now must be invoked prior to writing force data to file. Previously, this was automatically performed during writing forces to file. 
 - Methods that operate on SimTK::Vec<n> are now available through Java/Matlab and python bindings to add/subtract/divide/multiply vec<n> contents with a scalar (PR #2558)
 - The new Stopwatch class allows C++ API users to easily measure the runtime of their code.
+- If finalizeConnections() method was not called on a model after making changes and before printing, an exception is thrown to avoid creating corrupt model files quietly (PR #2529)
+- Updated the docopt.cpp dependency so that OpenSim can be compiled with Visual C++ from Visual Studio 2019.
+- Added `Blankevoort1991Ligament` force component which represents ligament fibers as non-linear path springs. The force-strain curve has a quadratic toe region at low strains and a linear stiffness region at high strains. (PR #2632)  
+- Updated Simbody to 3.7 to fix an issue with the simbody-visualizer on macOS 10.15 Catalina.
+- On Mac and Linux, we include a shell script opensim-install-command-line.sh to make OpenSim's command-line tools easily accessible.
+- Added the compliant SmoothSphereHalfSpaceForce component, for use with direct collocation and Moco.
+ 
 
 Converting from v4.0 to v4.1
 ----------------------------

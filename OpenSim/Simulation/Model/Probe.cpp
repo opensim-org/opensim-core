@@ -195,7 +195,7 @@ void Probe::extendAddToSystem(MultibodySystem& system) const
                 << ") and size of initial conditions vector (" 
                 << getInitialConditions().size() << ").\nAssuming an initial condition vector of " 
                 << getProbeOutputLabels().getSize() << " zeros." << endl;
-            cout << errorMessage.str() << endl;
+            log_error(errorMessage.str());
 
             SimTK::Vector newInitCond(getProbeOutputLabels().getSize());
             newInitCond = 0;

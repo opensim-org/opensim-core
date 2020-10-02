@@ -28,6 +28,7 @@
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
 #include <OpenSim/Simulation/MarkersReference.h>
+#include <OpenSim/Simulation/BufferedOrientationsReference.h>
 #include <OpenSim/Common/MarkerData.h>
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/STOFileAdapter.h>
@@ -102,6 +103,7 @@ int main()
         cout << e.what() << endl;
         failures.push_back("testOrientationsReference");
     }
+    
     try { testAccuracy(); }
     catch (const std::exception& e) {
         cout << e.what() << endl; failures.push_back("testAccuracy");
@@ -210,27 +212,26 @@ void testMarkersReference()
     }
 }
 
-void testOrientationsReference()
-{
+void testOrientationsReference() {
     // column labels for orientation sensor data
-    vector<std::string> labels{ "A", "B", "C", "D", "E", "F" };
-    // for testing construct a set of marker weights in a different order 
-    vector<int> order = { 3, 5, 1, 4, 0, 2 };
+    vector<std::string> labels{"A", "B", "C", "D", "E", "F"};
+    // for testing construct a set of marker weights in a different order
+    vector<int> order = {3, 5, 1, 4, 0, 2};
 
     size_t nc = labels.size(); // number of columns of orientation data
     size_t nr = 5;             // number of rows of orientation data
 
     TimeSeriesTable_<SimTK::Rotation> orientationData;
     orientationData.setColumnLabels(labels);
-    for (size_t r{ 0 }; r < nr; ++r) {
-        SimTK::RowVector_<SimTK::Rotation> row{ int(nc), SimTK::Rotation() };
-        orientationData.appendRow(0.1*r, row);
+    for (size_t r{0}; r < nr; ++r) {
+        SimTK::RowVector_<SimTK::Rotation> row{int(nc), SimTK::Rotation()};
+        orientationData.appendRow(0.1 * r, row);
     }
 
     Set<OrientationWeight> orientationWeights;
-    for (size_t m{ 0 }; m < nc; ++m)
+    for (size_t m{0}; m < nc; ++m)
         orientationWeights.adoptAndAppend(
-            new OrientationWeight(labels[order[m]], double(order[m])));
+                new OrientationWeight(labels[order[m]], double(order[m])));
 
     std::cout << orientationWeights.dump() << std::endl;
 
@@ -246,35 +247,36 @@ void testOrientationsReference()
     orientationsRef.getWeights(s, weights);
 
     SimTK_ASSERT_ALWAYS(names.size() == weights.size(),
-        "Number of markers does not match number of weights.");
+            "Number of markers does not match number of weights.");
 
-    for (unsigned int i{ 0 }; i < names.size(); ++i) {
+    for (unsigned int i{0}; i < names.size(); ++i) {
         std::cout << names[i] << ": " << weights[i] << std::endl;
-        SimTK_ASSERT_ALWAYS(weights[i] == double(i),
-            "Mismatched weight to marker.");
+        SimTK_ASSERT_ALWAYS(
+                weights[i] == double(i), "Mismatched weight to marker.");
     }
 
     // Add marker weights for markers not present in the data
     orientationWeights.adoptAndAppend(new OrientationWeight("X", 0.1));
     orientationWeights.insert(0, new OrientationWeight("Y", 0.01));
 
-    OrientationsReference orientationsRef2(orientationData, &orientationWeights);
+    OrientationsReference orientationsRef2(
+            orientationData, &orientationWeights);
 
     auto& oWeightSet = orientationsRef2.get_orientation_weights();
 
-    // verify that internal weight set was updated 
+    // verify that internal weight set was updated
     std::cout << oWeightSet.dump() << std::endl;
 
     names = orientationsRef2.getNames();
     orientationsRef2.getWeights(s, weights);
 
     SimTK_ASSERT_ALWAYS(names.size() == weights.size(),
-        "Number of orientation sensors does not match number of weights.");
+            "Number of orientation sensors does not match number of weights.");
 
     for (unsigned int i = 0; i < names.size(); ++i) {
         std::cout << names[i] << ": " << weights[i] << std::endl;
         SimTK_ASSERT_ALWAYS(weights[i] == double(i),
-            "Mismatched weight to orientation sensor.");
+                "Mismatched weight to orientation sensor.");
     }
 }
 
@@ -308,10 +310,12 @@ void testAccuracy()
     states.append(state);
 
     SimTK::RowVector_<SimTK::Vec3> biases(3, SimTK::Vec3(0));
-    MarkersReference
-        markersRef(generateMarkerDataFromModelAndStates(*pendulum, states, biases),
-            Set<MarkerWeight>());
-    markersRef.setDefaultWeight(1.0);
+    std::shared_ptr<MarkersReference> 
+        markersRef(
+            new MarkersReference(generateMarkerDataFromModelAndStates(
+                    *pendulum, states, biases),
+            Set<MarkerWeight>()));
+    markersRef->setDefaultWeight(1.0);
 
     // Reset the initial coordinate value
     coord.setValue(state, 0.0);
@@ -409,15 +413,16 @@ void testUpdateMarkerWeights()
     states.append(state);
 
     SimTK::RowVector_<SimTK::Vec3> biases(3, SimTK::Vec3(0));
-    MarkersReference
-        markersRef(generateMarkerDataFromModelAndStates(*pendulum,
+    std::shared_ptr<MarkersReference> 
+        markersRef(
+            new MarkersReference(generateMarkerDataFromModelAndStates(*pendulum,
                                                         states, biases,
                                                         0.02),
-            Set<MarkerWeight>());
-    auto& markerNames = markersRef.getNames();
+            Set<MarkerWeight>()));
+    auto& markerNames = markersRef->getNames();
 
     for (const auto& name : markerNames) {
-        markersRef.updMarkerWeightSet().adoptAndAppend(
+        markersRef->updMarkerWeightSet().adoptAndAppend(
             new MarkerWeight(name, 1.0));
     }
 
@@ -436,7 +441,7 @@ void testUpdateMarkerWeights()
     ikSolver.computeCurrentMarkerErrors(nominalMarkerErrors);
 
     SimTK::Array_<double> markerWeights;
-    markersRef.getWeights(state, markerWeights);
+    markersRef->getWeights(state, markerWeights);
 
     for (unsigned int i = 0; i < markerNames.size(); ++i) {
         cout << markerNames[i] << "(weight = " << markerWeights[i]
@@ -519,16 +524,14 @@ void testTrackWithUpdateMarkerWeights()
     } 
 
     SimTK::RowVector_<SimTK::Vec3> biases(3, SimTK::Vec3(0));
-    MarkersReference
-        markersRef(generateMarkerDataFromModelAndStates(*pendulum,
-                                                        states, biases,
-                                                        0.02,
-                                                        true),
-            Set<MarkerWeight>());
-    auto& markerNames = markersRef.getNames();
+    std::shared_ptr<MarkersReference> markersRef(
+            new MarkersReference(generateMarkerDataFromModelAndStates(
+                    *pendulum, states, biases, 0.02, true),
+                    Set<MarkerWeight>()));
+    auto& markerNames = markersRef->getNames();
 
     for (const auto& name : markerNames) {
-        markersRef.updMarkerWeightSet().adoptAndAppend(
+        markersRef->updMarkerWeightSet().adoptAndAppend(
             new MarkerWeight(name, 1.0));
     }
 
@@ -540,13 +543,13 @@ void testTrackWithUpdateMarkerWeights()
     ikSolver.assemble(state);
 
     SimTK::Array_<double> markerWeights;
-    markersRef.getWeights(state, markerWeights);
+    markersRef->getWeights(state, markerWeights);
 
     SimTK::Array_<double> leftMarkerWeightedErrors;
 
     double previousErr = 0.1;
 
-    for (unsigned i = 0; i < markersRef.getNumFrames(); ++i) {
+    for (unsigned i = 0; i < markersRef->getNumFrames(); ++i) {
         state.updTime() = i*dt;
         // increment the weight of the left marker each time  
         markerWeights[2] = 0.1*i+1;
@@ -634,9 +637,9 @@ void testNumberOfMarkersMismatch()
     cout << "After reorder and NaN injections:\n" << markerTable << endl;
 
     Set<MarkerWeight> markerWeightSet;
-    MarkersReference markersRef(markerTable, markerWeightSet);
-    int nmr = markersRef.getNumRefs();
-    auto& markerNames = markersRef.getNames();
+    std::shared_ptr<MarkersReference> markersRef(new MarkersReference(markerTable, markerWeightSet));
+    int nmr = markersRef->getNumRefs();
+    auto& markerNames = markersRef->getNames();
     cout << markerNames << endl;
 
     SimTK::Array_<CoordinateReference> coordRefs;
@@ -650,7 +653,7 @@ void testNumberOfMarkersMismatch()
     int nm = ikSolver.getNumMarkersInUse();
 
     SimTK::Array_<double> markerErrors(nm);
-    for (unsigned i = 0; i < markersRef.getNumFrames(); ++i) {
+    for (unsigned i = 0; i < markersRef->getNumFrames(); ++i) {
         state.updTime() = i*dt;
         ikSolver.track(state);
 
@@ -749,16 +752,16 @@ void testNumberOfOrientationsMismatch()
 
     cout << "After reorder and NaN injections:\n" << orientationsTable << endl;
 
-    OrientationsReference orientationsRef(orientationsTable);
-    int nmr = orientationsRef.getNumRefs();
-    auto& osNames = orientationsRef.getNames();
+    std::shared_ptr<OrientationsReference> orientationsRef(
+            new OrientationsReference(orientationsTable));
+    int nmr = orientationsRef->getNumRefs();
+    auto& osNames = orientationsRef->getNames();
     cout << osNames << endl;
 
-    MarkersReference mRefs{};
     SimTK::Array_<CoordinateReference> coordRefs;
     // Reset the initial coordinate value
     coord.setValue(state, 0.0);
-    InverseKinematicsSolver ikSolver(*leg, mRefs, orientationsRef, coordRefs);
+    InverseKinematicsSolver ikSolver(*leg, nullptr, orientationsRef, coordRefs);
     double tol = 1e-4;
     ikSolver.setAccuracy(tol);
     ikSolver.assemble(state);
@@ -766,7 +769,7 @@ void testNumberOfOrientationsMismatch()
     int nos = ikSolver.getNumOrientationSensorsInUse();
 
     SimTK::Array_<double> orientationErrors(nos);
-    for (double t : orientationsRef.getTimes()) {
+    for (double t : orientationsRef->getTimes()) {
         state.updTime() = t;
         ikSolver.track(state);
 

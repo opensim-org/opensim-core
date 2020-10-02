@@ -133,7 +133,7 @@ void testMarkerWeightAssignments(const std::string& ikSetupFile)
     InverseKinematicsTool ik(ikSetupFile);
 
     // Get a copy of the IK tasks
-    IKTaskSet tasks = ik.getIKTaskSet();
+    IKTaskSet tasks = ik.upd_IKTaskSet();
 
     // assign different weightings so we can verify the assignments
     int nt = tasks.getSize();
@@ -143,7 +143,7 @@ void testMarkerWeightAssignments(const std::string& ikSetupFile)
 
     cout << tasks.dump() << endl;
     // update tasks used by the IK tool
-    ik.getIKTaskSet() = tasks;
+    ik.upd_IKTaskSet() = tasks;
 
     // perform the check
     checkMarkersReferenceConsistencyFromTool(ik);
@@ -158,7 +158,7 @@ void testMarkerWeightAssignments(const std::string& ikSetupFile)
     }
 
     cout << tasks2.dump() << endl;
-    ik.getIKTaskSet() = tasks2;
+    ik.upd_IKTaskSet() = tasks2;
 
     // perform the check
     checkMarkersReferenceConsistencyFromTool(ik);
@@ -183,7 +183,7 @@ void testMarkerWeightAssignments(const std::string& ikSetupFile)
 
     cout << tasks.dump() << endl;
     // update the tasks of the IK Tool
-    ik.getIKTaskSet() = tasks;
+    ik.upd_IKTaskSet() = tasks;
 
     // perform the check: superfluous tasks should also be ignored
     checkMarkersReferenceConsistencyFromTool(ik);
@@ -195,7 +195,7 @@ void checkMarkersReferenceConsistencyFromTool(InverseKinematicsTool& ik)
     SimTK::Array_<CoordinateReference> coordinateReferences;
 
     ik.populateReferences(markersReference, coordinateReferences);
-    const IKTaskSet& tasks = ik.getIKTaskSet();
+    const IKTaskSet& tasks = ik.get_IKTaskSet();
 
     // Need a model to get a state, doesn't matter which model.
     Model model;
@@ -342,7 +342,8 @@ void compareMotionTables(const TimeSeriesTable& report,
         auto found = std::find(stdLabels.begin(), stdLabels.end(), label);
         if (found != stdLabels.end()) {
             // skip any pelvis translations
-            if (found->find("pelvis_t") == std::string::npos) {
+            if (found->find("pelvis_t") == std::string::npos ||
+                    label.length() != 9) {
                 index = (int)std::distance(stdLabels.begin(), found);
             }
         }
@@ -373,12 +374,11 @@ void testInverseKinematicsSolverWithOrientations()
     auto orientationsData = convertMotionFileToRotations(
          model, "std_subject01_walk1_ik.mot");
 
-    OrientationsReference oRefs(orientationsData);
-    oRefs.set_default_weight(1.0);
+    std::shared_ptr<OrientationsReference> 
+        oRefs(new OrientationsReference(orientationsData));
+    oRefs->set_default_weight(1.0);
 
-    const std::vector<double>& times = oRefs.getTimes();
-
-    MarkersReference mRefs{};
+    const std::vector<double>& times = oRefs->getTimes();
 
     SimTK::Array_<CoordinateReference> coordinateRefs;
 
@@ -397,10 +397,10 @@ void testInverseKinematicsSolverWithOrientations()
     SimTK::State& s0 = model.initSystem();
 
     // create the solver given the input data
-    InverseKinematicsSolver ikSolver(model, mRefs, oRefs, coordinateRefs);
+    InverseKinematicsSolver ikSolver(model, nullptr, oRefs, coordinateRefs);
     ikSolver.setAccuracy(1e-4);
 
-    auto timeRange = oRefs.getValidTimeRange();
+    auto timeRange = oRefs->getValidTimeRange();
     cout << "Time range from: " << timeRange[0] << " to " << timeRange[1]
         << "s."<< endl;
     
@@ -443,16 +443,16 @@ void testInverseKinematicsSolverWithEulerAnglesFromFile()
 
     SimTK::State& s0 = model.initSystem();
 
-    MarkersReference mRefs{};
-    OrientationsReference oRefs("subject1_walk_euler_angles.sto");
+    std::shared_ptr<OrientationsReference> oRefs(
+            new OrientationsReference("subject1_walk_euler_angles.sto"));
     SimTK::Array_<CoordinateReference> coordRefs{};
 
     // create the solver given the input data
     const double accuracy = 1e-4;
-    InverseKinematicsSolver ikSolver(model, mRefs, oRefs, coordRefs);
+    InverseKinematicsSolver ikSolver(model, nullptr, oRefs, coordRefs);
     ikSolver.setAccuracy(accuracy);
 
-    auto& times = oRefs.getTimes();
+    auto& times = oRefs->getTimes();
 
     s0.updTime() = times[0];
     ikSolver.assemble(s0);

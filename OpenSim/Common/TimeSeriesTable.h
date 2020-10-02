@@ -29,6 +29,8 @@ This file defines the TimeSeriesTable_ class, which is used by OpenSim to
 provide an in-memory container for data access and manipulation.              */
 
 #include "OpenSim/Common/DataTable.h"
+#include <SimTKsimbody.h>
+#include "Logger.h"
 
 namespace OpenSim {
 
@@ -446,9 +448,13 @@ public:
         // or newFinalTime is greater than last value in table
         start_index = this->getRowIndexAfterTime(newStartTime);
         last_index = this->getRowIndexBeforeTime(newFinalTime);
-
+        // Make sure last_index >= start_index before attempting to trim
+        OPENSIM_THROW_IF(last_index < start_index, EmptyTable);
         // do the actual trimming based on index instead of time.
         trimToIndices(start_index, last_index);
+        // If resulting table is empty, throw
+        if (this->getNumRows()==0)
+            log_warn("Trimming resulted in an empty table.");
     }
     /**
      * trim TimeSeriesTable, keeping rows at newStartTime to the end.
@@ -487,7 +493,7 @@ protected:
                              DT::_indData[rowIndex + 1]);
         }
     }
-    /** trim table to rows ebtween start_index and last_index incluslively
+    /** trim table to rows between start_index and last_index inclusively
      */
     void trimToIndices(const size_t& start_index, const size_t& last_index) {
         // This uses the rather invasive but efficient mechanism to copy a
@@ -505,6 +511,8 @@ protected:
         this->_indData = newIndependentVector;
     }
 
+    friend class TableUtilities;
+
 }; // TimeSeriesTable_
 
 /** See TimeSeriesTable_ for details on the interface.                        */
@@ -515,6 +523,10 @@ typedef TimeSeriesTable_<SimTK::Vec3> TimeSeriesTableVec3;
 
 /** See TimeSeriesTable_ for details on the interface.                        */
 typedef TimeSeriesTable_<SimTK::Quaternion> TimeSeriesTableQuaternion;
+
+/** See TimeSeriesTable_ for details on the interface.                        */
+typedef TimeSeriesTable_<SimTK::Rotation> TimeSeriesTableRotation;
+
 } // namespace OpenSim
 
 #endif // OPENSIM_TIME_SERIES_DATA_TABLE_H_

@@ -229,11 +229,11 @@ operator=(const ForwardTool &aTool)
  */
 bool ForwardTool::run()
 {
-    cout<<"Running tool "<<getName()<<"."<<endl;
+    log_warn("Running tool {}...", getName());
     // CHECK FOR A MODEL
     if(_model==NULL) {
-        string msg = "ERROR- A model has not been set.";
-        cout<<endl<<msg<<endl;
+        string msg = "A model has not been set.";
+        log_error(msg);
         throw(Exception(msg,__FILE__,__LINE__));
     }
 
@@ -242,9 +242,7 @@ bool ForwardTool::run()
 
     // Do the maneuver to change then restore working directory 
     // so that the parsing code behaves properly if called from a different directory.
-    string saveWorkingDirectory = IO::getCwd();
-    string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
-    IO::chDir(directoryOfSetupFile);
+    auto cwd = IO::CwdChanger::changeToParentOf(getDocumentFileName());
 
     /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model);
 
@@ -300,47 +298,51 @@ bool ForwardTool::run()
 
     try {
         // INTEGRATE
-        _model->printDetailedInfo(s, std::cout );
+        if (Logger::shouldLog(Logger::Level::Info)) {
+            _model->printDetailedInfo(s, std::cout);
+        }
 
-        cout<<"\n\nIntegrating from "<<_ti<<" to "<<_tf<<endl;
+        log_info("Integrating from {} to {}.", _ti, _tf);
         s.setTime(_ti);
         manager.initialize(s);
         manager.integrate(_tf);
     } catch(const std::exception& x) {
-        cout << "ForwardTool::run() caught exception \n";
-        cout << x.what() << endl;
+        log_error("ForwardTool::run() caught an exception: \n {}", x.what());
         completed = false;
-        IO::chDir(saveWorkingDirectory);
+        cwd.restore();
     }
     catch (...) { // e.g. may get InterruptedException
-        printf("ForwardTool::run() caught exception \n"  );
+        log_error("ForwardTool::run() caught an exception.");
         completed = false;
-        IO::chDir(saveWorkingDirectory);
+        cwd.restore();
     }
     // PRINT RESULTS
     string fileName;
-    if(_printResultFiles) printResults();
+    if(_printResultFiles) printResultsInternal();
 
-    IO::chDir(saveWorkingDirectory);
+    cwd.restore();
 
     removeAnalysisSetFromModel();
     return completed;
+}
+
+void ForwardTool::printResults() {
+    log_warn("ForwardTool::printResults() does nothing; use "
+             "ForwardTool::setPrintResultFiles(true) before run().");
 }
 //=============================================================================
 // PRINT RESULTS. 
 // This method needs to be private since it shouldn't be called except from 
 // within tool::run() otherwise will crash because Manager is out of scope
 //=============================================================================
-void ForwardTool::printResults() 
+void ForwardTool::printResultsInternal()
 {
     // Do the maneuver to change then restore working directory 
     // so that the parsing code behaves properly if called from a different directory.
-    string saveWorkingDirectory = IO::getCwd();
-    string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
-    IO::chDir(directoryOfSetupFile);
+    auto cwd = IO::CwdChanger::changeToParentOf(getDocumentFileName());
 
     AbstractTool::printResults(getName(),getResultsDir()); // this will create results directory if necessary
-    if(_model) {
+    if (_model) {
         _model->printControlStorage(getResultsDir() + "/" + getName() + "_controls.sto");
         getManager().getStateStorage().print(getResultsDir() + "/" + getName() + "_states.sto");
 
@@ -349,10 +351,6 @@ void ForwardTool::printResults()
         statesDegrees.setWriteSIMMHeader(true);
         statesDegrees.print(getResultsDir() + "/" + getName() + "_states_degrees.mot");
     }
-
-
-    
-    IO::chDir(saveWorkingDirectory);
 }
 
 
@@ -368,17 +366,19 @@ int ForwardTool::determineInitialTimeFromStatesStorage(double &rTI)
         index = _yStore->findIndex(rTI);
         if(index<0) {
             rTI = _yStore->getFirstTime();
-            cout<<"\n\nWARN- The initial time set for the investigation precedes the first time\n";
-            cout<<"in the initial states file.  Setting the investigation to run at the first time\n";
-            cout<<"in the initial states file (ti = "<<rTI<<").\n\n";
+            log_warn("The initial time set for the investigation precedes the "
+                     "first time in the initial states file. Setting the "
+                     "investigation to run at the first time in the initial "
+                     "states file (ti = {}).", rTI);
             index = 0;
         } else {
             _yStore->getTime(index,ti);
             if(rTI!=ti) {
                 rTI = ti;
-                cout<<"\n"<<getName()<<": The initial time for the investigation has been set to "<<rTI<<endl;
-                cout<<"to agree exactly with the time stamp of the closest initial states in file ";
-                cout<<_statesFileName<<".\n\n";
+                log_info("{}: The initial time for the investigation has been "
+                         "set to {} to agree exactly with the time stamp of "
+                         "the closest initial states in file '{}'.", 
+                    getName(), rTI, _statesFileName);
             }
         }
     }
@@ -389,13 +389,15 @@ void ForwardTool::loadStatesStorage (std::string& statesFileName, Storage*& rYSt
     // Initial states
     rYStore = NULL;
     if(_statesFileName!="") {
-        cout<<"\nLoading states from file "<<_statesFileName<<"."<<endl;
+        log_info("Loading states from file {}.", _statesFileName);
         Storage temp(statesFileName);
         rYStore = new Storage();
         _model->formStateStorage(temp, *rYStore);
 
-        cout<<"Found "<<rYStore->getSize()<<" state vectors with time stamps ranging"<<endl;
-        cout<<"from "<<rYStore->getFirstTime()<<" to "<<rYStore->getLastTime()<<"."<<endl;
+        log_info("Found {} state vectors with time stamps ranging from {} to "
+                 "{}.", 
+            rYStore->getSize(), rYStore->getFirstTime(), 
+            rYStore->getLastTime());
     }
 }
 
@@ -409,7 +411,7 @@ void ForwardTool::InitializeSpecifiedTimeStepping(Storage *aYStore, Manager& aMa
     // USE INITIAL STATES FILE FOR TIME STEPS
 
     if(aYStore) {
-        std::cout << "\nUsing dt specified from storage "<< aYStore->getName()<< std::endl;
+        log_info("Using dt specified from storage {}.", aYStore->getName());
         Array<double> tArray(0.0,aYStore->getSize());
         Array<double> dtArray(0.0,aYStore->getSize());
         aYStore->getTimeColumn(tArray);
@@ -422,7 +424,8 @@ void ForwardTool::InitializeSpecifiedTimeStepping(Storage *aYStore, Manager& aMa
 
     // NO AVAILABLE STATES FILE
     } else {
-        std::cout << "WARNING: Ignoring 'use_specified_dt' property because no initial states file is specified" << std::endl;
+        log_warn("Ignoring 'use_specified_dt' property because no initial "
+                 "states file is specified.");
     }
 }
 

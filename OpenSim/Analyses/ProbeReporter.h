@@ -158,8 +158,9 @@ public:
             Probe& nextProbe = (Probe&)probes[i];
             if (nextProbe.getOperation()=="integrate" || nextProbe.getOperation()=="min" || nextProbe.getOperation()=="max"){
                 nextProbe.setEnabled(false);
-                std::cout << "Disabling probe " << nextProbe.getName() << " as invalid for non-integration context." << std::endl;
-
+                log_warn("Disabling probe {} as invalid for non-integration "
+                         "context.",
+                        nextProbe.getName());
             }
         }
     }

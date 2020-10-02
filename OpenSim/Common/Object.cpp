@@ -31,12 +31,13 @@
 //============================================================================
 
 #include "Object.h"
-#include "XMLDocument.h"
-#include "Exception.h"
-#include "Property_Deprecated.h"
-#include "PropertyTransform.h"
-#include "IO.h"
 
+#include "Exception.h"
+#include "IO.h"
+#include "Logger.h"
+#include "PropertyTransform.h"
+#include "Property_Deprecated.h"
+#include "XMLDocument.h"
 #include <fstream>
 
 using namespace OpenSim;
@@ -53,7 +54,6 @@ std::map<string,string>     Object::_renamedTypesMap;
 
 bool                        Object::_serializeAllDefaults=false;
 const string                Object::DEFAULT_NAME(ObjectDEFAULT_NAME);
-int                         Object::_debugLevel = 0;
 
 //=============================================================================
 // CONSTRUCTOR(S)
@@ -115,16 +115,8 @@ Object::Object(const string &aFileName, bool aUpdateFromXMLNode)
     // relative to that directory. Make sure we switch back properly in case
     // of an exception.
     if (aUpdateFromXMLNode) {
-        const string saveWorkingDirectory = IO::getCwd();
-        const string directoryOfXMLFile = IO::getParentDirectory(aFileName);
-        IO::chDir(directoryOfXMLFile);
-        try {
-            updateFromXMLNode(myNode, _document->getDocumentVersion());
-        } catch (...) {
-            IO::chDir(saveWorkingDirectory);
-            throw; // re-issue the exception
-        }
-        IO::chDir(saveWorkingDirectory);
+        IO::CwdChanger cwd = IO::CwdChanger::changeToParentOf(aFileName);
+        updateFromXMLNode(myNode, _document->getDocumentVersion());
     }
 }
 //_____________________________________________________________________________
@@ -239,12 +231,8 @@ bool Object::operator==(const Object& other) const
     auto printDiff = [](const std::string& name,
                             const std::string& thisValue,
                             const std::string& otherValue) {
-        if (Object::getDebugLevel() > 0) {
-            std::cout << "In Object::operator==(), differing " << name << ":\n"
-                << "left: " << thisValue
-                << "\nright: " << otherValue << std::endl;
-        }
-
+        log_debug("In Object::operator==(), differing {}:\nleft: {}\nright: {}",
+                name, thisValue, otherValue);
     };
     if (getConcreteClassName()  != other.getConcreteClassName()) {
         printDiff("ConcreteClassName", getConcreteClassName(),
@@ -512,22 +500,18 @@ registerType(const Object& aObject)
     // GET TYPE
     const string& type = aObject.getConcreteClassName();
     if(type.empty()) {
-        printf("Object.registerType: ERR- no type name has been set.\n");
+        log_error("Object.registerType: no type name has been set.");
         return;
     }
-    if (_debugLevel>=2) {
-        cout << "Object.registerType: " << type << " .\n";
-    }
+    log_debug("Object.registerType: {}.", type);
 
     // REPLACE IF A MATCHING TYPE IS ALREADY REGISTERED
     for(int i=0; i <_registeredTypes.size(); ++i) {
         Object *object = _registeredTypes.get(i);
         if(object->getConcreteClassName() == type) {
-            if(_debugLevel>=2) {
-                cout<<"Object.registerType: replacing registered object of type ";
-                cout<<type;
-                cout<<"\n\twith a new default object of the same type."<<endl;
-            }
+            log_debug("Object.registerType: replacing registered object of "
+                      "type {} with a new default object of the same type.",
+                      type);
             Object* defaultObj = aObject.clone();
             defaultObj->setName(DEFAULT_NAME);
             _registeredTypes.set(i,defaultObj);
@@ -718,13 +702,13 @@ void Object::readObjectFromXMLNodeOrFile
     // the directory that contained the top-level XML file.
     XMLDocument* newDoc=0;
     try {
-        std::cout << "reading object from file [" << file <<"] cwd =" 
-                  << IO::getCwd() << std::endl;
+        log_info("Reading object from file [{}] cwd ={}.",
+                file, IO::getCwd());
          newDoc = new XMLDocument(file);
         _document = newDoc;
     } catch(const std::exception& ex){
-        std::cout << "failure reading object from file [" << file <<"] cwd =" 
-            << IO::getCwd() << "Error:" << ex.what() << std::endl;
+        log_error("Failure reading object from file [{}] cwd ={} Error:{}",
+                file, IO::getCwd(), ex.what());
         return;
     }
     _inlined=false;
@@ -912,11 +896,11 @@ try {
                 {
                     ++iter;
                 }
-                if (iter != aNode.element_end())
+                if (iter != aNode.element_end()) {
                     object.readObjectFromXMLNodeOrFile(*iter, versionNumber);
                     property->setValueIsDefault(false);
                 }
-            else {
+            } else {
                 object.readObjectFromXMLNodeOrFile(*iter, versionNumber);
                 property->setValueIsDefault(false);
             }
@@ -1369,37 +1353,28 @@ print(const string &aFileName) const
 {
     // Default to strict exception to avoid creating bad files
     // but for debugging allow users to be more lenient.
-    if (_debugLevel >= 1) { 
+    if (Logger::shouldLog(Logger::Level::Debug)) {
         try {
             warnBeforePrint();
         } catch (...) {}
-    }
-    else
+    } else {
         warnBeforePrint();
-    // Temporarily change current directory so that inlined files are written to correct relative directory
-    std::string savedCwd = IO::getCwd();
-    IO::chDir(IO::getParentDirectory(aFileName));
-    try {
-        XMLDocument* oldDoc = NULL;
-        if (_document != NULL){
-            oldDoc = _document;
-        }
-        _document = new XMLDocument();
-        if (oldDoc){
-            _document->copyDefaultObjects(*oldDoc);
-            delete oldDoc;
-            oldDoc = 0;
-        }
-        SimTK::Xml::Element e = _document->getRootElement(); 
-        updateXMLNode(e);
-    } catch (const Exception &ex) {
-        // Important to catch exceptions here so we can restore current working directory...
-        // And then we can re-throw the exception
-        IO::chDir(savedCwd);
-        throw(ex);
     }
-    IO::chDir(savedCwd);
-    if(_document==NULL) return false;
+
+    {
+        // Temporarily change current directory so that inlined files
+        // are written to correct relative directory
+        IO::CwdChanger cwd = IO::CwdChanger::changeToParentOf(aFileName);
+        std::unique_ptr<XMLDocument> newDoc{new XMLDocument()};
+        if (_document != nullptr) {
+            newDoc->copyDefaultObjects(*_document);
+            delete _document;
+        }
+        _document = newDoc.release();
+        SimTK::Xml::Element e = _document->getRootElement();
+        updateXMLNode(e);
+    }
+
     _document->print(aFileName);
     return true;
 }
@@ -1436,19 +1411,28 @@ PrintPropertyInfo(ostream &aOStream,
                   const string &aClassName, const string &aPropertyName,
                   bool printFlagInfo)
 {
+    std::stringstream ss;
+
     if(aClassName=="") {
         // NO CLASS
         int size = _registeredTypes.getSize();
-        aOStream<<"REGISTERED CLASSES ("<<size<<")\n";
+        ss<<"REGISTERED CLASSES ("<<size<<")\n";
         Object *obj;
         for(int i=0;i<size;i++) {
             obj = _registeredTypes.get(i);
             if(obj==NULL) continue;
-            aOStream<<obj->getConcreteClassName()<<endl;
+            ss<<obj->getConcreteClassName()<<endl;
         }
         if (printFlagInfo) {
-            aOStream<<"\n\nUse '-PropertyInfo ClassName' to list the properties of a particular class.\n\n";
+            ss<<"\n\nUse '-PropertyInfo ClassName' to list the properties of a particular class.\n\n";
         }
+
+        if (aOStream.rdbuf() == std::cout.rdbuf()) {
+            log_cout(ss.str());
+        } else {
+            aOStream << ss.str() << std::endl;
+        }
+
         return true;
     }
 
@@ -1456,9 +1440,16 @@ PrintPropertyInfo(ostream &aOStream,
     const Object* object = getDefaultInstanceOfType(aClassName);
     if(object==NULL) {
         if (printFlagInfo) {
-            aOStream<<"\nA class with the name '"<<aClassName<<"' was not found.\n";
-            aOStream<<"\nUse '-PropertyInfo' without specifying a class name to print a listing of all registered classes.\n";
+            ss<<"\nA class with the name '"<<aClassName<<"' was not found.\n";
+            ss<<"\nUse '-PropertyInfo' without specifying a class name to print a listing of all registered classes.\n";
         }
+
+        if (aOStream.rdbuf() == std::cout.rdbuf()) {
+            log_cout(ss.str());
+        } else {
+            aOStream << ss.str() << std::endl;
+        }
+
         return false;
     }
 
@@ -1470,7 +1461,7 @@ PrintPropertyInfo(ostream &aOStream,
         int propertySetSize = propertySet.getSize();
         int propertyTableSize = object->_propertyTable.getNumProperties();
         int size = propertySetSize + propertyTableSize;
-        aOStream<<"\nPROPERTIES FOR "<<aClassName<<" ("<<size<<")\n";
+        ss<<"\nPROPERTIES FOR "<<aClassName<<" ("<<size<<")\n";
         string comment;
         int i;
         for(i=0;i<propertyTableSize;i++) {
@@ -1478,13 +1469,13 @@ PrintPropertyInfo(ostream &aOStream,
                 &object->_propertyTable.getAbstractPropertyByIndex(i);
             if(abstractProperty==NULL) continue;
             if(aPropertyName=="") {
-                aOStream<<i+1<<". "<<abstractProperty->getName()<<endl;
+                ss<<i+1<<". "<<abstractProperty->getName()<<endl;
             } else {
-                aOStream<<"\n"<<i+1<<". "<<abstractProperty->getName()<<"\n";
+                ss<<"\n"<<i+1<<". "<<abstractProperty->getName()<<"\n";
                 comment = abstractProperty->getComment();
                 if(!comment.empty()) {
                     string formattedComment = IO::formatText(comment,"\t",80);
-                    aOStream<<"\t"<<formattedComment<<"\n";
+                    ss<<"\t"<<formattedComment<<"\n";
                 }
             }
         }
@@ -1493,25 +1484,32 @@ PrintPropertyInfo(ostream &aOStream,
             prop = object->_propertySet.get(i-propertyTableSize);
             if(prop==NULL) continue;
             if(aPropertyName=="") {
-                aOStream<<i+1<<". "<<prop->getName()<<endl;
+                ss<<i+1<<". "<<prop->getName()<<endl;
             } else {
-                aOStream<<"\n"<<i+1<<". "<<prop->getName()<<"\n";
+                ss<<"\n"<<i+1<<". "<<prop->getName()<<"\n";
                 comment = prop->getComment();
                 if(!comment.empty()) {
                     string formattedComment = IO::formatText(comment,"\t",80);
-                    aOStream<<"\t"<<formattedComment<<"\n";
+                    ss<<"\t"<<formattedComment<<"\n";
                 }
             }
         }
 
         if (printFlagInfo) {
-            aOStream << "\n\nUse '-PropertyInfo ClassName.PropertyName' to print "
+            ss << "\n\nUse '-PropertyInfo ClassName.PropertyName' to print "
                 "info for a particular property.\n";
             if(aPropertyName!="*") {
-                aOStream << "Use '-PropertyInfo ClassName.*' to print info for all "
+                ss << "Use '-PropertyInfo ClassName.*' to print info for all "
                     "properties in a class.\n";
             }
         }
+
+        if (aOStream.rdbuf() == std::cout.rdbuf()) {
+            log_cout(ss.str());
+        } else {
+            aOStream << ss.str() << std::endl;
+        }
+
         return true;
     }
 
@@ -1519,9 +1517,15 @@ PrintPropertyInfo(ostream &aOStream,
     try {
         prop = propertySet.get(aPropertyName);
         // OUTPUT
-        //aOStream<<"\nPROPERTY INFO FOR "<<aClassName<<"\n";
-        aOStream << "\n" << aClassName << "." << aPropertyName << "\n"
+        ss << "\n" << aClassName << "." << aPropertyName << "\n"
                  << prop->getComment() << "\n";
+
+        if (aOStream.rdbuf() == std::cout.rdbuf()) {
+            log_cout(ss.str());
+        } else {
+            aOStream << ss.str() << std::endl;
+        }
+
         return true;
     } catch(...) {
         try {
@@ -1531,18 +1535,31 @@ PrintPropertyInfo(ostream &aOStream,
                         "' class '" + aClassName + "'.");
             }
             // OUTPUT
-            //aOStream<<"\nPROPERTY INFO FOR "<<aClassName<<"\n";
-            aOStream << "\n" <<aClassName << "." << aPropertyName <<"\n"
+            ss << "\n" <<aClassName << "." << aPropertyName <<"\n"
                      << abstractProperty->getComment()<<"\n";
+
+            if (aOStream.rdbuf() == std::cout.rdbuf()) {
+                log_cout(ss.str());
+            } else {
+                aOStream << ss.str() << std::endl;
+            }
+
             return true;
         } catch (...) {
             if (printFlagInfo) {
-                aOStream << "\nPrintPropertyInfo: no property with the name "
+                ss << "\nPrintPropertyInfo: no property with the name "
                     << aPropertyName;
-                aOStream << " was found in class " << aClassName << ".\n";
-                aOStream << "Omit the property name to get a listing of all "
+                ss << " was found in class " << aClassName << ".\n";
+                ss << "Omit the property name to get a listing of all "
                     "properties in a class.\n";
             }
+
+            if (aOStream.rdbuf() == std::cout.rdbuf()) {
+                log_cout(ss.str());
+            } else {
+                aOStream << ss.str() << std::endl;
+            }
+
             return false;
         }
     }
@@ -1567,47 +1584,42 @@ makeObjectFromFile(const std::string &aFileName)
     /**
      * Open the file and get the type of the root element
      */
-    try{
-        XMLDocument *doc = new XMLDocument(aFileName);
+    try {
+        XMLDocument* doc = new XMLDocument(aFileName);
         // Here we know the fie exists and is good, chdir to where the file lives
         string rootName = doc->getRootTag();
-        bool newFormat=false;
-        if (rootName == "OpenSimDocument"){ // New format, get child node instead
-            rootName = doc->getRootElement().element_begin()->getElementTag();
-            newFormat=true;
-        }
-        Object* newObject = newInstanceOfType(rootName);
-        if(!newObject) throw Exception("Unrecognized XML element '"+rootName+"' and root of file '"+aFileName+"'",__FILE__,__LINE__);
-        // Here file is deemed legit, chdir to where the file lives here and restore at the end so offline objects are handled properly
-        const string saveWorkingDirectory = IO::getCwd();
-        const string directoryOfXMLFile = IO::getParentDirectory(aFileName);
-        IO::chDir(directoryOfXMLFile);
-        //cout << "File name = "<< aFileName << "Cwd is now "<< directoryOfXMLFile << endl;
-        try {
-            newObject->_document=doc;
-            if (newFormat)
-                newObject->updateFromXMLNode(*doc->getRootElement().element_begin(), doc->getDocumentVersion());
-            else { 
-                SimTK::Xml::Element e = doc->getRootElement();
-                newObject->updateFromXMLNode(e, 10500);
-            }
-        } catch (...) {
-            IO::chDir(saveWorkingDirectory);
-            throw; // re-issue the exception
-        }
-        IO::chDir(saveWorkingDirectory);
-        return (newObject);
-    }
 
-    catch(const std::exception& x) {
-        cout << x.what() << endl;
+        bool newFormat = false;
+        if (rootName == "OpenSimDocument") { // New format, get child node instead
+            rootName = doc->getRootElement().element_begin()->getElementTag();
+            newFormat = true;
+        }
+
+        Object* newObject = newInstanceOfType(rootName);
+        if(newObject == nullptr) {
+            throw Exception("Unrecognized XML element '"+rootName+"' and root of file '"+aFileName+"'",__FILE__,__LINE__);
+        }
+
+        // Here file is deemed legit, chdir to where the file lives
+        // here and restore at the end so offline objects are handled
+        // properly
+        IO::CwdChanger cwd = IO::CwdChanger::changeToParentOf(aFileName);
+        newObject->_document = doc;
+        if (newFormat) {
+            newObject->updateFromXMLNode(*doc->getRootElement().element_begin(), doc->getDocumentVersion());
+        } else {
+            SimTK::Xml::Element e = doc->getRootElement();
+            newObject->updateFromXMLNode(e, 10500);
+        }
+
+        return newObject;
+    } catch(const std::exception& x) {
+        log_error(x.what());
+        return nullptr;
+    } catch(...) {
+        // Document couldn't be opened, or something went really bad
         return nullptr;
     }
-    catch(...){ // Document couldn't be opened, or something went really bad
-        return nullptr;
-    }
-    assert(!"Shouldn't be here");
-    return nullptr;
 }
 
 void Object::makeObjectNamesConsistentWithProperties()
@@ -1642,15 +1654,11 @@ void Object::setObjectIsUpToDateWithProperties()
 
 void Object::updateFromXMLDocument()
 {
-    assert(_document!= 0);
-    
-    SimTK::Xml::Element e = _document->getRootDataElement(); 
-    const string saveWorkingDirectory = IO::getCwd();
-    string parentFileName = _document->getFileName();
-    const string directoryOfXMLFile = IO::getParentDirectory(parentFileName);
-    IO::chDir(directoryOfXMLFile);
+    assert(_document != nullptr);
+
+    SimTK::Xml::Element e = _document->getRootDataElement();
+    IO::CwdChanger cwd = IO::CwdChanger::changeToParentOf(_document->getFileName());
     updateFromXMLNode(e, _document->getDocumentVersion());
-    IO::chDir(saveWorkingDirectory);
 }
 
 std::string Object::dump() const {
@@ -1661,10 +1669,54 @@ std::string Object::dump() const {
     updateXMLNode(elem);
     Object::setSerializeAllDefaults(false);
     doc.getRootElement().node_begin()->writeToString(outString);
-    return outString;
+    return std::move(outString);
 }
 
-/** 
+
+void Object::setDebugLevel(int newLevel) {
+    switch (newLevel) {
+    case -4: Logger::setLevel(Logger::Level::Off);
+        break;
+    case -3: Logger::setLevel(Logger::Level::Critical);
+        break;
+    case -2: Logger::setLevel(Logger::Level::Error);
+        break;
+    case -1: Logger::setLevel(Logger::Level::Warn);
+        break;
+    case 0: Logger::setLevel(Logger::Level::Info);
+        break;
+    case 1: Logger::setLevel(Logger::Level::Debug);
+        break;
+    case 2: Logger::setLevel(Logger::Level::Trace);
+        break;
+    case 3:
+        // Backwards compatibility.
+        Logger::setLevel(Logger::Level::Trace);
+        break;
+    default:
+        OPENSIM_THROW(
+                Exception, "Expected newLevel to be -4, -3, "
+                           "-2, -1, 0, 1, 2, or 3; but got {}.",
+                newLevel);
+    }
+}
+
+int Object::getDebugLevel() {
+    const auto level = Logger::getLevel();
+    switch (level) {
+    case Logger::Level::Off: return -4;
+    case Logger::Level::Critical: return -3;
+    case Logger::Level::Error: return -2;
+    case Logger::Level::Warn: return -1;
+    case Logger::Level::Info: return 0;
+    case Logger::Level::Debug: return 1;
+    case Logger::Level::Trace: return 2;
+    default:
+        OPENSIM_THROW(Exception, "Internal error.");
+    }
+}
+
+/**
     * The following code accounts for an object made up to call 
     * RegisterTypes_osimCommon function on entry to the DLL in a cross platform manner 
     * 

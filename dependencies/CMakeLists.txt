@@ -56,12 +56,13 @@ endfunction()
 
 # Add a dependency. Arguments:
 #   NAME       -- (Required) Name of the project.
+#   DEFAULT    -- (Required) Default value for SUPERBUILD_${NAME} variable.
 #   URL        -- (Required) git repository to download the sources from.
 #   TAG        -- (Required) git tag to checkout before commencing build.
 #   CMAKE_ARGS -- (Optional) A CMake list of arguments to be passed to CMake 
 #                 while building the project.
 function(AddDependency)
-    set(onevalueargs NAME URL TAG)
+    set(onevalueargs NAME DEFAULT URL TAG)
     set(multiValueArgs CMAKE_ARGS)
     cmake_parse_arguments(DEP "" "${onevalueargs}" "${multiValueArgs}" ${ARGN})
 
@@ -73,7 +74,7 @@ function(AddDependency)
     endif()
 
     # Add a cache entry providing option for user to use (or not) superbuild.
-    set(SUPERBUILD_${DEP_NAME} ON CACHE BOOL 
+    set(SUPERBUILD_${DEP_NAME} ${DEP_DEFAULT} CACHE BOOL
         "Automatically download, configure, build and install ${DEP_NAME}")
 
     if(SUPERBUILD_${DEP_NAME})
@@ -141,24 +142,40 @@ SetDefaultCMakeBuildType()
 
 ####################### Add dependencies below.
 
+AddDependency(NAME       ezc3d
+              DEFAULT    OFF
+              URL        https://github.com/pyomeca/ezc3d.git
+              TAG        Release_1.3.2
+              CMAKE_ARGS -DBUILD_EXAMPLE:BOOL=OFF)
+
 AddDependency(NAME       BTK
+              DEFAULT    OFF
               # URL        https://github.com/Biomechanical-ToolKit/BTKCore.git
               URL        https://github.com/opensim-org/BTKCore.git
               TAG        6d787d0be223851a8f454f2ee8c7d9e47b84cbbe
               CMAKE_ARGS -DBUILD_SHARED_LIBS:BOOL=ON)
 
 AddDependency(NAME       simbody
+              DEFAULT    ON
               URL        https://github.com/simbody/simbody.git
-              # simbody-3.6 branch containing fixes for GCC-8 warnings
-              TAG        45654969ef2cf34555bf388472b78bec08ede84f
+              TAG        Simbody-3.7
               CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF 
                          -DBUILD_TESTING:BOOL=OFF)
-                     
 
 AddDependency(NAME       docopt
+              DEFAULT    ON
               URL        https://github.com/docopt/docopt.cpp.git
-              TAG        af03fa044ee1eff20819549b534ea86829a24a54)
- 
+              TAG        3dd23e3280f213bacefdf5fcb04857bf52e90917)
+
+
+AddDependency(NAME       spdlog
+              DEFAULT    ON
+              URL        https://github.com/gabime/spdlog.git
+              TAG        v1.4.1
+              CMAKE_ARGS -DSPDLOG_BUILD_BENCH:BOOL=OFF
+                         -DSPDLOG_BUILD_TESTS:BOOL=OFF
+                         -DSPDLOG_BUILD_EXAMPLE:BOOL=OFF
+                         -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON)
 #######################
 
 RemoveDefaultInstallDirIfEmpty("${DEFAULT_CMAKE_INSTALL_PREFIX}")

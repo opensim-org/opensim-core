@@ -10,6 +10,13 @@ else()
         "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
 endif()
 
+
+# Avoid excessive compiler warnings.
+# ==================================
+# We set these COMPILE_OPTIONS in the root CMakeLists.txt.
+set_directory_properties(PROPERTIES COMPILE_OPTIONS "")
+
+
 # Helper macros.
 # ==============
 
@@ -78,7 +85,7 @@ macro(OpenSimAddPythonModule)
     # configure step and fills the first argument with a list of the
     # dependencies.
     OpenSimFindSwigFileDependencies(_${OSIMSWIGPY_MODULE}_dependencies
-        ${OSIMSWIGPY_MODULE} "${_swig_common_args}")
+        "${OSIMSWIGPY_MODULE} (Python)" "${_swig_common_args}")
 
     # Run swig.
     add_custom_command(
@@ -129,10 +136,32 @@ macro(OpenSimAddPythonModule)
 
     add_library(${_libname} SHARED ${_output_cxx_file} ${_output_header_file})
 
-    target_include_directories(${_libname} PRIVATE ${PYTHON_INCLUDE_PATH})
+    target_include_directories(${_libname} PRIVATE
+            "${PYTHON_INCLUDE_PATH}"
+            "${PYTHON_NUMPY_INCLUDE_DIR}")
     
-    target_link_libraries(${_libname}
-        osimTools osimExampleComponents ${PYTHON_LIBRARIES})
+    # On macOS, the python interpreter might link to the python library 
+    # statically, in which case we do not want to link dynamically to the
+    # python library. This situation occurs with Anaconda's python.
+    # In this situation, we must add a linker flag to mark all undefined
+    # symbols as having to be looked up at runtime, and we ignore
+    # PYTHON_LIBRARIES.
+    # https://github.com/opensim-org/opensim-core/issues/2771
+    # https://stackoverflow.com/questions/25421479/clang-and-undefined-symbols-when-building-a-library
+    # https://github.com/lisitsyn/shogun/commit/961f6109c2a8abab4941bcdde1a19dfe70c440f1
+    # https://github.com/shogun-toolbox/shogun/issues/4068
+    execute_process(COMMAND "${PYTHON_EXECUTABLE}" -c
+        "import sysconfig; print(sysconfig.get_config_var('LDSHARED'))"
+        OUTPUT_VARIABLE PYTHON_LDSHARED
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if("${PYTHON_LDSHARED}" MATCHES "dynamic_lookup")
+        set_target_properties(${_libname} PROPERTIES LINK_FLAGS
+            "-undefined dynamic_lookup")
+    else()
+        target_link_libraries(${_libname} ${PYTHON_LIBRARIES})
+    endif()
+
+    target_link_libraries(${_libname} osimTools osimExampleComponents)
     
     # Set target properties for various platforms.
     # --------------------------------------------
@@ -170,24 +199,24 @@ macro(OpenSimAddPythonModule)
 
     # Copy files into the build tree python package.
     # ----------------------------------------------
-    # Copy the library file.
     add_custom_command(TARGET ${_libname} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy "$<TARGET_FILE:${_libname}>"
             "${OPENSIM_PYTHON_BINARY_DIR}/opensim/$<TARGET_FILE_NAME:${_libname}>"
-        COMMENT "Copying ${_libname} library to python package in build directory."
+        COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/${OSIMSWIGPY_MODULE}.py"
+            "${OPENSIM_PYTHON_BINARY_DIR}/opensim/${OSIMSWIGPY_MODULE}.py"
+        COMMENT "Copying ${OSIMSWIGPY_MODULE}.py and ${_libname} to python package in build directory."
         VERBATIM
         )
 
-    # Copy the generated .py file to the per-config python package dir.
-    OpenSimPutFileInPythonPackage(
-        "${CMAKE_CURRENT_BINARY_DIR}/${OSIMSWIGPY_MODULE}.py" opensim)
-
-    # Install the library.
-    # --------------------
-    # It's important that we use install(TARGETS) 
+    # Install the python module and compiled library.
+    # -----------------------------------------------
+    # For the shared library, it's important that we use install(TARGETS)
     # because this causes CMake to remove the build-tree RPATH from the library
     # (which is set temporarily for libraries in the build tree).
     install(TARGETS ${_libname} DESTINATION "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
+
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${OSIMSWIGPY_MODULE}.py"
+        DESTINATION "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
 
 endmacro()
 
@@ -328,4 +357,10 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/tests"
 
 # Install example files (not installed next to the python package).
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/examples/"
+        DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}")
+install(DIRECTORY ../Java/Matlab/OpenSenseExample
+        DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}"
+        # Exclude Matlab m files
+        PATTERN "*.m" EXCLUDE)
+install(DIRECTORY OpenSenseExample
         DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}")

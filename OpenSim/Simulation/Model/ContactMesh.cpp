@@ -99,25 +99,21 @@ SimTK::ContactGeometry::TriangleMesh* ContactMesh::
     SimTK::PolygonalMesh mesh;
     std::ifstream file;
     assert (_model);
-    const std::string& savedCwd = IO::getCwd();
-    bool restoreDirectory = false;
+
+    auto cwd = IO::CwdChanger::noop();
     if ((_model->getInputFileName()!="")
             && (_model->getInputFileName()!="Unassigned")) {
-        std::string parentDirectory = IO::getParentDirectory(
-                _model->getInputFileName());
-        IO::chDir(parentDirectory);
-        restoreDirectory=true;
+        cwd = IO::CwdChanger::changeToParentOf(_model->getInputFileName());
     }
+
     file.open(filename.c_str());
     if (file.fail()){
-        if (restoreDirectory) IO::chDir(savedCwd);
         throw Exception("Error loading mesh file: "+filename+". "
                 "The file should exist in same folder with model.\n "
                 "Loading is aborted.");
     }
     file.close();
     mesh.loadFile(filename);
-    if (restoreDirectory) IO::chDir(savedCwd);
     _decorativeGeometry.reset(new SimTK::DecorativeMesh(mesh));
     return new SimTK::ContactGeometry::TriangleMesh(mesh);
 }

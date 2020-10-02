@@ -28,7 +28,8 @@
 //    3. testClutchedPathSpring()
 //    4. testMcKibbenActuator()
 //    5. testActuatorsCombination()
-//      
+//    6. testActivationCoordinateActuator()
+//
 //     Add tests here as Actuators are added to OpenSim
 //
 //=============================================================================
@@ -55,6 +56,7 @@ void testBodyActuator();
 void testClutchedPathSpring();
 void testMcKibbenActuator();
 void testActuatorsCombination();
+void testActivationCoordinateActuator();
 
 
 int main()
@@ -80,6 +82,10 @@ int main()
     try { testActuatorsCombination(); }
     catch (const std::exception& e) {
         cout << e.what() << endl; failures.push_back("testActuatorsCombination");
+    }
+    try { testActivationCoordinateActuator(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl; failures.push_back("testActivationCoordinateActuator");
     }
     if (!failures.empty()) {
         cout << "Done, with failure(s): " << failures << endl;
@@ -709,7 +715,7 @@ void testBodyActuator()
 //==================================================================================
 /**
 * This test verifies if using a BodyActuator generates equivalent result in the body
-* acceleration compared to when using a combination of PointActuaor, TorqueActuaor 
+* acceleration compared to when using a combination of PointActuaor, TorqueActuator
 * and BodyActuator. 
 * It therefore also verifies model consistency when user defines and uses a 
 * combination of these 3 actuators. 
@@ -917,4 +923,47 @@ void testActuatorsCombination()
 
     std::cout << " ********** Test Actuator Combination time = ********** " <<
         1.e3*(std::clock() - startTime) / CLOCKS_PER_SEC << "ms\n" << endl;
+}
+
+// Test de/serialization and numerical integration of
+// ActivationCoordinateActautor.
+void testActivationCoordinateActuator() {
+    Model model;
+    auto* body = new Body("body", 1, SimTK::Vec3(0), SimTK::Inertia(1));
+    auto* joint = new PinJoint("joint", *body, model.getGround());
+    joint->updCoordinate().setName("coord");
+    model.addBody(body);
+    model.addJoint(joint);
+    auto* aca = new ActivationCoordinateActuator("coord");
+    aca->setName("aca");
+    const double a0 = 0.7;
+    const double tau = 0.20;
+    aca->set_default_activation(a0);
+    aca->set_activation_time_constant(tau);
+    model.addForce(aca);
+    model.finalizeFromProperties();
+    model.finalizeConnections();
+    model.print("Model_ActivationCoordinateActuator.osim");
+
+    Model modelDeserialized("Model_ActivationCoordinateActuator.osim");
+    ASSERT(model == modelDeserialized);
+
+    auto* controller = new PrescribedController();
+    controller->addActuator(*aca);
+    const double x = 0.15;
+    controller->prescribeControlForActuator("aca", new Constant(x));
+    model.addController(controller);
+
+    auto state = model.initSystem();
+
+    Manager manager(model);
+    manager.initialize(state);
+    const double tf = 0.10;
+    state = manager.integrate(tf);
+
+    const double expectedFinalActivation =
+            (a0 - x) * exp(-tf / tau) + x;
+    const double foundFinalActivation =
+            aca->getStateVariableValue(state, "activation");
+    ASSERT_EQUAL(expectedFinalActivation, foundFinalActivation, 1e-4);
 }

@@ -344,20 +344,18 @@ operator=(const RRATool &aTool)
  */
 bool RRATool::run()
 {
-    cout<<"Running tool "<<getName()<<".\n";
+    log_info("Running tool {}.", getName());
 
     // CHECK FOR A MODEL
     if(_model==NULL) {
-        string msg = "ERROR- A model has not been set.";
-        cout<<endl<<msg<<endl;
+        string msg = "A model has not been set.";
+        log_error(msg);
         throw(Exception(msg,__FILE__,__LINE__));
     }
     // OUTPUT DIRECTORY
     // Do the maneuver to change then restore working directory 
     // so that the parsing code behaves properly if called from a different directory
-    string saveWorkingDirectory = IO::getCwd();
-    string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
-    IO::chDir(directoryOfSetupFile);
+    auto cwd = IO::CwdChanger::changeToParentOf(getDocumentFileName());
 
     try {
 
@@ -378,7 +376,7 @@ bool RRATool::run()
     /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model);
 
     CMC_TaskSet taskSet(_taskSetFileName);           
-    cout<<"\n\n taskSet size = "<<taskSet.getSize()<<endl<<endl;         
+    log_info("\ttaskSet size = {}.", taskSet.getSize());         
 
     CMC* controller = new CMC(_model,&taskSet); // Need to make it a pointer since Model takes ownership 
     controller->setName( "CMC" );
@@ -398,17 +396,18 @@ bool RRATool::run()
     // ---- INPUT ----
     // DESIRED POINTS AND KINEMATICS
     if(_desiredPointsFileName=="" && _desiredKinematicsFileName=="") {
-        cout<<"ERROR- a desired points file and desired kinematics file were not specified.\n\n";
-        IO::chDir(saveWorkingDirectory);
+        log_error("A desired points file and desired kinematics file were not "
+                  "specified.");
         return false;
     }
 
     Storage *desiredPointsStore=NULL;
     bool desiredPointsFlag = false;
     if(_desiredPointsFileName=="") {
-        cout<<"\n\nWARN- a desired points file was not specified.\n\n";
+        log_warn("A desired points file was not specified.");
     } else {
-        cout<<"\n\nLoading desired points from file "<<_desiredPointsFileName<<" ...\n";
+        log_info("Loading desired points from file '{}'...",
+                _desiredPointsFileName);
         desiredPointsStore = new Storage(_desiredPointsFileName);
         desiredPointsFlag = true;
     }
@@ -416,9 +415,10 @@ bool RRATool::run()
     Storage *desiredKinStore=NULL;
     bool desiredKinFlag = false;
     if(_desiredKinematicsFileName=="") {
-        cout<<"\n\nWARN- a desired kinematics file was not specified.\n\n";
+        log_warn("A desired kinematics file was not specified.");
     } else {
-        cout<<"\n\nLoading desired kinematics from file "<<_desiredKinematicsFileName<<" ...\n";
+        log_info("Loading desired kinematics from file '{}'...",
+            _desiredKinematicsFileName);
         desiredKinStore = new Storage(_desiredKinematicsFileName);
         desiredKinFlag = true;
     }
@@ -429,17 +429,17 @@ bool RRATool::run()
     if(desiredPointsFlag) {
         double ti = desiredPointsStore->getFirstTime();
         if(_ti<ti) {
-            cout<<"\nThe initial time set for the cmc run precedes the first time\n";
-            cout<<"in the desired points file "<<_desiredPointsFileName<<".\n";
-            cout<<"Resetting the initial time from "<<_ti<<" to "<<ti<<".\n\n";
+            log_warn("The initial time set for the cmc run precedes the first "
+                "time in the desired points file '{}'. Resetting the initial "
+                "time from {} to {}.\n", _desiredPointsFileName, _ti, ti);
             _ti = ti;
         }
         // Final time
         double tf = desiredPointsStore->getLastTime();
         if(_tf>tf) {
-            cout<<"\n\nWARN- The final time set for the cmc run is past the last time stamp\n";
-            cout<<"in the desired points file "<<_desiredPointsFileName<<".\n";
-            cout<<"Resetting the final time from "<<_tf<<" to "<<tf<<".\n\n";
+            log_warn("The final time set for the cmc run is past the last time "
+                "stamp in the desired points file '{}'. Resetting the final "
+                "time from {} to {}.\n", _desiredPointsFileName, _tf, tf);
             _tf = tf;
         }
     }
@@ -448,17 +448,19 @@ bool RRATool::run()
     if(desiredKinFlag) {
         double ti = desiredKinStore->getFirstTime();
         if(_ti<ti) {
-            cout<<"\nThe initial time set for the cmc run precedes the first time\n";
-            cout<<"in the desired kinematics file "<<_desiredKinematicsFileName<<".\n";
-            cout<<"Resetting the initial time from "<<_ti<<" to "<<ti<<".\n\n";
+            log_warn("The initial time set for the cmc run precedes the first "
+                "time in the desired kinematics file '{}'. Resetting the "
+                "initial time from {} to {}.\n", _desiredKinematicsFileName, _ti,
+                ti);
             _ti = ti;
         }
         // Final time
         double tf = desiredKinStore->getLastTime();
         if(_tf>tf) {
-            cout<<"\n\nWARN- The final time set for the cmc run is past the last time stamp\n";
-            cout<<"in the desired kinematics file "<<_desiredKinematicsFileName<<".\n";
-            cout<<"Resetting the final time from "<<_tf<<" to "<<tf<<".\n\n";
+            log_warn("The final time set for the cmc run is past the last time "
+                "stamp in the desired kinematics file '{}'. Resetting the "
+                "final time from {} to {}.", _desiredKinematicsFileName, _tf,
+                tf);
             _tf = tf;
         }
     }
@@ -472,11 +474,11 @@ bool RRATool::run()
         desiredPointsStore->print("desiredPoints_padded.sto");
         if(_lowpassCutoffFrequency>=0) {
             int order = 50;
-            cout<<"\n\nLow-pass filtering desired points with a cutoff frequency of ";
-            cout<<_lowpassCutoffFrequency<<"...";
+            log_info("Low-pass filtering desired points with a cutoff "
+                "frequency of {}...", _lowpassCutoffFrequency);
             desiredPointsStore->lowpassFIR(order,_lowpassCutoffFrequency);
         } else {
-            cout<<"\n\nNote- not filtering the desired points.\n\n";
+            log_info("Not filtering the desired points.");
         }
     }
 
@@ -485,18 +487,17 @@ bool RRATool::run()
         if (_verbose) desiredKinStore->print("desiredKinematics_padded.sto");
         if(_lowpassCutoffFrequency>=0) {
             int order = 50;
-            cout<<"\n\nLow-pass filtering desired kinematics with a cutoff frequency of ";
-            cout<<_lowpassCutoffFrequency<<"...\n\n";
+            log_info("Low-pass filtering desired kinematics with a cutoff "
+                "frequency of {}...", _lowpassCutoffFrequency);
             desiredKinStore->lowpassFIR(order,_lowpassCutoffFrequency);
         } else {
-            cout<<"\n\nNote- not filtering the desired kinematics.\n\n";
+            log_info("Not filtering the desired kinematics.");
         }
     }
 
      // TASK SET
     if(_taskSetFileName=="") {           
-        cout<<"ERROR- a task set was not specified\n\n";         
-        IO::chDir(saveWorkingDirectory);         
+        log_error("A task set was not specified.");
         return false;        
     }
 
@@ -528,11 +529,10 @@ bool RRATool::run()
 
             // If not adjusting kinematics, we don't proceed with CMC, and just stop here.
             if(!_adjustKinematicsToReduceResiduals) {
-                cout << "No kinematics adjustment requested." << endl;
+                log_info("No kinematics adjustment requested.");
                 delete qStore;
                 delete uStore;
                 writeAdjustedModel();
-                IO::chDir(saveWorkingDirectory);
                 return true;
             }
         }
@@ -541,7 +541,7 @@ bool RRATool::run()
     // Spline
     GCVSplineSet *posSet=NULL;
     if(desiredPointsFlag) {
-        cout<<"\nConstructing function set for tracking desired points...\n\n";
+        log_info("Constructing function set for tracking desired points...");
         posSet = new GCVSplineSet(5,desiredPointsStore);
 
         Storage *velStore=posSet->constructStorage(1);
@@ -561,7 +561,7 @@ bool RRATool::run()
     GCVSplineSet *uDotSet=NULL;
 
     if(desiredKinFlag) {
-        cout<<"\nConstructing function set for tracking desired kinematics...\n\n";
+        log_info("Constructing function set for tracking desired kinematics...");
         qSet = new GCVSplineSet(5,qStore);
         delete qStore; qStore = NULL;
 
@@ -612,21 +612,22 @@ bool RRATool::run()
     ControlSet *controlConstraints = NULL;
     if(_constraintsFileName!="") {
         controlConstraints = new ControlSet(_constraintsFileName);
-        cout << "WARNING: Using DEPRECATED Control Constraints file "<< _constraintsFileName << 
-            " in RRA, generally unnecessary.\nSupport will be dropped in the future." << endl;
+        log_warn("Using DEPRECATED Control Constraints file '{}' in RRA, "
+            "generally unnecessary. Support will be dropped in the future.\n", 
+            _constraintsFileName);
     }
 
     // ---- INITIAL STATES ----
     Array<double> q(0.0,nq);
     Array<double> u(0.0,nu);
     if(desiredKinFlag) {
-        cout<<"Using the generalized coordinates specified in "<<_desiredKinematicsFileName;
-        cout<<" to set the initial configuration.\n" << endl;
+        log_info("Using the generalized coordinates specified in '{}' to set "
+            "the initial configuration.", _desiredKinematicsFileName);
         qSet->evaluate(q,0,_ti);
         uSet->evaluate(u,0,_ti);
     } else {
-        cout<<"Using the generalized coordinates specified as zeros ";
-        cout<<" to set the initial configuration.\n" << endl;
+        log_info("Using the generalized coordinates specified as zeros to set "
+            "the initial configuration.");
     }
 
     // formCompleteStorages ensures qSet is in order of model Coordinates
@@ -680,14 +681,15 @@ bool RRATool::run()
     SimTK::OptimizerAlgorithm algorithm = SimTK::InteriorPoint;
     if(IO::Uppercase(_optimizerAlgorithm) == "CFSQP") {
         if(!SimTK::Optimizer::isAlgorithmAvailable(SimTK::CFSQP)) {
-            std::cout << "CFSQP optimizer algorithm unavailable.  Will try to use IPOPT instead." << std::endl;
+            log_warn("CFSQP optimizer algorithm unavailable. Will try to use "
+                "IPOPT instead.");
             algorithm = SimTK::InteriorPoint;
         } else {
-            std::cout << "Using CFSQP optimizer algorithm." << std::endl;
+            log_info("Using CFSQP optimizer algorithm.");
             algorithm = SimTK::CFSQP;
         }
     } else if(IO::Uppercase(_optimizerAlgorithm) == "IPOPT") {
-        std::cout << "Using IPOPT optimizer algorithm." << std::endl;
+        log_info("Using IPOPT optimizer algorithm.");
         algorithm = SimTK::InteriorPoint;
     } else {
         throw Exception("RRATool: ERROR- Unrecognized optimizer algorithm: '"+_optimizerAlgorithm+"'",__FILE__,__LINE__);
@@ -696,11 +698,12 @@ bool RRATool::run()
     SimTK::Optimizer *optimizer = new SimTK::Optimizer(*target, algorithm);
     controller->setOptimizationTarget(target, optimizer);
 
-    cout<<"\nSetting optimizer print level to "<< (_verbose?4:0) <<".\n";
-    optimizer->setDiagnosticsLevel(_verbose?4:0);
-    cout<<"Setting optimizer convergence tolerance to "<<_optimizationConvergenceTolerance<<".\n";
+    log_info("Setting optimizer print level to {}.", _verbose ? 4 : 0);
+    optimizer->setDiagnosticsLevel(_verbose ? 4 : 0);
+    log_info("Setting optimizer convergence tolerance to {}.",
+        _optimizationConvergenceTolerance);
     optimizer->setConvergenceTolerance(_optimizationConvergenceTolerance);
-    cout<<"Setting optimizer maximum iterations to "<<2000<<".\n";
+    log_info("Setting optimizer maximum iterations to {}.", 2000);
     optimizer->setMaxIterations(2000);
     optimizer->useNumericalGradient(false); // Use our own central difference approximations
     optimizer->useNumericalJacobian(false);
@@ -712,8 +715,11 @@ bool RRATool::run()
         optimizer->setAdvancedRealOption("nlp_scaling_max_gradient",100);
     }
 
-    if(_verbose) cout<<"\nSetting cmc controller to use verbose printing."<<endl;
-    else cout<<"\nSetting cmc controller to not use verbose printing."<<endl;
+    if(_verbose) {
+        log_info("Setting cmc controller to use verbose printing.\n");
+    } else {
+        log_info("Setting cmc controller to not use verbose printing.\n");
+    }
     controller->setUseVerbosePrinting(_verbose);
 
     controller->setCheckTargetTime(true);
@@ -737,47 +743,42 @@ bool RRATool::run()
 
     // Initial auxiliary states
     time_t startTime,finishTime;
-    struct tm *localTime;
     double elapsedTime;
     if( s.getNZ() > 0) { // If there are actuator states (i.e. muscles dynamics)
-        cout<<"\n\n\n";
-        cout<<"================================================================\n";
-        cout<<"================================================================\n";
-        cout<<"Computing initial values for muscles states (activation, length)\n";
+        log_info("-----------------------------------------------------------------");
+        log_info("Computing initial values for muscles states (activation, length):");
+        log_info("-----------------------------------------------------------------");
         time(&startTime);
-        localTime = localtime(&startTime);
-        cout<<"Start time = "<<asctime(localTime)<<endl;
-        cout<<"================================================================\n";
+        log_info(" -- Start time = {}", getTimeString(startTime));
+        log_info("-----------------------------------------------------------------");
+        log_info("");
+
         try {
         controller->computeInitialStates(s,_ti);
         }
         catch(const Exception& x) {
         // TODO: eventually might want to allow writing of partial results
-            x.print(cout);
-            IO::chDir(saveWorkingDirectory);
+            log_error(x.what());
             return false;
         }
         catch(...) {
             // TODO: eventually might want to allow writing of partial results
-            IO::chDir(saveWorkingDirectory);
             // close open files if we die prematurely (e.g. Opt fail)
             return false;
         }
         time(&finishTime);
-        cout<<endl;
         // copy the final states from the last integration 
         s.updY() = cmcActSubsystem.getCompleteState().getY();
-        cout<<"----------------------------------------------------------------\n";
-        cout<<"Finished computing initial states:\n";
-        cout<<"----------------------------------------------------------------\n";
-        cout<<"================================================================\n";
-        localTime = localtime(&startTime);
-        cout<<"Start time   = "<<asctime(localTime);
-        localTime = localtime(&finishTime);
-        cout<<"Finish time  = "<<asctime(localTime);
-        elapsedTime = difftime(finishTime,startTime);
-        cout<<"Elapsed time = "<<elapsedTime<<" seconds.\n";
-        cout<<"================================================================\n";
+        log_info("----------------------------------");
+        log_info("Finished computing initial states:");
+        log_info("----------------------------------");
+        log_info(" -- Start time = {}", getTimeString(startTime));
+        log_info(" -- Finish time = {}", getTimeString(finishTime));
+        elapsedTime = difftime(finishTime, startTime);
+        log_info(" -- Elapsed time = {} seconds.", elapsedTime);
+        log_info("----------------------------------");
+        log_info("");
+
     } else {
         cmcActSubsystem.setCompleteState( s );
         actuatorSystemState.updTime() = _ti; 
@@ -789,17 +790,16 @@ bool RRATool::run()
     }
 
     // ---- INTEGRATE ----
-    cout<<"\n\n\n";
-    cout<<"================================================================\n";
-    cout<<"================================================================\n";
-    cout<<"Using CMC to track the specified kinematics\n";
-    cout<<"Integrating from "<<_ti<<" to "<<_tf<<endl;
+    log_info("--------------------------------------------");
+    log_info("Using CMC to track the specified kinematics:");
+    log_info("--------------------------------------------");
+    log_info(" -- Integrating from {} to {}", _ti, _tf);
     s.updTime() = _ti;
     controller->setTargetTime( _ti );
     time(&startTime);
-    localTime = localtime(&startTime);
-    cout<<"Start time = "<<asctime(localTime);
-    cout<<"================================================================\n";
+    log_info(" -- Start time = {}", getTimeString(startTime));
+    log_info("--------------------------------------------");
+    log_info("");
 
     _model->getMultibodySystem().realize(s, Stage::Acceleration );
 
@@ -816,33 +816,32 @@ bool RRATool::run()
     }
     catch(const Exception& x) {
         // TODO: eventually might want to allow writing of partial results
-        x.print(cout);
-        IO::chDir(saveWorkingDirectory);
+        log_error(x.what());
+        cwd.restore();
         // close open files if we die prematurely (e.g. Opt fail)
         manager.getStateStorage().print(getResultsDir() + "/" + getName() + "_states.sto");
         return false;
     }
     catch(...) {
         // TODO: eventually might want to allow writing of partial results
-        IO::chDir(saveWorkingDirectory);
+        cwd.restore();
         // close open files if we die prematurely (e.g. Opt fail)
         manager.getStateStorage().print(getResultsDir() + "/" + getName() + "_states.sto");
         return false;
     }
     time(&finishTime);
-    cout<<"----------------------------------------------------------------\n";
-    cout<<"Finished tracking the specified kinematics\n";
+    log_info("-------------------------------------------");
+    log_info("Finished tracking the specified kinematics:");
+    log_info("-------------------------------------------");
     if( _verbose ){
-      std::cout << "states= " << s.getY() << std::endl;
+      log_info(" -- States = {}", s.getY());
     }
-    cout<<"================================================================\n";
-    localTime = localtime(&startTime);
-    cout<<"Start time   = "<<asctime(localTime);
-    localTime = localtime(&finishTime);
-    cout<<"Finish time  = "<<asctime(localTime);
-    elapsedTime = difftime(finishTime,startTime);
-    cout<<"Elapsed time = "<<elapsedTime<<" seconds.\n";
-    cout<<"================================================================\n\n\n";
+    log_info(" -- Start time = {}", getTimeString(startTime));
+    log_info(" -- Finish time = {}", getTimeString(finishTime));
+    elapsedTime = difftime(finishTime, startTime);
+    log_info(" -- Elapsed time = {} seconds.", elapsedTime);
+    log_info("-------------------------------------------");
+    log_info("");
 
     // ---- RESULTS -----
     printResults(getName(),getResultsDir()); // this will create results directory if necessary
@@ -864,6 +863,7 @@ bool RRATool::run()
         Storage *forceStore = actuation.getForceStorage();
         computeAverageResiduals(*forceStore,FAve,MAve);
 
+        adjQMsg << endl;
         adjQMsg << "************************************************************" << endl;
         adjQMsg << "*                   Final Average Residuals                *" << endl;
         adjQMsg << "************************************************************" << endl;
@@ -887,20 +887,21 @@ bool RRATool::run()
     // Write new model file
     if(_adjustCOMToReduceResiduals) writeAdjustedModel();
 
-    cout << massAdjMsg << adjQMsg.str() << endl;
+    // Report mass adjustments.
+    log_info(massAdjMsg);
+
+    // Report kinematic adjustments.
+    log_info(adjQMsg.str());
 
     //_model->removeController(controller); // So that if this model is from GUI it doesn't double-delete it.
 
     } catch(const Exception& x) {
         // TODO: eventually might want to allow writing of partial results
-        x.print(cout);
-        IO::chDir(saveWorkingDirectory);
+        log_error(x.what());
         // close open files if we die prematurely (e.g. Opt fail)
         
         return false;
     }
-
-    IO::chDir(saveWorkingDirectory);
 
     return true;
 }
@@ -912,18 +913,20 @@ bool RRATool::run()
 void RRATool::writeAdjustedModel() 
 {
     if(_outputModelFile=="") {
-        cerr<<"Warning: A name for the output model was not set.\n";
-        cerr<<"Specify a value for the property "<<_outputModelFileProp.getName();
-        cerr<<" in the setup file.\n";
+        stringstream ss;
+        ss << "Warning: A name for the output model was not set.\n";
+        ss << "Specify a value for the property "
+           << _outputModelFileProp.getName();
+        ss << " in the setup file.\n";
         if (getDocument()){
             string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
             _outputModelFile = directoryOfSetupFile+"adjusted_model.osim";
+        } else {
+            ss << "Writing to adjusted_model.osim ...\n\n";
+            _outputModelFile = "adjusted_model.osim";
         }
-        else{
-        cerr<<"Writing to adjusted_model.osim ...\n\n";
-        _outputModelFile = "adjusted_model.osim";
-    }
-        cerr<<"Writing to " <<_outputModelFile << " ...\n\n";
+        ss << "Writing to " <<_outputModelFile << " ...\n\n";
+        log_error(ss.str());
     }
 
     // Set the model's actuator set back to the original set.  e.g. in RRA1
@@ -1004,13 +1007,13 @@ adjustCOMToReduceResiduals(SimTK::State& s, const Storage &qStore, const Storage
     double actualTi, actualTf;
     statesStore->getTime(statesStore->findIndex(ti),actualTi);
     statesStore->getTime(statesStore->findIndex(tf),actualTf);
-    cout<<"\nNote: requested COM adjustment time range "<<ti<<" - "<<tf<<" clamped to nearest available data times "<<actualTi<<" - "<<actualTf<<endl;
+    log_info("Requested COM adjustment time range {} to {}, clamped to nearest "
+        "available data times: {} to {}.", ti, tf, actualTi, actualTf);
 
     computeAverageResiduals(s, *_model, ti, tf, *statesStore, FAve, MAve);
 
     std::stringstream resMsg;
-
-    //          123456789012345678901234567890123456789012345678901234567890
+    resMsg << endl;
     resMsg <<  "* Average residuals before adjusting "<<_adjustedCOMBody<<" COM:"<<endl;
     resMsg <<  "*  FX="<<FAve[0]<<" FY="<<FAve[1]<<" FZ="<<FAve[2]<<endl;
     resMsg <<  "*  MX="<<MAve[0]<<" MY="<<MAve[1]<<" MZ="<<MAve[2]<<endl;
@@ -1059,25 +1062,21 @@ computeAverageResiduals(SimTK::State& s, Model &aModel,double aTi,double aTf,con
     int iFinal = aStatesStore.findIndex(aTf);
     aStatesStore.getTime(iInitial,aTi);
     aStatesStore.getTime(iFinal,aTf);
-
-    
+   
     aModel.getMultibodySystem().realize(s, Stage::Position );
 
-    cout << "\nComputing average residuals between " << aTi << " and " << aTf << endl;
+    log_info("Computing average residuals between {} and {}...", aTi, aTf);
     AnalyzeTool::run(s, aModel, iInitial, iFinal, aStatesStore, false);
-
 
     computeAverageResiduals(*inverseDynamics->getStorage(),rFAve,rMAve);
 
 //cout << "\nrFAve= " << rFAve << endl;
 //cout << "\nrMAve= " << rMAve << endl;
 
-
     aModel.removeAnalysis(inverseDynamics); // This deletes the analysis as well
 
     // Turn off whatever's currently there
     analysisSet.setOn(analysisSetOn);
-
 }
 //_____________________________________________________________________________
 /**
@@ -1101,9 +1100,9 @@ adjustCOMToReduceResiduals(const OpenSim::Array<double> &aFAve,const OpenSim::Ar
     Body *body = &_model->updBodySet().get(_adjustedCOMBody);
     double bodyMass = body->get_mass();
     double bodyWeight = fabs(g[1])*bodyMass;
-    if(bodyWeight<SimTK::Zero) {
-        cout<<"\nRRATool.adjustCOMToReduceResiduals: ERR- ";
-        cout<<_adjustedCOMBody<<" has no weight.\n";
+    if(bodyWeight < SimTK::Zero) {
+        log_error("RRATool::adjustCOMToReduceResiduals: {} has no weight.", 
+            _adjustedCOMBody);
         return "";
     }
     
@@ -1148,7 +1147,7 @@ adjustCOMToReduceResiduals(const OpenSim::Array<double> &aFAve,const OpenSim::Ar
     }
 
     std::stringstream msg;
-    //       123456789012345678901234567890123456789012345678901234567890
+    msg << endl;
     msg <<"\n************************************************************" << endl;
     msg <<  "*      Summary of Mass Adjustments to Reduce Residuals     *" << endl;
     msg <<  "************************************************************" << endl;
@@ -1187,7 +1186,7 @@ addNecessaryAnalyses()
     for(int i=0; i<as.getSize(); i++) 
         if(as.get(i).getConcreteClassName() == "Actuation") { act = (Actuation*)&as.get(i); break; }
     if(!act) {
-        std::cout << "No Actuation analysis found in analysis set -- adding one" << std::endl;
+        log_warn("No Actuation analysis found in analysis set, adding one...");
         act = new Actuation(_model);
         act->setModel(*_model );
         act->setStepInterval(stepInterval);
@@ -1200,7 +1199,7 @@ addNecessaryAnalyses()
     for(int i=0; i<as.getSize(); i++) 
         if(as.get(i).getConcreteClassName() == "Kinematics" && as.get(i).getPrintResultFiles()) { kin = (Kinematics*)&as.get(i); break; }
     if(!kin) {
-        std::cout << "No Kinematics analysis found in analysis set -- adding one" << std::endl;
+        log_warn("No Kinematics analysis found in analysis set, adding one...");
         kin = new Kinematics(_model);
         kin->setModel(*_model );
         kin->setStepInterval(stepInterval);
@@ -1264,7 +1263,7 @@ initializeControlSetUsingConstraints(
             }
             if(control==NULL) continue;
             control->setUseSteps(false);
-            cout<<"Set "<<rraControlName<<" to use linear interpolation.\n";
+            log_info("Set {} to use linear interpolation.", rraControlName);
         }
 #endif
     }   
@@ -1325,12 +1324,19 @@ void RRATool::setOriginalForceSet(const ForceSet &aForceSet) {
                 Xml::element_iterator replace_force_setIter(toolNode.element_begin("replace_force_set"));
                 if (replace_force_setIter != toolNode.element_end()){
                     String replace_forcesStr = replace_force_setIter->getValueAs<String>();
-                    if (replace_forcesStr.toLower()!= "true") cout << "Warn: old RRA setup file has replace_force_set set to false, will be ignored" << endl;
+                    if (replace_forcesStr.toLower() != "true") {
+                        log_warn("Old RRA setup file has replace_force_set set "
+                            " to false, will be ignored.");
+                    }
                 }
                 Xml::element_iterator timeWindowIter(toolNode.element_begin("cmc_time_window"));
                 if (timeWindowIter != toolNode.element_end()){
                     double timeWindow = timeWindowIter->getValueAs<double>();
-                    if (timeWindow!= .001) cout << "Warn: old setup file has cmc_time_window set to " << timeWindow << ", will be ignored and .001 used instead" << endl;
+                    if (timeWindow != .001) {
+                        log_warn("Old setup file has cmc_time_window set to {} "
+                            ", will be ignored and .001 used instead.",
+                            timeWindow);
+                    }
                 }
             }
         }

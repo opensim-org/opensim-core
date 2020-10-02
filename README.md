@@ -133,20 +133,20 @@ This code produces the following animation:
 and prints the following information to the console:
 ```
 [reporter]
-              |   /model_/bice|               |
-          time| ps|fiber_force|    elbow_angle|
---------------| --------------| --------------|
-  0.000000e+00| 1.18096897e+00| 1.57079633e+00|
-1.00000000e+00| 5.72750904e+01| 7.70664118e-01|
-2.00000000e+00| 1.97284113e+01| 1.56804557e+00|
-3.00000000e+00| 5.60904315e+01| 1.44198608e+00|
-4.00000000e+00| 3.45483498e+01| 1.50834805e+00|
-5.00000000e+00| 3.26037208e+01| 1.51802366e+00|
-6.00000000e+00| 3.71360518e+01| 1.50212351e+00|
-7.00000000e+00| 3.56985024e+01| 1.50718884e+00|
-8.00000000e+00| 3.41860103e+01| 1.50791862e+00|
-9.00000000e+00| 3.43416494e+01| 1.50672695e+00|
-1.00000000e+01| 3.57847134e+01| 1.50716396e+00|
+              | /forceset/bice|               | 
+          time| ps|fiber_force|    elbow_angle| 
+--------------| --------------| --------------| 
+           0.0|       1.180969|      1.5707963| 
+           1.0|       57.27509|     0.77066412| 
+           2.0|      19.219591|      1.5679832| 
+           3.0|      56.155742|      1.4422429| 
+           4.0|      33.436111|      1.5084227| 
+           5.0|      32.678114|       1.517973| 
+           6.0|      37.605448|      1.5022219| 
+           7.0|      36.417485|      1.5072158| 
+           8.0|      34.419941|      1.5079513| 
+           9.0|      34.661339|      1.5067137| 
+          10.0|      35.896608|      1.5071069| 
 ```
 
 Expand to see Python and Matlab versions of the above example example:
@@ -436,7 +436,6 @@ state = manager.integrate(10.0);
 ```
 
 </details>
----
 
 Building from the source code
 -----------------------------
@@ -482,7 +481,7 @@ On Windows using Visual Studio
         The C compiler identification is unknown
         The CXX compiler identification is unknown
         ```    
-* **physics engine**: Simbody >= 3.6. Two options:
+* **physics engine**: Simbody >= 3.7. Two options:
     * Let OpenSim get this for you using superbuild (see below).
     * [Build on your own](
       https://github.com/simbody/simbody#windows-using-visual-studio).
@@ -492,6 +491,9 @@ On Windows using Visual Studio
 * **command-line argument parsing**: docopt.cpp. Two options:
     * Let OpenSim get this for you using superbuild (see below); much easier!
     * [Build on your own](https://github.com/docopt/docopt.cpp) (no instructions).
+* **logging**: spdlog. Two options:
+    * Let OpenSim get this for you using superbuild (see below); much easier!
+    * [Build on your own](https://github.com/gabime/spdlog).
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6
 * **version control** (optional): git. There are many options:
@@ -505,7 +507,8 @@ On Windows using Visual Studio
                 'ver' in MATLAB to check MATLAB's JVM version (must be >= 1.7).
         * Note: Java development kit >= 9 requires CMake >= 3.10.
     * **Python scripting** (optional): Python 2 >= 2.7 or Python 3 >= 3.5
-        * [Anaconda](https://store.continuum.io/cshop/anaconda/)
+        * [Anaconda](https://www.anaconda.com/distribution/)
+        * Must provide the NumPy package; this should come with Anaconda.
     * The choice between 32-bit/64-bit must be the same between Java, Python,
       and OpenSim.
 
@@ -605,10 +608,14 @@ On Windows using Visual Studio
            `BTKConfig.cmake`. If the root directory of your BTK installation is
            `C:/BTKCore-install`, then set this variable to
            `C:/BTKCore-install/share/btk-0.4dev`.
-        3. docopt.cpp. Set the variable `docopt_DIR` to the directory
+        3. docopt.cpp: Set the variable `docopt_DIR` to the directory
            containing `docopt-config.cmake`. If the root directory of your
            docopt.cpp installation is `C:/docopt.cpp-install`, then set this
            variable to `C:/docopt.cpp-install/lib/cmake`.
+        4. spdlog: Set the variable `spdlog_DIR` to the directory containing
+           `spdlogConfig.cmake`. If the root directory of your spdlog 
+           installation is `C:/spdlog-install`, then set this variable to
+           `C:/spdlog-install/lib/spdlog/cmake`.
 7. Set the remaining configuration options.
     * `BUILD_API_EXAMPLES` to compile C++ API examples.
     * `BUILD_TESTING` to ensure that OpenSim works correctly. The tests take a
@@ -758,7 +765,7 @@ ctest -j8
   [CMake](http://www.cmake.org/cmake/resources/software.html) >= 3.2
 * **compiler / IDE**: [Xcode](https://developer.apple.com/xcode/) >= 7.3 (the latest version), through
   the Mac App Store.
-* **physics engine**: Simbody >= 3.6. Two options:
+* **physics engine**: Simbody >= 3.7. Two options:
   * Let OpenSim get this for you using superbuild (see below).
   * [Build on your own](https://github.com/simbody/simbody#installing).
 * **C3D file support**: Biomechanical-ToolKit Core. Two options:
@@ -767,6 +774,9 @@ ctest -j8
 * **command-line argument parsing**: docopt.cpp. Two options:
     * Let OpenSim get this for you using superbuild (see below); much easier!
     * [Build on your own](https://github.com/docopt/docopt.cpp) (no instructions).
+* **logging**: spdlog. Two options:
+    * Let OpenSim get this for you using superbuild (see below); much easier!
+    * [Build on your own](https://github.com/gabime/spdlog).
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6
 * **version control** (optional): git.
@@ -780,7 +790,8 @@ ctest -j8
     * **Python scripting** (optional): Python 2 >= 2.7 or Python 3 >= 3.5
         * Mac OSX comes with Python, but you could also use:
         * [`brew install python`](http://brew.sh),
-        * [Anaconda](https://store.continuum.io/cshop/anaconda/)
+        * [Anaconda](https://www.anaconda.com/distribution/)
+        * Must provide the NumPy package; this should come with Anaconda.
 
 You can get most of these dependencies using [Homebrew](http://brew.sh):
 
@@ -866,10 +877,14 @@ You can get most of these dependencies using [Homebrew](http://brew.sh):
         2. BTK: Set the `BTK_DIR` variable to the directory containing
            `BTKConfig.cmake`. If you installed BTK in `~/BTKCore-install`, then
            set `BTK_DIR` to `~/BTKCore-install/share/btk-0.4dev`
-        3. docopt.cpp. Set the variable `docopt_DIR` to the directory
+        3. docopt.cpp: Set the variable `docopt_DIR` to the directory
            containing `docopt-config.cmake`. If the root directory of your
            docopt.cpp installation is `~/docopt.cpp-install`, then set this
            variable to `~/docopt.cpp-install/lib/cmake`.
+        4. spdlog: Set the variable `spdlog_DIR` to the directory containing
+           `spdlogConfig.cmake`. If the root directory of your spdlog 
+           installation is `~/spdlog-install`, then set this variable to
+           `~/spdlog-install/lib/spdlog/cmake`.
 7. Set the remaining configuration options.
     * `BUILD_API_EXAMPLES` to compile C++ API examples.
     * `BUILD_TESTING` to ensure that OpenSim works correctly. The tests take a
@@ -944,7 +959,7 @@ specific Ubuntu versions under 'For the impatient' below.
   `cmake-gui`.
 * **compiler**: [gcc](http://gcc.gnu.org) >= 4.9; `g++-4.9`, or
   [Clang](http://clang.llvm.org) >= 3.4; `clang-3.4`.
-* **physics engine**: Simbody >= 3.6. Two options:
+* **physics engine**: Simbody >= 3.7. Two options:
   * Let OpenSim get this for you using superbuild (see below).
   * [Build on your own](https://github.com/simbody/simbody#installing).
 * **C3D file support**: Biomechanical-ToolKit Core. Two options:
@@ -953,6 +968,9 @@ specific Ubuntu versions under 'For the impatient' below.
 * **command-line argument parsing**: docopt.cpp. Two options:
     * Let OpenSim get this for you using superbuild (see below); much easier!
     * [Build on your own](https://github.com/docopt/docopt.cpp) (no instructions).
+* **logging**: spdlog. Two options:
+    * Let OpenSim get this for you using superbuild (see below); much easier!
+    * [Build on your own](https://github.com/gabime/spdlog).
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6;
   `doxygen`.
@@ -964,6 +982,7 @@ specific Ubuntu versions under 'For the impatient' below.
                 'ver' in MATLAB to check MATLAB's JVM version (must be >= 1.7).
         * Note: Java development kit >= 9 requires CMake >= 3.10.
     * **Python scripting** (optional): Python 2 >= 2.7 or Python 3 >= 3.5; `python-dev`.
+        * Must provide the NumPy package; `python-numpy`.
 
 For example, you could get the required dependencies (except Simbody) via:
 
@@ -971,7 +990,7 @@ For example, you could get the required dependencies (except Simbody) via:
 
 And you could get all the optional dependencies via:
 
-    $ sudo apt-get install doxygen git swig openjdk-7-jdk python-dev
+    $ sudo apt-get install doxygen git swig openjdk-7-jdk python-dev python-numpy
 
 #### Download the OpenSim-Core source code
 
@@ -1057,10 +1076,14 @@ And you could get all the optional dependencies via:
         2. BTK: Set the `BTK_DIR` variable to the directory containing
            `BTKConfig.cmake`. If you installed BTK in `~/BTK-install`, then set
            `BTK-DIR` to `~/BTK-install/share/btk-0.4dev`.
-        3. docopt.cpp. Set the variable `docopt_DIR` to the directory
+        3. docopt.cpp: Set the variable `docopt_DIR` to the directory
            containing `docopt-config.cmake`. If the root directory of your
            docopt.cpp installation is `~/docopt.cpp-install`, then set this
            variable to `~/docopt.cpp-install/lib/cmake`.
+        4. spdlog: Set the variable `spdlog_DIR` to the directory containing
+           `spdlogConfig.cmake`. If the root directory of your spdlog 
+           installation is `~/spdlog-install`, then set this variable to
+           `~/spdlog-install/lib/spdlog/cmake`.
 7. Choose your build type by setting `CMAKE_BUILD_TYPE` to one of the following:
     * **Debug**: debugger symbols; no optimizations (more than 10x slower).
     Library names end with `_d`.
@@ -1235,7 +1258,7 @@ Example: If opensim_install is in your home directory:
 [travisci]: https://travis-ci.org/opensim-org/opensim-core
 [buildstatus_image_appveyor]: https://ci.appveyor.com/api/projects/status/i4wxnmx9jlk69kge/branch/master?svg=true
 [appveyorci]: https://ci.appveyor.com/project/opensim-org/opensim-core/branch/master
-[zenhub_image]: https://raw.githubusercontent.com/ZenHubIO/support/master/zenhub-badge.png
+[zenhub_image]: https://dxssrr2j0sq4w.cloudfront.net/3.2.0/img/external/zenhub-badge.png
 [zenhub]: https://zenhub.com
 
 [running_gif]: doc/images/opensim_running.gif

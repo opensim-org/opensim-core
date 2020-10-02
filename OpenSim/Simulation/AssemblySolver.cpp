@@ -117,7 +117,6 @@ void AssemblySolver::setupGoals(SimTK::State &s)
             CoordinateReference *coordRef = p;
             const Coordinate &coord = modelCoordSet.get(coordRef->getName());
             if(coord.getLocked(s)){
-                //cout << "AssemblySolver: coordinate " << coord.getName() << " is locked/prescribed and will be excluded." << endl;
                 _assembler->lockQ(coord.getBodyIndex(), SimTK::MobilizerQIndex(coord.getMobilizerQIndex()));
                 //No longer need the lock on
                 coord.setLocked(s, false);
@@ -165,7 +164,7 @@ void AssemblySolver::updateCoordinateReference(const std::string &coordName, dou
 
 /* Internal method to update the time, reference values and/or their 
         weights that define the goals, based on the passed in state. */
-void AssemblySolver::updateGoals(const SimTK::State &s)
+void AssemblySolver::updateGoals(SimTK::State &s)
 {
     unsigned int nqrefs = _coordinateReferencesp.size();
     for(unsigned int i=0; i<nqrefs; i++){
@@ -196,14 +195,14 @@ void AssemblySolver::assemble(SimTK::State &state)
     // Let assembler perform some internal setup
     _assembler->initialize(s);
     
-    /* TODO: Useful to include through debug message/log in the future
-    printf("UNASSEMBLED CONFIGURATION (normerr=%g, maxerr=%g, cost=%g)\n",
+    // Useful to include through debug message/log in the future
+    log_debug("UNASSEMBLED CONFIGURATION (normerr={}, maxerr={}, cost={})",
         _assembler->calcCurrentErrorNorm(),
         max(abs(_assembler->getInternalState().getQErr())),
         _assembler->calcCurrentGoal());
-    cout << "Model numQs: " << _assembler->getInternalState().getNQ() 
-        << " Assembler num freeQs: " << _assembler->getNumFreeQs() << endl;
-    */
+    log_debug("Model numQs: {} Assembler num freeQs: {}",  
+        _assembler->getInternalState().getNQ(),  _assembler->getNumFreeQs());
+
     try{
         // Now do the assembly and return the updated state.
         _assembler->assemble();
@@ -220,17 +219,16 @@ void AssemblySolver::assemble(SimTK::State &state)
             if(isLocked)
                 modelCoordSet[i].setLocked(state, isLocked);
         }
-        /* TODO: Useful to include through debug message/log in the future
-        printf("ASSEMBLED CONFIGURATION (acc=%g tol=%g normerr=%g, maxerr=%g, cost=%g)\n",
+        // TODO: Useful to include through debug message/log in the future
+        log_debug("ASSEMBLED CONFIGURATION (acc={} tol={} normerr={}, maxerr={}, cost={})",
             _assembler->getAccuracyInUse(), _assembler->getErrorToleranceInUse(), 
             _assembler->calcCurrentErrorNorm(), max(abs(_assembler->getInternalState().getQErr())),
             _assembler->calcCurrentGoal());
-        printf("# initializations=%d\n", _assembler->getNumInitializations());
-        printf("# assembly steps: %d\n", _assembler->getNumAssemblySteps());
-        printf(" evals: goal=%d grad=%d error=%d jac=%d\n",
+        log_debug("# initializations={}", _assembler->getNumInitializations());
+        log_debug("# assembly steps: {}", _assembler->getNumAssemblySteps());
+        log_debug(" evals: goal={} grad={} error={} jac={}",
             _assembler->getNumGoalEvals(), _assembler->getNumGoalGradientEvals(),
             _assembler->getNumErrorEvals(), _assembler->getNumErrorJacobianEvals());
-        */
     }
     catch (const std::exception& ex)
     {
@@ -259,14 +257,13 @@ void AssemblySolver::track(SimTK::State &s)
             "AssemblySolver::track() failed: assemble() must be called first.");
     }
 
-    /* TODO: Useful to include through debug message/log in the future
-    printf("UNASSEMBLED(track) CONFIGURATION (normerr=%g, maxerr=%g, cost=%g)\n",
+    // TODO: Useful to include through debug message/log in the future
+    log_debug("UNASSEMBLED(track) CONFIGURATION (normerr={}, maxerr={}, cost={})",
         _assembler->calcCurrentErrorNorm(), 
         max(abs(_assembler->getInternalState().getQErr())), 
         _assembler->calcCurrentGoal() );
-    cout << "Model numQs: " << _assembler->getInternalState().getNQ() 
-        << " Assembler num freeQs: " << _assembler->getNumFreeQs() << endl;
-    */
+    log_debug("Model numQs: {}  Assembler num freeQs: {}",
+        _assembler->getInternalState().getNQ(), _assembler->getNumFreeQs());
 
     try{
         // Now do the assembly and return the updated state.
@@ -275,17 +272,16 @@ void AssemblySolver::track(SimTK::State &s)
         // update the state from the result of the assembler 
         _assembler->updateFromInternalState(s);
         
-        /* TODO: Useful to include through debug message/log in the future
-        printf("Tracking: t= %f (acc=%g tol=%g normerr=%g, maxerr=%g, cost=%g)\n", 
+        // TODO: Useful to include through debug message/log in the future
+        log_debug("Tracking: t= {} (acc={} tol={} normerr={}, maxerr={}, cost={})", 
             s.getTime(),
             _assembler->getAccuracyInUse(), _assembler->getErrorToleranceInUse(), 
             _assembler->calcCurrentErrorNorm(), max(abs(_assembler->getInternalState().getQErr())),
             _assembler->calcCurrentGoal()); 
-        */
     }
     catch (const std::exception& ex)
     {
-        std::cout << "AssemblySolver::track() attempt Failed: " << ex.what() << std::endl;
+        log_info( "AssemblySolver::track() attempt Failed: {}", ex.what());
         throw Exception("AssemblySolver::track() attempt failed.");
     }
 }
