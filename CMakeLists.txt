@@ -161,6 +161,17 @@ mark_as_advanced(OPENSIM_PYTHON_STANDALONE) # Mainly for packagers; not users.
 option(BUILD_API_ONLY "Build/install only headers, libraries,
 wrapping, tests; not applications (opensim, ik, rra, etc.)." OFF)
 
+option(OPENSIM_DISABLE_LOG_FILE
+"Disable OpenSim from automatically creating 'opensim.log'.
+
+By default, any application linking to osimCommon will create an
+'opensim.log' file in the current working directory. All log messages
+written by OpenSim (incl. during static initialization) are written to
+both this file and the standard output streams." OFF)
+
+if(OPENSIM_DISABLE_LOG_FILE)
+    add_definitions(-DOPENSIM_DISABLE_LOG_FILE=1)
+endif()
 
 set(OPENSIM_BUILD_INDIVIDUAL_APPS_DEFAULT OFF)
 if(WIN32)

@@ -984,7 +984,7 @@ void testComponentPathNames()
     ASSERT(CWrtOtherTop == "A/B/C");
 
     std::string OtherTopWrtC = otherTop.getRelativePathString(*C);
-    ASSERT(OtherTopWrtC == "../../../");
+    ASSERT(OtherTopWrtC == "../../..");
 
     // Must specify a unique path to E
     ASSERT_THROW(OpenSim::ComponentNotFoundOnSpecifiedPath,

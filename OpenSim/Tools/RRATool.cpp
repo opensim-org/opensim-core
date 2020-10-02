@@ -355,9 +355,7 @@ bool RRATool::run()
     // OUTPUT DIRECTORY
     // Do the maneuver to change then restore working directory 
     // so that the parsing code behaves properly if called from a different directory
-    string saveWorkingDirectory = IO::getCwd();
-    string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
-    IO::chDir(directoryOfSetupFile);
+    auto cwd = IO::CwdChanger::changeToParentOf(getDocumentFileName());
 
     try {
 
@@ -399,8 +397,7 @@ bool RRATool::run()
     // DESIRED POINTS AND KINEMATICS
     if(_desiredPointsFileName=="" && _desiredKinematicsFileName=="") {
         log_error("A desired points file and desired kinematics file were not "
-                  "specified.");;
-        IO::chDir(saveWorkingDirectory);
+                  "specified.");
         return false;
     }
 
@@ -500,8 +497,7 @@ bool RRATool::run()
 
      // TASK SET
     if(_taskSetFileName=="") {           
-        log_error("A task set was not specified.");         
-        IO::chDir(saveWorkingDirectory);         
+        log_error("A task set was not specified.");
         return false;        
     }
 
@@ -537,7 +533,6 @@ bool RRATool::run()
                 delete qStore;
                 delete uStore;
                 writeAdjustedModel();
-                IO::chDir(saveWorkingDirectory);
                 return true;
             }
         }
@@ -764,12 +759,10 @@ bool RRATool::run()
         catch(const Exception& x) {
         // TODO: eventually might want to allow writing of partial results
             log_error(x.what());
-            IO::chDir(saveWorkingDirectory);
             return false;
         }
         catch(...) {
             // TODO: eventually might want to allow writing of partial results
-            IO::chDir(saveWorkingDirectory);
             // close open files if we die prematurely (e.g. Opt fail)
             return false;
         }
@@ -824,14 +817,14 @@ bool RRATool::run()
     catch(const Exception& x) {
         // TODO: eventually might want to allow writing of partial results
         log_error(x.what());
-        IO::chDir(saveWorkingDirectory);
+        cwd.restore();
         // close open files if we die prematurely (e.g. Opt fail)
         manager.getStateStorage().print(getResultsDir() + "/" + getName() + "_states.sto");
         return false;
     }
     catch(...) {
         // TODO: eventually might want to allow writing of partial results
-        IO::chDir(saveWorkingDirectory);
+        cwd.restore();
         // close open files if we die prematurely (e.g. Opt fail)
         manager.getStateStorage().print(getResultsDir() + "/" + getName() + "_states.sto");
         return false;
@@ -905,13 +898,10 @@ bool RRATool::run()
     } catch(const Exception& x) {
         // TODO: eventually might want to allow writing of partial results
         log_error(x.what());
-        IO::chDir(saveWorkingDirectory);
         // close open files if we die prematurely (e.g. Opt fail)
         
         return false;
     }
-
-    IO::chDir(saveWorkingDirectory);
 
     return true;
 }

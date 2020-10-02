@@ -70,9 +70,8 @@ InverseKinematicsTool::InverseKinematicsTool() : InverseKinematicsToolBase() {
  *
  * @param aFileName File name of the document.
  */
-InverseKinematicsTool::InverseKinematicsTool(const string &aFileName, bool aLoadModel) :
-    InverseKinematicsToolBase(aFileName, true)
-{
+InverseKinematicsTool::InverseKinematicsTool(const string &aFileName, bool aLoadModel) : 
+    InverseKinematicsToolBase(aFileName, aLoadModel) {
     constructProperties();
     updateFromXMLDocument();
 }
@@ -86,7 +85,6 @@ void InverseKinematicsTool::constructProperties()
     constructProperty_IKTaskSet(IKTaskSet());
     constructProperty_marker_file("");
     constructProperty_coordinate_file("");
-    constructProperty_output_motion_file("");
     constructProperty_report_marker_locations(false);
 }
 
@@ -124,9 +122,7 @@ bool InverseKinematicsTool::run()
 
         // Do the maneuver to change then restore working directory so that the
         // parsing code behaves properly if called from a different directory.
-        string saveWorkingDirectory = IO::getCwd();
-        string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
-        IO::chDir(directoryOfSetupFile);
+        auto cwd = IO::CwdChanger::changeToParentOf(getDocumentFileName());
 
         // Define reporter for output
         kinematicsReporter = new Kinematics();
@@ -171,7 +167,7 @@ bool InverseKinematicsTool::run()
         const auto& times = markersTable.getIndependentColumn();
 
         // create the solver given the input data
-        InverseKinematicsSolver ikSolver(*_model, markersReference,
+        InverseKinematicsSolver ikSolver(*_model, make_shared<MarkersReference>(markersReference),
             coordinateReferences, get_constraint_weight());
         ikSolver.setAccuracy(get_accuracy());
         s.updTime() = times[start_ix];
@@ -292,8 +288,6 @@ bool InverseKinematicsTool::run()
 
             delete modelMarkerLocations;
         }
-
-        IO::chDir(saveWorkingDirectory);
 
         success = true;
 

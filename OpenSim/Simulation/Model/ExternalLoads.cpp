@@ -49,9 +49,7 @@ ExternalLoads::~ExternalLoads()
  * Default constructor.
  */
 ExternalLoads::ExternalLoads():
-_dataFileName(_dataFileNameProp.getValueStr()),
-_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
-_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
+_dataFileName(_dataFileNameProp.getValueStr())
 {
     setNull();
 }
@@ -59,8 +57,6 @@ _lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematic
 ExternalLoads::ExternalLoads(const std::string &fileName, bool updateFromXMLNode) :
     Super(fileName, false),
     _dataFileName(_dataFileNameProp.getValueStr()),
-    _externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
-    _lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
     _loadedFromFile(fileName)
 {
     setNull();
@@ -78,9 +74,7 @@ ExternalLoads::ExternalLoads(const std::string &fileName, bool updateFromXMLNode
  */
 ExternalLoads::ExternalLoads(const ExternalLoads &otherExternalLoads) :
     ModelComponentSet<ExternalForce>(otherExternalLoads),
-    _dataFileName(_dataFileNameProp.getValueStr()),
-    _externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
-    _lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
+    _dataFileName(_dataFileNameProp.getValueStr())
 {
     setNull();
 
@@ -115,8 +109,6 @@ void ExternalLoads::copyData(const ExternalLoads &aAbsExternalLoads)
 {
     // ACTUATORS
     _dataFileName = aAbsExternalLoads._dataFileName;
-    _externalLoadsModelKinematicsFileName = aAbsExternalLoads._externalLoadsModelKinematicsFileName;
-    _lowpassCutoffFrequencyForLoadKinematics = aAbsExternalLoads._lowpassCutoffFrequencyForLoadKinematics;
     _storages = aAbsExternalLoads._storages;
     _loadedFromFile = aAbsExternalLoads._loadedFromFile;
 }
@@ -134,23 +126,6 @@ void ExternalLoads::setupSerializedMembers()
                 "Note: this file overrides the data source specified by the individual external forces if specified.";
     _dataFileNameProp.setComment(comment);
     _propertySet.append(&_dataFileNameProp);
-
-    _externalLoadsModelKinematicsFileName="";
-    comment =   "The option is deprecated and unnecessary to apply external loads. " 
-                "A motion file (.mot) or storage file (.sto) containing the model kinematics "
-                "used to transform a point expressed in ground to the body of force application."
-                "If the point is not expressed in ground, the point is not transformed";
-    _externalLoadsModelKinematicsFileNameProp.setComment(comment);
-    _externalLoadsModelKinematicsFileNameProp.setName("external_loads_model_kinematics_file");
-    _propertySet.append( &_externalLoadsModelKinematicsFileNameProp );
-
-    _lowpassCutoffFrequencyForLoadKinematics=-1.0;
-    comment = "Optional low-pass cut-off frequency for filtering the model kinematics corresponding "
-              "used to transform the point of application. A negative value results in no filtering. "
-              "The default value is -1.0, so no filtering.";
-    _lowpassCutoffFrequencyForLoadKinematicsProp.setComment(comment);
-    _lowpassCutoffFrequencyForLoadKinematicsProp.setName("lowpass_cutoff_frequency_for_load_kinematics");
-    _propertySet.append( &_lowpassCutoffFrequencyForLoadKinematicsProp );
 }
 
 
@@ -183,19 +158,20 @@ void ExternalLoads::extendConnectToModel(Model& aModel)
     auto loadDataFromDirectoryAdjacentToFile =
         [this, &forceData](const std::string& filepath) {
             // Change working directory the ExternalLoads location
-            std::string savedCwd = IO::getCwd();
-            IO::chDir(IO::getParentDirectory(filepath));
+            auto cwd = IO::CwdChanger::changeToParentOf(filepath);
             try {
                 forceData = new Storage(this->_dataFileName);
             }
             catch (const std::exception &ex) {
                 log_error("Failed to read ExternalLoads data file '{}'.",
                         this->_dataFileName);
-                if (this->getDocument())
-                    IO::chDir(savedCwd);
+                if (this->getDocument()) {
+                    cwd.restore();
+                } else {
+                    cwd.stay();
+                }
                 throw(ex);
             }
-            IO::chDir(savedCwd);
     };
     if (_dataFileName.length() > 0) {
         if(IO::FileExists(_dataFileName))
@@ -433,16 +409,18 @@ void ExternalLoads::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
             SimTK::String transcoded = dataFileElementIter->getValueAs<SimTK::String>();
                     if (transcoded.length()>0)
                 _dataFileName =transcoded;
-                }
+        }
         SimTK::Xml::element_iterator kinFileNode = aNode.element_begin("external_loads_model_kinematics_file");
         if (kinFileNode != aNode.element_end()){
             SimTK::String transcoded = kinFileNode->getValueAs<SimTK::String>();
                     if (transcoded.length()>0)
-                _externalLoadsModelKinematicsFileName =transcoded;
-                }
+                        log_warn("ExternalLoads: external_loads_model_kinematics_file option is not supported anymore."
+                            "Results may change.");
+        }
         SimTK::Xml::element_iterator kinFilterNode = aNode.element_begin("lowpass_cutoff_frequency_for_load_kinematics");
         if (kinFilterNode != aNode.element_end()){
-            _lowpassCutoffFrequencyForLoadKinematics = kinFilterNode->getValueAs<double>();
+            // This is now unnecessary since we dropped supoprt for external_loads_model_kinematics_file
+                // _lowpassCutoffFrequencyForLoadKinematics = kinFilterNode->getValueAs<double>();
             }
             bool changeWorkingDir = false;
             std::string savedCwd;
@@ -506,7 +484,20 @@ void ExternalLoads::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
             }
             delete dataSource;
         }
-    else 
+        else {
+            // Warn on removed external_loads_kinematics_specification
+            SimTK::Xml::element_iterator kinFileNode =
+                    aNode.element_begin("external_loads_model_kinematics_file");
+            if (kinFileNode != aNode.element_end()) {
+                SimTK::String transcoded =
+                        kinFileNode->getValueAs<SimTK::String>();
+                if (transcoded.length() > 0)
+                    log_warn("ExternalLoades: "
+                             "external_loads_model_kinematics_file "
+                             "option is not supported anymore. Results may "
+                             "change.");
+            }
+        }
         // Call base class now assuming _node has been corrected for current version
         ModelComponentSet<ExternalForce>::updateFromXMLNode(aNode, versionNumber);
 }

@@ -30,6 +30,22 @@ v4.2
 - For PrescribedController, the controls_file column labels can now be absolute paths to actuators (previously, the column labels were required to be actuator names).
 - CMCTool now supports the setSolveForEquilibrium() method inherited by AbstractTool, which allows users to disable a call to Model::equilibrateMuscles() when running CMC. This setting is true by default, so the default behavior remains the same.
 - The Matlab utility osimTableToStruct() now handles column labels that start with a non-letter character by prepending 'a_' instead of 'unlabeled'.
+- Removed `Path` abstract base class (PR #2844)
+  - Unused by OpenSim and related projects
+- Improved the performance of `ComponentPath` (PR #2844)
+  - This improves the performance of component-heavy models by ~5-10 %
+  - The behavior and interface of `ComponentPath` should remain the same
+- The new Matlab CustomStaticOptimization.m guides the user to build their own custom static optimization code. 
+- Dropped support for separate Kinematics for application of External Loads. ([PR #2770] (https://github.com/opensim-org/opensim-core/pull/2770)). 
+- Refactored InverseKinematicsSolver to allow for adding (live) Orientation data to track, introduced BufferedOrientationsReference to queue data (PR #2855)
+- `opensim.log` will only be created/opened when the first message is logged to it (PR #2880):
+  - Previously, `opensim.log` would always be created, even if nothing was logged
+- Added a CMake option, `OPENSIM_DISABLE_LOG_FILE` (PR #2880):
+  - When set, disables `opensim.log` from being used by the logger by default when the first message is written to the log
+  - Log messages are still written to the standard output/error streams
+  - Previously, `opensim.log` would always be created - even if nothing was written to it (fixed above)
+  - Setting `OPENSIM_DISABLE_LOG_FILE` only disables the automatic creation of `opensim.log`. File logging can still be manually be enabled by calling `Logger::addFileSink()`
+  - This flag is `OFF` by default. So standard builds will still observe the existing behavior (`opensim.log` is created).
 
 v4.1
 ====

@@ -31,8 +31,8 @@ using namespace SimTK;
 
 namespace OpenSim {
 
-OrientationsReference::OrientationsReference() : Reference_<SimTK::Rotation>()
-{
+OrientationsReference::OrientationsReference()
+        : StreamableReference_<SimTK::Rotation>() {
     constructProperties();
     setAuthors("Ajay Seth");
 }
@@ -155,10 +155,9 @@ const SimTK::Array_<std::string>& OrientationsReference::getNames() const
 }
 
 /** get the values of the OrientationsReference */
-void  OrientationsReference::getValues(const SimTK::State &s,
-    SimTK::Array_<Rotation> &values) const
+void OrientationsReference::getValuesAtTime(
+        double time, SimTK::Array_<Rotation> &values) const
 {
-    double time =  s.getTime();
 
     // get values for time
     SimTK::RowVector_<Rotation> row = _orientationData.getRow(time);
