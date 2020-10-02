@@ -172,11 +172,13 @@ void EllipsoidJoint::generateDecorations
 {
     // invoke parent class method, this draws 2 Frames
     Super::generateDecorations(fixed,hints,state,geometryArray); 
-
+    // The next line is necessary to avoid ellipsoid below added twice
+    // since this method is called with fixed={true, false}
+    if (!fixed) return; 
     // Construct the visible Ellipsoid
     SimTK::DecorativeEllipsoid ellipsoid(get_radii_x_y_z());
-    ellipsoid.setTransform(getParentFrame().getTransformInGround(state));
+    const OpenSim::PhysicalFrame& frame = getParentFrame();
     ellipsoid.setColor(Vec3(0.0, 1.0, 1.0));
-
+    ellipsoid.setBodyId(frame.getMobilizedBodyIndex());
     geometryArray.push_back(ellipsoid);
 }

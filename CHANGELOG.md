@@ -42,6 +42,7 @@ v4.2
   - Previously, `opensim.log` would always be created - even if nothing was written to it (fixed above)
   - Setting `OPENSIM_DISABLE_LOG_FILE` only disables the automatic creation of `opensim.log`. File logging can still be manually be enabled by calling `Logger::addFileSink()`
   - This flag is `OFF` by default. So standard builds will still observe the existing behavior (`opensim.log` is created).
+- Fix bug with visualization of EllipsoidJoint not attaching to correct frame ([PR #2887] (https://github.com/opensim-org/opensim-core/pull/2887))
 
 v4.1
 ====
