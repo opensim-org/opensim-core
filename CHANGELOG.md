@@ -9,11 +9,11 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 
 v4.2
 ====
-- Introduced new logging system based on spdlog https://github.com/gabime/spdlog.git. The transition should be transparent to end users with defaul settings except that the name of the log file is now opensim.log. Main features are:
+- Introduced new logging system based on spdlog https://github.com/gabime/spdlog.git. The transition should be transparent to end users with default settings except that the name of the log file is now opensim.log. Main features are:
   - The ability to customize error level for reporting (in increasing level of verbosity): Off, Critical, Error, Warn, Info, Debug, Trace 
-  - The ability to add logging to a specified file on the fly.
+  - The ability to start logging to a specified file on the fly.
   - Log file messages are time stamped and the format can be changed by users
-  - More details and additional functionality is described in Developer's Guide, and Doxygen pages of OpenSim::Logger class.
+  - More details and additional functionality is described in the Developer's Guide, and Doxygen pages of OpenSim::Logger class.
 - Add the ActivationCoordinateActuator component, which is a CoordinateActuator with simple activation dynamics (PR #2699).
 - Easily convert Matlab matrices and Python NumPy arrays to and from OpenSim Vectors and Matrices. See Matlab example matrixConversions.m and Python example numpy_conversions.py.
 - Users have more control over which messages are logged. Messages are now logged to opensim.log instead of out.log and err.log. Users can control logging levels via `Logger::setLevel()`.
