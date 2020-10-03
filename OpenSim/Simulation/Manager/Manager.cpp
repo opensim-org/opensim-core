@@ -22,7 +22,7 @@
  * -------------------------------------------------------------------------- */
 
 /* Note: This code was originally developed by Realistic Dynamics Inc.
- * Author: Frank C. Anderson 
+ * Author: Frank C. Anderson
  */
 #include <cstdio>
 #include "Manager.h"
@@ -369,7 +369,7 @@ getTimeArray()
 }
 //_____________________________________________________________________________
 /**
- * Get the integration step (index) that occurred prior to or at 
+ * Get the integration step (index) that occurred prior to or at
  * a specified time.
  *
  * @param aTime Time of the integration step.
@@ -823,12 +823,13 @@ void Manager::initialize(const SimTK::State& s)
         _timeStepper->setReportAllSignificantStates(true);
     }
 
-    // Here we call the constructStorage because it is possible that the Model's
-    // control storage has already be appended in a previous simulation [Dimitar
-    // Stanev; see Manager memory leak PR].
-    if( _writeToStorage )
-        if (_model->isControlled())
-            _controllerSet->constructStorage();
+    // Here we call the constructStorage because it is possible that
+    // the Model's control storage has already been appended in a
+    // previous simulation since the Manager mutates the model
+    // (Dimitar Stanev; issue:
+    // https://github.com/opensim-org/opensim-core/issues/2865).
+    if( _writeToStorage && _model->isControlled())
+        _controllerSet->constructStorage();
 }
 
 void Manager::record(const SimTK::State& s, const int& step)
