@@ -42,7 +42,5 @@
 		<external_loads_file>externalForces.xml</external_loads_file>
 		<!--Motion file (.mot) or storage file (.sto) containing the time history of the generalized coordinates for the model. These can be specified in place of the states file.-->
 		<coordinates_file>subject01_walk1_ik.mot</coordinates_file>
-		<!--Low-pass cut-off frequency for filtering the coordinates_file data (currently does not apply to states_file or speeds_file). A negative value results in no filtering. The default value is -1.0, so no filtering.-->
-		<lowpass_cutoff_frequency_for_coordinates>-1</lowpass_cutoff_frequency_for_coordinates>
 	</AnalyzeTool>
 </OpenSimDocument>

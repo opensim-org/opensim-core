@@ -18,7 +18,7 @@
 				<!--Identifier (string) to locate the torque to be applied in the data source.-->
 				<torque_identifier>ground_torque</torque_identifier>
 				<!--Name of the data source (Storage) that will supply the force data.-->
-				<data_source_name></data_source_name>
+				<data_source_name />
 			</ExternalForce>
 			<ExternalForce name="LeftForce">
 				<!--Flag indicating whether the force is applied or not. If true the forceis applied to the MultibodySystem otherwise the force is not applied.NOTE: Prior to OpenSim 4.0, this behavior was controlled by the 'isDisabled' property, where 'true' meant that force was not being applied. Thus, if 'isDisabled' is true, then 'appliesForce` is false.-->
@@ -36,7 +36,7 @@
 				<!--Identifier (string) to locate the torque to be applied in the data source.-->
 				<torque_identifier>l_ground_torque</torque_identifier>
 				<!--Name of the data source (Storage) that will supply the force data.-->
-				<data_source_name></data_source_name>
+				<data_source_name />
 			</ExternalForce>
 		</objects>
 		<groups />
