@@ -232,12 +232,12 @@ bool IMUPlacer::run(bool visualizeResults) {
         s.updTime() = times[0];
 
         // create the solver given the input data
-        MarkersReference mRefs{};
         OrientationsReference oRefs(orientationsData);
         SimTK::Array_<CoordinateReference> coordRefs{};
 
         const double accuracy = 1e-4;
-        InverseKinematicsSolver ikSolver(*_model, mRefs, oRefs, coordRefs);
+        InverseKinematicsSolver ikSolver(*_model, nullptr,
+                std::make_shared<OrientationsReference>(oRefs), coordRefs);
         ikSolver.setAccuracy(accuracy);
 
         SimTK::Visualizer& viz = _model->updVisualizer().updSimbodyVisualizer();

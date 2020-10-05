@@ -255,9 +255,7 @@ bool InverseDynamicsTool::run()
         log_info("Running tool {}...", getName());
         // Do the maneuver to change then restore working directory 
         // so that the parsing code behaves properly if called from a different directory.
-        string saveWorkingDirectory = IO::getCwd();
-        string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
-        IO::chDir(directoryOfSetupFile);
+        auto cwd = IO::CwdChanger::changeToParentOf(getDocumentFileName());
 
         /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model);
         // Initialize the model's underlying computational system and get its default state.
@@ -301,7 +299,6 @@ bool InverseDynamicsTool::run()
             }
         }
         else{
-            IO::chDir(saveWorkingDirectory);
             throw Exception("InverseDynamicsTool: no coordinate file found, "
                 " or setCoordinateValues() was not called.");
         }
@@ -410,7 +407,7 @@ bool InverseDynamicsTool::run()
 
         IO::makeDir(getResultsDir());
         Storage::printResult(&genForceResults, _outputGenForceFileName, getResultsDir(), -1, ".sto");
-        IO::chDir(saveWorkingDirectory);
+        cwd.restore();
 
         // if body forces to be reported for specified joints
         if(nj >0){
@@ -419,7 +416,6 @@ bool InverseDynamicsTool::run()
 
             IO::makeDir(getResultsDir());
             Storage::printResult(&bodyForcesResults, _outputBodyForcesAtJointsFileName, getResultsDir(), -1, ".sto");
-            IO::chDir(saveWorkingDirectory);
         }
 
         removeExternalLoadsFromModel();

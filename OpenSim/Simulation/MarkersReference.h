@@ -80,9 +80,11 @@ private:
  *
  * @author Ajay Seth
  */
-class OSIMSIMULATION_API MarkersReference : public Reference_<SimTK::Vec3> {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MarkersReference, Reference_<SimTK::Vec3>);
-//=============================================================================
+class OSIMSIMULATION_API MarkersReference
+        : public Reference_<SimTK::Vec3> {
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+            MarkersReference, Reference_<SimTK::Vec3>);
+    //=============================================================================
 // Properties
 //=============================================================================
 public:
@@ -141,9 +143,9 @@ public:
     SimTK::Vec2 getValidTimeRange() const override;
     /** get the names of the markers serving as references */
     const SimTK::Array_<std::string>& getNames() const override;
-    /** get the value of the MarkersReference */
-    void getValues(const SimTK::State &s,
-        SimTK::Array_<SimTK::Vec3> &values) const override;
+    /** get the value of the MarkersReference  */
+    void getValuesAtTime(
+            double time, SimTK::Array_<SimTK::Vec3> &values) const override;
     // The following two methods are commented out as they are not implemented
     // and we don't want users to think it *is* implemented when viewing
     // doxygen.
@@ -186,7 +188,6 @@ private:
     TimeSeriesTable_<SimTK::Vec3> _markerTable;
     // marker names inside the marker data
     SimTK::Array_<std::string> _markerNames;
-    //    TimeSeriesTable_<SimTK::Vec3> _markerTable;
     // List of weights guaranteed to be in the same order as marker names.
     mutable SimTK::Array_<double> _weights;
 //=============================================================================

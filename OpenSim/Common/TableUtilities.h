@@ -25,7 +25,6 @@
 
 #include "Array.h"
 #include "GCVSpline.h"
-#include "TableUtilities.h"
 #include "TimeSeriesTable.h"
 #include "osimCommonDLL.h"
 
@@ -98,6 +97,11 @@ public:
     template <typename FunctionType = GCVSpline>
     static TimeSeriesTable resampleWithIntervalBounded(
             const TimeSeriesTable& in, double interval);
+
+    // Utility to convert TimeSeriesTable of Rotations to a 
+    // corresponding TimeSeriesTableVec3 of BodyFixedXYZ Euler angles
+    static TimeSeriesTable_<SimTK::Vec3> convertRotationsToEulerAngles(
+            const TimeSeriesTable_<SimTK::Rotation>& rotTable);
 
 private:
     static int findStateLabelIndexInternal(const std::string* begin,

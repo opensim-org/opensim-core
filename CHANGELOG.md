@@ -9,6 +9,11 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 
 v4.2
 ====
+- Introduced new logging system based on spdlog https://github.com/gabime/spdlog.git. The transition should be transparent to end users with default settings except that the name of the log file is now opensim.log. Main features are:
+  - The ability to customize error level for reporting (in increasing level of verbosity): Off, Critical, Error, Warn, Info, Debug, Trace 
+  - The ability to start logging to a specified file on the fly.
+  - Log file messages are time stamped and the format can be changed by users
+  - More details and additional functionality is described in the Developer's Guide, and Doxygen pages of OpenSim::Logger class.
 - Add the ActivationCoordinateActuator component, which is a CoordinateActuator with simple activation dynamics (PR #2699).
 - Easily convert Matlab matrices and Python NumPy arrays to and from OpenSim Vectors and Matrices. See Matlab example matrixConversions.m and Python example numpy_conversions.py.
 - Users have more control over which messages are logged. Messages are now logged to opensim.log instead of out.log and err.log. Users can control logging levels via `Logger::setLevel()`.
@@ -32,7 +37,17 @@ v4.2
   - This improves the performance of component-heavy models by ~5-10 %
   - The behavior and interface of `ComponentPath` should remain the same
 - The new Matlab CustomStaticOptimization.m guides the user to build their own custom static optimization code. 
-
+- Dropped support for separate Kinematics for application of External Loads. ([PR #2770] (https://github.com/opensim-org/opensim-core/pull/2770)). 
+- Refactored InverseKinematicsSolver to allow for adding (live) Orientation data to track, introduced BufferedOrientationsReference to queue data (PR #2855)
+- `opensim.log` will only be created/opened when the first message is logged to it (PR #2880):
+  - Previously, `opensim.log` would always be created, even if nothing was logged
+- Added a CMake option, `OPENSIM_DISABLE_LOG_FILE` (PR #2880):
+  - When set, disables `opensim.log` from being used by the logger by default when the first message is written to the log
+  - Log messages are still written to the standard output/error streams
+  - Previously, `opensim.log` would always be created - even if nothing was written to it (fixed above)
+  - Setting `OPENSIM_DISABLE_LOG_FILE` only disables the automatic creation of `opensim.log`. File logging can still be manually be enabled by calling `Logger::addFileSink()`
+  - This flag is `OFF` by default. So standard builds will still observe the existing behavior (`opensim.log` is created).
+- Fix bug in visualization of EllipsoidJoint that was not attaching to the correct frame ([PR #2887] (https://github.com/opensim-org/opensim-core/pull/2887))
 
 v4.1
 ====
