@@ -31,22 +31,22 @@ using namespace OpenSim;
 using SimTK::Vec3;
 
 template<typename T>
-std::unique_ptr<Model> create2DPointMassModel() {
-    std::unique_ptr<Model> model = std::make_unique<Model>();
-    model->setName("point_mass");
+Model create2DPointMassModel() {
+    Model model;
+    model.setName("point_mass");
     auto* intermed = new Body("intermed", 0, Vec3(0), SimTK::Inertia(0));
-    model->addComponent(intermed);
+    model.addComponent(intermed);
     auto* body = new Body("body", 50.0, Vec3(0), SimTK::Inertia(1));
-    model->addComponent(body);
+    model.addComponent(body);
 
     // Allows translation along x.
     auto* jointX = new SliderJoint();
     jointX->setName("tx");
-    jointX->connectSocket_parent_frame(model->getGround());
-    jointX->connectSocket_child_frame(model->getComponent<Body>("intermed"));
+    jointX->connectSocket_parent_frame(model.getGround());
+    jointX->connectSocket_child_frame(model.getComponent<Body>("intermed"));
     auto& coordX = jointX->updCoordinate(SliderJoint::Coord::TranslationX);
     coordX.setName("tx");
-    model->addComponent(jointX);
+    model.addComponent(jointX);
 
     // The joint's x axis must point in the global "+y" direction.
     auto* jointY = new SliderJoint("ty",
@@ -54,20 +54,20 @@ std::unique_ptr<Model> create2DPointMassModel() {
             *body, Vec3(0), Vec3(0, 0, 0.5 * SimTK::Pi));
     auto& coordY = jointY->updCoordinate(SliderJoint::Coord::TranslationX);
     coordY.setName("ty");
-    model->addComponent(jointY);
+    model.addComponent(jointY);
 
     auto* station = new Station();
     station->setName("contact_point");
-    model->addComponent(station);
-    station->connectSocket_parent_frame(model->getComponent<Body>("body"));
+    model.addComponent(station);
+    station->connectSocket_parent_frame(model.getComponent<Body>("body"));
 
     auto* force = new T();
     force->setName("contact");
     force->set_stiffness(STIFFNESS);
     force->set_dissipation(DISSIPATION);
     force->set_friction_coefficient(FRICTION_COEFFICIENT);
-    model->addComponent(force);
-    force->connectSocket_station(model->getComponent<Station>("contact_point"));
+    model.addComponent(force);
+    force->connectSocket_station(model.getComponent<Station>("contact_point"));
 
     return model;
 }
@@ -81,8 +81,8 @@ SimTK::Real testNormalForce() {
     auto model = create2DPointMassModel<T>();
     SimTK::Real weight;
     {
-        SimTK::State state = model->initSystem();
-        weight = model->getTotalMass(state) * (-model->getGravity()[1]);
+        SimTK::State state = model.initSystem();
+        weight = model.getTotalMass(state) * (-model.getGravity()[1]);
     }
 
     const SimTK::Real y0 = 0.5;
@@ -92,17 +92,17 @@ SimTK::Real testNormalForce() {
     // --------------
     SimTK::Real finalHeightTimeStepping;
     {
-        SimTK::State state = model->initSystem();
-        model->setStateVariableValue(state, "ty/ty/value", y0);
-        Manager manager(*model);
+        SimTK::State state = model.initSystem();
+        model.setStateVariableValue(state, "ty/ty/value", y0);
+        Manager manager(model);
         manager.setIntegratorAccuracy(1e-6);
         manager.initialize(state);
         state = manager.integrate(finalTime);
 
         // visualize(model, manager.getStateStorage());
 
-        auto& contact = model->getComponent<StationPlaneContactForce>("contact");
-        model->realizeVelocity(state);
+        auto& contact = model.getComponent<StationPlaneContactForce>("contact");
+        model.realizeVelocity(state);
         const Vec3 contactForce = contact.calcContactForceOnStation(state);
         // The horizontal force is not quite zero, maybe from a buildup of
         // numerical error (tightening the accuracy reduces this force).
@@ -112,7 +112,7 @@ SimTK::Real testNormalForce() {
         CHECK(contactForce[2] == 0);
 
         finalHeightTimeStepping =
-                model->getStateVariableValue(state, "ty/ty/value");
+                model.getStateVariableValue(state, "ty/ty/value");
     }
 
     // Direct collocation.
@@ -123,7 +123,7 @@ SimTK::Real testNormalForce() {
     {
         MocoStudy study;
         MocoProblem& mp = study.updProblem();
-        mp.setModel(std::move(model));
+        mp.setModelAsCopy(model);
         mp.setTimeBounds(0, finalTime);
         mp.setStateInfo("/tx/tx/value", {-1, 1}, 0);
         mp.setStateInfo("/ty/ty/value", {-0.5, 1}, y0);
@@ -141,8 +141,8 @@ SimTK::Real testNormalForce() {
 
         auto statesTraj = solution.exportToStatesTrajectory(mp);
         const auto& finalState = statesTraj.back();
-        model->realizeVelocity(finalState);
-        auto& contact = model->getComponent<StationPlaneContactForce>("contact");
+        model.realizeVelocity(finalState);
+        auto& contact = model.getComponent<StationPlaneContactForce>("contact");
         const Vec3 contactForce = contact.calcContactForceOnStation(finalState);
         // For some reason, direct collocation doesn't produce the same
         // numerical issues with the x component of the force as seen above.
@@ -151,7 +151,7 @@ SimTK::Real testNormalForce() {
         CHECK(contactForce[2] == 0);
 
         finalHeightDircol =
-                model->getStateVariableValue(finalState, "ty/ty/value");
+                model.getStateVariableValue(finalState, "ty/ty/value");
     }
 
     CHECK(finalHeightTimeStepping == Approx(finalHeightDircol).margin(1e-5));
@@ -166,17 +166,17 @@ SimTK::Real testNormalForce() {
 template<typename T>
 void testFrictionForce(const SimTK::Real& equilibriumHeight) {
     auto model = create2DPointMassModel<T>();
-    model->finalizeConnections();
+    model.finalizeConnections();
 
     {
-        SimTK::State state = model->initSystem();
+        SimTK::State state = model.initSystem();
     }
 
     const SimTK::Real y0 = equilibriumHeight;
     const SimTK::Real finalTime = 0.5;
     const SimTK::Real vx0 = 2.5;
 
-    const SimTK::Real g = -model->getGravity()[1];
+    const SimTK::Real g = -model.getGravity()[1];
 
     // Expected final x position.
     // --------------------------
@@ -195,16 +195,16 @@ void testFrictionForce(const SimTK::Real& equilibriumHeight) {
     // Time stepping.
     // --------------
     {
-        SimTK::State state = model->initSystem();
-        model->setStateVariableValue(state, "ty/ty/value", y0);
-        model->setStateVariableValue(state, "tx/tx/speed", vx0);
-        Manager manager(*model.get(), state);
+        SimTK::State state = model.initSystem();
+        model.setStateVariableValue(state, "ty/ty/value", y0);
+        model.setStateVariableValue(state, "tx/tx/speed", vx0);
+        Manager manager(model, state);
         state = manager.integrate(finalTime);
 
         // visualize(model, manager.getStateStorage());
 
         const SimTK::Real finalTX =
-                model->getStateVariableValue(state, "tx/tx/value");
+                model.getStateVariableValue(state, "tx/tx/value");
         CHECK(finalTX == Approx(expectedFinalX).margin(0.005));
 
         // The system should be at rest.
@@ -219,7 +219,7 @@ void testFrictionForce(const SimTK::Real& equilibriumHeight) {
     {
         MocoStudy study;
         MocoProblem& mp = study.updProblem();
-        mp.setModel(std::move(create2DPointMassModel<T>()));
+        mp.setModelAsCopy(model);
         mp.setTimeBounds(0, finalTime);
         mp.setStateInfo("/tx/tx/value", {-1, 1}, 0);
         mp.setStateInfo("/ty/ty/value", {-0.5, 1}, y0);
@@ -238,7 +238,7 @@ void testFrictionForce(const SimTK::Real& equilibriumHeight) {
         auto statesTraj = solution.exportToStatesTrajectory(mp);
         const auto& finalState = statesTraj.back();
         const SimTK::Real finalTX =
-                model->getStateVariableValue(finalState, "tx/tx/value");
+                model.getStateVariableValue(finalState, "tx/tx/value");
 
         CHECK(finalTX == Approx(expectedFinalX).margin(0.005));
 
