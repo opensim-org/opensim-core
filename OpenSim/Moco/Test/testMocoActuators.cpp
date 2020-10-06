@@ -79,10 +79,13 @@ Model createHangingMuscleModel(double optimalFiberLength,
 
 TEMPLATE_TEST_CASE(
         "Hanging muscle minimum time", "[casadi]", MocoCasADiSolver) {
+    // GENERATE creates separate tests in which these variables are set to
+    // either true or false.
     auto ignoreActivationDynamics = GENERATE(true, false);
     auto ignoreTendonCompliance = GENERATE(true, false);
     auto isTendonDynamicsExplicit = GENERATE(true, false);
 
+    // CAPTURE prints the current value of these variables to the console.
     CAPTURE(ignoreActivationDynamics);
     CAPTURE(ignoreTendonCompliance);
     CAPTURE(isTendonDynamicsExplicit);
