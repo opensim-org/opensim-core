@@ -277,7 +277,7 @@ def solveMarkerTracking(markersRef, guess):
     # Cost: track provided marker data.
     markerTracking = osim.MocoMarkerTrackingGoal()
     markerTracking.setMarkersReference(
-        osim.TableProcessor(markersRef.getMarkerTable()))
+        osim.TableProcessor(markersRef.getMarkerTable().flatten()))
     problem.addGoal(markerTracking)
     
     effort = osim.MocoControlGoal()
