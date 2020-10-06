@@ -210,7 +210,7 @@ def solveStateTracking(stateRef):
     # Arguments are name, [lower bound, upper bound],
     #                     initial [lower bound, upper bound],
     #                     final [lower bound, upper bound].
-    finalTime = markersRef.getMarkerTable().getIndependentColumn()[-1]
+    finalTime = stateRef.getIndependentColumn()[-1]
     problem.setTimeBounds(0, finalTime)
     problem.setStateInfo("/jointset/j0/q0/value", [-10, 10], 0)
     problem.setStateInfo("/jointset/j0/q0/speed", [-50, 50], 0)
@@ -276,7 +276,8 @@ def solveMarkerTracking(markersRef, guess):
 
     # Cost: track provided marker data.
     markerTracking = osim.MocoMarkerTrackingGoal()
-    markerTracking.setMarkersReference(markersRef)
+    markerTracking.setMarkersReference(
+        osim.TableProcessor(markersRef.getMarkerTable()))
     problem.addGoal(markerTracking)
     
     effort = osim.MocoControlGoal()
