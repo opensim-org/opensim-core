@@ -43,7 +43,7 @@ Model create2DPointMassModel() {
     auto* jointX = new SliderJoint();
     jointX->setName("tx");
     jointX->connectSocket_parent_frame(model.getGround());
-    jointX->connectSocket_child_frame(model.getComponent<Body>("intermed"));
+    jointX->connectSocket_child_frame(*intermed);
     auto& coordX = jointX->updCoordinate(SliderJoint::Coord::TranslationX);
     coordX.setName("tx");
     model.addComponent(jointX);
@@ -59,15 +59,15 @@ Model create2DPointMassModel() {
     auto* station = new Station();
     station->setName("contact_point");
     model.addComponent(station);
-    station->connectSocket_parent_frame(model.getComponent<Body>("body"));
+    station->connectSocket_parent_frame(*body);
 
     auto* force = new T();
     force->setName("contact");
     force->set_stiffness(STIFFNESS);
     force->set_dissipation(DISSIPATION);
     force->set_friction_coefficient(FRICTION_COEFFICIENT);
+    force->connectSocket_station(*station);
     model.addComponent(force);
-    force->connectSocket_station(model.getComponent<Station>("contact_point"));
 
     return model;
 }
@@ -78,7 +78,13 @@ Model create2DPointMassModel() {
 // collocation.
 template<typename T>
 SimTK::Real testNormalForce() {
-    auto model = create2DPointMassModel<T>();
+    // TODO this copy breaks the contact force station socket path
+    Model modelTemp = create2DPointMassModel<T>();
+    modelTemp.finalizeConnections();
+    Model model(modelTemp);
+    model.finalizeConnections();
+    ModelProcessor modelProc(model);
+
     SimTK::Real weight;
     {
         SimTK::State state = model.initSystem();
@@ -101,7 +107,8 @@ SimTK::Real testNormalForce() {
 
         // visualize(model, manager.getStateStorage());
 
-        auto& contact = model.getComponent<StationPlaneContactForce>("contact");
+        // https://stackoverflow.com/questions/34696351/template-dependent-typename
+        auto& contact = model.template getComponent<StationPlaneContactForce>("contact");
         model.realizeVelocity(state);
         const Vec3 contactForce = contact.calcContactForceOnStation(state);
         // The horizontal force is not quite zero, maybe from a buildup of
@@ -142,7 +149,8 @@ SimTK::Real testNormalForce() {
         auto statesTraj = solution.exportToStatesTrajectory(mp);
         const auto& finalState = statesTraj.back();
         model.realizeVelocity(finalState);
-        auto& contact = model.getComponent<StationPlaneContactForce>("contact");
+        // https://stackoverflow.com/questions/34696351/template-dependent-typename
+        auto& contact = model.template getComponent<StationPlaneContactForce>("contact");
         const Vec3 contactForce = contact.calcContactForceOnStation(finalState);
         // For some reason, direct collocation doesn't produce the same
         // numerical issues with the x component of the force as seen above.
@@ -166,7 +174,6 @@ SimTK::Real testNormalForce() {
 template<typename T>
 void testFrictionForce(const SimTK::Real& equilibriumHeight) {
     auto model = create2DPointMassModel<T>();
-    model.finalizeConnections();
 
     {
         SimTK::State state = model.initSystem();
@@ -507,11 +514,11 @@ void testSmoothSphereHalfSpaceForce_FrictionForce(
 }
 
 // TODO issue when copying model -- contact force connectee paths are lost.
-//TEMPLATE_TEST_CASE("testStationPlaneContactForce", "[tropter]", 
-//        AckermannVanDenBogert2010Force, EspositoMiller2018Force
-//        /* TODO MeyerFregly2016Force */) {
-//    testStationPlaneContactForce<TestType>();
-//}
+TEMPLATE_TEST_CASE("testStationPlaneContactForce", "[tropter]", 
+        AckermannVanDenBogert2010Force, EspositoMiller2018Force
+        /* TODO MeyerFregly2016Force */) {
+    testStationPlaneContactForce<TestType>();
+}
 
 TEST_CASE("testSmoothSphereHalfSpaceForce", "[casadi]") {
     const SimTK::Real equilibriumHeight =
