@@ -23,10 +23,6 @@
 
 #include <OpenSim/Simulation/Manager/Manager.h>
 
-const double STIFFNESS = 1e5;
-const double DISSIPATION = 1.0;
-const double FRICTION_COEFFICIENT = 0.7;
-
 using namespace OpenSim;
 using SimTK::Vec3;
 
@@ -63,9 +59,9 @@ Model create2DPointMassModel() {
 
     auto* force = new T();
     force->setName("contact");
-    force->set_stiffness(STIFFNESS);
-    force->set_dissipation(DISSIPATION);
-    force->set_friction_coefficient(FRICTION_COEFFICIENT);
+    force->set_stiffness(1e5);
+    force->set_dissipation(1.0);
+    force->set_friction_coefficient(0.7);
     force->connectSocket_station(*station);
     model.addComponent(force);
 
