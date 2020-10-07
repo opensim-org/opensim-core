@@ -94,6 +94,18 @@ class TestMocoSlidingMass {
       solution.write("sliding_mass_solution.sto");
     }
   }
+  
+  public static void testMarkersReference() throws Exception {
+      MocoStudy study = new MocoStudy();
+      study.setName("marker_tracking");
+      MocoProblem mp = study.updProblem();
+      mp.setModel(createSlidingMassModel());
+      MarkersReference ref = new MarkersReference();
+      MocoMarkerTrackingGoal tracking = new MocoMarkerTrackingGoal();
+      tracking.setMarkersReference(ref);
+      mp.addGoal(tracking);
+  }
+  
   public static void main(String[] args) {
     try {
       testMocoSlidingMass();
@@ -102,5 +114,13 @@ class TestMocoSlidingMass {
       System.out.println("Exception: " + e);
       System.exit(1);
     }
+    // TODO fails when setting MarkersReference to tracking goal
+    // try {
+      // testMarkersReference();
+      // System.out.println("Test finished!");
+    // } catch (Exception e) {
+      // System.out.println("Exception: " + e);
+      // System.exit(1);
+    // }
   }
 }
