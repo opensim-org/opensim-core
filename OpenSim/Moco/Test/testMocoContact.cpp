@@ -23,6 +23,8 @@
 
 #include <OpenSim/Simulation/Manager/Manager.h>
 
+const double FRICTION_COEFFICIENT = 0.7;
+
 using namespace OpenSim;
 using SimTK::Vec3;
 
@@ -61,7 +63,7 @@ Model create2DPointMassModel() {
     force->setName("contact");
     force->set_stiffness(1e5);
     force->set_dissipation(1.0);
-    force->set_friction_coefficient(0.7);
+    force->set_friction_coefficient(FRICTION_COEFFICIENT);
     force->connectSocket_station(*station);
     model.addComponent(force);
 
