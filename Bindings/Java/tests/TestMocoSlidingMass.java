@@ -114,7 +114,7 @@ class TestMocoSlidingMass {
       System.out.println("Exception: " + e);
       System.exit(1);
     }
-    // TODO fails when setting MarkersReference to tracking goal
+    // TODO fails MarkersReference is passed to MocoMarkerTrackingGoal
     // try {
       // testMarkersReference();
       // System.out.println("Test finished!");
