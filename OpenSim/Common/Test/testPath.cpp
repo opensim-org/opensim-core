@@ -104,6 +104,8 @@ void testComponentPath() {
             // the existing implementation returns this value, so it's kept
             // for backwards-compat
             { "/", "/", "" },
+            { "/a", "/a", "" },
+            { "/a/b", "/a/b", "" },
         };
 
         for (const TestCase& tc : testCases) {
