@@ -100,13 +100,17 @@ void testComponentPath() {
             // other potentially-failing examples, for good measure
             { "/a/b", "/c/d", "../../c/d" },
             { "/a/b/c/", "/e/f/g", "../../../e/f/g" },
+            // logically, the relative path should be "." for this. However,
+            // the existing implementation returns this value, so it's kept
+            // for backwards-compat
+            { "/", "/", "" },
         };
 
         for (const TestCase& tc : testCases) {
             const ComponentPath ans = CP{tc.to}.formRelativePath(CP{tc.from});
             if (ans.toString() != tc.expected) {
                 std::stringstream ss;
-                ss << "ComponentPath::formRelativePath produced invalid output" << std::endl;
+                ss << "ComponentPath::formRelativePath produced an invalid output" << std::endl;
                 ss << "      from = " << tc.from << std::endl;
                 ss << "        to = " << tc.to << std::endl;
                 ss << "  expected = " << tc.expected << std::endl;
