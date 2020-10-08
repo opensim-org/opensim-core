@@ -80,6 +80,26 @@ void testComponentPath() {
 
     /* Test formRelativePath(). Both paths must be absolute */
     // Test path that go up and back down the tree
+    {
+        struct TestCase {
+            std::string from;
+            std::string to;
+            std::string expected;
+        };
+
+        TestCase testCases[] = {
+            { "/a/b/e/f/g/h", "/a/b/c/d", "../../../../c/d" },
+            { "/a/b/c/d", "/a/b/e/f/g/h", "../../e/f/g/h" },
+            // Test path that just goes down a tree
+            { "/a/b", "/a/b/c/d", "c/d" },
+            // Test path that only goes up the tree
+            { "/a/b/e/f/g/h", "/a/b", "../../../.." },
+        };
+
+        for (const TestCase& tc : testCases) {
+            ASSERT(CP{tc.to}.formRelativePath(CP{tc.from}).toString() == tc.expected);
+        }
+    }
     ASSERT(CP{"/a/b/c/d"}.formRelativePath(CP{"/a/b/e/f/g/h"}).toString() == "../../../../c/d");
     ASSERT(CP{"/a/b/e/f/g/h"}.formRelativePath(CP{"/a/b/c/d"}).toString() == "../../e/f/g/h");
     // Test path that just goes down a tree
