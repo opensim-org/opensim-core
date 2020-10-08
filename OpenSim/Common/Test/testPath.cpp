@@ -94,6 +94,12 @@ void testComponentPath() {
             { "/a/b", "/a/b/c/d", "c/d" },
             // Test path that only goes up the tree
             { "/a/b/e/f/g/h", "/a/b", "../../../.." },
+            // An example that failed post-merge
+            //     see https://github.com/opensim-org/opensim-core/pull/2805
+            { "/contact", "/contact_point", "../contact_point" },
+            // other potentially-failing examples, for good measure
+            { "/a/b", "/c/d", "../../c/d" },
+            { "/a/b/c/", "/e/f/g", "../../../e/f/g" },
         };
 
         for (const TestCase& tc : testCases) {
