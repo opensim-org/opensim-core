@@ -213,7 +213,7 @@ void testModelWithPassiveForces() {
         "ModelWithPassiveForces activations failed");
 
     CHECK_STORAGE_AGAINST_STANDARD(forces, stdForces,
-        std::vector<double>(48, 2.5),
+        std::vector<double>(48, 3),
         __FILE__, __LINE__,
         "ModelWithPassiveForces forces failed.");
     cout << resultsDir << ": test ModelWithPassiveForces passed." << endl;
