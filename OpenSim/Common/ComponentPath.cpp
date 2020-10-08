@@ -304,46 +304,8 @@ ComponentPath ComponentPath::formAbsolutePath(const ComponentPath& otherPath) co
 }
 
 ComponentPath ComponentPath::formRelativePath(const ComponentPath& otherPath) const {
-    if (!isAbsolute()) {
-        OPENSIM_THROW(Exception, _path + ": is not an absolute path.");
-    }
-
-    if (!otherPath.isAbsolute()) {
-        OPENSIM_THROW(Exception, _path + ": is not an absolute path.");
-    }
-
-    // helper: returns the index of the first character where s1[index] !=
-    // s2[index] returns s1.size() for identical inputs
-    auto mismatchOffset = [](const std::string& s1, const std::string& s2) {
-        const size_t shortest = std::min(s1.size(), s2.size());
-
-        size_t offset = 0;
-        while (offset < shortest) {
-            if (s1[offset] != s2[offset]) {
-                break;
-            }
-            ++offset;
-        }
-
-        return offset;
-    };
-
-    // helper: returns the index of the first separator to the (inclusive) left
-    // of `offset` in `s`.
-    auto rfindSeparator = [](const std::string& s, size_t offset) {
-        while (offset > 0) {
-            char c = s[offset];
-            if (c == separator) {
-                break;
-            }
-            --offset;
-        }
-
-        return offset;
-    };
-
-    // helper: generate a path string containing `n` step ups (e.g. "../../")
-    auto generateStepUps = [](size_t n) {
+    // helper: returns a path string containing `n` step ups (e.g. "../../")
+    static auto generateStepUps = [](size_t n) {
         std::string rv;
         for (size_t i = 0; i < n; ++i) {
             rv += "..";
@@ -352,61 +314,56 @@ ComponentPath ComponentPath::formRelativePath(const ComponentPath& otherPath) co
         return rv;
     };
 
-    // for readability: we are going FROM p1 and TO p2 by stepping UP (..) in
-    //                  P1 to the common root and then stepping DOWN into p2
+    if (!isAbsolute()) {
+        OPENSIM_THROW(Exception, _path + ": is not an absolute path.");
+    }
+
+    if (!otherPath.isAbsolute()) {
+        OPENSIM_THROW(Exception, _path + ": is not an absolute path.");
+    }
+
+    // readability: the resulting path goes FROM p1 and TO p2
     const std::string& p1 = otherPath._path;
     const std::string& p2 = this->_path;
 
-    // edge-case: p1 is identical to p2, so no stepping logic is necessary and
-    // the identity path (".") should be returned
-    if (p1 == p2) {
-        return ComponentPath{"."};
+    // compute the lexographic mismatch between p1 and p2
+    const size_t mismatch = [&]() {
+        auto shortest = static_cast<std::string::difference_type>(std::min(p1.size(), p2.size()));
+        auto p = std::mismatch(p1.begin(), p1.begin() + shortest, p2.begin());
+        return static_cast<size_t>(std::distance(p1.begin(), p.first));
+    }();
+
+    // handle edge cases: see test suite for example inputs
+    ComponentPath rv;
+
+    if (p1[mismatch] == nul && p2[mismatch] == nul) {
+        // p1 == p2
+        rv = ComponentPath{""};
+    } else if (p1.size() == 1 && p1[0] == separator) {
+        // p1 is just "/", p2 is defined to be a direct subpath beginning after
+        // the "/"
+        rv = ComponentPath{p2.substr(1)};
+    } else if (p1[mismatch] == nul && p2[mismatch] == separator) {
+        // p2 is a direct subpath of p1, so only step down
+        rv = ComponentPath{p2.substr(mismatch + 1)};
+    } else if (p1[mismatch] == separator && p2[mismatch] == nul) {
+        // p1 is a direct subpath of p2, so only step up
+        size_t stepUps = std::count(p1.begin() + mismatch, p1.end(), separator);
+        rv = ComponentPath{generateStepUps(stepUps)};
+    } else {
+        // There is a divergence between the two paths. Step up to the
+        // divergence point (dir) then step down to the target
+        size_t divergencePoint = p1.rfind(separator, mismatch - 1);
+
+        // step up in p1 and then step down in p2
+        size_t stepUps = std::count(p1.begin() + divergencePoint, p1.end(), separator);
+        std::string path = generateStepUps(stepUps);
+        path += p2.substr(divergencePoint + 1);
+
+        rv = ComponentPath{std::move(path)};
     }
 
-    // p1 != p2, so find the point at which they lexographically mismatch
-    const size_t mismatchStart = mismatchOffset(p1, p2);
-
-    // edge-case: the lexographic mismatch indicates that p2 is a subpath in
-    // p1, so p2 can be reached by stepping down in p1
-    if (p1[mismatchStart] == nul && p2[mismatchStart] == separator) {
-        size_t subpathStart = mismatchStart + 1;  // skip separartor
-        return ComponentPath{p2.substr(subpathStart)};
-    }
-
-    // reverse edge-case: the lexographic mismatch indicates that p1 is a
-    // subpath in p1, so p2 can be reached by stepping up in p1
-    if (p1[mismatchStart] == separator && p2[mismatchStart] == nul) {
-        size_t n = std::count(p1.begin() + mismatchStart, p1.end(), separator);
-        return generateStepUps(n);
-    }
-
-    // Because:
-    //   - Both paths must be absolute (asserted above)
-    //   - p1 != p2 (handled above)
-    //   - p2 is not a direct subpath of p1 (handled above)
-    //   - p1 is not a direct subpath of p2 (handled above)
-    //
-    // Going from p1 to p2 must involve stepping up in p1 to a common tree
-    // divergence point, followed by stepping down in p2.
-    //
-    // The tree divergence point is the first separator to the left of the
-    // lexographic divergence point
-    size_t p1Start = rfindSeparator(p1, mismatchStart);
-    size_t p2Start = rfindSeparator(p2, mismatchStart);
-
-    // the number of step-ups == the number of separators after (and including)
-    // the tree divergence point
-    size_t stepUps = std::count(p1.begin() + p1Start, p1.end(), separator);
-
-    // create step-up portion of relative path (../../)
-    std::string rv = generateStepUps(stepUps);
-
-    // append step-down portion of relative path (a/b)
-    if (p2Start < p2.size()) {
-        rv += p2.substr(p2Start + 1);
-    }
-
-    return ComponentPath{std::move(rv)};
+    return rv;
 }
 
 OpenSim::ComponentPath OpenSim::ComponentPath::getParentPath() const {
