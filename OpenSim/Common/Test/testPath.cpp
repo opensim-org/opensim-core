@@ -119,12 +119,7 @@ void testComponentPath() {
             }
         }
     }
-    ASSERT(CP{"/a/b/c/d"}.formRelativePath(CP{"/a/b/e/f/g/h"}).toString() == "../../../../c/d");
-    ASSERT(CP{"/a/b/e/f/g/h"}.formRelativePath(CP{"/a/b/c/d"}).toString() == "../../e/f/g/h");
-    // Test path that just goes down a tree
-    ASSERT(CP{"/a/b/c/d"}.formRelativePath(CP{"/a/b"}).toString() == "c/d");
-    // Test path that only goes up the tree
-    ASSERT(CP{"/a/b"}.formRelativePath(CP{"/a/b/e/f/g/h"}).toString() == "../../../..");
+
     // Throw exceptions if either or both paths are not absolute
     ASSERT_THROW(Exception, CP{"c/d"}.formRelativePath(CP{"/a/b/e/f/g/h"}));
     ASSERT_THROW(Exception, CP{"/a/b/e/f/g/h"}.formRelativePath(CP{"e/f/g/h"}));
