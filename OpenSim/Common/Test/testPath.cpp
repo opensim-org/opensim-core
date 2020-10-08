@@ -97,7 +97,16 @@ void testComponentPath() {
         };
 
         for (const TestCase& tc : testCases) {
-            ASSERT(CP{tc.to}.formRelativePath(CP{tc.from}).toString() == tc.expected);
+            const ComponentPath ans = CP{tc.to}.formRelativePath(CP{tc.from});
+            if (ans.toString() != tc.expected) {
+                std::stringstream ss;
+                ss << "ComponentPath::formRelativePath produced invalid output" << std::endl;
+                ss << "      from = " << tc.from << std::endl;
+                ss << "        to = " << tc.to << std::endl;
+                ss << "  expected = " << tc.expected << std::endl;
+                ss << "       got = " << ans.toString();
+                throw std::runtime_error{ss.str()};
+            }
         }
     }
     ASSERT(CP{"/a/b/c/d"}.formRelativePath(CP{"/a/b/e/f/g/h"}).toString() == "../../../../c/d");
