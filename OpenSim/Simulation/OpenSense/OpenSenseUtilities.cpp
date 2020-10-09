@@ -250,8 +250,14 @@ SimTK::Vec3 OpenSenseUtilities::computeHeadingCorrection(
         const SimTK::Transform& baseXform =
                 baseFrame->getTransformInGround(state);
         Vec3 baseFrameXInGround = baseXform.xformFrameVecToBase(baseFrameX);
+        // Project axes to X-Z frame before computing correction angle
+        baseFrameXInGround[1] = 0.0;
+        baseFrameXInGround.normalize();
+        Vec3 projectedSegmentXHeading = baseSegmentXHeading;
+        projectedSegmentXHeading[1] = 0.0;
+        projectedSegmentXHeading.normalize();
         SimTK::Real angularDifference =
-                acos(~baseSegmentXHeading * baseFrameXInGround);
+                acos(~projectedSegmentXHeading * baseFrameXInGround);
         // Compute the sign of the angular correction.
         SimTK::Vec3 xproduct = (baseFrameXInGround % baseSegmentXHeading);
         if (xproduct.get(1) > 0) { 
