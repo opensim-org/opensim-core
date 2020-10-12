@@ -80,12 +80,48 @@ void testComponentPath() {
 
     /* Test formRelativePath(). Both paths must be absolute */
     // Test path that go up and back down the tree
-    ASSERT(CP{"/a/b/c/d"}.formRelativePath(CP{"/a/b/e/f/g/h"}).toString() == "../../../../c/d");
-    ASSERT(CP{"/a/b/e/f/g/h"}.formRelativePath(CP{"/a/b/c/d"}).toString() == "../../e/f/g/h");
-    // Test path that just goes down a tree
-    ASSERT(CP{"/a/b/c/d"}.formRelativePath(CP{"/a/b"}).toString() == "c/d");
-    // Test path that only goes up the tree
-    ASSERT(CP{"/a/b"}.formRelativePath(CP{"/a/b/e/f/g/h"}).toString() == "../../../..");
+    {
+        struct TestCase {
+            std::string from;
+            std::string to;
+            std::string expected;
+        };
+
+        TestCase testCases[] = {
+            { "/a/b/e/f/g/h", "/a/b/c/d", "../../../../c/d" },
+            { "/a/b/c/d", "/a/b/e/f/g/h", "../../e/f/g/h" },
+            // Test path that just goes down a tree
+            { "/a/b", "/a/b/c/d", "c/d" },
+            // Test path that only goes up the tree
+            { "/a/b/e/f/g/h", "/a/b", "../../../.." },
+            // An example that failed post-merge
+            //     see https://github.com/opensim-org/opensim-core/pull/2805
+            { "/contact", "/contact_point", "../contact_point" },
+            // other potentially-failing examples, for good measure
+            { "/a/b", "/c/d", "../../c/d" },
+            { "/a/b/c/", "/e/f/g", "../../../e/f/g" },
+            // logically, the relative path should be "." for this. However,
+            // the existing implementation returns this value, so it's kept
+            // for backwards-compat
+            { "/", "/", "" },
+            { "/a", "/a", "" },
+            { "/a/b", "/a/b", "" },
+        };
+
+        for (const TestCase& tc : testCases) {
+            const ComponentPath ans = CP{tc.to}.formRelativePath(CP{tc.from});
+            if (ans.toString() != tc.expected) {
+                std::stringstream ss;
+                ss << "ComponentPath::formRelativePath produced an invalid output" << std::endl;
+                ss << "      from = " << tc.from << std::endl;
+                ss << "        to = " << tc.to << std::endl;
+                ss << "  expected = " << tc.expected << std::endl;
+                ss << "       got = " << ans.toString();
+                throw std::runtime_error{ss.str()};
+            }
+        }
+    }
+
     // Throw exceptions if either or both paths are not absolute
     ASSERT_THROW(Exception, CP{"c/d"}.formRelativePath(CP{"/a/b/e/f/g/h"}));
     ASSERT_THROW(Exception, CP{"/a/b/e/f/g/h"}.formRelativePath(CP{"e/f/g/h"}));
