@@ -511,12 +511,11 @@ void testSmoothSphereHalfSpaceForce_FrictionForce(
     }
 }
 
-// TODO issue when copying model -- contact force connectee paths are lost.
-//TEMPLATE_TEST_CASE("testStationPlaneContactForce", "[tropter]", 
-//        AckermannVanDenBogert2010Force, EspositoMiller2018Force
-//        /* TODO MeyerFregly2016Force */) {
-//    testStationPlaneContactForce<TestType>();
-//}
+TEMPLATE_TEST_CASE("testStationPlaneContactForce", "[tropter]", 
+        AckermannVanDenBogert2010Force, EspositoMiller2018Force
+        /* TODO MeyerFregly2016Force */) {
+    testStationPlaneContactForce<TestType>();
+}
 
 TEST_CASE("testSmoothSphereHalfSpaceForce", "[casadi]") {
     const SimTK::Real equilibriumHeight =
