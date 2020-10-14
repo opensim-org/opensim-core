@@ -215,9 +215,9 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %template(SimTKArrayCoordinateReference) SimTK::Array_<OpenSim::CoordinateReference>;
 
 
-%shared_ptr(OpenSim::Reference_<SimTK::Vec3>);
+%shared_ptr(ReferenceVec3);
 %shared_ptr(ReferenceDouble);
-%shared_ptr(OpenSim::Reference_<SimTK::Rotation_<double>>);
+%shared_ptr(ReferenceRotation);
 %include <OpenSim/Simulation/MarkersReference.h>
 %shared_ptr(OpenSim::MarkersReference);
 %template(SetMarkerWeights) OpenSim::Set<MarkerWeight, OpenSim::Object>;
