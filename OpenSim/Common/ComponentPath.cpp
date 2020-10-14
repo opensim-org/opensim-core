@@ -304,6 +304,16 @@ ComponentPath ComponentPath::formAbsolutePath(const ComponentPath& otherPath) co
 }
 
 ComponentPath ComponentPath::formRelativePath(const ComponentPath& otherPath) const {
+    // helper: returns a path string containing `n` step ups (e.g. "../../")
+    static auto generateStepUps = [](size_t n) {
+        std::string rv;
+        for (size_t i = 0; i < n; ++i) {
+            rv += "..";
+            rv += separator;
+        }
+        return rv;
+    };
+
     if (!isAbsolute()) {
         OPENSIM_THROW(Exception, _path + ": is not an absolute path.");
     }
@@ -312,68 +322,48 @@ ComponentPath ComponentPath::formRelativePath(const ComponentPath& otherPath) co
         OPENSIM_THROW(Exception, _path + ": is not an absolute path.");
     }
 
-
-    // helper: returns the index of the first character where s1[index] !=
-    // s2[index] returns s1.size() for identical inputs
-    auto mismatchOffset = [](const std::string& s1, const std::string& s2) {
-        const size_t shortest = std::min(s1.size(), s2.size());
-
-        size_t offset = 0;
-        while (offset < shortest) {
-            if (s1[offset] != s2[offset]) {
-                break;
-            }
-            ++offset;
-        }
-
-        return offset;
-    };
-
-    // helper: returns the index of the first separator to the left of
-    // `offset` in `s`. If no separator can be found, returns 0.
-    auto rfindDelimiter = [](const std::string& s, size_t offset) {
-        while (offset > 0) {
-            char c = s[offset];
-            if (c == separator || c == nul) {
-                break;
-            }
-            --offset;
-        }
-
-        return offset;
-    };
-
-    // for readability: we are going FROM p1 and TO p2 by stepping UP (..) in P1 to the
-    //                  common root and then stepping DOWN into p2
+    // readability: the resulting path goes FROM p1 and TO p2
     const std::string& p1 = otherPath._path;
     const std::string& p2 = this->_path;
 
-    // find the point at which (if any) that p1 and p2 lexographically mismatch
-    const size_t mismatchStart = mismatchOffset(p1, p2);
+    // compute the lexographic mismatch between p1 and p2
+    const size_t mismatch = [&]() {
+        auto shortest = static_cast<std::string::difference_type>(std::min(p1.size(), p2.size()));
+        auto p = std::mismatch(p1.begin(), p1.begin() + shortest, p2.begin());
+        return static_cast<size_t>(std::distance(p1.begin(), p.first));
+    }();
 
-    // `mismatchStart` is now the index of the *string* divergence point between p1 and p2.
-    // Because both paths must be absolute requirement (above), we know that
-    // mismatchStart > 0 and that a reverse search in both strings from `mismatchStart`
-    // backwards for the separator will definitely find a separator (at worst, the root)
-    size_t p1Start = rfindDelimiter(p1, mismatchStart);
-    size_t p2Start = rfindDelimiter(p2, mismatchStart);
+    // handle edge cases: see test suite for example inputs
+    ComponentPath rv;
 
-    // `pXstart` is now the index of the *tree* divergence point between p1 and p2. The remaining
-    // logic is:
-    // - the number of "step ups" is the number of separators in p1 after the divergence point
-    // - the "step downs" is simply everything after the divergence point in P2
-    size_t stepUps = std::count(p1.begin() + p1Start, p1.end(), separator);
+    if (p1[mismatch] == nul && p2[mismatch] == nul) {
+        // p1 == p2
+        rv = ComponentPath{""};
+    } else if (p1.size() == 1 && p1[0] == separator) {
+        // p1 is just "/", p2 is defined to be a direct subpath beginning after
+        // the "/"
+        rv = ComponentPath{p2.substr(1)};
+    } else if (p1[mismatch] == nul && p2[mismatch] == separator) {
+        // p2 is a direct subpath of p1, so only step down
+        rv = ComponentPath{p2.substr(mismatch + 1)};
+    } else if (p1[mismatch] == separator && p2[mismatch] == nul) {
+        // p1 is a direct subpath of p2, so only step up
+        size_t stepUps = std::count(p1.begin() + mismatch, p1.end(), separator);
+        rv = ComponentPath{generateStepUps(stepUps)};
+    } else {
+        // There is a divergence between the two paths. Step up to the
+        // divergence point (dir) then step down to the target
+        size_t divergencePoint = p1.rfind(separator, mismatch - 1);
 
-    std::string rv;
-    for (size_t i = 0; i < stepUps; ++i) {
-        rv += "..";
-        rv += separator;
+        // step up in p1 and then step down in p2
+        size_t stepUps = std::count(p1.begin() + divergencePoint, p1.end(), separator);
+        std::string path = generateStepUps(stepUps);
+        path += p2.substr(divergencePoint + 1);
+
+        rv = ComponentPath{std::move(path)};
     }
-    if (p2Start < p2.size()) {
-        rv += p2.substr(p2Start + 1);
-    }
 
-    return ComponentPath{rv};
+    return rv;
 }
 
 OpenSim::ComponentPath OpenSim::ComponentPath::getParentPath() const {
