@@ -167,6 +167,7 @@ bool IMUPlacer::run(bool visualizeResults) {
     std::map<std::string, SimTK::Rotation> imuBodiesInGround;
 
     // First compute the transform of each of the imu bodies in ground
+    int cnt = 0; // check name match between data and model frames
     for (auto& imuName : imuLabels) {
         auto ix = imuName.rfind("_imu");
         if (ix != std::string::npos) {
@@ -175,11 +176,19 @@ bool IMUPlacer::run(bool visualizeResults) {
             if (body) {
                 bodies[imuix] = const_cast<PhysicalFrame*>(body);
                 imuBodiesInGround[imuName] = body->getTransformInGround(s0).R();
+                cnt++;
             }
         }
         ++imuix;
     }
-
+    // we check cnt >= 1 since ground or base frame only is rather meaningless I think
+    // -Ayman 10/20
+    if (cnt < 1) {
+        log_error("IMUPlacer: Calibration data does not "
+                  "correspond to at least 2 model frames.");
+        throw Exception("IMUPlacer: Calibration data does not "
+                        "correspond to at least 2 model frames.");
+    }
     // Now cycle through each imu with a body and compute the relative
     // offset of the IMU measurement relative to the body and
     // update the modelOffset OR add an offset if none exists
