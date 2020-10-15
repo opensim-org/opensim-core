@@ -85,7 +85,7 @@ public:
     /** Run the calibration method to place IMUs on the model,
      Optionally visualize the model post calibration.
      */
-    bool run(bool visualizeResults = false);
+    bool run(bool visualizeResults = false) SWIG_DECLARE_EXCEPTION;
     void setModel(Model& aModel) { _model = &aModel; };
     /** Retrieve the calibrated model. This method will throw if called before 
     the run method is invoked.

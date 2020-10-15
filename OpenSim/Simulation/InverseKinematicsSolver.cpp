@@ -89,6 +89,39 @@ InverseKinematicsSolver::InverseKinematicsSolver(const Model& model,
             log_warn("WARNING: InverseKinematicsSolver found only {} markers to track.", cnt);
 
     }
+    if (_orientationsReference && _orientationsReference->getNumRefs() > 0) {
+        const SimTK::Array_<std::string>& sensorNames =
+                _orientationsReference
+                        ->getNames(); // size and content as in orientations file
+
+        if (sensorNames.size() < 1) {
+            log_error("InverseKinematicsSolver: No orientation data available from source "
+                      "provided.");
+            throw Exception("InverseKinematicsSolver: No sensor data available "
+                            "from sources provided.");
+        }
+        int cnt = 0;
+        const auto onFrames = getModel().getComponentList<PhysicalFrame>();
+
+        for (const auto& modelFrame : onFrames) {
+            const std::string& modelFrameName = modelFrame.getName();
+            auto found = std::find(
+                    sensorNames.begin(), sensorNames.end(), modelFrameName);
+            if (found != sensorNames.end()) { cnt++; }
+        }
+
+        if (cnt < 1) {
+            log_error("InverseKinematicsSolver: Orientation data does not "
+                      "correspond to any model frames.");
+            throw Exception("InverseKinematicsSolver: Orientation data does not "
+                            "correspond to any model frames.");
+        }
+        if (cnt < 4)
+            log_warn("WARNING: InverseKinematicsSolver found only {} frames "
+                     "to track.",
+                    cnt);
+
+    }
 }
 
 int InverseKinematicsSolver::getNumMarkersInUse() const
