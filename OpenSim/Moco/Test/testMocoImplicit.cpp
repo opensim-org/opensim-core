@@ -71,9 +71,11 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
 
     // Cost.
     // -----
+    // Discourage the model from taking the full time range to complete the 
+    // motion.
     auto* ftCost = mp.addGoal<MocoFinalTimeGoal>();
     ftCost->setWeight(0.001);
-
+    // Make sure the end-effector reaches the final target.
     auto* finalCost = mp.addGoal<MocoMarkerFinalGoal>("final");
     finalCost->setWeight(1000.0);
     finalCost->setPointName("/markerset/marker1");
@@ -81,7 +83,7 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
 
     // Configure the solver.
     // =====================
-    int N = 29;
+    int N = 29; // 29 mesh intervals = 30 mesh points
     auto& solver = study.initSolver<SolverType>();
     solver.set_multibody_dynamics_mode(dynamics_mode);
     solver.set_num_mesh_intervals(N);

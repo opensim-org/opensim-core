@@ -25,6 +25,9 @@
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 using namespace OpenSim;
 
+// Reshaper is a JetBrains add-on to Visual Studio that allows running tests
+// individually, but sometimes needs this dummy test case to make template
+// test cases discoverable.
 TEST_CASE("(Dummy test to support discovery in Resharper)") { REQUIRE(true); }
 
 const double STIFFNESS = 100.0; // N/m
@@ -34,7 +37,9 @@ std::unique_ptr<Model> createOscillatorModel() {
     auto model = make_unique<Model>();
     model->setName("oscillator");
     model->set_gravity(SimTK::Vec3(0, 0, 0));
-    // Set model with incorrect mass value.
+    // We will optimize the mass of this body in the test below. Here, we'll set 
+    // the model with "incorrect" mass value, which the test will use as the 
+    // initial guess.
     auto* body = new Body("body", 0.5*MASS, SimTK::Vec3(0), SimTK::Inertia(0));
     model->addComponent(body);
 
