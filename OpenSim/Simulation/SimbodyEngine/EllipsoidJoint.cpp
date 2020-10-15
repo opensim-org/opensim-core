@@ -180,5 +180,6 @@ void EllipsoidJoint::generateDecorations
     const OpenSim::PhysicalFrame& frame = getParentFrame();
     ellipsoid.setColor(Vec3(0.0, 1.0, 1.0));
     ellipsoid.setBodyId(frame.getMobilizedBodyIndex());
+    ellipsoid.setTransform(frame.findTransformInBaseFrame());
     geometryArray.push_back(ellipsoid);
 }
