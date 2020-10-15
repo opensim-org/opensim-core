@@ -307,7 +307,7 @@ double InverseKinematicsSolver::
 double InverseKinematicsSolver::computeCurrentOrientationError(int osensorIndex)
 {
     if (osensorIndex >= 0 && 
-        osensorIndex < _markerAssemblyCondition->getNumMarkers()) {
+        osensorIndex < _orientationAssemblyCondition->getNumOSensors()) {
         return _orientationAssemblyCondition->
             findCurrentOSensorError(
                 SimTK::OrientationSensors::OSensorIx(osensorIndex));
@@ -315,7 +315,7 @@ double InverseKinematicsSolver::computeCurrentOrientationError(int osensorIndex)
     else
         throw Exception(
             "InverseKinematicsSolver::computeCurrentOrientationError: "
-            "invalid markerIndex." );
+            "invalid osensorIndex." );
 }
 
 /* Compute and return the distance between all model o-sensors and their observations. */
