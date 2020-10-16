@@ -95,10 +95,10 @@ InverseKinematicsSolver::InverseKinematicsSolver(const Model& model,
                         ->getNames(); // size and content as in orientations file
 
         if (sensorNames.size() < 1) {
-            log_error("InverseKinematicsSolver: No orientation data available from source "
-                      "provided.");
-            throw Exception("InverseKinematicsSolver: No sensor data available "
-                            "from sources provided.");
+            log_error("InverseKinematicsSolver: No orientation data is available from provided "
+                      "source.");
+            throw Exception("InverseKinematicsSolver: No orientation data is available "
+                            "from the provided source.");
         }
         int cnt = 0;
         const auto onFrames = getModel().getComponentList<PhysicalFrame>();
@@ -116,7 +116,7 @@ InverseKinematicsSolver::InverseKinematicsSolver(const Model& model,
             throw Exception("InverseKinematicsSolver: Orientation data does not "
                             "correspond to any model frames.");
         }
-        if (cnt < 4)
+        if (cnt < 2)
             log_warn("WARNING: InverseKinematicsSolver found only {} frames "
                      "to track.",
                     cnt);
