@@ -181,13 +181,13 @@ bool IMUPlacer::run(bool visualizeResults) {
         }
         ++imuix;
     }
-    // we check cnt >= 1 since ground or base frame only is rather meaningless I think
+    // we check cnt >= 1 since no frames is rather meaningless I think
     // -Ayman 10/20
     if (cnt < 1) {
         log_error("IMUPlacer: Calibration data does not "
-                  "correspond to at least 2 model frames.");
+                  "correspond to any model frames.");
         throw Exception("IMUPlacer: Calibration data does not "
-                        "correspond to at least 2 model frames.");
+                        "correspond to any model frames.");
     }
     // Now cycle through each imu with a body and compute the relative
     // offset of the IMU measurement relative to the body and
