@@ -116,9 +116,7 @@ InverseKinematicsSolver::InverseKinematicsSolver(const Model& model,
             throw Exception("InverseKinematicsSolver: Orientation data does not "
                             "correspond to any model frames.");
         }
-        if (cnt < 2)
-            log_info("WARNING: InverseKinematicsSolver found only {} model frames "
-                     "to track.",
+        log_info("InverseKinematicsSolver found {} model frames to track.",
                     cnt);
 
     }
