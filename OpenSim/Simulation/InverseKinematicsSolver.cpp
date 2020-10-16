@@ -117,7 +117,7 @@ InverseKinematicsSolver::InverseKinematicsSolver(const Model& model,
                             "correspond to any model frames.");
         }
         if (cnt < 2)
-            log_warn("WARNING: InverseKinematicsSolver found only {} frames "
+            log_info("WARNING: InverseKinematicsSolver found only {} model frames "
                      "to track.",
                     cnt);
 

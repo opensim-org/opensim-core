@@ -185,9 +185,11 @@ bool IMUPlacer::run(bool visualizeResults) {
     // -Ayman 10/20
     if (cnt < 1) {
         log_error("IMUPlacer: Calibration data does not "
-                  "correspond to any model frames.");
+                  "correspond to any model frames. "
+                  "Column names must formatted as (bodyname)_imu");
         throw Exception("IMUPlacer: Calibration data does not "
-                        "correspond to any model frames.");
+                        "correspond to any model frames."
+                        "Column names must formatted as (bodyname)_imu");
     }
     // Now cycle through each imu with a body and compute the relative
     // offset of the IMU measurement relative to the body and
