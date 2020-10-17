@@ -226,9 +226,15 @@ void IMUInverseKinematicsTool::runInverseKinematicsWithOrientationsFromFile(
     model.getSimbodyEngine().convertRadiansToDegrees(report);
     report.updTableMetaData().setValueForKey<string>("name", outName);
 
-    STOFileAdapter_<double>::write(report, outputFile + ".mot");
+    auto fullOutputFilename = outputFile;
+    std::string::size_type extSep = fullOutputFilename.rfind(".");
+    if (extSep == std::string::npos) { 
+        fullOutputFilename.append(".mot");
+    }
+    STOFileAdapter_<double>::write(report, fullOutputFilename);
 
-    log_info("Wrote IK with IMU tracking results to: '{}'.", outputFile);
+    log_info(
+            "Wrote IK with IMU tracking results to: '{}'.", fullOutputFilename);
     if (get_report_errors()) {
         STOFileAdapter_<double>::write(*modelOrientationErrors,
                 get_results_directory() + "/" +
