@@ -909,7 +909,7 @@ bool Component::isAllStatesVariablesListValid() const
     // variables associated with the Model and force the list to be rebuilt.
     bool valid = //isObjectUpToDateWithProperties() &&                  // 1.
         !_statesAssociatedSystem.empty() &&                             // 2.
-        _allStateVariables.size() == nsv &&                             // 3.
+        (int)_allStateVariables.size() == nsv &&                        // 3.
         getSystem().isSameSystem(_statesAssociatedSystem.getRef());     // 4.
 
     return valid;
@@ -1042,6 +1042,41 @@ setDiscreteVariableValue(SimTK::State& s, const std::string& name, double value)
             << getConcreteClassName();
         throw Exception(msg.str(),__FILE__,__LINE__);
     }
+}
+
+SimTK::CacheEntryIndex Component::getCacheVariableIndex(const std::string& name) const
+{
+    auto it = this->_namedCacheVariables.find(name);
+
+    if (it != this->_namedCacheVariables.end()) {
+        return it->second.index();
+    }
+
+    std::stringstream msg;
+    msg << "Cache variable with name '" << name << "' not found: maybe the cache variable was not allocated with `Component::addCacheVariable`?";
+
+    OPENSIM_THROW_FRMOBJ(Exception, msg.str());
+}
+
+bool Component::isCacheVariableValid(const SimTK::State& state, const std::string& name) const
+{
+    const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
+    const SimTK::CacheEntryIndex idx = this->getCacheVariableIndex(name);
+    return subsystem.isCacheValueRealized(state, idx);
+}
+
+void Component::markCacheVariableValid(const SimTK::State& state, const std::string& name) const
+{
+    const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
+    const SimTK::CacheEntryIndex idx = this->getCacheVariableIndex(name);
+    subsystem.markCacheValueRealized(state, idx);
+}
+
+void Component::markCacheVariableInvalid(const SimTK::State& state, const std::string& name) const
+{
+    const SimTK::DefaultSystemSubsystem& subsystem = this->getDefaultSubsystem();
+    const SimTK::CacheEntryIndex idx = this->getCacheVariableIndex(name);
+    subsystem.markCacheValueNotRealized(state, idx);
 }
 
 bool Component::constructOutputForStateVariable(const std::string& name)
@@ -1288,7 +1323,7 @@ size_t Component::getNumAdoptedSubcomponents() const
 
 
 
-const int Component::getStateIndex(const std::string& name) const
+int Component::getStateIndex(const std::string& name) const
 {
     std::map<std::string, StateVariableInfo>::const_iterator it;
     it = _namedStateVariableInfo.find(name);
@@ -1346,15 +1381,6 @@ getDiscreteVariableIndex(const std::string& name) const
     return it->second.index;
 }
 
-const SimTK::CacheEntryIndex Component::
-getCacheVariableIndex(const std::string& name) const
-{
-    std::map<std::string, CacheInfo>::const_iterator it;
-    it = _namedCacheVariableInfo.find(name);
-
-    return it->second.index;
-}
-
 Array<std::string> Component::
 getStateVariableNamesAddedByComponent() const
 {
@@ -1384,61 +1410,84 @@ getStateVariableNamesAddedByComponent() const
 void Component::extendRealizeTopology(SimTK::State& s) const
 {
     const SimTK::Subsystem& subSys = getSystem().getDefaultSubsystem();
-    
-    Component *mutableThis = const_cast<Component*>(this);
 
     // Allocate Modeling Option
-    if(_namedModelingOptionInfo.size()>0){
-        std::map<std::string, ModelingOptionInfo>::iterator it;
-        for (it = (mutableThis->_namedModelingOptionInfo).begin(); 
-             it !=_namedModelingOptionInfo.end(); ++it)
-        {
-            ModelingOptionInfo& moi = it->second;
-            moi.index = subSys.allocateDiscreteVariable
-               (s, SimTK::Stage::Instance, new SimTK::Value<int>(0));
-        }
+    for (auto& kv : _namedModelingOptionInfo) {
+        ModelingOptionInfo& moi = kv.second;
+        moi.index = subSys.allocateDiscreteVariable(
+                s, SimTK::Stage::Instance, new SimTK::Value<int>(0));
     }
 
     // Allocate Continuous State Variables
-    if(_namedStateVariableInfo.size()>0){
-        SimTK::Vector zInit(1, 0.0);
-        std::map<std::string, StateVariableInfo>::iterator it;
-        for (it = (mutableThis->_namedStateVariableInfo).begin(); 
-             it != _namedStateVariableInfo.end(); ++it)
-        {
-            const StateVariable& sv = *it->second.stateVariable;
-            const AddedStateVariable* asv 
-                = dynamic_cast<const AddedStateVariable *>(&sv);
+    SimTK::Vector zInit(1, 0.0);
+    for (auto& kv : _namedStateVariableInfo) {
+        const StateVariable& sv = *kv.second.stateVariable;
+        const AddedStateVariable* asv =
+                dynamic_cast<const AddedStateVariable*>(&sv);
 
-            if(asv){// add index information for added state variables
-                // make mutable just to update system allocated index ONLY!
-                AddedStateVariable* masv = const_cast<AddedStateVariable*>(asv);
-                masv->setVarIndex(subSys.allocateZ(s, zInit));
-                masv->setSubsystemIndex(getDefaultSubsystem().getMySubsystemIndex());
-            }
+        if (asv) { // add index information for added state variables
+            // make mutable just to update system allocated index ONLY!
+            AddedStateVariable* masv = const_cast<AddedStateVariable*>(asv);
+            masv->setVarIndex(subSys.allocateZ(s, zInit));
+            masv->setSubsystemIndex(
+                    getDefaultSubsystem().getMySubsystemIndex());
         }
     }
 
     // Allocate Discrete State Variables
-    if(_namedDiscreteVariableInfo.size()>0){
-        std::map<std::string, DiscreteVariableInfo>::iterator it;
-        for (it = (mutableThis->_namedDiscreteVariableInfo).begin(); 
-             it != _namedDiscreteVariableInfo.end(); ++it)
-        {
-            DiscreteVariableInfo& dvi = it->second;
-            dvi.index = subSys.allocateDiscreteVariable
-               (s, dvi.invalidatesStage, new SimTK::Value<double>(0.0));
-        }
+    for (auto& kv : _namedDiscreteVariableInfo) {
+        DiscreteVariableInfo& dvi = kv.second;
+        dvi.index = subSys.allocateDiscreteVariable(
+                s, dvi.invalidatesStage, new SimTK::Value<double>(0.0));
     }
 
-    // Allocate Cache Entry in the State
-    if(_namedCacheVariableInfo.size()>0){
-        std::map<std::string, CacheInfo>::iterator it;
-        for (it = (mutableThis->_namedCacheVariableInfo).begin(); 
-             it != _namedCacheVariableInfo.end(); ++it){
-            CacheInfo& ci = it->second;
-            ci.index = subSys.allocateLazyCacheEntry
-               (s, ci.dependsOnStage, ci.prototype->clone());
+    // allocate cache entry in the state
+    //
+    // BEWARE: the cache variables *must* be inserted into the SimTK::state
+    //         in a deterministic order.
+    //
+    //         The reason this is important is because:
+    //
+    //         - some downstream code will take copies of the `SimTK::State`
+    //           and expect indicies into the new state to also be able to
+    //           index into the copy (they shouldn't do this, but do, and
+    //           this code hardens against it)
+    //
+    //         - to callers, it *feels* like the copy should be interchangable
+    //           if the component is *logically* the same - the same component
+    //           with the same cache vars etc. *should* produce the same state,
+    //           right?
+    //
+    //         - but `unordered_map` has no iteration order guarantees, so even
+    //           the exact same component, at the same memory address, that is
+    //           merely re-initialized, and calls `addCacheVariable` in the
+    //           exact same order can still iterate the cache variables in
+    //           a different order and (ultimately) produce an incompatible
+    //           SimTK::State
+    //
+    //         - this is because re-initialization does not necessarily
+    //           reconstruct the backing containers. They may only have been
+    //           `.clear()`ed, which *may* hold onto memory, which *may* affect
+    //           (internal) insertion logic
+    //
+    //         - the safest thing to assume is that the iteration order of
+    //           `unordered_map` is non-deterministic. It isn't, but *essentially*
+    //           is, because there are plenty of non-obvious ways to affect its
+    //           iteration order
+    {
+        std::vector<std::reference_wrapper<const std::string>> keys;
+        keys.reserve(this->_namedCacheVariables.size());
+        for (auto& p : this->_namedCacheVariables) {
+            keys.emplace_back(p.first);
+        }
+
+        std::sort(keys.begin(), keys.end(), [](const std::string& a, const std::string& b) {
+            return a < b;
+        });
+
+        for (const std::string& k : keys) {
+            StoredCacheVariable& cv = this->_namedCacheVariables.at(k);
+            cv.maybeUninitIndex = subSys.allocateLazyCacheEntry(s, cv.dependsOnStage, cv.value->clone());
         }
     }
 }
@@ -1473,12 +1522,6 @@ void Component::extendRealizeAcceleration(const SimTK::State& s) const
                     asv->getDerivative(s);
         }
     }
-}
-
-const SimTK::MultibodySystem& Component::getSystem() const
-{
-    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
-    return _system.getRef();
 }
 
 SimTK::MultibodySystem& Component::updSystem() const
@@ -1544,7 +1587,7 @@ double Component::AddedStateVariable::
 void Component::AddedStateVariable::
     setDerivative(const SimTK::State& state, double deriv) const
 {
-    return getOwner().setCacheVariableValue<double>(state, getName()+"_deriv", deriv);
+    getOwner().setCacheVariableValue<double>(state, getName()+"_deriv", deriv);
 }
 
 
@@ -1755,7 +1798,7 @@ void Component::clearStateAllocations()
     _namedModelingOptionInfo.clear();
     _namedStateVariableInfo.clear();
     _namedDiscreteVariableInfo.clear();
-    _namedCacheVariableInfo.clear();
+    _namedCacheVariables.clear();
 }
 
 void Component::reset()

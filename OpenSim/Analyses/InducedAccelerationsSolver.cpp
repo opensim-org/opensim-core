@@ -345,23 +345,24 @@ Array<bool> InducedAccelerationsSolver::
             point = exf->getPointAtTime(t);
             // point should be expressed in the "applied to" body for consistency across all constraints
             if(exf->getPointExpressedInBodyName() != exf->getAppliedToBodyName()){
-                int appliedToBodyIndex = getModel().getBodySet().getIndex(exf->getAppliedToBodyName());
-                if(appliedToBodyIndex < 0){
-                    log_warn("ExternalForce applied_to_body '{}' not found.",
-                            exf->getAppliedToBodyName());
-                }
+                const PhysicalFrame* appliedToBody =
+                        getModel().findComponent<PhysicalFrame>(
+                                exf->getAppliedToBodyName());
+                const PhysicalFrame* expressedInBody =
+                        getModel().findComponent<PhysicalFrame>(
+                                exf->getPointExpressedInBodyName());
 
-                int expressedInBodyIndex = getModel().getBodySet().getIndex(exf->getPointExpressedInBodyName());
-                if(expressedInBodyIndex < 0) {
-                    log_warn("ExternalForce point_expressed_in_body '{}' not found.",
-                             exf->getPointExpressedInBodyName());
-                }
-
-                const Body &appliedToBody = getModel().getBodySet().get(appliedToBodyIndex);
-                const Body &expressedInBody = getModel().getBodySet().get(expressedInBodyIndex);
+                OPENSIM_THROW_IF_FRMOBJ(appliedToBody == nullptr, Exception,
+                        "ExternalForce's appliedToBody " +
+                                exf->getAppliedToBodyName() + " not found.");
+                OPENSIM_THROW_IF_FRMOBJ(expressedInBody == nullptr, Exception,
+                        "ExternalForce's pointExpressedInBodyName " +
+                                exf->getPointExpressedInBodyName() +
+                                " not found.");
 
                 getModel().getMultibodySystem().realize(s, SimTK::Stage::Velocity);
-                point = expressedInBody.findStationLocationInAnotherFrame(s, point, appliedToBody);
+                point = expressedInBody->findStationLocationInAnotherFrame(
+                        s, point, *appliedToBody);
             }
 
             _replacementConstraints[i].setContactPointForInducedAccelerations(s, point);

@@ -12,7 +12,7 @@
 %include <OpenSim/Common/Exception.h>
 
 %shared_ptr(OpenSim::LogSink);
-%ignore OpenSim::StringLogSink;
+%shared_ptr(OpenSim::StringLogSink);
 %include <OpenSim/Common/LogSink.h>
 %ignore OpenSim::Logger::getInstance();
 %include <OpenSim/Common/Logger.h>
@@ -36,6 +36,7 @@
 %include <OpenSim/Common/Storage.h>
 %template(ArrayStorage) OpenSim::ArrayPtrs<OpenSim::Storage>;
 %include <OpenSim/Common/Units.h>
+%ignore OpenSim::IO::CwdChanger;
 %include <OpenSim/Common/IO.h>
 %include <OpenSim/Common/Function.h>
 
@@ -109,7 +110,6 @@ namespace OpenSim {
 // Can't wrap the return type of this function.
 %ignore OpenSim::Component::getOutputs;
 
-%include <OpenSim/Common/Path.h>
 %include <OpenSim/Common/ComponentPath.h>
 
 %include <OpenSim/Common/Component.h>
@@ -337,6 +337,7 @@ DATATABLE_CLONE(double, SimTK::Rotation_<double>)
 %include <OpenSim/Common/AbstractDataTable.h>
 %include <OpenSim/Common/DataTable.h>
 %include <OpenSim/Common/TimeSeriesTable.h>
+%include <OpenSim/Common/TableUtilities.h>
 
 %template(DataTable)           OpenSim::DataTable_<double, double>;
 %template(DataTableVec3)       OpenSim::DataTable_<double, SimTK::Vec3>;

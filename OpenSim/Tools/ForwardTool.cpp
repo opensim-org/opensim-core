@@ -242,9 +242,7 @@ bool ForwardTool::run()
 
     // Do the maneuver to change then restore working directory 
     // so that the parsing code behaves properly if called from a different directory.
-    string saveWorkingDirectory = IO::getCwd();
-    string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
-    IO::chDir(directoryOfSetupFile);
+    auto cwd = IO::CwdChanger::changeToParentOf(getDocumentFileName());
 
     /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model);
 
@@ -311,37 +309,40 @@ bool ForwardTool::run()
     } catch(const std::exception& x) {
         log_error("ForwardTool::run() caught an exception: \n {}", x.what());
         completed = false;
-        IO::chDir(saveWorkingDirectory);
+        cwd.restore();
     }
     catch (...) { // e.g. may get InterruptedException
         log_error("ForwardTool::run() caught an exception.");
         completed = false;
-        IO::chDir(saveWorkingDirectory);
+        cwd.restore();
     }
     // PRINT RESULTS
     string fileName;
-    if(_printResultFiles) printResults();
+    if(_printResultFiles) printResultsInternal();
 
-    IO::chDir(saveWorkingDirectory);
+    cwd.restore();
 
     removeAnalysisSetFromModel();
     return completed;
+}
+
+void ForwardTool::printResults() {
+    log_warn("ForwardTool::printResults() does nothing; use "
+             "ForwardTool::setPrintResultFiles(true) before run().");
 }
 //=============================================================================
 // PRINT RESULTS. 
 // This method needs to be private since it shouldn't be called except from 
 // within tool::run() otherwise will crash because Manager is out of scope
 //=============================================================================
-void ForwardTool::printResults() 
+void ForwardTool::printResultsInternal()
 {
     // Do the maneuver to change then restore working directory 
     // so that the parsing code behaves properly if called from a different directory.
-    string saveWorkingDirectory = IO::getCwd();
-    string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
-    IO::chDir(directoryOfSetupFile);
+    auto cwd = IO::CwdChanger::changeToParentOf(getDocumentFileName());
 
     AbstractTool::printResults(getName(),getResultsDir()); // this will create results directory if necessary
-    if(_model) {
+    if (_model) {
         _model->printControlStorage(getResultsDir() + "/" + getName() + "_controls.sto");
         getManager().getStateStorage().print(getResultsDir() + "/" + getName() + "_states.sto");
 
@@ -350,10 +351,6 @@ void ForwardTool::printResults()
         statesDegrees.setWriteSIMMHeader(true);
         statesDegrees.print(getResultsDir() + "/" + getName() + "_states_degrees.mot");
     }
-
-
-    
-    IO::chDir(saveWorkingDirectory);
 }
 
 

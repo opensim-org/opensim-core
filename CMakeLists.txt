@@ -111,6 +111,17 @@ mark_as_advanced(OPENSIM_PYTHON_STANDALONE) # Mainly for packagers; not users.
 option(BUILD_API_ONLY "Build/install only headers, libraries,
 wrapping, tests; not applications (opensim, ik, rra, etc.)." OFF)
 
+option(OPENSIM_DISABLE_LOG_FILE
+"Disable OpenSim from automatically creating 'opensim.log'.
+
+By default, any application linking to osimCommon will create an
+'opensim.log' file in the current working directory. All log messages
+written by OpenSim (incl. during static initialization) are written to
+both this file and the standard output streams." OFF)
+
+if(OPENSIM_DISABLE_LOG_FILE)
+    add_definitions(-DOPENSIM_DISABLE_LOG_FILE=1)
+endif()
 
 set(OPENSIM_BUILD_INDIVIDUAL_APPS_DEFAULT OFF)
 if(WIN32)
@@ -305,10 +316,6 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
         set(GCC_INST_SET)
     endif()
 
-    # Get the gcc version number in major.minor.build format
-    execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion
-                    OUTPUT_VARIABLE GCC_VERSION)
-
 
     # Testing with Clang 3.3 on Ubuntu 14.04 shows a 5% decrease
     # in the runtime of the tests when we enable loop unrolling.
@@ -342,6 +349,24 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
     set(CMAKE_C_FLAGS_MINSIZEREL       "-DNDEBUG -Os ${GCC_INST_SET}"
       CACHE STRING "gcc MinSizeRel build compile flags" FORCE)
 
+    add_compile_options(-Wall -Wextra) # -Werror
+    # -Wshorten-64-to-32 helps us catch default warnings from Visual C++.
+    if(CMAKE_CXX_COMPILER_ID MATCHES Clang)
+        add_compile_options(-Wshorten-64-to-32)
+        # TODO Find clang/gcc equivalent to C4267; -Wconversion gives way too
+        # many warnings.
+    endif()
+    # The assert() macro is omitted in Release, causing "unused-variable"
+    # warnings. It is sufficient to just catch such warnings in Debug.
+    add_compile_options($<$<NOT:$<CONFIG:Debug>>:-Wno-unused-variable>
+            $<$<NOT:$<CONFIG:Debug>>:-Wno-unused-parameter>)
+
+    # Avoid warnings for Object::Self and Object::Super typedefs.
+    # This warning exists in GCC and Clang >=4.0.
+    if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
+            NOT (${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS "5.0.0"))
+        add_compile_options(-Wno-unused-local-typedefs)
+    endif()
 endif()
 
 ## When building in any of the Release modes, tell VC++ cl compiler to use intrinsics

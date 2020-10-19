@@ -1,7 +1,7 @@
 #ifndef OPENSIM_VISUALIZER_UTILITIES_H_
 #define OPENSIM_VISUALIZER_UTILITIES_H_
 /* -------------------------------------------------------------------------- *
- *                          OpenSim: DataVisualizer.h                         *
+ *                          OpenSim: VisualizerUtilities.h                    *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * OpenSim is developed at Stanford University and supported by the US        *
@@ -33,25 +33,44 @@ public:
     /// @name Visualize a motion of a model using the simbody-visualizer
     /// @{
 
-    /// Play back an existing motion (from the Storage) in the
-    /// simbody-visuailzer. The Storage should contain all generalized
+    /// Play back an existing motion (from the table) in the
+    /// simbody-visualizer. The Storage should contain all generalized
     /// coordinates. The visualizer window allows the user to control playback
     /// speed. This function blocks until the user exits the simbody-visualizer
     /// window.
-    // TODO handle degrees.
-    static void showMotion(Model, Storage);
+    static void showMotion(Model, TimeSeriesTable);
     /// @}
 
     ///  Visualize the passed in model in a simbody-visualizer window.
     ///  This function blocks until the user exits the simbody-visualizer
-    ///  window.
+    ///  window. 
     static void showModel(Model);
 
     /** Show markers with time histories specified by the passed in 
         TimeSeriesTableVec3. Visualization is shown in the simbody visualizer.
         Function blocks waiting for user to hit a key to start. */
     static void showMarkerData(const TimeSeriesTableVec3&);
+
+    /** Show frames with time histories specified by the passed in
+        TimeSeriesTableQuaternion. Visualization is shown in the simbody
+       visualizer. 
+       - layout options: 
+            -'line' default layout frames in a row along Z axis
+            -'circle' frames laid out around a half-circle in the Y-Z plane
+            -'model' Load passed in model and overlay frames at origins of 
+                corresponding bodies at default pose. Must have invoked
+                initSystem() on the model.
+
+       Function blocks waiting for user to hit a key to start. */
+    static void showOrientationData(
+            const TimeSeriesTable_<SimTK::Quaternion_<double>>&,
+            std::string layout = "line", 
+            const Model* modelForPose = nullptr);
+
+private:
+    static void addVisualizerControls(ModelVisualizer&, double, double);
 };
-}
+
+} // namespace OpenSim
 
 #endif //OPENSIM_VISUALIZER_UTILITIES_H_

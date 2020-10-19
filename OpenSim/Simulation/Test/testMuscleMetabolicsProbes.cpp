@@ -144,17 +144,17 @@ public:
     void setFiberLength(SimTK::State& s, double fiberLength) const
     {
         setStateVariableValue(s, stateName_fiberLength, fiberLength);
-        markCacheVariableInvalid(s, "lengthInfo");
-        markCacheVariableInvalid(s, "velInfo");
-        markCacheVariableInvalid(s, "dynamicsInfo");
+        markCacheVariableInvalid(s, _lengthInfoCV);
+        markCacheVariableInvalid(s, _velInfoCV);
+        markCacheVariableInvalid(s, _dynamicsInfoCV);
     }
 
     void setNormFiberVelocity(SimTK::State& s, double normFiberVelocity) const
     {
         setStateVariableValue(s, stateName_fiberVelocity, normFiberVelocity *
                          getMaxContractionVelocity() * getOptimalFiberLength());
-        markCacheVariableInvalid(s, "velInfo");
-        markCacheVariableInvalid(s, "dynamicsInfo");
+        markCacheVariableInvalid(s, _velInfoCV);
+        markCacheVariableInvalid(s, _dynamicsInfoCV);
     }
 
     //--------------------------------------------------------------------------

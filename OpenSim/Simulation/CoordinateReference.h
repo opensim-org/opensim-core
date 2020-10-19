@@ -41,8 +41,10 @@ namespace OpenSim {
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMSIMULATION_API CoordinateReference : public Reference_<double> {
-OpenSim_DECLARE_CONCRETE_OBJECT(CoordinateReference, Reference_<double>);
+class OSIMSIMULATION_API CoordinateReference
+        : public Reference_<double> {
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+            CoordinateReference, Reference_<double>);
 
 //=============================================================================
 // MEMBER VARIABLES
@@ -90,7 +92,7 @@ public:
     /** get the name(s) of the reference or its referettes */
     const SimTK::Array_<std::string>& getNames() const override;
     /** get the value of the Reference as a function of the state */
-    void getValues(const SimTK::State &s, SimTK::Array_<double> &values) const override;
+    void getValuesAtTime(double time, SimTK::Array_<double>& values) const override;
     /** get the weighting (importance) of meeting this Reference */
     void getWeights(const SimTK::State &s, SimTK::Array_<double>& weights) const override;
 

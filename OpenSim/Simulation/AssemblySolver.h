@@ -127,7 +127,7 @@ protected:
     /** Internal method to update the time, reference values and/or their 
         weights that define the goals, based on the passed in state. This method
         is called at the end of setupGoals() and beginning of track()*/
-    virtual void updateGoals(const SimTK::State &s);
+    virtual void updateGoals(SimTK::State &s);
 
     /** Write access to the underlying SimTK::Assembler. */
     SimTK::Assembler& updAssembler();

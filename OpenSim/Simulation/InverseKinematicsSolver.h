@@ -25,7 +25,7 @@
 
 #include "AssemblySolver.h"
 #include "MarkersReference.h"
-#include "OrientationsReference.h"
+#include "BufferedOrientationsReference.h"
 
 namespace SimTK {
 class Markers;
@@ -75,18 +75,42 @@ public:
     // CONSTRUCTION
     //--------------------------------------------------------------------------
     virtual ~InverseKinematicsSolver() {}
+    // No need for copy constructor or operator
+    InverseKinematicsSolver(const InverseKinematicsSolver& other)            = delete;
+    InverseKinematicsSolver& operator=(const InverseKinematicsSolver& other) = delete;
 
     InverseKinematicsSolver(const Model& model, 
-                        const MarkersReference& markersReference,
+                        std::shared_ptr<MarkersReference> markersReference,
                         SimTK::Array_<CoordinateReference>& coordinateReferences,
                         double constraintWeight = SimTK::Infinity);
 
     InverseKinematicsSolver(const Model& model,
-                        const MarkersReference& markersReference,
-                        const OrientationsReference& orientationsReference,
+                        std::shared_ptr<MarkersReference> markersReference,
+                        std::shared_ptr<OrientationsReference> orientationsReference,
                         SimTK::Array_<CoordinateReference> &coordinateReferences,
                         double constraintWeight = SimTK::Infinity);
-    
+#ifndef SWIG
+    // Backward compatible constructors
+    InverseKinematicsSolver(const Model& model,
+            const MarkersReference& markersReference,
+            SimTK::Array_<CoordinateReference>& coordinateReferences,
+            double constraintWeight = SimTK::Infinity): 
+        InverseKinematicsSolver(model,
+                        std::make_shared<MarkersReference>(markersReference),
+                        nullptr,
+                        coordinateReferences, constraintWeight){};
+
+    InverseKinematicsSolver(const Model& model,
+            const MarkersReference& markersReference,
+            const OrientationsReference& orientationsReference,
+            SimTK::Array_<CoordinateReference>& coordinateReferences,
+            double constraintWeight = SimTK::Infinity)
+            : InverseKinematicsSolver(model,
+                      std::make_shared<MarkersReference>(markersReference),
+                      std::make_shared<OrientationsReference>(
+                              orientationsReference),
+                      coordinateReferences, constraintWeight){};
+#endif
     /* Assemble a model configuration that meets the InverseKinematics conditions  
         (desired values and constraints) starting from an initial state that  
         does not have to satisfy the constraints. */
@@ -203,6 +227,10 @@ public:
     corresponding orientation sensor name for an index in the list of
     orientations returned by the solver. */
     std::string getOrientationSensorNameForIndex(int osensorIndex) const;
+    /** indicate whether time is provided by Reference objects or driver program */
+    void setAdvanceTimeFromReference(bool newValue) {
+        _advanceTimeFromReference = newValue;
+    };
 
 protected:
     /** Override to include point of interest matching (Marker tracking)
@@ -211,7 +239,7 @@ protected:
     void setupGoals(SimTK::State &s) override;
     /** Internal method to update the time, reference values and/or their 
         weights that define the goals, based on the provided state. */
-    void updateGoals(const SimTK::State &s) override;
+    void updateGoals(SimTK::State &s) override;
 
 private:
     /** Define and apply marker tracking goal to the assembly problem. */
@@ -222,24 +250,22 @@ private:
     void setupOrientationsGoal(SimTK::State &s);
 
     // The marker reference values and weightings
-    MarkersReference _markersReference;
+    std::shared_ptr<MarkersReference> _markersReference;
 
     // The orientation reference values and weightings
-    OrientationsReference _orientationsReference;
-
-    // Non-accessible cache of the marker values to be matched at a given state
-    SimTK::Array_<SimTK::Vec3> _markerValues;
+    std::shared_ptr<OrientationsReference> _orientationsReference;
 
     // Markers collectively form a single assembly condition for the 
     // SimTK::Assembler and the memory is managed by the Assembler
     SimTK::ReferencePtr<SimTK::Markers> _markerAssemblyCondition;
 
-    // Private cache of the orientation values to be matched at a given state
-    SimTK::Array_<SimTK::Rotation> _orientationValues;
-
     // OrientationSensors collectively form a single assembly condition for
     // the SimTK::Assembler and the memory is managed by the Assembler
     SimTK::ReferencePtr<SimTK::OrientationSensors> _orientationAssemblyCondition;
+
+    // internal flag indicating whether time is advanced based on live data or
+    // controlled by the driver porgram (typically based on pre-recorded data).
+    bool _advanceTimeFromReference{false};
 
 //=============================================================================
 };  // END of class InverseKinematicsSolver

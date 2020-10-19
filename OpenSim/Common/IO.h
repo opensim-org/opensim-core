@@ -120,7 +120,104 @@ public:
     static void TrimWhitespace(std::string &rStr) { TrimLeadingWhitespace(rStr); TrimTrailingWhitespace(rStr); }
     static std::string Lowercase(const std::string &aStr);
     static std::string Uppercase(const std::string &aStr);
+    /// Determine if `string` starts with the substring `start`.
+    static bool StartsWith(const std::string& string, const std::string& start);
+    /// Determine if `string` ends with the substring `ending`.
+    static bool EndsWith(const std::string& string, const std::string& ending);
+    /// Same as StartsWith() except both arguments are first converted to
+    /// lowercase before performing the check.
+    static bool StartsWithIgnoringCase(
+            const std::string& string, const std::string& start);
+    /// Same as EndsWith() except both arguments are first converted to
+    /// lowercase before performing the check.
+    static bool EndsWithIgnoringCase(
+            const std::string& string, const std::string& ending);
     static void eraseEmptyElements(std::vector<std::string>& list);
+
+    /**
+     * A class that:
+     *
+     * - On construction: switches the calling process's current working
+     *   directory to the supplied directory
+     *
+     * - On destruction: switches the calling process's working directory
+     *   back to its original directory.
+     */
+    class OSIMCOMMON_API CwdChanger final {
+        std::string _existingDir;
+
+        /**
+         * Constructs a CwdChanger that does nothing.
+         */
+        CwdChanger();
+
+        /**
+         * Constructs a CwdChanger that, during construction, switches the
+         * calling process's working directory to `newDir`.
+         */
+        CwdChanger(const std::string& newDir);
+
+    public:
+        /**
+         * Returns a CwdChanger that does nothing.
+         *
+         * This is useful for conditional directory changing:
+         *
+         *     CwdChanger c = shouldSwitch ? CwdChanger::changeTo(p) : CwdChanger::noop();
+         */
+        static CwdChanger noop();
+
+        /**
+         * Returns a CwdChanger that changes to `newDir`.
+         */
+        static CwdChanger changeTo(const std::string& newDir);
+
+        /**
+         * Returns a CwdChanger that changes to the parent of `path`.
+         *
+         * This is useful when changing into a file's parent dir:
+         *
+         *     CwdChanger::changeToParentOf(xmlFile);
+         */
+        static CwdChanger changeToParentOf(const std::string& path);
+
+        CwdChanger(const CwdChanger&) = delete;
+        CwdChanger(CwdChanger&& tmp);
+        CwdChanger& operator=(const CwdChanger&) = delete;
+        CwdChanger& operator=(CwdChanger&&);
+
+        /**
+         * Prematurely change the current working directory back to its
+         * original location.
+         *
+         * This is functionally equivalent to prematurely destructing the
+         * CwdChanger. After calling CwdChanger::restore(), the now-restored
+         * CwdChanger will become a noop instance that, when it destructs,
+         * will not attempt to change back to the original directory.
+         */
+        void restore();
+
+        /**
+         * Release CwdChanger's control over the current working directory,
+         * such that the CwdChanger instance does not attempt to change back
+         * to its original directory on destruction.
+         */
+        void stay() noexcept;
+
+        /**
+         * Destructs a CwdChanger instance.
+         *
+         * The destructor switches the calling process's current working
+         * directory back to whatever it was before constructing the instance,
+         * unless:
+         *
+         * - The instance was constructed with `noop()`: in this case, it does
+         *   nothing
+         *
+         * - The instance is an rvalue temporary: does nothing
+         */
+        ~CwdChanger() noexcept;
+    };
 //=============================================================================
 };  // END CLASS IO
 

@@ -6,14 +6,50 @@ request related to the change, then we may provide the commit.
 
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
 
+
 v4.2
 ====
+- Fixed a bug in Millard2012EquilibriumMuscle::extendFinalizeFromProperties(): the end point slopes on the force velocity curves are constrained to yield a valid curve. This does slightly change the values of the force velocity curve near the extremes (between normalized fiber velocities of 0.9 to 1, and -0.9 to 1.0).
+- Added logging to Millard2012EquilibriumMuscle::extendFinalizeFromProperties(): whenever an internal setting is changed automatically these changes are noted in the log.
+- Introduced new logging system based on spdlog https://github.com/gabime/spdlog.git. The transition should be transparent to end users with default settings except that the name of the log file is now opensim.log. Main features are:
+  - The ability to customize error level for reporting (in increasing level of verbosity): Off, Critical, Error, Warn, Info, Debug, Trace 
+  - The ability to start logging to a specified file on the fly.
+  - Log file messages are time stamped and the format can be changed by users
+  - More details and additional functionality is described in the Developer's Guide, and Doxygen pages of OpenSim::Logger class.
 - Add the ActivationCoordinateActuator component, which is a CoordinateActuator with simple activation dynamics (PR #2699).
 - Easily convert Matlab matrices and Python NumPy arrays to and from OpenSim Vectors and Matrices. See Matlab example matrixConversions.m and Python example numpy_conversions.py.
 - Users have more control over which messages are logged. Messages are now logged to opensim.log instead of out.log and err.log. Users can control logging levels via `Logger::setLevel()`.
 - Fix a segfault that occurs when using OpenSim's Python Package with Anaconda's Python on a Mac.
 - Expose PropertyHelper class to python bindings to allow editing of objects using the properties interface (useful for editing objects defined in plugins) in python (consistent with Java/Matlab).
-
+- Whitespace is trimmed when reading table metadata for STO, MOT, and CSV files.
+- Introduce utilities for creating SimTK::Vectors, linear interpolation, updating table column labels from v3.3 to v4.0 syntax, solving for a function's root using bisection (OpenSim/Common/CommonUtilities.h) ([PR #2808](https://github.com/opensim-org/opensim-core/pull/2808)).
+- Introduce utilities for querying, filtering, and resampling TimeSeriesTables (OpenSim/Common/TableUtilities.h) ([PR #2808](https://github.com/opensim-org/opensim-core/pull/2808)).
+- StatesTrajectories can now be created from a TimeSeriesTable of states.
+- Minor performance improvements (5-10 %) for controller-heavy models (PR #2806)
+- `Controller::isEnabled` will now only return whether the particular controller is enabled
+  - Previously, it would return `false` if its parent `Model`'s `Model::getAllControllersEnabled` returned `false`
+  - The previous behavior would mean that `Controller::setEnabled(true); return Controller::isEnabled();` could return `false`
+- The new Matlab examplePointMass.m shows how to build and simulate a point-mass model.
+- Fix OpenSense calibration algorithm to handle models facing an arbitrary direction. The calibration algorithm now aligns one axis of the provided Orientation Sensor data with the x-axis of the base segment (e.g. pelvis) of the model in default pose.
+- For PrescribedController, the controls_file column labels can now be absolute paths to actuators (previously, the column labels were required to be actuator names).
+- Fixed a critical bug in Induced Accelerations Analysis which prevents analysis to run when external forces are present ([PR #2847](https://github.com/opensim-org/opensim-core/pull/2808)).
+- Removed `Path` abstract base class (PR #2844)
+  - Unused by OpenSim and related projects
+- Improved the performance of `ComponentPath` (PR #2844)
+  - This improves the performance of component-heavy models by ~5-10 %
+  - The behavior and interface of `ComponentPath` should remain the same
+- The new Matlab CustomStaticOptimization.m guides the user to build their own custom static optimization code. 
+- Dropped support for separate Kinematics for application of External Loads. ([PR #2770] (https://github.com/opensim-org/opensim-core/pull/2770)). 
+- Refactored InverseKinematicsSolver to allow for adding (live) Orientation data to track, introduced BufferedOrientationsReference to queue data (PR #2855)
+- `opensim.log` will only be created/opened when the first message is logged to it (PR #2880):
+  - Previously, `opensim.log` would always be created, even if nothing was logged
+- Added a CMake option, `OPENSIM_DISABLE_LOG_FILE` (PR #2880):
+  - When set, disables `opensim.log` from being used by the logger by default when the first message is written to the log
+  - Log messages are still written to the standard output/error streams
+  - Previously, `opensim.log` would always be created - even if nothing was written to it (fixed above)
+  - Setting `OPENSIM_DISABLE_LOG_FILE` only disables the automatic creation of `opensim.log`. File logging can still be manually be enabled by calling `Logger::addFileSink()`
+  - This flag is `OFF` by default. So standard builds will still observe the existing behavior (`opensim.log` is created).
+- Fix bug in visualization of EllipsoidJoint that was not attaching to the correct frame ([PR #2887] (https://github.com/opensim-org/opensim-core/pull/2887))
 
 v4.1
 ====

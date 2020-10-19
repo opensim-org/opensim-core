@@ -352,13 +352,12 @@ void addImuFramesFromMarkers(const string& modelFile, const string& markersFile)
     //auto averageRow = table->averageRow(*times.cbegin(), *times.cend());
     const auto referenceRow = table.getRowAtIndex(0);
 
-    MarkersReference markersRef(table, Set<MarkerWeight>());
+    std::shared_ptr<MarkersReference> markersRef(new MarkersReference(table, Set<MarkerWeight>()));
 
     // create the IK solver based on markers only to get the static pose
     SimTK::Array_<CoordinateReference> coordinateReferences;
 
-    InverseKinematicsSolver ikSolver(model, markersRef,
-        coordinateReferences);
+    InverseKinematicsSolver ikSolver(model, markersRef, coordinateReferences);
  
     s.updTime() = times[0];
 
@@ -450,7 +449,7 @@ void addImuFramesFromMarkers(const string& modelFile, const string& markersFile)
     // store joint initial pose from marker IK as default pose for the model. 
     model.setPropertiesFromState(s);
 
-    for (int i = 0; i < offsets.size(); ++i) {
+    for (int i = 0; i < (int)offsets.size(); ++i) {
         // add imu offset frames to the model with model taking ownership
         bodies[i]->addComponent(offsets[i]);
     }

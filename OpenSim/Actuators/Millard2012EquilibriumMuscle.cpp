@@ -114,11 +114,23 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
             InvalidPropertyValue, getProperty_min_control().getName(),
             "Minimum control cannot be less than minimum activation");
 
-        if (falCurve.getMinValue() < 0.1)
+        if (falCurve.getMinValue() < 0.1){
+            log_info("'{}' ActiveForceLengthCurve parameter updated to avoid "
+                     "error: '{}' was {} but is now {}.", getName(),
+                     "minimum_value", falCurve.getMinValue(), 0.1);
             falCurve.setMinValue(0.1);
-        if (conSlopeAtVmax < 0.1 || eccSlopeAtVmax < 0.1)
+        }
+        if (conSlopeAtVmax < 0.1 || eccSlopeAtVmax < 0.1){
+            log_info("'{}' ForceVelocityCurve parameter updated to avoid error:"
+                     " '{}' was {} but is now {}.", getName(),
+                     "concentric_slope_near_vmax", conSlopeAtVmax, 0.1);
+            log_info("'{}' ForceVelocityCurve parameter updated to avoid error:"
+                     " '{}' was {} but is now {}.", getName(),
+                     "eccentric_slope_near_vmax", eccSlopeAtVmax, 0.1);
+
             fvCurve.setCurveShape(0.1, conSlopeNearVmax, isometricSlope,
                                   0.1, eccSlopeNearVmax, eccForceMax);
+        }
 
     } else { //singularity-free model still cannot have excitations below 0
         OPENSIM_THROW_IF_FRMOBJ(get_minimum_activation() < 0.0,
@@ -139,11 +151,20 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
         //Using this update preserves the shape of the rest of the force
         //velocity curve and guarantees that the condition that
         //conSlopeAtVmax < conSlopeNearVmax is satisfied
-        conSlopeAtVmax = 0.5*conSlopeNearVmax; 
+      log_info("'{}' ForceVelocityCurve parameter updated: "
+               "'{}' was {} but is now {}.",
+               getName(),"concentric_slope_at_vmax",
+               conSlopeAtVmax, 0.5*conSlopeNearVmax);
+      conSlopeAtVmax = 0.5*conSlopeNearVmax;
     }
     if (eccSlopeAtVmax < 0.5*eccSlopeNearVmax ) {
         //ditto
-        eccSlopeAtVmax = 0.5*eccSlopeNearVmax; 
+      log_info("'{}' ForceVelocityCurve parameter updated: "
+               "'{}' was {} but is now {}.",
+               getName(),"eccentric_slope_at_vmax",
+               eccSlopeAtVmax, 0.5*eccSlopeNearVmax);
+      eccSlopeAtVmax = 0.5*eccSlopeNearVmax;
+
     }
 
 
@@ -356,8 +377,8 @@ setActivation(SimTK::State& s, double activation) const
         setStateVariableValue(s, STATE_ACTIVATION_NAME,
                               getActivationModel().clampActivation(activation));
     }
-    markCacheVariableInvalid(s,"velInfo");
-    markCacheVariableInvalid(s,"dynamicsInfo");
+    markCacheVariableInvalid(s, _velInfoCV);
+    markCacheVariableInvalid(s, _dynamicsInfoCV);
 }
 
 void Millard2012EquilibriumMuscle::setDefaultFiberLength(double fiberLength)
@@ -397,9 +418,9 @@ setFiberLength(SimTK::State& s, double fiberLength) const
     if (!get_ignore_tendon_compliance()) {
         setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,
                               clampFiberLength(fiberLength));
-        markCacheVariableInvalid(s,"lengthInfo");
-        markCacheVariableInvalid(s,"velInfo");
-        markCacheVariableInvalid(s,"dynamicsInfo");
+        markCacheVariableInvalid(s, _lengthInfoCV);
+        markCacheVariableInvalid(s, _velInfoCV);
+        markCacheVariableInvalid(s, _dynamicsInfoCV);
     }
 }
 

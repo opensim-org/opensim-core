@@ -51,17 +51,6 @@ Units::Units() :
 
 //_____________________________________________________________________________
 /**
- * Copy constructor.
- *
- * @param aUnits Units to be copied.
- */
-Units::Units(const Units& aUnits)
-{
-    _type = aUnits._type;
-}
-
-//_____________________________________________________________________________
-/**
  * Constructor from a string.
  *
  * @param aString string containing the units text label

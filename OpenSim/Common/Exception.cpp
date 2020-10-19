@@ -92,9 +92,9 @@ Exception::Exception(const std::string& file,
 }
 
 Exception::Exception(const std::string& file,
-              size_t line,
-              const std::string& func,
-              const Object& obj) 
+                     size_t line,
+                     const std::string& func,
+                     const Object& obj)
     : Exception{file, line, func} {
     std::string className = obj.getConcreteClassName();
     std::string objName = obj.getName();
@@ -103,9 +103,9 @@ Exception::Exception(const std::string& file,
 }
 
 Exception::Exception(const std::string& file,
-              size_t line,
-              const std::string& func,
-              const Object& obj,
+                     size_t line,
+                     const std::string& func,
+                     const Object& obj,
                      const std::string& msg) 
     : Exception{file, line, func, obj} {
     addMessage(msg);
