@@ -114,11 +114,23 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
             InvalidPropertyValue, getProperty_min_control().getName(),
             "Minimum control cannot be less than minimum activation");
 
-        if (falCurve.getMinValue() < 0.1)
+        if (falCurve.getMinValue() < 0.1){
+            log_info("'{}' ActiveForceLengthCurve parameter updated to avoid "
+                     "error: '{}' was {} but is now {}.", getName(),
+                     "minimum_value", falCurve.getMinValue(), 0.1);
             falCurve.setMinValue(0.1);
-        if (conSlopeAtVmax < 0.1 || eccSlopeAtVmax < 0.1)
+        }
+        if (conSlopeAtVmax < 0.1 || eccSlopeAtVmax < 0.1){
+            log_info("'{}' ForceVelocityCurve parameter updated to avoid error:"
+                     " '{}' was {} but is now {}.", getName(),
+                     "concentric_slope_near_vmax", conSlopeAtVmax, 0.1);
+            log_info("'{}' ForceVelocityCurve parameter updated to avoid error:"
+                     " '{}' was {} but is now {}.", getName(),
+                     "eccentric_slope_near_vmax", eccSlopeAtVmax, 0.1);
+
             fvCurve.setCurveShape(0.1, conSlopeNearVmax, isometricSlope,
                                   0.1, eccSlopeNearVmax, eccForceMax);
+        }
 
     } else { //singularity-free model still cannot have excitations below 0
         OPENSIM_THROW_IF_FRMOBJ(get_minimum_activation() < 0.0,
@@ -135,10 +147,27 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
                               0.0, eccSlopeNearVmax, eccForceMax);
     }
 
-    if (conSlopeAtVmax < 0.1 || eccSlopeAtVmax < 0.1) {
-        conSlopeAtVmax = 0.1;
-        eccSlopeAtVmax = 0.1;
+    if (conSlopeAtVmax < 0.5*conSlopeNearVmax ) {
+        //Using this update preserves the shape of the rest of the force
+        //velocity curve and guarantees that the condition that
+        //conSlopeAtVmax < conSlopeNearVmax is satisfied
+      log_info("'{}' ForceVelocityCurve parameter updated: "
+               "'{}' was {} but is now {}.",
+               getName(),"concentric_slope_at_vmax",
+               conSlopeAtVmax, 0.5*conSlopeNearVmax);
+      conSlopeAtVmax = 0.5*conSlopeNearVmax;
     }
+    if (eccSlopeAtVmax < 0.5*eccSlopeNearVmax ) {
+        //ditto
+      log_info("'{}' ForceVelocityCurve parameter updated: "
+               "'{}' was {} but is now {}.",
+               getName(),"eccentric_slope_at_vmax",
+               eccSlopeAtVmax, 0.5*eccSlopeNearVmax);
+      eccSlopeAtVmax = 0.5*eccSlopeNearVmax;
+
+    }
+
+
     fvInvCurve = ForceVelocityInverseCurve(conSlopeAtVmax, conSlopeNearVmax,
                                            isometricSlope, eccSlopeAtVmax,
                                            eccSlopeNearVmax, eccForceMax,
