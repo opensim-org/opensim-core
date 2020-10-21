@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="30512">
+	<INDYGO>
+		<model_file>test2Muscles2DOFsDeGrooteFregly2016.osim</model_file>
+        <kinematics_file>
+			test2Muscles2DOFsDeGrooteFregly2016_INDYGO_kinematics.csv
+		</kinematics_file>
+		<!--The frequency (Hz) at which to filter inverse dynamics joint moments, which are computed internally from the kinematics (default is -1, which means no filtering; for walking, consider 6 Hz).-->
+		<lowpass_cutoff_frequency_for_joint_moments>20</lowpass_cutoff_frequency_for_joint_moments>
+		<!--Create a reserve actuator (CoordinateActuator) for each unconstrained coordinate in the model, and add each to the model. Each actuator will have the specified `optimal_force`, which should be set low to discourage the use of the reserve actuators. (default is -1, which means no reserves are created)-->
+		<create_reserve_actuators>0.01</create_reserve_actuators>
+		<!--Should the initial activation of all muscles be constrained to 0? This may be useful because the optimizer will often otherwise set initial activation to an unreasonably large value (there is no cost for this). If a muscle's min_control is greater than 0, then min_control is used instead. Default: false-->
+		<zero_initial_activation>true</zero_initial_activation>
+	</INDYGO>
+</OpenSimDocument>

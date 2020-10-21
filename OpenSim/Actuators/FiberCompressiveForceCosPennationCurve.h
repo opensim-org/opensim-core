@@ -92,64 +92,58 @@ public:
     and assigns it a default name **/
     FiberCompressiveForceCosPennationCurve();
 
-   
-    /**
-     Constructs a C2 continuous compressive fiber force cos pennation curve. The
-     sole purpose of this curve is to prevent the pennation angle from reaching
-     an angle of 90 degrees. Details to appear in Millard et al. 2012.
-     
-        @param engagementAngleInDegrees
-                The pennation angle engagement angle of the fiber compressive
-                force pennation curve. Making the spring engage too
-                far from 90 degrees may unrealistically limit the force 
-                production capability of the muscle. An engagement angle of 
-                80 degrees is a good place to start.
-    
-        @param stiffnessAtPerpendicular
-                This is the stiffness of the compressive elastic force length
-                spring when the pennation angle reaches 90 degrees. Note that 
-                the units of this stiffness are 
-                (normalized force) / cos(engagmentAngleInDegrees). If the 
-                engagement angle is 80 degrees, a good stiffness to start with
-                is -2*(1/cosd(engagementAngleInDegrees))
+    /** Constructs a C2 continuous compressive fiber force cos pennation curve.
+    The sole purpose of this curve is to prevent the pennation angle from
+    reaching an angle of 90 degrees. Details to appear in Millard et al. 2012.
 
-        @param curviness    
-                A dimensionless parameter between [0-1] that controls how 
-                the curve is drawn: 0 will create a curve that is
-                very close to a straight line segment while a value of 1 will 
-                create a curve that smoothly fills the corner formed by the 
-                linear extrapolation of 'stiffnessAtPerpendicularFiber' and the
-                x axis as shown in the figure. A good curviness parameter value
-                to start with is 0.5.
+    @param engagementAngleInDegrees
+            The pennation angle engagement angle of the fiber compressive
+            force pennation curve. Making the spring engage too
+            far from 90 degrees may unrealistically limit the force
+            production capability of the muscle. An engagement angle of
+            80 degrees is a good place to start.
 
-        @param muscleName
-                The name of the muscle this curve belongs to. This name is used
-                to create the name of this curve, which is formed simply by 
-                appending "_FiberCompressiveForceCosPennationCurve" to the 
-                string in muscleName. This name is used for making intelligible 
-                error messages and also for naming the XML version of this curve 
-                when it is serialized.
+    @param stiffnessAtPerpendicular
+            This is the stiffness of the compressive elastic force length
+            spring when the pennation angle reaches 90 degrees. Note that
+            the units of this stiffness are
+            (normalized force) / cos(engagmentAngleInDegrees). If the
+            engagement angle is 80 degrees, a good stiffness to start with
+            is -2*(1/cosd(engagementAngleInDegrees))
 
-      <B>Conditions:</B>
-        \verbatim
-            0 < engagmentAngleInDegrees < 90
-            stiffnessAtPerpendicular < -1/engagmentAngleInDegrees
-            0 <= curviness <= 1
-        \endverbatim
+    @param curviness
+            A dimensionless parameter between [0-1] that controls how
+            the curve is drawn: 0 will create a curve that is
+            very close to a straight line segment while a value of 1 will
+            create a curve that smoothly fills the corner formed by the
+            linear extrapolation of 'stiffnessAtPerpendicularFiber' and the
+            x axis as shown in the figure. A good curviness parameter value
+            to start with is 0.5.
 
-        <B>Computational Costs</B>
-        \verbatim 
-            ~174,100 flops
-        \endverbatim
+    @param muscleName
+            The name of the muscle this curve belongs to. This name is used
+            to create the name of this curve, which is formed simply by
+            appending "_FiberCompressiveForceCosPennationCurve" to the
+            string in muscleName. This name is used for making intelligible
+            error messages and also for naming the XML version of this curve
+            when it is serialized.
 
-    <B> Default Parameter Values </B>
+    <B>Conditions</B>
+    \verbatim
+        0 < engagmentAngleInDegrees < 90
+        stiffnessAtPerpendicular < -1/engagmentAngleInDegrees
+        0 <= curviness <= 1
+    \endverbatim
 
-         \verbatim
-             engagmentAngleInDegrees = 80 
-         \endverbatim
+    <B>Computational Costs</B>
+    \verbatim
+        ~174,100 flops
+    \endverbatim
 
-    <B>Example:</B>
-
+    <B>Default Parameter Values</B>
+    \verbatim
+        engagmentAngleInDegrees = 80
+    \endverbatim
     */
     FiberCompressiveForceCosPennationCurve(double engagementAngleInDegrees, 
                                            double stiffnessAtPerpendicular,

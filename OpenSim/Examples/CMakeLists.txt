@@ -22,6 +22,7 @@ if(BUILD_API_EXAMPLES)
     add_subdirectory(SymbolicExpressionReporter)
     add_subdirectory(DataTable)
     add_subdirectory(DataAdapter)
+    add_subdirectory(Moco)
 
 elseif()
 

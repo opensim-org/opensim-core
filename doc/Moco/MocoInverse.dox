@@ -1,0 +1,54 @@
+namespace OpenSim {
+/**
+
+@page mocoinverse MocoInverse: solving muscle and actuator redundancy
+
+A common goal in musculoskeletal biomechanics is to estimate muscle and actuator
+behavior that drove an observed motion; this is often called the **muscle
+redundancy problem**. We can solve this problem by tracking the observed motion,
+as with Computed %Muscle %Control (using the "slow target") or MocoTrack.
+Alternatively, we can prescribe the motion exactly, as with Static Optimization,
+EMG-driven simulation [1, 2], and the %Muscle Redundancy %Solver [3]. The
+advantage of prescribing the motion is the problem is more robust and solves
+faster, as the nonlinear multibody dynamics are no longer part of the
+optimization problem. The disadvantage is that we cannot predict deviations from
+the observed motion.
+
+In Moco, you can use the MocoInverse tool to solve optimization problems in
+which kinematics are known, including the muscle redundancy problem.
+
+The MocoInverse tool adds a PositionMotion component to your model, with
+splines created from a kinematics data file that you provide.
+
+@note The kinematics you provide should already obey any kinematic constraints
+in your model. MocoInverse attempts to alter your provided kinematics to satisfy
+the kinematic constraints (using Model::assemble()), so the tool will not
+actually track the kinematics as provided if they violate constraints.
+
+Sometimes it is not possible to achieve the desired motion using
+muscles alone. There are multiple possible causes for this:
+  - the muscles are not strong enough to achieve the required
+    net joint moments,
+  - the net joint moments change more rapidly than activation and
+    deactivation time constants allow,
+  - the filtering of the data causes unrealistic desired net joint moments.
+For these reasons, you may want to add "reserve" actuators to your model. See
+ModelFactory::createReserveActuators() and ModOpAddReserves.
+
+See @ref preskin, @ref preskinconstr, and @ref implpreskin for more information.
+
+[1] Arnold, E., Hamner, S., Seth, A., Millard, M., Delp, S. (2013). How muscle
+    fiber lengths and velocities affect muscle force generation as humans walk
+    and run at different speeds Journal of Experimental Biology  216(11),
+    2150-2160. https://dx.doi.org/10.1242/jeb.075697 \n
+[2] Jackson, R., Dembia, C., Delp, S., Collins, S. (2017). Muscle-tendon
+    mechanics explain unexpected effects of exoskeleton assistance on metabolic
+    rate during walking Journal of Experimental Biology  220(11), jeb.150011.
+    https://dx.doi.org/10.1242/jeb.150011 \n
+[3] Groote, F., Kinney, A., Rao, A., Fregly, B. (2016). Evaluation of Direct
+    Collocation Optimal Control Problem Formulations for Solving the Muscle
+    Redundancy Problem Annals of Biomedical Engineering  44(10), 2922-2936.
+    https://dx.doi.org/10.1007/s10439-016-1591-9 \n
+
+*/
+} // namespace OpenSim

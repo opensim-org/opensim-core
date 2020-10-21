@@ -56,8 +56,26 @@
       <tab type="globals" visible="yes" title="" intro=""/>
     </tab>
     <tab type="globals" visible="yes" title="Global Functions" intro=""/>
-    <!-- <tab type="dirs" visible="yes" title="" intro=""/>
-    --> <tab type="examples" visible="yes" title="" intro=""/>  
+    <!-- <tab type="dirs" visible="yes" title="" intro=""/> -->
+    <tab type="examples" visible="yes" title="" intro=""/>
+    <!--
+    These following navigation bar items cause a duplicate entry "Moco" in the
+    sidebar.
+    <tab type="usergroup" url="@ref mocomainpage" visible="yes" title="Moco" intro="">
+      <tab type="user" url="@ref mocogettingstarted" visible="yes" title="Getting started" intro=""/>
+      <tab type="usergroup" url="@ref mocouserguide" visible="yes" title="User Guide" intro="">
+        <tab type="user" url="@ref mocotrack" visible="yes" title="MocoTrack" intro=""/>
+        <tab type="user" url="@ref mocoinverse" visible="yes" title="MocoInverse" intro=""/>
+        <tab type="user" url="@ref mocostudy" visible="yes" title="MocoStudy" intro=""/>
+        <tab type="user" url="@ref mocogoal" visible="yes" title="MocoGoals" intro=""/>
+        <tab type="user" url="@ref mocofaq" visible="yes" title="FAQ" intro=""/>
+      </tab>
+      <tab type="user" url="@ref mocotheoryguide" visible="yes" title="Theory Guide" intro=""/>
+      <tab type="user" url="@ref mocodevguide" visible="yes" title="Dev Guide" intro=""/>
+      <tab type="user" url="@ref mocoapiref" visible="yes" title="Interface Reference" intro=""/>
+      <tab type="user" url="@ref mocoexamples" visible="yes" title="Examples" intro=""/>
+    </tab>
+    -->
   </navindex>
 
   <!-- Layout definition for a class page -->

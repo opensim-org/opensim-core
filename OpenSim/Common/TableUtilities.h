@@ -25,6 +25,7 @@
 
 #include "Array.h"
 #include "GCVSpline.h"
+#include "TableUtilities.h"
 #include "TimeSeriesTable.h"
 #include "osimCommonDLL.h"
 

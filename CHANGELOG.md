@@ -29,10 +29,14 @@ v4.2
 - `Controller::isEnabled` will now only return whether the particular controller is enabled
   - Previously, it would return `false` if its parent `Model`'s `Model::getAllControllersEnabled` returned `false`
   - The previous behavior would mean that `Controller::setEnabled(true); return Controller::isEnabled();` could return `false`
+- When building from source, CMake now outputs more detailed information about dependencies.
 - The new Matlab examplePointMass.m shows how to build and simulate a point-mass model.
 - Fix OpenSense calibration algorithm to handle models facing an arbitrary direction. The calibration algorithm now aligns one axis of the provided Orientation Sensor data with the x-axis of the base segment (e.g. pelvis) of the model in default pose.
 - For PrescribedController, the controls_file column labels can now be absolute paths to actuators (previously, the column labels were required to be actuator names).
 - Fixed a critical bug in Induced Accelerations Analysis which prevents analysis to run when external forces are present ([PR #2847](https://github.com/opensim-org/opensim-core/pull/2808)).
+- For PrescribedController, the controls_file column labels can now be absolute paths to actuators (previously, the column labels were required to be actuator names).
+- CMCTool now supports the setSolveForEquilibrium() method inherited by AbstractTool, which allows users to disable a call to Model::equilibrateMuscles() when running CMC. This setting is true by default, so the default behavior remains the same.
+- The Matlab utility osimTableToStruct() now handles column labels that start with a non-letter character by prepending 'a_' instead of 'unlabeled'.
 - Removed `Path` abstract base class (PR #2844)
   - Unused by OpenSim and related projects
 - Improved the performance of `ComponentPath` (PR #2844)

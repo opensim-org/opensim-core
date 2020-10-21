@@ -1,4 +1,4 @@
-﻿Guidelines for Contributing to OpenSim-Core
+Guidelines for Contributing to OpenSim-Core
 ===========================================
 OpenSim is a community resource that is housed in the OpenSim-Core repository.
 We encourage everyone to contribute to the OpenSim project. This could be adding new code for a feature, improving an algorithm, or letting us know about a bug or making a feature request. The purpose of our contribution policy is to ensure that all code in OpenSim-Core has undergone real scrutiny, thereby reducing the likelihood of errors.
@@ -12,6 +12,7 @@ Contents:
 - [Ways to Contribute](#ways-to-contribute)
 - [Making a Pull Request](#making-a-pull-request-pr)
 - [Writing tests](#writing-tests)
+- [Running Moco tests](#running-moco-tests)
 - [Checking for Memory Leaks through GitHub](#checking-for-memory-leaks-through-github)
 - [Coding Standards](#coding-standards)
 - [List of Contributors](#list-of-contributors)
@@ -77,6 +78,24 @@ copy the necessary shared files to the proper build directory. *DO NOT CHANGE* f
 that are already in `OpenSim/Tests/shared`; you could inadvertently weaken tests
 that rely on some obscure aspect of the files.
 
+
+Running Moco tests
+------------------
+In general, Moco's tests depend on the CasADi and Tropter libraries, whose use
+is determined by the `OPENSIM_WITH_CASADI` and `OPENSIM_WITH_TROPTER` CMake
+variables. The CTests are designed to succeed regardless of the value of these
+CMake variables: if `OPENSIM_WITH_CASADI` is off, Moco's C++ tests are run with
+arguments `"exclude:*MocoCasADiSolver*" "exclude:[casadi]"`,
+which excludes Catch2 templatized tests using MocoCasADiSolver and other tests
+that are tagged as relying on CasADi (likewise for Tropter).
+If the test executables are run without CTest (e.g., debugging a project in
+Visual Studio), the tests will fail if either `OPENSIM_WITH_CASADI` or
+`OPENSIM_WITH_TROPTER` is false; for the tests to pass, provide the argument(s)
+`"exclude:*MocoCasADiSolver*" "exclude:[casadi]"` and/or
+`"exclude:*MocoTropterSolver*" "exclude:[tropter]"` (depending on which
+libraries are available).
+
+
 Checking for Memory Leaks through GitHub
 ----------------------------------------
 If you want to check memory leaks, you can have Travis-CI run valgrind on the test cases. Just put `[ci valgrind]` in your commit message.
@@ -95,6 +114,7 @@ Coding Standards
 - [Throw and return are not functions](#throw-and-return-are-not-functions)
 - [Always use pre-increment and pre-decrement operators when you have a choice](#always-use-pre-increment-and-pre-decrement-operators-when-you-have-a-choice)
 - [Place pointer and reference symbols with the type](#place-pointer-and-reference-symbols-with-the-type)
+- [Setters and pass-by-value](#setters-and-pass-by-value)
 - [Removing methods](#removing-methods)
 
 ### Header guards
@@ -276,6 +296,14 @@ Therefore, you should place the ``*`` and ``&`` next to the type, not the variab
 
 /*NO*/  f(int I, string &name, char *something);
 ```
+
+### Setters and pass-by-value
+
+Setter functions usually make a copy of the passed-in argument, and therefore
+it is often preferable to use pass-by-value and then `std::move` the argument
+into a member variable (rather than to pass-by-reference).
+
+https://stackoverflow.com/questions/270408/is-it-better-in-c-to-pass-by-value-or-pass-by-constant-reference
 
 ### Removing methods
 

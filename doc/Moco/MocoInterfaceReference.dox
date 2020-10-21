@@ -1,0 +1,35 @@
+namespace OpenSim {
+/** @page mocoapiref Moco Interface Reference
+
+This is the landing page for the reference for Moco's interface, or Application
+Programming Interface. This reference is useful for obtaining a list of
+functions provided by a class. If you are new to Moco, consider starting with
+the User Guide before consulting this reference.
+
+The following classes are used frequently:
+
+- MocoTool
+  - MocoInverse
+  - MocoTrack
+- MocoTrajectory
+  - MocoSolution
+- MocoStudy
+  - MocoProblem
+    - MocoGoal
+    - MocoPathConstraint
+    - MocoParameter
+  - MocoSolver
+  - MocoProblemRep
+- MocoDirectCollocationSolver
+  - MocoTropterSolver
+  - MocoCasADiSolver
+- ModelFactory
+
+If the class you seek is not in the list above, use the
+search box in the upper right or the drop-down menu from the "API Reference"
+button.
+
+
+*/
+} // namespace OpenSim
+

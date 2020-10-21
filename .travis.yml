@@ -124,7 +124,7 @@ before_install:
   # that match the specified pattern. GREP does not pick up explicit tabs
   # (e.g., literally a \t in a source file).
   - cd $TRAVIS_BUILD_DIR
-  - if grep --line-num --recursive --exclude-dir="*dependencies*" --include={CMakeLists.txt,*.cpp,*.c,*.h} -P "\t" . ; then echo "Tabs found in the lines shown above. See CONTRIBUTING.md about tabs."; false; fi
+  - if grep --line-num --recursive --exclude-dir={"*dependencies*", "*snopt-interface*"} --include={CMakeLists.txt,*.cpp,*.c,*.h} -P "\t" . ; then echo "Tabs found in the lines shown above. See CONTRIBUTING.md about tabs."; false; fi
 
   ## Set up environment variables.
   # Only if compiling with gcc, update environment variables to use the new

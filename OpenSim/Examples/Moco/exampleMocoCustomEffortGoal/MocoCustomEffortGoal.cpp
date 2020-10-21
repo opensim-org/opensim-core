@@ -1,0 +1,37 @@
+/* -------------------------------------------------------------------------- *
+ * OpenSim Moco: MocoCustomEffortGoal.cpp                                     *
+ * -------------------------------------------------------------------------- *
+ * Copyright (c) 2019 Stanford University and the Authors                     *
+ *                                                                            *
+ * Author(s): Christopher Dembia                                              *
+ *                                                                            *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
+ * not use this file except in compliance with the License. You may obtain a  *
+ * copy of the License at http://www.apache.org/licenses/LICENSE-2.0          *
+ *                                                                            *
+ * Unless required by applicable law or agreed to in writing, software        *
+ * distributed under the License is distributed on an "AS IS" BASIS,          *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
+ * See the License for the specific language governing permissions and        *
+ * limitations under the License.                                             *
+ * -------------------------------------------------------------------------- */
+
+#include "MocoCustomEffortGoal.h"
+
+using namespace OpenSim;
+
+void MocoCustomEffortGoal::initializeOnModelImpl(const Model&) const {
+    setRequirements(1, 1);
+}
+
+void MocoCustomEffortGoal::calcIntegrandImpl(
+        const IntegrandInput& input, double& integrand) const {
+    getModel().realizeVelocity(input.state);
+    const auto& controls = getModel().getControls(input.state);
+    integrand = controls.normSqr();
+}
+
+void MocoCustomEffortGoal::calcGoalImpl(
+        const GoalInput& input, SimTK::Vector& cost) const {
+    cost[0] = input.integral;
+}

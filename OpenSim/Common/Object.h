@@ -807,7 +807,23 @@ protected:
         return PropertyIndex();
     }
 
-//--------------------------------------------------------------------------
+    /** Throw an exception if any of the property's values are not positive. */
+    template <class T>
+    void checkPropertyValueIsPositive(const Property<T>& p) const;
+
+    /** Throw an exception if any of the property's values are not in the
+    provided set. */
+    template <class T>
+    void checkPropertyValueIsInSet(
+            const Property<T>& p, const std::set<T>& set) const;
+
+    /** Throw an exception if any of the property's values are neither in the
+    provided range nor in the provided set.*/
+    template <class T>
+    void checkPropertyValueIsInRangeOrSet(const Property<T>& p,
+            const T& lower, const T& upper, const std::set<T>& set) const;
+
+    //--------------------------------------------------------------------------
 // PRIVATE METHODS
 //--------------------------------------------------------------------------
 private:
@@ -1033,6 +1049,44 @@ addListProperty(const std::string&  name,
     p->setValueIsDefault(true);
 
     return PropertyIndex(_propertyTable.adoptProperty(p));
+}
+
+template <class T>
+void Object::checkPropertyValueIsInSet(
+        const Property<T>& p, const std::set<T>& set) const {
+    for (int i = 0; i < p.size(); ++i) {
+        const auto& value = p.getValue(i);
+        if (set.find(value) == set.end()) {
+            std::string str = fmt::format("{}", fmt::join(set, ", "));
+            OPENSIM_THROW_FRMOBJ(Exception,
+                    "Property '{}' has invalid value {}; expected one of the "
+                    "following: {}.", p.getName(), value, str);
+        }
+    }
+}
+
+template <class T>
+void Object::checkPropertyValueIsPositive(const Property<T>& p) const {
+    for (int i = 0; i < p.size(); ++i) {
+        const auto& value = p.getValue(i);
+        OPENSIM_THROW_IF_FRMOBJ(value <= 0, Exception,
+                "Property {} must be positive, but is {}", p.getName(), value);
+    }
+}
+
+template <class T>
+void Object::checkPropertyValueIsInRangeOrSet(const Property<T>& p,
+        const T& lower, const T& upper, const std::set<T>& set) const {
+    for (int i = 0; i < p.size(); ++i) {
+        const auto& value = p.getValue(i);
+        if ((value < lower || value > upper) && set.find(value) == set.end()) {
+            std::string str = fmt::format("{}", fmt::join(set, ", "));
+            OPENSIM_THROW_FRMOBJ(Exception,
+                    "Property '{}' has invalid value {}; expected value to be "
+                    "in range [{}, {}], or one of the following: {}.",
+                    p.getName(), value, lower, upper, str);
+        }
+    }
 }
 
 

@@ -161,7 +161,7 @@ macro(OpenSimAddPythonModule)
         target_link_libraries(${_libname} ${PYTHON_LIBRARIES})
     endif()
 
-    target_link_libraries(${_libname} osimTools osimExampleComponents)
+    target_link_libraries(${_libname} osimTools osimExampleComponents osimMoco)
     
     # Set target properties for various platforms.
     # --------------------------------------------
@@ -230,6 +230,7 @@ OpenSimAddPythonModule(MODULE actuators)
 OpenSimAddPythonModule(MODULE analyses)
 OpenSimAddPythonModule(MODULE tools)
 OpenSimAddPythonModule(MODULE examplecomponents)
+OpenSimAddPythonModule(MODULE moco)
 
 
 # Copy files to create complete package in the build tree.
@@ -250,6 +251,8 @@ OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/setup.py" ".")
 
 # __init__.py.
 OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/__init__.py" opensim)
+
+OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/report.py" opensim)
 
 # Test files. If you require more test resource files, list them here.
 foreach(test_file
@@ -309,6 +312,18 @@ set(PYTHON_EXAMPLES_UNITTEST_ARGS
         posthoc_StatesTrajectory_example
         wiring_inputs_and_outputs_with_TableReporter
         )
+if(OPENSIM_WITH_CASADI)
+    list(APPEND PYTHON_EXAMPLES_UNITTEST_ARGS
+            Moco.exampleKinematicConstraints
+            Moco.exampleSlidingMass
+            )
+endif()
+if(OPENSIM_WITH_TROPTER)
+    list(APPEND PYTHON_EXAMPLES_UNITTEST_ARGS
+            Moco.exampleOptimizeMass
+            Moco.examplePredictAndTrack
+            )
+endif()
 # Similar as above, but for the example files. These files aren't named as
 # test_*.py, so we must specify a more general search pattern.
 add_test(NAME python_examples
@@ -318,7 +333,12 @@ add_test(NAME python_examples
                 --verbose
     )
 set_tests_properties(python_examples PROPERTIES
-        ENVIRONMENT PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR}/examples)
+        ENVIRONMENT "PYTHONPATH=${CMAKE_CURRENT_SOURCE_DIR}/examples")
+
+foreach(folder tests examples)
+    set_property(TEST python_${folder} APPEND PROPERTY ENVIRONMENT
+        "OPENSIM_USE_VISUALIZER=0")
+endforeach()
 
 if(WIN32)
     # On Windows, CMake cannot use RPATH to hard code the location of libraries

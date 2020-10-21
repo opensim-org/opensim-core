@@ -19,8 +19,11 @@ message(STATUS "NOTICE: Make sure all OpenSim dependencies are built with the \
 same CMAKE_BUILD_TYPE (Linux) or CONFIGURATION (Xcode/MSVC) as OpenSim to \
 avoid mysterious runtime errors.")
 
-# To create a folder hierarchy within Visual Studio.
+# To allow a folder hierarchy within Visual Studio's Solution Explorer.
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+# This is used to provide the user with information about config. options.
+include(FeatureSummary)
 
 # OpenSim version.
 # ----------------
@@ -34,10 +37,55 @@ if(OPENSIM_PATCH_VERSION)
     set(PATCH_VERSION_STRING ".${OPENSIM_PATCH_VERSION}")
 endif()
 
-set(OPENSIM_VERSION
+set(OPENSIM_RELEASE_VERSION
     "${OPENSIM_MAJOR_VERSION}.${OPENSIM_MINOR_VERSION}${PATCH_VERSION_STRING}"
     )
 
+# The OPENSIM_QUALIFIED_VERSION is more granular than OPENSIM_RELEASE_VERSION.
+# If git is not found, we simply append "?" to the release version.
+# If the checked-out commit is tagged, the qualified version is the tag name.
+# If the checked-out commit is not tagged, the qualified version is
+#   <release-version>-<git-commit-date>-<git-commit-short-hash>
+#   For example: 4.2-2020-07-01-5c10b4176
+set(QUALIFIED_VERSION "")
+find_package(Git)
+if(Git_FOUND)
+    # This command provides the annotated tag for the current commit, if it
+    # exists, and returns an error if a tag does not exist.
+    execute_process(
+            COMMAND "${GIT_EXECUTABLE}" describe --exact-match
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            RESULT_VARIABLE GIT_DESCRIBE_EXACT_MATCH_RETVAL
+            OUTPUT_VARIABLE GIT_TAG
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            ERROR_QUIET
+    )
+    if(${GIT_DESCRIBE_EXACT_MATCH_RETVAL} EQUAL 0)
+        # A tag exists.
+        set(QUALIFIED_VERSION ${GIT_TAG})
+        # Do not add anything to the version.
+    else()
+        execute_process(
+                COMMAND "${GIT_EXECUTABLE}" log -1 --format=%h
+                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                OUTPUT_VARIABLE GIT_COMMIT_HASH
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        # Prepend date for sorting.
+        execute_process(
+                COMMAND "${GIT_EXECUTABLE}" show -s --format=%cd --date=short HEAD
+                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                OUTPUT_VARIABLE GIT_COMMIT_DATE
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+        set(QUALIFIED_VERSION
+                "${OPENSIM_RELEASE_VERSION}-${GIT_COMMIT_DATE}-${GIT_COMMIT_HASH}")
+    endif()
+else()
+    set(QUALIFIED_VERSION "${OPENSIM_RELEASE_VERSION}?")
+endif()
+set(OPENSIM_QUALIFIED_VERSION "${QUALIFIED_VERSION}" CACHE STRING
+        "Qualified version string, containing git commit date/hash suffix." FORCE)
 
 # CMake module path.
 # ------------------
@@ -69,7 +117,9 @@ link_directories(${CMAKE_BINARY_DIR})
 # ----------------
 
 # Specify number of cores to run tests.
-set(PROCESSOR_COUNT 8 CACHE STRING
+include(ProcessorCount)
+ProcessorCount(PROCESSOR_COUNT)
+set(PROCESSOR_COUNT "${PROCESSOR_COUNT}" CACHE STRING
     "Number of concurrent jobs when running tests via RUN_TESTS_PARALLEL target.")
 mark_as_advanced(PROCESSOR_COUNT)
 
@@ -134,6 +184,18 @@ option(OPENSIM_BUILD_INDIVIDUAL_APPS
 mark_as_advanced(OPENSIM_BUILD_INDIVIDUAL_APPS)
 
 
+# Moco settings.
+# --------------
+option(OPENSIM_WITH_CASADI
+        "Build CasADi support for Moco (MocoCasADiSolver)." ON)
+add_feature_info(WITH_CASADI OPENSIM_WITH_CASADI
+        "Build CasADi support for Moco (OPENSIM_WITH_CASADI)")
+option(OPENSIM_WITH_TROPTER
+        "Build the tropter optimal control library, for use in MocoTropterSolver." ON)
+add_feature_info(WITH_TROPTER OPENSIM_WITH_TROPTER
+        "Build the tropter optimal control library (OPENSIM_WITH_TROPTER)")
+
+
 # Configure installation directories across platforms.
 # ----------------------------------------------------
 
@@ -183,6 +245,7 @@ if(${OPENSIM_INSTALL_UNIX_FHS})
     set(OPENSIM_INSTALL_APIEXDIR "${CMAKE_INSTALL_DOCDIR}/Code")
     set(OPENSIM_INSTALL_SIMBODYDIR ".")
     set(OPENSIM_INSTALL_SPDLOGDIR ".")
+    set(OPENSIM_INSTALL_CASADIDIR ".")
 
 else()
 
@@ -204,6 +267,7 @@ else()
     set(OPENSIM_INSTALL_APIEXDIR Resources/Code)
     set(OPENSIM_INSTALL_SIMBODYDIR sdk/Simbody)
     set(OPENSIM_INSTALL_SPDLOGDIR sdk/spdlog)
+    set(OPENSIM_INSTALL_CASADIDIR sdk)
 
 endif()
 
@@ -315,7 +379,6 @@ if(${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR
     else()
         set(GCC_INST_SET)
     endif()
-
 
     # Testing with Clang 3.3 on Ubuntu 14.04 shows a 5% decrease
     # in the runtime of the tests when we enable loop unrolling.
@@ -547,25 +610,9 @@ include(InstallRequiredSystemLibraries)
 
 # C++11
 # -----
-# In revision 8629, we started using std::unique_ptr, which requires
-# C++11 features to be enabled when using GCC or Clang.
-if(${CMAKE_C_COMPILER} MATCHES "cc" OR ${CMAKE_C_COMPILER} MATCHES "clang")
-    # Using C++11 on OSX requires using libc++ instead of libstd++.
-    # libc++ is an implementation of the C++ standard library for OSX.
-    if(APPLE)
-        if(XCODE)
-            set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LANGUAGE_STANDARD "c++11")
-            set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_LIBRARY "libc++")
-        else()
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-            if(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-            endif()
-        endif()
-    else() # not APPLE
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-    endif()
-endif()
+set(CMAKE_CXX_STANDARD 11)
+# Using c++11 is not optional.
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
 ## RPATH 
@@ -606,11 +653,42 @@ if(UNIX) # Linux and macOS
 endif()
 
 set(OPENSIM_DEPENDENCIES_DIR 
-    "" 
+    "${CMAKE_SOURCE_DIR}/../opensim_dependencies_install"
     CACHE 
     PATH
     "Directory containing installed binaries of OpenSim dependencies. Set this
      only if you used the Superbuild procedure to install dependencies. ")
+
+
+# Default paths for finding dependencies.
+get_filename_component(OPENSIM_DEPENDENCIES_ABSDIR "${OPENSIM_DEPENDENCIES_DIR}"
+        ABSOLUTE)
+if(NOT CMAKE_PREFIX_PATH
+        AND NOT ADOLC_DIR AND NOT "$ENV{ADOLC_DIR}"
+        AND NOT IPOPT_DIR AND NOT "$ENV{IPOPT_DIR}"
+        AND EXISTS "${OPENSIM_DEPENDENCIES_ABSDIR}")
+    message(STATUS
+            "Attempting to use dependencies from ${OPENSIM_DEPENDENCIES_ABSDIR}")
+    set(deps_to_find)
+    if(OPENSIM_WITH_TROPTER)
+        list(APPEND deps_to_find colpack eigen)
+    endif()
+    if(OPENSIM_WITH_CASADI)
+        list(APPEND deps_to_find casadi)
+    endif()
+    if(OPENSIM_WITH_TROPTER OR OPENSIM_WITH_CASADI)
+        list(APPEND deps_to_find ipopt)
+    endif()
+    set(dep_install_dirs)
+    foreach(dep ${deps_to_find})
+        list(APPEND dep_install_dirs "${OPENSIM_DEPENDENCIES_ABSDIR}/${dep}")
+    endforeach()
+    set(CMAKE_PREFIX_PATH "${dep_install_dirs}" CACHE PATH
+            "Directories containing dependencies.")
+    set(ADOLC_DIR "${OPENSIM_DEPENDENCIES_ABSDIR}/adol-c" CACHE PATH
+            "Path to ADOL-C install directory.")
+endif()
+
 
 set(OPENSIM_C3D_PARSER None CACHE STRING
     "Compile OpenSim with a C3D parser ? ezc3d or BTK provide C3D reading.")
@@ -625,7 +703,9 @@ if(${OPENSIM_C3D_PARSER} STREQUAL "ezc3d")
     endif()
     find_package(ezc3d REQUIRED HINTS "${ezc3d_hint}")
     add_definitions(-DWITH_EZC3D)
-    OpenSimCopyDependencyDLLsForWin(ezc3d "${ezc3d_LIBRARY_DIR}/../")
+    OpenSimCopyDependencyDLLsForWin(DEP_NAME ezc3d
+            DEP_BIN_DIR "${ezc3d_LIBRARY_DIR}/../bin"
+            )
     if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
         OpenSimInstallDependencyLibraries(ezc3d "${ezc3d_LIBRARY_DIR}/../"
             "${ezc3d_LIBRARY_DIR}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
@@ -644,7 +724,8 @@ elseif(${OPENSIM_C3D_PARSER} STREQUAL "BTK")
                  HINTS "${OPENSIM_DEPENDENCIES_DIR}/BTK/share/btk-0.4dev")
     include(${BTK_USE_FILE})
     add_definitions(-DWITH_BTK)
-    OpenSimCopyDependencyDLLsForWin(BTK ${BTK_INSTALL_PREFIX})
+    OpenSimCopyDependencyDLLsForWin(DEP_NAME BTK
+            DEP_BIN_DIR ${BTK_INSTALL_PREFIX}/bin)
     if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
         OpenSimInstallDependencyLibraries(BTK "${BTK_INSTALL_PREFIX}"
             "${BTK_LIBRARY_DIRS}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
@@ -730,7 +811,8 @@ endif()
 # so that the tests and examples can run without modifying the PATH
 # (that is, put Simbody's dll's in the same directory as OpenSim's
 # executables and libraries).
-OpenSimCopyDependencyDLLsForWin(Simbody "${Simbody_BIN_DIR}")
+OpenSimCopyDependencyDLLsForWin(DEP_NAME Simbody
+        DEP_BIN_DIR "${Simbody_BIN_DIR}")
 if(WIN32)
     add_dependencies(Copy_Simbody_DLLs Simbody_CONFIG_check)
 endif()
@@ -741,6 +823,29 @@ endif()
 # TODO no longer necessary; Simbody's library targets provide the 
 # include directories.
 include_directories("${Simbody_INCLUDE_DIR}")
+
+
+# CasADi
+# ------
+if(OPENSIM_WITH_CASADI)
+    find_package(casadi 3.4.4 REQUIRED)
+    set_package_properties(casadi PROPERTIES
+            URL https://web.casadi.org
+            TYPE REQUIRED
+            PURPOSE "Differentiation and optimizer interface.")
+    get_filename_component(CASADI_BIN_DIR "${casadi_DIR}/../" ABSOLUTE)
+    # Copy CasADi into our installation.
+    OpenSimCopyDependencyDLLsForWin(DEP_NAME casadi
+            DEP_BIN_DIR "${CASADI_BIN_DIR}")
+    if(OPENSIM_COPY_DEPENDENCIES AND NOT WIN32)
+        # MocoCopyDLLs() only copies DLLs for Windows, but we still need
+        # the CasADi shared libraries on other platforms.
+        install(DIRECTORY "${CASADI_CMAKE_DIR}/../../../"
+            DESTINATION "${CMAKE_INSTALL_PREFIX}/${OPENSIM_INSTALL_CASADIDIR}"
+                USE_SOURCE_PERMISSIONS)
+    endif()
+endif()
+
 
 # Installing dependencies into OpenSim's installation.
 # ----------------------------------------------------
@@ -863,7 +968,6 @@ add_custom_target(RUN_TESTS_PARALLEL
                                    --output-on-failure
                                    )
 
-
 # Create buildinfo.txt file and place under sdk to include product version,
 # platform and compiler for troubleshooting purposes
 set(VERSION_FILE_PATH ${CMAKE_BINARY_DIR}/OpenSim_buildinfo.txt)
@@ -899,7 +1003,7 @@ endif()
 add_definitions(-DOSIM_SYS_INFO=${OPENSIM_SYSTEM_INFO}
     -DOSIM_COMPILER_INFO=${OPENSIM_COMPILER_INFO}
     -DOSIM_OS_NAME=${OPENSIM_OS_NAME}
-    -DOSIM_VERSION=${OPENSIM_VERSION})
+    -DOSIM_VERSION=${OPENSIM_QUALIFIED_VERSION})
 
 
 
@@ -911,6 +1015,7 @@ add_definitions(-DOSIM_SYS_INFO=${OPENSIM_SYSTEM_INFO}
 set(OPENSIM_SHARED_TEST_FILES_DIR "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared")
 
 add_subdirectory(Vendors)
+
 add_subdirectory(OpenSim)
 if(NOT BUILD_API_ONLY)
     add_subdirectory(Applications)
@@ -919,3 +1024,7 @@ add_subdirectory(Bindings)
 
 add_subdirectory(cmake)
 add_subdirectory(doc)
+
+# Print a list of the dependencies that were found, and the features the user
+# chose.
+feature_summary(WHAT ALL)

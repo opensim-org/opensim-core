@@ -272,7 +272,10 @@ public:
     int getOutputPrecision() const { return _outputPrecision; }
     void setOutputPrecision(int aPrecision) { _outputPrecision = aPrecision; }
 
-    AnalysisSet& getAnalysisSet() const;
+    const AnalysisSet& getAnalysisSet() const { return _analysisSet; }
+    AnalysisSet& updAnalysisSet() const { return _analysisSet; }
+    const ControllerSet& getControllerSet() const { return _controllerSet; }
+    ControllerSet& updControllerSet() const { return _controllerSet; }
 
     /** 
     * Get Results Directory
