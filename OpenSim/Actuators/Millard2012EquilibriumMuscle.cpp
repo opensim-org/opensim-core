@@ -102,6 +102,18 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
     double eccCurviness     = fvCurve.getEccentricCurviness();
     double eccForceMax      = fvCurve.getMaxEccentricVelocityForceMultiplier();
 
+//Ensure that the slopes near vmax are postive, finite, and above zero
+    OPENSIM_THROW_IF_FRMOBJ(conSlopeNearVmax < SimTK::SqrtEps,
+            InvalidPropertyValue, 
+            "ForceVelocityCurve:concentric_slope_near_vmax",
+            "Slope near concentric vmax cannot be less than SimTK::SqrtEps");
+
+    OPENSIM_THROW_IF_FRMOBJ(eccSlopeNearVmax < SimTK::SqrtEps,
+            InvalidPropertyValue, 
+            "ForceVelocityCurve:eccentric_slope_near_vmax",
+            "Slope near eccentric vmax cannot be less than SimTK::SqrtEps");
+
+
     // A few parameters may need to be adjusted to avoid singularities (e.g., if
     // an elastic tendon is used with no fiber damping).
     if(!get_ignore_tendon_compliance() && !use_fiber_damping) {
@@ -115,61 +127,94 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
             "Minimum control cannot be less than minimum activation");
 
         if (falCurve.getMinValue() < 0.1){
-            log_info("'{}' ActiveForceLengthCurve parameter updated to avoid "
-                     "error: '{}' was {} but is now {}.", getName(),
-                     "minimum_value", falCurve.getMinValue(), 0.1);
+            log_info("'{}' Parameter update for classic Hill model: "
+                "ActiveForceLengthCurve parameter '{}' was {} but is now {}.", 
+                getName(),"minimum_value", falCurve.getMinValue(), 0.1);
             falCurve.setMinValue(0.1);
         }
-        if (conSlopeAtVmax < 0.1 || eccSlopeAtVmax < 0.1){
-            log_info("'{}' ForceVelocityCurve parameter updated to avoid error:"
-                     " '{}' was {} but is now {}.", getName(),
-                     "concentric_slope_near_vmax", conSlopeAtVmax, 0.1);
-            log_info("'{}' ForceVelocityCurve parameter updated to avoid error:"
-                     " '{}' was {} but is now {}.", getName(),
-                     "eccentric_slope_near_vmax", eccSlopeAtVmax, 0.1);
+        if (   conSlopeAtVmax < conSlopeNearVmax*0.5){
+            log_info("'{}' Parameter update for classic Hill model: "
+                "ForceVelocityCurve parameter '{}' was {} but is now {}.", 
+                getName(),"eccentric_slope_near_vmax", conSlopeAtVmax, 
+                conSlopeNearVmax*0.5);            
+            conSlopeAtVmax  = conSlopeNearVmax*0.5;
+            if(conSlopeNearVmax < 0.05){               
+                log_info("'{}': Warning slow simulation: classic Hill model"
+                    "is being used with a '{}' of {}. Use the damped model, or "
+                    "increase to {} for faster simulations.", getName(),
+                    "concentric_slope_near_vmax",conSlopeNearVmax, 0.05);                 
+            }
+        }
+        if (   eccSlopeAtVmax < eccSlopeNearVmax*0.5){
+            log_info("'{}' Parameter update for classic Hill model: "
+                "ForceVelocityCurve parameter '{}' was {} but is now {}.", 
+                getName(),"eccentric_slope_near_vmax", eccSlopeAtVmax, 
+                eccSlopeNearVmax*0.5);
+            eccSlopeAtVmax   = eccSlopeNearVmax*0.5;
+            
+            if(eccSlopeNearVmax < 0.05){
+                log_info("'{}': Warning slow simulation: classic Hill model"
+                    "is being used with a '{}' of {}. Use the damped model, or "
+                    "increase to {} for faster simulations.", getName(),
+                    "eccentric_slope_near_vmax",eccSlopeNearVmax, 0.05);                
+            }
 
-            fvCurve.setCurveShape(0.1, conSlopeNearVmax, isometricSlope,
-                                  0.1, eccSlopeNearVmax, eccForceMax);
         }
 
-    } else { //singularity-free model still cannot have excitations below 0
+        fvCurve.setCurveShape(
+                conSlopeAtVmax, conSlopeNearVmax, isometricSlope,
+                eccSlopeAtVmax, eccSlopeNearVmax, eccForceMax);  
+
+
+    } else { 
+
+        if(get_minimum_activation() > 0.){
+            log_info("'{}': Parameter update for the damped-model: "
+                "minimum_activation was {} but is now {}",
+                   getName(), get_minimum_activation(), 0.);
+
+            set_minimum_activation(clamp(0, get_minimum_activation(), 1));
+        }
+        if(falCurve.getMinValue() > 0.0){
+            log_info("'{}' Parameter update for the damped-model: "
+                "ActiveForceLengthCurve minimum value was {} but is now {}.",
+                 getName(), falCurve.getMinValue(), 0.);
+            falCurve.setMinValue(0.0);
+        }
+
+        if(conSlopeAtVmax > 0.){
+            log_info("'{}' Parameter update for the damped-model:"
+                " ForceVelocityCurve  '{}' was {} but is now {}.", 
+                getName(),"concentric_slope_at_vmax", conSlopeAtVmax, 0.);                        
+            conSlopeAtVmax  = 0.;
+        }
+        if(eccSlopeAtVmax > 0.){            
+            log_info("'{}' Parameter update for the damped-model: "
+                "ForceVelocityCurve '{}' was {} but is now {}.", 
+                getName(),"eccentric_slope_at_vmax", eccSlopeAtVmax, 0.);            
+            eccSlopeAtVmax   = 0.;
+        }
+
+        fvCurve.setCurveShape(
+            conSlopeAtVmax, conSlopeNearVmax, isometricSlope,
+            eccSlopeAtVmax, eccSlopeNearVmax, eccForceMax);
+
         OPENSIM_THROW_IF_FRMOBJ(get_minimum_activation() < 0.0,
             InvalidPropertyValue, getProperty_minimum_activation().getName(),
             "Minimum activation cannot be less than zero");
-
+        
+        //singularity-free model still cannot have excitations below 0
         OPENSIM_THROW_IF_FRMOBJ(getMinControl() < get_minimum_activation(),
             InvalidPropertyValue, getProperty_min_control().getName(),
             "Minimum control cannot be less than minimum activation");
-
-        set_minimum_activation(clamp(0, get_minimum_activation(), 1));
-        falCurve.setMinValue(0.0);
-        fvCurve.setCurveShape(0.0, conSlopeNearVmax, isometricSlope,
-                              0.0, eccSlopeNearVmax, eccForceMax);
     }
 
-    if (conSlopeAtVmax < 0.5*conSlopeNearVmax ) {
-        //Using this update preserves the shape of the rest of the force
-        //velocity curve and guarantees that the condition that
-        //conSlopeAtVmax < conSlopeNearVmax is satisfied
-      log_info("'{}' ForceVelocityCurve parameter updated: "
-               "'{}' was {} but is now {}.",
-               getName(),"concentric_slope_at_vmax",
-               conSlopeAtVmax, 0.5*conSlopeNearVmax);
-      conSlopeAtVmax = 0.5*conSlopeNearVmax;
-    }
-    if (eccSlopeAtVmax < 0.5*eccSlopeNearVmax ) {
-        //ditto
-      log_info("'{}' ForceVelocityCurve parameter updated: "
-               "'{}' was {} but is now {}.",
-               getName(),"eccentric_slope_at_vmax",
-               eccSlopeAtVmax, 0.5*eccSlopeNearVmax);
-      eccSlopeAtVmax = 0.5*eccSlopeNearVmax;
-
-    }
+    double eccSlopeAtVmaxFvInv  = eccSlopeNearVmax*0.5;
+    double conSlopeAtVmaxFvInv  = conSlopeNearVmax*0.5;
 
 
-    fvInvCurve = ForceVelocityInverseCurve(conSlopeAtVmax, conSlopeNearVmax,
-                                           isometricSlope, eccSlopeAtVmax,
+    fvInvCurve = ForceVelocityInverseCurve(conSlopeAtVmaxFvInv, conSlopeNearVmax,
+                                           isometricSlope, eccSlopeAtVmaxFvInv,
                                            eccSlopeNearVmax, eccForceMax,
                                            conCurviness, eccCurviness);
 
