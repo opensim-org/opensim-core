@@ -138,7 +138,7 @@ target_include_directories(osimMoco INTERFACE
 
 set_target_properties(osimMoco PROPERTIES
         DEFINE_SYMBOL OSIMMOCO_EXPORTS
-        PROJECT_LABEL "Library - osimMoco"
+        PROJECT_LABEL "osimMoco"
         FOLDER "Libraries"
         )
 if (OPENSIM_WITH_CASADI)
