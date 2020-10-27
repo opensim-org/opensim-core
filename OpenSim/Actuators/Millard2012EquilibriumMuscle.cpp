@@ -106,7 +106,8 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
     OPENSIM_THROW_IF_FRMOBJ(conSlopeNearVmax < SimTK::SqrtEps,
             InvalidPropertyValue, 
             "ForceVelocityCurve:concentric_slope_near_vmax",
-            "Slope near concentric vmax cannot be less than SimTK::SqrtEps");
+            "Slope near concentric vmax cannot be less than SimTK::SqrtEps"
+            "(1.49e-8)");
 
     OPENSIM_THROW_IF_FRMOBJ(eccSlopeNearVmax < SimTK::SqrtEps,
             InvalidPropertyValue, 
@@ -114,13 +115,15 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
             "Slope near eccentric vmax cannot be less than SimTK::SqrtEps");
 
 
-    // A few parameters may need to be adjusted to avoid singularities (e.g., if
-    // an elastic tendon is used with no fiber damping).
+    // A few parameters may need to be adjusted to avoid singularities 
+    // if the classic Hill formulation is being used with an elastic tendon
     if(!get_ignore_tendon_compliance() && !use_fiber_damping) {
         // Compliant tendon with no damping.
         OPENSIM_THROW_IF_FRMOBJ(get_minimum_activation() < 0.01,
             InvalidPropertyValue, getProperty_minimum_activation().getName(),
-            "Minimum activation cannot be less than 0.01");
+            "Minimum activation cannot be less than 0.01 when using"
+            "the classic Hill model with an elastic tendon due to a"
+            "singularity in the state derivative for an activation of 0.");
 
         OPENSIM_THROW_IF_FRMOBJ(getMinControl() < get_minimum_activation(),
             InvalidPropertyValue, getProperty_min_control().getName(),
@@ -132,34 +135,37 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
                 getName(),"minimum_value", falCurve.getMinValue(), 0.1);
             falCurve.setMinValue(0.1);
         }
-        if (   conSlopeAtVmax < conSlopeNearVmax*0.5){
+        
+
+        if (conSlopeAtVmax < conSlopeNearVmax*0.5){
             log_info("'{}' Parameter update for classic Hill model: "
                 "ForceVelocityCurve parameter '{}' was {} but is now {}.", 
                 getName(),"eccentric_slope_near_vmax", conSlopeAtVmax, 
                 conSlopeNearVmax*0.5);            
-            conSlopeAtVmax  = conSlopeNearVmax*0.5;
-            if(conSlopeNearVmax < 0.05){               
-                log_info("'{}': Warning slow simulation: classic Hill model"
-                    "is being used with a '{}' of {}. Use the damped model, or "
-                    "increase to {} for faster simulations.", getName(),
-                    "concentric_slope_near_vmax",conSlopeNearVmax, 0.05);                 
-            }
+            conSlopeAtVmax  = conSlopeNearVmax*0.5;            
         }
-        if (   eccSlopeAtVmax < eccSlopeNearVmax*0.5){
+        if(conSlopeNearVmax < 0.05){               
+            log_info("'{}': Warning slow simulation: classic Hill model"
+                "is being used with a '{}' of {}. Use the damped model, or "
+                "increase to {} for faster simulations.", getName(),
+                "concentric_slope_near_vmax",conSlopeNearVmax, 0.05);                 
+        }
+
+
+        if (eccSlopeAtVmax < eccSlopeNearVmax*0.5){
             log_info("'{}' Parameter update for classic Hill model: "
                 "ForceVelocityCurve parameter '{}' was {} but is now {}.", 
                 getName(),"eccentric_slope_near_vmax", eccSlopeAtVmax, 
                 eccSlopeNearVmax*0.5);
             eccSlopeAtVmax   = eccSlopeNearVmax*0.5;
-            
-            if(eccSlopeNearVmax < 0.05){
-                log_info("'{}': Warning slow simulation: classic Hill model"
-                    "is being used with a '{}' of {}. Use the damped model, or "
-                    "increase to {} for faster simulations.", getName(),
-                    "eccentric_slope_near_vmax",eccSlopeNearVmax, 0.05);                
-            }
 
         }
+        if(eccSlopeNearVmax < 0.05){
+            log_info("'{}': Warning slow simulation: classic Hill model"
+                "is being used with a '{}' of {}. Use the damped model, or "
+                "increase to {} for faster simulations.", getName(),
+                "eccentric_slope_near_vmax",eccSlopeNearVmax, 0.05);                
+        }        
 
         fvCurve.setCurveShape(
                 conSlopeAtVmax, conSlopeNearVmax, isometricSlope,
@@ -209,9 +215,34 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
             "Minimum control cannot be less than minimum activation");
     }
 
+    //The ForceVelocityInverseCurve is used by the classic Hill model: this 
+    //formulation is used when use_fiber_damping is false. When an elastic
+    //tendon is used Eqn. 6 of Millard et al. is used to evaluate the state
+    //derivative of fiber length. As noted in the paper Eqn. 6 has several
+    //singularites one of which is related to the force-velocity-inverse curve:
+    //simply, the force-velocity-inverse curve must be invertible. 
+    //
+    //This is equivalent to saying that the force-velocity-inverse curve must 
+    //have finite endslopes. To avoid this singularity we set the end slopes of 
+    //the force-velocity-inverse curve to be a fraction of the `near' slopes
+    //used by the force-velocity curve. While this may seem confusing don't 
+    //forget: the ForceVelocityInverseCurve takes in the parameters of the 
+    //force-velocity-curve that it inverts. So if you pass in an endslope of 
+    //0 the inverse curve will have an endslope of 1/0 = infinity! Instead we 
+    //make sure that we pass in a finite value for the end slopes so that the 
+    //inverse curve has finite endslopes. 
+    //
+    //This means that fvInvCurve is not the inverse of fvCurve: the end slopes
+    //differ. This has to be the case because the fvCurve is used by the damped
+    //fiber model. This model has no singularities in its state derivative
+    //(Eqn. 8 of Millard et al.) and so a user is permitted to set the end
+    //slopes of the fvCurve to zero.
+    //
+    //Millard M, Uchida T, Seth A, Delp SL. Flexing computational muscle: 
+    //modeling and simulation of musculotendon dynamics. Journal of 
+    //biomechanical engineering. 2013 Feb 1;135(2).
     double eccSlopeAtVmaxFvInv  = eccSlopeNearVmax*0.5;
     double conSlopeAtVmaxFvInv  = conSlopeNearVmax*0.5;
-
 
     fvInvCurve = ForceVelocityInverseCurve(conSlopeAtVmaxFvInv, conSlopeNearVmax,
                                            isometricSlope, eccSlopeAtVmaxFvInv,
