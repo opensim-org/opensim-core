@@ -112,7 +112,8 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
     OPENSIM_THROW_IF_FRMOBJ(eccSlopeNearVmax < SimTK::SqrtEps,
             InvalidPropertyValue, 
             "ForceVelocityCurve:eccentric_slope_near_vmax",
-            "Slope near eccentric vmax cannot be less than SimTK::SqrtEps");
+            "Slope near eccentric vmax cannot be less than SimTK::SqrtEps"
+            "(1.49e-8)");
 
 
     // A few parameters may need to be adjusted to avoid singularities 
