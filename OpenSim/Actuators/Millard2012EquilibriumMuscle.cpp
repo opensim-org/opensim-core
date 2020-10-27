@@ -178,7 +178,8 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
         if(get_minimum_activation() > 0.){
             log_info("'{}': Parameter update for the damped-model: "
                 "minimum_activation was {} but is now {}",
-                   getName(), get_minimum_activation(), 0.);
+                   getName(), get_minimum_activation(), 
+                   clamp(0, get_minimum_activation(), 1));
 
             set_minimum_activation(clamp(0, get_minimum_activation(), 1));
         }
