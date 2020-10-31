@@ -586,7 +586,9 @@ int StaticOptimization::begin(const SimTK::State& s )
         _forceReporter->begin(sWorkingCopy);
         _forceReporter->updForceStorage().reset();
 
-        // Set initial guess to lowest activation
+        // Set initial guess to highest activation
+        // This is necessary because previous activation is used for determining
+        // the force of the muscle (therefore cannot be zero)
         _parameters.resize(_modelWorkingCopy->getNumControls());
         const Set<Actuator>& fs = _modelWorkingCopy->getActuators();
         for(int i=0,j=0;i<fs.getSize();i++) {
