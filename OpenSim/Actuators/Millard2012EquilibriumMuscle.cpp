@@ -217,28 +217,45 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
             "Minimum control cannot be less than minimum activation");
     }
 
-    //The ForceVelocityInverseCurve is used by the classic Hill model: this 
-    //formulation is used when use_fiber_damping is false. When an elastic
-    //tendon is used Eqn. 6 of Millard et al. is used to evaluate the state
-    //derivative of fiber length. As noted in the paper Eqn. 6 has several
-    //singularites one of which is related to the force-velocity-inverse curve:
-    //simply, the force-velocity-inverse curve must be invertible. 
+
+    //The ForceVelocityInverseCurve is used with both the damped and the 
+    // classic Hill model but in different ways:
     //
-    //This is equivalent to saying that the force-velocity-inverse curve must 
-    //have finite endslopes. To avoid this singularity we set the end slopes of 
-    //the force-velocity-inverse curve to be a fraction of the `near' slopes
-    //used by the force-velocity curve. While this may seem confusing don't 
-    //forget: the ForceVelocityInverseCurve takes in the parameters of the 
-    //force-velocity-curve that it inverts. So if you pass in an endslope of 
-    //0 the inverse curve will have an endslope of 1/0 = infinity! Instead we 
-    //make sure that we pass in a finite value for the end slopes so that the 
-    //inverse curve has finite endslopes. 
+    // The damped model uses the fvInvCurve to provide an initial fiber 
+    // velocity prior to numerically solving the root using Eqn. 8 from 
+    // Millard et al.
     //
-    //This means that fvInvCurve is not the inverse of fvCurve: the end slopes
-    //differ. This has to be the case because the fvCurve is used by the damped
-    //fiber model. This model has no singularities in its state derivative
-    //(Eqn. 8 of Millard et al.) and so a user is permitted to set the end
-    //slopes of the fvCurve to zero.
+    // The classic Hill formulation uses the fvInvCurve to directly solve for 
+    // fiber velocity using Eqn. 6 from Millard et al.
+    //
+    //While the fvCurve and fvInvCurve are inverses of each other between
+    //concentric-velocity-near-vmax to eccentric-velocity-near-vmax these
+    //curves differ outside of this region. Why? When an elastic-tendon model
+    //is used with the classic Hill formulation Eqn. 6 of Millard et al. is 
+    //used to evaluate the state derivative of fiber length. As noted in the 
+    //paper Eqn. 6 has several singularites one of which is related to the 
+    //force-velocity-inverse curve: simply, the force-velocity-inverse curve 
+    //must be invertible.
+    //
+    //In this case this is equivalent to saying that the force-velocity-inverse 
+    //curve must have finite endslopes. To avoid this singularity we set the 
+    //end slopes of the force-velocity-inverse curve to be a fraction of the 
+    //`near' slopes used by the force-velocity curve: this value is guaranteed
+    //to be finite, and is also guaranteed not to break the monotonicity of the 
+    //curve. Also don't forget: the ForceVelocityInverseCurve constructor takes 
+    //in the parameters of the force-velocity-curve that it inverts. So if you 
+    //pass in an endslope of 0 the inverse curve will have an endslope of 
+    //1/0 = infinity! Instead we make sure that we pass in a finite value for 
+    //the end slopes so that the inverse curve has finite endslopes. 
+    //
+    //The fvCurve is used exclusively by the damped model. As such the fvCurve
+    //does not need to be invertible since the damped model's state derivative
+    //(Eqn. 8 of Millard et al.) has no singularities. This means that the user
+    //can set the endslopes to zero which is particularly useful if simulations
+    //of very rapid contractions are being performed. This also means that the
+    //fvInvCurve is not the inverse of fvCurve for concentric velocities faster 
+    //than concentric-velocity-near-vmax and eccentric velocities faster than 
+    //eccentric-velocity-near-vmax: the end slopes differ.
     //
     //Millard M, Uchida T, Seth A, Delp SL. Flexing computational muscle: 
     //modeling and simulation of musculotendon dynamics. Journal of 
