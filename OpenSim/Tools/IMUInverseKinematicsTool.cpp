@@ -211,35 +211,45 @@ void IMUInverseKinematicsTool::runInverseKinematicsWithOrientationsFromFile(
     }
 
     auto report = ikReporter->getTable();
+    // form resultsDir either from results_directory or output_motion_file
+    auto resultsDir = get_results_directory();
+    if (resultsDir.empty() && !get_output_motion_file().empty())
+        resultsDir = IO::getParentDirectory(get_output_motion_file());
+    if (!resultsDir.empty()) {
+        IO::makeDir(resultsDir);
+        // directory will be restored on block exit
+        // by changing dir all other files are created in resultsDir
+        IO::CwdChanger::changeTo(resultsDir);
+        std::string outName = get_output_motion_file();
+        outName = IO::GetFileNameFromURI(outName);
+        if (outName.empty()) {
+            bool isAbsolutePath;
+            string directory, fileName, extension;
+            SimTK::Pathname::deconstructPathname(orientationsFileName,
+                    isAbsolutePath, directory, fileName, extension);
+            outName = "ik_" + fileName;
+        }
+        std::string outputFile = outName;
 
-    IO::makeDir(get_results_directory());
-    std::string outName = get_output_motion_file();
-    if (outName.empty()) { 
-        auto eix = orientationsFileName.rfind(".");
-        auto stix = orientationsFileName.rfind("/") + 1;
-        outName = "ik_" + orientationsFileName.substr(stix, eix - stix);
-    }
-    std::string outputFile = get_results_directory() + "/" + outName;
+        // Convert to degrees to compare with marker-based IK
+        // but only for rotational coordinates
+        model.getSimbodyEngine().convertRadiansToDegrees(report);
+        report.updTableMetaData().setValueForKey<string>("name", outName);
 
-    // Convert to degrees to compare with marker-based IK
-    // but only for rotational coordinates
-    model.getSimbodyEngine().convertRadiansToDegrees(report);
-    report.updTableMetaData().setValueForKey<string>("name", outName);
+        auto fullOutputFilename = outputFile;
+        std::string::size_type extSep = fullOutputFilename.rfind(".");
+        if (extSep == std::string::npos) { fullOutputFilename.append(".mot"); }
+        STOFileAdapter_<double>::write(report, fullOutputFilename);
 
-    auto fullOutputFilename = outputFile;
-    std::string::size_type extSep = fullOutputFilename.rfind(".");
-    if (extSep == std::string::npos) { 
-        fullOutputFilename.append(".mot");
-    }
-    STOFileAdapter_<double>::write(report, fullOutputFilename);
-
-    log_info(
-            "Wrote IK with IMU tracking results to: '{}'.", fullOutputFilename);
-    if (get_report_errors()) {
-        STOFileAdapter_<double>::write(*modelOrientationErrors,
-                get_results_directory() + "/" +
-                        getName() + "_orientationErrors.sto");
-    }
+        log_info("Wrote IK with IMU tracking results to: '{}'.",
+                fullOutputFilename);
+        if (get_report_errors()) {
+            STOFileAdapter_<double>::write(*modelOrientationErrors,
+                    getName() + "_orientationErrors.sto");
+        }
+    } 
+    else
+        log_info("IMUInverseKinematicsTool: No output files are written.");
     // Results written to file, clear in case we run again
     ikReporter->clearTable();
 }
