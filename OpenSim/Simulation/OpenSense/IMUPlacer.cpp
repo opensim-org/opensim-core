@@ -87,7 +87,7 @@ bool IMUPlacer::run(bool visualizeResults) {
     _calibrated = false;
     // Check there's a model file specified before trying to open it
     if (_model.empty() && get_model_file().size() == 0) {
-        OPENSIM_THROW(Exception, "No model file specified for IMUPlacer.");
+        OPENSIM_THROW(Exception, "No model or model_file was specified for IMUPlacer.");
     }
     if (_model.empty()) { _model.reset(new Model(get_model_file())); }
     TimeSeriesTable_<SimTK::Quaternion> quatTable(
