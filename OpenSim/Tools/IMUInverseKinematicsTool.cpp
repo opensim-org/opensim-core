@@ -219,7 +219,7 @@ void IMUInverseKinematicsTool::runInverseKinematicsWithOrientationsFromFile(
         IO::makeDir(resultsDir);
         // directory will be restored on block exit
         // by changing dir all other files are created in resultsDir
-        IO::CwdChanger::changeTo(resultsDir);
+        auto cwd = IO::CwdChanger::changeTo(resultsDir);
         std::string outName = get_output_motion_file();
         outName = IO::GetFileNameFromURI(outName);
         if (outName.empty()) {
