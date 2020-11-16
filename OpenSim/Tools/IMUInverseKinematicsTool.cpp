@@ -245,11 +245,12 @@ void IMUInverseKinematicsTool::runInverseKinematicsWithOrientationsFromFile(
                 fullOutputFilename);
         if (get_report_errors()) {
             STOFileAdapter_<double>::write(*modelOrientationErrors,
-                    getName() + "_orientationErrors.sto");
+                    outName + "_orientationErrors.sto");
         }
     } 
     else
-        log_info("IMUInverseKinematicsTool: No output files are written.");
+        log_info("IMUInverseKinematicsTool: No output files were generated, "
+            "set output_motion_file to generate output files.");
     // Results written to file, clear in case we run again
     ikReporter->clearTable();
 }
