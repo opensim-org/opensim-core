@@ -42,7 +42,7 @@ Options:
 Description:
   The argument <tool-or-class> can be the name of a Tool
   
-         scale  ik  id  rra  cmc  forward  analyze  moco (case-insensitive)
+         scale  ik  id  rra  cmc  forward  analyze  moco   (case-insensitive)
 
   or the name of any registered (concrete) OpenSim class (even from a plugin).
   Here are descriptions of the Tools listed above:
