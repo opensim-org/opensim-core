@@ -26,6 +26,7 @@
 #include <docopt.h>
 
 #include <OpenSim/OpenSim.h>
+#include <OpenSim/Moco/osimMoco.h>
 
 namespace OpenSim {
 

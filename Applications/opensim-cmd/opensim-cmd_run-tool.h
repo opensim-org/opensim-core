@@ -50,6 +50,7 @@ Description:
             Computed Muscle Control      (CMC)
             Forward                      
             Analyze
+            MocoStudy
 
   This command will also recognize tools from plugins.
 
@@ -115,6 +116,12 @@ int run_tool(int argc, const char** argv) {
         const bool success = scale->run();
         if (success) return EXIT_SUCCESS;
         else return EXIT_FAILURE;
+    } else if (auto* study = dynamic_cast<MocoStudy*>(obj.get())) {
+        log_info("Preparing to run {}.", study->getConcreteClassName());
+        const auto solution = study->solve();
+        if (solution.success()) return EXIT_SUCCESS;
+        else return EXIT_FAILURE;
+
     } else {
         throw Exception("The provided file '" + setupFile + "' does not "
                 "define an OpenSim Tool. Did you intend to load a plugin?");
