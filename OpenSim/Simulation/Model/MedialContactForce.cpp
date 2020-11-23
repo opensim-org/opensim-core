@@ -22,6 +22,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "MedialContactForce.h"
+#include <OpenSim/Common/Component.h>
 
 using namespace OpenSim;
 
@@ -38,9 +39,6 @@ void MedialContactForce::constructProperties() {
 
 void MedialContactForce::extendFinalizeFromProperties() {
 
-    // Cache the joint.
-    m_joint = &getConnectee<Joint>("joint");
-
     // Get the frame from which the loads are computed.
     checkPropertyValueIsInSet(getProperty_loads_frame(), {"parent", "child"});
     if (get_loads_frame() == "parent") {
@@ -48,6 +46,15 @@ void MedialContactForce::extendFinalizeFromProperties() {
     } else if (get_loads_frame() == "child") {
         m_isParentFrame = false;
     }
+
+    // Check that moment and force indices are valid.
+    checkPropertyValueIsInRangeOrSet(
+        getProperty_adduction_moment_index(), 0, 2, {});
+    checkPropertyValueIsInRangeOrSet(
+        getProperty_vertical_force_index(), 0, 2, {});
+
+    m_moment_index = get_adduction_moment_index();
+    m_force_index = get_vertical_force_index();
 }
 
 void MedialContactForce::extendAddToSystem(
@@ -55,19 +62,36 @@ void MedialContactForce::extendAddToSystem(
     Super::extendAddToSystem(system);
     double force(0.0);
     addCacheVariable<double>(
-            "medial_contact_force", force, SimTK::Stage::Dynamics);
+            "medial_contact_force", force, SimTK::Stage::Acceleration);
 }
 
 double MedialContactForce::getMedialContactForce(
         const SimTK::State& s) const {
     if (!isCacheVariableValid(s, "medial_contact_force")) {
-        
+        calcMedialContactForce(s, 
+            updCacheVariableValue<double>(s, "medial_contact_force"));
+        markCacheVariableValid(s, "medial_contact_force");
     }
     return getCacheVariableValue<double>(s, "medial_contact_force");
 }
 
 void MedialContactForce::calcMedialContactForce(const SimTK::State& s, 
-        SimTK::Real& force) {
+        double& force) const {
     
+    // Compute the reaction loads on the parent or child frame.
+    SimTK::SpatialVec reaction;
+    if (m_isParentFrame) {
+        reaction = getJoint().calcReactionOnParentExpressedInGround(s);
+    } else {
+        reaction = getJoint().calcReactionOnChildExpressedInGround(s);
+    }
+
+    // Adduction moment.
+    const auto& KAM = reaction[0][m_moment_index];
+    // Vertical contact force.
+    const auto& KCF = reaction[1][m_force_index];
+
+    // Medial contact force.
+    force = 0.5 * KCF + (1 / get_condyle_width()) * KAM;
 }
 

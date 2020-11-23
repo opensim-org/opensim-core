@@ -19,19 +19,41 @@
 // This file provides a way to easily prototype or test temporary snippets of
 // code during development.
 
-#include <Moco/osimMoco.h>
+#include <OpenSim/Moco/osimMoco.h>
 
 using namespace OpenSim;
 
 int main() {
     // TODO Logger::setLevel(Logger::Level::Debug);
-    MocoTrack track;
-    ModelProcessor modelProcessor("DeMers_mod_noarms_welds_4.0.osim");
-    modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
-    modelProcessor.append(ModOpIgnoreTendonCompliance());
-    track.setModel(modelProcessor);
-    track.setStatesReference({"r_SLD_mean_coords.sto"});
-    track.set_allow_unused_references(true);
-    MocoSolution solution = track.solve();
+    //MocoTrack track;
+    //ModelProcessor modelProcessor("DeMers_mod_noarms_welds_4.0.osim");
+    //modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
+    //modelProcessor.append(ModOpIgnoreTendonCompliance());
+    //track.setModel(modelProcessor);
+    //track.setStatesReference({"r_SLD_mean_coords.sto"});
+    //track.set_allow_unused_references(true);
+    //MocoSolution solution = track.solve();
+
+    MocoStudy study("MocoStudy_mcfcon.osim");
+    auto& problem = study.updProblem();
+    Model model("processed_model.osim");
+    model.initSystem();
+    problem.setModelAsCopy(model);
+    auto* distanceConstraint = problem.addPathConstraint<MocoFrameDistanceConstraint>();
+    distanceConstraint->setName("distance_constraint");
+    distanceConstraint->addFramePair(
+            MocoFrameDistanceConstraintPair(
+                            "/bodyset/calcn_l", "/bodyset/calcn_r", 0.12,
+                            SimTK::Infinity));
+
+    auto& solver = study.updSolver<MocoCasADiSolver>();
+    solver.resetProblem(problem);
+    auto guess = solver.createGuess();
+    MocoTrajectory prevSol("motion_tracking_walking_solution_baseline.sto");
+    guess.insertStatesTrajectory(prevSol.exportToStatesTable(), true);
+    guess.insertControlsTrajectory(prevSol.exportToControlsTable(), true);
+    solver.setGuess(guess);
+    study.solve();
+
     return EXIT_SUCCESS;
 }

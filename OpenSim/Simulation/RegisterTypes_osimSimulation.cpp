@@ -49,6 +49,7 @@
 #include "Model/ElasticFoundationForce.h"
 #include "Model/HuntCrossleyForce.h"
 #include "Model/SmoothSphereHalfSpaceForce.h"
+#include "Model/MedialContactForce.h"
 #include "Model/Ligament.h"
 #include "Model/Blankevoort1991Ligament.h"
 #include "Model/JointSet.h"
@@ -244,6 +245,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( HuntCrossleyForce::ContactParametersSet() );
     Object::registerType( ElasticFoundationForce::ContactParameters() );
     Object::registerType( ElasticFoundationForce::ContactParametersSet() );
+    Object::registerType( MedialContactForce() );
 
     Object::registerType( Ligament() );
     Object::registerType( Blankevoort1991Ligament() );

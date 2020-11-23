@@ -25,6 +25,7 @@
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoControlBoundConstraint.h"
 #include "MocoFrameDistanceConstraint.h"
+#include "MocoOutputConstraint.h"
 #include "MocoGoal/MocoAccelerationTrackingGoal.h"
 #include "MocoGoal/MocoAngularVelocityTrackingGoal.h"
 #include "MocoGoal/MocoContactTrackingGoal.h"
@@ -97,6 +98,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
 
         Object::registerType(MocoControlBoundConstraint());
         Object::registerType(MocoFrameDistanceConstraint());
+        Object::registerType(MocoOutputConstraint());
 
         Object::registerType(MocoCasADiSolver());
 

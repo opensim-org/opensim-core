@@ -9,6 +9,7 @@
 #include <OpenSim/Moco/MocoCasADiSolver/MocoCasADiSolver.h>
 #include <OpenSim/Moco/MocoControlBoundConstraint.h>
 #include <OpenSim/Moco/MocoFrameDistanceConstraint.h>
+#include <OpenSim/Moco/MocoOutputConstraint.h>
 #include <OpenSim/Moco/MocoGoal/MocoAccelerationTrackingGoal.h>
 #include <OpenSim/Moco/MocoGoal/MocoContactTrackingGoal.h>
 #include <OpenSim/Moco/MocoGoal/MocoControlGoal.h>

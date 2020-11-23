@@ -176,7 +176,7 @@ public:
     elements for this MocoPathConstraint and passes this view to
     calcPathConstraintErrorsImpl().
     @precondition initializeOnModel() has been invoked. */
-    void calcPathConstraintErrors(
+    void calcPathConstraintErrorsView(
             const SimTK::State& state, SimTK::Vector& errors) const {
 
         // This vector shares writable, borrowed space from the *errors* vector
@@ -188,11 +188,16 @@ public:
         calcPathConstraintErrorsImpl(state, theseErrors);
     }
 
+    void calcPathConstraintErrors(
+            const SimTK::State& state, SimTK::Vector& errors) const {
+        calcPathConstraintErrorsImpl(state, errors);
+    }
+
     /** Perform error checks on user input for this constraint, and cache
     quantities needed when computing the constraint errors.
     to efficiently evaluate the constraint.
     This function must be invoked before invoking
-    calcPathConstraintErrors(). */
+    calcPathConstraintErrors() or calcPathConstraintErrorsView(). */
     void initializeOnModel(const Model& model, const MocoProblemInfo&,
             const int& pathConstraintIndex) const;
 

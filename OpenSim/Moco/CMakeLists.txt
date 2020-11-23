@@ -74,6 +74,8 @@ set(MOCO_SOURCES
         MocoControlBoundConstraint.h
         MocoFrameDistanceConstraint.h
         MocoFrameDistanceConstraint.cpp
+        MocoOutputConstraint.h
+        MocoOutputConstraint.cpp
         Components/DiscreteController.cpp
         Components/DiscreteController.h
         Components/StationPlaneContactForce.h

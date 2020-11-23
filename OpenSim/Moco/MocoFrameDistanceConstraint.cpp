@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoFrameDistanceConstraint.cpp                              *
+ * OpenSim: MocoFrameDistanceConstraint.cpp                                   *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2019 Stanford University and the Authors                     *
  *                                                                            *

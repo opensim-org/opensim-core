@@ -23,7 +23,6 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Simulation/Model/ModelComponent.h>
 #include "OpenSim/Simulation/SimbodyEngine/Joint.h"
 
 namespace OpenSim {
@@ -35,8 +34,8 @@ A model component for conveniently computing medial contact force.
 
 @endverbatim
  */
-class OSIMSIMULATION_API MedialContactForce : public ModelComponent {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MedialContactForce, ModelComponent);
+class OSIMSIMULATION_API MedialContactForce : public Component {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MedialContactForce, Component);
 
 public:
     OpenSim_DECLARE_PROPERTY(loads_frame, std::string,
@@ -52,22 +51,25 @@ public:
             "TODO.");
 
     OpenSim_DECLARE_OUTPUT(medial_contact_force, double, getMedialContactForce,
-            SimTK::Stage::Dynamics);
+            SimTK::Stage::Acceleration);
 
     MedialContactForce();
 
     double getMedialContactForce(const SimTK::State& s) const;
+
+    const Joint& getJoint() const { return getConnectee<Joint>("joint"); }
+
 
 private:
     void constructProperties();
     void extendFinalizeFromProperties() override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
-    void calcMedialContactForce(const SimTK::State& s, SimTK::Real& force);
+    void calcMedialContactForce(const SimTK::State& s, double& force) const;
 
-    mutable SimTK::ReferencePtr<const Joint> m_joint;
     mutable bool m_isParentFrame;
-
+    mutable int m_moment_index;
+    mutable int m_force_index;
 };
 
 } // namespace OpenSim
