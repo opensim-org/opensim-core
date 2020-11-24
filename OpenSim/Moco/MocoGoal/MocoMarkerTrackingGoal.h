@@ -53,10 +53,7 @@ public:
     specified to weight the tracking of individual markers in the cost
     function. Names of markers in the reference to be tracked should match
     the names of corresponding model markers. */
-    void setMarkersReference(const MarkersReference& ref) {
-        set_markers_reference(ref);
-    }
-
+    void setMarkersReference(const MarkersReference&);
     /** If no MarkersReference has been specified, this returns an empty
     MarkersReference object. */
     MarkersReference getMarkersReference() const {
