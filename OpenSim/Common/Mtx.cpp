@@ -37,11 +37,6 @@
 using namespace OpenSim;
 using SimTK::Vec3;
 
-int Mtx::_PSpaceSize = 0;
-int Mtx::_WSpaceSize = 0;
-double** Mtx::_P1Space = NULL;
-double** Mtx::_P2Space = NULL;
-double*  Mtx::_WSpace = NULL;
 static const double eps = std::numeric_limits<double>::epsilon();
 
 
@@ -361,11 +356,8 @@ Multiply(int aNR1,int aNCR,int aNC2,const double *aM1,const double *aM2,
     if(aNCR<=0) return(-1);
     if(aNC2<=0) return(-1);
 
-    // ENSURE WORKSPACE CAPACITY
-    EnsureWorkSpaceCapacity(aNR1*aNC2);
-
-    // SET POINTER INTO WORKSPACE
-    double *m = _WSpace;
+    // ALLOCATE WORKING MATRIX
+    double *m = new double[aNR1*aNC2];
 
     // MULTIPLY
     const double *ij1=NULL,*ij2=NULL;
@@ -390,6 +382,8 @@ Multiply(int aNR1,int aNCR,int aNC2,const double *aM1,const double *aM2,
     // COPY RESULTS INTO rM
     memcpy(rM,m,aNR1*aNC2*sizeof(double));
 
+    // DEALLOCATE MEMORY AND RETURN
+    delete[] m;
     return(0);
 }
 //_____________________________________________________________________________
@@ -410,16 +404,12 @@ Invert(int aN,const double *aM,double *rMInv)
     if(rMInv==NULL) return(-1);
 
     // VARIABLE DECLARATIONS
-    double *M,**Mp,**Mr,**Ip,**Ir,*Mrj,*Irj,*Mij,*Iij,d;
+    double *Mrj,*Irj,*Mij,*Iij,d;
     int r,i,j,n;
-
-    // ENSURE WORKSPACE CAPACITY
-    EnsureWorkSpaceCapacity(aN*aN);
-    EnsurePointerSpaceCapacity(aN);
 
     // INITIALIZE M (A COPY OF aM)
     n = aN*aN*sizeof(double);
-    M = _WSpace;
+    double *M = new double[aN*aN];
     memcpy(M,aM,n);
 
     // INITIALIZE rMInv TO THE IDENTITY MATRIX
@@ -427,10 +417,10 @@ Invert(int aN,const double *aM,double *rMInv)
     for(r=0,Irj=rMInv,n=aN+1;r<aN;r++,Irj+=n)  *Irj=1.0;
 
     // INITIALIZE ROW POINTERS
-    Mp = _P1Space;      // POINTER TO BEGINNING OF POINTER1 SPACE
-    Mr = _P1Space;      // ROW POINTERS INTO M
-    Ip  = _P2Space;     // POINTER TO BEGINNING OF POINTER2 SPACE
-    Ir = _P2Space;      // ROW POINTERS INTO aMInv
+    double **Mp = new double*[aN]; // POINTER TO BEGINNING OF M SPACE
+    double **Mr = Mp;              // ROW POINTERS INTO M
+    double **Ip = new double*[aN]; // POINTER TO BEGINNING OF aMInv SPACE
+    double **Ir = Ip;              // ROW POINTERS INTO aMInv
     for(r=0;r<aN;r++,Mr++,Ir++) {
         i = r*aN;
         *Mr = M + i;
@@ -481,6 +471,10 @@ Invert(int aN,const double *aM,double *rMInv)
         for(j=0,Irj=Ip[r];j<aN;j++) *(Irj++) *= d;
     }
 
+    // DEALLOCATE MEMORY AND RETURN
+    delete[] M;
+    delete[] Mp;
+    delete[] Ip;
     return(0);
 }
 //_____________________________________________________________________________
@@ -500,15 +494,14 @@ Transpose(int aNR,const int aNC,const double *aM,double *rMT)
     if(aM==NULL) return(-1);
     if(rMT==NULL) return(-1);
 
-    // ENSURE WORKSPACE CAPACITY
-    int n = aNR*aNC;
-    EnsureWorkSpaceCapacity(n);
-
     // SET UP COUNTERS AND POINTERS
     int r,c;
     const double *Mrc;
     double *Mcr;
-    double *MT = _WSpace;
+
+    // ALLOCATE WORKING MEMORY
+    int n = aNR*aNC;
+    double *MT = new double[n];
 
     // TRANSPOSE
     for(r=0,Mrc=aM;r<aNR;r++) {
@@ -521,6 +514,8 @@ Transpose(int aNR,const int aNC,const double *aM,double *rMT)
     // COPY RESULTS
     memcpy(rMT,MT,n*sizeof(double));
 
+    // DEALLOCATE MEMORY AND RETURN
+    delete[] MT;
     return(0);
 }
 //_____________________________________________________________________________
@@ -714,75 +709,4 @@ SetDim3(int n3,int n2,int n1,int i2,int i1,double *m,double *a)
         I = ComputeIndex(i3,n2,i2,n1,i1);
         m[I] = a[i3];
     }
-}
-
-
-//=============================================================================
-// WORKSPACE MANAGEMENT
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Ensure that the work space is at least of size aN.
- *
- * If the capacity could not be increased to aN, -1 is returned.  Otherwise,
- * 0 is returned.
- */
-int Mtx::
-EnsureWorkSpaceCapacity(int aN)
-{
-    if(aN>_WSpaceSize) {
-
-        _WSpaceSize = aN;
-
-        // DELETE EXISTING ALLOCATION
-        if(_WSpace!=NULL) delete[] _WSpace;
-
-        // W
-        _WSpace = new double[_WSpaceSize];
-        if(_WSpace==NULL) { _WSpaceSize=0;  return(-1); }
-    }
-
-    return(0);
-}
-//_____________________________________________________________________________
-/**
- * Ensure that the pointer spaces is at least of size aN.
- *
- * If the capacity could not be increased to aN, -1 is returned.  Otherwise,
- * 0 is returned.
- */
-int Mtx::
-EnsurePointerSpaceCapacity(int aN)
-{
-    if(aN>_PSpaceSize) {
-
-        _PSpaceSize = aN;
-
-        // DELETE EXISTING ALLOCATIONS
-        if(_P1Space!=NULL) delete[] _P1Space;
-        if(_P2Space!=NULL) delete[] _P2Space;
-
-        // P1
-        _P1Space = new double*[_PSpaceSize];
-        if(_P1Space==NULL) { _PSpaceSize=0;  return(-1); }
-
-        // P2
-        _P2Space = new double*[aN];
-        if(_P2Space==NULL) { delete[] _P1Space;  _PSpaceSize=0;  return(-1); }
-    }
-
-    return(0);
-}
-//_____________________________________________________________________________
-/**
- * Free the work and pointer spaces.
- */
-void Mtx::
-FreeWorkAndPointerSpaces()
-{
-    if(_WSpace!=NULL) { delete[] _WSpace;  _WSpace=NULL; }
-    if(_P1Space!=NULL) { delete[] _P1Space;  _P1Space=NULL; }
-    if(_P2Space!=NULL) { delete[] _P2Space;  _P2Space=NULL; }
-    _WSpaceSize = 0;
-    _PSpaceSize = 0;
 }

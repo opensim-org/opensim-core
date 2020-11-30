@@ -1034,6 +1034,20 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
             }
             geomPath.updPathPointSet().adoptAndAppend(pathPoint);
         }
+
+        const auto& pathWrapSet = muscBase.getGeometryPath().getWrapSet();
+        for (int ipw = 0; ipw < pathWrapSet.getSize(); ++ipw) {
+            auto* pathWrap = pathWrapSet.get(ipw).clone();
+            const auto& socketNames = pathWrap->getSocketNames();
+            for (const auto& socketName : socketNames) {
+                pathWrap->updSocket(socketName)
+                        .connect(pathWrapSet.get(ipw)
+                                        .getSocket(socketName)
+                                        .getConnecteeAsObject());
+            }
+            geomPath.updWrapSet().adoptAndAppend(pathWrap);
+        }
+
         std::string actname = actu->getName();
         model.addForce(actu.release());
 

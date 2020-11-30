@@ -46,16 +46,6 @@ namespace OpenSim {
 class OSIMCOMMON_API Mtx
 {
 //=============================================================================
-// DATA
-//=============================================================================
-private:
-    static int _PSpaceSize;
-    static int _WSpaceSize;
-    static double **_P1Space;
-    static double **_P2Space;
-    static double *_WSpace;
-
-//=============================================================================
 // METHODS
 //=============================================================================
 public:
@@ -193,13 +183,6 @@ public:
     static int ComputeIndex(int i3,int n2,int i2,int n1,int i1);
     static void GetDim3(int n3,int n2,int n1,int i2,int i1,double *m,double *a);
     static void SetDim3(int n3,int n2,int n1,int i2,int i1,double *m,double *a);
-
-    //--------------------------------------------------------------------------
-    // WORKSPACE MANAGEMENT
-    //--------------------------------------------------------------------------
-    static int EnsureWorkSpaceCapacity(int aN);
-    static int EnsurePointerSpaceCapacity(int aN);
-    static void FreeWorkAndPointerSpaces();
 
 //=============================================================================
 };  // END class Mtx
