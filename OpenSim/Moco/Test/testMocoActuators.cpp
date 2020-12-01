@@ -250,7 +250,7 @@ TEMPLATE_TEST_CASE(
         std::vector<std::string> controls{"/forceset/muscle"};
         const double error = cmcTraj.compareContinuousVariablesRMS(
                 solutionTrajOpt, {{"states", states}, {"controls", controls}});
-        CHECK(error < 0.05);
+        CHECK(error < 0.1);
     }
 
     // Track the kinematics from the trajectory optimization.
