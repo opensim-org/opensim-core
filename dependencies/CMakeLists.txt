@@ -312,17 +312,17 @@ else()
         # Patch the scripts that download Metis and MUMPS to use our
         # Sourceforge mirror (MUMPS) and the COIN-OR tools repo (Metis). The
         # original links are not reliable.
-        # TODO the COIN-OR patch (and our previous mirrored patch) produces error
-        # PATCH_COMMAND cd <SOURCE_DIR>/ThirdParty/Metis && patch < ${CMAKE_SOURCE_DIR}/get.Metis.patch
-        #       COMMAND cd <SOURCE_DIR>/ThirdParty/Metis && ./get.Metis
         ExternalProject_Add(ipopt
             URL https://www.coin-or.org/download/source/Ipopt/Ipopt-3.12.8.zip
             INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/ipopt"
-            PATCH_COMMAND cd <SOURCE_DIR>/ThirdParty/Mumps && patch < ${CMAKE_SOURCE_DIR}/get.Mumps.patch
+            PATCH_COMMAND cd <SOURCE_DIR>/ThirdParty/Metis && patch < ${CMAKE_SOURCE_DIR}/get.Metis.patch
+                  COMMAND cd <SOURCE_DIR>/ThirdParty/Metis && ./get.Metis
+                  COMMAND cd <SOURCE_DIR>/ThirdParty/Mumps && patch < ${CMAKE_SOURCE_DIR}/get.Mumps.patch
                   COMMAND cd <SOURCE_DIR>/ThirdParty/Mumps && ./get.Mumps
             # GCC 10 generates a warning when compling MUMPS that we must suppress using
             # -fallow-argument-mismatch.
-            CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> ADD_FFLAGS=-fallow-argument-mismatch
+            # Suppress warnings treated as errors in Clang/LLVM with -Wno-error=implicit-function-declaration
+            CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> ADD_FFLAGS=-fallow-argument-mismatch ADD_CFLAGS=-Wno-error=implicit-function-declaration
             BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
     endif()
