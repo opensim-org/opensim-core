@@ -1295,6 +1295,24 @@ public:
     double getStateVariableValue(const SimTK::State& state, const std::string& name) const;
 
     /**
+     * Get the value of a state variable allocated by this Component.
+     *
+     * To connect this StateVariable as an input to another component (such as
+     * a Reporter), use getOutput(name); each state variable has a
+     * corresponding Output:
+     *
+     *  @code
+     *  foo.getInput("input1").connect(bar.getOutput(name));
+     *  @endcode
+     *
+     * @param state   the State for which to get the value
+     * @param name    path to the state variable of interest
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
+     */
+    double getStateVariableValue(const SimTK::State& state, const ComponentPath& path) const;
+
+    /**
      * %Set the value of a state variable allocated by this Component by name.
      *
      * @param state  the State for which to set the value
@@ -2607,17 +2625,37 @@ public:
 #ifndef SWIG // StateVariable is protected.
     /**
      * Get a StateVariable anywhere in the Component tree, given a
-     * StateVariable path. The StateVariable doesn't need to be in a
-     * subcomponent of this compoonent; it could be located in a different
-     * branch of the Component tree (in such a case, the specified path might
-     * begin with "../").
+     * StateVariable path.
+     *
+     * The StateVariable doesn't need to be in a subcomponent of this
+     * component; it could be located in a different branch of the Component
+     * tree (in such a case, the specified path might begin with "../").
+     *
      * This returns nullptr if a StateVariable does not exist at the specified
      * path or if the path is invalid.
+     *
      * @throws ComponentHasNoSystem if this Component has not been added to a
      *         System (i.e., if initSystem has not been called)
      */
     const StateVariable* traverseToStateVariable(
             const std::string& pathName) const;
+
+    /**
+     * Get a StateVariable anywhere in the Component tree, given a
+     * StateVariable path.
+     *
+     * The StateVariable doesn't need to be in a subcomponent of this
+     * component; it could be located in a different branch of the Component
+     * tree (in such a case, the specified path might begin with "../").
+     *
+     * This returns nullptr if a StateVariable does not exist at the specified
+     * path or if the path is invalid.
+     *
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
+     */
+    const StateVariable* traverseToStateVariable(
+            const ComponentPath& path) const;
 #endif
 
     /// @name Access to the owning component (advanced).

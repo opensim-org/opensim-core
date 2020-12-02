@@ -128,7 +128,7 @@ public:
      * Returns a string representation of the ComponentPath
      * (e.g. "/a/b/component").
      */
-    std::string toString() const;
+    const std::string& toString() const;
 
     /**
      * Returns true if the path is absolute (effectively, if it begins
