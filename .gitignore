@@ -50,6 +50,7 @@ delete_this_to_stop_optimization*.txt
 .idea/dictionaries
 .idea/vcs.xml
 .idea/opensim-core.iml
+.idea/misc.xml
 
 # Sensitive or high-churn files:
 .idea/**/dataSources/
