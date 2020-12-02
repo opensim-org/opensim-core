@@ -416,7 +416,6 @@ TEST_CASE("Double pendulum coordinate tracking",
         // -------------------
         // Check that finite differences are correct.
         OCPDerivativesComparison<DoublePendulumCoordinateTracking> c;
-        c.num_mesh_intervals = 10;
         c.findiff_hessian_step_size = 1e-5;
         c.gradient_error_tolerance = 1e-5;
         c.jacobian_error_tolerance = 1e-5;
@@ -424,7 +423,6 @@ TEST_CASE("Double pendulum coordinate tracking",
         c.compare();
 
         OCPDerivativesComparison<ImplicitDoublePendulumCoordinateTracking> ci;
-        ci.num_mesh_intervals = 10;
         ci.findiff_hessian_step_size = 1e-5;
         ci.gradient_error_tolerance = 1e-5;
         ci.jacobian_error_tolerance = 1e-5;

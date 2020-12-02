@@ -310,8 +310,7 @@ else()
         # is preserved between commands is not defined. Behavior of shell
         # operators like && is not defined."
         # Patch the scripts that download Metis and MUMPS to use our
-        # Sourceforge mirror (MUMPS) and the COIN-OR tools repo (Metis). The
-        # original links are not reliable.
+        # Sourceforge mirror. The original links are not reliable.
         ExternalProject_Add(ipopt
             URL https://www.coin-or.org/download/source/Ipopt/Ipopt-3.12.8.zip
             INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/ipopt"
