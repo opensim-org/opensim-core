@@ -616,8 +616,9 @@ int WrapEllipsoid::calcTangentPoint(double p1e, SimTK::Vec3& r1, SimTK::Vec3& p1
 {
     int i, j, k, nit, nit2, maxit=50, maxit2=1000;
     Vec3 nr1, p1r1, p1m;
-    double d1, v[4], ee[4], ssqo, ssq, pcos, dedth[4][4];
-    double fakt, alpha=0.01, dedth2[4][4], diag[4], ddinv2[4][4], vt[4], dd;
+    double d1, v[4], ee[4], ssqo, ssq, pcos;
+    double fakt, alpha=0.01, diag[4], vt[4], dd;
+    SimTK::Mat44 dedth, dedth2, ddinv2;
 
     if (fabs(p1e) < 0.0001)
     {
@@ -703,7 +704,7 @@ int WrapEllipsoid::calcTangentPoint(double p1e, SimTK::Vec3& r1, SimTK::Vec3& p1
                 for (i = 0; i < 4; i++)
                     dedth2[i][i] = diag[i] * (1.0 + alpha);
 
-                Mtx::Invert(4, &dedth2[0][0], &ddinv2[0][0]);
+                ddinv2 = dedth2.invert();
 
                 for (i = 0; i < 4; i++)
                 {
