@@ -126,7 +126,7 @@ void compareOneAxisRotation(double angle, double& t, double& tc) {
     SimTK::Rotation Rx;
     Rx.setRotationFromAngleAboutX(angle);
     tic();
-    b = mat * ~Rx;
+    b = mat * ~Rx; // This multiplication matches the convention of WrapMath::Make3x3DirCosMatrix.
     t = toc();
 
     WrapMath::Make3x3DirCosMatrix(angle, Rxc);
@@ -172,7 +172,7 @@ void compareAngleAxis4x4Rotation(double angle, const SimTK::Vec3& axis, double& 
     tic();
     SimTK::Rotation R;
     R.setRotationFromAngleAboutNonUnitVector(angle, axis);
-    b = ~R * x;
+    b = ~R * x; // This multiplication matches the convention of WrapMath::ConvertAxisAngleTo4x4DirCosMatrix.
     t = toc();
 
     tic();
