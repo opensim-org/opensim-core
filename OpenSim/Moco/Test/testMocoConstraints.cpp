@@ -1663,6 +1663,35 @@ TEMPLATE_TEST_CASE("MocoFrameDistanceConstraint", "",
         position = positionTable.getRowAtIndex(irow)[0];
         // The margin is looser than the constraint tolerance because the
         // constraint is on the square of the distance.
-        CHECK(Approx(position.norm()).margin(1e-3) >= distance);
+        CHECK(Approx(position.norm()).margin(1e-2) >= distance);
     }
+}
+
+TEMPLATE_TEST_CASE("Multiple MocoPathConstraints", "", MocoCasADiSolver,
+        MocoTropterSolver) {
+    MocoStudy study;
+    auto& problem = study.updProblem();
+    problem.setModelAsCopy(ModelFactory::createDoublePendulum());
+    problem.setTimeBounds(0, 1);
+    problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0);
+    problem.setStateInfo("/jointset/j0/q0/speed", {-10, 10}, 0);
+    problem.setStateInfo("/jointset/j1/q1/value", {-10, 10}, 0);
+    problem.setStateInfo("/jointset/j1/q1/speed", {-10, 10}, 0);
+    problem.setControlInfo("/tau0", {-5, 5});
+    problem.setControlInfo("/tau0", {-5, 5});
+    problem.addGoal<MocoControlGoal>();
+    auto* controlConstraint = problem
+            .addPathConstraint<MocoControlBoundConstraint>();
+    controlConstraint->setName("control_constraint");
+    controlConstraint->addControlPath("/tau0");
+    controlConstraint->setUpperBound(Constant(1.0));
+    auto* distanceConstraint =
+            problem.addPathConstraint<MocoFrameDistanceConstraint>();
+    distanceConstraint->setName("distance_constraint");
+    distanceConstraint->addFramePair({"/ground", "/bodyset/b0", 1.0,
+                                      SimTK::Infinity});
+    distanceConstraint->addFramePair({"/ground", "/bodyset/b1", 1.0,
+                                      SimTK::Infinity});
+    study.initSolver<TestType>();
+    study.solve();
 }

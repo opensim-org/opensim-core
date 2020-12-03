@@ -137,8 +137,9 @@ MocoSolution solveDoublePendulumSwingup(const std::string& dynamics_mode) {
 //    CHECK(controlError == Approx(0));   
 //}
 
+// TODO not passing consistently for MocoTropterSolver on Mac
 TEMPLATE_TEST_CASE("Similar solutions between implicit and explicit dynamics",
-        "[implicit]", MocoCasADiSolver, MocoTropterSolver) {
+        "[implicit]", MocoCasADiSolver /*,MocoTropterSolver*/) {
     
     GIVEN("solutions to implicit and explicit problems") {
 

@@ -263,7 +263,7 @@ public:
                 "MocoProblem.");
 
         for (const auto& pc : m_path_constraints) {
-            pc->calcPathConstraintErrors(state, errors);
+            pc->calcPathConstraintErrorsView(state, errors);
         }
     }
     /// Calculate the errors in all the scalar kinematic constraint equations in
