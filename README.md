@@ -1,6 +1,6 @@
 OpenSim Core
 ============
- [![Travis][buildstatus_image_travis]][travisci] [![Appveyor][buildstatus_image_appveyor]][appveyorci] [![ZenHub][zenhub_image]][zenhub]
+![continuous-integration](https://github.com/opensim-org/opensim-core/workflows/continuous-integration/badge.svg)[![ZenHub][zenhub_image]][zenhub]
 
 **NOTE: This repository cannot be used to build OpenSim 3.x or earlier. For OpenSim 3.x, see [here](http://simtk-confluence.stanford.edu:8080/display/OpenSim/Building+OpenSim+from+Source).**
 
