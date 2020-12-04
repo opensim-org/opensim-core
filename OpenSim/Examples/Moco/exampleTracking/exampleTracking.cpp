@@ -122,6 +122,7 @@ int main() {
     // -----
     auto* tracking = problem.addGoal<MocoStateTrackingGoal>();
     TimeSeriesTable ref;
+    ref.addTableMetaData<std::string>("inDegrees", "no");
     ref.setColumnLabels({"/jointset/j0/q0/value", "/jointset/j1/q1/value"});
     // We supply a reference whose time range is a superset of the problem's
     // time bounds: Moco performs finite differences internally, which may

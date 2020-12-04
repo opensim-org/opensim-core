@@ -8,4 +8,3 @@ OpenSimAddTests(
     LINKLIBS osimTools
     )
 
-OpenSimCopySharedTestFiles(std_subject01_walk1_states.sto)

@@ -9,6 +9,13 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 
 v4.2
 ====
+- Fixed a bug in Millard2012EquilibriumMuscle::extendFinalizeFromProperties(): the end point slopes on the inverse force velocity curves are constrained to yield a valid curve. A warning is noted in the log if the slopes are small enough that numerical integration might be slow.
+- Added logging to Millard2012EquilibriumMuscle::extendFinalizeFromProperties(): whenever an internal setting is changed automatically these changes are noted in the log.
+- Introduced new logging system based on spdlog https://github.com/gabime/spdlog.git. The transition should be transparent to end users with default settings except that the name of the log file is now opensim.log. Main features are:
+  - The ability to customize error level for reporting (in increasing level of verbosity): Off, Critical, Error, Warn, Info, Debug, Trace 
+  - The ability to start logging to a specified file on the fly.
+  - Log file messages are time stamped and the format can be changed by users
+  - More details and additional functionality is described in the Developer's Guide, and Doxygen pages of OpenSim::Logger class.
 - Add the ActivationCoordinateActuator component, which is a CoordinateActuator with simple activation dynamics (PR #2699).
 - Easily convert Matlab matrices and Python NumPy arrays to and from OpenSim Vectors and Matrices. See Matlab example matrixConversions.m and Python example numpy_conversions.py.
 - Users have more control over which messages are logged. Messages are now logged to opensim.log instead of out.log and err.log. Users can control logging levels via `Logger::setLevel()`.
@@ -30,7 +37,24 @@ v4.2
 - For PrescribedController, the controls_file column labels can now be absolute paths to actuators (previously, the column labels were required to be actuator names).
 - CMCTool now supports the setSolveForEquilibrium() method inherited by AbstractTool, which allows users to disable a call to Model::equilibrateMuscles() when running CMC. This setting is true by default, so the default behavior remains the same.
 - The Matlab utility osimTableToStruct() now handles column labels that start with a non-letter character by prepending 'a_' instead of 'unlabeled'.
-
+- Removed `Path` abstract base class (PR #2844)
+  - Unused by OpenSim and related projects
+- Improved the performance of `ComponentPath` (PR #2844)
+  - This improves the performance of component-heavy models by ~5-10 %
+  - The behavior and interface of `ComponentPath` should remain the same
+- The new Matlab CustomStaticOptimization.m guides the user to build their own custom static optimization code. 
+- Dropped support for separate Kinematics for application of External Loads. ([PR #2770] (https://github.com/opensim-org/opensim-core/pull/2770)). 
+- Refactored InverseKinematicsSolver to allow for adding (live) Orientation data to track, introduced BufferedOrientationsReference to queue data (PR #2855)
+- `opensim.log` will only be created/opened when the first message is logged to it (PR #2880):
+  - Previously, `opensim.log` would always be created, even if nothing was logged
+- Added a CMake option, `OPENSIM_DISABLE_LOG_FILE` (PR #2880):
+  - When set, disables `opensim.log` from being used by the logger by default when the first message is written to the log
+  - Log messages are still written to the standard output/error streams
+  - Previously, `opensim.log` would always be created - even if nothing was written to it (fixed above)
+  - Setting `OPENSIM_DISABLE_LOG_FILE` only disables the automatic creation of `opensim.log`. File logging can still be manually be enabled by calling `Logger::addFileSink()`
+  - This flag is `OFF` by default. So standard builds will still observe the existing behavior (`opensim.log` is created).
+- Fix bug in visualization of EllipsoidJoint that was not attaching to the correct frame ([PR #2887] (https://github.com/opensim-org/opensim-core/pull/2887))
+- Fix bug in error reporting of sensor tracking (PR #2893)
 v4.1
 ====
 - Added `OrientationsReference` as the frame orientation analog to the location of experimental markers. Enables experimentally measured orientations from wearable sensors (e.g. from IMUs) to be tracked by reference frames in the model. A correspondence between the experimental (IMU frame) orientation column label and that of the virtual frame on the `Model` is expected. The `InverseKinematicsSolver` was extended to simultaneously track the `OrientationsReference` if provided. (PR #2412)

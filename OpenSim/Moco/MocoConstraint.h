@@ -171,6 +171,16 @@ public:
     }
 
     /** Calculate errors in the path constraint equations. The *errors* argument
+    represents the error vector for this MocoPathConstraint. The errors vector
+    is passed to calcPathConstraintErrorsImpl(), which is defined by derived
+    classes.
+    @precondition initializeOnModel() has been invoked. */
+    void calcPathConstraintErrors(
+            const SimTK::State& state, SimTK::Vector& errors) const {
+        calcPathConstraintErrorsImpl(state, errors);
+    }
+
+    /** Calculate errors in the path constraint equations. The *errors* argument
     represents the concatenated error vector for all path constraints in the
     MocoProblem. This method creates a view into *errors* to access the
     elements for this MocoPathConstraint and passes this view to

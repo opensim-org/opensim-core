@@ -116,7 +116,7 @@ private:
     bool _writeToStorage;
 
     /** controllerSet used for the integration */
-    ControllerSet* _controllerSet;
+    SimTK::ReferencePtr<ControllerSet> _controllerSet;
 
 
 //=============================================================================

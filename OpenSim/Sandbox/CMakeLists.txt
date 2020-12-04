@@ -1,6 +1,7 @@
 add_subdirectory(TaskSpace)
 add_subdirectory(UsefulComponents)
 add_subdirectory(Moco)
+add_subdirectory(WrappingMath)
 
 file(GLOB TO_COMPILE "future*.cpp")
 

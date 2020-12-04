@@ -169,7 +169,7 @@ SetDefaultCMakeBuildType()
 AddDependency(NAME       ezc3d
               DEFAULT    OFF
               GIT_URL    https://github.com/pyomeca/ezc3d.git
-              GIT_TAG    Release_1.3.2
+              GIT_TAG    Release_1.3.6
               CMAKE_ARGS -DBUILD_EXAMPLE:BOOL=OFF)
 
 AddDependency(NAME       BTK
@@ -320,7 +320,8 @@ else()
                   COMMAND cd <SOURCE_DIR>/ThirdParty/Mumps && ./get.Mumps
             # GCC 10 generates a warning when compling MUMPS that we must suppress using
             # -fallow-argument-mismatch.
-            CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> ADD_FFLAGS=-fallow-argument-mismatch
+            # Suppress warnings treated as errors in Clang/LLVM with -Wno-error=implicit-function-declaration
+            CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> ADD_FFLAGS=-fallow-argument-mismatch ADD_CFLAGS=-Wno-error=implicit-function-declaration
             BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}
             INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
     endif()

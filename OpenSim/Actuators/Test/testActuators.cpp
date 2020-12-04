@@ -929,7 +929,7 @@ void testActuatorsCombination()
 // ActivationCoordinateActautor.
 void testActivationCoordinateActuator() {
     Model model;
-    auto* body = new Body("body", 1, SimTK::Vec3(0), SimTK::Inertia(0));
+    auto* body = new Body("body", 1, SimTK::Vec3(0), SimTK::Inertia(1.0));
     auto* joint = new PinJoint("joint", *body, model.getGround());
     joint->updCoordinate().setName("coord");
     model.addBody(body);

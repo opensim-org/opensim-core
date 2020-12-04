@@ -254,62 +254,6 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName,
         throw(ex);
     }
 
-    string loadKinematicsFileName =
-        externalLoads->getExternalLoadsModelKinematicsFileName();
-    
-    const Storage *loadKinematicsForPointTransformation = nullptr;
-
-    IO::TrimLeadingWhitespace(loadKinematicsFileName);
-    Storage *temp = NULL;
-    // fine if there are no kinematics as long as it was not assigned
-    if (!(loadKinematicsFileName == "") && !(loadKinematicsFileName == "Unassigned")) {
-        if (IO::FileExists(loadKinematicsFileName)) {
-            temp = new Storage(loadKinematicsFileName);
-        }
-        else {
-            // attempt to find the file local to the external loads XML file
-            std::string savedCwd = IO::getCwd();
-            IO::chDir(IO::getParentDirectory(aExternalLoadsFileName));
-            if (IO::FileExists(loadKinematicsFileName)) {
-                temp = new Storage(loadKinematicsFileName);
-                IO::chDir(savedCwd);
-            }
-            else {
-                IO::chDir(savedCwd);
-                throw Exception("DynamicsTool: could not find external loads kinematics file '"
-                    + loadKinematicsFileName + "'.");
-            }
-        }
-        // if loading the data, do whatever filtering operations are also specified
-        if (temp && externalLoads->getLowpassCutoffFrequencyForLoadKinematics() >= 0) {
-            log_info("Low-pass filtering coordinates data with a cutoff "
-                     "frequency of {:0.1f}.", 
-                externalLoads->getLowpassCutoffFrequencyForLoadKinematics());
-            temp->pad(temp->getSize() / 2);
-            temp->lowpassIIR(externalLoads->getLowpassCutoffFrequencyForLoadKinematics());
-        }
-        loadKinematicsForPointTransformation = temp;
-    }
-
-
-    // if load kinematics for performing re-expressing the point of application is provided
-    // then perform the transformations
-    if(loadKinematicsForPointTransformation){
-        SimTK::State& s = copyModel.initSystem();
-
-        // Form complete storage so that the kinematics match the state labels/ordering
-        Storage *qStore=NULL;
-        Storage *uStore=NULL;
-        // qStore and uStore returned are in radians
-        copyModel.getSimbodyEngine().formCompleteStorages(s,
-            *loadKinematicsForPointTransformation,
-            qStore, uStore);
-
-        externalLoads->transformPointsExpressedInGroundToAppliedBodies(*qStore, _timeRange[0], _timeRange[1]);
-        delete qStore;
-        delete uStore;
-    }
-
     //Now add the ExternalLoads (transformed or not) to the Model to be analyzed
     ExternalLoads* exLoadsClone = externalLoads->clone();
     aModel.addModelComponent(exLoadsClone);

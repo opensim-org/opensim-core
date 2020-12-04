@@ -221,6 +221,14 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
     }
 
     if(numPlatform != 0) {
+        for (auto type : c3d.parameters().group("FORCE_PLATFORM")
+                            .parameter("TYPE").valuesAsInt()){
+            if (type == 1){
+                log_warn("C3DFileAdapter::extendRead::ezc3d: "
+                         "Type 1 force platform detected. Please note that "
+                         "results will vary between BTK and ezc3d backends.");
+            }
+        }
         std::vector<std::string> labels{};
         ValueArray<std::string> units{};
         for(int fp = 1; fp <= numPlatform; ++fp) {

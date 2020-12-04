@@ -118,3 +118,7 @@ void MocoMarkerTrackingGoal::printDescriptionImpl() const {
     }
 
 }
+
+void MocoMarkerTrackingGoal::setMarkersReference(const MarkersReference& ref) { 
+    upd_markers_reference() = ref; 
+}

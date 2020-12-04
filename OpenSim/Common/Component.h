@@ -550,7 +550,13 @@ public:
      * Throws an Exception if the System has not been created or the Component
      * has not added itself to the System.
      * @see hasSystem().  */
-    const SimTK::MultibodySystem& getSystem() const;
+    const SimTK::MultibodySystem& getSystem() const
+    {
+        // This method is inlined because it is called *a lot* at runtime
+
+        OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+        return _system.getRef();
+    }
 
     /**
     * Check if this component has an underlying MultibodySystem.
@@ -1500,7 +1506,7 @@ public:
     template<class T>
     SimTK::CacheEntryIndex getCacheVariableIndex(const CacheVariable<T>& cv) const {
         // cheap: index previously initialized, just return that
-        if (cv.maybeUninitIndex != SimTK::InvalidIndex) {
+        if (cv.maybeUninitIndex.isValid()) {
             return cv.maybeUninitIndex;
         }
 
@@ -3161,7 +3167,7 @@ private:
        }
 
        SimTK::CacheEntryIndex index() const {
-           if (this->maybeUninitIndex != SimTK::InvalidIndex) {
+           if (this->maybeUninitIndex.isValid()) {
                return this->maybeUninitIndex;
            } else {
                OPENSIM_THROW(Exception, "StoredCacheVariable::get: failed because this->index == SimTK::InvalidIndex: this can happen if Component::extendRealizeTopology has not been called");

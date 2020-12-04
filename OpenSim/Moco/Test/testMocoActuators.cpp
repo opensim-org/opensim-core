@@ -79,10 +79,13 @@ Model createHangingMuscleModel(double optimalFiberLength,
 
 TEMPLATE_TEST_CASE(
         "Hanging muscle minimum time", "[casadi]", MocoCasADiSolver) {
+    // GENERATE creates separate tests in which these variables are set to
+    // either true or false.
     auto ignoreActivationDynamics = GENERATE(true, false);
     auto ignoreTendonCompliance = GENERATE(true, false);
     auto isTendonDynamicsExplicit = GENERATE(true, false);
 
+    // CAPTURE prints the current value of these variables to the console.
     CAPTURE(ignoreActivationDynamics);
     CAPTURE(ignoreTendonCompliance);
     CAPTURE(isTendonDynamicsExplicit);
@@ -247,7 +250,7 @@ TEMPLATE_TEST_CASE(
         std::vector<std::string> controls{"/forceset/muscle"};
         const double error = cmcTraj.compareContinuousVariablesRMS(
                 solutionTrajOpt, {{"states", states}, {"controls", controls}});
-        CHECK(error < 0.05);
+        CHECK(error < 0.1);
     }
 
     // Track the kinematics from the trajectory optimization.

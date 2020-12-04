@@ -28,8 +28,8 @@ const double FRICTION_COEFFICIENT = 0.7;
 using namespace OpenSim;
 using SimTK::Vec3;
 
-using CreateContactFunction = std::function<StationPlaneContactForce*(void)>;
-Model create2DPointMassModel(CreateContactFunction createContact) {
+template<typename T>
+Model create2DPointMassModel() {
     Model model;
     model.setName("point_mass");
     auto* intermed = new Body("intermed", 0, Vec3(0), SimTK::Inertia(0));
@@ -56,13 +56,16 @@ Model create2DPointMassModel(CreateContactFunction createContact) {
 
     auto* station = new Station();
     station->setName("contact_point");
-    station->connectSocket_parent_frame(*body);
     model.addComponent(station);
+    station->connectSocket_parent_frame(*body);
 
-    auto* force = createContact();
+    auto* force = new T();
     force->setName("contact");
-    model.addComponent(force);
+    force->set_stiffness(1e5);
+    force->set_dissipation(1.0);
+    force->set_friction_coefficient(FRICTION_COEFFICIENT);
     force->connectSocket_station(*station);
+    model.addComponent(force);
 
     return model;
 }
@@ -71,8 +74,15 @@ Model create2DPointMassModel(CreateContactFunction createContact) {
 // system. This is the same type of test done in OpenSim's testForces for
 // HuntCrossleyForce. The test is performed with both time stepping and direct
 // collocation.
-SimTK::Real testNormalForce(CreateContactFunction createContact) {
-    Model model(create2DPointMassModel(createContact));
+template<typename T>
+SimTK::Real testNormalForce() {
+    // TODO this copy breaks the contact force station socket path
+    Model modelTemp = create2DPointMassModel<T>();
+    modelTemp.finalizeConnections();
+    Model model(modelTemp);
+    model.finalizeConnections();
+    ModelProcessor modelProc(model);
+
     SimTK::Real weight;
     {
         SimTK::State state = model.initSystem();
@@ -95,7 +105,8 @@ SimTK::Real testNormalForce(CreateContactFunction createContact) {
 
         // visualize(model, manager.getStateStorage());
 
-        auto& contact = model.getComponent<StationPlaneContactForce>("contact");
+        // https://stackoverflow.com/questions/34696351/template-dependent-typename
+        auto& contact = model.template getComponent<StationPlaneContactForce>("contact");
         model.realizeVelocity(state);
         const Vec3 contactForce = contact.calcContactForceOnStation(state);
         // The horizontal force is not quite zero, maybe from a buildup of
@@ -136,7 +147,8 @@ SimTK::Real testNormalForce(CreateContactFunction createContact) {
         auto statesTraj = solution.exportToStatesTrajectory(mp);
         const auto& finalState = statesTraj.back();
         model.realizeVelocity(finalState);
-        auto& contact = model.getComponent<StationPlaneContactForce>("contact");
+        // https://stackoverflow.com/questions/34696351/template-dependent-typename
+        auto& contact = model.template getComponent<StationPlaneContactForce>("contact");
         const Vec3 contactForce = contact.calcContactForceOnStation(finalState);
         // For some reason, direct collocation doesn't produce the same
         // numerical issues with the x component of the force as seen above.
@@ -157,9 +169,10 @@ SimTK::Real testNormalForce(CreateContactFunction createContact) {
 // mass travels the expected horizontal distance if it starts in the ground.
 // To make the friction force roughly constant, we want the equilibrium height
 // of the mass (from testNormalForce()).
-void testFrictionForce(CreateContactFunction createContact,
-        const SimTK::Real& equilibriumHeight) {
-    Model model(create2DPointMassModel(createContact));
+template<typename T>
+void testFrictionForce(const SimTK::Real& equilibriumHeight) {
+    auto model = create2DPointMassModel<T>();
+
     {
         SimTK::State state = model.initSystem();
     }
@@ -240,9 +253,10 @@ void testFrictionForce(CreateContactFunction createContact,
     }
 }
 
-void testStationPlaneContactForce(CreateContactFunction createContact) {
-    const SimTK::Real equilibriumHeight = testNormalForce(createContact);
-    testFrictionForce(createContact, equilibriumHeight);
+template<typename T>
+void testStationPlaneContactForce() {
+    const SimTK::Real equilibriumHeight = testNormalForce<T>();
+    testFrictionForce<T>(equilibriumHeight);
 }
 
 // Test our wrapping of SmoothSphereHalfSpaceForce in Moco
@@ -497,43 +511,11 @@ void testSmoothSphereHalfSpaceForce_FrictionForce(
     }
 }
 
-AckermannVanDenBogert2010Force* createAVDB() {
-    auto* contact = new AckermannVanDenBogert2010Force();
-    contact->set_stiffness(1e5);
-    contact->set_dissipation(1.0);
-    contact->set_friction_coefficient(FRICTION_COEFFICIENT);
-    return contact;
+TEMPLATE_TEST_CASE("testStationPlaneContactForce", "[tropter]", 
+        AckermannVanDenBogert2010Force, EspositoMiller2018Force
+        /* TODO MeyerFregly2016Force */) {
+    testStationPlaneContactForce<TestType>();
 }
-
-EspositoMiller2018Force* createEspositoMiller() {
-    auto* contact = new EspositoMiller2018Force();
-    contact->set_stiffness(1e5);
-    contact->set_dissipation(1.0);
-    contact->set_friction_coefficient(FRICTION_COEFFICIENT);
-    return contact;
-}
-
-MeyerFregly2016Force* createMeyerFregly() {
-    auto* contact = new MeyerFregly2016Force();
-    contact->set_stiffness(1e5);
-    contact->set_dissipation(1.0);
-    // TODO set friction coefficient.
-    return contact;
-}
-
-TEST_CASE("testStationPlaneContactForce AckermannVanDenBogert2010Force",
-        "[tropter]") {
-    testStationPlaneContactForce(createAVDB);
-}
-
-TEST_CASE("testStationPlaneContactForce EspositoMiller2018Force", "[tropter]") {
-    testStationPlaneContactForce(createEspositoMiller);
-}
-
-// TODO does not pass:
-// TEST_CASE("testStationPlaneContactForce MeyerFregly2016Force", "[tropter]") {
-//     testStationPlaneContactForce(createMeyerFregly);
-// }
 
 TEST_CASE("testSmoothSphereHalfSpaceForce", "[casadi]") {
     const SimTK::Real equilibriumHeight =

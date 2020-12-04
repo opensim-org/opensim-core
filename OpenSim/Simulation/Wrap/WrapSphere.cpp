@@ -165,12 +165,15 @@ double WrapSphere::getRadius() const
 int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
                                  const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
-   double l1, l2, disc, a, b, c, a1, a2, j1, j2, j3, j4, r1r2, ra[3][3], rrx[3][3], aa[3][3], mat[4][4], 
-            axis[4], vec[4], rotvec[4], angle, *r11, *r22;
+   double l1, l2, disc, a, b, c, a1, a2, j1, j2, j3, j4, r1r2, mat[4][4],
+            axis[4], angle, *r11, *r22;
     Vec3 ri, p2m, p1m, mp, r1n, r2n,
             p1p2, np2, hp2, r1m, r2m, y, z, n, r1a, r2a,
             r1b, r2b, r1am, r2am, r1bm, r2bm;
-            
+    SimTK::Vec3 vec, rotvec;
+    SimTK::Mat33 ra, aa;
+    SimTK::Rotation rrx;
+
    int i, j,/* maxit, */ return_code = wrapped;
    bool far_side_wrap = false;
    static SimTK::Vec3 origin(0,0,0);
@@ -276,15 +279,14 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
 
     a1 = asin(get_radius() / Mtx::Magnitude(3, p1m));
 
-    WrapMath::Make3x3DirCosMatrix(a1, rrx);
-    Mtx::Multiply(3, 3, 3, (double*)ra, (double*)rrx, (double*)aa);
-    // TODO: test that this gives same result as SIMM code
+    rrx.setRotationFromAngleAboutX(a1);
+    aa = ra * ~rrx;
 
    for (i = 0; i < 3; i++)
       r1a[i] = aPoint1[i] + aa[i][1] * Mtx::Magnitude(3, p1m) * cos(a1);
 
-   WrapMath::Make3x3DirCosMatrix(-a1, rrx);
-    Mtx::Multiply(3, 3, 3, (double*)ra, (double*)rrx, (double*)aa);
+   rrx.setRotationFromAngleAboutX(-a1);
+   aa = ra * ~rrx;
 
    for (i = 0; i < 3; i++)
       r1b[i] = aPoint1[i] + aa[i][1] * Mtx::Magnitude(3, p1m) * cos(a1);
@@ -303,15 +305,15 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
    }
 
    a2 = asin(get_radius() / Mtx::Magnitude(3, p2m));
-   
-   WrapMath::Make3x3DirCosMatrix(a2, rrx);
-    Mtx::Multiply(3, 3, 3, (double*)ra, (double*)rrx, (double*)aa);
+
+   rrx.setRotationFromAngleAboutX(a2);
+   aa = ra * ~rrx;
 
    for (i = 0; i < 3; i++)
       r2a[i] = aPoint2[i] + aa[i][1] * Mtx::Magnitude(3, p2m) * cos(a2);
 
-   WrapMath::Make3x3DirCosMatrix(-a2, rrx);
-    Mtx::Multiply(3, 3, 3, (double*)ra, (double*)rrx, (double*)aa);
+   rrx.setRotationFromAngleAboutX(-a2);
+   aa = ra * ~rrx;
 
    for (i = 0; i < 3; i++)
       r2b[i] = aPoint2[i] + aa[i][1] * Mtx::Magnitude(3, p2m) * cos(a2);
@@ -508,13 +510,13 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
    vec[0] = r1m[0];
    vec[1] = r1m[1];
    vec[2] = r1m[2];
-   vec[3] = 1.0;
 
-   for (i = 0; i < numWrapSegments - 2; i++) {
+    SimTK::Rotation R;
+    for (i = 0; i < numWrapSegments - 2; i++) {
         double wangle = angle * (i+1) / (numWrapSegments - 1) * SimTK_DEGREE_TO_RADIAN;
 
-        WrapMath::ConvertAxisAngleTo4x4DirCosMatrix(Vec3::getAs(axis), wangle, mat);
-        Mtx::Multiply(4, 4, 1, (double*)mat, (double*)vec, (double*)rotvec);
+        R.setRotationFromAngleAboutNonUnitVector(wangle, Vec3::getAs(axis));
+        rotvec = ~R * vec;
 
         SimTK::Vec3 wp;
         for (j = 0; j < 3; j++)

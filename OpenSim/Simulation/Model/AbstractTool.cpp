@@ -373,59 +373,44 @@ loadModel(const string &aToolSetupFileName, ForceSet *rOriginalForceSet )
             "No model file was specified (<model_file> element is empty) in "
             "the Tool's Setup file. Consider passing `false` for the "
             "constructor's `aLoadModel` parameter");
-    string saveWorkingDirectory = IO::getCwd();
-    string directoryOfSetupFile = IO::getParentDirectory(aToolSetupFileName);
-    IO::chDir(directoryOfSetupFile);
+
+    auto cwd = IO::CwdChanger::changeToParentOf(aToolSetupFileName);
 
     log_info("AbstractTool {} loading model {}", getName(), _modelFile);
 
-    Model *model = 0;
+    auto model = std::unique_ptr<Model>{new Model{_modelFile}};
+    model->finalizeFromProperties();
 
-    try {
-        model = new Model(_modelFile);
-        model->finalizeFromProperties();
-        if (rOriginalForceSet!=NULL)
-            *rOriginalForceSet = model->getForceSet();
-    } catch(...) { // Properly restore current directory if an exception is thrown
-        IO::chDir(saveWorkingDirectory);
-        throw;
+    if (rOriginalForceSet!=NULL) {
+        *rOriginalForceSet = model->getForceSet();
     }
-    _model = model;
-    IO::chDir(saveWorkingDirectory);
+    _model = model.release();
 }
 
 void AbstractTool::
 updateModelForces(Model& model, const string &aToolSetupFileName, ForceSet *rOriginalForceSet )
 {
-    string saveWorkingDirectory = IO::getCwd();
-    string directoryOfSetupFile = IO::getParentDirectory(aToolSetupFileName);
-    IO::chDir(directoryOfSetupFile);
+    auto cwd = IO::CwdChanger::changeToParentOf(aToolSetupFileName);
 
-    try {
-        if(rOriginalForceSet) *rOriginalForceSet = model.getForceSet();
-
-        // If replacing force set read in from model file, clear it here
-        if (_replaceForceSet){
-            // Can no longer just remove the model's forces.
-            // If the model is connected, then the model will
-            // maintain a list of subcomponents that refer to garbage.
-            model.cleanup();
-            model.updForceSet().setSize(0);
-        }
-
-        // Load force set(s)
-        for(int i=0;i<_forceSetFiles.getSize();i++) {
-            log_info("Adding force object set from {}", _forceSetFiles[i]);
-            ForceSet *forceSet=new ForceSet(_forceSetFiles[i], true);
-            model.updForceSet().append(*forceSet);
-        }
-
-    } catch (...) {
-        IO::chDir(saveWorkingDirectory);
-        throw;
+    if (rOriginalForceSet) {
+        *rOriginalForceSet = model.getForceSet();
     }
 
-    IO::chDir(saveWorkingDirectory);
+    // If replacing force set read in from model file, clear it here
+    if (_replaceForceSet){
+        // Can no longer just remove the model's forces.
+        // If the model is connected, then the model will
+        // maintain a list of subcomponents that refer to garbage.
+        model.cleanup();
+        model.updForceSet().setSize(0);
+    }
+
+    // Load force set(s)
+    for(int i=0; i<_forceSetFiles.getSize(); i++) {
+        log_info("Adding force object set from {}", _forceSetFiles[i]);
+        ForceSet *forceSet=new ForceSet(_forceSetFiles[i], true);
+        model.updForceSet().append(*forceSet);
+    }
 }
 //_____________________________________________________________________________
 /**
@@ -571,59 +556,6 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName,
         throw(ex);
     }
 
-    string loadKinematicsFileName =
-        externalLoads->getExternalLoadsModelKinematicsFileName();
-    
-    const Storage *loadKinematicsForPointTransformation = nullptr;
-
-    IO::TrimLeadingWhitespace(loadKinematicsFileName);
-    Storage *temp = NULL;
-    // fine if there are no kinematics as long as it was not assigned
-    if (!(loadKinematicsFileName == "") && !(loadKinematicsFileName == "Unassigned")) {
-        if (IO::FileExists(loadKinematicsFileName)) {
-            temp = new Storage(loadKinematicsFileName);
-        }
-        else {
-            // attempt to find the file local to the external loads XML file
-            std::string savedCwd = IO::getCwd();
-            IO::chDir(IO::getParentDirectory(aExternalLoadsFileName));
-            if (IO::FileExists(loadKinematicsFileName)) {
-                temp = new Storage(loadKinematicsFileName);
-                IO::chDir(savedCwd);
-            }
-            else {
-                IO::chDir(savedCwd);
-                throw Exception("AbstractTool: could not find external loads kinematics file '"
-                    + loadKinematicsFileName + "'.");
-            }
-        }
-        // if loading the data, do whatever filtering operations are also specified
-        if (temp && externalLoads->getLowpassCutoffFrequencyForLoadKinematics() >= 0) {
-            log_info("Low-pass filtering coordinates data with a cutoff frequency of {}.",
-                _externalLoads.getLowpassCutoffFrequencyForLoadKinematics());
-            temp->pad(temp->getSize() / 2);
-            temp->lowpassIIR(externalLoads->getLowpassCutoffFrequencyForLoadKinematics());
-        }
-        loadKinematicsForPointTransformation = temp;
-    }
-
-    // if load kinematics for performing re-expressing the point of application is provided
-    // then perform the transformations
-    if(loadKinematicsForPointTransformation){
-        SimTK::State& s = copyModel.initSystem();
-
-        // Form complete storage so that the kinematics match the state labels/ordering
-        Storage *qStore=NULL;
-        Storage *uStore=NULL;
-        copyModel.getSimbodyEngine().formCompleteStorages(s,
-            *loadKinematicsForPointTransformation,
-            qStore, uStore);
-
-        externalLoads->transformPointsExpressedInGroundToAppliedBodies(*qStore, _ti, _tf);
-        delete qStore;
-        delete uStore;
-    }
-
     //Now add the ExternalLoads (transformed or not) to the Model to be analyzed
     ExternalLoads* exLoadsClone = externalLoads->clone();
     aModel.addModelComponent(exLoadsClone);
@@ -703,51 +635,44 @@ void AbstractTool::removeExternalLoadsFromModel()
             if (iter!= aNode.element_end()){
                 string fileName="";
                 iter->getValueAs(fileName);
-                if (fileName!="" && fileName != "Unassigned"){
-                    string saveWorkingDirectory = IO::getCwd();
-                    string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
-                    IO::chDir(directoryOfSetupFile);
-                    //bool extLoadsFile=false;
-                    try {
-                        SimTK::Xml::Document doc(fileName);
-                        doc.setIndentString("\t");
-                        Xml::Element root = doc.getRootElement();
-                        if (root.getElementTag()=="OpenSimDocument"){
-                            //int curVersion = root.getRequiredAttributeValueAs<int>("Version");
-                            Xml::element_iterator rootIter(root.element_begin("ForceSet"));
-                            if (rootIter!=root.element_end()){
-                                rootIter->setElementTag("ExternalLoads");
-                            }
-                            Xml::element_iterator iter(root.element_begin("ExternalLoads"));
-                            Xml::Element extLoadsElem = *iter;
+                if (fileName!="" && fileName != "Unassigned") {
+                    auto cwd = IO::CwdChanger::changeToParentOf(getDocumentFileName());
 
-                            SimTK::Xml::element_iterator kIter = aNode.element_begin("external_loads_model_kinematics_file");
-                            if (kIter !=aNode.element_end()){
-                                string kinFileName= "";
-                                kIter->getValueAs(kinFileName);
-                                aNode.removeNode(kIter);
-                                // Make sure no node already exist
-                                Xml::element_iterator iter2(extLoadsElem.element_begin("external_loads_model_kinematics_file"));
-                                if (iter2 == extLoadsElem.element_end())
-                                    iter->insertNodeAfter(iter->element_end(), Xml::Element("external_loads_model_kinematics_file", kinFileName));
-                                else
-                                    iter2->setValue(kinFileName);
-                            }
-                            SimTK::Xml::element_iterator fIter = aNode.element_begin("lowpass_cutoff_frequency_for_load_kinematics");
-                            if (fIter !=aNode.element_end()){
-                                SimTK::String freq;
-                                fIter->getValueAs(freq);
-                                Xml::element_iterator iter2(extLoadsElem.element_begin("lowpass_cutoff_frequency_for_load_kinematics"));
-                                if (iter2 == extLoadsElem.element_end())
-                                    iter->insertNodeAfter(iter->element_end(), Xml::Element("lowpass_cutoff_frequency_for_load_kinematics", freq));
-                                else
-                                    iter2->setValue(freq);
-                            }
-                            doc.writeToFile(fileName);
+                    SimTK::Xml::Document doc(fileName);
+                    doc.setIndentString("\t");
+                    Xml::Element root = doc.getRootElement();
+                    if (root.getElementTag()=="OpenSimDocument"){
+                        //int curVersion = root.getRequiredAttributeValueAs<int>("Version");
+                        Xml::element_iterator rootIter(root.element_begin("ForceSet"));
+                        if (rootIter!=root.element_end()){
+                            rootIter->setElementTag("ExternalLoads");
                         }
-                    }
-                    catch(...){
-                        IO::chDir(saveWorkingDirectory);
+                        Xml::element_iterator iter(root.element_begin("ExternalLoads"));
+                        Xml::Element extLoadsElem = *iter;
+
+                        SimTK::Xml::element_iterator kIter = aNode.element_begin("external_loads_model_kinematics_file");
+                        if (kIter !=aNode.element_end()){
+                            string kinFileName= "";
+                            kIter->getValueAs(kinFileName);
+                            aNode.removeNode(kIter);
+                            // Make sure no node already exist
+                            Xml::element_iterator iter2(extLoadsElem.element_begin("external_loads_model_kinematics_file"));
+                            if (iter2 == extLoadsElem.element_end())
+                                iter->insertNodeAfter(iter->element_end(), Xml::Element("external_loads_model_kinematics_file", kinFileName));
+                            else
+                                iter2->setValue(kinFileName);
+                        }
+                        SimTK::Xml::element_iterator fIter = aNode.element_begin("lowpass_cutoff_frequency_for_load_kinematics");
+                        if (fIter !=aNode.element_end()){
+                            SimTK::String freq;
+                            fIter->getValueAs(freq);
+                            Xml::element_iterator iter2(extLoadsElem.element_begin("lowpass_cutoff_frequency_for_load_kinematics"));
+                            if (iter2 == extLoadsElem.element_end())
+                                iter->insertNodeAfter(iter->element_end(), Xml::Element("lowpass_cutoff_frequency_for_load_kinematics", freq));
+                            else
+                                iter2->setValue(freq);
+                        }
+                        doc.writeToFile(fileName);
                     }
                 }
             }
@@ -857,14 +782,12 @@ std::string AbstractTool::createExternalLoadsFile(const std::string& oldFile,
 {
     bool oldFileValid = !(oldFile=="" || oldFile=="Unassigned");
 
-    std::string savedCwd;
-    if(getDocument()) {
-        savedCwd = IO::getCwd();
-        IO::chDir(IO::getParentDirectory(getDocument()->getFileName()));
-    }
-    if (oldFileValid){
+    auto cwd = getDocument() != nullptr
+            ? IO::CwdChanger::changeToParentOf(getDocument()->getFileName())
+            : IO::CwdChanger::noop();
+
+    if (oldFileValid) {
         if(!ifstream(oldFile.c_str(), ios_base::in).good()) {
-            if(getDocument()) IO::chDir(savedCwd);
             string msg =
                 "Object: ERR- Could not open file " + oldFile+ ". It may not exist or you don't have permission to read it.";
             throw Exception(msg,__FILE__,__LINE__);
@@ -884,7 +807,6 @@ std::string AbstractTool::createExternalLoadsFile(const std::string& oldFile,
         for(int i=0; i<9; i++){
             indices[i][0]= labels.findIndex(forceLabels[i]);
             if (indices[i][0]==-1){ // Something went wrong, abort here 
-                if(getDocument()) IO::chDir(savedCwd);
                 string msg =
                     "Object: ERR- Could not find label "+forceLabels[i]+ "in file " + oldFile+ ". Aborting.";
                 throw Exception(msg,__FILE__,__LINE__);
@@ -908,17 +830,14 @@ std::string AbstractTool::createExternalLoadsFile(const std::string& oldFile,
         _externalLoads.setDataFileName(oldFile);
         std::string newName=oldFile.substr(0, oldFile.length()-4)+".xml";
         _externalLoads.print(newName);
-        if(getDocument()) IO::chDir(savedCwd);
         log_cout("Created ForceSet file {} to apply forces from {}.", newName, oldFile);
         return newName;
     }
     else {
-            if(getDocument()) IO::chDir(savedCwd);
             string msg =
                 "Object: ERR- Only one body is specified in " + oldFile+ ".";
             throw Exception(msg,__FILE__,__LINE__);
     }
-    if(getDocument()) IO::chDir(savedCwd);
 }
 
 std::string AbstractTool::getTimeString(const time_t& t) const {

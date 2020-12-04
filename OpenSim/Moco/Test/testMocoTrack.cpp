@@ -26,7 +26,7 @@ using namespace OpenSim;
 
 TEST_CASE("MocoTrack interface") {
     MocoTrack track;
-    track.setModel(ModelProcessor("testGait10dof18musc_subject01.osim"));
+    track.setModel(ModelProcessor("testMocoTrack_subject01.osim"));
 
     SECTION("apply_tracked_states_to_guess() true, but no states reference") {
         track.set_apply_tracked_states_to_guess(true);
@@ -48,7 +48,7 @@ TEST_CASE("MocoTrack gait10dof18musc", "[casadi]") {
 
     MocoTrack track;
 
-    track.setModel(ModelProcessor("testGait10dof18musc_subject01.osim") |
+    track.setModel(ModelProcessor("testMocoTrack_subject01.osim") |
             ModOpRemoveMuscles() | ModOpAddReserves(100) |
             ModOpAddExternalLoads("walk_gait1018_subject01_grf.xml"));
     track.setStatesReference(

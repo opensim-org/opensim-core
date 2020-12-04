@@ -210,7 +210,7 @@ def solveStateTracking(stateRef):
     # Arguments are name, [lower bound, upper bound],
     #                     initial [lower bound, upper bound],
     #                     final [lower bound, upper bound].
-    finalTime = markersRef.getMarkerTable().getIndependentColumn()[-1]
+    finalTime = stateRef.getIndependentColumn()[-1]
     problem.setTimeBounds(0, finalTime)
     problem.setStateInfo("/jointset/j0/q0/value", [-10, 10], 0)
     problem.setStateInfo("/jointset/j0/q0/speed", [-50, 50], 0)
@@ -316,7 +316,8 @@ markersRef = computeMarkersReference(optimalTrajectory)
 
 trackedSolution = solveStateTracking(optimalTrajectory.exportToStatesTable())
 
-trackedSolution = solveMarkerTracking(markersRef, trackedSolution)
+# TODO fails when MarkersReference is passed to MocoMarkerTrackingGoal
+# trackedSolution = solveMarkerTracking(markersRef, trackedSolution)
 
 
 
