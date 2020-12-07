@@ -198,11 +198,6 @@ public:
         calcPathConstraintErrorsImpl(state, theseErrors);
     }
 
-    void calcPathConstraintErrors(
-            const SimTK::State& state, SimTK::Vector& errors) const {
-        calcPathConstraintErrorsImpl(state, errors);
-    }
-
     /** Perform error checks on user input for this constraint, and cache
     quantities needed when computing the constraint errors.
     to efficiently evaluate the constraint.
