@@ -48,7 +48,7 @@ jobs:
         # operating system and a hash of the hashes of all files in the
         # dependencies directory (non-recursive).
         # https://help.github.com/en/actions/automating-your-workflow-with-github-actions/caching-dependencies-to-speed-up-workflows#matching-a-cache-key
-        key: ${{ runner.os }}-dependencies-v2-${{ hashFiles('dependencies/*') }}
+        key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
 
     - name: Build dependencies
       if: steps.cache-dependencies.outputs.cache-hit != 'true'
@@ -187,7 +187,7 @@ jobs:
         # If Homebrew updates the gcc package, then our cache of IPOPT is invalid.
         # Specifically, the pkgcfg_lib_IPOPT_gfortran CMake variable becomes
         # undefined.
-        key: ${{ runner.os }}-dependencies-v2-${{ hashFiles('dependencies/*') }}-${{ hashFiles('gfortran_version/*') }}
+        key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}-${{ hashFiles('gfortran_version/*') }}
 
     - name: Build dependencies
       if: steps.cache-dependencies.outputs.cache-hit != 'true'
@@ -305,7 +305,7 @@ jobs:
       uses: actions/cache@v1
       with:
         path: ~/opensim_dependencies_install
-        key: ${{ runner.os }}-dependencies-v2-${{ hashFiles('dependencies/*') }}
+        key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
 
     - name: Build dependencies
       if: steps.cache-dependencies.outputs.cache-hit != 'true'
