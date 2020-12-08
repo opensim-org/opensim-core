@@ -603,8 +603,7 @@ newInstanceOfType(const std::string& objectTypeTag)
     if (defaultObj)
         return defaultObj->clone();
 
-    cerr << "Object::newInstanceOfType(): object type '" << objectTypeTag 
-         << "' is not a registered Object!" << endl;
+    throw Exception( "Object::newInstanceOfType(): object type '{}' is not a registered Object! It will be ignored.", objectTypeTag);
 
     return NULL;
 }
@@ -934,8 +933,9 @@ try {
             SimTK::Xml::element_iterator iter = propElementIter->element_begin();
             while(iter != propElementIter->element_end()){
                 // Create an Object of the element tag's type.
-                object = newInstanceOfType(iter->getElementTag());
-                if (!object) { 
+                try {
+                    object = newInstanceOfType(iter->getElementTag());
+                } catch (const Exception& ) { 
                     std::cerr << "Object type " << iter->getElementTag() << " not recognized" 
                               << std::endl; 
                     iter++; 
