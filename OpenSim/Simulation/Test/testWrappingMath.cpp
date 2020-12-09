@@ -58,7 +58,7 @@ template<typename C, typename D, int N = 3>
 static void compareMat(C mat1, D mat2) {
     for (int i = 0; i < N; ++i) {
         for (int j = 0; j < N; ++j) {
-            CHECK(mat1[i][j] == Approx(mat2[i][j]).margin(1e-9));
+            CHECK(mat1[i][j] == Approx(mat2[i][j]).margin(1e-6));
         }
     }
 }
