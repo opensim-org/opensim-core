@@ -59,7 +59,7 @@ template<typename C, typename D, int N = 3>
 static void compareMat(C mat1, D mat2) {
     for (int i = 0; i < N; ++i) {
         for (int j = 0; j < N; ++j) {
-            SimTK_TEST_EQ_TOL(mat1[i][j], mat2[i][j], 1e-10);
+            SimTK_TEST_EQ(mat1[i][j], mat2[i][j]);
         }
     }
 }
