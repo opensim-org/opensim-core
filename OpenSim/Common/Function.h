@@ -102,6 +102,21 @@ public:
      *          its size must equal the value returned by getArgumentSize().
      */
     virtual double calcValue(const SimTK::Vector& x) const;
+
+    /**
+     * Calculate the value of this function at a given point.
+     *
+     * This assumes that this function object represents a unary function.
+     *
+     * @param v The input argument
+     * @return The value of the function at `v`
+     */
+    double calcValue(double v) const {
+        thread_local SimTK::Vector scratch(1);
+        scratch[0] = v;
+        return calcValue(scratch);
+    }
+
     /**
      * Calculate a partial derivative of this function at a particular point.  Which derivative to take is specified
      * by listing the input components with which to take it.  For example, if derivComponents=={0}, that indicates
