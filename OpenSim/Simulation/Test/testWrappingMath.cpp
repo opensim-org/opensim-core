@@ -56,10 +56,11 @@ static void fillVec(C vec1, D vec2) {
 }
 
 template<typename C, typename D, int N = 3>
-static void compareMat(C mat1, D mat2) {
+static void compareMat(C mat1, D mat2,
+                       double tol=SimTK::Test::defTol2<double, SimTK::Real>()) {
     for (int i = 0; i < N; ++i) {
         for (int j = 0; j < N; ++j) {
-            SimTK_TEST_EQ(mat1[i][j], mat2[i][j]);
+            SimTK_TEST_EQ_TOL(mat1[i][j], mat2[i][j], tol);
         }
     }
 }
@@ -136,5 +137,5 @@ TEST_CASE("Compare inverting matrices", "") {
     Minv = M.invert();
     Mtx::Invert(4, &Mc[0][0], &Mcinv[0][0]);
 
-    compareMat<SimTK::Mat44, double[][4], 4>(Minv, Mcinv);
+    compareMat<SimTK::Mat44, double[][4], 4>(Minv, Mcinv, 1e-10);
 }
