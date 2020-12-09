@@ -366,8 +366,6 @@ function(OpenSimAddTests)
             add_executable(${TEST_NAME} ${test_program}
                 ${OSIMADDTESTS_SOURCES})
             target_link_libraries(${TEST_NAME} ${OSIMADDTESTS_LINKLIBS})
-            target_include_directories(${TEST_NAME}
-                    PRIVATE "${CMAKE_SOURCE_DIR}/tropter/external/catch")
             add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
             set_target_properties(${TEST_NAME} PROPERTIES
                 FOLDER "Tests"

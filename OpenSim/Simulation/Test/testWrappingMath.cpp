@@ -25,6 +25,7 @@
 #include "Vendors/tropter/external/catch/catch.hpp"
 #include <OpenSim/Simulation/Wrap/WrapMath.h>
 #include <OpenSim/Common/Mtx.h>
+#include <SimTKcommon/Testing.h>
 
 #include <random>
 
@@ -58,7 +59,7 @@ template<typename C, typename D, int N = 3>
 static void compareMat(C mat1, D mat2) {
     for (int i = 0; i < N; ++i) {
         for (int j = 0; j < N; ++j) {
-            CHECK(mat1[i][j] == Approx(mat2[i][j]).margin(1e-6));
+            SimTK_TEST_EQ_TOL(mat1[i][j], mat2[i][j], 1e-10);
         }
     }
 }
@@ -123,7 +124,7 @@ TEST_CASE("Compare angle-axis rotations with 4x4 matrices", "") {
     Mtx::Multiply(4, 4, 1, (double*)mat, (double*)xc, (double*)bc);
 
     for (int i = 0; i < 3; ++i) {
-        CHECK(b[0] == bc[0]);
+        SimTK_TEST_EQ(b[0], bc[0]);
     }
 }
 
