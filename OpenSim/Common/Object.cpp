@@ -602,7 +602,9 @@ newInstanceOfType(const std::string& objectTypeTag)
     const Object* defaultObj = getDefaultInstanceOfType(objectTypeTag);
     if (defaultObj)
         return defaultObj->clone();
-
+    log_error("Object::newInstanceOfType(): object type '{}' is not a registered "
+            "Object! It will be ignored.",
+            objectTypeTag);
     throw Exception( "Object::newInstanceOfType(): object type '{}' is not a registered Object! It will be ignored.", objectTypeTag);
 
     return NULL;
