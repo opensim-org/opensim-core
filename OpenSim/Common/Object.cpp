@@ -605,7 +605,9 @@ newInstanceOfType(const std::string& objectTypeTag)
     log_error("Object::newInstanceOfType(): object type '{}' is not a registered "
             "Object! It will be ignored.",
             objectTypeTag);
-    throw Exception( "Object::newInstanceOfType(): object type '{}' is not a registered Object! It will be ignored.", objectTypeTag);
+    throw Exception("Object::newInstanceOfType(): object type '{" +
+                    objectTypeTag
+                    +"}' is not a registered Object! It will be ignored.");
 
     return NULL;
 }
@@ -935,14 +937,7 @@ try {
             SimTK::Xml::element_iterator iter = propElementIter->element_begin();
             while(iter != propElementIter->element_end()){
                 // Create an Object of the element tag's type.
-                try {
-                    object = newInstanceOfType(iter->getElementTag());
-                } catch (const Exception& ) { 
-                    std::cerr << "Object type " << iter->getElementTag() << " not recognized" 
-                              << std::endl; 
-                    iter++; 
-                    continue; 
-                }
+                object = newInstanceOfType(iter->getElementTag());
                 objectsFound++;
 
                 if(type==Property_Deprecated::ObjPtr) {

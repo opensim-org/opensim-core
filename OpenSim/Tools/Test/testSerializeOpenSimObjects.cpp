@@ -32,6 +32,15 @@ using namespace std;
 
 void testPropertiesDump(const OpenSim::Object& aObject);
 
+int testUnrecognizedTypes() {
+    try {
+        Object* newObject = Object::newInstanceOfType("Unreccognized");
+    } catch (Exception& ex) { 
+        return 0;
+    }
+    return 1;
+}
+
 static void indent(int nSpaces) {
     for (int i=0; i<nSpaces; ++i) cout << " ";
 }
@@ -122,6 +131,12 @@ int main()
 
     }
     catch (const Exception& e) {
+        e.print(cerr);
+        return 1;
+    }
+    try {
+        ASSERT(testUnrecognizedTypes()==0);
+    } catch (const Exception& e) {
         e.print(cerr);
         return 1;
     }
