@@ -22,7 +22,7 @@
  * -------------------------------------------------------------------------- */
 
 #define CATCH_CONFIG_MAIN
-#include "Vendors/tropter/external/catch/catch.hpp"
+#include <OpenSim/Auxiliary/catch.hpp>
 #include <OpenSim/Simulation/Wrap/WrapMath.h>
 #include <OpenSim/Common/Mtx.h>
 #include <SimTKcommon/Testing.h>
