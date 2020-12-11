@@ -1,8 +1,12 @@
 Moco Change Log
 ===============
 
-0.5.0 (in development)
-----------------------
+0.5.0
+-----
+- 2020-12-10: Fixed bugs where ModOpReplaceMusclesWithDeGrooteFregly2016 didn't 
+              include the muscle PathWrapSet and muscle wrapping wasn't 
+              thread-safe (preventing parallelization with MocoCasADiSolver).
+
 - 2020-11-17: Add support for solving a MocoStudy to opensim-cmd.
 
 - 2020-08-19: DeGrooteFregly2016Muscle now reports the equilibrium residual 
