@@ -182,7 +182,7 @@ computeDesiredAccelerations( const SimTK::State& state, double aT)
         derivComponents[1]=0;
         a = (_ka)[0]*_pTrk[0]->calcDerivative(derivComponents,SimTK::Vector(1,aT));
     } else {
-        a = (_ka)[0]*_aTrk[0]->calcValue(SimTK::Vector(1,aT));
+        a = (_ka)[0]*_aTrk[0]->calcValue(aT);
     }
 
     // Surface Error

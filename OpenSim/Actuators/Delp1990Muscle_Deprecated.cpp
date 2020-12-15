@@ -386,8 +386,8 @@ double Delp1990Muscle_Deprecated::computeActuation(const SimTK::State& s) const
     double massTerm = (tendonForce * ca - fiberForce * ca * ca) / muscleMass;
     double velocityTerm = normState[STATE_FIBER_VELOCITY] * normState[STATE_FIBER_VELOCITY] * ta * ta / normState[STATE_FIBER_LENGTH];
     normStateDeriv[STATE_FIBER_VELOCITY] = massTerm + velocityTerm;
-    setPassiveForce(s, getPassiveForceLengthCurve()->calcValue(SimTK::Vector(1, normState[STATE_FIBER_LENGTH])));
-    setActiveForce(s, getActiveForceLengthCurve()->calcValue(SimTK::Vector(1, normState[STATE_FIBER_LENGTH])) * getActivation(s));
+    setPassiveForce(s, getPassiveForceLengthCurve()->calcValue(normState[STATE_FIBER_LENGTH]));
+    setActiveForce(s, getActiveForceLengthCurve()->calcValue(normState[STATE_FIBER_LENGTH]) * getActivation(s));
     if (getActiveForce(s) < 0.0)
         setActiveForce(s, 0.0);
 
@@ -521,7 +521,7 @@ double Delp1990Muscle_Deprecated::calcTendonForce(const SimTK::State& s, double 
    if (tendon_strain < 0.0)
       tendon_force = 0.0;
    else
-      tendon_force = getTendonForceLengthCurve()->calcValue(SimTK::Vector(1, tendon_strain));
+      tendon_force = getTendonForceLengthCurve()->calcValue(tendon_strain);
 
    return tendon_force;
 }
@@ -536,9 +536,9 @@ double Delp1990Muscle_Deprecated::calcTendonForce(const SimTK::State& s, double 
  */
 double Delp1990Muscle_Deprecated::calcFiberForce(double aActivation, double aNormFiberLength, double aNormFiberVelocity) const
 {
-    double activeForce = getActiveForceLengthCurve()->calcValue(SimTK::Vector(1, aNormFiberLength));
-    double passiveForce = getPassiveForceLengthCurve()->calcValue(SimTK::Vector(1, aNormFiberLength));
-    double velocityFactor = getForceVelocityCurve()->calcValue(SimTK::Vector(1, aNormFiberVelocity));
+    double activeForce = getActiveForceLengthCurve()->calcValue(aNormFiberLength);
+    double passiveForce = getPassiveForceLengthCurve()->calcValue(aNormFiberLength);
+    double velocityFactor = getForceVelocityCurve()->calcValue(aNormFiberVelocity);
 
     return aActivation * activeForce * velocityFactor + passiveForce;
 }
@@ -596,11 +596,11 @@ double Delp1990Muscle_Deprecated::computeIsometricForce(SimTK::State& s, double 
         cos_factor = cos(atan(muscle_width / length));
         setStateVariableValue(s, STATE_FIBER_LENGTH_NAME,  length / cos_factor);
 
-        setActiveForce(s, getActiveForceLengthCurve()->calcValue(SimTK::Vector(1, getFiberLength(s) / _optimalFiberLength)) * aActivation * _maxIsometricForce);
+        setActiveForce(s, getActiveForceLengthCurve()->calcValue(getFiberLength(s) / _optimalFiberLength) * aActivation * _maxIsometricForce);
         if (getActiveForce(s) < 0.0)
             setActiveForce(s, 0.0);
 
-        setPassiveForce(s,  getPassiveForceLengthCurve()->calcValue(SimTK::Vector(1, getFiberLength(s) / _optimalFiberLength)) * _maxIsometricForce);
+        setPassiveForce(s,  getPassiveForceLengthCurve()->calcValue(getFiberLength(s) / _optimalFiberLength) * _maxIsometricForce);
         if (getPassiveForce(s) < 0.0)
             setPassiveForce(s, 0.0);
 
@@ -636,11 +636,11 @@ double Delp1990Muscle_Deprecated::computeIsometricForce(SimTK::State& s, double 
     // ERROR_LIMIT of each other), stop; else change the length guesses based
     // on the error and try again.
     for (i = 0; i < MAX_ITERATIONS; i++) {
-        setActiveForce(s, getActiveForceLengthCurve()->calcValue(SimTK::Vector(1, getFiberLength(s) / _optimalFiberLength)) * aActivation);
+        setActiveForce(s, getActiveForceLengthCurve()->calcValue(getFiberLength(s) / _optimalFiberLength) * aActivation);
         if (getActiveForce(s) < 0.0)
             setActiveForce(s,0.0);
 
-        setPassiveForce(s, getPassiveForceLengthCurve()->calcValue(SimTK::Vector(1, getFiberLength(s) / _optimalFiberLength)));
+        setPassiveForce(s, getPassiveForceLengthCurve()->calcValue(getFiberLength(s) / _optimalFiberLength));
         if (getPassiveForce(s) < 0.0)
             setPassiveForce(s, 0.0);
 
@@ -650,7 +650,7 @@ double Delp1990Muscle_Deprecated::computeIsometricForce(SimTK::State& s, double 
         if (tendon_strain < 0.0)
             tendon_force = 0.0;
         else
-            tendon_force = getTendonForceLengthCurve()->calcValue(SimTK::Vector(1, tendon_strain)) * _maxIsometricForce;
+            tendon_force = getTendonForceLengthCurve()->calcValue(tendon_strain) * _maxIsometricForce;
         setTendonForce(s, tendon_force);
         setActuation(s, tendon_force);
 
@@ -682,7 +682,7 @@ double Delp1990Muscle_Deprecated::computeIsometricForce(SimTK::State& s, double 
             double tendon_elastic_modulus = 1200.0;
             double tendon_max_stress = 32.0;
 
-            tendon_stiffness = getTendonForceLengthCurve()->calcValue(SimTK::Vector(1, tendon_strain)) *
+            tendon_stiffness = getTendonForceLengthCurve()->calcValue(tendon_strain) *
                 _maxIsometricForce / _tendonSlackLength;
 
             min_tendon_stiffness = (getActiveForce(s) + getPassiveForce(s)) *
@@ -693,8 +693,8 @@ double Delp1990Muscle_Deprecated::computeIsometricForce(SimTK::State& s, double 
                 tendon_stiffness = min_tendon_stiffness;
 
             fiber_stiffness = _maxIsometricForce / _optimalFiberLength *
-                (getActiveForceLengthCurve()->calcValue(SimTK::Vector(1, getFiberLength(s) / _optimalFiberLength))  +
-                getPassiveForceLengthCurve()->calcValue(SimTK::Vector(1, getFiberLength(s) / _optimalFiberLength)));
+                (getActiveForceLengthCurve()->calcValue(getFiberLength(s) / _optimalFiberLength)  +
+                getPassiveForceLengthCurve()->calcValue(getFiberLength(s) / _optimalFiberLength));
 
             // determine how much the fiber and tendon lengths have to
             // change to make the error_force zero. But don't let the

@@ -96,7 +96,7 @@ public:
             val = forceSet.getStateVariableValue(s, getName());
         }
 
-        return (_pTrk[0]->calcValue(SimTK::Vector(1,s.getTime()))- val);
+        return (_pTrk[0]->calcValue(s.getTime())- val);
     }
     /**
      * Return the gradient of the tracking error as a vector, whose length 

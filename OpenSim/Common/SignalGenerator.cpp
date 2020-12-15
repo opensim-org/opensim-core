@@ -36,5 +36,5 @@ void SignalGenerator::constructProperties() {
 }
 
 double SignalGenerator::getSignal(const SimTK::State& s) const {
-    return get_function().calcValue(SimTK::Vector(1, s.getTime()));
+    return get_function().calcValue(s.getTime());
 }

@@ -697,9 +697,9 @@ void scaleJointsAndConstraints()
         transform[3].setFunction(new LinearFunction(1.234, 5.678));
 
         // Evaluate LinearFunction before scaling and compare after scaling.
-        const Vector xA = Vector(1, 0.);
+        const double xA = 0.0;
         const double yA = transform[3].getFunction().calcValue(xA);
-        const Vector xB = Vector(1, 123.456);
+        const double xB = 123.456;
         const double yB = transform[3].getFunction().calcValue(xB);
 
         CustomJoint* custom1 =

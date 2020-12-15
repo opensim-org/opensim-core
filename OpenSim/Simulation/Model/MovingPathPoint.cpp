@@ -220,28 +220,28 @@ SimTK::Vec3 MovingPathPoint::getLocation(const SimTK::State& s) const
         const double xval = SimTK::clamp(_xCoordinate->getRangeMin(),
             _xCoordinate->getValue(s),
             _xCoordinate->getRangeMax());
-        pInF[0] = get_x_location().calcValue(SimTK::Vector(1, xval));
+        pInF[0] = get_x_location().calcValue(xval);
     }
     else // assume a Constant
-        pInF[0] = get_x_location().calcValue(SimTK::Vector(1, 0.0));
+        pInF[0] = get_x_location().calcValue(0.0);
 
     if (!_yCoordinate.empty()) {
         const double yval = SimTK::clamp(_yCoordinate->getRangeMin(),
             _yCoordinate->getValue(s),
             _yCoordinate->getRangeMax());
-        pInF[1] = get_y_location().calcValue(SimTK::Vector(1, yval));
+        pInF[1] = get_y_location().calcValue(yval);
     }
     else // type == Constant
-        pInF[1] = get_y_location().calcValue(SimTK::Vector(1, 0.0));
+        pInF[1] = get_y_location().calcValue(0.0);
 
     if (!_zCoordinate.empty()) {
         const double zval = SimTK::clamp(_zCoordinate->getRangeMin(),
             _zCoordinate->getValue(s),
             _zCoordinate->getRangeMax());
-        pInF[2] = get_z_location().calcValue(SimTK::Vector(1, zval));
+        pInF[2] = get_z_location().calcValue(zval);
     }
     else // type == Constant
-        pInF[2] = get_z_location().calcValue(SimTK::Vector(1, 0.0));
+        pInF[2] = get_z_location().calcValue(0.0);
 
     return pInF;
 }

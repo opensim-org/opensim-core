@@ -254,13 +254,13 @@ computeErrors(const SimTK::State& s, double aT)
     //std::cout<<_coordinateName<<std::endl;
     //std::cout<<"_pTrk[0]->calcValue(aT) = "<< _pTrk[0]->calcValue(SimTK::Vector(1, aT)) <<std::endl;
     //std::cout<<"_q->getValue(s) = "<<_q->getValue(s)<<std::endl;
-    _pErr[0] = _pTrk[0]->calcValue(SimTK::Vector(1,aT)) - _q->getValue(s);
+    _pErr[0] = _pTrk[0]->calcValue(aT) - _q->getValue(s);
     if(_vTrk[0]==NULL) {
         std::vector<int> derivComponents(1);
         derivComponents[0]=0;
         _vErr[0] = _pTrk[0]->calcDerivative(derivComponents,SimTK::Vector(1,aT)) - _q->getSpeedValue(s);
     } else {
-        _vErr[0] = _vTrk[0]->calcValue(SimTK::Vector(1,aT)) - _q->getSpeedValue(s);
+        _vErr[0] = _vTrk[0]->calcValue(aT) - _q->getSpeedValue(s);
     }
 }
 //_____________________________________________________________________________
@@ -295,7 +295,7 @@ computeDesiredAccelerations(const SimTK::State& s, double aT)
         derivComponents[1]=0;
         a = (_ka)[0]*_pTrk[0]->calcDerivative(derivComponents,SimTK::Vector(1,aT));
     } else {
-        a = (_ka)[0]*_aTrk[0]->calcValue(SimTK::Vector(1,aT));
+        a = (_ka)[0]*_aTrk[0]->calcValue(aT);
     }
     _aDes[0] = a + v + p;
 
@@ -337,7 +337,7 @@ computeDesiredAccelerations(const SimTK::State& s, double aTI,double aTF)
         derivComponents[1]=0;
         a = (_ka)[0]*_pTrk[0]->calcDerivative(derivComponents,SimTK::Vector(1,aTF));
     } else {
-        a = (_ka)[0]*_aTrk[0]->calcValue(SimTK::Vector(1,aTF));
+        a = (_ka)[0]*_aTrk[0]->calcValue(aTF);
     }
     _aDes[0] = a + v + p;
 

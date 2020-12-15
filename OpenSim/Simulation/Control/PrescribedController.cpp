@@ -165,10 +165,9 @@ void PrescribedController::extendConnectToModel(Model& model)
 void PrescribedController::computeControls(const SimTK::State& s, SimTK::Vector& controls) const
 {
     SimTK::Vector actControls(1, 0.0);
-    SimTK::Vector time(1, s.getTime());
 
     for(int i=0; i<getActuatorSet().getSize(); i++){
-        actControls[0] = get_ControlFunctions()[i].calcValue(time);
+        actControls[0] = get_ControlFunctions()[i].calcValue(s.getTime());
         getActuatorSet()[i].addInControls(actControls, controls);
     }  
 }

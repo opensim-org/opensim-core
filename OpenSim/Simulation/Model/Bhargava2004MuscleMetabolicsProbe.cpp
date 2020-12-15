@@ -331,8 +331,8 @@ computeProbeInputs(const State& s) const
         // ------------------------------------------
         if (get_forbid_negative_total_power() || get_maintenance_rate_on())
         {
-            Vector tmp(1, fiber_length_normalized);
-            fiber_length_dependence = get_normalized_fiber_length_dependence_on_maintenance_rate().calcValue(tmp);
+            fiber_length_dependence =
+                get_normalized_fiber_length_dependence_on_maintenance_rate().calcValueUnary(fiber_length_normalized);
             
             Mdot = mm.getMuscleMass() * fiber_length_dependence * 
                 ( (mm.get_maintenance_constant_slow_twitch() * slow_twitch_excitation) + (mm.get_maintenance_constant_fast_twitch() * fast_twitch_excitation) );

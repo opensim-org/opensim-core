@@ -359,47 +359,59 @@ void ExternalForce::computeForce(const SimTK::State& state,
  */
 Vec3 ExternalForce::getForceAtTime(double aTime) const  
 {
-    SimTK::Vector timeAsVector(1, aTime);
-    const Function* forceX=NULL;
-    const Function* forceY=NULL;
-    const Function* forceZ=NULL;
-    if (_forceFunctions.size()==3){
-        forceX=_forceFunctions[0];  forceY=_forceFunctions[1];  forceZ=_forceFunctions[2];
+    const Function* forceX = nullptr;
+    const Function* forceY = nullptr;
+    const Function* forceZ = nullptr;
+
+    if (_forceFunctions.size() == 3) {
+        forceX = _forceFunctions[0];
+        forceY = _forceFunctions[1];
+        forceZ = _forceFunctions[2];
     }
-    Vec3 force(forceX?forceX->calcValue(timeAsVector):0.0, 
-        forceY?forceY->calcValue(timeAsVector):0.0, 
-        forceZ?forceZ->calcValue(timeAsVector):0.0);
-    return force;
+
+    return Vec3{
+        forceX ? forceX->calcValue(aTime) : 0.0,
+        forceY ? forceY->calcValue(aTime) : 0.0,
+        forceZ ? forceZ->calcValue(aTime) : 0.0,
+    };
 }
 
 Vec3 ExternalForce::getPointAtTime(double aTime) const
 {
-    SimTK::Vector timeAsVector(1, aTime);
-    const Function* pointX=NULL;
-    const Function* pointY=NULL;
-    const Function* pointZ=NULL;
-    if (_pointFunctions.size()==3){
-        pointX=_pointFunctions[0];  pointY=_pointFunctions[1];  pointZ=_pointFunctions[2];
+    const Function* pointX = nullptr;
+    const Function* pointY = nullptr;
+    const Function* pointZ = nullptr;
+
+    if (_pointFunctions.size() == 3) {
+        pointX = _pointFunctions[0];
+        pointY = _pointFunctions[1];
+        pointZ = _pointFunctions[2];
     }
-    Vec3 point(pointX?pointX->calcValue(timeAsVector):0.0, 
-        pointY?pointY->calcValue(timeAsVector):0.0, 
-        pointZ?pointZ->calcValue(timeAsVector):0.0);
-    return point;
+
+    return Vec3{
+        pointX ? pointX->calcValue(aTime) : 0.0,
+        pointY ? pointY->calcValue(aTime) : 0.0,
+        pointZ ? pointZ->calcValue(aTime) : 0.0,
+    };
 }
 
 Vec3 ExternalForce::getTorqueAtTime(double aTime) const
 {
-    SimTK::Vector timeAsVector(1, aTime);
-    const Function* torqueX=NULL;
-    const Function* torqueY=NULL;
-    const Function* torqueZ=NULL;
-    if (_torqueFunctions.size()==3){
-        torqueX=_torqueFunctions[0];    torqueY=_torqueFunctions[1];    torqueZ=_torqueFunctions[2];
+    const Function* torqueX = nullptr;
+    const Function* torqueY = nullptr;
+    const Function* torqueZ = nullptr;
+
+    if (_torqueFunctions.size()==3) {
+        torqueX = _torqueFunctions[0];
+        torqueY = _torqueFunctions[1];
+        torqueZ = _torqueFunctions[2];
     }
-    Vec3 torque(torqueX?torqueX->calcValue(timeAsVector):0.0, 
-        torqueY?torqueY->calcValue(timeAsVector):0.0, 
-        torqueZ?torqueZ->calcValue(timeAsVector):0.0);
-    return torque;
+
+    return Vec3(
+        torqueX ? torqueX->calcValue(aTime) : 0.0,
+        torqueY ? torqueY->calcValue(aTime) : 0.0,
+        torqueZ ? torqueZ->calcValue(aTime) : 0.0
+    );
 }
 
 

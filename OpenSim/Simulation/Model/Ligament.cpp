@@ -239,8 +239,8 @@ void Ligament::computeForce(const SimTK::State& s,
     }
     
     // evaluate normalized tendon force length curve
-    force = getForceLengthCurve().calcValue(
-        SimTK::Vector(1, path.getLength(s)/restingLength))* pcsaForce;
+    force = getForceLengthCurve()
+        .calcValue(path.getLength(s)/restingLength) * pcsaForce;
     setCacheVariableValue(s, _tensionCV, force);
 
     OpenSim::Array<PointForceDirection*> PFDs;
