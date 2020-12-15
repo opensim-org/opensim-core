@@ -113,7 +113,7 @@ class Report(object):
                  trajectory_filepath,
                  bilateral=True,
                  ref_files=None,
-                 colormap=None,
+                 colorlist=None,
                  output=None,
                  ):
         self.model = model
@@ -122,7 +122,7 @@ class Report(object):
         self.trajectory = osim.MocoTrajectory(self.trajectory_filepath)
         self.bilateral = bilateral
         self.ref_files = ref_files
-        self.colormap = colormap
+        self.colorlist = colorlist
         trajectory_fname = ntpath.basename(self.trajectory_filepath)
         trajectory_fname = trajectory_fname.replace('.sto', '')
         trajectory_fname = trajectory_fname.replace('.mot', '')
@@ -165,13 +165,12 @@ class Report(object):
                                          skip_header=num_header_rows)
                 self.refs.append(this_ref)
 
-        # Load the colormap provided by the user. Use a default colormap ('jet') 
-        # if not provided. Uniformly sample the colormap based on the number of 
-        # reference data sets, plus one for the MocoTrajectory.
-        import matplotlib.cm as cm
-        if colormap is None: colormap = 'jet'
-        self.cmap_samples = np.linspace(0.1, 0.9, len(self.refs)+1)
-        self.cmap = cm.get_cmap(colormap)
+        # Check that the colorlist is the correct length
+        if len(self.colorlist) != len(self.refs)+1:
+            raise Exception(f"The argument 'colorlist' should have length equal "
+                            f"to the number of files provided (trajectory and "
+                            f"reference files), but has length "
+                            f"{len(self.colorlist)}.")
 
         ## Legend handles and labels.
         # ===========================
@@ -182,11 +181,10 @@ class Report(object):
         all_files = list()
         if ref_files != None: all_files += ref_files
         all_files.append(trajectory_filepath)
-        lw = 8 / len(self.cmap_samples)
+        lw = 8 / len(self.colorlist)
         if lw < 0.5: lw = 0.5
         if lw > 2: lw = 2
-        for sample, file in zip(self.cmap_samples, all_files):
-            color = self.cmap(sample)
+        for color, file in zip(self.colorlist, all_files):
             import matplotlib.lines as mlines
             if bilateral:
                 r = mlines.Line2D([], [], ls='-', color=color, linewidth=lw)
@@ -278,14 +276,14 @@ class Report(object):
                         y = ref[pathNoSlashes][init:final]
                         plt.plot(ref['time'][init:final],
                                  y, ls=ls,
-                                 color=self.cmap(self.cmap_samples[r]),
+                                 color=self.colorlist[r],
                                  linewidth=2.5)
                         ymin = np.minimum(ymin, np.min(y))
                         ymax = np.maximum(ymax, np.max(y))
 
                 # Plot the variable values from the MocoTrajectory.
-                plt.plot(self.time, var, ls=ls, color=self.cmap(
-                    self.cmap_samples[len(self.refs)]),
+                plt.plot(self.time, var, ls=ls, 
+                         color=self.colorlist[len(self.refs)],
                          linewidth=1.5)
 
             # Plot labels and settings.
@@ -608,10 +606,24 @@ def main():
 
     ref_files = args.ref_files
 
+    # Load the colormap provided by the user. Use a default colormap ('jet') 
+    # if not provided. Uniformly sample the colormap based on the number of 
+    # reference data sets, plus one for the MocoTrajectory.
+    colorlist = list()
+    refs = list()
+    if ref_files != None: refs = ref_files
+    import matplotlib.cm as cm
+    colormap = args.colormap
+    if colormap is None: colormap = 'jet'
+    cmap_samples = np.linspace(0.1, 0.9, len(refs)+1)
+    cmap = cm.get_cmap(colormap)
+    for sample in cmap_samples:
+        colorlist.append(cmap(sample))
+
     report = Report(model=model,
                     trajectory_filepath=args.trajectory,
                     bilateral=args.bilateral,
-                    colormap=args.colormap,
+                    colorlist=colorlist,
                     ref_files=ref_files,
                     output=args.output,
                     )
