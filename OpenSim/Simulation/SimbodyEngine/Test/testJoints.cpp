@@ -63,6 +63,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/UniversalJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/GimbalJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldConstraint.h>
+#include <OpenSim/Simulation/SimbodyEngine/ScapulothoracicJoint.h>
 
 #include <OpenSim/Common/SimmSpline.h>
 #include <OpenSim/Common/LinearFunction.h>
@@ -156,6 +157,7 @@ void testSliderJoint();
 void testPlanarJoint();
 void testBallJoint();
 void testFreeJoint();
+void testScapulothoracicJoint();
 void testCustomWithMultidimFunction();
 void testCustomVsCompoundJoint();
 void testEquivalentBodyForceFromGeneralizedForce();
@@ -267,6 +269,10 @@ int main()
     try { ++itc; testFreeJoint(); }
     catch (const std::exception& e){
         cout << e.what() <<endl; failures.push_back("testFreeJoint");
+    }
+    try { ++itc; testScapulothoracicJoint(); }
+    catch (const std::exception& e){
+        cout << e.what() <<endl; failures.push_back("testScapulothoracicJoint");
     }
     // Compare behavior of a Free hip and pin knee
     try { ++itc; testCustomWithMultidimFunction(); }
@@ -1157,6 +1163,40 @@ void testFreeJoint()
     }
 
 } // end testFreeJoint
+
+void testScapulothoracicJoint()
+{
+    // can default/value instantiate non-throwingly
+    {
+        ScapulothoracicJoint sj1;
+        ScapulothoracicJoint sj2{};
+    }
+
+    // can instantiate in a typical way (e.g. how a user probably would) without
+    // throwing an exception
+    {
+        Model m;
+        m.setName(__FUNCTION__);
+
+        auto thigh = new Body{
+            "thigh",
+            femurMass.getMass(),
+            femurMass.getMassCenter(),
+            femurMass.getInertia()
+        };
+
+        m.addBody(thigh);
+
+        m.addJoint(new ScapulothoracicJoint{
+            "scapulothoracic_joint",
+            m.getGround(),
+            *thigh,
+            SimTK::Vec3{0.1, 0.1, 0.1},  // ellipsoid radii
+            SimTK::Vec2{0.0, 0.0},  // winging origin
+            0.5  // winging direction
+        });
+    }
+}
 
 void testBallJoint()
 {
