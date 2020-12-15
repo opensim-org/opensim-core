@@ -63,7 +63,18 @@ XsensDataReader::extendRead(const std::string& folderName) const {
                 }
             }
             // Find indices for PacketCounter, Acc_{X,Y,Z}, Gyr_{X,Y,Z}, Mag_{X,Y,Z} on line 5
-            std::vector<std::string> tokens = FileAdapter::tokenize(line, "\t");
+            std::vector<std::string> tokens = FileAdapter::tokenize(line, "\t ");
+            // Search for Firmware Version
+            int firmwareIndex = find_index(tokens, "Firmware");
+            if (firmwareIndex != -1) {
+                auto versionString = tokens[firmwareIndex + 2];
+                // TODO Make this more general and based on documentation from Xsens which has 
+                // been hard to find. We can stretch or shrink time downstream as of now.
+                // -Ayman 12/20
+                if (versionString == "4.3.5") { 
+                    dataRate = 40;
+                }
+            }
             packetCounterIndex = find_index(tokens, "PacketCounter");
             if (packetCounterIndex == -1) {
                 // Could be comment, skip over

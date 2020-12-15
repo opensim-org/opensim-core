@@ -124,6 +124,16 @@ int main() {
             XsensDataReader(readerSettings3).read("./");
         auto accelTable3 = tables3.at(XsensDataReader::LinearAccelerations);
         ASSERT(accelTable3->getNumRows() == 3);
+        // 
+        // Now a file with latest format
+        XsensDataReaderSettings readerSettings4;
+        ExperimentalSensor nextSensor4("MT_01200454_000-000_00B40DE4", "test");
+        readerSettings4.append_ExperimentalSensors(nextSensor4);
+        DataAdapter::OutputTables tables4 =
+                XsensDataReader(readerSettings4).read("./");
+        auto accelTable4 = tables4.at(XsensDataReader::LinearAccelerations);
+        ASSERT(accelTable4->getNumRows() == 4);
+
     }
     catch (const std::exception& ex) {
         std::cout << "testXsensDataReader FAILED: " << ex.what() << std::endl;
