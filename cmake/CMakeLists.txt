@@ -14,6 +14,7 @@ configure_package_config_file(
     PATH_VARS # Variables to edit in OpenSimConfig.cmake.in.
         CMAKE_INSTALL_PREFIX
         CMAKE_INSTALL_INCLUDEDIR
+        CMAKE_INSTALL_BINDIR
         CMAKE_INSTALL_LIBDIR
         OPENSIM_INSTALL_CMAKEDIR
         OPENSIM_INSTALL_SIMBODYDIR
@@ -23,7 +24,7 @@ configure_package_config_file(
 # Version file.
 write_basic_config_version_file(
     "${CMAKE_CURRENT_BINARY_DIR}/OpenSimConfigVersion.cmake"
-    VERSION "${OPENSIM_VERSION}"
+    VERSION "${OPENSIM_RELEASE_VERSION}"
     COMPATIBILITY SameMajorVersion)
 
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/OpenSimConfigToInstall.cmake"
@@ -39,4 +40,31 @@ install(
         "${OPENSIM_INSTALL_CMAKEDIR}"
         )
 
+install(FILES OpenSimMacros.cmake
+    DESTINATION "${OPENSIM_INSTALL_CMAKEDIR}"
+    RENAME UseOpenSim.cmake)
+
 install(EXPORT OpenSimTargets DESTINATION "${OPENSIM_INSTALL_CMAKEDIR}")
+
+if(OPENSIM_COPY_DEPENDENCIES AND APPLE)
+    # Temporary hack to package dependencies on Macs.
+    # TODO if we're building a standalone binary distribution, we should
+    # use superbuild to build the dependencies.
+    # TODO install(FILES
+    # TODO         /usr/local/opt/llvm/lib/libc++.1.dylib
+    # TODO         DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+    # This command must be invoked from the cmake subdirectory so that the
+    # editing of libtropter's link libraries is done after libtropter.dylib
+    # is installed (add_subdirectory(cmake) must be after
+    # add_subdirectory(Moco)).
+
+    get_target_property(CASADI_LIBRARY_LOCATION casadi LOCATION)
+    get_filename_component(CASADI_LIBDIR "${CASADI_LIBRARY_LOCATION}" DIRECTORY)
+    set(script
+        ${CMAKE_CURRENT_BINARY_DIR}/OpenSimMocoInstallMacDependencyLibraries.cmake)
+    configure_file(OpenSimMocoInstallMacDependencyLibraries.cmake.in
+            "${script}" @ONLY)
+    install(SCRIPT "${script}")
+
+endif()

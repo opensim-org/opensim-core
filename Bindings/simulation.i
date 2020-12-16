@@ -216,11 +216,11 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %template(SimTKArrayCoordinateReference) SimTK::Array_<OpenSim::CoordinateReference>;
 
 
-%shared_ptr(OpenSim::Reference_<SimTK::Vec3>);
+%shared_ptr(ReferenceVec3);
 %shared_ptr(ReferenceDouble);
-%shared_ptr(OpenSim::Reference_<SimTK::Rotation_<double>>);
+%shared_ptr(ReferenceRotation);
 %include <OpenSim/Simulation/MarkersReference.h>
-%shared_ptr(OpenSim::MarkersReference);
+//%shared_ptr(OpenSim::MarkersReference);
 %template(SetMarkerWeights) OpenSim::Set<MarkerWeight, OpenSim::Object>;
 %include <OpenSim/Simulation/CoordinateReference.h>
 %include <OpenSim/Simulation/OrientationsReference.h>
@@ -241,7 +241,13 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/StatesTrajectoryReporter.h>
 
 %include <OpenSim/Simulation/SimulationUtilities.h>
+%template(analyze) OpenSim::analyze<double>;
+%template(analyzeVec3) OpenSim::analyze<SimTK::Vec3>;
+%template(analyzeSpatialVec) OpenSim::analyze<SimTK::SpatialVec>;
+
 %include <OpenSim/Simulation/VisualizerUtilities.h>
+
+%include <OpenSim/Simulation/TableProcessor.h>
 
 // Iterators.
 %template(FrameList) OpenSim::ComponentList<const OpenSim::Frame>;
@@ -372,3 +378,4 @@ EXPOSE_SET_CONSTRUCTORS_HELPER(ProbeSet);
 EXPOSE_SET_CONSTRUCTORS_HELPER(MarkerSet);
 EXPOSE_SET_CONSTRUCTORS_HELPER(WrapObjectSet);
 EXPOSE_SET_CONSTRUCTORS_HELPER(CoordinateSet);
+

@@ -37,6 +37,7 @@
 #include "Logger.h"
 #include "ModelDisplayHints.h"
 #include "MultiplierFunction.h"
+#include "MultivariatePolynomialFunction.h"
 #include "Object.h"
 #include "ObjectGroup.h"
 #include "PiecewiseConstantFunction.h"

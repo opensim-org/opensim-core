@@ -79,6 +79,7 @@
 #include "Model/Bhargava2004MuscleMetabolicsProbe.h"
 #include "Model/Appearance.h"
 #include "Model/Geometry.h"
+
 #include "Model/ModelVisualPreferences.h"
 #include "Model/ExpressionBasedCoordinateForce.h"
 
@@ -126,6 +127,8 @@
 #include "OpenSense/IMUPlacer.h"
 #include "OrientationsReference.h"
 #include "StatesTrajectoryReporter.h"
+#include "TableProcessor.h"
+#include "MarkersReference.h"
 
 #include <string>
 #include <iostream>
@@ -168,6 +171,11 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( SurfaceProperties());
     Object::registerType( Appearance());
     Object::registerType( ModelVisualPreferences());
+
+    Object::registerType(MarkersReference());
+    Object::registerType(MarkerWeight());
+    Object::registerType(Set<MarkerWeight>());
+
 
     Object::registerType( Brick());
     Object::registerType( Sphere());
@@ -269,6 +277,11 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( IMUPlacer() );
     
     Object::registerType( StatesTrajectoryReporter() );
+
+    Object::registerType( TableProcessor() );
+
+    Object::registerType( TabOpLowPassFilter() );
+    Object::registerType( TabOpUseAbsoluteStateNames() );
 
     // OLD Versions
     // Associate an instance with old name to help deserialization.

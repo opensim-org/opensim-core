@@ -40,6 +40,7 @@
 #include "PiecewiseConstantFunction.h"
 #include "MultiplierFunction.h"
 #include "PolynomialFunction.h"
+#include "MultivariatePolynomialFunction.h"
 
 #include "SignalGenerator.h"
 
@@ -86,6 +87,7 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
     Object::registerType( PiecewiseConstantFunction() );
     Object::registerType( MultiplierFunction() );
     Object::registerType( PolynomialFunction() );
+    Object::registerType( MultivariatePolynomialFunction() );
 
     Object::registerType( SignalGenerator() );
 

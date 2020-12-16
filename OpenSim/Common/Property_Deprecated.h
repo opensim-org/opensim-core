@@ -61,7 +61,7 @@ namespace OpenSim {
  *
  * As additional property types are needed, they may be added however.
  *
- * @todo Make default constructors for all derived classes
+ * TODO: Make default constructors for all derived classes
  * @version 1.0
  * @author Frank C. Anderson
  */

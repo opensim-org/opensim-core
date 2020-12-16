@@ -1,7 +1,7 @@
 #ifndef OPENSIM_OPENSIM_HEADERS_OPENSIM_H_
 #define OPENSIM_OPENSIM_HEADERS_OPENSIM_H_
 /* This header file is only used with SWIG to create bindings.
-*/
+ */
 
 #include <SimTKsimbody.h>
 
@@ -12,6 +12,7 @@
 #include <OpenSim/Common/ArrayPtrs.h>
 #include <OpenSim/Common/C3DFileAdapter.h>
 #include <OpenSim/Common/CSVFileAdapter.h>
+#include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Common/Component.h>
 #include <OpenSim/Common/ComponentPath.h>
 #include <OpenSim/Common/Constant.h>
@@ -35,6 +36,7 @@
 #include <OpenSim/Common/MarkerData.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
 #include <OpenSim/Common/MultiplierFunction.h>
+#include <OpenSim/Common/MultivariatePolynomialFunction.h>
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/ObjectGroup.h>
 #include <OpenSim/Common/PiecewiseConstantFunction.h>
@@ -66,4 +68,3 @@
 #include <OpenSim/version.h>
 
 #endif // OPENSIM_OPENSIM_HEADERS_OPENSIM_H_
-

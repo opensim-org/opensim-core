@@ -72,9 +72,9 @@ for iLabel = 0 : nLabels - 1
     if ~isvarname(col_label)
         % Find any non-alphanumeric characters and replace with '_'
         col_label(~(isstrprop(col_label,'alphanum'))) = '_';
-        % Check if first character is a letter, and append 'unlabeled' if not
+        % Check if first character is a letter, and prepend 'a_' if not.
         if ~(isletter(col_label(1)))
-            col_label = ['unlabeled', col_label];
+            col_label = ['a_' col_label(2:end)];
         end
         % Last check for too long a name 
         % Have user input a new name, and make them keep doing it until the

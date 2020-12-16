@@ -1,0 +1,436 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="30516">
+	<Model name="walk_subject01">
+		<!--List of components that this component owns and serializes.-->
+		<components>
+			<AckermannVanDenBogert2010Force name="marker0_contact">
+				<!--Path to a Component that satisfies the Socket 'station' of type Station (description: TODO).-->
+				<socket_station_connectee_name>../marker0</socket_station_connectee_name>
+				<!--TODO-->
+				<friction_coefficient>7.6230574482467209e-07</friction_coefficient>
+				<!--TODO N/m^3-->
+				<stiffness>2813391.3248650068</stiffness>
+				<!--TODO s/m-->
+				<dissipation>6.4340559810019569e-06</dissipation>
+				<!--TODO-->
+				<tangent_velocity_scaling_factor>0.073096345914057143</tangent_velocity_scaling_factor>
+			</AckermannVanDenBogert2010Force>
+			<AckermannVanDenBogert2010Force name="marker1_contact">
+				<!--Path to a Component that satisfies the Socket 'station' of type Station (description: TODO).-->
+				<socket_station_connectee_name>../marker1</socket_station_connectee_name>
+				<!--TODO-->
+				<friction_coefficient>0.35101338659599007</friction_coefficient>
+				<!--TODO N/m^3-->
+				<stiffness>48259939.857185312</stiffness>
+				<!--TODO s/m-->
+				<dissipation>1.9999955401974661</dissipation>
+				<!--TODO-->
+				<tangent_velocity_scaling_factor>0.010000057378364924</tangent_velocity_scaling_factor>
+			</AckermannVanDenBogert2010Force>
+			<AckermannVanDenBogert2010Force name="marker2_contact">
+				<!--Path to a Component that satisfies the Socket 'station' of type Station (description: TODO).-->
+				<socket_station_connectee_name>../marker2</socket_station_connectee_name>
+				<!--TODO-->
+				<friction_coefficient>0.8802753785225883</friction_coefficient>
+				<!--TODO N/m^3-->
+				<stiffness>1.4239115677862753</stiffness>
+				<!--TODO s/m-->
+				<dissipation>1.39917569718389</dissipation>
+				<!--TODO-->
+				<tangent_velocity_scaling_factor>0.041745715905238352</tangent_velocity_scaling_factor>
+			</AckermannVanDenBogert2010Force>
+			<AckermannVanDenBogert2010Force name="marker3_contact">
+				<!--Path to a Component that satisfies the Socket 'station' of type Station (description: TODO).-->
+				<socket_station_connectee_name>../marker3</socket_station_connectee_name>
+				<!--TODO-->
+				<friction_coefficient>0.63328100409632893</friction_coefficient>
+				<!--TODO N/m^3-->
+				<stiffness>15.696948375414172</stiffness>
+				<!--TODO s/m-->
+				<dissipation>0.36457463010367802</dissipation>
+				<!--TODO-->
+				<tangent_velocity_scaling_factor>0.047792896936184263</tangent_velocity_scaling_factor>
+			</AckermannVanDenBogert2010Force>
+			<AckermannVanDenBogert2010Force name="marker4_contact">
+				<!--Path to a Component that satisfies the Socket 'station' of type Station (description: TODO).-->
+				<socket_station_connectee_name>../marker4</socket_station_connectee_name>
+				<!--TODO-->
+				<friction_coefficient>0.14159507595181903</friction_coefficient>
+				<!--TODO N/m^3-->
+				<stiffness>35072539.113437034</stiffness>
+				<!--TODO s/m-->
+				<dissipation>1.9999999434748563</dissipation>
+				<!--TODO-->
+				<tangent_velocity_scaling_factor>0.066013032145415984</tangent_velocity_scaling_factor>
+			</AckermannVanDenBogert2010Force>
+			<AckermannVanDenBogert2010Force name="marker5_contact">
+				<!--Path to a Component that satisfies the Socket 'station' of type Station (description: TODO).-->
+				<socket_station_connectee_name>../marker5</socket_station_connectee_name>
+				<!--TODO-->
+				<friction_coefficient>0.46564322555726601</friction_coefficient>
+				<!--TODO N/m^3-->
+				<stiffness>2057692.4653327167</stiffness>
+				<!--TODO s/m-->
+				<dissipation>1.9999994903820288</dissipation>
+				<!--TODO-->
+				<tangent_velocity_scaling_factor>0.010000011019975627</tangent_velocity_scaling_factor>
+			</AckermannVanDenBogert2010Force>
+		</components>
+		<!--The model's ground reference frame.-->
+		<Ground name="ground">
+			<!--The geometry used to display the axes of this Frame.-->
+			<FrameGeometry name="frame_geometry">
+				<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+				<socket_frame_connectee_name>..</socket_frame_connectee_name>
+				<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+				<input_transform_connectee_name></input_transform_connectee_name>
+				<!--Scale factors in X, Y, Z directions respectively.-->
+				<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+			</FrameGeometry>
+			<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+			<attached_geometry />
+			<!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.This property used to be a member of Body but was moved up with the introduction of Frames.-->
+			<WrapObjectSet>
+				<objects />
+				<groups />
+			</WrapObjectSet>
+		</Ground>
+		<!--Acceleration due to gravity, expressed in ground.-->
+		<gravity>0 -9.8066499999999994 0</gravity>
+		<!--Credits (e.g., model author names) associated with the model.-->
+		<credits>A planar reduced gait model with 10 degrees of freedom and 18 muscles by Ajay Seth. Closely based on Delp S.L., Loan J.P., Hoy M.G., Zajac F.E., Topp E.L., Rosen J.M., Thelen D.G., Anderson F.C., Seth A. Notes: 3D, 23 DOF gait model created by D.G. Thelen, Univ. of Wisconsin-Madison, and Ajay Seth, Frank C. Anderson, and Scott L. Delp, Stanford University. Lower extremity joint defintions based on Delp et al. (1990). Low back joint and anthropometry based on Anderson and Pandy (1999, 2001). Planar knee model of Yamaguchi and Zajac (1989). Seth replaced tibia translation constraints with a CustomJoint for the knee and removed the patella to eliminate all kinematic constraints; insertions of the quadrucepts are handled with moving points in the tibia frame as defined by Delp 1990. Number of muscles was reduced by Anderson to improve simulation speed for demonstrations and is not intended to be used in research. License: Creative Commons (CCBY 3.0). You are free to distribute, remix, tweak, and build upon this work, even commercially, as long as you credit us for the original creation. http://creativecommons.org/licenses/by/3.0/ More Information: http://simtk-confluence.stanford.edu:8080/display/OpenSim/Gait+2392+and+2354+Models</credits>
+		<!--Publications and references associated with the model.-->
+		<publications>Delp, S.L., Loan, J.P., Hoy, M.G., Zajac, F.E., Topp E.L., Rosen, J.M.: An interactive graphics-based model of the lower extremity to study orthopaedic surgical procedures, IEEE Transactions on Biomedical Engineering, vol. 37, pp. 757-767, 1990. Yamaguchi G.T., Zajac F.E.: A planar model of the knee joint to characterize the knee extensor mechanism." J . Biomech. vol. 22. pp. 1-10. 1989. Anderson F.C., Pandy M.G.: A dynamic optimization solution for vertical jumping in three dimensions. Computer Methods in Biomechanics and Biomedical Engineering 2:201-231, 1999. Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Biomechanical Engineering 123:381-390, 2001.</publications>
+		<!--Units for all lengths.-->
+		<length_units>meters</length_units>
+		<!--Units for all forces.-->
+		<force_units>N</force_units>
+		<!--List of bodies that make up this model.-->
+		<BodySet>
+			<objects>
+				<Body name="toes_r">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame_connectee_name>..</socket_frame_connectee_name>
+						<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+						<input_transform_connectee_name></input_transform_connectee_name>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Mesh name="toes_r_geom_1">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>..</socket_frame_connectee_name>
+							<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+							<input_transform_connectee_name></input_transform_connectee_name>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1.02708 1.02708 1.02708</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>bofoot.vtp</mesh_file>
+						</Mesh>
+					</attached_geometry>
+					<!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.This property used to be a member of Body but was moved up with the introduction of Frames.-->
+					<WrapObjectSet>
+						<objects />
+						<groups />
+					</WrapObjectSet>
+					<!--The mass of the body (kg)-->
+					<mass>0.20920965454482601</mass>
+					<!--The location (Vec3) of the mass center in the body frame.-->
+					<mass_center>0.035536999999999999 0.0061624799999999997 -0.017973900000000001</mass_center>
+					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
+					<inertia>0.00010189 0.00020378 0.00010189 0 0 0</inertia>
+				</Body>
+				<Body name="calcn_r">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame_connectee_name>..</socket_frame_connectee_name>
+						<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+						<input_transform_connectee_name></input_transform_connectee_name>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Mesh name="calcn_r_geom_1">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>..</socket_frame_connectee_name>
+							<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+							<input_transform_connectee_name></input_transform_connectee_name>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1.02708 1.02708 1.02708</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>foot.vtp</mesh_file>
+						</Mesh>
+					</attached_geometry>
+					<!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.This property used to be a member of Body but was moved up with the introduction of Frames.-->
+					<WrapObjectSet>
+						<objects />
+						<groups />
+					</WrapObjectSet>
+					<!--The mass of the body (kg)-->
+					<mass>1.20735026861049</mass>
+					<!--The location (Vec3) of the mass center in the body frame.-->
+					<mass_center>0.10270799999999999 0.0308124 0</mass_center>
+					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
+					<inertia>0.0014264600000000001 0.0039737100000000001 0.0041774899999999998 0 0 0</inertia>
+				</Body>
+				<Body name="talus_r">
+					<!--The geometry used to display the axes of this Frame.-->
+					<FrameGeometry name="frame_geometry">
+						<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+						<socket_frame_connectee_name>..</socket_frame_connectee_name>
+						<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+						<input_transform_connectee_name></input_transform_connectee_name>
+						<!--Scale factors in X, Y, Z directions respectively.-->
+						<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+					</FrameGeometry>
+					<!--List of geometry attached to this Frame. Note, the geometry are treated as fixed to the frame and they share the transform of the frame when visualized-->
+					<attached_geometry>
+						<Mesh name="talus_r_geom_1">
+							<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+							<socket_frame_connectee_name>..</socket_frame_connectee_name>
+							<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+							<input_transform_connectee_name></input_transform_connectee_name>
+							<!--Scale factors in X, Y, Z directions respectively.-->
+							<scale_factors>1.11398 1.11398 1.11398</scale_factors>
+							<!--Default appearance attributes for this Geometry-->
+							<Appearance>
+								<!--The opacity used to display the geometry between 0:transparent, 1:opaque.-->
+								<opacity>1</opacity>
+								<!--The color, (red, green, blue), [0, 1], used to display the geometry. -->
+								<color>1 1 1</color>
+							</Appearance>
+							<!--Name of geometry file.-->
+							<mesh_file>talus.vtp</mesh_file>
+						</Mesh>
+					</attached_geometry>
+					<!--Set of wrap objects fixed to this body that GeometryPaths can wrap over.This property used to be a member of Body but was moved up with the introduction of Frames.-->
+					<WrapObjectSet>
+						<objects />
+						<groups />
+					</WrapObjectSet>
+					<!--The mass of the body (kg)-->
+					<mass>0.096588021488839201</mass>
+					<!--The location (Vec3) of the mass center in the body frame.-->
+					<mass_center>0 0 0</mass_center>
+					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
+					<inertia>0.0011986099999999999 0.0011986099999999999 0.0011986099999999999 0 0 0</inertia>
+				</Body>
+			</objects>
+			<groups />
+		</BodySet>
+		<!--List of joints that connect the bodies.-->
+		<JointSet>
+			<objects>
+				<PlanarJoint name="ground_toes">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
+					<socket_parent_frame_connectee_name>../ground</socket_parent_frame_connectee_name>
+					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
+					<socket_child_frame_connectee_name>../toes_r</socket_child_frame_connectee_name>
+					<!--List containing the generalized coordinates (q's) that parameterize this joint.-->
+					<coordinates>
+						<Coordinate name="rz">
+							<!--All properties of this object have their default values.-->
+						</Coordinate>
+						<Coordinate name="tx">
+							<!--All properties of this object have their default values.-->
+						</Coordinate>
+						<Coordinate name="ty">
+							<!--All properties of this object have their default values.-->
+						</Coordinate>
+					</coordinates>
+				</PlanarJoint>
+				<WeldJoint name="mtp_r">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
+					<socket_parent_frame_connectee_name>../toes_r</socket_parent_frame_connectee_name>
+					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
+					<socket_child_frame_connectee_name>calcn_r_offset</socket_child_frame_connectee_name>
+					<!--Physical offset frames owned by the Joint that are typically used to satisfy the owning Joint's parent and child frame connections (sockets). PhysicalOffsetFrames are often used to describe the fixed transformation from a Body's origin to another location of interest on the Body (e.g., the joint center). When the joint is deleted, so are the PhysicalOffsetFrame components in this list.-->
+					<frames>
+						<PhysicalOffsetFrame name="calcn_r_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame_connectee_name>..</socket_frame_connectee_name>
+								<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+								<input_transform_connectee_name></input_transform_connectee_name>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent_connectee_name>../../calcn_r</socket_parent_connectee_name>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>0.183642 -0.0020541600000000002 0.00110925</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0 0 0</orientation>
+						</PhysicalOffsetFrame>
+					</frames>
+				</WeldJoint>
+				<WeldJoint name="subtalar_r">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The parent frame for the joint.).-->
+					<socket_parent_frame_connectee_name>../calcn_r</socket_parent_frame_connectee_name>
+					<!--Path to a Component that satisfies the Socket 'child_frame' of type PhysicalFrame (description: The child frame for the joint.).-->
+					<socket_child_frame_connectee_name>talus_r_offset</socket_child_frame_connectee_name>
+					<!--Physical offset frames owned by the Joint that are typically used to satisfy the owning Joint's parent and child frame connections (sockets). PhysicalOffsetFrames are often used to describe the fixed transformation from a Body's origin to another location of interest on the Body (e.g., the joint center). When the joint is deleted, so are the PhysicalOffsetFrame components in this list.-->
+					<frames>
+						<PhysicalOffsetFrame name="talus_r_offset">
+							<!--The geometry used to display the axes of this Frame.-->
+							<FrameGeometry name="frame_geometry">
+								<!--Path to a Component that satisfies the Socket 'frame' of type Frame.-->
+								<socket_frame_connectee_name>..</socket_frame_connectee_name>
+								<!--Path to an output (channel) to satisfy the one-value Input 'transform' of type SimTK::Transform (description: The transform that positions the Geometry in Ground so it can be positioned. Note, either the Geometry is attached to a Frame OR the input transform can be supplied, but not both. ).-->
+								<input_transform_connectee_name></input_transform_connectee_name>
+								<!--Scale factors in X, Y, Z directions respectively.-->
+								<scale_factors>0.20000000000000001 0.20000000000000001 0.20000000000000001</scale_factors>
+							</FrameGeometry>
+							<!--Path to a Component that satisfies the Socket 'parent' of type C (description: The parent frame to this frame.).-->
+							<socket_parent_connectee_name>../../talus_r</socket_parent_connectee_name>
+							<!--Translational offset (in meters) of this frame's origin from the parent frame's origin, expressed in the parent frame.-->
+							<translation>-0.054328799999999997 -0.046731500000000002 0.0088227199999999992</translation>
+							<!--Orientation offset (in radians) of this frame in its parent frame, expressed as a frame-fixed x-y-z rotation sequence.-->
+							<orientation>0 0 0</orientation>
+						</PhysicalOffsetFrame>
+					</frames>
+				</WeldJoint>
+			</objects>
+		</JointSet>
+		<!--Controllers that provide the control inputs for Actuators.-->
+		<ControllerSet>
+			<objects />
+			<groups />
+		</ControllerSet>
+		<!--Constraints in the model.-->
+		<ConstraintSet>
+			<objects />
+			<groups />
+		</ConstraintSet>
+		<!--Forces in the model (includes Actuators).-->
+		<ForceSet>
+			<objects />
+			<groups />
+		</ForceSet>
+		<!--Markers in the model.-->
+		<MarkerSet>
+			<objects>
+				<Marker name="R.Heel">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame_connectee_name>../calcn_r</socket_parent_frame_connectee_name>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>-0.020481900000000001 0.017288399999999999 -0.0050373500000000003</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
+				</Marker>
+				<Marker name="R.Midfoot.Sup">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame_connectee_name>../calcn_r</socket_parent_frame_connectee_name>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>0.122708 0.030965800000000002 -0.0403332</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
+				</Marker>
+				<Marker name="R.Midfoot.Lat">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame_connectee_name>../calcn_r</socket_parent_frame_connectee_name>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>0.117766 0.011129 0.066972599999999993</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
+				</Marker>
+				<Marker name="R.Toe.Lat">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame_connectee_name>../calcn_r</socket_parent_frame_connectee_name>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>0.20769299999999999 -0.011410699999999999 0.076066900000000007</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
+				</Marker>
+				<Marker name="R.Toe.Med">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame_connectee_name>../calcn_r</socket_parent_frame_connectee_name>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>0.209814 0.0016980700000000001 -0.032368399999999999</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
+				</Marker>
+				<Marker name="R.Toe.Tip">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame_connectee_name>../calcn_r</socket_parent_frame_connectee_name>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>0.27073399999999997 0.0031500500000000002 -0.00061229700000000004</location>
+					<!--Flag (true or false) specifying whether the marker is fixed in its parent frame during the marker placement step of scaling.  If false, the marker is free to move within its parent Frame to match its experimental counterpart.-->
+					<fixed>false</fixed>
+				</Marker>
+				<Marker name="marker0">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame_connectee_name>../calcn_r</socket_parent_frame_connectee_name>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>-0.02 -0.040019061648902191 0</location>
+				</Marker>
+				<Marker name="marker1">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame_connectee_name>../calcn_r</socket_parent_frame_connectee_name>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>0.038000000000000006 -0.040019061648902191 0</location>
+				</Marker>
+				<Marker name="marker2">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame_connectee_name>../calcn_r</socket_parent_frame_connectee_name>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>0.096000000000000016 -0.040019061648902191 0</location>
+				</Marker>
+				<Marker name="marker3">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame_connectee_name>../calcn_r</socket_parent_frame_connectee_name>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>0.15400000000000003 -0.040019061648902191 0</location>
+				</Marker>
+				<Marker name="marker4">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame_connectee_name>../calcn_r</socket_parent_frame_connectee_name>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>0.21200000000000005 -0.040019061648902191 0</location>
+				</Marker>
+				<Marker name="marker5">
+					<!--Path to a Component that satisfies the Socket 'parent_frame' of type PhysicalFrame (description: The frame to which this station is fixed.).-->
+					<socket_parent_frame_connectee_name>../calcn_r</socket_parent_frame_connectee_name>
+					<!--The fixed location of the station expressed in its parent frame.-->
+					<location>0.27000000000000002 -0.040019061648902191 0</location>
+				</Marker>
+			</objects>
+			<groups />
+		</MarkerSet>
+		<!--Geometry to be used in contact forces.-->
+		<ContactGeometrySet>
+			<objects />
+			<groups />
+		</ContactGeometrySet>
+		<!--Additional components in the model.-->
+		<ComponentSet>
+			<objects />
+			<groups />
+		</ComponentSet>
+		<!--Probes in the model.-->
+		<ProbeSet>
+			<objects />
+			<groups />
+		</ProbeSet>
+	</Model>
+</OpenSimDocument>

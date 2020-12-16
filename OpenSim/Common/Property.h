@@ -34,6 +34,7 @@
 #include "SimTKcommon/internal/ClonePtr.h"
 
 #include <iomanip>
+#include <set>
 
 namespace OpenSim {
 

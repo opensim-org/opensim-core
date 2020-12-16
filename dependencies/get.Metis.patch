@@ -1,0 +1,13 @@
+--- get.Metis	2012-05-29 03:55:14.000000000 -0700
++++ get.Metis	2019-11-19 09:55:59.000000000 -0800
+@@ -22,8 +22,8 @@
+ echo " "
+ 
+ rm -f metis-4.0.3.tar.gz
+-echo "Downloading the source code from glaros.dtc.umn.edu..."
+-$wgetcmd http://glaros.dtc.umn.edu/gkhome/fetch/sw/metis/OLD/metis-4.0.3.tar.gz
++echo "Downloading the source code..."
++$wgetcmd https://sourceforge.net/projects/myosin/files/ipopt/metis-4.0.3.tar.gz
+
+ rm -rf metis-4.0
+ 

@@ -622,7 +622,6 @@ void WrapCylinder::_make_spiral_path(SimTK::Vec3& aPoint1,
     double x, y, t, axial_dist, theta;
     Vec3 r1a, r2a, uu, vv, ax, axial_vec, wrap_pt;
     double sense = far_side_wrap ? -1.0 : 1.0;
-    double m[4][4];
     int i, iterations = 0;
     const double _radius = get_radius();
 
@@ -667,10 +666,10 @@ restart_spiral_wrap:
 
     Mtx::CrossProduct(ax, uu, vv);
 
-    m[0][0] = ax[0]; m[0][1] = ax[1]; m[0][2] = ax[2]; m[0][3] = 0.0;
-    m[1][0] = uu[0]; m[1][1] = uu[1]; m[1][2] = uu[2]; m[1][3] = 0.0;
-    m[2][0] = vv[0]; m[2][1] = vv[1]; m[2][2] = vv[2]; m[2][3] = 0.0;
-    m[3][0] = 0.0;   m[3][1] = 0.0;   m[3][2] = 0.0;   m[3][3] = 1.0;
+    SimTK::Rotation m;
+    m.set(0, 0, ax[0]); m.set(0, 1, ax[1]); m.set(0, 2, ax[2]);
+    m.set(1, 0, uu[0]); m.set(1, 1, uu[1]); m.set(1, 2, uu[2]);
+    m.set(2, 0, vv[0]); m.set(2, 1, vv[1]); m.set(2, 2, vv[2]);
 
     // Each muscle segment on the surface of the cylinder should be
     // 0.002 meters long. This assumes the model is in meters, of course.
@@ -722,24 +721,21 @@ restart_spiral_wrap:
  * @param wrap_pt The new point on the spiral path
  */
 void WrapCylinder::_calc_spiral_wrap_point(const SimTK::Vec3& r1a,
-                                                         const SimTK::Vec3& axial_vec,
-                                                         double m[4][4],
-                                                         const SimTK::Vec3& axis,
-                                                         double sense,
-                                                         double t,
-                                                         double theta,
-                                                         SimTK::Vec3& wrap_pt) const
+                                             const SimTK::Vec3& axial_vec,
+                                             const SimTK::Rotation& m,
+                                             const SimTK::Vec3& axis,
+                                             double sense,
+                                             double t,
+                                             double theta,
+                                             SimTK::Vec3& wrap_pt) const
 {
-    double n[4][4];
-    int i, j;
+    SimTK::Rotation R;
+    double angle = sense * t * theta;
+    R.setRotationFromAngleAboutNonUnitVector(angle, axis);
 
-    for (i = 0; i < 4; i++)
-        for (j = 0; j < 4; j++)
-            n[i][j] = m[i][j];
+    SimTK::Mat33 n = m * ~R;
 
-    WrapMath::RotateMatrixAxisAngle(n, axis, sense * t * theta);
-
-    for (i = 0; i < 3; i++)
+    for (int i = 0; i < 3; i++)
     {
         double radial_component = get_radius() * n[1][i];
         double axial_component = t * axial_vec[i];

@@ -1,0 +1,44 @@
+namespace OpenSim {
+/**
+@page mocofaq Moco frequently asked questions
+
+@section faqpagesection Frequently asked questions
+
+This page contains a list of answers to miscellaneous questions. If you have a
+question that is not answered here, contact the %OpenSim Moco team via the [Moco
+forum on SimTK](https://simtk.org/plugins/phpBB/indexPhpbb.php?group_id=1815&pluginname=phpBB).
+
+@subsection faqcustomgoal How do I define a custom goal or cost term?
+
+If Moco does not contain a cost term you need, you can create your own in C++ by
+deriving from the MocoGoal class. If you do not want to use C++, you can draft
+your goal in Matlab, share your Matlab code, and the Moco team will consider
+implementing it in C++ for you (no guarantees!). Reach out using the Moco forum
+(see link above). See @ref mococustomgoal for more information.
+
+@subsection faqonegoalweight What is the meaning of a MocoGoal's weight if my
+problem contains only one goal?
+
+In Cost mode, the value of a MocoGoal includes a weight (MocoGoal::setWeight()).
+This weight is typically used to set the relative importance of different
+MocoGoal%s. The weight is still included in the value of a goal if a problem
+contains only one goal (in Cost mode). In this situation, the weight scales the
+value of the nonlinear program's objective function. While this theoretically
+has no effect on the optimization problem, the scaling of the objective function
+does affect when a problem converges because such scaling affects when the
+optimization algorithm's convergence tolerance is met.
+For the same convergence tolerance, a problem with a goal weight of 10.0 will
+take longer to converge than a problem with a goal weight of 1.0.
+
+@subsection faqinterrupt How do I interrupt an optimization in MATLAB?
+
+Sometimes, you may want to interrupt an optimization before it is complete. In
+MATLAB, we commonly use Ctrl-C to interrupt code, but this does not work during
+a Moco optimization.
+
+Use this alternative: During an optimization, Moco tries to write a text file to
+your current directory named "delete_this...". Delete this file to interrupt the
+optimization.
+*/
+} // namespace OpenSim
+
