@@ -61,6 +61,7 @@ static osimMocoInstantiator instantiator;
 OSIMMOCO_API void RegisterTypes_osimMoco() {
     try {
         Object::registerType(MocoFinalTimeGoal());
+        Object::registerType(MocoAverageSpeedGoal());
         Object::registerType(MocoWeight());
         Object::registerType(MocoWeightSet());
         Object::registerType(MocoStateTrackingGoal());
