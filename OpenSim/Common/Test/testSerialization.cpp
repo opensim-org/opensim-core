@@ -379,6 +379,7 @@ int main()
         ASSERT(loc == 1);
         int notFound = objWithListProp.getProperty_list_SerializableObject().findIndexForName("Third");
         ASSERT(notFound == -1);
+        SimTK_TEST_MUST_THROW(SerializableObject bad("obj1Bad.xml"));
     }
     catch(const std::exception& e) {
         cerr << "EXCEPTION: " << e.what() << endl;

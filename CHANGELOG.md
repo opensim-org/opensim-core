@@ -55,6 +55,8 @@ v4.2
   - This flag is `OFF` by default. So standard builds will still observe the existing behavior (`opensim.log` is created).
 - Fix bug in visualization of EllipsoidJoint that was not attaching to the correct frame ([PR #2887] (https://github.com/opensim-org/opensim-core/pull/2887))
 - Fix bug in error reporting of sensor tracking (PR #2893)
+- Throw an exception rather than log an error message when an unrecognized type is encountered in xml/osim files (PR #2914)
+
 v4.1
 ====
 - Added `OrientationsReference` as the frame orientation analog to the location of experimental markers. Enables experimentally measured orientations from wearable sensors (e.g. from IMUs) to be tracked by reference frames in the model. A correspondence between the experimental (IMU frame) orientation column label and that of the virtual frame on the `Model` is expected. The `InverseKinematicsSolver` was extended to simultaneously track the `OrientationsReference` if provided. (PR #2412)

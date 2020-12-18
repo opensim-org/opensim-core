@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="40000">
+	<SerializableObject name="TestObject">
+		<!--Comment on deprecated boolean-->
+		<Test_Bool>true</Test_Bool>
+		<!--Comment on deprecated Int-->
+		<Test_Int>0</Test_Int>
+		<!--Comment on deprecated Double Infinity-->
+		<Test_Infinity>Inf</Test_Infinity>
+		<!--Comment on deprecated Double-->
+		<Test_MinusInfinity>-Inf</Test_MinusInfinity>
+		<!--Comment on deprecated Double-->
+		<Test_Dbl>1.2345600000000001</Test_Dbl>
+		<!--Comment on deprecated Double-->
+		<Test_NaN>NaN</Test_NaN>
+		<!--Comment on deprecated String-->
+		<Test_Str>ABC</Test_Str>
+		<!--Comment on deprecated Object-->
+		<SerializableObject2 name="Test_Obj">
+			<!--All properties of this object have their default values.-->
+		</SerializableObject2>
+		<!--Comment on deprecated int-array-->
+		<Test_IntArray> 0 1 2 3</Test_IntArray>
+		<!--Comment on deprecated Dbl-array-->
+		<Test_DblArray> 0 1 2 3</Test_DblArray>
+		<!--Comment on deprecated str-array-->
+		<Test_StrArray> abc def ghi jkl</Test_StrArray>
+		<!--Comment on deprecated Object Array-->
+		<Test_ObjArray>
+			<SerializableObject2 name="Obj1">
+				<!--All properties of this object have their default values.-->
+			</SerializableObject2>
+			<SerializableObjectBad name="Obj2">
+				<!--All properties of this object have their default values.-->
+			</SerializableObjectBad>
+			<SerializableObject2 name="Obj3">
+				<!--All properties of this object have their default values.-->
+			</SerializableObject2>
+		</Test_ObjArray>
+		<!--Comment on deprecated Transform-->
+		<MyTransformProperty> 2 1 0.5 3 2 1</MyTransformProperty>
+		<!--deprecated Point at 3,5,7-->
+		<Test_DblVec3> 3 5 7</Test_DblVec3>
+		<!--Comment on deprecated nameless Object-->
+		<SerializableObject2>
+			<!--All properties of this object have their default values.-->
+		</SerializableObject2>
+	</SerializableObject>
+</OpenSimDocument>
