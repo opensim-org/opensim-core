@@ -33,10 +33,15 @@ using namespace OpenSim;
 using SimTK::Vec3;
 using SimTK::Transform;
 
+// here for perf reasons: many functions take a const reference to a
+// std::string. Using a C string literal results in millions of temporary
+// std::strings being constructed so, instead, pre-allocate it in static
+// storage
+static const std::string parentFrameKey{"parent_frame"};
 
 const PhysicalFrame& AbstractPathPoint::getParentFrame() const
 {
-    return getSocket<PhysicalFrame>("parent_frame").getConnectee();
+    return getSocket<PhysicalFrame>(parentFrameKey).getConnectee();
 }
 
 void AbstractPathPoint::setParentFrame(const OpenSim::PhysicalFrame& frame)
@@ -81,7 +86,7 @@ void AbstractPathPoint::updateFromXMLNode(SimTK::Xml::Element& aNode,
                 bodyName = XMLDocument::updateConnecteePath30517("bodyset",
                                                                  bodyName);
                 XMLDocument::addConnector(aNode, "Connector_PhysicalFrame_",
-                    "parent_frame", bodyName);
+                    parentFrameKey, bodyName);
             }
         }
     }
