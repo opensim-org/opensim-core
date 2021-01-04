@@ -134,13 +134,22 @@ void ScapulothoracicJoint::extendScale(const SimTK::State& s,
 
     // Scaling related to the parent body:
     // Get scale factors (if an entry for the parent Frame's base Body exists).
-    const Vec3& scaleFactors = getScaleFactors(scaleSet, getParentFrame());
-    if (scaleFactors == ModelComponent::InvalidScaleFactors) return;
+    const Vec3& scaleFactorsP = getScaleFactors(scaleSet, getParentFrame());
+    if (scaleFactorsP == ModelComponent::InvalidScaleFactors) return;
 
     // Now apply scale factors to the thoracic ellipsoid
     upd_thoracic_ellipsoid_radii_x_y_z() =
             get_thoracic_ellipsoid_radii_x_y_z().elementwiseMultiply(
-                    scaleFactors);
+                    scaleFactorsP);
+
+    // Get scale factors (if an entry for the child Frame's base Body exists).
+    const Vec3& scaleFactorsC = getScaleFactors(scaleSet, getChildFrame());
+    if (scaleFactorsC == ModelComponent::InvalidScaleFactors) return;
+
+    upd_scapula_winging_axis_origin(0) =
+            get_scapula_winging_axis_origin(0) * scaleFactorsC[0];
+    upd_scapula_winging_axis_origin(1) =
+            get_scapula_winging_axis_origin(1) * scaleFactorsC[1];
 }
 
 //=============================================================================

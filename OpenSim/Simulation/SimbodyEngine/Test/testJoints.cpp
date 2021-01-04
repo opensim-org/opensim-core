@@ -1323,7 +1323,7 @@ void testScapulothoracicJoint() {
         scaleThorax->setScaleFactors(thoraxFactors);
 
         Scale* scaleScapula = new Scale();
-        scaleScapula->setSegmentName("thorax");
+        scaleScapula->setSegmentName("scapula");
         SimTK::Vec3 scapulaFactors{1.2, 0.9, 1.15};
         scaleScapula->setScaleFactors(scapulaFactors);
 
