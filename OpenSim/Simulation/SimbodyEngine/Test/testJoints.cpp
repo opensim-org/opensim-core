@@ -1301,12 +1301,14 @@ void testScapulothoracicJoint() {
         m.addBody(thorax);
         m.addBody(scapula);
 
+        SimTK::Vec2 unscaled_XY{0.1, 0.1};
+
         ScapulothoracicJoint* scapulothoracicJoint = new ScapulothoracicJoint{
                 "scapulothoracic_joint",
                 *thorax, SimTK::Vec3{0.05}, SimTK::Vec3{0},
                 *scapula, SimTK::Vec3{0}, SimTK::Vec3{0},
                 SimTK::Vec3{1.0, 1.0, 1.0},     // ellipsoid radii
-                SimTK::Vec2{0.1, 0.1},          // winging origin
+                unscaled_XY,                    // winging origin
                 0.5                             // winging direction
         };
         m.addJoint(scapulothoracicJoint);
@@ -1336,6 +1338,20 @@ void testScapulothoracicJoint() {
         ASSERT_EQUAL(ellipsoidRadii, thoraxFactors, SimTK::Eps,
             __FILE__, __LINE__,
             "ScapulothoracicJoint failed to scale ellipsoid radii correctly.");
+
+        const double& origin_X =
+                scapulothoracicJoint->get_scapula_winging_axis_origin(0);
+
+        const double& origin_Y =
+                scapulothoracicJoint->get_scapula_winging_axis_origin(1);
+
+        ASSERT_EQUAL(origin_X, unscaled_XY[0] * scapulaFactors[0], SimTK::Eps,
+                __FILE__, __LINE__,
+                "ScapulothoracicJoint failed to scale origin X location.");
+
+        ASSERT_EQUAL(origin_Y, unscaled_XY[1] * scapulaFactors[1], SimTK::Eps,
+                __FILE__, __LINE__,
+                "ScapulothoracicJoint failed scale to origin Y location.");
     }
 }
 
