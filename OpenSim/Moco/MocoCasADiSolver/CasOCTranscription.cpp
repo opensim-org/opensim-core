@@ -708,17 +708,15 @@ Solution Transcription::solve(const Iterate& guessOrig) {
     // Print breakdown of objective.
     printObjectiveBreakdown(solution, objectiveOut[0]);
 
-    // TODO something in printConstraintValues is messing with the time vector
-    //if (!solution.stats.at("success")) {
+    if (!solution.stats.at("success")) {
 
-    //    // For some reason, nlpResult.at("g") is all 0. So we calculate the
-    //    // constraints ourselves.
-    //    casadi::Function constraintFunc("constraints", {x}, {g});
-    //    casadi::DMVector constraintsOut;
-    //    constraintFunc.call(finalVarsDMV, constraintsOut);
-    //    printConstraintValues(solution, expandConstraints(constraintsOut[0]));
-    //}
-
+        // For some reason, nlpResult.at("g") is all 0. So we calculate the
+        // constraints ourselves.
+        casadi::Function constraintFunc("constraints", {x}, {g});
+        casadi::DMVector constraintsOut;
+        constraintFunc.call(finalVarsDMV, constraintsOut);
+        printConstraintValues(solution, expandConstraints(constraintsOut[0]));
+    }
     return solution;
 }
 

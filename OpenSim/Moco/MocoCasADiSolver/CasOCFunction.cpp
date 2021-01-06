@@ -138,7 +138,7 @@ VectorDM PathConstraint::eval(const VectorDM& args) const {
     Problem::ContinuousInput input{args.at(0).scalar(), args.at(1), args.at(2),
             args.at(3), args.at(4), args.at(5)};
     VectorDM out{casadi::DM(sparsity_out(0))};
-    m_casProblem->calcPathConstraint(m_index, input, out.at(0));
+    m_casProblem->calcPathConstraint(m_index, input, out[0]);
     return out;
 }
 

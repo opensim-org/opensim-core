@@ -137,7 +137,9 @@ TEST_CASE("MocoInverse Rajagopal2016, 18 muscles", "[casadi]") {
     inverse.set_initial_time(0.450);
     inverse.set_final_time(1.0);
     inverse.set_kinematics_allow_extra_columns(true);
-    inverse.set_mesh_interval(0.05);
+    inverse.set_mesh_interval(0.025);
+    inverse.set_constraint_tolerance(1e-4);
+    inverse.set_convergence_tolerance(1e-4);
 
     MocoSolution solution = inverse.solve().getMocoSolution();
     //solution.write("testMocoInverse_subject_18musc_solution.sto");

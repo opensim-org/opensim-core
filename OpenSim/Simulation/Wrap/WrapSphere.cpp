@@ -165,7 +165,7 @@ double WrapSphere::getRadius() const
 int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
                                  const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
-   double l1, l2, disc, a, b, c, a1, a2, j1, j2, j3, j4, r1r2, mat[4][4],
+   double l1, l2, disc, a, b, c, a1, a2, j1, j2, j3, j4, r1r2,
             axis[4], angle, *r11, *r22;
     Vec3 ri, p2m, p1m, mp, r1n, r2n,
             p1p2, np2, hp2, r1m, r2m, y, z, n, r1a, r2a,
