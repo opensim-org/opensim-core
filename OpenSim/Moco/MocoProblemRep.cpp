@@ -28,6 +28,10 @@
 #include <unordered_set>
 
 #include <OpenSim/Simulation/SimulationUtilities.h>
+#include <OpenSim/Simulation/SimbodyEngine/ScapulothoracicJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/BallJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/EllipsoidJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 
 using namespace OpenSim;
 
@@ -103,6 +107,39 @@ void MocoProblemRep::initialize() {
         m_position_motion_base->setEnabled(m_state_base, true);
     }
 
+    // Disallow joints where the derivative of the generalized coordinates does
+    // not equal the generalized speeds.
+    for (const auto& joint : m_model_base.getComponentList<Joint>()) {
+        if (const auto* ballJoint =
+                dynamic_cast<const BallJoint*>(&joint)) {
+            OPENSIM_THROW(Exception, "BallJoint with name '{}' detected, but "
+                                     "BallJoints are not yet supported in Moco "
+                                     "(since qdot != u). Consider replacing "
+                                     "with a CustomJoint.",
+                         ballJoint->getName());
+        } else if (const auto* ellipsoidJoint =
+                dynamic_cast<const EllipsoidJoint*>(&joint)) {
+            OPENSIM_THROW(Exception, "EllipsoidJoint with name '{}' detected, "
+                                     "but EllipsoidJoints are not yet supported "
+                                     "in Moco (since qdot != u). Consider "
+                                     "replacing with a CustomJoint.",
+                          ellipsoidJoint->getName());
+        } else if (const auto* freeJoint =
+                dynamic_cast<const FreeJoint*>(&joint)) {
+            OPENSIM_THROW(Exception, "FreeJoint with name '{}' detected, "
+                                     "but FreeJoints are not yet supported "
+                                     "in Moco (since qdot != u). Consider "
+                                     "replacing with a CustomJoint.",
+                          freeJoint->getName());
+        } else if (const auto* scapJoint =
+                dynamic_cast<const ScapulothoracicJoint*>(&joint)) {
+            OPENSIM_THROW(Exception, "ScapulothoracicJoint with name '{}' "
+                                     "detected, but ScapulothoracicJoints are "
+                                     "not yet supported in Moco "
+                                     "(since qdot != u).",
+                          scapJoint->getName());
+        }
+    }
 
     // We would like to eventually compute the model accelerations through
     // realizing to Stage::Acceleration. However, if the model has constraints,
