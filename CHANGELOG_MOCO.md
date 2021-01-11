@@ -3,6 +3,11 @@ Moco Change Log
 
 0.5.0
 -----
+- 2021-01-11: An Exception is now thrown if the model includes joints whose
+              generalized speeds do not match the derivative of the generalized
+              coordinates (i.e., BallJoint, FreeJoint, EllipsoidJoint, and
+              ScapulothoracicJoint).
+  
 - 2020-12-10: Fixed bugs where ModOpReplaceMusclesWithDeGrooteFregly2016 didn't 
               include the muscle PathWrapSet and muscle wrapping wasn't 
               thread-safe (preventing parallelization with MocoCasADiSolver).
