@@ -35,6 +35,9 @@
 
 using namespace OpenSim;
 
+const std::vector<std::string> MocoProblemRep::m_disallowedJoints =
+        {"FreeJoint", "BallJoint", "EllipsoidJoint", "ScapulothoracicJoint"};
+
 MocoProblemRep::MocoProblemRep(const MocoProblem& problem)
         : m_problem(&problem) {
     initialize();
@@ -110,34 +113,14 @@ void MocoProblemRep::initialize() {
     // Disallow joints where the derivative of the generalized coordinates does
     // not equal the generalized speeds.
     for (const auto& joint : m_model_base.getComponentList<Joint>()) {
-        if (const auto* ballJoint =
-                dynamic_cast<const BallJoint*>(&joint)) {
-            OPENSIM_THROW(Exception, "BallJoint with name '{}' detected, but "
-                                     "BallJoints are not yet supported in Moco "
+        const std::string& jointType = joint.getConcreteClassName();
+        if (std::find(m_disallowedJoints.begin(), m_disallowedJoints.end(),
+                      jointType) != m_disallowedJoints.end()) {
+            OPENSIM_THROW(Exception, "{} with name '{}' detected, but "
+                                     "{}s are not yet supported in Moco "
                                      "(since qdot != u). Consider replacing "
                                      "with a CustomJoint.",
-                         ballJoint->getName());
-        } else if (const auto* ellipsoidJoint =
-                dynamic_cast<const EllipsoidJoint*>(&joint)) {
-            OPENSIM_THROW(Exception, "EllipsoidJoint with name '{}' detected, "
-                                     "but EllipsoidJoints are not yet supported "
-                                     "in Moco (since qdot != u). Consider "
-                                     "replacing with a CustomJoint.",
-                          ellipsoidJoint->getName());
-        } else if (const auto* freeJoint =
-                dynamic_cast<const FreeJoint*>(&joint)) {
-            OPENSIM_THROW(Exception, "FreeJoint with name '{}' detected, "
-                                     "but FreeJoints are not yet supported "
-                                     "in Moco (since qdot != u). Consider "
-                                     "replacing with a CustomJoint.",
-                          freeJoint->getName());
-        } else if (const auto* scapJoint =
-                dynamic_cast<const ScapulothoracicJoint*>(&joint)) {
-            OPENSIM_THROW(Exception, "ScapulothoracicJoint with name '{}' "
-                                     "detected, but ScapulothoracicJoints are "
-                                     "not yet supported in Moco "
-                                     "(since qdot != u).",
-                          scapJoint->getName());
+                          jointType, joint.getName(), jointType);
         }
     }
 
