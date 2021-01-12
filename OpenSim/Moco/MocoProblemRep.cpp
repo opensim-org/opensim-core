@@ -28,10 +28,6 @@
 #include <unordered_set>
 
 #include <OpenSim/Simulation/SimulationUtilities.h>
-#include <OpenSim/Simulation/SimbodyEngine/ScapulothoracicJoint.h>
-#include <OpenSim/Simulation/SimbodyEngine/BallJoint.h>
-#include <OpenSim/Simulation/SimbodyEngine/EllipsoidJoint.h>
-#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 
 using namespace OpenSim;
 
