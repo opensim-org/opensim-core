@@ -31,6 +31,9 @@
 
 using namespace OpenSim;
 
+const std::vector<std::string> MocoProblemRep::m_disallowedJoints(
+        {"FreeJoint", "BallJoint", "EllipsoidJoint", "ScapulothoracicJoint"});
+
 MocoProblemRep::MocoProblemRep(const MocoProblem& problem)
         : m_problem(&problem) {
     initialize();
@@ -103,6 +106,19 @@ void MocoProblemRep::initialize() {
         m_position_motion_base->setEnabled(m_state_base, true);
     }
 
+    // Disallow joints where the derivative of the generalized coordinates does
+    // not equal the generalized speeds.
+    for (const auto& joint : m_model_base.getComponentList<Joint>()) {
+        const std::string& jointType = joint.getConcreteClassName();
+        if (std::find(m_disallowedJoints.begin(), m_disallowedJoints.end(),
+                      jointType) != m_disallowedJoints.end()) {
+            OPENSIM_THROW(Exception, "{} with name '{}' detected, but "
+                                     "{}s are not yet supported in Moco "
+                                     "(since qdot != u). Consider replacing "
+                                     "with a CustomJoint.",
+                          jointType, joint.getName(), jointType);
+        }
+    }
 
     // We would like to eventually compute the model accelerations through
     // realizing to Stage::Acceleration. However, if the model has constraints,
