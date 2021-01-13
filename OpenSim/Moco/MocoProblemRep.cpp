@@ -31,8 +31,8 @@
 
 using namespace OpenSim;
 
-const std::vector<std::string> MocoProblemRep::m_disallowedJoints =
-        {"FreeJoint", "BallJoint", "EllipsoidJoint", "ScapulothoracicJoint"};
+const std::vector<std::string> MocoProblemRep::m_disallowedJoints(
+        {"FreeJoint", "BallJoint", "EllipsoidJoint", "ScapulothoracicJoint"});
 
 MocoProblemRep::MocoProblemRep(const MocoProblem& problem)
         : m_problem(&problem) {

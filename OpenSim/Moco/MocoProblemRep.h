@@ -413,7 +413,7 @@ private:
     std::vector<std::pair<std::string, SimTK::ReferencePtr<const Component>>>
             m_implicit_component_refs;
 
-    const static std::vector<std::string> m_disallowedJoints;
+    static const std::vector<std::string> m_disallowedJoints;
 };
 
 } // namespace OpenSim
