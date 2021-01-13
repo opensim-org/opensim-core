@@ -35,7 +35,7 @@ void testPropertiesDump(const OpenSim::Object& aObject);
 int testUnrecognizedTypes() {
     try {
         Object* newObject = Object::newInstanceOfType("Unreccognized");
-    } catch (Exception& ex) { 
+    } catch (Exception&) {
         return 0;
     }
     return 1;
