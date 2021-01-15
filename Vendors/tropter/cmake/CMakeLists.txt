@@ -36,8 +36,7 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
             "${script}" @ONLY)
     install(SCRIPT "${script}")
 
-endif()
-if(TROPTER_COPY_DEPENDENCIES AND (UNIX AND NOT APPLE))
+elseif(TROPTER_COPY_DEPENDENCIES AND UNIX)
     get_filename_component(gcc_libdir "${pkgcfg_lib_IPOPT_gfortran}" DIRECTORY)
 
     file(GLOB gfortran "${gcc_libdir}/libgfortran*.so")
