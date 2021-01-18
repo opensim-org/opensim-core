@@ -26,6 +26,7 @@
 #include <OpenSim/Moco/MocoGoal/MocoStateTrackingGoal.h>
 #include <OpenSim/Moco/MocoGoal/MocoSumSquaredStateGoal.h>
 #include <OpenSim/Moco/MocoGoal/MocoTranslationTrackingGoal.h>
+#include <OpenSim/Moco/MocoGoal/MocoStepTimeAsymmetryGoal.h>
 #include <OpenSim/Moco/MocoInverse.h>
 #include <OpenSim/Moco/MocoParameter.h>
 #include <OpenSim/Moco/MocoProblem.h>
