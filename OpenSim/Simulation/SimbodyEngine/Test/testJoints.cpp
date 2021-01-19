@@ -1286,8 +1286,9 @@ void testScapulothoracicJoint() {
         ScapulothoracicJoint sj2{};
     }
 
-    // can instantiate in a typical way (e.g. how a user probably would) without
-    // throwing an exception
+    // Test that we can instantiate in a typical way (e.g. how a user would)
+    // without throwing an exception. 
+    // Then verify that ScapulothoracicJoint scales appropriately.
     {
         Model m;
         m.setName(__FUNCTION__);
