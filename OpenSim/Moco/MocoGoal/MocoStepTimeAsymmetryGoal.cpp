@@ -54,16 +54,16 @@ void MocoStepTimeAsymmetryGoal::initializeOnModelImpl(const Model& model) const 
     m_left_frame = &model.getBodySet().get(get_left_foot_frame());
     m_right_frame = &model.getBodySet().get(get_right_foot_frame());
 
+    // Check that properties contain acceptable values.
     checkPropertyValueIsInRangeOrSet(
             getProperty_vertical_force_index(), 0, 2, {});
-    m_vertical_force_index = get_vertical_force_index();
-
     checkPropertyValueIsInRangeOrSet(
             getProperty_forward_direction_index(), 0, 2, {});
-    m_forward_direction_index = get_forward_direction_index();
-
     checkPropertyValueIsPositive(getProperty_foot_strike_threshold());
-    m_threshold = get_foot_strike_threshold();
+    // TODO what should be the range for target asymmetry?
+    checkPropertyValueIsInRangeOrSet(
+            getProperty_target_asymmetry(), -1.0, 1.0, {});
+    checkPropertyValueIsPositive(getProperty_smoothing());
 
     m_conditional = [](const double& cond, const double& shift,
                        const double& scale, const double& smoothing) {
@@ -85,20 +85,20 @@ void MocoStepTimeAsymmetryGoal::calcIntegrandImpl(
     double leftForce = 0;
     for (const auto& contact : m_left_contacts) {
         Array<double> recordValues = contact->getRecordValues(state);
-        leftForce += recordValues[m_vertical_force_index];
+        leftForce += recordValues[get_vertical_force_index()];
     }
     double rightForce = 0;
     for (const auto& contact : m_right_contacts) {
         Array<double> recordValues = contact->getRecordValues(state);
-        rightForce += recordValues[m_vertical_force_index];
+        rightForce += recordValues[get_vertical_force_index()];
     }
 
     // Right is negative such that shorter right step times give negative
     // asymmetry values.
-    const double rightContactDetect = -m_conditional(rightForce - m_threshold,
-                                                     0.5, 0.5, get_smoothing());
-    const double leftContactDetect = m_conditional(leftForce - m_threshold,
-                                                   0.5, 0.5, m_threshold);
+    const double rightContactDetect = -m_conditional(
+            rightForce - get_foot_strike_threshold(), 0.5, 0.5, get_smoothing());
+    const double leftContactDetect = m_conditional(
+            leftForce - get_foot_strike_threshold(), 0.5, 0.5, get_smoothing());
 
     // Now get the locations of each heel contact sphere, and calculate
     // which foot is in front of the other: This is necessary because of the
@@ -111,10 +111,10 @@ void MocoStepTimeAsymmetryGoal::calcIntegrandImpl(
     // contact spheres, maybe specify this in the main Moco script and pass
     // in? Also, I guess, relies on the naming convention of the calcaneous,
     // but maybe that's a safer assumption
-    double leftPos =
-            m_left_frame->getPositionInGround(state)[m_forward_direction_index];
-    double rightPos =
-            m_right_frame->getPositionInGround(state)[m_forward_direction_index];
+    double leftPos = m_left_frame->
+            getPositionInGround(state)[get_forward_direction_index()];
+    double rightPos = m_right_frame->
+            getPositionInGround(state)[get_forward_direction_index()];
 
     // This number will be -1 when left foot is in front, the +1 when right
     // foot is in front.
@@ -135,8 +135,7 @@ void MocoStepTimeAsymmetryGoal::calcIntegrandImpl(
 
     // Since this is a single term for a single node, (either 1 or -1) there
     // isn't anything to integrate or sum across here.
-    integrand = m_conditional(leftStepTime + rightStepTime, 0, 1,
-                              get_smoothing());
+    integrand = m_conditional(leftStepTime + rightStepTime, 0, 1, get_smoothing());
 }
 
 void MocoStepTimeAsymmetryGoal::calcGoalImpl(const GoalInput& input,
@@ -150,10 +149,6 @@ void MocoStepTimeAsymmetryGoal::calcGoalImpl(const GoalInput& input,
 }
 
 //void MocoStepTimeAsymmetryGoal::printDescriptionImpl() const {
-//    log_cout("        projection type: {}", get_projection());
-//    if (m_projectionType != ProjectionType::None) {
-//        log_cout("        projection vector: {}", get_projection_vector());
-//    }
 //    for (int ig = 0; ig < getProperty_contact_groups().size(); ++ig) {
 //        const auto& group = get_contact_groups(ig);
 //        log_cout("        group {}: ExternalForce: {}",

@@ -45,7 +45,7 @@ protected:
             const IntegrandInput& input, double& integrand) const override;
     void calcGoalImpl(
             const GoalInput& input, SimTK::Vector& cost) const override;
-    //void printDescriptionImpl() const override;
+//    void printDescriptionImpl() const override;
 
 private:
     OpenSim_DECLARE_LIST_PROPERTY(left_contact_force_paths, std::string, "TODO");
@@ -66,14 +66,10 @@ private:
         m_right_contacts;
     mutable SimTK::ReferencePtr<const Body> m_left_frame;
     mutable SimTK::ReferencePtr<const Body> m_right_frame;
-    mutable int m_forward_direction_index = 0;
-    mutable int m_vertical_force_index = 1;
-    mutable double m_threshold = 25;
 
     using ConditionalFunction =
         double(const double&, const double&, const double&, const double&);
     mutable std::function<ConditionalFunction> m_conditional;
-
 };
 
 } // namespace OpenSim
