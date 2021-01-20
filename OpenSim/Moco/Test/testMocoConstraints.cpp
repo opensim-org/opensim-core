@@ -1001,11 +1001,11 @@ TEMPLATE_TEST_CASE(
     auto* body = new Body("b", 0.7, SimTK::Vec3(0), SimTK::Inertia(1));
     model.addBody(body);
 
-    auto* joint = new FreeJoint("j", model.getGround(), *body);
+    auto* joint = new PlanarJoint("j", model.getGround(), *body);
     model.addJoint(joint);
 
-    auto* constraint = new WeldConstraint("weld", model.getGround(),
-            SimTK::Transform(), *body, SimTK::Transform());
+    auto* constraint = new PointConstraint(model.getGround(), SimTK::Vec3(0),
+                                           *body, SimTK::Vec3(0));
     model.addConstraint(constraint);
     model.finalizeConnections();
 
@@ -1327,11 +1327,11 @@ TEST_CASE("Multipliers are correct", "[casadi]") {
         auto* body = new Body("body", mass, SimTK::Vec3(0), SimTK::Inertia(1));
         model.addBody(body);
 
-        auto* joint = new FreeJoint("joint", model.getGround(), *body);
+        auto* joint = new PlanarJoint("joint", model.getGround(), *body);
         model.addJoint(joint);
 
-        auto* constr = new WeldConstraint("constraint", model.getGround(),
-                SimTK::Transform(), *body, SimTK::Transform());
+        auto* constr = new PointConstraint(model.getGround(), Vec3(0),
+                                           *body, Vec3(0));
         model.addConstraint(constr);
         model.finalizeConnections();
 
@@ -1349,21 +1349,15 @@ TEST_CASE("Multipliers are correct", "[casadi]") {
 
         MocoSolution solution = study.solve();
 
-        // Constraints 0 through 5 are the locks for the 6 DOFs.
-        const auto MX = solution.getMultiplier("lambda_cid6_p0");
-        SimTK::Vector zero(MX);
+        // Constraints 0 through 2 are the locks for the 3 translational DOFs.
+        const auto FX = solution.getMultiplier("lambda_cid3_p0");
+        SimTK::Vector zero(FX);
         zero.setToZero();
-        OpenSim_CHECK_MATRIX_TOL(MX, zero, 1e-5);
-        const auto MY = solution.getMultiplier("lambda_cid6_p1");
-        OpenSim_CHECK_MATRIX_TOL(MY, zero, 1e-5);
-        const auto MZ = solution.getMultiplier("lambda_cid6_p2");
-        OpenSim_CHECK_MATRIX_TOL(MZ, zero, 1e-5);
-        const auto FX = solution.getMultiplier("lambda_cid6_p3");
         OpenSim_CHECK_MATRIX_TOL(FX, zero, 1e-5);
-        const auto FY = solution.getMultiplier("lambda_cid6_p4");
+        const auto FY = solution.getMultiplier("lambda_cid3_p1");
         SimTK::Vector g(zero.size(), model.get_gravity()[1]);
         OpenSim_CHECK_MATRIX_TOL(FY, mass * g, 1e-5);
-        const auto FZ = solution.getMultiplier("lambda_cid6_p5");
+        const auto FZ = solution.getMultiplier("lambda_cid3_p2");
         OpenSim_CHECK_MATRIX_TOL(FZ, zero, 1e-5);
     }
 

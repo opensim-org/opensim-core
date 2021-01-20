@@ -157,7 +157,8 @@ jobs:
     - name: Install Homebrew packages
       # Save the gfortran version to a file so we can use it in the cache key.
       run: |
-        brew install cmake pkgconfig gcc autoconf libtool automake wget pcre doxygen gfortran
+        brew install cmake pkgconfig autoconf libtool automake wget pcre doxygen
+        brew reinstall gcc
         pip3 install numpy
         gfortran -v
         mkdir gfortran_version

@@ -111,7 +111,9 @@ install_name_tool_add_rpath(coinmetis.1)
 install_name_tool_id(gfortran)
 install_name_tool_change(gfortran gcc_s.1 "${libgcc_dir}")
 install_name_tool_change_quadmath(gfortran)
+install_name_tool_change_quadmath(gfortran.5)
 install_name_tool_add_rpath(gfortran)
+install_name_tool_add_rpath(gfortran.5)
 
 # gcc_s
 install_name_tool_id(gcc_s.1)

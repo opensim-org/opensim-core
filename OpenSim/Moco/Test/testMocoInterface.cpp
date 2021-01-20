@@ -28,6 +28,7 @@
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/ScapulothoracicJoint.h>
 
 using namespace OpenSim;
 
@@ -1837,20 +1838,58 @@ void testSkippingOverQuaternionSlots(
     }
 }
 
-TEST_CASE("Skip over empty quaternion slots; CasADi.", "[casadi]") {
-    auto mode = GENERATE(as<std::string>{}, "explicit", "implicit");
-    testSkippingOverQuaternionSlots<MocoCasADiSolver>(false, false, mode);
-    testSkippingOverQuaternionSlots<MocoCasADiSolver>(true, false, mode);
-    testSkippingOverQuaternionSlots<MocoCasADiSolver>(true, true, mode);
+// TODO these tests are currently disabled until we support joints where
+// qdot != u, since all joints with quaternion slots fall into this category.
+//TEST_CASE("Skip over empty quaternion slots; CasADi.", "[casadi]") {
+//    auto mode = GENERATE(as<std::string>{}, "explicit", "implicit");
+//    testSkippingOverQuaternionSlots<MocoCasADiSolver>(false, false, mode);
+//    testSkippingOverQuaternionSlots<MocoCasADiSolver>(true, false, mode);
+//    testSkippingOverQuaternionSlots<MocoCasADiSolver>(true, true, mode);
+//}
+//
+//TEST_CASE("Skip over empty quaternion slots; Tropter.", "[tropter]") {
+//    testSkippingOverQuaternionSlots<MocoTropterSolver>(
+//            false, false, "explicit");
+//    testSkippingOverQuaternionSlots<MocoTropterSolver>(true, false, "explicit");
+//    testSkippingOverQuaternionSlots<MocoTropterSolver>(true, true, "explicit");
+//    testSkippingOverQuaternionSlots<MocoTropterSolver>(
+//            false, false, "implicit");
+//}
+
+/// Joints where the derivative of the generalized coordinates is not equal to
+/// the generalized speeds are not supported yet in Moco.
+void testDisallowedJointTypes(const std::string& jointType) {
+    Model model;
+    using SimTK::Vec3;
+    auto* b1 = new Body("b1", 1, Vec3(0), SimTK::Inertia(1));
+    model.addBody(b1);
+    if (jointType == "BallJoint") {
+        auto *j1 = new BallJoint("j1", model.getGround(), *b1);
+        model.addJoint(j1);
+    } else if (jointType == "FreeJoint") {
+        auto *j1 = new FreeJoint("j1", model.getGround(), *b1);
+        model.addJoint(j1);
+    } else if (jointType == "EllipsoidJoint") {
+        auto *j1 = new EllipsoidJoint("j1", model.getGround(), *b1, Vec3(0));
+        model.addJoint(j1);
+    } else if (jointType == "ScapulothoracicJoint") {
+        auto *j1 = new ScapulothoracicJoint("j1", model.getGround(), *b1,
+                                            Vec3(0), SimTK::Vec2(0), 0);
+        model.addJoint(j1);
+    }
+    model.finalizeConnections();
+
+    MocoStudy study;
+    auto& problem = study.updProblem();
+    problem.setModelAsCopy(model);
+    SimTK_TEST_MUST_THROW(study.solve());
 }
 
-TEST_CASE("Skip over empty quaternion slots; Tropter.", "[tropter]") {
-    testSkippingOverQuaternionSlots<MocoTropterSolver>(
-            false, false, "explicit");
-    testSkippingOverQuaternionSlots<MocoTropterSolver>(true, false, "explicit");
-    testSkippingOverQuaternionSlots<MocoTropterSolver>(true, true, "explicit");
-    testSkippingOverQuaternionSlots<MocoTropterSolver>(
-            false, false, "implicit");
+TEST_CASE("Test disallowed joints") {
+    testDisallowedJointTypes("BallJoint");
+    testDisallowedJointTypes("FreeJoint");
+    testDisallowedJointTypes("EllipsoidJoint");
+    testDisallowedJointTypes("ScapulothoracicJoint");
 }
 
 TEST_CASE("MocoPhase::bound_activation_from_excitation") {
