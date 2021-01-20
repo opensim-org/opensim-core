@@ -56,6 +56,7 @@ v4.2
 - Fix bug in visualization of EllipsoidJoint that was not attaching to the correct frame ([PR #2887] (https://github.com/opensim-org/opensim-core/pull/2887))
 - Fix bug in error reporting of sensor tracking (PR #2893)
 - Throw an exception rather than log an error message when an unrecognized type is encountered in xml/osim files (PR #2914)
+- Added ScapulothoracicJoint as a builtin Joint type instead of a plugin (PRs #2877 and #2932)
 
 v4.1
 ====
