@@ -24,7 +24,9 @@ namespace OpenSim {
 
 class SmoothSphereHalfSpaceForce;
 
-/* TODO
+/* TODO does the user need to specify "front foot"
+ * TODO try to reduce the number of properties
+ * TODO what should be the range for target asymmetry?
 @ingroup mocogoal */
 class OSIMMOCO_API MocoStepTimeAsymmetryGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoStepTimeAsymmetryGoal, MocoGoal);
@@ -50,11 +52,11 @@ protected:
 private:
     OpenSim_DECLARE_LIST_PROPERTY(left_contact_force_paths, std::string, "TODO");
     OpenSim_DECLARE_LIST_PROPERTY(right_contact_force_paths, std::string, "TODO");
-    OpenSim_DECLARE_PROPERTY(vertical_force_index, int, "TODO. Default: 1.");
     OpenSim_DECLARE_PROPERTY(left_foot_frame, std::string, "TODO");
     OpenSim_DECLARE_PROPERTY(right_foot_frame, std::string, "TODO");
-    OpenSim_DECLARE_PROPERTY(forward_direction_index, int, "TODO");
-    OpenSim_DECLARE_PROPERTY(foot_strike_threshold, double, "TODO");
+    OpenSim_DECLARE_PROPERTY(contact_force_direction, std::string, "TODO. Default: 1.");
+    OpenSim_DECLARE_PROPERTY(contact_force_threshold, double, "TODO");
+    OpenSim_DECLARE_PROPERTY(walking_direction, std::string, "TODO");
     OpenSim_DECLARE_PROPERTY(smoothing, double, "TODO");
     OpenSim_DECLARE_PROPERTY(target_asymmetry, double, "TODO")
 
@@ -67,6 +69,12 @@ private:
     mutable SimTK::ReferencePtr<const Body> m_left_frame;
     mutable SimTK::ReferencePtr<const Body> m_right_frame;
 
+    static const std::set<std::string> m_directions;
+    mutable int m_walking_direction_index;
+    mutable int m_walking_direction_sign;
+    mutable int m_contact_force_index;
+    mutable int m_contact_force_sign;
+
     using ConditionalFunction =
         double(const double&, const double&, const double&, const double&);
     mutable std::function<ConditionalFunction> m_conditional;
@@ -74,4 +82,4 @@ private:
 
 } // namespace OpenSim
 
-#endif //OPENSIM_MOCOSTEPTIMEASYMMETRYGOAL_H
+#endif // OPENSIM_MOCOSTEPTIMEASYMMETRYGOAL_H

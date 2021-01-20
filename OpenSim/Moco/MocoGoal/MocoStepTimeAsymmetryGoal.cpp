@@ -21,50 +21,77 @@
 
 using namespace OpenSim;
 
+const std::set<std::string> MocoStepTimeAsymmetryGoal::m_directions{"positive-x",
+        "positive-y", "positive-z", "negative-x", "negative-y", "negative-z"};
+
 void MocoStepTimeAsymmetryGoal::constructProperties() {
     constructProperty_left_contact_force_paths();
     constructProperty_right_contact_force_paths();
-    constructProperty_vertical_force_index(1);
-    constructProperty_forward_direction_index(0);
-    constructProperty_foot_strike_threshold(25);
-    constructProperty_left_foot_frame("");
-    constructProperty_right_foot_frame("");
+    constructProperty_contact_force_direction("positive-y");
+    constructProperty_walking_direction("positive-x");
+    constructProperty_contact_force_threshold(25);
+    constructProperty_left_foot_frame("calcn_l");
+    constructProperty_right_foot_frame("calcn_r");
     constructProperty_smoothing(10);
     constructProperty_target_asymmetry(0);
 }
 
 void MocoStepTimeAsymmetryGoal::initializeOnModelImpl(const Model& model) const {
 
+    // Get references to left and right foot contact spheres.
     for (int ic = 0; ic < getProperty_left_contact_force_paths().size(); ++ic) {
         const auto& path = get_left_contact_force_paths(ic);
-        const auto& contactForce =
-                model.getComponent<SmoothSphereHalfSpaceForce>(path);
-
-        m_left_contacts.emplace_back(&contactForce);
+        m_left_contacts.emplace_back(
+                &model.getComponent<SmoothSphereHalfSpaceForce>(path));
     }
-
     for (int ic = 0; ic < getProperty_right_contact_force_paths().size(); ++ic) {
         const auto& path = get_right_contact_force_paths(ic);
-        const auto& contactForce =
-                model.getComponent<SmoothSphereHalfSpaceForce>(path);
-
-        m_right_contacts.emplace_back(&contactForce);
+        m_right_contacts.emplace_back(
+                &model.getComponent<SmoothSphereHalfSpaceForce>(path));
     }
 
+    // Get foot frames.
     m_left_frame = &model.getBodySet().get(get_left_foot_frame());
     m_right_frame = &model.getBodySet().get(get_right_foot_frame());
 
     // Check that properties contain acceptable values.
-    checkPropertyValueIsInRangeOrSet(
-            getProperty_vertical_force_index(), 0, 2, {});
-    checkPropertyValueIsInRangeOrSet(
-            getProperty_forward_direction_index(), 0, 2, {});
-    checkPropertyValueIsPositive(getProperty_foot_strike_threshold());
-    // TODO what should be the range for target asymmetry?
+    checkPropertyValueIsInSet(getProperty_contact_force_direction(),
+            m_directions);
+    checkPropertyValueIsInSet(getProperty_walking_direction(),
+            m_directions);
+
+    auto assign = [](const std::string& direction, int& index, int& sign) {
+        if (direction == "positive-x") {
+            index = 0;
+            sign = 1;
+        } else if (direction == "positive-y") {
+            index = 1;
+            sign = 1;
+        } else if (direction == "positive-z") {
+            index = 2;
+            sign = 1;
+        } else if (direction == "negative-x") {
+            index = 0;
+            sign = -1;
+        } else if (direction == "negative-y") {
+            index = 1;
+            sign = -1;
+        } else if (direction == "negative-z") {
+            index = 2;
+            sign = -1;
+        }
+    };
+    assign(get_contact_force_direction(),
+            m_contact_force_index, m_contact_force_sign);
+    assign(get_walking_direction(),
+           m_walking_direction_index, m_walking_direction_sign);
+
+    checkPropertyValueIsPositive(getProperty_contact_force_threshold());
     checkPropertyValueIsInRangeOrSet(
             getProperty_target_asymmetry(), -1.0, 1.0, {});
     checkPropertyValueIsPositive(getProperty_smoothing());
 
+    // Define smoothing function.
     m_conditional = [](const double& cond, const double& shift,
                        const double& scale, const double& smoothing) {
         return shift + scale * tanh(smoothing * cond);
@@ -75,71 +102,65 @@ void MocoStepTimeAsymmetryGoal::initializeOnModelImpl(const Model& model) const 
 
 void MocoStepTimeAsymmetryGoal::calcIntegrandImpl(
         const IntegrandInput& input, double& integrand) const {
+    // Need to realize to Velocity for SmoothSphereHalfSpaceForce.
     const auto& state = input.state;
-    const auto& time = state.getTime();
     getModel().realizeVelocity(state);
-    SimTK::Vector timeVec(1, time);
     integrand = 0;
 
     // Compute vertical force values from left and right foot contact spheres.
     double leftForce = 0;
     for (const auto& contact : m_left_contacts) {
         Array<double> recordValues = contact->getRecordValues(state);
-        leftForce += recordValues[get_vertical_force_index()];
+        leftForce += m_contact_force_sign * recordValues[m_contact_force_index];
     }
     double rightForce = 0;
     for (const auto& contact : m_right_contacts) {
         Array<double> recordValues = contact->getRecordValues(state);
-        rightForce += recordValues[get_vertical_force_index()];
+        rightForce += m_contact_force_sign * recordValues[m_contact_force_index];
     }
 
     // Right is negative such that shorter right step times give negative
     // asymmetry values.
     const double rightContactDetect = -m_conditional(
-            rightForce - get_foot_strike_threshold(), 0.5, 0.5, get_smoothing());
+            rightForce - get_contact_force_threshold(), 0.5, 0.5,
+            get_smoothing());
     const double leftContactDetect = m_conditional(
-            leftForce - get_foot_strike_threshold(), 0.5, 0.5, get_smoothing());
+            leftForce - get_contact_force_threshold(), 0.5, 0.5,
+            get_smoothing());
 
     // Now get the locations of each heel contact sphere, and calculate
-    // which foot is in front of the other: This is necessary because of the
+    // which foot is in front of the other. This is necessary because of the
     // double support phase in walking: when both feet are on the ground, we
     // need to detect which foot is in front so that when the leading foot
-    // strikes the ground, it begins a new step (aka begin a step at foot
-    // strike).
-
-    // Similar to above, this relies on the naming convention of the heel
-    // contact spheres, maybe specify this in the main Moco script and pass
-    // in? Also, I guess, relies on the naming convention of the calcaneous,
-    // but maybe that's a safer assumption
-    double leftPos = m_left_frame->
-            getPositionInGround(state)[get_forward_direction_index()];
-    double rightPos = m_right_frame->
-            getPositionInGround(state)[get_forward_direction_index()];
+    // strikes the ground, it begins a new step.
+    double leftPos = m_walking_direction_sign * m_left_frame->
+            getPositionInGround(state)[m_walking_direction_index];
+    double rightPos = m_walking_direction_sign * m_right_frame->
+            getPositionInGround(state)[m_walking_direction_index];
 
     // This number will be -1 when left foot is in front, the +1 when right
     // foot is in front.
     double frontFoot = m_conditional(rightPos - leftPos, 0, 1, get_smoothing());
 
-    // Then, use this "tiebreaker" variable to detect -- WHEN both feet are
-    // on the ground, which foot is in front?
-    // EXAMPLE: Double Support, left foot in front (left heel strike)
-    // TieBreaker = 1 * 1 * -1 = -1;
-    // EXAMPLE: Double Support, right foot in front (right heel strike)
-    // TieBreaker = 1 * 1 * 1 = 1;
+    // Use this "tiebreaker" variable to detect which foot is leading when both
+    // feet are on the ground.
+    // Double Support, left foot in front (left heel strike):
+    // tieBreaker = 1 * 1 * -1 = -1
+    // Double Support, right foot in front (right heel strike):
+    // tieBreaker = 1 * 1 * 1 = 1;
     // During single support, TieBreaker = 0
     // TieBreaker = 1 * 0 * 1 = 0;
     double tieBreaker = leftContactDetect * rightContactDetect * frontFoot;
-
     double leftStepTime = leftContactDetect + tieBreaker;
     double rightStepTime = rightContactDetect + tieBreaker;
 
-    // Since this is a single term for a single node, (either 1 or -1) there
-    // isn't anything to integrate or sum across here.
-    integrand = m_conditional(leftStepTime + rightStepTime, 0, 1, get_smoothing());
+    integrand = m_conditional(leftStepTime + rightStepTime, 0, 1,
+                              get_smoothing());
 }
 
 void MocoStepTimeAsymmetryGoal::calcGoalImpl(const GoalInput& input,
                                              SimTK::Vector& cost) const {
+
     // I believe the denominator (=2 here) is dependent on the number of nodes
     // NOTE: we discussed either being able to pass a value in to this function
     // based on the user's identification of their collocation scheme, or that
