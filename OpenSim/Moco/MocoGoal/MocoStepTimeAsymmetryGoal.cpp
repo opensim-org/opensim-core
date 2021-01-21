@@ -21,12 +21,9 @@
 
 using namespace OpenSim;
 
-const std::set<std::string> MocoStepTimeAsymmetryGoal::m_directions{"positive-x",
-        "positive-y", "positive-z", "negative-x", "negative-y", "negative-z"};
-
 void MocoStepTimeAsymmetryGoal::constructProperties() {
-    constructProperty_left_contact_force_paths();
-    constructProperty_right_contact_force_paths();
+    constructProperty_left_foot_contact_force_paths();
+    constructProperty_right_foot_contact_force_paths();
     constructProperty_contact_force_direction("positive-y");
     constructProperty_walking_direction("positive-x");
     constructProperty_contact_force_threshold(25);
@@ -39,13 +36,13 @@ void MocoStepTimeAsymmetryGoal::constructProperties() {
 void MocoStepTimeAsymmetryGoal::initializeOnModelImpl(const Model& model) const {
 
     // Get references to left and right foot contact spheres.
-    for (int ic = 0; ic < getProperty_left_contact_force_paths().size(); ++ic) {
-        const auto& path = get_left_contact_force_paths(ic);
+    for (int ic = 0; ic < getProperty_left_foot_contact_force_paths().size(); ++ic) {
+        const auto& path = get_left_foot_contact_force_paths(ic);
         m_left_contacts.emplace_back(
                 &model.getComponent<SmoothSphereHalfSpaceForce>(path));
     }
-    for (int ic = 0; ic < getProperty_right_contact_force_paths().size(); ++ic) {
-        const auto& path = get_right_contact_force_paths(ic);
+    for (int ic = 0; ic < getProperty_right_foot_contact_force_paths().size(); ++ic) {
+        const auto& path = get_right_foot_contact_force_paths(ic);
         m_right_contacts.emplace_back(
                 &model.getComponent<SmoothSphereHalfSpaceForce>(path));
     }
@@ -55,43 +52,30 @@ void MocoStepTimeAsymmetryGoal::initializeOnModelImpl(const Model& model) const 
     m_right_frame = &model.getBodySet().get(get_right_foot_frame());
 
     // Check that properties contain acceptable values.
-    checkPropertyValueIsInSet(getProperty_contact_force_direction(),
-            m_directions);
-    checkPropertyValueIsInSet(getProperty_walking_direction(),
-            m_directions);
+    std::set<std::string> directions{"positive-x", "positive-y", "positive-z",
+                                     "negative-x", "negative-y", "negative-z"};
+    checkPropertyValueIsInSet(getProperty_contact_force_direction(), directions);
+    checkPropertyValueIsInSet(getProperty_walking_direction(), directions);
 
     auto assign = [](const std::string& direction, int& index, int& sign) {
-        if (direction == "positive-x") {
-            index = 0;
-            sign = 1;
-        } else if (direction == "positive-y") {
-            index = 1;
-            sign = 1;
-        } else if (direction == "positive-z") {
-            index = 2;
-            sign = 1;
-        } else if (direction == "negative-x") {
-            index = 0;
-            sign = -1;
-        } else if (direction == "negative-y") {
-            index = 1;
-            sign = -1;
-        } else if (direction == "negative-z") {
-            index = 2;
-            sign = -1;
-        }
+        if      (direction == "positive-x") { index = 0; sign = 1; }
+        else if (direction == "positive-y") { index = 1; sign = 1; }
+        else if (direction == "positive-z") { index = 2; sign = 1; }
+        else if (direction == "negative-x") { index = 0; sign = -1; }
+        else if (direction == "negative-y") { index = 1; sign = -1; }
+        else if (direction == "negative-z") { index = 2; sign = -1; }
     };
-    assign(get_contact_force_direction(),
-            m_contact_force_index, m_contact_force_sign);
-    assign(get_walking_direction(),
-           m_walking_direction_index, m_walking_direction_sign);
+    assign(get_contact_force_direction(), m_contact_force_index,
+           m_contact_force_sign);
+    assign(get_walking_direction(), m_walking_direction_index,
+           m_walking_direction_sign);
 
     checkPropertyValueIsPositive(getProperty_contact_force_threshold());
     checkPropertyValueIsInRangeOrSet(
             getProperty_target_asymmetry(), -1.0, 1.0, {});
     checkPropertyValueIsPositive(getProperty_smoothing());
 
-    // Define smoothing function.
+    // Define the smoothing function.
     m_conditional = [](const double& cond, const double& shift,
                        const double& scale, const double& smoothing) {
         return shift + scale * tanh(smoothing * cond);
@@ -145,12 +129,13 @@ void MocoStepTimeAsymmetryGoal::calcIntegrandImpl(
     // Use this "tiebreaker" variable to detect which foot is leading when both
     // feet are on the ground.
     // Double Support, left foot in front (left heel strike):
-    // tieBreaker = 1 * 1 * -1 = -1
+    // tieBreaker = 1 * -1 * -1 = 1;
     // Double Support, right foot in front (right heel strike):
-    // tieBreaker = 1 * 1 * 1 = 1;
+    // tieBreaker = 1 * -1 * 1 = -1;
     // During single support, TieBreaker = 0
-    // TieBreaker = 1 * 0 * 1 = 0;
+    // tieBreaker = 1 * 0 * 1 = 0;
     double tieBreaker = leftContactDetect * rightContactDetect * frontFoot;
+
     double leftStepTime = leftContactDetect + tieBreaker;
     double rightStepTime = rightContactDetect + tieBreaker;
 
@@ -166,7 +151,7 @@ void MocoStepTimeAsymmetryGoal::calcGoalImpl(const GoalInput& input,
     // based on the user's identification of their collocation scheme, or that
     // this value =1, and the user needs to by-hand calculate what the target
     // Asymmetry should be given their collocation scheme.
-    cost[0] = 0.5 * input.integral - get_target_asymmetry();
+    cost[0] = 0.5 * 0.01 * input.integral - get_target_asymmetry();
 }
 
 //void MocoStepTimeAsymmetryGoal::printDescriptionImpl() const {
