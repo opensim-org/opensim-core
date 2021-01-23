@@ -58,6 +58,12 @@ void MocoStepTimeAsymmetryGoal::initializeOnModelImpl(const Model& model) const 
             get_left_contact_group().get_foot_position_contact_force_path();
     const auto& numLeftPaths =
             get_left_contact_group().getProperty_contact_force_paths().size();
+    OPENSIM_THROW_IF(leftPositionForcePath.empty(), Exception,
+            "Expected a 'foot_position_contact_force_path' for the left contact "
+            "group, but it was not provided.");
+    OPENSIM_THROW_IF(numLeftPaths == 0, Exception,
+            "Expected 'contact_force_paths' to be provided for the left contact "
+            "group, but none were found.");
     for (int ic = 0; ic < numLeftPaths; ++ic) {
         const auto& path = get_left_contact_group().get_contact_force_paths(ic);
         const auto& contactForce =
@@ -78,6 +84,12 @@ void MocoStepTimeAsymmetryGoal::initializeOnModelImpl(const Model& model) const 
             get_right_contact_group().get_foot_position_contact_force_path();
     const auto& numRightPaths =
             get_right_contact_group().getProperty_contact_force_paths().size();
+    OPENSIM_THROW_IF(rightPositionForcePath.empty(), Exception,
+            "Expected a 'foot_position_contact_force_path' for the right "
+            "contact group, but it not was provided.");
+    OPENSIM_THROW_IF(numRightPaths == 0, Exception,
+            "Expected 'contact_force_paths' to be provided for the right "
+            "contact group, but none were found.");
     for (int ic = 0; ic < numRightPaths; ++ic) {
         const auto& path = get_right_contact_group().get_contact_force_paths(ic);
         const auto& contactForce =
@@ -102,9 +114,11 @@ void MocoStepTimeAsymmetryGoal::initializeOnModelImpl(const Model& model) const 
     checkPropertyValueIsInRangeOrSet(getProperty_target_asymmetry(),
             -1.0, 1.0, {});
     checkPropertyValueIsPositive(getProperty_smoothing());
-
-    OPENSIM_THROW_IF(get_num_solver_collocation_points() < 5, Exception,
-            )
+    // TODO what is the minimum possible number of collocation points?
+    OPENSIM_THROW_IF(get_num_solver_collocation_points() < 2, Exception,
+            "The solver should be using at least 2 collocation points, but {} "
+            "was provided for 'num_solver_collocation_points.",
+            get_num_solver_collocation_points());
 
     // Assign the indices and signs for the contact force direction and walking
     // motion direction.
