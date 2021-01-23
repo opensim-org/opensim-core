@@ -24,6 +24,27 @@ namespace OpenSim {
 
 class SmoothSphereHalfSpaceForce;
 
+class OSIMMOCO_API MocoStepTimeAsymmetryGoalGroup : public Object {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoStepTimeAsymmetryGoalGroup, Object);
+public:
+    OpenSim_DECLARE_LIST_PROPERTY(contact_force_paths, std::string,
+            "Paths to SmoothSphereHalfSpaceForce objects on one foot of the "
+            "model whose forces are summed to determine when the foot is in "
+            "contact with the ground.");
+    OpenSim_DECLARE_PROPERTY(foot_position_contact_force_path, std::string,
+            "Path to a SmoothSphereHalfSpaceForce whose ContactSphere is used "
+            "to locate the position of the foot, which is necessary for "
+            "computing the step time during the double support phase of "
+            "walking. This path should match one of the paths in "
+            "'contact_force_paths'.");
+    MocoStepTimeAsymmetryGoalGroup();
+    MocoStepTimeAsymmetryGoalGroup(
+            const std::vector<std::string>& contactForcePaths,
+            const std::string& footPositionForcePath);
+private:
+    void constructProperties();
+};
+
 // TODO does the user need to specify "front foot"
 // TODO try to reduce the number of properties
 // TODO what should be the range for target asymmetry?
@@ -55,34 +76,66 @@ target symmetry.
 @ingroup mocogoal */
 class OSIMMOCO_API MocoStepTimeAsymmetryGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoStepTimeAsymmetryGoal, MocoGoal);
-
 public:
-    OpenSim_DECLARE_LIST_PROPERTY(left_foot_contact_force_paths, std::string,
-            "Paths to SmoothSphereHalfSpaceForce objects on the left foot of "
-            "the model whose forces are summed to determine when the left foot "
-            "is in contact with the ground.");
-    OpenSim_DECLARE_LIST_PROPERTY(right_foot_contact_force_paths, std::string,
-            "Paths to SmoothSphereHalfSpaceForce objects on the right foot of "
-            "the model whose forces are summed to determine when the right foot "
-            "is in contact with the ground.");
-    OpenSim_DECLARE_PROPERTY(left_foot_frame, std::string, "TODO");
-    OpenSim_DECLARE_PROPERTY(right_foot_frame, std::string, "TODO");
-    OpenSim_DECLARE_PROPERTY(contact_force_direction, std::string, "TODO");
-    OpenSim_DECLARE_PROPERTY(contact_force_threshold, double, "TODO");
-    OpenSim_DECLARE_PROPERTY(walking_direction, std::string, "TODO");
-    OpenSim_DECLARE_PROPERTY(smoothing, double, "TODO");
-    OpenSim_DECLARE_PROPERTY(target_asymmetry, double, "TODO");
-
     MocoStepTimeAsymmetryGoal() { constructProperties(); }
     MocoStepTimeAsymmetryGoal(std::string name) : MocoGoal(std::move(name)) {
         constructProperties();
     }
     MocoStepTimeAsymmetryGoal(std::string name, double weight)
-    : MocoGoal(std::move(name), weight) {
+            : MocoGoal(std::move(name), weight) {
         constructProperties();
     }
 
+    void setLeftContactGroup(
+            const std::vector<std::string>& contactForcePaths,
+            const std::string& footPositionForcePath) {
+        set_left_contact_group(MocoStepTimeAsymmetryGoalGroup(
+                contactForcePaths, footPositionForcePath));
+    }
+    void setRightContactGroup(
+            const std::vector<std::string>& contactForcePaths,
+            const std::string& footPositionForcePath) {
+        set_right_contact_group(MocoStepTimeAsymmetryGoalGroup(
+                contactForcePaths, footPositionForcePath));
+    }
+
+    void setTargetAsymmetry(double asymmetry) {
+        set_target_asymmetry(asymmetry);
+    }
+    double getTargetAsymmetry() { return get_target_asymmetry(); }
+
+    void setContactForceDirection(const std::string& direction) {
+        set_contact_force_direction(direction);
+    }
+    std::string getContactForceDirection() {
+        return get_contact_force_direction();
+    }
+
+    void setContactForceThreshold(double threshold) {
+        set_contact_force_threshold(threshold);
+    }
+    double getContactForceThreshold() { return get_contact_force_threshold(); }
+
+    void setWalkingDirection(const std::string& direction) {
+        set_walking_direction(direction);
+    }
+    std::string getWalkingDirection() { return get_walking_direction(); }
+
+    void setSmoothing(double smoothing) { set_smoothing(smoothing); }
+    double getSmoothing() { return get_smoothing(); }
+
+    void setNumSolverCollocationPoints(int numColPoints) {
+        set_num_solver_collocation_points(numColPoints);
+    }
+    int getNumSolverCollocationPoints() {
+        get_num_solver_collocation_points();
+    }
+
 protected:
+    bool getSupportsEndpointConstraintImpl() const override { return true; }
+    Mode getDefaultModeImpl() const override {
+        return Mode::EndpointConstraint;
+    }
     void initializeOnModelImpl(const Model&) const override;
     void calcIntegrandImpl(
             const IntegrandInput& input, double& integrand) const override;
@@ -91,14 +144,28 @@ protected:
 //    void printDescriptionImpl() const override;
 
 private:
+    OpenSim_DECLARE_PROPERTY(left_contact_group, MocoStepTimeAsymmetryGoalGroup,
+            "Paths to SmoothSphereHalfSpaceForce objects on the left foot of "
+            "the model whose forces are summed to determine when the left foot "
+            "is in contact with the ground.");
+    OpenSim_DECLARE_PROPERTY(right_contact_group, MocoStepTimeAsymmetryGoalGroup,
+            "Paths to SmoothSphereHalfSpaceForce objects on the right foot of "
+            "the model whose forces are summed to determine when the right foot "
+            "is in contact with the ground.");
+    OpenSim_DECLARE_PROPERTY(contact_force_direction, std::string, "TODO");
+    OpenSim_DECLARE_PROPERTY(contact_force_threshold, double, "TODO");
+    OpenSim_DECLARE_PROPERTY(walking_direction, std::string, "TODO");
+    OpenSim_DECLARE_PROPERTY(smoothing, double, "TODO");
+    OpenSim_DECLARE_PROPERTY(target_asymmetry, double, "TODO");
+    OpenSim_DECLARE_PROPERTY(num_solver_collocation_points, int, "TODO");
     void constructProperties();
 
     mutable std::vector<SimTK::ReferencePtr<const SmoothSphereHalfSpaceForce>>
         m_left_contacts;
     mutable std::vector<SimTK::ReferencePtr<const SmoothSphereHalfSpaceForce>>
         m_right_contacts;
-    mutable SimTK::ReferencePtr<const Body> m_left_frame;
-    mutable SimTK::ReferencePtr<const Body> m_right_frame;
+    mutable SimTK::ReferencePtr<const Frame> m_left_frame;
+    mutable SimTK::ReferencePtr<const Frame> m_right_frame;
 
     mutable int m_walking_direction_index;
     mutable int m_walking_direction_sign;

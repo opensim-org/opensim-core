@@ -21,43 +21,95 @@
 
 using namespace OpenSim;
 
+MocoStepTimeAsymmetryGoalGroup::MocoStepTimeAsymmetryGoalGroup() {
+    constructProperties();
+}
+
+MocoStepTimeAsymmetryGoalGroup::MocoStepTimeAsymmetryGoalGroup(
+        const std::vector<std::string>& contactForcePaths,
+        const std::string& footPositionForcePath) {
+    constructProperties();
+    for (const auto& path : contactForcePaths) {
+        append_contact_force_paths(path);
+    }
+    set_foot_position_contact_force_path(footPositionForcePath);
+}
+
+void MocoStepTimeAsymmetryGoalGroup::constructProperties() {
+    constructProperty_contact_force_paths();
+    constructProperty_foot_position_contact_force_path("");
+}
+
 void MocoStepTimeAsymmetryGoal::constructProperties() {
-    constructProperty_left_foot_contact_force_paths();
-    constructProperty_right_foot_contact_force_paths();
+    constructProperty_left_contact_group(MocoStepTimeAsymmetryGoalGroup());
+    constructProperty_right_contact_group(MocoStepTimeAsymmetryGoalGroup());
     constructProperty_contact_force_direction("positive-y");
     constructProperty_walking_direction("positive-x");
     constructProperty_contact_force_threshold(25);
-    constructProperty_left_foot_frame("calcn_l");
-    constructProperty_right_foot_frame("calcn_r");
     constructProperty_smoothing(10);
     constructProperty_target_asymmetry(0);
+    constructProperty_num_solver_collocation_points(100);
 }
 
 void MocoStepTimeAsymmetryGoal::initializeOnModelImpl(const Model& model) const {
 
     // Get references to left and right foot contact spheres.
-    for (int ic = 0; ic < getProperty_left_foot_contact_force_paths().size(); ++ic) {
-        const auto& path = get_left_foot_contact_force_paths(ic);
-        m_left_contacts.emplace_back(
-                &model.getComponent<SmoothSphereHalfSpaceForce>(path));
-    }
-    for (int ic = 0; ic < getProperty_right_foot_contact_force_paths().size(); ++ic) {
-        const auto& path = get_right_foot_contact_force_paths(ic);
-        m_right_contacts.emplace_back(
-                &model.getComponent<SmoothSphereHalfSpaceForce>(path));
-    }
+    const std::string& leftPositionForcePath =
+            get_left_contact_group().get_foot_position_contact_force_path();
+    const auto& numLeftPaths =
+            get_left_contact_group().getProperty_contact_force_paths().size();
+    for (int ic = 0; ic < numLeftPaths; ++ic) {
+        const auto& path = get_left_contact_group().get_contact_force_paths(ic);
+        const auto& contactForce =
+                model.getComponent<SmoothSphereHalfSpaceForce>(path);
+        m_left_contacts.emplace_back(&contactForce);
 
-    // Get foot frames.
-    m_left_frame = &model.getBodySet().get(get_left_foot_frame());
-    m_right_frame = &model.getBodySet().get(get_right_foot_frame());
+        if (path == leftPositionForcePath) {
+            m_left_frame = &contactForce.getConnectee<ContactSphere>("sphere")
+                    .getConnectee<PhysicalFrame>("frame").findBaseFrame();
+        }
+    }
+    OPENSIM_THROW_IF(m_left_frame.empty(), Exception,
+           "Expected the 'foot_position_contact_force_path' property to match "
+           "one of the paths in 'contact_force_paths', but '{}' was not found.",
+           leftPositionForcePath);
+
+    const std::string& rightPositionForcePath =
+            get_right_contact_group().get_foot_position_contact_force_path();
+    const auto& numRightPaths =
+            get_right_contact_group().getProperty_contact_force_paths().size();
+    for (int ic = 0; ic < numRightPaths; ++ic) {
+        const auto& path = get_right_contact_group().get_contact_force_paths(ic);
+        const auto& contactForce =
+                model.getComponent<SmoothSphereHalfSpaceForce>(path);
+        m_right_contacts.emplace_back(&contactForce);
+        if (path == rightPositionForcePath) {
+            m_right_frame = &contactForce.getConnectee<ContactSphere>("sphere")
+                    .getConnectee<PhysicalFrame>("frame").findBaseFrame();
+        }
+    }
+    OPENSIM_THROW_IF(m_right_frame.empty(), Exception,
+         "Expected the 'foot_position_contact_force_path' property to match "
+         "one of the paths in 'contact_force_paths', but '{}' was not found.",
+         rightPositionForcePath);
 
     // Check that properties contain acceptable values.
     std::set<std::string> directions{"positive-x", "positive-y", "positive-z",
                                      "negative-x", "negative-y", "negative-z"};
     checkPropertyValueIsInSet(getProperty_contact_force_direction(), directions);
     checkPropertyValueIsInSet(getProperty_walking_direction(), directions);
+    checkPropertyValueIsPositive(getProperty_contact_force_threshold());
+    checkPropertyValueIsInRangeOrSet(getProperty_target_asymmetry(),
+            -1.0, 1.0, {});
+    checkPropertyValueIsPositive(getProperty_smoothing());
 
-    auto assign = [](const std::string& direction, int& index, int& sign) {
+    OPENSIM_THROW_IF(get_num_solver_collocation_points() < 5, Exception,
+            )
+
+    // Assign the indices and signs for the contact force direction and walking
+    // motion direction.
+    auto setIndexAndSign = [](const std::string& direction, int& index,
+                int& sign) {
         if      (direction == "positive-x") { index = 0; sign = 1; }
         else if (direction == "positive-y") { index = 1; sign = 1; }
         else if (direction == "positive-z") { index = 2; sign = 1; }
@@ -65,15 +117,10 @@ void MocoStepTimeAsymmetryGoal::initializeOnModelImpl(const Model& model) const 
         else if (direction == "negative-y") { index = 1; sign = -1; }
         else if (direction == "negative-z") { index = 2; sign = -1; }
     };
-    assign(get_contact_force_direction(), m_contact_force_index,
+    setIndexAndSign(get_contact_force_direction(), m_contact_force_index,
            m_contact_force_sign);
-    assign(get_walking_direction(), m_walking_direction_index,
+    setIndexAndSign(get_walking_direction(), m_walking_direction_index,
            m_walking_direction_sign);
-
-    checkPropertyValueIsPositive(getProperty_contact_force_threshold());
-    checkPropertyValueIsInRangeOrSet(
-            getProperty_target_asymmetry(), -1.0, 1.0, {});
-    checkPropertyValueIsPositive(getProperty_smoothing());
 
     // Define the smoothing function.
     m_conditional = [](const double& cond, const double& shift,
@@ -81,6 +128,7 @@ void MocoStepTimeAsymmetryGoal::initializeOnModelImpl(const Model& model) const 
         return shift + scale * tanh(smoothing * cond);
     };
 
+    // Set the goal requirements.
     setRequirements(1, 1, SimTK::Stage::Velocity);
 }
 
@@ -126,20 +174,35 @@ void MocoStepTimeAsymmetryGoal::calcIntegrandImpl(
     // foot is in front.
     double frontFoot = m_conditional(rightPos - leftPos, 0, 1, get_smoothing());
 
-    // Use this "tiebreaker" variable to detect which foot is leading when both
-    // feet are on the ground.
-    // Double Support, left foot in front (left heel strike):
-    // tieBreaker = 1 * -1 * -1 = 1;
+    // During double support, leftContactDetect will equal -1 and
+    // rightContactDetect will equal 1. To avoid these values canceling each
+    // other out when computing the integrand, we use this "tie-breaker" variable
+    // to detect which foot is leading during double support. The tie-breaker
+    // ensures that only the leading foot will have the current time point
+    // counted towards its step time, which is true when calculating step time
+    // asymmetry. Examples:
+    //
+    // Double Support, left foot in front (left heel strike)
+    // tieBreaker = 1 * -1 * -1 = 1
+    // leftStepTime = 1 + 1 = 2
+    // rightStepTime = -1 + 1 = 0
+    // leftStepTime + rightStepTime > 0 (count towards left step time)
+    //
     // Double Support, right foot in front (right heel strike):
-    // tieBreaker = 1 * -1 * 1 = -1;
-    // During single support, TieBreaker = 0
-    // tieBreaker = 1 * 0 * 1 = 0;
+    // tieBreaker = 1 * -1 * 1 = -1
+    // leftStepTime = 1 - 1 = 0
+    // rightStepTime = -1 - 1 = -2
+    // leftStepTime + rightStepTime < 0 (count towards right step time)
+    //
+    // During single support, tieBreaker = 0
+    // tieBreaker = 1 * 0 * 1 = 0
     double tieBreaker = leftContactDetect * rightContactDetect * frontFoot;
-
     double leftStepTime = leftContactDetect + tieBreaker;
     double rightStepTime = rightContactDetect + tieBreaker;
 
-    integrand = m_conditional(leftStepTime + rightStepTime, 0, 1,
+    // Here, the scale argument is equal to 0.01 so that target asymmetry is
+    // [-1, 1] when using 100 collocation points.
+    integrand = m_conditional(leftStepTime + rightStepTime, 0, 0.01,
                               get_smoothing());
 }
 
@@ -151,7 +214,11 @@ void MocoStepTimeAsymmetryGoal::calcGoalImpl(const GoalInput& input,
     // based on the user's identification of their collocation scheme, or that
     // this value =1, and the user needs to by-hand calculate what the target
     // Asymmetry should be given their collocation scheme.
-    cost[0] = 0.5 * 0.01 * input.integral - get_target_asymmetry();
+    const double scale = 100.0 / get_num_solver_collocation_points();
+    cost[0] = scale * input.integral - get_target_asymmetry();
+    if (getModeIsCost()) {
+        cost[0] *= cost[0];
+    }
 }
 
 //void MocoStepTimeAsymmetryGoal::printDescriptionImpl() const {
