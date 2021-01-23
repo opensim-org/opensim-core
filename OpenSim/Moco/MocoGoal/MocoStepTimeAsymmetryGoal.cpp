@@ -223,11 +223,7 @@ void MocoStepTimeAsymmetryGoal::calcIntegrandImpl(
 void MocoStepTimeAsymmetryGoal::calcGoalImpl(const GoalInput& input,
                                              SimTK::Vector& cost) const {
 
-    // I believe the denominator (=2 here) is dependent on the number of nodes
-    // NOTE: we discussed either being able to pass a value in to this function
-    // based on the user's identification of their collocation scheme, or that
-    // this value =1, and the user needs to by-hand calculate what the target
-    // Asymmetry should be given their collocation scheme.
+    // This scale factor keeps the target asymmetry between [-1, 1].
     const double scale = 100.0 / get_num_solver_collocation_points();
     cost[0] = scale * input.integral - get_target_asymmetry();
     if (getModeIsCost()) {

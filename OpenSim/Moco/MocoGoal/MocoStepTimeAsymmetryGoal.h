@@ -104,6 +104,13 @@ public:
     }
     double getTargetAsymmetry() { return get_target_asymmetry(); }
 
+    void setNumSolverCollocationPoints(int numColPoints) {
+        set_num_solver_collocation_points(numColPoints);
+    }
+    int getNumSolverCollocationPoints() {
+        return get_num_solver_collocation_points();
+    }
+
     void setContactForceDirection(const std::string& direction) {
         set_contact_force_direction(direction);
     }
@@ -123,13 +130,6 @@ public:
 
     void setSmoothing(double smoothing) { set_smoothing(smoothing); }
     double getSmoothing() { return get_smoothing(); }
-
-    void setNumSolverCollocationPoints(int numColPoints) {
-        set_num_solver_collocation_points(numColPoints);
-    }
-    int getNumSolverCollocationPoints() {
-        get_num_solver_collocation_points();
-    }
 
 protected:
     bool getSupportsEndpointConstraintImpl() const override { return true; }
