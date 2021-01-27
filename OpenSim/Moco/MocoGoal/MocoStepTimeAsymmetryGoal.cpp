@@ -214,16 +214,13 @@ void MocoStepTimeAsymmetryGoal::calcIntegrandImpl(
     double leftStepTime = leftContactDetect + tieBreaker;
     double rightStepTime = rightContactDetect + tieBreaker;
 
-    // Here, the scale argument is equal to 0.01 so that target asymmetry is
-    // [-1, 1] when using 100 collocation points.
-    integrand = m_conditional(leftStepTime + rightStepTime, 0, 0.01,
+    integrand = m_conditional(leftStepTime + rightStepTime, 0, 1,
                               get_smoothing());
 }
 
 void MocoStepTimeAsymmetryGoal::calcGoalImpl(const GoalInput& input,
                                              SimTK::Vector& cost) const {
 
-    // This scale factor keeps the target asymmetry between [-1, 1].
     const double scale = 100.0 / get_num_solver_collocation_points();
     cost[0] = scale * input.integral - get_target_asymmetry();
     if (getModeIsCost()) {
