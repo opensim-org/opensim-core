@@ -121,6 +121,8 @@ int main()
         InverseKinematicsTool ik("setup_ik_abdbonepin.xml");
         ik.run();
         Storage result(ik.getOutputMotionFileName());
+        // Tolerance of 0.2 degs for rotational coordinates was selected from
+        // the other IK regression tests (above) 
         CHECK_STORAGE_AGAINST_STANDARD(result, standard,
                 std::vector<double>(17, 0.2), __FILE__, __LINE__,
                 "testInverseKinematicsScapulothoracicAbduction failed");
