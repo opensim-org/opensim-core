@@ -147,10 +147,12 @@ getScaleFactors(const ScaleSet& scaleSet, const Frame& frame) const
 
     int size = scaleSet.getSize();
 
-    for (int i = 0; i < size; ++i)
-        if (scaleSet[i].getSegmentName() == baseFrameName)
+    for (int i = 0; i < size; ++i) {
+        if (scaleSet[i].getSegmentName() == baseFrameName) {
             if (scaleSet[i].getApply())
                 return scaleSet[i].getScaleFactors();
+        }
+    }
 
     // No scale factors found for the base Body or not applicable.
     return InvalidScaleFactors;
