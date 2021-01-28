@@ -65,17 +65,15 @@ elseif(TROPTER_COPY_DEPENDENCIES AND UNIX)
 
             DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-    OpenSimAddInstallRPATHSelf(adolc)
-    OpenSimAddInstallRPATHSelf(ColPack)
     # This command must be invoked from the cmake subdirectory so that the
     # editing of libtropter's link libraries is done after libtropter.so
     # is installed (add_subdirectory(cmake) must be after
     # add_subdirectory(tropter)).
-    ## set(script
-    ## ${CMAKE_CURRENT_BINARY_DIR}/tropter_install_mac_dependency_libraries.cmake)
-    ## configure_file(tropter_install_mac_dependency_libraries.cmake.in
-    ##        "${script}" @ONLY)
-    ## install(SCRIPT "${script}")
+    set(script
+     ${CMAKE_CURRENT_BINARY_DIR}/tropter_install_mac_dependency_libraries.cmake)
+     configure_file(tropter_install_linux_dependency_libraries.cmake.in
+            "${script}" @ONLY)
+    install(SCRIPT "${script}")
 
 endif()
 
