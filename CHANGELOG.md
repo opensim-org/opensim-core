@@ -29,10 +29,14 @@ v4.2
 - `Controller::isEnabled` will now only return whether the particular controller is enabled
   - Previously, it would return `false` if its parent `Model`'s `Model::getAllControllersEnabled` returned `false`
   - The previous behavior would mean that `Controller::setEnabled(true); return Controller::isEnabled();` could return `false`
+- When building from source, CMake now outputs more detailed information about dependencies.
 - The new Matlab examplePointMass.m shows how to build and simulate a point-mass model.
 - Fix OpenSense calibration algorithm to handle models facing an arbitrary direction. The calibration algorithm now aligns one axis of the provided Orientation Sensor data with the x-axis of the base segment (e.g. pelvis) of the model in default pose.
 - For PrescribedController, the controls_file column labels can now be absolute paths to actuators (previously, the column labels were required to be actuator names).
 - Fixed a critical bug in Induced Accelerations Analysis which prevents analysis to run when external forces are present ([PR #2847](https://github.com/opensim-org/opensim-core/pull/2808)).
+- For PrescribedController, the controls_file column labels can now be absolute paths to actuators (previously, the column labels were required to be actuator names).
+- CMCTool now supports the setSolveForEquilibrium() method inherited by AbstractTool, which allows users to disable a call to Model::equilibrateMuscles() when running CMC. This setting is true by default, so the default behavior remains the same.
+- The Matlab utility osimTableToStruct() now handles column labels that start with a non-letter character by prepending 'a_' instead of 'unlabeled'.
 - Removed `Path` abstract base class (PR #2844)
   - Unused by OpenSim and related projects
 - Improved the performance of `ComponentPath` (PR #2844)
@@ -51,6 +55,9 @@ v4.2
   - This flag is `OFF` by default. So standard builds will still observe the existing behavior (`opensim.log` is created).
 - Fix bug in visualization of EllipsoidJoint that was not attaching to the correct frame ([PR #2887] (https://github.com/opensim-org/opensim-core/pull/2887))
 - Fix bug in error reporting of sensor tracking (PR #2893)
+- Throw an exception rather than log an error message when an unrecognized type is encountered in xml/osim files (PR #2914)
+- Added ScapulothoracicJoint as a builtin Joint type instead of a plugin (PRs #2877 and #2932)
+
 v4.1
 ====
 - Added `OrientationsReference` as the frame orientation analog to the location of experimental markers. Enables experimentally measured orientations from wearable sensors (e.g. from IMUs) to be tracked by reference frames in the model. A correspondence between the experimental (IMU frame) orientation column label and that of the virtual frame on the `Model` is expected. The `InverseKinematicsSolver` was extended to simultaneously track the `OrientationsReference` if provided. (PR #2412)

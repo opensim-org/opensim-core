@@ -145,11 +145,16 @@ getScaleFactors(const ScaleSet& scaleSet, const Frame& frame) const
 {
     const std::string& baseFrameName = frame.findBaseFrame().getName();
 
-    for (int i = 0; i < scaleSet.getSize(); ++i)
-        if (scaleSet[i].getSegmentName() == baseFrameName)
-            return scaleSet[i].getScaleFactors();
+    int size = scaleSet.getSize();
 
-    // No scale factors found for the base Body.
+    for (int i = 0; i < size; ++i) {
+        if (scaleSet[i].getSegmentName() == baseFrameName) {
+            if (scaleSet[i].getApply())
+                return scaleSet[i].getScaleFactors();
+        }
+    }
+
+    // No scale factors found for the base Body or not applicable.
     return InvalidScaleFactors;
 }
 

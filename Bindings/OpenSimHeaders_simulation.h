@@ -148,6 +148,8 @@
 #include <OpenSim/Simulation/SimulationUtilities.h>
 #include <OpenSim/Simulation/VisualizerUtilities.h>
 
+#include <OpenSim/Simulation/TableProcessor.h>
+
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Actuators/MuscleFixedWidthPennationModel.h>
 #include <OpenSim/Actuators/MuscleFirstOrderActivationDynamicModel.h>

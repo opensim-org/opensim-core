@@ -105,7 +105,6 @@ public:
     /** Default construction creates a valid display hints object with all
     hints set to their default values. **/
     ModelDisplayHints() { constructProperties(); }
-    /**@}**/
 
 
 private:

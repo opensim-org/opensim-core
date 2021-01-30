@@ -1,0 +1,110 @@
+namespace OpenSim {
+/**
+
+@page mocouserguide Moco User Guide
+
+@tableofcontents
+
+@section gettingstartedsection Getting started
+
+To learn how to download, install, and run your first Moco example, see the
+following page:
+- @subpage mocogettingstarted
+
+@section mocotool MocoTools
+
+Moco provides easy-to-use tools for solving for muscle activity that can achieve
+an observed motion. See the following pages:
+
+- @subpage mocotrack "MocoTrack: kinematics are tracked in the cost"
+- @subpage mocoinverse "MocoInverse: kinematics are prescribed"
+
+These tools derive from the MocoTool class.
+
+@section mocostudysection Solving custom optimal control problems
+
+If the MocoTool%s do not satisfy your needs, you can create and solve your own
+custom optimal control problem using the MocoStudy class.
+
+@subpage mocostudy
+
+@section mocochoosingmodel Choosing a Model
+
+Moco supports most OpenSim models, including those with kinematic constraints,
+auxiliary (muscle) dynamics, and passive force components.
+
+Currently, Moco does not support models with Controller%s. Moco must serve
+as the sole controller of the model. This prevents, for example,
+using reflex controllers to model spasticity.
+We hope to add support for Model Controllers in the future.
+
+Moco does not support models with SimTK::Measure%s, such as Probe%s. Some
+Measures rely on time-stepping forward integration, which does not
+occur with Moco. This prevents using, for example, the metabolics probes with
+Moco.
+
+Some model components are supported through Moco but may hinder the solvers
+from converging quickly. Any components with discontinuous functions can cause
+issues for the derivative-based optimization algorithms used by Moco.
+We suggest replacing your model's muscles with DeGrooteFregly2016Muscle%s
+and replacing your contact forces with SmoothSphereHalfSpaceForce%s. These
+components are designed for use with direct collocation.
+
+
+@section mococustomgoal Defining a custom goal or cost
+
+Moco allows you to compose your cost from multiple existing cost terms. This
+gives you flexibility and means that you usually do not need to write your
+cost yourself, even if it has many terms. Moco's existing costs are usually
+well-tested and work well with Moco's solvers, so we encourage you to use them
+if possible. In the case that you want to create your own custom cost term,
+you can derive from MocoGoal in C++. See @ref exampleSlidingMassAdvanced.cpp and
+@ref exampleMocoCustomEffortGoal.cpp.
+
+If you do not want to write C++ code, you can prototype your cost in MATLAB
+and we can help convert it to C++. See the Matlab example
+@ref examplePrototypeCustomGoal.m for more information.
+
+In the future, Moco could allow you to define custom cost terms in Python. If
+this is of interest to you, please let the Moco developers know (on GitHub).
+
+@section mocosealed Sealed solutions or trajectories
+
+Moco uses the MocoTrajectory and MocoSolution classes to hold initial guesses
+and solutions to optimal control problems. Solving a problem
+(MocoStudy::solve()) returns a MocoSolution.
+If the solver failed to converge, the solution will be sealed
+(MocoTrajectory::isSealed()), which means that you cannot do anything with the
+it (read, edit, or write) until you call MocoTrajectory::unseal(). The
+sealing forces you to acknowledge that the solver failed.
+
+@section utilities Utilities
+
+OpenSim and Moco contain utilities for creating models, modifying models,
+working with data, and postprocessing results.
+
+1. ModelFactory: Create standard models and modify existing models.
+2. ModelProcessor: Create a workflow of operations to perform on a model.
+3. TableProcessor: Create a workflow of operations to perform on a table.
+4. @ref mocoutil, including visualizing and analyzing a MocoTrajectory.
+6. plot_trajectory.py: Plot a MocoTrajectory with the Python Matplotlib plotting
+                       library.
+7. report.py: Generate a detailed PDF report about a MocoTrajectory and any
+              reference data (part of the `opensim` Python package).
+
+@section faqsection Frequently Asked Questions
+
+See @subpage mocofaq.
+
+@section mococheatsheet Cheat sheet
+
+This short PDF shows common Moco commands, and makes for a nice
+desk-side companion.
+
+@htmlonly
+<embed src="MocoCheatSheet.pdf" width="500px" height="600px"></embed>
+@endhtmlonly
+
+*/
+} // namespace OpenSim
+

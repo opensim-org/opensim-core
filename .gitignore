@@ -9,22 +9,64 @@
 tmp
 # Ignore build trees.
 /build*
-# CLion integrated development environment
-/cmake-build-*
 # Ignore install dir.
 install
-# Ignore settings from the CLion IDE (from JetBrains).
-.idea
+
+# Vim
+.*.swo
+.*.swp
+*~
+
+# OpenSim
+err.log
+out.log
+
+# Mac
+.DS_Store
+
+# dependencies
+dependencies/*
+!dependencies/CMakeLists.txt
+!dependencies/*.cmake
+!dependencies/*.patch
 
 # python
 *.pyc
+venv
 
-# Ignore directories under 'dependencies'
-dependencies/*
+# Matlab
+*.asv
 
-# Ignore log files from OpenSim crashing
-*.log
+# Moco optimization delete-to-stop file
+delete_this_to_stop_optimization*.txt
 
-# MAC File System files
-.DS_Store
+# Clion
+# -----
+# Reference: https://intellij-support.jetbrains.com/hc/en-us/articles/206544839
 
+# User-specific stuff:
+.idea/**/workspace.xml
+.idea/**/tasks.xml
+.idea/dictionaries
+.idea/vcs.xml
+.idea/opensim-core.iml
+.idea/misc.xml
+.idea/codeStyles/codeStyleConfig.xml
+
+# Sensitive or high-churn files:
+.idea/**/dataSources/
+.idea/**/dataSources.ids
+.idea/**/dataSources.xml
+.idea/**/dataSources.local.xml
+.idea/**/sqlDataSources.xml
+.idea/**/dynamic.xml
+.idea/**/uiDesigner.xml
+
+.idea/deployment.xml
+.idea/other.xml
+
+# CMake
+cmake-build-*
+
+## File-based project format:
+*.iws

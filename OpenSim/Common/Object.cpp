@@ -602,9 +602,12 @@ newInstanceOfType(const std::string& objectTypeTag)
     const Object* defaultObj = getDefaultInstanceOfType(objectTypeTag);
     if (defaultObj)
         return defaultObj->clone();
-
-    cerr << "Object::newInstanceOfType(): object type '" << objectTypeTag 
-         << "' is not a registered Object!" << endl;
+    log_error("Object::newInstanceOfType(): object type '{}' is not a registered "
+            "Object! It will be ignored.",
+            objectTypeTag);
+    throw Exception("Object::newInstanceOfType(): object type '{" +
+                    objectTypeTag
+                    +"}' is not a registered Object! It will be ignored.");
 
     return NULL;
 }
@@ -935,12 +938,6 @@ try {
             while(iter != propElementIter->element_end()){
                 // Create an Object of the element tag's type.
                 object = newInstanceOfType(iter->getElementTag());
-                if (!object) { 
-                    std::cerr << "Object type " << iter->getElementTag() << " not recognized" 
-                              << std::endl; 
-                    iter++; 
-                    continue; 
-                }
                 objectsFound++;
 
                 if(type==Property_Deprecated::ObjPtr) {

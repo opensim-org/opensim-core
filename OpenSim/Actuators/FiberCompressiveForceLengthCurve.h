@@ -81,60 +81,56 @@ public:
     // Uses default (compiler-generated) destructor, copy constructor, copy 
     // assignment operator.
 
-    /**
-     Constructs a C2 continuous compressive fiber force length curve. This curve
-     is used in the fiber model as a means of ensuring that the fiber cannot
-     generate a tensile force at, nor shorten beyond, some minimum length.
-     Details to appear in Millard et al. 2012.
-     
-        @param normLengthAtZeroForce
-                The normalized fiber length at which the compressive element
-                begins to engage. Normalized length is defined as 
-                length_norm = l/l0, where l is the length of the fiber,
-                and l0 is the resting length of the fiber.
-    
-        @param stiffnessAtZeroLength
-                This is the stiffness of the compressive elastic force length
-                spring when the fiber reaches a normalized length of 0.        
+    /** Constructs a C2 continuous compressive fiber force length curve. This
+    curve is used in the fiber model as a means of ensuring that the fiber
+    cannot generate a tensile force at, nor shorten beyond, some minimum length.
+    Details to appear in Millard et al. 2012.
 
-        @param curviness    
-                A dimensionless parameter between [0-1] that controls how 
-                the curve is drawn: 0 will create a curve that is
-                very close to a straight line segment while a value of 1 will 
-                create a curve that smoothly fills the corner formed by the 
-                linear extrapolation of 'stiffnessAtZeroLength' and the
-                x axis as shown in the figure.
+    @param normLengthAtZeroForce
+            The normalized fiber length at which the compressive element
+            begins to engage. Normalized length is defined as
+            length_norm = l/l0, where l is the length of the fiber,
+            and l0 is the resting length of the fiber.
 
-        @param muscleName
-                The name of the muscle this curve belongs to. This name is used
-                to create the name of this curve, which is formed simply by 
-                appending "_FiberCompressiveForceLengthCurve" to the string in 
-                muscleName. This name is used for making intelligible error 
-                messages and also for naming the XML version of this curve when 
-                it is serialized.
+    @param stiffnessAtZeroLength
+            This is the stiffness of the compressive elastic force length
+            spring when the fiber reaches a normalized length of 0.
 
-      <B>Conditions:</B>
-        \verbatim
-            normLengthAtZeroForce > 0
-            stiffnessAtZeroLength < -1/normLengthAtZeroForce
-            0 <= curviness <= 1
-        \endverbatim
+    @param curviness
+            A dimensionless parameter between [0-1] that controls how
+            the curve is drawn: 0 will create a curve that is
+            very close to a straight line segment while a value of 1 will
+            create a curve that smoothly fills the corner formed by the
+            linear extrapolation of 'stiffnessAtZeroLength' and the
+            x axis as shown in the figure.
 
-        <B>Computational Costs</B>
-        \verbatim 
-            ~174,100 flops
-        \endverbatim
+    @param muscleName
+            The name of the muscle this curve belongs to. This name is used
+            to create the name of this curve, which is formed simply by
+            appending "_FiberCompressiveForceLengthCurve" to the string in
+            muscleName. This name is used for making intelligible error
+            messages and also for naming the XML version of this curve when
+            it is serialized.
 
-    <B> Default Parameter Values </B>
+    <B>Conditions</B>
+    \verbatim
+        normLengthAtZeroForce > 0
+        stiffnessAtZeroLength < -1/normLengthAtZeroForce
+        0 <= curviness <= 1
+    \endverbatim
 
-         \verbatim
-             normLengthAtZeroForce   = 0.6 
-             stiffnessAtZeroLength   = -8.4, 
-             curviness               = 0.5)
-         \endverbatim
+    <B>Computational Costs</B>
+    \verbatim
+        ~174,100 flops
+    \endverbatim
 
-    <B>Example:</B>
+    <B>Default Parameter Values</B>
 
+    \verbatim
+        normLengthAtZeroForce   = 0.6
+        stiffnessAtZeroLength   = -8.4
+        curviness               = 0.5
+    \endverbatim
     */
     FiberCompressiveForceLengthCurve( double normLengthAtZeroForce, 
                             double stiffnessAtZeroLength,

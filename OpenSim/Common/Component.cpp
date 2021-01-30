@@ -1590,16 +1590,31 @@ void Component::AddedStateVariable::setValue(SimTK::State& state, double value) 
     throw Exception(msg.str(),__FILE__,__LINE__);
 }
 
+static std::string const& derivativeName(const std::string& baseName) {
+    // this function is called *a lot* (e.g. millions of times in a sim), so we
+    // use TLS to cache the (potentially, heap-allocated) derivative name
+    //
+    // although it is cleared each time this is called, clearing a string does
+    // not deallocate its heap
+
+    thread_local std::string derivativeName;
+    derivativeName.clear();
+    derivativeName += baseName;
+    derivativeName += "_deriv";
+
+    return derivativeName;
+}
+
 double Component::AddedStateVariable::
     getDerivative(const SimTK::State& state) const
 {
-    return getOwner().getCacheVariableValue<double>(state, getName()+"_deriv");
+    return getOwner().getCacheVariableValue<double>(state, derivativeName(getName()));
 }
 
 void Component::AddedStateVariable::
     setDerivative(const SimTK::State& state, double deriv) const
 {
-    getOwner().setCacheVariableValue<double>(state, getName()+"_deriv", deriv);
+    getOwner().setCacheVariableValue<double>(state, derivativeName(getName()), deriv);
 }
 
 

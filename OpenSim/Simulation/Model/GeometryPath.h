@@ -105,6 +105,7 @@ public:
     const PathPointSet& getPathPointSet() const { return get_PathPointSet(); }
     PathPointSet& updPathPointSet() { return upd_PathPointSet(); }
     const PathWrapSet& getWrapSet() const { return get_PathWrapSet(); }
+    PathWrapSet& updWrapSet() { return upd_PathWrapSet(); }
     void addPathWrap(WrapObject& aWrapObject);
 
     //--------------------------------------------------------------------------

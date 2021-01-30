@@ -20,7 +20,7 @@ OpenSimAddApplication(NAME opensim-cmd
             parse_arguments.h
     )
 
-target_link_libraries(opensim-cmd docopt_s)
+target_link_libraries(opensim-cmd docopt_s osimMoco)
 
 if(BUILD_TESTING)
     subdirs(test)

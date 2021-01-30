@@ -37,6 +37,7 @@ void testCopyModel( const string& fileName, const int nbod,
 
 int main()
 {
+    LoadOpenSimLibrary("osimActuators");
     try {
 
         // Test copying a simple property.

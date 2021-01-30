@@ -1,0 +1,277 @@
+namespace OpenSim {
+
+/**
+@page mocostudy MocoStudy: custom optimal control problems
+
+@tableofcontents
+
+MocoStudy allows one to solve a generic optimal control problem, where the
+costs, constraints, and solver settings are fully defined by the user.
+
+Solving a custom optimal control problem with direct collocation requires
+substantial tuning of the direct collocation method's settings. Use the more
+specific interfaces MocoInverse and MocoTrack if possible.
+
+For a mathematical description, see @ref mocoocp.
+
+In Moco, "goals", such as tracking marker data or effort, can be
+enforced either as cost terms to minimize or endpoint constraints.
+
+@section mocostudyoverview Overview
+
+A MocoStudy contains a MocoProblem and a MocoSolver.
+
+  - MocoProblem: describes the variables, dynamics, constraints, and cost
+      functional of the optimal control problem, using an OpenSim model.
+  - MocoSolver: solves the MocoProblem using direct collocation.
+
+When building a MocoStudy programmatically (e.g., in C++), the workflow is as
+follows:
+
+1. Build the MocoProblem (set the model, constraints, etc.).
+2. Call MocoStudy::initTropterSolver() or MocoStudy::initCasADiSolver(), which
+   returns a reference to a MocoSolver.
+3. Edit the settings of the MocoSolver.
+4. Call MocoStudy::solve(). This returns the MocoSolution.
+5. (Optional) Postprocess the solution, perhaps using MocoStudy::visualize().
+
+After calling MocoStudy::solve(), you can edit the MocoProblem and/or the
+MocoSolver and call MocoStudy::solve() again, if you wish.
+
+@section MocoProblem
+
+A MocoProblem is a list of MocoPhase%s, but Moco currently supports only
+single-phase problems. A MocoPhase consists of the following:
+
+1. An OpenSim model that describes states, controls, dynamics, and kinematic
+   constraints.
+2. MocoGoal%s: describes the cost functional to minimize or endpoint constraints
+   to enforce.
+3. MocoPathConstraint%s: describes non-kinematic algebraic constraints to
+   enforce over the entire phase.
+4. MocoParameter%s: describes Model (time-invariant) properties to optimize.
+5. Bounds on initial and final time.
+6. Bounds (initial, final, and over all time) for state variables, stored in
+   MocoVariableInfo.
+7. Bounds (initial, final, and over all time) for control variables, stored in
+   MocoVariableInfo.
+
+@subsection Bounds
+
+@subsubsection Time
+
+By default, the initial time and final time are unconstrained. However, this is
+rarely what you want, and often causes a problem to behave poorly. Moco issues a
+warning if you do not set bounds for initial or final time.
+
+@subsubsection Defaults
+
+Setting bounds for state and control variables is an important but often tedious
+process. To help, Moco sets some variable bounds automatically. See
+MocoPhase::setStateInfo() and MocoPhase::setControlInfo() for details.
+
+Although Moco supports setting initial and final bounds for controls, such
+functionality is not too useful: the initial and final values of a control have
+little influence on the value of the control at nearby times.
+
+@subsection costfunctional Defining the cost functional and endpoint constraints
+
+See @ref mocogoal for more information.
+
+@subsection params Parameter optimization with MocoParameter
+
+Moco allows you to optimize most model parameters by adding a %MocoParameter
+to your MocoProblem. See MocoParameter for more information.
+
+@subsection preskin Prescribed kinematics
+
+You may wish to solve a problem in which you prescribe known kinematics for all
+degrees of freedom and optimize only auxiliary dynamics or actuator
+behavior. In this formulation, the generalized coordinate and speed variables are
+replaced with known quantities. The system still contains auxiliary state
+variables, control variables, and auxiliary dynamics. If none of the parameter
+variables affect the multibody system, then the multibody dynamics is reduced
+to a force balance: applied forces must match the net generalized forces
+determined by the kinematics (that is, inverse dynamics).
+
+To prescribe motion in the "reduce-DOF" way, add a PositionMotion component
+to your model. PositionMotion requires that all DOFs are prescribed; Moco does
+not support prescribing a subset of the degrees of freedom.
+
+See @ref mocoinverse and @ref implpreskin for more information.
+
+@subsubsection preskinconstr Prescribed kinematics with kinematic constraints
+
+Prescribing kinematics is more complicated if the system contains kinematic
+constraints (e.g., weld constraints, point-on-line constraints, etc.), as such
+constraints can conflict with the prescribed kinematics (which is also
+essentially a constraint).
+
+@note If a model contains kinematic constraints, you must ensure that the
+prescribed motion obeys the kinematic constraints. PositionMotion does not
+ensure this for you. MocoInverse attempts to alter your provided kinematics to
+satisfy the kinematic constraints (using Model::assemble()).
+
+@subsection implicitauxiliary Implicit auxiliary dynamics
+
+OpenSim's Component%s support auxiliary dynamics,
+that is, additional dynamics added to the multibody dynamics equations
+that define a model's computational system (e.g., muscle activation dynamics).
+Component%s support dynamics in explicit form (i.e., \f$ \dot{y} =
+f(y) \f$), but it is often desirable to implement auxiliary dynamics in implicit
+form (i.e., \f$ f(y, \dot{y}) = 0 \f$). For example, expressing tendon
+compliance dynamics explicitly requires inverting the force-velocity curve,
+which introduces singularities. Solving the dynamics implicitly by enforcing
+muscle-tendon equilibrium (i.e. \f$ F^T - F^M cos(\alpha) = 0 \f$) is more
+natural and avoids such numerical issues [1].
+
+OpenSim's numerical integrators only support explicit differential equations,
+but Moco allows Component%s to express dynamics with implicit differential
+equations in addition to explicit differential equations. Currently, implicit
+differential equations are provided for the following pairs of components and
+state variables:
+
+- DeGrooteFregly2016Muscle's normalized_tendon_force.
+
+See the documentation for these components to learn how to set their dynamics
+mode.
+
+Implicit differential equations require an additional control
+for the derivative of the state variable; MocoTrajectories associated with a
+model containing implicit auxiliary dynamics contain columns for these state
+variable derivatives.
+
+To set the mode for multibody dynamics, see @ref implicitmultibody.
+
+@note **Implicit versus explicit integrators**: Differential equations can be
+implicit and explicit, but so can numerical integrators. This is often a point
+of confusion. Implicit and explicit numerical integrators describe types of
+methods for solving differential equations; both implicit and explicit numerical
+integrators can be used with explicit differential equations, while only
+implicit numerical integrators can be used with implicit differential equations.
+
+To implement implicit auxiliary differential equations yourself, see @ref
+exampleCustomImplicitAuxiliaryDynamics.cpp.
+
+@section MocoSolver
+
+A MocoSolver attempts to use an optimal control method to solve the MocoProblem,
+and exposes settings you can use to control the transcription to a generic
+optimization problem and the optimization process.
+
+@subsection implicitmultibody Implicit multibody dynamics mode
+
+MocoSolvers support two modes for expressing differential equations for
+multibody dynamics. When using the implicit dynamics mode, the differential
+equations for multibody dynamics are expressed as implicit differential
+equations. See the descriptions for the specific transcription
+schemes for more detail. As with implicit auxiliary dynamics, using implicit
+multibody dynamics often leads to a more robust problem, especially for systems
+with small masses [2].
+
+@subsection kincon Kinematic constraints
+
+Moco supports enforcing OpenSim kinematic constraints in optimal control
+problems. When a solver is initialized, any kinematic constraints
+enabled in the model are automatically detected, and additional information
+about each constraint is stored. This information includes the number of scalar
+path constraints (including derivatives if they exist), the scalar constraint
+kinematic levels (i.e. holonomic, non-holonomic, or acceleration), and the
+number of Lagrange multipliers that are added to the problem to enforce the
+constraints.
+
+The solvers allow the user to choose whether to enforce kinematic constraint
+derivatives or minimize Lagrange multipliers in the problem.
+
+@code{.cpp}
+MocoTropterSolver& solver = moco.initTropterSolver();
+solver.set_enforce_constraint_derivatives(true);
+solver.set_lagrange_multiplier_weight(10);
+@endcode
+
+If constraint derivatives are enforced, velocity correction variables are added
+to the problem according to the method described in Posa, Kuindersma, and
+Tedrake, 2016, "Optimization and stabilization of trajectories for constrained
+dynamical systems."
+
+@note Enforcing kinematic constraints is only supported with Hermite-Simpson
+transcription, since this scheme is necessary for implementing the method
+described in Posa et al. 2016. See @ref mocohermitesimpsontheory for a
+mathematical description.
+
+It is possible to modify the default bounds on these velocity correction
+variables:
+
+@code{.cpp}
+// Default bounds: [-0.1, 0.1]
+solver.set_velocity_correction_bounds({-0.25, 0.25});
+@endcode
+
+If constraint derivatives are not enforced or if the multibody constraint
+Jacobian is rank-deficient, it is recommended that the Lagrange multiplier
+minimization term is added to the problem to impose uniqueness for
+these variables.
+
+Even though OpenSim Models can contain non-holonomic constraints (that is,
+\f$ \nu(q, u, p) = 0 \f$), Moco solvers support only holonomic constraints; that
+is, \f$ \phi(q) = 0 \f$.
+
+By default, the controls at mesh interval midpoints are constrained by linear
+interpolation of control mesh endpoint values and is the recommended setting.
+However, you may disable this behavior in the solver:
+
+\code{.cpp}
+MocoCasADiSolver& solver = moco.initCasADiSolver();
+solver.set_interpolate_control_midpoints(false);
+\endcode
+
+@section casadivstropter MocoCasADiSolver versus MocoTropterSolver
+
+Moco provides two direct collocation solvers that transcribe continuous optimal
+control problems into finite-dimensional NLPs that are passed to
+well-established derivative-based NLP solvers. MocoCasADiSolver uses the
+third-party CasADi library, and MocoTropterSolver uses a
+direct collocation solver developed internally named Tropter. CasADi is an
+open-source package for algorithmic differentiation and is a bridge to NLP
+solvers IPOPT, SNOPT, and others.
+
+Compared to MocoTropterSolver, MocoCasADiSolver supports parallelization,
+implicit auxiliary dynamics, and implicit multibody dynamics with kinematic
+constraints. However, MocoTropterSolver may be able to solve parameter
+optimization problems more quickly that MocoCasADiSolver.
+
+CasADi is an ideal library for employing direct collocation, but two limitations
+led us to create Tropter: CasADi did not initially support finite differences,
+and CasADi’s open-source license is more restrictive than OpenSim’s.
+Those distributing Moco as a dependency of closed-source software may prefer
+distributing Moco without CasADi, as CasADi’s “weak copyleft” GNU Lesser General
+Public License 3.0 places requirements on how CasADi is redistributed.
+
+@section tips Tips for solving a custom problem
+
+1. Make sure every variable has bounds.
+2. Create a dynamically-consistent initial guess by solving a feasibility problem.
+   That is, solve a MocoStudy without any cost terms.
+3. Actuators should only be as strong as they need to be. Problems tend to
+converge slower if some actuator controls are very small compared to those of
+other actuators in the model due to unecessarily large max force settings.
+4. Add reserve actuators to muscle-driven problems (whether inverse,
+tracking, predicdtive, etc.) to improve convergence and identify muscles that
+are too weak to drive a desired motion.
+5. If controls display high frequency oscillations, try tightening the solver's
+convergence and constraint tolerances.
+
+@section mocostudyrefs References
+
+[1] Groote, F., Kinney, A., Rao, A., Fregly, B. (2016). Evaluation of Direct
+Collocation Optimal Control Problem Formulations for Solving the Muscle
+Redundancy Problem Annals of Biomedical Engineering  44(10), 2922-2936.
+https://dx.doi.org/10.1007/s10439-016-1591-9
+
+[2] Bogert, A., Blana, D., Heinrich, D. (2011). Implicit methods for efficient
+musculoskeletal simulation and optimal control Procedia IUTAM  2(), 297-316.
+https://dx.doi.org/10.1016/j.piutam.2011.04.027
+
+*/
+
+} // namespace OpenSim

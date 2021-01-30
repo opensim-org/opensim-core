@@ -58,7 +58,7 @@ int main()
     // and the 'standard' solution, which was closest to using 
     // Thelen2003Muscle_Deprecated muscle formulation.
     double actTols[4] = {0.005, 0.025, 0.04, 0.04};
-    double forceTols[4] = {0.5, 4, 5, 6};
+    double forceTols[4] = {1, 4, 5, 6};
     
     SimTK::Array_<std::string> failures;
 
@@ -213,7 +213,7 @@ void testModelWithPassiveForces() {
         "ModelWithPassiveForces activations failed");
 
     CHECK_STORAGE_AGAINST_STANDARD(forces, stdForces,
-        std::vector<double>(48, 2.5),
+        std::vector<double>(48, 3),
         __FILE__, __LINE__,
         "ModelWithPassiveForces forces failed.");
     cout << resultsDir << ": test ModelWithPassiveForces passed." << endl;

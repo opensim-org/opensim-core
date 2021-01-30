@@ -31,8 +31,8 @@ class Model;
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a set of parameters describing how to calibrate
- * on a model to match placement of Sensors (IMUs)
+ * A class implementing a set of parameters describing how to place IMUs
+ * on a model to match placement of experimental sensors (IMUs)
  *
  * Calibrates a model by registering IMU frames whose orientations in the
  * sensor world frame are specified, assuming the model's default pose is the
@@ -54,7 +54,7 @@ public:
     //==============================================================================
     OpenSim_DECLARE_PROPERTY(model_file, std::string,
             "Name/path to the xml .osim file used to load a model to be "
-            "calibrated.");
+            "calibrated via placement of IMUs.");
 
     OpenSim_DECLARE_PROPERTY(base_imu_label, std::string,
             "The label of the base IMU in the orientation_file_for_calibration used to account "
@@ -72,7 +72,7 @@ public:
 
     OpenSim_DECLARE_PROPERTY(orientation_file_for_calibration, std::string,
             "Name/path to a .sto file of sensor frame orientations as "
-            "quaternions to be used for calibration.");
+            "quaternions to be used to place IMUs on the model.");
 
     OpenSim_DECLARE_PROPERTY(output_model_file, std::string,
             "Name of OpenSim model file (.osim) to write when done placing IMUs.");

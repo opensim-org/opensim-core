@@ -2317,7 +2317,7 @@ protected:
     @warning Currently the realize() methods here are invoked early in the
     sequence of realizations at a given stage, meaning that you will not be
     able to access other computations at that same stage.
-    @bug Should defer calls to these until at least kinematic realizations
+    TODO: Should defer calls to these until at least kinematic realizations
     at the same stage have been performed.
 
     @see Simbody documentation for more information about realization.

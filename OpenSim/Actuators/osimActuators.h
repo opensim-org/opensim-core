@@ -39,8 +39,12 @@
 #include "RigidTendonMuscle.h"
 #include "Millard2012EquilibriumMuscle.h"
 #include "Millard2012AccelerationMuscle.h"
+#include "DeGrooteFregly2016Muscle.h"
 
 #include "McKibbenActuator.h"
+
+#include "ModelFactory.h"
+#include "ModelProcessor.h"
 
 #include "RegisterTypes_osimActuators.h"    // to expose RegisterTypes_osimActuators
 

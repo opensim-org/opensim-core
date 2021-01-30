@@ -42,7 +42,7 @@ Options:
 Description:
   The argument <tool-or-class> can be the name of a Tool
   
-         scale  ik  id  rra  cmc  forward  analyze     (case-insensitive)
+         scale  ik  id  rra  cmc  forward  analyze  moco   (case-insensitive)
 
   or the name of any registered (concrete) OpenSim class (even from a plugin).
   Here are descriptions of the Tools listed above:
@@ -55,6 +55,7 @@ Description:
          forward  Perform a forward simulation, using any controllers.
          analyze  Obtain muscle-related quantites, joint loads; 
                   perform Static Optimization; etc.
+         moco     Solve a trajectory optimization problem with Moco.
 
   The template file is written to <output-file> if provided. Otherwise, the
   file is written to the current directory with the name
@@ -92,6 +93,7 @@ int print_xml(int argc, const char** argv) {
     else if (toolLowerCase == "cmc")     className = "CMCTool";
     else if (toolLowerCase == "forward") className = "ForwardTool";
     else if (toolLowerCase == "analyze") className = "AnalyzeTool";
+    else if (toolLowerCase == "moco")    className = "MocoStudy";
     else {
         className = toolOrClass;
         isBuiltInTool = false;

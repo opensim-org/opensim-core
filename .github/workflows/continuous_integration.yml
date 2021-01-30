@@ -63,6 +63,7 @@ jobs:
         cmake --build . --config Release -- /maxcpucount:4
 
     - name: Configure opensim-core
+      id: configure
       run: |
         mkdir $env:GITHUB_WORKSPACE\\build
         chdir $env:GITHUB_WORKSPACE\\build
@@ -70,6 +71,11 @@ jobs:
         # Set the CXXFLAGS environment variable to turn warnings into errors.
         # Skip timing test section included by default.
         cmake -E env CXXFLAGS="/WX -DSKIP_TIMING" cmake $env:GITHUB_WORKSPACE -LAH -G"Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install -DOPENSIM_C3D_PARSER=ezc3d -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on
+        $env:match = cmake -L . | Select-String -Pattern OPENSIM_QUALIFIED_VERSION
+        $version = $env:match.split('=')[1]
+        echo $version
+        echo "VERSION=$version" >> $GITHUB_ENV
+        echo "::set-output name=version::$VERSION"
 
     - name: Build opensim-core
       # Install now to avoid building bindings twice (issue when using Visual Studio 2019).
@@ -83,19 +89,13 @@ jobs:
         chdir $env:GITHUB_WORKSPACE\\build
         ctest --parallel 4 --output-on-failure --build-config Release
 
-    - name: Obtain short git commit hash
-      id: commithash
-      shell: bash
-      # https://stackoverflow.com/questions/58886293/getting-current-branch-and-commit-hash-in-github-action
-      run: echo "::set-output name=hash::$(git rev-parse --short HEAD)"
-
     - name: Install opensim-core
       # TODO: This is where we wish to do the installing, but it's done above for now.
       run: |
         chdir $env:GITHUB_WORKSPACE\\build
         chdir $env:GITHUB_WORKSPACE
-        Copy-Item -Path "~/opensim-core-install" -Destination "opensim-core-${{ steps.commithash.outputs.hash }}" -Recurse
-        7z a "opensim-core-${{ steps.commithash.outputs.hash }}.zip" "opensim-core-${{ steps.commithash.outputs.hash }}"
+        Copy-Item -Path "~/opensim-core-install" -Destination "opensim-core-${{ steps.configure.outputs.version }}" -Recurse
+        7z a "opensim-core-${{ steps.configure.outputs.version }}.zip" "opensim-core-${{ steps.configure.outputs.version }}"
 
     - name: Test Python bindings
       run: |
@@ -109,8 +109,41 @@ jobs:
     - name: Upload opensim-core
       uses: actions/upload-artifact@v2
       with:
-        name: opensim-core-${{ steps.commithash.outputs.hash }}-win
-        path: opensim-core-${{ steps.commithash.outputs.hash }}.zip
+        name: opensim-core-${{ steps.configure.outputs.version }}-win
+        path: opensim-core-${{ steps.configure.outputs.version }}.zip
+
+    # TODO: Must be relative to the workspace?
+    # - name: Upload opensim-moco dependencies
+    #   uses: actions/upload-artifact@v1.0.0
+    #   with:
+    #     name: opensim-core-dependencies
+    #     path: opensim_dependencies_install.zip
+
+    # - name: Create release
+    #   id: create-release
+    #   uses: actions/create-release@v1.0.0
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   with:
+    #     tag_name: ${{ github.ref }}
+    #     release_name: OpenSim Core ${{ github.ref }}
+    #     draft: true
+    #     prerelease: false
+
+    # - name: Zip opensim-core
+    #   run: |
+    #     7z a opensim-core-$VERSION.zip opensim-core-${VERSION}
+
+    # - name: Upload release asset
+    #   id: upload-release-asset
+    #   uses: actions/upload-release-asset@v1.0.1
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   with:
+    #     upload_url: ${{ steps.create-release.outputs.upload_url }}
+    #     asset_path: ./opensim-core-${{ github.ref }}.zip
+    #     asset_name: opensim-core-${{ github.ref }}.zip
+    #     asset_content_type: application/zip
 
 
   mac:
@@ -121,10 +154,15 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
-    - name: Install Homebrew and Python packages
+    - name: Install Homebrew packages
+      # Save the gfortran version to a file so we can use it in the cache key.
       run: |
-        brew install cmake autoconf libtool automake doxygen swig@3
+        brew install cmake pkgconfig autoconf libtool automake wget pcre doxygen
+        brew reinstall gcc
         pip3 install numpy
+        gfortran -v
+        mkdir gfortran_version
+        gfortran -v &> gfortran_version/gfortran_version.txt
 
     - name: Cache SWIG
       id: cache-swig
@@ -147,7 +185,10 @@ jobs:
       uses: actions/cache@v1
       with:
         path: ~/opensim_dependencies_install
-        key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
+        # If Homebrew updates the gcc package, then our cache of IPOPT is invalid.
+        # Specifically, the pkgcfg_lib_IPOPT_gfortran CMake variable becomes
+        # undefined.
+        key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}-${{ hashFiles('gfortran_version/*') }}
 
     - name: Build dependencies
       if: steps.cache-dependencies.outputs.cache-hit != 'true'
@@ -158,12 +199,14 @@ jobs:
         DEP_CMAKE_ARGS+=(-DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install)
         DEP_CMAKE_ARGS+=(-DCMAKE_BUILD_TYPE=Release)
         DEP_CMAKE_ARGS+=(-DSUPERBUILD_ezc3d=ON)
+        DEP_CMAKE_ARGS+=(-DOPENSIM_DISABLE_LOG_FILE=ON)
         DEP_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=10.10)
         printf '%s\n' "${DEP_CMAKE_ARGS[@]}"
         cmake "${DEP_CMAKE_ARGS[@]}"
         make --jobs 4
 
     - name: Configure opensim-core
+      id: configure
       run: |
         mkdir $GITHUB_WORKSPACE/../build
         cd $GITHUB_WORKSPACE/../build
@@ -182,6 +225,10 @@ jobs:
         OSIM_CMAKE_ARGS+=(-DCMAKE_CXX_FLAGS="-Werror")
         printf '%s\n' "${OSIM_CMAKE_ARGS[@]}"
         cmake "${OSIM_CMAKE_ARGS[@]}"
+        VERSION=`cmake -L . | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
+        echo $VERSION
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        echo "::set-output name=version::$VERSION"
 
     - name: Build opensim-core
       run: |
@@ -193,20 +240,15 @@ jobs:
         cd $GITHUB_WORKSPACE/../build
         ctest --parallel 4 --output-on-failure
 
-    - name: Obtain short git commit hash
-      id: commithash
-      shell: bash
-      run: echo "::set-output name=hash::$(git rev-parse --short HEAD)"
-
     - name: Install opensim-core
       run: |
         cd $GITHUB_WORKSPACE/../build
         make doxygen
         make install
         cd $GITHUB_WORKSPACE
-        mv $GITHUB_WORKSPACE/../opensim-core-install opensim-core-${{ steps.commithash.outputs.hash }}
-        zip --symlinks --recurse-paths --quiet opensim-core-${{ steps.commithash.outputs.hash }}.zip opensim-core-${{ steps.commithash.outputs.hash }}
-        mv opensim-core-${{ steps.commithash.outputs.hash }} $GITHUB_WORKSPACE/../opensim-core-install
+        mv $GITHUB_WORKSPACE/../opensim-core-install opensim-core-${{ steps.configure.outputs.version }}
+        zip --symlinks --recurse-paths --quiet opensim-core-${{ steps.configure.outputs.version }}.zip opensim-core-${{ steps.configure.outputs.version }}
+        mv opensim-core-${{ steps.configure.outputs.version }} $GITHUB_WORKSPACE/../opensim-core-install
 
     - name: Test Python bindings
       run: |
@@ -219,8 +261,34 @@ jobs:
       with:
         # The upload-artifact zipping does not preserve symlinks or executable
         # bits. So we zip ourselves, even though this causes a double-zip.
-        name: opensim-core-${{ steps.commithash.outputs.hash }}-mac
-        path: opensim-core-${{ steps.commithash.outputs.hash }}.zip
+        name: opensim-core-${{ steps.configure.outputs.version }}-mac
+        path: opensim-core-${{ steps.configure.outputs.version }}.zip
+
+    # - name: Create release
+    #   id: create-release
+    #   uses: actions/create-release@v1.0.0
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   with:
+    #     tag_name: ${{ github.ref }}
+    #     release_name: OpenSim Core ${{ steps.configure.outputs.version }}
+    #     draft: true
+    #     prerelease: false
+
+    # - name: Zip opensim-core
+    #   run: |
+    #     zip --symlinks --recurse-paths --quiet opensim-core-$VERSION.zip opensim-core-${VERSION}
+
+    # - name: Upload release asset
+    #   id: upload-release-asset
+    #   uses: actions/upload-release-asset@v1.0.1
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #   with:
+    #     upload_url: ${{ steps.create-release.outputs.upload_url }}
+    #     asset_path: ./opensim-core-${{ steps.configure.outputs.version }}.zip
+    #     asset_name: opensim-core-${{ steps.configure.outputs.version }}.zip
+    #     asset_content_type: application/zip
 
 
   ubuntu:
@@ -232,7 +300,7 @@ jobs:
     - uses: actions/checkout@v1
 
     - name: Install packages
-      run: sudo apt-get update && sudo apt-get install --yes liblapack-dev freeglut3-dev libxi-dev libxmu-dev doxygen python3 python3-dev python3-numpy python3-setuptools swig
+      run: sudo apt-get update && sudo apt-get install --yes build-essential libtool autoconf pkg-config gfortran libopenblas-dev liblapack-dev freeglut3-dev libxi-dev libxmu-dev doxygen python3 python3-dev python3-numpy python3-setuptools swig
 
     - name: Cache dependencies
       id: cache-dependencies
@@ -255,6 +323,7 @@ jobs:
         make --jobs 4
 
     - name: Configure opensim-core
+      id: configure
       run: |
         mkdir $GITHUB_WORKSPACE/../build
         cd $GITHUB_WORKSPACE/../build
@@ -271,6 +340,10 @@ jobs:
         OSIM_CMAKE_ARGS+=(-DCMAKE_CXX_FLAGS="-Werror")
         printf '%s\n' "${OSIM_CMAKE_ARGS[@]}"
         cmake "${OSIM_CMAKE_ARGS[@]}"
+        VERSION=`cmake -L . | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
+        echo $VERSION
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        echo "::set-output name=version::$VERSION"
 
     - name: Build opensim-core
       run: |
@@ -284,20 +357,15 @@ jobs:
         export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/opensim_dependencies_install/simbody/lib
         ctest --parallel 4 --output-on-failure
 
-    - name: Obtain short git commit hash
-      id: commithash
-      shell: bash
-      run: echo "::set-output name=hash::$(git rev-parse --short HEAD)"
-
     - name: Install opensim-core
       run: |
         cd $GITHUB_WORKSPACE/../build
         make doxygen
         make --jobs 4 install
         cd $GITHUB_WORKSPACE
-        mv $GITHUB_WORKSPACE/../opensim-core-install opensim-core-${{ steps.commithash.outputs.hash }}
-        zip --symlinks --recurse-paths --quiet opensim-core-${{ steps.commithash.outputs.hash }}.zip opensim-core-${{ steps.commithash.outputs.hash }}
-        mv opensim-core-${{ steps.commithash.outputs.hash }} $GITHUB_WORKSPACE/../opensim-core-install
+        mv $GITHUB_WORKSPACE/../opensim-core-install opensim-core-${{ steps.configure.outputs.version }}
+        zip --symlinks --recurse-paths --quiet opensim-core-${{ steps.configure.outputs.version }}.zip opensim-core-${{ steps.configure.outputs.version }}
+        mv opensim-core-${{ steps.configure.outputs.version }} $GITHUB_WORKSPACE/../opensim-core-install
 
     # - name: Test Python bindings
     #   run: |
@@ -311,8 +379,8 @@ jobs:
       with:
         # The upload-artifact zipping does not preserve symlinks or executable
         # bits. So we zip ourselves, even though this causes a double-zip.
-        name: opensim-core-${{ steps.commithash.outputs.hash }}-linux
-        path: opensim-core-${{ steps.commithash.outputs.hash }}.zip
+        name: opensim-core-${{ steps.configure.outputs.version }}-linux
+        path: opensim-core-${{ steps.configure.outputs.version }}.zip
 
 
   style:
@@ -331,4 +399,4 @@ jobs:
       # The GREP command here checks for any tab characters in the the files
       # that match the specified pattern. GREP does not pick up explicit tabs
       # (e.g., literally a \t in a source file).
-      run: if grep --line-num --recursive --exclude-dir="*dependencies*" --include={CMakeLists.txt,*.cpp,*.c,*.h} -P "\t" . ; then echo "Tabs found in the lines shown above. See CONTRIBUTING.md about tabs."; false; fi
+      run: if grep --line-num --recursive --exclude-dir="*dependencies*" --exclude-dir="*snopt*" --include={CMakeLists.txt,*.cpp,*.c,*.h} -P "\t" . ; then echo "Tabs found in the lines shown above. See CONTRIBUTING.md about tabs."; false; fi
