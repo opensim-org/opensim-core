@@ -112,7 +112,7 @@ void MocoStepTimeAsymmetryGoal::initializeOnModelImpl(const Model& model) const 
     checkPropertyValueIsInSet(getProperty_walking_direction(), directions);
     checkPropertyValueIsPositive(getProperty_contact_force_threshold());
     checkPropertyValueIsInRangeOrSet(getProperty_target_asymmetry(),
-            -1.0, 1.0, {});
+            -100.0, 100.0, {});
     checkPropertyValueIsPositive(getProperty_smoothing());
     // TODO what is the minimum possible number of collocation points?
     OPENSIM_THROW_IF(get_num_solver_collocation_points() < 2, Exception,
