@@ -174,14 +174,16 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
 
 
     } else { 
-
-        if(get_minimum_activation() > 0.){
+        double min_activation = get_minimum_activation();
+        if (min_activation > 0. && 
+            std::abs(clamp(0, min_activation, 1) -
+                                            min_activation) > SimTK::Eps) {
             log_info("'{}': Parameter update for the damped-model: "
                 "minimum_activation was {} but is now {}",
                    getName(), get_minimum_activation(), 
                    clamp(0, get_minimum_activation(), 1));
 
-            set_minimum_activation(clamp(0, get_minimum_activation(), 1));
+            set_minimum_activation(clamp(0, min_activation, 1));
         }
         if(falCurve.getMinValue() > 0.0){
             log_info("'{}' Parameter update for the damped-model: "
