@@ -48,7 +48,7 @@ void MocoStepTimeAsymmetryGoal::constructProperties() {
     constructProperty_contact_force_threshold(25);
     constructProperty_smoothing(10);
     constructProperty_target_asymmetry(0);
-    constructProperty_num_solver_collocation_points(100);
+    constructProperty_asymmetry_scale_factor(1.0);
 }
 
 void MocoStepTimeAsymmetryGoal::initializeOnModelImpl(const Model& model) const {
@@ -114,11 +114,6 @@ void MocoStepTimeAsymmetryGoal::initializeOnModelImpl(const Model& model) const 
     checkPropertyValueIsInRangeOrSet(getProperty_target_asymmetry(),
             -100.0, 100.0, {});
     checkPropertyValueIsPositive(getProperty_smoothing());
-    // TODO what is the minimum possible number of collocation points?
-    OPENSIM_THROW_IF(get_num_solver_collocation_points() < 2, Exception,
-            "The solver should be using at least 2 collocation points, but {} "
-            "was provided for 'num_solver_collocation_points.",
-            get_num_solver_collocation_points());
 
     // Assign the indices and signs for the contact force direction and walking
     // motion direction.
@@ -221,8 +216,11 @@ void MocoStepTimeAsymmetryGoal::calcIntegrandImpl(
 void MocoStepTimeAsymmetryGoal::calcGoalImpl(const GoalInput& input,
                                              SimTK::Vector& cost) const {
 
-    const double scale = 100.0 / get_num_solver_collocation_points();
-    cost[0] = scale * input.integral - get_target_asymmetry();
+    SimTK::Real timeInitial = input.initial_state.getTime();
+    SimTK::Real timeFinal = input.final_state.getTime();
+    SimTK::Real duration = timeFinal - timeInitial;
+    SimTK::Real asymmetry = 100.0 * input.integral / duration;
+    cost[0] = asymmetry - get_target_asymmetry();
     if (getModeIsCost()) {
         cost[0] *= cost[0];
     }

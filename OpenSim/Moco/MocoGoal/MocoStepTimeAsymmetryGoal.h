@@ -104,13 +104,6 @@ public:
     }
     double getTargetAsymmetry() { return get_target_asymmetry(); }
 
-    void setNumSolverCollocationPoints(int numColPoints) {
-        set_num_solver_collocation_points(numColPoints);
-    }
-    int getNumSolverCollocationPoints() {
-        return get_num_solver_collocation_points();
-    }
-
     void setContactForceDirection(const std::string& direction) {
         set_contact_force_direction(direction);
     }
@@ -157,7 +150,6 @@ private:
     OpenSim_DECLARE_PROPERTY(walking_direction, std::string, "TODO");
     OpenSim_DECLARE_PROPERTY(smoothing, double, "TODO");
     OpenSim_DECLARE_PROPERTY(target_asymmetry, double, "TODO");
-    OpenSim_DECLARE_PROPERTY(num_solver_collocation_points, int, "TODO");
     void constructProperties();
 
     mutable std::vector<SimTK::ReferencePtr<const SmoothSphereHalfSpaceForce>>
