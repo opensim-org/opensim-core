@@ -174,8 +174,8 @@ void Millard2012EquilibriumMuscle::extendFinalizeFromProperties()
 
 
     } else { 
-        double min_activation = get_minimum_activation();
-        double min_activation_clamped = clamp(0, min_activation, 1);
+        const double min_activation = get_minimum_activation();
+        const double min_activation_clamped = clamp(0, min_activation, 1);
         if (min_activation > 0. && 
             std::abs(min_activation_clamped -min_activation) > SimTK::Eps) {
             log_info("'{}': Parameter update for the damped-model: "
