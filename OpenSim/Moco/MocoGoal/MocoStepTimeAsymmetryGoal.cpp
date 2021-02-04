@@ -48,7 +48,6 @@ void MocoStepTimeAsymmetryGoal::constructProperties() {
     constructProperty_contact_force_threshold(25);
     constructProperty_smoothing(10);
     constructProperty_target_asymmetry(0);
-    constructProperty_asymmetry_scale_factor(1.0);
 }
 
 void MocoStepTimeAsymmetryGoal::initializeOnModelImpl(const Model& model) const {
