@@ -6,6 +6,9 @@ request related to the change, then we may provide the commit.
 
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
 
+v4.2.1
+======
+- Added Bhargava2004Metabolics, a smoothed version of the Bhargava metabolics model designed for gradient-based optimization (i.e., Moco).
 
 v4.2
 ====
