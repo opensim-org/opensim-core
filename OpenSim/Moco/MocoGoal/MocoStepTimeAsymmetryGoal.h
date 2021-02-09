@@ -24,6 +24,14 @@ namespace OpenSim {
 
 class SmoothSphereHalfSpaceForce;
 
+/** A contact group includes a list of contact force component paths in the
+model. One of these force elements is designated to locate the position of the
+foot (via the "foot_position_contact_force_path" property) which is necessary to
+compute step time asymmetry. The MocoStepTimeAsymmetryGoal determines when a foot
+is in contact with the ground when the total contact force from the sum of the
+elements in this group exceeds a user provided threshold.
+
+@see MocoStepTimeAsymmetryGoal */
 class OSIMMOCO_API MocoStepTimeAsymmetryGoalGroup : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoStepTimeAsymmetryGoalGroup, Object);
 public:
@@ -45,19 +53,34 @@ private:
     void constructProperties();
 };
 
-// TODO does the user need to specify "front foot"
-// TODO try to reduce the number of properties
-// TODO what should be the range for target asymmetry?
-
 /** Minimize or constrain the error between a model's step time asymmetry and a
 specified target asymmetry value over a gait cycle.
 
-Step Time Asymmetry is calculated as follows:
+Step Time Asymmetry (STA) is a percentage and is calculated as follows:
 Right Step Time (RST) = Time from left heel-strike to right heel-strike
 Left Step Time (LST)  = Time from right heel-strike to left heel-strike
-Step Time Asymmetry = (RST - LST) / (RST + LST)
+STA = 100 * (RST - LST) / (RST + LST)
 
-This Moco goal is to calculate step time (a)symmetry for a
+@note The only contact element supported is SmoothSphereHalfSpaceForce.
+
+\f[
+STA_{model} = \int_{t_i}^{t_f} tanh(smoothing * stepTime) ~dt
+100 * STA_{model} - STA_{target} = 0
+\f]
+We use the following notation:
+- \f$ t_i \f$: the initial time of this phase.
+- \f$ t_f \f$: the final time of this phase.
+
+- \f$ \hat{n} \f$: a vector used for projecting the force error.
+- \f$ \mathrm{proj}_{\hat{n}}() \f$: this function projects the force error
+    either onto \f$ \hat{n} \f$ or onto the plane perpendicular to
+    \f$ \hat{n} \f$.
+- \f$ \vec{F}_{m,j} \f$ the sum of the contact forces in group \f$ j \f$,
+    expressed in ground.
+- \f$ \vec{F}_{e,j} \f$ the experimental contact force for group \f$ j \f$,
+    expressed in ground.
+
+Step time asymmetry
 MOCO gait optimization. The target symmetry (=0) or asymmetry can be set
 via a Target Asymmetry Input. This goal could be implemented more like a
 constraint (like the Moco Speed Goal), or it can be used more like an
