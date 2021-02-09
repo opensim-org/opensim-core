@@ -61,25 +61,6 @@ Right Step Time (RST) = Time from left heel-strike to right heel-strike
 Left Step Time (LST)  = Time from right heel-strike to left heel-strike
 STA = 100 * (RST - LST) / (RST + LST)
 
-@note The only contact element supported is SmoothSphereHalfSpaceForce.
-
-\f[
-STA_{model} = \int_{t_i}^{t_f} tanh(smoothing * stepTime) ~dt
-100 * STA_{model} - STA_{target} = 0
-\f]
-We use the following notation:
-- \f$ t_i \f$: the initial time of this phase.
-- \f$ t_f \f$: the final time of this phase.
-
-- \f$ \hat{n} \f$: a vector used for projecting the force error.
-- \f$ \mathrm{proj}_{\hat{n}}() \f$: this function projects the force error
-    either onto \f$ \hat{n} \f$ or onto the plane perpendicular to
-    \f$ \hat{n} \f$.
-- \f$ \vec{F}_{m,j} \f$ the sum of the contact forces in group \f$ j \f$,
-    expressed in ground.
-- \f$ \vec{F}_{e,j} \f$ the experimental contact force for group \f$ j \f$,
-    expressed in ground.
-
 Step time asymmetry
 MOCO gait optimization. The target symmetry (=0) or asymmetry can be set
 via a Target Asymmetry Input. This goal could be implemented more like a
@@ -90,6 +71,8 @@ be made generic by setting that outside and passing in as an option.
 
 Negative values indicate quicker right steps than left steps, positive
 values indicate quicker left steps than right steps.
+
+@note The only contact element supported is SmoothSphereHalfSpaceForce.
 
 @note Due to necessary limitations within method used here, user should
 calculate the asymmetry index after running an optimization to either
@@ -109,12 +92,16 @@ public:
         constructProperties();
     }
 
+    /// Add the group of contact forces that determine the position of the left
+    /// foot and when it is in contact with the ground.
     void setLeftContactGroup(
             const std::vector<std::string>& contactForcePaths,
             const std::string& footPositionForcePath) {
         set_left_contact_group(MocoStepTimeAsymmetryGoalGroup(
                 contactForcePaths, footPositionForcePath));
     }
+    /// Add the group of contact forces that determine the position of the right
+    /// foot and when it is in contact with the ground.
     void setRightContactGroup(
             const std::vector<std::string>& contactForcePaths,
             const std::string& footPositionForcePath) {
@@ -147,6 +134,10 @@ public:
     void setSmoothing(double smoothing) { set_smoothing(smoothing); }
     double getSmoothing() { return get_smoothing(); }
 
+    OpenSim_DECLARE_PROPERTY(smoothing, double, "TODO");
+    OpenSim_DECLARE_PROPERTY(grf_smoothing, double, "TODO");
+    OpenSim_DECLARE_PROPERTY(front_foot_smoothing, double, "TODO");
+
 protected:
     bool getSupportsEndpointConstraintImpl() const override { return true; }
     Mode getDefaultModeImpl() const override {
@@ -171,7 +162,7 @@ private:
     OpenSim_DECLARE_PROPERTY(contact_force_direction, std::string, "TODO");
     OpenSim_DECLARE_PROPERTY(contact_force_threshold, double, "TODO");
     OpenSim_DECLARE_PROPERTY(walking_direction, std::string, "TODO");
-    OpenSim_DECLARE_PROPERTY(smoothing, double, "TODO");
+    //OpenSim_DECLARE_PROPERTY(smoothing, double, "TODO");
     OpenSim_DECLARE_PROPERTY(target_asymmetry, double, "TODO");
     void constructProperties();
 

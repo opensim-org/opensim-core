@@ -46,6 +46,8 @@ void MocoStepTimeAsymmetryGoal::constructProperties() {
     constructProperty_contact_force_direction("positive-y");
     constructProperty_walking_direction("positive-x");
     constructProperty_contact_force_threshold(25);
+    constructProperty_grf_smoothing(0.25);
+    constructProperty_front_foot_smoothing(100);
     constructProperty_smoothing(10);
     constructProperty_target_asymmetry(0);
 }
@@ -163,10 +165,10 @@ void MocoStepTimeAsymmetryGoal::calcIntegrandImpl(
     // asymmetry values.
     const double rightContactDetect = -m_conditional(
             rightForce - get_contact_force_threshold(), 0.5, 0.5,
-            0.025 * get_smoothing());
+            get_grf_smoothing());
     const double leftContactDetect = m_conditional(
             leftForce - get_contact_force_threshold(), 0.5, 0.5,
-            0.025 * get_smoothing());
+            get_grf_smoothing());
 
     // Now get the locations of each heel contact sphere, and calculate
     // which foot is in front of the other. This is necessary because of the
@@ -181,7 +183,7 @@ void MocoStepTimeAsymmetryGoal::calcIntegrandImpl(
     // This number will be -1 when left foot is in front, the +1 when right
     // foot is in front.
     double frontFoot = m_conditional(rightPos - leftPos, 0, 1,
-                                     10 * get_smoothing());
+                                     get_front_foot_smoothing());
 
     // During double support, leftContactDetect will equal -1 and
     // rightContactDetect will equal 1. To avoid these values canceling each
