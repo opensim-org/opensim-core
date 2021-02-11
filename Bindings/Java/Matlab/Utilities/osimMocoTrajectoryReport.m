@@ -464,9 +464,9 @@ classdef osimMocoTrajectoryReport < handle
                         if ~isvarname(colLabel)
                             % Find any non-alphanumeric characters and replace with '_'
                             colLabel(~(isstrprop(colLabel, 'alphanum'))) = '_';
-                            % Check if first character is a letter, and append 'unlabeled' if not
-                            if ~(isletter(colLabel(1)))
-                                colLabel = colLabel(2:end);
+                            % Check if first character is a letter, and prepend 'a_' if not.
+                            if ~(isletter(col_label(1)))
+                                col_label = ['a_' col_label(2:end)];
                             end
                         end
                         if ~isempty(find(strcmp(fieldnames(ref), colLabel), 1))
