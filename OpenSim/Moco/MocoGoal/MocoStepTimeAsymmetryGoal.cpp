@@ -43,13 +43,12 @@ void MocoStepTimeAsymmetryGoalGroup::constructProperties() {
 void MocoStepTimeAsymmetryGoal::constructProperties() {
     constructProperty_left_contact_group(MocoStepTimeAsymmetryGoalGroup());
     constructProperty_right_contact_group(MocoStepTimeAsymmetryGoalGroup());
+    constructProperty_target_asymmetry(0);
+    constructProperty_contact_force_threshold(25);
     constructProperty_contact_force_direction("positive-y");
     constructProperty_walking_direction("positive-x");
-    constructProperty_contact_force_threshold(25);
     constructProperty_grf_smoothing(0.25);
-    constructProperty_front_foot_smoothing(100);
     constructProperty_smoothing(10);
-    constructProperty_target_asymmetry(0);
 }
 
 void MocoStepTimeAsymmetryGoal::initializeOnModelImpl(const Model& model) const {
@@ -113,7 +112,7 @@ void MocoStepTimeAsymmetryGoal::initializeOnModelImpl(const Model& model) const 
     checkPropertyValueIsInSet(getProperty_walking_direction(), directions);
     checkPropertyValueIsPositive(getProperty_contact_force_threshold());
     checkPropertyValueIsInRangeOrSet(getProperty_target_asymmetry(),
-            -100.0, 100.0, {});
+            -1.0, 1.0, {});
     checkPropertyValueIsPositive(getProperty_smoothing());
 
     // Assign the indices and signs for the contact force direction and walking
@@ -182,8 +181,7 @@ void MocoStepTimeAsymmetryGoal::calcIntegrandImpl(
 
     // This number will be -1 when left foot is in front, the +1 when right
     // foot is in front.
-    double frontFoot = m_conditional(rightPos - leftPos, 0, 1,
-                                     get_front_foot_smoothing());
+    double frontFoot = m_conditional(rightPos - leftPos, 0, 1, 100);
 
     // During double support, leftContactDetect will equal -1 and
     // rightContactDetect will equal 1. To avoid these values canceling each
@@ -221,7 +219,7 @@ void MocoStepTimeAsymmetryGoal::calcGoalImpl(const GoalInput& input,
     SimTK::Real timeInitial = input.initial_state.getTime();
     SimTK::Real timeFinal = input.final_state.getTime();
     SimTK::Real duration = timeFinal - timeInitial;
-    SimTK::Real asymmetry = 100.0 * input.integral / duration;
+    SimTK::Real asymmetry = input.integral / duration;
     cost[0] = asymmetry - get_target_asymmetry();
     if (getModeIsCost()) {
         cost[0] *= cost[0];

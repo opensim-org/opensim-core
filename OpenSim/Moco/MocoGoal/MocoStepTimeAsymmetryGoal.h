@@ -26,7 +26,7 @@ class SmoothSphereHalfSpaceForce;
 
 /** A contact group includes a list of contact force component paths in the
 model. One of these force elements is designated to locate the position of the
-foot (via the "foot_position_contact_force_path" property) which is necessary to
+foot (via the 'foot_position_contact_force_path' property) which is necessary to
 compute step time asymmetry. The MocoStepTimeAsymmetryGoal determines when a foot
 is in contact with the ground when the total contact force from the sum of the
 elements in this group exceeds a user provided threshold.
@@ -59,25 +59,29 @@ specified target asymmetry value over a gait cycle.
 Step Time Asymmetry (STA) is a percentage and is calculated as follows:
 Right Step Time (RST) = Time from left heel-strike to right heel-strike
 Left Step Time (LST)  = Time from right heel-strike to left heel-strike
-STA = 100 * (RST - LST) / (RST + LST)
+STA = (RST - LST) / (RST + LST)
 
-Step time asymmetry
-MOCO gait optimization. The target symmetry (=0) or asymmetry can be set
-via a Target Asymmetry Input. This goal could be implemented more like a
-constraint (like the Moco Speed Goal), or it can be used more like an
-objective function term, with a weighting. The naming convention for the
-heel contact sphere is used to grab the location of the foot, this could
-be made generic by setting that outside and passing in as an option.
+In this goal, step time asymmetry is estimated by detecting if a foot in contact
+with the ground at a given time point. We count positive values when the left
+foot is in contact, and negative values when the right is in contact. Therefore,
+positive asymmetry means longer left step times, and negative asymmetry means
+longer right step times. At time points when both feet are in contact, the step
+time is counted towards the leading foot.
 
-Negative values indicate quicker right steps than left steps, positive
-values indicate quicker left steps than right steps.
+The target asymmetry can be set via the 'target_asymmetry' property; a symmetric
+step time solution can be achieved by setting this property to zero. This goal
+can be used in either 'cost' mode or 'endpoint constraint' model. In 'cost', mode
+the error between the target asymmetry and model asymmetry is squared. To make
+this goal suitable for gradient-based optimization, step time values are assigned
+via smoothing functions which can be controlled via the <TODO> propertie(s).
+
+TODO notes about goal best practices (i.e., only used for bipedal gait, other
+necessary constraints, etc.)
 
 @note The only contact element supported is SmoothSphereHalfSpaceForce.
 
-@note Due to necessary limitations within method used here, user should
-calculate the asymmetry index after running an optimization to either
-confirm that it matched the target symmetry, or find the deviation from the
-target symmetry.
+@note Since this goal approximates step time asymmetry, users should calculate
+the true asymmetry index after running an optimization.s
 
 @ingroup mocogoal */
 class OSIMMOCO_API MocoStepTimeAsymmetryGoal : public MocoGoal {
@@ -109,11 +113,26 @@ public:
                 contactForcePaths, footPositionForcePath));
     }
 
+    /// Set the asymmetry value targeted by this goal. If using 'cost' mode, the
+    /// error between the target asymmetry and the model asymmetry is squared.
     void setTargetAsymmetry(double asymmetry) {
         set_target_asymmetry(asymmetry);
     }
     double getTargetAsymmetry() { return get_target_asymmetry(); }
 
+    /// Set the threshold force value used to detect is a foot is in contact with
+    /// the ground.
+    void setContactForceThreshold(double threshold) {
+        set_contact_force_threshold(threshold);
+    }
+    double getContactForceThreshold() { return get_contact_force_threshold(); }
+
+    /// Set the direction in ground of the total contact force component used to
+    /// detect foot contact. When the contact force component for a foot exceeds
+    /// the force set by the 'contact_force_threshold' property, we register that
+    /// foot as in contact with the ground. Acceptable direction values include
+    /// "positive-x", "positive-y", "positive-z", "negative-x", "negative-y", and
+    /// "negative-z". Default: "positive-y".
     void setContactForceDirection(const std::string& direction) {
         set_contact_force_direction(direction);
     }
@@ -121,22 +140,20 @@ public:
         return get_contact_force_direction();
     }
 
-    void setContactForceThreshold(double threshold) {
-        set_contact_force_threshold(threshold);
-    }
-    double getContactForceThreshold() { return get_contact_force_threshold(); }
-
+    /// Set the walking direction of the model in the ground frame, which is used
+    /// to determine the leading foot during double support. Acceptable direction
+    /// values include "positive-x", "positive-y", "positive-z", "negative-x",
+    /// "negative-y", and "negative-z". Default: "positive-x".
     void setWalkingDirection(const std::string& direction) {
         set_walking_direction(direction);
     }
     std::string getWalkingDirection() { return get_walking_direction(); }
 
+    /// TODO smoothing docs
     void setSmoothing(double smoothing) { set_smoothing(smoothing); }
     double getSmoothing() { return get_smoothing(); }
-
     OpenSim_DECLARE_PROPERTY(smoothing, double, "TODO");
     OpenSim_DECLARE_PROPERTY(grf_smoothing, double, "TODO");
-    OpenSim_DECLARE_PROPERTY(front_foot_smoothing, double, "TODO");
 
 protected:
     bool getSupportsEndpointConstraintImpl() const override { return true; }
@@ -159,11 +176,11 @@ private:
             "Paths to SmoothSphereHalfSpaceForce objects on the right foot of "
             "the model whose forces are summed to determine when the right foot "
             "is in contact with the ground.");
-    OpenSim_DECLARE_PROPERTY(contact_force_direction, std::string, "TODO");
+    OpenSim_DECLARE_PROPERTY(target_asymmetry, double, "TODO");
     OpenSim_DECLARE_PROPERTY(contact_force_threshold, double, "TODO");
+    OpenSim_DECLARE_PROPERTY(contact_force_direction, std::string, "TODO");
     OpenSim_DECLARE_PROPERTY(walking_direction, std::string, "TODO");
     //OpenSim_DECLARE_PROPERTY(smoothing, double, "TODO");
-    OpenSim_DECLARE_PROPERTY(target_asymmetry, double, "TODO");
     void constructProperties();
 
     mutable std::vector<SimTK::ReferencePtr<const SmoothSphereHalfSpaceForce>>
