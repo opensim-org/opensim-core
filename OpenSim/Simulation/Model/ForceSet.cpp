@@ -42,6 +42,13 @@ void ForceSet::extendConnectToModel(Model& aModel)
     updateMuscles();
 }
 
+ForceSet::ForceSet() = default;
+ForceSet::ForceSet(const ForceSet&) = default;
+ForceSet::ForceSet(ForceSet&&) = default;
+ForceSet& ForceSet::operator=(ForceSet&&) = default;
+ForceSet& ForceSet::operator=(const ForceSet&) = default;
+ForceSet::~ForceSet() = default;
+
 
 //=============================================================================
 // GET AND SET
