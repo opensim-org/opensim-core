@@ -43,10 +43,40 @@ void ForceSet::extendConnectToModel(Model& aModel)
 }
 
 ForceSet::ForceSet() = default;
-ForceSet::ForceSet(const ForceSet&) = default;
+
+// this custom copy constructor is necesssary to prevent a leak that can
+// form when _actuators and _muscles are recursively copy-constructed. The
+// leak happens because `Set<T>::Set(const Set<T>&)` will `.clone()` all
+// elements inside the set - even if they aren't owned. Here, _actuators
+// and _muscles are just lookups into *this and shouldn't be owned.
+//
+// see:
+//     https://github.com/opensim-org/opensim-core/issues/2944
+ForceSet::ForceSet(const ForceSet& other) :
+    Super{other},
+    _actuators{},
+    _muscles{} {
+
+    updateActuators();
+    updateMuscles();
+}
+
 ForceSet::ForceSet(ForceSet&&) = default;
 ForceSet& ForceSet::operator=(ForceSet&&) = default;
-ForceSet& ForceSet::operator=(const ForceSet&) = default;
+
+// see copy ctor for why this is here
+//
+// see:
+//     https://github.com/opensim-org/opensim-core/issues/2944
+ForceSet& ForceSet::operator=(const ForceSet& other) {
+    Super::operator=(other);
+
+    updateActuators();
+    updateMuscles();
+
+    return *this;
+}
+
 ForceSet::~ForceSet() = default;
 
 
