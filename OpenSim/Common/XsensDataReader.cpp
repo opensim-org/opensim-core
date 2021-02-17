@@ -18,7 +18,7 @@ XsensDataReader::extendRead(const std::string& folderName) const {
     std::vector<std::string> labels;
     // files specified by prefix + file name exist
     double dataRate = SimTK::NaN;
-    int packetCounterIndex = -1;
+    int packetCounterIndex;
     int accIndex = -1;
     int gyroIndex = -1;
     int magIndex = -1;
