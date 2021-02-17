@@ -18,7 +18,7 @@ XsensDataReader::extendRead(const std::string& folderName) const {
     std::vector<std::string> labels;
     // files specified by prefix + file name exist
     double dataRate = SimTK::NaN;
-    int packetCounterIndex;
+    //int packetCounterIndex;
     int accIndex = -1;
     int gyroIndex = -1;
     int magIndex = -1;
@@ -72,7 +72,7 @@ XsensDataReader::extendRead(const std::string& folderName) const {
         // Find indices for PacketCounter, Acc_{X,Y,Z}, Gyr_{X,Y,Z},
         // Mag_{X,Y,Z} on first non-comment line
         tokens = FileAdapter::tokenize(line, "\t");
-        packetCounterIndex = find_index(tokens, "PacketCounter");
+        //int packetCounterIndex = find_index(tokens, "PacketCounter");
         if (accIndex == -1) accIndex = find_index(tokens, "Acc_X");
         if (gyroIndex == -1) gyroIndex = find_index(tokens, "Gyr_X");
         if (magIndex == -1) magIndex = find_index(tokens, "Mag_X");
