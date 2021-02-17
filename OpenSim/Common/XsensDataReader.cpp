@@ -53,7 +53,6 @@ XsensDataReader::extendRead(const std::string& folderName) const {
         // Skip lines to get to data
         std::string line;
         auto commentLine = true;
-        packetCounterIndex = -1; // Force moving file pointer to beginning of data for each stream
         std::getline(*nextStream, line);
         auto isCommentLine = [](std::string aline) {
             return aline.substr(0, 2) == "//";
