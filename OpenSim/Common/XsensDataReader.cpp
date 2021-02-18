@@ -18,7 +18,7 @@ XsensDataReader::extendRead(const std::string& folderName) const {
     std::vector<std::string> labels;
     // files specified by prefix + file name exist
     double dataRate = SimTK::NaN;
-    //int packetCounterIndex;
+    
     int accIndex = -1;
     int gyroIndex = -1;
     int magIndex = -1;
@@ -59,9 +59,9 @@ XsensDataReader::extendRead(const std::string& folderName) const {
         };
         std::vector<std::string> tokens;
         while (commentLine) {
-            // Comment lines of arbitrray naumber on the form // "key":"value"
-            tokens =FileAdapter::tokenize(line.substr(2), ":");
-            // Will populate map from first file/imu only assume they all have same format
+            // Comment lines of arbitrary naumber on the form // "key":"value"
+            tokens =FileAdapter::tokenize(line.substr(2), ":"); //Skip leading 2 chars tokenize on :
+            // Will populate map from first file/imu only, assume they all have same format
             if (tokens.size() == 2 && index == 0) {
                 // Put values in map
                 headersKeyValuePairs[tokens[0]] = tokens[1];
@@ -69,10 +69,10 @@ XsensDataReader::extendRead(const std::string& folderName) const {
             std::getline(*nextStream, line);
             commentLine = isCommentLine(line);
         }
-        // Find indices for PacketCounter, Acc_{X,Y,Z}, Gyr_{X,Y,Z},
-        // Mag_{X,Y,Z} on first non-comment line
+        // Find indices for Acc_{X,Y,Z}, Gyr_{X,Y,Z},
+        // Mag_{X,Y,Z}, Mat on first non-comment line
         tokens = FileAdapter::tokenize(line, "\t");
-        //int packetCounterIndex = find_index(tokens, "PacketCounter");
+        
         if (accIndex == -1) accIndex = find_index(tokens, "Acc_X");
         if (gyroIndex == -1) gyroIndex = find_index(tokens, "Gyr_X");
         if (magIndex == -1) magIndex = find_index(tokens, "Mag_X");
@@ -84,7 +84,7 @@ XsensDataReader::extendRead(const std::string& folderName) const {
     if (it != headersKeyValuePairs.end())
         dataRate = std::stod(it->second);
     else
-        dataRate = 40.0; // Need confirmation from XSens
+        dataRate = 40.0; // Need confirmation from XSens as later files don't specify rate
     // internally keep track of what data was found in input files
     bool foundLinearAccelerationData = (accIndex != -1);
     bool foundMagneticHeadingData = (magIndex != -1);
