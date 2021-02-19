@@ -134,6 +134,17 @@ int main() {
         auto accelTable4 = tables4.at(XsensDataReader::LinearAccelerations);
         ASSERT(accelTable4->getNumRows() == 4);
 
+        // Now a file exported from MTManager2020.0.2
+        XsensDataReaderSettings readerSettings5;
+        ExperimentalSensor nextSensor5("MT_01200312-002-000_00B474BA", "test");
+        readerSettings5.append_ExperimentalSensors(nextSensor5);
+        XsensDataReader reader5(readerSettings5);
+        DataAdapter::OutputTables tables5 = reader5.read("./");
+        auto accelTable5 = tables5.at(XsensDataReader::LinearAccelerations);
+        ASSERT(accelTable5->getNumRows() == 5);
+        //const TimeSeriesTableQuaternion& quatTable5 =
+        //        reader5.getOrientationsTable(tables5);
+        // STOFileAdapterQuaternion::write(quatTable5, "2020-0-2-quaternions.sto");
     }
     catch (const std::exception& ex) {
         std::cout << "testXsensDataReader FAILED: " << ex.what() << std::endl;
