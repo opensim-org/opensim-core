@@ -59,8 +59,8 @@ XsensDataReader::extendRead(const std::string& folderName) const {
         };
         std::vector<std::string> tokens;
         while (commentLine) {
-            // Comment lines of arbitrary naumber on the form // "key":"value"
-            tokens =FileAdapter::tokenize(line.substr(2), ":"); //Skip leading 2 chars tokenize on :
+            // Comment lines of arbitrary number on the form // "key":"value"
+            tokens =FileAdapter::tokenize(line.substr(2), ":"); //Skip leading 2 chars tokenize on ':'
             // Will populate map from first file/imu only, assume they all have same format
             if (tokens.size() == 2 && index == 0) {
                 // Put values in map
