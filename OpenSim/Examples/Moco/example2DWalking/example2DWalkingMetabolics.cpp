@@ -65,7 +65,8 @@ void gaitTrackingMetabolics() {
     Model baseModel("2D_gait.osim");
 
     // Add metabolics
-    Bhargava2004Metabolics* metabolics = new Bhargava2004Metabolics();
+    Bhargava2004SmoothedMuscleMetabolics* metabolics =
+            new Bhargava2004SmoothedMuscleMetabolics();
     metabolics->setName("metabolics");
     metabolics->set_use_smoothing(true);
     metabolics->addMuscle("hamstrings_r",

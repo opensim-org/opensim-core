@@ -17,7 +17,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "Bhargava2004Metabolics.h"
+#include "Bhargava2004SmoothedMuscleMetabolics.h"
 
 #include <SimTKcommon/internal/State.h>
 
@@ -30,16 +30,14 @@ using namespace OpenSim;
 //  Bhargava2004Metabolics_MuscleParameters
 //=============================================================================
 
-Bhargava2004Metabolics_MuscleParameters::
-Bhargava2004Metabolics_MuscleParameters() {
+Bhargava2004SmoothedMuscleMetabolics_MuscleParameters::
+        Bhargava2004SmoothedMuscleMetabolics_MuscleParameters() {
     constructProperties();
 }
 
 // Set the muscle mass internal member variable muscleMass based on
 // whether the use_provided_muscle_mass property is true or false.
-void Bhargava2004Metabolics_MuscleParameters::
-setMuscleMass()
-{
+void Bhargava2004SmoothedMuscleMetabolics_MuscleParameters::setMuscleMass() {
     if (get_use_provided_muscle_mass())
         muscleMass = get_provided_muscle_mass();
     else {
@@ -49,9 +47,9 @@ setMuscleMass()
         }
 }
 
-void Bhargava2004Metabolics_MuscleParameters::
-constructProperties()
-{
+void Bhargava2004SmoothedMuscleMetabolics_MuscleParameters::
+        constructProperties() {
+
     // Specific tension of mammalian muscle (Pascals (N/m^2)).
     constructProperty_specific_tension(0.25e6);
     // Density of mammalian muscle (kg/m^3).
@@ -72,8 +70,7 @@ constructProperties()
 //=============================================================================
 //  Bhargava2004Metabolics
 //=============================================================================
-Bhargava2004Metabolics::Bhargava2004Metabolics()
-{
+Bhargava2004SmoothedMuscleMetabolics::Bhargava2004SmoothedMuscleMetabolics() {
     constructProperties();
     const int curvePoints = 5;
     const double curveX[] = {0.0, 0.5, 1.0, 1.5, 10.0};
@@ -85,9 +82,11 @@ Bhargava2004Metabolics::Bhargava2004Metabolics()
 // Add a muscle with default Bhargava2004Metabolics_MuscleParameters so that it
 // can be included in the metabolics analysis. If no muscle mass is provided
 // (or if set to NaN) a default approximation is used to calculate it.
-void Bhargava2004Metabolics::addMuscle(const std::string& name,
+void Bhargava2004SmoothedMuscleMetabolics::addMuscle(
+        const std::string& name,
         const Muscle& muscle, double muscle_mass) {
-    append_muscle_parameters(Bhargava2004Metabolics_MuscleParameters());
+    append_muscle_parameters(
+            Bhargava2004SmoothedMuscleMetabolics_MuscleParameters());
     auto& mp = upd_muscle_parameters(
             getProperty_muscle_parameters().size() - 1);
     mp.setName(name);
@@ -105,10 +104,11 @@ void Bhargava2004Metabolics::addMuscle(const std::string& name,
 // slow twitch fibers ratio and specific tension so that it can be included in
 // the metabolics analysis. If no muscle mass is provided (or if set to NaN) a
 // default approximation is used to calculate it.
-void Bhargava2004Metabolics::addMuscle(const std::string& name,
+void Bhargava2004SmoothedMuscleMetabolics::addMuscle(const std::string& name,
         const Muscle& muscle, double ratio_slow_twitch_fibers,
         double specific_tension, double muscle_mass) {
-    append_muscle_parameters(Bhargava2004Metabolics_MuscleParameters());
+    append_muscle_parameters(
+            Bhargava2004SmoothedMuscleMetabolics_MuscleParameters());
     auto& mp = upd_muscle_parameters(
             getProperty_muscle_parameters().size() - 1);
     mp.setName(name);
@@ -127,14 +127,15 @@ void Bhargava2004Metabolics::addMuscle(const std::string& name,
 // Add a muscle and specifiy all Bhargava2004Metabolics_MuscleParameters. If
 // no muscle mass is provided (or if set to NaN) a default approximation is
 // used to calculate it.
-void Bhargava2004Metabolics::addMuscle(const std::string& name,
+void Bhargava2004SmoothedMuscleMetabolics::addMuscle(const std::string& name,
         const Muscle& muscle, double ratio_slow_twitch_fibers,
         double specific_tension, double activation_constant_slow_twitch,
         double activation_constant_fast_twitch,
         double maintenance_constant_slow_twitch,
         double maintenance_constant_fast_twitch,
         double muscle_mass) {
-    append_muscle_parameters(Bhargava2004Metabolics_MuscleParameters());
+    append_muscle_parameters(
+            Bhargava2004SmoothedMuscleMetabolics_MuscleParameters());
     auto& mp = upd_muscle_parameters(
             getProperty_muscle_parameters().size() - 1);
     mp.setName(name);
@@ -154,8 +155,7 @@ void Bhargava2004Metabolics::addMuscle(const std::string& name,
     mp.setMuscleMass();
 }
 
-void Bhargava2004Metabolics::constructProperties()
-{
+void Bhargava2004SmoothedMuscleMetabolics::constructProperties() {
     constructProperty_muscle_parameters();
 
     constructProperty_enforce_minimum_heat_rate_per_muscle(true);
@@ -174,7 +174,7 @@ void Bhargava2004Metabolics::constructProperties()
     constructProperty_heat_rate_smoothing(10);
 }
 
-void Bhargava2004Metabolics::extendFinalizeFromProperties() {
+void Bhargava2004SmoothedMuscleMetabolics::extendFinalizeFromProperties() {
     if (get_use_smoothing()) {
         m_tanh_conditional = [](const double& cond, const double& left,
                 const double& right, const double& smoothing, const int&) {
@@ -214,7 +214,7 @@ void Bhargava2004Metabolics::extendFinalizeFromProperties() {
     }
 }
 
-double Bhargava2004Metabolics::getTotalMetabolicRate(
+double Bhargava2004SmoothedMuscleMetabolics::getTotalMetabolicRate(
         const SimTK::State& s) const {
     // BASAL METABOLIC RATE (W) (based on whole body mass, not muscle mass).
     // ---------------------------------------------------------------------
@@ -224,33 +224,33 @@ double Bhargava2004Metabolics::getTotalMetabolicRate(
     return getMetabolicRate(s).sum() + Bdot;
 }
 
-double Bhargava2004Metabolics::getTotalActivationRate(
+double Bhargava2004SmoothedMuscleMetabolics::getTotalActivationRate(
         const SimTK::State& s) const {
     return getActivationRate(s).sum();
 }
 
-double Bhargava2004Metabolics::getTotalMaintenanceRate(
+double Bhargava2004SmoothedMuscleMetabolics::getTotalMaintenanceRate(
         const SimTK::State& s) const {
     return getMaintenanceRate(s).sum();
 }
 
-double Bhargava2004Metabolics::getTotalShorteningRate(
+double Bhargava2004SmoothedMuscleMetabolics::getTotalShorteningRate(
         const SimTK::State& s) const {
     return getShorteningRate(s).sum();
 }
 
-double Bhargava2004Metabolics::getTotalMechanicalWorkRate(
+double Bhargava2004SmoothedMuscleMetabolics::getTotalMechanicalWorkRate(
         const SimTK::State& s) const {
     return getMechanicalWorkRate(s).sum();
 }
 
-double Bhargava2004Metabolics::getMuscleMetabolicRate(
+double Bhargava2004SmoothedMuscleMetabolics::getMuscleMetabolicRate(
         const SimTK::State& s, const std::string& channel) const {
     return getMetabolicRate(s).get(m_muscleIndices.at(channel));
 }
 
-void Bhargava2004Metabolics::extendRealizeTopology(SimTK::State& state)
-const {
+void Bhargava2004SmoothedMuscleMetabolics::extendRealizeTopology(
+        SimTK::State& state) const {
     Super::extendRealizeTopology(state);
     m_muscleIndices.clear();
     for (int i=0; i < getProperty_muscle_parameters().size(); ++i) {
@@ -262,7 +262,7 @@ const {
     }
 }
 
-void Bhargava2004Metabolics::extendAddToSystem(
+void Bhargava2004SmoothedMuscleMetabolics::extendAddToSystem(
         SimTK::MultibodySystem& system) const {
     Super::extendAddToSystem(system);
     SimTK::Vector rates = SimTK::Vector((int)m_muscleIndices.size(), 0.0);
@@ -278,7 +278,7 @@ void Bhargava2004Metabolics::extendAddToSystem(
             SimTK::Stage::Dynamics);
 }
 
-void Bhargava2004Metabolics::calcMetabolicRateForCache(
+void Bhargava2004SmoothedMuscleMetabolics::calcMetabolicRateForCache(
     const SimTK::State& s) const {
     calcMetabolicRate(s,
             updCacheVariableValue<SimTK::Vector>(s, "metabolic_rate"),
@@ -294,7 +294,7 @@ void Bhargava2004Metabolics::calcMetabolicRateForCache(
     markCacheVariableValid(s, "mechanical_work_rate");
 }
 
-const SimTK::Vector& Bhargava2004Metabolics::getMetabolicRate(
+const SimTK::Vector& Bhargava2004SmoothedMuscleMetabolics::getMetabolicRate(
         const SimTK::State& s) const {
     if (!isCacheVariableValid(s, "metabolic_rate")) {
         calcMetabolicRateForCache(s);
@@ -302,7 +302,7 @@ const SimTK::Vector& Bhargava2004Metabolics::getMetabolicRate(
     return getCacheVariableValue<SimTK::Vector>(s, "metabolic_rate");
 }
 
-const SimTK::Vector& Bhargava2004Metabolics::getActivationRate(
+const SimTK::Vector& Bhargava2004SmoothedMuscleMetabolics::getActivationRate(
         const SimTK::State& s) const {
     if (!isCacheVariableValid(s, "activation_rate")) {
         calcMetabolicRateForCache(s);
@@ -310,7 +310,7 @@ const SimTK::Vector& Bhargava2004Metabolics::getActivationRate(
     return getCacheVariableValue<SimTK::Vector>(s, "activation_rate");
 }
 
-const SimTK::Vector& Bhargava2004Metabolics::getMaintenanceRate(
+const SimTK::Vector& Bhargava2004SmoothedMuscleMetabolics::getMaintenanceRate(
         const SimTK::State& s) const {
     if (!isCacheVariableValid(s, "maintenance_rate")) {
         calcMetabolicRateForCache(s);
@@ -318,7 +318,7 @@ const SimTK::Vector& Bhargava2004Metabolics::getMaintenanceRate(
     return getCacheVariableValue<SimTK::Vector>(s, "maintenance_rate");
 }
 
-const SimTK::Vector& Bhargava2004Metabolics::getShorteningRate(
+const SimTK::Vector& Bhargava2004SmoothedMuscleMetabolics::getShorteningRate(
         const SimTK::State& s) const {
     if (!isCacheVariableValid(s, "shortening_rate")) {
         calcMetabolicRateForCache(s);
@@ -326,7 +326,8 @@ const SimTK::Vector& Bhargava2004Metabolics::getShorteningRate(
     return getCacheVariableValue<SimTK::Vector>(s, "shortening_rate");
 }
 
-const SimTK::Vector& Bhargava2004Metabolics::getMechanicalWorkRate(
+const SimTK::Vector&
+Bhargava2004SmoothedMuscleMetabolics::getMechanicalWorkRate(
         const SimTK::State& s) const {
     if (!isCacheVariableValid(s, "mechanical_work_rate")) {
         calcMetabolicRateForCache(s);
@@ -334,7 +335,7 @@ const SimTK::Vector& Bhargava2004Metabolics::getMechanicalWorkRate(
     return getCacheVariableValue<SimTK::Vector>(s, "mechanical_work_rate");
 }
 
-void Bhargava2004Metabolics::calcMetabolicRate(
+void Bhargava2004SmoothedMuscleMetabolics::calcMetabolicRate(
         const SimTK::State& s, SimTK::Vector& totalRatesForMuscles,
         SimTK::Vector& activationRatesForMuscles,
         SimTK::Vector& maintenanceRatesForMuscles,
@@ -536,7 +537,6 @@ void Bhargava2004Metabolics::calcMetabolicRate(
     }
 }
 
-int Bhargava2004Metabolics::getNumMetabolicMuscles() const
-{
+int Bhargava2004SmoothedMuscleMetabolics::getNumMetabolicMuscles() const {
     return getProperty_muscle_parameters().size();
 }

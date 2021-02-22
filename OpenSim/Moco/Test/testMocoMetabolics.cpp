@@ -23,7 +23,7 @@
 
 using namespace OpenSim;
 
-TEST_CASE("Bhargava2004Metabolics basics") {
+TEST_CASE("Bhargava2004SmoothedMuscleMetabolics basics") {
 
     Model model;
     model.setName("muscle");
@@ -43,15 +43,16 @@ TEST_CASE("Bhargava2004Metabolics basics") {
     auto& muscle = model.getComponent<DeGrooteFregly2016Muscle>("muscle");
 
     // Add non-smooth metabolics.
-    auto metabolicsPtr_nonSmooth = new Bhargava2004Metabolics();
+    auto metabolicsPtr_nonSmooth = new Bhargava2004SmoothedMuscleMetabolics();
     metabolicsPtr_nonSmooth->setName("metabolics_nonSmooth");
     metabolicsPtr_nonSmooth->set_include_negative_mechanical_work(false);
     metabolicsPtr_nonSmooth->addMuscle("muscle",  muscle);
     model.addComponent(metabolicsPtr_nonSmooth);
     auto& metabolics_nonSmooth =
-            model.getComponent<Bhargava2004Metabolics>("metabolics_nonSmooth");
+            model.getComponent<Bhargava2004SmoothedMuscleMetabolics>("metabolics_nonSmooth");
     // Add non-smooth metabolics with force_dependent_shortening_prop_constant.
-    auto metabolicsPtr_forceDep_nonSmooth = new Bhargava2004Metabolics();
+    auto metabolicsPtr_forceDep_nonSmooth = 
+            new Bhargava2004SmoothedMuscleMetabolics();
     metabolicsPtr_forceDep_nonSmooth->setName("metabolics_forceDep_nonSmooth");
     metabolicsPtr_forceDep_nonSmooth->
             set_use_force_dependent_shortening_prop_constant(true);
@@ -60,20 +61,21 @@ TEST_CASE("Bhargava2004Metabolics basics") {
     metabolicsPtr_forceDep_nonSmooth->addMuscle("muscle",  muscle);
     model.addComponent(metabolicsPtr_forceDep_nonSmooth);
     auto& metabolics_forceDep_nonSmooth =
-            model.getComponent<Bhargava2004Metabolics>(
+            model.getComponent<Bhargava2004SmoothedMuscleMetabolics>(
                     "metabolics_forceDep_nonSmooth");
     // Add non-smooth metabolics with negative mechanical work.
-    auto metabolicsPtr_negativeWork_nonSmooth = new Bhargava2004Metabolics();
+    auto metabolicsPtr_negativeWork_nonSmooth = 
+            new Bhargava2004SmoothedMuscleMetabolics();
     metabolicsPtr_negativeWork_nonSmooth->setName(
             "metabolics_negativeWork_nonSmooth");
     metabolicsPtr_negativeWork_nonSmooth->addMuscle("muscle",  muscle);
     model.addComponent(metabolicsPtr_negativeWork_nonSmooth);
     auto& metabolics_negativeWork_nonSmooth =
-            model.getComponent<Bhargava2004Metabolics>(
+            model.getComponent<Bhargava2004SmoothedMuscleMetabolics>(
                     "metabolics_negativeWork_nonSmooth");
 
     // Add smooth (using tanh function) metabolics.
-    auto metabolicsPtr_smooth_tanh = new Bhargava2004Metabolics();
+    auto metabolicsPtr_smooth_tanh = new Bhargava2004SmoothedMuscleMetabolics();
     metabolicsPtr_smooth_tanh->setName("metabolics_smooth_tanh");
     metabolicsPtr_smooth_tanh->set_use_smoothing(true);
     // We set a high value for the velocity and heat rate smoothing parameters
@@ -86,11 +88,12 @@ TEST_CASE("Bhargava2004Metabolics basics") {
     metabolicsPtr_smooth_tanh->addMuscle("muscle",  muscle);
     model.addComponent(metabolicsPtr_smooth_tanh);
     auto& metabolics_smooth_tanh =
-            model.getComponent<Bhargava2004Metabolics>(
+            model.getComponent<Bhargava2004SmoothedMuscleMetabolics>(
                     "metabolics_smooth_tanh");
     // Add smooth (using tanh function) metabolics with
     // force_dependent_shortening_prop_constant.
-    auto metabolicsPtr_forceDep_smooth_tanh = new Bhargava2004Metabolics();
+    auto metabolicsPtr_forceDep_smooth_tanh = 
+            new Bhargava2004SmoothedMuscleMetabolics();
     metabolicsPtr_forceDep_smooth_tanh->setName(
             "metabolics_forceDep_smooth_tanh");
     metabolicsPtr_forceDep_smooth_tanh->set_use_smoothing(true);
@@ -105,11 +108,12 @@ TEST_CASE("Bhargava2004Metabolics basics") {
     metabolicsPtr_forceDep_smooth_tanh->addMuscle("muscle",  muscle);
     model.addComponent(metabolicsPtr_forceDep_smooth_tanh);
     auto& metabolics_forceDep_smooth_tanh =
-            model.getComponent<Bhargava2004Metabolics>(
+            model.getComponent<Bhargava2004SmoothedMuscleMetabolics>(
                     "metabolics_forceDep_smooth_tanh");
     // Add smooth (using tanh function) metabolics with negative mechanical
     // work.
-    auto metabolicsPtr_negativeWork_smooth_tanh = new Bhargava2004Metabolics();
+    auto metabolicsPtr_negativeWork_smooth_tanh = 
+            new Bhargava2004SmoothedMuscleMetabolics();
     metabolicsPtr_negativeWork_smooth_tanh->setName(
             "metabolics_negativeWork_smooth_tanh");
     metabolicsPtr_negativeWork_smooth_tanh->set_use_smoothing(true);
@@ -119,10 +123,11 @@ TEST_CASE("Bhargava2004Metabolics basics") {
     metabolicsPtr_negativeWork_smooth_tanh->addMuscle("muscle",  muscle);
     model.addComponent(metabolicsPtr_negativeWork_smooth_tanh);
     auto& metabolics_negativeWork_smooth_tanh =
-            model.getComponent<Bhargava2004Metabolics>(
+            model.getComponent<Bhargava2004SmoothedMuscleMetabolics>(
                     "metabolics_negativeWork_smooth_tanh");
     // Add smooth (using Huber loss function) metabolics.
-    auto metabolicsPtr_smooth_huber = new Bhargava2004Metabolics();
+    auto metabolicsPtr_smooth_huber = 
+            new Bhargava2004SmoothedMuscleMetabolics();
     metabolicsPtr_smooth_huber->setName("metabolics_smooth_huber");
     metabolicsPtr_smooth_huber->set_use_smoothing(true);
     metabolicsPtr_smooth_huber->set_smoothing_type("huber");
@@ -136,11 +141,12 @@ TEST_CASE("Bhargava2004Metabolics basics") {
     metabolicsPtr_smooth_huber->addMuscle("muscle",  muscle);
     model.addComponent(metabolicsPtr_smooth_huber);
     auto& metabolics_smooth_huber =
-            model.getComponent<Bhargava2004Metabolics>(
+            model.getComponent<Bhargava2004SmoothedMuscleMetabolics>(
                     "metabolics_smooth_huber");
     // Add smooth (using Huber loss function) metabolics with
     // force_dependent_shortening_prop_constant.
-    auto metabolicsPtr_forceDep_smooth_huber = new Bhargava2004Metabolics();
+    auto metabolicsPtr_forceDep_smooth_huber = 
+            new Bhargava2004SmoothedMuscleMetabolics();
     metabolicsPtr_forceDep_smooth_huber->setName(
             "metabolics_forceDep_smooth_huber");
     metabolicsPtr_forceDep_smooth_huber->set_use_smoothing(true);
@@ -157,12 +163,12 @@ TEST_CASE("Bhargava2004Metabolics basics") {
     metabolicsPtr_forceDep_smooth_huber->addMuscle("muscle",  muscle);
     model.addComponent(metabolicsPtr_forceDep_smooth_huber);
     auto& metabolics_forceDep_smooth_huber =
-            model.getComponent<Bhargava2004Metabolics>(
+            model.getComponent<Bhargava2004SmoothedMuscleMetabolics>(
                     "metabolics_forceDep_smooth_huber");
     // Add smooth (using Huber loss function) metabolics with negative
     // mechanical work.
     auto metabolicsPtr_negativeWork_smooth_huber =
-            new Bhargava2004Metabolics();
+            new Bhargava2004SmoothedMuscleMetabolics();
     metabolicsPtr_negativeWork_smooth_huber->setName(
             "metabolics_negativeWork_smooth_huber");
     metabolicsPtr_negativeWork_smooth_huber->set_use_smoothing(true);
@@ -173,7 +179,7 @@ TEST_CASE("Bhargava2004Metabolics basics") {
     metabolicsPtr_negativeWork_smooth_huber->addMuscle("muscle",  muscle);
     model.addComponent(metabolicsPtr_negativeWork_smooth_huber);
     auto& metabolics_negativeWork_smooth_huber =
-            model.getComponent<Bhargava2004Metabolics>(
+            model.getComponent<Bhargava2004SmoothedMuscleMetabolics>(
                     "metabolics_negativeWork_smooth_huber");
     model.finalizeConnections();
 
