@@ -5,7 +5,7 @@
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2020 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Antoine Falisse, Christopher Dembia, Nick Bianco                *
+ * Author(s): Antoine Falisse, Christopher Dembia, Nicholas Bianco            *
  * Contributors: Tim Dorn, Thomas Uchida                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -28,8 +28,8 @@
 
 namespace OpenSim {
 
-/// Object class that holds the metabolic parameters required to calculate
-/// metabolic power for a single muscle.
+/** Object class that holds the metabolic parameters required to calculate
+metabolic power for a single muscle. */
 class OSIMSIMULATION_API Bhargava2004SmoothedMuscleMetabolics_MuscleParameters 
         : public Component {
     OpenSim_DECLARE_CONCRETE_OBJECT(
@@ -65,7 +65,8 @@ public:
         "111.0).");
 
     OpenSim_DECLARE_SOCKET(muscle, Muscle,
-            "The muscle to which the Bhargava2004Metabolics is connected.");
+            "The muscle to which the Bhargava2004SmoothedMuscleMetabolics is "
+            "connected.");
 
     Bhargava2004SmoothedMuscleMetabolics_MuscleParameters();
 
@@ -79,97 +80,115 @@ private:
     mutable double muscleMass;
 };
 
-/// This class implements the metabolic energy model of Bhargava et al (2004)
-/// and provides an option to use smooth (i.e., twice continuously
-/// differentiable) approximations. These approximations might be better suited
-/// for gradient-based optimization algorithms.
-///
-/// We propose two smooth implementations.
-///
-/// In the first implementation, conditional if statements were approximated by
-/// using hyperbolic tangent functions (tanh). For example, the following if
-/// statement:
-/// <pre>     y = a, if x <= d </pre>
-/// <pre>     y = b, if x > d </pre>
-/// can be approximated by:
-/// <pre>     f = 0.5 + 0.5 tanh(b(x-d)) </pre>
-/// <pre>     y = a + (-a + b) f </pre>
-/// where b is a parameter that determines the smoothness of the transition.
-///
-/// In the second implementation, conditional if statements were approximated
-/// by using Huber loss functions, which have the following form:
-/// <pre>     L(f(x)) = 0.5 f(x)^2, if f(x) <= delta </pre>
-/// <pre>     L(f(x)) = delta(f(x) - 0.5 delta), otherwise. </pre>
-/// The Huber loss function is quadratic for f(x) <= delta and linear
-/// otherwise, with equal value and slopes of the different sections at the
-/// points where f(x) = delta (https://en.wikipedia.org/wiki/Huber_loss). In
-/// our implementation, we scaled this function with a parameter b that
-/// determines the smootheness of the transition between the quadratic and
-/// linear parts. Note that this approximation is piecewise but still
-/// continuous.
-///
-/// The metabolic energy model includes components for activation heat rate,
-/// maintenance heat rate, shortening heat rate, and mechanical work rate.
-///
-/// The shortening heat rate model differs between concentric contractions and
-/// eccentric contractions. We smoothed the transition between both contraction
-/// types using our smoothing functions. Note that when using the force
-/// dependent shortening proportional constant, we only provide the tanh
-/// smoothing option for approximating the shortening heat rate. This is
-/// motivated by the fact that the shortening heat rate is defined by linear
-/// functions but with different non-zero constants of proportionality for
-/// concentric and eccentric contractions. It is therefore easier to smooth the
-/// transition between both contraction types with a tanh function than with a
-/// Huber loss function. The difference between the original (non-smooth) and
-/// the smooth implementations is illustrated in the following figure:
-///
-/// \htmlonly <style>div.image img[src="SmoothShorteningHeatRate.png"]{width:750px;}</style> \endhtmlonly
-/// @image html SmoothShorteningHeatRate.png "Curves produced using isometricTotalActiveForce=350, fiberForceTotal=250, velocity_smoothing=10"
-///
-/// The mechanical work rate model includes negative mechanical work rate
-/// (i.e., work rate resulting from eccentric contraction) by default. However,
-/// if specified by the user, the model only takes positive mechanical work
-/// rate (i.e., work rate resulting from concentric contraction) into account.
-/// In such case, we smoothed the transition between positive rate and zero
-/// using our smoothing functions. The difference between the original
-/// (non-smooth) and the smooth implementations is illustrated in the following
-/// figure:
-///
-/// \htmlonly <style>div.image img[src="SmoothMechanicalWorkRate.png"]{width:750px;}</style> \endhtmlonly
-/// @image html SmoothMechanicalWorkRate.png "Curves produced using fiber_force_active=250, velocity_smoothing=10"
-///
-/// The metabolic energy model implementation includes an optional clamping
-/// that prevents the total metabolic rate (i.e., total metabolic power) to be
-/// negative. This clamping is done by increasing the shortening heat rate. We
-/// smoothed the transition between positive and negative total metabolic rate
-/// using our smoothing functions. The difference between the original
-/// (non-smooth) and the smooth implementations is illustrated in the following
-/// figure:
-///
-/// \htmlonly <style>div.image img[src="ClampingTotalMetabolicRate.png"]{width:750px;}</style> \endhtmlonly
-/// @image html ClampingTotalMetabolicRate.png "Curves produced using shorteningHeatRate=totalRate/4, power_smoothing=10"
-///
-/// The metabolic energy model implementation includes an optional clamping
-/// (see Umberger et al (2003), page 104) that prevents the total heat rate
-/// (i.e., activation heat rate + maintenance heat rate + shortening heat rate)
-/// for a given muscle to fall below 1.0 W/kg. Note that, if active, this
-/// clamping will cause the sum of the reported individual heat rates and work
-/// rate to differ from the reported metabolic rate. We smoothed the transition
-/// between total heat rate higher and lower than 1.0 W/kg using our smoothing
-/// functions. The difference between the original (non-smooth) and the smooth
-/// implementations is illustrated in the following figure:
-///
-/// \htmlonly <style>div.image img[src="ClampingTotalHeatRate.png"]{width:750px;}</style> \endhtmlonly
-/// @image html ClampingTotalHeatRate.png "Curves produced using muscle_mass=0.4, heat_rate_smoothing=10"
-///
-/// Note that the maintenance heat rate implementation relies on a
-/// PiecewiseLinearFunction. The first and second order derivatives of this
-/// function can be evaluated but they are discontinuous. This might cause
-/// issues with gradient-based optimization algorithms. Problems using this
-/// discontinuous function have successfully converged; therefore, we have
-/// included it in this implementation of the model.
-///
-/// https://doi.org/10.1016/s0021-9290(03)00239-2
+/** This class implements the metabolic energy model of Bhargava et al (2004)
+and provides an option to use smooth (i.e., twice continuously
+differentiable) approximations. These approximations might be better suited
+for gradient-based optimization algorithms.
+
+We propose two smooth implementations.
+
+In the first implementation, conditional if statements were approximated by
+using hyperbolic tangent functions (tanh). For example, the following if
+statement:
+<pre>     y = a, if x <= d </pre>
+<pre>     y = b, if x > d </pre>
+can be approximated by:
+<pre>     f = 0.5 + 0.5 tanh(b(x-d)) </pre>
+<pre>     y = a + (-a + b) f </pre>
+where b is a parameter that determines the smoothness of the transition.
+
+In the second implementation, conditional if statements were approximated
+by using Huber loss functions, which have the following form:
+<pre>     L(f(x)) = 0.5 f(x)^2, if f(x) <= delta </pre>
+<pre>     L(f(x)) = delta(f(x) - 0.5 delta), otherwise. </pre>
+The Huber loss function is quadratic for f(x) <= delta and linear
+otherwise, with equal value and slopes of the different sections at the
+points where f(x) = delta (https://en.wikipedia.org/wiki/Huber_loss). In
+our implementation, we scaled this function with a parameter b that
+determines the smootheness of the transition between the quadratic and
+linear parts. Note that this approximation is piecewise but still
+continuous.
+
+The metabolic energy model includes components for activation heat rate,
+maintenance heat rate, shortening heat rate, and mechanical work rate.
+
+The shortening heat rate model differs between concentric contractions and
+eccentric contractions. We smoothed the transition between both contraction
+types using our smoothing functions. Note that when using the force
+dependent shortening proportional constant, we only provide the tanh
+smoothing option for approximating the shortening heat rate. This is
+motivated by the fact that the shortening heat rate is defined by linear
+functions but with different non-zero constants of proportionality for
+concentric and eccentric contractions. It is therefore easier to smooth the
+transition between both contraction types with a tanh function than with a
+Huber loss function. The difference between the original (non-smooth) and the
+smooth implementations is illustrated in the following figure:
+
+\htmlonly <style>div.image img[src="SmoothShorteningHeatRate.png"]{width:750px;}</style> \endhtmlonly
+@image html SmoothShorteningHeatRate.png "Curves produced using isometricTotalActiveForce=350, fiberForceTotal=250, velocity_smoothing=10"
+
+The mechanical work rate model includes negative mechanical work rate
+(i.e., work rate resulting from eccentric contraction) by default. However,
+if specified by the user, the model only takes positive mechanical work
+rate (i.e., work rate resulting from concentric contraction) into account.
+In such case, we smoothed the transition between positive rate and zero
+using our smoothing functions. The difference between the original
+(non-smooth) and the smooth implementations is illustrated in the following
+figure:
+
+\htmlonly <style>div.image img[src="SmoothMechanicalWorkRate.png"]{width:750px;}</style> \endhtmlonly
+@image html SmoothMechanicalWorkRate.png "Curves produced using fiber_force_active=250, velocity_smoothing=10"
+
+The metabolic energy model implementation includes an optional clamping
+that prevents the total metabolic rate (i.e., total metabolic power) to be
+negative. This clamping is done by increasing the shortening heat rate. We
+smoothed the transition between positive and negative total metabolic rate
+using our smoothing functions. The difference between the original
+(non-smooth) and the smooth implementations is illustrated in the following
+figure:
+
+\htmlonly <style>div.image img[src="ClampingTotalMetabolicRate.png"]{width:750px;}</style> \endhtmlonly
+@image html ClampingTotalMetabolicRate.png "Curves produced using shorteningHeatRate=totalRate/4, power_smoothing=10"
+
+The metabolic energy model implementation includes an optional clamping
+(see Umberger et al (2003), page 104) that prevents the total heat rate
+(i.e., activation heat rate + maintenance heat rate + shortening heat rate)
+for a given muscle to fall below 1.0 W/kg. Note that, if active, this
+clamping will cause the sum of the reported individual heat rates and work
+rate to differ from the reported metabolic rate. We smoothed the transition
+between total heat rate higher and lower than 1.0 W/kg using our smoothing
+functions. The difference between the original (non-smooth) and the smooth
+implementations is illustrated in the following figure:
+
+\htmlonly <style>div.image img[src="ClampingTotalHeatRate.png"]{width:750px;}</style> \endhtmlonly
+@image html ClampingTotalHeatRate.png "Curves produced using muscle_mass=0.4, heat_rate_smoothing=10"
+
+Note that the maintenance heat rate implementation relies on a
+PiecewiseLinearFunction. The first and second order derivatives of this
+function can be evaluated but they are discontinuous. This might cause
+issues with gradient-based optimization algorithms. Problems using this
+discontinuous function have successfully converged; therefore, we have
+included it in this implementation of the model.
+
+You can enable smoothing via the `use_smoothing` property. The smoothing type
+('tanh' or 'huber') can be chosen via the `smoothing_type` property, and the
+level of smoothing can be controlled by the `velocity_smoothing`,
+`power_smoothing`, and `heat_rate_smoothing` properties.
+
+Muscles to be included when computing the total metabolic rate should be
+specified using one of the three `addMuscle()` function overloads. See the
+properties of Bhargava2004SmoothedMuscleMetabolics_MuscleParameters() for the
+default parameter values used when not specified via the second or third
+`addMuscle()` overload.
+
+The total metabolic rate output can be obtained using `getTotalMetabolicRate()`,
+which takes a SimTK::State as a argument. You can similarly obtain the
+individual heat rate and mechanical work rate components of the total metabolic
+cost via `getTotalActivationRate()`, `getTotalMaintenanceRate()`,
+`getTotalShorteningRate()`, and `getTotalMechanicalWorkRate()`. All outputs
+require realizing the passed SimTK::State to SimTK::Stage::Dynamics.
+
+Bhargava et al. 2004: https://doi.org/10.1016/s0021-9290(03)00239-2 */
 class OSIMSIMULATION_API Bhargava2004SmoothedMuscleMetabolics
         : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT(
@@ -247,15 +266,33 @@ public:
 
     Bhargava2004SmoothedMuscleMetabolics();
 
+    /** Get the number of muscles added to the metabolics model by one of the
+    `addMuscle()` overloads. */
     int getNumMetabolicMuscles() const;
 
+    /** Specify a muscle that should be included when computing the total
+    metabolic rate. If the `muscle_mass` argument is not provided, it is
+    estimated based on the max isometric force, specific tension,
+    muscle density, and optimal fiber length. */
     void addMuscle(const std::string& name, const Muscle& muscle,
             double muscle_mass = SimTK::NaN);
 
+    /** Specify a muscle that should be included when computing the total
+    metabolic rate, as well as its ratio of slow to fast twitch fibers and
+    specific tension. If the `muscle_mass` argument is not provided, it is
+    estimated based on the max isometric force, specific tension,
+    muscle density, and optimal fiber length. */
     void addMuscle(const std::string& name, const Muscle& muscle,
             double ratio_slow_twitch_fibers, double specific_tension,
             double muscle_mass = SimTK::NaN);
 
+    /** Specify a muscle that should be included when computing the total
+    metabolic rate, as well as its ratio of slow to fast twitch fibers and
+    specific tension. This overload also allows you to specify the slow and fast
+    twitch fiber constants used to compute the activation and maintenance heat
+    rates. If the `muscle_mass` argument is not provided, it is estimated based
+    on the max isometric force, specific tension, muscle density, and optimal
+    fiber length. */
     void addMuscle(const std::string& name, const Muscle& muscle,
             double ratio_slow_twitch_fibers, double specific_tension,
             double activation_constant_slow_twitch,
