@@ -181,12 +181,54 @@ properties of Bhargava2004SmoothedMuscleMetabolics_MuscleParameters() for the
 default parameter values used when not specified via the second or third
 `addMuscle()` overload.
 
+@code
+Bhargava2004SmoothedMuscleMetabolics* metabolics =
+    new Bhargava2004SmoothedMuscleMetabolics();
+metabolics->setName("metabolics");
+metabolics->set_use_smoothing(true);
+
+// The simplest way to add the muscle to the metabolics model: just provide the
+name of the muscle and a reference to Muscle component.
+metabolics->addMuscle("soleus_r", model.getComponent<Muscle>("soleus_r"));
+
+// Provide the ratio of slow to fast twitch fibers and the specific tension of
+muscle when adding it to the metabolics model. The values shown are also the 
+default values.
+double ratio_slow_twitch_fibers = 0.5;
+double specific_tension = 0.25e6;
+metabolics->addMuscle("gastroc_r", model.getComponent<Muscle>("gastroc_r"), 
+        ratio_slow_twitch_fibers, specific_tension);
+
+// Provide the slow and fast twitch fiber constants used to compute the 
+// activation and maintenance heat rates. The values shown are also the default
+// values.
+double activation_constant_slow_twitch = 40.0;
+double activation_constant_fast_twitch = 133.0;
+double maintenance_constant_slow_twitch = 74.0;
+double maintenance_constant_fast_twitch = 111.0;
+metabolics->addMuscle("tibant_r", model.getComponent<Muscle>("tibant_r"),
+        ratio_slow_twitch_fibers, specific_tension,
+        activation_constant_slow_twitch, activation_constant_fast_twitch,
+        maintenance_constant_slow_twitch, maintenance_constant_fast_twitch);
+
+model.addComponent(metabolics);
+model.finalizeConnections();
+@endcode
+
 The total metabolic rate output can be obtained using `getTotalMetabolicRate()`,
 which takes a SimTK::State as a argument. You can similarly obtain the
 individual heat rate and mechanical work rate components of the total metabolic
 cost via `getTotalActivationRate()`, `getTotalMaintenanceRate()`,
 `getTotalShorteningRate()`, and `getTotalMechanicalWorkRate()`. All outputs
 require realizing the passed SimTK::State to SimTK::Stage::Dynamics.
+
+@code
+const auto& metabolics = 
+    model.getComponent<Bhargava2004SmoothedMuscleMetabolics>("metabolics");
+model.realizeDynamics(state);
+double totalMetabolicRate = metabolics.getTotalMetabolicRate(state);
+double activationHeatRate = metabolics.getTotalActivationRate(state);
+@endcode
 
 Bhargava et al. 2004: https://doi.org/10.1016/s0021-9290(03)00239-2 */
 class OSIMSIMULATION_API Bhargava2004SmoothedMuscleMetabolics
