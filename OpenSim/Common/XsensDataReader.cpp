@@ -18,7 +18,7 @@ XsensDataReader::extendRead(const std::string& folderName) const {
     std::vector<std::string> labels;
     // files specified by prefix + file name exist
     double dataRate = SimTK::NaN;
-    int packetCounterIndex = -1;
+    
     int accIndex = -1;
     int gyroIndex = -1;
     int magIndex = -1;
@@ -36,6 +36,7 @@ XsensDataReader::extendRead(const std::string& folderName) const {
     times.resize(last_size);
     
     std::string prefix = _settings.get_trial_prefix();
+    std::map<std::string, std::string> headersKeyValuePairs;
     for (int index = 0; index < n_imus; ++index) {
         std::string prefix = _settings.get_trial_prefix();
         const ExperimentalSensor& nextItem = _settings.get_ExperimentalSensors(index);
@@ -51,40 +52,46 @@ XsensDataReader::extendRead(const std::string& folderName) const {
 
         // Skip lines to get to data
         std::string line;
-        packetCounterIndex = -1; // Force moving file pointer to beginning of data for each stream
-        for (int j = 0; packetCounterIndex == -1; j++) {
+        auto commentLine = true;
+        std::getline(*nextStream, line);
+        auto isCommentLine = [](std::string aline) {
+            return aline.substr(0, 2) == "//";
+        };
+        std::vector<std::string> tokens;
+        while (commentLine) {
+            // Comment lines of arbitrary number on the form // "key":"value"
+            tokens =FileAdapter::tokenize(line.substr(2), ":"); //Skip leading 2 chars tokenize on ':'
+            // Will populate map from first file/imu only, assume they all have same format
+            if (tokens.size() == 2 && index == 0) {
+                // Put values in map
+                headersKeyValuePairs[tokens[0]] = tokens[1];
+            }
             std::getline(*nextStream, line);
-            if (j == 1 && SimTK::isNaN(dataRate)) { // Extract Data rate from line 1
-                std::vector<std::string> tokens = FileAdapter::tokenize(line, ", ");
-                // find Update Rate: and parse into dataRate
-                if (tokens.size() < 4) continue;
-                if (tokens[1] == "Update" && tokens[2] == "Rate:") {
-                    dataRate = std::stod(tokens[3]);
-                }
-            }
-            // Find indices for PacketCounter, Acc_{X,Y,Z}, Gyr_{X,Y,Z}, Mag_{X,Y,Z} on line 5
-            std::vector<std::string> tokens = FileAdapter::tokenize(line, "\t");
-            packetCounterIndex = find_index(tokens, "PacketCounter");
-            if (packetCounterIndex == -1) {
-                // Could be comment, skip over
-                continue;
-            }
-            else {
-                if (accIndex == -1) accIndex = find_index(tokens, "Acc_X");
-                if (gyroIndex == -1) gyroIndex = find_index(tokens, "Gyr_X");
-                if (magIndex == -1) magIndex = find_index(tokens, "Mag_X");
-                if (rotationsIndex == -1) rotationsIndex = find_index(tokens, "Mat[1][1]");
-            } 
+            commentLine = isCommentLine(line);
         }
+        // Find indices for Acc_{X,Y,Z}, Gyr_{X,Y,Z},
+        // Mag_{X,Y,Z}, Mat on first non-comment line
+        tokens = FileAdapter::tokenize(line, "\t");
+        
+        if (accIndex == -1) accIndex = find_index(tokens, "Acc_X");
+        if (gyroIndex == -1) gyroIndex = find_index(tokens, "Gyr_X");
+        if (magIndex == -1) magIndex = find_index(tokens, "Mag_X");
+        if (rotationsIndex == -1) rotationsIndex = find_index(tokens, "Mat[1][1]");
     }
+    // Compute data rate based on key/value pair if available
+    std::map<std::string, std::string>::iterator it =
+            headersKeyValuePairs.find("Update Rate");
+    if (it != headersKeyValuePairs.end())
+        dataRate = std::stod(it->second);
+    else
+        dataRate = 40.0; // Need confirmation from XSens as later files don't specify rate
     // internally keep track of what data was found in input files
     bool foundLinearAccelerationData = (accIndex != -1);
     bool foundMagneticHeadingData = (magIndex != -1);
     bool foundAngularVelocityData = (gyroIndex != -1);
 
-    // If no Orientation data is available or dataRate can't be deduced we'll abort completely
-    OPENSIM_THROW_IF((rotationsIndex == -1 || SimTK::isNaN(dataRate)),
-        TableMissingHeader);
+    // If no Orientation data is available we'll abort completely
+    OPENSIM_THROW_IF((rotationsIndex == -1), TableMissingHeader);
     
     // For all tables, will create row, stitch values from different files then append,time and timestep
     // are based on the first file

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CLionExternalBuildManager">
+    <target id="bec6fb90-8216-43d5-9b41-6e9d924ea35e" name="CTest" projectName="OpenSim">
+      <configuration id="afcd87a9-626e-4589-8c7e-f29b0bc3e438" name="CTest">
+        <build type="TOOL">
+          <tool actionId="Tool_External Tools_CTest" />
+        </build>
+      </configuration>
+    </target>
+  </component>
+</project>

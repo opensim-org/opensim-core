@@ -33,6 +33,13 @@
 using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
+
+// here for perf reasons: many functions take a const reference to a
+// std::string. Using a C string literal results in millions of temporary
+// std::strings being constructed so, instead, pre-allocate it in static
+// storage
+static const std::string parentFrameKey{"parent_frame"};
+
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
@@ -90,7 +97,7 @@ void Station::constructProperties()
 */
 const PhysicalFrame& Station::getParentFrame() const
 {
-    return getSocket<PhysicalFrame>("parent_frame").getConnectee();
+    return getSocket<PhysicalFrame>(parentFrameKey).getConnectee();
 }
 
 /*

@@ -79,6 +79,7 @@
 #include "Model/Bhargava2004MuscleMetabolicsProbe.h"
 #include "Model/Appearance.h"
 #include "Model/Geometry.h"
+
 #include "Model/ModelVisualPreferences.h"
 #include "Model/ExpressionBasedCoordinateForce.h"
 
@@ -119,12 +120,15 @@
 #include "SimbodyEngine/FreeJoint.h"
 #include "SimbodyEngine/CustomJoint.h"
 #include "SimbodyEngine/WeldJoint.h"
+#include "SimbodyEngine/ScapulothoracicJoint.h"
 #include "SimbodyEngine/TransformAxis.h"
 #include "SimbodyEngine/Coordinate.h"
 #include "SimbodyEngine/SpatialTransform.h"
 #include "OpenSense/IMUPlacer.h"
 #include "OrientationsReference.h"
 #include "StatesTrajectoryReporter.h"
+#include "TableProcessor.h"
+#include "MarkersReference.h"
 
 #include <string>
 #include <iostream>
@@ -168,6 +172,11 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( Appearance());
     Object::registerType( ModelVisualPreferences());
 
+    Object::registerType(MarkersReference());
+    Object::registerType(MarkerWeight());
+    Object::registerType(Set<MarkerWeight>());
+
+
     Object::registerType( Brick());
     Object::registerType( Sphere());
     Object::registerType( Cylinder());
@@ -208,6 +217,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( FreeJoint() );
     Object::registerType( BallJoint() );
     Object::registerType( GimbalJoint() );
+    Object::registerType( ScapulothoracicJoint() );
     Object::registerType( UniversalJoint() );
     Object::registerType( PinJoint() );
     Object::registerType( SliderJoint() );
@@ -256,6 +266,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( JointInternalPowerProbe() );
     Object::registerType( SystemEnergyProbe() );
     Object::registerType( ActuatorForceProbe() );
+    Object::registerType( ActuatorPowerProbe() );
     Object::registerType( Umberger2010MuscleMetabolicsProbe() );
     Object::registerType( Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameterSet() );
     Object::registerType( Umberger2010MuscleMetabolicsProbe_MetabolicMuscleParameter() );
@@ -267,6 +278,11 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( IMUPlacer() );
     
     Object::registerType( StatesTrajectoryReporter() );
+
+    Object::registerType( TableProcessor() );
+
+    Object::registerType( TabOpLowPassFilter() );
+    Object::registerType( TabOpUseAbsoluteStateNames() );
 
     // OLD Versions
     // Associate an instance with old name to help deserialization.

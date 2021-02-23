@@ -1,0 +1,50 @@
+/** The Moco interface is contained within the OpenSim namespace.
+*/
+// We must document the OpenSim namespace for free functions within the
+// namespace to appear in Doxygen.
+namespace OpenSim {
+/** @page mocomainpage Moco
+
+Moco is a part of %OpenSim for solving optimal control problems for
+musculoskeletal systems defined as %OpenSim models.
+The package has Python, MATLAB, and XML interfaces; the core
+library is written in C++.
+
+@image html OverviewOfMoco.png width=400px
+
+Here are some problems you can solve with Moco:
+
+- Solve for the muscle activity that tracks a known motion.
+- Solve for a new motion that optimizes some cost (e.g., effort).
+- Solve for mass properties that minimize residual (unrealistic) forces.
+
+Sections of the documentation:
+ - @ref mocogettingstarted
+ - @subpage mocouserguide "User Guide: How to use Moco"
+    - @ref mocoinverse "MocoInverse: Prescribing a motion"
+    - @ref mocoinverse "MocoTrack: Tracking a motion"
+    - @ref mocostudy "MocoStudy: Defining a custom problem"
+    - @ref mocogoal "MocoGoals: available cost terms and endpoint constraints"
+    - @ref mocofaq "Frequently asked questions"
+ - @subpage mocotheoryguide "Theory Guide: How Moco solves optimal control problems"
+ - @subpage mocodevguide "Developer Guide: The Moco codebase and how to contribute"
+ - @subpage mocoapiref "Moco Interface (API) Reference"
+ - @ref mococheatsheet "Printable cheat sheet"
+ - @subpage mocoexamples "Examples"
+
+Other resources:
+ - [SimTK: downloads, user forum, and mailing lists](https://simtk.org/projects/opensim-moco)
+ - [GitHub: source code, bug reporting, and feature requests](https://github.com/opensim-org/opensim-moco)
+ - [bioRxiv preprint](https://www.biorxiv.org/content/10.1101/839381v1)
+ - [Webinar recording](https://opensim.stanford.edu/support/event_details.php?id=236&title=Webinar-OpenSim-Moco-Software-to-optimize-the-motion-and-control-of-OpenSim-models)
+
+@defgroup mocogoal Moco: Available goals
+
+These are the goals available in Moco for use in your cost functional or as
+endpoint constraints. If none of these satisfy your needs, you can define your
+own using a plugin.
+
+*/
+
+} // namespace OpenSim
+

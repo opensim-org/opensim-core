@@ -113,6 +113,10 @@ namespace SimTK {
 %template(RowVectorBaseDouble) SimTK::RowVectorBase<double>;
 %template(RowVectorView)       SimTK::RowVectorView_<double>;
 %template(RowVector)           SimTK::RowVector_<double>;
+// This typedef should not be necessary but, in practice, this typedef
+// helps SWIG recognize the use of SimTK::RowVector in OpenSim's headers (e.g.,
+// MocoTrajectory.h).
+typedef SimTK::RowVector_<double> RowVector;
 
 %extend RowVectorBase<Vec3> {
      Vec3 __getitem__(int i) {

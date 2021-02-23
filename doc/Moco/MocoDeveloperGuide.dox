@@ -1,0 +1,361 @@
+namespace OpenSim {
+/**
+
+@page mocodevguide Moco Developer Guide
+
+@tableofcontents
+
+This guide explains the organization of code in Moco and how direct collocation
+schemes are implemented using an OpenSim model.
+
+@section implorg Organization of classes
+
+Moco is organized as multiple pairs of "problem" and "solver" classes at
+different abstraction levels.
+
+@image html MocoImplementationDiagram.svg width=700px
+
+<i>Organization of classes in Moco. Abstract classes are denoted by dashed
+lines.</i>
+
+MocoProblem describes a direct collocation problem using an OpenSim Model, and
+MocoSolver is an abstract class for solving MocoProblems. Moco provides two
+MocoSolvers: MocoTropterSolver and MocoCasADiSolver. MocoTropterSolver contains
+a problem-solver pair for optimal control problems: TropterProblem (which
+derives from tropter::Problem) and tropter::DirectCollocation (tropter is not
+exposed in Doxygen). To solve the optimal control problem,
+tropter::DirectCollocation employs a problem-solver pair for generic nonlinear
+optimization: tropter::Transcription (which derives from
+tropter::optimization::Problem) and tropter::optimization::Solver. The
+MocoCasADiSolver employs the problem-solver pair of MocoCasOCProblem (deriving
+from CasOC::Problem) and CasOC::Solver.
+
+These pairs of classes allow a separation between how a user specifies a
+problem and the method used to solve the problem.
+The MocoProblem class contains only user input and describes the physical
+optimal control problem. The MocoSolver classes allow the user to configure the
+numerical method used to solve the problem.
+
+@subsection stepbystep What happens when you call solve()?
+
+One way to learn the Moco codebase is to use a debugger to step through the
+code that is executed when invoking MocoStudy::solve(). Here, we walk through
+some of the key steps for you when using MocoCasADiSolver.
+
+1. MocoStudy::solve(): solve the MocoProblem with the requested MocoSolver.
+2. MocoProblem::createRep(): Create a MocoProblemRep from the MocoProblem (see
+   below). Initialize goals, path constraints, parameters, etc.
+3. MocoSolver::solve(): Invoke the derived class' solveImpl().
+4. MocoCasADiSolver::solveImpl(): Create a CasOC::Problem, CasOC::Solver, and
+   solve the CasOC::Problem.
+5. MocoCasADiSolver::createCasOCProblem(): Create a MocoCasOCProblem, which
+   derives from CasOC::Problem. Add states, controls, costs,
+   endpoint constraints, path constraints, etc. to the CasOC::Problem.
+6. MocoCasADiSolver::createCasOCSolver(): Copy solver settings from
+   MocoCasADiSolver into an instance of CasOC::Solver.
+7. CasOC::Solver::solve().
+8. CasOC::Solver::createTranscription(): Creates either CasOC::Trapezoidal or
+   CasOC::HermiteSimpson.
+9. CasOC::Transcription::solve().
+10. CasOC::Transcription::transcribe(): Convert the CasOC::Problem into a
+   nonlinear program using a given transcription scheme.
+11. casadi::nlpsol(): Create a CasADi Function for solving the nonlinear
+   program. After this call, we invoke this function to solve the problem.
+12. MocoStudy returns a MocoSolution.
+
+The MocoTropterSolver follows similar steps.
+
+@subsection implmocoproblemrep The MocoProblemRep class
+
+The MocoSolver interacts with the MocoProblem through the intermediate class
+MocoProblemRep. This class exists to:
+
+1. Validate the MocoProblem and cache useful quantities.
+2. Provide functionality, such as evaluating cost terms.
+3. Prevent solvers from accidentally editing any user input; the solvers do not
+have access to the original MocoProblem.
+
+The MocoProblemRep allows us not to worry about using invalid caches. Every
+time the Solver solves a problem, a new MocoProblemRep is created, ensuring that
+the most up-to-date settings in MocoProblem are obeyed.
+
+@section impldiverse Supporting diverse formulations using OpenSim and Simbody
+
+The following problem formulations in Moco require careful consideration:
+
+1. kinematic constraints,
+2. expressing multibody dynamics as implicit differential equations, and
+3. prescribing kinematics.
+
+We'll describe how Moco handles each of these formulations.
+
+There are multiple ways to use a SimTK::System to compute desired quantities.
+SimTK::SimbodyMatterSubsystem contains many useful operators, but
+ the conventional way to use a SimTK::System is to realize the system's
+SimTK::State through the Position, Velocity, Dynamics, and Acceleration stages.
+Using the SimTK::System in this way ensures that all calculations use the same
+input variables; this is described more concretely later. While the three
+formulations above could more easily be achieved using the
+SimTK::SimbodyMatterSubsystem operators, we employ strategies to handle these
+formulations using the standard realization stages. The goal of the following
+sections is to explain how we work the formulations above into the realization
+stages.
+
+@subsection implkincon Kinematic constraints
+
+When performing musculoskeletal simulations, we must satisfy the following
+equations for the multibody dynamics, kinematic constraints, and auxiliary dynamics (in that order):
+
+\f[
+    \begin{alignat*}{2}
+         M(q, p)\dot{u} + G(q, p)^T \lambda &= f_{\textrm{app}}(t, y, x, p) - f_{\textrm{inertial}}(q, u, p) \\
+         0 &= \phi(q, p) \\
+         \dot{z}(t) &= f_{\textrm{aux}}(t, y, x, \lambda, p). \\
+    \end{alignat*}
+\f]
+
+The common way to solve these equations is to differentiate the kinematic
+constraints until generalized accelerations appear linearly, and then solve for
+generalized accelerations and Lagrange multipliers. This calculation occurs when
+realizing a SimTK::System to SimTK::Stage::Acceleration.
+
+\f[
+    \begin{alignat*}{2}
+    \begin{bmatrix}
+    M(q, p) & G(q, p)^T \\
+    G(q, p) & 0
+    \end{bmatrix}
+    \begin{bmatrix}
+    \dot{u} \\
+    \lambda
+    \end{bmatrix}
+    &=
+    \begin{bmatrix}
+        f_{\textrm{app}}(t, y, x, p) - f_{\textrm{inertial}}(q, u, p) \\
+        b(q, u)
+        \end{bmatrix} \\
+         \dot{z}(t) &= f_{\textrm{aux}}(t, y, x, \lambda, p) \\
+    \end{alignat*}
+\f]
+
+Simbody then integrates \f$ u \f$ and \f$ z \f$ using the \f$ \dot{u} \f$ and \f$
+\dot{z} \f$ calculated from the equations above. If the kinematic constraints
+are obeyed in the initial state, then theoretically, enforcing the constraints
+at the acceleration level (as done above) should cause the accelerations to
+remain enforced at the position and velocity levels. However, numerical
+integrators generate errors, causing the constraints to no longer be satisfied
+at the position and velocity levels. To fix this, Simbody projects the
+generalized coordinates and speeds onto the "constraint manifold" (that is, the
+multidimensional surface on which the system's kinematic constraints are
+satisfied; see SimTK::System::project()).
+
+Handling kinematic constraints in direct collocation requires a different
+approach, because we cannot perform an internal "projection" within the
+direct collocation optimization problem. We use the method developed by Posa et
+al. [1]. In this scheme, the optimization solver searches for Lagrange
+multipliers that satisfy the equations above. This means that, when we use
+Simbody to evaluate multibody equations, we must tell Simbody what multipliers
+to use. However, this flow of data does not fit with Simbody's realization
+scheme, in which Simbody computes Lagrange multipliers itself. Some quantities
+such as joint reaction loads depend on Lagrange multipliers, and it is essential
+that we use the correct multipliers when computing such quantities (that is, the
+multipliers from the optimization instead of those computed by Simbody). To
+circumvent this issue, we employ two OpenSim Models: the original user-provided
+model with kinematic constraints, and a model in which all kinematic constraints
+are disabled. We use the first (constrained) model to calculate kinematic
+constraint violations and to convert the optimization solver's Lagrange
+multipliers into body and mobilizer forces using the constrained model's
+constraint Jacobian. Then we apply the multiplier-derived forces to the
+unconstrained model using the DiscreteForces component. In MocoGoal and
+MocoPathConstraint, we provide the unconstrained model with applied
+multiplier-derived forces, ensuring that joint reaction load calculations will
+use the correct multipliers.
+
+Note that MocoGoals and MocoPathConstraints do not have direct access
+to the Lagrange multipliers; the unconstrained model does not have multipliers.
+
+@subsection implimplicitmultibody Implicit multibody dynamics
+
+When enforcing multibody dynamics using an implicit differential equation, we do
+not solve explicitly for \f$ \dot{u} \f$. Instead, \f$ \dot{u} \f$ is a variable
+in the optimal control problem and the optimizer searches for the value of \f$
+\dot{u} \f$ that satisfies the multibody dynamics equation in its original form.
+This is similar to the "inverse dynamics" calculation, in which one knows \f$
+\dot{u} \f$ and solves for the additional generalized forces (mobility forces)
+required for the multibody dynamics equation to hold:
+
+\f[
+f_{\mathrm{residual}} = M \dot{u} + f_{\mathrm{inertial}} - f_{\mathrm{app}}.
+\f]
+
+Simbody provides the SimTK::SimbodyMatterSubsystem::calcResidual() "inverse
+dynamics" operator to compute this residual force, and we could use this
+residual force in a path constraint to enforce multibody dynamics implicitly.
+However, the accelerations computed by realizing to SimTK::Stage::Acceleration
+(e.g., when computing a joint reaction load for a cost term) are different from
+the acceleration values we receive from the optimizer to perform calcResidual().
+Therefore, we use an alternate scheme: we use SimTK::Motion to prescribe
+generalized accelerations, using the AccelerationMotion component. The
+SimTK::Motion comes with motion Lagrange multipliers \f$ \lambda_m \f$ that,
+when realizing to SimTK::Stage::Acceleration, are set to be the forces required
+for multibody dynamics to hold.
+
+\f[
+M \dot{u} + f_{\mathrm{inertial}} + \lambda_m = f_{\mathrm{app}}.
+\f]
+
+That is, the motion multipliers are equivalent to the residual forces from
+calcResidual().
+
+To enforce multibody dynamics, we use a path constraint to enforce the motion
+multipliers to be 0; that is, the force elements in the model must generate the
+forces necessary to satisfy the equations of motion.
+
+@subsubsection implimplicitkincon Implicit multibody dynamics with kinematic constraints
+
+With kinematic constraints, the equations of motion contain both kinematic
+constraint Lagrange multipliers \f$ \lambda_c \f$ and motion Lagrange multpliers
+\f$ \lambda_m \f$:
+
+\f[
+M(q)\dot{u} + f_{\textrm{inertial}}(q, u) + G(q)^T \lambda_c + \lambda_m = f_{\textrm{app}}(t, q, u, z, x).
+\f]
+
+Handling kinematic constraints with implicit multibody dynamics is no different
+than how kinematic constraints are handled with explicit multibody dynamics.
+The optimization solver still has variables for the Lagrange multipliers and
+we enforce kinematic constraints as path constraints in the optimal control
+problem.
+
+@subsection implimplicitauxiliary Implicit auxiliary dynamics
+
+While the implicit multibody dynamics setting lives in the MocoSolver, the
+implicit auxiliary dynamics settings live in the MocoProblem, in the model
+components. This difference exists for two reasons: (1) the equations for
+multibody dynamics exist outside of the Model, while the equations for auxiliary
+dynamics exist within the Model; and (2) users may wish for only a subset of
+states to be handled implicitly, while the choice of dynamics mode for the
+multibody system affects all differential equations describing the multibody
+system.
+
+Handling implicit dynamics requires that Moco (1) provides components with
+values for the derivatives of the auxiliary state variables, and (2) obtains the
+residuals of the implicit differential equations. For (1), MocoProblemRep
+provides a container of Component%s and the names of the appropriate discrete
+state variables. For (2), MocoProblemRep provides a container of Output%s that
+provide the residuals.
+
+To satisfy the %Model %Component interface, components must implement
+Component::computeStateVariableDerivatives() to provide the explicit form of the
+differential equations; this is still true for components supporting an implicit
+mode. Components supporting implicit mode must also support explicit mode so
+that models used in direct collocation problems can still be used in
+time-stepping forward simulations. We do not want to end up in a situation where
+some models can be used only in direct collocation and some only in
+time-stepping forward simulations. The correct implementation of
+computeStateVariableDerivatives() in implicit mode is to set the derivative
+to the value of the discrete variable holding the state derivative that was
+supplied by Moco. Moco relies on computeStateVariableDerivatives() when
+enforcing `zdot = zeta` (where zeta is the control variable for the derivative
+of the auxiliary state variable).
+
+The use of discrete state variables and component outputs instead of virtual
+functions (akin to computeStateVariableDerivatives()) was chosen to avoid
+modifying the Component class. The interface for specifying
+implicit auxiliary dynamics may change in the future to be more similar to the
+interface for explicit auxiliary dynamics.
+
+@subsection implpreskin Prescribed kinematics
+
+The situation of prescribed kinematics is similar to the situation for implicit
+multibody dynamics. In both cases, we are prescribing some portion of kinematics
+into the SimTK::System. For implicit dynamics, we are prescribing accelerations,
+and updating these accelerations with each optimization iteration. For
+prescribed kinematics, we prescribe coordinates, speeds, and accelerations based
+on user input. Given the similarity, we again use SimTK::Motion, but this time
+we enforce the motion at the position level using the PositionMotion component.
+No constraints are added (unlike with the prescribed_function property of
+OpenSim::Coordinate); instead, variables are replaced with data.
+
+For a system without kinematic constraints, the equations of motion are:
+
+\f[
+M(\hat{q})\dot{\hat{u}} + f_{\textrm{inertial}}(\hat{q}, \hat{u}) + \lambda_m = f_{\textrm{app}}(t, \hat{q}, \hat{u}, z, x) \\
+\f]
+
+The hat denotes known quantities; the only variables are  \f$ z \f$ and \f$ x
+\f$.
+
+The Lagrange multipliers \f$ \lambda_m \f$ are the mobility forces required for
+the system to follow the prescribed kinematics. In our case, we do not want any
+ficticious forces generated, and so we require that \f$\lambda_m = 0\f$. Simbody
+gives us access to these multipliers via
+SimTK::SimbodyMatterSubsystem::findMotionForces(), and we constrain the output
+of this function to be 0. Note that the only unknown in this equation is \f$
+f_{\mathrm{app}} \f$; the other quantities are known because they only depend on
+kinematics. We enforce the equations of motion as path constraints, but
+there are no multibody states or defects in the optimal control problem.
+
+Combining prescribed kinematics with implicit multibody dynamics is not
+possible: when kinematics are prescribed, there are no multibody dynamics to
+enforce. We only add the AccelerationMotion component to the model if the model
+does not contain a PositionMotion.
+
+@subsubsection implpreskinkincon Prescribed kinematics with kinematic constraints
+
+With kinematic constraints, the equations of motion are
+
+\f[
+M(\hat{q})\dot{\hat{u}} + f_{\textrm{inertial}}(\hat{q}, \hat{u}) + G(\hat{q})^T \lambda_c + \lambda_m = f_{\textrm{app}}(t, \hat{q}, \hat{u}, z, x) \\
+\f]
+
+\f$ G \f$ is the kinematic constraint Jacobian and \f$ \lambda_c \f$ are the
+kinematic constraint Lagrange multipliers. We still require \f$ \lambda_m = 0
+\f$ but we must allow the kinematic constraints to apply forces. Applied forces
+affect what the constraint forces must be. Consider a point mass with degrees of
+freedom \f$ x \f$ and \f$ y \f$ and generalized forces \f$ F_x \f$ and \f$ F_y
+\f$ constrained to the line \f$ y = x \f$ and with prescribed motion \f$ y(t) =
+x(t) = \sin(t) \f$. Moco will solve for the forces \f$ F_x \f$ and \f$ F_y \f$
+that can achieve this prescribed motion (by setting \f$ \lambda_m = 0 \f$ and
+solving for \f$ f_{\mathrm{app}} \f$, and the Lagrange multiplier \f$ \lambda_c
+\f$ will ensure that, regardless of the values of \f$ F_x \f$ and \f$ F_y \f$,
+the mass will remain on the line.
+
+In this scenario, we do not include path constraints for the kinematic
+constraint errors: the generalized coordinates, speeds, and accelerations are no
+longer variables in the problem, and so the constraint errors are constant.
+
+@section implstagedep MocoGoal stage dependency
+
+MocoGoals can declare the SimTK::Stage upon which they depend.
+This allows solvers to decide how to efficiently prepare the inputs for a
+MocoGoal. Here, we detail what solvers must do for each Stage when computing an
+integrand:
+
+- SimTK::Stage::Topology: set MocoGoal::IntegrandInput::time.
+- SimTK::Stage::Model: set MocoGoal::IntegrandInput::controls to the raw
+    controls from the optimizer. Provide implicit auxiliary dynamics
+    derivatives.
+- SimTK::Stage::Instance: apply MocoParameters to the model.
+- SimTK::Stage::Time: set SimTK::State::updTime(), update SimTK::State::updY(),
+    and prescribe kinematics. (If no motion were prescribed, then updating the
+    state variables could occur for a stage dependency SimTK::Stage::Model.
+    However, prescribing the kinematics requires setting time, and we do not
+    want goals to behave differently whether or not kinematics are prescribed.)
+- SimTK::Stage::Dynamics: Update the state of the base model; not just the model
+    with disabled constraints. Use the base model to compute kinematic
+    constraint forces and apply them to the model with disabled constraints.
+- SimTK::Stage::Acceleration: Prescribe generalized accelerations (if using
+    implicit multibody dynamics).
+
+Computing a goal value (that is, setting a MocoGoal::GoalInput) follows the same
+rules, except they are repeated for initial and final time, state, and controls.
+
+[1] M. Posa, S. Kuindersma, and R. Tedrake, “Optimization and stabilization of
+trajectories for constrained dynamical systems,” in Proceedings of the
+International Conference on Robotics and Automation (ICRA), Stockholm, Sweden,
+2016.
+
+*/
+} // namespace OpenSim
+

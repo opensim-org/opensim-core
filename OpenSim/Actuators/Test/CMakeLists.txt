@@ -4,4 +4,3 @@ OpenSimAddTests(
     TESTPROGRAMS ${TEST_PROGS}
     LINKLIBS osimTools
     )
-

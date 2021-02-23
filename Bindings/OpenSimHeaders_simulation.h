@@ -98,6 +98,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/GimbalJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/UniversalJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PlanarJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/ScapulothoracicJoint.h>
 #include <OpenSim/Simulation/Model/JointSet.h>
 
 #include <OpenSim/Simulation/Model/Marker.h>
@@ -146,6 +147,8 @@
 
 #include <OpenSim/Simulation/SimulationUtilities.h>
 #include <OpenSim/Simulation/VisualizerUtilities.h>
+
+#include <OpenSim/Simulation/TableProcessor.h>
 
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Actuators/MuscleFixedWidthPennationModel.h>

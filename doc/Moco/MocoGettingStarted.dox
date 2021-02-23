@@ -1,0 +1,102 @@
+namespace OpenSim {
+
+/**
+@page mocogettingstarted Getting started with Moco
+
+@section obtaining Obtaining Moco
+
+Download Moco for Windows or Mac from https://simtk.org/projects/opensim-moco.
+The Moco distribution contains a MATLAB/Java package, a Python package, a C++
+library, and a command-line tool. Currently, Moco does not have a graphical user
+interface.
+
+The distribution is a ZIP file that you can place anywhere on your computer;
+for example, `C:/Users/<username>/opensim-moco-<version>` on Windows
+or `/Users/<username>/opensim-moco-<version>` on Mac.
+We refer to this location
+
+@note On Windows, set your Windows PATH environment variable to include
+`<OpenSim-Moco-Install>/bin` before any other OpenSim/OpenSense paths.
+
+Decide which of Moco's interfaces you want to use and follow the relevant
+instructions below.
+
+@section buildingfromsource Building Moco from source
+
+If you want to edit Moco's C++ code or use Moco on a platform for which we do
+not distribute binaries (e.g., Linux), then you must build Moco from source.
+Developing your own cost module does not require building Moco from source.
+
+For instructions, visit the source code repository at
+https://github.com/opensim-org/opensim-core and consult the README.md file.
+
+@section usingmatlab Using Moco in MATLAB
+
+Follow the instructions for configuring Matlab to use OpenSim:
+https://simtk-confluence.stanford.edu:8443/display/OpenSim/Scripting+with+Matlab
+
+Restart Matlab and test that Matlab is properly configured to use OpenSim by
+running:
+
+```
+>> org.opensim.modeling.opensimCommon.GetVersionAndDate();
+```
+
+Make sure the output is consistent with the version of OpenSim you intend to use.
+
+The OpenSim distribution contains Matlab examples in the folder
+`Resources/Code/Matlab/Moco`. Start with `exampleSlidingMass.m`.
+
+@section usingpython Using Moco in Python
+
+To use the Python package that comes with the Moco distribution, you must use
+the same Python distribution with which Moco was built. For Windows, this is the
+Python 3 distribution from python.org. For Mac, this is the Python 3
+package from Homebrew.
+
+The OpenSim distribution contains Moco Python examples in the folder
+`Resources/Code/Python/Moco`. Start with `exampleSlidingMass.py`.
+
+If you would prefer to use Python 2 instead of Python 3, you must build from
+source using the instructions in the README.md file of the opensim-core source
+code repository (https://github.com/opensim-org/opensim-core/blob/master/README.md).
+
+In the future, we hope to make the Python package easier to install by
+distributing it through the Conda package manager.
+
+<!--
+(Most users use Moco through Matlab or Python, so we removed the command line
+tool when moving the code from the opensim-moco repository to opensim-core.)
+
+@section usingxml Using Moco with XML files and the command line
+
+Moco provides a command-line tool, `bin/opensim-moco`, through which you can
+solve studies saved as XML files, using the `.omoco` file extension.
+
+@note The command-line tool for Moco has been temporarily removed.
+
+The command-line interface allows generating a template XML `.omoco` file and
+for visualizing a solution.
+
+Unfortunately, Moco does not yet provide any examples of XML files for use with
+the command-line interface. However, the MATLAB/Python examples can generate XML
+files that you can then use through the command-line interface.
+-->
+
+@section usingcpp Using Moco in C++
+
+This section is under development.
+
+<!--
+TODO: examples are designed so that you can run them without any special
+settings.
+
+TODO: unify documentation for executables and plugins in C++ because they
+share background about compilers.
+
+TODO use through CMake. Use the same compiler or newer. Use C++11.
+-->
+
+*/
+
+}
