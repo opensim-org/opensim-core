@@ -35,12 +35,14 @@ a trajectory of SimTK::Vec3%s representing the acceleration reference data.
 You must provide either a file name to a STO or CSV file (or other file
 types for which there is a FileAdapter) or a TimeSeriesTableVec3 directly.
 
-Errors for this cost are computed assuming that the provided reference
-acceleration data is the derivative of a position vector with respect to the
-ground frame and expressed in the ground frame. This cost is not yet
-suitable for tracking acceleration signals from an inertial measurement unit
-(IMU) as it does not account for gravitational acceleration and does not
-re-express body accelerations into a different (e.g., IMU) frame.
+By default, errors for this cost are computed assuming that the provided
+reference acceleration data is the derivative of a position vector with respect
+to the ground frame and expressed in the ground frame. If using this cost for
+tracking acceleration signals from an inertial measurement unit (IMU), you must
+set both setGravityOffset() and setExpressAccelerationsInTrackingFrames() to
+true. In addition, the tracking frames for each IMU must be the same orientation
+and placement in the model as recorded experimentally. Therefore, it is
+recommended to add a frame to the model for each tracked IMU.
 
 This cost requires realization to SimTK::Stage::Acceleration.
 
@@ -106,6 +108,27 @@ public:
         return get_acceleration_reference_file();
     }
 
+    /** Subtract the model's gravity vector from the model-generated
+    accelerations. This offset is performed while the model accelerations are
+    expressed in the ground frame, before the accelerations are expressed in the
+    tracking frames when setExpressAccelerationsInTrackingFrames() is set to
+    true. This setting is useful when tracking accelerations recorded from
+    inertial measurement units. */
+    void setGravityOffset(bool tf) { set_gravity_offset(tf); }
+    bool getGravityOffset() { return get_gravity_offset(); }
+
+    /** Express the model-generated accelerations in the individual model
+    tracking frames specified by the 'frame_paths' property. Accelerations are
+    expressed after the gravity offset is applied when setGravityOffset() is set
+    to true. This setting is useful when tracking accelerations recorded from
+    inertial measurement units. */
+    void setExpressAccelerationsInTrackingFrames(bool tf) {
+        set_express_accelerations_in_tracking_frames(tf);
+    }
+    bool getExpressAccelerationsInTrackingFrames() {
+        return get_express_accelerations_in_tracking_frames();
+    }
+
 protected:
     void initializeOnModelImpl(const Model& model) const override;
     void calcIntegrandImpl(
@@ -128,11 +151,25 @@ private:
     OpenSim_DECLARE_PROPERTY(acceleration_weights, MocoWeightSet,
             "Set of weight objects to weight the tracking of "
             "individual frames' accelerations in the cost.");
+    OpenSim_DECLARE_PROPERTY(gravity_offset, bool,
+            "Subtract the model's gravity vector from the model-generated "
+            "accelerations. This offset is performed while the model "
+            "accelerations are expressed in the ground frame, before the "
+            "accelerations are expressed in the tracking frames when the "
+            "'express_accelerations_in_tracking_frames' property is set to "
+            "true.");
+    OpenSim_DECLARE_PROPERTY(express_accelerations_in_tracking_frames, bool,
+            "Express the model-generated accelerations in the individual model "
+            "tracking frames specified by the 'frame_paths' property. "
+            "Accelerations are expressed after the gravity offset is applied "
+            "when 'gravity_offset' is set to true.");
 
     void constructProperties() {
         constructProperty_acceleration_reference_file("");
         constructProperty_frame_paths();
         constructProperty_acceleration_weights(MocoWeightSet());
+        constructProperty_gravity_offset(false);
+        constructProperty_express_accelerations_in_tracking_frames(false);
     }
 
     TimeSeriesTableVec3 m_acceleration_table;

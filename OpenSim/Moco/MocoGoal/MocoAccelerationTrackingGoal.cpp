@@ -98,12 +98,14 @@ void MocoAccelerationTrackingGoal::calcIntegrandImpl(
     const auto& state = input.state;
     const auto& time = state.getTime();
     getModel().realizeAcceleration(state);
+    const auto& ground = getModel().getGround();
+    const auto& gravity = getModel().getGravity();
     SimTK::Vector timeVec(1, time);
 
     integrand = 0;
     Vec3 acceleration_ref(0.0);
     for (int iframe = 0; iframe < (int)m_model_frames.size(); ++iframe) {
-        const auto& acceleration_model =
+        auto acceleration_model =
                 m_model_frames[iframe]->getLinearAccelerationInGround(state);
 
         // Compute acceleration error.
@@ -111,6 +113,20 @@ void MocoAccelerationTrackingGoal::calcIntegrandImpl(
             acceleration_ref[ia] =
                     m_ref_splines[3*iframe + ia].calcValue(timeVec);
         }
+
+        // Gravity offset.
+        if (get_gravity_offset()) {
+            acceleration_model -= gravity;
+        }
+
+        // Express accelerations in the model's tracking frames.
+        if (get_express_accelerations_in_tracking_frames()) {
+            acceleration_model = ground.expressVectorInAnotherFrame(state,
+                acceleration_model,
+                m_model_frames[iframe].getRef());
+        }
+
+        // Compute error.
         Vec3 error = acceleration_model - acceleration_ref;
 
         // Add this frame's acceleration error to the integrand.
