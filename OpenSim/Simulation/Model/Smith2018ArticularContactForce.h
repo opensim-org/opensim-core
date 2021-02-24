@@ -920,8 +920,8 @@ public:
         SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
         SimTK::Vector& generalizedForces) const override;
 
-    OpenSim::Array<double> getRecordValues(const SimTK::State& s) const;
-    OpenSim::Array<std::string> getRecordLabels() const;
+    OpenSim::Array<double> getRecordValues(const SimTK::State& s) const override;
+    OpenSim::Array<std::string> getRecordLabels() const override;
 
 protected:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;

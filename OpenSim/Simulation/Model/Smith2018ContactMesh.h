@@ -307,7 +307,7 @@ private:
 //=========================================================================
 //                            OBB TREE NODE
 //=========================================================================
-
+#ifndef SWIG
 public:
     class OBBTreeNode {
         public:
@@ -346,6 +346,7 @@ public:
 
     OBBTreeNode _obb;
     OBBTreeNode _back_obb;
+#endif //SWIG
 
     //=========================================================================
 };  // END of class ContactGeometry
