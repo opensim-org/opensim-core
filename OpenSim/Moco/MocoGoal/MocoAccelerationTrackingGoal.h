@@ -3,7 +3,7 @@
 /* -------------------------------------------------------------------------- *
  * OpenSim: MocoAccelerationTrackingGoal.h                                    *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2019 Stanford University and the Authors                     *
+ * Copyright (c) 2020 Stanford University and the Authors                     *
  *                                                                            *
  * Author(s): Nicholas Bianco                                                 *
  *                                                                            *
@@ -39,10 +39,11 @@ By default, errors for this cost are computed assuming that the provided
 reference acceleration data is the derivative of a position vector with respect
 to the ground frame and expressed in the ground frame. If using this cost for
 tracking acceleration signals from an inertial measurement unit (IMU), you must
-set both setGravityOffset() and setExpressAccelerationsInTrackingFrames() to
-true. In addition, the tracking frames for each IMU must be the same orientation
-and placement in the model as recorded experimentally. Therefore, it is
-recommended to add a frame to the model for each tracked IMU.
+subject the gravity vector from the model accelerations and express them in the
+tracking frames using setGravityOffset() and
+setExpressAccelerationsInTrackingFrames(). In addition, the tracking frames for
+each IMU must be in the same orientation and placement in the model as in your
+experiment.
 
 This cost requires realization to SimTK::Stage::Acceleration.
 
