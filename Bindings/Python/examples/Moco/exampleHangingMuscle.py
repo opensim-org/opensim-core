@@ -22,6 +22,7 @@
 # The trajectory optimization problem is to lift the point mass by a small
 # distance in minimum time.
 
+import os
 import opensim as osim
 
 def createHangingMuscleModel(ignore_activation_dynamics,

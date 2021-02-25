@@ -631,11 +631,11 @@ TEMPLATE_TEST_CASE(
     auto* body = new Body("body", mass, SimTK::Vec3(0), SimTK::Inertia(1));
     model.addBody(body);
 
-    auto* joint = new FreeJoint("joint", model.getGround(), *body);
+    auto* joint = new PlanarJoint("joint", model.getGround(), *body);
     model.addJoint(joint);
 
-    auto* constr = new WeldConstraint("constraint", model.getGround(),
-            SimTK::Transform(), *body, SimTK::Transform());
+    auto* constr = new PointConstraint(model.getGround(), SimTK::Vec3(0),
+                                       *body, SimTK::Vec3(0));
     model.addConstraint(constr);
     model.finalizeConnections();
 

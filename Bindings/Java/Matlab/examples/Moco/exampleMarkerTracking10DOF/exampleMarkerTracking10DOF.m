@@ -88,8 +88,8 @@ markerWeights.cloneAndAppend(MarkerWeight('L.Toe.Tip',2));
 % trajectories and the marker weights and pass it to the tracking cost. The
 % cost term uses this marker reference to compute the weighted, squared
 % marker tracking error internally.
-markersRef = MarkersReference(fullfile(scriptdir, 'marker_trajectories.trc'));
-markersRef.setMarkerWeightSet(markerWeights);
+markersRef = MarkersReference(fullfile(scriptdir, 'marker_trajectories.trc'), ...
+    markerWeights);
 markerTrackingCost.setMarkersReference(markersRef);
 
 % This setting gives the marker tracking cost permission to ignore data in
