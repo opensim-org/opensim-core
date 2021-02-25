@@ -31,16 +31,23 @@ using namespace OpenSim;
 using namespace std;
 
 void testLeg6Dof9MuscSwing();
+void testLeg6Dof9MuscStance();
 
 int main() {
 
     SimTK::Array_<std::string> failures;
 
-    // Model uses Millard2012EquilibriumMuscle type muscles
-    try { testLeg6Dof9MuscSwing(); }
-    catch (const std::exception& e) {
+    try {
+        testLeg6Dof9MuscSwing();
+    } catch (const std::exception& e) {
         cout << e.what() << endl;
-        failures.push_back("testLeg6Dof9Musc");
+        failures.push_back("testLeg6Dof9MuscSwing");
+    }
+    try {
+        testLeg6Dof9MuscStance();
+    } catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testLeg6Dof9MuscStance");
     }
 
     if (!failures.empty()) {
@@ -56,21 +63,26 @@ int main() {
 // Perform regression test with standard generated from Leg6Dof9Musc
 // example in OpenSim 4.1
 void testLeg6Dof9MuscSwing() {
-    cout<<"\n******************************************************************" << endl;
-    cout << "*                      testLeg6Dof9Musc                       *" << endl;
-    cout << "******************************************************************\n" << endl;
+    cout << "\n****************************************************************"
+            "**"
+         << endl;
+    cout << "*                      testLeg6Dof9Musc Swing                     "
+            "*"
+         << endl;
+    cout << "******************************************************************"
+            "\n"
+         << endl;
     CMCTool cmc("leg6dof9musc_setup_Swing.xml");
     CoordinateSet& coordSet = cmc.getModel().updCoordinateSet();
     // Lock pelvis coordinates per tutorial
-    for (int i = 0; i < 3; i++) 
-        coordSet[i].setDefaultLocked(true);
+    for (int i = 0; i < 3; i++) coordSet[i].setDefaultLocked(true);
     if (!cmc.run())
         OPENSIM_THROW(Exception, "testLeg6Dof9Musc Swing failed to complete.");
 
     Storage results("Leg6Dof9MuscSwing/leg6dof9musc_states.sto");
     Storage temp("Leg6Dof9MuscSwing_std_leg6dof9musc_states.sto");
 
-    Storage *standard = new Storage();
+    Storage* standard = new Storage();
     cmc.getModel().formStateStorage(temp, *standard);
 
     int nstates = standard->getColumnLabels().size() - 1;
@@ -79,10 +91,43 @@ void testLeg6Dof9MuscSwing() {
     // and activations to within 1%
     std::vector<double> rms_tols(nstates, 0.01);
 
-    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols,
-        __FILE__, __LINE__, "testLeg6Dof9Musc Swing failed");
+    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__,
+            __LINE__, "testLeg6Dof9Musc Swing failed");
 
     cout << "\ntestLeg6Dof9Musc Swing passed\n" << endl;
 }
+void testLeg6Dof9MuscStance() {
+    cout << "\n****************************************************************"
+            "**"
+         << endl;
+    cout << "*                      testLeg6Dof9Musc Stance                     "
+            "*"
+         << endl;
+    cout << "******************************************************************"
+            "\n"
+         << endl;
+    CMCTool cmc("leg69_Setup_CMC_Stance.xml");
+
+    if (!cmc.run())
+        OPENSIM_THROW(Exception, "testLeg6Dof9Musc Stance failed to complete.");
+
+    Storage results("Leg6Dof9MuscStance/leg6dof9musc_RRA_adjusted_states.sto");
+    Storage temp("leg6dof9musc_std_RRA_adjusted_states.sto");
+
+    Storage* standard = new Storage();
+    cmc.getModel().formStateStorage(temp, *standard);
+
+    int nstates = standard->getColumnLabels().size() - 1;
+
+    // angles and speeds within 0.01 rads and 0.01 rad/s;
+    // and activations to within 1%
+    std::vector<double> rms_tols(nstates, 0.01);
+
+    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__,
+            __LINE__, "testLeg6Dof9Musc Stance failed");
+
+    cout << "\ntestLeg6Dof9Musc Stance passed\n" << endl;
+}
+
 
 
