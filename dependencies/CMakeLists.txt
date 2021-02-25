@@ -4,7 +4,7 @@
 
 project(OpenSimDependencies)
 # We require a version of CMake that supports Visual Studio 2015.
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.12)
 
 include(ExternalProject)
 include(CMakeParseArguments)
@@ -212,6 +212,17 @@ AddDependency(NAME colpack
               CMAKE_ARGS -DCMAKE_DEBUG_POSTFIX:STRING=_d
                          -DENABLE_EXAMPLES:BOOL=OFF
                          -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON)
+
+AddDependency(NAME hdf5
+                         DEFAULT ON
+                         GIT_URL https://github.com/HDFGroup/hdf5.git
+                         GIT_TAG 
+                         hdf5-1_12_0
+                         CMAKE_ARGS -DBUILD_STATIC_LIBS:BOOL=OFF
+                                    -DBUILD_TESTING:BOOL=OFF
+                                    -DHDF5_CPP_LIB:BOOL=OFF
+                                    -DHDF5_BUILD_EXAMPLES:BOOL=OFF
+                                    -DHDF5_BUILD_TOOLS:BOOL:OFF)
 
 set(SUPERBUILD_adolc ON CACHE BOOL 
     "Automatically download, configure, build and install adolc")

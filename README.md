@@ -505,6 +505,9 @@ On Windows using Visual Studio
         * **automatic differentiation**: [ADOL-C](https://github.com/coin-or/ADOL-C) >= 2.6.3.
     * **nonlinear optimizer** (required if building with CasADi or Tropter): 
         [IPOPT](https://github.com/coin-or/Ipopt) >= 3.12.8.
+* **H5 file support**: Hierarchical Data Format (HDF5)
+    * Let OpenSim get this for you using superbuild (see below).
+    * [Build on your own](https://github.com/HDFGroup/hdf5).
 * **API documentation** (optional):
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6
 * **version control** (optional): git. There are many options:

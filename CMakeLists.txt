@@ -742,6 +742,15 @@ endif()
 find_package(spdlog REQUIRED
         HINTS "${OPENSIM_DEPENDENCIES_DIR}/spdlog")
 
+# HDF5
+#-----
+find_package(hdf5 REQUIRED
+        HINTS "${OPENSIM_DEPENDENCIES_DIR}/hdf5")
+OpenSimCopyDependencyDLLsForWin(DEP_NAME hdf5
+        DEP_BIN_DIR ${hdf5_INSTALL_PREFIX}/bin)
+if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
+    OpenSimInstallDependencyLibraries(hdf5 "${hdf5_INSTALL_PREFIX}"
+        "${hdf5_LIBRARY_DIRS}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
 
 if(NOT SIMBODY_HOME AND OPENSIM_DEPENDENCIES_DIR)
     set(SIMBODY_HOME "${OPENSIM_DEPENDENCIES_DIR}/simbody")
@@ -931,6 +940,15 @@ if(${OPENSIM_COPY_DEPENDENCIES})
         # LIB: .so files on Linux, .dylib on macOS
         file(GLOB btk_desired_lib_files "${BTK_LIBRARY_DIRS}/*BTK*")
         install(FILES ${btk_desired_lib_files}
+                DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+    endif()
+
+    # HDF5
+    # ---
+    if(NOT WIN32)
+        # LIB: .so files on Linux, .dylib on macOS
+        file(GLOB hdf5_desired_lib_files "${hdf5_LIBRARY_DIRS}/*hdf5*")
+        install(FILES ${hdf5_desired_lib_files}
                 DESTINATION "${CMAKE_INSTALL_LIBDIR}")
     endif()
 
