@@ -185,18 +185,19 @@ class Report(object):
         if lw < 0.5: lw = 0.5
         if lw > 2: lw = 2
         for color, file in zip(self.colorlist, all_files):
+            label = truncate(file, 90)
             import matplotlib.lines as mlines
             if bilateral:
                 r = mlines.Line2D([], [], ls='-', color=color, linewidth=lw)
                 self.legend_handles.append(r)
-                self.legend_labels.append(file + ' (right leg)')
+                self.legend_labels.append(label + ' (right leg)')
                 l = mlines.Line2D([], [], ls='--', color=color, linewidth=lw)
                 self.legend_handles.append(l)
-                self.legend_labels.append(file + ' (left leg)')
+                self.legend_labels.append(label + ' (left leg)')
             else:
                 h = mlines.Line2D([], [], ls='-', color=color, linewidth=lw)
                 self.legend_handles.append(h)
-                self.legend_labels.append(file)
+                self.legend_labels.append(label)
 
         # Time
         # -----
