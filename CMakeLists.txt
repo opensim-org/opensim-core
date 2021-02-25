@@ -748,11 +748,12 @@ find_package(hdf5 REQUIRED
         HINTS "${OPENSIM_DEPENDENCIES_DIR}/hdf5/cmake/hdf5")
 
 OpenSimCopyDependencyDLLsForWin(DEP_NAME hdf5
-        DEP_BIN_DIR ${hdf5_INSTALL_PREFIX}/bin)
+        DEP_BIN_DIR ${hdf5_DIR}/../../bin)
 
 if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
     OpenSimInstallDependencyLibraries(hdf5 "${hdf5_INSTALL_PREFIX}"
         "${hdf5_LIBRARY_DIRS}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
+endif()
 
 if(NOT SIMBODY_HOME AND OPENSIM_DEPENDENCIES_DIR)
     set(SIMBODY_HOME "${OPENSIM_DEPENDENCIES_DIR}/simbody")
