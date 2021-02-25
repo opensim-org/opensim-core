@@ -222,7 +222,7 @@ AddDependency(NAME hdf5
                                     -DBUILD_TESTING:BOOL=OFF
                                     -DHDF5_CPP_LIB:BOOL=OFF
                                     -DHDF5_BUILD_EXAMPLES:BOOL=OFF
-                                    -DHDF5_BUILD_TOOLS:BOOL:OFF)
+                                    -DHDF5_BUILD_TOOLS:BOOL=OFF)
 
 set(SUPERBUILD_adolc ON CACHE BOOL 
     "Automatically download, configure, build and install adolc")
