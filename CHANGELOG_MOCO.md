@@ -1,6 +1,11 @@
 Moco Change Log
 ===============
 
+0.6.0
+-----
+- 2021-02-24: Updated MocoAccelerationTrackingGoal to add support for tracking
+              acceleration signals from inertial measurement units.
+  
 0.5.0
 -----
 - 2021-01-11: An Exception is now thrown if the model includes joints whose
