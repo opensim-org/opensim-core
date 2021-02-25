@@ -10,7 +10,7 @@ v4.2
 ====
 - Added Bhargava2004SmoothedMuscleMetabolics, a smoothed version of the Bhargava metabolics model designed for gradient-based optimization (i.e., Moco).
 - Fixed a bug in Millard2012EquilibriumMuscle::extendFinalizeFromProperties(): the end point slopes on the inverse force velocity curves are constrained to yield a valid curve. A warning is noted in the log if the slopes are small enough that numerical integration might be slow.
-- Added logging to Millard2012EquilibriumMuscle::extendFinalizeFromProperties(): whenever an internal setting is changed automatically these changes are noted in the log.
+- Added logging to Millard2012EquilibriumMuscle::extendFinalizeFromProperties(): whenever an internal setting is changed automatically these changes are noted in the log. To avoid seeing these messages, update the corresponding properties in the .osim file to the values noted in the log message.
 - Introduced new logging system based on spdlog https://github.com/gabime/spdlog.git. The transition should be transparent to end users with default settings except that the name of the log file is now opensim.log. Main features are:
   - The ability to customize error level for reporting (in increasing level of verbosity): Off, Critical, Error, Warn, Info, Debug, Trace 
   - The ability to start logging to a specified file on the fly.
