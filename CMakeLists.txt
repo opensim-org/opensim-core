@@ -744,8 +744,14 @@ find_package(spdlog REQUIRED
 
 # HDF5
 #-----
-find_package(hdf5 REQUIRED
-        HINTS "${OPENSIM_DEPENDENCIES_DIR}/hdf5/cmake/hdf5")
+if(WIN32)
+    set(hdf5_hint "${OPENSIM_DEPENDENCIES_DIR}/hdf5/cmake/hdf5")
+else()
+    set(hdf5_hint "${OPENSIM_DEPENDENCIES_DIR}/hdf5/share/cmake/hdf5")
+endif()
+
+
+find_package(hdf5 REQUIRED HINTS "${hdf5_hint}")
 
 OpenSimCopyDependencyDLLsForWin(DEP_NAME hdf5
         DEP_BIN_DIR ${hdf5_DIR}/../../bin)
