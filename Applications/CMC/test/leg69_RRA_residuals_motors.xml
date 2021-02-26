@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSimDocument Version="20302">
+	<ForceSet name="leg69_RRA_Residuals_and_Motors">
+    <defaults/>
+		<objects>
+			<TorqueActuator name="MZ">
+				<isDisabled> false </isDisabled>
+				<!--Minimum allowed value for control signal. Used primarily when solving
+				    for control values-->
+				<min_control> -10000.0 </min_control>
+				<!--Maximum allowed value for control signal. Used primarily when solving
+				    for control values-->
+				<max_control> 10000.0 </max_control>
+				<bodyA> pelvis </bodyA>
+				<bodyB> ground </bodyB>
+				<torque_is_global> true </torque_is_global>
+				<axis>       0.00000000       0.00000000       1.00000000 </axis>
+				<optimal_force>       1.000000 </optimal_force>
+			</TorqueActuator>
+			<PointActuator name="FX">
+				<isDisabled> false </isDisabled>
+				<!--Minimum allowed value for control signal. Used primarily when solving
+				    for control values-->
+				<min_control> -10000.0 </min_control>
+				<!--Maximum allowed value for control signal. Used primarily when solving
+				    for control values-->
+				<max_control> 10000.0 </max_control>
+				<body> pelvis </body>
+				<point>      -0.0592121       0.00000000       0.00000000 </point>
+				<point_is_global> false </point_is_global>
+				<direction>       1.00000000       0.00000000       0.00000000 </direction>
+				<force_is_global> true </force_is_global>
+				<optimal_force>       1.000000 </optimal_force>
+			</PointActuator>
+			<PointActuator name="FY">
+				<isDisabled> false </isDisabled>
+				<!--Minimum allowed value for control signal. Used primarily when solving
+				    for control values-->
+				<min_control> -10000.0 </min_control>
+				<!--Maximum allowed value for control signal. Used primarily when solving
+				    for control values-->
+				<max_control> 10000.0 </max_control>
+				<body> pelvis </body>
+				<point>      -0.0592121       0.00000000       0.00000000 </point>
+				<point_is_global> false </point_is_global>
+				<direction>       0.00000000       1.00000000       0.00000000 </direction>
+				<force_is_global> true </force_is_global>
+				<optimal_force>       1.00000000 </optimal_force>
+			</PointActuator>
+			<CoordinateActuator name="hip_flexion_r_moment">
+				<isDisabled> false </isDisabled>
+				<!--Minimum allowed value for control signal. Used primarily when solving
+				    for control values-->
+				<min_control> -10000.0 </min_control>
+				<!--Maximum allowed value for control signal. Used primarily when solving
+				    for control values-->
+				<max_control> 10000.0 </max_control>
+				<coordinate> hip_flexion_r </coordinate>
+				<optimal_force>       10000.00000000 </optimal_force>
+			</CoordinateActuator>
+			<CoordinateActuator name="knee_angle_r_moment">
+				<isDisabled> false </isDisabled>
+				<!--Minimum allowed value for control signal. Used primarily when solving
+				    for control values-->
+				<min_control> -10000.0 </min_control>
+				<!--Maximum allowed value for control signal. Used primarily when solving
+				    for control values-->
+				<max_control> 10000.0 </max_control>
+				<coordinate> knee_angle_r </coordinate>
+				<optimal_force>       10000.00000000 </optimal_force>
+			</CoordinateActuator>
+			<CoordinateActuator name="ankle_angle_r_moment">
+				<isDisabled> false </isDisabled>
+				<!--Minimum allowed value for control signal. Used primarily when solving
+				    for control values-->
+				<min_control> -10000.0 </min_control>
+				<!--Maximum allowed value for control signal. Used primarily when solving
+				    for control values-->
+				<max_control> 10000.0 </max_control>
+				<coordinate> ankle_angle_r </coordinate>
+				<optimal_force>       100000.00000000 </optimal_force>
+			</CoordinateActuator>
+		</objects>
+		<groups/>
+	</ForceSet>
+</OpenSimDocument>
+
