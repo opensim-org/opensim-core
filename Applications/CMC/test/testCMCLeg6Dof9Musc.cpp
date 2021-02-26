@@ -87,9 +87,9 @@ void testLeg6Dof9MuscSwing() {
 
     int nstates = standard->getColumnLabels().size() - 1;
 
-    // angles and speeds within 0.01 rads and 0.01 rad/s;
-    // and activations to within 1%
-    std::vector<double> rms_tols(nstates, 0.01);
+    // angles and speeds within 0.05 rads and 0.05 rad/s;
+    // and activations to within 5%
+    std::vector<double> rms_tols(nstates, 0.05);
 
     CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__,
             __LINE__, "testLeg6Dof9Musc Swing failed");
@@ -119,9 +119,9 @@ void testLeg6Dof9MuscStance() {
 
     int nstates = standard->getColumnLabels().size() - 1;
 
-    // angles and speeds within 0.01 rads and 0.01 rad/s;
-    // and activations to within 1%
-    std::vector<double> rms_tols(nstates, 0.01);
+    // angles and speeds within 0.05 rads and 0.05 rad/s;
+    // and activations to within 5%
+    std::vector<double> rms_tols(nstates, 0.05);
 
     CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols, __FILE__,
             __LINE__, "testLeg6Dof9Musc Stance failed");
