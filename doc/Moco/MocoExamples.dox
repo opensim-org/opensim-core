@@ -37,6 +37,10 @@ This is an example of how to prototype a custom goal in Matlab. See
 @example exampleSlidingMass.m
 This is Moco's simplest example.
 
+@example example2DWalking.m
+This example conducts a 2-D prediction of walking, employing a
+MocoPerodicityGoal.
+
 
 
 @example exampleMocoTrack.py
@@ -71,6 +75,11 @@ and includes a visualization of the Lagrange multipliers that Moco solves for.
 @example example2DWalking.cpp
 This example conducts a 2-D prediction of walking, employing a
 MocoPerodicityGoal.
+
+@example example2DWalkingMetabolics.cpp
+This is an example using the MocoTrack tool that also shows how to
+minimize the total metabolic rate employing the
+Bhargava2004SmoothedMuscleMetabolics.
 
 @example exampleCustomImplicitAuxiliaryDynamics.cpp
 This example shows how to define dynamics with an implicit differential
