@@ -34,8 +34,8 @@ Sections of the documentation:
 
 Other resources:
  - [SimTK: downloads, user forum, and mailing lists](https://simtk.org/projects/opensim-moco)
- - [GitHub: source code, bug reporting, and feature requests](https://github.com/opensim-org/opensim-moco)
- - [bioRxiv preprint](https://www.biorxiv.org/content/10.1101/839381v1)
+ - [GitHub: source code, bug reporting, and feature requests](https://github.com/opensim-org/opensim-core)
+ - [PLoS Comput Biol paper](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1008493)
  - [Webinar recording](https://opensim.stanford.edu/support/event_details.php?id=236&title=Webinar-OpenSim-Moco-Software-to-optimize-the-motion-and-control-of-OpenSim-models)
 
 @defgroup mocogoal Moco: Available goals
