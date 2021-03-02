@@ -28,10 +28,13 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Tools/InverseDynamicsTool.h>
+#include <OpenSim/Simulation/InverseDynamicsSolver.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
 using namespace std;
+
+void testThoracoscapularShoulderModel();
 
 int main()
 {
@@ -51,6 +54,9 @@ int main()
             std::vector<double>(23, 2.0), __FILE__, __LINE__,
             "testGait failed");
         cout << "testGait passed" << endl;
+
+        testThoracoscapularShoulderModel();
+        cout << "testThoracoscapularShoulderModel passed" << endl;
     }
     catch (const Exception& e) {
         e.print(cerr);
@@ -58,4 +64,57 @@ int main()
     }
     cout << "Done" << endl;
     return 0;
+}
+
+void testThoracoscapularShoulderModel() {
+    // Perform ID by setting coordinate values and setting up an
+    // InverseDynamicsSovler directly
+    Model model("ThoracoscapularShoulderModel.osim");
+    SimTK::State& s = model.initSystem();
+    TimeSeriesTable motionTable("ThorascapularShoulderModel_static.mot");
+    auto labels = motionTable.getColumnLabels();
+    
+    for (int i = 0; i < labels.size(); ++i) { 
+        const Coordinate& thisCoord = model.getCoordinateSet().get(labels[i]);
+        auto thisValue = motionTable.getDependentColumn(labels[i])[0];
+        thisCoord.setValue(s, thisValue, false);
+        thisCoord.setSpeedValue(s, 0);
+    }
+    model.assemble(s);
+
+    InverseDynamicsSolver idSolver(model);
+    Set<Muscle>& muscles = model.updMuscles();
+    for (int i = 0; i < muscles.getSize(); i++) {
+        muscles[i].setAppliesForce(s, false);
+    }
+    SimTK::Vector idSolverVec = idSolver.solve(s);
+    auto coordsInMultibodyOrder = model.getCoordinatesInMultibodyTreeOrder();
+
+    // Do the same thing with InverseDynamicsTool
+    InverseDynamicsTool idTool("ThorascapularShoulderModel_ID_static.xml");
+    idTool.run();
+    TimeSeriesTable idToolTable("ThorascapularShoulderModel_ID_output.sto");
+    auto idToolLabels = idToolTable.getColumnLabels();
+    auto row = idToolTable.getRowAtIndex(0);
+    SimTK::Vector idToolVec((int)coordsInMultibodyOrder.size());
+
+    // Reorder Storage file results to multibody tree order just in case
+    for (int i = 0; i < coordsInMultibodyOrder.size(); ++i) {
+        std::string genForce = coordsInMultibodyOrder[i]->getName();
+        if (coordsInMultibodyOrder[i]->getMotionType() ==
+            Coordinate::Rotational) {
+            genForce += "_moment";
+        } 
+        else if (coordsInMultibodyOrder[i]->getMotionType() ==
+                    Coordinate::Translational) {
+            genForce += "_force";
+        }
+        int colInd = (int)idToolTable.getColumnIndex(genForce);
+        idToolVec[i] = row[colInd];
+    }
+
+    // Compare results
+    std::cout << idSolverVec - idToolVec << std::endl;
+    ASSERT_EQUAL(idSolverVec, idToolVec, 0.01, __FILE__, __LINE__, 
+        "testThoracoscapularShoulderModel failed");
 }
