@@ -74,20 +74,27 @@ void testThoracoscapularShoulderModel() {
     TimeSeriesTable motionTable("ThorascapularShoulderModel_static.mot");
     auto labels = motionTable.getColumnLabels();
     
-    for (int i = 0; i < labels.size(); ++i) { 
+    for (int i = 0; i < labels.size(); ++i) {
+        std::cout << labels[i] << " ";
         const Coordinate& thisCoord = model.getCoordinateSet().get(labels[i]);
         auto thisValue = motionTable.getDependentColumn(labels[i])[0];
+        std::cout << thisValue << std::endl;
+        thisCoord.setLocked(s, false);
         thisCoord.setValue(s, thisValue, false);
         thisCoord.setSpeedValue(s, 0);
     }
-    model.assemble(s);
+    // IDTool and IDSolver specifically do not perform assembly since it 
+    // updates the state directly, so don't assemble here either
+    //model.assemble(s);
 
     InverseDynamicsSolver idSolver(model);
     Set<Muscle>& muscles = model.updMuscles();
     for (int i = 0; i < muscles.getSize(); i++) {
         muscles[i].setAppliesForce(s, false);
     }
+
     SimTK::Vector idSolverVec = idSolver.solve(s);
+    std::cout << idSolverVec << std::endl;
     auto coordsInMultibodyOrder = model.getCoordinatesInMultibodyTreeOrder();
 
     // Do the same thing with InverseDynamicsTool
@@ -114,7 +121,6 @@ void testThoracoscapularShoulderModel() {
     }
 
     // Compare results
-    std::cout << idSolverVec - idToolVec << std::endl;
-    ASSERT_EQUAL(idSolverVec, idToolVec, 0.01, __FILE__, __LINE__, 
+    ASSERT_EQUAL(idSolverVec, idToolVec, 1e-6, __FILE__, __LINE__, 
         "testThoracoscapularShoulderModel failed");
 }

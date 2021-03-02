@@ -34,6 +34,7 @@
 #include <OpenSim/Common/XMLDocument.h>
 #include <OpenSim/Simulation/InverseDynamicsSolver.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/SimulationUtilities.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -260,12 +261,39 @@ bool InverseDynamicsTool::run()
         /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model);
         // Initialize the model's underlying computational system and get its default state.
         SimTK::State& s = _model->initSystem();
-
-
         auto coords = _model->getCoordinatesInMultibodyTreeOrder();
-        int nq = _model->getNumCoordinates();
+        int nq = s.getNQ();
+        int nCoords = (int)coords.size();
+        int intUnusedQ = -1;
 
-        FunctionSet *coordFunctions = NULL;
+        // Create a vector coordIndsForEachQ whose i'th element provides
+        // the index in vector coords corresponding to the i'th 'q' value.
+        auto coordMap = createSystemYIndexMap(*_model);
+        std::vector<int> coordIndsForEachQ(nq, intUnusedQ); 
+        for (const auto& c : coordMap) {
+            // System's "y" has all "q"s first
+            if (c.second < nq) { 
+                std::string svName = c.first;
+                ComponentPath path(svName);
+                std::string coordName = path.getSubcomponentNameAtLevel(
+                        path.getNumPathLevels() - 2);
+
+                for (int i = 0; i < nCoords; ++i) {
+                    if (coordName == coords[i]->getName()) {
+                        coordIndsForEachQ[c.second] = i;
+                        break;
+                    }
+                    if (i == nCoords - 1) {
+                        throw Exception("Coordinate " + coordName + 
+                                " not found in model.");
+                    }
+                }
+
+            }
+        }
+
+        FunctionSet* coordFunctions = new FunctionSet();
+        coordFunctions->ensureCapacity(nq);
 
         if (loadCoordinateValues()){
             if(_lowpassCutoffFrequency>=0) {
@@ -279,13 +307,22 @@ bool InverseDynamicsTool::run()
                 _model->getSimbodyEngine().convertDegreesToRadians(*_coordinateValues);
             }
             // Create differentiable splines of the coordinate data
-            coordFunctions = new GCVSplineSet(5, _coordinateValues);
+            GCVSplineSet* coordSplines = new GCVSplineSet(5, _coordinateValues);
 
             //Functions must correspond to model coordinates and their order for the solver
+            //Order for solver needs to match order in q's
             for(int i=0; i<nq; i++){
-                const Coordinate& coord = *coords[i];
-                if(coordFunctions->contains(coord.getName())){
-                    coordFunctions->insert(i,coordFunctions->get(coord.getName()));
+                int coordInd = coordIndsForEachQ[i];
+
+                // unused q slot
+                if (coordInd == intUnusedQ) {
+                    coordFunctions->insert(i, new Constant(0));
+                    continue;
+                }
+
+                const Coordinate& coord = *coords[coordInd];
+                if (coordSplines->contains(coord.getName())) {
+                    coordFunctions->insert(i, coordSplines->get(coord.getName()));
                 }
                 else{
                     coordFunctions->insert(i,new Constant(coord.getDefaultValue()));
@@ -328,7 +365,7 @@ bool InverseDynamicsTool::run()
         }
 
         // Preallocate results
-        Array_<Vector> genForceTraj(nt, Vector(nq, 0.0));
+        Array_<Vector> genForceTraj(nt, Vector(nCoords, 0.0));
 
         // solve for the trajectory of generalized forces that correspond to the 
         // coordinate trajectories provided
@@ -345,8 +382,8 @@ bool InverseDynamicsTool::run()
         // Generalized forces from ID Solver are in MultibodyTree order and not
         // necessarily in the order of the Coordinates in the Model.
         // We can get the Coordinates in Tree order from the Model.
-        Array<string> labels("time", nq+1);
-        for(int i=0; i<nq; i++){
+        Array<string> labels("time", nCoords + 1);
+        for (int i = 0; i < nCoords; i++) {
             labels[i+1] = coords[i]->getName();
             labels[i+1] += (coords[i]->getMotionType() == Coordinate::Rotational) ? 
                 "_moment" : "_force";
