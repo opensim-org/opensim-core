@@ -70,7 +70,7 @@ elseif(TROPTER_COPY_DEPENDENCIES AND UNIX)
     # is installed (add_subdirectory(cmake) must be after
     # add_subdirectory(tropter)).
     set(script
-     ${CMAKE_CURRENT_BINARY_DIR}/tropter_install_mac_dependency_libraries.cmake)
+     ${CMAKE_CURRENT_BINARY_DIR}/tropter_install_linux_dependency_libraries.cmake)
      configure_file(tropter_install_linux_dependency_libraries.cmake.in
             "${script}" @ONLY)
     install(SCRIPT "${script}")
