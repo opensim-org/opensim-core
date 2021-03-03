@@ -292,8 +292,8 @@ bool InverseDynamicsTool::run()
             }
         }
 
-        FunctionSet* coordFunctions = new FunctionSet();
-        coordFunctions->ensureCapacity(nq);
+        FunctionSet coordFunctions;
+        coordFunctions.ensureCapacity(nq);
 
         if (loadCoordinateValues()){
             if(_lowpassCutoffFrequency>=0) {
@@ -307,7 +307,7 @@ bool InverseDynamicsTool::run()
                 _model->getSimbodyEngine().convertDegreesToRadians(*_coordinateValues);
             }
             // Create differentiable splines of the coordinate data
-            GCVSplineSet* coordSplines = new GCVSplineSet(5, _coordinateValues);
+            GCVSplineSet coordSplines = GCVSplineSet(5, _coordinateValues);
 
             //Functions must correspond to model coordinates and their order for the solver
             //Order for solver needs to match order in q's
@@ -316,23 +316,23 @@ bool InverseDynamicsTool::run()
 
                 // unused q slot
                 if (coordInd == intUnusedQ) {
-                    coordFunctions->insert(i, new Constant(0));
+                    coordFunctions.insert(i, new Constant(0));
                     continue;
                 }
 
                 const Coordinate& coord = *coords[coordInd];
-                if (coordSplines->contains(coord.getName())) {
-                    coordFunctions->insert(i, coordSplines->get(coord.getName()));
+                if (coordSplines.contains(coord.getName())) {
+                    coordFunctions.insert(i, coordSplines.get(coord.getName()));
                 }
                 else{
-                    coordFunctions->insert(i,new Constant(coord.getDefaultValue()));
+                    coordFunctions.insert(i,new Constant(coord.getDefaultValue()));
                     log_info("InverseDynamicsTool: coordinate file does not "
                              "contain coordinate '{}'. Assuming default value.",
                             coord.getName());   
                 }
             }
-            if(coordFunctions->getSize() > nq){
-                coordFunctions->setSize(nq);
+            if(coordFunctions.getSize() > nq){
+                coordFunctions.setSize(nq);
             }
         }
         else{
@@ -369,7 +369,7 @@ bool InverseDynamicsTool::run()
 
         // solve for the trajectory of generalized forces that correspond to the 
         // coordinate trajectories provided
-        ivdSolver.solve(s, *coordFunctions, times, genForceTraj);
+        ivdSolver.solve(s, coordFunctions, times, genForceTraj);
         success = true;
 
         log_info("InverseDynamicsTool: {} time frames in {}.", nt, 
@@ -421,8 +421,8 @@ bool InverseDynamicsTool::run()
                 Vector &u = s.updU();
 
                 for(int j=0; j<nq; ++j){
-                    q[j] = coordFunctions->evaluate(j, 0, times[i]);
-                    u[j] = coordFunctions->evaluate(j, 1, times[i]);
+                    q[j] = coordFunctions.evaluate(j, 0, times[i]);
+                    u[j] = coordFunctions.evaluate(j, 1, times[i]);
                 }
             
                 for(int j=0; j<nj; ++j){
