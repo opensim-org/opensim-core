@@ -117,7 +117,7 @@ void testThoracoscapularShoulderModel() {
                     Coordinate::Translational) {
             genForce += "_force";
         }
-        size_t colInd = idToolTable.getColumnIndex(genForce);
+        int colInd = (int)idToolTable.getColumnIndex(genForce);
         idToolVec[i] = row[colInd];
     }
 
