@@ -1,7 +1,7 @@
 Moco Change Log
 ===============
 
-0.5.0
+1.0.0
 -----
 - 2021-01-11: An Exception is now thrown if the model includes joints whose
               generalized speeds do not match the derivative of the generalized
