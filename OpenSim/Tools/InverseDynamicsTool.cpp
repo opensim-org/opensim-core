@@ -261,6 +261,10 @@ bool InverseDynamicsTool::run()
         /*bool externalLoads = */createExternalLoads(_externalLoadsFileName, *_model);
         // Initialize the model's underlying computational system and get its default state.
         SimTK::State& s = _model->initSystem();
+
+        // Need to map the indices with the State's q's indices, which are
+        // not necessarily in the same order or even the same length. The
+        // State's q may be longer due, e.g. unused slots for quaternions
         auto coords = _model->getCoordinatesInMultibodyTreeOrder();
         int nq = s.getNQ();
         int nCoords = (int)coords.size();
@@ -275,6 +279,9 @@ bool InverseDynamicsTool::run()
             if (c.second < nq) { 
                 std::string svName = c.first;
                 ComponentPath path(svName);
+                // The state names corresponding to q's will be of the form
+                // /jointset/(joint)/(coordinate)/value. We want to grab
+                // the coordinate name, so we get the second from the end.
                 std::string coordName = path.getSubcomponentNameAtLevel(
                         path.getNumPathLevels() - 2);
 

@@ -94,7 +94,6 @@ void testThoracoscapularShoulderModel() {
     }
 
     SimTK::Vector idSolverVec = idSolver.solve(s);
-    std::cout << idSolverVec << std::endl;
     auto coordsInMultibodyOrder = model.getCoordinatesInMultibodyTreeOrder();
     int nCoords = (int)coordsInMultibodyOrder.size();
 
@@ -109,14 +108,9 @@ void testThoracoscapularShoulderModel() {
     // Reorder Storage file results to multibody tree order just in case
     for (int i = 0; i < nCoords; ++i) {
         std::string genForce = coordsInMultibodyOrder[i]->getName();
-        if (coordsInMultibodyOrder[i]->getMotionType() ==
-            Coordinate::Rotational) {
-            genForce += "_moment";
-        } 
-        else if (coordsInMultibodyOrder[i]->getMotionType() ==
-                    Coordinate::Translational) {
-            genForce += "_force";
-        }
+        genForce += (coordsInMultibodyOrder[i]->getMotionType() ==
+                     Coordinate::Rotational) ? "_moment" : "_force";
+
         int colInd = (int)idToolTable.getColumnIndex(genForce);
         idToolVec[i] = row[colInd];
     }
