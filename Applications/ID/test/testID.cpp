@@ -74,7 +74,7 @@ void testThoracoscapularShoulderModel() {
     TimeSeriesTable motionTable("ThorascapularShoulderModel_static.mot");
     auto labels = motionTable.getColumnLabels();
     
-    for (int i = 0; i < labels.size(); ++i) {
+    for (size_t i = 0; i < labels.size(); ++i) {
         std::cout << labels[i] << " ";
         const Coordinate& thisCoord = model.getCoordinateSet().get(labels[i]);
         auto thisValue = motionTable.getDependentColumn(labels[i])[0];
@@ -106,7 +106,7 @@ void testThoracoscapularShoulderModel() {
     SimTK::Vector idToolVec((int)coordsInMultibodyOrder.size());
 
     // Reorder Storage file results to multibody tree order just in case
-    for (int i = 0; i < coordsInMultibodyOrder.size(); ++i) {
+    for (size_t i = 0; i < coordsInMultibodyOrder.size(); ++i) {
         std::string genForce = coordsInMultibodyOrder[i]->getName();
         if (coordsInMultibodyOrder[i]->getMotionType() ==
             Coordinate::Rotational) {
@@ -116,7 +116,7 @@ void testThoracoscapularShoulderModel() {
                     Coordinate::Translational) {
             genForce += "_force";
         }
-        int colInd = (int)idToolTable.getColumnIndex(genForce);
+        size_t colInd = idToolTable.getColumnIndex(genForce);
         idToolVec[i] = row[colInd];
     }
 
