@@ -9,6 +9,7 @@ add_subdirectory(Tools)
 add_subdirectory(Moco)
 add_subdirectory(Examples)
 add_subdirectory(Tests)
+add_subdirectory(JAM)
 
 #add_subdirectory(Sandbox)
 

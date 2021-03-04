@@ -751,14 +751,20 @@ else()
 endif()
 
 
-find_package(hdf5 REQUIRED HINTS "${hdf5_hint}")
+#find_package(hdf5 REQUIRED HINTS "${hdf5_hint}")
+FIND_PACKAGE(hdf5 NAMES hdf5 COMPONENTS CXX HL NO_MODULE REQUIRED shared)
+# get_cmake_property(_variableNames VARIABLES)
+# list (SORT _variableNames)
+# foreach (_variableName ${_variableNames})
+#     message(STATUS "${_variableName}=${${_variableName}}")
+# endforeach()
 
 OpenSimCopyDependencyDLLsForWin(DEP_NAME hdf5
         DEP_BIN_DIR ${hdf5_DIR}/../../bin)
 
 if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
-    OpenSimInstallDependencyLibraries(hdf5 "${hdf5_INSTALL_PREFIX}"
-        "${hdf5_LIBRARY_DIRS}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
+    OpenSimInstallDependencyLibraries(hdf5 "${HDF5_INSTALL_PREFIX}"
+        "${HDF5_LIBRARY_DIR}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
 endif()
 
 if(NOT SIMBODY_HOME AND OPENSIM_DEPENDENCIES_DIR)
@@ -956,7 +962,7 @@ if(${OPENSIM_COPY_DEPENDENCIES})
     # ---
     if(NOT WIN32)
         # LIB: .so files on Linux, .dylib on macOS
-        file(GLOB hdf5_desired_lib_files "${hdf5_LIBRARY_DIRS}/*hdf5*")
+        file(GLOB hdf5_desired_lib_files "${HDF5_LIBRARY_DIR}/*hdf5*")
         install(FILES ${hdf5_desired_lib_files}
                 DESTINATION "${CMAKE_INSTALL_LIBDIR}")
     endif()
