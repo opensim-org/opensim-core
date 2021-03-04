@@ -40,22 +40,28 @@ Options:
   -o <level>, --log <level>  Logging level.
 
 Description:
-  The argument <tool-or-class> can be the name of a Tool
+  The argument <tool-or-class> can be the name of a Tool (case-insensitive)
   
-         scale  ik  id  rra  cmc  forward  analyze  moco   (case-insensitive)
+         scale  ik  id  rra  cmc  forward  analyze  moco   
+             comak-ik comak forsim joint-mechanics         
 
   or the name of any registered (concrete) OpenSim class (even from a plugin).
   Here are descriptions of the Tools listed above:
   
-         scale    Create a subject-specific model.
-         ik       Inverse Kinematics
-         id       Inverse Dynamics
-         rra      Residual Reduction Algorithm
-         cmc      Computed Muscle Control
-         forward  Perform a forward simulation, using any controllers.
-         analyze  Obtain muscle-related quantites, joint loads; 
-                  perform Static Optimization; etc.
-         moco     Solve a trajectory optimization problem with Moco.
+    scale              Create a subject-specific model.
+    ik                 Inverse Kinematics
+    id                 Inverse Dynamics
+    rra                Residual Reduction Algorithm
+    cmc                Computed Muscle Control
+    forward            Perform a forward simulation, using any controllers.
+    analyze            Obtain muscle-related quantites, joint loads; 
+                       perform Static Optimization; etc.
+    moco               Solve a trajectory optimization problem with Moco.
+    comak-ik           Inverse Kinematics to generate inputs for comak.
+    comak              Concurrent Optimization of Muscle Activations 
+                           and Kinematics
+    forsim             Forward simulations with Smith2018ArticularContactForce.
+    joint-mechanics    Analyze results files with OpenSim-Jam components.
 
   The template file is written to <output-file> if provided. Otherwise, the
   file is written to the current directory with the name
@@ -94,6 +100,12 @@ int print_xml(int argc, const char** argv) {
     else if (toolLowerCase == "forward") className = "ForwardTool";
     else if (toolLowerCase == "analyze") className = "AnalyzeTool";
     else if (toolLowerCase == "moco")    className = "MocoStudy";
+    else if (toolLowerCase == "comak-ik")    
+                                    className = "COMAKInverseKinematicsTool";
+    else if (toolLowerCase == "comak")    className = "COMAKTool";
+    else if (toolLowerCase == "forsim")    className = "ForsimTool";
+    else if (toolLowerCase == "joint-mechanics")    
+                                    className = "JointMechanicsTool";
     else {
         className = toolOrClass;
         isBuiltInTool = false;

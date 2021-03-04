@@ -104,7 +104,7 @@ void COMAKInverseKinematicsTool::constructProperties()
     constructProperty_verbose(0);
 }
 
-void COMAKInverseKinematicsTool::initialize()
+bool COMAKInverseKinematicsTool::initialize()
 {
     //Make results directory
     int makeDir_out = IO::makeDir(get_results_directory());
@@ -219,7 +219,7 @@ void COMAKInverseKinematicsTool::initialize()
     _state = _model.initSystem();
 }
 
-void COMAKInverseKinematicsTool::run()
+bool COMAKInverseKinematicsTool::run()
 {
     //Secondary Constraint Simulation
     if (get_perform_secondary_constraint_sim()) {

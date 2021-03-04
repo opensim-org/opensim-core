@@ -16,16 +16,13 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
-//#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/FunctionSet.h>
 #include <OpenSim/Tools/IKTaskSet.h>
 
 #include "osimJAMDLL.h"
 
 namespace OpenSim { 
-    //class FunctionSet;
-    //class IKTaskSet;
+
 //=============================================================================
 //=============================================================================
 /**
@@ -207,8 +204,8 @@ private:
     void constructProperties();
 
 public:
-    void initialize();
-    void run();
+    bool initialize();
+    bool run();
     void performIKSecondaryConstraintSimulation();
     void performIK();
     void runInverseKinematics(Model& model);

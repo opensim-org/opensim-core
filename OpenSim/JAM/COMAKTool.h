@@ -315,7 +315,7 @@ private:
     void printResultsFiles();
 
 public:
-    void run();
+    bool run();
     void setModel(Model& model);
 
 

@@ -231,7 +231,7 @@ public:
 
     void setModel(Model& aModel);
     void loadModel(const std::string &aToolSetupFileName);
-    void run();
+    bool run();
 
     int printResults(const std::string &aBaseName, const std::string &aDir);
 

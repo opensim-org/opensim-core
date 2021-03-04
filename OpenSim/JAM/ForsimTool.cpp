@@ -87,7 +87,7 @@ void ForsimTool::setModel(Model& aModel)
     set_model_file(_model.getDocumentFileName());
 }
 
-void ForsimTool::run()
+bool ForsimTool::run()
 {
     //Make results directory
     int makeDir_out = IO::makeDir(get_results_directory());
@@ -210,19 +210,25 @@ void ForsimTool::run()
     //Print Results
     TimeSeriesTable states_table = result_states.exportToTable(_model);
     states_table.addTableMetaData("header", std::string("States"));
-    states_table.addTableMetaData("nRows", std::to_string(states_table.getNumRows()));
-    states_table.addTableMetaData("nColumns", std::to_string(states_table.getNumColumns()+1));
+    states_table.addTableMetaData("nRows", 
+        std::to_string(states_table.getNumRows()));
+    states_table.addTableMetaData("nColumns", 
+        std::to_string(states_table.getNumColumns()+1));
     states_table.addTableMetaData("inDegrees", std::string("no"));
 
     STOFileAdapter sto;
-    std::string basefile = get_results_directory() + "/" + get_results_file_basename();
+    std::string basefile = get_results_directory() + "/" +
+        get_results_file_basename();
 
     sto.write(states_table, basefile + "_states.sto");
     
-    _model.updAnalysisSet().printResults(get_results_file_basename(), get_results_directory());
+    _model.updAnalysisSet().printResults(
+        get_results_file_basename(), get_results_directory());
 
     std::cout << "\nSimulation complete." << std::endl;
     std::cout << "Printed results to: " + get_results_directory() << std::endl;
+
+    return true;
 }
 
 void ForsimTool::initializeStartStopTimes() {

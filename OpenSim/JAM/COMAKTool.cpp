@@ -107,11 +107,12 @@ void COMAKTool::setModel(Model& model) {
     _model = model;
 }
 
-void COMAKTool::run()
+bool COMAKTool::run()
 {
     printCOMAKascii();
 
     performCOMAK();
+    return true;
 }
 
 SimTK::State COMAKTool::initialize()
