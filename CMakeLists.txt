@@ -752,7 +752,7 @@ endif()
 
 
 #find_package(hdf5 REQUIRED HINTS "${hdf5_hint}")
-FIND_PACKAGE(hdf5 NAMES hdf5 COMPONENTS CXX HL NO_MODULE REQUIRED shared)
+FIND_PACKAGE(hdf5 HINTS "${hdf5_hint}" COMPONENTS CXX HL NO_MODULE REQUIRED shared)
 # get_cmake_property(_variableNames VARIABLES)
 # list (SORT _variableNames)
 # foreach (_variableName ${_variableNames})
