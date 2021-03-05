@@ -217,6 +217,8 @@ bool COMAKInverseKinematicsTool::initialize()
     }
 
     _state = _model.initSystem();
+
+    return true;
 }
 
 bool COMAKInverseKinematicsTool::run()
@@ -230,6 +232,7 @@ bool COMAKInverseKinematicsTool::run()
     if (get_perform_inverse_kinematics()) {
         performIK();
     }
+    return true;
 }
 
 
