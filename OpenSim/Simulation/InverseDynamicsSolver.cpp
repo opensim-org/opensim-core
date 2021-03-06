@@ -97,9 +97,15 @@ Vector InverseDynamicsSolver::solve(const SimTK::State &s, const SimTK::Vector &
 Vector InverseDynamicsSolver::solve(SimTK::State &s, const FunctionSet &Qs, double time)
 {
     int nq = s.getNQ();
+    int nu = s.getNU();
 
     if (Qs.getSize() != nq) {
         throw Exception("InverseDynamicsSolver::solve invalid number of q functions.");
+    }
+
+    if (nq != nu) {
+        throw Exception("InverseDynamicsSolver::solve using only FunctionSet of "
+                        "qs, nq != nu not supported.");
     }
 
     // update the State so we get the correct gravity and Coriolis effects
@@ -119,6 +125,38 @@ Vector InverseDynamicsSolver::solve(SimTK::State &s, const FunctionSet &Qs, doub
     return solve(s, udot);
 }
 
+Vector InverseDynamicsSolver::solve(SimTK::State& s, const FunctionSet& Qs, 
+        const std::vector<int> QIndsForEachU, double time) {
+    int nq = s.getNQ();
+    int nu = s.getNU();
+
+    if (Qs.getSize() != nq) {
+        throw Exception("InverseDynamicsSolver::solve invalid number of q functions.");
+    }
+
+    if (QIndsForEachU.size() != nu) {
+        throw Exception("InverseDynamicsSolver::solve QIndForEachU must be 'nu' long");
+    }
+
+    // update the State so we get the correct gravity and Coriolis effects
+    // direct references into the state so no allocation required
+    s.updTime() = time;
+    Vector& q = s.updQ();
+    Vector& u = s.updU();
+    Vector& udot = s.updUDot();
+
+    for (int i = 0; i < nq; i++) {
+        q[i] = Qs.evaluate(i, 0, time);
+    }
+
+    for (int i = 0; i < nu; i++) {
+        u[i] = Qs.evaluate(QIndsForEachU[i], 1, time);
+        udot[i] = Qs.evaluate(QIndsForEachU[i], 2, time);
+    }
+
+    // Perform general inverse dynamics
+    return solve(s, udot);
+}
 
 /** Same as above but for a given time series */
 void InverseDynamicsSolver::solve(SimTK::State &s, const FunctionSet &Qs, const Array_<double> &times, Array_<Vector> &genForceTrajectory)
@@ -133,6 +171,24 @@ void InverseDynamicsSolver::solve(SimTK::State &s, const FunctionSet &Qs, const 
     //fill in results for each time
     for(int i=0; i<nt; i++){ 
         genForceTrajectory[i] = solve(s, Qs, times[i]);
+        analysisSet.step(s, i);
+    }
+}
+
+void InverseDynamicsSolver::solve(SimTK::State& s, const FunctionSet& Qs,
+        const std::vector<int> QIndsForEachU, const Array_<double>& times,
+        Array_<Vector>& genForceTrajectory) {
+    int nCoords = getModel().getNumCoordinates();
+    int nt = times.size();
+
+    // Preallocate if not done already
+    genForceTrajectory.resize(nt, Vector(nCoords));
+
+    AnalysisSet& analysisSet =
+            const_cast<AnalysisSet&>(getModel().getAnalysisSet());
+    // fill in results for each time
+    for (int i = 0; i < nt; i++) {
+        genForceTrajectory[i] = solve(s, Qs, QIndsForEachU, times[i]);
         analysisSet.step(s, i);
     }
 }
