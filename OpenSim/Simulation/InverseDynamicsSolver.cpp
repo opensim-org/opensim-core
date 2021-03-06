@@ -134,7 +134,7 @@ Vector InverseDynamicsSolver::solve(SimTK::State& s, const FunctionSet& Qs,
         throw Exception("InverseDynamicsSolver::solve invalid number of q functions.");
     }
 
-    if (QIndsForEachU.size() != nu) {
+    if ((int)QIndsForEachU.size() != nu) {
         throw Exception("InverseDynamicsSolver::solve QIndForEachU must be 'nu' long");
     }
 
