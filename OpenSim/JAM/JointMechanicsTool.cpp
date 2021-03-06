@@ -563,10 +563,10 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
         for (auto& coord : _model->updComponentList<Coordinate>()) {
             std::string path = coord.getAbsolutePathString();
 
-            int value_index = coordinate_states_table.getColumnIndex(
+            size_t value_index = coordinate_states_table.getColumnIndex(
                 path + "/value");
 
-            int speed_index = coordinate_states_table.getColumnIndex(
+            size_t speed_index = coordinate_states_table.getColumnIndex(
                 path + "/speed");
 
             double value = coordinate_states_table.getMatrix()(t, value_index);
@@ -880,9 +880,9 @@ void JointMechanicsTool::setupContactStorage(SimTK::State& state) {
     }
 
     // Output Storage
-    int nOutputDouble = _contact_output_double_names.size();
-    int nOutputVec3 = _contact_output_vec3_names.size();
-    int nOutputVector = _contact_output_vector_double_names.size();
+    size_t nOutputDouble = _contact_output_double_names.size();
+    size_t nOutputVec3 = _contact_output_vec3_names.size();
+    size_t nOutputVector = _contact_output_vector_double_names.size();
 
     SimTK::Matrix double_data(_n_frames, nOutputDouble,-1);
     SimTK::Matrix_<SimTK::Vec3> 
@@ -1109,7 +1109,7 @@ void JointMechanicsTool::setupLigamentStorage() {
         }
     }
 
-    int nLigamentOutputs = _ligament_output_double_names.size();
+    size_t nLigamentOutputs = _ligament_output_double_names.size();
     SimTK::Matrix lig_output_data(_n_frames, nLigamentOutputs,-1);
 
     //Ligament Storage
@@ -1204,7 +1204,7 @@ void JointMechanicsTool::setupMuscleStorage() {
         }
     }
     
-    int nMuscleOutputs = _muscle_output_double_names.size();
+    size_t nMuscleOutputs = _muscle_output_double_names.size();
     SimTK::Matrix msl_output_data(_n_frames, nMuscleOutputs,-1);
 
     //Muscle Storage
@@ -1695,7 +1695,7 @@ void JointMechanicsTool::writeVTPFile(const std::string& mesh_path,
     for (int frame_num = 0; frame_num < _n_frames; ++frame_num) {
         //Write file
         VTPFileAdapter* mesh_vtp = new VTPFileAdapter();
-        mesh_vtp->setDataFormat(get_vtp_file_format());	
+        mesh_vtp->setDataFormat(get_vtp_file_format());
         //mesh_vtp->setDataFormat("ascii");
         for (int i = 0; i < triDataNames.size(); ++i) {
             mesh_vtp->appendFaceData(triDataNames[i], ~triData[i][frame_num]);
@@ -1775,7 +1775,7 @@ void JointMechanicsTool::writeLineVTPFiles(std::string line_name,
     const std::vector<std::string>& output_double_names, const SimTK::Matrix& output_double_values) 
 {
     for (int i = 0; i < _n_frames; ++i) {
-        int nPathPoints = nPoints.get(i);
+        int nPathPoints = (int)nPoints.get(i);
             
         VTPFileAdapter* mesh_vtp = new VTPFileAdapter();
 
@@ -1805,7 +1805,7 @@ void JointMechanicsTool::writeLineVTPFiles(std::string line_name,
         std::string origin = split_string(get_output_position_frame(), "/").back();
 
         mesh_vtp->write(get_results_file_basename() + "_" + line_name + "_" + 
-            frame + "_" + origin, get_results_directory() + "/", i);	
+            frame + "_" + origin, get_results_directory() + "/", i);
         delete mesh_vtp;
     }
 }

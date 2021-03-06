@@ -162,7 +162,7 @@ bool ForsimTool::run()
     
     //Integrate Forward in Time
     double dt = get_report_time_step();
-    int nSteps = round((get_stop_time() - get_start_time()) / dt);
+    int nSteps = lround((get_stop_time() - get_start_time()) / dt);
     
 
     std::cout << std::endl;

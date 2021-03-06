@@ -37,88 +37,88 @@ namespace OpenSim {
        VTPFileAdapter* clone() const override;
 
 
-	   /**
-	   @param[in] vertices
-			A matrix [nVertices x nTimeSteps] containing Vec3 with the locations
-			of the contact mesh vertices in space.
+       /**
+       @param[in] vertices
+            A matrix [nVertices x nTimeSteps] containing Vec3 with the locations
+            of the contact mesh vertices in space.
 
-		@param[in] faces
-			A matrix [nFaces x nVerticesPerFace]
+        @param[in] faces
+            A matrix [nFaces x nVerticesPerFace]
 
 
-	   */
-	   void write(const std::string& fileName, const std::string& filePath,
-		   const int frame_num) const;
+       */
+       void write(const std::string& fileName, const std::string& filePath,
+           const int frame_num) const;
 
-	   /**
-	   @param[in] aFaceDataNames
-			Cannot include spaces
+       /**
+       @param[in] aFaceDataNames
+            Cannot include spaces
 
-	   @param[in] aFaceData
-			A vector [nDataField] of SimTK::Matrix [nTimeStep x nFaces]
-			containing data values for each face in the contact mesh
-	   @param[in] aFaceDataTypes
-			Options:
-			Int8, UInt8, Int16, UInt16, Int32,
-			UInt32, Int64, UInt64, Float32, Float64
+       @param[in] aFaceData
+            A vector [nDataField] of SimTK::Matrix [nTimeStep x nFaces]
+            containing data values for each face in the contact mesh
+       @param[in] aFaceDataTypes
+            Options:
+            Int8, UInt8, Int16, UInt16, Int32,
+            UInt32, Int64, UInt64, Float32, Float64
 
-	   */
-	   void appendFaceData(std::string aFaceDataName, SimTK::Vector aFaceData)
-	   {
-		   _faceDataNames.push_back(aFaceDataName);
-		   _faceData.push_back(aFaceData);
-	   };
+       */
+       void appendFaceData(std::string aFaceDataName, SimTK::Vector aFaceData)
+       {
+           _faceDataNames.push_back(aFaceDataName);
+           _faceData.push_back(aFaceData);
+       };
 
-	   void appendPointData(std::string aPointDataNames, SimTK::Vector aPointData)
-	   {
-		   _pointDataNames.push_back(aPointDataNames);
-		   _pointData.push_back(aPointData);
+       void appendPointData(std::string aPointDataNames, SimTK::Vector aPointData)
+       {
+           _pointDataNames.push_back(aPointDataNames);
+           _pointData.push_back(aPointData);
 
-	   };
+       };
 
-	   void setDataFormat(SimTK::String format) {
-		   _data_format = format.toLower();
-	   }
+       void setDataFormat(SimTK::String format) {
+           _data_format = format.toLower();
+       }
 
-	   void setPointLocations(const SimTK::RowVector_<SimTK::Vec3>& vertices) {
-		   _points.resize(vertices.size());
-		   for (int i = 0; i < vertices.size(); ++i) {
-			   _points[i] = vertices[i];
-		   }		   
-	   }
+       void setPointLocations(const SimTK::RowVector_<SimTK::Vec3>& vertices) {
+           _points.resize(vertices.size());
+           for (int i = 0; i < vertices.size(); ++i) {
+               _points[i] = vertices[i];
+           }		   
+       }
 
-	   void setPolygonConnectivity(const SimTK::Matrix& faces) {
-		   _polygon_connectivity = faces;
-	   }
+       void setPolygonConnectivity(const SimTK::Matrix& faces) {
+           _polygon_connectivity = faces;
+       }
 
-	   void setPolygonsFromMesh(const SimTK::PolygonalMesh& mesh);
+       void setPolygonsFromMesh(const SimTK::PolygonalMesh& mesh);
 
-	   void setLineConnectivity(const SimTK::Vector& line) {
-		   _line_connectivity = line;
-	   }
+       void setLineConnectivity(const SimTK::Vector& line) {
+           _line_connectivity = line;
+       }
 
     protected:
         OutputTables extendRead(const std::string& fileName) const override;
 
         void extendWrite(const InputTables& tables, const std::string& fileName) const override;
     private:
-		bool isLittleEndian() const;
-		std::string encodeFloatDataVTPBase64(std::vector<float>& data) const;
-		std::string encodeIntDataVTPBase64(std::vector<uint32_t>& data) const;
+        bool isLittleEndian() const;
+        std::string encodeFloatDataVTPBase64(std::vector<float>& data) const;
+        std::string encodeIntDataVTPBase64(std::vector<uint32_t>& data) const;
 
-	//Data
-	private:
-		std::vector<std::string> _faceDataNames;
-		std::vector<SimTK::Vector>_faceData;
+    //Data
+    private:
+        std::vector<std::string> _faceDataNames;
+        std::vector<SimTK::Vector>_faceData;
 
-		std::vector<std::string> _pointDataNames;
-		std::vector<SimTK::Vector> _pointData;
+        std::vector<std::string> _pointDataNames;
+        std::vector<SimTK::Vector> _pointData;
 
-		SimTK::Vector_<SimTK::Vec3> _points;
-		SimTK::Matrix _polygon_connectivity;
-		SimTK::Vector _line_connectivity;
+        SimTK::Vector_<SimTK::Vec3> _points;
+        SimTK::Matrix _polygon_connectivity;
+        SimTK::Vector _line_connectivity;
 
-		SimTK::String _data_format;
+        SimTK::String _data_format;
     };
 
 } // namespace OpenSim

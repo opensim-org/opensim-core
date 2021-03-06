@@ -70,7 +70,7 @@ void COMAKTool::constructProperties()
     constructProperty_settle_secondary_coordinates_at_start(true);
     constructProperty_settle_threshold(1e-5);
     constructProperty_settle_accuracy(1e-6);
-    constructProperty_settle_internal_step_limit(1e-6);
+    constructProperty_settle_internal_step_limit(-1);
     constructProperty_print_settle_sim_results(false);
     constructProperty_settle_sim_results_directory("");
     constructProperty_settle_sim_results_prefix("");

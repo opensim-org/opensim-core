@@ -282,7 +282,7 @@ public:
         "Level of debug information reported (0: low, 1: medium, 2: high)")
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(AnalysisSet,"Analyses to be performed"
-		"throughout the COMAK simulation.")
+        "throughout the COMAK simulation.")
 
 //=============================================================================
 // METHODS

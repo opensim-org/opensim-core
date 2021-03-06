@@ -434,7 +434,7 @@ void COMAKInverseKinematicsTool::performIKSecondaryConstraintSimulation() {
     double sweep_start = 0;
     double sweep_stop = Px;
 
-    int nSteps = round((sweep_stop - sweep_start) / dt);
+    int nSteps = lround((sweep_stop - sweep_start) / dt);
 
     //Setup storage for computing constraint functions
     TimeSeriesTable q_table;

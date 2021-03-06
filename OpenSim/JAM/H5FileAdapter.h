@@ -46,7 +46,7 @@ namespace OpenSim {
     class OSIMJAM_API H5FileAdapter : public FileAdapter{
     //class H5FileAdapter : public FileAdapter {
     public:
-	   H5FileAdapter();
+       H5FileAdapter();
        H5FileAdapter(const H5FileAdapter&) = default;
        H5FileAdapter(H5FileAdapter&&) = default;
        H5FileAdapter& operator=(const H5FileAdapter&) = default;
@@ -56,34 +56,34 @@ namespace OpenSim {
        H5FileAdapter* clone() const override;
 
 
-	   void open(const std::string& file_name);
+       void open(const std::string& file_name);
 
-	   void close();
+       void close();
 
-	   void createGroup(const std::string& new_group);
+       void createGroup(const std::string& new_group);
 
-	   void writeDataSet(const TimeSeriesTable& table, const std::string group_path);
+       void writeDataSet(const TimeSeriesTable& table, const std::string group_path);
        void writeDataSet2(const TimeSeriesTable& table, const std::string group_path);
 
-	   void writeDataSetVec3(const TimeSeriesTableVec3& table, const std::string group_path);
+       void writeDataSetVec3(const TimeSeriesTableVec3& table, const std::string group_path);
 
-	   void writeDataSetVector(const TimeSeriesTable& table, const std::string group_path);
+       void writeDataSetVector(const TimeSeriesTable& table, const std::string group_path);
 
-	   void writeDataSetSimTKVector(const SimTK::Vector& data_vector, const std::string dataset_path);
+       void writeDataSetSimTKVector(const SimTK::Vector& data_vector, const std::string dataset_path);
 
-	   void writeDataSetSimTKVectorVec3(const SimTK::Vector_<SimTK::Vec3>& data_vector, const std::string dataset_path);
+       void writeDataSetSimTKVectorVec3(const SimTK::Vector_<SimTK::Vec3>& data_vector, const std::string dataset_path);
 
        void writeDataSetSimTKMatrix(const SimTK::Matrix& data_matrix, const std::string dataset_path);
 
-	   void writeDataSetSimTKMatrixColumns(const SimTK::Matrix& data, std::vector<std::string> column_dataset_paths);
+       void writeDataSetSimTKMatrixColumns(const SimTK::Matrix& data, std::vector<std::string> column_dataset_paths);
 
-	   void writeDataSetSimTKMatrixVec3Columns(const SimTK::Matrix_<SimTK::Vec3>& data, std::vector<std::string> column_dataset_paths);
+       void writeDataSetSimTKMatrixVec3Columns(const SimTK::Matrix_<SimTK::Vec3>& data, std::vector<std::string> column_dataset_paths);
 
-	   void writeTimeDataSet(const Array<double>& time);
+       void writeTimeDataSet(const Array<double>& time);
 
-	   void writeStatesDataSet(const TimeSeriesTable& table);
+       void writeStatesDataSet(const TimeSeriesTable& table);
 
-	   void writeComponentGroupDataSet(std::string group_name, std::vector<std::string> names,
+       void writeComponentGroupDataSet(std::string group_name, std::vector<std::string> names,
            std::vector<std::string> output_double_names,
            std::vector<SimTK::Matrix> output_double_values);
 
@@ -104,10 +104,10 @@ namespace OpenSim {
     private:
 
 
-	//Data
-	private:
-		H5::H5File _file;
-		bool _time_is_empty;
+    //Data
+    private:
+        H5::H5File _file;
+        bool _time_is_empty;
 
     };
 
