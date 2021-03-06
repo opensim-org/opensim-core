@@ -84,7 +84,7 @@ namespace OpenSim {
            _points.resize(vertices.size());
            for (int i = 0; i < vertices.size(); ++i) {
                _points[i] = vertices[i];
-           }		   
+           }
        }
 
        void setPolygonConnectivity(const SimTK::Matrix& faces) {

@@ -563,10 +563,10 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
         for (auto& coord : _model->updComponentList<Coordinate>()) {
             std::string path = coord.getAbsolutePathString();
 
-            size_t value_index = coordinate_states_table.getColumnIndex(
+            int value_index = (int)coordinate_states_table.getColumnIndex(
                 path + "/value");
 
-            size_t speed_index = coordinate_states_table.getColumnIndex(
+            int speed_index = (int)coordinate_states_table.getColumnIndex(
                 path + "/speed");
 
             double value = coordinate_states_table.getMatrix()(t, value_index);
@@ -646,7 +646,7 @@ void JointMechanicsTool::assembleStatesTrajectoryFromStatesData(
     s.updY().setToNaN();
 
     SimTK::Matrix msl_activations
-        (table.getNumRows(), _model->getMuscles().getSize(),-1);
+        ((int)table.getNumRows(), _model->getMuscles().getSize(),-1);
 
     // Loop through all rows of the Storage
     StatesTrajectory states_from_file;
@@ -880,9 +880,9 @@ void JointMechanicsTool::setupContactStorage(SimTK::State& state) {
     }
 
     // Output Storage
-    size_t nOutputDouble = _contact_output_double_names.size();
-    size_t nOutputVec3 = _contact_output_vec3_names.size();
-    size_t nOutputVector = _contact_output_vector_double_names.size();
+    int nOutputDouble = (int)_contact_output_double_names.size();
+    int nOutputVec3 = (int)_contact_output_vec3_names.size();
+    int nOutputVector = (int)_contact_output_vector_double_names.size();
 
     SimTK::Matrix double_data(_n_frames, nOutputDouble,-1);
     SimTK::Matrix_<SimTK::Vec3> 
@@ -1109,7 +1109,7 @@ void JointMechanicsTool::setupLigamentStorage() {
         }
     }
 
-    size_t nLigamentOutputs = _ligament_output_double_names.size();
+    int nLigamentOutputs = (int)_ligament_output_double_names.size();
     SimTK::Matrix lig_output_data(_n_frames, nLigamentOutputs,-1);
 
     //Ligament Storage
@@ -1204,7 +1204,7 @@ void JointMechanicsTool::setupMuscleStorage() {
         }
     }
     
-    size_t nMuscleOutputs = _muscle_output_double_names.size();
+    int nMuscleOutputs = (int)_muscle_output_double_names.size();
     SimTK::Matrix msl_output_data(_n_frames, nMuscleOutputs,-1);
 
     //Muscle Storage
@@ -1410,7 +1410,7 @@ int JointMechanicsTool::record(const SimTK::State& s, const int frame_num)
         const Frame& out_frame =
             _model->getComponent<Frame>(get_output_orientation_frame());
 
-        SimTK::RowVector row(_model_frame_transforms.getColumnLabels().size());
+        SimTK::RowVector row((int)_model_frame_transforms.getColumnLabels().size());
 
         int c = 0; 
         for (const Frame& frame : _model->updComponentList<Frame>()) {

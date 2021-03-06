@@ -399,7 +399,7 @@ void H5FileAdapter::writeDataSetSimTKMatrixColumns(const SimTK::Matrix& data, st
             data_vec(j) = data(j, i);
         }
         writeDataSetSimTKVector(data_vec, path);
-    }	
+    }
 }
 
 void H5FileAdapter::writeDataSetSimTKMatrixVec3Columns(const SimTK::Matrix_<SimTK::Vec3>& data, std::vector<std::string> column_dataset_paths) {

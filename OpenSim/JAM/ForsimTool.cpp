@@ -289,7 +289,7 @@ void ForsimTool::initializeActuators(SimTK::State& state) {
         STOFileAdapter actuator_file;
         _actuator_table = TimeSeriesTable(get_actuator_input_file());
 
-        int nDataPt = _actuator_table.getNumRows();
+        int nDataPt = (int)_actuator_table.getNumRows();
         std::vector<std::string> labels = _actuator_table.getColumnLabels();
         std::vector<double> time = _actuator_table.getIndependentColumn();
         
@@ -512,7 +512,7 @@ void ForsimTool::initializeCoordinates() {
 
         std::vector<std::string> labels = _coord_table.getColumnLabels();
 
-        int nDataPt = _coord_table.getNumRows();
+        int nDataPt = (int)_coord_table.getNumRows();
         std::vector<double> time = _coord_table.getIndependentColumn();
 
         std::cout << "\nPrescribed Coordinates:" << std::endl;

@@ -32,7 +32,6 @@
 //=============================================================================
 //STRING TOOLS
 //=============================================================================
-	
 /** Split string at delimiter
 */
 std::vector<std::string> split_string(std::string s, std::string delimiter);

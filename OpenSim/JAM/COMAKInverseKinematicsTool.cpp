@@ -59,7 +59,7 @@ COMAKInverseKinematicsTool::COMAKInverseKinematicsTool(const std::string file) :
     constructProperties();
     updateFromXMLDocument();
         
-    _directoryOfSetupFile = IO::getParentDirectory(file);	
+    _directoryOfSetupFile = IO::getParentDirectory(file);
     IO::chDir(_directoryOfSetupFile); 
 }
 
@@ -141,7 +141,7 @@ bool COMAKInverseKinematicsTool::initialize()
         }
     }
 
-    //Make sure Coordinate exists in model and no duplicates	
+    //Make sure Coordinate exists in model and no duplicates
     std::string name = get_secondary_coupled_coordinate();
     try { _model.getComponent<Coordinate>(name); }
     catch (Exception) {
@@ -484,7 +484,7 @@ void COMAKInverseKinematicsTool::performIKSecondaryConstraintSimulation() {
 
     SimTK::Vector ind_data = q_table.getDependentColumn(get_secondary_coupled_coordinate() + "/value");
 
-    SimTK::Matrix data(time.size(), _n_secondary_coord);
+    SimTK::Matrix data((int)time.size(), _n_secondary_coord);
 
 for (int j = 0; j < _n_secondary_coord; ++j) {
     std::string path = _secondary_coord_path[j];
@@ -703,12 +703,12 @@ void COMAKInverseKinematicsTool::runInverseKinematics(Model& model) {
                 ikSolver.assemble(s);
                 break;
             }
-            catch (const std::exception& ex){
+            catch (const std::exception){
                 try {
                     ikSolver.track(s);
                     break;
                 }
-                catch (const std::exception& ex) {
+                catch (const std::exception) {
                     std::cout << "Assembly failed... "
                         "retrying with new initial conditions." << std::endl;
                 }

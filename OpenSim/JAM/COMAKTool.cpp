@@ -1443,8 +1443,8 @@ void COMAKTool::extractKinematicsFromFile() {
     //Gather Q and U values
     Array<std::string> col_labels = store.getColumnLabels();
 
-    SimTK::Vector q_col_map(_model.getNumCoordinates());
-    q_col_map = -1;
+    std::vector<int> q_col_map(_model.getNumCoordinates(),-1);
+    //q_col_map = -1;
 
     for (int i = 0; i < col_labels.size(); ++i) {
         std::vector<std::string> split_label = 
@@ -1455,7 +1455,7 @@ void COMAKTool::extractKinematicsFromFile() {
             if (contains_string(split_label, coord.getName())) {
                 if (split_label.back() == "value" || 
                     split_label.back() == coord.getName()) {
-                    q_col_map(j) = i;
+                    q_col_map[j] = i;
                 }
             }
             j++;
@@ -1474,9 +1474,9 @@ void COMAKTool::extractKinematicsFromFile() {
     int j = 0;
     for (const Coordinate& coord : _model.getComponentList<Coordinate>()) {
 
-        if (q_col_map(j) != -1) {
+        if (q_col_map[j] != -1) {
             Array<double> data;
-            store.getDataColumn(col_labels[q_col_map(j)], data, _time[0]);
+            store.getDataColumn(col_labels[q_col_map[j]], data, _time[0]);
             for (int i = 0; i < _n_frames; ++i) {
                 _q_matrix(i, j) = data[i];
             }

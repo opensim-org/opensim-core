@@ -159,7 +159,7 @@ namespace OpenSim {
             if (_data_format == "ascii") {
                 DataArray.setAttributeValue("format", "ascii");
                 for (int j = 0; j < _faceData[i].size(); ++j) {
-                    cdata.append(std::to_string(_faceData[i](j)) + " ");						
+                    cdata.append(std::to_string(_faceData[i](j)) + " ");
                 }
                 DataArray.setValue(cdata);
             }
@@ -169,7 +169,7 @@ namespace OpenSim {
 
                 std::vector<float> data;
                 for (int j = 0; j < _faceData[i].size(); ++j) {
-                    data.push_back(_faceData[i](j));
+                    data.push_back((float)_faceData[i](j));
                 }
 
                 std::string encode_data = encodeFloatDataVTPBase64(data);
