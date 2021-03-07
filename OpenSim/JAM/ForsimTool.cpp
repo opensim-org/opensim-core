@@ -294,7 +294,7 @@ void ForsimTool::initializeActuators(SimTK::State& state) {
         std::vector<double> time = _actuator_table.getIndependentColumn();
         
         
-        for (int i = 0; i < labels.size(); ++i) {
+        for (int i = 0; i < (int)labels.size(); ++i) {
             std::vector<std::string> split_label = split_string(labels[i], "_");
 
             //Control Prescribed

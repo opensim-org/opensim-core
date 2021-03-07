@@ -638,7 +638,7 @@ void COMAKTool::performCOMAK()
     state = _model.initSystem();
 
     //Visualizer Settings
-    SimTK::Visualizer* viz;
+    SimTK::Visualizer* viz=NULL;
     if (get_use_visualizer()) {
         viz = &_model.updVisualizer().updSimbodyVisualizer();
         viz->setBackgroundColor(SimTK::White);

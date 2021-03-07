@@ -30,7 +30,7 @@ std::vector<std::string> split_string(std::string s, std::string delimiter)
     std::vector<std::string> split_s;
     std::vector<std::string> delim;
     
-    for (int i = 0; i < delimiter.size(); i++) {
+    for (int i = 0; i < (int)delimiter.size(); i++) {
         delim.push_back(std::string(1,delimiter[i]));
     }
     

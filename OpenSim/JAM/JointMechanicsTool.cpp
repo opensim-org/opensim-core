@@ -149,7 +149,7 @@ _max_path_points = 100;
 
     initialize(state);
 
-    SimTK::Visualizer* viz;
+    SimTK::Visualizer* viz=NULL;
     if (get_use_visualizer()) {
         viz = &_model->updVisualizer().updSimbodyVisualizer();
         viz->setShowSimTime(true);
@@ -527,7 +527,7 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
     state.updTime() = _time[0];
     ikSolver.assemble(state);
     
-    SimTK::Visualizer* viz;
+    SimTK::Visualizer* viz=NULL;
     if (get_use_visualizer()) {
         viz = &working_model.updVisualizer().updSimbodyVisualizer();
         viz->setShowSimTime(true);
@@ -819,7 +819,7 @@ void JointMechanicsTool::setupContactStorage(SimTK::State& state) {
     }
 
     //Turn on mesh flipping so metrics are computed for casting and target
-    for (int i = 0; i < _contact_force_paths.size(); ++i) {
+    for (int i = 0; i < (int)_contact_force_paths.size(); ++i) {
 
         Smith2018ArticularContactForce& contactForce = _model->updComponent
             <Smith2018ArticularContactForce>(_contact_force_paths[i]);
@@ -917,7 +917,7 @@ void JointMechanicsTool::setupContactStorage(SimTK::State& state) {
     //Vertex location storage
     _mesh_vertex_locations.resize(_contact_mesh_paths.size());
 
-    for (int i = 0; i < _contact_mesh_paths.size(); ++i) {
+    for (int i = 0; i < (int)_contact_mesh_paths.size(); ++i) {
 
         int mesh_nVer = _model->getComponent<Smith2018ContactMesh>
             (_contact_mesh_paths[i]).getPolygonalMesh().getNumVertices();
@@ -928,7 +928,7 @@ void JointMechanicsTool::setupContactStorage(SimTK::State& state) {
     //Mesh Transform Storage
     _mesh_transforms.resize(_contact_mesh_paths.size());
 
-    for (int i = 0; i < _contact_mesh_paths.size(); ++i) {
+    for (int i = 0; i < (int)_contact_mesh_paths.size(); ++i) {
         _mesh_transforms[i].resize(_n_frames, 16);
         _mesh_transforms[i] = 0;
     }
@@ -1251,7 +1251,7 @@ int JointMechanicsTool::record(const SimTK::State& s, const int frame_num)
     SimTK::Vec3 origin_pos = 
         origin.findStationLocationInAnotherFrame(s, SimTK::Vec3(0), frame);
 
-    for (int i = 0; i < _contact_mesh_paths.size(); ++i) {
+    for (int i = 0; i < (int)_contact_mesh_paths.size(); ++i) {
         int nVertex = _mesh_vertex_locations[i].ncol();
 
         const Smith2018ContactMesh& mesh = 
@@ -1285,7 +1285,7 @@ int JointMechanicsTool::record(const SimTK::State& s, const int frame_num)
 
     // Store Attached Geometries
     if (!_attach_geo_names.empty()) {
-        for (int i = 0; i < _attach_geo_names.size(); ++i) {
+        for (int i = 0; i < (int)_attach_geo_names.size(); ++i) {
 
             const SimTK::PolygonalMesh& mesh = _attach_geo_meshes[i];
 
@@ -1477,7 +1477,7 @@ int JointMechanicsTool::printResults(const std::string &aBaseName,const std::str
     //Write VTP files
     if (get_write_vtp_files()) {
         //Contact Meshes
-        for (int i = 0; i < _contact_mesh_names.size(); ++i) {
+        for (int i = 0; i < (int)_contact_mesh_names.size(); ++i) {
             std::string mesh_name = _contact_mesh_names[i];
             std::string mesh_path = _contact_mesh_paths[i];
 
@@ -1572,7 +1572,7 @@ void JointMechanicsTool::collectMeshContactOutputData(
             std::string output_data_type = output_name_split[1];
             std::string output_data_name = "";
 
-            for (int i = 2; i < output_name_split.size(); ++i) {
+            for (int i = 2; i < (int)output_name_split.size(); ++i) {
                 if (i == 2) {
                     output_data_name = output_name_split[i];
                 }
@@ -1697,7 +1697,7 @@ void JointMechanicsTool::writeVTPFile(const std::string& mesh_path,
         VTPFileAdapter* mesh_vtp = new VTPFileAdapter();
         mesh_vtp->setDataFormat(get_vtp_file_format());
         //mesh_vtp->setDataFormat("ascii");
-        for (int i = 0; i < triDataNames.size(); ++i) {
+        for (int i = 0; i < (int)triDataNames.size(); ++i) {
             mesh_vtp->appendFaceData(triDataNames[i], ~triData[i][frame_num]);
         }
 
@@ -1732,7 +1732,7 @@ void JointMechanicsTool::writeAttachedGeometryVTPFiles(bool isDynamic) {
     std::string frame = split_string(get_output_orientation_frame(), "/").back();
     std::string origin = split_string(get_output_position_frame(), "/").back();
 
-    for (int i = 0; i < _attach_geo_names.size(); ++i) {
+    for (int i = 0; i < (int)_attach_geo_names.size(); ++i) {
         std::cout << "Writing .vtp files: " << file_path << "/" 
             << base_name << "_"<< _attach_geo_names[i] << std::endl;
 
@@ -1795,7 +1795,7 @@ void JointMechanicsTool::writeLineVTPFiles(std::string line_name,
         mesh_vtp->setLineConnectivity(lines);
 
         //Collect Data
-        for (int k = 0; k < output_double_names.size(); ++k) {
+        for (int k = 0; k < (int)output_double_names.size(); ++k) {
             SimTK::Vector point_data(nPathPoints, output_double_values[i][k]);
             mesh_vtp->appendPointData(output_double_names[k], point_data);
         }
@@ -1947,8 +1947,8 @@ void JointMechanicsTool::writeH5File(
                 }
 
                 std::string data_label;
-                for (int k = 1; k < split_name.size(); ++k) {
-                    if (k == (split_name.size() - 1)) {
+                for (int k = 1; k < (int)split_name.size(); ++k) {
+                    if (k == ((int)split_name.size() - 1)) {
                         data_label.append(split_name[k]);
                     }
                     else {
@@ -1981,8 +1981,8 @@ void JointMechanicsTool::writeH5File(
                 }
 
                 std::string data_label;
-                for (int k = 1; k < split_name.size(); ++k) {
-                    if (k == (split_name.size() - 1)) {
+                for (int k = 1; k < (int)split_name.size(); ++k) {
+                    if (k == ((int)split_name.size() - 1)) {
                         data_label.append(split_name[k]);
                     }
                     else {
@@ -2015,8 +2015,8 @@ void JointMechanicsTool::writeH5File(
                 }
 
                 std::string data_label;
-                for (int k = 1; k < split_name.size(); ++k) {
-                    if (k == (split_name.size() - 1)) {
+                for (int k = 1; k < (int)split_name.size(); ++k) {
+                    if (k == ((int)split_name.size() - 1)) {
                         data_label.append(split_name[k]);
                     }
                     else {
@@ -2041,7 +2041,7 @@ void JointMechanicsTool::writeH5File(
         std::string transforms_group = contact_group + "/transforms";
         h5.createGroup(transforms_group);
 
-        for (int i = 0; i < _contact_mesh_paths.size(); ++i) {
+        for (int i = 0; i < (int)_contact_mesh_paths.size(); ++i) {
             std::string data_path =
                 transforms_group + "/" + _contact_mesh_names[i];
 
