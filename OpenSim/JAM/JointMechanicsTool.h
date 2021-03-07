@@ -282,7 +282,7 @@ private:
 
     Array<double> _time;
     int _n_frames;
-    int _n_out_frames;
+    
 
     SimTK::Matrix _q_matrix;
     SimTK::Matrix _u_matrix;

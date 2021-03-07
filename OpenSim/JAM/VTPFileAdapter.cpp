@@ -106,12 +106,12 @@ namespace OpenSim {
         //Point Data
         Xml::Element PointData("PointData");
         std::string pnt_names;
-        for (int i = 0; i < _pointDataNames.size(); ++i) {
+        for (int i = 0; i < (int)_pointDataNames.size(); ++i) {
             pnt_names.append(" " + _pointDataNames[i]);
         }
         PointData.setAttributeValue("Scalars", pnt_names);
 
-        for (int i = 0; i < _pointDataNames.size(); ++i) {
+        for (int i = 0; i < (int)_pointDataNames.size(); ++i) {
             Xml::Element DataArray("DataArray");
             DataArray.setAttributeValue("type","Float32");
             DataArray.setAttributeValue("Name", _pointDataNames[i]);
@@ -145,12 +145,12 @@ namespace OpenSim {
         //Cell Data
         Xml::Element CellData("CellData");
         std::string cell_names;
-        for (int i = 0; i < _faceDataNames.size(); ++i) {
+        for (int i = 0; i < (int)_faceDataNames.size(); ++i) {
             cell_names.append(" " + _faceDataNames[i]);
         }
         CellData.setAttributeValue("Scalars", cell_names);
 
-        for (int i = 0; i < _faceDataNames.size(); ++i) {
+        for (int i = 0; i < (int)_faceDataNames.size(); ++i) {
             Xml::Element DataArray("DataArray");
             DataArray.setAttributeValue("type", "Float32");
             DataArray.setAttributeValue("Name", _faceDataNames[i]);
