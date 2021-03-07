@@ -201,9 +201,9 @@ namespace OpenSim {
             PointArray.setAttributeValue("format", "binary");
             std::vector<float> pnt_coords;
             for (int i = 0; i < _points.size(); ++i) {
-                pnt_coords.push_back(_points(i)(0));
-                pnt_coords.push_back(_points(i)(1));
-                pnt_coords.push_back(_points(i)(2));
+                pnt_coords.push_back((float)_points(i)(0));
+                pnt_coords.push_back((float)_points(i)(1));
+                pnt_coords.push_back((float)_points(i)(2));
             }
             std::string encode_data = encodeFloatDataVTPBase64(pnt_coords);
             PointArray.setValue(encode_data);
@@ -379,10 +379,10 @@ namespace OpenSim {
         const float *p_floats = &(data[0]);
         const unsigned char* p_bytes = reinterpret_cast<const unsigned char *>(p_floats);
 
-        uint32_t len = nData * sizeof(float);
+        uint32_t len = (uint32_t)(nData * sizeof(float));
 
 
-        std::string cdata = base64_encode(p_bytes, nData * sizeof(float));
+        std::string cdata = base64_encode(p_bytes, nData * (int)sizeof(float));
         std::string encoded_data = base64_encode(reinterpret_cast<unsigned char *>(&len), sizeof(uint32_t));
         encoded_data.append(cdata);
         return encoded_data;
@@ -394,9 +394,9 @@ namespace OpenSim {
 
         const uint32_t *p_int = &(data[0]);
         const unsigned char* p_bytes = reinterpret_cast<const unsigned char *>(p_int);
-        uint32_t len = nData * sizeof(uint32_t);
+        uint32_t len = (uint32_t)(nData * sizeof(uint32_t));
 
-        std::string cdata = base64_encode(p_bytes, nData * sizeof(uint32_t));
+        std::string cdata = base64_encode(p_bytes, len);
         std::string encoded_data = base64_encode(reinterpret_cast<unsigned char *>(&len), sizeof(uint32_t));
         encoded_data.append(cdata);
 

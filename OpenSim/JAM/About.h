@@ -19,7 +19,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "osimJamDLL.h"
+#include "osimJAMDLL.h"
 #include <string>
 
 namespace OpenSim {
