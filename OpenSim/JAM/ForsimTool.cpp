@@ -162,7 +162,7 @@ bool ForsimTool::run()
     
     //Integrate Forward in Time
     double dt = get_report_time_step();
-    int nSteps = lround((get_stop_time() - get_start_time()) / dt);
+    int nSteps = (int)lround((get_stop_time() - get_start_time()) / dt);
     
 
     std::cout << std::endl;
@@ -183,7 +183,7 @@ bool ForsimTool::run()
 
         //Set Prescribed Muscle Forces
         if(_prescribed_frc_actuator_paths.size() > 0){
-            for (int j = 0; j < _prescribed_frc_actuator_paths.size();++j) {
+            for (int j = 0; j < (int)_prescribed_frc_actuator_paths.size();++j) {
                 std::string actuator_path = _prescribed_frc_actuator_paths[j];
                 ScalarActuator& actuator = _model.updComponent<ScalarActuator>(actuator_path);
                 double value = _frc_functions.get(actuator_path +"_frc").calcValue(SimTK::Vector(1,t));
@@ -516,7 +516,7 @@ void ForsimTool::initializeCoordinates() {
         std::vector<double> time = _coord_table.getIndependentColumn();
 
         std::cout << "\nPrescribed Coordinates:" << std::endl;
-        for (int i = 0; i < labels.size(); ++i) {
+        for (int i = 0; i < (int)labels.size(); ++i) {
 
             std::string coord_path = "";
             for (const Coordinate& coordinate : _model.updComponentList<Coordinate>()) {

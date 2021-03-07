@@ -412,7 +412,7 @@ SimTK::State COMAKTool::initialize()
         double new_acc = optim_coord.getAccelerationValue(state);
         double diff = new_acc - init_acc;
         std::cout << optim_coord.getName() << " " << diff << std::endl;
-        /*if (diff == 0) {
+        if (diff == 0) {
             
         }
 
@@ -1032,7 +1032,7 @@ void COMAKTool::performCOMAK()
             << std::setw(15) << "Bad Frames" 
             << std::setw(15) << "udot error" << std::endl;
 
-        for (int i = 0; i < _bad_frames.size(); i++) {
+        for (int i = 0; i < (int)_bad_frames.size(); i++) {
             std::cout 
                 << std::setw(15) << _bad_times[i] 
                 << std::setw(15) << _bad_frames[i] 

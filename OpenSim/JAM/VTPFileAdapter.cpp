@@ -382,7 +382,7 @@ namespace OpenSim {
         uint32_t len = (uint32_t)(nData * sizeof(float));
 
 
-        std::string cdata = base64_encode(p_bytes, nData * (int)sizeof(float));
+        std::string cdata = base64_encode(p_bytes, len);
         std::string encoded_data = base64_encode(reinterpret_cast<unsigned char *>(&len), sizeof(uint32_t));
         encoded_data.append(cdata);
         return encoded_data;

@@ -69,7 +69,7 @@ void H5FileAdapter::writeDataSet(const TimeSeriesTable& table, const std::string
         double* data = (double*)malloc(dim_data[0] * sizeof(double));
 
         //Set Data Array
-        for (int r = 0; r < dim_data[0]; ++r) {
+        for (int r = 0; r < (int)dim_data[0]; ++r) {
             data[r] = data_matrix(r,i);
         }
         
@@ -95,11 +95,11 @@ void H5FileAdapter::writeDataSet2(const TimeSeriesTable& table, const std::strin
     //Allocate space for data
     double** data = (double**)malloc(dim_data[0] * sizeof(double*));
     data[0] = (double*)malloc(dim_data[1] * dim_data[0] * sizeof(double));
-    for (int i = 1; i < dim_data[0]; i++) data[i] = data[0] + i*dim_data[1];
+    for (int i = 1; i < (int)dim_data[0]; i++) data[i] = data[0] + i*dim_data[1];
 
     //Set Data Array
-    for (int r = 0; r < dim_data[0]; ++r) {
-        for (int c = 0; c < dim_data[1]; ++c) {
+    for (int r = 0; r < (int)dim_data[0]; ++r) {
+        for (int c = 0; c < (int)dim_data[1]; ++c) {
             data[r][c] = data_matrix(r, c);
         }
     }
@@ -126,7 +126,7 @@ void H5FileAdapter::writeDataSet2(const TimeSeriesTable& table, const std::strin
     //Convert the vector into a C string array.
     //Because the input function ::write requires that.
     std::vector<const char *> cStrArray;
-    for(int index = 0; index < att_vector.size(); ++index)
+    for(int index = 0; index < (int)att_vector.size(); ++index)
     {
         cStrArray.push_back(att_vector[index].c_str());
     }
@@ -155,10 +155,10 @@ void H5FileAdapter::writeDataSetVec3(const TimeSeriesTableVec3& table, const std
         //Allocate space for data
         double** data = (double**)malloc(dim_data[0] * sizeof(double*));
         data[0] = (double*)malloc(dim_data[1] * dim_data[0] * sizeof(double));
-        for (int i = 1; i < dim_data[0]; i++) data[i] = data[0] + i*dim_data[1];
+        for (int i = 1; i < (int)dim_data[0]; i++) data[i] = data[0] + i*dim_data[1];
 
         //Set Data Array
-        for (int r = 0; r < dim_data[0]; ++r) {
+        for (int r = 0; r < (int)dim_data[0]; ++r) {
             for (int c = 0; c < 3; ++c) {
                 data[r][c] = data_matrix(r, i)(c);
             }
@@ -188,11 +188,11 @@ void H5FileAdapter::writeDataSetVector(const TimeSeriesTable& table, const std::
     //Allocate space for data
     double** data = (double**)malloc(dim_data[0] * sizeof(double*));
     data[0] = (double*)malloc(dim_data[1] * dim_data[0] * sizeof(double));
-    for (int i = 1; i < dim_data[0]; i++) data[i] = data[0] + i*dim_data[1];
+    for (int i = 1; i < (int)dim_data[0]; i++) data[i] = data[0] + i*dim_data[1];
 
     //Set Data Array
-    for (int r = 0; r < dim_data[0]; ++r) {
-        for (int c = 0; c < dim_data[1]; ++c) {
+    for (int r = 0; r < (int)dim_data[0]; ++r) {
+        for (int c = 0; c < (int)dim_data[1]; ++c) {
             data[r][c] = data_matrix(r, c);
         }
     }
@@ -231,7 +231,7 @@ void H5FileAdapter::writeStatesDataSet(const TimeSeriesTable& table) {
         double* data = (double*)malloc(dim_data[0] * sizeof(double));
 
         //Set Data Array
-        for (int r = 0; r < dim_data[0]; ++r) {
+        for (int r = 0; r < (int)dim_data[0]; ++r) {
             data[r] = data_matrix(r, i);
         }
 
@@ -323,7 +323,7 @@ void H5FileAdapter::writeDataSetSimTKVector(const SimTK::Vector& data_vector, co
     double* data = (double*)malloc(dim_data[0] * sizeof(double));
 
     //Set Data Array
-    for (int r = 0; r < dim_data[0]; ++r) {
+    for (int r = 0; r < (int)dim_data[0]; ++r) {
         data[r] = data_vector(r);
     }
 
@@ -345,10 +345,10 @@ void H5FileAdapter::writeDataSetSimTKVectorVec3(const SimTK::Vector_<SimTK::Vec3
     //Allocate space for data
     double** data = (double**)malloc(dim_data[0] * sizeof(double*));
     data[0] = (double*)malloc(dim_data[1] * dim_data[0] * sizeof(double));
-    for (int i = 1; i < dim_data[0]; i++) data[i] = data[0] + i*dim_data[1];
+    for (int i = 1; i < (int)dim_data[0]; i++) data[i] = data[0] + i*dim_data[1];
 
     //Set Data Array
-    for (int r = 0; r < dim_data[0]; ++r) {
+    for (int r = 0; r < (int)dim_data[0]; ++r) {
         for (int c = 0; c < 3; ++c) {
             data[r][c] = data_vector(r)(c);
         }
@@ -373,11 +373,11 @@ void H5FileAdapter::writeDataSetSimTKMatrix(const SimTK::Matrix& data_matrix, co
     //Allocate space for data
     double** data = (double**)malloc(dim_data[0] * sizeof(double*));
     data[0] = (double*)malloc(dim_data[1] * dim_data[0] * sizeof(double));
-    for (int i = 1; i < dim_data[0]; i++) data[i] = data[0] + i*dim_data[1];
+    for (int i = 1; i < (int)dim_data[0]; i++) data[i] = data[0] + i*dim_data[1];
 
     //Set Data Array
-    for (int r = 0; r < dim_data[0]; ++r) {
-        for (int c = 0; c < dim_data[1]; ++c) {
+    for (int r = 0; r < (int)dim_data[0]; ++r) {
+        for (int c = 0; c < (int)dim_data[1]; ++c) {
             data[r][c] = data_matrix(r,c);
         }
     }
