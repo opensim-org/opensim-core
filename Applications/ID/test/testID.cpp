@@ -210,6 +210,12 @@ void testBallJoint() {
         idToolVec[i] = idToolArray[i];
     }
 
+    // Test should pass when correct udot used
     ASSERT_EQUAL(idSolverVec, idToolVec, 1e-6, __FILE__, __LINE__,
             "testThoracoscapularShoulderModel failed");
+
+    // Test should not pass when default udot = 0 used
+    ASSERT_THROW(Exception,
+            ASSERT_EQUAL(idSolverVecZeroUDot, idToolVec, 1e-6, 
+            __FILE__, __LINE__, "testThoracoscapularShoulderModel failed"));
 }
