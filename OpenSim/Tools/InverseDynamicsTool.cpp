@@ -282,7 +282,6 @@ bool InverseDynamicsTool::run()
         std::vector<int> coordIndsForEachQ(nq, intUnusedSlot);
         std::vector<int> coordIndsForEachU(nu, intUnusedSlot);
         for (const auto& c : coordMap) {
-            std::cout << c.first << " " << c.second << std::endl;
             // SimTK::State layout is [q u z] 
             // (i.e., all "q"s first then "u"s second).
             if (c.second < nq + nu) { 

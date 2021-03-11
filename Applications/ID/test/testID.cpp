@@ -30,11 +30,15 @@
 #include <OpenSim/Tools/InverseDynamicsTool.h>
 #include <OpenSim/Simulation/InverseDynamicsSolver.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include <OpenSim/Simulation/SimbodyEngine/BallJoint.h>
+#include <OpenSim/Simulation/SimulationUtilities.h>
+#include <OpenSim/Common/GCVSplineSet.h>
 
 using namespace OpenSim;
 using namespace std;
 
 void testThoracoscapularShoulderModel();
+void testBallJoint();
 
 int main()
 {
@@ -57,6 +61,9 @@ int main()
 
         testThoracoscapularShoulderModel();
         cout << "testThoracoscapularShoulderModel passed" << endl;
+
+        testBallJoint();
+        cout << "testBallJoint passed" << endl;
     }
     catch (const Exception& e) {
         e.print(cerr);
@@ -118,4 +125,89 @@ void testThoracoscapularShoulderModel() {
     // Compare results
     ASSERT_EQUAL(idSolverVec, idToolVec, 1e-6, __FILE__, __LINE__, 
         "testThoracoscapularShoulderModel failed");
+}
+
+void testBallJoint() {
+    Model m;
+    Body* b = new Body("body", 1.0, SimTK::Vec3(0), SimTK::Inertia(1));
+    BallJoint* j = new BallJoint("joint", m.getGround(), *b);
+    m.addBody(b);
+    m.addJoint(j);
+    j->upd_coordinates(0).setName("c0");
+    j->upd_coordinates(1).setName("c1");
+    j->upd_coordinates(2).setName("c2");
+
+    SimTK::State& s = m.initSystem();
+
+    // only one joint, coord order is c0, c1, c2
+    auto coords = m.getCoordinatesInMultibodyTreeOrder();
+
+    // BallJoint is backed by a quaternion.
+    // q has length of 4: c0, c1, c2, (unused)
+    // u has length of 3: c0, c1, c2
+    // state has length 7: [q, u]
+    auto coordMap = createSystemYIndexMap(m);
+    for (const auto& c : coordMap) {
+        std::cout << c.first << " " << c.second << std::endl;
+    }
+
+    Array<string> coordStorageLabels;
+    coordStorageLabels.append("time");
+    for (const auto& c : coords) { 
+        coordStorageLabels.append(c->getName()); // order is c0, c1, c2
+        std::cout << c->getName() << std::endl;
+    }
+
+    Storage coordStorage;
+    coordStorage.setColumnLabels(coordStorageLabels);
+    for (int i = 0; i < 10; ++i) {
+        double vals[3] = {0.1*pow(2, i), 0.2*pow(2, i), 0.3*pow(2, i)};
+        SimTK::Vector q(3, vals);
+        coordStorage.append(0.1*i, q);
+    }
+    coordStorage.print("testBallJoint.sto");
+    Array<double> timeVec;
+    coordStorage.getTimeColumn(timeVec);
+    std::cout << timeVec << std::endl;
+
+    // Setup IDSolver 
+    double analyzeTime = 0.5;
+    SimTK::Vector udot(m.getNumCoordinates());
+    GCVSplineSet coordSplines(5, &coordStorage);
+    for (int i = 0; i < m.getNumCoordinates(); ++i) {
+        j->upd_coordinates(i).setValue(
+                s, coordSplines.evaluate(i, 0, analyzeTime));
+        j->upd_coordinates(i).setSpeedValue(
+                s, coordSplines.evaluate(i, 1, analyzeTime));
+        udot[i] = coordSplines.evaluate(i, 2, analyzeTime);
+    }
+    std::cout << s.getQ() << std::endl;
+    std::cout << s.getU() << std::endl;
+    std::cout << udot << std::endl;
+
+    InverseDynamicsSolver idSolver(m);
+    Set<Muscle>& muscles = m.updMuscles();
+    for (int i = 0; i < muscles.getSize(); i++) {
+        muscles[i].setAppliesForce(s, false);
+    }
+    SimTK::Vector idSolverVec = idSolver.solve(s, udot);
+
+    // Compare with IDTool
+    InverseDynamicsTool idTool;
+    string outputFile = "testBallJoint_ID_output.sto";
+    idTool.setModel(m);
+    idTool.setCoordinateValues(coordStorage);
+    idTool.setOutputGenForceFileName(outputFile);
+    idTool.run();
+
+    // Compare results (should be in same order already)
+    Storage idToolOutput(outputFile);
+    Array<double> idToolArray;
+    idToolOutput.getDataAtTime(analyzeTime, m.getNumCoordinates(), idToolArray);
+    SimTK::Vector idToolVec(m.getNumCoordinates());
+    for (int i = 0; i < m.getNumCoordinates(); ++i) {
+        idToolVec[i] = idToolArray[i];
+    }
+    ASSERT_EQUAL(idSolverVec, idToolVec, 1e-6, __FILE__, __LINE__,
+            "testThoracoscapularShoulderModel failed");
 }
