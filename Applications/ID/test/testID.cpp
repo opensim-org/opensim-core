@@ -190,6 +190,7 @@ void testBallJoint() {
     for (int i = 0; i < muscles.getSize(); i++) {
         muscles[i].setAppliesForce(s, false);
     }
+    SimTK::Vector idSolverVecZeroUDot = idSolver.solve(s);
     SimTK::Vector idSolverVec = idSolver.solve(s, udot);
 
     // Compare with IDTool
@@ -208,6 +209,7 @@ void testBallJoint() {
     for (int i = 0; i < m.getNumCoordinates(); ++i) {
         idToolVec[i] = idToolArray[i];
     }
+
     ASSERT_EQUAL(idSolverVec, idToolVec, 1e-6, __FILE__, __LINE__,
             "testThoracoscapularShoulderModel failed");
 }

@@ -126,7 +126,7 @@ Vector InverseDynamicsSolver::solve(SimTK::State &s, const FunctionSet &Qs, doub
 }
 
 Vector InverseDynamicsSolver::solve(SimTK::State& s, const FunctionSet& Qs, 
-        const std::vector<int> QIndsForEachU, double time) {
+        const std::vector<int> coordinatesToSpeedsIndexMap, double time) {
     int nq = s.getNQ();
     int nu = s.getNU();
 
@@ -134,8 +134,8 @@ Vector InverseDynamicsSolver::solve(SimTK::State& s, const FunctionSet& Qs,
         throw Exception("InverseDynamicsSolver::solve invalid number of q functions.");
     }
 
-    if ((int)QIndsForEachU.size() != nu) {
-        throw Exception("InverseDynamicsSolver::solve QIndForEachU must be 'nu' long");
+    if ((int)coordinatesToSpeedsIndexMap.size() != nu) {
+        throw Exception("InverseDynamicsSolver::solve coordinatesToSpeedsIndexMap must be 'nu' long");
     }
 
     // update the State so we get the correct gravity and Coriolis effects
@@ -150,8 +150,8 @@ Vector InverseDynamicsSolver::solve(SimTK::State& s, const FunctionSet& Qs,
     }
 
     for (int i = 0; i < nu; i++) {
-        u[i] = Qs.evaluate(QIndsForEachU[i], 1, time);
-        udot[i] = Qs.evaluate(QIndsForEachU[i], 2, time);
+        u[i] = Qs.evaluate(coordinatesToSpeedsIndexMap[i], 1, time);
+        udot[i] = Qs.evaluate(coordinatesToSpeedsIndexMap[i], 2, time);
     }
 
     // Perform general inverse dynamics
@@ -176,7 +176,8 @@ void InverseDynamicsSolver::solve(SimTK::State &s, const FunctionSet &Qs, const 
 }
 
 void InverseDynamicsSolver::solve(SimTK::State& s, const FunctionSet& Qs,
-        const std::vector<int> QIndsForEachU, const Array_<double>& times,
+        const std::vector<int> coordinatesToSpeedsIndexMap,
+        const Array_<double>& times,
         Array_<Vector>& genForceTrajectory) {
     int nCoords = getModel().getNumCoordinates();
     int nt = times.size();
@@ -188,7 +189,8 @@ void InverseDynamicsSolver::solve(SimTK::State& s, const FunctionSet& Qs,
             const_cast<AnalysisSet&>(getModel().getAnalysisSet());
     // fill in results for each time
     for (int i = 0; i < nt; i++) {
-        genForceTrajectory[i] = solve(s, Qs, QIndsForEachU, times[i]);
+        genForceTrajectory[i] =
+                solve(s, Qs, coordinatesToSpeedsIndexMap, times[i]);
         analysisSet.step(s, i);
     }
 }

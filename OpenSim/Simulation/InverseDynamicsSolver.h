@@ -96,11 +96,12 @@ public:
     virtual SimTK::Vector solve(SimTK::State& s, const FunctionSet& Qs, double time);
 
     /** This is the same as above, but can be used when qdot != u. This adds an
-        extra vector, QIndsForEachU, which is the length of number of u's in
+        extra vector, coordinatesToSpeedsIndexMap, which is the length of number of u's in
         the SimTK::State, and whose i'th index is the index of the FunctionSet
         Qs from which each 'u' and 'udot' will be calculated. */
     virtual SimTK::Vector solve(SimTK::State& s, const FunctionSet& Qs, 
-                                const std::vector<int> QIndsForEachU, double time);
+                                const std::vector<int> coordinatesToSpeedsIndexMap,
+                                double time);
 
 #ifndef SWIG
     /** Same as above but for a given time series populate an Array (trajectory)
@@ -112,12 +113,13 @@ public:
                  SimTK::Array_<SimTK::Vector>& genForceTrajectory);
 
     /** Same as above but for a given time series populate an Array (trajectory)
-       of generalized-coordinate forces (Vector), but can be used when dot != u.
-       This adds an extra vector, QIndsForEachU, which is the length of number of
+       of generalized-coordinate forces (Vector) that can be used when qdot != u.
+       This adds an extra vector, coordinatesToSpeedsIndexMap, which is the length of number of
        u's in the SimTK::State, and whose i'th index is the index of the
        FunctionSet Qs from which each 'u' and 'udot' will be calculated. */ 
     virtual void solve(SimTK::State& s, const FunctionSet& Qs, 
-            const std::vector<int> QIndsForEachU, const SimTK::Array_<double>& times,
+            const std::vector<int> coordinatesToSpeedsIndexMap,
+            const SimTK::Array_<double>& times,
             SimTK::Array_<SimTK::Vector>& genForceTrajectory);
 #endif
 //=============================================================================
