@@ -40,6 +40,13 @@ set(SWIG_JAVA_MOCO_CXX_FILE
 set(SWIG_JAVA_MOCO_H_FILE
     "${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/java_moco.h")
 
+set(SWIG_JAVA_JAM_INTERFACE_FILE
+    "${CMAKE_CURRENT_SOURCE_DIR}/swig/java_jam.i")
+set(SWIG_JAVA_JAM_CXX_FILE
+    "${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/java_jam.cxx")
+set(SWIG_JAVA_JAM_H_FILE
+    "${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/java_jam.h")
+
 set(OPENSIM_JAVA_WRAPPING_PACKAGE "org.opensim.modeling"
     CACHE STRING
     "The wrapping is built as the Java package specified in this variable.")
@@ -103,6 +110,9 @@ add_custom_command(
             ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/src/moco
+            ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/src/jam
             ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
     COMMAND ${CMAKE_COMMAND} -E copy
             ${CMAKE_CURRENT_SOURCE_DIR}/JavaLogSink.java
