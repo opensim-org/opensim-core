@@ -8,4 +8,3 @@
 %include <OpenSim/JAM/JointMechanicsTool.h>
 %include <OpenSim/JAM/JAMUtilities.h>
 %include <OpenSim/JAM/VTPFileAdapter.h>
-%include <OpenSim/JAM/MocoJointReactionGoal.h>
