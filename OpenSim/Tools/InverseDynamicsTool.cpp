@@ -274,9 +274,9 @@ bool InverseDynamicsTool::run()
         int nCoords = (int)coords.size();
         int intUnusedSlot = -1;
 
-        // Create a vector coordIndsForEachQ whose i'th element provides
+        // Create a vector mapCoordinateToQ whose i'th element provides
         // the index in vector 'coords' that corresponds with the i'th 'q' value.
-        // Do the same for coordIndsForEachU, which tracks the order for
+        // Do the same for mapCoordinateToU, which tracks the order for
         // each 'u' value.
         auto coordMap = createSystemYIndexMap(*_model);
         std::vector<int> mapCoordinateToQ(nq, intUnusedSlot);
