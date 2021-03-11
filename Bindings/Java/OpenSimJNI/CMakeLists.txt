@@ -74,9 +74,9 @@ OpenSimGenerateJavaWrapper(moco
     ${SWIG_JAVA_MOCO_H_FILE})
 
 OpenSimGenerateJavaWrapper(jam
-    ${SWIG_JAVA_MOCO_INTERFACE_FILE}
-    ${SWIG_JAVA_MOCO_CXX_FILE}
-    ${SWIG_JAVA_MOCO_H_FILE})
+    ${SWIG_JAVA_JAM_INTERFACE_FILE}
+    ${SWIG_JAVA_JAM_CXX_FILE}
+    ${SWIG_JAVA_JAM_H_FILE})
 
 set(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
