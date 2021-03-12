@@ -1,7 +1,6 @@
 /* -------------------------------------------------------------------------- *
  *                            OpenSim:  testID.cpp                            *
  * -------------------------------------------------------------------------- *
- * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
  * OpenSim is developed at Stanford University and supported by the US        *
@@ -62,7 +61,8 @@ int main()
 
         testThoracoscapularShoulderModel();
         cout << "testThoracoscapularShoulderModel passed" << endl;
-
+        // Commented out testBallJoint due to sporadic crash in Model destructor
+        // -Ayman 03/21
         //testBallJoint();
         //cout << "testBallJoint passed" << endl;
     }
@@ -85,7 +85,7 @@ void testThoracoscapularShoulderModel() {
     for (size_t i = 0; i < labels.size(); ++i) {
         const Coordinate& thisCoord = model.getCoordinateSet().get(labels[i]);
         auto thisValue = motionTable.getDependentColumn(labels[i])[0];
-        log_cout("ThoracoscapularShoulderModel {} {}", labels[i], thisValue);
+        log_cout("ThoracoscapularShoulderModel set {} to {}", labels[i], thisValue);
         thisCoord.setLocked(s, false);
         thisCoord.setValue(s, thisValue, false);
         thisCoord.setSpeedValue(s, 0);
@@ -148,7 +148,7 @@ void testBallJoint() {
     // state has length 7: [q, u]
     auto coordMap = createSystemYIndexMap(mdl);
     for (const auto& c : coordMap) {
-        log_cout("Map entry {} to {}", c.first,  c.second);
+        log_cout("Map entry {} to index {}", c.first,  c.second);
     }
 
     Array<string> coordStorageLabels;
@@ -210,11 +210,11 @@ void testBallJoint() {
         idToolVec[i] = idToolArray[i];
     }
 
-    // Test should pass when correct udot used
+    // Test should pass when correct udot is used
     ASSERT_EQUAL(idSolverVec, idToolVec, 1e-6, __FILE__, __LINE__,
             "testThoracoscapularShoulderModel failed");
 
-    // Test should not pass when default udot = 0 used
+    // Test should not pass when default udot = 0 is used instead
     ASSERT_THROW(Exception,
             ASSERT_EQUAL(idSolverVecZeroUDot, idToolVec, 1e-6, 
             __FILE__, __LINE__, "testThoracoscapularShoulderModel failed"));
