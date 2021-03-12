@@ -8,3 +8,7 @@
 %include <OpenSim/JAM/JointMechanicsTool.h>
 %include <OpenSim/JAM/JAMUtilities.h>
 %include <OpenSim/JAM/VTPFileAdapter.h>
+
+
+%shared_ptr(OpenSim::VTPFileAdapter)
+%shared_ptr(OpenSim::H5FileAdapter)
