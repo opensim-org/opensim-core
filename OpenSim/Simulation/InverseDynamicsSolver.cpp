@@ -126,7 +126,7 @@ Vector InverseDynamicsSolver::solve(SimTK::State &s, const FunctionSet &Qs, doub
 }
 
 Vector InverseDynamicsSolver::solve(SimTK::State& s, const FunctionSet& Qs, 
-        const std::vector<int> coordinatesToSpeedsIndexMap, double time) {
+        const std::vector<int>& coordinatesToSpeedsIndexMap, double time) {
     int nq = s.getNQ();
     int nu = s.getNU();
 

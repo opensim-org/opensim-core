@@ -100,7 +100,7 @@ public:
         the SimTK::State, and whose i'th index is the index of the FunctionSet
         Qs from which each 'u' and 'udot' will be calculated. */
     virtual SimTK::Vector solve(SimTK::State& s, const FunctionSet& Qs, 
-                                const std::vector<int> coordinatesToSpeedsIndexMap,
+                                const std::vector<int>& coordinatesToSpeedsIndexMap,
                                 double time);
 
 #ifndef SWIG
