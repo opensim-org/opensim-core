@@ -100,7 +100,7 @@ add_library(osim${KIT}
     OpenSimContext.h)
 
 target_include_directories(osim${KIT} PRIVATE
-                           ${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2})
+                           ${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE_PATH2} ${HDF5_INCLUDE_DIR})
 
 target_link_libraries(osim${KIT} osimTools osimExampleComponents osimMoco osimJAM)
     

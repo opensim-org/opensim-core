@@ -1,6 +1,6 @@
 #CMakeLists.txt for JAM
 #======================
-# TODO: Use OpenSimAddLibrary() macro.
+
 set(JAM_SOURCES
         About.cpp
         base64.cpp
