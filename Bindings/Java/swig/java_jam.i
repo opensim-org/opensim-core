@@ -1,4 +1,4 @@
-%module(directors="1") opensimMoco
+%module(directors="1") opensimJAM
 
 %{
 #include <Bindings/OpenSimHeaders_common.h>
@@ -8,6 +8,9 @@
 #include <Bindings/OpenSimHeaders_tools.h>
 #include <Bindings/OpenSimHeaders_moco.h>
 #include <Bindings/OpenSimHeaders_jam.h>
+
+#include <Bindings/Java/OpenSimJNI/OpenSimContext.h>
+
 using namespace OpenSim;
 using namespace SimTK;
 %}
