@@ -27,7 +27,7 @@ namespace OpenSim {
     //class VTPFileAdapter : public FileAdapter {
     public:
 
-       VTPFileAdapter();
+       VTPFileAdapter() = default;
        VTPFileAdapter(const VTPFileAdapter&) = default;
        VTPFileAdapter(VTPFileAdapter&&) = default;
        VTPFileAdapter& operator=(const VTPFileAdapter&) = default;

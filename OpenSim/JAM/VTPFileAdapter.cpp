@@ -21,10 +21,6 @@
 using namespace SimTK;
 namespace OpenSim {
 
-    VTPFileAdapter::VTPFileAdapter()
-    {
-
-    }
 
     VTPFileAdapter* VTPFileAdapter::clone() const
     {
@@ -34,6 +30,7 @@ namespace OpenSim {
 
     VTPFileAdapter::OutputTables VTPFileAdapter::extendRead(const std::string& fileName) const
     {
+        OPENSIM_THROW(Exception,"VTPFileAdapter::extendRead is not implemented.")
         OutputTables output_tables{};
         return output_tables;
     };

@@ -18,8 +18,6 @@ using namespace SimTK;
 %include <Bindings/preliminaries.i>
 %include "java_preliminaries.i";
 
-%import "java_actuators.i"
-
 %include <Bindings/jam.i>
 
 

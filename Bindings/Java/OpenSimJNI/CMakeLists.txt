@@ -11,7 +11,7 @@ set_directory_properties(PROPERTIES COMPILE_OPTIONS "")
 function(OpenSimGenerateJavaWrapper
         NAME INPUT_INTERFACE_FILE OUTPUT_CXX_FILE OUTPUT_H_FILE)
 
-    set(_swig_common_args -c++ -java
+    set(_swig_common_args -E -c++ -java
             -package ${OPENSIM_JAVA_WRAPPING_PACKAGE}
             -I${OpenSim_SOURCE_DIR}
             -I${OpenSim_SOURCE_DIR}/Bindings
@@ -127,6 +127,8 @@ set_source_files_properties(
         ${SWIG_JAVA_SIMULATION_CXX_FILE}
         ${SWIG_JAVA_ACTUATORS_CXX_FILE}
         ${SWIG_JAVA_EXAMPLECOMPONENTS_CXX_FILE}
+        ${SWIG_JAVA_MOCO_CXX_FILE}
+        ${SWIG_JAVA_JAM_CXX_FILE}
         PROPERTIES COMPILE_FLAGS "${COMPILE_FLAGS}")
 
 # RPATH: The osim libraries that osimJavaJNI needs are in the same folder as

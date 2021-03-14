@@ -16,5 +16,7 @@
 %shared_ptr(OpenSim::VTPFileAdapter)
 %shared_ptr(OpenSim::H5FileAdapter)
 
-%ignore VTPFileAdapter::VTPFileAdapter(VTPFileAdapter &&);
-%ignore H5FileAdapter::H5FileAdapter(H5FileAdapter &&);
+namespace OpenSim {
+    %ignore VTPFileAdapter::VTPFileAdapter(VTPFileAdapter &&);
+    %ignore H5FileAdapter::H5FileAdapter(H5FileAdapter &&);
+}
