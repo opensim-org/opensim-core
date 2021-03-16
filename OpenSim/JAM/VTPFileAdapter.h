@@ -101,6 +101,7 @@ namespace OpenSim {
         OutputTables extendRead(const std::string& fileName) const override;
 
         void extendWrite(const InputTables& tables, const std::string& fileName) const override;
+
     private:
         bool isLittleEndian() const;
         std::string encodeFloatDataVTPBase64(std::vector<float>& data) const;

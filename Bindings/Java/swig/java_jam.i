@@ -1,5 +1,7 @@
 %module(directors="1") opensimJAM
 
+#pragma SWIG nowarn=822,451,503,516,325,401
+
 %{
 #include <Bindings/OpenSimHeaders_common.h>
 #include <Bindings/OpenSimHeaders_simulation.h>
@@ -15,8 +17,9 @@ using namespace OpenSim;
 using namespace SimTK;
 %}
 
-%include <Bindings/preliminaries.i>
-%include "java_preliminaries.i";
+//%include <Bindings/preliminaries.i>
+//%include <Bindings/simulation.i>
+//%include "java_preliminaries.i";
 
 %include <Bindings/jam.i>
 

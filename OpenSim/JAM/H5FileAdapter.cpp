@@ -430,7 +430,7 @@ void H5FileAdapter::writeTimeDataSet(const Array<double>& time) {
         _time_is_empty = false;
     }
 }
-    
+
 H5FileAdapter::OutputTables H5FileAdapter::extendRead(const std::string& fileName) const 
 {
     OutputTables output_tables{};

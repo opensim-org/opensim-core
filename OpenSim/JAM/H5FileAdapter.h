@@ -101,11 +101,9 @@ namespace OpenSim {
         OutputTables extendRead(const std::string& fileName) const override;
 
         void extendWrite(const InputTables& tables, const std::string& fileName) const override;
-    private:
-
-
+        
     //Data
-    private:
+    protected:
         H5::H5File _file;
         bool _time_is_empty;
 

@@ -11,7 +11,7 @@ set_directory_properties(PROPERTIES COMPILE_OPTIONS "")
 function(OpenSimGenerateJavaWrapper
         NAME INPUT_INTERFACE_FILE OUTPUT_CXX_FILE OUTPUT_H_FILE)
 
-    set(_swig_common_args -E -c++ -java
+    set(_swig_common_args -c++ -java
             -package ${OPENSIM_JAVA_WRAPPING_PACKAGE}
             -I${OpenSim_SOURCE_DIR}
             -I${OpenSim_SOURCE_DIR}/Bindings

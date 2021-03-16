@@ -209,9 +209,12 @@ public:
     void performIKSecondaryConstraintSimulation();
     void performIK();
     void runInverseKinematics(Model& model);
+    
+
     void populateReferences(const Model& model, 
         MarkersReference& markersReference,
         SimTK::Array_<CoordinateReference>&coordinateReferences) const;
+   
     //--------------------------------------------------------------------------
     // Members
     //--------------------------------------------------------------------------
@@ -266,6 +269,7 @@ public:
 
     FunctionSet _secondary_constraint_functions;
     std::string _directoryOfSetupFile;
+
 //=============================================================================
 };  // END of class COMAK_INVERSE_KINEMATICS_TOOL
 
