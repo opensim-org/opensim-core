@@ -16,10 +16,10 @@
 using namespace OpenSim;
 using namespace SimTK;
 %}
-
-//%include <Bindings/preliminaries.i>
-//%include <Bindings/simulation.i>
-//%include "java_preliminaries.i";
+%include <Bindings/preliminaries.i>
+%include "java_preliminaries.i";
+%include <Bindings/common.i>
+%include "java_common.i";
 
 %include <Bindings/jam.i>
 
