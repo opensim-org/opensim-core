@@ -231,7 +231,7 @@ OpenSimAddPythonModule(MODULE analyses)
 OpenSimAddPythonModule(MODULE tools)
 OpenSimAddPythonModule(MODULE examplecomponents)
 OpenSimAddPythonModule(MODULE moco)
-
+OpenSimAddPythonModule(MODULE jam)
 
 # Copy files to create complete package in the build tree.
 # ========================================================

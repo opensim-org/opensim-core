@@ -1,11 +1,7 @@
 %include <OpenSim/JAM/osimJAMDLL.h>
 %include <OpenSim/JAM/About.h>
-%include <OpenSim/JAM/COMAKInverseKinematicsTool.h>
-%include <OpenSim/JAM/COMAKTarget.h>
-%include <OpenSim/JAM/COMAKTool.h>
-%include <OpenSim/JAM/ForsimTool.h>
-%include <OpenSim/JAM/JointMechanicsTool.h>
-%include <OpenSim/JAM/JAMUtilities.h>
+
+
 
 namespace OpenSim {
     %ignore VTPFileAdapter::VTPFileAdapter(VTPFileAdapter &&);

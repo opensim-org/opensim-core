@@ -11,18 +11,16 @@
 #include <Bindings/OpenSimHeaders_moco.h>
 #include <Bindings/OpenSimHeaders_jam.h>
 
-#include <Bindings/Java/OpenSimJNI/OpenSimContext.h>
-
 using namespace OpenSim;
 using namespace SimTK;
 %}
-//%include <Bindings/preliminaries.i>
+
 
 %include "java_preliminaries.i";
 %include "arrays_java.i";
 %import <java_common.i>
 %import <java_simulation.i>
-//%include "java_common.i";
+
 
 %include <Bindings/jam.i>
 

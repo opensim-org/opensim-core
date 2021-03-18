@@ -1,6 +1,6 @@
 %module(package="opensim", directors="1") jam
 #pragma SWIG nowarn=822,451,503,516,325
-//#pragma SWIG nowarn=401
+#pragma SWIG nowarn=401
 
 %{
 #define SWIG_FILE_WITH_INIT
@@ -11,18 +11,15 @@
 #include <Bindings/OpenSimHeaders_tools.h>
 #include <Bindings/OpenSimHeaders_moco.h>
 #include <Bindings/OpenSimHeaders_jam.h>
-%}
 
-%{
 using namespace OpenSim;
 using namespace SimTK;
 %}
 
-%include <Bindings/preliminaries.i>
-%include "python_preliminaries.i"
+%include "python_preliminaries.i";
 
-// Tell SWIG about the modules we depend on.
-%import "python_tools.i"
+%import <python_common.i>
+%import <python_simulation.i>
 
 // Relay exceptions to the target language.
 // This causes substantial code bloat and possibly hurts performance.
