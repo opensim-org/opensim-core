@@ -19,7 +19,6 @@ set_directory_properties(PROPERTIES COMPILE_OPTIONS "")
 
 # Helper macros.
 # ==============
-
 # Helper function to for copying files into the python package.
 macro(OpenSimPutFileInPythonPackage source_full_path relative_dest_dir)
 
@@ -77,6 +76,7 @@ macro(OpenSimAddPythonModule)
             -I${OpenSim_SOURCE_DIR}
             -I${OpenSim_SOURCE_DIR}/Bindings/
             -I${Simbody_INCLUDE_DIR}
+            
             ${SWIG_FLAGS}
             ${_interface_file}
             )
@@ -138,7 +138,9 @@ macro(OpenSimAddPythonModule)
 
     target_include_directories(${_libname} PRIVATE
             "${PYTHON_INCLUDE_PATH}"
-            "${PYTHON_NUMPY_INCLUDE_DIR}")
+            "${PYTHON_NUMPY_INCLUDE_DIR}"
+            "${HDF5_INCLUDE_DIR}"
+            )
     
     # On macOS, the python interpreter might link to the python library 
     # statically, in which case we do not want to link dynamically to the
