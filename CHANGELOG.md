@@ -8,6 +8,7 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 
 v4.2
 ====
+- Fixed a bug with InverseDynamicsTool/InverseDynamicsSolver to account for cases where a model has extra slots in its `State`'s "q" (PR #2971)
 - Added Bhargava2004SmoothedMuscleMetabolics, a smoothed version of the Bhargava metabolics model designed for gradient-based optimization (i.e., Moco).
 - Fixed a bug in Millard2012EquilibriumMuscle::extendFinalizeFromProperties(): the end point slopes on the inverse force velocity curves are constrained to yield a valid curve. A warning is noted in the log if the slopes are small enough that numerical integration might be slow.
 - Added logging to Millard2012EquilibriumMuscle::extendFinalizeFromProperties(): whenever an internal setting is changed automatically these changes are noted in the log. To avoid seeing these messages, update the corresponding properties in the .osim file to the values noted in the log message.

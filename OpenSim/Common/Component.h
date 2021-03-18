@@ -1604,7 +1604,7 @@ public:
      *
      * @param state
      *     the State in which to store the new value
-     * @param name
+     * @param k
      *     the name of the cache variable
      * @param value
      *     the new value for this cache variable
