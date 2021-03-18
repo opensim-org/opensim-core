@@ -161,7 +161,7 @@ macro(OpenSimAddPythonModule)
         target_link_libraries(${_libname} ${PYTHON_LIBRARIES})
     endif()
 
-    target_link_libraries(${_libname} osimTools osimExampleComponents osimMoco)
+    target_link_libraries(${_libname} osimTools osimExampleComponents osimMoco osimJAM)
     
     # Set target properties for various platforms.
     # --------------------------------------------
