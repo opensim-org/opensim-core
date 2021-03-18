@@ -116,6 +116,23 @@ int main()
         failures.push_back("testInverseKinematicsConstraintTest");
     }
 
+    try {
+        Storage standard("std_subject1_abdbonepin_IK.mot");
+        InverseKinematicsTool ik("setup_ik_abdbonepin.xml");
+        ik.run();
+        Storage result(ik.getOutputMotionFileName());
+        // Tolerance of 0.2 degs for rotational coordinates was selected from
+        // the other IK regression tests (above) 
+        CHECK_STORAGE_AGAINST_STANDARD(result, standard,
+                std::vector<double>(17, 0.2), __FILE__, __LINE__,
+                "testInverseKinematicsScapulothoracicAbduction failed");
+        cout << "testInverseKinematicsScapulothoracicAbduction passed" << endl;
+    } catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testInverseKinematicsScapulothoracicAbduction");
+    }
+
+
     if (!failures.empty()) {
         cout << "Done, with " << failures.size() << " failure(s) out of ";
         cout << itc << " test cases." << endl;

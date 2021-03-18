@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ControlSet name="leg69_muscles_control_limits">
+	<defaults/>
+	<objects>	
+		<ControlLinear name="bifemlh_r.excitation">
+			<default_min>       0.02000000 </default_min>
+			<default_max>       1.00000000 </default_max>
+			<use_steps> true </use_steps>
+		</ControlLinear>
+    
+		<ControlLinear name="bifemsh_r.excitation">
+			<default_min>       0.02000000 </default_min>
+			<default_max>       1.00000000 </default_max>
+			<use_steps> true </use_steps>
+		</ControlLinear>
+    
+		<ControlLinear name="glut_max2_r.excitation">
+			<default_min>       0.02000000 </default_min>
+			<default_max>       1.00000000 </default_max>
+			<use_steps> true </use_steps>
+		</ControlLinear>
+    
+		<ControlLinear name="psoas_r.excitation">
+			<default_min>       0.02000000 </default_min>
+			<default_max>       1.00000000 </default_max>
+			<use_steps> true </use_steps>
+		</ControlLinear>
+    
+		<ControlLinear name="rect_fem_r.excitation">
+			<default_min>       0.02000000 </default_min>
+			<default_max>       1.00000000 </default_max>
+			<use_steps> true </use_steps>
+		</ControlLinear>
+    
+		<ControlLinear name="vas_int_r.excitation">
+			<default_min>       0.02000000 </default_min>
+			<default_max>       1.00000000 </default_max>
+			<use_steps> true </use_steps>
+		</ControlLinear>
+    
+		<ControlLinear name="med_gas_r.excitation">
+			<default_min>       0.02000000 </default_min>
+			<default_max>       1.00000000 </default_max>
+			<use_steps> true </use_steps>
+		</ControlLinear>
+    
+		<ControlLinear name="soleus_r.excitation">
+			<default_min>       0.02000000 </default_min>
+			<default_max>       1.00000000 </default_max>
+			<use_steps> true </use_steps>
+		</ControlLinear>
+    
+		<ControlLinear name="tib_ant_r.excitation">
+			<default_min>       0.02000000 </default_min>
+			<default_max>       1.00000000 </default_max>
+			<use_steps> true </use_steps>
+		</ControlLinear>
+	</objects>
+</ControlSet>

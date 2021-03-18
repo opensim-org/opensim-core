@@ -1499,22 +1499,40 @@
 					<pennation_angle_at_optimal>0</pennation_angle_at_optimal>
 					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths/second-->
 					<max_contraction_velocity>10</max_contraction_velocity>
-					<!--time constant for ramping up muscle activation-->
+					<!--Activation time constant (in seconds).-->
 					<activation_time_constant>0.01</activation_time_constant>
-					<!--time constant for ramping down of muscle activation-->
+					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.04</deactivation_time_constant>
-					<!--tendon strain at maximum isometric muscle force-->
-					<FmaxTendonStrain>0.033</FmaxTendonStrain>
-					<!--passive muscle strain at maximum isometric muscle force-->
-					<FmaxMuscleStrain>0.6</FmaxMuscleStrain>
-					<!--shape factor for Gaussian active muscle force-length relationship-->
-					<KshapeActive>0.5</KshapeActive>
-					<!--exponential shape factor for passive force-length relationship-->
-					<KshapePassive>4</KshapePassive>
-					<!--force-velocity shape factor-->
-					<Af>0.3</Af>
-					<!--maximum normalized lengthening force-->
-					<Flen>1.8</Flen>
+					<!--Activation lower bound.-->
+					<minimum_activation>0.01</minimum_activation>
+					<!--Active-force-length curve.-->
+					<ActiveForceLengthCurve>
+						<!--Minimum value of the active-force-length curve-->
+						<minimum_value>0</minimum_value>
+					</ActiveForceLengthCurve>
+					<!--Force-velocity curve.-->
+					<ForceVelocityCurve>
+						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
+						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
+						<!--Curve slope just before reaching concentric_slope_at_vmax-->
+						<concentric_slope_near_vmax>0.25</concentric_slope_near_vmax>
+						<!--Curve slope at isometric (normalized velocity of 0)-->
+						<isometric_slope>5</isometric_slope>
+						<!--Curve slope at the maximum normalized eccentric (lengthening) velocity (normalized velocity of 1)-->
+						<eccentric_slope_at_vmax>0</eccentric_slope_at_vmax>
+						<!--Curve slope just before reaching eccentric_slope_at_vmax-->
+						<eccentric_slope_near_vmax>0.15</eccentric_slope_near_vmax>
+						<!--Curve value at the maximum normalized eccentric contraction velocity-->
+						<max_eccentric_velocity_force_multiplier>1.4</max_eccentric_velocity_force_multiplier>
+					</ForceVelocityCurve>
+					<!--Passive-force-length curve.-->
+					<FiberForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</FiberForceLengthCurve>
+					<!--Tendon-force-length curve.-->
+					<TendonForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="bifemsh_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
@@ -1577,22 +1595,40 @@
 					<pennation_angle_at_optimal>0.40142573</pennation_angle_at_optimal>
 					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths/second-->
 					<max_contraction_velocity>10</max_contraction_velocity>
-					<!--time constant for ramping up muscle activation-->
+					<!--Activation time constant (in seconds).-->
 					<activation_time_constant>0.01</activation_time_constant>
-					<!--time constant for ramping down of muscle activation-->
+					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.04</deactivation_time_constant>
-					<!--tendon strain at maximum isometric muscle force-->
-					<FmaxTendonStrain>0.033</FmaxTendonStrain>
-					<!--passive muscle strain at maximum isometric muscle force-->
-					<FmaxMuscleStrain>0.6</FmaxMuscleStrain>
-					<!--shape factor for Gaussian active muscle force-length relationship-->
-					<KshapeActive>0.5</KshapeActive>
-					<!--exponential shape factor for passive force-length relationship-->
-					<KshapePassive>4</KshapePassive>
-					<!--force-velocity shape factor-->
-					<Af>0.3</Af>
-					<!--maximum normalized lengthening force-->
-					<Flen>1.8</Flen>
+					<!--Activation lower bound.-->
+					<minimum_activation>0.01</minimum_activation>
+					<!--Active-force-length curve.-->
+					<ActiveForceLengthCurve>
+						<!--Minimum value of the active-force-length curve-->
+						<minimum_value>0</minimum_value>
+					</ActiveForceLengthCurve>
+					<!--Force-velocity curve.-->
+					<ForceVelocityCurve>
+						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
+						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
+						<!--Curve slope just before reaching concentric_slope_at_vmax-->
+						<concentric_slope_near_vmax>0.25</concentric_slope_near_vmax>
+						<!--Curve slope at isometric (normalized velocity of 0)-->
+						<isometric_slope>5</isometric_slope>
+						<!--Curve slope at the maximum normalized eccentric (lengthening) velocity (normalized velocity of 1)-->
+						<eccentric_slope_at_vmax>0</eccentric_slope_at_vmax>
+						<!--Curve slope just before reaching eccentric_slope_at_vmax-->
+						<eccentric_slope_near_vmax>0.15</eccentric_slope_near_vmax>
+						<!--Curve value at the maximum normalized eccentric contraction velocity-->
+						<max_eccentric_velocity_force_multiplier>1.4</max_eccentric_velocity_force_multiplier>
+					</ForceVelocityCurve>
+					<!--Passive-force-length curve.-->
+					<FiberForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</FiberForceLengthCurve>
+					<!--Tendon-force-length curve.-->
+					<TendonForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="glut_max_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
@@ -1659,22 +1695,40 @@
 					<pennation_angle_at_optimal>0</pennation_angle_at_optimal>
 					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths/second-->
 					<max_contraction_velocity>10</max_contraction_velocity>
-					<!--time constant for ramping up muscle activation-->
+					<!--Activation time constant (in seconds).-->
 					<activation_time_constant>0.01</activation_time_constant>
-					<!--time constant for ramping down of muscle activation-->
+					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.04</deactivation_time_constant>
-					<!--tendon strain at maximum isometric muscle force-->
-					<FmaxTendonStrain>0.033</FmaxTendonStrain>
-					<!--passive muscle strain at maximum isometric muscle force-->
-					<FmaxMuscleStrain>0.6</FmaxMuscleStrain>
-					<!--shape factor for Gaussian active muscle force-length relationship-->
-					<KshapeActive>0.5</KshapeActive>
-					<!--exponential shape factor for passive force-length relationship-->
-					<KshapePassive>4</KshapePassive>
-					<!--force-velocity shape factor-->
-					<Af>0.3</Af>
-					<!--maximum normalized lengthening force-->
-					<Flen>1.8</Flen>
+					<!--Activation lower bound.-->
+					<minimum_activation>0.01</minimum_activation>
+					<!--Active-force-length curve.-->
+					<ActiveForceLengthCurve>
+						<!--Minimum value of the active-force-length curve-->
+						<minimum_value>0</minimum_value>
+					</ActiveForceLengthCurve>
+					<!--Force-velocity curve.-->
+					<ForceVelocityCurve>
+						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
+						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
+						<!--Curve slope just before reaching concentric_slope_at_vmax-->
+						<concentric_slope_near_vmax>0.25</concentric_slope_near_vmax>
+						<!--Curve slope at isometric (normalized velocity of 0)-->
+						<isometric_slope>5</isometric_slope>
+						<!--Curve slope at the maximum normalized eccentric (lengthening) velocity (normalized velocity of 1)-->
+						<eccentric_slope_at_vmax>0</eccentric_slope_at_vmax>
+						<!--Curve slope just before reaching eccentric_slope_at_vmax-->
+						<eccentric_slope_near_vmax>0.15</eccentric_slope_near_vmax>
+						<!--Curve value at the maximum normalized eccentric contraction velocity-->
+						<max_eccentric_velocity_force_multiplier>1.4</max_eccentric_velocity_force_multiplier>
+					</ForceVelocityCurve>
+					<!--Passive-force-length curve.-->
+					<FiberForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</FiberForceLengthCurve>
+					<!--Tendon-force-length curve.-->
+					<TendonForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="iliopsoas_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
@@ -1747,22 +1801,40 @@
 					<pennation_angle_at_optimal>0.13962634</pennation_angle_at_optimal>
 					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths/second-->
 					<max_contraction_velocity>10</max_contraction_velocity>
-					<!--time constant for ramping up muscle activation-->
+					<!--Activation time constant (in seconds).-->
 					<activation_time_constant>0.01</activation_time_constant>
-					<!--time constant for ramping down of muscle activation-->
+					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.04</deactivation_time_constant>
-					<!--tendon strain at maximum isometric muscle force-->
-					<FmaxTendonStrain>0.033</FmaxTendonStrain>
-					<!--passive muscle strain at maximum isometric muscle force-->
-					<FmaxMuscleStrain>0.6</FmaxMuscleStrain>
-					<!--shape factor for Gaussian active muscle force-length relationship-->
-					<KshapeActive>0.5</KshapeActive>
-					<!--exponential shape factor for passive force-length relationship-->
-					<KshapePassive>4</KshapePassive>
-					<!--force-velocity shape factor-->
-					<Af>0.3</Af>
-					<!--maximum normalized lengthening force-->
-					<Flen>1.8</Flen>
+					<!--Activation lower bound.-->
+					<minimum_activation>0.01</minimum_activation>
+					<!--Active-force-length curve.-->
+					<ActiveForceLengthCurve>
+						<!--Minimum value of the active-force-length curve-->
+						<minimum_value>0</minimum_value>
+					</ActiveForceLengthCurve>
+					<!--Force-velocity curve.-->
+					<ForceVelocityCurve>
+						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
+						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
+						<!--Curve slope just before reaching concentric_slope_at_vmax-->
+						<concentric_slope_near_vmax>0.25</concentric_slope_near_vmax>
+						<!--Curve slope at isometric (normalized velocity of 0)-->
+						<isometric_slope>5</isometric_slope>
+						<!--Curve slope at the maximum normalized eccentric (lengthening) velocity (normalized velocity of 1)-->
+						<eccentric_slope_at_vmax>0</eccentric_slope_at_vmax>
+						<!--Curve slope just before reaching eccentric_slope_at_vmax-->
+						<eccentric_slope_near_vmax>0.15</eccentric_slope_near_vmax>
+						<!--Curve value at the maximum normalized eccentric contraction velocity-->
+						<max_eccentric_velocity_force_multiplier>1.4</max_eccentric_velocity_force_multiplier>
+					</ForceVelocityCurve>
+					<!--Passive-force-length curve.-->
+					<FiberForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</FiberForceLengthCurve>
+					<!--Tendon-force-length curve.-->
+					<TendonForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="rect_fem_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
@@ -1863,22 +1935,40 @@
 					<pennation_angle_at_optimal>0.08726646</pennation_angle_at_optimal>
 					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths/second-->
 					<max_contraction_velocity>10</max_contraction_velocity>
-					<!--time constant for ramping up muscle activation-->
+					<!--Activation time constant (in seconds).-->
 					<activation_time_constant>0.01</activation_time_constant>
-					<!--time constant for ramping down of muscle activation-->
+					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.04</deactivation_time_constant>
-					<!--tendon strain at maximum isometric muscle force-->
-					<FmaxTendonStrain>0.033</FmaxTendonStrain>
-					<!--passive muscle strain at maximum isometric muscle force-->
-					<FmaxMuscleStrain>0.6</FmaxMuscleStrain>
-					<!--shape factor for Gaussian active muscle force-length relationship-->
-					<KshapeActive>0.5</KshapeActive>
-					<!--exponential shape factor for passive force-length relationship-->
-					<KshapePassive>4</KshapePassive>
-					<!--force-velocity shape factor-->
-					<Af>0.3</Af>
-					<!--maximum normalized lengthening force-->
-					<Flen>1.8</Flen>
+					<!--Activation lower bound.-->
+					<minimum_activation>0.01</minimum_activation>
+					<!--Active-force-length curve.-->
+					<ActiveForceLengthCurve>
+						<!--Minimum value of the active-force-length curve-->
+						<minimum_value>0</minimum_value>
+					</ActiveForceLengthCurve>
+					<!--Force-velocity curve.-->
+					<ForceVelocityCurve>
+						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
+						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
+						<!--Curve slope just before reaching concentric_slope_at_vmax-->
+						<concentric_slope_near_vmax>0.25</concentric_slope_near_vmax>
+						<!--Curve slope at isometric (normalized velocity of 0)-->
+						<isometric_slope>5</isometric_slope>
+						<!--Curve slope at the maximum normalized eccentric (lengthening) velocity (normalized velocity of 1)-->
+						<eccentric_slope_at_vmax>0</eccentric_slope_at_vmax>
+						<!--Curve slope just before reaching eccentric_slope_at_vmax-->
+						<eccentric_slope_near_vmax>0.15</eccentric_slope_near_vmax>
+						<!--Curve value at the maximum normalized eccentric contraction velocity-->
+						<max_eccentric_velocity_force_multiplier>1.4</max_eccentric_velocity_force_multiplier>
+					</ForceVelocityCurve>
+					<!--Passive-force-length curve.-->
+					<FiberForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</FiberForceLengthCurve>
+					<!--Tendon-force-length curve.-->
+					<TendonForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="vasti_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
@@ -1983,22 +2073,40 @@
 					<pennation_angle_at_optimal>0.05235988</pennation_angle_at_optimal>
 					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths/second-->
 					<max_contraction_velocity>10</max_contraction_velocity>
-					<!--time constant for ramping up muscle activation-->
+					<!--Activation time constant (in seconds).-->
 					<activation_time_constant>0.01</activation_time_constant>
-					<!--time constant for ramping down of muscle activation-->
+					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.04</deactivation_time_constant>
-					<!--tendon strain at maximum isometric muscle force-->
-					<FmaxTendonStrain>0.033</FmaxTendonStrain>
-					<!--passive muscle strain at maximum isometric muscle force-->
-					<FmaxMuscleStrain>0.6</FmaxMuscleStrain>
-					<!--shape factor for Gaussian active muscle force-length relationship-->
-					<KshapeActive>0.5</KshapeActive>
-					<!--exponential shape factor for passive force-length relationship-->
-					<KshapePassive>4</KshapePassive>
-					<!--force-velocity shape factor-->
-					<Af>0.3</Af>
-					<!--maximum normalized lengthening force-->
-					<Flen>1.8</Flen>
+					<!--Activation lower bound.-->
+					<minimum_activation>0.01</minimum_activation>
+					<!--Active-force-length curve.-->
+					<ActiveForceLengthCurve>
+						<!--Minimum value of the active-force-length curve-->
+						<minimum_value>0</minimum_value>
+					</ActiveForceLengthCurve>
+					<!--Force-velocity curve.-->
+					<ForceVelocityCurve>
+						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
+						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
+						<!--Curve slope just before reaching concentric_slope_at_vmax-->
+						<concentric_slope_near_vmax>0.25</concentric_slope_near_vmax>
+						<!--Curve slope at isometric (normalized velocity of 0)-->
+						<isometric_slope>5</isometric_slope>
+						<!--Curve slope at the maximum normalized eccentric (lengthening) velocity (normalized velocity of 1)-->
+						<eccentric_slope_at_vmax>0</eccentric_slope_at_vmax>
+						<!--Curve slope just before reaching eccentric_slope_at_vmax-->
+						<eccentric_slope_near_vmax>0.15</eccentric_slope_near_vmax>
+						<!--Curve value at the maximum normalized eccentric contraction velocity-->
+						<max_eccentric_velocity_force_multiplier>1.4</max_eccentric_velocity_force_multiplier>
+					</ForceVelocityCurve>
+					<!--Passive-force-length curve.-->
+					<FiberForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</FiberForceLengthCurve>
+					<!--Tendon-force-length curve.-->
+					<TendonForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="gastroc_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
@@ -2063,22 +2171,40 @@
 					<pennation_angle_at_optimal>0.29670597</pennation_angle_at_optimal>
 					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths/second-->
 					<max_contraction_velocity>10</max_contraction_velocity>
-					<!--time constant for ramping up muscle activation-->
+					<!--Activation time constant (in seconds).-->
 					<activation_time_constant>0.01</activation_time_constant>
-					<!--time constant for ramping down of muscle activation-->
+					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.04</deactivation_time_constant>
-					<!--tendon strain at maximum isometric muscle force-->
-					<FmaxTendonStrain>0.033</FmaxTendonStrain>
-					<!--passive muscle strain at maximum isometric muscle force-->
-					<FmaxMuscleStrain>0.6</FmaxMuscleStrain>
-					<!--shape factor for Gaussian active muscle force-length relationship-->
-					<KshapeActive>0.5</KshapeActive>
-					<!--exponential shape factor for passive force-length relationship-->
-					<KshapePassive>4</KshapePassive>
-					<!--force-velocity shape factor-->
-					<Af>0.3</Af>
-					<!--maximum normalized lengthening force-->
-					<Flen>1.8</Flen>
+					<!--Activation lower bound.-->
+					<minimum_activation>0.01</minimum_activation>
+					<!--Active-force-length curve.-->
+					<ActiveForceLengthCurve>
+						<!--Minimum value of the active-force-length curve-->
+						<minimum_value>0</minimum_value>
+					</ActiveForceLengthCurve>
+					<!--Force-velocity curve.-->
+					<ForceVelocityCurve>
+						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
+						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
+						<!--Curve slope just before reaching concentric_slope_at_vmax-->
+						<concentric_slope_near_vmax>0.25</concentric_slope_near_vmax>
+						<!--Curve slope at isometric (normalized velocity of 0)-->
+						<isometric_slope>5</isometric_slope>
+						<!--Curve slope at the maximum normalized eccentric (lengthening) velocity (normalized velocity of 1)-->
+						<eccentric_slope_at_vmax>0</eccentric_slope_at_vmax>
+						<!--Curve slope just before reaching eccentric_slope_at_vmax-->
+						<eccentric_slope_near_vmax>0.15</eccentric_slope_near_vmax>
+						<!--Curve value at the maximum normalized eccentric contraction velocity-->
+						<max_eccentric_velocity_force_multiplier>1.4</max_eccentric_velocity_force_multiplier>
+					</ForceVelocityCurve>
+					<!--Passive-force-length curve.-->
+					<FiberForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</FiberForceLengthCurve>
+					<!--Tendon-force-length curve.-->
+					<TendonForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="soleus_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
@@ -2137,22 +2263,40 @@
 					<pennation_angle_at_optimal>0.43633231</pennation_angle_at_optimal>
 					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths/second-->
 					<max_contraction_velocity>10</max_contraction_velocity>
-					<!--time constant for ramping up muscle activation-->
+					<!--Activation time constant (in seconds).-->
 					<activation_time_constant>0.01</activation_time_constant>
-					<!--time constant for ramping down of muscle activation-->
+					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.04</deactivation_time_constant>
-					<!--tendon strain at maximum isometric muscle force-->
-					<FmaxTendonStrain>0.033</FmaxTendonStrain>
-					<!--passive muscle strain at maximum isometric muscle force-->
-					<FmaxMuscleStrain>0.6</FmaxMuscleStrain>
-					<!--shape factor for Gaussian active muscle force-length relationship-->
-					<KshapeActive>0.5</KshapeActive>
-					<!--exponential shape factor for passive force-length relationship-->
-					<KshapePassive>4</KshapePassive>
-					<!--force-velocity shape factor-->
-					<Af>0.3</Af>
-					<!--maximum normalized lengthening force-->
-					<Flen>1.8</Flen>
+					<!--Activation lower bound.-->
+					<minimum_activation>0.01</minimum_activation>
+					<!--Active-force-length curve.-->
+					<ActiveForceLengthCurve>
+						<!--Minimum value of the active-force-length curve-->
+						<minimum_value>0</minimum_value>
+					</ActiveForceLengthCurve>
+					<!--Force-velocity curve.-->
+					<ForceVelocityCurve>
+						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
+						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
+						<!--Curve slope just before reaching concentric_slope_at_vmax-->
+						<concentric_slope_near_vmax>0.25</concentric_slope_near_vmax>
+						<!--Curve slope at isometric (normalized velocity of 0)-->
+						<isometric_slope>5</isometric_slope>
+						<!--Curve slope at the maximum normalized eccentric (lengthening) velocity (normalized velocity of 1)-->
+						<eccentric_slope_at_vmax>0</eccentric_slope_at_vmax>
+						<!--Curve slope just before reaching eccentric_slope_at_vmax-->
+						<eccentric_slope_near_vmax>0.15</eccentric_slope_near_vmax>
+						<!--Curve value at the maximum normalized eccentric contraction velocity-->
+						<max_eccentric_velocity_force_multiplier>1.4</max_eccentric_velocity_force_multiplier>
+					</ForceVelocityCurve>
+					<!--Passive-force-length curve.-->
+					<FiberForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</FiberForceLengthCurve>
+					<!--Tendon-force-length curve.-->
+					<TendonForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="tib_ant_r">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
@@ -2215,22 +2359,40 @@
 					<pennation_angle_at_optimal>0.08726646</pennation_angle_at_optimal>
 					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths/second-->
 					<max_contraction_velocity>10</max_contraction_velocity>
-					<!--time constant for ramping up muscle activation-->
+					<!--Activation time constant (in seconds).-->
 					<activation_time_constant>0.01</activation_time_constant>
-					<!--time constant for ramping down of muscle activation-->
+					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.04</deactivation_time_constant>
-					<!--tendon strain at maximum isometric muscle force-->
-					<FmaxTendonStrain>0.033</FmaxTendonStrain>
-					<!--passive muscle strain at maximum isometric muscle force-->
-					<FmaxMuscleStrain>0.6</FmaxMuscleStrain>
-					<!--shape factor for Gaussian active muscle force-length relationship-->
-					<KshapeActive>0.5</KshapeActive>
-					<!--exponential shape factor for passive force-length relationship-->
-					<KshapePassive>4</KshapePassive>
-					<!--force-velocity shape factor-->
-					<Af>0.3</Af>
-					<!--maximum normalized lengthening force-->
-					<Flen>1.8</Flen>
+					<!--Activation lower bound.-->
+					<minimum_activation>0.01</minimum_activation>
+					<!--Active-force-length curve.-->
+					<ActiveForceLengthCurve>
+						<!--Minimum value of the active-force-length curve-->
+						<minimum_value>0</minimum_value>
+					</ActiveForceLengthCurve>
+					<!--Force-velocity curve.-->
+					<ForceVelocityCurve>
+						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
+						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
+						<!--Curve slope just before reaching concentric_slope_at_vmax-->
+						<concentric_slope_near_vmax>0.25</concentric_slope_near_vmax>
+						<!--Curve slope at isometric (normalized velocity of 0)-->
+						<isometric_slope>5</isometric_slope>
+						<!--Curve slope at the maximum normalized eccentric (lengthening) velocity (normalized velocity of 1)-->
+						<eccentric_slope_at_vmax>0</eccentric_slope_at_vmax>
+						<!--Curve slope just before reaching eccentric_slope_at_vmax-->
+						<eccentric_slope_near_vmax>0.15</eccentric_slope_near_vmax>
+						<!--Curve value at the maximum normalized eccentric contraction velocity-->
+						<max_eccentric_velocity_force_multiplier>1.4</max_eccentric_velocity_force_multiplier>
+					</ForceVelocityCurve>
+					<!--Passive-force-length curve.-->
+					<FiberForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</FiberForceLengthCurve>
+					<!--Tendon-force-length curve.-->
+					<TendonForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="hamstrings_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
@@ -2293,22 +2455,40 @@
 					<pennation_angle_at_optimal>0</pennation_angle_at_optimal>
 					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths/second-->
 					<max_contraction_velocity>10</max_contraction_velocity>
-					<!--time constant for ramping up muscle activation-->
+					<!--Activation time constant (in seconds).-->
 					<activation_time_constant>0.01</activation_time_constant>
-					<!--time constant for ramping down of muscle activation-->
+					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.04</deactivation_time_constant>
-					<!--tendon strain at maximum isometric muscle force-->
-					<FmaxTendonStrain>0.033</FmaxTendonStrain>
-					<!--passive muscle strain at maximum isometric muscle force-->
-					<FmaxMuscleStrain>0.6</FmaxMuscleStrain>
-					<!--shape factor for Gaussian active muscle force-length relationship-->
-					<KshapeActive>0.5</KshapeActive>
-					<!--exponential shape factor for passive force-length relationship-->
-					<KshapePassive>4</KshapePassive>
-					<!--force-velocity shape factor-->
-					<Af>0.3</Af>
-					<!--maximum normalized lengthening force-->
-					<Flen>1.8</Flen>
+					<!--Activation lower bound.-->
+					<minimum_activation>0.01</minimum_activation>
+					<!--Active-force-length curve.-->
+					<ActiveForceLengthCurve>
+						<!--Minimum value of the active-force-length curve-->
+						<minimum_value>0</minimum_value>
+					</ActiveForceLengthCurve>
+					<!--Force-velocity curve.-->
+					<ForceVelocityCurve>
+						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
+						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
+						<!--Curve slope just before reaching concentric_slope_at_vmax-->
+						<concentric_slope_near_vmax>0.25</concentric_slope_near_vmax>
+						<!--Curve slope at isometric (normalized velocity of 0)-->
+						<isometric_slope>5</isometric_slope>
+						<!--Curve slope at the maximum normalized eccentric (lengthening) velocity (normalized velocity of 1)-->
+						<eccentric_slope_at_vmax>0</eccentric_slope_at_vmax>
+						<!--Curve slope just before reaching eccentric_slope_at_vmax-->
+						<eccentric_slope_near_vmax>0.15</eccentric_slope_near_vmax>
+						<!--Curve value at the maximum normalized eccentric contraction velocity-->
+						<max_eccentric_velocity_force_multiplier>1.4</max_eccentric_velocity_force_multiplier>
+					</ForceVelocityCurve>
+					<!--Passive-force-length curve.-->
+					<FiberForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</FiberForceLengthCurve>
+					<!--Tendon-force-length curve.-->
+					<TendonForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="bifemsh_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
@@ -2371,22 +2551,40 @@
 					<pennation_angle_at_optimal>0.40142573</pennation_angle_at_optimal>
 					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths/second-->
 					<max_contraction_velocity>10</max_contraction_velocity>
-					<!--time constant for ramping up muscle activation-->
+					<!--Activation time constant (in seconds).-->
 					<activation_time_constant>0.01</activation_time_constant>
-					<!--time constant for ramping down of muscle activation-->
+					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.04</deactivation_time_constant>
-					<!--tendon strain at maximum isometric muscle force-->
-					<FmaxTendonStrain>0.033</FmaxTendonStrain>
-					<!--passive muscle strain at maximum isometric muscle force-->
-					<FmaxMuscleStrain>0.6</FmaxMuscleStrain>
-					<!--shape factor for Gaussian active muscle force-length relationship-->
-					<KshapeActive>0.5</KshapeActive>
-					<!--exponential shape factor for passive force-length relationship-->
-					<KshapePassive>4</KshapePassive>
-					<!--force-velocity shape factor-->
-					<Af>0.3</Af>
-					<!--maximum normalized lengthening force-->
-					<Flen>1.8</Flen>
+					<!--Activation lower bound.-->
+					<minimum_activation>0.01</minimum_activation>
+					<!--Active-force-length curve.-->
+					<ActiveForceLengthCurve>
+						<!--Minimum value of the active-force-length curve-->
+						<minimum_value>0</minimum_value>
+					</ActiveForceLengthCurve>
+					<!--Force-velocity curve.-->
+					<ForceVelocityCurve>
+						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
+						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
+						<!--Curve slope just before reaching concentric_slope_at_vmax-->
+						<concentric_slope_near_vmax>0.25</concentric_slope_near_vmax>
+						<!--Curve slope at isometric (normalized velocity of 0)-->
+						<isometric_slope>5</isometric_slope>
+						<!--Curve slope at the maximum normalized eccentric (lengthening) velocity (normalized velocity of 1)-->
+						<eccentric_slope_at_vmax>0</eccentric_slope_at_vmax>
+						<!--Curve slope just before reaching eccentric_slope_at_vmax-->
+						<eccentric_slope_near_vmax>0.15</eccentric_slope_near_vmax>
+						<!--Curve value at the maximum normalized eccentric contraction velocity-->
+						<max_eccentric_velocity_force_multiplier>1.4</max_eccentric_velocity_force_multiplier>
+					</ForceVelocityCurve>
+					<!--Passive-force-length curve.-->
+					<FiberForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</FiberForceLengthCurve>
+					<!--Tendon-force-length curve.-->
+					<TendonForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="glut_max_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
@@ -2453,22 +2651,40 @@
 					<pennation_angle_at_optimal>0</pennation_angle_at_optimal>
 					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths/second-->
 					<max_contraction_velocity>10</max_contraction_velocity>
-					<!--time constant for ramping up muscle activation-->
+					<!--Activation time constant (in seconds).-->
 					<activation_time_constant>0.01</activation_time_constant>
-					<!--time constant for ramping down of muscle activation-->
+					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.04</deactivation_time_constant>
-					<!--tendon strain at maximum isometric muscle force-->
-					<FmaxTendonStrain>0.033</FmaxTendonStrain>
-					<!--passive muscle strain at maximum isometric muscle force-->
-					<FmaxMuscleStrain>0.6</FmaxMuscleStrain>
-					<!--shape factor for Gaussian active muscle force-length relationship-->
-					<KshapeActive>0.5</KshapeActive>
-					<!--exponential shape factor for passive force-length relationship-->
-					<KshapePassive>4</KshapePassive>
-					<!--force-velocity shape factor-->
-					<Af>0.3</Af>
-					<!--maximum normalized lengthening force-->
-					<Flen>1.8</Flen>
+					<!--Activation lower bound.-->
+					<minimum_activation>0.01</minimum_activation>
+					<!--Active-force-length curve.-->
+					<ActiveForceLengthCurve>
+						<!--Minimum value of the active-force-length curve-->
+						<minimum_value>0</minimum_value>
+					</ActiveForceLengthCurve>
+					<!--Force-velocity curve.-->
+					<ForceVelocityCurve>
+						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
+						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
+						<!--Curve slope just before reaching concentric_slope_at_vmax-->
+						<concentric_slope_near_vmax>0.25</concentric_slope_near_vmax>
+						<!--Curve slope at isometric (normalized velocity of 0)-->
+						<isometric_slope>5</isometric_slope>
+						<!--Curve slope at the maximum normalized eccentric (lengthening) velocity (normalized velocity of 1)-->
+						<eccentric_slope_at_vmax>0</eccentric_slope_at_vmax>
+						<!--Curve slope just before reaching eccentric_slope_at_vmax-->
+						<eccentric_slope_near_vmax>0.15</eccentric_slope_near_vmax>
+						<!--Curve value at the maximum normalized eccentric contraction velocity-->
+						<max_eccentric_velocity_force_multiplier>1.4</max_eccentric_velocity_force_multiplier>
+					</ForceVelocityCurve>
+					<!--Passive-force-length curve.-->
+					<FiberForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</FiberForceLengthCurve>
+					<!--Tendon-force-length curve.-->
+					<TendonForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="iliopsoas_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
@@ -2541,22 +2757,40 @@
 					<pennation_angle_at_optimal>0.13962634</pennation_angle_at_optimal>
 					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths/second-->
 					<max_contraction_velocity>10</max_contraction_velocity>
-					<!--time constant for ramping up muscle activation-->
+					<!--Activation time constant (in seconds).-->
 					<activation_time_constant>0.01</activation_time_constant>
-					<!--time constant for ramping down of muscle activation-->
+					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.04</deactivation_time_constant>
-					<!--tendon strain at maximum isometric muscle force-->
-					<FmaxTendonStrain>0.033</FmaxTendonStrain>
-					<!--passive muscle strain at maximum isometric muscle force-->
-					<FmaxMuscleStrain>0.6</FmaxMuscleStrain>
-					<!--shape factor for Gaussian active muscle force-length relationship-->
-					<KshapeActive>0.5</KshapeActive>
-					<!--exponential shape factor for passive force-length relationship-->
-					<KshapePassive>4</KshapePassive>
-					<!--force-velocity shape factor-->
-					<Af>0.3</Af>
-					<!--maximum normalized lengthening force-->
-					<Flen>1.8</Flen>
+					<!--Activation lower bound.-->
+					<minimum_activation>0.01</minimum_activation>
+					<!--Active-force-length curve.-->
+					<ActiveForceLengthCurve>
+						<!--Minimum value of the active-force-length curve-->
+						<minimum_value>0</minimum_value>
+					</ActiveForceLengthCurve>
+					<!--Force-velocity curve.-->
+					<ForceVelocityCurve>
+						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
+						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
+						<!--Curve slope just before reaching concentric_slope_at_vmax-->
+						<concentric_slope_near_vmax>0.25</concentric_slope_near_vmax>
+						<!--Curve slope at isometric (normalized velocity of 0)-->
+						<isometric_slope>5</isometric_slope>
+						<!--Curve slope at the maximum normalized eccentric (lengthening) velocity (normalized velocity of 1)-->
+						<eccentric_slope_at_vmax>0</eccentric_slope_at_vmax>
+						<!--Curve slope just before reaching eccentric_slope_at_vmax-->
+						<eccentric_slope_near_vmax>0.15</eccentric_slope_near_vmax>
+						<!--Curve value at the maximum normalized eccentric contraction velocity-->
+						<max_eccentric_velocity_force_multiplier>1.4</max_eccentric_velocity_force_multiplier>
+					</ForceVelocityCurve>
+					<!--Passive-force-length curve.-->
+					<FiberForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</FiberForceLengthCurve>
+					<!--Tendon-force-length curve.-->
+					<TendonForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="rect_fem_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
@@ -2657,22 +2891,40 @@
 					<pennation_angle_at_optimal>0.08726646</pennation_angle_at_optimal>
 					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths/second-->
 					<max_contraction_velocity>10</max_contraction_velocity>
-					<!--time constant for ramping up muscle activation-->
+					<!--Activation time constant (in seconds).-->
 					<activation_time_constant>0.01</activation_time_constant>
-					<!--time constant for ramping down of muscle activation-->
+					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.04</deactivation_time_constant>
-					<!--tendon strain at maximum isometric muscle force-->
-					<FmaxTendonStrain>0.033</FmaxTendonStrain>
-					<!--passive muscle strain at maximum isometric muscle force-->
-					<FmaxMuscleStrain>0.6</FmaxMuscleStrain>
-					<!--shape factor for Gaussian active muscle force-length relationship-->
-					<KshapeActive>0.5</KshapeActive>
-					<!--exponential shape factor for passive force-length relationship-->
-					<KshapePassive>4</KshapePassive>
-					<!--force-velocity shape factor-->
-					<Af>0.3</Af>
-					<!--maximum normalized lengthening force-->
-					<Flen>1.8</Flen>
+					<!--Activation lower bound.-->
+					<minimum_activation>0.01</minimum_activation>
+					<!--Active-force-length curve.-->
+					<ActiveForceLengthCurve>
+						<!--Minimum value of the active-force-length curve-->
+						<minimum_value>0</minimum_value>
+					</ActiveForceLengthCurve>
+					<!--Force-velocity curve.-->
+					<ForceVelocityCurve>
+						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
+						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
+						<!--Curve slope just before reaching concentric_slope_at_vmax-->
+						<concentric_slope_near_vmax>0.25</concentric_slope_near_vmax>
+						<!--Curve slope at isometric (normalized velocity of 0)-->
+						<isometric_slope>5</isometric_slope>
+						<!--Curve slope at the maximum normalized eccentric (lengthening) velocity (normalized velocity of 1)-->
+						<eccentric_slope_at_vmax>0</eccentric_slope_at_vmax>
+						<!--Curve slope just before reaching eccentric_slope_at_vmax-->
+						<eccentric_slope_near_vmax>0.15</eccentric_slope_near_vmax>
+						<!--Curve value at the maximum normalized eccentric contraction velocity-->
+						<max_eccentric_velocity_force_multiplier>1.4</max_eccentric_velocity_force_multiplier>
+					</ForceVelocityCurve>
+					<!--Passive-force-length curve.-->
+					<FiberForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</FiberForceLengthCurve>
+					<!--Tendon-force-length curve.-->
+					<TendonForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="vasti_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
@@ -2777,22 +3029,40 @@
 					<pennation_angle_at_optimal>0.05235988</pennation_angle_at_optimal>
 					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths/second-->
 					<max_contraction_velocity>10</max_contraction_velocity>
-					<!--time constant for ramping up muscle activation-->
+					<!--Activation time constant (in seconds).-->
 					<activation_time_constant>0.01</activation_time_constant>
-					<!--time constant for ramping down of muscle activation-->
+					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.04</deactivation_time_constant>
-					<!--tendon strain at maximum isometric muscle force-->
-					<FmaxTendonStrain>0.033</FmaxTendonStrain>
-					<!--passive muscle strain at maximum isometric muscle force-->
-					<FmaxMuscleStrain>0.6</FmaxMuscleStrain>
-					<!--shape factor for Gaussian active muscle force-length relationship-->
-					<KshapeActive>0.5</KshapeActive>
-					<!--exponential shape factor for passive force-length relationship-->
-					<KshapePassive>4</KshapePassive>
-					<!--force-velocity shape factor-->
-					<Af>0.3</Af>
-					<!--maximum normalized lengthening force-->
-					<Flen>1.8</Flen>
+					<!--Activation lower bound.-->
+					<minimum_activation>0.01</minimum_activation>
+					<!--Active-force-length curve.-->
+					<ActiveForceLengthCurve>
+						<!--Minimum value of the active-force-length curve-->
+						<minimum_value>0</minimum_value>
+					</ActiveForceLengthCurve>
+					<!--Force-velocity curve.-->
+					<ForceVelocityCurve>
+						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
+						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
+						<!--Curve slope just before reaching concentric_slope_at_vmax-->
+						<concentric_slope_near_vmax>0.25</concentric_slope_near_vmax>
+						<!--Curve slope at isometric (normalized velocity of 0)-->
+						<isometric_slope>5</isometric_slope>
+						<!--Curve slope at the maximum normalized eccentric (lengthening) velocity (normalized velocity of 1)-->
+						<eccentric_slope_at_vmax>0</eccentric_slope_at_vmax>
+						<!--Curve slope just before reaching eccentric_slope_at_vmax-->
+						<eccentric_slope_near_vmax>0.15</eccentric_slope_near_vmax>
+						<!--Curve value at the maximum normalized eccentric contraction velocity-->
+						<max_eccentric_velocity_force_multiplier>1.4</max_eccentric_velocity_force_multiplier>
+					</ForceVelocityCurve>
+					<!--Passive-force-length curve.-->
+					<FiberForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</FiberForceLengthCurve>
+					<!--Tendon-force-length curve.-->
+					<TendonForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="gastroc_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
@@ -2857,22 +3127,40 @@
 					<pennation_angle_at_optimal>0.29670597</pennation_angle_at_optimal>
 					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths/second-->
 					<max_contraction_velocity>10</max_contraction_velocity>
-					<!--time constant for ramping up muscle activation-->
+					<!--Activation time constant (in seconds).-->
 					<activation_time_constant>0.01</activation_time_constant>
-					<!--time constant for ramping down of muscle activation-->
+					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.04</deactivation_time_constant>
-					<!--tendon strain at maximum isometric muscle force-->
-					<FmaxTendonStrain>0.033</FmaxTendonStrain>
-					<!--passive muscle strain at maximum isometric muscle force-->
-					<FmaxMuscleStrain>0.6</FmaxMuscleStrain>
-					<!--shape factor for Gaussian active muscle force-length relationship-->
-					<KshapeActive>0.5</KshapeActive>
-					<!--exponential shape factor for passive force-length relationship-->
-					<KshapePassive>4</KshapePassive>
-					<!--force-velocity shape factor-->
-					<Af>0.3</Af>
-					<!--maximum normalized lengthening force-->
-					<Flen>1.8</Flen>
+					<!--Activation lower bound.-->
+					<minimum_activation>0.01</minimum_activation>
+					<!--Active-force-length curve.-->
+					<ActiveForceLengthCurve>
+						<!--Minimum value of the active-force-length curve-->
+						<minimum_value>0</minimum_value>
+					</ActiveForceLengthCurve>
+					<!--Force-velocity curve.-->
+					<ForceVelocityCurve>
+						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
+						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
+						<!--Curve slope just before reaching concentric_slope_at_vmax-->
+						<concentric_slope_near_vmax>0.25</concentric_slope_near_vmax>
+						<!--Curve slope at isometric (normalized velocity of 0)-->
+						<isometric_slope>5</isometric_slope>
+						<!--Curve slope at the maximum normalized eccentric (lengthening) velocity (normalized velocity of 1)-->
+						<eccentric_slope_at_vmax>0</eccentric_slope_at_vmax>
+						<!--Curve slope just before reaching eccentric_slope_at_vmax-->
+						<eccentric_slope_near_vmax>0.15</eccentric_slope_near_vmax>
+						<!--Curve value at the maximum normalized eccentric contraction velocity-->
+						<max_eccentric_velocity_force_multiplier>1.4</max_eccentric_velocity_force_multiplier>
+					</ForceVelocityCurve>
+					<!--Passive-force-length curve.-->
+					<FiberForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</FiberForceLengthCurve>
+					<!--Tendon-force-length curve.-->
+					<TendonForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="soleus_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
@@ -2931,22 +3219,40 @@
 					<pennation_angle_at_optimal>0.43633231</pennation_angle_at_optimal>
 					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths/second-->
 					<max_contraction_velocity>10</max_contraction_velocity>
-					<!--time constant for ramping up muscle activation-->
+					<!--Activation time constant (in seconds).-->
 					<activation_time_constant>0.01</activation_time_constant>
-					<!--time constant for ramping down of muscle activation-->
+					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.04</deactivation_time_constant>
-					<!--tendon strain at maximum isometric muscle force-->
-					<FmaxTendonStrain>0.033</FmaxTendonStrain>
-					<!--passive muscle strain at maximum isometric muscle force-->
-					<FmaxMuscleStrain>0.6</FmaxMuscleStrain>
-					<!--shape factor for Gaussian active muscle force-length relationship-->
-					<KshapeActive>0.5</KshapeActive>
-					<!--exponential shape factor for passive force-length relationship-->
-					<KshapePassive>4</KshapePassive>
-					<!--force-velocity shape factor-->
-					<Af>0.3</Af>
-					<!--maximum normalized lengthening force-->
-					<Flen>1.8</Flen>
+					<!--Activation lower bound.-->
+					<minimum_activation>0.01</minimum_activation>
+					<!--Active-force-length curve.-->
+					<ActiveForceLengthCurve>
+						<!--Minimum value of the active-force-length curve-->
+						<minimum_value>0</minimum_value>
+					</ActiveForceLengthCurve>
+					<!--Force-velocity curve.-->
+					<ForceVelocityCurve>
+						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
+						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
+						<!--Curve slope just before reaching concentric_slope_at_vmax-->
+						<concentric_slope_near_vmax>0.25</concentric_slope_near_vmax>
+						<!--Curve slope at isometric (normalized velocity of 0)-->
+						<isometric_slope>5</isometric_slope>
+						<!--Curve slope at the maximum normalized eccentric (lengthening) velocity (normalized velocity of 1)-->
+						<eccentric_slope_at_vmax>0</eccentric_slope_at_vmax>
+						<!--Curve slope just before reaching eccentric_slope_at_vmax-->
+						<eccentric_slope_near_vmax>0.15</eccentric_slope_near_vmax>
+						<!--Curve value at the maximum normalized eccentric contraction velocity-->
+						<max_eccentric_velocity_force_multiplier>1.4</max_eccentric_velocity_force_multiplier>
+					</ForceVelocityCurve>
+					<!--Passive-force-length curve.-->
+					<FiberForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</FiberForceLengthCurve>
+					<!--Tendon-force-length curve.-->
+					<TendonForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
 				<Millard2012EquilibriumMuscle name="tib_ant_l">
 					<!--Flag indicating whether the force is disabled or not. Disabled means that the force is not active in subsequent dynamics realizations.-->
@@ -3009,22 +3315,40 @@
 					<pennation_angle_at_optimal>0.08726646</pennation_angle_at_optimal>
 					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths/second-->
 					<max_contraction_velocity>10</max_contraction_velocity>
-					<!--time constant for ramping up muscle activation-->
+					<!--Activation time constant (in seconds).-->
 					<activation_time_constant>0.01</activation_time_constant>
-					<!--time constant for ramping down of muscle activation-->
+					<!--Deactivation time constant (in seconds).-->
 					<deactivation_time_constant>0.04</deactivation_time_constant>
-					<!--tendon strain at maximum isometric muscle force-->
-					<FmaxTendonStrain>0.033</FmaxTendonStrain>
-					<!--passive muscle strain at maximum isometric muscle force-->
-					<FmaxMuscleStrain>0.6</FmaxMuscleStrain>
-					<!--shape factor for Gaussian active muscle force-length relationship-->
-					<KshapeActive>0.5</KshapeActive>
-					<!--exponential shape factor for passive force-length relationship-->
-					<KshapePassive>4</KshapePassive>
-					<!--force-velocity shape factor-->
-					<Af>0.3</Af>
-					<!--maximum normalized lengthening force-->
-					<Flen>1.8</Flen>
+					<!--Activation lower bound.-->
+					<minimum_activation>0.01</minimum_activation>
+					<!--Active-force-length curve.-->
+					<ActiveForceLengthCurve>
+						<!--Minimum value of the active-force-length curve-->
+						<minimum_value>0</minimum_value>
+					</ActiveForceLengthCurve>
+					<!--Force-velocity curve.-->
+					<ForceVelocityCurve>
+						<!--Curve slope at the maximum normalized concentric (shortening) velocity (normalized velocity of -1)-->
+						<concentric_slope_at_vmax>0</concentric_slope_at_vmax>
+						<!--Curve slope just before reaching concentric_slope_at_vmax-->
+						<concentric_slope_near_vmax>0.25</concentric_slope_near_vmax>
+						<!--Curve slope at isometric (normalized velocity of 0)-->
+						<isometric_slope>5</isometric_slope>
+						<!--Curve slope at the maximum normalized eccentric (lengthening) velocity (normalized velocity of 1)-->
+						<eccentric_slope_at_vmax>0</eccentric_slope_at_vmax>
+						<!--Curve slope just before reaching eccentric_slope_at_vmax-->
+						<eccentric_slope_near_vmax>0.15</eccentric_slope_near_vmax>
+						<!--Curve value at the maximum normalized eccentric contraction velocity-->
+						<max_eccentric_velocity_force_multiplier>1.4</max_eccentric_velocity_force_multiplier>
+					</ForceVelocityCurve>
+					<!--Passive-force-length curve.-->
+					<FiberForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</FiberForceLengthCurve>
+					<!--Tendon-force-length curve.-->
+					<TendonForceLengthCurve>
+						<!--All properties of this object have their default values.-->
+					</TendonForceLengthCurve>
 				</Millard2012EquilibriumMuscle>
 			</objects>
 			<groups />

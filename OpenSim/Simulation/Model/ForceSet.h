@@ -69,6 +69,13 @@ public:
     /** Use Super's constructors. @see ModelComponentSet */
     using Super::Super;
 
+    ForceSet();
+    ForceSet(const ForceSet&);
+    ForceSet(ForceSet&&);
+    ForceSet& operator=(ForceSet&&);
+    ForceSet& operator=(const ForceSet&);
+    ~ForceSet() override;
+
 private:
     void updateActuators();
     void updateMuscles();

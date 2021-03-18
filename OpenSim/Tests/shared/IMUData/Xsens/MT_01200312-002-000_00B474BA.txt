@@ -1,0 +1,18 @@
+// General information: 
+//  MT Manager version: 2020.0.2 
+//  XDA version: 2020.0.2 build 5355 rev 106296 built on 2020-10-15
+// Device information: 
+//  DeviceId: 00B474BA
+//  ProductCode: MTW2-3A7G6
+//  Firmware Version: 4.4.0
+//  Hardware Version: 2.0.0
+// Device settings: 
+//  Filter Profile: human(46.1)
+//  Option Flags: Orientation Smoother Disabled, Position/Velocity Smoother Disabled, Continuous Zero Rotation Update Disabled, AHS Disabled, ICC Disabled
+// Coordinate system: ENU
+PacketCounter	SampleTimeFine	Acc_X	Acc_Y	Acc_Z	Mat[1][1]	Mat[2][1]	Mat[3][1]	Mat[1][2]	Mat[2][2]	Mat[3][2]	Mat[1][3]	Mat[2][3]	Mat[3][3]
+01330		9.141516	0.467397	-3.447297	-0.305623	-0.181722	0.934651	-0.398513	0.915918	0.047770	-0.864744	-0.357870	-0.352344
+01331		9.166468	0.451719	-3.420457	-0.306267	-0.173723	0.935960	-0.382529	0.922792	0.046107	-0.871707	-0.343911	-0.349075
+01332		9.190893	0.459920	-3.401340	-0.306011	-0.178037	0.935233	-0.390937	0.919213	0.047071	-0.868058	-0.351213	-0.350891
+01333		9.257360	0.401316	-3.517000	-0.306266	-0.178264	0.935106	-0.390952	0.919201	0.047187	-0.867962	-0.351130	-0.351213
+01334		9.231664	0.401914	-3.519140	-0.306564	-0.178480	0.934967	-0.391115	0.919130	0.047214	-0.867783	-0.351206	-0.351579
