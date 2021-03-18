@@ -21,7 +21,7 @@ using namespace SimTK;
 %include "java_preliminaries.i";
 %include "arrays_java.i";
 %import <java_common.i>
-
+%import <java_simulation.i>
 //%include "java_common.i";
 
 %include <Bindings/jam.i>
