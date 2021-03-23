@@ -92,6 +92,7 @@ add_custom_command(
     DEPENDS ${SWIG_JAVA_ACTUATORS_CXX_FILE}
             ${SWIG_JAVA_EXAMPLECOMPONENTS_CXX_FILE}
             ${SWIG_JAVA_MOCO_CXX_FILE}
+            ${SWIG_JAVA_JAM_CXX_FILE}
     COMMAND ${CMAKE_COMMAND} -E remove ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}/*
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${CMAKE_CURRENT_BINARY_DIR}/OpenSimJNI/src/simbody

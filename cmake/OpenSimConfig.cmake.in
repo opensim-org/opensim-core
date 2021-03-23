@@ -67,7 +67,7 @@ include("@PACKAGE_OPENSIM_INSTALL_CMAKEDIR@/@CMAKE_PROJECT_NAME@Targets.cmake")
 
 # The osimTools target uses all the other targets.
 # This makes a distinction between release and debug libraries.
-list(APPEND @CMAKE_PROJECT_NAME@_LIBRARIES osimTools osimExampleComponents osimMoco)
+list(APPEND @CMAKE_PROJECT_NAME@_LIBRARIES osimTools osimExampleComponents osimMoco osimJAM)
 
 check_required_components(OpenSim)
 
