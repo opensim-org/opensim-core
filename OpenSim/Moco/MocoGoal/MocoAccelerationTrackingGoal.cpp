@@ -1,7 +1,7 @@
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoAccelerationTrackingGoal.cpp                             *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2019 Stanford University and the Authors                     *
+ * Copyright (c) 2021 Stanford University and the Authors                     *
  *                                                                            *
  * Author(s): Nicholas Bianco                                                 *
  *                                                                            *
@@ -75,8 +75,7 @@ void MocoAccelerationTrackingGoal::initializeOnModelImpl(
 
     // Cache the model frames and acceleration weights based on the order of the
     // acceleration table.
-    for (int i = 0; i < (int)m_frame_paths.size(); ++i) {
-        const auto& path = m_frame_paths[i];
+    for (const auto& path : m_frame_paths) {
         const auto& frame = model.getComponent<Frame>(path);
         m_model_frames.emplace_back(&frame);
 
@@ -108,7 +107,7 @@ void MocoAccelerationTrackingGoal::calcIntegrandImpl(
         auto acceleration_model =
                 m_model_frames[iframe]->getLinearAccelerationInGround(state);
 
-        // Compute acceleration error.
+        // Spline the acceleration reference data.
         for (int ia = 0; ia < acceleration_ref.size(); ++ia) {
             acceleration_ref[ia] =
                     m_ref_splines[3*iframe + ia].calcValue(timeVec);

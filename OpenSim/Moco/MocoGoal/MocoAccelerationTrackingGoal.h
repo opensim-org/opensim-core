@@ -3,7 +3,7 @@
 /* -------------------------------------------------------------------------- *
  * OpenSim: MocoAccelerationTrackingGoal.h                                    *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2020 Stanford University and the Authors                     *
+ * Copyright (c) 2021 Stanford University and the Authors                     *
  *                                                                            *
  * Author(s): Nicholas Bianco                                                 *
  *                                                                            *
@@ -33,17 +33,26 @@ and a reference acceleration value, summed over the frames for which a
 reference is provided, and integrated over the phase. The reference is
 a trajectory of SimTK::Vec3%s representing the acceleration reference data.
 You must provide either a file name to a STO or CSV file (or other file
-types for which there is a FileAdapter) or a TimeSeriesTableVec3 directly.
+types for which there is a FileAdapter) using setAccelerationReferenceFile() or
+a TimeSeriesTableVec3 directly using setAccelerationReference(). The model frames
+that track the acceleration reference data, or "tracking" frames, are specified
+using setFramePaths().
+
+### Default usage
 
 By default, errors for this cost are computed assuming that the provided
 reference acceleration data is the derivative of a position vector with respect
-to the ground frame and expressed in the ground frame. If using this cost for
-tracking acceleration signals from an inertial measurement unit (IMU), you must
-subject the gravity vector from the model accelerations and express them in the
-tracking frames using setGravityOffset() and
+to the ground frame and expressed in the ground frame.
+
+### Tracking inertial measurement unit (IMU) signals
+
+If using this cost for tracking acceleration signals from an inertial measurement
+unit (IMU), you must subtract the gravity vector from the model accelerations and
+express them in the tracking frames using setGravityOffset() and
 setExpressAccelerationsInTrackingFrames(). In addition, the tracking frames for
-each IMU must be in the same orientation and placement in the model as in your
-experiment.
+each IMU must be in the same location and orientation in the model as in your
+experiment. Therefore, it is recommended to add new frames to your model that
+represent the experimental IMU sensors when using these settings.
 
 This cost requires realization to SimTK::Stage::Acceleration.
 
@@ -146,14 +155,14 @@ private:
             "data to track. Column labels should be paths to frames in the "
             "model, e.g. '/bodyset/torso'.");
     OpenSim_DECLARE_LIST_PROPERTY(frame_paths, std::string,
-            "The frames in the model that this cost term will track. "
-            "The names set here must correspond to Components that "
-            "derive from class Frame.");
+            "The frames in the model (i.e., tracking frames) that this cost "
+            "term will track. The names set here must correspond to Components "
+            "that derive from class Frame.");
     OpenSim_DECLARE_PROPERTY(acceleration_weights, MocoWeightSet,
             "Set of weight objects to weight the tracking of "
             "individual frames' accelerations in the cost.");
     OpenSim_DECLARE_PROPERTY(gravity_offset, bool,
-            "Subtract the model's gravity vector from the model-generated "
+            "Subtract the model's gravity vector from the model tracking frame "
             "accelerations. This offset is performed while the model "
             "accelerations are expressed in the ground frame, before the "
             "accelerations are expressed in the tracking frames when the "
