@@ -177,7 +177,7 @@ level of smoothing can be controlled by the `velocity_smoothing`,
 
 Muscles to be included when computing the total metabolic rate should be
 specified using one of the three `addMuscle()` function overloads. See the
-properties of Bhargava2004SmoothedMuscleMetabolics_MuscleParameters() for the
+properties of `Bhargava2004SmoothedMuscleMetabolics_MuscleParameters()` for the
 default parameter values used when not specified via the second or third
 `addMuscle()` overload.
 
@@ -188,12 +188,12 @@ metabolics->setName("metabolics");
 metabolics->set_use_smoothing(true);
 
 // The simplest way to add the muscle to the metabolics model: just provide the
-name of the muscle and a reference to Muscle component.
+// name of the muscle and a reference to Muscle component.
 metabolics->addMuscle("soleus_r", model.getComponent<Muscle>("soleus_r"));
 
 // Provide the ratio of slow to fast twitch fibers and the specific tension of
-muscle when adding it to the metabolics model. The values shown are also the 
-default values.
+// muscle when adding it to the metabolics model. The values shown are also the 
+// default values.
 double ratio_slow_twitch_fibers = 0.5;
 double specific_tension = 0.25e6;
 metabolics->addMuscle("gastroc_r", model.getComponent<Muscle>("gastroc_r"), 

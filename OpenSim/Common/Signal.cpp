@@ -441,9 +441,41 @@ Pad(int aPad,int aN,const double aSignal[])
 void Signal::
 Pad(int aPad,Array<double> &rSignal)
 {
-    std::vector<double> padded = Pad(aPad, rSignal.getSize(), rSignal.get());
-    rSignal.setSize((int)padded.size());
-    std::copy_n(padded.data(), padded.size(), rSignal.get());
+    if(aPad<=0) return;
+
+    // COMPUTE NEW SIZE
+    int size = rSignal.getSize();
+    int newSize = size + 2*aPad;
+
+    // HANDLE PAD GREATER THAN SIZE
+    if(aPad>=size) {
+        int pad = size - 1;
+        while(size<newSize) {
+            Pad(pad,rSignal);
+            size = rSignal.getSize();
+            pad = (newSize - size) / 2;
+            if(pad>=size) pad = size - 1;
+        }
+        return;
+    }
+
+    // ALLOCATE
+    Array<double> s(0.0,newSize);
+
+    // PREPEND
+    int i,j;
+    for(i=0,j=aPad;i<aPad;i++,j--)  s[i] = rSignal[j];
+    for(i=0;i<aPad;i++)  s[i] = 2.0*rSignal[0] - s[i];
+
+    // SIGNAL
+    for(i=aPad,j=0;i<aPad+size;i++,j++)  s[i] = rSignal[j];
+
+    // APPEND
+    for(i=aPad+size,j=size-2;i<aPad+aPad+size;i++,j--)  s[i] = rSignal[j];
+    for(i=aPad+size;i<aPad+aPad+size;i++)  s[i] = 2.0*rSignal[size-1] - s[i];
+
+    // ALTER SIGNAL
+    rSignal = s;
 }
 
 
