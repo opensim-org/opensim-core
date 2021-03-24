@@ -26,9 +26,8 @@ void MocoStepLengthAsymmetryGoal::constructProperties() {
     constructProperty_right_foot_frame("");
 //    constructProperty_target_asymmetry(0);
     constructProperty_foot_velocity_threshold(0.05);
-    constructProperty_contact_force_direction("positive-y");
     constructProperty_walking_direction("positive-x");
-    constructProperty_smoothing(10);
+    constructProperty_smoothing(500);
     constructProperty_target_left_foot_position(0);
     constructProperty_target_right_foot_position(0);
     constructProperty_target_final_right_foot_position(0);
@@ -42,7 +41,6 @@ void MocoStepLengthAsymmetryGoal::initializeOnModelImpl(const Model& model) cons
     // Check that properties contain acceptable values.
     std::set<std::string> directions{"positive-x", "positive-y", "positive-z",
                                      "negative-x", "negative-y", "negative-z"};
-    checkPropertyValueIsInSet(getProperty_contact_force_direction(), directions);
     checkPropertyValueIsInSet(getProperty_walking_direction(), directions);
     checkPropertyValueIsPositive(getProperty_foot_velocity_threshold());
 //    checkPropertyValueIsInRangeOrSet(getProperty_target_asymmetry(),
@@ -60,8 +58,6 @@ void MocoStepLengthAsymmetryGoal::initializeOnModelImpl(const Model& model) cons
         else if (direction == "negative-y") { index = 1; sign = -1; }
         else if (direction == "negative-z") { index = 2; sign = -1; }
     };
-    setIndexAndSign(get_contact_force_direction(), m_contact_force_index,
-                    m_contact_force_sign);
     setIndexAndSign(get_walking_direction(), m_walking_direction_index,
                     m_walking_direction_sign);
 
@@ -119,7 +115,7 @@ void MocoStepLengthAsymmetryGoal::calcIntegrandImpl(
 void MocoStepLengthAsymmetryGoal::calcGoalImpl(const GoalInput& input,
         SimTK::Vector& cost) const {
 
-    getModel().realizeAcceleration(input.final_state);
+    getModel().realizePosition(input.final_state);
     const double rightFootFinalPosition =
             m_walking_direction_sign * m_right_foot_frame->
                     getPositionInGround(input.final_state)[

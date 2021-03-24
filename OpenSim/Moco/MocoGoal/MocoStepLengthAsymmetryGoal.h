@@ -58,19 +58,6 @@ public:
     }
     double setFootVelocityThreshold() { return get_foot_velocity_threshold(); }
 
-    /// Set the direction in ground of the total contact force component used to
-    /// detect foot contact. When the contact force component for a foot exceeds
-    /// the force set by the 'contact_force_threshold' property, we register that
-    /// foot as in contact with the ground. Acceptable direction values include
-    /// "positive-x", "positive-y", "positive-z", "negative-x", "negative-y", and
-    /// "negative-z". Default: "positive-y".
-    void setContactForceDirection(const std::string& direction) {
-        set_contact_force_direction(direction);
-    }
-    std::string getContactForceDirection() {
-        return get_contact_force_direction();
-    }
-
     /// Set the walking direction of the model in the ground frame, which is used
     /// to determine the leading foot during double support. Acceptable direction
     /// values include "positive-x", "positive-y", "positive-z", "negative-x",
