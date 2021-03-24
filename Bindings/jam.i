@@ -23,7 +23,7 @@ namespace OpenSim {
 %include <OpenSim/JAM/JAMUtilities.h>
 //%include <OpenSim/JAM/base64.h>
 %include <OpenSim/JAM/COMAKInverseKinematicsTool.h>
-%include <OpenSim/JAM/COMAKTarget.h>
+//%include <OpenSim/JAM/COMAKTarget.h>
 %include <OpenSim/JAM/COMAKTool.h>
 %include <OpenSim/JAM/ForsimTool.h>
 
