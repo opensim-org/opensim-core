@@ -60,6 +60,8 @@ set(MOCO_SOURCES
         MocoGoal/MocoPeriodicityGoal.cpp
         MocoGoal/MocoStepTimeAsymmetryGoal.h
         MocoGoal/MocoStepTimeAsymmetryGoal.cpp
+        MocoGoal/MocoStepLengthAsymmetryGoal.h
+        MocoGoal/MocoStepLengthAsymmetryGoal.cpp
         MocoSolver.h
         MocoSolver.cpp
         MocoDirectCollocationSolver.h
