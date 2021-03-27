@@ -95,6 +95,7 @@ macro(OpenSimAddPythonModule)
             #-debug-tmused # Which typemaps were used?
             -v # verbose
             -o ${_output_cxx_file}
+            -doxygen
             -outdir "${CMAKE_CURRENT_BINARY_DIR}"
             ${_swig_common_args}
         DEPENDS ${_${OSIMSWIGPY_MODULE}_dependencies}
