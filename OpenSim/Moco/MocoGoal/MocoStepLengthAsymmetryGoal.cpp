@@ -68,7 +68,7 @@ void MocoStepLengthAsymmetryGoal::initializeOnModelImpl(const Model& model) cons
     };
 
     // Set the goal requirements.
-    setRequirements(1, 1, SimTK::Stage::Velocity);
+    setRequirements(1, 1); // TODO: stage dependency velocity issue
 }
 
 void MocoStepLengthAsymmetryGoal::calcIntegrandImpl(
@@ -114,8 +114,6 @@ void MocoStepLengthAsymmetryGoal::calcIntegrandImpl(
 
 void MocoStepLengthAsymmetryGoal::calcGoalImpl(const GoalInput& input,
         SimTK::Vector& cost) const {
-
-    getModel().realizePosition(input.final_state);
     const double rightFootFinalPosition =
             m_walking_direction_sign * m_right_foot_frame->
                     getPositionInGround(input.final_state)[
