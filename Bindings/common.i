@@ -365,8 +365,8 @@ DATATABLE_CLONE(double, SimTK::Rotation_<double>)
 %include <OpenSim/Common/Event.h>
 %template(StdVectorEvent) std::vector<OpenSim::Event>;
 %shared_ptr(std::shared_ptr<OpenSim::TimeSeriesTableVec3>)
-%template(StdMapStringTimeSeriesTableVec3)
-        std::map<std::string,                                        std::shared_ptr<OpenSim::TimeSeriesTableVec3> >;
+//%template(StdMapStringTimeSeriesTableVec3)
+//        std::map<std::string, std::shared_ptr<OpenSim::TimeSeriesTableVec3> >;
 //%template(StdMapStringTimeSeriesTableVec3Iterator)
 //                 std::map<std::string, 
 //                 std::shared_ptr<OpenSim::TimeSeriesTableVec3> >::Iterator;

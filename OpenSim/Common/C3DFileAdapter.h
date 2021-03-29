@@ -117,9 +117,10 @@ public:
     ForceLocation getLocationForForceExpression() const {
         return _location;
     }
-
+#ifndef SWIG
     static void write(
             const TablesDictionary& markerTable, const std::string& fileName);
+#endif
     /** Retrieve the TimeSeriesTableVec3 of Markers */
     std::shared_ptr<TimeSeriesTableVec3> getMarkersTable(DataAdapter::OutputTables& tables) {
         std::shared_ptr<AbstractDataTable>& adt = tables.at("markers");
