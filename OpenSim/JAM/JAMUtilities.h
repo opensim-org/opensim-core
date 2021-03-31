@@ -26,7 +26,6 @@
 
 //=============================================================================
 //=============================================================================
-//namespace OpenSim {
 
 
 //=============================================================================
@@ -42,5 +41,5 @@ int find_nearest(std::vector<double> in_vec, double value);
 std::string erase_sub_string(std::string mainStr, const std::string & toErase);
 
 
-//}; //namespace
+ //namespace
 #endif // #ifndef OPENSIM_JAM_UTILITIES_H_

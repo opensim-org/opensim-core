@@ -1225,7 +1225,7 @@ getRecordLabels() const {
     labels.append(getName() + "." + c_mesh + ".regional.contact_moment_5_x");
     labels.append(getName() + "." + c_mesh + ".regional.contact_moment_5_y");
     labels.append(getName() + "." + c_mesh + ".regional.contact_moment_5_z");
-
+    
     labels.append(getName() + "." + t_mesh + ".total.contact_area");
     labels.append(getName() + "." + t_mesh + ".total.mean_proximity");
     labels.append(getName() + "." + t_mesh + ".total.max_proximity"); 
@@ -1354,13 +1354,17 @@ getRecordLabels() const {
     labels.append(getName() + "." + t_mesh + ".regional.contact_moment_5_x");
     labels.append(getName() + "." + t_mesh + ".regional.contact_moment_5_y");
     labels.append(getName() + "." + t_mesh + ".regional.contact_moment_5_z");
-
+    
     return labels;
 }
 
 
 OpenSim::Array<double> Smith2018ArticularContactForce::
 getRecordValues(const SimTK::State& state) const {
+    
+    if (!isCacheVariableValid(state, "casting.total.contact_area")) {
+        realizeContactMetricCaches(state);
+    }
 
     //Total
     double casting_contact_area = getCacheVariableValue<double>

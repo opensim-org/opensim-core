@@ -20,16 +20,17 @@
 
 #include "About.h"
 #include "base64.h"
+#include "JAMUtilities.h"
 #include "COMAKInverseKinematicsTool.h"
 #include "COMAKTarget.h"
 #include "COMAKTool.h"
 #include "ForsimTool.h"
-#include "H5FileAdapter.h"
-#include "JointMechanicsTool.h"
-#include "JAMUtilities.h"
-#include "osimJAM.h"
-#include "osimJAMDLL.h"
-#include "RegisterTypes_osimJAM.h"
-#include "VTPFileAdapter.h"
+//#include "H5FileAdapter.h"
+//#include "JointMechanicsTool.h"
 
+//#include "osimJAM.h"
+//#include "osimJAMDLL.h"
+
+#include "VTPFileAdapter.h"
+#include "RegisterTypes_osimJAM.h"
 #endif // OPENSIM_OSIMJAM_H

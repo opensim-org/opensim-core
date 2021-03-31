@@ -89,6 +89,7 @@ void ForsimTool::setModel(Model& aModel)
 
 bool ForsimTool::run()
 {
+    setModel(Model(get_model_file()));
     //Make results directory
     int makeDir_out = IO::makeDir(get_results_directory());
     if (errno == ENOENT && makeDir_out == -1) {
@@ -176,7 +177,7 @@ bool ForsimTool::run()
 
     for (int i = 0; i <= nSteps; ++i) {
         
-        double t = get_start_time() + i * dt;
+        double t = get_start_time() + (i+1) * dt;
         std::cout << "time:" << t << std::endl;
 
         printDebugInfo(state);
@@ -191,11 +192,12 @@ bool ForsimTool::run()
             }
             timestepper.initialize(state);
         }
-            
+
         timestepper.stepTo(t);
 
-        state = timestepper.updIntegrator().updAdvancedState();
-
+        ///state = timestepper.updIntegrator().updAdvancedState();
+        state = timestepper.getState();
+        _model.realizeReport(state);
         //Record parameters
         if (i == 0) {
             analysisSet.begin(state);

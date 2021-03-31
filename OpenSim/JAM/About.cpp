@@ -22,7 +22,7 @@
  */
 
 #include "About.h"
-
+/*
 #include <stdio.h>
 
 #include <OpenSim/Common/Logger.h>
@@ -40,9 +40,13 @@
 #endif
 
 using namespace std;
-
+*/
 namespace OpenSim {
-
+    int TestFunction() {
+        return 1;
+    };
+}
+/*
 static const char* OpenSimJAMVersion = GET_OPENSIM_JAM_VERSION_STRING;
 
 std::string GetJAMVersionAndDate() {
@@ -53,3 +57,4 @@ std::string GetJAMVersionAndDate() {
 std::string GetJAMVersion() { return OpenSimJAMVersion; }
 
 } // namespace OpenSim
+*/

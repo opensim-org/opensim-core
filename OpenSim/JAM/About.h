@@ -20,12 +20,14 @@
  * -------------------------------------------------------------------------- */
 
 #include "osimJAMDLL.h"
-#include <string>
+//#include <string>
 
 namespace OpenSim {
-OSIMJAM_API std::string GetJAMVersionAndDate();
+    OSIMJAM_API int TestFunction(); 
 
-OSIMJAM_API std::string GetJAMVersion();
+/*OSIMJAM_API std::string GetJAMVersionAndDate();
+
+OSIMJAM_API std::string GetJAMVersion();*/
 }
 
 #endif // OPENSIM_JAM_ABOUT_H_

@@ -8,8 +8,8 @@ set(JAM_SOURCES
         COMAKTarget.cpp
         COMAKTool.cpp
         ForsimTool.cpp
-        H5FileAdapter.cpp
-        JointMechanicsTool.cpp
+        #H5FileAdapter.cpp
+        #JointMechanicsTool.cpp
         JAMUtilities.cpp
         RegisterTypes_osimJAM.cpp
         VTPFileAdapter.cpp
@@ -22,8 +22,8 @@ set(JAM_INCLUDES
         COMAKTarget.h
         COMAKTool.h
         ForsimTool.h
-        H5FileAdapter.h
-        JointMechanicsTool.h
+        #H5FileAdapter.h
+        #JointMechanicsTool.h
         JAMUtilities.h
         osimJAM.h
         osimJAMDLL.h
@@ -35,8 +35,8 @@ OpenSimAddLibrary(
     KIT JAM
     AUTHORS "Colin_Smith"
     # Clients of osimCommon need not link to BTK or ezc3d.
-    LINKLIBS PUBLIC ${Simbody_LIBRARIES} spdlog::spdlog osimTools osimCommon
-             PRIVATE hdf5_cpp-shared hdf5_hl-shared
+    LINKLIBS PUBLIC ${Simbody_LIBRARIES} spdlog::spdlog osimTools osimCommon #hdf5_cpp-shared hdf5_hl-shared
+             PRIVATE 
     INCLUDES ${JAM_INCLUDES}
     SOURCES ${JAM_SOURCES}
     )

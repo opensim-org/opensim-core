@@ -24,6 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "osimJAMDLL.h"
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include "OpenSim/Simulation/Model/ExternalLoads.h"
