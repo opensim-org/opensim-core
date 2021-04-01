@@ -47,10 +47,24 @@ public:
 
     /// Set the asymmetry value targeted by this goal. If using 'cost' mode, the
     /// error between the target asymmetry and the model asymmetry is squared.
-//    void setTargetAsymmetry(double asymmetry) {
-//        set_target_asymmetry(asymmetry);
-//    }
-//    double getTargetAsymmetry() { return get_target_asymmetry(); }
+    void setTargetAsymmetry(double asymmetry) {
+        set_target_asymmetry(asymmetry);
+    }
+    double getTargetAsymmetry() { return get_target_asymmetry(); }
+
+    /// TODO
+    void setInitialRightFootPosition(double position) {
+        set_initial_right_foot_position(position);
+    }
+    double getInitialRightFootPosition() {
+        return get_initial_right_foot_position();
+    }
+
+    /// TODO
+    void setStrideLength(double length) {
+        set_stride_length(length);
+    }
+    double getStrideLength() { return get_stride_length(); }
 
     /// TODO
     void setFootVelocityThreshold(double threshold) {
@@ -71,10 +85,6 @@ public:
     void setSmoothing(double smoothing) { set_smoothing(smoothing); }
     double getSmoothing() { return get_smoothing(); }
 
-    OpenSim_DECLARE_PROPERTY(target_right_foot_position, double, "TODO");
-    OpenSim_DECLARE_PROPERTY(target_left_foot_position, double, "TODO");
-    OpenSim_DECLARE_PROPERTY(target_final_right_foot_position, double, "TODO");
-
 protected:
     bool getSupportsEndpointConstraintImpl() const override { return true; }
     Mode getDefaultModeImpl() const override {
@@ -90,8 +100,10 @@ protected:
 private:
     OpenSim_DECLARE_PROPERTY(left_foot_frame, std::string, "TODO");
     OpenSim_DECLARE_PROPERTY(right_foot_frame, std::string, "TODO");
-//    OpenSim_DECLARE_PROPERTY(target_asymmetry, double, "TODO");
     OpenSim_DECLARE_PROPERTY(foot_velocity_threshold, double, "TODO");
+    OpenSim_DECLARE_PROPERTY(target_asymmetry, double, "Default: 0.");
+    OpenSim_DECLARE_PROPERTY(initial_right_foot_position, double, "Default: 0.");
+    OpenSim_DECLARE_PROPERTY(stride_length, double, "Default: 1.");
     OpenSim_DECLARE_PROPERTY(contact_force_direction, std::string, "TODO");
     OpenSim_DECLARE_PROPERTY(walking_direction, std::string, "TODO");
     OpenSim_DECLARE_PROPERTY(smoothing, double, "TODO");
@@ -102,8 +114,10 @@ private:
 
     mutable int m_walking_direction_index;
     mutable int m_walking_direction_sign;
-    mutable int m_contact_force_index;
-    mutable int m_contact_force_sign;
+
+    mutable double m_left_foot_position;
+    mutable double m_right_foot_position;
+    mutable double m_final_right_foot_position;
 
     using ConditionalFunction =
         double(const double&, const double&, const double&, const double&);
