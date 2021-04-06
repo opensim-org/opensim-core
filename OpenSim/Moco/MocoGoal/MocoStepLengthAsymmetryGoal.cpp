@@ -24,13 +24,12 @@ using namespace OpenSim;
 void MocoStepLengthAsymmetryGoal::constructProperties() {
     constructProperty_left_foot_frame("");
     constructProperty_right_foot_frame("");
-//    constructProperty_target_asymmetry(0);
     constructProperty_foot_velocity_threshold(0.05);
     constructProperty_walking_direction("positive-x");
     constructProperty_smoothing(500);
-    constructProperty_target_asymmetry(0);
+    constructProperty_target_asymmetry(0.0);
     constructProperty_stride_length(1.0);
-    constructProperty_initial_right_foot_position(0);
+    constructProperty_initial_right_foot_position(0.0);
 }
 
 void MocoStepLengthAsymmetryGoal::initializeOnModelImpl(const Model& model) const {
@@ -50,7 +49,7 @@ void MocoStepLengthAsymmetryGoal::initializeOnModelImpl(const Model& model) cons
 
     // Compute target foot positions based on properties.
     m_left_foot_position =
-            -0.5 * get_stride_length() * (get_target_asymmetry() - 1)
+            0.5 * get_stride_length() * (1.0 - get_target_asymmetry())
                 + get_initial_right_foot_position();
     m_right_foot_position = get_initial_right_foot_position();
     m_final_right_foot_position =
@@ -82,7 +81,6 @@ void MocoStepLengthAsymmetryGoal::initializeOnModelImpl(const Model& model) cons
 
 void MocoStepLengthAsymmetryGoal::calcIntegrandImpl(
         const IntegrandInput& input, double& integrand) const {
-    // Need to realize to Velocity for SmoothSphereHalfSpaceForce.
     const auto& state = input.state;
     getModel().realizeVelocity(state);
     integrand = 0;
@@ -102,11 +100,11 @@ void MocoStepLengthAsymmetryGoal::calcIntegrandImpl(
 
     // Right is negative such that shorter right step times give negative
     // asymmetry values.
-    const double rightContactDetect = -m_conditional(
-            rightVelocity - get_foot_velocity_threshold(), 0.5, 0.5,
+    const double rightContactDetect = m_conditional(
+            rightVelocity - get_foot_velocity_threshold(), 0.5, -0.5,
             get_smoothing());
-    const double leftContactDetect = -m_conditional(
-            leftVelocity - get_foot_velocity_threshold(), 0.5, 0.5,
+    const double leftContactDetect = m_conditional(
+            leftVelocity - get_foot_velocity_threshold(), 0.5, -0.5,
             get_smoothing());
 
 //    const double rightFootNearTarget = -m_conditional(
