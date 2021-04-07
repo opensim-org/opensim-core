@@ -364,12 +364,8 @@ DATATABLE_CLONE(double, SimTK::Rotation_<double>)
 
 %include <OpenSim/Common/Event.h>
 %template(StdVectorEvent) std::vector<OpenSim::Event>;
-%shared_ptr(std::shared_ptr<OpenSim::TimeSeriesTableVec3>)
-//%template(StdMapStringTimeSeriesTableVec3)
-//        std::map<std::string, std::shared_ptr<OpenSim::TimeSeriesTableVec3> >;
-//%template(StdMapStringTimeSeriesTableVec3Iterator)
-//                 std::map<std::string, 
-//                 std::shared_ptr<OpenSim::TimeSeriesTableVec3> >::Iterator;
+%shared_ptr(OpenSim::TimeSeriesTableVec3)
+
 %shared_ptr(OpenSim::DataAdapter)
 %shared_ptr(OpenSim::FileAdapter)
 %shared_ptr(OpenSim::DelimFileAdapter)
@@ -386,9 +382,13 @@ DATATABLE_CLONE(double, SimTK::Rotation_<double>)
 %shared_ptr(OpenSim::TRCFileAdapter)
 %shared_ptr(OpenSim::C3DFileAdapter)
 %template(StdMapStringDataAdapter)
-        std::map<std::string, std::shared_ptr<OpenSim::DataAdapter>>;
+        std::map<std::string, std::shared_ptr<OpenSim::DataAdapter> >;
 %template(StdMapStringAbstractDataTable)
-        std::map<std::string, std::shared_ptr<OpenSim::AbstractDataTable>>;
+        std::map<std::string, std::shared_ptr<OpenSim::AbstractDataTable> >;
+//%template(StdMapStringTimeSeriesTableVec3)
+//        std::map<std::string, std::shared_ptr<OpenSim::TimeSeriesTable_<SimTK::Vec3> > >;
+        
+
 %include <OpenSim/Common/DataAdapter.h>
 %include <OpenSim/Common/ExperimentalSensor.h>
 %include <OpenSim/Common/IMUDataReader.h>

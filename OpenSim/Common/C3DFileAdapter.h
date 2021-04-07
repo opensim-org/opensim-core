@@ -30,8 +30,6 @@
 
 namespace OpenSim {
 
-typedef std::map<std::string, std::shared_ptr<TimeSeriesTableVec3>> TablesDictionary;
-
 /** C3DFileAdapter reads a C3D file into markers and forces tables of type
 TimeSeriesTableVec3. The markers table has each column labeled by its
 corresponding marker name. For the forces table, the data are grouped
@@ -43,6 +41,7 @@ CenterOfPressure, or the PointOfWrenchApplication. */
 class OSIMCOMMON_API C3DFileAdapter : public FileAdapter {
 public:
     typedef std::vector<Event>                         EventTable; 
+    typedef std::map<std::string, std::shared_ptr<TimeSeriesTableVec3>> Tables;
 
     /** Enumerated list of locations in which read in forces are expressed.
         %Measurement from force plates can be expressed by the C3DFileAdapter
@@ -117,15 +116,18 @@ public:
     ForceLocation getLocationForForceExpression() const {
         return _location;
     }
+
 #ifndef SWIG
-    static void write(
-            const TablesDictionary& markerTable, const std::string& fileName);
+    static
+    void write(const Tables& markerTable, const std::string& fileName);
 #endif
+
     /** Retrieve the TimeSeriesTableVec3 of Markers */
     std::shared_ptr<TimeSeriesTableVec3> getMarkersTable(DataAdapter::OutputTables& tables) {
         std::shared_ptr<AbstractDataTable>& adt = tables.at("markers");
         return std::dynamic_pointer_cast<TimeSeriesTableVec3>(adt);
     }
+
     /** Retrieve the TimeSeriesTableVec3 of Forces */
      std::shared_ptr<TimeSeriesTableVec3> getForcesTable(DataAdapter::OutputTables& tables) {
         std::shared_ptr<AbstractDataTable>& adt = tables.at("forces");

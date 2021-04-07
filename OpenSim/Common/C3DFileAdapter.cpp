@@ -81,7 +81,7 @@ C3DFileAdapter::clone() const {
 }
 
 void C3DFileAdapter::write(
-                      const TablesDictionary& tables,
+                      const C3DFileAdapter::Tables& tables,
                       const std::string& fileName) {
     OPENSIM_THROW(Exception, "Writing C3D not supported yet.");
 }
