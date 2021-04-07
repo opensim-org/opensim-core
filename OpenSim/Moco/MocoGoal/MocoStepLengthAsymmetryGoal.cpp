@@ -98,8 +98,6 @@ void MocoStepLengthAsymmetryGoal::calcIntegrandImpl(
             m_walking_direction_sign * m_left_foot_frame->
                 getVelocityInGround(state)[1][m_walking_direction_index];
 
-    // Right is negative such that shorter right step times give negative
-    // asymmetry values.
     const double rightContactDetect = m_conditional(
             rightVelocity - get_foot_velocity_threshold(), 0.5, -0.5,
             get_smoothing());
