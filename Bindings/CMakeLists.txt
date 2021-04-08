@@ -1,6 +1,4 @@
 if(BUILD_PYTHON_WRAPPING OR BUILD_JAVA_WRAPPING)
-    # We require 3.0.8 for the reason mentioned here (for Python 3):
-    # https://github.com/tensorflow/tensorflow/issues/830
     find_package(SWIG 4.0.0 REQUIRED)
 endif()
 
