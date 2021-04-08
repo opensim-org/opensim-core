@@ -416,7 +416,7 @@ begin(const SimTK::State& s)
     if (!proceed()) return(0);
 
     // NUMBER OF ACTUATORS
-    int na = _model->getActuators().getSize();
+    int na = getNumEnabledActuators();
     _na = na;
     // WORK ARRAY
     if (_fsp != NULL) delete[] _fsp;
