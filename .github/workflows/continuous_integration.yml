@@ -172,7 +172,7 @@ jobs:
         key: ${{ runner.os }}-swig
 
     - name: Install SWIG
-      if: steps.cache-swig.outputs.cache-hit != 'true'
+      # if: steps.cache-swig.outputs.cache-hit != 'true'
       run: |
         mkdir ~/swig-source && cd ~/swig-source
         wget https://github.com/swig/swig/archive/refs/tags/rel-4.0.2.tar.gz
