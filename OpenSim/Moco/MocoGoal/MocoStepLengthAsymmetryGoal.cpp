@@ -133,7 +133,4 @@ void MocoStepLengthAsymmetryGoal::calcGoalImpl(const GoalInput& input,
             m_final_right_foot_position;
 
     cost[0] = input.integral + (rightFootError * rightFootError);
-    if (getModeIsCost()) {
-        cost[0] *= cost[0];
-    }
 }
