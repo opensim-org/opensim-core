@@ -59,9 +59,9 @@ elseif(TROPTER_COPY_DEPENDENCIES AND UNIX)
             ${IPOPT_LIBDIR}/libcoinmetis.so.1
             ${IPOPT_LIBDIR}/libcoinmetis.so
 
-	    # These are system libraries and are not needed on Linux. The user
-	    # should install them through the package manager.
-	    #
+            # These are system libraries and are not needed on Linux. The user
+            # should install them through the package manager.
+            #
             # ${gfortran}
             # ${quadmath}
             # ${gcc_libdir}/libgcc_s.so.1
