@@ -10,6 +10,14 @@ macro(install_name_tool_change lib dep_name dep_oldpath)
             "${libdir}/lib${lib}.dylib")
 endmacro()
 
+# This should work but it is not tested yet.
+macro(patchelf_change lib dep_name dep_oldpath)
+    execute_process(COMMAND pathchelf
+            -replace-needed ${dep_oldpath}/lib${dep_name}.so
+            @rpath/lib${dep_name}.so
+            "${libdir}/lib${lib}.so")
+endmacro()
+
 macro(install_name_tool_change_gfortran lib)
     execute_process(COMMAND bash "-c"
         "otool -L ${libdir}/lib${lib}.dylib | grep 'libgfortran.*version' | perl -pe 's/^\\s+(.*)\\/libg.*/\\1/gc'"
@@ -47,10 +55,25 @@ macro(install_name_tool_add_rpath lib)
             "${libdir}/lib${lib}.dylib")
 endmacro()
 
+# This should not work because we have to find a substitution for
+# @loader_path. The last is specific on of MacOS.
+macro(patchelf_add_rpath lib)
+    execute_process(COMMAND patchelf
+            --add-needed "@loader_path/"
+            "${libdir}/lib${lib}.so")
+endmacro()
+
 macro(install_name_tool_delete_rpath lib rpath)
     execute_process(COMMAND install_name_tool
             -delete_rpath ${rpath}
             "${libdir}/lib${lib}.dylib")
+endmacro()
+
+# This should work but it is not tested yet.
+macro(patchelf_delete_rpath lib rpath)
+    execute_process(COMMAND patchelf
+            --remove-rpath ${rpath}
+            "${libdir}/lib${lib}.so")
 endmacro()
 
 # Get the directory containing libgcc_s.1.dylib.

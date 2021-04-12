@@ -6,6 +6,10 @@ project(tropter)
 # Include CMake macros that we wrote to reduce duplication in this project.
 include(cmake/tropter_macros.cmake)
 
+# Needed for add_feature_info and set_package_properties CMake functions on
+# Linux.
+include(FeatureSummary)
+
 # CMake settings.
 # ---------------
 # To allow a folder hierarchy within Visual Studio's Solution Explorer.
@@ -85,6 +89,13 @@ set_package_properties(ADOLC PROPERTIES
 tropter_copy_dlls(DEP_NAME ADOLC DEP_INSTALL_DIR "${ADOLC_DIR}/bin")
 
 if(UNIX)
+    # For this to work properly we have to specify the PKG_CONFIG_PATH to point
+    # to the custom-build version of IPOPT's .pc file before running
+    # cmake. Alternately, we can install ipopt using the package manager. How to
+    # use:
+    #
+    # export PKG_CONFIG_PATH=/path-to-ipopt/lib/pkgconfig:$PKG_CONFIG_PATH
+    # cmake .
     pkg_check_modules(IPOPT REQUIRED ipopt IMPORTED_TARGET)
 else()
     find_package(Ipopt REQUIRED CONFIG)
