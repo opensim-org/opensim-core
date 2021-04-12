@@ -19,7 +19,6 @@
  * -------------------------------------------------------------------------- */
 
 #include "osimActuatorsDLL.h"
-
 #include <OpenSim/Simulation/Model/Model.h>
 
 namespace OpenSim {
@@ -91,7 +90,6 @@ public:
             double bound = SimTK::NaN,
             bool skipCoordinatesWithExistingActuators = true);
 
-    /// @}
 };
 
 } // namespace OpenSim

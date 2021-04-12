@@ -476,7 +476,6 @@ public:
      * default values for `allowMissingColumns` and `allowExtraColumns`. */
     static StatesTrajectory createFromStatesStorage(const Model& model,
             const std::string& filepath);
-    /// @}
 };
 
 } // namespace

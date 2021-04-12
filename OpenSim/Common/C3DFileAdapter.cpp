@@ -80,8 +80,8 @@ C3DFileAdapter::clone() const {
     return new C3DFileAdapter{*this};
 }
 
-void
-C3DFileAdapter::write(const C3DFileAdapter::Tables& tables,
+void C3DFileAdapter::write(
+                      const C3DFileAdapter::Tables& tables,
                       const std::string& fileName) {
     OPENSIM_THROW(Exception, "Writing C3D not supported yet.");
 }
