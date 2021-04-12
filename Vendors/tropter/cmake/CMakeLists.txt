@@ -59,9 +59,12 @@ elseif(TROPTER_COPY_DEPENDENCIES AND UNIX)
             ${IPOPT_LIBDIR}/libcoinmetis.so.1
             ${IPOPT_LIBDIR}/libcoinmetis.so
 
-            ${gfortran}
-            ${quadmath}
-            ${gcc_libdir}/libgcc_s.so.1
+	    # These are system libraries and are not needed on Linux. The user
+	    # should install them through the package manager.
+	    #
+            # ${gfortran}
+            # ${quadmath}
+            # ${gcc_libdir}/libgcc_s.so.1
 
             DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
@@ -69,11 +72,16 @@ elseif(TROPTER_COPY_DEPENDENCIES AND UNIX)
     # editing of libtropter's link libraries is done after libtropter.so
     # is installed (add_subdirectory(cmake) must be after
     # add_subdirectory(tropter)).
-    set(script
-     ${CMAKE_CURRENT_BINARY_DIR}/tropter_install_linux_dependency_libraries.cmake)
-     configure_file(tropter_install_linux_dependency_libraries.cmake.in
-            "${script}" @ONLY)
-    install(SCRIPT "${script}")
+
+    # For now I have commented the following because it is not functional and
+    # needed on Linux. Dependencies (ADOLC, ColPack, IPOPT) are copied in the
+    # install directory properly, while system libraries should be installed
+    # with the package manager.
+    #
+    # set(script
+    # ${CMAKE_CURRENT_BINARY_DIR}/tropter_install_linux_dependency_libraries.cmake)
+    # configure_file(tropter_install_linux_dependency_libraries.cmake.in
+    # "${script}" @ONLY) install(SCRIPT "${script}")
 
 endif()
 
