@@ -207,7 +207,8 @@ prepareToOptimize(SimTK::State& s, double *x)
                 //ActivationFiberLengthMuscle *aflmus = dynamic_cast<ActivationFiberLengthMuscle*>(mus);
                 if(mus && _useMusclePhysiology) {
                     _model->setAllControllersEnabled(true);
-                    fOpt = mus->getActiveFiberForceAlongTendon(s) / x[imus]; // compute an approximative 100% (exactly true at x[imus])
+                    // compute an approximative 100% (exactly true at x[imus] = 1)
+                    fOpt = mus->getActiveFiberForceAlongTendon(s) / x[imus];
                     _model->setAllControllersEnabled(false);
                 } else {
                     fOpt = mus->getMaxIsometricForce();
