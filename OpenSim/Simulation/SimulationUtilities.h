@@ -305,7 +305,8 @@ TimeSeriesTable_<T> analyze(Model model, const TimeSeriesTable& statesTable,
 /// obey any kinematic constraints in the Model.
 ///
 /// @ingroup simulationutil
-TimeSeriesTableVec3 createSyntheticIMUAccelerationSignals(Model model,
+TimeSeriesTableVec3 createSyntheticIMUAccelerationSignals(
+        const Model& model,
         const TimeSeriesTable& statesTable, const TimeSeriesTable& controlsTable,
         const std::vector<std::string>& framePaths);
 

@@ -392,7 +392,8 @@ void OpenSim::checkLabelsMatchModelStates(const Model& model,
     }
 }
 
-TimeSeriesTableVec3 OpenSim::createSyntheticIMUAccelerationSignals(Model model,
+TimeSeriesTableVec3 OpenSim::createSyntheticIMUAccelerationSignals(
+        const Model& model,
         const TimeSeriesTable& statesTable, const TimeSeriesTable& controlsTable,
         const std::vector<std::string>& framePaths) {
     std::vector<std::string> outputPaths;
