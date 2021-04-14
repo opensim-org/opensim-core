@@ -402,8 +402,9 @@ TimeSeriesTableVec3 OpenSim::createSyntheticIMUAccelerationSignals(Model model,
     TimeSeriesTableVec3 accelTableEffort = analyze<SimTK::Vec3>(
             model, statesTable, controlsTable, outputPaths);
 
-    // Create synthetic IMU signals by extracting the gravity offset from the
-    // solution accelerations and expressing them in the model frames.
+    // Create synthetic IMU signals by extracting the gravitational acceleration
+    // vector from the solution accelerations and expressing them in the model
+    // frames.
     const auto& statesTraj =
             StatesTrajectory::createFromStatesTable(model, statesTable);
     const auto& ground = model.getGround();
