@@ -37,7 +37,7 @@ jobs:
         
     - name: Install numpy
       #Need numpy to use SWIG numpy typemaps.
-      run: python -m pip install numpy
+      run: python -m pip install numpy==1.19.3
 
     - name: Install SWIG
       run: choco install swig --version 4.0.0 --yes --limit-output
@@ -164,7 +164,7 @@ jobs:
       run: |
         brew install cmake pkgconfig autoconf libtool automake wget pcre doxygen python@3.7
         brew reinstall gcc
-        pip3 install numpy
+        pip3 install numpy==1.19.3
         gfortran -v
         mkdir gfortran_version
         gfortran -v &> gfortran_version/gfortran_version.txt
