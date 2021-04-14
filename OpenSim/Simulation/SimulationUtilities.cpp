@@ -397,7 +397,15 @@ TimeSeriesTableVec3 OpenSim::createSyntheticIMUAccelerationSignals(
         const TimeSeriesTable& statesTable, const TimeSeriesTable& controlsTable,
         const std::vector<std::string>& framePaths) {
     std::vector<std::string> outputPaths;
+
+    ComponentPath path;
     for (const auto& framePath : framePaths) {
+        OPENSIM_THROW_IF(path.isLegalPathElement(framePath), Exception,
+            "Provided frame path '{}' contains invalid characters.", framePath);
+        OPENSIM_THROW_IF(
+            !model.hasComponent<PhysicalFrame>(framePath), Exception,
+            "Expected provided frame path '{}' to point to component of "
+            "type PhysicalFrame, but no such component was found.", framePath);
         outputPaths.push_back(framePath + "\\|linear_acceleration");
     }
     TimeSeriesTableVec3 accelTableEffort = analyze<SimTK::Vec3>(

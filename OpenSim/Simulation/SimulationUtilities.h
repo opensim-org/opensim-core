@@ -304,6 +304,10 @@ TimeSeriesTable_<T> analyze(Model model, const TimeSeriesTable& statesTable,
 /// arguments must contain the same time points and we assume that the states
 /// obey any kinematic constraints in the Model.
 ///
+/// @note The passed in model must have the correct mass and inertia properties
+/// included, since computing accelerations requires realizing to
+/// SimTK::Stage::Acceleration which depends on SimTK::Stage::Dynamics.
+///
 /// @ingroup simulationutil
 TimeSeriesTableVec3 createSyntheticIMUAccelerationSignals(
         const Model& model,
