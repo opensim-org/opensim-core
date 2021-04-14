@@ -67,11 +67,49 @@ end
 %% Part 2: Add IMU tracking frames to the model 
 
 %% Part 3: Create "synthetic" IMU acceleration signals
+predictSolution = MocoTrajectory('predictSolution.sto');
+framePaths = StdVectorString();
+framePaths.add('/bodyset/torso');
+framePaths.add('/bodyset/pelvis');
+framePaths.add('/bodyset/femur_r');
+framePaths.add('/bodyset/tibia_r');
+torqueDrivenModel.initSystem();
+syntheticIMUAccelerations = ... 
+    opensimSimulation.createSyntheticIMUAccelerationSignals(...
+        torqueDrivenModel, ...
+        predictSolution.exportToStatesTable(), ...
+        predictSolution.exportToControlsTable(), framePaths);
+
 
 %% Part 4: IMU tracking problem 
+accelerationIMUTracking = MocoAccelerationTrackingGoal('imu_tracking');
+accelerationIMUTracking.setFramePaths(framePaths);
+accelerationIMUTracking.setAccelerationReference(syntheticIMUAccelerations);
+accelerationIMUTracking.setGravityOffset(true);
+accelerationIMUTracking.setExpressAccelerationsInTrackingFrames(true);
+problem.addGoal(accelerationIMUTracking);
+
+% Part xx: Reduce the control cost weight so it now acts as a regularization 
+% term.
+problem.updGoal('myeffort').setWeight(0);
+
+% Part 2d: Set the initial guess using the predictive problem solution.
+% Tighten convergence tolerance to ensure smooth controls.
+%solver.setGuessFile('predictSolution.sto');
+%solver.set_optim_convergence_tolerance(1e-6);
+
+if ~exist('trackingSolution.sto', 'file')
+% Part 2e: Solve! Write the solution to file, and visualize.
+trackingSolution = study.solve();
+trackingSolution.write('trackingSolution.sto');
+study.visualize(trackingSolution);
+end
+
 
 %% Part 5: Compare tracking solution to original prediction
-
+% This is a convenience function provided for you. See mocoPlotTrajectory.m
+mocoPlotTrajectory('predictSolution.sto', 'trackingSolution.sto', ...
+        'predict', 'track');
 
 
 
