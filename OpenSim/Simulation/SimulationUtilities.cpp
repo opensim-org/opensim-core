@@ -398,7 +398,7 @@ TimeSeriesTableVec3 OpenSim::createSyntheticIMUAccelerationSignals(
         const std::vector<std::string>& framePaths) {
     std::vector<std::string> outputPaths;
 
-    ComponentPath path
+    ComponentPath path;
     for (const auto& framePath : framePaths) {
         OPENSIM_THROW_IF(!path.isLegalPathElement(framePath), Exception,
             "Provided frame path '{}' contains invalid characters.", framePath);
