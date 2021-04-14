@@ -376,36 +376,12 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
         std::vector<std::string> framePaths = {"/bodyset/b0", "/bodyset/b1"};
         accelerationIMUTracking->setFramePaths(framePaths);
         // Compute the accelerations from the effort minimization solution to
-        // use as a tracking reference. It's fine to use the analyze() utility
-        // here, since this model has no kinematic constraints.
-        TimeSeriesTableVec3 accelTableEffort =
-                analyzeMocoTrajectory<SimTK::Vec3>(model, solutionEffort,
-                                       {"/bodyset/b0\\|linear_acceleration",
-                                        "/bodyset/b1\\|linear_acceleration"});
-
-        // Create synthetic IMU signals by extracting the gravity offset from the
-        // solution accelerations and expressing them in the model frames.
-        const auto& statesTraj = solutionEffort.exportToStatesTrajectory(model);
-        const auto& ground = model.getGround();
-        const auto& gravity = model.getGravity();
-        const auto& timeVec = accelTableEffort.getIndependentColumn();
-        TimeSeriesTableVec3 accelTableIMU(timeVec);
-        for (const auto& framePath : framePaths) {
-            std::string label = framePath + "|linear_acceleration";
-            const auto& col = accelTableEffort.getDependentColumn(label);
-            const auto& frame = model.getComponent<PhysicalFrame>(framePath);
-            SimTK::Vector_<SimTK::Vec3> colIMU(col.size());
-            for (int i = 0; i < (int)timeVec.size(); ++i) {
-                const auto& state = statesTraj.get(i);
-                model.realizeAcceleration(state);
-                SimTK::Vec3 accelIMU = ground.expressVectorInAnotherFrame(state,
-                    col[i] - gravity, frame);
-                colIMU[i] = accelIMU;
-            }
-            accelTableIMU.appendColumn(label, colIMU);
-        }
-        accelTableIMU.setColumnLabels(framePaths);
-
+        // use as a tracking reference.
+        TimeSeriesTableVec3 accelTableIMU =
+                createSyntheticIMUAccelerationSignals(model,
+                        solutionEffort.exportToStatesTable(),
+                        solutionEffort.exportToControlsTable(),
+                        framePaths);
         accelerationIMUTracking->setAccelerationReference(accelTableIMU);
         accelerationIMUTracking->setGravityOffset(true);
         accelerationIMUTracking->setExpressAccelerationsInTrackingFrames(true);

@@ -8,6 +8,7 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 v4.3
 ====
 - Fixed a bug with Actuation analysis that would lead to extra columns in the output when an actuator is disabled (Issue #2977).
+- Added createSyntheticIMUAccelerationSignals() to SimulationUtilities to generate "synthetic" IMU accelerations based on an existing model trajectory.
 
 v4.2
 ====
