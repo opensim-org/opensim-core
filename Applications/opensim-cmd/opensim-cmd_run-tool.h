@@ -137,12 +137,12 @@ int run_tool(int argc, const char** argv) {
         const bool success = forsim->run();
         if (success) return EXIT_SUCCESS;
         else return EXIT_FAILURE;
-    } /*else if (auto* jmt = dynamic_cast<JointMechanicsTool*>(obj.get())) {
+    } else if (auto* jmt = dynamic_cast<JointMechanicsTool*>(obj.get())) {
         log_info("Preparing to run {}.", jmt->getConcreteClassName());
         const bool success = jmt->run();
         if (success) return EXIT_SUCCESS;
         else return EXIT_FAILURE;
-    } */else {
+    } else {
         throw Exception("The provided file '" + setupFile + "' does not "
                 "define an OpenSim Tool. Did you intend to load a plugin?");
     }

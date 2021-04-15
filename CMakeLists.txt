@@ -752,7 +752,7 @@ endif()
 
 
 
-FIND_PACKAGE(hdf5 HINTS "${hdf5_hint}" COMPONENTS CXX HL NO_MODULE REQUIRED shared)
+FIND_PACKAGE(hdf5 HINTS "${hdf5_hint}" COMPONENTS C CXX HL)
 
 OpenSimCopyDependencyDLLsForWin(DEP_NAME hdf5
         DEP_BIN_DIR ${hdf5_DIR}/../../bin)

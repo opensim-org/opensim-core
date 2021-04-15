@@ -17,12 +17,16 @@
 #include "H5FileAdapter.h"
 #include "JAMUtilities.h"
 #include <fstream>
+//#include "H5Cpp.h"
+//#include "hdf5_hl.h"
+
 
 using namespace OpenSim;
 
 H5FileAdapter::H5FileAdapter()
 {
     _time_is_empty = true;
+
 }
 
 H5FileAdapter* H5FileAdapter::clone() const

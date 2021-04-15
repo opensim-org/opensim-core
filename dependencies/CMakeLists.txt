@@ -219,7 +219,7 @@ AddDependency(NAME hdf5
               GIT_TAG hdf5-1_12_0
               CMAKE_ARGS -DBUILD_STATIC_LIBS:BOOL=OFF
                          -DBUILD_TESTING:BOOL=OFF
-                         -DHDF5_CPP_LIB:BOOL=OFF
+                         -DHDF5_CPP_LIB:BOOL=ON
                          -DHDF5_BUILD_EXAMPLES:BOOL=OFF
                          -DHDF5_BUILD_TOOLS:BOOL=OFF)
 

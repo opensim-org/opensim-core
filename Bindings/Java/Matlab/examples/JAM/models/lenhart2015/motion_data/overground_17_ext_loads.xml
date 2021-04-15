@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="40000">
+	<ExternalLoads>
+		<objects>
+			<ExternalForce name="FP1">
+				<!--Name of the body the force is applied to.-->
+				<applied_to_body>calcn_l</applied_to_body>
+				<!--Name of the body the force is expressed in (default is ground).-->
+				<force_expressed_in_body>ground</force_expressed_in_body>
+				<!--Name of the body the point is expressed in (default is ground).-->
+				<point_expressed_in_body>ground</point_expressed_in_body>
+				<!--Identifier (string) to locate the force to be applied in the data source.-->
+				<force_identifier>ground_force_1_v</force_identifier>
+				<!--Identifier (string) to locate the point to be applied in the data source.-->
+				<point_identifier>ground_force_1_p</point_identifier>
+				<!--Identifier (string) to locate the torque to be applied in the data source.-->
+				<torque_identifier>ground_torque_1_</torque_identifier>
+			</ExternalForce>
+			<ExternalForce name="FP2">
+				<!--Name of the body the force is applied to.-->
+				<applied_to_body>calcn_r</applied_to_body>
+				<!--Name of the body the force is expressed in (default is ground).-->
+				<force_expressed_in_body>ground</force_expressed_in_body>
+				<!--Name of the body the point is expressed in (default is ground).-->
+				<point_expressed_in_body>ground</point_expressed_in_body>
+				<!--Identifier (string) to locate the force to be applied in the data source.-->
+				<force_identifier>ground_force_2_v</force_identifier>
+				<!--Identifier (string) to locate the point to be applied in the data source.-->
+				<point_identifier>ground_force_2_p</point_identifier>
+				<!--Identifier (string) to locate the torque to be applied in the data source.-->
+				<torque_identifier>ground_torque_2_</torque_identifier>
+			</ExternalForce>
+			<ExternalForce name="FP3">
+				<!--Name of the body the force is applied to.-->
+				<applied_to_body>calcn_l</applied_to_body>
+				<!--Name of the body the force is expressed in (default is ground).-->
+				<force_expressed_in_body>ground</force_expressed_in_body>
+				<!--Name of the body the point is expressed in (default is ground).-->
+				<point_expressed_in_body>ground</point_expressed_in_body>
+				<!--Identifier (string) to locate the force to be applied in the data source.-->
+				<force_identifier>ground_force_3_v</force_identifier>
+				<!--Identifier (string) to locate the point to be applied in the data source.-->
+				<point_identifier>ground_force_3_p</point_identifier>
+				<!--Identifier (string) to locate the torque to be applied in the data source.-->
+				<torque_identifier>ground_torque_3_</torque_identifier>
+			</ExternalForce>
+		</objects>
+		<groups />
+		<!--Storage file (.sto) containing (3) components of force and/or torque and point of application.Note: this file overrides the data source specified by the individual external forces if specified.-->
+		<datafile>overground_17_grf.mot</datafile>
+		<!--The option is deprecated and unnecessary to apply external loads. A motion file (.mot) or storage file (.sto) containing the model kinematics used to transform a point expressed in ground to the body of force application.If the point is not expressed in ground, the point is not transformed-->
+		<external_loads_model_kinematics_file />
+		<!--Optional low-pass cut-off frequency for filtering the model kinematics corresponding used to transform the point of application. A negative value results in no filtering. The default value is -1.0, so no filtering.-->
+		<lowpass_cutoff_frequency_for_load_kinematics>-1</lowpass_cutoff_frequency_for_load_kinematics>
+	</ExternalLoads>
+</OpenSimDocument>

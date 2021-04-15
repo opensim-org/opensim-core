@@ -19,10 +19,10 @@
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include "OpenSim/Simulation/Model/Smith2018ArticularContactForce.h"
-#include "H5FileAdapter.h"
+//#include "H5FileAdapter.h"
 #include "osimJAMDLL.h"
-#include "H5Cpp.h"
-#include "hdf5_hl.h"
+//#include "H5Cpp.h"
+//#include "hdf5_hl.h"
 #include "OpenSim/Simulation/StatesTrajectory.h"
 
 
@@ -226,11 +226,11 @@ public:
 public:
     JointMechanicsTool();
     JointMechanicsTool(std::string settings_file);
-    JointMechanicsTool(Model *aModel,
-        std::string coordinates_file, std::string results_dir);
+    /*JointMechanicsTool(Model *aModel,
+        std::string coordinates_file, std::string results_dir);*/
 
     void setModel(Model& aModel);
-    void loadModel(const std::string &aToolSetupFileName);
+    //void loadModel(const std::string &aToolSetupFileName);
     bool run();
 
     int printResults(const std::string &aBaseName, const std::string &aDir);
@@ -276,7 +276,8 @@ private:
 
     
 private:
-    Model* _model;
+    Model _model;
+    bool _model_exists;
 
     StatesTrajectory _states;
 

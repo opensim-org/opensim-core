@@ -53,9 +53,12 @@ using namespace OpenSim;
 COMAKInverseKinematicsTool::COMAKInverseKinematicsTool() 
 {
     constructProperties();
+    _directoryOfSetupFile = "";
+    _model_exists = false;
 }
 
-COMAKInverseKinematicsTool::COMAKInverseKinematicsTool(const std::string file) : Object(file) {
+COMAKInverseKinematicsTool::COMAKInverseKinematicsTool(const std::string file) 
+    : Object(file) {
     constructProperties();
     updateFromXMLDocument();
         
@@ -104,6 +107,28 @@ void COMAKInverseKinematicsTool::constructProperties()
     constructProperty_verbose(0);
 }
 
+void COMAKInverseKinematicsTool::setModel(Model& model) {
+    _model = model;
+    set_model_file(model.getDocumentFileName());
+    _model_exists = true;
+}
+
+bool COMAKInverseKinematicsTool::run()
+{
+    initialize();
+    
+    //Secondary Constraint Simulation
+    if (get_perform_secondary_constraint_sim()) {
+        performIKSecondaryConstraintSimulation();
+    }
+
+    //Inverse Kinematics 
+    if (get_perform_inverse_kinematics()) {
+        performIK();
+    }
+    return true;
+}
+
 bool COMAKInverseKinematicsTool::initialize()
 {
     //Make results directory
@@ -114,7 +139,13 @@ bool COMAKInverseKinematicsTool::initialize()
             "Possible reason: This tool cannot make new folder with subfolder.");
     }
 
-    _model = Model(get_model_file());
+        //Set Model
+    if (!_model_exists) {
+        if (get_model_file().empty()) {
+            OPENSIM_THROW(Exception, "No model was set in the COMAKInverseKinematicsTool.");
+        }
+        _model = Model(get_model_file());
+    }
 
     std::string function_file = get_secondary_constraint_function_file();
 
@@ -221,27 +252,14 @@ bool COMAKInverseKinematicsTool::initialize()
     return true;
 }
 
-bool COMAKInverseKinematicsTool::run()
-{
-    //Secondary Constraint Simulation
-    if (get_perform_secondary_constraint_sim()) {
-        performIKSecondaryConstraintSimulation();
-    }
 
-    //Inverse Kinematics 
-    if (get_perform_inverse_kinematics()) {
-        performIK();
-    }
-    return true;
-}
 
 
 void COMAKInverseKinematicsTool::performIKSecondaryConstraintSimulation() {
-    std::cout << "Performing IK Secondary Constraint Simulation..." 
-        << std::endl;
-    
+    log_info("Performing IK Secondary Constraint Simulation...");
+
     //Initialize Model
-    Model model = _model;
+    Model model = *_model.clone();
     model.setUseVisualizer(get_use_visualizer());
     model.initSystem();
 
@@ -349,16 +367,15 @@ void COMAKInverseKinematicsTool::performIKSecondaryConstraintSimulation() {
         timestepper.stepTo(i*dt);
         state = timestepper.getState();
         settle_states.append(state);
+            
+        log_info("Time: {}", state.getTime());
+        log_info("\t\t VALUE \t\tDELTA");
         
-        if (get_verbose() > 0) {
-            std::cout << std::endl;
-            std::cout << "Time: " << state.getTime() << std::endl;
-            std::cout << "\t\t VALUE \t\tDELTA" << std::endl;
-        }
 
         //Compute Delta Coordinate
         max_coord_delta = 0;
         for (int k = 0; k < _n_secondary_coord; k++) {
+            
             Coordinate& coord = model.updComponent<Coordinate>(_secondary_coord_path[k]);
             double value = coord.getValue(state);
             double delta = abs(value - prev_sec_coord_value(k));
@@ -369,7 +386,7 @@ void COMAKInverseKinematicsTool::performIKSecondaryConstraintSimulation() {
             prev_sec_coord_value(k) = value;
 
             if (get_verbose() > 0) {
-                std::cout << coord.getName() << " \t" << value << "\t" << delta <<std::endl;
+                log_info("{} \t {} \t", coord.getName(), value, delta);
             }
         }
         i++;
@@ -486,84 +503,84 @@ void COMAKInverseKinematicsTool::performIKSecondaryConstraintSimulation() {
 
     SimTK::Matrix data((int)time.size(), _n_secondary_coord);
 
-for (int j = 0; j < _n_secondary_coord; ++j) {
-    std::string path = _secondary_coord_path[j];
-    SimTK::Vector col_data = q_table.getDependentColumn(path + "/value");
+    for (int j = 0; j < _n_secondary_coord; ++j) {
+        std::string path = _secondary_coord_path[j];
+        SimTK::Vector col_data = q_table.getDependentColumn(path + "/value");
 
-    for (int i = 0; i < nSteps; ++i) {
-        data(i, j) = col_data(i);
+        for (int i = 0; i < nSteps; ++i) {
+            data(i, j) = col_data(i);
 
+        }
     }
-}
 
-double ind_max = SimTK::max(ind_data);
-double ind_min = SimTK::min(ind_data);
+    double ind_max = SimTK::max(ind_data);
+    double ind_min = SimTK::min(ind_data);
 
-int npts = get_constraint_function_num_interpolation_points();
-double step = (ind_max - ind_min) / npts;
+    int npts = get_constraint_function_num_interpolation_points();
+    double step = (ind_max - ind_min) / npts;
 
-SimTK::Vector ind_pt_data(npts);
-
-for (int i = 0; i < npts; ++i) {
-    ind_pt_data(i) = ind_min + i * step;
-}
-
-_secondary_constraint_functions.clearAndDestroy();
-
-for (int j = 0; j < _n_secondary_coord; ++j) {
-    std::string path = _secondary_coord_path[j];
-
-    SimTK::Vector secondary_data = data(j);
-
-    //GCVSpline* spline = new GCVSpline(5, secondary_data.nrow(), &ind_data[0], &secondary_data[0], path, -1);
-    SimmSpline data_fit = SimmSpline(secondary_data.size(), &ind_data[0], &secondary_data[0]);
-
-    SimmSpline* spline = new SimmSpline();
-    spline->setName(path);
+    SimTK::Vector ind_pt_data(npts);
 
     for (int i = 0; i < npts; ++i) {
-        spline->addPoint(ind_pt_data(i), data_fit.calcValue(SimTK::Vector(1, ind_pt_data(i))));
+        ind_pt_data(i) = ind_min + i * step;
     }
 
-    _secondary_constraint_functions.adoptAndAppend(spline);
-}
+    _secondary_constraint_functions.clearAndDestroy();
 
-//Print Secondardy Constraint Functions to file
-_secondary_constraint_functions.print(get_secondary_constraint_function_file());
+    for (int j = 0; j < _n_secondary_coord; ++j) {
+        std::string path = _secondary_coord_path[j];
 
-//Write Outputs
-if (get_print_secondary_constraint_sim_results()) {
-    std::cout << "Printing secondary constraint simulation results: " <<
-        get_results_directory() << std::endl;
+        SimTK::Vector secondary_data = data(j);
 
-    std::string name = "secondary_constraint_sim_states";
+        //GCVSpline* spline = new GCVSpline(5, secondary_data.nrow(), &ind_data[0], &secondary_data[0], path, -1);
+        SimmSpline data_fit = SimmSpline(secondary_data.size(), &ind_data[0], &secondary_data[0]);
 
-    TimeSeriesTable settle_table = settle_states.exportToTable(model);
-    settle_table.addTableMetaData("header", name);
-    settle_table.addTableMetaData("nRows", 
-        std::to_string(settle_table.getNumRows()));
-    settle_table.addTableMetaData("nColumns", 
-        std::to_string(settle_table.getNumColumns() + 1));
+        SimmSpline* spline = new SimmSpline();
+        spline->setName(path);
 
-    TimeSeriesTable sweep_table = sweep_states.exportToTable(model);
-    sweep_table.addTableMetaData("header", name);
-    sweep_table.addTableMetaData("nRows", 
-        std::to_string(sweep_table.getNumRows()));
-    sweep_table.addTableMetaData("nColumns", 
-        std::to_string(sweep_table.getNumColumns() + 1));
+        for (int i = 0; i < npts; ++i) {
+            spline->addPoint(ind_pt_data(i), data_fit.calcValue(SimTK::Vector(1, ind_pt_data(i))));
+        }
 
-    std::string settle_file =
-        get_results_directory() + "/" + get_results_prefix() +
-        "_secondary_constraint_settle_states.sto";
+        _secondary_constraint_functions.adoptAndAppend(spline);
+    }
 
-    std::string sweep_file =
-        get_results_directory() + "/" + get_results_prefix() +
-        "_secondary_constraint_sweep_states.sto";
+    //Print Secondardy Constraint Functions to file
+    _secondary_constraint_functions.print(get_secondary_constraint_function_file());
 
-    STOFileAdapter sto_file_adapt;
-    sto_file_adapt.write(settle_table, settle_file);
-    sto_file_adapt.write(sweep_table, sweep_file);
-}
+    //Write Outputs
+    if (get_print_secondary_constraint_sim_results()) {
+        std::cout << "Printing secondary constraint simulation results: " <<
+            get_results_directory() << std::endl;
+
+        std::string name = "secondary_constraint_sim_states";
+
+        TimeSeriesTable settle_table = settle_states.exportToTable(model);
+        settle_table.addTableMetaData("header", name);
+        settle_table.addTableMetaData("nRows", 
+            std::to_string(settle_table.getNumRows()));
+        settle_table.addTableMetaData("nColumns", 
+            std::to_string(settle_table.getNumColumns() + 1));
+
+        TimeSeriesTable sweep_table = sweep_states.exportToTable(model);
+        sweep_table.addTableMetaData("header", name);
+        sweep_table.addTableMetaData("nRows", 
+            std::to_string(sweep_table.getNumRows()));
+        sweep_table.addTableMetaData("nColumns", 
+            std::to_string(sweep_table.getNumColumns() + 1));
+
+        std::string settle_file =
+            get_results_directory() + "/" + get_results_prefix() +
+            "_secondary_constraint_settle_states.sto";
+
+        std::string sweep_file =
+            get_results_directory() + "/" + get_results_prefix() +
+            "_secondary_constraint_sweep_states.sto";
+
+        STOFileAdapter sto_file_adapt;
+        sto_file_adapt.write(settle_table, settle_file);
+        sto_file_adapt.write(sweep_table, sweep_file);
+    }
 }
 
 void COMAKInverseKinematicsTool::performIK()

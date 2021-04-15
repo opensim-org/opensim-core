@@ -171,7 +171,6 @@ public:
     ForsimTool(std::string settings_file);
 
     void setModel(Model& aModel);
-    void loadModel(const std::string &aToolSetupFileName);
     bool run();
     
 private:
@@ -187,9 +186,10 @@ private:
 // DATA
 //=============================================================================
 
-    
 private:
     Model _model;
+    bool _model_exists;
+
     ExternalLoads _external_loads;
 
     std::vector<std::string> _prescribed_frc_actuator_paths;

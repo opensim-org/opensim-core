@@ -206,6 +206,7 @@ private:
 public:
     bool initialize();
     bool run();
+    void setModel(Model& model);
     void performIKSecondaryConstraintSimulation();
     void performIK();
     void runInverseKinematics(Model& model);
@@ -220,6 +221,8 @@ public:
     //--------------------------------------------------------------------------
 public:
     Model _model;
+    bool _model_exists;
+
     SimTK::State _state;
 
     int _n_prescribed_coord;

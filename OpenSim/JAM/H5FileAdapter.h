@@ -35,6 +35,7 @@ datasets, and metadata describing the datasets.
 
 #include "OpenSim/Common/FileAdapter.h"
 #include "SimTKmath.h"
+
 #include "H5Cpp.h"
 #include "hdf5_hl.h"
 #include "osimJAMDLL.h"
@@ -55,7 +56,7 @@ namespace OpenSim {
 
        H5FileAdapter* clone() const override;
 
-
+       
        void open(const std::string& file_name);
 
        void close();
@@ -96,7 +97,7 @@ namespace OpenSim {
            std::vector<std::string> names,
            std::vector<std::string> output_vector_names,
            std::vector<std::vector<SimTK::Matrix>> output_vector_values);
-
+       
     protected:
         OutputTables extendRead(const std::string& fileName) const override;
 
@@ -105,6 +106,7 @@ namespace OpenSim {
     //Data
     protected:
         H5::H5File _file;
+
         bool _time_is_empty;
 
     };

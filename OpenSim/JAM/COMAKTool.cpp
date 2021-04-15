@@ -36,11 +36,13 @@ COMAKTool::COMAKTool()
 {
     constructProperties();
     _directoryOfSetupFile = "";
+    _model_exists = false;
 }
 
 COMAKTool::COMAKTool(const std::string file) : Object(file) {
     constructProperties();
     updateFromXMLDocument();
+
     _directoryOfSetupFile = IO::getParentDirectory(file);
     IO::chDir(_directoryOfSetupFile);
 }
@@ -105,6 +107,8 @@ void COMAKTool::constructProperties()
 
 void COMAKTool::setModel(Model& model) {
     _model = model;
+    set_model_file(model.getDocumentFileName());
+    _model_exists = true;
 }
 
 bool COMAKTool::run()
@@ -125,7 +129,14 @@ SimTK::State COMAKTool::initialize()
             "Possible reason: This tool cannot make new folder with "
             "subfolder.");
     }
-    _model = Model(get_model_file());
+    
+    //Set Model
+    if (!_model_exists) {
+        if (get_model_file().empty()) {
+            OPENSIM_THROW(Exception, "No model was set in the COMAKTool.");
+        }
+        _model = Model(get_model_file());
+    }
 
     updateModelForces();
 
@@ -1797,44 +1808,5 @@ void COMAKTool::printOptimizationResultsToConsole(
     }
 }
 
-COMAKSecondaryCoordinate::COMAKSecondaryCoordinate()
-{
-    constructProperties();
-}
 
-void COMAKSecondaryCoordinate::constructProperties() 
-{
-    constructProperty_coordinate("");
-    constructProperty_max_change(0.05);
-}
 
-COMAKSecondaryCoordinateSet::COMAKSecondaryCoordinateSet()
-{
-    constructProperties();
-}
-
-void COMAKSecondaryCoordinateSet::constructProperties() 
-{
-   
-}
-
-COMAKCostFunctionParameter::COMAKCostFunctionParameter()
-{
-    constructProperties();
-}
-
-void COMAKCostFunctionParameter::constructProperties() 
-{
-    constructProperty_actuator("");
-    constructProperty_weight(Constant(1.0));
-}
-
-COMAKCostFunctionParameterSet::COMAKCostFunctionParameterSet()
-{
-    constructProperties();
-}
-
-void COMAKCostFunctionParameterSet::constructProperties() 
-{
-   
-}

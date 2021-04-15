@@ -19,14 +19,16 @@
 #include "osimJAMDLL.h"
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/FunctionSet.h>
+#include <OpenSim/Common/Object.h>
 #include <OpenSim/Simulation/Model/ExternalLoads.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
 
+#include "COMAKSettingsSet.h"
+
 namespace OpenSim { 
-class COMAKSecondaryCoordinate;
-class COMAKSecondaryCoordinateSet;
+
 class COMAKCostFunctionParameter;
 class COMAKCostFunctionParameterSet;
 
@@ -322,8 +324,9 @@ public:
 //-----------------------------------------------------------------------------
 // Members
 //-----------------------------------------------------------------------------
-public:
+private:
     Model _model;
+    bool _model_exists;
 
     int _n_prescribed_coord;
     int _n_primary_coord;
@@ -392,66 +395,7 @@ public:
 //=============================================================================
 };  // END of class COMAK_TOOL
 
-class OSIMJAM_API COMAKSecondaryCoordinate : public Object {
-    OpenSim_DECLARE_CONCRETE_OBJECT(COMAKSecondaryCoordinate, Object)
 
-public:
-    OpenSim_DECLARE_PROPERTY(coordinate, std::string, 
-        "Path to Coordinate in model.")
-
-    /*OpenSim_DECLARE_PROPERTY(comak_damping, double,
-        "Coefficient to penalize frame-to-frame changes in predicted "
-        "secondary coordinate values. "
-        "The default value is 1.0.")*/
-
-    OpenSim_DECLARE_PROPERTY(max_change, double, "Limit on the maximum "
-        "frame-to-frame changes in secondary coordinate values. "
-        "The default value is 0.05.")
-
-    COMAKSecondaryCoordinate();
-    void constructProperties();
-}; //END of class COMAKSecondaryCoordinate
-
-class OSIMJAM_API COMAKSecondaryCoordinateSet : 
-    public Set<COMAKSecondaryCoordinate> {
-    OpenSim_DECLARE_CONCRETE_OBJECT(
-        COMAKSecondaryCoordinateSet, Set<COMAKSecondaryCoordinateSet>);
-
-public:
-    COMAKSecondaryCoordinateSet();
-private:
-    void constructProperties();
-//=============================================================================
-};  // COMAKSecondaryCoordinateSet
-
-
-class OSIMJAM_API COMAKCostFunctionParameter : public Object {
-    OpenSim_DECLARE_CONCRETE_OBJECT(COMAKCostFunctionParameter, Object)
-
-public:
-    OpenSim_DECLARE_PROPERTY(actuator, std::string, 
-        "Path to actuator in model.")
-
-    OpenSim_DECLARE_PROPERTY(weight, Function, 
-        "Weighting coefficient that multiplies the squared actuator "
-        "activation in the COMAK optimization cost function."
-        "The Default value is 1.0.")
-
-
-    COMAKCostFunctionParameter();
-    void constructProperties();
-}; //END of class COMAKCostFunctionParameter
-
-class OSIMJAM_API COMAKCostFunctionParameterSet : 
-    public Set<COMAKCostFunctionParameter> {
-    OpenSim_DECLARE_CONCRETE_OBJECT(
-        COMAKCostFunctionParameterSet, Set<COMAKCostFunctionParameter>)
-
-public:
-
-    COMAKCostFunctionParameterSet();
-    void constructProperties();
-}; //END of class COMAKCostFunctionParameterSet
 }; //namespace
 //=============================================================================
 //=============================================================================

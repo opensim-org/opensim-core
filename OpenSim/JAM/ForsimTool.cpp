@@ -38,13 +38,12 @@ ForsimTool::ForsimTool() : Object()
 {
     setNull();
     constructProperties();
-
+    _directoryOfSetupFile = "";
 }
 
 ForsimTool::ForsimTool(std::string settings_file) : Object(settings_file) {
     constructProperties();
     updateFromXMLDocument();
-    loadModel(settings_file);
 
     _directoryOfSetupFile = IO::getParentDirectory(settings_file);
     IO::chDir(_directoryOfSetupFile);
@@ -85,11 +84,19 @@ void ForsimTool::setModel(Model& aModel)
 {
     _model = aModel;
     set_model_file(_model.getDocumentFileName());
+    _model_exists = true;
 }
 
 bool ForsimTool::run()
 {
-    setModel(Model(get_model_file()));
+    //Set Model
+    if (!_model_exists) {
+        if (get_model_file().empty()) {
+            OPENSIM_THROW(Exception, "No model was set in the ForsimTool.");
+        }
+        _model = Model(get_model_file());
+    }
+
     //Make results directory
     int makeDir_out = IO::makeDir(get_results_directory());
     if (errno == ENOENT && makeDir_out == -1) {
@@ -586,32 +593,6 @@ void ForsimTool::applyExternalLoads()
 
     IO::chDir(savedCwd);
     return;
-}
-
-void ForsimTool::loadModel(const std::string &aToolSetupFileName)
-{
-    
-    OPENSIM_THROW_IF(get_model_file().empty(), Exception,
-            "No model file was specified (<model_file> element is empty) in "
-            "the Setup file. ");
-    std::string saveWorkingDirectory = IO::getCwd();
-    std::string directoryOfSetupFile = IO::getParentDirectory(aToolSetupFileName);
-    IO::chDir(directoryOfSetupFile);
-
-    std::cout<<"ForsimTool "<< getName() <<" loading model '"<<get_model_file() <<"'"<< std::endl;
-
-    Model model;
-
-    try {
-        model = Model(get_model_file());
-        model.finalizeFromProperties();
-        
-    } catch(...) { // Properly restore current directory if an exception is thrown
-        IO::chDir(saveWorkingDirectory);
-        throw;
-    }
-    _model = model;
-    IO::chDir(saveWorkingDirectory);
 }
 
 void ForsimTool::printDebugInfo(const SimTK::State& state) {

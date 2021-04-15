@@ -23,8 +23,10 @@
 #include "OpenSim/Simulation/Model/Blankevoort1991Ligament.h"
 #include "OpenSim/Simulation/Model/Smith2018ContactMesh.h"
 #include "OpenSim/Simulation/Model/Smith2018ArticularContactForce.h"
-//#include "JointMechanicsTool.h"
+#include "JointMechanicsTool.h"
 #include "ForsimTool.h"
+#include "COMAKSettings.h"
+#include "COMAKSettingsSet.h"
 #include "COMAKTool.h"
 #include "COMAKInverseKinematicsTool.h"
 
@@ -36,13 +38,14 @@ OSIMJAM_API void RegisterTypes_osimJAM() {
     Object::registerType(Blankevoort1991Ligament());
     Object::registerType(Smith2018ContactMesh());
     Object::registerType(Smith2018ArticularContactForce());
-    //Object::registerType(JointMechanicsTool());
+    Object::registerType(JointMechanicsTool());
     Object::registerType(ForsimTool());
-    Object::registerType(COMAKTool());
     Object::registerType(COMAKSecondaryCoordinate());
     Object::registerType(COMAKSecondaryCoordinateSet());
     Object::registerType(COMAKCostFunctionParameter());
     Object::registerType(COMAKCostFunctionParameterSet());
+    Object::registerType(COMAKTool());
+
     Object::registerType(COMAKInverseKinematicsTool());
 
     } catch (const std::exception& e) {
