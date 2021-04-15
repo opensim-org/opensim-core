@@ -194,8 +194,14 @@ constructDescription()
     strcat(descrip, tmp);
     strcat(descrip, "\nBody segment orientations are described using");
     strcat(descrip, " body-fixed X-Y-Z Euler angles.\n");
-    strcat(descrip, "\nAngular velocities and accelerations are given about");
-    strcat(descrip, " the body-local axes.\n");
+    if (_expressInLocalFrame) {
+        strcat(descrip, "\nAngular velocities and accelerations are");
+        strcat(descrip, " expressed in the body-local axes.\n");
+    } 
+    else {
+        strcat(descrip, "\nAngular velocities and accelerations are");
+        strcat(descrip, " expressed in the ground frame axes.\n");
+    }
     strcat(descrip, "\nUnits are S.I. units (seconds, meters, Newtons, ...)");
     strcat(descrip, "\nIf the header above contains a line with ");
     strcat(descrip, "'inDegrees', this indicates whether rotational values ");
@@ -700,6 +706,10 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
     string suffix;
     if(_expressInLocalFrame) suffix = "_bodyLocal";
     else suffix = "_global";
+
+    // Set the file headers just before printing in case the flag
+    // _expressInLocalFrame has changed since construction
+    constructDescription();
 
     // ACCELERATIONS
     Storage::printResult(_aStore,aBaseName+"_"+getName()+"_acc"+suffix,aDir,aDT,aExtension);
