@@ -309,7 +309,7 @@ TimeSeriesTable_<T> analyze(Model model, const TimeSeriesTable& statesTable,
 /// SimTK::Stage::Acceleration which depends on SimTK::Stage::Dynamics.
 ///
 /// @ingroup simulationutil
-TimeSeriesTableVec3 createSyntheticIMUAccelerationSignals(
+OSIMSIMULATION_API TimeSeriesTableVec3 createSyntheticIMUAccelerationSignals(
         const Model& model,
         const TimeSeriesTable& statesTable, const TimeSeriesTable& controlsTable,
         const std::vector<std::string>& framePaths);
