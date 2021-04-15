@@ -10,6 +10,7 @@ v4.3
 ====
 - Fixed a bug with Actuation analysis that would lead to extra columns in the output when an actuator is disabled (Issue #2977).
 - Upgrade bindings to use SWIG version 4.0 (allowing doxygen comments to carry over to Java/Python files).
+- Added createSyntheticIMUAccelerationSignals() to SimulationUtilities to generate "synthetic" IMU accelerations based on passed in state trajectory.
 
 v4.2
 ====
