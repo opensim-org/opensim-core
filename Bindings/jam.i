@@ -18,6 +18,7 @@ namespace OpenSim {
 
 %include <OpenSim/JAM/COMAKSettings.h>
 %template(SetCOMAKSecondaryCoordinates) OpenSim::Set<OpenSim::COMAKSecondaryCoordinate, OpenSim::Object>;
+%template(SetCOMAKCostFunctionParameters) OpenSim::Set<OpenSim::COMAKCostFunctionParameter, OpenSim::Object>;
 %include <OpenSim/JAM/COMAKSettingsSet.h>
 
 //%include <OpenSim/JAM/JAMUtilities.h>

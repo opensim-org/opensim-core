@@ -151,7 +151,7 @@ bool JointMechanicsTool::run() {
             OPENSIM_THROW(Exception, 
                 "No model was set in the JointMechanicsTool.");
         }
-        setModel(Model(get_model_file()));
+        _model = Model(get_model_file());
     }
 
     SimTK::State state = _model.initSystem();

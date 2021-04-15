@@ -250,7 +250,7 @@ comak_ik.print('./inputs/comak_inverse_kinematics_settings.xml');
 
 disp('Running COMAKInverseKinematicsTool...')
 comak_ik.run();
-%% Perform COMAK Simulation
+%% Perform Standard COMAK Simulation
 
 comak = COMAKTool();
 comak.set_model_file(model_file);
@@ -401,6 +401,101 @@ comak.print('./inputs/comak_settings.xml');
 disp('Running COMAK Tool...')
 comak.run();
 
+%% Perform COMAK simulation with muscle weights
+comak_muscle_weight_result_dir = './results/comak_muscle_weight';
+results_muscle_weight_basename = 'walking_muscle_weight';
+
+comak_muscle_weight = comak;
+comak_muscle_weight.set_results_directory(comak_muscle_weight_result_dir);
+comak_muscle_weight.set_results_prefix(results_muscle_weight_basename);
+
+cost_fun_param_set = COMAKCostFunctionParameterSet();
+cost_fun_param = COMAKCostFunctionParameter();
+
+cost_fun_param.setName('gasmed_r');
+cost_fun_param.set_actuator('/forceset/gasmed_r');
+cost_fun_param.set_weight(Constant(4));
+cost_fun_param_set.cloneAndAppend(cost_fun_param);
+
+cost_fun_param.setName('gaslat_r');
+cost_fun_param.set_actuator('/forceset/gaslat_r');
+cost_fun_param.set_weight(Constant(7));
+cost_fun_param_set.cloneAndAppend(cost_fun_param);
+
+cost_fun_param.setName('soleus_r');
+cost_fun_param.set_actuator('/forceset/soleus_r');
+cost_fun_param.set_weight(Constant(0.9));
+cost_fun_param_set.cloneAndAppend(cost_fun_param);
+
+cost_fun_param.setName('recfem_r');
+cost_fun_param.set_actuator('/forceset/recfem_r');
+cost_fun_param.set_weight(Constant(3));
+cost_fun_param_set.cloneAndAppend(cost_fun_param);
+
+cost_fun_param.setName('glmed1_r');
+cost_fun_param.set_actuator('/forceset/glmed1_r');
+cost_fun_param.set_weight(Constant(0.9));
+cost_fun_param_set.cloneAndAppend(cost_fun_param);
+
+cost_fun_param.setName('glmed2_r');
+cost_fun_param.set_actuator('/forceset/glmed1_r');
+cost_fun_param.set_weight(Constant(0.9));
+cost_fun_param_set.cloneAndAppend(cost_fun_param);
+
+cost_fun_param.setName('glmed3_r');
+cost_fun_param.set_actuator('/forceset/glmed3_r');
+cost_fun_param.set_weight(Constant(0.9));
+cost_fun_param_set.cloneAndAppend(cost_fun_param);
+
+cost_fun_param.setName('glmin1_r');
+cost_fun_param.set_actuator('/forceset/glmin1_r');
+cost_fun_param.set_weight(Constant(0.9));
+cost_fun_param_set.cloneAndAppend(cost_fun_param);
+
+cost_fun_param.setName('glmin2_r');
+cost_fun_param.set_actuator('/forceset/glmin2_r');
+cost_fun_param.set_weight(Constant(0.9));
+cost_fun_param_set.cloneAndAppend(cost_fun_param);
+
+cost_fun_param.setName('glmin3_r');
+cost_fun_param.set_actuator('/forceset/glmin3_r');
+cost_fun_param.set_weight(Constant(0.9));
+cost_fun_param_set.cloneAndAppend(cost_fun_param);
+
+cost_fun_param.setName('bflh_r');
+cost_fun_param.set_actuator('/forceset/bflh_r');
+cost_fun_param.set_weight(Constant(0.9));
+cost_fun_param_set.cloneAndAppend(cost_fun_param);
+
+cost_fun_param.setName('bfsh_r');
+cost_fun_param.set_actuator('/forceset/bfsh_r');
+cost_fun_param.set_weight(Constant(0.9));
+cost_fun_param_set.cloneAndAppend(cost_fun_param);
+
+cost_fun_param.setName('semiten_r');
+cost_fun_param.set_actuator('/forceset/semiten_r');
+cost_fun_param.set_weight(Constant(0.9));
+cost_fun_param_set.cloneAndAppend(cost_fun_param);
+
+cost_fun_param.setName('semimem_r');
+cost_fun_param.set_actuator('/forceset/semimem_r');
+cost_fun_param.set_weight(Constant(0.9));
+cost_fun_param_set.cloneAndAppend(cost_fun_param);
+
+comak_muscle_weight.set_COMAKCostFunctionParameterSet(cost_fun_param_set);
+comak_muscle_weight.print('./inputs/comak_muscle_weights_settings.xml');
+
+disp('Running COMAK Tool...')
+% comak_muscle_weight.run();
+%% Perform COMAK simulation with contact energy
+
+%comak.print('./inputs/comak_muscle_weights_settings.xml');
+
+%% Perform COMAK simulation with EMG informed
+%Desired activation to track
+
+%Upper and Lower Bounds 
+%comak.print('./inputs/comak_emg_settings.xml');
 %% Perform Joint Mechanics Analysis
 jnt_mech = JointMechanicsTool();
 jnt_mech.set_model_file(model_file);

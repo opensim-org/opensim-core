@@ -83,7 +83,7 @@ void ForsimTool::constructProperties()
 void ForsimTool::setModel(Model& aModel)
 {
     _model = aModel;
-    set_model_file(_model.getDocumentFileName());
+    set_model_file(aModel.getDocumentFileName());
     _model_exists = true;
 }
 
