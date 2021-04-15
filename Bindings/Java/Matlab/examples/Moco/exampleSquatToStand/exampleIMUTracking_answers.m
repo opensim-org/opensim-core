@@ -12,7 +12,7 @@ study = MocoStudy();
 
 % Part 1b: Initialize the problem and set the model.
 problem = study.updProblem();
-problem.setModel(torqueDrivenModel);
+problem.setModel(muscleDrivenModel);
 
 % Part 1c: Set bounds on the problem.
 %
@@ -76,7 +76,7 @@ framePaths.add('/bodyset/tibia_r');
 torqueDrivenModel.initSystem();
 syntheticIMUAccelerations = ... 
     opensimSimulation.createSyntheticIMUAccelerationSignals(...
-        torqueDrivenModel, ...
+        muscleDrivenModel, ...
         predictSolution.exportToStatesTable(), ...
         predictSolution.exportToControlsTable(), framePaths);
 
@@ -174,7 +174,7 @@ for m = 0:model.getMuscles().getSize()-1
     musc = model.updMuscles().get(m);
     musc.setMinControl(0);
     musc.set_ignore_activation_dynamics(false);
-    musc.set_ignore_tendon_compliance(false);
+    musc.set_ignore_tendon_compliance(true);
     musc.set_max_isometric_force(2 * musc.get_max_isometric_force());
     dgf = DeGrooteFregly2016Muscle.safeDownCast(musc);
     dgf.set_active_force_width_scale(1.5);
