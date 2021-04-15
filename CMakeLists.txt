@@ -158,6 +158,9 @@ mark_as_advanced(OPENSIM_PYTHON_STANDALONE) # Mainly for packagers; not users.
 #   pypi: ON (there is no way to install the C++ libraries otherwise)
 #   debian, homebrew, conda: OFF (can have a separate C++ library package)
 
+option(OPENSIM_PYTHON_CONDA "Build specifically for Conda packaging
+which implies NO C++ tests and no runtime as managed by Conda." OFF)
+
 option(BUILD_API_ONLY "Build/install only headers, libraries,
 wrapping, tests; not applications (opensim, ik, rra, etc.)." OFF)
 
@@ -606,7 +609,9 @@ if(WIN32)
     add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
 endif()
 
-include(InstallRequiredSystemLibraries)
+if (NOT OPENSIM_PYTHON_CONDA)
+    include(InstallRequiredSystemLibraries)
+endif()
 
 # C++11
 # -----
