@@ -178,9 +178,9 @@ SimTK::State COMAKTool::initialize()
         if (!isPrescribed && !isPrimary && !isSecondary) {
             append_prescribed_coordinates(path);
 
-            std::cout << "WARNING: Coordinate (" << name <<
+            log_warn("WARNING: Coordinate ({}"
                 ") was not listed in COMAKTool params file. "
-                "Assumed PRESCRIBED." << std::endl;
+                "Assumed PRESCRIBED.", name);
         }
 
         // Make sure coordinate is not listed multiple times
@@ -311,28 +311,23 @@ SimTK::State COMAKTool::initialize()
         nCoord++;
     }
 
-    if (get_verbose() > 0) {
-        std::cout << std::endl;
-        std::cout << "Prescribed Coordinates:" << std::endl;
-        std::cout << "-----------------------" << std::endl;
-        for (int i = 0; i < _n_prescribed_coord; ++i) {
-            std::cout << _prescribed_coord_name[i] << std::endl;
-        }
 
-        std::cout << std::endl;
-        std::cout << "Primary Coordinates:" << std::endl;
-        std::cout << "--------------------" << std::endl;
-        for (int i = 0; i < _n_primary_coord; ++i) {
-            std::cout << _primary_coord_name[i] << std::endl;
-        }
+    log_info("Prescribed Coordinates:");
+    log_info("-----------------------");
+    for (int i = 0; i < _n_prescribed_coord; ++i) {
+        log_info(_prescribed_coord_name[i]);
+    }
 
-        std::cout << std::endl;
-        std::cout << "Secondary Coordinates:" << std::endl;
-        std::cout << "----------------------" << std::endl;
-        for (int i = 0; i < _n_secondary_coord; ++i) {
-            std::cout << _secondary_coord_name[i] << std::endl;
-        }
-        std::cout << std::endl;
+    log_info("Primary Coordinates:");
+    log_info("--------------------");
+    for (int i = 0; i < _n_primary_coord; ++i) {
+        log_info(_primary_coord_name[i]);
+    }
+
+    log_info("Secondary Coordinates:");
+    log_info("----------------------");
+    for (int i = 0; i < _n_secondary_coord; ++i) {
+        log_info(_secondary_coord_name[i]);
     }
 
     //Organize COMAKSecondaryCoordinate Properties
@@ -363,15 +358,14 @@ SimTK::State COMAKTool::initialize()
             if (first_replaced) {
                 first_replaced = false;
 
-                std::cout << "The following CoordinateActuators are "
-                << " acting on a prescribed coordinate. These actuators will "
+                log_warn("The following CoordinateActuators are "
+                    " acting on a prescribed coordinate. These actuators will "
                     "be disabled because they will do nothing while adding "
-                    "extra variables to the optimization."
-                << std::endl;
+                    "extra variables to the optimization.");
+                
             }
-            std::cout << coord_act.getAbsolutePathString() << " ("
-                << coord_act.get_coordinate()
-                << ")." << std::endl;
+            log_warn("{} ({}).",
+                coord_act.getAbsolutePathString(), coord_act.get_coordinate());
 
 
             coord_act.setAppliesForce(state, false);
@@ -392,10 +386,10 @@ SimTK::State COMAKTool::initialize()
         if (ind > -1) {
             cc_const.set_isEnforced(false);
         }
-        std::cout << "CoordinateCouplerConstraint: " << cc_const.getName() 
-            << " will not be enforced because the dependent coordinate: " 
-            << cc_coord_name << " is prescribed."
-            << std::endl;
+        log_info("CoordinateCouplerConstraint: {}"
+            " will not be enforced because the dependent coordinate: {}"
+            " is prescribed.", cc_const.getName(), cc_coord_name);
+
     }
 
     // TO DO
@@ -475,7 +469,7 @@ SimTK::State COMAKTool::initialize()
 
     if (get_verbose() > 1) {
         int w = 15;
-        std::cout << "\nMuscle Properties" << std::endl;
+        log_info("\nMuscle Properties");
         std::cout << std::setw(15) << "name " << std::setw(15) << "Fmax" << 
             std::setw(15) << "Volume" << std::endl;
         i = 0;
@@ -607,16 +601,14 @@ void COMAKTool::performCOMAK()
         }
     }
 
-    if (get_verbose() > 1) {
-        std::cout << std::endl;
-        std::cout << "Initial Secondary Coordinate Values:" << std::endl;
+    log_info("Initial Secondary Coordinate Values:");
 
-        for (int i = 0; i < _n_secondary_coord; ++i) {
-            std::cout << _secondary_coord_name[i] <<
-                ":\t" << init_secondary_values(i) << std::endl;
-        }
-        std::cout << std::endl;
+    for (int i = 0; i < _n_secondary_coord; ++i) {
+        log_info("{} :\t {}",
+            _secondary_coord_name[i], init_secondary_values(i));
     }
+        
+    
 
     //Apply External Loads
     applyExternalLoads();
@@ -662,7 +654,7 @@ void COMAKTool::performCOMAK()
     AnalysisSet& analysisSet = _model.updAnalysisSet();
 
     //Prepare for Optimization
-    std::cout << "\nPerforming COMAK...\n" << std::endl;
+    log_info("\nPerforming COMAK...\n");
 
     _model.setAllControllersEnabled(false);
 
@@ -704,8 +696,8 @@ void COMAKTool::performCOMAK()
         //Set Time
         state.setTime(_time[i]);
 
-        std::cout << "Frame: " << ++frame_num << "/" << _n_out_frames << "\t"
-                  << "Time: " << _time[i] << std::endl;
+        log_info("Frame: {} / {}", ++frame_num, _n_out_frames);
+        log_info("Time: {}", _time[i]);
 
         //Set Primary Qs and Us to experimental values
         for (int j = 0; j < _n_primary_coord; ++j) {
@@ -749,18 +741,13 @@ void COMAKTool::performCOMAK()
         for (int iter = 0; iter < get_max_iterations(); ++iter) {
             n_iter++;
 
-            if (get_verbose() > 0) {
-                std::cout << std::endl;
-                std::cout << 
-                    "---------------------------------------"
-                    "---------------------------------------" << std::endl;
-                std::cout << "Frame: " << frame_num << "\t"
-                    << "Time: " << _time[i] << "\t"
-                    << "Iteration: " << iter << std::endl;
-                std::cout <<
-                    "---------------------------------------"
-                    "---------------------------------------" << std::endl;
-            }
+            log_info("---------------------------------------"
+                    "---------------------------------------");
+            log_info("Frame: {} \t Time: {} \t Iteration: {}", frame_num);
+
+            log_info("---------------------------------------"
+                    "---------------------------------------");
+            
 
             //Reset the optimized delta coords to zero
             for (int m = 0; m < _n_secondary_coord; ++m) {
@@ -840,10 +827,7 @@ void COMAKTool::performCOMAK()
                 optimizer.optimize(_optim_parameters);
             }
             catch (SimTK::Exception::Base ex) {
-                if (get_verbose() > 1) {
-                    std::cout << "COMAK Optimization failed: "
-                        << ex.getMessage() << std::endl;
-                }
+                log_error("COMAK Optimization failed: {}", ex.getMessage());
             }
 
             //Account for optimization scale factors
@@ -926,13 +910,9 @@ void COMAKTool::performCOMAK()
                         << std::setw(20) << udot_error << std::endl;
                 }
             }
-            if (get_verbose() > 0) {
-                std::cout << "\nMax udot Error: " 
-                    << max_udot_error << std::endl;
-                std::cout << "Max Error Coord: " 
-                    << max_udot_coord << std::endl;
-            }
-
+            
+            log_info("Max udot Error: {} \t Max Error Coord: {}", 
+                max_udot_error, max_udot_coord);
             iter_max_udot_error(iter) = max_udot_error;
             iter_max_udot_coord[iter] = max_udot_coord;
 

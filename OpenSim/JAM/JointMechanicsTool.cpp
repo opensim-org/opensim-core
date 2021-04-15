@@ -46,7 +46,7 @@ JointMechanicsTool::JointMechanicsTool() : Object()
     setNull();
     constructProperties();
     _directoryOfSetupFile = "";
-
+    _model_exists = false;
 }
 
 JointMechanicsTool::JointMechanicsTool(std::string settings_file) : 

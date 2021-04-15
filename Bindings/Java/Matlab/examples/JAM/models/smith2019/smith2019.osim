@@ -7585,49 +7585,7 @@
 		<!--Constraints in the model.-->
 		<ConstraintSet name="constraintset">
 			<objects>
-								<CoordinateCouplerConstraint name="pf_l_r3_con">
-					<!--Constraint function of generalized coordinates (to be specified) used to evaluate the constraint errors and their derivatives, and must valid to at least 2nd order. Constraint function must evaluate to zero when coordinates satisfy the constraint.-->
-					<coupled_coordinates_function>
-						<SimmSpline>
-							<x> 0 0.174533 0.349066 0.523599 0.698132 0.872665 1.0472 1.22173 1.39626 1.5708 1.74533 1.91986 2.0944</x>
-							<y> 0.00113686 -0.00629212 -0.105582 -0.253683 -0.414245 -0.579047 -0.747244 -0.91799 -1.09044 -1.26379 -1.43763 -1.61186 -1.78634</y>
-						</SimmSpline>
-					</coupled_coordinates_function>
-					<!--List of names of the right hand side (independent) coordinates. Note the constraint function above, must be able to handle multiple coordinate values if more than one coordinate name is provided.-->
-					<independent_coordinate_names>knee_flex_l</independent_coordinate_names>
-					<!--Name of the left-hand side (dependent) coordinate of the constraint coupling function.-->
-					<dependent_coordinate_name>pf_l_r3</dependent_coordinate_name>
-				</CoordinateCouplerConstraint>
-				<CoordinateCouplerConstraint name="pf_l_tx_con">
-					<!--Constraint function of generalized coordinates (to be specified) used to evaluate the constraint errors and their derivatives, and must valid to at least 2nd order. Constraint function must evaluate to zero when coordinates satisfy the constraint.-->
-					<coupled_coordinates_function>
-						<SimmSpline>
-							<x> 0 0.174533 0.349066 0.523599 0.698132 0.872665 1.0472 1.22173 1.39626 1.5708 1.74533 1.91986 2.0944</x>
-							<y> 0.04435 0.040692 0.035581 0.029012 0.021473 0.013523 0.005483 -0.002412 -0.009959 -0.016903 -0.022926 -0.027739 -0.030815</y>
-						</SimmSpline>
-					</coupled_coordinates_function>
-					<!--List of names of the right hand side (independent) coordinates. Note the constraint function above, must be able to handle multiple coordinate values if more than one coordinate name is provided.-->
-					<independent_coordinate_names>knee_flex_l</independent_coordinate_names>
-					<!--Name of the left-hand side (dependent) coordinate of the constraint coupling function.-->
-					<dependent_coordinate_name>pf_l_tx</dependent_coordinate_name>
-					<!--Scale factor for the coupling function.-->
-					<scale_factor>0.92521836279087077</scale_factor>
-				</CoordinateCouplerConstraint>
-				<CoordinateCouplerConstraint name="pf_l_ty_con">
-					<!--Constraint function of generalized coordinates (to be specified) used to evaluate the constraint errors and their derivatives, and must valid to at least 2nd order. Constraint function must evaluate to zero when coordinates satisfy the constraint.-->
-					<coupled_coordinates_function>
-						<SimmSpline>
-							<x> 0 0.174533 0.349066 0.523599 0.698132 0.872665 1.0472 1.22173 1.39626 1.5708 1.74533 1.91986 2.0944</x>
-							<y> -0.418712 -0.426965 -0.43422 -0.440152 -0.444617 -0.447495 -0.448724 -0.448337 -0.446353 -0.442826 -0.438035 -0.432448 -0.426632</y>
-						</SimmSpline>
-					</coupled_coordinates_function>
-					<!--List of names of the right hand side (independent) coordinates. Note the constraint function above, must be able to handle multiple coordinate values if more than one coordinate name is provided.-->
-					<independent_coordinate_names>knee_flex_l</independent_coordinate_names>
-					<!--Name of the left-hand side (dependent) coordinate of the constraint coupling function.-->
-					<dependent_coordinate_name>pf_l_ty</dependent_coordinate_name>
-					<!--Scale factor for the coupling function.-->
-					<scale_factor>0.92521836279087077</scale_factor>
-				</CoordinateCouplerConstraint>
+
 			</objects>
 		</ConstraintSet>
 		<!--Forces in the model (includes Actuators).-->

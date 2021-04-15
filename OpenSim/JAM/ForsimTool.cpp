@@ -39,6 +39,7 @@ ForsimTool::ForsimTool() : Object()
     setNull();
     constructProperties();
     _directoryOfSetupFile = "";
+    _model_exists = false;
 }
 
 ForsimTool::ForsimTool(std::string settings_file) : Object(settings_file) {
@@ -171,21 +172,18 @@ bool ForsimTool::run()
     //Integrate Forward in Time
     double dt = get_report_time_step();
     int nSteps = (int)lround((get_stop_time() - get_start_time()) / dt);
-    
 
-    std::cout << std::endl;
-    std::cout << std::endl;
-    std::cout << "=====================================================" << std::endl;
-    std::cout << "| ForsimTool: Performing Forward Dynamic Simulation |" << std::endl;
-    std::cout << "=====================================================" << std::endl;
-    std::cout << "start time: " << get_start_time() << std::endl;
-    std::cout << "stop time: " << get_stop_time() << std::endl;
-    std::cout << std::endl;
+    log_info("=====================================================");
+    log_info("| ForsimTool: Performing Forward Dynamic Simulation |");
+    log_info("=====================================================");
+    log_info("start time: {}", get_start_time());
+    log_info("stop time: {}", get_stop_time());
+
 
     for (int i = 0; i <= nSteps; ++i) {
         
         double t = get_start_time() + (i+1) * dt;
-        std::cout << "time:" << t << std::endl;
+        log_info("time: {}",t);
 
         printDebugInfo(state);
 
@@ -234,8 +232,8 @@ bool ForsimTool::run()
     _model.updAnalysisSet().printResults(
         get_results_file_basename(), get_results_directory());
 
-    std::cout << "\nSimulation complete." << std::endl;
-    std::cout << "Printed results to: " + get_results_directory() << std::endl;
+    log_info("\nSimulation complete.");
+    log_info("Printed results to: {}", get_results_directory());
 
     return true;
 }
@@ -327,7 +325,7 @@ void ForsimTool::initializeActuators(SimTK::State& state) {
 
                     control->prescribeControlForActuator(actuator.getName(), control_function);
 
-                    std::cout << "Control Prescribed: " << actuator_path << std::endl;
+                    log_info("Control Prescribed: {}", actuator_path);
                 }
                 catch (ComponentNotFoundOnSpecifiedPath) {
                     OPENSIM_THROW(Exception,
@@ -400,28 +398,25 @@ void ForsimTool::initializeActuators(SimTK::State& state) {
 
         //Output to Screen
         if (_prescribed_frc_actuator_paths.size() > 0) {
-            std::cout << std::endl;
-            std::cout << "Force Prescribed:" << std::endl;
+            
+            log_info("Force Prescribed:");
             for (std::string& name : _prescribed_frc_actuator_paths) {
-                std::cout << name << std::endl;
+                log_info("{}", name);
             }
-            std::cout << std::endl;
         }
 
         if (_prescribed_act_actuator_paths.size() > 0) {
-            std::cout << "Activation Prescribed:" << std::endl;
+            log_info("Activation Prescribed:");
             for (std::string& name : _prescribed_act_actuator_paths) {
-                std::cout << name << std::endl;
+                log_info("{}", name);
             }
-            std::cout << std::endl;
         }
 
         if (_prescribed_control_actuator_paths.size() > 0) {
-            std::cout << "Control Prescribed:" << std::endl;
+            log_info("Control Prescribed:");
             for (std::string& name : _prescribed_control_actuator_paths) {
-                std::cout << name << std::endl;
+                log_info("{}", name);
             }
-            std::cout << std::endl;
         }
     }
     
@@ -429,7 +424,7 @@ void ForsimTool::initializeActuators(SimTK::State& state) {
 
     //Setup Constant Muscle Control
     if (get_constant_muscle_control() > -1) {
-        std::cout << "Constant Muscle Control : " << get_constant_muscle_control() << std::endl;
+        log_info("Constant Muscle Control: {}",get_constant_muscle_control());
 
         for (Muscle& msl : _model.updComponentList<Muscle>()) {
             std::string msl_path = msl.getAbsolutePathString();
@@ -452,15 +447,16 @@ void ForsimTool::initializeActuators(SimTK::State& state) {
                     get_ignore_tendon_compliance());
             }
             else {
-                std::cout << msl.getName() << " is not a "
+                log_info("{} is not a "
                     "Millard2012EquilibriumMuscle, ignore_activation_dynamics "
-                    "and ignore_tendon_compliance will have no effect." 
-                    << std::endl;
+                    "and ignore_tendon_compliance will have no effect.",
+                    msl.getName());
             }
             
             if (get_ignore_muscle_dynamics()) {
                 msl.overrideActuation(state, true);
-                msl.setOverrideActuation(state, get_constant_muscle_control() * msl.getMaxIsometricForce());
+                msl.setOverrideActuation(state, 
+                    get_constant_muscle_control() * msl.getMaxIsometricForce());
             }
             else {
                 _prescribed_control_actuator_paths.push_back(msl_path);
@@ -473,9 +469,8 @@ void ForsimTool::initializeActuators(SimTK::State& state) {
 
                 control->prescribeControlForActuator(msl.getName(), control_function);
             }
-            std::cout << msl_path << std::endl;
+            log_info("{}", msl_path);
         }
-        std::cout << std::endl;
     }
     _model.addComponent(control);
     state = _model.initSystem();
@@ -486,14 +481,14 @@ void ForsimTool::initializeCoordinates() {
         coord.set_locked(true);
     }
 
-    std::cout << "\nUnconstrained Coordinates:" << std::endl;
+    log_info("Unconstrained Coordinates:");
     for (int i = 0; i < getProperty_unconstrained_coordinates().size(); ++i) {
         std::string coord_path = get_unconstrained_coordinates(i);
 
         try {
             Coordinate& coord = _model.updComponent<Coordinate>(coord_path);
             coord.set_locked(false);
-            std::cout << coord_path << std::endl;
+            log_info(coord_path);
         }
         catch (ComponentNotFoundOnSpecifiedPath) {
             OPENSIM_THROW(Exception,
@@ -524,7 +519,7 @@ void ForsimTool::initializeCoordinates() {
         int nDataPt = (int)_coord_table.getNumRows();
         std::vector<double> time = _coord_table.getIndependentColumn();
 
-        std::cout << "\nPrescribed Coordinates:" << std::endl;
+        log_info("Prescribed Coordinates:");
         for (int i = 0; i < (int)labels.size(); ++i) {
 
             std::string coord_path = "";
@@ -553,9 +548,8 @@ void ForsimTool::initializeCoordinates() {
             coord.set_prescribed_function(function);
             coord.set_locked(false);
 
-            std::cout << labels[i] << std::endl;
+            log_info(labels[i]);
         }
-        std::cout << std::endl;
     }
 }
 
@@ -581,9 +575,9 @@ void ForsimTool::applyExternalLoads()
     catch (const Exception &ex) {
         // Important to catch exceptions here so we can restore current working directory...
         // And then we can re-throw the exception
-        std::cout << "Error: failed to construct ExternalLoads from file " << aExternalLoadsFileName;
-        std::cout << ". Please make sure the file exists and that it contains an ExternalLoads";
-        std::cout << "object or create a fresh one." << std::endl;
+        log_error( "Error: failed to construct ExternalLoads from file {}"
+            ". Please make sure the file exists and that it contains an ExternalLoads"
+            "object or create a fresh one.", aExternalLoadsFileName);
         if (getDocument()) IO::chDir(savedCwd);
         throw(ex);
     }

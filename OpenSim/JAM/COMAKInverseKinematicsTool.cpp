@@ -221,30 +221,28 @@ bool COMAKInverseKinematicsTool::initialize()
         nCoord++;
     }
 
-    std::cout << std::endl;
-    std::cout << "Secondary Coordinates:" << std::endl;
-    std::cout << "----------------------" << std::endl;
+
+    log_info("Secondary Coordinates:");
+    log_info("----------------------");
     for (int i = 0; i < _n_secondary_coord; ++i) {
-        std::cout << _secondary_coord_name[i] << std::endl;
+        log_info(_secondary_coord_name[i]);
     }
-    std::cout << std::endl;
-    std::cout << "Secondary Coupled Coordinate: " <<
-        get_secondary_coupled_coordinate() << std::endl;
+    
+    log_info("Secondary Coupled Coordinate: ",
+        get_secondary_coupled_coordinate());
 
     if (get_perform_secondary_constraint_sim()) {
-        std::cout << "Settle Threshold: " <<
-            get_secondary_constraint_sim_settle_threshold() << std::endl;
+        log_info("Settle Threshold: {}",
+            get_secondary_constraint_sim_settle_threshold());
 
-        std::cout << "Sweep Time: " <<
-            get_secondary_constraint_sim_sweep_time() << std::endl;
+        log_info("Sweep Time: {}", 
+            get_secondary_constraint_sim_sweep_time());
 
-        std::cout << "Sweep secondary_coupled_coordinate start value: " <<
-            get_secondary_coupled_coordinate_start_value() << std::endl;
+        log_info("Sweep secondary_coupled_coordinate start value: {}",
+            get_secondary_coupled_coordinate_start_value());
 
-        std::cout << "Sweep secondary_coupled_coordinate stop value: " <<
-            get_secondary_coupled_coordinate_stop_value() << std::endl;
-
-        std::cout << std::endl;
+        log_info("Sweep secondary_coupled_coordinate stop value: {}",
+            get_secondary_coupled_coordinate_stop_value());
     }
 
     _state = _model.initSystem();
@@ -355,9 +353,9 @@ void COMAKInverseKinematicsTool::performIKSecondaryConstraintSimulation() {
 
     double dt = 0.01;
  
-    if (get_verbose() > 0) {
-        std::cout << "Starting Settling Simulation."<< std::endl;
-    }
+
+    log_info("Starting Settling Simulation.");
+
 
     SimTK::Vector prev_sec_coord_value(_n_secondary_coord);
 
@@ -385,9 +383,9 @@ void COMAKInverseKinematicsTool::performIKSecondaryConstraintSimulation() {
             }
             prev_sec_coord_value(k) = value;
 
-            if (get_verbose() > 0) {
-                log_info("{} \t {} \t", coord.getName(), value, delta);
-            }
+
+            log_info("{} \t {} \t", coord.getName(), value, delta);
+
         }
         i++;
     }
@@ -403,10 +401,10 @@ void COMAKInverseKinematicsTool::performIKSecondaryConstraintSimulation() {
         settled_secondary_speeds.set(c, coord.getSpeedValue(state));
     }
 
-    if (get_verbose() > 0) {
-        std::cout << "Finished Settling Simulation in " << state.getTime() << " s." << std::endl;
-        std::cout << "Starting Sweep Simulation."<< std::endl;
-    }
+
+     log_info("Finished Settling Simulation in {} s.", state.getTime());
+     log_info("Starting Sweep Simulation.");
+
 
     //Perform Sweep Simulation
     //------------------------
@@ -491,9 +489,7 @@ void COMAKInverseKinematicsTool::performIKSecondaryConstraintSimulation() {
         }
         q_table.appendRow(state.getTime(), q_row);
 
-        if (get_verbose() > 0) {
-            std::cout << state.getTime() << std::endl;
-        }
+        log_info("{}",state.getTime());
     }
 
     //Compute Coupled Constraint Functions
@@ -550,8 +546,8 @@ void COMAKInverseKinematicsTool::performIKSecondaryConstraintSimulation() {
 
     //Write Outputs
     if (get_print_secondary_constraint_sim_results()) {
-        std::cout << "Printing secondary constraint simulation results: " <<
-            get_results_directory() << std::endl;
+        log_info("Printing secondary constraint simulation results: {}",
+            get_results_directory());
 
         std::string name = "secondary_constraint_sim_states";
 
@@ -676,7 +672,7 @@ void COMAKInverseKinematicsTool::runInverseKinematics(Model& model) {
         kinematicsReporter->setInDegrees(true);
         model.addAnalysis(kinematicsReporter);
 
-        std::cout<<"Running Inverse Kinematics\n";
+        log_info("Running Inverse Kinematics\n");
 
         // Initialize the model's underlying system and get its default state.
         SimTK::State& s = model.initSystem();
@@ -726,8 +722,8 @@ void COMAKInverseKinematicsTool::runInverseKinematics(Model& model) {
                     break;
                 }
                 catch (const std::exception) {
-                    std::cout << "Assembly failed... "
-                        "retrying with new initial conditions." << std::endl;
+                    log_error("Assembly failed... " 
+                        "retrying with new initial conditions.");
                 }
             }
         }
@@ -849,11 +845,11 @@ void COMAKInverseKinematicsTool::runInverseKinematics(Model& model) {
             delete modelMarkerLocations;
         }
 
-        std::cout << "InverseKinematicsTool completed " << Nframes << " frames in "
-            << watch.getElapsedTimeFormatted() << "\n" <<std::endl;
+        log_info("InverseKinematicsTool completed {} frames in {}",
+            Nframes, watch.getElapsedTimeFormatted());
     }
     catch (const std::exception& ex) {
-        std::cout << "InverseKinematicsTool Failed: " << ex.what() << std::endl;
+         log_error("InverseKinematicsTool Failed: {}", ex.what());
         // If failure happened after kinematicsReporter was added, make sure to cleanup
         if (kinematicsReporter!= nullptr)
             model.removeAnalysis(kinematicsReporter);
