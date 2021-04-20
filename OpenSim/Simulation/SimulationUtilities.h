@@ -291,6 +291,29 @@ TimeSeriesTable_<T> analyze(Model model, const TimeSeriesTable& statesTable,
     return reporter->getTable();
 }
 
+/// Calculate "synthetic" acceleration signals equivalent to signals recorded
+/// from inertial measurement units (IMUs). First, this utility computes the
+/// linear acceleration for each frame included in 'framePaths' using Frame's
+/// 'linear_acceleration' Output. Then, to mimic acceleration signals measured
+/// from IMUs, the model's gravitational acceleration vector is subtracted from
+/// the linear accelerations and the resulting accelerations are re-expressed in
+/// the bases of the associated Frame%s.
+///
+/// @note The linear acceleration Output%s are computed using the analyze()
+/// simulation utility, and therefore the 'statesTable' and 'controlsTable'
+/// arguments must contain the same time points and we assume that the states
+/// obey any kinematic constraints in the Model.
+///
+/// @note The passed in model must have the correct mass and inertia properties
+/// included, since computing accelerations requires realizing to
+/// SimTK::Stage::Acceleration which depends on SimTK::Stage::Dynamics.
+///
+/// @ingroup simulationutil
+OSIMSIMULATION_API TimeSeriesTableVec3 createSyntheticIMUAccelerationSignals(
+        const Model& model,
+        const TimeSeriesTable& statesTable, const TimeSeriesTable& controlsTable,
+        const std::vector<std::string>& framePaths);
+
 } // end of namespace OpenSim
 
 #endif // OPENSIM_SIMULATION_UTILITIES_H_

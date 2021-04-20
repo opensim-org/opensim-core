@@ -32,8 +32,8 @@ public:
     /// LinearTangentFinalSpeed. This function is intended for use in testing.
     /// This problem has an analytical solution, and
     /// is described in Section 2.4 of Bryson and Ho [1]. Bryson, A. E., Ho,
-    /// Y.‐C., Applied Optimal Control, Optimization, Estimation, and Control.
-    /// New York‐London‐Sydney‐Toronto. John Wiley & Sons. 1975.
+    /// Y.C., Applied Optimal Control, Optimization, Estimation, and Control.
+    /// New York London Sydney Toronto. John Wiley & Sons. 1975.
     static MocoStudy createLinearTangentSteeringStudy(
             double acceleration, double finalTime, double finalHeight);
 };
