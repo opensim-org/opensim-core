@@ -245,6 +245,8 @@ void testBodyKinematics() {
     Body body("body", 1, SimTK::Vec3(0), SimTK::Inertia(1));
     model.addBody(&body);
 
+    // Rotate child frame so that planar rotational joint is about
+    // the body's local X axis, and the ground's Z axis
     PlanarJoint joint("joint",
         model.getGround(), SimTK::Vec3(0), SimTK::Vec3(0),
         body, SimTK::Vec3(0), SimTK::Vec3(0, SimTK::Pi/2, 0));
@@ -259,12 +261,11 @@ void testBodyKinematics() {
     BodyKinematics* bodyKinematicsGround = new BodyKinematics();
     bodyKinematicsGround->setName("ground");
     bodyKinematicsGround->setExpressResultsInLocalFrame(false);
-    bodyKinematicsGround->setInDegrees(true);
+    bodyKinematicsGround->setInDegrees(false);
 
     model.addAnalysis(bodyKinematicsLocal);
     model.addAnalysis(bodyKinematicsGround);
 
-    //model.print("test.osim");
     SimTK::State& s = model.initSystem();
     double speedRot = 1.0;
     double speedX = 2.0;
@@ -284,5 +285,23 @@ void testBodyKinematics() {
     bodyKinematicsLocal->printResults("BodyKinematics");
     bodyKinematicsGround->printResults("BodyKinematics");
 
+    Storage localVel("BodyKinematics_local_vel_bodyLocal.sto");
+    Storage groundVel("BodyKinematics_ground_vel_global.sto");
+    Array<double> localVelOx, localVelOz, globalVelOx, globalVelOz;
+    localVel.getDataColumn("body_Ox", localVelOx);
+    localVel.getDataColumn("body_Oz", localVelOz);
+    groundVel.getDataColumn("body_Ox", globalVelOx);
+    groundVel.getDataColumn("body_Oz", globalVelOz);
 
+    assert(localVelOx.getLast() == speedRot * SimTK_RADIAN_TO_DEGREE);
+    assert(localVelOz.getLast() == 0);
+    assert(groundVelOx.getLast() == 0);
+    assert(groundVelOz.getLast() == speedrot);
+
+    Array<double> groundPosX, groundPosY;
+    Storage groundPos("BodyKinematics_ground_pos_global.sto");
+    groundPos.getDataColumn("body_X", groundPosX);
+    groundPos.getDataColumn("body_Y", groundPosY);
+    assert(groundPosX.getLast() == speedX * duration);
+    assert(groundPosY.getLast() == speedY * duration);
 }

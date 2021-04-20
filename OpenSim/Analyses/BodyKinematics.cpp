@@ -708,7 +708,7 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
     else suffix = "_global";
 
     // Set the file headers just before printing in case the flag
-    // _expressInLocalFrame has changed since construction
+    // _expressInLocalFrame has changed or inDegrees
     constructDescription();
     _aStore->setInDegrees(getInDegrees());
     _vStore->setInDegrees(getInDegrees());
