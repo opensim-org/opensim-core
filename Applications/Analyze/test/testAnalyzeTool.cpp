@@ -30,7 +30,7 @@
 #include <OpenSim/Analyses/OutputReporter.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Auxiliary/auxiliaryTestMuscleFunctions.h>
-#include <OpenSim/Simulation/SimbodyEngine/PlanarJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Analyses/BodyKinematics.h>
 
@@ -272,7 +272,7 @@ void testBodyKinematics() {
 
     // Rotate child frame so that planar rotational joint is about
     // the body's local X axis, and the ground's Z axis
-    PlanarJoint joint("joint",
+    FreeJoint joint("joint",
         model.getGround(), SimTK::Vec3(0), SimTK::Vec3(0),
         body, SimTK::Vec3(0), SimTK::Vec3(0, SimTK::Pi/2, 0));
     model.addJoint(&joint);
@@ -295,11 +295,11 @@ void testBodyKinematics() {
     double speedRot = 1.0;
     double speedX = 2.0;
     double speedY = 3.0;
-    joint.updCoordinate(PlanarJoint::Coord::RotationZ)
+    joint.updCoordinate(FreeJoint::Coord::Rotation3Z)
             .setSpeedValue(s, speedRot);
-    joint.updCoordinate(PlanarJoint::Coord::TranslationX)
+    joint.updCoordinate(FreeJoint::Coord::TranslationX)
             .setSpeedValue(s, speedX);
-    joint.updCoordinate(PlanarJoint::Coord::TranslationY)
+    joint.updCoordinate(FreeJoint::Coord::TranslationY)
             .setSpeedValue(s, speedY);
 
     Manager manager(model);
