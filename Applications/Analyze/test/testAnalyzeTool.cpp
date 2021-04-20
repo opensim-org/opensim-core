@@ -38,6 +38,7 @@ using namespace OpenSim;
 using namespace std;
 
 void testTutorialOne();
+void testActuationAnalysisWithDisabledForce();
 
 // Test different default activations are respected when activation
 // states are not provided.
@@ -75,13 +76,16 @@ int main()
         failures.push_back("testTugOfWar with activation state provided");
     }
 
+    try { testActuationAnalysisWithDisabledForce(); } 
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testActuationAnalysisWithDisabledForce");
+    }
     try { testBodyKinematics(); } 
     catch (const std::exception& e) { 
         cout << e.what() << endl;
         failures.push_back("testBodyKinematics");
-    }
-
-    if (!failures.empty()) {
+    }    if (!failures.empty()) {
         cout << "Done, with failure(s): " << failures << endl;
         return 1;
     }
@@ -237,6 +241,27 @@ void testTugOfWar(const string& dataFileName, const double& defaultAct) {
         SimTK_ASSERT_ALWAYS(delta < maxDelta,
             "Force trajectory has unexplained discontinuity.");
     }
+}
+
+void testActuationAnalysisWithDisabledForce() {
+    AnalyzeTool analyze("PlotterTool.xml");
+    Model& model = analyze.getModel();
+    auto& muscle = model.updMuscles()[0];
+    muscle.set_appliesForce(false);
+
+    std::string resultsDir = "testPlotterToolWithDisabledForce";
+    analyze.setResultsDir(resultsDir);
+    analyze.run();
+
+    // Reading a file with mismatched nColumns header and actual number of
+    // data columns will throw.
+    TimeSeriesTable_<double> act_force_table(
+            resultsDir + "/BothLegs_Actuation_force.sto");
+    
+    // Let's also check that the number of columns is correct (i.e.,
+    // (number of muscles in the model) - 1).
+    ASSERT_EQUAL(model.getMuscles().getSize() - 1, 
+            (int)act_force_table.getNumColumns());
 }
 
 void testBodyKinematics() { 

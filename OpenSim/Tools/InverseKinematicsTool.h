@@ -106,15 +106,17 @@ public:
     // INTERFACE
     //--------------------------------------------------------------------------
     bool run() override SWIG_DECLARE_EXCEPTION;
-
+#ifndef SWIG
     /** @cond **/ // hide from Doxygen
+#endif
     // For testing/debugging it is necessary to know exactly what are the
     // MarkersReference (set of marker trajectories and their weights) and
     // CoordinateReferences that are being used by the InverseKinematicsSolver.
     void populateReferences(MarkersReference& markersReference,
         SimTK::Array_<CoordinateReference>&coordinateReferences) const;
+#ifndef SWIG
     /** @endcond **/
-
+#endif
 private:
     void constructProperties();
 
