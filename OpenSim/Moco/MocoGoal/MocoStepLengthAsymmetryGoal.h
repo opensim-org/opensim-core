@@ -85,6 +85,14 @@ public:
     void setSmoothing(double smoothing) { set_smoothing(smoothing); }
     double getSmoothing() { return get_smoothing(); }
 
+    void setOnlyMinimizeNearFootTargets(bool tf) {
+        set_only_minimize_near_foot_targets(tf);
+    }
+    bool getOnlyMinimizeNearFootTargets() {
+        get_only_minimize_near_foot_targets();
+    }
+
+
 protected:
     bool getSupportsEndpointConstraintImpl() const override { return true; }
     Mode getDefaultModeImpl() const override {
@@ -107,6 +115,7 @@ private:
     OpenSim_DECLARE_PROPERTY(contact_force_direction, std::string, "TODO");
     OpenSim_DECLARE_PROPERTY(walking_direction, std::string, "TODO");
     OpenSim_DECLARE_PROPERTY(smoothing, double, "TODO");
+    OpenSim_DECLARE_PROPERTY(only_minimize_near_foot_targets, bool, "TODO");
     void constructProperties();
 
     mutable SimTK::ReferencePtr<const Frame> m_left_foot_frame;

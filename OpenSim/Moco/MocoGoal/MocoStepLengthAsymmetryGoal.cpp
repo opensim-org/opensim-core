@@ -30,6 +30,7 @@ void MocoStepLengthAsymmetryGoal::constructProperties() {
     constructProperty_target_asymmetry(0.0);
     constructProperty_stride_length(1.0);
     constructProperty_initial_right_foot_position(0.0);
+    constructProperty_only_minimize_near_foot_targets(false);
 }
 
 void MocoStepLengthAsymmetryGoal::initializeOnModelImpl(const Model& model) const {
@@ -105,19 +106,25 @@ void MocoStepLengthAsymmetryGoal::calcIntegrandImpl(
             leftVelocity - get_foot_velocity_threshold(), 0.5, -0.5,
             get_smoothing());
 
-//    const double rightFootNearTarget = -m_conditional(
-//            rightFootPosition - m_left_foot_position, 0.5, 0.5,
-//            get_smoothing());
-//    const double leftFootNearTarget = -m_conditional(
-//            leftFootPosition - m_right_foot_position, 0.5, 0.5,
-//            get_smoothing());
+    double rightFootNearTarget = 1.0;
+    double leftFootNearTarget = 1.0;
+    if (get_only_minimize_near_foot_targets()) {
+        rightFootNearTarget = m_conditional(
+                rightFootPosition - m_left_foot_position, 0.5, -0.5,
+                get_smoothing());
+        leftFootNearTarget = m_conditional(
+                leftFootPosition - m_right_foot_position, 0.5, -0.5,
+                get_smoothing());
+    }
 
     const double rightFootError = m_right_foot_position - rightFootPosition;
     const double leftFootError = m_left_foot_position - leftFootPosition;
     const double rightFootAsymmetry =
-            rightContactDetect * rightFootError * rightFootError;
+            rightFootNearTarget * rightContactDetect *
+            rightFootError * rightFootError;
     const double leftFootAsymmetry =
-            leftContactDetect * leftFootError * leftFootError;
+            leftFootNearTarget * leftContactDetect *
+            leftFootError * leftFootError;
 
     integrand = rightFootAsymmetry + leftFootAsymmetry;
 }
