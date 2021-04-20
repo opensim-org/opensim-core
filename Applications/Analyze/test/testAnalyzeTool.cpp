@@ -30,6 +30,9 @@
 #include <OpenSim/Analyses/OutputReporter.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Auxiliary/auxiliaryTestMuscleFunctions.h>
+#include <OpenSim/Simulation/SimbodyEngine/PlanarJoint.h>
+#include <OpenSim/Simulation/Manager/Manager.h>
+#include <OpenSim/Analyses/BodyKinematics.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -39,6 +42,8 @@ void testTutorialOne();
 // Test different default activations are respected when activation
 // states are not provided.
 void testTugOfWar(const string& dataFileName, const double& defaultAct);
+
+void testBodyKinematics();
 
 int main()
 {
@@ -68,6 +73,12 @@ int main()
     catch (const std::exception& e) {
         cout << e.what() << endl;
         failures.push_back("testTugOfWar with activation state provided");
+    }
+
+    try { testBodyKinematics(); } 
+    catch (const std::exception& e) { 
+        cout << e.what() << endl;
+        failures.push_back("testBodyKinematics");
     }
 
     if (!failures.empty()) {
@@ -226,4 +237,52 @@ void testTugOfWar(const string& dataFileName, const double& defaultAct) {
         SimTK_ASSERT_ALWAYS(delta < maxDelta,
             "Force trajectory has unexplained discontinuity.");
     }
+}
+
+void testBodyKinematics() { 
+    Model model;
+    model.setGravity(SimTK::Vec3(0));
+    Body body("body", 1, SimTK::Vec3(0), SimTK::Inertia(1));
+    model.addBody(&body);
+
+    PlanarJoint joint("joint",
+        model.getGround(), SimTK::Vec3(0), SimTK::Vec3(0),
+        body, SimTK::Vec3(0), SimTK::Vec3(0, SimTK::Pi/2, 0));
+    model.addJoint(&joint);
+    model.finalizeConnections();
+
+    BodyKinematics* bodyKinematicsLocal = new BodyKinematics();
+    bodyKinematicsLocal->setName("local");
+    bodyKinematicsLocal->setExpressResultsInLocalFrame(true);
+    bodyKinematicsLocal->setInDegrees(true);
+
+    BodyKinematics* bodyKinematicsGround = new BodyKinematics();
+    bodyKinematicsGround->setName("ground");
+    bodyKinematicsGround->setExpressResultsInLocalFrame(false);
+    bodyKinematicsGround->setInDegrees(true);
+
+    model.addAnalysis(bodyKinematicsLocal);
+    model.addAnalysis(bodyKinematicsGround);
+
+    //model.print("test.osim");
+    SimTK::State& s = model.initSystem();
+    double speedRot = 1.0;
+    double speedX = 2.0;
+    double speedY = 3.0;
+    joint.updCoordinate(PlanarJoint::Coord::RotationZ)
+            .setSpeedValue(s, speedRot);
+    joint.updCoordinate(PlanarJoint::Coord::TranslationX)
+            .setSpeedValue(s, speedX);
+    joint.updCoordinate(PlanarJoint::Coord::TranslationY)
+            .setSpeedValue(s, speedY);
+
+    Manager manager(model);
+    double duration = 2.0;
+    manager.initialize(s);
+    s = manager.integrate(duration);
+
+    bodyKinematicsLocal->printResults("BodyKinematics");
+    bodyKinematicsGround->printResults("BodyKinematics");
+
+
 }

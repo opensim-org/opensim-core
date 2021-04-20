@@ -710,6 +710,9 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
     // Set the file headers just before printing in case the flag
     // _expressInLocalFrame has changed since construction
     constructDescription();
+    _aStore->setInDegrees(getInDegrees());
+    _vStore->setInDegrees(getInDegrees());
+    _pStore->setInDegrees(getInDegrees());
 
     // ACCELERATIONS
     Storage::printResult(_aStore,aBaseName+"_"+getName()+"_acc"+suffix,aDir,aDT,aExtension);
