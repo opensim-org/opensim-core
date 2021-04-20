@@ -278,18 +278,18 @@ void testBodyKinematics() {
     model.addJoint(&joint);
     model.finalizeConnections();
 
-    BodyKinematics* bodyKinematicsLocal = new BodyKinematics();
-    bodyKinematicsLocal->setName("local");
-    bodyKinematicsLocal->setExpressResultsInLocalFrame(true);
-    bodyKinematicsLocal->setInDegrees(true);
+    BodyKinematics bodyKinematicsLocal;
+    bodyKinematicsLocal.setName("local");
+    bodyKinematicsLocal.setExpressResultsInLocalFrame(true);
+    bodyKinematicsLocal.setInDegrees(true);
 
-    BodyKinematics* bodyKinematicsGround = new BodyKinematics();
-    bodyKinematicsGround->setName("ground");
-    bodyKinematicsGround->setExpressResultsInLocalFrame(false);
-    bodyKinematicsGround->setInDegrees(false);
+    BodyKinematics bodyKinematicsGround;
+    bodyKinematicsGround.setName("ground");
+    bodyKinematicsGround.setExpressResultsInLocalFrame(false);
+    bodyKinematicsGround.setInDegrees(false);
 
-    model.addAnalysis(bodyKinematicsLocal);
-    model.addAnalysis(bodyKinematicsGround);
+    model.addAnalysis(&bodyKinematicsLocal);
+    model.addAnalysis(&bodyKinematicsGround);
 
     SimTK::State& s = model.initSystem();
     double speedRot = 1.0;
@@ -307,8 +307,8 @@ void testBodyKinematics() {
     manager.initialize(s);
     s = manager.integrate(duration);
 
-    bodyKinematicsLocal->printResults("BodyKinematics");
-    bodyKinematicsGround->printResults("BodyKinematics");
+    bodyKinematicsLocal.printResults("BodyKinematics");
+    bodyKinematicsGround.printResults("BodyKinematics");
 
     Storage localVel("BodyKinematics_local_vel_bodyLocal.sto");
     Storage groundVel("BodyKinematics_ground_vel_global.sto");
