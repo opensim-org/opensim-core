@@ -2,9 +2,10 @@ function exampleIMUTracking_answers
 
 %% Part 0: Load the Moco libraries and pre-configured Models.
 import org.opensim.modeling.*;
+
 % These models are provided for you (i.e., they are not part of Moco).
-torqueDrivenModel = getTorqueDrivenModel();
-muscleDrivenModel = getMuscleDrivenModel();
+model = getTorqueDrivenModel();
+% model = getMuscleDrivenModel();
 
 %% Part 1: Torque-driven Predictive Problem
 % Part 1a: Create a new MocoStudy.
@@ -12,7 +13,7 @@ study = MocoStudy();
 
 % Part 1b: Initialize the problem and set the model.
 problem = study.updProblem();
-problem.setModel(muscleDrivenModel);
+problem.setModel(model);
 
 % Part 1c: Set bounds on the problem.
 %
@@ -54,7 +55,7 @@ problem.addGoal(MocoControlGoal('myeffort'));
 % Part 1e: Configure the solver.
 solver = study.initCasADiSolver();
 solver.set_num_mesh_intervals(25);
-solver.set_optim_convergence_tolerance(1e-4);
+solver.set_optim_convergence_tolerance(1e-2);
 solver.set_optim_constraint_tolerance(1e-4);
 
 if ~exist('predictSolution.sto', 'file')
@@ -74,32 +75,30 @@ framePaths.add('/bodyset/pelvis');
 framePaths.add('/bodyset/femur_r');
 framePaths.add('/bodyset/tibia_r');
 torqueDrivenModel.initSystem();
-syntheticIMUAccelerations = ... 
-    opensimSimulation.createSyntheticIMUAccelerationSignals(...
-        muscleDrivenModel, ...
+accelerationsReference = ... 
+    opensimSimulation.createSyntheticIMUAccelerationSignals(model, ...
         predictSolution.exportToStatesTable(), ...
         predictSolution.exportToControlsTable(), framePaths);
-
 
 %% Part 4: IMU tracking problem 
 accelerationIMUTracking = MocoAccelerationTrackingGoal('imu_tracking');
 accelerationIMUTracking.setFramePaths(framePaths);
-accelerationIMUTracking.setAccelerationReference(syntheticIMUAccelerations);
+accelerationIMUTracking.setAccelerationReference(accelerationsReference);
 accelerationIMUTracking.setGravityOffset(true);
 accelerationIMUTracking.setExpressAccelerationsInTrackingFrames(true);
 problem.addGoal(accelerationIMUTracking);
 
-% Part xx: Reduce the control cost weight so it now acts as a regularization 
+% Part 4a: Reduce the control cost weight so it now acts as a regularization 
 % term.
 problem.updGoal('myeffort').setWeight(0);
 
-% Part 2d: Set the initial guess using the predictive problem solution.
+% Part 4b: Set the initial guess using the predictive problem solution.
 % Tighten convergence tolerance to ensure smooth controls.
 %solver.setGuessFile('predictSolution.sto');
 %solver.set_optim_convergence_tolerance(1e-6);
 
 if ~exist('trackingSolution.sto', 'file')
-% Part 2e: Solve! Write the solution to file, and visualize.
+% Part 4c: Solve! Write the solution to file, and visualize.
 trackingSolution = study.solve();
 trackingSolution.write('trackingSolution.sto');
 study.visualize(trackingSolution);
@@ -110,7 +109,6 @@ end
 % This is a convenience function provided for you. See mocoPlotTrajectory.m
 mocoPlotTrajectory('predictSolution.sto', 'trackingSolution.sto', ...
         'predict', 'track');
-
 
 
 end
@@ -172,56 +170,13 @@ DeGrooteFregly2016Muscle().replaceMuscles(model);
 % active force-length curve.
 for m = 0:model.getMuscles().getSize()-1
     musc = model.updMuscles().get(m);
-    musc.setMinControl(0);
+    musc.setMinControl(0.01);
     musc.set_ignore_activation_dynamics(false);
     musc.set_ignore_tendon_compliance(true);
     musc.set_max_isometric_force(2 * musc.get_max_isometric_force());
     dgf = DeGrooteFregly2016Muscle.safeDownCast(musc);
     dgf.set_active_force_width_scale(1.5);
-    dgf.set_tendon_compliance_dynamics_mode('implicit');
-    if strcmp(char(musc.getName()), 'soleus_r')
-        % Soleus has a very long tendon, so modeling its tendon as rigid
-        % causes the fiber to be unrealistically long and generate
-        % excessive passive fiber force.
-        dgf.set_ignore_passive_fiber_force(true);
-    end
-end
-
-end
-
-function compareInverseSolutions(unassistedSolution, assistedSolution)
-
-unassistedSolution = unassistedSolution.getMocoSolution();
-assistedSolution = assistedSolution.getMocoSolution();
-figure;
-stateNames = unassistedSolution.getStateNames();
-numStates = stateNames.size();
-dim = 3;
-iplot = 0;
-for i = 0:numStates-1
-    if contains(char(stateNames.get(i)), 'activation')
-        iplot = iplot + 1;
-        subplot(dim, dim, iplot);
-        plot(unassistedSolution.getTimeMat(), ...
-             unassistedSolution.getStateMat(stateNames.get(i)), '-r', ...
-             'linewidth', 3);
-        hold on
-        plot(assistedSolution.getTimeMat(), ...
-             assistedSolution.getStateMat(stateNames.get(i)), '--b', ...
-             'linewidth', 2.5);
-        hold off
-        stateName = stateNames.get(i).toCharArray';
-        plotTitle = stateName;
-        plotTitle = strrep(plotTitle, '/forceset/', '');
-        plotTitle = strrep(plotTitle, '/activation', '');
-        title(plotTitle, 'Interpreter', 'none');
-        xlabel('time (s)');
-        ylabel('activation (-)');
-        ylim([0, 1]);
-        if iplot == 0
-           legend('unassisted', 'assisted');
-        end
-    end
+    dgf.set_ignore_passive_fiber_force(true);
 end
 
 end
