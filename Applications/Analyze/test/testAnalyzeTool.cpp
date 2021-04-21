@@ -81,11 +81,13 @@ int main()
         cout << e.what() << endl;
         failures.push_back("testActuationAnalysisWithDisabledForce");
     }
-    try { testBodyKinematics(); } 
+    try { testBodyKinematics(); }
     catch (const std::exception& e) { 
         cout << e.what() << endl;
         failures.push_back("testBodyKinematics");
-    }    if (!failures.empty()) {
+    }   
+
+    if (!failures.empty()) {
         cout << "Done, with failure(s): " << failures << endl;
         return 1;
     }
@@ -276,7 +278,6 @@ void testBodyKinematics() {
         model.getGround(), SimTK::Vec3(0), SimTK::Vec3(0),
         body, SimTK::Vec3(0), SimTK::Vec3(0, SimTK::Pi/2, 0));
     model.addJoint(&joint);
-    model.finalizeConnections();
 
     BodyKinematics bodyKinematicsLocal;
     bodyKinematicsLocal.setName("local");
