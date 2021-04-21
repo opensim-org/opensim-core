@@ -269,15 +269,15 @@ void testActuationAnalysisWithDisabledForce() {
 void testBodyKinematics() { 
     Model model;
     model.setGravity(SimTK::Vec3(0));
-    Body body("body", 1, SimTK::Vec3(0), SimTK::Inertia(1));
-    model.addBody(&body);
+    Body* body = new Body("body", 1, SimTK::Vec3(0), SimTK::Inertia(1));
+    model.addBody(body);
 
     // Rotate child frame so that planar rotational joint is about
     // the body's local X axis, and the ground's Z axis
-    FreeJoint joint("joint",
+    FreeJoint* joint = new FreeJoint("joint",
         model.getGround(), SimTK::Vec3(0), SimTK::Vec3(0),
-        body, SimTK::Vec3(0), SimTK::Vec3(0, SimTK::Pi/2, 0));
-    model.addJoint(&joint);
+        *body, SimTK::Vec3(0), SimTK::Vec3(0, SimTK::Pi/2, 0));
+    model.addJoint(joint);
 
     BodyKinematics* bodyKinematicsLocal = new BodyKinematics(&model);
     bodyKinematicsLocal->setName("local");
@@ -296,11 +296,11 @@ void testBodyKinematics() {
     double speedRot = 1.0;
     double speedX = 2.0;
     double speedY = 3.0;
-    joint.updCoordinate(FreeJoint::Coord::Rotation3Z)
+    joint->updCoordinate(FreeJoint::Coord::Rotation3Z)
             .setSpeedValue(s, speedRot);
-    joint.updCoordinate(FreeJoint::Coord::TranslationX)
+    joint->updCoordinate(FreeJoint::Coord::TranslationX)
             .setSpeedValue(s, speedX);
-    joint.updCoordinate(FreeJoint::Coord::TranslationY)
+    joint->updCoordinate(FreeJoint::Coord::TranslationY)
             .setSpeedValue(s, speedY);
 
     Manager manager(model);
