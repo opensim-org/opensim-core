@@ -312,21 +312,22 @@ void testBodyKinematics() {
 
     Storage localVel("BodyKinematics_local_vel_bodyLocal.sto");
     Storage groundVel("BodyKinematics_ground_vel_global.sto");
-    Array<double> localVelOx, localVelOz, globalVelOx, globalVelOz;
+    Array<double> localVelOx, localVelOz, groundVelOx, groundVelOz;
     localVel.getDataColumn("body_Ox", localVelOx);
     localVel.getDataColumn("body_Oz", localVelOz);
-    groundVel.getDataColumn("body_Ox", globalVelOx);
-    groundVel.getDataColumn("body_Oz", globalVelOz);
+    groundVel.getDataColumn("body_Ox", groundVelOx);
+    groundVel.getDataColumn("body_Oz", groundVelOz);
 
-    assert(localVelOx.getLast() == speedRot * SimTK_RADIAN_TO_DEGREE);
-    assert(localVelOz.getLast() == 0);
-    assert(groundVelOx.getLast() == 0);
-    assert(groundVelOz.getLast() == speedrot);
+    double tol = 1e-6;
+    ASSERT_EQUAL<double>(localVelOx.getLast(), speedRot * SimTK_RADIAN_TO_DEGREE, tol);
+    ASSERT_EQUAL<double>(localVelOz.getLast(), 0, tol);
+    ASSERT_EQUAL<double>(groundVelOx.getLast(), 0, tol);
+    ASSERT_EQUAL<double>(groundVelOz.getLast(), speedRot, tol);
 
     Array<double> groundPosX, groundPosY;
     Storage groundPos("BodyKinematics_ground_pos_global.sto");
     groundPos.getDataColumn("body_X", groundPosX);
     groundPos.getDataColumn("body_Y", groundPosY);
-    assert(groundPosX.getLast() == speedX * duration);
-    assert(groundPosY.getLast() == speedY * duration);
+    ASSERT_EQUAL<double>(groundPosX.getLast(), speedX * duration, tol);
+    ASSERT_EQUAL<double>(groundPosY.getLast(), speedY * duration, tol);
 }
