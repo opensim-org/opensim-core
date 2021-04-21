@@ -89,7 +89,7 @@ public:
         set_only_minimize_near_foot_targets(tf);
     }
     bool getOnlyMinimizeNearFootTargets() {
-        get_only_minimize_near_foot_targets();
+        return get_only_minimize_near_foot_targets();
     }
 
 
