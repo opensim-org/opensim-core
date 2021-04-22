@@ -30,6 +30,9 @@
 #include <OpenSim/Analyses/OutputReporter.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Auxiliary/auxiliaryTestMuscleFunctions.h>
+#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
+#include <OpenSim/Simulation/Manager/Manager.h>
+#include <OpenSim/Analyses/BodyKinematics.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -40,6 +43,8 @@ void testActuationAnalysisWithDisabledForce();
 // Test different default activations are respected when activation
 // states are not provided.
 void testTugOfWar(const string& dataFileName, const double& defaultAct);
+
+void testBodyKinematics();
 
 int main()
 {
@@ -76,6 +81,11 @@ int main()
         cout << e.what() << endl;
         failures.push_back("testActuationAnalysisWithDisabledForce");
     }
+    try { testBodyKinematics(); }
+    catch (const std::exception& e) { 
+        cout << e.what() << endl;
+        failures.push_back("testBodyKinematics");
+    }   
 
     if (!failures.empty()) {
         cout << "Done, with failure(s): " << failures << endl;
@@ -254,4 +264,78 @@ void testActuationAnalysisWithDisabledForce() {
     // (number of muscles in the model) - 1).
     ASSERT_EQUAL(model.getMuscles().getSize() - 1, 
             (int)act_force_table.getNumColumns());
+}
+
+void testBodyKinematics() { 
+    Model model;
+    model.setGravity(SimTK::Vec3(0));
+    Body* body = new Body("body", 1, SimTK::Vec3(0), SimTK::Inertia(1));
+    model.addBody(body);
+
+    // Rotate child frame to align the body's local X axis with the ground's Z
+    // axis. We'll apply a simple constant rotation about ground Z below
+    // for the test.
+    FreeJoint* joint = new FreeJoint("joint",
+        model.getGround(), SimTK::Vec3(0), SimTK::Vec3(0),
+        *body, SimTK::Vec3(0), SimTK::Vec3(0, SimTK::Pi/2, 0));
+    model.addJoint(joint);
+
+    BodyKinematics* bodyKinematicsLocal = new BodyKinematics(&model);
+    bodyKinematicsLocal->setName("BodyKinematics_local");
+    bodyKinematicsLocal->setExpressResultsInLocalFrame(true);
+    bodyKinematicsLocal->setInDegrees(true);
+
+    BodyKinematics* bodyKinematicsGround = new BodyKinematics(&model);
+    bodyKinematicsGround->setName("BodyKinematics_ground");
+    bodyKinematicsGround->setExpressResultsInLocalFrame(false);
+    bodyKinematicsGround->setInDegrees(false);
+
+    model.addAnalysis(bodyKinematicsLocal);
+    model.addAnalysis(bodyKinematicsGround);
+
+    SimTK::State& s = model.initSystem();
+
+    // Apply a constnat velocity simple rotation about the ground Z,
+    // and translation in the ground X and Y directions
+    double speedRot = 1.0;
+    double speedX = 2.0;
+    double speedY = 3.0;
+    joint->updCoordinate(FreeJoint::Coord::Rotation3Z)
+            .setSpeedValue(s, speedRot);
+    joint->updCoordinate(FreeJoint::Coord::TranslationX)
+            .setSpeedValue(s, speedX);
+    joint->updCoordinate(FreeJoint::Coord::TranslationY)
+            .setSpeedValue(s, speedY);
+
+    Manager manager(model);
+    double duration = 2.0;
+    manager.initialize(s);
+    s = manager.integrate(duration);
+
+    bodyKinematicsLocal->printResults("");
+    bodyKinematicsGround->printResults("");
+
+    Storage localVel("_BodyKinematics_local_vel_bodyLocal.sto");
+    Storage groundVel("_BodyKinematics_ground_vel_global.sto");
+    Array<double> localVelOx, localVelOz, groundVelOx, groundVelOz;
+    localVel.getDataColumn("body_Ox", localVelOx);
+    localVel.getDataColumn("body_Oz", localVelOz);
+    groundVel.getDataColumn("body_Ox", groundVelOx);
+    groundVel.getDataColumn("body_Oz", groundVelOz);
+
+    // Test rotation was a simple rotation about ground Z, which is aligned
+    // with the body X. Also note that local results are printed in degrees,
+    // and ground results are printed in radians.
+    double tol = 1e-6;
+    ASSERT_EQUAL<double>(localVelOx.getLast(), speedRot * SimTK_RADIAN_TO_DEGREE, tol);
+    ASSERT_EQUAL<double>(localVelOz.getLast(), 0, tol);
+    ASSERT_EQUAL<double>(groundVelOx.getLast(), 0, tol);
+    ASSERT_EQUAL<double>(groundVelOz.getLast(), speedRot, tol);
+
+    Array<double> groundPosX, groundPosY;
+    Storage groundPos("_BodyKinematics_ground_pos_global.sto");
+    groundPos.getDataColumn("body_X", groundPosX);
+    groundPos.getDataColumn("body_Y", groundPosY);
+    ASSERT_EQUAL<double>(groundPosX.getLast(), speedX * duration, tol);
+    ASSERT_EQUAL<double>(groundPosY.getLast(), speedY * duration, tol);
 }
