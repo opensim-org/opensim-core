@@ -196,11 +196,11 @@ constructDescription()
     strcat(descrip, " body-fixed X-Y-Z Euler angles.\n");
     if (_expressInLocalFrame) {
         strcat(descrip, "\nAngular velocities and accelerations are");
-        strcat(descrip, " expressed in the body-local axes.\n");
+        strcat(descrip, " expressed in the body-local frame.\n");
     } 
     else {
         strcat(descrip, "\nAngular velocities and accelerations are");
-        strcat(descrip, " expressed in the ground frame axes.\n");
+        strcat(descrip, " expressed in the ground frame.\n");
     }
     strcat(descrip, "\nUnits are S.I. units (seconds, meters, Newtons, ...)");
     strcat(descrip, "\nIf the header above contains a line with ");

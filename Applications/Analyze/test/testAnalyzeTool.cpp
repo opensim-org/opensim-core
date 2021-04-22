@@ -272,20 +272,21 @@ void testBodyKinematics() {
     Body* body = new Body("body", 1, SimTK::Vec3(0), SimTK::Inertia(1));
     model.addBody(body);
 
-    // Rotate child frame so that planar rotational joint is about
-    // the body's local X axis, and the ground's Z axis
+    // Rotate child frame to align the body's local X axis with the ground's Z
+    // axis. We'll apply a simple constant rotation about ground Z below
+    // for the test.
     FreeJoint* joint = new FreeJoint("joint",
         model.getGround(), SimTK::Vec3(0), SimTK::Vec3(0),
         *body, SimTK::Vec3(0), SimTK::Vec3(0, SimTK::Pi/2, 0));
     model.addJoint(joint);
 
     BodyKinematics* bodyKinematicsLocal = new BodyKinematics(&model);
-    bodyKinematicsLocal->setName("local");
+    bodyKinematicsLocal->setName("BodyKinematics_local");
     bodyKinematicsLocal->setExpressResultsInLocalFrame(true);
     bodyKinematicsLocal->setInDegrees(true);
 
     BodyKinematics* bodyKinematicsGround = new BodyKinematics(&model);
-    bodyKinematicsGround->setName("ground");
+    bodyKinematicsGround->setName("BodyKinematics_ground");
     bodyKinematicsGround->setExpressResultsInLocalFrame(false);
     bodyKinematicsGround->setInDegrees(false);
 
@@ -293,6 +294,9 @@ void testBodyKinematics() {
     model.addAnalysis(bodyKinematicsGround);
 
     SimTK::State& s = model.initSystem();
+
+    // Apply a constnat velocity simple rotation about the ground Z,
+    // and translation in the ground X and Y directions
     double speedRot = 1.0;
     double speedX = 2.0;
     double speedY = 3.0;
@@ -308,17 +312,20 @@ void testBodyKinematics() {
     manager.initialize(s);
     s = manager.integrate(duration);
 
-    bodyKinematicsLocal->printResults("BodyKinematics");
-    bodyKinematicsGround->printResults("BodyKinematics");
+    bodyKinematicsLocal->printResults("");
+    bodyKinematicsGround->printResults("");
 
-    Storage localVel("BodyKinematics_local_vel_bodyLocal.sto");
-    Storage groundVel("BodyKinematics_ground_vel_global.sto");
+    Storage localVel("_BodyKinematics_local_vel_bodyLocal.sto");
+    Storage groundVel("_BodyKinematics_ground_vel_global.sto");
     Array<double> localVelOx, localVelOz, groundVelOx, groundVelOz;
     localVel.getDataColumn("body_Ox", localVelOx);
     localVel.getDataColumn("body_Oz", localVelOz);
     groundVel.getDataColumn("body_Ox", groundVelOx);
     groundVel.getDataColumn("body_Oz", groundVelOz);
 
+    // Test rotation was a simple rotation about ground Z, which is aligned
+    // with the body X. Also note that local results are printed in degrees,
+    // and ground results are printed in radians.
     double tol = 1e-6;
     ASSERT_EQUAL<double>(localVelOx.getLast(), speedRot * SimTK_RADIAN_TO_DEGREE, tol);
     ASSERT_EQUAL<double>(localVelOz.getLast(), 0, tol);
@@ -326,7 +333,7 @@ void testBodyKinematics() {
     ASSERT_EQUAL<double>(groundVelOz.getLast(), speedRot, tol);
 
     Array<double> groundPosX, groundPosY;
-    Storage groundPos("BodyKinematics_ground_pos_global.sto");
+    Storage groundPos("_BodyKinematics_ground_pos_global.sto");
     groundPos.getDataColumn("body_X", groundPosX);
     groundPos.getDataColumn("body_Y", groundPosY);
     ASSERT_EQUAL<double>(groundPosX.getLast(), speedX * duration, tol);
