@@ -1049,7 +1049,7 @@ std::string JointMechanicsTool::findMeshFile(const std::string& mesh_file) {
     SimTK::Pathname::deconstructPathname(model_file, 
         dummyBool, model_dir, dummy1, dummy2);
 
-    std::string mesh_full_path;
+    std::string mesh_full_path = mesh_file;
 
     std::ifstream file(mesh_file);
     if (!file) {

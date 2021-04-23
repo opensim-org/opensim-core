@@ -62,10 +62,27 @@ public:
         "Path to actuator in model.")
 
     OpenSim_DECLARE_PROPERTY(weight, Function, 
-        "Weighting coefficient that multiplies the squared actuator "
-        "activation in the COMAK optimization cost function."
-        "The Default value is 1.0.")
+        "Time varying weighting coefficient that multiplies the entire "
+        "actuator activation term in the COMAK optimization cost function."
+        "W in the cost function: W*(a-d)^n. "
+        "The Default value is Constant(1.0).")
 
+    OpenSim_DECLARE_PROPERTY(desired_activation, Function, 
+        "Time varying term that is subtracted from the actuator activation "
+        "within the term rasied to the activation_exponent in the COMAK "
+        "optimization cost function."
+        "d in the cost function: W*(a-d)^n. "
+        "The Default value is Constant(0.0).")
+    
+    OpenSim_DECLARE_PROPERTY(activation_lower_bound, Function, 
+        "Time varying lower bound on the actuator activation in the "
+        "COMAK optimization constraints."
+        "The Default value is Constant(0.0).")
+
+    OpenSim_DECLARE_PROPERTY(activation_upper_bound, Function, 
+        "Time varying lower bound on the actuator activation in the "
+        "COMAK optimization constraints."
+        "The Default value is Constant(1.0).")
 
     COMAKCostFunctionParameter();
     void constructProperties();

@@ -1,9 +1,9 @@
 %% Setup Environment and Folders
 clear;
 import org.opensim.modeling.*
-Logger.setLevelString('Trace');
+Logger.setLevelString('info');
 
-model_file = '../models/lenhart2015/lenhart2015.osim';
+model_file = '../models/healthy/lenhart2015/lenhart2015.osim';
 results_basename = 'walking';
 ik_result_dir = './results/comak-inverse-kinematics';
 comak_result_dir = './results/comak';
@@ -49,7 +49,7 @@ comak_ik.set_constraint_function_num_interpolation_points(20);
 comak_ik.set_print_secondary_constraint_sim_results(true);
 comak_ik.set_constrained_model_file('./results/comak-inverse-kinematics/ik_constrained_model.osim');
 comak_ik.set_perform_inverse_kinematics(true);
-comak_ik.set_marker_file('../models/lenhart2015/motion_data/overground_17.trc');
+comak_ik.set_marker_file('../models/healthy/experimental_data/motion_analysis/overground_17.trc');
 comak_ik.set_output_motion_file('overground_17_ik.mot');
 comak_ik.set_time_range(0, 0);
 comak_ik.set_time_range(1, 2.36);
@@ -249,20 +249,20 @@ comak_ik.set_IKTaskSet(ik_task_set);
 comak_ik.print('./inputs/comak_inverse_kinematics_settings.xml');
 
 disp('Running COMAKInverseKinematicsTool...')
-comak_ik.run();
+% comak_ik.run();
 %% Perform Standard COMAK Simulation
 
 comak = COMAKTool();
 comak.set_model_file(model_file);
 comak.set_coordinates_file('./results/comak-inverse-kinematics/overground_17_ik.mot');
-comak.set_external_loads_file('../models/lenhart2015/motion_data/overground_17_ext_loads.xml'),
+comak.set_external_loads_file('../models/healthy/experimental_data/motion_analysis/overground_17_ext_loads.xml'),
 comak.set_results_directory(comak_result_dir);
 comak.set_results_prefix(results_basename);
 comak.set_replace_force_set(false);
-comak.set_force_set_file('../models/lenhart2015/lenhart2015_reserve_actuators.xml');
-comak.set_start_time(1.16);
+comak.set_force_set_file('../models/healthy/lenhart2015/lenhart2015_reserve_actuators.xml');
+comak.set_start_time(1.2);
 % comak.set_stop_time(2.32);
-comak.set_stop_time(1.26);
+comak.set_stop_time(1.8);
 comak.set_time_step(0.01);
 comak.set_lowpass_filter_frequency(6);
 comak.set_print_processed_input_kinematics(false);
@@ -370,7 +370,7 @@ secondary_coord_set.cloneAndAppend(secondary_coord);
 comak.set_COMAKSecondaryCoordinateSet(secondary_coord_set);
 
 comak.set_settle_secondary_coordinates_at_start(true);
-comak.set_settle_threshold(1e-3);
+comak.set_settle_threshold(1e-4);
 comak.set_settle_accuracy(1e-2);
 comak.set_settle_internal_step_limit(10000);
 comak.set_print_settle_sim_results(true);
@@ -399,13 +399,13 @@ comak.set_verbose(2);
 comak.print('./inputs/comak_settings.xml');
 
 disp('Running COMAK Tool...')
-comak.run();
+% comak.run();
 
 %% Perform COMAK simulation with muscle weights
 comak_muscle_weight_result_dir = './results/comak_muscle_weight';
 results_muscle_weight_basename = 'walking_muscle_weight';
 
-comak_muscle_weight = comak;
+comak_muscle_weight = comak.clone();
 comak_muscle_weight.set_results_directory(comak_muscle_weight_result_dir);
 comak_muscle_weight.set_results_prefix(results_muscle_weight_basename);
 
@@ -487,58 +487,140 @@ comak_muscle_weight.print('./inputs/comak_muscle_weights_settings.xml');
 
 disp('Running COMAK Tool...')
 % comak_muscle_weight.run();
+
+% results_states = osimTableToStruct(TimeSeriesTable('./results/comak/walking_activation.sto'));
+% 
+% figure('name','Walking Muscle Activations')
+% hold on;
+% plot(results_states.a_forceset_vasmed_r)
+% plot(results_states.a_forceset_vasint_r)
+% plot(results_states.a_forceset_vaslat_r)
+% legend('vasmed','vasint','vaslat')
 %% Perform COMAK simulation with contact energy
 
 %comak.print('./inputs/comak_muscle_weights_settings.xml');
 
 %% Perform COMAK simulation with EMG informed
+comak_emg_result_dir = './results/comak_emg';
+results_emg_basename = 'walking_emg';
+
+comak_emg = comak.clone();
+comak_muscle_weight.set_results_directory(comak_emg_result_dir);
+comak_muscle_weight.set_results_prefix(results_emg_basename);
+
+cost_fun_param_set = COMAKCostFunctionParameterSet();
+cost_fun_param = COMAKCostFunctionParameter();
+
 %Desired activation to track
+cost_fun_param.setName('bfsh_r');
+cost_fun_param.set_actuator('/forceset/bfsh_r');
+cost_fun_param.set_weight(Constant(1.0));
+cost_fun_param.set_desired_activation(Constant(0.4))
+cost_fun_param_set.cloneAndAppend(cost_fun_param);
+
+cost_fun_param.setName('bflh_r');
+cost_fun_param.set_actuator('/forceset/bflh_r');
+cost_fun_param.set_weight(Constant(100.0));
+cost_fun_param.set_desired_activation(Constant(0.4))
+cost_fun_param_set.cloneAndAppend(cost_fun_param);
 
 %Upper and Lower Bounds 
-%comak.print('./inputs/comak_emg_settings.xml');
+cost_fun_param.setName('semimem_r');
+cost_fun_param.set_actuator('/forceset/semimem_r');
+cost_fun_param.set_weight(Constant(1.0));
+cost_fun_param.set_activation_lower_bound(Constant(0.1));
+cost_fun_param.set_activation_upper_bound(Constant(0.4));
+cost_fun_param.set_desired_activation(Constant(0.0))
+cost_fun_param_set.cloneAndAppend(cost_fun_param);
+
+%Upper and Lower Bounds with Desired Activation
+cost_fun_param.setName('semiten_r');
+cost_fun_param.set_actuator('/forceset/semiten_r');
+cost_fun_param.set_weight(Constant(100.0));
+cost_fun_param.set_activation_lower_bound(Constant(0.1));
+cost_fun_param.set_activation_upper_bound(Constant(0.4));
+cost_fun_param.set_desired_activation(Constant(0.3))
+cost_fun_param_set.cloneAndAppend(cost_fun_param);
+
+
+comak_emg.set_COMAKCostFunctionParameterSet(cost_fun_param_set);
+comak_emg.print('./inputs/comak_emg_settings.xml');
+
+disp('Running COMAK Tool...')
+comak_emg.run();
+
+nominal_states = osimTableToStruct(TimeSeriesTable('./results/comak/walking_activation.sto'));
+emg_states = osimTableToStruct(TimeSeriesTable('./results/comak_emg/walking_emg_activation.sto'));
+
+figure('name','EMG Muscle Activations')
+subplot(2,2,1);hold on;
+title('bfsh-r') 
+plot(nominal_states.a_forceset_bfsh_r)
+plot(emg_states.a_forceset_bfsh_r)
+
+subplot(2,2,2);hold on;
+title('bflh-r') 
+plot(nominal_states.a_forceset_bflh_r)
+plot(emg_states.a_forceset_bflh_r)
+
+subplot(2,2,3);hold on;
+title('semiten-r') 
+plot(nominal_states.a_forceset_semiten_r)
+plot(emg_states.a_forceset_semiten_r)
+yline(0.1,'-')
+yline(0.4,'-')
+
+subplot(2,2,4);hold on;
+title('semimem-r') 
+plot(nominal_states.a_forceset_semimem_r)
+plot(emg_states.a_forceset_semimem_r)
+yline(0.1,'-')
+yline(0.4,'-')
+
+legend('nominal','emg')
 %% Perform Joint Mechanics Analysis
-jnt_mech = JointMechanicsTool();
-jnt_mech.set_model_file(model_file);
-jnt_mech.set_input_states_file([comak_result_dir '/' results_basename '_states.sto']);
-jnt_mech.set_use_muscle_physiology(false);
-jnt_mech.set_results_file_basename(results_basename);
-jnt_mech.set_results_directory(jnt_mech_result_dir);
-jnt_mech.set_start_time(1.16);
-jnt_mech.set_stop_time(-1);
-jnt_mech.set_resample_step_size(-1);
-jnt_mech.set_normalize_to_cycle(true);
-jnt_mech.set_lowpass_filter_frequency(-1);
-jnt_mech.set_print_processed_kinematics(false);
-jnt_mech.set_contacts(0,'all');
-jnt_mech.set_contact_outputs(0,'all');
-jnt_mech.set_contact_mesh_properties(0,'none');
-jnt_mech.set_ligaments(0,'all');
-jnt_mech.set_ligament_outputs(0,'all');
-jnt_mech.set_muscles(0,'all');
-jnt_mech.set_muscle_outputs(0,'all');
-
-jnt_mech.set_attached_geometry_bodies(0,'all');
-
-jnt_mech.set_output_orientation_frame('ground');
-jnt_mech.set_output_position_frame('ground');
-jnt_mech.set_write_vtp_files(true);
-jnt_mech.set_vtp_file_format('binary');
-jnt_mech.set_write_h5_file(false);
-jnt_mech.set_h5_kinematics_data(true);
-jnt_mech.set_h5_states_data(true);
-jnt_mech.set_write_transforms_file(false);
-jnt_mech.set_output_transforms_file_type('sto');
-jnt_mech.set_use_visualizer(true);
-jnt_mech.set_verbose(0);
-
-analysis_set = AnalysisSet();
-
-frc_reporter = ForceReporter();
-frc_reporter.setName('ForceReporter');
-
-analysis_set.cloneAndAppend(frc_reporter);
-jnt_mech.set_AnalysisSet(analysis_set);
-jnt_mech.print('./inputs/joint_mechanics_settings.xml');
-
-disp('Running JointMechanicsTool...');
-jnt_mech.run();
+% jnt_mech = JointMechanicsTool();
+% jnt_mech.set_model_file(model_file);
+% jnt_mech.set_input_states_file([comak_result_dir '/' results_basename '_states.sto']);
+% jnt_mech.set_use_muscle_physiology(false);
+% jnt_mech.set_results_file_basename(results_basename);
+% jnt_mech.set_results_directory(jnt_mech_result_dir);
+% jnt_mech.set_start_time(1.16);
+% jnt_mech.set_stop_time(-1);
+% jnt_mech.set_resample_step_size(-1);
+% jnt_mech.set_normalize_to_cycle(true);
+% jnt_mech.set_lowpass_filter_frequency(-1);
+% jnt_mech.set_print_processed_kinematics(false);
+% jnt_mech.set_contacts(0,'all');
+% jnt_mech.set_contact_outputs(0,'all');
+% jnt_mech.set_contact_mesh_properties(0,'none');
+% jnt_mech.set_ligaments(0,'all');
+% jnt_mech.set_ligament_outputs(0,'all');
+% jnt_mech.set_muscles(0,'all');
+% jnt_mech.set_muscle_outputs(0,'all');
+% 
+% jnt_mech.set_attached_geometry_bodies(0,'all');
+% 
+% jnt_mech.set_output_orientation_frame('ground');
+% jnt_mech.set_output_position_frame('ground');
+% jnt_mech.set_write_vtp_files(true);
+% jnt_mech.set_vtp_file_format('binary');
+% jnt_mech.set_write_h5_file(false);
+% jnt_mech.set_h5_kinematics_data(true);
+% jnt_mech.set_h5_states_data(true);
+% jnt_mech.set_write_transforms_file(false);
+% jnt_mech.set_output_transforms_file_type('sto');
+% jnt_mech.set_use_visualizer(true);
+% jnt_mech.set_verbose(0);
+% 
+% analysis_set = AnalysisSet();
+% 
+% frc_reporter = ForceReporter();
+% frc_reporter.setName('ForceReporter');
+% 
+% analysis_set.cloneAndAppend(frc_reporter);
+% jnt_mech.set_AnalysisSet(analysis_set);
+% jnt_mech.print('./inputs/joint_mechanics_settings.xml');
+% 
+% disp('Running JointMechanicsTool...');
+% jnt_mech.run();

@@ -1,8 +1,8 @@
 %% Setup Environment and Folders
 import org.opensim.modeling.*
-Logger.setLevelString('Trace');
+Logger.setLevelString('Info');
 
-model_file = '../models/smith2019/smith2019.osim';
+model_file = '../healthy/models/smith2019/smith2019.osim';
 results_basename = 'passive_flexion_meniscus';
 forsim_result_dir = './results/forsim';
 jnt_mech_result_dir = './results/joint-mechanics';

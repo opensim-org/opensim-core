@@ -1,9 +1,9 @@
 %% Setup Environment and Folders
 clear;
 import org.opensim.modeling.*
-Logger.setLevelString('Trace');
+Logger.setLevelString('Info');
 
-model_file = '../models/smith2019/smith2019.osim';
+model_file = '../models/healthy/smith2019/smith2019.osim';
 results_basename = 'walking_meniscus';
 ik_result_dir = './results/comak-inverse-kinematics';
 comak_result_dir = './results/comak';
@@ -61,7 +61,7 @@ comak_ik.set_constraint_function_num_interpolation_points(20);
 comak_ik.set_print_secondary_constraint_sim_results(true);
 comak_ik.set_constrained_model_file('./results/comak-inverse-kinematics/ik_constrained_model.osim');
 comak_ik.set_perform_inverse_kinematics(true);
-comak_ik.set_marker_file('../models/lenhart2015/motion_data/overground_17.trc');
+comak_ik.set_marker_file('../models/healthy/experimental_data/motion_analysis/overground_17.trc');
 comak_ik.set_output_motion_file('overground_17_ik.mot');
 comak_ik.set_time_range(0, 0);
 comak_ik.set_time_range(1, 2.36);
@@ -267,11 +267,11 @@ disp('Running COMAKInverseKinematicsTool...')
 comak = COMAKTool();
 comak.set_model_file(model_file);
 comak.set_coordinates_file('./results/comak-inverse-kinematics/overground_17_ik.mot');
-comak.set_external_loads_file('../models/lenhart2015/motion_data/overground_17_ext_loads.xml'),
+comak.set_external_loads_file('../models/healthy/experimental_data/motion_analysis/overground_17_ext_loads.xml'),
 comak.set_results_directory(comak_result_dir);
 comak.set_results_prefix(results_basename);
 comak.set_replace_force_set(false);
-comak.set_force_set_file('../models/smith2019/smith2019_reserve_actuators.xml');
+comak.set_force_set_file('../models/healthy/smith2019/smith2019_reserve_actuators.xml');
 comak.set_start_time(1.16);
 comak.set_stop_time(2.32);
 % comak.set_stop_time(1.26);

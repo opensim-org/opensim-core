@@ -455,7 +455,7 @@ void Smith2018ContactMesh::generateDecorations(
     Super::generateDecorations(fixed, hints, s, geometry);
 
     // There is no fixed geometry to generate here.
-    if (fixed) { return; }
+    /*if (fixed) { return; }
 
     // Guard against the case where the Force was disabled
     // or mesh failed to load.
@@ -477,7 +477,7 @@ void Smith2018ContactMesh::generateDecorations(
     
     _decorative_mesh->setBodyId(mbidx);
     _decorative_mesh->setTransform(transformInBaseFrame);
-    _decorative_mesh->setIndexOnBody(0);        
+    _decorative_mesh->setIndexOnBody(0);*/
 }
 
 
@@ -836,7 +836,7 @@ www.lighthouse3d.com/tutorials/maths/ray-triangle-intersection/
 
     q = SimTK::cross(s, e1);
 
-    v = f*SimTK::dot(direction, q);
+    v = f * SimTK::dot(direction, q);
     double w = 1 - u - v;
     
     if (v < 0.0 || w < 0.0)

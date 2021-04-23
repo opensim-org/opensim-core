@@ -1,8 +1,9 @@
 %% Setup Environment and Folders
+clear; close all;
 import org.opensim.modeling.*
-Logger.setLevelString('Trace');
+Logger.setLevelString('Info');
 
-model_file = '../models/lenhart2015/lenhart2015.osim';
+model_file = '../models/healthy/lenhart2015/lenhart2015.osim';
 results_basename = 'passive_flexion';
 forsim_result_dir = './results/forsim';
 jnt_mech_result_dir = './results/joint-mechanics';

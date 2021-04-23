@@ -384,7 +384,12 @@ private:
     SimTK::Vector _parameter_scale;
     SimTK::Vector _muscle_volumes;
     SimTK::Vector _normalized_muscle_volumes;
+    
     FunctionSet _cost_muscle_weights;
+    FunctionSet _cost_muscle_desired_act;
+    FunctionSet _cost_muscle_act_lower_bound;
+    FunctionSet _cost_muscle_act_upper_bound;
+
     std::string _directoryOfSetupFile;
 
     StatesTrajectory _result_states;
