@@ -233,6 +233,8 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/AssemblySolver.h>
 %include <OpenSim/Simulation/InverseKinematicsSolver.h>
 %include <OpenSim/Simulation/OpenSense/IMUPlacer.h>
+%include <OpenSim/Simulation/OpenSense/ExperimentalFrame.h>
+%include <OpenSim/Simulation/OpenSense/SyntheticIMU.h>
 %include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
 
 %include <OpenSim/Simulation/StatesTrajectory.h>

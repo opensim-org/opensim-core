@@ -126,7 +126,7 @@
 #include "StatesTrajectoryReporter.h"
 #include "TableProcessor.h"
 #include "OpenSense/OpenSenseUtilities.h"
-
+#include "OpenSense/SyntheticIMU.h"
 #include "SimulationUtilities.h"
 
 #include "RegisterTypes_osimSimulation.h"   // to expose RegisterTypes_osimSimulation
