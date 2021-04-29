@@ -253,11 +253,10 @@ void Bhargava2004SmoothedMuscleMetabolics::extendRealizeTopology(
         SimTK::State& state) const {
     Super::extendRealizeTopology(state);
     m_muscleIndices.clear();
-    for (int i=0; i < getProperty_muscle_parameters().size(); ++i) {
+    for (int i = 0; i < getProperty_muscle_parameters().size(); ++i) {
         const auto& muscle = get_muscle_parameters(i).getMuscle();
         if (muscle.get_appliesForce()) {
             m_muscleIndices[muscle.getAbsolutePathString()] = i;
-            ++i;
         }
     }
 }
