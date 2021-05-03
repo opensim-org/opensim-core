@@ -149,7 +149,8 @@ record(const SimTK::State& s)
 int SyntheticIMUDataReporter::begin(const SimTK::State& s )
 {
     if(!proceed()) return(0);
-
+    _modelLocal->addComponent(&_angularVelocityReporter);
+    _modelLocal->addComponent(&_linearAccelerationsReporter);
     _modelLocal->initSystem();
 
     for (auto& path : _imuComponents) { 
@@ -161,7 +162,7 @@ int SyntheticIMUDataReporter::begin(const SimTK::State& s )
                 comp.getOutput("linear_acceleration"));
     }
     // RECORD
-    int status = 0;
+    int status = record(s);
  
     return(status);
 }

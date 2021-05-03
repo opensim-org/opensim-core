@@ -61,7 +61,7 @@ public:
             "Report angular velocities of Synthetic IMUs.");
     OpenSim_DECLARE_PROPERTY(report_linear_accelerations, bool,
             "Report linear accelerations of Synthetic IMUs.");
-    //=============================================================================
+//=============================================================================
 // DATA
 //=============================================================================
 private:
