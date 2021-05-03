@@ -5,10 +5,13 @@ are related to the items below. If there is no issue or pull
 request related to the change, then we may provide the commit.
 
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
+
 v4.3
 ====
 - Fixed a bug with Actuation analysis that would lead to extra columns in the output when an actuator is disabled (Issue #2977).
+- Upgrade bindings to use SWIG version 4.0 (allowing doxygen comments to carry over to Java/Python files).
 - Added createSyntheticIMUAccelerationSignals() to SimulationUtilities to generate "synthetic" IMU accelerations based on passed in state trajectory.
+- Fixed incorrect header information in BodyKinematics file output
 
 v4.2
 ====
