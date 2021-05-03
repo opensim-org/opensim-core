@@ -24,7 +24,7 @@
 * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Simulation/Model/ModelComponent.h>
-#include <OpenSim/Simulation/OpenSense/ExperimentalFrame.h>
+#include <OpenSim/Simulation/Model/Frame.h>
 
 
 namespace OpenSim {
@@ -44,19 +44,22 @@ class OSIMSIMULATION_API SyntheticIMU : public ModelComponent {
 public:
     SyntheticIMU() { constructProperties(); }
     // Attachment frame for placement/visualization
-    OpenSim_DECLARE_PROPERTY(attachment_frame, ExperimentalFrame,
-        "The frame used to attach and visualize the Synthetic IMU.");
-    OpenSim_DECLARE_OUTPUT(transform, SimTK::Transform, calcTransformInGround,
-            SimTK::Stage::Position);
+    OpenSim_DECLARE_SOCKET(
+            attachment_frame, Frame, "The frame to which the IMU is attached.");
+
+    //OpenSim_DECLARE_OUTPUT(rotation_as_quaternion, SimTK::Quaternion,
+    //        calcRotationAsQuaternion,
+    //        SimTK::Stage::Position);
     OpenSim_DECLARE_OUTPUT(angular_velocity, SimTK::Vec3,
             calcAngularVelocity, SimTK::Stage::Velocity);
     OpenSim_DECLARE_OUTPUT(linear_acceleration, SimTK::Vec3,
             calcLinearAcceleration, SimTK::Stage::Dynamics);
     // Outputs
     SimTK::Transform calcTransformInGround(const SimTK::State& s) const {
-        return get_attachment_frame().
-                getInput<SimTK::Vec3>("transform_in_ground")
-                        .getValue(s);
+        return get_attachment_frame().getTransformInGround(s);
+    }
+    SimTK::Quaternion calcRotationAsQuaternion(const SimTK::State& s) const {
+        return SimTK::Quaternion();
     }
     SimTK::Vec3 calcAngularVelocity(const SimTK::State& s) const {
         return get_attachment_frame().getAngularVelocityInGround(s);
@@ -67,9 +70,10 @@ public:
 
 private:
     void constructProperties() {
-        constructProperty_attachment_frame(ExperimentalFrame());
     }
-
+    const Frame& get_attachment_frame() const {
+        return getSocket<Frame>("attachment_frame").getConnectee();
+    }
 }; // End of class SyntheticIMU
 
 }

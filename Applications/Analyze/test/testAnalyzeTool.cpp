@@ -33,6 +33,8 @@
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Analyses/BodyKinematics.h>
+#include <OpenSim/Analyses/SyntheticIMUDataReporter.h>
+#include <OpenSim/Actuators/ModelFactory.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -45,6 +47,8 @@ void testActuationAnalysisWithDisabledForce();
 void testTugOfWar(const string& dataFileName, const double& defaultAct);
 
 void testBodyKinematics();
+
+void testIMUDataReporter();
 
 int main()
 {
@@ -85,6 +89,12 @@ int main()
     catch (const std::exception& e) { 
         cout << e.what() << endl;
         failures.push_back("testBodyKinematics");
+    }   
+    try {
+        testIMUDataReporter();
+    } catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testIMUDataReporter");
     }   
 
     if (!failures.empty()) {
@@ -338,4 +348,36 @@ void testBodyKinematics() {
     groundPos.getDataColumn("body_Y", groundPosY);
     ASSERT_EQUAL<double>(groundPosX.getLast(), speedX * duration, tol);
     ASSERT_EQUAL<double>(groundPosY.getLast(), speedY * duration, tol);
+}
+void testIMUDataReporter() {
+    Model pendulum = ModelFactory::createNLinkPendulum(2);
+
+    BodyKinematics* bodyKinematicsLocal = new BodyKinematics(&pendulum);
+    bodyKinematicsLocal->setName("BodyKinematics_local");
+    bodyKinematicsLocal->setExpressResultsInLocalFrame(true);
+    bodyKinematicsLocal->setInDegrees(false);
+
+    SyntheticIMUDataReporter* imuDataReporter =
+            new SyntheticIMUDataReporter(&pendulum);
+    imuDataReporter->setName("IMU_DataReporter");
+    imuDataReporter->reportAllBodies();
+
+    pendulum.addAnalysis(bodyKinematicsLocal);
+    pendulum.addAnalysis(imuDataReporter);
+
+    SimTK::State& s = pendulum.initSystem();
+
+    // Apply a constnat velocity simple rotation about the ground Z,
+    // and translation in the ground X and Y directions
+    double speedRot = 1.0;
+    double speedX = 2.0;
+    double speedY = 3.0;
+    Joint& joint = pendulum.updJointSet()[0];
+    auto& qi = joint.updCoordinate();
+    qi.setSpeedValue(s, speedRot);
+
+    Manager manager(pendulum);
+    double duration = 2.0;
+    manager.initialize(s);
+    s = manager.integrate(duration);
 }

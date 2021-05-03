@@ -35,6 +35,7 @@
 #include "StatesReporter.h"
 #include "InducedAccelerations.h"
 #include "ProbeReporter.h"
+#include "SyntheticIMUDataReporter.h"
 #include "RegisterTypes_osimAnalyses.h" // to expose RegisterTypes_Analyses
 
 #endif // _osimAnalyses_h_
