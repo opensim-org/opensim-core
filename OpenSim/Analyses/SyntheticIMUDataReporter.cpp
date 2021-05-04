@@ -26,10 +26,10 @@
 // INCLUDES
 //=============================================================================
 #include <OpenSim/Common/IO.h>
+#include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Analyses/SyntheticIMUDataReporter.h>
 #include <OpenSim/Simulation/OpenSense/SyntheticIMU.h>
-
 
 using namespace OpenSim;
 using namespace std;
@@ -149,18 +149,20 @@ record(const SimTK::State& s)
 int SyntheticIMUDataReporter::begin(const SimTK::State& s )
 {
     if(!proceed()) return(0);
+
     _modelLocal->addComponent(&_angularVelocityReporter);
     _modelLocal->addComponent(&_linearAccelerationsReporter);
-    _modelLocal->initSystem();
 
     for (auto& path : _imuComponents) { 
         const Component& comp = _modelLocal->getComponent(path.toString());
         //_rotationsReporter.addToReport(comp.getOutput("rotation_as_quaternion"));
         _angularVelocityReporter.addToReport(
-                comp.getOutput("angular_velocity"));
+                comp.getOutput("angular_velocity"), comp.getName());
         _linearAccelerationsReporter.addToReport(
-                comp.getOutput("linear_acceleration"));
+                comp.getOutput("linear_acceleration"), comp.getName());
     }
+    _modelLocal->initSystem();
+
     // RECORD
     int status = record(s);
  
@@ -230,18 +232,14 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
                  const string &aExtension)
 {
     auto& angVelTable = _angularVelocityReporter.getTable();
-    /*
-    // Angular Velocity
-    Storage::printResult(_activationStorage,aBaseName+"_"+getName()+"_activation",aDir,aDT,aExtension);
-
-    // Linear Acceleration
-    Storage::printResult(getForceStorage(),aBaseName+"_"+getName()+"_force",aDir,aDT,aExtension);
-
-    // Make a ControlSet out of activations for use in forward dynamics
-    ControlSet cs(*_activationStorage);
-    std::string path = (aDir=="") ? "." : aDir;
-    std::string name = path + "/" + aBaseName+"_"+getName()+"_controls.xml";
-    cs.print(name); */
+    auto& linAccTable = _linearAccelerationsReporter.getTable();
+    {
+        IO::CwdChanger cwd = IO::CwdChanger::changeTo(aDir);
+        STOFileAdapter_<SimTK::Vec3>::write(
+                angVelTable, "angular_veolcity.sto");
+        STOFileAdapter_<SimTK::Vec3>::write(
+                linAccTable, "linear_accelerations.sto");
+    }
     return(0);
 }
 template <typename T>

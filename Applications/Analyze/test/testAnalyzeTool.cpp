@@ -374,10 +374,12 @@ void testIMUDataReporter() {
     double speedY = 3.0;
     Joint& joint = pendulum.updJointSet()[0];
     auto& qi = joint.updCoordinate();
-    qi.setSpeedValue(s, speedRot);
+    qi.setValue(s, SimTK::Pi/2.); // gravity only 
 
     Manager manager(pendulum);
     double duration = 2.0;
     manager.initialize(s);
     s = manager.integrate(duration);
+
+    imuDataReporter->printResults("", "imu_gravity");
 }
