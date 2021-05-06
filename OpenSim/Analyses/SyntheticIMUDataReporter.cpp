@@ -64,7 +64,6 @@ SyntheticIMUDataReporter::SyntheticIMUDataReporter(const SyntheticIMUDataReporte
     Analysis(aSyntheticIMUDataReporter),
     _modelLocal(nullptr) {
     setNull();
-    constructProperties();
     // COPY TYPE AND NAME
     *this = aSyntheticIMUDataReporter;
 }
