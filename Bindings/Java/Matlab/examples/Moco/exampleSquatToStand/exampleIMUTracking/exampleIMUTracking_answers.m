@@ -1,13 +1,14 @@
 function exampleIMUTracking_answers
 
 %% Part 0: Load the Moco libraries and pre-configured Models.
+addpath('../'); % Add the directory above to access mocoPlotTrajectory.m
 import org.opensim.modeling.*;
 
 % These models are provided for you (i.e., they are not part of Moco).
 model = getTorqueDrivenModel();
 % model = getMuscleDrivenModel();
 
-%% Part 1: Torque-driven Predictive Problem
+%% Part 1: Effort minimization prediction
 % Part 1a: Create a new MocoStudy.
 study = MocoStudy();
 
@@ -54,7 +55,7 @@ problem.addGoal(MocoControlGoal('myeffort'));
 
 % Part 1e: Configure the solver.
 solver = study.initCasADiSolver();
-solver.set_num_mesh_intervals(25);
+solver.set_num_mesh_intervals(50);
 solver.set_optim_convergence_tolerance(1e-2);
 solver.set_optim_constraint_tolerance(1e-4);
 
@@ -62,54 +63,89 @@ if ~exist('predictSolution.sto', 'file')
 % Part 1f: Solve! Write the solution to file, and visualize.
 predictSolution = study.solve();
 predictSolution.write('predictSolution.sto');
-study.visualize(predictSolution);
+% study.visualize(predictSolution);
 end
 
 %% Part 2: Add IMU tracking frames to the model 
+% TODO should we have a step to add frames to the model that will be
+% tracked? Depends on Ayman's SyntheticIMU component.
 
-%% Part 3: Create "synthetic" IMU acceleration signals
+%% Part 3: Create synthetic accelerometer signals
+% In this step, we'll create a set of fake, or "synthetic", accelerometer
+% signals that mimic the output of an IMU sensor. To do this, we need to 
+% compute the accelerations from our IMU frames, subtract the gravitational
+% acceleration vector, and re-express the accelerations in the IMU frames.
+% The <TODO insert SimulationReporter here> will help us do this.
+
+% Part 3a: Load the prediction solution.
 predictSolution = MocoTrajectory('predictSolution.sto');
+
+% Part 3b: Create a vector containing paths to the IMU frame we will track.
 framePaths = StdVectorString();
 framePaths.add('/bodyset/torso');
 framePaths.add('/bodyset/pelvis');
 framePaths.add('/bodyset/femur_r');
 framePaths.add('/bodyset/tibia_r');
-torqueDrivenModel.initSystem();
-accelerationsReference = ... 
+
+% Part 3c: Compute the accelerometer signals. TODO this will change when we
+% switch to Ayman's SyntheticIMUReporter.
+model.initSystem();
+accelerationReference = ... 
     opensimSimulation.createSyntheticIMUAccelerationSignals(model, ...
         predictSolution.exportToStatesTable(), ...
         predictSolution.exportToControlsTable(), framePaths);
+    
+% Part 3d: Plot the synthetic acceleration signals.
+plotAccelerationSignals(accelerationReference);
 
-%% Part 4: IMU tracking problem 
-accelerationIMUTracking = MocoAccelerationTrackingGoal('imu_tracking');
+%% Part 4: Synthetic acceleration tracking problem 
+% Part 4a: TODO
+accelerationIMUTracking = MocoAccelerationTrackingGoal('acceleration_tracking');
 accelerationIMUTracking.setFramePaths(framePaths);
-accelerationIMUTracking.setAccelerationReference(accelerationsReference);
+accelerationIMUTracking.setAccelerationReference(accelerationReference);
 accelerationIMUTracking.setGravityOffset(true);
 accelerationIMUTracking.setExpressAccelerationsInTrackingFrames(true);
 problem.addGoal(accelerationIMUTracking);
 
-% Part 4a: Reduce the control cost weight so it now acts as a regularization 
+% Part 4b: Reduce the control cost weight so it now acts as a regularization 
 % term.
-problem.updGoal('myeffort').setWeight(0);
-
-% Part 4b: Set the initial guess using the predictive problem solution.
-% Tighten convergence tolerance to ensure smooth controls.
-%solver.setGuessFile('predictSolution.sto');
-%solver.set_optim_convergence_tolerance(1e-6);
+problem.updGoal('myeffort').setWeight(0.001);
 
 if ~exist('trackingSolution.sto', 'file')
 % Part 4c: Solve! Write the solution to file, and visualize.
 trackingSolution = study.solve();
 trackingSolution.write('trackingSolution.sto');
-study.visualize(trackingSolution);
+% study.visualize(trackingSolution);
 end
-
 
 %% Part 5: Compare tracking solution to original prediction
 % This is a convenience function provided for you. See mocoPlotTrajectory.m
 mocoPlotTrajectory('predictSolution.sto', 'trackingSolution.sto', ...
         'predict', 'track');
+    
+%% Part 6: Noisy synthetic acceleration tracking problem 
+% Part 6a: Add noise to synthetic accelerations
+accelerationReferenceNoisy = addAccelerometerNoise(accelerationReference);
 
+% Part 6b: Update the acceleration tracking goal.
+accelerationIMUTracking = MocoAccelerationTrackingGoal().safeDownCast(...
+    problem.updGoal('acceleration_tracking'));
+accelerationIMUTracking.setAccelerationReference(...
+    accelerationReferenceNoisy);
+
+% Part 6c: Plot the synthetic acceleration signals.
+plotAccelerationSignals(accelerationReference, accelerationReferenceNoisy);
+
+if ~exist('noisyTrackingSolution.sto', 'file')
+% Part 6d: Solve! Write the solution to file, and visualize.
+noisyTrackingSolution = study.solve();
+noisyTrackingSolution.write('noisyTrackingSolution.sto');
+% study.visualize(noisyTrackingSolution);
+end
+
+%% Part 7: Compare noisy tracking solution to previous tracking solution
+mocoPlotTrajectory('trackingSolution.sto', 'noisyTrackingSolution.sto', ...
+        'track', 'track (noisy)');
 
 end
 
@@ -128,7 +164,8 @@ actu.setOptimalForce(optForce);
 actu.setMinControl(-1);
 actu.setMaxControl(1);
 
-model.addComponent(actu);
+% Add to ForceSet
+model.addForce(actu);
 
 end
 
@@ -137,7 +174,7 @@ function [model] = getTorqueDrivenModel()
 import org.opensim.modeling.*;
 
 % Load the base model.
-model = Model('squatToStand_3dof9musc.osim');
+model = Model('../squatToStand_3dof9musc.osim');
 
 % Remove the muscles in the model.
 model.updForceSet().clearAndDestroy();
@@ -155,7 +192,7 @@ function [model] = getMuscleDrivenModel()
 import org.opensim.modeling.*;
 
 % Load the base model.
-model = Model('squatToStand_3dof9musc.osim');
+model = Model('../squatToStand_3dof9musc.osim');
 model.finalizeConnections();
 
 % Replace the muscles in the model with muscles from DeGroote, Fregly,
@@ -178,5 +215,120 @@ for m = 0:model.getMuscles().getSize()-1
     dgf.set_active_force_width_scale(1.5);
     dgf.set_ignore_passive_fiber_force(true);
 end
+
+end
+
+function [accelerationReferenceNoisy] = ...
+                        addAccelerometerNoise(accelerationReference)
+import org.opensim.modeling.*;
+
+% Initial table to hold noisy acceleration signals
+accelerationReferenceNoisy = ...
+    TimeSeriesTableVec3(accelerationReference.getIndependentColumn());
+
+nrows = accelerationReference.getNumRows();
+ncols = accelerationReference.getNumColumns();
+labels = accelerationReference.getColumnLabels();
+for icol = 1:ncols
+    % Get the original acceleration column 
+    label = labels.get(icol-1);    
+    % Here, a column is of type VectorVec3
+    col = accelerationReference.getDependentColumn(label);    
+    
+    % Add white noise to this column
+    colMat = col.getAsMat();
+    maxNoise = norm(colMat) / nnz(colMat);
+    noise = maxNoise * randn(size(colMat));
+    newCol = VectorVec3(nrows, Vec3(0.0));
+    for irow = 1:nrows
+        newElt = Vec3(0.0);
+        newElt.set(0, colMat(irow, 1) + noise(irow, 1));
+        newElt.set(1, colMat(irow, 2) + noise(irow, 2));
+        newElt.set(2, colMat(irow, 3) + noise(irow, 3));
+        newCol.set(irow-1, newElt);
+    end
+    
+    % Append noisy column to the table
+    accelerationReferenceNoisy.appendColumn(label, newCol);
+end
+
+end
+
+function plotAccelerationSignals(varargin)
+
+import org.opensim.modeling.*;
+
+accelerationsReference = varargin{1};
+if nargin == 2
+    accelerationsReferenceNoisy = varargin{2};
+end
+
+% Create a time vector that can be used for plotting
+timeVec = accelerationsReference.getIndependentColumn();
+time = zeros(timeVec.size(),1);
+for i = 1:timeVec.size()
+   time(i) = timeVec.get(i-1);
+end
+
+figure;
+% Plot the torso accelerations
+subplot(2,2,1)
+torso = accelerationsReference.getDependentColumn(...
+    '/bodyset/torso').getAsMat();
+plot(time, torso(:,1), 'linewidth', 2, 'color', 'black')
+if nargin == 2
+hold on
+torsoNoisy = accelerationsReferenceNoisy.getDependentColumn(...
+    '/bodyset/torso').getAsMat();
+plot(time, torsoNoisy(:,1), 'linewidth', 2, 'color', 'red')
+end
+title('torso')
+xlabel('time (s)')
+ylabel('acceleration (m/s^2)')
+
+% Plot the pelvis accelerations
+subplot(2,2,2)
+pelvis = accelerationsReference.getDependentColumn(...
+    '/bodyset/torso').getAsMat();
+plot(time, pelvis(:,1), 'linewidth', 2, 'color', 'black')
+if nargin == 2
+hold on
+pelvisNoisy = accelerationsReferenceNoisy.getDependentColumn(...
+    '/bodyset/torso').getAsMat();
+plot(time, pelvisNoisy(:,1), 'linewidth', 2, 'color', 'red')
+end
+title('pelvis')
+xlabel('time (s)')
+ylabel('acceleration (m/s^2)')
+
+% Plot the femur accelerations
+subplot(2,2,3)
+femur = accelerationsReference.getDependentColumn(...
+    '/bodyset/femur_r').getAsMat();
+plot(time, femur(:,1), 'linewidth', 2, 'color', 'black')
+if nargin == 2
+hold on
+femurNoisy = accelerationsReferenceNoisy.getDependentColumn(...
+    '/bodyset/femur_r').getAsMat();
+plot(time, femurNoisy(:,1), 'linewidth', 2, 'color', 'red')
+end
+title('femur')
+xlabel('time (s)')
+ylabel('acceleration (m/s^2)')
+
+% Plot the tibia accelerations
+subplot(2,2,4)
+tibia = accelerationsReference.getDependentColumn(...
+    '/bodyset/tibia_r').getAsMat();
+plot(time, tibia(:,1), 'linewidth', 2, 'color', 'black')
+if nargin == 2
+hold on
+tibiaNoisy = accelerationsReferenceNoisy.getDependentColumn(...
+    '/bodyset/tibia_r').getAsMat();
+plot(time, tibiaNoisy(:,1), 'linewidth', 2, 'color', 'red')
+end
+title('tibia')
+xlabel('time (s)')
+ylabel('acceleration (m/s^2)')
 
 end
