@@ -55,19 +55,25 @@ class OSIMANALYSES_API SyntheticIMUDataReporter : public Analysis {
 OpenSim_DECLARE_CONCRETE_OBJECT(SyntheticIMUDataReporter, Analysis);
 
 public:
-    OpenSim_DECLARE_PROPERTY(report_rotations, bool,
-            "Report rotations of Synthetic IMUs as quaternions.");
+    OpenSim_DECLARE_PROPERTY(report_orientations, bool,
+            "Report orientations of Synthetic IMUs as quaternions, default is true.");
     OpenSim_DECLARE_PROPERTY(report_angular_velocities, bool,
-            "Report angular velocities of Synthetic IMUs.");
+            "Report angular velocities of Synthetic IMUs, default is true.");
     OpenSim_DECLARE_PROPERTY(report_linear_accelerations, bool,
-            "Report linear accelerations of Synthetic IMUs.");
-//=============================================================================
+            "Report linear accelerations of Synthetic IMUs, default is true.");
+
+    OpenSim_DECLARE_PROPERTY(IMU_frames, std::string,
+            "What frames to report. Frames, Bodies, Custom are valid. If Custom populate ");
+    OpenSim_DECLARE_LIST_PROPERTY(frame_paths, std::string,
+            "ComponentPaths for frames to attach Synthetic IMUs to, if IMU_attachments is set to Custom.");
+
+    //=============================================================================
 // DATA
 //=============================================================================
 private:
     std::vector<OpenSim::ComponentPath> _imuComponents;
     /** Output tables. */
-    TableReporter_<SimTK::Vec3> _rotationsReporter;
+    TableReporter_<SimTK::Quaternion> _orientationsReporter;
     TableReporter_<SimTK::Vec3> _angularVelocityReporter;
     TableReporter_<SimTK::Vec3> _linearAccelerationsReporter;
 
@@ -77,7 +83,6 @@ private:
 //=============================================================================
 public:
     SyntheticIMUDataReporter(Model *aModel=0);
-    SyntheticIMUDataReporter(const std::string &aFileName);
     SyntheticIMUDataReporter(const SyntheticIMUDataReporter &aObject);
     virtual ~SyntheticIMUDataReporter();
 
@@ -86,6 +91,17 @@ public:
     template <class T> void reportAll();
     void reportAllBodies() { reportAll<const OpenSim::Body>(); };
     void reportAllFrames() { reportAll<const OpenSim::Frame>(); };
+
+    const TimeSeriesTable_<SimTK::Quaternion_<double> >&
+    getOrientationsTable() const {
+        return _orientationsReporter.getTable();
+    }
+    const TimeSeriesTable_<SimTK::Vec3>& getAngularVelocitiesTable() const {
+        return _angularVelocityReporter.getTable();
+    }
+    const TimeSeriesTable_<SimTK::Vec3>& getLinearAccelerationTable() const {
+        return _linearAccelerationsReporter.getTable();
+    }
 
 public:
     //--------------------------------------------------------------------------
@@ -117,7 +133,15 @@ public:
         printResults(const std::string &aBaseName,const std::string &aDir="",
         double aDT=-1.0,const std::string &aExtension=".sto") override;
 
-//=============================================================================
+private:
+    void constructProperties() {
+        constructProperty_report_orientations(true);
+        constructProperty_report_angular_velocities(true);
+        constructProperty_report_linear_accelerations(true);
+        constructProperty_IMU_frames("Bodies");
+        constructProperty_frame_paths();
+    }
+    //=============================================================================
 };  // END of class SyntheticIMUDataReporter
 
 }; //namespace

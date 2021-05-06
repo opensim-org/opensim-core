@@ -47,9 +47,9 @@ public:
     OpenSim_DECLARE_SOCKET(
             attachment_frame, Frame, "The frame to which the IMU is attached.");
 
-    //OpenSim_DECLARE_OUTPUT(rotation_as_quaternion, SimTK::Quaternion,
-    //        calcRotationAsQuaternion,
-    //        SimTK::Stage::Position);
+    OpenSim_DECLARE_OUTPUT(rotation_as_quaternion, SimTK::Quaternion,
+            calcRotationAsQuaternion,
+            SimTK::Stage::Position);
     OpenSim_DECLARE_OUTPUT(angular_velocity, SimTK::Vec3,
             calcAngularVelocity, SimTK::Stage::Velocity);
     OpenSim_DECLARE_OUTPUT(linear_acceleration, SimTK::Vec3,
@@ -59,7 +59,7 @@ public:
         return get_attachment_frame().getTransformInGround(s);
     }
     SimTK::Quaternion calcRotationAsQuaternion(const SimTK::State& s) const {
-        return SimTK::Quaternion();
+        return SimTK::Quaternion(calcTransformInGround(s).R());
     }
     SimTK::Vec3 calcAngularVelocity(const SimTK::State& s) const {
         return get_attachment_frame().getAngularVelocityInGround(s);

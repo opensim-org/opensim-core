@@ -50,7 +50,7 @@ SyntheticIMUDataReporter::~SyntheticIMUDataReporter()
 SyntheticIMUDataReporter::SyntheticIMUDataReporter(Model *aModel) :
     Analysis(aModel), _modelLocal(nullptr) {
     setNull();
-
+    constructProperties();
     if(aModel) 
         setModel(*aModel);
 }
@@ -64,6 +64,7 @@ SyntheticIMUDataReporter::SyntheticIMUDataReporter(const SyntheticIMUDataReporte
     Analysis(aSyntheticIMUDataReporter),
     _modelLocal(nullptr) {
     setNull();
+    constructProperties();
     // COPY TYPE AND NAME
     *this = aSyntheticIMUDataReporter;
 }
@@ -81,11 +82,15 @@ SyntheticIMUDataReporter::SyntheticIMUDataReporter(const SyntheticIMUDataReporte
  * @return Reference to this object.
  */
 SyntheticIMUDataReporter& SyntheticIMUDataReporter::
-operator=(const SyntheticIMUDataReporter &aSyntheticIMUDataReporter)
+operator=(const SyntheticIMUDataReporter& other)
 {
     // BASE CLASS
-    Analysis::operator=(aSyntheticIMUDataReporter);
-
+    Analysis::operator=(other);
+    copyProperty_report_orientations(other);
+    copyProperty_report_angular_velocities(other);
+    copyProperty_report_linear_accelerations(other);
+    copyProperty_IMU_frames(other);
+    copyProperty_frame_paths(other);
     _modelLocal = nullptr;
     return(*this);
 }
@@ -150,16 +155,46 @@ int SyntheticIMUDataReporter::begin(const SimTK::State& s )
 {
     if(!proceed()) return(0);
 
-    _modelLocal->addComponent(&_angularVelocityReporter);
-    _modelLocal->addComponent(&_linearAccelerationsReporter);
+    _orientationsReporter.clearTable();
+    _angularVelocityReporter.clearTable();
+    _linearAccelerationsReporter.clearTable();
 
-    for (auto& path : _imuComponents) { 
-        const Component& comp = _modelLocal->getComponent(path.toString());
-        //_rotationsReporter.addToReport(comp.getOutput("rotation_as_quaternion"));
-        _angularVelocityReporter.addToReport(
-                comp.getOutput("angular_velocity"), comp.getName());
-        _linearAccelerationsReporter.addToReport(
-                comp.getOutput("linear_acceleration"), comp.getName());
+    if (_imuComponents.empty()) {
+        // Populate _imuComponents based on properties
+        if (get_IMU_frames() == "Bodies") { 
+            reportAllBodies();
+        } else if (get_IMU_frames() == "Frames") {
+            reportAllFrames();
+        } else if (get_IMU_frames() == "Custom") {
+            for (int i = 0; i < getProperty_frame_paths().size(); ++i) {
+                // This may need stricter error checking to make sure we have a valid Frame/Path
+                _imuComponents.push_back(ComponentPath(get_frame_paths(i)));
+            }
+        } else {
+            log_warn("SyntheticIMUDataReporter has invalid specification");
+            log_warn("Current selection is {}, required Bodies/Frames/Custom", get_IMU_frames());
+            log_warn("All bodies will be reported.");
+            reportAllBodies();
+        }
+    }
+    // If alreay part of the system, then a rerun and no need to add to _modelLocal
+    if (!_orientationsReporter.hasSystem()) {
+        _modelLocal->addComponent(&_orientationsReporter);
+        _modelLocal->addComponent(&_angularVelocityReporter);
+        _modelLocal->addComponent(&_linearAccelerationsReporter);
+
+        for (auto& path : _imuComponents) {
+            const Component& comp = _modelLocal->getComponent(path.toString());
+            if (get_report_orientations())
+                _orientationsReporter.addToReport(
+                    comp.getOutput("rotation_as_quaternion"), comp.getName());
+            if (get_report_angular_velocities())
+                _angularVelocityReporter.addToReport(
+                    comp.getOutput("angular_velocity"), comp.getName());
+            if (get_report_linear_accelerations())
+                _linearAccelerationsReporter.addToReport(
+                    comp.getOutput("linear_acceleration"), comp.getName());
+        }
     }
     _modelLocal->initSystem();
 
@@ -231,14 +266,20 @@ int SyntheticIMUDataReporter::
 printResults(const string &aBaseName,const string &aDir,double aDT,
                  const string &aExtension)
 {
+    auto& rotationsTable = _orientationsReporter.getTable();
     auto& angVelTable = _angularVelocityReporter.getTable();
     auto& linAccTable = _linearAccelerationsReporter.getTable();
     {
         IO::CwdChanger cwd = IO::CwdChanger::changeTo(aDir);
-        STOFileAdapter_<SimTK::Vec3>::write(
-                angVelTable, "angular_veolcity.sto");
-        STOFileAdapter_<SimTK::Vec3>::write(
-                linAccTable, "linear_accelerations.sto");
+        if (get_report_orientations())
+            STOFileAdapter_<SimTK::Quaternion>::write(
+                rotationsTable, aBaseName +"_"+"orientations.sto");
+        if (get_report_angular_velocities())
+            STOFileAdapter_<SimTK::Vec3>::write(
+                angVelTable, aBaseName + "_" + "angular_veolcity.sto");
+        if (get_report_linear_accelerations())
+            STOFileAdapter_<SimTK::Vec3>::write(
+                linAccTable, aBaseName + "_" + "linear_accelerations.sto");
     }
     return(0);
 }

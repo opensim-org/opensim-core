@@ -354,7 +354,7 @@ void testIMUDataReporter() {
 
     BodyKinematics* bodyKinematicsLocal = new BodyKinematics(&pendulum);
     bodyKinematicsLocal->setName("BodyKinematics_local");
-    bodyKinematicsLocal->setExpressResultsInLocalFrame(true);
+    bodyKinematicsLocal->setExpressResultsInLocalFrame(false);
     bodyKinematicsLocal->setInDegrees(false);
 
     SyntheticIMUDataReporter* imuDataReporter =
@@ -367,19 +367,45 @@ void testIMUDataReporter() {
 
     SimTK::State& s = pendulum.initSystem();
 
-    // Apply a constnat velocity simple rotation about the ground Z,
-    // and translation in the ground X and Y directions
-    double speedRot = 1.0;
-    double speedX = 2.0;
-    double speedY = 3.0;
+
     Joint& joint = pendulum.updJointSet()[0];
     auto& qi = joint.updCoordinate();
-    qi.setValue(s, SimTK::Pi/2.); // gravity only 
+    qi.setValue(s, SimTK::Pi/2.); // static
 
     Manager manager(pendulum);
     double duration = 2.0;
     manager.initialize(s);
     s = manager.integrate(duration);
 
-    imuDataReporter->printResults("", "imu_gravity");
+    imuDataReporter->printResults("static", "");
+    const TimeSeriesTable_<SimTK::Vec3>& angVelTable =
+            imuDataReporter->getAngularVelocitiesTable();
+    const TimeSeriesTable_<SimTK::Vec3>& linAccTable =
+            imuDataReporter->getLinearAccelerationTable();
+    const TimeSeriesTable_<SimTK::Quaternion>& rotationsTable =
+            imuDataReporter->getOrientationsTable();
+    for (int row = 0; row < angVelTable.getNumRows(); ++row) {
+        ASSERT_EQUAL<double>(angVelTable.getMatrix()[row][0].norm(), 0., 1e-7);
+        ASSERT_EQUAL<double>(angVelTable.getMatrix()[row][1].norm(), 0., 1e-7);
+        ASSERT_EQUAL<double>(linAccTable.getMatrix()[row][0].norm(), 0., 1e-7);
+        ASSERT_EQUAL<double>(linAccTable.getMatrix()[row][1].norm(), 0., 1e-7);
+    }
+    // Now allow pendulum to drop under gravity from horizontal
+    qi.setValue(s, 0.); // gravity only
+    s.setTime(0.);
+    Manager manager2(pendulum);
+    manager2.initialize(s);
+    s = manager2.integrate(duration);
+    imuDataReporter->printResults("gravity_fall", "");
+    // Compare results to Body kinematics
+    /* Attempt to compare to createSyntheticIMUAccelerationSignals  doesn't
+    * work now since the latter requires passing in controls!
+    * 
+    std::vector<std::string> framePaths = {"/bodyset/b0", "/bodyset/b1"};
+    TimeSeriesTableVec3 accelTableFromUtility =
+            createSyntheticIMUAccelerationSignals(
+                    pendulum, statesTable, controlsTable, framePaths);
+    STOFileAdapter_<SimTK::Vec3>::write(
+            accelTableFromUtility, "linacc_fromutils.sto");
+            */
 }
