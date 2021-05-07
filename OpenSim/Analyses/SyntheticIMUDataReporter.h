@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Copyright (c) 2005-2021 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -62,8 +62,8 @@ public:
     OpenSim_DECLARE_PROPERTY(report_linear_accelerations, bool,
             "Report linear accelerations of Synthetic IMUs, default is true.");
 
-    OpenSim_DECLARE_PROPERTY(IMU_frames, std::string,
-            "What frames to report. Frames, Bodies, Custom are valid. If Custom populate ");
+    OpenSim_DECLARE_PROPERTY(imu_frames, std::string,
+            "What frames to report. Frames, Bodies, Custom are valid. If Custom populate frame_paths accordingly.");
     OpenSim_DECLARE_LIST_PROPERTY(frame_paths, std::string,
             "ComponentPaths for frames to attach Synthetic IMUs to, if IMU_attachments is set to Custom.");
 
@@ -87,18 +87,22 @@ public:
     virtual ~SyntheticIMUDataReporter();
 
     void setNull();
-
+    // Convenience methods to support reporting all Bodies or all Frames or
+    // Frames that can be filtered by type.
     template <class T> void reportAll();
     void reportAllBodies() { reportAll<const OpenSim::Body>(); };
     void reportAllFrames() { reportAll<const OpenSim::Frame>(); };
 
+    // In memory access to IMU data as Tables (Orientations)
     const TimeSeriesTable_<SimTK::Quaternion_<double> >&
     getOrientationsTable() const {
         return _orientationsReporter.getTable();
     }
+    // In memory access to IMU data as Tables Angular Velocities)
     const TimeSeriesTable_<SimTK::Vec3>& getAngularVelocitiesTable() const {
         return _angularVelocityReporter.getTable();
     }
+    // In memory access to IMU data as Tables (Linear Accelerations)
     const TimeSeriesTable_<SimTK::Vec3>& getLinearAccelerationTable() const {
         return _linearAccelerationsReporter.getTable();
     }
@@ -116,21 +120,16 @@ public:
     //--------------------------------------------------------------------------
     // ANALYSIS
     //--------------------------------------------------------------------------
-    int
-        begin(const SimTK::State& s ) override;
-    int
-        step(const SimTK::State& s, int setNumber ) override;
-    int
-        end(const SimTK::State& s ) override;
+    int begin(const SimTK::State& s ) override;
+    int step(const SimTK::State& s, int setNumber ) override;
+    int end(const SimTK::State& s ) override;
 protected:
-    virtual int
-        record(const SimTK::State& s );
+    virtual int record(const SimTK::State& s );
     //--------------------------------------------------------------------------
     // IO
     //--------------------------------------------------------------------------
 public:
-    int
-        printResults(const std::string &aBaseName,const std::string &aDir="",
+    int printResults(const std::string &aBaseName,const std::string &aDir="",
         double aDT=-1.0,const std::string &aExtension=".sto") override;
 
 private:
@@ -138,7 +137,7 @@ private:
         constructProperty_report_orientations(true);
         constructProperty_report_angular_velocities(true);
         constructProperty_report_linear_accelerations(true);
-        constructProperty_IMU_frames("Bodies");
+        constructProperty_imu_frames("Bodies");
         constructProperty_frame_paths();
     }
     //=============================================================================

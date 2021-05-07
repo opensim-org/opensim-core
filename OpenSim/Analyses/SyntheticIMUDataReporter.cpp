@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2020 Stanford University and the Authors                *
+ * Copyright (c) 2005-2021 Stanford University and the Authors                *
  * Author(s): Ayman Habib                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -48,11 +48,11 @@ SyntheticIMUDataReporter::~SyntheticIMUDataReporter()
 /**
  */
 SyntheticIMUDataReporter::SyntheticIMUDataReporter(Model *aModel) :
-    Analysis(aModel), _modelLocal(nullptr) {
-    setNull();
-    constructProperties();
-    if(aModel) 
-        setModel(*aModel);
+    Analysis(aModel), 
+    _modelLocal(nullptr) {
+        setNull();
+        constructProperties();
+        if(aModel) setModel(*aModel);
 }
 // Copy constructor and virtual copy 
 //_____________________________________________________________________________
@@ -63,9 +63,9 @@ SyntheticIMUDataReporter::SyntheticIMUDataReporter(Model *aModel) :
 SyntheticIMUDataReporter::SyntheticIMUDataReporter(const SyntheticIMUDataReporter &aSyntheticIMUDataReporter): 
     Analysis(aSyntheticIMUDataReporter),
     _modelLocal(nullptr) {
-    setNull();
-    // COPY TYPE AND NAME
-    *this = aSyntheticIMUDataReporter;
+        setNull();
+        // COPY TYPE AND NAME
+        *this = aSyntheticIMUDataReporter;
 }
 
 //=============================================================================
@@ -88,7 +88,7 @@ operator=(const SyntheticIMUDataReporter& other)
     copyProperty_report_orientations(other);
     copyProperty_report_angular_velocities(other);
     copyProperty_report_linear_accelerations(other);
-    copyProperty_IMU_frames(other);
+    copyProperty_imu_frames(other);
     copyProperty_frame_paths(other);
     _modelLocal = nullptr;
     return(*this);
@@ -105,13 +105,6 @@ void SyntheticIMUDataReporter::setNull()
     setName("SyntheticIMUDataReporter");
     _modelLocal = nullptr;
 }
-
-//=============================================================================
-// CONSTRUCTION METHODS
-//=============================================================================
-//=============================================================================
-// GET AND SET
-//=============================================================================
 //_____________________________________________________________________________
 //=============================================================================
 // ANALYSIS
@@ -128,7 +121,6 @@ record(const SimTK::State& s)
     // Set model to whatever defaults have been updated to from the last iteration
     SimTK::State& sWorkingCopy = _modelLocal->updWorkingState();
     sWorkingCopy.setTime(s.getTime());
-    //_modelLocal->initStateWithoutRecreatingSystem(sWorkingCopy); 
 
     // update Q's and U's
     sWorkingCopy.setQ(s.getQ());
@@ -160,23 +152,25 @@ int SyntheticIMUDataReporter::begin(const SimTK::State& s )
 
     if (_imuComponents.empty()) {
         // Populate _imuComponents based on properties
-        if (get_IMU_frames() == "Bodies") { 
+        auto imu_frames_string = get_imu_frames();
+        if (imu_frames_string == "Bodies") { 
             reportAllBodies();
-        } else if (get_IMU_frames() == "Frames") {
+        } else if (imu_frames_string == "Frames") {
             reportAllFrames();
-        } else if (get_IMU_frames() == "Custom") {
+        } else if (imu_frames_string == "Custom") {
             for (int i = 0; i < getProperty_frame_paths().size(); ++i) {
                 // This may need stricter error checking to make sure we have a valid Frame/Path
                 _imuComponents.push_back(ComponentPath(get_frame_paths(i)));
             }
         } else {
             log_warn("SyntheticIMUDataReporter has invalid specification");
-            log_warn("Current selection is {}, required Bodies/Frames/Custom", get_IMU_frames());
+            log_warn("Current selection is {}, required Bodies/Frames/Custom",
+                    imu_frames_string);
             log_warn("All bodies will be reported.");
             reportAllBodies();
         }
     }
-    // If alreay part of the system, then a rerun and no need to add to _modelLocal
+    // If already part of the system, then a rerun and no need to add to _modelLocal
     if (!_orientationsReporter.hasSystem()) {
         _modelLocal->addComponent(&_orientationsReporter);
         _modelLocal->addComponent(&_angularVelocityReporter);
@@ -284,7 +278,7 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 }
 template <typename T>
 void SyntheticIMUDataReporter::reportAll() {
-    _modelLocal = std::make_unique<Model>();
+    //_modelLocal = std::make_unique<Model>();
     _modelLocal.reset(_model->clone());
     ComponentList <T> frameComponents =
             _modelLocal->getComponentList<T>();
