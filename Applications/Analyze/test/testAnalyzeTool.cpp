@@ -352,25 +352,25 @@ void testBodyKinematics() {
 void testIMUDataReporter() {
     Model pendulum = ModelFactory::createNLinkPendulum(2);
 
-    BodyKinematics* bodyKinematicsLocal = new BodyKinematics(&pendulum);
-    bodyKinematicsLocal->setName("BodyKinematics_local");
-    bodyKinematicsLocal->setExpressResultsInLocalFrame(false);
-    bodyKinematicsLocal->setInDegrees(false);
+    BodyKinematics* bodyKinematics = new BodyKinematics(&pendulum);
+    bodyKinematics->setName("BodyKinematics_fall");
+    bodyKinematics->setRecordCenterOfMass(false);
+    bodyKinematics->setExpressResultsInLocalFrame(false);
+    bodyKinematics->setInDegrees(false);
 
     SyntheticIMUDataReporter* imuDataReporter =
             new SyntheticIMUDataReporter(&pendulum);
     imuDataReporter->setName("IMU_DataReporter");
     imuDataReporter->reportAllBodies();
 
-    pendulum.addAnalysis(bodyKinematicsLocal);
+    pendulum.addAnalysis(bodyKinematics);
     pendulum.addAnalysis(imuDataReporter);
 
     SimTK::State& s = pendulum.initSystem();
 
-
     Joint& joint = pendulum.updJointSet()[0];
     auto& qi = joint.updCoordinate();
-    qi.setValue(s, SimTK::Pi/2.); // static
+    qi.setValue(s, SimTK::Pi / 2.); // static
 
     Manager manager(pendulum);
     double duration = 2.0;
@@ -391,16 +391,31 @@ void testIMUDataReporter() {
         ASSERT_EQUAL<double>(linAccTable.getMatrix()[row][1].norm(), 0., 1e-7);
     }
     // Now allow pendulum to drop under gravity from horizontal
-    qi.setValue(s, 0.); // gravity only
+    bodyKinematics->getPositionStorage()->purge();
+    qi.setValue(s, 0.); // Horisontal position
     s.setTime(0.);
     Manager manager2(pendulum);
     manager2.initialize(s);
     s = manager2.integrate(duration);
-    imuDataReporter->printResults("gravity_fall", "");
     // Compare results to Body kinematics
+    auto orientationTableIMU = imuDataReporter->getOrientationsTable();
+    auto orientationTableBodyKin = bodyKinematics->getPositionStorage();
+    for (int row = 0; row < orientationTableIMU.getNumRows(); ++row) {
+        // fromBodyKin has positions followed by rotations for each body
+        Array<double>& fromBodyKin =
+                orientationTableBodyKin->getStateVector(row)->getData();
+        for (int b = 0; b <= 1; b++) {
+            SimTK::Vec3 bodyFixedRotations =
+                    SimTK::Rotation(orientationTableIMU.getRowAtIndex(row)[b])
+                            .convertRotationToBodyFixedXYZ();
+            SimTK::Vec3 fromBodyKinRotations = SimTK::Vec3(&fromBodyKin[b * 6 + 3]);
+            ASSERT_EQUAL<double>(
+                    (bodyFixedRotations - fromBodyKinRotations).norm(), 0., 1e-7);
+        }
+    }
     /* Attempt to compare to createSyntheticIMUAccelerationSignals  doesn't
     * work now since the latter requires passing in controls!
-    * 
+    *
     std::vector<std::string> framePaths = {"/bodyset/b0", "/bodyset/b1"};
     TimeSeriesTableVec3 accelTableFromUtility =
             createSyntheticIMUAccelerationSignals(

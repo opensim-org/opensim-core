@@ -45,7 +45,7 @@ public:
     SyntheticIMU() { constructProperties(); }
     // Attachment frame for placement/visualization
     OpenSim_DECLARE_SOCKET(
-            attachment_frame, Frame, "The frame to which the IMU is attached.");
+            frame, Frame, "The frame to which the IMU is attached.");
 
     OpenSim_DECLARE_OUTPUT(rotation_as_quaternion, SimTK::Quaternion,
             calcRotationAsQuaternion,
@@ -56,23 +56,23 @@ public:
             calcLinearAcceleration, SimTK::Stage::Dynamics);
     // Outputs
     SimTK::Transform calcTransformInGround(const SimTK::State& s) const {
-        return get_attachment_frame().getTransformInGround(s);
+        return get_frame().getTransformInGround(s);
     }
     SimTK::Quaternion calcRotationAsQuaternion(const SimTK::State& s) const {
         return SimTK::Quaternion(calcTransformInGround(s).R());
     }
     SimTK::Vec3 calcAngularVelocity(const SimTK::State& s) const {
-        return get_attachment_frame().getAngularVelocityInGround(s);
+        return get_frame().getAngularVelocityInGround(s);
     }
     SimTK::Vec3 calcLinearAcceleration(const SimTK::State& s) const {
-        return get_attachment_frame().getLinearAccelerationInGround(s);
+        return get_frame().getLinearAccelerationInGround(s);
     }
 
 private:
     void constructProperties() {
     }
-    const Frame& get_attachment_frame() const {
-        return getSocket<Frame>("attachment_frame").getConnectee();
+    const Frame& get_frame() const {
+        return getSocket<Frame>("frame").getConnectee();
     }
 }; // End of class SyntheticIMU
 

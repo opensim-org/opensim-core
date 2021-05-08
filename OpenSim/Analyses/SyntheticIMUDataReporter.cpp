@@ -259,20 +259,25 @@ int SyntheticIMUDataReporter::
 printResults(const string &aBaseName,const string &aDir,double aDT,
                  const string &aExtension)
 {
-    auto& rotationsTable = _orientationsReporter.getTable();
-    auto& angVelTable = _angularVelocityReporter.getTable();
-    auto& linAccTable = _linearAccelerationsReporter.getTable();
+    
+    
     {
         IO::CwdChanger cwd = IO::CwdChanger::changeTo(aDir);
-        if (get_report_orientations())
+        if (get_report_orientations()) {
+            auto& rotationsTable = _orientationsReporter.getTable();
             STOFileAdapter_<SimTK::Quaternion>::write(
-                rotationsTable, aBaseName +"_"+"orientations.sto");
-        if (get_report_angular_velocities())
+                    rotationsTable, aBaseName + "_" + "orientations.sto");
+        }
+        if (get_report_angular_velocities()) {
+            auto& angVelTable = _angularVelocityReporter.getTable();
             STOFileAdapter_<SimTK::Vec3>::write(
-                angVelTable, aBaseName + "_" + "angular_veolcity.sto");
-        if (get_report_linear_accelerations())
+                    angVelTable, aBaseName + "_" + "angular_veolcity.sto");
+        }
+        if (get_report_linear_accelerations()) {
+            auto& linAccTable = _linearAccelerationsReporter.getTable();
             STOFileAdapter_<SimTK::Vec3>::write(
-                linAccTable, aBaseName + "_" + "linear_accelerations.sto");
+                    linAccTable, aBaseName + "_" + "linear_accelerations.sto");
+        }
     }
     return(0);
 }
@@ -287,7 +292,7 @@ void SyntheticIMUDataReporter::reportAll() {
         // Ceate Synthetic IMU, connect it to frame
         SyntheticIMU* next_imu = new SyntheticIMU();
         next_imu->setName(frame.getName() + "_imu");
-        next_imu->connectSocket_attachment_frame(frame);
+        next_imu->connectSocket_frame(frame);
         _modelLocal->addComponent(next_imu);
         _imuComponents.push_back(next_imu->getAbsolutePath());
     };
