@@ -384,7 +384,7 @@ void testIMUDataReporter() {
             imuDataReporter->getLinearAccelerationTable();
     const TimeSeriesTable_<SimTK::Quaternion>& rotationsTable =
             imuDataReporter->getOrientationsTable();
-    for (int row = 0; row < angVelTable.getNumRows(); ++row) {
+    for (size_t row = 0; row < angVelTable.getNumRows(); ++row) {
         ASSERT_EQUAL<double>(angVelTable.getMatrix()[row][0].norm(), 0., 1e-7);
         ASSERT_EQUAL<double>(angVelTable.getMatrix()[row][1].norm(), 0., 1e-7);
         ASSERT_EQUAL<double>(linAccTable.getMatrix()[row][0].norm(), 0., 1e-7);
@@ -400,7 +400,7 @@ void testIMUDataReporter() {
     // Compare results to Body kinematics
     auto orientationTableIMU = imuDataReporter->getOrientationsTable();
     auto orientationTableBodyKin = bodyKinematics->getPositionStorage();
-    for (int row = 0; row < orientationTableIMU.getNumRows(); ++row) {
+    for (size_t row = 0; row < orientationTableIMU.getNumRows(); ++row) {
         // fromBodyKin has positions followed by rotations for each body
         Array<double>& fromBodyKin =
                 orientationTableBodyKin->getStateVector(row)->getData();
