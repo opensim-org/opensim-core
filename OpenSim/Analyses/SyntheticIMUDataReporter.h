@@ -30,7 +30,7 @@
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/Reporter.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
-#include <OpenSim/Simulation/OpenSense/SyntheticIMU.h>
+#include <OpenSim/Simulation/OpenSense/IMU.h>
 #include "osimAnalysesDLL.h"
 
 
@@ -51,8 +51,8 @@ namespace OpenSim {
  * @author Ayman Habib
  * @version 1.0
  */
-class OSIMANALYSES_API SyntheticIMUDataReporter : public Analysis {
-OpenSim_DECLARE_CONCRETE_OBJECT(SyntheticIMUDataReporter, Analysis);
+class OSIMANALYSES_API IMUDataReporter : public Analysis {
+OpenSim_DECLARE_CONCRETE_OBJECT(IMUDataReporter, Analysis);
 
 public:
     OpenSim_DECLARE_PROPERTY(report_orientations, bool,
@@ -82,9 +82,9 @@ private:
 // METHODS
 //=============================================================================
 public:
-    SyntheticIMUDataReporter(Model *aModel=0);
-    SyntheticIMUDataReporter(const SyntheticIMUDataReporter &aObject);
-    virtual ~SyntheticIMUDataReporter();
+    IMUDataReporter(Model *aModel=0);
+    IMUDataReporter(const IMUDataReporter &aObject);
+    virtual ~IMUDataReporter();
 
     void setNull();
     // Convenience methods to support reporting all Bodies or all Frames or
@@ -112,7 +112,7 @@ public:
     // OPERATORS
     //--------------------------------------------------------------------------
 #ifndef SWIG
-    SyntheticIMUDataReporter& operator=(const SyntheticIMUDataReporter &aRporter);
+    IMUDataReporter& operator=(const IMUDataReporter &aRporter);
 #endif
     //--------------------------------------------------------------------------
     // GET AND SET

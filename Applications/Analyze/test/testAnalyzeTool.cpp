@@ -358,8 +358,8 @@ void testIMUDataReporter() {
     bodyKinematics->setExpressResultsInLocalFrame(false);
     bodyKinematics->setInDegrees(false);
 
-    SyntheticIMUDataReporter* imuDataReporter =
-            new SyntheticIMUDataReporter(&pendulum);
+    IMUDataReporter* imuDataReporter =
+            new IMUDataReporter(&pendulum);
     imuDataReporter->setName("IMU_DataReporter");
     imuDataReporter->reportAllBodies();
 

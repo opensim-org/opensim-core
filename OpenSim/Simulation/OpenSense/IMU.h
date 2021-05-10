@@ -1,7 +1,7 @@
-#ifndef OPENSIM_SYNTHETIC_IMU_H_
-#define OPENSIM_SYNTHETIC_IMU_H_
+#ifndef OPENSIM_IMU_H_
+#define OPENSIM_IMU_H_
 /* -------------------------------------------------------------------------- *
-*                        OpenSim:  SyntheticIMU.h                            *
+*                        OpenSim:           IMU.h                            *
 * -------------------------------------------------------------------------- *
 * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
 * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -29,20 +29,20 @@
 
 namespace OpenSim {
 //=============================================================================
-//                               SyntheticIMU
+//                               IMU
 //=============================================================================
 /**
-SyntheticIMU is a Model Component that represents an IMU along with its Geometry
+IMU is a Model Component that represents an IMU along with its Geometry
 for visualization, noise model.
 
 
 @authors Ayman Habib
 **/
-class OSIMSIMULATION_API SyntheticIMU : public ModelComponent {
-    OpenSim_DECLARE_CONCRETE_OBJECT(SyntheticIMU, ModelComponent);
+class OSIMSIMULATION_API IMU : public ModelComponent {
+    OpenSim_DECLARE_CONCRETE_OBJECT(IMU, ModelComponent);
 
 public:
-    SyntheticIMU() { constructProperties(); }
+    IMU() {  }
     // Attachment frame for placement/visualization
     OpenSim_DECLARE_SOCKET(
             frame, Frame, "The frame to which the IMU is attached.");
@@ -67,14 +67,28 @@ public:
     SimTK::Vec3 calcLinearAcceleration(const SimTK::State& s) const {
         return get_frame().getLinearAccelerationInGround(s);
     }
+    void generateDecorations(bool fixed, const ModelDisplayHints& hints,
+        const SimTK::State& state,
+        SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis)
+        const override {
+        if (!fixed) return;
+
+        // @TODO default color, size, shape should be obtained from hints
+        const OpenSim::Frame& frame = get_frame();
+        const OpenSim::PhysicalFrame& physFrame =
+                static_cast<const OpenSim::PhysicalFrame&>(frame);
+        appendToThis.push_back(
+                SimTK::DecorativeBrick(SimTK::Vec3(0.02, 0.01, 0.005))
+                        .setBodyId(physFrame.getMobilizedBodyIndex())
+                                        .setColor(SimTK::Orange));
+    }
 
 private:
-    void constructProperties() {
-    }
+ 
     const Frame& get_frame() const {
         return getSocket<Frame>("frame").getConnectee();
     }
-}; // End of class SyntheticIMU
+}; // End of class IMU
 
 }
-#endif // OPENSIM_SYNTHETIC_IMU_H_
+#endif // OPENSIM_IMU_H_

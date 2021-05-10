@@ -54,7 +54,7 @@ OSIMANALYSES_API void RegisterTypes_osimAnalyses()
     Object::registerType( StatesReporter() );
     Object::registerType( InducedAccelerations() );
     Object::RegisterType( ProbeReporter() );
-    Object::RegisterType( SyntheticIMUDataReporter() );
+    Object::RegisterType( IMUDataReporter() );
     
     Object::RegisterType( OutputReporter() );
 

@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                      OpenSim:  SyntheticIMUDataReporter.cpp                *
+ *                      OpenSim:  IMUDataReporter.cpp                         *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -29,7 +29,7 @@
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Analyses/SyntheticIMUDataReporter.h>
-#include <OpenSim/Simulation/OpenSense/SyntheticIMU.h>
+#include <OpenSim/Simulation/OpenSense/IMU.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -41,13 +41,13 @@ using namespace std;
 /**
  * Destructor.
  */
-SyntheticIMUDataReporter::~SyntheticIMUDataReporter()
+IMUDataReporter::~IMUDataReporter()
 {
 }
 //_____________________________________________________________________________
 /**
  */
-SyntheticIMUDataReporter::SyntheticIMUDataReporter(Model *aModel) :
+IMUDataReporter::IMUDataReporter(Model *aModel) :
     Analysis(aModel), 
     _modelLocal(nullptr) {
         setNull();
@@ -60,7 +60,7 @@ SyntheticIMUDataReporter::SyntheticIMUDataReporter(Model *aModel) :
  * Copy constructor.
  *
  */
-SyntheticIMUDataReporter::SyntheticIMUDataReporter(const SyntheticIMUDataReporter &aSyntheticIMUDataReporter): 
+IMUDataReporter::IMUDataReporter(const IMUDataReporter &aSyntheticIMUDataReporter): 
     Analysis(aSyntheticIMUDataReporter),
     _modelLocal(nullptr) {
         setNull();
@@ -80,8 +80,8 @@ SyntheticIMUDataReporter::SyntheticIMUDataReporter(const SyntheticIMUDataReporte
  *
  * @return Reference to this object.
  */
-SyntheticIMUDataReporter& SyntheticIMUDataReporter::
-operator=(const SyntheticIMUDataReporter& other)
+IMUDataReporter& IMUDataReporter::
+operator=(const IMUDataReporter& other)
 {
     // BASE CLASS
     Analysis::operator=(other);
@@ -98,11 +98,11 @@ operator=(const SyntheticIMUDataReporter& other)
 /**
  * SetNull().
  */
-void SyntheticIMUDataReporter::setNull()
+void IMUDataReporter::setNull()
 {
     setAuthors("Ayman Habib");
 
-    setName("SyntheticIMUDataReporter");
+    setName("IMUDataReporter");
     _modelLocal = nullptr;
 }
 //_____________________________________________________________________________
@@ -113,7 +113,7 @@ void SyntheticIMUDataReporter::setNull()
 /**
  * Record the results.
  */
-int SyntheticIMUDataReporter::
+int IMUDataReporter::
 record(const SimTK::State& s)
 {
     if(_modelLocal == nullptr) return -1;
@@ -142,7 +142,7 @@ record(const SimTK::State& s)
  *
  * @return -1 on error, 0 otherwise.
  */
-int SyntheticIMUDataReporter::begin(const SimTK::State& s )
+int IMUDataReporter::begin(const SimTK::State& s )
 {
     if(!proceed()) return(0);
 
@@ -163,7 +163,7 @@ int SyntheticIMUDataReporter::begin(const SimTK::State& s )
                 _imuComponents.push_back(ComponentPath(get_frame_paths(i)));
             }
         } else {
-            log_warn("SyntheticIMUDataReporter has invalid specification");
+            log_warn("IMUDataReporter has invalid specification");
             log_warn("Current selection is {}, required Bodies/Frames/Custom",
                     imu_frames_string);
             log_warn("All bodies will be reported.");
@@ -210,7 +210,7 @@ int SyntheticIMUDataReporter::begin(const SimTK::State& s )
  *
  * @return -1 on error, 0 otherwise.
  */
-int SyntheticIMUDataReporter::step(const SimTK::State& s, int stepNumber )
+int IMUDataReporter::step(const SimTK::State& s, int stepNumber )
 {
     if(!proceed(stepNumber)) return(0);
 
@@ -227,7 +227,7 @@ int SyntheticIMUDataReporter::step(const SimTK::State& s, int stepNumber )
  *
  * @return -1 on error, 0 otherwise.
  */
-int SyntheticIMUDataReporter::end( const SimTK::State& s )
+int IMUDataReporter::end( const SimTK::State& s )
 {
     if(!proceed()) return(0);
 
@@ -255,7 +255,7 @@ int SyntheticIMUDataReporter::end( const SimTK::State& s )
  *
  * @return 0 on success, -1 on error.
  */
-int SyntheticIMUDataReporter::
+int IMUDataReporter::
 printResults(const string &aBaseName,const string &aDir,double aDT,
                  const string &aExtension)
 {
@@ -282,7 +282,7 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
     return(0);
 }
 template <typename T>
-void SyntheticIMUDataReporter::reportAll() {
+void IMUDataReporter::reportAll() {
     //_modelLocal = std::make_unique<Model>();
     _modelLocal.reset(_model->clone());
     ComponentList <T> frameComponents =
@@ -290,7 +290,7 @@ void SyntheticIMUDataReporter::reportAll() {
     // Add SyntheticIMUs to the model if needed
     for (auto& frame : frameComponents) {
         // Ceate Synthetic IMU, connect it to frame
-        SyntheticIMU* next_imu = new SyntheticIMU();
+        IMU* next_imu = new IMU();
         next_imu->setName(frame.getName() + "_imu");
         next_imu->connectSocket_frame(frame);
         _modelLocal->addComponent(next_imu);

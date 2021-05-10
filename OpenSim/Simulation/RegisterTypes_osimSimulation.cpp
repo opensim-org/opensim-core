@@ -126,7 +126,7 @@
 #include "SimbodyEngine/Coordinate.h"
 #include "SimbodyEngine/SpatialTransform.h"
 #include "OpenSense/IMUPlacer.h"
-#include "OpenSense/SyntheticIMU.h"
+#include "OpenSense/IMU.h"
 #include "OrientationsReference.h"
 #include "StatesTrajectoryReporter.h"
 #include "TableProcessor.h"
@@ -280,7 +280,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( OrientationWeight() );
 
     Object::registerType( IMUPlacer() );
-    Object::registerType( SyntheticIMU() );
+    Object::registerType( IMU() );
     Object::registerType( StatesTrajectoryReporter() );
 
     Object::registerType( TableProcessor() );
