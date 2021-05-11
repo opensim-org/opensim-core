@@ -1,7 +1,7 @@
-#ifndef _SYNTHETIC_IMUDATA_REPORTER_h_
-#define _SYNTHETIC_IMUDATA_REPORTER_h_
+#ifndef _IMUDATA_REPORTER_h_
+#define _IMUDATA_REPORTER_h_
 /* -------------------------------------------------------------------------- *
- *                         OpenSim:  SyntheticIMUDataReporter.h               *
+ *                         OpenSim:  IMUDataReporter.h                        *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -56,11 +56,11 @@ OpenSim_DECLARE_CONCRETE_OBJECT(IMUDataReporter, Analysis);
 
 public:
     OpenSim_DECLARE_PROPERTY(report_orientations, bool,
-            "Report orientations of Synthetic IMUs as quaternions, default is true.");
+            "Report orientation of IMU as quaternion, default is true.");
     OpenSim_DECLARE_PROPERTY(report_angular_velocities, bool,
-            "Report angular velocities of Synthetic IMUs, default is true.");
+            "Report angular velocity of the IMU, default is true.");
     OpenSim_DECLARE_PROPERTY(report_linear_accelerations, bool,
-            "Report linear accelerations of Synthetic IMUs, default is true.");
+            "Report linear acceleration of the IMU, default is true.");
 
     OpenSim_DECLARE_PROPERTY(imu_frames, std::string,
             "What frames to report. Frames, Bodies, Custom are valid. If Custom populate frame_paths accordingly.");
@@ -141,11 +141,11 @@ private:
         constructProperty_frame_paths();
     }
     //=============================================================================
-};  // END of class SyntheticIMUDataReporter
+};  // END of class IMUDataReporter
 
 }; //namespace
 //=============================================================================
 //=============================================================================
 
 
-#endif // #ifndef _SYNTHETIC_IMUDATA_REPORTER_h_
+#endif // #ifndef _IMUDATA_REPORTER_h_

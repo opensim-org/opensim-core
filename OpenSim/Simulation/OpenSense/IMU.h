@@ -24,7 +24,7 @@
 * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Simulation/Model/ModelComponent.h>
-#include <OpenSim/Simulation/Model/Frame.h>
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 
 
 namespace OpenSim {
@@ -45,7 +45,7 @@ public:
     IMU() {  }
     // Attachment frame for placement/visualization
     OpenSim_DECLARE_SOCKET(
-            frame, Frame, "The frame to which the IMU is attached.");
+            frame, PhysicalFrame, "The frame to which the IMU is attached.");
 
     OpenSim_DECLARE_OUTPUT(rotation_as_quaternion, SimTK::Quaternion,
             calcRotationAsQuaternion,
@@ -54,6 +54,8 @@ public:
             calcAngularVelocity, SimTK::Stage::Velocity);
     OpenSim_DECLARE_OUTPUT(linear_acceleration, SimTK::Vec3,
             calcLinearAcceleration, SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(local_linear_acceleration_nogravity, SimTK::Vec3,
+            calcLocalLinearAccelerationNoGravity, SimTK::Stage::Dynamics);
     // Outputs
     SimTK::Transform calcTransformInGround(const SimTK::State& s) const {
         return get_frame().getTransformInGround(s);
@@ -67,6 +69,14 @@ public:
     SimTK::Vec3 calcLinearAcceleration(const SimTK::State& s) const {
         return get_frame().getLinearAccelerationInGround(s);
     }
+    SimTK::Vec3 calcLocalLinearAccelerationNoGravity(
+            const SimTK::State& s) const {
+        const auto& model = getModel();
+        const auto& ground = model.getGround();
+        const auto& gravity = model.getGravity();
+        return ground.expressVectorInAnotherFrame(
+                s, calcLinearAcceleration(s) - gravity, get_frame());
+    }
     void generateDecorations(bool fixed, const ModelDisplayHints& hints,
         const SimTK::State& state,
         SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis)
@@ -74,19 +84,17 @@ public:
         if (!fixed) return;
 
         // @TODO default color, size, shape should be obtained from hints
-        const OpenSim::Frame& frame = get_frame();
-        const OpenSim::PhysicalFrame& physFrame =
-                static_cast<const OpenSim::PhysicalFrame&>(frame);
-        appendToThis.push_back(
+        const OpenSim::PhysicalFrame& physFrame = this->get_frame();
+       appendToThis.push_back(
                 SimTK::DecorativeBrick(SimTK::Vec3(0.02, 0.01, 0.005))
                         .setBodyId(physFrame.getMobilizedBodyIndex())
-                                        .setColor(SimTK::Orange));
+                                        .setColor(SimTK::Purple));
     }
 
 private:
  
-    const Frame& get_frame() const {
-        return getSocket<Frame>("frame").getConnectee();
+    const PhysicalFrame& get_frame() const {
+        return getSocket<PhysicalFrame>("frame").getConnectee();
     }
 }; // End of class IMU
 

@@ -17,6 +17,6 @@
 #include <OpenSim/Analyses/InducedAccelerations.h>
 #include <OpenSim/Analyses/ProbeReporter.h>
 #include <OpenSim/Analyses/OutputReporter.h>
-#include <OpenSim/Analyses/SyntheticIMUDataReporter.h>
+#include <OpenSim/Analyses/IMUDataReporter.h>
 
 #endif // OPENSIM_OPENSIM_HEADERS_ANALYSES_H_

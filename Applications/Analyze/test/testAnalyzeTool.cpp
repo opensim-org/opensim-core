@@ -33,7 +33,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Analyses/BodyKinematics.h>
-#include <OpenSim/Analyses/SyntheticIMUDataReporter.h>
+#include <OpenSim/Analyses/IMUDataReporter.h>
 #include <OpenSim/Actuators/ModelFactory.h>
 
 using namespace OpenSim;

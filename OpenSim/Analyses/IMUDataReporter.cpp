@@ -28,7 +28,7 @@
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Analyses/SyntheticIMUDataReporter.h>
+#include <OpenSim/Analyses/IMUDataReporter.h>
 #include <OpenSim/Simulation/OpenSense/IMU.h>
 
 using namespace OpenSim;
@@ -60,12 +60,12 @@ IMUDataReporter::IMUDataReporter(Model *aModel) :
  * Copy constructor.
  *
  */
-IMUDataReporter::IMUDataReporter(const IMUDataReporter &aSyntheticIMUDataReporter): 
-    Analysis(aSyntheticIMUDataReporter),
+IMUDataReporter::IMUDataReporter(const IMUDataReporter &aIMUDataReporter): 
+    Analysis(aIMUDataReporter),
     _modelLocal(nullptr) {
         setNull();
         // COPY TYPE AND NAME
-        *this = aSyntheticIMUDataReporter;
+        *this = aIMUDataReporter;
 }
 
 //=============================================================================
