@@ -4,11 +4,16 @@ function exampleIMUTracking_answers
 addpath('../'); % Add the directory above to access mocoPlotTrajectory.m
 import org.opensim.modeling.*;
 
-% These models are provided for you (i.e., they are not part of Moco).
-model = getTorqueDrivenModel();
-% model = getMuscleDrivenModel();
+% Load a torque-driven, 3 degree-of-freedom model with a single leg and
+% foot welded to the floor. See the function definition at the bottom of
+% this file to see how the model is loaded and constructed.
+model = getTorqueDrivenSquatToStandModel();
 
-%% Part 1: Effort minimization prediction
+%% Part 1: Solve an effort minimization predictive problem
+% Generate a simulation of a squat-to-stand motion that minimizes control
+% effort. We'll use the results from this simulation to compute a set of 
+% "synthetic" accelerometer signals later.
+
 % Part 1a: Create a new MocoStudy.
 study = MocoStudy();
 
@@ -50,14 +55,25 @@ problem.setStateInfo('/jointset/ankle_r/ankle_angle_r/value', ...
 % Velocity bounds: all model coordinates should start and end at rest.
 problem.setStateInfoPattern('/jointset/.*/speed', [], 0, 0);
 
-% Part 1d: Add a MocoControlCost to the problem.
+% Part 1d: Add a MocoControlGoal to the problem.
 problem.addGoal(MocoControlGoal('myeffort'));
 
 % Part 1e: Configure the solver.
 solver = study.initCasADiSolver();
+% A reasonably tight tolerance for the constraints and appropriately dense
+% mesh are important to ensure that the model dynamics are enforced 
+% accurately.
 solver.set_num_mesh_intervals(50);
+solver.set_optim_constraint_tolerance(1e-6);
+% The convergence tolerance can be less tight, as long as the goal of the
+% objective function is achieved.
 solver.set_optim_convergence_tolerance(1e-2);
-solver.set_optim_constraint_tolerance(1e-4);
+
+% TODO minimizing accelerations smoothes the solution during noisy tracking
+% but only because the acceleration term dominates the cost function.
+solver.set_multibody_dynamics_mode('implicit');
+solver.set_minimize_implicit_multibody_accelerations(true);
+% solver.set_implicit_multibody_accelerations_weight(1e0);
 
 if ~exist('predictSolution.sto', 'file')
 % Part 1f: Solve! Write the solution to file, and visualize.
@@ -124,8 +140,13 @@ mocoPlotTrajectory('predictSolution.sto', 'trackingSolution.sto', ...
         'predict', 'track');
     
 %% Part 6: Noisy synthetic acceleration tracking problem 
-% Part 6a: Add noise to synthetic accelerations
-accelerationReferenceNoisy = addAccelerometerNoise(accelerationReference);
+% Part 6a: Add white noise to the synthetic accelerations signals. Set the 
+% magnitude of the noise to 1% of the maximum original acceleration
+% signals.
+accelerationMat = accelerationReference.flatten().getMatrix().getAsMat();
+noiseMagnitude = 0.01 * max(max(accelerationMat));
+accelerationReferenceNoisy = ...
+    addAccelerometerNoise(accelerationReference, noiseMagnitude);
 
 % Part 6b: Update the acceleration tracking goal.
 accelerationIMUTracking = MocoAccelerationTrackingGoal().safeDownCast(...
@@ -169,7 +190,7 @@ model.addForce(actu);
 
 end
 
-function [model] = getTorqueDrivenModel()
+function [model] = getTorqueDrivenSquatToStandModel()
 
 import org.opensim.modeling.*;
 
@@ -187,7 +208,7 @@ addCoordinateActuator(model, 'ankle_angle_r', 150);
 
 end
 
-function [model] = getMuscleDrivenModel()
+function [model] = getMuscleDrivenSquatToStandModel()
 
 import org.opensim.modeling.*;
 
@@ -219,7 +240,7 @@ end
 end
 
 function [accelerationReferenceNoisy] = ...
-                        addAccelerometerNoise(accelerationReference)
+        addAccelerometerNoise(accelerationReference, noiseMagnitude)
 import org.opensim.modeling.*;
 
 % Initial table to hold noisy acceleration signals
@@ -237,8 +258,7 @@ for icol = 1:ncols
     
     % Add white noise to this column
     colMat = col.getAsMat();
-    maxNoise = norm(colMat) / nnz(colMat);
-    noise = maxNoise * randn(size(colMat));
+    noise = noiseMagnitude * randn(size(colMat));
     newCol = VectorVec3(nrows, Vec3(0.0));
     for irow = 1:nrows
         newElt = Vec3(0.0);
@@ -281,6 +301,9 @@ hold on
 torsoNoisy = accelerationsReferenceNoisy.getDependentColumn(...
     '/bodyset/torso').getAsMat();
 plot(time, torsoNoisy(:,1), 'linewidth', 2, 'color', 'red')
+end
+if nargin == 2
+    legend('original', 'noise added', 'location', 'best');
 end
 title('torso')
 xlabel('time (s)')
