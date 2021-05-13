@@ -361,7 +361,7 @@ void testIMUDataReporter() {
     IMUDataReporter* imuDataReporter =
             new IMUDataReporter(&pendulum);
     imuDataReporter->setName("IMU_DataReporter");
-    imuDataReporter->reportAllBodies();
+    imuDataReporter->append_frame_paths("Bodies");
 
     pendulum.addAnalysis(bodyKinematics);
     pendulum.addAnalysis(imuDataReporter);

@@ -30,6 +30,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Analyses/IMUDataReporter.h>
 #include <OpenSim/Simulation/OpenSense/IMU.h>
+#include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -88,7 +89,6 @@ operator=(const IMUDataReporter& other)
     copyProperty_report_orientations(other);
     copyProperty_report_angular_velocities(other);
     copyProperty_report_linear_accelerations(other);
-    copyProperty_imu_frames(other);
     copyProperty_frame_paths(other);
     _modelLocal = nullptr;
     return(*this);
@@ -152,22 +152,11 @@ int IMUDataReporter::begin(const SimTK::State& s )
 
     if (_imuComponents.empty()) {
         // Populate _imuComponents based on properties
-        auto imu_frames_string = get_imu_frames();
-        if (imu_frames_string == "Bodies") { 
-            reportAllBodies();
-        } else if (imu_frames_string == "Frames") {
-            reportAllFrames();
-        } else if (imu_frames_string == "Custom") {
-            for (int i = 0; i < getProperty_frame_paths().size(); ++i) {
-                // This may need stricter error checking to make sure we have a valid Frame/Path
-                _imuComponents.push_back(ComponentPath(get_frame_paths(i)));
-            }
-        } else {
-            log_warn("IMUDataReporter has invalid specification");
-            log_warn("Current selection is {}, required Bodies/Frames/Custom",
-                    imu_frames_string);
-            log_warn("All bodies will be reported.");
-            reportAllBodies();
+        if (getProperty_frame_paths().size() > 0) {
+            _modelLocal.reset(_model->clone());
+            std::vector<std::string> paths_string{get_frame_paths(0)};
+            _imuComponents = 
+                OpenSenseUtilities::addSelectModelIMUs(*_modelLocal, paths_string);
         }
     }
     // If already part of the system, then a rerun and no need to add to _modelLocal
@@ -176,8 +165,8 @@ int IMUDataReporter::begin(const SimTK::State& s )
         _modelLocal->addComponent(&_angularVelocityReporter);
         _modelLocal->addComponent(&_linearAccelerationsReporter);
 
-        for (auto& path : _imuComponents) {
-            const Component& comp = _modelLocal->getComponent(path.toString());
+        for (auto path : _imuComponents) {
+            const Component& comp = _modelLocal->getComponent(path->toString());
             if (get_report_orientations())
                 _orientationsReporter.addToReport(
                     comp.getOutput("rotation_as_quaternion"), comp.getName());
@@ -280,21 +269,4 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
         }
     }
     return(0);
-}
-template <typename T>
-void IMUDataReporter::reportAll() {
-    //_modelLocal = std::make_unique<Model>();
-    _modelLocal.reset(_model->clone());
-    ComponentList <T> frameComponents =
-            _modelLocal->getComponentList<T>();
-    // Add SyntheticIMUs to the model if needed
-    for (auto& frame : frameComponents) {
-        // Ceate Synthetic IMU, connect it to frame
-        IMU* next_imu = new IMU();
-        next_imu->setName(frame.getName() + "_imu");
-        next_imu->connectSocket_frame(frame);
-        _modelLocal->addComponent(next_imu);
-        _imuComponents.push_back(next_imu->getAbsolutePath());
-    };
-    _modelLocal->finalizeConnections();
 }

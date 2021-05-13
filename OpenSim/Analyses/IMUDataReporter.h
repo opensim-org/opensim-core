@@ -45,7 +45,7 @@
 namespace OpenSim { 
 
 /**
- * A class for recording the readings off a synthetic IMU placed on a model
+ * A class for recording the readings off an IMU placed on a model
  * during a simulation.
  *
  * @author Ayman Habib
@@ -62,16 +62,16 @@ public:
     OpenSim_DECLARE_PROPERTY(report_linear_accelerations, bool,
             "Report linear acceleration of the IMU, default is true.");
 
-    OpenSim_DECLARE_PROPERTY(imu_frames, std::string,
-            "What frames to report. Frames, Bodies, Custom are valid. If Custom populate frame_paths accordingly.");
     OpenSim_DECLARE_LIST_PROPERTY(frame_paths, std::string,
-            "ComponentPaths for frames to attach Synthetic IMUs to, if IMU_attachments is set to Custom.");
+            "ComponentPaths for frames to attach IMUs to, if 'IMU' then the model "
+            "is assumed to have IMUs attached already otherwise IMUs are temporarily"
+            "added as needed.");
 
     //=============================================================================
 // DATA
 //=============================================================================
 private:
-    std::vector<OpenSim::ComponentPath> _imuComponents;
+    std::vector<OpenSim::IMU*> _imuComponents;
     /** Output tables. */
     TableReporter_<SimTK::Quaternion> _orientationsReporter;
     TableReporter_<SimTK::Vec3> _angularVelocityReporter;
@@ -87,11 +87,6 @@ public:
     virtual ~IMUDataReporter();
 
     void setNull();
-    // Convenience methods to support reporting all Bodies or all Frames or
-    // Frames that can be filtered by type.
-    template <class T> void reportAll();
-    void reportAllBodies() { reportAll<const OpenSim::Body>(); };
-    void reportAllFrames() { reportAll<const OpenSim::Frame>(); };
 
     // In memory access to IMU data as Tables (Orientations)
     const TimeSeriesTable_<SimTK::Quaternion_<double> >&
@@ -137,7 +132,6 @@ private:
         constructProperty_report_orientations(true);
         constructProperty_report_angular_velocities(true);
         constructProperty_report_linear_accelerations(true);
-        constructProperty_imu_frames("Bodies");
         constructProperty_frame_paths();
     }
     //=============================================================================

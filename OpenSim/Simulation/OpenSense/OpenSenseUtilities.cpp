@@ -269,3 +269,40 @@ SimTK::Vec3 OpenSenseUtilities::computeHeadingCorrection(
                 "Heading correction attempted without base imu specification. Aborting.'");
     return rotations;
 }
+
+std::vector<OpenSim::IMU*> OpenSenseUtilities::addSelectModelIMUs(
+    Model& model, std::vector<std::string>& paths) {
+    std::vector<OpenSim::IMU*> selectedIMUs;
+    if (paths.size() == 1 && paths[0] == "IMUs") {
+        auto compList =  model.getComponentList<const OpenSim::IMU>();
+        for (auto imu : compList) { 
+            selectedIMUs.push_back(&imu); 
+        }
+    } else {
+        if (paths.size() == 1 && paths[0] == "Bodies") {
+            auto& bodies = model.getComponentList<OpenSim::Body>();
+            for (auto body : bodies) {
+                IMU* next_imu = new IMU();
+                next_imu->setName(body.getName() + "_imu");
+                next_imu->connectSocket_frame(body);
+                model.addComponent(next_imu);
+                selectedIMUs.push_back(next_imu); 
+            }
+            //model.finalizeConnections();
+        } 
+        else {
+            for (auto path : paths) {
+                IMU* next_imu = new IMU();
+                const Component& comp = model.getComponent(path);
+                next_imu->setName(comp.getName() + "_imu");
+                next_imu->connectSocket_frame(comp);
+                model.addComponent(next_imu);
+                // make sure it's a Frame
+                selectedIMUs.push_back(next_imu); 
+            }
+            //model.finalizeConnections();
+            return selectedIMUs;
+        }
+    }
+    return selectedIMUs;
+}

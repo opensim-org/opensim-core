@@ -26,6 +26,7 @@
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include "IMU.h"
 #include "IMUPlacer.h"
 
 namespace OpenSim {
@@ -75,6 +76,15 @@ public:
     static SimTK::Transform formTransformFromPoints(const SimTK::Vec3& op, 
         const SimTK::Vec3& xp,  const SimTK::Vec3& yp);
   
+    /// Add IMUs to passed in model and return references to them
+    /// based on paths specification. Some special cases:
+    /// - "IMUs" no new IMUs are added to model, existing IMUs are selected.
+    /// - "Bodies" one new IMU with the name "{Body}_imu" is added per Body 
+    ///     and returned in result.
+    /// - If "paths" refer to user specified list of frames, then one new 
+    ///     "{Frame}_imu" is added to the model and returned in result.
+    static std::vector<OpenSim::IMU*> addSelectModelIMUs(
+            Model& model, std::vector<std::string>& paths);
 }; // end of class OpenSenseUtilities
 }
 #endif // OPENSENSE_UTILITIES_H_
