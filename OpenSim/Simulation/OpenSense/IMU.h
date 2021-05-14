@@ -85,7 +85,7 @@ public:
 
         // @TODO default color, size, shape should be obtained from hints
         const OpenSim::PhysicalFrame& physFrame = this->get_frame();
-       appendToThis.push_back(
+        appendToThis.push_back(
                 SimTK::DecorativeBrick(SimTK::Vec3(0.02, 0.01, 0.005))
                         .setBodyId(physFrame.getMobilizedBodyIndex())
                                         .setColor(SimTK::Purple));

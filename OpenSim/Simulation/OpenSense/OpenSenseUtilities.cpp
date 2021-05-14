@@ -286,9 +286,9 @@ std::vector<OpenSim::IMU*> OpenSenseUtilities::addSelectModelIMUs(
                 next_imu->setName(body.getName() + "_imu");
                 next_imu->connectSocket_frame(body);
                 model.addComponent(next_imu);
+                model.finalizeConnections();
                 selectedIMUs.push_back(next_imu); 
             }
-            //model.finalizeConnections();
         } 
         else {
             for (auto path : paths) {
@@ -300,7 +300,7 @@ std::vector<OpenSim::IMU*> OpenSenseUtilities::addSelectModelIMUs(
                 // make sure it's a Frame
                 selectedIMUs.push_back(next_imu); 
             }
-            //model.finalizeConnections();
+            model.finalizeConnections();
             return selectedIMUs;
         }
     }

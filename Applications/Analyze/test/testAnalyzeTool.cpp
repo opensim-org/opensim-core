@@ -370,7 +370,7 @@ void testIMUDataReporter() {
 
     Joint& joint = pendulum.updJointSet()[0];
     auto& qi = joint.updCoordinate();
-    qi.setValue(s, SimTK::Pi / 2.); // static
+    qi.setValue(s, SimTK::Pi / 2.); // lowest-point hanging condition
 
     Manager manager(pendulum);
     double duration = 2.0;
@@ -393,7 +393,7 @@ void testIMUDataReporter() {
     }
     // Now allow pendulum to drop under gravity from horizontal
     bodyKinematics->getPositionStorage()->purge();
-    qi.setValue(s, 0.); // Horisontal position
+    qi.setValue(s, 0.); // Horizontal position
     s.setTime(0.);
     Manager manager2(pendulum);
     manager2.initialize(s);
