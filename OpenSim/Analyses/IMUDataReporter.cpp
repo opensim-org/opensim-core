@@ -125,9 +125,7 @@ record(const SimTK::State& s)
     // update Q's and U's
     sWorkingCopy.setQ(s.getQ());
     sWorkingCopy.setU(s.getU());
-
-    _modelLocal->getMultibodySystem().realize(
-            sWorkingCopy, SimTK::Stage::Report);
+    _modelLocal->realizeReport(sWorkingCopy);
 
     return 0;
 }
@@ -260,7 +258,7 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
         if (get_report_angular_velocities()) {
             auto& angVelTable = _angularVelocityReporter.getTable();
             STOFileAdapter_<SimTK::Vec3>::write(
-                    angVelTable, aBaseName + "_" + "angular_veolcity.sto");
+                    angVelTable, aBaseName + "_" + "angular_velocity.sto");
         }
         if (get_report_linear_accelerations()) {
             auto& linAccTable = _linearAccelerationsReporter.getTable();
