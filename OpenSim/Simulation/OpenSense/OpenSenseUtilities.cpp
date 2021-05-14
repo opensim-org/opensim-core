@@ -280,7 +280,7 @@ std::vector<OpenSim::IMU*> OpenSenseUtilities::addSelectModelIMUs(
         }
     } else {
         if (paths.size() == 1 && paths[0] == "Bodies") {
-            auto& bodies = model.getComponentList<OpenSim::Body>();
+            ComponentList<const OpenSim::Body> bodies = model.getComponentList<OpenSim::Body>();
             for (auto& body : bodies) {
                 IMU* next_imu = new IMU();
                 next_imu->setName(body.getName() + "_imu");
