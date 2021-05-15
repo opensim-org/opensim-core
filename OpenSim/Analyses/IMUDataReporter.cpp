@@ -167,7 +167,7 @@ int IMUDataReporter::begin(const SimTK::State& s )
             const Component& comp = _modelLocal->getComponent(path->toString());
             if (get_report_orientations())
                 _orientationsReporter.addToReport(
-                    comp.getOutput("rotation_as_quaternion"), comp.getName());
+                    comp.getOutput("orientation_as_quaternion"), comp.getName());
             if (get_report_angular_velocities())
                 _angularVelocityReporter.addToReport(
                     comp.getOutput("angular_velocity"), comp.getName());

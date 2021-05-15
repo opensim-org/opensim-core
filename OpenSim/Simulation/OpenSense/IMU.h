@@ -47,29 +47,27 @@ public:
     OpenSim_DECLARE_SOCKET(
             frame, PhysicalFrame, "The frame to which the IMU is attached.");
 
-    OpenSim_DECLARE_OUTPUT(rotation_as_quaternion, SimTK::Quaternion,
-            calcRotationAsQuaternion,
+    OpenSim_DECLARE_OUTPUT(orientation_as_quaternion, SimTK::Quaternion,
+            calcOrientationAsQuaternion,
             SimTK::Stage::Position);
-    OpenSim_DECLARE_OUTPUT(angular_velocity, SimTK::Vec3,
-            calcAngularVelocity, SimTK::Stage::Velocity);
-    OpenSim_DECLARE_OUTPUT(linear_acceleration, SimTK::Vec3,
-            calcLinearAcceleration, SimTK::Stage::Dynamics);
-    OpenSim_DECLARE_OUTPUT(local_linear_acceleration_nogravity, SimTK::Vec3,
-            calcLocalLinearAccelerationNoGravity, SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(gyro_signal, SimTK::Vec3,
+            calcGyroscopeSignal, SimTK::Stage::Velocity);
+    OpenSim_DECLARE_OUTPUT(accel_signal, SimTK::Vec3,
+            calcAccelerometerSignal, SimTK::Stage::Dynamics);
     // Outputs
     SimTK::Transform calcTransformInGround(const SimTK::State& s) const {
         return get_frame().getTransformInGround(s);
     }
-    SimTK::Quaternion calcRotationAsQuaternion(const SimTK::State& s) const {
+    SimTK::Quaternion calcOrientationAsQuaternion(const SimTK::State& s) const {
         return SimTK::Quaternion(calcTransformInGround(s).R());
     }
-    SimTK::Vec3 calcAngularVelocity(const SimTK::State& s) const {
+    SimTK::Vec3 calcGyroscopeSignal(const SimTK::State& s) const {
         return get_frame().getAngularVelocityInGround(s);
     }
     SimTK::Vec3 calcLinearAcceleration(const SimTK::State& s) const {
         return get_frame().getLinearAccelerationInGround(s);
     }
-    SimTK::Vec3 calcLocalLinearAccelerationNoGravity(
+    SimTK::Vec3 calcAccelerometerSignal(
             const SimTK::State& s) const {
         const auto& model = getModel();
         const auto& ground = model.getGround();
