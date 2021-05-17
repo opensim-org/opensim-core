@@ -29,6 +29,7 @@ namespace OpenSim {
 class MocoPhase;
 class MocoVariableInfo;
 class MocoParameter;
+class MocoScaleFactor;
 
 /** Small struct-like class to handle bounds. */
 class OSIMMOCO_API MocoBounds : public Object {
@@ -99,6 +100,7 @@ protected:
     friend MocoPhase;
     friend MocoVariableInfo;
     friend MocoParameter;
+    friend MocoScaleFactor;
 
 private:
     void constructProperties();

@@ -480,6 +480,26 @@ void MocoProblemRep::initialize() {
         }
     }
 
+    // Goals.
+    // ------
+    std::unordered_set<std::string> goalNames;
+    for (int i = 0; i < ph0.getProperty_goals().size(); ++i) {
+        const auto& goal = ph0.get_goals(i);
+        OPENSIM_THROW_IF(goal.getName().empty(), Exception,
+                         "All goals must have a name.");
+        OPENSIM_THROW_IF(goalNames.count(goal.getName()), Exception,
+                         "A goal with name '{}' already exists.", goal.getName());
+        goalNames.insert(goal.getName());
+        if (goal.getEnabled()) {
+            std::unique_ptr<MocoGoal> item(goal.clone());
+            item->initializeOnModel(m_model_disabled_constraints);
+            if (item->getModeIsEndpointConstraint()) {
+                m_endpoint_constraints.push_back(std::move(item));
+            } else {
+                m_costs.push_back(std::move(item));
+            }
+        }
+    }
 
     // Parameters.
     // -----------
@@ -501,27 +521,6 @@ void MocoProblemRep::initialize() {
         // the MocoParameter's internal vector of property references.
         m_parameters[i]->initializeOnModel(m_model_base);
         m_parameters[i]->initializeOnModel(m_model_disabled_constraints);
-    }
-
-    // Goals.
-    // ------
-    std::unordered_set<std::string> goalNames;
-    for (int i = 0; i < ph0.getProperty_goals().size(); ++i) {
-        const auto& goal = ph0.get_goals(i);
-        OPENSIM_THROW_IF(goal.getName().empty(), Exception,
-                "All goals must have a name.");
-        OPENSIM_THROW_IF(goalNames.count(goal.getName()), Exception,
-                "A goal with name '{}' already exists.", goal.getName());
-        goalNames.insert(goal.getName());
-        if (goal.getEnabled()) {
-            std::unique_ptr<MocoGoal> item(goal.clone());
-            item->initializeOnModel(m_model_disabled_constraints);
-            if (item->getModeIsEndpointConstraint()) {
-                m_endpoint_constraints.push_back(std::move(item));
-            } else {
-                m_costs.push_back(std::move(item));
-            }
-        }
     }
 
     MocoProblemInfo problemInfo;
