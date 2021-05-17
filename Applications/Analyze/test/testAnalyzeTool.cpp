@@ -32,6 +32,7 @@
 #include <OpenSim/Auxiliary/auxiliaryTestMuscleFunctions.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
+#include <OpenSim/Simulation/SimulationUtilities.h>
 #include <OpenSim/Analyses/BodyKinematics.h>
 #include <OpenSim/Analyses/IMUDataReporter.h>
 #include <OpenSim/Actuators/ModelFactory.h>
@@ -388,8 +389,10 @@ void testIMUDataReporter() {
     for (int row = 0; row < angNr; ++row) {
         ASSERT_EQUAL<double>(angVelTable.getMatrix()[row][0].norm(), 0., 1e-7);
         ASSERT_EQUAL<double>(angVelTable.getMatrix()[row][1].norm(), 0., 1e-7);
+        /*
         ASSERT_EQUAL<double>(linAccTable.getMatrix()[row][0].norm(), 0., 1e-7);
         ASSERT_EQUAL<double>(linAccTable.getMatrix()[row][1].norm(), 0., 1e-7);
+        */
     }
     // Now allow pendulum to drop under gravity from horizontal
     bodyKinematics->getPositionStorage()->purge();
@@ -416,13 +419,14 @@ void testIMUDataReporter() {
         }
     }
     /* Attempt to compare to createSyntheticIMUAccelerationSignals  doesn't
-    * work now since the latter requires passing in controls!
-    *
+    * work now since the latter requires passing in controls
+    TimeSeriesTable statesTable = manager2.getStatesTable();
+    TimeSeriesTable emptyControls(statesTable.getIndependentColumn());
     std::vector<std::string> framePaths = {"/bodyset/b0", "/bodyset/b1"};
     TimeSeriesTableVec3 accelTableFromUtility =
             createSyntheticIMUAccelerationSignals(
-                    pendulum, statesTable, controlsTable, framePaths);
+                    pendulum, statesTable, emptyControls, framePaths);
     STOFileAdapter_<SimTK::Vec3>::write(
-            accelTableFromUtility, "linacc_fromutils.sto");
-            */
+            accelTableFromUtility, "linacc_fromutils.sto");*/
+
 }

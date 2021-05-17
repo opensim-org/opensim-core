@@ -153,8 +153,13 @@ int IMUDataReporter::begin(const SimTK::State& s )
         if (getProperty_frame_paths().size() > 0) {
             _modelLocal.reset(_model->clone());
             std::vector<std::string> paths_string{get_frame_paths(0)};
-            _imuComponents = 
-                OpenSenseUtilities::addSelectModelIMUs(*_modelLocal, paths_string);
+            if (paths_string[0] == "IMUs") {
+                auto compList = _model->getComponentList<const OpenSim::IMU>();
+                for (auto imu : compList) { _imuComponents.push_back(&imu); }
+            } else {
+                _imuComponents = OpenSenseUtilities::addModelIMUs(
+                        *_modelLocal, paths_string);
+            }
         }
     }
     // If already part of the system, then a rerun and no need to add to _modelLocal
@@ -170,10 +175,10 @@ int IMUDataReporter::begin(const SimTK::State& s )
                     comp.getOutput("orientation_as_quaternion"), comp.getName());
             if (get_report_angular_velocities())
                 _angularVelocityReporter.addToReport(
-                    comp.getOutput("angular_velocity"), comp.getName());
+                    comp.getOutput("gyro_signal"), comp.getName());
             if (get_report_linear_accelerations())
                 _linearAccelerationsReporter.addToReport(
-                    comp.getOutput("linear_acceleration"), comp.getName());
+                    comp.getOutput("accel_signal"), comp.getName());
         }
     }
     _modelLocal->initSystem();
