@@ -138,6 +138,20 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
         // For use in printDescriptionImpl().
         m_control_names.push_back(controlToTrack);
         m_ref_labels.push_back(refLabel);
+
+        // Check to see if the model contains a MocoScaleFactor associated with
+        // this control.
+        bool foundScaleFactor = false;
+        for (const auto& scaleFactor :
+                getModel().getComponentList<MocoScaleFactor>()) {
+            if (scaleFactor.getComponentPath() == controlToTrack) {
+                m_scaleFactorRefs.emplace_back(&scaleFactor);
+                foundScaleFactor = true;
+            }
+        }
+        // If we didn't find a MocoScaleFactor for this control, set the
+        // reference pointer to null.
+        if (!foundScaleFactor) m_scaleFactorRefs.emplace_back(nullptr);
     }
 
     setRequirements(1, 1, SimTK::Stage::Model);
@@ -155,8 +169,18 @@ void MocoControlTrackingGoal::calcIntegrandImpl(
         const auto& modelValue = controls[m_control_indices[i]];
         const auto& refValue =
                 m_ref_splines[m_ref_indices[i]].calcValue(timeVec);
-        integrand +=
-                m_control_weights[i] * SimTK::square(modelValue - refValue);
+
+        // If a scale factor exists for this control, retrieve its value.
+        double scaleFactor = 1.0;
+        if (m_scaleFactorRefs[i] != nullptr) {
+            scaleFactor = m_scaleFactorRefs[i]->getScaleFactor();
+        }
+
+        // Compute the tracking error.
+        double error = modelValue - scaleFactor * refValue;
+
+        // Compute the integrand.
+        integrand += m_control_weights[i] * error * error;
     }
 }
 

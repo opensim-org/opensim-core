@@ -291,7 +291,7 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
         guessTracking.randomizeAdd();
         solver.setGuess(guessTracking);
         auto solutionTracking = study.solve();
-        solutionEffort.write(
+        solutionTracking.write(
                 "testMocoGoals_MocoControlTrackingGoal_tracking_solution.sto");
 
         // Make sure control tracking problem matches control effort problem.
@@ -299,41 +299,6 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
                 solutionTracking.getControlsTrajectory(), 1e-4);
         OpenSim_CHECK_MATRIX_ABSTOL(solutionEffort.getStatesTrajectory(),
                 solutionTracking.getStatesTrajectory(), 1e-4);
-    }
-
-    // MocoControlTrackingGoal (with scale factors)
-    {
-        // Re-run problem, now setting effort cost function to zero and adding a
-        // control tracking cost.
-        auto& problem = study.updProblem();
-        problem.updPhase(0).updGoal("effort").setWeight(0);
-        auto* tracking =
-                problem.addGoal<MocoControlTrackingGoal>("control_tracking");
-        std::vector<double> time(
-                solutionEffort.getTime().getContiguousScalarData(),
-                solutionEffort.getTime().getContiguousScalarData() +
-                solutionEffort.getNumTimes());
-        TimeSeriesTable controlsRef(time,
-                                    solutionEffort.getControlsTrajectory(),
-                                    solutionEffort.getControlNames());
-        tracking->setReference(controlsRef);
-
-        // Finding a solution with Hermite-Simpson and Tropter requires a better
-        // initial guess.
-        auto& solver = study.updSolver<TestType>();
-        solver.resetProblem(problem);
-        MocoTrajectory guessTracking = solutionEffort;
-        guessTracking.randomizeAdd();
-        solver.setGuess(guessTracking);
-        auto solutionTracking = study.solve();
-        solutionEffort.write(
-                "testMocoGoals_MocoControlTrackingGoal_tracking_solution.sto");
-
-        // Make sure control tracking problem matches control effort problem.
-        OpenSim_CHECK_MATRIX_ABSTOL(solutionEffort.getControlsTrajectory(),
-                                    solutionTracking.getControlsTrajectory(), 1e-4);
-        OpenSim_CHECK_MATRIX_ABSTOL(solutionEffort.getStatesTrajectory(),
-                                    solutionTracking.getStatesTrajectory(), 1e-4);
     }
 
     // MocoOrientationTrackingGoal
@@ -431,6 +396,56 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
                           solutionTracking.getControlsTrajectory(), 1e-1);
         SimTK_TEST_EQ_TOL(solutionEffort.getStatesTrajectory(),
                           solutionTracking.getStatesTrajectory(), 1e-1);
+    }
+}
+
+TEMPLATE_TEST_CASE("Test MocoScaleFactor", "",
+        MocoCasADiSolver, MocoTropterSolver) {
+    MocoStudy study = setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
+    auto solutionEffort = study.solve();
+
+    // MocoControlTrackingGoal (with scale factors)
+    {
+        // Re-run problem, now setting effort cost function to zero and adding a
+        // control tracking cost.
+        auto& problem = study.updProblem();
+        problem.updPhase(0).updGoal("effort").setWeight(0);
+        auto* tracking =
+                problem.addGoal<MocoControlTrackingGoal>("control_tracking");
+        std::vector<double> time(
+                solutionEffort.getTime().getContiguousScalarData(),
+                solutionEffort.getTime().getContiguousScalarData() +
+                solutionEffort.getNumTimes());
+        TimeSeriesTable controlsRef(time,
+                                    solutionEffort.getControlsTrajectory(),
+                                    solutionEffort.getControlNames());
+        tracking->setReference(controlsRef);
+        const auto& controlNames = solutionEffort.getControlNames();
+        tracking->addScaleFactorForControl("tau0_scale_factor",
+                controlNames[0], MocoBounds(0.1, 10));
+        tracking->addScaleFactorForControl("tau1_scale_factor",
+                controlNames[1], MocoBounds(0.1, 10));
+
+        // Finding a solution with Hermite-Simpson and Tropter requires a better
+        // initial guess.
+        auto& solver = study.updSolver<TestType>();
+        solver.resetProblem(problem);
+        auto guessTracking = solver.createGuess("bounds");
+        guessTracking.insertStatesTrajectory(
+                solutionEffort.exportToStatesTable(), true);
+        guessTracking.insertControlsTrajectory(
+                solutionEffort.exportToControlsTable(), true);
+        guessTracking.randomizeAdd();
+        solver.setGuess(guessTracking);
+        auto solutionTracking = study.solve();
+        solutionTracking.write(
+                "testMocoGoals_MocoControlTrackingGoal_scale_factors_tracking_solution.sto");
+
+        // Make sure control tracking problem matches control effort problem.
+        OpenSim_CHECK_MATRIX_ABSTOL(solutionEffort.getControlsTrajectory(),
+                                    solutionTracking.getControlsTrajectory(), 1e-4);
+        OpenSim_CHECK_MATRIX_ABSTOL(solutionEffort.getStatesTrajectory(),
+                                    solutionTracking.getStatesTrajectory(), 1e-4);
     }
 }
 

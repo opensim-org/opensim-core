@@ -23,6 +23,7 @@
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Moco/MocoBounds.h>
 #include <OpenSim/Moco/MocoConstraintInfo.h>
+#include <OpenSim/Moco/MocoScaleFactor.h>
 #include <OpenSim/Moco/osimMocoDLL.h>
 
 namespace OpenSim {
@@ -286,6 +287,11 @@ public:
                 "but it was not.");
     }
 
+    // TODO
+    const std::vector<MocoScaleFactor>& getScaleFactors() const {
+        return m_scaleFactors;
+    }
+
     /// Print the name type and mode of this goal. In cost mode, this prints the
     /// weight.
     void printDescription() const;
@@ -357,6 +363,11 @@ protected:
     double calcSystemDisplacement(
             const SimTK::State& initial, const SimTK::State& final) const;
 
+    // TODO
+    void appendScaleFactor(const MocoScaleFactor& scaleFactor) {
+        m_scaleFactors.push_back(scaleFactor);
+    }
+
 private:
     OpenSim_DECLARE_PROPERTY(
             enabled, bool, "This bool indicates whether this goal is enabled.");
@@ -386,6 +397,7 @@ private:
     mutable Mode m_modeToUse;
     mutable SimTK::Stage m_stageDependency = SimTK::Stage::Acceleration;
     mutable int m_numIntegrals = -1;
+    mutable std::vector<MocoScaleFactor> m_scaleFactors;
 };
 
 inline void MocoGoal::calcIntegrandImpl(

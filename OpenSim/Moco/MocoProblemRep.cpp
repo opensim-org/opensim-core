@@ -24,6 +24,7 @@
 #include "Components/PositionMotion.h"
 #include "MocoProblem.h"
 #include "MocoProblemInfo.h"
+#include "MocoScaleFactor.h"
 #include <regex>
 #include <unordered_set>
 
@@ -72,6 +73,17 @@ void MocoProblemRep::initialize() {
     auto discreteControllerBaseUPtr = make_unique<DiscreteController>();
     m_discrete_controller_base.reset(discreteControllerBaseUPtr.get());
     m_model_base.addController(discreteControllerBaseUPtr.release());
+
+    // TODO adding scale factors components to model
+    int numScaleFactors = 0;
+    for (int i = 0; i < ph0.getProperty_goals().size(); ++i) {
+        const auto& goal = ph0.get_goals(i);
+        const auto& scaleFactors = goal.getScaleFactors();
+        for (const auto& scaleFactor : scaleFactors) {
+            m_model_base.addComponent(scaleFactor.clone());
+            ++numScaleFactors;
+        }
+    }
 
     m_model_base.finalizeFromProperties();
 
@@ -503,9 +515,11 @@ void MocoProblemRep::initialize() {
 
     // Parameters.
     // -----------
-    m_parameters.resize(ph0.getProperty_parameters().size());
+    int numParametersFromPhase = (int)ph0.getProperty_parameters().size();
+    m_parameters.resize(ph0.getProperty_parameters().size() + numScaleFactors);
+    // Construct MocoParameters added to the MocoProblem via addParameter().
     std::unordered_set<std::string> paramNames;
-    for (int i = 0; i < ph0.getProperty_parameters().size(); ++i) {
+    for (int i = 0; i < numParametersFromPhase; ++i) {
         const auto& param = ph0.get_parameters(i);
         OPENSIM_THROW_IF(param.getName().empty(), Exception,
                 "All parameters must have a name.");
@@ -521,6 +535,22 @@ void MocoProblemRep::initialize() {
         // the MocoParameter's internal vector of property references.
         m_parameters[i]->initializeOnModel(m_model_base);
         m_parameters[i]->initializeOnModel(m_model_disabled_constraints);
+    }
+    // Construct MocoParameters added to the MocoProblem via MocoScaleFactors in
+    // MocoGoals.
+    int iparam = numParametersFromPhase;
+    for (int i = 0; i < ph0.getProperty_goals().size(); ++i) {
+        const auto& goal = ph0.get_goals(i);
+        const auto& scaleFactors = goal.getScaleFactors();
+        for (const auto& scaleFactor : scaleFactors) {
+            m_parameters[iparam] = std::unique_ptr<MocoParameter>(
+                    new MocoParameter(
+                            scaleFactor.getName(),
+                            scaleFactor.getComponentPath(),
+                            "scale_factor",
+                            scaleFactor.getBounds()));
+            ++iparam;
+        }
     }
 
     MocoProblemInfo problemInfo;
