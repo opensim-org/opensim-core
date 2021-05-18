@@ -63,9 +63,9 @@ public:
             "Report linear acceleration of the IMU, default is true.");
 
     OpenSim_DECLARE_LIST_PROPERTY(frame_paths, std::string,
-            "ComponentPaths for frames to attach IMUs to, if 'IMU' then the model "
+            "ComponentPaths for frames to attach IMUs to, if 'IMUs' then the model "
             "is assumed to have IMUs attached already otherwise IMUs are temporarily"
-            "added as needed.");
+            "added as needed to the specified frame_paths.");
 
     //=============================================================================
 // DATA
