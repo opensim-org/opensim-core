@@ -43,7 +43,8 @@ using namespace std;
  * Destructor.
  */
 IMUDataReporter::~IMUDataReporter()
-{
+{ 
+    _modelLocal.reset();
 }
 //_____________________________________________________________________________
 /**

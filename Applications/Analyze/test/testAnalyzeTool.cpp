@@ -418,17 +418,17 @@ void testIMUDataReporter() {
                     (bodyFixedRotations - fromBodyKinRotations).norm(), 0., 1e-7);
         }
     }
-    /* Attempt to compare to createSyntheticIMUAccelerationSignals
+    /* Attempt to compare to createSyntheticIMUAccelerationSignals */
     TimeSeriesTable statesTable = manager2.getStatesTable();
     TimeSeriesTable controlsTable(statesTable.getIndependentColumn());
-    SimTK::Vector zeroControl(controlsTable.getNumRows(), 0.0);
-    controlsTable.appendColumn("/forceset/tau0", zeroControl);
-    controlsTable.appendColumn("/forceset/tau1", zeroControl);
+    SimTK::Vector zeroControl(int(controlsTable.getNumRows()), 0.0);
+    controlsTable.appendColumn("/tau0", zeroControl);
+    controlsTable.appendColumn("/tau1", zeroControl);
     std::vector<std::string> framePaths = {"/bodyset/b0", "/bodyset/b1"};
     TimeSeriesTableVec3 accelTableFromUtility =
             createSyntheticIMUAccelerationSignals(
                     pendulum, statesTable, controlsTable, framePaths);
     STOFileAdapter_<SimTK::Vec3>::write(
-            accelTableFromUtility, "linacc_fromutils.sto"); */
+            accelTableFromUtility, "linacc_fromutils.sto");
 
 }
