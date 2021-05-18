@@ -50,9 +50,9 @@ public:
     OpenSim_DECLARE_OUTPUT(orientation_as_quaternion, SimTK::Quaternion,
             calcOrientationAsQuaternion,
             SimTK::Stage::Position);
-    OpenSim_DECLARE_OUTPUT(gyro_signal, SimTK::Vec3,
+    OpenSim_DECLARE_OUTPUT(gyroscope_signal, SimTK::Vec3,
             calcGyroscopeSignal, SimTK::Stage::Velocity);
-    OpenSim_DECLARE_OUTPUT(accel_signal, SimTK::Vec3,
+    OpenSim_DECLARE_OUTPUT(accelerometer_signal, SimTK::Vec3,
             calcAccelerometerSignal, SimTK::Stage::Dynamics);
     // Outputs
     SimTK::Transform calcTransformInGround(const SimTK::State& s) const {
@@ -64,16 +64,15 @@ public:
     SimTK::Vec3 calcGyroscopeSignal(const SimTK::State& s) const {
         return get_frame().getAngularVelocityInGround(s);
     }
-    SimTK::Vec3 calcLinearAcceleration(const SimTK::State& s) const {
-        return get_frame().getLinearAccelerationInGround(s);
-    }
     SimTK::Vec3 calcAccelerometerSignal(
             const SimTK::State& s) const {
         const auto& model = getModel();
         const auto& ground = model.getGround();
         const auto& gravity = model.getGravity();
+        SimTK::Vec3 linearAcceleration =
+                get_frame().getLinearAccelerationInGround(s);
         return ground.expressVectorInAnotherFrame(
-                s, calcLinearAcceleration(s) - gravity, get_frame());
+                s, linearAcceleration - gravity, get_frame());
     }
     void generateDecorations(bool fixed, const ModelDisplayHints& hints,
         const SimTK::State& state,

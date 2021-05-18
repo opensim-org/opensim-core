@@ -57,9 +57,9 @@ OpenSim_DECLARE_CONCRETE_OBJECT(IMUDataReporter, Analysis);
 public:
     OpenSim_DECLARE_PROPERTY(report_orientations, bool,
             "Report orientation of IMU as quaternion, default is true.");
-    OpenSim_DECLARE_PROPERTY(report_angular_velocities, bool,
+    OpenSim_DECLARE_PROPERTY(report_gyro_signals, bool,
             "Report angular velocity of the IMU, default is true.");
-    OpenSim_DECLARE_PROPERTY(report_linear_accelerations, bool,
+    OpenSim_DECLARE_PROPERTY(report_accel_signals, bool,
             "Report linear acceleration of the IMU, default is true.");
 
     OpenSim_DECLARE_LIST_PROPERTY(frame_paths, std::string,
@@ -94,11 +94,11 @@ public:
         return _orientationsReporter.getTable();
     }
     // In memory access to IMU data as Tables Angular Velocities)
-    const TimeSeriesTable_<SimTK::Vec3>& getAngularVelocitiesTable() const {
+    const TimeSeriesTable_<SimTK::Vec3>& getGyroSignalsTable() const {
         return _angularVelocityReporter.getTable();
     }
     // In memory access to IMU data as Tables (Linear Accelerations)
-    const TimeSeriesTable_<SimTK::Vec3>& getLinearAccelerationTable() const {
+    const TimeSeriesTable_<SimTK::Vec3>& getAccelSignalsTable() const {
         return _linearAccelerationsReporter.getTable();
     }
 
@@ -130,8 +130,8 @@ public:
 private:
     void constructProperties() {
         constructProperty_report_orientations(true);
-        constructProperty_report_angular_velocities(true);
-        constructProperty_report_linear_accelerations(true);
+        constructProperty_report_gyro_signals(true);
+        constructProperty_report_accel_signals(true);
         constructProperty_frame_paths();
     }
     //=============================================================================

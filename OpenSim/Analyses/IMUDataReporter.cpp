@@ -87,8 +87,7 @@ operator=(const IMUDataReporter& other)
     // BASE CLASS
     Analysis::operator=(other);
     copyProperty_report_orientations(other);
-    copyProperty_report_angular_velocities(other);
-    copyProperty_report_linear_accelerations(other);
+
     copyProperty_frame_paths(other);
     _modelLocal = nullptr;
     return(*this);
@@ -173,12 +172,12 @@ int IMUDataReporter::begin(const SimTK::State& s )
             if (get_report_orientations())
                 _orientationsReporter.addToReport(
                     comp.getOutput("orientation_as_quaternion"), comp.getName());
-            if (get_report_angular_velocities())
+            if (get_report_gyro_signals())
                 _angularVelocityReporter.addToReport(
-                    comp.getOutput("gyro_signal"), comp.getName());
-            if (get_report_linear_accelerations())
+                    comp.getOutput("gyroscope_signal"), comp.getName());
+            if (get_report_accel_signals())
                 _linearAccelerationsReporter.addToReport(
-                    comp.getOutput("accel_signal"), comp.getName());
+                    comp.getOutput("accelerometer_signal"), comp.getName());
         }
     }
     _modelLocal->initSystem();
@@ -260,12 +259,12 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
             STOFileAdapter_<SimTK::Quaternion>::write(
                     rotationsTable, aBaseName + "_" + "orientations.sto");
         }
-        if (get_report_angular_velocities()) {
+        if (get_report_gyro_signals()) {
             auto& angVelTable = _angularVelocityReporter.getTable();
             STOFileAdapter_<SimTK::Vec3>::write(
                     angVelTable, aBaseName + "_" + "angular_velocity.sto");
         }
-        if (get_report_linear_accelerations()) {
+        if (get_report_accel_signals()) {
             auto& linAccTable = _linearAccelerationsReporter.getTable();
             STOFileAdapter_<SimTK::Vec3>::write(
                     linAccTable, aBaseName + "_" + "linear_accelerations.sto");

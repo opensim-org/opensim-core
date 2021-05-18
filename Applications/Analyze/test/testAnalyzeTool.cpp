@@ -380,9 +380,9 @@ void testIMUDataReporter() {
 
     imuDataReporter->printResults("static", "");
     const TimeSeriesTable_<SimTK::Vec3>& angVelTable =
-            imuDataReporter->getAngularVelocitiesTable();
+            imuDataReporter->getGyroSignalsTable();
     const TimeSeriesTable_<SimTK::Vec3>& linAccTable =
-            imuDataReporter->getLinearAccelerationTable();
+            imuDataReporter->getAccelSignalsTable();
     const TimeSeriesTable_<SimTK::Quaternion>& rotationsTable =
             imuDataReporter->getOrientationsTable();
     int angNr = int(angVelTable.getNumRows());
@@ -418,15 +418,17 @@ void testIMUDataReporter() {
                     (bodyFixedRotations - fromBodyKinRotations).norm(), 0., 1e-7);
         }
     }
-    /* Attempt to compare to createSyntheticIMUAccelerationSignals  doesn't
-    * work now since the latter requires passing in controls
+    /* Attempt to compare to createSyntheticIMUAccelerationSignals
     TimeSeriesTable statesTable = manager2.getStatesTable();
-    TimeSeriesTable emptyControls(statesTable.getIndependentColumn());
+    TimeSeriesTable controlsTable(statesTable.getIndependentColumn());
+    SimTK::Vector zeroControl(controlsTable.getNumRows(), 0.0);
+    controlsTable.appendColumn("/forceset/tau0", zeroControl);
+    controlsTable.appendColumn("/forceset/tau1", zeroControl);
     std::vector<std::string> framePaths = {"/bodyset/b0", "/bodyset/b1"};
     TimeSeriesTableVec3 accelTableFromUtility =
             createSyntheticIMUAccelerationSignals(
-                    pendulum, statesTable, emptyControls, framePaths);
+                    pendulum, statesTable, controlsTable, framePaths);
     STOFileAdapter_<SimTK::Vec3>::write(
-            accelTableFromUtility, "linacc_fromutils.sto");*/
+            accelTableFromUtility, "linacc_fromutils.sto"); */
 
 }
