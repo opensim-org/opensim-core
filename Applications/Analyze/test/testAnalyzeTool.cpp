@@ -428,7 +428,8 @@ void testIMUDataReporter() {
     TimeSeriesTableVec3 accelTableFromUtility =
             createSyntheticIMUAccelerationSignals(
                     pendulum, statesTable, controlsTable, framePaths);
-    STOFileAdapter_<SimTK::Vec3>::write(
-            accelTableFromUtility, "linacc_fromutils.sto");
-
+    auto diff = (accelTableFromUtility.getMatrix() -
+                 imuDataReporter->getAccelSignalsTable().getMatrix());
+    auto elemSum = diff.colSum().rowSum().norm();
+    ASSERT_EQUAL<double>(elemSum, 0., 1e-5);
 }
