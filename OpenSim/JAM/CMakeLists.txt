@@ -42,7 +42,7 @@ OpenSimAddLibrary(
              # Need to link static libraries because MATLAB already links a 
              # different hdf5 internally somewhere and this leads to 
              
-             PRIVATE hdf5_cpp-static hdf5_hl_cpp-static
+             PRIVATE hdf5-static hdf5_cpp-static hdf5_hl_cpp-static
     INCLUDES ${JAM_INCLUDES} 
     SOURCES ${JAM_SOURCES}
     )
