@@ -69,7 +69,7 @@ public:
     /**
         * Create Orientations as a TimeSeriesTable based on passed in markerFile
         */
-    static TimeSeriesTable_<SimTK::Quaternion>
+    static TimeSeriesTable_<SimTK::Quaternion_<double> >
         createOrientationsFileFromMarkers(const std::string& markersFile);
 
     /// form a Transform from 3 points origin (op), along x (xp - op), along y(yp - op)

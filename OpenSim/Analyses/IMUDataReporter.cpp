@@ -173,10 +173,10 @@ int IMUDataReporter::begin(const SimTK::State& s )
             if (get_report_orientations())
                 _orientationsReporter.addToReport(
                     comp.getOutput("orientation_as_quaternion"), comp.getName());
-            if (get_report_gyro_signals())
+            if (get_report_gyroscope_signals())
                 _angularVelocityReporter.addToReport(
                     comp.getOutput("gyroscope_signal"), comp.getName());
-            if (get_report_accel_signals())
+            if (get_report_accelerometer_signals())
                 _linearAccelerationsReporter.addToReport(
                     comp.getOutput("accelerometer_signal"), comp.getName());
         }
@@ -260,12 +260,12 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
             STOFileAdapter_<SimTK::Quaternion>::write(
                     rotationsTable, aBaseName + "_" + "orientations.sto");
         }
-        if (get_report_gyro_signals()) {
+        if (get_report_gyroscope_signals()) {
             auto& angVelTable = _angularVelocityReporter.getTable();
             STOFileAdapter_<SimTK::Vec3>::write(
                     angVelTable, aBaseName + "_" + "angular_velocity.sto");
         }
-        if (get_report_accel_signals()) {
+        if (get_report_accelerometer_signals()) {
             auto& linAccTable = _linearAccelerationsReporter.getTable();
             STOFileAdapter_<SimTK::Vec3>::write(
                     linAccTable, aBaseName + "_" + "linear_accelerations.sto");
