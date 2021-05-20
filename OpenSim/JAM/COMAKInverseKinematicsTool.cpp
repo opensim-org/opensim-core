@@ -503,7 +503,7 @@ void COMAKInverseKinematicsTool::performIKSecondaryConstraintSimulation() {
         std::string path = _secondary_coord_path[j];
         SimTK::Vector col_data = q_table.getDependentColumn(path + "/value");
 
-        for (int i = 0; i < nSteps; ++i) {
+        for (int i = 0; i < (int)time.size(); ++i) {
             data(i, j) = col_data(i);
 
         }
