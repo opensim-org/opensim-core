@@ -94,11 +94,11 @@ public:
         return _orientationsReporter.getTable();
     }
     // In memory access to IMU data as Tables Angular Velocities)
-    const TimeSeriesTable_<SimTK::Vec3>& getGyroSignalsTable() const {
+    const TimeSeriesTable_<SimTK::Vec3>& getGyroscopeSignalsTable() const {
         return _angularVelocityReporter.getTable();
     }
     // In memory access to IMU data as Tables (Linear Accelerations)
-    const TimeSeriesTable_<SimTK::Vec3>& getAccelSignalsTable() const {
+    const TimeSeriesTable_<SimTK::Vec3>& getAccelerometerSignalsTable() const {
         return _linearAccelerationsReporter.getTable();
     }
 

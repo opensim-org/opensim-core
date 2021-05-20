@@ -380,9 +380,9 @@ void testIMUDataReporter() {
 
     imuDataReporter->printResults("static", "");
     const TimeSeriesTable_<SimTK::Vec3>& angVelTable =
-            imuDataReporter->getGyroSignalsTable();
+            imuDataReporter->getGyroscopeSignalsTable();
     const TimeSeriesTable_<SimTK::Vec3>& linAccTable =
-            imuDataReporter->getAccelSignalsTable();
+            imuDataReporter->getAccelerometerSignalsTable();
     const TimeSeriesTable_<SimTK::Quaternion>& rotationsTable =
             imuDataReporter->getOrientationsTable();
     int angNr = int(angVelTable.getNumRows());
@@ -429,7 +429,7 @@ void testIMUDataReporter() {
             createSyntheticIMUAccelerationSignals(
                     pendulum, statesTable, controlsTable, framePaths);
     auto diff = (accelTableFromUtility.getMatrix() -
-                 imuDataReporter->getAccelSignalsTable().getMatrix());
+                 imuDataReporter->getAccelerometerSignalsTable().getMatrix());
     auto elemSum = diff.colSum().rowSum().norm();
     ASSERT_EQUAL<double>(elemSum, 0., 1e-5);
 }
