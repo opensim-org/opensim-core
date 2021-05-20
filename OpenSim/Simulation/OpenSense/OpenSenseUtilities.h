@@ -77,9 +77,7 @@ public:
         const SimTK::Vec3& xp,  const SimTK::Vec3& yp);
   
     /// Add IMUs to passed in model and return references to them
-    /// based on paths specification. Some special cases:
-    /// - "Bodies" one new IMU with the name "{Body}_imu" is added per Body 
-    ///     and returned in result.
+    /// based on paths specification. 
     /// - If "paths" refer to user specified list of frames, then one new 
     ///     "{Frame}_imu" is added to the model and returned in result.
     static std::vector<OpenSim::IMU*> addModelIMUs(

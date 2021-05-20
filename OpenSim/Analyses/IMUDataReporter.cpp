@@ -152,14 +152,16 @@ int IMUDataReporter::begin(const SimTK::State& s )
         // Populate _imuComponents based on properties
         if (getProperty_frame_paths().size() > 0) {
             _modelLocal.reset(_model->clone());
-            std::vector<std::string> paths_string{get_frame_paths(0)};
-            if (paths_string[0] == "IMUs") {
-                auto compList = _model->getComponentList<const OpenSim::IMU>();
-                for (auto imu : compList) { _imuComponents.push_back(&imu); }
-            } else {
-                _imuComponents = OpenSenseUtilities::addModelIMUs(
-                        *_modelLocal, paths_string);
+            auto compList = _model->getComponentList<const OpenSim::IMU>();
+            for (IMU imu : compList) { 
+                _imuComponents.push_back(&imu); 
             }
+            std::vector<std::string> paths_string;
+            for (int i = 0; i < getProperty_frame_paths().size(); i++) {
+                paths_string.push_back(get_frame_paths(i));
+            }
+            _imuComponents = OpenSenseUtilities::addModelIMUs(
+                    *_modelLocal, paths_string);
         }
     }
     // If already part of the system, then a rerun and no need to add to _modelLocal

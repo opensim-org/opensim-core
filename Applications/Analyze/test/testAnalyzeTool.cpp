@@ -362,7 +362,9 @@ void testIMUDataReporter() {
     IMUDataReporter* imuDataReporter =
             new IMUDataReporter(&pendulum);
     imuDataReporter->setName("IMU_DataReporter");
-    imuDataReporter->append_frame_paths("Bodies");
+    std::vector<std::string> framePaths = {"/bodyset/b0", "/bodyset/b1"};
+    imuDataReporter->append_frame_paths("/bodyset/b0");
+    imuDataReporter->append_frame_paths("/bodyset/b1");
 
     pendulum.addAnalysis(bodyKinematics);
     pendulum.addAnalysis(imuDataReporter);
@@ -389,10 +391,6 @@ void testIMUDataReporter() {
     for (int row = 0; row < angNr; ++row) {
         ASSERT_EQUAL<double>(angVelTable.getMatrix()[row][0].norm(), 0., 1e-7);
         ASSERT_EQUAL<double>(angVelTable.getMatrix()[row][1].norm(), 0., 1e-7);
-        /*
-        ASSERT_EQUAL<double>(linAccTable.getMatrix()[row][0].norm(), 0., 1e-7);
-        ASSERT_EQUAL<double>(linAccTable.getMatrix()[row][1].norm(), 0., 1e-7);
-        */
     }
     // Now allow pendulum to drop under gravity from horizontal
     bodyKinematics->getPositionStorage()->purge();
@@ -424,7 +422,6 @@ void testIMUDataReporter() {
     SimTK::Vector zeroControl(int(controlsTable.getNumRows()), 0.0);
     controlsTable.appendColumn("/tau0", zeroControl);
     controlsTable.appendColumn("/tau1", zeroControl);
-    std::vector<std::string> framePaths = {"/bodyset/b0", "/bodyset/b1"};
     TimeSeriesTableVec3 accelTableFromUtility =
             createSyntheticIMUAccelerationSignals(
                     pendulum, statesTable, controlsTable, framePaths);
