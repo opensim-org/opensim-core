@@ -119,7 +119,8 @@ void Smith2018ContactMesh::extendScale(
 
 void Smith2018ContactMesh::extendFinalizeFromProperties() {
     Super::extendFinalizeFromProperties();
-    if (!_mesh_is_cached) {
+    //if (!_mesh_is_cached) {
+    if (!isObjectUpToDateWithProperties()) {
         initializeMesh();
     }
 }
@@ -142,7 +143,7 @@ void Smith2018ContactMesh::extendConnectToModel(Model& model)
     setNextSubcomponentInSystem(*mesh_frame);
 }
 
-std::string Smith2018ContactMesh::findMeshFile(const std::string& file)
+std::string Smith2018ContactMesh::findMeshFile(const std::string& aafile)
 {
     /*This is a modified version of the code found in Geometry.cpp
     Mesh::extendFinalizeFromProperties to find geometry files in
@@ -153,73 +154,163 @@ std::string Smith2018ContactMesh::findMeshFile(const std::string& file)
     Smith2018ContactMesh can't call getModel() at this stage
     */
 
-    bool isAbsolutePath; 
-    std::string directory, fileName, extension;
-    
-    SimTK::Pathname::deconstructPathname(file, isAbsolutePath, directory,
-        fileName, extension);
-    const std::string lowerExtension = SimTK::String::toLower(extension);
-    
-    //Check for correct extension
-    if (lowerExtension != ".vtp" && lowerExtension != ".obj" && 
-        lowerExtension != ".stl") {
+    //bool isAbsolutePath; 
+    //std::string directory, fileName, extension;
+    //
+    //SimTK::Pathname::deconstructPathname(file, isAbsolutePath, directory,
+    //    fileName, extension);
+    //const std::string lowerExtension = SimTK::String::toLower(extension);
+    //
+    ////Check for correct extension
+    //if (lowerExtension != ".vtp" && lowerExtension != ".obj" && 
+    //    lowerExtension != ".stl") {
 
-        std::cout << "Smith2018ContactMesh ERROR: '" << file << 
-            "'; only .vtp .stl and .obj files currently supported.\n";
+    //    log_error("Smith2018ContactMesh ERROR: '" + file +
+    //        "'; only .vtp .stl and .obj files currently supported.\n");
 
-        OPENSIM_THROW(Exception,"Smith2018ContactMesh: Bad file type.");
-    }
+    //    OPENSIM_THROW(Exception,"Smith2018ContactMesh: Bad file type.");
+    //}
 
-    // Find OpenSim modelDir
-    const Component* rootModel = nullptr;
-    if (!hasOwner()) {
-        std::cout << "Mesh " << file << " not connected to model..ignoring\n";
-        return file;   // Orphan Mesh not part of a model yet
-    }
-    const Component* parent = &getOwner();
-    while (parent != nullptr) {
-        if (dynamic_cast<const Model*>(parent) != nullptr) {
-            rootModel = parent;
-            break;
+    //// Find OpenSim modelDir
+    //const Component* rootModel = nullptr;
+    //if (!hasOwner()) {
+    //    log_error("Mesh {} not connected to model...ignoring",
+    //                get_mesh_file());
+    //        return file;   // Orphan Mesh not part of a model yet
+    //}
+    //const Component* parent = &getOwner();
+    //while (parent != nullptr) {
+    //    if (dynamic_cast<const Model*>(parent) != nullptr) {
+    //        rootModel = parent;
+    //        break;
+    //    }
+    //    if (parent->hasOwner())
+    //        parent = &(parent->getOwner()); // traverse up Component tree
+    //    else
+    //        break; // can't traverse up.
+    //}
+
+    //if (rootModel == nullptr) {
+    //    log_error("Mesh {} not connected to model...ignoring",
+    //                get_mesh_file());
+    //        return file;   // Orphan Mesh not descendant of a model
+    //}
+    ////const Model& model = dynamic_cast<const Model&>(*rootModel);
+    //std::string osimFileName = rootModel->getDocumentFileName();
+    //
+
+    ////Find geometry file
+    //Model model;
+    //model.setInputFileName(osimFileName);
+    //
+    //SimTK::Array_<std::string> attempts;
+
+    //bool foundIt = ModelVisualizer::findGeometryFile(model,
+    //    file, isAbsolutePath, attempts);
+
+    //if (!foundIt) {
+    //    log_error("Model: {}",osimFileName);
+
+    //    log_error("Smith2018ContactMesh couldn't find file '" +
+    //        file + "'; tried");
+
+    //    for (unsigned i = 0; i < attempts.size(); ++i) {
+    //        log_error(attempts[i]);
+    //    }
+
+    //    if (!isAbsolutePath && 
+    //        !SimTK::Pathname::environmentVariableExists("OPENSIM_HOME")) {
+    //        
+    //        log_error("Set environment variable OPENSIM_HOME " 
+    //            "to search $OPENSIM_HOME/Geometry.");
+    //    }
+
+    //    throw OpenSim::Exception("Smith2018ContactMesh: " + getName() +
+    //        "File NOT found: " + file);
+    //}
+
+    // File is a .vtp, .stl, or .obj; attempt to find it.
+            const Component* rootModel = nullptr;
+        if (!hasOwner()) {
+             log_error("Mesh {} not connected to model...ignoring",
+                    get_mesh_file());
+             OPENSIM_THROW(Exception, "");
+            //return "";   // Orphan Mesh not part of a model yet
         }
-        if (parent->hasOwner())
-            parent = &(parent->getOwner()); // traverse up Component tree
-        else
-            break; // can't traverse up.
-    }
+        const Component* owner = &getOwner();
+        while (owner != nullptr) {
+            if (dynamic_cast<const Model*>(owner) != nullptr) {
+                rootModel = owner;
+                break;
+            }
+            if (owner->hasOwner())
+                owner = &(owner->getOwner()); // traverse up Component tree
+            else
+                break; // can't traverse up.
+        }
 
-    if (rootModel == nullptr) {
-        std::cout << "Mesh " << file << " not connected to model..ignoring\n";
-        return file;   // Orphan Mesh not descendent of a model
-    }
-    //const Model& model = dynamic_cast<const Model&>(*rootModel);
-    std::string osimFileName = rootModel->getDocumentFileName();
-    
+        if (rootModel == nullptr) {
+             log_error("Mesh {} not connected to model...ignoring",
+                    get_mesh_file());
+             OPENSIM_THROW(Exception, "");
+            //return "";   // Orphan Mesh not descendant of a model
+        }
 
-    //Find geometry file
-    Model model;
-    model.setInputFileName(osimFileName);
-    
-    SimTK::Array_<std::string> attempts;
+        // Current interface to Visualizer calls generateDecorations on every
+        // frame. On first time through, load file and create DecorativeMeshFile
+        // and cache it so we don't load files from disk during live rendering.
+        const std::string& file = get_mesh_file();
+        if (file.empty() || file.compare(PropertyStr::getDefaultStr()) == 0) {
+            log_error("No mesh_file property defined in Smith2018ContactMesh: "
+                "{}", getName());
+            OPENSIM_THROW(Exception, "");
+            //return;  // Return immediately if no file has been specified.
+        }
 
-    bool foundIt = ModelVisualizer::findGeometryFile(model,
-        file, isAbsolutePath, attempts);
+        bool isAbsolutePath; std::string directory, fileName, extension;
+        SimTK::Pathname::deconstructPathname(file,
+            isAbsolutePath, directory, fileName, extension);
+        const std::string lowerExtension = SimTK::String::toLower(extension);
+        if (lowerExtension != ".vtp" && lowerExtension != ".obj" && lowerExtension != ".stl") {
+             log_error("ModelVisualizer ignoring '{}'; only .vtp, .stl, and "
+                      ".obj files currently supported.",
+                    file);
+            OPENSIM_THROW(Exception, "");
+            //return;
+        }
 
-    if (!foundIt) {
-        std::cout << "Smith2018ContactMesh couldn't find file '" <<
-            file << "'; tried\n";
+        SimTK::Array_<std::string> attempts;
+        const Model& model = dynamic_cast<const Model&>(*rootModel);
+        bool foundIt = ModelVisualizer::findGeometryFile(model, file, isAbsolutePath, attempts);
 
-        for (unsigned i = 0; i < attempts.size(); ++i)
-            std::cout << "  " << attempts[i] << "\n";
-        if (!isAbsolutePath && 
-            !SimTK::Pathname::environmentVariableExists("OPENSIM_HOME")) {
+        if (!foundIt) {
             
-            std::cout << "Set environment variable OPENSIM_HOME " <<
-                "to search $OPENSIM_HOME/Geometry.\n";
+            log_error("Couldn't find file '{}'.", file);
+            
+            log_error( "The following locations were tried:");
+            for (unsigned i = 0; i < attempts.size(); ++i)
+                log_error(attempts[i]);
+            
+            if (!isAbsolutePath &&
+                !SimTK::Pathname::environmentVariableExists("OPENSIM_HOME"))
+                log_debug("Set environment variable OPENSIM_HOME to search $OPENSIM_HOME/Geometry.");
+            OPENSIM_THROW(Exception, "");
+            //return;
         }
-        throw OpenSim::Exception("Smith2018ContactMesh: " + getName() +
-            "File NOT found: " + file);
-    }
+
+        try {
+            std::ifstream objFile;
+            objFile.open(attempts.back().c_str());
+            // objFile closes when destructed
+            // if the file can be opened but had bad contents e.g. binary vtp 
+            // it will be handled downstream 
+        }
+        catch (const std::exception& e) {
+            log_warn("Visualizer couldn't open {} because: {}",
+                attempts.back(), e.what());
+            OPENSIM_THROW(Exception, "");
+            //return;
+        }
 
     return attempts.back();
 }
@@ -227,9 +318,16 @@ std::string Smith2018ContactMesh::findMeshFile(const std::string& file)
 void Smith2018ContactMesh::initializeMesh()
 {
     _mesh_is_cached = true;
+    _mesh.clear();
+    _mesh_back.clear();
+    
+    _obb = OBBTreeNode();
+    _back_obb = OBBTreeNode();
+
 
     // Load Mesh from file
     std::string file = findMeshFile(get_mesh_file());
+    
     _mesh.loadFile(file);
 
     //Scale Mesh
@@ -255,7 +353,7 @@ void Smith2018ContactMesh::initializeMesh()
     _vertex_locations.resize(_mesh.getNumVertices());
     _face_vertex_locations.resize(_mesh.getNumFaces(), 3);
         
-    _regional_tri_ind.resize(6);    
+    _regional_tri_ind.resize(6);
     _regional_n_tri.assign(6,0);
 
     // Compute Mesh Properties
@@ -375,8 +473,9 @@ void Smith2018ContactMesh::initializeMesh()
     createObbTree(_obb, _mesh, allFaces);
 
     //Create Decorative Mesh
-    _decorative_mesh.reset(new SimTK::DecorativeMeshFile(file));
-    _decorative_mesh->setScaleFactors(get_scale_factors());
+    
+    _decorative_mesh.reset(new SimTK::DecorativeMeshFile(file.c_str()));
+    //_decorative_mesh->setScaleFactors(get_scale_factors());
 
     //Triangle Material Properties
     if(get_use_variable_thickness()){
@@ -449,20 +548,37 @@ void Smith2018ContactMesh::computeVariableThickness() {
 }
 
 void Smith2018ContactMesh::generateDecorations(
-    bool fixed, const ModelDisplayHints& hints,const SimTK::State& s,
+    bool fixed, const ModelDisplayHints& hints,const SimTK::State& state,
     SimTK::Array_<SimTK::DecorativeGeometry>& geometry) const
 {
-    Super::generateDecorations(fixed, hints, s, geometry);
+    Super::generateDecorations(fixed, hints, state, geometry);
 
     // There is no fixed geometry to generate here.
-    /*if (fixed) { return; }
+    if (fixed) { return; }
 
-    // Guard against the case where the Force was disabled
-    // or mesh failed to load.
-    if (_decorative_mesh == nullptr) return;
+    if (!get_Appearance().get_visible()) return;
     if (!hints.get_show_contact_geometry()) return;
-    
-    const Frame& myFrame = getMeshFrame();
+
+    if (_decorative_mesh.get() != nullptr) {
+        try {
+            // Force the loading of the mesh to see if it has bad contents
+            // (e.g., binary vtp).
+            // We do not want to do this in extendFinalizeFromProperties b/c
+            // it's expensive to repeatedly load meshes.
+            _decorative_mesh->getMesh();
+        }
+        catch (const std::exception& e) {
+            log_warn("Visualizer couldn't open {} because: {}",
+                get_mesh_file(), e.what());
+            // No longer try to visualize this mesh.
+            _decorative_mesh.reset();
+            return;
+        }
+    }
+    //_decorative_mesh->setScaleFactors(get_scale_factors());
+
+    //SET TRANSFORM
+    const Frame& myFrame = getFrame();
     const Frame& bFrame = myFrame.findBaseFrame();
     const PhysicalFrame* bPhysicalFrame =
         dynamic_cast<const PhysicalFrame*>(&bFrame);
@@ -471,13 +587,28 @@ void Smith2018ContactMesh::generateDecorations(
         throw (Exception("Frame for Geometry " + getName() +
             " is not attached to a PhysicalFrame."));
     }
-     
     SimTK::MobilizedBodyIndex mbidx = bPhysicalFrame->getMobilizedBodyIndex();
     SimTK::Transform transformInBaseFrame = myFrame.findTransformInBaseFrame();
-    
+
     _decorative_mesh->setBodyId(mbidx);
     _decorative_mesh->setTransform(transformInBaseFrame);
-    _decorative_mesh->setIndexOnBody(0);*/
+    _decorative_mesh->setIndexOnBody(0);
+
+
+    // SET APPERANCE
+    _decorative_mesh->setColor(get_Appearance().get_color());
+    _decorative_mesh->setOpacity(get_Appearance().get_opacity());
+   
+    if (get_Appearance().get_visible()) {
+        _decorative_mesh->setRepresentation(
+            (VisualRepresentation)
+            get_Appearance().get_representation());
+    }
+    else {
+        _decorative_mesh->setRepresentation(SimTK::DecorativeGeometry::Hide);
+    }
+
+    geometry.push_back(*_decorative_mesh);
 }
 
 

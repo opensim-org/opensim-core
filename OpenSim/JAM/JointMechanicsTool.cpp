@@ -133,7 +133,6 @@ void JointMechanicsTool::setModel(Model& aModel)
 
 
 bool JointMechanicsTool::run() {
-    
     //Set the max number of points a ligament or muscle path can contain
     _max_path_points = 100;
 

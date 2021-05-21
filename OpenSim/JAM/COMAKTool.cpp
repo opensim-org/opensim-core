@@ -1034,10 +1034,10 @@ void COMAKTool::performCOMAK()
         log_info("All frames converged!");
     }
     else {
-        log_info("%15{} %15{} %15{}", "Bad Times", "Bad Frames", "udot error");
+        log_info("{:<15} {:<15}{:<15}", "Bad Times", "Bad Frames", "udot error");
 
         for (int i = 0; i < (int)_bad_frames.size(); i++) {
-            log_info("%15{} %15{} %15{}", 
+            log_info("{:<15}{:<15} {:<15}", 
                 _bad_times[i], _bad_frames[i], _bad_udot_errors[i]);
         }
     }
@@ -1323,7 +1323,7 @@ SimTK::Vector COMAKTool::equilibriateSecondaryCoordinates()
         result_states.append(state);
 
         log_info("Time: ", state.getTime());
-        log_info("%15{} %15{} %15{}",
+        log_info("{:<15} {:<15} {:<15}",
             "Secondary Coord", "Value", "Value Change (Delta)");
 
         //Compute Delta Coordinate
@@ -1342,7 +1342,7 @@ SimTK::Vector COMAKTool::equilibriateSecondaryCoordinates()
             prev_sec_coord_value(k) = value;
 
 
-            log_info("%15{} %15{} %15{}",
+            log_info("{:<15} {:<15} {:<15}",
                 coord.getName(), value, delta);
 
         }
@@ -1401,6 +1401,16 @@ void COMAKTool::extractKinematicsFromFile() {
     }
     if (get_stop_time() == -1) {
         set_stop_time(in_time.getLast());
+    }
+
+    if (get_start_time() < in_time.get(0)) {
+        OPENSIM_THROW(Exception,"ERROR: start_time in COMAKTool preceeds "
+            "the times listed in the input file.");
+    }
+
+    if (get_stop_time() > in_time.getLast()) {
+        OPENSIM_THROW(Exception,"ERROR: stop_time in COMAKTool exceeds "
+            "the times listed in the input file.");
     }
 
     if (store.isInDegrees()) {

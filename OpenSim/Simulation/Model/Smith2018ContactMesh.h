@@ -301,7 +301,7 @@ private:
     // We cache the DecorativeMeshFile if we successfully
     // load the mesh from file so we don't try loading from disk every frame.
     // This is mutable since it is not part of the public interface.
-    mutable SimTK::ResetOnCopy<std::unique_ptr<SimTK::DecorativeMeshFile>>
+    mutable SimTK::ResetOnCopy<std::unique_ptr<SimTK::DecorativeMeshFile>> 
         _decorative_mesh;
 
 //=========================================================================
