@@ -153,8 +153,8 @@ int IMUDataReporter::begin(const SimTK::State& s )
         if (getProperty_frame_paths().size() > 0) {
             _modelLocal.reset(_model->clone());
             auto compList = _model->getComponentList<const OpenSim::IMU>();
-            for (IMU imu : compList) { 
-                _imuComponents.push_back(&imu); 
+            for (const IMU& imu : compList) { 
+                _imuComponents.push_back(std::make_shared<IMU>(imu)); 
             }
             std::vector<std::string> paths_string;
             for (int i = 0; i < getProperty_frame_paths().size(); i++) {
