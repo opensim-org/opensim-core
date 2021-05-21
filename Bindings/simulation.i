@@ -237,7 +237,8 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 
 %include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
 
-%template(StdVectorIMUs) std::vector<OpenSim::IMU*>;
+%shared_ptr(OpenSim::IMU);
+%template(StdVectorIMUs) std::vector< std::shared_ptr<OpenSim::IMU> >;
 
 %include <OpenSim/Simulation/StatesTrajectory.h>
 // This enables iterating using the getBetween() method.
