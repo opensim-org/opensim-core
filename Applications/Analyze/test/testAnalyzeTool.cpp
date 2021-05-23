@@ -429,4 +429,17 @@ void testIMUDataReporter() {
                  imuDataReporter->getAccelerometerSignalsTable().getMatrix());
     auto elemSum = diff.colSum().rowSum().norm();
     ASSERT_EQUAL<double>(elemSum, 0., 1e-5);
+    // Now test AnalyzeTool workflow
+    AnalyzeTool analyzeIMU;
+    analyzeIMU.setName("dpend_imu");
+    analyzeIMU.setModelFilename("double_pendulum.osim");
+    analyzeIMU.setCoordinatesFileName("double_pendum1sec.sto");
+    IMUDataReporter imuDataReporter2;
+    imuDataReporter2.setName("IMU_DataReporter");
+    imuDataReporter2.append_frame_paths("/bodyset/rod1/rod1_geom_frame_1");
+    imuDataReporter2.append_frame_paths("/bodyset/rod2");
+    analyzeIMU.updAnalysisSet().cloneAndAppend(imuDataReporter2);
+    analyzeIMU.print("analyzeReportIMUData.xml");
+    AnalyzeTool roundTrip("analyzeReportIMUData.xml");
+    roundTrip.run();
 }

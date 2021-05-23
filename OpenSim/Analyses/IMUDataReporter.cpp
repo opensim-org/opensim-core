@@ -88,6 +88,8 @@ operator=(const IMUDataReporter& other)
     // BASE CLASS
     Analysis::operator=(other);
     copyProperty_report_orientations(other);
+    copyProperty_report_gyroscope_signals(other);
+    copyProperty_report_accelerometer_signals(other);
 
     copyProperty_frame_paths(other);
     _modelLocal = nullptr;
