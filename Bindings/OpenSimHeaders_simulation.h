@@ -141,6 +141,7 @@
 #include <OpenSim/Simulation/OrientationsReference.h>
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
 #include <OpenSim/Simulation/OpenSense/IMUPlacer.h>
+#include <OpenSim/Simulation/OpenSense/IMU.h>
 #include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
 
 #include <OpenSim/Simulation/StatesTrajectory.h>
