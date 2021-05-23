@@ -152,12 +152,12 @@ int IMUDataReporter::begin(const SimTK::State& s )
 
     if (_imuComponents.empty()) {
         // Populate _imuComponents based on properties
+        _modelLocal.reset(_model->clone());
+        auto compList = _model->getComponentList<const OpenSim::IMU>();
+        for (const IMU& imu : compList) { 
+            _imuComponents.push_back(std::make_shared<IMU>(imu)); 
+        }
         if (getProperty_frame_paths().size() > 0) {
-            _modelLocal.reset(_model->clone());
-            auto compList = _model->getComponentList<const OpenSim::IMU>();
-            for (const IMU& imu : compList) { 
-                _imuComponents.push_back(std::make_shared<IMU>(imu)); 
-            }
             std::vector<std::string> paths_string;
             for (int i = 0; i < getProperty_frame_paths().size(); i++) {
                 paths_string.push_back(get_frame_paths(i));
