@@ -279,7 +279,7 @@ std::vector<std::shared_ptr<OpenSim::IMU> > OpenSenseUtilities::addModelIMUs(
         const Component& comp = model.getComponent(path);
         next_imu->setName(comp.getName() + "_imu");
         next_imu->connectSocket_frame(comp);
-        model.addComponent(next_imu);
+        model.addModelComponent(next_imu);
         // make sure it's a Frame
         selectedIMUs.push_back(std::shared_ptr<IMU>(next_imu)); 
     }
