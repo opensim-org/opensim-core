@@ -311,6 +311,27 @@ using namespace SimTK;
     }
 %}
 
+%typemap(javacode) OpenSim::MocoControlTrackingGoal %{
+    public static MocoBounds convertArrayToMB(double[] arr) throws Exception {
+            MocoBounds bounds = new MocoBounds();
+            if (arr == null) {
+                return bounds;
+            } else if (arr.length > 2) {
+                throw new RuntimeException(
+                "Bounds cannot have more than 2 elements.");
+            } else if (arr.length == 1) {
+                bounds = new MocoBounds(arr[0]);
+            } else if (arr.length == 2) {
+                bounds = new MocoBounds(arr[0], arr[1]);
+            }
+            return bounds;
+    }
+    public void addScaleFactor(String name, String control, double[] b)
+            throws Exception {
+            addScaleFactor(name, control, this.convertArrayToMB(b));
+    }
+%}
+
 /* SWIG does not support initializer_list, but we can use Java arrays to
  * achieve similar syntax in MATLAB.
  * TODO create Vector(double[]) constructor. */

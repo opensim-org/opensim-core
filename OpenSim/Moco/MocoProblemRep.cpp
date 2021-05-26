@@ -80,11 +80,14 @@ void MocoProblemRep::initialize() {
         const auto& goal = ph0.get_goals(i);
         const auto& scaleFactors = goal.getScaleFactors();
         for (const auto& scaleFactor : scaleFactors) {
-            m_model_base.addComponent(scaleFactor.clone());
+            MocoScaleFactor* thisScaleFactor = new MocoScaleFactor(
+                    scaleFactor.getName(),
+                    scaleFactor.getComponentPath(),
+                    scaleFactor.getBounds());
+            m_model_base.addComponent(thisScaleFactor);
             ++numScaleFactors;
         }
     }
-
     m_model_base.finalizeFromProperties();
 
     int countMotion = 0;
@@ -492,6 +495,46 @@ void MocoProblemRep::initialize() {
         }
     }
 
+    // Parameters.
+    // -----------
+    int numParametersFromPhase = (int)ph0.getProperty_parameters().size();
+    m_parameters.resize(ph0.getProperty_parameters().size() + numScaleFactors);
+    // Construct MocoParameters added to the MocoProblem via addParameter().
+    std::unordered_set<std::string> paramNames;
+    for (int i = 0; i < numParametersFromPhase; ++i) {
+        const auto& param = ph0.get_parameters(i);
+        OPENSIM_THROW_IF(param.getName().empty(), Exception,
+                "All parameters must have a name.");
+        OPENSIM_THROW_IF(paramNames.count(param.getName()), Exception,
+                "A parameter with name '{}' already exists.", param.getName());
+        paramNames.insert(param.getName());
+        m_parameters[i] = std::unique_ptr<MocoParameter>(param.clone());
+        // We must initialize on both models so that they are consistent
+        // when parameters are updated when applyParameterToModel() is
+        // called. Calling initializeOnModel() twice here is fine since the
+        // models are identical aside from disabled Simbody constraints. The
+        // property references to the parameters in both models are added to
+        // the MocoParameter's internal vector of property references.
+        m_parameters[i]->initializeOnModel(m_model_base);
+        m_parameters[i]->initializeOnModel(m_model_disabled_constraints);
+    }
+    // Construct MocoParameters added to the MocoProblem via MocoScaleFactors in
+    // MocoGoals.
+    int iparam = numParametersFromPhase;
+    const auto& scaleFactors = m_model_disabled_constraints.getComponentList<MocoScaleFactor>();
+    for (const auto& scaleFactor : scaleFactors) {
+        m_parameters[iparam] = std::unique_ptr<MocoParameter>(
+                new MocoParameter(
+                        scaleFactor.getName(),
+                        scaleFactor.getAbsolutePathString(),
+                        "scale_factor",
+                        scaleFactor.getBounds()));
+        m_parameters[iparam]->initializeOnModel(m_model_base);
+        m_parameters[iparam]->initializeOnModel(
+                m_model_disabled_constraints);
+        ++iparam;
+    }
+
     // Goals.
     // ------
     std::unordered_set<std::string> goalNames;
@@ -510,46 +553,6 @@ void MocoProblemRep::initialize() {
             } else {
                 m_costs.push_back(std::move(item));
             }
-        }
-    }
-
-    // Parameters.
-    // -----------
-    int numParametersFromPhase = (int)ph0.getProperty_parameters().size();
-    m_parameters.resize(ph0.getProperty_parameters().size() + numScaleFactors);
-    // Construct MocoParameters added to the MocoProblem via addParameter().
-    std::unordered_set<std::string> paramNames;
-    for (int i = 0; i < numParametersFromPhase; ++i) {
-        const auto& param = ph0.get_parameters(i);
-        OPENSIM_THROW_IF(param.getName().empty(), Exception,
-                "All parameters must have a name.");
-        OPENSIM_THROW_IF(paramNames.count(param.getName()), Exception,
-                "A parameter with name '{}' already exists.", param.getName());
-        paramNames.insert(param.getName());
-        m_parameters[i] = std::unique_ptr<MocoParameter>(param.clone());
-        // We must initialize on both models so that they are consistent
-        // when parameters are updated when applyParameterToModel() is
-        // called. Calling initalizeOnModel() twice here is fine since the
-        // models are identical aside from disabled Simbody constraints. The
-        // property references to the parameters in both models are added to
-        // the MocoParameter's internal vector of property references.
-        m_parameters[i]->initializeOnModel(m_model_base);
-        m_parameters[i]->initializeOnModel(m_model_disabled_constraints);
-    }
-    // Construct MocoParameters added to the MocoProblem via MocoScaleFactors in
-    // MocoGoals.
-    int iparam = numParametersFromPhase;
-    for (int i = 0; i < ph0.getProperty_goals().size(); ++i) {
-        const auto& goal = ph0.get_goals(i);
-        const auto& scaleFactors = goal.getScaleFactors();
-        for (const auto& scaleFactor : scaleFactors) {
-            m_parameters[iparam] = std::unique_ptr<MocoParameter>(
-                    new MocoParameter(
-                            scaleFactor.getName(),
-                            scaleFactor.getComponentPath(),
-                            "scale_factor",
-                            scaleFactor.getBounds()));
-            ++iparam;
         }
     }
 

@@ -204,25 +204,8 @@ public:
         return get_allow_unused_references();
     }
 
-    void addScaleFactorForControl(const std::string& name,
-            const std::string& control, const MocoBounds& bounds) {
-        if (getProperty_reference_labels().empty()) {
-            const auto& labels = get_reference().process().getColumnLabels();
-            bool foundLabel = false;
-            for (const auto& label : labels) {
-                if (control == label) {
-                    foundLabel = true;
-                }
-            }
-            OPENSIM_THROW_IF_FRMOBJ(!foundLabel,  Exception,
-                    "No reference label provided for control '{}'.", control);
-        } else {
-            OPENSIM_THROW_IF_FRMOBJ(!hasReferenceLabel(control),  Exception,
-                    "No reference label provided for control '{}'.", control);
-        }
-
-        appendScaleFactor(MocoScaleFactor(name, control, bounds));
-    };
+    void addScaleFactor(const std::string& name, const std::string& control,
+            const MocoBounds&);
 
 protected:
     // TODO check that the reference covers the entire possible time range.
