@@ -145,6 +145,10 @@ int IMUDataReporter::begin(const SimTK::State& s )
 {
     if(!proceed()) return(0);
 
+    _orientationsReporter.clearTable();
+    _angularVelocityReporter.clearTable();
+    _linearAccelerationsReporter.clearTable();
+
     if (_imuComponents.empty()) {
         // Populate _imuComponents based on properties
         _modelLocal.reset(_model->clone());
