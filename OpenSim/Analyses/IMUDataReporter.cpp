@@ -44,7 +44,6 @@ using namespace std;
  */
 IMUDataReporter::~IMUDataReporter()
 { 
-    _modelLocal.reset();
 }
 //_____________________________________________________________________________
 /**
@@ -146,13 +145,10 @@ int IMUDataReporter::begin(const SimTK::State& s )
 {
     if(!proceed()) return(0);
 
-    _orientationsReporter.clearTable();
-    _angularVelocityReporter.clearTable();
-    _linearAccelerationsReporter.clearTable();
-
     if (_imuComponents.empty()) {
         // Populate _imuComponents based on properties
         _modelLocal.reset(_model->clone());
+        _modelLocal->updAnalysisSet().setSize(0);
         auto compList = _modelLocal->updComponentList<OpenSim::IMU>();
         for (IMU& imu : compList) { 
             SimTK::ReferencePtr<OpenSim::IMU> imuRef(imu);
