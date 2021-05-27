@@ -74,9 +74,9 @@ public:
 private:
     std::vector<std::shared_ptr<OpenSim::IMU> > _imuComponents;
     /** Output tables. */
-    TableReporter_<SimTK::Quaternion>* _orientationsReporter;
-    TableReporter_<SimTK::Vec3>* _angularVelocityReporter;
-    TableReporter_<SimTK::Vec3>* _linearAccelerationsReporter;
+    SimTK::ReferencePtr<TableReporter_<SimTK::Quaternion>> _orientationsReporter;
+    SimTK::ReferencePtr < TableReporter_<SimTK::Vec3>> _angularVelocityReporter;
+    SimTK::ReferencePtr <TableReporter_<SimTK::Vec3>> _linearAccelerationsReporter;
 
     std::unique_ptr<Model> _modelLocal;
 //=============================================================================

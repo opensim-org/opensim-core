@@ -105,9 +105,7 @@ void IMUDataReporter::setNull()
 
     setName("IMUDataReporter");
     _modelLocal = nullptr;
-
-    _orientationsReporter = nullptr;
-    _angularVelocityReporter = _linearAccelerationsReporter = nullptr;
+    // ReferencePtr members are initialized to null by construction
 }
 //_____________________________________________________________________________
 //=============================================================================
@@ -182,9 +180,9 @@ int IMUDataReporter::begin(const SimTK::State& s )
     }
     // If already part of the system, then a rerun and no need to add to _modelLocal
     if (!_orientationsReporter->hasSystem()) {
-        _modelLocal->addComponent(_orientationsReporter);
-        _modelLocal->addComponent(_angularVelocityReporter);
-        _modelLocal->addComponent(_linearAccelerationsReporter);
+        _modelLocal->addComponent(_orientationsReporter.get());
+        _modelLocal->addComponent(_angularVelocityReporter.get());
+        _modelLocal->addComponent(_linearAccelerationsReporter.get());
 
         for (auto& comp : _imuComponents) {
             if (get_report_orientations())
