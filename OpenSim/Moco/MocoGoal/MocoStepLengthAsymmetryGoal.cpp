@@ -24,13 +24,10 @@ using namespace OpenSim;
 void MocoStepLengthAsymmetryGoal::constructProperties() {
     constructProperty_left_foot_frame("");
     constructProperty_right_foot_frame("");
-    constructProperty_foot_velocity_threshold(0.05);
     constructProperty_walking_direction("positive-x");
     constructProperty_smoothing(500);
     constructProperty_target_asymmetry(0.0);
     constructProperty_stride_length(1.0);
-    constructProperty_initial_right_foot_position(0.0);
-    constructProperty_only_minimize_near_foot_targets(false);
 }
 
 void MocoStepLengthAsymmetryGoal::initializeOnModelImpl(const Model& model) const {
@@ -42,19 +39,16 @@ void MocoStepLengthAsymmetryGoal::initializeOnModelImpl(const Model& model) cons
     std::set<std::string> directions{"positive-x", "positive-y", "positive-z",
                                      "negative-x", "negative-y", "negative-z"};
     checkPropertyValueIsInSet(getProperty_walking_direction(), directions);
-    checkPropertyValueIsPositive(getProperty_foot_velocity_threshold());
     checkPropertyValueIsInRangeOrSet(getProperty_target_asymmetry(),
                                      -1.0, 1.0, {});
     checkPropertyValueIsPositive(getProperty_smoothing());
     checkPropertyValueIsPositive(getProperty_stride_length());
 
     // Compute target foot positions based on properties.
-    m_left_foot_position =
-            0.5 * get_stride_length() * (1.0 - get_target_asymmetry())
-                + get_initial_right_foot_position();
-    m_right_foot_position = get_initial_right_foot_position();
-    m_final_right_foot_position =
-            get_stride_length() + get_initial_right_foot_position();
+    m_right_foot_threshold =
+            0.5 * (1 + get_target_asymmetry()) * get_stride_length();
+    m_left_foot_threshold =
+            0.5 * (1 - get_target_asymmetry()) * get_stride_length();
 
     // Assign the indices and signs for the contact force direction and walking
     // motion direction.
@@ -92,52 +86,21 @@ void MocoStepLengthAsymmetryGoal::calcIntegrandImpl(
     const double leftFootPosition =
             m_walking_direction_sign * m_left_foot_frame->
                     getPositionInGround(state)[m_walking_direction_index];
-    const double rightVelocity =
-            m_walking_direction_sign * m_right_foot_frame->
-                getVelocityInGround(state)[1][m_walking_direction_index];
-    const double leftVelocity =
-            m_walking_direction_sign * m_left_foot_frame->
-                getVelocityInGround(state)[1][m_walking_direction_index];
 
-    const double rightContactDetect = m_conditional(
-            rightVelocity - get_foot_velocity_threshold(), 0.5, -0.5,
+    const double rightFootDiff = rightFootPosition - leftFootPosition;
+    const double leftFootDiff = leftFootPosition - rightFootPosition;
+
+    const double rightFootAsymmetry = m_conditional(
+            m_right_foot_threshold - rightFootDiff, 0.5, -0.5,
             get_smoothing());
-    const double leftContactDetect = m_conditional(
-            leftVelocity - get_foot_velocity_threshold(), 0.5, -0.5,
+    const double leftFootAsymmetry = m_conditional(
+            m_left_foot_threshold - leftFootDiff, 0.5, -0.5,
             get_smoothing());
-
-    double rightFootNearTarget = 1.0;
-    double leftFootNearTarget = 1.0;
-    if (get_only_minimize_near_foot_targets()) {
-        rightFootNearTarget = m_conditional(
-                rightFootPosition - m_left_foot_position, 0.5, -0.5,
-                get_smoothing());
-        leftFootNearTarget = m_conditional(
-                leftFootPosition - m_right_foot_position, 0.5, -0.5,
-                get_smoothing());
-    }
-
-    const double rightFootError = m_right_foot_position - rightFootPosition;
-    const double leftFootError = m_left_foot_position - leftFootPosition;
-    const double rightFootAsymmetry =
-            rightFootNearTarget * rightContactDetect *
-            rightFootError * rightFootError;
-    const double leftFootAsymmetry =
-            leftFootNearTarget * leftContactDetect *
-            leftFootError * leftFootError;
 
     integrand = rightFootAsymmetry + leftFootAsymmetry;
 }
 
 void MocoStepLengthAsymmetryGoal::calcGoalImpl(const GoalInput& input,
         SimTK::Vector& cost) const {
-    const double rightFootFinalPosition =
-            m_walking_direction_sign * m_right_foot_frame->
-                    getPositionInGround(input.final_state)[
-                            m_walking_direction_index];
-
-    const double rightFootError = rightFootFinalPosition -
-            m_final_right_foot_position;
-
-    cost[0] = input.integral + (rightFootError * rightFootError);
+    cost[0] = input.integral;
 }

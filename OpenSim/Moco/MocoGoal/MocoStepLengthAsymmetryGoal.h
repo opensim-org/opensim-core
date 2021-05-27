@@ -53,24 +53,10 @@ public:
     double getTargetAsymmetry() { return get_target_asymmetry(); }
 
     /// TODO
-    void setInitialRightFootPosition(double position) {
-        set_initial_right_foot_position(position);
-    }
-    double getInitialRightFootPosition() {
-        return get_initial_right_foot_position();
-    }
-
-    /// TODO
     void setStrideLength(double length) {
         set_stride_length(length);
     }
     double getStrideLength() { return get_stride_length(); }
-
-    /// TODO
-    void setFootVelocityThreshold(double threshold) {
-        set_foot_velocity_threshold(threshold);
-    }
-    double setFootVelocityThreshold() { return get_foot_velocity_threshold(); }
 
     /// Set the walking direction of the model in the ground frame, which is used
     /// to determine the leading foot during double support. Acceptable direction
@@ -84,13 +70,6 @@ public:
     /// TODO smoothing docs
     void setSmoothing(double smoothing) { set_smoothing(smoothing); }
     double getSmoothing() { return get_smoothing(); }
-
-    void setOnlyMinimizeNearFootTargets(bool tf) {
-        set_only_minimize_near_foot_targets(tf);
-    }
-    bool getOnlyMinimizeNearFootTargets() {
-        return get_only_minimize_near_foot_targets();
-    }
 
 
 protected:
@@ -108,14 +87,10 @@ protected:
 private:
     OpenSim_DECLARE_PROPERTY(left_foot_frame, std::string, "TODO");
     OpenSim_DECLARE_PROPERTY(right_foot_frame, std::string, "TODO");
-    OpenSim_DECLARE_PROPERTY(foot_velocity_threshold, double, "TODO");
     OpenSim_DECLARE_PROPERTY(target_asymmetry, double, "Default: 0.");
-    OpenSim_DECLARE_PROPERTY(initial_right_foot_position, double, "Default: 0.");
     OpenSim_DECLARE_PROPERTY(stride_length, double, "Default: 1.");
-    OpenSim_DECLARE_PROPERTY(contact_force_direction, std::string, "TODO");
     OpenSim_DECLARE_PROPERTY(walking_direction, std::string, "TODO");
     OpenSim_DECLARE_PROPERTY(smoothing, double, "TODO");
-    OpenSim_DECLARE_PROPERTY(only_minimize_near_foot_targets, bool, "TODO");
     void constructProperties();
 
     mutable SimTK::ReferencePtr<const Frame> m_left_foot_frame;
@@ -124,9 +99,8 @@ private:
     mutable int m_walking_direction_index;
     mutable int m_walking_direction_sign;
 
-    mutable double m_left_foot_position;
-    mutable double m_right_foot_position;
-    mutable double m_final_right_foot_position;
+    mutable double m_left_foot_threshold;
+    mutable double m_right_foot_threshold;
 
     using ConditionalFunction =
         double(const double&, const double&, const double&, const double&);
