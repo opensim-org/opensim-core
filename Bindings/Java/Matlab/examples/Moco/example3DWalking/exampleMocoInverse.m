@@ -98,7 +98,7 @@ modelProcessor.append(ModOpIgnoreTendonCompliance());
 modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
 modelProcessor.append(ModOpIgnorePassiveFiberForcesDGF());
 modelProcessor.append(ModOpScaleActiveFiberForceCurveWidthDGF(1.5));
-modelProcessor.append(ModOpAddReserves(0.01));
+modelProcessor.append(ModOpAddReserves(1.0));
 inverse.setModel(modelProcessor);
 inverse.setKinematics(TableProcessor('coordinates.sto'));
 inverse.set_initial_time(0.81);

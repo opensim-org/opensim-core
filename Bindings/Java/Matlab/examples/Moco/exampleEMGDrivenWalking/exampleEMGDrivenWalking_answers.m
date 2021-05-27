@@ -200,7 +200,7 @@ jointsToWeld.add('mtp_r');
 jointsToWeld.add('mtp_l');
 modelProcessor.append(ModOpReplaceJointsWithWelds(jointsToWeld));
 % Apply the ground reaction forces to the model.
-modelProcessor.append(ModOpAddExternalLoads('grf_walk.xml'));
+modelProcessor.append(ModOpAddExternalLoads('external_loads.xml'));
 % Update the muscles: ignore tendon compliance and passive forces, replace 
 % muscle types with the DeGrooteFregly2016Muscle type, and scale the width
 % of the active force length curve.
