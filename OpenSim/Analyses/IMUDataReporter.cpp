@@ -105,6 +105,9 @@ void IMUDataReporter::setNull()
 
     setName("IMUDataReporter");
     _modelLocal = nullptr;
+
+    _orientationsReporter = nullptr;
+    _angularVelocityReporter = _linearAccelerationsReporter = nullptr;
 }
 //_____________________________________________________________________________
 //=============================================================================
@@ -145,14 +148,24 @@ int IMUDataReporter::begin(const SimTK::State& s )
 {
     if(!proceed()) return(0);
 
-    _orientationsReporter.clearTable();
-    _angularVelocityReporter.clearTable();
-    _linearAccelerationsReporter.clearTable();
+    if (_orientationsReporter)
+        _orientationsReporter->clearTable();
+    else
+        _orientationsReporter = new TableReporter_<SimTK::Quaternion>();
+
+    if (_angularVelocityReporter)
+        _angularVelocityReporter->clearTable();
+    else
+        _angularVelocityReporter = new TableReporter_<SimTK::Vec3>();
+
+    if (_linearAccelerationsReporter)
+        _linearAccelerationsReporter->clearTable();
+    else
+        _linearAccelerationsReporter = new TableReporter_<SimTK::Vec3>();
 
     if (_imuComponents.empty()) {
         // Populate _imuComponents based on properties
         _modelLocal.reset(_model->clone());
-        _modelLocal->updAnalysisSet().setSize(0);
         auto compList = _modelLocal->updComponentList<OpenSim::IMU>();
         for (IMU& imu : compList) { 
             SimTK::ReferencePtr<OpenSim::IMU> imuRef(imu);
@@ -168,20 +181,20 @@ int IMUDataReporter::begin(const SimTK::State& s )
         }
     }
     // If already part of the system, then a rerun and no need to add to _modelLocal
-    if (!_orientationsReporter.hasSystem()) {
-        _modelLocal->addComponent(&_orientationsReporter);
-        _modelLocal->addComponent(&_angularVelocityReporter);
-        _modelLocal->addComponent(&_linearAccelerationsReporter);
+    if (!_orientationsReporter->hasSystem()) {
+        _modelLocal->addComponent(_orientationsReporter);
+        _modelLocal->addComponent(_angularVelocityReporter);
+        _modelLocal->addComponent(_linearAccelerationsReporter);
 
         for (auto& comp : _imuComponents) {
             if (get_report_orientations())
-                _orientationsReporter.addToReport(
+                _orientationsReporter->addToReport(
                     comp->getOutput("orientation_as_quaternion"), comp->getName());
             if (get_report_gyroscope_signals())
-                _angularVelocityReporter.addToReport(
+                _angularVelocityReporter->addToReport(
                     comp->getOutput("gyroscope_signal"), comp->getName());
             if (get_report_accelerometer_signals())
-                _linearAccelerationsReporter.addToReport(
+                _linearAccelerationsReporter->addToReport(
                     comp->getOutput("accelerometer_signal"), comp->getName());
         }
     }
@@ -260,17 +273,17 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
     {
         IO::CwdChanger cwd = IO::CwdChanger::changeTo(aDir);
         if (get_report_orientations()) {
-            auto& rotationsTable = _orientationsReporter.getTable();
+            auto& rotationsTable = _orientationsReporter->getTable();
             STOFileAdapter_<SimTK::Quaternion>::write(
                     rotationsTable, aBaseName + "_" + "orientations.sto");
         }
         if (get_report_gyroscope_signals()) {
-            auto& angVelTable = _angularVelocityReporter.getTable();
+            auto& angVelTable = _angularVelocityReporter->getTable();
             STOFileAdapter_<SimTK::Vec3>::write(
                     angVelTable, aBaseName + "_" + "angular_velocity.sto");
         }
         if (get_report_accelerometer_signals()) {
-            auto& linAccTable = _linearAccelerationsReporter.getTable();
+            auto& linAccTable = _linearAccelerationsReporter->getTable();
             STOFileAdapter_<SimTK::Vec3>::write(
                     linAccTable, aBaseName + "_" + "linear_accelerations.sto");
         }
