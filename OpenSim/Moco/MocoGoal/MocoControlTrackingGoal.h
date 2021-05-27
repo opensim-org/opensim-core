@@ -102,7 +102,14 @@ as a TimeSeriesTable.
 
 Use `addScaleFactor()` to add a MocoParameter to the MocoParameter that will
 scale the tracking reference data associated with a control in the tracking cost.
+Scale factors for this goal can be useful if the magnitude of the tracking
+reference data is either unknown or unreliable (e.g., electromyography data).
+The scale factor is applied when computing the tracking error for each control,
+not to the reference data directly. Therefore, if a column in the reference data
+is tracked by two different controls, the scale factor will only scale the column
+for the associated control; the tracking for the other control is unaffected.
 
+Adding a scale factor to a MocoControlTrackingGoal.
 @code
 auto* controlTrackingGoal = problem.addGoal<MocoControlTrackingGoal>();
 ...

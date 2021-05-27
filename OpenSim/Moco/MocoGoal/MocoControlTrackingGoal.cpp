@@ -171,9 +171,8 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
         // Check to see if the model contains a MocoScaleFactor associated with
         // this control.
         bool foundScaleFactor = false;
-
         for (const auto& scaleFactor : scaleFactors) {
-            if (scaleFactor.getComponentPath() == controlToTrack) {
+            if (m_scaleFactorMap[controlToTrack] == scaleFactor.getName()) {
                 m_scaleFactorRefs.emplace_back(&scaleFactor);
                 foundScaleFactor = true;
             }

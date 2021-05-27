@@ -208,7 +208,7 @@ TEST_CASE("Enabled Goals", "") {
 }
 
 template <class SolverType>
-MocoStudy setupMocoStudyDoublePendulumMinimizeEffort(bool endpoints = true) {
+MocoStudy setupMocoStudyDoublePendulumMinimizeEffort() {
     using SimTK::Pi;
     const Model doublePendulum = ModelFactory::createNLinkPendulum(2);
 
@@ -219,18 +219,10 @@ MocoStudy setupMocoStudyDoublePendulumMinimizeEffort(bool endpoints = true) {
     problem.setTimeBounds(0, 2);
     problem.setControlInfo("/tau0", {-100, 100});
     problem.setControlInfo("/tau1", {-100, 100});
-    if (endpoints) {
-        problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0, Pi / 2);
-        problem.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0, 0);
-        problem.setStateInfo("/jointset/j1/q1/value", {-10, 10}, Pi, 0);
-        problem.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0, 0);
-    } else {
-        problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0);
-        problem.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0);
-        problem.setStateInfo("/jointset/j1/q1/value", {-10, 10}, Pi);
-        problem.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0);
-    }
-
+    problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0, Pi / 2);
+    problem.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0, 0);
+    problem.setStateInfo("/jointset/j1/q1/value", {-10, 10}, Pi, 0);
+    problem.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0, 0);
     auto& solver = study.initSolver<SolverType>();
     solver.set_num_mesh_intervals(30);
     solver.set_optim_convergence_tolerance(1e-5);
@@ -407,26 +399,23 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
     }
 }
 
-TEMPLATE_TEST_CASE("Test MocoScaleFactor", "",
-        MocoTropterSolver) {
-
+TEST_CASE("Test MocoScaleFactor", "") {
     // Start with double pendulum problem to minimize control effort to create
     // a trajectory to track.
-    MocoStudy studyEffort = setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
-    auto solutionEffort = studyEffort.solve();
+    MocoStudy study =
+            setupMocoStudyDoublePendulumMinimizeEffort<MocoCasADiSolver>();
+    auto solutionEffort = study.solve();
 
     // Change the strength of the CoordinateActuators in the Model so that we
     // force the scale factors to be used. The actuators have a default optimal
     // force of 1, and bounds of [-100, 100].
-//    auto& problem = study.updProblem();
-
-
-    MocoStudy study = setupMocoStudyDoublePendulumMinimizeEffort<TestType>(false);
     auto& problem = study.updProblem();
     auto& model = problem.updModel();
-//    model.updComponent<CoordinateActuator>("/tau0").setOptimalForce(2.0);
-//    model.updComponent<CoordinateActuator>("/tau0").setOptimalForce(2.0);
-    problem.updPhase(0).updGoal("effort").setWeight(1e-5);
+    model.updComponent<CoordinateActuator>("/tau0").setOptimalForce(2.0);
+    model.updComponent<CoordinateActuator>("/tau1").setOptimalForce(2.0);
+    // Down-weight the effort term so the tracking cost dominates.
+    problem.updPhase(0).updGoal("effort").setWeight(1e-6);
+    // Add the control tracking goal.
     auto* tracking =
             problem.addGoal<MocoControlTrackingGoal>("control_tracking");
     std::vector<double> time(
@@ -437,44 +426,43 @@ TEMPLATE_TEST_CASE("Test MocoScaleFactor", "",
                                 solutionEffort.getControlsTrajectory(),
                                 solutionEffort.getControlNames());
     tracking->setReference(controlsRef);
+    // Add the scale factors.
     const auto& controlNames = solutionEffort.getControlNames();
     tracking->addScaleFactor("tau0_scale_factor",
-            controlNames[0], MocoBounds(0.9, 1.1));
+            controlNames[0], MocoBounds(0.1, 0.5));
     tracking->addScaleFactor("tau1_scale_factor",
-            controlNames[1], MocoBounds(0.9, 1.1));
+            controlNames[1], MocoBounds(0.1, 0.5));
 
-    // Finding a solution with Hermite-Simpson and Tropter requires a better
-    // initial guess.
-    auto& solver = study.updSolver<TestType>();
-    //solver.set_parameters_require_initsystem(false);
+    // Update the solver with the new problem and disable initSystem() calls for
+    // the MocoParameters.
+    auto& solver = study.updSolver<MocoCasADiSolver>();
+    solver.set_parameters_require_initsystem(false);
     solver.resetProblem(problem);
+    // Construct a guess for the problem. We double the actuator strengths so
+    // here we half the controls.
     auto guessTracking = solver.createGuess("bounds");
     guessTracking.insertStatesTrajectory(
             solutionEffort.exportToStatesTable(), true);
-//    auto controlsMatrixEffort = solutionEffort.getControlsTrajectory();
-//    controlsMatrixEffort.updCol(0) *= 0.5;
-//    controlsMatrixEffort.updCol(1) *= 0.5;
-//    solutionEffort.setControl("/tau0", controlsMatrixEffort.updCol(0).getAsVector());
-//    solutionEffort.setControl("/tau1", controlsMatrixEffort.updCol(1).getAsVector());
+    auto effortControls = solutionEffort.getControlsTrajectory();
+    effortControls.updCol(0) *= 0.5;
+    effortControls.updCol(1) *= 0.5;
+    solutionEffort.setControl("/tau0", effortControls.updCol(0).getAsVector());
+    solutionEffort.setControl("/tau1", effortControls.updCol(1).getAsVector());
     guessTracking.insertControlsTrajectory(
             solutionEffort.exportToControlsTable(), true);
-//    guessTracking.setParameter("tau0_scale_factor", 0.5);
-//    guessTracking.setParameter("tau1_scale_factor", 0.5);
-//    guessTracking.randomizeAdd();
     solver.setGuess(guessTracking);
-    auto solutionTracking = study.solve().unseal();
+    // Solve.
+    auto solutionTracking = study.solve();
     solutionTracking.write(
             "testMocoGoals_MocoControlTrackingGoal_scale_factors"
             "_tracking_solution.sto");
-
-    auto controlsMatrix = solutionTracking.getControlsTrajectory();
-    controlsMatrix.updCol(0) *= solutionTracking.getParameter("tau0_scale_factor");
-    controlsMatrix.updCol(1) *= solutionTracking.getParameter("tau1_scale_factor");
-    // Make sure control tracking problem matches control effort problem.
+    // Make sure control tracking problem matches control effort problem. We've
+    // already adjusted the effort controls while constructing the initial guess
+    // above, so this comparison should pass if the problem solved correctly.
     OpenSim_CHECK_MATRIX_ABSTOL(solutionEffort.getControlsTrajectory(),
-            controlsMatrix, 1e-4);
-//    OpenSim_CHECK_MATRIX_ABSTOL(solutionEffort.getStatesTrajectory(),
-//            solutionTracking.getStatesTrajectory(), 1e-4);
+            solutionTracking.getControlsTrajectory(), 1e-4);
+    OpenSim_CHECK_MATRIX_ABSTOL(solutionEffort.getStatesTrajectory(),
+            solutionTracking.getStatesTrajectory(), 1e-4);
 }
 
 TEMPLATE_TEST_CASE("Test MocoJointReactionGoal", "",
