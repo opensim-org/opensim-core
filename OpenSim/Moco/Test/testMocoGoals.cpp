@@ -224,7 +224,7 @@ MocoStudy setupMocoStudyDoublePendulumMinimizeEffort() {
     problem.setStateInfo("/jointset/j1/q1/value", {-10, 10}, Pi, 0);
     problem.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0, 0);
     auto& solver = study.initSolver<SolverType>();
-    solver.set_num_mesh_intervals(30);
+    solver.set_num_mesh_intervals(20);
     solver.set_optim_convergence_tolerance(1e-5);
     solver.set_multibody_dynamics_mode("explicit");
     solver.set_transcription_scheme("trapezoidal");

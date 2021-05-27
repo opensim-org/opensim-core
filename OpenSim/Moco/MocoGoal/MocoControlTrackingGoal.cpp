@@ -141,7 +141,6 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
 
     // Populate member variables needed to compute the cost.
     const auto& scaleFactors = getModel().getComponentList<MocoScaleFactor>();
-    int numScaleFactors = (int)std::distance(scaleFactors.begin(), scaleFactors.end());
     for (const auto& controlToTrack : controlsToTrack) {
 
         double weight = 1.0;
