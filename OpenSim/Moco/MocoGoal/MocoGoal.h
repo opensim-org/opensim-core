@@ -32,7 +32,7 @@ class Model;
 
 // TODO give option to specify gradient and Hessian analytically.
 
-/** A goal is term in the cost functional to be minimized, or a set of endpoint
+/** A goal is a term in the cost functional to be minimized, or a set of endpoint
 constraints that must lie within provided bounds. Goals depend on the
 phase's initial and final states and controls, and optionally on the
 integral of a quantity over the phase.
@@ -84,7 +84,7 @@ public:
 
     MocoGoal(std::string name, double weight);
 
-    /// %Set whether this goal is used in the problem.
+    /// Set whether this goal is used in the problem.
     void setEnabled(bool enabled) { set_enabled(enabled); }
     bool getEnabled() const { return get_enabled(); }
 

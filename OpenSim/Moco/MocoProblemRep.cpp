@@ -74,15 +74,22 @@ void MocoProblemRep::initialize() {
     m_discrete_controller_base.reset(discreteControllerBaseUPtr.get());
     m_model_base.addController(discreteControllerBaseUPtr.release());
 
-    // TODO adding scale factors components to model
+    // Scale factors
+    // -------------
     int numScaleFactors = 0;
+    std::unordered_set<std::string> scaleFactorNames;
     for (int i = 0; i < ph0.getProperty_goals().size(); ++i) {
         const auto& goal = ph0.get_goals(i);
         const auto& scaleFactors = goal.getScaleFactors();
         for (const auto& scaleFactor : scaleFactors) {
+            OPENSIM_THROW_IF(scaleFactor.getName().empty(), Exception,
+                    "All scale factors must have a name.");
+            OPENSIM_THROW_IF(scaleFactorNames.count(scaleFactor.getName()),
+                     Exception, "A scale factor with name '{}' already exists.",
+                     scaleFactor.getName());
+            scaleFactorNames.insert(scaleFactor.getName());
             MocoScaleFactor* thisScaleFactor = new MocoScaleFactor(
                     scaleFactor.getName(),
-                    scaleFactor.getComponentPath(),
                     scaleFactor.getBounds());
             m_model_base.addComponent(thisScaleFactor);
             ++numScaleFactors;
@@ -518,10 +525,12 @@ void MocoProblemRep::initialize() {
         m_parameters[i]->initializeOnModel(m_model_base);
         m_parameters[i]->initializeOnModel(m_model_disabled_constraints);
     }
-    // Construct MocoParameters added to the MocoProblem via MocoScaleFactors in
-    // MocoGoals.
+    // Add MocoParameters based on MocoScaleFactors added to the model. We use
+    // the name of the MocoScaleFactor for the MocoParameter, which is already
+    // guaranteed to be unique based on the checks we made above.
     int iparam = numParametersFromPhase;
-    const auto& scaleFactors = m_model_disabled_constraints.getComponentList<MocoScaleFactor>();
+    const auto& scaleFactors =
+            m_model_disabled_constraints.getComponentList<MocoScaleFactor>();
     for (const auto& scaleFactor : scaleFactors) {
         m_parameters[iparam] = std::unique_ptr<MocoParameter>(
                 new MocoParameter(

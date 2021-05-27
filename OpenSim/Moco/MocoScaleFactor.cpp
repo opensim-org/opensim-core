@@ -25,16 +25,12 @@ MocoScaleFactor::MocoScaleFactor() {
 }
 
 MocoScaleFactor::MocoScaleFactor(const std::string& name,
-        const std::string& path, const MocoBounds& bounds) : MocoScaleFactor() {
+        const MocoBounds& bounds) : MocoScaleFactor() {
     setName(name);
-    set_component_path(path);
     set_bounds(bounds.getAsArray());
 }
 
 void MocoScaleFactor::constructProperties() {
     constructProperty_bounds();
-    constructProperty_component_path("");
     constructProperty_scale_factor(1.0);
 }
-
-

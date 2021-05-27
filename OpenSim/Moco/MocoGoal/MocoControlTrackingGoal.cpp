@@ -39,6 +39,7 @@ MocoControlTrackingGoalReference::MocoControlTrackingGoalReference(
 void MocoControlTrackingGoal::addScaleFactor(const std::string &name,
         const std::string &control, const MocoBounds &bounds) {
 
+    // Ensure that the specified control has reference data associated with it.
     if (getProperty_reference_labels().empty()) {
         const auto& labels = get_reference().process().getColumnLabels();
         bool foundLabel = false;
@@ -54,7 +55,12 @@ void MocoControlTrackingGoal::addScaleFactor(const std::string &name,
                 "No reference label provided for control '{}'.", control);
     }
 
-    appendScaleFactor(MocoScaleFactor(name, control, bounds));
+    // Update the scale factor map so we can retrieve the correct MocoScaleFactor
+    // for this control during initialization.
+    m_scaleFactorMap[control] = name;
+
+    // Append the scale factor to the MocoGoal.
+    appendScaleFactor(MocoScaleFactor(name, bounds));
 }
 
 void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
@@ -134,6 +140,8 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
     }
 
     // Populate member variables needed to compute the cost.
+    const auto& scaleFactors = getModel().getComponentList<MocoScaleFactor>();
+    int numScaleFactors = (int)std::distance(scaleFactors.begin(), scaleFactors.end());
     for (const auto& controlToTrack : controlsToTrack) {
 
         double weight = 1.0;
@@ -163,10 +171,8 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
         // Check to see if the model contains a MocoScaleFactor associated with
         // this control.
         bool foundScaleFactor = false;
-        const auto& scaleFactors = getModel().getComponentList<MocoScaleFactor>();
-        int numScaleFactors = (int)std::distance(scaleFactors.begin(), scaleFactors.end());
-        for (const auto& scaleFactor :
-                getModel().getComponentList<MocoScaleFactor>()) {
+
+        for (const auto& scaleFactor : scaleFactors) {
             if (scaleFactor.getComponentPath() == controlToTrack) {
                 m_scaleFactorRefs.emplace_back(&scaleFactor);
                 foundScaleFactor = true;
@@ -203,9 +209,6 @@ void MocoControlTrackingGoal::calcIntegrandImpl(
 
         // Compute the tracking error.
         double error = modelValue - (scaleFactor * refValue);
-
-        //std::cout << "DEBUG error = " << error << " = " << modelValue << " - " << scaleFactor << " * " << refValue << std::endl;
-
 
         // Compute the integrand.
         integrand += m_control_weights[i] * error * error;

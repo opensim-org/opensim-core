@@ -23,20 +23,25 @@
 
 namespace OpenSim {
 
-/** TODO */
+/** A scale factor is an optimized scalar value that can be used to scale a
+tracked reference quantity in the cost function. Scale factors can be added to
+a MocoProblem via MocoGoals, and this class enables the use of MocoParameter
+to optimize scale factors values by providing the 'scale_factor' property.
+MocoScaleFactor derives from Component, since it must be appended to the model
+internal to MocoProblem as MocoParameter can only optimize model parameter values
+contained in properties. Users do not need to interact with this class directly,
+but rather use the 'addScaleFactor()' interface provided by MocoGoals that
+support scale factors. How the scale factor is utilized in the cost function is
+specific to each MocoGoal. */
 class OSIMMOCO_API MocoScaleFactor : public Component {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoScaleFactor, Component);
 
 public:
     MocoScaleFactor();
-    MocoScaleFactor(const std::string& name, const std::string& path,
-            const MocoBounds&);
+    MocoScaleFactor(const std::string& nam, const MocoBounds&);
 
     double getScaleFactor() const { return get_scale_factor(); }
     void setScaleFactor(double value) { set_scale_factor(value); }
-
-    const std::string& getComponentPath() const { return get_component_path(); }
-    void setComponentPath(const std::string& path) { set_component_path(path); }
 
     /// @details Note: the return value is constructed fresh on every call from
     /// the internal property. Avoid repeated calls to this function.
@@ -46,7 +51,6 @@ public:
     }
 protected:
     OpenSim_DECLARE_PROPERTY(scale_factor, double, "TODO");
-    OpenSim_DECLARE_PROPERTY(component_path, std::string, "TODO");
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST(bounds, double, 2,
         "1 value: required value over all time. "
         "2 values: lower, upper bounds on value over all time.");

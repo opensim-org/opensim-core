@@ -98,6 +98,18 @@ The reference can be provided as a file name to a STO or CSV file (or
 other file types for which there is a FileAdapter), or programmatically
 as a TimeSeriesTable.
 
+### Scale factors
+
+Use `addScaleFactor()` to add a MocoParameter to the MocoParameter that will
+scale the tracking reference data associated with a control in the tracking cost.
+
+@code
+auto* controlTrackingGoal = problem.addGoal<MocoControlTrackingGoal>();
+...
+controlTrackingGoal->addScaleFactor(
+        'soleus_scale_factor', '/forceset/soleus_r', {0.01, 1.0});
+@endcode
+
 ### Helpful tips
 
 Tracking problems in direct collocation perform best when tracking smooth
@@ -204,6 +216,13 @@ public:
         return get_allow_unused_references();
     }
 
+    /// Add a MocoParameter to the problem that will scale the tracking reference
+    /// data associated with the specified control. The scale factor is applied
+    /// when computing the tracking error for each control, not to the reference
+    /// data directly. Therefore, if a column in the reference data is tracked
+    /// by two different controls, the scale factor will only scale the column
+    /// for the associated control; the tracking for the other control is
+    /// unaffected.
     void addScaleFactor(const std::string& name, const std::string& control,
             const MocoBounds&);
 
@@ -248,6 +267,7 @@ private:
     mutable std::vector<int> m_ref_indices;
     mutable std::vector<std::string> m_control_names;
     mutable std::vector<std::string> m_ref_labels;
+    mutable std::unordered_map<std::string, std::string> m_scaleFactorMap;
     mutable std::vector<SimTK::ReferencePtr<const MocoScaleFactor>>
     m_scaleFactorRefs;
 };
