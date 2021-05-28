@@ -72,14 +72,14 @@ public:
 // DATA
 //=============================================================================
 private:
-    std::vector<std::shared_ptr<OpenSim::IMU> > _imuComponents;
+    std::vector<SimTK::ReferencePtr<const OpenSim::IMU>> _imuComponents;
     /** Output tables. */
     SimTK::ReferencePtr<TableReporter_<SimTK::Quaternion>> _orientationsReporter;
     SimTK::ReferencePtr < TableReporter_<SimTK::Vec3>> _angularVelocityReporter;
     SimTK::ReferencePtr <TableReporter_<SimTK::Vec3>> _linearAccelerationsReporter;
 
-    std::unique_ptr<Model> _modelLocal;
-//=============================================================================
+    std::shared_ptr<Model> _modelLocal;
+    //=============================================================================
 // METHODS
 //=============================================================================
 public:

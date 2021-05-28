@@ -164,18 +164,24 @@ int IMUDataReporter::begin(const SimTK::State& s )
     if (_imuComponents.empty()) {
         // Populate _imuComponents based on properties
         _modelLocal.reset(_model->clone());
-        auto compList = _modelLocal->updComponentList<OpenSim::IMU>();
-        for (IMU& imu : compList) { 
-            SimTK::ReferencePtr<OpenSim::IMU> imuRef(imu);
-            _imuComponents.push_back(std::shared_ptr<IMU>(imuRef.get())); 
+        auto& compList = _modelLocal->getComponentList<OpenSim::IMU>();
+        // To convert the const_ref to a Ptr for use by SimTK::ReferencePtr
+        // Using this relatively expensive maneuver
+        for (const IMU& imu : compList) { 
+            const IMU* imuPtr=_modelLocal->findComponent<IMU>(imu.getAbsolutePath());
+            _imuComponents.push_back(SimTK::ReferencePtr <const OpenSim::IMU>(imuPtr)); 
         }
         if (getProperty_frame_paths().size() > 0) {
             std::vector<std::string> paths_string;
             for (int i = 0; i < getProperty_frame_paths().size(); i++) {
                 paths_string.push_back(get_frame_paths(i));
             }
-            _imuComponents = OpenSenseUtilities::addModelIMUs(
+            auto addedImus = OpenSenseUtilities::addModelIMUs(
                     *_modelLocal, paths_string);
+            for (auto& nextImu : addedImus) { 
+                _imuComponents.push_back(
+                        SimTK::ReferencePtr<const OpenSim::IMU>(nextImu));
+            }
         }
     }
     // If already part of the system, then a rerun and no need to add to _modelLocal
