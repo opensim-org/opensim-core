@@ -43,6 +43,13 @@ class OSIMSIMULATION_API IMU : public ModelComponent {
 
 public:
     IMU() {  }
+    virtual ~IMU() { 
+    };
+    IMU(const IMU&) = default;
+    IMU(IMU&&) = default;
+    IMU& operator=(const IMU&) = default;
+    IMU& operator=(IMU&&) = default;
+
     // Attachment frame for placement/visualization
     OpenSim_DECLARE_SOCKET(
             frame, PhysicalFrame, "The frame to which the IMU is attached.");
