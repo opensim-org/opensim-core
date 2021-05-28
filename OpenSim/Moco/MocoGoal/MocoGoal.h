@@ -67,6 +67,13 @@ Here are the expectations for each SimTK::Stage:
     used to compute acceleration-dependent quantities, such as body
     accelerations and joint reactions.
 
+## Scale factors
+Goals may include an option to add scale factors to the MocoProblem using
+`appendScaleFactor()`, which takes a MocoScaleFactor object for its argument.
+A copy of this component is added to the Model internal to MocoProblemRep and
+its property value is optimized via a MocoParameter. Scale factor usage is
+specific to each MocoGoal (if used at all).
+
 @par For developers
 Every time the problem is solved, a copy of this goal is used. An individual
 instance of a goal is only ever used in a single problem. Therefore, there
@@ -287,7 +294,7 @@ public:
                 "but it was not.");
     }
 
-    // TODO
+    /// Get a vector of the MocoScaleFactors added to this MocoGoal.
     const std::vector<MocoScaleFactor>& getScaleFactors() const {
         return m_scaleFactors;
     }
@@ -363,7 +370,7 @@ protected:
     double calcSystemDisplacement(
             const SimTK::State& initial, const SimTK::State& final) const;
 
-    // TODO
+    /// Append a MocoScaleFactor to this MocoGoal.
     void appendScaleFactor(const MocoScaleFactor& scaleFactor) {
         m_scaleFactors.push_back(scaleFactor);
     }
