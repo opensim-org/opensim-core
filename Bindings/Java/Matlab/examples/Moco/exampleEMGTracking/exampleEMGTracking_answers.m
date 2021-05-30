@@ -83,7 +83,7 @@ tracking.setReferenceLabel('/forceset/glmax2_l', 'gluteus');
 % a maximum value of 1, but the magnitudes of the excitations from the 
 % effort minimization solution suggest that these signals should be
 % rescaled. Use addScaleFactor() to add a MocoParameter to the problem that
-% will scale the reference data the muscles in the tracking cost.
+% will scale the reference data for the muscles in the tracking cost.
 tracking.addScaleFactor('gastroc_factor', '/forceset/gasmed_l', [0.05 0.5]); 
 tracking.addScaleFactor('tibant_factor', '/forceset/tibant_l', [0.05 0.5]); 
 tracking.addScaleFactor('bifem_factor', '/forceset/bfsh_l', [0.05 0.5]); 
