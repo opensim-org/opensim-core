@@ -42,9 +42,8 @@ class OSIMSIMULATION_API IMU : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT(IMU, ModelComponent);
 
 public:
-    IMU() {  }
-    virtual ~IMU() { 
-    };
+    IMU() = default;
+    virtual ~IMU() = default;
     IMU(const IMU&) = default;
     IMU(IMU&&) = default;
     IMU& operator=(const IMU&) = default;
