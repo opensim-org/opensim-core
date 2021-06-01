@@ -164,7 +164,7 @@ int IMUDataReporter::begin(const SimTK::State& s )
     if (_imuComponents.empty()) {
         // Populate _imuComponents based on properties
         _modelLocal.reset(_model->clone());
-        auto& compList = _modelLocal->getComponentList<OpenSim::IMU>();
+        auto compList = _modelLocal->getComponentList<OpenSim::IMU>();
         // To convert the const_ref to a Ptr for use by SimTK::ReferencePtr
         // Using this relatively expensive maneuver
         for (const IMU& imu : compList) { 
