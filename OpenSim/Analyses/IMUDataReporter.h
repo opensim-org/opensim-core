@@ -72,14 +72,14 @@ public:
 // DATA
 //=============================================================================
 private:
-    std::vector<std::shared_ptr<OpenSim::IMU> > _imuComponents;
+    std::vector<SimTK::ReferencePtr<const OpenSim::IMU>> _imuComponents;
     /** Output tables. */
-    TableReporter_<SimTK::Quaternion> _orientationsReporter;
-    TableReporter_<SimTK::Vec3> _angularVelocityReporter;
-    TableReporter_<SimTK::Vec3> _linearAccelerationsReporter;
+    SimTK::ReferencePtr<TableReporter_<SimTK::Quaternion>> _orientationsReporter;
+    SimTK::ReferencePtr < TableReporter_<SimTK::Vec3>> _angularVelocityReporter;
+    SimTK::ReferencePtr <TableReporter_<SimTK::Vec3>> _linearAccelerationsReporter;
 
-    std::unique_ptr<Model> _modelLocal;
-//=============================================================================
+    std::shared_ptr<Model> _modelLocal;
+    //=============================================================================
 // METHODS
 //=============================================================================
 public:
@@ -92,15 +92,15 @@ public:
     // In memory access to IMU data as Tables (Orientations)
     const TimeSeriesTable_<SimTK::Quaternion_<double> >&
     getOrientationsTable() const {
-        return _orientationsReporter.getTable();
+        return _orientationsReporter->getTable();
     }
     // In memory access to IMU data as Tables Angular Velocities)
     const TimeSeriesTable_<SimTK::Vec3>& getGyroscopeSignalsTable() const {
-        return _angularVelocityReporter.getTable();
+        return _angularVelocityReporter->getTable();
     }
     // In memory access to IMU data as Tables (Linear Accelerations)
     const TimeSeriesTable_<SimTK::Vec3>& getAccelerometerSignalsTable() const {
-        return _linearAccelerationsReporter.getTable();
+        return _linearAccelerationsReporter->getTable();
     }
 
 public:

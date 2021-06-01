@@ -80,7 +80,7 @@ public:
     /// based on paths specification. 
     /// - If "paths" refer to user specified list of frames, then one new 
     ///     "{Frame}_imu" is added to the model and returned in result.
-    static std::vector< std::shared_ptr<OpenSim::IMU> > addModelIMUs(
+    static std::vector< OpenSim::IMU* > addModelIMUs(
             Model& model, std::vector<std::string>& paths);
 }; // end of class OpenSenseUtilities
 }

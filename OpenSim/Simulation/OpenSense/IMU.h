@@ -42,7 +42,13 @@ class OSIMSIMULATION_API IMU : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT(IMU, ModelComponent);
 
 public:
-    IMU() {  }
+    IMU() = default;
+    virtual ~IMU() = default;
+    IMU(const IMU&) = default;
+    IMU(IMU&&) = default;
+    IMU& operator=(const IMU&) = default;
+    IMU& operator=(IMU&&) = default;
+
     // Attachment frame for placement/visualization
     OpenSim_DECLARE_SOCKET(
             frame, PhysicalFrame, "The frame to which the IMU is attached.");
@@ -82,10 +88,12 @@ public:
 
         // @TODO default color, size, shape should be obtained from hints
         const OpenSim::PhysicalFrame& physFrame = this->get_frame();
+        SimTK::Transform relativeXform = physFrame.findTransformInBaseFrame();
         appendToThis.push_back(
                 SimTK::DecorativeBrick(SimTK::Vec3(0.02, 0.01, 0.005))
                         .setBodyId(physFrame.getMobilizedBodyIndex())
-                                        .setColor(SimTK::Purple));
+                                        .setColor(SimTK::Orange)
+                        .setTransform(relativeXform));
     }
 
 private:
