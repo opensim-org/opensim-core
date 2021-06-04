@@ -32,7 +32,10 @@
 #include <OpenSim/Auxiliary/auxiliaryTestMuscleFunctions.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
+#include <OpenSim/Simulation/SimulationUtilities.h>
 #include <OpenSim/Analyses/BodyKinematics.h>
+#include <OpenSim/Analyses/IMUDataReporter.h>
+#include <OpenSim/Actuators/ModelFactory.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -45,6 +48,8 @@ void testActuationAnalysisWithDisabledForce();
 void testTugOfWar(const string& dataFileName, const double& defaultAct);
 
 void testBodyKinematics();
+
+void testIMUDataReporter();
 
 int main()
 {
@@ -85,6 +90,12 @@ int main()
     catch (const std::exception& e) { 
         cout << e.what() << endl;
         failures.push_back("testBodyKinematics");
+    }   
+    try {
+        testIMUDataReporter();
+    } catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testIMUDataReporter");
     }   
 
     if (!failures.empty()) {
@@ -338,4 +349,97 @@ void testBodyKinematics() {
     groundPos.getDataColumn("body_Y", groundPosY);
     ASSERT_EQUAL<double>(groundPosX.getLast(), speedX * duration, tol);
     ASSERT_EQUAL<double>(groundPosY.getLast(), speedY * duration, tol);
+}
+void testIMUDataReporter() {
+    Model pendulum = ModelFactory::createNLinkPendulum(2);
+
+    BodyKinematics* bodyKinematics = new BodyKinematics(&pendulum);
+    bodyKinematics->setName("BodyKinematics_fall");
+    bodyKinematics->setRecordCenterOfMass(false);
+    bodyKinematics->setExpressResultsInLocalFrame(false);
+    bodyKinematics->setInDegrees(false);
+
+    IMUDataReporter* imuDataReporter =
+            new IMUDataReporter(&pendulum);
+    imuDataReporter->setName("IMU_DataReporter");
+    std::vector<std::string> framePaths = {"/bodyset/b0", "/bodyset/b1"};
+    imuDataReporter->append_frame_paths("/bodyset/b0");
+    imuDataReporter->append_frame_paths("/bodyset/b1");
+
+    pendulum.addAnalysis(bodyKinematics);
+    pendulum.addAnalysis(imuDataReporter);
+
+    SimTK::State& s = pendulum.initSystem();
+
+    Joint& joint = pendulum.updJointSet()[0];
+    auto& qi = joint.updCoordinate();
+    qi.setValue(s, SimTK::Pi / 2.); // lowest-point hanging condition
+
+    Manager manager(pendulum);
+    double duration = 2.0;
+    manager.initialize(s);
+    s = manager.integrate(duration);
+
+    imuDataReporter->printResults("static", "");
+    const TimeSeriesTable_<SimTK::Vec3>& angVelTable =
+            imuDataReporter->getGyroscopeSignalsTable();
+    const TimeSeriesTable_<SimTK::Vec3>& linAccTable =
+            imuDataReporter->getAccelerometerSignalsTable();
+    const TimeSeriesTable_<SimTK::Quaternion>& rotationsTable =
+            imuDataReporter->getOrientationsTable();
+    int angNr = int(angVelTable.getNumRows());
+    for (int row = 0; row < angNr; ++row) {
+        ASSERT_EQUAL<double>(angVelTable.getMatrix()[row][0].norm(), 0., 1e-7);
+        ASSERT_EQUAL<double>(angVelTable.getMatrix()[row][1].norm(), 0., 1e-7);
+    }
+    // Now allow pendulum to drop under gravity from horizontal
+    bodyKinematics->getPositionStorage()->purge();
+    qi.setValue(s, 0.); // Horizontal position
+    s.setTime(0.);
+    Manager manager2(pendulum);
+    manager2.initialize(s);
+    s = manager2.integrate(duration);
+    // Compare results to Body kinematics
+    auto orientationTableIMU = imuDataReporter->getOrientationsTable();
+    auto orientationTableBodyKin = bodyKinematics->getPositionStorage();
+    int nr = int(orientationTableIMU.getNumRows());
+    for (int row = 0; row < nr; ++row) {
+        // fromBodyKin has positions followed by rotations for each body
+        Array<double>& fromBodyKin =
+                orientationTableBodyKin->getStateVector(row)->getData();
+        for (int b = 0; b <= 1; b++) {
+            SimTK::Vec3 bodyFixedRotations =
+                    SimTK::Rotation(orientationTableIMU.getRowAtIndex(row)[b])
+                            .convertRotationToBodyFixedXYZ();
+            SimTK::Vec3 fromBodyKinRotations = SimTK::Vec3(&fromBodyKin[b * 6 + 3]);
+            ASSERT_EQUAL<double>(
+                    (bodyFixedRotations - fromBodyKinRotations).norm(), 0., 1e-7);
+        }
+    }
+    /* Attempt to compare to createSyntheticIMUAccelerationSignals */
+    TimeSeriesTable statesTable = manager2.getStatesTable();
+    TimeSeriesTable controlsTable(statesTable.getIndependentColumn());
+    SimTK::Vector zeroControl(int(controlsTable.getNumRows()), 0.0);
+    controlsTable.appendColumn("/tau0", zeroControl);
+    controlsTable.appendColumn("/tau1", zeroControl);
+    TimeSeriesTableVec3 accelTableFromUtility =
+            createSyntheticIMUAccelerationSignals(
+                    pendulum, statesTable, controlsTable, framePaths);
+    auto diff = (accelTableFromUtility.getMatrix() -
+                 imuDataReporter->getAccelerometerSignalsTable().getMatrix());
+    auto elemSum = diff.colSum().rowSum().norm();
+    ASSERT_EQUAL<double>(elemSum, 0., 1e-5);
+    // Now test AnalyzeTool workflow
+    AnalyzeTool analyzeIMU;
+    analyzeIMU.setName("dpend_imu");
+    analyzeIMU.setModelFilename("double_pendulum.osim");
+    analyzeIMU.setCoordinatesFileName("double_pendum1sec.sto");
+    IMUDataReporter imuDataReporter2;
+    imuDataReporter2.setName("IMU_DataReporter");
+    imuDataReporter2.append_frame_paths("/bodyset/rod1/rod1_geom_frame_1");
+    imuDataReporter2.append_frame_paths("/bodyset/rod2");
+    analyzeIMU.updAnalysisSet().cloneAndAppend(imuDataReporter2);
+    analyzeIMU.print("analyzeReportIMUData.xml");
+    AnalyzeTool roundTrip("analyzeReportIMUData.xml");
+    roundTrip.run();
 }
