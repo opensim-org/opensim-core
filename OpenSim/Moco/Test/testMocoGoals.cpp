@@ -227,7 +227,6 @@ MocoStudy setupMocoStudyDoublePendulumMinimizeEffort() {
     solver.set_num_mesh_intervals(20);
     solver.set_optim_convergence_tolerance(1e-5);
     solver.set_multibody_dynamics_mode("explicit");
-    solver.set_transcription_scheme("trapezoidal");
 
     return study;
 }

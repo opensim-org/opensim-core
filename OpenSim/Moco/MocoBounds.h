@@ -30,7 +30,6 @@ class MocoPhase;
 class MocoVariableInfo;
 class MocoParameter;
 class MocoScaleFactor;
-class MocoControlTrackingGoal;
 
 /** Small struct-like class to handle bounds. */
 class OSIMMOCO_API MocoBounds : public Object {
@@ -102,7 +101,6 @@ protected:
     friend MocoVariableInfo;
     friend MocoParameter;
     friend MocoScaleFactor;
-    friend MocoControlTrackingGoal;
 
 private:
     void constructProperties();
