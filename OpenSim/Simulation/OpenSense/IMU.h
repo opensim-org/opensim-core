@@ -42,7 +42,13 @@ class OSIMSIMULATION_API IMU : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT(IMU, ModelComponent);
 
 public:
-    IMU() {  }
+    IMU() = default;
+    virtual ~IMU() = default;
+    IMU(const IMU&) = default;
+    IMU(IMU&&) = default;
+    IMU& operator=(const IMU&) = default;
+    IMU& operator=(IMU&&) = default;
+
     // Attachment frame for placement/visualization
     OpenSim_DECLARE_SOCKET(
             frame, PhysicalFrame, "The frame to which the IMU is attached.");
@@ -81,16 +87,13 @@ public:
         if (!fixed) return;
 
         // @TODO default color, size, shape should be obtained from hints
-        const OpenSim::PhysicalFrame& frame = get_frame();
-        SimTK::DecorativeBrick imu(SimTK::Vec3(0.02, 0.01, 0.005));
-        imu.setBodyId(frame.getMobilizedBodyIndex());
-        const auto& baseFrame = frame.findBaseFrame();
-        const auto& X_GB = baseFrame.getTransformInGround(state);
-        const auto& X_GF = frame.getTransformInGround(state);
-        const auto& X_BF = ~X_GB*X_GF;
-        imu.setTransform(X_BF);
-        imu.setColor(SimTK::Orange);
-        appendToThis.push_back(imu);
+        const OpenSim::PhysicalFrame& physFrame = this->get_frame();
+        SimTK::Transform relativeXform = physFrame.findTransformInBaseFrame();
+        appendToThis.push_back(
+                SimTK::DecorativeBrick(SimTK::Vec3(0.02, 0.01, 0.005))
+                        .setBodyId(physFrame.getMobilizedBodyIndex())
+                                        .setColor(SimTK::Orange)
+                        .setTransform(relativeXform));
     }
 
 private:

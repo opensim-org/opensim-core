@@ -218,10 +218,12 @@ bool IMUPlacer::run(bool visualizeResults) {
 
                 imuOffset = new PhysicalOffsetFrame(
                         imuName, *bodies[imuix], SimTK::Transform(R_FB, p_FB));
-                auto* brick = new Brick(Vec3(0.02, 0.01, 0.005));
-                brick->setColor(SimTK::Orange);
-                imuOffset->attachGeometry(brick);
                 bodies[imuix]->addComponent(imuOffset);
+                // Create an IMU Object in the model, connect it to imuOffset
+                IMU* modelImu = new IMU();
+                modelImu->setName(imuName);
+                modelImu->connectSocket_frame(*imuOffset);
+                _model->addModelComponent(modelImu);
                 log_info("Added offset frame for {}.", imuName);
             }
             log_info("{} offset computed from {} data from file.",
