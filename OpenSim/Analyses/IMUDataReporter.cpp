@@ -183,13 +183,6 @@ int IMUDataReporter::begin(const SimTK::State& s )
                         SimTK::ReferencePtr<const OpenSim::IMU>(nextImu));
             }
         }
-        // Populate _imuComponents based on properties
-        _modelLocal.reset(_model->clone());
-        const auto& imuList = _model->getComponentList<const IMU>();
-        for (const IMU& imu : imuList) {
-            _imuComponents.emplace_back(&imu);
-        }
-
     }
     // If already part of the system, then a rerun and no need to add to _modelLocal
     if (!_orientationsReporter->hasSystem()) {
