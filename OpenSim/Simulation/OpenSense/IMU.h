@@ -81,11 +81,16 @@ public:
         if (!fixed) return;
 
         // @TODO default color, size, shape should be obtained from hints
-        const OpenSim::PhysicalFrame& physFrame = this->get_frame();
-        appendToThis.push_back(
-                SimTK::DecorativeBrick(SimTK::Vec3(0.02, 0.01, 0.005))
-                        .setBodyId(physFrame.getMobilizedBodyIndex())
-                                        .setColor(SimTK::Purple));
+        const OpenSim::PhysicalFrame& frame = get_frame();
+        SimTK::DecorativeBrick imu(SimTK::Vec3(0.02, 0.01, 0.005));
+        imu.setBodyId(frame.getMobilizedBodyIndex());
+        const auto& baseFrame = frame.findBaseFrame();
+        const auto& X_GB = baseFrame.getTransformInGround(state);
+        const auto& X_GF = frame.getTransformInGround(state);
+        const auto& X_BF = ~X_GB*X_GF;
+        imu.setTransform(X_BF);
+        imu.setColor(SimTK::Orange);
+        appendToThis.push_back(imu);
     }
 
 private:

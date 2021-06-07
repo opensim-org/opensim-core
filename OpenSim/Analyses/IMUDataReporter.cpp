@@ -151,20 +151,20 @@ int IMUDataReporter::begin(const SimTK::State& s )
     _linearAccelerationsReporter.clearTable();
 
     if (_imuComponents.empty()) {
-        // Populate _imuComponents based on properties
-        _modelLocal.reset(_model->clone());
-        auto compList = _model->getComponentList<const OpenSim::IMU>();
-        for (const IMU& imu : compList) { 
-            _imuComponents.push_back(std::make_shared<IMU>(imu)); 
-        }
         if (getProperty_frame_paths().size() > 0) {
             std::vector<std::string> paths_string;
             for (int i = 0; i < getProperty_frame_paths().size(); i++) {
                 paths_string.push_back(get_frame_paths(i));
             }
-            _imuComponents = OpenSenseUtilities::addModelIMUs(
-                    *_modelLocal, paths_string);
+            OpenSenseUtilities::addModelIMUs(*_modelLocal, paths_string);
         }
+        // Populate _imuComponents based on properties
+        _modelLocal.reset(_model->clone());
+        const auto& imuList = _model->getComponentList<const IMU>();
+        for (const IMU& imu : imuList) {
+            _imuComponents.emplace_back(&imu);
+        }
+
     }
     // If already part of the system, then a rerun and no need to add to _modelLocal
     if (!_orientationsReporter.hasSystem()) {

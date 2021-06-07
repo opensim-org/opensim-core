@@ -72,7 +72,7 @@ public:
 // DATA
 //=============================================================================
 private:
-    std::vector<std::shared_ptr<OpenSim::IMU> > _imuComponents;
+    std::vector<SimTK::ReferencePtr<const IMU>> _imuComponents;
     /** Output tables. */
     TableReporter_<SimTK::Quaternion> _orientationsReporter;
     TableReporter_<SimTK::Vec3> _angularVelocityReporter;

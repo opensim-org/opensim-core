@@ -270,19 +270,15 @@ SimTK::Vec3 OpenSenseUtilities::computeHeadingCorrection(
     return rotations;
 }
 
-std::vector<std::shared_ptr<OpenSim::IMU> > OpenSenseUtilities::addModelIMUs(
-    Model& model, std::vector<std::string>& paths) {
+void OpenSenseUtilities::addModelIMUs(Model& model,
+        std::vector<std::string>& paths) {
 
-    std::vector< std::shared_ptr<OpenSim::IMU> > selectedIMUs;
     for (auto path : paths) {
-        IMU* next_imu = new IMU();
-        const Component& comp = model.getComponent(path);
-        next_imu->setName(comp.getName() + "_imu");
-        next_imu->connectSocket_frame(comp);
-        model.addComponent(next_imu);
-        // make sure it's a Frame
-        selectedIMUs.push_back(std::shared_ptr<IMU>(next_imu)); 
+        IMU* imu = new IMU();
+        const auto& frame = model.getComponent<PhysicalFrame>(path);
+        imu->setName(frame.getName() + "_imu");
+        imu->connectSocket_frame(frame);
+        model.addComponent(imu);
     }
     model.finalizeConnections();
-    return selectedIMUs;
 }
