@@ -100,7 +100,7 @@ as a TimeSeriesTable.
 
 ### Scale factors
 
-Use `addScaleFactor()` to add a MocoParameter to the MocoParameter that will
+Use `addScaleFactor()` to add a MocoParameter to the MocoProblem that will
 scale the tracking reference data associated with a control in the tracking cost.
 Scale factors for this goal can be useful if the magnitude of the tracking
 reference data is either unknown or unreliable (e.g., electromyography data).
