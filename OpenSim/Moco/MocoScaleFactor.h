@@ -23,8 +23,8 @@
 
 namespace OpenSim {
 
-/** A scale factor is an optimized scalar value that can be used to scale a
-tracked reference quantity in the cost function. Scale factors can be added to
+/** A scale factor is a scalar value optimized by Moco that can be used to scale
+a tracked reference quantity in the cost function. Scale factors can be added to
 a MocoProblem via MocoGoals, and this class enables the use of MocoParameter
 to optimize scale factors values by providing the 'scale_factor' property.
 MocoScaleFactor derives from Component, since it must be appended to the model
@@ -38,7 +38,7 @@ class OSIMMOCO_API MocoScaleFactor : public Component {
 
 public:
     MocoScaleFactor();
-    MocoScaleFactor(const std::string& nam, const MocoBounds&);
+    MocoScaleFactor(const std::string& name, const MocoBounds&);
 
     double getScaleFactor() const { return get_scale_factor(); }
     void setScaleFactor(double value) { set_scale_factor(value); }
