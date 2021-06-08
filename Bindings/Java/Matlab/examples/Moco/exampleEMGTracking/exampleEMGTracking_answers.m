@@ -1,4 +1,4 @@
-function exampleEMGDrivenWalking_answers
+function exampleEMGTracking_answers
 clear; close all; clc;
 
 %% Part 0: Load the OpenSim and Moco libraries.
@@ -13,7 +13,7 @@ import org.opensim.modeling.*;
 % reaction forces applied to the model via ExternalLoads, which is necessary
 % for the muscle redundancy problem. See the function definition at the 
 % bottom of this file to see how the model is loaded and constructed.
-model = get3DWalkingModel(); 
+model = getWalkingModel(); 
 
 % Part 1a: Create the MocoInverse tool and set the Model.
 inverse = MocoInverse();
@@ -41,7 +41,7 @@ inverse.set_mesh_interval(0.02);
 inverse.set_constraint_tolerance(1e-5);
 % The convergence tolerance can be less tight, as long as the goal of the
 % objective function is achieved.
-inverse.set_convergence_tolerance(1e-2);
+inverse.set_convergence_tolerance(1e-3);
 
 % Part 1e: Solve the problem!
 if ~exist('effortSolution.sto', 'file')
@@ -163,7 +163,7 @@ model.addForce(actu);
 
 end
 
-function [modelProcessor] = get3DWalkingModel()
+function [modelProcessor] = getWalkingModel()
 
 import org.opensim.modeling.*;
 
@@ -209,7 +209,7 @@ modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
 modelProcessor.append(ModOpIgnorePassiveFiberForcesDGF());
 modelProcessor.append(ModOpScaleActiveFiberForceCurveWidthDGF(1.5));
 % Add a set a weak reserves to the sagittal-plane joints in the model.
-modelProcessor.append(ModOpAddReserves(2.0));
+modelProcessor.append(ModOpAddReserves(1.0));
 
 end
 
