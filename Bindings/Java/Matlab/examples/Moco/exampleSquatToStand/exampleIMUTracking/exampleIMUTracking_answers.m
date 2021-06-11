@@ -158,35 +158,6 @@ end
 % This is a convenience function provided for you. See mocoPlotTrajectory.m
 mocoPlotTrajectory('predictSolution.sto', 'trackingSolution.sto', ...
         'predict', 'track');
-    
-%% Part 6: Noisy synthetic acceleration tracking problem 
-% Part 6a: Add white noise to the synthetic accelerations signals. Set the 
-% magnitude of the noise to 1% of the maximum original acceleration
-% signals.
-signalsMat = accelerometerSignals.flatten().getMatrix().getAsMat();
-noiseMagnitude = 0.01 * max(max(signalsMat));
-accelerometerSignalsNoisy = ...
-    addAccelerometerNoise(accelerometerSignals, noiseMagnitude);
-
-% Part 6b: Update the acceleration tracking goal.
-accelerationIMUTracking = MocoAccelerationTrackingGoal().safeDownCast(...
-    problem.updGoal('acceleration_tracking'));
-accelerationIMUTracking.setAccelerationReference(...
-    accelerometerSignalsNoisy);
-
-% Part 6c: Plot the synthetic acceleration signals.
-plotAccelerationSignals(accelerometerSignals, accelerometerSignalsNoisy);
-
-if ~exist('noisyTrackingSolution.sto', 'file')
-% Part 6d: Solve! Write the solution to file, and visualize.
-noisyTrackingSolution = study.solve();
-noisyTrackingSolution.write('noisyTrackingSolution.sto');
-study.visualize(noisyTrackingSolution);
-end
-
-%% Part 7: Compare noisy tracking solution to previous tracking solution
-mocoPlotTrajectory('trackingSolution.sto', 'noisyTrackingSolution.sto', ...
-        'track', 'track (noisy)');
 
 end
 
@@ -239,41 +210,6 @@ bodyOffset.set_translation(translation);
 bodyOffset.set_orientation(orientation);
 body.addComponent(bodyOffset);
 model.finalizeConnections();
-
-end
-
-function [accelerationReferenceNoisy] = ...
-        addAccelerometerNoise(accelerationReference, noiseMagnitude)
-import org.opensim.modeling.*;
-
-% Initial table to hold noisy acceleration signals
-accelerationReferenceNoisy = ...
-    TimeSeriesTableVec3(accelerationReference.getIndependentColumn());
-
-nrows = accelerationReference.getNumRows();
-ncols = accelerationReference.getNumColumns();
-labels = accelerationReference.getColumnLabels();
-for icol = 1:ncols
-    % Get the original acceleration column 
-    label = labels.get(icol-1);    
-    % Here, a column is of type VectorVec3
-    col = accelerationReference.getDependentColumn(label);    
-    
-    % Add white noise to this column
-    colMat = col.getAsMat();
-    noise = noiseMagnitude * randn(size(colMat));
-    newCol = VectorVec3(nrows, Vec3(0.0));
-    for irow = 1:nrows
-        newElt = Vec3(0.0);
-        newElt.set(0, colMat(irow, 1) + noise(irow, 1));
-        newElt.set(1, colMat(irow, 2) + noise(irow, 2));
-        newElt.set(2, colMat(irow, 3) + noise(irow, 3));
-        newCol.set(irow-1, newElt);
-    end
-    
-    % Append noisy column to the table
-    accelerationReferenceNoisy.appendColumn(label, newCol);
-end
 
 end
 
