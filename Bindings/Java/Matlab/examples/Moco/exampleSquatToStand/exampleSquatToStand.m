@@ -243,7 +243,7 @@ for i = 0:numStates-1
              assistedSolution.getStateMat(stateNames.get(i)), '--b', ...
              'linewidth', 2.5);
         hold off
-        stateName = stateNames.get(i).toCharArray';
+        stateName = stateNames.get(i);
         plotTitle = stateName;
         plotTitle = strrep(plotTitle, '/forceset/', '');
         plotTitle = strrep(plotTitle, '/activation', '');

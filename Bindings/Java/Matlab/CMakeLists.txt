@@ -61,6 +61,11 @@ file(COPY "examples/Moco/exampleSquatToStand/squatToStand_3dof9musc.osim"
         DESTINATION
         "${CMAKE_BINARY_DIR}/Examples/Moco/exampleSquatToStand")
 
+# Copy Geometry folder for squat-to-stand examples
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/OpenSenseExample/Geometry/"
+        DESTINATION
+        "${OPENSIM_INSTALL_MATLABEXDIR}/Moco/exampleSquatToStand/Geometry/")
+
 # The configureOpenSim.m script contains paths into the OpenSim installation
 # that may be different on different platforms, so we configure it with CMake
 # variables.

@@ -82,18 +82,9 @@ problem.addGoal(MocoControlGoal('myeffort'));
 
 % Part 2e: Configure the solver.
 solver = study.initCasADiSolver();
-% A reasonably tight tolerance for the constraints and appropriately dense
-% mesh are important to ensure that the model dynamics are enforced 
-% accurately.
-solver.set_num_mesh_intervals(50);
-solver.set_optim_constraint_tolerance(1e-6);
-% The convergence tolerance can be looser, as long as the purpose of the
-% objective function is achieved.
-solver.set_optim_convergence_tolerance(1e-2);
-% Use implicit multibody dynamics and minimize the acceleration controls.
-solver.set_multibody_dynamics_mode('implicit');
-solver.set_minimize_implicit_multibody_accelerations(true);
-solver.set_implicit_multibody_accelerations_weight(1e-5);
+solver.set_num_mesh_intervals(25);
+solver.set_optim_constraint_tolerance(1e-4);
+solver.set_optim_convergence_tolerance(1e-4);
 
 if ~exist('predictSolution.sto', 'file')
 % Part 2f: Solve! Write the solution to file, and visualize.
@@ -155,9 +146,20 @@ study.visualize(trackingSolution);
 end
 
 %% Part 5: Compare tracking solution to original prediction
-% This is a convenience function provided for you. See mocoPlotTrajectory.m
+% Part 5a: Plot the tracking solution against the prediction. This is 
+% convenience function provided for you. See mocoPlotTrajectory.m
 mocoPlotTrajectory('predictSolution.sto', 'trackingSolution.sto', ...
         'predict', 'track');
+ 
+% Part 5b: Compare accelerations from tracking solution to the reference
+% accelerations.
+trackingSolution = MocoTrajectory('trackingSolution.sto');
+accelerometerSignalsTracking = opensimSimulation.analyzeVec3(model, ...
+    trackingSolution.exportToStatesTable(), ...
+    trackingSolution.exportToControlsTable(), ...
+    outputPaths);
+accelerometerSignalsTracking.setColumnLabels(imuFramePaths);
+plotAccelerationSignals(accelerometerSignals, accelerometerSignalsTracking)
 
 end
 
@@ -219,7 +221,7 @@ import org.opensim.modeling.*;
 
 accelerationsReference = varargin{1};
 if nargin == 2
-    accelerationsReferenceNoisy = varargin{2};
+    accelerationsTracking = varargin{2};
 end
 
 % Create a time vector that can be used for plotting
@@ -234,15 +236,15 @@ figure;
 subplot(1,3,1)
 torso = accelerationsReference.getDependentColumn(...
     '/bodyset/torso/torso_imu_offset').getAsMat();
-plot(time, torso(:,1), 'linewidth', 2, 'color', 'black')
+plot(time, torso(:,1), 'b-', 'linewidth', 3)
 if nargin == 2
 hold on
-torsoNoisy = accelerationsReferenceNoisy.getDependentColumn(...
+torsoTrack = accelerationsTracking.getDependentColumn(...
     '/bodyset/torso/torso_imu_offset').getAsMat();
-plot(time, torsoNoisy(:,1), 'linewidth', 2, 'color', 'red')
+plot(time, torsoTrack(:,1), 'r--', 'linewidth', 3)
 end
 if nargin == 2
-    legend('original', 'noise added', 'location', 'best');
+    legend('reference', 'tracking solution', 'location', 'best');
 end
 title('torso')
 xlabel('time (s)')
@@ -252,12 +254,12 @@ ylabel('acceleration (m/s^2)')
 subplot(1,3,2)
 femur = accelerationsReference.getDependentColumn(...
     '/bodyset/femur_r/femur_r_imu_offset').getAsMat();
-plot(time, femur(:,1), 'linewidth', 2, 'color', 'black')
+plot(time, femur(:,1), 'b-', 'linewidth', 3)
 if nargin == 2
 hold on
-femurNoisy = accelerationsReferenceNoisy.getDependentColumn(...
+femurTrack = accelerationsTracking.getDependentColumn(...
     '/bodyset/femur_r/femur_r_imu_offset').getAsMat();
-plot(time, femurNoisy(:,1), 'linewidth', 2, 'color', 'red')
+plot(time, femurTrack(:,1), 'r--', 'linewidth', 3)
 end
 title('femur')
 xlabel('time (s)')
@@ -267,12 +269,12 @@ ylabel('acceleration (m/s^2)')
 subplot(1,3,3)
 tibia = accelerationsReference.getDependentColumn(...
     '/bodyset/tibia_r/tibia_r_imu_offset').getAsMat();
-plot(time, tibia(:,1), 'linewidth', 2, 'color', 'black')
+plot(time, tibia(:,1), 'b-', 'linewidth', 3)
 if nargin == 2
 hold on
-tibiaNoisy = accelerationsReferenceNoisy.getDependentColumn(...
+tibiaTrack = accelerationsTracking.getDependentColumn(...
     '/bodyset/tibia_r/tibia_r_imu_offset').getAsMat();
-plot(time, tibiaNoisy(:,1), 'linewidth', 2, 'color', 'red')
+plot(time, tibiaTrack(:,1), 'r--', 'linewidth', 3)
 end
 title('tibia')
 xlabel('time (s)')
