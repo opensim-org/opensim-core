@@ -62,7 +62,7 @@ compareSolutionToEMG(emgReference, effortSolution);
 % Modify the existing problem we created with the MocoInverse tool to solve
 % a new problem where we will track electromyography (EMG) data. 
 
-% Part 3a: Call initialize() to get acess to the MocoStudy contained within
+% Part 3a: Call initialize() to get access to the MocoStudy contained within
 % the MocoInverse instance. This will allow us to make additional
 % modifications to the problem not provided by MocoInverse.
 study = inverse.initialize();
