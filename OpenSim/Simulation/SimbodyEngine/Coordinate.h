@@ -181,7 +181,8 @@ public:
     double getRangeMin() const {return get_range(0); }
     double getRangeMax() const {return get_range(1); }
     /** set the range with a double array of length 2 in order of
-        minimum and maximum coordinate values */
+        minimum and maximum coordinate values (`setRange()` is not
+        wrapped; use `setRangeMin()` and `setRangeMax()` instead) */
     void setRange(double aRange[2]);
     void setRangeMin(double aMin);
     void setRangeMax(double aMax);
