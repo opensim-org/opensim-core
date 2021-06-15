@@ -925,7 +925,6 @@ public:
 
 protected:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
-    void extendRealizeReport(const SimTK::State & state) const override;
 
     void computeMeshProximity(const SimTK::State& state,
         const Smith2018ContactMesh& casting_mesh,
@@ -993,6 +992,64 @@ private:
     //=========================================================================
     // Member Variables
     //=========================================================================
+private:
+    mutable CacheVariable<std::vector<int>> _target_triangle_previous_contacting_triangleCV;
+    mutable CacheVariable<std::vector<int>> _casting_triangle_previous_contacting_triangleCV;
+    mutable CacheVariable<int> _target_num_active_trianglesCV;
+    mutable CacheVariable<int> _casting_num_active_trianglesCV;
+    mutable CacheVariable<int> _target_num_contacting_trianglesCV;
+    mutable CacheVariable<int> _casting_num_contacting_trianglesCV;
+    mutable CacheVariable<int> _target_num_contacting_triangles_sameCV;
+    mutable CacheVariable<int> _casting_num_contacting_triangles_sameCV;
+    mutable CacheVariable<int> _target_num_contacting_triangles_neighborCV;
+    mutable CacheVariable<int> _casting_num_contacting_triangles_neighborCV;
+    mutable CacheVariable<int> _target_num_contacting_triangles_differentCV;
+    mutable CacheVariable<int> _casting_num_contacting_triangles_differentCV;
+    mutable CacheVariable<SimTK::Vector> _target_triangle_proximityCV;
+    mutable CacheVariable<SimTK::Vector> _casting_triangle_proximityCV;
+    mutable CacheVariable<SimTK::Vector> _target_triangle_pressureCV;
+    mutable CacheVariable<SimTK::Vector> _casting_triangle_pressureCV;
+    mutable CacheVariable<SimTK::Vector> _target_triangle_potential_energyCV;
+    mutable CacheVariable<SimTK::Vector> _casting_triangle_potential_energyCV;
+    mutable CacheVariable<SimTK::Vector_<SimTK::Vec3>> _target_triangle_forceCV;
+    mutable CacheVariable<SimTK::Vector_<SimTK::Vec3>> _casting_triangle_forceCV;
+    mutable CacheVariable<double> _target_total_contact_areaCV;
+    mutable CacheVariable<double> _target_total_mean_proximityCV;
+    mutable CacheVariable<double> _target_total_max_proximityCV;
+    mutable CacheVariable<SimTK::Vec3> _target_total_center_of_proximityCV;
+    mutable CacheVariable<double> _target_total_mean_pressureCV;
+    mutable CacheVariable<double> _target_total_max_pressureCV;
+    mutable CacheVariable<SimTK::Vec3> _target_total_center_of_pressureCV;
+    mutable CacheVariable<SimTK::Vec3> _target_total_contact_forceCV;
+    mutable CacheVariable<SimTK::Vec3> _target_total_contact_momentCV;
+    mutable CacheVariable<double> _casting_total_contact_areaCV;
+    mutable CacheVariable<double> _casting_total_mean_proximityCV;
+    mutable CacheVariable<double> _casting_total_max_proximityCV;
+    mutable CacheVariable<SimTK::Vec3> _casting_total_center_of_proximityCV;
+    mutable CacheVariable<double> _casting_total_mean_pressureCV;
+    mutable CacheVariable<double> _casting_total_max_pressureCV;
+    mutable CacheVariable<SimTK::Vec3> _casting_total_center_of_pressureCV;
+    mutable CacheVariable<SimTK::Vec3> _casting_total_contact_forceCV;
+    mutable CacheVariable<SimTK::Vec3> _casting_total_contact_momentCV;
+    mutable CacheVariable<SimTK::Vector> _target_regional_contact_areaCV;
+    mutable CacheVariable<SimTK::Vector> _target_regional_mean_proximityCV;
+    mutable CacheVariable<SimTK::Vector> _target_regional_max_proximityCV;
+    mutable CacheVariable<SimTK::Vector_<SimTK::Vec3>> _target_regional_center_of_proximityCV;
+    mutable CacheVariable<SimTK::Vector> _target_regional_mean_pressureCV;
+    mutable CacheVariable<SimTK::Vector> _target_regional_max_pressureCV;
+    mutable CacheVariable<SimTK::Vector_<SimTK::Vec3>> _target_regional_center_of_pressureCV;
+    mutable CacheVariable<SimTK::Vector_<SimTK::Vec3>> _target_regional_contact_forceCV;
+    mutable CacheVariable<SimTK::Vector_<SimTK::Vec3>> _target_regional_contact_momentCV;
+    mutable CacheVariable<SimTK::Vector> _casting_regional_contact_areaCV;
+    mutable CacheVariable<SimTK::Vector> _casting_regional_mean_proximityCV;
+    mutable CacheVariable<SimTK::Vector> _casting_regional_max_proximityCV;
+    mutable CacheVariable<SimTK::Vector_<SimTK::Vec3>> _casting_regional_center_of_proximityCV;
+    mutable CacheVariable<SimTK::Vector> _casting_regional_mean_pressureCV;
+    mutable CacheVariable<SimTK::Vector> _casting_regional_max_pressureCV;
+    mutable CacheVariable<SimTK::Vector_<SimTK::Vec3>> _casting_regional_center_of_pressureCV;
+    mutable CacheVariable<SimTK::Vector_<SimTK::Vec3>> _casting_regional_contact_forceCV;
+    mutable CacheVariable<SimTK::Vector_<SimTK::Vec3>> _casting_regional_contact_momentCV;
+
     struct NonlinearContactParams {
         double h1, h2, k1, k2, dc;
     };

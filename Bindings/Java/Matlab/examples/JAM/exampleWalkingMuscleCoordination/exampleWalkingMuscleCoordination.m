@@ -9,6 +9,9 @@ ik_result_dir = './results/comak-inverse-kinematics';
 comak_result_dir = './results/comak';
 jnt_mech_result_dir = './results/joint-mechanics';
 
+start_time = 1.16;
+% stop_time = 1.8;
+stop_time = 1.28;
 if(exist('./inputs','dir')~=7)
     mkdir('./inputs')
 end
@@ -58,8 +61,6 @@ comak_ik.set_report_marker_locations(false);
 comak_ik.set_ik_constraint_weight(100);
 comak_ik.set_ik_accuracy(1e-5);
 comak_ik.set_use_visualizer(true);
-comak_ik.set_verbose(10);
-
 
 ik_task_set = IKTaskSet();
 
@@ -260,9 +261,8 @@ comak.set_results_directory(comak_result_dir);
 comak.set_results_prefix(results_basename);
 comak.set_replace_force_set(false);
 comak.set_force_set_file('../models/healthy/lenhart2015/lenhart2015_reserve_actuators.xml');
-comak.set_start_time(1.2);
-% comak.set_stop_time(2.32);
-comak.set_stop_time(1.8);
+comak.set_start_time(start_time);
+comak.set_stop_time(stop_time);
 comak.set_time_step(0.01);
 comak.set_lowpass_filter_frequency(6);
 comak.set_print_processed_input_kinematics(false);
@@ -505,8 +505,8 @@ comak_emg_result_dir = './results/comak_emg';
 results_emg_basename = 'walking_emg';
 
 comak_emg = comak.clone();
-comak_muscle_weight.set_results_directory(comak_emg_result_dir);
-comak_muscle_weight.set_results_prefix(results_emg_basename);
+comak_emg.set_results_directory(comak_emg_result_dir);
+comak_emg.set_results_prefix(results_emg_basename);
 
 cost_fun_param_set = COMAKCostFunctionParameterSet();
 cost_fun_param = COMAKCostFunctionParameter();
@@ -547,80 +547,80 @@ comak_emg.set_COMAKCostFunctionParameterSet(cost_fun_param_set);
 comak_emg.print('./inputs/comak_emg_settings.xml');
 
 disp('Running COMAK Tool...')
-comak_emg.run();
+% comak_emg.run();
 
-nominal_states = osimTableToStruct(TimeSeriesTable('./results/comak/walking_activation.sto'));
-emg_states = osimTableToStruct(TimeSeriesTable('./results/comak_emg/walking_emg_activation.sto'));
-
-figure('name','EMG Muscle Activations')
-subplot(2,2,1);hold on;
-title('bfsh-r') 
-plot(nominal_states.a_forceset_bfsh_r)
-plot(emg_states.a_forceset_bfsh_r)
-
-subplot(2,2,2);hold on;
-title('bflh-r') 
-plot(nominal_states.a_forceset_bflh_r)
-plot(emg_states.a_forceset_bflh_r)
-
-subplot(2,2,3);hold on;
-title('semiten-r') 
-plot(nominal_states.a_forceset_semiten_r)
-plot(emg_states.a_forceset_semiten_r)
-yline(0.1,'-')
-yline(0.4,'-')
-
-subplot(2,2,4);hold on;
-title('semimem-r') 
-plot(nominal_states.a_forceset_semimem_r)
-plot(emg_states.a_forceset_semimem_r)
-yline(0.1,'-')
-yline(0.4,'-')
-
-legend('nominal','emg')
+% nominal_states = osimTableToStruct(TimeSeriesTable('./results/comak/walking_activation.sto'));
+% emg_states = osimTableToStruct(TimeSeriesTable('./results/comak_emg/walking_emg_activation.sto'));
+% 
+% figure('name','EMG Muscle Activations')
+% subplot(2,2,1);hold on;
+% title('bfsh-r') 
+% plot(nominal_states.a_forceset_bfsh_r)
+% plot(emg_states.a_forceset_bfsh_r)
+% 
+% subplot(2,2,2);hold on;
+% title('bflh-r') 
+% plot(nominal_states.a_forceset_bflh_r)
+% plot(emg_states.a_forceset_bflh_r)
+% 
+% subplot(2,2,3);hold on;
+% title('semiten-r') 
+% plot(nominal_states.a_forceset_semiten_r)
+% plot(emg_states.a_forceset_semiten_r)
+% yline(0.1,'-')
+% yline(0.4,'-')
+% 
+% subplot(2,2,4);hold on;
+% title('semimem-r') 
+% plot(nominal_states.a_forceset_semimem_r)
+% plot(emg_states.a_forceset_semimem_r)
+% yline(0.1,'-')
+% yline(0.4,'-')
+% 
+% legend('nominal','emg')
 %% Perform Joint Mechanics Analysis
-% jnt_mech = JointMechanicsTool();
-% jnt_mech.set_model_file(model_file);
-% jnt_mech.set_input_states_file([comak_result_dir '/' results_basename '_states.sto']);
-% jnt_mech.set_use_muscle_physiology(false);
-% jnt_mech.set_results_file_basename(results_basename);
-% jnt_mech.set_results_directory(jnt_mech_result_dir);
-% jnt_mech.set_start_time(1.16);
-% jnt_mech.set_stop_time(-1);
-% jnt_mech.set_resample_step_size(-1);
-% jnt_mech.set_normalize_to_cycle(true);
-% jnt_mech.set_lowpass_filter_frequency(-1);
-% jnt_mech.set_print_processed_kinematics(false);
-% jnt_mech.set_contacts(0,'all');
-% jnt_mech.set_contact_outputs(0,'all');
-% jnt_mech.set_contact_mesh_properties(0,'none');
-% jnt_mech.set_ligaments(0,'all');
-% jnt_mech.set_ligament_outputs(0,'all');
-% jnt_mech.set_muscles(0,'all');
-% jnt_mech.set_muscle_outputs(0,'all');
-% 
-% jnt_mech.set_attached_geometry_bodies(0,'all');
-% 
-% jnt_mech.set_output_orientation_frame('ground');
-% jnt_mech.set_output_position_frame('ground');
-% jnt_mech.set_write_vtp_files(true);
-% jnt_mech.set_vtp_file_format('binary');
-% jnt_mech.set_write_h5_file(false);
-% jnt_mech.set_h5_kinematics_data(true);
-% jnt_mech.set_h5_states_data(true);
-% jnt_mech.set_write_transforms_file(false);
-% jnt_mech.set_output_transforms_file_type('sto');
-% jnt_mech.set_use_visualizer(true);
-% jnt_mech.set_verbose(0);
-% 
-% analysis_set = AnalysisSet();
-% 
-% frc_reporter = ForceReporter();
-% frc_reporter.setName('ForceReporter');
-% 
-% analysis_set.cloneAndAppend(frc_reporter);
-% jnt_mech.set_AnalysisSet(analysis_set);
-% jnt_mech.print('./inputs/joint_mechanics_settings.xml');
-% 
-% disp('Running JointMechanicsTool...');
+jnt_mech = JointMechanicsTool();
+jnt_mech.set_model_file(model_file);
+jnt_mech.set_input_states_file([comak_result_dir '/' results_basename '_states.sto']);
+jnt_mech.set_use_muscle_physiology(false);
+jnt_mech.set_results_file_basename(results_basename);
+jnt_mech.set_results_directory(jnt_mech_result_dir);
+jnt_mech.set_start_time(1.16);
+jnt_mech.set_stop_time(-1);
+jnt_mech.set_resample_step_size(-1);
+jnt_mech.set_normalize_to_cycle(true);
+jnt_mech.set_lowpass_filter_frequency(-1);
+jnt_mech.set_print_processed_kinematics(false);
+jnt_mech.set_contacts(0,'all');
+jnt_mech.set_contact_outputs(0,'all');
+jnt_mech.set_contact_mesh_properties(0,'none');
+jnt_mech.set_ligaments(0,'all');
+jnt_mech.set_ligament_outputs(0,'all');
+jnt_mech.set_muscles(0,'all');
+jnt_mech.set_muscle_outputs(0,'all');
+
+jnt_mech.set_attached_geometry_bodies(0,'all');
+
+jnt_mech.set_output_orientation_frame('ground');
+jnt_mech.set_output_position_frame('ground');
+jnt_mech.set_write_vtp_files(false);
+jnt_mech.set_vtp_file_format('binary');
+jnt_mech.set_write_h5_file(true);
+jnt_mech.set_h5_kinematics_data(true);
+jnt_mech.set_h5_states_data(true);
+jnt_mech.set_write_transforms_file(false);
+jnt_mech.set_output_transforms_file_type('sto');
+jnt_mech.set_use_visualizer(true);
+jnt_mech.set_verbose(0);
+
+analysis_set = AnalysisSet();
+
+frc_reporter = ForceReporter();
+frc_reporter.setName('ForceReporter');
+
+analysis_set.cloneAndAppend(frc_reporter);
+jnt_mech.set_AnalysisSet(analysis_set);
+jnt_mech.print('./inputs/joint_mechanics_settings.xml');
+
+disp('Running JointMechanicsTool...');
 % jnt_mech.run();

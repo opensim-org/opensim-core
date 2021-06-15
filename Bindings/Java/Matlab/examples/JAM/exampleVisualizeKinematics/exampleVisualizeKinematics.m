@@ -57,7 +57,7 @@ femur.setName('femur');
 femur.setMass(1.0);                                      
 femur.setMassCenter(massCenter);                        
 femur.setInertia(inertia); 
-femur.attachGeometry(Mesh(femur_bone_mesh_file));
+% femur.attachGeometry(Mesh(femur_bone_mesh_file));
 model.addBody(femur);
 
 tibia  = Body();
@@ -65,7 +65,7 @@ tibia.setName('tibia');
 tibia.setMass(1.0);                                      
 tibia.setMassCenter(massCenter);                        
 tibia.setInertia(inertia);
-tibia.attachGeometry(Mesh(tibia_bone_mesh_file));
+% tibia.attachGeometry(Mesh(tibia_bone_mesh_file));
 model.addBody(tibia);
 
 patella  = Body();

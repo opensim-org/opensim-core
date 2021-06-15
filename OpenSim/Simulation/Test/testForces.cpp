@@ -77,7 +77,7 @@ void testBlankevoort1991Ligament();
 
 int main() {
     SimTK::Array_<std::string> failures;
-
+    
     try { testPathSpring(); }
     catch (const std::exception& e){
         cout << e.what() <<endl; failures.push_back("testPathSpring");
@@ -166,7 +166,7 @@ int main() {
         cout << e.what() <<endl;
         failures.push_back("testSerializeDeserialize");
     }
-
+    
     try {
         testBlankevoort1991Ligament();
     } catch (const std::exception& e) {
@@ -2278,6 +2278,15 @@ void testBlankevoort1991Ligament() {
         __FILE__, __LINE__,
         "Expected damping_force in Blankevoort1991Ligament to be"
         "equal to zero when the ligament is slack");
+
+    double damping_frc = results.getDependentColumn("damping_force").getElt(12, 0);
+    double spring_frc = results.getDependentColumn("spring_force").getElt(12, 0);
+
+    ASSERT_EQUAL(results.getDependentColumn("total_force").getElt(12, 0),
+            damping_frc + spring_frc, 1e-3,
+        __FILE__, __LINE__,
+        "Expected total_force in Blankevoort1991Ligament to be"
+        "equal to the damping_force + spring_force");
 
     //Check that the spring_force and potential_energy are greater when the
     //ligment crosses the transition from the toe region to linear region

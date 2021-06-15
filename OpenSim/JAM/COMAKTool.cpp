@@ -35,7 +35,7 @@ using namespace SimTK;
 COMAKTool::COMAKTool()
 {
     constructProperties();
-    _directoryOfSetupFile = "";
+    //_directoryOfSetupFile = "";
     _model_exists = false;
 }
 
@@ -43,8 +43,8 @@ COMAKTool::COMAKTool(const std::string file) : Object(file) {
     constructProperties();
     updateFromXMLDocument();
 
-    _directoryOfSetupFile = IO::getParentDirectory(file);
-    IO::chDir(_directoryOfSetupFile);
+    //_directoryOfSetupFile = IO::getParentDirectory(file);
+    //IO::chDir(_directoryOfSetupFile);
 }
 
 void COMAKTool::constructProperties()
@@ -57,7 +57,7 @@ void COMAKTool::constructProperties()
 
     constructProperty_replace_force_set(false);
     constructProperty_force_set_file("");
-
+    
     constructProperty_start_time(-1);
     constructProperty_stop_time(-1);
     constructProperty_time_step(-1);
@@ -113,10 +113,29 @@ void COMAKTool::setModel(Model& model) {
 
 bool COMAKTool::run()
 {
-    printCOMAKascii();
+    bool completed = false;
+    
+    auto cwd = IO::CwdChanger::changeToParentOf(getDocumentFileName());
 
-    performCOMAK();
-    return true;
+    try {
+        printCOMAKascii();
+
+        performCOMAK();
+        completed = true;
+    }
+
+    catch(const std::exception& x) {
+        log_error("COMAKTool::run() caught an exception: \n {}", x.what());
+        cwd.restore();
+    }
+    catch (...) { // e.g. may get InterruptedException
+        log_error("COMAKTool::run() caught an exception.");
+        cwd.restore();
+    }
+
+    cwd.restore();
+
+    return completed;
 }
 
 SimTK::State COMAKTool::initialize()
@@ -467,14 +486,14 @@ SimTK::State COMAKTool::initialize()
 
     computeMuscleVolumes();
 
-    log_info("Muscle Properties");
-    log_info("{15:s} {15:s} {15:s}", "name ", "Fmax", "Volume");
+    log_debug("Muscle Properties");
+    log_debug("{:<15} {:<15} {:<15}", "name ", "Fmax", "Volume");
     i = 0;
     for (const Muscle& msl : _model.getComponentList<Muscle>()) {
         double l0 = msl.get_optimal_fiber_length();
         double fmax = msl.get_max_isometric_force();
 
-        log_info("{15:s} {15:d} {15:d}", msl.getName(), fmax, _muscle_volumes[i]);
+        log_debug("{:<15} {:<15} {:<15}", msl.getName(), fmax, _muscle_volumes[i]);
         i++;
     }
 
@@ -569,11 +588,12 @@ SimTK::State COMAKTool::initialize()
         if(found_msl == false){
             _cost_muscle_weights.cloneAndAppend(Constant(1.0));
             _cost_muscle_desired_act.cloneAndAppend(Constant(0.0));
-            _cost_muscle_act_lower_bound.cloneAndAppend(Constant(0.0));
+            _cost_muscle_act_lower_bound.cloneAndAppend(Constant(0.01));
             _cost_muscle_act_upper_bound.cloneAndAppend(Constant(1.0));
             
         }
     }
+
 
     //Add Analysis set
     AnalysisSet aSet = get_AnalysisSet();
@@ -582,6 +602,11 @@ SimTK::State COMAKTool::initialize()
     for(int i=0;i<size;i++) {
         Analysis *analysis = aSet.get(i).clone();
         _model.addAnalysis(analysis);
+    }
+
+    //Print Contact Mesh Debug Info
+    for (auto& cnt_mesh : _model.updComponentList<Smith2018ContactMesh>()) {
+        cnt_mesh.printMeshDebugInfo();
     }
 
     return state;
@@ -596,6 +621,27 @@ void COMAKTool::performCOMAK()
     //Read Kinematics and Compute Desired Accelerations
     extractKinematicsFromFile();
 
+    //Check Cost Function Parameters
+    log_debug("{:<20} {:<20} {:<20} {:<20} {:<20}",
+        "Muscles","muscle_weight","desired_act","lower_bound","upper_bound");
+    int m = 0;
+    for (Muscle &msl : _model.updComponentList<Muscle>()) {
+
+        log_debug("{:<20} {:<20} {:<20} {:<20} {:<20}", msl.getName(),
+            _cost_muscle_weights.get(m).calcValue(
+                SimTK::Vector(1, _time[0])),
+            
+            _cost_muscle_desired_act.get(m).calcValue(
+                SimTK::Vector(1, _time[0])),
+
+            _cost_muscle_act_lower_bound.get(m).calcValue(
+                SimTK::Vector(1, _time[0])),
+
+            _cost_muscle_act_upper_bound.get(m).calcValue(
+                SimTK::Vector(1, _time[0])));
+        m++;
+    }
+
     //Initialize Secondary Kinematics
     SimTK::Vector init_secondary_values(_n_secondary_coord);
 
@@ -609,13 +655,13 @@ void COMAKTool::performCOMAK()
         }
     }
 
-    log_info("Initial Secondary Coordinate Values:");
+    log_debug("Initial Secondary Coordinate Values:");
 
     for (int i = 0; i < _n_secondary_coord; ++i) {
-        log_info("{} :\t {}",
+        log_debug("{} :\t {}",
             _secondary_coord_name[i], init_secondary_values(i));
     }
-
+    
     //Apply External Loads
     applyExternalLoads();
 
@@ -635,8 +681,6 @@ void COMAKTool::performCOMAK()
         }
         nCoord++;
     }
-
-
 
     if (get_use_visualizer()) {
         _model.setUseVisualizer(true);
@@ -736,6 +780,11 @@ void COMAKTool::performCOMAK()
         _model.assemble(state);
         _model.realizeVelocity(state);
 
+        //Print initial optimization 
+        if (frame_num == 1) {
+            printOptimizationResultsToConsole(_optim_parameters, state);
+        }
+
         //Iterate for COMAK Solution
         double max_udot_error = SimTK::Infinity;
         SimTK::Vector iter_max_udot_error(get_max_iterations(), 0.0);
@@ -749,12 +798,12 @@ void COMAKTool::performCOMAK()
 
             log_info("---------------------------------------"
                     "---------------------------------------");
-            log_info("Frame: {} \t Time: {} \t Iteration: {}", frame_num);
+            log_info("Frame: {} \t Time: {} \t Iteration: {}", frame_num,_time[i],n_iter);
 
             log_info("---------------------------------------"
                     "---------------------------------------");
 
-            //Reset the optimized delta coords to zero
+            //Reset the optimized change in secondary coords to zero
             for (int m = 0; m < _n_secondary_coord; ++m) {
                 _optim_parameters[m + _n_actuators] = 0.0;
             }
@@ -844,12 +893,12 @@ void COMAKTool::performCOMAK()
             //optimizer.setAdvancedStrOption("hessian_approximation", "exact");
             
             // For debugging cost and constraint changes
-            /*optimizer.setAdvancedStrOption("derivative_test", "first-order");
+            optimizer.setAdvancedStrOption("derivative_test", "first-order");
             optimizer.setAdvancedBoolOption(
                 "derivative_test_print_all", true);
             optimizer.setAdvancedRealOption(
                 "derivative_test_perturbation", 1e-6);
-            */
+            
             
             try {
                 optimizer.optimize(_optim_parameters);
@@ -877,7 +926,7 @@ void COMAKTool::performCOMAK()
             printOptimizationResultsToConsole(_optim_parameters, state);
 
             log_info("Optimized Acceleration Errors:");
-            log_info("%20{} %20{} %20{} %20{}",
+            log_info("{:<20} {:<20} {:<20} {:<20}",
                 "Name", "Experimental", "Simulated", "Error");
 
             std::string max_udot_coord = "";
@@ -925,7 +974,7 @@ void COMAKTool::performCOMAK()
                     max_udot_error = udot_error;
                 }
 
-                log_info("{20:d} {20:d} {20:d} {20:d}",
+                log_info("{:<20} {:<20} {:<20} {:<20}",
                     coord.getName(), observed_udot, coord_udot , udot_error);
 
             }
@@ -1213,6 +1262,8 @@ void COMAKTool::printResultsFiles() {
 
     sto.write(_result_values, get_results_directory() + "/" 
         + get_results_prefix() + "_values.sto");
+
+    _model.updAnalysisSet().printResults(get_results_prefix(), get_results_directory());
 }
 
 SimTK::Vector COMAKTool::equilibriateSecondaryCoordinates() 
@@ -1322,8 +1373,8 @@ SimTK::Vector COMAKTool::equilibriateSecondaryCoordinates()
         state = timestepper.getState();
         result_states.append(state);
 
-        log_info("Time: ", state.getTime());
-        log_info("{:<15} {:<15} {:<15}",
+        log_info("Time: {}", state.getTime());
+        log_info("{:<20} {:<15} {:<15}",
             "Secondary Coord", "Value", "Value Change (Delta)");
 
         //Compute Delta Coordinate
@@ -1342,7 +1393,7 @@ SimTK::Vector COMAKTool::equilibriateSecondaryCoordinates()
             prev_sec_coord_value(k) = value;
 
 
-            log_info("{:<15} {:<15} {:<15}",
+            log_info("{:<20} {:<15} {:<15}",
                 coord.getName(), value, delta);
 
         }
@@ -1578,8 +1629,8 @@ void COMAKTool::applyExternalLoads()
 
     // This is required so that the references to other files inside 
     // ExternalLoads file are interpreted as relative paths
-    std::string savedCwd = IO::getCwd();
-    IO::chDir(IO::getParentDirectory(aExternalLoadsFileName));
+    //std::string savedCwd = IO::getCwd();
+    //IO::chDir(IO::getParentDirectory(aExternalLoadsFileName));
 
     // Create external forces
     ExternalLoads* externalLoads = nullptr;
@@ -1597,14 +1648,14 @@ void COMAKTool::applyExternalLoads()
             "ExternalLoads object or create a fresh one.",
              aExternalLoadsFileName);
 
-        if (getDocument()) IO::chDir(savedCwd);
+        //if (getDocument()) IO::chDir(savedCwd);
         throw(ex);
     }
 
     // copy over created external loads to the external loads owned by the tool
     _external_loads = *externalLoads;
 
-    IO::chDir(savedCwd);
+    //IO::chDir(savedCwd);
     return;
 }
 
@@ -1674,130 +1725,95 @@ void COMAKTool::printCOMAKascii() {
 
 void COMAKTool::printOptimizationResultsToConsole(
     const SimTK::Vector& parameters, const SimTK::State& state) {
-    int w = 20;
 
-    if (get_verbose() > 1) {
-        for (int k = 0; k < _n_secondary_coord; ++k) {
-            if (parameters[_n_actuators + k] == _secondary_coord_max_change[k]) {
-                std::cout << "Warning: " << _secondary_coord_name[k]
-                    << " optimized to max change: " 
-                    << _secondary_coord_max_change[k] << std::endl;
-            }
-        }
-    }
-    if (get_verbose() > 2) {
-        std::cout << std::left << "\nOptimized Muscles:" << std::endl;
-        std::cout << std::setw(w) << "name"
-            << std::setw(w) << "activation"
-            << std::setw(w) << "force" << std::endl;
+    for (int k = 0; k < _n_secondary_coord; ++k) {
+        if (parameters[_n_actuators + k] == _secondary_coord_max_change[k]) {
+            log_warn("Warning: {} optimized to max change: {}", _secondary_coord_name[k], _secondary_coord_max_change[k]);
 
-        int p = 0;
-        for (int k = 0; k < _n_muscles; ++k) {
-            std::cout << std::setw(w) << _optim_parameter_names[p]
-                << std::setw(w) << parameters[p]
-                << std::setw(w) << parameters[p] * _optimal_force[p] << std::endl;
-            p++;
-        }
-
-        std::cout << "\nOptimized Non Muscle Actuators:" << std::endl;
-        std::cout << std::setw(w) << "name"
-            << std::setw(w) << "activation"
-            << std::setw(w) << "force" << std::endl;
-
-        for (int k = 0; k < _n_non_muscle_actuators; ++k) {
-            std::cout << std::setw(w) << _optim_parameter_names[p]
-                << std::setw(w) << parameters[p]
-                << std::setw(w) << parameters[p] * _optimal_force[p] << std::endl;
-            p++;
-        }
-
-        std::cout << "\nOptimized Secondardy Coordinates:" << std::endl;
-        std::cout << std::setw(w) << "name" << std::setw(w) << "value"
-            << std::setw(w) << "change"
-            << std::setw(w) << "damping force" << std::endl;
-
-        for (int k = 0; k < _n_secondary_coord; ++k) {
-            double value = _model.updComponent<Coordinate>
-                (_secondary_coord_path[k]).getValue(state);
-
-            std::cout << std::setw(w) << _secondary_coord_name[k]
-                << std::setw(w) << value
-                << std::setw(w) << parameters[p]
-
-                << std::endl;
-            p++;
         }
     }
 
-    if (get_verbose() > 3) {
-        _model.realizeReport(state);
+    // Optimization Parameters
+    log_debug("Optimized Muscles:");
+    log_debug("{:<20} {:<20} {:<20}","name","activation", "force");
 
-        std::cout << "\nBlankevoort1991Ligaments:" << std::endl;
-        std::cout << std::setw(w) << "Name"
-            << std::setw(w) << "Total_Force"
-            << std::setw(w) << "Spring_Force"
-            << std::setw(w) << "Damping_Force"
-            << std::setw(w) << "Lengths"
-            << std::setw(w) << "Strains" << std::endl;
-
-        for (auto& lig : _model.updComponentList<Blankevoort1991Ligament>()) {
-            double total_frc = lig.getOutputValue<double>(state, "total_force");
-            double spring_frc = lig.getOutputValue<double>(state, "spring_force");
-            double damping_frc = lig.getOutputValue<double>(state, "damping_force");
-            double length = lig.getOutputValue<double>(state, "length");
-            double strain = lig.getOutputValue<double>(state, "strain");
-
-            std::cout << std::setw(w) << lig.getName()
-                << std::setw(w) << total_frc
-                << std::setw(w) << spring_frc
-                << std::setw(w) << damping_frc
-                << std::setw(w) << length
-                << std::setw(w) << strain << std::endl;
-        }
-
-        std::cout << "\nSmith2018ArticularContactForce: casting_mesh" << std::endl;
-        std::cout << std::setw(w) << "Name"
-            << std::setw(w) << "Num_Contacting_Tri"
-            << std::setw(w) << "Contact_Force"
-            << std::setw(w) << "Contact_Moment"
-            << std::setw(w) << "Mean Pressure"
-            << std::setw(w) << "Max Pressure"
-            << std::setw(w) << "Mean Proximity"
-            << std::setw(w) << "Max Proximity"
-            << std::endl;
-
-        for (auto& cnt :
-            _model.updComponentList<Smith2018ArticularContactForce>()) {
-
-            int num_cnt_tri =
-                cnt.getOutputValue<int>(state, "casting_num_contacting_triangles");
-            SimTK::Vec3 cnt_frc =
-                cnt.getOutputValue<SimTK::Vec3>(state,
-                    "casting_total_contact_force");
-            SimTK::Vec3 cnt_moment =
-                cnt.getOutputValue<SimTK::Vec3>(state,
-                    "casting_total_contact_moment");
-
-            double mean_prs =
-                cnt.getOutputValue<double>(state, "casting_total_mean_pressure");
-            double max_prs =
-                cnt.getOutputValue<double>(state, "casting_total_max_pressure");
-            double mean_prx =
-                cnt.getOutputValue<double>(state, "casting_total_mean_proximity");
-            double max_prx =
-                cnt.getOutputValue<double>(state, "casting_total_max_proximity");
-
-            std::cout << std::setw(w) << cnt.getName()
-                << std::setw(w) << num_cnt_tri
-                << std::setw(w) << cnt_frc
-                << std::setw(w) << cnt_moment
-                << std::setw(w) << mean_prs
-                << std::setw(w) << max_prs
-                << std::setw(w) << mean_prx
-                << std::setw(w) << max_prx
-                << std::endl;
-        }
+    int p = 0;
+    for (int k = 0; k < _n_muscles; ++k) {
+        log_debug("{:<20} {:<20} {:<20}", _optim_parameter_names[p],
+            parameters[p], parameters[p] * _optimal_force[p]);
+        p++;
     }
+
+    log_debug("Optimized Non Muscle Actuators:");
+    log_debug("{:<20} {:<20} {:<20}","name","activation", "force");
+
+    for (int k = 0; k < _n_non_muscle_actuators; ++k) {
+        log_debug("{:<20} {:<20} {:<20}", _optim_parameter_names[p],
+            parameters[p], parameters[p] * _optimal_force[p]);
+        p++;
+    }
+
+    log_debug("Optimized Secondardy Coordinates:");
+    log_debug("{:<20} {:<20}","name", "value", "change");
+
+    for (int k = 0; k < _n_secondary_coord; ++k) {
+        double value = _model.updComponent<Coordinate>
+            (_secondary_coord_path[k]).getValue(state);
+
+        log_debug("{:<20} {:<20}", value, parameters[p]);
+
+        p++;
+    }
+
+    
+    _model.realizeReport(state);
+
+    log_debug("\nBlankevoort1991Ligaments:");
+    log_debug("{:<20} {:<10} {:<10} {:<10} {:<10} {:<10}",
+        "Name", "Total_Force", "Spring_Force", "Damping_Force",
+        "Lengths", "Strains");
+
+    for (auto& lig : _model.updComponentList<Blankevoort1991Ligament>()) {
+        double total_frc = lig.getOutputValue<double>(state, "total_force");
+        double spring_frc = lig.getOutputValue<double>(state, "spring_force");
+        double damping_frc = lig.getOutputValue<double>(state, "damping_force");
+        double length = lig.getOutputValue<double>(state, "length");
+        double strain = lig.getOutputValue<double>(state, "strain");
+
+        log_debug("{:<20} {:<10} {:<10} {:<10} {:<10} {:<10}", lig.getName(), total_frc, spring_frc, damping_frc, length, strain);
+    }
+
+    log_debug("Smith2018ArticularContactForce: casting_mesh");
+    log_debug("{:<20} {:<10} {:<10} {:<10} {:<10} {:<10} {:<10} {:<10}", 
+        "Name", "Num_Contacting_Tri", "Contact_Force", "Contact_Moment", 
+        "Mean Pressure", "Max Pressure", "Mean Proximity", "Max Proximity");
+
+    for (auto& cnt :
+        _model.updComponentList<Smith2018ArticularContactForce>()) {
+
+        int num_cnt_tri =
+            cnt.getOutputValue<int>(state, "casting_num_contacting_triangles");
+        SimTK::Vec3 cnt_frc =
+            cnt.getOutputValue<SimTK::Vec3>(state,
+                "casting_total_contact_force");
+        SimTK::Vec3 cnt_moment =
+            cnt.getOutputValue<SimTK::Vec3>(state,
+                "casting_total_contact_moment");
+
+        double mean_prs =
+            cnt.getOutputValue<double>(state, "casting_total_mean_pressure");
+        double max_prs =
+            cnt.getOutputValue<double>(state, "casting_total_max_pressure");
+        double mean_prx =
+            cnt.getOutputValue<double>(state, "casting_total_mean_proximity");
+        double max_prx =
+            cnt.getOutputValue<double>(state, "casting_total_max_proximity");
+
+        log_debug("{:<20} {:<10} {:<10} {:<10} {:<10} {:<10} {:<10} {:<10}",
+            cnt.getName(), num_cnt_tri, cnt_frc, cnt_moment, 
+            mean_prs, max_prs, mean_prx, max_prx);
+    }
+    
 }
 
 

@@ -45,7 +45,7 @@ JointMechanicsTool::JointMechanicsTool() : Object()
 {
     setNull();
     constructProperties();
-    _directoryOfSetupFile = "";
+    //_directoryOfSetupFile = "";
     _model_exists = false;
 }
 
@@ -55,8 +55,8 @@ JointMechanicsTool::JointMechanicsTool(std::string settings_file) :
     updateFromXMLDocument();
     //loadModel(settings_file);
 
-    _directoryOfSetupFile = IO::getParentDirectory(settings_file);
-    IO::chDir(_directoryOfSetupFile);
+    //_directoryOfSetupFile = IO::getParentDirectory(settings_file);
+    //IO::chDir(_directoryOfSetupFile);
 }
 /*
 JointMechanicsTool::JointMechanicsTool(Model *aModel, 
@@ -133,62 +133,83 @@ void JointMechanicsTool::setModel(Model& aModel)
 
 
 bool JointMechanicsTool::run() {
-    //Set the max number of points a ligament or muscle path can contain
-    _max_path_points = 100;
+    bool completed = false;
+    
+    auto cwd = IO::CwdChanger::changeToParentOf(getDocumentFileName());
 
-    //Make results directory
-    int makeDir_out = IO::makeDir(get_results_directory());
-    if (errno == ENOENT && makeDir_out == -1) {
-        OPENSIM_THROW(Exception, "Could not create " +
-            get_results_directory() +
-            "Possible reason: This tool cannot make new folder with subfolder.");
-    }
+    try {
 
-    //Set Model
-    if (!_model_exists) {
-        if (get_model_file().empty()) {
-            OPENSIM_THROW(Exception, 
-                "No model was set in the JointMechanicsTool.");
-        }
-        _model = Model(get_model_file());
-    }
+        //Set the max number of points a ligament or muscle path can contain
+        _max_path_points = 100;
 
-    SimTK::State state = _model.initSystem();
-
-    initialize(state);
-
-    SimTK::Visualizer* viz=NULL;
-    if (get_use_visualizer()) {
-        viz = &_model.updVisualizer().updSimbodyVisualizer();
-        viz->setShowSimTime(true);
-    }
-
-    //loop over each frame
-    for (int i = 0; i < _n_frames; ++i) {
-        
-        std::cout << "Time: " << _time[i] << std::endl;
-
-        //Set State
-        state = _states[i];
-        
-        //Record Values
-        record(state,i);
-
-        //Perform analyses
-        if (i == 0) {
-            _model.updAnalysisSet().begin(state);
-        }
-        else {
-            _model.updAnalysisSet().step(state, i);
+        //Make results directory
+        int makeDir_out = IO::makeDir(get_results_directory());
+        if (errno == ENOENT && makeDir_out == -1) {
+            OPENSIM_THROW(Exception, "Could not create " +
+                get_results_directory() +
+                "Possible reason: This tool cannot make new folder with subfolder.");
         }
 
-        //Visualize
+        //Set Model
+        if (!_model_exists) {
+            if (get_model_file().empty()) {
+                OPENSIM_THROW(Exception, 
+                    "No model was set in the JointMechanicsTool.");
+            }
+            _model = Model(get_model_file());
+        }
+
+        SimTK::State state = _model.initSystem();
+
+        initialize(state);
+
+        SimTK::Visualizer* viz=NULL;
         if (get_use_visualizer()) {
-            viz->drawFrameNow(state);
+            viz = &_model.updVisualizer().updSimbodyVisualizer();
+            viz->setShowSimTime(true);
         }
+
+        //loop over each frame
+        for (int i = 0; i < _n_frames; ++i) {
+        
+            std::cout << "Time: " << _time[i] << std::endl;
+
+            //Set State
+            state = _states[i];
+        
+            //Record Values
+            record(state,i);
+
+            //Perform analyses
+            if (i == 0) {
+                _model.updAnalysisSet().begin(state);
+            }
+            else {
+                _model.updAnalysisSet().step(state, i);
+            }
+
+            //Visualize
+            if (get_use_visualizer()) {
+                viz->drawFrameNow(state);
+            }
+        }
+        printResults(get_results_file_basename(), get_results_directory());
+
+        completed = true;
     }
-    printResults(get_results_file_basename(), get_results_directory());
-    return true;
+
+    catch(const std::exception& x) {
+        log_error("COMAKTool::run() caught an exception: \n {}", x.what());
+        cwd.restore();
+    }
+    catch (...) { // e.g. may get InterruptedException
+        log_error("COMAKTool::run() caught an exception.");
+        cwd.restore();
+    }
+
+    cwd.restore();
+
+    return completed;
 }
 
 void JointMechanicsTool::initialize(SimTK::State& state) {

@@ -53,7 +53,7 @@ using namespace OpenSim;
 COMAKInverseKinematicsTool::COMAKInverseKinematicsTool() 
 {
     constructProperties();
-    _directoryOfSetupFile = "";
+    //_directoryOfSetupFile = "";
     _model_exists = false;
 }
 
@@ -62,8 +62,8 @@ COMAKInverseKinematicsTool::COMAKInverseKinematicsTool(const std::string file)
     constructProperties();
     updateFromXMLDocument();
         
-    _directoryOfSetupFile = IO::getParentDirectory(file);
-    IO::chDir(_directoryOfSetupFile); 
+    //_directoryOfSetupFile = IO::getParentDirectory(file);
+    //IO::chDir(_directoryOfSetupFile); 
 }
 
 //_____________________________________________________________________________
@@ -115,18 +115,39 @@ void COMAKInverseKinematicsTool::setModel(Model& model) {
 
 bool COMAKInverseKinematicsTool::run()
 {
-    initialize();
+    bool completed = false;
     
-    //Secondary Constraint Simulation
-    if (get_perform_secondary_constraint_sim()) {
-        performIKSecondaryConstraintSimulation();
+    auto cwd = IO::CwdChanger::changeToParentOf(getDocumentFileName());
+
+    try {
+    
+        initialize();
+    
+        //Secondary Constraint Simulation
+        if (get_perform_secondary_constraint_sim()) {
+            performIKSecondaryConstraintSimulation();
+        }
+
+        //Inverse Kinematics 
+        if (get_perform_inverse_kinematics()) {
+            performIK();
+        }
+
+        completed = true;
     }
 
-    //Inverse Kinematics 
-    if (get_perform_inverse_kinematics()) {
-        performIK();
+    catch(const std::exception& x) {
+        log_error("COMAKTool::run() caught an exception: \n {}", x.what());
+        cwd.restore();
     }
-    return true;
+    catch (...) { // e.g. may get InterruptedException
+        log_error("COMAKTool::run() caught an exception.");
+        cwd.restore();
+    }
+
+    cwd.restore();
+
+    return completed;
 }
 
 bool COMAKInverseKinematicsTool::initialize()

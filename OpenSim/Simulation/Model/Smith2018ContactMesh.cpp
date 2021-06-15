@@ -143,7 +143,7 @@ void Smith2018ContactMesh::extendConnectToModel(Model& model)
     setNextSubcomponentInSystem(*mesh_frame);
 }
 
-std::string Smith2018ContactMesh::findMeshFile(const std::string& aafile)
+std::string Smith2018ContactMesh::findMeshFile(const std::string& file)
 {
     /*This is a modified version of the code found in Geometry.cpp
     Mesh::extendFinalizeFromProperties to find geometry files in
@@ -230,10 +230,10 @@ std::string Smith2018ContactMesh::findMeshFile(const std::string& aafile)
     //}
 
     // File is a .vtp, .stl, or .obj; attempt to find it.
-            const Component* rootModel = nullptr;
+    const Component* rootModel = nullptr;
         if (!hasOwner()) {
-             log_error("Mesh {} not connected to model...ignoring",
-                    get_mesh_file());
+             log_error("Smith2018ContactMesh {} not connected to model...ignoring",
+                    getName());
              OPENSIM_THROW(Exception, "");
             //return "";   // Orphan Mesh not part of a model yet
         }
@@ -250,8 +250,8 @@ std::string Smith2018ContactMesh::findMeshFile(const std::string& aafile)
         }
 
         if (rootModel == nullptr) {
-             log_error("Mesh {} not connected to model...ignoring",
-                    get_mesh_file());
+             log_error("Smith2018ContactMesh {} not connected to model...ignoring",
+                    getName());
              OPENSIM_THROW(Exception, "");
             //return "";   // Orphan Mesh not descendant of a model
         }
@@ -259,7 +259,7 @@ std::string Smith2018ContactMesh::findMeshFile(const std::string& aafile)
         // Current interface to Visualizer calls generateDecorations on every
         // frame. On first time through, load file and create DecorativeMeshFile
         // and cache it so we don't load files from disk during live rendering.
-        const std::string& file = get_mesh_file();
+        //const std::string& file = get_mesh_file();
         if (file.empty() || file.compare(PropertyStr::getDefaultStr()) == 0) {
             log_error("No mesh_file property defined in Smith2018ContactMesh: "
                 "{}", getName());
@@ -529,16 +529,16 @@ void Smith2018ContactMesh::computeVariableThickness() {
         int tri;
         SimTK::Vec3 intersection_point;
         double depth = 0.0;
-
+        
         if (_back_obb.rayIntersectOBB(_mesh_back,
             _tri_center(i), -_tri_normal(i), tri, intersection_point, depth)) {
 
             if (depth < min_thickness) {
                 depth = min_thickness;
             }
-            if (depth > max_thickness) {
+            else if (depth > max_thickness) {
                 depth = min_thickness;
-            }
+            }            
         }
         else{ //Normal from mesh missed mesh back
             depth = min_thickness;
@@ -774,15 +774,11 @@ bool Smith2018ContactMesh::rayIntersectMesh(
 }
 
 void Smith2018ContactMesh::printMeshDebugInfo() const {
-    int w = 20;
-    std::cout << std::setw(w) << "Tri #"
-        << std::setw(w) << "Area"
-        << std::setw(w) << "Thickness"
-        << std::setw(w) << "Elastic Modulus"
-        << std::setw(w) << "Poissons Ratio"
-        << std::setw(w) << "Center"
-        << std::setw(w) << "Normal"
-        << std::endl;
+    log_trace("Mesh Properties: {}", getName());
+    log_trace("{:<10} {:<15} {:<15} {:<15} {:<15} {:<35} {:<35}",
+        "Tri #", "Area", "Thickness",  "Elastic Modulus", "Poissons Ratio",
+        "Center", "Normal");
+
 
     const SimTK::Vector& area = getTriangleAreas();
     const SimTK::Vector_<SimTK::Vec3>&  center = getTriangleCenters();
@@ -796,14 +792,8 @@ void Smith2018ContactMesh::printMeshDebugInfo() const {
         SimTK::Vec3 c = center(i);
         SimTK::Vec3 n = normal(i);
 
-        std::cout
-            << std::setw(w) << t
-            << std::setw(w) << E
-            << std::setw(w) << v
-            << std::setw(w) << a
-            << std::setw(w) << c
-            << std::setw(w) << n
-            << std::endl;
+        log_trace("{:<10} {:<15} {:<15} {:<15} {:<15} {:<35} {:<35}",
+          i, a, t, E, v, c, n);
     }
 }
 

@@ -46,8 +46,8 @@ ForsimTool::ForsimTool(std::string settings_file) : Object(settings_file) {
     constructProperties();
     updateFromXMLDocument();
 
-    _directoryOfSetupFile = IO::getParentDirectory(settings_file);
-    IO::chDir(_directoryOfSetupFile);
+    //_directoryOfSetupFile = IO::getParentDirectory(settings_file);
+    //IO::chDir(_directoryOfSetupFile);
 }
 
 void ForsimTool::setNull()
@@ -90,152 +90,172 @@ void ForsimTool::setModel(Model& aModel)
 
 bool ForsimTool::run()
 {
-    //Set Model
-    if (!_model_exists) {
-        if (get_model_file().empty()) {
-            OPENSIM_THROW(Exception, "No model was set in the ForsimTool.");
-        }
-        _model = Model(get_model_file());
-    }
-
-    //Make results directory
-    int makeDir_out = IO::makeDir(get_results_directory());
-    if (errno == ENOENT && makeDir_out == -1) {
-        OPENSIM_THROW(Exception, "Could not create " +
-            get_results_directory() +
-            "Possible reason: This tool cannot make new folder with subfolder.");
-    }
-
-    SimTK::State state = _model.initSystem();
-
-    //Add Analysis set
-    AnalysisSet aSet = get_AnalysisSet();
-    int size = aSet.getSize();
-
-    for (int i = 0; i < size; i++) {
-        Analysis *analysis = aSet.get(i).clone();
-        _model.addAnalysis(analysis);
-    }
-
-    initializeActuators(state);
-
-    initializeCoordinates();
-
-    applyExternalLoads();
-
-    if (get_use_visualizer()) {
-        _model.setUseVisualizer(true);
-    }
-
-    state = _model.initSystem();
-
-    if (get_verbose() > 2) {
-        for (const auto& mesh : _model.updComponentList<Smith2018ContactMesh>()) {
-            mesh.printMeshDebugInfo();
-        }
-    }
-
-    initializeStartStopTimes();
-
-    //Allocate Results Storage
-    StatesTrajectory result_states;
-    AnalysisSet& analysisSet = _model.updAnalysisSet();
-
-    if (get_equilibrate_muscles()) {
-        _model.equilibrateMuscles(state);
-    }
-
-    //Setup Visualizer
-    if (get_use_visualizer()) {
-        _model.updMatterSubsystem().setShowDefaultGeometry(false);
-        SimTK::Visualizer& viz = _model.updVisualizer().updSimbodyVisualizer();
-        viz.setBackgroundColor(SimTK::Black);
-        viz.setBackgroundType(SimTK::Visualizer::BackgroundType::SolidColor);
-        viz.setMode(SimTK::Visualizer::Mode::Sampling);
-        viz.setShowSimTime(true);
-        viz.setDesiredFrameRate(100);
-    }
-
-    //Setup Integrator
-    state.setTime(get_start_time());
+    bool completed = false;
     
-    SimTK::CPodesIntegrator integrator(_model.getSystem(), SimTK::CPodes::BDF, SimTK::CPodes::Newton);
-    integrator.setAccuracy(get_integrator_accuracy());
-    integrator.setMinimumStepSize(get_minimum_time_step());
-    integrator.setMaximumStepSize(get_maximum_time_step());
-    if (get_internal_step_limit()>0) {
-        integrator.setInternalStepLimit(get_internal_step_limit());
-    }
-    SimTK::TimeStepper timestepper(_model.getSystem(), integrator);
-    timestepper.initialize(state);
-    
-    //Integrate Forward in Time
-    double dt = get_report_time_step();
-    int nSteps = (int)lround((get_stop_time() - get_start_time()) / dt);
+    auto cwd = IO::CwdChanger::changeToParentOf(getDocumentFileName());
 
-    log_info("=====================================================");
-    log_info("| ForsimTool: Performing Forward Dynamic Simulation |");
-    log_info("=====================================================");
-    log_info("start time: {}", get_start_time());
-    log_info("stop time: {}", get_stop_time());
+    try {
 
-
-    for (int i = 0; i <= nSteps; ++i) {
-        
-        double t = get_start_time() + (i+1) * dt;
-        log_info("time: {}",t);
-
-        printDebugInfo(state);
-
-        //Set Prescribed Muscle Forces
-        if(_prescribed_frc_actuator_paths.size() > 0){
-            for (int j = 0; j < (int)_prescribed_frc_actuator_paths.size();++j) {
-                std::string actuator_path = _prescribed_frc_actuator_paths[j];
-                ScalarActuator& actuator = _model.updComponent<ScalarActuator>(actuator_path);
-                double value = _frc_functions.get(actuator_path +"_frc").calcValue(SimTK::Vector(1,t));
-                actuator.setOverrideActuation(state, value);
+        //Set Model
+        if (!_model_exists) {
+            if (get_model_file().empty()) {
+                OPENSIM_THROW(Exception, "No model was set in the ForsimTool.");
             }
-            timestepper.initialize(state);
+            _model = Model(get_model_file());
         }
 
-        timestepper.stepTo(t);
-
-        ///state = timestepper.updIntegrator().updAdvancedState();
-        state = timestepper.getState();
-        _model.realizeReport(state);
-        //Record parameters
-        if (i == 0) {
-            analysisSet.begin(state);
-        }
-        else {
-            analysisSet.step(state, i);
+        //Make results directory
+        int makeDir_out = IO::makeDir(get_results_directory());
+        if (errno == ENOENT && makeDir_out == -1) {
+            OPENSIM_THROW(Exception, "Could not create " +
+                get_results_directory() +
+                "Possible reason: This tool cannot make new folder with subfolder.");
         }
 
-        result_states.append(state);
+        SimTK::State state = _model.initSystem();
+
+        //Add Analysis set
+        AnalysisSet aSet = get_AnalysisSet();
+        int size = aSet.getSize();
+
+        for (int i = 0; i < size; i++) {
+            Analysis *analysis = aSet.get(i).clone();
+            _model.addAnalysis(analysis);
+        }
+
+        initializeActuators(state);
+
+        initializeCoordinates();
+
+        applyExternalLoads();
+
+        if (get_use_visualizer()) {
+            _model.setUseVisualizer(true);
+        }
+
+        state = _model.initSystem();
+
+        if (get_verbose() > 2) {
+            for (const auto& mesh : _model.updComponentList<Smith2018ContactMesh>()) {
+                mesh.printMeshDebugInfo();
+            }
+        }
+
+        initializeStartStopTimes();
+
+        //Allocate Results Storage
+        StatesTrajectory result_states;
+        AnalysisSet& analysisSet = _model.updAnalysisSet();
+
+        if (get_equilibrate_muscles()) {
+            _model.equilibrateMuscles(state);
+        }
+
+        //Setup Visualizer
+        if (get_use_visualizer()) {
+            _model.updMatterSubsystem().setShowDefaultGeometry(false);
+            SimTK::Visualizer& viz = _model.updVisualizer().updSimbodyVisualizer();
+            viz.setBackgroundColor(SimTK::Black);
+            viz.setBackgroundType(SimTK::Visualizer::BackgroundType::SolidColor);
+            viz.setMode(SimTK::Visualizer::Mode::Sampling);
+            viz.setShowSimTime(true);
+            viz.setDesiredFrameRate(100);
+        }
+
+        //Setup Integrator
+        state.setTime(get_start_time());
+    
+        SimTK::CPodesIntegrator integrator(_model.getSystem(), SimTK::CPodes::BDF, SimTK::CPodes::Newton);
+        integrator.setAccuracy(get_integrator_accuracy());
+        integrator.setMinimumStepSize(get_minimum_time_step());
+        integrator.setMaximumStepSize(get_maximum_time_step());
+        if (get_internal_step_limit()>0) {
+            integrator.setInternalStepLimit(get_internal_step_limit());
+        }
+        SimTK::TimeStepper timestepper(_model.getSystem(), integrator);
+        timestepper.initialize(state);
+    
+        //Integrate Forward in Time
+        double dt = get_report_time_step();
+        int nSteps = (int)lround((get_stop_time() - get_start_time()) / dt);
+
+        log_info("=====================================================");
+        log_info("| ForsimTool: Performing Forward Dynamic Simulation |");
+        log_info("=====================================================");
+        log_info("start time: {}", get_start_time());
+        log_info("stop time: {}", get_stop_time());
+
+
+        for (int i = 0; i <= nSteps; ++i) {
+        
+            double t = get_start_time() + (i+1) * dt;
+            log_info("time: {}",t);
+
+            printDebugInfo(state);
+
+            //Set Prescribed Muscle Forces
+            if(_prescribed_frc_actuator_paths.size() > 0){
+                for (int j = 0; j < (int)_prescribed_frc_actuator_paths.size();++j) {
+                    std::string actuator_path = _prescribed_frc_actuator_paths[j];
+                    ScalarActuator& actuator = _model.updComponent<ScalarActuator>(actuator_path);
+                    double value = _frc_functions.get(actuator_path +"_frc").calcValue(SimTK::Vector(1,t));
+                    actuator.setOverrideActuation(state, value);
+                }
+                timestepper.initialize(state);
+            }
+
+            timestepper.stepTo(t);
+
+            ///state = timestepper.updIntegrator().updAdvancedState();
+            state = timestepper.getState();
+            _model.realizeReport(state);
+            //Record parameters
+            if (i == 0) {
+                analysisSet.begin(state);
+            }
+            else {
+                analysisSet.step(state, i);
+            }
+
+            result_states.append(state);
+        }
+
+        //Print Results
+        TimeSeriesTable states_table = result_states.exportToTable(_model);
+        states_table.addTableMetaData("header", std::string("States"));
+        states_table.addTableMetaData("nRows", 
+            std::to_string(states_table.getNumRows()));
+        states_table.addTableMetaData("nColumns", 
+            std::to_string(states_table.getNumColumns()+1));
+        states_table.addTableMetaData("inDegrees", std::string("no"));
+
+        STOFileAdapter sto;
+        std::string basefile = get_results_directory() + "/" +
+            get_results_file_basename();
+
+        sto.write(states_table, basefile + "_states.sto");
+    
+        _model.updAnalysisSet().printResults(
+            get_results_file_basename(), get_results_directory());
+
+        log_info("\nSimulation complete.");
+        log_info("Printed results to: {}", get_results_directory());
+
+        completed = true;
     }
 
-    //Print Results
-    TimeSeriesTable states_table = result_states.exportToTable(_model);
-    states_table.addTableMetaData("header", std::string("States"));
-    states_table.addTableMetaData("nRows", 
-        std::to_string(states_table.getNumRows()));
-    states_table.addTableMetaData("nColumns", 
-        std::to_string(states_table.getNumColumns()+1));
-    states_table.addTableMetaData("inDegrees", std::string("no"));
+    catch(const std::exception& x) {
+        log_error("COMAKTool::run() caught an exception: \n {}", x.what());
+        cwd.restore();
+    }
+    catch (...) { // e.g. may get InterruptedException
+        log_error("COMAKTool::run() caught an exception.");
+        cwd.restore();
+    }
 
-    STOFileAdapter sto;
-    std::string basefile = get_results_directory() + "/" +
-        get_results_file_basename();
+    cwd.restore();
 
-    sto.write(states_table, basefile + "_states.sto");
-    
-    _model.updAnalysisSet().printResults(
-        get_results_file_basename(), get_results_directory());
-
-    log_info("\nSimulation complete.");
-    log_info("Printed results to: {}", get_results_directory());
-
-    return true;
+    return completed; 
 }
 
 void ForsimTool::initializeStartStopTimes() {

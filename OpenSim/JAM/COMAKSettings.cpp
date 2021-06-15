@@ -56,7 +56,7 @@ void COMAKCostFunctionParameter::constructProperties()
     constructProperty_actuator("");
     constructProperty_weight(Constant(1.0));
     constructProperty_desired_activation(Constant(0.0));
-    constructProperty_activation_lower_bound(Constant(0.0));
+    constructProperty_activation_lower_bound(Constant(0.01));
     constructProperty_activation_upper_bound(Constant(1.0));
 }
 
