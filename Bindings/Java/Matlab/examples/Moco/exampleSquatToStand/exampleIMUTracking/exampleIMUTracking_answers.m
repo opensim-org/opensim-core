@@ -146,7 +146,7 @@ study.visualize(trackingSolution);
 end
 
 %% Part 5: Compare tracking solution to original prediction
-% Part 5a: Plot the tracking solution against the prediction. This is 
+% Part 5a: Plot the tracking solution against the prediction. This is a
 % convenience function provided for you. See mocoPlotTrajectory.m
 mocoPlotTrajectory('predictSolution.sto', 'trackingSolution.sto', ...
         'predict', 'track');
@@ -236,15 +236,15 @@ figure;
 subplot(1,3,1)
 torso = accelerationsReference.getDependentColumn(...
     '/bodyset/torso/torso_imu_offset').getAsMat();
-plot(time, torso(:,1), 'b-', 'linewidth', 3)
+plot(time, torso(:,1), 'r-', 'linewidth', 3)
 if nargin == 2
 hold on
 torsoTrack = accelerationsTracking.getDependentColumn(...
     '/bodyset/torso/torso_imu_offset').getAsMat();
-plot(time, torsoTrack(:,1), 'r--', 'linewidth', 3)
+plot(time, torsoTrack(:,1), 'b--', 'linewidth', 3)
 end
 if nargin == 2
-    legend('reference', 'tracking solution', 'location', 'best');
+    legend('predict', 'track', 'location', 'best');
 end
 title('torso')
 xlabel('time (s)')
@@ -254,12 +254,12 @@ ylabel('acceleration (m/s^2)')
 subplot(1,3,2)
 femur = accelerationsReference.getDependentColumn(...
     '/bodyset/femur_r/femur_r_imu_offset').getAsMat();
-plot(time, femur(:,1), 'b-', 'linewidth', 3)
+plot(time, femur(:,1), 'r-', 'linewidth', 3)
 if nargin == 2
 hold on
 femurTrack = accelerationsTracking.getDependentColumn(...
     '/bodyset/femur_r/femur_r_imu_offset').getAsMat();
-plot(time, femurTrack(:,1), 'r--', 'linewidth', 3)
+plot(time, femurTrack(:,1), 'b--', 'linewidth', 3)
 end
 title('femur')
 xlabel('time (s)')
@@ -269,12 +269,12 @@ ylabel('acceleration (m/s^2)')
 subplot(1,3,3)
 tibia = accelerationsReference.getDependentColumn(...
     '/bodyset/tibia_r/tibia_r_imu_offset').getAsMat();
-plot(time, tibia(:,1), 'b-', 'linewidth', 3)
+plot(time, tibia(:,1), 'r-', 'linewidth', 3)
 if nargin == 2
 hold on
 tibiaTrack = accelerationsTracking.getDependentColumn(...
     '/bodyset/tibia_r/tibia_r_imu_offset').getAsMat();
-plot(time, tibiaTrack(:,1), 'r--', 'linewidth', 3)
+plot(time, tibiaTrack(:,1), 'b--', 'linewidth', 3)
 end
 title('tibia')
 xlabel('time (s)')

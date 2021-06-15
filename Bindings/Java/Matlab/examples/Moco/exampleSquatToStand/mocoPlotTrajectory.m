@@ -40,7 +40,7 @@ for i = 0:numStates-1
         hold off
     end
     
-    stateName = stateNames.get(i); %.toCharArray';
+    stateName = stateNames.get(i);
     title(stateName(11:end), 'Interpreter', 'none')
     xlabel('time (s)')
     if contains(stateName, 'value')
@@ -82,7 +82,7 @@ for i = 0:numControls-1
     if nargin > 1
         hold on
         yB = trajB.getControlMat(controlNames.get(i));
-        plot(trajB.getTimeMat(), yB, '-b', 'linewidth', 2.5);
+        plot(trajB.getTimeMat(), yB, '--b', 'linewidth', 2.5);
         hold off
     end
     title(controlNames.get(i), 'Interpreter', 'none')
