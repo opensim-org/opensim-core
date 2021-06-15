@@ -295,8 +295,14 @@ public:
     }
 
     /// Get a vector of the MocoScaleFactors added to this MocoGoal.
-    const std::vector<MocoScaleFactor>& getScaleFactors() const {
-        return m_scaleFactors;
+    /// @details Note: the return value is constructed fresh on every call from
+    /// the internal property. Avoid repeated calls to this function.
+    std::vector<MocoScaleFactor> getScaleFactors() const {
+        std::vector<MocoScaleFactor> scaleFactors;
+        for (int i = 0; i < getProperty_scale_factors().size(); ++i) {
+            scaleFactors.push_back(get_scale_factors(i));
+        }
+        return scaleFactors;
     }
 
     /// Print the name type and mode of this goal. In cost mode, this prints the
@@ -372,7 +378,7 @@ protected:
 
     /// Append a MocoScaleFactor to this MocoGoal.
     void appendScaleFactor(const MocoScaleFactor& scaleFactor) {
-        m_scaleFactors.push_back(scaleFactor);
+        append_scale_factors(scaleFactor);
     }
 
 private:
@@ -387,6 +393,12 @@ private:
     OpenSim_DECLARE_UNNAMED_PROPERTY(MocoConstraintInfo,
             "The bounds and labels for this MocoGoal, if applied as an "
             "endpoint constraint.");
+    OpenSim_DECLARE_LIST_PROPERTY(scale_factors, MocoScaleFactor,
+            "Scale factors added by derived MocoGoal classes that are optimized "
+            "via a MocoParameter. A copy of each MocoScaleFactor component is "
+            "added to the model internal to MocoProblem, which makes the scale "
+            "factors values available when computing the cost function for each "
+            "MocoGoal.")
 
     void constructProperties();
 
@@ -404,7 +416,6 @@ private:
     mutable Mode m_modeToUse;
     mutable SimTK::Stage m_stageDependency = SimTK::Stage::Acceleration;
     mutable int m_numIntegrals = -1;
-    mutable std::vector<MocoScaleFactor> m_scaleFactors;
 };
 
 inline void MocoGoal::calcIntegrandImpl(

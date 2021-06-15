@@ -62,4 +62,5 @@ void MocoGoal::constructProperties() {
     constructProperty_weight(1);
     constructProperty_mode();
     constructProperty_MocoConstraintInfo(MocoConstraintInfo());
+    constructProperty_scale_factors();
 }

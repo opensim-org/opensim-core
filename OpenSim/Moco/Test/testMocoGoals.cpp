@@ -452,9 +452,6 @@ TEST_CASE("Test MocoScaleFactor", "") {
     solver.setGuess(guessTracking);
     // Solve.
     auto solutionTracking = study.solve();
-    solutionTracking.write(
-            "testMocoGoals_MocoControlTrackingGoal_scale_factors"
-            "_tracking_solution.sto");
     // Make sure control tracking problem matches control effort problem. We've
     // already adjusted the effort controls while constructing the initial guess
     // above, so this comparison should pass if the problem solved correctly.

@@ -80,7 +80,7 @@ void MocoProblemRep::initialize() {
     std::unordered_set<std::string> scaleFactorNames;
     for (int i = 0; i < ph0.getProperty_goals().size(); ++i) {
         const auto& goal = ph0.get_goals(i);
-        const auto& scaleFactors = goal.getScaleFactors();
+        std::vector<MocoScaleFactor> scaleFactors = goal.getScaleFactors();
         for (const auto& scaleFactor : scaleFactors) {
             OPENSIM_THROW_IF(scaleFactor.getName().empty(), Exception,
                     "All scale factors must have a name.");
