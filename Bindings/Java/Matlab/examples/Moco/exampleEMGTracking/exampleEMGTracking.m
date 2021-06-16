@@ -1,4 +1,4 @@
-function exampleEMGTracking_answers
+function exampleEMGTracking
 clear; close all; clc;
 
 %% Part 0: Load the OpenSim and Moco libraries.
@@ -13,35 +13,27 @@ import org.opensim.modeling.*;
 % ground reaction forces applied to the model via ExternalLoads, which is 
 % necessary for the muscle redundancy problem. See the function definition 
 % at the bottom of this file to see how the model is loaded and constructed.
-model = getWalkingModel(); 
+model = getWalkingModel();  
 
-% Part 1b: Create the MocoInverse tool and set the Model.
-inverse = MocoInverse();
-inverse.setModel(model);
+% Part 1a: Create the MocoInverse tool and set the Model.
 
-% Part 1c: Create a TableProcessor using the coordinates file from inverse
+
+% Part 1b: Create a TableProcessor using the coordinates file from inverse
 % kinematics.
-coordinates = TableProcessor('coordinates.mot');
-coordinates.append(TabOpLowPassFilter(6));
-coordinates.append(TabOpUseAbsoluteStateNames());
 
-% Part 1d: Set the kinematics reference for MocoInverse using the 
+
+% Part 1c: Set the kinematics reference for MocoInverse using the 
 % TableProcessor we just created.
-inverse.setKinematics(coordinates);
-inverse.set_kinematics_allow_extra_columns(true);
 
-% Part 1e: Provide the solver settings: initial and final time, the mesh 
+
+% Part 1d: Provide the solver settings: initial and final time, the mesh 
 % interval, and the constraint and convergence tolerances.
-inverse.set_initial_time(0.83);
-inverse.set_final_time(2.0);
-inverse.set_mesh_interval(0.04);
-inverse.set_constraint_tolerance(1e-3);
-inverse.set_convergence_tolerance(1e-3);
+
 
 if ~exist('effortSolution.sto', 'file')
-% Part 1f: Solve the problem!
-solution = inverse.solve().getMocoSolution();
-solution.write('effortSolution.sto');
+% Part 1e: Solve the problem!
+
+
 end
 
 %% Part 2: Plot the muscle redundancy problem solution.
@@ -59,55 +51,41 @@ compareSolutionToEMG(emgReference, 'effortSolution.sto');
 % Part 3a: Call initialize() to get access to the MocoStudy contained within
 % the MocoInverse instance. This will allow us to make additional
 % modifications to the problem not provided by MocoInverse.
-study = inverse.initialize();
-problem = study.updProblem();
+
 
 % Part 3b: Create a MocoControlTrackingGoal, set its weight, and provide
 % the EMG data as the tracking reference. We also need to specify the 
 % reference labels for the four muscles whose EMG we will track.
-tracking = MocoControlTrackingGoal('emg_tracking');
-tracking.setWeight(5);
-tracking.setReference(TableProcessor(emgReference));
-tracking.setReferenceLabel('/forceset/gasmed_l', 'gastrocnemius');
-tracking.setReferenceLabel('/forceset/tibant_l', 'tibialis_anterior');
-tracking.setReferenceLabel('/forceset/bfsh_l', 'biceps_femoris');
-tracking.setReferenceLabel('/forceset/glmax2_l', 'gluteus');
+
 
 % Part 3c: The EMG signals in the tracking are all normalized to have
 % a maximum value of 1, but the magnitudes of the excitations from the 
 % effort minimization solution suggest that these signals should be
 % rescaled. Use addScaleFactor() to add a MocoParameter to the problem that
 % will scale the reference data for the muscles in the tracking cost.
-tracking.addScaleFactor('gastroc_factor', '/forceset/gasmed_l', [0.01 1.0]); 
-tracking.addScaleFactor('tibant_factor', '/forceset/tibant_l', [0.01 1.0]); 
-tracking.addScaleFactor('bifem_factor', '/forceset/bfsh_l', [0.01 1.0]); 
-tracking.addScaleFactor('gluteus_factor', '/forceset/glmax2_l', [0.01 1.0]); 
+
 
 % Part 3d: Add the tracking goal to the problem.
-problem.addGoal(tracking)
+
 
 % Part 3e: Update the MocoCasADiSolver with the updated MocoProblem using 
 % resetProblem().
-solver = MocoCasADiSolver.safeDownCast(study.updSolver());
-solver.resetProblem(problem);
+
 
 % Part 3f: Tell MocoCasADiSolver that the MocoParameters we added to the 
 % problem via addScaleFactor() above do not require initSystem() calls on
 % the model. This provides a large speed-up.
-solver.set_parameters_require_initsystem(false);
+
 
 if ~exist('trackingSolution.sto', 'file')
 % Part 3g: Solve the problem!
-solution = study.solve();
-solution.write('trackingSolution.sto');
+
+
 end
 
 % Part 3h: Get the values of the optimized scale factors.
-trackingSolution = MocoTrajectory('trackingSolution.sto');
-gastroc_factor = trackingSolution.getParameter('gastroc_factor');
-tibant_factor = trackingSolution.getParameter('tibant_factor');
-bifem_factor = trackingSolution.getParameter('bifem_factor');
-gluteus_factor = trackingSolution.getParameter('gluteus_factor');
+
+
 
 %% Part 4: Plot the EMG-tracking muscle redundancy problem solution.
 % Part 4a: Print the scale factor values to the command window.
