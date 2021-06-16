@@ -40,7 +40,7 @@ jobs:
       run: python -m pip install numpy==1.19.3
 
     - name: Install SWIG
-      run: choco install swig --version 4.0.0 --yes --limit-output
+      run: choco install swig --version 4.0.0 --yes --limit-output --allow-downgrade
 
     - name: Cache dependencies
       id: cache-dependencies
