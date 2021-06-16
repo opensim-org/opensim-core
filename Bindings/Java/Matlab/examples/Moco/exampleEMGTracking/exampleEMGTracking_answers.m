@@ -34,21 +34,15 @@ inverse.set_kinematics_allow_extra_columns(true);
 % interval, and the constraint and convergence tolerances.
 inverse.set_initial_time(0.83);
 inverse.set_final_time(2.0);
-% A reasonably tight tolerance for the constraints and appropriately dense
-% mesh are important to ensure that the model dynamics are enforced 
-% accurately.
-inverse.set_mesh_interval(0.02);
-inverse.set_constraint_tolerance(1e-5);
-% The convergence tolerance can be less tight, as long as the goal of the
-% objective function is achieved.
+inverse.set_mesh_interval(0.04);
+inverse.set_constraint_tolerance(1e-3);
 inverse.set_convergence_tolerance(1e-3);
 
-% Part 1e: Solve the problem!
 if ~exist('effortSolution.sto', 'file')
-    solution = inverse.solve().getMocoSolution();
-    solution.write('effortSolution.sto');
+% Part 1e: Solve the problem!
+solution = inverse.solve().getMocoSolution();
+solution.write('effortSolution.sto');
 end
-effortSolution = MocoTrajectory('effortSolution.sto');
 
 %% Part 2: Plot the muscle redundancy problem solution.
 % Load the experimental electromyography data and compare 
@@ -56,7 +50,7 @@ effortSolution = MocoTrajectory('effortSolution.sto');
 % it later for the EMG-tracking problem. Each column in emg.sto is 
 % normalized so the maximum value for each signal is 1.0.
 emgReference = TimeSeriesTable('emg.sto');
-compareSolutionToEMG(emgReference, effortSolution);
+compareSolutionToEMG(emgReference, 'effortSolution.sto');
 
 %% Part 3: Muscle redundancy problem: EMG-tracking.
 % Modify the existing problem we created with the MocoInverse tool to solve
@@ -84,10 +78,10 @@ tracking.setReferenceLabel('/forceset/glmax2_l', 'gluteus');
 % effort minimization solution suggest that these signals should be
 % rescaled. Use addScaleFactor() to add a MocoParameter to the problem that
 % will scale the reference data for the muscles in the tracking cost.
-tracking.addScaleFactor('gastroc_factor', '/forceset/gasmed_l', [0.05 0.5]); 
-tracking.addScaleFactor('tibant_factor', '/forceset/tibant_l', [0.05 0.5]); 
-tracking.addScaleFactor('bifem_factor', '/forceset/bfsh_l', [0.05 0.5]); 
-tracking.addScaleFactor('gluteus_factor', '/forceset/glmax2_l', [0.05 0.5]); 
+tracking.addScaleFactor('gastroc_factor', '/forceset/gasmed_l', [0.01 1.0]); 
+tracking.addScaleFactor('tibant_factor', '/forceset/tibant_l', [0.01 1.0]); 
+tracking.addScaleFactor('bifem_factor', '/forceset/bfsh_l', [0.01 1.0]); 
+tracking.addScaleFactor('gluteus_factor', '/forceset/glmax2_l', [0.01 1.0]); 
 
 % Part 3d: Add the tracking goal to the problem.
 problem.addGoal(tracking)
@@ -102,18 +96,21 @@ solver.resetProblem(problem);
 % the model. This provides a large speed-up.
 solver.set_parameters_require_initsystem(false);
 
-% Part 3g: Solve the problem!
 if ~exist('trackingSolution.sto', 'file')
-    solution = study.solve();
-    solution.write('trackingSolution.sto');
+% Part 3g: Solve the problem!
+solution = study.solve();
+solution.write('trackingSolution.sto');
 end
-trackingSolution = MocoTrajectory('trackingSolution.sto');
 
-% Part 3h: Print out the values of the optimized scale factors.
+% Part 3h: Get the values of the optimized scale factors.
+trackingSolution = MocoTrajectory('trackingSolution.sto');
 gastroc_factor = trackingSolution.getParameter('gastroc_factor');
 tibant_factor = trackingSolution.getParameter('tibant_factor');
 bifem_factor = trackingSolution.getParameter('bifem_factor');
 gluteus_factor = trackingSolution.getParameter('gluteus_factor');
+
+%% Part 4: Plot the EMG-tracking muscle redundancy problem solution.
+% Part 4a: Print the scale factor values to the command window.
 fprintf('\n')
 fprintf('Optimized scale factor values: \n')
 fprintf('------------------------------ \n')
@@ -123,9 +120,7 @@ fprintf(['biceps femoris short head = ' num2str(bifem_factor) '\n'])
 fprintf(['gluteus = ' num2str(gluteus_factor) '\n'])
 fprintf('\n')
 
-%% Part 4: Plot the EMG-tracking muscle redundancy problem solution.
-
-% Part 4a: Re-scale the reference data using the optimized scale factors.
+% Part 4b: Re-scale the reference data using the optimized scale factors.
 gastroc = emgReference.updDependentColumn('gastrocnemius');
 tibant = emgReference.updDependentColumn('tibialis_anterior');
 bifem = emgReference.updDependentColumn('biceps_femoris');
@@ -137,9 +132,10 @@ for t = 0:emgReference.getNumRows() - 1
     gluteus.set(t, gluteus_factor * gluteus.get(t));
 end
 
-% Part 4b: Generate the plots. Compare results to the effort minimization 
+% Part 4c: Generate the plots. Compare results to the effort minimization 
 % solution.
-compareSolutionToEMG(emgReference, effortSolution, trackingSolution);
+compareSolutionToEMG(emgReference, 'effortSolution.sto', ... 
+    'trackingSolution.sto');
 
 end
 
@@ -219,9 +215,9 @@ import org.opensim.modeling.*;
 
 % Retrieve the inputs.
 emgReference = varargin{1};
-effortSolution = varargin{2};
+effortSolution = MocoTrajectory(varargin{2});
 if nargin > 2
-   trackingSolution = varargin{3}; 
+   trackingSolution = MocoTrajectory(varargin{3}); 
 end
 
 % Create a time vector for the EMG data that is consistent with the problem
