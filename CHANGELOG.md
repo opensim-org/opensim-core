@@ -6,11 +6,19 @@ request related to the change, then we may provide the commit.
 
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
 
+v4.3
+====
+- Fixed a bug with Actuation analysis that would lead to extra columns in the output when an actuator is disabled (Issue #2977).
+- Upgrade bindings to use SWIG version 4.0 (allowing doxygen comments to carry over to Java/Python files).
+- Added createSyntheticIMUAccelerationSignals() to SimulationUtilities to generate "synthetic" IMU accelerations based on passed in state trajectory.
+- Fixed incorrect header information in BodyKinematics file output
 
 v4.2
 ====
+- Fixed a bug with InverseDynamicsTool/InverseDynamicsSolver to account for cases where a model has extra slots in its `State`'s "q" (PR #2971)
+- Added Bhargava2004SmoothedMuscleMetabolics, a smoothed version of the Bhargava metabolics model designed for gradient-based optimization (i.e., Moco).
 - Fixed a bug in Millard2012EquilibriumMuscle::extendFinalizeFromProperties(): the end point slopes on the inverse force velocity curves are constrained to yield a valid curve. A warning is noted in the log if the slopes are small enough that numerical integration might be slow.
-- Added logging to Millard2012EquilibriumMuscle::extendFinalizeFromProperties(): whenever an internal setting is changed automatically these changes are noted in the log.
+- Added logging to Millard2012EquilibriumMuscle::extendFinalizeFromProperties(): whenever an internal setting is changed automatically these changes are noted in the log. To avoid seeing these messages, update the corresponding properties in the .osim file to the values noted in the log message.
 - Introduced new logging system based on spdlog https://github.com/gabime/spdlog.git. The transition should be transparent to end users with default settings except that the name of the log file is now opensim.log. Main features are:
   - The ability to customize error level for reporting (in increasing level of verbosity): Off, Critical, Error, Warn, Info, Debug, Trace 
   - The ability to start logging to a specified file on the fly.

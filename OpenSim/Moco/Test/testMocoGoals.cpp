@@ -360,6 +360,43 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
         SimTK_TEST_EQ_TOL(solutionEffort.getStatesTrajectory(),
                 solutionTracking.getStatesTrajectory(), 1e-1);
     }
+
+    // MocoAccelerationTrackingGoal (IMU tracking)
+    {
+        MocoStudy studyAccelerationTracking =
+                setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
+        // Re-run problem, now setting effort cost function to a low weight and
+        // adding an acceleration tracking cost.
+        auto& problem = studyAccelerationTracking.updProblem();
+        MocoProblemRep problemRep = problem.createRep();
+        const Model& model = problemRep.getModelBase();
+        problem.updPhase(0).updGoal("effort").setWeight(0.001);
+        auto* accelerationIMUTracking =
+                problem.addGoal<MocoAccelerationTrackingGoal>("tracking");
+        std::vector<std::string> framePaths = {"/bodyset/b0", "/bodyset/b1"};
+        accelerationIMUTracking->setFramePaths(framePaths);
+        // Compute the accelerations from the effort minimization solution to
+        // use as a tracking reference.
+        TimeSeriesTableVec3 accelTableIMU =
+                createSyntheticIMUAccelerationSignals(model,
+                        solutionEffort.exportToStatesTable(),
+                        solutionEffort.exportToControlsTable(),
+                        framePaths);
+        accelerationIMUTracking->setAccelerationReference(accelTableIMU);
+        accelerationIMUTracking->setGravityOffset(true);
+        accelerationIMUTracking->setExpressAccelerationsInTrackingFrames(true);
+
+        studyAccelerationTracking.updSolver<TestType>().resetProblem(problem);
+        auto solutionTracking = studyAccelerationTracking.solve();
+        solutionTracking.write("testMocoGoals_MocoAccelerationTrackingGoal_"
+                               "imu_tracking_solution.sto");
+
+        // The tracking solution should match the effort solution.
+        SimTK_TEST_EQ_TOL(solutionEffort.getControlsTrajectory(),
+                          solutionTracking.getControlsTrajectory(), 1e-1);
+        SimTK_TEST_EQ_TOL(solutionEffort.getStatesTrajectory(),
+                          solutionTracking.getStatesTrajectory(), 1e-1);
+    }
 }
 
 TEMPLATE_TEST_CASE("Test MocoJointReactionGoal", "",

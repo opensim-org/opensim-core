@@ -96,14 +96,16 @@ Vector InverseDynamicsSolver::solve(const SimTK::State &s, const SimTK::Vector &
     state variables (like muscle fiber lengths) that are not known */
 Vector InverseDynamicsSolver::solve(SimTK::State &s, const FunctionSet &Qs, double time)
 {
-    int nq = getModel().getNumCoordinates();
+    int nq = s.getNQ();
+    int nu = s.getNU();
 
-    if(Qs.getSize() != nq){
+    if (Qs.getSize() != nq) {
         throw Exception("InverseDynamicsSolver::solve invalid number of q functions.");
     }
 
-    if( nq != getModel().getNumSpeeds()){
-        throw Exception("InverseDynamicsSolver::solve using FunctionSet, nq != nu not supported.");
+    if (nq != nu) {
+        throw Exception("InverseDynamicsSolver::solve using only FunctionSet of "
+                        "qs, nq != nu not supported.");
     }
 
     // update the State so we get the correct gravity and Coriolis effects
@@ -123,20 +125,72 @@ Vector InverseDynamicsSolver::solve(SimTK::State &s, const FunctionSet &Qs, doub
     return solve(s, udot);
 }
 
+Vector InverseDynamicsSolver::solve(SimTK::State& s, const FunctionSet& Qs, 
+        const std::vector<int>& coordinatesToSpeedsIndexMap, double time) {
+    int nq = s.getNQ();
+    int nu = s.getNU();
+
+    if (Qs.getSize() != nq) {
+        throw Exception("InverseDynamicsSolver::solve invalid number of q functions.");
+    }
+
+    if ((int)coordinatesToSpeedsIndexMap.size() != nu) {
+        throw Exception("InverseDynamicsSolver::solve coordinatesToSpeedsIndexMap must be 'nu' long");
+    }
+
+    // update the State so we get the correct gravity and Coriolis effects
+    // direct references into the state so no allocation required
+    s.updTime() = time;
+    Vector& q = s.updQ();
+    Vector& u = s.updU();
+    Vector& udot = s.updUDot();
+
+    for (int i = 0; i < nq; i++) {
+        q[i] = Qs.evaluate(i, 0, time);
+    }
+
+    for (int i = 0; i < nu; i++) {
+        u[i] = Qs.evaluate(coordinatesToSpeedsIndexMap[i], 1, time);
+        udot[i] = Qs.evaluate(coordinatesToSpeedsIndexMap[i], 2, time);
+    }
+
+    // Perform general inverse dynamics
+    return solve(s, udot);
+}
 
 /** Same as above but for a given time series */
 void InverseDynamicsSolver::solve(SimTK::State &s, const FunctionSet &Qs, const Array_<double> &times, Array_<Vector> &genForceTrajectory)
 {
-    int nq = getModel().getNumCoordinates();
+    int nCoords = getModel().getNumCoordinates();
     int nt = times.size();
 
     //Preallocate if not done already
-    genForceTrajectory.resize(nt, Vector(nq));
+    genForceTrajectory.resize(nt, Vector(nCoords));
     
     AnalysisSet& analysisSet = const_cast<AnalysisSet&>(getModel().getAnalysisSet());
     //fill in results for each time
     for(int i=0; i<nt; i++){ 
         genForceTrajectory[i] = solve(s, Qs, times[i]);
+        analysisSet.step(s, i);
+    }
+}
+
+void InverseDynamicsSolver::solve(SimTK::State& s, const FunctionSet& Qs,
+        const std::vector<int> coordinatesToSpeedsIndexMap,
+        const Array_<double>& times,
+        Array_<Vector>& genForceTrajectory) {
+    int nCoords = getModel().getNumCoordinates();
+    int nt = times.size();
+
+    // Preallocate if not done already
+    genForceTrajectory.resize(nt, Vector(nCoords));
+
+    AnalysisSet& analysisSet =
+            const_cast<AnalysisSet&>(getModel().getAnalysisSet());
+    // fill in results for each time
+    for (int i = 0; i < nt; i++) {
+        genForceTrajectory[i] =
+                solve(s, Qs, coordinatesToSpeedsIndexMap, times[i]);
         analysisSet.step(s, i);
     }
 }

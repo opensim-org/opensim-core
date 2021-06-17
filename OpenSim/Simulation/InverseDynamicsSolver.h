@@ -88,16 +88,39 @@ public:
     /** Solve the inverse dynamics system of equations for generalized coordinate 
         forces, Tau. Now the state is updated from known coordinates, q, as 
         functions of time. Coordinate functions must be twice differentiable and 
-        are used to supply the coordinate speed and acceleration
+        are used to supply the coordinate speed and acceleration. Coordinate
+        functions must be in the same order as the order of q's, u's, and udot's
+        in the provided SimTK::State.
         NOTE: forces with internal states should be removed/disabled prior to  
               solving if default state is inappropriate */
     virtual SimTK::Vector solve(SimTK::State& s, const FunctionSet& Qs, double time);
+
+    /** This is the same as above, but can be used when qdot != u. This adds an
+        extra vector, coordinatesToSpeedsIndexMap, which is the length of number of u's in
+        the SimTK::State, and whose i'th index is the index of the FunctionSet
+        Qs from which each 'u' and 'udot' will be calculated. */
+    virtual SimTK::Vector solve(SimTK::State& s, const FunctionSet& Qs, 
+                                const std::vector<int>& coordinatesToSpeedsIndexMap,
+                                double time);
+
 #ifndef SWIG
-    /** Same as above but for a given time series populate an Array (trajectory) of
-        generalized-coordinate forces (Vector) */
+    /** Same as above but for a given time series populate an Array (trajectory)
+        of generalized-coordinate forces (Vector). Coordinate functions must be
+        in the same order as the order of q's, u's, and udot's in the provided
+        SimTK::State. */
     virtual void solve(SimTK::State& s, const FunctionSet& Qs, 
-                 const SimTK::Array_<double>&  times,
+                 const SimTK::Array_<double>& times,
                  SimTK::Array_<SimTK::Vector>& genForceTrajectory);
+
+    /** Same as above but for a given time series populate an Array (trajectory)
+       of generalized-coordinate forces (Vector) that can be used when qdot != u.
+       This adds an extra vector, coordinatesToSpeedsIndexMap, which is the length of number of
+       u's in the SimTK::State, and whose i'th index is the index of the
+       FunctionSet Qs from which each 'u' and 'udot' will be calculated. */ 
+    virtual void solve(SimTK::State& s, const FunctionSet& Qs, 
+            const std::vector<int> coordinatesToSpeedsIndexMap,
+            const SimTK::Array_<double>& times,
+            SimTK::Array_<SimTK::Vector>& genForceTrajectory);
 #endif
 //=============================================================================
 };  // END of class InverseDynamicsSolver

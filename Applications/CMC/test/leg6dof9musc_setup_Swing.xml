@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="40000">
+	<CMCTool name="leg6dof9musc">
+		<!--Name of the .osim file used to construct a model.-->
+		<model_file>leg6dof9musc.osim</model_file>
+		<!--Replace the model's force set with sets specified in <force_set_files>? If false, the force set is appended to.-->
+		<replace_force_set>false</replace_force_set>
+		<!--List of xml files used to construct a force set for the model.-->
+		<force_set_files />
+		<!--Directory used for writing results.-->
+		<results_directory>Leg6Dof9MuscSwing</results_directory>
+		<!--Output precision.  It is 8 by default.-->
+		<output_precision>8</output_precision>
+		<!--Initial time for the simulation.-->
+		<initial_time>0.11666667</initial_time>
+		<!--Final time for the simulation.-->
+		<final_time>0.61666666999999997</final_time>
+		<!--Flag indicating whether or not to compute equilibrium values for states other than the coordinates or speeds.  For example, equilibrium muscle fiber lengths or muscle forces.-->
+		<solve_for_equilibrium_for_auxiliary_states>true</solve_for_equilibrium_for_auxiliary_states>
+		<!--Maximum number of integrator steps.-->
+		<maximum_number_of_integrator_steps>20000</maximum_number_of_integrator_steps>
+		<!--Maximum integration step size.-->
+		<maximum_integrator_step_size>1</maximum_integrator_step_size>
+		<!--Minimum integration step size.-->
+		<minimum_integrator_step_size>1e-08</minimum_integrator_step_size>
+		<!--Integrator error tolerance. When the error is greater, the integrator step size is decreased.-->
+		<integrator_error_tolerance>1.0000000000000001e-05</integrator_error_tolerance>
+		<!--Set of analyses to be run during the investigation.-->
+		<AnalysisSet name="Analyses">
+			<objects />
+			<groups />
+		</AnalysisSet>
+		<!--Controller objects in the model.-->
+		<ControllerSet name="Controllers">
+			<objects />
+			<groups />
+		</ControllerSet>
+		<!--XML file (.xml) containing the forces applied to the model as ExternalLoads.-->
+		<external_loads_file />
+		<!--List of individual Actuators by individual or user-defined group name  to be excluded from CMC's control.-->
+		<actuators_to_exclude />
+		<!--Motion (.mot) or storage (.sto) file containing the desired point trajectories.-->
+		<desired_points_file />
+		<!--Motion (.mot) or storage (.sto) file containing the desired kinematic trajectories.-->
+		<desired_kinematics_file>leg69_IK_swing.mot</desired_kinematics_file>
+		<!--File containing the tracking tasks. Which coordinates are tracked and with what weights are specified here.-->
+		<task_set_file>leg69_CMC_Swing_Tracking_Tasks.xml</task_set_file>
+		<!--File containing the constraints on the controls.-->
+		<constraints_file>leg69_muscles_control_limits.xml</constraints_file>
+		<!--File containing the controls output by RRA. These can be used to place constraints on the residuals during CMC.-->
+		<rra_controls_file />
+		<!--Low-pass cut-off frequency for filtering the desired kinematics. A negative value results in no filtering. The default value is -1.0, so no filtering.-->
+		<lowpass_cutoff_frequency>6</lowpass_cutoff_frequency>
+		<!--Time window over which the desired actuator forces are achieved. Muscles forces cannot change instantaneously, so a finite time window must be allowed. The recommended time window for RRA is about 0.001 sec, and for CMC is about 0.010 sec.-->
+		<cmc_time_window>0.01</cmc_time_window>
+		<!--Flag (true or false) indicating whether to use the fast CMC optimization target. The fast target requires the desired accelerations to be met. The optimizer fails if the accelerations constraints cannot be met, so the fast target can be less robust.  The regular target does not require the acceleration constraints to be met; it meets them as well as it can, but it is slower and less accurate.-->
+		<use_fast_optimization_target>true</use_fast_optimization_target>
+		<!--Preferred optimizer algorithm (currently support "ipopt" or "cfsqp", the latter requiring the osimCFSQP library.-->
+		<optimizer_algorithm>ipopt</optimizer_algorithm>
+		<!--Step size used by the optimizer to compute numerical derivatives. A value between 1.0e-4 and 1.0e-8 is usually appropriate.-->
+		<numerical_derivative_step_size>0.0001</numerical_derivative_step_size>
+		<!--Convergence tolerance for the optimizer. The smaller this value, the deeper the convergence. Decreasing this number can improve a solution, but will also likely increase computation time.-->
+		<optimization_convergence_tolerance>0.0001</optimization_convergence_tolerance>
+		<!--Maximum number of iterations for the optimizer.-->
+		<optimizer_max_iterations>1000</optimizer_max_iterations>
+		<!--Print level for the optimizer, 0 - 3. 0=no printing, 3=detailed printing, 2=in between-->
+		<optimizer_print_level>0</optimizer_print_level>
+		<!--True-false flag indicating whether or not to turn on verbose printing for cmc.-->
+		<use_verbose_printing>false</use_verbose_printing>
+	</CMCTool>
+</OpenSimDocument>

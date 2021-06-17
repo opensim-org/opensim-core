@@ -25,6 +25,7 @@
 
 #include "Model/AnalysisSet.h"
 #include "Model/Bhargava2004MuscleMetabolicsProbe.h"
+#include "Model/Bhargava2004SmoothedMuscleMetabolics.h"
 #include "Model/Model.h"
 #include "Model/ModelVisualizer.h"
 #include "Model/ForceSet.h"
@@ -127,7 +128,7 @@
 #include "StatesTrajectoryReporter.h"
 #include "TableProcessor.h"
 #include "OpenSense/OpenSenseUtilities.h"
-
+#include "OpenSense/IMU.h"
 #include "SimulationUtilities.h"
 
 #include "RegisterTypes_osimSimulation.h"   // to expose RegisterTypes_osimSimulation

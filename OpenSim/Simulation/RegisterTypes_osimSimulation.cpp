@@ -80,6 +80,7 @@
 #include "Model/SystemEnergyProbe.h"
 #include "Model/Umberger2010MuscleMetabolicsProbe.h"
 #include "Model/Bhargava2004MuscleMetabolicsProbe.h"
+#include "Model/Bhargava2004SmoothedMuscleMetabolics.h"
 #include "Model/Appearance.h"
 #include "Model/Geometry.h"
 
@@ -128,6 +129,7 @@
 #include "SimbodyEngine/Coordinate.h"
 #include "SimbodyEngine/SpatialTransform.h"
 #include "OpenSense/IMUPlacer.h"
+#include "OpenSense/IMU.h"
 #include "OrientationsReference.h"
 #include "StatesTrajectoryReporter.h"
 #include "TableProcessor.h"
@@ -278,10 +280,12 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( Bhargava2004MuscleMetabolicsProbe() );
     Object::registerType( Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameterSet() );
     Object::registerType( Bhargava2004MuscleMetabolicsProbe_MetabolicMuscleParameter() );
+    Object::registerType( Bhargava2004SmoothedMuscleMetabolics());
+    Object::registerType( Bhargava2004SmoothedMuscleMetabolics_MuscleParameters() );
     Object::registerType( OrientationWeight() );
 
     Object::registerType( IMUPlacer() );
-    
+    Object::registerType( IMU() );
     Object::registerType( StatesTrajectoryReporter() );
 
     Object::registerType( TableProcessor() );
