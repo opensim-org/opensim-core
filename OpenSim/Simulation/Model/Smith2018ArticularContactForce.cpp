@@ -100,7 +100,9 @@ extendAddToSystem(MultibodySystem& system) const
     target_mesh_def_vec = -1;
     casting_mesh_def_vec = -1;
 
+    Vector_<Vec3> target_mesh_def_vec3(target_mesh_nTri,Vec3(0.0));
     Vector_<Vec3> casting_mesh_def_vec3(casting_mesh_nTri,Vec3(0.0));
+    
 
     std::vector<int> target_mesh_def_vector_int(target_mesh_nTri,-1);
     std::vector<int> casting_mesh_def_vector_int(casting_mesh_nTri,-1);
@@ -111,210 +113,210 @@ extendAddToSystem(MultibodySystem& system) const
     // the stage to LowestRuntime???
 
     this->_target_triangle_previous_contacting_triangleCV = 
-        addCacheVariable<std::vector<int>>(
-        "target.triangle.previous_contacting_triangle",
+        addCacheVariable(
+        "target_triangle_previous_contacting_triangle",
         target_mesh_def_vector_int, Stage::LowestRuntime);
 
     this->_casting_triangle_previous_contacting_triangleCV =
-        addCacheVariable<std::vector<int>>(
-        "casting.triangle.previous_contacting_triangle",
+        addCacheVariable(
+        "casting_triangle_previous_contacting_triangle",
         casting_mesh_def_vector_int, Stage::LowestRuntime);
 
     //Triangles with ray intersections
     this->_target_num_active_trianglesCV = 
-        addCacheVariable<int>("target.num_active_triangles",
+        addCacheVariable("target_num_active_triangles",
         0, Stage::Position);
 
     this->_casting_num_active_trianglesCV =
-        addCacheVariable<int>("casting.num_active_triangles",
+        addCacheVariable("casting_num_active_triangles",
         0, Stage::Position);
 
     //Subset of num_active_triangles with positive proximity
     this->_target_num_contacting_trianglesCV = 
-        addCacheVariable<int>("target.num_contacting_triangles",
+        addCacheVariable("target_num_contacting_triangles",
         0, Stage::Position);
 
     this->_casting_num_contacting_trianglesCV = 
-        addCacheVariable<int>("casting.num_contacting_triangles",
+        addCacheVariable("casting_num_contacting_triangles",
         0, Stage::Position);
     
     //same, neighbor, and different are useful for debugging issues with
     //newly constructed contact meshes
     //Subset of n_contacting_tri that contact same triangle as previous step
     this->_target_num_contacting_triangles_sameCV =
-        addCacheVariable<int>("target.num_contacting_triangles_same",
+        addCacheVariable("target_num_contacting_triangles_same",
         0, Stage::Position);
 
-    this->_target_num_contacting_triangles_sameCV =
-        addCacheVariable<int>("casting.num_contacting_triangles_same",
+    this->_casting_num_contacting_triangles_sameCV =
+        addCacheVariable("casting_num_contacting_triangles_same",
         0, Stage::Position);
 
     //Subset of n_contacting_tri that contact 
     //neighboring triangle to previous step
     this->_target_num_contacting_triangles_neighborCV =
-        addCacheVariable<int>("target.num_contacting_triangles_neighbor",
+        addCacheVariable("target_num_contacting_triangles_neighbor",
         0, Stage::Position);
 
     this->_casting_num_contacting_triangles_neighborCV = 
-        addCacheVariable<int>("casting.num_contacting_triangles_neighbor",
+        addCacheVariable("casting_num_contacting_triangles_neighbor",
         0, Stage::Position);
 
     //Subset of n_contacting_tri that contact different triangle from previous 
     //step (not same or neighbor), this means expensive OBB check was used
     this->_target_num_contacting_triangles_differentCV =
-        addCacheVariable<int>("target.num_contacting_triangles_different",
+        addCacheVariable("target_num_contacting_triangles_different",
         0, Stage::Position);
 
     this->_casting_num_contacting_triangles_differentCV = 
-        addCacheVariable<int>("casting.num_contacting_triangles_different",
+        addCacheVariable("casting_num_contacting_triangles_different",
         0, Stage::Position);
 
 
     this->_target_triangle_proximityCV =
-        addCacheVariable<Vector>("target.triangle.proximity",
+        addCacheVariable("target_triangle_proximity",
         target_mesh_def_vec, Stage::Position);
     this->_casting_triangle_proximityCV =
-        addCacheVariable<Vector>("casting.triangle.proximity",
+        addCacheVariable("casting_triangle_proximity",
         casting_mesh_def_vec, Stage::Position);
     
     this->_target_triangle_pressureCV =
-        addCacheVariable<Vector>("target.triangle.pressure",
-        target_mesh_def_vec, Stage::Dynamics);
+        addCacheVariable("target_triangle_pressure",
+        target_mesh_def_vec, Stage::Position);
     this->_casting_triangle_pressureCV =
-        addCacheVariable<Vector>("casting.triangle.pressure",
-        casting_mesh_def_vec, Stage::Dynamics);
+        addCacheVariable("casting_triangle_pressure",
+        casting_mesh_def_vec, Stage::Position);
 
     this->_target_triangle_potential_energyCV = 
-        addCacheVariable<Vector>("target.triangle.potential_energy",
-        target_mesh_def_vec, Stage::Dynamics);
+        addCacheVariable("target_triangle_potential_energy",
+        target_mesh_def_vec, Stage::Position);
     this->_casting_triangle_potential_energyCV =
-        addCacheVariable<Vector>("casting.triangle.potential_energy",
-        casting_mesh_def_vec, Stage::Dynamics);
+        addCacheVariable("casting_triangle_potential_energy",
+        casting_mesh_def_vec, Stage::Position);
 
     this->_target_triangle_forceCV =
-        addCacheVariable<Vector_<Vec3>>("target.triangle.force",
-        casting_mesh_def_vec3, Stage::Dynamics);
+        addCacheVariable("target_triangle_force",
+        target_mesh_def_vec3, Stage::Position);
     this->_casting_triangle_forceCV = 
-        addCacheVariable<Vector_<Vec3>>("casting.triangle.force",
-        casting_mesh_def_vec3, Stage::Dynamics);
+        addCacheVariable("casting_triangle_force",
+        casting_mesh_def_vec3, Stage::Position);
 
 
     //Lazy Evaluations (only computed getXX is called)
     this->_target_total_contact_areaCV = 
-        addCacheVariable<double>
-        ("target.total.contact_area", 0, Stage::Position);
+        addCacheVariable
+        ("target_total_contact_area", 0.0, Stage::Position);
     this->_target_total_mean_proximityCV =
-        addCacheVariable<double>
-        ("target.total.mean_proximity", 0, Stage::Position);
+        addCacheVariable
+        ("target_total_mean_proximity", 0.0, Stage::Position);
     this->_target_total_max_proximityCV = 
-        addCacheVariable<double>
-        ("target.total.max_proximity", 0, Stage::Position);
+        addCacheVariable
+        ("target_total_max_proximity", 0.0, Stage::Position);
     this->_target_total_center_of_proximityCV =
-        addCacheVariable<Vec3>
-        ("target.total.center_of_proximity", Vec3(0), Stage::Position);
+        addCacheVariable
+        ("target_total_center_of_proximity", Vec3(0), Stage::Position);
     this->_target_total_mean_pressureCV =
-        addCacheVariable<double>
-        ("target.total.mean_pressure", 0, Stage::Position);
+        addCacheVariable
+        ("target_total_mean_pressure", 0.0, Stage::Position);
     this->_target_total_max_pressureCV =
-        addCacheVariable<double>
-        ("target.total.max_pressure", 0, Stage::Position);
+        addCacheVariable
+        ("target_total_max_pressure", 0.0, Stage::Position);
     this->_target_total_center_of_pressureCV =
-        addCacheVariable<Vec3>
-        ("target.total.center_of_pressure", Vec3(0), Stage::Position);
+        addCacheVariable
+        ("target_total_center_of_pressure", Vec3(0), Stage::Position);
     this->_target_total_contact_forceCV = 
-        addCacheVariable<Vec3>
-        ("target.total.contact_force", Vec3(0), Stage::Position);
+        addCacheVariable
+        ("target_total_contact_force", Vec3(0), Stage::Position);
     this->_target_total_contact_momentCV =
-        addCacheVariable<Vec3>(
-        "target.total.contact_moment", Vec3(0), Stage::Position);
+        addCacheVariable(
+        "target_total_contact_moment", Vec3(0), Stage::Position);
     this->_casting_total_contact_areaCV =
-        addCacheVariable<double>(
-        "casting.total.contact_area", 0, Stage::Position);
+        addCacheVariable(
+        "casting_total_contact_area", 0.0, Stage::Position);
     this->_casting_total_mean_proximityCV =
-        addCacheVariable<double>(
-        "casting.total.mean_proximity", 0, Stage::Position);
+        addCacheVariable(
+        "casting_total_mean_proximity", 0.0, Stage::Position);
     this->_casting_total_max_proximityCV =
-        addCacheVariable<double>(
-        "casting.total.max_proximity", 0, Stage::Position);
+        addCacheVariable(
+        "casting_total_max_proximity", 0.0, Stage::Position);
     this->_casting_total_center_of_proximityCV =
-        addCacheVariable<Vec3>(
-        "casting.total.center_of_proximity", Vec3(0), Stage::Position);
+        addCacheVariable(
+        "casting_total_center_of_proximity", Vec3(0), Stage::Position);
     this->_casting_total_mean_pressureCV =
-        addCacheVariable<double>(
-        "casting.total.mean_pressure", 0, Stage::Position);
+        addCacheVariable(
+        "casting_total_mean_pressure", 0.0, Stage::Position);
     this->_casting_total_max_pressureCV =
-        addCacheVariable<double>(
-        "casting.total.max_pressure", 0, Stage::Position);
+        addCacheVariable(
+        "casting_total_max_pressure", 0.0, Stage::Position);
     this->_casting_total_center_of_pressureCV =
-        addCacheVariable<Vec3>(
-        "casting.total.center_of_pressure", Vec3(0), Stage::Position);
+        addCacheVariable(
+        "casting_total_center_of_pressure", Vec3(0), Stage::Position);
     this->_casting_total_contact_forceCV =
-        addCacheVariable<Vec3>(
-        "casting.total.contact_force", Vec3(0), Stage::Position);
+        addCacheVariable(
+        "casting_total_contact_force", Vec3(0), Stage::Position);
     this->_casting_total_contact_momentCV =
-        addCacheVariable<Vec3>(
-        "casting.total.contact_moment", Vec3(0), Stage::Position);
+        addCacheVariable(
+        "casting_total_contact_moment", Vec3(0), Stage::Position);
     this->_target_regional_contact_areaCV =
-        addCacheVariable<Vector>(
-        "target.regional.contact_area", Vector(6,0.0), Stage::Position);
+        addCacheVariable(
+        "target_regional_contact_area", Vector(6,0.0), Stage::Position);
     this->_target_regional_mean_proximityCV =
-        addCacheVariable<Vector>(
-        "target.regional.mean_proximity", Vector(6,0.0), Stage::Position);
+        addCacheVariable(
+        "target_regional_mean_proximity", Vector(6,0.0), Stage::Position);
     this->_target_regional_max_proximityCV =
-        addCacheVariable<Vector>(
-        "target.regional.max_proximity", Vector(6,0.0), Stage::Position);
+        addCacheVariable(
+        "target_regional_max_proximity", Vector(6,0.0), Stage::Position);
     this->_target_regional_center_of_proximityCV =
-        addCacheVariable<Vector_<Vec3>>(
-        "target.regional.center_of_proximity", Vector_<Vec3>(6,Vec3(0)),
+        addCacheVariable(
+        "target_regional_center_of_proximity", Vector_<Vec3>(6,Vec3(0)),
         Stage::Position);
     this->_target_regional_mean_pressureCV =
-        addCacheVariable<Vector>(
-        "target.regional.mean_pressure", Vector(6,0.0), Stage::Position);
+        addCacheVariable(
+        "target_regional_mean_pressure", Vector(6,0.0), Stage::Position);
     this->_target_regional_max_pressureCV =
-        addCacheVariable<Vector>(
-        "target.regional.max_pressure",Vector(6,0.0), Stage::Position);
+        addCacheVariable(
+        "target_regional_max_pressure",Vector(6,0.0), Stage::Position);
     this->_target_regional_center_of_pressureCV =
-        addCacheVariable<Vector_<Vec3>>(
-        "target.regional.center_of_pressure", Vector_<Vec3>(6,Vec3(0)),
+        addCacheVariable(
+        "target_regional_center_of_pressure", Vector_<Vec3>(6,Vec3(0)),
         Stage::Position);
     this->_target_regional_contact_forceCV =
-        addCacheVariable<Vector_<Vec3>>(
-        "target.regional.contact_force", Vector_<Vec3>(6,Vec3(0)),
+        addCacheVariable(
+        "target_regional_contact_force", Vector_<Vec3>(6,Vec3(0)),
         Stage::Position);
     this->_target_regional_contact_momentCV =
-        addCacheVariable<Vector_<Vec3>>(
-        "target.regional.contact_moment", Vector_<Vec3>(6,Vec3(0)),
+        addCacheVariable(
+        "target_regional_contact_moment", Vector_<Vec3>(6,Vec3(0)),
         Stage::Position);
     this->_casting_regional_contact_areaCV =
-        addCacheVariable<Vector>(
-        "casting.regional.contact_area", Vector(6,0.0), Stage::Position);
+        addCacheVariable(
+        "casting_regional_contact_area", Vector(6,0.0), Stage::Position);
     this->_casting_regional_mean_proximityCV =
-        addCacheVariable<Vector>(
-        "casting.regional.mean_proximity", Vector(6,0.0), Stage::Position);
+        addCacheVariable(
+        "casting_regional_mean_proximity", Vector(6,0.0), Stage::Position);
     this->_casting_regional_max_proximityCV =
-        addCacheVariable<Vector>(
-        "casting.regional.max_proximity", Vector(6,0.0), Stage::Position);
+        addCacheVariable(
+        "casting_regional_max_proximity", Vector(6,0.0), Stage::Position);
     this->_casting_regional_center_of_proximityCV =
-        addCacheVariable<Vector_<Vec3>>(
-        "casting.regional.center_of_proximity", Vector_<Vec3>(6, Vec3(0)),
+        addCacheVariable(
+        "casting_regional_center_of_proximity", Vector_<Vec3>(6, Vec3(0)),
         Stage::Position);
     this->_casting_regional_mean_pressureCV =
-        addCacheVariable<Vector>(
-        "casting.regional.mean_pressure", Vector(6,0.0), Stage::Position);
+        addCacheVariable(
+        "casting_regional_mean_pressure", Vector(6,0.0), Stage::Position);
     this->_casting_regional_max_pressureCV =
-        addCacheVariable<Vector>(
-        "casting.regional.max_pressure", Vector(6,0.0), Stage::Position);
+        addCacheVariable(
+        "casting_regional_max_pressure", Vector(6,0.0), Stage::Position);
     this->_casting_regional_center_of_pressureCV =
-        addCacheVariable<Vector_<Vec3>>(
-        "casting.regional.center_of_pressure", Vector_<Vec3>(6,Vec3(0)),
+        addCacheVariable(
+        "casting_regional_center_of_pressure", Vector_<Vec3>(6,Vec3(0)),
         Stage::Position);
     this->_casting_regional_contact_forceCV =
-        addCacheVariable<Vector_<Vec3>>(
-        "casting.regional.contact_force", Vector_<Vec3>(6,Vec3(0)),
+        addCacheVariable(
+        "casting_regional_contact_force", Vector_<Vec3>(6,Vec3(0)),
         Stage::Position);
     this->_casting_regional_contact_momentCV =
-        addCacheVariable<Vector_<Vec3>>(
-        "casting.regional.contact_moment", Vector_<Vec3>(6,Vec3(0)),
+        addCacheVariable(
+        "casting_regional_contact_moment", Vector_<Vec3>(6,Vec3(0)),
         Stage::Position);
 
     //Modeling Options
@@ -519,15 +521,15 @@ void Smith2018ArticularContactForce::computeMeshDynamics(
     }
 
     const Vector& triangle_proximity = (flipped_meshes) ?
-        this->getCacheVariableValue<Vector>(state, 
+        this->getCacheVariableValue(state, 
             this->_target_triangle_proximityCV) :
-        this->getCacheVariableValue<Vector>(state, 
+        this->getCacheVariableValue(state, 
             this->_casting_triangle_proximityCV);
 
     const std::vector<int>& target_tri = (flipped_meshes) ?
-        this->getCacheVariableValue<std::vector<int>>(state,
+        this->getCacheVariableValue(state,
             this->_target_triangle_previous_contacting_triangleCV) :
-        this->getCacheVariableValue<std::vector<int>>(state,
+        this->getCacheVariableValue(state,
             this->_casting_triangle_previous_contacting_triangleCV);
 
     const Vector& triangle_area = casting_mesh.getTriangleAreas();
@@ -741,7 +743,7 @@ void Smith2018ArticularContactForce::computeForce(const State& state,
     }
     else {
         casting_triangle_proximity = 
-            this->getCacheVariableValue(state, _casting_triangle_proximityCV);
+            this->getCacheVariableValue(state, this->_casting_triangle_proximityCV);
     }
 
     SimTK::Vector casting_triangle_pressure;
@@ -782,17 +784,18 @@ void Smith2018ArticularContactForce::computeForce(const State& state,
         SimTK::Vector target_triangle_proximity;
 
         //target proximity
-        if (!this->isCacheVariableValid(state, 
+        if (!this->isCacheVariableValid(state,
             this->_target_triangle_proximityCV)) {
-                computeMeshProximity(state, target_mesh, casting_mesh,
-                    "target", target_triangle_proximity);
+            computeMeshProximity(state, target_mesh, casting_mesh,
+                "target", target_triangle_proximity);
         }
         else {
-            target_triangle_proximity = 
-                this->getCacheVariableValue(state, 
+            target_triangle_proximity =
+                this->getCacheVariableValue(state,
                     this->_target_triangle_proximityCV);
         }
-
+    
+        
         //target pressure
         SimTK::Vector target_triangle_pressure;
         SimTK::Vector_<SimTK::Vec3> target_triangle_force;
@@ -800,7 +803,7 @@ void Smith2018ArticularContactForce::computeForce(const State& state,
 
         computeMeshDynamics(state, target_mesh, casting_mesh,
             target_triangle_force, target_triangle_pressure, target_triangle_energy);
-
+            
         /*setCacheVariableValue(state,
             "target.triangle.proximity", target_triangle_proximity);
 
@@ -863,7 +866,7 @@ void Smith2018ArticularContactForce::realizeContactMetricCaches(
     SimTK::Vector target_triangle_pressure;
 
     if (getModelingOption(state, "flip_meshes")) {
-
+        
         target_triangle_proximity = 
             this->getCacheVariableValue(state, 
                 this->_target_triangle_proximityCV);
@@ -873,32 +876,32 @@ void Smith2018ArticularContactForce::realizeContactMetricCaches(
                 this->_target_triangle_pressureCV);
 
         //target contact stats
-        std::vector<int> casting_faces;
+        std::vector<int> Tcasting_faces;
         for (int i = 0; i < target_mesh.getNumFaces(); ++i) {
-            casting_faces.push_back(i);
+            Tcasting_faces.push_back(i);
         }
 
-        auto stats = computeContactStats(target_mesh, target_triangle_proximity,
-            target_triangle_pressure,casting_faces);
+        auto Tstats = computeContactStats(target_mesh, target_triangle_proximity,
+            target_triangle_pressure,Tcasting_faces);
     
         this->setCacheVariableValue(state,
-            this->_target_total_contact_areaCV, stats.contact_area);
+            this->_target_total_contact_areaCV, Tstats.contact_area);
         this->setCacheVariableValue(state,
-            this->_target_total_mean_proximityCV, stats.mean_proximity);
+            this->_target_total_mean_proximityCV, Tstats.mean_proximity);
         this->setCacheVariableValue(state,
-            this->_target_total_max_proximityCV, stats.max_proximity);
+            this->_target_total_max_proximityCV, Tstats.max_proximity);
         this->setCacheVariableValue(state,
-            this->_target_total_center_of_proximityCV, stats.center_of_proximity);
+            this->_target_total_center_of_proximityCV, Tstats.center_of_proximity);
         this->setCacheVariableValue(state,
-            this->_target_total_mean_pressureCV, stats.mean_pressure);
+            this->_target_total_mean_pressureCV, Tstats.mean_pressure);
         this->setCacheVariableValue(state,
-            this->_target_total_max_pressureCV, stats.max_pressure);
+            this->_target_total_max_pressureCV, Tstats.max_pressure);
         this->setCacheVariableValue(state,
-            this->_target_total_center_of_pressureCV, stats.center_of_pressure);
+            this->_target_total_center_of_pressureCV, Tstats.center_of_pressure);
         this->setCacheVariableValue(state,
-            this->_target_total_contact_forceCV, stats.contact_force);
+            this->_target_total_contact_forceCV, Tstats.contact_force);
         this->setCacheVariableValue(state,
-            this->_target_total_contact_momentCV, stats.contact_moment);
+            this->_target_total_contact_momentCV, Tstats.contact_moment);
     }
 
     //regional casting stats
@@ -951,7 +954,7 @@ void Smith2018ArticularContactForce::realizeContactMetricCaches(
 
     //target
     if (getModelingOption(state, "flip_meshes")) {
-
+        
         std::vector<std::vector<int>> target_region_tri_ind =
             target_mesh.getRegionalTriangleIndices();
 
@@ -995,7 +998,13 @@ double Smith2018ArticularContactForce::
 computePotentialEnergy(const SimTK::State& state) const
 {
     if (!this->isCacheVariableValid(state, this->_casting_triangle_potential_energyCV)) {
-        _model->realizeDynamics(state);
+        const Smith2018ContactMesh& casting_mesh =
+            getConnectee<Smith2018ContactMesh>("casting_mesh");
+
+        const Smith2018ContactMesh& target_mesh =
+            getConnectee<Smith2018ContactMesh>("target_mesh");
+
+        computeMeshDynamics(state,target_mesh, casting_mesh);
     }
     const SimTK::Vector& triangle_energy = this->getCacheVariableValue(
         state, this->_casting_triangle_potential_energyCV);
@@ -1065,9 +1074,15 @@ Smith2018ArticularContactForce::computeContactStats(
     }
 
     //Mean Pressure
-    stats.mean_pressure = triangle_pressure.sum() / nContactingTri;
-    stats.mean_proximity = triangle_proximity.sum() / nContactingTri;
-
+    if (nContactingTri == 0) {
+        stats.mean_pressure = 0.0;
+        stats.mean_proximity = 0.0;
+    }
+    else
+    {
+        stats.mean_pressure = triangle_pressure.sum() / nContactingTri;
+        stats.mean_proximity = triangle_proximity.sum() / nContactingTri;
+    }
     //Max Pressure
     stats.max_pressure = triangle_pressure.normInf();
     stats.max_proximity = triangle_proximity.normInf();
@@ -1100,10 +1115,16 @@ Smith2018ArticularContactForce::computeContactStats(
     double zNumVal_prx = zNum_prx.sum();
     double COPrx_z = zNumVal_prx / denVal_prx;
 
-    stats.center_of_proximity(0) = COPrx_x;
-    stats.center_of_proximity(1) = COPrx_y;
-    stats.center_of_proximity(2) = COPrx_z;
-
+    if (denVal_prx == 0) {
+        stats.center_of_proximity(0) = -1;
+        stats.center_of_proximity(1) = -1;
+        stats.center_of_proximity(2) = -1;
+    }
+    else {
+        stats.center_of_proximity(0) = COPrx_x;
+        stats.center_of_proximity(1) = COPrx_y;
+        stats.center_of_proximity(2) = COPrx_z;
+    }
     //Center of Pressure
     SimTK::Vector num = triangle_pressure.elementwiseMultiply(triangle_area);
     SimTK::Vector den = triangle_pressure.elementwiseMultiply(triangle_area);
@@ -1121,10 +1142,16 @@ Smith2018ArticularContactForce::computeContactStats(
     double zNumVal = zNum.sum();
     double COPz = zNumVal / denVal;
 
-    stats.center_of_pressure(0) = COPx;
-    stats.center_of_pressure(1) = COPy;
-    stats.center_of_pressure(2) = COPz;
-
+    if (denVal_prx == 0) {
+        stats.center_of_pressure(0) = -1;
+        stats.center_of_pressure(1) = -1;
+        stats.center_of_pressure(2) = -1;
+    }
+    else {
+        stats.center_of_pressure(0) = COPx;
+        stats.center_of_pressure(1) = COPy;
+        stats.center_of_pressure(2) = COPz;
+    }
     //Contact Force
     stats.contact_force = 0.0;
     stats.contact_moment = 0.0;

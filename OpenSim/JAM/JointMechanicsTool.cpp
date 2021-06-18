@@ -162,7 +162,7 @@ bool JointMechanicsTool::run() {
         SimTK::State state = _model.initSystem();
 
         initialize(state);
-
+        
         SimTK::Visualizer* viz=NULL;
         if (get_use_visualizer()) {
             viz = &_model.updVisualizer().updSimbodyVisualizer();
@@ -171,12 +171,11 @@ bool JointMechanicsTool::run() {
 
         //loop over each frame
         for (int i = 0; i < _n_frames; ++i) {
-        
-            std::cout << "Time: " << _time[i] << std::endl;
-
             //Set State
             state = _states[i];
-        
+
+            log_info("Time: {}", state.getTime()); 
+
             //Record Values
             record(state,i);
 
@@ -199,11 +198,11 @@ bool JointMechanicsTool::run() {
     }
 
     catch(const std::exception& x) {
-        log_error("COMAKTool::run() caught an exception: \n {}", x.what());
+        log_error("JointMechanicsTool::run() caught an exception: \n {}", x.what());
         cwd.restore();
     }
     catch (...) { // e.g. may get InterruptedException
-        log_error("COMAKTool::run() caught an exception.");
+        log_error("JointMechanicsTool::run() caught an exception.");
         cwd.restore();
     }
 
@@ -258,10 +257,16 @@ void JointMechanicsTool::initialize(SimTK::State& state) {
     }
     state = _model.initSystem();
 
-    setupContactStorage(state);
+    if (!get_input_transforms_file().empty()) {
+        assembleStatesTrajectoryFromTransformsData(input_data, state);
+    }
+    else if (!get_input_states_file().empty()) {
+        assembleStatesTrajectoryFromStatesData(input_data, state);
+    }
 
- 
     setupLigamentStorage();
+
+    setupContactStorage(state);
 
     setupMuscleStorage();
 
@@ -288,14 +293,6 @@ void JointMechanicsTool::initialize(SimTK::State& state) {
         }
         _model_frame_transforms.setColumnLabels(column_labels);
     }
-    
-    if (!get_input_transforms_file().empty()) {
-        assembleStatesTrajectoryFromTransformsData(input_data, state);
-    }
-    else if (!get_input_states_file().empty()) {
-        assembleStatesTrajectoryFromStatesData(input_data, state);
-    }
-
 }
 
 Storage JointMechanicsTool::processInputStorage(std::string file) {
@@ -603,7 +600,8 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
             coord.setValue(s, value, false);
         }
         _model.assemble(s);
-        _states.append(s);
+        //_states.append(s);
+        _states.push_back(s);
     }
 }
 
@@ -771,8 +769,9 @@ void JointMechanicsTool::assembleStatesTrajectoryFromStatesData(
             }
         }
 
-        //final_state.invalidateAllCacheAtOrAbove(SimTK::Stage::Time);
-        _states.append(final_state);
+        final_state.invalidateAllCacheAtOrAbove(SimTK::Stage::Time);
+        //_states.append(final_state);
+        _states.push_back(final_state);
     }
 }
 
@@ -873,7 +872,7 @@ void JointMechanicsTool::setupContactStorage(SimTK::State& state) {
 
     //Realize Report so the sizes of output vectors are known
     _model.realizeReport(state);
-
+    
     //Contact Outputs
     const Smith2018ArticularContactForce& frc0 = _model.getComponent
         <Smith2018ArticularContactForce>(_contact_force_paths[0]);

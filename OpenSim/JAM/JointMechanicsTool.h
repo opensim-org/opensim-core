@@ -279,8 +279,8 @@ private:
     Model _model;
     bool _model_exists;
 
-    StatesTrajectory _states;
-
+    //StatesTrajectory _states;
+    std::vector<SimTK::State> _states;
     Array<double> _time;
     int _n_frames;
     

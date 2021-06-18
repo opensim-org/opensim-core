@@ -158,7 +158,7 @@ double Blankevoort1991Ligament::getLengtheningSpeed(
 }
 
 double Blankevoort1991Ligament::getStrain(const SimTK::State& state) const {
-    if (isCacheVariableValid(state, _strainCV)) {
+    if (this->isCacheVariableValid(state, _strainCV)) {
         return getCacheVariableValue(state, _strainCV);
     }
 
@@ -169,7 +169,7 @@ double Blankevoort1991Ligament::getStrain(const SimTK::State& state) const {
 }
 
 double Blankevoort1991Ligament::getStrainRate(const SimTK::State& state) const {
-    if (isCacheVariableValid(state, _strainRateCV)) {
+    if (this->isCacheVariableValid(state, _strainRateCV)) {
         return getCacheVariableValue(state, _strainRateCV);
     }
 
@@ -180,7 +180,7 @@ double Blankevoort1991Ligament::getStrainRate(const SimTK::State& state) const {
 }
 
 double Blankevoort1991Ligament::getSpringForce(const SimTK::State& state) const {
-    if (isCacheVariableValid(state, _forceSpringCV)) {
+    if (this->isCacheVariableValid(state, _forceSpringCV)) {
         return getCacheVariableValue(state, _forceSpringCV);
     }
 
@@ -190,7 +190,7 @@ double Blankevoort1991Ligament::getSpringForce(const SimTK::State& state) const 
 }
 
 double Blankevoort1991Ligament::getDampingForce(const SimTK::State& state) const {
-    if (isCacheVariableValid(state, _forceDampingCV)) {
+    if (this->isCacheVariableValid(state, _forceDampingCV)) {
         return getCacheVariableValue(state, _forceDampingCV);
     }
 
@@ -200,7 +200,7 @@ double Blankevoort1991Ligament::getDampingForce(const SimTK::State& state) const
 }
 
 double Blankevoort1991Ligament::getTotalForce(const SimTK::State& state) const {
-    if (isCacheVariableValid(state, _forceTotalCV)) {
+    if (this->isCacheVariableValid(state, _forceTotalCV)) {
         return getCacheVariableValue(state, _forceTotalCV);
     }
 

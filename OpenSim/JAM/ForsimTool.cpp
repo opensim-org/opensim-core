@@ -112,7 +112,11 @@ bool ForsimTool::run()
                 "Possible reason: This tool cannot make new folder with subfolder.");
         }
 
+
+
         SimTK::State state = _model.initSystem();
+
+
 
         //Add Analysis set
         AnalysisSet aSet = get_AnalysisSet();
@@ -245,11 +249,11 @@ bool ForsimTool::run()
     }
 
     catch(const std::exception& x) {
-        log_error("COMAKTool::run() caught an exception: \n {}", x.what());
+        log_error("ForsimTool::run() caught an exception: \n {}", x.what());
         cwd.restore();
     }
     catch (...) { // e.g. may get InterruptedException
-        log_error("COMAKTool::run() caught an exception.");
+        log_error("ForsimTool::run() caught an exception.");
         cwd.restore();
     }
 

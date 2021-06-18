@@ -623,4 +623,4 @@ jnt_mech.set_AnalysisSet(analysis_set);
 jnt_mech.print('./inputs/joint_mechanics_settings.xml');
 
 disp('Running JointMechanicsTool...');
-% jnt_mech.run();
+jnt_mech.run();

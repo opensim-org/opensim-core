@@ -471,444 +471,444 @@ public:
 
     //number of contacting triangles
     int getTargetNumContactingTriangles(const SimTK::State& state) const {
-        return getCacheVariableValue<int>
-            (state, "target.num_contacting_triangles");
+        return this->getCacheVariableValue
+            (state, this->_target_num_contacting_trianglesCV);
     }
 
     int getCastingNumContactingTriangles(const SimTK::State& state) const {
-        return getCacheVariableValue<int>
-            (state, "casting.num_contacting_triangles");
+        return this->getCacheVariableValue
+            (state, this->_casting_num_contacting_trianglesCV);
     }
 
     //tri proximity
     SimTK::Vector getTargetTriangleProximity(const SimTK::State& state) const {
-        return getCacheVariableValue<SimTK::Vector>
-            (state, "target.triangle.proximity");
+        return this->getCacheVariableValue
+            (state, this->_target_triangle_proximityCV);
     }
     SimTK::Vector getCastingTriangleProximity(const SimTK::State& state) const {
-        return getCacheVariableValue<SimTK::Vector>
-            (state, "casting.triangle.proximity");
+        return getCacheVariableValue
+            (state, this->_casting_triangle_proximityCV);
     }
 
     //tri pressure
     SimTK::Vector getTargetTrianglePressure(const SimTK::State& state) const {
-        return getCacheVariableValue<SimTK::Vector>
-            (state, "target.triangle.pressure");
+        return this->getCacheVariableValue
+            (state, this->_target_triangle_pressureCV);
     }
     SimTK::Vector getCastingTrianglePressure(const SimTK::State& state) const {
-        return getCacheVariableValue<SimTK::Vector>
-            (state, "casting.triangle.pressure");
+        return this->getCacheVariableValue
+            (state, this->_casting_triangle_pressureCV);
     }
 
     //tri potential energy
     SimTK::Vector getTargetTrianglePotentialEnergy(
         const SimTK::State& state) const {
-        return getCacheVariableValue<SimTK::Vector>
-            (state, "target.triangle.potential_energy");
+        return this->getCacheVariableValue
+            (state, this->_target_triangle_potential_energyCV);
     }
     SimTK::Vector getCastingTrianglePotentialEnergy(
         const SimTK::State& state) const {
-        return getCacheVariableValue<SimTK::Vector>
-            (state, "casting.triangle.potential_energy");
+        return this->getCacheVariableValue
+            (state, this->_casting_triangle_potential_energyCV);
     }
 
     //Lazy computed outputs
 
     //contact_area
     double getTargetTotalContactArea(const SimTK::State& state) const {
-        if (!isCacheVariableValid(state, "target.total.contact_area")) {
+        if (!this->isCacheVariableValid(state, this->_target_total_contact_areaCV)) {
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<double>
-            (state, "target.total.contact_area");
+        return this->getCacheVariableValue
+            (state, this->_target_total_contact_areaCV);
     }
 
     double getCastingTotalContactArea(const SimTK::State& state) const {
-        if (!isCacheVariableValid(state, "casting.total.contact_area")) {
+        if (!this->isCacheVariableValid(state, this->_casting_total_contact_areaCV)) {
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<double>
-            (state, "casting.total.contact_area");
+        return this->getCacheVariableValue
+            (state, this->_casting_total_contact_areaCV);
     }
 
     SimTK::Vector getTargetRegionalContactArea(
         const SimTK::State& state) const {
         
-        if (!isCacheVariableValid(state, "target.regional.contact_area")) {
+        if (!this->isCacheVariableValid(state, this->_target_regional_contact_areaCV)) {
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<SimTK::Vector>
-            (state, "target.regional.contact_area");
+        return this->getCacheVariableValue
+            (state, this->_target_regional_contact_areaCV);
     }
 
     SimTK::Vector getCastingRegionalContactArea(
         const SimTK::State& state) const {
 
-        if (!isCacheVariableValid(state, "casting.regional.contact_area")) {
+        if (!this->isCacheVariableValid(state, this->_casting_regional_contact_areaCV)) {
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<SimTK::Vector>
-            (state, "casting.regional.contact_area");
+        return this->getCacheVariableValue
+            (state, this->_casting_regional_contact_areaCV);
     }
 
     //mean proximity
     double getTargetTotalMeanProximity(const SimTK::State& state) const {
         
-        if (!isCacheVariableValid(state, "target.total.mean_proximity")) {
+        if (!this->isCacheVariableValid(state, this->_target_total_mean_proximityCV)) {
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<double>
-            (state, "target.total.mean_proximity");
+        return this->getCacheVariableValue
+            (state, this->_target_total_mean_proximityCV);
     }
 
     double getCastingTotalMeanProximity(const SimTK::State& state) const {
 
-        if (!isCacheVariableValid(state, "casting.total.mean_proximity")) {
+        if (!this->isCacheVariableValid(state, this->_casting_total_mean_proximityCV)) {
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<double>
-            (state, "casting.total.mean_proximity");
+        return this->getCacheVariableValue
+            (state, this->_casting_total_mean_proximityCV);
     }
 
     SimTK::Vector getTargetRegionalMeanProximity(
         const SimTK::State& state) const {
 
-        if (!isCacheVariableValid(state, "target.regional.mean_proximity")) {
+        if (!this->isCacheVariableValid(state, this->_target_regional_mean_proximityCV)) {
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<SimTK::Vector>
-            (state, "target.regional.mean_proximity");
+        return this->getCacheVariableValue
+            (state, this->_target_regional_mean_proximityCV);
     }
 
     SimTK::Vector getCastingRegionalMeanProximity(
         const SimTK::State& state) const {
 
-        if (!isCacheVariableValid(state, "casting.regional.mean_proximity")) {
+        if (!this->isCacheVariableValid(state, this->_casting_regional_mean_proximityCV)) {
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<SimTK::Vector>
-            (state, "casting.regional.mean_proximity");
+        return this->getCacheVariableValue
+            (state, this->_casting_regional_mean_proximityCV);
     }
 
     //max proximity
     double getTargetTotalMaxProximity(const SimTK::State& state) const {
 
-        if (!isCacheVariableValid(state, "target.total.max_proximity")) {
+        if (!this->isCacheVariableValid(state, this->_target_total_max_proximityCV)) {
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<double>
-            (state, "target.total.max_proximity");
+        return this->getCacheVariableValue
+            (state, this->_target_total_max_proximityCV);
     }
 
     double getCastingTotalMaxProximity(const SimTK::State& state) const {
 
-        if (!isCacheVariableValid(state, "casting.total.max_proximity")) {
+        if (!this->isCacheVariableValid(state, this->_casting_total_max_proximityCV)) {
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<double>
-            (state, "casting.total.max_proximity");
+        return this->getCacheVariableValue
+            (state, this->_casting_total_max_proximityCV);
     }
 
     SimTK::Vector getTargetRegionalMaxProximity(
         const SimTK::State& state) const {
 
-        if (!isCacheVariableValid(state, "target.regional.max_proximity")) {
+        if (!this->isCacheVariableValid(state, this->_target_regional_max_proximityCV)) {
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<SimTK::Vector>
-            (state, "target.regional.max_proximity");
+        return this->getCacheVariableValue
+            (state, this->_target_regional_max_proximityCV);
     }
 
     SimTK::Vector getCastingRegionalMaxProximity(
         const SimTK::State& state) const {
 
-        if (!isCacheVariableValid(state, "casting.regional.max_proximity")) {
+        if (!this->isCacheVariableValid(state, this->_casting_regional_max_proximityCV)) {
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<SimTK::Vector>
-            (state, "casting.regional.max_proximity");
+        return this->getCacheVariableValue
+            (state, this->_casting_regional_max_proximityCV);
     }
 
     //mean pressure
     double getTargetTotalMeanPressure(const SimTK::State& state) const {
 
-        if (!isCacheVariableValid(state, "target.total.mean_pressure")) {
+        if (!this->isCacheVariableValid(state, this->_target_total_mean_pressureCV)) {
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<double>
-            (state, "target.total.mean_pressure");
+        return this->getCacheVariableValue
+            (state, this->_target_total_mean_pressureCV);
     }
 
     double getCastingTotalMeanPressure(const SimTK::State& state) const {
 
-        if (!isCacheVariableValid(state, "casting.total.mean_pressure")) {
+        if (!this->isCacheVariableValid(state, this->_casting_total_mean_pressureCV)) {
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<double>
-            (state, "casting.total.mean_pressure");
+        return this->getCacheVariableValue
+            (state, this->_casting_total_mean_pressureCV);
     }
 
     SimTK::Vector getTargetRegionalMeanPressure(
         const SimTK::State& state) const {
 
-        if (!isCacheVariableValid(state, "casting.total.mean_pressure")) {
+        if (!this->isCacheVariableValid(state, this->_casting_total_mean_pressureCV)) {
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<SimTK::Vector>
-            (state, "target.regional.mean_pressure");
+        return this->getCacheVariableValue
+            (state, this->_target_regional_mean_pressureCV);
     }
 
     SimTK::Vector getCastingRegionalMeanPressure(
         const SimTK::State& state) const {
 
-        if (!isCacheVariableValid(state, "casting.regional.mean_pressure")) {
+        if (!this->isCacheVariableValid(state, this->_casting_regional_mean_pressureCV)) {
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<SimTK::Vector>
-            (state, "casting.regional.mean_pressure");
+        return this->getCacheVariableValue
+            (state, this->_casting_regional_mean_pressureCV);
     }
 
     //max pressure
     double getTargetTotalMaxPressure(const SimTK::State& state) const {
 
-        if (!isCacheVariableValid(state, "target.total.max_pressure")) {
+        if (!this->isCacheVariableValid(state, this->_target_total_max_pressureCV)) {
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<double>
-            (state, "target.total.max_pressure");
+        return this->getCacheVariableValue
+            (state, this->_target_total_max_pressureCV);
     }
 
     double getCastingTotalMaxPressure(const SimTK::State& state) const {
 
-        if (!isCacheVariableValid(state, "casting.total.max_pressure")) {
+        if (!this->isCacheVariableValid(state, this->_casting_total_max_pressureCV)) {
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<double>
-            (state, "casting.total.max_pressure");
+        return this->getCacheVariableValue
+            (state, this->_casting_total_max_pressureCV);
     }
 
     SimTK::Vector getTargetRegionalMaxPressure(
         const SimTK::State& state) const {
 
-        if (!isCacheVariableValid(state, "target.regional.max_pressure")) {
+        if (!this->isCacheVariableValid(state, this->_target_regional_max_pressureCV)) {
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<SimTK::Vector>
-            (state, "target.regional.max_pressure");
+        return this->getCacheVariableValue
+            (state, this->_target_regional_max_pressureCV);
     }
 
     SimTK::Vector getCastingRegionalMaxPressure(
         const SimTK::State& state) const {
 
-        if (!isCacheVariableValid(state, "casting.regional.max_pressure")) {
+        if (!this->isCacheVariableValid(state, this->_casting_regional_max_pressureCV)) {
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<SimTK::Vector>
-            (state, "casting.regional.max_pressure");
+        return this->getCacheVariableValue
+            (state, this->_casting_regional_max_pressureCV);
     }
 
     //center of proximity
     SimTK::Vec3 getTargetTotalCenterOfProximity(
         const SimTK::State& state) const {
 
-        if (!isCacheVariableValid(state, "target.total.center_of_proximity")) {
+        if (!this->isCacheVariableValid(state, this->_target_total_center_of_proximityCV)) {
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<SimTK::Vec3>
-            (state, "target.total.center_of_proximity");
+        return this->getCacheVariableValue
+            (state, this->_target_total_center_of_proximityCV);
     }
 
     SimTK::Vec3 getCastingTotalCenterOfProximity(
         const SimTK::State& state) const {
         
-        if (!isCacheVariableValid(state, "target.total.center_of_proximity")) {
+        if (!this->isCacheVariableValid(state, this->_target_total_center_of_proximityCV)) {
             realizeContactMetricCaches(state);
         }
         
-        return getCacheVariableValue<SimTK::Vec3>
-            (state, "casting.total.center_of_proximity");
+        return this->getCacheVariableValue
+            (state, this->_casting_total_center_of_proximityCV);
     }
 
     SimTK::Vector_<SimTK::Vec3> getTargetRegionalCenterOfProximity(
         const SimTK::State& state) const {
 
-        if (!isCacheVariableValid(state, 
-            "target.regional.center_of_proximity")) {
+        if (!this->isCacheVariableValid(state, 
+            this->_target_regional_center_of_proximityCV)) {
 
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<SimTK::Vector_<SimTK::Vec3>>
-            (state, "target.regional.center_of_proximity");
+        return this->getCacheVariableValue
+            (state, this->_target_regional_center_of_proximityCV);
     }
 
     SimTK::Vector_<SimTK::Vec3> getCastingRegionalCenterOfProximity(
         const SimTK::State& state) const {
 
-        if (!isCacheVariableValid(state, 
-            "casting.regional.center_of_proximity")) {
+        if (!this->isCacheVariableValid(state, 
+            this->_casting_regional_center_of_proximityCV)) {
 
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<SimTK::Vector_<SimTK::Vec3>>
-            (state, "casting.regional.center_of_proximity");
+        return this->getCacheVariableValue
+            (state, this->_casting_regional_center_of_proximityCV);
     }
 
     //center of pressure
     SimTK::Vec3 getTargetTotalCenterOfPressure(
         const SimTK::State& state) const {
 
-        if (!isCacheVariableValid(state, "target.total.center_of_pressure")) {
+        if (!this->isCacheVariableValid(state, this->_target_total_center_of_pressureCV)) {
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<SimTK::Vec3>
-            (state, "target.total.center_of_pressure");
+        return this->getCacheVariableValue
+            (state, this->_target_total_center_of_pressureCV);
     }
 
     SimTK::Vec3 getCastingTotalCenterOfPressure(
         const SimTK::State& state) const {
 
-        if (!isCacheVariableValid(state, "casting.total.center_of_pressure")) {
+        if (!this->isCacheVariableValid(state, this->_casting_total_center_of_pressureCV)) {
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<SimTK::Vec3>
-            (state, "casting.total.center_of_pressure");
+        return this->getCacheVariableValue
+            (state, this->_casting_total_center_of_pressureCV);
     }
 
     SimTK::Vector_<SimTK::Vec3> getTargetRegionalCenterOfPressure(
         const SimTK::State& state) const {
 
-        if (!isCacheVariableValid(state, 
-            "target.regional.center_of_pressure")) {
+        if (!this->isCacheVariableValid(state, 
+            this->_target_regional_center_of_pressureCV)) {
 
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<SimTK::Vector_<SimTK::Vec3>>
-            (state, "target.regional.center_of_pressure");
+        return this->getCacheVariableValue
+            (state, this->_target_regional_center_of_pressureCV);
     }
 
     SimTK::Vector_<SimTK::Vec3> getCastingRegionalCenterOfPressure(
         const SimTK::State& state) const {
 
-        if (!isCacheVariableValid(state, 
-            "casting.regional.center_of_pressure")) {
+        if (!this->isCacheVariableValid(state, 
+            this->_casting_regional_center_of_pressureCV)) {
 
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<SimTK::Vector_<SimTK::Vec3>>
-            (state, "casting.regional.center_of_pressure");
+        return this->getCacheVariableValue
+            (state, this->_casting_regional_center_of_pressureCV);
     }
 
     //contact force
     SimTK::Vec3 getTargetTotalContactForce(const SimTK::State& state) const {
 
-        if (!isCacheVariableValid(state, "target.total.contact_force")) {
+        if (!this->isCacheVariableValid(state, this->_target_total_contact_forceCV)) {
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<SimTK::Vec3>
-            (state, "target.total.contact_force");
+        return this->getCacheVariableValue
+            (state, this->_target_total_contact_forceCV);
     }
 
     SimTK::Vec3 getCastingTotalContactForce(const SimTK::State& state) const {
 
-        if (!isCacheVariableValid(state, "casting.total.contact_force")) {
+        if (!this->isCacheVariableValid(state, this->_casting_total_contact_forceCV)) {
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<SimTK::Vec3>
-            (state, "casting.total.contact_force");
+        return this->getCacheVariableValue
+            (state, this->_casting_total_contact_forceCV);
     }
 
     SimTK::Vector_<SimTK::Vec3> getTargetRegionalContactForce(
         const SimTK::State& state) const {
 
-        if (!isCacheVariableValid(state, "target.regional.contact_force")) {
+        if (!this->isCacheVariableValid(state, this->_target_regional_contact_forceCV)) {
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<SimTK::Vector_<SimTK::Vec3>>
-            (state, "target.regional.contact_force");
+        return this->getCacheVariableValue
+            (state, this->_target_regional_contact_forceCV);
     }
 
     SimTK::Vector_<SimTK::Vec3> getCastingRegionalContactForce(
         const SimTK::State& state) const {
 
-        if (!isCacheVariableValid(state, "casting.regional.contact_force")) {
+        if (!this->isCacheVariableValid(state, this->_casting_regional_contact_forceCV)) {
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<SimTK::Vector_<SimTK::Vec3>>
-            (state, "casting.regional.contact_force");
+        return this->getCacheVariableValue
+            (state, this->_casting_regional_contact_forceCV);
     }
 
     //contact moment
     SimTK::Vec3 getTargetTotalContactMoment(const SimTK::State& state) const {
 
-        if (!isCacheVariableValid(state, "target.total.contact_moment")) {
+        if (!this->isCacheVariableValid(state, this->_target_total_contact_momentCV)) {
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<SimTK::Vec3>
-            (state, "target.total.contact_moment");
+        return this->getCacheVariableValue
+            (state, this->_target_total_contact_momentCV);
     }
 
     SimTK::Vec3 getCastingTotalContactMoment(const SimTK::State& state) const {
 
-        if (!isCacheVariableValid(state, "casting.total.contact_moment")) {
+        if (!this->isCacheVariableValid(state, this->_casting_total_contact_momentCV)) {
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<SimTK::Vec3>
-            (state, "casting.total.contact_moment");
+        return this->getCacheVariableValue
+            (state, this->_casting_total_contact_momentCV);
     }
 
     SimTK::Vector_<SimTK::Vec3> getTargetRegionalContactMoment(
         const SimTK::State& state) const {
 
-        if (!isCacheVariableValid(state, "target.regional.contact_moment")) {
+        if (!this->isCacheVariableValid(state, this->_target_regional_contact_momentCV)) {
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<SimTK::Vector_<SimTK::Vec3>>
-            (state, "target.regional.contact_moment");
+        return this->getCacheVariableValue
+            (state, this->_target_regional_contact_momentCV);
     }
 
     SimTK::Vector_<SimTK::Vec3> getCastingRegionalContactMoment(
         const SimTK::State& state) const {
 
-        if (!isCacheVariableValid(state, "casting.regional.contact_moment")) {
+        if (!this->isCacheVariableValid(state, this->_casting_regional_contact_momentCV)) {
             realizeContactMetricCaches(state);
         }
 
-        return getCacheVariableValue<SimTK::Vector_<SimTK::Vec3>>
-            (state, "casting.regional.contact_moment");
+        return this->getCacheVariableValue
+            (state, this->_casting_regional_contact_momentCV);
     }
 
     // END Lazy outputs
