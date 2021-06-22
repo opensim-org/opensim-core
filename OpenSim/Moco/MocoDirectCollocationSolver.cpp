@@ -40,6 +40,7 @@ void MocoDirectCollocationSolver::constructProperties() {
     constructProperty_implicit_auxiliary_derivative_bounds({-1000, 1000});
     constructProperty_minimize_lagrange_multipliers(false);
     constructProperty_lagrange_multiplier_weight(1.0);
+    constructProperty_optim_ipopt_opt_filename("ipopt.opt");
 }
 
 void MocoDirectCollocationSolver::setMesh(const std::vector<double>& mesh) {

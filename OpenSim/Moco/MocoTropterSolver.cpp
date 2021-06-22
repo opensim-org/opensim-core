@@ -188,6 +188,9 @@ MocoTropterSolver::createTropterSolver(
         // Check that IPOPT print level is valid.
         checkPropertyValueIsInRangeOrSet(
                 getProperty_optim_ipopt_print_level(), 0, 12, {-1});
+        // Set the optional options file name.
+        optsolver.set_advanced_option_string(
+                "option_file_name", get_optim_ipopt_opt_filename());
         if (get_verbosity() < 2) {
             optsolver.set_advanced_option_int("print_level", 0);
         } else {

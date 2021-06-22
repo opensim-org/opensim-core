@@ -124,6 +124,10 @@ public:
             "Newton.");
     OpenSim_DECLARE_PROPERTY(optim_ipopt_print_level, int,
             "IPOPT's verbosity (see IPOPT documentation).");
+    OpenSim_DECLARE_PROPERTY(optim_ipopt_opt_filename, std::string,
+            "When using IPOPT, 'ipopt.opt' (default)."
+            "IPOPT looks for this file before it starts and uses it "
+            "to set optimizer options. See: https://coin-or.github.io/Ipopt/OPTIONS.html.");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(enforce_constraint_derivatives, bool,
             "'true' (default) or 'false', whether or not derivatives of "
             "kinematic constraints are enforced as path constraints in the "
