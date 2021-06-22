@@ -52,6 +52,9 @@ clear;
 % Load the Moco libraries
 import org.opensim.modeling.*;
 
+% Flag to enable or disable the custom ipopt options files.
+USE_CUSTOM_OPTIONS = true;
+
 % ---------------------------------------------------------------------------
 % Set up a coordinate tracking problem where the goal is to minimize the
 % difference between provided and simulated coordinate values and speeds (and
@@ -183,6 +186,16 @@ problem.setStateInfo('/jointset/ankle_l/ankle_angle_l/value', [-15*pi/180, 25*pi
 problem.setStateInfo('/jointset/ankle_r/ankle_angle_r/value', [-15*pi/180, 25*pi/180]);
 problem.setStateInfo('/jointset/lumbar/lumbar/value', [0, 20*pi/180]);
 
+solver = MocoDirectCollocationSolver.safeDownCast(study.updSolver());
+solver.set_verbosity(2);
+solver.set_optim_solver('ipopt');
+solver.set_optim_convergence_tolerance(1e-4);
+solver.set_optim_constraint_tolerance(1e-4);
+solver.set_optim_max_iterations(1000);
+if (USE_CUSTOM_OPTIONS)
+    % This is a file which contains more custom solver options for ipopt.
+    solver.set_optim_ipopt_opt_filename("track_opt.opt");
+end
 
 % Solve the problem
 % =================
@@ -326,6 +339,10 @@ solver.set_optim_constraint_tolerance(1e-4);
 solver.set_optim_max_iterations(1000);
 solver.setGuess(gaitTrackingSolution); % Use tracking solution as initial guess
 
+if (USE_CUSTOM_OPTIONS)
+    % This is a file which contains more custom solver options for ipopt.
+    solver.set_optim_ipopt_opt_filename("predi_opt.opt");
+end
 
 % Solve problem
 % =============
