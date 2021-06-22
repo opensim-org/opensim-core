@@ -2,7 +2,9 @@ set(EXAMPLE_2D_WALKING_FILES
         2D_gait.osim
         referenceCoordinates.sto
         referenceGRF.sto
-        referenceGRF.xml)
+        referenceGRF.xml
+        predi_opt.opt
+        track_opt.opt)
 
 OpenSimAddExampleCXX(NAME example2DWalking SUBDIR Moco
     EXECUTABLES example2DWalking example2DWalkingMetabolics

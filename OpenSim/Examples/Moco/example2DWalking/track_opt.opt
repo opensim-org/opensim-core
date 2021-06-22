@@ -1,0 +1,3 @@
+# Example of an option that can be specified when we use an external options file.
+
+least_square_init_duals yes

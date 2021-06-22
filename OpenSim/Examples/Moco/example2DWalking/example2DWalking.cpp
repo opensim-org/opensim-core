@@ -47,6 +47,8 @@
 
 using namespace OpenSim;
 
+bool USE_CUSTOM_OPTIONS = false;
+
 /// Set a coordinate tracking problem where the goal is to minimize the
 /// difference between provided and simulated coordinate values and speeds
 /// (and ground reaction forces) as well as to minimize an effort cost (squared
@@ -185,6 +187,11 @@ MocoSolution gaitTracking(double controlEffortWeight = 10,
     solver.set_optim_constraint_tolerance(1e-4);
     solver.set_optim_max_iterations(1000);
 
+    if (USE_CUSTOM_OPTIONS) {
+        // This is a file which contains more custom solver options for ipopt.
+        solver.set_optim_ipopt_opt_filename("track_opt.opt");
+    }
+
     // Solve problem.
     // ==============
     MocoSolution solution = study.solve();
@@ -317,6 +324,11 @@ void gaitPrediction(const MocoSolution& gaitTrackingSolution) {
     solver.set_optim_max_iterations(1000);
     // Use the solution from the tracking simulation as initial guess.
     solver.setGuess(gaitTrackingSolution);
+
+    if (USE_CUSTOM_OPTIONS) {
+        // This is a file which contains more custom solver options for ipopt.
+        solver.set_optim_ipopt_opt_filename("predi_opt.opt");
+    }
 
     // Solve problem.
     // ==============

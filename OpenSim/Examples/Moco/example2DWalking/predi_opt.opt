@@ -1,0 +1,2 @@
+# Warm start since the problem is probably somewhat converged from the first problem.
+warm_start_init_point yes
