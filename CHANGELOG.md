@@ -12,6 +12,7 @@ v4.3
 - Upgrade bindings to use SWIG version 4.0 (allowing doxygen comments to carry over to Java/Python files).
 - Added createSyntheticIMUAccelerationSignals() to SimulationUtilities to generate "synthetic" IMU accelerations based on passed in state trajectory.
 - Fixed incorrect header information in BodyKinematics file output
+- Fixed bug applying non-uniform scaling to inertia matrix of a Body due to using local vaiable of type SysMat33 (Issue #2871).
 - Default build to python 3.8 and numpy 1.20.3
 
 v4.2
