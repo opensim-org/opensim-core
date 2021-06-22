@@ -102,7 +102,7 @@ jobs:
     - name: Test Python bindings
       run: |
         $env:PATH += ";$env:USERPROFILE/opensim-core-install/bin"
-        $env:PYTHONPATH = "$env:USERPROFILE/opensim-core-install/bin"
+        echo "PYTHONPATH=$env:USERPROFILE/opensim-core-install/bin" >> $GITHUB_ENV
         # Move to the installed location of the python package.
         cd ~/opensim-core-install/sdk/python
         # Run python tests.
