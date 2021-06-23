@@ -1,9 +1,9 @@
 %% Setup Environment and Folders
 clear;
 import org.opensim.modeling.*
-Logger.setLevelString('Trace');
+Logger.setLevelString('Debug');
 
-model_file = '../models/lenhart2015/lenhart2015.osim';
+model_file = '../models/healthy/lenhart2015/lenhart2015.osim';
 results_basename = 'walking';
 ik_result_dir = './results/comak-inverse-kinematics';
 comak_result_dir = './results/comak';
@@ -49,7 +49,8 @@ comak_ik.set_constraint_function_num_interpolation_points(20);
 comak_ik.set_print_secondary_constraint_sim_results(true);
 comak_ik.set_constrained_model_file('./results/comak-inverse-kinematics/ik_constrained_model.osim');
 comak_ik.set_perform_inverse_kinematics(true);
-comak_ik.set_marker_file('../models/lenhart2015/motion_data/overground_17.trc');
+comak_ik.set_marker_file('../models/healthy/experimental_data/motion_analysis/overground_17.trc');
+
 comak_ik.set_output_motion_file('overground_17_ik.mot');
 comak_ik.set_time_range(0, 0);
 comak_ik.set_time_range(1, 2.36);
@@ -57,7 +58,7 @@ comak_ik.set_report_errors(true);
 comak_ik.set_report_marker_locations(false);
 comak_ik.set_ik_constraint_weight(100);
 comak_ik.set_ik_accuracy(1e-5);
-comak_ik.set_use_visualizer(true);
+comak_ik.set_use_visualizer(false);
 comak_ik.set_verbose(10);
 
 
@@ -255,14 +256,13 @@ comak_ik.run();
 comak = COMAKTool();
 comak.set_model_file(model_file);
 comak.set_coordinates_file('./results/comak-inverse-kinematics/overground_17_ik.mot');
-comak.set_external_loads_file('../models/lenhart2015/motion_data/overground_17_ext_loads.xml'),
+comak.set_external_loads_file('../models/healthy/experimental_data/motion_analysis/overground_17_ext_loads.xml'),
 comak.set_results_directory(comak_result_dir);
 comak.set_results_prefix(results_basename);
 comak.set_replace_force_set(false);
-comak.set_force_set_file('../models/lenhart2015/lenhart2015_reserve_actuators.xml');
+comak.set_force_set_file('../models/healthy/lenhart2015/lenhart2015_reserve_actuators.xml');
 comak.set_start_time(1.16);
-% comak.set_stop_time(2.32);
-comak.set_stop_time(1.26);
+comak.set_stop_time(2.32);
 comak.set_time_step(0.01);
 comak.set_lowpass_filter_frequency(6);
 comak.set_print_processed_input_kinematics(false);
@@ -393,7 +393,7 @@ comak.set_activation_exponent(2);
 comak.set_contact_energy_weight(0);
 comak.set_non_muscle_actuator_weight(1000);
 comak.set_model_assembly_accuracy(1e-12);
-comak.set_use_visualizer(true);
+comak.set_use_visualizer(false);
 comak.set_verbose(2);
 
 comak.print('./inputs/comak_settings.xml');
@@ -433,7 +433,7 @@ jnt_mech.set_h5_kinematics_data(true);
 jnt_mech.set_h5_states_data(true);
 jnt_mech.set_write_transforms_file(false);
 jnt_mech.set_output_transforms_file_type('sto');
-jnt_mech.set_use_visualizer(true);
+jnt_mech.set_use_visualizer(false);
 jnt_mech.set_verbose(0);
 
 analysis_set = AnalysisSet();

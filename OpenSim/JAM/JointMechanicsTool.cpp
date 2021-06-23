@@ -175,7 +175,7 @@ bool JointMechanicsTool::run() {
             state = _states[i];
 
             log_info("Time: {}", state.getTime()); 
-
+            state.invalidateAllCacheAtOrAbove(SimTK::Stage::Time);
             //Record Values
             record(state,i);
 
@@ -256,6 +256,18 @@ void JointMechanicsTool::initialize(SimTK::State& state) {
         _model.setUseVisualizer(true);
     }
     state = _model.initSystem();
+
+    //Turn on mesh flipping so metrics are computed for casting and target
+    /*for (int i = 0; i < (int)_contact_force_paths.size(); ++i) {
+
+        Smith2018ArticularContactForce& contactForce = _model.updComponent
+            <Smith2018ArticularContactForce>(_contact_force_paths[i]);
+
+        contactForce.setModelingOption(state, "flip_meshes", 1);
+    }*/
+    for (auto& cnt : _model.updComponentList<Smith2018ArticularContactForce>()) {
+        cnt.setModelingOption(state, "flip_meshes", 1);
+    }
 
     if (!get_input_transforms_file().empty()) {
         assembleStatesTrajectoryFromTransformsData(input_data, state);
@@ -645,7 +657,7 @@ void JointMechanicsTool::assembleStatesTrajectoryFromStatesData(
 
     // Initialize so that missing columns end up as NaN.
     s.updY().setToNaN();
-    SimTK::State default_state = _model.initSystem();
+    SimTK::State default_state = _model.getWorkingState();
     SimTK::Vector default_state_values = 
         _model.getStateVariableValues(default_state);
 
@@ -862,13 +874,13 @@ void JointMechanicsTool::setupContactStorage(SimTK::State& state) {
     }
 
     //Turn on mesh flipping so metrics are computed for casting and target
-    for (int i = 0; i < (int)_contact_force_paths.size(); ++i) {
+    /*for (int i = 0; i < (int)_contact_force_paths.size(); ++i) {
 
         Smith2018ArticularContactForce& contactForce = _model.updComponent
             <Smith2018ArticularContactForce>(_contact_force_paths[i]);
 
         contactForce.setModelingOption(state, "flip_meshes", 1);
-    }
+    }*/
 
     //Realize Report so the sizes of output vectors are known
     _model.realizeReport(state);

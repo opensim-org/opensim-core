@@ -137,11 +137,11 @@ bool COMAKInverseKinematicsTool::run()
     }
 
     catch(const std::exception& x) {
-        log_error("COMAKTool::run() caught an exception: \n {}", x.what());
+        log_error("COMAKInverseKinematicsTool::run() caught an exception: \n {}", x.what());
         cwd.restore();
     }
     catch (...) { // e.g. may get InterruptedException
-        log_error("COMAKTool::run() caught an exception.");
+        log_error("COMAKInverseKinematicsTool::run() caught an exception.");
         cwd.restore();
     }
 
