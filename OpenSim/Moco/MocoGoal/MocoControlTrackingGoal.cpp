@@ -37,7 +37,7 @@ MocoControlTrackingGoalReference::MocoControlTrackingGoalReference(
 }
 
 void MocoControlTrackingGoal::addScaleFactor(const std::string &name,
-        const std::string &control, const MocoBounds &bounds) {
+        const std::string &control, const MocoBounds& bounds) {
 
     // Ensure that the specified control has reference data associated with it.
     if (getProperty_reference_labels().empty()) {

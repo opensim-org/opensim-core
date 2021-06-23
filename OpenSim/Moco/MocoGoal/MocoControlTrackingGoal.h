@@ -241,7 +241,7 @@ public:
     /// scale factor will only scale the column for the associated control. The
     /// tracking error for the other control is unaffected.
     void addScaleFactor(const std::string& name, const std::string& control,
-            const MocoBounds&);
+            const MocoBounds& bounds);
 
 protected:
     // TODO check that the reference covers the entire possible time range.

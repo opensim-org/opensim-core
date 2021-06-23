@@ -40,7 +40,8 @@ inverse.set_convergence_tolerance(1e-3);
 
 if ~exist('effortSolution.sto', 'file')
 % Part 1f: Solve the problem!
-solution = inverse.solve().getMocoSolution();
+inverseSolution = inverse.solve();
+solution = inverseSolution.getMocoSolution();
 solution.write('effortSolution.sto');
 end
 

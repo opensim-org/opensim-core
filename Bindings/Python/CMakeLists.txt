@@ -383,5 +383,9 @@ install(DIRECTORY ../Java/Matlab/OpenSenseExample
         DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}"
         # Exclude Matlab m files
         PATTERN "*.m" EXCLUDE)
+install(DIRECTORY ../Java/Matlab/examples/Moco/exampleEMGTracking
+        DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}/Moco"
+        # Exclude Matlab m files
+        PATTERN "*.m" EXCLUDE)
 install(DIRECTORY OpenSenseExample
         DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}")
