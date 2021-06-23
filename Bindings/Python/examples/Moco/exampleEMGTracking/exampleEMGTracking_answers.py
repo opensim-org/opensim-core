@@ -110,25 +110,24 @@ gluteus_factor = trackingSolution.getParameter('gluteus_factor')
 
 ## Part 4: Plot the EMG-tracking muscle redundancy problem solution.
 # Part 4a: Print the scale factor values to the command window.
-print('\n')
-print('Optimized scale factor values: \n')
-print('------------------------------ \n')
-print('gastrocnemius = ' + str(gastroc_factor) + '\n')
-print('tibialis anterior = ' + str(tibant_factor) + '\n')
-print('biceps femoris short head = ' + str(bifem_factor) + '\n')
-print('gluteus = ' + str(gluteus_factor) + '\n')
-print('\n')
+print('\nOptimized scale factor values:')
+print('------------------------------')
+print('gastrocnemius = ' + str(gastroc_factor))
+print('tibialis anterior = ' + str(tibant_factor))
+print('biceps femoris short head = ' + str(bifem_factor))
+print('gluteus = ' + str(gluteus_factor))
 
 # Part 4b: Re-scale the reference data using the optimized scale factors.
 gastroc = emgReference.updDependentColumn('gastrocnemius')
 tibant = emgReference.updDependentColumn('tibialis_anterior')
 bifem = emgReference.updDependentColumn('biceps_femoris')
 gluteus = emgReference.updDependentColumn('gluteus')
-for t in np.arange(emgReference.getNumRows()):   
-    gastroc.set(t, gastroc_factor * gastroc.get(t))
-    tibant.set(t, tibant_factor * tibant.get(t))
-    bifem.set(t, bifem_factor * bifem.get(t))
-    gluteus.set(t, gluteus_factor * gluteus.get(t))
+for t in np.arange(emgReference.getNumRows()):
+    t = int(t) # Convert to Python built-in int type for indexing
+    gastroc[t] = gastroc_factor * gastroc[t]
+    tibant[t] = tibant_factor * tibant[t]
+    bifem[t] = bifem_factor * bifem[t]
+    gluteus[t] = gluteus_factor * gluteus[t]
 
 # Part 4c: Generate the plots. Compare results to the effort minimization
 # solution.
