@@ -3,7 +3,7 @@ from opensim import *
 from exampleIMUTracking_helpers import *
 # Add the directory above to access mocoPlotTrajectory.py
 import sys
-sys.path.insert('../')
+sys.path.insert(1, '../')
 from mocoPlotTrajectory import *
 import numpy as np
 import os
@@ -28,9 +28,9 @@ addIMUFrame(model, 'tibia_r', Vec3(0, -0.2, 0.05), Vec3(0, 0, 0.5*np.pi))
 # we just added to the model. We'll use the helper function addModelIMUs()
 # included with OpenSenseUtilities.
 imuFramePaths = StdVectorString()
-imuFramePaths.add('/bodyset/torso/torso_imu_offset')
-imuFramePaths.add('/bodyset/femur_r/femur_r_imu_offset')
-imuFramePaths.add('/bodyset/tibia_r/tibia_r_imu_offset')
+imuFramePaths.append('/bodyset/torso/torso_imu_offset')
+imuFramePaths.append('/bodyset/femur_r/femur_r_imu_offset')
+imuFramePaths.append('/bodyset/tibia_r/tibia_r_imu_offset')
 OpenSenseUtilities().addModelIMUs(model, imuFramePaths)
 model.initSystem()
 
@@ -109,8 +109,8 @@ predictSolution = MocoTrajectory('predictSolution.sto')
 # function included with SimulationUtilities. These free functions can be
 # accessed in scripting by using the 'opensimSimulation' prefix. 
 outputPaths = StdVectorString()
-outputPaths.add('.*accelerometer_signal')
-accelerometerSignals = opensimSimulation.analyzeVec3(model,
+outputPaths.append('.*accelerometer_signal')
+accelerometerSignals = analyzeVec3(model,
     predictSolution.exportToStatesTable(),
     predictSolution.exportToControlsTable(),
     outputPaths)
@@ -157,7 +157,7 @@ mocoPlotTrajectory('predictSolution.sto', 'trackingSolution.sto',
 # Part 5b: Compare accelerations from tracking solution to the reference
 # accelerations.
 trackingSolution = MocoTrajectory('trackingSolution.sto')
-accelerometerSignalsTracking = opensimSimulation.analyzeVec3(model, 
+accelerometerSignalsTracking = analyzeVec3(model, 
     trackingSolution.exportToStatesTable(), 
     trackingSolution.exportToControlsTable(), 
     outputPaths)

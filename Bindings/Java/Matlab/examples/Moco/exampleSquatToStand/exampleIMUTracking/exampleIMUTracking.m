@@ -103,7 +103,7 @@ end
 
 
 % Part 3d: Plot the synthetic acceleration signals.
-
+plotAccelerationSignals(accelerometerSignals);
 
 %% Part 4: Synthetic acceleration tracking problem 
 % Part 4a: Add a MocoAccelerationTrackingGoal to the MocoProblem. Set the
@@ -112,7 +112,6 @@ end
 % We need to subtract the gravitational acceleration vector and re-express
 % the accelerations in the tracking frames so that the model-computed
 % values in the tracking cost match the accelerometer signals.
-
 
 
 % Part 4b: Reduce the control cost weight so that the tracking term will

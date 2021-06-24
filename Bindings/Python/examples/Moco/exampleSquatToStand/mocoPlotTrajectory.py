@@ -55,7 +55,7 @@ def mocoPlotTrajectory(*args):
             ax.set_ylim(0, 1)
         
         if i == 0 and len(args) > 1:
-            ax.legend()
+            ax.legend(loc='best')
 
     plt.show()
 
@@ -98,7 +98,7 @@ def mocoPlotTrajectory(*args):
                 ax.set_ylim(0, 1)
 
         if i == 0 and len(args) > 1:
-            ax.legend()
+            ax.legend(loc='best')
 
     fig.tight_layout()
     plt.show()

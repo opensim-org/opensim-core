@@ -54,53 +54,67 @@ def plotAccelerationSignals(*args):
     time = np.zeros(len(timeVec))
     for i in np.arange(len(timeVec)):
        time[i] = timeVec[i]
+
+    def to_mat(vectorVec3):
+        mat = np.zeros((vectorVec3.size(), 3))
+        for i in np.arange(vectorVec3.size()):
+            for j in np.arange(3):
+                mat[i,j] = vectorVec3[int(i)][int(j)]
+        return mat
     
     fig = plt.figure()
     # Plot the torso accelerations
     ax = fig.add_subplot(131)
-    torso = accelerationsReference.getDependentColumn(
-            '/bodyset/torso/torso_imu_offset')
+    torso = to_mat(accelerationsReference.getDependentColumn(
+            '/bodyset/torso/torso_imu_offset'))
     ax.plot(time, torso[:,1], color='red', linewidth=3,
         label='predict')
     if len(args) == 2:
-        torsoTrack = accelerationsTracking.getDependentColumn(
-            '/bodyset/torso/torso_imu_offset')
+        torsoTrack = to_mat(accelerationsTracking.getDependentColumn(
+            '/bodyset/torso/torso_imu_offset'))
         ax.plot(time, torsoTrack[:,1], color='blue', 
             linestyle='--', linewidth=3, label='track')
 
     if len(args) == 2:
         ax.legend(loc='best')
 
+    ax.set_xlim(0, 1)
     ax.set_title('torso')
     ax.set_xlabel('time (s)')
     ax.set_ylabel('acceleration (m/s^2)')
 
     # Plot the femur accelerations
     ax = fig.add_subplot(132)
-    femur = accelerationsReference.getDependentColumn(
-        '/bodyset/femur_r/femur_r_imu_offset')
+    femur = to_mat(accelerationsReference.getDependentColumn(
+        '/bodyset/femur_r/femur_r_imu_offset'))
     ax.plot(time, femur[:,1], color='red', linewidth=3)
     if len(args) == 2:
-        femurTrack = accelerationsTracking.getDependentColumn(
-            '/bodyset/femur_r/femur_r_imu_offset')
+        femurTrack = to_mat(accelerationsTracking.getDependentColumn(
+            '/bodyset/femur_r/femur_r_imu_offset'))
         ax.plot(time, femurTrack[:,1], color='blue', 
             linestyle='--', linewidth=3)
 
+    ax.set_xlim(0, 1)
     ax.set_title('femur')
     ax.set_xlabel('time (s)')
     ax.set_ylabel('acceleration (m/s^2)')
 
     # Plot the tibia accelerations
     ax = fig.add_subplot(133)
-    tibia = accelerationsReference.getDependentColumn(
-        '/bodyset/tibia_r/tibia_r_imu_offset')
+    tibia = to_mat(accelerationsReference.getDependentColumn(
+        '/bodyset/tibia_r/tibia_r_imu_offset'))
     ax.plot(time, tibia[:,1], color='red', linewidth=3)
     if len(args) == 2:
-        tibiaTrack = accelerationsTracking.getDependentColumn(
-            '/bodyset/tibia_r/tibia_r_imu_offset')
+        tibiaTrack = to_mat(accelerationsTracking.getDependentColumn(
+            '/bodyset/tibia_r/tibia_r_imu_offset'))
         ax.plot(time, tibiaTrack[:,1], color='blue', 
             linestyle='--', linewidth=3)
     
+    ax.set_xlim(0, 1)
     ax.set_title('tibia')
     ax.set_xlabel('time (s)')
     ax.set_ylabel('acceleration (m/s^2)')
+
+    fig.tight_layout()
+    plt.show()
+    plt.close()
