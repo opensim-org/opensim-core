@@ -44,7 +44,7 @@ problem.setStateInfo('/jointset/ankle_r/ankle_angle_r/value', );
 % Velocity bounds: all model coordinates should start and end at rest.
 problem.setStateInfoPattern('/jointset/.*/speed', );
 
-% Part 1d: Add a MocoControlCost to the problem.
+% Part 1d: Add a MocoControlGoal to the problem.
 
 
 % Part 1e: Configure the solver.
@@ -71,7 +71,7 @@ end
 % the predictive solution.
 
 
-% Part 2c: Reduce the control cost weight so it now acts as a regularization 
+% Part 2c: Reduce the control goal weight so it now acts as a regularization 
 % term.
 
 

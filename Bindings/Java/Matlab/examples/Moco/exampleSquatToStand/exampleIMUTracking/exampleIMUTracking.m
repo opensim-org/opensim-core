@@ -57,20 +57,25 @@ addIMUFrame(model, 'tibia_r', Vec3(0, -0.2, 0.05), Vec3(0, 0, 0.5*pi));
 % problem.setStateInfoPattern('/path/to/states/.*/value', ...)
 
 % Time bounds
-
+problem.setTimeBounds( );
 
 % Position bounds: the model should start in a squat and finish 
 % standing up.
-
+problem.setStateInfo('/jointset/hip_r/hip_flexion_r/value', );
+problem.setStateInfo('/jointset/knee_r/knee_angle_r/value', );
+problem.setStateInfo('/jointset/ankle_r/ankle_angle_r/value', );
 
 % Velocity bounds: all model coordinates should start and end at rest.
-
+problem.setStateInfoPattern('/jointset/.*/speed', );
 
 % Part 2d: Add a MocoControlGoal to the problem.
 
 
 % Part 2e: Configure the solver.
-
+solver = study.initCasADiSolver();
+solver.set_num_mesh_intervals( );
+solver.set_optim_convergence_tolerance( );
+solver.set_optim_constraint_tolerance( );
 
 if ~exist('predictSolution.sto', 'file')
 % Part 2f: Solve! Write the solution to file, and visualize.
