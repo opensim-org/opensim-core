@@ -259,7 +259,7 @@ OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/report.py" opensim)
 if (WIN32)
     set(DLL_PATH_FILE ${CMAKE_CURRENT_BINARY_DIR}/dll_location.txt)
     file(WRITE ${DLL_PATH_FILE} "${CMAKE_INSTALL_PREFIX}/bin")
-    OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_BINARY_DIR}/dll_location.txt" opensim)
+    OpenSimPutFileInPythonPackage("${DLL_PATH_FILE}" opensim)
 endif()
 
 # Test files. If you require more test resource files, list them here.
