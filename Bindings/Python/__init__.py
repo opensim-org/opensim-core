@@ -1,7 +1,7 @@
 import sys
 import os
 if (sys.version_info.major == 3 and sys.version_info.minor >= 8 and sys.platform.startswith('win')):
-    print('Reading dll_location.txt from '+os.getcwd())
+    print('Reading dll_location.txt from '+os.getcwd()+' platform: '+sys.platform)
     with open('opensim/dll_location.txt', 'r') as reader:
         os.add_dll_directory(reader.read())
 
