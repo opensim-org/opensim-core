@@ -62,26 +62,26 @@ Left Step Time (LST)  = Time from right heel-strike to left heel-strike
 STA = (RST - LST) / (RST + LST)
 
 In this goal, step time asymmetry is estimated by detecting if a foot in contact
-with the ground at a given time point. We count positive values when the left
-foot is in contact, and negative values when the right is in contact. Therefore,
-positive asymmetry means longer left step times, and negative asymmetry means
+with the ground at a given time point. We count negative values when the left
+foot is in contact, and positive values when the right is in contact. Therefore,
+negative asymmetry means longer left step times, and negative positive means
 longer right step times. At time points when both feet are in contact, the step
 time is counted towards the leading foot.
 
 The target asymmetry can be set via the 'target_asymmetry' property; a symmetric
 step time solution can be achieved by setting this property to zero. This goal
-can be used in either 'cost' mode or 'endpoint constraint' model. In 'cost', mode
-the error between the target asymmetry and model asymmetry is squared. To make
-this goal suitable for gradient-based optimization, step time values are assigned
-via smoothing functions which can be controlled via the <TODO> propertie(s).
+can be used only in 'cost' mode, where the error between the target asymmetry
+and model asymmetry is squared. To make this goal suitable for gradient-based
+optimization, step time values are assigned via smoothing functions which can be
+controlled via the 'asymmetry_smoothing' and 'contact_detection_smoothing'
+properties.
 
-TODO notes about goal best practices (i.e., only used for bipedal gait, other
-necessary constraints, etc.)
+@note This goal is designed for simulations of bipedal gait.
 
 @note The only contact element supported is SmoothSphereHalfSpaceForce.
 
 @note Since this goal approximates step time asymmetry, users should calculate
-the true asymmetry index after running an optimization.s
+the true asymmetry index after running an optimization.
 
 @ingroup mocogoal */
 class OSIMMOCO_API MocoStepTimeAsymmetryGoal : public MocoGoal {
@@ -149,13 +149,17 @@ public:
     }
     std::string getWalkingDirection() { return get_walking_direction(); }
 
-    /// TODO smoothing docs
+    /// Set the values that determines the smoothing of the asymmetry
+    /// computation. This term is necessary since this computation is non-smooth
+    /// (i.e., either the left foot or right foot is in contact).
     void setAsymmetrySmoothing(double smoothing) {
         set_asymmetry_smoothing(smoothing);
     }
     double getAsymmetrySmoothing() { return get_asymmetry_smoothing(); }
 
-    /// TODO smoothing docs
+    /// Set the value that determins the smoothing of the contact force
+    /// detection. This term in necessary since foot contact is non-smooth,
+    /// (i.e., ether the foot is in contact or not).
     void setContactDetectionSmoothing(double smoothing) {
         set_contact_detection_smoothing(smoothing);
     }
@@ -169,7 +173,7 @@ protected:
             const IntegrandInput& input, double& integrand) const override;
     void calcGoalImpl(
             const GoalInput& input, SimTK::Vector& cost) const override;
-//    void printDescriptionImpl() const override;
+    void printDescriptionImpl() const override;
 
 private:
     OpenSim_DECLARE_PROPERTY(left_contact_group, MocoStepTimeAsymmetryGoalGroup,
@@ -180,12 +184,31 @@ private:
             "Paths to SmoothSphereHalfSpaceForce objects on the right foot of "
             "the model whose forces are summed to determine when the right foot "
             "is in contact with the ground.");
-    OpenSim_DECLARE_PROPERTY(target_asymmetry, double, "TODO");
-    OpenSim_DECLARE_PROPERTY(contact_force_threshold, double, "TODO");
-    OpenSim_DECLARE_PROPERTY(contact_force_direction, std::string, "TODO");
-    OpenSim_DECLARE_PROPERTY(walking_direction, std::string, "TODO");
-    OpenSim_DECLARE_PROPERTY(asymmetry_smoothing, double, "TODO");
-    OpenSim_DECLARE_PROPERTY(contact_detection_smoothing, double, "TODO");
+    OpenSim_DECLARE_PROPERTY(target_asymmetry, double,
+            "The target asymmetry value, between -1.0 and 1.0. Positive "
+            "asymmetry is associated with the right leg, and negative asymmetry "
+            "for the left. Default: 0");
+    OpenSim_DECLARE_PROPERTY(asymmetry_smoothing, double,
+            "The value that determines the smoothing of the asymmetry "
+            "computation (default: 10)");
+    OpenSim_DECLARE_PROPERTY(contact_force_threshold, double,
+            "The contact force threshold that determines when the foot is in "
+            "contact with the ground (default: 25 [Newtons]).");
+    OpenSim_DECLARE_PROPERTY(contact_force_direction, std::string,
+            "The direction of the contact force component in the ground frame "
+            "which is used to compute foot-contact detection. "
+            "Acceptable direction values include 'positive-x', 'positive-y', "
+            "'positive-z', 'negative-x', 'negative-y', and 'negative-z'. "
+            "Default: 'positive-x'.");
+    OpenSim_DECLARE_PROPERTY(contact_detection_smoothing, double,
+            "The value that determines the smoothing of the foot-contact "
+            "detection. Default: 0.25.");
+    OpenSim_DECLARE_PROPERTY(walking_direction, std::string,
+            "The walking direction of the model in the ground frame, which "
+            "is used to determine the leading foot during double support. "
+            "Acceptable direction values include 'positive-x', 'positive-y', "
+            "'positive-z', 'negative-x', 'negative-y', and 'negative-z'. "
+            "Default: 'positive-x'.");
 
     void constructProperties();
 

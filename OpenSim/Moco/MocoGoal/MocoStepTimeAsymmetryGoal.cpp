@@ -227,15 +227,22 @@ void MocoStepTimeAsymmetryGoal::calcGoalImpl(const GoalInput& input,
     }
 }
 
-//void MocoStepTimeAsymmetryGoal::printDescriptionImpl() const {
-//    for (int ig = 0; ig < getProperty_contact_groups().size(); ++ig) {
-//        const auto& group = get_contact_groups(ig);
-//        log_cout("        group {}: ExternalForce: {}",
-//                 ig, group.get_external_force_name());
-//        log_cout("            forces:");
-//        for (int ic = 0; ic < group.getProperty_contact_force_paths().size();
-//             ++ic) {
-//            log_cout("                {}", group.get_contact_force_paths(ic));
-//        }
-//    }
-//}
+void MocoStepTimeAsymmetryGoal::printDescriptionImpl() const {
+    const auto& leftGroup = get_left_contact_group();
+    log_cout("            left forces:");
+    for (int ic = 0; ic < leftGroup.getProperty_contact_force_paths().size();
+         ++ic) {
+        log_cout("                {}", leftGroup.get_contact_force_paths(ic));
+    }
+    log_cout("            left contact sphere for position: ",
+             leftGroup.get_foot_position_contact_force_path());
+
+    const auto& rightGroup = get_left_contact_group();
+    log_cout("            right forces:");
+    for (int ic = 0; ic < leftGroup.getProperty_contact_force_paths().size();
+         ++ic) {
+        log_cout("                {}", rightGroup.get_contact_force_paths(ic));
+    }
+    log_cout("            right contact sphere for position: ",
+             rightGroup.get_foot_position_contact_force_path());
+}
