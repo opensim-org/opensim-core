@@ -30,8 +30,9 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Analyses/IMUDataReporter.h>
 #include <OpenSim/Simulation/OpenSense/IMU.h>
+#include <OpenSim/Simulation/StatesTrajectory.h>
 #include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
-
+#include <OpenSim/Moco/Components/PositionMotion.h>
 using namespace OpenSim;
 using namespace std;
 
@@ -89,6 +90,7 @@ operator=(const IMUDataReporter& other)
     copyProperty_report_orientations(other);
     copyProperty_report_gyroscope_signals(other);
     copyProperty_report_accelerometer_signals(other);
+    copyProperty_compute_accelerations_without_forces(other);
 
     copyProperty_frame_paths(other);
     _modelLocal = nullptr;
@@ -125,8 +127,12 @@ record(const SimTK::State& s)
     sWorkingCopy.setTime(s.getTime());
 
     // update Q's and U's
-    sWorkingCopy.setQ(s.getQ());
-    sWorkingCopy.setU(s.getU());
+    if (get_compute_accelerations_without_forces()) {
+        // Compute derivatives using a PositionMotion
+    } else {
+        sWorkingCopy.setQ(s.getQ());
+        sWorkingCopy.setU(s.getU());
+    }
     _modelLocal->realizeReport(sWorkingCopy);
 
     return 0;
@@ -201,6 +207,22 @@ int IMUDataReporter::begin(const SimTK::State& s )
                 _linearAccelerationsReporter->addToReport(
                     comp->getOutput("accelerometer_signal"), comp->getName());
         }
+    }
+    if (get_compute_accelerations_without_forces()) {
+        if (_statesStore == nullptr) {
+            throw(Exception("IMUDataReporter: compute_accelerations_without_forces requires providing a states file as input."));
+        }
+        // Create splines for coordinates from statesStore and provide to
+        // PositionMotion.
+        TimeSeriesTable statesTable = _statesStore->exportToTable();
+        auto statesTraj = StatesTrajectory::createFromStatesTable(*_modelLocal,
+                statesTable, true, true, true);
+
+        auto posmot = PositionMotion::createFromStatesTrajectory(
+                *_modelLocal, statesTraj);
+        posmot->setName("position_motion");
+        const auto* posmotPtr = posmot.get();
+        _modelLocal->addComponent(posmot.release());
     }
     _modelLocal->initSystem();
 
