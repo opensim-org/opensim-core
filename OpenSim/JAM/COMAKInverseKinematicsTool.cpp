@@ -133,6 +133,9 @@ bool COMAKInverseKinematicsTool::run()
             performIK();
         }
 
+        log_info("COMAKInverseKinematics complete.");
+        log_info("Printed results to: {}", get_results_directory());
+
         completed = true;
     }
 

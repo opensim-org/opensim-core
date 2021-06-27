@@ -119,9 +119,15 @@ void Smith2018ContactMesh::extendScale(
 
 void Smith2018ContactMesh::extendFinalizeFromProperties() {
     Super::extendFinalizeFromProperties();
-    //if (!_mesh_is_cached) {
-    if (!isObjectUpToDateWithProperties()) {
+    if (!_mesh_is_cached) {
         initializeMesh();
+    }
+    
+    //Create Decorative Mesh
+    if (!isObjectUpToDateWithProperties()) {
+        _decorative_mesh.reset(
+            new SimTK::DecorativeMeshFile(_full_mesh_file_path.c_str()));
+        //_decorative_mesh->setScaleFactors(get_scale_factors());
     }
 }
 
@@ -326,9 +332,9 @@ void Smith2018ContactMesh::initializeMesh()
 
 
     // Load Mesh from file
-    std::string file = findMeshFile(get_mesh_file());
+    _full_mesh_file_path = findMeshFile(get_mesh_file());
     
-    _mesh.loadFile(file);
+    _mesh.loadFile(_full_mesh_file_path);
 
     //Scale Mesh
     SimTK::Real xscale = get_scale_factors()(0);
@@ -471,11 +477,6 @@ void Smith2018ContactMesh::initializeMesh()
         allFaces[i] = i;}
 
     createObbTree(_obb, _mesh, allFaces);
-
-    //Create Decorative Mesh
-    
-    _decorative_mesh.reset(new SimTK::DecorativeMeshFile(file.c_str()));
-    //_decorative_mesh->setScaleFactors(get_scale_factors());
 
     //Triangle Material Properties
     if(get_use_variable_thickness()){

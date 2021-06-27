@@ -284,6 +284,7 @@ private:
     // Member Variables
     SimTK::PolygonalMesh _mesh;
     SimTK::PolygonalMesh _mesh_back;
+    std::string _full_mesh_file_path;
     SimTK::Vector_<SimTK::Vec3> _tri_center;
     SimTK::Vector_<SimTK::UnitVec3> _tri_normal;
     SimTK::Vector _tri_area;

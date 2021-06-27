@@ -194,6 +194,8 @@ bool JointMechanicsTool::run() {
         }
         printResults(get_results_file_basename(), get_results_directory());
 
+        log_info("Joint Mechanics Analysis complete.");
+        log_info("Printed results to: {}", get_results_directory());
         completed = true;
     }
 
@@ -257,14 +259,6 @@ void JointMechanicsTool::initialize(SimTK::State& state) {
     }
     state = _model.initSystem();
 
-    //Turn on mesh flipping so metrics are computed for casting and target
-    /*for (int i = 0; i < (int)_contact_force_paths.size(); ++i) {
-
-        Smith2018ArticularContactForce& contactForce = _model.updComponent
-            <Smith2018ArticularContactForce>(_contact_force_paths[i]);
-
-        contactForce.setModelingOption(state, "flip_meshes", 1);
-    }*/
     for (auto& cnt : _model.updComponentList<Smith2018ArticularContactForce>()) {
         cnt.setModelingOption(state, "flip_meshes", 1);
     }
@@ -908,6 +902,33 @@ void JointMechanicsTool::setupContactStorage(SimTK::State& state) {
             }
         }
     }
+    else if (get_contact_outputs(0) == "htc") {
+        for (const auto& entry : frc0.getOutputs()) {
+            const std::string& output_name = entry.first;
+            const AbstractOutput* output = entry.second.get();
+
+            if(output->isListOutput()){continue;}
+
+            if (output->getTypeName() == "double") {
+                _contact_output_double_names.push_back(output->getName());
+            }
+            if (output->getTypeName() == "Vec3") {
+                _contact_output_vec3_names.push_back(output->getName());
+            }
+            if (output->getTypeName() == "Vector") {
+                if (output->getName() == "casting_triangle_proximity" ||
+                    output->getName() == "target_triangle_proximity" ||
+                    output->getName() == "casting_triangle_pressure" ||
+                    output->getName() == "target_triangle_pressure" ||
+                    output->getName() == "casting_triangle_potential_energy" ||
+                    output->getName() == "target_triangle_potential_energy") {
+                    continue;
+                }
+                _contact_output_vector_double_names.push_back(
+                    output->getName());
+            }
+        }
+    }
     else if (getProperty_contact_outputs().size() != 0 &&
         get_contact_outputs(0) != "none") {
         
@@ -1223,7 +1244,7 @@ void JointMechanicsTool::setupMuscleStorage() {
     //Muscle Outputs
     const Muscle& msl0 = _model.getMuscles().get(0);
     
-    if (!get_use_muscle_physiology()) {
+    if (!get_use_muscle_physiology() && get_muscle_outputs(0) == "all") {
         _muscle_output_double_names.push_back("activation");
         _muscle_output_double_names.push_back("actuation");
         _muscle_output_double_names.push_back("power");
@@ -1252,9 +1273,11 @@ void JointMechanicsTool::setupMuscleStorage() {
                 
             }
             catch (Exception){
-                OPENSIM_THROW(Exception, "muscle_output: " + 
-                    get_muscle_outputs(i) + " is not a valid "
-                    "Muscle output name")
+                if (output_name != "length") {
+                    OPENSIM_THROW(Exception, "muscle_output: " +
+                        get_muscle_outputs(i) + " is not a valid "
+                        "Muscle output name")
+                }
             }
             _muscle_output_double_names.push_back(output_name);
         }
@@ -1437,15 +1460,17 @@ int JointMechanicsTool::record(const SimTK::State& s, const int frame_num)
             int j = 0;
             for (std::string output_name : _muscle_output_double_names) {
                 if (output_name == "length") {
-                    break;
+                    _muscle_output_double_values[nMsl].set(frame_num, j,
+                        msl.get_GeometryPath().getOutputValue<double>
+                        (s, "length"));
                 }
-                _muscle_output_double_values[nMsl].set(
-                    frame_num, j, msl.getOutputValue<double>(s, output_name));
-
+                else {
+                    _muscle_output_double_values[nMsl].set(
+                        frame_num, j, msl.getOutputValue<double>(s, output_name));
+                }
                 j++;
             }
-            _muscle_output_double_values[nMsl].set(frame_num, j++,
-                msl.get_GeometryPath().getOutputValue<double>(s, "length"));
+            
 
             nMsl++;
         }

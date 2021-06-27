@@ -893,12 +893,12 @@ void COMAKTool::performCOMAK()
             //optimizer.setAdvancedStrOption("hessian_approximation", "exact");
             
             // For debugging cost and constraint changes
-            optimizer.setAdvancedStrOption("derivative_test", "first-order");
+            /*optimizer.setAdvancedStrOption("derivative_test", "first-order");
             optimizer.setAdvancedBoolOption(
                 "derivative_test_print_all", true);
             optimizer.setAdvancedRealOption(
                 "derivative_test_perturbation", 1e-6);
-            
+            */
             
             try {
                 optimizer.optimize(_optim_parameters);
@@ -961,7 +961,7 @@ void COMAKTool::performCOMAK()
                 //optimization solution is only a small change from the 
                 //initial secondary coordinates that you linearize around. 
 
-                udot_error = abs(observed_udot - coord_udot);
+                udot_error = fabs(observed_udot - coord_udot);
 
                 k++;
 
