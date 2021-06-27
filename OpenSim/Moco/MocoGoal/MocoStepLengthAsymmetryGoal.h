@@ -73,10 +73,6 @@ public:
 
 
 protected:
-    bool getSupportsEndpointConstraintImpl() const override { return true; }
-    Mode getDefaultModeImpl() const override {
-        return Mode::EndpointConstraint;
-    }
     void initializeOnModelImpl(const Model&) const override;
     void calcIntegrandImpl(
             const IntegrandInput& input, double& integrand) const override;

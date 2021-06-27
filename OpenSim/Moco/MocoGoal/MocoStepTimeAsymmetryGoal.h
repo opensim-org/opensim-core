@@ -150,16 +150,20 @@ public:
     std::string getWalkingDirection() { return get_walking_direction(); }
 
     /// TODO smoothing docs
-    void setSmoothing(double smoothing) { set_smoothing(smoothing); }
-    double getSmoothing() { return get_smoothing(); }
-    OpenSim_DECLARE_PROPERTY(smoothing, double, "TODO");
-    OpenSim_DECLARE_PROPERTY(grf_smoothing, double, "TODO");
+    void setAsymmetrySmoothing(double smoothing) {
+        set_asymmetry_smoothing(smoothing);
+    }
+    double getAsymmetrySmoothing() { return get_asymmetry_smoothing(); }
+
+    /// TODO smoothing docs
+    void setContactDetectionSmoothing(double smoothing) {
+        set_contact_detection_smoothing(smoothing);
+    }
+    double getContactDetectionSmoothing() {
+        return get_contact_detection_smoothing();
+    }
 
 protected:
-    bool getSupportsEndpointConstraintImpl() const override { return true; }
-    Mode getDefaultModeImpl() const override {
-        return Mode::EndpointConstraint;
-    }
     void initializeOnModelImpl(const Model&) const override;
     void calcIntegrandImpl(
             const IntegrandInput& input, double& integrand) const override;
@@ -180,7 +184,9 @@ private:
     OpenSim_DECLARE_PROPERTY(contact_force_threshold, double, "TODO");
     OpenSim_DECLARE_PROPERTY(contact_force_direction, std::string, "TODO");
     OpenSim_DECLARE_PROPERTY(walking_direction, std::string, "TODO");
-    //OpenSim_DECLARE_PROPERTY(smoothing, double, "TODO");
+    OpenSim_DECLARE_PROPERTY(asymmetry_smoothing, double, "TODO");
+    OpenSim_DECLARE_PROPERTY(contact_detection_smoothing, double, "TODO");
+
     void constructProperties();
 
     mutable std::vector<SimTK::ReferencePtr<const SmoothSphereHalfSpaceForce>>

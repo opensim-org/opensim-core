@@ -47,8 +47,8 @@ void MocoStepTimeAsymmetryGoal::constructProperties() {
     constructProperty_contact_force_threshold(25);
     constructProperty_contact_force_direction("positive-y");
     constructProperty_walking_direction("positive-x");
-    constructProperty_grf_smoothing(0.25);
-    constructProperty_smoothing(10);
+    constructProperty_contact_detection_smoothing(0.25);
+    constructProperty_asymmetry_smoothing(10);
 }
 
 void MocoStepTimeAsymmetryGoal::initializeOnModelImpl(const Model& model) const {
@@ -113,7 +113,8 @@ void MocoStepTimeAsymmetryGoal::initializeOnModelImpl(const Model& model) const 
     checkPropertyValueIsPositive(getProperty_contact_force_threshold());
     checkPropertyValueIsInRangeOrSet(getProperty_target_asymmetry(),
             -1.0, 1.0, {});
-    checkPropertyValueIsPositive(getProperty_smoothing());
+    checkPropertyValueIsPositive(getProperty_asymmetry_smoothing());
+    checkPropertyValueIsPositive(getProperty_contact_detection_smoothing());
 
     // Assign the indices and signs for the contact force direction and walking
     // motion direction.
@@ -164,10 +165,10 @@ void MocoStepTimeAsymmetryGoal::calcIntegrandImpl(
     // asymmetry values.
     const double rightContactDetect = -m_conditional(
             rightForce - get_contact_force_threshold(), 0.5, 0.5,
-            get_grf_smoothing());
+            get_contact_detection_smoothing());
     const double leftContactDetect = m_conditional(
             leftForce - get_contact_force_threshold(), 0.5, 0.5,
-            get_grf_smoothing());
+            get_contact_detection_smoothing());
 
     // Now get the locations of each heel contact sphere, and calculate
     // which foot is in front of the other. This is necessary because of the
@@ -210,7 +211,7 @@ void MocoStepTimeAsymmetryGoal::calcIntegrandImpl(
     double rightStepTime = rightContactDetect + tieBreaker;
 
     integrand = m_conditional(leftStepTime + rightStepTime, 0, 1,
-                              get_smoothing());
+                              get_asymmetry_smoothing());
 }
 
 void MocoStepTimeAsymmetryGoal::calcGoalImpl(const GoalInput& input,
