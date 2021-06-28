@@ -22,6 +22,39 @@
 
 namespace OpenSim {
 
+/** This goal works by constraining the distance between feet, or "foot frames",
+throughout the gait cycle. The goal calculates the distance between the left
+foot and right foot, then enforces a constraint with minimum (negative) and
+maximum (positive) bounds on the distance between feet. There are two
+constraints: one that constrains the distance between feet when the right foot
+is in front, and one that constrains the distance between fee when the left
+foot is in front.
+
+The Right Step Length (RSL) is the distance between feet at right foot strike
+The Left Step Length (LSL) is the distance between feet at left foot strike
+Step Length Asymmetry = (RSL - LSL)/ (RSL + LSL)
+
+Asymmetry Ranges from -1 to 1, for example: 0.20 is 20% positive step
+length asymmetry with greater right step length than left step length.
+
+Users input the stride length and target step length asymmetry. The
+goal then calculates the minimum and maximum bounds on the distance
+between right and left foot.
+
+Because this goal doesn't directly compute the step length
+asymmetry from heel strike data, users should confirm that the step
+length asymmetry from the solution matches closely to their target.
+Additionally, in some cases users may want to set target asymmetries
+above or below the desired value, in the event there is some offset. To do
+this, we provide the helper function computeStepAsymmetryValues() below.
+
+For this goal, one potential limitation is you need to specify both the
+stride length and target speed (and therefore, the stride time as well).
+This is necessary for the way this goal is written, as it needs to
+calculate what the bounds are for distance between feet. Users could do a
+systematic parameter sweep to sample across a range of stride lengths.
+
+@ingroup mocogoal */
 class OSIMMOCO_API MocoStepLengthAsymmetryGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoStepLengthAsymmetryGoal, MocoGoal);
 public:
