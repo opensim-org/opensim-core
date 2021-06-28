@@ -7,7 +7,6 @@ if (sys.version_info.major == 3 and sys.version_info.minor >= 8 and sys.platform
    install_path=os.path.abspath('../../bin')
    with open('opensim/dll_location.txt', 'w') as writer:
       writer.write(install_path)
-      writer.write("\n")
 
 # This provides the variable `__version__`.
 if sys.version_info[0] < 3:
