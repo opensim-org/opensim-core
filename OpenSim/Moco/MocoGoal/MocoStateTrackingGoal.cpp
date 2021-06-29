@@ -24,6 +24,28 @@
 
 using namespace OpenSim;
 
+void MocoStateTrackingGoal::addScaleFactor(const std::string& name,
+        const std::string& state, const MocoBounds& bounds) {
+
+    // Ensure that the specified state has reference data associated with it.
+    const auto& labels = get_reference().process().getColumnLabels();
+    bool foundLabel = false;
+    for (const auto& label : labels) {
+        if (state == label) {
+            foundLabel = true;
+        }
+    }
+    OPENSIM_THROW_IF_FRMOBJ(!foundLabel,  Exception,
+            "No reference label provided for state '{}'.", state);
+
+    // Update the scale factor map so we can retrieve the correct MocoScaleFactor
+    // for this state during initialization.
+    m_scaleFactorMap[state] = name;
+
+    // Append the scale factor to the MocoGoal.
+    appendScaleFactor(MocoScaleFactor(name, bounds));
+}
+
 void MocoStateTrackingGoal::initializeOnModelImpl(const Model& model) const {
 
     // TODO: set relativeToDirectory properly.
@@ -63,6 +85,7 @@ void MocoStateTrackingGoal::initializeOnModelImpl(const Model& model) const {
     // Populate member variables needed to compute cost. Unless the property
     // allow_unused_references is set to true, an exception is thrown for
     // names in the references that don't correspond to a state variable.
+    const auto& scaleFactors = getModel().getComponentList<MocoScaleFactor>();
     for (int iref = 0; iref < allSplines.getSize(); ++iref) {
         const auto& refName = allSplines[iref].getName();
         if (allSysYIndices.count(refName) == 0) {
@@ -96,6 +119,21 @@ void MocoStateTrackingGoal::initializeOnModelImpl(const Model& model) const {
         m_state_weights.push_back(refWeight);
         m_refsplines.cloneAndAppend(allSplines[iref]);
         m_state_names.push_back(refName);
+
+        // Check to see if the model contains a MocoScaleFactor associated with
+        // this state.
+        bool foundScaleFactor = false;
+        for (const auto& scaleFactor : scaleFactors) {
+            if (m_scaleFactorMap[refName] == scaleFactor.getName()) {
+                m_scaleFactorRefs.emplace_back(&scaleFactor);
+                foundScaleFactor = true;
+            }
+        }
+        // If we didn't find a MocoScaleFactor for this control, set the
+        // reference pointer to null.
+        if (!foundScaleFactor) {
+            m_scaleFactorRefs.emplace_back(nullptr);
+        }
     }
 
     setRequirements(1, 1, SimTK::Stage::Time);
@@ -113,8 +151,18 @@ void MocoStateTrackingGoal::calcIntegrandImpl(
     for (int iref = 0; iref < m_refsplines.getSize(); ++iref) {
         const auto& modelValue = input.state.getY()[m_sysYIndices[iref]];
         const auto& refValue = m_refsplines[iref].calcValue(timeVec);
-        integrand +=
-                m_state_weights[iref] * SimTK::square(modelValue - refValue);
+
+        // If a scale factor exists for this state, retrieve its value.
+        double scaleFactor = 1.0;
+        if (m_scaleFactorRefs[iref] != nullptr) {
+            scaleFactor = m_scaleFactorRefs[iref]->getScaleFactor();
+        }
+
+        // Compute the tracking error.
+        double error = modelValue - (scaleFactor * refValue);
+
+        // Compute the integrand.
+        integrand += m_state_weights[iref] * error * error;
     }
 }
 

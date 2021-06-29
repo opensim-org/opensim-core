@@ -33,6 +33,29 @@ reference marker location, summed over the markers for which an
 experimental data location is provided, and integrated over the phase.
 The reference can be provided as a file name to a TRC file, or
 programmatically as a TimeSeriesTable.
+
+### Scale factors
+
+Use `addScaleFactor()` to add a MocoParameter to the MocoProblem that will
+scale the tracking reference data associated with a marker in the tracking cost.
+Scale factors for this goal can be useful if the magnitude of the tracking
+reference data is either unknown or unreliable (e.g., pelvis marker Y-value).
+Scale factors are applied to the tracking error calculations based on the
+following equation:
+
+    error = modelValue - scaleFactor * referenceValue
+
+In other words, scale factors are applied when computing the tracking error for
+each marker, not to the reference data directly.
+
+Adding a scale factor to a MocoMarkerTrackingGoal.
+@code
+auto* markerTrackingGoal = problem.addGoal<MocoMarkerTrackingGoal>();
+...
+markerTrackingGoal->addScaleFactor(
+        'LPSIS_y_scale_factor', 'LPSIS', 1, {0.5, 2.0});
+@endcode
+
 @ingroup mocogoal */
 class OSIMMOCO_API MocoMarkerTrackingGoal : public MocoGoal {
 OpenSim_DECLARE_CONCRETE_OBJECT(MocoMarkerTrackingGoal, MocoGoal);
@@ -67,6 +90,19 @@ public:
         set_allow_unused_references(tf);
     }
 
+    /// Add a MocoParameter to the problem that will scale the tracking reference
+    /// data associated with the specified marker. Scale factors are applied
+    /// to the tracking error calculations based on the following equation:
+    ///
+    ///     error = modelValue - scaleFactor * referenceValue
+    ///
+    /// In other words, the scale factor is applied when computing the tracking
+    /// error for each marker, not to the reference data directly. You must
+    /// specify both the marker name and the index corresponding to the direction
+    /// in ground (i.e., X = 0, Y = 1, Z = 2) of the scaled value.
+    void addScaleFactor(const std::string& name, const std::string& marker,
+                        int index, const MocoBounds& bounds);
+
 protected:
     void initializeOnModelImpl(const Model&) const override;
     void calcIntegrandImpl(
@@ -93,6 +129,10 @@ protected:
     mutable std::vector<int> m_refindices;
     mutable SimTK::Array_<double> m_marker_weights;
     mutable SimTK::Array_<std::string> m_marker_names;
+    mutable std::map<std::pair<std::string, int>, std::string>
+    m_scaleFactorMap;
+    using MSF = SimTK::ReferencePtr<const MocoScaleFactor>;
+    mutable std::vector<std::tuple<MSF, MSF, MSF>> m_scaleFactorRefs;
 
 private:
     void constructProperties() {

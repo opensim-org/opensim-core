@@ -41,6 +41,30 @@ those columns will be converted to radians.
 Tracking problems in direct collocation perform best when tracking smooth
 data, so it is recommended to filter the data in the reference you provide
 to the cost.
+
+### Scale factors
+
+Use `addScaleFactor()` to add a MocoParameter to the MocoProblem that will
+scale the tracking reference data associated with a state in the tracking cost.
+Scale factors for this goal can be useful if the magnitude of the tracking
+reference data is either unknown or unreliable (e.g., pelvis height).
+Scale factors are applied to the tracking error calculations based on the
+following equation:
+
+    error = modelValue - scaleFactor * referenceValue
+
+In other words, scale factors are applied when computing the tracking error for
+each state, not to the reference data directly.
+
+Adding a scale factor to a MocoStateTrackingGoal.
+@code
+auto* stateTrackingGoal = problem.addGoal<MocoStateTrackingGoal>();
+...
+stateTrackingGoal->addScaleFactor(
+        'pelvis_ty_scale_factor', '/jointset/ground_pelvis/pelvis_ty/value',
+        {0.5, 2.0});
+@endcode
+
 @ingroup mocogoal */
 class OSIMMOCO_API MocoStateTrackingGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoStateTrackingGoal, MocoGoal);
@@ -112,6 +136,17 @@ public:
     /// with different magnitudes.
     void setScaleWeightsWithRange(bool tf) { set_scale_weights_with_range(tf); }
 
+    /// Add a MocoParameter to the problem that will scale the tracking reference
+    /// data associated with the specified state. Scale factors are applied
+    /// to the tracking error calculations based on the following equation:
+    ///
+    ///     error = modelValue - scaleFactor * referenceValue
+    ///
+    /// In other words, the scale factor is applied when computing the tracking
+    /// error for each state, not to the reference data directly.
+    void addScaleFactor(const std::string& name, const std::string& state,
+                        const MocoBounds& bounds);
+
 protected:
     // TODO check that the reference covers the entire possible time range.
     void initializeOnModelImpl(const Model&) const override;
@@ -161,6 +196,9 @@ private:
     mutable std::vector<int> m_sysYIndices;
     mutable std::vector<double> m_state_weights;
     mutable std::vector<std::string> m_state_names;
+    mutable std::unordered_map<std::string, std::string> m_scaleFactorMap;
+    mutable std::vector<SimTK::ReferencePtr<const MocoScaleFactor>>
+            m_scaleFactorRefs;
 };
 
 } // namespace OpenSim
