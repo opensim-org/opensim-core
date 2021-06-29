@@ -93,33 +93,44 @@ metabolics.addMuscle('tib_ant_l', Muscle.safeDownCast(model.getComponent('tib_an
 model.addComponent(metabolics);
 model.finalizeConnections();
 
+% Pass the model to MocoTrack
+modelProcessor = ModelProcessor(model);
+track.setModel(modelProcessor);
+
 % Reference data for tracking problem
 tableProcessor = TableProcessor('referenceCoordinates.sto');
 tableProcessor.append(TabOpLowPassFilter(6));
-
-% ModelProcessor modelprocessor = ModelProcessor(baseModel);
-modelProcessor = ModelProcessor(model);
-track.setModel(modelProcessor);
 track.setStatesReference(tableProcessor);
+
+% Provide the remaining necesssary MocoTrack settings.
 track.set_states_global_tracking_weight(30);
 track.set_allow_unused_references(true);
 track.set_track_reference_position_derivatives(true);
 track.set_apply_tracked_states_to_guess(true);
 track.set_initial_time(0.0);
 track.set_final_time(0.47008941);
+
+% Call initialize() to get the internal MocoStudy. This will allow us to
+% make further modifications to the MocoProblem.
 study = track.initialize();
 problem = study.updProblem();
 
 % Goals
 % =====
 
-% Symmetry (to permit simulating only one step)
+% Symmetry
+% --------
+% This goal allows us to simulate only one step with left-right symmetry
+% that we can then double to create a full gait cycle.
 symmetryGoal = MocoPeriodicityGoal('symmetryGoal');
 problem.addGoal(symmetryGoal);
 model = modelProcessor.process();
 model.initSystem();
 
-% Symmetric coordinate values (except for pelvis_tx) and speeds
+% Symmetric coordinate values (except for pelvis_tx) and speeds. Here, we 
+% constrain final coordinate values of one leg to match the initial value of the 
+% other leg. Or, in the case of the pelvis_tx value, we constraint the final 
+% value to be the same as the initial value.
 for i = 1:model.getNumStateVariables()
     currentStateName = string(model.getStateVariableNames().getitem(i-1));
     if startsWith(currentStateName , '/jointset')
@@ -142,7 +153,8 @@ for i = 1:model.getNumStateVariables()
     end
 end
 
-% Symmetric muscle activations
+% Symmetric muscle activations. Here, we  constrain final muscle activation 
+% values of one leg to match the initial activation values of the other leg.
 for i = 1:model.getNumStateVariables()
     currentStateName = string(model.getStateVariableNames().getitem(i-1));
     if endsWith(currentStateName,'/activation')
@@ -159,14 +171,13 @@ for i = 1:model.getNumStateVariables()
     end
 end
 
-% Symmetric coordinate actuator controls
+% The lumbar coordinate actuator control is symmetric.
 symmetryGoal.addControlPair(MocoPeriodicityGoalPair('/lumbarAct'));
 
 % Get a reference to the MocoControlGoal that is added to every MocoTrack
 % problem by default and change the weight
 effort = MocoControlGoal.safeDownCast(problem.updGoal('control_effort'));
 effort.setWeight(0.1);
-
 
 % Metabolic cost; total metabolic rate includes activation heat rate,
 % maintenance heat rate, shortening heat rate, mechanical work rate, and
@@ -218,5 +229,23 @@ disp( ['The metabolic cost of transport is: '  ...
       ' J/kg/m'])
 disp('   ')
 
-% Uncomment next line to visualize the result
+% Visualize the result.
 study.visualize(fullStride);
+
+% Extract ground reaction forces
+% ==============================
+contact_r = StdVectorString();
+contact_l = StdVectorString();
+contact_r.add('contactHeel_r');
+contact_r.add('contactFront_r');
+contact_l.add('contactHeel_l');
+contact_l.add('contactFront_l');
+
+% Create a conventional ground reaction forces file by summing the contact
+% forces of contact spheres on each foot.
+% For details, view the Doxygen documentation for
+% createExternalLoadsTableForGait().
+externalForcesTableFlat = opensimMoco.createExternalLoadsTableForGait(model, ...
+                             fullStride, contact_r, contact_l);
+STOFileAdapter.write(externalForcesTableFlat, ...
+                             'gaitTrackingMetCost_solutionGRF_fullStride.sto');
