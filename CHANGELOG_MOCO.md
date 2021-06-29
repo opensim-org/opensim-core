@@ -3,6 +3,9 @@ Moco Change Log
 
 1.1.0
 -----
+- 2021-06-29: Added MocoStepTimeAsymmetryGoal, MocoStepLengthAsymmetryGoal, and
+              example2DWalkingStepAsymmetry (Matlab).
+  
 - 2021-02-24: Updated MocoAccelerationTrackingGoal to add support for tracking
               acceleration signals from inertial measurement units.
   
