@@ -46,8 +46,8 @@ end
 %  - Left Step Time (LST)  = Time from right foot-strike to left foot-strike
 %  - STA = (RST - LST) / (RST + LST)
 %
-% Asymmetry Ranges from -1 to 1, for example: 0.20 is 20% positive step time 
-% asymmetry with greater right step time than left step time.
+% Asymmetry values range from -1.0 to 1.0. For example, 0.20 is 20% positive 
+% step time asymmetry with greater right step time than left step time.
 %
 % The step time goal works by "counting" the number of nodes that each foot is in 
 % contact with the ground (with respect to a specified contact force threshold). 
@@ -213,12 +213,19 @@ end
 % The Left Step Length (LSL) is the distance between feet at left foot strike
 % Step Length Asymmetry = (RSL - LSL)/ (RSL + LSL) 
 %
-% Asymmetry Ranges from -1 to 1, for example: 0.20 is 20% positive step
-% length asymmetry with greater right step length than left step length.
+% Asymmetry values ranges from -1.0 to 1.0. For example, 0.20 is 20% positive 
+% step length asymmetry with greater right step length than left step length.
 %
 % Users input the stride length and target step length asymmetry. The
 % goal then calculates the minimum and maximum bounds on the distance
-% between right and left foot. 
+% between right and left foot.
+%
+% In order for this goal to work properly, users must prescribe both the stride
+% length and the average gait speed. The stride length is specified via the
+% 'stride_length' property, but users must ensure that this stride length is met
+% via problem bounds or other goals; the property value is only used to compute
+% the model's asymmetry in the cost function. Average gait speed can be specified
+% using the MocoAverageSpeedGoal.
 %
 % Because this goal doesn't directly compute the step length
 % asymmetry from heel strike data, users should confirm that the step
@@ -226,12 +233,6 @@ end
 % Additionally, in some cases users may want to set target asymmetries
 % above or below the desired value, in the event there is some offset. To do 
 % this, we provide the helper function computeStepAsymmetryValues() below.
-%
-% For this goal, one potential limitation is you need to specify both the
-% stride length and target speed (and therefore, the stride time as well).
-% This is necessary for the way this goal is written, as it needs to
-% calculate what the bounds are for distance between feet. Users could do a
-% systematic parameter sweep to sample across a range of stride lengths. 
 function stepLengthAsymmetry()
 
 import org.opensim.modeling.*;
@@ -267,9 +268,6 @@ end
 periodicityGoal.addControlPair(MocoPeriodicityGoalPair('/lumbarAct'));
 problem.addGoal(periodicityGoal);
 
-% Symmetric coordinate actuator controls
-periodicityGoal.addControlPair(MocoPeriodicityGoalPair('/lumbarAct'));
-
 % Average gait speed
 % ------------------
 speedGoal = MocoAverageSpeedGoal('speed');
@@ -294,11 +292,11 @@ stepLengthAsymmetry.setLeftFootFrame('/bodyset/calcn_l');
 % Value for smoothing term use to compute asymmetry (default is 500). Users may 
 % need to adjust this based on convergence and matching the target
 % asymmetry.
-stepLengthAsymmetry.setSmoothing(500);                        
+stepLengthAsymmetry.setAsymmetrySmoothing(500);                        
 % Target step length asymmetry: positive numbers mean greater right step lengths 
 % than left.
 stepLengthAsymmetry.setTargetAsymmetry(-0.10);
-% Need to provide the stride length. This in combination with the average walking
+% Provide the stride length. This in combination with the average walking
 % speed determines the stride time.
 stepLengthAsymmetry.setStrideLength(0.904);            
 % Add  the goal to problem.

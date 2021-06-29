@@ -228,6 +228,7 @@ void MocoStepTimeAsymmetryGoal::calcGoalImpl(const GoalInput& input,
 }
 
 void MocoStepTimeAsymmetryGoal::printDescriptionImpl() const {
+    log_cout("            target asymmetry: ", get_target_asymmetry());
     const auto& leftGroup = get_left_contact_group();
     log_cout("            left forces:");
     for (int ic = 0; ic < leftGroup.getProperty_contact_force_paths().size();

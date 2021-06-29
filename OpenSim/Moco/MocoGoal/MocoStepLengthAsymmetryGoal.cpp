@@ -25,7 +25,7 @@ void MocoStepLengthAsymmetryGoal::constructProperties() {
     constructProperty_left_foot_frame("");
     constructProperty_right_foot_frame("");
     constructProperty_walking_direction("positive-x");
-    constructProperty_smoothing(500);
+    constructProperty_asymmetry_smoothing(500);
     constructProperty_target_asymmetry(0.0);
     constructProperty_stride_length(1.0);
 }
@@ -41,7 +41,7 @@ void MocoStepLengthAsymmetryGoal::initializeOnModelImpl(const Model& model) cons
     checkPropertyValueIsInSet(getProperty_walking_direction(), directions);
     checkPropertyValueIsInRangeOrSet(getProperty_target_asymmetry(),
                                      -1.0, 1.0, {});
-    checkPropertyValueIsPositive(getProperty_smoothing());
+    checkPropertyValueIsPositive(getProperty_asymmetry_smoothing());
     checkPropertyValueIsPositive(getProperty_stride_length());
 
     // Compute target foot positions based on properties.
@@ -71,7 +71,7 @@ void MocoStepLengthAsymmetryGoal::initializeOnModelImpl(const Model& model) cons
     };
 
     // Set the goal requirements.
-    setRequirements(1, 1); // TODO: stage dependency velocity issue
+    setRequirements(1, 1, SimTK::Stage::Velocity);
 }
 
 void MocoStepLengthAsymmetryGoal::calcIntegrandImpl(
@@ -92,10 +92,10 @@ void MocoStepLengthAsymmetryGoal::calcIntegrandImpl(
 
     const double rightFootAsymmetry = m_conditional(
             m_right_foot_threshold - rightFootDiff, 0.5, -0.5,
-            get_smoothing());
+            get_asymmetry_smoothing());
     const double leftFootAsymmetry = m_conditional(
             m_left_foot_threshold - leftFootDiff, 0.5, -0.5,
-            get_smoothing());
+            get_asymmetry_smoothing());
 
     integrand = rightFootAsymmetry + leftFootAsymmetry;
 }
@@ -103,4 +103,10 @@ void MocoStepLengthAsymmetryGoal::calcIntegrandImpl(
 void MocoStepLengthAsymmetryGoal::calcGoalImpl(const GoalInput& input,
         SimTK::Vector& cost) const {
     cost[0] = input.integral;
+}
+
+void MocoStepLengthAsymmetryGoal::printDescriptionImpl() const {
+    log_cout("            target asymmetry: ", get_target_asymmetry());
+    log_cout("            left foot frame: ", get_left_foot_frame());
+    log_cout("            right foot frame: ", get_right_foot_frame());
 }

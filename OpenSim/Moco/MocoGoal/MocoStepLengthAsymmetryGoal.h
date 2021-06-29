@@ -22,37 +22,41 @@
 
 namespace OpenSim {
 
-/** This goal works by constraining the distance between feet, or "foot frames",
-throughout the gait cycle. The goal calculates the distance between the left
-foot and right foot, then enforces a constraint with minimum (negative) and
-maximum (positive) bounds on the distance between feet. There are two
-constraints: one that constrains the distance between feet when the right foot
-is in front, and one that constrains the distance between fee when the left
-foot is in front.
+/** Minimize the error between a model's step time asymmetry and a specified
+target asymmetry value over a gait cycle.
 
+Step Length Asymmetry (SLA) is a percentage and is calculated as follows:
 The Right Step Length (RSL) is the distance between feet at right foot strike
 The Left Step Length (LSL) is the distance between feet at left foot strike
-Step Length Asymmetry = (RSL - LSL)/ (RSL + LSL)
+Step Length Asymmetry = (RSL - LSL) / (RSL + LSL)
 
-Asymmetry Ranges from -1 to 1, for example: 0.20 is 20% positive step
+In this goal, the distance between feet throughout the gait cycle is controlled
+via the cost function. The distance between the left foot and right foot is
+bounded to approximate the specified step length asymmetry. Negative asymmetry
+means longer left step lengths, and negative positive means longer right step
+lengths.
+
+Asymmetry values range from -1.0 to 1.0. For example, 0.20 is 20% positive step
 length asymmetry with greater right step length than left step length.
 
-Users input the stride length and target step length asymmetry. The
-goal then calculates the minimum and maximum bounds on the distance
-between right and left foot.
+The target asymmetry can be set via the 'target_asymmetry' property; a symmetric
+step time solution can be achieved by setting this property to zero. This goal
+can be used only in 'cost' mode, where the error between the target asymmetry
+and model asymmetry is squared. To make this goal suitable for gradient-based
+optimization, step length values are assigned via a smoothing function which can
+be controlled the 'asymmetry_smoothing' property.
 
-Because this goal doesn't directly compute the step length
-asymmetry from heel strike data, users should confirm that the step
-length asymmetry from the solution matches closely to their target.
-Additionally, in some cases users may want to set target asymmetries
-above or below the desired value, in the event there is some offset. To do
-this, we provide the helper function computeStepAsymmetryValues() below.
+In order for this goal to work properly, users must prescribe both the stride
+length and the average gait speed. The stride length is specified via the
+'stride_length' property, but users must ensure that this stride length is met
+via problem bounds or other goals; the property value is only used to compute
+the model's asymmetry in the cost function. Average gait speed can be specified
+using the MocoAverageSpeedGoal.
 
-For this goal, one potential limitation is you need to specify both the
-stride length and target speed (and therefore, the stride time as well).
-This is necessary for the way this goal is written, as it needs to
-calculate what the bounds are for distance between feet. Users could do a
-systematic parameter sweep to sample across a range of stride lengths.
+@note This goal is designed for simulations of bipedal gait.
+
+@note Since this goal approximates step length asymmetry, users should calculate
+the true asymmetry value after running an optimization.
 
 @ingroup mocogoal */
 class OSIMMOCO_API MocoStepLengthAsymmetryGoal : public MocoGoal {
@@ -67,43 +71,46 @@ public:
         constructProperties();
     }
 
-    /// TODO
+    /// Set the body frame associated with the left foot.
     void setLeftFootFrame(const std::string& frame) {
         set_left_foot_frame(frame);
     }
     std::string getLeftFootFrame() { return get_left_foot_frame(); }
-    /// TODO
+    /// Set the body frame associated with the right foot.
     void setRightFootFrame(const std::string& frame) {
         set_right_foot_frame(frame);
     }
     std::string getRightFootFrame() { return get_right_foot_frame(); }
 
-    /// Set the asymmetry value targeted by this goal. If using 'cost' mode, the
-    /// error between the target asymmetry and the model asymmetry is squared.
+    /// Set the asymmetry value targeted by this goal. The error between the
+    /// target asymmetry and the model asymmetry is squared in the integrand.
     void setTargetAsymmetry(double asymmetry) {
         set_target_asymmetry(asymmetry);
     }
     double getTargetAsymmetry() { return get_target_asymmetry(); }
 
-    /// TODO
+    /// Set the known stride length of your walking simulation. This value is
+    /// necessary to compute step length asymmetry.
     void setStrideLength(double length) {
         set_stride_length(length);
     }
     double getStrideLength() { return get_stride_length(); }
 
     /// Set the walking direction of the model in the ground frame, which is used
-    /// to determine the leading foot during double support. Acceptable direction
-    /// values include "positive-x", "positive-y", "positive-z", "negative-x",
-    /// "negative-y", and "negative-z". Default: "positive-x".
+    /// to compute step lengths. Acceptable direction values include
+    /// "positive-x", "positive-y", "positive-z", "negative-x", "negative-y", and
+    /// "negative-z". Default: "positive-x".
     void setWalkingDirection(const std::string& direction) {
         set_walking_direction(direction);
     }
     std::string getWalkingDirection() { return get_walking_direction(); }
 
-    /// TODO smoothing docs
-    void setSmoothing(double smoothing) { set_smoothing(smoothing); }
-    double getSmoothing() { return get_smoothing(); }
-
+    /// Set the values that determines the smoothing of the asymmetry
+    /// computation. This term is necessary since this computation is non-smooth.
+    void setAsymmetrySmoothing(double smoothing) {
+        set_asymmetry_smoothing(smoothing);
+    }
+    double getAsymmetrySmoothing() { return get_asymmetry_smoothing(); }
 
 protected:
     void initializeOnModelImpl(const Model&) const override;
@@ -111,15 +118,29 @@ protected:
             const IntegrandInput& input, double& integrand) const override;
     void calcGoalImpl(
             const GoalInput& input, SimTK::Vector& cost) const override;
-    // void printDescriptionImpl() const override;
+    void printDescriptionImpl() const override;
 
 private:
-    OpenSim_DECLARE_PROPERTY(left_foot_frame, std::string, "TODO");
-    OpenSim_DECLARE_PROPERTY(right_foot_frame, std::string, "TODO");
-    OpenSim_DECLARE_PROPERTY(target_asymmetry, double, "Default: 0.");
-    OpenSim_DECLARE_PROPERTY(stride_length, double, "Default: 1.");
-    OpenSim_DECLARE_PROPERTY(walking_direction, std::string, "TODO");
-    OpenSim_DECLARE_PROPERTY(smoothing, double, "TODO");
+    OpenSim_DECLARE_PROPERTY(left_foot_frame, std::string,
+            "The model frame associated with the left foot.");
+    OpenSim_DECLARE_PROPERTY(right_foot_frame, std::string,
+            "The model frame associated with the right foot.");
+    OpenSim_DECLARE_PROPERTY(target_asymmetry, double,
+            "The target asymmetry value, between -1.0 and 1.0. Positive "
+            "asymmetry is associated with the right leg, and negative asymmetry "
+            "for the left. Default: 0");
+    OpenSim_DECLARE_PROPERTY(asymmetry_smoothing, double,
+            "The value that determines the smoothing of the asymmetry "
+            "computation (default: 10)");
+    OpenSim_DECLARE_PROPERTY(stride_length, double,
+            "The known stride length of the simulation. Default: 1.");
+    OpenSim_DECLARE_PROPERTY(walking_direction, std::string,
+            "The walking direction of the model in the ground frame, which "
+            "is used to determine the leading foot during double support. "
+            "Acceptable direction values include 'positive-x', 'positive-y', "
+            "'positive-z', 'negative-x', 'negative-y', and 'negative-z'. "
+            "Default: 'positive-x'.");
+
     void constructProperties();
 
     mutable SimTK::ReferencePtr<const Frame> m_left_foot_frame;

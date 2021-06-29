@@ -53,8 +53,8 @@ private:
     void constructProperties();
 };
 
-/** Minimize or constrain the error between a model's step time asymmetry and a
-specified target asymmetry value over a gait cycle.
+/** Minimize the error between a model's step time asymmetry and a specified
+target asymmetry value over a gait cycle.
 
 Step Time Asymmetry (STA) is a percentage and is calculated as follows:
 Right Step Time (RST) = Time from left heel-strike to right heel-strike
@@ -67,6 +67,9 @@ foot is in contact, and positive values when the right is in contact. Therefore,
 negative asymmetry means longer left step times, and negative positive means
 longer right step times. At time points when both feet are in contact, the step
 time is counted towards the leading foot.
+
+Asymmetry values range from -1.0 to 1.0. For example, 0.20 is 20% positive
+step time asymmetry with greater right step time than left step time.
 
 The target asymmetry can be set via the 'target_asymmetry' property; a symmetric
 step time solution can be achieved by setting this property to zero. This goal
@@ -81,7 +84,7 @@ properties.
 @note The only contact element supported is SmoothSphereHalfSpaceForce.
 
 @note Since this goal approximates step time asymmetry, users should calculate
-the true asymmetry index after running an optimization.
+the true asymmetry value after running an optimization.
 
 @ingroup mocogoal */
 class OSIMMOCO_API MocoStepTimeAsymmetryGoal : public MocoGoal {
