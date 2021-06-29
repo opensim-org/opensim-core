@@ -1,6 +1,6 @@
 ## Part 0: Load the OpenSim and Moco libraries.
-from opensim import *
-from exampleEMGTracking_helpers import *
+import opensim as osim
+import exampleEMGTracking_helpers as helpers
 import os
 import numpy as np
 
@@ -13,7 +13,7 @@ import numpy as np
 # ground reaction forces applied to the model via ExternalLoads, which is
 # necessary for the muscle redundancy problem. See the function definition
 # at the bottom of this file to see how the model is loaded and constructed.
-model = getWalkingModel()
+model = helpers.getWalkingModel()
 
 # Part 1b: Create the MocoInverse tool and set the Model.
 
@@ -39,8 +39,8 @@ if not os.path.isfile('effortSolution.sto'):
 # the effort minimization solution against this data. We will also use
 # it later for the EMG-tracking problem. Each column in emg.sto is
 # normalized so the maximum value for each signal is 1.0.
-emgReference = TimeSeriesTable('emg.sto')
-compareSolutionToEMG(emgReference, 'effortSolution.sto')
+emgReference = osim.TimeSeriesTable('emg.sto')
+helpers.compareSolutionToEMG(emgReference, 'effortSolution.sto')
 
 ## Part 3: Muscle redundancy problem: EMG-tracking.
 # Modify the existing problem we created with the MocoInverse tool to solve
@@ -105,5 +105,5 @@ for t in np.arange(emgReference.getNumRows()):
 
 # Part 4c: Generate the plots. Compare results to the effort minimization
 # solution.
-compareSolutionToEMG(emgReference, 'effortSolution.sto',
+helpers.compareSolutionToEMG(emgReference, 'effortSolution.sto',
     'trackingSolution.sto')

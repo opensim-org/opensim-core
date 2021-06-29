@@ -1,6 +1,6 @@
 ## Part 0: Load the OpenSim and Moco libraries.
-from opensim import *
-from exampleEMGTracking_helpers import *
+import opensim as osim
+import exampleEMGTracking_helpers as helpers
 import os
 import numpy as np
 
@@ -13,17 +13,17 @@ import numpy as np
 # ground reaction forces applied to the model via ExternalLoads, which is
 # necessary for the muscle redundancy problem. See the function definition
 # at the bottom of this file to see how the model is loaded and constructed.
-model = getWalkingModel()
+model = helpers.getWalkingModel()
 
 # Part 1b: Create the MocoInverse tool and set the Model.
-inverse = MocoInverse()
+inverse = osim.MocoInverse()
 inverse.setModel(model)
 
 # Part 1c: Create a TableProcessor using the coordinates file from inverse
 # kinematics.
-coordinates = TableProcessor('coordinates.mot')
-coordinates.append(TabOpLowPassFilter(6))
-coordinates.append(TabOpUseAbsoluteStateNames())
+coordinates = osim.TableProcessor('coordinates.mot')
+coordinates.append(osim.TabOpLowPassFilter(6))
+coordinates.append(osim.TabOpUseAbsoluteStateNames())
 
 # Part 1d: Set the kinematics reference for MocoInverse using the
 # TableProcessor we just created.
@@ -49,8 +49,8 @@ if not os.path.isfile('effortSolution.sto'):
 # the effort minimization solution against this data. We will also use
 # it later for the EMG-tracking problem. Each column in emg.sto is
 # normalized so the maximum value for each signal is 1.0.
-emgReference = TimeSeriesTable('emg.sto')
-compareSolutionToEMG(emgReference, 'effortSolution.sto')
+emgReference = osim.TimeSeriesTable('emg.sto')
+helpers.compareSolutionToEMG(emgReference, 'effortSolution.sto')
 
 ## Part 3: Muscle redundancy problem: EMG-tracking.
 # Modify the existing problem we created with the MocoInverse tool to solve
@@ -65,9 +65,9 @@ problem = study.updProblem()
 # Part 3b: Create a MocoControlTrackingGoal, set its weight, and provide
 # the EMG data as the tracking reference. We also need to specify the
 # reference labels for the four muscles whose EMG we will track.
-tracking = MocoControlTrackingGoal('emg_tracking')
+tracking = osim.MocoControlTrackingGoal('emg_tracking')
 tracking.setWeight(5)
-tracking.setReference(TableProcessor(emgReference))
+tracking.setReference(osim.TableProcessor(emgReference))
 tracking.setReferenceLabel('/forceset/gasmed_l', 'gastrocnemius')
 tracking.setReferenceLabel('/forceset/tibant_l', 'tibialis_anterior')
 tracking.setReferenceLabel('/forceset/bfsh_l', 'biceps_femoris')
@@ -88,7 +88,7 @@ problem.addGoal(tracking)
 
 # Part 3e: Update the MocoCasADiSolver with the updated MocoProblem using
 # resetProblem().
-solver = MocoCasADiSolver.safeDownCast(study.updSolver())
+solver = osim.MocoCasADiSolver.safeDownCast(study.updSolver())
 solver.resetProblem(problem)
 
 # Part 3f: Tell MocoCasADiSolver that the MocoParameters we added to the
@@ -102,7 +102,7 @@ if not os.path.isfile('trackingSolution.sto'):
     solution.write('trackingSolution.sto')
 
 # Part 3h: Get the values of the optimized scale factors.
-trackingSolution = MocoTrajectory('trackingSolution.sto')
+trackingSolution = osim.MocoTrajectory('trackingSolution.sto')
 gastroc_factor = trackingSolution.getParameter('gastroc_factor')
 tibant_factor = trackingSolution.getParameter('tibant_factor')
 bifem_factor = trackingSolution.getParameter('bifem_factor')
@@ -131,5 +131,5 @@ for t in np.arange(emgReference.getNumRows()):
 
 # Part 4c: Generate the plots. Compare results to the effort minimization
 # solution.
-compareSolutionToEMG(emgReference, 'effortSolution.sto',
+helpers.compareSolutionToEMG(emgReference, 'effortSolution.sto',
     'trackingSolution.sto')
