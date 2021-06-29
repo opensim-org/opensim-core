@@ -31,14 +31,14 @@ model = getWalkingModel();
 
 
 if ~exist('effortSolution.sto', 'file')
-% Part 1e: Solve the problem!
+    % Part 1e: Solve the problem!
 
 
 end
 
 %% Part 2: Plot the muscle redundancy problem solution.
 % Load the experimental electromyography data and compare 
-% the effort minimization solution against this data. We will also and use 
+% the effort minimization solution against this data. We will also use
 % it later for the EMG-tracking problem. Each column in emg.sto is 
 % normalized so the maximum value for each signal is 1.0.
 emgReference = TimeSeriesTable('emg.sto');
@@ -78,7 +78,7 @@ compareSolutionToEMG(emgReference, 'effortSolution.sto');
 
 
 if ~exist('trackingSolution.sto', 'file')
-% Part 3g: Solve the problem!
+    % Part 3g: Solve the problem!
 
 
 end
@@ -123,7 +123,7 @@ function addCoordinateActuator(model, coordinateName, optForce)
 
 import org.opensim.modeling.*;
 
-coordSet = model.updCoordinateSet();
+coordSet = model.getCoordinateSet();
 
 actu = CoordinateActuator();
 actu.setName(['torque_' coordinateName]);

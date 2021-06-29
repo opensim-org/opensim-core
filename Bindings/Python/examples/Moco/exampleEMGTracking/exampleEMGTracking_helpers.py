@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 # force.
 def addCoordinateActuator(model, coordinateName, optForce):
 
-    coordSet = model.updCoordinateSet();
+    coordSet = model.getCoordinateSet();
 
     actu = osim.CoordinateActuator();
     actu.setName('torque_' + coordinateName);

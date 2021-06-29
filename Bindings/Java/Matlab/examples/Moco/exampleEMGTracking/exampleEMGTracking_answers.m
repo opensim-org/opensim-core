@@ -39,15 +39,15 @@ inverse.set_constraint_tolerance(1e-3);
 inverse.set_convergence_tolerance(1e-3);
 
 if ~exist('effortSolution.sto', 'file')
-% Part 1f: Solve the problem!
-inverseSolution = inverse.solve();
-solution = inverseSolution.getMocoSolution();
-solution.write('effortSolution.sto');
+    % Part 1f: Solve the problem!
+    inverseSolution = inverse.solve();
+    solution = inverseSolution.getMocoSolution();
+    solution.write('effortSolution.sto');
 end
 
 %% Part 2: Plot the muscle redundancy problem solution.
 % Load the experimental electromyography data and compare 
-% the effort minimization solution against this data. We will also and use 
+% the effort minimization solution against this data. We will also use
 % it later for the EMG-tracking problem. Each column in emg.sto is 
 % normalized so the maximum value for each signal is 1.0.
 emgReference = TimeSeriesTable('emg.sto');
@@ -98,9 +98,9 @@ solver.resetProblem(problem);
 solver.set_parameters_require_initsystem(false);
 
 if ~exist('trackingSolution.sto', 'file')
-% Part 3g: Solve the problem!
-solution = study.solve();
-solution.write('trackingSolution.sto');
+    % Part 3g: Solve the problem!
+    solution = study.solve();
+    solution.write('trackingSolution.sto');
 end
 
 % Part 3h: Get the values of the optimized scale factors.
@@ -146,7 +146,7 @@ function addCoordinateActuator(model, coordinateName, optForce)
 
 import org.opensim.modeling.*;
 
-coordSet = model.updCoordinateSet();
+coordSet = model.getCoordinateSet();
 
 actu = CoordinateActuator();
 actu.setName(['torque_' coordinateName]);

@@ -46,7 +46,7 @@ if not os.path.isfile('effortSolution.sto'):
 
 ##  Part 2: Plot the muscle redundancy problem solution.
 # Load the experimental electromyography data and compare
-# the effort minimization solution against this data. We will also and use
+# the effort minimization solution against this data. We will also use
 # it later for the EMG-tracking problem. Each column in emg.sto is
 # normalized so the maximum value for each signal is 1.0.
 emgReference = TimeSeriesTable('emg.sto')
