@@ -78,7 +78,7 @@ solver.set_optim_convergence_tolerance( );
 solver.set_optim_constraint_tolerance( );
 
 if ~exist('predictSolution.sto', 'file')
-% Part 2f: Solve! Write the solution to file, and visualize.
+    % Part 2f: Solve! Write the solution to file, and visualize.
 
 
 end
@@ -119,7 +119,7 @@ plotAccelerationSignals(accelerometerSignals);
 
 
 if ~exist('trackingSolution.sto', 'file')
-% Part 4c: Solve! Write the solution to file, and visualize.
+    % Part 4c: Solve! Write the solution to file, and visualize.
 
 
 end

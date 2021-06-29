@@ -88,9 +88,9 @@ solver.set_optim_convergence_tolerance(1e-4);
 
 if ~exist('predictSolution.sto', 'file')
 % Part 2f: Solve! Write the solution to file, and visualize.
-predictSolution = study.solve();
-predictSolution.write('predictSolution.sto');
-study.visualize(predictSolution);
+    predictSolution = study.solve();
+    predictSolution.write('predictSolution.sto');
+    study.visualize(predictSolution);
 end
 
 %% Part 3: Compute synthetic accelerometer signals
@@ -139,10 +139,10 @@ problem.addGoal(tracking);
 problem.updGoal('myeffort').setWeight(0.001);
 
 if ~exist('trackingSolution.sto', 'file')
-% Part 4c: Solve! Write the solution to file, and visualize.
-trackingSolution = study.solve();
-trackingSolution.write('trackingSolution.sto');
-study.visualize(trackingSolution);
+    % Part 4c: Solve! Write the solution to file, and visualize.
+    trackingSolution = study.solve();
+    trackingSolution.write('trackingSolution.sto');
+    study.visualize(trackingSolution);
 end
 
 %% Part 5: Compare tracking solution to original prediction
