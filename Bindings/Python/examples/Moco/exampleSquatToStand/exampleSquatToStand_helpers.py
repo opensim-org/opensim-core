@@ -1,10 +1,10 @@
-from opensim import *
+import opensim as osim
 import numpy as np
 import matplotlib.pyplot as plt
 
 def addCoordinateActuator(model, coordName, optForce):
     coordSet = model.updCoordinateSet()
-    actu = CoordinateActuator()
+    actu = osim.CoordinateActuator()
     actu.setName('tau_' + coordName)
     actu.setCoordinate(coordSet.get(coordName))
     actu.setOptimalForce(optForce)
@@ -14,7 +14,7 @@ def addCoordinateActuator(model, coordName, optForce):
 
 def getTorqueDrivenModel():
     # Load the base model.
-    model = Model('squatToStand_3dof9musc.osim')
+    model = osim.Model('squatToStand_3dof9musc.osim')
 
     # Remove the muscles in the model.
     model.updForceSet().clearAndDestroy()
@@ -30,7 +30,7 @@ def getTorqueDrivenModel():
 def getMuscleDrivenModel():
 
     # Load the base model.
-    model = Model('squatToStand_3dof9musc.osim')
+    model = osim.Model('squatToStand_3dof9musc.osim')
     model.finalizeConnections()
 
     # Replace the muscles in the model with muscles from DeGroote, Fregly,
@@ -39,7 +39,7 @@ def getMuscleDrivenModel():
     # have the same properties as the original muscles but their characteristic
     # curves are optimized for direct collocation (i.e. no discontinuities,
     # twice differentiable, etc).
-    DeGrooteFregly2016Muscle().replaceMuscles(model)
+    osim.DeGrooteFregly2016Muscle().replaceMuscles(model)
 
     # Make problems easier to solve by strengthening the model and widening the
     # active force-length curve.
@@ -49,7 +49,7 @@ def getMuscleDrivenModel():
         musc.set_ignore_activation_dynamics(False)
         musc.set_ignore_tendon_compliance(False)
         musc.set_max_isometric_force(2.0 * musc.get_max_isometric_force())
-        dgf = DeGrooteFregly2016Muscle.safeDownCast(musc)
+        dgf = osim.DeGrooteFregly2016Muscle.safeDownCast(musc)
         dgf.set_active_force_width_scale(1.5)
         dgf.set_tendon_compliance_dynamics_mode('implicit')
         if str(musc.getName()) == 'soleus_r':

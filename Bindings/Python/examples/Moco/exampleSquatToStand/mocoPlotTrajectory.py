@@ -1,4 +1,4 @@
-from opensim import *
+import opensim as osim
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -8,10 +8,10 @@ def mocoPlotTrajectory(*args):
     args_list = list(args)
 
     if isinstance(args_list[0], str):
-        trajA = MocoTrajectory(args_list[0])
+        trajA = osim.MocoTrajectory(args_list[0])
     
     if len(args) > 1 and isinstance(args_list[1], str):
-        trajB = MocoTrajectory(args_list[1])
+        trajB = osim.MocoTrajectory(args_list[1])
 
     labelA = args_list[2] if len(args) == 4 else 'A'
     labelB = args_list[3] if len(args) == 4 else 'B'

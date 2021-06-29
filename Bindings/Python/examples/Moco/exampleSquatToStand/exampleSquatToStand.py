@@ -1,12 +1,12 @@
 ## Part 0: Load the Moco libraries and pre-configured Models.
 # These models are provided for you (i.e., they are not part of Moco).
-from opensim import *
-from exampleSquatToStand_helpers import *
-from mocoPlotTrajectory import *
+import opensim as osim
+import exampleSquatToStand_helpers as helpers
+import mocoPlotTrajectory as plot
 import os
 import numpy as np
-torqueDrivenModel = getTorqueDrivenModel()
-muscleDrivenModel = getMuscleDrivenModel()
+torqueDrivenModel = helpers.getTorqueDrivenModel()
+muscleDrivenModel = helpers.getMuscleDrivenModel()
 
 ## Part 1: Torque-driven Predictive Problem
 # Part 1a: Create a new MocoStudy.
@@ -82,7 +82,7 @@ if not os.path.isfile('trackingSolution.sto'):
 
 ## Part 3: Compare Predictive and Tracking Solutions
 # This is a convenience function provided for you. See mocoPlotTrajectory.m
-mocoPlotTrajectory('predictSolution.sto', 'trackingSolution.sto', 
+plot.mocoPlotTrajectory('predictSolution.sto', 'trackingSolution.sto', 
     'predict', 'track')
 
 ## Part 4: Muscle-driven Inverse Problem
@@ -137,5 +137,4 @@ print('Cost with device: ', deviceSolution.getObjective())
 
 # This is a convenience function provided for you. See below for the
 # implementation.
-compareInverseSolutions(inverseSolution, inverseDeviceSolution)
-
+helpers.compareInverseSolutions(inverseSolution, inverseDeviceSolution)

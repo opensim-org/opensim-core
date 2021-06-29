@@ -1,10 +1,10 @@
 ## Part 0: Load the Moco libraries.
-from opensim import *
-from exampleIMUTracking_helpers import *
+import opensim as osim
+import exampleIMUTracking_helpers as helpers
 # Add the directory above to access mocoPlotTrajectory.py
 import sys
 sys.path.insert(1, '../')
-from mocoPlotTrajectory import *
+import mocoPlotTrajectory as plot
 import numpy as np
 import os
 
@@ -12,7 +12,7 @@ import os
 # Part 1a: Load a torque-driven, 3 degree-of-freedom model with a single leg 
 # and foot welded to the floor. See the function definition at the bottom of
 # this file to see how the model is loaded and constructed.
-model = getTorqueDrivenSquatToStandModel()
+model = helpers.getTorqueDrivenSquatToStandModel()
 
 # Part 1b: Add frames to the model that will represent our IMU locations. 
 # The function addIMUFrame() adds a PhysicalOffsetFrame to a body at a 
@@ -20,9 +20,12 @@ model = getTorqueDrivenSquatToStandModel()
 #
 # /bodyset/<body_name>/<body_name>_imu_offset
 #
-addIMUFrame(model, 'torso',   Vec3(0.08, 0.3, 0), Vec3(0, 0.5*np.pi, 0.5*np.pi))
-addIMUFrame(model, 'femur_r', Vec3(0, -0.2, 0.05), Vec3(0, 0, 0.5*np.pi))
-addIMUFrame(model, 'tibia_r', Vec3(0, -0.2, 0.05), Vec3(0, 0, 0.5*np.pi))
+helpers.addIMUFrame(model, 'torso', 
+    osim.Vec3(0.08, 0.3, 0), osim.Vec3(0, 0.5*np.pi, 0.5*np.pi))
+helpers.addIMUFrame(model, 'femur_r', 
+    osim.Vec3(0, -0.2, 0.05), osim.Vec3(0, 0, 0.5*np.pi))
+helpers.addIMUFrame(model, 'tibia_r', osim.Vec3(0, -0.2, 0.05), 
+    osim.Vec3(0, 0, 0.5*np.pi))
 
 # Part 1c: Add IMU components to the model using the PhysicalOffsetFrames
 # we just added to the model. We'll use the helper function addModelIMUs()
@@ -105,7 +108,7 @@ if not os.path.isfile('predictSolution.sto'):
 
     
 # Part 3d: Plot the synthetic acceleration signals.
-plotAccelerationSignals(accelerometerSignals)
+helpers.plotAccelerationSignals(accelerometerSignals)
 
 ## Part 4: Synthetic acceleration tracking problem 
 # Part 4a: Add a MocoAccelerationTrackingGoal to the MocoProblem. Set the
@@ -128,15 +131,16 @@ if not os.path.isfile('trackingSolution.sto'):
 ## Part 5: Compare tracking solution to original prediction
 # Part 5a: Plot the tracking solution against the prediction. This is a
 # convenience function provided for you. See mocoPlotTrajectory.m
-mocoPlotTrajectory('predictSolution.sto', 'trackingSolution.sto',
+plot.mocoPlotTrajectory('predictSolution.sto', 'trackingSolution.sto',
         'predict', 'track')
  
 # Part 5b: Compare accelerations from tracking solution to the reference
 # accelerations.
-trackingSolution = MocoTrajectory('trackingSolution.sto')
-accelerometerSignalsTracking = analyzeVec3(model, 
+trackingSolution = osim.MocoTrajectory('trackingSolution.sto')
+accelerometerSignalsTracking = osim.analyzeVec3(model, 
     trackingSolution.exportToStatesTable(), 
     trackingSolution.exportToControlsTable(), 
     outputPaths)
 accelerometerSignalsTracking.setColumnLabels(imuFramePaths)
-plotAccelerationSignals(accelerometerSignals, accelerometerSignalsTracking)
+helpers.plotAccelerationSignals(accelerometerSignals, 
+                                accelerometerSignalsTracking)

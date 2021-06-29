@@ -1,16 +1,16 @@
 ## Part 0: Load the Moco libraries and pre-configured Models.
 # These models are provided for you (i.e., they are not part of Moco).
-from opensim import *
-from exampleSquatToStand_helpers import *
-from mocoPlotTrajectory import *
+import opensim as osim
+import exampleSquatToStand_helpers as helpers
+import mocoPlotTrajectory as plot
 import os
 import numpy as np
-torqueDrivenModel = getTorqueDrivenModel()
-muscleDrivenModel = getMuscleDrivenModel()
+torqueDrivenModel = helpers.getTorqueDrivenModel()
+muscleDrivenModel = helpers.getMuscleDrivenModel()
 
 ## Part 1: Torque-driven Predictive Problem
 # Part 1a: Create a new MocoStudy.
-study = MocoStudy()
+study = osim.MocoStudy()
 
 # Part 1b: Initialize the problem and set the model.
 problem = study.updProblem()
@@ -51,7 +51,7 @@ problem.setStateInfo('/jointset/ankle_r/ankle_angle_r/value',
 problem.setStateInfoPattern('/jointset/.*/speed', [], 0, 0)
 
 # Part 1d: Add a MocoControlCost to the problem.
-problem.addGoal(MocoControlGoal('myeffort'))
+problem.addGoal(osim.MocoControlGoal('myeffort'))
 
 # Part 1e: Configure the solver.
 solver = study.initCasADiSolver()
@@ -70,14 +70,14 @@ if not os.path.isfile('predictSolution.sto'):
 # Part 2a: Construct a tracking reference TimeSeriesTable using filtered 
 # data from the previous solution. Use a TableProcessor, which accepts a 
 # base table and allows appending operations to modify the table.
-tableProcessor = TableProcessor('predictSolution.sto')
-tableProcessor.append(TabOpLowPassFilter(6))
+tableProcessor = osim.TableProcessor('predictSolution.sto')
+tableProcessor.append(osim.TabOpLowPassFilter(6))
 
 # Part 2b: Add a MocoStateTrackingCost to the problem using the states
 # from the predictive problem (via the TableProcessor we just created). 
 # Enable the setAllowUnusedReferences() setting to ignore the controls in
 # the predictive solution.
-tracking = MocoStateTrackingGoal()
+tracking = osim.MocoStateTrackingGoal()
 tracking.setName('mytracking')
 tracking.setReference(tableProcessor)
 tracking.setAllowUnusedReferences(True)
@@ -101,7 +101,7 @@ if not os.path.isfile('trackingSolution.sto'):
 
 ## Part 3: Compare Predictive and Tracking Solutions
 # This is a convenience function provided for you. See mocoPlotTrajectory.m
-mocoPlotTrajectory('predictSolution.sto', 'trackingSolution.sto', 
+plot.mocoPlotTrajectory('predictSolution.sto', 'trackingSolution.sto', 
     'predict', 'track')
 
 ## Part 4: Muscle-driven Inverse Problem
@@ -110,8 +110,8 @@ inverse = MocoInverse()
 
 # Part 4a: Provide the model via a ModelProcessor. Similar to the TableProcessor,
 # you can add operators to modify the base model.
-modelProcessor = ModelProcessor(muscleDrivenModel)
-modelProcessor.append(ModOpAddReserves(2))
+modelProcessor = osim.ModelProcessor(muscleDrivenModel)
+modelProcessor.append(osim.ModOpAddReserves(2))
 inverse.setModel(modelProcessor)
 
 # Part 4b: Set the reference kinematics using the same TableProcessor we used
@@ -141,13 +141,13 @@ solution.write('inverseSolution.sto')
 
 # Part 4e: Get the outputs we calculated from the inverse solution.
 inverseOutputs = inverseSolution.getOutputs()
-sto = STOFileAdapter()
+sto = osim.STOFileAdapter()
 sto.write(inverseOutputs, 'muscleOutputs.sto')
 
 ## Part 5: Muscle-driven Inverse Problem with Passive Assistance
 # Part 5a: Create a new muscle-driven model, now adding a SpringGeneralizedForce 
 # about the knee coordinate.
-device = SpringGeneralizedForce('knee_angle_r')
+device = osim.SpringGeneralizedForce('knee_angle_r')
 device.setStiffness(50)
 device.setRestLength(0)
 device.setViscosity(0)
@@ -155,8 +155,8 @@ muscleDrivenModel.addForce(device)
 
 # Part 5b: Create a ModelProcessor similar to the previous one, using the same
 # reserve actuator strength so we can compare muscle activity accurately.
-modelProcessor = ModelProcessor(muscleDrivenModel)
-modelProcessor.append(ModOpAddReserves(2))
+modelProcessor = osim.ModelProcessor(muscleDrivenModel)
+modelProcessor.append(osim.ModOpAddReserves(2))
 inverse.setModel(modelProcessor)
 
 # Part 5c: Solve! Write solution.
@@ -170,5 +170,4 @@ print('Cost with device: ', deviceSolution.getObjective())
 
 # This is a convenience function provided for you. See below for the
 # implementation.
-compareInverseSolutions(inverseSolution, inverseDeviceSolution)
-
+helpers.compareInverseSolutions(inverseSolution, inverseDeviceSolution)

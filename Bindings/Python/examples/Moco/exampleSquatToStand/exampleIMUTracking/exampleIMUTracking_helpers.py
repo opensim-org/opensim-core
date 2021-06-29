@@ -1,10 +1,10 @@
-from opensim import *
+import opensim as osim
 import numpy as np
 import matplotlib.pyplot as plt
 
 def addCoordinateActuator(model, coordName, optForce):
     coordSet = model.updCoordinateSet()
-    actu = CoordinateActuator()
+    actu = osim.CoordinateActuator()
     actu.setName('tau_' + coordName)
     actu.setCoordinate(coordSet.get(coordName))
     actu.setOptimalForce(optForce)
@@ -18,7 +18,7 @@ def addCoordinateActuator(model, coordName, optForce):
 def getTorqueDrivenSquatToStandModel():
 
     # Load the base model.
-    model = Model('../squatToStand_3dof9musc.osim')
+    model = osim.Model('../squatToStand_3dof9musc.osim')
 
     # Remove the muscles in the model.
     model.updForceSet().clearAndDestroy()
@@ -35,7 +35,7 @@ def getTorqueDrivenSquatToStandModel():
 def addIMUFrame(model, bodyName, translation, orientation):
     body = model.updBodySet().get(bodyName)
     name = str(body.getName()) + '_imu_offset'
-    bodyOffset = PhysicalOffsetFrame(name, body, Transform())
+    bodyOffset = osim.PhysicalOffsetFrame(name, body, Transform())
     bodyOffset.set_translation(translation)
     bodyOffset.set_orientation(orientation)
     body.addComponent(bodyOffset)
