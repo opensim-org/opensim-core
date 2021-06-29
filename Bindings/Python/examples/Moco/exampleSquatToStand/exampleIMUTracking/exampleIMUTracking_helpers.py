@@ -35,7 +35,7 @@ def getTorqueDrivenSquatToStandModel():
 def addIMUFrame(model, bodyName, translation, orientation):
     body = model.updBodySet().get(bodyName)
     name = str(body.getName()) + '_imu_offset'
-    bodyOffset = osim.PhysicalOffsetFrame(name, body, Transform())
+    bodyOffset = osim.PhysicalOffsetFrame(name, body, osim.Transform())
     bodyOffset.set_translation(translation)
     bodyOffset.set_orientation(orientation)
     body.addComponent(bodyOffset)
