@@ -2249,7 +2249,7 @@
 								<color>1 1 1</color>
 							</Appearance>
 							<!--Name of geometry file.-->
-							<mesh_file>hat_ribs.vtp</mesh_file>
+							<mesh_file>hat_ribs_scap.vtp</mesh_file>
 						</Mesh>
 					</attached_geometry>
 					<!--The mass of the body (kg)-->
