@@ -59,7 +59,7 @@ public:
     OpenSim_DECLARE_OUTPUT(gyroscope_signal, SimTK::Vec3,
             calcGyroscopeSignal, SimTK::Stage::Velocity);
     OpenSim_DECLARE_OUTPUT(accelerometer_signal, SimTK::Vec3,
-            calcAccelerometerSignal, SimTK::Stage::Dynamics);
+            calcAccelerometerSignal, SimTK::Stage::Acceleration);
     // Outputs
     SimTK::Transform calcTransformInGround(const SimTK::State& s) const {
         return get_frame().getTransformInGround(s);

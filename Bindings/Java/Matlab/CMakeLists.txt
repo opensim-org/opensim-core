@@ -61,6 +61,14 @@ file(COPY "examples/Moco/exampleSquatToStand/squatToStand_3dof9musc.osim"
         DESTINATION
         "${CMAKE_BINARY_DIR}/Examples/Moco/exampleSquatToStand")
 
+# Copy Geometry folder for squat-to-stand examples
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/OpenSenseExample/Geometry/"
+        DESTINATION
+        "${OPENSIM_INSTALL_MATLABEXDIR}/Moco/exampleSquatToStand/Geometry/")
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/OpenSenseExample/Geometry/"
+        DESTINATION
+        "${OPENSIM_INSTALL_PYTHONEXDIR}/Moco/exampleSquatToStand/Geometry/")
+        
 # Copy Geometry folder for Moco 2D walking examples
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/OpenSenseExample/Geometry/"
         DESTINATION
