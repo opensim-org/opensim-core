@@ -254,12 +254,9 @@ OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/setup.py" ".")
 OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/__init__.py" opensim)
 
 OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/report.py" opensim)
-# for Python 3.8+/Windows we create a file dll_location.txt and use
-# it in setup_win_python38.py to set additional dll directory
+# for Python 3.8+/Windows we use a special script
+# setup_win_python38.py to set additional dll directory in __init__.py on client machine
 if (WIN32)
-    set(DLL_PATH_FILE ${CMAKE_CURRENT_BINARY_DIR}/dll_location.txt)
-    file(WRITE ${DLL_PATH_FILE} "${CMAKE_INSTALL_PREFIX}/bin")
-    OpenSimPutFileInPythonPackage("${DLL_PATH_FILE}" opensim)
     OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/setup_win_python38.py" ".")
 endif()
 
