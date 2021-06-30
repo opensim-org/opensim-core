@@ -106,7 +106,7 @@ plot.mocoPlotTrajectory('predictSolution.sto', 'trackingSolution.sto',
 
 ## Part 4: Muscle-driven Inverse Problem
 # Create a MocoInverse tool instance.
-inverse = MocoInverse()
+inverse = osim.MocoInverse()
 
 # Part 4a: Provide the model via a ModelProcessor. Similar to the TableProcessor,
 # you can add operators to modify the base model.
