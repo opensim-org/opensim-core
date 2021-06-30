@@ -203,5 +203,5 @@ using namespace SimTK;
 %}
 
 %import "java_common.i"
-
+moco_unique_ptr(OpenSim::PositionMotion);
 %include <Bindings/simulation.i>

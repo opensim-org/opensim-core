@@ -21,12 +21,12 @@
 #include "Components/AccelerationMotion.h"
 #include "Components/DiscreteController.h"
 #include "Components/DiscreteForces.h"
-#include "Components/PositionMotion.h"
 #include "MocoProblem.h"
 #include "MocoProblemInfo.h"
 #include <regex>
 #include <unordered_set>
 
+#include <OpenSim/Simulation/PositionMotion.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
 
 using namespace OpenSim;

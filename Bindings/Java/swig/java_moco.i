@@ -424,7 +424,6 @@ using namespace SimTK;
 %}
 
 moco_unique_ptr(OpenSim::MocoProblemRep);
-moco_unique_ptr(OpenSim::PositionMotion);
 
 %import "java_actuators.i"
 

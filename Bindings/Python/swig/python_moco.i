@@ -427,6 +427,5 @@ using namespace SimTK;
 // =============================
 
 moco_unique_ptr(OpenSim::MocoProblemRep);
-moco_unique_ptr(OpenSim::PositionMotion);
 
 %include <Bindings/moco.i>

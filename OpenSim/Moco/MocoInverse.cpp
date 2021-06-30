@@ -18,7 +18,6 @@
 
 #include "MocoInverse.h"
 
-#include "Components/PositionMotion.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoGoal/MocoControlGoal.h"
 #include "MocoGoal/MocoInitialActivationGoal.h"

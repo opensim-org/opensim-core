@@ -135,8 +135,6 @@ namespace OpenSim {
 %include <OpenSim/Moco/MocoInverse.h>
 %include <OpenSim/Moco/MocoTrack.h>
 
-%include <OpenSim/Moco/Components/PositionMotion.h>
-
 %include <OpenSim/Moco/MocoUtilities.h>
 %template(analyzeMocoTrajectory) OpenSim::analyze<double>;
 %template(analyzeMocoTrajectoryVec3) OpenSim::analyze<SimTK::Vec3>;
