@@ -1,8 +1,7 @@
 import sys
 import os
-from pathlib import Path
 if (sys.version_info.major == 3 and sys.version_info.minor >= 8 and sys.platform.startswith('win')):
-        if (Path('opensim/dll_location.txt').is_file()):
+        if (os.path.isfile('opensim/dll_location.txt')):
             with open('opensim/dll_location.txt', 'r') as reader:
                 os.add_dll_directory(reader.read())
         else:
