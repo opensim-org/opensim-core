@@ -311,6 +311,13 @@ using namespace SimTK;
     }
 %}
 
+%typemap(javacode) OpenSim::MocoControlTrackingGoal %{
+    public void addScaleFactor(String name, String control, double[] b)
+            throws Exception {
+            addScaleFactor(name, control, MocoPhase.convertArrayToMB(b));
+    }
+%}
+
 /* SWIG does not support initializer_list, but we can use Java arrays to
  * achieve similar syntax in MATLAB.
  * TODO create Vector(double[]) constructor. */

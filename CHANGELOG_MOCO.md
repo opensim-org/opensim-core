@@ -8,6 +8,12 @@ Moco Change Log
               
 - 2021-06-28: Added exampleIMUTracking (Matlab and Python) for TGCS 2021.
 
+- 2021-06-28: Added exampleEMGTracking (Matlab and Python) for TGCS 2021.
+  
+- 2021-06-28: Added support for optimized scale factors including the component
+              MocoScaleFactor, and interface for MocoGoals to add scale factors
+              to a MocoProblem (e.g., MocoControlTrackingGoal::addScaleFactor).
+
 - 2021-02-24: Updated MocoAccelerationTrackingGoal to add support for tracking
               acceleration signals from inertial measurement units.
   
