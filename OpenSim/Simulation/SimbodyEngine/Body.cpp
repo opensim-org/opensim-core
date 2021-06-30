@@ -214,8 +214,9 @@ void Body::scaleInertialProperties(const SimTK::Vec3& scaleFactors, bool scaleMa
     // Scale the mass.
     if (scaleMass)
         upd_mass() *= massScaleFactor;
-
-    SimTK::SymMat33 inertia = _inertia.asSymMat33();
+    // Fix issue #2871 by fmatari
+    SimTK::Mat33 inertia = _inertia.toMat33();
+    //SimTK::SymMat33 inertia = _inertia.asSymMat33();
 
     // If the mass is zero, then make the inertia tensor zero as well.
     // If the X, Y, Z scale factors are equal, then you can scale the
