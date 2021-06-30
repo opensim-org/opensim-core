@@ -129,7 +129,7 @@ model.initSystem();
 
 % Symmetric coordinate values (except for pelvis_tx) and speeds. Here, we 
 % constrain final coordinate values of one leg to match the initial value of the 
-% other leg. Or, in the case of the pelvis_tx value, we constraint the final 
+% other leg. Or, in the case of the pelvis_tx value, we constrain the final 
 % value to be the same as the initial value.
 for i = 1:model.getNumStateVariables()
     currentStateName = string(model.getStateVariableNames().getitem(i-1));
@@ -153,7 +153,7 @@ for i = 1:model.getNumStateVariables()
     end
 end
 
-% Symmetric muscle activations. Here, we  constrain final muscle activation 
+% Symmetric muscle activations. Here, we constrain final muscle activation 
 % values of one leg to match the initial activation values of the other leg.
 for i = 1:model.getNumStateVariables()
     currentStateName = string(model.getStateVariableNames().getitem(i-1));
