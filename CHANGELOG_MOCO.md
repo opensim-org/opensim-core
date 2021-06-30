@@ -3,6 +3,9 @@ Moco Change Log
 
 1.1.0
 -----
+- 2021-06-29: Added Matlab version of example2DWalkingMetabolics (via Brian 
+              Umberger).
+  
 - 2021-02-24: Updated MocoAccelerationTrackingGoal to add support for tracking
               acceleration signals from inertial measurement units.
   
