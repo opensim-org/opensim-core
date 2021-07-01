@@ -21,6 +21,7 @@
 #include "Components/DiscreteForces.h"
 #include "Components/StationPlaneContactForce.h"
 #include "MocoBounds.h"
+#include "MocoScaleFactor.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoControlBoundConstraint.h"
 #include "MocoFrameDistanceConstraint.h"
@@ -85,6 +86,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(MocoInitialBounds());
         Object::registerType(MocoFinalBounds());
         Object::registerType(MocoVariableInfo());
+        Object::registerType(MocoScaleFactor());
         Object::registerType(MocoParameter());
         Object::registerType(MocoPhase());
         Object::registerType(MocoProblem());

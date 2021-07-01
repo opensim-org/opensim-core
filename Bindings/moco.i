@@ -6,6 +6,10 @@
 
 %include <OpenSim/Moco/About.h>
 
+%include <OpenSim/Moco/MocoScaleFactor.h>
+%include <OpenSim/Moco/MocoBounds.h>
+%include <OpenSim/Moco/MocoVariableInfo.h>
+
 namespace OpenSim {
     %ignore MocoGoal::IntegrandInput;
     %ignore MocoGoal::calcIntegrand;
@@ -18,9 +22,9 @@ namespace OpenSim {
 %include <OpenSim/Moco/MocoGoal/MocoStateTrackingGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoMarkerTrackingGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoMarkerFinalGoal.h>
-%include <OpenSim/Moco/MocoGoal/MocoContactTrackingGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoControlGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoControlTrackingGoal.h>
+%include <OpenSim/Moco/MocoGoal/MocoContactTrackingGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoInitialActivationGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoJointReactionGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoSumSquaredStateGoal.h>
@@ -31,10 +35,6 @@ namespace OpenSim {
 %include <OpenSim/Moco/MocoGoal/MocoPeriodicityGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoInitialForceEquilibriumDGFGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoInitialVelocityEquilibriumDGFGoal.h>
-
-
-%include <OpenSim/Moco/MocoBounds.h>
-%include <OpenSim/Moco/MocoVariableInfo.h>
 
 %ignore OpenSim::MocoMultibodyConstraint::getKinematicLevels;
 %ignore OpenSim::MocoConstraintInfo::getBounds;

@@ -95,6 +95,8 @@ set(MOCO_SOURCES
         MocoConstraintInfo.cpp
         MocoStudyFactory.h
         MocoStudyFactory.cpp
+        MocoScaleFactor.h
+        MocoScaleFactor.cpp
         )
 if(OPENSIM_WITH_CASADI)
     list(APPEND MOCO_SOURCES
