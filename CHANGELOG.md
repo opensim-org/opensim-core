@@ -13,7 +13,7 @@ v4.3
 - Added createSyntheticIMUAccelerationSignals() to SimulationUtilities to generate "synthetic" IMU accelerations based on passed in state trajectory.
 - Fixed incorrect header information in BodyKinematics file output
 - Fixed bug applying non-uniform scaling to inertia matrix of a Body due to using local vaiable of type SysMat33 (Issue #2871).
-- Default build to python 3.8 and numpy 1.20
+- Default build to python 3.8 and numpy 1.20 (special instructions for using python 3.8+ on windows at https://simtk-confluence.stanford.edu/display/OpenSim/Scripting+in+Python)
 
 v4.2
 ====
