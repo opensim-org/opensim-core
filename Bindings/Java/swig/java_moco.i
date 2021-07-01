@@ -430,7 +430,7 @@ using namespace SimTK;
     }
 %}
 
-moco_unique_ptr(OpenSim::MocoProblemRep);
+opensim_unique_ptr(OpenSim::MocoProblemRep);
 
 %import "java_actuators.i"
 

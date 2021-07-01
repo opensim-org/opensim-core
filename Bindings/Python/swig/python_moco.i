@@ -448,6 +448,6 @@ using namespace SimTK;
 // Include all the OpenSim code.
 // =============================
 
-moco_unique_ptr(OpenSim::MocoProblemRep);
+opensim_unique_ptr(OpenSim::MocoProblemRep);
 
 %include <Bindings/moco.i>
