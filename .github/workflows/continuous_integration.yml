@@ -107,6 +107,7 @@ jobs:
         echo "PYTHONPATH= $env:USERPROFILE/opensim-core-install/bin">> $GITHUB_ENV
         # Move to the installed location of the python package.
         cd ~/opensim-core-install/sdk/python
+        python setup_win_python38.py
         # Run python tests.
         python -m unittest discover --start-directory opensim/tests --verbose
 
