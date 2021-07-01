@@ -2,9 +2,7 @@
 
 import os
 import sys
-
 from setuptools import setup
-
 # This provides the variable `__version__`.
 if sys.version_info[0] < 3:
     execfile('opensim/version.py')
