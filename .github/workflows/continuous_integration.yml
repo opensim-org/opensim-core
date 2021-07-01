@@ -92,7 +92,7 @@ jobs:
     - name: Test opensim-core
       run: |
         chdir $env:GITHUB_WORKSPACE\\build
-        ctest --parallel 4 --output-on-failure --build-config Release
+        ctest --parallel 4 --output-on-failure --build-config Release -E python.*
 
     - name: Install opensim-core
       # TODO: This is where we wish to do the installing, but it's done above for now.
