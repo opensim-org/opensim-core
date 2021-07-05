@@ -32,7 +32,7 @@
 #include <OpenSim/Simulation/OpenSense/IMU.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
 #include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
-#include <OpenSim/Moco/Components/PositionMotion.h>
+#include <OpenSim/Simulation/PositionMotion.h>
 using namespace OpenSim;
 using namespace std;
 
