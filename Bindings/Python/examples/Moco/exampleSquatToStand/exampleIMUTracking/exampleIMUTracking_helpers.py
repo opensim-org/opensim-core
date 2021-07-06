@@ -67,12 +67,12 @@ def plotAccelerationSignals(*args):
     ax = fig.add_subplot(131)
     torso = to_mat(accelerationsReference.getDependentColumn(
             '/bodyset/torso/torso_imu_offset'))
-    ax.plot(time, torso[:,1], color='red', linewidth=3,
+    ax.plot(time, torso[:,0], color='red', linewidth=3,
         label='predict')
     if len(args) == 2:
         torsoTrack = to_mat(accelerationsTracking.getDependentColumn(
             '/bodyset/torso/torso_imu_offset'))
-        ax.plot(time, torsoTrack[:,1], color='blue', 
+        ax.plot(time, torsoTrack[:,0], color='blue', 
             linestyle='--', linewidth=3, label='track')
 
     if len(args) == 2:
@@ -87,11 +87,11 @@ def plotAccelerationSignals(*args):
     ax = fig.add_subplot(132)
     femur = to_mat(accelerationsReference.getDependentColumn(
         '/bodyset/femur_r/femur_r_imu_offset'))
-    ax.plot(time, femur[:,1], color='red', linewidth=3)
+    ax.plot(time, femur[:,0], color='red', linewidth=3)
     if len(args) == 2:
         femurTrack = to_mat(accelerationsTracking.getDependentColumn(
             '/bodyset/femur_r/femur_r_imu_offset'))
-        ax.plot(time, femurTrack[:,1], color='blue', 
+        ax.plot(time, femurTrack[:,0], color='blue', 
             linestyle='--', linewidth=3)
 
     ax.set_xlim(0, 1)
@@ -103,11 +103,11 @@ def plotAccelerationSignals(*args):
     ax = fig.add_subplot(133)
     tibia = to_mat(accelerationsReference.getDependentColumn(
         '/bodyset/tibia_r/tibia_r_imu_offset'))
-    ax.plot(time, tibia[:,1], color='red', linewidth=3)
+    ax.plot(time, tibia[:,0], color='red', linewidth=3)
     if len(args) == 2:
         tibiaTrack = to_mat(accelerationsTracking.getDependentColumn(
             '/bodyset/tibia_r/tibia_r_imu_offset'))
-        ax.plot(time, tibiaTrack[:,1], color='blue', 
+        ax.plot(time, tibiaTrack[:,0], color='blue', 
             linestyle='--', linewidth=3)
     
     ax.set_xlim(0, 1)

@@ -15,23 +15,23 @@ import org.opensim.modeling.*;
 % at the bottom of this file to see how the model is loaded and constructed.
 model = getWalkingModel();  
 
-% Part 1a: Create the MocoInverse tool and set the Model.
+% Part 1b: Create the MocoInverse tool and set the Model.
 
 
-% Part 1b: Create a TableProcessor using the coordinates file from inverse
+% Part 1c: Create a TableProcessor using the coordinates file from inverse
 % kinematics.
 
 
-% Part 1c: Set the kinematics reference for MocoInverse using the 
+% Part 1d: Set the kinematics reference for MocoInverse using the 
 % TableProcessor we just created.
 
 
-% Part 1d: Provide the solver settings: initial and final time, the mesh 
+% Part 1e: Provide the solver settings: initial and final time, the mesh 
 % interval, and the constraint and convergence tolerances.
 
 
 if ~exist('effortSolution.sto', 'file')
-    % Part 1e: Solve the problem!
+    % Part 1f: Solve the problem!
 
 
 end
