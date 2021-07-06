@@ -111,6 +111,10 @@ jobs:
         # Run python tests.
         python -m unittest discover --start-directory opensim/tests --verbose
 
+    - name: Build Python wheel
+      run: |
+        python -m cibuildwheel --output-dir wheelhouse
+
     - name: Upload opensim-core
       uses: actions/upload-artifact@v2
       with:
