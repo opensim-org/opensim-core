@@ -78,8 +78,6 @@ set(MOCO_SOURCES
         Components/DiscreteController.h
         Components/StationPlaneContactForce.h
         Components/StationPlaneContactForce.cpp
-        Components/PositionMotion.h
-        Components/PositionMotion.cpp
         Components/DiscreteForces.h
         Components/DiscreteForces.cpp
         Components/AccelerationMotion.h

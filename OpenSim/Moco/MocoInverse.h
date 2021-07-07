@@ -22,6 +22,7 @@
 #include "MocoTool.h"
 #include "MocoTrajectory.h"
 #include "OpenSim/Simulation/TableProcessor.h"
+#include "OpenSim/Simulation/PositionMotion.h"
 #include "osimMocoDLL.h"
 
 #include <OpenSim/Simulation/Model/Model.h>
