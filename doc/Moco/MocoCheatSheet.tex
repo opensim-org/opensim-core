@@ -125,7 +125,7 @@ solver = study.initCasADiSolver();
 \end{lstlisting}
 \vspace{5pt}
 \textbf{Settings for Tropter and CasADi solvers.}\\
-Solve the problem on a grid of 51 mesh points.
+Solve the problem on a grid of 50 mesh intervals.
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
 solver.set_num_mesh_intervals(50);
 \end{lstlisting}
@@ -135,12 +135,12 @@ solver.set_transcription_scheme('hermite-simpson');
 \end{lstlisting}
 Loosen the convergence and constraint tolerances.
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
-solver.set_convergence_tolerance(1e-3);
-solver.set_constraint_tolerance(1e-3);
+solver.set_optim_convergence_tolerance(1e-3);
+solver.set_optim_constraint_tolerance(1e-3);
 \end{lstlisting}
 Stop optimization after 500 iterations.
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
-solver.set_max_iterations(500);
+solver.set_optim_max_iterations(500);
 \end{lstlisting}
 By default, the Hessian is approximated from first derivatives. Set to 'exact' to use an exact Hessian.
 \begin{lstlisting}[style=Matlab-editor, basicstyle=\mlttfamily\small, linewidth=0.48\textwidth]
