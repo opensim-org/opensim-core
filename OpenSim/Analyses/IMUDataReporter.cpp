@@ -127,9 +127,7 @@ record(const SimTK::State& s)
     sWorkingCopy.setTime(s.getTime());
 
     // update Q's and U's
-    if (get_compute_accelerations_without_forces()) {
-        // Compute derivatives using a PositionMotion
-    } else {
+    if (!get_compute_accelerations_without_forces()) {
         sWorkingCopy.setQ(s.getQ());
         sWorkingCopy.setU(s.getU());
     }
@@ -214,9 +212,8 @@ int IMUDataReporter::begin(const SimTK::State& s )
         }
         // Create splines for coordinates from statesStore and provide to
         // PositionMotion.
-        TimeSeriesTable statesTable = _statesStore->exportToTable();
-        auto statesTraj = StatesTrajectory::createFromStatesTable(*_modelLocal,
-                statesTable, true, true, true);
+        auto statesTraj = StatesTrajectory::createFromStatesStorage(
+                *_modelLocal, *_statesStore, true, true, true);
 
         auto posmot = PositionMotion::createFromStatesTrajectory(
                 *_modelLocal, statesTraj);

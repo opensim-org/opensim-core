@@ -63,7 +63,7 @@ public:
             "Report linear acceleration of the IMU, default is true.");
     OpenSim_DECLARE_PROPERTY(compute_accelerations_without_forces, bool,
             "Ignore external forces and controls, use kinematics to compute "
-            " linear accelerations of the IMUs, default is false.");
+            "accelerometer signals, default is false.");
     OpenSim_DECLARE_LIST_PROPERTY(frame_paths, std::string,
             "Additional ComponentPaths to frames in the model to which new IMUs "
             "components are attached. IMUs added based on these paths will be "
