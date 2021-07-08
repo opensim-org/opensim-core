@@ -46,15 +46,27 @@ end
 %  - Left Step Time (LST)  = Time from right foot-strike to left foot-strike
 %  - STA = (RST - LST) / (RST + LST)
 %
-% Asymmetry values range from -1.0 to 1.0. For example, 0.20 is 20% positive 
-% step time asymmetry with greater right step time than left step time.
-%
 % The step time goal works by "counting" the number of nodes that each foot is in 
 % contact with the ground (with respect to a specified contact force threshold). 
 % Since, in walking, there are double support phases where both feet are on the 
 % ground, the goal also detects which foot is in front and assigns the step time 
 % to the leading foot. Altogether, it estimates the time between consecutive 
-% heel strikes in order to infer the left and right step times. 
+% heel strikes in order to infer the left and right step times.
+%
+% The contact elements for each foot must specified via 'setLeftContactGroup()'
+% and 'setRightContactGroup()'. The force element and force threshold used to 
+% determine when a foot is in contact is set via 'setContactForceDirection()' and 
+% 'setContactForceThreshold()'.
+%
+% Users must provide the target asymmetry value via 'setTargetAsymmetry()'.
+% Asymmetry values ranges from -1.0 to 1.0. For example, 0.20 is 20% positive
+% step time asymmetry with greater right step times than left step times. A
+% symmetric step times solution can be achieved by setting this property to zero.
+% This goal can be used only in 'cost' mode, where the error between the target
+% asymmetry and model asymmetry is squared. To make this goal suitable for
+% gradient-based optimization, step time values are assigned via smoothing
+% functions which can be controlled via 'setAsymmetrySmoothing()' and
+% 'setContactDetectionSmoothing()'.
 %
 % Since this goal doesn't directly compute the step time asymmetry from heel 
 % strikes, users should confirm that the step time asymmetry from the solution 
@@ -128,7 +140,7 @@ stepTimeAsymmetry.setAsymmetrySmoothing(3);
 % than left.
 stepTimeAsymmetry.setTargetAsymmetry(0.10);   
 % Set goal weight.
-stepTimeAsymmetry.setWeight(800);          
+stepTimeAsymmetry.setWeight(8);          
 
 % Need to define the names of the left and right heel spheres: this is
 % used to detect which foot is in front during double support phase.
@@ -204,30 +216,32 @@ end
 
 % Step Length Asymmetry
 % ---------------------
-% This goal works by constraining the distance between feet, or "foot
-% frames", throughout the gait cycle. The goal calculates the distance
-% between the left foot and right foot, then limits the distance between
-% feet to not pass beyond minimum (negative) or maximum (positive) bounds.
-% There are two limits used: one that limits the distance between feet when
-% the right foot is in front, and one that limits the distance between feet
-% when the left foot is in front.
+% This goal works by limiting the distance between feet, or "foot frames", 
+% throughout the gait cycle. The goal calculates the distance between the left 
+% foot and right foot, then limits the distance between feet to not pass beyond 
+% minimum (negative) or maximum (positive) bounds. There are two limits used: 
+% one that limits the distance between feet when the right foot is in front, and 
+% one that limits the distance between feet when the left foot is in front.
 %
+% Step Length Asymmetry (SLA) is a ratio and is calculated as follows:
 % The Right Step Length (RSL) is the distance between feet at right foot strike
 % The Left Step Length (LSL) is the distance between feet at left foot strike
 % Step Length Asymmetry = (RSL - LSL)/ (RSL + LSL) 
 %
-% Asymmetry values ranges from -1.0 to 1.0. For example, 0.20 is 20% positive 
-% step length asymmetry with greater right step length than left step length.
+% Users must provide the target asymmetry value via 'setTargetAsymmetry()'.
+% Asymmetry values ranges from -1.0 to 1.0. For example, 0.20 is 20% positive
+% step length asymmetry with greater right step length than left step length. A
+% symmetric step length solution can be achieved by setting this property to zero.
+% This goal can be used only in 'cost' mode, where the error between the target
+% asymmetry and model asymmetry is squared. To make this goal suitable for
+% gradient-based optimization, step length values are assigned via a smoothing
+% function which can be controlled via 'setAsymmetrySmoothing()'.
 %
-% Users input the stride length and target step length asymmetry. The
-% goal then calculates the minimum and maximum bounds on the distance
-% between right and left foot.
-%
-% Users must prescribe the stride length for this optimization. The stride
-% length is specified via the 'stride_length' property, but users must
-% ensure that this stride length is met via problem bounds or other goals;
-% the property value is only used to compute the model's asymmetry in the
-% cost function.
+% Users must also prescribed the stride length via 'setStrideLength()'. The goal 
+% then calculates the minimum and maximum bounds on the distance between right 
+% and left foot. Users must ensure that this stride length is met via problem
+% bounds or other goals; the value provided to MocoStepLengthAsymmetryGoal is 
+% only used to compute the model's asymmetry in the cost function.
 %
 % Because this goal doesn't directly compute the step length asymmetry from
 % heel strike data, users should confirm that the step length asymmetry
@@ -289,7 +303,7 @@ problem.addGoal(effortGoal);
 % Step length asymmetry
 % ---------------------
 stepLengthAsymmetry = MocoStepLengthAsymmetryGoal();
-stepLengthAsymmetry.setWeight(500);
+stepLengthAsymmetry.setWeight(5);
 % Provide the body name for the right foot.
 stepLengthAsymmetry.setRightFootFrame('/bodyset/calcn_r');    
 % Provide the body name for the left foot.

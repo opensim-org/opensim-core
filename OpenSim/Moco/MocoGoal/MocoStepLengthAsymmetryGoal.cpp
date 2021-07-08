@@ -71,38 +71,52 @@ void MocoStepLengthAsymmetryGoal::initializeOnModelImpl(const Model& model) cons
     };
 
     // Set the goal requirements.
-    setRequirements(1, 1, SimTK::Stage::Velocity);
+    setRequirements(1, 1, SimTK::Stage::Position);
 }
 
 void MocoStepLengthAsymmetryGoal::calcIntegrandImpl(
         const IntegrandInput& input, double& integrand) const {
     const auto& state = input.state;
-    getModel().realizeVelocity(state);
+    getModel().realizePosition(state);
     integrand = 0;
 
+    // Find the position of the right foot frame.
     const double rightFootPosition =
             m_walking_direction_sign * m_right_foot_frame->
                     getPositionInGround(state)[m_walking_direction_index];
+    // Find the position of the left foot frame.
     const double leftFootPosition =
             m_walking_direction_sign * m_left_foot_frame->
                     getPositionInGround(state)[m_walking_direction_index];
 
-    const double rightFootDiff = rightFootPosition - leftFootPosition;
-    const double leftFootDiff = leftFootPosition - rightFootPosition;
+    // Find the distance between the left foot and the right foot and vice versa
+    // to compute the right and left foot step lengths. Since these step length
+    // have separate limits when computing the asymmetry below, we compute them
+    // separately here.
+    const double rightFootStepLength = rightFootPosition - leftFootPosition;
+    const double leftFootStepLength = leftFootPosition - rightFootPosition;
 
+    // Compute if the right foot or left foot step lengths exceed their
+    // respective thresholds. If so, count this time point towards the asymmetry
+    // for the respective foot (+1 for right foot, -1 for left foot).
     const double rightFootAsymmetry = m_conditional(
-            m_right_foot_threshold - rightFootDiff, 0.5, -0.5,
+            m_right_foot_threshold - rightFootStepLength, 0.5, -0.5,
             get_asymmetry_smoothing());
     const double leftFootAsymmetry = m_conditional(
-            m_left_foot_threshold - leftFootDiff, 0.5, -0.5,
+            m_left_foot_threshold - leftFootStepLength, 0.5, -0.5,
             get_asymmetry_smoothing());
 
+    // Sum the computed asymmetry values for both feet and assign it to the
+    // integrand. Positive sums means a larger right foot asymmetry, and negative
+    // sums a larger left foot asymmetry.
     integrand = rightFootAsymmetry + leftFootAsymmetry;
 }
 
 void MocoStepLengthAsymmetryGoal::calcGoalImpl(const GoalInput& input,
         SimTK::Vector& cost) const {
-    cost[0] = input.integral;
+    // Multiplying by 100 scales the cost to more reasonable values. Without it,
+    // users would need to provide large cost weights, which may be unintuitive.
+    cost[0] = 100.0 * input.integral;
 }
 
 void MocoStepLengthAsymmetryGoal::printDescriptionImpl() const {

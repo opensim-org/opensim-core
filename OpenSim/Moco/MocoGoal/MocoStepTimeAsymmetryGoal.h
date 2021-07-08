@@ -3,7 +3,7 @@
 /* -------------------------------------------------------------------------- *
  * OpenSim: MocoStepTimeAsymmetryGoal.h                                       *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2020 Stanford University and the Authors                     *
+ * Copyright (c) 2021 Stanford University and the Authors                     *
  *                                                                            *
  * Author(s): Russell Johnson, Nicholas Bianco                                *
  *                                                                            *
@@ -56,28 +56,33 @@ private:
 /** Minimize the error between a model's step time asymmetry and a specified
 target asymmetry value over a gait cycle.
 
-Step Time Asymmetry (STA) is a percentage and is calculated as follows:
-Right Step Time (RST) = Time from left heel-strike to right heel-strike
-Left Step Time (LST)  = Time from right heel-strike to left heel-strike
-STA = (RST - LST) / (RST + LST)
+Step time is defined as the time between consecutive foot strikes. Step Time
+Asymmetry (STA) is a ratio and is calculated as follows:
+ - Right Step Time (RST) = Time from left foot-strike to right foot-strike
+ - Left Step Time (LST)  = Time from right foot-strike to left foot-strike
+ - STA = (RST - LST) / (RST + LST)
 
-In this goal, step time asymmetry is estimated by detecting if a foot in contact
-with the ground at a given time point. We count negative values when the left
-foot is in contact, and positive values when the right is in contact. Therefore,
-negative asymmetry means longer left step times, and negative positive means
-longer right step times. At time points when both feet are in contact, the step
-time is counted towards the leading foot.
+In this goal, the step time asymmetry is computed by "counting" the number of
+nodes that each foot is in  contact with the ground (with respect to a specified
+contact force threshold). Since, in walking, there are double support phases
+where both feet are on the ground, the goal also detects which foot is in front
+and assigns the step time to the leading foot. Altogether, it estimates the time
+between consecutive heel strikes in order to infer the left and right step times.
 
-Asymmetry values range from -1.0 to 1.0. For example, 0.20 is 20% positive
-step time asymmetry with greater right step time than left step time.
+The contact elements for each foot must specified via 'setLeftContactGroup()'
+and 'setRightContactGroup()'. The force element and force threshold used to
+determine when a foot is in contact is set via 'setContactForceDirection()' and
+'setContactForceThreshold()'.
 
-The target asymmetry can be set via the 'target_asymmetry' property; a symmetric
-step time solution can be achieved by setting this property to zero. This goal
-can be used only in 'cost' mode, where the error between the target asymmetry
-and model asymmetry is squared. To make this goal suitable for gradient-based
-optimization, step time values are assigned via smoothing functions which can be
-controlled via the 'asymmetry_smoothing' and 'contact_detection_smoothing'
-properties.
+Users must provide the target asymmetry value via 'setTargetAsymmetry()'.
+Asymmetry values ranges from -1.0 to 1.0. For example, 0.20 is 20% positive
+step time asymmetry with greater right step times than left step times. A
+symmetric step times solution can be achieved by setting this property to zero.
+This goal can be used only in 'cost' mode, where the error between the target
+asymmetry and model asymmetry is squared. To make this goal suitable for
+gradient-based optimization, step time values are assigned via smoothing
+functions which can be controlled via 'setAsymmetrySmoothing()' and
+'setContactDetectionSmoothing()'.
 
 @note This goal is designed for simulations of bipedal gait.
 

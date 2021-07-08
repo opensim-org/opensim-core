@@ -221,10 +221,10 @@ void MocoStepTimeAsymmetryGoal::calcGoalImpl(const GoalInput& input,
     SimTK::Real timeFinal = input.final_state.getTime();
     SimTK::Real duration = timeFinal - timeInitial;
     SimTK::Real asymmetry = input.integral / duration;
-    cost[0] = asymmetry - get_target_asymmetry();
-    if (getModeIsCost()) {
-        cost[0] *= cost[0];
-    }
+    double error = asymmetry - get_target_asymmetry();
+    // Multiplying by 100 scales the cost to more reasonable values. Without it,
+    // users would need to provide large cost weights, which may be unintuitive.
+    cost[0] = 100.0 * error * error;
 }
 
 void MocoStepTimeAsymmetryGoal::printDescriptionImpl() const {

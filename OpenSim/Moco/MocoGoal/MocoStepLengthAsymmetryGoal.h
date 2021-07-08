@@ -3,7 +3,7 @@
 /* -------------------------------------------------------------------------- *
  * OpenSim: MocoStepLengthAsymmetryGoal.h                                     *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2020 Stanford University and the Authors                     *
+ * Copyright (c) 2021 Stanford University and the Authors                     *
  *                                                                            *
  * Author(s): Russell Johnson, Nicholas Bianco                                *
  *                                                                            *
@@ -25,33 +25,31 @@ namespace OpenSim {
 /** Minimize the error between a model's step time asymmetry and a specified
 target asymmetry value over a gait cycle.
 
-Step Length Asymmetry (SLA) is a percentage and is calculated as follows:
+Step Length Asymmetry (SLA) is a ratio and is calculated as follows:
 The Right Step Length (RSL) is the distance between feet at right foot strike
 The Left Step Length (LSL) is the distance between feet at left foot strike
 Step Length Asymmetry = (RSL - LSL) / (RSL + LSL)
 
-In this goal, the distance between feet throughout the gait cycle is controlled
-via the cost function. The distance between the left foot and right foot is
-bounded to approximate the specified step length asymmetry. Negative asymmetry
-means longer left step lengths, and negative positive means longer right step
-lengths.
+In this goal, the distance between feet, or "foot frames", is limited throughout
+the gait cycle. The goal calculates the distance between the left foot and right
+foot, then limits the distance between feet to not pass beyond minimum (negative)
+or maximum (positive) bounds. There are two limits used: one that limits the
+distance between feet when the right foot is in front, and one that limits the
+distance between feet when the left foot is in front.
 
-Asymmetry values range from -1.0 to 1.0. For example, 0.20 is 20% positive step
-length asymmetry with greater right step length than left step length.
+Users must provide the target asymmetry value via 'setTargetAsymmetry()'.
+Asymmetry values ranges from -1.0 to 1.0. For example, 0.20 is 20% positive
+step length asymmetry with greater right step length than left step length. A
+symmetric step length solution can be achieved by setting this property to zero.
+This goal can be used only in 'cost' mode. To make this goal suitable for
+gradient-based optimization, step length values are assigned via a smoothing
+function which can be controlled via 'setAsymmetrySmoothing()'.
 
-The target asymmetry can be set via the 'target_asymmetry' property; a symmetric
-step time solution can be achieved by setting this property to zero. This goal
-can be used only in 'cost' mode, where the error between the target asymmetry
-and model asymmetry is squared. To make this goal suitable for gradient-based
-optimization, step length values are assigned via a smoothing function which can
-be controlled the 'asymmetry_smoothing' property.
-
-In order for this goal to work properly, users must prescribe both the stride
-length and the average gait speed. The stride length is specified via the
-'stride_length' property, but users must ensure that this stride length is met
-via problem bounds or other goals; the property value is only used to compute
-the model's asymmetry in the cost function. Average gait speed can be specified
-using the MocoAverageSpeedGoal.
+Users must also prescribed the stride length via 'setStrideLength()'. The goal
+then calculates the minimum and maximum bounds on the distance between right
+and left foot. Users must ensure that this stride length is met via problem
+bounds or other goals; the value provided to MocoStepLengthAsymmetryGoal is
+only used to compute the model's asymmetry in the cost function.
 
 @note This goal is designed for simulations of bipedal gait.
 
