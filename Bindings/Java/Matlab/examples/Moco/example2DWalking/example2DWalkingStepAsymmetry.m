@@ -53,8 +53,8 @@ end
 % contact with the ground (with respect to a specified contact force threshold). 
 % Since, in walking, there are double support phases where both feet are on the 
 % ground, the goal also detects which foot is in front and assigns the step time 
-% to the leading foot. Altogether, it calculates the time between consecutive 
-% heel strikes in order to calculate left and right step times. 
+% to the leading foot. Altogether, it estimates the time between consecutive 
+% heel strikes in order to infer the left and right step times. 
 %
 % Since this goal doesn't directly compute the step time asymmetry from heel 
 % strikes, users should confirm that the step time asymmetry from the solution 
@@ -111,6 +111,8 @@ problem.addGoal(effortGoal);
 
 % Step time asymmetry
 % -------------------
+% The settings here have been modified from the default values to suit this 
+% specific problem.
 stepTimeAsymmetry = MocoStepTimeAsymmetryGoal();
 % Value for smoothing term used to compute when foot contact is made (default is 
 % 0.25). Users may need to adjust this based on convergence and matching the 
@@ -165,7 +167,8 @@ solver.set_optim_constraint_tolerance(1e-4);
 solver.set_optim_max_iterations(2000);
 
 % Use the tracking problem solution from example2DWalking as the initial
-% guess, if it exists.
+% guess, if it exists. If it doesn't exist, users can run example2DWalking.m to 
+% generate this file.
 if exist('gaitTracking_solution_fullStride.sto', 'file')
     solver.setGuessFile('gaitTracking_solution_fullStride.sto');
 end
@@ -201,13 +204,13 @@ end
 
 % Step Length Asymmetry
 % ---------------------
-% This goal works by constraining the distance between feet, or "foot frames", 
-% throughout the gait cycle. The goal calculates the distance between the left 
-% foot and right foot, then enforces a constraint with minimum (negative) and 
-% maximum (positive) bounds on the distance between feet. There are two 
-% constraints: one that constrains the distance between feet when the right foot 
-% is in front, and one that constrains the distance between fee when the left 
-% foot is in front. 
+% This goal works by constraining the distance between feet, or "foot
+% frames", throughout the gait cycle. The goal calculates the distance
+% between the left foot and right foot, then limits the distance between
+% feet to not pass beyond minimum (negative) or maximum (positive) bounds.
+% There are two limits used: one that limits the distance between feet when
+% the right foot is in front, and one that limits the distance between feet
+% when the left foot is in front.
 %
 % The Right Step Length (RSL) is the distance between feet at right foot strike
 % The Left Step Length (LSL) is the distance between feet at left foot strike
@@ -220,19 +223,21 @@ end
 % goal then calculates the minimum and maximum bounds on the distance
 % between right and left foot.
 %
-% In order for this goal to work properly, users must prescribe both the stride
-% length and the average gait speed. The stride length is specified via the
-% 'stride_length' property, but users must ensure that this stride length is met
-% via problem bounds or other goals; the property value is only used to compute
-% the model's asymmetry in the cost function. Average gait speed can be specified
-% using the MocoAverageSpeedGoal.
+% Users must prescribe the stride length for this optimization. The stride
+% length is specified via the 'stride_length' property, but users must
+% ensure that this stride length is met via problem bounds or other goals;
+% the property value is only used to compute the model's asymmetry in the
+% cost function.
 %
-% Because this goal doesn't directly compute the step length
-% asymmetry from heel strike data, users should confirm that the step
-% length asymmetry from the solution matches closely to their target.
-% Additionally, in some cases users may want to set target asymmetries
-% above or below the desired value, in the event there is some offset. To do 
-% this, we provide the helper function computeStepAsymmetryValues() below.
+% Because this goal doesn't directly compute the step length asymmetry from
+% heel strike data, users should confirm that the step length asymmetry
+% from the solution matches closely to their target. To do this, we
+% provide the helper function computeStepAsymmetryValues() below. Users may
+% also want to confirm that the stride length from the optimization
+% matches with setStrideLength(), or set additional constraints for stride length
+% within the optimization. Additionally, in some cases users may want to set 
+% target asymmetries above or below the desired value, in the event there is 
+% some offset.
 function stepLengthAsymmetry()
 
 import org.opensim.modeling.*;
@@ -325,8 +330,9 @@ solver.set_optim_constraint_tolerance(1e-4);
 solver.set_optim_max_iterations(2000);
 
 % Use the tracking problem solution from example2DWalking as the initial
-% guess, if it exists.
-if exists('gaitTracking_solution_fullStride.sto', 'file')
+% guess, if it exists. If it doesn't exist, users can run example2DWalking.m to 
+% generate this file.
+if exist('gaitTracking_solution_fullStride.sto', 'file')
     solver.setGuessFile('gaitTracking_solution_fullStride.sto');
 end
 
