@@ -73,7 +73,7 @@ SWIG_JAVABODY_PROXY(public, public, SWIGTYPE)
 }
 
 // https://github.com/swig/swig/blob/master/Lib/java/std_auto_ptr.i
-%define moco_unique_ptr(TYPE)
+%define opensim_unique_ptr(TYPE)
 %template() std::unique_ptr<TYPE>;
 %typemap(jni) std::unique_ptr<TYPE> "jlong"
 %typemap(jtype) std::unique_ptr<TYPE> "long"

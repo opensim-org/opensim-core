@@ -374,8 +374,7 @@ protected: // Protected so that doxygen shows the properties.
             "expression.");
     OpenSim_DECLARE_LIST_PROPERTY(parameters, MocoParameter,
             "Parameter variables (model properties) to optimize.");
-    OpenSim_DECLARE_LIST_PROPERTY(
-            goals, MocoGoal,
+    OpenSim_DECLARE_LIST_PROPERTY(goals, MocoGoal,
             "Integral/endpoint quantities to minimize or constrain.");
     OpenSim_DECLARE_LIST_PROPERTY(path_constraints, MocoPathConstraint,
             "Path constraints to enforce in the optimal control problem.");

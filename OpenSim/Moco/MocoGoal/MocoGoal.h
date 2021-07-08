@@ -23,6 +23,7 @@
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Moco/MocoBounds.h>
 #include <OpenSim/Moco/MocoConstraintInfo.h>
+#include <OpenSim/Moco/MocoScaleFactor.h>
 #include <OpenSim/Moco/osimMocoDLL.h>
 
 namespace OpenSim {
@@ -31,7 +32,7 @@ class Model;
 
 // TODO give option to specify gradient and Hessian analytically.
 
-/** A goal is term in the cost functional to be minimized, or a set of endpoint
+/** A goal is a term in the cost functional to be minimized, or a set of endpoint
 constraints that must lie within provided bounds. Goals depend on the
 phase's initial and final states and controls, and optionally on the
 integral of a quantity over the phase.
@@ -66,6 +67,13 @@ Here are the expectations for each SimTK::Stage:
     used to compute acceleration-dependent quantities, such as body
     accelerations and joint reactions.
 
+## Scale factors
+Goals may include an option to add scale factors to the MocoProblem using
+`appendScaleFactor()`, which takes a MocoScaleFactor object for its argument.
+A copy of this component is added to the Model internal to MocoProblemRep and
+its property value is optimized via a MocoParameter. Scale factor usage is
+specific to each MocoGoal (if used at all).
+
 @par For developers
 Every time the problem is solved, a copy of this goal is used. An individual
 instance of a goal is only ever used in a single problem. Therefore, there
@@ -83,7 +91,7 @@ public:
 
     MocoGoal(std::string name, double weight);
 
-    /// %Set whether this goal is used in the problem.
+    /// Set whether this goal is used in the problem.
     void setEnabled(bool enabled) { set_enabled(enabled); }
     bool getEnabled() const { return get_enabled(); }
 
@@ -286,6 +294,17 @@ public:
                 "but it was not.");
     }
 
+    /// Get a vector of the MocoScaleFactors added to this MocoGoal.
+    /// @details Note: the return value is constructed fresh on every call from
+    /// the internal property. Avoid repeated calls to this function.
+    std::vector<MocoScaleFactor> getScaleFactors() const {
+        std::vector<MocoScaleFactor> scaleFactors;
+        for (int i = 0; i < getProperty_scale_factors().size(); ++i) {
+            scaleFactors.push_back(get_scale_factors(i));
+        }
+        return scaleFactors;
+    }
+
     /// Print the name type and mode of this goal. In cost mode, this prints the
     /// weight.
     void printDescription() const;
@@ -357,6 +376,11 @@ protected:
     double calcSystemDisplacement(
             const SimTK::State& initial, const SimTK::State& final) const;
 
+    /// Append a MocoScaleFactor to this MocoGoal.
+    void appendScaleFactor(const MocoScaleFactor& scaleFactor) {
+        append_scale_factors(scaleFactor);
+    }
+
 private:
     OpenSim_DECLARE_PROPERTY(
             enabled, bool, "This bool indicates whether this goal is enabled.");
@@ -369,6 +393,12 @@ private:
     OpenSim_DECLARE_UNNAMED_PROPERTY(MocoConstraintInfo,
             "The bounds and labels for this MocoGoal, if applied as an "
             "endpoint constraint.");
+    OpenSim_DECLARE_LIST_PROPERTY(scale_factors, MocoScaleFactor,
+            "Scale factors added by derived MocoGoal classes that are optimized "
+            "via a MocoParameter. A copy of each MocoScaleFactor component is "
+            "added to the model internal to MocoProblem, which makes the scale "
+            "factors values available when computing the cost function for each "
+            "MocoGoal.")
 
     void constructProperties();
 

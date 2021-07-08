@@ -19,9 +19,9 @@
 
 #include "Components/AccelerationMotion.h"
 #include "Components/DiscreteForces.h"
-#include "Components/PositionMotion.h"
 #include "Components/StationPlaneContactForce.h"
 #include "MocoBounds.h"
+#include "MocoScaleFactor.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoControlBoundConstraint.h"
 #include "MocoFrameDistanceConstraint.h"
@@ -90,6 +90,7 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(MocoInitialBounds());
         Object::registerType(MocoFinalBounds());
         Object::registerType(MocoVariableInfo());
+        Object::registerType(MocoScaleFactor());
         Object::registerType(MocoParameter());
         Object::registerType(MocoPhase());
         Object::registerType(MocoProblem());
@@ -113,7 +114,6 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(AckermannVanDenBogert2010Force());
         Object::registerType(MeyerFregly2016Force());
         Object::registerType(EspositoMiller2018Force());
-        Object::registerType(PositionMotion());
 
         Object::registerType(DiscreteForces());
         Object::registerType(AccelerationMotion());

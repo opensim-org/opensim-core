@@ -3,9 +3,20 @@ Moco Change Log
 
 1.1.0
 -----
-- 2021-06-29: Added MocoStepTimeAsymmetryGoal, MocoStepLengthAsymmetryGoal, and
+- 2021-07-07: Added MocoStepTimeAsymmetryGoal, MocoStepLengthAsymmetryGoal, and
               example2DWalkingStepAsymmetry (Matlab).
   
+- 2021-06-29: Added Matlab version of example2DWalkingMetabolics (via Brian 
+              Umberger).
+              
+- 2021-06-28: Added exampleIMUTracking (Matlab and Python) for TGCS 2021.
+
+- 2021-06-28: Added exampleEMGTracking (Matlab and Python) for TGCS 2021.
+  
+- 2021-06-28: Added support for optimized scale factors including the component
+              MocoScaleFactor, and interface for MocoGoals to add scale factors
+              to a MocoProblem (e.g., MocoControlTrackingGoal::addScaleFactor).
+
 - 2021-02-24: Updated MocoAccelerationTrackingGoal to add support for tracking
               acceleration signals from inertial measurement units.
   
