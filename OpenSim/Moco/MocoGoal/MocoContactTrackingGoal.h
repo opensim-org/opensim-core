@@ -30,7 +30,7 @@ contact force component paths in the model. The MocoContactTrackingGoal
 calculates the difference between the data from the ExternalForce and the sum of
 the forces from the contact force components.
 
-### Alternative frame paths
+## Alternative frame paths
 
 Contact force elements that correspond to a single ExternalForce are
 typically attached to the same single body/frame. However, it is possible
@@ -106,7 +106,7 @@ We use the following notation:
 - \f$ \vec{F}_{e,j} \f$ the experimental contact force for group \f$ j \f$,
     expressed in ground.
 
-### Tracking a subset of force components
+# Tracking a subset of force components
 
 The projection is useful for selecting which components of the force to
 track. The force can be projected to be onto a vector or
@@ -116,7 +116,7 @@ projecting onto the plane perpendicular to the vector (0, 0, 1) allows
 ignoring the transverse force. See the projection and projection_vector
 properties.
 
-### Usage
+## Usage
 
 To use this goal, specify the following:
 - a single ExternalLoads file or object, which is a set of ExternalForces.

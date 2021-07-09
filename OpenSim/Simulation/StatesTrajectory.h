@@ -47,7 +47,9 @@ class Model;
 // TODO See the bottom of this file for a class description to use once the
 // OSTATES file format is implemented.
 //
-/** This class holds a sequence of SimTK::State%s. You can obtain a
+/** 
+ * \section StatesTrajectory
+ * This class holds a sequence of SimTK::State%s. You can obtain a
  * StatesTrajectory during a simulation via the StatesTrajectoryReporter. You
  * can also create a StatesTrajectory from a states storage (.sto) file (see
  * createFromStatesStorage()). Users can modify a trajectory by appending
@@ -61,7 +63,7 @@ class Model;
  * @note In a future release, we plan to support an OSTATES file format that
  * allows one to write the trajectory to a file with full numerical precision.
  *
- * ### Guarantees
+ * \subsection Guarantees
  * This class is designed to ensure the following:
  * - The states are ordered nondecreasing in time (adjacent states *can* have
  *   the same time).
@@ -73,7 +75,7 @@ class Model;
  * Python and MATLAB do not enforce constness and thus allow modifying the
  * trajectory.
  *
- * ### Using with a %Model 
+ * \subsection Using with an OpenSim:: Model 
  * A StatesTrajectory is not very useful on its own, since neither the
  * trajectory nor the contained states know how the Component%s name the state
  * variables they create. You probably want to use the trajectory with an
@@ -93,7 +95,7 @@ class Model;
  * To increase your confidence that a StatesTrajectory matches a given Model,
  * you can perform some weak checks with isCompatibleWith().
  *
- * ### Usage
+ * \subsection Usage
  * Here are a few basic things you can do with a StatesTrajectory, assuming you
  * already have one:
  * @code{.cpp}
@@ -441,7 +443,6 @@ public:
      *      alter the trajectory and cause inconsistency between coordinate
      *      values and speeds.
      *
-     * #### Usage
      * Here is how you might use this function in python:
      * @code{.py}
      * import opensim

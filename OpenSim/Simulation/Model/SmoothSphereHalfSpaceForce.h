@@ -35,7 +35,7 @@ component models contact between a single sphere and a single half space.
 This force does NOT use ContactGeometry objects; the description of the
 contact geometries is done through properties of this component.
 
-### Constant contact force
+\section Constant contact force
 
 This force applies a constant contact force even when the sphere and half-space
 are not contacting. This constant force is set with the constant_contact_force
