@@ -45,7 +45,7 @@ This goal can be used only in 'cost' mode. To make this goal suitable for
 gradient-based optimization, step length values are assigned via a smoothing
 function which can be controlled via 'setAsymmetrySmoothing()'.
 
-Users must also prescribed the stride length via 'setStrideLength()'. The goal
+Users must also prescribe the stride length via 'setStrideLength()'. The goal
 then calculates the minimum and maximum bounds on the distance between right
 and left foot. Users must ensure that this stride length is met via problem
 bounds or other goals; the value provided to MocoStepLengthAsymmetryGoal is
@@ -131,7 +131,8 @@ private:
             "The value that determines the smoothing of the asymmetry "
             "computation (default: 10)");
     OpenSim_DECLARE_PROPERTY(stride_length, double,
-            "The known stride length of the simulation. Default: 1.");
+            "The known stride length of the simulation, in meters."
+            "Default is -1; the user must provide a positive value.");
     OpenSim_DECLARE_PROPERTY(walking_direction, std::string,
             "The walking direction of the model in the ground frame, which "
             "is used to determine the leading foot during double support. "

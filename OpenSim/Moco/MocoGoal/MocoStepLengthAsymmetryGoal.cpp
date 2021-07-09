@@ -27,7 +27,7 @@ void MocoStepLengthAsymmetryGoal::constructProperties() {
     constructProperty_walking_direction("positive-x");
     constructProperty_asymmetry_smoothing(500);
     constructProperty_target_asymmetry(0.0);
-    constructProperty_stride_length(1.0);
+    constructProperty_stride_length(-1);
 }
 
 void MocoStepLengthAsymmetryGoal::initializeOnModelImpl(const Model& model) const {
