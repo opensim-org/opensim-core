@@ -60,8 +60,10 @@ public:
     OpenSim_DECLARE_PROPERTY(report_gyroscope_signals, bool,
             "Report angular velocity of the IMU, default is true.");
     OpenSim_DECLARE_PROPERTY(report_accelerometer_signals, bool,
-            "Report linear acceleration of the IMU, default is true.");
-
+            "Report the IMU accelerometer signals, default is true.");
+    OpenSim_DECLARE_PROPERTY(compute_accelerations_without_forces, bool,
+            "Ignore external forces and controls, use kinematics to compute "
+            "accelerometer signals, default is false.");
     OpenSim_DECLARE_LIST_PROPERTY(frame_paths, std::string,
             "Additional ComponentPaths to frames in the model to which new IMUs "
             "components are attached. IMUs added based on these paths will be "
@@ -133,6 +135,7 @@ private:
         constructProperty_report_orientations(true);
         constructProperty_report_gyroscope_signals(true);
         constructProperty_report_accelerometer_signals(true);
+        constructProperty_compute_accelerations_without_forces(false);
         constructProperty_frame_paths();
     }
     //=============================================================================
