@@ -31,9 +31,9 @@ helpers.addIMUFrame(model, 'tibia_r', osim.Vec3(0, -0.2, 0.05),
 # we just added to the model. We'll use the helper function addModelIMUs()
 # included with OpenSenseUtilities.
 imuFramePaths = osim.StdVectorString()
-imuFramePaths.append()
-imuFramePaths.append()
-imuFramePaths.append()
+imuFramePaths.append( )
+imuFramePaths.append( )
+imuFramePaths.append( )
 osim.OpenSenseUtilities().addModelIMUs(model, imuFramePaths)
 model.initSystem()
 
@@ -106,7 +106,7 @@ if not os.path.isfile('predictSolution.sto'):
 # function included with SimulationUtilities. These free functions can be
 # accessed in scripting by using the 'opensimSimulation' prefix. 
 outputPaths = osim.StdVectorString()
-outputPaths.append()
+outputPaths.append( )
 accelerometerSignals = osim.analyzeVec3(model,
     predictSolution.exportToStatesTable(),
     predictSolution.exportToControlsTable(),
@@ -115,7 +115,7 @@ accelerometerSignals = osim.analyzeVec3(model,
 # Part 3c: Update the column labels of the accelerometer signals to match
 # the offset frame paths. This is necessary for the tracking goal we'll add
 # to the problem in Part 4. 
-
+accelerometerSignals.setColumnLabels(imuFramePaths)
     
 # Part 3d: Plot the synthetic acceleration signals.
 helpers.plotAccelerationSignals(accelerometerSignals)
@@ -128,11 +128,11 @@ helpers.plotAccelerationSignals(accelerometerSignals)
 # the accelerations in the tracking frames so that the model-computed
 # values in the tracking cost match the accelerometer signals.
 tracking = 
-tracking.setFramePaths()
-tracking.setAccelerationReference()
-tracking.setGravityOffset()
-tracking.setExpressAccelerationsInTrackingFrames()
-problem.addGoal()
+tracking.setFramePaths( )
+tracking.setAccelerationReference( )
+tracking.setGravityOffset( )
+tracking.setExpressAccelerationsInTrackingFrames( )
+problem.addGoal( )
 
 # Part 4b: Reduce the control cost weight so that the tracking term will
 # dominate.

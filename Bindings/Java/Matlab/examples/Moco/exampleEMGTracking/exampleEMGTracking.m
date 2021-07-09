@@ -24,16 +24,15 @@ model = getWalkingModel();
 
 % Part 1d: Set the kinematics reference for MocoInverse using the 
 % TableProcessor we just created.
-inverse.setKinematics();
-inverse.set_kinematics_allow_extra_columns(true);
+
 
 % Part 1e: Provide the solver settings: initial and final time, the mesh 
 % interval, and the constraint and convergence tolerances.
-inverse.set_initial_time();
-inverse.set_final_time();
-inverse.set_mesh_interval();
-inverse.set_constraint_tolerance();
-inverse.set_convergence_tolerance();
+inverse.set_initial_time( );
+inverse.set_final_time( );
+inverse.set_mesh_interval( );
+inverse.set_constraint_tolerance( );
+inverse.set_convergence_tolerance( );
 
 if ~exist('effortSolution.sto', 'file')
     % Part 1f: Solve the problem!
@@ -62,12 +61,12 @@ compareSolutionToEMG(emgReference, 'effortSolution.sto');
 % the EMG data as the tracking reference. We also need to specify the 
 % reference labels for the four muscles whose EMG we will track.
 tracking = 
-tracking.setWeight();
-tracking.setReference();
+tracking.setWeight( );
+tracking.setReference( );
 tracking.setReferenceLabel('/forceset/gasmed_l', 'gastrocnemius');
 tracking.setReferenceLabel('/forceset/tibant_l', 'tibialis_anterior');
-tracking.setReferenceLabel('/forceset/bfsh_l', );
-tracking.setReferenceLabel();
+tracking.setReferenceLabel('/forceset/bfsh_l', 'biceps_femoris');
+tracking.setReferenceLabel( );
 
 % Part 3c: The EMG signals in the tracking are all normalized to have
 % a maximum value of 1, but the magnitudes of the excitations from the 
@@ -76,8 +75,8 @@ tracking.setReferenceLabel();
 % will scale the reference data for the muscles in the tracking cost.
 tracking.addScaleFactor('gastroc_factor', '/forceset/gasmed_l', [0.01 1.0]); 
 tracking.addScaleFactor('tibant_factor', '/forceset/tibant_l', [0.01 1.0]); 
-tracking.addScaleFactor('bifem_factor', '/forceset/bfsh_l', ); 
-tracking.addScaleFactor(); 
+tracking.addScaleFactor('bifem_factor', '/forceset/bfsh_l', [0.01 1.0]); 
+tracking.addScaleFactor( ); 
 
 % Part 3d: Add the tracking goal to the problem.
 
@@ -85,7 +84,7 @@ tracking.addScaleFactor();
 % Part 3e: Update the MocoCasADiSolver with the updated MocoProblem using 
 % resetProblem().
 solver = MocoCasADiSolver.safeDownCast(study.updSolver());
-solver.
+solver.resetProblem(problem);
 
 % Part 3f: Tell MocoCasADiSolver that the MocoParameters we added to the 
 % problem via addScaleFactor() above do not require initSystem() calls on
@@ -99,7 +98,7 @@ if ~exist('trackingSolution.sto', 'file')
 end
 
 % Part 3h: Get the values of the optimized scale factors.
-trackingSolution = 
+trackingSolution = MocoTrajectory('trackingSolution.sto');
 gastroc_factor = trackingSolution.getParameter('gastroc_factor');
 tibant_factor = trackingSolution.getParameter('tibant_factor');
 bifem_factor = trackingSolution.getParameter('bifem_factor');
