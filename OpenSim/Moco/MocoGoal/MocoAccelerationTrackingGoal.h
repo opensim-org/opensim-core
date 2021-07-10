@@ -39,13 +39,13 @@ that track the acceleration reference data, or "tracking" frames, are specified
 using setFramePaths().
 
 \section MocoAccelerationTrackingGoal
-\subsection Default usage
+\subsection use_MocoAccelerationTrackingGoal Default Usage
 
 By default, errors for this cost are computed assuming that the provided
 reference acceleration data is the derivative of a position vector with respect
 to the ground frame and expressed in the ground frame.
 
-\subsection Tracking inertial measurement unit (IMU) signals
+\subsection trMocoAccelerationTrackingGoal Tracking inertial measurement unit (IMU) signals
 
 If using this cost for tracking acceleration signals from an inertial measurement
 unit (IMU), you must subtract the gravity vector from the model accelerations and

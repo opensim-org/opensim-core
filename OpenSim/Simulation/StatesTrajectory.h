@@ -63,7 +63,7 @@ class Model;
  * @note In a future release, we plan to support an OSTATES file format that
  * allows one to write the trajectory to a file with full numerical precision.
  *
- * \subsection Guarantees
+ * \subsection st_guarantees Guarantees
  * This class is designed to ensure the following:
  * - The states are ordered nondecreasing in time (adjacent states *can* have
  *   the same time).
@@ -75,7 +75,7 @@ class Model;
  * Python and MATLAB do not enforce constness and thus allow modifying the
  * trajectory.
  *
- * \subsection Using with an OpenSim:: Model 
+ * \subsection st_using_model Using with an OpenSim:: Model 
  * A StatesTrajectory is not very useful on its own, since neither the
  * trajectory nor the contained states know how the Component%s name the state
  * variables they create. You probably want to use the trajectory with an
@@ -95,7 +95,7 @@ class Model;
  * To increase your confidence that a StatesTrajectory matches a given Model,
  * you can perform some weak checks with isCompatibleWith().
  *
- * \subsection Usage
+ * \subsection st_usage Usage
  * Here are a few basic things you can do with a StatesTrajectory, assuming you
  * already have one:
  * @code{.cpp}
