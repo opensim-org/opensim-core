@@ -20,7 +20,6 @@
 
 #include "About.h"
 #include "Components/DiscreteForces.h"
-#include "Components/PositionMotion.h"
 #include "Components/StationPlaneContactForce.h"
 #include "MocoBounds.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"

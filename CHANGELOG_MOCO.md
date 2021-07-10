@@ -3,6 +3,11 @@ Moco Change Log
 
 1.1.0
 -----
+- 2021-06-29: Added Matlab version of example2DWalkingMetabolics (via Brian 
+              Umberger).
+              
+- 2021-06-28: Added exampleIMUTracking (Matlab and Python) for TGCS 2021.
+
 - 2021-06-28: Added exampleEMGTracking (Matlab and Python) for TGCS 2021.
   
 - 2021-06-28: Added support for optimized scale factors including the component

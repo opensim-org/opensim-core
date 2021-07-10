@@ -131,6 +131,7 @@ MODEL_ADOPT_HELPER(Controller);
 // the following line:
 %template(_StdVectorState) std::vector<SimTK::State>;
 
+opensim_unique_ptr(OpenSim::PositionMotion);
 
 // Include all the OpenSim code.
 // =============================

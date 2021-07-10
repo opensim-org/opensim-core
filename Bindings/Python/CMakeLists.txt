@@ -254,6 +254,11 @@ OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/setup.py" ".")
 OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/__init__.py" opensim)
 
 OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/report.py" opensim)
+# for Python 3.8+/Windows we use a special script
+# setup_win_python38.py to set additional dll directory in __init__.py on client machine
+if (WIN32)
+    OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/setup_win_python38.py" ".")
+endif()
 
 # Test files. If you require more test resource files, list them here.
 foreach(test_file
@@ -384,6 +389,10 @@ install(DIRECTORY ../Java/Matlab/OpenSenseExample
         # Exclude Matlab m files
         PATTERN "*.m" EXCLUDE)
 install(DIRECTORY ../Java/Matlab/examples/Moco/exampleEMGTracking
+        DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}/Moco"
+        # Exclude Matlab m files
+        PATTERN "*.m" EXCLUDE)
+install(DIRECTORY ../Java/Matlab/examples/Moco/exampleSquatToStand
         DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}/Moco"
         # Exclude Matlab m files
         PATTERN "*.m" EXCLUDE)

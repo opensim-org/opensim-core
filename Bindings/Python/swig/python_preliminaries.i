@@ -48,7 +48,7 @@ note: ## is a "glue" operator: `a ## b` --> `ab`.
 %enddef
 
 // https://github.com/swig/swig/blob/master/Lib/python/std_auto_ptr.i
-%define moco_unique_ptr(TYPE)
+%define opensim_unique_ptr(TYPE)
 %template() std::unique_ptr<TYPE>;
 %newobject std::unique_ptr<TYPE>::release;
 %typemap(out) std::unique_ptr<TYPE> %{

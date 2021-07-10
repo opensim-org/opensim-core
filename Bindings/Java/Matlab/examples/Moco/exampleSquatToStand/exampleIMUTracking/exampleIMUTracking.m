@@ -1,4 +1,4 @@
-function exampleIMUTracking_answers
+function exampleIMUTracking
 clc; clear; close all;
 
 %% Part 0: Load the Moco libraries.
@@ -25,9 +25,9 @@ addIMUFrame(model, 'tibia_r', Vec3(0, -0.2, 0.05), Vec3(0, 0, 0.5*pi));
 % we just added to the model. We'll use the helper function addModelIMUs()
 % included with OpenSenseUtilities.
 imuFramePaths = StdVectorString();
-imuFramePaths.add('/bodyset/torso/torso_imu_offset');
-imuFramePaths.add('/bodyset/femur_r/femur_r_imu_offset');
-imuFramePaths.add('/bodyset/tibia_r/tibia_r_imu_offset');
+imuFramePaths.add( );
+imuFramePaths.add( );
+imuFramePaths.add( );
 OpenSenseUtilities().addModelIMUs(model, imuFramePaths);
 model.initSystem();
 
@@ -37,11 +37,10 @@ model.initSystem();
 % "synthetic" accelerometer signals later.
 
 % Part 2a: Create a new MocoStudy.
-study = MocoStudy();
+
 
 % Part 2b: Initialize the problem and set the model.
-problem = study.updProblem();
-problem.setModel(model);
+
 
 % Part 2c: Set bounds on the problem.
 %
@@ -63,34 +62,30 @@ problem.setModel(model);
 % problem.setStateInfoPattern('/path/to/states/.*/value', ...)
 
 % Time bounds
-problem.setTimeBounds(0, 1);
+problem.setTimeBounds( );
 
 % Position bounds: the model should start in a squat and finish 
 % standing up.
-problem.setStateInfo('/jointset/hip_r/hip_flexion_r/value', ...
-    [-2, 0.5], -2, 0);
-problem.setStateInfo('/jointset/knee_r/knee_angle_r/value', ...
-    [-2, 0], -2, 0);
-problem.setStateInfo('/jointset/ankle_r/ankle_angle_r/value', ...
-    [-0.5, 0.7], -0.5, 0);
+problem.setStateInfo('/jointset/hip_r/hip_flexion_r/value', );
+problem.setStateInfo('/jointset/knee_r/knee_angle_r/value', );
+problem.setStateInfo('/jointset/ankle_r/ankle_angle_r/value', );
 
 % Velocity bounds: all model coordinates should start and end at rest.
-problem.setStateInfoPattern('/jointset/.*/speed', [], 0, 0);
+problem.setStateInfoPattern('/jointset/.*/speed', );
 
 % Part 2d: Add a MocoControlGoal to the problem.
-problem.addGoal(MocoControlGoal('myeffort'));
+
 
 % Part 2e: Configure the solver.
 solver = study.initCasADiSolver();
-solver.set_num_mesh_intervals(25);
-solver.set_optim_constraint_tolerance(1e-4);
-solver.set_optim_convergence_tolerance(1e-4);
+solver.set_num_mesh_intervals( );
+solver.set_optim_convergence_tolerance( );
+solver.set_optim_constraint_tolerance( );
 
 if ~exist('predictSolution.sto', 'file')
-% Part 2f: Solve! Write the solution to file, and visualize.
-    predictSolution = study.solve();
-    predictSolution.write('predictSolution.sto');
-    study.visualize(predictSolution);
+    % Part 2f: Solve! Write the solution to file, and visualize.
+
+
 end
 
 %% Part 3: Compute synthetic accelerometer signals
@@ -100,13 +95,13 @@ end
 % previously added to the model. 
 
 % Part 3a: Load the prediction solution.
-predictSolution = MocoTrajectory('predictSolution.sto');
+
 
 % Part 3b: Compute the accelerometer signals using the analyzeVec3() free
 % function included with SimulationUtilities. These free functions can be
 % accessed in scripting by using the 'opensimSimulation' prefix. 
 outputPaths = StdVectorString();
-outputPaths.add('.*accelerometer_signal');
+outputPaths.add( );
 accelerometerSignals = opensimSimulation.analyzeVec3(model, ...
     predictSolution.exportToStatesTable(), ...
     predictSolution.exportToControlsTable(), ...
@@ -116,7 +111,7 @@ accelerometerSignals = opensimSimulation.analyzeVec3(model, ...
 % the offset frame paths. This is necessary for the tracking goal we'll add
 % to the problem in Part 4. 
 accelerometerSignals.setColumnLabels(imuFramePaths);
-    
+
 % Part 3d: Plot the synthetic acceleration signals.
 plotAccelerationSignals(accelerometerSignals);
 
@@ -127,22 +122,21 @@ plotAccelerationSignals(accelerometerSignals);
 % We need to subtract the gravitational acceleration vector and re-express
 % the accelerations in the tracking frames so that the model-computed
 % values in the tracking cost match the accelerometer signals.
-tracking = MocoAccelerationTrackingGoal('acceleration_tracking');
-tracking.setFramePaths(imuFramePaths);
-tracking.setAccelerationReference(accelerometerSignals);
-tracking.setGravityOffset(true);
-tracking.setExpressAccelerationsInTrackingFrames(true);
-problem.addGoal(tracking);
+tracking = 
+tracking.setFramePaths( );
+tracking.setAccelerationReference( );
+tracking.setGravityOffset( );
+tracking.setExpressAccelerationsInTrackingFrames( );
+problem.addGoal( );
 
 % Part 4b: Reduce the control cost weight so that the tracking term will
 % dominate.
-problem.updGoal('myeffort').setWeight(0.001);
+
 
 if ~exist('trackingSolution.sto', 'file')
     % Part 4c: Solve! Write the solution to file, and visualize.
-    trackingSolution = study.solve();
-    trackingSolution.write('trackingSolution.sto');
-    study.visualize(trackingSolution);
+
+
 end
 
 %% Part 5: Compare tracking solution to original prediction
