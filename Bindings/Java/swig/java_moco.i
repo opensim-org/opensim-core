@@ -328,7 +328,7 @@ using namespace SimTK;
 %typemap(javacode) OpenSim::MocoMarkerTrackingGoal %{
     public void addScaleFactor(String name, String marker, int index, double[] b)
             throws Exception {
-            addScaleFactor(name, state, index, MocoPhase.convertArrayToMB(b));
+            addScaleFactor(name, marker, index, MocoPhase.convertArrayToMB(b));
     }
 %}
 
