@@ -96,7 +96,7 @@ control index.
 
 The reference can be provided as a file name to a STO or CSV file (or
 other file types for which there is a FileAdapter), or programmatically
-as a TimeSeriesTable.
+sas a TimeSeriesTable.
 
 ### Scale factors
 

@@ -24,6 +24,23 @@
 #include <OpenSim/Simulation/Model/Model.h>
 
 using namespace OpenSim;
+using RefPtrMSF = SimTK::ReferencePtr<const MocoScaleFactor>;
+
+void MocoMarkerTrackingGoal::addScaleFactor(const std::string& name,
+    const std::string& marker, int index, const MocoBounds &bounds) {
+
+    // Check that the marker exists in the MarkersReference.
+    const auto& markerWeights = get_markers_reference().getMarkerWeightSet();
+    OPENSIM_THROW_IF_FRMOBJ(!markerWeights.contains(marker), Exception,
+                "Marker '{}' not found in the MarkersReference.", marker);
+
+    // Update the scale factor map so we can retrieve the correct MocoScaleFactor
+    // for this control during initialization.
+    m_scaleFactorMap[std::pair<std::string, int>(marker, index)] = name;
+
+    // Append the scale factor to the MocoGoal.
+    appendScaleFactor(MocoScaleFactor(name, bounds));
+}
 
 void MocoMarkerTrackingGoal::initializeOnModelImpl(const Model& model) const {
 
@@ -43,6 +60,7 @@ void MocoMarkerTrackingGoal::initializeOnModelImpl(const Model& model) const {
     // Cache reference pointers to model markers.
     const auto& markRefNames = get_markers_reference().getNames();
     const auto& markerSet = model.getMarkerSet();
+    const auto& scaleFactors = getModel().getComponentList<MocoScaleFactor>();
     int iset = -1;
     for (int i = 0; i < (int)markRefNames.size(); ++i) {
         if (model.hasComponent<Marker>(markRefNames[i])) {
@@ -64,6 +82,26 @@ void MocoMarkerTrackingGoal::initializeOnModelImpl(const Model& model) const {
                         markRefNames[i]);
             }
         }
+
+        // Check to see if the model contains a MocoScaleFactor associated with
+        // this marker.
+        std::array<RefPtrMSF, 3> theseScaleFactorRefs;
+        for (int j = 0; j < 3; ++j) {
+            bool foundScaleFactor = false;
+            std::pair<std::string, int> key(markRefNames[i], j);
+            for (const auto& scaleFactor : scaleFactors) {
+                if (m_scaleFactorMap[key] == scaleFactor.getName()) {
+                    theseScaleFactorRefs[j] = &scaleFactor;
+                    foundScaleFactor = true;
+                }
+            }
+            // If we didn't find a MocoScaleFactor for this control, set the
+            // reference pointer to null.
+            if (!foundScaleFactor) {
+                theseScaleFactorRefs[j] = nullptr;
+            }
+        }
+        m_scaleFactorRefs.push_back(theseScaleFactorRefs);
     }
 
     // Get the marker weights. The MarkersReference constructor automatically
@@ -100,6 +138,14 @@ void MocoMarkerTrackingGoal::calcIntegrandImpl(
         refValue[1] = m_refsplines[3 * refidx + 1].calcValue(timeVec);
         refValue[2] = m_refsplines[3 * refidx + 2].calcValue(timeVec);
 
+        // Apply scale factors for this marker, if they exist.
+        const auto& scaleFactorRef = m_scaleFactorRefs[i];
+        for (int j = 0; j < 3; ++j) {
+            if (scaleFactorRef[j] != nullptr) {
+                refValue[j] *= scaleFactorRef[j]->getScaleFactor();
+            }
+        }
+
         double distance = (modelValue - refValue).normSqr();
 
         integrand += m_marker_weights[refidx] * distance;
@@ -122,3 +168,5 @@ void MocoMarkerTrackingGoal::printDescriptionImpl() const {
 void MocoMarkerTrackingGoal::setMarkersReference(const MarkersReference& ref) { 
     upd_markers_reference() = ref; 
 }
+
+

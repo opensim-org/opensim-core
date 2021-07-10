@@ -215,6 +215,23 @@ public:
     void clearProjectionVector() { updProperty_projection_vector().clear(); }
     SimTK::Vec3 getProjectionVector() const { return get_projection_vector(); }
 
+    /// Add a MocoParameter to the problem that will scale the tracking reference
+    /// data associated with a contact force group. Scale factors are applied
+    /// to the tracking error calculations based on the following equation:
+    ///
+    ///     error = modelValue - scaleFactor * referenceValue
+    ///
+    /// In other words, the scale factor is applied when computing the tracking
+    /// error for each contact force group, not to the reference data directly.
+    /// You must specify both the external force name associated with the contact
+    /// force group and the index corresponding to the direction (i.e., X = 0,
+    /// Y = 1, Z = 2) of the scaled force value. The direction is applied in
+    /// whatever frame the reference data is expressed in based on the provided
+    /// ExternalLoads in each contact group.
+    void addScaleFactor(const std::string& name,
+            const std::string& externalForceName, int index,
+            const MocoBounds& bounds);
+
 protected:
     void initializeOnModelImpl(const Model&) const override;
     void calcIntegrandImpl(
@@ -270,6 +287,11 @@ private:
         const PhysicalFrame* refExpressedInFrame = nullptr;
     };
     mutable std::vector<GroupInfo> m_groups;
+
+    mutable std::map<std::pair<std::string, int>, std::string>
+            m_scaleFactorMap;
+    using RefPtrMSF = SimTK::ReferencePtr<const MocoScaleFactor>;
+    mutable std::vector<std::array<RefPtrMSF, 3>> m_scaleFactorRefs;
 };
 
 } // namespace OpenSim
