@@ -297,7 +297,7 @@ void MocoContactTrackingGoal::calcIntegrandImpl(
 
     integrand = 0;
     SimTK::Vec3 force_ref;
-    for (int ig = 0; ig < m_groups.size(); ++ig) {
+    for (int ig = 0; ig < (int)m_groups.size(); ++ig) {
 
         // Get contact groups.
         const auto& group = m_groups[ig];
