@@ -35,7 +35,7 @@ void MocoMarkerTrackingGoal::addScaleFactor(const std::string& name,
                 "Marker '{}' not found in the MarkersReference.", marker);
 
     // Update the scale factor map so we can retrieve the correct MocoScaleFactor
-    // for this control during initialization.
+    // for this marker during initialization.
     m_scaleFactorMap[std::pair<std::string, int>(marker, index)] = name;
 
     // Append the scale factor to the MocoGoal.
@@ -95,8 +95,8 @@ void MocoMarkerTrackingGoal::initializeOnModelImpl(const Model& model) const {
                     foundScaleFactor = true;
                 }
             }
-            // If we didn't find a MocoScaleFactor for this control, set the
-            // reference pointer to null.
+            // If we didn't find a MocoScaleFactor for this marker direction, set
+            // the reference pointer to null.
             if (!foundScaleFactor) {
                 theseScaleFactorRefs[j] = nullptr;
             }

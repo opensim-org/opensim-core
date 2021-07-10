@@ -129,7 +129,7 @@ void MocoStateTrackingGoal::initializeOnModelImpl(const Model& model) const {
                 foundScaleFactor = true;
             }
         }
-        // If we didn't find a MocoScaleFactor for this control, set the
+        // If we didn't find a MocoScaleFactor for this state, set the
         // reference pointer to null.
         if (!foundScaleFactor) {
             m_scaleFactorRefs.emplace_back(nullptr);

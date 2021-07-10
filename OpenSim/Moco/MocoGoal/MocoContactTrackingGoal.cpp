@@ -91,7 +91,7 @@ void MocoContactTrackingGoal::addScaleFactor(const std::string& name,
             externalForceName);
 
     // Update the scale factor map so we can retrieve the correct MocoScaleFactor
-    // for this control during initialization.
+    // for this contact group during initialization.
     std::pair<std::string, int> key(externalForceName, index);
     m_scaleFactorMap[key] = name;
 
@@ -206,8 +206,8 @@ void MocoContactTrackingGoal::initializeOnModelImpl(const Model& model) const {
                     foundScaleFactor = true;
                 }
             }
-            // If we didn't find a MocoScaleFactor for this control, set the
-            // reference pointer to null.
+            // If we didn't find a MocoScaleFactor for this force direction, set
+            // the reference pointer to null.
             if (!foundScaleFactor) {
                 theseScaleFactorRefs[j] = nullptr;
             }
