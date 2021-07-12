@@ -32,8 +32,8 @@ textbook:
 Betts, John T. Practical methods for optimal control and estimation using
 nonlinear programming. Vol. 19. Siam, 2010.
 
-Direct Collocation Solver
-=========================
+MocoDirectCollocationSolver
+===========================
 Transcription scheme
 --------------------
 The `transcription_scheme` setting allows you to choose between

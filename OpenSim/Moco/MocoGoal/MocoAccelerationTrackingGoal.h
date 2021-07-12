@@ -45,7 +45,7 @@ By default, errors for this cost are computed assuming that the provided
 reference acceleration data is the derivative of a position vector with respect
 to the ground frame and expressed in the ground frame.
 
-\subsection trMocoAccelerationTrackingGoal Tracking inertial measurement unit (IMU) signals
+\subsection imu_MocoAccelerationTrackingGoal Tracking inertial measurement unit (IMU) signals
 
 If using this cost for tracking acceleration signals from an inertial measurement
 unit (IMU), you must subtract the gravity vector from the model accelerations and

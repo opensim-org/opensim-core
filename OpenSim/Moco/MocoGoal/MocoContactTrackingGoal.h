@@ -24,8 +24,9 @@
 namespace OpenSim {
 
 class SmoothSphereHalfSpaceForce;
-
-/** A contact group consists of the name of a single ExternalForce and a list of
+/** 
+\section MocoContactTrackingGoalGroup
+A contact group consists of the name of a single ExternalForce and a list of
 contact force component paths in the model. The MocoContactTrackingGoal
 calculates the difference between the data from the ExternalForce and the sum of
 the forces from the contact force components.
@@ -73,7 +74,9 @@ private:
 };
 
 
-/** Minimize the error between compliant contact force elements in the model and
+/**
+\section MocoContactTrackingGoal
+Minimize the error between compliant contact force elements in the model and
 experimentally measured contact forces.
 
 This class handles multiple groups of contact forces and a single
