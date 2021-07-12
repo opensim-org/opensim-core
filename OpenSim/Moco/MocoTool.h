@@ -26,7 +26,8 @@ namespace OpenSim {
 
 /** This is a base class for solving problems that depend on an observed motion
 using Moco's optimal control methods.
-
+MocoTool Properties
+===================
 Mesh interval
 -------------
 A smaller mesh interval increases the convergence time, but is necessary

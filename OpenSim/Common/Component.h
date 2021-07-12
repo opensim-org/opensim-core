@@ -242,7 +242,8 @@ public:
  * handles all of the bookkeeping of system indices and provides convenience
  * access to variable values (incl. derivatives) via their names as strings.
  *
- * ### System and State
+ * # Component's Interfaces
+ * ## System and State
  *
  * The MultibodySystem and its State are defined by Simbody (ref ...). Briefly,
  * a System represents the mathematical equations that specify the behavior
@@ -268,7 +269,7 @@ public:
  * the modeled dynamics of the component. Component provides services
  * that enable developers of components to define additional ModelingOptions.
  *
- * ### Discrete variables
+ * ## Discrete variables
  *
  * Often a component requires input from an outside source (precomputed data
  * from a file, another program, or interaction from a user) in which case these
@@ -284,7 +285,7 @@ public:
  * provides services to enable developers of components to define and access its
  * DiscreteVariables.
  *
- * ### Cache variables
+ * ## Cache variables
  *
  * Fast and efficient simulations also require computationally expensive
  * calculations to be performed only when necessary. Often the result of an
@@ -297,7 +298,7 @@ public:
  * variables and their validity. Component provides a simplified interface to
  * define and access CacheVariables.
  *
- * ### Stages
+ * ## Stages
  *
  * Many modeling and simulation codes put the onus on users and component
  * creators to manage the validity of cache variables, which is likely to lead
@@ -350,7 +351,7 @@ public:
  * Component provides methods to check if the cache is valid, update its value
  * and then to mark it as valid.
  *
- * ### The interface of this class
+ * ## The interface of this class
  *
  * The primary responsibility of a Component is to add its computational
  * representation(s) to the underlying SimTK::System by implementing
@@ -361,7 +362,7 @@ public:
  *
  * Public methods enable access to component variables via their names.
  *
- * ### Subcomponents
+ * ## Subcomponents
  *
  * A %Component can have any number of %Components within it; we call these
  * subcomponents. Subcomponents can also contain their own subcomponents as
