@@ -308,7 +308,7 @@ stepLengthAsymmetry.setWeight(5);
 stepLengthAsymmetry.setRightFootFrame('/bodyset/calcn_r');    
 % Provide the body name for the left foot.
 stepLengthAsymmetry.setLeftFootFrame('/bodyset/calcn_l');     
-% Value for smoothing term use to compute asymmetry (default is 500). Users may 
+% Value for smoothing term use to compute asymmetry (default is 5). Users may 
 % need to adjust this based on convergence and matching the target
 % asymmetry.
 stepLengthAsymmetry.setAsymmetrySmoothing(5);                        
