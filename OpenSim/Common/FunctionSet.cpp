@@ -144,7 +144,7 @@ evaluate(Array<double> &rValues,int aDerivOrder,double aX) const
     for(i=0;i<size;i++) {
         Function& func = get(i);
         if (aDerivOrder==0)
-            rValues[i] = func.calcValue(SimTK::Vector(1,aX));
+            rValues[i] = func.calcValue(aX);
         else {
             std::vector<int> derivComponents;
             for(int j=0; j<aDerivOrder; j++)

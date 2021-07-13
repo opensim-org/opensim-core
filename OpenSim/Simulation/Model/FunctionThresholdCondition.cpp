@@ -154,7 +154,7 @@ FunctionThresholdCondition& FunctionThresholdCondition::operator=(const Function
 //-----------------------------------------------------------------------------
 bool FunctionThresholdCondition::calcCondition(const SimTK::State& s) const
 {
-    return (_function->calcValue(SimTK::Vector(1, s.getTime())) > _threshold);
+    return _function->calcValue(s.getTime()) > _threshold;
 }
 
 //_____________________________________________________________________________

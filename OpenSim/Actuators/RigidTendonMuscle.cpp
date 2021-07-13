@@ -138,11 +138,10 @@ calcMuscleLengthInfo(const State& s, MuscleLengthInfo& mli) const
     mli.pennationAngle = acos(mli.cosPennationAngle);
     mli.normFiberLength = mli.fiberLength/getOptimalFiberLength();
 
-    const Vector arg(1, mli.normFiberLength);
     mli.fiberActiveForceLengthMultiplier = 
-        get_active_force_length_curve().calcValue(arg);
+        get_active_force_length_curve().calcValue(mli.normFiberLength);
     mli.fiberPassiveForceLengthMultiplier = 
-        SimTK::clamp(0, get_passive_force_length_curve().calcValue(arg), 10);
+        SimTK::clamp(0, get_passive_force_length_curve().calcValue(mli.normFiberLength), 10);
 
     mli.normTendonLength = 1.0;
     mli.tendonStrain = 0.0;
@@ -165,7 +164,7 @@ void RigidTendonMuscle::calcFiberVelocityInfo(const State& s, FiberVelocityInfo&
     fvi.normFiberVelocity = fvi.fiberVelocity / 
                             (getOptimalFiberLength()*getMaxContractionVelocity());
     fvi.fiberForceVelocityMultiplier = 
-        get_force_velocity_curve().calcValue(Vector(1, fvi.normFiberVelocity));
+        get_force_velocity_curve().calcValue(fvi.normFiberVelocity);
 }
 
 /* calculate muscle's active and passive force-length, force-velocity, 
@@ -219,13 +218,12 @@ double RigidTendonMuscle::computeActuation(const State& s) const
 
 double RigidTendonMuscle::computeIsometricForce(State& s, double activation) const
 {
-    const double &aNormFiberLength = getNormalizedFiberLength(s);
+    const double aNormFiberLength = getNormalizedFiberLength(s);
 
-    const Vector arg(1, aNormFiberLength);
     double activeForceLength = 
-        get_active_force_length_curve().calcValue(arg);
+        get_active_force_length_curve().calcValue(aNormFiberLength);
     double passiveForceLength = 
-        get_passive_force_length_curve().calcValue(arg);
+        get_passive_force_length_curve().calcValue(aNormFiberLength);
 
     // Isometric means velocity is zero, so velocity "factor" is 1
     return (activation*activeForceLength + passiveForceLength)

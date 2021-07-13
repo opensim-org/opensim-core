@@ -3352,8 +3352,7 @@ double Storage::compareColumnRMS(const Storage& aOtherStorage, const std::string
     double rms = 0.;
 
     for(int i = startIndex; i <= endIndex; i++) {
-        SimTK::Vector inputTime(1, thisTime[i]);
-        double diff = thisData[i] - spline.calcValue(inputTime);
+        double diff = thisData[i] - spline.calcValue(thisTime[i]);
         rms += diff * diff;
     }
 

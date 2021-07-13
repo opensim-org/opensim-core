@@ -272,13 +272,13 @@ computeErrors(const SimTK::State& s, double aT)
     if(_expressBodyName == "ground") {
 
         for(int i=0;i<3;i++) {
-            _inertialPTrk[i] = _pTrk[i]->calcValue(SimTK::Vector(1,aT));
+            _inertialPTrk[i] = _pTrk[i]->calcValue(aT);
             if(_vTrk[i]==NULL) {
                 std::vector<int> derivComponents(1);
                 derivComponents[0]=0;
                 _inertialVTrk[i] = _pTrk[i]->calcDerivative(derivComponents,SimTK::Vector(1,aT));
             } else {
-                _inertialVTrk[i] = _vTrk[i]->calcValue(SimTK::Vector(1,aT));
+                _inertialVTrk[i] = _vTrk[i]->calcValue(aT);
             }
         }
 
@@ -289,14 +289,14 @@ computeErrors(const SimTK::State& s, double aT)
         SimTK::Vec3 pVec,vVec,origin;
 
         for(int i=0;i<3;i++) {
-            pVec(i) = _pTrk[i]->calcValue(SimTK::Vector(1,aT));
+            pVec(i) = _pTrk[i]->calcValue(aT);
         }
         _inertialPTrk = _expressBody->findStationLocationInGround(s, pVec);
         if(_vTrk[0]==NULL) {
             _inertialVTrk = _expressBody->findStationVelocityInGround(s, pVec);
         } else {
             for(int i=0;i<3;i++) {
-                vVec(i) = _vTrk[i]->calcValue(SimTK::Vector(1,aT));
+                vVec(i) = _vTrk[i]->calcValue(aT);
             }
             _inertialVTrk = _expressBody->findStationVelocityInGround(s, origin); // get velocity of _expressBody origin in inertial frame
             _inertialVTrk += vVec; // _vTrk is velocity in _expressBody, so it is simply added to velocity of _expressBody origin in inertial frame
@@ -353,7 +353,7 @@ computeDesiredAccelerations(const SimTK::State& s, double aT)
             derivComponents[1]=0;
             a = (_ka)[0]*_pTrk[i]->calcDerivative(derivComponents,SimTK::Vector(1,aT));
         } else {
-            a = (_ka)[0]*_aTrk[i]->calcValue(SimTK::Vector(1,aT));
+            a = (_ka)[0]*_aTrk[i]->calcValue(aT);
         }
         _aDes[i] = a + v + p;
     }
@@ -398,7 +398,7 @@ computeDesiredAccelerations(const SimTK::State& s, double aTI,double aTF)
             derivComponents[1]=0;
             a = (_ka)[0]*_pTrk[i]->calcDerivative(derivComponents,SimTK::Vector(1,aTF));
         } else {
-            a = (_ka)[0]*_aTrk[i]->calcValue(SimTK::Vector(1,aTF));
+            a = (_ka)[0]*_aTrk[i]->calcValue(aTF);
         }
         _aDes[i] = a + v + p;
     }

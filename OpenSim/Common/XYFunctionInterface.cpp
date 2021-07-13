@@ -433,18 +433,18 @@ Array<XYPoint>* XYFunctionInterface::renderAsLineSegments(int aIndex)
         int numSegs = 20;
         for (int i=0; i<numSegs-1; i++) {
             double xValue = x[aIndex] + (double)i * (x[aIndex + 1] - x[aIndex]) / ((double)numSegs - 1.0);
-            xyPts->append(XYPoint(xValue, _natCubicSpline->calcValue(SimTK::Vector(1,xValue)) * _scaleFactor));
+            xyPts->append(XYPoint(xValue, _natCubicSpline->calcValueUnary(xValue) * _scaleFactor));
         }
-        xyPts->append(XYPoint(x[aIndex + 1], _natCubicSpline->calcValue(SimTK::Vector(1,x[aIndex+1])) * _scaleFactor));
+        xyPts->append(XYPoint(x[aIndex + 1], _natCubicSpline->calcValueUnary(x[aIndex+1]) * _scaleFactor));
     } else if (_functionType == typeGCVSpline) {
         // X sometimes goes slightly beyond the range due to roundoff error,
         // so do the last point separately.
         int numSegs = 20;
         for (int i=0; i<numSegs-1; i++) {
             double xValue = x[aIndex] + (double)i * (x[aIndex + 1] - x[aIndex]) / ((double)numSegs - 1.0);
-            xyPts->append(XYPoint(xValue, _gcvSpline->calcValue(SimTK::Vector(1,xValue)) * _scaleFactor));
+            xyPts->append(XYPoint(xValue, _gcvSpline->calcValue(xValue) * _scaleFactor));
         }
-        xyPts->append(XYPoint(x[aIndex + 1], _gcvSpline->calcValue(SimTK::Vector(1,x[aIndex + 1])) * _scaleFactor));
+        xyPts->append(XYPoint(x[aIndex + 1], _gcvSpline->calcValue(x[aIndex + 1]) * _scaleFactor));
     } else if (_functionType == typePiecewiseConstantFunction)  {
         xyPts->append(XYPoint(x[aIndex], y[aIndex]));
         xyPts->append(XYPoint(x[aIndex], y[aIndex+1]));

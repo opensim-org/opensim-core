@@ -248,15 +248,15 @@ TimeSeriesTable TableUtilities::resample(
 
     std::unique_ptr<FunctionSet> functions =
             createFunctionSet<FunctionType>(in);
-    SimTK::Vector curTime(1);
     SimTK::RowVector row(functions->getSize());
+    double curTime = 0.0;
     for (int itime = 0; itime < (int)newTime.size(); ++itime) {
-        curTime[0] = newTime[itime];
+        curTime = newTime[itime];
         for (int icol = 0; icol < functions->getSize(); ++icol) {
             row(icol) = functions->get(icol).calcValue(curTime);
         }
         // Not efficient!
-        out.appendRow(curTime[0], row);
+        out.appendRow(curTime, row);
     }
     return out;
 }

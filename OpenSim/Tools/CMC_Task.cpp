@@ -679,7 +679,7 @@ getTaskPosition(int aWhich,double aT) const
         string msg = "CMC_Task: ERR- Invalid task.";
         throw( Exception(msg,__FILE__,__LINE__) );
     }
-    double position = _pTrk[aWhich]->calcValue(SimTK::Vector(1,aT));
+    double position = _pTrk[aWhich]->calcValue(aT);
     return(position);
 }
 //_____________________________________________________________________________
@@ -701,7 +701,7 @@ getTaskVelocity(int aWhich,double aT) const
 
     double velocity;
     if(_vTrk[aWhich]!=NULL) {
-        velocity = _vTrk[aWhich]->calcValue(SimTK::Vector(1,aT));
+        velocity = _vTrk[aWhich]->calcValue(aT);
     } else {
         std::vector<int> derivComponents(1);
         derivComponents[0]=0;
@@ -728,7 +728,7 @@ getTaskAcceleration(int aWhich,double aT) const
 
     double acceleration;
     if(_aTrk[aWhich]!=NULL) {
-        acceleration = _aTrk[aWhich]->calcValue(SimTK::Vector(1,aT));
+        acceleration = _aTrk[aWhich]->calcValue(aT);
     } else {
         std::vector<int> derivComponents(2);
         derivComponents[0]=0;

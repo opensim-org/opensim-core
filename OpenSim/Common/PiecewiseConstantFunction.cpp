@@ -184,7 +184,7 @@ void PiecewiseConstantFunction::init(Function* aFunction)
                   double x[2] = {0.0, 1.0}, y[2];
                   Constant* cons = dynamic_cast<Constant*>(aFunction);
                   if (cons != NULL) {
-                      y[0] = y[1] = cons->calcValue(SimTK::Vector(1, 0.));
+                      y[0] = y[1] = cons->calcValueUnary(0.0);
                   } else {
                       y[0] = y[1] = 1.0;
                   }

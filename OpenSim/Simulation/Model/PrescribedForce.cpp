@@ -251,7 +251,6 @@ void PrescribedForce::computeForce(const SimTK::State& state,
     const FunctionSet& torqueFunctions = getTorqueFunctions();
 
     double time = state.getTime();
-    SimTK::Vector  timeAsVector(1, time);
 
     const bool hasForceFunctions  = forceFunctions.getSize()==3;
     const bool hasPointFunctions  = pointFunctions.getSize()==3;
@@ -261,18 +260,18 @@ void PrescribedForce::computeForce(const SimTK::State& state,
         getSocket<PhysicalFrame>("frame").getConnectee();
     const Ground& gnd = getModel().getGround();
     if (hasForceFunctions) {
-        Vec3 force(forceFunctions[0].calcValue(timeAsVector), 
-                   forceFunctions[1].calcValue(timeAsVector), 
-                   forceFunctions[2].calcValue(timeAsVector));
+        Vec3 force(forceFunctions[0].calcValue(time),
+                   forceFunctions[1].calcValue(time),
+                   forceFunctions[2].calcValue(time));
         if (!forceIsGlobal)
             force = frame.expressVectorInAnotherFrame(state, force, gnd);
 
         Vec3 point(0); // Default is body origin.
         if (hasPointFunctions) {
             // Apply force to a specified point on the body.
-            point = Vec3(pointFunctions[0].calcValue(timeAsVector), 
-                         pointFunctions[1].calcValue(timeAsVector), 
-                         pointFunctions[2].calcValue(timeAsVector));
+            point = Vec3(pointFunctions[0].calcValue(time),
+                         pointFunctions[1].calcValue(time),
+                         pointFunctions[2].calcValue(time));
             if (pointIsGlobal)
                 point = gnd.findStationLocationInAnotherFrame(state, point, frame);
 
@@ -280,9 +279,9 @@ void PrescribedForce::computeForce(const SimTK::State& state,
         applyForceToPoint(state, frame, point, force, bodyForces);
     }
     if (hasTorqueFunctions){
-        Vec3 torque(torqueFunctions[0].calcValue(timeAsVector), 
-                    torqueFunctions[1].calcValue(timeAsVector), 
-                    torqueFunctions[2].calcValue(timeAsVector));
+        Vec3 torque(torqueFunctions[0].calcValue(time),
+                    torqueFunctions[1].calcValue(time),
+                    torqueFunctions[2].calcValue(time));
         if (!forceIsGlobal)
             torque = frame.expressVectorInAnotherFrame(state, torque, gnd);
 
@@ -300,10 +299,9 @@ Vec3 PrescribedForce::getForceAtTime(double aTime) const
     if (forceFunctions.getSize() != 3)
         return Vec3(0);
 
-    const SimTK::Vector timeAsVector(1, aTime);
-    const Vec3 force(forceFunctions[0].calcValue(timeAsVector), 
-                     forceFunctions[1].calcValue(timeAsVector), 
-                     forceFunctions[2].calcValue(timeAsVector));
+    const Vec3 force(forceFunctions[0].calcValue(aTime),
+                     forceFunctions[1].calcValue(aTime),
+                     forceFunctions[2].calcValue(aTime));
     return force;
 }
 
@@ -314,10 +312,9 @@ Vec3 PrescribedForce::getPointAtTime(double aTime) const
     if (pointFunctions.getSize() != 3)
         return Vec3(0);
 
-    const SimTK::Vector timeAsVector(1, aTime);
-    const Vec3 point(pointFunctions[0].calcValue(timeAsVector), 
-                     pointFunctions[1].calcValue(timeAsVector), 
-                     pointFunctions[2].calcValue(timeAsVector));
+    const Vec3 point(pointFunctions[0].calcValue(aTime),
+                     pointFunctions[1].calcValue(aTime),
+                     pointFunctions[2].calcValue(aTime));
     return point;
 }
 
@@ -328,10 +325,9 @@ Vec3 PrescribedForce::getTorqueAtTime(double aTime) const
     if (torqueFunctions.getSize() != 3)
         return Vec3(0);
 
-    const SimTK::Vector timeAsVector(1, aTime);
-    const Vec3 torque(torqueFunctions[0].calcValue(timeAsVector), 
-                      torqueFunctions[1].calcValue(timeAsVector), 
-                      torqueFunctions[2].calcValue(timeAsVector));
+    const Vec3 torque(torqueFunctions[0].calcValue(aTime),
+                      torqueFunctions[1].calcValue(aTime),
+                      torqueFunctions[2].calcValue(aTime));
     return torque;
 }
 
