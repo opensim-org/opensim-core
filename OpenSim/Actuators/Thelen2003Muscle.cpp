@@ -388,7 +388,7 @@ void Thelen2003Muscle::calcMuscleLengthInfo(const SimTK::State& s,
 
         //Clamp the minimum fiber length to its minimum physical value.
         mli.fiberLength  = getPennationModel().clampFiberLength(
-                                getStateVariableValue(s, STATE_FIBER_LENGTH_NAME));
+                                getStateVariableValue(s, STATE_FIBER_LENGTH_PATH));
 
         mli.normFiberLength = mli.fiberLength/optFiberLength;       
         mli.pennationAngle  = getPennationModel()
@@ -459,7 +459,7 @@ void Thelen2003Muscle::calcFiberVelocityInfo(const SimTK::State& s,
 
         //clamp activation to a legal range
         double a = getActivationModel().clampActivation(getStateVariableValue(s,
-                                          STATE_ACTIVATION_NAME));
+                                          STATE_ACTIVATION_PATH));
    
 
         double lce  = mli.fiberLength;   
@@ -581,7 +581,7 @@ void Thelen2003Muscle::calcMuscleDynamicsInfo(const SimTK::State& s,
         //=========================================================================
         //1. Get fiber/tendon kinematic information
         double a = getActivationModel().clampActivation(
-                       getStateVariableValue(s, STATE_ACTIVATION_NAME) );
+                       getStateVariableValue(s, STATE_ACTIVATION_PATH) );
 
         double lce      = mli.fiberLength;
         double fiberStateClamped = mvi.userDefinedVelocityExtras[1];
@@ -689,7 +689,7 @@ bool Thelen2003Muscle::
 
     //Is the fiber length  clamped and it is shortening, then the fiber length
     //not valid
-    if( (getStateVariableValue(s, STATE_FIBER_LENGTH_NAME) 
+    if( (getStateVariableValue(s, STATE_FIBER_LENGTH_PATH)
             <= getMinimumFiberLength())
         && dlceN <= 0){
         clamped = true;

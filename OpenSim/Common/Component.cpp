@@ -763,27 +763,32 @@ ComponentPath Component::getRelativePath(const Component& wrt) const
 const Component::StateVariable* Component::
     traverseToStateVariable(const std::string& pathName) const
 {
+    return traverseToStateVariable(ComponentPath{pathName});
+}
+
+const Component::StateVariable* Component::traverseToStateVariable(
+        const ComponentPath& path) const
+{
     // Must have already called initSystem.
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
-    ComponentPath svPath(pathName);
-
     const StateVariable* found = nullptr;
-    if (svPath.getNumPathLevels() == 1) {
+    if (path.getNumPathLevels() == 1) {
         // There was no slash. The state variable should be in this component.
-        auto it = _namedStateVariableInfo.find(pathName);
+        auto it = _namedStateVariableInfo.find(path.toString());
         if (it != _namedStateVariableInfo.end()) {
             return it->second.stateVariable.get();
         }
-    } else if (svPath.getNumPathLevels() > 1) {
-        const auto& compPath = svPath.getParentPath();
+    } else if (path.getNumPathLevels() > 1) {
+        const auto& compPath = path.getParentPath();
         const Component* comp = traversePathToComponent<Component>(compPath);
         if (comp) {
             // This is the leaf of the path:
-            const auto& varName = svPath.getComponentName();
+            const auto& varName = path.getComponentName();
             found = comp->traverseToStateVariable(varName);
         }
     }
+
     return found;
 }
 
@@ -816,17 +821,24 @@ Array<std::string> Component::getStateVariableNames() const
 double Component::
     getStateVariableValue(const SimTK::State& s, const std::string& name) const
 {
+    return getStateVariableValue(s, ComponentPath{name});
+}
+
+// Get the value of a state variable allocated by this Component.
+double Component::
+    getStateVariableValue(const SimTK::State& s, const ComponentPath& path) const
+{
     // Must have already called initSystem.
     OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
 
     // find the state variable with this component or its subcomponents
-    const StateVariable* rsv = traverseToStateVariable(name);
+    const StateVariable* rsv = traverseToStateVariable(path);
     if (rsv) {
         return rsv->getValue(s);
     }
-    
+
     std::stringstream msg;
-    msg << "Component::getStateVariableValue: ERR- state named '" << name 
+    msg << "Component::getStateVariableValue: ERR- state named '" << path.toString()
         << "' not found in " << getName() << " of type " << getConcreteClassName();
     throw Exception(msg.str(),__FILE__,__LINE__);
 

@@ -425,7 +425,7 @@ std::string ComponentPath::getComponentName() const {
     return _path.substr(start);
 }
 
-std::string ComponentPath::toString() const {
+const std::string& ComponentPath::toString() const {
     return _path;
 }
 

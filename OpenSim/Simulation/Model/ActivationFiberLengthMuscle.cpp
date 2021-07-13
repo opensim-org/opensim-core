@@ -35,7 +35,9 @@ using SimTK::Vec3;
 // STATIC INITIALIZATION
 //==============================================================================
 const string ActivationFiberLengthMuscle::STATE_ACTIVATION_NAME = "activation";
+const ComponentPath ActivationFiberLengthMuscle::STATE_ACTIVATION_PATH{STATE_ACTIVATION_NAME};
 const string ActivationFiberLengthMuscle::STATE_FIBER_LENGTH_NAME = "fiber_length";
+const ComponentPath ActivationFiberLengthMuscle::STATE_FIBER_LENGTH_PATH{STATE_FIBER_LENGTH_NAME};
 
 
 //==============================================================================
@@ -101,8 +103,8 @@ void ActivationFiberLengthMuscle::extendSetPropertiesFromState(const SimTK::Stat
 {
     Super::extendSetPropertiesFromState(state);    // invoke superclass implementation
 
-    setDefaultActivation(getStateVariableValue(state, STATE_ACTIVATION_NAME));
-    setDefaultFiberLength(getStateVariableValue(state, STATE_FIBER_LENGTH_NAME));
+    setDefaultActivation(getStateVariableValue(state, STATE_ACTIVATION_PATH));
+    setDefaultFiberLength(getStateVariableValue(state, STATE_FIBER_LENGTH_PATH));
 }
 
 void ActivationFiberLengthMuscle::extendConnectToModel(Model& aModel)

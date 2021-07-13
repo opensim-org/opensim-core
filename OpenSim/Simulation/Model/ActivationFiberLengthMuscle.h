@@ -129,7 +129,9 @@ protected:
     void computeStateVariableDerivatives(const SimTK::State& s) const override;
 
     static const std::string STATE_ACTIVATION_NAME;
-    static const std::string STATE_FIBER_LENGTH_NAME;   
+    static const ComponentPath STATE_ACTIVATION_PATH;
+    static const std::string STATE_FIBER_LENGTH_NAME;
+    static const ComponentPath STATE_FIBER_LENGTH_PATH;
 
 private:
     void constructProperties();

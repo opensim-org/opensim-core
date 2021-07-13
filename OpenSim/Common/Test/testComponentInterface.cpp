@@ -1240,6 +1240,42 @@ void testGetStateVariableValue() {
             OpenSim::Exception);
 }
 
+void testGetStateVariableValueComponentPath() {
+    using CP = ComponentPath;
+
+    TheWorld top;
+    top.setName("top");
+    Sub* a = new Sub();
+    a->setName("a");
+    Sub* b = new Sub();
+    b->setName("b");
+
+    top.add(a);
+    a->addComponent(b);
+
+    MultibodySystem system;
+    top.buildUpSystem(system);
+    State s = system.realizeTopology();
+
+    SimTK_TEST(s.getNY() == 3);
+    s.updY()[0] = 10; // "top/internalSub/subState"
+    s.updY()[1] = 20; // "top/a/subState"
+    s.updY()[2] = 30; // "top/a/b/subState"
+
+    SimTK_TEST(top.getStateVariableValue(s, CP{"internalSub/subState"}) == 10);
+    SimTK_TEST(top.getStateVariableValue(s, CP{"a/subState"}) == 20);
+    SimTK_TEST(top.getStateVariableValue(s, CP{"a/b/subState"}) == 30);
+    SimTK_TEST(a->getStateVariableValue(s, CP{"subState"}) == 20);
+    SimTK_TEST(a->getStateVariableValue(s, CP{"b/subState"}) == 30);
+    SimTK_TEST(b->getStateVariableValue(s, CP{"subState"}) == 30);
+    SimTK_TEST(b->getStateVariableValue(s, CP{"../subState"}) == 20);
+    SimTK_TEST(b->getStateVariableValue(s, CP{"../../internalSub/subState"}) == 10);
+
+    SimTK_TEST_MUST_THROW_EXC(
+            top.getStateVariableValue(s, CP{"typo/b/subState"}),
+            OpenSim::Exception);
+}
+
 void testInputOutputConnections()
 {
     {
@@ -2519,6 +2555,7 @@ int main() {
         SimTK_SUBTEST(testFindComponent);
         SimTK_SUBTEST(testTraversePathToComponent);
         SimTK_SUBTEST(testGetStateVariableValue);
+        SimTK_SUBTEST(testGetStateVariableValueComponentPath);
         SimTK_SUBTEST(testInputOutputConnections);
         SimTK_SUBTEST(testInputConnecteePaths);
         SimTK_SUBTEST(testExceptionsForConnecteeTypeMismatch);
