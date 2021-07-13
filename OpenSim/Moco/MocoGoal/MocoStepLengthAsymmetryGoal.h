@@ -105,6 +105,9 @@ public:
 
     /// Set the values that determines the smoothing of the asymmetry
     /// computation. This term is necessary since this computation is non-smooth.
+    /// Larger smoothing values mean that larger step length errors are required
+    /// for a given step to be counted towards the total asymmetry error
+    /// minimized in the cost.
     void setAsymmetrySmoothing(double smoothing) {
         set_asymmetry_smoothing(smoothing);
     }
@@ -129,7 +132,9 @@ private:
             "for the left. Default: 0");
     OpenSim_DECLARE_PROPERTY(asymmetry_smoothing, double,
             "The value that determines the smoothing of the asymmetry "
-            "computation (default: 10)");
+            "computation. Larger values mean that larger step length errors are "
+            "required for a step to be counted towards the asymmetry error. "
+            "Default: 5.");
     OpenSim_DECLARE_PROPERTY(stride_length, double,
             "The known stride length of the simulation, in meters."
             "Default is -1; the user must provide a positive value.");

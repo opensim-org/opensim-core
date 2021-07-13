@@ -25,7 +25,7 @@ void MocoStepLengthAsymmetryGoal::constructProperties() {
     constructProperty_left_foot_frame("");
     constructProperty_right_foot_frame("");
     constructProperty_walking_direction("positive-x");
-    constructProperty_asymmetry_smoothing(500);
+    constructProperty_asymmetry_smoothing(5);
     constructProperty_target_asymmetry(0.0);
     constructProperty_stride_length(-1);
 }
@@ -97,18 +97,18 @@ void MocoStepLengthAsymmetryGoal::calcIntegrandImpl(
     const double leftFootStepLength = leftFootPosition - rightFootPosition;
 
     // Compute if the right foot or left foot step lengths exceed their
-    // respective thresholds. If so, count this time point towards the asymmetry
-    // for the respective foot (+1 for right foot, -1 for left foot).
+    // respective thresholds. If so, count this time point towards the
+    // asymmetry error (for each foot independently) via the smoothing functions.
+    // The user input smoothing value is scaled by 100 here to produce a more
+    // noticeable effect on the asymmetry error.
     const double rightFootAsymmetry = m_conditional(
             m_right_foot_threshold - rightFootStepLength, 0.5, -0.5,
-            get_asymmetry_smoothing());
+            100.0 * get_asymmetry_smoothing());
     const double leftFootAsymmetry = m_conditional(
             m_left_foot_threshold - leftFootStepLength, 0.5, -0.5,
-            get_asymmetry_smoothing());
+            100.0 * get_asymmetry_smoothing());
 
-    // Sum the computed asymmetry values for both feet and assign it to the
-    // integrand. Positive sums means a larger right foot asymmetry, and negative
-    // sums a larger left foot asymmetry.
+    // Compute the total asymmetry error at this time step.
     integrand = rightFootAsymmetry + leftFootAsymmetry;
 }
 

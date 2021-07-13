@@ -140,7 +140,7 @@ stepTimeAsymmetry.setAsymmetrySmoothing(3);
 % than left.
 stepTimeAsymmetry.setTargetAsymmetry(0.10);   
 % Set goal weight.
-stepTimeAsymmetry.setWeight(8);          
+stepTimeAsymmetry.setWeight(5);          
 
 % Need to define the names of the left and right heel spheres: this is
 % used to detect which foot is in front during double support phase.
@@ -311,7 +311,7 @@ stepLengthAsymmetry.setLeftFootFrame('/bodyset/calcn_l');
 % Value for smoothing term use to compute asymmetry (default is 500). Users may 
 % need to adjust this based on convergence and matching the target
 % asymmetry.
-stepLengthAsymmetry.setAsymmetrySmoothing(500);                        
+stepLengthAsymmetry.setAsymmetrySmoothing(5);                        
 % Target step length asymmetry: positive numbers mean greater right step lengths 
 % than left.
 stepLengthAsymmetry.setTargetAsymmetry(-0.10);
