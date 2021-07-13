@@ -312,8 +312,7 @@ private:
     };
     mutable std::vector<GroupInfo> m_groups;
 
-    mutable std::map<std::pair<std::string, int>, std::string>
-            m_scaleFactorMap;
+    mutable std::map<std::pair<std::string, int>, std::string> m_scaleFactorMap;
     using RefPtrMSF = SimTK::ReferencePtr<const MocoScaleFactor>;
     mutable std::vector<std::array<RefPtrMSF, 3>> m_scaleFactorRefs;
 };

@@ -81,14 +81,18 @@ void MocoContactTrackingGoal::addScaleFactor(const std::string& name,
     bool foundContactGroup = false;
     for (int ig = 0; ig < getProperty_contact_groups().size(); ++ig) {
         const auto& group = get_contact_groups(ig);
-        if (externalForceName ==  group.get_external_force_name()) {
+        if (externalForceName == group.get_external_force_name()) {
             foundContactGroup = true;
         }
     }
-
     OPENSIM_THROW_IF_FRMOBJ(!foundContactGroup, Exception,
             "Contact group associated with external force '{}' not found.",
             externalForceName);
+
+    // Check that the index is in the correct range.
+    OPENSIM_THROW_IF_FRMOBJ((index < 0) || (index > 2), Exception,
+                "Expected marker scale factor index to be in the range [0, 2], "
+                "but received '{}'.", index);
 
     // Update the scale factor map so we can retrieve the correct MocoScaleFactor
     // for this contact group during initialization.

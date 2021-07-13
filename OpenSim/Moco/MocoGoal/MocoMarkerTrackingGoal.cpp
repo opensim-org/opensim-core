@@ -34,6 +34,11 @@ void MocoMarkerTrackingGoal::addScaleFactor(const std::string& name,
     OPENSIM_THROW_IF_FRMOBJ(!markerWeights.contains(marker), Exception,
                 "Marker '{}' not found in the MarkersReference.", marker);
 
+    // Check that the index is in the correct range.
+    OPENSIM_THROW_IF_FRMOBJ((index < 0) || (index > 2), Exception,
+                "Expected marker scale factor index to be in the range [0, 2], "
+                "but received '{}'.", index);
+
     // Update the scale factor map so we can retrieve the correct MocoScaleFactor
     // for this marker during initialization.
     m_scaleFactorMap[std::pair<std::string, int>(marker, index)] = name;
