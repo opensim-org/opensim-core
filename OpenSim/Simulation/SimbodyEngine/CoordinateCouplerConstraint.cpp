@@ -28,13 +28,13 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include "simbody/internal/Constraint.h"
 
-// Helper class to construct functions when user's specify a dependency as qd = f(qi)
-// this function casts as C(q) = 0 = f(qi) - qd;
+// Helper class to construct functions when user's specify a dependency as qd = f(qi_1, qi_2, ..., qi_N)
+// this function casts as C(q) = 0 = f(qi_1, qi_2, ..., qi_N) - qd;
 
 // Excluding this from Doxygen until it has better documentation! -Sam Hamner
     /// @cond
 class CompoundFunction : public SimTK::Function {
-// returns f1(x[0]) - x[1];
+// returns f1(x[0], x[1], ..., x[N-1]) - x[N];
 private:
     std::unique_ptr<const SimTK::Function> f1;
     const double scale;
@@ -45,9 +45,11 @@ public:
     }
 
     double calcValue(const SimTK::Vector& x) const override {
-        SimTK::Vector xf(1);
-        xf[0] = x[0];
-        return scale*f1->calcValue(xf)-x[1];
+        SimTK::Vector xf(f1->getArgumentSize());
+        for (int i = 0; i < f1->getArgumentSize(); i++) {
+            xf[i] = x[i];
+        }
+        return scale*f1->calcValue(xf)-x[f1->getArgumentSize()];
     }
 
     double calcDerivative(const std::vector<int>& derivComponents, const SimTK::Vector& x) const {
@@ -56,18 +58,22 @@ public:
 
     double calcDerivative(const SimTK::Array_<int>& derivComponents, const SimTK::Vector& x) const override {
         if (derivComponents.size() == 1){
-            if (derivComponents[0]==0){
-                SimTK::Vector x1(1);
-                x1[0] = x[0];
+            if (derivComponents[0] < f1->getArgumentSize()){
+                SimTK::Vector x1(f1->getArgumentSize());
+                for (int i = 0; i < f1->getArgumentSize(); i++) {
+                    x1[i] = x[i];
+                }
                 return scale*f1->calcDerivative(derivComponents, x1);
             }
-            else if (derivComponents[0]==1)
+            else if (derivComponents[0]==f1->getArgumentSize())
                 return -1;
         }
         else if(derivComponents.size() == 2){
-            if (derivComponents[0]==0 && derivComponents[1] == 0){
-                SimTK::Vector x1(1);
-                x1[0] = x[0];
+            if (derivComponents[0] < f1->getArgumentSize() && derivComponents[1] < f1->getArgumentSize()){
+                SimTK::Vector x1(f1->getArgumentSize());
+                for (int i = 0; i < f1->getArgumentSize(); i++) {
+                    x1[i] = x[i];
+                }
                 return scale*f1->calcDerivative(derivComponents, x1);
             }
         }
@@ -75,7 +81,7 @@ public:
     }
 
     int getArgumentSize() const override {
-        return 2;
+        return f1->getArgumentSize() + 1;
     }
     int getMaxDerivativeOrder() const override {
         return 2;
