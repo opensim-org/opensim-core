@@ -3,6 +3,9 @@ Moco Change Log
 
 1.1.0
 -----
+- 2021-07-13: Added MocoStepTimeAsymmetryGoal, MocoStepLengthAsymmetryGoal, and
+              example2DWalkingStepAsymmetry (Matlab).
+
 - 2021-07-09: Added MocoScaleFactor support for MocoStateTrackingGoal, 
               MocoMarkerTrackingGoal, and MocoContactTrackingGoal.
   
