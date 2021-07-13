@@ -63,8 +63,7 @@ are set to NaN.
 The provided trajectory is altered to satisfy any enabled kinematic
 constraints in the model.
 
-Cost
-----
+# Cost
 By default, MocoInverse minimizes the sum of squared controls and
 constrains initial activation to be equal to initial excitation (to avoid
 initial activation spikes). To customize the cost, invoke initialize(), add
@@ -72,8 +71,7 @@ costs manually, and solve the problem using the solver directly. Note,
 however, that kinematic states are not included in the solution if you use
 the solver directly.
 
-Default solver settings
------------------------
+# Default solver settings
 - solver: MocoCasADiSolver
 - multibody_dynamics_mode: implicit
 - interpolate_control_midpoints: false
@@ -91,8 +89,7 @@ MocoInverse minimizes the sum of squared controls and, optionally, the sum
 of squared activations. As MocoInverse becomes more mature and general, the
 costs will become more flexible.
 
-Mesh interval
--------------
+# Mesh interval
 A smaller mesh interval increases the convergence time, but is necessary
 for fast motions or problems with stiff differential equations (e.g.,
 stiff tendons).
@@ -100,8 +97,7 @@ For gait, consider using a mesh interval between 0.01 and 0.05 seconds.
 Try solving your problem with decreasing mesh intervals and choose a mesh
 interval at which the solution stops changing noticeably.
 
-Basic example
--------------
+# Basic example
 
 This example shows how to use MocoInverse in C++:
 

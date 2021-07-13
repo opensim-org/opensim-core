@@ -34,8 +34,7 @@ class MocoTrajectory;
 
 /**
 
-MocoTrack
----------
+\section MocoTrack
 This tool constructs problems in which state and/or marker trajectory data
 are tracked while solving for model kinematics and actuator controls.
 "Tracking" refers to cost terms that minimize the error between provided
@@ -162,6 +161,7 @@ class OSIMMOCO_API MocoTrack : public MocoTool {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoTrack, MocoTool);
 
 public:
+    // Properties
     OpenSim_DECLARE_PROPERTY(states_reference, TableProcessor,
             "States reference data to be tracked. If provided, a "
             "MocoStateTrackingGoal term is created and added to the internal "

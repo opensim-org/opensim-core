@@ -50,6 +50,7 @@ public:
         set_bounds(bounds.getAsArray());
     }
 protected:
+    // Properties
     OpenSim_DECLARE_PROPERTY(scale_factor, double, "TODO");
     OpenSim_DECLARE_LIST_PROPERTY_ATMOST(bounds, double, 2,
         "1 value: required value over all time. "
