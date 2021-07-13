@@ -685,6 +685,46 @@ void Muscle::updateGeometry(const SimTK::State& s)
     updGeometryPath().updateGeometry(s);
 }
 
+void Muscle::copyPropertiesFromObject(const OpenSim::Muscle& fromObject)
+{
+    // Cycle thru properties, find name and check if this object has similarly named Property
+    // if so, delegate to Property assignment to copy values. 
+    // Special cases: Lists, Objects
+    //std::cout << (const_cast<OpenSim::Muscle&>(fromObject)).dump() << std::endl;
+
+    const int numProps = getNumProperties();
+    bool debug = false;
+    for (int px = 0; px < numProps; ++px) {
+        AbstractProperty& fromProp = updPropertyByIndex(px);
+        const std::string& pName = fromProp.getName();
+        if (hasProperty(pName)) {
+            AbstractProperty& myProp = updPropertyByName(pName); // Get writable reference to my property
+            if (myProp.isSamePropertyClass(fromProp) && !fromProp.getValueIsDefault()) {
+                if (fromProp.isOneObjectProperty()) { // Either recur or "clone the object
+                    // Expands to Property<GeometryPath>::updAs(fromProp).updValue() and works perfectly
+                    GeometryPath& gpp2 = const_cast<Muscle&>(fromObject).upd_GeometryPath();
+                    // While the following lines produce an empty Path
+                    Object& fromPropertyAsObject = fromProp.updValueAsObject();
+                    std::cout << fromPropertyAsObject.dump() << std::endl;
+                    const GeometryPath* gpp = dynamic_cast<GeometryPath*>(&fromPropertyAsObject);
+                    if (gpp != nullptr) {
+                        cout << gpp->getPathPointSet().getSize() << std::endl;
+                        cout << gpp2.getPathPointSet().getSize() << std::endl;
+                        myProp.setValueAsObject(gpp2);
+                    }
+                    else
+                        myProp.setValueAsObject(fromPropertyAsObject);
+
+                    //if (debug)
+                     //   std::cout << fromObj.dump() << std::endl;
+                    //myProp.updValueAsObject().copyPropertiesFromObject(asObj); // if we want to recur we could do that instead
+                }
+                else
+                    myProp = fromProp;
+            }
+        }
+    }
+}
 
 //_____________________________________________________________________________
 /**
