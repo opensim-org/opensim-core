@@ -3,6 +3,9 @@ Moco Change Log
 
 1.1.0
 -----
+- 2021-07-09: Added MocoScaleFactor support for MocoStateTrackingGoal, 
+              MocoMarkerTrackingGoal, and MocoContactTrackingGoal.
+  
 - 2021-06-29: Added Matlab version of example2DWalkingMetabolics (via Brian 
               Umberger).
               
