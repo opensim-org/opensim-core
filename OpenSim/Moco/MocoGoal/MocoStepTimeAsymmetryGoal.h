@@ -184,6 +184,7 @@ protected:
     void printDescriptionImpl() const override;
 
 private:
+    // PROPERTIES
     OpenSim_DECLARE_PROPERTY(left_contact_group, MocoStepTimeAsymmetryGoalGroup,
             "Paths to SmoothSphereHalfSpaceForce objects on the left foot of "
             "the model whose forces are summed to determine when the left foot "

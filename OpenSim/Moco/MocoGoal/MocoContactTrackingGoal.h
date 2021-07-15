@@ -270,6 +270,7 @@ protected:
     void printDescriptionImpl() const override;
 
 private:
+    // PROPERTIES
     OpenSim_DECLARE_LIST_PROPERTY(contact_groups, MocoContactTrackingGoalGroup,
             "Associate contact elements in the model with force data.");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(external_loads, ExternalLoads,
