@@ -24,13 +24,14 @@
 namespace OpenSim {
 
 class SmoothSphereHalfSpaceForce;
-
-/** A contact group consists of the name of a single ExternalForce and a list of
+/** 
+\section MocoContactTrackingGoalGroup
+A contact group consists of the name of a single ExternalForce and a list of
 contact force component paths in the model. The MocoContactTrackingGoal
 calculates the difference between the data from the ExternalForce and the sum of
 the forces from the contact force components.
 
-### Alternative frame paths
+## Alternative frame paths
 
 Contact force elements that correspond to a single ExternalForce are
 typically attached to the same single body/frame. However, it is possible
@@ -73,7 +74,9 @@ private:
 };
 
 
-/** Minimize the error between compliant contact force elements in the model and
+/**
+\section MocoContactTrackingGoal
+Minimize the error between compliant contact force elements in the model and
 experimentally measured contact forces.
 
 This class handles multiple groups of contact forces and a single
@@ -106,7 +109,7 @@ We use the following notation:
 - \f$ \vec{F}_{e,j} \f$ the experimental contact force for group \f$ j \f$,
     expressed in ground.
 
-### Tracking a subset of force components
+# Tracking a subset of force components
 
 The projection is useful for selecting which components of the force to
 track. The force can be projected to be onto a vector or
@@ -116,7 +119,7 @@ projecting onto the plane perpendicular to the vector (0, 0, 1) allows
 ignoring the transverse force. See the projection and projection_vector
 properties.
 
-### Usage
+## Usage
 
 To use this goal, specify the following:
 - a single ExternalLoads file or object, which is a set of ExternalForces.
@@ -155,6 +158,30 @@ this goal implies that the model contains compliant contact forces, so
 adding ExternalLoads to the model would be redundant. This class uses the
 ExternalLoads *only* for computing the force error, not for applying forces
 to the model.
+
+### Scale factors
+
+Add a MocoParameter to the problem that will scale the tracking reference
+data associated with a contact force group. Scale factors are applied
+to the tracking error calculations based on the following equation:
+
+     error = modelValue - scaleFactor * referenceValue
+
+In other words, the scale factor is applied when computing the tracking
+error for each contact force group, not to the reference data directly.
+You must specify both the external force name associated with the contact
+force group and the index corresponding to the direction (i.e., X = 0,
+Y = 1, Z = 2) of the scaled force value. The direction is applied in
+whatever frame the reference data is expressed in based on the provided
+ExternalLoads in each contact group.
+
+Adding a scale factor to a MocoContactTrackingGoal.
+@code
+auto* markerTrackingGoal = problem.addGoal<MocoContactTrackingGoal>();
+...
+markerTrackingGoal->addScaleFactor(
+        'RightGRF_vertical_scale_factor', 'Right_GRF', 1, {0.5, 2.0});
+@endcode
 
 @ingroup mocogoal */
 class OSIMMOCO_API MocoContactTrackingGoal : public MocoGoal {
@@ -215,6 +242,23 @@ public:
     void clearProjectionVector() { updProperty_projection_vector().clear(); }
     SimTK::Vec3 getProjectionVector() const { return get_projection_vector(); }
 
+    /// Add a MocoParameter to the problem that will scale the tracking reference
+    /// data associated with a contact force group. Scale factors are applied
+    /// to the tracking error calculations based on the following equation:
+    ///
+    ///     error = modelValue - scaleFactor * referenceValue
+    ///
+    /// In other words, the scale factor is applied when computing the tracking
+    /// error for each contact force group, not to the reference data directly.
+    /// You must specify both the external force name associated with the contact
+    /// force group and the index corresponding to the direction (i.e., X = 0,
+    /// Y = 1, Z = 2) of the scaled force value. The direction is applied in
+    /// whatever frame the reference data is expressed in based on the provided
+    /// ExternalLoads in each contact group.
+    void addScaleFactor(const std::string& name,
+            const std::string& externalForceName, int index,
+            const MocoBounds& bounds);
+
 protected:
     void initializeOnModelImpl(const Model&) const override;
     void calcIntegrandImpl(
@@ -226,6 +270,7 @@ protected:
     void printDescriptionImpl() const override;
 
 private:
+    // PROPERTIES
     OpenSim_DECLARE_LIST_PROPERTY(contact_groups, MocoContactTrackingGoalGroup,
             "Associate contact elements in the model with force data.");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(external_loads, ExternalLoads,
@@ -270,6 +315,10 @@ private:
         const PhysicalFrame* refExpressedInFrame = nullptr;
     };
     mutable std::vector<GroupInfo> m_groups;
+
+    mutable std::map<std::pair<std::string, int>, std::string> m_scaleFactorMap;
+    using RefPtrMSF = SimTK::ReferencePtr<const MocoScaleFactor>;
+    mutable std::vector<std::array<RefPtrMSF, 3>> m_scaleFactorRefs;
 };
 
 } // namespace OpenSim

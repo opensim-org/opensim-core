@@ -33,7 +33,8 @@ namespace OpenSim {
 //=============================================================================
 /**
 IMU is a Model Component that represents an IMU along with its Geometry
-for visualization, noise model.
+for visualization.
+@todo add noise model, limits/saturation, as needed.
 
 
 @authors Ayman Habib
@@ -61,15 +62,21 @@ public:
     OpenSim_DECLARE_OUTPUT(accelerometer_signal, SimTK::Vec3,
             calcAccelerometerSignal, SimTK::Stage::Acceleration);
     // Outputs
+    /// Report the Transform of this IMU in Ground frame
     SimTK::Transform calcTransformInGround(const SimTK::State& s) const {
         return get_frame().getTransformInGround(s);
     }
+    /// Report the orientation of this IMU in ground frame expressed as Quaternion
     SimTK::Quaternion calcOrientationAsQuaternion(const SimTK::State& s) const {
         return SimTK::Quaternion(calcTransformInGround(s).R());
     }
+    /// Report the angular velocity of the frame to which this IMU is attached
+    /// in ground frame
     SimTK::Vec3 calcGyroscopeSignal(const SimTK::State& s) const {
         return get_frame().getAngularVelocityInGround(s);
     }
+    /// Report the linear acceleration of the frame to which this IMU is attached in Ground.
+    /// Gravity is subtracted and result expressed in the frame to which the IMU is attached.
     SimTK::Vec3 calcAccelerometerSignal(
             const SimTK::State& s) const {
         const auto& model = getModel();

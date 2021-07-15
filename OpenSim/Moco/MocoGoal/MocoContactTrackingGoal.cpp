@@ -20,6 +20,7 @@
 #include <OpenSim/Simulation/Model/SmoothSphereHalfSpaceForce.h>
 
 using namespace OpenSim;
+using RefPtrMSF = SimTK::ReferencePtr<const MocoScaleFactor>;
 
 MocoContactTrackingGoalGroup::MocoContactTrackingGoalGroup() {
     constructProperties();
@@ -71,6 +72,37 @@ void MocoContactTrackingGoal::setExternalLoads(const ExternalLoads& extLoads) {
     set_external_loads(extLoads);
 }
 
+void MocoContactTrackingGoal::addScaleFactor(const std::string& name,
+        const std::string& externalForceName, int index,
+        const MocoBounds &bounds) {
+
+    // Check that the contact group associated with the provided external force
+    // name exists.
+    bool foundContactGroup = false;
+    for (int ig = 0; ig < getProperty_contact_groups().size(); ++ig) {
+        const auto& group = get_contact_groups(ig);
+        if (externalForceName == group.get_external_force_name()) {
+            foundContactGroup = true;
+        }
+    }
+    OPENSIM_THROW_IF_FRMOBJ(!foundContactGroup, Exception,
+            "Contact group associated with external force '{}' not found.",
+            externalForceName);
+
+    // Check that the index is in the correct range.
+    OPENSIM_THROW_IF_FRMOBJ((index < 0) || (index > 2), Exception,
+                "Expected marker scale factor index to be in the range [0, 2], "
+                "but received '{}'.", index);
+
+    // Update the scale factor map so we can retrieve the correct MocoScaleFactor
+    // for this contact group during initialization.
+    std::pair<std::string, int> key(externalForceName, index);
+    m_scaleFactorMap[key] = name;
+
+    // Append the scale factor to the MocoGoal.
+    appendScaleFactor(MocoScaleFactor(name, bounds));
+}
+
 void MocoContactTrackingGoal::initializeOnModelImpl(const Model& model) const {
 
     // Calculate the denominator.
@@ -110,6 +142,7 @@ void MocoContactTrackingGoal::initializeOnModelImpl(const Model& model) const {
     // contact force components must also apply forces to the same body. Here,
     // we find which of the two bodies in each contact force component matches
     // the ExternalForce body.
+    const auto& scaleFactors = getModel().getComponentList<MocoScaleFactor>();
     for (int ig = 0; ig < getProperty_contact_groups().size(); ++ig) {
         const auto& group = get_contact_groups(ig);
 
@@ -164,6 +197,26 @@ void MocoContactTrackingGoal::initializeOnModelImpl(const Model& model) const {
         }
 
         m_groups.push_back(groupInfo);
+
+        // Check to see if the model contains a MocoScaleFactor associated with
+        // this contact group.
+        std::array<RefPtrMSF, 3> theseScaleFactorRefs;
+        for (int j = 0; j < 3; ++j) {
+            bool foundScaleFactor = false;
+            std::pair<std::string, int> key(group.get_external_force_name(), j);
+            for (const auto& scaleFactor : scaleFactors) {
+                if (m_scaleFactorMap[key] == scaleFactor.getName()) {
+                    theseScaleFactorRefs[j] = &scaleFactor;
+                    foundScaleFactor = true;
+                }
+            }
+            // If we didn't find a MocoScaleFactor for this force direction, set
+            // the reference pointer to null.
+            if (!foundScaleFactor) {
+                theseScaleFactorRefs[j] = nullptr;
+            }
+        }
+        m_scaleFactorRefs.push_back(theseScaleFactorRefs);
     }
 
     // Should the contact force errors be projected onto a plane or vector?
@@ -248,7 +301,10 @@ void MocoContactTrackingGoal::calcIntegrandImpl(
 
     integrand = 0;
     SimTK::Vec3 force_ref;
-    for (const auto& group : m_groups) {
+    for (int ig = 0; ig < (int)m_groups.size(); ++ig) {
+
+        // Get contact groups.
+        const auto& group = m_groups[ig];
 
         // Model force.
         SimTK::Vec3 force_model(0);
@@ -268,6 +324,14 @@ void MocoContactTrackingGoal::calcIntegrandImpl(
         // Re-express the reference force.
         if (group.refExpressedInFrame) {
             group.refExpressedInFrame->expressVectorInGround(state, force_ref);
+        }
+
+        // Apply scale factors for this marker, if they exist.
+        const auto& scaleFactorRef = m_scaleFactorRefs[ig];
+        for (int j = 0; j < 3; ++j) {
+            if (scaleFactorRef[j] != nullptr) {
+                force_ref[j] *= scaleFactorRef[j]->getScaleFactor();
+            }
         }
 
         SimTK::Vec3 error3D = force_model - force_ref;

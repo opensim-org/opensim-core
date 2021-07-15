@@ -197,6 +197,76 @@ using namespace SimTK;
     if not type(bounds) is MocoBounds:
         bounds = self._convert(MocoBounds, bounds)
 %}
+
+%extend OpenSim::MocoStateTrackingGoal {
+%pythoncode %{
+    def _convert(self, cls, v):
+        if hasattr(v, '__len__'):
+            if len(v) > 2:
+                raise Exception("Bounds cannot have more than 2 elements.")
+            elif len(v) == 0:
+                return cls()
+            elif len(v) == 1:
+                return cls(v[0])
+            elif len(v) == 2:
+                return cls(v[0], v[1])
+            else:
+                return cls()
+        else:
+            return cls(v)
+%}
+}
+%pythonprepend OpenSim::MocoStateTrackingGoal::addScaleFactor %{
+    if not type(bounds) is MocoBounds:
+        bounds = self._convert(MocoBounds, bounds)
+%}
+
+%extend OpenSim::MocoMarkerTrackingGoal {
+%pythoncode %{
+    def _convert(self, cls, v):
+        if hasattr(v, '__len__'):
+            if len(v) > 2:
+                raise Exception("Bounds cannot have more than 2 elements.")
+            elif len(v) == 0:
+                return cls()
+            elif len(v) == 1:
+                return cls(v[0])
+            elif len(v) == 2:
+                return cls(v[0], v[1])
+            else:
+                return cls()
+        else:
+            return cls(v)
+%}
+}
+%pythonprepend OpenSim::MocoMarkerTrackingGoal::addScaleFactor %{
+    if not type(bounds) is MocoBounds:
+        bounds = self._convert(MocoBounds, bounds)
+%}
+
+%extend OpenSim::MocoContactTrackingGoal {
+%pythoncode %{
+    def _convert(self, cls, v):
+        if hasattr(v, '__len__'):
+            if len(v) > 2:
+                raise Exception("Bounds cannot have more than 2 elements.")
+            elif len(v) == 0:
+                return cls()
+            elif len(v) == 1:
+                return cls(v[0])
+            elif len(v) == 2:
+                return cls(v[0], v[1])
+            else:
+                return cls()
+        else:
+            return cls(v)
+%}
+}
+%pythonprepend OpenSim::MocoContactTrackingGoal::addScaleFactor %{
+    if not type(bounds) is MocoBounds:
+        bounds = self._convert(MocoBounds, bounds)
+%}
+
 // MocoTrajectory's functions contain lots of matrices, and Python users
 // feel more comfortable providing/getting these matrices as NumPy types rather
 // than as SimTK numeric types. We can use SWIG NumPy typemaps to accomplish

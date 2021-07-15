@@ -318,6 +318,28 @@ using namespace SimTK;
     }
 %}
 
+%typemap(javacode) OpenSim::MocoStateTrackingGoal %{
+    public void addScaleFactor(String name, String state, double[] b)
+            throws Exception {
+            addScaleFactor(name, state, MocoPhase.convertArrayToMB(b));
+    }
+%}
+
+%typemap(javacode) OpenSim::MocoMarkerTrackingGoal %{
+    public void addScaleFactor(String name, String marker, int index, double[] b)
+            throws Exception {
+            addScaleFactor(name, marker, index, MocoPhase.convertArrayToMB(b));
+    }
+%}
+
+%typemap(javacode) OpenSim::MocoContactTrackingGoal %{
+    public void addScaleFactor(String name, String externalForceName, int index,
+        double[] b) throws Exception {
+        addScaleFactor(name, externalForceName, index,
+                       MocoPhase.convertArrayToMB(b));
+    }
+%}
+
 /* SWIG does not support initializer_list, but we can use Java arrays to
  * achieve similar syntax in MATLAB.
  * TODO create Vector(double[]) constructor. */

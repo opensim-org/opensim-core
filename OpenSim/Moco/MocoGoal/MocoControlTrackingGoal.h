@@ -46,8 +46,10 @@ private:
     void constructProperties();
 };
 
-/** The squared difference between a control variable value and a reference
-control variable value, summed over the control variables for which a
+/** 
+\section MocoControlTrackingGoal
+The squared difference between a control
+variable value and a reference control variable value, summed over the control variables for which a
 reference is provided, and integrated over the phase. This can be used to
 track actuator controls, muscle excitations, etc.
 
@@ -83,7 +85,7 @@ This goal has two labeling modes: 'auto' and 'manual':
             The `allow_unused_references` property does not apply in this
             mode.
 
-### Control variable names
+## Control variable names
 
 Control variable names are based on paths to actuators,
 e.g., `/forceset/soleus_r`. For non-scalar actuators, the control variable
@@ -92,13 +94,13 @@ e.g., `/forceset/body_actuator_0`, where
 'body_actuator' is the name of the actuator and `_0` specifies the
 control index.
 
-### Reference data
+## Reference data
 
 The reference can be provided as a file name to a STO or CSV file (or
 other file types for which there is a FileAdapter), or programmatically
 as a TimeSeriesTable.
 
-### Scale factors
+## Scale factors
 
 Use `addScaleFactor()` to add a MocoParameter to the MocoProblem that will
 scale the tracking reference data associated with a control in the tracking cost.
@@ -123,7 +125,7 @@ controlTrackingGoal->addScaleFactor(
         'soleus_scale_factor', '/forceset/soleus_r', {0.01, 1.0});
 @endcode
 
-### Helpful tips
+## Helpful tips
 
 Tracking problems in direct collocation perform best when tracking smooth
 data, so it is recommended to filter the data in the reference you provide

@@ -35,6 +35,8 @@ namespace OpenSim {
 %include <OpenSim/Moco/MocoGoal/MocoPeriodicityGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoInitialForceEquilibriumDGFGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoInitialVelocityEquilibriumDGFGoal.h>
+%include <OpenSim/Moco/MocoGoal/MocoStepTimeAsymmetryGoal.h>
+%include <OpenSim/Moco/MocoGoal/MocoStepLengthAsymmetryGoal.h>
 
 %ignore OpenSim::MocoMultibodyConstraint::getKinematicLevels;
 %ignore OpenSim::MocoConstraintInfo::getBounds;
