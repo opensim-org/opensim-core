@@ -2857,13 +2857,22 @@ print(const string &aFileName,double aDT,const string &aMode) const
     return(nTotal);
 }
 
-void Storage::
-printResult(const Storage *aStorage,const std::string &aName,
-                const std::string &aDir,double aDT,const std::string &aExtension)
-{
-    if(!aStorage) return;
-    std::string path = (aDir=="") ? "." : aDir;
-    std::string name = (aName.rfind(aExtension)==string::npos)? (path + "/" + aName + aExtension) :  (path + "/" + aName);
+void Storage::printResult(const Storage* aStorage, const std::string& aName,
+        const std::string& aDir, double aDT, const std::string& aExtension) {
+    if (!aStorage) return;
+    std::string path = (aDir == "") ? "." : aDir;
+    std::string directory;
+    bool dontApplySearchPath;
+    std::string fileName, extension;
+    SimTK::Pathname::deconstructPathname(
+            aName, dontApplySearchPath, directory, fileName, extension);
+    if (directory != "") {
+        log_warn("Directory {} was specified where only file name {} is expected. It will "
+                 "be ignored. Result files will be written to directory '{}' instead.",
+                directory, fileName, path);
+    }
+    std::string name = (extension == "") ? (path + "/" + fileName + aExtension)
+                                         : (path + "/" + fileName + extension);
     if(aDT<=0.0) aStorage->print(name);
     else aStorage->print(name,aDT);
 }
