@@ -2867,9 +2867,10 @@ void Storage::printResult(const Storage* aStorage, const std::string& aName,
     SimTK::Pathname::deconstructPathname(
             aName, dontApplySearchPath, directory, fileName, extension);
     if (directory != "") {
-        log_warn("Directory {} was specified where only file name {} is expected. It will "
-                 "be ignored. Result files will be written to directory '{}' instead.",
-                directory, fileName, path);
+        log_warn("Directory '{}' was specified where only file name '{}' is "
+                 "expected. The directory will be ignored. Result files will "
+                 "be written to directory '{}' instead.",
+                    directory, fileName, path);
     }
     std::string name = (extension == "") ? (path + "/" + fileName + aExtension)
                                          : (path + "/" + fileName + extension);
