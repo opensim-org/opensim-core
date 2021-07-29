@@ -30,8 +30,10 @@ namespace OpenSim {
 // TODO allow raising error to different powers (cubed).
 // TODO allow a "deadband."
 
-/** The squared difference between a state variable value and a reference
-state variable value, summed over the state variables for which a
+/** 
+\section MocoStateTrackingGoal
+The squared difference between a state variable
+value and a reference state variable value, summed over the state variables for which a
 reference is provided, and integrated over the phase. This can be used to
 track joint angles, activations, etc.
 The reference can be provided as a file name to a STO or CSV file (or
@@ -42,7 +44,7 @@ Tracking problems in direct collocation perform best when tracking smooth
 data, so it is recommended to filter the data in the reference you provide
 to the cost.
 
-### Scale factors
+## Scale factors
 
 Use `addScaleFactor()` to add a MocoParameter to the MocoProblem that will
 scale the tracking reference data associated with a state in the tracking cost.
@@ -159,6 +161,7 @@ protected:
     void printDescriptionImpl() const override;
 
 private:
+    // PROPERTIES
     OpenSim_DECLARE_PROPERTY(reference, TableProcessor,
             "Trajectories of states "
             "(coordinates, speeds, activation, etc.) to track. Column labels "

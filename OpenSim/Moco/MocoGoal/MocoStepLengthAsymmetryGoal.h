@@ -122,6 +122,7 @@ protected:
     void printDescriptionImpl() const override;
 
 private:
+    // PROPERTIES
     OpenSim_DECLARE_PROPERTY(left_foot_frame, std::string,
             "The model frame associated with the left foot.");
     OpenSim_DECLARE_PROPERTY(right_foot_frame, std::string,

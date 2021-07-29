@@ -28,13 +28,15 @@ namespace OpenSim {
 
 class Marker;
 
-/** The squared difference between a model marker location and an experimental
-reference marker location, summed over the markers for which an
+/** 
+\section MocoMarkerTrackingGoal
+The squared difference between a model marker
+location and an experimental reference marker location, summed over the markers for which an
 experimental data location is provided, and integrated over the phase.
 The reference can be provided as a file name to a TRC file, or
 programmatically as a TimeSeriesTable.
 
-### Scale factors
+## Scale factors
 
 Use `addScaleFactor()` to add a MocoParameter to the MocoProblem that will
 scale the tracking reference data associated with a marker in the tracking cost.
@@ -112,7 +114,7 @@ protected:
         cost[0] = input.integral;
     }
     void printDescriptionImpl() const override;
-
+    // PROPERTIES
     OpenSim_DECLARE_PROPERTY(markers_reference, MarkersReference,
             "MarkersReference object containing the marker trajectories to be "
             "tracked by a model. Marker weights can be optionally specified "
