@@ -207,20 +207,23 @@ int IMUDataReporter::begin(const SimTK::State& s )
         }
     }
     if (get_compute_accelerations_without_forces()) {
-        if (_statesStore == nullptr) {
-            throw(Exception("IMUDataReporter: compute_accelerations_without_forces requires providing a states file as input."));
-        }
+
+        OPENSIM_THROW_IF_FRMOBJ(_statesStore == nullptr, Exception,
+            "IMUDataReporter: compute_accelerations_without_forces requires "
+            "providing a states file as input.");
+
         // Create splines for coordinates from statesStore and provide to
         // PositionMotion.
+        _modelLocal->initSystem();
         auto statesTraj = StatesTrajectory::createFromStatesStorage(
                 *_modelLocal, *_statesStore, true, true, true);
 
         auto posmot = PositionMotion::createFromStatesTrajectory(
                 *_modelLocal, statesTraj);
         posmot->setName("position_motion");
-        const auto* posmotPtr = posmot.get();
         _modelLocal->addComponent(posmot.release());
     }
+
     _modelLocal->initSystem();
 
     // RECORD

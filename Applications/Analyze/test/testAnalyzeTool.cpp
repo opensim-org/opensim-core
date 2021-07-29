@@ -36,6 +36,9 @@
 #include <OpenSim/Analyses/BodyKinematics.h>
 #include <OpenSim/Analyses/IMUDataReporter.h>
 #include <OpenSim/Actuators/ModelFactory.h>
+#include <OpenSim/Simulation/Control/PrescribedController.h>
+#include <OpenSim/Actuators/CoordinateActuator.h>
+#include <OpenSim/Common/Constant.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -350,6 +353,7 @@ void testBodyKinematics() {
     ASSERT_EQUAL<double>(groundPosX.getLast(), speedX * duration, tol);
     ASSERT_EQUAL<double>(groundPosY.getLast(), speedY * duration, tol);
 }
+
 void testIMUDataReporter() {
     Model pendulum = ModelFactory::createNLinkPendulum(2);
 
@@ -371,9 +375,13 @@ void testIMUDataReporter() {
 
     SimTK::State& s = pendulum.initSystem();
 
-    Joint& joint = pendulum.updJointSet()[0];
-    auto& qi = joint.updCoordinate();
-    qi.setValue(s, SimTK::Pi / 2.); // lowest-point hanging condition
+    Joint& j0 = pendulum.updJointSet()[0];
+    auto& q0 = j0.updCoordinate();
+    q0.setValue(s, SimTK::Pi / 2.0); // lowest-point hanging condition
+
+    Joint& j1 = pendulum.updJointSet()[1];
+    auto& q1 = j1.updCoordinate();
+    q1.setValue(s, 0.0);
 
     Manager manager(pendulum);
     double duration = 2.0;
@@ -394,8 +402,8 @@ void testIMUDataReporter() {
     }
     // Now allow pendulum to drop under gravity from horizontal
     bodyKinematics->getPositionStorage()->purge();
-    qi.setValue(s, 0.); // Horizontal position
-    s.setTime(0.);
+    q0.setValue(s, 0.0); // Horizontal position
+    s.setTime(0.0);
     Manager manager2(pendulum);
     manager2.initialize(s);
     s = manager2.integrate(duration);
@@ -413,7 +421,7 @@ void testIMUDataReporter() {
                             .convertRotationToBodyFixedXYZ();
             SimTK::Vec3 fromBodyKinRotations = SimTK::Vec3(&fromBodyKin[b * 6 + 3]);
             ASSERT_EQUAL<double>(
-                    (bodyFixedRotations - fromBodyKinRotations).norm(), 0., 1e-7);
+                    (bodyFixedRotations - fromBodyKinRotations).norm(), 0.0, 1e-7);
         }
     }
     /* Attempt to compare to createSyntheticIMUAccelerationSignals */
@@ -428,7 +436,8 @@ void testIMUDataReporter() {
     auto diff = (accelTableFromUtility.getMatrix() -
                  imuDataReporter->getAccelerometerSignalsTable().getMatrix());
     auto elemSum = diff.colSum().rowSum().norm();
-    ASSERT_EQUAL<double>(elemSum, 0., 1e-5);
+    ASSERT_EQUAL<double>(elemSum, 0.0, 1e-5);
+
     // Now test AnalyzeTool workflow
     AnalyzeTool analyzeIMU;
     analyzeIMU.setName("dpend_imu");
@@ -442,4 +451,86 @@ void testIMUDataReporter() {
     analyzeIMU.print("analyzeReportIMUData.xml");
     AnalyzeTool roundTrip("analyzeReportIMUData.xml");
     roundTrip.run();
+
+    // Create another pendulum simulation to test that IMUDataReporter can
+    // produce the correct accelerations when the applied forces are unknown.
+    {
+        // Create a fresh double pendulum model.
+        Model pendulum = ModelFactory::createNLinkPendulum(2);
+
+        IMUDataReporter* imuDataReporter = new IMUDataReporter(&pendulum);
+        imuDataReporter->setName("IMUDataReporter");
+        std::vector<std::string> framePaths = {"/bodyset/b0", "/bodyset/b1"};
+        imuDataReporter->append_frame_paths("/bodyset/b0");
+        imuDataReporter->append_frame_paths("/bodyset/b1");
+        pendulum.addAnalysis(imuDataReporter);
+
+        auto& state = pendulum.initSystem();
+        pendulum.print("testIMUDataReporter_double_pendulum.osim");
+
+        Joint& j0 = pendulum.updJointSet()[0];
+        auto& q0 = j0.updCoordinate();
+        q0.setValue(s, SimTK::Pi / 2.0); // lowest-point hanging condition
+
+        Joint& j1 = pendulum.updJointSet()[1];
+        auto& q1 = j1.updCoordinate();
+        q1.setValue(s, 0.0);
+        pendulum.initSystem();
+
+        PrescribedController* controller = new PrescribedController();
+        controller->setName("torque_controller");
+        controller->addActuator(
+                pendulum.getComponent<CoordinateActuator>("/tau0"));
+        controller->addActuator(
+                pendulum.getComponent<CoordinateActuator>("/tau1"));
+        pendulum.addController(controller);
+        pendulum.initSystem();
+
+        Constant* constantTorque = new Constant(10.0);
+        pendulum.updComponent<PrescribedController>(
+                    "/controllerset/torque_controller")
+                .prescribeControlForActuator("tau0", constantTorque);
+        pendulum.updComponent<PrescribedController>(
+                    "/controllerset/torque_controller")
+                .prescribeControlForActuator("tau1", constantTorque);
+
+        state = pendulum.initSystem();
+        q0.setValue(state, 0.0); // Horizontal position
+        q1.setValue(state, 0.0);
+        state.setTime(0.0);
+        Manager manager(pendulum);
+        manager.initialize(state);
+        manager.integrate(duration);
+
+        TimeSeriesTableVec3 accelSignals =
+                imuDataReporter->getAccelerometerSignalsTable();
+
+        TimeSeriesTable statesTable = manager.getStatesTable();
+        STOFileAdapter::write(statesTable, "testIMUDataReporter_states.sto");
+
+        AnalyzeTool analyzeIMU;
+        analyzeIMU.setName("testIMUDataReporter_no_forces");
+        analyzeIMU.setModelFilename("testIMUDataReporter_double_pendulum.osim");
+        analyzeIMU.setStatesFileName("testIMUDataReporter_states.sto");
+        analyzeIMU.setStartTime(0.0);
+        analyzeIMU.setFinalTime(2.0);
+        IMUDataReporter imuDataReporter2;
+        imuDataReporter2.setName("IMUDataReporter_no_forces");
+        imuDataReporter2.append_frame_paths("/bodyset/b0");
+        imuDataReporter2.append_frame_paths("/bodyset/b1");
+        imuDataReporter2.set_compute_accelerations_without_forces(true);
+        analyzeIMU.updAnalysisSet().cloneAndAppend(imuDataReporter2);
+        analyzeIMU.print("analyzeReportIMUDataNoForces.xml");
+        AnalyzeTool roundTrip("analyzeReportIMUDataNoForces.xml");
+        roundTrip.run();
+
+        // Compare accelerations
+        TimeSeriesTableVec3 accelSignals_no_forces(
+                "testIMUDataReporter_no_forces_linear_accelerations.sto");
+
+        auto diff = accelSignals.getMatrix() -
+                    accelSignals_no_forces.getMatrix();
+        auto elemSum = diff.colSum().rowSum().norm();
+        ASSERT_EQUAL<double>(elemSum, 0.0, 1e-5);
+    }
 }
