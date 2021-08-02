@@ -22,14 +22,14 @@
 
 # Import OpenSim libraries
 import opensim as osim
-
+import math.pi as pi
 # Set variables to use
 modelFileName = 'Rajagopal_2015.osim';          # The path to an input model
 orientationsFileName = 'MT_012005D6_009-001_orientations.sto';   # The path to orientation data for calibration 
-sensor_to_opensim_rotations = Vec3(-pi/2, 0, 0);# The rotation of IMU data to the OpenSim world frame 
+sensor_to_opensim_rotations = osim.Vec3(-pi/2, 0, 0);# The rotation of IMU data to the OpenSim world frame
 baseIMUName = 'pelvis_imu';                     # The base IMU is the IMU on the base body of the model that dictates the heading (forward) direction of the model.
 baseIMUHeading = 'z';                           # The Coordinate Axis of the base IMU that points in the heading direction. 
-visulizeCalibration = true;                     # Boolean to Visualize the Output model
+visulizeCalibration = True;                     # Boolean to Visualize the Output model
 
 # Instantiate an IMUPlacer object
 imuPlacer = osim.IMUPlacer();
