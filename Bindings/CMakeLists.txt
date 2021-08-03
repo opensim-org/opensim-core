@@ -9,6 +9,13 @@ endif()
 if(WITH_EZC3D)
     set(SWIG_FLAGS "-DWITH_EZC3D")
 endif()
+#flag to indicate whether to let SWIG process Doxygen comments
+# Will be on for releases but too many warnings/errors for regular dev.
+set(BUILD_SWIG_DOXYGEN OFF CACHE BOOL "Carry Doxygen comments to bindings")
+set(SWIG_DOXYGEN "")
+if (BUILD_SWIG_DOXYGEN)
+    set(SWIG_DOXYGEN "-doxygen")
+endif()
 
 if(BUILD_PYTHON_WRAPPING)
     add_subdirectory(Python)
