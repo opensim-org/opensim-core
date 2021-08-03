@@ -22,7 +22,7 @@
 
 # Import OpenSim libraries
 import opensim as osim
-import math.pi as pi
+from math import pi
 # Set variables to use
 modelFileName = 'Rajagopal_2015.osim';          # The path to an input model
 orientationsFileName = 'MT_012005D6_009-001_orientations.sto';   # The path to orientation data for calibration 
