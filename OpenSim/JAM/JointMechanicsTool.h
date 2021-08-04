@@ -99,6 +99,13 @@ public:
         "states for these actuators listed in the input_states_file will be "
         "ignored.")
 
+    OpenSim_DECLARE_PROPERTY(input_activations_file, std::string,
+        "Path to storage file (.sto) containing forces vs time for actuators "
+        "in the model. The overrideActuation function will be used to set the "
+        "forces in the model for any actuator listed in this file, thus the "
+        "states for these actuators listed in the input_states_file will be "
+        "ignored.")
+
     OpenSim_DECLARE_PROPERTY(results_directory, std::string,
         "Path to folder where the results files will be written.")
 
@@ -239,7 +246,7 @@ private:
     void setNull();
     void constructProperties();
     
-    void initialize(SimTK::State& state);
+    void initialize();
     void assembleStatesTrajectoryFromTransformsData(const Storage& storage, SimTK::State s);
     void assembleStatesTrajectoryFromStatesData(const Storage& storage, SimTK::State s);
     Storage processInputStorage(std::string file);

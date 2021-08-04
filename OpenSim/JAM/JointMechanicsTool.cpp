@@ -88,6 +88,7 @@ void JointMechanicsTool::constructProperties()
     constructProperty_use_muscle_physiology("");
     constructProperty_input_transforms_file("");
     constructProperty_input_forces_file("");
+    constructProperty_input_activations_file("");
 
     constructProperty_results_directory(".");
     constructProperty_results_file_basename("");
@@ -159,9 +160,9 @@ bool JointMechanicsTool::run() {
             _model = Model(get_model_file());
         }
 
-        SimTK::State state = _model.initSystem();
-
-        initialize(state);
+        //SimTK::State state = _model.initSystem();
+        initialize();
+        //initialize(state);
         
         SimTK::Visualizer* viz=NULL;
         if (get_use_visualizer()) {
@@ -172,7 +173,7 @@ bool JointMechanicsTool::run() {
         //loop over each frame
         for (int i = 0; i < _n_frames; ++i) {
             //Set State
-            state = _states[i];
+            SimTK::State state = _states[i];
 
             log_info("Time: {}", state.getTime()); 
             state.invalidateAllCacheAtOrAbove(SimTK::Stage::Time);
@@ -213,7 +214,7 @@ bool JointMechanicsTool::run() {
     return completed;
 }
 
-void JointMechanicsTool::initialize(SimTK::State& state) {
+void JointMechanicsTool::initialize() {
     
     //Read input files, trim, filter data
     Storage input_data;
@@ -257,7 +258,7 @@ void JointMechanicsTool::initialize(SimTK::State& state) {
     if (get_use_visualizer()) {
         _model.setUseVisualizer(true);
     }
-    state = _model.initSystem();
+    SimTK::State state = _model.initSystem();
 
     for (auto& cnt : _model.updComponentList<Smith2018ArticularContactForce>()) {
         cnt.setModelingOption(state, "flip_meshes", 1);
@@ -621,8 +622,7 @@ void JointMechanicsTool::assembleStatesTrajectoryFromStatesData(
             get_results_file_basename() + "_processed_kinematics.sto");
     }
 
-    std::vector<std::string> force_paths;
-    std::vector<SimTK::Vector> force_data;
+
 
     TimeSeriesTable table = store.exportToTable();
 
@@ -708,6 +708,7 @@ void JointMechanicsTool::assembleStatesTrajectoryFromStatesData(
         }*/
 
         // Make a copy of the edited state and put it in the trajectory.
+        
         states_from_file.append(s);
 
         // Save muscle activation values in case use_muscle_physiology is false
@@ -726,6 +727,43 @@ void JointMechanicsTool::assembleStatesTrajectoryFromStatesData(
         }
     }
 
+    std::vector<std::string> activation_paths;
+    std::vector<SimTK::Vector> activation_data;
+    
+    std::vector<std::string> force_paths;
+    std::vector<SimTK::Vector> force_data;
+
+    // Read activations file
+    if (!get_input_activations_file().empty()) {
+        Storage store = processInputStorage(get_input_activations_file());
+        //Storage store = Storage(get_input_states_file());
+        int j = 0;
+        for (Muscle& msl : _model.updComponentList<Muscle>()) {
+
+            std::string msl_path = msl.getAbsolutePathString();
+            Array<int> column_index = 
+                store.getColumnIndicesForIdentifier(msl_path);
+
+            if (column_index.size() > 0) {
+                double* Tdata=NULL;
+                
+                //std::cout << msl_path << std::endl;
+                
+                store.getDataColumn(msl_path, Tdata);
+
+                for (int t = 0; t < store.getSize(); ++t) {
+                    msl_activations(t, j) = Tdata[t];
+                }
+            }
+            else {
+                log_warn("Muscle: {} was not listed in activations file.", msl.getAbsolutePathString());
+            }
+
+            j++;
+        }
+    }
+
+
     // Read forces file
     if (!get_input_forces_file().empty()) {
         Storage store = processInputStorage(get_input_forces_file());
@@ -738,7 +776,7 @@ void JointMechanicsTool::assembleStatesTrajectoryFromStatesData(
 
             if (column_index.size() > 0) {
                 force_paths.push_back(actuator_path);
-                double* data;
+                double* data=NULL;
                 
                 store.getDataColumn(actuator_path, data);
                 SimTK::Vector data_vec(store.getSize(), data);
@@ -748,9 +786,26 @@ void JointMechanicsTool::assembleStatesTrajectoryFromStatesData(
         }
     }
 
+
+
     // Overide forces in states if settings dictate
     int i = 0;
     for (SimTK::State final_state : states_from_file) {
+        if (!get_input_activations_file().empty()) {
+            int j = 0;
+            for (auto& msl : _model.updComponentList<Muscle>()) {
+                msl.setActivation(final_state, msl_activations(i, j));
+                ++j;
+                //msl.set(final_state, msl_activations(i, j));
+
+                /*msl.overrideActuation(final_state, true);
+
+                double force =
+                    msl_activations(i,j) * msl.getMaxIsometricForce();
+                msl.setOverrideActuation(final_state, force);*/
+            }
+        }
+
         if (!get_use_muscle_physiology()) {
             int j = 0;
             for (auto& msl : _model.updComponentList<Muscle>()) {
@@ -758,8 +813,8 @@ void JointMechanicsTool::assembleStatesTrajectoryFromStatesData(
 
                 double force =
                     msl_activations(i,j) * msl.getMaxIsometricForce();
-
                 msl.setOverrideActuation(final_state, force);
+                ++j;
             }
         }
 
@@ -778,6 +833,7 @@ void JointMechanicsTool::assembleStatesTrajectoryFromStatesData(
         final_state.invalidateAllCacheAtOrAbove(SimTK::Stage::Time);
         //_states.append(final_state);
         _states.push_back(final_state);
+        ++i;
     }
 }
 
@@ -1249,7 +1305,6 @@ void JointMechanicsTool::setupMuscleStorage() {
         _muscle_output_double_names.push_back("actuation");
         _muscle_output_double_names.push_back("power");
         _muscle_output_double_names.push_back("speed");
-        _muscle_output_double_names.push_back("tension");
         _muscle_output_double_names.push_back("length");
     }
     else if (get_muscle_outputs(0) == "all") {
