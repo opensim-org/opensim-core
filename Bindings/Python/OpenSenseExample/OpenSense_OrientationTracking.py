@@ -26,12 +26,12 @@
 
 # Import OpenSim Libraries
 import opensim as osim
-
+from math import pi
 # Set variables to use
 modelFileName = 'calibrated_Rajagopal_2015.osim';                # The path to an input model
 orientationsFileName = 'MT_012005D6_009-001_orientations.sto';   # The path to orientation data for calibration 
-sensor_to_opensim_rotation = Vec3(-pi/2, 0, 0); # The rotation of IMU data to the OpenSim world frame 
-visualizeTracking = true;  # Boolean to Visualize the tracking simulation
+sensor_to_opensim_rotation = osim.Vec3(-pi/2, 0, 0); # The rotation of IMU data to the OpenSim world frame
+visualizeTracking = True;  # Boolean to Visualize the tracking simulation
 startTime = 7.25;          # Start time (in seconds) of the tracking simulation. 
 endTime = 15;              # End time (in seconds) of the tracking simulation.
 resultsDirectory = 'IKResults';
