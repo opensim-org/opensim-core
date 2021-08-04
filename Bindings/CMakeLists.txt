@@ -11,9 +11,10 @@ if(WITH_EZC3D)
 endif()
 #flag to indicate whether to let SWIG process Doxygen comments
 # Will be on for releases but too many warnings/errors for regular dev.
-set(BUILD_SWIG_DOXYGEN OFF CACHE BOOL "Carry Doxygen comments to bindings")
+set(SKIP_SWIG_DOXYGEN OFF CACHE BOOL "Don't carry Doxygen comments to bindings")
+mark_as_advanced(SKIP_SWIG_DOXYGEN)
 set(SWIG_DOXYGEN "")
-if (BUILD_SWIG_DOXYGEN)
+if (NOT SKIP_SWIG_DOXYGEN)
     set(SWIG_DOXYGEN "-doxygen")
 endif()
 
