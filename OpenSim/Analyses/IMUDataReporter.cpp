@@ -50,11 +50,9 @@ IMUDataReporter::~IMUDataReporter()
 /**
  */
 IMUDataReporter::IMUDataReporter(Model *aModel) :
-    Analysis(aModel), 
-    _modelLocal(nullptr) {
+    Analysis(aModel) {
         setNull();
         constructProperties();
-        if(aModel) setModel(*aModel);
 }
 // Copy constructor and virtual copy 
 //_____________________________________________________________________________
@@ -63,8 +61,7 @@ IMUDataReporter::IMUDataReporter(Model *aModel) :
  *
  */
 IMUDataReporter::IMUDataReporter(const IMUDataReporter &aIMUDataReporter): 
-    Analysis(aIMUDataReporter),
-    _modelLocal(nullptr) {
+    Analysis(aIMUDataReporter) {
         setNull();
         // COPY TYPE AND NAME
         *this = aIMUDataReporter;
@@ -127,10 +124,9 @@ record(const SimTK::State& s)
     sWorkingCopy.setTime(s.getTime());
 
     // update Q's and U's
-    if (!get_compute_accelerations_without_forces()) {
-        sWorkingCopy.setQ(s.getQ());
-        sWorkingCopy.setU(s.getU());
-    }
+    sWorkingCopy.setQ(s.getQ());
+    sWorkingCopy.setU(s.getU());
+
     _modelLocal->realizeReport(sWorkingCopy);
 
     return 0;
@@ -146,68 +142,48 @@ record(const SimTK::State& s)
  *
  * @return -1 on error, 0 otherwise.
  */
-int IMUDataReporter::begin(const SimTK::State& s )
+int IMUDataReporter::begin(const SimTK::State& s)
 {
     if(!proceed()) return(0);
 
-    if (_orientationsReporter)
-        _orientationsReporter->clearTable();
-    else
-        _orientationsReporter = new TableReporter_<SimTK::Quaternion>();
+    if (_model == nullptr)
+        return -1;
 
-    if (_angularVelocityReporter)
-        _angularVelocityReporter->clearTable();
-    else
-        _angularVelocityReporter = new TableReporter_<SimTK::Vec3>();
+    _modelLocal.reset(_model->clone());
 
-    if (_linearAccelerationsReporter)
-        _linearAccelerationsReporter->clearTable();
-    else
-        _linearAccelerationsReporter = new TableReporter_<SimTK::Vec3>();
+    _orientationsReporter = new TableReporter_<SimTK::Quaternion>();
+    _orientationsReporter->setName("OrientationsReporter");
+    _angularVelocityReporter = new TableReporter_<SimTK::Vec3>();
+    _angularVelocityReporter->setName("AngularVelocityReporter");
+    _linearAccelerationsReporter = new TableReporter_<SimTK::Vec3>();
+    _linearAccelerationsReporter->setName("LinearAccelerationsReporter");
 
-    if (_imuComponents.empty()) {
-        // Populate _imuComponents based on properties
-        _modelLocal.reset(_model->clone());
-        auto compList = _modelLocal->getComponentList<OpenSim::IMU>();
-        // To convert the const_ref to a Ptr for use by SimTK::ReferencePtr
-        // Using this relatively expensive maneuver
-        for (const IMU& imu : compList) { 
-            const IMU* imuPtr=_modelLocal->findComponent<IMU>(imu.getAbsolutePath());
-            _imuComponents.push_back(SimTK::ReferencePtr <const OpenSim::IMU>(imuPtr)); 
+    if (getProperty_frame_paths().size() > 0) {
+        std::vector<std::string> paths_string;
+        for (int i = 0; i < getProperty_frame_paths().size(); i++) {
+            paths_string.push_back(get_frame_paths(i));
         }
-        if (getProperty_frame_paths().size() > 0) {
-            std::vector<std::string> paths_string;
-            for (int i = 0; i < getProperty_frame_paths().size(); i++) {
-                paths_string.push_back(get_frame_paths(i));
-            }
-            auto addedImus = OpenSenseUtilities::addModelIMUs(
-                    *_modelLocal, paths_string);
-            for (auto& nextImu : addedImus) { 
-                _imuComponents.push_back(
-                        SimTK::ReferencePtr<const OpenSim::IMU>(nextImu));
-            }
-        }
+        OpenSenseUtilities::addModelIMUs(*_modelLocal, paths_string);
     }
-    // If already part of the system, then a rerun and no need to add to _modelLocal
-    if (!_orientationsReporter->hasSystem()) {
-        _modelLocal->addComponent(_orientationsReporter.get());
-        _modelLocal->addComponent(_angularVelocityReporter.get());
-        _modelLocal->addComponent(_linearAccelerationsReporter.get());
 
-        for (auto& comp : _imuComponents) {
-            if (get_report_orientations())
-                _orientationsReporter->addToReport(
-                    comp->getOutput("orientation_as_quaternion"), comp->getName());
-            if (get_report_gyroscope_signals())
-                _angularVelocityReporter->addToReport(
-                    comp->getOutput("gyroscope_signal"), comp->getName());
-            if (get_report_accelerometer_signals())
-                _linearAccelerationsReporter->addToReport(
-                    comp->getOutput("accelerometer_signal"), comp->getName());
-        }
+    _modelLocal->initSystem();
+    for (const auto& comp : _modelLocal->getComponentList<IMU>()) {
+        if (get_report_orientations())
+            _orientationsReporter->addToReport(
+                comp.getOutput("orientation_as_quaternion"), comp.getName());
+        if (get_report_gyroscope_signals())
+            _angularVelocityReporter->addToReport(
+                comp.getOutput("gyroscope_signal"), comp.getName());
+        if (get_report_accelerometer_signals())
+            _linearAccelerationsReporter->addToReport(
+                comp.getOutput("accelerometer_signal"), comp.getName());
     }
+
+    _modelLocal->addComponent(_orientationsReporter.get());
+    _modelLocal->addComponent(_angularVelocityReporter.get());
+    _modelLocal->addComponent(_linearAccelerationsReporter.get());
+
     if (get_compute_accelerations_without_forces()) {
-
         OPENSIM_THROW_IF_FRMOBJ(_statesStore == nullptr, Exception,
             "IMUDataReporter: compute_accelerations_without_forces requires "
             "providing a states file as input.");
@@ -222,6 +198,10 @@ int IMUDataReporter::begin(const SimTK::State& s )
                 *_modelLocal, statesTraj);
         posmot->setName("position_motion");
         _modelLocal->addComponent(posmot.release());
+
+        auto& state = _modelLocal->initSystem();
+        _modelLocal->getComponent<PositionMotion>("position_motion")
+                .setEnabled(state, true);
     }
 
     _modelLocal->initSystem();
@@ -245,7 +225,7 @@ int IMUDataReporter::begin(const SimTK::State& s )
  *
  * @return -1 on error, 0 otherwise.
  */
-int IMUDataReporter::step(const SimTK::State& s, int stepNumber )
+int IMUDataReporter::step(const SimTK::State& s, int stepNumber)
 {
     if(!proceed(stepNumber)) return(0);
 
@@ -262,7 +242,7 @@ int IMUDataReporter::step(const SimTK::State& s, int stepNumber )
  *
  * @return -1 on error, 0 otherwise.
  */
-int IMUDataReporter::end( const SimTK::State& s )
+int IMUDataReporter::end( const SimTK::State& s)
 {
     if(!proceed()) return(0);
 
@@ -294,8 +274,6 @@ int IMUDataReporter::
 printResults(const string &aBaseName,const string &aDir,double aDT,
                  const string &aExtension)
 {
-    
-    
     {
         IO::CwdChanger cwd = IO::CwdChanger::changeTo(aDir);
         if (get_report_orientations()) {

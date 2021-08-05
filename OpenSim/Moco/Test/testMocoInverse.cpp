@@ -19,6 +19,8 @@
 #include <OpenSim/Actuators/ModelFactory.h>
 #include <OpenSim/Actuators/ModelOperators.h>
 #include <OpenSim/Moco/osimMoco.h>
+#include <OpenSim/Tools/AnalyzeTool.h>
+#include <OpenSim/Analyses/IMUDataReporter.h>
 
 #define CATCH_CONFIG_MAIN
 #include "Testing.h"
@@ -149,4 +151,99 @@ TEST_CASE("MocoInverse Rajagopal2016, 18 muscles", "[casadi]") {
     CHECK(std.compareContinuousVariablesRMS(solution,
             {{"controls", {}}}) < 1e-2);
     CHECK(std.compareContinuousVariablesRMS(solution, {{"states", {}}}) < 1e-2);
+}
+
+TEST_CASE("Test IMUDataReporter for gait") {
+
+    ModelProcessor modelProcessor =
+        ModelProcessor("subject_walk_armless_18musc.osim") |
+        ModOpReplaceJointsWithWelds({"subtalar_r", "subtalar_l",
+            "mtp_r", "mtp_l"}) |
+        ModOpReplaceMusclesWithDeGrooteFregly2016() |
+        ModOpIgnorePassiveFiberForcesDGF() |
+        ModOpTendonComplianceDynamicsModeDGF("implicit") |
+        ModOpAddExternalLoads("subject_walk_armless_external_loads.xml");
+
+    std::vector<std::string> paths = {"/bodyset/pelvis",
+                                       "/bodyset/femur_r",
+                                       "/bodyset/tibia_r",
+                                       "/bodyset/calcn_r"};
+
+    Model model = modelProcessor.process();
+    OpenSenseUtilities().addModelIMUs(model, paths);
+    model.initSystem();
+    model.print("subject_walk_armless_18musc_with_imus.osim");
+
+    auto tableProcessor =
+            TableProcessor("subject_walk_armless_coordinates.mot") |
+            TabOpLowPassFilter(6);
+    STOFileAdapter::write(tableProcessor.processAndConvertToRadians(model),
+        "subject_walk_armless_coordinates_radians.sto");
+
+
+    MocoTrajectory std("std_testMocoInverse_subject_18musc_solution.sto");
+    TimeSeriesTable stdTable("std_testMocoInverse_subject_18musc_solution.sto");
+
+
+    for (const auto& label : stdTable.getColumnLabels()) {
+        if (label.find("forceset") != std::string::npos ||
+                label.find("lambda") != std::string::npos) {
+            stdTable.removeColumn(label);
+        }
+    }
+    STOFileAdapter::write(stdTable,
+                          "testMocoInverse_solution_kinematics_states.sto");
+
+    TimeSeriesTableVec3 accelSignals =
+            analyzeMocoTrajectory<SimTK::Vec3>(model, std,
+                                               {".*accelerometer_signal"});
+    STOFileAdapter_<SimTK::Vec3>::write(accelSignals,
+            "testMocoInverse_accelerometer_signals.sto");
+
+    ModelProcessor modelProcNoMuscles =
+        ModelProcessor("subject_walk_armless_18musc.osim") |
+        ModOpReplaceJointsWithWelds({"subtalar_r", "subtalar_l",
+            "mtp_r", "mtp_l"}) |
+        ModOpRemoveMuscles() |
+        ModOpAddExternalLoads("subject_walk_armless_external_loads.xml");
+
+    Model modelNoMuscles = modelProcNoMuscles.process();
+    OpenSenseUtilities().addModelIMUs(modelNoMuscles, paths);
+    modelNoMuscles.initSystem();
+    modelNoMuscles.print("subject_walk_armless_with_imus.osim");
+
+    AnalyzeTool analyzeIMU;
+    analyzeIMU.setName("testMocoInverse_analysis");
+    analyzeIMU.setModelFilename("subject_walk_armless_with_imus.osim");
+    analyzeIMU.setStatesFileName("testMocoInverse_solution_kinematics_states.sto");
+    analyzeIMU.setStartTime(0.450);
+    analyzeIMU.setFinalTime(1.0);
+    IMUDataReporter imuDataReporter;
+    imuDataReporter.setName("IMUDataReporter_no_forces");
+    imuDataReporter.set_compute_accelerations_without_forces(true);
+    imuDataReporter.setInDegrees(false);
+    analyzeIMU.updAnalysisSet().cloneAndAppend(imuDataReporter);
+    analyzeIMU.print("testMocoInverse_analyze_imu_accel.xml");
+    AnalyzeTool roundTrip("testMocoInverse_analyze_imu_accel.xml");
+    roundTrip.run();
+
+    // Compare the original accelerations to the accelerations computed with
+    // AnalyzeTool.
+    auto accelBlock = accelSignals.getMatrixBlock(5, 0,
+        accelSignals.getNumRows()-10,
+        accelSignals.getNumColumns());
+    auto accelSignals_no_forces =
+            TimeSeriesTableVec3(
+                    "testMocoInverse_analysis_linear_accelerations.sto");
+    auto accelBlock_no_forces = accelSignals_no_forces.getMatrixBlock(5, 0,
+        accelSignals_no_forces.getNumRows()-10,
+        accelSignals_no_forces.getNumColumns());
+
+    auto diff = accelBlock - accelBlock_no_forces;
+    std::cout << "DEBUG: " << diff << std::endl;
+    SimTK_TEST_EQ_TOL(accelBlock, accelBlock_no_forces, 1e-2);
+
+
+
+
 }

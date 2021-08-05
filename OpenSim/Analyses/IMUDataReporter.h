@@ -77,15 +77,15 @@ private:
     std::vector<SimTK::ReferencePtr<const OpenSim::IMU>> _imuComponents;
     /** Output tables. */
     SimTK::ReferencePtr<TableReporter_<SimTK::Quaternion>> _orientationsReporter;
-    SimTK::ReferencePtr < TableReporter_<SimTK::Vec3>> _angularVelocityReporter;
-    SimTK::ReferencePtr <TableReporter_<SimTK::Vec3>> _linearAccelerationsReporter;
+    SimTK::ReferencePtr<TableReporter_<SimTK::Vec3>> _angularVelocityReporter;
+    SimTK::ReferencePtr<TableReporter_<SimTK::Vec3>> _linearAccelerationsReporter;
 
-    std::shared_ptr<Model> _modelLocal;
+    SimTK::ResetOnCopy<std::unique_ptr<Model>> _modelLocal;
     //=============================================================================
 // METHODS
 //=============================================================================
 public:
-    IMUDataReporter(Model *aModel=0);
+    IMUDataReporter(Model *aModel = nullptr);
     IMUDataReporter(const IMUDataReporter &aObject);
     virtual ~IMUDataReporter();
 
@@ -110,7 +110,7 @@ public:
     // OPERATORS
     //--------------------------------------------------------------------------
 #ifndef SWIG
-    IMUDataReporter& operator=(const IMUDataReporter &aRporter);
+    IMUDataReporter& operator=(const IMUDataReporter &aReporter);
 #endif
     //--------------------------------------------------------------------------
     // GET AND SET
@@ -118,11 +118,11 @@ public:
     //--------------------------------------------------------------------------
     // ANALYSIS
     //--------------------------------------------------------------------------
-    int begin(const SimTK::State& s ) override;
-    int step(const SimTK::State& s, int setNumber ) override;
-    int end(const SimTK::State& s ) override;
+    int begin(const SimTK::State& s) override;
+    int step(const SimTK::State& s, int setNumber) override;
+    int end(const SimTK::State& s) override;
 protected:
-    virtual int record(const SimTK::State& s );
+    virtual int record(const SimTK::State& s);
     //--------------------------------------------------------------------------
     // IO
     //--------------------------------------------------------------------------
