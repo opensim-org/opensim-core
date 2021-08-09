@@ -101,13 +101,13 @@ int main()
         failures.push_back("testIMUDataReporter");
     }   
 
-//    if (!failures.empty()) {
-//        cout << "Done, with failure(s): " << failures << endl;
-//        return 1;
-//    }
-//
-//    cout << "Done" << endl;
-    return EXIT_SUCCESS;
+    if (!failures.empty()) {
+        cout << "Done, with failure(s): " << failures << endl;
+        return 1;
+    }
+
+    cout << "Done" << endl;
+    return 0;
 }
 
 void testTutorialOne() {
