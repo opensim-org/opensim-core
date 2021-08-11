@@ -397,6 +397,7 @@ private:
     TimeSeriesTable _result_forces;
     TimeSeriesTable _result_kinematics;
     TimeSeriesTable _result_values;
+    TimeSeriesTable _convergence;
 //=============================================================================
 };  // END of class COMAK_TOOL
 

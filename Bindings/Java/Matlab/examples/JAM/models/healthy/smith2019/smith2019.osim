@@ -912,9 +912,9 @@
 					<!--The mass of the body (kg)-->
 					<mass>0.1</mass>
 					<!--The location (Vec3) of the mass center in the body frame.-->
-					<mass_center>0 0 0</mass_center>
+					<mass_center>0.001 -0.02 0.022</mass_center>
 					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
-					<inertia>1e-5 1e-5 1e-5 0 0 0</inertia>
+					<inertia>5e-6 5e-6 5e-6 0 0 0</inertia>
 				</Body>
 				<Body name="meniscus_medial_r">
 					<!--List of components that this component owns and serializes.-->
@@ -974,9 +974,9 @@
 					<!--The mass of the body (kg)-->
 					<mass>0.1</mass>
 					<!--The location (Vec3) of the mass center in the body frame.-->
-					<mass_center>0 0 0</mass_center>
+					<mass_center>-0.001 -0.02 -0.016</mass_center>
 					<!--The elements of the inertia tensor (Vec6) as [Ixx Iyy Izz Ixy Ixz Iyz] measured about the mass_center and not the body origin.-->
-					<inertia>1e-5 1e-5 1e-5 0 0 0</inertia>
+					<inertia>5e-6 5e-6 5e-6 0 0 0</inertia>
 				</Body>
 				<Body name="tibia_r">
 					<!--The geometry used to display the axes of this Frame.-->
@@ -14485,9 +14485,9 @@
 					<!--The maximum proximity that is valid between contacting meshes to limit the search distance along the casting_mesh normal ray used for collision detection.Default value set to 0.01 meters.-->
 					<max_proximity>0.02</max_proximity>
 					<!--Formulation for depth-pressure relationship: 'linear' or 'nonlinear'. Default value set to 'linear'.-->
-					<elastic_foundation_formulation>nonlinear</elastic_foundation_formulation>
+					<elastic_foundation_formulation>linear</elastic_foundation_formulation>
 					<!--Combine the thickness and the average material properties between the Smith2018ContactMeshes for both meshes and use Bei & Fregly 2003 lumped parameter Elastic Foundation model.-->
-					<use_lumped_contact_model>false</use_lumped_contact_model>
+					<use_lumped_contact_model>true</use_lumped_contact_model>
 				</Smith2018ArticularContactForce>
 				<Smith2018ArticularContactForce name="pf_contact">
 					<!--List of components that this component owns and serializes.-->
@@ -14503,9 +14503,9 @@
 					<!--The maximum proximity that is valid between contacting meshes to limit the search distance along the casting_mesh normal ray used for collision detection.Default value set to 0.01 meters.-->
 					<max_proximity>0.02</max_proximity>
 					<!--Formulation for depth-pressure relationship: 'linear' or 'nonlinear'. Default value set to 'linear'.-->
-					<elastic_foundation_formulation>nonlinear</elastic_foundation_formulation>
+					<elastic_foundation_formulation>linear</elastic_foundation_formulation>
 					<!--Combine the thickness and the average material properties between the Smith2018ContactMeshes for both meshes and use Bei & Fregly 2003 lumped parameter Elastic Foundation model.-->
-					<use_lumped_contact_model>false</use_lumped_contact_model>
+					<use_lumped_contact_model>true</use_lumped_contact_model>
 				</Smith2018ArticularContactForce>
 				<Smith2018ArticularContactForce name="femur_meniscus_medial_contact">
 					<!--List of components that this component owns and serializes.-->
@@ -15318,7 +15318,7 @@
 					<!--Minimum thickness threshold for elastic layer [m] when calculating variable thickness for each triangle.-->
 					<min_thickness>0.001</min_thickness>
 					<!--Maximum thickness threshold for elastic layer [m] when calculating variable thickness for each triangle.-->
-					<max_thickness>0.01</max_thickness>
+					<max_thickness>0.02</max_thickness>
 					<!--[x,y,z] scale factors applied to vertex locations of the mesh_file and mesh_back_file meshes.-->
 					<scale_factors>1 1 1</scale_factors>
 				</Smith2018ContactMesh>
@@ -15360,7 +15360,7 @@
 					<!--Path to traingle mesh geometry file representing the backside of contact surface elastic layer (bone / backside of artifical component) mesh geometry file (supports .obj, .stl, .vtp). -->
 					<mesh_back_file>smith2019-R-tibia-bone.stl</mesh_back_file>
 					<!--Minimum thickness threshold for elastic layer [m] when calculating variable thickness for each triangle.-->
-					<min_thickness>0.001</min_thickness>
+					<min_thickness>0.002</min_thickness>
 					<!--Maximum thickness threshold for elastic layer [m] when calculating variable thickness for each triangle.-->
 					<max_thickness>0.01</max_thickness>
 					<!--[x,y,z] scale factors applied to vertex locations of the mesh_file and mesh_back_file meshes.-->
@@ -15404,7 +15404,7 @@
 					<!--Path to traingle mesh geometry file representing the backside of contact surface elastic layer (bone / backside of artifical component) mesh geometry file (supports .obj, .stl, .vtp). -->
 					<mesh_back_file>smith2019-R-patella-bone.stl</mesh_back_file>
 					<!--Minimum thickness threshold for elastic layer [m] when calculating variable thickness for each triangle.-->
-					<min_thickness>0.001</min_thickness>
+					<min_thickness>0.002</min_thickness>
 					<!--Maximum thickness threshold for elastic layer [m] when calculating variable thickness for each triangle.-->
 					<max_thickness>0.01</max_thickness>
 					<!--[x,y,z] scale factors applied to vertex locations of the mesh_file and mesh_back_file meshes.-->
@@ -15438,7 +15438,7 @@
 					<!--Path to triangle mesh geometry file representing the contact surface (supports .obj, .stl, .vtp).-->
 					<mesh_file>smith2019-R-medial-meniscus-superior.stl</mesh_file>
 					<!--Uniform Elastic Modulus value for every triangle in mesh. The default value is 1000000.0 Pa.-->
-					<elastic_modulus>5e6</elastic_modulus>
+					<elastic_modulus>1e6</elastic_modulus>
 					<!--Uniform Poissons Ratio value for every triangle in mesh. The default value is 0.5.-->
 					<poissons_ratio>0.45</poissons_ratio>
 					<!--Uniform thickness of elastic layer for entire mesh. The default value is 0.005 meters-->
@@ -15482,7 +15482,7 @@
 					<!--Path to triangle mesh geometry file representing the contact surface (supports .obj, .stl, .vtp).-->
 					<mesh_file>smith2019-R-medial-meniscus-inferior.stl</mesh_file>
 					<!--Uniform Elastic Modulus value for every triangle in mesh. The default value is 1000000.0 Pa.-->
-					<elastic_modulus>5e6</elastic_modulus>
+					<elastic_modulus>1e6</elastic_modulus>
 					<!--Uniform Poissons Ratio value for every triangle in mesh. The default value is 0.5.-->
 					<poissons_ratio>0.45</poissons_ratio>
 					<!--Uniform thickness of elastic layer for entire mesh. The default value is 0.005 meters-->
@@ -15526,7 +15526,7 @@
 					<!--Path to triangle mesh geometry file representing the contact surface (supports .obj, .stl, .vtp).-->
 					<mesh_file>smith2019-R-lateral-meniscus-superior.stl</mesh_file>
 					<!--Uniform Elastic Modulus value for every triangle in mesh. The default value is 1000000.0 Pa.-->
-					<elastic_modulus>5e6</elastic_modulus>
+					<elastic_modulus>1e6</elastic_modulus>
 					<!--Uniform Poissons Ratio value for every triangle in mesh. The default value is 0.5.-->
 					<poissons_ratio>0.45</poissons_ratio>
 					<!--Uniform thickness of elastic layer for entire mesh. The default value is 0.005 meters-->
@@ -15570,7 +15570,7 @@
 					<!--Path to triangle mesh geometry file representing the contact surface (supports .obj, .stl, .vtp).-->
 					<mesh_file>smith2019-R-lateral-meniscus-inferior.stl</mesh_file>
 					<!--Uniform Elastic Modulus value for every triangle in mesh. The default value is 1000000.0 Pa.-->
-					<elastic_modulus>5e6</elastic_modulus>
+					<elastic_modulus>1e6</elastic_modulus>
 					<!--Uniform Poissons Ratio value for every triangle in mesh. The default value is 0.5.-->
 					<poissons_ratio>0.45</poissons_ratio>
 					<!--Uniform thickness of elastic layer for entire mesh. The default value is 0.005 meters-->

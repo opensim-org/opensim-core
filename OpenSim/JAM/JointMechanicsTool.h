@@ -100,11 +100,16 @@ public:
         "ignored.")
 
     OpenSim_DECLARE_PROPERTY(input_activations_file, std::string,
-        "Path to storage file (.sto) containing forces vs time for actuators "
+        "Path to storage file (.sto) containing activations vs time for muscles "
         "in the model. The overrideActuation function will be used to set the "
         "forces in the model for any actuator listed in this file, thus the "
         "states for these actuators listed in the input_states_file will be "
-        "ignored.")
+        "ignored. For muscles, the force-length-velocity is ignored and thus "
+        "F = a * F_max_iso.")
+
+    OpenSim_DECLARE_PROPERTY(input_comak_convergence_file, std::string,
+        "Path to storage file (.sto) convergence metrics vs time for comak "
+        "results to be written to the .h5 file.")
 
     OpenSim_DECLARE_PROPERTY(results_directory, std::string,
         "Path to folder where the results files will be written.")

@@ -63,7 +63,7 @@ namespace OpenSim {
 
        void createGroup(const std::string& new_group);
 
-       void writeDataSet(const TimeSeriesTable& table, const std::string group_path);
+       void writeDataSet(const TimeSeriesTable& table, const std::string group_path, bool write_time = false);
        void writeDataSet2(const TimeSeriesTable& table, const std::string group_path);
 
        void writeDataSetVec3(const TimeSeriesTableVec3& table, const std::string group_path);

@@ -50,7 +50,7 @@ void H5FileAdapter::createGroup(const std::string& group_name) {
     }
 }
 
-void H5FileAdapter::writeDataSet(const TimeSeriesTable& table, const std::string group_path) 
+void H5FileAdapter::writeDataSet(const TimeSeriesTable& table, const std::string group_path, bool write_time) 
 {
     createGroup(group_path);
 
@@ -81,6 +81,31 @@ void H5FileAdapter::writeDataSet(const TimeSeriesTable& table, const std::string
 
         //Free dynamically allocated memory
         free(data);
+    }
+
+    if (write_time) {
+        std::vector<double> time= table.getIndependentColumn();
+
+        std::string dataset_path = group_path + "/time";
+
+        H5::DataSpace dataspace(1, dim_data, dim_data);
+        H5::PredType datatype(H5::PredType::NATIVE_DOUBLE);
+
+        H5::DataSet dataset = _file.createDataSet(dataset_path, datatype, dataspace);
+
+        //Allocate space for data
+        double* data = (double*)malloc(dim_data[0] * sizeof(double));
+
+        //Set Data Array
+        for (int r = 0; r < (int)dim_data[0]; ++r) {
+            data[r] = time[r];
+        }
+        
+        dataset.write(&data[0], datatype);
+
+        //Free dynamically allocated memory
+        free(data);
+
     }
 }
 
@@ -318,11 +343,36 @@ void H5FileAdapter::writeComponentGroupDataSetVector(std::string group_name,
 void H5FileAdapter::writeDataSetSimTKVector(const SimTK::Vector& data_vector, const std::string dataset_path) {
     hsize_t dim_data[1];
     dim_data[0] = data_vector.size();
-
+    hsize_t chunk_dims[1] = { 50 };
     H5::DataSpace dataspace(1, dim_data, dim_data);
     H5::PredType datatype(H5::PredType::NATIVE_DOUBLE);
-    H5::DataSet dataset = _file.createDataSet(dataset_path, datatype, dataspace);
 
+    // Enable Compression
+
+    /*H5::DSetCreatPropList  *plist = new  H5::DSetCreatPropList;
+    plist->setChunk(1, chunk_dims);
+    plist->setDeflate(9);*/
+    //H5::DataSet dataset = _file.createDataSet(dataset_path, datatype, dataspace,*plist);
+
+   /*hsize_t chunk_size[1];
+
+   chunk_size[0] = 25;
+   hid_t properties = H5Pcreate (H5P_DATASET_CREATE);
+   H5Pset_chunk (properties, 2, chunk_size);
+
+  
+   // Set parameters for SZIP compression; check the description of
+   // the H5Pset_szip function in the HDF5 Reference Manual for more 
+   // information.
+   
+   unsigned szip_options_mask=H5_SZIP_NN_OPTION_MASK;
+   unsigned szip_pixels_per_block=32;
+
+   H5Pset_szip (properties, szip_options_mask, szip_pixels_per_block);
+
+   H5::DataSet dataset = _file.createDataSet(dataset_path, datatype, dataspace,properties);
+    */
+    H5::DataSet dataset = _file.createDataSet(dataset_path, datatype, dataspace);
     //Allocate space for data
     double* data = (double*)malloc(dim_data[0] * sizeof(double));
 

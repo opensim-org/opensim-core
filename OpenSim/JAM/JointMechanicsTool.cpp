@@ -38,6 +38,7 @@
 #include "OpenSim/Tools/IKTaskSet.h"
 #include <OpenSim/Common/Reporter.h>
 #include <OpenSim/Common/TableUtilities.h>
+#include <OpenSim/Common/Stopwatch.h>
 
 using namespace OpenSim;
 
@@ -89,6 +90,7 @@ void JointMechanicsTool::constructProperties()
     constructProperty_input_transforms_file("");
     constructProperty_input_forces_file("");
     constructProperty_input_activations_file("");
+    constructProperty_input_comak_convergence_file("");
 
     constructProperty_results_directory(".");
     constructProperty_results_file_basename("");
@@ -139,6 +141,12 @@ bool JointMechanicsTool::run() {
     auto cwd = IO::CwdChanger::changeToParentOf(getDocumentFileName());
 
     try {
+        const Stopwatch stopwatch;
+        log_critical("");
+        log_critical("====================");
+        log_critical("Joint Mechanics Tool");
+        log_critical("====================");
+        log_critical("");
 
         //Set the max number of points a ligament or muscle path can contain
         _max_path_points = 100;
@@ -195,8 +203,12 @@ bool JointMechanicsTool::run() {
         }
         printResults(get_results_file_basename(), get_results_directory());
 
-        log_info("Joint Mechanics Analysis complete.");
+        const long long elapsed = stopwatch.getElapsedTimeInNs();
+
+        log_info("JointMechanicsTool complete.");
+        log_info("Finished in {}", stopwatch.formatNs(elapsed));
         log_info("Printed results to: {}", get_results_directory());
+        log_info("");
         completed = true;
     }
 
@@ -300,6 +312,8 @@ void JointMechanicsTool::initialize() {
         }
         _model_frame_transforms.setColumnLabels(column_labels);
     }
+
+
 }
 
 Storage JointMechanicsTool::processInputStorage(std::string file) {
@@ -1959,6 +1973,17 @@ void JointMechanicsTool::writeH5File(
 
     std::string force_group = _model.getName() + "/forceset";
     h5.createGroup(force_group);
+
+    //Write COMAK Convergence
+    if (!get_input_comak_convergence_file().empty()) {
+
+        //Read COMAK convergence sto
+        
+        TimeSeriesTable convergence_table = TimeSeriesTable(get_input_comak_convergence_file());
+
+        //h5.createGroup("comak");
+        h5.writeDataSet(convergence_table, "comak",true);
+    }
 
     //Write States Data
     if (get_h5_states_data()) {

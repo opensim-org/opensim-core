@@ -120,7 +120,13 @@ bool COMAKInverseKinematicsTool::run()
     auto cwd = IO::CwdChanger::changeToParentOf(getDocumentFileName());
 
     try {
-    
+        const Stopwatch stopwatch;
+        log_critical("");
+        log_critical("==========================");
+        log_critical("COMAKInverseKinematicsTool");
+        log_critical("==========================");
+        log_critical("");
+
         initialize();
     
         //Secondary Constraint Simulation
@@ -133,8 +139,12 @@ bool COMAKInverseKinematicsTool::run()
             performIK();
         }
 
+        const long long elapsed = stopwatch.getElapsedTimeInNs();
+
         log_info("COMAKInverseKinematics complete.");
+        log_info("Finished in {}", stopwatch.formatNs(elapsed));
         log_info("Printed results to: {}", get_results_directory());
+        log_info("");
 
         completed = true;
     }
@@ -341,6 +351,7 @@ void COMAKInverseKinematicsTool::performIKSecondaryConstraintSimulation() {
         SimTK::Visualizer& viz = model.updVisualizer().updSimbodyVisualizer();
         viz.setBackgroundColor(SimTK::White);
         viz.setShowSimTime(true);
+        viz.setDesiredFrameRate(100);
     }
         
     //Perform Settling Simulation
@@ -381,7 +392,13 @@ void COMAKInverseKinematicsTool::performIKSecondaryConstraintSimulation() {
     log_info("Starting Settling Simulation.");
 
 
-    SimTK::Vector prev_sec_coord_value(_n_secondary_coord);
+    SimTK::Vector prev_sec_coord_value(_n_secondary_coord,0.0);
+
+    for (int k = 0; k < _n_secondary_coord; k++) {
+        Coordinate& coord = model.updComponent<Coordinate>(_secondary_coord_path[k]);
+        double value = coord.getValue(state);
+        prev_sec_coord_value(k) = value;
+    }
 
     double max_coord_delta = SimTK::Infinity;
     int i = 1;
@@ -408,7 +425,7 @@ void COMAKInverseKinematicsTool::performIKSecondaryConstraintSimulation() {
             prev_sec_coord_value(k) = value;
 
 
-            log_info("{} \t {} \t", coord.getName(), value, delta);
+            log_info("{} \t {} \t {}", coord.getName(), value, delta);
 
         }
         i++;

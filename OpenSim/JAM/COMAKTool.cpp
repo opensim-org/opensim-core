@@ -28,6 +28,7 @@
 #include "OpenSim/Common/Constant.h"
 #include <OpenSim/Common/GCVSpline.h>
 #include "OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h"
+#include <OpenSim/Common/Stopwatch.h>
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -118,9 +119,24 @@ bool COMAKTool::run()
     auto cwd = IO::CwdChanger::changeToParentOf(getDocumentFileName());
 
     try {
+        const Stopwatch stopwatch;
+        log_critical("");
+        log_critical("==========================");
+        log_critical("COMAKTool");
+        log_critical("==========================");
+        log_critical("");
+
         printCOMAKascii();
 
         performCOMAK();
+
+        const long long elapsed = stopwatch.getElapsedTimeInNs();
+
+        log_info("COMAK complete.");
+        log_info("Finished in {}", stopwatch.formatNs(elapsed));
+        log_info("Printed results to: {}", get_results_directory());
+        log_info("");
+
         completed = true;
     }
 
@@ -992,7 +1008,10 @@ void COMAKTool::performCOMAK()
             }
             
         }// END COMAK ITERATION
-                
+
+        int frame_converged = 0;
+        double min_max_udot_error = max_udot_error;
+
         if (max_udot_error > get_udot_tolerance()) {
 
             log_info("COMAK failed to converge.");
@@ -1014,7 +1033,7 @@ void COMAKTool::performCOMAK()
                 _optim_parameters = ~iter_parameters[min_iter];
                 state = iter_states[min_iter];
 
-                log_info("Using best iteration ({}) with max udot error: ",
+                log_info("Using best iteration ({}) with max udot error: {}",
                     min_iter, min_val);
             }
             else {
@@ -1035,10 +1054,19 @@ void COMAKTool::performCOMAK()
             _bad_times.push_back(_time[i]);
             _bad_udot_errors.push_back(min_val);
             _bad_udot_coord.push_back(bad_coord);
+
+            min_max_udot_error = min_val;
         }
         else {
             log_info("COMAK Converged! Number of iterations: {}", n_iter);
+            frame_converged = 1;
         }
+
+        SimTK::RowVector convergence_metrics(3);
+        convergence_metrics(0) = frame_converged;
+        convergence_metrics(1) = n_iter;
+        convergence_metrics(2) = min_max_udot_error;
+        _convergence.appendRow(_time[i], convergence_metrics);
 
         //Store Solution
         _model.realizeAcceleration(state);
@@ -1090,6 +1118,7 @@ void COMAKTool::performCOMAK()
                 _bad_times[i], _bad_frames[i], _bad_udot_errors[i]);
         }
     }
+
     //Print Results
     printResultsFiles();
 }
@@ -1158,6 +1187,12 @@ void COMAKTool::initializeResultsStorage() {
     }
     _result_kinematics.setColumnLabels(kinematics_names);
     _result_values.setColumnLabels(values_names);
+
+    std::vector<std::string> convergence_names;
+    convergence_names.push_back("converged");
+    convergence_names.push_back("iterations");
+    convergence_names.push_back("max_udot_error");
+    _convergence.setColumnLabels(convergence_names);
 }
 
 void COMAKTool::recordResultsStorage(const SimTK::State& state, int frame) {
@@ -1207,9 +1242,20 @@ void COMAKTool::printResultsFiles() {
             get_results_directory() + "Possible reason: This tool cannot "
             "make new folder with subfolder.");
     }
-    log_info("Printing COMAK results to: {}",get_results_directory());
+    //log_info("Printing COMAK results to: {}",get_results_directory());
 
     STOFileAdapter sto;
+
+    _convergence.addTableMetaData("header",
+        std::string("COMAK Convergence"));
+    _convergence.addTableMetaData("nRows",
+        std::to_string(_convergence.getNumRows()));
+    _convergence.addTableMetaData("nColumns",
+        std::to_string( _convergence.getNumColumns() + 1));
+
+    sto.write(_convergence, get_results_directory() + "/"
+        + get_results_prefix() + "_convergence.sto");
+
     TimeSeriesTable states_table = _result_states.exportToTable(_model);
     states_table.addTableMetaData("header", std::string("COMAK Model States"));
     states_table.addTableMetaData("nRows",
@@ -1227,7 +1273,7 @@ void COMAKTool::printResultsFiles() {
         std::to_string( _result_activations.getNumColumns() + 1));
 
     sto.write(_result_activations, get_results_directory() + "/"
-        + get_results_prefix() + "_activation.sto");
+        + get_results_prefix() + "_activations.sto");
 
     _result_forces.addTableMetaData("header", 
         std::string("COMAK Actuator Forces"));
@@ -1250,7 +1296,7 @@ void COMAKTool::printResultsFiles() {
 
     sto.write(_result_kinematics, get_results_directory() + "/" 
         + get_results_prefix() + "_kinematics.sto");
-
+/*
     _result_values.addTableMetaData("inDegrees", std::string("no"));
     _model.getSimbodyEngine().convertRadiansToDegrees(_result_values);
     _result_values.addTableMetaData("header", 
@@ -1261,7 +1307,7 @@ void COMAKTool::printResultsFiles() {
         std::to_string(_result_values.getNumColumns() + 1));
 
     sto.write(_result_values, get_results_directory() + "/" 
-        + get_results_prefix() + "_values.sto");
+        + get_results_prefix() + "_values.sto");*/
 
     _model.updAnalysisSet().printResults(get_results_prefix(), get_results_directory());
 }
@@ -1754,13 +1800,13 @@ void COMAKTool::printOptimizationResultsToConsole(
     }
 
     log_debug("Optimized Secondardy Coordinates:");
-    log_debug("{:<20} {:<20}","name", "value", "change");
+    log_debug("{:<20} {:<20} {:<20}","name", "value", "change");
 
     for (int k = 0; k < _n_secondary_coord; ++k) {
         double value = _model.updComponent<Coordinate>
             (_secondary_coord_path[k]).getValue(state);
 
-        log_debug("{:<20} {:<20}", value, parameters[p]);
+        log_debug("{:<20} {:<20} {:<20}", value, parameters[p]);
 
         p++;
     }

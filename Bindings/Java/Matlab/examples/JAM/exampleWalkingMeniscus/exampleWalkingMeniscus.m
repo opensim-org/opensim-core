@@ -325,125 +325,125 @@ secondary_coord_set = COMAKSecondaryCoordinateSet();
 secondary_coord = COMAKSecondaryCoordinate();
 
 secondary_coord.setName('knee_add_r');
-secondary_coord.set_max_change(0.01);
+secondary_coord.set_max_change(0.005);
 secondary_coord.set_coordinate('/jointset/knee_r/knee_add_r');
 secondary_coord_set.cloneAndAppend(secondary_coord);
 
 secondary_coord.setName('knee_rot_r');
-secondary_coord.set_max_change(0.01);
+secondary_coord.set_max_change(0.005);
 secondary_coord.set_coordinate('/jointset/knee_r/knee_rot_r');
 secondary_coord_set.cloneAndAppend(secondary_coord);
 
 secondary_coord.setName('knee_tx_r');
-secondary_coord.set_max_change(0.05);
+secondary_coord.set_max_change(0.001);
 secondary_coord.set_coordinate('/jointset/knee_r/knee_tx_r');
 secondary_coord_set.cloneAndAppend(secondary_coord);
 
 secondary_coord.setName('knee_ty_r');
-secondary_coord.set_max_change(0.05);
+secondary_coord.set_max_change(0.001);
 secondary_coord.set_coordinate('/jointset/knee_r/knee_ty_r');
 secondary_coord_set.cloneAndAppend(secondary_coord);
 
 secondary_coord.setName('knee_tz_r');
-secondary_coord.set_max_change(0.05);
+secondary_coord.set_max_change(0.001);
 secondary_coord.set_coordinate('/jointset/knee_r/knee_tz_r');
 secondary_coord_set.cloneAndAppend(secondary_coord);
 
 secondary_coord.setName('pf_flex_r');
-secondary_coord.set_max_change(0.01);
+secondary_coord.set_max_change(0.005);
 secondary_coord.set_coordinate('/jointset/pf_r/pf_flex_r');
 secondary_coord_set.cloneAndAppend(secondary_coord);
 
 secondary_coord.setName('pf_rot_r');
-secondary_coord.set_max_change(0.01);
+secondary_coord.set_max_change(0.005);
 secondary_coord.set_coordinate('/jointset/pf_r/pf_rot_r');
 secondary_coord_set.cloneAndAppend(secondary_coord);
 
 secondary_coord.setName('pf_tilt_r');
-secondary_coord.set_max_change(0.01);
+secondary_coord.set_max_change(0.005);
 secondary_coord.set_coordinate('/jointset/pf_r/pf_tilt_r');
 secondary_coord_set.cloneAndAppend(secondary_coord);
 
 secondary_coord.setName('pf_tx_r');
-secondary_coord.set_max_change(0.005);
+secondary_coord.set_max_change(0.001);
 secondary_coord.set_coordinate('/jointset/pf_r/pf_tx_r');
 secondary_coord_set.cloneAndAppend(secondary_coord);
 
 secondary_coord.setName('pf_ty_r');
-secondary_coord.set_max_change(0.005);
+secondary_coord.set_max_change(0.001);
 secondary_coord.set_coordinate('/jointset/pf_r/pf_ty_r');
 secondary_coord_set.cloneAndAppend(secondary_coord);
 
 secondary_coord.setName('pf_tz_r');
-secondary_coord.set_max_change(0.005);
+secondary_coord.set_max_change(0.001);
 secondary_coord.set_coordinate('/jointset/pf_r/pf_tz_r');
 secondary_coord_set.cloneAndAppend(secondary_coord);
 
 secondary_coord.setName('meniscus_medial_flex_r');
-secondary_coord.set_max_change(0.01);
+secondary_coord.set_max_change(0.005);
 secondary_coord.set_coordinate('/jointset/meniscus_medial_r/meniscus_medial_flex_r');
 secondary_coord_set.cloneAndAppend(secondary_coord);
 
 secondary_coord.setName('meniscus_medial_add_r');
-secondary_coord.set_max_change(0.01);
+secondary_coord.set_max_change(0.005);
 secondary_coord.set_coordinate('/jointset/meniscus_medial_r/meniscus_medial_add_r');
 secondary_coord_set.cloneAndAppend(secondary_coord);
 
 secondary_coord.setName('meniscus_medial_rot_r');
-secondary_coord.set_max_change(0.01);
+secondary_coord.set_max_change(0.005);
 secondary_coord.set_coordinate('/jointset/meniscus_medial_r/meniscus_medial_rot_r');
 secondary_coord_set.cloneAndAppend(secondary_coord);
 
 secondary_coord.setName('meniscus_medial_tx_r');
-secondary_coord.set_max_change(0.005);
+secondary_coord.set_max_change(0.001);
 secondary_coord.set_coordinate('/jointset/meniscus_medial_r/meniscus_medial_tx_r');
 secondary_coord_set.cloneAndAppend(secondary_coord);
 
 secondary_coord.setName('meniscus_medial_ty_r');
-secondary_coord.set_max_change(0.005);
+secondary_coord.set_max_change(0.001);
 secondary_coord.set_coordinate('/jointset/meniscus_medial_r/meniscus_medial_ty_r');
 secondary_coord_set.cloneAndAppend(secondary_coord);
 
 secondary_coord.setName('meniscus_medial_tz_r');
-secondary_coord.set_max_change(0.005);
+secondary_coord.set_max_change(0.001);
 secondary_coord.set_coordinate('/jointset/meniscus_medial_r/meniscus_medial_tz_r');
 secondary_coord_set.cloneAndAppend(secondary_coord);
 
 secondary_coord.setName('meniscus_lateral_flex_r');
-secondary_coord.set_max_change(0.01);
+secondary_coord.set_max_change(0.005);
 secondary_coord.set_coordinate('/jointset/meniscus_lateral_r/meniscus_lateral_flex_r');
 secondary_coord_set.cloneAndAppend(secondary_coord);
 
 secondary_coord.setName('meniscus_lateral_add_r');
-secondary_coord.set_max_change(0.01);
+secondary_coord.set_max_change(0.005);
 secondary_coord.set_coordinate('/jointset/meniscus_lateral_r/meniscus_lateral_add_r');
 secondary_coord_set.cloneAndAppend(secondary_coord);
 
 secondary_coord.setName('meniscus_lateral_rot_r');
-secondary_coord.set_max_change(0.01);
+secondary_coord.set_max_change(0.005);
 secondary_coord.set_coordinate('/jointset/meniscus_lateral_r/meniscus_lateral_rot_r');
 secondary_coord_set.cloneAndAppend(secondary_coord);
 
 secondary_coord.setName('meniscus_lateral_tx_r');
-secondary_coord.set_max_change(0.005);
+secondary_coord.set_max_change(0.001);
 secondary_coord.set_coordinate('/jointset/meniscus_lateral_r/meniscus_lateral_tx_r');
 secondary_coord_set.cloneAndAppend(secondary_coord);
 
 secondary_coord.setName('meniscus_lateral_ty_r');
-secondary_coord.set_max_change(0.005);
+secondary_coord.set_max_change(0.001);
 secondary_coord.set_coordinate('/jointset/meniscus_lateral_r/meniscus_lateral_ty_r');
 secondary_coord_set.cloneAndAppend(secondary_coord);
 
 secondary_coord.setName('meniscus_lateral_tz_r');
-secondary_coord.set_max_change(0.005);
+secondary_coord.set_max_change(0.001);
 secondary_coord.set_coordinate('/jointset/meniscus_lateral_r/meniscus_lateral_tz_r');
 secondary_coord_set.cloneAndAppend(secondary_coord);
 
 comak.set_COMAKSecondaryCoordinateSet(secondary_coord_set);
 
 comak.set_settle_secondary_coordinates_at_start(true);
-comak.set_settle_threshold(1e-3);
-comak.set_settle_accuracy(1e-2);
+comak.set_settle_threshold(1e-4);
+comak.set_settle_accuracy(1e-3);
 comak.set_settle_internal_step_limit(10000);
 comak.set_print_settle_sim_results(true);
 comak.set_settle_sim_results_directory(comak_result_dir);
@@ -471,12 +471,14 @@ comak.set_verbose(2);
 comak.print('./inputs/comak_settings.xml');
 
 disp('Running COMAK Tool...')
-comak.run();
+% comak.run();
 
 %% Perform Joint Mechanics Analysis
 jnt_mech = JointMechanicsTool();
 jnt_mech.set_model_file(model_file);
 jnt_mech.set_input_states_file([comak_result_dir '/' results_basename '_states.sto']);
+jnt_mech.set_input_activations_file([comak_result_dir '/' results_basename '_activations.sto']);
+jnt_mech.set_input_comak_convergence_file([comak_result_dir '/' results_basename '_convergence.sto']);
 jnt_mech.set_use_muscle_physiology(false);
 jnt_mech.set_results_file_basename(results_basename);
 jnt_mech.set_results_directory(jnt_mech_result_dir);

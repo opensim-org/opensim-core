@@ -31,6 +31,7 @@
 #include "OpenSim/Simulation/StatesTrajectory.h"
 #include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Simulation/Control/PrescribedController.h>
+#include <OpenSim/Common/Stopwatch.h>
 
 using namespace OpenSim;
 
@@ -95,6 +96,13 @@ bool ForsimTool::run()
     auto cwd = IO::CwdChanger::changeToParentOf(getDocumentFileName());
 
     try {
+        const Stopwatch stopwatch;
+        log_critical("");
+        log_critical("==========");
+        log_critical("ForsimTool");
+        log_critical("==========");
+        log_critical("");
+
 
         //Set Model
         if (!_model_exists) {
@@ -183,9 +191,9 @@ bool ForsimTool::run()
         double dt = get_report_time_step();
         int nSteps = (int)lround((get_stop_time() - get_start_time()) / dt);
 
-        log_info("=====================================================");
+        /*log_info("=====================================================");
         log_info("| ForsimTool: Performing Forward Dynamic Simulation |");
-        log_info("=====================================================");
+        log_info("=====================================================");*/
         log_info("start time: {}", get_start_time());
         log_info("stop time: {}", get_stop_time());
 
@@ -242,8 +250,12 @@ bool ForsimTool::run()
         _model.updAnalysisSet().printResults(
             get_results_file_basename(), get_results_directory());
 
-        log_info("\nSimulation complete.");
+        const long long elapsed = stopwatch.getElapsedTimeInNs();
+
+        log_info("\nForsim Tool complete.");
+        log_info("Finished in {}", stopwatch.formatNs(elapsed));
         log_info("Printed results to: {}", get_results_directory());
+        log_info("");
 
         completed = true;
     }
