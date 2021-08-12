@@ -199,11 +199,16 @@ bool ForsimTool::run()
 
 
         for (int i = 0; i <= nSteps; ++i) {
-        
+            
+            if (i == 0) {
+                log_debug("Initial State:");
+            }
+            printDebugInfo(state);
+
             double t = get_start_time() + (i+1) * dt;
             log_info("time: {}",t);
 
-            printDebugInfo(state);
+            
 
             //Set Prescribed Muscle Forces
             if(_prescribed_frc_actuator_paths.size() > 0){
@@ -628,63 +633,65 @@ void ForsimTool::applyExternalLoads()
 void ForsimTool::printDebugInfo(const SimTK::State& state) {
     
     _model.realizeReport(state);
-    int w = 20;
 
-    if (get_verbose() >= 2) {
-        //Muscle
-        std::cout << std::setw(w) << "Muscle"
-            << std::setw(w) << "Force"
-            << std::setw(w) << "Activation"
-            << std::setw(w) << "Control" << std::endl;
+    //Unconstrained Coordinates
+    log_debug("{:<30} {:<20} {:<20}",
+        "Unconstrained Coordinate", "Value", "Speed");
 
-        for (const Muscle& msl : _model.updComponentList<Muscle>()) {
-            std::cout << std::setw(w) << msl.getName()
-                << std::setw(w) << msl.getActuation(state)
-                << std::setw(w) << msl.getActivation(state)
-                << std::setw(w) << msl.getControl(state)
-                << std::endl;
-        }
-        std::cout << std::endl;
-
-        //Ligament 
-        std::cout << std::setw(w) << "Ligament "
-                << std::setw(w) << "Total Force"
-                << std::setw(w) << "Spring Force"
-                << std::setw(w) << "Damping Force"
-                << std::setw(w) << "Strain"
-                << std::setw(w) << "Strain Rate"
-                << std::setw(w) << "Length"
-                << std::setw(w) << "Lengthening Rate"
-                << std::endl;
-
-
-        for (const Blankevoort1991Ligament& lig : _model.updComponentList<Blankevoort1991Ligament>()) {
-            std::cout << std::setw(w) << lig.getName()
-                << std::setw(w) << lig.getOutputValue<double>(state, "total_force")
-                << std::setw(w) << lig.getOutputValue<double>(state, "spring_force")
-                << std::setw(w) << lig.getOutputValue<double>(state, "damping_force")
-                << std::setw(w) << lig.getOutputValue<double>(state, "strain")
-                << std::setw(w) << lig.getOutputValue<double>(state, "strain_rate")
-                << std::setw(w) << lig.getOutputValue<double>(state, "length")
-                << std::setw(w) << lig.getOutputValue<double>(state, "lengthening_speed")
-                << std::endl;
-        }
-        std::cout << std::endl;
-
-        std::cout << std::setw(w) << "Contact " << std::setw(20)
-            << "Force" << std::setw(w) << "COP" << std::endl;
-
-        for (Smith2018ArticularContactForce& cnt : _model.updComponentList<Smith2018ArticularContactForce>()) {
-            std::cout << std::setw(w) << cnt.getName()
-                << std::setw(w) << cnt.getOutputValue<SimTK::Vec3>(state, "casting_total_contact_force")
-                << std::setw(w) << cnt.getOutputValue<SimTK::Vec3>(state, "casting_total_center_of_pressure")
-                << std::endl;
-        }
-        std::cout << std::endl;
+    for (int i = 0; i < getProperty_unconstrained_coordinates().size(); ++i) {
+        std::string coord_path = get_unconstrained_coordinates(i);
+        const Coordinate& coord = _model.updComponent<Coordinate>(coord_path);
+        log_debug("{:<30} {:<20} {:<20}", coord.getName(),
+            coord.getValue(state), coord.getSpeedValue(state));
     }
+    log_debug("");
 
+    //Muscle
+    log_debug("{:<20} {:<20} {:<20} {:<20}",
+        "Muscle", "Force", "Activation", "Control");
+
+    for (const Muscle& msl : _model.updComponentList<Muscle>()) {
+        log_debug("{:<20} {:<20} {:<20} {:<20}",
+            msl.getName(), msl.getActuation(state),
+            msl.getActivation(state), msl.getControl(state));
+    }
+    log_debug("");
+
+    // Ligament 
+    log_debug("{:<12} {:<12} {:<12} {:<12} {:<12} {:<12} {:<12}",
+        "Ligament", "Total Force", "Spring Force", 
+        "Damping Force", "Strain", "Strain Rate", "Length"); 
+
+    for (const Blankevoort1991Ligament& lig : 
+        _model.updComponentList<Blankevoort1991Ligament>()) {
+
+        log_debug("{:<12} {:<12} {:<12} {:<12} {:<12} {:<12} {:<12}",
+            lig.getName(),
+            lig.getOutputValue<double>(state, "total_force"),
+            lig.getOutputValue<double>(state, "spring_force"),
+            lig.getOutputValue<double>(state, "damping_force"),
+            lig.getOutputValue<double>(state, "strain"),
+            lig.getOutputValue<double>(state, "strain_rate"),
+            lig.getOutputValue<double>(state, "length"));
+    }
+    log_debug("");
+
+    // Contact
+    log_debug("{:<20} {:<20} {:<20}","Contact","Force","COP");
+
+    for (Smith2018ArticularContactForce& cnt : 
+        _model.updComponentList<Smith2018ArticularContactForce>()) {
+            
+        log_debug("{:<20} {:<20} {:<20}", cnt.getName(),
+            cnt.getOutputValue<SimTK::Vec3>(state,
+                "casting_total_contact_force"),
+            cnt.getOutputValue<SimTK::Vec3>(state,
+                "casting_total_center_of_pressure"));
+    }
+    log_debug("");
+/*
     if (get_verbose() >= 3) {
-        std::cout << std::setw(w) << "Contact " << std::setw(20)
+        log_debug("{:<20} {:<20} {:<20}", "Contact " << std::setw(20)
             << "Force" << std::setw(w) << "COP" << std::endl;
 
         for (Smith2018ArticularContactForce& cnt : _model.updComponentList<Smith2018ArticularContactForce>()) {
@@ -699,5 +706,5 @@ void ForsimTool::printDebugInfo(const SimTK::State& state) {
     if (get_verbose() >= 2) {
         std::cout << "Press Any Key to Continue." << std::endl;
         std::cin.ignore();
-    }
+    }*/
 }
