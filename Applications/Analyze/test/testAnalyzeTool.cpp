@@ -39,6 +39,7 @@
 #include <OpenSim/Simulation/Control/PrescribedController.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Common/Constant.h>
+#include <OpenSim/Common/GCVSplineSet.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -375,12 +376,12 @@ void testIMUDataReporter() {
 
     SimTK::State& s = pendulum.initSystem();
 
-    Joint& j0 = pendulum.updJointSet()[0];
-    auto& q0 = j0.updCoordinate();
+    const Joint& j0 = pendulum.getJointSet()[0];
+    const auto& q0 = j0.getCoordinate();
     q0.setValue(s, SimTK::Pi / 2.0); // lowest-point hanging condition
 
-    Joint& j1 = pendulum.updJointSet()[1];
-    auto& q1 = j1.updCoordinate();
+    const Joint& j1 = pendulum.getJointSet()[1];
+    const auto& q1 = j1.getCoordinate();
     q1.setValue(s, 0.0);
 
     Manager manager(pendulum);
@@ -495,31 +496,27 @@ void testIMUDataReporter() {
         state = pendulum.initSystem();
 
         // Set a horizontal default pendulum position.
-        Joint& j0 = pendulum.updJointSet()[0];
-        auto& q0 = j0.updCoordinate();
-        Joint& j1 = pendulum.updJointSet()[1];
-        auto& q1 = j1.updCoordinate();
+        const Joint& j0 = pendulum.getJointSet()[0];
+        const auto& q0 = j0.getCoordinate();
+        const Joint& j1 = pendulum.getJointSet()[1];
+        const auto& q1 = j1.getCoordinate();
         q0.setValue(state, 0.0);
         q1.setValue(state, 0.0);
 
         // Set the initial time and run the integration.
         state.setTime(0.0);
         Manager manager(pendulum);
-        manager.setIntegratorMaximumStepSize(1e-3);
+        manager.setIntegratorMaximumStepSize(1e-4);
         manager.initialize(state);
-        manager.integrate(2.0);
+        manager.integrate(5.0);
 
         // Extract the accelerometer signals from the torque-driven forward
         // integration.
         TimeSeriesTableVec3 accelSignals =
                 imuDataReporter->getAccelerometerSignalsTable();
+        accelSignals.trim(2.0, 4.0);
         STOFileAdapter_<SimTK::Vec3>::write(accelSignals,
                               "testIMUDataReporter_linear_accelerations.sto");
-
-        TimeSeriesTableVec3 gyroSignals =
-                imuDataReporter->getGyroscopeSignalsTable();
-        STOFileAdapter_<SimTK::Vec3>::write(gyroSignals,
-                              "testIMUDataReporter_angular_velocities.sto");
 
         // Save the coordinate states from the forward integration.
         TimeSeriesTable statesTable = manager.getStatesTable();
@@ -535,8 +532,6 @@ void testIMUDataReporter() {
         analyzeIMU.setName("testIMUDataReporter_no_forces");
         analyzeIMU.setModelFilename("testIMUDataReporter_double_pendulum.osim");
         analyzeIMU.setStatesFileName("testIMUDataReporter_states.sto");
-        analyzeIMU.setStartTime(0.0);
-        analyzeIMU.setFinalTime(2.0);
         IMUDataReporter imuDataReporter2;
         imuDataReporter2.setName("IMUDataReporter_no_forces");
         imuDataReporter2.append_frame_paths("/bodyset/b0");
@@ -548,19 +543,46 @@ void testIMUDataReporter() {
         roundTrip.run();
 
         // Load the accelerations from AnalyzeTool from file.
-        TimeSeriesTableVec3 accelSignals_no_forces(
+        TimeSeriesTableVec3 accelSignalsNoForces(
                 "testIMUDataReporter_no_forces_linear_accelerations.sto");
+
+        TimeSeriesTable accelSignalsNoForcesFlat =
+            accelSignalsNoForces.flatten();
+        GCVSplineSet accelSplines(accelSignalsNoForcesFlat);
+        auto time = accelSignals.getIndependentColumn();
+        TimeSeriesTable accelSignalsNoForcesFlatResampled(time);
+        for (const auto& label : accelSignalsNoForcesFlat.getColumnLabels()) {
+            SimTK::Vector col((int)time.size(), 0.0);
+            const auto& thisSpline = accelSplines.get(label);
+            for (int i = 0; i < (int)time.size(); ++i) {
+                SimTK::Vector timeVec(1, time[i]);
+                col[i] = thisSpline.calcValue(timeVec);
+            }
+            accelSignalsNoForcesFlatResampled.appendColumn(label, col);
+        }
+        accelSignalsNoForcesFlatResampled.addTableMetaData<std::string>(
+                "inDegrees", "no");
 
         // Compare the original accelerations to the accelerations computed with
         // AnalyzeTool.
-        // TODO the results from AnalyzeTool deviate from original solution in
-        //      the last few time points for some reason.
-        auto accelBlock = accelSignals.getMatrixBlock(0, 0,
-            accelSignals.getNumRows()-10,
-            accelSignals.getNumColumns());
-        auto accelBlock_no_forces = accelSignals_no_forces.getMatrixBlock(0, 0,
-            accelSignals_no_forces.getNumRows()-10,
-            accelSignals_no_forces.getNumColumns());
-        SimTK_TEST_EQ_TOL(accelBlock, accelBlock_no_forces, 1e-5);
+        auto accelSignalFlat = accelSignals.flatten();
+        auto accelBlock = accelSignalFlat.getMatrixBlock(0, 0,
+            accelSignalFlat.getNumRows(),
+            accelSignalFlat.getNumColumns());
+        auto accelBlockNoForces =
+            accelSignalsNoForcesFlatResampled.getMatrixBlock(0, 0,
+            accelSignalsNoForcesFlatResampled.getNumRows(),
+            accelSignalsNoForcesFlatResampled.getNumColumns());
+        auto diff = accelBlock - accelBlockNoForces;
+        auto diffSqr = diff.elementwiseMultiply(diff);
+        auto sumSquaredError = diffSqr.rowSum();
+        // Trapezoidal rule for uniform grid:
+        // dt / 2 (f_0 + 2f_1 + 2f_2 + 2f_3 + ... + 2f_{N-1} + f_N)
+        double timeInterval = time[(int)time.size()-1] - time[0];
+        int numTimes = (int)time.size();
+        auto integratedSumSquaredError = timeInterval / 2.0 *
+                   (sumSquaredError.sum() +
+                    sumSquaredError(1, numTimes - 2).sum());
+        SimTK_TEST_EQ_TOL(integratedSumSquaredError, 0.0, 1e-4);
     }
 }

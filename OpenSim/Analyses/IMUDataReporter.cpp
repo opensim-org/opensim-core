@@ -146,8 +146,8 @@ int IMUDataReporter::begin(const SimTK::State& s)
 {
     if(!proceed()) return(0);
 
-    if (_model == nullptr)
-        return -1;
+    OPENSIM_THROW_IF_FRMOBJ(_model == nullptr, Exception, ""
+        "IMUDataReporter: model not provided.");
 
     _modelLocal.reset(_model->clone());
 
