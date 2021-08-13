@@ -506,7 +506,7 @@ void testIMUDataReporter() {
         // Set the initial time and run the integration.
         state.setTime(0.0);
         Manager manager(pendulum);
-        manager.setIntegratorMaximumStepSize(1e-4);
+        manager.setIntegratorMaximumStepSize(1e-3);
         manager.initialize(state);
         manager.integrate(5.0);
 
@@ -532,6 +532,8 @@ void testIMUDataReporter() {
         analyzeIMU.setName("testIMUDataReporter_no_forces");
         analyzeIMU.setModelFilename("testIMUDataReporter_double_pendulum.osim");
         analyzeIMU.setStatesFileName("testIMUDataReporter_states.sto");
+        analyzeIMU.setInitialTime(0.0);
+        analyzeIMU.setFinalTime(5.0);
         IMUDataReporter imuDataReporter2;
         imuDataReporter2.setName("IMUDataReporter_no_forces");
         imuDataReporter2.append_frame_paths("/bodyset/b0");
@@ -583,6 +585,6 @@ void testIMUDataReporter() {
         auto integratedSumSquaredError = timeInterval / 2.0 *
                    (sumSquaredError.sum() +
                     sumSquaredError(1, numTimes - 2).sum());
-        SimTK_TEST_EQ_TOL(integratedSumSquaredError, 0.0, 1e-4);
+        SimTK_TEST_EQ_TOL(integratedSumSquaredError, 0.0, 1e-5);
     }
 }
