@@ -1549,8 +1549,14 @@ int JointMechanicsTool::record(const SimTK::State& s, const int frame_num)
     if (get_h5_kinematics_data()) {
         int nCoord = 0;
         for (const Coordinate& coord : _model.updComponentList<Coordinate>()) {
-            _coordinate_output_double_values[nCoord](frame_num,0) = coord.getValue(s);
-            _coordinate_output_double_values[nCoord](frame_num,1) = coord.getSpeedValue(s);
+            if (coord.getMotionType() == Coordinate::MotionType::Rotational) {
+                _coordinate_output_double_values[nCoord](frame_num, 0) = coord.getValue(s)*180/SimTK::Pi;
+                _coordinate_output_double_values[nCoord](frame_num, 1) = coord.getSpeedValue(s)*180/SimTK::Pi;
+            }
+            else {
+                _coordinate_output_double_values[nCoord](frame_num, 0) = coord.getValue(s);
+                _coordinate_output_double_values[nCoord](frame_num, 1) = coord.getSpeedValue(s);
+            }
             nCoord++;
         }
     }
