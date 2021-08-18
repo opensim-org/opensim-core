@@ -59,7 +59,7 @@ void MocoOutputConstraint::initializeOnModelImpl(
         bounds.emplace_back(get_lower_bounds(i), get_upper_bounds(i));
     }
     
-    setNumEquations(m_outputs.size());
+    setNumEquations((int)m_outputs.size());
     MocoConstraintInfo info;
     info.setBounds(bounds);
     const_cast<MocoOutputConstraint*>(this)->setConstraintInfo(info);

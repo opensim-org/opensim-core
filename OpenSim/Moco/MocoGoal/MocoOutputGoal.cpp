@@ -24,7 +24,7 @@ void MocoOutputGoal::constructProperties() {
     constructProperty_output_path("");
     constructProperty_divide_by_displacement(false);
     constructProperty_divide_by_mass(false);
-    constructProperty_exponent(1.0);
+    constructProperty_exponent(1);
 }
 
 void MocoOutputGoal::initializeOnModelImpl(const Model& output) const {
