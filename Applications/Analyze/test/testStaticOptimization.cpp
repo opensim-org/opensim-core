@@ -264,4 +264,5 @@ void testArm26DisabledMuscles() {
     ASSERT_EQUAL(forces.getColumnLabels().size(), 5);
     ASSERT_EQUAL(forces.getColumnLabels().findIndex("TRIlat"), -1);
     ASSERT_EQUAL(forces.getColumnLabels().findIndex("TRImed"), -1);
+
 }
