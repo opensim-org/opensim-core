@@ -69,7 +69,7 @@ void MocoOutputConstraint::calcPathConstraintErrorsImpl(
         const SimTK::State& state, SimTK::Vector& errors) const {
     getModel().realizeAcceleration(state);
     //getModel().getSystem().realize(state, m_output->getDependsOnStage());
-    for (int i = 0; i < m_outputs.size(); ++i) {
+    for (int i = 0; i < (int)m_outputs.size(); ++i) {
         errors[i] = static_cast<const Output<double>*>(m_outputs[i].get())
                             ->getValue(state);
     }
