@@ -187,6 +187,7 @@ TEST_CASE("Test IMUDataReporter for gait") {
             TabOpLowPassFilter(6) |
             TabOpUseAbsoluteStateNames();
     auto coordinatesRadians = tableProcessor.processAndConvertToRadians(model);
+    /*
     for (const auto& label : coordinatesRadians.getColumnLabels()) {
         if (label.find("/jointset/") != std::string::npos) {
             std::string speedLabel(label);
@@ -196,7 +197,7 @@ TEST_CASE("Test IMUDataReporter for gait") {
         } else {
             coordinatesRadians.removeColumn(label);
         }
-    }
+    }*/
     STOFileAdapter::write(coordinatesRadians,
                           "subject_walk_armless_coordinates_radians.sto");
 
