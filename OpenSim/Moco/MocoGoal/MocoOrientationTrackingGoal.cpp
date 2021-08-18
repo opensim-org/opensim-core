@@ -194,7 +194,7 @@ void MocoOrientationTrackingGoal::calcIntegrandImpl(
             m_ref_splines[4*iframe + 1].calcValue(timeVec),
             m_ref_splines[4*iframe + 2].calcValue(timeVec),
             m_ref_splines[4*iframe + 3].calcValue(timeVec));
-        // Construct a Rotation object from which we'll calcuation an angle-axis 
+        // Construct a Rotation object from which we'll calculate an angle-axis
         // representation of the current orientation error.
         const Rotation R_GD(e);
         const Rotation R_MD = ~R_GM*R_GD;

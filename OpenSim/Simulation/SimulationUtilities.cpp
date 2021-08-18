@@ -391,3 +391,50 @@ void OpenSim::checkLabelsMatchModelStates(const Model& model,
                 label);
     }
 }
+
+TimeSeriesTableVec3 OpenSim::createSyntheticIMUAccelerationSignals(
+        const Model& model,
+        const TimeSeriesTable& statesTable, const TimeSeriesTable& controlsTable,
+        const std::vector<std::string>& framePaths) {
+    std::vector<std::string> outputPaths;
+
+    ComponentPath path;
+    for (const auto& framePath : framePaths) {
+        OPENSIM_THROW_IF(path.isLegalPathElement(framePath), Exception,
+            "Provided frame path '{}' contains invalid characters.", framePath);
+        OPENSIM_THROW_IF(
+            !model.hasComponent<PhysicalFrame>(framePath), Exception,
+            "Expected provided frame path '{}' to point to component of "
+            "type PhysicalFrame, but no such component was found.", framePath);
+        outputPaths.push_back(framePath + "\\|linear_acceleration");
+    }
+    TimeSeriesTableVec3 accelTableEffort = analyze<SimTK::Vec3>(
+            model, statesTable, controlsTable, outputPaths);
+
+    // Create synthetic IMU signals by extracting the gravitational acceleration
+    // vector from the solution accelerations and expressing them in the model
+    // frames.
+    const auto& statesTraj =
+            StatesTrajectory::createFromStatesTable(model, statesTable);
+    const auto& ground = model.getGround();
+    const auto& gravity = model.getGravity();
+    const auto& timeVec = accelTableEffort.getIndependentColumn();
+    TimeSeriesTableVec3 accelTableIMU(timeVec);
+    for (const auto& framePath : framePaths) {
+        std::string label = framePath + "|linear_acceleration";
+        const auto& col = accelTableEffort.getDependentColumn(label);
+        const auto& frame = model.getComponent<PhysicalFrame>(framePath);
+        SimTK::Vector_<SimTK::Vec3> colIMU(col.size());
+        for (int i = 0; i < (int)timeVec.size(); ++i) {
+            const auto& state = statesTraj.get(i);
+            model.realizeAcceleration(state);
+            SimTK::Vec3 accelIMU = ground.expressVectorInAnotherFrame(
+                    state, col[i] - gravity, frame);
+            colIMU[i] = accelIMU;
+        }
+        accelTableIMU.appendColumn(label, colIMU);
+    }
+    accelTableIMU.setColumnLabels(framePaths);
+
+    return accelTableIMU;
+}

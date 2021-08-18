@@ -73,10 +73,11 @@ macro(OpenSimAddPythonModule)
     # We run swig once to get dependencies and then again to actually generate
     # the wrappers. This variable holds the parts of the swig command that
     # are shared between both invocations.
-    set(_swig_common_args -c++ -python
+    set(_swig_common_args -c++ -python -py3
             -I${OpenSim_SOURCE_DIR}
             -I${OpenSim_SOURCE_DIR}/Bindings/
             -I${Simbody_INCLUDE_DIR}
+            -v
             ${SWIG_FLAGS}
             ${_interface_file}
             )
@@ -95,6 +96,7 @@ macro(OpenSimAddPythonModule)
             #-debug-tmused # Which typemaps were used?
             -v # verbose
             -o ${_output_cxx_file}
+            ${SWIG_DOXYGEN_STRING}
             -outdir "${CMAKE_CURRENT_BINARY_DIR}"
             ${_swig_common_args}
         DEPENDS ${_${OSIMSWIGPY_MODULE}_dependencies}
@@ -253,6 +255,11 @@ OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/setup.py" ".")
 OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/__init__.py" opensim)
 
 OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/report.py" opensim)
+# for Python 3.8+/Windows we use a special script
+# setup_win_python38.py to set additional dll directory in __init__.py on client machine
+if (WIN32)
+    OpenSimPutFileInPythonPackage("${CMAKE_CURRENT_SOURCE_DIR}/setup_win_python38.py" ".")
+endif()
 
 # Test files. If you require more test resource files, list them here.
 foreach(test_file
@@ -380,6 +387,14 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/examples/"
         DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}")
 install(DIRECTORY ../Java/Matlab/OpenSenseExample
         DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}"
+        # Exclude Matlab m files
+        PATTERN "*.m" EXCLUDE)
+install(DIRECTORY ../Java/Matlab/examples/Moco/exampleEMGTracking
+        DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}/Moco"
+        # Exclude Matlab m files
+        PATTERN "*.m" EXCLUDE)
+install(DIRECTORY ../Java/Matlab/examples/Moco/exampleSquatToStand
+        DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}/Moco"
         # Exclude Matlab m files
         PATTERN "*.m" EXCLUDE)
 install(DIRECTORY OpenSenseExample

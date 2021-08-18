@@ -142,6 +142,7 @@
 #include <OpenSim/Simulation/OrientationsReference.h>
 #include <OpenSim/Simulation/InverseKinematicsSolver.h>
 #include <OpenSim/Simulation/OpenSense/IMUPlacer.h>
+#include <OpenSim/Simulation/OpenSense/IMU.h>
 #include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
 
 #include <OpenSim/Simulation/StatesTrajectory.h>
@@ -151,7 +152,7 @@
 #include <OpenSim/Simulation/VisualizerUtilities.h>
 
 #include <OpenSim/Simulation/TableProcessor.h>
-
+#include <OpenSim/Simulation/PositionMotion.h>
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Actuators/MuscleFixedWidthPennationModel.h>
 #include <OpenSim/Actuators/MuscleFirstOrderActivationDynamicModel.h>

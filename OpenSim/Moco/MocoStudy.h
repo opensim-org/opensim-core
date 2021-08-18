@@ -36,7 +36,7 @@ problem, and a MocoSolver, which describes the numerical method for
 solving the problem.
 
 Workflow
---------
+========
 When building a MocoStudy programmatically (e.g., in C++), the workflow is
 as follows:
 

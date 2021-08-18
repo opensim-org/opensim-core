@@ -34,6 +34,7 @@
 #include <OpenSim/Common/XMLDocument.h>
 #include <OpenSim/Simulation/InverseDynamicsSolver.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/SimulationUtilities.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -136,7 +137,12 @@ void InverseDynamicsTool::setupProperties()
     _lowpassCutoffFrequencyProp.setName("lowpass_cutoff_frequency_for_coordinates");
     _propertySet.append( &_lowpassCutoffFrequencyProp );
 
-    _outputGenForceFileNameProp.setComment("Name of the storage file (.sto) to which the generalized forces are written.");
+    string genForceComment =
+            "Name of the storage file (.sto) to which the generalized forces "
+            "are written. Only a filename should be specified here (not a "
+            "full path); the file will appear in the location provided in the "
+            "results_directory property.";
+    _outputGenForceFileNameProp.setComment(genForceComment);
     _outputGenForceFileNameProp.setName("output_gen_force_file");
     _outputGenForceFileNameProp.setValue("inverse_dynamics.sto");
     _propertySet.append(&_outputGenForceFileNameProp);
@@ -261,11 +267,76 @@ bool InverseDynamicsTool::run()
         // Initialize the model's underlying computational system and get its default state.
         SimTK::State& s = _model->initSystem();
 
-
+        // OpenSim::Coordinates represent degrees of freedom for a model.
+        // Each Coordinate's value and speed maps to an index
+        // in the model's underlying SimTK::State (value to a slot in the
+        // State's q, and speed to a slot in the State's u).
+        // So we need to map each OpenSim::Coordinate value and speed to the
+        // corresponding SimTK::State's q and u indices, respectively.
         auto coords = _model->getCoordinatesInMultibodyTreeOrder();
-        int nq = _model->getNumCoordinates();
+        int nq = s.getNQ();
+        int nu = s.getNU();
+        int nCoords = (int)coords.size();
+        int intUnusedSlot = -1;
 
-        FunctionSet *coordFunctions = NULL;
+        // Create a vector mapCoordinateToQ whose i'th element provides
+        // the index in vector 'coords' that corresponds with the i'th 'q' value.
+        // Do the same for mapCoordinateToU, which tracks the order for
+        // each 'u' value.
+        auto coordMap = createSystemYIndexMap(*_model);
+        std::vector<int> mapCoordinateToQ(nq, intUnusedSlot);
+        std::vector<int> mapCoordinateToU(nu, intUnusedSlot);
+        for (const auto& c : coordMap) {
+            // SimTK::State layout is [q u z] 
+            // (i.e., all "q"s first then "u"s second).
+            if (c.second < nq + nu) { 
+                std::string svName = c.first;
+                
+                // The state names corresponding to q's and u's will be of 
+                // the form:
+                // /jointset/(joint)/(coordinate)/(value or speed).
+                // So the corresponding coordinate name is second from the end.
+                ComponentPath svPath(svName);
+                std::string lastPathElement = svPath.getComponentName();
+                std::string coordName = svPath.getSubcomponentNameAtLevel(
+                        svPath.getNumPathLevels() - 2);
+
+                for (int i = 0; i < nCoords; ++i) {
+                    if (coordName == coords[i]->getName()) {
+                        if (lastPathElement == "value") {
+                            mapCoordinateToQ[c.second] = i;
+                            break;
+                        }
+                        
+                        // Shift State/System indices by nq since u's follow q's
+                        else if (lastPathElement == "speed") {
+                            mapCoordinateToU[c.second - nq] = i;
+                            break;
+                        }
+                        
+                        else {
+                            throw Exception("Last element in state variable "
+                                            " name " + svName + " is neither "
+                                            "'value' nor 'speed'");
+                        }
+                    }
+                    if (i == nCoords - 1) {
+                        throw Exception("Coordinate " + coordName + 
+                                " not found in model.");
+                    }
+                }
+
+            }
+        }
+
+        // Make sure that order of coordFunctions (which define splines for 
+        // State's q's) is in the same order as the State's q order.
+        // Also make a new vector (coordinatesToSpeedsIndexMap) that, for each
+        // u in the State, gives the corresponding index in q (which is same
+        // order as  coordFunctions). This accounts for cases where qdot != u.
+        FunctionSet coordFunctions;
+        coordFunctions.ensureCapacity(nq);
+        std::vector<int> coordinatesToSpeedsIndexMap(nu, intUnusedSlot);
 
         if (loadCoordinateValues()){
             if(_lowpassCutoffFrequency>=0) {
@@ -279,23 +350,41 @@ bool InverseDynamicsTool::run()
                 _model->getSimbodyEngine().convertDegreesToRadians(*_coordinateValues);
             }
             // Create differentiable splines of the coordinate data
-            coordFunctions = new GCVSplineSet(5, _coordinateValues);
+            GCVSplineSet coordSplines(5, _coordinateValues);
 
-            //Functions must correspond to model coordinates and their order for the solver
-            for(int i=0; i<nq; i++){
-                const Coordinate& coord = *coords[i];
-                if(coordFunctions->contains(coord.getName())){
-                    coordFunctions->insert(i,coordFunctions->get(coord.getName()));
+            // Functions must correspond to model coordinates.
+            // Solver needs the order of Function's to be the same as order
+            // in State's q's.
+            for (int i = 0; i < nq; i++) {
+                int coordInd = mapCoordinateToQ[i];
+
+                // unused q slot
+                if (coordInd == intUnusedSlot) {
+                    coordFunctions.insert(i, new Constant(0));
+                    continue;
+                }
+
+                const Coordinate& coord = *coords[coordInd];
+                if (coordSplines.contains(coord.getName())) {
+                    coordFunctions.insert(i, coordSplines.get(coord.getName()));
                 }
                 else{
-                    coordFunctions->insert(i,new Constant(coord.getDefaultValue()));
+                    coordFunctions.insert(i,new Constant(coord.getDefaultValue()));
                     log_info("InverseDynamicsTool: coordinate file does not "
                              "contain coordinate '{}'. Assuming default value.",
                             coord.getName());   
                 }
+
+                // Fill in coordinatesToSpeedsIndexMap as we go along to make
+                // sure we know which function corresponds to State's u's.
+                for (int j = 0; j < nu; ++j) {
+                    if (mapCoordinateToU[j] == coordInd) { 
+                        coordinatesToSpeedsIndexMap[j] = i;
+                    }
+                }
             }
-            if(coordFunctions->getSize() > nq){
-                coordFunctions->setSize(nq);
+            if(coordFunctions.getSize() > nq){
+                coordFunctions.setSize(nq);
             }
         }
         else{
@@ -328,11 +417,12 @@ bool InverseDynamicsTool::run()
         }
 
         // Preallocate results
-        Array_<Vector> genForceTraj(nt, Vector(nq, 0.0));
+        Array_<Vector> genForceTraj(nt, Vector(nCoords, 0.0));
 
         // solve for the trajectory of generalized forces that correspond to the 
         // coordinate trajectories provided
-        ivdSolver.solve(s, *coordFunctions, times, genForceTraj);
+        ivdSolver.solve(s, coordFunctions, coordinatesToSpeedsIndexMap, times,
+                genForceTraj);
         success = true;
 
         log_info("InverseDynamicsTool: {} time frames in {}.", nt, 
@@ -345,8 +435,8 @@ bool InverseDynamicsTool::run()
         // Generalized forces from ID Solver are in MultibodyTree order and not
         // necessarily in the order of the Coordinates in the Model.
         // We can get the Coordinates in Tree order from the Model.
-        Array<string> labels("time", nq+1);
-        for(int i=0; i<nq; i++){
+        Array<string> labels("time", nCoords + 1);
+        for (int i = 0; i < nCoords; i++) {
             labels[i+1] = coords[i]->getName();
             labels[i+1] += (coords[i]->getMotionType() == Coordinate::Rotational) ? 
                 "_moment" : "_force";
@@ -383,10 +473,15 @@ bool InverseDynamicsTool::run()
                 Vector &q = s.updQ();
                 Vector &u = s.updU();
 
-                for(int j=0; j<nq; ++j){
-                    q[j] = coordFunctions->evaluate(j, 0, times[i]);
-                    u[j] = coordFunctions->evaluate(j, 1, times[i]);
+                // Account for cases where qdot != u with coordinatesToSpeedsIndexMap
+                for( int j = 0; j < nq; ++j) {
+                    q[j] = coordFunctions.evaluate(j, 0, times[i]);
                 }
+                for (int j = 0; j < nu; ++j) {
+                    u[j] = coordFunctions.evaluate(
+                            coordinatesToSpeedsIndexMap[j], 1, times[i]);
+                }
+
             
                 for(int j=0; j<nj; ++j){
                     equivalentBodyForceAtJoint = jointsForEquivalentBodyForces[j].calcEquivalentSpatialForce(s, genForceTraj[i]);

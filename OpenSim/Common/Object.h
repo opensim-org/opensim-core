@@ -1213,6 +1213,9 @@ template <> struct Object_GetClassName<SimTK::Transform>
 {   static const std::string name() {return "Transform";} };
 template <> struct Object_GetClassName<SimTK::Rotation_<SimTK::Real>>
 {   static const std::string name() { return "Rotation"; } };
+template <> struct Object_GetClassName<SimTK::Quaternion_<SimTK::Real>> {
+    static const std::string name() { return "Quaternion"; } };
+
 
 #define OpenSim_OBJECT_ANY_DEFS(ConcreteClass, SuperClass)                     \
 public:                                                                        \
