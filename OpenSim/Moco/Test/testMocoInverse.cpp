@@ -187,7 +187,6 @@ TEST_CASE("Test IMUDataReporter for gait") {
             TabOpLowPassFilter(6) |
             TabOpUseAbsoluteStateNames();
     auto coordinatesRadians = tableProcessor.processAndConvertToRadians(model);
-    /*
     for (const auto& label : coordinatesRadians.getColumnLabels()) {
         if (label.find("/jointset/") != std::string::npos) {
             std::string speedLabel(label);
@@ -197,10 +196,10 @@ TEST_CASE("Test IMUDataReporter for gait") {
         } else {
             coordinatesRadians.removeColumn(label);
         }
-    }*/
+    }
     STOFileAdapter::write(coordinatesRadians,
                           "subject_walk_armless_coordinates_radians.sto");
-
+    log_info("File {} has been written", "subject_walk_armless_coordinates_radians.sto");
     // Create a model with no muscles (or other forces) and add IMU components.
     ModelProcessor modelProcessorNoMuscles =
         ModelProcessor("subject_walk_armless_18musc.osim") |
