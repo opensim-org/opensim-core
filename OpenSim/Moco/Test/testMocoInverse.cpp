@@ -200,6 +200,8 @@ TEST_CASE("Test IMUDataReporter for gait") {
     STOFileAdapter::write(coordinatesRadians,
                           "subject_walk_armless_coordinates_radians.sto");
     log_info("File {} has been written", "subject_walk_armless_coordinates_radians.sto");
+    // Try to trigger exception here for debugging
+    Storage coordinatesStore("subject_walk_armless_coordinates_radians.sto");
     // Create a model with no muscles (or other forces) and add IMU components.
     ModelProcessor modelProcessorNoMuscles =
         ModelProcessor("subject_walk_armless_18musc.osim") |
