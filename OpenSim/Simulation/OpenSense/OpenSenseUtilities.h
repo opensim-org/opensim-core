@@ -26,6 +26,7 @@
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include "IMU.h"
 #include "IMUPlacer.h"
 
 namespace OpenSim {
@@ -68,13 +69,19 @@ public:
     /**
         * Create Orientations as a TimeSeriesTable based on passed in markerFile
         */
-    static TimeSeriesTable_<SimTK::Quaternion>
+    static TimeSeriesTable_<SimTK::Quaternion_<double> >
         createOrientationsFileFromMarkers(const std::string& markersFile);
 
     /// form a Transform from 3 points origin (op), along x (xp - op), along y(yp - op)
     static SimTK::Transform formTransformFromPoints(const SimTK::Vec3& op, 
         const SimTK::Vec3& xp,  const SimTK::Vec3& yp);
   
+    /// Add IMUs to passed in model and return references to them
+    /// based on paths specification. 
+    /// - If "paths" refer to user specified list of frames, then one new 
+    ///     "{Frame}_imu" is added to the model and returned in result.
+    static std::vector< OpenSim::IMU* > addModelIMUs(
+            Model& model, std::vector<std::string>& paths);
 }; // end of class OpenSenseUtilities
 }
 #endif // OPENSENSE_UTILITIES_H_

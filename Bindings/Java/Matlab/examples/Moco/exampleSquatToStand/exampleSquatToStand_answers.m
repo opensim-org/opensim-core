@@ -48,7 +48,7 @@ problem.setStateInfo('/jointset/ankle_r/ankle_angle_r/value', ...
 % Velocity bounds: all model coordinates should start and end at rest.
 problem.setStateInfoPattern('/jointset/.*/speed', [], 0, 0);
 
-% Part 1d: Add a MocoControlCost to the problem.
+% Part 1d: Add a MocoControlGoal to the problem.
 problem.addGoal(MocoControlGoal('myeffort'));
 
 % Part 1e: Configure the solver.
@@ -81,7 +81,7 @@ tracking.setReference(tableProcessor);
 tracking.setAllowUnusedReferences(true);
 problem.addGoal(tracking);
 
-% Part 2c: Reduce the control cost weight so it now acts as a regularization 
+% Part 2c: Reduce the control goal weight so it now acts as a regularization 
 % term.
 problem.updGoal('myeffort').setWeight(0.001);
 
@@ -265,7 +265,7 @@ for i = 0:numStates-1
              assistedSolution.getStateMat(stateNames.get(i)), '--b', ...
              'linewidth', 2.5);
         hold off
-        stateName = stateNames.get(i).toCharArray';
+        stateName = stateNames.get(i);
         plotTitle = stateName;
         plotTitle = strrep(plotTitle, '/forceset/', '');
         plotTitle = strrep(plotTitle, '/activation', '');

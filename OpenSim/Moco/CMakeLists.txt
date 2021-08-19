@@ -58,6 +58,10 @@ set(MOCO_SOURCES
         MocoGoal/MocoInitialForceEquilibriumDGFGoal.cpp
         MocoGoal/MocoPeriodicityGoal.h
         MocoGoal/MocoPeriodicityGoal.cpp
+        MocoGoal/MocoStepTimeAsymmetryGoal.h
+        MocoGoal/MocoStepTimeAsymmetryGoal.cpp
+        MocoGoal/MocoStepLengthAsymmetryGoal.h
+        MocoGoal/MocoStepLengthAsymmetryGoal.cpp
         MocoSolver.h
         MocoSolver.cpp
         MocoDirectCollocationSolver.h
@@ -78,8 +82,6 @@ set(MOCO_SOURCES
         Components/DiscreteController.h
         Components/StationPlaneContactForce.h
         Components/StationPlaneContactForce.cpp
-        Components/PositionMotion.h
-        Components/PositionMotion.cpp
         Components/DiscreteForces.h
         Components/DiscreteForces.cpp
         Components/AccelerationMotion.h
@@ -97,6 +99,8 @@ set(MOCO_SOURCES
         MocoConstraintInfo.cpp
         MocoStudyFactory.h
         MocoStudyFactory.cpp
+        MocoScaleFactor.h
+        MocoScaleFactor.cpp
         )
 if(OPENSIM_WITH_CASADI)
     list(APPEND MOCO_SOURCES

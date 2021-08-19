@@ -25,7 +25,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 using namespace OpenSim;
 
-// Reshaper is a JetBrains add-on to Visual Studio that allows running tests
+// Resharper is a JetBrains add-on to Visual Studio that allows running tests
 // individually, but sometimes needs this dummy test case to make template
 // test cases discoverable.
 TEST_CASE("(Dummy test to support discovery in Resharper)") { REQUIRE(true); }

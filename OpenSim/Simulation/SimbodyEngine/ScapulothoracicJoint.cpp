@@ -133,23 +133,23 @@ void ScapulothoracicJoint::extendScale(const SimTK::State& s,
     const std::string& parentName = getParentFrame().getName();
 
     // Scaling related to the parent body:
-    //
-    // Joint kinematics are scaled by the scale factors for the parent body,
-    // so get those body's factors
-    Vec3 scaleFactors(1.0);
-    for (int i = 0; i < scaleSet.getSize(); i++) {
-        const Scale &scale = scaleSet.get(i);
+    // Get scale factors (if an entry for the parent Frame's base Body exists).
+    const Vec3& scaleFactorsP = getScaleFactors(scaleSet, getParentFrame());
+    if (scaleFactorsP == ModelComponent::InvalidScaleFactors) return;
 
-        if (scale.getSegmentName() == parentName) {
-            scale.getScaleFactors(scaleFactors);
-            break;
-        }
-    }
+    // Now apply scale factors to the thoracic ellipsoid
+    upd_thoracic_ellipsoid_radii_x_y_z() =
+            get_thoracic_ellipsoid_radii_x_y_z().elementwiseMultiply(
+                    scaleFactorsP);
 
-    // Scale the size of the mobilizer
-    for (int i=0; i<3; i++) {
-        upd_thoracic_ellipsoid_radii_x_y_z()[i] *= scaleFactors[i];
-    }
+    // Get scale factors (if an entry for the child Frame's base Body exists).
+    const Vec3& scaleFactorsC = getScaleFactors(scaleSet, getChildFrame());
+    if (scaleFactorsC == ModelComponent::InvalidScaleFactors) return;
+
+    upd_scapula_winging_axis_origin(0) =
+            get_scapula_winging_axis_origin(0) * scaleFactorsC[0];
+    upd_scapula_winging_axis_origin(1) =
+            get_scapula_winging_axis_origin(1) * scaleFactorsC[1];
 }
 
 //=============================================================================

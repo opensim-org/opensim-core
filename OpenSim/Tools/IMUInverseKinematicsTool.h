@@ -56,6 +56,8 @@ public:
     /** Use Super's constructors. */
     using Super::Super;
     // default copy, assignment operator, and destructor
+    OrientationWeightSet() = default;
+    OrientationWeightSet(const OrientationWeightSet&) = default;
     //=============================================================================
 }; 
         //=============================================================================

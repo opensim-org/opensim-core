@@ -172,6 +172,7 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/Model/ActuatorForceProbe.h>
 %include <OpenSim/Simulation/Model/MuscleActiveFiberPowerProbe.h>
 %include <OpenSim/Simulation/Model/Bhargava2004MuscleMetabolicsProbe.h>
+%include <OpenSim/Simulation/Model/Bhargava2004SmoothedMuscleMetabolics.h>
 %include <OpenSim/Simulation/Model/Umberger2010MuscleMetabolicsProbe.h>
 %include <OpenSim/Simulation/Model/ModelVisualPreferences.h>
 %include <OpenSim/Simulation/Model/ModelVisualizer.h>
@@ -232,14 +233,18 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/AssemblySolver.h>
 %include <OpenSim/Simulation/InverseKinematicsSolver.h>
 %include <OpenSim/Simulation/OpenSense/IMUPlacer.h>
+%include <OpenSim/Simulation/OpenSense/IMU.h>
+
 %include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
+
+%template(StdVectorIMUs) std::vector< OpenSim::IMU* >;
 
 %include <OpenSim/Simulation/StatesTrajectory.h>
 // This enables iterating using the getBetween() method.
 %template(IteratorRangeStatesTrajectoryIterator)
     SimTK::IteratorRange<OpenSim::StatesTrajectory::const_iterator>;
 %include <OpenSim/Simulation/StatesTrajectoryReporter.h>
-
+%include <OpenSim/Simulation/PositionMotion.h>
 %include <OpenSim/Simulation/SimulationUtilities.h>
 %template(analyze) OpenSim::analyze<double>;
 %template(analyzeVec3) OpenSim::analyze<SimTK::Vec3>;
@@ -268,12 +273,42 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %template(ActuatorList) OpenSim::ComponentList<const OpenSim::Actuator>;
 %template(ActuatorIterator) OpenSim::ComponentListIterator<const OpenSim::Actuator>;
 
-%template(getFrameList) OpenSim::Model::getComponentList<OpenSim::Frame>;
-%template(getBodyList) OpenSim::Model::getComponentList<OpenSim::Body>;
-%template(getMuscleList) OpenSim::Model::getComponentList<OpenSim::Muscle>;
-%template(getModelComponentList) OpenSim::Model::getComponentList<OpenSim::ModelComponent>;
-%template(getJointList) OpenSim::Model::getComponentList<OpenSim::Joint>;
-%template(getActuatorList) OpenSim::Model::getComponentList<OpenSim::Actuator>;
+%template(Thelen2003MuscleList)
+    OpenSim::ComponentList<const OpenSim::Thelen2003Muscle>;
+%template(Thelen2003MuscleIterator)
+    OpenSim::ComponentListIterator<const OpenSim::Thelen2003Muscle>;
+
+%template(Millard2012EquilibriumMuscleList)
+    OpenSim::ComponentList<const OpenSim::Millard2012EquilibriumMuscle>;
+%template(Millard2012EquilibriumMuscleIterator)
+    OpenSim::ComponentListIterator<const OpenSim::Millard2012EquilibriumMuscle>;
+
+%extend OpenSim::Model {
+    OpenSim::ComponentList<const OpenSim::Frame> getFrameList(){
+        return $self->getComponentList<OpenSim::Frame>();
+    }
+    OpenSim::ComponentList<const OpenSim::Body> getBodyList(){
+        return $self->getComponentList<OpenSim::Body>();
+    }
+    OpenSim::ComponentList<const OpenSim::Muscle> getMuscleList(){
+        return $self->getComponentList<OpenSim::Muscle>();
+    }
+    OpenSim::ComponentList<const OpenSim::Joint> getJointList(){
+        return $self->getComponentList<OpenSim::Joint>();
+    }
+    OpenSim::ComponentList<const OpenSim::Actuator> getActuatorList(){
+        return $self->getComponentList<OpenSim::Actuator>();
+    }
+    OpenSim::ComponentList<const OpenSim::ModelComponent> getModelComponentList(){
+        return $self->getComponentList<OpenSim::ModelComponent>();
+    }
+    OpenSim::ComponentList<const OpenSim::Thelen2003Muscle> getThelen2003MuscleList(){
+        return $self->getComponentList<OpenSim::Thelen2003Muscle>();
+    }
+    OpenSim::ComponentList<const OpenSim::Millard2012EquilibriumMuscle> getMillard2012EquilibriumMuscleList(){
+        return $self->getComponentList<OpenSim::Millard2012EquilibriumMuscle>();
+    }
+}
 
 %include <OpenSim/Actuators/osimActuatorsDLL.h>
 %include <OpenSim/Actuators/ActiveForceLengthCurve.h>
@@ -288,20 +323,6 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Actuators/Thelen2003Muscle.h>
 %include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
 
-%template(Thelen2003MuscleList)
-    OpenSim::ComponentList<const OpenSim::Thelen2003Muscle>;
-%template(Thelen2003MuscleIterator)
-    OpenSim::ComponentListIterator<const OpenSim::Thelen2003Muscle>;
-
-%template(Millard2012EquilibriumMuscleList)
-    OpenSim::ComponentList<const OpenSim::Millard2012EquilibriumMuscle>;
-%template(Millard2012EquilibriumMuscleIterator)
-    OpenSim::ComponentListIterator<const OpenSim::Millard2012EquilibriumMuscle>;
-
-%template(getThelen2003MuscleList)
-  OpenSim::Model::getComponentList<OpenSim::Thelen2003Muscle>;
-%template(getMillard2012EquilibriumMuscleList)
-  OpenSim::Model::getComponentList<OpenSim::Millard2012EquilibriumMuscle>;
 
 // Compensate for insufficient C++11 support in SWIG
 // =================================================
