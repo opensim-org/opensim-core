@@ -197,6 +197,9 @@ TEST_CASE("Test IMUDataReporter for gait") {
             coordinatesRadians.removeColumn(label);
         }
     }
+    // Fix nColumns in header as not updated by the append/removeColumns calls above
+    coordinatesRadians.updTableMetaData().setValueForKey(
+            "nColumns", coordinatesRadians.getColumnLabels().size());
     STOFileAdapter::write(coordinatesRadians,
                           "subject_walk_armless_coordinates_radians.sto");
     log_info("File {} has been written", "subject_walk_armless_coordinates_radians.sto");
