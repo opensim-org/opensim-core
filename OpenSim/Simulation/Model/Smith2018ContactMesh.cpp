@@ -127,7 +127,7 @@ void Smith2018ContactMesh::extendFinalizeFromProperties() {
     if (!isObjectUpToDateWithProperties()) {
         _decorative_mesh.reset(
             new SimTK::DecorativeMeshFile(_full_mesh_file_path.c_str()));
-        //_decorative_mesh->setScaleFactors(get_scale_factors());
+        _decorative_mesh->setScaleFactors(get_scale_factors());
     }
 }
 
@@ -579,21 +579,17 @@ void Smith2018ContactMesh::generateDecorations(
     //_decorative_mesh->setScaleFactors(get_scale_factors());
 
     //SET TRANSFORM
-    const Frame& myFrame = getFrame();
-    const Frame& bFrame = myFrame.findBaseFrame();
-    const PhysicalFrame* bPhysicalFrame =
-        dynamic_cast<const PhysicalFrame*>(&bFrame);
-    if (bPhysicalFrame == nullptr) {
-        // throw exception something is wrong
-        throw (Exception("Frame for Geometry " + getName() +
-            " is not attached to a PhysicalFrame."));
-    }
-    SimTK::MobilizedBodyIndex mbidx = bPhysicalFrame->getMobilizedBodyIndex();
-    SimTK::Transform transformInBaseFrame = myFrame.findTransformInBaseFrame();
+    // B: base Frame (Body or Ground)
+    // F: PhysicalFrame that this ContactGeometry is connected to
+    // P: the frame defined (relative to F) by the location and orientation
+    //    properties.
 
-    _decorative_mesh->setBodyId(mbidx);
-    _decorative_mesh->setTransform(transformInBaseFrame);
-    _decorative_mesh->setIndexOnBody(0);
+    const auto& X_BF = getFrame().findTransformInBaseFrame();
+    const auto& X_FP = getTransform();
+    const auto X_BP = X_BF * X_FP;
+
+    _decorative_mesh->setTransform(X_BP);
+    _decorative_mesh->setBodyId(getFrame().getMobilizedBodyIndex());
 
 
     // SET APPERANCE
