@@ -36,31 +36,32 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
             "${script}" @ONLY)
     install(SCRIPT "${script}")
 
-endif()
-if(TROPTER_COPY_DEPENDENCIES AND UNIX)
+elseif(TROPTER_COPY_DEPENDENCIES AND UNIX)
     get_filename_component(gcc_libdir "${pkgcfg_lib_IPOPT_gfortran}" DIRECTORY)
 
     file(GLOB gfortran "${gcc_libdir}/libgfortran*.so")
     file(GLOB quadmath "${gcc_libdir}/libquadmath*.so")
 
     install(FILES
-            ${ADOLC_DIR}/lib64/libadolc.2.so
+            ${ADOLC_DIR}/lib64/libadolc.so.2
+            ${ADOLC_DIR}/lib64/libadolc.so.2.1.0
             ${ADOLC_DIR}/lib64/libadolc.so
             # /usr/local/opt/boost/lib/libboost_system.so
-            ${ColPack_ROOT_DIR}/lib/libColPack.0.so
-            ${IPOPT_LIBDIR}/libipopt.1.10.8.so
-            ${IPOPT_LIBDIR}/libipopt.1.so
+            ${ColPack_ROOT_DIR}/lib/libColPack.so.0
+            ${ColPack_ROOT_DIR}/lib/libColPack.so
+            ${IPOPT_LIBDIR}/libipopt.so.1.10.8
+            ${IPOPT_LIBDIR}/libipopt.so.1
             ${IPOPT_LIBDIR}/libipopt.so
-            ${IPOPT_LIBDIR}/libcoinmumps.1.6.0.so
-            ${IPOPT_LIBDIR}/libcoinmumps.1.so
+            ${IPOPT_LIBDIR}/libcoinmumps.so.1.6.0
+            ${IPOPT_LIBDIR}/libcoinmumps.so.1
             ${IPOPT_LIBDIR}/libcoinmumps.so
-            ${IPOPT_LIBDIR}/libcoinmetis.1.3.5.so
-            ${IPOPT_LIBDIR}/libcoinmetis.1.so
+            ${IPOPT_LIBDIR}/libcoinmetis.so.1.3.5
+            ${IPOPT_LIBDIR}/libcoinmetis.so.1
             ${IPOPT_LIBDIR}/libcoinmetis.so
 
             ${gfortran}
             ${quadmath}
-            ${gcc_libdir}/libgcc_s.1.so
+            ${gcc_libdir}/libgcc_s.so.1
 
             DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
