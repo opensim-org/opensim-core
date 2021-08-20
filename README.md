@@ -513,9 +513,9 @@ On Windows using Visual Studio
       intermediate; good for TortoiseSVN users;
     * [GitHub for Windows](https://windows.github.com/), easiest.
 * **Bindings** (optional): [SWIG](http://www.swig.org/) 4.0.2
-    * **MATLAB scripting** (optional): [Java development kit][java] >= 1.7.
+    * **MATLAB scripting** (optional): [Java development kit][java] >= 1.8.
         * Note: Older versions of MATLAB may use an older version of JVM. Run
-                'ver' in MATLAB to check MATLAB's JVM version (must be >= 1.7).
+                'ver' in MATLAB to check MATLAB's JVM version (must be >= 1.8).
         * Note: Java development kit >= 9 requires CMake >= 3.10.
     * **Python scripting** (optional): Python 2 >= 2.7 or Python 3 >= 3.5
         * [Anaconda](https://www.anaconda.com/distribution/)
@@ -551,10 +551,9 @@ On Windows using Visual Studio
    which to build dependencies. Let's say this is
    `C:/opensim-core-dependencies-build`.
 4. Click the **Configure** button.
-    1. Visual Studio 2015: Choose the *Visual Studio 14 2015* generator (may appear as *Visual Studio 14*).
-    2. Visual Studio 2017: Choose the *Visual Studio 15 2017* generator.
-    3. To build as 64-bit, select the generator with *Win64* in the name.
-    4. Click **Finish**.
+    1. Visual Studio 2019: Choose the *Visual Studio 16 2019* generator.
+    2. Need to build as 64-bit, select the generator with *Win64* in the name.
+    3. Click **Finish**.
 5. Where do you want to install OpenSim dependencies on your computer? Set this
    by changing the `CMAKE_INSTALL_PREFIX` variable. Let's say this is
    `C:/opensim-core-dependencies-install`.
