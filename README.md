@@ -512,7 +512,7 @@ On Windows using Visual Studio
     * [TortoiseGit](https://code.google.com/p/tortoisegit/wiki/Download),
       intermediate; good for TortoiseSVN users;
     * [GitHub for Windows](https://windows.github.com/), easiest.
-* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.8
+* **Bindings** (optional): [SWIG](http://www.swig.org/) 4.0.2
     * **MATLAB scripting** (optional): [Java development kit][java] >= 1.7.
         * Note: Older versions of MATLAB may use an older version of JVM. Run
                 'ver' in MATLAB to check MATLAB's JVM version (must be >= 1.7).
@@ -806,7 +806,7 @@ ctest -j8
 * **version control** (optional): git.
     * Xcode Command Line Tools gives you git on the command line.
     * [GitHub for Mac](https://mac.github.com), for a simple-to-use GUI.
-* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.8
+* **Bindings** (optional): [SWIG](http://www.swig.org/) 4.0.2
     * **MATLAB scripting** (optional): [Java development kit][java] >= 1.7.
         * Note: Older versions of MATLAB may use an older version of JVM. Run
                 'ver' in MATLAB to check MATLAB's JVM version (must be >= 1.7).
@@ -1010,7 +1010,7 @@ specific Ubuntu versions under 'For the impatient' below.
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6;
   `doxygen`.
 * **version control** (optional): git; `git`.
-* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.8; `swig`.
+* **Bindings** (optional): [SWIG](http://www.swig.org/) 4.0.2; `swig`.
     * **MATLAB scripting** (optional): [Java development kit][java] >= 1.7;
       `openjdk-7-jdk`.
         * Note: Older versions of MATLAB may use an older version of JVM. Run
