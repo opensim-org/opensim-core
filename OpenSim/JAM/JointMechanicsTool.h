@@ -111,6 +111,10 @@ public:
         "Path to storage file (.sto) convergence metrics vs time for comak "
         "results to be written to the .h5 file.")
 
+    OpenSim_DECLARE_PROPERTY(input_inverse_dynamics_file, std::string,
+        "Path to storage file (.sto) containing results from the inverse "
+        "dynamics tool.")
+
     OpenSim_DECLARE_PROPERTY(results_directory, std::string,
         "Path to folder where the results files will be written.")
 

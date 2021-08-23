@@ -91,6 +91,7 @@ void JointMechanicsTool::constructProperties()
     constructProperty_input_forces_file("");
     constructProperty_input_activations_file("");
     constructProperty_input_comak_convergence_file("");
+    constructProperty_input_inverse_dynamics_file("");
 
     constructProperty_results_directory(".");
     constructProperty_results_file_basename("");
@@ -1989,6 +1990,37 @@ void JointMechanicsTool::writeH5File(
 
         //h5.createGroup("comak");
         h5.writeDataSet(convergence_table, "comak",true);
+    }
+
+    //Write Inverse Dynamics Data
+    if (!get_input_inverse_dynamics_file().empty()) {
+        Storage id_sto = processInputStorage(get_input_inverse_dynamics_file());
+        TimeSeriesTable id_table = id_sto.exportToTable();
+
+        std::string coordinate_group = _model.getName() + "/coordinateset";
+        h5.createGroup(coordinate_group);
+
+        for (std::string& label : id_table.getColumnLabels()) {
+            std::vector<std::string> split_label = split_string(label, "_");
+
+            //force or moment
+            std::string id_type = split_label.back();
+
+            std::string coord_name;
+            for (int i = 0; i < split_label.size() - 1; i++) {
+                if (i > 0) {
+                    coord_name.append("_");
+                }
+                coord_name.append(split_label[i]);
+            }
+
+
+            std::string coord_group = coordinate_group + "/" + coord_name;
+            h5.createGroup(coord_group);
+
+            SimTK::VectorView data = id_table.getDependentColumn(label);
+            h5.writeDataSetSimTKVector(data, coord_group + "/" + id_type);
+        }
     }
 
     //Write States Data
