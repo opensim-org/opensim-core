@@ -2007,7 +2007,7 @@ void JointMechanicsTool::writeH5File(
             std::string id_type = split_label.back();
 
             std::string coord_name;
-            for (int i = 0; i < split_label.size() - 1; i++) {
+            for (size_t i = 0; i < split_label.size() - 1; i++) {
                 if (i > 0) {
                     coord_name.append("_");
                 }

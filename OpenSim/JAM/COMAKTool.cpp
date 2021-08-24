@@ -1296,7 +1296,7 @@ void COMAKTool::printResultsFiles() {
 
     sto.write(_result_kinematics, get_results_directory() + "/" 
         + get_results_prefix() + "_kinematics.sto");
-/*
+
     _result_values.addTableMetaData("inDegrees", std::string("no"));
     _model.getSimbodyEngine().convertRadiansToDegrees(_result_values);
     _result_values.addTableMetaData("header", 
@@ -1307,7 +1307,7 @@ void COMAKTool::printResultsFiles() {
         std::to_string(_result_values.getNumColumns() + 1));
 
     sto.write(_result_values, get_results_directory() + "/" 
-        + get_results_prefix() + "_values.sto");*/
+        + get_results_prefix() + "_values.sto");
 
     _model.updAnalysisSet().printResults(get_results_prefix(), get_results_directory());
 }
