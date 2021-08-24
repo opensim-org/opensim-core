@@ -8,8 +8,8 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 
 v4.3
 ====
-- Introduced IMU component that models industrial Inertial Measurement Units (IMUs) with corresponding output signals. 
-- Introduced IMUDataReporter (analysis) to record signals from IMUs components placed on models.
+- Introduced IMU component that models a typical Inertial Measurement Unit (IMU) with corresponding outputs for orientation, accelerometer, and gyroscope signals. 
+- Introduced IMUDataReporter (analysis) to record signals from IMU components placed on models.
 - Fixed a bug with Actuation analysis that would lead to extra columns in the output when an actuator is disabled (Issue #2977).
 - Fix issue where including path in output file name caused output to not be written without warning, now warning is given and file is written (Issue #3042).
 - Fix copy-paste bug in reporting orientation errors (Issue #2893, fixed by Henrik-Norgren). 
