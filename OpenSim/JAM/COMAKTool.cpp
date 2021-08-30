@@ -530,16 +530,20 @@ SimTK::State COMAKTool::initialize()
 
     int p = 0;
     for (const Muscle &msl : _model.updComponentList<Muscle>()) {
-        _optim_parameter_names[p] = msl.getName();
-        p++;
+        if (msl.appliesForce(state)) {
+            _optim_parameter_names[p] = msl.getName();
+            p++;
+        }
     }
     for (const auto &actuator : _model.updComponentList<ScalarActuator>()) {
         if (Object::isObjectTypeDerivedFrom<Muscle>(
             actuator.getConcreteClassName())) {
             continue;
         }
-        _optim_parameter_names[p] = actuator.getName();
-        p++;
+        if (actuator.appliesForce(state)) {
+            _optim_parameter_names[p] = actuator.getName();
+            p++;
+        }
     }
     for (int p = 0; p < _n_secondary_coord; ++p) {
         _optim_parameter_names[_n_actuators + p] = _secondary_coord_name[p];
@@ -1662,16 +1666,16 @@ void COMAKTool::extractKinematicsFromFile() {
 
 void COMAKTool::applyExternalLoads()
 {
-    const std::string& aExternalLoadsFileName = 
-        SimTK::Pathname::getAbsolutePathname(get_external_loads_file());
+    if(get_external_loads_file() == "" || 
+        get_external_loads_file() == "Unassigned") {
 
-    if (aExternalLoadsFileName == "" || 
-        aExternalLoadsFileName == "Unassigned") {
-
-        std::cout << "No external loads will be applied "
-            "(external loads file not specified)." << std::endl;
+        log_info("No external loads will be applied "
+            "(external loads file not specified).");
         return;
     }
+
+    const std::string& aExternalLoadsFileName = 
+        SimTK::Pathname::getAbsolutePathname(get_external_loads_file());
 
     // This is required so that the references to other files inside 
     // ExternalLoads file are interpreted as relative paths

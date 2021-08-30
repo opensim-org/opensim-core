@@ -147,6 +147,17 @@ public:
         "and filtered) kinematics used for posing the model through out the "
         "analysis.")
 
+    OpenSim_DECLARE_LIST_PROPERTY(coordinates, std::string, 
+        "Paths to Coordinate components to be recorded in .h5 files. "
+        "Options: 'none','all', or a list of Coordinate "
+        "component paths. The default value is 'all'.")
+
+    OpenSim_DECLARE_LIST_PROPERTY(coordinate_outputs, std::string, 
+        "Coordinate outputs to be recorded in .h5 files. "
+        "Options: 'none','all', 'value','speed', or 'id_generalized_force' "
+        "if the input_inverse_dynamics_file is set. "
+        "The default value is 'all'.")
+
     OpenSim_DECLARE_LIST_PROPERTY(contacts, std::string, 
         "Paths to Smith2018ArticularContactForce components to be recorded. "
         "Options: 'none','all', or a list of Smith2018ArticularContactForce "
@@ -219,6 +230,9 @@ public:
 
     OpenSim_DECLARE_PROPERTY(h5_kinematics_data, bool,
         "Write kinematics data to .h5 file")
+
+    /*OpenSim_DECLARE_PROPERTY(h5_transforms_data, bool,
+        "Write frame 4x4 transform matrix to .h5 file")*/
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(AnalysisSet,"Analyses to be performed "
         "during forward simulation.")

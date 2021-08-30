@@ -102,6 +102,8 @@ void JointMechanicsTool::constructProperties()
     constructProperty_lowpass_filter_frequency(-1);
     constructProperty_print_processed_kinematics(false);
 
+    constructProperty_coordinates(defaultListAll);
+    constructProperty_coordinate_outputs(defaultListAll);
     constructProperty_contacts(defaultListAll);
     constructProperty_contact_outputs(defaultListAll);
     constructProperty_contact_mesh_properties(defaultListNone);
@@ -119,9 +121,10 @@ void JointMechanicsTool::constructProperties()
     constructProperty_write_h5_file(true);
     constructProperty_h5_states_data(true);
     constructProperty_h5_kinematics_data(true);
+    //constructProperty_h5_transforms_data(false);
 
     constructProperty_write_transforms_file(false);
-    constructProperty_output_transforms_file_type("");
+    constructProperty_output_transforms_file_type("sto");
 
     constructProperty_AnalysisSet(AnalysisSet());
     constructProperty_use_visualizer(false);
@@ -368,6 +371,7 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
     //Make a copy of the model so we can make changes
     Model working_model = *_model.clone();
     working_model.set_assembly_accuracy(1e-8);
+    working_model.setUseVisualizer(false);
     working_model.initSystem();
     Storage transforms_storage = processInputStorage(get_input_transforms_file());
 
@@ -415,29 +419,35 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
             spat_trans[0].setCoordinateNames(OpenSim::Array<std::string>(
                 body.getName() + "_ground_r1", 1, 1));
             spat_trans[0].setFunction(new LinearFunction());
+            spat_trans[0].setAxis(SimTK::Vec3(1, 0, 0));
 
             spat_trans[1].setCoordinateNames(OpenSim::Array<std::string>(
                 body.getName() + "_ground_r2", 1, 1));
             spat_trans[1].setFunction(new LinearFunction());
+            spat_trans[1].setAxis(SimTK::Vec3(0, 1, 0));
 
             spat_trans[2].setCoordinateNames(OpenSim::Array<std::string>(
                 body.getName() + "_ground_r3", 1, 1));
             spat_trans[2].setFunction(new LinearFunction());
+            spat_trans[2].setAxis(SimTK::Vec3(0, 0, 1));
 
             spat_trans[3].setCoordinateNames(OpenSim::Array<std::string>(
                 body.getName() + "_ground_t1", 1, 1));
             spat_trans[3].setFunction(new LinearFunction());
+            spat_trans[3].setAxis(SimTK::Vec3(1, 0, 0));
 
             spat_trans[4].setCoordinateNames(OpenSim::Array<std::string>(
                 body.getName() + "_ground_t2", 1, 1));
             spat_trans[4].setFunction(new LinearFunction());
+            spat_trans[4].setAxis(SimTK::Vec3(0, 1, 0));
 
             spat_trans[5].setCoordinateNames(OpenSim::Array<std::string>(
                 body.getName() + "_ground_t3", 1, 1));
             spat_trans[5].setFunction(new LinearFunction());
+            spat_trans[5].setAxis(SimTK::Vec3(0, 0, 1));
 
             CustomJoint* ground_hidden_joint = new CustomJoint(
-                body.getName() + "_hidden_ground", working_model.updGround(),
+                body.getName() + "_hidden_ground",  working_model.updGround(),
                 *hidden_body, spat_trans);
                 
             WeldConstraint* hidden_weld = new WeldConstraint(
@@ -455,12 +465,12 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
                 ground_hidden_joint->getAbsolutePathString());
         }
     }
-    if (get_use_visualizer()) {
+    /*if (get_use_visualizer()) {
         working_model.setUseVisualizer(true);
-    }
+    }*/
 
     SimTK::State state = working_model.initSystem();
-
+    working_model.print("hidden.osim");
     //Collect Transformation matrix values
     std::vector<GCVSplineSet> hidden_coord_splines;
 
@@ -498,7 +508,7 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
 
                     int col_index = column_labels.findIndex(TXX_label);
                     col_index -= 1; //time listed in labels, not in data
-                    if (col_index > -1) {
+                    if (col_index > -2) {
                         double value; 
                         transforms_storage.getData(t, col_index, value);
                         R_matrix(m, n) = value;
@@ -528,7 +538,7 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
                 int col_index = column_labels.findIndex(TXX_label);
                 col_index -= 1; //time listed in labels, not in data
 
-                if (col_index) {
+                if (col_index>-2) {
                     double value;
                     transforms_storage.getData(t, col_index,value);
                     xyz_trans(m) = value; 
@@ -547,6 +557,7 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
             coords_table.setRowAtIndex(t, coord_values);
         }
         hidden_coord_splines.push_back(GCVSplineSet(coords_table));
+        STOFileAdapter().write(coords_table,partner_body.getName() + ".sto");
     }
         
     //Use IK to compute org joint angles
@@ -559,6 +570,7 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
 
         for (int j = 0; j < 6; ++j) {
             std::string name = hidden_joint.get_coordinates(j).getName();
+            std::cout <<  hidden_joint.get_coordinates(j).getName() << std::endl;
             CoordinateReference* coordRef = 
                 new CoordinateReference(name, hidden_coord_splines[i].get(j));
             coordRef->setWeight(1);
@@ -568,18 +580,19 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
 
     // create the solver given the input data
     InverseKinematicsSolver ikSolver(working_model, markersReference,
-        coordinateReferences, SimTK::Infinity);
+        coordinateReferences, 1e5);
 
     ikSolver.setAccuracy(1e-6);
+    
 
     state.updTime() = _time[0];
     ikSolver.assemble(state);
     
-    SimTK::Visualizer* viz=NULL;
+    /*SimTK::Visualizer* viz=NULL;
     if (get_use_visualizer()) {
         viz = &working_model.updVisualizer().updSimbodyVisualizer();
         viz->setShowSimTime(true);
-    }
+    }*/
 
     for (int t = 0; t < _n_frames; ++t) {
         state.updTime() = _time[t];
@@ -600,12 +613,12 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
         //save pose
         working_model.realizeReport(state);
         
-        if (get_use_visualizer()) {
+        /*if (get_use_visualizer()) {
             viz->drawFrameNow(state);
-        }
+        }*/
     }
     TimeSeriesTable coordinate_states_table = ikReporter->getTable();
- 
+    STOFileAdapter().write(coordinate_states_table,"ikReporter.sto");
     for (int t = 0; t < _n_frames; ++t) {
         s.setTime(_time[t]);
         for (auto& coord : _model.updComponentList<Coordinate>()) {
@@ -723,11 +736,11 @@ void JointMechanicsTool::assembleStatesTrajectoryFromStatesData(
         }*/
 
         // Make a copy of the edited state and put it in the trajectory.
-        
+        _model.realizeVelocity(s);
         states_from_file.append(s);
 
         // Save muscle activation values in case use_muscle_physiology is false
-        _model.realizeVelocity(s);
+        //_model.realizeVelocity(s);
         int j=0;
         for (auto& msl : _model.updComponentList<Muscle>()) {
             //UGLY way to get around when no muscle states are input and fiber length is zero
@@ -1638,8 +1651,8 @@ int JointMechanicsTool::printResults(const std::string &aBaseName,const std::str
             std::string mesh_name = _contact_mesh_names[i];
             std::string mesh_path = _contact_mesh_paths[i];
 
-            std::cout << "Writing .vtp files: " << file_path << "/" 
-                << base_name << "_"<< mesh_name << std::endl;
+            log_info( "Writing .vtp files: {}/{}_{}", 
+                file_path, base_name, mesh_name);
 
             writeVTPFile(mesh_path, _contact_force_names, true);
         }
@@ -1653,8 +1666,9 @@ int JointMechanicsTool::printResults(const std::string &aBaseName,const std::str
         if (!_ligament_names.empty()) {
             int i = 0;
             for (std::string lig : _ligament_names) {
-                std::cout << "Writing .vtp files: " << file_path << "/" 
-                    << base_name << "_"<< lig << std::endl;
+
+                log_info( "Writing .vtp files: {}/{}_{}", 
+                file_path, base_name, lig);
 
                 writeLineVTPFiles("ligament_" + lig, _ligament_path_nPoints[i],
                     _ligament_path_points[i], _ligament_output_double_names,
@@ -1667,8 +1681,9 @@ int JointMechanicsTool::printResults(const std::string &aBaseName,const std::str
         if (!_muscle_names.empty()) {
             int i = 0;
             for (std::string msl : _muscle_names) {
-                std::cout << "Writing .vtp files: " << file_path << "/" 
-                    << base_name << "_"<< msl << std::endl;
+
+                log_info( "Writing .vtp files: {}/{}_{}", 
+                    file_path, base_name, msl);
 
                 writeLineVTPFiles("muscle_" + msl, _muscle_path_nPoints[i],
                     _muscle_path_points[i], _muscle_output_double_names,
@@ -1697,7 +1712,7 @@ void JointMechanicsTool::collectMeshContactOutputData(
     std::vector<SimTK::Matrix>& vertexData,
     std::vector<std::string>& vertexDataNames) {
 
-    Smith2018ContactMesh mesh;
+    //Smith2018ContactMesh mesh;
 
     int nFrc = -1;
     for (std::string frc_path : _contact_force_paths) {
@@ -1711,16 +1726,18 @@ void JointMechanicsTool::collectMeshContactOutputData(
 
         if (mesh_name == casting_mesh_name) {
             mesh_type = "casting";
-            mesh = frc.getConnectee<Smith2018ContactMesh>("casting_mesh");
+            //Smith2018ContactMesh mesh = frc.getConnectee<Smith2018ContactMesh>("casting_mesh");
         }
         else if (mesh_name == target_mesh_name) {
             mesh_type = "target";
-            mesh = frc.getConnectee<Smith2018ContactMesh>("target_mesh");
+            //Smith2018ContactMesh mesh = frc.getConnectee<Smith2018ContactMesh>("target_mesh");
         }
         else {
             continue;
         }
+        const Smith2018ContactMesh& mesh = frc.getConnectee<Smith2018ContactMesh>(mesh_type +"_mesh");
 
+        
         int nVectorDouble = -1;
         for (std::string output_name : _contact_output_vector_double_names) {
             nVectorDouble++;
@@ -1760,7 +1777,7 @@ void JointMechanicsTool::collectMeshContactOutputData(
             }
 
         }
-
+        
         //Variable Cartilage Properties
         if ((getProperty_contact_mesh_properties().findIndex("thickness") != -1
             || getProperty_contact_mesh_properties().findIndex("all") != -1)
@@ -1993,7 +2010,12 @@ void JointMechanicsTool::writeH5File(
     }
 
     //Write Inverse Dynamics Data
-    if (!get_input_inverse_dynamics_file().empty()) {
+    if (!get_input_inverse_dynamics_file().empty() && 
+        (get_coordinate_outputs(0) == "all" ||
+                getProperty_coordinate_outputs().findIndex("id_generalized_force") > -1)
+        ) {
+
+
         Storage id_sto = processInputStorage(get_input_inverse_dynamics_file());
         TimeSeriesTable id_table = id_sto.exportToTable();
 
@@ -2014,12 +2036,22 @@ void JointMechanicsTool::writeH5File(
                 coord_name.append(split_label[i]);
             }
 
+            std::string coord_path = _model.getCoordinateSet().
+                get(coord_name).getAbsolutePathString();
 
-            std::string coord_group = coordinate_group + "/" + coord_name;
-            h5.createGroup(coord_group);
 
-            SimTK::VectorView data = id_table.getDependentColumn(label);
-            h5.writeDataSetSimTKVector(data, coord_group + "/" + id_type);
+
+
+            if (get_coordinates(0) == "all" ||
+                getProperty_coordinates().findIndex(coord_path) > -1) {
+
+
+                std::string coord_group = coordinate_group + "/" + coord_name;
+                h5.createGroup(coord_group);
+
+                SimTK::VectorView data = id_table.getDependentColumn(label);
+                h5.writeDataSetSimTKVector(data, coord_group + "/" + id_type);
+            }
         }
     }
 
@@ -2034,7 +2066,8 @@ void JointMechanicsTool::writeH5File(
     }
 
     //Write coordinate data
-    if (get_h5_kinematics_data()) {
+    if (get_h5_kinematics_data() &&
+        !(get_coordinate_outputs(0) == "none")) {
 
         std::string coordinate_group = _model.getName() + "/coordinateset";
         h5.createGroup(coordinate_group);
@@ -2042,14 +2075,28 @@ void JointMechanicsTool::writeH5File(
         int i = 0;
         for (std::string coord_name : _coordinate_names) {
             std::string coord_group = coordinate_group + "/" + coord_name;
-            h5.createGroup(coord_group);
+           
 
-            int j = 0;
-            for (std::string data_label : _coordinate_output_double_names) {
+            std::string coord_path = _model.getCoordinateSet().
+                get(coord_name).getAbsolutePathString();
 
-                SimTK::Vector data = _coordinate_output_double_values[i](j);
-                h5.writeDataSetSimTKVector(data, coord_group + "/" + data_label);
-                j++;
+            if (get_coordinates(0) == "all" ||
+                getProperty_coordinates().findIndex(coord_path) > -1) {
+
+                 h5.createGroup(coord_group);
+
+                int j = 0;
+                for (std::string data_label : _coordinate_output_double_names) {
+
+                    if (get_coordinate_outputs(0) == "all" ||
+                        getProperty_coordinate_outputs().findIndex(data_label) > -1) {
+
+                        SimTK::Vector data = _coordinate_output_double_values[i](j);
+                        h5.writeDataSetSimTKVector(data, coord_group + "/" + data_label);
+                    }
+                    j++;
+                }
+                
             }
             i++;
         }
@@ -2237,7 +2284,7 @@ void JointMechanicsTool::writeH5File(
         }
 
         //Mesh Transforms
-        std::string transforms_group = contact_group + "/transforms";
+        /*std::string transforms_group = contact_group + "/transforms";
         h5.createGroup(transforms_group);
 
         for (int i = 0; i < (int)_contact_mesh_paths.size(); ++i) {
@@ -2245,11 +2292,12 @@ void JointMechanicsTool::writeH5File(
                 transforms_group + "/" + _contact_mesh_names[i];
 
             h5.writeDataSetSimTKMatrix(_mesh_transforms[i], data_path);
-        }
+        }*/
     }
 
     //Write Transforms Data
-    /*if (get_write_transforms_file()) {
+    /*
+    if (get_h5_write_transforms()) {
         std::string transforms_group = _model.getName() + "/transforms";
         h5.createGroup(transforms_group);
         //_model_frame_transforms.getColumnLabels();

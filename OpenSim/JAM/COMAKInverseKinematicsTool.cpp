@@ -569,10 +569,13 @@ void COMAKInverseKinematicsTool::performIKSecondaryConstraintSimulation() {
 
         SimTK::Vector secondary_data = data(j);
 
-        //GCVSpline* spline = new GCVSpline(5, secondary_data.nrow(), &ind_data[0], &secondary_data[0], path, -1);
+        
+        
         SimmSpline data_fit = SimmSpline(secondary_data.size(), &ind_data[0], &secondary_data[0]);
-
-        SimmSpline* spline = new SimmSpline();
+        //GCVSpline* spline = new GCVSpline(5, secondary_data.nrow(), &ind_data[0], &secondary_data[0], path, -1);
+        GCVSpline* spline = new GCVSpline();
+        spline->setDegree(5);
+        //SimmSpline* spline = new SimmSpline();
         spline->setName(path);
 
         for (int i = 0; i < npts; ++i) {
@@ -624,6 +627,43 @@ void COMAKInverseKinematicsTool::performIK()
 {
     Model model = _model;
     model.initSystem();
+
+    // Check that IK tasks exist as markers
+    for (int i = 0; i < get_IKTaskSet().getSize(); i++) {
+        const std::string& iktask_name = get_IKTaskSet(i).getName();
+
+        if (get_IKTaskSet(i).getConcreteClassName() == "IKMarkerTask"){
+            try {
+                model.getMarkerSet().get(iktask_name);
+            }
+            catch (Exception) {
+                OPENSIM_THROW(Exception, "COMAKInverseKinematics "
+                    "IKMarkerTask: " + iktask_name + 
+                    " does not exist as a marker in the model.");
+            }
+            try {
+                TimeSeriesTableVec3 trc = TimeSeriesTableVec3(get_marker_file());
+                trc.getColumnIndex(iktask_name);
+            }
+            catch (Exception) {
+                OPENSIM_THROW(Exception, "COMAKInverseKinematics "
+                    "IKMarkerTask: " + iktask_name + 
+                    " does not exist as a marker in the .trc marker_file: " +
+                    get_marker_file());
+            }
+            
+        }
+        if (get_IKTaskSet(i).getConcreteClassName() == "IKCoordinateTask"){
+            try {
+                model.getCoordinateSet().get(iktask_name);
+            }
+            catch (Exception) {
+                OPENSIM_THROW(Exception, "COMAKInverseKinematics "
+                    "IKCoordinateTask: " + iktask_name + 
+                    " does not exist as a coordinate in the model.");
+            }
+        }
+    }
 
     try {
         _secondary_constraint_functions =
@@ -716,6 +756,7 @@ void COMAKInverseKinematicsTool::runInverseKinematics(Model& model) {
         log_info("Running Inverse Kinematics\n");
 
         // Initialize the model's underlying system and get its default state.
+        model.setUseVisualizer(get_use_visualizer());
         SimTK::State& s = model.initSystem();
 
         //Convert old Tasks to references for assembly and tracking
