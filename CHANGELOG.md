@@ -5,6 +5,8 @@ are related to the items below. If there is no issue or pull
 request related to the change, then we may provide the commit.
 
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
+v4.3.1
+======
 
 v4.3
 ====
