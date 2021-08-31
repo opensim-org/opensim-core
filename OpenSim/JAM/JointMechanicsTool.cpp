@@ -972,18 +972,23 @@ void JointMechanicsTool::setupContactStorage(SimTK::State& state) {
             const std::string& output_name = entry.first;
             const AbstractOutput* output = entry.second.get();
 
-            if(output->isListOutput()){continue;}
+            if (output->isListOutput()) { continue; }
 
             if (output->getTypeName() == "double") {
                 _contact_output_double_names.push_back(output->getName());
             }
-            if (output->getTypeName() == "Vec3") {
+            else if (output->getTypeName() == "Vec3") {
                 _contact_output_vec3_names.push_back(output->getName());
             }
-            if (output->getTypeName() == "Vector") {
+            else if (output->getTypeName() == "Vector") {
                 _contact_output_vector_double_names.push_back(
                     output->getName());
             }
+            else if (output->getTypeName() == "Vector_<Vec3>") {
+                _contact_output_vector_vec3_names.push_back(
+                    output->getName());
+            }
+
         }
     }
     else if (get_contact_outputs(0) == "htc") {
@@ -1024,11 +1029,14 @@ void JointMechanicsTool::setupContactStorage(SimTK::State& state) {
                 if (output.getTypeName() == "double") {
                     _contact_output_double_names.push_back(output_name);
                 }
-                if (output.getTypeName() == "Vec3") {
+                else if (output.getTypeName() == "Vec3") {
                     _contact_output_vec3_names.push_back(output_name);
                 }
-                if (output.getTypeName() == "Vector") {
+                else if (output.getTypeName() == "Vector") {
                     _contact_output_vector_double_names.push_back(output_name);
+                }
+                else if (output.getTypeName() == "Vector_<Vec3>") {
+                    _contact_output_vector_vec3_names.push_back(output_name);
                 }
             }
             catch (Exception){
@@ -1039,10 +1047,11 @@ void JointMechanicsTool::setupContactStorage(SimTK::State& state) {
         }
     }
 
-    // Output Storage
+    // Allocate Output Storage
     int nOutputDouble = (int)_contact_output_double_names.size();
     int nOutputVec3 = (int)_contact_output_vec3_names.size();
     int nOutputVector = (int)_contact_output_vector_double_names.size();
+    int nOutputVectorVec3 = (int)_contact_output_vector_vec3_names.size();
 
     SimTK::Matrix double_data(_n_frames, nOutputDouble,-1);
     SimTK::Matrix_<SimTK::Vec3> 
@@ -1072,7 +1081,25 @@ void JointMechanicsTool::setupContactStorage(SimTK::State& state) {
         }
         _contact_output_vector_double_values.push_back(def_output_vector);
 
+        std::vector<SimTK::Matrix_<SimTK::Vec3>> def_output_vector_vec3;
+
+        for (int i = 0; i < nOutputVectorVec3; ++i) {
+            
+            const AbstractOutput& abs_output = 
+                frc.getOutput(_contact_output_vector_vec3_names[i]);
+            
+            const Output<SimTK::Vector_<SimTK::Vec3>>& vector_output = 
+                dynamic_cast<const Output<SimTK::Vector_<SimTK::Vec3>>&>(abs_output);
+
+            int output_vector_size = vector_output.getValue(state).size();
+            
+            def_output_vector_vec3.push_back(
+                SimTK::Matrix_<SimTK::Vec3>(_n_frames, output_vector_size,SimTK::Vec3(-1.5)));
+        }
+        _contact_output_vector_vec3_values.push_back(def_output_vector_vec3);
     }
+
+
     
     //Vertex location storage
     _mesh_vertex_locations.resize(_contact_mesh_paths.size());
@@ -1483,6 +1510,17 @@ int JointMechanicsTool::record(const SimTK::State& s, const int frame_num)
                     updRow(frame_num) = 
                     ~frc.getOutputValue<SimTK::Vector>(s, output_name);
                 nVector++;
+            }
+
+            int nVectorVec3 = 0;
+            for (std::string output_name : _contact_output_vector_vec3_names) {
+                int nCol = _contact_output_vector_vec3_values[nFrc][nVectorVec3].ncol();
+                for (int c = 0; c < nCol; c++) {
+                    _contact_output_vector_vec3_values[nFrc][nVectorVec3].updElt(frame_num, c) =
+                        //updRow(frame_num) = ~SimTK::Vector_<SimTK::Vec3>(6, SimTK::Vec3(-2));
+                    frc.getOutputValue<SimTK::Vector_<SimTK::Vec3>>(s, output_name)(c);
+                }
+                nVectorVec3++;
             }
             nFrc++;
         }
@@ -2240,7 +2278,7 @@ void JointMechanicsTool::writeH5File(
 
                 std::string data_path = 
                     cnt_group + "/" + mesh_name + "/" + data_label;
-
+                
                 h5.writeDataSetSimTKVectorVec3(data, data_path);
 
                 j++;
@@ -2276,6 +2314,47 @@ void JointMechanicsTool::writeH5File(
                     cnt_group + "/" + mesh_name + "/" + data_label;
 
                 h5.writeDataSetSimTKMatrix(data, data_path);
+
+                j++;
+            }
+
+             // output vector vec3
+            j = 0;
+            for (std::string output_name : _contact_output_vector_vec3_names) {
+                std::vector<std::string> split_name = 
+                    split_string(output_name, "_");
+
+                std::string mesh_name;
+                if (split_name[0] == "casting") {
+                    mesh_name = casting_mesh_name;
+                }
+                else {
+                    mesh_name = target_mesh_name;
+                }
+
+                std::string data_label;
+                for (int k = 1; k < (int)split_name.size(); ++k) {
+                    if (k == ((int)split_name.size() - 1)) {
+                        data_label.append(split_name[k]);
+                    }
+                    else {
+                        data_label.append(split_name[k] + "_");
+                    }
+                }
+
+                SimTK::Matrix_<SimTK::Vec3> data = 
+                    _contact_output_vector_vec3_values[i][j];
+
+                std::string data_path = 
+                    cnt_group + "/" + mesh_name + "/" + data_label;
+                h5.createGroup(data_path);
+
+                std::vector<std::string> reg_data_path;
+                for (int r = 0; r < 6; ++r) {
+                    reg_data_path.push_back(data_path + "/" + std::to_string(r));
+                }
+
+                h5.writeDataSetSimTKMatrixVec3Columns(data, reg_data_path);
 
                 j++;
             }

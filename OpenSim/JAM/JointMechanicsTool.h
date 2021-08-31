@@ -327,9 +327,13 @@ private:
     std::vector<std::string> _contact_output_double_names;
     std::vector<std::string> _contact_output_vec3_names;
     std::vector<std::string> _contact_output_vector_double_names;
+    std::vector<std::string> _contact_output_vector_vec3_names;
     std::vector<SimTK::Matrix> _contact_output_double_values;
     std::vector<SimTK::Matrix_<SimTK::Vec3>> _contact_output_vec3_values;
-    std::vector<std::vector<SimTK::Matrix>> _contact_output_vector_double_values;
+    std::vector<std::vector<SimTK::Matrix>> 
+        _contact_output_vector_double_values;
+    std::vector<std::vector<SimTK::Matrix_<SimTK::Vec3>>> 
+        _contact_output_vector_vec3_values;
 
     std::vector<std::string> _attach_geo_names;
     std::vector<std::string> _attach_geo_frames;
