@@ -17,7 +17,6 @@
  * -------------------------------------------------------------------------- */
 #include "MocoStudy.h"
 
-#include "Components/PositionMotion.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoProblem.h"
 #include "MocoTropterSolver.h"
@@ -28,7 +27,7 @@
 #include <OpenSim/Common/Reporter.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
 #include <OpenSim/Simulation/VisualizerUtilities.h>
-
+#include <OpenSim/Simulation/PositionMotion.h>
 using namespace OpenSim;
 
 MocoStudy::MocoStudy() { constructProperties(); }

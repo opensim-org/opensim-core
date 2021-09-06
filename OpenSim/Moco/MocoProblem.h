@@ -86,7 +86,7 @@ public:
     /// pass that single value. If you want to constrain to a range, pass
     /// the lower and upper bounds to the constructor as two arguments.
     ///
-    /// ### Default bounds
+    /// Default bounds
     /// 1. Coordinate values: the Coordinate's range is used (regardless of
     ///     whether the coordinate is clamped).
     /// 2. Coordinate speeds: this class's default_speed_bounds property.
@@ -102,7 +102,7 @@ public:
     /// For states with default bounds, if you actually want a variable to
     /// be unconstrained, pass in MocoBounds::unconstrained().
     ///
-    /// ### Examples
+    /// Examples
     /// Set bounds over the entire phase, but do not specify additional
     /// bounds on the value at the start and end of the phase.
     /// @code{.cpp}
@@ -374,8 +374,7 @@ protected: // Protected so that doxygen shows the properties.
             "expression.");
     OpenSim_DECLARE_LIST_PROPERTY(parameters, MocoParameter,
             "Parameter variables (model properties) to optimize.");
-    OpenSim_DECLARE_LIST_PROPERTY(
-            goals, MocoGoal,
+    OpenSim_DECLARE_LIST_PROPERTY(goals, MocoGoal,
             "Integral/endpoint quantities to minimize or constrain.");
     OpenSim_DECLARE_LIST_PROPERTY(path_constraints, MocoPathConstraint,
             "Path constraints to enforce in the optimal control problem.");

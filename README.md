@@ -462,18 +462,10 @@ On Windows using Visual Studio
 * **operating system**: Windows 7, 8, or 10.
 * **cross-platform build system**:
   [CMake](http://www.cmake.org/cmake/resources/software.html) >= 3.2
-* **compiler / IDE**: Visual Studio [2015](https://www.visualstudio.com/vs/older-downloads/) or [2017](https://www.visualstudio.com/) (2017 requires CMake >= 3.9).
+* **compiler / IDE**: Visual Studio [2019](https://visualstudio.microsoft.com/vs/) 
     * The *Community* variant is sufficient and is free for everyone.
-    * Visual Studio 2015 and 2017 do not install C++ support by default.
-      * **2015**: During the installation you must select
-        *Custom*, and check *Programming Languages > Visual C++ > Common Tools
-        for Visual C++ 2015*.
-        You can uncheck all other boxes. If you have already installed
-        Visual Studio without C++ support, simply re-run the installer and
-        select *Modify*. Alternatively, go to *File > New > Project...* in
-        Visual Studio, select *Visual C++*, and click
-        *Install Visual C++ 2015 Tools for Windows Desktop*.
-      * **2017**: During the installation, select the workload
+    * Visual Studio 2019 may not install C++ support by default.
+      * During the installation, select the workload
         *Desktop Development with C++*.
       * If Visual Studio is installed without C++ support, CMake will report
         the following errors:
@@ -481,13 +473,12 @@ On Windows using Visual Studio
         The C compiler identification is unknown
         The CXX compiler identification is unknown
         ```    
-* **physics engine**: Simbody >= 3.7. Two options:
+* **physics engine**: 
+    * Let OpenSim get this for you using superbuild (see below), or
+    * [Build on your own from latest master branch](
+      https://github.com/simbody).
+* **C3D file support**: Biomechanical-ToolKit Core or EZC3D, we use the latter by default. 
     * Let OpenSim get this for you using superbuild (see below).
-    * [Build on your own](
-      https://github.com/simbody/simbody#windows-using-visual-studio).
-* **C3D file support**: Biomechanical-ToolKit Core. Two options:
-    * Let OpenSim get this for you using superbuild (see below).
-    * [Build on your own](https://github.com/klshrinidhi/BTKCore).
 * **command-line argument parsing**: docopt.cpp. Two options:
     * Let OpenSim get this for you using superbuild (see below); much easier!
     * [Build on your own](https://github.com/docopt/docopt.cpp) (no instructions).
@@ -515,16 +506,16 @@ On Windows using Visual Studio
     * [TortoiseGit](https://code.google.com/p/tortoisegit/wiki/Download),
       intermediate; good for TortoiseSVN users;
     * [GitHub for Windows](https://windows.github.com/), easiest.
-* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.8
-    * **MATLAB scripting** (optional): [Java development kit][java] >= 1.7.
+* **Bindings** (optional): [SWIG](http://www.swig.org/) 4.0.2
+    * **MATLAB scripting** (optional): [Java development kit][java] >= 1.8.
         * Note: Older versions of MATLAB may use an older version of JVM. Run
-                'ver' in MATLAB to check MATLAB's JVM version (must be >= 1.7).
+                'ver' in MATLAB to check MATLAB's JVM version (must be >= 1.8).
         * Note: Java development kit >= 9 requires CMake >= 3.10.
     * **Python scripting** (optional): Python 2 >= 2.7 or Python 3 >= 3.5
         * [Anaconda](https://www.anaconda.com/distribution/)
         * Must provide the NumPy package; this should come with Anaconda.
     * The choice between 32-bit/64-bit must be the same between Java, Python,
-      and OpenSim.
+      and OpenSim, we only build/test/support 64-bit platforms.
 
 #### Download the OpenSim-Core source code
 
@@ -554,10 +545,9 @@ On Windows using Visual Studio
    which to build dependencies. Let's say this is
    `C:/opensim-core-dependencies-build`.
 4. Click the **Configure** button.
-    1. Visual Studio 2015: Choose the *Visual Studio 14 2015* generator (may appear as *Visual Studio 14*).
-    2. Visual Studio 2017: Choose the *Visual Studio 15 2017* generator.
-    3. To build as 64-bit, select the generator with *Win64* in the name.
-    4. Click **Finish**.
+    1. Visual Studio 2019: Choose the *Visual Studio 16 2019* generator.
+    2. Need to build as 64-bit, select the generator with *Win64* in the name.
+    3. Click **Finish**.
 5. Where do you want to install OpenSim dependencies on your computer? Set this
    by changing the `CMAKE_INSTALL_PREFIX` variable. Let's say this is
    `C:/opensim-core-dependencies-install`.
@@ -602,11 +592,10 @@ On Windows using Visual Studio
    `C:/opensim-core-build`, or some other path that is not inside your source
    directory. This is *not* where we are installing OpenSim-Core; see below.
 4. Click the **Configure** button.
-    1. Visual Studio 2015: Choose the *Visual Studio 14* or *Visual Studio 14 2015* generator.
-    2. Visual Studio 2017: Choose the *Visual Studio 15 2017* generator.
-    3. To build as 64-bit, select the generator with *Win64* in the name.
+    1. Visual Studio 2019: Choose the *Visual Studio 16* generator.
+    2. To build as 64-bit, select the generator with *Win64* in the name.
        The choice between 32-bit/64-bit must be the same across all dependencies.
-    4. Click **Finish**.
+    3. Click **Finish**.
 5. Where do you want to install OpenSim-Core on your computer? Set this by
    changing the `CMAKE_INSTALL_PREFIX` variable. We'll assume you set it to
    `C:/opensim-core`. If you choose a different installation location, make
@@ -691,11 +680,9 @@ directory to your `PATH` environment variable.
 #### For the impatient (Windows)
 
 * Get **Visual Studio Community**
-  [2015](https://www.visualstudio.com/vs/older-downloads/) or
-  [2017](https://www.visualstudio.com/en-us/downloads/download-visual-studio-vs.aspx).
-  * 2015: Choose *Custom installation*, then choose
+  [2019](https://www.visualstudio.com/vs/)
+  * Choose *Custom installation*, then choose
     *Programming Languages* -> *Visual C++*.
-  * 2017: Choose the workload *Desktop Development with C++*.
 * Get **git** from [here](https://git-scm.com/downloads).
   * Choose *Use Git from the Windows Command Prompt*.
 * Get **CMake** from [here](https://cmake.org/download/).
@@ -706,22 +693,21 @@ directory to your `PATH` environment variable.
   ```powershell
   choco install python2 jdk8 swig
   ```
-* In **PowerShell** (if using Visual Studio 2017, replace
-  *14 2015* with *15 2017*):
+* In **PowerShell**:
 
   ```powershell
   git clone https://github.com/opensim-org/opensim-core.git
   mkdir opensim_dependencies_build
   cd .\opensim_dependencies_build
   cmake ..\opensim-core\dependencies                             `
-        -G"Visual Studio 14 2015 Win64"                          `
+        -G"Visual Studio 16 2019 Win64"                          `
         -DCMAKE_INSTALL_PREFIX="..\opensim_dependencies_install"
   cmake --build . --config RelWithDebInfo -- /maxcpucount:8
   cd ..
   mkdir opensim_build
   cd .\opensim_build
   cmake ..\opensim-core                                              `
-        -G"Visual Studio 14 2015 Win64"                              `
+        -G"Visual Studio 16 2019 Win64"                              `
         -DCMAKE_INSTALL_PREFIX="..\opensim_install"                  `
         -DOPENSIM_DEPENDENCIES_DIR="..\opensim_dependencies_install" `
         -DBUILD_JAVA_WRAPPING=ON                                     `
@@ -781,12 +767,11 @@ ctest -j8
   [CMake](http://www.cmake.org/cmake/resources/software.html) >= 3.2
 * **compiler / IDE**: [Xcode](https://developer.apple.com/xcode/) >= 7.3 (the latest version), through
   the Mac App Store.
-* **physics engine**: Simbody >= 3.7. Two options:
+* **physics engine**: Simbody latest. Two options:
   * Let OpenSim get this for you using superbuild (see below).
   * [Build on your own](https://github.com/simbody/simbody#installing).
-* **C3D file support**: Biomechanical-ToolKit Core. Two options:
+* **C3D file support**: EZC3D or Biomechanical-ToolKit Core. 
   * Let OpenSim get this for you using superbuild (see below).
-  * [Build on your own](https://github.com/klshrinidhi/BTKCore).
 * **command-line argument parsing**: docopt.cpp. Two options:
     * Let OpenSim get this for you using superbuild (see below); much easier!
     * [Build on your own](https://github.com/docopt/docopt.cpp) (no instructions).
@@ -809,7 +794,7 @@ ctest -j8
 * **version control** (optional): git.
     * Xcode Command Line Tools gives you git on the command line.
     * [GitHub for Mac](https://mac.github.com), for a simple-to-use GUI.
-* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.8
+* **Bindings** (optional): [SWIG](http://www.swig.org/) 4.0.2
     * **MATLAB scripting** (optional): [Java development kit][java] >= 1.7.
         * Note: Older versions of MATLAB may use an older version of JVM. Run
                 'ver' in MATLAB to check MATLAB's JVM version (must be >= 1.7).
@@ -1013,7 +998,7 @@ specific Ubuntu versions under 'For the impatient' below.
   [Doxygen](http://www.stack.nl/~dimitri/doxygen/download.html) >= 1.8.6;
   `doxygen`.
 * **version control** (optional): git; `git`.
-* **Bindings** (optional): [SWIG](http://www.swig.org/) 3.0.8; `swig`.
+* **Bindings** (optional): [SWIG](http://www.swig.org/) 4.0.2; `swig`.
     * **MATLAB scripting** (optional): [Java development kit][java] >= 1.7;
       `openjdk-7-jdk`.
         * Note: Older versions of MATLAB may use an older version of JVM. Run
@@ -1190,8 +1175,9 @@ And you could get all the optional dependencies via:
 Your changes will only take effect in new terminal windows.
 
 #### For the impatient (Ubuntu)
-##### Ubuntu 14.04 Trusty Tahr
+##### Ubuntu 18.0
 In **Terminal** --
+
 ```shell
 sudo add-apt-repository --yes ppa:george-edison55/cmake-3.x
 sudo apt-add-repository --yes ppa:fenics-packages/fenics-exp
@@ -1225,67 +1211,7 @@ make -j8
 ctest -j8
 make -j8 install
  ```
-##### Ubuntu 15.10 Wily Werewolf
-In **Terminal** --
-```shell
-sudo apt-add-repository --yes ppa:fenics-packages/fenics
-sudo apt-get update
-sudo apt-get --yes install git cmake cmake-curses-gui \
-                           freeglut3-dev libxi-dev libxmu-dev \
-                           liblapack-dev swig3.0 python-dev \
-                           openjdk-8-jdk
-export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
-git clone https://github.com/opensim-org/opensim-core.git
-mkdir opensim_dependencies_build
-cd opensim_dependencies_build
-cmake ../opensim-core/dependencies/ \
-      -DCMAKE_INSTALL_PREFIX='~/opensim_dependencies_install' \
-      -DCMAKE_BUILD_TYPE=RelWithDebInfo
-make -j8
-cd ..
-mkdir opensim_build
-cd opensim_build
-cmake ../opensim-core \
-      -DCMAKE_INSTALL_PREFIX="~/opensim_install" \
-      -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-      -DOPENSIM_DEPENDENCIES_DIR="~/opensim_dependencies_install" \
-      -DBUILD_PYTHON_WRAPPING=ON \
-      -DBUILD_JAVA_WRAPPING=ON \
-      -DWITH_BTK=ON
-make -j8
-ctest -j8
-make -j8 install
-```
-##### Ubuntu 16.04 Xenial Xerus AND Ubuntu 16.10 Yakkety Yak
-In **Terminal** --
-```shell
-sudo apt-get update
-sudo apt-get --yes install git cmake cmake-curses-gui \
-                           freeglut3-dev libxi-dev libxmu-dev \
-                           liblapack-dev swig python-dev \
-                           openjdk-8-jdk
-export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
-git clone https://github.com/opensim-org/opensim-core.git
-mkdir opensim_dependencies_build
-cd opensim_dependencies_build
-cmake ../opensim-core/dependencies/ \
-      -DCMAKE_INSTALL_PREFIX='~/opensim_dependencies_install' \
-      -DCMAKE_BUILD_TYPE=RelWithDebInfo
-make -j8
-cd ..
-mkdir opensim_build
-cd opensim_build
-cmake ../opensim-core \
-      -DCMAKE_INSTALL_PREFIX="~/opensim_install" \
-      -DCMAKE_BUILD_TYPE=RelWithDebInfo \
-      -DOPENSIM_DEPENDENCIES_DIR="~/opensim_dependencies_install" \
-      -DBUILD_PYTHON_WRAPPING=ON \
-      -DBUILD_JAVA_WRAPPING=ON \
-      -DWITH_BTK=ON
-make -j8
-ctest -j8
-make -j8 install
-```
+
 Note: You may need to add `<FULL-DIR>/opensim_install/bin` to your PATH variable as per [these instructions](#set-environment-variables-2).  
 Example: If opensim_install is in your home directory:
 

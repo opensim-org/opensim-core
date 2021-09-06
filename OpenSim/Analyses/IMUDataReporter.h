@@ -45,8 +45,20 @@
 namespace OpenSim { 
 
 /**
- * A class for recording the readings off an IMU placed on a model
+ * A class for recording the readings off an IMU object placed on a model
  * during a simulation.
+ *
+ * If using this reporter to compute IMU accelerometer signals based on kinematic
+ * information only (i.e., a solution from the InverseKinematicsTool), then
+ * set the property `compute_accelerations_without_forces` to true. This property
+ * will apply forces to the model corresponding to the kinematics that you
+ * provide as input so that the correct accelerations are computed. The input
+ * kinematics are splined and then prescribed to the model (via the
+ * PositionMotion class), and the applied forces are based on derivatives of
+ * these splines; therefore, you should ensure that the input kinematics produce
+ * the correct derivatives when splined. It is recommended that you don't not
+ * compute any quantities near the beginning or end of the time range in your
+ * data, since spline derivatives can be inaccurate in these regions.
  *
  * @author Ayman Habib
  * @version 1.0
@@ -60,8 +72,10 @@ public:
     OpenSim_DECLARE_PROPERTY(report_gyroscope_signals, bool,
             "Report angular velocity of the IMU, default is true.");
     OpenSim_DECLARE_PROPERTY(report_accelerometer_signals, bool,
-            "Report linear acceleration of the IMU, default is true.");
-
+            "Report the IMU accelerometer signals, default is true.");
+    OpenSim_DECLARE_PROPERTY(compute_accelerations_without_forces, bool,
+            "Ignore external forces and controls, use kinematics to compute "
+            "accelerometer signals, default is false.");
     OpenSim_DECLARE_LIST_PROPERTY(frame_paths, std::string,
             "Additional ComponentPaths to frames in the model to which new IMUs "
             "components are attached. IMUs added based on these paths will be "
@@ -72,18 +86,17 @@ public:
 // DATA
 //=============================================================================
 private:
-    std::vector<SimTK::ReferencePtr<const OpenSim::IMU>> _imuComponents;
     /** Output tables. */
     SimTK::ReferencePtr<TableReporter_<SimTK::Quaternion>> _orientationsReporter;
-    SimTK::ReferencePtr < TableReporter_<SimTK::Vec3>> _angularVelocityReporter;
-    SimTK::ReferencePtr <TableReporter_<SimTK::Vec3>> _linearAccelerationsReporter;
+    SimTK::ReferencePtr<TableReporter_<SimTK::Vec3>> _angularVelocityReporter;
+    SimTK::ReferencePtr<TableReporter_<SimTK::Vec3>> _linearAccelerationsReporter;
 
-    std::shared_ptr<Model> _modelLocal;
+    SimTK::ResetOnCopy<std::unique_ptr<Model>> _modelLocal;
     //=============================================================================
 // METHODS
 //=============================================================================
 public:
-    IMUDataReporter(Model *aModel=0);
+    IMUDataReporter(Model *aModel = nullptr);
     IMUDataReporter(const IMUDataReporter &aObject);
     virtual ~IMUDataReporter();
 
@@ -108,7 +121,7 @@ public:
     // OPERATORS
     //--------------------------------------------------------------------------
 #ifndef SWIG
-    IMUDataReporter& operator=(const IMUDataReporter &aRporter);
+    IMUDataReporter& operator=(const IMUDataReporter &aReporter);
 #endif
     //--------------------------------------------------------------------------
     // GET AND SET
@@ -116,11 +129,11 @@ public:
     //--------------------------------------------------------------------------
     // ANALYSIS
     //--------------------------------------------------------------------------
-    int begin(const SimTK::State& s ) override;
-    int step(const SimTK::State& s, int setNumber ) override;
-    int end(const SimTK::State& s ) override;
+    int begin(const SimTK::State& s) override;
+    int step(const SimTK::State& s, int setNumber) override;
+    int end(const SimTK::State& s) override;
 protected:
-    virtual int record(const SimTK::State& s );
+    virtual int record(const SimTK::State& s);
     //--------------------------------------------------------------------------
     // IO
     //--------------------------------------------------------------------------
@@ -133,6 +146,7 @@ private:
         constructProperty_report_orientations(true);
         constructProperty_report_gyroscope_signals(true);
         constructProperty_report_accelerometer_signals(true);
+        constructProperty_compute_accelerations_without_forces(false);
         constructProperty_frame_paths();
     }
     //=============================================================================

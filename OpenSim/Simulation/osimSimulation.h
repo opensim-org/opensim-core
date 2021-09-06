@@ -127,6 +127,7 @@
 #include "StatesTrajectory.h"
 #include "StatesTrajectoryReporter.h"
 #include "TableProcessor.h"
+#include "PositionMotion.h"
 #include "OpenSense/OpenSenseUtilities.h"
 #include "OpenSense/IMU.h"
 #include "SimulationUtilities.h"

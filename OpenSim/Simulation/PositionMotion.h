@@ -22,8 +22,8 @@
 
 #include <OpenSim/Common/FunctionSet.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
-#include <OpenSim/Moco/osimMocoDLL.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
+#include "osimSimulationDLL.h"
 
 namespace OpenSim {
 
@@ -39,7 +39,7 @@ kinematic constraint. When prescribing motion, the system must compute
 constraint forces to apply to enforce the prescribed motion;
 such forces are available via SimbodyMatterSubsystem::findMotionForces().
 @note This class requires that *all* coordinates are prescribed. */
-class OSIMMOCO_API PositionMotion : public ModelComponent {
+class OSIMSIMULATION_API PositionMotion : public ModelComponent {
     OpenSim_DECLARE_CONCRETE_OBJECT(PositionMotion, ModelComponent);
 
 public:

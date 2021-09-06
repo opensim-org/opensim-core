@@ -153,7 +153,7 @@
 #include <OpenSim/Simulation/VisualizerUtilities.h>
 
 #include <OpenSim/Simulation/TableProcessor.h>
-
+#include <OpenSim/Simulation/PositionMotion.h>
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Actuators/MuscleFixedWidthPennationModel.h>
 #include <OpenSim/Actuators/MuscleFirstOrderActivationDynamicModel.h>

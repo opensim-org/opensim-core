@@ -25,6 +25,7 @@
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Moco/MocoWeightSet.h>
 #include <OpenSim/Simulation/TableProcessor.h>
+#include <OpenSim/Moco/MocoScaleFactor.h>
 
 namespace OpenSim {
 
@@ -45,8 +46,10 @@ private:
     void constructProperties();
 };
 
-/** The squared difference between a control variable value and a reference
-control variable value, summed over the control variables for which a
+/** 
+\section MocoControlTrackingGoal
+The squared difference between a control
+variable value and a reference control variable value, summed over the control variables for which a
 reference is provided, and integrated over the phase. This can be used to
 track actuator controls, muscle excitations, etc.
 
@@ -82,7 +85,7 @@ This goal has two labeling modes: 'auto' and 'manual':
             The `allow_unused_references` property does not apply in this
             mode.
 
-### Control variable names
+## Control variable names
 
 Control variable names are based on paths to actuators,
 e.g., `/forceset/soleus_r`. For non-scalar actuators, the control variable
@@ -91,13 +94,38 @@ e.g., `/forceset/body_actuator_0`, where
 'body_actuator' is the name of the actuator and `_0` specifies the
 control index.
 
-### Reference data
+## Reference data
 
 The reference can be provided as a file name to a STO or CSV file (or
 other file types for which there is a FileAdapter), or programmatically
 as a TimeSeriesTable.
 
-### Helpful tips
+## Scale factors
+
+Use `addScaleFactor()` to add a MocoParameter to the MocoProblem that will
+scale the tracking reference data associated with a control in the tracking cost.
+Scale factors for this goal can be useful if the magnitude of the tracking
+reference data is either unknown or unreliable (e.g., electromyography data).
+Scale factors are applied to the tracking error calculations based on the
+following equation:
+
+    error = modelValue - scaleFactor * referenceValue
+
+In other words, scale factors are applied when computing the tracking error for
+each control, not to the reference data directly. Therefore, if a column in the
+reference data is tracked by two different controls, the scale factor will only
+scale the column for the associated control. The tracking error for the other
+control is unaffected.
+
+Adding a scale factor to a MocoControlTrackingGoal.
+@code
+auto* controlTrackingGoal = problem.addGoal<MocoControlTrackingGoal>();
+...
+controlTrackingGoal->addScaleFactor(
+        'soleus_scale_factor', '/forceset/soleus_r', {0.01, 1.0});
+@endcode
+
+## Helpful tips
 
 Tracking problems in direct collocation perform best when tracking smooth
 data, so it is recommended to filter the data in the reference you provide
@@ -203,6 +231,20 @@ public:
         return get_allow_unused_references();
     }
 
+    /// Add a MocoParameter to the problem that will scale the tracking reference
+    /// data associated with the specified control. Scale factors are applied
+    /// to the tracking error calculations based on the following equation:
+    ///
+    ///     error = modelValue - scaleFactor * referenceValue
+    ///
+    /// In other words, the scale factor is applied when computing the tracking
+    /// error for each control, not to the reference data directly. Therefore, if
+    /// a column in the reference data is tracked by two different controls, the
+    /// scale factor will only scale the column for the associated control. The
+    /// tracking error for the other control is unaffected.
+    void addScaleFactor(const std::string& name, const std::string& control,
+            const MocoBounds& bounds);
+
 protected:
     // TODO check that the reference covers the entire possible time range.
     void initializeOnModelImpl(const Model& model) const override;
@@ -244,6 +286,9 @@ private:
     mutable std::vector<int> m_ref_indices;
     mutable std::vector<std::string> m_control_names;
     mutable std::vector<std::string> m_ref_labels;
+    mutable std::unordered_map<std::string, std::string> m_scaleFactorMap;
+    mutable std::vector<SimTK::ReferencePtr<const MocoScaleFactor>>
+    m_scaleFactorRefs;
 };
 
 } // namespace OpenSim

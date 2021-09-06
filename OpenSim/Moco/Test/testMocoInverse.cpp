@@ -19,6 +19,8 @@
 #include <OpenSim/Actuators/ModelFactory.h>
 #include <OpenSim/Actuators/ModelOperators.h>
 #include <OpenSim/Moco/osimMoco.h>
+#include <OpenSim/Tools/AnalyzeTool.h>
+#include <OpenSim/Analyses/IMUDataReporter.h>
 
 #define CATCH_CONFIG_MAIN
 #include "Testing.h"
@@ -150,3 +152,173 @@ TEST_CASE("MocoInverse Rajagopal2016, 18 muscles", "[casadi]") {
             {{"controls", {}}}) < 1e-2);
     CHECK(std.compareContinuousVariablesRMS(solution, {{"states", {}}}) < 1e-2);
 }
+// Next test_case fails on linux while parsing .sto file, disabling for now 
+#ifdef _WIN32
+TEST_CASE("Test IMUDataReporter for gait") {
+
+    // Compute accelerometer signals from MocoInverse solution.
+    ModelProcessor modelProcessor =
+        ModelProcessor("subject_walk_armless_18musc.osim") |
+        ModOpReplaceJointsWithWelds({"subtalar_r", "subtalar_l",
+            "mtp_r", "mtp_l"}) |
+        ModOpReplaceMusclesWithDeGrooteFregly2016() |
+        ModOpIgnorePassiveFiberForcesDGF() |
+        ModOpTendonComplianceDynamicsModeDGF("implicit") |
+        ModOpAddExternalLoads("subject_walk_armless_external_loads.xml");
+    std::vector<std::string> paths = {"/bodyset/pelvis",
+                                       "/bodyset/femur_r",
+                                       "/bodyset/tibia_r",
+                                       "/bodyset/calcn_r"};
+    Model model = modelProcessor.process();
+    OpenSenseUtilities().addModelIMUs(model, paths);
+    model.initSystem();
+    MocoTrajectory std("std_testMocoInverse_subject_18musc_solution.sto");
+    TimeSeriesTableVec3 accelSignals =
+            analyzeMocoTrajectory<SimTK::Vec3>(model, std,
+                                               {".*accelerometer_signal"});
+    STOFileAdapter_<SimTK::Vec3>::write(accelSignals,
+        "testMocoInverse_accelerometer_signals.sto");
+
+    // Compute accelerometer signals with no forces and a PositionMotion created
+    // from the model coordinates.
+
+    // Create the coordinates table (in radians).
+    auto tableProcessor =
+            TableProcessor("subject_walk_armless_coordinates.mot") |
+            TabOpLowPassFilter(6) |
+            TabOpUseAbsoluteStateNames();
+    auto coordinatesRadians = tableProcessor.processAndConvertToRadians(model);
+    for (const auto& label : coordinatesRadians.getColumnLabels()) {
+        if (label.find("/jointset/") != std::string::npos) {
+            std::string speedLabel(label);
+            speedLabel.replace(speedLabel.end()-6, speedLabel.end(), "/speed");
+            coordinatesRadians.appendColumn(speedLabel,
+                coordinatesRadians.getDependentColumn(label));
+        } else {
+            coordinatesRadians.removeColumn(label);
+        }
+    }
+    STOFileAdapter::write(coordinatesRadians,
+                          "subject_walk_armless_coordinates_radians.sto");
+    // Create a model with no muscles (or other forces) and add IMU components.
+    ModelProcessor modelProcessorNoMuscles =
+        ModelProcessor("subject_walk_armless_18musc.osim") |
+        ModOpReplaceJointsWithWelds({"subtalar_r", "subtalar_l",
+            "mtp_r", "mtp_l"}) |
+        ModOpRemoveMuscles() |
+        ModOpAddExternalLoads("subject_walk_armless_external_loads.xml");
+    Model modelNoMuscles = modelProcessorNoMuscles.process();
+    modelNoMuscles.updForceSet().clearAndDestroy();
+    OpenSenseUtilities().addModelIMUs(modelNoMuscles, paths);
+    modelNoMuscles.initSystem();
+    modelNoMuscles.print("subject_walk_armless_with_imus.osim");
+
+    // Add a PositionMotion to the model based on the coordinate trajectories.
+    auto statesTraj = StatesTrajectory::createFromStatesTable(model,
+          coordinatesRadians, true, true, true);
+    auto posmot = PositionMotion::createFromStatesTrajectory(model, statesTraj);
+    posmot->setName("position_motion");
+    modelNoMuscles.addComponent(posmot.release());
+    auto state = modelNoMuscles.initSystem();
+
+    TimeSeriesTable empty(coordinatesRadians.getIndependentColumn());
+    TimeSeriesTableVec3 accelSignalsNoMuscles =
+            analyze<SimTK::Vec3>(modelNoMuscles, coordinatesRadians, empty,
+                                           {".*accelerometer_signal"});
+
+    // Resample the accelerometer signals so we can compare to the MocoInverse
+    // solution accelerometer signals.
+    TimeSeriesTable accelSignalsNoMusclesFlat = accelSignalsNoMuscles.flatten();
+    GCVSplineSet accelSplines(accelSignalsNoMusclesFlat);
+    const auto& time = accelSignals.getIndependentColumn();
+    TimeSeriesTable accelSignalsNoMusclesDownSampledFlat(time);
+    for (const auto& label : accelSignalsNoMusclesFlat.getColumnLabels()) {
+        SimTK::Vector col((int)time.size(), 0.0);
+        const auto& thisSpline = accelSplines.get(label);
+        for (int i = 0; i < (int)time.size(); ++i) {
+            SimTK::Vector timeVec(1, time[i]);
+            col[i] = thisSpline.calcValue(timeVec);
+        }
+        accelSignalsNoMusclesDownSampledFlat.appendColumn(label, col);
+    }
+    accelSignalsNoMusclesDownSampledFlat.addTableMetaData<std::string>(
+            "inDegrees", "no");
+    STOFileAdapter::write(accelSignalsNoMusclesDownSampledFlat,
+                    "testMocoInverse_no_forces_linear_accelerations.sto");
+
+    // Compute error in accelerometer signals.
+    auto accelSignalsFlat = accelSignals.flatten();
+    auto accelBlock = accelSignalsFlat.getMatrixBlock(0, 0,
+        accelSignalsFlat.getNumRows(),
+        accelSignalsFlat.getNumColumns());
+    auto accelBlockNoMuscles =
+        accelSignalsNoMusclesDownSampledFlat.getMatrixBlock(0, 0,
+        accelSignalsNoMusclesDownSampledFlat.getNumRows(),
+        accelSignalsNoMusclesDownSampledFlat.getNumColumns());
+    auto diff = accelBlock - accelBlockNoMuscles;
+    auto diffSqr = diff.elementwiseMultiply(diff);
+    auto sumSquaredError = diffSqr.rowSum();
+    // Trapezoidal rule for uniform grid:
+    // dt / 2 (f_0 + 2f_1 + 2f_2 + 2f_3 + ... + 2f_{N-1} + f_N)
+    double timeInterval = time[(int)time.size()-1] - time[0];
+    int numTimes = (int)time.size();
+    auto integratedSumSquaredError = timeInterval / 2.0 *
+               (sumSquaredError.sum() +
+                sumSquaredError(1, numTimes - 2).sum());
+    SimTK_TEST_EQ_TOL(integratedSumSquaredError, 0.0, 1e-4);
+
+    // Redo the test above, but now using the AnalyzeTool interface.
+    AnalyzeTool analyzeIMU;
+    analyzeIMU.setName("testMocoInverse_analysis");
+    analyzeIMU.setModelFilename("subject_walk_armless_with_imus.osim");
+    analyzeIMU.setCoordinatesFileName(
+            "subject_walk_armless_coordinates_radians.sto");
+    analyzeIMU.setLowpassCutoffFrequency(-1);
+    IMUDataReporter imuDataReporter;
+    imuDataReporter.setName("IMUDataReporter_no_forces");
+    imuDataReporter.set_compute_accelerations_without_forces(true);
+    imuDataReporter.setInDegrees(false);
+    analyzeIMU.updAnalysisSet().cloneAndAppend(imuDataReporter);
+    analyzeIMU.print("testMocoInverse_analyze_imu_accel.xml");
+    AnalyzeTool roundTrip("testMocoInverse_analyze_imu_accel.xml");
+    roundTrip.run();
+
+    // Compare the original accelerations to the accelerations computed with
+    // AnalyzeTool.
+    auto accelSignalsNoMusclesAnalyzeTool =
+            TimeSeriesTableVec3(
+                    "testMocoInverse_analysis_linear_accelerations.sto");
+
+    // Resample the accelerometer signals so we can compare to the MocoInverse
+    // solution accelerometer signals.
+    TimeSeriesTable accelSignalsNoMusclesAnalyzeToolFlat =
+            accelSignalsNoMusclesAnalyzeTool.flatten();
+    GCVSplineSet accelSplinesAnalyzeTool(accelSignalsNoMusclesAnalyzeToolFlat);
+    TimeSeriesTable accelSignalsNoMusclesAnalyzeToolDownSampledFlat(time);
+    for (const auto& label : accelSignalsNoMusclesAnalyzeToolFlat.getColumnLabels()) {
+        SimTK::Vector col((int)time.size(), 0.0);
+        const auto& thisSpline = accelSplinesAnalyzeTool.get(label);
+        for (int i = 0; i < (int)time.size(); ++i) {
+            SimTK::Vector timeVec(1, time[i]);
+            col[i] = thisSpline.calcValue(timeVec);
+        }
+        accelSignalsNoMusclesAnalyzeToolDownSampledFlat.appendColumn(label, col);
+    }
+    accelSignalsNoMusclesAnalyzeToolDownSampledFlat.addTableMetaData<std::string>(
+            "inDegrees", "no");
+
+    // Compute accelerometer signal errors.
+    auto accelBlockNoMusclesAnalyzeTool =
+        accelSignalsNoMusclesAnalyzeToolDownSampledFlat.getMatrixBlock(0, 0,
+        accelSignalsNoMusclesAnalyzeToolDownSampledFlat.getNumRows(),
+        accelSignalsNoMusclesAnalyzeToolDownSampledFlat.getNumColumns());
+    auto diffAnalyze = accelBlock - accelBlockNoMusclesAnalyzeTool;
+    auto diffSqrAnalyze = diffAnalyze.elementwiseMultiply(diffAnalyze);
+    auto sumSquaredErrorAnalyze = diffSqrAnalyze.rowSum();
+    auto integratedSumSquaredErrorAnalyze = timeInterval / 2.0 *
+               (sumSquaredErrorAnalyze.sum() +
+                sumSquaredErrorAnalyze(1, numTimes - 2).sum());
+    // TODO The error when using AnalyzeTool is slightly larger.
+    SimTK_TEST_EQ_TOL(integratedSumSquaredErrorAnalyze, 0.0, 1e-3);
+}
+#endif

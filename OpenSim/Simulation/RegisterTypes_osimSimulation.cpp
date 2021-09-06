@@ -134,6 +134,7 @@
 #include "StatesTrajectoryReporter.h"
 #include "TableProcessor.h"
 #include "MarkersReference.h"
+#include "PositionMotion.h"
 
 #include <string>
 #include <iostream>
@@ -292,6 +293,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 
     Object::registerType( TabOpLowPassFilter() );
     Object::registerType( TabOpUseAbsoluteStateNames() );
+    Object::registerType( PositionMotion() );
 
     // OLD Versions
     // Associate an instance with old name to help deserialization.
