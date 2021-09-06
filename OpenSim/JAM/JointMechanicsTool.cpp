@@ -172,10 +172,8 @@ bool JointMechanicsTool::run() {
             _model = Model(get_model_file());
         }
 
-        //SimTK::State state = _model.initSystem();
         initialize();
-        //initialize(state);
-        
+
         SimTK::Visualizer* viz=NULL;
         if (get_use_visualizer()) {
             viz = &_model.updVisualizer().updSimbodyVisualizer();
@@ -231,7 +229,8 @@ bool JointMechanicsTool::run() {
 }
 
 void JointMechanicsTool::initialize() {
-    
+    clearInitializedMemberData();
+
     //Read input files, trim, filter data
     Storage input_data;
 
@@ -253,11 +252,18 @@ void JointMechanicsTool::initialize() {
 
     //States
     if (get_h5_states_data()) {
-        StatesReporter* states_rep = new StatesReporter();
-        states_rep->setName("states_analysis");
-        states_rep->setStepInterval(1);
-        states_rep->setPrintResultFiles(false);
-        _model.addAnalysis(states_rep);
+
+        /*if (_model.getAnalysisSet.contains("joint_mechanics_states_analysis")) {
+            auto& states_rep = _model.getAnalysisSet().get("joint_mechanics_states_analysis");
+
+            //states_rep.set
+        }*/
+        
+            StatesReporter* states_rep = new StatesReporter();
+            states_rep->setName("joint_mechanics_states_analysis");
+            states_rep->setStepInterval(1);
+            states_rep->setPrintResultFiles(false);
+            _model.addAnalysis(states_rep);
     }
 
     //Add Analysis set
@@ -299,7 +305,8 @@ void JointMechanicsTool::initialize() {
         setupCoordinateStorage();
     }
 
-    if (get_write_transforms_file()) {
+    if (get_write_transforms_file()) {        
+
         std::vector<std::string> column_labels;
 
         for (const Frame& frame : _model.updComponentList<Frame>()) {
@@ -318,6 +325,65 @@ void JointMechanicsTool::initialize() {
     }
 
 
+}
+
+void JointMechanicsTool::clearInitializedMemberData(){
+    _contact_force_names.clear();
+    _contact_force_paths.clear();
+
+    _states.clear();
+    _time = Array<double>();
+       
+
+    _q_matrix.clear();
+    _u_matrix.clear();
+
+    _contact_force_names.clear();
+    _contact_force_paths.clear();
+    _contact_mesh_names.clear();
+    _contact_mesh_paths.clear();
+    _mesh_vertex_locations.clear();
+    
+    _contact_output_double_names.clear();
+    _contact_output_vec3_names.clear();
+    _contact_output_vector_double_names.clear();
+    _contact_output_vector_vec3_names.clear();
+    _contact_output_double_values.clear();
+    _contact_output_vec3_values.clear();
+    _contact_output_vector_double_values.clear();
+    _contact_output_vector_vec3_values.clear();
+
+    _attach_geo_names.clear();
+    _attach_geo_frames.clear();
+    _attach_geo_meshes.clear();
+    _attach_geo_vertex_locations.clear();  
+    
+
+    _ligament_names.clear();
+    _ligament_paths.clear();
+    _ligament_path_nPoints.clear();
+    _ligament_path_points.clear();
+    _ligament_output_double_names.clear();
+    _ligament_output_double_values.clear();
+
+    _muscle_names.clear();
+    _muscle_paths.clear();
+    _muscle_path_nPoints.clear();
+    _muscle_path_points.clear();
+    _muscle_output_double_names.clear();
+    _muscle_output_double_values.clear();
+
+    _muscle_state_names.clear();
+    _muscle_state_data.clear();
+
+    _coordinate_names.clear();
+    _coordinate_output_double_names.clear();
+    _coordinate_output_double_values.clear();
+
+    _model_frame_transforms = TimeSeriesTable();
+
+    _mesh_names.clear();
+    _mesh_transforms.clear();
 }
 
 Storage JointMechanicsTool::processInputStorage(std::string file) {
@@ -470,7 +536,7 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
     }*/
 
     SimTK::State state = working_model.initSystem();
-    working_model.print("hidden.osim");
+
     //Collect Transformation matrix values
     std::vector<GCVSplineSet> hidden_coord_splines;
 
@@ -557,7 +623,6 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
             coords_table.setRowAtIndex(t, coord_values);
         }
         hidden_coord_splines.push_back(GCVSplineSet(coords_table));
-        STOFileAdapter().write(coords_table,partner_body.getName() + ".sto");
     }
         
     //Use IK to compute org joint angles
@@ -580,9 +645,9 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
 
     // create the solver given the input data
     InverseKinematicsSolver ikSolver(working_model, markersReference,
-        coordinateReferences, 1e5);
+        coordinateReferences, 1e8);
 
-    ikSolver.setAccuracy(1e-6);
+    ikSolver.setAccuracy(1e-12);
     
 
     state.updTime() = _time[0];
@@ -593,32 +658,59 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
         viz = &working_model.updVisualizer().updSimbodyVisualizer();
         viz->setShowSimTime(true);
     }*/
+    double transform_assembly_threshold = 1e-6;
 
     for (int t = 0; t < _n_frames; ++t) {
         state.updTime() = _time[t];
+        double max_error = transform_assembly_threshold;
+        bool first_loop = true;
+        
+        while (max_error >= transform_assembly_threshold) {
+            for (int i = 0; i < num_hidden_bodies; ++i) {
+                CustomJoint& hidden_joint =
+                    working_model.updComponent<CustomJoint>(hidden_joint_paths[i]);
 
-        for (int i = 0; i < num_hidden_bodies; ++i) {
-            CustomJoint& hidden_joint =
-                working_model.updComponent<CustomJoint>(hidden_joint_paths[i]);
-
-            for (int j = 0; j < 6; ++j) {
-                double value = hidden_coord_splines[i].get(j).calcValue(SimTK::Vector(1, time[t]));
-                hidden_joint.get_coordinates(j).setValue(state,value,false);
+                for (int j = 0; j < 6; ++j) {
+                    double value = hidden_coord_splines[i].get(j).calcValue(SimTK::Vector(1, time[t]));
+                    hidden_joint.get_coordinates(j).setValue(state, value, false);
+                }
             }
-        }
+            //working_model.assemble(state);
+            //if (first_loop) {
+                ikSolver.assemble(state);
+                //first_loop = false;
+            //}
+            ikSolver.track(state);
 
-        ikSolver.assemble(state);
-        ikSolver.track(state);
+            max_error = 0.0;
+
+            for (int i = 0; i < num_hidden_bodies; ++i) {
+                CustomJoint& hidden_joint =
+                    working_model.updComponent<CustomJoint>(hidden_joint_paths[i]);
+
+                for (int j = 0; j < 6; ++j) {
+                    double desired_value = hidden_coord_splines[i].get(j).calcValue(SimTK::Vector(1, time[t]));
+                    double assembled_value = hidden_joint.get_coordinates(j).getValue(state);
+                    double value_error = abs(desired_value - assembled_value);
+                    if (value_error > max_error) {
+                        max_error = value_error;
+                        
+                    }
+                }
+            }
+            /*if (get_use_visualizer()) {
+                viz->drawFrameNow(state);
+            }
+            for (auto& coord : working_model.getComponentList<Coordinate>() ){
+                std::cout << coord.getName() << " " << coord.getValue(state) << std::endl;
+            }*/
+        }
 
         //save pose
         working_model.realizeReport(state);
-        
-        /*if (get_use_visualizer()) {
-            viz->drawFrameNow(state);
-        }*/
     }
     TimeSeriesTable coordinate_states_table = ikReporter->getTable();
-    STOFileAdapter().write(coordinate_states_table,"ikReporter.sto");
+
     for (int t = 0; t < _n_frames; ++t) {
         s.setTime(_time[t]);
         for (auto& coord : _model.updComponentList<Coordinate>()) {
@@ -635,7 +727,6 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
             coord.setValue(s, value, false);
         }
         _model.assemble(s);
-        //_states.append(s);
         _states.push_back(s);
     }
 }
@@ -2095,7 +2186,7 @@ void JointMechanicsTool::writeH5File(
 
     //Write States Data
     if (get_h5_states_data()) {
-        StatesReporter& states_analysis = dynamic_cast<StatesReporter&>(_model.updAnalysisSet().get("states_analysis"));
+        StatesReporter& states_analysis = dynamic_cast<StatesReporter&>(_model.updAnalysisSet().get("joint_mechanics_states_analysis"));
         const TimeSeriesTable& states_table = states_analysis.getStatesStorage().exportToTable();
 
         //h5.writeDataSet(states_table, _model.getName() + "/states");

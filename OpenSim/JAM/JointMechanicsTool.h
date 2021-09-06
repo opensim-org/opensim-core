@@ -270,6 +270,7 @@ private:
     void constructProperties();
     
     void initialize();
+    void clearInitializedMemberData();
     void assembleStatesTrajectoryFromTransformsData(const Storage& storage, SimTK::State s);
     void assembleStatesTrajectoryFromStatesData(const Storage& storage, SimTK::State s);
     Storage processInputStorage(std::string file);
