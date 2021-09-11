@@ -629,10 +629,11 @@ void COMAKInverseKinematicsTool::performIK()
     model.initSystem();
 
     // Check that IK tasks exist as markers
-    for (int i = 0; i < get_IKTaskSet().getSize(); i++) {
-        const std::string& iktask_name = get_IKTaskSet(i).getName();
 
-        if (get_IKTaskSet(i).getConcreteClassName() == "IKMarkerTask"){
+    for (int i = 0; i < get_IKTaskSet().getSize(); i++) {
+        std::string iktask_name = get_IKTaskSet().get(i).getName();
+
+        if (get_IKTaskSet().get(i).getConcreteClassName() == "IKMarkerTask"){
             try {
                 model.getMarkerSet().get(iktask_name);
             }
@@ -653,7 +654,7 @@ void COMAKInverseKinematicsTool::performIK()
             }
             
         }
-        if (get_IKTaskSet(i).getConcreteClassName() == "IKCoordinateTask"){
+        if (get_IKTaskSet().get(i).getConcreteClassName() == "IKCoordinateTask"){
             try {
                 model.getCoordinateSet().get(iktask_name);
             }

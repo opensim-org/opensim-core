@@ -123,8 +123,7 @@ int run_tool(int argc, const char** argv) {
         else return EXIT_FAILURE;
     } else if (auto* comak_ik = dynamic_cast<COMAKInverseKinematicsTool*>(obj.get())) {
         log_info("Preparing to run {}.", comak_ik->getConcreteClassName());
-        bool success = comak_ik->initialize();
-        success = comak_ik->run();
+        bool success = comak_ik->run();
         if (success) return EXIT_SUCCESS;
         else return EXIT_FAILURE;
     } else if (auto* comak = dynamic_cast<COMAKTool*>(obj.get())) {
