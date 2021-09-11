@@ -16,10 +16,13 @@ using namespace OpenSim;
 using namespace SimTK;
 %}
 
+%include <Bindings/preliminaries.i>
 %include "python_preliminaries.i";
 
 %import <python_common.i>
 %import <python_simulation.i>
+%import <python_actuators.i>
+
 
 // Relay exceptions to the target language.
 // This causes substantial code bloat and possibly hurts performance.
