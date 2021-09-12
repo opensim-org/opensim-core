@@ -3,7 +3,6 @@
 #pragma SWIG nowarn=401
 
 %{
-#define SWIG_FILE_WITH_INIT
 #include <Bindings/OpenSimHeaders_common.h>
 #include <Bindings/OpenSimHeaders_simulation.h>
 #include <Bindings/OpenSimHeaders_actuators.h>
@@ -16,7 +15,7 @@ using namespace OpenSim;
 using namespace SimTK;
 %}
 
-%include <Bindings/preliminaries.i>
+//%include <Bindings/preliminaries.i>
 %include "python_preliminaries.i";
 
 %import <python_common.i>
