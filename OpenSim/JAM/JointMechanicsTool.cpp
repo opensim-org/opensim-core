@@ -39,6 +39,8 @@
 #include <OpenSim/Common/Reporter.h>
 #include <OpenSim/Common/TableUtilities.h>
 #include <OpenSim/Common/Stopwatch.h>
+#include <OpenSim/JAM/JointMechanicsSettingsSet.h>
+#include <OpenSim/JAM/JointMechanicsSettings.h>
 
 using namespace OpenSim;
 
@@ -122,6 +124,8 @@ void JointMechanicsTool::constructProperties()
     constructProperty_h5_states_data(true);
     constructProperty_h5_kinematics_data(true);
     //constructProperty_h5_transforms_data(false);
+    constructProperty_JointMechanicsFrameTransformSet(
+        JointMechanicsFrameTransformSet());
 
     constructProperty_write_transforms_file(false);
     constructProperty_output_transforms_file_type("sto");
@@ -164,6 +168,7 @@ bool JointMechanicsTool::run() {
         }
 
         //Set Model
+        log_critical("test0");
         if (!_model_exists) {
             if (get_model_file().empty()) {
                 OPENSIM_THROW(Exception, 
@@ -171,9 +176,9 @@ bool JointMechanicsTool::run() {
             }
             _model = Model(get_model_file());
         }
-
+        log_critical("test1");
         initialize();
-
+        log_critical("test2");
         SimTK::Visualizer* viz=NULL;
         if (get_use_visualizer()) {
             viz = &_model.updVisualizer().updSimbodyVisualizer();
@@ -305,6 +310,8 @@ void JointMechanicsTool::initialize() {
         setupCoordinateStorage();
     }
 
+    setupFrameTransformStorage();
+
     if (get_write_transforms_file()) {        
 
         std::vector<std::string> column_labels;
@@ -387,12 +394,12 @@ void JointMechanicsTool::clearInitializedMemberData(){
 }
 
 Storage JointMechanicsTool::processInputStorage(std::string file) {
-    
+    log_critical("test 3");
     std::string saveWorkingDirectory = IO::getCwd();
     IO::chDir(_directoryOfSetupFile);
     Storage store = Storage(file);
     IO::chDir(saveWorkingDirectory);
-
+    log_critical("test4");
     //Set Start and Stop Times
     store.getTimeColumn(_time);
      
@@ -740,8 +747,6 @@ void JointMechanicsTool::assembleStatesTrajectoryFromStatesData(
         store.print(get_results_directory() + "/" + 
             get_results_file_basename() + "_processed_kinematics.sto");
     }
-
-
 
     TimeSeriesTable table = store.exportToTable();
 
@@ -1518,6 +1523,46 @@ void JointMechanicsTool::setupCoordinateStorage() {
     }
 }
 
+void JointMechanicsTool::setupFrameTransformStorage() {
+    int nFrameTransforms = getProperty_JointMechanicsFrameTransformSet().size();
+
+    for (int i = 0; i < nFrameTransforms; ++i) {
+        JointMechanicsFrameTransform frame_transform =
+                get_JointMechanicsFrameTransformSet().get(i);
+
+        if (frame_transform.get_output_coordinates()) {
+            TimeSeriesTable coordinates_table;
+            std::vector<std::string> column_labels;
+            column_labels.push_back("r1");
+            column_labels.push_back("r2");
+            column_labels.push_back("r3");
+            column_labels.push_back("tx");
+            column_labels.push_back("ty");
+            column_labels.push_back("tz");
+
+            coordinates_table.setColumnLabels(column_labels);
+            _frame_transform_coordinates[i] = coordinates_table;
+
+        }
+        if (frame_transform.get_output_transformation_matrix()) {
+            TimeSeriesTable T_matrix_table;
+            std::vector<std::string> column_labels;
+
+            for (int m = 1; m < 5; ++m) {
+                for (int n = 1; n < 5; ++n) {
+                    std::string col_label =
+                            "T" + std::to_string(m) + std::to_string(n);
+                    column_labels.push_back(col_label);
+                }
+            }
+
+            T_matrix_table.setColumnLabels(column_labels);
+            _frame_transform_coordinates[i] = T_matrix_table;
+        
+        }
+    }
+}
+
 int JointMechanicsTool::record(const SimTK::State& s, const int frame_num)
 {
     _model.realizeReport(s);
@@ -1667,7 +1712,6 @@ int JointMechanicsTool::record(const SimTK::State& s, const int frame_num)
             }
             _muscle_path_nPoints[nMsl][frame_num] = nPoints;
 
-
             //Output Data
             int j = 0;
             for (std::string output_name : _muscle_output_double_names) {
@@ -1681,9 +1725,7 @@ int JointMechanicsTool::record(const SimTK::State& s, const int frame_num)
                         frame_num, j, msl.getOutputValue<double>(s, output_name));
                 }
                 j++;
-            }
-            
-
+            }   
             nMsl++;
         }
     }
@@ -1704,7 +1746,7 @@ int JointMechanicsTool::record(const SimTK::State& s, const int frame_num)
         }
     }
 
-    //Store Body Transformations in Ground
+    // Store Body Transformations in Ground
     if (get_write_transforms_file()) {
         const Frame& out_frame =
             _model.getComponent<Frame>(get_output_orientation_frame());
@@ -1726,8 +1768,90 @@ int JointMechanicsTool::record(const SimTK::State& s, const int frame_num)
         }
         _model_frame_transforms.appendRow(_time[frame_num],row);
     }
+
+    // Store Frame Transformations
+    int nFrameTransforms = getProperty_JointMechanicsFrameTransformSet().size();
+
+    for (int i = 0; i < nFrameTransforms; ++i) {
+        JointMechanicsFrameTransform frame_transform =
+                get_JointMechanicsFrameTransformSet().get(i);
+
+        const Frame& parent =
+            _model.getComponent<Frame>(frame_transform.get_parent_frame());
+
+        const Frame& child =
+            _model.getComponent<Frame>(frame_transform.get_parent_frame());
+
+        SimTK::Transform T_matrix = parent.findTransformBetween(s, child);
+
+        if (frame_transform.get_output_coordinates()) {
+            SimTK::RowVector row(6);
+
+            SimTK::Rotation R_matrix = T_matrix.R();
+
+            SimTK::BodyOrSpaceType rotation_type;
+            if (frame_transform.get_rotation_type() == "space") {
+                rotation_type = SimTK::BodyOrSpaceType::SpaceRotationSequence;
+            }
+            else if(frame_transform.get_rotation_type() == "body") {
+                rotation_type = SimTK::BodyOrSpaceType::BodyRotationSequence;
+            }
+            else {
+                OPENSIM_THROW(Exception, "JointMechanicsFrameTransform rotation_type must be either 'space' or 'body'.")
+            }
+
+            std::vector<SimTK::CoordinateAxis> rotation_axes;
+            for (int j = 0; j < 3; ++j) {
+                if (frame_transform.get_rotation_sequence(j) == "x") {
+                    rotation_axes.push_back(
+                            SimTK::CoordinateAxis::XCoordinateAxis());
+                }
+                if (frame_transform.get_rotation_sequence(j) == "y") {
+                    rotation_axes.push_back(
+                            SimTK::CoordinateAxis::YCoordinateAxis());
+                }
+                if (frame_transform.get_rotation_sequence(j) == "z") {
+                    rotation_axes.push_back(
+                            SimTK::CoordinateAxis::ZCoordinateAxis());
+                }
+                else {
+                    OPENSIM_THROW(Exception, "JointMechanicsFrameTransform rotation_seqeunce must only contain 'x','y', or 'z'")
+                }
+            }
+
+            SimTK::Vec3 rotation_angles = 
+                R_matrix.convertThreeAxesRotationToThreeAngles(rotation_type,
+                    rotation_axes[0],rotation_axes[1],rotation_axes[2]);
+
+            SimTK::Vec3 translations = T_matrix.p();
+
+            for (int j = 0; j < 3; ++j) { 
+                row(j) = rotation_angles(j)*180/SimTK::Pi;
+                row(j + 3) = translations(j);
+            }
+
+            _frame_transform_coordinates[i].appendRow(_time[frame_num],row);
+
+        }
+        if (frame_transform.get_output_transformation_matrix()) {
+            SimTK::RowVector row(16);
+
+            int c = 0;
+            for (int m = 0; m < 4; ++m) {
+                for (int n = 0; n < 4; ++n) {
+                    row(c) = T_matrix.toMat44().get(m, n);
+                    c++;
+                }
+            }          
+
+            _frame_transform_matrix[i].appendRow(_time[frame_num], row);
+        }
+    }
+
     return(0);
 }
+
+
 
 void JointMechanicsTool::getGeometryPathPoints(const SimTK::State& s, const GeometryPath& geoPath, SimTK::Vector_<SimTK::Vec3>& path_points, int& nPoints) {
     const Frame& out_frame = _model.getComponent<Frame>(get_output_orientation_frame());
@@ -2485,8 +2609,38 @@ void JointMechanicsTool::writeH5File(
         }
     }*/
 
-    h5.close();
+    // Write Frame Transforms
+    int nFrameTransforms = getProperty_JointMechanicsFrameTransformSet().size();
+    std::string frame_transforms_group =
+            _model.getName() + "/frametransformsset";
 
+    for (int i = 0; i < nFrameTransforms; ++i) {
+
+        if (i == 0) {
+            
+            h5.createGroup(frame_transforms_group);
+        }
+
+        JointMechanicsFrameTransform frame_transform =
+                get_JointMechanicsFrameTransformSet().get(i);
+    
+        if (frame_transform.get_output_coordinates()) {
+            std::string group =
+                    frame_transforms_group + "/" + frame_transform.getName();
+            h5.createGroup(group);
+            std::string data_set_path = group + "/coordinates";
+            h5.writeDataSet2(_frame_transform_coordinates[i], group);
+        }
+
+        if (frame_transform.get_output_transformation_matrix()) {
+            std::string group =
+                    frame_transforms_group + "/" + frame_transform.getName();
+            h5.createGroup(group);
+            std::string data_set_path = group + "/transformation_matix";
+            h5.writeDataSet2(_frame_transform_matrix[i], group);
+        }
+    }
+    h5.close();
 }
 
 void JointMechanicsTool::writeTransformsFile() {

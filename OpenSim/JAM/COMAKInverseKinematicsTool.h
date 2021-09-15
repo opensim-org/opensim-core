@@ -210,7 +210,7 @@ public:
     void performIKSecondaryConstraintSimulation();
     void performIK();
     void runInverseKinematics(Model& model);
-    
+    void printDebugInfo(const Model& model, const SimTK::State& state);
 
     void populateReferences(const Model& model, 
         MarkersReference& markersReference,

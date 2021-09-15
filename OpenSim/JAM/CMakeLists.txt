@@ -12,6 +12,8 @@ set(JAM_SOURCES
         ForsimTool.cpp
         H5FileAdapter.cpp
         JointMechanicsTool.cpp
+        JointMechanicsSettings.cpp
+        JointMechanicsSettingsSet.cpp
         JAMUtilities.cpp
         RegisterTypes_osimJAM.cpp
         VTPFileAdapter.cpp
@@ -28,6 +30,8 @@ set(JAM_INCLUDES
         ForsimTool.h
         H5FileAdapter.h
         JointMechanicsTool.h
+        JointMechanicsSettings.h
+        JointMechanicsSettingsSet.h
         JAMUtilities.h
         osimJAM.h
         osimJAMDLL.h

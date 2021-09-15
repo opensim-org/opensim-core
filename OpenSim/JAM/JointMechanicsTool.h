@@ -24,7 +24,7 @@
 //#include "H5Cpp.h"
 //#include "hdf5_hl.h"
 #include "OpenSim/Simulation/StatesTrajectory.h"
-
+#include "OpenSim/JAM/JointMechanicsSettingsSet.h"
 
 //#include <OpenSim/Tools/IKTaskSet.h>
 
@@ -234,8 +234,14 @@ public:
     /*OpenSim_DECLARE_PROPERTY(h5_transforms_data, bool,
         "Write frame 4x4 transform matrix to .h5 file")*/
 
+    OpenSim_DECLARE_UNNAMED_PROPERTY(JointMechanicsFrameTransformSet,
+        "List of JointMechanicsFrameTransform objects to insert virtual "
+        "joints to report the transformations between any two frames in. "
+        "the model. Note this is just a reporter and that no new Joint "
+        "components are added to the so the model dynamics are not altered.")
+
     OpenSim_DECLARE_UNNAMED_PROPERTY(AnalysisSet,"Analyses to be performed "
-        "during forward simulation.")
+        "within the JointMechaicsTool.")
 
     OpenSim_DECLARE_PROPERTY(write_transforms_file, bool,
         "Write file containing the transformation matrix for each body "
@@ -292,6 +298,7 @@ private:
     void setupAttachedGeometriesStorage();
     void setupCoordinateStorage();
     void setupContactStorage(SimTK::State& state);
+    void setupFrameTransformStorage();
     std::string findMeshFile(const std::string& file);
 
     void getGeometryPathPoints(const SimTK::State& s, const GeometryPath& geoPath, SimTK::Vector_<SimTK::Vec3>& path_points, int& nPoints);
@@ -363,6 +370,9 @@ private:
     std::vector<std::string> _coordinate_names;
     std::vector<std::string> _coordinate_output_double_names;
     std::vector<SimTK::Matrix> _coordinate_output_double_values;
+
+    std::vector<TimeSeriesTable> _frame_transform_coordinates;
+    std::vector<TimeSeriesTable> _frame_transform_matrix;
 
     TimeSeriesTable _model_frame_transforms;
 

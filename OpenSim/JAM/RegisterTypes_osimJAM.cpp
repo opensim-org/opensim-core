@@ -29,6 +29,8 @@
 #include "COMAKSettingsSet.h"
 #include "COMAKTool.h"
 #include "COMAKInverseKinematicsTool.h"
+#include "JointMechanicsSettings.h"
+#include "JointMechanicsSettingsSet.h"
 
 using namespace OpenSim;
 static osimJAMInstantiator instantiator;
@@ -39,6 +41,8 @@ OSIMJAM_API void RegisterTypes_osimJAM() {
     Object::registerType(Smith2018ContactMesh());
     Object::registerType(Smith2018ArticularContactForce());
     Object::registerType(JointMechanicsTool());
+    Object::registerType(JointMechanicsFrameTransform());
+    Object::registerType(JointMechanicsFrameTransformSet());
     Object::registerType(ForsimTool());
     Object::registerType(COMAKSecondaryCoordinate());
     Object::registerType(COMAKSecondaryCoordinateSet());

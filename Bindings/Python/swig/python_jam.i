@@ -1,8 +1,9 @@
 %module(package="opensim", directors="1") jam
 #pragma SWIG nowarn=822,451,503,516,325
-#pragma SWIG nowarn=401
+//#pragma SWIG nowarn=401
 
 %{
+
 #include <Bindings/OpenSimHeaders_common.h>
 #include <Bindings/OpenSimHeaders_simulation.h>
 #include <Bindings/OpenSimHeaders_actuators.h>
@@ -15,7 +16,6 @@ using namespace OpenSim;
 using namespace SimTK;
 %}
 
-//%include <Bindings/preliminaries.i>
 %include "python_preliminaries.i";
 
 %import <python_common.i>
@@ -41,5 +41,5 @@ using namespace SimTK;
 }
 
 
-
+//%include <Bindings/preliminaries.i>
 %include <Bindings/jam.i>

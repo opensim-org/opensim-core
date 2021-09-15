@@ -23,7 +23,6 @@
 
 #include "COMAKSettingsSet.h"
 
-using namespace std;
 using namespace OpenSim;
 
 

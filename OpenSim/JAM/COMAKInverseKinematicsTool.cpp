@@ -39,6 +39,9 @@
 #include <OpenSim/Tools/IKCoordinateTask.h>
 #include <OpenSim/Analyses/Kinematics.h>
 
+#include "OpenSim/Simulation/Model/Smith2018ArticularContactForce.h"
+#include "OpenSim/Simulation/Model/Blankevoort1991Ligament.h"
+
 using namespace OpenSim;
 //using namespace SimTK;
 
@@ -390,7 +393,7 @@ void COMAKInverseKinematicsTool::performIKSecondaryConstraintSimulation() {
  
 
     log_info("Starting Settling Simulation.");
-
+    
 
     SimTK::Vector prev_sec_coord_value(_n_secondary_coord,0.0);
 
@@ -408,7 +411,7 @@ void COMAKInverseKinematicsTool::performIKSecondaryConstraintSimulation() {
         settle_states.append(state);
             
         log_info("Time: {}", state.getTime());
-        log_info("\t\t VALUE \t\tDELTA");
+        log_info("{:<30} {:<20} {:<20}","Name", "Value", "Value Change");
         
 
         //Compute Delta Coordinate
@@ -425,9 +428,11 @@ void COMAKInverseKinematicsTool::performIKSecondaryConstraintSimulation() {
             prev_sec_coord_value(k) = value;
 
 
-            log_info("{} \t {} \t {}", coord.getName(), value, delta);
+            log_info("{:<30} {:<20} {:<20}", coord.getName(), value, delta);
 
         }
+        printDebugInfo(model,state);  
+
         i++;
     }
 
@@ -531,6 +536,7 @@ void COMAKInverseKinematicsTool::performIKSecondaryConstraintSimulation() {
         q_table.appendRow(state.getTime(), q_row);
 
         log_info("{}",state.getTime());
+        printDebugInfo(model,state);  
     }
 
     //Compute Coupled Constraint Functions
@@ -1003,4 +1009,86 @@ void COMAKInverseKinematicsTool::populateReferences(const Model& model,
     //Markers in the model and the marker file but not in the markerWeights are
     //ignored
     markersReference.initializeFromMarkersFile(get_marker_file(), markerWeights);
+}
+
+void COMAKInverseKinematicsTool::printDebugInfo(const Model& model, const SimTK::State& state) {
+
+    model.realizeReport(state);
+
+    // Unconstrained Coordinates
+    log_debug("{:<30} {:<20} {:<20}", "Unconstrained Coordinate", "Value",
+            "Speed");
+
+    for (int i = 0; i < getProperty_secondary_coordinates().size();
+            ++i) {
+        std::string coord_path = get_secondary_coordinates(i);
+        const Coordinate& coord = model.getComponent<Coordinate>(coord_path);
+        log_debug("{:<30} {:<20} {:<20}", coord.getName(),
+                coord.getValue(state), coord.getSpeedValue(state));
+    }
+    log_debug("");
+
+    // Muscle
+    log_debug("{:<20} {:<20} {:<20} {:<20}", "Muscle", "Force", "Activation",
+            "Control");
+
+    for (const Muscle& msl : model.getComponentList<Muscle>()) {
+        log_debug("{:<20} {:<20} {:<20} {:<20}", msl.getName(),
+                msl.getActuation(state), msl.getActivation(state),
+                msl.getControl(state));
+    }
+    log_debug("");
+
+    // Ligament
+    log_debug("{:<12} {:<12} {:<12} {:<12} {:<12} {:<12} {:<12}", "Ligament",
+            "Total Force", "Spring Force", "Damping Force", "Strain",
+            "Strain Rate", "Length");
+
+    for (const Blankevoort1991Ligament& lig :
+            model.getComponentList<Blankevoort1991Ligament>()) {
+
+        log_debug("{:<12} {:<12} {:<12} {:<12} {:<12} {:<12} {:<12}",
+                lig.getName(), lig.getOutputValue<double>(state, "total_force"),
+                lig.getOutputValue<double>(state, "spring_force"),
+                lig.getOutputValue<double>(state, "damping_force"),
+                lig.getOutputValue<double>(state, "strain"),
+                lig.getOutputValue<double>(state, "strain_rate"),
+                lig.getOutputValue<double>(state, "length"));
+    }
+    log_debug("");
+
+    // Contact
+    log_debug("{:<20} {:<20} {:<20}", "Contact", "Force", "COP");
+
+    for (const Smith2018ArticularContactForce& cnt :
+            model.getComponentList<Smith2018ArticularContactForce>()) {
+
+        log_debug("{:<20} {:<20} {:<20}", cnt.getName(),
+                cnt.getOutputValue<SimTK::Vec3>(
+                        state, "casting_total_contact_force"),
+                cnt.getOutputValue<SimTK::Vec3>(
+                        state, "casting_total_center_of_pressure"));
+    }
+    log_debug("");
+    /*
+        if (get_verbose() >= 3) {
+            log_debug("{:<20} {:<20} {:<20}", "Contact " << std::setw(20)
+                << "Force" << std::setw(w) << "COP" << std::endl;
+
+            for (Smith2018ArticularContactForce& cnt :
+       model.updComponentList<Smith2018ArticularContactForce>()) {
+
+                std::cout << std::setw(w) << cnt.getName()
+                    << std::setw(w) << cnt.getOutputValue<SimTK::Vector>(state,
+       "casting_triangle_proximity")
+                    << std::setw(w) << cnt.getOutputValue<SimTK::Vector>(state,
+       "casting_triangle_pressure")
+                    << std::endl;
+            }
+        }
+
+        if (get_verbose() >= 2) {
+            std::cout << "Press Any Key to Continue." << std::endl;
+            std::cin.ignore();
+        }*/
 }
