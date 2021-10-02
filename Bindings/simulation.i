@@ -221,7 +221,7 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %shared_ptr(ReferenceDouble);
 %shared_ptr(ReferenceRotation);
 %include <OpenSim/Simulation/MarkersReference.h>
-//%shared_ptr(OpenSim::MarkersReference);
+%shared_ptr(OpenSim::MarkersReference);
 %template(SetMarkerWeights) OpenSim::Set<MarkerWeight, OpenSim::Object>;
 %include <OpenSim/Simulation/CoordinateReference.h>
 %include <OpenSim/Simulation/OrientationsReference.h>
