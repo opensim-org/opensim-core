@@ -277,8 +277,8 @@ private:
     
     void initialize();
     void clearInitializedMemberData();
-    void assembleStatesTrajectoryFromTransformsData(const Storage& storage, SimTK::State s);
-    void assembleStatesTrajectoryFromStatesData(const Storage& storage, SimTK::State s);
+    void assembleStatesTrajectoryFromTransformsData(SimTK::State s);
+    void assembleStatesTrajectoryFromStatesData(SimTK::State s);
     Storage processInputStorage(std::string file);
 
     int record(const SimTK::State& s, const int frame_num);

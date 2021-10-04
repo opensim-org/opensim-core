@@ -122,6 +122,10 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/Model/ElasticFoundationForce.h>
 %include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
 %include <OpenSim/Simulation/Model/SmoothSphereHalfSpaceForce.h>
+
+namespace OpenSim {
+    %ignore Smith2018ContactMesh::OBBTreeNode;
+}
 %include <OpenSim/Simulation/Model/Smith2018ContactMesh.h>
 %include <OpenSim/Simulation/Model/Smith2018ArticularContactForce.h>
 

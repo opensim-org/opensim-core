@@ -236,25 +236,6 @@ bool JointMechanicsTool::run() {
 void JointMechanicsTool::initialize() {
     clearInitializedMemberData();
 
-    //Read input files, trim, filter data
-    Storage input_data;
-
-    if (!get_input_transforms_file().empty() &&
-        !get_input_states_file().empty()) {
-        OPENSIM_THROW(Exception,"Either the input_states_file or the "
-            "input_transforms_file must be empty.")
-    }
-    else if (!get_input_transforms_file().empty()) {
-        input_data = processInputStorage(get_input_transforms_file());
-    }
-    else if (!get_input_states_file().empty()) {
-        input_data = processInputStorage(get_input_states_file());
-    }
-    else {
-        OPENSIM_THROW(Exception,"Either the input_states_file or the "
-            "input_transforms_file must be set.")
-    }
-
     //States
     if (get_h5_states_data()) {
 
@@ -264,11 +245,11 @@ void JointMechanicsTool::initialize() {
             //states_rep.set
         }*/
         
-            StatesReporter* states_rep = new StatesReporter();
-            states_rep->setName("joint_mechanics_states_analysis");
-            states_rep->setStepInterval(1);
-            states_rep->setPrintResultFiles(false);
-            _model.addAnalysis(states_rep);
+        StatesReporter* states_rep = new StatesReporter();
+        states_rep->setName("joint_mechanics_states_analysis");
+        states_rep->setStepInterval(1);
+        states_rep->setPrintResultFiles(false);
+        _model.addAnalysis(states_rep);
     }
 
     //Add Analysis set
@@ -291,13 +272,24 @@ void JointMechanicsTool::initialize() {
         cnt.setModelingOption(state, "flip_meshes", 1);
     }
 
-    if (!get_input_transforms_file().empty()) {
-        assembleStatesTrajectoryFromTransformsData(input_data, state);
+    // Read input files, trim, filter data
+    if (!get_input_transforms_file().empty() &&
+            !get_input_states_file().empty()) {
+        OPENSIM_THROW(Exception, "Either the input_states_file or the "
+                                 "input_transforms_file must be empty.")
+    } 
+    else if (!get_input_transforms_file().empty()) {
+        assembleStatesTrajectoryFromTransformsData(state);
     }
     else if (!get_input_states_file().empty()) {
-        assembleStatesTrajectoryFromStatesData(input_data, state);
+        assembleStatesTrajectoryFromStatesData(state);
+    } 
+    else {
+        OPENSIM_THROW(Exception, "Either the input_states_file or the "
+                                 "input_transforms_file must be set.")
     }
 
+    // Setup storage for outputs
     setupLigamentStorage();
 
     setupContactStorage(state);
@@ -440,7 +432,7 @@ Storage JointMechanicsTool::processInputStorage(std::string file) {
 }
 
 void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
-    const Storage& storage, SimTK::State s) {
+    SimTK::State s) {
     //Make a copy of the model so we can make changes
     Model working_model = *_model.clone();
     working_model.set_assembly_accuracy(1e-8);
@@ -739,7 +731,7 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
 }
 
 void JointMechanicsTool::assembleStatesTrajectoryFromStatesData(
-    const Storage& storage, SimTK::State s) {
+    SimTK::State s) {
 
     Storage store = processInputStorage(get_input_states_file());
     
@@ -1524,7 +1516,7 @@ void JointMechanicsTool::setupCoordinateStorage() {
 }
 
 void JointMechanicsTool::setupFrameTransformStorage() {
-    int nFrameTransforms = getProperty_JointMechanicsFrameTransformSet().size();
+    int nFrameTransforms = get_JointMechanicsFrameTransformSet().getSize();
 
     for (int i = 0; i < nFrameTransforms; ++i) {
         JointMechanicsFrameTransform frame_transform =
@@ -1770,7 +1762,7 @@ int JointMechanicsTool::record(const SimTK::State& s, const int frame_num)
     }
 
     // Store Frame Transformations
-    int nFrameTransforms = getProperty_JointMechanicsFrameTransformSet().size();
+    int nFrameTransforms = get_JointMechanicsFrameTransformSet().getSize();
 
     for (int i = 0; i < nFrameTransforms; ++i) {
         JointMechanicsFrameTransform frame_transform =
@@ -2610,7 +2602,7 @@ void JointMechanicsTool::writeH5File(
     }*/
 
     // Write Frame Transforms
-    int nFrameTransforms = getProperty_JointMechanicsFrameTransformSet().size();
+    int nFrameTransforms = get_JointMechanicsFrameTransformSet().getSize();
     std::string frame_transforms_group =
             _model.getName() + "/frametransformsset";
 

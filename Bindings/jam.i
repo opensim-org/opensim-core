@@ -22,7 +22,7 @@ namespace OpenSim {
 %include <OpenSim/JAM/COMAKSettingsSet.h>
 
 %include <OpenSim/JAM/JointMechanicsSettings.h>
-%template(SetCOMAKCostFunctionParameters) OpenSim::Set<OpenSim::COMAKCostFunctionParameter, OpenSim::Object>;
+%template(SetJointMechanicsFrameTransform) OpenSim::Set<OpenSim::JointMechanicsFrameTransform, OpenSim::Object>;
 %include <OpenSim/JAM/JointMechanicsSettingsSet.h>
 
 //%include <OpenSim/JAM/JAMUtilities.h>
