@@ -415,12 +415,12 @@ void Smith2018ContactMesh::initializeMesh()
         //Determine regional triangle indices
         for (int j = 0; j < 3; ++j) {
             if (_tri_center(i)(j) < 0.0) {
-                _regional_tri_ind[j * 2.0].push_back(i);
-                _regional_n_tri[j * 2.0]++;
+                _regional_tri_ind[j * 2].push_back(i);
+                _regional_n_tri[j * 2]++;
             }
             else {
-                _regional_tri_ind[j * 2.0 + 1.0].push_back(i);
-                _regional_n_tri[j * 2.0 + 1.0]++;
+                _regional_tri_ind[j * 2 + 1].push_back(i);
+                _regional_n_tri[j * 2 + 1]++;
             }
         }  
     }
