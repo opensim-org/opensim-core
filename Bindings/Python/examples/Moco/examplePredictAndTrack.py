@@ -316,7 +316,6 @@ markersRef = computeMarkersReference(optimalTrajectory)
 
 trackedSolution = solveStateTracking(optimalTrajectory.exportToStatesTable())
 
-# TODO fails when MarkersReference is passed to MocoMarkerTrackingGoal
 trackedSolution2 = solveMarkerTracking(markersRef, trackedSolution)
 
 
