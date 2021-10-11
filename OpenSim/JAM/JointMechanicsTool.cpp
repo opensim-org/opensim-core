@@ -168,7 +168,6 @@ bool JointMechanicsTool::run() {
         }
 
         //Set Model
-        log_critical("test0");
         if (!_model_exists) {
             if (get_model_file().empty()) {
                 OPENSIM_THROW(Exception, 
@@ -176,9 +175,9 @@ bool JointMechanicsTool::run() {
             }
             _model = Model(get_model_file());
         }
-        log_critical("test1");
+        
         initialize();
-        log_critical("test2");
+        
         SimTK::Visualizer* viz=NULL;
         if (get_use_visualizer()) {
             viz = &_model.updVisualizer().updSimbodyVisualizer();
@@ -386,12 +385,12 @@ void JointMechanicsTool::clearInitializedMemberData(){
 }
 
 Storage JointMechanicsTool::processInputStorage(std::string file) {
-    log_critical("test 3");
+    
     std::string saveWorkingDirectory = IO::getCwd();
     IO::chDir(_directoryOfSetupFile);
     Storage store = Storage(file);
     IO::chDir(saveWorkingDirectory);
-    log_critical("test4");
+    
     //Set Start and Stop Times
     store.getTimeColumn(_time);
      
