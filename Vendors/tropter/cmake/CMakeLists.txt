@@ -36,13 +36,13 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
             "${script}" @ONLY)
     install(SCRIPT "${script}")
 
-    elseif(TROPTER_COPY_DEPENDENCIES AND UNIX)
+elseif(TROPTER_COPY_DEPENDENCIES AND UNIX)
         get_filename_component(gcc_libdir "${pkgcfg_lib_IPOPT_gfortran}" DIRECTORY)
 
-    	file(GLOB gfortran "${gcc_libdir}/libgfortran*.so")
-    	file(GLOB quadmath "${gcc_libdir}/libquadmath*.so")
+        file(GLOB gfortran "${gcc_libdir}/libgfortran*.so")
+        file(GLOB quadmath "${gcc_libdir}/libquadmath*.so")
 
-    	install(FILES
+        install(FILES
            ${ADOLC_DIR}/lib64/libadolc.so.2.1.0 DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()
 
