@@ -121,6 +121,7 @@ class OSIMMOCO_API MocoCasADiSolver : public MocoDirectCollocationSolver {
             MocoCasADiSolver, MocoDirectCollocationSolver);
 
 public:
+    OpenSim_DECLARE_PROPERTY(scale_variables_using_bounds, bool, "TODO");
     OpenSim_DECLARE_PROPERTY(parameters_require_initsystem, bool,
             "Do some MocoParameters in the problem require invoking "
             "initSystem() to take effect properly? "
