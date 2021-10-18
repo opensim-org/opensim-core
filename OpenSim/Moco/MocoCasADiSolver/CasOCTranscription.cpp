@@ -21,7 +21,6 @@ using casadi::DM;
 using casadi::MX;
 using casadi::MXVector;
 using casadi::Slice;
-using casadi::Sparsity;
 
 namespace CasOC {
 
@@ -178,7 +177,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     // The VariablesDM for scaling have length 1 in the time dimension.
     auto initializeScalingDM = [&](VariablesDM& bounds) {
         for (auto& kv : m_scaledVars) {
-            bounds[kv.first] = DM(Sparsity::dense(kv.second.rows(), 1));
+            bounds[kv.first] = DM(casadi::Sparsity::dense(kv.second.rows(), 1));
         }
     };
 
