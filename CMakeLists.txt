@@ -28,8 +28,8 @@ include(FeatureSummary)
 # OpenSim version.
 # ----------------
 set(OPENSIM_MAJOR_VERSION 4)
-set(OPENSIM_MINOR_VERSION 3)
-set(OPENSIM_PATCH_VERSION 1)
+set(OPENSIM_MINOR_VERSION 4)
+set(OPENSIM_PATCH_VERSION 0)
 
 # Don't include the patch version if it is 0.
 set(PATCH_VERSION_STRING)
