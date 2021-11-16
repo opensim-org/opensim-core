@@ -99,14 +99,20 @@ void COMAKTool::constructProperties()
     constructProperty_COMAKCostFunctionParameterSet(
         COMAKCostFunctionParameterSet());
 
+    constructProperty_use_muscle_physiology(false);
+
     constructProperty_model_assembly_accuracy(1e-12);
+    constructProperty_geometry_folder("");
     constructProperty_use_visualizer(false);
-    constructProperty_verbose(0);
 
     constructProperty_AnalysisSet(AnalysisSet());
 }
 
 void COMAKTool::setModel(Model& model) {
+    if (!get_geometry_folder().empty()) {
+        ModelVisualizer::addDirToGeometrySearchPaths(get_geometry_folder());
+    }
+    
     _model = model;
     set_model_file(model.getDocumentFileName());
     _model_exists = true;
@@ -119,6 +125,12 @@ bool COMAKTool::run()
     auto cwd = IO::CwdChanger::changeToParentOf(getDocumentFileName());
 
     try {
+        if (get_use_muscle_physiology()) { 
+            OPENSIM_THROW(Exception, 
+                "ERROR: COMAKTool use_muscle_physiology = true "
+                "is not implemented")
+        };
+
         const Stopwatch stopwatch;
         log_critical("");
         log_critical("==========================");
@@ -166,6 +178,10 @@ SimTK::State COMAKTool::initialize()
     }
     
     //Set Model
+    if (!get_geometry_folder().empty()) {
+        ModelVisualizer::addDirToGeometrySearchPaths(get_geometry_folder());
+    }
+
     if (!_model_exists) {
         if (get_model_file().empty()) {
             OPENSIM_THROW(Exception, "No model was set in the COMAKTool.");
@@ -862,8 +878,7 @@ void COMAKTool::performCOMAK()
             target.setScaleDeltaCoordinates(
                 get_optimization_scale_delta_coord());
             target.setActivationExponent(get_activation_exponent());
-            target.setParameterNames(_optim_parameter_names);
-            target.setVerbose(get_verbose());
+            target.setParameterNames(_optim_parameter_names);            
 
             //Set Muscle Weight Factors
             SimTK::Vector msl_weight(_n_muscles);
@@ -1589,8 +1604,11 @@ void COMAKTool::extractKinematicsFromFile() {
             }
         }
         else {
-            std::cout << "Coordinate Value: " << coord.getName() << 
-                " not found in coordinates_file, assuming 0." << std::endl;
+            log_warn("Coordinate Value: {} not found in coordinates_file, assuming default value." , coord.getName());
+            for (int i = 0; i < _n_frames; ++i) {
+                _q_matrix(i, j) = coord.getDefaultValue();
+            }
+            
         }
 
         //GCVSpline q_spline;

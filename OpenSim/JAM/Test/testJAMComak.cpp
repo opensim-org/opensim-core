@@ -1,14 +1,13 @@
-#ifndef OPENSIM_FORSIM_EXE_H_
-#define OPENSIM_FORSIM_EXE_H_
-
 /* -------------------------------------------------------------------------- *
- *                                 Forsim_EXE.h                               *
+ *                        OpenSim JAM: testCOMAK.cpp                          *
  * -------------------------------------------------------------------------- *
+ * Copyright (c) 2019 Stanford University and the Authors                     *
+ *                                                                            *
  * Author(s): Colin Smith                                                     *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
- * copy of the License at http://www.apache.org/licenses/LICENSE-2.0.         *
+ * copy of the License at http://www.apache.org/licenses/LICENSE-2.0          *
  *                                                                            *
  * Unless required by applicable law or agreed to in writing, software        *
  * distributed under the License is distributed on an "AS IS" BASIS,          *
@@ -17,9 +16,24 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/OpenSim.h>
+#include <OpenSim/JAM/COMAKTool.h>
 
-namespace OpenSim {
+using namespace OpenSim;
+
+void testCOMAK();
+
+int main() {
+    try {
+        testCOMAK();
+
+    } catch (const Exception& e) {
+        e.print(std::cerr);
+        return 1;
+    }
+    std::cout << "Done" << std::endl;
+    return 0;
+}
+
+void testCOMAK() {
 
 }
-#endif // OPENSIM_FORSIM_EXE_H_

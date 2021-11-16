@@ -49,6 +49,7 @@ OpenSimAddLibrary(
              PRIVATE hdf5-static hdf5_cpp-static hdf5_hl_cpp-static
     INCLUDES ${JAM_INCLUDES} 
     SOURCES ${JAM_SOURCES}
+    TESTDIRS Test
     )
 
 #Need to let SWIG wrapping find included hdf5.h files in H5FileAdapter.h 
@@ -65,3 +66,7 @@ target_include_directories(osimJAM INTERFACE ${HDF5_INCLUDE_DIR})
 #     add_dependencies(osimJAM hdf5_hl_cpp-shared)
 
 # endif()
+
+#if(BUILD_TESTING)
+#    add_subdirectory(Test)
+#endif()

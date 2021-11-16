@@ -106,11 +106,15 @@ void COMAKInverseKinematicsTool::constructProperties()
     constructProperty_report_errors(false);
     constructProperty_report_marker_locations(false);
     constructProperty_constrained_model_file("");
+    constructProperty_geometry_folder("");
     constructProperty_use_visualizer(false);
-    constructProperty_verbose(0);
 }
 
 void COMAKInverseKinematicsTool::setModel(Model& model) {
+    if (!get_geometry_folder().empty()) {
+        ModelVisualizer::addDirToGeometrySearchPaths(get_geometry_folder());
+    }
+
     _model = model;
     set_model_file(model.getDocumentFileName());
     _model_exists = true;
@@ -176,7 +180,11 @@ bool COMAKInverseKinematicsTool::initialize()
             "Possible reason: This tool cannot make new folder with subfolder.");
     }
 
-        //Set Model
+    //Set Model
+    if (!get_geometry_folder().empty()) {
+        ModelVisualizer::addDirToGeometrySearchPaths(get_geometry_folder());
+    }
+
     if (!_model_exists) {
         if (get_model_file().empty()) {
             OPENSIM_THROW(Exception, "No model was set in the COMAKInverseKinematicsTool.");

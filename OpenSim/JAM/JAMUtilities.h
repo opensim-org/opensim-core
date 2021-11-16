@@ -28,6 +28,7 @@
 //=============================================================================
 
 
+
 //=============================================================================
 //STRING TOOLS
 //=============================================================================
@@ -39,7 +40,8 @@ bool contains_string(std::vector<std::string> s_vector, std::string s);
 bool contains_string(std::vector<std::string> s_vector, std::string s, int& index);
 int find_nearest(std::vector<double> in_vec, double value);
 std::string erase_sub_string(std::string mainStr, const std::string & toErase);
-
+std::string replace_string(std::string subject, const std::string& search,
+        const std::string& replace);
 
  //namespace
 #endif // #ifndef OPENSIM_JAM_UTILITIES_H_

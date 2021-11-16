@@ -75,22 +75,48 @@ class OSIMJAM_API JointMechanicsTool : public Object {
 public:
     OpenSim_DECLARE_PROPERTY(model_file, std::string,
         "Path to .osim file to use in analysis.")
+    
+    OpenSim_DECLARE_PROPERTY(model_assembly_accuracy, double,
+        "Model assembly accuracy used within the tool. "
+        "If greater than 0, this value will override the settings "
+        "in the .osim file."
+        "The default value is -1")
 
     OpenSim_DECLARE_PROPERTY(input_states_file, std::string,
         "Path to storage file (.sto) containing the model states vs time for "
         "the simulation to be analyzed. This can contain coordinate (values "
         "and speed) muscle states.")
 
+    OpenSim_DECLARE_PROPERTY(use_activation_dynamics, bool,
+        "Set whether activation dynamics should be used. "
+        "If false, control (i.e. excitation) = activation."
+        "The default value is true.")
+
+    OpenSim_DECLARE_PROPERTY(use_tendon_compliance, bool,
+        "Set whether a compliant or rigid tendon is used in "
+        "should be used in the contraction dynamics model. "
+        "If false, the fiber length is removed as a state variable"
+        "and simulation performance is improved."
+        "The default value is true.")
+    
     OpenSim_DECLARE_PROPERTY(use_muscle_physiology, bool,
-        "Set whether muscle force-length and force-velocity properties should "
-        "be used. If false, muscle force will be calculated using: "
-        "Force = activation * max_isometric_force(). Thus, the value should "
-        "be false if analyzing COMAK results. The default value is true.")
+        "Set whether activation dynamics, muscle force-length-velocity "
+        "and pennation properties should be used. "
+        "If false, use_activation_dynamics and use_tendon_compliance "
+        "are ignored and muscle-tendon force is calculated using: "
+        "Force = activation * max_isometric_force(). "
+        "The value should be false if "
+        "analyzing COMAK results. "
+        "The default value is true.")    
 
     OpenSim_DECLARE_PROPERTY(input_transforms_file, std::string,
         "Path to file (.sto or .csv) containing the 4 x 4 transformation "
         "matrices for each body in the ground reference frames at each time "
         "step to pose the model for analysis.")
+
+   OpenSim_DECLARE_PROPERTY(transform_assembly_threshold, double,
+       "Threshold to determine accuracy in matching the input 4x4 transfomations "
+       "listed in the input_transforms_file.")
 
     OpenSim_DECLARE_PROPERTY(input_forces_file, std::string,
         "Path to storage file (.sto) containing forces vs time for actuators "
@@ -243,6 +269,10 @@ public:
     OpenSim_DECLARE_UNNAMED_PROPERTY(AnalysisSet,"Analyses to be performed "
         "within the JointMechaicsTool.")
 
+    OpenSim_DECLARE_PROPERTY(write_states_sto_file, bool,
+        "Write .sto file containing the analyzed states. "
+        "The default value is false.")
+
     OpenSim_DECLARE_PROPERTY(write_transforms_file, bool,
         "Write file containing the transformation matrix for each body "
         "relative to output_frame and output_origin.")
@@ -250,12 +280,14 @@ public:
     OpenSim_DECLARE_PROPERTY(output_transforms_file_type, std::string,
         "File type for transforms_file options are 'csv' or 'sto'.")
 
+    OpenSim_DECLARE_PROPERTY(geometry_folder, std::string,
+        "Optional. File path to folder containing model geometries.")
+
     OpenSim_DECLARE_PROPERTY(use_visualizer, bool, "Use the SimTK visualizer "
         "to display the model posed at each time step. "
         " The default value is false.")
 
-    OpenSim_DECLARE_PROPERTY(verbose, int, "Define how detailed the output to "
-        "console should be. 0 - silent. The default value is 0.")
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -279,6 +311,10 @@ private:
     void clearInitializedMemberData();
     void assembleStatesTrajectoryFromTransformsData(SimTK::State s);
     void assembleStatesTrajectoryFromStatesData(SimTK::State s);
+    void assembleStatesTrajectoryFromActivationsData(SimTK::State s);
+    void assembleStatesTrajectoryFromForcesData(SimTK::State s);
+    void processInputFiles();
+    void processInputFileTime(std::string file);
     Storage processInputStorage(std::string file);
 
     int record(const SimTK::State& s, const int frame_num);

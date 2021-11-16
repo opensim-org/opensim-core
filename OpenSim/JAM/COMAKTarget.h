@@ -155,10 +155,6 @@ public:
         _parameter_names = parameter_names;
     }
 
-    void setVerbose(int verbose) {
-        _verbose = verbose;
-    }
-
     //=========================================================================
     // DATA
     //=========================================================================
@@ -198,8 +194,6 @@ private:
 
     Array<std::string> _primary_coords;
     Array<std::string> _secondary_coords;
-
-    int _verbose;
 
     SimTK::Vector _max_change;
     double _unit_udot_epsilon;

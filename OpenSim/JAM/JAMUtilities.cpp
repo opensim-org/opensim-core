@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <vector>
 
+
 //=============================================================================
 // String Tools
 //=============================================================================
@@ -101,6 +102,20 @@ std::string erase_sub_string(std::string mainStr, const std::string & toErase)
 
     return mainStr;
 }
+
+/*
+  http://stackoverflow.com/questions/5343190/how-do-i-replace-all-instances-of-a-string-with-another-string
+*/
+std::string replace_string(std::string subject, const std::string& search,
+        const std::string& replace) {
+    size_t pos = 0;
+    while ((pos = subject.find(search, pos)) != std::string::npos) {
+        subject.replace(pos, search.length(), replace);
+        pos += replace.length();
+    }
+    return subject;
+}
+
 
 int find_nearest(std::vector<double> in_vec, double value)
 {

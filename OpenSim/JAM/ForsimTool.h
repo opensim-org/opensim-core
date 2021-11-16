@@ -29,6 +29,7 @@
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include "OpenSim/Simulation/Model/ExternalLoads.h"
 #include "OpenSim/Common/FunctionSet.h"
+#include "OpenSim/Simulation/StatesTrajectory.h"
 
 namespace OpenSim { 
 //=============================================================================
@@ -58,6 +59,27 @@ that they are acting on.
 
 prescribed_coordinate_file: Define the prescribed coordinates in the 
 model and their values vs time.  
+
+## Muscle Modeling 
+The controls (excitation), activation, or force in the muscles can be 
+explictly defined as constants, or time varying functions. Furthermore,
+the underlying models of activation and muscle-tendon dynamics can be
+used in full complexity or simplified to improve simulation performance. 
+A constant control can be input to all muscles using the 
+constant_muscle_control property. If use_activation_dynamics is set to
+false, the constant_muscle_control also becomes a constant activation (e = a). 
+If use_tendon_compliance is false, then the tendons are set to be rigid.
+If use_muscle_physiology is false, then activation dynamics, pennation angle 
+and all force-length-velocity 
+properties are ignored, the tendon is rigid, and the force in the muscle
+is computed F = constant_muscle_control * max_isometric_force. 
+Time varying control, activation, or force can be set for individual 
+muscles in the actuator_input_file. Any muscles listed in the actuator_input_file
+are not affected by the aforementioned property settings. Remember that 
+default activation (ie initial) and minimum activation are
+not always the same in the OpenSim muscle models. If use_activation_dynamics
+is true, the intial activation will not instateously decay to the minimum
+activation.
 */
 
 class OSIMJAM_API ForsimTool : public Object {
@@ -109,19 +131,26 @@ public:
         "listed in the actuator_input_file. "
         "Set to -1 to ignore. Default is 0.01.")
 
-    OpenSim_DECLARE_PROPERTY(ignore_activation_dynamics, bool, "Set the "
-        "ignore_activation_dynamics property for all muscles not listed in "
-        "actuator_input_file. The default value is false.")
+    OpenSim_DECLARE_PROPERTY(use_activation_dynamics, bool,
+        "Set whether activation dynamics should be used. "
+        "If false, control (i.e. excitation) = activation."
+        "The default value is true.")
 
-    OpenSim_DECLARE_PROPERTY(ignore_tendon_compliance, bool, "Set the "
-        "use_tendon_compliance property for all muscles not listed in "
-        "actuator_input_file. The default value is false.")
-
-    OpenSim_DECLARE_PROPERTY(ignore_muscle_dynamics, bool, 
-        "Ignore muscle-tendon dynamics for all muscles not list in "
-        "actuator_input_file. The force in these muscles is calculated using "
-        "F = contastant_muscle_control * maxIsometricForce. "
-        "The default value is false.")
+    OpenSim_DECLARE_PROPERTY(use_tendon_compliance, bool,
+        "Set whether a compliant or rigid tendon is used in "
+        "should be used in the contraction dynamics model. "
+        "If false, the fiber length is removed as a state variable"
+        "and simulation performance is improved."
+        "The default value is true.")
+    
+    OpenSim_DECLARE_PROPERTY(use_muscle_physiology, bool,
+        "Set whether activation dynamics, muscle force-length-velocity "
+        "and pennation properties should be used. "
+        "If false, use_activation_dynamics and use_tendon_compliance "
+        "are ignored and muscle-tendon force is calculated using: "
+        "Force = activation * max_isometric_force(). "
+        "The value should be false if analyzing COMAK results. "
+        "The default value is true.")
 
     OpenSim_DECLARE_PROPERTY(equilibrate_muscles, bool, 
         "Call equilibrateMuscles() before starting the simulation. "
@@ -156,8 +185,9 @@ public:
     OpenSim_DECLARE_PROPERTY(use_visualizer, bool, "Use the SimTK visualizer "
         "to display the simulation. The default value is false.")
 
-    OpenSim_DECLARE_PROPERTY(verbose, int, "Define how detailed the output to "
-        "console should be. 0 - silent. The default value is 0.")
+    OpenSim_DECLARE_PROPERTY(geometry_folder, std::string, "Optional. "
+        "File path to folder containing model geometries.")
+
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(AnalysisSet,"Analyses to be performed "
         "throughout the forward simulation.")
@@ -177,9 +207,10 @@ private:
     void setNull();
     void constructProperties();
     void initializeCoordinates();
-    void initializeActuators(SimTK::State& state);
+    void initializeActuators();
     void applyExternalLoads();
     void initializeStartStopTimes();
+    void printResults();
     void printDebugInfo(const SimTK::State& state);
     
 //=============================================================================
@@ -203,7 +234,9 @@ private:
     TimeSeriesTable _coord_table;
 
     std::string _directoryOfSetupFile;
-//=============================================================================
+
+    StatesTrajectory _result_states;
+    //=============================================================================
 };  // END of class ForsimTool
 
 }; //namespace

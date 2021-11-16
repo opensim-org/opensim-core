@@ -466,12 +466,12 @@ objectiveFunc(const SimTK::Vector &parameters, const bool new_parameters,
         + non_muscle_cost * _non_muscle_actuator_weight
         + contact_cost * _contact_energy_weight;
 
-    if (_verbose > 9) {
+    /*
         std::cout << "Total Cost: " << performance << "\t";
         std::cout << "Muscle Cost: " << msl_cost << "\t";
         std::cout << "Non Muscle Actuator Cost: " << non_muscle_cost << "\t";
         std::cout << "Contact Cost: " << contact_cost << std::endl;
-    }
+    */
 
     return 0;
 }

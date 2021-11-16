@@ -87,14 +87,15 @@ void JointMechanicsTool::constructProperties()
     defaultListNone.append("none");
 
     constructProperty_model_file("");
-    constructProperty_input_states_file("");
-    constructProperty_use_muscle_physiology("");
+    constructProperty_model_assembly_accuracy(-1);
+    constructProperty_input_states_file("");    
     constructProperty_input_transforms_file("");
+    constructProperty_transform_assembly_threshold(1e-5);
     constructProperty_input_forces_file("");
     constructProperty_input_activations_file("");
     constructProperty_input_comak_convergence_file("");
     constructProperty_input_inverse_dynamics_file("");
-
+    
     constructProperty_results_directory(".");
     constructProperty_results_file_basename("");
     constructProperty_start_time(-1);
@@ -104,6 +105,10 @@ void JointMechanicsTool::constructProperties()
     constructProperty_lowpass_filter_frequency(-1);
     constructProperty_print_processed_kinematics(false);
 
+    constructProperty_use_activation_dynamics(true);
+    constructProperty_use_tendon_compliance(true);
+    constructProperty_use_muscle_physiology(true);
+    
     constructProperty_coordinates(defaultListAll);
     constructProperty_coordinate_outputs(defaultListAll);
     constructProperty_contacts(defaultListAll);
@@ -127,16 +132,22 @@ void JointMechanicsTool::constructProperties()
     constructProperty_JointMechanicsFrameTransformSet(
         JointMechanicsFrameTransformSet());
 
+    constructProperty_write_states_sto_file(false);
     constructProperty_write_transforms_file(false);
     constructProperty_output_transforms_file_type("sto");
 
     constructProperty_AnalysisSet(AnalysisSet());
+    constructProperty_geometry_folder("");
     constructProperty_use_visualizer(false);
-    constructProperty_verbose(0);
+
 }
 
 void JointMechanicsTool::setModel(Model& aModel)
 {
+    if (!get_geometry_folder().empty()) {
+        ModelVisualizer::addDirToGeometrySearchPaths(get_geometry_folder());
+    }
+    
     _model = aModel;
     set_model_file(aModel.getDocumentFileName());
     _model_exists = true;
@@ -168,12 +179,17 @@ bool JointMechanicsTool::run() {
         }
 
         //Set Model
+        if (!get_geometry_folder().empty()) {
+            ModelVisualizer::addDirToGeometrySearchPaths(get_geometry_folder());
+        }
+        
         if (!_model_exists) {
             if (get_model_file().empty()) {
                 OPENSIM_THROW(Exception, 
                     "No model was set in the JointMechanicsTool.");
             }
             _model = Model(get_model_file());
+            _model_exists = true;
         }
         
         initialize();
@@ -187,13 +203,16 @@ bool JointMechanicsTool::run() {
         //loop over each frame
         for (int i = 0; i < _n_frames; ++i) {
             //Set State
-            SimTK::State state = _states[i];
+            SimTK::State& state = _states[i];
 
             log_info("Time: {}", state.getTime()); 
             state.invalidateAllCacheAtOrAbove(SimTK::Stage::Time);
+
+            _model.realizeReport(state);
+            
             //Record Values
             record(state,i);
-
+            
             //Perform analyses
             if (i == 0) {
                 _model.updAnalysisSet().begin(state);
@@ -201,11 +220,12 @@ bool JointMechanicsTool::run() {
             else {
                 _model.updAnalysisSet().step(state, i);
             }
-
+            
             //Visualize
             if (get_use_visualizer()) {
                 viz->drawFrameNow(state);
             }
+            
         }
         printResults(get_results_file_basename(), get_results_directory());
 
@@ -234,16 +254,27 @@ bool JointMechanicsTool::run() {
 
 void JointMechanicsTool::initialize() {
     clearInitializedMemberData();
-
-    //States
-    if (get_h5_states_data()) {
-
-        /*if (_model.getAnalysisSet.contains("joint_mechanics_states_analysis")) {
-            auto& states_rep = _model.getAnalysisSet().get("joint_mechanics_states_analysis");
-
-            //states_rep.set
-        }*/
-        
+    
+    //_model.finalizeConnections();
+    _model.setUseVisualizer(false); // Prevent extra visualizer windows
+    _model.initSystem();
+    
+    // Initialize Muscle Properties
+    for (Muscle& msl : _model.updComponentList<Muscle>()) {
+        if (msl.getConcreteClassName() == "Millard2012EquilibriumMuscle") {
+            msl.set_ignore_activation_dynamics(!get_use_activation_dynamics());
+            msl.set_ignore_tendon_compliance(!get_use_tendon_compliance());
+        } 
+        else {
+            log_info("{} is not a "
+                "Millard2012EquilibriumMuscle, ignore_activation_dynamics "
+                "and ignore_tendon_compliance will have no effect.",
+            msl.getName());
+        }
+    }
+    
+    // Add Reporters
+    if (get_h5_states_data() || get_write_states_sto_file()) {    
         StatesReporter* states_rep = new StatesReporter();
         states_rep->setName("joint_mechanics_states_analysis");
         states_rep->setStepInterval(1);
@@ -251,7 +282,11 @@ void JointMechanicsTool::initialize() {
         _model.addAnalysis(states_rep);
     }
 
-    //Add Analysis set
+    if (get_model_assembly_accuracy() > 0) {
+        _model.set_assembly_accuracy(get_model_assembly_accuracy());
+    }
+
+    // Add Analysis set
     AnalysisSet aSet = get_AnalysisSet();
     int size = aSet.getSize();
 
@@ -265,27 +300,39 @@ void JointMechanicsTool::initialize() {
     if (get_use_visualizer()) {
         _model.setUseVisualizer(true);
     }
+
+    // Initialize Model
     SimTK::State state = _model.initSystem();
 
     for (auto& cnt : _model.updComponentList<Smith2018ArticularContactForce>()) {
         cnt.setModelingOption(state, "flip_meshes", 1);
     }
 
-    // Read input files, trim, filter data
-    if (!get_input_transforms_file().empty() &&
-            !get_input_states_file().empty()) {
-        OPENSIM_THROW(Exception, "Either the input_states_file or the "
-                                 "input_transforms_file must be empty.")
-    } 
-    else if (!get_input_transforms_file().empty()) {
-        assembleStatesTrajectoryFromTransformsData(state);
+    for (Muscle& msl : _model.updComponentList<Muscle>()) {
+        if (!get_use_muscle_physiology()) {
+            msl.overrideActuation(state, true);
+        }
     }
-    else if (!get_input_states_file().empty()) {
+
+    // Parse input files to construct final states for analysis
+    processInputFiles();
+
+    // Initialize with default state
+    for (int i = 0; i < _n_frames; ++i) {
+        _states.push_back(state);    
+    }
+
+    if (!get_input_states_file().empty()) {
         assembleStatesTrajectoryFromStatesData(state);
     } 
-    else {
-        OPENSIM_THROW(Exception, "Either the input_states_file or the "
-                                 "input_transforms_file must be set.")
+    if (!get_input_transforms_file().empty()) {
+        assembleStatesTrajectoryFromTransformsData(state);
+    }
+    if (!get_input_activations_file().empty()) {
+        assembleStatesTrajectoryFromActivationsData(state);
+    }
+    if (!get_input_forces_file().empty()) {
+        assembleStatesTrajectoryFromForcesData(state);
     }
 
     // Setup storage for outputs
@@ -310,7 +357,7 @@ void JointMechanicsTool::initialize() {
         for (const Frame& frame : _model.updComponentList<Frame>()) {
             std::string name = frame.getName();
 
-            //use non-c index convention in labels
+            //use non-c (start at 1) index convention in labels
             for (int m = 1; m < 5; ++m) {
                 for (int n = 1; n < 5; ++n) {
                     std::string col_label =
@@ -321,8 +368,6 @@ void JointMechanicsTool::initialize() {
         }
         _model_frame_transforms.setColumnLabels(column_labels);
     }
-
-
 }
 
 void JointMechanicsTool::clearInitializedMemberData(){
@@ -354,8 +399,7 @@ void JointMechanicsTool::clearInitializedMemberData(){
     _attach_geo_names.clear();
     _attach_geo_frames.clear();
     _attach_geo_meshes.clear();
-    _attach_geo_vertex_locations.clear();  
-    
+    _attach_geo_vertex_locations.clear();      
 
     _ligament_names.clear();
     _ligament_paths.clear();
@@ -384,28 +428,108 @@ void JointMechanicsTool::clearInitializedMemberData(){
     _mesh_transforms.clear();
 }
 
+void JointMechanicsTool::processInputFiles() {
+    // Process Input Files
+    if (!get_input_transforms_file().empty() &&
+            !get_input_states_file().empty()) {
+
+        log_warn("WARNING: Any coordinate values and speeds in the "
+                 "input_states_file will be ignored. These will "
+                 "be set based on the input_transforms_file.");
+    }
+    if (get_input_transforms_file().empty() &&
+            get_input_states_file().empty()) {
+
+        log_warn("WARNING: No input_states_file or input_transforms_file. "
+                 "Model coordinates will be set to default values.");
+    }
+    if (get_input_states_file().empty() &&
+            get_input_activations_file().empty() &&
+            get_input_forces_file().empty()) {
+
+        log_warn("WARNING: No input_states_file, input_activations_file "
+                 "or input_forces_file. "
+                 "Muscle states will be set to default values.");
+    }
+    if (get_input_states_file().empty() &&
+            get_input_transforms_file().empty() &&
+            get_input_activations_file().empty() &&
+            get_input_forces_file().empty()) {
+
+        log_warn("WARNING: No input_XX_files containing Coordinate "
+                 "or Muscle states were set. "
+                 "All model states set to default values.");       
+    }
+
+    // Establish start and stop times
+    if (!get_input_states_file().empty()) {
+        processInputFileTime(get_input_states_file());
+    }
+    else if (!get_input_transforms_file().empty()) {
+        processInputFileTime(get_input_transforms_file());
+    }
+    else if (!get_input_activations_file().empty()) {
+        processInputFileTime(get_input_activations_file());
+    }
+    else if (!get_input_forces_file().empty()) {
+        processInputFileTime(get_input_forces_file());
+    }
+    else if (!get_input_inverse_dynamics_file().empty()) {
+        processInputFileTime(get_input_inverse_dynamics_file());
+    } 
+    else if (!get_input_comak_convergence_file().empty()) {
+        processInputFileTime(get_input_inverse_dynamics_file());
+    }
+    else {
+        log_error("WARNING: JointMechanicsTool is not THAT magical!"
+                 "No input_XX_files were set ");
+        OPENSIM_THROW(Exception);
+    }
+
+}
+
+void JointMechanicsTool::processInputFileTime(std::string file) {
+    std::string saveWorkingDirectory = IO::getCwd();
+    IO::chDir(_directoryOfSetupFile);
+    Storage store = Storage(file);
+    IO::chDir(saveWorkingDirectory);
+
+    // Set Start and Stop Times
+    store.getTimeColumn(_time);
+
+    if (get_start_time() == -1) { set_start_time(_time.get(0)); }
+    if (get_stop_time() == -1) { set_stop_time(_time.getLast()); }
+
+    // Cut to start and stop times
+    store.crop(get_start_time(), get_stop_time());
+
+    if (get_normalize_to_cycle() == true) {
+        double norm_dt = (get_stop_time() - get_start_time()) / 100;
+        store.resampleLinear(norm_dt);
+    } else if (get_resample_step_size() != -1 &&
+               get_normalize_to_cycle() == false) {
+        store.resampleLinear(get_resample_step_size());
+    }
+
+    // Update the time
+    store.getTimeColumn(_time);
+
+    // Set number of Frames
+    _n_frames = _time.size();
+}
+
 Storage JointMechanicsTool::processInputStorage(std::string file) {
     
     std::string saveWorkingDirectory = IO::getCwd();
     IO::chDir(_directoryOfSetupFile);
     Storage store = Storage(file);
-    IO::chDir(saveWorkingDirectory);
-    
-    //Set Start and Stop Times
-    store.getTimeColumn(_time);
-     
-    if (get_start_time() == -1) {
-        set_start_time(_time.get(0));
-    }
-    if (get_stop_time() == -1) {
-        set_stop_time(_time.getLast());
-    }
-    
+    IO::chDir(saveWorkingDirectory);    
+
     if (store.isInDegrees()) {
         _model.getSimbodyEngine().convertDegreesToRadians(store);
     }
 
-    else if (get_lowpass_filter_frequency() != -1) {
+    if (get_lowpass_filter_frequency() != -1) {
         store.pad(store.getSize() / 2);
         store.lowpassIIR(get_lowpass_filter_frequency());
     }
@@ -420,21 +544,135 @@ Storage JointMechanicsTool::processInputStorage(std::string file) {
     else if (get_resample_step_size() != -1 && get_normalize_to_cycle() == false) {
         store.resampleLinear(get_resample_step_size());
     }
-    
-    //Update the time 
-    store.getTimeColumn(_time);
-
-    //Set number of Frames
-    _n_frames = _time.size();
 
     return store;
 }
 
+void JointMechanicsTool::assembleStatesTrajectoryFromStatesData(
+        SimTK::State s) {
+
+    Storage store = processInputStorage(get_input_states_file());
+
+    if (get_print_processed_kinematics()) {
+        store.print(get_results_directory() + "/" +
+                    get_results_file_basename() + "_processed_kinematics.sto");
+    }
+
+    TimeSeriesTable table = store.exportToTable();
+
+    // The labels of the columns in the storage file.
+    const auto& tableLabels = table.getColumnLabels();
+    int numDependentColumns = (int)table.getNumColumns();
+
+    // Error checking.
+    // ===============
+    // Angular quantities must be expressed in radians.
+    // TODO we could also manually convert the necessary coords/speeds to
+    // radians.
+    OPENSIM_THROW_IF(TableUtilities::isInDegrees(table), Exception,
+            "JointMechanicsTool input_states_file cannot be in degrees.");
+
+    // If column labels aren't unique, it's unclear which column the user
+    // wanted to use for the related state variable.
+    TableUtilities::checkNonUniqueLabels(tableLabels);
+
+    // Check if states are missing from the Storage.
+    // ---------------------------------------------
+    const auto& modelStateNames = _model.getStateVariableNames();
+    // Working memory for state. Initialize so that missing columns end up as
+    // NaN.
+    SimTK::Vector statesValues(modelStateNames.getSize(), SimTK::NaN);
+
+    // Initialize so that missing columns end up as NaN.
+    s.updY().setToNaN();
+    SimTK::State default_state = _model.getWorkingState();
+    SimTK::Vector default_state_values =
+            _model.getStateVariableValues(default_state);
+
+    std::vector<std::string> missingColumnNames;
+    // Also, assemble the indices of the states that we will actually set in the
+    // trajectory.
+    std::map<int, int> statesToFillUp;
+
+    for (int is = 0; is < modelStateNames.getSize(); ++is) {
+        // getStateIndex() will check for pre-4.0 column names.
+        const int stateIndex = TableUtilities::findStateLabelIndex(
+                tableLabels, modelStateNames[is]);
+        // const int stateIndex = findStateLabelIndexInternal(
+        //       tableLabels.data(), tableLabels.data() + tableLabels.size(),
+        //        modelStateNames[is]);
+        if (stateIndex == -1) {
+            missingColumnNames.push_back(modelStateNames[is]);
+            statesValues[is] = default_state_values[is];
+        } else {
+            statesToFillUp[stateIndex] = is;
+        }
+    }
+
+    for (auto mc : missingColumnNames) {
+        log_warn("JointMechanicsTool input_states_file missing state: {}", mc);
+    }
+    // Fill up trajectory from states in file
+
+    // Reserve the memory we'll need to fit all the states.
+    //_states.m_states.reserve(table.getNumRows());
+
+    SimTK::Matrix msl_activations(
+            (int)table.getNumRows(), _model.getMuscles().getSize(), -1);
+
+    // Loop through all rows of the Storage
+    StatesTrajectory states_from_file;
+
+    for (int itime = 0; itime < (int)table.getNumRows(); ++itime) {
+        const auto& row = table.getRowAtIndex(itime);
+
+        // Set the correct time in the state.
+        s.setTime(table.getIndependentColumn()[itime]);
+
+        // Fill up current State with the data for the current time.
+        for (const auto& kv : statesToFillUp) {
+            // 'first': index for Storage; 'second': index for Model.
+            statesValues[kv.second] = row[kv.first];
+        }
+        _model.setStateVariableValues(s, statesValues);
+
+        // Make a copy of the edited state and put it in the trajectory.
+        _model.realizeVelocity(s);
+        states_from_file.append(s);
+
+        // Save muscle activation values in case use_muscle_physiology is false
+
+        int j = 0;
+        for (auto& msl : _model.updComponentList<Muscle>()) {
+            msl_activations(itime, j) = msl.getActivation(s);
+            j++;
+        }
+    }    
+
+    // Overide forces in states if settings dictate
+    int i = 0;
+    for (SimTK::State final_state : states_from_file) {
+        if (!get_use_muscle_physiology()) {
+            int j = 0;
+            for (auto& msl : _model.updComponentList<Muscle>()) {
+                double force =
+                        msl_activations(i, j) * msl.getMaxIsometricForce();
+                msl.setOverrideActuation(final_state, force);
+                ++j;
+            }
+        }
+
+        _states[i] = final_state;
+        ++i;
+    }
+}
+
 void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
     SimTK::State s) {
+
     //Make a copy of the model so we can make changes
-    Model working_model = *_model.clone();
-    working_model.set_assembly_accuracy(1e-8);
+    Model working_model = *_model.clone();    
+    //working_model.set_assembly_accuracy(1e-16);
     working_model.setUseVisualizer(false);
     working_model.initSystem();
     Storage transforms_storage = processInputStorage(get_input_transforms_file());
@@ -529,9 +767,9 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
                 ground_hidden_joint->getAbsolutePathString());
         }
     }
-    /*if (get_use_visualizer()) {
+    if (get_use_visualizer()) {
         working_model.setUseVisualizer(true);
-    }*/
+    }
 
     SimTK::State state = working_model.initSystem();
 
@@ -633,84 +871,118 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
 
         for (int j = 0; j < 6; ++j) {
             std::string name = hidden_joint.get_coordinates(j).getName();
-            std::cout <<  hidden_joint.get_coordinates(j).getName() << std::endl;
+            //std::cout <<  hidden_joint.get_coordinates(j).getName() << std::endl;
             CoordinateReference* coordRef = 
                 new CoordinateReference(name, hidden_coord_splines[i].get(j));
             coordRef->setWeight(1);
             coordinateReferences.push_back(*coordRef);
         }
     }
-
+    working_model.print("./inputs/working_model.osim");
     // create the solver given the input data
     InverseKinematicsSolver ikSolver(working_model, markersReference,
-        coordinateReferences, 1e8);
+        coordinateReferences,1);
 
-    ikSolver.setAccuracy(1e-12);
-    
-
+    if (get_model_assembly_accuracy() > 0) { 
+        ikSolver.setAccuracy(get_model_assembly_accuracy());
+    }
+        
     state.updTime() = _time[0];
     ikSolver.assemble(state);
     
-    /*SimTK::Visualizer* viz=NULL;
+    SimTK::Visualizer* viz=NULL;
     if (get_use_visualizer()) {
         viz = &working_model.updVisualizer().updSimbodyVisualizer();
         viz->setShowSimTime(true);
-    }*/
-    double transform_assembly_threshold = 1e-6;
+    }
+    double transform_assembly_threshold = get_transform_assembly_threshold();
 
     for (int t = 0; t < _n_frames; ++t) {
         state.updTime() = _time[t];
-        double max_error = transform_assembly_threshold;
-        bool first_loop = true;
         
-        while (max_error >= transform_assembly_threshold) {
-            for (int i = 0; i < num_hidden_bodies; ++i) {
-                CustomJoint& hidden_joint =
-                    working_model.updComponent<CustomJoint>(hidden_joint_paths[i]);
+        bool first_loop = true;
 
-                for (int j = 0; j < 6; ++j) {
-                    double value = hidden_coord_splines[i].get(j).calcValue(SimTK::Vector(1, time[t]));
-                    hidden_joint.get_coordinates(j).setValue(state, value, false);
+         for (int w = 0; w < 3; ++w) {
+            double constraint_weight = 1 * pow(10,w*2);
+            
+            ikSolver.setConstraintWeight(constraint_weight);
+            
+            double max_error = transform_assembly_threshold;
+
+            int num_loop = 0;
+            while (max_error >= transform_assembly_threshold) {
+                num_loop++;
+                if (num_loop > 1000) { 
+                    log_warn("Assembly failed to acheive desired accuracy.");
+                    break;
                 }
-            }
-            //working_model.assemble(state);
-            //if (first_loop) {
-                ikSolver.assemble(state);
-                //first_loop = false;
-            //}
-            ikSolver.track(state);
 
-            max_error = 0.0;
+                for (int i = 0; i < num_hidden_bodies; ++i) {
+                    CustomJoint& hidden_joint =
+                            working_model.updComponent<CustomJoint>(
+                                    hidden_joint_paths[i]);
 
-            for (int i = 0; i < num_hidden_bodies; ++i) {
-                CustomJoint& hidden_joint =
-                    working_model.updComponent<CustomJoint>(hidden_joint_paths[i]);
+                    for (int j = 0; j < 6; ++j) {
+                        double value = hidden_coord_splines[i].get(j).calcValue(
+                                SimTK::Vector(1, time[t]));
+                        hidden_joint.get_coordinates(j).setValue(
+                                state, value, false);
+                    }
+                }                
+                if (first_loop) {
+                    ikSolver.assemble(state);
+                    first_loop = false;
+                    
+                }
+                ikSolver.track(state);
 
-                for (int j = 0; j < 6; ++j) {
-                    double desired_value = hidden_coord_splines[i].get(j).calcValue(SimTK::Vector(1, time[t]));
-                    double assembled_value = hidden_joint.get_coordinates(j).getValue(state);
-                    double value_error = abs(desired_value - assembled_value);
-                    if (value_error > max_error) {
-                        max_error = value_error;
-                        
+                max_error = 0.0;
+                int bad_i = 0;
+                int bad_j = 0;
+                for (int i = 0; i < num_hidden_bodies; ++i) {
+                    CustomJoint& hidden_joint =
+                            working_model.updComponent<CustomJoint>(
+                                    hidden_joint_paths[i]);
+
+                    for (int j = 0; j < 6; ++j) {
+                        double desired_value =
+                                hidden_coord_splines[i].get(j).calcValue(
+                                        SimTK::Vector(1, time[t]));
+                        double assembled_value =
+                                hidden_joint.get_coordinates(j).getValue(state);
+                        double value_error =
+                                abs(desired_value - assembled_value);
+                        if (value_error > max_error) {
+                            max_error = value_error;
+                            bad_i = i;
+                            bad_j = j;
+                        }
                     }
                 }
+                std::cout << "max_error: " << max_error << std::endl;
+                std::cout << "bad_coord: "
+                          << working_model.updComponent<CustomJoint>(
+                             hidden_joint_paths[bad_i]).get_coordinates(bad_j).getName()
+                          << std::endl
+                          << std::endl;
+                if (get_use_visualizer()) { viz->drawFrameNow(state); }
+                /* for (auto& coord :
+                        working_model.getComponentList<Coordinate>()) {
+                    std::cout << coord.getName() << " " << coord.getValue(state)
+                << std::endl;
+                }*/
             }
-            /*if (get_use_visualizer()) {
-                viz->drawFrameNow(state);
-            }
-            for (auto& coord : working_model.getComponentList<Coordinate>() ){
-                std::cout << coord.getName() << " " << coord.getValue(state) << std::endl;
-            }*/
-        }
+    }
 
         //save pose
         working_model.realizeReport(state);
     }
     TimeSeriesTable coordinate_states_table = ikReporter->getTable();
+    
 
     for (int t = 0; t < _n_frames; ++t) {
-        s.setTime(_time[t]);
+        SimTK::State& final_state = _states[t];
+        final_state.setTime(_time[t]);
         for (auto& coord : _model.updComponentList<Coordinate>()) {
             std::string path = coord.getAbsolutePathString();
 
@@ -722,237 +994,107 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
 
             double value = coordinate_states_table.getMatrix()(t, value_index);
             double speed = coordinate_states_table.getMatrix()(t, speed_index);
-            coord.setValue(s, value, false);
+            coord.setValue(final_state, value, false);
         }
-        _model.assemble(s);
-        _states.push_back(s);
+        _model.assemble(final_state);
+        //_states[t] = final_state; 
+        //_states.push_back(s);
     }
 }
 
-void JointMechanicsTool::assembleStatesTrajectoryFromStatesData(
-    SimTK::State s) {
+void JointMechanicsTool::assembleStatesTrajectoryFromActivationsData(
+        SimTK::State s) {
 
-    Storage store = processInputStorage(get_input_states_file());
-    
-    if (get_print_processed_kinematics()) {
-        store.print(get_results_directory() + "/" + 
-            get_results_file_basename() + "_processed_kinematics.sto");
-    }
+    Storage store = processInputStorage(get_input_activations_file());
 
-    TimeSeriesTable table = store.exportToTable();
+    SimTK::Matrix msl_activations(_n_frames, _model.getMuscles().getSize(), -1);
 
-    // The labels of the columns in the storage file.
-    const auto& tableLabels = table.getColumnLabels();
-    int numDependentColumns = (int)table.getNumColumns();
+    int j = 0;
+    for (Muscle& msl : _model.updComponentList<Muscle>()) {
 
-    // Error checking.
-    // ===============
-    // Angular quantities must be expressed in radians.
-    // TODO we could also manually convert the necessary coords/speeds to
-    // radians.
-    OPENSIM_THROW_IF(TableUtilities::isInDegrees(table), Exception, 
-        "JointMechanicsTool input_states_file cannot be in degrees.");
+        std::string msl_path = msl.getAbsolutePathString();
+        Array<int> column_index = store.getColumnIndicesForIdentifier(msl_path);
 
-    // If column labels aren't unique, it's unclear which column the user
-    // wanted to use for the related state variable.
-    TableUtilities::checkNonUniqueLabels(tableLabels);
+        if (column_index.size() > 0) {
+            double* Tdata = NULL;
 
-    // Check if states are missing from the Storage.
-    // ---------------------------------------------
-    const auto& modelStateNames = _model.getStateVariableNames();
-    // Working memory for state. Initialize so that missing columns end up as
-    // NaN.
-    SimTK::Vector statesValues(modelStateNames.getSize(), SimTK::NaN);
+            store.getDataColumn(msl_path, Tdata);
 
-    // Initialize so that missing columns end up as NaN.
-    s.updY().setToNaN();
-    SimTK::State default_state = _model.getWorkingState();
-    SimTK::Vector default_state_values = 
-        _model.getStateVariableValues(default_state);
-
-    std::vector<std::string> missingColumnNames;
-    // Also, assemble the indices of the states that we will actually set in the
-    // trajectory.
-    std::map<int, int> statesToFillUp;
-
-    for (int is = 0; is < modelStateNames.getSize(); ++is) {
-        // getStateIndex() will check for pre-4.0 column names.
-        const int stateIndex = TableUtilities::findStateLabelIndex(
-                tableLabels, modelStateNames[is]);
-        //const int stateIndex = findStateLabelIndexInternal(
-        //       tableLabels.data(), tableLabels.data() + tableLabels.size(),
-        //        modelStateNames[is]);
-        if (stateIndex == -1) {
-            missingColumnNames.push_back(modelStateNames[is]);
-            statesValues[is] = default_state_values[is];
-        } else {
-            statesToFillUp[stateIndex] = is;
+            for (int t = 0; t < store.getSize(); ++t) {
+                msl_activations(t, j) = Tdata[t];
+            }
         }
-    }
 
-    for (auto mc : missingColumnNames) {
-        log_warn("JointMechanicsTool input_states_file missing state: {}", mc);
-    }
-    // Fill up trajectory from states in file
-
-    // Reserve the memory we'll need to fit all the states.
-    //_states.m_states.reserve(table.getNumRows());
-
-
-
-    SimTK::Matrix msl_activations
-        ((int)table.getNumRows(), _model.getMuscles().getSize(),-1);
-
-    // Loop through all rows of the Storage
-    StatesTrajectory states_from_file;
-
-    for (int itime = 0; itime < (int)table.getNumRows(); ++itime) {
-        const auto& row = table.getRowAtIndex(itime);
-
-        // Set the correct time in the state.
-        s.setTime(table.getIndependentColumn()[itime]);
-
-        // Fill up current State with the data for the current time.
-        for (const auto& kv : statesToFillUp) {
-            // 'first': index for Storage; 'second': index for Model.
-            statesValues[kv.second] = row[kv.first];
-        }
-        _model.setStateVariableValues(s, statesValues);
-        /*if (assemble) {
-            localModel.assemble(state);
+        /* else {
+            log_warn("Muscle: {} was not listed in activations file.",
+                    msl.getAbsolutePathString());
         }*/
 
-        // Make a copy of the edited state and put it in the trajectory.
-        _model.realizeVelocity(s);
-        states_from_file.append(s);
-
-        // Save muscle activation values in case use_muscle_physiology is false
-        //_model.realizeVelocity(s);
-        int j=0;
-        for (auto& msl : _model.updComponentList<Muscle>()) {
-            //UGLY way to get around when no muscle states are input and fiber length is zero
-            //try {
-                msl_activations(itime, j) = msl.getActivation(s);
-            //}
-            /*catch (Exception) {
-                _model.equilibrateMuscles(s);
-                msl_activations(itime, j) = msl.getActivation(s);
-            }*/
-            j++;
-        }
+        j++;
     }
 
-    std::vector<std::string> activation_paths;
-    std::vector<SimTK::Vector> activation_data;
-    
-    std::vector<std::string> force_paths;
-    std::vector<SimTK::Vector> force_data;
+    int i = 0;
+    for (SimTK::State& final_state : _states) {
+        j = 0;
+        for (auto& msl : _model.updComponentList<Muscle>()) {
 
-    // Read activations file
-    if (!get_input_activations_file().empty()) {
-        Storage store = processInputStorage(get_input_activations_file());
-        //Storage store = Storage(get_input_states_file());
-        int j = 0;
-        for (Muscle& msl : _model.updComponentList<Muscle>()) {
+            if (!(msl_activations(i, j) == -1)) {
+                msl.setActivation(final_state, msl_activations(i, j));
 
-            std::string msl_path = msl.getAbsolutePathString();
-            Array<int> column_index = 
-                store.getColumnIndicesForIdentifier(msl_path);
-
-            if (column_index.size() > 0) {
-                double* Tdata=NULL;
-                
-                //std::cout << msl_path << std::endl;
-                
-                store.getDataColumn(msl_path, Tdata);
-
-                for (int t = 0; t < store.getSize(); ++t) {
-                    msl_activations(t, j) = Tdata[t];
+                if (!get_use_muscle_physiology()) {
+                    double force = msl_activations(i, j) *
+                                    msl.getMaxIsometricForce();
+                    msl.setOverrideActuation(final_state, force);
                 }
             }
-            else {
-                log_warn("Muscle: {} was not listed in activations file.", msl.getAbsolutePathString());
-            }
-
-            j++;
+            ++j;
         }
-    }
-
-
-    // Read forces file
-    if (!get_input_forces_file().empty()) {
-        Storage store = processInputStorage(get_input_forces_file());
-        
-        for (ScalarActuator& actuator : _model.updComponentList<ScalarActuator>()) {
-
-            std::string actuator_path = actuator.getAbsolutePathString();
-            Array<int> column_index = 
-                store.getColumnIndicesForIdentifier(actuator_path);
-
-            if (column_index.size() > 0) {
-                force_paths.push_back(actuator_path);
-                double* data=NULL;
-                
-                store.getDataColumn(actuator_path, data);
-                SimTK::Vector data_vec(store.getSize(), data);
-                force_data.push_back(data_vec);
-            }
-
-        }
-    }
-
-
-
-    // Overide forces in states if settings dictate
-    int i = 0;
-    for (SimTK::State final_state : states_from_file) {
-        if (!get_input_activations_file().empty()) {
-            int j = 0;
-            for (auto& msl : _model.updComponentList<Muscle>()) {
-                msl.setActivation(final_state, msl_activations(i, j));
-                ++j;
-                //msl.set(final_state, msl_activations(i, j));
-
-                /*msl.overrideActuation(final_state, true);
-
-                double force =
-                    msl_activations(i,j) * msl.getMaxIsometricForce();
-                msl.setOverrideActuation(final_state, force);*/
-            }
-        }
-
-        if (!get_use_muscle_physiology()) {
-            int j = 0;
-            for (auto& msl : _model.updComponentList<Muscle>()) {
-                msl.overrideActuation(final_state, true);
-
-                double force =
-                    msl_activations(i,j) * msl.getMaxIsometricForce();
-                msl.setOverrideActuation(final_state, force);
-                ++j;
-            }
-        }
-
-        if (!get_input_forces_file().empty()) {
-            int nForces = 0;
-            for (const auto& path : force_paths) {
-                ScalarActuator& actuator = 
-                    _model.updComponent<ScalarActuator>(path);
-
-                actuator.overrideActuation(final_state, true);
-                actuator.setOverrideActuation(final_state, force_data[nForces](i));
-                nForces++;
-            }
-        }
-
-        final_state.invalidateAllCacheAtOrAbove(SimTK::Stage::Time);
-        //_states.append(final_state);
-        _states.push_back(final_state);
         ++i;
     }
 }
 
-void JointMechanicsTool::setupContactStorage(SimTK::State& state) {
+void JointMechanicsTool::assembleStatesTrajectoryFromForcesData(
+        SimTK::State s) {
+
+    std::vector<std::string> force_paths;
+    std::vector<SimTK::Vector> force_data;
+
+    Storage store = processInputStorage(get_input_forces_file());
+
+    for (ScalarActuator& actuator :
+            _model.updComponentList<ScalarActuator>()) {
+
+        std::string actuator_path = actuator.getAbsolutePathString();
+        Array<int> column_index =
+                store.getColumnIndicesForIdentifier(actuator_path);
+
+        if (column_index.size() > 0) {
+            force_paths.push_back(actuator_path);
+            double* data = NULL;
+
+            store.getDataColumn(actuator_path, data);
+            SimTK::Vector data_vec(store.getSize(), data);
+            force_data.push_back(data_vec);
+        }
+    }
+
+    int i = 0;
+    for (SimTK::State& final_state : _states) {
+        int nForces = 0;
+        
+        for (const auto& path : force_paths) {
+            ScalarActuator& actuator =
+                    _model.updComponent<ScalarActuator>(path);
+
+            actuator.overrideActuation(final_state, true);
+            actuator.setOverrideActuation(final_state, force_data[nForces](i));
+            nForces++;
+        }
+        ++i;
+    }
+}
+
+void JointMechanicsTool::setupContactStorage(SimTK::State& s) {
     if (_model.countNumComponents<Smith2018ArticularContactForce>() == 0) {
         return;
     }
@@ -1048,7 +1190,7 @@ void JointMechanicsTool::setupContactStorage(SimTK::State& state) {
     }*/
 
     //Realize Report so the sizes of output vectors are known
-    _model.realizeReport(state);
+    _model.realizeReport(_states[0]);
     
     //Contact Outputs
     const Smith2018ArticularContactForce& frc0 = _model.getComponent
@@ -1161,7 +1303,7 @@ void JointMechanicsTool::setupContactStorage(SimTK::State& state) {
             const Output<SimTK::Vector>& vector_output = 
                 dynamic_cast<const Output<SimTK::Vector>&>(abs_output);
 
-            int output_vector_size = vector_output.getValue(state).size();
+            int output_vector_size = vector_output.getValue(_states[0]).size();
             
             def_output_vector.push_back(
                 SimTK::Matrix(_n_frames, output_vector_size,-1));
@@ -1178,7 +1320,7 @@ void JointMechanicsTool::setupContactStorage(SimTK::State& state) {
             const Output<SimTK::Vector_<SimTK::Vec3>>& vector_output = 
                 dynamic_cast<const Output<SimTK::Vector_<SimTK::Vec3>>&>(abs_output);
 
-            int output_vector_size = vector_output.getValue(state).size();
+            int output_vector_size = vector_output.getValue(_states[0]).size();
             
             def_output_vector_vec3.push_back(
                 SimTK::Matrix_<SimTK::Vec3>(_n_frames, output_vector_size,SimTK::Vec3(-1.5)));
@@ -1289,6 +1431,70 @@ void JointMechanicsTool::setupAttachedGeometriesStorage() {
     }
 }
 
+std::string JointMechanicsTool::findMeshFile(const std::string& file) {
+    // File is a .vtp, .stl, or .obj; attempt to find it.
+    //const Component* rootModel = nullptr;
+
+    // Current interface to Visualizer calls generateDecorations on every
+    // frame. On first time through, load file and create DecorativeMeshFile
+    // and cache it so we don't load files from disk during live rendering.
+    // const std::string& file = get_mesh_file();
+    if (file.empty() || file.compare(PropertyStr::getDefaultStr()) == 0) {
+        log_error("No file property defined in AttachedGeometry.");
+        OPENSIM_THROW(Exception, "");
+        // return;  // Return immediately if no file has been specified.
+    }
+
+    bool isAbsolutePath;
+    std::string directory, fileName, extension;
+    SimTK::Pathname::deconstructPathname(
+            file, isAbsolutePath, directory, fileName, extension);
+    const std::string lowerExtension = SimTK::String::toLower(extension);
+    if (lowerExtension != ".vtp" && lowerExtension != ".obj" &&
+            lowerExtension != ".stl") {
+        log_error("ModelVisualizer ignoring '{}'; only .vtp, .stl, and "
+                  ".obj files currently supported.",
+                file);
+        OPENSIM_THROW(Exception, "");
+        // return;
+    }
+
+    SimTK::Array_<std::string> attempts;
+//    const Model& model = dynamic_cast<const Model&>(*rootModel);
+    bool foundIt = ModelVisualizer::findGeometryFile(
+            _model, file, isAbsolutePath, attempts);
+
+    if (!foundIt) {
+
+        log_error("Couldn't find file '{}'.", file);
+
+        log_error("The following locations were tried:");
+        for (unsigned i = 0; i < attempts.size(); ++i) log_error(attempts[i]);
+
+        if (!isAbsolutePath &&
+                !SimTK::Pathname::environmentVariableExists("OPENSIM_HOME"))
+            log_debug("Set environment variable OPENSIM_HOME to search "
+                      "$OPENSIM_HOME/Geometry.");
+        OPENSIM_THROW(Exception, "");
+        // return;
+    }
+
+    try {
+        std::ifstream objFile;
+        objFile.open(attempts.back().c_str());
+        // objFile closes when destructed
+        // if the file can be opened but had bad contents e.g. binary vtp
+        // it will be handled downstream
+    } catch (const std::exception& e) {
+        log_warn("JointMechanics couldn't open {} because: {}", attempts.back(),
+                e.what());
+        OPENSIM_THROW(Exception, "");
+        // return;
+    }
+
+    return attempts.back();
+}
+/*
 std::string JointMechanicsTool::findMeshFile(const std::string& mesh_file) {
     
     std::string model_file = 
@@ -1318,7 +1524,7 @@ std::string JointMechanicsTool::findMeshFile(const std::string& mesh_file) {
 
     return mesh_full_path;
 }
-
+*/
 void JointMechanicsTool::setupLigamentStorage() {
     if (_model.countNumComponents<Blankevoort1991Ligament>() == 0) return;
 
@@ -1442,7 +1648,8 @@ void JointMechanicsTool::setupMuscleStorage() {
     //Muscle Outputs
     const Muscle& msl0 = _model.getMuscles().get(0);
     
-    if (!get_use_muscle_physiology() && get_muscle_outputs(0) == "all") {
+    if (!get_use_muscle_physiology()            
+            && get_muscle_outputs(0) == "all") {
         _muscle_output_double_names.push_back("activation");
         _muscle_output_double_names.push_back("actuation");
         _muscle_output_double_names.push_back("power");
@@ -1516,6 +1723,8 @@ void JointMechanicsTool::setupCoordinateStorage() {
 
 void JointMechanicsTool::setupFrameTransformStorage() {
     int nFrameTransforms = get_JointMechanicsFrameTransformSet().getSize();
+    _frame_transform_coordinates.resize(nFrameTransforms);
+    _frame_transform_matrix.resize(nFrameTransforms);
 
     for (int i = 0; i < nFrameTransforms; ++i) {
         JointMechanicsFrameTransform frame_transform =
@@ -1532,8 +1741,8 @@ void JointMechanicsTool::setupFrameTransformStorage() {
             column_labels.push_back("tz");
 
             coordinates_table.setColumnLabels(column_labels);
-            _frame_transform_coordinates[i] = coordinates_table;
-
+           _frame_transform_coordinates[i] = coordinates_table;
+            //_frame_transform_coordinates.push_back(coordinates_table);
         }
         if (frame_transform.get_output_transformation_matrix()) {
             TimeSeriesTable T_matrix_table;
@@ -1547,8 +1756,9 @@ void JointMechanicsTool::setupFrameTransformStorage() {
                 }
             }
 
+           // T_matrix_table.setColumnLabels(column_labels);
             T_matrix_table.setColumnLabels(column_labels);
-            _frame_transform_coordinates[i] = T_matrix_table;
+            _frame_transform_matrix[i] = T_matrix_table;
         
         }
     }
@@ -1556,7 +1766,7 @@ void JointMechanicsTool::setupFrameTransformStorage() {
 
 int JointMechanicsTool::record(const SimTK::State& s, const int frame_num)
 {
-    _model.realizeReport(s);
+    
 
     //Store mesh vertex locations and transforms
     std::string frame_name = get_output_orientation_frame();
@@ -1706,10 +1916,15 @@ int JointMechanicsTool::record(const SimTK::State& s, const int frame_num)
             //Output Data
             int j = 0;
             for (std::string output_name : _muscle_output_double_names) {
+                
                 if (output_name == "length") {
                     _muscle_output_double_values[nMsl].set(frame_num, j,
                         msl.get_GeometryPath().getOutputValue<double>
                         (s, "length"));
+                }
+                else if (output_name == "tension") {
+                    _muscle_output_double_values[nMsl].set(frame_num, j,
+                            msl.getOutputValue<double>(s, "actuation"));
                 }
                 else {
                     _muscle_output_double_values[nMsl].set(
@@ -1771,7 +1986,7 @@ int JointMechanicsTool::record(const SimTK::State& s, const int frame_num)
             _model.getComponent<Frame>(frame_transform.get_parent_frame());
 
         const Frame& child =
-            _model.getComponent<Frame>(frame_transform.get_parent_frame());
+            _model.getComponent<Frame>(frame_transform.get_child_frame());
 
         SimTK::Transform T_matrix = parent.findTransformBetween(s, child);
 
@@ -1797,27 +2012,28 @@ int JointMechanicsTool::record(const SimTK::State& s, const int frame_num)
                     rotation_axes.push_back(
                             SimTK::CoordinateAxis::XCoordinateAxis());
                 }
-                if (frame_transform.get_rotation_sequence(j) == "y") {
+                else if (frame_transform.get_rotation_sequence(j) == "y") {
                     rotation_axes.push_back(
                             SimTK::CoordinateAxis::YCoordinateAxis());
                 }
-                if (frame_transform.get_rotation_sequence(j) == "z") {
+                else if (frame_transform.get_rotation_sequence(j) == "z") {
                     rotation_axes.push_back(
                             SimTK::CoordinateAxis::ZCoordinateAxis());
                 }
                 else {
-                    OPENSIM_THROW(Exception, "JointMechanicsFrameTransform rotation_seqeunce must only contain 'x','y', or 'z'")
+                    OPENSIM_THROW(Exception, 
+                        "JointMechanicsFrameTransform rotation_sequence must only contain 'x','y', or 'z'")
                 }
             }
 
             SimTK::Vec3 rotation_angles = 
                 R_matrix.convertThreeAxesRotationToThreeAngles(rotation_type,
-                    rotation_axes[0],rotation_axes[1],rotation_axes[2]);
+                    rotation_axes[0], rotation_axes[1], rotation_axes[2]);
 
             SimTK::Vec3 translations = T_matrix.p();
-
+            
             for (int j = 0; j < 3; ++j) { 
-                row(j) = rotation_angles(j)*180/SimTK::Pi;
+                row(j) = rotation_angles(j) * 180 / SimTK::Pi;
                 row(j + 3) = translations(j);
             }
 
@@ -1940,6 +2156,17 @@ int JointMechanicsTool::printResults(const std::string &aBaseName,const std::str
     //Write h5 file
     if (get_write_h5_file()) {
         writeH5File(aBaseName, aDir);
+    }
+
+    //Write States .sto
+    if (get_write_states_sto_file()) {
+        StatesReporter& states_analysis = dynamic_cast<StatesReporter&>(
+                _model.updAnalysisSet().get("joint_mechanics_states_analysis"));
+        const TimeSeriesTable& states_table =
+                states_analysis.getStatesStorage().exportToTable();
+        std::string sto_file = get_results_directory() + "/" +
+                               get_results_file_basename() + "_states.sto";
+        STOFileAdapter().write(states_table, sto_file);
     }
 
     //Write Transforms file
@@ -2237,9 +2464,11 @@ void JointMechanicsTool::writeH5File(
     h5.open(h5_file);
     h5.writeTimeDataSet(_time);
 
-    h5.createGroup(_model.getName());
+    //h5.createGroup(_model.getName());
+    h5.createGroup("model");
 
-    std::string force_group = _model.getName() + "/forceset";
+    //std::string force_group = _model.getName() + "/forceset";
+    std::string force_group = "model/forceset";
     h5.createGroup(force_group);
 
     //Write COMAK Convergence
@@ -2305,7 +2534,8 @@ void JointMechanicsTool::writeH5File(
         const TimeSeriesTable& states_table = states_analysis.getStatesStorage().exportToTable();
 
         //h5.writeDataSet(states_table, _model.getName() + "/states");
-        h5.writeDataSet2(states_table, _model.getName() + "/states");
+        //h5.writeDataSet2(states_table, _model.getName() + "/states");
+        h5.writeDataSet2(states_table, "model/states");
         //h5.writeStatesDataSet(states_table);
     }
 
@@ -2313,7 +2543,8 @@ void JointMechanicsTool::writeH5File(
     if (get_h5_kinematics_data() &&
         !(get_coordinate_outputs(0) == "none")) {
 
-        std::string coordinate_group = _model.getName() + "/coordinateset";
+        //std::string coordinate_group = _model.getName() + "/coordinateset";
+        std::string coordinate_group = "model/coordinateset";
         h5.createGroup(coordinate_group);
 
         int i = 0;
@@ -2602,13 +2833,13 @@ void JointMechanicsTool::writeH5File(
 
     // Write Frame Transforms
     int nFrameTransforms = get_JointMechanicsFrameTransformSet().getSize();
-    std::string frame_transforms_group =
-            _model.getName() + "/frametransformsset";
+    std::string frame_transforms_group = 
+        "model/frametransformsset";
+        //        _model.getName() + "/frametransformsset";
 
     for (int i = 0; i < nFrameTransforms; ++i) {
 
-        if (i == 0) {
-            
+        if (i == 0) {            
             h5.createGroup(frame_transforms_group);
         }
 
@@ -2620,7 +2851,7 @@ void JointMechanicsTool::writeH5File(
                     frame_transforms_group + "/" + frame_transform.getName();
             h5.createGroup(group);
             std::string data_set_path = group + "/coordinates";
-            h5.writeDataSet2(_frame_transform_coordinates[i], group);
+            h5.writeDataSet(_frame_transform_coordinates[i], data_set_path);
         }
 
         if (frame_transform.get_output_transformation_matrix()) {
@@ -2628,7 +2859,7 @@ void JointMechanicsTool::writeH5File(
                     frame_transforms_group + "/" + frame_transform.getName();
             h5.createGroup(group);
             std::string data_set_path = group + "/transformation_matix";
-            h5.writeDataSet2(_frame_transform_matrix[i], group);
+            h5.writeDataSet(_frame_transform_matrix[i], data_set_path);
         }
     }
     h5.close();

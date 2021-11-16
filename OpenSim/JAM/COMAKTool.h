@@ -276,12 +276,22 @@ public:
         "iterations are not converging."
         "The default value is 1e-10.")
 
+    OpenSim_DECLARE_PROPERTY(use_muscle_physiology, bool,
+        "PLACEHOLDER PROPERTY. ONLY false IS IMPLEMENTED."
+        "Set whether activation dynamics, muscle force-length-velocity "
+        "and pennation properties should be used. "
+        "If false, use_activation_dynamics and use_tendon_compliance "
+        "are ignored and muscle-tendon force is calculated using: "
+        "Force = activation * max_isometric_force(). "            
+        "The default value is false.")
+
+    OpenSim_DECLARE_PROPERTY(geometry_folder, std::string,
+        "Optional. "
+        "File path to folder containing model geometries.")
+
     OpenSim_DECLARE_PROPERTY(use_visualizer, bool, 
         "Use SimTK visualizer to display simulations in progress. "
         "The default value is false.")
-
-    OpenSim_DECLARE_PROPERTY(verbose, int, 
-        "Level of debug information reported (0: low, 1: medium, 2: high)")
 
     OpenSim_DECLARE_UNNAMED_PROPERTY(AnalysisSet,"Analyses to be performed"
         "throughout the COMAK simulation.")

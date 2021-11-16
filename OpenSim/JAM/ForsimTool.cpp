@@ -15,9 +15,9 @@
  * -------------------------------------------------------------------------- */
 
 
-//=============================================================================
-// INCLUDES
-//=============================================================================
+ //=============================================================================
+ // INCLUDES
+ //=============================================================================
 #include <OpenSim/Simulation/Model/Model.h>
 #include "ForsimTool.h"
 #include "JAMUtilities.h"
@@ -32,7 +32,7 @@
 #include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Simulation/Control/PrescribedController.h>
 #include <OpenSim/Common/Stopwatch.h>
-
+#include <OpenSim/Common/Reporter.h>
 using namespace OpenSim;
 
 ForsimTool::ForsimTool() : Object()
@@ -69,21 +69,25 @@ void ForsimTool::constructProperties()
     constructProperty_integrator_accuracy(1e-6);
     constructProperty_internal_step_limit(-1);
     constructProperty_constant_muscle_control(0.02);
-    constructProperty_ignore_activation_dynamics(false);
-    constructProperty_ignore_tendon_compliance(false);
-    constructProperty_ignore_muscle_dynamics(false);
+    constructProperty_use_activation_dynamics(true);
+    constructProperty_use_tendon_compliance(true);
+    constructProperty_use_muscle_physiology(true);
     constructProperty_equilibrate_muscles(true);
     constructProperty_unconstrained_coordinates();
     constructProperty_actuator_input_file("");
     constructProperty_external_loads_file("");
     constructProperty_prescribed_coordinates_file("");
+    constructProperty_geometry_folder("");
     constructProperty_use_visualizer(false);
-    constructProperty_verbose(0);
     constructProperty_AnalysisSet(AnalysisSet());
 }
 
 void ForsimTool::setModel(Model& aModel)
 {
+    if (!get_geometry_folder().empty()) {
+        ModelVisualizer::addDirToGeometrySearchPaths(get_geometry_folder());
+    }
+    
     _model = aModel;
     set_model_file(aModel.getDocumentFileName());
     _model_exists = true;
@@ -92,25 +96,19 @@ void ForsimTool::setModel(Model& aModel)
 bool ForsimTool::run()
 {
     bool completed = false;
-    
+
     auto cwd = IO::CwdChanger::changeToParentOf(getDocumentFileName());
 
     try {
+        // Clear Previous Results
+        _result_states.clear();
+
         const Stopwatch stopwatch;
         log_critical("");
         log_critical("==========");
         log_critical("ForsimTool");
         log_critical("==========");
         log_critical("");
-
-
-        //Set Model
-        if (!_model_exists) {
-            if (get_model_file().empty()) {
-                OPENSIM_THROW(Exception, "No model was set in the ForsimTool.");
-            }
-            _model = Model(get_model_file());
-        }
 
         //Make results directory
         int makeDir_out = IO::makeDir(get_results_directory());
@@ -120,11 +118,27 @@ bool ForsimTool::run()
                 "Possible reason: This tool cannot make new folder with subfolder.");
         }
 
+        //Set Model
+        if (!get_geometry_folder().empty()) {
+            ModelVisualizer::addDirToGeometrySearchPaths(get_geometry_folder());
+        }
 
+        if (!_model_exists) {
+            if (get_model_file().empty()) {
+                OPENSIM_THROW(Exception, "No model was set in the ForsimTool.");
+            }
+            _model = Model(get_model_file());
+        }
 
-        SimTK::State state = _model.initSystem();
+        _model.initSystem();        
+        
+        initializeActuators();
 
+        initializeCoordinates();
 
+        initializeStartStopTimes();
+
+        applyExternalLoads();
 
         //Add Analysis set
         AnalysisSet aSet = get_AnalysisSet();
@@ -135,33 +149,46 @@ bool ForsimTool::run()
             _model.addAnalysis(analysis);
         }
 
-        initializeActuators(state);
-
-        initializeCoordinates();
-
-        applyExternalLoads();
-
         if (get_use_visualizer()) {
             _model.setUseVisualizer(true);
         }
 
-        state = _model.initSystem();
+        SimTK::State state = _model.initSystem();
+        
+        for (const auto& mesh : _model.updComponentList<Smith2018ContactMesh>()) {
+            mesh.printMeshDebugInfo();
+        }        
 
-        if (get_verbose() > 2) {
-            for (const auto& mesh : _model.updComponentList<Smith2018ContactMesh>()) {
-                mesh.printMeshDebugInfo();
+        // Initialize Muscle States
+        for (Muscle& msl : _model.updComponentList<Muscle>()) {
+            std::string msl_path = msl.getAbsolutePathString();
+
+            if (contains_string(_prescribed_frc_actuator_paths, msl_path)) {                
+                msl.overrideActuation(state, true);
+                msl.setOverrideActuation(state, 0.0);
+
+                continue;
+            }
+            if (contains_string(_prescribed_act_actuator_paths, msl_path)) {
+                continue;
+            }
+            if (contains_string(_prescribed_control_actuator_paths, msl_path)) {
+                continue;
+            }
+
+            if (get_constant_muscle_control() > -1) {
+                if (!get_use_muscle_physiology ()) {
+                    msl.overrideActuation(state, true);
+                    /*msl.setOverrideActuation(
+                            state, get_constant_muscle_control() *
+                                           msl.getMaxIsometricForce()); */
+                }
             }
         }
 
-        initializeStartStopTimes();
+        if (get_equilibrate_muscles()) { _model.equilibrateMuscles(state); }
 
-        //Allocate Results Storage
-        StatesTrajectory result_states;
         AnalysisSet& analysisSet = _model.updAnalysisSet();
-
-        if (get_equilibrate_muscles()) {
-            _model.equilibrateMuscles(state);
-        }
 
         //Setup Visualizer
         if (get_use_visualizer()) {
@@ -187,29 +214,26 @@ bool ForsimTool::run()
         SimTK::TimeStepper timestepper(_model.getSystem(), integrator);
         timestepper.initialize(state);
     
-        //Integrate Forward in Time
+       // Record Initial State
+        log_debug("Initial State:");
+        _model.realizeReport(state);
+        printDebugInfo(state);
+        analysisSet.begin(state);
+        
+        _result_states.append(state);
+
+        // Integrate Forward in Time
         double dt = get_report_time_step();
         int nSteps = (int)lround((get_stop_time() - get_start_time()) / dt);
 
-        /*log_info("=====================================================");
-        log_info("| ForsimTool: Performing Forward Dynamic Simulation |");
-        log_info("=====================================================");*/
         log_info("start time: {}", get_start_time());
         log_info("stop time: {}", get_stop_time());
 
-
         for (int i = 0; i <= nSteps; ++i) {
             
-            if (i == 0) {
-                log_debug("Initial State:");
-            }
-            printDebugInfo(state);
-
             double t = get_start_time() + (i+1) * dt;
-            log_info("time: {}",t);
-
+            log_info("time: {}", t);
             
-
             //Set Prescribed Muscle Forces
             if(_prescribed_frc_actuator_paths.size() > 0){
                 for (int j = 0; j < (int)_prescribed_frc_actuator_paths.size();++j) {
@@ -223,43 +247,26 @@ bool ForsimTool::run()
 
             timestepper.stepTo(t);
 
-            ///state = timestepper.updIntegrator().updAdvancedState();
             state = timestepper.getState();
             _model.realizeReport(state);
-            //Record parameters
-            if (i == 0) {
+            printDebugInfo(state);
+
+            // Record Result
+            /* if (i == 0) {
                 analysisSet.begin(state);
             }
-            else {
+            else {*/
                 analysisSet.step(state, i);
-            }
-
-            result_states.append(state);
+            //}
+            _result_states.append(state);            
         }
 
-        //Print Results
-        TimeSeriesTable states_table = result_states.exportToTable(_model);
-        states_table.addTableMetaData("header", std::string("States"));
-        states_table.addTableMetaData("nRows", 
-            std::to_string(states_table.getNumRows()));
-        states_table.addTableMetaData("nColumns", 
-            std::to_string(states_table.getNumColumns()+1));
-        states_table.addTableMetaData("inDegrees", std::string("no"));
-
-        STOFileAdapter sto;
-        std::string basefile = get_results_directory() + "/" +
-            get_results_file_basename();
-
-        sto.write(states_table, basefile + "_states.sto");
-    
-        _model.updAnalysisSet().printResults(
-            get_results_file_basename(), get_results_directory());
+        printResults();
 
         const long long elapsed = stopwatch.getElapsedTimeInNs();
 
         log_info("\nForsim Tool complete.");
-        log_info("Finished in {}", stopwatch.formatNs(elapsed));
-        log_info("Printed results to: {}", get_results_directory());
+        log_info("Finished in {}", stopwatch.formatNs(elapsed));        
         log_info("");
 
         completed = true;
@@ -330,7 +337,7 @@ void ForsimTool::initializeStartStopTimes() {
     }
 }
 
-void ForsimTool::initializeActuators(SimTK::State& state) {
+void ForsimTool::initializeActuators() {
     PrescribedController* control = new PrescribedController();
 
     if (get_actuator_input_file() != ""){
@@ -364,9 +371,7 @@ void ForsimTool::initializeActuators(SimTK::State& state) {
 
                     control->addActuator(actuator);
 
-                    control->prescribeControlForActuator(actuator.getName(), control_function);
-
-                    log_info("Control Prescribed: {}", actuator_path);
+                    control->prescribeControlForActuator(actuator.getName(), control_function);                    
                 }
                 catch (ComponentNotFoundOnSpecifiedPath) {
                     OPENSIM_THROW(Exception,
@@ -419,7 +424,6 @@ void ForsimTool::initializeActuators(SimTK::State& state) {
 
                 try {
                     ScalarActuator& actuator = _model.updComponent<ScalarActuator>(actuator_path);
-                    actuator.overrideActuation(state, true);
                     _prescribed_frc_actuator_paths.push_back(actuator_path);
                     SimTK::Vector values = _actuator_table.getDependentColumn(labels[i]);
                     SimmSpline* frc_function = new SimmSpline(nDataPt, &time[0], &values[0], actuator_path + "_frc");
@@ -444,6 +448,7 @@ void ForsimTool::initializeActuators(SimTK::State& state) {
             for (std::string& name : _prescribed_frc_actuator_paths) {
                 log_info("{}", name);
             }
+            log_info("");
         }
 
         if (_prescribed_act_actuator_paths.size() > 0) {
@@ -451,6 +456,7 @@ void ForsimTool::initializeActuators(SimTK::State& state) {
             for (std::string& name : _prescribed_act_actuator_paths) {
                 log_info("{}", name);
             }
+            log_info("");
         }
 
         if (_prescribed_control_actuator_paths.size() > 0) {
@@ -458,63 +464,127 @@ void ForsimTool::initializeActuators(SimTK::State& state) {
             for (std::string& name : _prescribed_control_actuator_paths) {
                 log_info("{}", name);
             }
+            log_info("");
         }
     }
-    
-    _model.initSystem();
 
-    //Setup Constant Muscle Control
+    // Setup Results Reporters
+    const auto act_reporterExists =
+            _model.findComponent<TableReporter>("activations");
+
+    TableReporter* report_activations = nullptr;
+    if (act_reporterExists == nullptr) {
+        
+        report_activations = new TableReporter();
+        report_activations->setName("activations");
+
+    } else {
+        report_activations = &_model.updComponent<TableReporter>("activations");
+        report_activations->clearTable();
+        report_activations->clearConnections();
+    }
+
+    int num_activation_msl = 0;
+
+    const auto frc_reporterExists =
+        _model.findComponent<TableReporter>("forces");
+
+    TableReporter* report_forces = nullptr;
+    if (frc_reporterExists == nullptr) {
+
+        report_forces = new TableReporter();
+        report_forces->setName("forces");
+
+    } else {
+        report_forces = &_model.updComponent<TableReporter>("forces");
+        report_forces->clearTable();
+        report_forces->clearConnections();
+    }
+
+    int num_force_msl = 0;
+
+    //Setup Constant Muscle Control    
+    log_info("use_activation_dynamics: {}", get_use_activation_dynamics());
+    log_info("use_tendon_compliance: {}", get_use_tendon_compliance());
+    log_info("use_muscle_physiology : {}", get_use_muscle_physiology ());
+    log_info("");
+
     if (get_constant_muscle_control() > -1) {
-        log_info("Constant Muscle Control: {}",get_constant_muscle_control());
+        log_info("Constant Muscle Control: {}", get_constant_muscle_control());
+    }
 
-        for (Muscle& msl : _model.updComponentList<Muscle>()) {
-            std::string msl_path = msl.getAbsolutePathString();
+    for (Muscle& msl : _model.updComponentList<Muscle>()) {
+        std::string msl_path = msl.getAbsolutePathString();
 
-            if (contains_string(_prescribed_frc_actuator_paths, msl_path)) {
-                continue;
-            }
-            if (contains_string(_prescribed_act_actuator_paths, msl_path)) {
-                continue;
-            }
-            if (contains_string(_prescribed_control_actuator_paths, msl_path)) {
-                continue;
+        if (contains_string(_prescribed_frc_actuator_paths, msl_path)) {
+            report_forces->addToReport(msl.getOutput("actuation"));
+            num_force_msl++;
+            continue;
+        }
+        if (contains_string(_prescribed_act_actuator_paths, msl_path)) {
+            report_activations->addToReport(msl.getOutput("activation"));
+            num_activation_msl++;
+            continue;
+        }
+        if (contains_string(_prescribed_control_actuator_paths, msl_path)) {
+            continue;
+        }
+
+        if (msl.getConcreteClassName() == "Millard2012EquilibriumMuscle") {
+            msl.set_ignore_activation_dynamics(
+                !get_use_activation_dynamics());
+
+            if (!get_use_activation_dynamics() && get_use_muscle_physiology()) {
+                num_activation_msl++;
+                report_activations->addToReport(msl.getOutput("activation"));
             }
 
-            if (msl.getConcreteClassName() == "Millard2012EquilibriumMuscle") {
-                msl.set_ignore_activation_dynamics(
-                    get_ignore_activation_dynamics());
+            if (!get_use_muscle_physiology ()) {
+                num_force_msl++;
+                report_forces->addToReport(msl.getOutput("actuation"));
+            }
 
-                msl.set_ignore_tendon_compliance(
-                    get_ignore_tendon_compliance());
-            }
-            else {
-                log_info("{} is not a "
-                    "Millard2012EquilibriumMuscle, ignore_activation_dynamics "
-                    "and ignore_tendon_compliance will have no effect.",
-                    msl.getName());
-            }
+            msl.set_ignore_tendon_compliance(
+                !get_use_tendon_compliance());
+        }
+        else {
+            log_info("{} is not a "
+                "Millard2012EquilibriumMuscle, ignore_activation_dynamics "
+                "and ignore_tendon_compliance will have no effect.",
+                msl.getName());
+        }
             
-            if (get_ignore_muscle_dynamics()) {
-                msl.overrideActuation(state, true);
-                msl.setOverrideActuation(state, 
-                    get_constant_muscle_control() * msl.getMaxIsometricForce());
-            }
-            else {
+        if (get_constant_muscle_control() > -1) {
+            if (get_use_muscle_physiology ()) {
                 _prescribed_control_actuator_paths.push_back(msl_path);
 
                 Constant* control_function =
-                    new Constant(get_constant_muscle_control());
+                        new Constant(get_constant_muscle_control());
+
                 control_function->setName(msl_path + "_frc");
 
                 control->addActuator(msl);
+                control->prescribeControlForActuator(
+                        msl.getName(), control_function);
+            } 
 
-                control->prescribeControlForActuator(msl.getName(), control_function);
-            }
             log_info("{}", msl_path);
         }
     }
+    log_info("");
+
     _model.addComponent(control);
-    state = _model.initSystem();
+
+    if (num_activation_msl > 0) {     
+        _model.addComponent(report_activations);
+    } else {
+        delete report_activations;
+    }
+    if (num_force_msl > 0) {
+        _model.addComponent(report_forces);
+    } else {
+        delete report_forces;
+    }
 }
 
 void ForsimTool::initializeCoordinates() {
@@ -537,6 +607,7 @@ void ForsimTool::initializeCoordinates() {
                 "Did you use absolute path?")
         }
     }
+    log_info("");
 
     //Load prescribed coordinates file
     STOFileAdapter coord_file;
@@ -591,6 +662,7 @@ void ForsimTool::initializeCoordinates() {
 
             log_info(labels[i]);
         }
+        log_info("");
     }
 }
 
@@ -599,18 +671,23 @@ void ForsimTool::applyExternalLoads()
     const std::string& aExternalLoadsFileName = get_external_loads_file();
 
     if (aExternalLoadsFileName == "" || aExternalLoadsFileName == "Unassigned") {
-        std::cout << "No external loads will be applied (external loads file not specified)." << std::endl;
+        log_info(
+            "No external loads will be applied (external_loads_file not specified).");                
         return;
     }
 
     // This is required so that the references to other files inside ExternalLoads file are interpreted 
     // as relative paths
-    std::string savedCwd = IO::getCwd();
-    IO::chDir(IO::getParentDirectory(aExternalLoadsFileName));
+    //std::string savedCwd = IO::getCwd();
+    //IO::chDir(IO::getParentDirectory(aExternalLoadsFileName));
+
     // Create external forces
     ExternalLoads* externalLoads = nullptr;
     try {
-        externalLoads = new ExternalLoads(aExternalLoadsFileName, true);
+
+        //externalLoads = new ExternalLoads(IO::GetFileNameFromURI( aExternalLoadsFileName), true);
+        externalLoads = new ExternalLoads(
+                aExternalLoadsFileName, true);
         _model.addModelComponent(externalLoads);
     }
     catch (const Exception &ex) {
@@ -619,20 +696,84 @@ void ForsimTool::applyExternalLoads()
         log_error( "Error: failed to construct ExternalLoads from file {}"
             ". Please make sure the file exists and that it contains an ExternalLoads"
             "object or create a fresh one.", aExternalLoadsFileName);
-        if (getDocument()) IO::chDir(savedCwd);
+        //if (getDocument()) IO::chDir(savedCwd);
         throw(ex);
     }
 
     // copy over created external loads to the external loads owned by the tool
     _external_loads = *externalLoads;
 
-    IO::chDir(savedCwd);
+   // IO::chDir(savedCwd);
     return;
+}
+
+void ForsimTool::printResults() {
+    STOFileAdapter sto;
+    std::string basefile =
+            get_results_directory() + "/" + get_results_file_basename();
+
+    // States
+    TimeSeriesTable states_table = _result_states.exportToTable(_model);
+    states_table.addTableMetaData("header", std::string("States"));
+    states_table.addTableMetaData(
+            "nRows", std::to_string(states_table.getNumRows()));
+    states_table.addTableMetaData(
+            "nColumns", std::to_string(states_table.getNumColumns() + 1));
+    states_table.addTableMetaData("inDegrees", std::string("no"));
+    sto.write(states_table, basefile + "_states.sto");
+
+    // Activations
+    if (_model.hasComponent<TableReporter>("activations")) {
+        TimeSeriesTable activations_table =
+            _model.getComponent<TableReporter>("activations").getTable();
+    
+        std::vector<std::string> activation_labels =
+                activations_table.getColumnLabels();
+        for (std::string& label : activation_labels) {
+            label = replace_string(label, "|activation", "");
+        }
+        activations_table.setColumnLabels(activation_labels);
+
+        activations_table.addTableMetaData("header", std::string("Forsim Activations"));
+        activations_table.addTableMetaData(
+                "nRows", std::to_string(activations_table.getNumRows()));
+        activations_table.addTableMetaData(
+                "nColumns", std::to_string(activations_table.getNumColumns() + 1));
+        activations_table.addTableMetaData("inDegrees", std::string("no"));
+    
+        sto.write(activations_table, basefile + "_activations.sto");
+    }
+
+    // Forces
+    if (_model.hasComponent<TableReporter>("forces")) {
+        TimeSeriesTable forces_table = 
+            _model.getComponent<TableReporter>("forces").getTable();
+    
+        std::vector<std::string> frc_labels = forces_table.getColumnLabels();
+        for (std::string& label : frc_labels) {
+            label = replace_string(label, "|actuation", "");
+        }
+        forces_table.setColumnLabels(frc_labels);
+
+        forces_table.addTableMetaData("header", std::string("Forsim Forces"));
+        forces_table.addTableMetaData(
+                "nRows", std::to_string(forces_table.getNumRows()));
+        forces_table.addTableMetaData(
+                "nColumns", std::to_string(forces_table.getNumColumns() + 1));
+        forces_table.addTableMetaData("inDegrees", std::string("no"));
+    
+        sto.write(forces_table, basefile + "_forces.sto");
+    }
+
+    _model.updAnalysisSet().printResults(
+            get_results_file_basename(), get_results_directory());
+
+    log_info("Printed results to: {}", get_results_directory());
 }
 
 void ForsimTool::printDebugInfo(const SimTK::State& state) {
     
-    _model.realizeReport(state);
+    //_model.realizeReport(state);
 
     //Unconstrained Coordinates
     log_debug("{:<30} {:<20} {:<20}",
@@ -647,13 +788,16 @@ void ForsimTool::printDebugInfo(const SimTK::State& state) {
     log_debug("");
 
     //Muscle
-    log_debug("{:<20} {:<20} {:<20} {:<20}",
-        "Muscle", "Force", "Activation", "Control");
+    log_debug("{:<20} {:<20} {:<20} {:<20} {:<20} {:<20} {:<20}", 
+        "Muscle", "Control", "Activation", "Fiber-Length",
+        "Force", "Active-frc-AT", "Passive-frc-AT");
 
     for (const Muscle& msl : _model.updComponentList<Muscle>()) {
-        log_debug("{:<20} {:<20} {:<20} {:<20}",
-            msl.getName(), msl.getActuation(state),
-            msl.getActivation(state), msl.getControl(state));
+        log_debug("{:<20} {:<20} {:<20} {:<20} {:<20} {:<20} {:<20}", 
+            msl.getName(), msl.getControl(state),
+            msl.getActivation(state), msl.getFiberLength(state),
+             msl.getActuation(state), msl.getActiveFiberForceAlongTendon(state),
+            msl.getPassiveFiberForceAlongTendon(state));
     }
     log_debug("");
 
@@ -677,12 +821,12 @@ void ForsimTool::printDebugInfo(const SimTK::State& state) {
     log_debug("");
 
     // Contact
-    log_debug("{:<20} {:<20} {:<20}","Contact","Force","COP");
+    log_debug("{:<20} {:<30} {:<30}","Contact","Force","COP");
 
     for (Smith2018ArticularContactForce& cnt : 
         _model.updComponentList<Smith2018ArticularContactForce>()) {
             
-        log_debug("{:<20} {:<20} {:<20}", cnt.getName(),
+        log_debug("{:<20} {:<30} {:<30}", cnt.getName(),
             cnt.getOutputValue<SimTK::Vec3>(state,
                 "casting_total_contact_force"),
             cnt.getOutputValue<SimTK::Vec3>(state,

@@ -176,19 +176,17 @@ public:
         "Markers and coordinates to be considered (tasks) and their weightings. "
         "The sum of weighted-squared task errors composes the cost function."); 
 
+    OpenSim_DECLARE_PROPERTY(geometry_folder, std::string,
+            "Optional. "
+            "File path to folder containing model geometries.")
+
     OpenSim_DECLARE_PROPERTY(use_visualizer, bool,
         "Use SimTK visualizer to display the model during "
         "secondary_constraint_sim and inverse kinematics."
         "The default value is false.")
 
-    OpenSim_DECLARE_PROPERTY(verbose, int, 
-        "Level of debug information written to the console. "
-        "(0: silent). "
-        "The default value is 0.")
 
-
-
-    //=============================================================================
+//=============================================================================
 // METHODS
 //=============================================================================
   
