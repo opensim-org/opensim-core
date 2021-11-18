@@ -31,6 +31,7 @@ namespace OpenSim {
 %include <OpenSim/Moco/MocoGoal/MocoOrientationTrackingGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoTranslationTrackingGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoAccelerationTrackingGoal.h>
+%include <OpenSim/Moco/MocoGoal/MocoAngularVelocityTrackingGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoOutputGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoPeriodicityGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoInitialForceEquilibriumDGFGoal.h>
