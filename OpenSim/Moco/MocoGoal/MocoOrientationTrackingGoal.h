@@ -25,21 +25,23 @@
 #include <OpenSim/Moco/MocoWeightSet.h>
 #include <OpenSim/Simulation/Model/Frame.h>
 #include <OpenSim/Simulation/TableProcessor.h>
+#include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
 
 namespace OpenSim {
 
 using SimTK::Rotation;
+using SimTK::Quaternion;
 
 /** The squared difference between a model frame's orientation and a reference
 orientation value, summed over the frames for which a reference is provided,
 and integrated over the phase. This can be used to track orientation
 quantities in the model that don't correspond to model degrees of freedom.
-The reference can be provided as a trajectory of SimTK::Rotation%s
+The reference can be provided as a trajectory of SimTK::Quaternion%s
 representing the orientation reference data, or as a states trajectory from
 which the tracked rotation reference is computed. Both rotation and states
 references can be provided as a file name to a STO or CSV file (or other
 file types for which there is a FileAdapter), or programmatically as a
-TimeSeriesTable_<SimTK::Rotation> (for the rotation reference) or as a
+TimeSeriesTable_<SimTK::Quaternion> (for the rotation reference) or as a
 scalar TimeSeriesTable (for the states reference).
 
 This cost requires realization to SimTK::Stage::Position. The cost is
@@ -86,6 +88,12 @@ public:
         set_states_reference(TableProcessor());
         set_rotation_reference_file("");
         m_rotation_table = ref;
+    }
+    /** @copydoc setRotationReference(const TimeSeriesTable_<Rotation>& ref) */
+    void setRotationReference(const TimeSeriesTable_<Quaternion>& ref) {
+        set_states_reference(TableProcessor());
+        set_rotation_reference_file("");
+        m_rotation_table = OpenSenseUtilities().convertQuaternionsToRotations(ref);
     }
     /** Provide a table containing values of model state variables. These data
     are used to create a StatesTrajectory internally, from which the
