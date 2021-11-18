@@ -29,9 +29,6 @@
 
 namespace OpenSim {
 
-using SimTK::Rotation;
-using SimTK::Quaternion;
-
 /** The squared difference between a model frame's orientation and a reference
 orientation value, summed over the frames for which a reference is provided,
 and integrated over the phase. This can be used to track orientation
@@ -77,20 +74,20 @@ public:
     `states_reference_file` property, if any. */
     void setRotationReferenceFile(const std::string& filepath) {
         set_states_reference(TableProcessor());
-        m_rotation_table = TimeSeriesTable_<Rotation>();
+        m_rotation_table = TimeSeriesTable_<SimTK::Rotation_<double>>();
         set_rotation_reference_file(filepath);
     }
     /** Each column label must be the path of a valid frame path (see
     setRotationReferenceFile()). Calling this function clears the
     `states_reference_file` and `rotation_reference_file` properties or the
     table provided via setStatesReference(), if any. */
-    void setRotationReference(const TimeSeriesTable_<Rotation>& ref) {
+    void setRotationReference(const TimeSeriesTable_<SimTK::Rotation_<double>>& ref) {
         set_states_reference(TableProcessor());
         set_rotation_reference_file("");
         m_rotation_table = ref;
     }
-    /** @copydoc setRotationReference(const TimeSeriesTable_<Rotation>& ref) */
-    void setRotationReference(const TimeSeriesTable_<Quaternion>& ref) {
+    /** @copydoc setRotationReference(const TimeSeriesTable_<SimTK::Rotation>& ref) */
+    void setRotationReference(const TimeSeriesTable_<SimTK::Quaternion_<double>>& ref) {
         set_states_reference(TableProcessor());
         set_rotation_reference_file("");
         m_rotation_table = OpenSenseUtilities().convertQuaternionsToRotations(ref);
@@ -105,7 +102,7 @@ public:
     until the MocoProblem is initialized. */
     void setStatesReference(const TableProcessor& ref) {
         set_rotation_reference_file("");
-        m_rotation_table = TimeSeriesTable_<Rotation>();
+        m_rotation_table = TimeSeriesTable_<SimTK::Rotation_<double>>();
         set_states_reference(std::move(ref));
     }
     /** Set the paths to frames in the model that this cost term will track. The
@@ -179,7 +176,7 @@ private:
         constructProperty_rotation_weights(MocoWeightSet());
     }
 
-    TimeSeriesTable_<Rotation> m_rotation_table;
+    TimeSeriesTable_<SimTK::Rotation_<double>> m_rotation_table;
     mutable GCVSplineSet m_ref_splines;
     mutable std::vector<std::string> m_frame_paths;
     mutable std::vector<SimTK::ReferencePtr<const Frame>> m_model_frames;
