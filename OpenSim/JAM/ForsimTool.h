@@ -152,6 +152,13 @@ public:
         "The value should be false if analyzing COMAK results. "
         "The default value is true.")
 
+    
+    OpenSim_DECLARE_PROPERTY(override_default_muscle_activation, double,
+        "Override the default muscle activation value in the model. "
+        "This is useful to avoid transients at the beginning of passive simulations."
+        "If the value is negative, then the default activation in the model file is used "
+        "The default value is -1.")
+
     OpenSim_DECLARE_PROPERTY(equilibrate_muscles, bool, 
         "Call equilibrateMuscles() before starting the simulation. "
         "The default value is true.")

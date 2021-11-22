@@ -72,6 +72,7 @@ void ForsimTool::constructProperties()
     constructProperty_use_activation_dynamics(true);
     constructProperty_use_tendon_compliance(true);
     constructProperty_use_muscle_physiology(true);
+    constructProperty_override_default_muscle_activation(-1);
     constructProperty_equilibrate_muscles(true);
     constructProperty_unconstrained_coordinates();
     constructProperty_actuator_input_file("");
@@ -339,6 +340,18 @@ void ForsimTool::initializeStartStopTimes() {
 
 void ForsimTool::initializeActuators() {
     PrescribedController* control = new PrescribedController();
+
+    if (get_override_default_muscle_activation() >= 0) {
+
+        log_info("Setting default muscle activation to: {}",
+                get_override_default_muscle_activation());
+
+        for (Millard2012EquilibriumMuscle& msl :
+                _model.updComponentList<Millard2012EquilibriumMuscle>()) {
+         
+            msl.setDefaultActivation(get_override_default_muscle_activation());
+        }
+    }
 
     if (get_actuator_input_file() != ""){
         STOFileAdapter actuator_file;

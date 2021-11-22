@@ -8,7 +8,6 @@
 #include <Bindings/OpenSimHeaders_actuators.h>
 #include <Bindings/OpenSimHeaders_analyses.h>
 #include <Bindings/OpenSimHeaders_tools.h>
-#include <Bindings/OpenSimHeaders_moco.h>
 #include <Bindings/OpenSimHeaders_jam.h>
 
 using namespace OpenSim;
