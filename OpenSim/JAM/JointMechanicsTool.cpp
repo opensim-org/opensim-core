@@ -637,9 +637,11 @@ void JointMechanicsTool::assembleStatesTrajectoryFromStatesData(
         _model.setStateVariableValues(s, statesValues);
 
         // Make a copy of the edited state and put it in the trajectory.
-        _model.realizeVelocity(s);
+        //
+        s.invalidateAllCacheAtOrAbove(SimTK::Stage::Time);
+        _model.realizeDynamics(s);
         states_from_file.append(s);
-
+        
         // Save muscle activation values in case use_muscle_physiology is false
 
         int j = 0;
