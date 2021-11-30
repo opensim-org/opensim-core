@@ -863,28 +863,29 @@ void GeometryPath::computeLengtheningSpeed(const SimTK::State& s) const
 void GeometryPath::
 applyWrapObjects(const SimTK::State& s, Array<AbstractPathPoint*>& path) const 
 {
-    if (get_PathWrapSet().getSize() < 1)
+    int wrapSetSize = get_PathWrapSet().getSize();
+    if (wrapSetSize < 1)
         return;
 
     WrapResult best_wrap;
     Array<int> result, order;
 
-    result.setSize(get_PathWrapSet().getSize());
-    order.setSize(get_PathWrapSet().getSize());
+    result.setSize(wrapSetSize);
+    order.setSize(wrapSetSize);
 
     // Set the initial order to be the order they are listed in the path.
-    for (int i = 0; i < get_PathWrapSet().getSize(); i++)
+    for (int i = 0; i < wrapSetSize; i++)
         order[i] = i;
 
     // If there is only one wrap object, calculate the wrapping only once.
     // If there are two or more objects, perform up to 8 iterations where
     // the result from one wrap object is used as the starting point for
     // the next wrap.
-    const int maxIterations = get_PathWrapSet().getSize() < 2 ? 1 : 8;
+    const int maxIterations = wrapSetSize < 2 ? 1 : 8;
     double last_length = SimTK::Infinity;
     for (int kk = 0; kk < maxIterations; kk++)
     {
-        for (int i = 0; i < get_PathWrapSet().getSize(); i++)
+        for (int i = 0; i < wrapSetSize; i++)
         {
             result[i] = 0;
             PathWrap& ws = get_PathWrapSet().get(order[i]);
