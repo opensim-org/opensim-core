@@ -1115,7 +1115,6 @@ calcLengthAfterPathComputation(const SimTK::State& s,
                                const Array<AbstractPathPoint*>& currentPath) const
 {
     double length = 0.0;
-    std::list<Vec3> transformedPts;
     const AbstractPathPoint* p1 = currentPath[0];
     Vec3 p1InGround = p1->getLocationInGround(s);
     // Transform all points to ground once rather than once per-segment
