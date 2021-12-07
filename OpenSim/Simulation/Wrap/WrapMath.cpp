@@ -135,9 +135,8 @@ IntersectLineSegPlane(SimTK::Vec3& pt1, SimTK::Vec3& pt2,
                              SimTK::Vec3& plane, double d,
                              SimTK::Vec3& inter)
 {
-    SimTK::Vec3 vec;
+    SimTK::Vec3 vec = pt2 - pt1;
 
-    MAKE_3DVECTOR(pt1,pt2,vec);
     double dotprod = Mtx::DotProduct(3, vec,plane);
 
     if (DABS(dotprod) < LINE_EPSILON)
@@ -283,13 +282,10 @@ CalcDistanceSquaredBetweenPoints(SimTK::Vec3& point1, SimTK::Vec3& point2)
 double WrapMath::
 CalcDistanceSquaredPointToLine(SimTK::Vec3& point, SimTK::Vec3& linePt, SimTK::Vec3& line)
 {
-    double t;
-    Vec3 ptemp;
 
-    // find the closest point on line
-    GetClosestPointOnLineToPoint(point, linePt, line, ptemp, t);
-
-    return CalcDistanceSquaredBetweenPoints(point, ptemp);
+    Vec3 pToLinePt = (linePt - point);
+    Vec3 n = line.normalize();
+    return (pToLinePt - (~ pToLinePt * n) * n).scalarNormSqr();
 }
 /* Rotate a 4x4 transform matrix by 'angle' radians about axis 'axis'.
  * @param matrix The 4x4 transform matrix

@@ -256,10 +256,10 @@ int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::
         return insideRadius;
     }
 
-    MAKE_3DVECTOR21(p1, p2, p1p2);
-    MAKE_3DVECTOR21(p1, m, p1m);
+    p1p2 = p1 - p2;
+    p1m = p1 - m;
     Mtx::Normalize(3, p1m, p1m);
-    MAKE_3DVECTOR21(p2, m, p2m);
+    p2m = p2 - m;
     Mtx::Normalize(3, p2m, p2m);
 
     ppm = Mtx::DotProduct(3, p1m, p2m) - 1.0;   // angle between p1->m and p2->m: -2.0 to 0.0
@@ -335,7 +335,7 @@ int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::
 
     // ==== COMPUTE WRAPPING PLANE (begin) ====
 
-    MAKE_3DVECTOR21(aWrapResult.r2, aWrapResult.r1, r1r2);
+    r1r2 = aWrapResult.r2 - aWrapResult.r1;
 
     // (1) Frans technique: choose the most parallel coordinate axis, then set
     // 'sv' to the point along the muscle line that crosses the plane where
@@ -423,7 +423,7 @@ int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::
 
                 findClosestPoint(a[0], a[1], a[2], t_sv[0][0], t_sv[0][1], t_sv[0][2], &t_c1[0][0], &t_c1[0][1], &t_c1[0][2]);
 
-                MAKE_3DVECTOR21(t_c1[0], t_sv[0], v);
+                v = t_c1[0] - t_sv[0];
 
                 Mtx::Normalize(3, v, v);
 
@@ -532,7 +532,7 @@ int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::
     }
 
     // use p1, p2, and c1 to create parameters for the wrapping plane
-    MAKE_3DVECTOR21(p1, aWrapResult.c1, p1c1);
+    p1c1 = p1 - aWrapResult.c1;
     Mtx::CrossProduct(p1p2, p1c1, vs);
     Mtx::Normalize(3, vs, vs);
 
@@ -557,10 +557,10 @@ calc_wrap_path:
 
         // check for wrong-way wrap by testing angle of first and last
         // wrap path segments:
-        MAKE_3DVECTOR(aWrapResult.r1, p1, r1p1);
-        MAKE_3DVECTOR(aWrapResult.r1, w1, r1w1);
-        MAKE_3DVECTOR(aWrapResult.r2, p2, r2p2);
-        MAKE_3DVECTOR(aWrapResult.r2, w2, r2w2);
+        r1p1 = p1 - aWrapResult.r1;
+        r1w1 = w1 - aWrapResult.r1;
+        r2p2 = p2 - aWrapResult.r2;
+        r2w2 = w2 - aWrapResult.r2;
 
         Mtx::Normalize(3, r1p1, r1p1);
         Mtx::Normalize(3, r1w1, r1w1);
@@ -662,10 +662,10 @@ int WrapEllipsoid::calcTangentPoint(double p1e, SimTK::Vec3& r1, SimTK::Vec3& p1
             dedth[3][2] = 1.0;
             dedth[3][3] = 1.0;
 
-            MAKE_3DVECTOR21(p1, r1, p1r1);
+            p1r1 = p1 - r1;
             Mtx::Normalize(3, p1r1, p1r1);
 
-            MAKE_3DVECTOR21(p1, m, p1m);
+            p1m = p1 - m;
             Mtx::Normalize(3, p1m, p1m);
 
             pcos = Mtx::DotProduct(3, p1r1, p1m);
@@ -820,7 +820,7 @@ void WrapEllipsoid::CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, Si
     SimTK::Vec3 u, ux, a0, ar1, ar2, vsy, vsz, t, r, f1, f2, dr, dv;
     double phi, dphi, phi0, len, mu, aa, bb, cc, mu3, s[500][3], r0[3][3], rphi[3][3], desiredSegLength = 0.001;
 
-    MAKE_3DVECTOR21(r1, r2, dr);
+    dr = r1 - r2;
     len = Mtx::Magnitude(3, dr) / aWrapResult.factor;
 
     if (len < desiredSegLength) {
@@ -872,9 +872,9 @@ void WrapEllipsoid::CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, Si
     for (i=0;i<3;i++)
         a0[i] = m[i] + mu * u[i];
 
-    MAKE_3DVECTOR21(r1, a0, ar1);
+    ar1 = r1 - a0;
     Mtx::Normalize(3, ar1, ar1);
-    MAKE_3DVECTOR21(r2, a0, ar2);
+    ar2 = r2 - a0;
     Mtx::Normalize(3, ar2, ar2);
 
     phi0 = acos(Mtx::DotProduct(3, ar1, ar2));
@@ -963,8 +963,7 @@ void WrapEllipsoid::CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, Si
     {
         Vec3 p = aWrapResult.wrap_pts.get(i);
         Vec3 q = aWrapResult.wrap_pts.get(i+1);
-        MAKE_3DVECTOR21(q, p, dv); 
-
+        dv = q - p;
         aWrapResult.wrap_path_length += dv.norm(); //Mtx::Magnitude(3, dv);
     }
 }
