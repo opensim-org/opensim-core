@@ -1115,11 +1115,13 @@ calcLengthAfterPathComputation(const SimTK::State& s,
                                const Array<AbstractPathPoint*>& currentPath) const
 {
     double length = 0.0;
-
-    for (int i = 0; i < currentPath.getSize() - 1; i++) {
-        const AbstractPathPoint* p1 = currentPath[i];
-        const AbstractPathPoint* p2 = currentPath[i+1];
-
+    std::list<Vec3> transformedPts;
+    const AbstractPathPoint* p1 = currentPath[0];
+    Vec3 p1InGround = p1->getLocationInGround(s);
+    // Transform all points to ground once rather than once per-segment
+    for (int i = 1; i < currentPath.getSize() ; i++) {
+        const AbstractPathPoint* p2 = currentPath[i];
+        Vec3 p2InGround = p2->getLocationInGround(s);
         // If both points are wrap points on the same wrap object, then this
         // path segment wraps over the surface of a wrap object, so just add in 
         // the pre-calculated length.
@@ -1131,8 +1133,10 @@ calcLengthAfterPathComputation(const SimTK::State& s,
             if (smwp)
                 length += smwp->getWrapLength();
         } else {
-            length += p1->calcDistanceBetween(s, *p2);
+            length += (p1InGround - p2InGround).norm();
         }
+        p1 = p2;
+        p1InGround = p2InGround;
     }
 
     setLength(s,length);
