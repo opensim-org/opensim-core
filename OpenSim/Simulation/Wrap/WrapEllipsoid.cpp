@@ -423,7 +423,8 @@ int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::
 
                 findClosestPoint(a[0], a[1], a[2], t_sv[0][0], t_sv[0][1], t_sv[0][2], &t_c1[0][0], &t_c1[0][1], &t_c1[0][2]);
 
-                v = t_c1[0] - t_sv[0];
+                for (int k=0; k<3; k++) 
+                    v[k] = t_c1[0][k] - t_sv[0][k];
 
                 Mtx::Normalize(3, v, v);
 
