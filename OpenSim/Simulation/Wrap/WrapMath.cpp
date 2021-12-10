@@ -272,21 +272,6 @@ CalcDistanceSquaredBetweenPoints(SimTK::Vec3& point1, SimTK::Vec3& point2)
     return vec.normSqr();
 }
 
-/* Compute the square of the distance between a point
- * and a line.
- * @param point the point
- * @param linePt a point on the line
- * @param line defines the line passing through linePt
- * @return the square of the distance
- 
-double WrapMath::
-CalcDistanceSquaredPointToLine(SimTK::Vec3& point, SimTK::Vec3& linePt, SimTK::Vec3& line)
-{
-
-    Vec3 pToLinePt = (linePt - point);
-    Vec3 n = line.normalize();
-    return (pToLinePt - (~ pToLinePt * n) * n).scalarNormSqr();
-}
 /* Rotate a 4x4 transform matrix by 'angle' radians about axis 'axis'.
  * @param matrix The 4x4 transform matrix
  * @param axis The axis about which to rotate
