@@ -27,18 +27,14 @@ namespace OpenSim {
 
 #define TINY_NUMBER 0.0000001
 #define ROUNDOFF_ERROR 0.0000000000002
-#define MAX(a,b) ((a)>=(b)?(a):(b))
-#define MIN(a,b) ((a)<=(b)?(a):(b))
-#define DABS(a) ((a)>(double)0.0?(a):(-(a)))
+#define MAX(a,b) (std::max(a, b))
+#define MIN(a,b) (std::min(a, b))
+#define DABS(a) (std::abs(a))
 #define DSIGN(a) ((a)>=0.0?(1):(-1))
 #define SQR(x)  ((x) * (x))
 #define EQUAL_WITHIN_ERROR(a,b) (DABS(((a)-(b))) <= ROUNDOFF_ERROR)
 #define NOT_EQUAL_WITHIN_ERROR(a,b) (DABS(((a)-(b))) > ROUNDOFF_ERROR)
 #define EQUAL_WITHIN_TOLERANCE(a,b,c) (DABS(((a)-(b))) <= (c))
-
-#define CALC_DETERMINANT(m) (((m[0][0]) * ((m[1][1])*(m[2][2]) - (m[1][2])*(m[2][1]))) - \
-((m[0][1]) * ((m[1][0])*(m[2][2]) - (m[1][2])*(m[2][0]))) + \
-((m[0][2]) * ((m[1][0])*(m[2][1]) - (m[1][1])*(m[2][0]))))
 
 } // end of namespace OpenSim
 

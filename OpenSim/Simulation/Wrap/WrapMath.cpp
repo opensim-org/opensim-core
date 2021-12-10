@@ -104,7 +104,7 @@ IntersectLines(SimTK::Vec3& p1, SimTK::Vec3& p2, SimTK::Vec3& p3, SimTK::Vec3& p
     mat[2][1] = cross_prod[1];
     mat[2][2] = cross_prod[2];
 
-    t = CALC_DETERMINANT(mat) / denom;
+    t = det(mat) / denom;
 
     pInt2 = p3 + t * (vec2);
 
@@ -112,7 +112,7 @@ IntersectLines(SimTK::Vec3& p1, SimTK::Vec3& p2, SimTK::Vec3& p3, SimTK::Vec3& p
     mat[1][1] = vec2[1];
     mat[1][2] = vec2[2];
 
-    s = CALC_DETERMINANT(mat) / denom;
+    s = det(mat) / denom;
 
     pInt1 = p1 + s * (vec1);
 
@@ -269,7 +269,7 @@ CalcDistanceSquaredBetweenPoints(SimTK::Vec3& point1, SimTK::Vec3& point2)
 {
     SimTK::Vec3 vec = point2 - point1;
 
-    return vec[0]*vec[0]+vec[1]*vec[1]+vec[2]*vec[2];
+    return vec.normSqr();
 }
 
 /* Compute the square of the distance between a point
@@ -278,7 +278,7 @@ CalcDistanceSquaredBetweenPoints(SimTK::Vec3& point1, SimTK::Vec3& point2)
  * @param linePt a point on the line
  * @param line defines the line passing through linePt
  * @return the square of the distance
- */
+ 
 double WrapMath::
 CalcDistanceSquaredPointToLine(SimTK::Vec3& point, SimTK::Vec3& linePt, SimTK::Vec3& line)
 {

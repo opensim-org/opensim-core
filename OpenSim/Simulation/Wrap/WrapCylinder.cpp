@@ -195,13 +195,11 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     // un-normalized at the end of the previous wrap calculation.
     const WrapResult& previousWrap = aPathWrap.getPreviousWrap();
     aWrapResult.factor = previousWrap.factor;
-    for (i = 0; i < 3; i++)
-    {
-        aWrapResult.r1[i] = previousWrap.r1[i] * previousWrap.factor;
-        aWrapResult.r2[i] = previousWrap.r2[i] * previousWrap.factor;
-        aWrapResult.c1[i] = previousWrap.c1[i];
-        aWrapResult.sv[i] = previousWrap.sv[i];
-    }
+    // Use Vec3 operators
+    aWrapResult.r1 = previousWrap.r1 * previousWrap.factor;
+    aWrapResult.r2 = previousWrap.r2 * previousWrap.factor;
+    aWrapResult.c1 = previousWrap.c1;
+    aWrapResult.sv = previousWrap.sv;
 
     aFlag = false;
     aWrapResult.wrap_path_length = 0.0;
