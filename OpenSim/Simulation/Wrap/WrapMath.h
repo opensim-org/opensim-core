@@ -71,7 +71,7 @@ public:
             SimTK::Vec3& point, SimTK::Vec3& linePt, SimTK::Vec3& line){
         SimTK::Vec3 pToLinePt = (linePt - point);
         SimTK::Vec3 n = line.normalize();
-        return (pToLinePt - (~pToLinePt * n) * n).scalarNormSqr();
+        return (pToLinePt - (~pToLinePt * n) * n).normSqr();
     };
     static void
         RotateMatrixAxisAngle(double matrix[][4], const SimTK::Vec3& axis, double angle);
