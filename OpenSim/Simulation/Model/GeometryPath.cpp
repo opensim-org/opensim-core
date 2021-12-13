@@ -1059,7 +1059,7 @@ applyWrapObjects(const SimTK::State& s, Array<AbstractPathPoint*>& path) const
             last_length = length;
         }
 
-        if (kk == 0 && get_PathWrapSet().getSize() > 1) {
+        if (kk == 0 && wrapSetSize > 1) {
             // If the first wrap was a no wrap, and the second was a no wrap
             // because a point was inside the object, switch the order of
             // the first two objects and try again.
