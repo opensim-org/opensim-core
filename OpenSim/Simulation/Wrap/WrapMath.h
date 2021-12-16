@@ -28,8 +28,7 @@
  */
 
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <SimTKcommon/SmallMatrix.h>
-
+#include <SimTKcommon.h>
 
 namespace OpenSim { 
 
@@ -54,7 +53,7 @@ public:
         SimTK::Vec3& pInt2, double& t);
     static bool
         IntersectLineSegPlane(SimTK::Vec3& pt1, SimTK::Vec3& pt2,
-        SimTK::Vec3& plane, double d, SimTK::Vec3& inter);
+        SimTK::UnitVec3& plane, double d, SimTK::Vec3& inter);
     static void
         ConvertAxisAngleToQuaternion(const SimTK::Vec3& axis,
         double angle, double quat[4]);

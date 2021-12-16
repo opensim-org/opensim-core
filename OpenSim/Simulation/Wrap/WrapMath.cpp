@@ -73,17 +73,15 @@ bool WrapMath::
 IntersectLines(SimTK::Vec3& p1, SimTK::Vec3& p2, SimTK::Vec3& p3, SimTK::Vec3& p4,
                     SimTK::Vec3& pInt1, double& s, SimTK::Vec3& pInt2, double& t)
 {
-    SimTK::Vec3 cross_prod, vec1, vec2;
-
-    vec1 = p2 - p1;
+    SimTK::Vec3 vec1 = p2 - p1;
 
     double mag1 = Mtx::Normalize(3, vec1, vec1);
 
-    vec2 = p4 - p3;
+    SimTK::Vec3 vec2 = p4 - p3;
 
     double mag2 = Mtx::Normalize(3, vec2, vec2);
 
-    Mtx::CrossProduct(vec1, vec2, cross_prod);
+    SimTK::Vec3 cross_prod = vec1 % vec2;
 
     double denom = cross_prod.normSqr();
 
@@ -132,7 +130,7 @@ IntersectLines(SimTK::Vec3& p1, SimTK::Vec3& p2, SimTK::Vec3& p3, SimTK::Vec3& p
  */
 bool WrapMath::
 IntersectLineSegPlane(SimTK::Vec3& pt1, SimTK::Vec3& pt2, 
-                             SimTK::Vec3& plane, double d,
+                             SimTK::UnitVec3& plane, double d,
                              SimTK::Vec3& inter)
 {
     SimTK::Vec3 vec = pt2 - pt1;
@@ -147,10 +145,7 @@ IntersectLineSegPlane(SimTK::Vec3& pt1, SimTK::Vec3& pt2,
     if ((t < -LINE_EPSILON) || (t > 1.0 + LINE_EPSILON))
         return false;
 
-    inter[0] = pt1[0] + (t * vec[0]);
-    inter[1] = pt1[1] + (t * vec[1]);
-    inter[2] = pt1[2] + (t * vec[2]);
-
+    inter = pt1 + (t * vec);
     return true;
 }
 

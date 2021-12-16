@@ -24,6 +24,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
+#include <SimTKcommon.h>
 #include "WrapCylinder.h"
 #include "PathWrap.h"
 #include "WrapMath.h"
@@ -40,6 +41,7 @@
 using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
+using SimTK::UnitVec3;
 
 static const char* wrapTypeName = "cylinder";
 static Vec3 p0(0.0, 0.0, -1.0);
@@ -181,10 +183,10 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     double dist1, dist2;
     double t12, t00;
 
-    Vec3 pp, vv, uu, r1a, r1b, r2a, r2b, apex, plane_normal, sum_musc, 
+    Vec3 pp, vv, uu, r1a, r1b, r2a, r2b, apex, sum_musc, 
         r1am, r1bm, r2am, r2bm, p11, p22, r1p, r2p, axispt, near12, 
         vert1, vert2, mpt, apex1, apex2, l1, l2, near00;
-
+    UnitVec3 plane_normal;
     int i, return_code = wrapped;
     bool r1_inter, r2_inter;
     bool constrained   = (bool) (_wrapSign != 0);
@@ -537,11 +539,10 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     uu = aPoint1 - apex;
     vv = aPoint2 - apex;
 
-    Mtx::Normalize(3, uu, uu);
-    Mtx::Normalize(3, vv, vv);
+    uu.normalize();
+    vv.normalize();
 
-    Mtx::CrossProduct(uu, vv, plane_normal);
-    Mtx::Normalize(3, plane_normal, plane_normal);
+    SimTK::UnitVec3 plane_nomral(uu % vv);
 
     d = - aPoint1[0] * plane_normal[0] - aPoint1[1] * plane_normal[1] - aPoint1[2] * plane_normal[2];
 
