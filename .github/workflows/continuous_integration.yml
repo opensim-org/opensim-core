@@ -154,7 +154,7 @@ jobs:
   mac:
     name: Mac
 
-    runs-on: macos-latest
+    runs-on: macos-10.15
 
     steps:
     - uses: actions/checkout@v1
@@ -196,7 +196,7 @@ jobs:
         key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}-${{ hashFiles('gfortran_version/*') }}
 
     - name: Build dependencies
-      if: steps.cache-dependencies.outputs.cache-hit != 'true'
+      # if: steps.cache-dependencies.outputs.cache-hit != 'true'
       run: |
         mkdir $GITHUB_WORKSPACE/../build_deps
         cd $GITHUB_WORKSPACE/../build_deps
