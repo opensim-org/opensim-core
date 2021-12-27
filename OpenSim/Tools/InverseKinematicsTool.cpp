@@ -169,7 +169,10 @@ bool InverseKinematicsTool::run()
         // create the solver given the input data
         InverseKinematicsSolver ikSolver(*_model, make_shared<MarkersReference>(markersReference),
             coordinateReferences, get_constraint_weight());
-        ikSolver.setAccuracy(get_accuracy());
+        double default_accuracy = get_accuracy();
+        double currentAccuracy = default_accuracy;
+        bool runAssemble = false;
+        ikSolver.setAccuracy(default_accuracy);
         s.updTime() = times[start_ix];
         ikSolver.assemble(s);
         kinematicsReporter->begin(s);
@@ -192,7 +195,62 @@ bool InverseKinematicsTool::run()
 
         for (int i = start_ix; i <= final_ix; ++i) {
             s.updTime() = times[i];
-            ikSolver.track(s);
+
+            // if the accuracy was changed on the previous step, change it back
+            if (get_adaptiveAccuracy() && currentAccuracy != default_accuracy) {
+                log_info("Resetting accuracy to {}.", default_accuracy);
+
+                currentAccuracy = default_accuracy;
+                set_accuracy(currentAccuracy);
+                ikSolver.setAccuracy(currentAccuracy);
+
+                runAssemble = true;
+            }
+
+            // Try to run track until it does not throw an exception with decreasing
+            // accuracy threshold if adaptiveAccuracy is on
+            bool ongoingAdaptingAccuracy = true;
+            while (ongoingAdaptingAccuracy) {
+                try {
+                    if (runAssemble) {
+                        log_info("Starting asseble at time {}",
+                                times[i]);
+                        ikSolver.assemble(s);
+                        runAssemble = false;
+                    }
+                    log_info("Starting track at time {} with accuracy {}.",
+                            times[i], currentAccuracy);
+                    ikSolver.track(s);
+                    ongoingAdaptingAccuracy = false;
+                } 
+                catch (const std::exception& ex) {
+                    if (get_adaptiveAccuracy()) {
+                        // try again with lower accuracy
+                        currentAccuracy *= get_adaptiveAccuracyStep();
+                        if (currentAccuracy <=
+                                get_adaptiveAccuracyThreshold()) {
+                            log_info("Caught exception by adaptive accuracy: {}", ex.what());
+                            log_info("Updating accuracy to {}.",
+                                    currentAccuracy);
+
+                            set_accuracy(currentAccuracy);
+                            ikSolver.setAccuracy(currentAccuracy);
+
+                            runAssemble = true;
+                        } else { // if it cannot be solved with desired
+                                 // accuracy, rethrow
+                            log_info("Adaptive accuracy failed, rethrowing the "
+                                     "Assembler error.");
+                            throw(ex);
+                        }
+
+                    } else {  // default behavior
+                        throw(ex);
+                    }
+                }
+            };
+
+
             // show progress line every 1000 frames so users see progress
             if (std::remainder(i - start_ix, 1000) == 0 && i != start_ix)
                 log_info("Solved {} frame(s)...", i - start_ix);
@@ -398,7 +456,8 @@ void InverseKinematicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int ve
     Object::updateFromXMLNode(aNode, versionNumber);
 }
 
-void InverseKinematicsTool::populateReferences(MarkersReference& markersReference,
+void InverseKinematicsTool::populateReferences(
+        MarkersReference& markersReference,
     SimTK::Array_<CoordinateReference>&coordinateReferences) const
 {
     FunctionSet *coordFunctions = NULL;
