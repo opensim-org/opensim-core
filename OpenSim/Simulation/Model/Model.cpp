@@ -1167,6 +1167,7 @@ void Model::generateDecorations
         const SimTK::State&                         state,
         SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
 {
+    if (!hints.isVisualizationEnabled()) return;
     ComponentList<const Component> allComps = getComponentList();
     ComponentList<Component>::const_iterator iter = allComps.begin();
     while (iter != allComps.end()){

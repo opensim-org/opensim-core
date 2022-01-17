@@ -29,6 +29,7 @@
 #include "PathWrap.h"
 #include "WrapMath.h"
 #include "WrapResult.h"
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
 #include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Common/SimmMacros.h>
@@ -661,7 +662,18 @@ restart_spiral_wrap:
     m.set(0, 0, ax[0]); m.set(0, 1, ax[1]); m.set(0, 2, ax[2]);
     m.set(1, 0, uu[0]); m.set(1, 1, uu[1]); m.set(1, 2, uu[2]);
     m.set(2, 0, vv[0]); m.set(2, 1, vv[1]); m.set(2, 2, vv[2]);
-
+    // WrapTorus creates a WrapCyl with no connected model, avoid this hack
+    if (!_model.empty() && !getModel().getDisplayHints().isVisualizationEnabled() &&
+            aWrapResult.singleWrap) {
+        // Use one WrapSegment/cord instead of dense list of wrap_pt(s)
+        _calc_spiral_wrap_point(
+                r1a, axial_vec, m, ax, sense, 0, theta, wrap_pt);
+        aWrapResult.wrap_pts.append(wrap_pt);
+        _calc_spiral_wrap_point(
+                r1a, axial_vec, m, ax, sense, 1.0, theta, wrap_pt);
+        aWrapResult.wrap_pts.append(wrap_pt);
+        return;
+    }
     // Each muscle segment on the surface of the cylinder should be
     // 0.002 meters long. This assumes the model is in meters, of course.
     int numWrapSegments = (int) (aWrapResult.wrap_path_length / 0.002);
@@ -676,7 +688,7 @@ restart_spiral_wrap:
 
         // adjust r1/r2 tangent points if necessary to achieve tangency with
         // the spiral path:
-        if (i == 1 && iterations < MAX_ITERATIONS)
+        if (i == 1 && iterations < MAX_ITERATIONS && !aWrapResult.singleWrap)
         {
             bool did_adjust_r2 = false;
             bool did_adjust_r1 = _adjust_tangent_point(aPoint1, dn, aWrapResult.r1, wrap_pt);
