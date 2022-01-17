@@ -854,6 +854,11 @@ void GeometryPath::computeLengtheningSpeed(const SimTK::State& s) const
     }
 
     setLengtheningSpeed(s, speed);
+    log_trace("length {}, speed {}",
+            calcLengthAfterPathComputation(s, currentPath), speed);
+    log_trace("Path:");
+    for (int i = 0; i < currentPath.getSize(); i++)
+        log_trace("{}", currentPath[i]->getLocation(s));
 }
 
 //_____________________________________________________________________________
@@ -974,7 +979,7 @@ applyWrapObjects(const SimTK::State& s, Array<AbstractPathPoint*>& path) const
                         WrapResult wr;
                         wr.startPoint = pt1;
                         wr.endPoint   = pt2;
-
+                        wr.singleWrap = (wrapSetSize==1);
                         result[i] = wo->wrapPathSegment(s, *path.get(pt1), 
                                                         *path.get(pt2), ws, wr);
                         if (result[i] == WrapObject::mandatoryWrap) {
