@@ -182,6 +182,7 @@ void MocoProblemRep::initialize() {
 
     // Grab a writable state from the copied model -- we'll use this to disable
     // its constraints below.
+    m_model_disabled_constraints.updDisplayHints().disableVisualization();
     m_state_disabled_constraints[0] = m_model_disabled_constraints.initSystem();
     m_state_disabled_constraints[1] = m_state_disabled_constraints[0];
 
