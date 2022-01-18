@@ -104,7 +104,7 @@ IntersectLines(SimTK::Vec3& p1, SimTK::Vec3& p2, SimTK::Vec3& p3, SimTK::Vec3& p
     mat[2][1] = cross_prod[1];
     mat[2][2] = cross_prod[2];
 
-    t = CALC_DETERMINANT(mat) / denom;
+    t = det(mat) / denom;
 
     pInt2 = p3 + t * (vec2);
 
@@ -112,7 +112,7 @@ IntersectLines(SimTK::Vec3& p1, SimTK::Vec3& p2, SimTK::Vec3& p3, SimTK::Vec3& p
     mat[1][1] = vec2[1];
     mat[1][2] = vec2[2];
 
-    s = CALC_DETERMINANT(mat) / denom;
+    s = det(mat) / denom;
 
     pInt1 = p1 + s * (vec1);
 
@@ -135,9 +135,8 @@ IntersectLineSegPlane(SimTK::Vec3& pt1, SimTK::Vec3& pt2,
                              SimTK::Vec3& plane, double d,
                              SimTK::Vec3& inter)
 {
-    SimTK::Vec3 vec;
+    SimTK::Vec3 vec = pt2 - pt1;
 
-    MAKE_3DVECTOR(pt1,pt2,vec);
     double dotprod = Mtx::DotProduct(3, vec,plane);
 
     if (DABS(dotprod) < LINE_EPSILON)
@@ -270,27 +269,9 @@ CalcDistanceSquaredBetweenPoints(SimTK::Vec3& point1, SimTK::Vec3& point2)
 {
     SimTK::Vec3 vec = point2 - point1;
 
-    return vec[0]*vec[0]+vec[1]*vec[1]+vec[2]*vec[2];
+    return vec.normSqr();
 }
 
-/* Compute the square of the distance between a point
- * and a line.
- * @param point the point
- * @param linePt a point on the line
- * @param line defines the line passing through linePt
- * @return the square of the distance
- */
-double WrapMath::
-CalcDistanceSquaredPointToLine(SimTK::Vec3& point, SimTK::Vec3& linePt, SimTK::Vec3& line)
-{
-    double t;
-    Vec3 ptemp;
-
-    // find the closest point on line
-    GetClosestPointOnLineToPoint(point, linePt, line, ptemp, t);
-
-    return CalcDistanceSquaredBetweenPoints(point, ptemp);
-}
 /* Rotate a 4x4 transform matrix by 'angle' radians about axis 'axis'.
  * @param matrix The 4x4 transform matrix
  * @param axis The axis about which to rotate

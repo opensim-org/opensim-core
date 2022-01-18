@@ -67,8 +67,12 @@ public:
         ConvertAxisAngleTo4x4DirCosMatrix(const SimTK::Vec3& axis, double angle, double mat[][4]);
     static double
         CalcDistanceSquaredBetweenPoints(SimTK::Vec3& point1, SimTK::Vec3& point2);
-    static double
-        CalcDistanceSquaredPointToLine(SimTK::Vec3& point, SimTK::Vec3& linePt, SimTK::Vec3& line);
+    inline static double CalcDistanceSquaredPointToLine(
+            SimTK::Vec3& point, SimTK::Vec3& linePt, SimTK::Vec3& line){
+        SimTK::Vec3 pToLinePt = (linePt - point);
+        SimTK::Vec3 n = line.normalize();
+        return (pToLinePt - (~pToLinePt * n) * n).normSqr();
+    };
     static void
         RotateMatrixAxisAngle(double matrix[][4], const SimTK::Vec3& axis, double angle);
     static void

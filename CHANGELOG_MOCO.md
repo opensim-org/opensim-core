@@ -1,6 +1,16 @@
 Moco Change Log
 ===============
 
+1.2.0
+-----
+- 2021-11-18: Implemented fix for DeGrooteFregly2016Muscle so that optimal fiber 
+              lengths and tendon slack lengths are scaled when using the ScaleTool.
+  
+- 2021-11-17: Added Matlab and Python support for MocoAngularVelocityTrackingGoal.
+              Fixed Matlab and Python issues with 
+              MocoOrientationTrackingGoal::setRotationReference(); this method 
+              is now overloaded to accept tables of type TimeSeriesTableQuaternion.
+
 1.1.0
 -----
 - 2021-07-13: Added MocoStepTimeAsymmetryGoal, MocoStepLengthAsymmetryGoal, and
