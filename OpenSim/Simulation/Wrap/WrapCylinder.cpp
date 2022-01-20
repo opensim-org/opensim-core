@@ -543,7 +543,7 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     uu.normalize();
     vv.normalize();
 
-    SimTK::UnitVec3 plane_nomral(uu % vv);
+    plane_normal = UnitVec3(uu % vv);
 
     d = - aPoint1[0] * plane_normal[0] - aPoint1[1] * plane_normal[1] - aPoint1[2] * plane_normal[2];
 
