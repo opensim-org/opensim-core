@@ -105,8 +105,9 @@ public:
     /** Default construction creates a valid display hints object with all
     hints set to their default values. **/
     ModelDisplayHints() { constructProperties(); }
-    /** Turn off visualization completely, only use API/modeling.
-    Meshes will not be loaded, pathwrappig intermediate points not computed.
+    /** Turn off visualization completely, only use for API/modeling.
+    Meshes will not be loaded, path-wrapping intermediate points will
+    not be computed, MomentArm computations are not affected however.
     Intentionally there's no reverse API to turn on visualization downstream.
     **/
     void disableVisualization() { _visualization = false; }
