@@ -243,8 +243,10 @@ void Mesh::extendFinalizeFromProperties() {
         // Current interface to Visualizer calls generateDecorations on every
         // frame. On first time through, load file and create DecorativeMeshFile
         // and cache it so we don't load files from disk during live rendering.
+        const Model* mdl = dynamic_cast<const Model*>(rootModel);
         const std::string& file = get_mesh_file();
-        if (file.empty() || file.compare(PropertyStr::getDefaultStr()) == 0)
+        if (file.empty() || file.compare(PropertyStr::getDefaultStr()) == 0 ||
+            !mdl->getDisplayHints().isVisualizationEnabled())
             return;  // Return immediately if no file has been specified.
 
         bool isAbsolutePath; string directory, fileName, extension;
