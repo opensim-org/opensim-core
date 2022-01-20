@@ -126,6 +126,7 @@ public:
             }
             Model modelFromFile(path);
             model = std::move(modelFromFile);
+            model.updDisplayHints().disableVisualization();
             model.finalizeFromProperties();
             model.finalizeConnections();
         }
