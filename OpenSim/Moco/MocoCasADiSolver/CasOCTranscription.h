@@ -113,6 +113,8 @@ protected:
             } else {
                 shift = -0.5 * (upper + lower);
             }
+            OpenSim::log_info("dilate: {}", dilate);
+            OpenSim::log_info("shift: {}", shift);
             m_scale.at(key)(rowIndices, columnIndices) = dilate;
             m_shift.at(key)(rowIndices, columnIndices) = shift;
         } else {
