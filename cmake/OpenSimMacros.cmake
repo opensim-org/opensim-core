@@ -454,7 +454,7 @@ function(OpenSimAddExampleCXX)
     foreach(exe ${OSIMEX_EXECUTABLES})
         add_executable(${exe} ${exe}.cpp)
         set_target_properties(${exe} PROPERTIES FOLDER "Examples")
-        target_link_libraries(${exe} osimTools osimExampleComponents osimMoco)
+        target_link_libraries(${exe} osimTools osimExampleComponents osimMoco casadi)
     endforeach()
     file(COPY ${OSIMEX_RESOURCES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 

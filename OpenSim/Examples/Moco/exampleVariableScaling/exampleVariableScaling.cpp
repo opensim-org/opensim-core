@@ -17,107 +17,148 @@
  * -------------------------------------------------------------------------- */
 
 /// This example ... TODO
+/// https://web.casadi.org/blog/nlp-scaling/
 
-#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
-#include <OpenSim/Moco/osimMoco.h>
+#include <OpenSim/Moco/MocoCasADiSolver/CasOCProblem.h>
+#include <OpenSim/Moco/MocoCasADiSolver/CasOCSolver.h>
+#include <OpenSim/Moco/MocoCasADiSolver/MocoCasOCProblem.h>
+
+#include <casadi/casadi.hpp>
+
+using casadi::Callback;
+using casadi::Dict;
+using casadi::DM;
+using casadi::MX;
+using casadi::Slice;
+using casadi::Sparsity;
+using CasOC::Bounds;
 
 using namespace OpenSim;
 
-std::unique_ptr<Model> createDoublePendulumModel() {
-    // This function is similar to ModelFactory::createNLinkPendulum().
+class RocketProblem : public CasOC::Problem {
+public:
+    RocketProblem() {
+        setTimeBounds(Bounds(0.0, 0.0), Bounds(100.0, 100.0));
+        addState("height", CasOC::StateType::Coordinate, Bounds(0.0, 1e5), Bounds(0.0, 0.0), Bounds(1e5, 1e5));
+        addState("velocity", CasOC::StateType::Speed, Bounds(0.0, 2e3), Bounds(0.0, 0.0), Bounds(0.0, 2e3));
+        addState("mass", CasOC::StateType::Auxiliary, {0, 5e5}, {5e5, 5e5}, {0, 5e5});
+        addControl("force", Bounds(0.0, 1e8), Bounds(0.0, 1e8), Bounds(0.0, 1e8));
+        addCost("effort", 0, 1);
+        setDynamicsMode("explicit");
+    }
+private:
+    void calcMultibodySystemExplicit(const ContinuousInput& input,
+            bool calcKCErrors, MultibodySystemExplicitOutput& output) const override {
 
-    auto model = make_unique<Model>();
-    model->setName("double_pendulum");
+        SimTK::Vector x(3, input.states.ptr(), true);
+        SimTK::Vector u(1, input.controls.ptr(), true);
 
-    using SimTK::Vec3;
-    using SimTK::Inertia;
+        SimTK::Vector xdot(1, 0.0);
+        SimTK::Vector auxdot(1, 0.0);
 
-    // Create two links, each with a mass of 1 kg, center of mass at the body's
-    // origin, and moments and products of inertia of zero.
-    double scale = 1e-10;
-    auto* b0 = new OpenSim::Body("b0", 1.0/scale, Vec3(0), Inertia(1.0/scale));
-    model->addBody(b0);
-    auto* b1 = new OpenSim::Body("b1", scale, Vec3(0), Inertia(scale));
-    model->addBody(b1);
+        xdot[0] = u[0] / x[2] - 9.81;
+        auxdot[0] = -u[0] / (300.0 * 9.81);
 
-    // Add markers to body origin locations
-    auto* m0 = new Marker("m0", *b0, Vec3(0));
-    auto* m1 = new Marker("m1", *b1, Vec3(0));
-    model->addMarker(m0);
-    model->addMarker(m1);
+        std::copy_n(xdot.getContiguousScalarData(), xdot.size(),
+                output.multibody_derivatives.ptr());
+        std::copy_n(auxdot.getContiguousScalarData(), auxdot.size(),
+                output.auxiliary_derivatives.ptr());
+    }
+    void calcMultibodySystemImplicit(const ContinuousInput& input,
+            bool calcKCErrors, MultibodySystemImplicitOutput& output) const override {
+        // not implemented
+    }
+    void calcVelocityCorrection(const double& time,
+            const casadi::DM& multibody_states, const casadi::DM& slacks,
+            const casadi::DM& parameters,
+            casadi::DM& velocity_correction) const override {
+        // not implemented
+    }
 
-    // Connect the bodies with pin joints. Assume each body is 1 m long.
-    auto* j0 = new PinJoint("j0", model->getGround(), Vec3(0), Vec3(0),
-            *b0, Vec3(-1, 0, 0), Vec3(0));
-    auto& q0 = j0->updCoordinate();
-    q0.setName("q0");
-    auto* j1 = new PinJoint("j1",
-            *b0, Vec3(0), Vec3(0), *b1, Vec3(-1, 0, 0), Vec3(0));
-    auto& q1 = j1->updCoordinate();
-    q1.setName("q1");
-    model->addJoint(j0);
-    model->addJoint(j1);
+//    void calcCostIntegrand(int costIndex,
+//            const ContinuousInput& input, double& integrand) const override {
+//        integrand = 0;
+//        SimTK::Vector controls(1, input.controls.ptr(), true);
+//        integrand = controls[0] * controls[0];
+//    }
+    void calcCost(int costIndex, const CostInput& input,
+            casadi::DM& cost) const override {
+        SimTK::Vector simtkCost((int)cost.rows(), cost.ptr(), true);
+        SimTK::Vector init_x(3, input.initial_states.ptr(), true);
+        SimTK::Vector final_x(3, input.final_states.ptr(), true);
+        simtkCost[0] = init_x[2] - final_x[2];
 
-    auto* tau0 = new CoordinateActuator();
-    tau0->setCoordinate(&j0->updCoordinate());
-    tau0->setName("tau0");
-    tau0->setOptimalForce(1);
-    model->addForce(tau0);
+        //simtkCost[0] += 1e-15 * input.integral;
+//        std::copy_n(simtkCost.getContiguousScalarData(), simtkCost.size(),
+//                    cost.ptr());
+    }
 
-    auto* tau1 = new CoordinateActuator();
-    tau1->setCoordinate(&j1->updCoordinate());
-    tau1->setName("tau1");
-    tau1->setOptimalForce(1);
-    model->addForce(tau1);
+};
 
-    model->finalizeConnections();
+std::unique_ptr<RocketProblem> createCasOCProblem() {
+    return OpenSim::make_unique<RocketProblem>();
+}
 
-    return model;
+std::unique_ptr<CasOC::Solver> createCasOCSolver(
+        const RocketProblem& casProblem) {
+    auto casSolver = OpenSim::make_unique<CasOC::Solver>(casProblem);
+
+    // Set solver options.
+    // -------------------
+    Dict solverOptions;
+    solverOptions["print_user_options"] = "yes";
+    solverOptions["print_level"] = 5;
+    solverOptions["hessian_approximation"] = "limited-memory";
+    solverOptions["max_iter"] = 10000;
+    const double tol = 1e-2;
+    solverOptions["tol"] = tol;
+    solverOptions["dual_inf_tol"] = tol;
+    solverOptions["compl_inf_tol"] = tol;
+    solverOptions["acceptable_tol"] = tol;
+    solverOptions["acceptable_dual_inf_tol"] = tol;
+    solverOptions["acceptable_compl_inf_tol"] = tol;
+    solverOptions["constr_viol_tol"] = tol;
+    solverOptions["acceptable_constr_viol_tol"] = tol;
+
+    casSolver->setSparsityDetection("none");
+    casSolver->setSparsityDetectionRandomCount(3);
+    casSolver->setFiniteDifferenceScheme("forward");
+
+    Dict pluginOptions;
+    pluginOptions["verbose_init"] = true;
+
+    casSolver->setNumMeshIntervals(100);
+    casSolver->setTranscriptionScheme("trapezoidal");
+    casSolver->setScaleVariablesUsingBounds(false);
+
+    casSolver->setOptimSolver("ipopt");
+    casSolver->setParallelism("thread", 10);
+    //casSolver->setInterpolateControlMidpoints(true);
+    casSolver->setPluginOptions(pluginOptions);
+    casSolver->setSolverOptions(solverOptions);
+    return casSolver;
+}
+
+void solveRocketProblem() {
+    std::cout.flush();
+    Logger::setLevelString("Debug");
+    std::cout << "logger level: "  << Logger::getLevelString() << std::endl;
+    auto casProblem = createCasOCProblem();
+    auto casSolver = createCasOCSolver(*casProblem);
+    auto casGuess = casSolver->createInitialGuessFromBounds();
+    auto casSolution = casSolver->solve(casGuess);
+
+    MocoSolution mocoSolution =
+            convertToMocoTrajectory<MocoSolution>(casSolution);
+
+    mocoSolution.write("exampleVariableScaling_solution.sto");
+
 }
 
 int main() {
 
-    MocoStudy study;
-    study.setName("double_pendulum_tracking");
-
-    // Define the optimal control problem.
-    // ===================================
-    MocoProblem& problem = study.updProblem();
-
-    // Model (dynamics).
-    // -----------------
-    problem.setModel(createDoublePendulumModel());
-
-    // Bounds.
-    // -------
-    problem.setTimeBounds(0, 10.0);
-    problem.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0, 10.0);
-    problem.setStateInfo("/jointset/j0/q0/speed", {-50, 50}, 0);
-    problem.setStateInfo("/jointset/j1/q1/value", {-10, 10}, 0, 10.0);
-    problem.setStateInfo("/jointset/j1/q1/speed", {-50, 50}, 0);
-    double scale = 1e-10;
-    problem.setControlInfo("/forceset/tau0", {-100/scale, 100/scale});
-    problem.setControlInfo("/forceset/tau1", {-100*scale, 100*scale});
-
-    // Cost.
-    // -----
-    auto* effort = problem.addGoal<MocoControlGoal>();
-
-    // Configure the solver.
-    // =====================
-    auto& solver = study.initCasADiSolver();
-    solver.set_num_mesh_intervals(100);
-    solver.set_verbosity(2);
-    solver.set_optim_solver("ipopt");
-    solver.set_scale_variables_using_bounds(true);
-
-    study.print("double_pendulum_tracking.omoco");
-
-    // Solve the problem.
-    // ==================
-    MocoSolution solution = study.solve();
-    solution.write("exampleVariableScaling_solution.sto");
+    solveRocketProblem();
 
     return EXIT_SUCCESS;
 }

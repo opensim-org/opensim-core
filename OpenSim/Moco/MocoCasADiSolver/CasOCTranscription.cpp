@@ -202,6 +202,10 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
             setVariableBounds(states, is, -1, info.finalBounds);
             setScalingUsingBounds(states, Slice(), Slice(), info.bounds);
             ++is;
+
+            std::cout << "state bounds: " << info.bounds.upper << ", " << info.bounds.lower << std::endl;
+            std::cout << "state initial bounds: " << info.initialBounds.upper << ", " << info.initialBounds.lower << std::endl;
+            std::cout << "state final bounds: " << info.finalBounds.upper << ", " << info.finalBounds.lower << std::endl;
         }
     }
     {
@@ -214,6 +218,10 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
             setVariableBounds(controls, ic, -1, info.finalBounds);
             setScalingUsingBounds(controls, Slice(), Slice(), info.bounds);
             ++ic;
+
+            std::cout << "control bounds: " << info.bounds.upper << ", " << info.bounds.lower << std::endl;
+            std::cout << "control initial bounds: " << info.initialBounds.upper << ", " << info.initialBounds.lower << std::endl;
+            std::cout << "control final bounds: " << info.finalBounds.upper << ", " << info.finalBounds.lower << std::endl;
         }
     }
     {
@@ -728,6 +736,9 @@ Solution Transcription::solve(const Iterate& guessOrig) {
     // -------------------------
     Solution solution = m_problem.createIterate<Solution>();
     const auto finalVariables = nlpResult.at("x");
+    std::stringstream ss;
+    finalVariables.print_dense(ss);
+    OpenSim::log_cout(ss.str());
     solution.variables = unscaleVariables(expandVariables(finalVariables));
     solution.objective = nlpResult.at("f").scalar();
 

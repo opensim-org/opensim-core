@@ -205,15 +205,15 @@ private:
     void calcDefects() {
         calcDefectsImpl(
                 m_unscaledVars.at(states), m_xdot, m_constraints.defects);
-        if (m_solver.getScaleVariablesUsingBounds() &&
-                m_problem.getNumStates()) {
-            // TODO this is hacky:
-            const auto repRow =
-                    m_constraints.defects.rows() / m_problem.getNumStates();
-            const auto repCol = m_constraints.defects.columns();
-            m_constraints.defects /=
-                    casadi::DM::repmat(m_scale.at(states), repRow, repCol);
-        }
+//        if (m_solver.getScaleVariablesUsingBounds() &&
+//                m_problem.getNumStates()) {
+//            // TODO this is hacky:
+//            const auto repRow =
+//                    m_constraints.defects.rows() / m_problem.getNumStates();
+//            const auto repCol = m_constraints.defects.columns();
+//            m_constraints.defects /=
+//                    casadi::DM::repmat(m_scale.at(states), repRow, repCol);
+//        }
     }
     void calcInterpolatingControls() {
         calcInterpolatingControlsImpl(
