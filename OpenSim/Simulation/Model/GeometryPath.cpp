@@ -854,11 +854,6 @@ void GeometryPath::computeLengtheningSpeed(const SimTK::State& s) const
     }
 
     setLengtheningSpeed(s, speed);
-    log_trace("length {}, speed {}",
-            calcLengthAfterPathComputation(s, currentPath), speed);
-    log_trace("Path:");
-    for (int i = 0; i < currentPath.getSize(); i++)
-        log_trace("{}", currentPath[i]->getLocation(s));
 }
 
 //_____________________________________________________________________________

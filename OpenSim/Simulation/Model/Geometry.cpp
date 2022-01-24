@@ -247,7 +247,8 @@ void Mesh::extendFinalizeFromProperties() {
         const std::string& file = get_mesh_file();
         if (file.empty() || file.compare(PropertyStr::getDefaultStr()) == 0 ||
             !mdl->getDisplayHints().isVisualizationEnabled())
-            return;  // Return immediately if no file has been specified.
+            return;  // Return immediately if no file has been specified
+                     // or display is disabled altogether.
 
         bool isAbsolutePath; string directory, fileName, extension;
         SimTK::Pathname::deconstructPathname(file,
