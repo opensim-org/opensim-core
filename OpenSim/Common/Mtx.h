@@ -61,9 +61,6 @@ private:
 public:
     //--------------------------------------------------------------------------
     // CONSTRUCTION
-    //--------------------------------------------------------------------------
-    //Mtx();
-    //virtual ~Mtx();
 
     //--------------------------------------------------------------------------
     // VECTOR
@@ -77,9 +74,7 @@ public:
     * @return Angle between two vectors in radians.
     */
     inline static double Angle(const SimTK::Vec3& aV1, const SimTK::Vec3& aV2){
-        SimTK::Vec3 v1(aV1);    v1.normalize();
-        SimTK::Vec3 v2(aV2);    v2.normalize();
-        return (acos( ~v1 * v2));
+        return (acos( (~aV1 * aV2)/(aV1.norm()*aV2.norm())));
     }
     //_____________________________________________________________________________
     /**
@@ -121,59 +116,11 @@ public:
     inline static double DotProduct(int aN,const SimTK::Vec3& aV1,const SimTK::Vec3& aV2){
         return ~aV1 * aV2;
     }
-    //_____________________________________________________________________________
-    /**
-    * Compute the cross product of two vectors.
-    *
-    * If the arguments are not valid (aR=aS=NULL), -1 is returned.
-    */
-    inline static void CrossProduct(const SimTK::Vec3& aV1, const SimTK::Vec3& aV2, SimTK::Vec3& aV){
-         aV = aV1 % aV2;
-    };
-    /**
-    * Get a unit vector that is perpendicular to a specified vector.  The unit
-    * vector is arbitrary, in the sense that it is one of an infinite number of
-    * vectors that are perpendicular to the original specified vector.
-    *
-    * @param aV Input vector.
-    * @param rV Perpendicular unit vector.
-    */
-    static void PerpendicularUnitVector(const SimTK::Vec3& aV, SimTK::Vec3& rV)
-    {
-        SimTK::UnitVec3 unit(aV);
-        rV = unit.perp().asVec3();
-    }
-    static void
-     Interpolate(int aN,double aT1,double *aY1,double aT2,double *aY2,
-     double t,double *aY);
-    static double
-     Interpolate(double aT1,double aY1,double aT2,double aY2,
-     double t);
-
-    //--------------------------------------------------------------------------
-    // TRANSLATION AND ROTATION
-    //--------------------------------------------------------------------------
-    static void
-        Translate(double aX,double aY,double aZ,const double aP[3],double rP[3]);
-    static void
-        Rotate(int aXYZ,double aRadians,const double aP[3],double rP[3]);
-    static void
-        Rotate(const double aAxis[3],double aRadians,const double aP[3],
-        double rP[3]);
-    static void
-        RotateDeg(int aXYZ,double aDegrees,const double aP[3],double rP[3]);
-    static void
-        RotateDeg(const double aAxis[3],double aDegrees,const double aP[3],
-        double rP[3]);
 
     //--------------------------------------------------------------------------
     // MATRIX
     //--------------------------------------------------------------------------
     static int Identity(int aNR,double *rI);
-    //static int Assign(int aNR,int aNC,double aScalar,double *rM);
-    //static int Assign(int aNR,int aNC,const double *aM,double *rM);
-    //static int Add(int aNR,int aNC,const double *aM1,double aScalar,double *aM);
-    static int Add(int aNR,int aNC,const double *aM1,const double *aM2,double *aM);
     static int Subtract(int aNR,int aNC,const double *aM1,const double *aM2,
         double *aM);
     static int Multiply(int aNR,int aNC,const double *aM,double aScalar,double *rM);
