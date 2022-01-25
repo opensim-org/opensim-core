@@ -534,7 +534,7 @@ int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::
 
     // use p1, p2, and c1 to create parameters for the wrapping plane
     p1c1 = p1 - aWrapResult.c1;
-    Mtx::CrossProduct(p1p2, p1c1, vs);
+    vs = p1p2 % p1c1;
     Mtx::Normalize(3, vs, vs);
 
     vs4 = - Mtx::DotProduct(3, vs, aWrapResult.c1);
@@ -885,9 +885,9 @@ void WrapEllipsoid::CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, Si
     else
         dphi = phi0 / (double) numPathSegments;
 
-    Mtx::CrossProduct(ar1, ar2, vsz);
+    vsz = ar1 % ar2;
     Mtx::Normalize(3, vsz, vsz);
-    Mtx::CrossProduct(vsz, ar1, vsy);
+    vsy = vsz % ar1;
 
     for (i = 0; i < 3; i++)
     {

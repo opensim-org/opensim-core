@@ -260,7 +260,7 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
 
     dist = sqrt(r_squared - dist * dist);
 
-    Mtx::CrossProduct(dn, vv, uu);
+    uu = dn % vv;
 
     for (i = 0; i < 3; i++)
     {
@@ -282,7 +282,7 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
 
     dist = sqrt(r_squared - dist * dist);
 
-    Mtx::CrossProduct(dn, vv, uu);
+    uu = dn % vv;
 
     for (i = 0; i < 3; i++)
     {
@@ -425,10 +425,10 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
         r2am = r2a - p22;
         r2bm = r2b - p22;
 
-        Mtx::Normalize(3, r1am, r1am);
-        Mtx::Normalize(3, r1bm, r1bm);
-        Mtx::Normalize(3, r2am, r2am);
-        Mtx::Normalize(3, r2bm, r2bm);
+        r1am.normalize();
+        r1bm.normalize();
+        r2am.normalize();
+        r2bm.normalize();
 
         dot1 = Mtx::DotProduct(3, r1am, r2am);
         dot2 = Mtx::DotProduct(3, r1am, r2bm);
@@ -465,7 +465,7 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     for (i = 0; i < 3; i++)
         vv[i] = uu[i] + vv[i];
 
-    Mtx::Normalize(3, vv, vv);
+    vv.normalize();
 
     // find the apex point by using a ratio of the lengths of the
     // aPoint1-p11 and aPoint2-p22 segments:
@@ -485,16 +485,16 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     Mtx::Normalize(3, l1, l1);
     Mtx::Normalize(3, l2, l2);
 
-    Mtx::CrossProduct(l1, l2, plane_normal);
+    plane_normal = UnitVec3(l1 % l2);
     Mtx::Normalize(3, plane_normal, plane_normal);
 
     // cross plane normal and cylinder axis (each way) to
     // get vectors pointing from axispt towards mpt and
     // away from mpt (you can't tell which is which yet).
-    Mtx::CrossProduct(dn, plane_normal, vert1);
-    Mtx::Normalize(3, vert1, vert1);
-    Mtx::CrossProduct(plane_normal, dn, vert2);
-    Mtx::Normalize(3, vert2, vert2);
+    vert1 = dn % plane_normal;
+    vert1.normalize();
+    vert2 = plane_normal % dn;
+    vert2.normalize();
 
     // now find two potential apex points, one along each vector
     for (i = 0; i < 3; i++)
@@ -653,10 +653,10 @@ restart_spiral_wrap:
     aWrapResult.wrap_path_length = sqrt(x * x + y * y);
 
     // build path segments
-    Mtx::CrossProduct(uu, vv, ax);
-    Mtx::Normalize(3, ax, ax);
+    ax = uu % vv;
+    ax.normalize();
 
-    Mtx::CrossProduct(ax, uu, vv);
+    vv = ax % uu;
 
     SimTK::Rotation m;
     m.set(0, 0, ax[0]); m.set(0, 1, ax[1]); m.set(0, 2, ax[2]);
@@ -772,8 +772,8 @@ bool WrapCylinder::_adjust_tangent_point(SimTK::Vec3& pt1,
     int i;
     bool did_adust = false;
 
-    Mtx::Normalize(3, pr_vec, pr_vec);
-    Mtx::Normalize(3, rw_vec, rw_vec);
+    pr_vec.normalize();
+    rw_vec.normalize();
 
     alpha = acos(Mtx::DotProduct(3, pr_vec, dn));
     omega = acos(Mtx::DotProduct(3, rw_vec, dn));

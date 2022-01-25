@@ -242,7 +242,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
     Mtx::Normalize(3, p1p2, p1p2);
     Mtx::Normalize(3, p2m, np2);
 
-    Mtx::CrossProduct(p1p2, np2, hp2);
+    hp2 = p1p2 % np2;
 
    // if the muscle line passes too close to the center of the sphere
    // then give up
@@ -268,7 +268,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
     for (i = 0; i < 3; i++)
         y[i] = origin[i] - aPoint1[i];
     Mtx::Normalize(3, y, y);
-    Mtx::CrossProduct(n, y, z);
+    z = n % y;
    
    for (i = 0; i < 3; i++)
    {
@@ -295,7 +295,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
     for (i = 0; i < 3; i++)
         y[i] = origin[i] - aPoint2[i];
     Mtx::Normalize(3, y, y);
-    Mtx::CrossProduct(n, y, z);
+    z = n % y;
 
    for (i = 0; i < 3; i++)
    {
@@ -489,8 +489,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
    r1r2 = get_radius() * angle;
    aWrapResult.wrap_path_length = r1r2;
 
-    Vec3 axis3;
-    Mtx::CrossProduct(r1n, r2n, axis3);
+    Vec3 axis3 = r1n % r2n;
     Mtx::Normalize(3, axis3, axis3);
 
    for(int ii=0; ii<3; ii++) axis[ii]=axis3[ii];
