@@ -326,8 +326,8 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
         r2am = r2a - p22;
         r2bm = r2b - p22;
 
-        alpha = Mtx::Angle(r1am, r2bm);
-        beta = Mtx::Angle(r1bm, r2am);
+        alpha = acos((~r1am * r2bm) / (r1am.norm() * r2bm.norm()));
+        beta = acos((~r1bm * r2am) / (r1bm.norm() * r2am.norm()));
 
         // check to see which of the four tangent points should be chosen by seeing which
         // ones are on the 'active' portion of the cylinder. If r1a and r1b are both on or
@@ -640,7 +640,7 @@ restart_spiral_wrap:
         vv[i] /= _radius;
     }
 
-    theta = Mtx::Angle(uu,vv);
+    theta = acos((~uu * vv) / (uu.norm() * vv.norm()));
 
     if (far_side_wrap)
         theta = 2.0 * SimTK_PI - theta;

@@ -66,16 +66,6 @@ public:
     // VECTOR
     //--------------------------------------------------------------------------
     //_____________________________________________________________________________
-    /**
-    * Find the angle between two vectors:  theta = acos( aV1*aV2/(|aV1|*|aV2|)).
-    *
-    * @param aV1 Vector 1.
-    * @param aV2 Vector 2.
-    * @return Angle between two vectors in radians.
-    */
-    inline static double Angle(const SimTK::Vec3& aV1, const SimTK::Vec3& aV2){
-        return (acos( (~aV1 * aV2)/(aV1.norm()*aV2.norm())));
-    }
     //_____________________________________________________________________________
     /**
     * Normalize a vector.
