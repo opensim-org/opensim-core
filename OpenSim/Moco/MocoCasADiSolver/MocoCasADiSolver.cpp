@@ -342,7 +342,7 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
 
     if (get_verbosity()) {
         log_info(std::string(72, '='));
-        log_info("MocoCasADiSolver startig.");
+        log_info("MocoCasADiSolver starting.");
         log_info(getFormattedDateTime(false, "%c"));
         log_info(std::string(72, '-'));
         getProblemRep().printDescription();

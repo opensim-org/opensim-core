@@ -16,149 +16,87 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/// This example ... TODO
-/// https://web.casadi.org/blog/nlp-scaling/
+/// This example 
+/// Inspired by: https://web.casadi.org/blog/nlp-scaling/.
 
 #include <OpenSim/Actuators/CoordinateActuator.h>
-#include <OpenSim/Moco/MocoCasADiSolver/CasOCProblem.h>
-#include <OpenSim/Moco/MocoCasADiSolver/CasOCSolver.h>
-#include <OpenSim/Moco/MocoCasADiSolver/MocoCasOCProblem.h>
-
-#include <casadi/casadi.hpp>
-
-using casadi::Callback;
-using casadi::Dict;
-using casadi::DM;
-using casadi::MX;
-using casadi::Slice;
-using casadi::Sparsity;
-using CasOC::Bounds;
+#include <OpenSim/Moco/osimMoco.h>
+#include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 
 using namespace OpenSim;
 
-class RocketProblem : public CasOC::Problem {
-public:
-    RocketProblem() {
-        setTimeBounds(Bounds(0.0, 0.0), Bounds(100.0, 100.0));
-        addState("height", CasOC::StateType::Coordinate, Bounds(0.0, 1e5), Bounds(0.0, 0.0), Bounds(1e5, 1e5));
-        addState("velocity", CasOC::StateType::Speed, Bounds(0.0, 2e3), Bounds(0.0, 0.0), Bounds(0.0, 2e3));
-        addState("mass", CasOC::StateType::Auxiliary, {0, 5e5}, {5e5, 5e5}, {0, 5e5});
-        addControl("force", Bounds(0.0, 1e8), Bounds(0.0, 1e8), Bounds(0.0, 1e8));
-        addCost("effort", 0, 1);
-        setDynamicsMode("explicit");
-    }
-private:
-    void calcMultibodySystemExplicit(const ContinuousInput& input,
-            bool calcKCErrors, MultibodySystemExplicitOutput& output) const override {
+std::unique_ptr<Model> createRocketModel() {
+    auto model = make_unique<Model>();
+    model->setName("sliding_mass");
+    model->set_gravity(SimTK::Vec3(9.81, 0, 0));
+    auto* body = new Body("body", 100000.0, SimTK::Vec3(0), SimTK::Inertia(0));
+    model->addComponent(body);
 
-        SimTK::Vector x(3, input.states.ptr(), true);
-        SimTK::Vector u(1, input.controls.ptr(), true);
+    // Allows translation along x.
+    auto* joint = new SliderJoint("slider", model->getGround(), *body);
+    auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
+    coord.setName("position");
+    model->addComponent(joint);
 
-        SimTK::Vector xdot(1, 0.0);
-        SimTK::Vector auxdot(1, 0.0);
+    auto* actu = new CoordinateActuator();
+    actu->setCoordinate(&coord);
+    actu->setName("actuator");
+    actu->setOptimalForce(1);
+    model->addComponent(actu);
 
-        xdot[0] = u[0] / x[2] - 9.81;
-        auxdot[0] = -u[0] / (300.0 * 9.81);
+    body->attachGeometry(new Sphere(0.05));
 
-        std::copy_n(xdot.getContiguousScalarData(), xdot.size(),
-                output.multibody_derivatives.ptr());
-        std::copy_n(auxdot.getContiguousScalarData(), auxdot.size(),
-                output.auxiliary_derivatives.ptr());
-    }
-    void calcMultibodySystemImplicit(const ContinuousInput& input,
-            bool calcKCErrors, MultibodySystemImplicitOutput& output) const override {
-        // not implemented
-    }
-    void calcVelocityCorrection(const double& time,
-            const casadi::DM& multibody_states, const casadi::DM& slacks,
-            const casadi::DM& parameters,
-            casadi::DM& velocity_correction) const override {
-        // not implemented
-    }
+    model->finalizeConnections();
 
-//    void calcCostIntegrand(int costIndex,
-//            const ContinuousInput& input, double& integrand) const override {
-//        integrand = 0;
-//        SimTK::Vector controls(1, input.controls.ptr(), true);
-//        integrand = controls[0] * controls[0];
-//    }
-    void calcCost(int costIndex, const CostInput& input,
-            casadi::DM& cost) const override {
-        SimTK::Vector simtkCost((int)cost.rows(), cost.ptr(), true);
-        SimTK::Vector init_x(3, input.initial_states.ptr(), true);
-        SimTK::Vector final_x(3, input.final_states.ptr(), true);
-        simtkCost[0] = init_x[2] - final_x[2];
-
-        //simtkCost[0] += 1e-15 * input.integral;
-//        std::copy_n(simtkCost.getContiguousScalarData(), simtkCost.size(),
-//                    cost.ptr());
-    }
-
-};
-
-std::unique_ptr<RocketProblem> createCasOCProblem() {
-    return OpenSim::make_unique<RocketProblem>();
+    return model;
 }
 
-std::unique_ptr<CasOC::Solver> createCasOCSolver(
-        const RocketProblem& casProblem) {
-    auto casSolver = OpenSim::make_unique<CasOC::Solver>(casProblem);
+void solveRocketProblem(bool scaleVariables) {
 
-    // Set solver options.
-    // -------------------
-    Dict solverOptions;
-    solverOptions["print_user_options"] = "yes";
-    solverOptions["print_level"] = 5;
-    solverOptions["hessian_approximation"] = "limited-memory";
-    solverOptions["max_iter"] = 10000;
-    const double tol = 1e-2;
-    solverOptions["tol"] = tol;
-    solverOptions["dual_inf_tol"] = tol;
-    solverOptions["compl_inf_tol"] = tol;
-    solverOptions["acceptable_tol"] = tol;
-    solverOptions["acceptable_dual_inf_tol"] = tol;
-    solverOptions["acceptable_compl_inf_tol"] = tol;
-    solverOptions["constr_viol_tol"] = tol;
-    solverOptions["acceptable_constr_viol_tol"] = tol;
+    MocoStudy study;
+    study.setName("rocket_problem");
 
-    casSolver->setSparsityDetection("none");
-    casSolver->setSparsityDetectionRandomCount(3);
-    casSolver->setFiniteDifferenceScheme("forward");
+    // Define the optimal control problem.
+    // ===================================
+    MocoProblem& problem = study.updProblem();
 
-    Dict pluginOptions;
-    pluginOptions["verbose_init"] = true;
+    // Model (dynamics).
+    // -----------------
+    problem.setModel(createRocketModel());
 
-    casSolver->setNumMeshIntervals(100);
-    casSolver->setTranscriptionScheme("trapezoidal");
-    casSolver->setScaleVariablesUsingBounds(false);
+    // Bounds.
+    // -------
+    // The rocket must reach a height of 100000 meters in 100 seconds
+    // starting from rest.
+    problem.setTimeBounds(0, 100);
+    problem.setStateInfo("/slider/position/value", {0, 1e5}, 0, 1e5);
+    problem.setStateInfo("/slider/position/speed", {-1e4, 1e4}, 0);
+    problem.setControlInfo("/actuator", {0, 1e9});
 
-    casSolver->setOptimSolver("ipopt");
-    casSolver->setParallelism("thread", 10);
-    //casSolver->setInterpolateControlMidpoints(true);
-    casSolver->setPluginOptions(pluginOptions);
-    casSolver->setSolverOptions(solverOptions);
-    return casSolver;
-}
+    // Cost.
+    // -----
+    problem.addGoal<MocoControlGoal>();
 
-void solveRocketProblem() {
-    std::cout.flush();
-    Logger::setLevelString("Debug");
-    std::cout << "logger level: "  << Logger::getLevelString() << std::endl;
-    auto casProblem = createCasOCProblem();
-    auto casSolver = createCasOCSolver(*casProblem);
-    auto casGuess = casSolver->createInitialGuessFromBounds();
-    auto casSolution = casSolver->solve(casGuess);
+    // Configure the solver.
+    // =====================
+    MocoCasADiSolver& solver = study.initCasADiSolver();
+    solver.set_num_mesh_intervals(100);
+    solver.set_scale_variables_using_bounds(scaleVariables);
 
-    MocoSolution mocoSolution =
-            convertToMocoTrajectory<MocoSolution>(casSolution);
-
-    mocoSolution.write("exampleVariableScaling_solution.sto");
-
+    // Solve the problem.
+    // ==================
+    MocoSolution solution = study.solve();
+    solution.write("exampleVariableScaling_solution.sto");
 }
 
 int main() {
 
-    solveRocketProblem();
+    // solves in ~150 iterations
+    solveRocketProblem(false);
+
+    // solves in ~10 iterations
+    solveRocketProblem(true);
+
 
     return EXIT_SUCCESS;
 }
