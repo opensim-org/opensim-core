@@ -29,7 +29,7 @@
 
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include "SimTKcommon/SmallMatrix.h"
-#include "SimTKcommon/Internal/UnitVec.h"
+#include "SimTKcommon/internal/UnitVec.h"
 
 
 namespace OpenSim { 
