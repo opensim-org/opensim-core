@@ -96,16 +96,6 @@ public:
             rV.setToZero();
         return mag;
     }
-    /**
-    * Compute the magnitude of a vector.
-    *
-    * @param aN     Obsolete -- always pass as a "3".
-    * @param aV     Vector.
-    * @returns      Square root of the dot product aV*aV.
-    */
-    inline static double Magnitude(int aN,const SimTK::Vec3& aV){
-        return aV.norm();
-    }
     //_____________________________________________________________________________
     /**
     * Compute the dot product of two vectors.

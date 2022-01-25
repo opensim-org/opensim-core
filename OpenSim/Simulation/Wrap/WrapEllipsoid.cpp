@@ -822,7 +822,7 @@ void WrapEllipsoid::CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, Si
     double phi, dphi, phi0, len, mu, aa, bb, cc, mu3, s[500][3], r0[3][3], rphi[3][3], desiredSegLength = 0.001;
 
     dr = r1 - r2;
-    len = Mtx::Magnitude(3, dr) / aWrapResult.factor;
+    len = dr.norm() / aWrapResult.factor;
 
     if (len < desiredSegLength) {
         // If the distance between r1 and r2 is very small, then don't bother

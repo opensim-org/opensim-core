@@ -205,7 +205,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
     }
 
    // check that neither point is inside the radius of the sphere
-    if (Mtx::Magnitude(3, p1m) < get_radius() || Mtx::Magnitude(3, p2m) < get_radius())
+    if (p1m.norm() < get_radius() || p2m.norm() < get_radius())
       return insideRadius;
 
     a = Mtx::DotProduct(3, ri, ri);
@@ -246,21 +246,11 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
 
    // if the muscle line passes too close to the center of the sphere
    // then give up
-    if (Mtx::Magnitude(3, hp2) < 0.00001) {
+    if (hp2.norm() < 0.00001) {
         // JPL 12/28/06: r1 and r2 from the previous wrap have already
         // been copied into aWrapResult (and not yet overwritten). So
         // just go directly to calc_path.
-#if 0
-      // no wait!  don't give up!  Instead use the previous r1 & r2:
-      // -- added KMS 9/9/99
-      //
-        const WrapResult& previousWrap = aPathWrap.getPreviousWrap();
-      for (i = 0; i < 3; i++) {
-         aWrapResult.r1[i] = previousWrap.r1[i];
-         aWrapResult.r2[i] = previousWrap.r2[i];
-      }
-#endif
-      goto calc_path;
+        goto calc_path;
    }
 
    // calc tangent point candidates r1a, r1b
@@ -277,19 +267,19 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
       ra[i][2] = z[i];
    }
 
-    a1 = asin(get_radius() / Mtx::Magnitude(3, p1m));
+    a1 = asin(get_radius() / p1m.norm());
 
     rrx.setRotationFromAngleAboutX(a1);
     aa = ra * ~rrx;
 
    for (i = 0; i < 3; i++)
-      r1a[i] = aPoint1[i] + aa[i][1] * Mtx::Magnitude(3, p1m) * cos(a1);
+      r1a[i] = aPoint1[i] + aa[i][1] * p1m.norm() * cos(a1);
 
    rrx.setRotationFromAngleAboutX(-a1);
    aa = ra * ~rrx;
 
    for (i = 0; i < 3; i++)
-      r1b[i] = aPoint1[i] + aa[i][1] * Mtx::Magnitude(3, p1m) * cos(a1);
+      r1b[i] = aPoint1[i] + aa[i][1] * p1m.norm() * cos(a1);
 
    // calc tangent point candidates r2a, r2b
     for (i = 0; i < 3; i++)
@@ -304,19 +294,19 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
       ra[i][2] = z[i];
    }
 
-   a2 = asin(get_radius() / Mtx::Magnitude(3, p2m));
+   a2 = asin(get_radius() / p2m.norm());
 
    rrx.setRotationFromAngleAboutX(a2);
    aa = ra * ~rrx;
 
    for (i = 0; i < 3; i++)
-      r2a[i] = aPoint2[i] + aa[i][1] * Mtx::Magnitude(3, p2m) * cos(a2);
+      r2a[i] = aPoint2[i] + aa[i][1] * p2m.norm() * cos(a2);
 
    rrx.setRotationFromAngleAboutX(-a2);
    aa = ra * ~rrx;
 
    for (i = 0; i < 3; i++)
-      r2b[i] = aPoint2[i] + aa[i][1] * Mtx::Magnitude(3, p2m) * cos(a2);
+      r2b[i] = aPoint2[i] + aa[i][1] * p2m.norm() * cos(a2);
 
    // determine wrapping tangent points r1 & r2
     for (i = 0; i < 3; i++) {
