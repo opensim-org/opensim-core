@@ -16,7 +16,14 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/// This example 
+/// This example demonstrates how scaling optimization variables can be valuable
+/// when solving a non-linear program. Here, we'll solve an optimal control
+/// problem to find the trajectory of a rocket needed to reach a height of
+/// 100 kilometers with minimum effort. The variables in this problem have large
+/// values, but optimizers typical work best with values between [0.01, 100].
+/// We'll solve two problems: one using the original variable values, and a
+/// second with scaled variables based on the variable bounds.
+///
 /// Inspired by: https://web.casadi.org/blog/nlp-scaling/.
 
 #include <OpenSim/Actuators/CoordinateActuator.h>
@@ -29,7 +36,7 @@ std::unique_ptr<Model> createRocketModel() {
     auto model = make_unique<Model>();
     model->setName("sliding_mass");
     model->set_gravity(SimTK::Vec3(9.81, 0, 0));
-    auto* body = new Body("body", 100000.0, SimTK::Vec3(0), SimTK::Inertia(0));
+    auto* body = new Body("body", 500000.0, SimTK::Vec3(0), SimTK::Inertia(0));
     model->addComponent(body);
 
     // Allows translation along x.
@@ -71,7 +78,7 @@ void solveRocketProblem(bool scaleVariables) {
     problem.setTimeBounds(0, 100);
     problem.setStateInfo("/slider/position/value", {0, 1e5}, 0, 1e5);
     problem.setStateInfo("/slider/position/speed", {-1e4, 1e4}, 0);
-    problem.setControlInfo("/actuator", {0, 1e9});
+    problem.setControlInfo("/actuator", {0, 1e10}, 0);
 
     // Cost.
     // -----
@@ -91,12 +98,19 @@ void solveRocketProblem(bool scaleVariables) {
 
 int main() {
 
-    // solves in ~150 iterations
+    // No variable scaling
+    // -------------------
+    // This converges but requires ~250+ iterations, despite being a simple
+    // problem with only a few trajectory variables.
     solveRocketProblem(false);
 
-    // solves in ~10 iterations
+    // With variable scaling
+    // ---------------------
+    // This converges in only ~10 iterations. In this problem, we've enabled
+    // the property `scale_variables_using_bounds` of MocoCasADiSolver, which
+    // scales each optimization variable based on the magnitude between the
+    // lower and upper bounds so that all variables lie in the range [-0.5, 0.5].
     solveRocketProblem(true);
-
 
     return EXIT_SUCCESS;
 }

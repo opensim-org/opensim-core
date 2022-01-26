@@ -113,8 +113,6 @@ protected:
             } else {
                 shift = -0.5 * (upper + lower);
             }
-            OpenSim::log_info("dilate: {}", dilate);
-            OpenSim::log_info("shift: {}", shift);
             m_scale.at(key)(rowIndices, columnIndices) = dilate;
             m_shift.at(key)(rowIndices, columnIndices) = shift;
         } else {
@@ -205,15 +203,6 @@ private:
     void calcDefects() {
         calcDefectsImpl(
                 m_unscaledVars.at(states), m_xdot, m_constraints.defects);
-//        if (m_solver.getScaleVariablesUsingBounds() &&
-//                m_problem.getNumStates()) {
-//            // TODO this is hacky:
-//            const auto repRow =
-//                    m_constraints.defects.rows() / m_problem.getNumStates();
-//            const auto repCol = m_constraints.defects.columns();
-//            m_constraints.defects /=
-//                    casadi::DM::repmat(m_scale.at(states), repRow, repCol);
-//        }
     }
     void calcInterpolatingControls() {
         calcInterpolatingControlsImpl(
