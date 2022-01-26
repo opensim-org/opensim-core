@@ -728,9 +728,6 @@ Solution Transcription::solve(const Iterate& guessOrig) {
     // -------------------------
     Solution solution = m_problem.createIterate<Solution>();
     const auto finalVariables = nlpResult.at("x");
-    std::stringstream ss;
-    finalVariables.print_dense(ss);
-    OpenSim::log_cout(ss.str());
     solution.variables = unscaleVariables(expandVariables(finalVariables));
     solution.objective = nlpResult.at("f").scalar();
 
