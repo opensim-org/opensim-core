@@ -482,11 +482,10 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     l1 = aPoint1 - axispt;
     l2 = aPoint2 - axispt;
 
-    Mtx::Normalize(3, l1, l1);
-    Mtx::Normalize(3, l2, l2);
+    l1.normalize();
+    l2.normalize();
 
     plane_normal = UnitVec3(l1 % l2);
-    Mtx::Normalize(3, plane_normal, plane_normal);
 
     // cross plane normal and cylinder axis (each way) to
     // get vectors pointing from axispt towards mpt and
