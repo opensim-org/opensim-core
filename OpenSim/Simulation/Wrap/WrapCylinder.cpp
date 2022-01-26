@@ -665,48 +665,50 @@ restart_spiral_wrap:
     // WrapTorus creates a WrapCyl with no connected model, avoid this hack
     if (!_model.empty() && !getModel().getDisplayHints().isVisualizationEnabled() &&
             aWrapResult.singleWrap) {
-        // Use one WrapSegment/cord instead of dense list of wrap_pt(s)
+        // Use one WrapSegment/cord instead of finely sampled list of wrap_pt(s)
         _calc_spiral_wrap_point(
                 r1a, axial_vec, m, ax, sense, 0, theta, wrap_pt);
         aWrapResult.wrap_pts.append(wrap_pt);
         _calc_spiral_wrap_point(
                 r1a, axial_vec, m, ax, sense, 1.0, theta, wrap_pt);
         aWrapResult.wrap_pts.append(wrap_pt);
-        return;
-    }
-    // Each muscle segment on the surface of the cylinder should be
-    // 0.002 meters long. This assumes the model is in meters, of course.
-    int numWrapSegments = (int) (aWrapResult.wrap_path_length / 0.002);
-    if (numWrapSegments < 1)
-        numWrapSegments = 1;
+    } 
+    else {
+        // Each muscle segment on the surface of the cylinder should be
+        // 0.002 meters long. This assumes the model is in meters, of course.
+        int numWrapSegments = (int)(aWrapResult.wrap_path_length / 0.002);
+        if (numWrapSegments < 1) numWrapSegments = 1;
 
-    for (i = 0; i < numWrapSegments; i++)
-    {
-        double t = (double) i / numWrapSegments;
+        for (i = 0; i < numWrapSegments; i++) {
+            double t = (double)i / numWrapSegments;
 
-        _calc_spiral_wrap_point(r1a, axial_vec, m, ax, sense, t, theta, wrap_pt);
+            _calc_spiral_wrap_point(
+                    r1a, axial_vec, m, ax, sense, t, theta, wrap_pt);
 
-        // adjust r1/r2 tangent points if necessary to achieve tangency with
-        // the spiral path:
-        if (i == 1 && iterations < MAX_ITERATIONS && !aWrapResult.singleWrap)
-        {
-            bool did_adjust_r2 = false;
-            bool did_adjust_r1 = _adjust_tangent_point(aPoint1, dn, aWrapResult.r1, wrap_pt);
+            // adjust r1/r2 tangent points if necessary to achieve tangency with
+            // the spiral path:
+            if (i == 1 && iterations < MAX_ITERATIONS &&
+                    !aWrapResult.singleWrap) {
+                bool did_adjust_r2 = false;
+                bool did_adjust_r1 = _adjust_tangent_point(
+                        aPoint1, dn, aWrapResult.r1, wrap_pt);
 
-            SimTK::Vec3 temp_wrap_pt;
+                SimTK::Vec3 temp_wrap_pt;
 
-            _calc_spiral_wrap_point(r1a, axial_vec, m, ax, sense, 1.0 - t, theta, temp_wrap_pt);
+                _calc_spiral_wrap_point(r1a, axial_vec, m, ax, sense, 1.0 - t,
+                        theta, temp_wrap_pt);
 
-            did_adjust_r2 = _adjust_tangent_point(aPoint2, dn, aWrapResult.r2, temp_wrap_pt);
+                did_adjust_r2 = _adjust_tangent_point(
+                        aPoint2, dn, aWrapResult.r2, temp_wrap_pt);
 
-            if (did_adjust_r1 || did_adjust_r2)
-            {
-                iterations++;
-                goto restart_spiral_wrap;
+                if (did_adjust_r1 || did_adjust_r2) {
+                    iterations++;
+                    goto restart_spiral_wrap;
+                }
             }
-        }
 
-        aWrapResult.wrap_pts.append(wrap_pt);
+            aWrapResult.wrap_pts.append(wrap_pt);
+        }
     }
 }
 
