@@ -31,7 +31,6 @@
 #include "SimTKcommon/SmallMatrix.h"
 #include "SimTKcommon/internal/UnitVec.h"
 
-
 namespace OpenSim { 
 
 /** @cond **/ // hide from Doxygen
@@ -64,8 +63,6 @@ public:
                                       SimTK::Vec3& closestPt, double& t);
     static void
         Make3x3DirCosMatrix(double angle, double mat[][3]);
-    static void
-        ConvertAxisAngleTo4x4DirCosMatrix(const SimTK::Vec3& axis, double angle, double mat[][4]);
     static double
         CalcDistanceSquaredBetweenPoints(SimTK::Vec3& point1, SimTK::Vec3& point2);
     inline static double CalcDistanceSquaredPointToLine(
@@ -75,11 +72,36 @@ public:
         return (pToLinePt - (~pToLinePt * n) * n).normSqr();
     };
     static void
-        RotateMatrixAxisAngle(double matrix[][4], const SimTK::Vec3& axis, double angle);
-    static void
         ConvertQuaternionToMatrix(const double quat[4], double matrix[][4]);
-    static void
-        RotateMatrixQuaternion(double matrix[][4], const double quat[4]); 
+    /**
+     * Normalize a vector.
+     *
+     * If aV has a magnitude of zero, all elements of rV are set to 0.0.
+     * It is permissible for aV and rV to coincide in memory.
+     *
+     * @param aV     Vector to be normalized.
+     * @param rV     Result of the normalization.
+     * @returns      Magnitude of aV.
+     */
+    inline static double Normalize(const SimTK::Vec3& aV, SimTK::Vec3& rV) {
+        double mag = aV.norm();
+        if (mag >= SimTK::Eps)
+            rV = aV.scalarMultiply(1.0 / mag);
+        else
+            rV.setToZero();
+        return mag;
+    }
+    //_____________________________________________________________________________
+    /**
+     * Compute the dot product of two vectors.
+     *
+     * If the arguments are not valid (aV1=aV2=NULL), 0.0 is returned.
+     */
+    //_____________________________________________________________________________
+    inline static double DotProduct(
+            const SimTK::Vec3& aV1, const SimTK::Vec3& aV2) {
+        return ~aV1 * aV2;
+    }
 
 
 //=============================================================================

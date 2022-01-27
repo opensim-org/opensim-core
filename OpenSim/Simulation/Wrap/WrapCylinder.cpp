@@ -31,7 +31,6 @@
 #include "WrapResult.h"
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
-#include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/ScaleSet.h>
 
@@ -249,7 +248,7 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     // find preliminary tangent point candidates r1a & r1b
     vv = aPoint1 - p11;
 
-    p11_dist = Mtx::Normalize(3, vv, vv);
+    p11_dist = WrapMath::Normalize(vv, vv);
 
     sin_theta = _radius / p11_dist;
 
@@ -271,7 +270,7 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     // find preliminary tangent point candidates r2a & r2b
     vv = aPoint2 - p22;
 
-    p22_dist = Mtx::Normalize(3, vv, vv);
+    p22_dist = WrapMath::Normalize(vv, vv);
 
     sin_theta = _radius / p22_dist;
 
@@ -415,7 +414,7 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
             sum_r[i] = (aWrapResult.r1[i] - p11[i]) + (aWrapResult.r2[i] - p22[i]);
         }
 
-        if (Mtx::DotProduct(3, sum_r, sum_musc) < 0.0)
+        if ((~sum_r*sum_musc) < 0.0)
             long_wrap = true;
     }
     else
@@ -430,10 +429,10 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
         r2am.normalize();
         r2bm.normalize();
 
-        dot1 = Mtx::DotProduct(3, r1am, r2am);
-        dot2 = Mtx::DotProduct(3, r1am, r2bm);
-        dot3 = Mtx::DotProduct(3, r1bm, r2am);
-        dot4 = Mtx::DotProduct(3, r1bm, r2bm);
+        dot1 = (~r1am*r2am);
+        dot2 = (~r1am*r2bm);
+        dot3 = (~r1bm*r2am);
+        dot4 = (~r1bm*r2bm);
 
         if (dot1 > dot2 && dot1 > dot3 && dot1 > dot4)
         {
@@ -482,11 +481,11 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     l1 = aPoint1 - axispt;
     l2 = aPoint2 - axispt;
 
-    Mtx::Normalize(3, l1, l1);
-    Mtx::Normalize(3, l2, l2);
+    WrapMath::Normalize(l1, l1);
+    WrapMath::Normalize(l2, l2);
 
     plane_normal = UnitVec3(l1 % l2);
-    Mtx::Normalize(3, plane_normal, plane_normal);
+    WrapMath::Normalize(plane_normal, plane_normal);
 
     // cross plane normal and cylinder axis (each way) to
     // get vectors pointing from axispt towards mpt and
@@ -777,8 +776,8 @@ bool WrapCylinder::_adjust_tangent_point(SimTK::Vec3& pt1,
     pr_vec.normalize();
     rw_vec.normalize();
 
-    alpha = acos(Mtx::DotProduct(3, pr_vec, dn));
-    omega = acos(Mtx::DotProduct(3, rw_vec, dn));
+    alpha = acos((~pr_vec*dn));
+    omega = acos((~rw_vec*dn));
 
     if (fabs(alpha - omega) > TANGENCY_THRESHOLD)
     {

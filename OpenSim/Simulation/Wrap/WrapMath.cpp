@@ -30,7 +30,6 @@
 //=============================================================================
 #include <math.h>
 #include "WrapMath.h"
-#include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Common/SimmMacros.h>
 
 
@@ -75,11 +74,11 @@ IntersectLines(SimTK::Vec3& p1, SimTK::Vec3& p2, SimTK::Vec3& p3, SimTK::Vec3& p
 {
     SimTK::Vec3 vec1 = p2 - p1;
 
-    double mag1 = Mtx::Normalize(3, vec1, vec1);
+    double mag1 = WrapMath::Normalize(vec1, vec1);
 
     SimTK::Vec3 vec2 = p4 - p3;
 
-    double mag2 = Mtx::Normalize(3, vec2, vec2);
+    double mag2 = WrapMath::Normalize(vec2, vec2);
 
     SimTK::Vec3 cross_prod = vec1 % vec2;
 
@@ -135,7 +134,7 @@ IntersectLineSegPlane(SimTK::Vec3& pt1, SimTK::Vec3& pt2,
 {
     SimTK::Vec3 vec = pt2 - pt1;
 
-    double dotprod = Mtx::DotProduct(3, vec,plane);
+    double dotprod = (~vec*plane);
 
     if (DABS(dotprod) < LINE_EPSILON)
         return false;
@@ -194,9 +193,9 @@ GetClosestPointOnLineToPoint(SimTK::Vec3& pt, SimTK::Vec3& linePt, SimTK::Vec3& 
     v1 = pt - linePt;
 
     v2 = line;
-    double mag = Mtx::Normalize(3, v1, v1);
-    double mag2 = Mtx::Normalize(3, v2, v2);
-    t = Mtx::DotProduct(3, v1, v2) * mag;
+    double mag = WrapMath::Normalize(v1, v1);
+    double mag2 = WrapMath::Normalize(v2, v2);
+    t = (~v1*v2) * mag;
 
     closestPt = linePt + t * v2;
     t = t / mag2;
@@ -223,36 +222,6 @@ Make3x3DirCosMatrix(double angle, double mat[][3])
     mat[2][2] = mat[1][1];
 }
 
-/* Make a 4x4 direction cosine matrix from an
- * axis/angle rotation.
- * @param axis the axis of rotation
- * @param angle the angle, in radians
- * @param mat the matrix
- */
-void WrapMath::
-ConvertAxisAngleTo4x4DirCosMatrix(const SimTK::Vec3& axis, double angle, double mat[][4])
-{
-    SimTK::Vec3 normAxis;
-
-    Mtx::Identity(4, (double*)mat);
-    Mtx::Normalize(3, axis, normAxis);
-
-    double cl = cos(angle);
-    double sl = sin(angle);
-    double omc = 1.0 - cl;
-
-    // the following matrix is taken from Kane's 'Spacecraft Dynamics,' pp 6-7
-    mat[0][0] = cl + normAxis[0]*normAxis[0]*omc;
-    mat[1][0] = -normAxis[2]*sl + normAxis[0]*normAxis[1]*omc;
-    mat[2][0] = normAxis[1]*sl + normAxis[2]*normAxis[0]*omc;
-    mat[0][1] = normAxis[2]*sl + normAxis[0]*normAxis[1]*omc;
-    mat[1][1] = cl + normAxis[1]*normAxis[1]*omc;
-    mat[2][1] = -normAxis[0]*sl + normAxis[1]*normAxis[2]*omc;
-    mat[0][2] = -normAxis[1]*sl + normAxis[2]*normAxis[0]*omc;
-    mat[1][2] = normAxis[0]*sl + normAxis[1]*normAxis[2]*omc;
-    mat[2][2] = cl + normAxis[2]*normAxis[2]*omc;
-}
-
 /* Compute the square of the distance between two
  * points.
  * @param point1 the first point
@@ -265,20 +234,6 @@ CalcDistanceSquaredBetweenPoints(SimTK::Vec3& point1, SimTK::Vec3& point2)
     SimTK::Vec3 vec = point2 - point1;
 
     return vec.normSqr();
-}
-
-/* Rotate a 4x4 transform matrix by 'angle' radians about axis 'axis'.
- * @param matrix The 4x4 transform matrix
- * @param axis The axis about which to rotate
- * @param angle the amount to rotate, in radians
- */
-void WrapMath::
-RotateMatrixAxisAngle(double matrix[][4], const SimTK::Vec3& axis, double angle)
-{
-    double quat[4];
-
-    ConvertAxisAngleToQuaternion(axis, angle, quat);
-    RotateMatrixQuaternion(matrix, quat);
 }
 
 /* Make a 4x4 transform matrix from a quaternion.
@@ -303,19 +258,4 @@ ConvertQuaternionToMatrix(const double quat[4], double matrix[][4])
 
     matrix[0][3] = matrix[1][3] = matrix[2][3] = matrix[3][0] = matrix[3][1] = matrix[3][2] = 0.0;
     matrix[3][3] = 1.0;
-}
-
-/* Rotate a 4x4 transform matrix by a quaternion.
- * @param matrix The 4x4 transform matrix
- * @param quat The quaternion
- */
-void WrapMath::
-RotateMatrixQuaternion(double matrix[][4], const double quat[4])
-{
-    // append a quaternion rotation to a matrix
-    double n[4][4];
-
-    ConvertQuaternionToMatrix(quat, n);
-
-    Mtx::Multiply(4, 4, 4, (double*)matrix, (double*)n, (double*)matrix);
 }

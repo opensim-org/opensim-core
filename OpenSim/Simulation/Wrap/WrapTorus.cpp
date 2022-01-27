@@ -27,10 +27,10 @@
 #include "WrapTorus.h"
 #include "WrapCylinder.h"
 #include "WrapResult.h"
+#include "WrapMath.h"
 #include <OpenSim/Common/ModelDisplayHints.h>
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/Lmdif.h>
-#include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Common/ScaleSet.h>
 
@@ -225,7 +225,7 @@ int WrapTorus::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3
     closestPt *= -1;
 
     cylXaxis = closestPt;
-    Mtx::Normalize(3, cylXaxis, cylXaxis);
+    WrapMath::Normalize(cylXaxis, cylXaxis);
     cylYaxis[0] = 0.0;
     cylYaxis[1] = 0.0;
     cylYaxis[2] = -1.0;

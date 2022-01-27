@@ -24,7 +24,6 @@
 #define CATCH_CONFIG_MAIN
 #include <OpenSim/Auxiliary/catch.hpp>
 #include <OpenSim/Simulation/Wrap/WrapMath.h>
-#include <OpenSim/Common/Mtx.h>
 #include <SimTKcommon/Testing.h>
 
 #include <random>
@@ -72,70 +71,3 @@ static void compareMat(C mat1, D mat2,
 
 static const double ANGLE = 0.1;
 static const SimTK::Vec3 AXIS(1.0, 2.0, 3.0);
-
-TEST_CASE("Compare rotations about the X-axis", "") {
-    SimTK::Mat33 mat, b;
-    double Rxc[3][3], matc[3][3], bc[3][3];
-    fillMat<SimTK::Mat33&, double[][3], 3>(mat, matc);
-
-    SimTK::Rotation Rx;
-    Rx.setRotationFromAngleAboutX(ANGLE);
-    // This multiplication matches the convention of
-    // WrapMath::Make3x3DirCosMatrix.
-    b = mat * ~Rx;
-
-    WrapMath::Make3x3DirCosMatrix(ANGLE, Rxc);
-    Mtx::Multiply(3, 3, 3, (double*)matc, (double*)Rxc, (double*)bc);
-
-    // Need to transpose the SimTK rotation matrix to match rotation convention.
-    compareMat<SimTK::InverseRotation, double[][3], 3>(~Rx, Rxc);
-    compareMat<SimTK::Mat33, double[][3], 3>(b, bc);
-}
-
-TEST_CASE("Compare angle-axis rotations", "") {
-    SimTK::Mat44 x;
-    SimTK::Mat33 b;
-    double bc[4][4];
-    fillMat<SimTK::Mat44&, double[][4], 4>(x, bc);
-
-    SimTK::Rotation R;
-    R.setRotationFromAngleAboutNonUnitVector(ANGLE, AXIS);
-    // This multiplication matches the convention of
-    // WrapMath::RotateMatrixAxisAngle.
-    b = x.dropRowCol(3, 3) * ~R;
-
-    WrapMath::RotateMatrixAxisAngle(bc, AXIS, ANGLE);
-
-    compareMat<SimTK::Mat33, double[][4], 3>(b, bc);
-}
-
-TEST_CASE("Compare angle-axis rotations with 4x4 matrices", "") {
-    double mat[4][4], xc[4], bc[4];
-    SimTK::Vec4 x;
-    SimTK::Vec3 b;
-    fillVec<SimTK::Vec4&, double[4], 4>(x, xc);
-
-    SimTK::Rotation R;
-    R.setRotationFromAngleAboutNonUnitVector(ANGLE, AXIS);
-    // This multiplication matches the convention of
-    // WrapMath::ConvertAxisAngleTo4x4DirCosMatrix.
-    b = ~R * x.drop1(3);
-
-    WrapMath::ConvertAxisAngleTo4x4DirCosMatrix(AXIS, ANGLE, mat);
-    Mtx::Multiply(4, 4, 1, (double*)mat, (double*)xc, (double*)bc);
-
-    for (int i = 0; i < 3; ++i) {
-        SimTK_TEST_EQ(b[0], bc[0]);
-    }
-}
-
-TEST_CASE("Compare inverting matrices", "") {
-    SimTK::Mat44 M, Minv;
-    double Mc[4][4], Mcinv[4][4];
-    fillMat<SimTK::Mat44&, double[][4], 4>(M, Mc);
-
-    Minv = M.invert();
-    Mtx::Invert(4, &Mc[0][0], &Mcinv[0][0]);
-
-    compareMat<SimTK::Mat44, double[][4], 4>(Minv, Mcinv, 1e-10);
-}
