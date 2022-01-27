@@ -262,7 +262,7 @@ int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::
     p2m = p2 - m;
     WrapMath::Normalize(p2m, p2m);
 
-    ppm = WrapMath::DotProduct(p1m, p2m) - 1.0;   // angle between p1->m and p2->m: -2.0 to 0.0
+    ppm = (~p1m*p2m) - 1.0;   // angle between p1->m and p2->m: -2.0 to 0.0
 
     if (fabs(ppm) < 0.0001)
     {
@@ -286,9 +286,9 @@ int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::
         f1[i] = p1p2[i] / a[i];
         f2[i] = (p2[i] - m[i]) / a[i];
     }
-    aa = WrapMath::DotProduct(f1, f1);
-    bb = 2.0 * WrapMath::DotProduct(f1, f2);
-    cc = WrapMath::DotProduct(f2, f2) - 1.0;
+    aa = (~f1*f1);
+    bb = 2.0 * (~f1*f2);
+    cc = (~f2*f2) - 1.0;
     disc = SQR(bb) - 4.0 * aa * cc;
 
     if (disc < 0.0)
@@ -537,7 +537,7 @@ int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::
     vs = p1p2 % p1c1;
     WrapMath::Normalize(vs, vs);
 
-    vs4 = - WrapMath::DotProduct(vs, aWrapResult.c1);
+    vs4 = - (~vs*aWrapResult.c1);
 
     // find r1 & r2 by starting at c1 moving toward p1 & p2
     calcTangentPoint(p1e, aWrapResult.r1, p1, m, a, vs, vs4);
@@ -568,7 +568,7 @@ calc_wrap_path:
         WrapMath::Normalize(r2p2, r2p2);
         WrapMath::Normalize(r2w2, r2w2);
 
-        if (WrapMath::DotProduct(r1p1, r1w1) > 0.0 || WrapMath::DotProduct(r2p2, r2w2) > 0.0)
+        if ((~r1p1*r1w1) > 0.0 || (~r2p2*r2w2) > 0.0)
         {
             // NOTE: I added the ability to call CalcDistanceOnEllipsoid() a 2nd time in this
             //  situation to force a far-side wrap instead of aborting the
@@ -631,15 +631,15 @@ int WrapEllipsoid::calcTangentPoint(double p1e, SimTK::Vec3& r1, SimTK::Vec3& p1
         for (i = 0; i < 3; i++)
             nr1[i] = 2.0 * (r1[i] - m[i])/(SQR(a[i]));
 
-        d1 = -WrapMath::DotProduct(nr1, r1);
-        ee[0] = WrapMath::DotProduct(vs, r1) + vs4;
+        d1 = -(~nr1*r1);
+        ee[0] = (~vs*r1) + vs4;
         ee[1] = -1.0;
 
         for (i = 0; i < 3; i++)
             ee[1] += SQR((r1[i] - m[i]) / a[i]);
 
-        ee[2] = WrapMath::DotProduct(nr1, r1) + d1;
-        ee[3] = WrapMath::DotProduct(nr1, p1) + d1;
+        ee[2] = (~nr1*r1) + d1;
+        ee[3] = (~nr1*p1) + d1;
 
         ssqo = SQR(ee[0]) + SQR(ee[1]) + SQR(ee[2]) + SQR(ee[3]);
         ssq = ssqo;
@@ -669,7 +669,7 @@ int WrapEllipsoid::calcTangentPoint(double p1e, SimTK::Vec3& r1, SimTK::Vec3& p1
             p1m = p1 - m;
             WrapMath::Normalize(p1m, p1m);
 
-            pcos = WrapMath::DotProduct(p1r1, p1m);
+            pcos = (~p1r1*p1m);
 
             if (pcos > 0.1)
                 dd = 1.0 - pow(pcos, 100);
@@ -723,14 +723,14 @@ int WrapEllipsoid::calcTangentPoint(double p1e, SimTK::Vec3& r1, SimTK::Vec3& p1
                 for (i = 0; i < 3; i++)
                     nr1[i] = 2.0 * (r1[i] - m[i])/SQR(a[i]);
 
-                ee[0] = WrapMath::DotProduct(vs, r1) + vs4;
+                ee[0] = (~vs*r1) + vs4;
                 ee[1] = -1.0;
 
                 for (i = 0; i < 3; i++)
                     ee[1] += SQR((r1[i] - m[i])/a[i]);
 
-                ee[2] = WrapMath::DotProduct(nr1, r1) + d1;
-                ee[3] = WrapMath::DotProduct(nr1, p1) + d1;
+                ee[2] = (~nr1*r1) + d1;
+                ee[3] = (~nr1*p1) + d1;
 
                 ssqo = ssq;
 
@@ -758,14 +758,14 @@ int WrapEllipsoid::calcTangentPoint(double p1e, SimTK::Vec3& r1, SimTK::Vec3& p1
                 for (i = 0; i < 3; i++)
                     nr1[i] = 2.0 * (r1[i] - m[i]) / SQR(a[i]);
 
-                ee[0] = WrapMath::DotProduct(vs, r1) + vs4;
+                ee[0] = (~vs*r1) + vs4;
                 ee[1] = -1.0;
 
                 for (i=0; i<3; i++)
                     ee[1] += SQR((r1[i] - m[i]) / a[i]);
 
-                ee[2] = WrapMath::DotProduct(nr1, r1) + d1;
-                ee[3] = WrapMath::DotProduct(nr1, p1) + d1;
+                ee[2] = (~nr1*r1) + d1;
+                ee[3] = (~nr1*p1) + d1;
 
                 ssqo = ssq;     
 
@@ -782,14 +782,14 @@ int WrapEllipsoid::calcTangentPoint(double p1e, SimTK::Vec3& r1, SimTK::Vec3& p1
             for (i=0; i<3; i++)
                 nr1[i] = 2.0 * (r1[i] - m[i]) / SQR(a[i]);
 
-            ee[0] = WrapMath::DotProduct(vs, r1) + vs4;
+            ee[0] = (~vs*r1) + vs4;
             ee[1] = -1.0;
 
             for (i = 0; i < 3; i++)
                 ee[1] += SQR((r1[i] - m[i]) / a[i]);
 
-            ee[2] = WrapMath::DotProduct(nr1, r1) + d1;
-            ee[3] = WrapMath::DotProduct(nr1, p1) + d1;
+            ee[2] = (~nr1*r1) + d1;
+            ee[3] = (~nr1*p1) + d1;
 
             ssq = SQR(ee[0]) + SQR(ee[1]) + SQR(ee[2]) + SQR(ee[3]);
             ssqo = ssq;     
@@ -868,7 +868,7 @@ void WrapEllipsoid::CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, Si
     u[0] = u[1] = u[2] = 0.0;
     u[imax] = 1.0;
 
-    mu = (-WrapMath::DotProduct(vs, m) - vs4) / WrapMath::DotProduct(vs, u);
+    mu = (-(~vs*m) - vs4) / (~vs*u);
 
     for (i=0;i<3;i++)
         a0[i] = m[i] + mu * u[i];
@@ -878,7 +878,7 @@ void WrapEllipsoid::CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, Si
     ar2 = r2 - a0;
     WrapMath::Normalize(ar2, ar2);
 
-    phi0 = acos(WrapMath::DotProduct(ar1, ar2));
+    phi0 = acos((~ar1*ar2));
 
     if (far_side_wrap)
         dphi = - (2 * SimTK_PI - phi0) / (double) numPathSegments;
@@ -936,9 +936,9 @@ void WrapEllipsoid::CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, Si
             f2[j] = (a0[j] - m[j])/a[j];
         }
 
-        aa = WrapMath::DotProduct(f1, f1);
-        bb = 2.0 * (WrapMath::DotProduct(f1, f2));
-        cc = WrapMath::DotProduct(f2, f2) - 1.0;
+        aa = (~f1*f1);
+        bb = 2.0 * ((~f1*f2));
+        cc = (~f2*f2) - 1.0;
         mu3 = (-bb + sqrt(SQR(bb) - 4.0 * aa * cc)) / (2.0 * aa);
 
         for (j = 0; j < 3; j++)

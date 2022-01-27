@@ -91,18 +91,6 @@ public:
             rV.setToZero();
         return mag;
     }
-    //_____________________________________________________________________________
-    /**
-     * Compute the dot product of two vectors.
-     *
-     * If the arguments are not valid (aV1=aV2=NULL), 0.0 is returned.
-     */
-    //_____________________________________________________________________________
-    inline static double DotProduct(
-            const SimTK::Vec3& aV1, const SimTK::Vec3& aV2) {
-        return ~aV1 * aV2;
-    }
-
 
 //=============================================================================
 };  // END class WrapMath

@@ -207,9 +207,9 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
     if (p1m.norm() < get_radius() || p2m.norm() < get_radius())
       return insideRadius;
 
-    a = WrapMath::DotProduct(ri, ri);
-   b = -2.0 * WrapMath::DotProduct(mp, ri);
-   c = WrapMath::DotProduct(mp, mp) - get_radius() * get_radius();
+    a = (~ri*ri);
+   b = -2.0 * (~mp*ri);
+   c = (~mp*mp) - get_radius() * get_radius();
    disc = b * b - 4.0 * a * c;
 
    // check if there is an intersection of p1p2 and the sphere
@@ -322,10 +322,10 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
    
    {
       // check which of the tangential points results in the shortest distance
-        j1 = WrapMath::DotProduct(r1am, r2am);
-      j2 = WrapMath::DotProduct(r1am, r2bm);
-      j3 = WrapMath::DotProduct(r1bm, r2am);
-      j4 = WrapMath::DotProduct(r1bm, r2bm);
+      j1 = (~r1am*r2am);
+      j2 = (~r1am*r2bm);
+      j3 = (~r1bm*r2am);
+      j4 = (~r1bm*r2bm);
        
       if (j1 > j2 && j1 > j3 && j1 > j4)
       {
@@ -410,7 +410,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
 
          WrapMath::Normalize(sum_musc, sum_musc);
 
-            if (WrapMath::DotProduct(r1am, sum_musc) > WrapMath::DotProduct(r1bm, sum_musc))
+            if ((~r1am*sum_musc) > (~r1bm*sum_musc))
          {
                 for (i = 0; i < 3; i++)
                     aWrapResult.r1[i] = r1a[i];
@@ -423,7 +423,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
             r11 = &r1a[0];
          }
 
-            if (WrapMath::DotProduct(r2am, sum_musc) > WrapMath::DotProduct(r2bm, sum_musc))
+            if ((~r2am*sum_musc) > (~r2bm*sum_musc))
          {
                 for (i = 0; i < 3; i++)
                     aWrapResult.r2[i] = r2a[i];
@@ -442,7 +442,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
 
          WrapMath::Normalize(sum_musc, sum_musc);
 
-            if (WrapMath::DotProduct(sum_musc, wrapaxis) < 0.0)
+            if ((~sum_musc*wrapaxis) < 0.0)
          {
                 for (i = 0; i < 3; i++) {
                     aWrapResult.r1[i] = r11[i];
@@ -456,7 +456,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
             sum_r[i] = (aWrapResult.r1[i] - origin[i]) + (aWrapResult.r2[i] - origin[i]);
          }
 
-            if (WrapMath::DotProduct(sum_r, sum_musc) < 0.0)
+         if ((~sum_r*sum_musc) < 0.0)
             far_side_wrap = true;
       }
    }
@@ -470,7 +470,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
     WrapMath::Normalize(r1m, r1n);
     WrapMath::Normalize(r2m, r2n);
 
-    angle = acos(WrapMath::DotProduct(r1n, r2n));
+    angle = acos((~r1n*r2n));
    
    if (far_side_wrap)
         angle = -(2 * SimTK_PI - angle);
