@@ -258,9 +258,9 @@ int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::
 
     p1p2 = p1 - p2;
     p1m = p1 - m;
-    WrapMath::Normalize(p1m, p1m);
+    WrapMath::NormalizeOrZero(p1m, p1m);
     p2m = p2 - m;
-    WrapMath::Normalize(p2m, p2m);
+    WrapMath::NormalizeOrZero(p2m, p2m);
 
     ppm = (~p1m*p2m) - 1.0;   // angle between p1->m and p2->m: -2.0 to 0.0
 
@@ -343,7 +343,7 @@ int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::
     // handling in pt_to_ellipsoid() that reduces the 3d point-to-ellipsoid
     // problem to a 2d point-to-ellipse problem.  The 2d case returns a nice
     // c1 in situations where the "fan" has a sharp discontinuity.
-    WrapMath::Normalize(p1p2, mu);
+    WrapMath::NormalizeOrZero(p1p2, mu);
 
     for (i = 0; i < 3; i++)
     {
@@ -426,7 +426,7 @@ int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::
                 for (int k=0; k<3; k++) 
                     v[k] = t_c1[0][k] - t_sv[0][k];
 
-                WrapMath::Normalize(v, v);
+                WrapMath::NormalizeOrZero(v, v);
 
                 // add sv->c1 "fan blade" vector to the running total
                 for (j = 0; j < 3; j++)
@@ -434,7 +434,7 @@ int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::
 
             }
             // use vector sum to determine c1
-            WrapMath::Normalize(v_sum, v_sum);
+            WrapMath::NormalizeOrZero(v_sum, v_sum);
 
             for (i = 0; i < 3; i++)
                 t_c1[0][i] = t_sv[2][i] + v_sum[i];
@@ -535,7 +535,7 @@ int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::
     // use p1, p2, and c1 to create parameters for the wrapping plane
     p1c1 = p1 - aWrapResult.c1;
     vs = p1p2 % p1c1;
-    WrapMath::Normalize(vs, vs);
+    WrapMath::NormalizeOrZero(vs, vs);
 
     vs4 = - (~vs*aWrapResult.c1);
 
@@ -563,10 +563,10 @@ calc_wrap_path:
         r2p2 = p2 - aWrapResult.r2;
         r2w2 = w2 - aWrapResult.r2;
 
-        WrapMath::Normalize(r1p1, r1p1);
-        WrapMath::Normalize(r1w1, r1w1);
-        WrapMath::Normalize(r2p2, r2p2);
-        WrapMath::Normalize(r2w2, r2w2);
+        WrapMath::NormalizeOrZero(r1p1, r1p1);
+        WrapMath::NormalizeOrZero(r1w1, r1w1);
+        WrapMath::NormalizeOrZero(r2p2, r2p2);
+        WrapMath::NormalizeOrZero(r2w2, r2w2);
 
         if ((~r1p1*r1w1) > 0.0 || (~r2p2*r2w2) > 0.0)
         {
@@ -664,10 +664,10 @@ int WrapEllipsoid::calcTangentPoint(double p1e, SimTK::Vec3& r1, SimTK::Vec3& p1
             dedth[3][3] = 1.0;
 
             p1r1 = p1 - r1;
-            WrapMath::Normalize(p1r1, p1r1);
+            WrapMath::NormalizeOrZero(p1r1, p1r1);
 
             p1m = p1 - m;
-            WrapMath::Normalize(p1m, p1m);
+            WrapMath::NormalizeOrZero(p1m, p1m);
 
             pcos = (~p1r1*p1m);
 
@@ -874,9 +874,9 @@ void WrapEllipsoid::CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, Si
         a0[i] = m[i] + mu * u[i];
 
     ar1 = r1 - a0;
-    WrapMath::Normalize(ar1, ar1);
+    WrapMath::NormalizeOrZero(ar1, ar1);
     ar2 = r2 - a0;
-    WrapMath::Normalize(ar2, ar2);
+    WrapMath::NormalizeOrZero(ar2, ar2);
 
     phi0 = acos((~ar1*ar2));
 
@@ -886,7 +886,7 @@ void WrapEllipsoid::CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, Si
         dphi = phi0 / (double) numPathSegments;
 
     vsz = ar1 % ar2;
-    WrapMath::Normalize(vsz, vsz);
+    WrapMath::NormalizeOrZero(vsz, vsz);
     vsy = vsz % ar1;
 
     for (i = 0; i < 3; i++)

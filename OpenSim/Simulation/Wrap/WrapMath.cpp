@@ -74,11 +74,11 @@ IntersectLines(SimTK::Vec3& p1, SimTK::Vec3& p2, SimTK::Vec3& p3, SimTK::Vec3& p
 {
     SimTK::Vec3 vec1 = p2 - p1;
 
-    double mag1 = WrapMath::Normalize(vec1, vec1);
+    double mag1 = WrapMath::NormalizeOrZero(vec1, vec1);
 
     SimTK::Vec3 vec2 = p4 - p3;
 
-    double mag2 = WrapMath::Normalize(vec2, vec2);
+    double mag2 = WrapMath::NormalizeOrZero(vec2, vec2);
 
     SimTK::Vec3 cross_prod = vec1 % vec2;
 
@@ -193,8 +193,8 @@ GetClosestPointOnLineToPoint(SimTK::Vec3& pt, SimTK::Vec3& linePt, SimTK::Vec3& 
     v1 = pt - linePt;
 
     v2 = line;
-    double mag = WrapMath::Normalize(v1, v1);
-    double mag2 = WrapMath::Normalize(v2, v2);
+    double mag = WrapMath::NormalizeOrZero(v1, v1);
+    double mag2 = WrapMath::NormalizeOrZero(v2, v2);
     t = (~v1*v2) * mag;
 
     closestPt = linePt + t * v2;

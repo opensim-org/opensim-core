@@ -225,7 +225,7 @@ int WrapTorus::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3
     closestPt *= -1;
 
     cylXaxis = closestPt;
-    WrapMath::Normalize(cylXaxis, cylXaxis);
+    WrapMath::NormalizeOrZero(cylXaxis, cylXaxis);
     cylYaxis[0] = 0.0;
     cylYaxis[1] = 0.0;
     cylYaxis[2] = -1.0;

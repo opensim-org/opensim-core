@@ -74,7 +74,7 @@ public:
     static void
         ConvertQuaternionToMatrix(const double quat[4], double matrix[][4]);
     /**
-     * Normalize a vector.
+     * Normalize a vector or Zero it out if norm < Epsilon.
      *
      * If aV has a magnitude of zero, all elements of rV are set to 0.0.
      * It is permissible for aV and rV to coincide in memory.
@@ -83,7 +83,7 @@ public:
      * @param rV     Result of the normalization.
      * @returns      Magnitude of aV.
      */
-    inline static double Normalize(const SimTK::Vec3& aV, SimTK::Vec3& rV) {
+    inline static double NormalizeOrZero(const SimTK::Vec3& aV, SimTK::Vec3& rV) {
         double mag = aV.norm();
         if (mag >= SimTK::Eps)
             rV = aV.scalarMultiply(1.0 / mag);

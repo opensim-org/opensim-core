@@ -248,7 +248,7 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     // find preliminary tangent point candidates r1a & r1b
     vv = aPoint1 - p11;
 
-    p11_dist = WrapMath::Normalize(vv, vv);
+    p11_dist = WrapMath::NormalizeOrZero(vv, vv);
 
     sin_theta = _radius / p11_dist;
 
@@ -270,7 +270,7 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     // find preliminary tangent point candidates r2a & r2b
     vv = aPoint2 - p22;
 
-    p22_dist = WrapMath::Normalize(vv, vv);
+    p22_dist = WrapMath::NormalizeOrZero(vv, vv);
 
     sin_theta = _radius / p22_dist;
 
@@ -481,11 +481,11 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     l1 = aPoint1 - axispt;
     l2 = aPoint2 - axispt;
 
-    WrapMath::Normalize(l1, l1);
-    WrapMath::Normalize(l2, l2);
+    WrapMath::NormalizeOrZero(l1, l1);
+    WrapMath::NormalizeOrZero(l2, l2);
 
     plane_normal = UnitVec3(l1 % l2);
-    WrapMath::Normalize(plane_normal, plane_normal);
+    WrapMath::NormalizeOrZero(plane_normal, plane_normal);
 
     // cross plane normal and cylinder axis (each way) to
     // get vectors pointing from axispt towards mpt and
