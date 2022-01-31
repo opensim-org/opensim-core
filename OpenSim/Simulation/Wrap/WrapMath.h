@@ -85,10 +85,10 @@ public:
      */
     inline static double NormalizeOrZero(const SimTK::Vec3& aV, SimTK::Vec3& rV) {
         double mag = aV.norm();
-        if (mag >= SimTK::Eps)
+        //if (mag >= SimTK::Eps)
             rV = aV.scalarMultiply(1.0 / mag);
-        else
-            rV.setToZero();
+        //else
+        //    rV.setToZero();
         return mag;
     }
 
