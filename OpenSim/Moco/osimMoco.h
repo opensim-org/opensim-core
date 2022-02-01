@@ -26,6 +26,7 @@
 #include "MocoConstraint.h"
 #include "MocoControlBoundConstraint.h"
 #include "MocoFrameDistanceConstraint.h"
+#include "MocoFrameOrientationConstraint.h"
 #include "MocoGoal/MocoAccelerationTrackingGoal.h"
 #include "MocoGoal/MocoAngularVelocityTrackingGoal.h"
 #include "MocoGoal/MocoContactTrackingGoal.h"
