@@ -483,31 +483,63 @@ TEMPLATE_TEST_CASE("Test MocoJointReactionGoal", "",
     model.addComponent(actuator);
     model.finalizeConnections();
 
-    MocoStudy study;
-    study.setName("counteract_gravity");
-    MocoProblem& mp = study.updProblem();
-    mp.setModelAsCopy(model);
+    auto createStudy = [model]() {
+        MocoStudy study;
+        study.setName("counteract_gravity");
+        MocoProblem& problem = study.updProblem();
+        problem.setModelAsCopy(model);
+        problem.setTimeBounds(0, 1);
+        problem.setControlInfo("/actu", {-20, 20});
+        return study;
+    };
 
-    mp.setTimeBounds(0, 1);
-    mp.setControlInfo("/actu", {-20, 20});
+    // Solve using joint reaction goal.
+    {
+        auto study = createStudy();
+        auto& problem = study.updProblem();
+        auto *reaction = problem.template addGoal<MocoJointReactionGoal>();
+        reaction->setJointPath("/jointset/weld");
+        reaction->setReactionMeasures({"force-x"});
+        reaction->setExpressedInFramePath("/ground");
 
-    auto* reaction = mp.addGoal<MocoJointReactionGoal>();
-    reaction->setJointPath("/jointset/weld");
-    reaction->setReactionMeasures({"force-x"});
+        auto &solver = study.template initSolver<TestType>();
+        int N = 5;
+        solver.set_num_mesh_intervals(N);
+        solver.set_optim_convergence_tolerance(1e-6);
 
-    auto& ms = study.initSolver<TestType>();
-    int N = 5;
-    ms.set_num_mesh_intervals(N);
-    ms.set_optim_convergence_tolerance(1e-6);
+        MocoSolution solution = study.solve().unseal();
+        //solution.write("testMocoGoals_testMocoJointReactionGoal.sto");
 
-    MocoSolution solution = study.solve().unseal();
-    solution.write("testMocoGoals_testMocoJointReactionGoal.sto");
+        // Check that the actuator "actu" is equal to gravity (i.e. supporting all
+        // of the weight).
+        CHECK(solution.getControl("/actu")[0] == Approx(-10).epsilon(1e-4));
+        // Check that the reaction force is zero.
+        CHECK(solution.getObjective() == Approx(0.0).margin(1e-6));
+    }
 
-    // Check that the actuator "actu" is equal to gravity (i.e. supporting all
-    // of the weight).
-    CHECK(solution.getControl("/actu")[0] == Approx(-10).epsilon(1e-4));
-    // Check that the reaction force is zero.
-    CHECK(solution.getObjective() == Approx(0.0).margin(1e-6));
+    // Solve using Output goal.
+    {
+        auto study = createStudy();
+        auto& problem = study.updProblem();
+        auto *reaction = problem.template addGoal<MocoOutputGoal>();
+        reaction->setOutputPath("/jointset/weld|reaction_on_parent");
+        reaction->setOutputIndex(3);
+        reaction->setExponent(2);
+
+        auto &solver = study.template initSolver<TestType>();
+        int N = 5;
+        solver.set_num_mesh_intervals(N);
+        solver.set_optim_convergence_tolerance(1e-6);
+
+        MocoSolution solution = study.solve().unseal();
+        //solution.write("testMocoGoals_testMocoOutputGoal_joint_reactions.sto");
+
+        // Check that the actuator "actu" is equal to gravity (i.e. supporting all
+        // of the weight).
+        CHECK(solution.getControl("/actu")[0] == Approx(-10).epsilon(1e-4));
+        // Check that the reaction force is zero.
+        CHECK(solution.getObjective() == Approx(0.0).margin(1e-6));
+    }
 }
 
 TEST_CASE("Test MocoSumSquaredStateGoal") {
