@@ -313,10 +313,10 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
     r2am = r2a - origin;
     r2bm = r2b - origin;
 
-    r1am.normalize();
-    r1bm.normalize();
-    r2am.normalize();
-    r2bm.normalize();
+    WrapMath::NormalizeOrZero(r1am, r1am);
+    WrapMath::NormalizeOrZero(r1bm, r1bm);
+    WrapMath::NormalizeOrZero(r2am, r2am);
+    WrapMath::NormalizeOrZero(r2bm, r2bm);
    
    {
       // check which of the tangential points results in the shortest distance

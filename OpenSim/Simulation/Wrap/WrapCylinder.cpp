@@ -424,10 +424,10 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
         r2am = r2a - p22;
         r2bm = r2b - p22;
 
-        r1am.normalize();
-        r1bm.normalize();
-        r2am.normalize();
-        r2bm.normalize();
+        WrapMath::NormalizeOrZero(r1am, r1am);
+        WrapMath::NormalizeOrZero(r1bm, r1bm);
+        WrapMath::NormalizeOrZero(r2am, r2am);
+        WrapMath::NormalizeOrZero(r2bm, r2bm);
 
         dot1 = (~r1am*r2am);
         dot2 = (~r1am*r2bm);
@@ -464,7 +464,7 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     for (i = 0; i < 3; i++)
         vv[i] = uu[i] + vv[i];
 
-    vv.normalize();
+    WrapMath::NormalizeOrZero(vv, vv);
 
     // find the apex point by using a ratio of the lengths of the
     // aPoint1-p11 and aPoint2-p22 segments:
@@ -491,9 +491,9 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     // get vectors pointing from axispt towards mpt and
     // away from mpt (you can't tell which is which yet).
     vert1 = dn % plane_normal;
-    vert1.normalize();
+    WrapMath::NormalizeOrZero(vert1, vert1);
     vert2 = plane_normal % dn;
-    vert2.normalize();
+    WrapMath::NormalizeOrZero(vert2, vert2);
 
     // now find two potential apex points, one along each vector
     for (i = 0; i < 3; i++)
@@ -539,8 +539,8 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     uu = aPoint1 - apex;
     vv = aPoint2 - apex;
 
-    uu.normalize();
-    vv.normalize();
+    WrapMath::NormalizeOrZero(uu, uu);
+    WrapMath::NormalizeOrZero(vv, vv);
 
     plane_normal = UnitVec3(uu % vv);
 
@@ -653,7 +653,7 @@ restart_spiral_wrap:
 
     // build path segments
     ax = uu % vv;
-    ax.normalize();
+    WrapMath::NormalizeOrZero(ax, ax);
 
     vv = ax % uu;
 
