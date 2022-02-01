@@ -1,8 +1,8 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: SimonFrameOrientationConstraint.cpp                                     *
+ * OpenSim Moco: MocoFrameOrientationConstraint.cpp                           *
  * -------------------------------------------------------------------------- *
  *                                                                            *
- * Author(s): Simon Jeng                                              *
+ * Author(s): Size Zheng                                              		  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -20,11 +20,11 @@
 using namespace OpenSim;
 
 
-SimonFrameOrientationConstraintPair::SimonFrameOrientationConstraintPair() {
+MocoFrameOrientationConstraintPair::MocoFrameOrientationConstraintPair() {
     constructProperties();
 }
 
-SimonFrameOrientationConstraintPair::SimonFrameOrientationConstraintPair(
+MocoFrameOrientationConstraintPair::MocoFrameOrientationConstraintPair(
     std::string frame1Path, std::string frame2Path,
     double minimum_angle, double maximum_angle) {
     constructProperties();
@@ -34,7 +34,7 @@ SimonFrameOrientationConstraintPair::SimonFrameOrientationConstraintPair(
     set_maximum_angle(maximum_angle);
 }
 
-void SimonFrameOrientationConstraintPair::constructProperties() {
+void MocoFrameOrientationConstraintPair::constructProperties() {
     constructProperty_frame1_path("");
     constructProperty_frame2_path("");
     constructProperty_minimum_angle(-SimTK::Infinity);
@@ -42,18 +42,14 @@ void SimonFrameOrientationConstraintPair::constructProperties() {
 }
 
 //=============================================================================
-//  SimonFrameOrientationConstraint
+//  MocoFrameOrientationConstraint
 //=============================================================================
 
-SimonFrameOrientationConstraint::SimonFrameOrientationConstraint() 
+MocoFrameOrientationConstraint::MocoFrameOrientationConstraint() 
 {
     constructProperties();
 }
-SimonFrameOrientationConstraint::SimonFrameOrientationConstraint(std::string name)
-{
-    constructProperties();
-}
-void SimonFrameOrientationConstraint::initializeOnModelImpl(const Model& model, const MocoProblemInfo&) const
+void MocoFrameOrientationConstraint::initializeOnModelImpl(const Model& model, const MocoProblemInfo&) const
 {
 
     int nFramePairs = getProperty_frame_pairs().size();
@@ -85,11 +81,11 @@ void SimonFrameOrientationConstraint::initializeOnModelImpl(const Model& model, 
 
     setNumEquations(nFramePairs);
     info.setBounds(bounds);
-    const_cast<SimonFrameOrientationConstraint*>(this)->setConstraintInfo(info);
+    const_cast<MocoFrameOrientationConstraint*>(this)->setConstraintInfo(info);
 
 }
 
-void SimonFrameOrientationConstraint::calcPathConstraintErrorsImpl(const SimTK::State& state, SimTK::Vector& errors) const
+void MocoFrameOrientationConstraint::calcPathConstraintErrorsImpl(const SimTK::State& state, SimTK::Vector& errors) const
 {
     int iconstr = 0;
 
@@ -98,9 +94,9 @@ void SimonFrameOrientationConstraint::calcPathConstraintErrorsImpl(const SimTK::
     for (const auto& frame_pair : m_frame_pairs) {
         const auto& frame1_rotation = frame_pair.first->getRotationInGround(state);
         const auto& frame2_rotation = frame_pair.second->getRotationInGround(state);
-        auto coordaxis = SimTK::CoordinateAxis(2);
-        auto frame1_angle = frame1_rotation.convertOneAxisRotationToOneAngle(coordaxis);
-        auto frame2_angle = frame2_rotation.convertOneAxisRotationToOneAngle(coordaxis);
+        auto coordaxis = SimTK::CoordinateAxis(2);											//set the number as 2 to represent ZAxis
+        auto frame1_angle = frame1_rotation.convertOneAxisRotationToOneAngle(coordaxis);	//the angle of this frame is about the z-axis
+        auto frame2_angle = frame2_rotation.convertOneAxisRotationToOneAngle(coordaxis);	//the angle of this frame is about the z-axis
         auto relative_angle = frame2_angle - frame1_angle;
              
         errors[iconstr++] = relative_angle;
@@ -108,7 +104,6 @@ void SimonFrameOrientationConstraint::calcPathConstraintErrorsImpl(const SimTK::
 
 }
 
-void SimonFrameOrientationConstraint::constructProperties() {
+void MocoFrameOrientationConstraint::constructProperties() {
     constructProperty_frame_pairs();
-    
 }
