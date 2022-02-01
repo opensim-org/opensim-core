@@ -22,8 +22,11 @@
 
 namespace OpenSim {
 
-/** This goal allows you to use any (double, or scalar) Output in the model
-as the integrand of a goal.
+/** This goal allows you to use model Outputs of type double, SimTK::Vec3, and
+SimTK::SpatialVec in the integrand of a goal. By default, when using vector
+type Outputs, the norm of the vector is minimized, but you can also minimize
+a specific element of a vector Output via `setOutputIndex()`. You can also
+specify the exponent of the value in the integrand via `setExponent()`.
 @ingroup mocogoal */
 class OSIMMOCO_API MocoOutputGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoOutputGoal, MocoGoal);
@@ -56,6 +59,19 @@ public:
         return get_divide_by_mass();
     }
 
+    /** Set the exponent applied to the output value in the integrand. This
+    exponent is applied when minimizing the norm of a vector type output. */
+    void setExponent(int exponent) { set_exponent(exponent); }
+    int getExponent() const { return get_exponent(); }
+
+    /** Set the index to the value to be minimized when a vector type
+    Output is specified. For SpatialVec Outputs, indices 0, 1, and 2
+    refer to the rotational components and indices 3, 4, and 5 refer
+    to the translational components. A value of -1 indicates to
+    minimize the vector norm. */
+    void setOutputIndex(int index) { set_output_index(index); }
+    int getOutputIndex() const { return get_output_index(); }
+
 protected:
     void initializeOnModelImpl(const Model&) const override;
     void calcIntegrandImpl(
@@ -72,9 +88,28 @@ private:
             "false)");
     OpenSim_DECLARE_PROPERTY(divide_by_mass, bool,
             "Divide by the model's total mass (default: false)");
+    OpenSim_DECLARE_PROPERTY(exponent, int,
+            "The exponent applied to the output value in the integrand "
+            "(default: 1).");
+    OpenSim_DECLARE_PROPERTY(output_index, int,
+            "The index to the value to be minimized when a vector type "
+            "Output is specified. For SpatialVec Outputs, indices 0, 1, "
+            "and 2 refer to the rotational components and indices 3, 4, "
+            "and 5 refer to the translational components. A value of -1 "
+            "indicates to minimize the vector norm (default: -1).");
     void constructProperties();
 
-    mutable SimTK::ReferencePtr<const Output<double>> m_output;
+    enum DataType {
+        Type_double,
+        Type_Vec3,
+        Type_SpatialVec,
+    };
+    mutable DataType m_data_type;
+    mutable SimTK::ReferencePtr<const AbstractOutput> m_output;
+    mutable std::function<double(const double&)> m_power_function;
+    mutable int m_index1;
+    mutable int m_index2;
+    mutable bool m_minimizeVectorNorm;
 };
 
 } // namespace OpenSim
