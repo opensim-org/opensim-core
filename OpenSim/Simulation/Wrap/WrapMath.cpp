@@ -148,33 +148,6 @@ IntersectLineSegPlane(SimTK::Vec3& pt1, SimTK::Vec3& pt2,
     return true;
 }
 
-/* Convert an axis/angle rotation into a quaternion
- * @param axis the axis of rotation
- * @param angle the angle, in radians
- * @param quat the quaternion
- */
-void WrapMath::
-ConvertAxisAngleToQuaternion(const SimTK::Vec3& axis, double angle, double quat[4])
-{
-    quat[0] = axis[0];
-    quat[1] = axis[1];
-    quat[2] = axis[2];
-    quat[3] = 0.0;
-
-    double n = sqrt(quat[0] * quat[0] + quat[1] * quat[1] + quat[2] * quat[2]);
-
-    if (NOT_EQUAL_WITHIN_ERROR(n, 0.0))
-    {
-        double halfAngle = 0.5 * angle;
-        double s = sin(halfAngle) / n;
-
-        quat[0] *= s;
-        quat[1] *= s;
-        quat[2] *= s;
-        quat[3] = cos(halfAngle);
-    }
-}
-
 /* Calculate the point (closestPt) on a line (linePt, line)
  * that is closest to a point (pt). 'line' does not need to
  * be normalized.
@@ -199,63 +172,4 @@ GetClosestPointOnLineToPoint(SimTK::Vec3& pt, SimTK::Vec3& linePt, SimTK::Vec3& 
 
     closestPt = linePt + t * v2;
     t = t / mag2;
-}
-
-/* Make a 3x3 direction cosine matrix for a
- * rotation about the X axis.
- * @param angle the rotation angle, in radians
- * @param m the 3x3 matrix
- */
-void WrapMath::
-Make3x3DirCosMatrix(double angle, double mat[][3])
-{
-    mat[0][0] = 1.0;
-    mat[0][1] = 0.0;
-    mat[0][2] = 0.0;
-
-    mat[1][0] = 0.0;
-    mat[1][1] = cos(angle);
-    mat[1][2] = sin(angle);
-
-    mat[2][0] = 0.0;
-    mat[2][1] = -mat[1][2];
-    mat[2][2] = mat[1][1];
-}
-
-/* Compute the square of the distance between two
- * points.
- * @param point1 the first point
- * @param point2 the second point
- * @return the square of the distance
- */
-double WrapMath::
-CalcDistanceSquaredBetweenPoints(SimTK::Vec3& point1, SimTK::Vec3& point2)
-{
-    SimTK::Vec3 vec = point2 - point1;
-
-    return vec.normSqr();
-}
-
-/* Make a 4x4 transform matrix from a quaternion.
- * @param matrix The 4x4 transform matrix
- * @param axis The axis about which to rotate
- * @param angle the amount to rotate, in radians
- */
-void WrapMath::
-ConvertQuaternionToMatrix(const double quat[4], double matrix[][4]) 
-{
-    double Nq = quat[0] * quat[0] + quat[1] * quat[1] + quat[2] * quat[2] + quat[3] * quat[3];
-    double s = (Nq > 0.0) ? (2.0 / Nq) : 0.0;
-
-    double xs = quat[0] * s,   ys = quat[1] * s,   zs = quat[2] * s;
-    double wx = quat[3] * xs,  wy = quat[3] * ys,  wz = quat[3] * zs;
-    double xx = quat[0] * xs,  xy = quat[0] * ys,  xz = quat[0] * zs;
-    double yy = quat[1] * ys,  yz = quat[1] * zs,  zz = quat[2] * zs;
-
-    matrix[0][0] = 1.0 - (yy + zz);  matrix[0][1] = xy + wz;          matrix[0][2] = xz - wy;
-    matrix[1][0] = xy - wz;          matrix[1][1] = 1.0 - (xx + zz);  matrix[1][2] = yz + wx;
-    matrix[2][0] = xz + wy;          matrix[2][1] = yz - wx;          matrix[2][2] = 1.0 - (xx + yy);
-
-    matrix[0][3] = matrix[1][3] = matrix[2][3] = matrix[3][0] = matrix[3][1] = matrix[3][2] = 0.0;
-    matrix[3][3] = 1.0;
 }

@@ -56,23 +56,18 @@ public:
         IntersectLineSegPlane(SimTK::Vec3& pt1, SimTK::Vec3& pt2,
         SimTK::UnitVec3& plane, double d, SimTK::Vec3& inter);
     static void
-        ConvertAxisAngleToQuaternion(const SimTK::Vec3& axis,
-        double angle, double quat[4]);
-    static void
         GetClosestPointOnLineToPoint(SimTK::Vec3& pt, SimTK::Vec3& linePt, SimTK::Vec3& line,
                                       SimTK::Vec3& closestPt, double& t);
-    static void
-        Make3x3DirCosMatrix(double angle, double mat[][3]);
-    static double
-        CalcDistanceSquaredBetweenPoints(SimTK::Vec3& point1, SimTK::Vec3& point2);
+    inline static double CalcDistanceSquaredBetweenPoints(
+        SimTK::Vec3& point1, SimTK::Vec3& point2) {
+        return (point1 - point2).normSqr();
+    }
     inline static double CalcDistanceSquaredPointToLine(
             SimTK::Vec3& point, SimTK::Vec3& linePt, SimTK::Vec3& line){
         SimTK::Vec3 pToLinePt = (linePt - point);
         SimTK::Vec3 n = line.normalize();
         return (pToLinePt - (~pToLinePt * n) * n).normSqr();
     };
-    static void
-        ConvertQuaternionToMatrix(const double quat[4], double matrix[][4]);
     /**
      * Normalize a vector or Zero it out if norm < Epsilon.
      *
@@ -85,10 +80,10 @@ public:
      */
     inline static double NormalizeOrZero(const SimTK::Vec3& aV, SimTK::Vec3& rV) {
         double mag = aV.norm();
-        //if (mag >= SimTK::Eps)
+        if (mag >= SimTK::Eps)
             rV = aV.scalarMultiply(1.0 / mag);
-        //else
-        //    rV.setToZero();
+        else
+            rV.setToZero();
         return mag;
     }
 
