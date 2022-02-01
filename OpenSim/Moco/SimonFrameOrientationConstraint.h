@@ -1,10 +1,10 @@
-#ifndef OPENSIM_SIMONFRAMEORIENTATIONCONSTRAINT_H 
-#define OPENSIM_SIMONFRAMEORIENTATIONCONSTRAINT_H 
+#ifndef OPENSIM_MOCOFRAMEORIENTATIONCONSTRAINT_H 
+#define OPENSIM_MOCOFRAMEORIENTATIONCONSTRAINT_H 
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: SimonFrameOrientationConstraint.h                                     *
+ * OpenSim Moco: MocoFrameOrientationConstraint.h                             *
  * -------------------------------------------------------------------------- *
  *                                                                            *
- * Author(s): Simon Jeng                                              *
+ * Author(s): Size Zheng                                              		  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -17,14 +17,14 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-
+#include "MocoConstraint.h"
 #include <OpenSim/Moco/osimMoco.h>
-#include "osimSimonFrameOrientationConstraintDLL.h"
+#include "osimMocoDLL.h"
 
 namespace OpenSim {
 
-class OSIMMOCOCUSTOMEFFORTGOAL_API SimonFrameOrientationConstraintPair : public Object {
-    OpenSim_DECLARE_CONCRETE_OBJECT(SimonFrameOrientationConstraintPair, Object);
+class OSIMMOCO_API MocoFrameOrientationConstraintPair : public Object {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoFrameOrientationConstraintPair, Object);
 
 public:
     OpenSim_DECLARE_PROPERTY(frame1_path, std::string,
@@ -38,8 +38,8 @@ public:
         "The maximum distance apart that the two frame origins can be "
         "(meters).")
 
-    SimonFrameOrientationConstraintPair();
-    SimonFrameOrientationConstraintPair(std::string firstFramePath,
+    MocoFrameOrientationConstraintPair();
+    MocoFrameOrientationConstraintPair(std::string firstFramePath,
         std::string secondFramePath, double minimum_angle,
         double maximum_angle);
 
@@ -47,25 +47,25 @@ private:
     void constructProperties();
 };
 
-class OSIMMOCOCUSTOMEFFORTGOAL_API SimonFrameOrientationConstraint : public MocoPathConstraint {
-    OpenSim_DECLARE_CONCRETE_OBJECT(SimonFrameOrientationConstraint, MocoPathConstraint);
+class OSIMMOCO_API MocoFrameOrientationConstraint : public MocoPathConstraint {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoFrameOrientationConstraint, MocoPathConstraint);
 
 public:
-    SimonFrameOrientationConstraint();
-    SimonFrameOrientationConstraint(std::string name);
-    void addFramePair(SimonFrameOrientationConstraintPair pair) {
+    MocoFrameOrientationConstraint();
+    
+    void addFramePair(MocoFrameOrientationConstraintPair pair) {
         append_frame_pairs(std::move(pair));
     }
     void addFramePair(const std::string& frame1_path,const std::string& frame2_path, double minimum_angle,
         double maximum_angle) {
-        append_frame_pairs(SimonFrameOrientationConstraintPair(frame1_path,frame2_path, minimum_angle,maximum_angle));
+        append_frame_pairs(MocoFrameOrientationConstraintPair(frame1_path,frame2_path, minimum_angle,maximum_angle));
     }
 protected:
     void initializeOnModelImpl(const Model& model, const MocoProblemInfo&) const override;
     void calcPathConstraintErrorsImpl(const SimTK::State& state, SimTK::Vector& errors) const override;
 private:
     OpenSim_DECLARE_LIST_PROPERTY(frame_pairs,
-        SimonFrameOrientationConstraintPair,
+        MocoFrameOrientationConstraintPair,
         "Pairs of frames whose origins are constrained to be within "
         "minimum and maximum bounds.");
        
@@ -77,4 +77,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // OPENSIM_SIMONFRAMEORIENTATIONCONSTRAINT_H 
+#endif // OPENSIM_MOCOFRAMEORIENTATIONCONSTRAINT_H 
