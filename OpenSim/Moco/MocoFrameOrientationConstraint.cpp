@@ -15,7 +15,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "SimonFrameOrientationConstraint.h"
+#include "MocoFrameOrientationConstraint.h"
 
 using namespace OpenSim;
 
