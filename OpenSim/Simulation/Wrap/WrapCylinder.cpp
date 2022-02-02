@@ -773,8 +773,8 @@ bool WrapCylinder::_adjust_tangent_point(SimTK::Vec3& pt1,
     int i;
     bool did_adust = false;
 
-    pr_vec.normalize();
-    rw_vec.normalize();
+    WrapMath::NormalizeOrZero(pr_vec, pr_vec);
+    WrapMath::NormalizeOrZero(rw_vec, rw_vec);
 
     alpha = acos((~pr_vec*dn));
     omega = acos((~rw_vec*dn));

@@ -58,10 +58,9 @@ public:
     static void
         GetClosestPointOnLineToPoint(SimTK::Vec3& pt, SimTK::Vec3& linePt, SimTK::Vec3& line,
                                       SimTK::Vec3& closestPt, double& t);
-    static double CalcDistanceSquaredBetweenPoints(
+    inline static double CalcDistanceSquaredBetweenPoints(
         SimTK::Vec3& point1, SimTK::Vec3& point2) {
-        SimTK::Vec3 diff = point2 - point1;
-        return diff.normSqr();
+        return (point1 - point2).normSqr();
     }
     inline static double CalcDistanceSquaredPointToLine(
             SimTK::Vec3& point, SimTK::Vec3& linePt, SimTK::Vec3& line){
