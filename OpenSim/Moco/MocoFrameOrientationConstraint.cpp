@@ -26,8 +26,7 @@ MocoFrameOrientationConstraintPair::MocoFrameOrientationConstraintPair() {
 }
 
 MocoFrameOrientationConstraintPair::MocoFrameOrientationConstraintPair(
-    std::string frame1Path, std::string frame2Path,
-    double minimum_angle, double maximum_angle) {
+std::string frame1Path, std::string frame2Path, double minimum_angle, double maximum_angle) {
     constructProperties();
     set_frame1_path(frame1Path);
     set_frame2_path(frame2Path);
@@ -46,12 +45,10 @@ void MocoFrameOrientationConstraintPair::constructProperties() {
 //  MocoFrameOrientationConstraint
 //=============================================================================
 
-MocoFrameOrientationConstraint::MocoFrameOrientationConstraint() 
-{
+MocoFrameOrientationConstraint::MocoFrameOrientationConstraint() {
     constructProperties();
 }
-void MocoFrameOrientationConstraint::initializeOnModelImpl(const Model& model, const MocoProblemInfo&) const
-{
+void MocoFrameOrientationConstraint::initializeOnModelImpl(const Model& model, const MocoProblemInfo&) const {
 
     int nFramePairs = getProperty_frame_pairs().size();
     MocoConstraintInfo info;
@@ -88,8 +85,7 @@ void MocoFrameOrientationConstraint::initializeOnModelImpl(const Model& model, c
 
 }
 
-void MocoFrameOrientationConstraint::calcPathConstraintErrorsImpl(const SimTK::State& state, SimTK::Vector& errors) const
-{
+void MocoFrameOrientationConstraint::calcPathConstraintErrorsImpl(const SimTK::State& state, SimTK::Vector& errors) const {
     int iconstr = 0;
 
     getModel().realizePosition(state);
