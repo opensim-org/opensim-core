@@ -74,6 +74,9 @@ public:
     void addFramePair(const std::string& frame1_path,const std::string& frame2_path, double minimum_angle,
         double maximum_angle) {
         append_frame_pairs(MocoFrameOrientationConstraintPair(frame1_path,frame2_path, minimum_angle,maximum_angle));
+    void setCoordinateAxis(int coordinate_axis) {
+        set_coordinate_axis(coordinate_axis);
+    }
     }
 protected:
     void initializeOnModelImpl(const Model& model, const MocoProblemInfo&) const override;
@@ -83,11 +86,15 @@ private:
         MocoFrameOrientationConstraintPair,
         "Pairs of frames whose origins are constrained to be within "
         "minimum and maximum bounds.");
-       
+     OpenSim_DECLARE_OPTIONAL_PROPERTY(coordinate_axis, int,
+        "(optional) If provided, the coordinate axis is defined "
+        "0 represents x-aixs, 1 represents y-axis, 2 represents z-axis,"
+        "3 represents all the axis.");
+    
     void constructProperties();
     mutable std::vector<std::pair<SimTK::ReferencePtr<const Frame>,
         SimTK::ReferencePtr<const Frame>>> m_frame_pairs;
-
+    mutable int m_coordinateAxis;
 };
 
 } // namespace OpenSim
