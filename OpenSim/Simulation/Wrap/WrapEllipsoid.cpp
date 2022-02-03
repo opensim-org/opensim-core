@@ -27,8 +27,8 @@
 #include "WrapEllipsoid.h"
 #include "PathWrap.h"
 #include "WrapResult.h"
+#include "WrapMath.h"
 #include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
 #include <OpenSim/Common/ScaleSet.h>
 
@@ -258,11 +258,11 @@ int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::
 
     p1p2 = p1 - p2;
     p1m = p1 - m;
-    Mtx::Normalize(3, p1m, p1m);
+    WrapMath::NormalizeOrZero(p1m, p1m);
     p2m = p2 - m;
-    Mtx::Normalize(3, p2m, p2m);
+    WrapMath::NormalizeOrZero(p2m, p2m);
 
-    ppm = Mtx::DotProduct(3, p1m, p2m) - 1.0;   // angle between p1->m and p2->m: -2.0 to 0.0
+    ppm = (~p1m*p2m) - 1.0;   // angle between p1->m and p2->m: -2.0 to 0.0
 
     if (fabs(ppm) < 0.0001)
     {
@@ -286,9 +286,9 @@ int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::
         f1[i] = p1p2[i] / a[i];
         f2[i] = (p2[i] - m[i]) / a[i];
     }
-    aa = Mtx::DotProduct(3, f1, f1);
-    bb = 2.0 * Mtx::DotProduct(3, f1, f2);
-    cc = Mtx::DotProduct(3, f2, f2) - 1.0;
+    aa = (~f1*f1);
+    bb = 2.0 * (~f1*f2);
+    cc = (~f2*f2) - 1.0;
     disc = SQR(bb) - 4.0 * aa * cc;
 
     if (disc < 0.0)
@@ -343,7 +343,7 @@ int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::
     // handling in pt_to_ellipsoid() that reduces the 3d point-to-ellipsoid
     // problem to a 2d point-to-ellipse problem.  The 2d case returns a nice
     // c1 in situations where the "fan" has a sharp discontinuity.
-    Mtx::Normalize(3, p1p2, mu);
+    WrapMath::NormalizeOrZero(p1p2, mu);
 
     for (i = 0; i < 3; i++)
     {
@@ -426,7 +426,7 @@ int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::
                 for (int k=0; k<3; k++) 
                     v[k] = t_c1[0][k] - t_sv[0][k];
 
-                Mtx::Normalize(3, v, v);
+                WrapMath::NormalizeOrZero(v, v);
 
                 // add sv->c1 "fan blade" vector to the running total
                 for (j = 0; j < 3; j++)
@@ -434,7 +434,7 @@ int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::
 
             }
             // use vector sum to determine c1
-            Mtx::Normalize(3, v_sum, v_sum);
+            WrapMath::NormalizeOrZero(v_sum, v_sum);
 
             for (i = 0; i < 3; i++)
                 t_c1[0][i] = t_sv[2][i] + v_sum[i];
@@ -534,10 +534,10 @@ int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::
 
     // use p1, p2, and c1 to create parameters for the wrapping plane
     p1c1 = p1 - aWrapResult.c1;
-    Mtx::CrossProduct(p1p2, p1c1, vs);
-    Mtx::Normalize(3, vs, vs);
+    vs = p1p2 % p1c1;
+    WrapMath::NormalizeOrZero(vs, vs);
 
-    vs4 = - Mtx::DotProduct(3, vs, aWrapResult.c1);
+    vs4 = - (~vs*aWrapResult.c1);
 
     // find r1 & r2 by starting at c1 moving toward p1 & p2
     calcTangentPoint(p1e, aWrapResult.r1, p1, m, a, vs, vs4);
@@ -563,12 +563,12 @@ calc_wrap_path:
         r2p2 = p2 - aWrapResult.r2;
         r2w2 = w2 - aWrapResult.r2;
 
-        Mtx::Normalize(3, r1p1, r1p1);
-        Mtx::Normalize(3, r1w1, r1w1);
-        Mtx::Normalize(3, r2p2, r2p2);
-        Mtx::Normalize(3, r2w2, r2w2);
+        WrapMath::NormalizeOrZero(r1p1, r1p1);
+        WrapMath::NormalizeOrZero(r1w1, r1w1);
+        WrapMath::NormalizeOrZero(r2p2, r2p2);
+        WrapMath::NormalizeOrZero(r2w2, r2w2);
 
-        if (Mtx::DotProduct(3, r1p1, r1w1) > 0.0 || Mtx::DotProduct(3, r2p2, r2w2) > 0.0)
+        if ((~r1p1*r1w1) > 0.0 || (~r2p2*r2w2) > 0.0)
         {
             // NOTE: I added the ability to call CalcDistanceOnEllipsoid() a 2nd time in this
             //  situation to force a far-side wrap instead of aborting the
@@ -631,15 +631,15 @@ int WrapEllipsoid::calcTangentPoint(double p1e, SimTK::Vec3& r1, SimTK::Vec3& p1
         for (i = 0; i < 3; i++)
             nr1[i] = 2.0 * (r1[i] - m[i])/(SQR(a[i]));
 
-        d1 = -Mtx::DotProduct(3, nr1, r1);
-        ee[0] = Mtx::DotProduct(3, vs, r1) + vs4;
+        d1 = -(~nr1*r1);
+        ee[0] = (~vs*r1) + vs4;
         ee[1] = -1.0;
 
         for (i = 0; i < 3; i++)
             ee[1] += SQR((r1[i] - m[i]) / a[i]);
 
-        ee[2] = Mtx::DotProduct(3, nr1, r1) + d1;
-        ee[3] = Mtx::DotProduct(3, nr1, p1) + d1;
+        ee[2] = (~nr1*r1) + d1;
+        ee[3] = (~nr1*p1) + d1;
 
         ssqo = SQR(ee[0]) + SQR(ee[1]) + SQR(ee[2]) + SQR(ee[3]);
         ssq = ssqo;
@@ -664,12 +664,12 @@ int WrapEllipsoid::calcTangentPoint(double p1e, SimTK::Vec3& r1, SimTK::Vec3& p1
             dedth[3][3] = 1.0;
 
             p1r1 = p1 - r1;
-            Mtx::Normalize(3, p1r1, p1r1);
+            WrapMath::NormalizeOrZero(p1r1, p1r1);
 
             p1m = p1 - m;
-            Mtx::Normalize(3, p1m, p1m);
+            WrapMath::NormalizeOrZero(p1m, p1m);
 
-            pcos = Mtx::DotProduct(3, p1r1, p1m);
+            pcos = (~p1r1*p1m);
 
             if (pcos > 0.1)
                 dd = 1.0 - pow(pcos, 100);
@@ -723,14 +723,14 @@ int WrapEllipsoid::calcTangentPoint(double p1e, SimTK::Vec3& r1, SimTK::Vec3& p1
                 for (i = 0; i < 3; i++)
                     nr1[i] = 2.0 * (r1[i] - m[i])/SQR(a[i]);
 
-                ee[0] = Mtx::DotProduct(3, vs, r1) + vs4;
+                ee[0] = (~vs*r1) + vs4;
                 ee[1] = -1.0;
 
                 for (i = 0; i < 3; i++)
                     ee[1] += SQR((r1[i] - m[i])/a[i]);
 
-                ee[2] = Mtx::DotProduct(3, nr1, r1) + d1;
-                ee[3] = Mtx::DotProduct(3, nr1, p1) + d1;
+                ee[2] = (~nr1*r1) + d1;
+                ee[3] = (~nr1*p1) + d1;
 
                 ssqo = ssq;
 
@@ -758,14 +758,14 @@ int WrapEllipsoid::calcTangentPoint(double p1e, SimTK::Vec3& r1, SimTK::Vec3& p1
                 for (i = 0; i < 3; i++)
                     nr1[i] = 2.0 * (r1[i] - m[i]) / SQR(a[i]);
 
-                ee[0] = Mtx::DotProduct(3, vs, r1) + vs4;
+                ee[0] = (~vs*r1) + vs4;
                 ee[1] = -1.0;
 
                 for (i=0; i<3; i++)
                     ee[1] += SQR((r1[i] - m[i]) / a[i]);
 
-                ee[2] = Mtx::DotProduct(3, nr1, r1) + d1;
-                ee[3] = Mtx::DotProduct(3, nr1, p1) + d1;
+                ee[2] = (~nr1*r1) + d1;
+                ee[3] = (~nr1*p1) + d1;
 
                 ssqo = ssq;     
 
@@ -782,14 +782,14 @@ int WrapEllipsoid::calcTangentPoint(double p1e, SimTK::Vec3& r1, SimTK::Vec3& p1
             for (i=0; i<3; i++)
                 nr1[i] = 2.0 * (r1[i] - m[i]) / SQR(a[i]);
 
-            ee[0] = Mtx::DotProduct(3, vs, r1) + vs4;
+            ee[0] = (~vs*r1) + vs4;
             ee[1] = -1.0;
 
             for (i = 0; i < 3; i++)
                 ee[1] += SQR((r1[i] - m[i]) / a[i]);
 
-            ee[2] = Mtx::DotProduct(3, nr1, r1) + d1;
-            ee[3] = Mtx::DotProduct(3, nr1, p1) + d1;
+            ee[2] = (~nr1*r1) + d1;
+            ee[3] = (~nr1*p1) + d1;
 
             ssq = SQR(ee[0]) + SQR(ee[1]) + SQR(ee[2]) + SQR(ee[3]);
             ssqo = ssq;     
@@ -822,7 +822,7 @@ void WrapEllipsoid::CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, Si
     double phi, dphi, phi0, len, mu, aa, bb, cc, mu3, s[500][3], r0[3][3], rphi[3][3], desiredSegLength = 0.001;
 
     dr = r1 - r2;
-    len = Mtx::Magnitude(3, dr) / aWrapResult.factor;
+    len = dr.norm() / aWrapResult.factor;
 
     if (len < desiredSegLength) {
         // If the distance between r1 and r2 is very small, then don't bother
@@ -868,26 +868,26 @@ void WrapEllipsoid::CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, Si
     u[0] = u[1] = u[2] = 0.0;
     u[imax] = 1.0;
 
-    mu = (-Mtx::DotProduct(3, vs, m) - vs4) / Mtx::DotProduct(3, vs, u);
+    mu = (-(~vs*m) - vs4) / (~vs*u);
 
     for (i=0;i<3;i++)
         a0[i] = m[i] + mu * u[i];
 
     ar1 = r1 - a0;
-    Mtx::Normalize(3, ar1, ar1);
+    WrapMath::NormalizeOrZero(ar1, ar1);
     ar2 = r2 - a0;
-    Mtx::Normalize(3, ar2, ar2);
+    WrapMath::NormalizeOrZero(ar2, ar2);
 
-    phi0 = acos(Mtx::DotProduct(3, ar1, ar2));
+    phi0 = acos((~ar1*ar2));
 
     if (far_side_wrap)
         dphi = - (2 * SimTK_PI - phi0) / (double) numPathSegments;
     else
         dphi = phi0 / (double) numPathSegments;
 
-    Mtx::CrossProduct(ar1, ar2, vsz);
-    Mtx::Normalize(3, vsz, vsz);
-    Mtx::CrossProduct(vsz, ar1, vsy);
+    vsz = ar1 % ar2;
+    WrapMath::NormalizeOrZero(vsz, vsz);
+    vsy = vsz % ar1;
 
     for (i = 0; i < 3; i++)
     {
@@ -936,9 +936,9 @@ void WrapEllipsoid::CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, Si
             f2[j] = (a0[j] - m[j])/a[j];
         }
 
-        aa = Mtx::DotProduct(3, f1, f1);
-        bb = 2.0 * (Mtx::DotProduct(3, f1, f2));
-        cc = Mtx::DotProduct(3, f2, f2) - 1.0;
+        aa = (~f1*f1);
+        bb = 2.0 * ((~f1*f2));
+        cc = (~f2*f2) - 1.0;
         mu3 = (-bb + sqrt(SQR(bb) - 4.0 * aa * cc)) / (2.0 * aa);
 
         for (j = 0; j < 3; j++)
@@ -965,7 +965,7 @@ void WrapEllipsoid::CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, Si
         Vec3 p = aWrapResult.wrap_pts.get(i);
         Vec3 q = aWrapResult.wrap_pts.get(i+1);
         dv = q - p;
-        aWrapResult.wrap_path_length += dv.norm(); //Mtx::Magnitude(3, dv);
+        aWrapResult.wrap_path_length += dv.norm(); //WrapMath::Magnitude(3, dv);
     }
 }
 

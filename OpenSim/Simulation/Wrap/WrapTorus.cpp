@@ -27,10 +27,10 @@
 #include "WrapTorus.h"
 #include "WrapCylinder.h"
 #include "WrapResult.h"
+#include "WrapMath.h"
 #include <OpenSim/Common/ModelDisplayHints.h>
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/Lmdif.h>
-#include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Common/ScaleSet.h>
 
@@ -225,11 +225,11 @@ int WrapTorus::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3
     closestPt *= -1;
 
     cylXaxis = closestPt;
-    Mtx::Normalize(3, cylXaxis, cylXaxis);
+    WrapMath::NormalizeOrZero(cylXaxis, cylXaxis);
     cylYaxis[0] = 0.0;
     cylYaxis[1] = 0.0;
     cylYaxis[2] = -1.0;
-    Mtx::CrossProduct(cylXaxis, cylYaxis, cylZaxis);
+    cylZaxis = cylXaxis % cylYaxis;
     // Note: you don't need to recalculate Y as Z x X because X and Z are always in the XY plane, so Y will remain 0 0 -1.
 
     // cylinderToTorus is the transform from the cylinder to the torus.

@@ -160,7 +160,7 @@ void testArm26() {
     for (int j = 0; j < state->getSize(); ++j) {
         stringstream message;
         message << "t=" << time <<" state# "<< j << " " << standard->getColumnLabels()[j+1] << " std=" << data[j] <<"  computed=" << state->getData()[j] << endl;
-        ASSERT_EQUAL(data[j], state->getData()[j], 1.0e-3, 
+        ASSERT_EQUAL(data[j], state->getData()[j], 5.0e-3, 
             __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
         cout << "ASSERT_EQUAL PASSED " << message.str();
     }
@@ -173,7 +173,7 @@ void testArm26() {
     for (int j = 0; j < state->getSize(); ++j) {
         stringstream message;
         message << "t=" << time <<" state# "<< j << " " << standard->getColumnLabels()[j+1] << " std=" << data[j] <<"  computed=" << state->getData()[j] << endl;
-        ASSERT_EQUAL(data[j], state->getData()[j], 1.0e-3, 
+        ASSERT_EQUAL(data[j], state->getData()[j], 5.0e-3, 
             __FILE__, __LINE__, "ASSERT_EQUAL FAILED " + message.str());
         cout << "ASSERT_EQUAL PASSED " << message.str();
     }
