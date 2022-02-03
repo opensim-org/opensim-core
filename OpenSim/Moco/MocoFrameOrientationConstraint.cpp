@@ -78,7 +78,9 @@ void MocoFrameOrientationConstraint::initializeOnModelImpl(const Model& model, c
             minimum, maximum);
         bounds.emplace_back(minimum, maximum);
     }
-  
+    m_coordinateAxis = get_coordinate_axis();
+    OPENSIM_THROW_IF(((m_coordinateAxis!=0) && (m_coordinateAxis != 1) && (m_coordinateAxis != 2) && (m_coordinateAxis != 3)), Exception,
+        "The coordinate axis should be 0,1,2,or 3.", m_coordinateAxis);
 
     setNumEquations(nFramePairs);
     info.setBounds(bounds);
@@ -95,12 +97,19 @@ void MocoFrameOrientationConstraint::calcPathConstraintErrorsImpl(const SimTK::S
     for (const auto& frame_pair : m_frame_pairs) {
         const auto& frame1_rotation = frame_pair.first->getRotationInGround(state);
         const auto& frame2_rotation = frame_pair.second->getRotationInGround(state);
-        auto coordaxis = SimTK::CoordinateAxis(2);											
-        auto frame1_angle = frame1_rotation.convertOneAxisRotationToOneAngle(coordaxis);	
-        auto frame2_angle = frame2_rotation.convertOneAxisRotationToOneAngle(coordaxis);	
-        auto relative_angle = frame2_angle - frame1_angle;
-             
-        errors[iconstr++] = relative_angle;
+        
+        if (m_coordinateAxis == 0 || m_coordinateAxis == 1 || m_coordinateAxis == 2) {
+            auto frame1_angle = frame1_rotation.convertOneAxisRotationToOneAngle(SimTK::CoordinateAxis(m_coordinateAxis));
+            auto frame2_angle = frame2_rotation.convertOneAxisRotationToOneAngle(SimTK::CoordinateAxis(m_coordinateAxis));
+            auto relative_angle = frame2_angle - frame1_angle;
+            errors[iconstr++] = relative_angle;
+        }
+        else if(m_coordinateAxis == 3) {
+            const Rotation R_frames = ~frame1_rotation * frame2_rotation;
+            const SimTK::Vec4 aa_frames = R_frames.convertRotationToAngleAxis();
+            errors[iconstr++] = SimTK::square(aa_frames[0]);
+        }
+    
     }
 
 }
