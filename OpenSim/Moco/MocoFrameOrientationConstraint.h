@@ -71,8 +71,7 @@ public:
     void addFramePair(MocoFrameOrientationConstraintPair pair) {
         append_frame_pairs(std::move(pair));
     }
-    void addFramePair(const std::string& frame1_path,const std::string& frame2_path, double minimum_angle,
-        double maximum_angle) {
+    void addFramePair(const std::string& frame1_path,const std::string& frame2_path, double minimum_angle,double maximum_angle) {
         append_frame_pairs(MocoFrameOrientationConstraintPair(frame1_path,frame2_path, minimum_angle,maximum_angle));
     void setCoordinateAxis(int coordinate_axis) {
         set_coordinate_axis(coordinate_axis);
