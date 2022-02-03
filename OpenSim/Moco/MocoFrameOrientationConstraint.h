@@ -3,8 +3,9 @@
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoFrameOrientationConstraint.h                             *
  * -------------------------------------------------------------------------- *
+* Copyright (c) 2022 Stanford University and the Authors                      *
  *                                                                            *
- * Author(s): Size Zheng                                              		  *
+ * Author(s): Size Zheng                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
