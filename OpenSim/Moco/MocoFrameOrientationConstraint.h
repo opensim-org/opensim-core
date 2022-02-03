@@ -19,7 +19,6 @@
  * -------------------------------------------------------------------------- */
 
 #include "MocoConstraint.h"
-#include <OpenSim/Moco/osimMoco.h>
 #include "osimMocoDLL.h"
 
 namespace OpenSim {
