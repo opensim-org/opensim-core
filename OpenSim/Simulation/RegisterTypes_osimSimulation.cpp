@@ -126,10 +126,12 @@
 #include "SimbodyEngine/Coordinate.h"
 #include "SimbodyEngine/SpatialTransform.h"
 #include "OpenSense/IMUPlacer.h"
+#include "OpenSense/IMU.h"
 #include "OrientationsReference.h"
 #include "StatesTrajectoryReporter.h"
 #include "TableProcessor.h"
 #include "MarkersReference.h"
+#include "PositionMotion.h"
 
 #include <string>
 #include <iostream>
@@ -279,13 +281,14 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( OrientationWeight() );
 
     Object::registerType( IMUPlacer() );
-    
+    Object::registerType( IMU() );
     Object::registerType( StatesTrajectoryReporter() );
 
     Object::registerType( TableProcessor() );
 
     Object::registerType( TabOpLowPassFilter() );
     Object::registerType( TabOpUseAbsoluteStateNames() );
+    Object::registerType( PositionMotion() );
 
     // OLD Versions
     // Associate an instance with old name to help deserialization.

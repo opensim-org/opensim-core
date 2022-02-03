@@ -232,8 +232,11 @@ Model* ScaleTool::createModel() const
         Model *model = getGenericModelMaker().processModel(_pathToSubject);
         if (!model)
         {
-            log_error("Unable to load generic model at path {}.", 
-                _pathToSubject);
+            // processModel() attempts to load both the model and market set
+            // file. _pathToSubject might be misleading of model path was
+            // given as an aboslute path in the setup file, so it was
+            // removed from this error message.
+            log_error("Unable to load the generic model or marker set file.");
             return 0;
         }
         else {

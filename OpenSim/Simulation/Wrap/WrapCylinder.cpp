@@ -24,12 +24,13 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
+#include <SimTKcommon.h>
 #include "WrapCylinder.h"
 #include "PathWrap.h"
 #include "WrapMath.h"
 #include "WrapResult.h"
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
-#include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/ScaleSet.h>
 
@@ -40,6 +41,7 @@
 using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
+using SimTK::UnitVec3;
 
 static const char* wrapTypeName = "cylinder";
 static Vec3 p0(0.0, 0.0, -1.0);
@@ -181,10 +183,10 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     double dist1, dist2;
     double t12, t00;
 
-    Vec3 pp, vv, uu, r1a, r1b, r2a, r2b, apex, plane_normal, sum_musc, 
+    Vec3 pp, vv, uu, r1a, r1b, r2a, r2b, apex, sum_musc, 
         r1am, r1bm, r2am, r2bm, p11, p22, r1p, r2p, axispt, near12, 
         vert1, vert2, mpt, apex1, apex2, l1, l2, near00;
-
+    UnitVec3 plane_normal;
     int i, return_code = wrapped;
     bool r1_inter, r2_inter;
     bool constrained   = (bool) (_wrapSign != 0);
@@ -195,13 +197,11 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     // un-normalized at the end of the previous wrap calculation.
     const WrapResult& previousWrap = aPathWrap.getPreviousWrap();
     aWrapResult.factor = previousWrap.factor;
-    for (i = 0; i < 3; i++)
-    {
-        aWrapResult.r1[i] = previousWrap.r1[i] * previousWrap.factor;
-        aWrapResult.r2[i] = previousWrap.r2[i] * previousWrap.factor;
-        aWrapResult.c1[i] = previousWrap.c1[i];
-        aWrapResult.sv[i] = previousWrap.sv[i];
-    }
+    // Use Vec3 operators
+    aWrapResult.r1 = previousWrap.r1 * previousWrap.factor;
+    aWrapResult.r2 = previousWrap.r2 * previousWrap.factor;
+    aWrapResult.c1 = previousWrap.c1;
+    aWrapResult.sv = previousWrap.sv;
 
     aFlag = false;
     aWrapResult.wrap_path_length = 0.0;
@@ -246,9 +246,9 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     WrapMath::GetClosestPointOnLineToPoint(aPoint2, p0, dn, p22, t);
 
     // find preliminary tangent point candidates r1a & r1b
-    MAKE_3DVECTOR(p11, aPoint1, vv);
+    vv = aPoint1 - p11;
 
-    p11_dist = Mtx::Normalize(3, vv, vv);
+    p11_dist = WrapMath::NormalizeOrZero(vv, vv);
 
     sin_theta = _radius / p11_dist;
 
@@ -259,7 +259,7 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
 
     dist = sqrt(r_squared - dist * dist);
 
-    Mtx::CrossProduct(dn, vv, uu);
+    uu = dn % vv;
 
     for (i = 0; i < 3; i++)
     {
@@ -268,9 +268,9 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     }
 
     // find preliminary tangent point candidates r2a & r2b
-    MAKE_3DVECTOR(p22, aPoint2, vv);
+    vv = aPoint2 - p22;
 
-    p22_dist = Mtx::Normalize(3, vv, vv);
+    p22_dist = WrapMath::NormalizeOrZero(vv, vv);
 
     sin_theta = _radius / p22_dist;
 
@@ -281,7 +281,7 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
 
     dist = sqrt(r_squared - dist * dist);
 
-    Mtx::CrossProduct(dn, vv, uu);
+    uu = dn % vv;
 
     for (i = 0; i < 3; i++)
     {
@@ -320,13 +320,13 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
             }
         }
 
-        MAKE_3DVECTOR(p11, r1a, r1am);
-        MAKE_3DVECTOR(p11, r1b, r1bm);
-        MAKE_3DVECTOR(p22, r2a, r2am);
-        MAKE_3DVECTOR(p22, r2b, r2bm);
+        r1am = r1a - p11;
+        r1bm = r1b - p11;
+        r2am = r2a - p22;
+        r2bm = r2b - p22;
 
-        alpha = Mtx::Angle(r1am, r2bm);
-        beta = Mtx::Angle(r1bm, r2am);
+        alpha = acos((~r1am * r2bm) / (r1am.norm() * r2bm.norm()));
+        beta = acos((~r1bm * r2am) / (r1bm.norm() * r2am.norm()));
 
         // check to see which of the four tangent points should be chosen by seeing which
         // ones are on the 'active' portion of the cylinder. If r1a and r1b are both on or
@@ -335,8 +335,8 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
         {
             if (DSIGN(r2a[_wrapAxis]) == _wrapSign)
             {
-                COPY_1X3VECTOR(r1b, aWrapResult.r1);
-                COPY_1X3VECTOR(r2a, aWrapResult.r2);
+                aWrapResult.r1 = r1b;
+                aWrapResult.r2 = r2a;
                 if (alpha > beta)
                     far_side_wrap = false;
                 else
@@ -344,8 +344,8 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
             }
             else
             {
-                COPY_1X3VECTOR(r1a, aWrapResult.r1);
-                COPY_1X3VECTOR(r2b, aWrapResult.r2);
+                aWrapResult.r1 = r1a;
+                aWrapResult.r2 = r2b;
                 if (alpha > beta)
                     far_side_wrap = true;
                 else
@@ -354,8 +354,8 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
         }
         else if (DSIGN(r1a[_wrapAxis]) == _wrapSign && DSIGN(r1b[_wrapAxis]) != _wrapSign)
         {
-            COPY_1X3VECTOR(r1a, aWrapResult.r1);
-            COPY_1X3VECTOR(r2b, aWrapResult.r2);
+            aWrapResult.r1 = r1a;
+            aWrapResult.r2 = r2b;
             if (alpha > beta)
                 far_side_wrap = true;
             else
@@ -363,8 +363,8 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
         }
         else if (DSIGN(r1a[_wrapAxis]) != _wrapSign && DSIGN(r1b[_wrapAxis]) == _wrapSign)
         {
-            COPY_1X3VECTOR(r1b, aWrapResult.r1);
-            COPY_1X3VECTOR(r2a, aWrapResult.r2);
+            aWrapResult.r1 = r1b;
+            aWrapResult.r2 = r2a;
             if (alpha > beta)
                 far_side_wrap = false;
             else
@@ -374,8 +374,8 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
         {
             if (DSIGN(r2a[_wrapAxis]) == _wrapSign)
             {
-                COPY_1X3VECTOR(r1b, aWrapResult.r1);
-                COPY_1X3VECTOR(r2a, aWrapResult.r2);
+                aWrapResult.r1 = r1b;
+                aWrapResult.r2 = r2a;
                 if (alpha > beta)
                     far_side_wrap = false;
                 else
@@ -383,8 +383,8 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
             }
             else if (DSIGN(r2b[_wrapAxis]) == _wrapSign)
             {
-                COPY_1X3VECTOR(r1a, aWrapResult.r1);
-                COPY_1X3VECTOR(r2b, aWrapResult.r2);
+                aWrapResult.r1 = r1a;
+                aWrapResult.r2 = r2b;
                 if (alpha > beta)
                     far_side_wrap = true;
                 else
@@ -394,14 +394,14 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
             {
                 if (alpha > beta)
                 {
-                    COPY_1X3VECTOR(r1a, aWrapResult.r1);
-                    COPY_1X3VECTOR(r2b, aWrapResult.r2);
+                    aWrapResult.r1 = r1a;
+                    aWrapResult.r2 = r2b;
                     far_side_wrap = true;
                 }
                 else
                 {
-                    COPY_1X3VECTOR(r1b, aWrapResult.r1);
-                    COPY_1X3VECTOR(r2a, aWrapResult.r2);
+                    aWrapResult.r1 = r1b;
+                    aWrapResult.r2 = r2a;
                     far_side_wrap = true;
                 }
             }
@@ -414,65 +414,57 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
             sum_r[i] = (aWrapResult.r1[i] - p11[i]) + (aWrapResult.r2[i] - p22[i]);
         }
 
-        if (Mtx::DotProduct(3, sum_r, sum_musc) < 0.0)
+        if ((~sum_r*sum_musc) < 0.0)
             long_wrap = true;
     }
     else
     {
-        MAKE_3DVECTOR(p11, r1a, r1am);
-        MAKE_3DVECTOR(p11, r1b, r1bm);
-        MAKE_3DVECTOR(p22, r2a, r2am);
-        MAKE_3DVECTOR(p22, r2b, r2bm);
+        r1am = r1a - p11;
+        r1bm = r1b - p11;
+        r2am = r2a - p22;
+        r2bm = r2b - p22;
 
-        Mtx::Normalize(3, r1am, r1am);
-        Mtx::Normalize(3, r1bm, r1bm);
-        Mtx::Normalize(3, r2am, r2am);
-        Mtx::Normalize(3, r2bm, r2bm);
+        WrapMath::NormalizeOrZero(r1am, r1am);
+        WrapMath::NormalizeOrZero(r1bm, r1bm);
+        WrapMath::NormalizeOrZero(r2am, r2am);
+        WrapMath::NormalizeOrZero(r2bm, r2bm);
 
-        dot1 = Mtx::DotProduct(3, r1am, r2am);
-        dot2 = Mtx::DotProduct(3, r1am, r2bm);
-        dot3 = Mtx::DotProduct(3, r1bm, r2am);
-        dot4 = Mtx::DotProduct(3, r1bm, r2bm);
+        dot1 = (~r1am*r2am);
+        dot2 = (~r1am*r2bm);
+        dot3 = (~r1bm*r2am);
+        dot4 = (~r1bm*r2bm);
 
         if (dot1 > dot2 && dot1 > dot3 && dot1 > dot4)
         {
-            COPY_1X3VECTOR(r1a, aWrapResult.r1);
-            COPY_1X3VECTOR(r2a, aWrapResult.r2);
-            //r11 = &r1b[0];
-            //r22 = &r2b[0];
+            aWrapResult.r1 = r1a;
+            aWrapResult.r2 = r2a;
         }
         else if (dot2 > dot3 && dot2 > dot4)
         {
-            COPY_1X3VECTOR(r1a, aWrapResult.r1);
-            COPY_1X3VECTOR(r2b, aWrapResult.r2);
-            //r11 = &r1b[0];
-            //r22 = &r2a[0];
+            aWrapResult.r1 = r1a;
+            aWrapResult.r2 = r2b;
         }
         else if (dot3 > dot4)
         {
-            COPY_1X3VECTOR(r1b, aWrapResult.r1);
-            COPY_1X3VECTOR(r2a, aWrapResult.r2);
-            //r11 = &r1a[0];
-            //r22 = &r2b[0];
+            aWrapResult.r1 = r1b;
+            aWrapResult.r2 = r2a;
         }
         else
         {
-            COPY_1X3VECTOR(r1b, aWrapResult.r1);
-            COPY_1X3VECTOR(r2b, aWrapResult.r2);
-            //r11 = &r1a[0];
-            //r22 = &r2a[0];
+            aWrapResult.r1 = r1b;
+            aWrapResult.r2 = r2b;
         }
     }
 
     // bisect angle between r1 & r2 vectors to find the apex edge of the
     // cylinder:
-    MAKE_3DVECTOR(p11, aWrapResult.r1, uu);
-    MAKE_3DVECTOR(p22, aWrapResult.r2, vv);
+    uu = aWrapResult.r1 - p11;
+    vv = aWrapResult.r2 - p22;
 
     for (i = 0; i < 3; i++)
         vv[i] = uu[i] + vv[i];
 
-    Mtx::Normalize(3, vv, vv);
+    WrapMath::NormalizeOrZero(vv, vv);
 
     // find the apex point by using a ratio of the lengths of the
     // aPoint1-p11 and aPoint2-p22 segments:
@@ -486,22 +478,22 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     WrapMath::GetClosestPointOnLineToPoint(mpt, p0, dn, axispt, t);
 
     // find normal of plane through aPoint1, aPoint2, axispt
-    MAKE_3DVECTOR(axispt, aPoint1, l1);
-    MAKE_3DVECTOR(axispt, aPoint2, l2);
+    l1 = aPoint1 - axispt;
+    l2 = aPoint2 - axispt;
 
-    Mtx::Normalize(3, l1, l1);
-    Mtx::Normalize(3, l2, l2);
+    WrapMath::NormalizeOrZero(l1, l1);
+    WrapMath::NormalizeOrZero(l2, l2);
 
-    Mtx::CrossProduct(l1, l2, plane_normal);
-    Mtx::Normalize(3, plane_normal, plane_normal);
+    plane_normal = UnitVec3(l1 % l2);
+    WrapMath::NormalizeOrZero(plane_normal, plane_normal);
 
     // cross plane normal and cylinder axis (each way) to
     // get vectors pointing from axispt towards mpt and
     // away from mpt (you can't tell which is which yet).
-    Mtx::CrossProduct(dn, plane_normal, vert1);
-    Mtx::Normalize(3, vert1, vert1);
-    Mtx::CrossProduct(plane_normal, dn, vert2);
-    Mtx::Normalize(3, vert2, vert2);
+    vert1 = dn % plane_normal;
+    WrapMath::NormalizeOrZero(vert1, vert1);
+    vert2 = plane_normal % dn;
+    WrapMath::NormalizeOrZero(vert2, vert2);
 
     // now find two potential apex points, one along each vector
     for (i = 0; i < 3; i++)
@@ -544,14 +536,13 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     // determine how far to slide the preliminary r1/r2 along their
     // "edge of tangency" with the cylinder by intersecting the aPoint1-ax
     // line with the plane formed by aPoint1, aPoint2, and apex:
-    MAKE_3DVECTOR(apex, aPoint1, uu);
-    MAKE_3DVECTOR(apex, aPoint2, vv);
+    uu = aPoint1 - apex;
+    vv = aPoint2 - apex;
 
-    Mtx::Normalize(3, uu, uu);
-    Mtx::Normalize(3, vv, vv);
+    WrapMath::NormalizeOrZero(uu, uu);
+    WrapMath::NormalizeOrZero(vv, vv);
 
-    Mtx::CrossProduct(uu, vv, plane_normal);
-    Mtx::Normalize(3, plane_normal, plane_normal);
+    plane_normal = UnitVec3(uu % vv);
 
     d = - aPoint1[0] * plane_normal[0] - aPoint1[1] * plane_normal[1] - aPoint1[2] * plane_normal[2];
 
@@ -634,13 +625,13 @@ restart_spiral_wrap:
     WrapMath::GetClosestPointOnLineToPoint(aWrapResult.r1, p0, dn, r1a, t);
     WrapMath::GetClosestPointOnLineToPoint(aWrapResult.r2, p0, dn, r2a, t);
 
-    MAKE_3DVECTOR(r1a, r2a, axial_vec);
+    axial_vec = r2a - r1a;
 
-    axial_dist = Mtx::Magnitude(3, axial_vec);
+    axial_dist = axial_vec.norm();
 
     // determine the radial angle
-    MAKE_3DVECTOR(r1a, aWrapResult.r1, uu);
-    MAKE_3DVECTOR(r2a, aWrapResult.r2, vv);
+    uu = aWrapResult.r1 - r1a;
+    vv = aWrapResult.r2 - r2a;
 
     for (i = 0; i < 3; i++)
     {
@@ -648,7 +639,7 @@ restart_spiral_wrap:
         vv[i] /= _radius;
     }
 
-    theta = Mtx::Angle(uu,vv);
+    theta = acos((~uu * vv) / (uu.norm() * vv.norm()));
 
     if (far_side_wrap)
         theta = 2.0 * SimTK_PI - theta;
@@ -661,49 +652,62 @@ restart_spiral_wrap:
     aWrapResult.wrap_path_length = sqrt(x * x + y * y);
 
     // build path segments
-    Mtx::CrossProduct(uu, vv, ax);
-    Mtx::Normalize(3, ax, ax);
+    ax = uu % vv;
+    WrapMath::NormalizeOrZero(ax, ax);
 
-    Mtx::CrossProduct(ax, uu, vv);
+    vv = ax % uu;
 
     SimTK::Rotation m;
     m.set(0, 0, ax[0]); m.set(0, 1, ax[1]); m.set(0, 2, ax[2]);
     m.set(1, 0, uu[0]); m.set(1, 1, uu[1]); m.set(1, 2, uu[2]);
     m.set(2, 0, vv[0]); m.set(2, 1, vv[1]); m.set(2, 2, vv[2]);
-
-    // Each muscle segment on the surface of the cylinder should be
-    // 0.002 meters long. This assumes the model is in meters, of course.
-    int numWrapSegments = (int) (aWrapResult.wrap_path_length / 0.002);
-    if (numWrapSegments < 1)
-        numWrapSegments = 1;
-
-    for (i = 0; i < numWrapSegments; i++)
-    {
-        double t = (double) i / numWrapSegments;
-
-        _calc_spiral_wrap_point(r1a, axial_vec, m, ax, sense, t, theta, wrap_pt);
-
-        // adjust r1/r2 tangent points if necessary to achieve tangency with
-        // the spiral path:
-        if (i == 1 && iterations < MAX_ITERATIONS)
-        {
-            bool did_adjust_r2 = false;
-            bool did_adjust_r1 = _adjust_tangent_point(aPoint1, dn, aWrapResult.r1, wrap_pt);
-
-            SimTK::Vec3 temp_wrap_pt;
-
-            _calc_spiral_wrap_point(r1a, axial_vec, m, ax, sense, 1.0 - t, theta, temp_wrap_pt);
-
-            did_adjust_r2 = _adjust_tangent_point(aPoint2, dn, aWrapResult.r2, temp_wrap_pt);
-
-            if (did_adjust_r1 || did_adjust_r2)
-            {
-                iterations++;
-                goto restart_spiral_wrap;
-            }
-        }
-
+    // WrapTorus creates a WrapCyl with no connected model, avoid this hack
+    if (!_model.empty() && !getModel().getDisplayHints().isVisualizationEnabled() &&
+            aWrapResult.singleWrap) {
+        // Use one WrapSegment/cord instead of finely sampled list of wrap_pt(s)
+        _calc_spiral_wrap_point(
+                r1a, axial_vec, m, ax, sense, 0, theta, wrap_pt);
         aWrapResult.wrap_pts.append(wrap_pt);
+        _calc_spiral_wrap_point(
+                r1a, axial_vec, m, ax, sense, 1.0, theta, wrap_pt);
+        aWrapResult.wrap_pts.append(wrap_pt);
+    } 
+    else {
+        // Each muscle segment on the surface of the cylinder should be
+        // 0.002 meters long. This assumes the model is in meters, of course.
+        int numWrapSegments = (int)(aWrapResult.wrap_path_length / 0.002);
+        if (numWrapSegments < 1) numWrapSegments = 1;
+
+        for (i = 0; i < numWrapSegments; i++) {
+            double t = (double)i / numWrapSegments;
+
+            _calc_spiral_wrap_point(
+                    r1a, axial_vec, m, ax, sense, t, theta, wrap_pt);
+
+            // adjust r1/r2 tangent points if necessary to achieve tangency with
+            // the spiral path:
+            if (i == 1 && iterations < MAX_ITERATIONS &&
+                    !aWrapResult.singleWrap) {
+                bool did_adjust_r2 = false;
+                bool did_adjust_r1 = _adjust_tangent_point(
+                        aPoint1, dn, aWrapResult.r1, wrap_pt);
+
+                SimTK::Vec3 temp_wrap_pt;
+
+                _calc_spiral_wrap_point(r1a, axial_vec, m, ax, sense, 1.0 - t,
+                        theta, temp_wrap_pt);
+
+                did_adjust_r2 = _adjust_tangent_point(
+                        aPoint2, dn, aWrapResult.r2, temp_wrap_pt);
+
+                if (did_adjust_r1 || did_adjust_r2) {
+                    iterations++;
+                    goto restart_spiral_wrap;
+                }
+            }
+
+            aWrapResult.wrap_pts.append(wrap_pt);
+        }
     }
 }
 
@@ -763,19 +767,17 @@ bool WrapCylinder::_adjust_tangent_point(SimTK::Vec3& pt1,
                                                       SimTK::Vec3& r1,
                                                       SimTK::Vec3& w1) const
 {
-    SimTK::Vec3 pr_vec, rw_vec;
+    SimTK::Vec3 pr_vec = r1 - pt1;
+    SimTK::Vec3 rw_vec = w1 - r1;
     double alpha, omega, t;
     int i;
     bool did_adust = false;
 
-    MAKE_3DVECTOR(pt1, r1, pr_vec);
-    MAKE_3DVECTOR(r1, w1, rw_vec);
+    WrapMath::NormalizeOrZero(pr_vec, pr_vec);
+    WrapMath::NormalizeOrZero(rw_vec, rw_vec);
 
-    Mtx::Normalize(3, pr_vec, pr_vec);
-    Mtx::Normalize(3, rw_vec, rw_vec);
-
-    alpha = acos(Mtx::DotProduct(3, pr_vec, dn));
-    omega = acos(Mtx::DotProduct(3, rw_vec, dn));
+    alpha = acos((~pr_vec*dn));
+    omega = acos((~rw_vec*dn));
 
     if (fabs(alpha - omega) > TANGENCY_THRESHOLD)
     {

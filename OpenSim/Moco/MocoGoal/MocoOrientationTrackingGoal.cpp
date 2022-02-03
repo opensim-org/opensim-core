@@ -30,15 +30,15 @@ using namespace OpenSim;
 void MocoOrientationTrackingGoal::initializeOnModelImpl(const Model& model)
         const {
     // Get the reference data.
-    TimeSeriesTable_<Rotation> rotationTable;
+    TimeSeriesTable_<SimTK::Rotation_<double>> rotationTable;
     if (m_rotation_table.getNumColumns() != 0 ||   // rotation table or rotation
             get_rotation_reference_file() != "") { // reference file provided
-        TimeSeriesTable_<Rotation> rotationTableToUse;
+        TimeSeriesTable_<SimTK::Rotation_<double>> rotationTableToUse;
         // Should not be able to supply any two simultaneously.
         assert(get_states_reference().empty());
         if (get_rotation_reference_file() != "") { // rotation reference file
             assert(m_rotation_table.getNumColumns() == 0);
-            rotationTableToUse = TimeSeriesTable_<Rotation>(
+            rotationTableToUse = TimeSeriesTable_<SimTK::Rotation_<double>>(
                     get_rotation_reference_file());
 
         } else { // rotation table
@@ -53,7 +53,7 @@ void MocoOrientationTrackingGoal::initializeOnModelImpl(const Model& model)
             m_frame_paths = rotationTableToUse.getColumnLabels();
             rotationTable = rotationTableToUse;
         } else {
-            rotationTable = TimeSeriesTable_<Rotation>(
+            rotationTable = TimeSeriesTable_<SimTK::Rotation_<double>>(
                 rotationTableToUse.getIndependentColumn());
             const auto& labels = rotationTableToUse.getColumnLabels();
             for (int i = 0; i < getProperty_frame_paths().size(); ++i) {
@@ -98,9 +98,9 @@ void MocoOrientationTrackingGoal::initializeOnModelImpl(const Model& model)
             // This realization ignores any SimTK::Motions prescribed in the
             // model.
             model.realizePosition(state);
-            std::vector<Rotation> rotations;
+            std::vector<SimTK::Rotation_<double>> rotations;
             for (const auto& path : m_frame_paths) {
-                Rotation rotation =
+                SimTK::Rotation_<double> rotation =
                     model.getComponent<Frame>(path).getRotationInGround(state);
                 rotations.push_back(rotation);
             }
@@ -189,15 +189,15 @@ void MocoOrientationTrackingGoal::calcIntegrandImpl(
         // valid. However, ensuring that the normalization step is included
         // seems to be sufficient for the purposes of this cost. 
         // https://keithmaggio.wordpress.com/2011/02/15/math-magician-lerp-slerp-and-nlerp/
-        const SimTK::Quaternion e(
+        const SimTK::Quaternion_<double> e(
             m_ref_splines[4*iframe].calcValue(timeVec),
             m_ref_splines[4*iframe + 1].calcValue(timeVec),
             m_ref_splines[4*iframe + 2].calcValue(timeVec),
             m_ref_splines[4*iframe + 3].calcValue(timeVec));
-        // Construct a Rotation object from which we'll calcuation an angle-axis 
+        // Construct a Rotation object from which we'll calculate an angle-axis
         // representation of the current orientation error.
-        const Rotation R_GD(e);
-        const Rotation R_MD = ~R_GM*R_GD;
+        const SimTK::Rotation_<double> R_GD(e);
+        const SimTK::Rotation_<double> R_MD = ~R_GM*R_GD;
         const SimTK::Vec4 aa_MD = R_MD.convertRotationToAngleAxis();
 
         // Add this frame's rotation error to the integrand.

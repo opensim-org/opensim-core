@@ -28,7 +28,7 @@ include(FeatureSummary)
 # OpenSim version.
 # ----------------
 set(OPENSIM_MAJOR_VERSION 4)
-set(OPENSIM_MINOR_VERSION 3)
+set(OPENSIM_MINOR_VERSION 4)
 set(OPENSIM_PATCH_VERSION 0)
 
 # Don't include the patch version if it is 0.
@@ -702,9 +702,9 @@ if(${OPENSIM_C3D_PARSER} STREQUAL "ezc3d")
     set(WITH_EZC3D true)
     set(WITH_BTK false)
     if(WIN32)
-        set(ezc3d_hint "${OPENSIM_DEPENDENCIES_DIR}/ezc3d/lib/cmake")
+        set(ezc3d_hint "${OPENSIM_DEPENDENCIES_DIR}/ezc3d/cmake")
     else()
-        set(ezc3d_hint "${OPENSIM_DEPENDENCIES_DIR}/ezc3d/lib/ezc3d/cmake")
+        set(ezc3d_hint "${OPENSIM_DEPENDENCIES_DIR}/ezc3d/lib/cmake/ezc3d")
     endif()
     find_package(ezc3d REQUIRED HINTS "${ezc3d_hint}")
     add_definitions(-DWITH_EZC3D)

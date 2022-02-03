@@ -1,8 +1,35 @@
 Moco Change Log
 ===============
 
+1.2.0
+-----
+- 2021-11-18: Implemented fix for DeGrooteFregly2016Muscle so that optimal fiber 
+              lengths and tendon slack lengths are scaled when using the ScaleTool.
+  
+- 2021-11-17: Added Matlab and Python support for MocoAngularVelocityTrackingGoal.
+              Fixed Matlab and Python issues with 
+              MocoOrientationTrackingGoal::setRotationReference(); this method 
+              is now overloaded to accept tables of type TimeSeriesTableQuaternion.
+
 1.1.0
 -----
+- 2021-07-13: Added MocoStepTimeAsymmetryGoal, MocoStepLengthAsymmetryGoal, and
+              example2DWalkingStepAsymmetry (Matlab).
+
+- 2021-07-09: Added MocoScaleFactor support for MocoStateTrackingGoal, 
+              MocoMarkerTrackingGoal, and MocoContactTrackingGoal.
+  
+- 2021-06-29: Added Matlab version of example2DWalkingMetabolics (via Brian 
+              Umberger).
+              
+- 2021-06-28: Added exampleIMUTracking (Matlab and Python) for TGCS 2021.
+
+- 2021-06-28: Added exampleEMGTracking (Matlab and Python) for TGCS 2021.
+  
+- 2021-06-28: Added support for optimized scale factors including the component
+              MocoScaleFactor, and interface for MocoGoals to add scale factors
+              to a MocoProblem (e.g., MocoControlTrackingGoal::addScaleFactor).
+
 - 2021-02-24: Updated MocoAccelerationTrackingGoal to add support for tracking
               acceleration signals from inertial measurement units.
   

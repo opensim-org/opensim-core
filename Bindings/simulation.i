@@ -221,7 +221,11 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %shared_ptr(ReferenceDouble);
 %shared_ptr(ReferenceRotation);
 %include <OpenSim/Simulation/MarkersReference.h>
-//%shared_ptr(OpenSim::MarkersReference);
+// Since we have both MarkersReference and shared_ptr<MarkersReference>
+// Across the interface, DO NOT use %shared_ptr macro here as it treats
+// all pointers and references as std::shared_ptr
+//
+%template(SharedMarkersReference) std::shared_ptr<OpenSim::MarkersReference>;
 %template(SetMarkerWeights) OpenSim::Set<MarkerWeight, OpenSim::Object>;
 %include <OpenSim/Simulation/CoordinateReference.h>
 %include <OpenSim/Simulation/OrientationsReference.h>
@@ -233,14 +237,18 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Simulation/AssemblySolver.h>
 %include <OpenSim/Simulation/InverseKinematicsSolver.h>
 %include <OpenSim/Simulation/OpenSense/IMUPlacer.h>
+%include <OpenSim/Simulation/OpenSense/IMU.h>
+
 %include <OpenSim/Simulation/OpenSense/OpenSenseUtilities.h>
+
+%template(StdVectorIMUs) std::vector< OpenSim::IMU* >;
 
 %include <OpenSim/Simulation/StatesTrajectory.h>
 // This enables iterating using the getBetween() method.
 %template(IteratorRangeStatesTrajectoryIterator)
     SimTK::IteratorRange<OpenSim::StatesTrajectory::const_iterator>;
 %include <OpenSim/Simulation/StatesTrajectoryReporter.h>
-
+%include <OpenSim/Simulation/PositionMotion.h>
 %include <OpenSim/Simulation/SimulationUtilities.h>
 %template(analyze) OpenSim::analyze<double>;
 %template(analyzeVec3) OpenSim::analyze<SimTK::Vec3>;

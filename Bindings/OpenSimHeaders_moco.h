@@ -4,7 +4,6 @@
  */
 
 #include <OpenSim/Moco/About.h>
-#include <OpenSim/Moco/Components/PositionMotion.h>
 #include <OpenSim/Moco/MocoBounds.h>
 #include <OpenSim/Moco/MocoCasADiSolver/MocoCasADiSolver.h>
 #include <OpenSim/Moco/MocoControlBoundConstraint.h>
@@ -21,11 +20,14 @@
 #include <OpenSim/Moco/MocoGoal/MocoMarkerFinalGoal.h>
 #include <OpenSim/Moco/MocoGoal/MocoMarkerTrackingGoal.h>
 #include <OpenSim/Moco/MocoGoal/MocoOrientationTrackingGoal.h>
+#include <OpenSim/Moco/MocoGoal/MocoAngularVelocityTrackingGoal.h>
 #include <OpenSim/Moco/MocoGoal/MocoOutputGoal.h>
 #include <OpenSim/Moco/MocoGoal/MocoPeriodicityGoal.h>
 #include <OpenSim/Moco/MocoGoal/MocoStateTrackingGoal.h>
 #include <OpenSim/Moco/MocoGoal/MocoSumSquaredStateGoal.h>
 #include <OpenSim/Moco/MocoGoal/MocoTranslationTrackingGoal.h>
+#include <OpenSim/Moco/MocoGoal/MocoStepTimeAsymmetryGoal.h>
+#include <OpenSim/Moco/MocoGoal/MocoStepLengthAsymmetryGoal.h>
 #include <OpenSim/Moco/MocoInverse.h>
 #include <OpenSim/Moco/MocoParameter.h>
 #include <OpenSim/Moco/MocoProblem.h>
@@ -37,6 +39,7 @@
 #include <OpenSim/Moco/MocoUtilities.h>
 #include <OpenSim/Moco/MocoWeightSet.h>
 #include <OpenSim/Moco/ModelOperatorsDGF.h>
+#include <OpenSim/Moco/MocoScaleFactor.h>
 #include <OpenSim/Moco/osimMocoDLL.h>
 
 #endif // OPENSIM_OPENSIM_HEADERS_MOCO_H_

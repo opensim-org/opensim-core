@@ -5,9 +5,23 @@ are related to the items below. If there is no issue or pull
 request related to the change, then we may provide the commit.
 
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
+v4.4
+====
+- Updated ezc3d to version 1.4.6 which better manage the events defined in a c3d file.
+- Fixed an issue that could happen sometimes with ScaleTool where loading the model file or marker set file could fail if the file was given as an absolute path (Issue #3109, PR #3110)
+
 v4.3
 ====
+- Introduced IMU component that models a typical Inertial Measurement Unit (IMU) with corresponding outputs for orientation, accelerometer, and gyroscope signals. 
+- Introduced IMUDataReporter (analysis) to record signals from IMU components placed on models.
 - Fixed a bug with Actuation analysis that would lead to extra columns in the output when an actuator is disabled (Issue #2977).
+- Fix issue where including path in output file name caused output to not be written without warning, now warning is given and file is written (Issue #3042).
+- Fix copy-paste bug in reporting orientation errors (Issue #2893, fixed by Henrik-Norgren). 
+- Upgrade bindings to use SWIG version 4.0 (allowing doxygen comments to carry over to Java/Python files).
+- Added createSyntheticIMUAccelerationSignals() to SimulationUtilities to generate "synthetic" IMU accelerations based on passed in state trajectory.
+- Fixed incorrect header information in BodyKinematics file output
+- Fixed bug applying non-uniform scaling to inertia matrix of a Body due to using local vaiable of type SysMat33 (Issue #2871).
+- Default build to python 3.8 and numpy 1.20 (special instructions for using python 3.8+ on windows at https://simtk-confluence.stanford.edu/display/OpenSim/Scripting+in+Python)
 
 v4.2
 ====

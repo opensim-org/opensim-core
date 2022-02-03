@@ -50,6 +50,17 @@ int main()
             std::vector<double>(23, 1e-2), __FILE__, __LINE__,
             "testArm failed");
         cout << "testArm passed" << endl;
+        // setOutputGenForceFileName including folder name, test 
+        // that folder will be ignored and file is written to Results
+        InverseDynamicsTool id12("arm26_Setup_InverseDynamics.xml");
+        id12.setOutputGenForceFileName(
+                "unused_folder/arm26_InverseDynamics_rerun.sto");
+        id12.run();
+        Storage result12("Results/arm26_InverseDynamics_rerun.sto");
+        CHECK_STORAGE_AGAINST_STANDARD(result1, result12,
+                std::vector<double>(23, 1e-5), __FILE__, __LINE__,
+                "testArm ignore path in output file spec. failed");
+        cout << "testArm output file spec. passed" << endl;
 
         InverseDynamicsTool id2("subject01_Setup_InverseDynamics.xml");
         id2.run();

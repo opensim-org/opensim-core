@@ -29,7 +29,6 @@
 #include "WrapResult.h"
 #include "WrapMath.h"
 #include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
 #include <OpenSim/Common/ScaleSet.h>
 
@@ -205,12 +204,12 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
     }
 
    // check that neither point is inside the radius of the sphere
-    if (Mtx::Magnitude(3, p1m) < get_radius() || Mtx::Magnitude(3, p2m) < get_radius())
+    if (p1m.norm() < get_radius() || p2m.norm() < get_radius())
       return insideRadius;
 
-    a = Mtx::DotProduct(3, ri, ri);
-   b = -2.0 * Mtx::DotProduct(3, mp, ri);
-   c = Mtx::DotProduct(3, mp, mp) - get_radius() * get_radius();
+   a = (~ri*ri);
+   b = -2.0 * (~mp*ri);
+   c = (~mp*mp) - get_radius() * get_radius();
    disc = b * b - 4.0 * a * c;
 
    // check if there is an intersection of p1p2 and the sphere
@@ -239,36 +238,26 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
       return noWrap;
    }
 
-    Mtx::Normalize(3, p1p2, p1p2);
-    Mtx::Normalize(3, p2m, np2);
+    WrapMath::NormalizeOrZero(p1p2, p1p2);
+    WrapMath::NormalizeOrZero(p2m, np2);
 
-    Mtx::CrossProduct(p1p2, np2, hp2);
+    hp2 = p1p2 % np2;
 
    // if the muscle line passes too close to the center of the sphere
    // then give up
-    if (Mtx::Magnitude(3, hp2) < 0.00001) {
+    if (hp2.norm() < 0.00001) {
         // JPL 12/28/06: r1 and r2 from the previous wrap have already
         // been copied into aWrapResult (and not yet overwritten). So
         // just go directly to calc_path.
-#if 0
-      // no wait!  don't give up!  Instead use the previous r1 & r2:
-      // -- added KMS 9/9/99
-      //
-        const WrapResult& previousWrap = aPathWrap.getPreviousWrap();
-      for (i = 0; i < 3; i++) {
-         aWrapResult.r1[i] = previousWrap.r1[i];
-         aWrapResult.r2[i] = previousWrap.r2[i];
-      }
-#endif
-      goto calc_path;
+        goto calc_path;
    }
 
    // calc tangent point candidates r1a, r1b
-    Mtx::Normalize(3, hp2, n);
+    WrapMath::NormalizeOrZero(hp2, n);
     for (i = 0; i < 3; i++)
         y[i] = origin[i] - aPoint1[i];
-    Mtx::Normalize(3, y, y);
-    Mtx::CrossProduct(n, y, z);
+    WrapMath::NormalizeOrZero(y, y);
+    z = n % y;
    
    for (i = 0; i < 3; i++)
    {
@@ -277,25 +266,25 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
       ra[i][2] = z[i];
    }
 
-    a1 = asin(get_radius() / Mtx::Magnitude(3, p1m));
+    a1 = asin(get_radius() / p1m.norm());
 
     rrx.setRotationFromAngleAboutX(a1);
     aa = ra * ~rrx;
 
    for (i = 0; i < 3; i++)
-      r1a[i] = aPoint1[i] + aa[i][1] * Mtx::Magnitude(3, p1m) * cos(a1);
+      r1a[i] = aPoint1[i] + aa[i][1] * p1m.norm() * cos(a1);
 
    rrx.setRotationFromAngleAboutX(-a1);
    aa = ra * ~rrx;
 
    for (i = 0; i < 3; i++)
-      r1b[i] = aPoint1[i] + aa[i][1] * Mtx::Magnitude(3, p1m) * cos(a1);
+      r1b[i] = aPoint1[i] + aa[i][1] * p1m.norm() * cos(a1);
 
    // calc tangent point candidates r2a, r2b
     for (i = 0; i < 3; i++)
         y[i] = origin[i] - aPoint2[i];
-    Mtx::Normalize(3, y, y);
-    Mtx::CrossProduct(n, y, z);
+    WrapMath::NormalizeOrZero(y, y);
+    z = n % y;
 
    for (i = 0; i < 3; i++)
    {
@@ -304,39 +293,37 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
       ra[i][2] = z[i];
    }
 
-   a2 = asin(get_radius() / Mtx::Magnitude(3, p2m));
+   a2 = asin(get_radius() / p2m.norm());
 
    rrx.setRotationFromAngleAboutX(a2);
    aa = ra * ~rrx;
 
    for (i = 0; i < 3; i++)
-      r2a[i] = aPoint2[i] + aa[i][1] * Mtx::Magnitude(3, p2m) * cos(a2);
+      r2a[i] = aPoint2[i] + aa[i][1] * p2m.norm() * cos(a2);
 
    rrx.setRotationFromAngleAboutX(-a2);
    aa = ra * ~rrx;
 
    for (i = 0; i < 3; i++)
-      r2b[i] = aPoint2[i] + aa[i][1] * Mtx::Magnitude(3, p2m) * cos(a2);
+      r2b[i] = aPoint2[i] + aa[i][1] * p2m.norm() * cos(a2);
 
    // determine wrapping tangent points r1 & r2
-    for (i = 0; i < 3; i++) {
-        r1am[i] = r1a[i] - origin[i];
-        r1bm[i] = r1b[i] - origin[i];
-        r2am[i] = r2a[i] - origin[i];
-        r2bm[i] = r2b[i] - origin[i];
-    }
+    r1am = r1a - origin;
+    r1bm = r1b - origin;
+    r2am = r2a - origin;
+    r2bm = r2b - origin;
 
-    Mtx::Normalize(3, r1am, r1am);
-    Mtx::Normalize(3, r1bm, r1bm);
-    Mtx::Normalize(3, r2am, r2am);
-    Mtx::Normalize(3, r2bm, r2bm);
+    WrapMath::NormalizeOrZero(r1am, r1am);
+    WrapMath::NormalizeOrZero(r1bm, r1bm);
+    WrapMath::NormalizeOrZero(r2am, r2am);
+    WrapMath::NormalizeOrZero(r2bm, r2bm);
    
    {
       // check which of the tangential points results in the shortest distance
-        j1 = Mtx::DotProduct(3, r1am, r2am);
-      j2 = Mtx::DotProduct(3, r1am, r2bm);
-      j3 = Mtx::DotProduct(3, r1bm, r2am);
-      j4 = Mtx::DotProduct(3, r1bm, r2bm);
+      j1 = (~r1am*r2am);
+      j2 = (~r1am*r2bm);
+      j3 = (~r1bm*r2am);
+      j4 = (~r1bm*r2bm);
        
       if (j1 > j2 && j1 > j3 && j1 > j4)
       {
@@ -419,9 +406,9 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
          for (i = 0; i < 3; i++)
             sum_musc[i] = (origin[i] - aPoint1[i]) + (origin[i] - aPoint2[i]);
 
-         Mtx::Normalize(3, sum_musc, sum_musc);
+         WrapMath::NormalizeOrZero(sum_musc, sum_musc);
 
-            if (Mtx::DotProduct(3, r1am, sum_musc) > Mtx::DotProduct(3, r1bm, sum_musc))
+            if ((~r1am*sum_musc) > (~r1bm*sum_musc))
          {
                 for (i = 0; i < 3; i++)
                     aWrapResult.r1[i] = r1a[i];
@@ -434,7 +421,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
             r11 = &r1a[0];
          }
 
-            if (Mtx::DotProduct(3, r2am, sum_musc) > Mtx::DotProduct(3, r2bm, sum_musc))
+            if ((~r2am*sum_musc) > (~r2bm*sum_musc))
          {
                 for (i = 0; i < 3; i++)
                     aWrapResult.r2[i] = r2a[i];
@@ -451,9 +438,9 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
          for (i = 0; i < 3; i++)
             sum_musc[i] = (aWrapResult.r1[i] - aPoint1[i]) + (aWrapResult.r2[i] - aPoint2[i]);
 
-         Mtx::Normalize(3, sum_musc, sum_musc);
+         WrapMath::NormalizeOrZero(sum_musc, sum_musc);
 
-            if (Mtx::DotProduct(3, sum_musc, wrapaxis) < 0.0)
+            if ((~sum_musc*wrapaxis) < 0.0)
          {
                 for (i = 0; i < 3; i++) {
                     aWrapResult.r1[i] = r11[i];
@@ -467,7 +454,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
             sum_r[i] = (aWrapResult.r1[i] - origin[i]) + (aWrapResult.r2[i] - origin[i]);
          }
 
-            if (Mtx::DotProduct(3, sum_r, sum_musc) < 0.0)
+         if ((~sum_r*sum_musc) < 0.0)
             far_side_wrap = true;
       }
    }
@@ -478,10 +465,10 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
         r2m[i] = aWrapResult.r2[i] - origin[i];
     }
 
-    Mtx::Normalize(3, r1m, r1n);
-    Mtx::Normalize(3, r2m, r2n);
+    WrapMath::NormalizeOrZero(r1m, r1n);
+    WrapMath::NormalizeOrZero(r2m, r2n);
 
-    angle = acos(Mtx::DotProduct(3, r1n, r2n));
+    angle = acos((~r1n*r2n));
    
    if (far_side_wrap)
         angle = -(2 * SimTK_PI - angle);
@@ -489,9 +476,8 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
    r1r2 = get_radius() * angle;
    aWrapResult.wrap_path_length = r1r2;
 
-    Vec3 axis3;
-    Mtx::CrossProduct(r1n, r2n, axis3);
-    Mtx::Normalize(3, axis3, axis3);
+    Vec3 axis3 = r1n % r2n;
+    WrapMath::NormalizeOrZero(axis3, axis3);
 
    for(int ii=0; ii<3; ii++) axis[ii]=axis3[ii];
    axis[3] = 1.0;

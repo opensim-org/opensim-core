@@ -97,13 +97,19 @@ problem = study.updProblem();
 % Goals
 % =====
 
-% Symmetry (to permit simulating only one step)
+% Symmetry
+% --------
+% This goal allows us to simulate only one step with left-right symmetry
+% that we can then double to create a full gait cycle.
 symmetryGoal = MocoPeriodicityGoal('symmetryGoal');
 problem.addGoal(symmetryGoal);
 model = modelProcessor.process();
 model.initSystem();
 
-% Symmetric coordinate values (except for pelvis_tx) and speeds
+% Symmetric coordinate values (except for pelvis_tx) and speeds. Here, we 
+% constrain final coordinate values of one leg to match the initial value of the 
+% other leg. Or, in the case of the pelvis_tx value, we constrain the final 
+% value to be the same as the initial value.
 for i = 1:model.getNumStateVariables()
     currentStateName = string(model.getStateVariableNames().getitem(i-1));
     if startsWith(currentStateName , '/jointset')
@@ -126,7 +132,8 @@ for i = 1:model.getNumStateVariables()
     end
 end
 
-% Symmetric muscle activations
+% Symmetric muscle activations. Here, we constrain final muscle activation 
+% values of one leg to match the initial activation values of the other leg.
 for i = 1:model.getNumStateVariables()
     currentStateName = string(model.getStateVariableNames().getitem(i-1));
     if endsWith(currentStateName,'/activation')
@@ -143,7 +150,7 @@ for i = 1:model.getNumStateVariables()
     end
 end
 
-% Symmetric coordinate actuator controls
+% The lumbar coordinate actuator control is symmetric.
 symmetryGoal.addControlPair(MocoPeriodicityGoalPair('/lumbarAct'));
 
 % Get a reference to the MocoControlGoal that is added to every MocoTrack
@@ -326,7 +333,6 @@ solver.set_optim_constraint_tolerance(1e-4);
 solver.set_optim_max_iterations(1000);
 solver.setGuess(gaitTrackingSolution); % Use tracking solution as initial guess
 
-
 % Solve problem
 % =============
 gaitPredictionSolution = study.solve();
@@ -336,9 +342,8 @@ gaitPredictionSolution = study.solve();
 fullStride = opensimMoco.createPeriodicTrajectory(gaitPredictionSolution);
 fullStride.write('gaitPrediction_solution_fullStride.sto');
 
-% Uncomment next line to visualize the result
-% study.visualize(fullStride);
-
+% Visualize the result.
+study.visualize(fullStride);
 
 % Extract ground reaction forces
 % ==============================
@@ -357,6 +362,3 @@ externalForcesTableFlat = opensimMoco.createExternalLoadsTableForGait(model, ...
                              fullStride, contact_r, contact_l);
 STOFileAdapter.write(externalForcesTableFlat, ...
                              'gaitPrediction_solutionGRF_fullStride.sto');
-
-
-

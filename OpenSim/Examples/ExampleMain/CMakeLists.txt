@@ -5,8 +5,6 @@ cmake_minimum_required(VERSION 3.2)
 # Settings.
 # ---------
 set(TARGET exampleMain CACHE TYPE STRING)
-set(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME}
-        CACHE PATH "Top-level directory of OpenSim install")
 
 # OpenSim uses C++11 language features.
 set(CMAKE_CXX_STANDARD 11)

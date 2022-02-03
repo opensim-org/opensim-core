@@ -137,7 +137,12 @@ void InverseDynamicsTool::setupProperties()
     _lowpassCutoffFrequencyProp.setName("lowpass_cutoff_frequency_for_coordinates");
     _propertySet.append( &_lowpassCutoffFrequencyProp );
 
-    _outputGenForceFileNameProp.setComment("Name of the storage file (.sto) to which the generalized forces are written.");
+    string genForceComment =
+            "Name of the storage file (.sto) to which the generalized forces "
+            "are written. Only a filename should be specified here (not a "
+            "full path); the file will appear in the location provided in the "
+            "results_directory property.";
+    _outputGenForceFileNameProp.setComment(genForceComment);
     _outputGenForceFileNameProp.setName("output_gen_force_file");
     _outputGenForceFileNameProp.setValue("inverse_dynamics.sto");
     _propertySet.append(&_outputGenForceFileNameProp);

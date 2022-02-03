@@ -863,28 +863,29 @@ void GeometryPath::computeLengtheningSpeed(const SimTK::State& s) const
 void GeometryPath::
 applyWrapObjects(const SimTK::State& s, Array<AbstractPathPoint*>& path) const 
 {
-    if (get_PathWrapSet().getSize() < 1)
+    int wrapSetSize = get_PathWrapSet().getSize();
+    if (wrapSetSize < 1)
         return;
 
     WrapResult best_wrap;
     Array<int> result, order;
 
-    result.setSize(get_PathWrapSet().getSize());
-    order.setSize(get_PathWrapSet().getSize());
+    result.setSize(wrapSetSize);
+    order.setSize(wrapSetSize);
 
     // Set the initial order to be the order they are listed in the path.
-    for (int i = 0; i < get_PathWrapSet().getSize(); i++)
+    for (int i = 0; i < wrapSetSize; i++)
         order[i] = i;
 
     // If there is only one wrap object, calculate the wrapping only once.
     // If there are two or more objects, perform up to 8 iterations where
     // the result from one wrap object is used as the starting point for
     // the next wrap.
-    const int maxIterations = get_PathWrapSet().getSize() < 2 ? 1 : 8;
+    const int maxIterations = wrapSetSize < 2 ? 1 : 8;
     double last_length = SimTK::Infinity;
     for (int kk = 0; kk < maxIterations; kk++)
     {
-        for (int i = 0; i < get_PathWrapSet().getSize(); i++)
+        for (int i = 0; i < wrapSetSize; i++)
         {
             result[i] = 0;
             PathWrap& ws = get_PathWrapSet().get(order[i]);
@@ -973,7 +974,7 @@ applyWrapObjects(const SimTK::State& s, Array<AbstractPathPoint*>& path) const
                         WrapResult wr;
                         wr.startPoint = pt1;
                         wr.endPoint   = pt2;
-
+                        wr.singleWrap = (wrapSetSize==1);
                         result[i] = wo->wrapPathSegment(s, *path.get(pt1), 
                                                         *path.get(pt2), ws, wr);
                         if (result[i] == WrapObject::mandatoryWrap) {
@@ -1058,7 +1059,7 @@ applyWrapObjects(const SimTK::State& s, Array<AbstractPathPoint*>& path) const
             last_length = length;
         }
 
-        if (kk == 0 && get_PathWrapSet().getSize() > 1) {
+        if (kk == 0 && wrapSetSize > 1) {
             // If the first wrap was a no wrap, and the second was a no wrap
             // because a point was inside the object, switch the order of
             // the first two objects and try again.
@@ -1114,11 +1115,12 @@ calcLengthAfterPathComputation(const SimTK::State& s,
                                const Array<AbstractPathPoint*>& currentPath) const
 {
     double length = 0.0;
-
-    for (int i = 0; i < currentPath.getSize() - 1; i++) {
-        const AbstractPathPoint* p1 = currentPath[i];
-        const AbstractPathPoint* p2 = currentPath[i+1];
-
+    const AbstractPathPoint* p1 = currentPath[0];
+    Vec3 p1InGround = p1->getLocationInGround(s);
+    // Transform all points to ground once rather than once per-segment
+    for (int i = 1; i < currentPath.getSize() ; i++) {
+        const AbstractPathPoint* p2 = currentPath[i];
+        Vec3 p2InGround = p2->getLocationInGround(s);
         // If both points are wrap points on the same wrap object, then this
         // path segment wraps over the surface of a wrap object, so just add in 
         // the pre-calculated length.
@@ -1130,8 +1132,10 @@ calcLengthAfterPathComputation(const SimTK::State& s,
             if (smwp)
                 length += smwp->getWrapLength();
         } else {
-            length += p1->calcDistanceBetween(s, *p2);
+            length += (p1InGround - p2InGround).norm();
         }
+        p1 = p2;
+        p1InGround = p2InGround;
     }
 
     setLength(s,length);

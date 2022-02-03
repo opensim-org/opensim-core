@@ -19,9 +19,9 @@
 
 #include "Components/AccelerationMotion.h"
 #include "Components/DiscreteForces.h"
-#include "Components/PositionMotion.h"
 #include "Components/StationPlaneContactForce.h"
 #include "MocoBounds.h"
+#include "MocoScaleFactor.h"
 #include "MocoCasADiSolver/MocoCasADiSolver.h"
 #include "MocoControlBoundConstraint.h"
 #include "MocoFrameDistanceConstraint.h"
@@ -43,6 +43,8 @@
 #include "MocoGoal/MocoStateTrackingGoal.h"
 #include "MocoGoal/MocoSumSquaredStateGoal.h"
 #include "MocoGoal/MocoTranslationTrackingGoal.h"
+#include "MocoGoal/MocoStepTimeAsymmetryGoal.h"
+#include "MocoGoal/MocoStepLengthAsymmetryGoal.h"
 #include "MocoInverse.h"
 #include "MocoParameter.h"
 #include "MocoProblem.h"
@@ -82,10 +84,13 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(MocoPeriodicityGoalPair());
         Object::registerType(MocoPeriodicityGoal());
         Object::registerType(MocoOutputGoal());
+        Object::registerType(MocoStepTimeAsymmetryGoal());
+        Object::registerType(MocoStepLengthAsymmetryGoal());
         Object::registerType(MocoBounds());
         Object::registerType(MocoInitialBounds());
         Object::registerType(MocoFinalBounds());
         Object::registerType(MocoVariableInfo());
+        Object::registerType(MocoScaleFactor());
         Object::registerType(MocoParameter());
         Object::registerType(MocoPhase());
         Object::registerType(MocoProblem());
@@ -109,7 +114,6 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(AckermannVanDenBogert2010Force());
         Object::registerType(MeyerFregly2016Force());
         Object::registerType(EspositoMiller2018Force());
-        Object::registerType(PositionMotion());
 
         Object::registerType(DiscreteForces());
         Object::registerType(AccelerationMotion());
