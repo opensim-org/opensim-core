@@ -54,7 +54,7 @@ their bounds are specified via a MocoFrameOrientationConstraintPair.
 Any model component derived from Frame is valid to be included in a frame
 pair, and any number of frame pairs may be append to this constraint via
 addFramePair().
-To project the frame distance onto a vector or plane before ensuring its
+To project the frame angle onto a vector or plane before ensuring its
 within the provided bounds, use setProjection() and setProjectionVector().
 @note This class represents a path constraint, *not* a model kinematic
 constraint. Therefore, there are no Lagrange multipliers or constraint
