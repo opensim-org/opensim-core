@@ -97,7 +97,7 @@ protected:
     }
 
     template <typename TRow, typename TColumn>
-    void setScalingUsingBounds(Var key, const TRow& rowIndices,
+    void setVariableScaling(Var key, const TRow& rowIndices,
         const TColumn& columnIndices, const Bounds& bounds) {
         if (m_solver.getScaleVariablesUsingBounds()) {
             const auto& lower = bounds.lower;
@@ -264,7 +264,7 @@ private:
         return out;
     }
 
-    // TODO scale/unscale guess!
+    /// scaled = [unscaled + 0.5 * (upper + lower)] / (upper - lower)
     template <typename T>
     Variables<T> scaleVariables(const Variables<T>& unscaledVars) {
         using casadi::DM;

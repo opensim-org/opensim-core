@@ -187,8 +187,8 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     setVariableBounds(initial_time, 0, 0, m_problem.getTimeInitialBounds());
     setVariableBounds(final_time, 0, 0, m_problem.getTimeFinalBounds());
 
-    setScalingUsingBounds(initial_time, 0, 0, m_problem.getTimeInitialBounds());
-    setScalingUsingBounds(final_time, 0, 0, m_problem.getTimeFinalBounds());
+    setVariableScaling(initial_time, 0, 0, m_problem.getTimeInitialBounds());
+    setVariableScaling(final_time, 0, 0, m_problem.getTimeFinalBounds());
 
     {
         const auto& stateInfos = m_problem.getStateInfos();
@@ -200,7 +200,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
             setVariableBounds(states, is, 0, info.initialBounds);
             // The "-1" grabs the last column (last mesh point).
             setVariableBounds(states, is, -1, info.finalBounds);
-            setScalingUsingBounds(states, Slice(), Slice(), info.bounds);
+            setVariableScaling(states, Slice(), Slice(), info.bounds);
             ++is;
         }
     }
@@ -212,7 +212,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
                     controls, ic, Slice(1, m_numGridPoints - 1), info.bounds);
             setVariableBounds(controls, ic, 0, info.initialBounds);
             setVariableBounds(controls, ic, -1, info.finalBounds);
-            setScalingUsingBounds(controls, Slice(), Slice(), info.bounds);
+            setVariableScaling(controls, Slice(), Slice(), info.bounds);
             ++ic;
         }
     }
@@ -224,7 +224,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
                     info.bounds);
             setVariableBounds(multipliers, im, 0, info.initialBounds);
             setVariableBounds(multipliers, im, -1, info.finalBounds);
-            setScalingUsingBounds(multipliers, Slice(), Slice(), info.bounds);
+            setVariableScaling(multipliers, Slice(), Slice(), info.bounds);
             ++im;
         }
     }
@@ -234,7 +234,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
             // Matlab).
             setVariableBounds(derivatives, Slice(0, m_problem.getNumSpeeds()),
                     Slice(), m_solver.getImplicitMultibodyAccelerationBounds());
-            setScalingUsingBounds(derivatives, Slice(0, m_problem.getNumSpeeds()), 
+            setVariableScaling(derivatives, Slice(0, m_problem.getNumSpeeds()),
                     Slice(), m_solver.getImplicitMultibodyAccelerationBounds());
 
         }
@@ -243,7 +243,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
                     Slice(m_problem.getNumAccelerations(),
                           m_problem.getNumDerivatives()),
                     Slice(), m_solver.getImplicitAuxiliaryDerivativeBounds());
-            setScalingUsingBounds(derivatives,
+            setVariableScaling(derivatives,
                     Slice(m_problem.getNumAccelerations(),
                           m_problem.getNumDerivatives()),
                     Slice(), m_solver.getImplicitAuxiliaryDerivativeBounds());
@@ -254,7 +254,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
         int isl = 0;
         for (const auto& info : slackInfos) {
             setVariableBounds(slacks, isl, Slice(), info.bounds);
-            setScalingUsingBounds(slacks, isl, Slice(), info.bounds);
+            setVariableScaling(slacks, isl, Slice(), info.bounds);
             ++isl;
         }
     }
@@ -263,7 +263,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
         int ip = 0;
         for (const auto& info : paramInfos) {
             setVariableBounds(parameters, ip, 0, info.bounds);
-            setScalingUsingBounds(parameters, ip, 0, info.bounds);
+            setVariableScaling(parameters, ip, 0, info.bounds);
             ++ip;
         }
     }
