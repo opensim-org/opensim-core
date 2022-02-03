@@ -68,7 +68,8 @@ public:
     Output is specified. For SpatialVec Outputs, indices 0, 1, and 2
     refer to the rotational components and indices 3, 4, and 5 refer
     to the translational components. A value of -1 indicates to
-    minimize the vector norm. */
+    minimize the vector norm. If an output index for a type double
+    Output is provided, an exception is thrown. */
     void setOutputIndex(int index) { set_output_index(index); }
     int getOutputIndex() const { return get_output_index(); }
 
