@@ -77,9 +77,11 @@ public:
         set_coordinate_axis(coordinate_axis);
     }
     }
+    
 protected:
     void initializeOnModelImpl(const Model& model, const MocoProblemInfo&) const override;
     void calcPathConstraintErrorsImpl(const SimTK::State& state, SimTK::Vector& errors) const override;
+    
 private:
     OpenSim_DECLARE_LIST_PROPERTY(frame_pairs,
         MocoFrameOrientationConstraintPair,
