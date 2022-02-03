@@ -95,9 +95,9 @@ void MocoFrameOrientationConstraint::calcPathConstraintErrorsImpl(const SimTK::S
     for (const auto& frame_pair : m_frame_pairs) {
         const auto& frame1_rotation = frame_pair.first->getRotationInGround(state);
         const auto& frame2_rotation = frame_pair.second->getRotationInGround(state);
-        auto coordaxis = SimTK::CoordinateAxis(2);											//set the number as 2 to represent ZAxis
-        auto frame1_angle = frame1_rotation.convertOneAxisRotationToOneAngle(coordaxis);	//the angle of this frame is about the z-axis
-        auto frame2_angle = frame2_rotation.convertOneAxisRotationToOneAngle(coordaxis);	//the angle of this frame is about the z-axis
+        auto coordaxis = SimTK::CoordinateAxis(2);											
+        auto frame1_angle = frame1_rotation.convertOneAxisRotationToOneAngle(coordaxis);	
+        auto frame2_angle = frame2_rotation.convertOneAxisRotationToOneAngle(coordaxis);	
         auto relative_angle = frame2_angle - frame1_angle;
              
         errors[iconstr++] = relative_angle;
