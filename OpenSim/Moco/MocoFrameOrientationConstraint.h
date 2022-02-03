@@ -3,7 +3,7 @@
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoFrameOrientationConstraint.h                             *
  * -------------------------------------------------------------------------- *
-* Copyright (c) 2022 Stanford University and the Authors                      *
+ * Copyright (c) 2022 Stanford University and the Authors                     *
  *                                                                            *
  * Author(s): Size Zheng                                                      *
  *                                                                            *
@@ -63,7 +63,8 @@ forces associated with this constraint. The model's force elements
 constraint.
 @ingroup mocopathcon */
 class OSIMMOCO_API MocoFrameOrientationConstraint : public MocoPathConstraint {
-    OpenSim_DECLARE_CONCRETE_OBJECT(MocoFrameOrientationConstraint, MocoPathConstraint);
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+		MocoFrameOrientationConstraint, MocoPathConstraint);
 
 public:
     MocoFrameOrientationConstraint();
@@ -71,16 +72,21 @@ public:
     void addFramePair(MocoFrameOrientationConstraintPair pair) {
         append_frame_pairs(std::move(pair));
     }
-    void addFramePair(const std::string& frame1_path,const std::string& frame2_path, double minimum_angle,double maximum_angle) {
-        append_frame_pairs(MocoFrameOrientationConstraintPair(frame1_path,frame2_path, minimum_angle,maximum_angle));
+    void addFramePair(const std::string& frame1_path,
+			const std::string& frame2_path, double minimum_angle,
+			double maximum_angle) {
+        append_frame_pairs(MocoFrameOrientationConstraintPair(
+		frame1_path,frame2_path, minimum_angle,maximum_angle));
     void setCoordinateAxis(int coordinate_axis) {
         set_coordinate_axis(coordinate_axis);
     }
     }
     
 protected:
-    void initializeOnModelImpl(const Model& model, const MocoProblemInfo&) const override;
-    void calcPathConstraintErrorsImpl(const SimTK::State& state, SimTK::Vector& errors) const override;
+    void initializeOnModelImpl(
+			const Model& model, const MocoProblemInfo&) const override;
+    void calcPathConstraintErrorsImpl(
+			const SimTK::State& state, SimTK::Vector& errors) const override;
     
 private:
     OpenSim_DECLARE_LIST_PROPERTY(frame_pairs,
