@@ -64,7 +64,7 @@ constraint.
 @ingroup mocopathcon */
 class OSIMMOCO_API MocoFrameOrientationConstraint : public MocoPathConstraint {
     OpenSim_DECLARE_CONCRETE_OBJECT(
-		MocoFrameOrientationConstraint, MocoPathConstraint);
+        MocoFrameOrientationConstraint, MocoPathConstraint);
 
 public:
     MocoFrameOrientationConstraint();
@@ -73,10 +73,10 @@ public:
         append_frame_pairs(std::move(pair));
     }
     void addFramePair(const std::string& frame1_path,
-			const std::string& frame2_path, double minimum_angle,
-			double maximum_angle) {
+            const std::string& frame2_path, double minimum_angle,
+            double maximum_angle) {
         append_frame_pairs(MocoFrameOrientationConstraintPair(
-		frame1_path,frame2_path, minimum_angle,maximum_angle));
+        frame1_path,frame2_path, minimum_angle,maximum_angle));
     void setCoordinateAxis(int coordinate_axis) {
         set_coordinate_axis(coordinate_axis);
     }
@@ -84,9 +84,9 @@ public:
     
 protected:
     void initializeOnModelImpl(
-			const Model& model, const MocoProblemInfo&) const override;
+            const Model& model, const MocoProblemInfo&) const override;
     void calcPathConstraintErrorsImpl(
-			const SimTK::State& state, SimTK::Vector& errors) const override;
+            const SimTK::State& state, SimTK::Vector& errors) const override;
     
 private:
     OpenSim_DECLARE_LIST_PROPERTY(frame_pairs,
