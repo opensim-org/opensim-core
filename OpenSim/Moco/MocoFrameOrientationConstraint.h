@@ -48,6 +48,20 @@ private:
     void constructProperties();
 };
 
+/** This path constraint enforces that the angle between the pairs of model 
+frames is kept between minimum and maximum bounds. Frame pairs and
+their bounds are specified via a MocoFrameOrientationConstraintPair.
+Any model component derived from Frame is valid to be included in a frame
+pair, and any number of frame pairs may be append to this constraint via
+addFramePair().
+To project the frame distance onto a vector or plane before ensuring its
+within the provided bounds, use setProjection() and setProjectionVector().
+@note This class represents a path constraint, *not* a model kinematic
+constraint. Therefore, there are no Lagrange multipliers or constraint
+forces associated with this constraint. The model's force elements
+(including actuators) must generate the forces necessary for satisfying this
+constraint.
+@ingroup mocopathcon */
 class OSIMMOCO_API MocoFrameOrientationConstraint : public MocoPathConstraint {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoFrameOrientationConstraint, MocoPathConstraint);
 
