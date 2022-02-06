@@ -61,8 +61,8 @@ public:
     // so we can more easily detect any bugs caused by not copying this
     // variable.
     double factor = SimTK::NaN;  // scale factor used to normalize parameters
-
-//=============================================================================
+    bool singleWrap = false; //Flag to indicate if a single wrap object to be considered so we can optimize
+    //=============================================================================
 // METHODS
 //=============================================================================
     //--------------------------------------------------------------------------

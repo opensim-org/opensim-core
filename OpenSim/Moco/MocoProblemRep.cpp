@@ -43,9 +43,11 @@ void MocoProblemRep::initialize() {
 
     // Clear member variables.
     m_model_base = Model();
+    m_model_base.updDisplayHints().disableVisualization();
     m_state_base.clear();
     m_position_motion_base.reset();
     m_model_disabled_constraints = Model();
+    m_model_disabled_constraints.updDisplayHints().disableVisualization();
     m_position_motion_disabled_constraints.reset();
     m_constraint_forces.reset();
     m_acceleration_motion.reset();

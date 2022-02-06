@@ -105,8 +105,13 @@ public:
     /** Default construction creates a valid display hints object with all
     hints set to their default values. **/
     ModelDisplayHints() { constructProperties(); }
-
-
+    /** Turn off visualization completely, only use for API/modeling.
+    Meshes will not be loaded, path-wrapping intermediate points will
+    not be computed, MomentArm computations are not affected however.
+    Intentionally there's no reverse API to turn on visualization downstream.
+    **/
+    void disableVisualization() { _visualization = false; }
+    bool isVisualizationEnabled() const { return _visualization; }
 private:
     void constructProperties() {
         constructProperty_show_wrap_geometry(true);
@@ -120,6 +125,7 @@ private:
         constructProperty_show_forces(true);
         constructProperty_show_debug_geometry(false);
     }
+    bool _visualization{true};
 };
 
 
