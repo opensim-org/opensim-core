@@ -3,6 +3,9 @@ Moco Change Log
 
 1.2.0
 -----
+- 2022-02-01: Updated MocoOutputGoal to support SimTK::Vec3 and SimTK::SpatialVec 
+              types and custom integrand exponents.
+              
 - 2022-01-25: Added option for automatic variable scaling based on trajectory 
               variable bounds to MocoCasADiSolver via the property
               'scale_variables_using_bounds'.
