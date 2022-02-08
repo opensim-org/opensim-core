@@ -37,7 +37,7 @@ jobs:
         
     - name: Install numpy
       #Need numpy to use SWIG numpy typemaps.
-      run: python3 -m pip3 install numpy==1.20.2
+      run: python3 -m pip install numpy==1.20.2
 
     - name: Install SWIG
       run: choco install swig --version 4.0.2 --yes --limit-output --allow-downgrade
