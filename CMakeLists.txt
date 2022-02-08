@@ -547,8 +547,7 @@ if(${BUILD_PYTHON_WRAPPING})
     # PythonInterp is supposed to come before PythonLibs.
     if(${OPENSIM_PYTHON_VERSION} STREQUAL "3")
         set(required_python_version 3)
-        find_package(Python3 3.6 REQUIRED
-            COMPONENTS Interpreter NumPy)
+        find_package(Python3 3.6 REQUIRED COMPONENTS Interpreter Development NumPy)
         # message(${Python3_NumPy_INCLUDE_DIRS})
     else()
         message(FATAL_ERROR "OPENSIM_PYTHON_VERSION should be '2' or '3'.")
