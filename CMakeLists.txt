@@ -550,13 +550,15 @@ if(${BUILD_PYTHON_WRAPPING})
     # PythonInterp is supposed to come before PythonLibs.
     if(${OPENSIM_PYTHON_VERSION} STREQUAL "2")
         set(required_python_version 2.7)
+        find_package(Python2 COMPONENTS Interpreter NumPy REQUIRED)
     elseif(${OPENSIM_PYTHON_VERSION} STREQUAL "3")
         set(required_python_version 3)
+        find_package(Python3 3.8 REQUIRED
+            COMPONENTS Interpreter Development NumPy)
+        # message(${Python3_NumPy_INCLUDE_DIRS})
     else()
         message(FATAL_ERROR "OPENSIM_PYTHON_VERSION should be '2' or '3'.")
     endif()
-    find_package(PythonInterp ${required_python_version} REQUIRED)
-    find_package(NumPy REQUIRED)
 
     # We update the python install dir to include the python version,
     # now that we know it. We replace the token "VERSION" with the actual python
