@@ -8,7 +8,7 @@ project(OpenSim)
 #
 #----------------------------------------------------
 
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.15)
 
 if(COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
@@ -487,10 +487,7 @@ set(BUILD_JAVA_WRAPPING OFF CACHE BOOL "Build Java wrapping (needed if you're bu
 
 set(BUILD_PYTHON_WRAPPING OFF CACHE BOOL "Build Python wrapping (needed if you're building the Python wrapping; requires that you have SWIG and Python installed on your machine.)")
 
-set(OPENSIM_PYTHON_VERSION 3 CACHE STRING
-    "The major Python version (2 or 3) for which to build the wrapping.")
-# To create a drop-down in the CMake GUI:
-set_property(CACHE OPENSIM_PYTHON_VERSION PROPERTY STRINGS "2" "3")
+set(OPENSIM_PYTHON_VERSION 3)
 
 if(${BUILD_JAVA_WRAPPING})
     # If we can find a MATLAB installation, we'll try to run some MATLAB tests.
@@ -548,12 +545,9 @@ endif()
 
 if(${BUILD_PYTHON_WRAPPING})
     # PythonInterp is supposed to come before PythonLibs.
-    if(${OPENSIM_PYTHON_VERSION} STREQUAL "2")
-        set(required_python_version 2.7)
-        find_package(Python2 COMPONENTS Interpreter NumPy REQUIRED)
-    elseif(${OPENSIM_PYTHON_VERSION} STREQUAL "3")
+    if(${OPENSIM_PYTHON_VERSION} STREQUAL "3")
         set(required_python_version 3)
-        find_package(Python3 3.8 REQUIRED
+        find_package(Python3 3.7 REQUIRED
             COMPONENTS Interpreter Development NumPy)
         # message(${Python3_NumPy_INCLUDE_DIRS})
     else()

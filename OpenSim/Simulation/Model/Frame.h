@@ -322,7 +322,7 @@ public:
     };
 
     /** Accessor for Rotation matrix of the Frame in Ground. */
-    SimTK::Rotation getRotationInGround(const SimTK::State& state) const {
+    SimTK::Rotation_<double> getRotationInGround(const SimTK::State& state) const {
         return getTransformInGround(state).R();
     };
 

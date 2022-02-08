@@ -139,7 +139,7 @@ macro(OpenSimAddPythonModule)
     add_library(${_libname} SHARED ${_output_cxx_file} ${_output_header_file})
 
     target_include_directories(${_libname} PRIVATE
-            "${Python3_INCLUDE_DIR}"
+            "${Python3_INCLUDE_DIRS}"
             "${Python3_NumPy_INCLUDE_DIRS}")
     
     # On macOS, the python interpreter might link to the python library 
