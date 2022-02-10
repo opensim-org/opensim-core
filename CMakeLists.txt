@@ -544,19 +544,19 @@ if(${BUILD_JAVA_WRAPPING})
 endif()
 
 if(${BUILD_PYTHON_WRAPPING})
-    # PythonInterp is supposed to come before PythonLibs.
-    if(${OPENSIM_PYTHON_VERSION} STREQUAL "3")
-        set(required_python_version 3)
-        find_package(Python3 3.6 REQUIRED COMPONENTS Interpreter Development NumPy)
-        # message(${Python3_NumPy_INCLUDE_DIRS})
-    else()
-        message(FATAL_ERROR "OPENSIM_PYTHON_VERSION should be '2' or '3'.")
-    endif()
+    set(required_python_version 3)
+    find_package(Python3 3.6 REQUIRED COMPONENTS Interpreter Development NumPy)
+    message("Python3_FOUND:${Python3_FOUND}")
+    message("Python3_VERSION:${Python3_VERSION}")
+    message("Python3_Development_FOUND:${Python3_Development_FOUND}")
+    message("Python3_LIBRARIES:${Python3_LIBRARIES}")
+    message("Python3_Numpy_Include:${Python3_NumPy_INCLUDE_DIRS}")
+    message("Python3_Numpy_VERSION:${Python3_NumPy_VERSION}")
 
     # We update the python install dir to include the python version,
     # now that we know it. We replace the token "VERSION" with the actual python
     # version.
-    set(python_version_majmin "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
+    set(python_version_majmin "${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}")
     string(REPLACE "VERSION" "${python_version_majmin}"
         OPENSIM_INSTALL_PYTHONDIR "${OPENSIM_INSTALL_PYTHONDIR}")
     # This must be done before adding the OpenSim libraries, since
@@ -570,7 +570,7 @@ if(${BUILD_PYTHON_WRAPPING})
         # So we use the python-config executable to get the
         # correct library and include directory.
         # https://github.com/Homebrew/legacy-homebrew/issues/25118
-        execute_process(COMMAND "${PYTHON_EXECUTABLE}-config" --prefix
+        execute_process(COMMAND "${Python3_EXECUTABLE}-config" --prefix
                     OUTPUT_VARIABLE python_prefix
                     OUTPUT_STRIP_TRAILING_WHITESPACE)
         string(CONCAT pyinc_desc
