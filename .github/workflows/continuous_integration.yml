@@ -31,7 +31,7 @@ jobs:
         echo "$env:GITHUB_WORKSPACE\\doxygen" >> $GITHUB_PATH
 
     - name: Install Python packages
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v2.2.1
       with:
         python-version: '3.8'
         
