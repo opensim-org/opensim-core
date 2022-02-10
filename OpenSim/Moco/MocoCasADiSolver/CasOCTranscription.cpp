@@ -113,9 +113,11 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
         m_numConstraints += info.num_outputs;
     }
     m_constraints.path.resize(m_problem.getPathConstraintInfos().size());
+    m_numPathConstraintPoints = m_solver.getEnforcePathConstraintMidpoints()
+                               ? m_numGridPoints : m_numMeshPoints;
     for (int ipc = 0; ipc < (int)m_constraints.path.size(); ++ipc) {
         const auto& info = m_problem.getPathConstraintInfos()[ipc];
-        m_numConstraints += info.size() * m_numMeshPoints;
+        m_numConstraints += info.size() * m_numPathConstraintPoints;
     }
     m_grid = grid;
 

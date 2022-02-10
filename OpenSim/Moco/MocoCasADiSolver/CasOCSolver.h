@@ -109,6 +109,14 @@ public:
         return m_interpolateControlMidpoints;
     }
 
+    /// TODO
+    void setEnforcePathConstraintMidpoints(bool tf) {
+        m_enforcePathConstraintMidpoints = tf;
+    }
+    bool getEnforcePathConstraintMidpoints() const {
+        return m_enforcePathConstraintMidpoints;
+    }
+
     void setOptimSolver(std::string optimSolver) {
         m_optimSolver = std::move(optimSolver);
     }
@@ -184,6 +192,7 @@ private:
     bool m_minimizeImplicitAuxiliaryDerivatives = false;
     double m_implicitAuxiliaryDerivativesWeight = 1.0;
     bool m_interpolateControlMidpoints = true;
+    bool m_enforcePathConstraintMidpoints = false;
     Bounds m_implicitMultibodyAccelerationBounds;
     Bounds m_implicitAuxiliaryDerivativeBounds;
     std::string m_finite_difference_scheme = "central";

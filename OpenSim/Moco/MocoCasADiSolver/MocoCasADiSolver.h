@@ -167,6 +167,9 @@ public:
             "'minimize_implicit_auxiliary_derivatives' is enabled."
             "Default: 1.0.");
 
+    OpenSim_DECLARE_PROPERTY(enforce_path_constraint_midpoints, bool,
+            "TODO");
+
     MocoCasADiSolver();
 
     /// Returns true if Moco was compiled with the CasADi library; returns false
