@@ -587,7 +587,6 @@ if(${BUILD_PYTHON_WRAPPING})
             "${python_prefix}/lib/libpython${python_version_majmin}.dylib"
             CACHE FILEPATH "${pylib_desc}")
     endif()
-    find_package(PythonLibs ${required_python_version} REQUIRED)
     
     # Most users need to copy dependencies if wrapping is on. Warn user
     # if it isn't on.
