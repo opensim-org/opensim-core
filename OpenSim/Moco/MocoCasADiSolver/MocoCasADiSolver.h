@@ -172,7 +172,9 @@ public:
             "Default: 1.0.");
 
     OpenSim_DECLARE_PROPERTY(enforce_path_constraint_midpoints, bool,
-            "TODO");
+            "If the transcription scheme is set to 'hermite-simpson', then "
+            "enable this property to enforce MocoPathConstraints at mesh "
+            "interval midpoints. Default: false.");
 
     MocoCasADiSolver();
 
