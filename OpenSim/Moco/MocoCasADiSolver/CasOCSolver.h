@@ -53,6 +53,12 @@ public:
     void setMinimizeLagrangeMultipliers(bool tf) {
         m_minimizeLagrangeMultipliers = tf;
     }
+    void setScaleVariablesUsingBounds(bool value) {
+        m_scaleVariablesUsingBounds = value;
+    }
+    bool getScaleVariablesUsingBounds() const {
+        return m_scaleVariablesUsingBounds;
+    }
     bool getMinimizeLagrangeMultipliers() const {
         return m_minimizeLagrangeMultipliers;
     }
@@ -185,6 +191,7 @@ private:
     const Problem& m_problem;
     std::vector<double> m_mesh;
     std::string m_transcriptionScheme = "hermite-simpson";
+    bool m_scaleVariablesUsingBounds = false;
     bool m_minimizeLagrangeMultipliers = false;
     double m_lagrangeMultiplierWeight = 1.0;
     bool m_minimizeImplicitMultibodyAccelerations = false;

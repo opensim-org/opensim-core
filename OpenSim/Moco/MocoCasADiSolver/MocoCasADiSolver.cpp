@@ -40,6 +40,7 @@ using namespace OpenSim;
 MocoCasADiSolver::MocoCasADiSolver() { constructProperties(); }
 
 void MocoCasADiSolver::constructProperties() {
+    constructProperty_scale_variables_using_bounds(false);
     constructProperty_parameters_require_initsystem(true);
     constructProperty_optim_sparsity_detection("none");
     constructProperty_optim_write_sparsity("");
@@ -295,6 +296,7 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
         casSolver->setMesh(mesh);
     }
     casSolver->setTranscriptionScheme(get_transcription_scheme());
+    casSolver->setScaleVariablesUsingBounds(get_scale_variables_using_bounds());
     casSolver->setMinimizeLagrangeMultipliers(
             get_minimize_lagrange_multipliers());
     casSolver->setLagrangeMultiplierWeight(get_lagrange_multiplier_weight());
