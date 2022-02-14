@@ -139,6 +139,23 @@ solution.write("MocoInverse_solution.sto");
 
 Do NOT change the multibody_dynamics_mode solver setting, as setting this to
 "implicit" is vital to how MocoInverse works.
+
+# Path constraints
+If adding a MocoPathConstraint to a custom MocoInverse problem, you may want
+to enable the solver setting 'enforce_path_constraint_midpoints':
+
+@code
+solver.set_enforce_path_constraint_midpoints(true);
+@endcode
+
+This is because we do not enforce MocoPathConstraints at mesh interval
+midpoints by default with Hermite-Simpson collocation, and the property
+'interpolate_control_midpoints' is set to false with MocoInverse to ensure
+the problem does not become over-constrained.
+
+For example, if using a MocoControlBoundConstraint with MocoInverse,
+the constraint will be ignored at mesh interval midpoints if
+'enforce_path_constraint_midpoints' is set to false.
  */
 class OSIMMOCO_API MocoInverse : public MocoTool {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoInverse, MocoTool);

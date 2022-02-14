@@ -148,6 +148,7 @@ protected:
     int m_numMultibodyResiduals = -1;
     int m_numAuxiliaryResiduals = -1;
     int m_numConstraints = -1;
+    int m_numPathConstraintPoints = -1;
     casadi::DM m_grid;
     casadi::DM m_pointsForInterpControls;
     casadi::MX m_times;
@@ -159,6 +160,7 @@ private:
     casadi::MX m_paramsTrajGrid;
     casadi::MX m_paramsTrajMesh;
     casadi::MX m_paramsTrajMeshInterior;
+    casadi::MX m_paramsTrajPathCon;
     VariablesDM m_lowerBounds;
     VariablesDM m_upperBounds;
     VariablesDM m_shift;
@@ -168,6 +170,7 @@ private:
     casadi::Matrix<casadi_int> m_gridIndices;
     casadi::Matrix<casadi_int> m_meshIndices;
     casadi::Matrix<casadi_int> m_meshInteriorIndices;
+    casadi::Matrix<casadi_int> m_pathConstraintIndices;
 
     casadi::MX m_xdot; // State derivatives.
 
@@ -321,23 +324,25 @@ private:
         //    path_3                        x
         //    residual_3                    x
 
-        // Hermite-Simpson sparsity pattern for mesh intervals 0, 1 and 2:
+        // Hermite-Simpson sparsity pattern for mesh intervals 0, 1 and 2
+        // (* indicates additional non-zero entry when path constraint
+        // midpoints are enforced):
         //                   0    0.5    1    1.5    2    2.5    3
         //    endpoint       x     x     x     x     x     x     x
-        //    path_0         x
+        //    path_0         x     *
         //    kinematic_0    x
         //    residual_0     x
         //    residual_0.5         x
         //    defect_0       x     x     x
         //    interp_con_0   x     x     x
         //    kinematic_1                x
-        //    path_1                     x
+        //    path_1                     x     *
         //    residual_1                 x
         //    residual_1.5                     x
         //    defect_1                   x     x     x
         //    interp_con_1               x     x     x
         //    kinematic_2                            x
-        //    path_2                                 x
+        //    path_2                                 x     *
         //    residual_2                             x
         //    residual_2.5                                 x
         //    defect_2                               x     x     x
@@ -351,14 +356,17 @@ private:
             copyColumn(endpoint, 0);
         }
 
+        for (int ipc = 0; ipc < m_numPathConstraintPoints; ++ipc) {
+            for (const auto& path: constraints.path) {
+                copyColumn(path, ipc);
+            }
+        }
+
         int igrid = 0;
         // Index for pointsForInterpControls.
         int icon = 0;
         for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
             copyColumn(constraints.kinematic, imesh);
-            for (const auto& path : constraints.path) {
-                copyColumn(path, imesh);
-            }
             if (imesh < m_numMeshIntervals) {
                 while (m_grid(igrid).scalar() < m_solver.getMesh()[imesh + 1]) {
                     copyColumn(constraints.multibody_residuals, igrid);
@@ -409,7 +417,7 @@ private:
         out.path.resize(m_problem.getPathConstraintInfos().size());
         for (int ipc = 0; ipc < (int)m_constraints.path.size(); ++ipc) {
             const auto& info = m_problem.getPathConstraintInfos()[ipc];
-            out.path[ipc] = init(info.size(), m_numMeshPoints);
+            out.path[ipc] = init(info.size(), m_numPathConstraintPoints);
         }
         out.interp_controls = init(m_problem.getNumControls(),
                 (int)m_pointsForInterpControls.numel());
@@ -428,12 +436,17 @@ private:
             copyColumn(endpoint, 0);
         }
 
+        for (int ipc = 0; ipc < m_numPathConstraintPoints; ++ipc) {
+            for (auto& path : out.path) {
+                copyColumn(path, ipc);
+            }
+        }
+
         int igrid = 0;
         // Index for pointsForInterpControls.
         int icon = 0;
         for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
             copyColumn(out.kinematic, imesh);
-            for (auto& path : out.path) { copyColumn(path, imesh); }
             if (imesh < m_numMeshIntervals) {
                 while (m_grid(igrid).scalar() < m_solver.getMesh()[imesh + 1]) {
                     copyColumn(out.multibody_residuals, igrid);

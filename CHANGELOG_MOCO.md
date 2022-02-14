@@ -3,6 +3,10 @@ Moco Change Log
 
 1.2.0
 -----
+- 2022-02-10: Added option to MocoCasADiSolver to enforce MocoPathConstraints 
+              at mesh interval midpoints when using Hermite-Simpson collocation
+              (via the property 'enforce_path_constraint_midpoints').
+
 - 2022-02-01: Updated MocoOutputGoal to support SimTK::Vec3 and SimTK::SpatialVec 
               types and custom integrand exponents.
               
