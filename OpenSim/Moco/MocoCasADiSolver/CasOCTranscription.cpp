@@ -1121,7 +1121,7 @@ void Transcription::printConstraintValues(const Iterate& it,
                 ++ipc;
             }
         }
-        ss << "Path constraint values at each mesh point:" << std::endl;
+        ss << "Path constraint values at each path constraint point:" << std::endl;
         ss << "      time  ";
         for (int ipc = 0; ipc < (int)pathconNames.size(); ++ipc) {
             ss << std::setw(9) << ipc << "  ";

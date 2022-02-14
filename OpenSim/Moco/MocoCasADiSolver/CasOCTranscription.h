@@ -325,7 +325,8 @@ private:
         //    residual_3                    x
 
         // Hermite-Simpson sparsity pattern for mesh intervals 0, 1 and 2
-        // (* indicates when path constraint midpoints are enforced):
+        // (* indicates additional non-zero entry when path constraint
+        // midpoints are enforced):
         //                   0    0.5    1    1.5    2    2.5    3
         //    endpoint       x     x     x     x     x     x     x
         //    path_0         x     *

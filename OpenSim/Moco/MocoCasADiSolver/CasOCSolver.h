@@ -118,7 +118,7 @@ public:
     /// Whether or not to enforce path constraints at mesh interval midpoints.
     /// @note Only applies to Hermite-Simpson collocation.
     /// @note Does not apply to implicit dynamics residuals, as these are
-    ///       always enforce at mesh interval midpoints.
+    ///       always enforced at mesh interval midpoints.
     void setEnforcePathConstraintMidpoints(bool tf) {
         m_enforcePathConstraintMidpoints = tf;
     }
