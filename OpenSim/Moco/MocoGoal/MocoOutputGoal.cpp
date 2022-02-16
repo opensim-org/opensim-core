@@ -20,6 +20,14 @@
 
 using namespace OpenSim;
 
+// ============================================================================
+// MocoOutputBase
+// ============================================================================
+
+// ============================================================================
+// MocoOutputGoal
+// ============================================================================
+
 void MocoOutputGoal::constructProperties() {
     constructProperty_output_path("");
     constructProperty_divide_by_displacement(false);
