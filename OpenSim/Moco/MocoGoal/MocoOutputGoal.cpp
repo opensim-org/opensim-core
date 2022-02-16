@@ -24,19 +24,13 @@ using namespace OpenSim;
 // MocoOutputBase
 // ============================================================================
 
-// ============================================================================
-// MocoOutputGoal
-// ============================================================================
-
-void MocoOutputGoal::constructProperties() {
+void MocoOutputBase::constructProperties() {
     constructProperty_output_path("");
-    constructProperty_divide_by_displacement(false);
-    constructProperty_divide_by_mass(false);
     constructProperty_exponent(1);
     constructProperty_output_index(-1);
 }
 
-void MocoOutputGoal::initializeOnModelImpl(const Model& output) const {
+void MocoOutputBase::initializeOnModelBase() const {
     OPENSIM_THROW_IF_FRMOBJ(get_output_path().empty(), Exception,
             "No output_path provided.");
     std::string componentPath;
@@ -99,37 +93,58 @@ void MocoOutputGoal::initializeOnModelImpl(const Model& output) const {
         };
     }
 
-    setRequirements(1, 1, m_output->getDependsOnStage());
+    // Set the "depends-on stage", the SimTK::Stage we must realize to
+    // in order to calculate values from this output.
+    m_dependsOnStage = m_output->getDependsOnStage();
 }
 
-void MocoOutputGoal::calcIntegrandImpl(
-        const IntegrandInput& input, double& integrand) const {
-    getModel().getSystem().realize(input.state, m_output->getDependsOnStage());
+double MocoOutputBase::calcOutputValue(const SimTK::State& state) const {
+    getModel().getSystem().realize(state, m_output->getDependsOnStage());
+
     double value = 0;
     if (m_data_type == Type_double) {
         value = static_cast<const Output<double>*>(m_output.get())
-                        ->getValue(input.state);
+                        ->getValue(state);
 
     } else if (m_data_type == Type_Vec3) {
         if (m_minimizeVectorNorm) {
             value = static_cast<const Output<SimTK::Vec3>*>(m_output.get())
-                        ->getValue(input.state).norm();
+                        ->getValue(state).norm();
         } else {
             value = static_cast<const Output<SimTK::Vec3>*>(m_output.get())
-                        ->getValue(input.state)[m_index1];
+                        ->getValue(state)[m_index1];
         }
 
     } else if (m_data_type == Type_SpatialVec) {
         if (m_minimizeVectorNorm) {
             value = static_cast<const Output<SimTK::SpatialVec>*>(m_output.get())
-                        ->getValue(input.state).norm();
+                        ->getValue(state).norm();
         } else {
             value = static_cast<const Output<SimTK::SpatialVec>*>(m_output.get())
-                        ->getValue(input.state)[m_index1][m_index2];
+                        ->getValue(state)[m_index1][m_index2];
         }
     }
 
-    integrand = m_power_function(value);
+    return value;
+}
+
+// ============================================================================
+// MocoOutputGoal
+// ============================================================================
+
+void MocoOutputGoal::constructProperties() {
+    constructProperty_divide_by_displacement(false);
+    constructProperty_divide_by_mass(false);
+}
+
+void MocoOutputGoal::initializeOnModelImpl(const Model& output) const {
+    initializeOnModelBase();
+    setRequirements(1, 1, getDependsOnStage());
+}
+
+void MocoOutputGoal::calcIntegrandImpl(
+        const IntegrandInput& input, double& integrand) const {
+    integrand = setValueToExponent(calcOutputValue(input.state));
 }
 
 void MocoOutputGoal::calcGoalImpl(
