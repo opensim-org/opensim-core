@@ -240,7 +240,11 @@ if(${OPENSIM_INSTALL_UNIX_FHS})
     # Bindings/Python/CMakeLists.txt).
     # The _LIBDIR variable might contain something like x86-64-linux-gnu on
     # some systems, but for python, we really just want lib/, no matter what.
-    set(OPENSIM_INSTALL_PYTHONDIR "lib/pythonVERSION/site-packages")
+    if (OPENSIM_PYTHON_CONDA)
+        set(OPENSIM_INSTALL_PYTHONDIR "Lib/site-packages")
+    else()
+        set(OPENSIM_INSTALL_PYTHONDIR "lib/pythonVERSION/site-packages")
+    endif()
     # share/java, as expected on Ubuntu/Debian (apt-get).
     set(OPENSIM_INSTALL_JAVAJARDIR "${CMAKE_INSTALL_DATAROOTDIR}/java")
     # Don't want to put source files in share/java.
