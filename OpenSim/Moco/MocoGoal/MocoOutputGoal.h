@@ -22,6 +22,28 @@
 
 namespace OpenSim {
 
+/** This abstract base class provides convenience methods and common interfaces
+for all Output-related MocoGoal's. All MocoGoal's deriving from this class
+include the 'setOutputPath()', 'setOutputIndex()', and 'setExponent()' methods
+and their corresponding Object properties. The convenience method
+'initializeOnModelBase()' should be called at the top of
+'initializeOnModelImpl()' within each derived class. Similarly,
+'calcOutputValue()' can be used to retrieve the Output value with
+'calcGoalImpl()' and/or 'calcIntegrandImpl()', as needed for each derived class.
+The method 'getDependsOnStage()' returns the SimTK::Stage that should be realized
+to to calculate Output values. The method 'setValueToExponent()' can be used to
+raise a value to the exponent provided via 'setExponent()'.
+
+We support the following Output types:
+- double
+- SimTK::Vec3
+- SimTK::SpatialVec
+
+When using vector types, 'setOutputIndex()' may be used to select a specific
+element of the Output vector. If not specified, the norm of the vector is
+returned when calling 'calcOutputValue()'.
+
+@ingroup mocogoal */
 class OSIMMOCO_API MocoOutputBase : public MocoGoal {
     OpenSim_DECLARE_ABSTRACT_OBJECT(MocoOutputBase, MocoGoal);
 
@@ -45,25 +67,39 @@ public:
     void setExponent(int exponent) { set_exponent(exponent); }
     int getExponent() const { return get_exponent(); }
 
-    /** Set the index to the value to be minimized when a vector type
-    Output is specified. For SpatialVec Outputs, indices 0, 1, and 2
-    refer to the rotational components and indices 3, 4, and 5 refer
-    to the translational components. A value of -1 indicates to
-    minimize the vector norm. If an index for a type double Output
-    is provided, an exception is thrown. */
+    /** Set the index to the value to be minimized when a vector type Output is
+    specified. For SpatialVec Outputs, indices 0, 1, and 2 refer to the
+    rotational components and indices 3, 4, and 5 refer to the translational
+    components. A value of -1 indicates to minimize the vector norm (which is the
+    default setting). If an index for a type double Output is provided, an
+    exception is thrown. */
     void setOutputIndex(int index) { set_output_index(index); }
     int getOutputIndex() const { return get_output_index(); }
 
 protected:
 
+    /** Get a reference to the Output at the specified Output path and store its
+    data type. This also creates a function based on the exponent set via
+    'setExponent()', which can be accessed with 'setValueToExponent()'. Finally,
+    this also sets the "depends-on stage", which can be accessed with
+    'getDependsOnStage()'. Call this function at the top of
+    'initializeOnModelImpl()' in each derived class. */
     void initializeOnModelBase() const;
 
+    /** Calculate the Output value for the provided SimTK::State. If using a
+    vector Output, either the vector norm or vector element will be returned,
+    depending on whether an index was provided via 'setOutputIndex()'. Do not
+    call this function until 'initializeOnModelBase()' has been called. */
     double calcOutputValue(const SimTK::State&) const;
 
+    /** Raise a value to the exponent set via 'setExponent()'. Do not call this
+    function until 'initializeOnModelBase()' has been called. */
     double setValueToExponent(double value) const {
         return m_power_function(value);
     }
 
+    /** Get the "depends-on stage", or the SimTK::Stage we need to realize the
+    system to in order to calculate the Output value. */
     const SimTK::Stage& getDependsOnStage() const {
         return m_dependsOnStage;
     }
@@ -99,10 +135,11 @@ private:
 };
 
 /** This goal allows you to use model Outputs of type double, SimTK::Vec3, and
-SimTK::SpatialVec in the integrand of a goal. By default, when using vector
-type Outputs, the norm of the vector is minimized, but you can also minimize
-a specific element of a vector Output via `setOutputIndex()`. You can also
-specify the exponent of the value in the integrand via `setExponent()`.
+SimTK::SpatialVec in the integrand of a goal. By default, when using vector type
+Outputs, the norm of the vector is minimized, but you can also minimize a
+specific element of a vector Output via `setOutputIndex()`. You can also specify
+the exponent of the value in the integrand via `setExponent()`. This goal
+supports both 'Cost' (default) and 'EndpointConstraint' modesl.
 @ingroup mocogoal */
 class OSIMMOCO_API MocoOutputGoal : public MocoOutputBase {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoOutputGoal, MocoOutputBase);
@@ -136,6 +173,10 @@ protected:
             const IntegrandInput& state, double& integrand) const override;
     void calcGoalImpl(
             const GoalInput& input, SimTK::Vector& cost) const override;
+    bool getSupportsEndpointConstraintImpl() const override { return true; }
+    Mode getDefaultModeImpl() const override {
+        return Mode::Cost;
+    }
 
 private:
     OpenSim_DECLARE_PROPERTY(divide_by_displacement, bool,

@@ -148,13 +148,13 @@ void MocoOutputGoal::calcIntegrandImpl(
 }
 
 void MocoOutputGoal::calcGoalImpl(
-        const MocoGoal::GoalInput& input, SimTK::Vector& cost) const {
-    cost[0] = input.integral;
+        const MocoGoal::GoalInput& input, SimTK::Vector& values) const {
+    values[0] = input.integral;
     if (get_divide_by_displacement()) {
-        cost[0] /=
+        values[0] /=
                 calcSystemDisplacement(input.initial_state, input.final_state);
     }
     if (get_divide_by_mass()) {
-        cost[0] /= getModel().getTotalMass(input.initial_state);
+        values[0] /= getModel().getTotalMass(input.initial_state);
     }
 }
