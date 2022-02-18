@@ -128,6 +128,33 @@ double MocoOutputBase::calcOutputValue(const SimTK::State& state) const {
     return value;
 }
 
+void MocoOutputBase::printDescriptionImpl() const {
+    // Output path.
+    std::string str = fmt::format("        output: {}", getOutputPath());
+
+    // Output type.
+    std::string type;
+    if (m_data_type == Type_double) { type = "double"; }
+    else if (m_data_type == Type_Vec3) { type = "SimTK::Vec3"; }
+    else if (m_data_type == Type_SpatialVec) { type = "SimTK::SpatialVec"; }
+    str += fmt::format(", type: {}", type);
+
+    // Output index (if relevant).
+    if (getOutputIndex() != -1) {
+        str += fmt::format(", index: {}", getOutputIndex());
+    }
+
+    // Exponent.
+    str += fmt::format(", exponent: {}", getExponent());
+
+    // Bounds (if endpoint constraint).
+    if (getModeIsEndpointConstraint()) {
+        str += fmt::format(", bounds: {}", getConstraintInfo().getBounds()[0]);
+    }
+
+    log_cout(str);
+}
+
 // ============================================================================
 // MocoOutputGoal
 // ============================================================================
@@ -157,4 +184,29 @@ void MocoOutputGoal::calcGoalImpl(
     if (get_divide_by_mass()) {
         values[0] /= getModel().getTotalMass(input.initial_state);
     }
+}
+
+// ============================================================================
+// MocoOutputTrackingGoal
+// ============================================================================
+
+void MocoOutputTrackingGoal::constructProperties() {
+    constructProperty_tracking_function();
+}
+
+void MocoOutputTrackingGoal::initializeOnModelImpl(const Model& output) const {
+    initializeOnModelBase();
+    setRequirements(1, 1, getDependsOnStage());
+}
+
+void MocoOutputTrackingGoal::calcIntegrandImpl(const IntegrandInput& input,
+        double& integrand) const {
+    SimTK::Vector time(1, input.state.getTime());
+    integrand = SimTK::square(setValueToExponent(calcOutputValue(input.state)) -
+            setValueToExponent(get_tracking_function().calcValue(time)));
+}
+
+void MocoOutputTrackingGoal::calcGoalImpl(const GoalInput &input,
+        SimTK::Vector &values) const {
+    values[0] = input.integral;
 }

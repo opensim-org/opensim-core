@@ -104,6 +104,9 @@ protected:
         return m_dependsOnStage;
     }
 
+    void printDescriptionImpl() const override;
+
+
 private:
     OpenSim_DECLARE_PROPERTY(output_path, std::string,
             "The absolute path to the output in the model to use as the "
@@ -124,7 +127,6 @@ private:
         Type_Vec3,
         Type_SpatialVec,
     };
-
     mutable DataType m_data_type;
     mutable SimTK::ReferencePtr<const AbstractOutput> m_output;
     mutable std::function<double(const double&)> m_power_function;
@@ -138,8 +140,12 @@ private:
 SimTK::SpatialVec in the integrand of a goal. By default, when using vector type
 Outputs, the norm of the vector is minimized, but you can also minimize a
 specific element of a vector Output via `setOutputIndex()`. You can also specify
-the exponent of the value in the integrand via `setExponent()`. This goal
-supports both 'Cost' (default) and 'EndpointConstraint' modesl.
+the exponent of the value in the integrand via `setExponent()`.
+
+This goal supports both "Cost" (default) and "EndpointConstraint" modes. In
+"EndpointConstraint" mode, the integral of the Output value is constrained
+between user-specified bounds. By default, these bounds constrain the integral to
+zero; use 'updConstraintInfo()' to set custom bounds.
 @ingroup mocogoal */
 class OSIMMOCO_API MocoOutputGoal : public MocoOutputBase {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoOutputGoal, MocoOutputBase);
@@ -172,7 +178,7 @@ protected:
     void calcIntegrandImpl(
             const IntegrandInput& state, double& integrand) const override;
     void calcGoalImpl(
-            const GoalInput& input, SimTK::Vector& cost) const override;
+            const GoalInput& input, SimTK::Vector& values) const override;
     bool getSupportsEndpointConstraintImpl() const override { return true; }
     Mode getDefaultModeImpl() const override {
         return Mode::Cost;
@@ -184,6 +190,135 @@ private:
             "false)");
     OpenSim_DECLARE_PROPERTY(divide_by_mass, bool,
             "Divide by the model's total mass (default: false)");
+    void constructProperties();
+};
+
+/** This goal allows you to minimize or constrain a Model Output value at the
+beginning of a trajectory. Outputs of type double, SimTK::Vec3, and
+SimTK::SpatialVec are supported. By default, when using vector type Outputs, the
+norm of the vector is minimized, but you can also minimize a specific element of
+a vector Output via `setOutputIndex()`. You can also specify the exponent of the
+value in the integrand via `setExponent()`.
+
+This goal supports both "Cost" (default) and "EndpointConstraint" modes. In
+"EndpointConstraint" mode, the Output value is constrained between user-specified
+bounds. By default, these bounds constrain the initial value to zero; use
+'updConstraintInfo()' to set custom bounds.
+@ingroup mocogoal */
+class OSIMMOCO_API MocoInitialOutputGoal : public MocoOutputBase {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoInitialOutputGoal, MocoOutputBase);
+
+public:
+    MocoInitialOutputGoal() { constructProperties(); }
+    MocoInitialOutputGoal(std::string name) : MocoOutputBase(std::move(name)) {
+        constructProperties();
+    }
+    MocoInitialOutputGoal(std::string name, double weight)
+            : MocoOutputBase(std::move(name), weight) {
+        constructProperties();
+    }
+protected:
+    void initializeOnModelImpl(const Model&) const override {
+        initializeOnModelBase();
+        setRequirements(0, 1, getDependsOnStage());
+    }
+    void calcGoalImpl(
+            const GoalInput& input, SimTK::Vector& values) const override {
+        values[0] = setValueToExponent(calcOutputValue(input.initial_state));
+    }
+    bool getSupportsEndpointConstraintImpl() const override { return true; }
+    Mode getDefaultModeImpl() const override {
+        return Mode::Cost;
+    }
+
+private:
+    void constructProperties() {};
+};
+
+/** This goal allows you to minimize or constrain a Model Output value at the
+end of a trajectory. Outputs of type double, SimTK::Vec3, and SimTK::SpatialVec
+are supported. By default, when using vector type Outputs, the norm of the vector
+is minimized, but you can also minimize a specific element of a vector Output via
+`setOutputIndex()`. You can also specify the exponent of the value in the
+integrand via `setExponent()`.
+
+This goal supports both "Cost" (default) and "EndpointConstraint" modes. In
+"EndpointConstraint" mode, the Output value is constrained between user-specified
+bounds. By default, these bounds constrain the final value to zero; use
+'updConstraintInfo()' to set custom bounds.
+@ingroup mocogoal */
+class OSIMMOCO_API MocoFinalOutputGoal : public MocoOutputBase {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoFinalOutputGoal, MocoOutputBase);
+
+public:
+    MocoFinalOutputGoal() { constructProperties(); }
+    MocoFinalOutputGoal(std::string name) : MocoOutputBase(std::move(name)) {
+        constructProperties();
+    }
+    MocoFinalOutputGoal(std::string name, double weight)
+            : MocoOutputBase(std::move(name), weight) {
+        constructProperties();
+    }
+protected:
+    void initializeOnModelImpl(const Model&) const override {
+        initializeOnModelBase();
+        setRequirements(0, 1, getDependsOnStage());
+    }
+    void calcGoalImpl(
+            const GoalInput& input, SimTK::Vector& values) const override {
+        values[0] = setValueToExponent(calcOutputValue(input.final_state));
+    }
+    bool getSupportsEndpointConstraintImpl() const override { return true; }
+    Mode getDefaultModeImpl() const override {
+        return Mode::Cost;
+    }
+
+private:
+    void constructProperties() {};
+};
+
+/** This goal allows you to minimize the squared difference between a Model
+Output value and a user-defined function. Outputs of type double, SimTK::Vec3,
+and  SimTK::SpatialVec are supported. By default, when using vector type Outputs,
+the norm of the vector is tracked, but you can also track a specific element of a
+vector Output via `setOutputIndex()`.
+@note The exponent provided via 'setExponent()' is applied to both the Output
+      value and the tracking function. The squared difference between these two
+      values raised to the exponent is what is minimized. In most cases, the
+      default exponent value of 1 should provide the expected behavior.
+@ingroup mocogoal */
+class OSIMMOCO_API MocoOutputTrackingGoal : public MocoOutputBase {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoOutputTrackingGoal, MocoOutputBase);
+
+public:
+    MocoOutputTrackingGoal() { constructProperties(); }
+    MocoOutputTrackingGoal(std::string name) : MocoOutputBase(std::move(name)) {
+        constructProperties();
+    }
+    MocoOutputTrackingGoal(std::string name, double weight)
+            : MocoOutputBase(std::move(name), weight) {
+        constructProperties();
+    }
+
+    /// The function of time that the Output value will track in the integrand.
+    void setTrackingFunction(const Function& f) {
+        set_tracking_function(f);
+    }
+    const Function& getTrackingFunction() const {
+        return get_tracking_function();
+    }
+
+protected:
+    void initializeOnModelImpl(const Model&) const override;
+    void calcIntegrandImpl(
+            const IntegrandInput& input, double& integrand) const override;
+    void calcGoalImpl(
+            const GoalInput& input, SimTK::Vector& values) const override;
+
+private:
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(tracking_function, Function,
+            "A function of time that the model Output value will track in the "
+            "integrand.");
     void constructProperties();
 };
 

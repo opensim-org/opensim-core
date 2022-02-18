@@ -219,17 +219,16 @@ TimeSeriesTable_<T> analyze(Model model, const TimeSeriesTable& statesTable,
 
     // Initialize the system so we can access the outputs.
     model.initSystem();
+
     // Create the reporter object to which we'll add the output data to create
     // the report.
     auto* reporter = new TableReporter_<T>();
-    // Loop through all the outputs for all components in the model, and if
-    // the output path matches one provided in the argument and the output type
-    // agrees with the template argument type, add it to the report.
-    for (const auto& comp : model.getComponentList()) {
-        for (const auto& outputName : comp.getOutputNames()) {
-            const auto& output = comp.getOutput(outputName);
-            auto thisOutputPath = output.getPathName();
-            for (const auto& outputPathArg : outputPaths) {
+
+    // Convenience function for populating the reporter.
+    auto populateReporter = [](const std::vector<std::string>& outputPaths,
+            const AbstractOutput& output, TableReporter_<T>* reporter) {
+        auto thisOutputPath = output.getPathName();
+        for (const auto& outputPathArg : outputPaths) {
                 if (std::regex_match(
                         thisOutputPath, std::regex(outputPathArg))) {
                     // Make sure the output type agrees with the template.
@@ -243,8 +242,25 @@ TimeSeriesTable_<T> analyze(Model model, const TimeSeriesTable& statesTable,
                     }
                 }
             }
+    };
+
+    // Loop through all the outputs for all components in the model, and if
+    // the output path matches one provided in the argument and the output type
+    // agrees with the template argument type, add it to the report.
+    for (const auto& comp : model.getComponentList()) {
+        for (const auto& outputName : comp.getOutputNames()) {
+            const auto& output = comp.getOutput(outputName);
+            populateReporter(outputPaths, output, reporter);
         }
     }
+
+    // Check if any output paths match outputs of the top-level model.
+    for (const auto& outputName : model.getOutputNames()) {
+        const auto& output = model.getOutput(outputName);
+        populateReporter(outputPaths, output, reporter);
+    }
+
+    // Add the reporter to the model.
     model.addComponent(reporter);
     model.initSystem();
 
