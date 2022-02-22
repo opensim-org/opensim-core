@@ -219,7 +219,7 @@ bool InverseKinematicsTool::run()
                     // if the accuracy was changed, reassemble
                     if (runAssemble) {
                         if (get_report_errors())
-                            log_info("Adaptive accuracy. Starting asseble at "
+                            log_info("Adaptive accuracy. Starting assemble at "
                                      "time {}",
                                     times[i]);
                         ikSolver.assemble(s);
