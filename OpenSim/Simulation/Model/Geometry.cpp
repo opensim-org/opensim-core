@@ -37,6 +37,15 @@ using namespace SimTK;
 
 OpenSim_DEFINE_SOCKET_FD(frame, Geometry);
 
+// emplace a geometry element onto the back of the provided array and return a reference
+// to it so that callers can mutate it in-place
+template<typename T, typename... Args>
+static T& EmplaceGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& out, Args&&... args)
+{
+    out.emplace_back(T{std::forward<Args>(args)...});
+    return static_cast<T&>(out.back());
+}
+
 Geometry::Geometry() {
     setNull();
     constructProperties();
@@ -88,129 +97,138 @@ void Geometry::generateDecorations(bool fixed,
     const SimTK::State& state,
     SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const
 {
-    // serialized Geometry is assumed fixed
-    // if it has a Transform input then it is not "attached" geometry
-    // and fixed to a body but floating w.r.t Ground.
-    if (!fixed && !getInput("transform").isConnected())
-        return; 
-    
-    if (!get_Appearance().get_visible()) return;
+    const auto& transformInput = getInput<SimTK::Transform>("transform");
 
-    SimTK::Array_<SimTK::DecorativeGeometry> decos;
-    implementCreateDecorativeGeometry(decos);
-    if (decos.size() == 0) return;
-    setDecorativeGeometryTransform(decos, state);
-    for (unsigned i = 0; i < decos.size(); i++){
-        setDecorativeGeometryAppearance(decos[i]);
-        appendToThis.push_back(decos[i]);
+    if (!fixed && !transformInput.isConnected())
+    {
+        // serialized `Geometry` is assumed to be fixed. If it has a "transform"
+        // input then it is not "attached" geometry that is fixed to body; rather,
+        // it is "floating" w.r.t. `Ground`
+        return;
     }
-}
 
-/*
- * Apply the Transform of the Frame the Geometry is attached to,
- * OR use the Transform supplied to the Geometry via its Input.
-*/
-void Geometry::setDecorativeGeometryTransform(
-    SimTK::Array_<SimTK::DecorativeGeometry>& decorations, 
-    const SimTK::State& state) const
-{
-    auto& input = getInput<SimTK::Transform>("transform");
+    OpenSim::Appearance const& appearance = get_Appearance();
+    
+    if (!appearance.get_visible())
+    {
+        return;  // it's invisible
+    }
 
+    int sizeBefore = static_cast<int>(appendToThis.size());
+    implementCreateDecorativeGeometry(appendToThis);
+    int nAdded = appendToThis.size() - sizeBefore;
+
+    if (nAdded <= 0)
+    {
+        return;  // nothing was emitted
+    }
+
+    // figure out base xform and body index
     SimTK::Transform transformInBaseFrame;
     SimTK::MobilizedBodyIndex mbidx;
-
-    if (input.isConnected()) {
-        transformInBaseFrame = input.getValue(state);
+    if (transformInput.isConnected())
+    {
+        transformInBaseFrame = transformInput.getValue(state);
         mbidx = SimTK::MobilizedBodyIndex(0);
     }
-    else {
+    else
+    {
         const Frame& myFrame = getFrame();
         const Frame& bFrame = myFrame.findBaseFrame();
         const PhysicalFrame* bPhysicalFrame =
             dynamic_cast<const PhysicalFrame*>(&bFrame);
-        if (bPhysicalFrame == nullptr) {
+
+        if (!bPhysicalFrame) {
             // throw exception something is wrong
             throw (Exception("Frame for Geometry " + getName() +
                 " is not attached to a PhysicalFrame."));
         }
+
         mbidx = bPhysicalFrame->getMobilizedBodyIndex();
         transformInBaseFrame = myFrame.findTransformInBaseFrame();
     }
 
-    for (unsigned i = 0; i < decorations.size(); i++){
-        decorations[i].setBodyId(mbidx);
-        decorations[i].setTransform(transformInBaseFrame);
-        decorations[i].setIndexOnBody(i);
+    // apply body index, transform, index, and appearance
+    int size = static_cast<int>(appendToThis.size());
+    for (int i = size - nAdded; i < size; ++i)
+    {
+        SimTK::DecorativeGeometry& dg = appendToThis[i];
+        VisualRepresentation r = get_Appearance().get_visible() ?
+            static_cast<VisualRepresentation>(appearance.get_representation()) :
+            SimTK::DecorativeGeometry::Hide;
+
+        dg.setBodyId(mbidx);
+        dg.setTransform(transformInBaseFrame);
+        dg.setIndexOnBody(i);
+        dg.setColor(appearance.get_color());
+        dg.setOpacity(appearance.get_opacity());
+        dg.setRepresentation(r);
     }
 }
+
 void Sphere::implementCreateDecorativeGeometry(
-    SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+    SimTK::Array_<SimTK::DecorativeGeometry>& out) const
 {
-    const Vec3 netScale = get_scale_factors();
-    DecorativeSphere deco(get_radius());
-    deco.setScaleFactors(netScale);
-    decoGeoms.push_back(deco);
+    auto& d = EmplaceGeometry<DecorativeSphere>(out, get_radius());
+    d.setScaleFactors(get_scale_factors());
 }
 
 void Cylinder::implementCreateDecorativeGeometry(
-    SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+    SimTK::Array_<SimTK::DecorativeGeometry>& out) const
 {
-    const Vec3 netScale = get_scale_factors();
-    DecorativeCylinder deco(get_radius(), get_half_height());
-    deco.setScaleFactors(netScale);
-    decoGeoms.push_back(deco);
+    auto& d = EmplaceGeometry<DecorativeCylinder>(out, get_radius(), get_half_height());
+    d.setScaleFactors(get_scale_factors());
 }
 
-void Cone::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+void Cone::implementCreateDecorativeGeometry(
+        SimTK::Array_<SimTK::DecorativeGeometry>& out) const
 {
-    const Vec3 netScale = get_scale_factors();
-    DecorativeCone deco(get_origin(), SimTK::UnitVec3(get_direction()), get_height(), get_base_radius());
-    deco.setScaleFactors(netScale);
-    decoGeoms.push_back(deco);
+    auto& d = EmplaceGeometry<DecorativeCone>(out,
+                                              get_origin(),
+                                              SimTK::UnitVec3(get_direction()),
+                                              get_height(),
+                                              get_base_radius());
+    d.setScaleFactors(get_scale_factors());
 }
 
-void LineGeometry::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+void LineGeometry::implementCreateDecorativeGeometry(
+        SimTK::Array_<SimTK::DecorativeGeometry>& out) const
 {
-    const Vec3 netScale = get_scale_factors();
-    DecorativeLine deco(get_start_point(), get_end_point());
-    deco.setScaleFactors(netScale);
-    decoGeoms.push_back(deco);
+    auto& d = EmplaceGeometry<DecorativeLine>(out, get_start_point(), get_end_point());
+    d.setScaleFactors(get_scale_factors());
 }
 
-
-void Arrow::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+void Arrow::implementCreateDecorativeGeometry(
+        SimTK::Array_<SimTK::DecorativeGeometry>& out) const
 {
-    const Vec3 netScale = get_scale_factors();
-    SimTK::Vec3 endPt(get_length()*get_direction());
-    DecorativeArrow deco(SimTK::Vec3(0), endPt);
-    deco.setLineThickness(0.05);
-    deco.setScaleFactors(netScale);
-    decoGeoms.push_back(deco);
+    const Vec3 start = get_start_point();
+    const Vec3 end = start + get_length()*get_direction().normalize();
+
+    auto& d = EmplaceGeometry<DecorativeArrow>(out, start, end);
+    d.setLineThickness(0.05);
+    d.setScaleFactors(get_scale_factors());
 }
 
-void Ellipsoid::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+void Ellipsoid::implementCreateDecorativeGeometry(
+        SimTK::Array_<SimTK::DecorativeGeometry>& out) const
 {
-    const Vec3 netScale = get_scale_factors();
-    DecorativeEllipsoid deco(get_radii());
-    deco.setScaleFactors(netScale);
-    decoGeoms.push_back(deco);
+    auto& d = EmplaceGeometry<DecorativeEllipsoid>(out, get_radii());
+    d.setScaleFactors(get_scale_factors());
 }
 
-void Brick::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+void Brick::implementCreateDecorativeGeometry(
+        SimTK::Array_<SimTK::DecorativeGeometry>& out) const
 {
-    const Vec3 netScale = get_scale_factors();
-    DecorativeBrick deco(get_half_lengths());
-    deco.setScaleFactors(netScale);
-    decoGeoms.push_back(deco);
+    auto& d = EmplaceGeometry<DecorativeBrick>(out, get_half_lengths());
+    d.setScaleFactors(get_scale_factors());
 }
 
-void FrameGeometry::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+void FrameGeometry::implementCreateDecorativeGeometry(
+        SimTK::Array_<SimTK::DecorativeGeometry>& out) const
 {
-    const Vec3 netScale = get_scale_factors();
-    DecorativeFrame deco(1.0);
-    deco.setLineThickness(get_display_radius());
-    deco.setScaleFactors(netScale);
-    decoGeoms.push_back(deco);
+    auto& d = EmplaceGeometry<DecorativeFrame>(out, 1.0);
+    d.setLineThickness(get_display_radius());
+    d.setScaleFactors(get_scale_factors());
 }
 
 void Mesh::extendFinalizeFromProperties() {
@@ -300,23 +318,28 @@ void Mesh::extendFinalizeFromProperties() {
 }
 
 
-void Mesh::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
+void Mesh::implementCreateDecorativeGeometry(
+        SimTK::Array_<SimTK::DecorativeGeometry>& out) const
 {
-    if (cachedMesh.get() != nullptr) {
-        try {
-            // Force the loading of the mesh to see if it has bad contents
-            // (e.g., binary vtp).
-            // We do not want to do this in extendFinalizeFromProperties b/c
-            // it's expensive to repeatedly load meshes.
-            cachedMesh->getMesh();
-        } catch (const std::exception& e) {
-            log_warn("Visualizer couldn't open {} because: {}",
-                get_mesh_file(), e.what());
-            // No longer try to visualize this mesh.
-            cachedMesh.reset();
-            return;
-        }
-        cachedMesh->setScaleFactors(get_scale_factors());
-        decoGeoms.push_back(*cachedMesh);
+    if (!cachedMesh)
+    {
+        // should be populated by `Mesh::extendFinalizeFromProperties`
+        return;
     }
+
+    try {
+        // Force the loading of the mesh to see if it has bad contents (e.g. binary,
+        // vtp). We do not want to do this in extendFinalizeFromProperties b/c it's
+        // expensive to repeatedly load meshes.
+        cachedMesh->getMesh();
+    } catch (const std::exception& e) {
+        log_warn("Visualizer couldn't open {} because: {}",
+            get_mesh_file(), e.what());
+        // No longer try to visualize this mesh.
+        cachedMesh.reset();
+        return;
+    }
+
+    auto& d = EmplaceGeometry<DecorativeMeshFile>(out, *cachedMesh);
+    d.setScaleFactors(get_scale_factors());
 }
