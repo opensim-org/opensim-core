@@ -151,6 +151,7 @@ void Geometry::generateDecorations(bool fixed,
     int firstEl = static_cast<int>(appendToThis.size()) - nAdded;
     for (int i = 0; i < nAdded; ++i) {
         SimTK::DecorativeGeometry& dg = appendToThis[firstEl + i];
+        dg.setScaleFactors(get_scale_factors());
         dg.setBodyId(mbidx);
         dg.setTransform(transformInBaseFrame);
         dg.setIndexOnBody(i);
@@ -163,33 +164,31 @@ void Geometry::generateDecorations(bool fixed,
 void Sphere::implementCreateDecorativeGeometry(
     SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
-    auto& deco = EmplaceGeometry<DecorativeSphere>(decoGeoms, get_radius());
-    deco.setScaleFactors(get_scale_factors());
+    EmplaceGeometry<DecorativeSphere>(decoGeoms, get_radius());
 }
 
 void Cylinder::implementCreateDecorativeGeometry(
     SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
-    auto& deco = EmplaceGeometry<DecorativeCylinder>(decoGeoms, get_radius(), get_half_height());
-    deco.setScaleFactors(get_scale_factors());
+    EmplaceGeometry<DecorativeCylinder>(decoGeoms, get_radius(), get_half_height());
 }
 
 void Cone::implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
-    auto& deco = EmplaceGeometry<DecorativeCone>(decoGeoms,
-                                                 get_origin(),
-                                                 SimTK::UnitVec3(get_direction()),
-                                                 get_height(),
-                                                 get_base_radius());
-    deco.setScaleFactors(get_scale_factors());
+    EmplaceGeometry<DecorativeCone>(decoGeoms,
+                                    get_origin(),
+                                    SimTK::UnitVec3(get_direction()),
+                                    get_height(),
+                                    get_base_radius());
 }
 
 void LineGeometry::implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
-    auto& deco = EmplaceGeometry<DecorativeLine>(decoGeoms, get_start_point(), get_end_point());
-    deco.setScaleFactors(get_scale_factors());
+    EmplaceGeometry<DecorativeLine>(decoGeoms,
+                                    get_start_point(),
+                                    get_end_point());
 }
 
 void Arrow::implementCreateDecorativeGeometry(
@@ -200,21 +199,18 @@ void Arrow::implementCreateDecorativeGeometry(
 
     auto& deco = EmplaceGeometry<DecorativeArrow>(decoGeoms, start, end);
     deco.setLineThickness(0.05);
-    deco.setScaleFactors(get_scale_factors());
 }
 
 void Ellipsoid::implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
-    auto& deco = EmplaceGeometry<DecorativeEllipsoid>(decoGeoms, get_radii());
-    deco.setScaleFactors(get_scale_factors());
+    EmplaceGeometry<DecorativeEllipsoid>(decoGeoms, get_radii());
 }
 
 void Brick::implementCreateDecorativeGeometry(
         SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
-    auto& deco = EmplaceGeometry<DecorativeBrick>(decoGeoms, get_half_lengths());
-    deco.setScaleFactors(get_scale_factors());
+    EmplaceGeometry<DecorativeBrick>(decoGeoms, get_half_lengths());
 }
 
 void FrameGeometry::implementCreateDecorativeGeometry(
@@ -222,7 +218,6 @@ void FrameGeometry::implementCreateDecorativeGeometry(
 {
     auto& deco = EmplaceGeometry<DecorativeFrame>(decoGeoms, 1.0);
     deco.setLineThickness(get_display_radius());
-    deco.setScaleFactors(get_scale_factors());
 }
 
 void Mesh::extendFinalizeFromProperties() {
@@ -334,6 +329,5 @@ void Mesh::implementCreateDecorativeGeometry(
         return;
     }
 
-    auto& deco = EmplaceGeometry<DecorativeMeshFile>(decoGeoms, *cachedMesh);
-    deco.setScaleFactors(get_scale_factors());
+    EmplaceGeometry<DecorativeMeshFile>(decoGeoms, *cachedMesh);
 }
