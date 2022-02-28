@@ -8,7 +8,7 @@ if (sys.version_info.major == 3 and sys.version_info.minor >= 8 and sys.platform
       new_path = install_path.replace(os.sep, '/')
       print ('install path found as '+ new_path)
    else:
-      new_path = 'os.path.dirname(os.path.realpath(__file__))' # Conda layout on windows
+      new_path = os.path.dirname(os.path.realpath(__file__)) # Conda layout on windows
    with fileinput.FileInput('opensim/__init__.py', inplace=True, backup='.bak') as file:
      for line in file:
           print(line.replace('DLL_PATH', "'" + new_path + "'"), end='')
