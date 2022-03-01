@@ -120,7 +120,7 @@ int main() {
 
     // Cost.
     // -----
-    auto* tracking = problem.addGoal<MocoStateTrackingGoal>();
+    auto* tracking = problem.addGoal<MocoStateTrackingGoal>("tracking");
     TimeSeriesTable ref;
     ref.addTableMetaData<std::string>("inDegrees", "no");
     ref.setColumnLabels({"/jointset/j0/q0/value", "/jointset/j1/q1/value"});
@@ -135,6 +135,9 @@ int main() {
     }
 
     tracking->setReference(ref);
+
+    // A low-weighted cost term minimizing controls helps with convergence.
+    problem.addGoal<MocoControlGoal>("effort", 0.001);
 
     // Configure the solver.
     // =====================

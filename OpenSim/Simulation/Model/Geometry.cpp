@@ -181,8 +181,11 @@ void LineGeometry::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::Decora
 void Arrow::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
     const Vec3 netScale = get_scale_factors();
-    SimTK::Vec3 endPt(get_length()*get_direction());
-    DecorativeArrow deco(SimTK::Vec3(0), endPt);
+
+    const Vec3 start = get_start_point();
+    const Vec3 end = start + get_length()*get_direction().normalize();
+
+    DecorativeArrow deco(start, end);
     deco.setLineThickness(0.05);
     deco.setScaleFactors(netScale);
     decoGeoms.push_back(deco);
