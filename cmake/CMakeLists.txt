@@ -46,7 +46,7 @@ install(FILES OpenSimMacros.cmake
 
 install(EXPORT OpenSimTargets DESTINATION "${OPENSIM_INSTALL_CMAKEDIR}")
 
-if(OPENSIM_COPY_DEPENDENCIES AND APPLE)
+if(OPENSIM_COPY_DEPENDENCIES AND APPLE AND OPENSIM_WITH_CASADI)
     # Temporary hack to package dependencies on Macs.
     # TODO if we're building a standalone binary distribution, we should
     # use superbuild to build the dependencies.
