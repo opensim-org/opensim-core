@@ -11,6 +11,7 @@ v4.4
 - Fixed an issue that could happen sometimes with ScaleTool where loading the model file or marker set file could fail if the file was given as an absolute path (Issue #3109, PR #3110)
 - Fixed an issue with SWIG with `OpenSim::Body::getRotationInGround()` where it would return an object without the correct `SimTK::Rotation` methods.
 - Fixed OpenSim::Arrow start_point property being ignored
+- Fixed objects being set as not up to date with their properties by finalizeFromProperties
 
 v4.3
 ====
