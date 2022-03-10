@@ -44,16 +44,14 @@ OpenSim_DECLARE_CONCRETE_OBJECT(PathWrapPoint, PathPoint);
 //=============================================================================
 // METHODS
 //=============================================================================
-    //--------------------------------------------------------------------------
-    // CONSTRUCTION
-    //--------------------------------------------------------------------------
 public:
-    PathWrapPoint() {}
-    virtual ~PathWrapPoint() {}
+    PathWrapPoint() = default;
 
     Array<SimTK::Vec3>& getWrapPath() { return _wrapPath; }
+
     double getWrapLength() const { return _wrapPathLength; }
     void setWrapLength(double aLength) { _wrapPathLength = aLength; }
+
     const WrapObject* getWrapObject() const override { return _wrapObject.get(); }
     void setWrapObject(const WrapObject* wrapObject) { _wrapObject.reset(wrapObject); }
 
@@ -63,11 +61,12 @@ public:
 private:
     // points defining muscle path on surface of wrap object
     Array<SimTK::Vec3> _wrapPath{};
+
     // length of _wrapPath TODO this should be a cache variable!
     double _wrapPathLength{ 0.0 };
 
     // the wrap object this point is on
-    SimTK::ReferencePtr<const WrapObject> _wrapObject; 
+    SimTK::ReferencePtr<const WrapObject> _wrapObject;
 
 //=============================================================================
 };  // END of class PathWrapPoint

@@ -57,10 +57,10 @@ public:
 //=============================================================================
 public:
     WrapSphereObst();
-    virtual ~WrapSphereObst();
 
     double getRadius() const { return get_radius(); }
     void setRadius(double aRadius) { set_radius(aRadius); }
+
     double getLength() const { return get_length(); }
     void setLength(double aLength) { set_length(aLength); }
 
@@ -68,8 +68,13 @@ public:
     std::string getDimensionsString() const override;
 
 protected:
-    int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-        const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const override;
+    WrapObject::WrapAction wrapLine(
+            const SimTK::State& s,
+            const SimTK::Vec3& aPoint1,
+            const SimTK::Vec3& aPoint2,
+            const PathWrap& aPathWrap,
+            WrapResult& aWrapResult,
+            bool& aFlag) const override;
 
     void extendFinalizeFromProperties() override;
 

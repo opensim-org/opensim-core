@@ -18,7 +18,7 @@
  *                                                                            *
  * Unless required by applicable law or agreed to in writing, software        *
  * distributed under the License is distributed on an "AS IS" BASIS,          *
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
@@ -43,11 +43,6 @@ class WrapResult;
 class OSIMSIMULATION_API WrapTorus : public WrapObject {
 OpenSim_DECLARE_CONCRETE_OBJECT(WrapTorus, WrapObject);
 
-private:
-    struct CircleCallback {
-        double p1[3], p2[3], r;
-    };
-
 public:
 //==============================================================================
 // PROPERTIES
@@ -58,40 +53,39 @@ public:
 //=============================================================================
 // METHODS
 //=============================================================================
-    //--------------------------------------------------------------------------
-    // CONSTRUCTION
-    //--------------------------------------------------------------------------
 public:
     WrapTorus();
-    virtual ~WrapTorus();
 
     const char* getWrapTypeName() const override;
     std::string getDimensionsString() const override;
     SimTK::Real getInnerRadius() const;
     SimTK::Real getOuterRadius() const;
 
-    /** Scale the torus's dimensions. The base class (WrapObject) scales the
-        origin of the torus in the body's reference frame. */
+    /**
+     * Scale the torus's dimensions. The base class (WrapObject) scales the
+     * origin of the torus in the body's reference frame.
+     */
     void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
 protected:
-    int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-        const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const override;
+    WrapObject::WrapAction wrapLine(
+            const SimTK::State& s,
+            const SimTK::Vec3& aPoint1,
+            const SimTK::Vec3& aPoint2,
+            const PathWrap& aPathWrap,
+            WrapResult& aWrapResult,
+            bool& aFlag) const override;
 
-    /// Implement generateDecorations to draw geometry in visualizer
-    void generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
-        SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const override;
+    void generateDecorations(
+            bool fixed,
+            const ModelDisplayHints& hints,
+            const SimTK::State& state,
+            SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const override;
 
     void extendFinalizeFromProperties() override;
 
 private:
     void constructProperties();
-
-    int findClosestPoint(double radius, double p1[], double p2[],
-        double* xc, double* yc, double* zc,
-        int wrap_sign, int wrap_axis) const;
-    static void calcCircleResids(int numResid, int numQs, double q[],
-        double resid[], int *flag2, void *ptr);
 
 //=============================================================================
 };  // END of class WrapTorus

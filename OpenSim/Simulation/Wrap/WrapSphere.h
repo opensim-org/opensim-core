@@ -51,12 +51,8 @@ public:
 //=============================================================================
 // METHODS
 //=============================================================================
-    //--------------------------------------------------------------------------
-    // CONSTRUCTION
-    //--------------------------------------------------------------------------
 public:
     WrapSphere();
-    virtual ~WrapSphere();
 
     const char* getWrapTypeName() const override;
     std::string getDimensionsString() const override;
@@ -68,12 +64,20 @@ public:
     void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
 protected:
-    int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-        const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const override;
+    WrapObject::WrapAction wrapLine(
+            const SimTK::State& s,
+            const SimTK::Vec3& aPoint1,
+            const SimTK::Vec3& aPoint2,
+            const PathWrap& aPathWrap,
+            WrapResult& aWrapResult,
+            bool& aFlag) const override;
 
     /// Implement generateDecorations to draw geometry in visualizer
-    void generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
-        SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const override;
+    void generateDecorations(
+            bool fixed,
+            const ModelDisplayHints& hints,
+            const SimTK::State& state,
+            SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const override;
 
     void extendFinalizeFromProperties() override;
 private:

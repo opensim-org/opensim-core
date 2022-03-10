@@ -61,14 +61,6 @@ WrapCylinder::WrapCylinder() : WrapObject()
     constructProperties();
 }
 
-//_____________________________________________________________________________
-/*
-* Destructor.
-*/
-WrapCylinder::~WrapCylinder()
-{}
-
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
@@ -174,8 +166,14 @@ string WrapCylinder::getDimensionsString() const
  * @param aFlag A flag for indicating errors, etc.
  * @return The status, as a WrapAction enum
  */
-int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-                                    const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
+
+WrapObject::WrapAction WrapCylinder::wrapLine(
+        const SimTK::State& s,
+        const SimTK::Vec3& aPoint1,
+        const SimTK::Vec3& aPoint2,
+        const PathWrap& aPathWrap,
+        WrapResult& aWrapResult,
+        bool& aFlag) const
 {
     const double& _radius = get_radius();
     double dist, p11_dist, p22_dist, t, dot1, dot2, dot3, dot4, d, sin_theta,
@@ -187,7 +185,8 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
         r1am, r1bm, r2am, r2bm, p11, p22, r1p, r2p, axispt, near12, 
         vert1, vert2, mpt, apex1, apex2, l1, l2, near00;
     UnitVec3 plane_normal;
-    int i, return_code = wrapped;
+    int i;
+    WrapObject::WrapAction return_code = wrapped;
     bool r1_inter, r2_inter;
     bool constrained   = (bool) (_wrapSign != 0);
     bool far_side_wrap = false, long_wrap = false;
@@ -605,10 +604,10 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
  * @param far_side_wrap Boolean indicating if the wrap is the long way around
  * @param aWrapResult The result of the wrapping (tangent points, etc.)
  */
-void WrapCylinder::_make_spiral_path(SimTK::Vec3& aPoint1,
-                                                 SimTK::Vec3& aPoint2,
-                                                 bool far_side_wrap,
-                                                 WrapResult& aWrapResult) const
+void WrapCylinder::_make_spiral_path(const SimTK::Vec3& aPoint1,
+                                     const SimTK::Vec3& aPoint2,
+                                     bool far_side_wrap,
+                                     WrapResult& aWrapResult) const
 {
     double x, y, t, axial_dist, theta;
     Vec3 r1a, r2a, uu, vv, ax, axial_vec, wrap_pt;
@@ -762,10 +761,10 @@ void WrapCylinder::_calc_spiral_wrap_point(const SimTK::Vec3& r1a,
  * @param w1 A wrapping point (?)
  * @return Whether or not the point was adjusted
  */
-bool WrapCylinder::_adjust_tangent_point(SimTK::Vec3& pt1,
-                                                      SimTK::Vec3& dn,
-                                                      SimTK::Vec3& r1,
-                                                      SimTK::Vec3& w1) const
+bool WrapCylinder::_adjust_tangent_point(const SimTK::Vec3& pt1,
+                                         SimTK::Vec3& dn,
+                                         SimTK::Vec3& r1,
+                                         SimTK::Vec3& w1) const
 {
     SimTK::Vec3 pr_vec = r1 - pt1;
     SimTK::Vec3 rw_vec = w1 - r1;

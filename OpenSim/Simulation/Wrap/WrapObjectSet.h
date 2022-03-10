@@ -44,7 +44,6 @@ public:
     /** Use Super's constructors. @see ModelComponentSet */
     using Super::Super;
 
-    // default copy, assignment operator, and destructor
 //=============================================================================
 };  // END of class WrapObjectSet
 //=============================================================================

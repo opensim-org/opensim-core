@@ -54,7 +54,6 @@ public:
 //=============================================================================
 public:
     WrapCylinder();
-    virtual ~WrapCylinder();
 
     const char* getWrapTypeName() const override;
     std::string getDimensionsString() const override;
@@ -64,36 +63,49 @@ public:
     void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
 protected:
-    int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-        const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const override;
-    // WrapTorus uses WrapCylinder::wrapLine.
-    friend class WrapTorus;
+    WrapObject::WrapAction wrapLine(
+            const SimTK::State& s,
+            const SimTK::Vec3& aPoint1,
+            const SimTK::Vec3& aPoint2,
+            const PathWrap& aPathWrap,
+            WrapResult& aWrapResult,
+            bool& aFlag) const override;
 
-    /// Implement generateDecorations to draw geometry in visualizer
-    void generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
-        SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const override;
+    void generateDecorations(
+            bool fixed,
+            const ModelDisplayHints& hints,
+            const SimTK::State& state,
+            SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const override;
 
     void extendFinalizeFromProperties() override;
 
 private:
+    // WrapTorus uses WrapCylinder::wrapLine.
+    friend class WrapTorus;
+
     void constructProperties();
 
-    void _make_spiral_path(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-                                                 bool far_side_wrap,WrapResult& aWrapResult) const;
-    void _calc_spiral_wrap_point(const SimTK::Vec3& r1a,
-                                 const SimTK::Vec3& axial_vec,
-                                 const SimTK::Rotation& rotation,
-                                 const SimTK::Vec3& axis,
-                                 double sense,
-                                 double t,
-                                 double theta,
-                                 SimTK::Vec3& wrap_pt) const;
+    void _make_spiral_path(
+            const SimTK::Vec3& aPoint1,
+            const SimTK::Vec3& aPoint2,
+            bool far_side_wrap,
+            WrapResult& aWrapResult) const;
 
+    void _calc_spiral_wrap_point(
+            const SimTK::Vec3& r1a,
+            const SimTK::Vec3& axial_vec,
+            const SimTK::Rotation& rotation,
+            const SimTK::Vec3& axis,
+            double sense,
+            double t,
+            double theta,
+            SimTK::Vec3& wrap_pt) const;
 
-    bool _adjust_tangent_point(SimTK::Vec3& pt1,
-                                                      SimTK::Vec3& dn,
-                                                      SimTK::Vec3& r1,
-                                                      SimTK::Vec3& w1) const;
+    bool _adjust_tangent_point(
+            const SimTK::Vec3& pt1,
+            SimTK::Vec3& dn,
+            SimTK::Vec3& r1,
+            SimTK::Vec3& w1) const;
 
 //=============================================================================
 };  // END of class WrapCylinder

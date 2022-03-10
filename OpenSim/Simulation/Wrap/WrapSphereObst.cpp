@@ -45,14 +45,6 @@ WrapSphereObst::WrapSphereObst()
     constructProperties();
 }
 
-//_____________________________________________________________________________
-/**
-* Destructor.
-*/
-WrapSphereObst::~WrapSphereObst()
-{
-}
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
@@ -137,11 +129,16 @@ string WrapSphereObst::getDimensionsString() const
  * @param aFlag A flag for indicating errors, etc.
  * @return The status, as a WrapAction enum
  */
-int WrapSphereObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-                        const PathWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const
+WrapObject::WrapAction WrapSphereObst::wrapLine(
+        const SimTK::State& s,
+        const SimTK::Vec3& aPoint1,
+        const SimTK::Vec3& aPoint2,
+        const PathWrap& aMuscleWrap,
+        WrapResult& aWrapResult,
+        bool& aFlag) const
 {
-    SimTK::Vec3& aPointP = aPoint1;     double R=0.8*get_radius();
-    SimTK::Vec3& aPointS = aPoint2;     double Qx,Qy, Tx,Ty;
+    SimTK::Vec3 aPointP = aPoint1;     double R=0.8*get_radius();
+    SimTK::Vec3 aPointS = aPoint2;     double Qx,Qy, Tx,Ty;
 
     // Initialize return values
     aFlag = false;

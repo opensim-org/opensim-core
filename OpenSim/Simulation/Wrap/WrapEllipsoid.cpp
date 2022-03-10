@@ -61,14 +61,6 @@ WrapEllipsoid::WrapEllipsoid()
     constructProperties();
 }
 
-//_____________________________________________________________________________
-/**
-* Destructor.
-*/
-WrapEllipsoid::~WrapEllipsoid()
-{
-}
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
@@ -186,8 +178,12 @@ SimTK::Vec3 WrapEllipsoid::getRadii() const
  * @param aFlag A flag for indicating errors, etc.
  * @return The status, as a WrapAction enum
  */
-int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-                                     const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
+WrapObject::WrapAction WrapEllipsoid::wrapLine(
+        const SimTK::State& s,
+        const SimTK::Vec3& aPoint1,
+        const SimTK::Vec3& aPoint2,
+        const PathWrap& aPathWrap,
+        WrapResult& aWrapResult, bool& aFlag) const
 {
     int i, j, bestMu;
     SimTK::Vec3 p1, p2, m, a, p1p2, p1m, p2m, f1, f2, p1c1, r1r2, vs, t, mu;

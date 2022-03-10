@@ -49,15 +49,6 @@ WrapDoubleCylinderObst::WrapDoubleCylinderObst()
     constructProperties();
 }
 
-//_____________________________________________________________________________
-/**
-* Destructor.
-*/
-WrapDoubleCylinderObst::~WrapDoubleCylinderObst()
-{
-}
-
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
@@ -398,10 +389,14 @@ static int double_cylinder(double U[3],double Ru,double V[3],double Rv,double M[
  * @param aFlag A flag for indicating errors, etc.
  * @return The status, as a WrapAction enum
  */
-int WrapDoubleCylinderObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-                        const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
+WrapObject::WrapAction WrapDoubleCylinderObst::wrapLine(
+        const SimTK::State& s,
+        const SimTK::Vec3& aPoint1,
+        const SimTK::Vec3& aPoint2,
+        const PathWrap& aPathWrap,
+        WrapResult& aWrapResult,
+        bool& aFlag) const
 {
-
     double U[3];    U[0]=get_translation()[0];       U[1]= get_translation()[1];       U[2]= get_translation()[2];
     double V[3];    V[0]=get_translationVcyl()[0];   V[1]=get_translationVcyl()[1];   V[2]=get_translationVcyl()[2];
     double Ru = ( m_wrapUcylDirection==righthand ? get_radiusUcyl() : -get_radiusUcyl() );

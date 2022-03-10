@@ -45,38 +45,21 @@ class WrapResult;
  */
 class OSIMSIMULATION_API WrapCylinderObst : public WrapObject {
 OpenSim_DECLARE_CONCRETE_OBJECT(WrapCylinderObst, WrapObject);
-private:
+
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    enum WrapDirectionEnum  // The prescribed direction of wrapping about the cylinders' z-axis
-    {
-        righthand,
-        lefthand
-    };
-
 public:
     OpenSim_DECLARE_PROPERTY(radius, double, "The radius of the cylinder.");
     OpenSim_DECLARE_PROPERTY(length, double, "The length of the cylinder.");
     OpenSim_DECLARE_PROPERTY(wrapDirection, std::string, "Describe if the cylinder is right or left handed.");
 
-private:
-    // Facilitate prescription of wrapping direction around obstacle: "righthand" or "lefthand".
-    // In traversing from the 1st point (P) to the 2nd (S), the path will wrap either
-    //    right-handed or left-handed about the obstacle's z-axis.
-    WrapDirectionEnum m_wrapDirection;
-
 
 //=============================================================================
 // METHODS
 //=============================================================================
-    //--------------------------------------------------------------------------
-    // CONSTRUCTION
-    //--------------------------------------------------------------------------
 public:
     WrapCylinderObst();
-    virtual ~WrapCylinderObst();
-
 
     const char* getWrapTypeName() const override;
     std::string getDimensionsString() const override;
@@ -87,17 +70,31 @@ public:
     void setLength(double aLength);
     int getWrapDirection() const;
 
-
 protected:
-    int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-        const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const override;
+    WrapObject::WrapAction wrapLine(
+            const SimTK::State& s,
+            const SimTK::Vec3& aPoint1,
+            const SimTK::Vec3& aPoint2,
+            const PathWrap& aPathWrap,
+            WrapResult& aWrapResult,
+            bool& aFlag) const override;
 
     void extendFinalizeFromProperties() override;
 
 private:
     void constructProperties();
-
     void initCircleWrapPts();
+
+    enum WrapDirectionEnum  // The prescribed direction of wrapping about the cylinders' z-axis
+    {
+        righthand,
+        lefthand
+    };
+
+    // Facilitate prescription of wrapping direction around obstacle: "righthand" or "lefthand".
+    // In traversing from the 1st point (P) to the 2nd (S), the path will wrap either
+    //    right-handed or left-handed about the obstacle's z-axis.
+    WrapDirectionEnum m_wrapDirection;
 
 //=============================================================================
 };  // END of class WrapCylinder

@@ -58,7 +58,6 @@ private:
         lefthand
     };
 
-
 public:
     // Name of body to which B cylinder is attached
     OpenSim_DECLARE_PROPERTY(wrapVcylHomeBodyName, std::string, "The name of body to which B cylinder is attached.");
@@ -76,15 +75,6 @@ public:
     OpenSim_DECLARE_PROPERTY(xyz_body_rotationVcyl, SimTK::Vec3, "The rotation of the second cylinder.");
     OpenSim_DECLARE_PROPERTY(length, double, "The length of the cylinder.");
 
-private:
-    PhysicalFrame* _wrapVcylHomeBody;
-    PhysicalFrame* _wrapUcylHomeBody;
-    WrapDirectionEnum m_wrapUcylDirection;
-    WrapDirectionEnum m_wrapVcylDirection;
-    // State of activity of each or both cylinders:  0=inactive, 1=U-Cylinder, 2=V-Cylinder, 3=Both Cylinders
-    int _activeState;
-    Model* _model;
-
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -93,23 +83,33 @@ private:
     //--------------------------------------------------------------------------
 public:
     WrapDoubleCylinderObst();
-    virtual ~WrapDoubleCylinderObst();
 
     const char* getWrapTypeName() const override;
     std::string getDimensionsString() const override;
 
     void connectToModelAndBody(Model& aModel, PhysicalFrame& aBody) override;
 protected:
-    int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-        const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const override;
+    WrapObject::WrapAction wrapLine(
+            const SimTK::State& s,
+            const SimTK::Vec3& aPoint1,
+            const SimTK::Vec3& aPoint2,
+            const PathWrap& aPathWrap,
+            WrapResult& aWrapResult,
+            bool& aFlag) const override;
 
     void extendFinalizeFromProperties() override;
 
 private:
     void constructProperties();
-
     void getVcylToUcylRotationMatrix(const SimTK::State& s, double M[9]) const;
 
+    PhysicalFrame* _wrapVcylHomeBody;
+    PhysicalFrame* _wrapUcylHomeBody;
+    WrapDirectionEnum m_wrapUcylDirection;
+    WrapDirectionEnum m_wrapVcylDirection;
+    // State of activity of each or both cylinders:  0=inactive, 1=U-Cylinder, 2=V-Cylinder, 3=Both Cylinders
+    int _activeState;
+    Model* _model;
 
 //=============================================================================
 };  // END of class WrapDoubleCylinderObst

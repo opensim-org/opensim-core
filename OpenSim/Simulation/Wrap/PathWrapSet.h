@@ -55,7 +55,7 @@ private:
 public:
     PathWrapSet();
     PathWrapSet(const PathWrapSet& aPathWrapSet);
-    ~PathWrapSet(void);
+
     //--------------------------------------------------------------------------
     // OPERATORS
     //--------------------------------------------------------------------------

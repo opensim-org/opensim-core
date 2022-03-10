@@ -52,14 +52,6 @@ WrapSphere::WrapSphere()
     constructProperties();
 }
 
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-WrapSphere::~WrapSphere()
-{
-}
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
@@ -161,10 +153,15 @@ double WrapSphere::getRadius() const
  * @param aFlag A flag for indicating errors, etc.
  * @return The status, as a WrapAction enum
  */
-int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-                                 const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
+WrapObject::WrapAction WrapSphere::wrapLine(
+        const SimTK::State& s,
+        const SimTK::Vec3& aPoint1,
+        const SimTK::Vec3& aPoint2,
+        const PathWrap& aPathWrap,
+        WrapResult& aWrapResult,
+        bool& aFlag) const
 {
-   double l1, l2, disc, a, b, c, a1, a2, j1, j2, j3, j4, r1r2,
+    double l1, l2, disc, a, b, c, a1, a2, j1, j2, j3, j4, r1r2,
             axis[4], angle, *r11, *r22;
     Vec3 ri, p2m, p1m, mp, r1n, r2n,
             p1p2, np2, hp2, r1m, r2m, y, z, n, r1a, r2a,
@@ -173,9 +170,10 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
     SimTK::Mat33 ra, aa;
     SimTK::Rotation rrx;
 
-   int i, j,/* maxit, */ return_code = wrapped;
-   bool far_side_wrap = false;
-   static SimTK::Vec3 origin(0,0,0);
+    int i, j;
+    WrapObject::WrapAction return_code = wrapped;
+    bool far_side_wrap = false;
+    static const SimTK::Vec3 origin(0,0,0);
 
     // In case you need any variables from the previous wrap, copy them from
     // the PathWrap into the WrapResult, re-normalizing the ones that were
@@ -538,6 +536,4 @@ void WrapSphere::generateDecorations(bool fixed, const ModelDisplayHints& hints,
             .setScale(1).setRepresentation(defaultAppearance.get_representation())
             .setBodyId(getFrame().getMobilizedBodyIndex()));
     }
-
-
 }

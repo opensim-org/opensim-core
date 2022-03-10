@@ -83,14 +83,14 @@ public:
     //--------------------------------------------------------------------------
 public:
     PathWrap();
-    ~PathWrap();
 
 #ifndef SWIG
-    void setStartPoint( const SimTK::State& s, int aIndex);
-    void setEndPoint( const SimTK::State& s, int aIndex);
+    void setStartPoint(const SimTK::State& s, int aIndex);
+    void setEndPoint(const SimTK::State& s, int aIndex);
 #endif
     int getStartPoint() const { return get_range(0); }
     int getEndPoint() const { return get_range(1); }
+
     const std::string& getWrapObjectName() const { return get_wrap_object(); }
     const WrapObject* getWrapObject() const { return _wrapObject; }
     void setWrapObject(WrapObject& aWrapObject);
@@ -98,11 +98,12 @@ public:
     const PathWrapPoint& getWrapPoint1() const {
         return getMemberSubcomponent<PathWrapPoint>(_wrapPoint1Ix);
     }
+    PathWrapPoint& updWrapPoint1() {
+        return updMemberSubcomponent<PathWrapPoint>(_wrapPoint1Ix);
+    }
+
     const PathWrapPoint& getWrapPoint2() const {
         return getMemberSubcomponent<PathWrapPoint>(_wrapPoint2Ix);
-    }
-    PathWrapPoint& updWrapPoint1() { 
-        return updMemberSubcomponent<PathWrapPoint>(_wrapPoint1Ix);
     }
     PathWrapPoint& updWrapPoint2() {
         return updMemberSubcomponent<PathWrapPoint>(_wrapPoint2Ix);

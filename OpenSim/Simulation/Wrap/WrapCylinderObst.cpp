@@ -54,14 +54,6 @@ WrapCylinderObst::WrapCylinderObst()
     constructProperties();
 }
 
-//_____________________________________________________________________________
-/**
-* Destructor.
-*/
-WrapCylinderObst::~WrapCylinderObst()
-{
-}
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
@@ -195,11 +187,16 @@ int WrapCylinderObst::getWrapDirection() const {
  * @param aFlag A flag for indicating errors, etc.
  * @return The status, as a WrapAction enum
  */
-int WrapCylinderObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-                        const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
+WrapObject::WrapAction WrapCylinderObst::wrapLine(
+        const SimTK::State& s,
+        const SimTK::Vec3& aPoint1,
+        const SimTK::Vec3& aPoint2,
+        const PathWrap& aPathWrap,
+        WrapResult& aWrapResult,
+        bool& aFlag) const
 {
-    SimTK::Vec3& aPointP = aPoint1;     double R=0.8*( m_wrapDirection==righthand ? get_radius() : -get_radius() );
-    SimTK::Vec3& aPointS = aPoint2;     double Qx,Qy,Qz, Tx,Ty,Tz;
+    SimTK::Vec3 aPointP = aPoint1;     double R=0.8*( m_wrapDirection==righthand ? get_radius() : -get_radius() );
+    SimTK::Vec3 aPointS = aPoint2;     double Qx,Qy,Qz, Tx,Ty,Tz;
 
     // Initialize return values
     aFlag = false;

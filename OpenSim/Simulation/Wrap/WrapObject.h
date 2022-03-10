@@ -79,12 +79,20 @@ public:
 
     enum WrapAction
     {
-        noWrap,          // the path segment did not intersect the wrap object
-        insideRadius,    // one or both path points are inside the wrap object
-        wrapped,         // successful wrap, but may not be 'best' path
-        mandatoryWrap    // successful wrap that must be used (e.g., both tangent
-    };                  // points are on the constrained side of the wrap object)
+        // no wrap, because the path segment did not intersect the wrap object
+        noWrap = 0,
 
+        // no wrap, because one or both path points are inside the wrap object
+        insideRadius,
+
+        // wrapped, but may not be the 'best' path
+        wrapped,
+
+        // wrapped, and *must* be used
+        //
+        // e.g. because both tangent points are on the constrained side of the wrap object
+        mandatoryWrap
+    };
 
 
 //=============================================================================
@@ -92,7 +100,6 @@ public:
 //=============================================================================
 public:
     WrapObject();
-    virtual ~WrapObject();
 
     // Use default copy and assignment operator
 
@@ -114,54 +121,57 @@ public:
     // TODO: total SIMM hack!
     virtual std::string getDimensionsString() const { return ""; }
 
-//=============================================================================
-// WRAPPING
-//=============================================================================
-/**
-* Calculate the wrapping of one path segment over one wrap object.
-* @param state   The State of the model
-* @param aPoint1 The first path point
-* @param aPoint2 The second path point
-* @param aPathWrap An object holding the parameters for this path/wrap-object pairing
-* @param aWrapResult The result of the wrapping (tangent points, etc.)
-* @return The status, as a WrapAction enum
-*/
-    int wrapPathSegment( const SimTK::State& state, 
-                         AbstractPathPoint& aPoint1, AbstractPathPoint& aPoint2,
-                         const PathWrap& aPathWrap,
-                         WrapResult& aWrapResult) const;
+    /**
+    * Calculate the wrapping of one path segment over one wrap object.
+    * @param state   The State of the model
+    * @param p1      The first path point
+    * @param p2      The second path point
+    * @param wrap    An object holding the parameters for this path/wrap-object pairing
+    * @param out     An output parameter that will contain the result of the wrapping (tangent points, etc.)
+    * @return The status, as a WrapAction enum
+    */
+    WrapAction wrapPathSegment(const SimTK::State& state,
+                               const AbstractPathPoint& p1,
+                               const AbstractPathPoint& p2,
+                               const PathWrap& wrap,
+                               WrapResult& out) const;
 
 protected:
-    virtual int wrapLine(const SimTK::State& state,
-                         SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-                         const PathWrap& aPathWrap,
-                         WrapResult& aWrapResult, bool& aFlag) const = 0;
+    // implemented by each wrap object geometry (e.g. WrapSphere)
+    virtual WrapAction wrapLine(const SimTK::State& state,
+                                const SimTK::Vec3& aPoint1,
+                                const SimTK::Vec3& aPoint2,
+                                const PathWrap& aPathWrap,
+                                WrapResult& aWrapResult,
+                                bool& aFlag) const = 0;
 
     /**
      * Compute the transform of the wrap geomerty w.r.t. the mobilized body 
      * it is attached to.
      */
     SimTK::Transform calcWrapGeometryTransformInBaseFrame() const;
-   /** Determine the appropriate values of _quadrant, _wrapAxis, and _wrapSign,
-     * based on the name of the quadrant. finalizeFromProperties() should be
-     * called whenever the quadrant property changes. */
+
+   /**
+    * Determine the appropriate values of _quadrant, _wrapAxis, and _wrapSign,
+    * based on the name of the quadrant. finalizeFromProperties() should be
+    * called whenever the quadrant property changes.
+    */
     void extendFinalizeFromProperties() override;
 
-    void updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
-        override;
+    void updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber) override;
 
 private:
     void constructProperties();
 
-    SimTK::ReferencePtr<const PhysicalFrame> _frame;
-
 protected:
-
     WrapQuadrant _quadrant{ WrapQuadrant::allQuadrants };
     int _wrapAxis{ 0 };
     int _wrapSign{ 1 };
 
     SimTK::Transform _pose;
+private:
+    SimTK::ReferencePtr<const PhysicalFrame> _frame;
+
 //=============================================================================
 };  // END of class WrapObject
 //=============================================================================

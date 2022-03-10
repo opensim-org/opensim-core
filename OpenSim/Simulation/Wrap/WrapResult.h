@@ -33,8 +33,7 @@ namespace OpenSim {
 
 /** @cond **/ // hide from Doxygen
 
-//=============================================================================
-//=============================================================================
+
 /**
  * A class for holding the results of a wrapping calculation.
  *
@@ -43,39 +42,17 @@ namespace OpenSim {
  */
 class OSIMSIMULATION_API WrapResult
 {
-
-//=============================================================================
-// DATA
-//=============================================================================
 public:
-    int startPoint;            // first point in muscle line that is wrapped
-    int endPoint;              // second point in muscle line that is wrapped
+    int startPoint;              // first point in muscle line that is wrapped
+    int endPoint;                // second point in muscle line that is wrapped
     Array<SimTK::Vec3> wrap_pts; // array of wrapping path points
-    double wrap_path_length;   // distance along curved r1->r2 path
+    double wrap_path_length;     // distance along curved r1->r2 path
     SimTK::Vec3 r1;              // wrap tangent point nearest to p1
     SimTK::Vec3 r2;              // wrap tangent point nearest to p2
     SimTK::Vec3 c1;              // intermediate point used by some wrap objects
     SimTK::Vec3 sv;              // intermediate point used by some wrap objects
-    // TODO(chrisdembia): This member variable is not copied by the copy
-    // constructor or copy assignment operator, so I've initialized it to NaN
-    // so we can more easily detect any bugs caused by not copying this
-    // variable.
     double factor = SimTK::NaN;  // scale factor used to normalize parameters
-    bool singleWrap = false; //Flag to indicate if a single wrap object to be considered so we can optimize
-    //=============================================================================
-// METHODS
-//=============================================================================
-    //--------------------------------------------------------------------------
-    // CONSTRUCTION
-    //--------------------------------------------------------------------------
-public:
-    WrapResult() = default;
-    virtual ~WrapResult() = default;
-    WrapResult(const WrapResult& other);
-    WrapResult& operator=(const WrapResult& aWrapResult);
-
-private:
-    void copyData(const WrapResult& aWrapResult);
+    bool singleWrap = false;     // indicates if a single wrap object to be considered so we can optimize
 
 //=============================================================================
 };  // END of class WrapResult

@@ -54,7 +54,6 @@ public:
 //=============================================================================
 public:
     WrapEllipsoid();
-    virtual ~WrapEllipsoid();
 
     const char* getWrapTypeName() const override;
     std::string getDimensionsString() const override;
@@ -65,29 +64,65 @@ public:
     void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
 protected:
-    int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-        const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const override;
+    WrapObject::WrapAction wrapLine(
+            const SimTK::State& s,
+            const SimTK::Vec3& aPoint1,
+            const SimTK::Vec3& aPoint2,
+            const PathWrap& aPathWrap,
+            WrapResult& aWrapResult,
+            bool& aFlag) const override;
 
     /// Implement generateDecorations to draw geometry in visualizer
-    void generateDecorations(bool fixed, const ModelDisplayHints& hints, const SimTK::State& state,
-        SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const override;
+    void generateDecorations(
+            bool fixed,
+            const ModelDisplayHints& hints,
+            const SimTK::State& state,
+            SimTK::Array_<SimTK::DecorativeGeometry>& appendToThis) const override;
 
     void extendFinalizeFromProperties() override;
 
 private:
     void constructProperties();
 
-    int calcTangentPoint(double p1e, SimTK::Vec3& r1, SimTK::Vec3& p1, SimTK::Vec3& m,
-                                                SimTK::Vec3& a, SimTK::Vec3& vs, double vs4) const;
-    void CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, SimTK::Vec3& m, SimTK::Vec3& a, 
-                                                          SimTK::Vec3& vs, double vs4, bool far_side_wrap,
-                                                          WrapResult& aWrapResult) const;
-    double findClosestPoint(double a, double b, double c,
-        double u, double v, double w,
-        double* x, double* y, double* z,
-        int specialCaseAxis = -1) const;
-    double closestPointToEllipse(double a, double b, double u,
-        double v, double* x, double* y) const;
+    int calcTangentPoint(
+            double p1e,
+            SimTK::Vec3& r1,
+            SimTK::Vec3& p1,
+            SimTK::Vec3& m,
+            SimTK::Vec3& a,
+            SimTK::Vec3& vs,
+            double vs4) const;
+
+    void CalcDistanceOnEllipsoid(
+            SimTK::Vec3& r1,
+            SimTK::Vec3& r2,
+            SimTK::Vec3& m,
+            SimTK::Vec3& a,
+            SimTK::Vec3& vs,
+            double vs4,
+            bool far_side_wrap,
+            WrapResult& aWrapResult) const;
+
+    double findClosestPoint(
+            double a,
+            double b,
+            double c,
+            double u,
+            double v,
+            double w,
+            double* x,
+            double* y,
+            double* z,
+            int specialCaseAxis = -1) const;
+
+    double closestPointToEllipse(
+            double a,
+            double b,
+            double u,
+            double v,
+            double* x,
+            double* y) const;
+
 //=============================================================================
 };  // END of class WrapEllipsoid
 //=============================================================================
