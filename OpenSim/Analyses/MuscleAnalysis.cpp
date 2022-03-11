@@ -141,7 +141,7 @@ void MuscleAnalysis::setNull()
     _muscleListProp.getValueStrArray().updElt(0) = "all";
     _coordinateListProp.getValueStrArray().setSize(1);
     _coordinateListProp.getValueStrArray().updElt(0) = "all";
-    _computeMoments = true;
+    setComputeMoments(true);
 }
 //_____________________________________________________________________________
 /**
@@ -205,7 +205,7 @@ void MuscleAnalysis::allocateStorageObjects()
     _muscleArray.setSize(0);
 
     // FOR MOMENT ARMS AND MOMENTS
-    if(_computeMoments) {
+    if(getComputeMoments()) {
         const CoordinateSet& qSet = _model->getCoordinateSet();
         _coordinateList = _coordinateListProp.getValueStrArray();
 
@@ -409,7 +409,6 @@ MuscleAnalysis& MuscleAnalysis::operator=(const MuscleAnalysis &aAnalysis)
     _muscleListProp = aAnalysis._muscleListProp;
     _coordinateListProp = aAnalysis._coordinateListProp;
     _computeMomentsProp = aAnalysis._computeMomentsProp;
-    _computeMoments = _computeMomentsProp.getValueBool();
     allocateStorageObjects();
 
     return (*this);
@@ -639,7 +638,7 @@ int MuscleAnalysis::record(const SimTK::State& s)
     _tendonPowerStore->append(tReal,tendonPower.getSize(),&tendonPower[0]);
     _musclePowerStore->append(tReal,muscPower.getSize(),&muscPower[0]);
 
-    if (_computeMoments){
+    if (getComputeMoments()){
         // LOOP OVER ACTIVE MOMENT ARM STORAGE OBJECTS
         Coordinate *q = NULL;
         Storage *maStore=NULL, *mStore=NULL;
@@ -699,7 +698,7 @@ int MuscleAnalysis::begin(const SimTK::State&s )
     // RECORD
     int status = 0;
     // Make sure coordinates are not locked
-    if (_computeMoments){
+    if (getComputeMoments()){
     // LOOP OVER ACTIVE MOMENT ARM STORAGE OBJECTS
         Coordinate *q = NULL;
         int nq = _momentArmStorageArray.getSize();
