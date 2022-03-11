@@ -12,6 +12,10 @@ v4.4
 - Fixed an issue with SWIG with `OpenSim::Body::getRotationInGround()` where it would return an object without the correct `SimTK::Rotation` methods.
 - Fixed OpenSim::Arrow start_point property being ignored
 - Fixed objects being set as not up to date with their properties by finalizeFromProperties
+- Changed API of `OpenSim::WrapObject::wrapLine` to accept its point arguments as `const SimTK::Vec3&` (previously: `SimTK::Vec3&`)
+- Changed API of `OpenSim::WrapObject::wrapLine` to return a `OpenSim::WrapObject::WrapAction` (previously: returned an `int`)
+- Changed the in-parameters in the `OpenSim::WrapMath` functions (e.g. `SimTK::Vec3&`) to now be const-qualified (previously: they were mutable)
+- Moved previously private-member functions in `OpenSim::WrapTorus` (e.g. `OpenSim::WrapTorus::calcCircleResids`) into the implementation file as compilation-unit-local functions
 
 v4.3
 ====
