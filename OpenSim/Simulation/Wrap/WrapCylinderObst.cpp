@@ -195,8 +195,8 @@ WrapObject::WrapAction WrapCylinderObst::wrapLine(
         WrapResult& aWrapResult,
         bool& aFlag) const
 {
-    SimTK::Vec3 aPointP = aPoint1;     double R=0.8*( m_wrapDirection==righthand ? get_radius() : -get_radius() );
-    SimTK::Vec3 aPointS = aPoint2;     double Qx,Qy,Qz, Tx,Ty,Tz;
+    const SimTK::Vec3& aPointP = aPoint1;     double R=0.8*( m_wrapDirection==righthand ? get_radius() : -get_radius() );
+    const SimTK::Vec3& aPointS = aPoint2;     double Qx,Qy,Qz, Tx,Ty,Tz;
 
     // Initialize return values
     aFlag = false;
