@@ -25,7 +25,9 @@
 // INCLUDES
 //=============================================================================
 #include "PathWrap.h"
+
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
 
 //=============================================================================
 // STATICS
@@ -40,7 +42,14 @@ using namespace OpenSim;
 /**
  * Default constructor.
  */
-PathWrap::PathWrap() : ModelComponent()
+PathWrap::PathWrap() :
+    ModelComponent(),
+    _method{},
+    _wrapObject{nullptr},
+    _path{nullptr},
+    _previousWrap{},
+    _wrapPoint1Ix{constructSubcomponent<PathWrapPoint>("pwpt1")},
+    _wrapPoint2Ix{constructSubcomponent<PathWrapPoint>("pwpt2")}
 {
     setNull();
     constructProperties();
@@ -161,6 +170,26 @@ void PathWrap::setWrapObject(WrapObject& aWrapObject)
 {
     _wrapObject = &aWrapObject;
     upd_wrap_object() = aWrapObject.getName();
+}
+
+const PathWrapPoint& PathWrap::getWrapPoint1() const
+{
+    return getMemberSubcomponent<PathWrapPoint>(_wrapPoint1Ix);
+}
+
+PathWrapPoint& PathWrap::updWrapPoint1()
+{
+    return updMemberSubcomponent<PathWrapPoint>(_wrapPoint1Ix);
+}
+
+const PathWrapPoint& PathWrap::getWrapPoint2() const
+{
+    return getMemberSubcomponent<PathWrapPoint>(_wrapPoint2Ix);
+}
+
+PathWrapPoint& PathWrap::updWrapPoint2()
+{
+    return updMemberSubcomponent<PathWrapPoint>(_wrapPoint2Ix);
 }
 
 void PathWrap::setMethod(WrapMethod aMethod)

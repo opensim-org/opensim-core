@@ -23,9 +23,12 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-// INCLUDE
-#include "PathWrapPoint.h"
-#include "WrapResult.h"
+#include <OpenSim/Common/Component.h>
+#include <OpenSim/Simulation/Model/ModelComponent.h>
+#include <OpenSim/Simulation/Wrap/WrapResult.h>
+#include <SimTKcommon.h>
+
+#include <string>
 
 #ifdef SWIG
     #ifdef OSIMSIMULATION_API
@@ -39,6 +42,7 @@ namespace OpenSim {
 class Model;
 class WrapObject;
 class GeometryPath;
+class PathWrapPoint;
 
 /** @cond **/ // hide from Doxygen
 
@@ -91,22 +95,16 @@ public:
 #endif
     int getStartPoint() const { return get_range(0); }
     int getEndPoint() const { return get_range(1); }
+
     const std::string& getWrapObjectName() const { return get_wrap_object(); }
     const WrapObject* getWrapObject() const { return _wrapObject; }
     void setWrapObject(WrapObject& aWrapObject);
 
-    const PathWrapPoint& getWrapPoint1() const {
-        return getMemberSubcomponent<PathWrapPoint>(_wrapPoint1Ix);
-    }
-    const PathWrapPoint& getWrapPoint2() const {
-        return getMemberSubcomponent<PathWrapPoint>(_wrapPoint2Ix);
-    }
-    PathWrapPoint& updWrapPoint1() { 
-        return updMemberSubcomponent<PathWrapPoint>(_wrapPoint1Ix);
-    }
-    PathWrapPoint& updWrapPoint2() {
-        return updMemberSubcomponent<PathWrapPoint>(_wrapPoint2Ix);
-    }
+    const PathWrapPoint& getWrapPoint1() const;
+    PathWrapPoint& updWrapPoint1();
+
+    const PathWrapPoint& getWrapPoint2() const;
+    PathWrapPoint& updWrapPoint2();
 
     WrapMethod getMethod() const { return _method; }
     void setMethod(WrapMethod aMethod);
@@ -129,10 +127,8 @@ private:
 
     WrapResult _previousWrap;  // results from previous wrapping
 
-    MemberSubcomponentIndex _wrapPoint1Ix{
-        constructSubcomponent<PathWrapPoint>("pwpt1") };
-    MemberSubcomponentIndex _wrapPoint2Ix{
-        constructSubcomponent<PathWrapPoint>("pwpt2") };
+    MemberSubcomponentIndex _wrapPoint1Ix;
+    MemberSubcomponentIndex _wrapPoint2Ix;
 //=============================================================================
 };  // END of class PathWrap
 //=============================================================================

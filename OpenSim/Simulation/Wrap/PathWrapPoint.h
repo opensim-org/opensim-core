@@ -24,7 +24,9 @@
  * -------------------------------------------------------------------------- */
 
 // INCLUDE
-#include <OpenSim/Simulation/Model/PathPoint.h>
+#include <OpenSim/Simulation/Model/AbstractPathPoint.h>
+#include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/Array.h>
 
 namespace OpenSim {
 
@@ -39,35 +41,51 @@ class WrapObject;
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMSIMULATION_API PathWrapPoint : public PathPoint {
-OpenSim_DECLARE_CONCRETE_OBJECT(PathWrapPoint, PathPoint);
+class OSIMSIMULATION_API PathWrapPoint final : public AbstractPathPoint {
+OpenSim_DECLARE_CONCRETE_OBJECT(PathWrapPoint, AbstractPathPoint);
 //=============================================================================
 // METHODS
 //=============================================================================
-    //--------------------------------------------------------------------------
-    // CONSTRUCTION
-    //--------------------------------------------------------------------------
 public:
-    PathWrapPoint() {}
-    virtual ~PathWrapPoint() {}
+    PathWrapPoint();
 
-    Array<SimTK::Vec3>& getWrapPath() { return _wrapPath; }
-    double getWrapLength() const { return _wrapPathLength; }
-    void setWrapLength(double aLength) { _wrapPathLength = aLength; }
-    const WrapObject* getWrapObject() const override { return _wrapObject.get(); }
-    void setWrapObject(const WrapObject* wrapObject) { _wrapObject.reset(wrapObject); }
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+
+    const Array<SimTK::Vec3>& getWrapPath(const SimTK::State& s) const;
+    void setWrapPath(const SimTK::State& s, const Array<SimTK::Vec3>& src) const;
+    void clearWrapPath(const SimTK::State& s) const;
+
+    double getWrapLength(const SimTK::State& s) const;
+    void setWrapLength(const SimTK::State& s, double aLength) const;
+
+    const WrapObject* getWrapObject() const override;
+    void setWrapObject(const WrapObject* wrapObject);
+
+    SimTK::Vec3 getLocation(const SimTK::State& s) const override;
+    void setLocation(const SimTK::State& s, const SimTK::Vec3& loc) const;
+
+    SimTK::Vec3 getdPointdQ(const SimTK::State& s) const override;
+
+private:
+    SimTK::Vec3 calcLocationInGround(const SimTK::State& state) const override;
+    SimTK::Vec3 calcVelocityInGround(const SimTK::State& state) const override;
+    SimTK::Vec3 calcAccelerationInGround(const SimTK::State& state) const override;
 
 //=============================================================================
 // DATA
 //=============================================================================
-private:
-    // points defining muscle path on surface of wrap object
-    Array<SimTK::Vec3> _wrapPath{};
-    // length of _wrapPath TODO this should be a cache variable!
-    double _wrapPathLength{ 0.0 };
+
+    // points defining the wrapped muscle path on surface of wrap object
+    mutable CacheVariable<Array<SimTK::Vec3>> _wrapPath;
+
+    // overall length of _wrapPath
+    mutable CacheVariable<double> _wrapPathLength;
+
+    // location of the first tangent point of the path wrap (i.e. where to connect to)
+    mutable CacheVariable<SimTK::Vec3> _location;
 
     // the wrap object this point is on
-    SimTK::ReferencePtr<const WrapObject> _wrapObject; 
+    SimTK::ReferencePtr<const WrapObject> _wrapObject;
 
 //=============================================================================
 };  // END of class PathWrapPoint

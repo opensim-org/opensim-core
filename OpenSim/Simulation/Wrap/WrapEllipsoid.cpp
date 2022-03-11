@@ -31,6 +31,7 @@
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/ModelDisplayHints.h>
 #include <OpenSim/Common/ScaleSet.h>
+#include <OpenSim/Simulation/Model/PhysicalFrame.h>
 
 //=============================================================================
 // STATICS
