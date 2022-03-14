@@ -554,7 +554,7 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
         GeometryPath* geomPath = paths[i];
         const PathWrapSet& wrapSet = geomPath->getWrapSet();
         const PathPointSet& viaSet = geomPath->getPathPointSet();
-        Array<AbstractPathPoint*> activePathPoints = geomPath->getCurrentPath(si);
+        Array<const AbstractPathPoint*> activePathPoints = geomPath->getCurrentPath(si);
 
         AbstractPathPoint* orgPoint = &viaSet[0];
         AbstractPathPoint* insPoint = &viaSet[viaSet.getSize()-1];
@@ -566,7 +566,7 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
 
         int numVias = 0, numSurfs = 0;
         for (int j = 0; j < activePathPoints.getSize(); ++j) {
-            AbstractPathPoint* pp = activePathPoints[j];
+            const AbstractPathPoint* pp = activePathPoints[j];
             cout << "pp" << j << " = " << pp->getName() << " @ "
                  << pp->getParentFrame().getName() << ", loc = "
                  << pp->getLocation(si) << endl;
@@ -618,7 +618,7 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
         int obsIdx = 0;
         int viaPtIdx = 1; // skip first (origin) point
         for (int j = 1; j < activePathPoints.getSize()-1; ++j) { // skip first (origin) and last (insertion)
-            AbstractPathPoint* pp = activePathPoints[j];
+            const AbstractPathPoint* pp = activePathPoints[j];
             if (*pp == viaSet[viaPtIdx]) {
                 viaPtIdx++;
                 obsIdx++;
@@ -632,7 +632,7 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
                         obs->isActive = true;
                         // pp and next pp are wrap points
                         Transform X_SB = obs->X_BS.invert();
-                        AbstractPathPoint* pp_next = activePathPoints[++i]; // increment to next pp
+                        const AbstractPathPoint* pp_next = activePathPoints[++i]; // increment to next pp
                         obs->P_S = X_SB*pp->getLocation(si);
                         obs->Q_S = X_SB*pp_next->getLocation(si);
                         cableInfo.obstacles.insert(obsIdx++, *obs);
