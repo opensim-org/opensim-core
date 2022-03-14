@@ -325,8 +325,6 @@ private:
 
     void constructProperties();
 
-    Array<const AbstractPathPoint*>& populatePathPtrsCache(const std::vector<ComponentPath>&) const;
-
     void applyWrapObjects(const SimTK::State&, Array<const AbstractPathPoint*>&) const;
 
     double calcLengtheningSpeed(const SimTK::State&, const Array<const AbstractPathPoint*>&) const;
@@ -377,12 +375,16 @@ private:
     // cache variable for the path's lengthening speed
     mutable CacheVariable<double> _speedCV;
 
-    // cache variable for (component paths to) the path's points
+    // cache variable for the (order of) the path's points
     //
     // populated by the implementation whenever the path's points are computed. The
-    // actual data for the points are held elsewhere in the model tree and must be
-    // looked up via this (value-type) path.
-    mutable CacheVariable<std::vector<ComponentPath>> _currentPathAbspathCV;
+    // actual data for the points are either held directly (i.e. in PathPointSet) or
+    // as sub elements of directly-held PathWrap objects
+    struct PathElement {
+        int index;
+        enum class Type { InPathPointSet, PathWrapPt1, PathWrapPt2 } type;
+    };
+    mutable CacheVariable<std::vector<PathElement>> _currentPathElsCV;
 
     // cache variable for the color of the path (e.g. red, blue)
     mutable CacheVariable<SimTK::Vec3> _colorCV;
