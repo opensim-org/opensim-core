@@ -97,7 +97,7 @@ public:
     int getEndPoint() const { return get_range(1); }
 
     const std::string& getWrapObjectName() const { return get_wrap_object(); }
-    const WrapObject* getWrapObject() const { return _wrapObject; }
+    const WrapObject* getWrapObject() const { return _wrapObject.get(); }
     void setWrapObject(WrapObject& aWrapObject);
 
     const PathWrapPoint& getWrapPoint1() const;
@@ -122,8 +122,8 @@ private:
 private:
     WrapMethod _method;
 
-    const WrapObject* _wrapObject;
-    const GeometryPath* _path;
+    SimTK::ReferencePtr<const WrapObject> _wrapObject;
+    SimTK::ReferencePtr<const GeometryPath> _path;
 
     WrapResult _previousWrap;  // results from previous wrapping
 
