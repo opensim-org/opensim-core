@@ -81,9 +81,9 @@ OpenSim::GeometryPath::GeometryPath() : ModelComponent(), _preScaleLength(0.0)
     constructProperties();
 }
 OpenSim::GeometryPath::GeometryPath(const GeometryPath&) = default;
-OpenSim::GeometryPath::GeometryPath(GeometryPath&&) noexcept = default;
+OpenSim::GeometryPath::GeometryPath(GeometryPath&&) = default;
 OpenSim::GeometryPath& OpenSim::GeometryPath::operator=(const GeometryPath&) = default;
-OpenSim::GeometryPath& OpenSim::GeometryPath::operator=(GeometryPath&&) noexcept = default;
+OpenSim::GeometryPath& OpenSim::GeometryPath::operator=(GeometryPath&&) = default;
 OpenSim::GeometryPath::~GeometryPath() noexcept = default;
 
 const OpenSim::PathPointSet& OpenSim::GeometryPath::getPathPointSet() const

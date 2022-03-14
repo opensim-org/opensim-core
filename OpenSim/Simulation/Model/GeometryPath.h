@@ -96,9 +96,9 @@ public:
 
     GeometryPath();
     GeometryPath(const GeometryPath&);
-    GeometryPath(GeometryPath&&) noexcept;
+    GeometryPath(GeometryPath&&);
     GeometryPath& operator=(const GeometryPath&);
-    GeometryPath& operator=(GeometryPath&&) noexcept;
+    GeometryPath& operator=(GeometryPath&&);
     ~GeometryPath() noexcept;
 
     const PathPointSet& getPathPointSet() const;
