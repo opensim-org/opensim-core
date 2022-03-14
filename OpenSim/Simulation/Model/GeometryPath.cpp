@@ -268,6 +268,7 @@ void OpenSim::GeometryPath::moveUpPathWrap(const SimTK::State& s, int aIndex)
         PathWrap& wrap = get_PathWrapSet().get(aIndex);
         upd_PathWrapSet().remove(aIndex);
         upd_PathWrapSet().insert(aIndex - 1, &wrap);
+
         upd_PathWrapSet().setMemoryOwner(true);
     }
 }
@@ -281,6 +282,7 @@ void OpenSim::GeometryPath::moveDownPathWrap(const SimTK::State& s, int aIndex)
         PathWrap& wrap = get_PathWrapSet().get(aIndex);
         upd_PathWrapSet().remove(aIndex);
         upd_PathWrapSet().insert(aIndex + 1, &wrap);
+
         upd_PathWrapSet().setMemoryOwner(true);
     }
 }
@@ -526,128 +528,6 @@ void OpenSim::GeometryPath::addInEquivalentForces(
 {
     using SimTK::Vec3;
 
-    constexpr bool useOld = false;
-
-    if (useOld) {
-
-    const AbstractPathPoint* start = NULL;
-    const AbstractPathPoint* end = NULL;
-    const SimTK::MobilizedBody* bo = NULL;
-    const SimTK::MobilizedBody* bf = NULL;
-    const Array<const AbstractPathPoint*>& currentPath = getCurrentPath(s);
-    int np = currentPath.getSize();
-
-    const SimTK::SimbodyMatterSubsystem& matter =
-                                        getModel().getMatterSubsystem();
-
-    // start point, end point,  direction, and force vectors in ground
-    Vec3 po(0), pf(0), dir(0), force(0);
-    // partial velocity of point in body expressed in ground
-    Vec3 dPodq_G(0), dPfdq_G(0);
-
-    // gen force (torque) due to moving point under tension
-    double fo, ff;
-
-    for (int i = 0; i < np-1; ++i) {
-        start = currentPath[i];
-        end = currentPath[i+1];
-
-        bo = &start->getParentFrame().getMobilizedBody();
-        bf = &end->getParentFrame().getMobilizedBody();
-
-        if (bo != bf) {
-            // Find the positions of start and end in the inertial frame.
-            po = start->getLocationInGround(s);
-            pf = end->getLocationInGround(s);
-
-            // Form a vector from start to end, in the inertial frame.
-            dir = (pf - po);
-
-            // Check that the two points are not coincident.
-            // This can happen due to infeasible wrapping of the path,
-            // when the origin or insertion enters the wrapping surface.
-            // This is a temporary fix, since the wrap algorithm should
-            // return NaN for the points and/or throw an Exception- aseth
-            if (dir.norm() < SimTK::SignificantReal){
-                dir = dir*SimTK::NaN;
-            }
-            else{
-                dir = dir.normalize();
-            }
-
-            force = tension*dir;
-
-            const MovingPathPoint* mppo =
-                dynamic_cast<const MovingPathPoint *>(start);
-
-            // do the same for the end point of this segment of the path
-            const MovingPathPoint* mppf =
-                dynamic_cast<const MovingPathPoint *>(end);
-
-            // add in the tension point forces to body forces
-            if (mppo) {// moving path point location is a function of the state
-                // transform of the frame of the point to the base mobilized body
-                auto X_BF = mppo->getParentFrame().findTransformInBaseFrame();
-                bo->applyForceToBodyPoint(s, X_BF*mppo->getLocation(s), force,
-                    bodyForces);
-            }
-            else {
-                // transform of the frame of the point to the base mobilized body
-                auto X_BF = start->getParentFrame().findTransformInBaseFrame();
-                bo->applyForceToBodyPoint(s, X_BF*start->getLocation(s), force,
-                    bodyForces);
-            }
-
-            if (mppf) {// moving path point location is a function of the state
-                // transform of the frame of the point to the base mobilized body
-                auto X_BF = mppf->getParentFrame().findTransformInBaseFrame();
-                bf->applyForceToBodyPoint(s, X_BF*mppf->getLocation(s), -force,
-                    bodyForces);
-            }
-            else {
-                // transform of the frame of the point to the base mobilized body
-                auto X_BF = end->getParentFrame().findTransformInBaseFrame();
-                bf->applyForceToBodyPoint(s, X_BF*end->getLocation(s), -force,
-                    bodyForces);
-            }
-
-            // Now account for the work being done by virtue of the moving
-            // path point motion relative to the body it is on
-            if(mppo){
-                // torque (genforce) contribution due to relative movement
-                // of a via point w.r.t. the body it is connected to.
-                dPodq_G = bo->expressVectorInGroundFrame(s, start->getdPointdQ(s));
-                fo = ~dPodq_G*force;
-
-                // get the mobilized body the coordinate is couple to.
-                const SimTK::MobilizedBody& mpbod =
-                    matter.getMobilizedBody(mppo->getXCoordinate().getBodyIndex());
-
-                // apply the generalized (mobility) force to the coordinate's body
-                mpbod.applyOneMobilityForce(s,
-                    mppo->getXCoordinate().getMobilizerQIndex(),
-                    fo, mobilityForces);
-            }
-
-            if(mppf){
-                dPfdq_G = bf->expressVectorInGroundFrame(s, end->getdPointdQ(s));
-                ff = ~dPfdq_G*(-force);
-
-                // get the mobilized body the coordinate is couple to.
-                const SimTK::MobilizedBody& mpbod =
-                    matter.getMobilizedBody(mppf->getXCoordinate().getBodyIndex());
-
-                mpbod.applyOneMobilityForce(s,
-                    mppf->getXCoordinate().getMobilizerQIndex(),
-                    ff, mobilityForces);
-            }
-        }
-    }
-
-    }
-
-    else {
-
     const Array<const AbstractPathPoint*>& currentPath = getCurrentPath(s);
     int np = currentPath.getSize();
 
@@ -731,7 +611,6 @@ void OpenSim::GeometryPath::addInEquivalentForces(
                 mobilityForces);
         }
     }
-    }
 }
 
 double OpenSim::GeometryPath::computeMomentArm(
@@ -770,8 +649,9 @@ void OpenSim::GeometryPath::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
 
-    for (int i = 0; i < get_PathWrapSet().getSize(); ++i) {
-        if (upd_PathWrapSet()[i].getName().empty()) {
+    const PathWrapSet& pws = get_PathWrapSet();
+    for (int i = 0; i < pws.getSize(); ++i) {
+        if (pws[i].getName().empty()) {
             std::stringstream label;
             label << "pathwrap_" << i;
             upd_PathWrapSet()[i].setName(label.str());
@@ -955,12 +835,18 @@ void OpenSim::GeometryPath::updateFromXMLNode(
 void OpenSim::GeometryPath::constructProperties()
 {
     constructProperty_PathPointSet(PathPointSet());
-
     constructProperty_PathWrapSet(PathWrapSet());
     
     Appearance appearance;
     appearance.set_color(SimTK::Gray);
     constructProperty_Appearance(appearance);
+}
+
+static void ResetWrapResult(OpenSim::WrapResult& wr)
+{
+    wr.wrap_pts.setSize(0);
+    wr.factor = SimTK::NaN;
+    wr.singleWrap = false;
 }
 
 /*
@@ -970,39 +856,46 @@ void OpenSim::GeometryPath::applyWrapObjects(
     const SimTK::State& s,
     Array<const AbstractPathPoint*>& path) const
 {
-    int wrapSetSize = get_PathWrapSet().getSize();
-    if (wrapSetSize < 1)
+    const PathWrapSet& pws = get_PathWrapSet();
+
+    if (pws.getSize() <= 0) {
         return;
+    }
+
+    const PathPointSet& pps = get_PathPointSet();
 
     WrapResult best_wrap;
+    WrapResult attemptedWrap;
     Array<int> result, order;
 
-    result.setSize(wrapSetSize);
-    order.setSize(wrapSetSize);
+    result.setSize(pws.getSize());
+    order.setSize(pws.getSize());
 
     // Set the initial order to be the order they are listed in the path.
-    for (int i = 0; i < wrapSetSize; i++)
+    for (int i = 0; i < pws.getSize(); i++) {
         order[i] = i;
+    }
 
     // If there is only one wrap object, calculate the wrapping only once.
     // If there are two or more objects, perform up to 8 iterations where
     // the result from one wrap object is used as the starting point for
     // the next wrap.
-    const int maxIterations = wrapSetSize < 2 ? 1 : 8;
+    const int maxIterations = pws.getSize() < 2 ? 1 : 8;
+
     double last_length = SimTK::Infinity;
     for (int kk = 0; kk < maxIterations; kk++)
     {
-        for (int i = 0; i < wrapSetSize; i++)
+        for (int i = 0; i < pws.getSize(); i++)
         {
             result[i] = 0;
-            PathWrap& ws = get_PathWrapSet().get(order[i]);
+            PathWrap& ws = pws.get(order[i]);
             const WrapObject* wo = ws.getWrapObject();
-            best_wrap.wrap_pts.setSize(0);
+            ResetWrapResult(best_wrap);
             double min_length_change = SimTK::Infinity;
 
             // First remove this object's wrapping points from the current path.
             for (int j = 0; j <path.getSize(); j++) {
-                if( path.get(j) == &ws.getWrapPoint1()) {
+                if ( path.get(j) == &ws.getWrapPoint1()) {
                     path.remove(j); // remove the first wrap point
                     path.remove(j); // remove the second wrap point
                     break;
@@ -1027,28 +920,28 @@ void OpenSim::GeometryPath::applyWrapObjects(
                                             ? 0
                                             : ws.getStartPoint() - 1);
                 const int wrapEnd   = (ws.getEndPoint() < 1
-                                            ? get_PathPointSet().getSize() - 1
+                                            ? pps.getSize() - 1
                                             : ws.getEndPoint() - 1);
 
                 // 2. Scan forward from wrapStart in get_PathPointSet() to find
                 // the first point that is active. Store a pointer to it (smp).
                 int jfwd = wrapStart;
                 for (; jfwd <= wrapEnd; jfwd++)
-                    if (get_PathPointSet().get(jfwd).isActive(s))
+                    if (pps.get(jfwd).isActive(s))
                         break;
                 if (jfwd > wrapEnd) // there are no active points in the path
                     return;
-                const AbstractPathPoint* const smp = &get_PathPointSet().get(jfwd);
+                const AbstractPathPoint* const smp = &pps.get(jfwd);
 
                 // 3. Scan backwards from wrapEnd in get_PathPointSet() to find
                 // the last point that is active. Store a pointer to it (emp).
                 int jrev = wrapEnd;
                 for (; jrev >= wrapStart; jrev--)
-                    if (get_PathPointSet().get(jrev).isActive(s))
+                    if (pps.get(jrev).isActive(s))
                         break;
                 if (jrev < wrapStart) // there are no active points in the path
                     return;
-                const AbstractPathPoint* const emp = &get_PathPointSet().get(jrev);
+                const AbstractPathPoint* const emp = &pps.get(jrev);
 
                 // 4. Now find the indices of smp and emp in _currentPath.
                 int start=-1, end=-1;
@@ -1078,15 +971,16 @@ void OpenSim::GeometryPath::applyWrapObjects(
                         || (   path.get(pt1)->getWrapObject()
                             != path.get(pt2)->getWrapObject()))
                     {
-                        WrapResult wr;
-                        wr.startPoint = pt1;
-                        wr.endPoint   = pt2;
-                        wr.singleWrap = (wrapSetSize==1);
+                        ResetWrapResult(attemptedWrap);
+                        attemptedWrap.startPoint = pt1;
+                        attemptedWrap.endPoint   = pt2;
+                        attemptedWrap.singleWrap = pws.getSize() == 1;
                         result[i] = wo->wrapPathSegment(s,
                                                         const_cast<AbstractPathPoint&>(*path.get(pt1)),
                                                         const_cast<AbstractPathPoint&>(*path.get(pt2)),
                                                         ws,
-                                                        wr);
+                                                        attemptedWrap);
+
                         if (result[i] == WrapObject::mandatoryWrap) {
                             // "mandatoryWrap" means the path actually
                             // intersected the wrap object. In this case, you
@@ -1095,10 +989,10 @@ void OpenSim::GeometryPath::applyWrapObjects(
                             // that intersects the object, the first one is
                             // taken as the mandatory wrap (this is considered
                             // an ill-conditioned case).
-                            best_wrap = wr;
+                            best_wrap = attemptedWrap;
                             // Store the best wrap in the pathWrap for possible
                             // use next time.
-                            ws.setPreviousWrap(wr);
+                            ws.setPreviousWrap(attemptedWrap);
                             break;
                         }  else if (result[i] == WrapObject::wrapped) {
                             // "wrapped" means the path segment was wrapped over
@@ -1106,19 +1000,16 @@ void OpenSim::GeometryPath::applyWrapObjects(
                             // segments as well to see if one
                             // wraps with a smaller length change.
                             double path_length_change =
-                                calcPathLengthChange(s, *wo, wr, path);
+                                calcPathLengthChange(s, *wo, attemptedWrap, path);
                             if (path_length_change < min_length_change)
                             {
-                                best_wrap = wr;
+                                best_wrap = attemptedWrap;
                                 // Store the best wrap in the pathWrap for
                                 // possible use next time
-                                ws.setPreviousWrap(wr);
+                                ws.setPreviousWrap(attemptedWrap);
                                 min_length_change = path_length_change;
                             } else {
-                                // The wrap was not shorter than the current
-                                // minimum, so just free the wrap points that
-                                // were allocated.
-                                wr.wrap_pts.setSize(0);
+                                // The wrap was not shorter than the current minimum
                             }
                         } else {
                             // Nothing to do.
@@ -1135,7 +1026,6 @@ void OpenSim::GeometryPath::applyWrapObjects(
                 } else {
                     // If wrapping did occur, copy wrap info into the PathStruct.
                     ws.updWrapPoint1().clearWrapPath(s);
-
                     ws.updWrapPoint2().setWrapPath(s, best_wrap.wrap_pts);
 
                     // In OpenSim, all conversion to/from the wrap object's
@@ -1168,7 +1058,7 @@ void OpenSim::GeometryPath::applyWrapObjects(
             last_length = length;
         }
 
-        if (kk == 0 && wrapSetSize > 1) {
+        if (kk == 0 && pws.getSize() > 1) {
             // If the first wrap was a no wrap, and the second was a no wrap
             // because a point was inside the object, switch the order of
             // the first two objects and try again.
@@ -1179,9 +1069,9 @@ void OpenSim::GeometryPath::applyWrapObjects(
                 order[1] = 0;
 
                 // remove wrap object 0 from the list of path points
-                PathWrap& ws = get_PathWrapSet().get(0);
+                const PathWrap& ws = pws.get(0);
                 for (int j = 0; j < path.getSize(); j++) {
-                    if (path.get(j) == &ws.updWrapPoint1()) {
+                    if (path.get(j) == &ws.getWrapPoint1()) {
                         path.remove(j); // remove the first wrap point
                         path.remove(j); // remove the second wrap point
                         break;
