@@ -87,9 +87,16 @@ private:
     // cleared on copy.
     SimTK::ResetOnCopy<std::unique_ptr<MomentArmSolver> > _maSolver;
 
+    // populated from the current path cache variable whenever the implementation
+    // needs an array of `AbstractPathPoint`s
+    mutable SimTK::ResetOnCopy<Array<AbstractPathPoint*>> _currentPathPtrsCache;
+
     mutable CacheVariable<double> _lengthCV;
     mutable CacheVariable<double> _speedCV;
-    mutable CacheVariable<Array<AbstractPathPoint*>> _currentPathCV;
+public:
+    class PathElementLookup;
+private:
+    mutable CacheVariable<std::vector<PathElementLookup>> _currentPathCV;
     mutable CacheVariable<SimTK::Vec3> _colorCV;
     
 //=============================================================================
