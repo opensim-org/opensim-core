@@ -31,48 +31,30 @@
 #include <OpenSim/Simulation/Wrap/PathWrap.h>
 #include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
 
-// normalize a vector, or fill it with NaNs if the resulting direction vector
-// would have a close-to-zero length
-static void NormalizeIfNotCoindicentOrNaN(SimTK::Vec3& v)
+// if the length of the provided vector is nonzero, returns a normalized version of
+// the provided vector; otherwise, returns a vector filled with NaNs
+static SimTK::Vec3 NormalizeOrNaNIfZeroLength(SimTK::Vec3 v)
 {
-    double len = v.norm();
+    double lenSqr = v.normSqr();
 
-    if (len < SimTK::SignificantReal) {
-        v = SimTK::Vec3{SimTK::NaN, SimTK::NaN, SimTK::NaN};
+    if (lenSqr >= SimTK::SignificantReal) {
+        return v / sqrt(lenSqr);  // normalize
     }
     else {
-        v /= len;  // normalize
+        return SimTK::Vec3{SimTK::NaN, SimTK::NaN, SimTK::NaN};
     }
-}
-
-// emplace an element onto the end of a SimTK::Array
-template<typename T, typename... Args, typename U = T>
-static T& EmplaceBack(SimTK::Array_<U>& out, Args&&... args)
-{
-    out.emplace_back(T{std::forward<Args>(args)...});
-    return static_cast<T&>(out.back());
 }
 
 // linearly search an OpenSim container (e.g. PathWrapSet) for an element at the given address
 template<typename OpenSimContainer, typename T>
-static int IndexOfOrMinusOne(const OpenSimContainer& els, const T* el) {
+static int IndexOfOrMinusOne(const OpenSimContainer& els, const T* el)
+{
     for (int i = 0; i < els.getSize(); ++i) {
         if (&els[i] == el) {
             return i;
         }
     }
     return -1;
-}
-
-// perform a bounds-checked index lookup into a container
-template<typename T>
-static const T& ElementAt(const OpenSim::Set<T>& els, int idx) {
-    if (0 <= idx && idx < els.getSize()) {
-        return els[idx];
-    }
-    else {
-        OPENSIM_THROW(OpenSim::Exception, "out of bounds access detected: this is a developer error");
-    }
 }
 
 OpenSim::GeometryPath::GeometryPath() : ModelComponent(), _preScaleLength(0.0)
@@ -363,6 +345,8 @@ void OpenSim::GeometryPath::setLengtheningSpeed( const SimTK::State& s, double s
 const OpenSim::Array<const OpenSim::AbstractPathPoint*>& OpenSim::GeometryPath::getCurrentPath(
     const SimTK::State& s) const
 {
+    const PathPointSet& pps = get_PathPointSet();
+    const PathWrapSet& pws = get_PathWrapSet();
 
     if (isCacheVariableValid(s, _currentPathElsCV)) {
         // even though the cache variable is valid, re-populate the pointers cache
@@ -372,19 +356,20 @@ const OpenSim::Array<const OpenSim::AbstractPathPoint*>& OpenSim::GeometryPath::
         // states
         const auto& pathEls = getCacheVariableValue(s, _currentPathElsCV);
         _currentPathPtrsCache.setSize(static_cast<int>(pathEls.size()));
+
         for (int i = 0; i < static_cast<int>(pathEls.size()); ++i) {
             const PathElement& e = pathEls[i];
 
             const AbstractPathPoint* ptr = nullptr;
             switch (e.type) {
             case PathElement::Type::InPathPointSet:
-                ptr = &ElementAt(get_PathPointSet(), e.index);
+                ptr = &pps.get(e.index);
                 break;
             case PathElement::Type::PathWrapPt1:
-                ptr = &ElementAt(get_PathWrapSet(), e.index).getWrapPoint1();
+                ptr = &pws.get(e.index).getWrapPoint1();
                 break;
             case PathElement::Type::PathWrapPt2:
-                ptr = &ElementAt(get_PathWrapSet(), e.index).getWrapPoint2();
+                ptr = &pws.get(e.index).getWrapPoint2();
                 break;
             default:
                 OPENSIM_THROW(OpenSim::Exception, "unhandled PathElement::Type case: this is a developer error");
@@ -398,7 +383,6 @@ const OpenSim::Array<const OpenSim::AbstractPathPoint*>& OpenSim::GeometryPath::
     // clear the local pointers cache and populate it with an initial (pre-wrapping)
     // guess of the path points
     _currentPathPtrsCache.setSize(0);
-    const PathPointSet& pps = get_PathPointSet();
     for (int i = 0; i < pps.getSize(); i++) {
 
         const AbstractPathPoint& p = pps[i];
@@ -430,7 +414,6 @@ const OpenSim::Array<const OpenSim::AbstractPathPoint*>& OpenSim::GeometryPath::
 
         if (owner == this)
         {
-            const PathPointSet& pps = get_PathPointSet();
             int loc = IndexOfOrMinusOne(pps, p);
             if (loc == -1) {
                 OPENSIM_THROW(OpenSim::Exception, "cannot find path point element: this is a developer error");
@@ -439,7 +422,6 @@ const OpenSim::Array<const OpenSim::AbstractPathPoint*>& OpenSim::GeometryPath::
         }
         else
         {
-            const PathWrapSet& pws = get_PathWrapSet();
             int loc = IndexOfOrMinusOne(pws, owner);
             if (loc == -1) {
                 OPENSIM_THROW(OpenSim::Exception, "cannot find path wrap element: this is a developer error");
@@ -498,7 +480,7 @@ void OpenSim::GeometryPath::getPointForceDirections(
             // when the origin or insertion enters the wrapping surface.
             // This is a temporary fix, since the wrap algorithm should
             // return NaN for the points and/or throw an Exception- aseth
-            NormalizeIfNotCoindicentOrNaN(v);
+            v = NormalizeOrNaNIfZeroLength(v);
 
             direction = nextDirection + v;
             nextDirection = -direction;  // negate next point
@@ -557,8 +539,7 @@ void OpenSim::GeometryPath::addInEquivalentForces(
         // when the origin or insertion enters the wrapping surface.
         // This is a temporary fix, since the wrap algorithm should
         // return NaN for the points and/or throw an Exception- aseth
-        Vec3 dir = (pf - po);
-        NormalizeIfNotCoindicentOrNaN(dir);
+        Vec3 dir = NormalizeOrNaNIfZeroLength(pf - po);
 
         Vec3 force = tension*dir;
 
@@ -714,48 +695,46 @@ void OpenSim::GeometryPath::generateDecorations(
     // ensure that the state has been realized to Stage::Dynamics before looking
     // at it. (It is only guaranteed to be at Stage::Position here.)
 
-    // There is no fixed geometry to generate here.
     if (fixed) {
-        return;
+        return;  // all geometry generated here is !fixed
     }
 
     SimTK::MobilizedBodyIndex mbix{0};
     SimTK::Vec3 color = getColor(state);
 
-    // helper method for emitting a point to the output
-    auto emitPoint = [mbix, color, &appendToThis](SimTK::Vec3 pos)
-    {
-        SimTK::DefaultGeometry::drawPathPoint(
-            mbix,
-            pos,
-            color,
-            appendToThis);
-    };
-
-    // helper method for emitting a line to the output
-    auto emitLine = [mbix, color, &appendToThis](SimTK::Vec3 a, SimTK::Vec3 b, int idx)
-    {
-        EmplaceBack<SimTK::DecorativeLine>(appendToThis, a, b)
-            .setLineThickness(4)
-            .setColor(color)
-            .setBodyId(0)
-            .setIndexOnBody(idx);
-    };
-
+    bool isShowingPathPoints = hints.get_show_path_points();
     const Array<const AbstractPathPoint*>& pathPoints = getCurrentPath(state);
     assert(pathPoints.size() > 1);
 
     Vec3 prevPos = pathPoints[0]->getLocationInGround(state);
 
-    if (hints.get_show_path_points()) {
-        emitPoint(prevPos);
+    if (isShowingPathPoints) {
+        SimTK::DefaultGeometry::drawPathPoint(mbix, prevPos, color, appendToThis);
     }
 
+    // helper method for handling each point
+    auto handlePoint = [mbix, color, isShowingPathPoints, &appendToThis, &prevPos](SimTK::Vec3 p, int idx)
+    {
+        if (isShowingPathPoints) {
+            SimTK::DefaultGeometry::drawPathPoint(mbix, p, color, appendToThis);
+        }
+
+        appendToThis.push_back(SimTK::DecorativeLine{prevPos, p}
+            .setLineThickness(4)
+            .setColor(color)
+            .setBodyId(0)
+            .setIndexOnBody(idx));
+
+        prevPos = p;
+    };
+
+    // emit the remaining points (maybe) and lines (always)
     for (int i = 1; i < pathPoints.getSize(); ++i) {
 
-        const AbstractPathPoint* point = pathPoints[i];
+        const AbstractPathPoint& point = *pathPoints[i];
+        const PathWrapPoint* pwp = dynamic_cast<const PathWrapPoint*>(&point);
 
-        if (const PathWrapPoint* pwp = dynamic_cast<const PathWrapPoint*>(point)) {
+        if (pwp) {
 
             // A PathWrapPoint provides points on the wrapping surface as Vec3s
             const Array<Vec3>& surfacePoints = pwp->getWrapPath(state);
@@ -769,27 +748,12 @@ void OpenSim::GeometryPath::generateDecorations(
             for (int j = 0; j<surfacePoints.getSize(); ++j) {
 
                 // transform the surface point into the Ground reference frame
-                Vec3 pos = X_BG*surfacePoints[j];
-
-                if (hints.get_show_path_points()) {
-                    emitPoint(pos);
-                }
-
-                emitLine(prevPos, pos, j);
-                prevPos = pos;
+                handlePoint(X_BG * surfacePoints[j], j);
             }
         }
         else {
             // otherwise, it's a regular PathPoint, so just draw its location
-
-            Vec3 pos = point->getLocationInGround(state);
-
-            if (hints.get_show_path_points()) {
-                emitPoint(pos);
-            }
-
-            emitLine(prevPos, pos, i);
-            prevPos = pos;
+            handlePoint(point.getLocationInGround(state), i);
         }
     }
 }
@@ -1091,7 +1055,7 @@ double OpenSim::GeometryPath::calcLengtheningSpeed(
 {
     double speed = 0.0;
 
-    for (int i = 0; i < path.getSize() - 1; i++) {
+    for (int i = 0, len = path.getSize() - 1; i < len; i++) {
         speed += path[i]->calcSpeedBetween(s, *path[i+1]);
     }
 
