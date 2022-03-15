@@ -45,36 +45,40 @@ class OpenSim::GeometryPath::PathElementLookup {
 public:
     static PathElementLookup fromPtr(const OpenSim::PathPointSet& pps,
                                      const OpenSim::PathWrapSet& pws,
+                                     const OpenSim::GeometryPath& geomPath,
                                      const OpenSim::AbstractPathPoint* ptr)
     {
         // linearly search each collection to figure out its type + index
 
-        for (int i = 0, len = pps.getSize(); i < len; ++i) {
-            if (&pps[i] == ptr) {
-                return PathElementLookup{i, PointType::InPathPointSet};
+        const OpenSim::Component* owner = &ptr->getOwner();
+
+        if (owner == &geomPath) {
+            for (int i = 0, len = pps.getSize(); i < len; ++i) {
+                if (&pps[i] == ptr) {
+                    return PathElementLookup{PointType::InPathPointSet, i};
+                }
             }
         }
-        for (int i = 0, len = pws.getSize(); i < len; ++i) {
-            const PathWrap& pw = pws[i];
-            if (&pw.getWrapPoint1() == ptr) {
-                return PathElementLookup{i, PointType::PathWrapPt1};
-            }
-            else if (&pw.getWrapPoint2() == ptr) {
-                return PathElementLookup{i, PointType::PathWrapPt2};
+        else {
+            for (int i = 0, len = pws.getSize(); i < len; ++i) {
+                if (&pws[i] == owner) {
+                    PointType t = ptr == &pws[i].getWrapPoint1() ? PointType::PathWrapPt1 : PointType::PathWrapPt2;
+                    return PathElementLookup{t, i};
+                }
             }
         }
+
         OPENSIM_THROW(OpenSim::Exception, "unable to create a PathElementLookup for the given pointer: are you sure it is part of the GeometryPath?");
     }
 
 private:
-    enum class PointType { InPathPointSet, PathWrapPt1, PathWrapPt2 };
+    enum class PointType : char { InPathPointSet, PathWrapPt1, PathWrapPt2 };
 
-    PathElementLookup(int index, PointType pointType) :
+    PathElementLookup(PointType pointType, int index) :
         index_{index},
         pointType_{pointType}
     {
     }
-
 public:
     OpenSim::AbstractPathPoint* toPtr(const OpenSim::PathPointSet& pps,
                                       const OpenSim::PathWrapSet& pws) const
@@ -92,8 +96,8 @@ public:
     }
 
 private:
-    int index_;
-    PointType pointType_;
+    int index_ : 24;
+    PointType pointType_ : 8;
 };
 
 static void PopulatePathPointersCache(
@@ -112,12 +116,13 @@ static void PopulatePathElementLookup(
     const OpenSim::PathPointSet& pps,
     const OpenSim::PathWrapSet& pws,
     const OpenSim::Array<OpenSim::AbstractPathPoint*>& ptrs,
+    const OpenSim::GeometryPath& geomPath,
     std::vector<OpenSim::GeometryPath::PathElementLookup>& out)
 {
     out.clear();
     out.reserve(ptrs.getSize());
     for (int i = 0, len = ptrs.getSize(); i < len; ++i) {
-        out.push_back(OpenSim::GeometryPath::PathElementLookup::fromPtr(pps, pws, ptrs[i]));
+        out.push_back(OpenSim::GeometryPath::PathElementLookup::fromPtr(pps, pws, geomPath, ptrs[i]));
     }
 }
 
@@ -935,6 +940,7 @@ void GeometryPath::computePath(const SimTK::State& s) const
     PopulatePathElementLookup(get_PathPointSet(),
                               get_PathWrapSet(),
                               _currentPathPtrsCache,
+                              *this,
                               lookups);
     markCacheVariableValid(s, _currentPathCV);
 }
