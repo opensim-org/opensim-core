@@ -12,6 +12,21 @@ v4.4
 - Fixed an issue with SWIG with `OpenSim::Body::getRotationInGround()` where it would return an object without the correct `SimTK::Rotation` methods.
 - Fixed OpenSim::Arrow start_point property being ignored
 - Fixed objects being set as not up to date with their properties by finalizeFromProperties
+- `OpenSim::GeometryPath::getCurrentPath` now returns `const Array<const AbstractPathPoint*>&` (previously: `const Array<AbstractPathPoint*>&`)
+- `OpenSim::PathWrapPoint` now stores its `WrapPath`, `length`, and `location` in cache variables:
+  - This prevents a bug, where computing paths was mutating (the wrapping parts of) the model
+  - The following methods on `PathWrapPoint` now require a `const SimTK::State&`:
+    - `getPathWrap`
+    - `setPathWrap`
+    - `clearPathWrap`
+    - `getWrapLength`
+    - `setWrapLength`
+    - `getLocation`
+    - `setLocation`
+    - `getdPointdQ`
+  - `PathWrapPoint` now inherits from `AbstractPathPoint` (previously: `PathPoint`)
+  - See PR #3159
+
 
 v4.3
 ====
