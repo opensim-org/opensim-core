@@ -152,7 +152,7 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
 
         if (pwp) {
             // A PathWrapPoint provides points on the wrapping surface as Vec3s
-            Array<Vec3>& surfacePoints = pwp->getWrapPath();
+            const Array<Vec3>& surfacePoints = pwp->getWrapPath(state);
             // The surface points are expressed w.r.t. the wrap surface's body frame.
             // Transform the surface points into the ground reference frame to draw
             // the surface point as the wrapping portion of the GeometryPath
@@ -1017,17 +1017,15 @@ applyWrapObjects(const SimTK::State& s, Array<AbstractPathPoint*>& path) const
                 }
 
                 // Deallocate previous wrapping points if necessary.
-                ws.updWrapPoint2().getWrapPath().setSize(0);
+                ws.updWrapPoint2().clearWrapPath(s);
 
                 if (best_wrap.wrap_pts.getSize() == 0) {
                     ws.resetPreviousWrap();
-                    ws.updWrapPoint2().getWrapPath().setSize(0);
+                    ws.updWrapPoint2().clearWrapPath(s);
                 } else {
                     // If wrapping did occur, copy wrap info into the PathStruct.
-                    ws.updWrapPoint1().getWrapPath().setSize(0);
-
-                    Array<SimTK::Vec3>& wrapPath = ws.updWrapPoint2().getWrapPath();
-                    wrapPath = best_wrap.wrap_pts;
+                    ws.updWrapPoint1().clearWrapPath(s);
+                    ws.updWrapPoint2().setWrapPath(s, best_wrap.wrap_pts);
 
                     // In OpenSim, all conversion to/from the wrap object's 
                     // reference frame will be performed inside 
@@ -1039,11 +1037,11 @@ applyWrapObjects(const SimTK::State& s, Array<AbstractPathPoint*>& path) const
                     //            ms->ground_segment);
                     // }
 
-                    ws.updWrapPoint1().setWrapLength(0.0);
-                    ws.updWrapPoint2().setWrapLength(best_wrap.wrap_path_length);
+                    ws.updWrapPoint1().setWrapLength(s, 0.0);
+                    ws.updWrapPoint2().setWrapLength(s, best_wrap.wrap_path_length);
 
-                    ws.updWrapPoint1().setLocation(best_wrap.r1);
-                    ws.updWrapPoint2().setLocation(best_wrap.r2);
+                    ws.updWrapPoint1().setLocation(s, best_wrap.r1);
+                    ws.updWrapPoint2().setLocation(s, best_wrap.r2);
 
                     // Now insert the two new wrapping points into mp[] array.
                     path.insert(best_wrap.endPoint, &ws.updWrapPoint1());
@@ -1130,7 +1128,7 @@ calcLengthAfterPathComputation(const SimTK::State& s,
         {
             const PathWrapPoint* smwp = dynamic_cast<const PathWrapPoint*>(p2);
             if (smwp)
-                length += smwp->getWrapLength();
+                length += smwp->getWrapLength(s);
         } else {
             length += (p1InGround - p2InGround).norm();
         }
