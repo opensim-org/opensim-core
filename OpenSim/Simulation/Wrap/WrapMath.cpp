@@ -68,9 +68,13 @@ using SimTK::Mat33;
  * @param t parameterized distance along second line from p3 to pInt2
  * @return false if lines are parallel, true otherwise
  */
-bool WrapMath::
-IntersectLines(SimTK::Vec3& p1, SimTK::Vec3& p2, SimTK::Vec3& p3, SimTK::Vec3& p4,
-                    SimTK::Vec3& pInt1, double& s, SimTK::Vec3& pInt2, double& t)
+bool WrapMath::IntersectLines(const SimTK::Vec3& p1,
+                              const SimTK::Vec3& p2,
+                              const SimTK::Vec3& p3,
+                              const SimTK::Vec3& p4,
+                              SimTK::Vec3& pInt1,
+                              double& s,
+                              SimTK::Vec3& pInt2, double& t)
 {
     SimTK::Vec3 vec1 = p2 - p1;
 
@@ -158,8 +162,24 @@ IntersectLineSegPlane(SimTK::Vec3& pt1, SimTK::Vec3& pt2,
  * @param t parameterized distance from linePt along line to closestPt
  */
 void WrapMath::
-GetClosestPointOnLineToPoint(SimTK::Vec3& pt, SimTK::Vec3& linePt, SimTK::Vec3& line,
-                                      SimTK::Vec3& closestPt, double& t)
+GetClosestPointOnLineToPoint(const SimTK::Vec3& pt,
+                             const SimTK::Vec3& linePt,
+                             const SimTK::UnitVec3& lineDir,
+                             SimTK::Vec3& closestPt,
+                             double& t)
+{
+    Vec3 v1 = pt - linePt;
+    double vCosTheta = SimTK::dot(v1, lineDir);
+    closestPt = linePt + vCosTheta*lineDir;
+    t = vCosTheta;
+}
+
+void WrapMath::GetClosestPointOnLineToPoint(
+        const SimTK::Vec3& pt,
+        const SimTK::Vec3& linePt,
+        const SimTK::Vec3& line,
+        SimTK::Vec3& closestPt,
+        double& t)
 {
     SimTK::Vec3 v1, v2;
 
