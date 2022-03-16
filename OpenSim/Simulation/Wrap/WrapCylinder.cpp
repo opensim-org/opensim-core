@@ -594,6 +594,21 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     return return_code;
 }
 
+namespace
+{
+    // helper method as a stand-in before the WrapMath version is changed
+    Vec3 Helper_GetClosestPointOnLineFromPoint(const Vec3& linePoint, const Vec3& lineDir, const Vec3& p)
+    {
+        Vec3 linePointCopy = linePoint;
+        Vec3 lineDirCopy = lineDir;
+        Vec3 pCopy = p;
+        double t;
+        Vec3 rv;
+        WrapMath::GetClosestPointOnLineToPoint(pCopy, linePointCopy,lineDirCopy, rv, t);
+        return rv;
+    }
+}
+
 //_____________________________________________________________________________
 /**
  * Calculate the wrapping points along a spiral path on the cylinder from aPoint1
@@ -610,49 +625,39 @@ void WrapCylinder::_make_spiral_path(SimTK::Vec3& aPoint1,
                                                  bool far_side_wrap,
                                                  WrapResult& aWrapResult) const
 {
-    double x, y, t, axial_dist, theta;
-    Vec3 r1a, r2a, uu, vv, ax, axial_vec, wrap_pt;
-    double sense = far_side_wrap ? -1.0 : 1.0;
-    int i, iterations = 0;
-    const double _radius = get_radius();
+    const double sense = far_side_wrap ? -1.0 : 1.0;
+    const double radius = get_radius();
 
+    int iterations = 0;
 restart_spiral_wrap:
 
     aWrapResult.wrap_pts.setSize(0);
 
     // determine the axial vector
-
-    WrapMath::GetClosestPointOnLineToPoint(aWrapResult.r1, p0, dn, r1a, t);
-    WrapMath::GetClosestPointOnLineToPoint(aWrapResult.r2, p0, dn, r2a, t);
-
-    axial_vec = r2a - r1a;
-
-    axial_dist = axial_vec.norm();
+    const Vec3 r1a = Helper_GetClosestPointOnLineFromPoint(p0, dn, aWrapResult.r1);
+    const Vec3 r2a = Helper_GetClosestPointOnLineFromPoint(p0, dn, aWrapResult.r2);
 
     // determine the radial angle
-    uu = aWrapResult.r1 - r1a;
-    vv = aWrapResult.r2 - r2a;
+    const Vec3 uu = (aWrapResult.r1 - r1a)/radius;
+    Vec3 vv = (aWrapResult.r2 - r2a)/radius;
 
-    for (i = 0; i < 3; i++)
-    {
-        uu[i] /= _radius;
-        vv[i] /= _radius;
+    double theta = acos((~uu * vv) / (uu.norm() * vv.norm()));
+    if (far_side_wrap) {
+        theta = 2.0*SimTK_PI - theta;
     }
 
-    theta = acos((~uu * vv) / (uu.norm() * vv.norm()));
-
-    if (far_side_wrap)
-        theta = 2.0 * SimTK_PI - theta;
+    const Vec3 axial_vec = r2a - r1a;
 
     // use Pythagoras to calculate the length of the spiral path (imaging
     // a right triangle wrapping around the surface of a cylinder)
-    x = _radius * theta;
-    y = axial_dist;
-
-    aWrapResult.wrap_path_length = sqrt(x * x + y * y);
+    {
+        const double x = radius * theta;
+        const double y = axial_vec.norm();
+        aWrapResult.wrap_path_length = sqrt(x*x + y*y);
+    }
 
     // build path segments
-    ax = uu % vv;
+    Vec3 ax = uu % vv;
     WrapMath::NormalizeOrZero(ax, ax);
 
     vv = ax % uu;
@@ -661,15 +666,36 @@ restart_spiral_wrap:
     m.set(0, 0, ax[0]); m.set(0, 1, ax[1]); m.set(0, 2, ax[2]);
     m.set(1, 0, uu[0]); m.set(1, 1, uu[1]); m.set(1, 2, uu[2]);
     m.set(2, 0, vv[0]); m.set(2, 1, vv[1]); m.set(2, 2, vv[2]);
+
     // WrapTorus creates a WrapCyl with no connected model, avoid this hack
-    if (!_model.empty() && !getModel().getDisplayHints().isVisualizationEnabled() &&
-            aWrapResult.singleWrap) {
+    if (!_model.empty() &&
+        !getModel().getDisplayHints().isVisualizationEnabled() &&
+        aWrapResult.singleWrap) {
+
         // Use one WrapSegment/cord instead of finely sampled list of wrap_pt(s)
+        Vec3 wrap_pt;
         _calc_spiral_wrap_point(
-                r1a, axial_vec, m, ax, sense, 0, theta, wrap_pt);
+            r1a,
+            axial_vec,
+            m,
+            ax,
+            sense,
+            0,
+            theta,
+            wrap_pt);
+
         aWrapResult.wrap_pts.append(wrap_pt);
+
         _calc_spiral_wrap_point(
-                r1a, axial_vec, m, ax, sense, 1.0, theta, wrap_pt);
+            r1a,
+            axial_vec,
+            m,
+            ax,
+            sense,
+            1.0,
+            theta,
+            wrap_pt);
+
         aWrapResult.wrap_pts.append(wrap_pt);
     } 
     else {
@@ -678,8 +704,9 @@ restart_spiral_wrap:
         int numWrapSegments = (int)(aWrapResult.wrap_path_length / 0.002);
         if (numWrapSegments < 1) numWrapSegments = 1;
 
-        for (i = 0; i < numWrapSegments; i++) {
+        for (int i = 0; i < numWrapSegments; i++) {
             double t = (double)i / numWrapSegments;
+            Vec3 wrap_pt;
 
             _calc_spiral_wrap_point(
                     r1a, axial_vec, m, ax, sense, t, theta, wrap_pt);
