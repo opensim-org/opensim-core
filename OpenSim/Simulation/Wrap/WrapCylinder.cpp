@@ -60,12 +60,6 @@ static Vec3 GetClosestPointOnLineToPoint(const Vec3& pt,
     return rv;
 }
 
-static double CalcWrapAngle(const UnitVec3& a, const UnitVec3& b, bool reverse)
-{
-    double ang = acos(SimTK::dot(a, b));
-    return !reverse ? ang : -(2.0*SimTK_PI - ang);
-}
-
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
@@ -644,10 +638,10 @@ restart_spiral_wrap:
 
     const Vec3 r1AxisToR2Axis = r2AxialPos - r1AxialPos;
 
-    const double theta = CalcWrapAngle(
-        r1AxisToSurfaceDir,
-        r2AxisToSurfaceDir,
-        doFarSideWrap);
+    double theta = acos(SimTK::dot(r1AxisToSurfaceDir, r2AxisToSurfaceDir));
+    if (doFarSideWrap) {
+        theta -= 2.0*SimTK_PI;
+    }
 
     // use Pythagoras to calculate the length of the spiral path (imagine
     // a right angle where one edge is a line around the circumference and
