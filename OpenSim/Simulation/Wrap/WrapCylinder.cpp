@@ -605,21 +605,19 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     return return_code;
 }
 
-
-//_____________________________________________________________________________
 /**
- * Calculate the wrapping points along a spiral path on the cylinder from aPoint1
- * to aPoint2. This function may slide aPoint1 and aPoint2 axially along the
- * cylinder's surface to achieve tangency to within 1 degree at the two points.
+ * Calculate the wrapping points along a spiral path on the cylinder from `p1`
+ * to `p2`. This function may slide `p1` and `p2` axially along the cylinder's
+ * surface to achieve tangency to within 1 degree at the two points.
  *
- * @param aPoint1 One end of the spiral path
- * @param aPoint2 The other end of the spiral path
- * @param far_side_wrap Boolean indicating if the wrap is the long way around
- * @param aWrapResult The result of the wrapping (tangent points, etc.)
+ * @param p1 One end of the spiral path
+ * @param p2 The other end of the spiral path
+ * @param doFarSideWrap Boolean indicating if the wrap is the long way around
+ * @param out The result of the wrapping (tangent points, etc.)
  */
 void WrapCylinder::_make_spiral_path(const SimTK::Vec3& p1,
                                      const SimTK::Vec3& p2,
-                                     bool doFarSideWrap,
+                                     const bool doFarSideWrap,
                                      WrapResult& out) const
 {
     const double radius = get_radius();
