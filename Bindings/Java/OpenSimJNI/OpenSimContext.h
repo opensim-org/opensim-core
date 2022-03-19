@@ -26,8 +26,9 @@
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/PropertyTransform.h>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Force.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/PathPoint.h>
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Tools/InverseKinematicsTool.h>
 #include <Bindings/PropertyHelper.h>
