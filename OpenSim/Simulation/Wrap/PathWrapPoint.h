@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Copyright (c) 2005-2022 Stanford University and the Authors                *
  * Author(s): Peter Loan                                                      *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -23,15 +23,12 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-// INCLUDE
 #include <OpenSim/Simulation/Model/AbstractPathPoint.h>
 
 namespace OpenSim {
 
 class WrapObject;
 
-//=============================================================================
-//=============================================================================
 /**
  * A class implementing a path wrapping point, which is a path point that
  * is produced by a PathWrap.
@@ -55,9 +52,19 @@ public:
     double getWrapLength(const SimTK::State&) const;
     void setWrapLength(const SimTK::State&, double newLength) const;
 
+    // careful: Although this class effectively represents a *sequence*
+    //          of many wrapping points, these methods still need to be
+    //          here for legacy compatability with `AbstractPathPoint`,
+    //          which is used extensively by `GeometryPath`.
+    //
+    // The implementation uses the first, or last, tangent point of the path
+    // wrap as a "best guess" of the location. `GeometryPath`, itself, handles
+    // stuffing the relevant data data into this class.
+    //
+    // (later iterations of `GeometryPath` may ideally (e.g.) hold a sequence
+    //  of path *segments*, rather than path *points*)
     SimTK::Vec3 getLocation(const SimTK::State&) const override;
     void setLocation(const SimTK::State&, const SimTK::Vec3&) const;
-
     SimTK::Vec3 getdPointdQ(const SimTK::State&) const override;
 
 private:
@@ -76,12 +83,7 @@ private:
 
     // the wrap object this point is on
     SimTK::ReferencePtr<const WrapObject> _wrapObject; 
-
-//=============================================================================
-};  // END of class PathWrapPoint
-//=============================================================================
-//=============================================================================
-
+};
 
 } // end of namespace OpenSim
 
