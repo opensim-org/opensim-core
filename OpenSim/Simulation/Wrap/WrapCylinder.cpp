@@ -672,6 +672,8 @@ restart_spiral_wrap:
 
         // Each muscle segment on the surface of the cylinder should be
         // 0.002 meters long. This assumes the model is in meters, of course.
+        //
+        // TODO: design, build, staff, and shoot an ion cannon at this
         int numWrapSegments = static_cast<int>(out.wrap_path_length / 0.002);
         if (numWrapSegments < 1) {
             numWrapSegments = 1;
@@ -680,6 +682,8 @@ restart_spiral_wrap:
         out.wrap_pts.setSize(0);
 
         for (int i = 0; i < numWrapSegments; i++) {
+            // TODO: re-use the ion cannon (above) to annihilate this and
+            // TODO: replace it with `i/(numWrapSegments-1)`
             double t = static_cast<double>(i)/static_cast<double>(numWrapSegments);
 
             Vec3 wrap_pt = CalcWrapPoint(t);
@@ -706,6 +710,8 @@ restart_spiral_wrap:
 
                 if (did_adjust_r1 || did_adjust_r2) {
                     iterations++;
+                    // TODO: realize that ion cannons (above) aren't enough and resort to
+                    //       using an appropriate death star on this
                     goto restart_spiral_wrap;
                 }
             }
