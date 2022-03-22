@@ -72,9 +72,7 @@ int main()
     LoadOpenSimLibrary("osimJavaJNI");
 
     Model *model = new Model("wrist.osim");
-    SimTK::State* workingState = &model->initSystem();
-    model->realizePosition(*workingState);
-    OpenSimContext* context = new OpenSimContext(workingState, model);
+    OpenSimContext* context = new OpenSimContext(&model->initSystem(), model);
     const ForceSet& fs = model->getForceSet();
     int n1 = fs.getNumGroups();
     const ObjectGroup* grp = fs.getGroup("wrist");
@@ -86,9 +84,7 @@ int main()
     delete model;
     delete context;
     model = new Model("arm26_20.osim");
-    workingState = &model->initSystem();
-    model->realizePosition(*workingState);
-    context = new OpenSimContext(workingState, model);
+    context = new OpenSimContext(&model->initSystem(), model);
 
     // Make a copy of state contained in context ad make sure content match
     SimTK::State stateCopy = context->getCurrentStateCopy();
