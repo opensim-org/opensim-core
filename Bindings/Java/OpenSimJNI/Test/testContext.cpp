@@ -85,10 +85,10 @@ int main()
     delete context;
     model = new Model("arm26_20.osim");
     context = new OpenSimContext(&model->initSystem(), model);
-
     // Make a copy of state contained in context ad make sure content match
     SimTK::State stateCopy = context->getCurrentStateCopy();
     assert(context->getCurrentStateRef().toString()==stateCopy.toString());
+
     Array<std::string> stateNames = model->getStateVariableNames();
     OpenSim::Force* dForce=&(model->updForceSet().get("TRIlong"));
     Muscle* dTRIlong = dynamic_cast<Muscle*>(dForce);

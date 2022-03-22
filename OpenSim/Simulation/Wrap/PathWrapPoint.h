@@ -25,6 +25,9 @@
 
 #include <OpenSim/Simulation/Model/AbstractPathPoint.h>
 
+// legacy: this used to be included (older codebases may transitively depend on it)
+#include <OpenSim/Simulation/Model/PathPoint.h>
+
 namespace OpenSim {
 
 class WrapObject;
