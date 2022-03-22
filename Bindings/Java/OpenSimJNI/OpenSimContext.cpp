@@ -50,6 +50,7 @@ namespace OpenSim {
 OpenSimContext::OpenSimContext( SimTK::State* s, Model* model ) {
     _configState.reset(s);
     _model.reset(model);
+    realizePosition();
 }
 
 
