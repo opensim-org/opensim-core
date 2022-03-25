@@ -890,6 +890,18 @@ TimeSeriesTable MocoTrajectory::exportToControlsTable() const {
             m_controls, m_control_names};
 }
 
+TimeSeriesTable MocoTrajectory::exportToMultipliersTable() const {
+    ensureUnsealed();
+    return {std::vector<double>(&m_time[0], &m_time[0] + m_time.size()),
+            m_multipliers, m_multiplier_names};
+}
+
+TimeSeriesTable MocoTrajectory::exportToDerivativesTable() const {
+    ensureUnsealed();
+    return {std::vector<double>(&m_time[0], &m_time[0] + m_time.size()),
+            m_derivatives, m_derivative_names};
+}
+
 StatesTrajectory MocoTrajectory::exportToStatesTrajectory(
         const MocoProblem& problem) const {
     ensureUnsealed();

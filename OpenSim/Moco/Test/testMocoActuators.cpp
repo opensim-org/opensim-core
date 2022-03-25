@@ -46,7 +46,7 @@ Model createHangingMuscleModel(double optimalFiberLength,
 
     auto* actu = new DeGrooteFregly2016Muscle();
     actu->setName("muscle");
-    actu->set_max_isometric_force(100.0);
+    actu->set_max_isometric_force(10.0);
     actu->set_optimal_fiber_length(optimalFiberLength);
     actu->set_tendon_slack_length(tendonSlackLength);
     actu->set_tendon_strain_at_one_norm_force(0.10);
@@ -98,7 +98,8 @@ TEMPLATE_TEST_CASE(
     SimTK::Real finalSpeed = 0;
     MocoBounds heightBounds(0.14, 0.17);
     MocoBounds speedBounds(-10, 10);
-    MocoBounds actuBounds(0.02, 1);
+    MocoBounds actuBounds(0.1, 1);
+    MocoBounds normTendonBounds(0.1, 2);
 
     Model model = createHangingMuscleModel(optimalFiberLength,
             tendonSlackLength, ignoreActivationDynamics, ignoreTendonCompliance,
@@ -120,11 +121,16 @@ TEMPLATE_TEST_CASE(
                 "/joint/height/value", heightBounds, initHeight, finalHeight);
         problem.setStateInfo(
                 "/joint/height/speed", speedBounds, initSpeed, finalSpeed);
-        problem.setControlInfo("/forceset/muscle", actuBounds);
-
-        auto* initial_equilibrium =
-                problem.addGoal<MocoInitialForceEquilibriumDGFGoal>();
-        initial_equilibrium->setName("initial_equilibrium");
+        problem.setControlInfo("/forceset/muscle",
+                               actuBounds, actuBounds.getLower());
+        if (!ignoreActivationDynamics) {
+            problem.setStateInfo("/forceset/muscle/activation",
+                                 actuBounds, actuBounds.getLower());
+        }
+        if (!ignoreTendonCompliance) {
+            problem.setStateInfo("/forceset/muscle/normalized_tendon_force",
+                                 normTendonBounds, normTendonBounds.getLower());
+        }
 
         problem.addGoal<MocoControlGoal>("effort");
 
@@ -133,7 +139,6 @@ TEMPLATE_TEST_CASE(
         solver.set_multibody_dynamics_mode("explicit");
         solver.set_optim_convergence_tolerance(1e-4);
         solver.set_optim_constraint_tolerance(1e-4);
-        solver.set_minimize_implicit_auxiliary_derivatives(true);
 
         solutionTrajOpt = study.solve();
         solutionFilename = "testDeGrooteFregly2016Muscle_solution";
@@ -147,10 +152,30 @@ TEMPLATE_TEST_CASE(
         outputPaths.emplace_back(".*length.*");
         outputPaths.emplace_back(".*velocity.*");
         auto table = study.analyze(solutionTrajOpt, outputPaths);
-        STOFileAdapter::write(table, solutionFilename + "_outputs.sto");
+        //STOFileAdapter::write(table, solutionFilename + "_outputs.sto");
 
         solutionFilename += ".sto";
         solutionTrajOpt.write(solutionFilename);
+
+        // Check that the muscle and tendon are in equilibrium.
+        const auto& muscle = model.getComponent<DeGrooteFregly2016Muscle>(
+                "/forceset/muscle");
+        auto statesTable = solutionTrajOpt.exportToStatesTable();
+        const auto& activeFiberForceAlongTendon = table.getDependentColumn(
+                "/forceset/muscle|active_fiber_force_along_tendon");
+        const auto& passiveFiberForceAlongTendon = table.getDependentColumn(
+                "/forceset/muscle|passive_fiber_force_along_tendon");
+        const auto& tendonForce = table.getDependentColumn(
+                "/forceset/muscle|tendon_force");
+        SimTK::Vector equilibriumResidual((int)table.getNumRows(), 0.0);
+        for (int i = 0; i < (int)table.getNumRows(); ++i) {
+            const double fiberForceAlongTendon =
+                    activeFiberForceAlongTendon[i] +
+                    passiveFiberForceAlongTendon[i];
+            equilibriumResidual[i] = (tendonForce[i] - fiberForceAlongTendon) /
+                    muscle.getMaxIsometricForce();
+        }
+        CHECK(equilibriumResidual.normRMS() < 1e-3);
     }
 
     // Perform time stepping forward simulation using optimized controls.
@@ -165,17 +190,17 @@ TEMPLATE_TEST_CASE(
             mutableDGFMuscle->set_tendon_compliance_dynamics_mode("explicit");
         }
         const auto trajSim =
-                simulateTrajectoryWithTimeStepping(solutionTrajOpt, model);
+                simulateTrajectoryWithTimeStepping(solutionTrajOpt, model, 1e-6);
         std::string trajFilename = "testDeGrooteFregly2016Muscle_timestepping";
         if (!ignoreActivationDynamics) trajFilename += "_actdyn";
         if (ignoreTendonCompliance) trajFilename += "_rigidtendon";
         if (isTendonDynamicsExplicit) trajFilename += "_exptendyn";
         trajFilename += ".sto";
-        trajSim.write(trajFilename);
+        //trajSim.write(trajFilename);
 
         const double error = trajSim.compareContinuousVariablesRMS(
                 solutionTrajOpt, {{"states", {}}, {"controls", {}}});
-        CHECK(error < 0.01);
+        CHECK(error < 0.1);
         if (!ignoreTendonCompliance && !isTendonDynamicsExplicit) {
             mutableDGFMuscle->set_tendon_compliance_dynamics_mode("implicit");
         }
@@ -184,7 +209,7 @@ TEMPLATE_TEST_CASE(
     // Solve problem again using CMC.
     // ------------------------------
     // See if we get the correct muscle activity.
-    {
+    if (!ignoreActivationDynamics) {
         Model modelCMC =
                 createHangingMuscleModel(optimalFiberLength, tendonSlackLength,
                         ignoreActivationDynamics, ignoreTendonCompliance, true);
@@ -236,21 +261,20 @@ TEMPLATE_TEST_CASE(
                 cmcStates.getMatrix(),
                 cmcControls.getMatrixBlock(0, 0, cmcControls.getNumRows(), 1),
                 SimTK::Matrix(), SimTK::RowVector());
-        cmcTraj.write(
-                "testDeGrooteFregly2016Muscle_cmc/" + cmcFilename + ".sto");
+        //cmcTraj.write(
+        //        "testDeGrooteFregly2016Muscle_cmc/" + cmcFilename + ".sto");
 
         // Compare CMC solution to the Moco solution.
         std::vector<std::string> states;
-        if (!ignoreActivationDynamics) {
-            states.push_back("/forceset/muscle/activation");
-        }
+        states.push_back("/forceset/muscle/activation");
         if (!ignoreTendonCompliance) {
             states.push_back("/forceset/muscle/normalized_tendon_force");
         }
-        std::vector<std::string> controls{"/forceset/muscle"};
+        // Only compare states, since CMC controls are spiky. Only need a rough
+        // comparison here, just confirming that CMC works with the muscle model.
         const double error = cmcTraj.compareContinuousVariablesRMS(
-                solutionTrajOpt, {{"states", states}, {"controls", controls}});
-        CHECK(error < 0.1);
+                solutionTrajOpt, {{"states", states}});
+        CHECK(error < 0.5);
     }
 
     // Track the kinematics from the trajectory optimization.
@@ -271,11 +295,16 @@ TEMPLATE_TEST_CASE(
                 "/joint/height/value", heightBounds, initHeight, finalHeight);
         problem.setStateInfo(
                 "/joint/height/speed", speedBounds, initSpeed, finalSpeed);
-        problem.setControlInfo("/forceset/muscle", actuBounds);
-
-        auto* initial_equilibrium =
-                problem.addGoal<MocoInitialForceEquilibriumDGFGoal>();
-        initial_equilibrium->setName("initial_equilibrium");
+        problem.setControlInfo("/forceset/muscle",
+                               actuBounds, actuBounds.getLower());
+        if (!ignoreActivationDynamics) {
+            problem.setStateInfo("/forceset/muscle/activation",
+                                 actuBounds, actuBounds.getLower());
+        }
+        if (!ignoreTendonCompliance) {
+            problem.setStateInfo("/forceset/muscle/normalized_tendon_force",
+                                 normTendonBounds, normTendonBounds.getLower());
+        }
 
         auto* tracking = problem.addGoal<MocoStateTrackingGoal>("tracking");
 
@@ -294,9 +323,11 @@ TEMPLATE_TEST_CASE(
         tracking->setReference(ref);
         tracking->setAllowUnusedReferences(true);
 
+        // Need a low-weighted effort cost so the problem is well-conditioned.
+        problem.addGoal<MocoControlGoal>("effort", 1e-3);
+
         auto& solver = study.initSolver<TestType>();
         solver.set_num_mesh_intervals(30);
-        solver.set_minimize_implicit_auxiliary_derivatives(true);
 
         MocoSolution solutionTrack = study.solve();
         std::string solutionFilename =
@@ -305,9 +336,9 @@ TEMPLATE_TEST_CASE(
         if (ignoreTendonCompliance) solutionFilename += "_rigidtendon";
         if (isTendonDynamicsExplicit) solutionFilename += "_exptendyn";
         solutionFilename += ".sto";
-        solutionTrack.write(solutionFilename);
-        double error =
-                solutionTrack.compareContinuousVariablesRMS(solutionTrajOpt);
+        //solutionTrack.write(solutionFilename);
+        double error = solutionTrack.compareContinuousVariablesRMS(
+                solutionTrajOpt, {{"states", {}}, {"controls", {}}});
         CHECK(error < 0.01);
     }
 }

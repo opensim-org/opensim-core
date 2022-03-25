@@ -25,6 +25,7 @@
 
 #include "StatesTrajectory.h"
 #include "osimSimulationDLL.h"
+#include "OpenSim/Actuators/DeGrooteFregly2016Muscle.h"
 #include <regex>
 
 #include <SimTKcommon/internal/State.h>
@@ -32,6 +33,7 @@
 #include <OpenSim/Common/Reporter.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/Model.h>
+
 
 namespace OpenSim {
 
@@ -192,7 +194,7 @@ OSIMSIMULATION_API void checkLabelsMatchModelStates(
         const Model& model, const std::vector<std::string>& labels);
 
 /// Calculate the requested outputs using the model in the problem and the
-/// provided states and controls tables
+/// provided states and controls tables.
 /// The controls table is used to set the model's controls vector.
 /// We assume the states and controls tables contain the same time points.
 /// The output paths can be regular expressions. For example,
@@ -202,6 +204,12 @@ OSIMSIMULATION_API void checkLabelsMatchModelStates(
 /// the template argument, otherwise they are not included in the report.
 ///
 /// Controls missing from the controls table are given a value of 0.
+///
+/// If you analysis depends on the values of discrete variables in the state,
+/// you may provide those values via the optional argument
+/// "discreteVariablesTable". This table should contain column labels with the
+/// following format: <path_to_component>/<discrete_var_name>. For example,
+/// "/forceset/muscle/implicitderiv_normalized_tendon_force".
 ///
 /// @note The provided trajectory is not modified to satisfy kinematic
 /// constraints, but SimTK::Motions in the Model (e.g., PositionMotion) are
@@ -215,7 +223,8 @@ OSIMSIMULATION_API void checkLabelsMatchModelStates(
 template <typename T>
 TimeSeriesTable_<T> analyze(Model model, const TimeSeriesTable& statesTable,
         const TimeSeriesTable& controlsTable,
-        const std::vector<std::string>& outputPaths) {
+        const std::vector<std::string>& outputPaths,
+        const TimeSeriesTable& discreteVariablesTable = {}) {
 
     // Initialize the system so we can access the outputs.
     model.initSystem();
@@ -264,6 +273,34 @@ TimeSeriesTable_<T> analyze(Model model, const TimeSeriesTable& statesTable,
             "and controlsTable contains {} rows.",
             statesTable.getNumRows(), controlsTable.getNumRows());
 
+    // If the table for discrete variables was provided, get references
+    // to the components associated with each discrete variable.
+    std::vector<std::pair<std::string, SimTK::ReferencePtr<const Component>>>
+    discreteComponentRefs;
+    if (discreteVariablesTable.getNumRows()) {
+        OPENSIM_THROW_IF(discreteVariablesTable.getNumRows() !=
+                         statesTable.getNumRows(), Exception,
+            "Expected discreteVariablesTable to contain the "
+            "same number of rows as statesTable and controlsTable, "
+            "but discreteVariablesTable contains {} rows "
+            "and statesTable contains {} rows.",
+            discreteVariablesTable.getNumRows(), statesTable.getNumRows());
+
+        // The labels for each discrete variable are in the following format:
+        //      <path_to_component>/<discrete_var_name>
+        // We can use ComponentPath to split up the component path from the
+        // discrete variable name.
+        for (const auto& label : discreteVariablesTable.getColumnLabels()) {
+            ComponentPath discreteVarPath(label);
+            const std::string& discreteVarName =
+                    discreteVarPath.getComponentName();
+            const std::string& componentPath =
+                    discreteVarPath.getParentPathString();
+            const auto& component = model.getComponent(componentPath);
+            discreteComponentRefs.emplace_back(discreteVarName, &component);
+        }
+    }
+
     // Loop through the states trajectory to create the report.
     for (int itime = 0; itime < (int)statesTraj.getSize(); ++itime) {
         // Get the current state.
@@ -283,6 +320,17 @@ TimeSeriesTable_<T> analyze(Model model, const TimeSeriesTable& statesTable,
         // Set the controls on the state object.
         model.realizeVelocity(state);
         model.setControls(state, controls);
+
+        // Apply discrete variables to the state.
+        const auto& labels = discreteVariablesTable.getColumnLabels();
+        for (int idv = 0; idv < (int)labels.size(); ++idv) {
+            const auto& label = labels[idv];
+            const auto& discreteCol =
+                    discreteVariablesTable.getDependentColumn(label);
+            const auto& component = discreteComponentRefs[idv].second.getRef();
+            component.setDiscreteVariableValue(state,
+                    discreteComponentRefs[idv].first, discreteCol[itime]);
+        }
 
         // Generate report results for the current state.
         model.realizeReport(state);

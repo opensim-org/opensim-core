@@ -609,6 +609,11 @@ public:
     TimeSeriesTable exportToStatesTable() const;
     /// Export the controls trajectory to a TimeSeriesTable.
     TimeSeriesTable exportToControlsTable() const;
+    /// Export the multipliers trajectory to a TimeSeriesTable.
+    TimeSeriesTable exportToMultipliersTable() const;
+    /// Export the derivatives trajectory to a TimeSeriesTable.
+    TimeSeriesTable exportToDerivativesTable() const;
+
     /// Controls are not carried over to the StatesTrajectory.
     /// The MocoProblem is necessary because we need the underlying Model to
     /// order the state variables correctly.
