@@ -25,7 +25,6 @@
 
 #include "StatesTrajectory.h"
 #include "osimSimulationDLL.h"
-#include "OpenSim/Actuators/DeGrooteFregly2016Muscle.h"
 #include <regex>
 
 #include <SimTKcommon/internal/State.h>
@@ -33,7 +32,6 @@
 #include <OpenSim/Common/Reporter.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/Model.h>
-
 
 namespace OpenSim {
 
