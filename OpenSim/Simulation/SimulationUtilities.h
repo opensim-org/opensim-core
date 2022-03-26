@@ -275,7 +275,7 @@ TimeSeriesTable_<T> analyze(Model model, const TimeSeriesTable& statesTable,
     // to the components associated with each discrete variable.
     std::vector<std::pair<std::string, SimTK::ReferencePtr<const Component>>>
     discreteComponentRefs;
-    if (discreteVariablesTable.getNumRows()) {
+    if (discreteVariablesTable.getNumColumns()) {
         OPENSIM_THROW_IF(discreteVariablesTable.getNumRows() !=
                          statesTable.getNumRows(), Exception,
             "Expected discreteVariablesTable to contain the "
@@ -320,14 +320,16 @@ TimeSeriesTable_<T> analyze(Model model, const TimeSeriesTable& statesTable,
         model.setControls(state, controls);
 
         // Apply discrete variables to the state.
-        const auto& labels = discreteVariablesTable.getColumnLabels();
-        for (int idv = 0; idv < (int)labels.size(); ++idv) {
-            const auto& label = labels[idv];
-            const auto& discreteCol =
-                    discreteVariablesTable.getDependentColumn(label);
-            const auto& component = discreteComponentRefs[idv].second.getRef();
-            component.setDiscreteVariableValue(state,
-                    discreteComponentRefs[idv].first, discreteCol[itime]);
+        if (discreteVariablesTable.getNumColumns()) {
+           const auto& labels = discreteVariablesTable.getColumnLabels();
+            for (int idv = 0; idv < (int)labels.size(); ++idv) {
+                const auto& label = labels[idv];
+                const auto& discreteCol =
+                        discreteVariablesTable.getDependentColumn(label);
+                const auto& component = discreteComponentRefs[idv].second.getRef();
+                component.setDiscreteVariableValue(state,
+                        discreteComponentRefs[idv].first, discreteCol[itime]);
+            }
         }
 
         // Generate report results for the current state.
