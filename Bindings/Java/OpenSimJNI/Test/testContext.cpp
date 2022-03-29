@@ -125,7 +125,6 @@ int main()
     const OpenSim::Array<AbstractPathPoint*>& path = context->getCurrentPath(*dTRIlong);
     cout << "Muscle Path" << endl;
     cout << path.getSize() << endl;
-    context->realizePosition();
     for(int i=0; i< path.getSize(); i++)
         cout << path[i]->getParentFrame().getName()
              << path[i]->getLocation(stateCopy) << endl;
