@@ -85,7 +85,7 @@ int main()
     delete context;
     model = new Model("arm26_20.osim");
     context = new OpenSimContext(&model->initSystem(), model);
-    // Make a copy of state contained in context ad make sure content match 
+    // Make a copy of state contained in context ad make sure content match
     SimTK::State stateCopy = context->getCurrentStateCopy();
     assert(context->getCurrentStateRef().toString()==stateCopy.toString());
 
@@ -162,7 +162,8 @@ int main()
     // Compare to known path 
     cout << "New Muscle Path" << endl;
     cout << path.getSize() << endl;
-    context->realizePosition();
+    context->recreateSystemKeepStage();
+    model->realizePosition(stateCopy);
     for(int i=0; i< path.getSize(); i++)
         cout << path[i]->getParentFrame().getName() 
              << path[i]->getLocation(stateCopy) << endl;
