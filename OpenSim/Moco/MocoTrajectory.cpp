@@ -368,7 +368,7 @@ void MocoTrajectory::insertControlsTrajectory(
 void MocoTrajectory::generateSpeedsFromValues() {
     auto valuesTable = exportToValuesTable();
     int numValues = (int)valuesTable.getNumColumns();
-    OPENSIM_THROW_IF(numValues, Exception,
+    OPENSIM_THROW_IF(!numValues, Exception,
         "Tried to compute speeds from coordinate values, but no values "
         "exist in the trajectory.");
     m_states.resize(getNumTimes(), 2*numValues);
@@ -395,6 +395,7 @@ void MocoTrajectory::generateSpeedsFromValues() {
         // speed memory.
         for (int itime = 0; itime < m_time.size(); ++itime) {
             currTime[0] = m_time[itime];
+            m_states(itime, ivalue) = splines.get(name).calcValue(currTime);
             m_states(itime, ivalue + numValues) =
                     splines.get(name).calcDerivative({0}, currTime);
         }
@@ -407,11 +408,13 @@ void MocoTrajectory::generateSpeedsFromValues() {
 void MocoTrajectory::generateAccelerationsFromValues() {
     auto valuesTable = exportToValuesTable();
     int numValues = (int)valuesTable.getNumColumns();
-    OPENSIM_THROW_IF(numValues, Exception,
+    OPENSIM_THROW_IF(!numValues, Exception,
         "Tried to compute accelerations from coordinate values, but no values "
         "exist in the trajectory.");
     int numDerivativesWithoutAccelerations =
             getNumDerivativesWithoutAccelerations();
+    SimTK::Matrix derivativesWithoutAccelerations =
+            getDerivativesWithoutAccelerationsTrajectory();
     m_derivatives.resize(getNumTimes(),
                          numValues + numDerivativesWithoutAccelerations);
 
@@ -444,6 +447,15 @@ void MocoTrajectory::generateAccelerationsFromValues() {
         }
     }
 
+    // Fill back in any non-acceleration derivative values.
+    for (int idv = 0; idv < numDerivativesWithoutAccelerations; ++idv) {
+        for (int itime = 0; itime < m_time.size(); ++itime) {
+            currTime[0] = m_time[itime];
+            m_derivatives(itime, idv + numValues) =
+                    derivativesWithoutAccelerations(itime, idv);
+        }
+    }
+
     // Assign derivative names.
     m_derivative_names = derivativeNames;
 }
@@ -451,16 +463,18 @@ void MocoTrajectory::generateAccelerationsFromValues() {
 void MocoTrajectory::generateAccelerationsFromSpeeds() {
     auto speedsTable = exportToSpeedsTable();
     int numSpeeds = (int)speedsTable.getNumColumns();
-    OPENSIM_THROW_IF(numSpeeds, Exception,
+    OPENSIM_THROW_IF(!numSpeeds, Exception,
         "Tried to compute accelerations from coordinate speeds, but no speeds "
         "exist in the trajectory.");
     int numDerivativesWithoutAccelerations =
             getNumDerivativesWithoutAccelerations();
+    SimTK::Matrix derivativesWithoutAccelerations =
+            getDerivativesWithoutAccelerationsTrajectory();
     m_derivatives.resize(getNumTimes(),
                          numSpeeds + numDerivativesWithoutAccelerations);
 
     // Spline the values trajectory.
-    GCVSplineSet splines(numSpeeds, {}, std::min(getNumTimes() - 1, 5));
+    GCVSplineSet splines(speedsTable, {}, std::min(getNumTimes() - 1, 5));
 
     const auto& speedNames = speedsTable.getColumnLabels();
     std::vector<std::string> derivativeNamesWithoutAccelerations =
@@ -485,6 +499,15 @@ void MocoTrajectory::generateAccelerationsFromSpeeds() {
             currTime[0] = m_time[itime];
             m_derivatives(itime, ivalue) =
                     splines.get(name).calcDerivative({0}, currTime);
+        }
+    }
+
+    // Fill back in any non-acceleration derivative values.
+    for (int idv = 0; idv < numDerivativesWithoutAccelerations; ++idv) {
+        for (int itime = 0; itime < m_time.size(); ++itime) {
+            currTime[0] = m_time[itime];
+            m_derivatives(itime, idv + numSpeeds) =
+                    derivativesWithoutAccelerations(itime, idv);
         }
     }
 
