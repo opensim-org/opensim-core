@@ -68,21 +68,11 @@ TimeSeriesTable_<T> analyzeMocoTrajectory(
         const std::vector<std::string>& outputPaths) {
     const TimeSeriesTable statesTable = trajectory.exportToStatesTable();
     const TimeSeriesTable controlsTable = trajectory.exportToControlsTable();
-    TimeSeriesTable derivativesTable = trajectory.exportToDerivativesTable();
-
-    // Remove all derivatives representing coordinate accelerations since we only
-    // want to pass derivatives associated with auxiliary dynamics in the model.
-    const std::vector<std::string>& labels = derivativesTable.getColumnLabels();
-    for (const std::string& label : labels) {
-        ComponentPath path(label);
-        if (path.getComponentName() == "accel") {
-            derivativesTable.removeColumn(label);
-        }
-    }
-
+    const TimeSeriesTable derivativesWithoutAccelerationsTable =
+            trajectory.exportToDerivativesWithoutAccelerationsTable();
     return analyze<T>(
             std::move(model), statesTable, controlsTable, outputPaths,
-            derivativesTable);
+            derivativesWithoutAccelerationsTable);
 }
 
 /// Given a MocoTrajectory and the associated OpenSim model, return the model
