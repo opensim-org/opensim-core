@@ -8,6 +8,7 @@ cmake_minimum_required(VERSION 3.2)
 
 include(ExternalProject)
 include(CMakeParseArguments)
+include(CMakeDependentOption)
 
 # Set the default for CMAKE_INSTALL_PREFIX.
 function(SetDefaultCMakeInstallPrefix)
@@ -200,7 +201,15 @@ AddDependency(NAME       spdlog
                          -DSPDLOG_BUILD_TESTS:BOOL=OFF
                          -DSPDLOG_BUILD_EXAMPLE:BOOL=OFF
                          -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON)
+# Moco settings.
+# --------------
+option(OPENSIM_WITH_CASADI
+        "Build CasADi support for Moco (MocoCasADiSolver)." OFF)
+option(OPENSIM_WITH_TROPTER
+        "Build the tropter optimal control library, for use in MocoTropterSolver." OFF)
 
+
+if(OPENSIM_WITH_TROPTER OR OPENSIM_WITH_CASADI)
 AddDependency(NAME    eigen
               DEFAULT ON
               URL     https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.zip)
@@ -213,13 +222,16 @@ AddDependency(NAME colpack
                          -DENABLE_EXAMPLES:BOOL=OFF
                          -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON)
 
-set(SUPERBUILD_adolc ON CACHE BOOL 
-    "Automatically download, configure, build and install adolc")
-set(SUPERBUILD_ipopt ON CACHE BOOL 
-    "Automatically download, configure, build and install ipopt")
+CMAKE_DEPENDENT_OPTION(SUPERBUILD_adolc "Automatically download, configure, build and install adolc" ON
+                       "OPENSIM_WITH_TROPTER OR OPENSIM_WITH_CASADI" OFF)
+CMAKE_DEPENDENT_OPTION(SUPERBUILD_ipopt "Automatically download, configure, build and install ipopt" ON
+                       "OPENSIM_WITH_TROPTER OR OPENSIM_WITH_CASADI" OFF)
+endif()
 
-set(SUPERBUILD_casadi ON CACHE BOOL 
-    "Automatically download, configure, build and install casadi")
+if (OPENSIM_WITH_CASADI)
+    CMAKE_DEPENDENT_OPTION(SUPERBUILD_casadi "Automatically download, configure, build and install casadi" ON
+                           "OPENSIM_WITH_CASADI" OFF)
+endif()
 
 if (WIN32)
 
