@@ -214,6 +214,8 @@ AddDependency(NAME    eigen
               DEFAULT ON
               URL     https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.zip)
 
+mark_as_advanced(SUPERBUILD_eigen)
+
 AddDependency(NAME colpack
               DEFAULT ON
               GIT_URL https://github.com/opensim-org/colpack.git
@@ -222,8 +224,10 @@ AddDependency(NAME colpack
                          -DENABLE_EXAMPLES:BOOL=OFF
                          -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON)
 
+mark_as_advanced(SUPERBUILD_colpack)
+
 CMAKE_DEPENDENT_OPTION(SUPERBUILD_adolc "Automatically download, configure, build and install adolc" ON
-                       "OPENSIM_WITH_TROPTER OR OPENSIM_WITH_CASADI" OFF)
+                       "OPENSIM_WITH_TROPTER" ON)
 CMAKE_DEPENDENT_OPTION(SUPERBUILD_ipopt "Automatically download, configure, build and install ipopt" ON
                        "OPENSIM_WITH_TROPTER OR OPENSIM_WITH_CASADI" OFF)
 endif()
@@ -231,6 +235,7 @@ endif()
 if (OPENSIM_WITH_CASADI)
     CMAKE_DEPENDENT_OPTION(SUPERBUILD_casadi "Automatically download, configure, build and install casadi" ON
                            "OPENSIM_WITH_CASADI" OFF)
+    mark_as_advanced(SUPERBUILD_casadi)
 endif()
 
 if (WIN32)
@@ -247,6 +252,8 @@ if (WIN32)
             CONFIGURE_COMMAND ""
             BUILD_COMMAND ""
             INSTALL_COMMAND ${ADOLC_INSTALL_CMD})
+
+        mark_as_advanced(SUPERBUILD_adolc)
     endif()
 
 
@@ -281,7 +288,7 @@ if (WIN32)
         # COIN-OR may make binaries available on GitHub (see release 3.13.2),
         # likely using Intel Fortran.
         # https://github.com/coin-or/Ipopt/releases
-
+        mark_as_advanced(SUPERBUILD_ipopt)
     endif()
 else()
 
