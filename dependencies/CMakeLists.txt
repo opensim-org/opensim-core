@@ -227,7 +227,7 @@ AddDependency(NAME colpack
 mark_as_advanced(SUPERBUILD_colpack)
 
 CMAKE_DEPENDENT_OPTION(SUPERBUILD_adolc "Automatically download, configure, build and install adolc" ON
-                       "OPENSIM_WITH_TROPTER" ON)
+                       "OPENSIM_WITH_TROPTER" OFF)
 CMAKE_DEPENDENT_OPTION(SUPERBUILD_ipopt "Automatically download, configure, build and install ipopt" ON
                        "OPENSIM_WITH_TROPTER OR OPENSIM_WITH_CASADI" OFF)
 endif()
