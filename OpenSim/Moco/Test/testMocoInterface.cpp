@@ -2060,6 +2060,53 @@ TEST_CASE("Objective breakdown", "[casadi]") {
     CHECK(solution.getObjectiveTerm("goal_b") == Approx(0.01 * 7.3));
 }
 
+TEST_CASE("generateAccelerationsFromXXX() does not overwrite existing "
+          "non-accleration derivatives.") {
+    int N = 20;
+    SimTK::Vector time = createVectorLinspace(20, 0.0, 1.0);
+    std::vector<std::string> snames{"/jointset/joint/coord/value",
+                                    "/jointset/joint/coord/speed",
+                                    "/forceset/muscle/normalized_tendon_force"};
+    std::vector<std::string> cnames{"/forceset/muscle"};
+    std::vector<std::string> dnames{
+        "/forceset/muscle/implicitderiv_normalized_tendon_force"};
+    SimTK::Matrix states = SimTK::Test::randMatrix(N, 3);
+    SimTK::Matrix controls = SimTK::Test::randMatrix(N, 1);
+    SimTK::Matrix derivatives = SimTK::Test::randMatrix(N, 1);
+    MocoTrajectory traj(time, snames, cnames, {}, dnames, {}, states, controls,
+            SimTK::Matrix(), derivatives, SimTK::RowVector());
+
+    std::vector<std::string> derivativeNames{
+        "/jointset/joint/coord/accel",
+        "/forceset/muscle/implicitderiv_normalized_tendon_force"};
+    {
+        traj.generateAccelerationsFromValues();
+        CHECK(traj.getNumDerivatives() == 2);
+        CHECK(traj.getDerivativeNames() == derivativeNames);
+        SimTK::Matrix derivativesWithoutAccelerations =
+                traj.getDerivativesWithoutAccelerationsTrajectory();
+        double error = 0.0;
+        for (int irow = 0; irow < derivatives.nrow(); ++irow) {
+            error += pow(derivatives(irow, 0) -
+                         derivativesWithoutAccelerations(irow, 0), 2);
+        }
+        SimTK_TEST_EQ(error, 0.0);
+    }
+    {
+        traj.generateAccelerationsFromSpeeds();
+        CHECK(traj.getNumDerivatives() == 2);
+        CHECK(traj.getDerivativeNames() == derivativeNames);
+        SimTK::Matrix derivativesWithoutAccelerations =
+                traj.getDerivativesWithoutAccelerationsTrajectory();
+        double error = 0.0;
+        for (int irow = 0; irow < derivatives.nrow(); ++irow) {
+            error += pow(derivatives(irow, 0) -
+                         derivativesWithoutAccelerations(irow, 0), 2);
+        }
+        SimTK_TEST_EQ(error, 0.0);
+    }
+}
+
 TEST_CASE("Solver isAvailable()") {
 #ifdef OPENSIM_WITH_CASADI
     CHECK(MocoCasADiSolver::isAvailable());
