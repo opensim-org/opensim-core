@@ -100,6 +100,15 @@ the trajectory will be sealed (MocoTrajectory::isSealed()), which means
 that you cannot do anything with the trajectory (read, edit, or write) until you
 call MocoTrajectory::unseal(). The sealing forces you to acknowledge that the
 solver failed.
+
+@par Convenience accessors
+The accessors getValuesTrajectory() and getSpeedsTrajectory() (and related
+methods (e.g., getValueNames()) are available to obtain only the coordinate
+values or coordinate speeds, which are part of the states trajectory. Note that
+these accessors create fresh data structures from the existing member variables,
+so repeated calls should be avoided. Similarly, the accessors
+getAccelerationsTrajectory() and getDerivativesWithoutAccelerationsTrajectory()
+are available to access subcomponents of the derivatives trajectory.
  */
 // Not using three-slash doxygen comments because that messes up verbatim.
 class OSIMMOCO_API MocoTrajectory {
