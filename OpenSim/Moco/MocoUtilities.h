@@ -68,8 +68,11 @@ TimeSeriesTable_<T> analyzeMocoTrajectory(
         const std::vector<std::string>& outputPaths) {
     const TimeSeriesTable statesTable = trajectory.exportToStatesTable();
     const TimeSeriesTable controlsTable = trajectory.exportToControlsTable();
+    const TimeSeriesTable derivativesWithoutAccelerationsTable =
+            trajectory.exportToDerivativesWithoutAccelerationsTable();
     return analyze<T>(
-            std::move(model), statesTable, controlsTable, outputPaths);
+            std::move(model), statesTable, controlsTable, outputPaths,
+            derivativesWithoutAccelerationsTable);
 }
 
 /// Given a MocoTrajectory and the associated OpenSim model, return the model

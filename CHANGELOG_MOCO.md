@@ -3,6 +3,14 @@ Moco Change Log
 
 1.2.0
 -----
+- 2022-03-25: Fixed a bug where calculations from MocoStudy::analyze() were
+              incorrect because DeGrooteFregly2016Muscle auxiliary variables
+              were not included in the SimTK::State. Added convenience 
+              accessors to MocoTrajectory and fixed a bug where
+              MocoTrajectory::generateAccelerationsFromValues() and
+              MocoTrajectory::generateAccelerationsFromSpeeds() were
+              overwriting non-acceleration derivatives in the trajectory.
+
 - 2022-02-10: Added option to MocoCasADiSolver to enforce MocoPathConstraints 
               at mesh interval midpoints when using Hermite-Simpson collocation
               (via the property 'enforce_path_constraint_midpoints').

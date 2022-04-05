@@ -142,9 +142,12 @@ TEST_CASE("MocoInverse Rajagopal2016, 18 muscles", "[casadi]") {
     inverse.set_mesh_interval(0.025);
     inverse.set_constraint_tolerance(1e-4);
     inverse.set_convergence_tolerance(1e-4);
+    inverse.set_output_paths(0, ".*tendon_force.*");
+    inverse.set_output_paths(1, ".*fiber_force_along_tendon.*");
 
     SECTION("Base problem") {
-        MocoSolution solution = inverse.solve().getMocoSolution();
+        MocoInverseSolution inverseSolution = inverse.solve();
+        MocoSolution solution = inverseSolution.getMocoSolution();
         //solution.write("testMocoInverse_subject_18musc_solution.sto");
 
         MocoTrajectory std("std_testMocoInverse_subject_18musc_solution.sto");
@@ -152,6 +155,27 @@ TEST_CASE("MocoInverse Rajagopal2016, 18 muscles", "[casadi]") {
         CHECK(std.compareContinuousVariablesRMS(solution,
                                                 {{"controls", {}}}) < 1e-2);
         CHECK(std.compareContinuousVariablesRMS(solution, {{"states", {}}}) < 1e-2);
+
+        // Check muscle-tendon equilibrium.
+        TimeSeriesTable outputs = inverseSolution.getOutputs();
+        Model model = modelProcessor.process();
+        const auto& muscles = model.getComponentList<DeGrooteFregly2016Muscle>();
+        for (const auto& muscle : muscles) {
+            const auto& path = muscle.getAbsolutePathString();
+            const auto& activeFiberForceAlongTendon = outputs.getDependentColumn(
+                    path + "|active_fiber_force_along_tendon");
+            const auto& passiveFiberForceAlongTendon =
+                    outputs.getDependentColumn(
+                        path + "|passive_fiber_force_along_tendon");
+            const auto& tendonForce = outputs.getDependentColumn(
+                    path + "|tendon_force");
+
+            const auto residual = (tendonForce -
+                    (passiveFiberForceAlongTendon + activeFiberForceAlongTendon))
+                            / muscle.getMaxIsometricForce();
+
+            CHECK(residual.normRMS() < 1e-6);
+        }
     }
 
     SECTION("With a MocoControlBoundConstraint") {
