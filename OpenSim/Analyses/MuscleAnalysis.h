@@ -104,6 +104,8 @@ private:
     Storage *_normFiberVelocityStore;
     /** Angular velocity of the muscle fibers. */
     Storage *_pennationAngularVelocityStore;
+    /** Tendon Velocity */
+    Storage* _tendonVelocityStore;
 
     /** Force applied by the muscle. */
     Storage *_forceStore;
@@ -185,6 +187,8 @@ public:
         return _normFiberVelocityStore; }
     Storage* getPennationAngularVelocityStorage() const { 
         return _pennationAngularVelocityStore; }
+    Storage* getTendonVelocityStorage() const { 
+        return _tendonVelocityStore; }
 
     Storage* getForceStorage() const { 
         return _forceStore; }

@@ -123,6 +123,7 @@ void MuscleAnalysis::setNull()
     _fiberVelocityStore = NULL;
     _normFiberVelocityStore = NULL;
     _pennationAngularVelocityStore = NULL;
+    _tendonVelocityStore = NULL;
 
     _forceStore = NULL;
     _fiberForceStore = NULL;
@@ -291,7 +292,13 @@ void MuscleAnalysis::allocateStorageObjects()
     _normFiberVelocityStore->setDescription(getDescription());
     _storageList.append(_normFiberVelocityStore );
 
-    _pennationAngularVelocityStore = new Storage(1000,
+
+    _tendonVelocityStore = new Storage(1000, "TendonVelocity");
+    _tendonVelocityStore->setDescription(getDescription());
+    _storageList.append(_tendonVelocityStore);
+
+    _pennationAngularVelocityStore =
+            new Storage(1000,
         "PennationAngularVelocity");
     _pennationAngularVelocityStore->setDescription(getDescription());
     _storageList.append(_pennationAngularVelocityStore );
@@ -512,7 +519,8 @@ int MuscleAnalysis::record(const SimTK::State& s)
 
     // Muscle velocity information
     Array<double> fibVel(nan,nm), normFibVel(nan,nm);
-    Array<double> penAngVel(nan,nm);
+    Array<double> penAngVel(nan, nm);
+    Array<double> tendonVel(nan, nm);
 
     // Muscle component forces
     Array<double> force(nan, nm), fibforce(nan, nm);
@@ -582,6 +590,7 @@ int MuscleAnalysis::record(const SimTK::State& s)
                 fibVel[i] = _muscleArray[i]->getFiberVelocity(s);
                 normFibVel[i] =  _muscleArray[i]->getNormalizedFiberVelocity(s);
                 penAngVel[i] =  _muscleArray[i]->getPennationAngularVelocity(s);
+                tendonVel[i] = _muscleArray[i]->getTendonVelocity(s);
                 //Powers
                 fibActivePower[i] = _muscleArray[i]->getFiberActivePower(s);
                 fibPassivePower[i] = _muscleArray[i]->getFiberPassivePower(s);
@@ -620,7 +629,8 @@ int MuscleAnalysis::record(const SimTK::State& s)
     _normFiberVelocityStore->append(tReal,normFibVel.getSize(),&normFibVel[0]);
     _pennationAngularVelocityStore
         ->append(tReal,penAngVel.getSize(),&penAngVel[0]);
-
+    _tendonVelocityStore->append(tReal, tendonVel.getSize(), &tendonVel[0]);
+ 
     _forceStore->append(tReal,force.getSize(),&force[0]);
     _fiberForceStore->append(tReal,fibforce.getSize(),&fibforce[0]);
     _activeFiberForceStore->append(tReal,actfibforce.getSize(),&actfibforce[0]);
