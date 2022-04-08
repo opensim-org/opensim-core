@@ -951,12 +951,18 @@ TEMPLATE_TEST_CASE(
         MocoTrajectory guess = ms.createGuess("bounds");
         CHECK(guess.getTime().size() == Nc);
         CHECK(guess.getStateNames() == expectedStateNames);
+        CHECK(guess.getValueNames()[0] == expectedStateNames[0]);
+        CHECK(guess.getSpeedNames()[0] == expectedStateNames[1]);
         CHECK(guess.getControlNames() == expectedControlNames);
         CHECK(guess.getTime()[0] == 0);
         // midpoint of bounds [0, 10]
         CHECK(guess.getTime()[Nc - 1] == Approx(5.0));
 
         SimTK_TEST_EQ(guess.getStatesTrajectory(), expectedStatesTraj);
+        SimTK_TEST_EQ(guess.getValuesTrajectory(),
+                      expectedStatesTraj.block(0, 0, Nc, 1));
+        SimTK_TEST_EQ(guess.getSpeedsTrajectory(),
+                      expectedStatesTraj.block(0, 1, Nc, 1));
         SimTK_TEST_EQ(guess.getControlsTrajectory(), expectedControlsTraj);
     }
 
@@ -965,11 +971,17 @@ TEMPLATE_TEST_CASE(
         MocoTrajectory guess = ms.createGuess("random");
         CHECK(guess.getTime().size() == Nc);
         CHECK(guess.getStateNames() == expectedStateNames);
+        CHECK(guess.getValueNames()[0] == expectedStateNames[0]);
+        CHECK(guess.getSpeedNames()[0] == expectedStateNames[1]);
         CHECK(guess.getControlNames() == expectedControlNames);
 
         // The numbers are random, so we don't what they are; only that they
         // are different from the guess from bounds.
         SimTK_TEST_NOTEQ(guess.getStatesTrajectory(), expectedStatesTraj);
+        SimTK_TEST_NOTEQ(guess.getValuesTrajectory(),
+                      expectedStatesTraj.block(0, 0, Nc, 1));
+        SimTK_TEST_NOTEQ(guess.getSpeedsTrajectory(),
+                      expectedStatesTraj.block(0, 1, Nc, 1));
         SimTK_TEST_NOTEQ(guess.getControlsTrajectory(), expectedControlsTraj);
     }
 
@@ -1124,6 +1136,8 @@ TEMPLATE_TEST_CASE(
             CHECK(guess.getTime().size() == 10);
             CHECK(guess.getTime()[9] == Approx(5));
             CHECK(guess.getStatesTrajectory().nrow() == 10);
+            CHECK(guess.getValuesTrajectory().nrow() == 10);
+            CHECK(guess.getSpeedsTrajectory().nrow() == 10);
             CHECK(guess.getControlsTrajectory().nrow() == 10);
             SimTK_TEST_EQ(guess.getControl("/actuator"),
                     createVectorLinspace(10, 2.8, 7.3));
@@ -1142,6 +1156,8 @@ TEMPLATE_TEST_CASE(
             CHECK(guess.getTime().size() == expectedNumTimes);
             SimTK_TEST_EQ(guess.getTime()[expectedNumTimes - 1], 5);
             CHECK(guess.getStatesTrajectory().nrow() == expectedNumTimes);
+            CHECK(guess.getValuesTrajectory().nrow() == expectedNumTimes);
+            CHECK(guess.getSpeedsTrajectory().nrow() == expectedNumTimes);
             CHECK(guess.getControlsTrajectory().nrow() == expectedNumTimes);
             SimTK_TEST_EQ(guess.getControl("/actuator"),
                     createVectorLinspace(expectedNumTimes, 2.8, 7.3));
@@ -1159,6 +1175,8 @@ TEMPLATE_TEST_CASE(
             CHECK(guess.getTime().size() == expectedNumTimes);
             SimTK_TEST_EQ(guess.getTime()[expectedNumTimes - 1], 5);
             CHECK(guess.getStatesTrajectory().nrow() == expectedNumTimes);
+            CHECK(guess.getValuesTrajectory().nrow() == expectedNumTimes);
+            CHECK(guess.getSpeedsTrajectory().nrow() == expectedNumTimes);
             CHECK(guess.getControlsTrajectory().nrow() == expectedNumTimes);
             SimTK_TEST_EQ(guess.getControl("/actuator"),
                     createVectorLinspace(expectedNumTimes, 2.8, 7.3));
@@ -1701,6 +1719,8 @@ TEMPLATE_TEST_CASE("Sliding mass", "", MocoCasADiSolver,
     MocoSolution solution = study.solve();
     int numTimes = 20;
     int numStates = 2;
+    int numValues = 1;
+    int numSpeeds = 1;
     int numControls = 1;
 
     // Check dimensions and metadata of the solution.
@@ -1713,6 +1733,12 @@ TEMPLATE_TEST_CASE("Sliding mass", "", MocoCasADiSolver,
     const auto& states = solution.getStatesTrajectory();
     SimTK_TEST(states.nrow() == numTimes);
     SimTK_TEST(states.ncol() == numStates);
+    const auto& values = solution.getValuesTrajectory();
+    SimTK_TEST(values.nrow() == numTimes);
+    SimTK_TEST(values.ncol() == numValues);
+    const auto& speeds = solution.getSpeedsTrajectory();
+    SimTK_TEST(speeds.nrow() == numTimes);
+    SimTK_TEST(speeds.ncol() == numSpeeds);
     const auto& controls = solution.getControlsTrajectory();
     SimTK_TEST(controls.nrow() == numTimes);
     SimTK_TEST(controls.ncol() == numControls);
@@ -1756,6 +1782,17 @@ TEMPLATE_TEST_CASE("Solving an empty MocoProblem", "",
         CHECK(solution.getMultipliersTrajectory().nrow() == Nc);
         CHECK(solution.getDerivativesTrajectory().ncol() == 0);
         CHECK(solution.getDerivativesTrajectory().nrow() == Nc);
+        CHECK(solution.getValuesTrajectory().ncol() == 0);
+        CHECK(solution.getValuesTrajectory().nrow() == Nc);
+        CHECK(solution.getSpeedsTrajectory().ncol() == 0);
+        CHECK(solution.getSpeedsTrajectory().nrow() == Nc);
+        CHECK(solution.getAccelerationsTrajectory().ncol() == 0);
+        CHECK(solution.getAccelerationsTrajectory().nrow() == Nc);
+        CHECK(solution.getDerivativesWithoutAccelerationsTrajectory()
+              .ncol() == 0);
+        CHECK(solution.getDerivativesWithoutAccelerationsTrajectory()
+              .nrow() == Nc);
+
     }
 }
 
@@ -2021,6 +2058,53 @@ TEST_CASE("Objective breakdown", "[casadi]") {
     CHECK(solution.getObjectiveTermByIndex(1) == Approx(0.01 * 7.3));
     CHECK(solution.getObjectiveTerm("goal_a") == Approx(1.5 * 5.2));
     CHECK(solution.getObjectiveTerm("goal_b") == Approx(0.01 * 7.3));
+}
+
+TEST_CASE("generateAccelerationsFromXXX() does not overwrite existing "
+          "non-accleration derivatives.") {
+    int N = 20;
+    SimTK::Vector time = createVectorLinspace(20, 0.0, 1.0);
+    std::vector<std::string> snames{"/jointset/joint/coord/value",
+                                    "/jointset/joint/coord/speed",
+                                    "/forceset/muscle/normalized_tendon_force"};
+    std::vector<std::string> cnames{"/forceset/muscle"};
+    std::vector<std::string> dnames{
+        "/forceset/muscle/implicitderiv_normalized_tendon_force"};
+    SimTK::Matrix states = SimTK::Test::randMatrix(N, 3);
+    SimTK::Matrix controls = SimTK::Test::randMatrix(N, 1);
+    SimTK::Matrix derivatives = SimTK::Test::randMatrix(N, 1);
+    MocoTrajectory traj(time, snames, cnames, {}, dnames, {}, states, controls,
+            SimTK::Matrix(), derivatives, SimTK::RowVector());
+
+    std::vector<std::string> derivativeNames{
+        "/jointset/joint/coord/accel",
+        "/forceset/muscle/implicitderiv_normalized_tendon_force"};
+    {
+        traj.generateAccelerationsFromValues();
+        CHECK(traj.getNumDerivatives() == 2);
+        CHECK(traj.getDerivativeNames() == derivativeNames);
+        SimTK::Matrix derivativesWithoutAccelerations =
+                traj.getDerivativesWithoutAccelerationsTrajectory();
+        double error = 0.0;
+        for (int irow = 0; irow < derivatives.nrow(); ++irow) {
+            error += pow(derivatives(irow, 0) -
+                         derivativesWithoutAccelerations(irow, 0), 2);
+        }
+        SimTK_TEST_EQ(error, 0.0);
+    }
+    {
+        traj.generateAccelerationsFromSpeeds();
+        CHECK(traj.getNumDerivatives() == 2);
+        CHECK(traj.getDerivativeNames() == derivativeNames);
+        SimTK::Matrix derivativesWithoutAccelerations =
+                traj.getDerivativesWithoutAccelerationsTrajectory();
+        double error = 0.0;
+        for (int irow = 0; irow < derivatives.nrow(); ++irow) {
+            error += pow(derivatives(irow, 0) -
+                         derivativesWithoutAccelerations(irow, 0), 2);
+        }
+        SimTK_TEST_EQ(error, 0.0);
+    }
 }
 
 TEST_CASE("Solver isAvailable()") {

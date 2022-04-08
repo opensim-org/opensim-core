@@ -12,7 +12,8 @@ v4.4
 - Fixed an issue with SWIG with `OpenSim::Body::getRotationInGround()` where it would return an object without the correct `SimTK::Rotation` methods.
 - Fixed OpenSim::Arrow start_point property being ignored
 - Fixed objects being set as not up to date with their properties by finalizeFromProperties
-
+- Fixed issue #3176 where McKibbenActuator is not registered and can't be serialized to XML files
+- 
 v4.3
 ====
 - Introduced IMU component that models a typical Inertial Measurement Unit (IMU) with corresponding outputs for orientation, accelerometer, and gyroscope signals. 
