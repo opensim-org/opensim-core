@@ -357,8 +357,11 @@ SimTK::MassProperties Body::getMassProperties() const
 {
     const double& m = get_mass();
     const Vec3& com = get_mass_center();
+    try {
+        auto validMass = !SimTK::isNaN(m) && m >= 0;
+        string msg ="Body "+getName()+" has unspecified or -ve mass value.";
+        SimTK_ERRCHK_ALWAYS(validMass, "Body::getMassProperties", msg.c_str());
 
-    try{
         const SimTK::Inertia& Icom = getInertia();
 
         SimTK::Inertia Ib = Icom;
