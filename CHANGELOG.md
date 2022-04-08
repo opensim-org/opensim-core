@@ -5,6 +5,7 @@ are related to the items below. If there is no issue or pull
 request related to the change, then we may provide the commit.
 
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
+
 v4.4
 ====
 - Updated ezc3d to version 1.4.6 which better manage the events defined in a c3d file.
@@ -12,6 +13,7 @@ v4.4
 - Fixed an issue with SWIG with `OpenSim::Body::getRotationInGround()` where it would return an object without the correct `SimTK::Rotation` methods.
 - Fixed OpenSim::Arrow start_point property being ignored
 - Fixed objects being set as not up to date with their properties by finalizeFromProperties
+- Throw exception if body masses are either NaN or -ve (Issue #3130)
 
 v4.3
 ====
