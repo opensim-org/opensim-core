@@ -15,7 +15,7 @@ v4.4
 - Fixed objects being set as not up to date with their properties by finalizeFromProperties
 - Throw exception if body masses are either NaN or -ve (Issue #3130)
 - Fixed issue #3176 where McKibbenActuator is not registered and can't be serialized to XML files
-- 
+
 
 v4.3
 ====
