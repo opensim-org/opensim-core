@@ -34,6 +34,7 @@
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
 #include <OpenSim/Analyses/BodyKinematics.h>
+#include <OpenSim/Analyses/MuscleAnalysis.h>
 #include <OpenSim/Analyses/IMUDataReporter.h>
 #include <OpenSim/Actuators/ModelFactory.h>
 #include <OpenSim/Simulation/Control/PrescribedController.h>
@@ -54,6 +55,8 @@ void testTugOfWar(const string& dataFileName, const double& defaultAct);
 void testBodyKinematics();
 
 void testIMUDataReporter();
+
+void testMuscleAnalysisSerialization();
 
 int main()
 {
@@ -100,6 +103,12 @@ int main()
     } catch (const std::exception& e) {
         cout << e.what() << endl;
         failures.push_back("testIMUDataReporter");
+    }   
+    try {
+        testMuscleAnalysisSerialization();
+    } catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testMuscleAnalysisSerialization");
     }   
 
     if (!failures.empty()) {
@@ -587,4 +596,17 @@ void testIMUDataReporter() {
                     sumSquaredError(1, numTimes - 2).sum());
         SimTK_TEST_EQ_TOL(integratedSumSquaredError, 0.0, 1e-5);
     }
+}
+void testMuscleAnalysisSerialization()
+{ 
+    MuscleAnalysis m;
+    m.setComputeMoments(true);
+    m.print("manalysis.xml");
+    MuscleAnalysis roundTrip("manalysis.xml");
+    ASSERT(roundTrip.getComputeMoments());
+    m.setComputeMoments(false);
+    m.print("manalysis.xml");
+    // Check deserialization and copying
+    roundTrip = MuscleAnalysis("manalysis.xml");
+    ASSERT(!roundTrip.getComputeMoments());
 }

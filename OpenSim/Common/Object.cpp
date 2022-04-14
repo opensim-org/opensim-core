@@ -1621,10 +1621,13 @@ makeObjectFromFile(const std::string &aFileName)
 
 void Object::makeObjectNamesConsistentWithProperties()
 {
+    bool prevDirtyFlag = isObjectUpToDateWithProperties();
+    bool modificationMade = false;
+
     // Cycle through this object's Object properties and make sure those
     // that are objects have names that are consistent with object property. 
     for (int i = 0; i < getNumProperties(); ++i) {
-        auto& prop = updPropertyByIndex(i);
+        auto& prop = updPropertyByIndex(i);  // CARE: sets object as not up to date
         // check if property is of type Object
         if (prop.isObjectProperty()) {
             // a property is a list so cycle through its contents
@@ -1633,13 +1636,22 @@ void Object::makeObjectNamesConsistentWithProperties()
                 // If a single object property, set the object's name to the
                 // property's name, otherwise it will be inconsistent with
                 // what is serialized (property name).
-                if (!prop.isUnnamedProperty() && prop.isOneObjectProperty()) {
+                if (!prop.isUnnamedProperty() && prop.isOneObjectProperty() && obj.getName() != prop.getName()) {
                     obj.setName(prop.getName());
+                    modificationMade = true;
                 }
                 // In any case, any objects that are properties of this object
                 // also need to be processed
                 obj.makeObjectNamesConsistentWithProperties();
             }
+        }
+    }
+
+    if (!modificationMade) {
+        if (prevDirtyFlag) {
+            setObjectIsUpToDateWithProperties();
+        } else {
+            clearObjectIsUpToDateWithProperties();
         }
     }
 }

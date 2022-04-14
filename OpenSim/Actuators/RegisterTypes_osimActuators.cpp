@@ -25,40 +25,7 @@
 #include <iostream>
 #include <OpenSim/Common/Object.h>
 #include "RegisterTypes_osimActuators.h"
-
-#include "CoordinateActuator.h"
-#include "ActivationCoordinateActuator.h"
-#include "PointActuator.h"
-#include "TorqueActuator.h"
-#include "BodyActuator.h"
-#include "PointToPointActuator.h"
-#include "ClutchedPathSpring.h"
-
-#include "Thelen2003Muscle.h"
-#include "Thelen2003Muscle_Deprecated.h"
-
-#include "Schutte1993Muscle_Deprecated.h"
-#include "Delp1990Muscle_Deprecated.h"
-#include "SpringGeneralizedForce.h"
-
-#include "RigidTendonMuscle.h"
-
-#include "ActiveForceLengthCurve.h"
-#include "ForceVelocityCurve.h"
-#include "ForceVelocityInverseCurve.h"
-#include "TendonForceLengthCurve.h"
-#include "FiberForceLengthCurve.h"
-#include "FiberCompressiveForceLengthCurve.h"
-#include "FiberCompressiveForceCosPennationCurve.h"
-#include "MuscleFirstOrderActivationDynamicModel.h"
-#include "MuscleSecondOrderActivationDynamicModel.h"
-
-#include "MuscleFixedWidthPennationModel.h"
-
-#include "Millard2012EquilibriumMuscle.h"
-#include "Millard2012AccelerationMuscle.h"
-#include "DeGrooteFregly2016Muscle.h"
-
+#include "osimActuators.h"
 #include "ModelOperators.h"
 
 
@@ -89,6 +56,7 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
     Object::registerType( BodyActuator() );
     Object::registerType( PointToPointActuator() );
     Object::registerType( ClutchedPathSpring() );
+    Object::registerType( McKibbenActuator() );
 
     Object::registerType( Thelen2003Muscle() );
     Object::registerType( Thelen2003Muscle_Deprecated() );

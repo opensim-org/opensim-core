@@ -53,9 +53,13 @@ const std::string modelFilename = "arm26.osim";
 // to recompose existing components, this will need continual updating. For example,
 // Joint's often add PhysicalOffsetFrames to handle what used to be baked in location
 // and orientation offsets.
-// 2018-09-05 updates to accommodate ModelComponentSets: BodySet, JointSet,
-//    ConstraintSet, ForceSet, ProbeSet, WrapObjectSet, ...
-const int expectedNumComponents = 200; 
+// 2018-09-05
+//     Updates to accommodate ModelComponentSets: BodySet, JointSet, ConstraintSet,
+//     ForceSet, ProbeSet, WrapObjectSet, ...
+// 2022-03-16
+//     Subtracted 14 from the count because PathWrapPoint no longer inherits from
+//     PathPoint (which internally creates a Station subcomponent)
+const int expectedNumComponents = 186;
 const int expectedNumJointsWithStateVariables = 2;
 // 2018-08-22 added 2 for JointSet and ForceSet that contain Components with states
 const int expectedNumModelComponentsWithStateVariables = 12;
