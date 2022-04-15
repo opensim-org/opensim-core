@@ -330,7 +330,6 @@ Output value and a user-defined function. Outputs of type double, SimTK::Vec3,
 and SimTK::SpatialVec are supported. By default, when using vector type Outputs,
 the norm of the vector is tracked, but you can also track a specific element of a
 vector Output via `setOutputIndex()`.
-
 @note The exponent provided via 'setExponent()' is applied to the difference
       between Output value and the tracking function.
 @ingroup mocogoal */

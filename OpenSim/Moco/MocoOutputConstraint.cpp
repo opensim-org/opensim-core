@@ -1,9 +1,9 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoOutputGoal.cpp                                           *
+ * OpenSim: MocoOutputConstraint.h                                            *
  * -------------------------------------------------------------------------- *
  * Copyright (c) 2022 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia, Nicholas Bianco                             *
+ * Author(s): Nicholas Bianco                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -16,21 +16,18 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoOutputGoal.h"
+#include "MocoOutputConstraint.h"
 
 using namespace OpenSim;
 
-// ============================================================================
-// MocoOutputBase
-// ============================================================================
-
-void MocoOutputBase::constructProperties() {
+void MocoOutputConstraint::constructProperties() {
     constructProperty_output_path("");
     constructProperty_exponent(1);
     constructProperty_output_index(-1);
 }
 
-void MocoOutputBase::initializeOnModelBase() const {
+void MocoOutputConstraint::initializeOnModelImpl(const Model&,
+                                                 const MocoProblemInfo&) const {
     OPENSIM_THROW_IF_FRMOBJ(get_output_path().empty(), Exception,
             "No output_path provided.");
     std::string componentPath;
@@ -49,14 +46,13 @@ void MocoOutputBase::initializeOnModelBase() const {
     if (dynamic_cast<const Output<double>*>(abstractOutput)) {
         m_data_type = Type_double;
         OPENSIM_THROW_IF_FRMOBJ(get_output_index() != -1, Exception,
-                "An Output index was provided, but the Output is of type "
-                "'double'.")
+                "An Output index was provided, but the Output is of type 'double'.")
 
     } else if (dynamic_cast<const Output<SimTK::Vec3>*>(abstractOutput)) {
         m_data_type = Type_Vec3;
         OPENSIM_THROW_IF_FRMOBJ(get_output_index() > 2, Exception,
-                "The Output is of type 'SimTK::Vec3', but an Output index "
-                "greater than 2 was provided.");
+                "The Output is of type 'SimTK::Vec3', but an Output index greater "
+                "than 2 was provided.");
         m_index1 = get_output_index();
 
     } else if (dynamic_cast<const Output<SimTK::SpatialVec>*>(abstractOutput)) {
@@ -97,9 +93,17 @@ void MocoOutputBase::initializeOnModelBase() const {
     // Set the "depends-on stage", the SimTK::Stage we must realize to
     // in order to calculate values from this output.
     m_dependsOnStage = m_output->getDependsOnStage();
+
+    // There is only one scalar constraint per Output.
+    setNumEquations(1);
 }
 
-double MocoOutputBase::calcOutputValue(const SimTK::State& state) const {
+void MocoOutputConstraint::calcPathConstraintErrorsImpl(
+        const SimTK::State& state, SimTK::Vector& errors) const {
+    errors[0] = setValueToExponent(calcOutputValue(state));
+}
+
+double MocoOutputConstraint::calcOutputValue(const SimTK::State& state) const {
     getModel().getSystem().realize(state, m_output->getDependsOnStage());
 
     double value = 0;
@@ -129,7 +133,7 @@ double MocoOutputBase::calcOutputValue(const SimTK::State& state) const {
     return value;
 }
 
-void MocoOutputBase::printDescriptionImpl() const {
+void MocoOutputConstraint::printDescriptionImpl() const {
     // Output path.
     std::string str = fmt::format("        output: {}", getOutputPath());
 
@@ -148,66 +152,8 @@ void MocoOutputBase::printDescriptionImpl() const {
     // Exponent.
     str += fmt::format(", exponent: {}", getExponent());
 
-    // Bounds (if endpoint constraint).
-    if (getModeIsEndpointConstraint()) {
-        str += fmt::format(", bounds: {}", getConstraintInfo().getBounds()[0]);
-    }
+    // Bounds.
+    str += fmt::format(", bounds: {}", getConstraintInfo().getBounds()[0]);
 
     log_cout(str);
-}
-
-// ============================================================================
-// MocoOutputGoal
-// ============================================================================
-
-void MocoOutputGoal::constructProperties() {
-    constructProperty_divide_by_displacement(false);
-    constructProperty_divide_by_mass(false);
-}
-
-void MocoOutputGoal::initializeOnModelImpl(const Model& output) const {
-    initializeOnModelBase();
-    setRequirements(1, 1, getDependsOnStage());
-}
-
-void MocoOutputGoal::calcIntegrandImpl(
-        const IntegrandInput& input, double& integrand) const {
-    integrand = setValueToExponent(calcOutputValue(input.state));
-}
-
-void MocoOutputGoal::calcGoalImpl(
-        const MocoGoal::GoalInput& input, SimTK::Vector& values) const {
-    values[0] = input.integral;
-    if (get_divide_by_displacement()) {
-        values[0] /=
-                calcSystemDisplacement(input.initial_state, input.final_state);
-    }
-    if (get_divide_by_mass()) {
-        values[0] /= getModel().getTotalMass(input.initial_state);
-    }
-}
-
-// ============================================================================
-// MocoOutputTrackingGoal
-// ============================================================================
-
-void MocoOutputTrackingGoal::constructProperties() {
-    constructProperty_tracking_function();
-}
-
-void MocoOutputTrackingGoal::initializeOnModelImpl(const Model& output) const {
-    initializeOnModelBase();
-    setRequirements(1, 1, getDependsOnStage());
-}
-
-void MocoOutputTrackingGoal::calcIntegrandImpl(const IntegrandInput& input,
-        double& integrand) const {
-    SimTK::Vector time(1, input.state.getTime());
-    integrand = setValueToExponent(calcOutputValue(input.state) -
-                                   get_tracking_function().calcValue(time));
-}
-
-void MocoOutputTrackingGoal::calcGoalImpl(const GoalInput &input,
-        SimTK::Vector &values) const {
-    values[0] = input.integral;
 }
