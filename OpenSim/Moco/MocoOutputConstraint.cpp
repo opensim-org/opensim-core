@@ -152,8 +152,5 @@ void MocoOutputConstraint::printDescriptionImpl() const {
     // Exponent.
     str += fmt::format(", exponent: {}", getExponent());
 
-    // Bounds.
-    str += fmt::format(", bounds: {}", getConstraintInfo().getBounds()[0]);
-
     log_cout(str);
 }
