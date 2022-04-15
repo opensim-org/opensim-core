@@ -3,9 +3,9 @@
 /* -------------------------------------------------------------------------- *
  * OpenSim: MocoOutputGoal.h                                                  *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2019 Stanford University and the Authors                     *
+ * Copyright (c) 2022 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia                                              *
+ * Author(s): Christopher Dembia, Nicholas Bianco                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -277,15 +277,62 @@ private:
     void constructProperties() {};
 };
 
+/** This goal allows you to minimize or constrain the difference of values from
+a Model Output from the beginning and end of a trajectory. Outputs of type
+double, SimTK::Vec3, and SimTK::SpatialVec are supported. By default, when using
+vector type Outputs, the norm of the vector is minimized, but you can also
+minimize a specific element of a vector Output via `setOutputIndex()`. You can
+also specify the exponent of the value in the integrand via `setExponent()`.
+
+This goal supports both "Cost" (default) and "EndpointConstraint" modes. In
+"EndpointConstraint" mode, the difference in Output values is constrained between
+user-specified bounds. By default, these bounds constrain the final value to
+zero; use 'updConstraintInfo()' to set custom bounds.
+
+@note The exponent provided via 'setExponent()' is applied to the difference
+      between final and initial Output values.
+@ingroup mocogoal */
+class OSIMMOCO_API MocoOutputPeriodicityGoal : public MocoOutputBase {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoOutputPeriodicityGoal, MocoOutputBase);
+
+public:
+    MocoOutputPeriodicityGoal() { constructProperties(); }
+    MocoOutputPeriodicityGoal(std::string name) :
+            MocoOutputBase(std::move(name)) {
+        constructProperties();
+    }
+    MocoOutputPeriodicityGoal(std::string name, double weight)
+            : MocoOutputBase(std::move(name), weight) {
+        constructProperties();
+    }
+protected:
+    void initializeOnModelImpl(const Model&) const override {
+        initializeOnModelBase();
+        setRequirements(0, 1, getDependsOnStage());
+    }
+    void calcGoalImpl(
+            const GoalInput& input, SimTK::Vector& values) const override {
+        values[0] = setValueToExponent(
+                calcOutputValue(input.final_state) -
+                calcOutputValue(input.initial_state));
+    }
+    bool getSupportsEndpointConstraintImpl() const override { return true; }
+    Mode getDefaultModeImpl() const override {
+        return Mode::Cost;
+    }
+
+private:
+    void constructProperties() {};
+};
+
 /** This goal allows you to minimize the squared difference between a Model
 Output value and a user-defined function. Outputs of type double, SimTK::Vec3,
-and  SimTK::SpatialVec are supported. By default, when using vector type Outputs,
+and SimTK::SpatialVec are supported. By default, when using vector type Outputs,
 the norm of the vector is tracked, but you can also track a specific element of a
 vector Output via `setOutputIndex()`.
-@note The exponent provided via 'setExponent()' is applied to both the Output
-      value and the tracking function. The squared difference between these two
-      values raised to the exponent is what is minimized. In most cases, the
-      default exponent value of 1 should provide the expected behavior.
+
+@note The exponent provided via 'setExponent()' is applied to the difference
+      between Output value and the tracking function.
 @ingroup mocogoal */
 class OSIMMOCO_API MocoOutputTrackingGoal : public MocoOutputBase {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoOutputTrackingGoal, MocoOutputBase);

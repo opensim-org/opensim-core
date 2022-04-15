@@ -1,9 +1,9 @@
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoOutputGoal.cpp                                           *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2019 Stanford University and the Authors                     *
+ * Copyright (c) 2022 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia                                              *
+ * Author(s): Christopher Dembia, Nicholas Bianco                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -202,8 +202,8 @@ void MocoOutputTrackingGoal::initializeOnModelImpl(const Model& output) const {
 void MocoOutputTrackingGoal::calcIntegrandImpl(const IntegrandInput& input,
         double& integrand) const {
     SimTK::Vector time(1, input.state.getTime());
-    integrand = SimTK::square(setValueToExponent(calcOutputValue(input.state)) -
-            setValueToExponent(get_tracking_function().calcValue(time)));
+    integrand = setValueToExponent(calcOutputValue(input.state) -
+                                   get_tracking_function().calcValue(time));
 }
 
 void MocoOutputTrackingGoal::calcGoalImpl(const GoalInput &input,
