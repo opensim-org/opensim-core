@@ -50,24 +50,29 @@ int main() {
     model.setUseVisualizer(true);
 
     // Create two links, each with a mass of 1 kg, center of mass at the body's
-    // origin, and moments and products of inertia of zero.
-    OpenSim::Body* humerus = new OpenSim::Body("humerus", 1, Vec3(0), Inertia(0));
-    OpenSim::Body* radius  = new OpenSim::Body("radius",  1, Vec3(0), Inertia(0));
+    // origin, and moments and products of inertia corresponding to an
+    // ellipsoid with radii of 0.1, 0.5 and 0.1, in the x, y and z directions,
+    // respectively.
+    OpenSim::Body* humerus = new OpenSim::Body(
+        "humerus", mass, Vec3(0), Inertia(0.052, 0.004, 0.052));
+    OpenSim::Body* radius  = new OpenSim::Body(
+        "radius",  mass, Vec3(0), Inertia(0.052, 0.004, 0.052));
 
     // Connect the bodies with pin joints. Assume each body is 1 m long.
     PinJoint* shoulder = new PinJoint("shoulder",
             // Parent body, location in parent, orientation in parent.
             model.getGround(), Vec3(0), Vec3(0),
             // Child body, location in child, orientation in child.
-            *humerus, Vec3(0, 1, 0), Vec3(0));
+            *humerus, Vec3(0, 0.5, 0), Vec3(0));
     PinJoint* elbow = new PinJoint("elbow",
-            *humerus, Vec3(0), Vec3(0), *radius, Vec3(0, 1, 0), Vec3(0));
+            *humerus, Vec3(0, -0.5, 0), Vec3(0),
+            *radius, Vec3(0, 0.5, 0), Vec3(0));
 
     // Add a muscle that flexes the elbow.
     Millard2012EquilibriumMuscle* biceps = new
         Millard2012EquilibriumMuscle("biceps", 200, 0.6, 0.55, 0);
-    biceps->addNewPathPoint("origin",    *humerus, Vec3(0, 0.8, 0));
-    biceps->addNewPathPoint("insertion", *radius,  Vec3(0, 0.7, 0));
+    biceps->addNewPathPoint("origin",    *humerus, Vec3(0, 0.3, 0));
+    biceps->addNewPathPoint("insertion", *radius,  Vec3(0, 0.2, 0));
 
     // Add a controller that specifies the excitation of the muscle.
     PrescribedController* brain = new PrescribedController();
@@ -96,11 +101,11 @@ int main() {
     bodyGeometry.setColor(Gray);
     // Attach an ellipsoid to a frame located at the center of each body.
     PhysicalOffsetFrame* humerusCenter = new PhysicalOffsetFrame(
-        "humerusCenter", *humerus, Transform(Vec3(0, 0.5, 0)));
+        "humerusCenter", *humerus, Transform(Vec3(0)));
     humerus->addComponent(humerusCenter);
     humerusCenter->attachGeometry(bodyGeometry.clone());
     PhysicalOffsetFrame* radiusCenter = new PhysicalOffsetFrame(
-        "radiusCenter", *radius, Transform(Vec3(0, 0.5, 0)));
+        "radiusCenter", *radius, Transform(Vec3(0)));
     radius->addComponent(radiusCenter);
     radiusCenter->attachGeometry(bodyGeometry.clone());
 
@@ -118,7 +123,7 @@ int main() {
     viz.setBackgroundColor(White);
 
     // Simulate.
-    simulate(model, state, 10.0);
+    simulate(model, state, 5.0);
 
     return 0;
 };
@@ -133,20 +138,15 @@ This code produces the following animation:
 and prints the following information to the console:
 ```
 [reporter]
-              | /forceset/bice|               | 
-          time| ps|fiber_force|    elbow_angle| 
---------------| --------------| --------------| 
-           0.0|       1.180969|      1.5707963| 
-           1.0|       57.27509|     0.77066412| 
-           2.0|      19.219591|      1.5679832| 
-           3.0|      56.155742|      1.4422429| 
-           4.0|      33.436111|      1.5084227| 
-           5.0|      32.678114|       1.517973| 
-           6.0|      37.605448|      1.5022219| 
-           7.0|      36.417485|      1.5072158| 
-           8.0|      34.419941|      1.5079513| 
-           9.0|      34.661339|      1.5067137| 
-          10.0|      35.896608|      1.5071069| 
+              | /forceset/bice|               |
+          time| ps|fiber_force|    elbow_angle|
+--------------| --------------| --------------|
+           0.0|     0.59048448|      1.5707963|
+           1.0|      24.574034|     0.91820573|
+           2.0|      21.418144|      1.4289945|
+           3.0|      17.584893|      1.5105765|
+           4.0|      17.688588|      1.5090021|
+           5.0|      17.590774|      1.5067387| 
 ```
 
 Expand to see Python and Matlab versions of the above example example:
@@ -162,18 +162,19 @@ arm.setName("bicep_curl")
 arm.setUseVisualizer(True)
 
 # ---------------------------------------------------------------------------
-# Create two links, each with a mass of 1 kg, centre of mass at the body's
-# origin, and moments and products of inertia of zero.
+# Create two links, each with a mass of 1 kg, center of mass at the body's
+# origin, and moments and products of inertia corresponding to an ellipsoid
+# with radii of 0.1, 0.5 and 0.1, in the x, y and z directions, respectively.
 # ---------------------------------------------------------------------------
 
 humerus = osim.Body("humerus",
                     1.0,
                     osim.Vec3(0),
-                    osim.Inertia(0, 0, 0))
+                    osim.Inertia(0.052, 0.004, 0.052))
 radius = osim.Body("radius",
                    1.0,
                    osim.Vec3(0),
-                   osim.Inertia(0, 0, 0))
+                   osim.Inertia(0.052, 0.004, 0.052))
 
 # ---------------------------------------------------------------------------
 # Connect the bodies with pin joints. Assume each body is 1m long.
@@ -184,15 +185,15 @@ shoulder = osim.PinJoint("shoulder",
                          osim.Vec3(0),
                          osim.Vec3(0),
                          humerus, # PhysicalFrame
-                         osim.Vec3(0, 1, 0),
+                         osim.Vec3(0, 0.5, 0),
                          osim.Vec3(0))
 
 elbow = osim.PinJoint("elbow",
                       humerus, # PhysicalFrame
-                      osim.Vec3(0),
+                      osim.Vec3(0, -0.5, 0),
                       osim.Vec3(0),
                       radius, # PhysicalFrame
-                      osim.Vec3(0, 1, 0),
+                      osim.Vec3(0, 0.5, 0),
                       osim.Vec3(0))
 
 # ---------------------------------------------------------------------------
@@ -200,17 +201,17 @@ elbow = osim.PinJoint("elbow",
 # ---------------------------------------------------------------------------
 
 biceps = osim.Millard2012EquilibriumMuscle("biceps",  # Muscle name
-                                           200.0,  # Max isometric force
+                                           100.0,  # Max isometric force
                                            0.6,  # Optimal fibre length
                                            0.55,  # Tendon slack length
                                            0.0)  # Pennation angle
 biceps.addNewPathPoint("origin",
                        humerus,
-                       osim.Vec3(0, 0.8, 0))
+                       osim.Vec3(0, 0.3, 0))
 
 biceps.addNewPathPoint("insertion",
                        radius,
-                       osim.Vec3(0, 0.7, 0))
+                       osim.Vec3(0, 0.2, 0))
 
 # ---------------------------------------------------------------------------
 # Add a controller that specifies the excitation of the muscle.
@@ -253,14 +254,14 @@ bodyGeometry.setColor(osim.Vec3(0.5)) # Gray
 humerusCenter = osim.PhysicalOffsetFrame()
 humerusCenter.setName("humerusCenter")
 humerusCenter.setParentFrame(humerus)
-humerusCenter.setOffsetTransform(osim.Transform(osim.Vec3(0, 0.5, 0)))
+humerusCenter.setOffsetTransform(osim.Transform(osim.Vec3(0)))
 humerus.addComponent(humerusCenter)
 humerusCenter.attachGeometry(bodyGeometry.clone())
 
 radiusCenter = osim.PhysicalOffsetFrame()
 radiusCenter.setName("radiusCenter")
 radiusCenter.setParentFrame(radius)
-radiusCenter.setOffsetTransform(osim.Transform(osim.Vec3(0, 0.5, 0)))
+radiusCenter.setOffsetTransform(osim.Transform(osim.Vec3(0)))
 radius.addComponent(radiusCenter)
 radiusCenter.attachGeometry(bodyGeometry.clone())
 
@@ -289,7 +290,7 @@ viz.setGroundHeight(-2)
 manager = osim.Manager(arm)
 state.setTime(0)
 manager.initialize(state)
-state = manager.integrate(10.0)
+state = manager.integrate(5.0)
 ```
 
 </details>
@@ -305,18 +306,19 @@ arm.setName('bicep_curl');
 arm.setUseVisualizer(true);
 
 % ---------------------------------------------------------------------------
-% Create two links, each with a mass of 1 kg, centre of mass at the body's
-% origin, and moments and products of inertia of zero.
+% Create two links, each with a mass of 1 kg, center of mass at the body's
+% origin, and moments and products of inertia corresponding to an ellipsoid
+% with radii of 0.1, 0.5 and 0.1, in the x, y and z directions, respectively.
 % ---------------------------------------------------------------------------
 
 humerus = Body('humerus',...
                     1.0,...
                     Vec3(0),...
-                    Inertia(0, 0, 0));
+                    Inertia(0.052, 0.004, 0.052));
 radius = Body('radius',...
                    1.0,...
                    Vec3(0),...
-                   Inertia(0, 0, 0));
+                   Inertia(0.052, 0.004, 0.052));
 
 % ---------------------------------------------------------------------------
 % Connect the bodies with pin joints. Assume each body is 1m long.
@@ -327,15 +329,15 @@ shoulder = PinJoint('shoulder',...
                          Vec3(0),...
                          Vec3(0),...
                          humerus,... % PhysicalFrame
-                         Vec3(0, 1, 0),...
+                         Vec3(0, 0.5, 0),...
                          Vec3(0));
 
 elbow = PinJoint('elbow',...
                       humerus,... % PhysicalFrame
-                      Vec3(0),...
+                      Vec3(0, -0.5, 0),...
                       Vec3(0),...
                       radius,... % PhysicalFrame
-                      Vec3(0, 1, 0),...
+                      Vec3(0, 0.5, 0),...
                       Vec3(0));
 
 % ---------------------------------------------------------------------------
@@ -343,17 +345,17 @@ elbow = PinJoint('elbow',...
 % ---------------------------------------------------------------------------
 
 biceps = Millard2012EquilibriumMuscle('biceps',...  % Muscle name
-                                           200.0,...  % Max isometric force
+                                           100.0,...  % Max isometric force
                                            0.6,...  % Optimal fibre length
                                            0.55,...  % Tendon slack length
                                            0.0);  % Pennation angle
 biceps.addNewPathPoint('origin',...
                        humerus,...
-                       Vec3(0, 0.8, 0));
+                       Vec3(0, 0.3, 0));
 
 biceps.addNewPathPoint('insertion',...
                        radius,...
-                       Vec3(0, 0.7, 0));
+                       Vec3(0, 0.2, 0));
 
 % ---------------------------------------------------------------------------
 % Add a controller that specifies the excitation of the muscle.
@@ -396,14 +398,14 @@ bodyGeometry.setColor(Vec3(0.5)); % Gray
 humerusCenter = PhysicalOffsetFrame();
 humerusCenter.setName('humerusCenter');
 humerusCenter.setParentFrame(humerus);
-humerusCenter.setOffsetTransform(Transform(Vec3(0, 0.5, 0)));
+humerusCenter.setOffsetTransform(Transform(Vec3(0)));
 humerus.addComponent(humerusCenter);
 humerusCenter.attachGeometry(bodyGeometry.clone());
 
 radiusCenter = PhysicalOffsetFrame();
 radiusCenter.setName('radiusCenter');
 radiusCenter.setParentFrame(radius);
-radiusCenter.setOffsetTransform(Transform(Vec3(0, 0.5, 0)));
+radiusCenter.setOffsetTransform(Transform(Vec3(0)));
 radius.addComponent(radiusCenter);
 radiusCenter.attachGeometry(bodyGeometry.clone());
 
@@ -432,7 +434,7 @@ viz.setGroundHeight(-2)
 manager = Manager(arm);
 state.setTime(0);
 manager.initialize(state);
-state = manager.integrate(10.0);
+state = manager.integrate(5.0);
 ```
 
 </details>
