@@ -229,8 +229,12 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %template(SetMarkerWeights) OpenSim::Set<MarkerWeight, OpenSim::Object>;
 %include <OpenSim/Simulation/CoordinateReference.h>
 %include <OpenSim/Simulation/OrientationsReference.h>
+// Since we have both OrientationsReference and shared_ptr<OrientationsReference>
+// Across the interface, DO NOT use %shared_ptr macro here as it treats
+// all pointers and references as std::shared_ptr
+//
 %template (SetOientationWeights) OpenSim::Set<OrientationWeight, OpenSim::Object>;
-%shared_ptr(OpenSim::OrientationsReference);
+%template(SharedOrientationsReference) std::shared_ptr<OpenSim::OrientationsReference>;
 %include <OpenSim/Simulation/BufferedOrientationsReference.h>
 %shared_ptr(OpenSim::BufferedOrientationsReference);
 
