@@ -210,26 +210,33 @@ option(OPENSIM_WITH_TROPTER
 
 
 if(OPENSIM_WITH_TROPTER OR OPENSIM_WITH_CASADI)
-AddDependency(NAME    eigen
-              DEFAULT ON
-              URL     https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.zip)
+    AddDependency(NAME    eigen
+                  DEFAULT ON
+                  URL     https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.zip)
 
-mark_as_advanced(SUPERBUILD_eigen)
+    mark_as_advanced(SUPERBUILD_eigen)
 
-AddDependency(NAME colpack
-              DEFAULT ON
-              GIT_URL https://github.com/opensim-org/colpack.git
-              GIT_TAG 72f691e91d59e8eb2123f258e67a4ddc72d105ee
-              CMAKE_ARGS -DCMAKE_DEBUG_POSTFIX:STRING=_d
-                         -DENABLE_EXAMPLES:BOOL=OFF
-                         -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON)
+    AddDependency(NAME colpack
+                  DEFAULT ON
+                  GIT_URL https://github.com/opensim-org/colpack.git
+                  GIT_TAG 72f691e91d59e8eb2123f258e67a4ddc72d105ee
+                  CMAKE_ARGS -DCMAKE_DEBUG_POSTFIX:STRING=_d
+                             -DENABLE_EXAMPLES:BOOL=OFF
+                             -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON)
 
-mark_as_advanced(SUPERBUILD_colpack)
+    mark_as_advanced(SUPERBUILD_colpack)
 
-CMAKE_DEPENDENT_OPTION(SUPERBUILD_adolc "Automatically download, configure, build and install adolc" ON
-                       "OPENSIM_WITH_TROPTER" OFF)
-CMAKE_DEPENDENT_OPTION(SUPERBUILD_ipopt "Automatically download, configure, build and install ipopt" ON
-                       "OPENSIM_WITH_TROPTER OR OPENSIM_WITH_CASADI" OFF)
+    CMAKE_DEPENDENT_OPTION(SUPERBUILD_adolc "Automatically download, configure, build and install adolc" ON
+                        "OPENSIM_WITH_TROPTER" OFF)
+    CMAKE_DEPENDENT_OPTION(SUPERBUILD_ipopt "Automatically download, configure, build and install ipopt" ON
+                        "OPENSIM_WITH_TROPTER OR OPENSIM_WITH_CASADI" OFF)
+    CMAKE_DEPENDENT_OPTION(USE_IPOPT_INSTALL "Use an ipopt install folder instead of using the superbuild option." OFF
+                        "OPENSIM_WITH_TROPTER OR OPENSIM_WITH_CASADI" OFF)
+    set(IPOPT_INSTALL_DIR "" CACHE STRING "Path to the ipopt install folder when USE_IPOPT_INSTALL is ON")
+endif()
+
+if (SUPERBUILD_ipopt AND USE_IPOPT_INSTALL)
+    message(FATAL_ERROR "SUPERBUILD_ipopt and USE_IPOPT_INSTALL cannot both be ON")
 endif()
 
 if (OPENSIM_WITH_CASADI)
@@ -319,32 +326,97 @@ else()
                                                --with-colpack=${CMAKE_INSTALL_PREFIX}/colpack
                                                --with-boost=no
             BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}
-            INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
+            INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
+            )
     endif()
 
     if(SUPERBUILD_ipopt)
-        # TODO --enable-debug if building in Debug.
-        # TODO must have gfortran for MUMPS (brew install gcc).
-        # TODO CMake documentation says "Whether the current working directory
-        # is preserved between commands is not defined. Behavior of shell
-        # operators like && is not defined."
-        # Patch the scripts that download Metis and MUMPS to use our
-        # Sourceforge mirror. The original links are not reliable.
-        ExternalProject_Add(ipopt
-            URL https://www.coin-or.org/download/source/Ipopt/Ipopt-3.12.8.zip
-            INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/ipopt"
-            PATCH_COMMAND cd <SOURCE_DIR>/ThirdParty/Metis && patch < ${CMAKE_SOURCE_DIR}/get.Metis.patch
-                  COMMAND cd <SOURCE_DIR>/ThirdParty/Metis && ./get.Metis
-                  COMMAND cd <SOURCE_DIR>/ThirdParty/Mumps && patch < ${CMAKE_SOURCE_DIR}/get.Mumps.patch
-                  COMMAND cd <SOURCE_DIR>/ThirdParty/Mumps && ./get.Mumps
-            # GCC 10 generates a warning when compling MUMPS that we must suppress using
-            # -fallow-argument-mismatch.
-            # Suppress warnings treated as errors in Clang/LLVM with -Wno-error=implicit-function-declaration
-            CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> ADD_FFLAGS=-fallow-argument-mismatch ADD_CFLAGS=-Wno-error=implicit-function-declaration
-            BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}
-            INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
+
+        # Check for arm64 architecture
+        execute_process(
+            COMMAND uname -m
+            OUTPUT_VARIABLE MACHINE_ARCH
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+            )
+
+        # For ARM-based Macs, use different version of METIS and MUMPS than
+        # those automatically pulled from IPOPT's ThirdParty submodules.
+        if(APPLE AND MACHINE_ARCH STREQUAL "arm64")
+            
+            # Homebrew dir is /opt/homebrew for arm64 (/usr/local for x86_64).
+            # Use METIS from Homebrew, which is currently 5.1.0 (IPOPT 3.12.8
+            # automatically pulls 4.10.0, which had some segfault issues)
+            set(HOMEBREW_DIR "/opt/homebrew")
+            set(METIS_INSTALL_DIR "${HOMEBREW_DIR}/opt/metis")
+
+            # For MUMPS, use a tag from stable/2.1 branch instead of what
+            # IPOPT 3.12.8 automatically pulls (stable/1.6). Both branches
+            # use MUMPS 4.10.0. This avoid some linker issues with Homebrew METIS.
+            set(MUMPS_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/mumps")
+            ExternalProject_Add(mumps
+                GIT_REPOSITORY    https://github.com/coin-or-tools/ThirdParty-Mumps.git
+                GIT_TAG           f4ad789112161f73b2a3daf1c586f7de85cd7043 #from stable/2.1 branch
+                INSTALL_DIR       ${MUMPS_INSTALL_DIR}
+                PATCH_COMMAND     cd <SOURCE_DIR> && ./get.Mumps
+                CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> ADD_FFLAGS=-fallow-argument-mismatch ADD_CFLAGS=-Wno-error=implicit-function-declaration
+                                                            --with-metis-cflags=-I${METIS_INSTALL_DIR}/include
+                                                            "--with-metis-lflags=-L${METIS_INSTALL_DIR}/lib -lmetis"
+                BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}
+                INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
+                )
+
+            # Can still use IPOPT 3.12.8, with a small patch.
+            set(IPOPT_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/ipopt")
+            ExternalProject_Add(ipopt
+                DEPENDS           mumps
+                URL               https://www.coin-or.org/download/source/Ipopt/Ipopt-3.12.8.zip
+                INSTALL_DIR       ${IPOPT_INSTALL_DIR}
+                # For Ipopt 3.12, patch a file so that it can find the proper MUMPS flags/variables.
+                PATCH_COMMAND     cd <SOURCE_DIR> && patch -p0 < ${CMAKE_SOURCE_DIR}/ipopt.patch
+                CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
+                                                            --with-mumps-incdir=${MUMPS_INSTALL_DIR}/include/coin-or/mumps
+                                                            "--with-mumps-lib=-L${MUMPS_INSTALL_DIR}/lib -lcoinmumps"
+                BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}
+                INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
+                )
+
+        else()
+            # TODO --enable-debug if building in Debug.
+            # TODO must have gfortran for MUMPS (brew install gcc).
+            # TODO CMake documentation says "Whether the current working directory
+            # is preserved between commands is not defined. Behavior of shell
+            # operators like && is not defined."
+            # Patch the scripts that download Metis and MUMPS to use our
+            # Sourceforge mirror. The original links are not reliable.
+            ExternalProject_Add(ipopt
+                URL https://www.coin-or.org/download/source/Ipopt/Ipopt-3.12.8.zip
+                INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/ipopt"
+                PATCH_COMMAND cd <SOURCE_DIR>/ThirdParty/Metis && patch < ${CMAKE_SOURCE_DIR}/get.Metis.patch
+                    COMMAND cd <SOURCE_DIR>/ThirdParty/Metis && ./get.Metis
+                    COMMAND cd <SOURCE_DIR>/ThirdParty/Mumps && patch < ${CMAKE_SOURCE_DIR}/get.Mumps.patch
+                    COMMAND cd <SOURCE_DIR>/ThirdParty/Mumps && ./get.Mumps
+                # GCC 10 generates a warning when compling MUMPS that we must suppress using
+                # -fallow-argument-mismatch.
+                # Suppress warnings treated as errors in Clang/LLVM with -Wno-error=implicit-function-declaration
+                CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> ADD_FFLAGS=-fallow-argument-mismatch ADD_CFLAGS=-Wno-error=implicit-function-declaration
+                BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}
+                INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install)
+        endif()
     endif()
 
+endif()
+
+# Use a pre-built IPOPT installation folder instead of using the superbuild.
+if (USE_IPOPT_INSTALL)
+    set(IPOPT_INSTALL_CMD "${CMAKE_COMMAND}" -E copy_directory
+        "${IPOPT_INSTALL_DIR}"
+        "${CMAKE_INSTALL_PREFIX}/ipopt")
+    ExternalProject_Add(ipopt
+        DOWNLOAD_COMMAND ""
+        CONFIGURE_COMMAND ""
+        BUILD_COMMAND ""
+        INSTALL_COMMAND ${IPOPT_INSTALL_CMD}
+        )
 endif()
 
 if(SUPERBUILD_casadi)
