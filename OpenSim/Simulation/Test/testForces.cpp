@@ -35,6 +35,7 @@
 //      9. PathSpring
 //     10. ExpressionBasedPointToPointForce
 //     11. Blankevoort1991Ligament
+//     12. Smith2018ArticularContactForce
 //
 //     Add tests here as Forces are added to OpenSim
 //
@@ -74,6 +75,7 @@ void testSerializeDeserialize();
 void testTranslationalDampingEffect(Model& osimModel, Coordinate& sliderCoord,
         double start_h, Component& componentWithDamping);
 void testBlankevoort1991Ligament();
+void testSmith2018ArticularContactForce();
 
 int main() {
     SimTK::Array_<std::string> failures;
@@ -172,6 +174,14 @@ int main() {
     } catch (const std::exception& e) {
         cout << e.what() << endl;
         failures.push_back("testBlankevoort1991Ligament");
+    }
+
+    try {
+        testSmith2018ArticularContactForce();
+    }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testSmith2018ArticularContactForce");
     }
 
     if (!failures.empty()) {
@@ -2390,4 +2400,115 @@ void testBlankevoort1991Ligament() {
         "Expected the strain in the Blankevoort1991Ligament at the input "
         "reference state be equal to the strain value input "
         "to setSlackLengthFromReferenceStrain().");
+}
+
+void testSmith2018ArticularContactForce() {
+    Model model = Model();
+    
+    double mass = 1.0;
+    
+    OpenSim::Body* plane = new OpenSim::Body("plane", mass, SimTK::Vec3(0),
+        mass * SimTK::Inertia::brick(0.05, 0.05, 0.05));
+
+    OpenSim::Body* ball = new OpenSim::Body("ball", mass, SimTK::Vec3(0),
+        mass * SimTK::Inertia::brick(0.05, 0.05, 0.05));
+    
+    //plane->attachGeometry(new Brick(SimTK::Vec3(0.05, 0.05, 0.05)));
+
+    model.addBody(plane);
+    model.addBody(ball);
+
+    SpatialTransform plane_transform = SpatialTransform();
+    plane_transform.upd_rotation1().set_coordinates(0, "ground_plane_rx");
+    plane_transform.upd_rotation1().set_axis(SimTK::Vec3(1, 0, 0));
+    plane_transform.upd_rotation1().set_function(LinearFunction());
+                    
+    plane_transform.upd_rotation2().set_coordinates(0, "ground_plane_ry");
+    plane_transform.upd_rotation2().set_axis(SimTK::Vec3(0, 1, 0));
+    plane_transform.upd_rotation2().set_function(LinearFunction());
+                    
+    plane_transform.upd_rotation3().set_coordinates(0, "ground_plane_rz");
+    plane_transform.upd_rotation3().set_axis(SimTK::Vec3(0, 0, 1));
+    plane_transform.upd_rotation3().set_function(LinearFunction());
+                    
+    plane_transform.upd_translation1().set_coordinates(0, "ground_plane_tx");
+    plane_transform.upd_translation1().set_axis(SimTK::Vec3(1, 0, 0));
+    plane_transform.upd_translation1().set_function(LinearFunction());
+                    
+    plane_transform.upd_translation2().set_coordinates(0, "ground_plane_ty");
+    plane_transform.upd_translation2().set_axis(SimTK::Vec3(0, 1, 0));
+    plane_transform.upd_translation2().set_function(LinearFunction());
+                    
+    plane_transform.upd_translation3().set_coordinates(0, "ground_plane_tz");
+    plane_transform.upd_translation3().set_axis(SimTK::Vec3(0, 0, 1));
+    plane_transform.upd_translation3().set_function(LinearFunction());
+
+    SpatialTransform ball_transform = SpatialTransform();
+    ball_transform.upd_rotation1().set_coordinates(0, "plane_ball_rx");
+    ball_transform.upd_rotation1().set_axis(SimTK::Vec3(1, 0, 0));
+    ball_transform.upd_rotation1().set_function(LinearFunction());
+
+    ball_transform.upd_rotation2().set_coordinates(0, "plane_ball_ry");
+    ball_transform.upd_rotation2().set_axis(SimTK::Vec3(0, 1, 0));
+    ball_transform.upd_rotation2().set_function(LinearFunction());
+
+    ball_transform.upd_rotation3().set_coordinates(0, "plane_ball_rz");
+    ball_transform.upd_rotation3().set_axis(SimTK::Vec3(0, 0, 1));
+    ball_transform.upd_rotation3().set_function(LinearFunction());
+
+    ball_transform.upd_translation1().set_coordinates(0, "plane_ball_tx");
+    ball_transform.upd_translation1().set_axis(SimTK::Vec3(1, 0, 0));
+    ball_transform.upd_translation1().set_function(LinearFunction());
+
+    ball_transform.upd_translation2().set_coordinates(0, "plane_ball_ty");
+    ball_transform.upd_translation2().set_axis(SimTK::Vec3(0, 1, 0));
+    ball_transform.upd_translation2().set_function(LinearFunction());
+
+    ball_transform.upd_translation3().set_coordinates(0, "plane_ball_tz");
+    ball_transform.upd_translation3().set_axis(SimTK::Vec3(0, 0, 1));
+    ball_transform.upd_translation3().set_function(LinearFunction());
+
+       
+    CustomJoint* ground_plane = new CustomJoint("ground_plane", model.getGround(), *plane, plane_transform);
+    CustomJoint* plane_ball = new CustomJoint("plane_ball", *plane, *ball, ball_transform);
+
+    model.addJoint(ground_plane);
+    model.addJoint(plane_ball);
+
+    Smith2018ContactMesh* plane_mesh = new Smith2018ContactMesh("plane", "plane.stl", *plane);
+    Smith2018ContactMesh* ball_mesh = new Smith2018ContactMesh("ball", "ball.stl", *ball);
+    plane_mesh->set_elastic_modulus(1e6);
+    plane_mesh->set_poissons_ratio(0.46);
+    ball_mesh->set_elastic_modulus(1e6);
+    ball_mesh->set_poissons_ratio(0.46);
+
+    model.addContactGeometry(plane_mesh);
+    model.addContactGeometry(ball_mesh);
+
+    Smith2018ArticularContactForce* contact = new Smith2018ArticularContactForce("contact", *ball_mesh, *plane_mesh);
+    
+    model.addForce(contact);
+
+    //model.setUseVisualizer(true);
+    SimTK::State state = model.initSystem();
+
+    model.print("contact_test.osim");
+
+    Coordinate& tx = model.updCoordinateSet().get("plane_ball_tx");
+    Coordinate& ty = model.updCoordinateSet().get("plane_ball_ty");
+
+    model.realizeReport(state);
+    //std::cout << contact->getOutputValue<double>(state, "casting_total_max_proximity") << " " << contact->getOutputValue<SimTK::Vec3>(state, "casting_total_contact_force") << " " << contact->getOutputValue<SimTK::Vec3>(state, "casting_total_contact_moment") << std::endl;
+
+    ty.setValue(state, -0.005);
+    tx.setValue(state, 0.05);
+
+    model.realizeReport(state);
+    //std::cout << contact->getOutputValue<double>(state, "casting_total_max_proximity") << " " << contact->getOutputValue<SimTK::Vec3>(state, "casting_total_contact_force") << " " << contact->getOutputValue<SimTK::Vec3>(state, "casting_total_contact_moment") << std::endl;
+
+    //const ModelVisualizer& viz = model.getVisualizer();
+    //viz.show(state);
+
+    //std::cout << plane_mesh->getMeshFrame().getAbsolutePathString() << std::endl;
+
 }

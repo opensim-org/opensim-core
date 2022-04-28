@@ -1023,7 +1023,7 @@ computeContactMomentVector(double pressure, double area, Vec3 normal,
     Vec3 center) const
 {
     Vec3 force = normal * pressure * area;
-    Vec3 moment = SimTK::cross(force,center);
+    Vec3 moment = SimTK::cross(center,force);
     return moment;
 }
 

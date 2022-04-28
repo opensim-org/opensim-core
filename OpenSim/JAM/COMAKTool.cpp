@@ -1645,19 +1645,19 @@ void COMAKTool::extractKinematicsFromFile() {
         SimTK::Matrix processed_kinematics(_time.size(), numCoordinates * 3);
 
         int nCol = 0;
-        for (auto coord : _model.getComponentList<Coordinate>()) {
+        for (auto& coord : _model.getComponentList<Coordinate>()) {
             labels.push_back(coord.getAbsolutePathString() + "/value");
             processed_kinematics(nCol) = _q_matrix(nCol);
             nCol++;
         }
 
-        for (auto coord : _model.getComponentList<Coordinate>()) {
+        for (auto& coord : _model.getComponentList<Coordinate>()) {
             labels.push_back(coord.getAbsolutePathString() + "/speed");
             processed_kinematics(nCol) = _u_matrix(nCol);
             nCol++;
         }
 
-        for (auto coord : _model.getComponentList<Coordinate>()) {
+        for (auto& coord : _model.getComponentList<Coordinate>()) {
             labels.push_back(coord.getAbsolutePathString() + "/acceleration");
             processed_kinematics(nCol) = _udot_matrix(nCol);
             nCol++;
@@ -1766,29 +1766,28 @@ void COMAKTool::computeMuscleVolumes() {
 }
 
 void COMAKTool::printCOMAKascii() {
-    std::cout <<
-"#################################################################################################\n" 
-"#################################################################################################\n"
-"##                                                                                             ##\n"
-"##    WWWWWW WWWW      WWWWWWW        WWWWWWW    WWWWWWWW       WWWWWWWWW    WWWWWWWW  WWWWWWW ##\n"
-"##  WWWWWWWWWWWWW   WWWWWWWWWWWWW    WWWWWWWWW   WWWWWWWW        WWWWWWWWW    WWWWWWW  WWWWWWW ##\n"
-"## WWWWWW    WWWW  WWWWWW   WWWWWW   WWWWW  WWWWWWW  WWWWW       WWWWWWWWW     WWWWWW  WWWW    ##\n"
-"## WWWWWW          WWWWWW   WWWWWW   WWWWW  WWWWWWW  WWWWW       WWW  WWWWW    WWWWWWWWWWW     ##\n"
-"## WWWWWW    WWW   WWWWWW   WWWWWW  WWWWWW   WWWWW   WWWWW      WWWWWWWWWWW    WWWWWW WWWWWW   ##\n"
-"## WWWWWWW  WWWWW   WWWWWW WWWWWW   WWWWWW  WWWWWW   WWWWWW   WWWWW    WWWWWW WWWWWWW  WWWWWWW ##\n"
-"##   WWWWWWWWWW       WWWWWWWWW    WWWWWWW WWWWWWWW  WWWWWWW  WWWWWW  WWWWWWW WWWWWWWW WWWWWWW ##\n"
-"##                                                                                             ##\n"
-"#################################################################################################\n"
-"#################################################################################################\n"
-"      ##           Concurrent Optimization of Muscle Activations and Kinematics          ##\n"
-"      ##                                                                                 ##\n"
-"      ##               Developed by Colin Smith [1,2] and Darryl Thelen [1]              ##\n"
-"      ##                       1. University of Wisconsin-Madison                        ##\n"
-"      ##                                   2. ETH Zurich                                 ##\n"
-"      #####################################################################################\n"
-"      #####################################################################################\n\n"
-
-    << std::endl;
+    log_info(
+        "#################################################################################################\n"
+        "#################################################################################################\n"
+        "##                                                                                             ##\n"
+        "##    WWWWWW WWWW      WWWWWWW        WWWWWWW    WWWWWWWW       WWWWWWWWW    WWWWWWWW  WWWWWWW ##\n"
+        "##  WWWWWWWWWWWWW   WWWWWWWWWWWWW    WWWWWWWWW   WWWWWWWW        WWWWWWWWW    WWWWWWW  WWWWWWW ##\n"
+        "## WWWWWW    WWWW  WWWWWW   WWWWWW   WWWWW  WWWWWWW  WWWWW       WWWWWWWWW     WWWWWW  WWWW    ##\n"
+        "## WWWWWW          WWWWWW   WWWWWW   WWWWW  WWWWWWW  WWWWW       WWW  WWWWW    WWWWWWWWWWW     ##\n"
+        "## WWWWWW    WWW   WWWWWW   WWWWWW  WWWWWW   WWWWW   WWWWW      WWWWWWWWWWW    WWWWWW WWWWWW   ##\n"
+        "## WWWWWWW  WWWWW   WWWWWW WWWWWW   WWWWWW  WWWWWW   WWWWWW   WWWWW    WWWWWW WWWWWWW  WWWWWWW ##\n"
+        "##   WWWWWWWWWW       WWWWWWWWW    WWWWWWW WWWWWWWW  WWWWWWW  WWWWWW  WWWWWWW WWWWWWWW WWWWWWW ##\n"
+        "##                                                                                             ##\n"
+        "#################################################################################################\n"
+        "#################################################################################################\n"
+        "      ##           Concurrent Optimization of Muscle Activations and Kinematics          ##\n"
+        "      ##                                                                                 ##\n"
+        "      ##               Developed by Colin Smith [1,2] and Darryl Thelen [1]              ##\n"
+        "      ##                       1. University of Wisconsin-Madison                        ##\n"
+        "      ##                                   2. ETH Zurich                                 ##\n"
+        "      #####################################################################################\n"
+        "      #####################################################################################\n\n"
+    );
 };
 
 void COMAKTool::printOptimizationResultsToConsole(
@@ -1802,8 +1801,9 @@ void COMAKTool::printOptimizationResultsToConsole(
     }
 
     // Optimization Parameters
+    log_debug("");
     log_debug("Optimized Muscles:");
-    log_debug("{:<20} {:<20} {:<20}","name","activation", "force");
+    log_debug("{:<20} {:<20} {:<20}", "name", "activation", "force");
 
     int p = 0;
     for (int k = 0; k < _n_muscles; ++k) {
@@ -1812,8 +1812,9 @@ void COMAKTool::printOptimizationResultsToConsole(
         p++;
     }
 
+    log_debug("");
     log_debug("Optimized Non Muscle Actuators:");
-    log_debug("{:<20} {:<20} {:<20}","name","activation", "force");
+    log_debug("{:<20} {:<20} {:<20}", "name", "activation", "force");
 
     for (int k = 0; k < _n_non_muscle_actuators; ++k) {
         log_debug("{:<20} {:<20} {:<20}", _optim_parameter_names[p],
@@ -1821,22 +1822,22 @@ void COMAKTool::printOptimizationResultsToConsole(
         p++;
     }
 
+    log_debug("");
     log_debug("Optimized Secondardy Coordinates:");
-    log_debug("{:<20} {:<20} {:<20}","name", "value", "change");
+    log_debug("{:<20} {:<20} {:<20}", "name", "value", "change");
 
     for (int k = 0; k < _n_secondary_coord; ++k) {
         double value = _model.updComponent<Coordinate>
             (_secondary_coord_path[k]).getValue(state);
 
-        log_debug("{:<20} {:<20} {:<20}", value, parameters[p]);
-
-        p++;
+        log_debug("{:<20} {:<20} {:<20}", _secondary_coord_name[k], value, parameters[_n_actuators + k]);
     }
 
-    
+
     _model.realizeReport(state);
 
-    log_debug("\nBlankevoort1991Ligaments:");
+    log_debug("");
+    log_debug("Blankevoort1991Ligaments:");
     log_debug("{:<20} {:<10} {:<10} {:<10} {:<10} {:<10}",
         "Name", "Total_Force", "Spring_Force", "Damping_Force",
         "Lengths", "Strains");
@@ -1851,9 +1852,10 @@ void COMAKTool::printOptimizationResultsToConsole(
         log_debug("{:<20} {:<10} {:<10} {:<10} {:<10} {:<10}", lig.getName(), total_frc, spring_frc, damping_frc, length, strain);
     }
 
+    log_debug("");
     log_debug("Smith2018ArticularContactForce: casting_mesh");
-    log_debug("{:<20} {:<10} {:<10} {:<10} {:<10} {:<10} {:<10} {:<10}", 
-        "Name", "Num_Contacting_Tri", "Contact_Force", "Contact_Moment", 
+    log_debug("{:<20} {:<10} {:<10} {:<10} {:<10} {:<10} {:<10} {:<10}",
+        "Name", "Num_Contacting_Tri", "Contact_Force", "Contact_Moment",
         "Mean Pressure", "Max Pressure", "Mean Proximity", "Max Proximity");
 
     for (auto& cnt :
@@ -1878,10 +1880,23 @@ void COMAKTool::printOptimizationResultsToConsole(
             cnt.getOutputValue<double>(state, "casting_total_max_proximity");
 
         log_debug("{:<20} {:<10} {:<10} {:<10} {:<10} {:<10} {:<10} {:<10}",
-            cnt.getName(), num_cnt_tri, cnt_frc, cnt_moment, 
+            cnt.getName(), num_cnt_tri, cnt_frc, cnt_moment,
             mean_prs, max_prs, mean_prx, max_prx);
     }
-    
+
+
+    log_debug("");
+    log_debug("Model Coordinates");
+    log_debug("{:<20} {:<10} {:<10} {:<10}",
+        "Name", "Value", "Speed", "Acceleration");
+
+    for (auto& coord :
+        _model.updComponentList<Coordinate>()) {
+
+        log_debug("{:<20} {:<10} {:<10} {:<10}",
+            coord.getName(), coord.getValue(state),
+            coord.getSpeedValue(state), coord.getAccelerationValue(state));
+    }
 }
 
 
