@@ -80,7 +80,7 @@ void testSmith2018ArticularContactForce();
 int main() {
     SimTK::Array_<std::string> failures;
     
-    try { testPathSpring(); }
+    /*try { testPathSpring(); }
     catch (const std::exception& e){
         cout << e.what() <<endl; failures.push_back("testPathSpring");
     }
@@ -174,7 +174,7 @@ int main() {
     } catch (const std::exception& e) {
         cout << e.what() << endl;
         failures.push_back("testBlankevoort1991Ligament");
-    }
+    }*/
 
     try {
         testSmith2018ArticularContactForce();
@@ -2475,8 +2475,8 @@ void testSmith2018ArticularContactForce() {
     model.addJoint(ground_plane);
     model.addJoint(plane_ball);
 
-    Smith2018ContactMesh* plane_mesh = new Smith2018ContactMesh("plane", "plane.stl", *plane);
-    Smith2018ContactMesh* ball_mesh = new Smith2018ContactMesh("ball", "ball.stl", *ball);
+    Smith2018ContactMesh* plane_mesh = new Smith2018ContactMesh("plane", "x_z_plane.stl", *plane);
+    Smith2018ContactMesh* ball_mesh = new Smith2018ContactMesh("ball", "half_sphere_10cm_radius.stl", *ball);
     plane_mesh->set_elastic_modulus(1e6);
     plane_mesh->set_poissons_ratio(0.46);
     ball_mesh->set_elastic_modulus(1e6);
@@ -2489,7 +2489,7 @@ void testSmith2018ArticularContactForce() {
     
     model.addForce(contact);
 
-    //model.setUseVisualizer(true);
+    model.setUseVisualizer(true);
     SimTK::State state = model.initSystem();
 
     model.print("contact_test.osim");
@@ -2500,14 +2500,14 @@ void testSmith2018ArticularContactForce() {
     model.realizeReport(state);
     //std::cout << contact->getOutputValue<double>(state, "casting_total_max_proximity") << " " << contact->getOutputValue<SimTK::Vec3>(state, "casting_total_contact_force") << " " << contact->getOutputValue<SimTK::Vec3>(state, "casting_total_contact_moment") << std::endl;
 
-    ty.setValue(state, -0.005);
-    tx.setValue(state, 0.05);
+    ty.setValue(state, 0.1);
+    //tx.setValue(state, 0.05);
 
     model.realizeReport(state);
-    //std::cout << contact->getOutputValue<double>(state, "casting_total_max_proximity") << " " << contact->getOutputValue<SimTK::Vec3>(state, "casting_total_contact_force") << " " << contact->getOutputValue<SimTK::Vec3>(state, "casting_total_contact_moment") << std::endl;
+    std::cout << contact->getOutputValue<double>(state, "casting_total_max_proximity") << " " << contact->getOutputValue<SimTK::Vec3>(state, "casting_total_contact_force") << " " << contact->getOutputValue<SimTK::Vec3>(state, "casting_total_contact_moment") << std::endl;
 
-    //const ModelVisualizer& viz = model.getVisualizer();
-    //viz.show(state);
+    const ModelVisualizer& viz = model.getVisualizer();
+    viz.show(state);
 
     //std::cout << plane_mesh->getMeshFrame().getAbsolutePathString() << std::endl;
 
