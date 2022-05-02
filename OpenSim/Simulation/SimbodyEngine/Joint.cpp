@@ -762,6 +762,7 @@ int Joint::assignSystemIndicesToBodyAndCoordinates(
         if (j < nc){ // assign
             mutableSelf.upd_coordinates(j)._mobilizerQIndex =
                 SimTK::MobilizerQIndex(iq);
+            //<=== This assumes coordinates are in order of mobilities
             mutableSelf.upd_coordinates(j)._bodyIndex =
                 mobod.getMobilizedBodyIndex();
             j++;

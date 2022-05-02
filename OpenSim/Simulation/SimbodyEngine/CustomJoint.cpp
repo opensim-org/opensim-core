@@ -148,7 +148,7 @@ void CustomJoint::constructCoordinates()
     int ncoords = coordinateNames.getSize();
 
     for (int i = 0; i < ncoords; ++i){
-        std::string coordName = spatialTransform.getCoordinateNames()[i];
+        std::string coordName = coordinateNames[i];
         // Locate the coordinate in the set if it has already been defined (e.g. in XML) 
         int coordIndex = getProperty_coordinates().findIndexForName(coordName);
         if (coordIndex < 0) {
