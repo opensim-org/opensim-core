@@ -230,8 +230,10 @@ void CustomJoint::constructCoordinates()
                     newCoord.get_prescribed());
             updProperty_coordinates()[ix].set_is_free_to_satisfy_constraints(
                     newCoord.get_is_free_to_satisfy_constraints());
-            updProperty_coordinates()[ix].set_prescribed_function(
-                    newCoord.get_prescribed_function());
+            if (!newCoord.getProperty_prescribed_function()
+                     .empty())
+                updProperty_coordinates()[ix].set_prescribed_function(
+                        *(newCoord.get_prescribed_function().clone()));
             
         }
     }
