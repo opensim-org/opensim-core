@@ -141,19 +141,26 @@ void CustomJoint::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
 void CustomJoint::constructCoordinates()
 {
     const SpatialTransform& spatialTransform = getSpatialTransform();
-    OpenSim::Array<std::string> coordinateNames
-        = spatialTransform.getCoordinateNames();
+    OpenSim::Array<std::string> coordinateNames =
+            spatialTransform.getCoordinateNames(); // in order of appearance in
+                                                   // spatialTransform
 
     // Check how many coordinates are required
     int ncoords = coordinateNames.getSize();
-
-    for (int i = 0; i < ncoords; ++i){
+    std::vector<int> coordIndices;
+    bool coordinatesInTransformOrder = true;
+    for (int i = 0; i < ncoords; ++i) {
         std::string coordName = coordinateNames[i];
-        // Locate the coordinate in the set if it has already been defined (e.g. in XML) 
+        // Locate the coordinate in the set if it has already been defined (e.g.
+        // in XML)
         int coordIndex = getProperty_coordinates().findIndexForName(coordName);
         if (coordIndex < 0) {
-            coordIndex = constructCoordinate(Coordinate::MotionType::Undefined,
-                                             i);
+            coordIndex =
+                    constructCoordinate(Coordinate::MotionType::Undefined, i);
+        } else {
+            coordinatesInTransformOrder = coordinatesInTransformOrder && 
+                    coordIndex == coordIndices.size();
+            coordIndices.push_back(coordIndex);
         }
         Coordinate& coord = upd_coordinates(coordIndex);
         coord.setName(coordName);
@@ -195,6 +202,38 @@ void CustomJoint::constructCoordinates()
             }
         }
         setMotionType(CoordinateIndex(i), mt);
+    }
+    // Reorder Coordinates list in property to match the order in
+    // SpatialTransform issue #3191
+    if (!coordinatesInTransformOrder) {
+        // Make a fresh copy of the CoordinateSet in Property
+        CoordinateSet newCoordinates;
+        for (int ix = 0; ix < getProperty_coordinates().size(); ix++)
+            newCoordinates.cloneAndAppend(
+                    getProperty_coordinates()[coordIndices.at(ix)]);
+        // Copy back values to proper entry in Property_coordinates.
+        // Ideally this would be done using copy construction or operators
+        // unfortunately these wipe out pointers thus breaking downstream code.
+        // so copying one property at a time -Ayman 5/22
+        for (int ix = 0; ix < getProperty_coordinates().size(); ix++) {
+            Coordinate newCoord = newCoordinates[ix];
+            updProperty_coordinates()[ix].setName(newCoord.getName());
+            updProperty_coordinates()[ix].set_default_value(
+                    newCoord.get_default_value());
+            updProperty_coordinates()[ix].set_default_speed_value(
+                    newCoord.get_default_speed_value());
+            updProperty_coordinates()[ix].setRangeMin(newCoord.getRangeMin());
+            updProperty_coordinates()[ix].setRangeMax(newCoord.getRangeMax());
+            updProperty_coordinates()[ix].set_clamped(newCoord.get_clamped());
+            updProperty_coordinates()[ix].set_locked(newCoord.get_locked());
+            updProperty_coordinates()[ix].set_prescribed(
+                    newCoord.get_prescribed());
+            updProperty_coordinates()[ix].set_is_free_to_satisfy_constraints(
+                    newCoord.get_is_free_to_satisfy_constraints());
+            updProperty_coordinates()[ix].set_prescribed_function(
+                    newCoord.get_prescribed_function());
+            
+        }
     }
 }
 
