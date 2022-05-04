@@ -158,8 +158,9 @@ void CustomJoint::constructCoordinates()
             coordIndex =
                     constructCoordinate(Coordinate::MotionType::Undefined, i);
         } else {
+            int sizeAsInt = static_cast<int>(coordIndices.size());
             coordinatesInTransformOrder = coordinatesInTransformOrder && 
-                    coordIndex == coordIndices.size();
+                    coordIndex == sizeAsInt;
             coordIndices.push_back(coordIndex);
         }
         Coordinate& coord = upd_coordinates(coordIndex);
