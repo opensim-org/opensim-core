@@ -2380,9 +2380,10 @@ void JointMechanicsTool::writeAttachedGeometryVTPFiles(bool isDynamic) {
     std::string origin = split_string(get_output_position_frame(), "/").back();
 
     for (int i = 0; i < (int)_attach_geo_names.size(); ++i) {
-        std::cout << "Writing .vtp files: " << file_path << "/" 
-            << base_name << "_"<< _attach_geo_names[i] << std::endl;
 
+        log_info("Writing .vtp files: {}/{}_{}",
+            file_path, base_name, _attach_geo_names[i]);
+        
         //Face Connectivity
         const SimTK::PolygonalMesh& mesh = _attach_geo_meshes[i];
 
