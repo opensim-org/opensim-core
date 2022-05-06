@@ -23,6 +23,7 @@
 #include <OpenSim/Actuators/ModelFactory.h>
 #include <OpenSim/Actuators/PointActuator.h>
 #include <OpenSim/Moco/osimMoco.h>
+#include <OpenSim/Moco/MocoOutputConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 
@@ -208,7 +209,8 @@ TEST_CASE("Enabled Goals", "") {
 }
 
 template <class SolverType>
-MocoStudy setupMocoStudyDoublePendulumMinimizeEffort() {
+MocoStudy setupMocoStudyDoublePendulumMinimizeEffort(
+        double initialSpeed = 0, double finalSpeed = 0) {
     using SimTK::Pi;
     const Model doublePendulum = ModelFactory::createNLinkPendulum(2);
 
@@ -804,50 +806,157 @@ public:
         return getModel().getControls(state).normSqr();
     }
 };
+
+auto createStudy = [](
+        MocoInitialBounds initialSpeed = {},
+        MocoFinalBounds finalSpeed = {}) {
+    MocoStudy study;
+    study.setName("sliding_mass");
+    MocoProblem& problem = study.updProblem();
+    problem.setModel(createSlidingMassModel());
+    problem.setTimeBounds(0, {0, 5});
+    problem.setStateInfo("/slider/position/value", {0, 1}, 0, 1);
+    problem.setStateInfo("/slider/position/speed", {-100, 100},
+                         initialSpeed, finalSpeed);
+    problem.setControlInfo("/actuator", MocoBounds(-10, 10));
+    return study;
+};
+
 TEMPLATE_TEST_CASE("MocoOutputGoal", "", MocoCasADiSolver,
         MocoTropterSolver) {
-    auto createStudy = []() {
-        MocoStudy study;
-        study.setName("sliding_mass");
-        MocoProblem& problem = study.updProblem();
-        problem.setModel(createSlidingMassModel());
-        problem.setTimeBounds(0, {0, 5});
-        problem.setStateInfo("/slider/position/value", {0, 1}, 0, 1);
-        problem.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
-        problem.setControlInfo("/actuator", MocoBounds(-10, 10));
-        return study;
-    };
 
     MocoSolution solutionControl;
-    {
-        auto study = createStudy();
+    SECTION("MocoOutputGoal") {
+        {
+            auto study = createStudy(0, 0);
+            auto& problem = study.updProblem();
+            problem.template addGoal<MocoControlGoal>();
+            auto &solver = study.template initSolver<TestType>();
+            solver.set_num_mesh_intervals(10);
+            solutionControl = study.solve();
+        }
+        MocoSolution solutionOutput;
+        {
+            auto study = createStudy(0, 0);
+            auto& problem = study.updProblem();
+            auto model = createSlidingMassModel();
+
+            auto* component = new MySumSquaredControls();
+            component->setName("mysumsquaredcontrols");
+            model->addComponent(component);
+            problem.setModel(std::move(model));
+
+            auto* goal = problem.template addGoal<MocoOutputGoal>();
+            goal->setOutputPath("/mysumsquaredcontrols|sum_squared_controls");
+
+            auto& solver = study.template initSolver<TestType>();
+            solver.set_num_mesh_intervals(10);
+            solutionOutput = study.solve();
+        }
+
+        CHECK(solutionControl.isNumericallyEqual(solutionOutput, 1e-5));
+    }
+
+    SECTION("MocoInitialOutputGoal") {
+        auto study = createStudy({0, 100.0}, 0);
         auto& problem = study.updProblem();
-        problem.template addGoal<MocoControlGoal>();
+        auto* goal = problem.template addGoal<MocoInitialOutputGoal>();
+        goal->setName("initial_speed");
+        goal->setOutputPath("/body|linear_velocity");
         auto& solver = study.template initSolver<TestType>();
         solver.set_num_mesh_intervals(10);
-        solutionControl = study.solve();
+        MocoSolution solution = study.solve();
+        CHECK(solution.getState("/slider/position/speed")[0] ==
+                Approx(0).margin(1e-6));
     }
-    MocoSolution solutionOutput;
-    {
-        auto study = createStudy();
+
+    SECTION("MocoFinalOutputGoal") {
+        auto study = createStudy(0, {0, 100.0});
         auto& problem = study.updProblem();
-        auto model = createSlidingMassModel();
-
-        auto* component = new MySumSquaredControls();
-        component->setName("mysumsquaredcontrols");
-        model->addComponent(component);
-        problem.setModel(std::move(model));
-
-        auto* goal = problem.template addGoal<MocoOutputGoal>();
-        goal->setOutputPath("/mysumsquaredcontrols|sum_squared_controls");
-
-        auto& solver = study.template initSolver<TestType>();
+        auto* goal = problem.template addGoal<MocoFinalOutputGoal>();
+        goal->setName("final_speed");
+        goal->setOutputPath("/body|linear_velocity");
+        auto &solver = study.template initSolver<TestType>();
         solver.set_num_mesh_intervals(10);
-        solutionOutput = study.solve();
+        MocoSolution solution = study.solve();
+        CHECK(solution.getState(
+                "/slider/position/speed")[solution.getNumTimes() - 1] ==
+                Approx(0).margin(1e-6));
     }
 
-    CHECK(solutionControl.isNumericallyEqual(solutionOutput, 1e-5));
+    SECTION("MocoOutputConstraint") {
+        auto study = createStudy({-100.0, 100.0}, {-100.0, 100.0});
+        auto& problem = study.updProblem();
+        auto* pathCon =
+                problem.template addPathConstraint<MocoOutputConstraint>();
+        pathCon->setName("nonnegative_velocity");
+        pathCon->setOutputPath("/body|linear_velocity");
+        pathCon->setOutputIndex(0);
+        pathCon->updConstraintInfo().setBounds({{0, 100.0}});
+        auto &solver = study.template initSolver<TestType>();
+        solver.set_num_mesh_intervals(10);
+        MocoSolution solution = study.solve();
+        auto solutionSpeed = solution.getState("/slider/position/speed");
+        for (int i = 0; i < solution.getNumTimes(); ++i) {
+            CHECK(solutionSpeed[i] >= Approx(0));
+        }
+    }
 }
+
+TEST_CASE("MocoOutputPeriodicityGoal and MocoOutputTrackingGoal") {
+
+        // Output periodicity problem.
+        // ---------------------------
+        auto study = createStudy({-100, 100.0}, {-100, 100.0});
+        auto& problem = study.updProblem();
+        problem.template addGoal<MocoControlGoal>("effort");
+        auto* goal = problem.template addGoal<MocoOutputPeriodicityGoal>();
+        goal->setName("periodic_speed");
+        goal->setOutputPath("/body|linear_velocity");
+        goal->setMode("endpoint_constraint");
+        auto &solver = study.initSolver<MocoCasADiSolver>();
+        solver.set_num_mesh_intervals(10);
+        MocoSolution solution = study.solve();
+        double initialSpeed = solution.getState("/slider/position/speed")[0];
+        double finalSpeed = solution.getState(
+                "/slider/position/speed")[solution.getNumTimes() - 1];
+        CHECK(initialSpeed == Approx(finalSpeed).margin(1e-6));
+
+        // Compute tracking reference.
+        // ---------------------------
+        TimeSeriesTableVec3 table = analyzeMocoTrajectory<SimTK::Vec3>(
+                problem.createRep().getModelBase(), solution,
+                {"/body\\|linear_velocity"});
+        TimeSeriesTable linearVelocity = table.flatten();
+        GCVSplineSet linearVelocitySplines(linearVelocity);
+        auto* speedSpline = linearVelocitySplines.getGCVSpline(0);
+
+        // Output tracking problem.
+        // ------------------------
+        auto studyTracking = createStudy({-100.0, 100.0}, {-100.0, 100.0});
+        auto& problemTracking = studyTracking.updProblem();
+        problemTracking.template addGoal<MocoControlGoal>("effort", 1e-3);
+        auto* goalTracking =
+                problemTracking.template addGoal<MocoOutputTrackingGoal>();
+        goalTracking->setName("speed_tracking");
+        goalTracking->setOutputPath("/body|linear_velocity");
+        goalTracking->setExponent(2.0);
+        goalTracking->setOutputIndex(0);
+        goalTracking->setTrackingFunction(*speedSpline);
+        auto& solverTracking = studyTracking.initSolver<MocoCasADiSolver>();
+        solverTracking.set_num_mesh_intervals(10);
+        MocoSolution solutionTracking = studyTracking.solve().unseal();
+        auto solutionSpeed =
+                solutionTracking.getState("/slider/position/speed");
+        SimTK::Vector time = solutionTracking.getTime();
+        SimTK::Vector trackedSpeed(solutionTracking.getNumTimes(), 0.0);
+        for (int itime = 0; itime < solutionTracking.getNumTimes(); ++itime) {
+            SimTK::Vector timeVec(1, time[itime]);
+            trackedSpeed[itime] = speedSpline->calcValue(timeVec);
+        }
+        auto trackingError = solutionSpeed - trackedSpeed;
+        CHECK(trackingError.normRMS() == Approx(0).margin(1e-3));
+    }
 
 /// This goal violates the rule that calcIntegrandImpl() and calcGoalImpl()
 /// cannot realize the state's stage beyond the stage dependency.

@@ -30,10 +30,7 @@ void MocoOutputConstraint::initializeOnModelImpl(const Model&,
                                                  const MocoProblemInfo&) const {
     OPENSIM_THROW_IF_FRMOBJ(get_output_path().empty(), Exception,
             "No output_path provided.");
-    std::string componentPath;
-    std::string outputName;
-    std::string channelName;
-    std::string alias;
+    std::string componentPath, outputName, channelName, alias;
     AbstractInput::parseConnecteePath(
             get_output_path(), componentPath, outputName, channelName, alias);
     const auto& component = getModel().getComponent(componentPath);
