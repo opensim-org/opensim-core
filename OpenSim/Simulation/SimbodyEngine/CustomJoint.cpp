@@ -157,10 +157,11 @@ void CustomJoint::constructCoordinates()
         if (coordIndex < 0) {
             coordIndex =
                     constructCoordinate(Coordinate::MotionType::Undefined, i);
-        } else {
-            int sizeAsInt = static_cast<int>(coordIndices.size());
+        } else { 
+            // Coordinate was defined in XML, make sure the order in spatialTransform
+            // matches the order in the XML file/property
             coordinatesInTransformOrder = coordinatesInTransformOrder && 
-                    coordIndex == sizeAsInt;
+                    coordIndex == i;
             coordIndices.push_back(coordIndex);
         }
         Coordinate& coord = upd_coordinates(coordIndex);
