@@ -945,7 +945,7 @@ TEST_CASE("MocoOutputPeriodicityGoal and MocoOutputTrackingGoal") {
         goalTracking->setTrackingFunction(*speedSpline);
         auto& solverTracking = studyTracking.initSolver<MocoCasADiSolver>();
         solverTracking.set_num_mesh_intervals(10);
-        MocoSolution solutionTracking = studyTracking.solve().unseal();
+        MocoSolution solutionTracking = studyTracking.solve();
         auto solutionSpeed =
                 solutionTracking.getState("/slider/position/speed");
         SimTK::Vector time = solutionTracking.getTime();
