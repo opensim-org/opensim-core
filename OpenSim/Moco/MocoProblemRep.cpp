@@ -863,7 +863,7 @@ void MocoProblemRep::printDescription() const {
 
     printHeaderLine("Path constraints", m_path_constraints.size());
     for (const auto& pc : m_path_constraints) {
-        pc->getConstraintInfo().printDescription();
+        pc->printDescription();
     }
 
     printHeaderLine("States", m_state_infos.size());
