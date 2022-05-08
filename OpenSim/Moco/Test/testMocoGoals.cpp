@@ -940,7 +940,7 @@ TEST_CASE("MocoOutputPeriodicityGoal and MocoOutputTrackingGoal") {
                 problemTracking.template addGoal<MocoOutputTrackingGoal>();
         goalTracking->setName("speed_tracking");
         goalTracking->setOutputPath("/body|linear_velocity");
-        goalTracking->setExponent(2.0);
+        goalTracking->setExponent(2);
         goalTracking->setOutputIndex(0);
         goalTracking->setTrackingFunction(*speedSpline);
         auto& solverTracking = studyTracking.initSolver<MocoCasADiSolver>();
