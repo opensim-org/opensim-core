@@ -15,7 +15,7 @@ class TestOpenSense(unittest.TestCase):
         coordinates = model.getCoordinateSet();
         imuPlacer = osim.IMUPlacer();
         print("Created IMUPlacer object..")
-        quatTable = osim.TimeSeriesTableQuaternion();
+        quatTable = osim.TimeSeriesTableQuaternion("orientation_quats.sto");
         print("Created TimeSeriesTableQuaternion object..")
         orientationsData = osim.OpenSenseUtilities.convertQuaternionsToRotations(quatTable)
         print("Convert Quaternions to orientationsData")
@@ -25,6 +25,7 @@ class TestOpenSense(unittest.TestCase):
         print("Created MarkersReference object..")
         coordinateReferences = osim.SimTKArrayCoordinateReference()
         print("Created SimTKArrayCoordinateReference object..")
+        constraint_var = .0001
         ikSolver = osim.InverseKinematicsSolver(model, mRefs, oRefs, coordinateReferences, constraint_var)
         print("Created InverseKinematicsSolver object..")
 
