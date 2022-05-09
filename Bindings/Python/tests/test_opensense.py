@@ -7,6 +7,9 @@ from opensim import Vec3
 import numpy as np
 from multiprocessing import Process, Queue
 
+test_dir = os.path.join(os.path.dirname(os.path.abspath(osim.__file__)),
+                        'tests')
+
 class TestOpenSense(unittest.TestCase):
     def test_createObjects(self):
         # Make sure we can instantiate objects for interfacing to 
@@ -15,7 +18,8 @@ class TestOpenSense(unittest.TestCase):
         coordinates = model.getCoordinateSet();
         imuPlacer = osim.IMUPlacer();
         print("Created IMUPlacer object..")
-        quatTable = osim.TimeSeriesTableQuaternion("orientation_quats.sto");
+        quatTable = osim.TimeSeriesTableQuaternion(os.path.join(test_dir, 
+                             'orientation_quats.sto'))
         print("Created TimeSeriesTableQuaternion object..")
         orientationsData = osim.OpenSenseUtilities.convertQuaternionsToRotations(quatTable)
         print("Convert Quaternions to orientationsData")
