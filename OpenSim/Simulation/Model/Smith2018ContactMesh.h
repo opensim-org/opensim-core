@@ -100,8 +100,7 @@ SimTK::ContactGeometry::TriangularMesh::OBBTreeNodeImpl.
 class OSIMSIMULATION_API Smith2018ContactMesh : public ContactGeometry {
     OpenSim_DECLARE_CONCRETE_OBJECT(Smith2018ContactMesh, ContactGeometry)
  public :
-    class OBBTreeNode;
-    class JAMOrientedBoundingBox;
+    class OBBTreeNode;    
     //=====================================================================
     // PROPERTIES
     //=====================================================================
@@ -290,103 +289,10 @@ private:
             _decorative_mesh;
 
 #ifndef SWIG
-public:
-    //=========================================================================
-    //                            JAMOrientedBoundingBox
-    //=========================================================================
-
-    /**
-     * Copy of SimTK::OrientedBoundingBox to avoid crashes when running
-     * python SWIG wrapped version of code
-     *
-     * This class represents a rectangular box with arbitrary position and
-     * orientation.  It is used in collision detection as a bounding volume for
-     * geometry of various types.
-     *
-     * An OrientedBoundingBox is defined by a Transform that specifies its
-     * position and orientation, and a Vec3 that specifies its size. In the
-     * reference frame defined by the Transform, one corner is at the origin and
-     * the opposite corner is at the point returned by getSize().
-     */
-    class JAMOrientedBoundingBox {
-    public:
-        JAMOrientedBoundingBox();
-        /**
-         * Create an OrientedBoundingBox.
-         *
-         * @param transform     specifies the position and orientation of the
-         * box
-         * @param size          specifies the dimensions of the box
-         */
-        JAMOrientedBoundingBox(
-                const SimTK::Transform& transform, const SimTK::Vec3& size);
-        /**
-         * Create an OrientedBoundingBox which encloses a set of points.
-         */
-        explicit JAMOrientedBoundingBox(
-                const SimTK::Vector_<SimTK::Vec3>& points);
-        /**
-         * Get the position and orientation of the box.
-         */
-        const SimTK::Transform& getTransform() const;
-        /**
-         * Get the dimensions of the box.
-         */
-        const SimTK::Vec3& getSize() const;
-        /**
-         * Determine whether a point is inside the box.
-         */
-        bool containsPoint(const SimTK::Vec3& point) const;
-        /**
-         * Determine whether this box intersects another bounding box at any
-         * point.
-         */
-        bool intersectsBox(const JAMOrientedBoundingBox& box) const;
-        /**
-         * Determine whether a ray intersects this bounding box.
-         *
-         * @param origin     the position at which the ray begins
-         * @param direction  the ray direction
-         * @param distance   if an intersection is found, the distance from the
-         * ray origin to the intersection point is stored in this. Otherwise, it
-         * is left unchanged.
-         * @return true if an intersection is found, false otherwise
-         */
-        bool intersectsRay(const SimTK::Vec3& origin,
-                const SimTK::UnitVec3& direction, SimTK::Real& distance) const;
-        /**
-         * Given a point in space, find the point inside the bounding box which
-         * is nearest to it.
-         */
-        SimTK::Vec3 findNearestPoint(const SimTK::Vec3& position) const;
-        /**
-         * Get the locations of the eight corners of the box.
-         *
-         * @param corners   the corner locations are stored in this array
-         */
-        void getCorners(SimTK::Vec3 corners[8]) const;
-
-    private:
-        SimTK::Real calculateVolume(const SimTK::Vector_<SimTK::Vec3>& points,
-                const SimTK::Rotation& rotation);
-
-        SimTK::Transform transform;
-        SimTK::Vec3 size;
-
-        /*
-        SimTK_SIMMATH_EXPORT JAMOrientedBoundingBox operator*(
-                const SimTK::Transform& t, const SimTK::OrientedBoundingBox&
-        box);
-                */
-        //=========================================================================
-    }; // END of class JAMOrientedBoundingBox
-    //=========================================================================
-
-
 //=========================================================================
 //                            OBB TREE NODE
 //=========================================================================
-
+public:
 
     class OBBTreeNode {
         
@@ -406,14 +312,14 @@ public:
                 SimTK::Vec3 origin, SimTK::Vec3 direction, int tri_index,
                 SimTK::Vec3& intersection_pt, double& distance) const;
 
-        const JAMOrientedBoundingBox& getBounds() const;
+        const SimTK::OrientedBoundingBox& getBounds() const;
         bool isLeafNode() const;
         const OBBTreeNode getFirstChildNode() const;
         const OBBTreeNode getSecondChildNode() const;
         const SimTK::Array_<int>& getTriangles() const;
         int getNumTriangles() const;
 
-        JAMOrientedBoundingBox _bounds;
+        SimTK::OrientedBoundingBox _bounds;
         OBBTreeNode* _child1;
         OBBTreeNode* _child2;
         SimTK::Array_<int> _triangles;
@@ -434,26 +340,3 @@ public:
 } // end of namespace OpenSim
 
 #endif // OPENSIM_SMITH2018_CONTACT_MESH_H_
-
-//=============================================================================
-// Eigen Decomposition
-//=============================================================================
-/*
-http://barnesc.blogspot.com/2007/02/eigenvectors-of-3x3-symmetric-matrix.html
-C++ module 'eig3' by Connelly Barnes
-------------------------------------
-
-License: public domain.
-
-The source files in this directory have been copied from the public
-domain Java matrix library JAMA.  The derived source code is in the public
-domain as well.
-
-
-
-Symmetric matrix A => eigenvectors in columns of V, corresponding
-    eigenvalues in d.
-*/
-#ifndef SWIG
-void eigen_decomposition(double A[3][3], double V[3][3], double d[3]);
-#endif // SWIG
