@@ -44,7 +44,8 @@ using std::set;
 // CONSTRUCTOR
 //=============================================================================
 
-Smith2018ContactMesh::Smith2018ContactMesh() 
+Smith2018ContactMesh::Smith2018ContactMesh() :
+    ContactGeometry(), _decorative_mesh(nullptr)
 {
     setNull();
     constructProperties();
@@ -53,7 +54,7 @@ Smith2018ContactMesh::Smith2018ContactMesh()
 
 Smith2018ContactMesh::Smith2018ContactMesh(const std::string& name, 
     const std::string& mesh_file, const PhysicalFrame& parent_frame) :
-    ContactGeometry (parent_frame)
+    ContactGeometry (parent_frame), _decorative_mesh(nullptr)
 {
     setNull();
     constructProperties();
@@ -129,6 +130,15 @@ void Smith2018ContactMesh::extendFinalizeFromProperties() {
     
     //Create Decorative Mesh
     if (!isObjectUpToDateWithProperties()) {
+        std::string file1 =
+            SimTK::Pathname::getAbsolutePathname(get_mesh_file());
+
+        std::string file2 =
+            SimTK::Pathname::getAbsolutePathname(_full_mesh_file_path.c_str());
+
+        if (file1 != file2) {
+            initializeMesh();
+        }
         _decorative_mesh.reset(
             new SimTK::DecorativeMeshFile(_full_mesh_file_path.c_str()));
         _decorative_mesh->setScaleFactors(get_scale_factors());
@@ -363,7 +373,10 @@ void Smith2018ContactMesh::initializeMesh()
     _vertex_locations.resize(_mesh.getNumVertices());
     _face_vertex_locations.resize(_mesh.getNumFaces(), 3);
         
+    _regional_tri_ind.clear();
     _regional_tri_ind.resize(6);
+
+    _regional_n_tri.clear();
     _regional_n_tri.assign(6,0);
 
     // Compute Mesh Properties

@@ -88,7 +88,7 @@ also performs ray intersection tests with a individual mesh triangles or an
 Oriented Bounding Box (OBB) hierarchy. Here, a SimTK::OrientedBoundingBox
 is constructed for the mesh_file geometry using code adapted from
 SimTK::ContactGeometry::TriangularMesh::OBBTreeNodeImpl.
-
+                                                                               
 # References
 
    [1] Smith, C. R., Won Choi, K., Negrut, D., & Thelen, D. G. (2018).
@@ -100,154 +100,68 @@ SimTK::ContactGeometry::TriangularMesh::OBBTreeNodeImpl.
 class OSIMSIMULATION_API Smith2018ContactMesh : public ContactGeometry {
     OpenSim_DECLARE_CONCRETE_OBJECT(Smith2018ContactMesh, ContactGeometry)
  public :
-     class OBBTreeNode;
+    class OBBTreeNode;
     class JAMOrientedBoundingBox;
     //=====================================================================
     // PROPERTIES
     //=====================================================================
     OpenSim_DECLARE_PROPERTY(mesh_file, std::string,
             "Path to triangle mesh geometry file representing the contact "
-            "surface "
-            "(supports .obj, .stl, .vtp).")
+            "surface (supports .obj, .stl, .vtp).")
 
-            OpenSim_DECLARE_PROPERTY(elastic_modulus, double,
-                    "Uniform Elastic Modulus value for every triangle in mesh. "
-                    "The default value is 1000000.0 Pa.")
+	OpenSim_DECLARE_PROPERTY(elastic_modulus, double,
+		"Uniform Elastic Modulus value for every triangle in mesh. "
+		"The default value is 1000000.0 Pa.")
 
-                    OpenSim_DECLARE_PROPERTY(poissons_ratio, double,
-                            "Uniform Poissons Ratio value for every triangle "
-                            "in mesh. "
-                            "The default value is 0.5.")
+	OpenSim_DECLARE_PROPERTY(poissons_ratio, double,
+		"Uniform Poissons Ratio value for every triangle "
+		"in mesh. "
+		"The default value is 0.5.")
 
-                            OpenSim_DECLARE_PROPERTY(thickness, double,
-                                    "Uniform thickness of elastic layer for "
-                                    "entire mesh. "
-                                    "The default value is 0.005 meters")
+	OpenSim_DECLARE_PROPERTY(thickness, double,
+		"Uniform thickness of elastic layer for entire mesh. "
+		"The default value is 0.005 meters")
 
-                                    OpenSim_DECLARE_PROPERTY(
-                                            use_variable_thickness, bool,
-                                            "Compute the local thickness for "
-                                            "each triangle in mesh_file by "
-                                            "calculating the distance along a "
-                                            "normal ray cast from the center "
-                                            "of "
-                                            "each triangle in the mesh_file to "
-                                            "intersection with the "
-                                            "mesh_back_file. If "
-                                            "use_variable_thickness is true, "
-                                            "mesh_back_file "
-                                            "must be defined and the "
-                                            "'thickness' property value is not "
-                                            "used."
-                                            "The Default value is false.")
+	OpenSim_DECLARE_PROPERTY(use_variable_thickness, bool,
+		"Compute the local thickness for each triangle in mesh_file by "
+		"calculating the distance along a normal ray cast from the center "
+		"of each triangle in the mesh_file to intersection with the "
+		"mesh_back_file. If use_variable_thickness is true, "
+		"mesh_back_file must be defined and the 'thickness' property "
+        "value is not used."
+		"The Default value is false.")
 
-                                            OpenSim_DECLARE_OPTIONAL_PROPERTY(
-                                                    mesh_back_file, std::string,
-                                                    "Path to traingle mesh "
-                                                    "geometry file "
-                                                    "representing the backside "
-                                                    "of "
-                                                    "contact surface elastic "
-                                                    "layer (bone / backside of "
-                                                    "artifical "
-                                                    "component) mesh geometry "
-                                                    "file (supports .obj, "
-                                                    ".stl, .vtp). ")
+	OpenSim_DECLARE_OPTIONAL_PROPERTY(mesh_back_file, std::string,
+		"Path to traingle mesh geometry file representing the backside "
+		"of contact surface elastic layer (bone / backside of "
+		"artifical component) mesh geometry file (supports .obj, "
+		".stl, .vtp). ")
 
-                                                    OpenSim_DECLARE_OPTIONAL_PROPERTY(
-                                                            min_thickness,
-                                                            double,
-                                                            "Minimum thickness "
-                                                            "threshold for "
-                                                            "elastic layer [m] "
-                                                            "when calculating "
-                                                            "variable "
-                                                            "thickness for "
-                                                            "each triangle.")
+	OpenSim_DECLARE_OPTIONAL_PROPERTY(min_thickness, double,
+		"Minimum thickness threshold for elastic layer [m] "
+		"when calculating variable thickness for each triangle.")
 
-                                                            OpenSim_DECLARE_OPTIONAL_PROPERTY(
-                                                                    max_thickness,
-                                                                    double,
-                                                                    "Maximum "
-                                                                    "thickness "
-                                                                    "threshold "
-                                                                    "for "
-                                                                    "elastic "
-                                                                    "layer [m] "
-                                                                    "when "
-                                                                    "calculatin"
-                                                                    "g "
-                                                                    "variable "
-                                                                    "thickness "
-                                                                    "for each "
-                                                                    "triangle.")
+	OpenSim_DECLARE_OPTIONAL_PROPERTY(max_thickness, double,
+		"Maximum thickness threshold for elastic layer [m] when "
+		"calculating variable thickness for each triangle.")
 
-                                                                    OpenSim_DECLARE_PROPERTY(
-                                                                            scale_factors,
-                                                                            SimTK::Vec3,
-                                                                            "[x"
-                                                                            ",y"
-                                                                            ",z"
-                                                                            "] "
-                                                                            "sc"
-                                                                            "al"
-                                                                            "e "
-                                                                            "fa"
-                                                                            "ct"
-                                                                            "or"
-                                                                            "s "
-                                                                            "ap"
-                                                                            "pl"
-                                                                            "ie"
-                                                                            "d "
-                                                                            "to"
-                                                                            " v"
-                                                                            "er"
-                                                                            "te"
-                                                                            "x "
-                                                                            "lo"
-                                                                            "ca"
-                                                                            "ti"
-                                                                            "on"
-                                                                            "s "
-                                                                            "of"
-                                                                            " t"
-                                                                            "he"
-                                                                            " m"
-                                                                            "es"
-                                                                            "h_"
-                                                                            "fi"
-                                                                            "le"
-                                                                            " "
-                                                                            "an"
-                                                                            "d "
-                                                                            "me"
-                                                                            "sh"
-                                                                            "_b"
-                                                                            "ac"
-                                                                            "k_"
-                                                                            "fi"
-                                                                            "le"
-                                                                            " m"
-                                                                            "es"
-                                                                            "he"
-                                                                            "s"
-                                                                            ".")
+	OpenSim_DECLARE_PROPERTY(scale_factors, SimTK::Vec3,
+		"[x,y,z] scale factors applied to vertex locations of the"
+		" mesh_file and mesh_back_file meshes.")
 
-            //=========================================================================
-            // SOCKETS
-            //=========================================================================
-            OpenSim_DECLARE_SOCKET(scale_frame, PhysicalFrame,
-                    "When using the ScaleTool, the scale factors from this "
-                    "frame will be "
-                    "used to scale the mesh.")
+    //=========================================================================
+    // SOCKETS
+    //=========================================================================
+    OpenSim_DECLARE_SOCKET(scale_frame, PhysicalFrame,
+            "When using the ScaleTool, the scale factors from this "
+            "frame will be used to scale the mesh.")
 
-            //=========================================================================
-            // METHODS
-            //=========================================================================
-            public :
-            // CONSTRUCORS
-            Smith2018ContactMesh();
+    //=========================================================================
+    // METHODS
+    //=========================================================================
+    public :
+    // CONSTRUCTORS
+    Smith2018ContactMesh();
 
     Smith2018ContactMesh(const std::string& name, const std::string& mesh_file,
             const PhysicalFrame& frame);
@@ -374,7 +288,6 @@ private:
     // This is mutable since it is not part of the public interface.
     mutable SimTK::ResetOnCopy<std::unique_ptr<SimTK::DecorativeMeshFile>>
             _decorative_mesh;
-
 
 #ifndef SWIG
 public:

@@ -241,9 +241,11 @@ proximity/pressure etc. Finally, there are regional summary outputs which
 return a SimTK::Vector (size = 6). Here, the entries in the vector reflect the
 summary metrics corresponding to subset of mesh triangles located in six 
 specific regions. These six regions are defined as the subset of mesh triangles 
-whose center is located in the half space [+x, -x, +y, -y, +z, -z] in the 
-local mesh coordinate system. If the mesh coordinate system is aligned with 
-anatomical axes, then this enables simulation results to be more readily 
+whose center is located in half spaces defined by the x y z axes in the local
+mesh coordinate system. Thus, the size 6 vector contains metrics corresponding
+to triangles in the following half spaces [-x, +x, -y, +y, -z, +z]. 
+If the mesh coordinate system is aligned with anatomical axes, then this 
+enables simulation results to be more readily 
 interpreted. For example, when performing simulations of the knee, if the 
 z axis is aligned to the medial-lateral axis, points medially, and the origin 
 is located between the femoral condyles, then the regional outputs 

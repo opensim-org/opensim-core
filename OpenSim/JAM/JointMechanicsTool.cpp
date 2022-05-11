@@ -2494,7 +2494,7 @@ void JointMechanicsTool::writeH5File(
         Storage id_sto = processInputStorage(get_input_inverse_dynamics_file());
         TimeSeriesTable id_table = id_sto.exportToTable();
 
-        std::string coordinate_group = _model.getName() + "/coordinateset";
+        std::string coordinate_group = "model/coordinateset";
         h5.createGroup(coordinate_group);
 
         for (std::string& label : id_table.getColumnLabels()) {

@@ -1154,8 +1154,7 @@ Smith2018ArticularContactForce::computeContactStats(
     }
     //Contact Force
     stats.contact_force = 0.0;
-    stats.contact_moment = 0.0;
-    
+    stats.contact_moment = 0.0;    
 
     for (int i = 0; i < nTri; ++i) {
         stats.contact_force += computeContactForceVector(
@@ -1166,7 +1165,6 @@ Smith2018ArticularContactForce::computeContactStats(
     }
 
     return stats;
-
 }
 
 OpenSim::Array<std::string> Smith2018ArticularContactForce::
