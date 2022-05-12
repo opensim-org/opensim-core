@@ -14,7 +14,8 @@ class TestOpenSense(unittest.TestCase):
     def test_createObjects(self):
         # Make sure we can instantiate objects for interfacing to 
         # InverseKinematicsSolver
-        model = osim.Model()
+        modelfile = os.path.join(test_dir,'calibrated_model_imu.osim')
+        model = osim.Model(modelfile)
         coordinates = model.getCoordinateSet();
         imuPlacer = osim.IMUPlacer();
         print("Created IMUPlacer object..")

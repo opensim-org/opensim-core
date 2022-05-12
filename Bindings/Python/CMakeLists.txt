@@ -275,6 +275,7 @@ foreach(test_file
         "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/walking2.c3d"
         "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/walking5.c3d"
         "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/orientation_quats.sto"
+        "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/calibrated_model_imu.osim"
         )
 
     OpenSimPutFileInPythonPackage("${test_file}" opensim/tests)
