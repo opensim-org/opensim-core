@@ -405,7 +405,12 @@ void Smith2018ContactMesh::initializeMesh()
         double mag = cross.norm();
 
         for (int j = 0; j < 3; ++j) {
-            _tri_normal(i).set(j,-cross[j] / mag);
+            _tri_normal(i).set(j, -cross[j] / mag);
+
+            if (SimTK::isNaN(_tri_normal(i)(0))){
+                OPENSIM_THROW(Exception, "Smith2018ContactMesh " + getName() + 
+                    " Triangle Number (0-index): " + std::to_string(i) + " has NaN normal.");
+            }
         }
 
         
@@ -429,6 +434,12 @@ void Smith2018ContactMesh::initializeMesh()
         double s = (s1 + s2 + s3) / 2.0;
         _tri_area[i] = sqrt(s*(s - s1)*(s - s2)*(s - s3));
         
+        if (_tri_area[i]<=0) {
+            OPENSIM_THROW(Exception, "Smith2018ContactMesh " + getName() +
+                " Triangle Number (0-index): " + std::to_string(i) + 
+                " has an area <= 0.");
+        }
+
         //Determine regional triangle indices
         for (int j = 0; j < 3; ++j) {
             if (_tri_center(i)(j) < 0.0) {
@@ -788,6 +799,7 @@ bool Smith2018ContactMesh::rayIntersectMesh(
 }
 
 void Smith2018ContactMesh::printMeshDebugInfo() const {
+    
     log_trace("Mesh Properties: {}", getName());
     log_trace("{:<10} {:<15} {:<15} {:<15} {:<15} {:<35} {:<35}",
         "Tri #", "Area", "Thickness",  "Elastic Modulus", "Poissons Ratio",

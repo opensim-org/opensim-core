@@ -82,7 +82,7 @@ void testSmith2018ArticularContactForce();
 int main() {
     SimTK::Array_<std::string> failures;
     
-    /*try { testPathSpring(); }
+    try { testPathSpring(); }
     catch (const std::exception& e){
         cout << e.what() <<endl; failures.push_back("testPathSpring");
     }
@@ -176,7 +176,7 @@ int main() {
     } catch (const std::exception& e) {
         cout << e.what() << endl;
         failures.push_back("testBlankevoort1991Ligament");
-    }*/
+    }
 
     try {
         testSmith2018ArticularContactForce();

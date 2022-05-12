@@ -606,6 +606,10 @@ void ForsimTool::initializeCoordinates() {
     }
 
     log_info("Unconstrained Coordinates:");
+    if (getProperty_unconstrained_coordinates().size()) {
+        log_warn("Forsim Tool: No unconstrained_coordinates listed!");
+        log_warn("No kinematics will be predicted!");
+    }
     for (int i = 0; i < getProperty_unconstrained_coordinates().size(); ++i) {
         std::string coord_path = get_unconstrained_coordinates(i);
 
@@ -657,9 +661,9 @@ void ForsimTool::initializeCoordinates() {
             }
 
             if (coord_path == ""){
-                std::cout << "Warning: Column label: " + labels[i] +
+                log_warn("Warning: Column label: " + labels[i] +
                     "in the prescribed_coordinates_file is not a coordinate "
-                    "in the model." << std::endl;
+                    "in the model.");
                 continue;
             }
             Coordinate& coord = _model.updComponent<Coordinate>(coord_path);
@@ -846,6 +850,26 @@ void ForsimTool::printDebugInfo(const SimTK::State& state) {
                 "casting_total_center_of_pressure"));
     }
     log_debug("");
+
+    log_debug("Other Model Forces");
+    for (Force& frc : _model.updComponentList<Force>()) {
+        
+        if (Object::isObjectTypeDerivedFrom<Muscle>(frc.getConcreteClassName()))
+            { continue; }
+        if (frc.getConcreteClassName() == "Blankevoort1991Ligament")
+            { continue;}       
+        if (frc.getConcreteClassName() == "Smith2018ArticularContactForce")
+            { continue;}
+        
+        log_debug("{}", frc.getName());
+        for(const auto& output : frc.getOutputs()){
+            std::string name = output.first;
+            const AbstractOutput* value = output.second.get();
+
+            log_debug("{:<20} {:<30}", name, value->getValueAsString(state));           
+        }
+        log_debug("");        
+    }
 /*
     if (get_verbose() >= 3) {
         log_debug("{:<20} {:<20} {:<20}", "Contact " << std::setw(20)
