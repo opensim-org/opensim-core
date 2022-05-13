@@ -192,6 +192,13 @@ bool COMAKInverseKinematicsTool::initialize()
         _model = Model(get_model_file());
     }
 
+    // check marker file exists
+    if (!SimTK::Pathname::fileExists(get_marker_file())) {
+        OPENSIM_THROW(Exception,"COMAKInverseKinematicsTool: marker_file "
+            "does not exist! " + get_marker_file())
+    }
+    
+
     std::string function_file = get_secondary_constraint_function_file();
 
     if (get_secondary_constraint_function_file() == "") {

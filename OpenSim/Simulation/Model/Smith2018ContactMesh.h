@@ -281,6 +281,7 @@ private:
     SimTK::Vector _tri_elastic_modulus;
     SimTK::Vector _tri_poissons_ratio;
     bool _mesh_is_cached;
+    std::string _cached_mesh_file;
 
     // We cache the DecorativeMeshFile if we successfully
     // load the mesh from file so we don't try loading from disk every frame.

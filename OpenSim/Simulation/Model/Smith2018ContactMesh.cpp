@@ -130,13 +130,7 @@ void Smith2018ContactMesh::extendFinalizeFromProperties() {
     
     //Create Decorative Mesh
     if (!isObjectUpToDateWithProperties()) {
-        std::string file1 =
-            SimTK::Pathname::getAbsolutePathname(get_mesh_file());
-
-        std::string file2 =
-            SimTK::Pathname::getAbsolutePathname(_full_mesh_file_path.c_str());
-
-        if (file1 != file2) {
+        if (get_mesh_file() != _cached_mesh_file) {
             initializeMesh();
         }
         _decorative_mesh.reset(
@@ -338,6 +332,7 @@ std::string Smith2018ContactMesh::findMeshFile(const std::string& file)
 void Smith2018ContactMesh::initializeMesh()
 {
     _mesh_is_cached = true;
+    _cached_mesh_file = get_mesh_file();
     _mesh.clear();
     _mesh_back.clear();
     
