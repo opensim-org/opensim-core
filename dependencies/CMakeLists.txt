@@ -233,6 +233,9 @@ if(OPENSIM_WITH_TROPTER OR OPENSIM_WITH_CASADI)
     CMAKE_DEPENDENT_OPTION(USE_IPOPT_INSTALL "Use an ipopt install folder instead of using the superbuild option." OFF
                         "OPENSIM_WITH_TROPTER OR OPENSIM_WITH_CASADI" OFF)
     set(IPOPT_INSTALL_DIR "" CACHE STRING "Path to the ipopt install folder when USE_IPOPT_INSTALL is ON")
+
+    mark_as_advanced(USE_IPOPT_INSTALL)
+    mark_as_advanced(IPOPT_INSTALL_DIR)
 endif()
 
 if (SUPERBUILD_ipopt AND USE_IPOPT_INSTALL)
