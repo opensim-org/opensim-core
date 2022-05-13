@@ -81,7 +81,7 @@ public:
     /** add passed in values to data procesing Queue */
     void putValues(double time, const SimTK::RowVector_<SimTK::Rotation>& dataRow);
 
-    void getNextValuesAndTime(double& time,
+    double getNextValuesAndTime(
             SimTK::Array_<SimTK::Rotation_<double>>& values) override;
 
     virtual bool hasNext() const override { return !_finished; };

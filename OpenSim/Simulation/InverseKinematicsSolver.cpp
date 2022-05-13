@@ -482,8 +482,8 @@ void InverseKinematicsSolver::updateGoals(SimTK::State &s)
         if (_orientationsReference &&
                 _orientationsReference->getNumRefs() > 0) {
             SimTK::Array_<SimTK::Rotation> orientationValues;
-            _orientationsReference->getNextValuesAndTime(
-                    nextTime, orientationValues);
+            nextTime = _orientationsReference->getNextValuesAndTime(
+                    orientationValues);
             s.setTime(nextTime);
             _orientationAssemblyCondition->moveAllObservations(
                     orientationValues);
