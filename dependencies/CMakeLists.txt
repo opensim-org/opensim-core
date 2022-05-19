@@ -8,6 +8,7 @@ cmake_minimum_required(VERSION 3.12)
 
 include(ExternalProject)
 include(CMakeParseArguments)
+include(CMakeDependentOption)
 
 # Set the default for CMAKE_INSTALL_PREFIX.
 function(SetDefaultCMakeInstallPrefix)
@@ -169,7 +170,7 @@ SetDefaultCMakeBuildType()
 AddDependency(NAME       ezc3d
               DEFAULT    OFF
               GIT_URL    https://github.com/pyomeca/ezc3d.git
-              GIT_TAG    Release_1.4.3
+              GIT_TAG    Release_1.4.6
               CMAKE_ARGS -DBUILD_EXAMPLE:BOOL=OFF)
 
 AddDependency(NAME       BTK
@@ -182,7 +183,7 @@ AddDependency(NAME       BTK
 AddDependency(NAME       simbody
               DEFAULT    ON
               GIT_URL    https://github.com/simbody/simbody.git
-              GIT_TAG    a8f49c84e98ccf3b7e6f05db55a29520e5f9c176
+              GIT_TAG    962af5326a0dc0658d60827fc8fb0dff88b79f90
               CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF
                          -DBUILD_TESTING:BOOL=OFF)
 
@@ -200,10 +201,20 @@ AddDependency(NAME       spdlog
                          -DSPDLOG_BUILD_TESTS:BOOL=OFF
                          -DSPDLOG_BUILD_EXAMPLE:BOOL=OFF
                          -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON)
+# Moco settings.
+# --------------
+option(OPENSIM_WITH_CASADI
+        "Build CasADi support for Moco (MocoCasADiSolver)." OFF)
+option(OPENSIM_WITH_TROPTER
+        "Build the tropter optimal control library, for use in MocoTropterSolver." OFF)
 
+
+if(OPENSIM_WITH_TROPTER OR OPENSIM_WITH_CASADI)
 AddDependency(NAME    eigen
               DEFAULT ON
               URL     https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.zip)
+
+mark_as_advanced(SUPERBUILD_eigen)
 
 AddDependency(NAME colpack
               DEFAULT ON
@@ -212,6 +223,9 @@ AddDependency(NAME colpack
               CMAKE_ARGS -DCMAKE_DEBUG_POSTFIX:STRING=_d
                          -DENABLE_EXAMPLES:BOOL=OFF
                          -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON)
+
+
+mark_as_advanced(SUPERBUILD_colpack)
 
 AddDependency(NAME hdf5
               DEFAULT ON
@@ -228,8 +242,17 @@ set(SUPERBUILD_adolc ON CACHE BOOL
 set(SUPERBUILD_ipopt ON CACHE BOOL 
     "Automatically download, configure, build and install ipopt")
 
-set(SUPERBUILD_casadi ON CACHE BOOL 
-    "Automatically download, configure, build and install casadi")
+CMAKE_DEPENDENT_OPTION(SUPERBUILD_adolc "Automatically download, configure, build and install adolc" ON
+                       "OPENSIM_WITH_TROPTER" OFF)
+CMAKE_DEPENDENT_OPTION(SUPERBUILD_ipopt "Automatically download, configure, build and install ipopt" ON
+                       "OPENSIM_WITH_TROPTER OR OPENSIM_WITH_CASADI" OFF)
+endif()
+
+if (OPENSIM_WITH_CASADI)
+    CMAKE_DEPENDENT_OPTION(SUPERBUILD_casadi "Automatically download, configure, build and install casadi" ON
+                           "OPENSIM_WITH_CASADI" OFF)
+    mark_as_advanced(SUPERBUILD_casadi)
+endif()
 
 if (WIN32)
 
@@ -245,6 +268,8 @@ if (WIN32)
             CONFIGURE_COMMAND ""
             BUILD_COMMAND ""
             INSTALL_COMMAND ${ADOLC_INSTALL_CMD})
+
+        mark_as_advanced(SUPERBUILD_adolc)
     endif()
 
 
@@ -279,7 +304,7 @@ if (WIN32)
         # COIN-OR may make binaries available on GitHub (see release 3.13.2),
         # likely using Intel Fortran.
         # https://github.com/coin-or/Ipopt/releases
-
+        mark_as_advanced(SUPERBUILD_ipopt)
     endif()
 else()
 

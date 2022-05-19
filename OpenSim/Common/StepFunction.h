@@ -35,9 +35,20 @@ namespace OpenSim {
 /**
  * A class for representing a StepFunction.
  *
- *          {   start_value,    t <= start_time 
- * f(t) =   {   S-polynomial(t), start_time < t < end_time
- *          {   end_value,      t >= end_time
+ * Defines a piecewise function \f(f: \mathbb{R}\mapsto\mathbb{R}\f), with a
+ * smooth "S"-shaped quintic polynomial \f$S(t)\f$ from
+ * (\c startTime, \c startValue) to (\c endTime, \c endValue).
+ * The function is defined as follows:
+ * \f[f(t) =
+ * \begin{cases}
+ * startValue, & t\leq startTime\\
+ * S(t), & startTime < t \leq endTime\\
+ * endValue, & endTime < t
+ * \end{cases}\f]
+ *
+ * The function has the following shape:
+ * 
+ * \image html fig_StepFunction.png
  *
  * This class inherits from Function and so can be used as input to
  * any class requiring a Function as input.

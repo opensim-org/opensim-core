@@ -49,6 +49,9 @@ namespace OpenSim {
  *
  * The potential energy stored in the spring component of the force is
  * accessible as well as the power (nd optionally energy) dissipated.
+  * The function has the following shape:
+ * 
+ * \image html coordinate_limit_force.png
  *
  * @author Ajay Seth
  */

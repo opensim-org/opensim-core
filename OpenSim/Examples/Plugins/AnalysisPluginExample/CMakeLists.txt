@@ -5,9 +5,6 @@ cmake_minimum_required(VERSION 3.2)
 file(GLOB SOURCE_FILES *.cpp)
 file(GLOB INCLUDE_FILES *.h)
 
-set(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME}
-    CACHE PATH "Top-level directory of OpenSim install")
-
 set(PLUGIN_NAME "osimPlugin" CACHE STRING "Name of shared library to create")
 
 # OpenSim uses C++11 language features.

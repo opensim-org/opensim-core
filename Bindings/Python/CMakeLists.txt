@@ -138,11 +138,8 @@ macro(OpenSimAddPythonModule)
     add_library(${_libname} SHARED ${_output_cxx_file} ${_output_header_file})
 
     target_include_directories(${_libname} PRIVATE
-            "${PYTHON_INCLUDE_PATH}"
-            "${PYTHON_NUMPY_INCLUDE_DIR}"
-            "${HDF5_INCLUDE_DIR}"
-            )
-    
+            "${Python3_INCLUDE_DIRS}"
+            "${Python3_NumPy_INCLUDE_DIRS}")            "${HDF5_INCLUDE_DIR}"            )    
     # On macOS, the python interpreter might link to the python library 
     # statically, in which case we do not want to link dynamically to the
     # python library. This situation occurs with Anaconda's python.
@@ -153,7 +150,7 @@ macro(OpenSimAddPythonModule)
     # https://stackoverflow.com/questions/25421479/clang-and-undefined-symbols-when-building-a-library
     # https://github.com/lisitsyn/shogun/commit/961f6109c2a8abab4941bcdde1a19dfe70c440f1
     # https://github.com/shogun-toolbox/shogun/issues/4068
-    execute_process(COMMAND "${PYTHON_EXECUTABLE}" -c
+    execute_process(COMMAND "${Python3_EXECUTABLE}" -c
         "import sysconfig; print(sysconfig.get_config_var('LDSHARED'))"
         OUTPUT_VARIABLE PYTHON_LDSHARED
         OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -161,7 +158,7 @@ macro(OpenSimAddPythonModule)
         set_target_properties(${_libname} PROPERTIES LINK_FLAGS
             "-undefined dynamic_lookup")
     else()
-        target_link_libraries(${_libname} ${PYTHON_LIBRARIES})
+        target_link_libraries(${_libname} ${Python3_LIBRARIES})
     endif()
 
     target_link_libraries(${_libname} osimTools osimExampleComponents osimMoco osimJAM)
@@ -275,6 +272,8 @@ foreach(test_file
         "${CMAKE_SOURCE_DIR}/Applications/IK/test/std_subject01_walk1_ik.mot"
         "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/walking2.c3d"
         "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/walking5.c3d"
+        "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/orientation_quats.sto"
+        "${CMAKE_SOURCE_DIR}/OpenSim/Tests/shared/calibrated_model_imu.osim"
         )
 
     OpenSimPutFileInPythonPackage("${test_file}" opensim/tests)
@@ -306,7 +305,7 @@ set_target_properties(PythonBindings PROPERTIES
 # ${OPENSIM_PYTHON_BINARY_DIR}, but the former avoids an `if(MSVC OR XCODE)`.
 add_test(NAME python_tests
     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>"
-    COMMAND "${PYTHON_EXECUTABLE}" -m unittest discover
+    COMMAND "${Python3_EXECUTABLE}" -m unittest discover
                 --start-directory "${CMAKE_CURRENT_SOURCE_DIR}/tests"
                 --verbose
     )
@@ -336,7 +335,7 @@ endif()
 # test_*.py, so we must specify a more general search pattern.
 add_test(NAME python_examples
     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>"
-    COMMAND "${PYTHON_EXECUTABLE}" -m unittest
+    COMMAND "${Python3_EXECUTABLE}" -m unittest
                 ${PYTHON_EXAMPLES_UNITTEST_ARGS}
                 --verbose
     )

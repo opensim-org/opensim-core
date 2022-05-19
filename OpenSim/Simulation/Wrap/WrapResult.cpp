@@ -57,6 +57,7 @@ void WrapResult::copyData(const WrapResult& aWrapResult) {
         sv[i] = aWrapResult.sv[i];
     }
 
+    singleWrap = aWrapResult.singleWrap;
     // TODO: Should factor be omitted from the copy?
 }
 

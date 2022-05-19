@@ -84,6 +84,8 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(MocoPeriodicityGoalPair());
         Object::registerType(MocoPeriodicityGoal());
         Object::registerType(MocoOutputGoal());
+        Object::registerType(MocoInitialOutputGoal());
+        Object::registerType(MocoFinalOutputGoal());
         Object::registerType(MocoStepTimeAsymmetryGoal());
         Object::registerType(MocoStepLengthAsymmetryGoal());
         Object::registerType(MocoBounds());

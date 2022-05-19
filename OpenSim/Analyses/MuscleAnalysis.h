@@ -133,7 +133,6 @@ private:
     /** Work array for holding the list of coordinates. */
     Array<std::string> _coordinateList;
 
-    bool _computeMoments;
 #ifndef SWIG
     /** Array of active storage and coordinate pairs. */
     ArrayPtrs<StorageCoordinatePair> _momentArmStorageArray;
@@ -213,10 +212,10 @@ public:
     void setCoordinates(Array<std::string>& aCoordinates);
 
     void setComputeMoments(bool aTrueFalse) {
-        _computeMoments = aTrueFalse;
+        _computeMomentsProp.setValue(aTrueFalse);
     }
-    bool getComputeMoments() const {
-        return _computeMoments;
+    bool getComputeMoments() const { 
+        return _computeMomentsProp.getValueBool();
     }
 #ifndef SWIG
     const ArrayPtrs<StorageCoordinatePair>& getMomentArmStorageArray() const { return _momentArmStorageArray; }

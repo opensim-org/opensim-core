@@ -71,7 +71,7 @@ if(UNIX)
 endif()
 
 # ColPack can now use CMake to be built.
-find_package(ColPack 1.0.10 REQUIRED)
+find_package(ColPack 1.0.10 REQUIRED HINTS "${OPENSIM_DEPENDENCIES_DIR}/colpack")
 set_package_properties(ColPack PROPERTIES
         URL https://github.com/CSCsw/ColPack
         TYPE REQUIRED

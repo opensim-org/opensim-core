@@ -124,33 +124,86 @@ TEST_CASE("MocoInverse Rajagopal2016, 18 muscles", "[casadi]") {
 
     MocoInverse inverse;
     ModelProcessor modelProcessor =
-        ModelProcessor("subject_walk_armless_18musc.osim") |
-        ModOpReplaceJointsWithWelds({"subtalar_r", "subtalar_l",
-            "mtp_r", "mtp_l"}) |
-        ModOpReplaceMusclesWithDeGrooteFregly2016() |
-        ModOpIgnorePassiveFiberForcesDGF() |
-        ModOpTendonComplianceDynamicsModeDGF("implicit") |
-        ModOpAddExternalLoads("subject_walk_armless_external_loads.xml");
+                ModelProcessor("subject_walk_armless_18musc.osim") |
+                ModOpReplaceJointsWithWelds({"subtalar_r", "subtalar_l",
+                                             "mtp_r", "mtp_l"}) |
+                ModOpReplaceMusclesWithDeGrooteFregly2016() |
+                ModOpIgnorePassiveFiberForcesDGF() |
+                ModOpTendonComplianceDynamicsModeDGF("implicit") |
+                ModOpAddExternalLoads("subject_walk_armless_external_loads.xml");
 
     inverse.setModel(modelProcessor);
     inverse.setKinematics(
-        TableProcessor("subject_walk_armless_coordinates.mot") |
-        TabOpLowPassFilter(6));
+            TableProcessor("subject_walk_armless_coordinates.mot") |
+            TabOpLowPassFilter(6));
     inverse.set_initial_time(0.450);
     inverse.set_final_time(1.0);
     inverse.set_kinematics_allow_extra_columns(true);
     inverse.set_mesh_interval(0.025);
     inverse.set_constraint_tolerance(1e-4);
     inverse.set_convergence_tolerance(1e-4);
+    inverse.set_output_paths(0, ".*tendon_force.*");
+    inverse.set_output_paths(1, ".*fiber_force_along_tendon.*");
 
-    MocoSolution solution = inverse.solve().getMocoSolution();
-    //solution.write("testMocoInverse_subject_18musc_solution.sto");
+    SECTION("Base problem") {
+        MocoInverseSolution inverseSolution = inverse.solve();
+        MocoSolution solution = inverseSolution.getMocoSolution();
+        //solution.write("testMocoInverse_subject_18musc_solution.sto");
 
-    MocoTrajectory std("std_testMocoInverse_subject_18musc_solution.sto");
-    const auto expected = std.getControlsTrajectory();
-    CHECK(std.compareContinuousVariablesRMS(solution,
-            {{"controls", {}}}) < 1e-2);
-    CHECK(std.compareContinuousVariablesRMS(solution, {{"states", {}}}) < 1e-2);
+        MocoTrajectory std("std_testMocoInverse_subject_18musc_solution.sto");
+        const auto expected = std.getControlsTrajectory();
+        CHECK(std.compareContinuousVariablesRMS(solution,
+                                                {{"controls", {}}}) < 1e-2);
+        CHECK(std.compareContinuousVariablesRMS(solution, {{"states", {}}}) < 1e-2);
+
+        // Check muscle-tendon equilibrium.
+        TimeSeriesTable outputs = inverseSolution.getOutputs();
+        Model model = modelProcessor.process();
+        const auto& muscles = model.getComponentList<DeGrooteFregly2016Muscle>();
+        for (const auto& muscle : muscles) {
+            const auto& path = muscle.getAbsolutePathString();
+            const auto& activeFiberForceAlongTendon = outputs.getDependentColumn(
+                    path + "|active_fiber_force_along_tendon");
+            const auto& passiveFiberForceAlongTendon =
+                    outputs.getDependentColumn(
+                        path + "|passive_fiber_force_along_tendon");
+            const auto& tendonForce = outputs.getDependentColumn(
+                    path + "|tendon_force");
+
+            const auto residual = (tendonForce -
+                    (passiveFiberForceAlongTendon + activeFiberForceAlongTendon))
+                            / muscle.getMaxIsometricForce();
+
+            CHECK(residual.normRMS() < 1e-6);
+        }
+    }
+
+    SECTION("With a MocoControlBoundConstraint") {
+        MocoStudy study = inverse.initialize();
+        auto& problem = study.updProblem();
+
+        // Add control bound constraint.
+        auto* controlBound = problem.addPathConstraint<MocoControlBoundConstraint>();
+        controlBound->addControlPath("/forceset/med_gas_r");
+        controlBound->addControlPath("/forceset/med_gas_l");
+        controlBound->setLowerBound(Constant(0));
+        controlBound->setUpperBound(Constant(0.1));
+
+        auto& solver = study.updSolver<MocoCasADiSolver>();
+        solver.resetProblem(problem);
+        solver.set_enforce_path_constraint_midpoints(true);
+
+        MocoSolution solution = study.solve();
+
+        auto med_gas_r_excitation = solution.getControl("/forceset/med_gas_r");
+        auto med_gas_l_excitation = solution.getControl("/forceset/med_gas_l");
+
+        for (int i = 0; i < solution.getNumTimes(); ++i) {
+            CHECK(med_gas_r_excitation[i] < 0.1);
+            CHECK(med_gas_l_excitation[i] < 0.1);
+        }
+
+    }
 }
 // Next test_case fails on linux while parsing .sto file, disabling for now 
 #ifdef _WIN32

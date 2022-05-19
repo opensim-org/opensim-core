@@ -89,7 +89,6 @@ public:
                         std::shared_ptr<OrientationsReference> orientationsReference,
                         SimTK::Array_<CoordinateReference> &coordinateReferences,
                         double constraintWeight = SimTK::Infinity);
-#ifndef SWIG
     // Backward compatible constructors
     InverseKinematicsSolver(const Model& model,
             const MarkersReference& markersReference,
@@ -110,7 +109,7 @@ public:
                       std::make_shared<OrientationsReference>(
                               orientationsReference),
                       coordinateReferences, constraintWeight){};
-#endif
+
     /* Assemble a model configuration that meets the InverseKinematics conditions  
         (desired values and constraints) starting from an initial state that  
         does not have to satisfy the constraints. */
