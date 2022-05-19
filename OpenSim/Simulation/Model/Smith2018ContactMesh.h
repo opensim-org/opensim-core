@@ -105,48 +105,48 @@ class OSIMSIMULATION_API Smith2018ContactMesh : public ContactGeometry {
     // PROPERTIES
     //=====================================================================
     OpenSim_DECLARE_PROPERTY(mesh_file, std::string,
-            "Path to triangle mesh geometry file representing the contact "
-            "surface (supports .obj, .stl, .vtp).")
+        "Path to triangle mesh geometry file representing the contact "
+        "surface (supports .obj, .stl, .vtp).")
 
-	OpenSim_DECLARE_PROPERTY(elastic_modulus, double,
-		"Uniform Elastic Modulus value for every triangle in mesh. "
-		"The default value is 1000000.0 Pa.")
+    OpenSim_DECLARE_PROPERTY(elastic_modulus, double,
+        "Uniform Elastic Modulus value for every triangle in mesh. "
+        "The default value is 1000000.0 Pa.")
 
-	OpenSim_DECLARE_PROPERTY(poissons_ratio, double,
-		"Uniform Poissons Ratio value for every triangle "
-		"in mesh. "
-		"The default value is 0.5.")
+    OpenSim_DECLARE_PROPERTY(poissons_ratio, double,
+        "Uniform Poissons Ratio value for every triangle "
+        "in mesh. "
+        "The default value is 0.5.")
 
-	OpenSim_DECLARE_PROPERTY(thickness, double,
-		"Uniform thickness of elastic layer for entire mesh. "
-		"The default value is 0.005 meters")
+    OpenSim_DECLARE_PROPERTY(thickness, double,
+        "Uniform thickness of elastic layer for entire mesh. "
+        "The default value is 0.005 meters")
 
-	OpenSim_DECLARE_PROPERTY(use_variable_thickness, bool,
-		"Compute the local thickness for each triangle in mesh_file by "
-		"calculating the distance along a normal ray cast from the center "
-		"of each triangle in the mesh_file to intersection with the "
-		"mesh_back_file. If use_variable_thickness is true, "
-		"mesh_back_file must be defined and the 'thickness' property "
+    OpenSim_DECLARE_PROPERTY(use_variable_thickness, bool,
+        "Compute the local thickness for each triangle in mesh_file by "
+        "calculating the distance along a normal ray cast from the center "
+        "of each triangle in the mesh_file to intersection with the "
+        "mesh_back_file. If use_variable_thickness is true, "
+        "mesh_back_file must be defined and the 'thickness' property "
         "value is not used."
-		"The Default value is false.")
+        "The Default value is false.")
 
-	OpenSim_DECLARE_OPTIONAL_PROPERTY(mesh_back_file, std::string,
-		"Path to traingle mesh geometry file representing the backside "
-		"of contact surface elastic layer (bone / backside of "
-		"artifical component) mesh geometry file (supports .obj, "
-		".stl, .vtp). ")
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(mesh_back_file, std::string,
+        "Path to traingle mesh geometry file representing the backside "
+        "of contact surface elastic layer (bone / backside of "
+        "artifical component) mesh geometry file (supports .obj, "
+        ".stl, .vtp). ")
 
-	OpenSim_DECLARE_OPTIONAL_PROPERTY(min_thickness, double,
-		"Minimum thickness threshold for elastic layer [m] "
-		"when calculating variable thickness for each triangle.")
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(min_thickness, double,
+        "Minimum thickness threshold for elastic layer [m] "
+        "when calculating variable thickness for each triangle.")
 
-	OpenSim_DECLARE_OPTIONAL_PROPERTY(max_thickness, double,
-		"Maximum thickness threshold for elastic layer [m] when "
-		"calculating variable thickness for each triangle.")
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(max_thickness, double,
+        "Maximum thickness threshold for elastic layer [m] when "
+        "calculating variable thickness for each triangle.")
 
-	OpenSim_DECLARE_PROPERTY(scale_factors, SimTK::Vec3,
-		"[x,y,z] scale factors applied to vertex locations of the"
-		" mesh_file and mesh_back_file meshes.")
+    OpenSim_DECLARE_PROPERTY(scale_factors, SimTK::Vec3,
+        "[x,y,z] scale factors applied to vertex locations of the"
+        " mesh_file and mesh_back_file meshes.")
 
     //=========================================================================
     // SOCKETS
@@ -249,7 +249,7 @@ class OSIMSIMULATION_API Smith2018ContactMesh : public ContactGeometry {
 #endif // SWIG
 
     //SWIG exposure for MATLAB/Python geometry queries 
-    bool Smith2018ContactMesh::rayIntersectionTest(
+    bool rayIntersectionTest(
         const SimTK::Vec3& origin, const SimTK::UnitVec3& direction,
         const double& min_proximity, const double& max_proximity);
 
