@@ -606,7 +606,7 @@ void ForsimTool::initializeCoordinates() {
     }
 
     log_info("Unconstrained Coordinates:");
-    if (getProperty_unconstrained_coordinates().size()) {
+    if (getProperty_unconstrained_coordinates().size() == 0) {
         log_warn("Forsim Tool: No unconstrained_coordinates listed!");
         log_warn("No kinematics will be predicted!");
     }
