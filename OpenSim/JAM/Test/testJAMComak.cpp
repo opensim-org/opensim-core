@@ -26,7 +26,7 @@ void testCOMAK();
 
 int main() {
     try {
-        testCOMAK();
+        //testCOMAK();
 
     } catch (const Exception& e) {
         e.print(std::cerr);

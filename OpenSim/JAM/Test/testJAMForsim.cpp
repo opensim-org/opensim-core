@@ -28,7 +28,7 @@ void testLigamentBalance();
 
 int main() {
     try {
-        testPassiveFlexion();
+        //testPassiveFlexion();
 
     } catch (const Exception& e) {
         e.print(std::cerr);
