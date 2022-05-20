@@ -2079,7 +2079,7 @@ void JointMechanicsTool::getGeometryPathPoints(const SimTK::State& s, const Geom
 
         //If wrapping point, need to collect all points on wrap object surface
         if (pwp) {
-            Array<SimTK::Vec3>& surfacePoints = pwp->getWrapPath();
+            const Array<SimTK::Vec3>& surfacePoints = pwp->getWrapPath(s);
             const SimTK::Transform& X_BG = pwp->getParentFrame().findTransformBetween(s, out_frame);
             // Cycle through each surface point and tranform to output frame
             for (int j = 0; j < surfacePoints.getSize(); ++j) {

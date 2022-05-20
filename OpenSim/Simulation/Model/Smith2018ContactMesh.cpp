@@ -115,7 +115,8 @@ Smith2018ContactMesh::Smith2018ContactMesh(const std::string& name,
     _init_mesh_from_file = false;
 
     _faces = triangles;
-    _num_faces = triangles.size();
+    
+    _num_faces = static_cast<int>(triangles.size());
 
     _vertex_locations = vertices;
     _num_vertices = vertices.size();
