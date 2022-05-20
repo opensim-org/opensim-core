@@ -174,8 +174,10 @@ void Smith2018ContactMesh::extendFinalizeFromProperties() {
         if (get_mesh_file() != _cached_mesh_file) {
             initializeMesh();
         }
+        //_decorative_mesh.reset(
+          //  new SimTK::DecorativeMeshFile(_full_mesh_file_path.c_str()));
         _decorative_mesh.reset(
-            new SimTK::DecorativeMeshFile(_full_mesh_file_path.c_str()));
+            new SimTK::DecorativeMesh(getPolygonalMesh()));
         _decorative_mesh->setScaleFactors(get_scale_factors());
     }
 }
@@ -330,13 +332,10 @@ void Smith2018ContactMesh::initializeMesh()
             _mesh.addVertex(_vertex_locations[v]);
         }
              
-        for (int t = 0; t < _num_faces; ++t) {
-            for (int j = 0; j < 3; j++) {
-                SimTK::Array_<int> face(_faces[t]);
-                _mesh.addFace(face);
-            }
-        }
-        
+        for (int t = 0; t < _num_faces; ++t) {            
+            SimTK::Array_<int> face(_faces[t]);
+            _mesh.addFace(face);            
+        }        
     }
     //Scale Mesh
     SimTK::Real xscale = get_scale_factors()(0);
