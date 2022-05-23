@@ -160,6 +160,7 @@ mark_as_advanced(OPENSIM_PYTHON_STANDALONE) # Mainly for packagers; not users.
 
 option(OPENSIM_PYTHON_CONDA "Build specifically for Conda packaging
 which implies NO C++ tests and no runtime as managed by Conda." OFF)
+mark_as_advanced(OPENSIM_PYTHON_CONDA)
 
 option(BUILD_API_ONLY "Build/install only headers, libraries,
 wrapping, tests; not applications (opensim, ik, rra, etc.)." OFF)
@@ -549,6 +550,7 @@ endif()
 
 if(${BUILD_PYTHON_WRAPPING})
     set(required_python_version 3)
+    set(Python3_ROOT_DIR ""  CACHE PATH "Top level directory containing Python3 ")
     find_package(Python3 3.6 REQUIRED COMPONENTS Interpreter Development NumPy)
     message("Python3_FOUND:${Python3_FOUND}")
     message("Python3_VERSION:${Python3_VERSION}")
