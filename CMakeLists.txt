@@ -550,7 +550,7 @@ endif()
 
 if(${BUILD_PYTHON_WRAPPING})
     set(required_python_version 3)
-    set(Python3_ROOT_DIR ""  CACHE PATH "Top level directory containing Python3 ")
+    set(Python3_ROOT_DIR ""  CACHE PATH "Top level directory containing Python3. For conda environments, this can also be set to the top level directory for a specific environment.")
     find_package(Python3 3.6 REQUIRED COMPONENTS Interpreter Development NumPy)
     message("Python3_FOUND:${Python3_FOUND}")
     message("Python3_VERSION:${Python3_VERSION}")
