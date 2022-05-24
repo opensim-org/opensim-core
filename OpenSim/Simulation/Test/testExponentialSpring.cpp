@@ -1,0 +1,360 @@
+﻿/* -------------------------------------------------------------------------- *
+ *               OpenSim:  testContactExponentialSpring.cpp                   *
+ * -------------------------------------------------------------------------- *
+ * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
+ * See http://opensim.stanford.edu and the NOTICE file for more information.  *
+ * OpenSim is developed at Stanford University and supported by the US        *
+ * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
+ * through the Warrior Web program.                                           *
+ *                                                                            *
+ * Copyright (c) 2022 Stanford University and the Authors                     *
+ * Author(s): F. C. Anderson                                                  *
+ *                                                                            *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
+ * not use this file except in compliance with the License. You may obtain a  *
+ * copy of the License at http://www.apache.org/licenses/LICENSE-2.0.         *
+ *                                                                            *
+ * Unless required by applicable law or agreed to in writing, software        *
+ * distributed under the License is distributed on an "AS IS" BASIS,          *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
+ * See the License for the specific language governing permissions and        *
+ * limitations under the License.                                             *
+ * -------------------------------------------------------------------------- */
+
+#include <iostream>
+#include <OpenSim/Common/IO.h>
+#include <OpenSim/Common/Exception.h>
+
+#include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/Manager/Manager.h>
+#include <OpenSim/Analyses/Kinematics.h>
+#include <OpenSim/Analyses/ForceReporter.h>
+
+#include <OpenSim/Simulation/Model/ContactGeometrySet.h>
+#include <OpenSim/Simulation/Model/ContactHalfSpace.h>
+#include <OpenSim/Simulation/Model/ContactMesh.h>
+#include <OpenSim/Simulation/Model/ContactSphere.h>
+#include <OpenSim/Simulation/Model/ElasticFoundationForce.h>
+#include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
+#include <OpenSim/Simulation/Model/ExponentialSpringForce.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include "SimTKsimbody.h"
+
+using namespace SimTK;
+using namespace std;
+
+namespace OpenSim {
+
+
+//=============================================================================
+/** Class ExponentialSpringTester provides a thread-safe scope and framework
+for evaluating and testing the ExponentialSpringForce class. */
+class ExponentialSpringTester {
+
+public:
+    // Contact choices
+    enum ContactChoice {
+        ExpSpr = 0,
+        HuntCross,
+        Both
+    };
+
+    // Initial condition choices
+    enum InitialConditionsChoice {
+        Static = 0,
+        Bounce,
+        Slide,
+        SpinSlide,
+        Tumble
+    };
+
+    // Constructor
+    ExponentialSpringTester(){};
+
+    // Destructor
+    ~ExponentialSpringTester() {
+        model->disownAllComponents();
+        delete model;
+    }
+
+    // Command line parsing and usage
+    int parseCommandLine(int argc, char** argv);
+    void printUsage();
+
+    // Model Creation
+    void buildModel();
+    OpenSim::Body* addBlock(Model* model, const String& suffix);
+    //void addExponentialSprings(Model* model, OpenSim::Body* body);
+    void addHuntCrossleyContact(Model* model, OpenSim::Body* body);
+
+    // Simulation
+    void setInitialConditions();
+    void simulate(Model* model);
+
+    // MEMBER VARIABLES
+    // Simulation related
+    double integ_accuracy{1.0e-5};
+    SimTK::Vec3 gravity{SimTK::Vec3(0, -9.8065, 0)};
+    double mass{10.0};
+    double halfSide{0.10};
+    double tf{5.0};
+
+    // Command line options and their defaults
+    ContactChoice whichContact{ExpSpr};
+    InitialConditionsChoice whichInit{Slide};
+    bool noDamp{false};
+    bool applyFx{false};
+    bool visuals{false};
+
+    // Other member variables
+    Model* model{NULL};
+    Body* blockES{NULL};
+    Body* blockHC{NULL};
+
+}; // End class ExponentialSpringTester declarations
+
+}  // End namespace OpenSim
+
+
+using namespace OpenSim;
+
+//_____________________________________________________________________________
+int
+ExponentialSpringTester::
+parseCommandLine(int argc, char** argv) {
+
+    string option;
+    for (int i = 1; i < argc; ++i) {
+
+        option = argv[i];
+
+        // Contact choice
+        if (option == "ExpSpr")
+            whichContact = ExpSpr;
+        else if (option == "HuntCross")
+            whichContact = HuntCross;
+        else if (option == "Both")
+            whichContact = Both;
+
+        // Initial condition choice
+        else if (option == "Static")
+            whichInit = Static;
+        else if (option == "Bounce")
+            whichInit = Bounce;
+        else if (option == "Slide")
+            whichInit = Slide;
+        else if (option == "SpinSlide")
+            whichInit = SpinSlide;
+        else if (option == "Tumble")
+            whichInit = Tumble;
+
+        // Turn off all dissipative terms
+        else if (option == "NoDamp")
+            noDamp = true;
+
+        // Apply a horizontal ramping force
+        else if (option == "ApplyFx")
+            applyFx = true;
+
+        // Show the visuals
+        else if (option == "Vis")
+            visuals = true;
+
+        // Unrecognized
+        else {
+            printUsage();
+            return -1;
+        }
+    }
+    return 0;
+}
+
+//_____________________________________________________________________________
+void
+ExponentialSpringTester::
+printUsage() {
+    cout << endl << "Usage:" << endl;
+    cout << "$ testExponetialSpring "
+         << "[InitCond] [Contact] [NoDamp] [ApplyFx] [Vis]" << endl;
+    cout << "\tInitCond (choose one): Static Bounce Slide SpinSlide Tumble";
+    cout << endl;
+    cout << "\t Contact (choose one): ExpSpr HuntCross Both" << endl << endl;
+
+    cout << "All arguments are optional. If no arguments are specified, ";
+    cout << "a 'Slide' will" << endl;
+    cout << "be simulated with one block that uses ";
+    cout << "ExponentialSpringForce contact," << endl;
+    cout << "with typical damping settings, ";
+    cout << "with no extnerally applied force, " << endl;
+    cout << "and with no visuals." << endl << endl;
+
+    cout << "Example:" << endl;
+    cout << "To simulated 2 blocks (one with Exponential Springs and one";
+    cout << " with Hunt-Crossley)" << endl;
+    cout << "that bounce without energy dissipation and with Visuals, ";
+    cout << "enter the following: " << endl << endl;
+
+    cout << "$ testExponentialSpring Bounce Both NoDamp Vis" << endl << endl;
+}
+
+//_____________________________________________________________________________
+// Build the model
+void ExponentialSpringTester::buildModel() {
+    // Create the model(s)
+    Model* model = new Model();
+    model->setGravity(gravity);
+    model->setName("TestExponentialSpring");
+    switch (whichContact) {
+    case ExpSpr:
+        blockES = addBlock(model, "ES");
+        // addExponentialSprings(model, blockES);
+    case HuntCross:
+        blockHC = addBlock(model, "HC");
+        addHuntCrossleyContact(model, blockHC);
+    case Both:
+        blockES = addBlock(model, "ES");
+        // addExponentialSprings(model, blockES);
+        blockHC = addBlock(model, "HC");
+        addHuntCrossleyContact(model, blockHC);
+    }
+}
+//______________________________________________________________________________
+OpenSim::Body*
+ExponentialSpringTester::
+addBlock(Model* model, const String& suffix) {
+
+    Ground& ground = model->updGround();
+
+    // Body
+    OpenSim::Body* block = new OpenSim::Body();
+    block->setName("Block"+suffix);
+    block->set_mass(mass);
+    block->set_mass_center(Vec3(0));
+    block->setInertia(Inertia(1.0));
+
+    // Joint
+    FreeJoint free("Free"+suffix,
+        ground, Vec3(0), Vec3(0), *block, Vec3(0), Vec3(0));
+    model->addBody(block);
+    model->addJoint(&free);
+
+    return block;
+}
+//______________________________________________________________________________
+void
+ExponentialSpringTester::
+addHuntCrossleyContact(Model* model, OpenSim::Body* block) {
+
+    Ground& ground = model->updGround();
+
+    // Create ContactGeometry.
+    ContactHalfSpace* floor = new ContactHalfSpace(
+            Vec3(0), Vec3(0, 0, -0.5 * SimTK_PI), ground, "floor");
+    model->addContactGeometry(floor);
+    OpenSim::ContactGeometry* geometry;
+    geometry = new ContactSphere(halfSide, Vec3(0), *block, "sphere");
+    model->addContactGeometry(geometry);
+
+    // Add a HuntCrossleyForce.
+    auto* contactParams = new OpenSim::HuntCrossleyForce::ContactParameters(
+            1.0e7, 2e-1, 0.0, 0.0, 0.0);
+    contactParams->addGeometry("sphere");
+    contactParams->addGeometry("floor");
+    OpenSim::Force* force = new OpenSim::HuntCrossleyForce(contactParams);
+    model->addForce(force);
+}
+
+//_____________________________________________________________________________
+void
+ExponentialSpringTester::
+setInitialConditions() {
+
+}
+
+//_____________________________________________________________________________
+void
+ExponentialSpringTester::
+simulate(Model* model)
+{
+    SimTK::State& state = model->initSystem();
+    model->getMultibodySystem().realize(state, Stage::Velocity );
+
+    cout << "state =" << state << std::endl;
+
+    Manager manager(*model);
+    manager.setIntegratorAccuracy(integ_accuracy);
+    state.setTime(0.0);
+    manager.initialize(state);
+    state = manager.integrate(tf);
+}
+
+
+//_____________________________________________________________________________
+/* Entry Point (i.e., main())
+
+The motion of a 10 kg, 6 degree-of-freedom block and its force interaction
+with a laboratory floor are simulated.
+
+Contact with the floor is modeled using either
+    1) 8 ExponentialSpringForce instances, one at each corner of the block, or
+    2) 8 HuntCrossleyForce instances, one at each corner of the block.
+
+For a side-by-side comparison of simulated motions, two blocks (one using
+the ExponentialSpringForce class for contact and the other using the
+HuntCrossleyForce class) can be created and visualized simultaneously.
+
+For an assessment of computational performance, just one block should be
+simulated at a time. Number of integration trys and steps, as well as cpu time,
+are reported.
+
+Choice of initial conditions can be made in order to generate the following
+motions:
+    1) Static (y = 0.1 m, sitting at rest on the floor)
+    2) Bouncing (y = 1.0 m, dropped)
+    3) Sliding (y = 0.2 m, vx = -2.0 m/s)
+    4) Spinning & Sliding (y = 0.2 m, vx = -2.0 m/s, wy = 2.0 pi rad/sec)
+    5) Tumbling (py = 2.0 m, vx = -2.0 m/s, wz = 2.0 pi rad/sec)
+
+Additional options allow the following to be specified:
+    NoDamp   Parameters are chosen to eliminate all energy dissipation.
+    ApplyFx  A ramping horizontal force (Fx) is applied after 5.0 sec.
+
+If no external force is applied, tf = 5.0 s.
+
+If an external force is applied, tf = 10.0 s and this force ramps up
+linearly from a value of fx = 0.0 at t = 5.0 s to a value of
+fx = |mass*g| at t = 10.0 s. The force is not ramped up prior to t = 5.0 s
+in order to allow the block an opportunity to come more fully to rest.
+This ramping profile was done with the "Static" initial condition choice
+in mind so that friction models could be evaluated more critically.
+In particular, a static block should not start sliding until fx > μₛ Fₙ.
+
+For ExponentialSpringForce, the following things are tested:
+    a) instantiation
+    b) model initialization
+    c) energy conservation
+    d) data cache access
+    e) realization stage invalidation
+    f) reporting
+    g) serialization
+
+The HuntCrossleyForce class is tested elsewhere (e.g., see
+testContactGeometry.cpp). */
+int main(int argc, char** argv) {
+    try {
+        ExponentialSpringTester tester;
+        if(tester.parseCommandLine(argc, argv) < 0) return 1;
+        tester.buildModel();
+        //tester.setInitialConditions();
+        //tester.simulate();
+
+    } catch (const OpenSim::Exception& e) {
+        e.print(cerr);
+        return 1;
+    }
+    cout << "Done" << endl;
+    return 0;
+}
