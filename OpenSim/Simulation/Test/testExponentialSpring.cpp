@@ -63,7 +63,7 @@ public:
     };
 
     // Initial condition choices
-    enum InitialConditionsChoice {
+    enum InitialConditionsChoice{
         Static = 0,
         Bounce,
         Slide,
@@ -72,7 +72,10 @@ public:
     };
 
     // Constructor
-    ExponentialSpringTester(){};
+    ExponentialSpringTester() {
+        runMenuItems.push_back(std::make_pair("Go", 1));
+        runMenuItems.push_back(std::make_pair("Replay", 2));
+    };
 
     // Destructor
     ~ExponentialSpringTester() {
@@ -86,13 +89,17 @@ public:
 
     // Model Creation
     void buildModel();
-    OpenSim::Body* addBlock(Model* model, const String& suffix);
+    OpenSim::Body* addBlock(const String& suffix);
     //void addExponentialSprings(Model* model, OpenSim::Body* body);
-    void addHuntCrossleyContact(Model* model, OpenSim::Body* body);
+    void addHuntCrossleyContact(OpenSim::Body* body);
+
+    // Vizualizer
+    void addVisualizer();
 
     // Simulation
-    void setInitialConditions();
-    void simulate(Model* model);
+    void setInitialConditions(SimTK::State& state,
+        const SimTK::MobilizedBody& body, double dz);
+    void simulate();
 
     // MEMBER VARIABLES
     // Simulation related
@@ -103,16 +110,22 @@ public:
     double tf{5.0};
 
     // Command line options and their defaults
-    ContactChoice whichContact{ExpSpr};
+    ContactChoice whichContact{HuntCross};
     InitialConditionsChoice whichInit{Slide};
     bool noDamp{false};
     bool applyFx{false};
     bool visuals{false};
 
-    // Other member variables
+    // Model and parts
     Model* model{NULL};
     Body* blockES{NULL};
     Body* blockHC{NULL};
+
+    // Visualization
+    SimTK::Visualizer* viz{NULL};
+    SimTK::Visualizer::InputSilo* silo{NULL};
+    SimTK::Array_<std::pair<String, int>> runMenuItems;
+
 
 }; // End class ExponentialSpringTester declarations
 
@@ -202,51 +215,55 @@ printUsage() {
 
 //_____________________________________________________________________________
 // Build the model
-void ExponentialSpringTester::buildModel() {
+void
+ExponentialSpringTester::
+buildModel() {
     // Create the model(s)
-    Model* model = new Model();
+    model = new Model();
     model->setGravity(gravity);
     model->setName("TestExponentialSpring");
     switch (whichContact) {
     case ExpSpr:
-        blockES = addBlock(model, "ES");
-        // addExponentialSprings(model, blockES);
+        blockES = addBlock("ES");
+        //addExponentialSprings(model, blockES);
+        break;
     case HuntCross:
-        blockHC = addBlock(model, "HC");
-        addHuntCrossleyContact(model, blockHC);
+        blockHC = addBlock("HC");
+        addHuntCrossleyContact(blockHC);
+        break;
     case Both:
-        blockES = addBlock(model, "ES");
-        // addExponentialSprings(model, blockES);
-        blockHC = addBlock(model, "HC");
-        addHuntCrossleyContact(model, blockHC);
+        blockES = addBlock("ES");
+        //addExponentialSprings(model, blockES);
+        blockHC = addBlock("HC");
+        addHuntCrossleyContact(blockHC);
     }
 }
 //______________________________________________________________________________
 OpenSim::Body*
 ExponentialSpringTester::
-addBlock(Model* model, const String& suffix) {
+addBlock(const String& suffix) {
 
     Ground& ground = model->updGround();
 
     // Body
     OpenSim::Body* block = new OpenSim::Body();
-    block->setName("Block"+suffix);
+    block->setName("block");
     block->set_mass(mass);
     block->set_mass_center(Vec3(0));
     block->setInertia(Inertia(1.0));
 
     // Joint
-    FreeJoint free("Free"+suffix,
-        ground, Vec3(0), Vec3(0), *block, Vec3(0), Vec3(0));
+    FreeJoint *free = new
+        FreeJoint("free", ground, Vec3(0), Vec3(0), *block, Vec3(0), Vec3(0));
     model->addBody(block);
-    model->addJoint(&free);
+    model->addJoint(free);
 
     return block;
 }
 //______________________________________________________________________________
 void
 ExponentialSpringTester::
-addHuntCrossleyContact(Model* model, OpenSim::Body* block) {
+addHuntCrossleyContact(OpenSim::Body* block) {
 
     Ground& ground = model->updGround();
 
@@ -259,8 +276,8 @@ addHuntCrossleyContact(Model* model, OpenSim::Body* block) {
     model->addContactGeometry(geometry);
 
     // Add a HuntCrossleyForce.
-    auto* contactParams = new OpenSim::HuntCrossleyForce::ContactParameters(
-            1.0e7, 2e-1, 0.0, 0.0, 0.0);
+    auto* contactParams = new OpenSim::HuntCrossleyForce::
+        ContactParameters(1.0e7, 2e-1, 0.0, 0.0, 0.0);
     contactParams->addGeometry("sphere");
     contactParams->addGeometry("floor");
     OpenSim::Force* force = new OpenSim::HuntCrossleyForce(contactParams);
@@ -270,18 +287,70 @@ addHuntCrossleyContact(Model* model, OpenSim::Body* block) {
 //_____________________________________________________________________________
 void
 ExponentialSpringTester::
-setInitialConditions() {
+setInitialConditions(SimTK::State& state, const SimTK::MobilizedBody& body,
+    double dz)
+{
+    SimTK::Vec3 pos(0.0, 0.0, dz);
+    SimTK::Vec3 vel(0.0);
+    SimTK::Vec3 angvel(0.0);
+
+    switch (whichInit) {
+    case Static:
+        pos[0] = 0.0;
+        pos[1] = halfSide + 0.004;
+        body.setQToFitTranslation(state, pos);
+        break;
+    case Bounce:
+        pos[0] = 0.0;
+        pos[1] = 1.0;
+        body.setQToFitTranslation(state, pos);
+        break;
+    case Slide:
+        pos[0] = 2.0;
+        pos[1] = 2.0 * halfSide;
+        vel[0] = -2.0;
+        body.setQToFitTranslation(state, pos);
+        body.setUToFitLinearVelocity(state, vel);
+        break;
+    case SpinSlide:
+        pos[0] = 2.0;
+        pos[1] = 2.0 * halfSide;
+        vel[0] = -2.0;
+        angvel[1] = 2.0 * SimTK::Pi;
+        body.setQToFitTranslation(state, pos);
+        body.setUToFitLinearVelocity(state, vel);
+        body.setUToFitAngularVelocity(state, angvel);
+        break;
+    case Tumble:
+        pos[0] = 2.0;
+        pos[1] = 2.0 * halfSide;
+        vel[0] = -2.0;
+        angvel[2] = 2.0 * SimTK::Pi;
+        body.setQToFitTranslation(state, pos);
+        body.setUToFitLinearVelocity(state, vel);
+        body.setUToFitAngularVelocity(state, angvel);
+        break;
+    default:
+        cout << "Unrecognized set of initial conditions!" << endl;
+    }
 
 }
 
 //_____________________________________________________________________________
 void
 ExponentialSpringTester::
-simulate(Model* model)
+simulate()
 {
+    // Initialize the System
     SimTK::State& state = model->initSystem();
     model->getMultibodySystem().realize(state, Stage::Velocity );
-
+    
+    // Set initial conditions
+    double dz = 1.0;
+    if (blockES != NULL)
+        setInitialConditions(state, blockES->getMobilizedBody(),  dz);
+    if (blockHC != NULL)
+        setInitialConditions(state, blockHC->getMobilizedBody(), -dz);
     cout << "state =" << state << std::endl;
 
     Manager manager(*model);
@@ -348,8 +417,7 @@ int main(int argc, char** argv) {
         ExponentialSpringTester tester;
         if(tester.parseCommandLine(argc, argv) < 0) return 1;
         tester.buildModel();
-        //tester.setInitialConditions();
-        //tester.simulate();
+        tester.simulate();
 
     } catch (const OpenSim::Exception& e) {
         e.print(cerr);
