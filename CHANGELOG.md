@@ -8,7 +8,7 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 
 v4.4
 ====
-- Updated ezc3d to version 1.4.6 which better manage the events defined in a c3d file.
+- Updated ezc3d to version 1.4.9 which better manage the events defined in a c3d file and deals with ROTATION type of data.
 - Fixed an issue that could happen sometimes with ScaleTool where loading the model file or marker set file could fail if the file was given as an absolute path (Issue #3109, PR #3110)
 - Fixed an issue with SWIG with `OpenSim::Body::getRotationInGround()` where it would return an object without the correct `SimTK::Rotation` methods.
 - Fixed OpenSim::Arrow start_point property being ignored
