@@ -176,9 +176,9 @@ public:
     OpenSim::Body* addBlock(const String& suffix);
     //void addExponentialSprings(Model* model, OpenSim::Body* body);
     void addHuntCrossleyContact(OpenSim::Body* body);
+    void addDecorations();
 
     // Simulation
-    void addDecorations();
     void setInitialConditions(SimTK::State& state,
         const SimTK::MobilizedBody& body, double dz);
     void simulate();
@@ -192,7 +192,7 @@ public:
     double integ_accuracy{1.0e-5};
     SimTK::Vec3 gravity{SimTK::Vec3(0, -9.8065, 0)};
     double mass{10.0};
-    double halfSide{0.10};
+    double hs{0.10};  // half of a side of a cube (kind of like a radius)
     double tf{5.0};
 
     // Command line options and their defaults
@@ -344,26 +344,46 @@ addHuntCrossleyContact(OpenSim::Body* block) {
 
     Ground& ground = model->updGround();
 
-    // Create ContactGeometry.
+    // Geometry for the floor
     ContactHalfSpace* floor = new ContactHalfSpace(
             Vec3(0), Vec3(0, 0, -0.5 * SimTK_PI), ground, "floor");
     model->addContactGeometry(floor);
-    OpenSim::ContactGeometry* geometry;
-    geometry = new ContactSphere(halfSide, Vec3(0), *block, "sphere");
-    model->addContactGeometry(geometry);
 
-    // Add a HuntCrossleyForce.
-    auto* contactParams = new OpenSim::HuntCrossleyForce::
-        ContactParameters(1.0e7, 2e-1, 0.0, 0.0, 0.0);
-    contactParams->addGeometry("sphere");
-    contactParams->addGeometry("floor");
-    OpenSim::Force* force = new OpenSim::HuntCrossleyForce(contactParams);
-    model->addForce(force);
+    // Corners of the block
+    const int n = 8;
+    Vec3 corner[n];
+    corner[0] = Vec3(hs, -hs, hs);
+    corner[1] = Vec3(hs, -hs, -hs);
+    corner[2] = Vec3(-hs, -hs, -hs);
+    corner[3] = Vec3(-hs, -hs, hs);
+    corner[4] = Vec3(hs, hs, hs);
+    corner[5] = Vec3(hs, hs, -hs);
+    corner[6] = Vec3(-hs, hs, -hs);
+    corner[7] = Vec3(-hs, hs, hs);
+
+    // Loop over the corners
+    std::string name = "";
+    for (int i = 0; i < n; ++i) {
+        // Geometry
+        name = "sphere" + std::to_string(i); 
+        OpenSim::ContactGeometry* geometry =
+            new ContactSphere(0.005, corner[i], *block, name);
+        model->addContactGeometry(geometry);
+
+        // HuntCrossleyForce
+        auto* contactParams = new OpenSim::HuntCrossleyForce::
+            ContactParameters(1.0e7, 2e-1, 0.0, 0.0, 0.0);
+        contactParams->addGeometry(name);
+        contactParams->addGeometry("floor");
+        OpenSim::Force* force = new OpenSim::HuntCrossleyForce(contactParams);
+        model->addForce(force);
+    }
 }
 //_____________________________________________________________________________
 void
 ExponentialSpringTester::
 addDecorations() {
+
     // Ground
     Ground& ground = model->updGround();
     SimTK::DecorativeBrick* floor =
@@ -377,7 +397,7 @@ addDecorations() {
     if (blockES) {
         SimTK::Body& body = blockES->updMobilizedBody().updBody();
         SimTK::DecorativeBrick* brick =
-            new SimTK::DecorativeBrick(SimTK::Vec3(halfSide));
+            new SimTK::DecorativeBrick(SimTK::Vec3(hs));
         brick->setColor(SimTK::Blue);
         body.addDecoration(SimTK::Transform(), *brick);
     }
@@ -386,7 +406,7 @@ addDecorations() {
     if (blockHC) {
         SimTK::Body& body = blockHC->updMobilizedBody().updBody();
         SimTK::DecorativeBrick* brick =
-                new SimTK::DecorativeBrick(SimTK::Vec3(halfSide));
+                new SimTK::DecorativeBrick(SimTK::Vec3(hs));
         brick->setColor(SimTK::Red);
         body.addDecoration(SimTK::Transform(), *brick);
     }
@@ -404,7 +424,7 @@ setInitialConditions(SimTK::State& state, const SimTK::MobilizedBody& body,
     switch (whichInit) {
     case Static:
         pos[0] = 0.0;
-        pos[1] = halfSide + 0.004;
+        pos[1] = hs + 0.004;
         body.setQToFitTranslation(state, pos);
         break;
     case Bounce:
@@ -414,14 +434,14 @@ setInitialConditions(SimTK::State& state, const SimTK::MobilizedBody& body,
         break;
     case Slide:
         pos[0] = 2.0;
-        pos[1] = 2.0 * halfSide;
+        pos[1] = 2.0 * hs;
         vel[0] = -2.0;
         body.setQToFitTranslation(state, pos);
         body.setUToFitLinearVelocity(state, vel);
         break;
     case SpinSlide:
         pos[0] = 2.0;
-        pos[1] = 2.0 * halfSide;
+        pos[1] = 2.0 * hs;
         vel[0] = -2.0;
         angvel[1] = 2.0 * SimTK::Pi;
         body.setQToFitTranslation(state, pos);
@@ -430,7 +450,7 @@ setInitialConditions(SimTK::State& state, const SimTK::MobilizedBody& body,
         break;
     case Tumble:
         pos[0] = 2.0;
-        pos[1] = 2.0 * halfSide;
+        pos[1] = 2.0 * hs;
         vel[0] = -2.0;
         angvel[2] = 2.0 * SimTK::Pi;
         body.setQToFitTranslation(state, pos);
@@ -448,14 +468,8 @@ ExponentialSpringTester::
 simulate() {
 
     // Initialize the System
+    if(showVisuals) model->setUseVisualizer(false);
     SimTK::State& state = model->initSystem();
-    SimTK::MultibodySystem& system = model->updMultibodySystem();
-
-    // Visuals
-    if (false) {
-        addDecorations();
-        visuals = new TestExpSprVisuals(system);
-    }
 
     // Set initial conditions
     double dz = 1.0;
@@ -473,7 +487,11 @@ simulate() {
     manager.setIntegratorAccuracy(integ_accuracy);
     state.setTime(0.0);
     manager.initialize(state);
+    // start timing
+    std::clock_t startTime = std::clock();
     state = manager.integrate(tf);
+    auto runTime = 1.e3 * (std::clock() - startTime) / CLOCKS_PER_SEC;
+    cout << "simulation time = " << runTime << " msec" << endl;
 
     // Visuals Replay
     if (visuals) visuals->pollForReplay();
