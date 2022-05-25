@@ -45,13 +45,100 @@
 
 using namespace SimTK;
 using namespace std;
+using namespace OpenSim;
 
-namespace OpenSim {
+class TestExpSprVisuals;
+
+//=============================================================================
+/** Record the System state at regular intervals. */
+class VisualsReporter : public PeriodicEventReporter {
+public:
+    VisualsReporter(TestExpSprVisuals& visuals, Real reportInterval) :
+        PeriodicEventReporter(reportInterval), vis(visuals) {}
+
+    void handleEvent(const State& state) const override;
+
+private:
+    TestExpSprVisuals& vis;
+};
+
+//=============================================================================
+/** Class Visuals encapsulates the variables needed for running a
+SimTK::Visualizer and provides the polling methods for starting a
+simulation and replaying the simulated motion. */
+class TestExpSprVisuals {
+public:
+    // Constructor
+    TestExpSprVisuals(MultibodySystem& system) {
+        // Menu Items
+        runMenuItems.push_back(std::make_pair("Go", goItem));
+        runMenuItems.push_back(std::make_pair("Replay", replayItem));
+
+        // SimTK::Visualizer
+        vis = new Visualizer(system);
+        vis->setShowShadows(true);
+
+        // Input Silo
+        silo = new Visualizer::InputSilo();
+        vis->addInputListener(silo);
+        vis->addMenu("Run", runMenuID, runMenuItems);
+
+        // Reporters
+        system.addEventReporter(new Visualizer::Reporter(*vis, reportInterval));
+        system.addEventReporter(new VisualsReporter(*this, reportInterval));
+
+        // Reserve memory for the System states to be recorded
+        states.reserve(50000);
+    }
+
+    // State storage
+    void appendState(const State& state) { states.emplace_back(state); }
+
+    // Polling
+    void pollForStart() {
+        cout << "\nChoose 'Go' from the Run menu to simulate.\n";
+        int menuID, item;
+        do {
+            silo->waitForMenuPick(menuID, item);
+            if (menuID != runMenuID || item != goItem)
+                cout << "\aDude ... follow instructions!\n";
+        } while (menuID != runMenuID || item != goItem);
+    }
+    void pollForReplay() {
+        silo->clear();
+        while (true) {
+            cout << "Choose Replay to see that again ...\n";
+            int menuID, item;
+            silo->waitForMenuPick(menuID, item);
+            for (double i = 0; i < (int)states.size(); i++) {
+                vis->report(states[(int)i]);
+            }
+        }
+    }
+
+private:
+    SimTK::Visualizer* vis{NULL};
+    SimTK::Visualizer::InputSilo* silo{NULL};
+    SimTK::Array_<std::pair<String, int>> runMenuItems;
+    const int runMenuID = 3;
+    const int goItem{1}, replayItem{2}, quitItem{3}; 
+    double reportInterval = 0.01;
+    SimTK::Array_<State> states;
+};
+
+//_____________________________________________________________________________
+// Definition had to follow the declaration for TestExpSprVisuals
+void
+VisualsReporter::
+handleEvent(const State& state) const {
+    vis.appendState(state);
+}
 
 
 //=============================================================================
-/** Class ExponentialSpringTester provides a thread-safe scope and framework
-for evaluating and testing the ExponentialSpringForce class. */
+/** Class ExponentialSpringTester provides a scope and framework for
+evaluating and testing the ExponentialSpringForce class. Using a class gets
+a lot of variables out of the global scope. */
 class ExponentialSpringTester {
 
 public:
@@ -72,10 +159,7 @@ public:
     };
 
     // Constructor
-    ExponentialSpringTester() {
-        runMenuItems.push_back(std::make_pair("Go", 1));
-        runMenuItems.push_back(std::make_pair("Replay", 2));
-    };
+    ExponentialSpringTester() {};
 
     // Destructor
     ~ExponentialSpringTester() {
@@ -93,15 +177,17 @@ public:
     //void addExponentialSprings(Model* model, OpenSim::Body* body);
     void addHuntCrossleyContact(OpenSim::Body* body);
 
-    // Vizualizer
-    void addVisualizer();
-
     // Simulation
+    void addDecorations();
     void setInitialConditions(SimTK::State& state,
         const SimTK::MobilizedBody& body, double dz);
     void simulate();
 
-    // MEMBER VARIABLES
+    //-------------------------------------------------------------------------
+    // Member variables
+    //-------------------------------------------------------------------------
+ private:
+
     // Simulation related
     double integ_accuracy{1.0e-5};
     SimTK::Vec3 gravity{SimTK::Vec3(0, -9.8065, 0)};
@@ -114,25 +200,18 @@ public:
     InitialConditionsChoice whichInit{Slide};
     bool noDamp{false};
     bool applyFx{false};
-    bool visuals{false};
+    bool showVisuals{true};
 
     // Model and parts
     Model* model{NULL};
-    Body* blockES{NULL};
-    Body* blockHC{NULL};
+    OpenSim::Body* blockES{NULL};
+    OpenSim::Body* blockHC{NULL};
 
     // Visualization
-    SimTK::Visualizer* viz{NULL};
-    SimTK::Visualizer::InputSilo* silo{NULL};
-    SimTK::Array_<std::pair<String, int>> runMenuItems;
-
+    TestExpSprVisuals* visuals{NULL};
 
 }; // End class ExponentialSpringTester declarations
 
-}  // End namespace OpenSim
-
-
-using namespace OpenSim;
 
 //_____________________________________________________________________________
 int
@@ -174,7 +253,7 @@ parseCommandLine(int argc, char** argv) {
 
         // Show the visuals
         else if (option == "Vis")
-            visuals = true;
+            showVisuals = true;
 
         // Unrecognized
         else {
@@ -184,7 +263,6 @@ parseCommandLine(int argc, char** argv) {
     }
     return 0;
 }
-
 //_____________________________________________________________________________
 void
 ExponentialSpringTester::
@@ -212,7 +290,6 @@ printUsage() {
 
     cout << "$ testExponentialSpring Bounce Both NoDamp Vis" << endl << endl;
 }
-
 //_____________________________________________________________________________
 // Build the model
 void
@@ -283,7 +360,37 @@ addHuntCrossleyContact(OpenSim::Body* block) {
     OpenSim::Force* force = new OpenSim::HuntCrossleyForce(contactParams);
     model->addForce(force);
 }
+//_____________________________________________________________________________
+void
+ExponentialSpringTester::
+addDecorations() {
+    // Ground
+    Ground& ground = model->updGround();
+    SimTK::DecorativeBrick* floor =
+            new SimTK::DecorativeBrick(Vec3(2.0, 0.5, 2.0));
+    floor->setColor(Green);
+    floor->setOpacity(0.1);
+    SimTK::Body& grndBody = ground.updMobilizedBody().updBody();
+    grndBody.addDecoration(Transform(Vec3(0, -0.5, 0)), *floor);
 
+    // Exponential Springs Block
+    if (blockES) {
+        SimTK::Body& body = blockES->updMobilizedBody().updBody();
+        SimTK::DecorativeBrick* brick =
+            new SimTK::DecorativeBrick(SimTK::Vec3(halfSide));
+        brick->setColor(SimTK::Blue);
+        body.addDecoration(SimTK::Transform(), *brick);
+    }
+
+    // Hunt-Crossley Block
+    if (blockHC) {
+        SimTK::Body& body = blockHC->updMobilizedBody().updBody();
+        SimTK::DecorativeBrick* brick =
+                new SimTK::DecorativeBrick(SimTK::Vec3(halfSide));
+        brick->setColor(SimTK::Red);
+        body.addDecoration(SimTK::Transform(), *brick);
+    }
+}
 //_____________________________________________________________________________
 void
 ExponentialSpringTester::
@@ -335,29 +442,41 @@ setInitialConditions(SimTK::State& state, const SimTK::MobilizedBody& body,
     }
 
 }
-
 //_____________________________________________________________________________
 void
 ExponentialSpringTester::
-simulate()
-{
+simulate() {
+
     // Initialize the System
     SimTK::State& state = model->initSystem();
-    model->getMultibodySystem().realize(state, Stage::Velocity );
-    
+    SimTK::MultibodySystem& system = model->updMultibodySystem();
+
+    // Visuals
+    if (false) {
+        addDecorations();
+        visuals = new TestExpSprVisuals(system);
+    }
+
     // Set initial conditions
     double dz = 1.0;
     if (blockES != NULL)
-        setInitialConditions(state, blockES->getMobilizedBody(),  dz);
+        setInitialConditions(state, blockES->getMobilizedBody(), dz);
     if (blockHC != NULL)
         setInitialConditions(state, blockHC->getMobilizedBody(), -dz);
     cout << "state =" << state << std::endl;
 
+    // Visuals Start
+    if(visuals) visuals->pollForStart();
+
+    // Integrate
     Manager manager(*model);
     manager.setIntegratorAccuracy(integ_accuracy);
     state.setTime(0.0);
     manager.initialize(state);
     state = manager.integrate(tf);
+
+    // Visuals Replay
+    if (visuals) visuals->pollForReplay();
 }
 
 
@@ -415,7 +534,8 @@ testContactGeometry.cpp). */
 int main(int argc, char** argv) {
     try {
         ExponentialSpringTester tester;
-        if(tester.parseCommandLine(argc, argv) < 0) return 1;
+        int status = tester.parseCommandLine(argc, argv);
+        if (status<0) return 1;
         tester.buildModel();
         tester.simulate();
 
