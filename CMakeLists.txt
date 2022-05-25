@@ -707,15 +707,18 @@ if(${OPENSIM_C3D_PARSER} STREQUAL "ezc3d")
         set(ezc3d_hint "${OPENSIM_DEPENDENCIES_DIR}/ezc3d/lib/cmake/ezc3d")
     endif()
     find_package(ezc3d REQUIRED HINTS "${ezc3d_hint}")
+    set(ezc3d_ROOT_DIR "${ezc3d_DIR}/../../..")
+    set(ezc3d_LIBRARY_DIR "${ezc3d_ROOT_DIR}/lib")
+    set(ezc3d_INCLUDE_DIR "${ezc3d_ROOT_DIR}/include")
     add_definitions(-DWITH_EZC3D)
     OpenSimCopyDependencyDLLsForWin(DEP_NAME ezc3d
-            DEP_BIN_DIR "${ezc3d_LIBRARY_DIR}/../bin"
+            DEP_BIN_DIR "${ezc3d_ROOT_DIR}/bin"
             )
     if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
-        OpenSimInstallDependencyLibraries(ezc3d "${ezc3d_LIBRARY_DIR}/../"
+        OpenSimInstallDependencyLibraries(ezc3d "${ezc3d_ROOT_DIR}/"
             "${ezc3d_LIBRARY_DIR}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
     endif()
-
+    include_directories("${ezc3d_INCLUDE_DIR}")
 elseif(${OPENSIM_C3D_PARSER} STREQUAL "BTK")
     set(WITH_EZC3D false)
     unset(ezc3d_LIBRARY_DIR CACHE)
