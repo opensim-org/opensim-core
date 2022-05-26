@@ -29,8 +29,8 @@
 //#include <OpenSim/Tools/IKTaskSet.h>
 
 
-class MarkersReference;
-class CoordinateReference;
+//class MarkersReference;
+//class CoordinateReference;
 
 
 namespace OpenSim { 
@@ -121,9 +121,16 @@ public:
         "matrices for each body in the ground reference frames at each time "
         "step to pose the model for analysis.")
 
-   OpenSim_DECLARE_PROPERTY(transform_assembly_threshold, double,
-       "Threshold to determine accuracy in matching the input 4x4 transfomations "
-       "listed in the input_transforms_file.")
+    OpenSim_DECLARE_PROPERTY(transform_assembly_threshold, double,
+       "Threshold to determine accuracy in matching the input 4x4 "
+       "transfomations listed in the input_transforms_file. "
+       "The default value is 1e-6. ")
+    
+    OpenSim_DECLARE_PROPERTY(transform_assembly_max_iterations, int,
+        "Maximum number of iterations to reach transform_assembly_threshold "
+        "at each time step when posing model according to the "
+        "input_transforms_file. "
+        "The default value is 1e3. ")
 
     OpenSim_DECLARE_PROPERTY(input_forces_file, std::string,
         "Path to storage file (.sto) containing forces vs time for actuators "
