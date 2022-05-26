@@ -130,7 +130,13 @@ public:
         "Maximum number of iterations to reach transform_assembly_threshold "
         "at each time step when posing model according to the "
         "input_transforms_file. "
-        "The default value is 1e3. ")
+        "The default value is 500. ")
+
+    OpenSim_DECLARE_PROPERTY(transform_assembly_iterations_to_full, int,
+        "Number of iterations between full assembly (call to model.assemble() "
+        " after setting every coordinate when posing model according to the "
+        "input_transforms_file. "
+        "The default value is 100. ")
 
     OpenSim_DECLARE_PROPERTY(input_forces_file, std::string,
         "Path to storage file (.sto) containing forces vs time for actuators "

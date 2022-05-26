@@ -91,7 +91,8 @@ void JointMechanicsTool::constructProperties()
     constructProperty_input_states_file("");    
     constructProperty_input_transforms_file("");
     constructProperty_transform_assembly_threshold(1e-6);
-    constructProperty_transform_assembly_max_iterations(1e3);
+    constructProperty_transform_assembly_max_iterations(500);
+    constructProperty_transform_assembly_iterations_to_full(100);
     constructProperty_input_forces_file("");
     constructProperty_input_activations_file("");
     constructProperty_input_comak_convergence_file("");
@@ -888,8 +889,10 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
         viz->setShowSimTime(true);
     }
 
-    int num_iter_full_assemble = 100;
-    int max_default_coord_reset = 3;
+    
+
+
+    int max_default_coord_reset = 1;
 
 
     Coordinate* bad_coord = NULL;
@@ -902,7 +905,8 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
             double max_error = get_transform_assembly_threshold();
 
             int num_loop = 0;
-            int full_assemble_count = num_iter_full_assemble;
+            int full_assemble_count = 
+                get_transform_assembly_iterations_to_full();
             int num_default_coord_reset = 0;
             while (max_error >= get_transform_assembly_threshold()) {
                 num_loop++;
@@ -942,7 +946,8 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
                         double value = hidden_coord_splines[i].get(j).calcValue(
                             SimTK::Vector(1, time[t]));
                         
-                        if (full_assemble_count == num_iter_full_assemble) {
+                        if (full_assemble_count == 
+                            get_transform_assembly_iterations_to_full()) {
                             hidden_joint.get_coordinates(j).setValue(
                                 state, value, true);                            
                         }
@@ -954,7 +959,8 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
                     }
                 }
 
-                if (full_assemble_count == num_iter_full_assemble) {
+                if (full_assemble_count == 
+                    get_transform_assembly_iterations_to_full()) {
                     full_assemble_count = 0;
                 }
                 else {
@@ -996,7 +1002,8 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
 
                 if (get_use_visualizer()) { viz->drawFrameNow(state); }
                 log_debug("");
-                log_debug("Max Assembly Error: {} {}", bad_coord->getName(), max_error);
+                log_debug("Max Assembly Error: {} {}",
+                    bad_coord->getName(), max_error);
                 log_debug("");
                 for (auto& coord :
                     working_model.getComponentList<Coordinate>()) {
