@@ -24,6 +24,7 @@
 #include <iostream>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/Exception.h>
+#include <OpenSim/Common/Array.h>
 
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
@@ -37,6 +38,7 @@
 #include <OpenSim/Simulation/Model/ElasticFoundationForce.h>
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
 #include <OpenSim/Simulation/Model/ExponentialSpringForce.h>
+#include <OpenSim/Simulation/Model/ExternalForce.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
@@ -51,7 +53,8 @@ class TestExpSprVisuals;
 
 //=============================================================================
 /** Record the System state at regular intervals. */
-class VisualsReporter : public PeriodicEventReporter {
+class VisualsReporter : public PeriodicEventReporter
+{
 public:
     VisualsReporter(TestExpSprVisuals& visuals, Real reportInterval) :
         PeriodicEventReporter(reportInterval), vis(visuals) {}
@@ -66,7 +69,8 @@ private:
 /** Class Visuals encapsulates the variables needed for running a
 SimTK::Visualizer and provides the polling methods for starting a
 simulation and replaying the simulated motion. */
-class TestExpSprVisuals {
+class TestExpSprVisuals
+{
 public:
     // Constructor
     TestExpSprVisuals(MultibodySystem& system) {
@@ -130,17 +134,17 @@ private:
 // Definition had to follow the declaration for TestExpSprVisuals
 void
 VisualsReporter::
-handleEvent(const State& state) const {
+handleEvent(const State& state) const
+{
     vis.appendState(state);
 }
-
 
 //=============================================================================
 /** Class ExponentialSpringTester provides a scope and framework for
 evaluating and testing the ExponentialSpringForce class. Using a class gets
 a lot of variables out of the global scope. */
-class ExponentialSpringTester {
-
+class ExponentialSpringTester
+{
 public:
     // Contact choices
     enum ContactChoice {
@@ -173,9 +177,12 @@ public:
 
     // Model Creation
     void buildModel();
-    OpenSim::Body* addBlock(const String& suffix);
-    //void addExponentialSprings(Model* model, OpenSim::Body* body);
+    OpenSim::Body* addBlock(const std::string& suffix);
+    void addExponentialSprings(OpenSim::Body* body);
     void addHuntCrossleyContact(OpenSim::Body* body);
+    void setForceData(
+            double t, const SimTK::Vec3& point, const SimTK::Vec3& force);
+    void setForceDataHeader();
     void addDecorations();
 
     // Simulation
@@ -196,29 +203,63 @@ public:
     double tf{5.0};
 
     // Command line options and their defaults
-    ContactChoice whichContact{HuntCross};
+    ContactChoice whichContact{ExpSpr};
     InitialConditionsChoice whichInit{Slide};
     bool noDamp{false};
     bool applyFx{false};
-    bool showVisuals{true};
+    bool showVisuals{false};
 
     // Model and parts
     Model* model{NULL};
     OpenSim::Body* blockES{NULL};
     OpenSim::Body* blockHC{NULL};
+    Storage fxData;
+    ExternalForce* fxES{NULL};
+    ExternalForce* fxHC{NULL};
 
     // Visualization
     TestExpSprVisuals* visuals{NULL};
 
 }; // End class ExponentialSpringTester declarations
 
+//_____________________________________________________________________________
+void
+ExponentialSpringTester::
+addDecorations()
+{
+    // Ground
+    Ground& ground = model->updGround();
+    SimTK::DecorativeBrick* floor =
+            new SimTK::DecorativeBrick(Vec3(2.0, 0.5, 2.0));
+    floor->setColor(Green);
+    floor->setOpacity(0.1);
+    SimTK::Body& grndBody = ground.updMobilizedBody().updBody();
+    grndBody.addDecoration(Transform(Vec3(0, -0.5, 0)), *floor);
 
+    // Exponential Springs Block
+    if (blockES) {
+        SimTK::Body& body = blockES->updMobilizedBody().updBody();
+        SimTK::DecorativeBrick* brick =
+                new SimTK::DecorativeBrick(SimTK::Vec3(hs));
+        brick->setColor(SimTK::Blue);
+        body.addDecoration(SimTK::Transform(), *brick);
+    }
+
+    // Hunt-Crossley Block
+    if (blockHC) {
+        SimTK::Body& body = blockHC->updMobilizedBody().updBody();
+        SimTK::DecorativeBrick* brick =
+                new SimTK::DecorativeBrick(SimTK::Vec3(hs));
+        brick->setColor(SimTK::Red);
+        body.addDecoration(SimTK::Transform(), *brick);
+    }
+}
 //_____________________________________________________________________________
 int
 ExponentialSpringTester::
-parseCommandLine(int argc, char** argv) {
-
-    string option;
+parseCommandLine(int argc, char** argv)
+{
+    std::string option;
     for (int i = 1; i < argc; ++i) {
 
         option = argv[i];
@@ -248,7 +289,7 @@ parseCommandLine(int argc, char** argv) {
             noDamp = true;
 
         // Apply a horizontal ramping force
-        else if (option == "ApplyFx")
+        else if (option == "Fx")
             applyFx = true;
 
         // Show the visuals
@@ -266,7 +307,8 @@ parseCommandLine(int argc, char** argv) {
 //_____________________________________________________________________________
 void
 ExponentialSpringTester::
-printUsage() {
+printUsage()
+{
     cout << endl << "Usage:" << endl;
     cout << "$ testExponetialSpring "
          << "[InitCond] [Contact] [NoDamp] [ApplyFx] [Vis]" << endl;
@@ -293,16 +335,16 @@ printUsage() {
 //_____________________________________________________________________________
 // Build the model
 void
-ExponentialSpringTester::
-buildModel() {
-    // Create the model(s)
+ExponentialSpringTester::buildModel()
+{
+    // Create the bodies
     model = new Model();
     model->setGravity(gravity);
     model->setName("TestExponentialSpring");
     switch (whichContact) {
     case ExpSpr:
         blockES = addBlock("ES");
-        //addExponentialSprings(model, blockES);
+        addExponentialSprings(blockES);
         break;
     case HuntCross:
         blockHC = addBlock("HC");
@@ -310,28 +352,86 @@ buildModel() {
         break;
     case Both:
         blockES = addBlock("ES");
-        //addExponentialSprings(model, blockES);
+        addExponentialSprings(blockES);
         blockHC = addBlock("HC");
         addHuntCrossleyContact(blockHC);
     }
+
+    // Add the external force
+    if (applyFx) {
+        setForceDataHeader();
+        SimTK::Vec3 point(0.0, -hs, 0.0);
+        SimTK::Vec3 zero(0.0);
+        SimTK::Vec3 force(-0.7*gravity[1]*mass, 0.0, 0.0);
+        setForceData(0.0, point, zero);
+        setForceData(tf, point, zero);
+        tf = tf + 10.0;
+        setForceData(tf, point, force);
+        if (blockES) {
+            cout << "Adding fx for " << blockES->getName() << endl;
+            fxData.print("C:\\Users\\fcand\\Documents\\fxData.sto");
+            fxES = new ExternalForce(fxData,"force", "point", "",
+                blockES->getName(), "ground", blockES->getName());
+            model->addForce(fxES);
+        }
+        if (blockHC) {
+            cout << "Adding fx for " << blockHC->getName() << endl;
+            fxData.print("C:\\Users\\fcand\\Documents\\fxData.sto");
+            fxHC = new ExternalForce(fxData, "force", "point", "",
+                blockHC->getName(), "ground", blockHC->getName());
+            model->addForce(fxHC);
+        }
+    }
 }
+//______________________________________________________________________________
+void ExponentialSpringTester::setForceDataHeader()
+{
+    fxData.setName("fx");
+    fxData.setDescription("An external force applied to a block.");
+    Array<std::string> lab; // labels
+    lab.append("time");
+    lab.append("point.x");
+    lab.append("point.y");
+    lab.append("point.z");
+    lab.append("force.x");
+    lab.append("force.y");
+    lab.append("force.z");
+    fxData.setColumnLabels(lab);
+}
+
+//______________________________________________________________________________
+void
+ExponentialSpringTester::
+setForceData(double t, const SimTK::Vec3& point, const SimTK::Vec3& force)
+{
+    SimTK::Vector_<double> data(6);
+    for (int i = 0; i < 3; ++i) {
+        data[i] = point[i];
+        data[3 + i] = force[i];
+    }
+    StateVector sv(t, data);
+    fxData.append(sv);
+}
+
 //______________________________________________________________________________
 OpenSim::Body*
 ExponentialSpringTester::
-addBlock(const String& suffix) {
-
+addBlock(const std::string& suffix)
+{
     Ground& ground = model->updGround();
 
     // Body
+    std::string name = "block" + suffix;
     OpenSim::Body* block = new OpenSim::Body();
-    block->setName("block");
+    block->setName(name);
     block->set_mass(mass);
     block->set_mass_center(Vec3(0));
     block->setInertia(Inertia(1.0));
 
     // Joint
+    name = "free" + suffix;
     FreeJoint *free = new
-        FreeJoint("free", ground, Vec3(0), Vec3(0), *block, Vec3(0), Vec3(0));
+        FreeJoint(name, ground, Vec3(0), Vec3(0), *block, Vec3(0), Vec3(0));
     model->addBody(block);
     model->addJoint(free);
 
@@ -339,9 +439,45 @@ addBlock(const String& suffix) {
 }
 //______________________________________________________________________________
 void
-ExponentialSpringTester::
-addHuntCrossleyContact(OpenSim::Body* block) {
+ExponentialSpringTester
+::addExponentialSprings(OpenSim::Body* block)
+{
+    Ground& ground = model->updGround();
 
+    // Corners of the block
+    const int n = 8;
+    Vec3 corner[n];
+    corner[0] = Vec3(hs, -hs, hs);
+    corner[1] = Vec3(hs, -hs, -hs);
+    corner[2] = Vec3(-hs, -hs, -hs);
+    corner[3] = Vec3(-hs, -hs, hs);
+    corner[4] = Vec3(hs, hs, hs);
+    corner[5] = Vec3(hs, hs, -hs);
+    corner[6] = Vec3(-hs, hs, -hs);
+    corner[7] = Vec3(-hs, hs, hs);
+
+    // Contact Plane Transform
+    Real angle = convertDegreesToRadians(90.0);
+    Rotation floorRot(-angle, XAxis);
+    Vec3 floorOrigin(0., -0.004, 0.);
+    Transform floorXForm(floorRot, floorOrigin);
+
+    // Loop over the corners
+    std::string name = "";
+    for (int i = 0; i < n; ++i) {
+        name = "ExpSpr" + std::to_string(i);
+        OpenSim::ExponentialSpringForce* force =
+            new OpenSim::ExponentialSpringForce(floorXForm,
+                block->getName(), corner[i]);
+        force->setName(name);
+        model->addForce(force);
+    }
+}
+//______________________________________________________________________________
+void
+ExponentialSpringTester::
+addHuntCrossleyContact(OpenSim::Body* block)
+{
     Ground& ground = model->updGround();
 
     // Geometry for the floor
@@ -365,50 +501,22 @@ addHuntCrossleyContact(OpenSim::Body* block) {
     std::string name = "";
     for (int i = 0; i < n; ++i) {
         // Geometry
-        name = "sphere" + std::to_string(i); 
+        name = "sphere_" + std::to_string(i); 
         OpenSim::ContactGeometry* geometry =
             new ContactSphere(0.005, corner[i], *block, name);
         model->addContactGeometry(geometry);
 
         // HuntCrossleyForce
         auto* contactParams = new OpenSim::HuntCrossleyForce::
-            ContactParameters(1.0e7, 2e-1, 0.0, 0.0, 0.0);
+            ContactParameters(1.0e7, 4e-1, 0.7, 0.465, 0.0);
         contactParams->addGeometry(name);
         contactParams->addGeometry("floor");
-        OpenSim::Force* force = new OpenSim::HuntCrossleyForce(contactParams);
+        OpenSim::HuntCrossleyForce* force =
+            new OpenSim::HuntCrossleyForce(contactParams);
+        name = "HuntCrossleyForce_" + std::to_string(i);
+        force->setName(name);
+        force->setTransitionVelocity(0.01);
         model->addForce(force);
-    }
-}
-//_____________________________________________________________________________
-void
-ExponentialSpringTester::
-addDecorations() {
-
-    // Ground
-    Ground& ground = model->updGround();
-    SimTK::DecorativeBrick* floor =
-            new SimTK::DecorativeBrick(Vec3(2.0, 0.5, 2.0));
-    floor->setColor(Green);
-    floor->setOpacity(0.1);
-    SimTK::Body& grndBody = ground.updMobilizedBody().updBody();
-    grndBody.addDecoration(Transform(Vec3(0, -0.5, 0)), *floor);
-
-    // Exponential Springs Block
-    if (blockES) {
-        SimTK::Body& body = blockES->updMobilizedBody().updBody();
-        SimTK::DecorativeBrick* brick =
-            new SimTK::DecorativeBrick(SimTK::Vec3(hs));
-        brick->setColor(SimTK::Blue);
-        body.addDecoration(SimTK::Transform(), *brick);
-    }
-
-    // Hunt-Crossley Block
-    if (blockHC) {
-        SimTK::Body& body = blockHC->updMobilizedBody().updBody();
-        SimTK::DecorativeBrick* brick =
-                new SimTK::DecorativeBrick(SimTK::Vec3(hs));
-        brick->setColor(SimTK::Red);
-        body.addDecoration(SimTK::Transform(), *brick);
     }
 }
 //_____________________________________________________________________________
@@ -435,15 +543,15 @@ setInitialConditions(SimTK::State& state, const SimTK::MobilizedBody& body,
     case Slide:
         pos[0] = 2.0;
         pos[1] = 2.0 * hs;
-        vel[0] = -2.0;
+        vel[0] = -4.0;
         body.setQToFitTranslation(state, pos);
         body.setUToFitLinearVelocity(state, vel);
         break;
     case SpinSlide:
         pos[0] = 2.0;
         pos[1] = 2.0 * hs;
-        vel[0] = -2.0;
-        angvel[1] = 2.0 * SimTK::Pi;
+        vel[0] = -4.0;
+        angvel[1] = 4.0 * SimTK::Pi;
         body.setQToFitTranslation(state, pos);
         body.setUToFitLinearVelocity(state, vel);
         body.setUToFitAngularVelocity(state, angvel);
@@ -451,8 +559,8 @@ setInitialConditions(SimTK::State& state, const SimTK::MobilizedBody& body,
     case Tumble:
         pos[0] = 2.0;
         pos[1] = 2.0 * hs;
-        vel[0] = -2.0;
-        angvel[2] = 2.0 * SimTK::Pi;
+        vel[0] = -4.0;
+        angvel[2] = 4.0 * SimTK::Pi;
         body.setQToFitTranslation(state, pos);
         body.setUToFitLinearVelocity(state, vel);
         body.setUToFitAngularVelocity(state, angvel);
@@ -464,11 +572,24 @@ setInitialConditions(SimTK::State& state, const SimTK::MobilizedBody& body,
 }
 //_____________________________________________________________________________
 void
-ExponentialSpringTester::
-simulate() {
+ExponentialSpringTester::simulate()
+{
+    // Visuals?
+    if (showVisuals) {
+        if (blockES) {
+            auto blockESGeometry = new Brick(Vec3(hs));
+            blockESGeometry->setColor(Vec3(0.1, 0.1, 0.8));
+            blockES->attachGeometry(blockESGeometry);
+        }
+        if (blockHC) {
+            auto blockHCGeometry = new Brick(Vec3(hs));
+            blockHCGeometry->setColor(Vec3(0.8, 0.1, 0.1));
+            blockHC->attachGeometry(blockHCGeometry);
+        }
+        model->setUseVisualizer(true);
+    }
 
     // Initialize the System
-    if(showVisuals) model->setUseVisualizer(false);
     SimTK::State& state = model->initSystem();
 
     // Set initial conditions
@@ -477,26 +598,31 @@ simulate() {
         setInitialConditions(state, blockES->getMobilizedBody(), dz);
     if (blockHC != NULL)
         setInitialConditions(state, blockHC->getMobilizedBody(), -dz);
-    cout << "state =" << state << std::endl;
-
-    // Visuals Start
-    if(visuals) visuals->pollForStart();
+    // cout << "state =" << state << std::endl;
 
     // Integrate
     Manager manager(*model);
+    manager.getIntegrator().setMaximumStepSize(0.02);
     manager.setIntegratorAccuracy(integ_accuracy);
     state.setTime(0.0);
     manager.initialize(state);
-    // start timing
     std::clock_t startTime = std::clock();
     state = manager.integrate(tf);
     auto runTime = 1.e3 * (std::clock() - startTime) / CLOCKS_PER_SEC;
     cout << "simulation time = " << runTime << " msec" << endl;
 
-    // Visuals Replay
-    if (visuals) visuals->pollForReplay();
-}
+    // Trys and Steps
+    int trys = manager.getIntegrator().getNumStepsAttempted();
+    int steps = manager.getIntegrator().getNumStepsTaken();
+    cout << "trys = " << trys << "\t\tsteps = " << steps << endl;
 
+    // Visuals Replay
+    //if (showVisuals) {
+    //    //visuals->pollForReplay();
+    //    auto vis = model->getVisualizer();
+    //    vis.show(state);
+    //}
+}
 
 //_____________________________________________________________________________
 /* Entry Point (i.e., main())
