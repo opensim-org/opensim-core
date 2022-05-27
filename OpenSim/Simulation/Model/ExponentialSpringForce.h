@@ -44,30 +44,44 @@ public:
     // PROPERTIES
     //==============================================================================
     OpenSim_DECLARE_PROPERTY(contact_plane_transform, SimTK::Transform,
-            "Rotation and translation of the contact plane wrt Ground.");
-    OpenSim_DECLARE_PROPERTY(
-            body, PhysicalFrame, "Body to which the force is applied.");
+        "Rotation and translation of the contact plane wrt Ground.");
+    OpenSim_DECLARE_PROPERTY(body_name, std::string,
+        "Name of the Body to which the force is applied.");
     OpenSim_DECLARE_PROPERTY(body_station, SimTK::Vec3,
-            "Point on the body at which the force is applied.");
+        "Point on the body at which the force is applied.");
+
+    //______________________________________________________________________________
+    /** Default constructor. */
+    ExponentialSpringForce();
 
     //______________________________________________________________________________
     /** Construct an ExponentialSpringForce.
     @param XContactPlane Transform specifying the location and orientation of
     the contact plane in Ground.
-    @param body Body to which the force is applied.
+    @param bodyName Name of the body to which the force is applied.
     @param station Point on the body at which the force is applied. */
-    explicit ExponentialSpringForce(const SimTK::Transform& XContactPlane,
-            const PhysicalFrame& body, const SimTK::Vec3& station);
+    explicit ExponentialSpringForce(const SimTK::Transform& contactPlaneXform,
+            const std::string& bodyName, const SimTK::Vec3& station);
 
     //-----------------------------------------------------------------------------
     // Accessors
     //-----------------------------------------------------------------------------
+    /** Set the tranform that specifies the location and orientation of the
+    contact plane in the Ground frame. */
+    void setContactPlaneTransform(const SimTK::Transform& contactPlaneXform);
     /** Get the tranform that specifies the location and orientation of the
     contact plane in the Ground frame. */
     const SimTK::Transform& getContactPlaneTransform() const;
-    /** Set the tranform that specifies the location and orientation of the
-    contact plane in the Ground frame. */
-    void setContactPlaneTransform(const SimTK::Transform& XContactPlane);
+
+    /** Set the name of the body to which this force is applied. */
+    void setBodyName(const std::string& bodyName) { set_body_name(bodyName); }
+    /** Get the name of the body to which this force is applied. */
+    const std::string& getBodyName() const { return get_body_name(); }
+
+    /** Set the point on the body at which the force is applied. */
+    void setBodyStation(SimTK::Vec3 station) { set_body_station(station); }
+    /** Get the point on the body at which the force is applied. */
+    const SimTK::Vec3& getBodyStation() { return get_body_station(); }
 
     //-----------------------------------------------------------------------------
     // Reporting
@@ -80,12 +94,18 @@ public:
             const SimTK::State& state) const override;
 
 protected:
-    /** Create a SimTK::Force which implements this Force. */
+    /** Connect to the OpenSim Model. */
+    void extendConnectToModel(Model& model) override;
+
+    /** Create a SimTK::ExponentialSpringForce that implements this Force. */
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
 private:
-    void constructProperties(const SimTK::Transform& XContactPlane,
-            const PhysicalFrame& body, const SimTK::Vec3& station);
+    void setNull();
+    void constructProperties();
+
+    // Temporary solution until implemented with Sockets
+    SimTK::ReferencePtr<const PhysicalFrame> _body;
 
 }; // END of class ExponentialSpringForce
 

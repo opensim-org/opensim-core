@@ -26,7 +26,9 @@
 
 #include "simbody/internal/ExponentialSpringForce.h"
 
-namespace OpenSim {
+using namespace OpenSim;
+using namespace std;
+
 
 //=============================================================================
 // Class ExponentialSpringForce
@@ -36,13 +38,25 @@ namespace OpenSim {
 // Construction
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-ExponentialSpringForce::
-ExponentialSpringForce(const SimTK::Transform& XContactPlane,
-    const PhysicalFrame& body, const SimTK::Vec3& station)
+ExponentialSpringForce::ExponentialSpringForce()
 {
-    constructProperties(XContactPlane, body, station);
+    setNull();
+    constructProperties();
 }
+//_____________________________________________________________________________
+ExponentialSpringForce::
+ExponentialSpringForce(const SimTK::Transform& contactPlaneXform,
+    const std::string& bodyName, const SimTK::Vec3& station)
+{
+    setNull();
+    constructProperties();
 
+    setContactPlaneTransform(contactPlaneXform);
+    setBodyName(bodyName);
+    setBodyStation(station);
+}
+//_____________________________________________________________________________
+void ExponentialSpringForce::setNull() { setAuthors("F. C. Anderson"); }
 
 //-----------------------------------------------------------------------------
 // Properties
@@ -55,14 +69,37 @@ ExponentialSpringForce(const SimTK::Transform& XContactPlane,
 //_____________________________________________________________________________
 void
 ExponentialSpringForce::
-constructProperties(const SimTK::Transform& XContactPlane,
-    const PhysicalFrame& body, const SimTK::Vec3& station)
+constructProperties()
 {
-    constructProperty_contact_plane_transform(XContactPlane);
-    constructProperty_body(body);
-    constructProperty_body_station(station);
+    SimTK::Transform contactXForm;
+    constructProperty_contact_plane_transform(contactXForm);
+
+    constructProperty_body_name("");
+
+    SimTK::Vec3 origin(0.0);
+    constructProperty_body_station(origin);
 }
 
+
+//-----------------------------------------------------------------------------
+// CONNECT TO THE MODEL
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+void
+ExponentialSpringForce::
+extendConnectToModel(OpenSim::Model& model)
+{
+    // Allow based class to connect first
+    Super::extendConnectToModel(model);
+
+    // Find the OpenSim::Body
+    const string& bodyName = getBodyName();
+    if (getModel().hasComponent(bodyName))
+        _body = &(getModel().getComponent<PhysicalFrame>(bodyName));
+    else
+        _body = &(getModel().getComponent<PhysicalFrame>(
+                "./bodyset/" + bodyName));
+}
 
 //-----------------------------------------------------------------------------
 // ADD TO THE MULTIBODY SYSTEM
@@ -76,20 +113,19 @@ constructProperties(const SimTK::Transform& XContactPlane,
 // keeps references to it still valid.
 // 
 //_____________________________________________________________________________
-// Connect to SimTK::ExponentialSpringForce
 void
 ExponentialSpringForce::
-extendAddToSystem(SimTK::MultibodySystem& system) const {
+extendAddToSystem(SimTK::MultibodySystem& system) const
+{
     // Extend the OpenSim::Force parent
     Super::extendAddToSystem(system);
 
     // Construct the SimTK::ExponentialSpringForce object
     SimTK::GeneralForceSubsystem& forces = _model->updForceSubsystem();
     const SimTK::Transform& XContactPlane = get_contact_plane_transform();
-    const OpenSim::PhysicalFrame& body = get_body();
     const SimTK::Vec3& station = get_body_station();
     SimTK::ExponentialSpringForce
-        spr(forces, XContactPlane, body.getMobilizedBody(), station);
+        spr(forces, XContactPlane, _body->getMobilizedBody(), station);
 
     // Get the subsystem index so we can access the SimTK::Force later.
     ExponentialSpringForce* mutableThis =
@@ -102,14 +138,16 @@ extendAddToSystem(SimTK::MultibodySystem& system) const {
 // ACCESSORS
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-const SimTK::Transform&
-ExponentialSpringForce::getContactPlaneTransform() const {
-    return get_contact_plane_transform();
+void ExponentialSpringForce::
+setContactPlaneTransform(const SimTK::Transform& XContactPlane)
+{
+    set_contact_plane_transform(XContactPlane);
 }
 //_____________________________________________________________________________
-void ExponentialSpringForce::setContactPlaneTransform(
-        const SimTK::Transform& XContactPlane) {
-    set_contact_plane_transform(XContactPlane);
+const SimTK::Transform&
+ExponentialSpringForce::getContactPlaneTransform() const
+{
+    return get_contact_plane_transform();
 }
 
 
@@ -118,13 +156,14 @@ void ExponentialSpringForce::setContactPlaneTransform(
 //-----------------------------------------------------------------------------
 // Questions:
 // 1. Do I need to conform to a certain reporting format since this object
-// will be treated as an OpenSim::Force ?
+// will be treated as an OpenSim::Force?
 //_____________________________________________________________________________
 OpenSim::Array<std::string>
 ExponentialSpringForce::
-getRecordLabels() const {
+getRecordLabels() const
+{
     OpenSim::Array<std::string> labels("");
-    std::string frameName = get_body().getName();
+    std::string frameName = getBodyName();
     labels.append(getName()+"."+frameName+".force.X");
     labels.append(getName()+"."+frameName+".force.Y");
     labels.append(getName()+"."+frameName+".force.Z");
@@ -148,4 +187,3 @@ getRecordValues(const SimTK::State& state) const
     return values;
 }
 
-}// end of namespace OpenSim
