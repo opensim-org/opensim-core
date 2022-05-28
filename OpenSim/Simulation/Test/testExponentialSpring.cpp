@@ -158,7 +158,7 @@ public:
         Static = 0,
         Bounce,
         Slide,
-        SpinSlide,
+        Spin,
         Tumble
     };
 
@@ -167,8 +167,8 @@ public:
 
     // Destructor
     ~ExponentialSpringTester() {
-        model->disownAllComponents();
-        delete model;
+        if(model) model->disownAllComponents();
+        if(model) delete model;
     }
 
     // Command line parsing and usage
@@ -279,8 +279,8 @@ parseCommandLine(int argc, char** argv)
             whichInit = Bounce;
         else if (option == "Slide")
             whichInit = Slide;
-        else if (option == "SpinSlide")
-            whichInit = SpinSlide;
+        else if (option == "Spin")
+            whichInit = Spin;
         else if (option == "Tumble")
             whichInit = Tumble;
 
@@ -312,7 +312,7 @@ printUsage()
     cout << endl << "Usage:" << endl;
     cout << "$ testExponetialSpring "
          << "[InitCond] [Contact] [NoDamp] [ApplyFx] [Vis]" << endl;
-    cout << "\tInitCond (choose one): Static Bounce Slide SpinSlide Tumble";
+    cout << "\tInitCond (choose one): Static Bounce Slide Spin Tumble ";
     cout << endl;
     cout << "\t Contact (choose one): ExpSpr HuntCross Both" << endl << endl;
 
@@ -365,13 +365,14 @@ ExponentialSpringTester::buildModel()
         SimTK::Vec3 force(-0.7*gravity[1]*mass, 0.0, 0.0);
         setForceData(0.0, point, zero);
         setForceData(tf, point, zero);
-        tf = tf + 10.0;
+        tf = tf + 25.0;
         setForceData(tf, point, force);
         if (blockES) {
             cout << "Adding fx for " << blockES->getName() << endl;
             fxData.print("C:\\Users\\fcand\\Documents\\fxData.sto");
             fxES = new ExternalForce(fxData,"force", "point", "",
                 blockES->getName(), "ground", blockES->getName());
+            fxES->setName("externalforceES");
             model->addForce(fxES);
         }
         if (blockHC) {
@@ -379,6 +380,7 @@ ExponentialSpringTester::buildModel()
             fxData.print("C:\\Users\\fcand\\Documents\\fxData.sto");
             fxHC = new ExternalForce(fxData, "force", "point", "",
                 blockHC->getName(), "ground", blockHC->getName());
+            fxHC->setName("externalforceHC");
             model->addForce(fxHC);
         }
     }
@@ -515,7 +517,7 @@ addHuntCrossleyContact(OpenSim::Body* block)
             new OpenSim::HuntCrossleyForce(contactParams);
         name = "HuntCrossleyForce_" + std::to_string(i);
         force->setName(name);
-        force->setTransitionVelocity(0.01);
+        force->setTransitionVelocity(0.001);
         model->addForce(force);
     }
 }
@@ -532,7 +534,7 @@ setInitialConditions(SimTK::State& state, const SimTK::MobilizedBody& body,
     switch (whichInit) {
     case Static:
         pos[0] = 0.0;
-        pos[1] = hs + 0.004;
+        pos[1] = hs;
         body.setQToFitTranslation(state, pos);
         break;
     case Bounce:
@@ -547,20 +549,20 @@ setInitialConditions(SimTK::State& state, const SimTK::MobilizedBody& body,
         body.setQToFitTranslation(state, pos);
         body.setUToFitLinearVelocity(state, vel);
         break;
-    case SpinSlide:
-        pos[0] = 2.0;
-        pos[1] = 2.0 * hs;
-        vel[0] = -4.0;
+    case Spin:
+        pos[0] = 0.0;
+        pos[1] = hs;
+        vel[0] = 0.0;
         angvel[1] = 4.0 * SimTK::Pi;
         body.setQToFitTranslation(state, pos);
         body.setUToFitLinearVelocity(state, vel);
         body.setUToFitAngularVelocity(state, angvel);
         break;
     case Tumble:
-        pos[0] = 2.0;
+        pos[0] = -1.5;
         pos[1] = 2.0 * hs;
-        vel[0] = -4.0;
-        angvel[2] = 4.0 * SimTK::Pi;
+        vel[0] = -1.0;
+        angvel[2] = 2.0 * SimTK::Pi;
         body.setQToFitTranslation(state, pos);
         body.setUToFitLinearVelocity(state, vel);
         body.setUToFitAngularVelocity(state, angvel);
@@ -572,7 +574,8 @@ setInitialConditions(SimTK::State& state, const SimTK::MobilizedBody& body,
 }
 //_____________________________________________________________________________
 void
-ExponentialSpringTester::simulate()
+ExponentialSpringTester::
+simulate()
 {
     // Visuals?
     if (showVisuals) {
@@ -679,7 +682,10 @@ int main(int argc, char** argv) {
     try {
         ExponentialSpringTester tester;
         int status = tester.parseCommandLine(argc, argv);
-        if (status<0) return 1;
+        if (status < 0) {
+            cout << "Exiting..." << endl;
+            return 1;
+        }
         tester.buildModel();
         tester.simulate();
 
