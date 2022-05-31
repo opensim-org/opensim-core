@@ -594,14 +594,21 @@ void COMAKInverseKinematicsTool::performIKSecondaryConstraintSimulation() {
         
         SimmSpline data_fit = SimmSpline(secondary_data.size(), &ind_data[0], &secondary_data[0]);
         //GCVSpline* spline = new GCVSpline(5, secondary_data.nrow(), &ind_data[0], &secondary_data[0], path, -1);
-        GCVSpline* spline = new GCVSpline();
-        spline->setDegree(5);
+        //GCVSpline* spline = new GCVSpline();
+        //spline->setDegree(5);
+        //spline->set
         //SimmSpline* spline = new SimmSpline();
-        spline->setName(path);
+        //spline->setName(path);
+
+        SimTK::Vector dep_interp_pts(npts);
 
         for (int i = 0; i < npts; ++i) {
-            spline->addPoint(ind_pt_data(i), data_fit.calcValue(SimTK::Vector(1, ind_pt_data(i))));
+            //spline->addPoint(ind_pt_data(i), data_fit.calcValue(SimTK::Vector(1, ind_pt_data(i))));
+            dep_interp_pts(i) = data_fit.calcValue(SimTK::Vector(1, ind_pt_data(i)));
         }
+        SimmSpline* spline = new SimmSpline(npts, &ind_data[0], &dep_interp_pts[0],path);
+        
+        //GCVSpline* spline = new GCVSpline(5, npts, &ind_data[0], &dep_interp_pts[0], path, -1);
 
         _secondary_constraint_functions.adoptAndAppend(spline);
     }
