@@ -168,7 +168,7 @@ void muscleDrivenStateTracking() {
 
 int main() {
 
-    // Solve tq he torque-driven marker tracking problem.
+    // Solve the torque-driven marker tracking problem.
     // This problem takes a few minutes to solve.
     torqueDrivenMarkerTracking();
 
