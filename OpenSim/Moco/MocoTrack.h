@@ -246,12 +246,16 @@ public:
     void setMarkersReference(TableProcessor markers) {
         set_markers_reference(std::move(markers));
     }
-    /// Set the markers reference directly from a TRC file.
+    /// Set the markers reference directly from a TRC file. By default, the
+    /// marker data is low-pass filtered with a 6 Hz cutoff frequency, but you
+    /// may set any frequency using the optional argument.
     /// @note Overrides any existing TableProcessor for 'markers_reference'.
-    void setMarkersReferenceFromTRC(const std::string& filename) {
+    void setMarkersReferenceFromTRC(
+            const std::string& filename, double lowpassFilterFreq = 6.0) {
         TimeSeriesTableVec3 markers(filename);
         TimeSeriesTable markersFlat = markers.flatten();
-        set_markers_reference(TableProcessor(markersFlat));
+        set_markers_reference(TableProcessor(markersFlat) |
+                              TabOpLowPassFilter(lowpassFilterFreq));
     }
 
     MocoStudy initialize();
