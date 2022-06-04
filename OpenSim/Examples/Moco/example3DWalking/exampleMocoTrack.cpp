@@ -56,8 +56,8 @@ void torqueDrivenMarkerTracking() {
     //   track.setModel(ModelProcessor("model.osim") | ModOpAddReserves(250));
 
     // Use this convenience function to set the MocoTrack markers reference
-    // directly from a TRC file. By default, the markers data is filtered at
-    // 6 Hz and if in millimeters, converted to meters.
+    // directly from a TRC file. By default, the marker data is filtered at
+    //  6 Hz
     track.setMarkersReferenceFromTRC("marker_trajectories.trc");
 
     // There is marker data in the 'marker_trajectories.trc' associated with
