@@ -468,8 +468,8 @@ ExponentialSpringTester
     std::string name = "";
     for (int i = 0; i < n; ++i) {
         name = "ExpSpr" + std::to_string(i);
-        OpenSim::ExponentialSpringForce* force =
-            new OpenSim::ExponentialSpringForce(floorXForm,
+        OpenSim::ExponentialContact* force =
+            new OpenSim::ExponentialContact(floorXForm,
                 block->getName(), corner[i]);
         force->setName(name);
         model->addForce(force);
@@ -517,7 +517,7 @@ addHuntCrossleyContact(OpenSim::Body* block)
             new OpenSim::HuntCrossleyForce(contactParams);
         name = "HuntCrossleyForce_" + std::to_string(i);
         force->setName(name);
-        force->setTransitionVelocity(0.001);
+        force->setTransitionVelocity(0.01);
         model->addForce(force);
     }
 }
@@ -601,7 +601,6 @@ simulate()
         setInitialConditions(state, blockES->getMobilizedBody(), dz);
     if (blockHC != NULL)
         setInitialConditions(state, blockHC->getMobilizedBody(), -dz);
-    // cout << "state =" << state << std::endl;
 
     // Integrate
     Manager manager(*model);
@@ -612,12 +611,14 @@ simulate()
     std::clock_t startTime = std::clock();
     state = manager.integrate(tf);
     auto runTime = 1.e3 * (std::clock() - startTime) / CLOCKS_PER_SEC;
-    cout << "simulation time = " << runTime << " msec" << endl;
 
     // Trys and Steps
     int trys = manager.getIntegrator().getNumStepsAttempted();
     int steps = manager.getIntegrator().getNumStepsTaken();
-    cout << "trys = " << trys << "\t\tsteps = " << steps << endl;
+
+    // Output
+    cout << "trys = " << trys << "\t\tsteps = " << steps;
+    cout << "\t\tcpu time = " << runTime << endl;
 
     // Visuals Replay
     //if (showVisuals) {

@@ -21,72 +21,174 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "ExponentialSpringForce.h"
 #include "Model.h"
-
-#include "simbody/internal/ExponentialSpringForce.h"
+#include "ExponentialSpringForce.h"
 
 using namespace OpenSim;
 using namespace std;
 
 
 //=============================================================================
-// Class ExponentialSpringForce
+// ExponentialContact::Parameters
 //=============================================================================
-
-//-----------------------------------------------------------------------------
-// Construction
-//-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-ExponentialSpringForce::ExponentialSpringForce()
+ExponentialContact::Parameters::
+Parameters()
+{
+    constructProperties();
+}
+//_____________________________________________________________________________
+ExponentialContact::Parameters::
+Parameters(const SimTK::ExponentialSpringParameters& params)
+{
+    _stkparams = params;
+    constructProperties();
+}
+//_____________________________________________________________________________
+void
+ExponentialContact::Parameters::
+constructProperties()
+{
+    SimTK::Vec3 shape;
+    _stkparams.getShapeParameters(shape[0], shape[1], shape[2]);
+    constructProperty_exponential_shape_parameters(shape);
+    constructProperty_normal_viscosity(_stkparams.getNormalViscosity());
+    constructProperty_max_normal_force(_stkparams.getMaxNormalForce());
+    constructProperty_friction_elasticity(_stkparams.getFrictionElasticity());
+    constructProperty_friction_viscocity(_stkparams.getFrictionViscosity());
+    constructProperty_sliding_time_constant(_stkparams.getSlidingTimeConstant());
+    constructProperty_settle_velocity(_stkparams.getSettleVelocity());
+    constructProperty_settle_acceleration(_stkparams.getSettleAcceleration());
+    constructProperty_initial_mu_static(_stkparams.getInitialMuStatic());
+    constructProperty_initial_mu_kinetic(_stkparams.getInitialMuKinetic());
+}
+//_____________________________________________________________________________
+// Update the Properties based on the SimTK::ExponentialSpringParameters.
+void
+ExponentialContact::Parameters::
+updateProperties()
+{
+    SimTK::Vec3 shape;
+    _stkparams.getShapeParameters(shape[0], shape[1], shape[2]);
+    set_exponential_shape_parameters(shape);
+    set_normal_viscosity(_stkparams.getNormalViscosity());
+    set_max_normal_force(_stkparams.getMaxNormalForce());
+    set_friction_elasticity(_stkparams.getFrictionElasticity());
+    set_friction_viscocity(_stkparams.getFrictionViscosity());
+    set_sliding_time_constant(_stkparams.getSlidingTimeConstant());
+    set_settle_velocity(_stkparams.getSettleVelocity());
+    set_settle_acceleration(_stkparams.getSettleAcceleration());
+    set_initial_mu_static(_stkparams.getInitialMuStatic());
+    set_initial_mu_kinetic(_stkparams.getInitialMuKinetic());
+}
+//_____________________________________________________________________________
+// Update the SimTK::ExponentialSpringParamters based on the Properties.
+void
+ExponentialContact::Parameters::
+updateParameters()
+{
+    const SimTK::Vec3 shape = get_exponential_shape_parameters();
+    _stkparams.setShapeParameters(shape[0], shape[1], shape[2]);
+    _stkparams.setNormalViscosity(get_normal_viscosity());
+    _stkparams.setMaxNormalForce(get_max_normal_force());
+    _stkparams.setFrictionElasticity(get_friction_elasticity());
+    _stkparams.setFrictionViscosity(get_friction_viscocity());
+    _stkparams.setSlidingTimeConstant(get_sliding_time_constant());
+    _stkparams.setSettleVelocity(get_settle_velocity());
+    _stkparams.setSettleAcceleration(get_settle_acceleration());
+    _stkparams.setInitialMuStatic(get_initial_mu_static());
+    _stkparams.setInitialMuKinetic(get_initial_mu_kinetic());
+}
+//_____________________________________________________________________________
+void
+ExponentialContact::Parameters::
+updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
+{
+    Super::updateFromXMLNode(node, versionNumber);
+    updateParameters();
+}
+//_____________________________________________________________________________
+// Note that the OpenSim Properties are updated as well.
+void
+ExponentialContact::Parameters::
+setSimTKParameters(const SimTK::ExponentialSpringParameters& params)
+{
+    _stkparams = params;
+    updateProperties();
+}
+//_____________________________________________________________________________
+// Get a read-only reference to the  SimTK::ExponentialSpringParamters held
+// by this instance.
+const SimTK::ExponentialSpringParameters&
+ExponentialContact::Parameters::
+getSimTKParameters()
+{
+    return _stkparams;
+}
+
+
+
+//=============================================================================
+// ExponentialContact
+//=============================================================================
+//_____________________________________________________________________________
+ExponentialContact::ExponentialContact()
 {
     setNull();
     constructProperties();
 }
 //_____________________________________________________________________________
-ExponentialSpringForce::
-ExponentialSpringForce(const SimTK::Transform& contactPlaneXform,
-    const std::string& bodyName, const SimTK::Vec3& station)
+ExponentialContact::
+ExponentialContact(const SimTK::Transform& contactPlaneXform,
+    const std::string& bodyName, const SimTK::Vec3& station,
+    SimTK::ExponentialSpringParameters params)
 {
     setNull();
     constructProperties();
-
     setContactPlaneTransform(contactPlaneXform);
     setBodyName(bodyName);
     setBodyStation(station);
 }
 //_____________________________________________________________________________
-void ExponentialSpringForce::setNull() { setAuthors("F. C. Anderson"); }
-
-//-----------------------------------------------------------------------------
-// Properties
-//-----------------------------------------------------------------------------
-// Questions:
-// 1. Is it ok not to have a default constructor? There really isn't a
-// situation in which a default constructor makes sense. There needs to
-// be a body to which the force is applied. I suppose the default constructor
-// could apply a force between Ground and Ground.
+ExponentialContact::
+ExponentialContact(const ExponentialContact& source)
+{
+    setNull();
+    constructProperties();
+    setContactPlaneTransform(source.getContactPlaneTransform());
+    setBodyName(source.getBodyName());
+    setBodyStation(source.getBodyStation());
+}
 //_____________________________________________________________________________
 void
-ExponentialSpringForce::
+ExponentialContact::
+setNull()
+{
+    setAuthors("F. C. Anderson");
+    _spr = NULL;
+}
+//_____________________________________________________________________________
+void
+ExponentialContact::
 constructProperties()
 {
     SimTK::Transform contactXForm;
-    constructProperty_contact_plane_transform(contactXForm);
-
-    constructProperty_body_name("");
-
     SimTK::Vec3 origin(0.0);
+    Parameters params;
+    constructProperty_contact_plane_transform(contactXForm);
+    constructProperty_body_name("");
     constructProperty_body_station(origin);
+    constructProperty_contact_parameters(params);
 }
-
-
-//-----------------------------------------------------------------------------
-// CONNECT TO THE MODEL
-//-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 void
-ExponentialSpringForce::
+ExponentialContact
+::updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber) {
+    Super::updateFromXMLNode(node, versionNumber);
+}
+//_____________________________________________________________________________
+void
+ExponentialContact::
 extendConnectToModel(OpenSim::Model& model)
 {
     // Allow based class to connect first
@@ -100,56 +202,61 @@ extendConnectToModel(OpenSim::Model& model)
         _body = &(getModel().getComponent<PhysicalFrame>(
                 "./bodyset/" + bodyName));
 }
-
-//-----------------------------------------------------------------------------
-// ADD TO THE MULTIBODY SYSTEM
-//-----------------------------------------------------------------------------
-// Questions:
-// 1. Does "spr" not need to be allocated from the heap?
-// 2. What happens to the force subsystem when spr goes out of scope?
-// 
-// Guesses:
-// 1. The GeneralForceSubsystem makes a clone of spr in a way that
-// keeps references to it still valid.
-// 
 //_____________________________________________________________________________
 void
-ExponentialSpringForce::
+ExponentialContact::
 extendAddToSystem(SimTK::MultibodySystem& system) const
 {
     // Extend the OpenSim::Force parent
     Super::extendAddToSystem(system);
 
-    // Construct the SimTK::ExponentialSpringForce object
+    // Construct the SimTK::ExponentialContact object
     SimTK::GeneralForceSubsystem& forces = _model->updForceSubsystem();
     const SimTK::Transform& XContactPlane = get_contact_plane_transform();
     const SimTK::Vec3& station = get_body_station();
-    SimTK::ExponentialSpringForce
-        spr(forces, XContactPlane, _body->getMobilizedBody(), station);
+    SimTK::ExponentialSpringForce* spr =
+        new SimTK::ExponentialSpringForce(forces, XContactPlane,
+            _body->getMobilizedBody(), station, getParameters());
 
     // Get the subsystem index so we can access the SimTK::Force later.
-    ExponentialSpringForce* mutableThis =
-        const_cast<ExponentialSpringForce *>(this);
-    mutableThis->_index = spr.getForceIndex();
+    ExponentialContact* mutableThis =
+        const_cast<ExponentialContact *>(this);
+    mutableThis->_spr = spr;
+    mutableThis->_index = spr->getForceIndex();
 }
-
 
 //-----------------------------------------------------------------------------
 // ACCESSORS
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-void ExponentialSpringForce::
+void ExponentialContact::
 setContactPlaneTransform(const SimTK::Transform& XContactPlane)
 {
     set_contact_plane_transform(XContactPlane);
 }
 //_____________________________________________________________________________
 const SimTK::Transform&
-ExponentialSpringForce::getContactPlaneTransform() const
+ExponentialContact::getContactPlaneTransform() const
 {
     return get_contact_plane_transform();
 }
 
+//_____________________________________________________________________________
+void
+ExponentialContact::
+setParameters(const SimTK::ExponentialSpringParameters& params)
+{
+    ExponentialContact::Parameters& p = upd_contact_parameters();
+    p.setSimTKParameters(params);
+    if (_spr != NULL) _spr->setParameters(params);
+}
+//_____________________________________________________________________________
+const SimTK::ExponentialSpringParameters&
+ExponentialContact::
+getParameters() const
+{
+    return _spr->getParameters();
+}
 
 //-----------------------------------------------------------------------------
 // Reporting
@@ -159,7 +266,7 @@ ExponentialSpringForce::getContactPlaneTransform() const
 // will be treated as an OpenSim::Force?
 //_____________________________________________________________________________
 OpenSim::Array<std::string>
-ExponentialSpringForce::
+ExponentialContact::
 getRecordLabels() const
 {
     OpenSim::Array<std::string> labels("");
@@ -172,7 +279,7 @@ getRecordLabels() const
 }
 //_____________________________________________________________________________
 OpenSim::Array<double>
-ExponentialSpringForce::
+ExponentialContact::
 getRecordValues(const SimTK::State& state) const 
 {
     OpenSim::Array<double> values(1);
