@@ -121,7 +121,7 @@ setSimTKParameters(const SimTK::ExponentialSpringParameters& params)
 // by this instance.
 const SimTK::ExponentialSpringParameters&
 ExponentialContact::Parameters::
-getSimTKParameters()
+getSimTKParameters() const
 {
     return _stkparams;
 }
@@ -148,6 +148,7 @@ ExponentialContact(const SimTK::Transform& contactPlaneXform,
     setContactPlaneTransform(contactPlaneXform);
     setBodyName(bodyName);
     setBodyStation(station);
+    setParameters(params);
 }
 //_____________________________________________________________________________
 ExponentialContact::
@@ -248,6 +249,7 @@ setParameters(const SimTK::ExponentialSpringParameters& params)
 {
     ExponentialContact::Parameters& p = upd_contact_parameters();
     p.setSimTKParameters(params);
+    // The following call will invalidate the State at Stage::Topology
     if (_spr != NULL) _spr->setParameters(params);
 }
 //_____________________________________________________________________________
@@ -255,7 +257,7 @@ const SimTK::ExponentialSpringParameters&
 ExponentialContact::
 getParameters() const
 {
-    return _spr->getParameters();
+    return get_contact_parameters().getSimTKParameters();
 }
 
 //-----------------------------------------------------------------------------

@@ -200,7 +200,7 @@ public:
     /** Get a read-only reference to the underlying
     SimTK::ExponentialSpringParameters. To alter the parameters, use
     setParameters(). */
-    const SimTK::ExponentialSpringParameters& getSimTKParameters();
+    const SimTK::ExponentialSpringParameters& getSimTKParameters() const;
 
 private:
     void setNull();
