@@ -303,8 +303,10 @@ bool InverseKinematicsTool::run()
             "please see messages window for details..."));
     }
 
-    if (modelFromFile) 
+    if (modelFromFile) { 
+        delete _model.get();
         _model.reset();
+    }
 
     return success;
 }
