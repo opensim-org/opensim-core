@@ -46,8 +46,9 @@ using namespace std;
 /**
  * Destructor.
  */
-Kinematics::~Kinematics()
-{
+Kinematics::~Kinematics() 
+{ 
+    deleteStorage(); 
 }
 //_____________________________________________________________________________
 /**
@@ -108,7 +109,7 @@ setNull()
     _pStore=_vStore=_aStore=NULL;
 
     // Let the list own the storages so we don't have to manually delete them
-    _storageList.setMemoryOwner(true);
+    _storageList.setMemoryOwner(false);
 
     _recordAccelerations = true;
 }
