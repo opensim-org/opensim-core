@@ -108,7 +108,7 @@ setNull()
     setName("Kinematics");
     _pStore=_vStore=_aStore=NULL;
 
-    // Let the list own the storages so we don't have to manually delete them
+    // Make sure storages are owned/managed by the Analysis
     _storageList.setMemoryOwner(false);
 
     _recordAccelerations = true;
