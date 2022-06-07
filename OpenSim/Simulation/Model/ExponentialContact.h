@@ -140,29 +140,29 @@ private:
 //=============================================================================
 // ExponentialContact::Parameters
 //=============================================================================
-/** This subclass manages topology-stage parameters that are available for
-for customizing the characteristics of an ExponentialContact object. It does
-not provide the interface for getting and setting contact parameters (directly
-anyway) but rather provides the infrastructure for making the underlying
-SimTK::ExponentialSpringForce and SimTK::ExponentialSpringParameters classes
-available in OpenSim. More specifically, the infrastructure does three things:
+/** This subclass helps manage topology-stage parameters of an
+OpenSim::ExponentialContact object. It does not provide the interface for
+getting and setting contact parameters (directly anyway) but rather provides
+the infrastructure for making the underlying SimTK::ExponentialSpringForce and
+SimTK::ExponentialSpringParameters classes available in OpenSim.
+
+More specifically, this class does 3 things:
 - Implements OpenSim Properties for most of the customizable contact
 parameters of class OpenSim::ExponentialContact, enabling those parameters
 to be serialized to and de-serialized from file.
 - Provides a member variable (_stkparams) for storing non-default parameters
-prior to creation of an underlying SimTK::ExponentialSpringForce object. During model
-initialization, when the SimTK::ExponetialSpringForce object is constructed,
-the parameters are pushed to that object.
-- Ensures that the values held by the OpenSim properties are consistent
+prior to the creation of an underlying SimTK::ExponentialSpringForce object.
+During model initialization, when the SimTK::ExponetialSpringForce object is
+constructed, the parameters are pushed to that object.
+- Ensures that the values held by the OpenSim properties are kept consistent
 with the values held by a SimTK::ExponentialSpringParameters object.
-Depending on the circumstance, sometimes parameters are updated to match
-properties; other times properties are update to match parameters.
+Depending on the circumstance, parameters are updated to match properties or
+properties are update to match parameters.
 
-To access the values of parameters (and properties) managed by this class,
+To access the values of the parameters (and properties) managed by this class,
 you should use ExponentialContact::getParameters() and
-ExponentialContact::setParameters(). All parameter changes are made via
-SimTK::ExpponentialSpringParameters().
-
+ExponentialContact::setParameters(). Like SimTK::ExponentialSpringForce,
+parameter changes are made via a SimTK::ExpponentialSpringParameters() object.
 
 @author F. C. Anderson **/
 class ExponentialContact::Parameters : public Object {
@@ -217,7 +217,6 @@ private:
     void updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber);
     SimTK::ExponentialSpringParameters _stkparams;
 };
-
 
 } // end of namespace OpenSim
 
