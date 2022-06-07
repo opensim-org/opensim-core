@@ -1,5 +1,5 @@
 /* -------------------------------------------------------------------------- *
- *                      OpenSim:  ExponentialSpringForce.cpp                  *
+ *                   OpenSim:  ExponentialContact.cpp                         *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -22,7 +22,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "Model.h"
-#include "ExponentialSpringForce.h"
+#include "ExponentialContact.h"
 
 using namespace OpenSim;
 using namespace std;

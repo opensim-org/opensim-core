@@ -37,7 +37,7 @@
 #include <OpenSim/Simulation/Model/ContactSphere.h>
 #include <OpenSim/Simulation/Model/ElasticFoundationForce.h>
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
-#include <OpenSim/Simulation/Model/ExponentialSpringForce.h>
+#include <OpenSim/Simulation/Model/ExponentialContact.h>
 #include <OpenSim/Simulation/Model/ExternalForce.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
