@@ -33,9 +33,9 @@ namespace OpenSim {
 //=============================================================================
 // ExponentialContact
 //=============================================================================
-/** This force subclass implements a SimTK::ExponentialSpringForce to model
-contact of a specified point on a body (i.e., a "station" in Simbody vocabulary) with
-a contact plane that is fixed to Ground.
+/** This OpenSim::Force subclass implements a SimTK::ExponentialSpringForce
+to model contact of a specified point on a body (i.e., a "station" in Simbody
+vocabulary) with a contact plane that is fixed to Ground.
 
 @author F. C. Anderson **/
 class OSIMSIMULATION_API ExponentialContact : public Force {
@@ -77,7 +77,7 @@ public:
         SimTK::ExponentialSpringParameters());
 
     /** Copy constructor. */
-    ExponentialContact(const ExponentialContact& other);
+    //ExponentialContact(const ExponentialContact& other);
 
     //-------------------------------------------------------------------------
     // Accessors
@@ -94,15 +94,15 @@ public:
     /** Get the name of the body to which this force is applied. */
     const std::string& getBodyName() const { return get_body_name(); }
 
-    /** Set the point on the body at which the force is applied. */
+    /** Set the point on the body at which this force is applied. */
     void setBodyStation(const SimTK::Vec3& station) { set_body_station(station); }
-    /** Get the point on the body at which the force is applied. */
+    /** Get the point on the body at which this force is applied. */
     const SimTK::Vec3& getBodyStation() const { return get_body_station(); }
 
     /** Set the customizable Topology-stage spring parameters. Calling this
     method will invalidate the SimTK::System at Stage::Toplogy. The System
-    must therefore be realized at Stage::Topology, as well subsequent stages
-    when appropriate, before simulation or analysis can proceed. */
+    must therefore be realized at Stage::Topology before simulation or
+    analysis can proceed. */
     void setParameters(const SimTK::ExponentialSpringParameters& params);
     /** Get the customizable Topology-stage spring parameters. */
     const SimTK::ExponentialSpringParameters& getParameters() const;
@@ -140,22 +140,29 @@ private:
 //=============================================================================
 // ExponentialContact::Parameters
 //=============================================================================
-/** This subclass manages the topology-stage parameters that are available
-for customizing the characteristics of an ExponentialContact object. More
-specifically, it has two purposes:
+/** This subclass manages topology-stage parameters that are available for
+for customizing the characteristics of an ExponentialContact object. It does
+not provide the interface for getting and setting contact parameters (directly
+anyway) but rather provides the infrastructure for making the underlying
+SimTK::ExponentialSpringForce and SimTK::ExponentialSpringParameters classes
+available in OpenSim. More specifically, the infrastructure does three things:
+- Implements OpenSim Properties for most of the customizable contact
+parameters of class OpenSim::ExponentialContact, enabling those parameters
+to be serialized to and de-serialized from file.
+- Provides a member variable (_stkparams) for storing non-default parameters
+prior to creation of an underlying SimTK::ExponentialSpringForce object. During model
+initialization, when the SimTK::ExponetialSpringForce object is constructed,
+the parameters are pushed to that object.
+- Ensures that the values held by the OpenSim properties are consistent
+with the values held by a SimTK::ExponentialSpringParameters object.
+Depending on the circumstance, sometimes parameters are updated to match
+properties; other times properties are update to match parameters.
 
-- Initialization. Before model initialization there is no underlying
-SimTK::ExponentialSpringForce object upon which to set non-default parameters.
-This class serves as a storage mechanism so that, upon model initialization,
-parameters can be pushed to the underlying SimTK::ExponentialSpringForce
-instance.
+To access the values of parameters (and properties) managed by this class,
+you should use ExponentialContact::getParameters() and
+ExponentialContact::setParameters(). All parameter changes are made via
+SimTK::ExpponentialSpringParameters().
 
-- Property Maintenance. This class maintains consistence between the
-parameters of the underlying SimTK::ExponentialSpringForce inst ance and their
-corresponding OpenSim Properties. The local SimTK::ExponentialSpringParameters
-member variable (_stkparams) provides a way to ensure the Properties hold
-valid values. Before any properties are updated, new parameters are set
-on _stkparams.
 
 @author F. C. Anderson **/
 class ExponentialContact::Parameters : public Object {

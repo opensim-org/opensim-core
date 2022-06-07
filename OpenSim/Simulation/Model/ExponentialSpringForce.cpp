@@ -35,14 +35,21 @@ using namespace std;
 ExponentialContact::Parameters::
 Parameters()
 {
+    setNull();
     constructProperties();
 }
 //_____________________________________________________________________________
 ExponentialContact::Parameters::
 Parameters(const SimTK::ExponentialSpringParameters& params)
 {
+    setNull();
     _stkparams = params;
     constructProperties();
+}
+//_____________________________________________________________________________
+void ExponentialContact::Parameters::setNull()
+{
+    setAuthors("F. C. Anderson");
 }
 //_____________________________________________________________________________
 void
@@ -100,12 +107,23 @@ updateParameters()
     _stkparams.setInitialMuKinetic(get_initial_mu_kinetic());
 }
 //_____________________________________________________________________________
+// This method is needed to ensure that the SimTK::ExponentialSpringParameters
+// member variable (_stkparam) is kept consistent with the properties.
+// It is necessary to have the _stkparams member variable because there needs
+// to be a place to store non-default parameters when the underlying
+// SimTK::ExponentialSpringForce hasn't been instantiated.
+// Having to do a little extra bookkeeping (i.e., storing properties values
+// twice [once in the Properties and once in _stkparams]) is justified
+// by not having to rewrite a whole bunch of additional accessor methods.
+// All parameter set/gets go through the SimTK::ExponentialSpringParameters
+// interface (i.e., through _stkparams).
 void
 ExponentialContact::Parameters::
 updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber)
 {
     Super::updateFromXMLNode(node, versionNumber);
-    updateParameters();
+    updateParameters(); // catching any invalid property values in the process
+    updateProperties(); // pushes valid parameters back to the properties.
 }
 //_____________________________________________________________________________
 // Note that the OpenSim Properties are updated as well.
@@ -125,7 +143,6 @@ getSimTKParameters() const
 {
     return _stkparams;
 }
-
 
 
 //=============================================================================
@@ -151,6 +168,7 @@ ExponentialContact(const SimTK::Transform& contactPlaneXform,
     setParameters(params);
 }
 //_____________________________________________________________________________
+/*
 ExponentialContact::
 ExponentialContact(const ExponentialContact& source)
 {
@@ -160,6 +178,7 @@ ExponentialContact(const ExponentialContact& source)
     setBodyName(source.getBodyName());
     setBodyStation(source.getBodyStation());
 }
+*/
 //_____________________________________________________________________________
 void
 ExponentialContact::
@@ -249,7 +268,7 @@ setParameters(const SimTK::ExponentialSpringParameters& params)
 {
     ExponentialContact::Parameters& p = upd_contact_parameters();
     p.setSimTKParameters(params);
-    // The following call will invalidate the State at Stage::Topology
+    // The following call will invalidate the System at Stage::Topology
     if (_spr != NULL) _spr->setParameters(params);
 }
 //_____________________________________________________________________________
@@ -264,7 +283,7 @@ getParameters() const
 // Reporting
 //-----------------------------------------------------------------------------
 // Questions:
-// 1. Do I need to conform to a certain reporting format since this object
+// 1. Do I need to conform to a certain reporting format because this object
 // will be treated as an OpenSim::Force?
 //_____________________________________________________________________________
 OpenSim::Array<std::string>

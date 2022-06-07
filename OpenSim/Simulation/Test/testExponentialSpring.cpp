@@ -464,13 +464,21 @@ ExponentialSpringTester
     Vec3 floorOrigin(0., -0.004, 0.);
     Transform floorXForm(floorRot, floorOrigin);
 
+    // Specify non-default contact parameters
+    SimTK::ExponentialSpringParameters params;
+    if (noDamp) {
+        params.setNormalViscosity(0.0);
+        params.setFrictionViscosity(0.0);
+        params.setInitialMuStatic(0.0);
+    }
+
     // Loop over the corners
     std::string name = "";
     for (int i = 0; i < n; ++i) {
         name = "ExpSpr" + std::to_string(i);
         OpenSim::ExponentialContact* force =
             new OpenSim::ExponentialContact(floorXForm,
-                block->getName(), corner[i]);
+                block->getName(), corner[i], params);
         force->setName(name);
         model->addForce(force);
     }
@@ -626,6 +634,9 @@ simulate()
     //    auto vis = model->getVisualizer();
     //    vis.show(state);
     //}
+
+    // Write the model to file
+    model->print("C:\\Users\\fcand\\Documents\\block.osim");
 }
 
 //_____________________________________________________________________________
