@@ -104,7 +104,7 @@ bool InverseKinematicsTool::run()
 {
     bool success = false;
     bool modelFromFile=true;
-    Kinematics* kinematicsReporter = nullptr;
+    std::unique_ptr<Kinematics> kinematicsReporter(new Kinematics());
     try{
         //Load and create the indicated model
         if (_model.empty()) { 
@@ -125,10 +125,9 @@ bool InverseKinematicsTool::run()
         auto cwd = IO::CwdChanger::changeToParentOf(getDocumentFileName());
 
         // Define reporter for output
-        kinematicsReporter = new Kinematics();
         kinematicsReporter->setRecordAccelerations(false);
         kinematicsReporter->setInDegrees(true);
-        _model->addAnalysis(kinematicsReporter);
+        _model->addAnalysis(kinematicsReporter.get());
 
         log_info("Running tool {}.", getName());
 
@@ -248,7 +247,7 @@ bool InverseKinematicsTool::run()
                     get_output_motion_file());
         }
         // Remove the analysis we added to the model, this also deletes it
-        _model->removeAnalysis(kinematicsReporter);
+        _model->removeAnalysis(kinematicsReporter.get());
 
         if (modelMarkerErrors) {
             Array<string> labels("", 4);
@@ -298,13 +297,15 @@ bool InverseKinematicsTool::run()
         log_error("InverseKinematicsTool Failed: {}", ex.what());
         // If failure happened after kinematicsReporter was added, make sure to cleanup
         if (kinematicsReporter!= nullptr)
-            _model->removeAnalysis(kinematicsReporter);
+            _model->removeAnalysis(kinematicsReporter.get());
         throw (Exception("InverseKinematicsTool Failed, "
             "please see messages window for details..."));
     }
 
-    if (modelFromFile) 
+    if (modelFromFile) { 
+        delete _model.get();
         _model.reset();
+    }
 
     return success;
 }
