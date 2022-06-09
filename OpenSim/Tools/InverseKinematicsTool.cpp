@@ -246,8 +246,9 @@ bool InverseKinematicsTool::run()
             kinematicsReporter->getPositionStorage()->print(
                     get_output_motion_file());
         }
-        // Remove the analysis we added to the model, this also deletes it
-        _model->removeAnalysis(kinematicsReporter.get());
+        // Remove the analysis we added to the model, do not delete as 
+        // the unique_ptr takes care of that.
+        _model->removeAnalysis(kinematicsReporter.get(), false);
 
         if (modelMarkerErrors) {
             Array<string> labels("", 4);
@@ -303,6 +304,7 @@ bool InverseKinematicsTool::run()
     }
 
     if (modelFromFile) { 
+        log_debug("Deleting Model {} at end of IK.run", _model->getName());
         delete _model.get();
         _model.reset();
     }
