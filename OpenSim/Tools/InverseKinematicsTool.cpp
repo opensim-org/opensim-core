@@ -247,7 +247,7 @@ bool InverseKinematicsTool::run()
                     get_output_motion_file());
         }
         // Remove the analysis we added to the model, do not delete as 
-        // the unique_ptr takes care of that.
+        // the unique_ptr takes care of that automatically
         _model->removeAnalysis(kinematicsReporter.get(), false);
 
         if (modelMarkerErrors) {
