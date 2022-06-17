@@ -443,7 +443,7 @@ Building from the source code
 -----------------------------
 
 **NOTE**: On all platforms (Windows, OSX, Linux), you should
-build all OpenSim dependencies (Simbody, BTK, etc) with the
+build all OpenSim dependencies (Simbody, etc) with the
 same *CMAKE_BUILD_TYPE* (Linux) / *CONFIGURATION*
 (MSVC/Xcode) (e.g., Release, Debug) as OpenSim. Failing to
 do so *may* result in mysterious runtime errors like
@@ -606,15 +606,11 @@ On Windows using Visual Studio
     * Obtained on your own:
         1. Simbody: Set the `SIMBODY_HOME` variable to where you installed
            Simbody (e.g., `C:/Simbody`).
-        2. BTK: Set the variable `BTK_DIR` to the directory containing
-           `BTKConfig.cmake`. If the root directory of your BTK installation is
-           `C:/BTKCore-install`, then set this variable to
-           `C:/BTKCore-install/share/btk-0.4dev`.
-        3. docopt.cpp: Set the variable `docopt_DIR` to the directory
+        2. docopt.cpp: Set the variable `docopt_DIR` to the directory
            containing `docopt-config.cmake`. If the root directory of your
            docopt.cpp installation is `C:/docopt.cpp-install`, then set this
            variable to `C:/docopt.cpp-install/lib/cmake`.
-        4. spdlog: Set the variable `spdlog_DIR` to the directory containing
+        3. spdlog: Set the variable `spdlog_DIR` to the directory containing
            `spdlogConfig.cmake`. If the root directory of your spdlog 
            installation is `C:/spdlog-install`, then set this variable to
            `C:/spdlog-install/lib/spdlog/cmake`.
@@ -710,8 +706,7 @@ directory to your `PATH` environment variable.
         -DCMAKE_INSTALL_PREFIX="..\opensim_install"                  `
         -DOPENSIM_DEPENDENCIES_DIR="..\opensim_dependencies_install" `
         -DBUILD_JAVA_WRAPPING=ON                                     `
-        -DBUILD_PYTHON_WRAPPING=ON                                   `
-        -DWITH_BTK=ON                                  
+        -DBUILD_PYTHON_WRAPPING=ON
   cmake --build . --config RelWithDebInfo -- /maxcpucount:8
   ctest --build-config RelWithDebInfo --parallel 8
   cmake --build . --config RelWithDebInfo --target install -- /maxcpucount:8
@@ -750,8 +745,7 @@ cmake ../opensim-core \
       -DCMAKE_BUILD_TYPE=RelWithDebInfo \
       -DBUILD_PYTHON_WRAPPING=ON \
       -DBUILD_JAVA_WRAPPING=ON \
-      -DOPENSIM_DEPENDENCIES_DIR="~/opensim_dependencies_install" \
-      -DWITH_BTK=ON
+      -DOPENSIM_DEPENDENCIES_DIR="~/opensim_dependencies_install"
 make -j8
 ctest -j8
 ```
@@ -885,14 +879,11 @@ You can get most of these dependencies using [Homebrew](http://brew.sh):
         1. Simbody: Set the `SIMBODY_HOME` variable to where you installed
            Simbody (e.g., `~/simbody`). If you installed Simbody using `brew`,
            then CMake will find Simbody automatically.
-        2. BTK: Set the `BTK_DIR` variable to the directory containing
-           `BTKConfig.cmake`. If you installed BTK in `~/BTKCore-install`, then
-           set `BTK_DIR` to `~/BTKCore-install/share/btk-0.4dev`
-        3. docopt.cpp: Set the variable `docopt_DIR` to the directory
+        2. docopt.cpp: Set the variable `docopt_DIR` to the directory
            containing `docopt-config.cmake`. If the root directory of your
            docopt.cpp installation is `~/docopt.cpp-install`, then set this
            variable to `~/docopt.cpp-install/lib/cmake`.
-        4. spdlog: Set the variable `spdlog_DIR` to the directory containing
+        3. spdlog: Set the variable `spdlog_DIR` to the directory containing
            `spdlogConfig.cmake`. If the root directory of your spdlog 
            installation is `~/spdlog-install`, then set this variable to
            `~/spdlog-install/lib/spdlog/cmake`.
@@ -973,9 +964,9 @@ specific Ubuntu versions under 'For the impatient' below.
 * **physics engine**: Simbody >= 3.7. Two options:
   * Let OpenSim get this for you using superbuild (see below).
   * [Build on your own](https://github.com/simbody/simbody#installing).
-* **C3D file support**: Biomechanical-ToolKit Core. Two options:
+* **C3D file support**: Ezc3d. Two options:
   * Let OpenSim get this for you using superbuild (see below).
-  * [Build on your own](https://github.com/klshrinidhi/BTKCore).
+  * [Build on your own](https://github.com/pyomeca/ezc3d).
 * **command-line argument parsing**: docopt.cpp. Two options:
     * Let OpenSim get this for you using superbuild (see below); much easier!
     * [Build on your own](https://github.com/docopt/docopt.cpp) (no instructions).
@@ -1095,14 +1086,11 @@ And you could get all the optional dependencies via:
     * Obatained on your own:
         1. Simbody: Set the `SIMBODY_HOME` variable to where you installed
            Simbody (e.g., `~/simbody`).
-        2. BTK: Set the `BTK_DIR` variable to the directory containing
-           `BTKConfig.cmake`. If you installed BTK in `~/BTK-install`, then set
-           `BTK-DIR` to `~/BTK-install/share/btk-0.4dev`.
-        3. docopt.cpp: Set the variable `docopt_DIR` to the directory
+        2. docopt.cpp: Set the variable `docopt_DIR` to the directory
            containing `docopt-config.cmake`. If the root directory of your
            docopt.cpp installation is `~/docopt.cpp-install`, then set this
            variable to `~/docopt.cpp-install/lib/cmake`.
-        4. spdlog: Set the variable `spdlog_DIR` to the directory containing
+        3. spdlog: Set the variable `spdlog_DIR` to the directory containing
            `spdlogConfig.cmake`. If the root directory of your spdlog 
            installation is `~/spdlog-install`, then set this variable to
            `~/spdlog-install/lib/spdlog/cmake`.
@@ -1134,7 +1122,7 @@ And you could get all the optional dependencies via:
     * `OPENSIM_PYTHON_VERSION` to choose if the Python wrapping is built for
       Python 2 or Python 3.
     * `BUILD_API_ONLY` if you don't want to build the command-line applications.
-    * `OPENSIM_COPY_DEPENDENCIES` to decide if Simbody and BTK are copied into
+    * `OPENSIM_COPY_DEPENDENCIES` to decide if Simbody and ezc3d are copied into
       the OpenSim installation; you want this off if you're installing OpenSim
       into `/usr/` or `/usr/local/`.
 9. Click the **Configure** button again. Then, click **Generate** to create
@@ -1204,8 +1192,7 @@ cmake ../opensim-core \
       -DCMAKE_BUILD_TYPE=RelWithDebInfo \
       -DOPENSIM_DEPENDENCIES_DIR="~/opensim_dependencies_install" \
       -DBUILD_PYTHON_WRAPPING=ON \
-      -DBUILD_JAVA_WRAPPING=ON \
-      -DWITH_BTK=ON
+      -DBUILD_JAVA_WRAPPING=ON
 make -j8
 ctest -j8
 make -j8 install

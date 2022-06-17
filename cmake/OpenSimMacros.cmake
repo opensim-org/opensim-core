@@ -555,7 +555,7 @@ endfunction()
 # Function to install shared libraries (any platform) from a dependency install
 # directory into the OpenSim installation. One use case is to install libraries
 # into the python package.
-# PREFIX: A common part of the library file names (e.g., 'SimTK', 'ezc3d' or 'BTK').
+# PREFIX: A common part of the library file names (e.g., 'SimTK' or 'ezc3d').
 #         This is to avoid copying unrelated files from a folder like /usr/lib.
 # DEP_LIBS_DIR_WIN: Directory to search for the dependency's library, on
 #         Windows.

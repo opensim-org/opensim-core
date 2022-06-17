@@ -173,13 +173,6 @@ AddDependency(NAME       ezc3d
               GIT_TAG    Release_1.4.6
               CMAKE_ARGS -DBUILD_EXAMPLE:BOOL=OFF)
 
-AddDependency(NAME       BTK
-              DEFAULT    OFF
-              # GIT_URL  https://github.com/Biomechanical-ToolKit/BTKCore.git
-              GIT_URL    https://github.com/opensim-org/BTKCore.git
-              GIT_TAG    6d787d0be223851a8f454f2ee8c7d9e47b84cbbe
-              CMAKE_ARGS -DBUILD_SHARED_LIBS:BOOL=ON)
-
 AddDependency(NAME       simbody
               DEFAULT    ON
               GIT_URL    https://github.com/simbody/simbody.git
