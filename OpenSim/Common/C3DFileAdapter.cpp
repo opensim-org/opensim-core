@@ -36,6 +36,7 @@ convertToSimtkMatrix(const std::vector<ezc3d::Vector3d>& all_vec) {
 
     return simtkMat;
 }
+#endif
 } // anonymous namespace
 
 
