@@ -1,4 +1,4 @@
-#ifndef OPENSIM_EXPONENTIAL_CONTACT_H_
+﻿#ifndef OPENSIM_EXPONENTIAL_CONTACT_H_
 #define OPENSIM_EXPONENTIAL_CONTACT_H_
 /* -------------------------------------------------------------------------- *
  *                  OpenSim:  ExponentialContactForce.h                        *
@@ -33,9 +33,250 @@ namespace OpenSim {
 //=============================================================================
 // ExponentialContact
 //=============================================================================
-/** This OpenSim::Force subclass implements a SimTK::ExponentialSpringForce
-to model contact of a specified point on a body (i.e., a "station" in Simbody
-vocabulary) with a contact plane that is fixed to Ground.
+/** Class ExponentialContact uses an "exponential spring" as a means
+of modeling contact of a specified point on a Body with a contact
+plane that is fixed to Ground. In this documentation, this specified point
+is referred to as the "body station". Each ExponentialContact instance
+acts at only one body station. In practice, you should choose a number of
+body stations strategically located across the surface of a Body,
+and construct an ExponentialContact instance for each of those body stations.
+For example, if the Body were a cube, you would likely choose the body
+stations to be the corners of the cube and construct an ExponentialContact
+instance for each corner of the cube (so a total of 8 instances). The contact
+plane is typically used to model interactions with a floor, but is not
+limited to this use case. The contact plane can be rotated and translated
+relative to the Ground frame and so can be used to model a wall, ramp, or
+some other planar structure.
+
+Aspects of the exponential contact model are described in the following
+publication:
+
+        Anderson F.C. and Pandy M.G. (1999). A dynamics optimization
+        solution for vertical jumping in three dimensions. Computer Methods
+        in Biomechanics and Biomedical Engineering 2(3):201-231.
+
+Under the covers, the OpenSim::ExponentialContact class encapsulates two
+SimTK objects: ExponentialSpringForce and ExponentialSpringParameters.
+For the details concerning the contact model, see the Simbody API
+documentation for SimTK::ExponentialSpringForce. A condensed version of
+that documentation is provided here.
+
+----------------------------------
+Computations and Coordinate Frames
+----------------------------------
+The positive z-axis of the contact plane defines its normal. The positive
+z-axis is the axis along which the repelling normal force (modeled using an
+exponential) is applied. The x-axis and y-axis of the contact plane together
+define the tangent plane. Friction forces will always be tangent to the x-y
+plane.
+
+In the equations below, all quantities are expressed in the frame of the
+contact plane. A variable with a "z" suffix (e.g., pz, vz, or cz) refers
+to a quantity that is normal to the contact plane or that pertains to
+calculation of the normal force. A variable with an "xy" suffix
+(e.g., pxy, vxy, or cxy) refers to a quantity that lies in or is tangent to
+the contact plane or that pertains to calculation of the friction force.
+
+### Normal Force (positive z-axis)
+
+The elastic part of the normal force is computed using an exponential
+whose shape is a function of three parameters (d₀, d₁, and d₂):
+
+        fzElastic = d₁exp(−d₂(pz−d₀))
+
+Note that pz is the displacement of the body station above (pz > 0.0)
+or below (pz < 0.0) the contact plane. The default values of the shape
+parameters were chosen to maximize integration step size while maintaining a
+number of constraints (e.g., the normal force should fall below 0.01 Newtons
+when pz > 1.0 cm). The damping part of the normal force is linear in velocity
+and scaled by the elastic part:
+
+        fzDamping = −cz vz fzElastic,
+
+where vz is the normal component of the velocity of the body station and
+cz is the damping coefficient for the normal direction. All together, the
+spring force in the normal direction is given by
+
+        fz  = fzElastic + fzDamping
+            = d₁exp(d₂(py−d₀)) − cz vz d₁exp(d₂(pz−d₀)))
+            = d₁exp(d₂(pz−d₀)) (1 − cz vz)
+
+which has the form of the Hunt & Crossley damping model:
+
+        K. H. Hunt and F. R. E. Crossley (1975). Coefficient of Restitution
+        Interpreted as Damping in Vibroimpact. ASME Journal of Applied
+        Mechanics, pp. 440-445.
+
+### Friction Force (x-y plane)
+
+The friction force is computed by blending two different friction models.
+The blending is performed based on the 'Sliding' State of the
+ExponentialSpringForce class. 'Sliding' is a continuous state variable (a Z
+in Simbody vocabulary) that characterizes the extent to which either static
+or kinetic conditions are present.
+
+#### Friction Model 1 - Pure Damping (Sliding = 1.0)
+When the body station is moving with respect to the contact plane, the
+friction force is computed using a simple damping term:
+
+        fricDamp = −cxy vxy
+
+where cxy is the damping coefficient in the contact plane and vxy is the
+velocity of the body station in the contact plane. However, the magnitude
+of the total frictional force is not allowed to exceed the frictional limit:
+
+        fricLimit = μ fz
+        if (|fricDamp| > fricLimit)
+            fricDamp = −fricLimit vxy / |vxy| = −μ fz vxy / |vxy|
+
+where μ is the instantaneous coefficient of friction (more below). Note that
+fz is always positive and so fricLimit is a positive scalar. Thus, for
+velocities in the contact plane above some threshold velocity, which is
+typically small (i.e., less than 0.1 m/s), this model is consistent with a
+standard Coulomb Friction model.
+
+#### Friction Model 2 - Damped Linear Spring (Sliding = 0.0)
+When the body station is anchored with respect to the contact plane, the
+friction force is represented by a damped linear spring. The viscous term is
+given by the same damping expression as above:
+
+        fricDampSpr = −cxy vxy
+
+and the elastic term is given by
+
+        fricElasSpr = −kxy (pxy−p₀)
+
+where kxy is the friction spring elasticity, pxy is the position of the body
+station projected onto the contact plane, and p₀ is the current spring zero
+(i.e., the elastic anchor point of the friction spring). Note that p₀ always
+resides in the contact plane.
+
+The total friction spring force is then given by the sum of the elastic and
+viscous terms:
+
+        fricSpr = fricElasSpr + fricDampSpr
+
+If the magnitude of the fricSpr exceeds the magnitude of the friction limit,
+the terms are scaled down:
+
+        if(|fricSpr| > fricLimit)
+            scaleFactor = fricLimit / |fricSpr|
+            fricDampSpr = scaleFactor * fricDampSpr
+            fricElasSpr = scaleFactor * fricElasSpr
+            fricSpr = fricElasSpr + fricDampSpr
+
+Scaling down the friction spring force does not alter its direction.
+
+#### Blending the Friction Models
+Blending Model 1 and Model 2 is accomplished using linear expressions of the
+Sliding State:
+
+        fricElasBlend = fricElasSpr * (1.0 − Sliding)
+        fricDampBlend = fricDampSpr + (fricDamp − fricDampSpr)*Sliding
+        fricBlend = fricElasBlend + fricDampBlend
+
+Thus, Model 1 (Pure Damping) dominates as Sliding → 1.0, and Model 2
+(Damped Linear Spring) dominates as Sliding → 0.0.
+
+#### Moving the Friction Spring Zero
+The friction spring zero (p₀) (the elastic anchor point) is always altered
+to be consistent with the final value of the blended elastic force:
+
+        p₀ = pxy + fricElasBlend / kxy;
+        p₀[2] = 0.0;  // ensures that p₀ lies in the contact plane
+
+#### Coefficients of Friction
+Coefficients of kinetic (sliding) and static (fixed) friction can be specified
+for the spring, subject to the following constraints:
+
+        0.0 ≤ μₖ ≤ μₛ
+
+Note that there is no upper bound on μₛ. The instantaneous coefficient of
+friction (μ) is calculated based on the value of the Sliding State:
+
+        μ = μₛ − Sliding*(μₛ − μₖ)
+
+The time derivative of Sliding, SlidingDot, is used to drive Sliding toward
+the extremes of 0.0 or 1.0, depending on the following criteria:
+
+- If the frictional spring force (fricSpr) exceeded the frictional limit at
+any point during its calculation, Sliding is driven toward 1.0 (rise):
+
+        SlidingDot = (1.0 − Sliding)/tau
+
+- If the frictional spring force (fricSpr) does not exceed the frictional
+limit at any point during its calculation and if the kinematics of the body
+station are near static equilibrium, Sliding is driven toward 0.0 (decay):
+
+        SlidingDot = −Sliding/tau
+
+The threshold for being "near" static equilibrium is established by two
+parameters, vSettle and aSettle. When the velocity and acceleration of the
+body station relative to the contact plane are below vSettle and aSettle,
+respectively, static equilibrium is considered effectively reached.
+
+During a simulation, once a rise or decay is triggered, the rise or decay
+continues uninterrupted until Sliding crosses 0.95 or 0.05, respectively. Once
+these thresholds have been crossed, the criteria for rise and decay are again
+monitored.
+
+In the above equations for SlidingDot, tau is the characteristic time it takes
+for the Sliding State to rise or decay. The default value of tau is 0.01 sec.
+The motivation for using a continuous state variable is that, although the
+transition between static and kinetic may happen quickly, it does not happen
+instantaneously. Evolving Sliding based on a differential equation ensures
+that μ is continuous and that the blending of friction models is well behaved.
+
+-----------------------
+CUSTOMIZABLE PARAMETERS
+-----------------------
+Customizable Topology-stage parameters specifying the characteristics of the
+exponential spring are managed using SimTK::ExponentialSpringParameters.
+To customize any of the Topology-stage parameters on an ExponentialContact
+instance, you should
+
+1) Create an ExponentialSpringParameters object. For example,
+
+        ExponentialSpringParameters myParams;
+
+2) Use the available 'set' methods in ExponentialSpringParamters to change
+the parameters of that object. For example,
+
+        myParams.setNormalViscosity(0.25);
+
+3) Use ExponentialContact::setParameters() to alter the parameters of one
+(or many) ExponentialContact instances. For example,
+
+        ExponentialContact spr1, spr2;
+        spr1.setParameters(myParams);
+        spr2.setParameters(myParams);
+
+4) Realize the system to Stage::Topology. When a new set of parameters is
+set on an ExponentialContact instance, as above in step 3, the System will
+be invalidated at Stage::Topology. The System must therefore be realized at
+Stage::Topology (and hence Stage::Model) before a simulation can proceed.
+
+        system.realizeTopology();
+
+Note that each ExponentialContact instance owns its own private
+ExponentialSpringParameters object. The myParams object is just used to set
+the desired parameter values of the privately owned parameters object. It is
+fine for objects like myParams to go out of scope or for myParams objects
+allocated from the heap to be deleted.
+
+Therefore, also note that the parameter values possessed by an
+ExponentialContact instance do not necessarily correspond to the values
+held by an instance of ExponentialSpringParameters until a call to
+ExponentialContact::setParameters() is made.
+
+The default values of the parameters are expressed in units of Newtons,
+meters, seconds, and kilograms; however, you may use an alternate set of
+self-consistent units by re-specifying all parameters.
+
+The default values of the parameters work well for typical contact
+interactions, but clearly may not be appropriate for simulating many contact
+interactions. For the full descriptions of the contact parameters see the
+Simbody API documentation for SimTK::ExponentialSpringParameters.
 
 @author F. C. Anderson **/
 class OSIMSIMULATION_API ExponentialContact : public Force {
@@ -64,7 +305,7 @@ public:
     /** Default constructor. */
     ExponentialContact();
 
-    /** Construct an ExponentialContact.
+    /** Construct an ExponentialContact instance.
     @param XContactPlane Transform specifying the location and orientation of
     the contact plane in Ground.
     @param bodyName Name of the body to which the force is applied.
@@ -76,35 +317,41 @@ public:
         SimTK::ExponentialSpringParameters params =
         SimTK::ExponentialSpringParameters());
 
-    /** Copy constructor. */
-    //ExponentialContact(const ExponentialContact& other);
+    /** Destructor. */
+    ~ExponentialContact() {
+        if (_spr != NULL) delete _spr;
+    }
 
     //-------------------------------------------------------------------------
     // Accessors
     //-------------------------------------------------------------------------
-    /** Set the tranform that specifies the location and orientation of the
+    /** Set the transform that specifies the location and orientation of the
     contact plane in the Ground frame. */
     void setContactPlaneTransform(const SimTK::Transform& contactPlaneXform);
-    /** Get the tranform that specifies the location and orientation of the
+    /** Get the transform that specifies the location and orientation of the
     contact plane in the Ground frame. */
     const SimTK::Transform& getContactPlaneTransform() const;
 
     /** Set the name of the body to which this force is applied. */
-    void setBodyName(const std::string& bodyName) { set_body_name(bodyName); }
+    void setBodyName(const std::string& bodyName) {
+        set_body_name(bodyName);
+    }
     /** Get the name of the body to which this force is applied. */
     const std::string& getBodyName() const { return get_body_name(); }
 
     /** Set the point on the body at which this force is applied. */
-    void setBodyStation(const SimTK::Vec3& station) { set_body_station(station); }
+    void setBodyStation(const SimTK::Vec3& station) {
+        set_body_station(station);
+    }
     /** Get the point on the body at which this force is applied. */
     const SimTK::Vec3& getBodyStation() const { return get_body_station(); }
 
     /** Set the customizable Topology-stage spring parameters. Calling this
-    method will invalidate the SimTK::System at Stage::Toplogy. The System
-    must therefore be realized at Stage::Topology before simulation or
-    analysis can proceed. */
+    method will invalidate the SimTK::System at Stage::Toplogy. */
     void setParameters(const SimTK::ExponentialSpringParameters& params);
-    /** Get the customizable Topology-stage spring parameters. */
+    /** Get the customizable Topology-stage spring parameters. Use the copy
+    constructor on the returned reference to create an object that can
+    be altered. */
     const SimTK::ExponentialSpringParameters& getParameters() const;
 
     //-------------------------------------------------------------------------
@@ -121,7 +368,8 @@ protected:
     /** Connect to the OpenSim Model. */
     void extendConnectToModel(Model& model) override;
 
-    /** Create a SimTK::ExponentialContact that implements this Force. */
+    /** Create a SimTK::ExponentialSpringForce objects that implements
+    this Force. */
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
     /** Update this Object base on an XML node. */
@@ -140,13 +388,13 @@ private:
 //=============================================================================
 // ExponentialContact::Parameters
 //=============================================================================
-/** This subclass helps manage topology-stage parameters of an
+/** This subclass helps manage most of the topology-stage parameters of an
 OpenSim::ExponentialContact object. It does not provide the interface for
 getting and setting contact parameters (directly anyway) but rather provides
 the infrastructure for making the underlying SimTK::ExponentialSpringForce and
 SimTK::ExponentialSpringParameters classes available in OpenSim.
 
-More specifically, this class does 3 things:
+More specifically, this class mainly does 3 things:
 - Implements OpenSim Properties for most of the customizable contact
 parameters of class OpenSim::ExponentialContact, enabling those parameters
 to be serialized to and de-serialized from file.
@@ -159,10 +407,10 @@ with the values held by a SimTK::ExponentialSpringParameters object.
 Depending on the circumstance, parameters are updated to match properties or
 properties are update to match parameters.
 
-To access the values of the parameters (and properties) managed by this class,
-you should use ExponentialContact::getParameters() and
-ExponentialContact::setParameters(). Like SimTK::ExponentialSpringForce,
-parameter changes are made via a SimTK::ExpponentialSpringParameters() object.
+To get or set values of the parameters managed by this class, you should use
+ExponentialContact::getParameters() and ExponentialContact::setParameters().
+Note that the values of the parameters managed by this class are always the
+same as the values of their corresponding properties.
 
 @author F. C. Anderson **/
 class ExponentialContact::Parameters : public Object {
@@ -201,12 +449,18 @@ public:
     object. */
     Parameters(const SimTK::ExponentialSpringParameters& params);
 
-    /** Set the underlying SimTK::ExponentialSpringParameters. */
+    /** Set the underlying SimTK parameters. This method is used to maintain
+    consistency between OpenSim Properties and the underlying parameters.
+    The typical user of OpenSim::ExponentialContact will not have reason to
+    call this method. For setting contact parameters, the typical user should
+    call OpenSim::ExponentialContact::setParameters(). */
     void setSimTKParameters(const SimTK::ExponentialSpringParameters& params);
 
-    /** Get a read-only reference to the underlying
-    SimTK::ExponentialSpringParameters. To alter the parameters, use
-    setParameters(). */
+    /** Get a read-only reference to the underlying SimTK paramters. This
+    method is used to maintain consistency between OpenSim Properties and the
+    underlying parameters. The typical user of OpenSim::ExponentialContact will
+    not have reason to call this method. For getting contact parameters, the
+    typical user should call OpenSim::ExponentialContact::getParameters() */
     const SimTK::ExponentialSpringParameters& getSimTKParameters() const;
 
 private:
