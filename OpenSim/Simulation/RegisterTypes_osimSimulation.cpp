@@ -47,6 +47,7 @@
 #include "Model/CoordinateLimitForce.h"
 #include "Model/CoordinateSet.h"
 #include "Model/ElasticFoundationForce.h"
+#include "Model/ExponentialContact.h"
 #include "Model/HuntCrossleyForce.h"
 #include "Model/SmoothSphereHalfSpaceForce.h"
 #include "Model/Ligament.h"
@@ -242,6 +243,8 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( ContactSphere() );
     Object::registerType( CoordinateLimitForce() );
     Object::registerType( SmoothSphereHalfSpaceForce() );
+    Object::registerType( ExponentialContact() );
+    Object::registerType( ExponentialContact::Parameters() );
     Object::registerType( HuntCrossleyForce() );
     Object::registerType( ElasticFoundationForce() );
     Object::registerType( HuntCrossleyForce::ContactParameters() );
