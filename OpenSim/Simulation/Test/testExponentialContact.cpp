@@ -49,96 +49,6 @@ using namespace SimTK;
 using namespace std;
 using namespace OpenSim;
 
-class TestExpSprVisuals;
-
-//=============================================================================
-/** Record the System state at regular intervals. */
-class VisualsReporter : public PeriodicEventReporter
-{
-public:
-    VisualsReporter(TestExpSprVisuals& visuals, Real reportInterval) :
-        PeriodicEventReporter(reportInterval), vis(visuals) {}
-
-    void handleEvent(const State& state) const override;
-
-private:
-    TestExpSprVisuals& vis;
-};
-
-//=============================================================================
-/** Class Visuals encapsulates the variables needed for running a
-SimTK::Visualizer and provides the polling methods for starting a
-simulation and replaying the simulated motion. */
-class TestExpSprVisuals
-{
-public:
-    // Constructor
-    TestExpSprVisuals(MultibodySystem& system) {
-        // Menu Items
-        runMenuItems.push_back(std::make_pair("Go", goItem));
-        runMenuItems.push_back(std::make_pair("Replay", replayItem));
-
-        // SimTK::Visualizer
-        vis = new Visualizer(system);
-        vis->setShowShadows(true);
-
-        // Input Silo
-        silo = new Visualizer::InputSilo();
-        vis->addInputListener(silo);
-        vis->addMenu("Run", runMenuID, runMenuItems);
-
-        // Reporters
-        system.addEventReporter(new Visualizer::Reporter(*vis, reportInterval));
-        system.addEventReporter(new VisualsReporter(*this, reportInterval));
-
-        // Reserve memory for the System states to be recorded
-        states.reserve(50000);
-    }
-
-    // State storage
-    void appendState(const State& state) { states.emplace_back(state); }
-
-    // Polling
-    void pollForStart() {
-        cout << "\nChoose 'Go' from the Run menu to simulate.\n";
-        int menuID, item;
-        do {
-            silo->waitForMenuPick(menuID, item);
-            if (menuID != runMenuID || item != goItem)
-                cout << "\aDude ... follow instructions!\n";
-        } while (menuID != runMenuID || item != goItem);
-    }
-    void pollForReplay() {
-        silo->clear();
-        while (true) {
-            cout << "Choose Replay to see that again ...\n";
-            int menuID, item;
-            silo->waitForMenuPick(menuID, item);
-            for (double i = 0; i < (int)states.size(); i++) {
-                vis->report(states[(int)i]);
-            }
-        }
-    }
-
-private:
-    SimTK::Visualizer* vis{NULL};
-    SimTK::Visualizer::InputSilo* silo{NULL};
-    SimTK::Array_<std::pair<String, int>> runMenuItems;
-    const int runMenuID = 3;
-    const int goItem{1}, replayItem{2}, quitItem{3}; 
-    double reportInterval = 0.01;
-    SimTK::Array_<State> states;
-};
-
-//_____________________________________________________________________________
-// Definition had to follow the declaration for TestExpSprVisuals
-void
-VisualsReporter::
-handleEvent(const State& state) const
-{
-    vis.appendState(state);
-}
-
 //=============================================================================
 /** Class ExponentialSpringTester provides a scope and framework for
 evaluating and testing the ExponentialSpringForce class. Using a class gets
@@ -167,8 +77,16 @@ public:
 
     // Destructor
     ~ExponentialSpringTester() {
-        if(model) model->disownAllComponents();
-        if(model) delete model;
+        if (model) {
+            model->disownAllComponents();
+            delete model;
+        }
+        if (blockES) delete blockES;
+        if (blockHC) delete blockHC;
+        for (int i = 0; i < n; i++) {
+            if (sprES[i]) delete sprES[i];
+            if (sprHC[i]) delete sprHC[i];
+        }
     }
 
     // Command line parsing and usage
@@ -210,15 +128,15 @@ public:
     bool showVisuals{false};
 
     // Model and parts
+    const static int n{8};
     Model* model{NULL};
     OpenSim::Body* blockES{NULL};
     OpenSim::Body* blockHC{NULL};
+    ExponentialContact* sprES[n]{NULL};
+    OpenSim::HuntCrossleyForce* sprHC[n]{NULL};
     Storage fxData;
     ExternalForce* fxES{NULL};
     ExternalForce* fxHC{NULL};
-
-    // Visualization
-    TestExpSprVisuals* visuals{NULL};
 
 }; // End class ExponentialSpringTester declarations
 
@@ -447,7 +365,6 @@ ExponentialSpringTester
     Ground& ground = model->updGround();
 
     // Corners of the block
-    const int n = 8;
     Vec3 corner[n];
     corner[0] = Vec3(hs, -hs, hs);
     corner[1] = Vec3(hs, -hs, -hs);
@@ -476,11 +393,10 @@ ExponentialSpringTester
     std::string name = "";
     for (int i = 0; i < n; ++i) {
         name = "ExpSpr" + std::to_string(i);
-        OpenSim::ExponentialContact* force =
-            new OpenSim::ExponentialContact(floorXForm,
-                block->getName(), corner[i], params);
-        force->setName(name);
-        model->addForce(force);
+        sprES[i] = new OpenSim::ExponentialContact(floorXForm,
+            block->getName(), corner[i], params);
+        sprES[i]->setName(name);
+        model->addForce(sprES[i]);
     }
 }
 //______________________________________________________________________________
@@ -496,7 +412,6 @@ addHuntCrossleyContact(OpenSim::Body* block)
     model->addContactGeometry(floor);
 
     // Corners of the block
-    const int n = 8;
     Vec3 corner[n];
     corner[0] = Vec3(hs, -hs, hs);
     corner[1] = Vec3(hs, -hs, -hs);
@@ -521,12 +436,11 @@ addHuntCrossleyContact(OpenSim::Body* block)
             ContactParameters(1.0e7, 4e-1, 0.7, 0.465, 0.0);
         contactParams->addGeometry(name);
         contactParams->addGeometry("floor");
-        OpenSim::HuntCrossleyForce* force =
-            new OpenSim::HuntCrossleyForce(contactParams);
+        sprHC[i] = new OpenSim::HuntCrossleyForce(contactParams);
         name = "HuntCrossleyForce_" + std::to_string(i);
-        force->setName(name);
-        force->setTransitionVelocity(0.01);
-        model->addForce(force);
+        sprHC[i]->setName(name);
+        sprHC[i]->setTransitionVelocity(0.01);
+        model->addForce(sprHC[i]);
     }
 }
 //_____________________________________________________________________________
@@ -620,23 +534,14 @@ simulate()
     state = manager.integrate(tf);
     auto runTime = 1.e3 * (std::clock() - startTime) / CLOCKS_PER_SEC;
 
-    // Trys and Steps
+    // Output
     int trys = manager.getIntegrator().getNumStepsAttempted();
     int steps = manager.getIntegrator().getNumStepsTaken();
-
-    // Output
     cout << "trys = " << trys << "\t\tsteps = " << steps;
     cout << "\t\tcpu time = " << runTime << endl;
 
-    // Visuals Replay
-    //if (showVisuals) {
-    //    //visuals->pollForReplay();
-    //    auto vis = model->getVisualizer();
-    //    vis.show(state);
-    //}
-
     // Write the model to file
-    model->print("C:\\Users\\fcand\\Documents\\block.osim");
+    //model->print("C:\\Users\\fcand\\Documents\\block.osim");
 }
 
 //_____________________________________________________________________________
@@ -646,11 +551,11 @@ The motion of a 10 kg, 6 degree-of-freedom block and its force interaction
 with a laboratory floor are simulated.
 
 Contact with the floor is modeled using either
-    1) 8 ExponentialSpringForce instances, one at each corner of the block, or
+    1) 8 ExponentialContact instances, one at each corner of the block, or
     2) 8 HuntCrossleyForce instances, one at each corner of the block.
 
 For a side-by-side comparison of simulated motions, two blocks (one using
-the ExponentialSpringForce class for contact and the other using the
+the ExponentialContact class for contact and the other using the
 HuntCrossleyForce class) can be created and visualized simultaneously.
 
 For an assessment of computational performance, just one block should be
@@ -662,7 +567,7 @@ motions:
     1) Static (y = 0.1 m, sitting at rest on the floor)
     2) Bouncing (y = 1.0 m, dropped)
     3) Sliding (y = 0.2 m, vx = -2.0 m/s)
-    4) Spinning & Sliding (y = 0.2 m, vx = -2.0 m/s, wy = 2.0 pi rad/sec)
+    4) Spinning (y = 0.2 m, vx = 0.0 m/s, wy = 2.0 pi rad/sec)
     5) Tumbling (py = 2.0 m, vx = -2.0 m/s, wz = 2.0 pi rad/sec)
 
 Additional options allow the following to be specified:
@@ -679,17 +584,17 @@ This ramping profile was done with the "Static" initial condition choice
 in mind so that friction models could be evaluated more critically.
 In particular, a static block should not start sliding until fx > μₛ Fₙ.
 
-For ExponentialSpringForce, the following things are tested:
+For ExponentialContact, the following things are tested:
     a) instantiation
     b) model initialization
-    c) energy conservation
+    c) consistency between OpenSim Properties and SimTK parameters
     d) data cache access
     e) realization stage invalidation
     f) reporting
     g) serialization
 
-The HuntCrossleyForce class is tested elsewhere (e.g., see
-testContactGeometry.cpp). */
+The HuntCrossleyForce class is tested elsewhere
+(e.g., see testContactGeometry.cpp and testForce.cpp). */
 int main(int argc, char** argv) {
     try {
         ExponentialSpringTester tester;
