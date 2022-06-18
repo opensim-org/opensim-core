@@ -364,6 +364,12 @@ public:
     OpenSim::Array<double> getRecordValues(
             const SimTK::State& state) const override;
 
+    //-------------------------------------------------------------------------
+    // Internal Testing
+    //-------------------------------------------------------------------------
+    /** Assess consistency between Properties and internal parameters. */
+    void assertPropertiesAndParametersEqual() const;
+
 protected:
     /** Connect to the OpenSim Model. */
     void extendConnectToModel(Model& model) override;
@@ -426,7 +432,7 @@ public:
             "Maximum allowed normal force (100,000.0 N).");
     OpenSim_DECLARE_PROPERTY(friction_elasticity, double,
             "Elasticity of the linear friction spring (20,000.0 N/m).");
-    OpenSim_DECLARE_PROPERTY(friction_viscocity, double,
+    OpenSim_DECLARE_PROPERTY(friction_viscosity, double,
             "Viscosity of the linear friction spring (282.8427 N*s/m).");
     OpenSim_DECLARE_PROPERTY(sliding_time_constant, double,
             "Time constant for rise/decay between static and kinetic friction \

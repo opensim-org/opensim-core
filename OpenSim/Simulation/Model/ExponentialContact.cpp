@@ -62,7 +62,7 @@ constructProperties()
     constructProperty_normal_viscosity(_stkparams.getNormalViscosity());
     constructProperty_max_normal_force(_stkparams.getMaxNormalForce());
     constructProperty_friction_elasticity(_stkparams.getFrictionElasticity());
-    constructProperty_friction_viscocity(_stkparams.getFrictionViscosity());
+    constructProperty_friction_viscosity(_stkparams.getFrictionViscosity());
     constructProperty_sliding_time_constant(_stkparams.getSlidingTimeConstant());
     constructProperty_settle_velocity(_stkparams.getSettleVelocity());
     constructProperty_settle_acceleration(_stkparams.getSettleAcceleration());
@@ -81,7 +81,7 @@ updateProperties()
     set_normal_viscosity(_stkparams.getNormalViscosity());
     set_max_normal_force(_stkparams.getMaxNormalForce());
     set_friction_elasticity(_stkparams.getFrictionElasticity());
-    set_friction_viscocity(_stkparams.getFrictionViscosity());
+    set_friction_viscosity(_stkparams.getFrictionViscosity());
     set_sliding_time_constant(_stkparams.getSlidingTimeConstant());
     set_settle_velocity(_stkparams.getSettleVelocity());
     set_settle_acceleration(_stkparams.getSettleAcceleration());
@@ -99,7 +99,7 @@ updateParameters()
     _stkparams.setNormalViscosity(get_normal_viscosity());
     _stkparams.setMaxNormalForce(get_max_normal_force());
     _stkparams.setFrictionElasticity(get_friction_elasticity());
-    _stkparams.setFrictionViscosity(get_friction_viscocity());
+    _stkparams.setFrictionViscosity(get_friction_viscosity());
     _stkparams.setSlidingTimeConstant(get_sliding_time_constant());
     _stkparams.setSettleVelocity(get_settle_velocity());
     _stkparams.setSettleAcceleration(get_settle_acceleration());
@@ -321,3 +321,54 @@ getRecordValues(const SimTK::State& state) const
     return values;
 }
 
+//-----------------------------------------------------------------------------
+// Internal Testing
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+void
+ExponentialContact::
+assertPropertiesAndParametersEqual() const
+{
+    const ExponentialContact::Parameters& a = get_contact_parameters();
+    const SimTK::ExponentialSpringParameters& b = getParameters();
+
+    const SimTK::Vec3& vecA = a.get_exponential_shape_parameters();
+    SimTK::Vec3 vecB;
+    b.getShapeParameters(vecB[0], vecB[1], vecB[2]);
+    SimTK_TEST_EQ(vecA[0], vecB[0]);
+    SimTK_TEST_EQ(vecA[1], vecB[1]);
+    SimTK_TEST_EQ(vecA[2], vecB[2]);
+
+    double valA, valB;
+    valA = a.get_normal_viscosity();
+    valB = b.getNormalViscosity();
+    SimTK_TEST_EQ(valA, valB);
+
+    valA = a.get_friction_elasticity();
+    valB = b.getFrictionElasticity();
+    SimTK_TEST_EQ(valA, valB);
+
+    valA = a.get_friction_viscosity();
+    valB = b.getFrictionViscosity();
+    SimTK_TEST_EQ(valA, valB);
+
+    valA = a.get_sliding_time_constant();
+    valB = b.getSlidingTimeConstant();
+    SimTK_TEST_EQ(valA, valB);
+
+    valA = a.get_settle_velocity();
+    valB = b.getSettleVelocity();
+    SimTK_TEST_EQ(valA, valB);
+
+    valA = a.get_settle_acceleration();
+    valB = b.getSettleAcceleration();
+    SimTK_TEST_EQ(valA, valB);
+
+    valA = a.get_initial_mu_static();
+    valB = b.getInitialMuStatic();
+    SimTK_TEST_EQ(valA, valB);
+
+    valA = a.get_initial_mu_kinetic();
+    valB = b.getInitialMuKinetic();
+    SimTK_TEST_EQ(valA, valB);
+}
