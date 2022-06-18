@@ -168,18 +168,6 @@ ExponentialContact(const SimTK::Transform& contactPlaneXform,
     setParameters(params);
 }
 //_____________________________________________________________________________
-/*
-ExponentialContact::
-ExponentialContact(const ExponentialContact& source)
-{
-    setNull();
-    constructProperties();
-    setContactPlaneTransform(source.getContactPlaneTransform());
-    setBodyName(source.getBodyName());
-    setBodyStation(source.getBodyStation());
-}
-*/
-//_____________________________________________________________________________
 void
 ExponentialContact::
 setNull()
@@ -282,9 +270,6 @@ getParameters() const
 //-----------------------------------------------------------------------------
 // Reporting
 //-----------------------------------------------------------------------------
-// Questions:
-// 1. Do I need to conform to a certain reporting format because this object
-// will be treated as an OpenSim::Force?
 //_____________________________________________________________________________
 OpenSim::Array<std::string>
 ExponentialContact::
@@ -292,6 +277,18 @@ getRecordLabels() const
 {
     OpenSim::Array<std::string> labels("");
     std::string frameName = getBodyName();
+    labels.append(getName()+"."+frameName+".p0.X");
+    labels.append(getName()+"."+frameName+".p0.Y");
+    labels.append(getName()+"."+frameName+".p0.Z");
+    labels.append(getName()+"."+frameName+".station.X");
+    labels.append(getName()+"."+frameName+".station.Y");
+    labels.append(getName()+"."+frameName+".station.Z");
+    labels.append(getName()+"."+frameName+".forceNormal.X");
+    labels.append(getName()+"."+frameName+".forceNormal.Y");
+    labels.append(getName()+"."+frameName+".forceNormal.Z");
+    labels.append(getName()+"."+frameName+".forceFriction.X");
+    labels.append(getName()+"."+frameName+".forceFriction.Y");
+    labels.append(getName()+"."+frameName+".forceFriction.Z");
     labels.append(getName()+"."+frameName+".force.X");
     labels.append(getName()+"."+frameName+".force.Y");
     labels.append(getName()+"."+frameName+".force.Z");
@@ -303,13 +300,22 @@ OpenSim::Array<double>
 ExponentialContact::
 getRecordValues(const SimTK::State& state) const 
 {
-    OpenSim::Array<double> values(1);
+    OpenSim::Array<double> values(0.0);
 
     const auto& forceSubsys = getModel().getForceSubsystem();
     const SimTK::Force& abstractForce = forceSubsys.getForce(_index);
     const auto& spr = (SimTK::ExponentialSpringForce&)(abstractForce);
 
+    SimTK::Vec3 p0 = spr.getFrictionSpringZeroPosition(state);
+    SimTK::Vec3 station = spr.getStationPosition(state);
+    SimTK::Vec3 normal = spr.getNormalForce(state);
+    SimTK::Vec3 friction = spr.getFrictionForce(state);
     SimTK::Vec3 force = spr.getForce(state);
+
+    values.append(3, &p0[0]);
+    values.append(3, &station[0]);
+    values.append(3, &normal[0]);
+    values.append(3, &friction[0]);
     values.append(3, &force[0]);
 
     return values;
