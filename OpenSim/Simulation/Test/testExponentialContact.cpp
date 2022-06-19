@@ -51,9 +51,9 @@ using namespace OpenSim;
 
 //=============================================================================
 /** Class ExponentialContactTester provides a scope and framework for
-evaluating and testing the ExponentialSpringForce class. Using a class gets
-a lot of variables out of the global scope and allows for more structured
-memory cleanup. */
+evaluating and testing the ExponentialContact class. Using a testing class, as
+opposed to just a main() and C-style procedures, gets a lot of variables out
+of the global scope and allows for more structured memory management. */
 class ExponentialContactTester
 {
 public:
@@ -102,7 +102,6 @@ public:
     void setForceData(
             double t, const SimTK::Vec3& point, const SimTK::Vec3& force);
     void setForceDataHeader();
-    void addDecorations();
 
     // Test stuff not covered elsewhere.
     void test();
@@ -146,38 +145,6 @@ public:
 
 }; // End class ExponentialContactTester declarations
 
-//_____________________________________________________________________________
-void
-ExponentialContactTester::
-addDecorations()
-{
-    // Ground
-    Ground& ground = model->updGround();
-    SimTK::DecorativeBrick* floor =
-            new SimTK::DecorativeBrick(Vec3(2.0, 0.5, 2.0));
-    floor->setColor(Green);
-    floor->setOpacity(0.1);
-    SimTK::Body& grndBody = ground.updMobilizedBody().updBody();
-    grndBody.addDecoration(Transform(Vec3(0, -0.5, 0)), *floor);
-
-    // Exponential Contact Block
-    if (blockEC) {
-        SimTK::Body& body = blockEC->updMobilizedBody().updBody();
-        SimTK::DecorativeBrick* brick =
-                new SimTK::DecorativeBrick(SimTK::Vec3(hs));
-        brick->setColor(SimTK::Blue);
-        body.addDecoration(SimTK::Transform(), *brick);
-    }
-
-    // Hunt-Crossley Block
-    if (blockHC) {
-        SimTK::Body& body = blockHC->updMobilizedBody().updBody();
-        SimTK::DecorativeBrick* brick =
-                new SimTK::DecorativeBrick(SimTK::Vec3(hs));
-        brick->setColor(SimTK::Red);
-        body.addDecoration(SimTK::Transform(), *brick);
-    }
-}
 //_____________________________________________________________________________
 int
 ExponentialContactTester::
@@ -517,7 +484,6 @@ setInitialConditions(SimTK::State& state, const SimTK::MobilizedBody& body,
     default:
         cout << "Unrecognized set of initial conditions!" << endl;
     }
-
 }
 
 //-----------------------------------------------------------------------------
