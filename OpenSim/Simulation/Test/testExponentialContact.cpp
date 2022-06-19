@@ -50,10 +50,11 @@ using namespace std;
 using namespace OpenSim;
 
 //=============================================================================
-/** Class ExponentialSpringTester provides a scope and framework for
+/** Class ExponentialContactTester provides a scope and framework for
 evaluating and testing the ExponentialSpringForce class. Using a class gets
-a lot of variables out of the global scope. */
-class ExponentialSpringTester
+a lot of variables out of the global scope and allows for more structured
+memory cleanup. */
+class ExponentialContactTester
 {
 public:
     // Contact choices
@@ -73,18 +74,18 @@ public:
     };
 
     // Constructor
-    ExponentialSpringTester() {};
+    ExponentialContactTester() {};
 
     // Destructor
-    ~ExponentialSpringTester() {
+    ~ExponentialContactTester() {
         if (model) {
             model->disownAllComponents();
             delete model;
         }
-        if (blockES) delete blockES;
+        if (blockEC) delete blockEC;
         if (blockHC) delete blockHC;
         for (int i = 0; i < n; i++) {
-            if (sprES[i]) delete sprES[i];
+            if (sprEC[i]) delete sprEC[i];
             if (sprHC[i]) delete sprHC[i];
         }
     }
@@ -96,12 +97,17 @@ public:
     // Model Creation
     void buildModel();
     OpenSim::Body* addBlock(const std::string& suffix);
-    void addExponentialSprings(OpenSim::Body* body);
+    void addExponentialContact(OpenSim::Body* body);
     void addHuntCrossleyContact(OpenSim::Body* body);
     void setForceData(
             double t, const SimTK::Vec3& point, const SimTK::Vec3& force);
     void setForceDataHeader();
     void addDecorations();
+
+    // Test stuff not covered elsewhere.
+    void test();
+    void testParameters();
+    void testSerialization();
 
     // Simulation
     void setInitialConditions(SimTK::State& state,
@@ -130,19 +136,19 @@ public:
     // Model and parts
     const static int n{8};
     Model* model{NULL};
-    OpenSim::Body* blockES{NULL};
+    OpenSim::Body* blockEC{NULL};
     OpenSim::Body* blockHC{NULL};
-    ExponentialContact* sprES[n]{NULL};
+    OpenSim::ExponentialContact* sprEC[n]{NULL};
     OpenSim::HuntCrossleyForce* sprHC[n]{NULL};
     Storage fxData;
     ExternalForce* fxES{NULL};
     ExternalForce* fxHC{NULL};
 
-}; // End class ExponentialSpringTester declarations
+}; // End class ExponentialContactTester declarations
 
 //_____________________________________________________________________________
 void
-ExponentialSpringTester::
+ExponentialContactTester::
 addDecorations()
 {
     // Ground
@@ -154,9 +160,9 @@ addDecorations()
     SimTK::Body& grndBody = ground.updMobilizedBody().updBody();
     grndBody.addDecoration(Transform(Vec3(0, -0.5, 0)), *floor);
 
-    // Exponential Springs Block
-    if (blockES) {
-        SimTK::Body& body = blockES->updMobilizedBody().updBody();
+    // Exponential Contact Block
+    if (blockEC) {
+        SimTK::Body& body = blockEC->updMobilizedBody().updBody();
         SimTK::DecorativeBrick* brick =
                 new SimTK::DecorativeBrick(SimTK::Vec3(hs));
         brick->setColor(SimTK::Blue);
@@ -174,7 +180,7 @@ addDecorations()
 }
 //_____________________________________________________________________________
 int
-ExponentialSpringTester::
+ExponentialContactTester::
 parseCommandLine(int argc, char** argv)
 {
     std::string option;
@@ -224,11 +230,11 @@ parseCommandLine(int argc, char** argv)
 }
 //_____________________________________________________________________________
 void
-ExponentialSpringTester::
+ExponentialContactTester::
 printUsage()
 {
     cout << endl << "Usage:" << endl;
-    cout << "$ testExponetialSpring "
+    cout << "$ testExponetialContact "
          << "[InitCond] [Contact] [NoDamp] [ApplyFx] [Vis]" << endl;
     cout << "\tInitCond (choose one): Static Bounce Slide Spin Tumble ";
     cout << endl;
@@ -237,40 +243,41 @@ printUsage()
     cout << "All arguments are optional. If no arguments are specified, ";
     cout << "a 'Slide' will" << endl;
     cout << "be simulated with one block that uses ";
-    cout << "ExponentialSpringForce contact," << endl;
+    cout << "ExponentialContact instances," << endl;
     cout << "with typical damping settings, ";
     cout << "with no extnerally applied force, " << endl;
     cout << "and with no visuals." << endl << endl;
 
     cout << "Example:" << endl;
-    cout << "To simulated 2 blocks (one with Exponential Springs and one";
+    cout << "To simulated 2 blocks (one with ExponentialContact and one";
     cout << " with Hunt-Crossley)" << endl;
     cout << "that bounce without energy dissipation and with Visuals, ";
     cout << "enter the following: " << endl << endl;
 
-    cout << "$ testExponentialSpring Bounce Both NoDamp Vis" << endl << endl;
+    cout << "$ testExponentialContact Bounce Both NoDamp Vis" << endl << endl;
 }
 //_____________________________________________________________________________
 // Build the model
 void
-ExponentialSpringTester::buildModel()
+ExponentialContactTester::
+buildModel()
 {
     // Create the bodies
     model = new Model();
     model->setGravity(gravity);
-    model->setName("TestExponentialSpring");
+    model->setName("TestExponentialContact");
     switch (whichContact) {
     case ExpSpr:
-        blockES = addBlock("ES");
-        addExponentialSprings(blockES);
+        blockEC = addBlock("EC");
+        addExponentialContact(blockEC);
         break;
     case HuntCross:
         blockHC = addBlock("HC");
         addHuntCrossleyContact(blockHC);
         break;
     case Both:
-        blockES = addBlock("ES");
-        addExponentialSprings(blockES);
+        blockEC = addBlock("EC");
+        addExponentialContact(blockEC);
         blockHC = addBlock("HC");
         addHuntCrossleyContact(blockHC);
     }
@@ -285,11 +292,11 @@ ExponentialSpringTester::buildModel()
         setForceData(tf, point, zero);
         tf = tf + 25.0;
         setForceData(tf, point, force);
-        if (blockES) {
-            cout << "Adding fx for " << blockES->getName() << endl;
+        if (blockEC) {
+            cout << "Adding fx for " << blockEC->getName() << endl;
             fxData.print("C:\\Users\\fcand\\Documents\\fxData.sto");
             fxES = new ExternalForce(fxData,"force", "point", "",
-                blockES->getName(), "ground", blockES->getName());
+                blockEC->getName(), "ground", blockEC->getName());
             fxES->setName("externalforceES");
             model->addForce(fxES);
         }
@@ -302,9 +309,29 @@ ExponentialSpringTester::buildModel()
             model->addForce(fxHC);
         }
     }
+
+    // Visuals?
+    if (showVisuals) {
+        if (blockEC) {
+            auto blockESGeometry = new Brick(Vec3(hs));
+            blockESGeometry->setColor(Vec3(0.1, 0.1, 0.8));
+            blockEC->attachGeometry(blockESGeometry);
+        }
+        if (blockHC) {
+            auto blockHCGeometry = new Brick(Vec3(hs));
+            blockHCGeometry->setColor(Vec3(0.8, 0.1, 0.1));
+            blockHC->attachGeometry(blockHCGeometry);
+        }
+        model->setUseVisualizer(true);
+    }
+
+    // Build the System
+    model->buildSystem();
 }
 //______________________________________________________________________________
-void ExponentialSpringTester::setForceDataHeader()
+void
+ExponentialContactTester::
+setForceDataHeader()
 {
     fxData.setName("fx");
     fxData.setDescription("An external force applied to a block.");
@@ -318,10 +345,9 @@ void ExponentialSpringTester::setForceDataHeader()
     lab.append("force.z");
     fxData.setColumnLabels(lab);
 }
-
 //______________________________________________________________________________
 void
-ExponentialSpringTester::
+ExponentialContactTester::
 setForceData(double t, const SimTK::Vec3& point, const SimTK::Vec3& force)
 {
     SimTK::Vector_<double> data(6);
@@ -332,10 +358,9 @@ setForceData(double t, const SimTK::Vec3& point, const SimTK::Vec3& force)
     StateVector sv(t, data);
     fxData.append(sv);
 }
-
 //______________________________________________________________________________
 OpenSim::Body*
-ExponentialSpringTester::
+ExponentialContactTester::
 addBlock(const std::string& suffix)
 {
     Ground& ground = model->updGround();
@@ -359,8 +384,8 @@ addBlock(const std::string& suffix)
 }
 //______________________________________________________________________________
 void
-ExponentialSpringTester
-::addExponentialSprings(OpenSim::Body* block)
+ExponentialContactTester::
+addExponentialContact(OpenSim::Body* block)
 {
     Ground& ground = model->updGround();
 
@@ -393,15 +418,15 @@ ExponentialSpringTester
     std::string name = "";
     for (int i = 0; i < n; ++i) {
         name = "ExpSpr" + std::to_string(i);
-        sprES[i] = new OpenSim::ExponentialContact(floorXForm,
+        sprEC[i] = new OpenSim::ExponentialContact(floorXForm,
             block->getName(), corner[i], params);
-        sprES[i]->setName(name);
-        model->addForce(sprES[i]);
+        sprEC[i]->setName(name);
+        model->addForce(sprEC[i]);
     }
 }
 //______________________________________________________________________________
 void
-ExponentialSpringTester::
+ExponentialContactTester::
 addHuntCrossleyContact(OpenSim::Body* block)
 {
     Ground& ground = model->updGround();
@@ -445,7 +470,7 @@ addHuntCrossleyContact(OpenSim::Body* block)
 }
 //_____________________________________________________________________________
 void
-ExponentialSpringTester::
+ExponentialContactTester::
 setInitialConditions(SimTK::State& state, const SimTK::MobilizedBody& body,
     double dz)
 {
@@ -494,33 +519,144 @@ setInitialConditions(SimTK::State& state, const SimTK::MobilizedBody& body,
     }
 
 }
+
+//-----------------------------------------------------------------------------
+// TESTING
+//-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 void
-ExponentialSpringTester::
-simulate()
+ExponentialContactTester::
+test()
 {
-    // Visuals?
-    if (showVisuals) {
-        if (blockES) {
-            auto blockESGeometry = new Brick(Vec3(hs));
-            blockESGeometry->setColor(Vec3(0.1, 0.1, 0.8));
-            blockES->attachGeometry(blockESGeometry);
-        }
-        if (blockHC) {
-            auto blockHCGeometry = new Brick(Vec3(hs));
-            blockHCGeometry->setColor(Vec3(0.8, 0.1, 0.1));
-            blockHC->attachGeometry(blockHCGeometry);
-        }
-        model->setUseVisualizer(true);
+    testParameters();
+    testSerialization();
+}
+//_____________________________________________________________________________
+void
+ExponentialContactTester::
+testParameters()
+{
+    // Check current properties/parameters for all springs
+    for (int i = 0; i < n; i++) {
+        sprEC[i]->assertPropertiesAndParametersEqual();
     }
 
-    // Initialize the System
-    SimTK::State& state = model->initSystem();
+    // Pick just one contact instance to manipulate.
+    ExponentialContact& spr = *sprEC[0];
+
+    // Save the starting parameters
+    SimTK::ExponentialSpringParameters p0 = spr.getParameters();
+
+    // Change the properties systematically
+    SimTK::ExponentialSpringParameters p1 = p0;
+
+    // Shape
+    double delta = 0.1;
+    Vec3 d;
+    p1.getShapeParameters(d[0], d[1], d[2]);
+    p1.setShapeParameters(d[0] + delta, d[1], d[2]);
+    spr.setParameters(p1);
+    spr.assertPropertiesAndParametersEqual();
+    p1.setShapeParameters(d[0], d[1] + delta, d[2]);
+    spr.setParameters(p1);
+    spr.assertPropertiesAndParametersEqual();
+    p1.setShapeParameters(d[0], d[1], d[2] + delta);
+    spr.setParameters(p1);
+    spr.assertPropertiesAndParametersEqual();
+
+    // Normal Viscosity
+    double value;
+    value = p1.getNormalViscosity();
+    p1.setNormalViscosity(value + delta);
+    spr.setParameters(p1);
+    spr.assertPropertiesAndParametersEqual();
+
+    // Friction Elasticity
+    value = p1.getFrictionElasticity();
+    p1.setFrictionElasticity(value + delta);
+    spr.setParameters(p1);
+    spr.assertPropertiesAndParametersEqual();
+
+    // Friction Viscosity
+    value = p1.getFrictionViscosity();
+    p1.setFrictionViscosity(value + delta);
+    spr.setParameters(p1);
+    spr.assertPropertiesAndParametersEqual();
+
+    // Sliding Time Constant
+    value = p1.getSlidingTimeConstant();
+    p1.setSlidingTimeConstant(value + delta);
+    spr.setParameters(p1);
+    spr.assertPropertiesAndParametersEqual();
+
+    // Settle Velocity
+    value = p1.getSettleVelocity();
+    p1.setSettleVelocity(value + delta);
+    spr.setParameters(p1);
+    spr.assertPropertiesAndParametersEqual();
+
+    // Settle Acceleration
+    value = p1.getSettleAcceleration();
+    p1.setSettleAcceleration(value + delta);
+    spr.setParameters(p1);
+    spr.assertPropertiesAndParametersEqual();
+
+    // Initial Coefficients of Friction
+    double mus = p1.getInitialMuStatic();
+    double muk = p1.getInitialMuKinetic();
+    p1.setInitialMuStatic(muk - delta);  // Changes muk also
+    mus = p1.getInitialMuStatic();
+    muk = p1.getInitialMuKinetic();
+    SimTK_TEST_EQ(mus, muk);
+    spr.setParameters(p1);
+    spr.assertPropertiesAndParametersEqual();
+    p1.setInitialMuKinetic(mus + delta); // Changes mus also
+    SimTK_TEST_EQ(mus, muk);
+    spr.setParameters(p1);
+    spr.assertPropertiesAndParametersEqual();
+
+    // Return to the starting parameters
+    spr.setParameters(p0);
+    spr.assertPropertiesAndParametersEqual();
+}
+//_____________________________________________________________________________
+void
+ExponentialContactTester::
+testSerialization() {
+    // Serialize the current model
+    std::string fileName = "testExponentialContact.osim";
+    model->print(fileName);
+    ExponentialSpringParameters p = sprEC[0]->getParameters();
+
+    // Deserialize the model
+    Model modelCopy(fileName);
+
+    // Get the 0th contact instance
+    ExponentialContact* spr = sprEC[0];
+    ExponentialContact* sprCopy = dynamic_cast<ExponentialContact*>(
+        &modelCopy.updForceSet().get(spr->getName()));
+    ExponentialSpringParameters pCopy = sprCopy->getParameters();
+
+    // Parameters should be equal
+    SimTK_ASSERT_ALWAYS(pCopy == p,
+        "Deserialized parameters are not equal to original parameters.");
+}
+
+//_____________________________________________________________________________
+void
+ExponentialContactTester::
+simulate()
+{
+    // Initialize the state
+    // Note that model components have already been connected and the
+    // SimTK::System has already been built.
+    // See TestExponentialContact::buildModel().
+    SimTK::State& state = model->initializeState();
 
     // Set initial conditions
     double dz = 1.0;
-    if (blockES != NULL)
-        setInitialConditions(state, blockES->getMobilizedBody(), dz);
+    if (blockEC != NULL)
+        setInitialConditions(state, blockEC->getMobilizedBody(), dz);
     if (blockHC != NULL)
         setInitialConditions(state, blockHC->getMobilizedBody(), -dz);
 
@@ -597,13 +733,14 @@ The HuntCrossleyForce class is tested elsewhere
 (e.g., see testContactGeometry.cpp and testForce.cpp). */
 int main(int argc, char** argv) {
     try {
-        ExponentialSpringTester tester;
+        ExponentialContactTester tester;
         int status = tester.parseCommandLine(argc, argv);
         if (status < 0) {
             cout << "Exiting..." << endl;
             return 1;
         }
         tester.buildModel();
+        tester.test();
         tester.simulate();
 
     } catch (const OpenSim::Exception& e) {
