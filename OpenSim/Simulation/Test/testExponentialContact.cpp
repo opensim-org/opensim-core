@@ -140,7 +140,7 @@ public:
     OpenSim::ExponentialContact* sprEC[n]{NULL};
     OpenSim::HuntCrossleyForce* sprHC[n]{NULL};
     Storage fxData;
-    ExternalForce* fxES{NULL};
+    ExternalForce* fxEC{NULL};
     ExternalForce* fxHC{NULL};
 
 }; // End class ExponentialContactTester declarations
@@ -261,15 +261,13 @@ buildModel()
         setForceData(tf, point, force);
         if (blockEC) {
             cout << "Adding fx for " << blockEC->getName() << endl;
-            fxData.print("C:\\Users\\fcand\\Documents\\fxData.sto");
-            fxES = new ExternalForce(fxData,"force", "point", "",
+            fxEC = new ExternalForce(fxData,"force", "point", "",
                 blockEC->getName(), "ground", blockEC->getName());
-            fxES->setName("externalforceES");
-            model->addForce(fxES);
+            fxEC->setName("externalforceES");
+            model->addForce(fxEC);
         }
         if (blockHC) {
             cout << "Adding fx for " << blockHC->getName() << endl;
-            fxData.print("C:\\Users\\fcand\\Documents\\fxData.sto");
             fxHC = new ExternalForce(fxData, "force", "point", "",
                 blockHC->getName(), "ground", blockHC->getName());
             fxHC->setName("externalforceHC");
