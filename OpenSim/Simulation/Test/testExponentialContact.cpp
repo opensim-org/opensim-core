@@ -59,8 +59,8 @@ class ExponentialContactTester
 public:
     // Contact choices
     enum ContactChoice {
-        ExpSpr = 0,
-        HuntCross,
+        Exp = 0,
+        Hunt,
         Both
     };
 
@@ -126,7 +126,7 @@ public:
     double tf{5.0};
 
     // Command line options and their defaults
-    ContactChoice whichContact{ExpSpr};
+    ContactChoice whichContact{Exp};
     InitialConditionsChoice whichInit{Slide};
     bool noDamp{false};
     bool applyFx{false};
@@ -156,10 +156,10 @@ parseCommandLine(int argc, char** argv)
         option = argv[i];
 
         // Contact choice
-        if (option == "ExpSpr")
-            whichContact = ExpSpr;
-        else if (option == "HuntCross")
-            whichContact = HuntCross;
+        if (option == "Exp")
+            whichContact = Exp;
+        else if (option == "Hunt")
+            whichContact = Hunt;
         else if (option == "Both")
             whichContact = Both;
 
@@ -205,7 +205,7 @@ printUsage()
          << "[InitCond] [Contact] [NoDamp] [ApplyFx] [Vis]" << endl;
     cout << "\tInitCond (choose one): Static Bounce Slide Spin Tumble ";
     cout << endl;
-    cout << "\t Contact (choose one): ExpSpr HuntCross Both" << endl << endl;
+    cout << "\t Contact (choose one): Exp Hunt Both" << endl << endl;
 
     cout << "All arguments are optional. If no arguments are specified, ";
     cout << "a 'Slide' will" << endl;
@@ -234,11 +234,11 @@ buildModel()
     model->setGravity(gravity);
     model->setName("TestExponentialContact");
     switch (whichContact) {
-    case ExpSpr:
+    case Exp:
         blockEC = addBlock("EC");
         addExponentialContact(blockEC);
         break;
-    case HuntCross:
+    case Hunt:
         blockHC = addBlock("HC");
         addHuntCrossleyContact(blockHC);
         break;
@@ -384,7 +384,7 @@ addExponentialContact(OpenSim::Body* block)
     // Loop over the corners
     std::string name = "";
     for (int i = 0; i < n; ++i) {
-        name = "ExpSpr" + std::to_string(i);
+        name = "Exp" + std::to_string(i);
         sprEC[i] = new OpenSim::ExponentialContact(floorXForm,
             block->getName(), corner[i], params);
         sprEC[i]->setName(name);
