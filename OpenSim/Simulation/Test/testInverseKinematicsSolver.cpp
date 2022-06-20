@@ -41,6 +41,9 @@ using namespace std;
 // Verify that the marker weight are consistent with the initial Set
 // of MarkerWeights used to construct the MarkersReference
 void testMarkersReference();
+// Repeat test of MarkersReference when constructed from trc file, the more
+// conventional workflow
+void testMarkersReferenceFromFile();
 // Verify that the orientations sensor weights are consistent with the initial
 // Set of OrientationWeights used to construct the OrientationsReference
 void testOrientationsReference();
@@ -97,6 +100,11 @@ int main()
     catch (const std::exception& e) {
         cout << e.what() << endl;
         failures.push_back("testMarkersReference");
+    }
+    try { testMarkersReferenceFromFile(); }
+    catch (const std::exception& e) {
+        cout << e.what() << endl;
+        failures.push_back("testMarkersReferenceFromFile");
     }
     try { testOrientationsReference(); }
     catch (const std::exception& e) {
@@ -210,6 +218,38 @@ void testMarkersReference()
         SimTK_ASSERT_ALWAYS(weights[i] == double(i),
             "Mismatched weight to marker.");
     }
+}
+
+void testMarkersReferenceFromFile()
+{
+
+    auto   fileName = "simple_arm_trc.trc";
+    auto modelFileName = "simple_arm_model.osim";
+
+
+    Model    model(modelFileName);
+    SimTK::State& state = model.initSystem();
+    std::vector<string> markerNames = { "r_humerus1", "r_humerus2", "r_humerus3", "r_radius1",
+        "r_radius2", "r_radius3" };
+    Set<MarkerWeight> markerWeightSet;
+    for (auto mn  : markerNames)
+        markerWeightSet.cloneAndAppend(MarkerWeight(mn, 1.0));
+
+    MarkersReference markersReference(fileName, markerWeightSet); // 4.4 beta
+    //    markersReference = MarkersReference(fileName); % 4.0
+    //    markersReference.setMarkerWeightSet(markerWeightSet); % 4.0
+    SimTK::Array_<CoordinateReference> coordinateReferences;
+    InverseKinematicsSolver    ikSolver(model, markersReference, coordinateReferences);
+
+    ikSolver.assemble(state);
+    int numMarkersInUse = ikSolver.getNumMarkersInUse();
+    auto error = new double[numMarkersInUse];
+    std::cout << "Errors:" << std::endl;
+    for (int i = 0; i < numMarkersInUse; i++) {
+        error[i] = ikSolver.computeCurrentMarkerError(i);
+        std::cout << error[i] << " ";
+    }
+    std::cout << std::endl;
 }
 
 void testOrientationsReference() {
@@ -432,7 +472,8 @@ void testUpdateMarkerWeights()
     InverseKinematicsSolver ikSolver(*pendulum, markersRef, coordRefs);
     ikSolver.setAccuracy(1.0e-8);
     ikSolver.assemble(state);
-
+    int nmm = ikSolver.getNumMarkersInUse();
+    cout << "tNumMarkersInUse:" << nmm << endl;
     double coordValue = coord.getValue(state);
     cout << "Assembled " << coord.getName() << " value = "
         << coordValue << endl;
