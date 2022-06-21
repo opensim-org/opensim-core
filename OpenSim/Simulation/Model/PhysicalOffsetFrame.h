@@ -60,7 +60,7 @@ public:
     using OffsetFrame<PhysicalFrame>::OffsetFrame;
 #endif
 
-    ~PhysicalOffsetFrame() final {}
+    ~PhysicalOffsetFrame() = default;
 
 protected:
     /** Extend Component interface for adding the PhysicalOffsetFrame to the 
