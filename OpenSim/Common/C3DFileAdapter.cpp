@@ -1,7 +1,7 @@
 #include "C3DFileAdapter.h"
 
 #ifdef WITH_EZC3D
-#include "ezc3d_all.h"
+#include "ezc3d/ezc3d_all.h"
 #else
 #include "btkAcquisitionFileReader.h"
 #include "btkAcquisition.h"
