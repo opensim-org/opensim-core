@@ -289,13 +289,11 @@ public:
     // PROPERTIES
     //-------------------------------------------------------------------------
     OpenSim_DECLARE_PROPERTY(contact_plane_transform, SimTK::Transform,
-        "Location and orientation of the contact plane wrt Ground. \
-        The positive z-axis of the contact plane defines the normal.");
+        "Orientation and location of the contact plane wrt Ground. The positive z-axis of the contact plane defines the normal.");
     OpenSim_DECLARE_PROPERTY(body_name, std::string,
         "Name of the Body to which the resultant contact force is applied.");
     OpenSim_DECLARE_PROPERTY(body_station, SimTK::Vec3,
-        "Point on the body, expressed in the Body frame, at which the \
-        resultant contact force is applied.");
+        "Point on the body, expressed in the Body frame, at which the resultant contact force is applied.");
     OpenSim_DECLARE_PROPERTY(contact_parameters, ExponentialContact::Parameters,
         "Customizable topology-stage parameters.");
 
@@ -424,29 +422,25 @@ class ExponentialContact::Parameters : public Object {
 
 public:
     OpenSim_DECLARE_PROPERTY(exponential_shape_parameters, SimTK::Vec3,
-            "Shape parameters for the exponential that is used to model the \
-        normal force: d0 (0.0065905 m), d1 (0.5336 N), d2 (1150.0/m).");
+        "Shape parameters for the exponential that models the normal force: d0 (0.0065905 m), d1 (0.5336 N), d2 (1150.0/m).");
     OpenSim_DECLARE_PROPERTY(normal_viscosity, double,
-            "Viscosity in the normal direction (0.5 s/m).");
+        "Viscosity in the normal direction (0.5 s/m).");
     OpenSim_DECLARE_PROPERTY(max_normal_force, double,
-            "Maximum allowed normal force (100,000.0 N).");
+        "Maximum allowed normal force (100,000.0 N).");
     OpenSim_DECLARE_PROPERTY(friction_elasticity, double,
-            "Elasticity of the linear friction spring (20,000.0 N/m).");
+        "Elasticity of the friction spring (20,000.0 N/m).");
     OpenSim_DECLARE_PROPERTY(friction_viscosity, double,
-            "Viscosity of the linear friction spring (282.8427 N*s/m).");
+        "Viscosity of the friction spring (282.8427 N*s/m).");
     OpenSim_DECLARE_PROPERTY(sliding_time_constant, double,
-            "Time constant for rise/decay between static and kinetic friction \
-        conditions (0.01 s).");
+        "Time constant for rise/decay between static and kinetic friction conditions (0.01 s).");
     OpenSim_DECLARE_PROPERTY(settle_velocity, double,
-            "Velocity below which static friction conditions are triggered \
-         to come into effect (0.01 m/s) .");
+        "Velocity below which static friction conditions are triggered (0.01 m/s) .");
     OpenSim_DECLARE_PROPERTY(settle_acceleration, double,
-            "Acceleration below which static friction conditions are triggered \
-        to come into effect (1.0 m/s^2).");
+        "Acceleration below which static friction conditions are triggered (1.0 m/s²).");
     OpenSim_DECLARE_PROPERTY(initial_mu_static, double,
-            "Initial value of the static coefficient of friction.");
+        "Initial value of the static coefficient of friction.");
     OpenSim_DECLARE_PROPERTY(initial_mu_kinetic, double,
-            "Initial value of the kinetic coefficient of friction.");
+        "Initial value of the kinetic coefficient of friction.");
 
     /** Default constructor. */
     Parameters();
