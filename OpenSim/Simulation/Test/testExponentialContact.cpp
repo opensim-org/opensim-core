@@ -74,7 +74,16 @@ public:
     };
 
     // Constructor
-    ExponentialContactTester() {};
+    ExponentialContactTester() {
+        corner[0] = Vec3( hs, -hs,  hs);
+        corner[1] = Vec3( hs, -hs, -hs);
+        corner[2] = Vec3(-hs, -hs, -hs);
+        corner[3] = Vec3(-hs, -hs,  hs);
+        corner[4] = Vec3( hs,  hs,  hs);
+        corner[5] = Vec3( hs,  hs, -hs);
+        corner[6] = Vec3(-hs,  hs, -hs);
+        corner[7] = Vec3(-hs,  hs,  hs);    
+    };
 
     // Destructor
     ~ExponentialContactTester() {
@@ -87,6 +96,7 @@ public:
         for (int i = 0; i < n; i++) {
             if (sprEC[i]) delete sprEC[i];
             if (sprHC[i]) delete sprHC[i];
+            if (geomHC[i]) delete geomHC[i];
         }
     }
 
@@ -122,8 +132,10 @@ public:
     double integ_accuracy{1.0e-5};
     SimTK::Vec3 gravity{SimTK::Vec3(0, -9.8065, 0)};
     double mass{10.0};
-    double hs{0.10};  // half of a side of a cube (kind of like a radius)
     double tf{5.0};
+    const static int n{8};
+    const double hs{0.10}; // half of a side of a cube (like a radius)
+    Vec3 corner[n];
 
     // Command line options and their defaults
     ContactChoice whichContact{Exp};
@@ -133,12 +145,12 @@ public:
     bool showVisuals{false};
 
     // Model and parts
-    const static int n{8};
     Model* model{NULL};
     OpenSim::Body* blockEC{NULL};
     OpenSim::Body* blockHC{NULL};
     OpenSim::ExponentialContact* sprEC[n]{NULL};
     OpenSim::HuntCrossleyForce* sprHC[n]{NULL};
+    OpenSim::ContactGeometry* geomHC[n]{NULL};
     Storage fxData;
     ExternalForce* fxEC{NULL};
     ExternalForce* fxHC{NULL};
@@ -354,32 +366,21 @@ addExponentialContact(OpenSim::Body* block)
 {
     Ground& ground = model->updGround();
 
-    // Corners of the block
-    Vec3 corner[n];
-    corner[0] = Vec3(hs, -hs, hs);
-    corner[1] = Vec3(hs, -hs, -hs);
-    corner[2] = Vec3(-hs, -hs, -hs);
-    corner[3] = Vec3(-hs, -hs, hs);
-    corner[4] = Vec3(hs, hs, hs);
-    corner[5] = Vec3(hs, hs, -hs);
-    corner[6] = Vec3(-hs, hs, -hs);
-    corner[7] = Vec3(-hs, hs, hs);
-
     // Contact Plane Transform
     Real angle = convertDegreesToRadians(90.0);
     Rotation floorRot(-angle, XAxis);
     Vec3 floorOrigin(0., -0.004, 0.);
     Transform floorXForm(floorRot, floorOrigin);
 
-    // Specify non-default contact parameters
-    SimTK::ExponentialSpringParameters params;
+    // Contact Parameters
+    SimTK::ExponentialSpringParameters params;  // yields default params
     if (noDamp) {
         params.setNormalViscosity(0.0);
         params.setFrictionViscosity(0.0);
         params.setInitialMuStatic(0.0);
     }
 
-    // Loop over the corners
+    // Place a spring at each of the 8 corners
     std::string name = "";
     for (int i = 0; i < n; ++i) {
         name = "Exp" + std::to_string(i);
@@ -401,29 +402,26 @@ addHuntCrossleyContact(OpenSim::Body* block)
             Vec3(0), Vec3(0, 0, -0.5 * SimTK_PI), ground, "floor");
     model->addContactGeometry(floor);
 
-    // Corners of the block
-    Vec3 corner[n];
-    corner[0] = Vec3(hs, -hs, hs);
-    corner[1] = Vec3(hs, -hs, -hs);
-    corner[2] = Vec3(-hs, -hs, -hs);
-    corner[3] = Vec3(-hs, -hs, hs);
-    corner[4] = Vec3(hs, hs, hs);
-    corner[5] = Vec3(hs, hs, -hs);
-    corner[6] = Vec3(-hs, hs, -hs);
-    corner[7] = Vec3(-hs, hs, hs);
-
-    // Loop over the corners
+    // Place a contact sphere at each of the 8 corners
     std::string name = "";
     for (int i = 0; i < n; ++i) {
         // Geometry
         name = "sphere_" + std::to_string(i); 
-        OpenSim::ContactGeometry* geometry =
-            new ContactSphere(0.005, corner[i], *block, name);
-        model->addContactGeometry(geometry);
+        geomHC[i] = new ContactSphere(0.005, corner[i], *block, name);
+        model->addContactGeometry(geomHC[i]);
 
         // HuntCrossleyForce
+        double dissipation = 4e-1;
+        double mus = 0.7;
+        double muk = 0.465;
+        if (noDamp) {
+            dissipation = 0.0;
+            mus = 0.0;
+            muk = 0.0;
+        }
         auto* contactParams = new OpenSim::HuntCrossleyForce::
-            ContactParameters(1.0e7, 4e-1, 0.7, 0.465, 0.0);
+            ContactParameters(1.0e7, dissipation, mus, muk, 0.0);
+
         contactParams->addGeometry(name);
         contactParams->addGeometry("floor");
         sprHC[i] = new OpenSim::HuntCrossleyForce(contactParams);
@@ -492,6 +490,9 @@ void
 ExponentialContactTester::
 test()
 {
+    // Don't test if the only contact is Hunt-Crossley
+    if (whichContact == Hunt) return;
+
     testParameters();
     testSerialization();
 }
