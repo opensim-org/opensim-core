@@ -713,7 +713,7 @@ if(${OPENSIM_C3D_PARSER} STREQUAL "ezc3d")
     include_directories("${ezc3d_INCLUDE_DIR}")
     set(ezc3d_LIBRARY "ezc3d")
     if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
-        OpenSimInstallDependencyLibraries(ezc3d "${ezc3d_DIR}/../"
+        OpenSimInstallDependencyLibraries(ezc3d "${ezc3d_DIR}/../../../bin"
             "${ezc3d_DIR}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
     endif()
 elseif(${OPENSIM_C3D_PARSER} STREQUAL "BTK")
