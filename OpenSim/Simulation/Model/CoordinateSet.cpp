@@ -39,8 +39,8 @@ using namespace OpenSim;
 void CoordinateSet::populate(Model& model)
 {
     // Aggregate Coordinates owned by the Joint's into a single CoordinateSet
-    setMemoryOwner(false);
     setSize(0);
+    setMemoryOwner(false);
 
     auto joints = model.updComponentList<Joint>();
 
