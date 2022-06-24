@@ -244,7 +244,7 @@ buildModel()
     // Create the bodies
     model = new Model();
     model->setGravity(gravity);
-    model->setName("TestExponentialContact");
+    model->setName("BouncingBlock_ExponentialContact");
     switch (whichContact) {
     case Exp:
         blockEC = addBlock("EC");
@@ -589,7 +589,7 @@ void
 ExponentialContactTester::
 testSerialization() {
     // Serialize the current model
-    std::string fileName = "testExponentialContact.osim";
+    std::string fileName = "BouncingBlock_ExponentialContact_Serialized.osim";
     model->print(fileName);
     ExponentialSpringParameters p = sprEC[0]->getParameters();
 
