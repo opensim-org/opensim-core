@@ -95,7 +95,8 @@ problem.addGoal(symmetryGoal)
 # Enforce periodic symmetry
 model = modelProcessor.process()
 model.initSystem()
-state_names = [model.getStateVariableNames().getitem(sn) for sn in range(model.getNumStateVariables())]
+state_names = [model.getStateVariableNames().getitem(sn) 
+                   for sn in range(model.getNumStateVariables())]
 for sn in state_names:
     
     # Symmetric coordinate values and speeds (except for pelvis_tx value):
@@ -103,9 +104,11 @@ for sn in state_names:
     # value of the other leg. Manually add pelvis_tx speed later.
     if "jointset" in sn:
         if "_r" in sn:
-            symmetryGoal.addStatePair(osim.MocoPeriodicityGoalPair(sn, sn.replace("_r", "_l")))
+            symmetryGoal.addStatePair(osim.MocoPeriodicityGoalPair(sn, 
+                       sn.replace("_r", "_l")))
         elif "_l" in sn:
-            symmetryGoal.addStatePair(osim.MocoPeriodicityGoalPair(sn, sn.replace("_l", "_r")))
+            symmetryGoal.addStatePair(osim.MocoPeriodicityGoalPair(sn, 
+                       sn.replace("_l", "_r")))
         elif "pelvis_tx" not in sn:
             symmetryGoal.addStatePair(osim.MocoPeriodicityGoalPair(sn))
 
@@ -114,13 +117,16 @@ for sn in state_names:
     # initial activation values of the other leg.
     elif "activation" in sn:
         if "_r" in sn:
-            symmetryGoal.addStatePair(osim.MocoPeriodicityGoalPair(sn, sn.replace("_r", "_l"))) 
+            symmetryGoal.addStatePair(osim.MocoPeriodicityGoalPair(sn, 
+                       sn.replace("_r", "_l"))) 
         elif "_l" in sn:
-            symmetryGoal.addStatePair(osim.MocoPeriodicityGoalPair(sn, sn.replace("_l", "_r")))
+            symmetryGoal.addStatePair(osim.MocoPeriodicityGoalPair(sn, 
+                       sn.replace("_l", "_r")))
 
 
 # The pelvis_tx speed has periodic symmetry
-symmetryGoal.addStatePair(osim.MocoPeriodicityGoalPair("/jointset/groundPelvis/pelvis_tx/speed"))   
+symmetryGoal.addStatePair(
+    osim.MocoPeriodicityGoalPair("/jointset/groundPelvis/pelvis_tx/speed"))   
 
 # Lumbar control has periodic symmetry. The other controls don't need symmetry
 # enforced as they are all muscle excitations. Their behaviour will be
@@ -151,15 +157,20 @@ problem.addGoal(metabolicsGoal)
          
 # Coordinate bounds as dict
 coord_bounds = {}
-coord_bounds["/jointset/groundPelvis/pelvis_tilt/value"] = [-20*pi/180, -10*pi/180]
+coord_bounds["/jointset/groundPelvis/pelvis_tilt/value"] = [-20*pi/180, 
+                                                            -10*pi/180]
 coord_bounds["/jointset/groundPelvis/pelvis_tx/value"] = [0.0, 1.0]
 coord_bounds["/jointset/groundPelvis/pelvis_ty/value"] = [0.75, 1.25]
-coord_bounds["/jointset/hip_r/hip_flexion_r/value"] = [-10*pi/180, 60*pi/180]
-coord_bounds["/jointset/hip_l/hip_flexion_l/value"] = [-10*pi/180, 60*pi/180]
+coord_bounds["/jointset/hip_r/hip_flexion_r/value"] = [-10*pi/180, 
+                                                       60*pi/180]
+coord_bounds["/jointset/hip_l/hip_flexion_l/value"] = [-10*pi/180, 
+                                                       60*pi/180]
 coord_bounds["/jointset/knee_r/knee_angle_r/value"] = [-50*pi/180, 0]
 coord_bounds["/jointset/knee_l/knee_angle_l/value"] = [-50*pi/180, 0]
-coord_bounds["/jointset/ankle_r/ankle_angle_r/value"] = [-15*pi/180, 25*pi/180]
-coord_bounds["/jointset/ankle_l/ankle_angle_l/value"] = [-15*pi/180, 25*pi/180]
+coord_bounds["/jointset/ankle_r/ankle_angle_r/value"] = [-15*pi/180, 
+                                                         25*pi/180]
+coord_bounds["/jointset/ankle_l/ankle_angle_l/value"] = [-15*pi/180, 
+                                                         25*pi/180]
 coord_bounds["/jointset/lumbar/lumbar/value"] = [0, 20*pi/180]
 
 # Set coordinate bounds
@@ -192,8 +203,10 @@ two_steps_solution.write("walk_2D_metabolics_two_steps_tracking_solution.sto")
 # this utility function
 contact_r = ["contactHeel_r", "contactFront_r"]
 contact_l = ["contactHeel_l", "contactFront_l"]
-contact_forces_table = osim.createExternalLoadsTableForGait(model, two_steps_solution, contact_r, contact_l)
-osim.STOFileAdapter().write(contact_forces_table, "walk_2D_metabolics_two_steps_tracking_ground_forces.sto")
+contact_forces_table = osim.createExternalLoadsTableForGait(model, 
+                two_steps_solution, contact_r, contact_l)
+osim.STOFileAdapter().write(contact_forces_table, 
+                "walk_2D_metabolics_two_steps_tracking_ground_forces.sto")
 
 
 # Determine the cost of transport from the metabolics cost term. Need to divide

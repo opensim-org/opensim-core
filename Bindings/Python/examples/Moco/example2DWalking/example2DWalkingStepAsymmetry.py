@@ -77,7 +77,8 @@ def stepTimeAsymmetry():
     
     # Get the model
     modelProcessor = osim.ModelProcessor("2D_gait.osim")
-    modelProcessor.append(osim.ModOpTendonComplianceDynamicsModeDGF("implicit"))
+    modelProcessor.append(
+        osim.ModOpTendonComplianceDynamicsModeDGF("implicit"))
     
     # Get the MocoProblem from the MocoStudy and set the model on it
     problem = study.updProblem()
@@ -94,7 +95,8 @@ def stepTimeAsymmetry():
     periodicityGoal = osim.MocoPeriodicityGoal("periodicity")
     model = modelProcessor.process()
     model.initSystem()
-    state_names = [model.getStateVariableNames().getitem(sn) for sn in range(model.getNumStateVariables())]
+    state_names = [model.getStateVariableNames().getitem(sn) 
+                       for sn in range(model.getNumStateVariables())]
     for sn in state_names:
         if "pelvis_tx/value" not in sn:
             periodicityGoal.addStatePair(osim.MocoPeriodicityGoalPair(sn))
@@ -114,7 +116,8 @@ def stepTimeAsymmetry():
     
     # Step time asymmetry:
     # Create the goal, and configure it
-    stepTimeAsymmetryGoal = osim.MocoStepTimeAsymmetryGoal("step_time_asymmetry")
+    stepTimeAsymmetryGoal = \
+                    osim.MocoStepTimeAsymmetryGoal("step_time_asymmetry")
     # Value for smoothing term used to compute when foot contact is made
     # (default = 0.25). Users may need to adjust this based on convergence and 
     # matching the target asymmetry.
@@ -149,15 +152,20 @@ def stepTimeAsymmetry():
     
     # Coordinate bounds as dict
     coord_bounds = {}
-    coord_bounds["/jointset/groundPelvis/pelvis_tilt/value"] = [-20*pi/180, 20*pi/180]
+    coord_bounds["/jointset/groundPelvis/pelvis_tilt/value"] = [-20*pi/180, 
+                                                                20*pi/180]
     coord_bounds["/jointset/groundPelvis/pelvis_tx/value"] = [0, 2]
     coord_bounds["/jointset/groundPelvis/pelvis_ty/value"] = [0.75, 1.25]
-    coord_bounds["/jointset/hip_r/hip_flexion_r/value"] = [-10*pi/180, 60*pi/180]
-    coord_bounds["/jointset/hip_l/hip_flexion_l/value"] = [-10*pi/180, 60*pi/180]
+    coord_bounds["/jointset/hip_r/hip_flexion_r/value"] = [-10*pi/180, 
+                                                           60*pi/180]
+    coord_bounds["/jointset/hip_l/hip_flexion_l/value"] = [-10*pi/180, 
+                                                           60*pi/180]
     coord_bounds["/jointset/knee_r/knee_angle_r/value"] = [-50*pi/180, 0]
     coord_bounds["/jointset/knee_l/knee_angle_l/value"] = [-50*pi/180, 0]
-    coord_bounds["/jointset/ankle_r/ankle_angle_r/value"] = [-15*pi/180, 25*pi/180]
-    coord_bounds["/jointset/ankle_l/ankle_angle_l/value"] = [-15*pi/180, 25*pi/180]
+    coord_bounds["/jointset/ankle_r/ankle_angle_r/value"] = [-15*pi/180, 
+                                                             25*pi/180]
+    coord_bounds["/jointset/ankle_l/ankle_angle_l/value"] = [-15*pi/180, 
+                                                             25*pi/180]
     coord_bounds["/jointset/lumbar/lumbar/value"] = [0, 20*pi/180]
     
     # Set coordinate bounds
@@ -193,11 +201,15 @@ def stepTimeAsymmetry():
     
     
     # Write predicted GRF to file
-    contact_forces_table = osim.createExternalLoadsTableForGait(model, solution, contact_r, contact_l)
-    osim.STOFileAdapter().write(contact_forces_table, "walk_2D_step_time_asym_ground_forces.sto")
+    contact_forces_table = osim.createExternalLoadsTableForGait(model, 
+                                solution, contact_r, contact_l)
+    osim.STOFileAdapter().write(contact_forces_table, 
+                                "walk_2D_step_time_asym_ground_forces.sto")
     
     # Calculate step time asymmetry
-    step_time_asym, _ = computeStepAsymmetry(model, 25, "walk_2D_step_time_asym_solution.sto", "walk_2D_step_time_asym_ground_forces.sto")
+    step_time_asym, _ = computeStepAsymmetry(model, 25, 
+                                 "walk_2D_step_time_asym_solution.sto", 
+                                 "walk_2D_step_time_asym_ground_forces.sto")
     print("\nStep time asymmetry: %f\n" % step_time_asym)
 
 
@@ -257,7 +269,8 @@ def stepLengthAsymmetry():
     
     # Get the model
     modelProcessor = osim.ModelProcessor("2D_gait.osim")
-    modelProcessor.append(osim.ModOpTendonComplianceDynamicsModeDGF("implicit"))
+    modelProcessor.append(
+        osim.ModOpTendonComplianceDynamicsModeDGF("implicit"))
     
     # Get the MocoProblem from the MocoStudy and set the model on it
     problem = study.updProblem()
@@ -274,7 +287,8 @@ def stepLengthAsymmetry():
     periodicityGoal = osim.MocoPeriodicityGoal("periodicity")
     model = modelProcessor.process()
     model.initSystem()
-    state_names = [model.getStateVariableNames().getitem(sn) for sn in range(model.getNumStateVariables())]
+    state_names = [model.getStateVariableNames().getitem(sn) 
+                       for sn in range(model.getNumStateVariables())]
     for sn in state_names:
         if "pelvis_tx/value" not in sn:
             periodicityGoal.addStatePair(osim.MocoPeriodicityGoalPair(sn))
@@ -322,15 +336,20 @@ def stepLengthAsymmetry():
     
     # Coordinate bounds as dict
     coord_bounds = {}
-    coord_bounds["/jointset/groundPelvis/pelvis_tilt/value"] = [-20*pi/180, 20*pi/180]
+    coord_bounds["/jointset/groundPelvis/pelvis_tilt/value"] = [-20*pi/180, 
+                                                                20*pi/180]
     coord_bounds["/jointset/groundPelvis/pelvis_tx/value"] = [0, 2]
     coord_bounds["/jointset/groundPelvis/pelvis_ty/value"] = [0.75, 1.25]
-    coord_bounds["/jointset/hip_r/hip_flexion_r/value"] = [-10*pi/180, 60*pi/180]
-    coord_bounds["/jointset/hip_l/hip_flexion_l/value"] = [-10*pi/180, 60*pi/180]
+    coord_bounds["/jointset/hip_r/hip_flexion_r/value"] = [-10*pi/180, 
+                                                           60*pi/180]
+    coord_bounds["/jointset/hip_l/hip_flexion_l/value"] = [-10*pi/180, 
+                                                           60*pi/180]
     coord_bounds["/jointset/knee_r/knee_angle_r/value"] = [-50*pi/180, 0]
     coord_bounds["/jointset/knee_l/knee_angle_l/value"] = [-50*pi/180, 0]
-    coord_bounds["/jointset/ankle_r/ankle_angle_r/value"] = [-15*pi/180, 25*pi/180]
-    coord_bounds["/jointset/ankle_l/ankle_angle_l/value"] = [-15*pi/180, 25*pi/180]
+    coord_bounds["/jointset/ankle_r/ankle_angle_r/value"] = [-15*pi/180, 
+                                                             25*pi/180]
+    coord_bounds["/jointset/ankle_l/ankle_angle_l/value"] = [-15*pi/180, 
+                                                             25*pi/180]
     coord_bounds["/jointset/lumbar/lumbar/value"] = [0, 20*pi/180]
     
     # Set coordinate bounds
@@ -367,11 +386,15 @@ def stepLengthAsymmetry():
     # Write predicted GRF to file
     contact_r = ["contactHeel_r", "contactFront_r"]
     contact_l = ["contactHeel_l", "contactFront_l"]
-    contact_forces_table = osim.createExternalLoadsTableForGait(model, solution, contact_r, contact_l)
-    osim.STOFileAdapter().write(contact_forces_table, "walk_2D_step_length_asym_ground_forces.sto")
+    contact_forces_table = osim.createExternalLoadsTableForGait(model, 
+                                solution, contact_r, contact_l)
+    osim.STOFileAdapter().write(contact_forces_table, 
+                                "walk_2D_step_length_asym_ground_forces.sto")
     
     # Calculate step time asymmetry
-    _, step_length_asym = computeStepAsymmetry(model, 25, "walk_2D_step_length_asym_solution.sto", "walk_2D_step_length_asym_ground_forces.sto")
+    _, step_length_asym = computeStepAsymmetry(model, 25, 
+                               "walk_2D_step_length_asym_solution.sto", 
+                               "walk_2D_step_length_asym_ground_forces.sto")
     print("\nStep length asymmetry: %f\n" % step_length_asym)
     
    
@@ -415,14 +438,16 @@ def computeStepAsymmetry(model_file, threshold, solution_file, grf_file):
         step_timeL = tvec[-1] - step_timeR  
     
     # Calculate step time asymmetry (%)
-    step_time_asym = 100 * (step_timeR - step_timeL) / (step_timeR + step_timeL)
+    step_time_asym = 100 * (step_timeR - step_timeL) \
+                                    / (step_timeR + step_timeL)
     
     
     # **********************************
     # STEP LENGTH ASYMMETRY
     
     # Get the states for each limb at the instant of heel strike on that limb
-    states_traj = osim.StatesTrajectory().createFromStatesTable(model, osim.TimeSeriesTable(solution_file), False, True, True)
+    states_traj = osim.StatesTrajectory().createFromStatesTable(model, 
+                        osim.TimeSeriesTable(solution_file), False, True, True)
     statesR = states_traj.get(hs_idxR)
     statesL = states_traj.get(hs_idxL)
     
@@ -431,7 +456,8 @@ def computeStepAsymmetry(model_file, threshold, solution_file, grf_file):
     step_lengthL = calculateStepLength(model, statesL)
     
     # Calculate step length asymmetry (%)
-    step_length_asym = 100 * (step_lengthR - step_lengthL) / (step_lengthR + step_lengthL)
+    step_length_asym = 100 * (step_lengthR - step_lengthL) \
+                                    / (step_lengthR + step_lengthL)
     
     
     return step_time_asym, step_length_asym
