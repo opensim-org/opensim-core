@@ -54,9 +54,9 @@ int main() {
     // ellipsoid with radii of 0.1, 0.5 and 0.1, in the x, y and z directions,
     // respectively.
     OpenSim::Body* humerus = new OpenSim::Body(
-        "humerus", mass, Vec3(0), Inertia(0.052, 0.004, 0.052));
+        "humerus", 1.0, Vec3(0), Inertia(0.052, 0.004, 0.052));
     OpenSim::Body* radius  = new OpenSim::Body(
-        "radius",  mass, Vec3(0), Inertia(0.052, 0.004, 0.052));
+        "radius",  1.0, Vec3(0), Inertia(0.052, 0.004, 0.052));
 
     // Connect the bodies with pin joints. Assume each body is 1 m long.
     PinJoint* shoulder = new PinJoint("shoulder",
