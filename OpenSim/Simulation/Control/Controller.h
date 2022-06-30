@@ -81,6 +81,9 @@ public:
 
     /** Default constructor. */
     Controller();
+    Controller(Controller const&);
+    Controller& operator=(Controller const&);
+    ~Controller() noexcept override;
 
     // Uses default (compiler-generated) destructor, copy constructor and copy 
     // assignment operator.
@@ -142,12 +145,6 @@ private:
 
     // the (sub)set of Model actuators that this controller controls */ 
     Set<const Actuator> _actuatorSet;
-
-    // construct and initialize properties
-    void constructProperties();
-
-    //friend class ControlSet;
-    friend class ControllerSet;
 
 //=============================================================================
 };  // END of class Controller
