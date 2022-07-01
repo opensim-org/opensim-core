@@ -362,8 +362,8 @@ else()
                 INSTALL_DIR       ${MUMPS_INSTALL_DIR}
                 PATCH_COMMAND     cd <SOURCE_DIR> && ./get.Mumps
                 CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> ADD_FFLAGS=-fallow-argument-mismatch ADD_CFLAGS=-Wno-error=implicit-function-declaration
-                                                            --with-metis-cflags=-I${METIS_INSTALL_DIR}/include
-                                                            "--with-metis-lflags=-L${METIS_INSTALL_DIR}/lib -lmetis"
+                                                         --with-metis-cflags=-I${METIS_INSTALL_DIR}/include
+                                                         "--with-metis-lflags=-L${METIS_INSTALL_DIR}/lib -lmetis"
                 BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}
                 INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
                 )
@@ -377,8 +377,10 @@ else()
                 # For Ipopt 3.12, patch a file so that it can find the proper MUMPS flags/variables.
                 PATCH_COMMAND     cd <SOURCE_DIR> && patch -p0 < ${CMAKE_SOURCE_DIR}/ipopt.patch
                 CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
-                                                            --with-mumps-incdir=${MUMPS_INSTALL_DIR}/include/coin-or/mumps
-                                                            "--with-mumps-lib=-L${MUMPS_INSTALL_DIR}/lib -lcoinmumps"
+                                                         --with-mumps-incdir=${MUMPS_INSTALL_DIR}/include/coin-or/mumps
+                                                         "--with-mumps-lib=-L${MUMPS_INSTALL_DIR}/lib -lcoinmumps"
+                                                         --without-hsl --without-hsl-lib --without-hsl-incdir
+                                                         --without-asl --without-asl-lib --without-asl-incdir
                 BUILD_COMMAND ${CMAKE_MAKE_PROGRAM} ${BUILD_FLAGS}
                 INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
                 )
