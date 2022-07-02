@@ -6,11 +6,11 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
     file(GLOB quadmath "${gcc_libdir}/libquadmath*.dylib")
 
     # Check for arm64 architecture
-        execute_process(
-            COMMAND uname -m
-            OUTPUT_VARIABLE MACHINE_ARCH
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-            )
+    execute_process(
+        COMMAND uname -m
+        OUTPUT_VARIABLE MACHINE_ARCH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
 
     # For ARM-based Macs, install a different set of libraries (without mumps 
     # and metis) because of the different way dependencies are built.
@@ -51,6 +51,7 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
                 ${gcc_libdir}/libgcc_s.1.dylib
 
                 DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    endif()
 
     # This command must be invoked from the cmake subdirectory so that the
     # editing of libtropter's link libraries is done after libtropter.dylib
