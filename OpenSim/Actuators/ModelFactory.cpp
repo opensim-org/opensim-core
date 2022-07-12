@@ -186,6 +186,21 @@ void ModelFactory::replaceMusclesWithPathActuators(OpenSim::Model &model) {
             geomPath.updPathPointSet().adoptAndAppend(pathPoint);
         }
 
+        // For the connectee names in the PathWraps to be correct, we must add
+        // the path wrap objects after adding the PathActuator to the model.
+        const auto& pathWrapSet = musc.getGeometryPath().getWrapSet();
+        for (int ipw = 0; ipw < pathWrapSet.getSize(); ++ipw) {
+            auto* pathWrap = pathWrapSet.get(ipw).clone();
+            const auto& socketNames = pathWrap->getSocketNames();
+            for (const auto& socketName : socketNames) {
+                pathWrap->updSocket(socketName)
+                        .connect(pathWrapSet.get(ipw)
+                                .getSocket(socketName)
+                                .getConnecteeAsObject());
+            }
+            geomPath.updWrapSet().adoptAndAppend(pathWrap);
+        }
+        
         musclesToDelete.push_back(&musc);
     }
 

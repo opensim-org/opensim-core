@@ -172,6 +172,19 @@ public:
     }
 };
 
+/// Invoke ModelFactory::replaceMusclesWithPathActuators() on the model.
+class OSIMACTUATORS_API ModOpReplaceMusclesWithPathActuators
+        : public ModelOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+            ModOpReplaceMusclesWithPathActuators, ModelOperator);
+
+public:
+    void operate(Model& model, const std::string&) const override {
+        model.finalizeConnections();
+        ModelFactory::replaceMusclesWithPathActuators(model);
+    }
+};
+
 } // namespace OpenSim
 
 #endif // OPENSIM_MODELOPERATORS_H
