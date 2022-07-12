@@ -10,6 +10,7 @@ v4.4.1
 ======
 
 - Made `Component::getSocketNames` a `const` member method (previously: non-const)
+- Added `ModOpReplaceMusclesWithPathActuators`
 
 v4.4
 ====
