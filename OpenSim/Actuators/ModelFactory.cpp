@@ -22,6 +22,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
+#include <OpenSim/Common/CommonUtilities.h>
 
 using namespace OpenSim;
 
@@ -187,7 +188,7 @@ void ModelFactory::replaceMusclesWithPathActuators(OpenSim::Model &model) {
         }
 
         // For the connectee names in the PathWraps to be correct, we must add
-        // the path wrap objects after adding the PathActuator to the model.
+        // the path wraps after adding the PathActuator to the model.
         const auto& pathWrapSet = musc.getGeometryPath().getWrapSet();
         for (int ipw = 0; ipw < pathWrapSet.getSize(); ++ipw) {
             auto* pathWrap = pathWrapSet.get(ipw).clone();
@@ -200,7 +201,7 @@ void ModelFactory::replaceMusclesWithPathActuators(OpenSim::Model &model) {
             }
             geomPath.updWrapSet().adoptAndAppend(pathWrap);
         }
-        
+
         musclesToDelete.push_back(&musc);
     }
 
@@ -214,6 +215,9 @@ void ModelFactory::replaceMusclesWithPathActuators(OpenSim::Model &model) {
                 "Attempt to remove muscle with name {} was unsuccessful.",
                 musc->getName());
     }
+
+    model.finalizeFromProperties();
+    model.finalizeConnections();
 }
 
 
