@@ -223,7 +223,7 @@ void CoordinateCouplerConstraint::extendAddToSystem(SimTK::MultibodySystem& syst
     }
 
     // Create and set the underlying coupler constraint function;
-    const Function& f = get_coupled_coordinates_function();
+    const Function& f = getFunction();
     SimTK::Function *simtkCouplerFunction = new CompoundFunction(f.createSimTKFunction(), get_scale_factor());
 
 
