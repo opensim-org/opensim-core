@@ -3,9 +3,6 @@ if(BUILD_PYTHON_WRAPPING OR BUILD_JAVA_WRAPPING)
 endif()
 
 # Flags are both Python and Java bindings will use.
-if(WITH_BTK)
-    set(SWIG_FLAGS "-DWITH_BTK")
-endif()
 if(WITH_EZC3D)
     set(SWIG_FLAGS "-DWITH_EZC3D")
 endif()
