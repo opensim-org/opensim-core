@@ -207,6 +207,7 @@ int main()
         muscle2->addNewPathPoint("muscle2-point1", ground, Vec3(0.0,0.05,0.35));
         muscle2->addNewPathPoint("muscle2-point2", *block, Vec3(0.0,0.0,0.05));
 
+
         // Add the two muscles (as forces) to the model
         osimModel.addForce(muscle1);
         osimModel.addForce(muscle2);
@@ -290,6 +291,19 @@ int main()
         osimModel.finalizeConnections();
         // Save the model to a file
         osimModel.print("tugOfWar_model.osim");
+
+        auto pnew = new ConditionalPathPoint();
+        pnew->setName("vasmed_r");
+        pnew->setRangeMin(1);
+        pnew->setRangeMax(2);
+        pnew->setCoordinate(blockToGround->getCoordinate(FreeJoint::Coord::TranslationX));
+        pnew->setParentFrame(*leftAnchorFrame);
+        pnew->setLocation(Vec3(1, 2, 3));
+        muscle2->updGeometryPath().updPathPointSet().insert(1, *pnew);
+
+        osimModel.finalizeConnections();
+        // Save the model to a file
+        osimModel.print("tugOfWar_model_withConditionalPathPoint.osim");
 
         //////////////////////////
         // PERFORM A SIMULATION //
