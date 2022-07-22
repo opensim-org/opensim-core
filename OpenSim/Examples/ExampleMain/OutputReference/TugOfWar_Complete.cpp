@@ -297,10 +297,11 @@ int main()
         pnew->setRangeMin(1);
         pnew->setRangeMax(2);
         pnew->setCoordinate(blockToGround->getCoordinate(FreeJoint::Coord::TranslationX));
-        pnew->setParentFrame(*leftAnchorFrame);
+        pnew->updSocket("coordinate").setConnecteePath(blockToGround->getCoordinate(FreeJoint::Coord::TranslationX).getAbsolutePathString());
+        pnew->updSocket("parent_frame").setConnecteePath(leftAnchorFrame->getAbsolutePathString());
         pnew->setLocation(Vec3(1, 2, 3));
         muscle2->updGeometryPath().updPathPointSet().insert(1, *pnew);
-
+        std::cout << pnew->dump() << std::endl;
         osimModel.finalizeConnections();
         // Save the model to a file
         osimModel.print("tugOfWar_model_withConditionalPathPoint.osim");
