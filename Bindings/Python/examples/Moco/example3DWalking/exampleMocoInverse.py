@@ -140,12 +140,13 @@ def solveMocoInverseWithEMG():
     model = modelProcessor.process()
     output = 'example3DWalking_MocoInverseWithEMG_report.pdf'
     ref_files = [
-        'example3DWalking_MocoInverseWithEMG_solution.sto',
-        'controls_reference.sto']
+        'controls_reference.sto',
+        'example3DWalking_MocoInverseWithEMG_solution.sto']
     report = osim.report.Report(model,
                                 'example3DWalking_MocoInverse_solution.sto',
                                 output=output, bilateral=True,
-                                ref_files=ref_files)
+                                ref_files=ref_files,
+                                colors=['darkgray', 'blue', 'red'])
     # The PDF is saved to the working directory.
     report.generate()
 
