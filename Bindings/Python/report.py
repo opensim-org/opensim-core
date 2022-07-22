@@ -23,7 +23,7 @@ import math
 import opensim as osim
 import numpy as np
 from collections import defaultdict, OrderedDict
-# import pdb
+import matplotlib.cm as cm
 
 ## Helper functions.
 # ==================
@@ -165,6 +165,13 @@ class Report(object):
                                          skip_header=num_header_rows)
                 self.refs.append(this_ref)
 
+        if self.colors is None:
+            self.colors = list()
+            cmap_samples = np.linspace(0.1, 0.9, len(self.refs)+1)
+            cmap = cm.get_cmap('jet')
+            for sample in cmap_samples:
+                self.colors.append(cmap(sample))
+
         # Check that the colors list is the correct length
         if len(self.colors) != len(self.refs)+1:
             raise Exception(f"The list argument 'colors' should have length equal "
@@ -276,7 +283,7 @@ class Report(object):
                         y = ref[pathNoSlashes][init:final]
                         plt.plot(ref['time'][init:final],
                                  y, ls=ls,
-                                 color=self.cmap(self.colors[r]),
+                                 color=self.colors[r],
                                  linewidth=2.5)
                         ymin = np.minimum(ymin, np.min(y))
                         ymax = np.maximum(ymax, np.max(y))
@@ -612,7 +619,6 @@ def main():
     colors = list()
     refs = list()
     if ref_files != None: refs = ref_files
-    import matplotlib.cm as cm
     colormap = args.colormap
     if colormap is None: colormap = 'jet'
     cmap_samples = np.linspace(0.1, 0.9, len(refs)+1)

@@ -146,7 +146,7 @@ def solveMocoInverseWithEMG():
                                 'example3DWalking_MocoInverse_solution.sto',
                                 output=output, bilateral=True,
                                 ref_files=ref_files,
-                                colors=['darkgray', 'blue', 'red'])
+                                colors=['black', 'blue', 'red'])
     # The PDF is saved to the working directory.
     report.generate()
 
