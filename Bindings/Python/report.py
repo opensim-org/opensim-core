@@ -23,7 +23,6 @@ import math
 import opensim as osim
 import numpy as np
 from collections import defaultdict, OrderedDict
-import matplotlib.cm as cm
 
 ## Helper functions.
 # ==================
@@ -167,6 +166,7 @@ class Report(object):
 
         if self.colors is None:
             self.colors = list()
+            import matplotlib.cm as cm
             cmap_samples = np.linspace(0.1, 0.9, len(self.refs)+1)
             cmap = cm.get_cmap('jet')
             for sample in cmap_samples:
@@ -621,6 +621,7 @@ def main():
     if ref_files != None: refs = ref_files
     colormap = args.colormap
     if colormap is None: colormap = 'jet'
+    import matplotlib.cm as cm
     cmap_samples = np.linspace(0.1, 0.9, len(refs)+1)
     cmap = cm.get_cmap(colormap)
     for sample in cmap_samples:
