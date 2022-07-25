@@ -196,6 +196,16 @@ void MocoContactTrackingGoal::initializeOnModelImpl(const Model& model) const {
             }
         }
 
+        // Compute normalization factors.
+        std::vector<std::string> suffixes = {"x", "y", "z"};
+        for (int i = 0; i < 3; ++i) {
+            double factor = SimTK::max(
+                data.getDependentColumn(forceID + suffixes[i]).abs());
+            if (factor > SimTK::SignificantReal) {
+                groupInfo.normalizeFactors[i] = factor;
+            }
+        }
+
         m_groups.push_back(groupInfo);
 
         // Check to see if the model contains a MocoScaleFactor associated with
@@ -334,7 +344,11 @@ void MocoContactTrackingGoal::calcIntegrandImpl(
             }
         }
 
+        // Compute the tracking error.
         SimTK::Vec3 error3D = force_model - force_ref;
+
+        // Apply tracking error normalization.
+        error3D = error3D.elementwiseDivide(group.normalizeFactors);
 
         // Project the error.
         SimTK::Vec3 error;
