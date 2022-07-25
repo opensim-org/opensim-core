@@ -261,7 +261,7 @@ public:
 
     /// Normalize each component of the 3-D tracking error by the peak value of 
     /// each contact force component in the tracking data. No normalization is 
-    /// applied when tracking data is close to zero.
+    /// applied when tracking data is close to zero (default: false).
     void setNormalizeTrackingError(bool tf) {
         set_normalize_tracking_error(tf);
     }
@@ -298,7 +298,7 @@ private:
             "Normalize each component of the 3-D tracking error by the peak "
             "value of each contact force component in the tracking data. "
             "No normalization is applied when tracking data is close to "
-            "zero.");
+            "zero (default: false).");
 
     void constructProperties();
 

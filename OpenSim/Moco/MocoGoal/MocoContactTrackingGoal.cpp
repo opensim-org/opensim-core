@@ -59,6 +59,7 @@ void MocoContactTrackingGoal::constructProperties() {
     constructProperty_external_loads_file("");
     constructProperty_projection("none");
     constructProperty_projection_vector();
+    constructProperty_normalize_tracking_error(false);
 }
 
 void MocoContactTrackingGoal::setExternalLoadsFile(
