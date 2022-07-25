@@ -8,7 +8,7 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 
 v4.4.1
 ======
-
+- Add `setDependentColumnAtIndex` and `setDependentColumn` to DataTable
 - Made `Component::getSocketNames` a `const` member method (previously: non-const)
 
 v4.4
