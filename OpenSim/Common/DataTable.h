@@ -1023,12 +1023,67 @@ public:
         return _depData.updCol(static_cast<int>(index));
     }
 
+    /** Set dependent column at index using a SimTK::VectorView.
+    
+    \throws EmptyTable If the table is empty.
+    \throws ColumnIndexOutOfRange If index is out of range for number of columns
+                                  in the table.
+    \throws InvalidColumn If the input column contains incorrect number of 
+                          rows.                                              */
+    void setDependentColumnAtIndex(size_t index, const VectorView& depCol) {
+        OPENSIM_THROW_IF(depCol.nrow() != (int)getNumRows(), 
+                         IncorrectNumRows,
+                         static_cast<size_t>(getNumRows()),
+                         static_cast<size_t>(depCol.nrow()));
+
+        updDependentColumnAtIndex(index) = depCol;
+    }
+
+    /** Set dependent column at index using a SimTK::Vector.
+
+    \throws EmptyTable If the table is empty.
+    \throws ColumnIndexOutOfRange If index is out of range for number of columns
+                                  in the table.
+    \throws InvalidColumn If the input column contains incorrect number of
+                          rows.                                              */
+    void setDependentColumnAtIndex(size_t index, const Vector& depCol) {
+        setDependentColumnAtIndex(index, depCol.getAsVectorView());
+    }
+
     /** Update dependent Column which has the given column label.
 
     \throws KeyNotFound If columnLabel is not found to be label of any existing
                         column.                                               */
     VectorView updDependentColumn(const std::string& columnLabel) {
         return _depData.updCol(static_cast<int>(getColumnIndex(columnLabel)));
+    }
+
+    /** Set dependent column which has the given column label 
+        using a SimTK::VectorView.
+
+    \throws KeyNotFound If columnLabel is not found to be label of any existing
+                        column.    
+    \throws InvalidColumn If the input column contains incorrect number of
+                          rows.                                              */
+    void setDependentColumn(const std::string& columnLabel, 
+                            const VectorView& depCol) {
+        OPENSIM_THROW_IF(depCol.nrow() != (int)getNumRows(), IncorrectNumRows,
+                static_cast<size_t>(getNumRows()),
+                static_cast<size_t>(depCol.nrow()));
+
+        updDependentColumn(columnLabel) = depCol;
+    }
+
+    /** Set dependent column which has the given column label
+        using a SimTK::Vector.
+
+    \throws KeyNotFound If columnLabel is not found to be label of any existing
+                        column.
+    \throws InvalidColumn If the input column contains incorrect number of
+                          rows.                                              */
+    void setDependentColumn(const std::string& columnLabel, 
+                            const Vector& depCol) {
+        setDependentColumn(columnLabel, depCol.getAsVectorView());
     }
 
     /** %Set value of the independent column at index.

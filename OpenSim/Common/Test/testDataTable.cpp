@@ -225,6 +225,14 @@ TEST_CASE("DataTable") {
                        table.getRowAtIndex(r)[c]);
     }
 
+    std::cout << "Test scripting-friendly column setters." << std::endl;
+    table.setDependentColumn("6", Vector(5, 5.0));
+    table.setDependentColumnAtIndex(6, Vector(5, 5.0));
+    for (unsigned r = 0; r < table.getNumRows(); ++r) {
+        ASSERT(table.getDependentColumn("6")[r] == 5.0);
+        ASSERT(table.getDependentColumnAtIndex(6)[r] == 5.0);
+    }
+
     std::cout << "Test numComponentsPerElement()." << std::endl;
     ASSERT((static_cast<AbstractDataTable&&>
             (DataTable_<double, double    >{})).
