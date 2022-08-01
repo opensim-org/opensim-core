@@ -1,6 +1,42 @@
 Moco Change Log
 ===============
 
+1.2.0
+-----
+- 2022-06-03: Fixed bug that was breaking marker tracking problems when
+              using MocoTrack::setMarkersReferenceFromTRC().
+
+- 2022-04-15: Added MocoInitialOutputGoal, MocoFinalOutputGoal,
+              MocoOutputPeriodicityGoal, MocoOutputTrackingGoal, and
+              MocoOutputConstraint.
+
+- 2022-03-25: Fixed a bug where calculations from MocoStudy::analyze() were
+              incorrect because DeGrooteFregly2016Muscle auxiliary variables
+              were not included in the SimTK::State. Added convenience 
+              accessors to MocoTrajectory and fixed a bug where
+              MocoTrajectory::generateAccelerationsFromValues() and
+              MocoTrajectory::generateAccelerationsFromSpeeds() were
+              overwriting non-acceleration derivatives in the trajectory.
+
+- 2022-02-10: Added option to MocoCasADiSolver to enforce MocoPathConstraints 
+              at mesh interval midpoints when using Hermite-Simpson collocation
+              (via the property 'enforce_path_constraint_midpoints').
+
+- 2022-02-01: Updated MocoOutputGoal to support SimTK::Vec3 and SimTK::SpatialVec 
+              types and custom integrand exponents.
+              
+- 2022-01-25: Added option for automatic variable scaling based on trajectory 
+              variable bounds to MocoCasADiSolver via the property
+              'scale_variables_using_bounds'.
+
+- 2021-11-18: Implemented fix for DeGrooteFregly2016Muscle so that optimal fiber 
+              lengths and tendon slack lengths are scaled when using the ScaleTool.
+  
+- 2021-11-17: Added Matlab and Python support for MocoAngularVelocityTrackingGoal.
+              Fixed Matlab and Python issues with 
+              MocoOrientationTrackingGoal::setRotationReference(); this method 
+              is now overloaded to accept tables of type TimeSeriesTableQuaternion.
+
 1.1.0
 -----
 - 2021-07-13: Added MocoStepTimeAsymmetryGoal, MocoStepLengthAsymmetryGoal, and

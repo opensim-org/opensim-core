@@ -123,7 +123,7 @@ void testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, O
     const Ground& ground = osimModel->getGround();
     OpenSim::Body ball;
     ball.setName("ball");
-
+    ball.setMass(0);
     // Add joints
     FreeJoint free("free", ground, Vec3(0), Vec3(0), ball, Vec3(0), Vec3(0));
 

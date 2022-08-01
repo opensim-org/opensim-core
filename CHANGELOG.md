@@ -6,8 +6,28 @@ request related to the change, then we may provide the commit.
 
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
 
+v4.4.1
+======
+
+- Made `Component::getSocketNames` a `const` member method (previously: non-const)
+
+v4.4
+====
+- Updated ezc3d to version 1.5.0 which better manages the events defined in a c3d file.
+- Fixed an issue that could happen sometimes with ScaleTool where loading the model file or marker set file could fail if the file was given as an absolute path (Issue #3109, PR #3110)
+- Fixed an issue with SWIG with `OpenSim::Body::getRotationInGround()` where it would return an object without the correct `SimTK::Rotation` methods.
+- Fixed OpenSim::Arrow start_point property being ignored
+- Fixed objects being set as not up to date with their properties by finalizeFromProperties
+- Throw exception if body masses are either NaN or -ve (Issue #3130)
+- Fixed issue #3176 where McKibbenActuator is not registered and can't be serialized to XML files
+- Fixed issue #3191 where CustomJoint coordinates ordering in model files affects coordinate definitions.
+- Fixed issue #3220 Memory leak running InverseKinematicsTool repeatedly and using Kinematics analysis.
+
+
 v4.3
 ====
+- Introduced IMU component that models a typical Inertial Measurement Unit (IMU) with corresponding outputs for orientation, accelerometer, and gyroscope signals. 
+- Introduced IMUDataReporter (analysis) to record signals from IMU components placed on models.
 - Fixed a bug with Actuation analysis that would lead to extra columns in the output when an actuator is disabled (Issue #2977).
 - Fix issue where including path in output file name caused output to not be written without warning, now warning is given and file is written (Issue #3042).
 - Fix copy-paste bug in reporting orientation errors (Issue #2893, fixed by Henrik-Norgren). 

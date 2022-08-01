@@ -357,8 +357,10 @@ SimTK::MassProperties Body::getMassProperties() const
 {
     const double& m = get_mass();
     const Vec3& com = get_mass_center();
+    try {
+        OPENSIM_THROW_IF_FRMOBJ(!(m >= 0.0), Exception,
+                "Body " + getName() + " has unspecified or negative mass.");
 
-    try{
         const SimTK::Inertia& Icom = getInertia();
 
         SimTK::Inertia Ib = Icom;

@@ -7910,7 +7910,11 @@ namespace Catch {
 
 #ifdef CATCH_PLATFORM_MAC
 
-    #define CATCH_TRAP() __asm__("int $3\n" : : ) /* NOLINT */
+    #if defined(__i386__) || defined(__x86_64__)
+        #define CATCH_TRAP() __asm__("int $3\n" : : ) /* NOLINT */
+    #elif defined(__aarch64__)
+        #define CATCH_TRAP()  __asm__(".inst 0xd4200000")
+    #endif
 
 #elif defined(CATCH_PLATFORM_IPHONE)
 
@@ -10791,7 +10795,7 @@ namespace Catch {
 
     // 32kb for the alternate stack seems to be sufficient. However, this value
     // is experimentally determined, so that's not guaranteed.
-    static constexpr std::size_t sigStackSize = 32768 >= MINSIGSTKSZ ? 32768 : MINSIGSTKSZ;
+    static constexpr std::size_t sigStackSize = 32768;
 
     static SignalDefs signalDefs[] = {
         { SIGINT,  "SIGINT - Terminal interrupt signal" },

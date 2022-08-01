@@ -181,8 +181,11 @@ void LineGeometry::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::Decora
 void Arrow::implementCreateDecorativeGeometry(SimTK::Array_<SimTK::DecorativeGeometry>& decoGeoms) const
 {
     const Vec3 netScale = get_scale_factors();
-    SimTK::Vec3 endPt(get_length()*get_direction());
-    DecorativeArrow deco(SimTK::Vec3(0), endPt);
+
+    const Vec3 start = get_start_point();
+    const Vec3 end = start + get_length()*get_direction().normalize();
+
+    DecorativeArrow deco(start, end);
     deco.setLineThickness(0.05);
     deco.setScaleFactors(netScale);
     decoGeoms.push_back(deco);
@@ -243,9 +246,12 @@ void Mesh::extendFinalizeFromProperties() {
         // Current interface to Visualizer calls generateDecorations on every
         // frame. On first time through, load file and create DecorativeMeshFile
         // and cache it so we don't load files from disk during live rendering.
+        const Model* mdl = dynamic_cast<const Model*>(rootModel);
         const std::string& file = get_mesh_file();
-        if (file.empty() || file.compare(PropertyStr::getDefaultStr()) == 0)
-            return;  // Return immediately if no file has been specified.
+        if (file.empty() || file.compare(PropertyStr::getDefaultStr()) == 0 ||
+            !mdl->getDisplayHints().isVisualizationEnabled())
+            return;  // Return immediately if no file has been specified
+                     // or display is disabled altogether.
 
         bool isAbsolutePath; string directory, fileName, extension;
         SimTK::Pathname::deconstructPathname(file,

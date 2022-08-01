@@ -53,6 +53,12 @@ public:
     void setMinimizeLagrangeMultipliers(bool tf) {
         m_minimizeLagrangeMultipliers = tf;
     }
+    void setScaleVariablesUsingBounds(bool value) {
+        m_scaleVariablesUsingBounds = value;
+    }
+    bool getScaleVariablesUsingBounds() const {
+        return m_scaleVariablesUsingBounds;
+    }
     bool getMinimizeLagrangeMultipliers() const {
         return m_minimizeLagrangeMultipliers;
     }
@@ -107,6 +113,17 @@ public:
     }
     bool getInterpolateControlMidpoints() const {
         return m_interpolateControlMidpoints;
+    }
+
+    /// Whether or not to enforce path constraints at mesh interval midpoints.
+    /// @note Only applies to Hermite-Simpson collocation.
+    /// @note Does not apply to implicit dynamics residuals, as these are
+    ///       always enforced at mesh interval midpoints.
+    void setEnforcePathConstraintMidpoints(bool tf) {
+        m_enforcePathConstraintMidpoints = tf;
+    }
+    bool getEnforcePathConstraintMidpoints() const {
+        return m_enforcePathConstraintMidpoints;
     }
 
     void setOptimSolver(std::string optimSolver) {
@@ -177,6 +194,7 @@ private:
     const Problem& m_problem;
     std::vector<double> m_mesh;
     std::string m_transcriptionScheme = "hermite-simpson";
+    bool m_scaleVariablesUsingBounds = false;
     bool m_minimizeLagrangeMultipliers = false;
     double m_lagrangeMultiplierWeight = 1.0;
     bool m_minimizeImplicitMultibodyAccelerations = false;
@@ -184,6 +202,7 @@ private:
     bool m_minimizeImplicitAuxiliaryDerivatives = false;
     double m_implicitAuxiliaryDerivativesWeight = 1.0;
     bool m_interpolateControlMidpoints = true;
+    bool m_enforcePathConstraintMidpoints = false;
     Bounds m_implicitMultibodyAccelerationBounds;
     Bounds m_implicitAuxiliaryDerivativeBounds;
     std::string m_finite_difference_scheme = "central";

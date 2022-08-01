@@ -7,9 +7,9 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Copyright (c) 2005-2022 Stanford University and the Authors                *
  * Author(s): Chris Dembia                                                    *
- * Contributor(s): Thomas Uchida, James Dunne                                 *
+ * Contributor(s): Thomas Uchida, James Dunne, Connor Rawlings, Samuel Suys   *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -40,7 +40,7 @@
  *    repository.
  */
 
-//#define VISUALIZE
+// #define VISUALIZE
 
 /// [README]
 #include <OpenSim/OpenSim.h>
@@ -55,24 +55,29 @@ int main() {
 #endif
 
     // Create two links, each with a mass of 1 kg, center of mass at the body's
-    // origin, and moments and products of inertia of zero.
-    OpenSim::Body* humerus = new OpenSim::Body("humerus", 1, Vec3(0), Inertia(0));
-    OpenSim::Body* radius  = new OpenSim::Body("radius",  1, Vec3(0), Inertia(0));
+    // origin, and moments and products of inertia corresponding to an
+    // ellipsoid with radii of 0.1, 0.5 and 0.1, in the x, y and z directions,
+    // respectively.
+    OpenSim::Body* humerus = new OpenSim::Body(
+        "humerus", 1, Vec3(0), Inertia(0.052, 0.004, 0.052));
+    OpenSim::Body* radius  = new OpenSim::Body(
+        "radius",  1, Vec3(0), Inertia(0.052, 0.004, 0.052));
 
     // Connect the bodies with pin joints. Assume each body is 1 m long.
     PinJoint* shoulder = new PinJoint("shoulder",
             // Parent body, location in parent, orientation in parent.
             model.getGround(), Vec3(0), Vec3(0),
             // Child body, location in child, orientation in child.
-            *humerus, Vec3(0, 1, 0), Vec3(0));
+            *humerus, Vec3(0, 0.5, 0), Vec3(0));
     PinJoint* elbow = new PinJoint("elbow",
-            *humerus, Vec3(0), Vec3(0), *radius, Vec3(0, 1, 0), Vec3(0));
+            *humerus, Vec3(0, -0.5, 0), Vec3(0),
+            *radius, Vec3(0, 0.5, 0), Vec3(0));
 
     // Add a muscle that flexes the elbow.
     Millard2012EquilibriumMuscle* biceps = new
-        Millard2012EquilibriumMuscle("biceps", 200, 0.6, 0.55, 0);
-    biceps->addNewPathPoint("origin",    *humerus, Vec3(0, 0.8, 0));
-    biceps->addNewPathPoint("insertion", *radius,  Vec3(0, 0.7, 0));
+        Millard2012EquilibriumMuscle("biceps", 100, 0.6, 0.55, 0);
+    biceps->addNewPathPoint("origin",    *humerus, Vec3(0, 0.3, 0));
+    biceps->addNewPathPoint("insertion", *radius,  Vec3(0, 0.2, 0));
 
     // Add a controller that specifies the excitation of the muscle.
     PrescribedController* brain = new PrescribedController();
@@ -101,11 +106,11 @@ int main() {
     bodyGeometry.setColor(Gray);
     // Attach an ellipsoid to a frame located at the center of each body.
     PhysicalOffsetFrame* humerusCenter = new PhysicalOffsetFrame(
-        "humerusCenter", *humerus, Transform(Vec3(0, 0.5, 0)));
+        "humerusCenter", *humerus, Transform(Vec3(0)));
     humerus->addComponent(humerusCenter);
     humerusCenter->attachGeometry(bodyGeometry.clone());
     PhysicalOffsetFrame* radiusCenter = new PhysicalOffsetFrame(
-        "radiusCenter", *radius, Transform(Vec3(0, 0.5, 0)));
+        "radiusCenter", *radius, Transform(Vec3(0)));
     radius->addComponent(radiusCenter);
     radiusCenter->attachGeometry(bodyGeometry.clone());
 
@@ -125,7 +130,7 @@ int main() {
 #endif
 
     // Simulate.
-    simulate(model, state, 10.0);
+    simulate(model, state, 5.0);
 
     return 0;
 };

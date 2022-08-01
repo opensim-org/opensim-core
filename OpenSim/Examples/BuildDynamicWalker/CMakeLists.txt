@@ -8,8 +8,6 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Find the OpenSim libraries and header files.
-set(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME}
-        CACHE PATH "Top-level directory of OpenSim install.")
 # This command searches for the file OpenSimConfig.cmake
 # in common system directories and in OPENSIM_INSTALL_DIR.
 find_package(OpenSim 4.0 REQUIRED PATHS "${OPENSIM_INSTALL_DIR}")

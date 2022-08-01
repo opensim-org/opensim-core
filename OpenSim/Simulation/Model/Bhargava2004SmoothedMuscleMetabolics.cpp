@@ -350,11 +350,10 @@ void Bhargava2004SmoothedMuscleMetabolics::calcMetabolicRate(
     activationHeatRate = maintenanceHeatRate = shorteningHeatRate =
         mechanicalWorkRate = 0;
 
-    int i = 0;
     for (const auto& muscleIndex : m_muscleIndices) {
 
-        const auto& muscleParameter =
-            get_muscle_parameters(muscleIndex.second);
+        const auto& index = muscleIndex.second;
+        const auto& muscleParameter = get_muscle_parameters(index);
         const auto& muscle = muscleParameter.getMuscle();
 
         const double maximalIsometricForce = muscle.getMaxIsometricForce();
@@ -526,13 +525,11 @@ void Bhargava2004SmoothedMuscleMetabolics::calcMetabolicRate(
         // --------------------------------
         double Edot = totalHeatRate + mechanicalWorkRate;
 
-        totalRatesForMuscles[i] = Edot;
-        activationRatesForMuscles[i] = activationHeatRate;
-        maintenanceRatesForMuscles[i] = maintenanceHeatRate;
-        shorteningRatesForMuscles[i] = shorteningHeatRate;
-        mechanicalWorkRatesForMuscles[i] = mechanicalWorkRate;
-
-        ++i;
+        totalRatesForMuscles[index] = Edot;
+        activationRatesForMuscles[index] = activationHeatRate;
+        maintenanceRatesForMuscles[index] = maintenanceHeatRate;
+        shorteningRatesForMuscles[index] = shorteningHeatRate;
+        mechanicalWorkRatesForMuscles[index] = mechanicalWorkRate;
     }
 }
 

@@ -39,6 +39,93 @@ using namespace OpenSim;
 using namespace SimTK;
 using SimTK::Vec3;
 
+// this is what is stored in a cache variable at runtime. It's a value-type that's safe to
+// pass between multiple models, which looks up a point in the component path
+class OpenSim::GeometryPath::PathElementLookup {
+public:
+    static PathElementLookup fromPtr(const OpenSim::PathPointSet& pps,
+                                     const OpenSim::PathWrapSet& pws,
+                                     const OpenSim::GeometryPath& geomPath,
+                                     const OpenSim::AbstractPathPoint* ptr)
+    {
+        // linearly search each collection to figure out its type + index
+
+        const OpenSim::Component* owner = &ptr->getOwner();
+
+        if (owner == &geomPath) {
+            for (int i = 0, len = pps.getSize(); i < len; ++i) {
+                if (&pps[i] == ptr) {
+                    return PathElementLookup{PointType::InPathPointSet, i};
+                }
+            }
+        }
+        else {
+            for (int i = 0, len = pws.getSize(); i < len; ++i) {
+                if (&pws[i] == owner) {
+                    PointType t = ptr == &pws[i].getWrapPoint1() ? PointType::PathWrapPt1 : PointType::PathWrapPt2;
+                    return PathElementLookup{t, i};
+                }
+            }
+        }
+
+        OPENSIM_THROW(OpenSim::Exception, "unable to create a PathElementLookup for the given pointer: are you sure it is part of the GeometryPath?");
+    }
+
+private:
+    enum class PointType : char { InPathPointSet, PathWrapPt1, PathWrapPt2 };
+
+    PathElementLookup(PointType pointType, int index) :
+        index_{index},
+        pointType_{pointType}
+    {
+    }
+public:
+    OpenSim::AbstractPathPoint* toPtr(const OpenSim::PathPointSet& pps,
+                                      const OpenSim::PathWrapSet& pws) const
+    {
+        switch (pointType_) {
+        case PointType::InPathPointSet:
+            return &pps.get(index_);
+        case PointType::PathWrapPt1:
+            return const_cast<OpenSim::PathWrapPoint*>(&pws.get(index_).getWrapPoint1());
+        case PointType::PathWrapPt2:
+            return const_cast<OpenSim::PathWrapPoint*>(&pws.get(index_).getWrapPoint2());
+        default:
+            OPENSIM_THROW(OpenSim::Exception, "unhandled PointType passed to `toPtr`: this is a developer error");
+        }
+    }
+
+private:
+    int index_ : 24;
+    PointType pointType_ : 8;
+};
+
+static void PopulatePathPointersCache(
+    const OpenSim::PathPointSet& pps,
+    const OpenSim::PathWrapSet& pws,
+    const std::vector<OpenSim::GeometryPath::PathElementLookup>& lookups,
+    OpenSim::Array<OpenSim::AbstractPathPoint*>& out)
+{
+    out.setSize(static_cast<int>(lookups.size()));
+    for (int i = 0, len = static_cast<int>(lookups.size()); i < len; ++i) {
+        out[i] = lookups[i].toPtr(pps, pws);
+    }
+}
+
+static void PopulatePathElementLookup(
+    const OpenSim::PathPointSet& pps,
+    const OpenSim::PathWrapSet& pws,
+    const OpenSim::Array<OpenSim::AbstractPathPoint*>& ptrs,
+    const OpenSim::GeometryPath& geomPath,
+    std::vector<OpenSim::GeometryPath::PathElementLookup>& out)
+{
+    out.clear();
+    out.reserve(ptrs.getSize());
+    for (int i = 0, len = ptrs.getSize(); i < len; ++i) {
+        out.push_back(OpenSim::GeometryPath::PathElementLookup::fromPtr(pps, pws, geomPath, ptrs[i]));
+    }
+}
+
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
@@ -102,7 +189,7 @@ void GeometryPath::extendConnectToModel(Model& aModel)
     this->_speedCV = addCacheVariable("speed", 0.0, SimTK::Stage::Velocity);
 
     // Cache the set of points currently defining this path.
-    this->_currentPathCV = addCacheVariable("current_path", Array<AbstractPathPoint*>{}, SimTK::Stage::Position);
+    this->_currentPathCV = addCacheVariable("current_path", std::vector<PathElementLookup>{}, SimTK::Stage::Position);
 
     // We consider this cache entry valid any time after it has been created
     // and first marked valid, and we won't ever invalidate it.
@@ -152,7 +239,7 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
 
         if (pwp) {
             // A PathWrapPoint provides points on the wrapping surface as Vec3s
-            Array<Vec3>& surfacePoints = pwp->getWrapPath();
+            const Array<Vec3>& surfacePoints = pwp->getWrapPath(state);
             // The surface points are expressed w.r.t. the wrap surface's body frame.
             // Transform the surface points into the ground reference frame to draw
             // the surface point as the wrapping portion of the GeometryPath
@@ -231,7 +318,7 @@ const OpenSim::Array <AbstractPathPoint*> & GeometryPath::
 getCurrentPath(const SimTK::State& s)  const
 {
     computePath(s);   // compute checks if path needs to be recomputed
-    return getCacheVariableValue< Array<AbstractPathPoint*> >(s, "current_path");
+    return _currentPathPtrsCache;
 }
 
 // get the path as PointForceDirections directions 
@@ -814,24 +901,47 @@ extendPostScale(const SimTK::State& s, const ScaleSet& scaleSet)
 void GeometryPath::computePath(const SimTK::State& s) const
 {
     if (isCacheVariableValid(s, _currentPathCV)) {
+        // even though the cache variable is valid, re-populate the pointers cache
+        //
+        // this is because although it may be valid *in the state* the
+        // model-level pointers cache may be dirty with lookups from other
+        // states
+        PopulatePathPointersCache(get_PathPointSet(),
+                                  get_PathWrapSet(),
+                                  getCacheVariableValue(s, _currentPathCV),
+                                  _currentPathPtrsCache);
         return;
     }
 
     // Clear the current path.
-    Array<AbstractPathPoint*>& currentPath = updCacheVariableValue(s, _currentPathCV);
-    currentPath.setSize(0);
+    _currentPathPtrsCache.setSize(0);
 
     // Add the active fixed and moving via points to the path.
     for (int i = 0; i < get_PathPointSet().getSize(); i++) {
         if (get_PathPointSet()[i].isActive(s))
-            currentPath.append(&get_PathPointSet()[i]); // <--- !!!!BAD
+            _currentPathPtrsCache.append(&get_PathPointSet()[i]); // <--- !!!!BAD
     }
   
     // Use the current path so far to check for intersection with wrap objects, 
     // which may add additional points to the path.
-    applyWrapObjects(s, currentPath);
-    calcLengthAfterPathComputation(s, currentPath);
+    applyWrapObjects(s, _currentPathPtrsCache);
+    calcLengthAfterPathComputation(s, _currentPathPtrsCache);
 
+    // the pointers array now contains the "correct" (wrapped) path
+    //
+    // because the path is state-dependent (different states may wrap differently), the
+    // path points (abstract) must be stored in a SimTK cache variable.
+    //
+    // However, we can't store raw pointers in a cache variable because that may cause
+    // aliasing issues in downstream code. E.g. the state may later be used with a
+    // copied/moved-from version of the model, rather than the original one, so the
+    // pointers may be stale.
+    std::vector<PathElementLookup>& lookups = updCacheVariableValue(s, _currentPathCV);
+    PopulatePathElementLookup(get_PathPointSet(),
+                              get_PathWrapSet(),
+                              _currentPathPtrsCache,
+                              *this,
+                              lookups);
     markCacheVariableValid(s, _currentPathCV);
 }
 
@@ -863,28 +973,29 @@ void GeometryPath::computeLengtheningSpeed(const SimTK::State& s) const
 void GeometryPath::
 applyWrapObjects(const SimTK::State& s, Array<AbstractPathPoint*>& path) const 
 {
-    if (get_PathWrapSet().getSize() < 1)
+    int wrapSetSize = get_PathWrapSet().getSize();
+    if (wrapSetSize < 1)
         return;
 
     WrapResult best_wrap;
     Array<int> result, order;
 
-    result.setSize(get_PathWrapSet().getSize());
-    order.setSize(get_PathWrapSet().getSize());
+    result.setSize(wrapSetSize);
+    order.setSize(wrapSetSize);
 
     // Set the initial order to be the order they are listed in the path.
-    for (int i = 0; i < get_PathWrapSet().getSize(); i++)
+    for (int i = 0; i < wrapSetSize; i++)
         order[i] = i;
 
     // If there is only one wrap object, calculate the wrapping only once.
     // If there are two or more objects, perform up to 8 iterations where
     // the result from one wrap object is used as the starting point for
     // the next wrap.
-    const int maxIterations = get_PathWrapSet().getSize() < 2 ? 1 : 8;
+    const int maxIterations = wrapSetSize < 2 ? 1 : 8;
     double last_length = SimTK::Infinity;
     for (int kk = 0; kk < maxIterations; kk++)
     {
-        for (int i = 0; i < get_PathWrapSet().getSize(); i++)
+        for (int i = 0; i < wrapSetSize; i++)
         {
             result[i] = 0;
             PathWrap& ws = get_PathWrapSet().get(order[i]);
@@ -973,7 +1084,7 @@ applyWrapObjects(const SimTK::State& s, Array<AbstractPathPoint*>& path) const
                         WrapResult wr;
                         wr.startPoint = pt1;
                         wr.endPoint   = pt2;
-
+                        wr.singleWrap = (wrapSetSize==1);
                         result[i] = wo->wrapPathSegment(s, *path.get(pt1), 
                                                         *path.get(pt2), ws, wr);
                         if (result[i] == WrapObject::mandatoryWrap) {
@@ -1016,17 +1127,15 @@ applyWrapObjects(const SimTK::State& s, Array<AbstractPathPoint*>& path) const
                 }
 
                 // Deallocate previous wrapping points if necessary.
-                ws.updWrapPoint2().getWrapPath().setSize(0);
+                ws.updWrapPoint2().clearWrapPath(s);
 
                 if (best_wrap.wrap_pts.getSize() == 0) {
                     ws.resetPreviousWrap();
-                    ws.updWrapPoint2().getWrapPath().setSize(0);
+                    ws.updWrapPoint2().clearWrapPath(s);
                 } else {
                     // If wrapping did occur, copy wrap info into the PathStruct.
-                    ws.updWrapPoint1().getWrapPath().setSize(0);
-
-                    Array<SimTK::Vec3>& wrapPath = ws.updWrapPoint2().getWrapPath();
-                    wrapPath = best_wrap.wrap_pts;
+                    ws.updWrapPoint1().clearWrapPath(s);
+                    ws.updWrapPoint2().setWrapPath(s, best_wrap.wrap_pts);
 
                     // In OpenSim, all conversion to/from the wrap object's 
                     // reference frame will be performed inside 
@@ -1038,11 +1147,11 @@ applyWrapObjects(const SimTK::State& s, Array<AbstractPathPoint*>& path) const
                     //            ms->ground_segment);
                     // }
 
-                    ws.updWrapPoint1().setWrapLength(0.0);
-                    ws.updWrapPoint2().setWrapLength(best_wrap.wrap_path_length);
+                    ws.updWrapPoint1().setWrapLength(s, 0.0);
+                    ws.updWrapPoint2().setWrapLength(s, best_wrap.wrap_path_length);
 
-                    ws.updWrapPoint1().setLocation(best_wrap.r1);
-                    ws.updWrapPoint2().setLocation(best_wrap.r2);
+                    ws.updWrapPoint1().setLocation(s, best_wrap.r1);
+                    ws.updWrapPoint2().setLocation(s, best_wrap.r2);
 
                     // Now insert the two new wrapping points into mp[] array.
                     path.insert(best_wrap.endPoint, &ws.updWrapPoint1());
@@ -1058,7 +1167,7 @@ applyWrapObjects(const SimTK::State& s, Array<AbstractPathPoint*>& path) const
             last_length = length;
         }
 
-        if (kk == 0 && get_PathWrapSet().getSize() > 1) {
+        if (kk == 0 && wrapSetSize > 1) {
             // If the first wrap was a no wrap, and the second was a no wrap
             // because a point was inside the object, switch the order of
             // the first two objects and try again.
@@ -1114,11 +1223,12 @@ calcLengthAfterPathComputation(const SimTK::State& s,
                                const Array<AbstractPathPoint*>& currentPath) const
 {
     double length = 0.0;
-
-    for (int i = 0; i < currentPath.getSize() - 1; i++) {
-        const AbstractPathPoint* p1 = currentPath[i];
-        const AbstractPathPoint* p2 = currentPath[i+1];
-
+    const AbstractPathPoint* p1 = currentPath[0];
+    Vec3 p1InGround = p1->getLocationInGround(s);
+    // Transform all points to ground once rather than once per-segment
+    for (int i = 1; i < currentPath.getSize() ; i++) {
+        const AbstractPathPoint* p2 = currentPath[i];
+        Vec3 p2InGround = p2->getLocationInGround(s);
         // If both points are wrap points on the same wrap object, then this
         // path segment wraps over the surface of a wrap object, so just add in 
         // the pre-calculated length.
@@ -1128,10 +1238,12 @@ calcLengthAfterPathComputation(const SimTK::State& s,
         {
             const PathWrapPoint* smwp = dynamic_cast<const PathWrapPoint*>(p2);
             if (smwp)
-                length += smwp->getWrapLength();
+                length += smwp->getWrapLength(s);
         } else {
-            length += p1->calcDistanceBetween(s, *p2);
+            length += (p1InGround - p2InGround).norm();
         }
+        p1 = p2;
+        p1InGround = p2InGround;
     }
 
     setLength(s,length);

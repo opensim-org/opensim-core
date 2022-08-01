@@ -96,6 +96,31 @@ protected:
         }
     }
 
+    template <typename TRow, typename TColumn>
+    void setVariableScaling(Var key, const TRow& rowIndices,
+        const TColumn& columnIndices, const Bounds& bounds) {
+        if (m_solver.getScaleVariablesUsingBounds()) {
+            const auto& lower = bounds.lower;
+            const auto& upper = bounds.upper;
+            double dilate = upper - lower;
+            double shift;
+            if (std::isinf(dilate) || std::isnan(dilate)) {
+                dilate = 1;
+                shift = 0;
+            } else if (dilate == 0) {
+                dilate = 1;
+                shift = upper;
+            } else {
+                shift = -0.5 * (upper + lower);
+            }
+            m_scale.at(key)(rowIndices, columnIndices) = dilate;
+            m_shift.at(key)(rowIndices, columnIndices) = shift;
+        } else {
+            m_scale.at(key)(rowIndices, columnIndices) = 1;
+            m_shift.at(key)(rowIndices, columnIndices) = 0;
+        }
+    }
+
     template <typename T>
     struct Constraints {
         T defects;
@@ -123,23 +148,29 @@ protected:
     int m_numMultibodyResiduals = -1;
     int m_numAuxiliaryResiduals = -1;
     int m_numConstraints = -1;
+    int m_numPathConstraintPoints = -1;
     casadi::DM m_grid;
     casadi::DM m_pointsForInterpControls;
     casadi::MX m_times;
     casadi::MX m_duration;
 
 private:
-    VariablesMX m_vars;
+    VariablesMX m_scaledVars;
+    VariablesMX m_unscaledVars;
     casadi::MX m_paramsTrajGrid;
     casadi::MX m_paramsTrajMesh;
     casadi::MX m_paramsTrajMeshInterior;
+    casadi::MX m_paramsTrajPathCon;
     VariablesDM m_lowerBounds;
     VariablesDM m_upperBounds;
+    VariablesDM m_shift;
+    VariablesDM m_scale;
 
     casadi::DM m_meshIndicesMap;
     casadi::Matrix<casadi_int> m_gridIndices;
     casadi::Matrix<casadi_int> m_meshIndices;
     casadi::Matrix<casadi_int> m_meshInteriorIndices;
+    casadi::Matrix<casadi_int> m_pathConstraintIndices;
 
     casadi::MX m_xdot; // State derivatives.
 
@@ -173,11 +204,12 @@ private:
     void transcribe();
     void setObjectiveAndEndpointConstraints();
     void calcDefects() {
-        calcDefectsImpl(m_vars.at(states), m_xdot, m_constraints.defects);
+        calcDefectsImpl(
+                m_unscaledVars.at(states), m_xdot, m_constraints.defects);
     }
     void calcInterpolatingControls() {
         calcInterpolatingControlsImpl(
-                m_vars.at(controls), m_constraints.interp_controls);
+                m_unscaledVars.at(controls), m_constraints.interp_controls);
     }
 
     /// Use this function to ensure you iterate through variables in the same
@@ -204,13 +236,53 @@ private:
         CasOC::VariablesDM out;
         using casadi::Slice;
         casadi_int offset = 0;
-        for (const auto& key : getSortedVarKeys(m_vars)) {
-            const auto& value = m_vars.at(key);
+        for (const auto& key : getSortedVarKeys(m_scaledVars)) {
+            const auto& value = m_scaledVars.at(key);
             // Convert a portion of the column vector into a matrix.
             out[key] = casadi::DM::reshape(
                     x(Slice(offset, offset + value.numel())), value.rows(),
                     value.columns());
             offset += value.numel();
+        }
+        return out;
+    }
+
+    /// unscaled = (upper - lower) * scaled - 0.5 * (upper + lower);
+    template <typename T>
+    Variables<T> unscaleVariables(const Variables<T>& scaledVars) {
+        using casadi::DM;
+        Variables<T> out;
+
+        for (const auto& kv : scaledVars) {
+            const auto& key = kv.first;
+            const auto& scaled = scaledVars.at(key);
+            const auto& numCols = scaled.columns();
+            // The shift and scale are column vectors. For appropriate
+            // elementwise math, we repeat the column to match the number of
+            // columns for this key.
+            const auto& shift = DM::repmat(m_shift.at(key), 1, numCols);
+            const auto& scale = DM::repmat(m_scale.at(key), 1, numCols);
+            out[key] = scaled * scale + shift;
+        }
+        return out;
+    }
+
+    /// scaled = [unscaled + 0.5 * (upper + lower)] / (upper - lower)
+    template <typename T>
+    Variables<T> scaleVariables(const Variables<T>& unscaledVars) {
+        using casadi::DM;
+        Variables<T> out;
+
+        for (const auto& kv : unscaledVars) {
+            const auto& key = kv.first;
+            const auto& unscaled = unscaledVars.at(key);
+            const auto& numCols = unscaled.columns();
+            // The shift and scale are column vectors. For appropriate
+            // elementwise math, we repeat the column to match the number of
+            // columns for this key.
+            const auto& shift = DM::repmat(m_shift.at(key), 1, numCols);
+            const auto& scale = DM::repmat(m_scale.at(key), 1, numCols);
+            out[key] = (unscaled - shift) / scale;
         }
         return out;
     }
@@ -252,23 +324,25 @@ private:
         //    path_3                        x
         //    residual_3                    x
 
-        // Hermite-Simpson sparsity pattern for mesh intervals 0, 1 and 2:
+        // Hermite-Simpson sparsity pattern for mesh intervals 0, 1 and 2
+        // (* indicates additional non-zero entry when path constraint
+        // midpoints are enforced):
         //                   0    0.5    1    1.5    2    2.5    3
         //    endpoint       x     x     x     x     x     x     x
-        //    path_0         x
+        //    path_0         x     *
         //    kinematic_0    x
         //    residual_0     x
         //    residual_0.5         x
         //    defect_0       x     x     x
         //    interp_con_0   x     x     x
         //    kinematic_1                x
-        //    path_1                     x
+        //    path_1                     x     *
         //    residual_1                 x
         //    residual_1.5                     x
         //    defect_1                   x     x     x
         //    interp_con_1               x     x     x
         //    kinematic_2                            x
-        //    path_2                                 x
+        //    path_2                                 x     *
         //    residual_2                             x
         //    residual_2.5                                 x
         //    defect_2                               x     x     x
@@ -282,14 +356,17 @@ private:
             copyColumn(endpoint, 0);
         }
 
+        for (int ipc = 0; ipc < m_numPathConstraintPoints; ++ipc) {
+            for (const auto& path: constraints.path) {
+                copyColumn(path, ipc);
+            }
+        }
+
         int igrid = 0;
         // Index for pointsForInterpControls.
         int icon = 0;
         for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
             copyColumn(constraints.kinematic, imesh);
-            for (const auto& path : constraints.path) {
-                copyColumn(path, imesh);
-            }
             if (imesh < m_numMeshIntervals) {
                 while (m_grid(igrid).scalar() < m_solver.getMesh()[imesh + 1]) {
                     copyColumn(constraints.multibody_residuals, igrid);
@@ -340,7 +417,7 @@ private:
         out.path.resize(m_problem.getPathConstraintInfos().size());
         for (int ipc = 0; ipc < (int)m_constraints.path.size(); ++ipc) {
             const auto& info = m_problem.getPathConstraintInfos()[ipc];
-            out.path[ipc] = init(info.size(), m_numMeshPoints);
+            out.path[ipc] = init(info.size(), m_numPathConstraintPoints);
         }
         out.interp_controls = init(m_problem.getNumControls(),
                 (int)m_pointsForInterpControls.numel());
@@ -359,12 +436,17 @@ private:
             copyColumn(endpoint, 0);
         }
 
+        for (int ipc = 0; ipc < m_numPathConstraintPoints; ++ipc) {
+            for (auto& path : out.path) {
+                copyColumn(path, ipc);
+            }
+        }
+
         int igrid = 0;
         // Index for pointsForInterpControls.
         int icon = 0;
         for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
             copyColumn(out.kinematic, imesh);
-            for (auto& path : out.path) { copyColumn(path, imesh); }
             if (imesh < m_numMeshIntervals) {
                 while (m_grid(igrid).scalar() < m_solver.getMesh()[imesh + 1]) {
                     copyColumn(out.multibody_residuals, igrid);

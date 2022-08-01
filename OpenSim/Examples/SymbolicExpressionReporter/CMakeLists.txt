@@ -40,9 +40,6 @@ set(PLUGIN_NAME "osimExpressionReporter")
 
 # Settings.
 # ---------
-set(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME}
-        CACHE PATH "Top-level directory of OpenSim install")
-
 # OpenSim uses C++11 language features.
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

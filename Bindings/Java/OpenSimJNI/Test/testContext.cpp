@@ -127,7 +127,7 @@ int main()
     cout << path.getSize() << endl;
     for(int i=0; i< path.getSize(); i++)
         cout << path[i]->getParentFrame().getName()
-             << path[i]->getLocation(stateCopy) << endl;
+             << path[i]->getLocation(context->getCurrentStateRef()) << endl;
     // Compare to known path 
     const OpenSim::Body& dBody = model->getBodySet().get("r_ulna_radius_hand");
     Transform xform = context->getTransform(dBody);
@@ -158,12 +158,13 @@ int main()
     // Compare to known xform
     dTRIlong->updGeometryPath().updateGeometry(context->getCurrentStateRef());
     const OpenSim::Array<AbstractPathPoint*>& newPath = context->getCurrentPath(*dTRIlong);
+    context->realizePosition();
     // Compare to known path 
     cout << "New Muscle Path" << endl;
     cout << path.getSize() << endl;
     for(int i=0; i< path.getSize(); i++)
         cout << path[i]->getParentFrame().getName() 
-             << path[i]->getLocation(stateCopy) << endl;
+             << path[i]->getLocation(context->getCurrentStateRef()) << endl;
     double length2 = context->getMuscleLength(*dTRIlong);
     cout << length2 << endl;
     ASSERT_EQUAL(.315748, length2, 1e-5);

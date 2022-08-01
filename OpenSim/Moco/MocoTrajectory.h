@@ -100,6 +100,15 @@ the trajectory will be sealed (MocoTrajectory::isSealed()), which means
 that you cannot do anything with the trajectory (read, edit, or write) until you
 call MocoTrajectory::unseal(). The sealing forces you to acknowledge that the
 solver failed.
+
+@par Convenience accessors
+The accessors getValuesTrajectory() and getSpeedsTrajectory() (and related
+methods (e.g., getValueNames()) are available to obtain only the coordinate
+values or coordinate speeds, which are part of the states trajectory. Note that
+these accessors create fresh data structures from the existing member variables,
+so repeated calls should be avoided. Similarly, the accessors
+getAccelerationsTrajectory() and getDerivativesWithoutAccelerationsTrajectory()
+are available to access subcomponents of the derivatives trajectory.
  */
 // Not using three-slash doxygen comments because that messes up verbatim.
 class OSIMMOCO_API MocoTrajectory {
@@ -454,6 +463,25 @@ public:
         return (int)m_derivative_names.size();
     }
 
+    int getNumValues() const {
+        ensureUnsealed();
+        return (int)getValueIndices().size();
+    }
+
+    int getNumSpeeds() const {
+        return (int)getSpeedIndices().size();
+    }
+
+    int getNumAccelerations() const {
+        ensureUnsealed();
+        return (int)getAccelerationIndices().size();
+    }
+
+    int getNumDerivativesWithoutAccelerations() const {
+        ensureUnsealed();
+        return getNumDerivatives() - getNumAccelerations();
+    }
+
     int getNumParameters() const {
         ensureUnsealed();
         return (int)m_parameter_names.size();
@@ -474,6 +502,50 @@ public:
     const std::vector<std::string>& getDerivativeNames() const {
         ensureUnsealed();
         return m_derivative_names;
+    }
+    std::vector<std::string> getValueNames() const {
+        ensureUnsealed();
+        std::vector<std::string> valueNames;
+        for (const auto& name : m_state_names) {
+            auto leafpos = name.find("/value");
+            if (leafpos != std::string::npos) {
+                valueNames.push_back(name);
+            }
+        }
+        return valueNames;
+    }
+    std::vector<std::string> getSpeedNames() const {
+        ensureUnsealed();
+        std::vector<std::string> speedNames;
+        for (const auto& name : m_state_names) {
+            auto leafpos = name.find("/speed");
+            if (leafpos != std::string::npos) {
+                speedNames.push_back(name);
+            }
+        }
+        return speedNames;
+    }
+    std::vector<std::string> getAccelerationNames() const {
+        ensureUnsealed();
+        std::vector<std::string> accelerationNames;
+        for (const auto& name : m_derivative_names) {
+            auto leafpos = name.find("/accel");
+            if (leafpos != std::string::npos) {
+                accelerationNames.push_back(name);
+            }
+        }
+        return accelerationNames;
+    }
+    std::vector<std::string> getDerivativeNamesWithoutAccelerations() const {
+        ensureUnsealed();
+        std::vector<std::string> derivativeNamesWithoutAccelerations;
+        for (const auto& name : m_derivative_names) {
+            auto leafpos = name.find("/accel");
+            if (leafpos == std::string::npos) {
+                derivativeNamesWithoutAccelerations.push_back(name);
+            }
+        }
+        return derivativeNamesWithoutAccelerations;
     }
     const std::vector<std::string>& getParameterNames() const {
         ensureUnsealed();
@@ -499,6 +571,34 @@ public:
     const SimTK::Matrix& getDerivativesTrajectory() const {
         ensureUnsealed();
         return m_derivatives;
+    }
+    SimTK::Matrix getValuesTrajectory() const {
+        ensureUnsealed();
+        auto indices = getValueIndices();
+        if (indices.empty()) indices.push_back(0);
+        return {m_states.block(0, indices[0],
+                m_states.nrow(), getNumValues())};
+    }
+    SimTK::Matrix getSpeedsTrajectory() const {
+        ensureUnsealed();
+        auto indices = getSpeedIndices();
+        if (indices.empty()) indices.push_back(0);
+        return {m_states.block(0, indices[0],
+                m_states.nrow(), getNumSpeeds())};
+    }
+    SimTK::Matrix getAccelerationsTrajectory() const {
+        ensureUnsealed();
+        auto indices = getAccelerationIndices();
+        if (indices.empty()) indices.push_back(0);
+        return {m_derivatives.block(0, indices[0],
+                m_derivatives.nrow(), getNumAccelerations())};
+    }
+    SimTK::Matrix getDerivativesWithoutAccelerationsTrajectory() const {
+        ensureUnsealed();
+        auto indices = getDerivativeIndicesWithoutAccelerations();
+        if (indices.empty()) indices.push_back(0);
+        return {m_derivatives.block(0, indices[0], m_derivatives.nrow(),
+                getNumDerivativesWithoutAccelerations())};
     }
     const SimTK::RowVector& getParameters() const {
         ensureUnsealed();
@@ -609,6 +709,23 @@ public:
     TimeSeriesTable exportToStatesTable() const;
     /// Export the controls trajectory to a TimeSeriesTable.
     TimeSeriesTable exportToControlsTable() const;
+    /// Export the multipliers trajectory to a TimeSeriesTable.
+    TimeSeriesTable exportToMultipliersTable() const;
+    /// Export the derivatives trajectory to a TimeSeriesTable.
+    TimeSeriesTable exportToDerivativesTable() const;
+    /// Export the coordinate values from the states trajectory to a
+    /// TimeSeriesTable.
+    TimeSeriesTable exportToValuesTable() const;
+    /// Export the coordinate speeds from the states trajectory to a
+    /// TimeSeriesTable.
+    TimeSeriesTable exportToSpeedsTable() const;
+    /// Export the coordinate accelerations from the derivatives trajectory to a
+    /// TimeSeriesTable.
+    TimeSeriesTable exportToAccelerationsTable() const;
+    /// Export the derivatives trajectory without coordinate accelerations to a
+    /// TimeSeriesTable.
+    TimeSeriesTable exportToDerivativesWithoutAccelerationsTable() const;
+
     /// Controls are not carried over to the StatesTrajectory.
     /// The MocoProblem is necessary because we need the underlying Model to
     /// order the state variables correctly.
@@ -732,6 +849,55 @@ private:
     // with threading (e.g., std::unique_lock()).
     bool m_sealed = false;
     static const std::vector<std::string> m_allowedKeys;
+
+    std::vector<int> getValueIndices() const {
+        ensureUnsealed();
+        std::vector<int> valueIndices;
+        for (int i = 0; i < (int)m_state_names.size(); ++i) {
+            const auto& name = m_state_names[i];
+            auto leafpos = name.find("/value");
+            if (leafpos != std::string::npos) {
+                valueIndices.push_back(i);
+            }
+        }
+        return valueIndices;
+    }
+    std::vector<int> getSpeedIndices() const {
+        ensureUnsealed();
+        std::vector<int> speedIndices;
+        for (int i = 0; i < (int)m_state_names.size(); ++i) {
+            const auto& name = m_state_names[i];
+            auto leafpos = name.find("/speed");
+            if (leafpos != std::string::npos) {
+                speedIndices.push_back(i);
+            }
+        }
+        return speedIndices;
+    }
+    std::vector<int> getAccelerationIndices() const {
+        ensureUnsealed();
+        std::vector<int> accelerationIndices;
+        for (int i = 0; i < (int)m_derivative_names.size(); ++i) {
+            const auto& name = m_derivative_names[i];
+            auto leafpos = name.find("/accel");
+            if (leafpos != std::string::npos) {
+                accelerationIndices.push_back(i);
+            }
+        }
+        return accelerationIndices;
+    }
+    std::vector<int> getDerivativeIndicesWithoutAccelerations() const {
+        ensureUnsealed();
+        std::vector<int> derivativeIndicesWithoutAccelerations;
+        for (int i = 0; i < (int)m_derivative_names.size(); ++i) {
+            const auto& name = m_derivative_names[i];
+            auto leafpos = name.find("/accel");
+            if (leafpos == std::string::npos) {
+                derivativeIndicesWithoutAccelerations.push_back(i);
+            }
+        }
+        return derivativeIndicesWithoutAccelerations;
+    }
 };
 
 /// Return type for MocoStudy::solve(). Use success() to check if the solver
