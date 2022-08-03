@@ -61,7 +61,7 @@ elseif(TROPTER_COPY_DEPENDENCIES AND UNIX)
 
             ${gfortran}
             ${quadmath}
-            ${gcc_libdir}/libgcc_s.so.1
+            ${gcc_libdir}/libgcc_s.so
 
             DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
