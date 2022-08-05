@@ -64,7 +64,11 @@ elseif(TROPTER_COPY_DEPENDENCIES AND UNIX)
             ${gcc_libdir}/libgcc_s.so
 
             DESTINATION ${CMAKE_INSTALL_LIBDIR})
-
+        set(script
+            ${CMAKE_CURRENT_BINARY_DIR}/tropter_install_linux_dependency_libraries.cmake)
+        configure_file(tropter_install_linux_dependency_libraries.cmake.in
+                   "${script}" @ONLY)
+        install(SCRIPT "${script}")
 endif()
 
 
