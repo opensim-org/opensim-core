@@ -10,30 +10,12 @@ macro(install_name_tool_change lib dep_name dep_oldpath)
             "${libdir}/lib${lib}.dylib")
 endmacro()
 
-macro(install_name_tool_change_gfortran lib)
-    execute_process(COMMAND bash "-c"
-        "otool -L ${libdir}/lib${lib}.dylib | grep 'libgfortran.*version' | perl -pe 's/^\\s+(.*)\\/libg.*/\\1/gc'"
-        OUTPUT_VARIABLE libgfortran_dir
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-    execute_process(COMMAND bash "-c"
-        "otool -L ${libdir}/lib${lib}.dylib | grep 'libgfortran.*version' | perl -pe 's/.*lib(.*).dylib.*/\\1/gc'"
-        OUTPUT_VARIABLE libgfortran_name
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-    install_name_tool_change(${lib} "${libgfortran_name}" "${libgfortran_dir}")
-endmacro()
-
-macro(install_name_tool_change_quadmath lib)
-execute_process(COMMAND bash "-c"
-    "otool -L ${libdir}/lib${lib}.dylib | grep 'libquadmath' | perl -pe 's/^\\s+(.*)\\/libq.*/\\1/gc'"
-    OUTPUT_VARIABLE libquadmath_dir
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-execute_process(COMMAND bash "-c"
-    "otool -L ${libdir}/lib${lib}.dylib | grep 'libquadmath' | perl -pe 's/.*lib(.*).dylib.*/\\1/gc'"
-    OUTPUT_VARIABLE libquadmath_name
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
-    install_name_tool_change(${lib} "${libquadmath_name}" "${libquadmath_dir}")
-endmacro()
+#execute_process(COMMAND bash "-c"
+#    "otool -L ${libdir}/lib${lib}.dylib | grep 'libquadmath' | perl -pe 's/.*lib(.*).dylib.*/\\1/gc'"
+#    OUTPUT_VARIABLE libquadmath_name
+#    OUTPUT_STRIP_TRAILING_WHITESPACE)
+#    install_name_tool_change(${lib} "${libquadmath_name}" "${libquadmath_dir}")
+#endmacro()
 
 macro(install_name_tool_id lib)
     execute_process(COMMAND install_name_tool
@@ -43,14 +25,14 @@ endmacro()
 
 macro(install_name_tool_add_rpath lib)
     execute_process(COMMAND patchelf
-            --add_rpath "@loader_path/"
-            "${libdir}/lib${lib}.so")
+            --add-rpath "$ORIGIN"
+            "${libdir}/lib${lib}")
 endmacro()
 
 macro(install_name_tool_delete_rpath lib rpath)
     execute_process(COMMAND patchelf
             --remove-rpath ${rpath}
-            "${libdir}/lib${lib}.so")
+            "${libdir}/lib${lib}")
 endmacro()
 
 # Get the directory containing libgcc_s.1.dylib.
@@ -61,10 +43,10 @@ endmacro()
 #   (.*)       matches everything up to libgcc, and captures it as match gorup #1
 #   \\/libg.*  matches the rest of the line.
 #   \\1        replaces the contents of the entire match with match group #1
-execute_process(COMMAND bash "-c"
-    "otool -L ${libdir}/libgfortran.dylib | grep 'libgcc' | perl -pe 's/^\\s+(.*)\\/libg.*/\\1/gc'"
-    OUTPUT_VARIABLE libgcc_dir
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
+#execute_process(COMMAND bash "-c"
+#    "otool -L ${libdir}/libgfortran.dylib | grep 'libgcc' | perl -pe 's/^\\s+(.*)\\/libg.*/\\1/gc'"
+#    OUTPUT_VARIABLE libgcc_dir
+#    OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 # tropter
 #install_name_tool_change(tropter adolc.2 "@ADOLC_DIR@/lib64")
@@ -73,11 +55,13 @@ execute_process(COMMAND bash "-c"
 #install_name_tool_change(tropter coinmetis.1 "@IPOPT_LIBDIR@")
 #install_name_tool_change_gfortran(tropter)
 #install_name_tool_change_quadmath(tropter)
-install_name_tool_add_rpath(tropter)
+install_name_tool_add_rpath(tropter.so)
 
 # adol-c
 #install_name_tool_id(adolc.2)
-install_name_tool_add_rpath(adolc.2)
+install_name_tool_add_rpath(adolc.so.2.1.0)
+install_name_tool_add_rpath(adolc.so)
+install_name_tool_add_rpath(adolc.so.2)
 #install_name_tool_delete_rpath(adolc.2 "@ColPack_ROOT_DIR@/lib")
 
 # ipopt
