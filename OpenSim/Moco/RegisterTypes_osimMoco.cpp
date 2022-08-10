@@ -31,6 +31,7 @@
 #include "MocoGoal/MocoControlGoal.h"
 #include "MocoGoal/MocoControlTrackingGoal.h"
 #include "MocoGoal/MocoGoal.h"
+#include "MocoGoal/MocoImpulseTrackingGoal.h
 #include "MocoGoal/MocoInitialActivationGoal.h"
 #include "MocoGoal/MocoInitialForceEquilibriumDGFGoal.h"
 #include "MocoGoal/MocoInitialVelocityEquilibriumDGFGoal.h"
