@@ -10,6 +10,7 @@ v4.4.1
 ======
 
 - Made `Component::getSocketNames` a `const` member method (previously: non-const)
+- Fixed an issue with IPOPT libraries when building OpenSim with `OPENSIM_WITH_CASADI = ON` but `OPENSIM_WITH_TROPTER = OFF` (Issue #3267).
 
 v4.4
 ====
