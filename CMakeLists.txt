@@ -851,6 +851,16 @@ if(OPENSIM_WITH_CASADI)
     endif()
 endif()
 
+# IPOPT
+# -----
+
+# Avoid using pkg-config on Windows as it's not easy to get
+# on Windows. On UNIX, the pkg-config file for Ipopt provides
+# a flag that we must use.
+if(UNIX)
+    find_package(PkgConfig REQUIRED)
+endif()
+
 if (OPENSIM_WITH_CASADI OR OPENSIM_WITH_TROPTER)
 	if(UNIX)
 		pkg_check_modules(IPOPT REQUIRED ipopt IMPORTED_TARGET)
