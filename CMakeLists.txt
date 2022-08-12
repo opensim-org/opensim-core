@@ -862,20 +862,20 @@ if(UNIX)
 endif()
 
 if (OPENSIM_WITH_CASADI OR OPENSIM_WITH_TROPTER)
-	if(UNIX)
-		pkg_check_modules(IPOPT REQUIRED ipopt IMPORTED_TARGET)
-	else()
-		find_package(Ipopt REQUIRED CONFIG)
-		set_package_properties(IPOPT PROPERTIES
-				URL https://projects.coin-or.org/Ipopt
-				TYPE REQUIRED
-				PURPOSE "Nonlinear optimization")
-		# Flags to use when building a shared library.
-		# TODO move these flags to a specific target.
-		# TODO set(CMAKE_SHARED_LINKER_FLAGS
-		# TODO        "${CMAKE_SHARED_LINKER_FLAGS} ${IPOPT_LINK_FLAGS}")
-		OpenSimCopyDependencyDLLsForWin(DEP_NAME IPOPT DEP_BIN_DIR "${Ipopt_ROOT_DIR}/bin")
-	endif()
+    if(UNIX)
+        pkg_check_modules(IPOPT REQUIRED ipopt IMPORTED_TARGET)
+    else()
+        find_package(Ipopt REQUIRED CONFIG)
+        set_package_properties(IPOPT PROPERTIES
+                URL https://projects.coin-or.org/Ipopt
+                TYPE REQUIRED
+                PURPOSE "Nonlinear optimization")
+        # Flags to use when building a shared library.
+        # TODO move these flags to a specific target.
+        # TODO set(CMAKE_SHARED_LINKER_FLAGS
+        # TODO        "${CMAKE_SHARED_LINKER_FLAGS} ${IPOPT_LINK_FLAGS}")
+        OpenSimCopyDependencyDLLsForWin(DEP_NAME IPOPT DEP_BIN_DIR "${Ipopt_ROOT_DIR}/bin")
+    endif()
 endif()
 
 # Installing dependencies into OpenSim's installation.
