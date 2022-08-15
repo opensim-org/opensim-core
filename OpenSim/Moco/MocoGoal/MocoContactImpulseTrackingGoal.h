@@ -1,11 +1,11 @@
-#ifndef OPENSIM_MOCOIMPULSETRACKINGGOAL_H
-#define OPENSIM_MOCOIMPULSETRACKINGGOAL_H
+#ifndef OPENSIM_MOCOCONTACTIMPULSETRACKINGGOAL_H
+#define OPENSIM_MOCOCONTACTIMPULSETRACKINGGOAL_H
 /* -------------------------------------------------------------------------- *
- * OpenSim: MocoImpulseTrackingGoal.h                                         *
+ * OpenSim: MocoContactImpulseTrackingGoal.h                                  *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2020 Stanford University and the Authors                     *
+ * Copyright (c) 2022 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia                                              *
+ * Author(s): Nicos Haralabidis                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -19,18 +19,19 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Moco/osimMoco.h>
-#include "osimMocoImpulseTrackingGoalDLL.h"
+#include "osimMocoContactImpulseTrackingGoalDLL.h"
 #include <OpenSim/Simulation/Model/ExternalLoads.h>
 
 namespace OpenSim {
 
     class SmoothSphereHalfSpaceForce;
     /**
-    \section MocoImpulseTrackingGoalGroup
-    A contact group consists of the name of a single ExternalForce and a list of
-    contact force component paths in the model. The MocoImpulseTrackingGoal
-    calculates the difference between the data from the ExternalForce and the sum of
-    the forces from the contact force components.
+    \section MocoContactImpulseTrackingGoalGroup
+    The MocoContactImpulseTrackingGoalGroup reflects the name of a single ExternalForce 
+    and a list of smooth compliant contact force components in the model. 
+    The MocoContactImpulseTrackingGoal calculates the difference in contact impulse, 
+    for a single axis, between the data from the ExternalForce and the sum of the 
+    forces from the contact force components.
     ## Alternative frame paths
     Contact force elements that correspond to a single ExternalForce are
     typically attached to the same single body/frame. However, it is possible
@@ -45,25 +46,25 @@ namespace OpenSim {
     specifying these alternative frames, Moco does not know which force to use
     (the force on the sphere or the force on the half-space) when summing the
     contact forces across contact force elements.
-    @see MocoImpulseTrackingGoal */
-    class OSIMMOCOIMPULSETRACKINGGOAL_API MocoImpulseTrackingGoalGroup : public Object {
-        OpenSim_DECLARE_CONCRETE_OBJECT(MocoImpulseTrackingGoalGroup, Object);
+    @see MocoContactImpulseTrackingGoal */
+    class OSIMMOCOCONTACTIMPULSETRACKINGGOAL_API MocoContactImpulseTrackingGoalGroup : public Object {
+        OpenSim_DECLARE_CONCRETE_OBJECT(MocoContactImpulseTrackingGoalGroup, Object);
     public:
         OpenSim_DECLARE_LIST_PROPERTY(contact_force_paths, std::string,
             "Paths to SmoothSphereHalfSpaceForce objects in the model whose "
-            "forces are summed and compared to the data from a single "
-            "ExternalForce.");
+            "combined contact impulse is compared to the contact impulse "
+            "from a single ExternalForce.");
         OpenSim_DECLARE_PROPERTY(external_force_name, std::string,
             "The name of an ExternalForce object in the ExternalLoads set.");
         OpenSim_DECLARE_LIST_PROPERTY(alternative_frame_paths, std::string,
             "If neither of the two bodies/frames of a contact force match "
             "ExternalForce's applied_to_body, then one of the bodies/frames "
             "must match one of these alternative frame paths.");
-        MocoImpulseTrackingGoalGroup();
-        MocoImpulseTrackingGoalGroup(
+        MocoContactImpulseTrackingGoalGroup();
+        MocoContactImpulseTrackingGoalGroup(
             const std::vector<std::string>& contactForcePaths,
             const std::string& externalForceName);
-        MocoImpulseTrackingGoalGroup(
+        MocoContactImpulseTrackingGoalGroup(
             const std::vector<std::string>& contactForcePaths,
             const std::string& externalForceName,
             const std::vector<std::string>& altFramePaths);
@@ -73,19 +74,20 @@ namespace OpenSim {
 
 
     /**
-    \section MocoImpulseTrackingGoal
+    \section MocoContactImpulseTrackingGoal
     Minimize the error between compliant contact force impulse from the model and
-    experimentally measured contact impulse.
-    This class handles multiple groups of contact forces and a single
-    experimental external loads file. Tracking ground reaction forces for the
-    left and right feet in gait requires only one instance of this goal.
+    experimentally measured contact impulse - for a single axis.
+    This class handles the contact impulses from a single contact group and a 
+    single experimental external loads file. Tracking ground reaction impulses for
+    the left and right feet in gait requires separate instances of this goal.
+    Tracking ground reaction impulses for multiple axes requires separate 
+    instances of this goal.
     @note The only contact element supported is SmoothSphereHalfSpaceForce.
     @note This goal does not include torques or centers of pressure.
     This goal is computed as follows:
     \f[
-    \frac{1}{mg} \int_{t_i}^{t_f}
-            \sum_{j \in G}
-                \|\mathrm{proj}_{\hat{n}}(\vec{F}_{m,j} - \vec{F}_{e,j})\|^2 ~dt
+    \frac{1}{mg} (\int_{t_i}^{t_f}
+                 \vec{F}_{m,j,a} - \vec{F}_{e,j,a} ~dt)^2; {j \in G}; {a \in A}
     \f]
     We use the following notation:
     - \f$ t_i \f$: the initial time of this phase.
@@ -93,27 +95,15 @@ namespace OpenSim {
     - \f$ mg \f$: the total weight of the system; replaced with
         \f$ m \f$ if \f$ g = 0 \f$.
     - \f$ G \f$: the set of contact groups.
-    - \f$ \hat{n} \f$: a vector used for projecting the force error.
-    - \f$ \mathrm{proj}_{\hat{n}}() \f$: this function projects the force error
-        either onto \f$ \hat{n} \f$ or onto the plane perpendicular to
-        \f$ \hat{n} \f$.
-    - \f$ \vec{F}_{m,j} \f$ the sum of the contact forces in group \f$ j \f$,
-        expressed in ground.
-    - \f$ \vec{F}_{e,j} \f$ the experimental contact force for group \f$ j \f$,
-        expressed in ground.
-    # Tracking a subset of force components
-    The projection is useful for selecting which components of the force to
-    track. The force can be projected to be onto a vector or
-    onto a plane. For example, with gait, projecting onto the vector (0, 1, 0)
-    allows tracking only the vertical component of a ground reaction force;
-    projecting onto the plane perpendicular to the vector (0, 0, 1) allows
-    ignoring the transverse force. See the projection and projection_vector
-    properties.
+    - \f$ A \f$: the set of axes {0, 1, 2}.
+
+    The impulse_axis property, a = {0, 1, 2}, specifies which component
+    of the contact impulse should be tracked.
+
     ## Usage
     To use this goal, specify the following:
     - a single ExternalLoads file or object, which is a set of ExternalForces.
-    - a set of contact groups, each of which contains the name of an
-        ExternalForce (within the ExternalLoads).
+    - a single contact group, which contains the names of an contact forces. 
     ### Configuring the ExternalLoads
     The ExternalLoads class is the standard way to provide experimental contact
     forces in OpenSim. This class is a set of ExternalForce objects. For gait,
@@ -140,37 +130,37 @@ namespace OpenSim {
     @note The ExternalLoads used by this goal is separate from the model. Using
     this goal implies that the model contains compliant contact forces, so
     adding ExternalLoads to the model would be redundant. This class uses the
-    ExternalLoads *only* for computing the force error, not for applying forces
-    to the model.
+    ExternalLoads *only* for computing the contact impulse error, not for 
+    applying forces to the model.
     ### Scale factors
     Add a MocoParameter to the problem that will scale the tracking reference
     data associated with a contact force group. Scale factors are applied
     to the tracking error calculations based on the following equation:
          error = modelValue - scaleFactor * referenceValue
-    In other words, the scale factor is applied when computing the tracking
-    error for each contact force group, not to the reference data directly.
-    You must specify both the external force name associated with the contact
-    force group and the index corresponding to the direction (i.e., X = 0,
-    Y = 1, Z = 2) of the scaled force value. The direction is applied in
-    whatever frame the reference data is expressed in based on the provided
-    ExternalLoads in each contact group.
+    In other words, the scale factor is applied when computing the contact
+    impulse tracking error for each contact force group, not to the reference 
+    data directly. You must specify both the external force name associated 
+    with the contact force group and the index corresponding to the direction
+    (i.e., X = 0, Y = 1, Z = 2) of the scaled force value. The direction is 
+    applied in whatever frame the reference data is expressed in based on the 
+    provided ExternalLoads in each contact group.
     Adding a scale factor to a MocoImpulseTrackingGoal.
     @code
-    auto* markerTrackingGoal = problem.addGoal<MocoContactTrackingGoal>();
+    auto* contactImpulseTrackingGoal = problem.addGoal<MocoContactImpulseTrackingGoal>();
     ...
-    markerTrackingGoal->addScaleFactor(
+    contactImpulseTrackingGoal->addScaleFactor(
             'RightGRF_vertical_scale_factor', 'Right_GRF', 1, {0.5, 2.0});
     @endcode
     @ingroup mocogoal */
-    class OSIMMOCOIMPULSETRACKINGGOAL_API MocoImpulseTrackingGoal : public MocoGoal {
-        OpenSim_DECLARE_CONCRETE_OBJECT(MocoImpulseTrackingGoal, MocoGoal);
+    class OSIMMOCOCONTACTIMPULSETRACKINGGOAL_API MocoContactImpulseTrackingGoal : public MocoGoal {
+        OpenSim_DECLARE_CONCRETE_OBJECT(MocoContactImpulseTrackingGoal, MocoGoal);
 
     public:
-        MocoImpulseTrackingGoal() { constructProperties(); }
-        MocoImpulseTrackingGoal(std::string name) : MocoGoal(std::move(name)) {
+        MocoContactImpulseTrackingGoal() { constructProperties(); }
+        MocoContactImpulseTrackingGoal(std::string name) : MocoGoal(std::move(name)) {
             constructProperties();
         }
-        MocoImpulseTrackingGoal(std::string name, double weight)
+        MocoContactImpulseTrackingGoal(std::string name, double weight)
             : MocoGoal(std::move(name), weight) {
             constructProperties();
         }
@@ -182,30 +172,31 @@ namespace OpenSim {
         /// XML file, if provided.
         void setExternalLoads(const ExternalLoads& extLoads);
 
-        /// Add a group of contact forces whose sum should track the force data from
-        /// a single ExternalForce. The externalForceName should be the name of an
-        /// ExternalForce object in the ExternalLoads.
+        /// Add a single group of contact forces whose sum should track the ground 
+        /// reaction force impulse data from a single axis of a single ExternalForce. 
+        /// The externalForceName should be the name of an ExternalForce object
+        /// in the ExternalLoads.
         void addContactGroup(
             const std::vector<std::string>& contactForcePaths,
             const std::string& externalForceName) {
-            append_contact_groups(MocoImpulseTrackingGoalGroup(
+            append_contact_groups(MocoContactImpulseTrackingGoalGroup(
                 contactForcePaths, externalForceName));
         }
-        /// Add a group of contact forces whose sum should track the force data from
-        /// a single ExternalForce.
+        /// Add a single group of contact forces whose sum should track the ground
+        /// reaction force impulse data from a single axis of a single ExternalForce.
         /// If the contact force elements associated with a single ExternalForce are
         /// distributed across multiple bodies use this function instead of the
         /// easier-to-use addContactGroup(), and set the group's
         /// alternative_frame_paths property accordingly. See
-        /// MocoContactTrackingGoalGroup for more information.
-        void addContactGroup(MocoImpulseTrackingGoalGroup group) {
+        /// MocoContactImpulseTrackingGoalGroup for more information.
+        void addContactGroup(MocoContactImpulseTrackingGoalGroup group) {
             append_contact_groups(std::move(group));
         }
 
-        /// Set the GRF Impulse 'axis' to be tracked. As per OpenSim convention:
-        /// X = 0; 
-        /// Y = 1; 
-        /// Z = 2;
+        /// Set the ground reaction force contact impulse 'axis' to be tracked
+        /// (X = 0, Y = 1, Z = 2), where 'axis' refers to the dimension/direction of
+        /// the ground reaction force contact impulse, in the ground frame, to be
+        /// tracked.
         void setImpulseAxis(int ImpulseAxis) {
             set_impulse_axis(ImpulseAxis);
         }
@@ -225,7 +216,7 @@ namespace OpenSim {
         /// whatever frame the reference data is expressed in based on the provided
         /// ExternalLoads in each contact group.
         void addScaleFactor(const std::string& name,
-            const std::string& externalForceName, int index,
+            const std::string& externalForceName, int impulse_axis,
             const MocoBounds& bounds);
 
     protected:
@@ -234,21 +225,21 @@ namespace OpenSim {
             const IntegrandInput& input, double& integrand) const override;
         void calcGoalImpl(
             const GoalInput& input, SimTK::Vector& cost) const override {
-            cost[0] = input.integral / m_denominator;
+            cost[0] = (input.integral * input.integral) / m_denominator;
         }
         void printDescriptionImpl() const override;
 
     private:
         // PROPERTIES
-        OpenSim_DECLARE_LIST_PROPERTY(contact_groups, MocoImpulseTrackingGoalGroup,
+        OpenSim_DECLARE_LIST_PROPERTY(contact_groups, MocoContactImpulseTrackingGoalGroup,
             "Associate contact elements in the model with force data.");
         OpenSim_DECLARE_OPTIONAL_PROPERTY(external_loads, ExternalLoads,
             "Experimental contact force data.");
         OpenSim_DECLARE_PROPERTY(external_loads_file, std::string,
             "Experimental contact force data as an ExternalLoads XML file.");
         OpenSim_DECLARE_PROPERTY(impulse_axis, int,
-            "User specifies which axis to track the GRF impulse: "
-            "'1': X, '2': Y, '3': Z"
+            "User specifies which axis to track the ground reaction force impulse: "
+            "'X'= 0, 'Y'= 1 , 'Z'= 2"
             "(Default value is: -1)");
 
         void constructProperties();
@@ -256,7 +247,7 @@ namespace OpenSim {
         /// For a given contact force, find the starting index of the forces from
         /// SmoothSphereHalfSpaceForce::getRecordValues().
         int findRecordOffset(
-            const MocoImpulseTrackingGoalGroup& group,
+            const MocoContactImpulseTrackingGoalGroup& group,
             const SmoothSphereHalfSpaceForce& contactForce,
             const std::string& appliedToBody) const;
 
@@ -275,9 +266,9 @@ namespace OpenSim {
 
         mutable std::map<std::pair<std::string, int>, std::string> m_scaleFactorMap;
         using RefPtrMSF = SimTK::ReferencePtr<const MocoScaleFactor>;
-        mutable std::vector<std::array<RefPtrMSF, 3>> m_scaleFactorRefs;
+        mutable std::vector<RefPtrMSF> m_scaleFactorRefs;
     };
 
 } // namespace OpenSim
 
-#endif // OPENSIM_MOCOCONTACTTRACKINGGOAL_H
+#endif // OPENSIM_MOCOCONTACTIMPULSETRACKINGGOAL_H

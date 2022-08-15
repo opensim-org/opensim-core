@@ -1,9 +1,9 @@
 /* -------------------------------------------------------------------------- *
- * OpenSim Moco: MocoImpulseTrackingGoal.cpp                                  *
+ * OpenSim Moco: MocoContactImpulseTrackingGoal.cpp                           *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2020 Stanford University and the Authors                     *
+ * Copyright (c) 2022 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia                                              *
+ * Author(s): Nicos Haralabidis                                               *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -16,17 +16,17 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "MocoImpulseTrackingGoal.h"
+#include "MocoContactImpulseTrackingGoal.h"
 #include <OpenSim/Simulation/Model/SmoothSphereHalfSpaceForce.h>
 
 using namespace OpenSim;
 using RefPtrMSF = SimTK::ReferencePtr<const MocoScaleFactor>;
 
-MocoImpulseTrackingGoalGroup::MocoImpulseTrackingGoalGroup() {
+MocoContactImpulseTrackingGoalGroup::MocoContactImpulseTrackingGoalGroup() {
     constructProperties();
 }
 
-MocoImpulseTrackingGoalGroup::MocoImpulseTrackingGoalGroup(
+MocoContactImpulseTrackingGoalGroup::MocoContactImpulseTrackingGoalGroup(
     const std::vector<std::string>& contactForcePaths,
     const std::string& externalForceName) {
     constructProperties();
@@ -36,43 +36,43 @@ MocoImpulseTrackingGoalGroup::MocoImpulseTrackingGoalGroup(
     set_external_force_name(externalForceName);
 }
 
-MocoImpulseTrackingGoalGroup::MocoImpulseTrackingGoalGroup(
+MocoContactImpulseTrackingGoalGroup::MocoContactImpulseTrackingGoalGroup(
     const std::vector<std::string>& contactForcePaths,
     const std::string& externalForceName,
     const std::vector<std::string>& altFramePaths) :
-    MocoImpulseTrackingGoalGroup(contactForcePaths, externalForceName) {
+    MocoContactImpulseTrackingGoalGroup(contactForcePaths, externalForceName) {
     for (const auto& path : altFramePaths) {
         append_alternative_frame_paths(path);
     }
 }
 
-void MocoImpulseTrackingGoalGroup::constructProperties() {
+void MocoContactImpulseTrackingGoalGroup::constructProperties() {
     constructProperty_contact_force_paths();
     constructProperty_external_force_name("");
     constructProperty_alternative_frame_paths();
 }
 
 
-void MocoImpulseTrackingGoal::constructProperties() {
+void MocoContactImpulseTrackingGoal::constructProperties() {
     constructProperty_contact_groups();
     constructProperty_external_loads();
     constructProperty_external_loads_file("");
     constructProperty_impulse_axis(-1);
 }
 
-void MocoImpulseTrackingGoal::setExternalLoadsFile(
+void MocoContactImpulseTrackingGoal::setExternalLoadsFile(
     const std::string& extLoadsFile) {
     updProperty_external_loads().clear();
     set_external_loads_file(extLoadsFile);
 }
 
-void MocoImpulseTrackingGoal::setExternalLoads(const ExternalLoads& extLoads) {
+void MocoContactImpulseTrackingGoal::setExternalLoads(const ExternalLoads& extLoads) {
     updProperty_external_loads_file().clear();
     set_external_loads(extLoads);
 }
 
-void MocoImpulseTrackingGoal::addScaleFactor(const std::string& name,
-    const std::string& externalForceName, int index,
+void MocoContactImpulseTrackingGoal::addScaleFactor(const std::string& name,
+    const std::string& externalForceName, int impulse_axis,
     const MocoBounds& bounds) {
 
     // Check that the contact group associated with the provided external force
@@ -88,21 +88,16 @@ void MocoImpulseTrackingGoal::addScaleFactor(const std::string& name,
         "Contact group associated with external force '{}' not found.",
         externalForceName);
 
-    // Check that the index is in the correct range.
-    OPENSIM_THROW_IF_FRMOBJ((index < 0) || (index > 2), Exception,
-        "Expected marker scale factor index to be in the range [0, 2], "
-        "but received '{}'.", index);
-
     // Update the scale factor map so we can retrieve the correct MocoScaleFactor
     // for this contact group during initialization.
-    std::pair<std::string, int> key(externalForceName, index);
+    std::pair<std::string, int> key(externalForceName, impulse_axis);
     m_scaleFactorMap[key] = name;
 
     // Append the scale factor to the MocoGoal.
     appendScaleFactor(MocoScaleFactor(name, bounds));
 }
 
-void MocoImpulseTrackingGoal::initializeOnModelImpl(const Model& model) const {
+void MocoContactImpulseTrackingGoal::initializeOnModelImpl(const Model& model) const {
 
     // Calculate the denominator.
     m_denominator = model.getTotalMass(model.getWorkingState());
@@ -203,29 +198,27 @@ void MocoImpulseTrackingGoal::initializeOnModelImpl(const Model& model) const {
 
         // Check to see if the model contains a MocoScaleFactor associated with
         // this contact group.
-        std::array<RefPtrMSF, 3> theseScaleFactorRefs;
-        for (int j = 0; j < 3; ++j) {
-            bool foundScaleFactor = false;
-            std::pair<std::string, int> key(group.get_external_force_name(), j);
-            for (const auto& scaleFactor : scaleFactors) {
-                if (m_scaleFactorMap[key] == scaleFactor.getName()) {
-                    theseScaleFactorRefs[j] = &scaleFactor;
-                    foundScaleFactor = true;
-                }
-            }
-            // If we didn't find a MocoScaleFactor for this force direction, set
-            // the reference pointer to null.
-            if (!foundScaleFactor) {
-                theseScaleFactorRefs[j] = nullptr;
+        RefPtrMSF thisScaleFactorRef;
+        bool foundScaleFactor = false;
+        std::pair<std::string, int> key(group.get_external_force_name(), get_impulse_axis());
+        for (const auto& scaleFactor : scaleFactors) {
+            if (m_scaleFactorMap[key] == scaleFactor.getName()) {
+                thisScaleFactorRef = &scaleFactor;
+                foundScaleFactor = true;
             }
         }
-        m_scaleFactorRefs.push_back(theseScaleFactorRefs);
+        // If we didn't find a MocoScaleFactor for this force direction, set
+        // the reference pointer to null.
+        if (!foundScaleFactor) {
+            thisScaleFactorRef = nullptr;
+        }
+        m_scaleFactorRefs.push_back(thisScaleFactorRef);
     }
 
     // Which axis should the impulse be tracked for?
     if (get_impulse_axis() < 0 || get_impulse_axis() > 2)
         OPENSIM_THROW_FRMOBJ(Exception,
-            "Expected 'ImpulseAxis' to be either 0, 1 or 2, but "
+            "Expected 'impulse_axis' to be either 0, 1 or 2, but "
             "got '{}'.",
             get_impulse_axis());
 
@@ -241,8 +234,8 @@ void MocoImpulseTrackingGoal::initializeOnModelImpl(const Model& model) const {
     setRequirements(1, 1, SimTK::Stage::Velocity);
 }
 
-int MocoImpulseTrackingGoal::findRecordOffset(
-    const MocoImpulseTrackingGoalGroup& group,
+int MocoContactImpulseTrackingGoal::findRecordOffset(
+    const MocoContactImpulseTrackingGoalGroup& group,
     const SmoothSphereHalfSpaceForce& contactForce,
     const std::string& appliedToBody) const {
 
@@ -294,7 +287,7 @@ int MocoImpulseTrackingGoal::findRecordOffset(
         halfSpaceBaseName, appliedToBody, group.get_external_force_name());
 }
 
-void MocoImpulseTrackingGoal::calcIntegrandImpl(
+void MocoContactImpulseTrackingGoal::calcIntegrandImpl(
     const IntegrandInput& input, double& integrand) const {
     const auto& state = input.state;
     const auto& time = state.getTime();
@@ -309,13 +302,11 @@ void MocoImpulseTrackingGoal::calcIntegrandImpl(
         const auto& group = m_groups[ig];
 
         // Model force.
-        SimTK::Vec3 force_model(0);
+        double force_model;
         for (const auto& entry : group.contacts) {
             Array<double> recordValues = entry.first->getRecordValues(state);
             const auto& recordOffset = entry.second;
-            for (int im = 0; im < force_model.size(); ++im) {
-                force_model[im] += recordValues[recordOffset + im];
-            }
+                force_model += recordValues[recordOffset + get_impulse_axis()];
         }
 
         // Reference force.
@@ -330,24 +321,17 @@ void MocoImpulseTrackingGoal::calcIntegrandImpl(
 
         // Apply scale factors for this marker, if they exist.
         const auto& scaleFactorRef = m_scaleFactorRefs[ig];
-        for (int j = 0; j < 3; ++j) {
-            if (scaleFactorRef[j] != nullptr) {
-                force_ref[j] *= scaleFactorRef[j]->getScaleFactor();
-            }
+        if (scaleFactorRef != nullptr) {
+            force_ref *= scaleFactorRef->getScaleFactor();
         }
 
-        SimTK::Vec3 error3D = force_model - force_ref;
-
-        double error = error3D[get_impulse_axis()];
-
+        double error = force_model - force_ref[get_impulse_axis()];
         integrand += error;
     }
 
-    // Square the integrated impulse error
-    integrand = (integrand * integrand);
 }
 
-void MocoImpulseTrackingGoal::printDescriptionImpl() const {
+void MocoContactImpulseTrackingGoal::printDescriptionImpl() const {
     log_cout("        impulse axis: {}", get_impulse_axis());
     for (int ig = 0; ig < getProperty_contact_groups().size(); ++ig) {
         const auto& group = get_contact_groups(ig);
