@@ -171,13 +171,7 @@ void test(const std::string filename) {
     loadTime = watch.getElapsedTimeInNs();
     cout << "\tC3DFileAdapter '" << filename << "' read with forces at COP in "
         << watch.formatNs(loadTime) << endl;
-    // on ci-biulds will define SKIP_TIMING as it is unpredictably slow on some
-    // machines
-    #if defined(NDEBUG) && !defined(SKIP_TIMING)
-    ASSERT(loadTime < MaximumLoadTimeInNs, __FILE__, __LINE__,
-        "Unable to load '" + filename + "' within " +
-        to_string(MaximumLoadTimeInNs) + "ns.");
-    #endif
+
     std::shared_ptr<TimeSeriesTableVec3> force_table_cop =
             c3dFileAdapter.getForcesTable(tables2);
     downsample_table(*force_table_cop, 100);
