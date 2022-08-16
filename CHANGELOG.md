@@ -11,6 +11,7 @@ v4.4.1
 
 - Made `Component::getSocketNames` a `const` member method (previously: non-const)
 - Modifed the swig interface files to make OpenSim::PathPointSet adopt new PathPoints inserted into it. (Issue #3276)
+- Remove BTK dependency and switched completely to ezc3d.
 
 v4.4
 ====
