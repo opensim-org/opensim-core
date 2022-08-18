@@ -44,6 +44,8 @@ int main()
         wo->set_radius(.5);
         wo->set_length(1);
         testWrapObject(wo);
+        wo->set_quadrant("+y");
+        testWrapObject(wo);
     }
     catch (const std::exception& e) {
         std::cout << "Exception: " << e.what() << std::endl;
@@ -53,6 +55,8 @@ int main()
         auto* wo = new WrapSphere();
         wo->setName("pulley1");
         wo->set_radius(.5);
+        testWrapObject(wo);
+        wo->set_quadrant("+y");
         testWrapObject(wo);
     }
     catch (const std::exception& e) {
@@ -64,12 +68,16 @@ int main()
         wo->setName("pulley1");
         wo->set_dimensions(Vec3(.5));
         testWrapObject(wo);
+        wo->set_quadrant("+y");
+        testWrapObject(wo);
+
     }
     catch (const std::exception& e) {
         std::cout << "Exception: " << e.what() << std::endl;
         failures.push_back("TestWrapEllipsoid");
     }
-
+    // Repeat with Rotate the wrap object by angle theta to get an ellipse with radii (.5/cos(theta), .5)
+    // length of wrap 
 
     if (!failures.empty()) {
         cout << "Done, with failure(s): " << failures << endl;
@@ -82,6 +90,7 @@ int main()
 
 void testWrapObject(WrapObject* wrapObject)
 {
+    auto visualize = false;
     const double r = 0.5;
     Model model;
     model.setName("test"+wrapObject->getConcreteClassName());
@@ -103,7 +112,7 @@ void testWrapObject(WrapObject* wrapObject)
     PathSpring* spring1 =
         new PathSpring("spring1", 1.0, 0.1, 0.01);
     spring1->updGeometryPath().
-        appendNewPathPoint("origin", ground, Vec3(r, r, 0));
+        appendNewPathPoint("origin", ground, Vec3(r-.1, r, 0)); //offset in X direction to avoid ambiguous scenario where path passes through center
     spring1->updGeometryPath().
         appendNewPathPoint("insert", *body, Vec3(-r, r, 0));
     spring1->updGeometryPath().addPathWrap(*wObj);
@@ -111,32 +120,33 @@ void testWrapObject(WrapObject* wrapObject)
     model.addComponent(spring1);
 
     model.finalizeConnections();
-    model.setUseVisualizer(true);
-    model.print(wObj->getConcreteClassName()+"Analytical.osim");
+    model.setUseVisualizer(visualize);
+    //model.print(wObj->getConcreteClassName()+"Analytical.osim");
     SimTK::State& s = model.initSystem();
     auto& coord = joint->updCoordinate();
     const CoordinateSet& cset = model.getCoordinateSet();
-    int nsteps = 100;
-    for (int i = 0; i < nsteps; ++i) {
+    int nsteps = 10000;
+    for (int i = 0; i <= nsteps; ++i) {
         
         coord.setValue(s, i*SimTK::Pi/(2*nsteps));
         model.realizeVelocity(s);
 
-        model.getVisualizer().show(s);
+        if (visualize)
+            model.getVisualizer().show(s);
 
         double ma1 = spring1->computeMomentArm(s, coord);
 
-        ASSERT_EQUAL<double>(-r, ma1, SimTK::Eps);
+        ASSERT_EQUAL<double>(-r, ma1, .0001); // SimTK::Eps
 
         double len1 = spring1->getLength(s);
         if (i== 0) {
-            std::cout << "i=" << i << "ma=" << ma1 << "len=" << len1 << std::endl;
-            ASSERT_EQUAL<double>(len1, 1, SimTK::Eps);
+            //std::cout << "Testing " << wObj->getConcreteClassName() << std::endl;
+            //std::cout << "i=" << i << "ma=" << ma1 << "len=" << len1 << std::endl;
+            ASSERT_EQUAL<double>(len1, 1 - 0.1, 1e-4); //SimTK::Eps
         }
-        if (i == nsteps - 1) {
-            std::cout << "i=" << i << "ma=" << ma1 << "len=" << len1 << std::endl;
-            std::cout << 1 + .25 * 2 * SimTK::Pi * r << std::endl;
-            ASSERT_EQUAL<double>(len1, 1 + .25 * 2 * SimTK::Pi * r, .01);
+        if (i == nsteps) { // sgould be 1/4 way around wrapObject
+            //std::cout << "i=" << i << "ma=" << ma1 << "len=" << len1 << std::endl;
+            ASSERT_EQUAL<double>(len1, 1 + .25 * 2 * SimTK::Pi * r -0.1, .0001); //SimTK::Eps
         }
     }
 }
