@@ -96,7 +96,7 @@ void testWrapObject(WrapObject* wrapObject)
     model.setName("test"+wrapObject->getConcreteClassName());
 
     auto& ground = model.updGround();
-    auto body = new OpenSim::Body("body", 1, Vec3(0), Inertia(0.1, 0.1, 0.01));
+    auto body = new OpenSim::Body("body", 1, Vec3(-.5, 0, 0), Inertia(0.1, 0.1, 0.01));
     model.addComponent(body);
     
     auto joint = new PinJoint("pin", ground, *body);
@@ -125,7 +125,7 @@ void testWrapObject(WrapObject* wrapObject)
     SimTK::State& s = model.initSystem();
     auto& coord = joint->updCoordinate();
     const CoordinateSet& cset = model.getCoordinateSet();
-    int nsteps = 10000;
+    int nsteps = 1000;
     for (int i = 0; i <= nsteps; ++i) {
         
         coord.setValue(s, i*SimTK::Pi/(2*nsteps));
