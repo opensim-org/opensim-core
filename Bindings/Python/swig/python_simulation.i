@@ -92,6 +92,10 @@ MODEL_ADOPT_HELPER(Controller);
     args[1]._markAdopted()
 %}
 
+// PathPointSet takes ownership of passed in object
+%pythonappend OpenSim::PathPointSet::insert %{
+    aObject._markAdopted()
+%}
 // Typemaps
 // ========
 // None.

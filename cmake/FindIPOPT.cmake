@@ -83,7 +83,6 @@
 # Additional support to YCM was received from the FP7 EU project
 # WALK-MAN (http://walk-man.eu/)
 
-
 if(NOT WIN32)
   # On non Windows systems we use PkgConfig to find IPOPT
   find_package(PkgConfig QUIET)

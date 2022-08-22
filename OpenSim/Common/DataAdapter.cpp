@@ -44,7 +44,7 @@ bool
 registerAdapters{DataAdapter::registerDataAdapter("trc", TRCFileAdapter{}) 
         && DataAdapter::registerDataAdapter("mot", STOFileAdapter_<double>{}) 
         && DataAdapter::registerDataAdapter("csv", CSVFileAdapter{})
-#if defined (WITH_EZC3D) || defined (WITH_BTK)
+#if defined (WITH_EZC3D)
               && DataAdapter::registerDataAdapter("c3d", C3DFileAdapter{})
 #endif
                 };
