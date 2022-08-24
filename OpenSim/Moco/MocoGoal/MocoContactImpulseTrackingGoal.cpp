@@ -72,7 +72,7 @@ void MocoContactImpulseTrackingGoal::setExternalLoads(const ExternalLoads& extLo
 }
 
 void MocoContactImpulseTrackingGoal::addScaleFactor(const std::string& name,
-    const std::string& externalForceName, int impulse_axis,
+    const std::string& externalForceName,
     const MocoBounds& bounds) {
 
     // Check that the contact group associated with the provided external force
@@ -90,7 +90,7 @@ void MocoContactImpulseTrackingGoal::addScaleFactor(const std::string& name,
 
     // Update the scale factor map so we can retrieve the correct MocoScaleFactor
     // for this contact group during initialization.
-    std::pair<std::string, int> key(externalForceName, impulse_axis);
+    std::string key(externalForceName);
     m_scaleFactorMap[key] = name;
 
     // Append the scale factor to the MocoGoal.
@@ -200,7 +200,7 @@ void MocoContactImpulseTrackingGoal::initializeOnModelImpl(const Model& model) c
         // this contact group.
         RefPtrMSF thisScaleFactorRef;
         bool foundScaleFactor = false;
-        std::pair<std::string, int> key(group.get_external_force_name(), get_impulse_axis());
+        std::string key(group.get_external_force_name());
         for (const auto& scaleFactor : scaleFactors) {
             if (m_scaleFactorMap[key] == scaleFactor.getName()) {
                 thisScaleFactorRef = &scaleFactor;
@@ -213,6 +213,15 @@ void MocoContactImpulseTrackingGoal::initializeOnModelImpl(const Model& model) c
             thisScaleFactorRef = nullptr;
         }
         m_scaleFactorRefs.push_back(thisScaleFactorRef);
+        
+        // Check that the length of scale factors == 1; As the goal does not
+        // support multiple integrals currently
+        if (m_scaleFactorRefs.size() != 1)
+            OPENSIM_THROW_FRMOBJ(Exception,
+                "Expected size of scale factors to be 1, but "
+                " got '{}.",
+                m_scaleFactorRefs.size());
+
     }
 
     // Which axis should the impulse be tracked for?

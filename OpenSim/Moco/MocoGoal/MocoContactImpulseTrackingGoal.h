@@ -19,7 +19,6 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Moco/osimMoco.h>
-#include "osimMocoContactImpulseTrackingGoalDLL.h"
 #include <OpenSim/Simulation/Model/ExternalLoads.h>
 
 namespace OpenSim {
@@ -47,7 +46,7 @@ namespace OpenSim {
     (the force on the sphere or the force on the half-space) when summing the
     contact forces across contact force elements.
     @see MocoContactImpulseTrackingGoal */
-    class OSIMMOCOCONTACTIMPULSETRACKINGGOAL_API MocoContactImpulseTrackingGoalGroup : public Object {
+    class OSIMMOCO_API MocoContactImpulseTrackingGoalGroup : public Object {
         OpenSim_DECLARE_CONCRETE_OBJECT(MocoContactImpulseTrackingGoalGroup, Object);
     public:
         OpenSim_DECLARE_LIST_PROPERTY(contact_force_paths, std::string,
@@ -76,7 +75,7 @@ namespace OpenSim {
     /**
     \section MocoContactImpulseTrackingGoal
     Minimize the error between compliant contact force impulse from the model and
-    experimentally measured contact impulse - for a single axis.
+    experimentally measured contact impulse for a single axis.
     This class handles the contact impulses from a single contact group and a 
     single experimental external loads file. Tracking ground reaction impulses for
     the left and right feet in gait requires separate instances of this goal.
@@ -152,7 +151,7 @@ namespace OpenSim {
             'RightGRF_vertical_scale_factor', 'Right_GRF', 1, {0.5, 2.0});
     @endcode
     @ingroup mocogoal */
-    class OSIMMOCOCONTACTIMPULSETRACKINGGOAL_API MocoContactImpulseTrackingGoal : public MocoGoal {
+    class OSIMMOCO_API MocoContactImpulseTrackingGoal : public MocoGoal {
         OpenSim_DECLARE_CONCRETE_OBJECT(MocoContactImpulseTrackingGoal, MocoGoal);
 
     public:
@@ -216,7 +215,7 @@ namespace OpenSim {
         /// whatever frame the reference data is expressed in based on the provided
         /// ExternalLoads in each contact group.
         void addScaleFactor(const std::string& name,
-            const std::string& externalForceName, int impulse_axis,
+            const std::string& externalForceName,
             const MocoBounds& bounds);
 
     protected:
@@ -238,7 +237,7 @@ namespace OpenSim {
         OpenSim_DECLARE_PROPERTY(external_loads_file, std::string,
             "Experimental contact force data as an ExternalLoads XML file.");
         OpenSim_DECLARE_PROPERTY(impulse_axis, int,
-            "User specifies which axis to track the ground reaction force impulse: "
+            "The axis of the ground reaction force impulse component to be tracked in the goal."
             "'X'= 0, 'Y'= 1 , 'Z'= 2"
             "(Default value is: -1)");
 
@@ -264,7 +263,7 @@ namespace OpenSim {
         };
         mutable std::vector<GroupInfo> m_groups;
 
-        mutable std::map<std::pair<std::string, int>, std::string> m_scaleFactorMap;
+        mutable std::map<std::string, std::string> m_scaleFactorMap;
         using RefPtrMSF = SimTK::ReferencePtr<const MocoScaleFactor>;
         mutable std::vector<RefPtrMSF> m_scaleFactorRefs;
     };
