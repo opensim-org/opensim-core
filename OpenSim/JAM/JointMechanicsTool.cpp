@@ -1037,6 +1037,7 @@ void JointMechanicsTool::assembleStatesTrajectoryFromActivationsData(
 
     int i = 0;
     for (SimTK::State& final_state : _states) {
+        _model.realizeVelocity(final_state);
         j = 0;
         for (auto& msl : _model.updComponentList<Muscle>()) {
 
