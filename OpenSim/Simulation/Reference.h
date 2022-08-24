@@ -113,8 +113,7 @@ template <class T> class StreamableReference_ : public Reference_<T> {
     using Reference_<T>::Reference_;
 public:
     // Optionally support streaming mode where data can be added and used
-    virtual void getNextValuesAndTime(
-            double& time, SimTK::Array_<T>& values) = 0;
+    virtual double getNextValuesAndTime(SimTK::Array_<T>& values) = 0;
     // indicate whether to stop or wait for more data
     virtual bool hasNext() const override = 0;
 };

@@ -81,8 +81,8 @@ void testSmith2018ArticularContactForce();
 
 int main() {
     SimTK::Array_<std::string> failures;
-    
-    /*try { testPathSpring(); }
+    /*
+    try { testPathSpring(); }
     catch (const std::exception& e){
         cout << e.what() <<endl; failures.push_back("testPathSpring");
     }
@@ -2435,7 +2435,6 @@ void testSmith2018ArticularContactForce() {
     double gravity_acc = 9.8067;
     model.setGravity(SimTK::Vec3(0, -gravity_acc, 0));
 
-
     double mass = 1.0;
     double radius = 0.1;
     
@@ -2483,8 +2482,6 @@ void testSmith2018ArticularContactForce() {
 
     Smith2018ContactMesh* plane_mesh = new Smith2018ContactMesh("plane", "x_z_plane.stl", *plane);
     Smith2018ContactMesh* indenter_mesh = new Smith2018ContactMesh("indenter", "half_sphere_10cm_radius.stl", *indenter);
-    //Smith2018ContactMesh* indenter_mesh = new Smith2018ContactMesh(
-    //        "indenter", "x_z_disk_10cm_radius.stl", *indenter);
 
     double E_indenter = 1e6;
     double v_indenter = 0.46;
@@ -3029,4 +3026,86 @@ void testSmith2018ArticularContactForce() {
         1e-3, __FILE__, __LINE__,
         "Expected the settled indenter contact force to be equal to the "
         "weight of the indenter.");
+
+    // TEST 3 - Ray intersection tests
+    // ========================================================================
+    // half sphere radius 10 cm, center at (0,0,0), top half (+y) deleted
+
+    Smith2018ContactMesh mesh = 
+        Smith2018ContactMesh("half_sphere","half_sphere_10cm_radius.stl");
+
+    mesh.finalizeFromProperties();
+
+    SimTK::Vec3 origin(0, -0.2, 0);
+    SimTK::UnitVec3 ray(0, 0.5, 0);
+    double min_proximity = 0.0;
+    double max_proximity = 0.1;
+
+    int tri_index;
+    SimTK::Vec3 intersect_pt;
+    double distance;
+    
+    bool ray_hit = mesh.rayIntersectMesh(origin, ray, 
+            min_proximity, max_proximity, tri_index, intersect_pt, distance);
+    
+    ASSERT(ray_hit, __FILE__, __LINE__,
+        "Expected the ray to intersect the half sphere. ");
+
+    double expected_distance = 0.1; // origin y - sphere radius
+    ASSERT_EQUAL(distance, expected_distance,
+        1e-3, __FILE__, __LINE__,
+        "The distance along the ray to contact with sphere to be equal to the "
+        "ray origin minus the sphere radius.");
+
+    // Flip ray
+    ray = SimTK::UnitVec3(0,-0.5,0);
+
+    ray_hit = mesh.rayIntersectMesh(origin, ray,
+        min_proximity, max_proximity, tri_index, intersect_pt, distance);
+    
+    ASSERT(!ray_hit, __FILE__, __LINE__,
+        "Expected the ray pointed away from half sphere to fail the "
+        "rayIntersectMesh test. ");
+
+    // move origin
+    origin = SimTK::Vec3(0, 0, 0);
+    ray_hit = mesh.rayIntersectMesh(origin, ray,
+        min_proximity, max_proximity, tri_index, intersect_pt, distance);
+    
+    ASSERT(!ray_hit, __FILE__, __LINE__,
+        "Expected the ray pointed from inside from half sphere to hit "
+        "a back face and fail the rayIntersectMesh test. ");
+        
+    // Test 4 - test constructor from vertices and tri
+
+    SimTK::PolygonalMesh ply_mesh;
+    ply_mesh.loadFile("half_sphere_10cm_radius.stl");
+
+    SimTK::Vector_<SimTK::Vec3> vertices(ply_mesh.getNumVertices());
+    for (int v = 0; v < ply_mesh.getNumVertices(); ++v) {
+        vertices.set(v, ply_mesh.getVertexPosition(v));
+    }
+    
+    //SimTK::Vector_<SimTK::Vec3> triangles;
+    std::vector<std::vector<int>> triangles;
+    for (int t = 0; t < ply_mesh.getNumFaces(); ++t) {
+        std::vector<int> face_vertex(3);
+        for (int j = 0; j < 3; j++) {
+             face_vertex[j] = ply_mesh.getFaceVertex(t, j);
+        }
+        triangles.push_back(face_vertex);
+    }
+
+    Smith2018ContactMesh t4_mesh = Smith2018ContactMesh("half_sphere",vertices,triangles);
+    
+    t4_mesh.finalizeFromProperties();
+
+    origin = SimTK::Vec3 (0, -0.2, 0);
+    ray = SimTK::UnitVec3 (0, 0.5, 0);
+
+    ray_hit = t4_mesh.rayIntersectMesh(origin, ray,
+        min_proximity, max_proximity, tri_index, intersect_pt, distance);
+    
+    ASSERT(ray_hit, __FILE__, __LINE__,
+        "Expected the ray to intersect the half sphere. ");
 }

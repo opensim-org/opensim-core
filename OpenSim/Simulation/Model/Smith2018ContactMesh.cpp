@@ -50,6 +50,20 @@ Smith2018ContactMesh::Smith2018ContactMesh() :
     setNull();
     constructProperties();
     _mesh_is_cached = false;
+    _init_mesh_from_file = true;
+}
+
+Smith2018ContactMesh::Smith2018ContactMesh(const std::string& name,
+    const std::string& mesh_file) :
+    ContactGeometry(), _decorative_mesh(nullptr)
+{
+    setNull();
+    constructProperties();
+    _mesh_is_cached = false;
+    _init_mesh_from_file = true;
+
+    setName(name);
+    set_mesh_file(mesh_file);    
 }
 
 Smith2018ContactMesh::Smith2018ContactMesh(const std::string& name, 
@@ -59,6 +73,7 @@ Smith2018ContactMesh::Smith2018ContactMesh(const std::string& name,
     setNull();
     constructProperties();
     _mesh_is_cached = false;
+    _init_mesh_from_file = true;
 
     setName(name);
     set_mesh_file(mesh_file);
@@ -88,6 +103,27 @@ Smith2018ContactMesh::Smith2018ContactMesh(const std::string& name,
     set_max_thickness(max_thickness);
 }
 
+Smith2018ContactMesh::Smith2018ContactMesh(const std::string& name,
+    SimTK::Vector_<SimTK::Vec3> vertices,
+    std::vector<std::vector<int>> triangles)
+{
+    setNull();
+    constructProperties();
+
+    setName(name);
+    _mesh_is_cached = true;
+    _init_mesh_from_file = false;
+
+    _faces = triangles;
+    
+    _num_faces = static_cast<int>(triangles.size());
+
+    _vertex_locations = vertices;
+    _num_vertices = vertices.size();
+    
+    initializeMesh();
+}
+
 void Smith2018ContactMesh::setNull()
 {
     setAuthors("Colin Smith");
@@ -96,6 +132,11 @@ void Smith2018ContactMesh::setNull()
         "Efficient computation of cartilage contact pressures within dynamic "
         "simulations of movement. Computer Methods in Biomechanics and "
         "Biomedical Engineering: Imaging & Visualization, 6(5), 491-498.");
+
+    //Set defaults
+    _ray_intersect_distance = -1;
+    _ray_intersect_point = -1;
+    _ray_intersect_tri = -1;
 }
 
 void Smith2018ContactMesh::constructProperties()
@@ -130,17 +171,13 @@ void Smith2018ContactMesh::extendFinalizeFromProperties() {
     
     //Create Decorative Mesh
     if (!isObjectUpToDateWithProperties()) {
-        std::string file1 =
-            SimTK::Pathname::getAbsolutePathname(get_mesh_file());
-
-        std::string file2 =
-            SimTK::Pathname::getAbsolutePathname(_full_mesh_file_path.c_str());
-
-        if (file1 != file2) {
+        if (get_mesh_file() != _cached_mesh_file) {
             initializeMesh();
         }
+        //_decorative_mesh.reset(
+          //  new SimTK::DecorativeMeshFile(_full_mesh_file_path.c_str()));
         _decorative_mesh.reset(
-            new SimTK::DecorativeMeshFile(_full_mesh_file_path.c_str()));
+            new SimTK::DecorativeMesh(getPolygonalMesh()));
         _decorative_mesh->setScaleFactors(get_scale_factors());
     }
 }
@@ -174,88 +211,13 @@ std::string Smith2018ContactMesh::findMeshFile(const std::string& file)
     Smith2018ContactMesh can't call getModel() at this stage
     */
 
-    //bool isAbsolutePath; 
-    //std::string directory, fileName, extension;
-    //
-    //SimTK::Pathname::deconstructPathname(file, isAbsolutePath, directory,
-    //    fileName, extension);
-    //const std::string lowerExtension = SimTK::String::toLower(extension);
-    //
-    ////Check for correct extension
-    //if (lowerExtension != ".vtp" && lowerExtension != ".obj" && 
-    //    lowerExtension != ".stl") {
-
-    //    log_error("Smith2018ContactMesh ERROR: '" + file +
-    //        "'; only .vtp .stl and .obj files currently supported.\n");
-
-    //    OPENSIM_THROW(Exception,"Smith2018ContactMesh: Bad file type.");
-    //}
-
-    //// Find OpenSim modelDir
-    //const Component* rootModel = nullptr;
-    //if (!hasOwner()) {
-    //    log_error("Mesh {} not connected to model...ignoring",
-    //                get_mesh_file());
-    //        return file;   // Orphan Mesh not part of a model yet
-    //}
-    //const Component* parent = &getOwner();
-    //while (parent != nullptr) {
-    //    if (dynamic_cast<const Model*>(parent) != nullptr) {
-    //        rootModel = parent;
-    //        break;
-    //    }
-    //    if (parent->hasOwner())
-    //        parent = &(parent->getOwner()); // traverse up Component tree
-    //    else
-    //        break; // can't traverse up.
-    //}
-
-    //if (rootModel == nullptr) {
-    //    log_error("Mesh {} not connected to model...ignoring",
-    //                get_mesh_file());
-    //        return file;   // Orphan Mesh not descendant of a model
-    //}
-    ////const Model& model = dynamic_cast<const Model&>(*rootModel);
-    //std::string osimFileName = rootModel->getDocumentFileName();
-    //
-
-    ////Find geometry file
-    //Model model;
-    //model.setInputFileName(osimFileName);
-    //
-    //SimTK::Array_<std::string> attempts;
-
-    //bool foundIt = ModelVisualizer::findGeometryFile(model,
-    //    file, isAbsolutePath, attempts);
-
-    //if (!foundIt) {
-    //    log_error("Model: {}",osimFileName);
-
-    //    log_error("Smith2018ContactMesh couldn't find file '" +
-    //        file + "'; tried");
-
-    //    for (unsigned i = 0; i < attempts.size(); ++i) {
-    //        log_error(attempts[i]);
-    //    }
-
-    //    if (!isAbsolutePath && 
-    //        !SimTK::Pathname::environmentVariableExists("OPENSIM_HOME")) {
-    //        
-    //        log_error("Set environment variable OPENSIM_HOME " 
-    //            "to search $OPENSIM_HOME/Geometry.");
-    //    }
-
-    //    throw OpenSim::Exception("Smith2018ContactMesh: " + getName() +
-    //        "File NOT found: " + file);
-    //}
-
     // File is a .vtp, .stl, or .obj; attempt to find it.
     const Component* rootModel = nullptr;
         if (!hasOwner()) {
-             log_error("Smith2018ContactMesh {} not connected to model...ignoring",
+             log_warn("Smith2018ContactMesh {} not connected to a model.",
                     getName());
-             OPENSIM_THROW(Exception, "");
-            //return "";   // Orphan Mesh not part of a model yet
+             
+            return file;   // Orphan Mesh not part of a model
         }
         const Component* owner = &getOwner();
         while (owner != nullptr) {
@@ -270,10 +232,10 @@ std::string Smith2018ContactMesh::findMeshFile(const std::string& file)
         }
 
         if (rootModel == nullptr) {
-             log_error("Smith2018ContactMesh {} not connected to model...ignoring",
+             log_warn("Smith2018ContactMesh {} not connected to a model",
                     getName());
-             OPENSIM_THROW(Exception, "");
-            //return "";   // Orphan Mesh not descendant of a model
+             
+            return file;   // Orphan Mesh not descendant of a model
         }
 
         // Current interface to Visualizer calls generateDecorations on every
@@ -292,8 +254,8 @@ std::string Smith2018ContactMesh::findMeshFile(const std::string& file)
             isAbsolutePath, directory, fileName, extension);
         const std::string lowerExtension = SimTK::String::toLower(extension);
         if (lowerExtension != ".vtp" && lowerExtension != ".obj" && lowerExtension != ".stl") {
-             log_error("ModelVisualizer ignoring '{}'; only .vtp, .stl, and "
-                      ".obj files currently supported.",
+             log_error("Smith2018ContactMesh file type error: '{}'; "
+                 "only .vtp, .stl, and .obj files currently supported.",
                     file);
             OPENSIM_THROW(Exception, "");
             //return;
@@ -338,18 +300,43 @@ std::string Smith2018ContactMesh::findMeshFile(const std::string& file)
 void Smith2018ContactMesh::initializeMesh()
 {
     _mesh_is_cached = true;
+    _cached_mesh_file = get_mesh_file();
     _mesh.clear();
     _mesh_back.clear();
     
     _obb = OBBTreeNode();
     _back_obb = OBBTreeNode();
 
-
-    // Load Mesh from file
-    _full_mesh_file_path = findMeshFile(get_mesh_file());
     
-    _mesh.loadFile(_full_mesh_file_path);
+    // Load Mesh from file
+    if (_init_mesh_from_file) {
+        _full_mesh_file_path = findMeshFile(get_mesh_file());
+        _mesh.loadFile(_full_mesh_file_path);
 
+        //_vertex_locations set below
+        _num_vertices = _mesh.getNumVertices();
+        _num_faces = _mesh.getNumFaces();
+
+        for (int f = 0; f < _num_faces; ++f) {
+            std::vector<int> face_vertex(3);
+            for (int j = 0; j < 3; ++j) {
+                face_vertex[j] = _mesh.getFaceVertex(f, j);
+            }
+            _faces.push_back(face_vertex);
+        }
+        
+    }
+    else{
+        //initialize from tris and vertices passed into constructor
+        for (int v = 0; v < _num_vertices; ++v) {
+            _mesh.addVertex(_vertex_locations[v]);
+        }
+             
+        for (int t = 0; t < _num_faces; ++t) {            
+            SimTK::Array_<int> face(_faces[t]);
+            _mesh.addFace(face);            
+        }        
+    }
     //Scale Mesh
     SimTK::Real xscale = get_scale_factors()(0);
     SimTK::Real yscale = get_scale_factors()(1);
@@ -405,7 +392,12 @@ void Smith2018ContactMesh::initializeMesh()
         double mag = cross.norm();
 
         for (int j = 0; j < 3; ++j) {
-            _tri_normal(i).set(j,-cross[j] / mag);
+            _tri_normal(i).set(j, -cross[j] / mag);
+
+            if (SimTK::isNaN(_tri_normal(i)(0))){
+                OPENSIM_THROW(Exception, "Smith2018ContactMesh " + getName() + 
+                    " Triangle Number (0-index): " + std::to_string(i) + " has NaN normal.");
+            }
         }
 
         
@@ -429,6 +421,12 @@ void Smith2018ContactMesh::initializeMesh()
         double s = (s1 + s2 + s3) / 2.0;
         _tri_area[i] = sqrt(s*(s - s1)*(s - s2)*(s - s3));
         
+        if (_tri_area[i]<=0) {
+            OPENSIM_THROW(Exception, "Smith2018ContactMesh " + getName() +
+                " Triangle Number (0-index): " + std::to_string(i) + 
+                " has an area <= 0.");
+        }
+
         //Determine regional triangle indices
         for (int j = 0; j < 3; ++j) {
             if (_tri_center(i)(j) < 0.0) {
@@ -753,10 +751,59 @@ void Smith2018ContactMesh::splitObbAxis
     }
 }
 
+bool Smith2018ContactMesh::rayIntersectionTest(
+    const SimTK::Vec3& origin, const SimTK::UnitVec3& direction,
+    const double& min_proximity, const double& max_proximity) {
+
+    double obb_distance = -1;
+    SimTK::Array_<int> obb_triangles;
+    bool intersection_dectected = false;
+
+    //dummy variables
+    int tri;
+    SimTK::Vec3 intersection_point;
+    SimTK::Real distance;
+
+    if (_obb.rayIntersectOBB(_mesh, origin, direction, tri,
+        intersection_point, distance)) {
+
+        if ((distance > min_proximity) && (distance < max_proximity)) {
+            intersection_dectected = true;
+        }
+    }
+
+    //Shoot the ray in the opposite direction
+    if (min_proximity < 0.0) {
+        if (_obb.rayIntersectOBB(_mesh, origin, -direction, tri,
+            intersection_point, distance)) {
+
+            distance = -distance;
+            if ((distance > min_proximity) && (distance < max_proximity)) {
+                intersection_dectected = true;
+            }
+        }
+    }
+
+    //ray didn't intersect
+    if (intersection_dectected == false) {
+        distance = -1;
+        intersection_point = -1;
+        tri = -1;
+    }
+
+
+    //store values (only for matlab and python access)
+    _ray_intersect_distance = distance;
+    _ray_intersect_point = intersection_point;
+    _ray_intersect_tri = tri;
+
+    return intersection_dectected;
+}
+
 bool Smith2018ContactMesh::rayIntersectMesh(
     const SimTK::Vec3& origin, const SimTK::UnitVec3& direction,
     const double& min_proximity, const double& max_proximity, 
-    int& tri, SimTK::Vec3 intersection_point, SimTK::Real& distance) const {
+    int& tri, SimTK::Vec3& intersection_point, SimTK::Real& distance) const {
 
     double obb_distance=-1;
     SimTK::Array_<int> obb_triangles;
@@ -784,10 +831,13 @@ bool Smith2018ContactMesh::rayIntersectMesh(
     //ray didn't intersect
     distance = -1;
     intersection_point = -1;
+    tri = -1;
+
     return false;
 }
 
 void Smith2018ContactMesh::printMeshDebugInfo() const {
+    
     log_trace("Mesh Properties: {}", getName());
     log_trace("{:<10} {:<15} {:<15} {:<15} {:<15} {:<35} {:<35}",
         "Tri #", "Area", "Thickness",  "Elastic Modulus", "Poissons Ratio",

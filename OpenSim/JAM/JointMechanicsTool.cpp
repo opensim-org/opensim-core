@@ -90,7 +90,9 @@ void JointMechanicsTool::constructProperties()
     constructProperty_model_assembly_accuracy(-1);
     constructProperty_input_states_file("");    
     constructProperty_input_transforms_file("");
-    constructProperty_transform_assembly_threshold(1e-5);
+    constructProperty_transform_assembly_threshold(1e-6);
+    constructProperty_transform_assembly_max_iterations(500);
+    constructProperty_transform_assembly_iterations_to_full(100);
     constructProperty_input_forces_file("");
     constructProperty_input_activations_file("");
     constructProperty_input_comak_convergence_file("");
@@ -672,11 +674,11 @@ void JointMechanicsTool::assembleStatesTrajectoryFromStatesData(
 void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
     SimTK::State s) {
 
-    //Make a copy of the model so we can make changes
-    Model working_model = *_model.clone();    
-    //working_model.set_assembly_accuracy(1e-16);
+    // Make a copy of the model so we can make changes
+    Model working_model = *_model.clone();        
     working_model.setUseVisualizer(false);
     working_model.initSystem();
+
     Storage transforms_storage = processInputStorage(get_input_transforms_file());
 
     Array<std::string> column_labels =
@@ -687,24 +689,7 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
     for (int i = 0; i < column_labels.getSize(); ++i) {
         std::string label = column_labels.get(i);
         body_names[i] = label.erase(label.length() - 4);
-    }
-
-    // Add a reporter to get IK computed coordinate values out for 
-    // orginal joints in the model 
-
-    TableReporter* ikReporter = new TableReporter();
-    ikReporter->setName("ik_reporter");
-
-    for (auto& coord : working_model.getComponentList<Coordinate>()) {
-        ikReporter->updInput("inputs").connect(
-            coord.getOutput("value"), 
-            coord.getAbsolutePathString() + "/value");
-
-        ikReporter->updInput("inputs").connect(
-            coord.getOutput("speed"),
-            coord.getAbsolutePathString() + "/speed");
-    }
-    working_model.addComponent(ikReporter);
+    }    
 
     // Add Hidden Bodies
     int num_hidden_bodies=0;
@@ -721,59 +706,82 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
             SpatialTransform spat_trans;
 
             spat_trans[0].setCoordinateNames(OpenSim::Array<std::string>(
-                body.getName() + "_ground_r1", 1, 1));
+                body.getName() + "_ground_hidden_r1", 1, 1));
             spat_trans[0].setFunction(new LinearFunction());
             spat_trans[0].setAxis(SimTK::Vec3(1, 0, 0));
 
             spat_trans[1].setCoordinateNames(OpenSim::Array<std::string>(
-                body.getName() + "_ground_r2", 1, 1));
+                body.getName() + "_ground_hidden_r2", 1, 1));
             spat_trans[1].setFunction(new LinearFunction());
             spat_trans[1].setAxis(SimTK::Vec3(0, 1, 0));
 
             spat_trans[2].setCoordinateNames(OpenSim::Array<std::string>(
-                body.getName() + "_ground_r3", 1, 1));
+                body.getName() + "_ground_hidden_r3", 1, 1));
             spat_trans[2].setFunction(new LinearFunction());
             spat_trans[2].setAxis(SimTK::Vec3(0, 0, 1));
 
             spat_trans[3].setCoordinateNames(OpenSim::Array<std::string>(
-                body.getName() + "_ground_t1", 1, 1));
+                body.getName() + "_ground_hidden_t1", 1, 1));
             spat_trans[3].setFunction(new LinearFunction());
             spat_trans[3].setAxis(SimTK::Vec3(1, 0, 0));
 
             spat_trans[4].setCoordinateNames(OpenSim::Array<std::string>(
-                body.getName() + "_ground_t2", 1, 1));
+                body.getName() + "_ground_hidden_t2", 1, 1));
             spat_trans[4].setFunction(new LinearFunction());
             spat_trans[4].setAxis(SimTK::Vec3(0, 1, 0));
 
             spat_trans[5].setCoordinateNames(OpenSim::Array<std::string>(
-                body.getName() + "_ground_t3", 1, 1));
+                body.getName() + "_ground_hidden_t3", 1, 1));
             spat_trans[5].setFunction(new LinearFunction());
             spat_trans[5].setAxis(SimTK::Vec3(0, 0, 1));
 
             CustomJoint* ground_hidden_joint = new CustomJoint(
                 body.getName() + "_hidden_ground",  working_model.updGround(),
                 *hidden_body, spat_trans);
-                
-            WeldConstraint* hidden_weld = new WeldConstraint(
-                body.getName() + "_hidden", body, SimTK::Transform(),
-                *hidden_body, SimTK::Transform());
-
+            
             working_model.addBody(hidden_body);
+            working_model.addJoint(ground_hidden_joint);        
+
+            WeldConstraint* hidden_weld = new WeldConstraint(
+                body.getName() + "_hidden_weld", 
+                body, SimTK::Vec3(0), SimTK::Vec3(0),
+                *hidden_body, SimTK::Vec3(0), SimTK::Vec3(0));
+
             working_model.addConstraint(hidden_weld);
-            working_model.addJoint(ground_hidden_joint);
 
             hidden_partner_body_path.push_back(
                 body.getAbsolutePathString());
 
             hidden_joint_paths.push_back(
-                ground_hidden_joint->getAbsolutePathString());
+                ground_hidden_joint->getAbsolutePathString());            
         }
     }
+
+    // Add a reporter to get IK computed coordinate values out for 
+    // orginal joints in the model 
+
+    TableReporter* ikReporter = new TableReporter();
+    ikReporter->setName("ik_reporter");
+
+    for (auto& coord : working_model.updComponentList<Coordinate>()) {
+        ikReporter->updInput("inputs").connect(
+            coord.getOutput("value"),
+            coord.getAbsolutePathString() + "/value");
+
+        ikReporter->updInput("inputs").connect(
+            coord.getOutput("speed"),
+            coord.getAbsolutePathString() + "/speed");
+    }
+    working_model.addComponent(ikReporter);    
+
     if (get_use_visualizer()) {
         working_model.setUseVisualizer(true);
     }
 
     SimTK::State state = working_model.initSystem();
+
+    //working_model.print("working_model.osim");
+
 
     //Collect Transformation matrix values
     std::vector<GCVSplineSet> hidden_coord_splines;
@@ -802,7 +810,7 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
         coords_table.updMatrix() = 0.0;
         for (int t = 0; t < transforms_storage.getSize(); ++t) {
             SimTK::Mat33 R_matrix(0.0);
-                    
+
             for (int m = 0; m < 3; ++m) {
                 for (int n = 0; n < 3; ++n) {
 
@@ -813,7 +821,7 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
                     int col_index = column_labels.findIndex(TXX_label);
                     col_index -= 1; //time listed in labels, not in data
                     if (col_index > -2) {
-                        double value; 
+                        double value;
                         transforms_storage.getData(t, col_index, value);
                         R_matrix(m, n) = value;
                     }
@@ -825,27 +833,27 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
             }
 
             SimTK::Rotation rot = SimTK::Rotation(R_matrix);
-            SimTK::Vec3 xyz_rot = 
+            SimTK::Vec3 xyz_rot =
                 rot.convertThreeAxesRotationToThreeAngles(
-                SimTK::BodyOrSpaceType::BodyRotationSequence,
-                SimTK::CoordinateAxis(0),SimTK::CoordinateAxis(1),
-                SimTK::CoordinateAxis(2));
+                    SimTK::BodyOrSpaceType::BodyRotationSequence,
+                    SimTK::CoordinateAxis(0), SimTK::CoordinateAxis(1),
+                    SimTK::CoordinateAxis(2));
 
             //Translations
             SimTK::Vec3 xyz_trans(0);
             for (int m = 0; m < 3; ++m) {
 
                 std::string TXX_label =
-                    partner_body.getName() + "_T" + 
+                    partner_body.getName() + "_T" +
                     std::to_string(m + 1) + std::to_string(4);
 
                 int col_index = column_labels.findIndex(TXX_label);
                 col_index -= 1; //time listed in labels, not in data
 
-                if (col_index>-2) {
+                if (col_index > -2) {
                     double value;
-                    transforms_storage.getData(t, col_index,value);
-                    xyz_trans(m) = value; 
+                    transforms_storage.getData(t, col_index, value);
+                    xyz_trans(m) = value;
                 }
                 else {
                     OPENSIM_THROW(Exception, TXX_label +
@@ -856,131 +864,159 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
             SimTK::RowVector coord_values(6);
             for (int j = 0; j < 3; ++j) {
                 coord_values[j] = xyz_rot(j);
-                coord_values[j+3] = xyz_trans(j);
+                coord_values[j + 3] = xyz_trans(j);
             }
             coords_table.setRowAtIndex(t, coord_values);
+
+            if (t == 0) {
+                CustomJoint& hidden_joint = working_model.updComponent<CustomJoint>(hidden_joint_paths[i]);
+                for (int c = 0; c < 6; ++c) {
+                    
+                    Coordinate& coord = hidden_joint.upd_coordinates(c);
+
+                    coord.set_default_value(coord_values(c));
+                }
+            }
         }
+        //STOFileAdapter::write(coords_table,partner_body.getName() + ".sto");
         hidden_coord_splines.push_back(GCVSplineSet(coords_table));
     }
-        
-    //Use IK to compute org joint angles
-    MarkersReference markersReference;
-    SimTK::Array_<CoordinateReference> coordinateReferences;
 
-    for (int i = 0; i < num_hidden_bodies; ++i) {
-            CustomJoint& hidden_joint = 
-                working_model.updComponent<CustomJoint>(hidden_joint_paths[i]);
-
-        for (int j = 0; j < 6; ++j) {
-            std::string name = hidden_joint.get_coordinates(j).getName();
-            //std::cout <<  hidden_joint.get_coordinates(j).getName() << std::endl;
-            CoordinateReference* coordRef = 
-                new CoordinateReference(name, hidden_coord_splines[i].get(j));
-            coordRef->setWeight(1);
-            coordinateReferences.push_back(*coordRef);
-        }
-    }
-    working_model.print("./inputs/working_model.osim");
-    // create the solver given the input data
-    InverseKinematicsSolver ikSolver(working_model, markersReference,
-        coordinateReferences,1);
-
-    if (get_model_assembly_accuracy() > 0) { 
-        ikSolver.setAccuracy(get_model_assembly_accuracy());
-    }
-        
     state.updTime() = _time[0];
-    ikSolver.assemble(state);
-    
     SimTK::Visualizer* viz=NULL;
     if (get_use_visualizer()) {
         viz = &working_model.updVisualizer().updSimbodyVisualizer();
         viz->setShowSimTime(true);
     }
-    double transform_assembly_threshold = get_transform_assembly_threshold();
+
+    
+
+
+    int max_default_coord_reset = 1;
+
+
+    Coordinate* bad_coord = NULL;
 
     for (int t = 0; t < _n_frames; ++t) {
         state.updTime() = _time[t];
         
         bool first_loop = true;
-
-         for (int w = 0; w < 3; ++w) {
-            double constraint_weight = 1 * pow(10,w*2);
             
-            ikSolver.setConstraintWeight(constraint_weight);
-            
-            double max_error = transform_assembly_threshold;
+            double max_error = get_transform_assembly_threshold();
 
             int num_loop = 0;
-            while (max_error >= transform_assembly_threshold) {
+            int full_assemble_count = 
+                get_transform_assembly_iterations_to_full();
+            int num_default_coord_reset = 0;
+            while (max_error >= get_transform_assembly_threshold()) {
                 num_loop++;
-                if (num_loop > 1000) { 
-                    log_warn("Assembly failed to acheive desired accuracy.");
-                    break;
+                if (num_loop > get_transform_assembly_max_iterations()) {
+
+                    if (num_default_coord_reset < max_default_coord_reset) {
+
+                        
+                        for (Coordinate& coord : working_model.updComponentList<Coordinate>()) {
+                            std::string name = coord.getName();
+                            if (name.find("hidden") != std::string::npos) {
+                                coord.setValue(state, coord.getDefaultValue(), false);
+                            }
+                        }
+                        working_model.assemble(state);
+                        
+                        num_default_coord_reset++;
+                        num_loop = 0;
+                        continue;
+                    }
+                    else {
+
+                        log_warn("Time: " + std::to_string(_time[t]) +
+                            " Max iterations exceeded, assembly failed to "
+                            "acheive the desired accuracy.");
+                        break;
+                    }
                 }
 
                 for (int i = 0; i < num_hidden_bodies; ++i) {
                     CustomJoint& hidden_joint =
-                            working_model.updComponent<CustomJoint>(
-                                    hidden_joint_paths[i]);
+                        working_model.updComponent<CustomJoint>(
+                            hidden_joint_paths[i]);
 
                     for (int j = 0; j < 6; ++j) {
-                        double value = hidden_coord_splines[i].get(j).calcValue(
-                                SimTK::Vector(1, time[t]));
-                        hidden_joint.get_coordinates(j).setValue(
-                                state, value, false);
-                    }
-                }                
-                if (first_loop) {
-                    ikSolver.assemble(state);
-                    first_loop = false;
-                    
-                }
-                ikSolver.track(state);
 
+                        double value = hidden_coord_splines[i].get(j).calcValue(
+                            SimTK::Vector(1, time[t]));
+                        
+                        if (full_assemble_count == 
+                            get_transform_assembly_iterations_to_full()) {
+                            hidden_joint.get_coordinates(j).setValue(
+                                state, value, true);                            
+                        }
+                        else {
+                            hidden_joint.get_coordinates(j).setValue(
+                                state, value, false);                            
+                        }
+                            
+                    }
+                }
+
+                if (full_assemble_count == 
+                    get_transform_assembly_iterations_to_full()) {
+                    full_assemble_count = 0;
+                }
+                else {
+                    full_assemble_count++;
+                    working_model.assemble(state);// , bad_coord, 100);
+                }
+                
                 max_error = 0.0;
                 int bad_i = 0;
                 int bad_j = 0;
                 for (int i = 0; i < num_hidden_bodies; ++i) {
                     CustomJoint& hidden_joint =
-                            working_model.updComponent<CustomJoint>(
-                                    hidden_joint_paths[i]);
+                        working_model.updComponent<CustomJoint>(
+                            hidden_joint_paths[i]);
 
                     for (int j = 0; j < 6; ++j) {
                         double desired_value =
-                                hidden_coord_splines[i].get(j).calcValue(
-                                        SimTK::Vector(1, time[t]));
+                            hidden_coord_splines[i].get(j).calcValue(
+                                SimTK::Vector(1, time[t]));
                         double assembled_value =
-                                hidden_joint.get_coordinates(j).getValue(state);
+                            hidden_joint.get_coordinates(j).getValue(state);
                         double value_error =
-                                abs(desired_value - assembled_value);
+                            abs(desired_value - assembled_value);
                         if (value_error > max_error) {
                             max_error = value_error;
                             bad_i = i;
                             bad_j = j;
                         }
+
+                        std::string hidden_coord_name = working_model.
+                            updComponent<CustomJoint>(hidden_joint_paths[i]).
+                            get_coordinates(j).getName();
+
+                        log_debug("{} {}", hidden_coord_name, value_error);
                     }
                 }
-                std::cout << "max_error: " << max_error << std::endl;
-                std::cout << "bad_coord: "
-                          << working_model.updComponent<CustomJoint>(
-                             hidden_joint_paths[bad_i]).get_coordinates(bad_j).getName()
-                          << std::endl
-                          << std::endl;
+                bad_coord = &working_model.updComponent<CustomJoint>(
+                    hidden_joint_paths[bad_i]).upd_coordinates(bad_j);
+
                 if (get_use_visualizer()) { viz->drawFrameNow(state); }
-                /* for (auto& coord :
-                        working_model.getComponentList<Coordinate>()) {
-                    std::cout << coord.getName() << " " << coord.getValue(state)
-                << std::endl;
-                }*/
+                log_debug("");
+                log_debug("Max Assembly Error: {} {}",
+                    bad_coord->getName(), max_error);
+                log_debug("");
+                for (auto& coord :
+                    working_model.getComponentList<Coordinate>()) {
+                    log_debug("{} {}", coord.getName(), coord.getValue(state));
+                }
+                log_debug("");
             }
-    }
 
         //save pose
         working_model.realizeReport(state);
     }
     TimeSeriesTable coordinate_states_table = ikReporter->getTable();
-    
+    //STOFileAdapter::write(coordinate_states_table, "test_states.sto");
 
     for (int t = 0; t < _n_frames; ++t) {
         SimTK::State& final_state = _states[t];
@@ -999,8 +1035,6 @@ void JointMechanicsTool::assembleStatesTrajectoryFromTransformsData(
             coord.setValue(final_state, value, false);
         }
         _model.assemble(final_state);
-        //_states[t] = final_state; 
-        //_states.push_back(s);
     }
 }
 
@@ -2080,7 +2114,7 @@ void JointMechanicsTool::getGeometryPathPoints(const SimTK::State& s, const Geom
 
         //If wrapping point, need to collect all points on wrap object surface
         if (pwp) {
-            Array<SimTK::Vec3>& surfacePoints = pwp->getWrapPath();
+            const Array<SimTK::Vec3>& surfacePoints = pwp->getWrapPath(s);
             const SimTK::Transform& X_BG = pwp->getParentFrame().findTransformBetween(s, out_frame);
             // Cycle through each surface point and tranform to output frame
             for (int j = 0; j < surfacePoints.getSize(); ++j) {

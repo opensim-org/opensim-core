@@ -77,6 +77,7 @@ void COMAKTool::constructProperties()
     constructProperty_print_settle_sim_results(false);
     constructProperty_settle_sim_results_directory("");
     constructProperty_settle_sim_results_prefix("");
+    constructProperty_settle_constant_muscle_control(0.02);
 
     constructProperty_max_iterations(50);
     constructProperty_udot_tolerance(1.0);
@@ -630,6 +631,12 @@ SimTK::State COMAKTool::initialize()
         }
     }
 
+    //Check Settle Simulation Parameters
+    if (get_settle_constant_muscle_control() < 0 ||
+        get_settle_constant_muscle_control() > 1) {
+        OPENSIM_THROW(Exception, "COMAKTOOL: settle_constant_muscle_control " 
+            "must be within [0 1].");
+    }
 
     //Add Analysis set
     AnalysisSet aSet = get_AnalysisSet();
@@ -1405,7 +1412,8 @@ SimTK::Vector COMAKTool::equilibriateSecondaryCoordinates()
     // Prescribe Muscle Force
     for (Muscle& msl : settle_model.updComponentList<Muscle>()) {
         msl.overrideActuation(state, true);
-        double value = msl.getMaxIsometricForce()*0.02;
+        double value = 
+            msl.getMaxIsometricForce() * get_settle_constant_muscle_control();
         msl.setOverrideActuation(state, value);
     }
 

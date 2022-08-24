@@ -8,7 +8,7 @@
 %template(StdVectorInt)      std::vector<int>;
 %template(StdVectorDouble)   std::vector<double>;
 %template(StdVectorString)   std::vector<std::string>;
-
+%template(StdVectorStdVectorInt)      std::vector<std::vector<int>>;
 %include "std_map.i"
 %include <std_shared_ptr.i>
 

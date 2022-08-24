@@ -105,48 +105,48 @@ class OSIMSIMULATION_API Smith2018ContactMesh : public ContactGeometry {
     // PROPERTIES
     //=====================================================================
     OpenSim_DECLARE_PROPERTY(mesh_file, std::string,
-            "Path to triangle mesh geometry file representing the contact "
-            "surface (supports .obj, .stl, .vtp).")
+        "Path to triangle mesh geometry file representing the contact "
+        "surface (supports .obj, .stl, .vtp).")
 
-	OpenSim_DECLARE_PROPERTY(elastic_modulus, double,
-		"Uniform Elastic Modulus value for every triangle in mesh. "
-		"The default value is 1000000.0 Pa.")
+    OpenSim_DECLARE_PROPERTY(elastic_modulus, double,
+        "Uniform Elastic Modulus value for every triangle in mesh. "
+        "The default value is 1000000.0 Pa.")
 
-	OpenSim_DECLARE_PROPERTY(poissons_ratio, double,
-		"Uniform Poissons Ratio value for every triangle "
-		"in mesh. "
-		"The default value is 0.5.")
+    OpenSim_DECLARE_PROPERTY(poissons_ratio, double,
+        "Uniform Poissons Ratio value for every triangle "
+        "in mesh. "
+        "The default value is 0.5.")
 
-	OpenSim_DECLARE_PROPERTY(thickness, double,
-		"Uniform thickness of elastic layer for entire mesh. "
-		"The default value is 0.005 meters")
+    OpenSim_DECLARE_PROPERTY(thickness, double,
+        "Uniform thickness of elastic layer for entire mesh. "
+        "The default value is 0.005 meters")
 
-	OpenSim_DECLARE_PROPERTY(use_variable_thickness, bool,
-		"Compute the local thickness for each triangle in mesh_file by "
-		"calculating the distance along a normal ray cast from the center "
-		"of each triangle in the mesh_file to intersection with the "
-		"mesh_back_file. If use_variable_thickness is true, "
-		"mesh_back_file must be defined and the 'thickness' property "
+    OpenSim_DECLARE_PROPERTY(use_variable_thickness, bool,
+        "Compute the local thickness for each triangle in mesh_file by "
+        "calculating the distance along a normal ray cast from the center "
+        "of each triangle in the mesh_file to intersection with the "
+        "mesh_back_file. If use_variable_thickness is true, "
+        "mesh_back_file must be defined and the 'thickness' property "
         "value is not used."
-		"The Default value is false.")
+        "The Default value is false.")
 
-	OpenSim_DECLARE_OPTIONAL_PROPERTY(mesh_back_file, std::string,
-		"Path to traingle mesh geometry file representing the backside "
-		"of contact surface elastic layer (bone / backside of "
-		"artifical component) mesh geometry file (supports .obj, "
-		".stl, .vtp). ")
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(mesh_back_file, std::string,
+        "Path to traingle mesh geometry file representing the backside "
+        "of contact surface elastic layer (bone / backside of "
+        "artifical component) mesh geometry file (supports .obj, "
+        ".stl, .vtp). ")
 
-	OpenSim_DECLARE_OPTIONAL_PROPERTY(min_thickness, double,
-		"Minimum thickness threshold for elastic layer [m] "
-		"when calculating variable thickness for each triangle.")
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(min_thickness, double,
+        "Minimum thickness threshold for elastic layer [m] "
+        "when calculating variable thickness for each triangle.")
 
-	OpenSim_DECLARE_OPTIONAL_PROPERTY(max_thickness, double,
-		"Maximum thickness threshold for elastic layer [m] when "
-		"calculating variable thickness for each triangle.")
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(max_thickness, double,
+        "Maximum thickness threshold for elastic layer [m] when "
+        "calculating variable thickness for each triangle.")
 
-	OpenSim_DECLARE_PROPERTY(scale_factors, SimTK::Vec3,
-		"[x,y,z] scale factors applied to vertex locations of the"
-		" mesh_file and mesh_back_file meshes.")
+    OpenSim_DECLARE_PROPERTY(scale_factors, SimTK::Vec3,
+        "[x,y,z] scale factors applied to vertex locations of the"
+        " mesh_file and mesh_back_file meshes.")
 
     //=========================================================================
     // SOCKETS
@@ -162,6 +162,8 @@ class OSIMSIMULATION_API Smith2018ContactMesh : public ContactGeometry {
     // CONSTRUCTORS
     Smith2018ContactMesh();
 
+    Smith2018ContactMesh(const std::string& name, const std::string& mesh_file);
+
     Smith2018ContactMesh(const std::string& name, const std::string& mesh_file,
             const PhysicalFrame& frame);
 
@@ -175,6 +177,10 @@ class OSIMSIMULATION_API Smith2018ContactMesh : public ContactGeometry {
             const std::string& mesh_back_file, double min_thickness,
             double max_thickness);
 
+    Smith2018ContactMesh(const std::string& name, 
+        SimTK::Vector_<SimTK::Vec3> vertices, 
+        std::vector<std::vector<int>> triangles);
+
     // TODO This function must be overriden for because this component is
     // derived from OpenSim::ContactGeometry.
     SimTK::ContactGeometry createSimTKContactGeometry() const override {
@@ -183,9 +189,14 @@ class OSIMSIMULATION_API Smith2018ContactMesh : public ContactGeometry {
 
     const SimTK::PolygonalMesh& getPolygonalMesh() const { return _mesh; }
 
-    int getNumFaces() const { return _mesh.getNumFaces(); }
+    int getNumFaces() const { return _num_faces; }
+    int getNumTriangles() const { return _num_faces; }
 
-    int getNumVertices() const { return _mesh.getNumVertices(); }
+    int getNumVertices() const { return _num_vertices; }
+
+    const std::vector<std::vector<int>>&  getTriangleConnectivity() const {
+        return _faces;
+    };
 
     const std::set<int>& getNeighborTris(int tri) const {
         return _tri_neighbors[tri];
@@ -229,10 +240,39 @@ class OSIMSIMULATION_API Smith2018ContactMesh : public ContactGeometry {
 
     int getOBBNumTriangles() const { return _obb._numTriangles; }
 
+    //C++ API use
+#ifndef SWIG
     bool rayIntersectMesh(const SimTK::Vec3& origin,
-            const SimTK::UnitVec3& direction, const double& min_proximity,
-            const double& max_proximity, int& tri,
-            SimTK::Vec3 intersection_point, SimTK::Real& distance) const;
+        const SimTK::UnitVec3& direction, const double& min_proximity,
+        const double& max_proximity, int& tri,
+        SimTK::Vec3& intersection_point, SimTK::Real& distance) const;
+#endif // SWIG
+
+    //SWIG exposure for MATLAB/Python geometry queries 
+    bool rayIntersectionTest(
+        const SimTK::Vec3& origin, const SimTK::UnitVec3& direction,
+        const double& min_proximity, const double& max_proximity);
+
+    /*** Access the distance from ray origin to mesh contact.
+         You must call rayIntersectionTest() prior to calling this function.
+    */
+    const SimTK::Real& getRayIntersectionDistance() const {
+        return _ray_intersect_distance;
+    };
+
+    /*** Access the intersection point where ray-mesh contact occurs.
+         You must call rayIntersectionTest() prior to calling this function.
+    */
+    const SimTK::Vec3& getRayIntersectionPoint() const {
+        return _ray_intersect_point;
+    };
+
+    /*** Access the distance from ray origin to mesh contact.
+         You must call rayIntersectionTest() prior to calling this function.
+    */
+    const int& getRayIntersectionTriangle() const {
+        return _ray_intersect_tri;
+    };
 
     void generateDecorations(bool fixed, const ModelDisplayHints& hints,
             const SimTK::State& s,
@@ -275,17 +315,28 @@ private:
     std::vector<std::vector<int>> _regional_tri_ind;
     std::vector<int> _regional_n_tri;
     std::vector<std::set<int>> _tri_neighbors;
+    int _num_vertices;
+    int _num_faces;
+    std::vector<std::vector<int>> _faces;
     SimTK::Vector_<SimTK::Vec3> _vertex_locations;
     SimTK::Matrix_<SimTK::Vec3> _face_vertex_locations;
     SimTK::Vector _tri_thickness;
     SimTK::Vector _tri_elastic_modulus;
     SimTK::Vector _tri_poissons_ratio;
+    bool _init_mesh_from_file;
     bool _mesh_is_cached;
+    std::string _cached_mesh_file;
+    
+    
+    
+    int _ray_intersect_tri;
+    SimTK::Vec3 _ray_intersect_point;
+    SimTK::Real _ray_intersect_distance;
 
     // We cache the DecorativeMeshFile if we successfully
     // load the mesh from file so we don't try loading from disk every frame.
     // This is mutable since it is not part of the public interface.
-    mutable SimTK::ResetOnCopy<std::unique_ptr<SimTK::DecorativeMeshFile>>
+    mutable SimTK::ResetOnCopy<std::unique_ptr<SimTK::DecorativeMesh>>
             _decorative_mesh;
 
 #ifndef SWIG

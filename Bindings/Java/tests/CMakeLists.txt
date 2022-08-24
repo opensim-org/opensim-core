@@ -92,6 +92,8 @@ macro(OpenSimAddJavaTest TESTNAME)
                  DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/TestEditProperties")
     file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/gait10dof18musc_subject01.osim"
                  DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/TestEditMarkers")
+    file(COPY "${OPENSIM_SHARED_TEST_FILES_DIR}/gait10dof18musc_subject01.osim"
+                 DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/TestIKInterfaces")
     if(WIN32)
         # On Windows, CMake cannot use RPATH to hard code the location of libraries
         # in the binary directory (DLL's don't have RPATH), so we must set PATH to
@@ -140,6 +142,7 @@ OpenSimAddJavaTest(TestEditProperties)
 OpenSimAddJavaTest(TestTables)
 OpenSimAddJavaTest(TestModelBuilding)
 OpenSimAddJavaTest(TestEditMarkers)
+OpenSimAddJavaTest(TestIKInterfaces)
 if(WITH_BTK OR WITH_EZC3D)
     OpenSimAddJavaTest(TestC3DFileAdapter)
 endif()

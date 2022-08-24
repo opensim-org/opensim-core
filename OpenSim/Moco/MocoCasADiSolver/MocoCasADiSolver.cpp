@@ -40,6 +40,7 @@ using namespace OpenSim;
 MocoCasADiSolver::MocoCasADiSolver() { constructProperties(); }
 
 void MocoCasADiSolver::constructProperties() {
+    constructProperty_scale_variables_using_bounds(false);
     constructProperty_parameters_require_initsystem(true);
     constructProperty_optim_sparsity_detection("none");
     constructProperty_optim_write_sparsity("");
@@ -51,6 +52,8 @@ void MocoCasADiSolver::constructProperties() {
     constructProperty_implicit_multibody_accelerations_weight(1.0);
     constructProperty_minimize_implicit_auxiliary_derivatives(false);
     constructProperty_implicit_auxiliary_derivatives_weight(1.0);
+
+    constructProperty_enforce_path_constraint_midpoints(false);
 }
 
 bool MocoCasADiSolver::isAvailable() {
@@ -293,6 +296,7 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
         casSolver->setMesh(mesh);
     }
     casSolver->setTranscriptionScheme(get_transcription_scheme());
+    casSolver->setScaleVariablesUsingBounds(get_scale_variables_using_bounds());
     casSolver->setMinimizeLagrangeMultipliers(
             get_minimize_lagrange_multipliers());
     casSolver->setLagrangeMultiplierWeight(get_lagrange_multiplier_weight());
@@ -323,6 +327,8 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     casSolver->setOptimSolver(get_optim_solver());
     casSolver->setInterpolateControlMidpoints(
             get_interpolate_control_midpoints());
+    casSolver->setEnforcePathConstraintMidpoints(
+            get_enforce_path_constraint_midpoints());
     if (casProblem.getJarSize() > 1) {
         casSolver->setParallelism("thread", casProblem.getJarSize());
     }

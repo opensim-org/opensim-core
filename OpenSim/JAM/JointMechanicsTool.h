@@ -29,8 +29,8 @@
 //#include <OpenSim/Tools/IKTaskSet.h>
 
 
-class MarkersReference;
-class CoordinateReference;
+//class MarkersReference;
+//class CoordinateReference;
 
 
 namespace OpenSim { 
@@ -46,6 +46,7 @@ performed (using a different tool) with the model states written to a .sto file.
 The JointMechanicsTool reposes the model at the states listed in the 
 states_file and performs further analyses. 
 
+### .vtp File Output
 A key feature of the JointMechanicsTool is the ability to write .vtp files 
 for each timestep that contain both geometric information (vertex locations 
 and connectivity) and simulations outputs. These .vtp 
@@ -61,7 +62,13 @@ components and respective outputs that are written to .vtp files can be
 controlled using the contacts, contact_outputs, ligaments, ligament_ouputs, 
 muscles, muscle_outputs, and attached_geometry_bodies properties. 
 
-
+### .h5 File Output
+The JointMechanicsTool can also output .h5 files that store model outputs
+(coordinate values, muscle outputs, ligament outputs, contact outputs etc). 
+The .h5 format is binary and hierarchical and thus provides a compact and well
+organized file structure for storing large amounts of data. There are .h5
+file readers in Python and MATLAB enabling post-hoc analysis of simulation
+results. HDFView is a free GUI for inspecting the contents of .h5 files.
 
 
 */
@@ -114,9 +121,22 @@ public:
         "matrices for each body in the ground reference frames at each time "
         "step to pose the model for analysis.")
 
-   OpenSim_DECLARE_PROPERTY(transform_assembly_threshold, double,
-       "Threshold to determine accuracy in matching the input 4x4 transfomations "
-       "listed in the input_transforms_file.")
+    OpenSim_DECLARE_PROPERTY(transform_assembly_threshold, double,
+       "Threshold to determine accuracy in matching the input 4x4 "
+       "transfomations listed in the input_transforms_file. "
+       "The default value is 1e-6. ")
+    
+    OpenSim_DECLARE_PROPERTY(transform_assembly_max_iterations, int,
+        "Maximum number of iterations to reach transform_assembly_threshold "
+        "at each time step when posing model according to the "
+        "input_transforms_file. "
+        "The default value is 500. ")
+
+    OpenSim_DECLARE_PROPERTY(transform_assembly_iterations_to_full, int,
+        "Number of iterations between full assembly (call to model.assemble() "
+        " after setting every coordinate when posing model according to the "
+        "input_transforms_file. "
+        "The default value is 100. ")
 
     OpenSim_DECLARE_PROPERTY(input_forces_file, std::string,
         "Path to storage file (.sto) containing forces vs time for actuators "

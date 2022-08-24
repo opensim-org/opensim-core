@@ -147,3 +147,8 @@ void MocoPathConstraint::initializeOnModel(const Model& model,
         "zero.");
     m_path_constraint_index = pathConstraintIndex;    
 }
+
+void MocoPathConstraint::printDescription() const {
+    getConstraintInfo().printDescription();
+    printDescriptionImpl();
+}

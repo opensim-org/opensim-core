@@ -8,7 +8,7 @@ project(OpenSim)
 #
 #----------------------------------------------------
 
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.15)
 
 if(COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
@@ -28,8 +28,8 @@ include(FeatureSummary)
 # OpenSim version.
 # ----------------
 set(OPENSIM_MAJOR_VERSION 4)
-set(OPENSIM_MINOR_VERSION 3)
-set(OPENSIM_PATCH_VERSION 1)
+set(OPENSIM_MINOR_VERSION 4)
+set(OPENSIM_PATCH_VERSION 0)
 
 # Don't include the patch version if it is 0.
 set(PATCH_VERSION_STRING)
@@ -158,6 +158,9 @@ mark_as_advanced(OPENSIM_PYTHON_STANDALONE) # Mainly for packagers; not users.
 #   pypi: ON (there is no way to install the C++ libraries otherwise)
 #   debian, homebrew, conda: OFF (can have a separate C++ library package)
 
+option(OPENSIM_PYTHON_CONDA "Build specifically for Conda packaging
+which implies NO C++ tests and no runtime as managed by Conda." OFF)
+
 option(BUILD_API_ONLY "Build/install only headers, libraries,
 wrapping, tests; not applications (opensim, ik, rra, etc.)." OFF)
 
@@ -237,7 +240,11 @@ if(${OPENSIM_INSTALL_UNIX_FHS})
     # Bindings/Python/CMakeLists.txt).
     # The _LIBDIR variable might contain something like x86-64-linux-gnu on
     # some systems, but for python, we really just want lib/, no matter what.
-    set(OPENSIM_INSTALL_PYTHONDIR "lib/pythonVERSION/site-packages")
+    if (OPENSIM_PYTHON_CONDA)
+        set(OPENSIM_INSTALL_PYTHONDIR "Lib/site-packages")
+    else()
+        set(OPENSIM_INSTALL_PYTHONDIR "lib/pythonVERSION/site-packages")
+    endif()
     # share/java, as expected on Ubuntu/Debian (apt-get).
     set(OPENSIM_INSTALL_JAVAJARDIR "${CMAKE_INSTALL_DATAROOTDIR}/java")
     # Don't want to put source files in share/java.
@@ -484,10 +491,7 @@ set(BUILD_JAVA_WRAPPING OFF CACHE BOOL "Build Java wrapping (needed if you're bu
 
 set(BUILD_PYTHON_WRAPPING OFF CACHE BOOL "Build Python wrapping (needed if you're building the Python wrapping; requires that you have SWIG and Python installed on your machine.)")
 
-set(OPENSIM_PYTHON_VERSION 3 CACHE STRING
-    "The major Python version (2 or 3) for which to build the wrapping.")
-# To create a drop-down in the CMake GUI:
-set_property(CACHE OPENSIM_PYTHON_VERSION PROPERTY STRINGS "2" "3")
+set(OPENSIM_PYTHON_VERSION 3)
 
 if(${BUILD_JAVA_WRAPPING})
     # If we can find a MATLAB installation, we'll try to run some MATLAB tests.
@@ -544,21 +548,19 @@ if(${BUILD_JAVA_WRAPPING})
 endif()
 
 if(${BUILD_PYTHON_WRAPPING})
-    # PythonInterp is supposed to come before PythonLibs.
-    if(${OPENSIM_PYTHON_VERSION} STREQUAL "2")
-        set(required_python_version 2.7)
-    elseif(${OPENSIM_PYTHON_VERSION} STREQUAL "3")
-        set(required_python_version 3)
-    else()
-        message(FATAL_ERROR "OPENSIM_PYTHON_VERSION should be '2' or '3'.")
-    endif()
-    find_package(PythonInterp ${required_python_version} REQUIRED)
-    find_package(NumPy REQUIRED)
+    set(required_python_version 3)
+    find_package(Python3 3.6 REQUIRED COMPONENTS Interpreter Development NumPy)
+    message("Python3_FOUND:${Python3_FOUND}")
+    message("Python3_VERSION:${Python3_VERSION}")
+    message("Python3_Development_FOUND:${Python3_Development_FOUND}")
+    message("Python3_LIBRARIES:${Python3_LIBRARIES}")
+    message("Python3_Numpy_Include:${Python3_NumPy_INCLUDE_DIRS}")
+    message("Python3_Numpy_VERSION:${Python3_NumPy_VERSION}")
 
     # We update the python install dir to include the python version,
     # now that we know it. We replace the token "VERSION" with the actual python
     # version.
-    set(python_version_majmin "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
+    set(python_version_majmin "${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}")
     string(REPLACE "VERSION" "${python_version_majmin}"
         OPENSIM_INSTALL_PYTHONDIR "${OPENSIM_INSTALL_PYTHONDIR}")
     # This must be done before adding the OpenSim libraries, since
@@ -572,7 +574,7 @@ if(${BUILD_PYTHON_WRAPPING})
         # So we use the python-config executable to get the
         # correct library and include directory.
         # https://github.com/Homebrew/legacy-homebrew/issues/25118
-        execute_process(COMMAND "${PYTHON_EXECUTABLE}-config" --prefix
+        execute_process(COMMAND "${Python3_EXECUTABLE}-config" --prefix
                     OUTPUT_VARIABLE python_prefix
                     OUTPUT_STRIP_TRAILING_WHITESPACE)
         string(CONCAT pyinc_desc
@@ -589,7 +591,6 @@ if(${BUILD_PYTHON_WRAPPING})
             "${python_prefix}/lib/libpython${python_version_majmin}.dylib"
             CACHE FILEPATH "${pylib_desc}")
     endif()
-    find_package(PythonLibs ${required_python_version} REQUIRED)
     
     # Most users need to copy dependencies if wrapping is on. Warn user
     # if it isn't on.
@@ -606,7 +607,9 @@ if(WIN32)
     add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
 endif()
 
-include(InstallRequiredSystemLibraries)
+if (NOT OPENSIM_PYTHON_CONDA)
+    include(InstallRequiredSystemLibraries)
+endif()
 
 # C++11
 # -----
@@ -697,9 +700,9 @@ if(${OPENSIM_C3D_PARSER} STREQUAL "ezc3d")
     set(WITH_EZC3D true)
     set(WITH_BTK false)
     if(WIN32)
-        set(ezc3d_hint "${OPENSIM_DEPENDENCIES_DIR}/ezc3d/lib/cmake")
+        set(ezc3d_hint "${OPENSIM_DEPENDENCIES_DIR}/ezc3d/cmake")
     else()
-        set(ezc3d_hint "${OPENSIM_DEPENDENCIES_DIR}/ezc3d/lib/ezc3d/cmake")
+        set(ezc3d_hint "${OPENSIM_DEPENDENCIES_DIR}/ezc3d/lib/cmake/ezc3d")
     endif()
     find_package(ezc3d REQUIRED HINTS "${ezc3d_hint}")
     add_definitions(-DWITH_EZC3D)

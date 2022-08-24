@@ -206,6 +206,9 @@ public:
     void initializeOnModel(const Model& model, const MocoProblemInfo&,
             const int& pathConstraintIndex) const;
 
+    /// Print the description for this path constraint.
+    void printDescription() const;
+
 protected:
     OpenSim_DECLARE_UNNAMED_PROPERTY(MocoConstraintInfo,
             "The bounds and labels for this MocoPathConstraint.");
@@ -236,6 +239,8 @@ protected:
     /// @endcode
     virtual void calcPathConstraintErrorsImpl(
             const SimTK::State& state, SimTK::Vector& errors) const = 0;
+    /// Print a more detailed description unique to each path constraint.
+    virtual void printDescriptionImpl() const {};
     /// For use within virtual function implementations.
     const Model& getModel() const {
         OPENSIM_THROW_IF(!m_model, Exception,

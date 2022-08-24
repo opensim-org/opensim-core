@@ -168,6 +168,12 @@ public:
     OpenSim_DECLARE_PROPERTY(settle_sim_results_prefix, std::string, 
         "Prefix to settle simulation results file names.")
 
+    OpenSim_DECLARE_PROPERTY(settle_constant_muscle_control, double,
+        "Set constant control value for all muscles in settle simulation. "
+        "Note muscle physiology is ignored so F_muscle = F_max_iso * control. "
+        "Value must be within the bounds [0 - 1]"
+        "The default value is 0.02. ")
+
     OpenSim_DECLARE_PROPERTY(max_iterations, int, 
         "Maximum number of COMAK iterations per time step allowed for the "
         "the simulated model accelerations to converge to the input observed "
