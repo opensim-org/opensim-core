@@ -70,6 +70,8 @@ organized file structure for storing large amounts of data. There are .h5
 file readers in Python and MATLAB enabling post-hoc analysis of simulation
 results. HDFView is a free GUI for inspecting the contents of .h5 files.
 
+### Report joint kinematics in different reference frames
+
 
 */
 class OSIMJAM_API JointMechanicsTool : public Object {
