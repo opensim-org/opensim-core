@@ -181,8 +181,8 @@ void MocoContactImpulseTrackingGoal::initializeOnModelImpl(const Model& model) c
                         forceExpressedInBody);
             }
             else if (model.hasComponent<PhysicalFrame>(
-                "./bodyset/" + forceExpressedInBody)) {
-                    groupInfo.refExpressedInFrame =
+                    "./bodyset/" + forceExpressedInBody)) {
+                groupInfo.refExpressedInFrame =
                         &model.getComponent<PhysicalFrame>(
                             "./bodyset/" + forceExpressedInBody);
             }
