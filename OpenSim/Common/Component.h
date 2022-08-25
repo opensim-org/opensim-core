@@ -876,7 +876,7 @@ public:
      *     const AbstractSocket& socket = getSocket(name);
      * }
      * @endcode */
-    std::vector<std::string> getSocketNames() {
+    std::vector<std::string> getSocketNames() const {
         std::vector<std::string> names;
         for (const auto& it : _socketsTable) {
             names.push_back(it.first);
