@@ -4,7 +4,7 @@ set_target_properties(exampleTRCFileAdapter PROPERTIES FOLDER "Examples")
 file(COPY ${CMAKE_SOURCE_DIR}/OpenSim/Common/Test/dataWithNaNsOfDifferentCases.trc
      DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
-if(WITH_BTK OR WITH_EZC3D)
+if(WITH_EZC3D)
     add_executable(exampleC3DFileAdapter exampleC3DFileAdapter.cpp)
     target_link_libraries(exampleC3DFileAdapter ${Simbody_LIBRARIES} osimCommon)
     set_target_properties(exampleC3DFileAdapter PROPERTIES FOLDER "Examples")

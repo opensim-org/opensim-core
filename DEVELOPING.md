@@ -74,7 +74,7 @@ documentation online.
 
 The layout of the distribution on Windows is as follows:
 
-  - `bin/` OpenSim, SimTK, and BTK DLLs, opensim-cmd.exe, simbody-visualizer.exe
+  - `bin/` OpenSim and SimTK DLLs, opensim-cmd.exe, simbody-visualizer.exe
   - `cmake/` OpenSimConfig.cmake, etc.
   - `sdk/`
     - `APIExamples/`: C++ examples.
@@ -99,7 +99,7 @@ if `OPENSIM_INSTALL_UNIX_FHS` is `ON`, as follows:
   - `include/`
     - `OpenSim/` OpenSim (and Lepton) headers.
     - `simbody/` Simbody headers.
-  - `lib/` (on some Linux variants, `lib/<arch>/`) OpenSim, SimTK, and BTK  shared libraries.
+  - `lib/` (on some Linux variants, `lib/<arch>/`) OpenSim and SimTK shared libraries.
     - `cmake/` OpenSimConfig.cmake, SimbodyConfig.cmake, etc.
     - `python2.7/site-packages/` OpenSim Python bindings.
   - `libexec/simbody/simbody-visualizer`
@@ -151,7 +151,7 @@ interchangeably.
 
 There are two types of dependencies: public, or those exposed through OpenSim's 
 API (e.g., Simbody), and private, or those used internally by OpenSim 
-(e.g., BTK and ezc3d):
+(e.g., ezc3d):
 
 - **private**: OpenSim's binary distribution need only contain the 
   dependency's dynamic libraries.
