@@ -90,8 +90,7 @@ void MocoContactImpulseTrackingGoal::addScaleFactor(const std::string& name,
 
     // Update the scale factor map so we can retrieve the correct MocoScaleFactor
     // for this contact group during initialization.
-    std::string key(externalForceName);
-    m_scaleFactorMap[key] = name;
+    m_scaleFactorMap[externalForceName] = name;
 
     // Append the scale factor to the MocoGoal.
     appendScaleFactor(MocoScaleFactor(name, bounds));
@@ -151,7 +150,7 @@ void MocoContactImpulseTrackingGoal::initializeOnModelImpl(const Model& model) c
 
         GroupInfo groupInfo;
         for (int ic = 0; ic < group.getProperty_contact_force_paths().size();
-            ++ic) {
+                ++ic) {
             const auto& path = group.get_contact_force_paths(ic);
             const auto& contactForce =
                 model.getComponent<SmoothSphereHalfSpaceForce>(path);
@@ -183,9 +182,9 @@ void MocoContactImpulseTrackingGoal::initializeOnModelImpl(const Model& model) c
             }
             else if (model.hasComponent<PhysicalFrame>(
                 "./bodyset/" + forceExpressedInBody)) {
-                groupInfo.refExpressedInFrame =
-                    &model.getComponent<PhysicalFrame>(
-                        "./bodyset/" + forceExpressedInBody);
+                    groupInfo.refExpressedInFrame =
+                        &model.getComponent<PhysicalFrame>(
+                            "./bodyset/" + forceExpressedInBody);
             }
             else {
                 OPENSIM_THROW_FRMOBJ(Exception,

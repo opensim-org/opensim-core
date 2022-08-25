@@ -192,12 +192,12 @@ namespace OpenSim {
             append_contact_groups(std::move(group));
         }
 
-        /// Set the ground reaction force contact impulse 'axis' to be tracked
-        /// (X = 0, Y = 1, Z = 2), where 'axis' refers to the dimension/direction of
+        /// Set the ground reaction force contact impulse axis to be tracked
+        /// (X = 0, Y = 1, Z = 2), where axis refers to the component of
         /// the ground reaction force contact impulse, in the ground frame, to be
         /// tracked.
-        void setImpulseAxis(int ImpulseAxis) {
-            set_impulse_axis(ImpulseAxis);
+        void setImpulseAxis(int impulseAxis) {
+            set_impulse_axis(impulseAxis);
         }
         int getImpulseAxis() const { return get_impulse_axis(); }
 
@@ -238,8 +238,8 @@ namespace OpenSim {
             "Experimental contact force data as an ExternalLoads XML file.");
         OpenSim_DECLARE_PROPERTY(impulse_axis, int,
             "The axis of the ground reaction force impulse component to be tracked in the goal."
-            "'X'= 0, 'Y'= 1 , 'Z'= 2"
-            "(Default value is: -1)");
+            "X= 0, Y= 1 , Z= 2"
+            "(Default value = -1)");
 
         void constructProperties();
 
