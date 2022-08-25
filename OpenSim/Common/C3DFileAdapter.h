@@ -22,7 +22,7 @@
 #ifndef OPENSIM_C3D_FILE_ADAPTER_H_
 #define OPENSIM_C3D_FILE_ADAPTER_H_
 
-#if defined (WITH_EZC3D) || defined (WITH_BTK)
+#if defined (WITH_EZC3D)
 
 #include "FileAdapter.h"
 #include "TimeSeriesTable.h"
@@ -153,6 +153,6 @@ private:
 
 } // namespace OpenSim
 
-#endif // WITH_BTK || WITH_EZC3D
+#endif // WITH_EZC3D
 
 #endif // OPENSIM_C3D_FILE_ADAPTER_H_
