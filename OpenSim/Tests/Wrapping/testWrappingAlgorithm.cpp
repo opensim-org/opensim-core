@@ -80,6 +80,7 @@ int main()
     
     // Repeat with Rotate the wrap object by angle theta to get an ellipse with radii (.5/cos(theta), .5)
     // length of wrap 
+    /**
     try {
         auto* wo = new WrapCylinder();
         wo->setName("pulley1");
@@ -95,7 +96,7 @@ int main()
     catch (const std::exception& e) {
         std::cout << "Exception: " << e.what() << std::endl;
         failures.push_back("TestWrapCylinder");
-    }
+    } */
 
     if (!failures.empty()) {
         cout << "Done, with failure(s): " << failures << endl;
@@ -161,18 +162,18 @@ void testWrapObject(WrapObject* wrapObject)
 
         double ma1 = spring1->computeMomentArm(s, coord);
 
-        //ASSERT_EQUAL<double>(-r, ma1, .0001); // SimTK::Eps
-        std::cout << "marm=" << ma1 << std::endl;
+        ASSERT_EQUAL<double>(-r, ma1, .0001); // SimTK::Eps
+        //std::cout << "marm=" << ma1 << std::endl;
         double len1 = spring1->getLength(s);
         if (i== 0) {
-            std::cout << "Testing " << wObj->getConcreteClassName() << std::endl;
-            std::cout << "i=" << i << "ma=" << ma1 << "len=" << len1 << std::endl;
-            //ASSERT_EQUAL<double>(len1, 1 - 0.1, 1e-4); //SimTK::Eps
+            //std::cout << "Testing " << wObj->getConcreteClassName() << std::endl;
+            //std::cout << "i=" << i << "ma=" << ma1 << "len=" << len1 << std::endl;
+            ASSERT_EQUAL<double>(len1, 1 - 0.1, 1e-4); //SimTK::Eps
         }
         if (i == nsteps) { // sgould be 1/4 way around wrapObject
-            std::cout << "i=" << i << "ma=" << ma1 << "len=" << len1 << std::endl;
-            std::cout << "p=" << .9 + p / 4;
-            //ASSERT_EQUAL<double>(len1, 1 + .25 * 2 * SimTK::Pi * r -0.1, .0001); //SimTK::Eps
+            //std::cout << "i=" << i << "ma=" << ma1 << "len=" << len1 << std::endl;
+            //std::cout << "p=" << .9 + p / 4;
+            ASSERT_EQUAL<double>(len1, 1 + .25 * 2 * SimTK::Pi * r -0.1, .0001); //SimTK::Eps
         }
     }
 }
