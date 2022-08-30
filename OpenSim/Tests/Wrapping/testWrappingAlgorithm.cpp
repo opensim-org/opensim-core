@@ -79,8 +79,7 @@ int main()
         failures.push_back("TestWrapEllipsoid");
     }
     
-    // Repeat with Rotate the wrap object by angle theta to get an ellipse with radii (.5/cos(theta), .5)
-    // length of wrap 
+    // Compare rotated wrap cylinder by angle theta with an ellipsoid with radii matching cylinder
     
     try {
         auto* woOne = new WrapCylinder();
