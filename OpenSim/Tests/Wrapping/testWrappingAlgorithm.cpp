@@ -89,11 +89,11 @@ int main()
         woOne->set_length(2);
         auto* woTwo = new WrapEllipsoid();
         woTwo->setName("pulley2");
-        // -45 - 45 degrees guarantee no edge which is poorly handled and need to be dropped
+        // -30 - 30 degrees guarantee no edge which is poorly handled and need to be dropped
         for (int i = -2; i <= 2; i++) {
             double angle = i * SimTK::Pi / 12;
             woOne->set_xyz_body_rotation(Vec3(0,  angle, 0));
-            woTwo->set_dimensions(Vec3(.5/cos(angle), .5, .5));
+            woTwo->set_dimensions(Vec3(.5/cos(angle), .5, 1));
             testCompareWrapObjects(woOne, woTwo);
         }
     }
@@ -249,6 +249,7 @@ void testCompareWrapObjects(OpenSim::WrapObject* wObj1, OpenSim::WrapObject* wOb
     //double p = SimTK::Pi * (3 * (a + b) - sqrt((3 * a + b) * (a + 3 * b)));
     
     int nsteps = 1000;
+    double max_diff = 0.;
     for (int i = 0; i <= nsteps; ++i) {
 
         coord.setValue(s, i * SimTK::Pi / (4 * nsteps));
@@ -259,8 +260,10 @@ void testCompareWrapObjects(OpenSim::WrapObject* wObj1, OpenSim::WrapObject* wOb
 
         double len1 = spring1->getLength(s);
         double len2 = spring2->getLength(s);
+        max_diff = std::max(max_diff, std::abs(len1 - len2));
         //std::cout << "i=" << i << " length=" << len1 << " " << len2 << " diff="  << std::abs(len1-len2) << std::endl;
-        ASSERT_EQUAL<double>(len1, len2, .05);
+        ASSERT_EQUAL<double>(len1, len2, .01);
     }
+    //std::cout << "max_diff:" << max_diff << std::endl;
 }
 
