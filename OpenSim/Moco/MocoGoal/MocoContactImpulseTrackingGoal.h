@@ -86,15 +86,14 @@ namespace OpenSim {
     This goal is computed as follows:
     \f[
     \frac{1}{mg} (\int_{t_i}^{t_f}
-                 \vec{F}_{m,j,a} - \vec{F}_{e,j,a} ~dt)^2; {j \in G}; {a \in A}
+                 \vec{F}_{m,a} - \vec{F}_{e,a} ~dt)^2
     \f]
     We use the following notation:
     - \f$ t_i \f$: the initial time of this phase.
     - \f$ t_f \f$: the final time of this phase.
     - \f$ mg \f$: the total weight of the system; replaced with
         \f$ m \f$ if \f$ g = 0 \f$.
-    - \f$ G \f$: the set of contact groups.
-    - \f$ A \f$: the set of axes {0, 1, 2}.
+    - \f$ a \f$: the impulse axis to be tracked.
 
     The impulse_axis property, a = {0, 1, 2}, specifies which component
     of the contact impulse should be tracked.
@@ -143,7 +142,7 @@ namespace OpenSim {
     (i.e., X = 0, Y = 1, Z = 2) of the scaled force value. The direction is 
     applied in whatever frame the reference data is expressed in based on the 
     provided ExternalLoads in each contact group.
-    Adding a scale factor to a MocoImpulseTrackingGoal.
+    Adding a scale factor to a MocoContactImpulseTrackingGoal.
     @code
     auto* contactImpulseTrackingGoal = problem.addGoal<MocoContactImpulseTrackingGoal>();
     ...

@@ -71,9 +71,9 @@ OSIMMOCO_API void RegisterTypes_osimMoco() {
         Object::registerType(MocoMarkerTrackingGoal());
         Object::registerType(MocoMarkerFinalGoal());
         Object::registerType(MocoContactTrackingGoal());
-		Object::registerType(MocoContactTrackingGoalGroup());
-		Object::registerType(MocoContactImpulseTrackingGoal());
-		Object::registerType(MocoContactImpulseTrackingGoalGroup());
+        Object::registerType(MocoContactTrackingGoalGroup());
+        Object::registerType(MocoContactImpulseTrackingGoal());
+        Object::registerType(MocoContactImpulseTrackingGoalGroup());
         Object::registerType(MocoControlGoal());
         Object::registerType(MocoSumSquaredStateGoal());
         Object::registerType(MocoControlTrackingGoal());

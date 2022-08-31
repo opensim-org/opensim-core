@@ -27,8 +27,8 @@ MocoContactImpulseTrackingGoalGroup::MocoContactImpulseTrackingGoalGroup() {
 }
 
 MocoContactImpulseTrackingGoalGroup::MocoContactImpulseTrackingGoalGroup(
-    const std::vector<std::string>& contactForcePaths,
-    const std::string& externalForceName) {
+        const std::vector<std::string>& contactForcePaths,
+        const std::string& externalForceName) {
     constructProperties();
     for (const auto& path : contactForcePaths) {
         append_contact_force_paths(path);
@@ -37,10 +37,10 @@ MocoContactImpulseTrackingGoalGroup::MocoContactImpulseTrackingGoalGroup(
 }
 
 MocoContactImpulseTrackingGoalGroup::MocoContactImpulseTrackingGoalGroup(
-    const std::vector<std::string>& contactForcePaths,
-    const std::string& externalForceName,
-    const std::vector<std::string>& altFramePaths) :
-    MocoContactImpulseTrackingGoalGroup(contactForcePaths, externalForceName) {
+        const std::vector<std::string>& contactForcePaths,
+        const std::string& externalForceName,
+        const std::vector<std::string>& altFramePaths) :
+        MocoContactImpulseTrackingGoalGroup(contactForcePaths, externalForceName) {
     for (const auto& path : altFramePaths) {
         append_alternative_frame_paths(path);
     }
@@ -199,9 +199,8 @@ void MocoContactImpulseTrackingGoal::initializeOnModelImpl(const Model& model) c
         // this contact group.
         RefPtrMSF thisScaleFactorRef;
         bool foundScaleFactor = false;
-        std::string key(group.get_external_force_name());
         for (const auto& scaleFactor : scaleFactors) {
-            if (m_scaleFactorMap[key] == scaleFactor.getName()) {
+            if (m_scaleFactorMap[group.get_external_force_name()] == scaleFactor.getName()) {
                 thisScaleFactorRef = &scaleFactor;
                 foundScaleFactor = true;
             }
@@ -243,15 +242,15 @@ void MocoContactImpulseTrackingGoal::initializeOnModelImpl(const Model& model) c
 }
 
 int MocoContactImpulseTrackingGoal::findRecordOffset(
-    const MocoContactImpulseTrackingGoalGroup& group,
-    const SmoothSphereHalfSpaceForce& contactForce,
-    const std::string& appliedToBody) const {
+        const MocoContactImpulseTrackingGoalGroup& group,
+        const SmoothSphereHalfSpaceForce& contactForce,
+        const std::string& appliedToBody) const {
 
     // Is the ExternalForce applied to the sphere's body?
     const auto& sphereBase =
         contactForce.getConnectee<ContactSphere>("sphere")
-        .getConnectee<PhysicalFrame>("frame")
-        .findBaseFrame();
+            .getConnectee<PhysicalFrame>("frame")
+            .findBaseFrame();
     const std::string& sphereBaseName = sphereBase.getName();
     if (sphereBaseName == appliedToBody) {
         // We want the first 3 entries in
@@ -263,8 +262,8 @@ int MocoContactImpulseTrackingGoal::findRecordOffset(
     // Is the ExternalForce applied to the half space's body?
     const auto& halfSpaceBase =
         contactForce.getConnectee<ContactHalfSpace>("half_space")
-        .getConnectee<PhysicalFrame>("frame")
-        .findBaseFrame();
+            .getConnectee<PhysicalFrame>("frame")
+            .findBaseFrame();
     const std::string& halfSpaceBaseName = halfSpaceBase.getName();
     if (halfSpaceBaseName == appliedToBody) {
         // We want the forces applied to the half space, which are
@@ -280,7 +279,7 @@ int MocoContactImpulseTrackingGoal::findRecordOffset(
     const auto& sphereBasePath = sphereBase.getAbsolutePathString();
     const auto& halfSpaceBasePath = halfSpaceBase.getAbsolutePathString();
     for (int ia = 0; ia < group.getProperty_alternative_frame_paths().size();
-        ++ia) {
+            ++ia) {
         const auto& path = group.get_alternative_frame_paths(ia);
         if (path == sphereBasePath) { return 0; }
         if (path == halfSpaceBasePath) { return 6; }
@@ -314,7 +313,7 @@ void MocoContactImpulseTrackingGoal::calcIntegrandImpl(
         for (const auto& entry : group.contacts) {
             Array<double> recordValues = entry.first->getRecordValues(state);
             const auto& recordOffset = entry.second;
-                force_model += recordValues[recordOffset + get_impulse_axis()];
+            force_model += recordValues[recordOffset + get_impulse_axis()];
         }
 
         // Reference force.
@@ -329,11 +328,12 @@ void MocoContactImpulseTrackingGoal::calcIntegrandImpl(
 
         // Apply scale factors for this marker, if they exist.
         const auto& scaleFactorRef = m_scaleFactorRefs[ig];
+        double scaleFactor = 1.0;
         if (scaleFactorRef != nullptr) {
-            force_ref *= scaleFactorRef->getScaleFactor();
+            scaleFactor = scaleFactorRef->getScaleFactor();
         }
 
-        double error = force_model - force_ref[get_impulse_axis()];
+        double error = force_model - scaleFactor * force_ref[get_impulse_axis()];
         integrand += error;
     }
 
@@ -347,7 +347,7 @@ void MocoContactImpulseTrackingGoal::printDescriptionImpl() const {
             ig, group.get_external_force_name());
         log_cout("            forces:");
         for (int ic = 0; ic < group.getProperty_contact_force_paths().size();
-            ++ic) {
+                ++ic) {
             log_cout("                {}", group.get_contact_force_paths(ic));
         }
     }
