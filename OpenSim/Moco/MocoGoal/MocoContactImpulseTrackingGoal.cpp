@@ -309,7 +309,7 @@ void MocoContactImpulseTrackingGoal::calcIntegrandImpl(
         const auto& group = m_groups[ig];
 
         // Model force.
-        double force_model;
+        double force_model(0);
         for (const auto& entry : group.contacts) {
             Array<double> recordValues = entry.first->getRecordValues(state);
             const auto& recordOffset = entry.second;
