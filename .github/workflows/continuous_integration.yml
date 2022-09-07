@@ -266,7 +266,8 @@ jobs:
       run: |
         brew install cmake pkgconfig autoconf libtool automake wget pcre doxygen python@3.8
         brew reinstall gcc
-        pip3 install numpy==1.21
+        brew reinstall python@3.8
+        pip3 install numpy==1.20
         gfortran -v
         mkdir gfortran_version
         gfortran -v &> gfortran_version/gfortran_version.txt
