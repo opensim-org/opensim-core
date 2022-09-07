@@ -136,6 +136,61 @@ void CustomJoint::extendScale(const SimTK::State& s, const ScaleSet& scaleSet)
 
     //TODO: Need to scale transforms appropriately, given an arbitrary axis.
     updSpatialTransform().scale(scaleFactors);
+    
+    //Scale Translation Default Value
+    SpatialTransform& spat_trans = updSpatialTransform();
+    const Frame& scale_factor_frame = getParentFrame().findBaseFrame();
+
+    if (spat_trans.get_translation1().getCoordinateNames().size() > 0) {
+        Vec3 axis = spat_trans.get_translation1().getAxis();
+        std::string translation_coord_name = spat_trans.get_translation1().get_coordinates(0);
+        Vec3 axis_scale_frame = getParentFrame().expressVectorInAnotherFrame(s, axis, scale_factor_frame);
+        axis_scale_frame = axis_scale_frame / axis_scale_frame.sum();
+        double scale = dot(axis_scale_frame, scaleFactors);
+
+        for (int i = 0; i < updProperty_coordinates().size(); ++i) {
+            Coordinate& coord = upd_coordinates(i);
+            if (coord.getName() == translation_coord_name) {
+                double def_value = coord.getDefaultValue();
+                def_value = scale * def_value;
+                coord.setDefaultValue(def_value);
+            }
+        }
+    }
+
+    if (spat_trans.get_translation2().getCoordinateNames().size() > 0) {
+        Vec3 axis = spat_trans.get_translation2().getAxis();
+        std::string translation_coord_name = spat_trans.get_translation2().get_coordinates(0);
+        Vec3 axis_scale_frame = getParentFrame().expressVectorInAnotherFrame(s, axis, scale_factor_frame);
+        axis_scale_frame = axis_scale_frame / axis_scale_frame.sum();
+        double scale = dot(axis_scale_frame, scaleFactors);
+
+        for (int i = 0; i < updProperty_coordinates().size(); ++i) {
+            Coordinate& coord = upd_coordinates(i);
+            if (coord.getName() == translation_coord_name) {
+                double def_value = coord.getDefaultValue();
+                def_value = scale * def_value;
+                coord.setDefaultValue(def_value);
+            }
+        }
+    }
+
+    if (spat_trans.get_translation3().getCoordinateNames().size() > 0) {
+        Vec3 axis = spat_trans.get_translation3().getAxis();
+        std::string translation_coord_name = spat_trans.get_translation3().get_coordinates(0);
+        Vec3 axis_scale_frame = getParentFrame().expressVectorInAnotherFrame(s, axis, scale_factor_frame);
+        axis_scale_frame = axis_scale_frame / axis_scale_frame.sum();
+        double scale = dot(axis_scale_frame, scaleFactors);
+
+        for (int i = 0; i < updProperty_coordinates().size(); ++i) {
+            Coordinate& coord = upd_coordinates(i);
+            if (coord.getName() == translation_coord_name) {
+                double def_value = coord.getDefaultValue();
+                def_value = scale * def_value;
+                coord.setDefaultValue(def_value);
+            }
+        }
+    }     
 }
 
 void CustomJoint::constructCoordinates()
