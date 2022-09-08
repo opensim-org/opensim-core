@@ -260,13 +260,16 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-
+    
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.8' 
+        
     - name: Install Homebrew packages
       # Save the gfortran version to a file so we can use it in the cache key.
       run: |
-        brew install cmake pkgconfig autoconf libtool automake wget pcre doxygen python@3.8
+        brew install cmake pkgconfig autoconf libtool automake wget pcre doxygen
         brew reinstall gcc
-        brew reinstall python@3.8
         pip3 install numpy==1.20
         gfortran -v
         mkdir gfortran_version
