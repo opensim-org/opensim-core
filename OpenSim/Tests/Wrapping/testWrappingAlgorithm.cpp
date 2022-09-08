@@ -139,15 +139,9 @@ void testWrapObject(WrapObject* wrapObject)
         ASSERT_EQUAL<double>(-r, ma1, .0001); // SimTK::Eps
 
         double len1 = spring1->getLength(s);
-        if (i== 0) {
-            //std::cout << "Testing " << wObj->getConcreteClassName() << std::endl;
-            //std::cout << "i=" << i << "ma=" << ma1 << "len=" << len1 << std::endl;
-            ASSERT_EQUAL<double>(len1, 1 - 0.1, 1e-4); //SimTK::Eps
-        }
-        if (i == nsteps) { // sgould be 1/4 way around wrapObject
-            //std::cout << "i=" << i << "ma=" << ma1 << "len=" << len1 << std::endl;
-            ASSERT_EQUAL<double>(len1, 1 + .25 * 2 * SimTK::Pi * r -0.1, .0001); //SimTK::Eps
-        }
+        // Length is 0.9 by construction plus a portion of a quarter circle with radius r proportional to i
+        ASSERT_EQUAL<double>(len1, .9 + 0.25 * 2 * SimTK::Pi * r * i / nsteps, 1e-6); //SimTK::Eps
+
     }
 }
 
