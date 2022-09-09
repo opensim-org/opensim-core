@@ -607,7 +607,7 @@ jobs:
       with:
         # The upload-artifact zipping does not preserve symlinks or executable
         # bits. So we zip ourselves, even though this causes a double-zip.
-        name: opensim-core-${{ steps.configure.outputs.version }}-linux
+        name: opensim-core-${{ steps.configure.outputs.version }}-ub20-linux
         path: opensim-core-${{ steps.configure.outputs.version }}-ub20.zip
   ubuntu20-nomoco:
     name: Ubuntu2004-nomoco
@@ -709,8 +709,8 @@ jobs:
       with:
         # The upload-artifact zipping does not preserve symlinks or executable
         # bits. So we zip ourselves, even though this causes a double-zip.
-        name: opensim-core-${{ steps.configure.outputs.version }}-linux
-        path: opensim-core-${{ steps.configure.outputs.version }}-ub20-nomoco.zip
+        name: opensim-core-${{ steps.configure.outputs.version }}-ub20-nomoco-linux
+        path: opensim-core-${{ steps.configure.outputs.version }}-ub20.zip
 
   style:
     name: Style
