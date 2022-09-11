@@ -70,6 +70,8 @@ public:
         Bounce,
         Slide,
         Spin,
+        SpinSlide,
+        SpinTop,
         Tumble
     };
 
@@ -184,6 +186,10 @@ parseCommandLine(int argc, char** argv)
             whichInit = Slide;
         else if (option == "Spin")
             whichInit = Spin;
+        else if (option == "SpinSlide")
+            whichInit = SpinSlide;
+        else if (option == "SpinTop")
+            whichInit = SpinTop;
         else if (option == "Tumble")
             whichInit = Tumble;
 
@@ -214,7 +220,7 @@ printUsage()
 {
     cout << endl << "Usage:" << endl;
     cout << "$ testExponetialContact "
-         << "[InitCond] [Contact] [NoDamp] [ApplyFx] [Vis]" << endl;
+         << "[InitCond] [Contact] [NoDamp] [Fx] [Vis]" << endl;
     cout << "\tInitCond (choose one): Static Bounce Slide Spin Tumble ";
     cout << endl;
     cout << "\t Contact (choose one): Exp Hunt Both" << endl << endl;
@@ -413,7 +419,7 @@ addHuntCrossleyContact(OpenSim::Body* block)
         // HuntCrossleyForce
         double dissipation = 4e-1;
         double mus = 0.7;
-        double muk = 0.465;
+        double muk = 0.5;
         if (noDamp) {
             dissipation = 0.0;
             mus = 0.0;
@@ -432,11 +438,14 @@ addHuntCrossleyContact(OpenSim::Body* block)
     }
 }
 //_____________________________________________________________________________
+// dz allows for the body to be shifted along the z axis. This is useful for
+// displacing the Exp and Hunt models.
 void
 ExponentialContactTester::
 setInitialConditions(SimTK::State& state, const SimTK::MobilizedBody& body,
     double dz)
 {
+    SimTK::Rotation R;
     SimTK::Vec3 pos(0.0, 0.0, dz);
     SimTK::Vec3 vel(0.0);
     SimTK::Vec3 angvel(0.0);
@@ -463,7 +472,28 @@ setInitialConditions(SimTK::State& state, const SimTK::MobilizedBody& body,
         pos[0] = 0.0;
         pos[1] = hs;
         vel[0] = 0.0;
+        angvel[1] = 8.0 * SimTK::Pi;
+        body.setQToFitTranslation(state, pos);
+        body.setUToFitLinearVelocity(state, vel);
+        body.setUToFitAngularVelocity(state, angvel);
+        break;
+    case SpinSlide:
+        pos[0] = 1.0;
+        pos[1] = hs;
+        vel[0] = -3.0;
         angvel[1] = 4.0 * SimTK::Pi;
+        body.setQToFitTranslation(state, pos);
+        body.setUToFitLinearVelocity(state, vel);
+        body.setUToFitAngularVelocity(state, angvel);
+        break;
+    case SpinTop:
+        R.setRotationFromAngleAboutNonUnitVector(
+                convertDegreesToRadians(54.74), Vec3(1, 0, 1));
+        pos[0] = 0.0;
+        pos[1] = 2.0*hs;
+        vel[0] = 0.0;
+        angvel[1] = 1.5 * SimTK::Pi;
+        body.setQToFitRotation(state, R);
         body.setQToFitTranslation(state, pos);
         body.setUToFitLinearVelocity(state, vel);
         body.setUToFitAngularVelocity(state, angvel);
@@ -490,7 +520,7 @@ void
 ExponentialContactTester::
 test()
 {
-    // Don't test if the only contact is Hunt-Crossley
+    // Don't run tests if the only contact is Hunt-Crossley
     if (whichContact == Hunt) return;
 
     testParameters();
@@ -627,7 +657,7 @@ simulate()
 
     // Integrate
     Manager manager(*model);
-    manager.getIntegrator().setMaximumStepSize(0.02);
+    manager.getIntegrator().setMaximumStepSize(0.03);
     manager.setIntegratorAccuracy(integ_accuracy);
     state.setTime(0.0);
     manager.initialize(state);
