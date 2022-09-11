@@ -105,6 +105,7 @@ public:
     // Command line parsing and usage
     int parseCommandLine(int argc, char** argv);
     void printUsage();
+    void printConditions();
 
     // Model Creation
     void buildModel();
@@ -132,6 +133,7 @@ public:
 
     // Simulation related
     double integ_accuracy{1.0e-5};
+    double dt_max{0.03};
     SimTK::Vec3 gravity{SimTK::Vec3(0, -9.8065, 0)};
     double mass{10.0};
     double tf{5.0};
@@ -221,8 +223,8 @@ printUsage()
     cout << endl << "Usage:" << endl;
     cout << "$ testExponetialContact "
          << "[InitCond] [Contact] [NoDamp] [Fx] [Vis]" << endl;
-    cout << "\tInitCond (choose one): Static Bounce Slide Spin Tumble ";
-    cout << endl;
+    cout << "\tInitCond (choose one): Static Bounce Slide Spin ";
+    cout << "SpinSlide SpinTop Tumble" << endl;
     cout << "\t Contact (choose one): Exp Hunt Both" << endl << endl;
 
     cout << "All arguments are optional. If no arguments are specified, ";
@@ -240,6 +242,52 @@ printUsage()
     cout << "enter the following: " << endl << endl;
 
     cout << "$ testExponentialContact Bounce Both NoDamp Vis" << endl << endl;
+}
+//_____________________________________________________________________________
+void
+ExponentialContactTester::
+printConditions() {
+    std::string modelDes;
+    std::string contactDes;
+    switch (whichContact) {
+    case (Exp):
+        modelDes = "One Block";
+        contactDes = "Exponential";
+        break;
+    case (Hunt):
+        modelDes = "One Block";
+        contactDes = "Hunt Crossley";
+        break;
+    case (Both):
+        modelDes = "Two Blocks";
+        contactDes = "1 Block Exponential, 1 Block Hunt Crossley";
+    }
+
+    std::string motion;
+    switch (whichInit) {
+    case (Static): motion = "Sitting Still"; break;
+    case (Bounce): motion = "Bouncing"; break;
+    case (Slide): motion = "Sliding"; break;
+    case (Spin): motion = "Spinning"; break;
+    case (SpinSlide): motion = "Spinning & Sliding"; break;
+    case (SpinTop): motion = "Spinnning like a Top"; break;
+    case (Tumble): motion = "Tumbling Horizontally";
+    }
+
+    std::string appliedForce;
+    if (applyFx)
+        appliedForce = "Ramping Fx after 25 sec.";
+    else
+        appliedForce = "None";
+
+    cout << endl << endl;
+    cout << "          model:  " << modelDes << " (10 kg, 6 dof, 10x10x10 cm^3)" << endl;
+    cout << "        contact:  " << contactDes << endl;
+    cout << "         motion:  " << motion << endl;
+    cout << "  applied force:  " << appliedForce << endl;
+    cout << "      integ acc:  " << integ_accuracy << endl;
+    cout << "  max step size:  " << dt_max << " sec" << endl;
+    cout << "             tf:  " << tf << " sec" << endl;
 }
 //_____________________________________________________________________________
 // Build the model
@@ -657,7 +705,7 @@ simulate()
 
     // Integrate
     Manager manager(*model);
-    manager.getIntegrator().setMaximumStepSize(0.03);
+    manager.getIntegrator().setMaximumStepSize(dt_max);
     manager.setIntegratorAccuracy(integ_accuracy);
     state.setTime(0.0);
     manager.initialize(state);
@@ -668,8 +716,10 @@ simulate()
     // Output
     int trys = manager.getIntegrator().getNumStepsAttempted();
     int steps = manager.getIntegrator().getNumStepsTaken();
-    cout << "trys = " << trys << "\t\tsteps = " << steps;
-    cout << "\t\tcpu time = " << runTime << endl;
+    printConditions();
+    cout << "           trys:  " << trys << endl;
+    cout << "          steps:  " << steps << endl;
+    cout << "       cpu time:  " << runTime << " msec" << endl;
 
     // Write the model to file
     //model->print("C:\\Users\\fcand\\Documents\\block.osim");
