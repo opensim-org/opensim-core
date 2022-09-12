@@ -193,6 +193,83 @@ private:
     void constructProperties();
 };
 
+/** This goal permits the integration of only positive or negative values from a
+model Output. This goal allows you to use model Outputs of type double, and a 
+single specified element from an Output of type SimTK::Vec3 and 
+SimTK::SpatialVec in the integrand of a goal. You can also specify the exponent
+of the value in the integrand via 'setExponent()'. */
+class OSIMMOCO_API MocoOutputExtremumGoal : public MocoOutputBase {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoOutputExtremumGoal, MocoOutputBase);
+
+public:
+    MocoOutputExtremumGoal() { constructProperties(); }
+    MocoOutputExtremumGoal(std::string name) : MocoOutputBase(std::move(name)) {
+        constructProperties();
+    }
+    MocoOutputExtremumGoal(std::string name, double weight)
+            : MocoOutputBase(std::move(name), weight) {
+        constructProperties();
+    }
+
+    /** Set if the goal should be divided by the displacement of the system's
+    center of mass over the phase. */
+    void setDivideByDisplacement(bool tf) { set_divide_by_displacement(tf); }
+    bool getDivideByDisplacement() const {
+        return get_divide_by_displacement();
+    }
+
+    /** Set if the goal should be divided by the total mass of the model. */
+    void setDivideByMass(bool tf) { set_divide_by_mass(tf); }
+    bool getDivideByMass() const { return get_divide_by_mass(); }
+
+    /** Set the type of extremum (min or max) to be applied to the output
+    variable of choice. */
+    void setExtremumType(std::string extremum_type) {
+        set_extremum_type(extremum_type);
+    }
+    std::string getExtremumType() const { return get_extremum_type(); }
+
+    /** Set the scaling factor used for the extremum approximation. */
+    void setExtremumScaler(double extremum_scaler) {
+        set_extremum_scaler(extremum_scaler);
+    }
+    double getExtremumScaler() const { return get_extremum_scaler(); }
+
+protected:
+    void initializeOnModelImpl(const Model&) const override;
+    void calcIntegrandImpl(
+            const IntegrandInput& state, double& integrand) const override;
+    void calcGoalImpl(
+            const GoalInput& input, SimTK::Vector& values) const override;
+    bool getSupportsEndpointConstraintImpl() const override { return true; }
+    Mode getDefaultModeImpl() const override { return Mode::Cost; }
+
+private:
+    OpenSim_DECLARE_PROPERTY(divide_by_displacement, bool,
+            "Divide by the model's displacement over the phase (default: "
+            "false)");
+    OpenSim_DECLARE_PROPERTY(divide_by_mass, bool,
+            "Divide by the model's total mass (default: false)");
+    OpenSim_DECLARE_PROPERTY(extremum_type, std::string,
+            "The type of extremum to be taken in the goal."
+            "'min' or 'max'"
+            "(Default extremum type = 'min').");
+    OpenSim_DECLARE_PROPERTY(extremum_scaler, double,
+            "The scaling factor applied in the approximation of the "
+            " extremum function (Default extremum scaler = 1).");
+    
+    enum DataType {
+        Type_double,
+        Type_Vec3,
+        Type_SpatialVec,
+    };
+    mutable DataType m_data_type;
+    mutable int m_beta;
+    mutable bool m_minimizeVectorNorm; 
+
+    void constructProperties();
+};
+
 /** This goal allows you to minimize or constrain a Model Output value at the
 beginning of a trajectory. Outputs of type double, SimTK::Vec3, and
 SimTK::SpatialVec are supported. By default, when using vector type Outputs, the
