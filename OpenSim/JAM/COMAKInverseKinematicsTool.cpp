@@ -64,7 +64,7 @@ COMAKInverseKinematicsTool::COMAKInverseKinematicsTool(const std::string file)
     : Object(file) {
     constructProperties();
     updateFromXMLDocument();
-        
+    _model_exists = false;
     //_directoryOfSetupFile = IO::getParentDirectory(file);
     //IO::chDir(_directoryOfSetupFile); 
 }
@@ -310,7 +310,7 @@ void COMAKInverseKinematicsTool::performIKSecondaryConstraintSimulation() {
 
     //Initialize Model
     Model model = *_model.clone();
-    model.setUseVisualizer(get_use_visualizer());
+    
     model.initSystem();
 
     for (Muscle& msl : model.updComponentList<Muscle>()) {
@@ -365,12 +365,7 @@ void COMAKInverseKinematicsTool::performIKSecondaryConstraintSimulation() {
     //Initialize Simulation 
     //---------------------
 
-    if (get_use_visualizer()) {
-        SimTK::Visualizer& viz = model.updVisualizer().updSimbodyVisualizer();
-        viz.setBackgroundColor(SimTK::White);
-        viz.setShowSimTime(true);
-        viz.setDesiredFrameRate(100);
-    }
+    
         
     //Perform Settling Simulation
     //---------------------------
@@ -378,8 +373,17 @@ void COMAKInverseKinematicsTool::performIKSecondaryConstraintSimulation() {
     //prescribe coupled coord
     Constant settle_func = Constant(start_value);
     coupled_coord.set_prescribed_function(settle_func);
-
+    
+    model.setUseVisualizer(get_use_visualizer());
     SimTK::State state = model.initSystem();
+
+    if (get_use_visualizer()) {
+        SimTK::Visualizer& viz = model.updVisualizer().updSimbodyVisualizer();
+        viz.setWindowTitle("COMAK IK Settle Simulation");
+        viz.setBackgroundColor(SimTK::White);
+        viz.setShowSimTime(true);
+        viz.setDesiredFrameRate(100);        
+    }
 
     //prescribe muscle force
     for (Muscle& msl : model.updComponentList<Muscle>()) {
@@ -490,6 +494,13 @@ void COMAKInverseKinematicsTool::performIKSecondaryConstraintSimulation() {
     coupled_coord.set_prescribed_function(sweep_func);
 
     state = model.initSystem();
+    if (get_use_visualizer()) {
+        SimTK::Visualizer& viz = model.updVisualizer().updSimbodyVisualizer();
+        viz.setWindowTitle("COMAK IK Sweep Simulation");
+        viz.setBackgroundColor(SimTK::White);
+        viz.setShowSimTime(true);
+        viz.setDesiredFrameRate(100);
+    }
 
     //prescribe muscle force
     for (Muscle& msl : model.updComponentList<Muscle>()) {
@@ -579,7 +590,7 @@ void COMAKInverseKinematicsTool::performIKSecondaryConstraintSimulation() {
 
     SimTK::Vector ind_pt_data(npts);
 
-    for (int i = 0; i < npts; ++i) {
+    for (int i = 0; i < npts+1; ++i) {
         ind_pt_data(i) = ind_min + i * step;
     }
 
@@ -606,7 +617,7 @@ void COMAKInverseKinematicsTool::performIKSecondaryConstraintSimulation() {
             //spline->addPoint(ind_pt_data(i), data_fit.calcValue(SimTK::Vector(1, ind_pt_data(i))));
             dep_interp_pts(i) = data_fit.calcValue(SimTK::Vector(1, ind_pt_data(i)));
         }
-        SimmSpline* spline = new SimmSpline(npts, &ind_data[0], &dep_interp_pts[0],path);
+        SimmSpline* spline = new SimmSpline(npts, &ind_pt_data[0], &dep_interp_pts[0],path);
         
         //GCVSpline* spline = new GCVSpline(5, npts, &ind_data[0], &dep_interp_pts[0], path, -1);
 
@@ -654,6 +665,7 @@ void COMAKInverseKinematicsTool::performIKSecondaryConstraintSimulation() {
 void COMAKInverseKinematicsTool::performIK()
 {
     Model model = _model;
+    model.setUseVisualizer(false);
     model.initSystem();
 
     // Check that IK tasks exist as markers

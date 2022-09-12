@@ -43,7 +43,7 @@ COMAKTool::COMAKTool()
 COMAKTool::COMAKTool(const std::string file) : Object(file) {
     constructProperties();
     updateFromXMLDocument();
-
+    _model_exists = false;
     //_directoryOfSetupFile = IO::getParentDirectory(file);
     //IO::chDir(_directoryOfSetupFile);
 }
@@ -1527,12 +1527,12 @@ void COMAKTool::extractKinematicsFromFile() {
         set_stop_time(in_time.getLast());
     }
 
-    if (get_start_time() < in_time.get(0)) {
+    if (get_start_time() + get_time_step() < in_time.get(0)) {
         OPENSIM_THROW(Exception,"ERROR: start_time in COMAKTool preceeds "
             "the times listed in the input file.");
     }
 
-    if (get_stop_time() > in_time.getLast()) {
+    if (get_stop_time() - get_time_step() > in_time.getLast()) {
         OPENSIM_THROW(Exception,"ERROR: stop_time in COMAKTool exceeds "
             "the times listed in the input file.");
     }

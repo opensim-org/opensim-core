@@ -56,6 +56,7 @@ JointMechanicsTool::JointMechanicsTool(std::string settings_file) :
     Object(settings_file) {
     constructProperties();
     updateFromXMLDocument();
+    _model_exists = false;
     //loadModel(settings_file);
 
     //_directoryOfSetupFile = IO::getParentDirectory(settings_file);

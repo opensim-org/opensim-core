@@ -46,7 +46,7 @@ ForsimTool::ForsimTool() : Object()
 ForsimTool::ForsimTool(std::string settings_file) : Object(settings_file) {
     constructProperties();
     updateFromXMLDocument();
-
+    _model_exists = false;
     //_directoryOfSetupFile = IO::getParentDirectory(settings_file);
     //IO::chDir(_directoryOfSetupFile);
 }
