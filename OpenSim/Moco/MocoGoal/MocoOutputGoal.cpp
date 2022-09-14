@@ -192,15 +192,17 @@ void MocoOutputExtremumGoal::constructProperties() {
     constructProperty_divide_by_displacement(false);
     constructProperty_divide_by_mass(false);
     constructProperty_extremum_type("min");
-    constructProperty_extremum_scaler(1);
+    constructProperty_smoothing_factor(1);
 }
 
 void MocoOutputExtremumGoal::initializeOnModelImpl(const Model& output) const {
     initializeOnModelBase();
 
     OPENSIM_THROW_IF_FRMOBJ(
-            get_extremum_type() != "min" && get_extremum_type() != "max",
-            Exception, "The extremum type must be either 'min' or 'max'.");
+            get_extremum_type() != "minimum" 
+                && get_extremum_type() != "maximum",
+            Exception, "The extremum type must be either 'minimum' " 
+            " or 'maximum'.");
 
     OPENSIM_THROW_IF_FRMOBJ(m_minimizeVectorNorm == 1 &&
                                         m_data_type == Type_Vec3,
@@ -215,9 +217,9 @@ void MocoOutputExtremumGoal::initializeOnModelImpl(const Model& output) const {
              "taking the norm of an ouput of SimTK::SpatialVec type. Use the "
              "MocoOutputGoal instead.");
     
-    if (get_extremum_type() == "min") { 
+    if (get_extremum_type() == "minimum") { 
         m_beta = -1;
-    } else if (get_extremum_type() == "max") {
+    } else if (get_extremum_type() == "maximum") {
         m_beta = 1;
     };
 
@@ -227,8 +229,8 @@ void MocoOutputExtremumGoal::initializeOnModelImpl(const Model& output) const {
 void MocoOutputExtremumGoal::calcIntegrandImpl(
         const IntegrandInput& input, double& integrand) const {
     double integrand_temp =
-            (1 / get_extremum_scaler()) *
-            (std::log(1 + exp(get_extremum_scaler() * m_beta *
+            (1 / get_smoothing_factor()) *
+            (std::log(1 + exp(get_smoothing_factor() * m_beta *
                                   calcOutputValue(input.state))));
     integrand = m_beta*setValueToExponent(integrand_temp);
 }

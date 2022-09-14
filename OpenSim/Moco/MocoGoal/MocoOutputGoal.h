@@ -194,10 +194,35 @@ private:
 };
 
 /** This goal permits the integration of only positive or negative values from a
-model Output. This goal allows you to use model Outputs of type double, and a 
-single specified element from an Output of type SimTK::Vec3 and 
+model Output. This goal allows you to use model Outputs of type double, or a 
+single specified element from an Output of type SimTK::Vec3 or 
 SimTK::SpatialVec in the integrand of a goal. You can also specify the exponent
-of the value in the integrand via 'setExponent()'. */
+of the value in the integrand via 'setExponent()'. 
+
+This goal performs an approximation to the extremum, minimum or maximum,
+of two numbers and then calculates the resulting integral. 
+The goal is computed as follows:
+
+\f[
+\frac{1}{dm} \int_{t_i}^{t_f} w_vB((\frac{1}{s} (\ln (1 + \exp (sBv))))^p)  ~dt
+\f]
+We use the following notation:
+- \f$ d \f$: displacement of the system, if `divide_by_displacement` is
+  true; 1 otherwise.
+- \f$ m \f$: mass of the system, if `divide_by_mass` is
+  true; 1 otherwise.
+- \f$ v \f$: the output variable of choice.
+- \f$ w_v \f$: the weight for output variable \f$ v \f$.
+- \f$ B \f$: the approximate extremum to be taken (B = -1 for minimum;
+  B = 1 for maximum).
+- \f$ s \f$: the smoothing factor for approximating the extremum. With
+  \f$ s \f$ set to >= 1 the approximation is closer to the true extremum
+  to be taken, whilst if it is set to < 1 the approximation is further 
+  from the true extremum (more smoothing). For \f$ v \f$ with magnitudes
+  of around 2500 it is recommended to set this value as 0.2 to prevent the
+  exponential operator from reaching Inf.
+- \f$ p \f$: the `exponent`.
+*/
 class OSIMMOCO_API MocoOutputExtremumGoal : public MocoOutputBase {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoOutputExtremumGoal, MocoOutputBase);
 
@@ -222,18 +247,18 @@ public:
     void setDivideByMass(bool tf) { set_divide_by_mass(tf); }
     bool getDivideByMass() const { return get_divide_by_mass(); }
 
-    /** Set the type of extremum (min or max) to be applied to the output
-    variable of choice. */
+    /** Set the type of extremum ('minimum' or 'maximum') to be applied to the 
+    output variable of choice. */
     void setExtremumType(std::string extremum_type) {
         set_extremum_type(extremum_type);
     }
     std::string getExtremumType() const { return get_extremum_type(); }
 
-    /** Set the scaling factor used for the extremum approximation. */
-    void setExtremumScaler(double extremum_scaler) {
-        set_extremum_scaler(extremum_scaler);
+    /** Set the smoothing factor used for the extremum approximation. */
+    void setSmoothingFactor(double smoothing_factor) {
+        set_smoothing_factor(smoothing_factor);
     }
-    double getExtremumScaler() const { return get_extremum_scaler(); }
+    double getSmoothingFactor() const { return get_smoothing_factor(); }
 
 protected:
     void initializeOnModelImpl(const Model&) const override;
@@ -254,8 +279,8 @@ private:
             "The type of extremum to be taken in the goal."
             "'min' or 'max'"
             "(Default extremum type = 'min').");
-    OpenSim_DECLARE_PROPERTY(extremum_scaler, double,
-            "The scaling factor applied in the approximation of the "
+    OpenSim_DECLARE_PROPERTY(smoothing_factor, double,
+            "The smoothing factor applied in the approximation of the "
             " extremum function (Default extremum scaler = 1).");
     
     enum DataType {
