@@ -4,7 +4,7 @@ Moco Change Log
 1.2.0
 -----
 - 2022-09-07: Added MocoContactImpulseTrackingGoal.
-			  
+
 - 2022-06-03: Fixed bug that was breaking marker tracking problems when
               using MocoTrack::setMarkersReferenceFromTRC().
 

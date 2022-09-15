@@ -199,12 +199,13 @@ single specified element from an Output of type SimTK::Vec3 or
 SimTK::SpatialVec in the integrand of a goal. You can also specify the exponent
 of the value in the integrand via 'setExponent()'. 
 
-This goal performs an approximation to the extremum, minimum or maximum,
-of two numbers and then calculates the resulting integral. 
+This goal performs a smooth approximation of the common 'minimum' or 'maximum'
+extremum functions and then calculates the resulting integral. 
 The goal is computed as follows:
 
 \f[
-\frac{1}{dm} \int_{t_i}^{t_f} w_vB((\frac{1}{s} (\ln (1 + \exp (sBv))))^p)  ~dt
+\frac{1}{dm} \int_{t_i}^{t_f} 
+    w_vB((\frac{1}{s} (\ln (1 + \exp (s\betav))))^p) ~dt
 \f]
 We use the following notation:
 - \f$ d \f$: displacement of the system, if `divide_by_displacement` is
@@ -219,8 +220,8 @@ We use the following notation:
   \f$ s \f$ set to >= 1 the approximation is closer to the true extremum
   to be taken, whilst if it is set to < 1 the approximation is further 
   from the true extremum (more smoothing). For \f$ v \f$ with magnitudes
-  of around 2500 it is recommended to set this value as 0.2 to prevent the
-  exponential operator from reaching Inf.
+  between 1-3000 during a simulation it is recommended to set this value
+  as 0.2 to prevent the exponential operator from reaching Inf.
 - \f$ p \f$: the `exponent`.
 */
 class OSIMMOCO_API MocoOutputExtremumGoal : public MocoOutputBase {
@@ -277,12 +278,22 @@ private:
             "Divide by the model's total mass (default: false)");
     OpenSim_DECLARE_PROPERTY(extremum_type, std::string,
             "The type of extremum to be taken in the goal."
-            "'min' or 'max'"
-            "(Default extremum type = 'min').");
+            "'minimum' or 'maximum'"
+            "(Default extremum type = 'minimum').");
     OpenSim_DECLARE_PROPERTY(smoothing_factor, double,
             "The smoothing factor applied in the approximation of the "
-            " extremum function (Default extremum scaler = 1).");
-    
+            "extremum function (Default extremum scaler = 1). For outputs "
+            "with magnitudes between 1-3000 during a simulation it is "
+            "recommended to set this property as 0.2 to prevent the "
+            "calculation from reaching Inf."
+            "For example, if the extremum_type is 'maximum', "
+            "smoothing_factor = 1, and the output variable = 30000; it "
+            "returns Inf. Decrease the smoothing_factor = 0.2; it returns "
+            "3000.0 recurring. With output variable = 25 and "
+            "smoothing_factor = 0.2; it returns 25.0335767. With output "
+            "variable = 25 and smoothing_factor = 1; it returns 25.0 "
+            "recurring.");
+
     enum DataType {
         Type_double,
         Type_Vec3,

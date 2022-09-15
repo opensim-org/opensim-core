@@ -191,7 +191,7 @@ void MocoOutputGoal::calcGoalImpl(
 void MocoOutputExtremumGoal::constructProperties() {
     constructProperty_divide_by_displacement(false);
     constructProperty_divide_by_mass(false);
-    constructProperty_extremum_type("min");
+    constructProperty_extremum_type("minimum");
     constructProperty_smoothing_factor(1);
 }
 
