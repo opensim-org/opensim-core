@@ -626,21 +626,9 @@ testParameters()
     spr.setParameters(p1);
     spr.assertPropertiesAndParametersEqual();
 
-    // Sliding Time Constant
-    value = p1.getSlidingTimeConstant();
-    p1.setSlidingTimeConstant(value + delta);
-    spr.setParameters(p1);
-    spr.assertPropertiesAndParametersEqual();
-
     // Settle Velocity
     value = p1.getSettleVelocity();
     p1.setSettleVelocity(value + delta);
-    spr.setParameters(p1);
-    spr.assertPropertiesAndParametersEqual();
-
-    // Settle Acceleration
-    value = p1.getSettleAcceleration();
-    p1.setSettleAcceleration(value + delta);
     spr.setParameters(p1);
     spr.assertPropertiesAndParametersEqual();
 
@@ -703,6 +691,11 @@ simulate()
     if (blockHC != NULL)
         setInitialConditions(state, blockHC->getMobilizedBody(), -dz);
 
+    // Reset the elastic anchor point for each ExponentialContact instance
+    for (int i = 0; i < n; ++i) {
+        if (sprEC[i] != NULL) sprEC[i]->resetAnchorPoint(state); 
+    }
+
     // Integrate
     Manager manager(*model);
     manager.getIntegrator().setMaximumStepSize(dt_max);
@@ -740,27 +733,30 @@ the ExponentialContact class for contact and the other using the
 HuntCrossleyForce class) can be created and visualized simultaneously.
 
 For an assessment of computational performance, just one block should be
-simulated at a time. Number of integration trys and steps, as well as cpu time,
-are reported.
+simulated at a time. Number of integration trys and steps, as well as cpu
+time, are reported.
 
-Choice of initial conditions can be made in order to generate the following
+Choice of initial conditions can be made in order to simulate the following
 motions:
     1) Static (y = 0.1 m, sitting at rest on the floor)
     2) Bouncing (y = 1.0 m, dropped)
-    3) Sliding (y = 0.2 m, vx = -2.0 m/s)
-    4) Spinning (y = 0.2 m, vx = 0.0 m/s, wy = 2.0 pi rad/sec)
-    5) Tumbling (py = 2.0 m, vx = -2.0 m/s, wz = 2.0 pi rad/sec)
+    3) Sliding (y = 0.2 m, vx = -4.0 m/s)
+    4) Spinning (y = 0.1 m, vx = 0.0 m/s, wy = 8.0 pi rad/sec)
+    5) Spining and Sliding (y = 0.1 m, vx = -3.0 m/s, wy = 4.0 pi rad/sec)
+    6) Spinning like a Top. (y = 0.2 m, vx = 0.0 m/s, wy = 1.5 pi rad/sec)
+    7) Tumbling (py = 0.2 m, vx = -1.0 m/s, wz = 2.0 pi rad/sec)
 
 Additional options allow the following to be specified:
     NoDamp   Parameters are chosen to eliminate all energy dissipation.
-    ApplyFx  A ramping horizontal force (Fx) is applied after 5.0 sec.
+    Fx       A ramping horizontal force (Fx) is applied.
+    Vis      Open a visualization window.
 
 If no external force is applied, tf = 5.0 s.
 
-If an external force is applied, tf = 10.0 s and this force ramps up
-linearly from a value of fx = 0.0 at t = 5.0 s to a value of
-fx = |mass*g| at t = 10.0 s. The force is not ramped up prior to t = 5.0 s
-in order to allow the block an opportunity to come more fully to rest.
+If a horizontal force is applied, tf = 30.0 s and the force ramps up
+linearly from a value of fx = 0.0 at t = 25.0 s to a value of
+fx = |mass*g| at t = 30.0 s. The force is not ramped up prior to t = 25.0 s
+in order to allow the block an opportunity to come fully to rest.
 This ramping profile was done with the "Static" initial condition choice
 in mind so that friction models could be evaluated more critically.
 In particular, a static block should not start sliding until fx > μₛ Fₙ.
@@ -774,8 +770,8 @@ For ExponentialContact, the following things are tested:
     f) reporting
     g) serialization
 
-The HuntCrossleyForce class is tested elsewhere
-(e.g., see testContactGeometry.cpp and testForce.cpp). */
+The HuntCrossleyForce class is tested elsewhere (e.g., see
+testContactGeometry.cpp and testForce.cpp). */
 int main(int argc, char** argv) {
     try {
         ExponentialContactTester tester;

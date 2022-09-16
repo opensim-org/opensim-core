@@ -35,8 +35,8 @@ namespace OpenSim {
 //=============================================================================
 /** Class ExponentialContact uses an "exponential spring" as a means
 of modeling contact of a specified point on a Body with a contact
-plane that is fixed to Ground. In this documentation, this specified point
-is referred to as the "body station". Each ExponentialContact instance
+plane that is fixed to Ground. This specified point is referred to in this
+documentation as the "body station". Each ExponentialContact instance
 acts at only one body station. In practice, you should choose a number of
 body stations strategically located across the surface of a Body,
 and construct an ExponentialContact instance for each of those body stations.
@@ -57,9 +57,8 @@ publication:
 
 Under the covers, the OpenSim::ExponentialContact class encapsulates two
 SimTK objects: ExponentialSpringForce and ExponentialSpringParameters.
-For the details concerning the contact model, see the Simbody API
-documentation for SimTK::ExponentialSpringForce. A condensed version of
-that documentation is provided here.
+For the details concerning these classes, see the Simbody API
+documentation. A condensed version of that documentation is provided here.
 
 ----------------------------------
 Computations and Coordinate Frames
@@ -111,19 +110,17 @@ which has the form of the Hunt & Crossley damping model:
 
 The friction force is computed by blending two different friction models.
 The blending is performed based on the 'Sliding' State of the
-ExponentialSpringForce class. 'Sliding' is a continuous state variable (a Z
-in Simbody vocabulary) that characterizes the extent to which either static
-or kinetic conditions are present.
+ExponentialSpringForce class. 
 
 #### Friction Model 1 - Pure Damping (Sliding = 1.0)
-When the body station is moving with respect to the contact plane, the
+When the body station is sliding with respect to the contact plane, the
 friction force is computed using a simple damping term:
 
         fricDamp = −cxy vxy
 
 where cxy is the damping coefficient in the contact plane and vxy is the
-velocity of the body station in the contact plane. However, the magnitude
-of the total frictional force is not allowed to exceed the frictional limit:
+velocity of the body station in the contact plane. The magnitude of the
+total frictional force is not allowed to exceed the frictional limit:
 
         fricLimit = μ fz
         if (|fricDamp| > fricLimit)
@@ -175,7 +172,7 @@ Sliding State:
         fricDampBlend = fricDampSpr + (fricDamp − fricDampSpr)*Sliding
         fricBlend = fricElasBlend + fricDampBlend
 
-Thus, Model 1 (Pure Damping) dominates as Sliding → 1.0, and Model 2
+Model 1 (Pure Damping) dominates as Sliding → 1.0, and Model 2
 (Damped Linear Spring) dominates as Sliding → 0.0.
 
 #### Moving the Friction Spring Zero
@@ -196,36 +193,19 @@ friction (μ) is calculated based on the value of the Sliding State:
 
         μ = μₛ − Sliding*(μₛ − μₖ)
 
-The time derivative of Sliding, SlidingDot, is used to drive Sliding toward
-the extremes of 0.0 or 1.0, depending on the following criteria:
+The value of Sliding is calculated using a continuous function of the
+ratio of the speed of the elastic anchor point (ṗ₀) to the settle velocity
+(vSettle). vSettle is a customizable topology-stage parameter that represents
+the speed at which a body station settles into a static state with respect to
+the contact plane. See SimTK::ExponentialSpringParameters::setSettleVelocity()
+for details. In particular,
 
-- If the frictional spring force (fricSpr) exceeded the frictional limit at
-any point during its calculation, Sliding is driven toward 1.0 (rise):
+        ṗ₀ = |Δp₀| / Δt
+        Sliding = SimTK::stepUp( SimTK::clamp(0.0, ṗ₀/vSettle, 1.0) )
 
-        SlidingDot = (1.0 − Sliding)/tau
-
-- If the frictional spring force (fricSpr) does not exceed the frictional
-limit at any point during its calculation and if the kinematics of the body
-station are near static equilibrium, Sliding is driven toward 0.0 (decay):
-
-        SlidingDot = −Sliding/tau
-
-The threshold for being "near" static equilibrium is established by two
-parameters, vSettle and aSettle. When the velocity and acceleration of the
-body station relative to the contact plane are below vSettle and aSettle,
-respectively, static equilibrium is considered effectively reached.
-
-During a simulation, once a rise or decay is triggered, the rise or decay
-continues uninterrupted until Sliding crosses 0.95 or 0.05, respectively. Once
-these thresholds have been crossed, the criteria for rise and decay are again
-monitored.
-
-In the above equations for SlidingDot, tau is the characteristic time it takes
-for the Sliding State to rise or decay. The default value of tau is 0.01 sec.
-The motivation for using a continuous state variable is that, although the
-transition between static and kinetic may happen quickly, it does not happen
-instantaneously. Evolving Sliding based on a differential equation ensures
-that μ is continuous and that the blending of friction models is well behaved.
+where Δp₀ is the change in p₀ and Δt is the change in time since the last
+successful integration step. When ṗ₀ ≥ vSettle, Sliding = 1.0, and as
+ṗ₀ → 0.0, Sliding → 0.0.
 
 -----------------------
 CUSTOMIZABLE PARAMETERS
@@ -266,7 +246,7 @@ allocated from the heap to be deleted.
 
 Therefore, also note that the parameter values possessed by an
 ExponentialContact instance do not necessarily correspond to the values
-held by an instance of ExponentialSpringParameters until a call to
+held by a local instance of ExponentialSpringParameters until a call to
 ExponentialContact::setParameters() is made.
 
 The default values of the parameters are expressed in units of Newtons,
@@ -321,7 +301,19 @@ public:
     }
 
     //-------------------------------------------------------------------------
-    // Accessors
+    // Initialization
+    //-------------------------------------------------------------------------
+    /** Reset the elastic anchor point (friction spring zero) so that it
+    coincides with the projection of the body station onto the contact
+    plane. This step is often needed at the beginning of a simulation to
+    ensure that a simulation does not begin with large friction forces.
+    After this call, the elastic portion of the friction force should be 0.0
+    Calling this method will invalidate the System at Stage::Dynamics.
+    @param state State object on which to base the reset. */
+    void resetAnchorPoint(SimTK::State& state) const;
+
+    //-------------------------------------------------------------------------
+    // Accessors for properties
     //-------------------------------------------------------------------------
     /** Set the transform that specifies the location and orientation of the
     contact plane in the Ground frame. */
@@ -351,6 +343,10 @@ public:
     constructor on the returned reference to create an object that can
     be altered. */
     const SimTK::ExponentialSpringParameters& getParameters() const;
+
+    //-------------------------------------------------------------------------
+    // Accessors for data cache entries
+    //-------------------------------------------------------------------------
 
     //-------------------------------------------------------------------------
     // Reporting
@@ -398,10 +394,10 @@ getting and setting contact parameters (directly anyway) but rather provides
 the infrastructure for making the underlying SimTK::ExponentialSpringForce and
 SimTK::ExponentialSpringParameters classes available in OpenSim.
 
-More specifically, this class mainly does 3 things:
+More specifically, this class chiefly does 3 things:
 - Implements OpenSim Properties for most of the customizable contact
 parameters of class OpenSim::ExponentialContact, enabling those parameters
-to be serialized to and de-serialized from file.
+to be serialized and de-serialized from file.
 - Provides a member variable (_stkparams) for storing non-default parameters
 prior to the creation of an underlying SimTK::ExponentialSpringForce object.
 During model initialization, when the SimTK::ExponetialSpringForce object is
