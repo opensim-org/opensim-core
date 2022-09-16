@@ -403,7 +403,7 @@ jobs:
     #     asset_name: opensim-core-${{ steps.configure.outputs.version }}.zip
     #     asset_content_type: application/zip
 
-  mac:
+  mac11:
     name: Mac11
 
     runs-on: macos-11
