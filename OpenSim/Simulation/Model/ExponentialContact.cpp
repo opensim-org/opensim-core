@@ -63,9 +63,7 @@ constructProperties()
     constructProperty_max_normal_force(_stkparams.getMaxNormalForce());
     constructProperty_friction_elasticity(_stkparams.getFrictionElasticity());
     constructProperty_friction_viscosity(_stkparams.getFrictionViscosity());
-    constructProperty_sliding_time_constant(_stkparams.getSlidingTimeConstant());
     constructProperty_settle_velocity(_stkparams.getSettleVelocity());
-    constructProperty_settle_acceleration(_stkparams.getSettleAcceleration());
     constructProperty_initial_mu_static(_stkparams.getInitialMuStatic());
     constructProperty_initial_mu_kinetic(_stkparams.getInitialMuKinetic());
 }
@@ -82,9 +80,7 @@ updateProperties()
     set_max_normal_force(_stkparams.getMaxNormalForce());
     set_friction_elasticity(_stkparams.getFrictionElasticity());
     set_friction_viscosity(_stkparams.getFrictionViscosity());
-    set_sliding_time_constant(_stkparams.getSlidingTimeConstant());
     set_settle_velocity(_stkparams.getSettleVelocity());
-    set_settle_acceleration(_stkparams.getSettleAcceleration());
     set_initial_mu_static(_stkparams.getInitialMuStatic());
     set_initial_mu_kinetic(_stkparams.getInitialMuKinetic());
 }
@@ -100,9 +96,7 @@ updateParameters()
     _stkparams.setMaxNormalForce(get_max_normal_force());
     _stkparams.setFrictionElasticity(get_friction_elasticity());
     _stkparams.setFrictionViscosity(get_friction_viscosity());
-    _stkparams.setSlidingTimeConstant(get_sliding_time_constant());
     _stkparams.setSettleVelocity(get_settle_velocity());
-    _stkparams.setSettleAcceleration(get_settle_acceleration());
     _stkparams.setInitialMuStatic(get_initial_mu_static());
     _stkparams.setInitialMuKinetic(get_initial_mu_kinetic());
 }
@@ -234,6 +228,25 @@ extendAddToSystem(SimTK::MultibodySystem& system) const
 }
 
 //-----------------------------------------------------------------------------
+// Utility
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+void
+ExponentialContact::
+resetAnchorPoint(SimTK::State& state) const {
+    if (_spr == NULL) {
+        std::string msg = "Underlying SimTK::ExponentialSpringForce instance";
+        msg += " not yet allocated! The system must be built by calling ";
+        msg += "Model::buildSystem() and the state must be initialized by ";
+        msg += "calling Model::initializeState() before calling ";
+        msg += "ExponentialContact::resetAnchorPoint().";
+        SimTK_ASSERT(_spr!=NULL, msg);
+    }
+    _spr->resetAnchorPoint(state);
+}
+
+
+//-----------------------------------------------------------------------------
 // ACCESSORS
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
@@ -352,16 +365,8 @@ assertPropertiesAndParametersEqual() const
     valB = b.getFrictionViscosity();
     SimTK_TEST_EQ(valA, valB);
 
-    valA = a.get_sliding_time_constant();
-    valB = b.getSlidingTimeConstant();
-    SimTK_TEST_EQ(valA, valB);
-
     valA = a.get_settle_velocity();
     valB = b.getSettleVelocity();
-    SimTK_TEST_EQ(valA, valB);
-
-    valA = a.get_settle_acceleration();
-    valB = b.getSettleAcceleration();
     SimTK_TEST_EQ(valA, valB);
 
     valA = a.get_initial_mu_static();
