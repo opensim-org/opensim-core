@@ -345,8 +345,46 @@ public:
     const SimTK::ExponentialSpringParameters& getParameters() const;
 
     //-------------------------------------------------------------------------
+    // Accessors for states
+    //-------------------------------------------------------------------------
+    /** Set the static coefficient of friction (μₛ) for this exponential
+    spring. The value of μₛ is held in the System's State object. Unlike the
+    parameters managed by ExponentialSpringParameters, μₛ can be set at any
+    time during a simulation. A change to μₛ will invalidate the System at
+    Stage::Dynamics, but not at Stage::Topology.
+    @param state State object that will be modified.
+    @param mus %Value of the static coefficient of friction. No upper bound.
+    0.0 ≤ μₛ. If μₛ < μₖ, μₖ is set equal to μₛ. */
+    void setMuStatic(SimTK::State& state, SimTK::Real mus);
+
+    /** Get the static coefficient of friction (μₛ) held by the specified
+    state for this exponential spring.
+    @param state State object from which to retrieve μₛ. */
+    SimTK::Real getMuStatic(const SimTK::State& state) const;
+
+    /** Set the kinetic coefficient of friction (μₖ) for this exponential
+    spring. The value of μₖ is held in the System's State object. Unlike the
+    parameters managed by ExponentialSpringParameters, μₖ can be set at any
+    time during a simulation. A change to μₖ will invalidate the System at
+    Stage::Dynamics.
+    @param state State object that will be modified.
+    @param muk %Value of the kinetic coefficient of friction. No upper bound.
+    0.0 ≤ μₖ. If μₖ > μₛ, μₛ is set equal to μₖ. */
+    void setMuKinetic(SimTK::State& state, SimTK::Real muk);
+
+    /** Get the kinetic coefficient of friction (μₖ) held by the specified
+    state for this exponential spring.
+    @param state State object from which to retrieve μₖ. */
+    SimTK::Real getMuKinetic(const SimTK::State& state) const;
+
+    /** Get the Sliding state of the spring.
+    @param state State object from which to retrieve Sliding. */
+    SimTK::Real getSliding(const SimTK::State& state) const;
+
+    //-------------------------------------------------------------------------
     // Accessors for data cache entries
     //-------------------------------------------------------------------------
+
 
     //-------------------------------------------------------------------------
     // Reporting
@@ -452,7 +490,7 @@ public:
     call OpenSim::ExponentialContact::setParameters(). */
     void setSimTKParameters(const SimTK::ExponentialSpringParameters& params);
 
-    /** Get a read-only reference to the underlying SimTK paramters. This
+    /** Get a read-only reference to the underlying SimTK parameters. This
     method is used to maintain consistency between OpenSim Properties and the
     underlying parameters. The typical user of OpenSim::ExponentialContact will
     not have reason to call this method. For getting contact parameters, the

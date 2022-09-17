@@ -1,4 +1,4 @@
-/* -------------------------------------------------------------------------- *
+﻿/* -------------------------------------------------------------------------- *
  *                   OpenSim:  ExponentialContact.cpp                         *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
@@ -245,9 +245,8 @@ resetAnchorPoint(SimTK::State& state) const {
     _spr->resetAnchorPoint(state);
 }
 
-
 //-----------------------------------------------------------------------------
-// ACCESSORS
+// ACCESSORS for properties
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 void ExponentialContact::
@@ -278,6 +277,68 @@ ExponentialContact::
 getParameters() const
 {
     return get_contact_parameters().getSimTKParameters();
+}
+
+
+//-----------------------------------------------------------------------------
+// ACCESSORS for states
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+void
+ExponentialContact::
+setMuStatic(SimTK::State& state, SimTK::Real mus) {
+    if (_spr == NULL) {
+        std::string msg = "Underlying SimTK::ExponentialSpringForce instance";
+        msg += " not yet allocated!.";
+        SimTK_ASSERT(_spr != NULL, msg);
+    }
+    _spr->setMuStatic(state, mus);
+}
+//_____________________________________________________________________________
+SimTK::Real
+ExponentialContact::
+getMuStatic(const SimTK::State& state) const {
+    if (_spr == NULL) {
+        std::string msg = "Underlying SimTK::ExponentialSpringForce instance";
+        msg += " not yet allocated!.";
+        SimTK_ASSERT(_spr != NULL, msg);
+    }
+    return _spr->getMuStatic(state);
+}
+
+//_____________________________________________________________________________
+void
+ExponentialContact::
+setMuKinetic(SimTK::State& state, SimTK::Real mus) {
+    if (_spr == NULL) {
+        std::string msg = "Underlying SimTK::ExponentialSpringForce instance";
+        msg += " not yet allocated!.";
+        SimTK_ASSERT(_spr != NULL, msg);
+    }
+    _spr->setMuKinetic(state, mus);
+}
+//_____________________________________________________________________________
+SimTK::Real
+ExponentialContact::
+getMuKinetic(const SimTK::State& state) const {
+    if (_spr == NULL) {
+        std::string msg = "Underlying SimTK::ExponentialSpringForce instance";
+        msg += " not yet allocated!.";
+        SimTK_ASSERT(_spr != NULL, msg);
+    }
+    return _spr->getMuKinetic(state);
+}
+
+//_____________________________________________________________________________
+SimTK::Real
+ExponentialContact::
+getSliding(const SimTK::State& state) const {
+    if (_spr == NULL) {
+        std::string msg = "Underlying SimTK::ExponentialSpringForce instance";
+        msg += " not yet allocated!.";
+        SimTK_ASSERT(_spr != NULL, msg);
+    }
+    return _spr->getSliding(state);
 }
 
 //-----------------------------------------------------------------------------
@@ -319,7 +380,7 @@ getRecordValues(const SimTK::State& state) const
     const SimTK::Force& abstractForce = forceSubsys.getForce(_index);
     const auto& spr = (SimTK::ExponentialSpringForce&)(abstractForce);
 
-    SimTK::Vec3 p0 = spr.getFrictionSpringZeroPosition(state);
+    SimTK::Vec3 p0 = spr.getAnchorPointPosition(state);
     SimTK::Vec3 station = spr.getStationPosition(state);
     SimTK::Vec3 normal = spr.getNormalForce(state);
     SimTK::Vec3 friction = spr.getFrictionForce(state);
