@@ -225,6 +225,23 @@ ExponentialContact::
 resetAnchorPoint(SimTK::State& state) const {
     _spr->resetAnchorPoint(state);
 }
+//_____________________________________________________________________________
+void
+ExponentialContact::
+resetAnchorPoints(OpenSim::ForceSet& fSet, SimTK::State& state) {
+    int i;
+    int n = fSet.getSize();
+    for (i = 0; i < n; ++i) {
+        try {
+            ExponentialContact& ec =
+                    dynamic_cast<ExponentialContact&>(fSet.get(i));
+            ec.resetAnchorPoint(state);
+        } catch (const std::bad_cast) {
+            // Nothing should happen here. Execution is just skipping any
+            // OpenSim::Force that is not an ExponentialContact.
+        }
+    }
+}
 
 //-----------------------------------------------------------------------------
 // ACCESSORS for properties

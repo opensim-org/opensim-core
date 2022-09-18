@@ -26,9 +26,9 @@
 #include "SimTKsimbody.h"
 #include "Force.h"
 #include "OpenSim/Common/Set.h"
+#include "OpenSim/Simulation/Model/ForceSet.h"
 
 namespace OpenSim {
-
 
 //=============================================================================
 // ExponentialContact
@@ -301,7 +301,7 @@ public:
     }
 
     //-------------------------------------------------------------------------
-    // Initialization
+    // Utility
     //-------------------------------------------------------------------------
     /** Reset the elastic anchor point (friction spring zero) so that it
     coincides with the projection of the body station onto the contact
@@ -311,6 +311,15 @@ public:
     Calling this method will invalidate the System at Stage::Dynamics.
     @param state State object on which to base the reset. */
     void resetAnchorPoint(SimTK::State& state) const;
+
+    /** Reset the elastic anchor points (friction spring zeros) of all
+    ExponentialContact instances in an OpenSim::ForceSet. This step is often
+    needed at the beginning of a simulation to ensure that a simulation does
+    not begin with large friction forces. Calling this method will invalidate
+    the System at Stage::Dynamics.
+    @param fSet Force set.
+    @param state State object on which to base the reset. */
+    static void resetAnchorPoints(OpenSim::ForceSet& fSet, SimTK::State& state);
 
     //-------------------------------------------------------------------------
     // Accessors for properties

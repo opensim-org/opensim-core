@@ -692,9 +692,8 @@ simulate()
         setInitialConditions(state, blockHC->getMobilizedBody(), -dz);
 
     // Reset the elastic anchor point for each ExponentialContact instance
-    for (int i = 0; i < n; ++i) {
-        if (sprEC[i] != NULL) sprEC[i]->resetAnchorPoint(state); 
-    }
+    ForceSet& fSet = model->updForceSet();
+    ExponentialContact::resetAnchorPoints(fSet, state);
 
     // Integrate
     Manager manager(*model);
