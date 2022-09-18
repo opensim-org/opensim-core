@@ -384,7 +384,134 @@ public:
     //-------------------------------------------------------------------------
     // Accessors for data cache entries
     //-------------------------------------------------------------------------
+    /** Get the elastic part of the normal force. The system must be realized
+    to Stage::Dynamics to access this data.
+    @param state State object on which to base the calculations.
+    @param inGround Flag for choosing the frame in which the returned quantity
+    will be expressed. If true (the default), the quantity will be expressed
+    in the Ground frame. If false, the quantity will be expressed in the frame
+    of the contact plane. */
+    SimTK::Vec3 getNormalForceElasticPart(
+        const SimTK::State& state, bool inGround = true) const;
 
+    /** Get the damping part of the normal force. The system must be realized
+    to Stage::Dynamics to access this data.
+    @param state State object on which to base the calculations.
+    @param inGround Flag for choosing the frame in which the returned quantity
+    will be expressed. If true (the default), the quantity will be expressed
+    in the Ground frame. If false, the quantity will be expressed in the frame
+    of the contact plane. */
+    SimTK::Vec3 getNormalForceDampingPart(
+        const SimTK::State& state, bool inGround = true) const;
+
+    /** Get the normal force. The system must be realized to Stage::Dynamics
+    to access this data.
+    @param state State object on which to base the calculations.
+    @param inGround Flag for choosing the frame in which the returned quantity
+    will be expressed. If true (the default), the quantity will be expressed
+    in the Ground frame. If false, the quantity will be expressed in the frame
+    of the contact plane. */
+    SimTK::Vec3 getNormalForce(
+        const SimTK::State& state, bool inGround = true) const;
+
+    /** Get the instantaneous coefficient of friction (μ). The system must be
+    realized to Stage::Dynamics to access this data. μ is obtained by using
+    the Sliding state to transition between μₖ and μₛ:
+
+            μ = μₛ - Sliding*(μₛ - μₖ)
+
+    Because 0.0 ≤ Sliding ≤ 1.0, μₖ ≤ μ ≤ μₛ.
+    @param state State object on which to base the calculations. */
+    SimTK::Real getMu(const SimTK::State& state) const;
+
+    /** Get the friction limit. The system must be realized to Stage::Dynamics
+    to access this data.
+    @param state State object on which to base the calculations. */
+    SimTK::Real getFrictionForceLimit(const SimTK::State& state) const;
+
+    /** Get the elastic part of the friction force. The system must be
+    realized to Stage::Dynamics to access this data.
+    @param state State object on which to base the calculations.
+    @param inGround Flag for choosing the frame in which the returned quantity
+    will be expressed. If true (the default), the quantity will be expressed
+    in the Ground frame. If false, the quantity will be expressed in the frame
+    of the contact plane. */
+    SimTK::Vec3 getFrictionForceElasticPart(
+        const SimTK::State& state, bool inGround = true) const;
+
+    /** Get the damping part of the friction force. The system must be
+    realized to Stage::Dynamics to access this data.
+    @param state State object on which to base the calculations.
+    @param inGround Flag for choosing the frame in which the returned quantity
+    will be expressed. If true (the default), the quantity will be expressed
+    in the Ground frame. If false, the quantity will be expressed in the frame
+    of the contact plane. */
+    SimTK::Vec3 getFrictionForceDampingPart(
+        const SimTK::State& state, bool inGround = true) const;
+
+    /** Get the total friction force. The total frictional force is always
+    just the sum of the elastic part and the damping part of the frictional
+    force, which may be obtained separately by calling
+    getFrictionalForceElasticPart() and getFrictionalForceDampingPart().
+    The system must be realized to Stage::Dynamics to access this data.
+    @param state State object on which to base the calculations.
+    @param inGround Flag for choosing the frame in which the returned quantity
+    will be expressed. If true (the default), the quantity will be expressed
+    in the Ground frame. If false, the quantity will be expressed in the frame
+    of the contact plane. */
+    SimTK::Vec3 getFrictionForce(
+        const SimTK::State& state, bool inGround = true) const;
+
+    /** Get the total force applied to the body by this
+    ExponentialSpringForce instance. The total force is the vector sum of the
+    friction force, which may be obtained by a call to getFrictionForce(), and
+    the normal force, which may be obtained by a call to getNormalForce().
+    The system must be realized to Stage::Dynamics to access this data.
+    @param state State object on which to base the calculations.
+    @param inGround Flag for choosing the frame in which the returned quantity
+    will be expressed. If true (the default), the quantity will be expressed
+    in the Ground frame. If false, the quantity will be expressed in the frame
+    of the contact plane. */
+    SimTK::Vec3 getForce(
+        const SimTK::State& state, bool inGround = true) const;
+
+    /** Get the position of the body station (i.e., the point on the body at
+    which the force generated by this ExponentialSpringForce is applied). This
+    method differs from getStation() in terms of the frame in which the
+    station is expressed. getStation() expresses the point in the frame of
+    the MobilizedBody. getStationPosition() expresses the point either in the
+    Ground frame or in the frame of the Contact Plane. The system must be
+    realized to Stage::Position to access this data.
+    @param state State object on which to base the calculations.
+    @param inGround Flag for choosing the frame in which the returned quantity
+    will be expressed. If true (the default), the quantity will be expressed
+    in the Ground frame. If false, the quantity will be expressed in the frame
+    of the contact plane. */
+    SimTK::Vec3 getStationPosition(
+        const SimTK::State& state, bool inGround = true) const;
+
+    /** Get the velocity of the body station (i.e., the point on the body at
+    which the force generated by this ExponentialSpringForce is applied).
+    The system must be realized to Stage::Velocity to access this data.
+    @param state State object on which to base the calculations.
+    @param inGround Flag for choosing the frame in which the returned quantity
+    will be expressed. If true (the default), the quantity will be expressed
+    in the Ground frame. If false, the quantity will be expressed in the frame
+    of the contact plane. */
+    SimTK::Vec3 getStationVelocity(
+        const SimTK::State& state, bool inGround = true) const;
+
+    /** Get the position of the elastic anchor point (p₀), which will always
+    lie in the Contact Plane. p₀ is the spring zero of the damped linear
+    spring used in Friction Model 2. The system must be realized to
+    Stage::Dynamics to access this data.
+    @param state State object on which to base the calculations.
+    @param inGround Flag for choosing the frame in which the returned quantity
+    will be expressed. If true (the default), the quantity will be expressed
+    in the Ground frame. If false, the quantity will be expressed in the frame
+    of the contact plane. */
+    SimTK::Vec3 getAnchorPointPosition(
+        const SimTK::State& state, bool inGround = true) const;
 
     //-------------------------------------------------------------------------
     // Reporting
@@ -436,10 +563,10 @@ More specifically, this class chiefly does 3 things:
 - Implements OpenSim Properties for most of the customizable contact
 parameters of class OpenSim::ExponentialContact, enabling those parameters
 to be serialized and de-serialized from file.
-- Provides a member variable (_stkparams) for storing non-default parameters
+- Provides a member variable (_stkparams) for storing user-set parameters
 prior to the creation of an underlying SimTK::ExponentialSpringForce object.
 During model initialization, when the SimTK::ExponetialSpringForce object is
-constructed, the parameters are pushed to that object.
+constructed, the user-set parameters are then pushed to that object.
 - Ensures that the values held by the OpenSim properties are kept consistent
 with the values held by a SimTK::ExponentialSpringParameters object.
 Depending on the circumstance, parameters are updated to match properties or
@@ -447,8 +574,8 @@ properties are update to match parameters.
 
 To get or set values of the parameters managed by this class, you should use
 ExponentialContact::getParameters() and ExponentialContact::setParameters().
-Note that the values of the parameters managed by this class are always the
-same as the values of their corresponding properties.
+Note that the values of the parameters managed by this class should always be
+the same as the values of their corresponding properties.
 
 @author F. C. Anderson **/
 class ExponentialContact::Parameters : public Object {
