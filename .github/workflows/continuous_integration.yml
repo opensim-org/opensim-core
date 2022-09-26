@@ -260,11 +260,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-
+    
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.8' 
+        
     - name: Install Homebrew packages
       # Save the gfortran version to a file so we can use it in the cache key.
       run: |
-        brew install cmake pkgconfig autoconf libtool automake wget pcre doxygen python@3.8
+        brew install cmake pkgconfig autoconf libtool automake wget pcre doxygen
         brew reinstall gcc
         pip3 install numpy==1.20.2
         gfortran -v
@@ -298,7 +302,7 @@ jobs:
         key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}-${{ hashFiles('gfortran_version/*') }}
 
     - name: Build dependencies
-      # if: steps.cache-dependencies.outputs.cache-hit != 'true'
+      if: steps.cache-dependencies.outputs.cache-hit != 'true'
       run: |
         mkdir $GITHUB_WORKSPACE/../build_deps
         cd $GITHUB_WORKSPACE/../build_deps
@@ -530,7 +534,7 @@ jobs:
         key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
 
     - name: Build dependencies
-      # if: steps.cache-dependencies.outputs.cache-hit != 'true'
+      if: steps.cache-dependencies.outputs.cache-hit != 'true'
       run: |
         mkdir $GITHUB_WORKSPACE/../build_deps
         cd $GITHUB_WORKSPACE/../build_deps
