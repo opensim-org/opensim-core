@@ -32,11 +32,11 @@ using namespace SimTK;
 template <class T>
 class ProbeMeasure : public SimTK::Measure_<T> {
 public:
-    SimTK_MEASURE_HANDLE_PREAMBLE(ProbeMeasure, Measure_<T>);
+    SimTK_MEASURE_HANDLE_PREAMBLE(ProbeMeasure, SimTK::Measure_<T>);
  
     ProbeMeasure(Subsystem& sub, const OpenSim::Probe& probe, int index)
     :   SimTK::Measure_<T>(sub, new Implementation(probe, index), AbstractMeasure::SetHandle()) {}
-    SimTK_MEASURE_HANDLE_POSTSCRIPT(ProbeMeasure, Measure_<T>);
+    SimTK_MEASURE_HANDLE_POSTSCRIPT(ProbeMeasure, SimTK::Measure_<T>);
 };
  
  
