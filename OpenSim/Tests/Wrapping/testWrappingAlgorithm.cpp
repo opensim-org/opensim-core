@@ -88,12 +88,18 @@ int main()
         woOne->set_length(2);
         auto* woTwo = new WrapEllipsoid();
         woTwo->setName("pulley2");
-        // -30 - 30 degrees guarantees that wrapping doesn't occur at the cap of the cylinder which is poorly 
-        // handled and may need to be dropped as non-physical scenario
-        for (int i = -2; i <= 2; i++) {
-            double angle = i * SimTK::Pi / 12;
-            woOne->set_xyz_body_rotation(Vec3(0,  angle, 0));
-            woTwo->set_dimensions(Vec3(.5/cos(angle), .5, 1));
+        // Change the angle between the cylinder axis and the line connecting end points of pulley
+        // -36 to 36 degrees guarantees that wrapping doesn't occur at the cap of the cylinder which is a rather poorly 
+        // handled scenario and may need to be dropped as non-biological and also results in truncated conic-section
+        // Wider range should work also but ellipsoid wrapping bugs out and produces a kink
+        // -Ayman 10/22
+        auto startAngle = -SimTK::Pi / 5;
+        auto endAngle = SimTK::Pi / 5;
+        for (double angle = startAngle; angle <= endAngle; angle += SimTK::Pi/180) {
+            woOne->set_xyz_body_rotation(Vec3(0,  angle, 0)); // Rotate the cylinder by angle
+            woTwo->set_dimensions(Vec3(.5/cos(angle), .5, 1)); // Change radii of ellipsoid to match
+            std::cout << "compare cylinder vs ellipsoid at angle " << angle * 180/SimTK::Pi
+                      << std::endl;
             testCompareWrapObjects(woOne, woTwo);
         }
     }
@@ -111,8 +117,9 @@ int main()
     return 0;
 }
 // Test results of wrapping a sigle path perpendicular to a wrapObject
-// particularly perpendicular to cylinder axis 
-// and compare results to analytical/expected answers
+// particularly path perpendicular to cylinder axis 
+// and compare results to analytical/expected answers. Since cross-section is a circle/arc
+// results should match a sphere or ellipsoid with matching radii
 void testSingleWrapObjectPerpendicular(WrapObject* wrapObject)
 {
     auto visualize = false;
@@ -121,7 +128,7 @@ void testSingleWrapObjectPerpendicular(WrapObject* wrapObject)
     model.setName("test"+wrapObject->getConcreteClassName());
 
     auto& ground = model.updGround();
-    auto body = new OpenSim::Body("body", 1, Vec3(-.5, 0, 0), Inertia(0.1, 0.1, 0.01));
+    auto body = new OpenSim::Body("body", 1, Vec3(-r, 0, 0), Inertia(0.1, 0.1, 0.01));
     model.addComponent(body);
     
     auto joint = new PinJoint("pin", ground, *body);
@@ -169,9 +176,9 @@ void testSingleWrapObjectPerpendicular(WrapObject* wrapObject)
 
     }
 }
-// Test results of wrapping a sigle path around a wrapObject wObj1
+// Test results of wrapping a sigle path around a wrapCylinder wObj1
 // and compare results to analytically equivalent wrapObject wObj2
-// For example a rotated cylinder against an ellipsoid
+// For example wrapping around a rotated cylinder against an ellipsoid with radii to match
 void testCompareWrapObjects(OpenSim::WrapCylinder* wObj1, OpenSim::WrapObject* wObj2) {
     auto visualize = false;
     const double r = wObj1->get_radius();
@@ -229,7 +236,6 @@ void testCompareWrapObjects(OpenSim::WrapCylinder* wObj1, OpenSim::WrapObject* w
     const CoordinateSet& cset = model.getCoordinateSet();
 
     int nsteps = 1000;
-    double max_diff = 0.;
     for (int i = 0; i <= nsteps; ++i) {
 
         coord.setValue(s, i * SimTK::Pi / (4 * nsteps));
