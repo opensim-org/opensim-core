@@ -131,6 +131,8 @@ void WrapCylinder::extendFinalizeFromProperties()
         InvalidPropertyValue,
         getProperty_length().getName(),
         "Length cannot be less than zero");
+    // Cache in _radius for reuse in time sensitive code downstream
+    _radius = get_radius();
 }
 
 //_____________________________________________________________________________
@@ -177,7 +179,6 @@ string WrapCylinder::getDimensionsString() const
 int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
                                     const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
-    const double& _radius = get_radius();
     double dist, p11_dist, p22_dist, t, dot1, dot2, dot3, dot4, d, sin_theta,
         /* *r11, *r22, */alpha, beta, r_squared = _radius * _radius;
     double dist1, dist2;
@@ -614,7 +615,6 @@ void WrapCylinder::_make_spiral_path(SimTK::Vec3& aPoint1,
     Vec3 r1a, r2a, uu, vv, ax, axial_vec, wrap_pt;
     double sense = far_side_wrap ? -1.0 : 1.0;
     int i, iterations = 0;
-    const double _radius = get_radius();
 
 restart_spiral_wrap:
 
@@ -741,7 +741,7 @@ void WrapCylinder::_calc_spiral_wrap_point(const SimTK::Vec3& r1a,
 
     for (int i = 0; i < 3; i++)
     {
-        double radial_component = get_radius() * n[1][i];
+        double radial_component = _radius * n[1][i];
         double axial_component = t * axial_vec[i];
 
         wrap_pt[i] = r1a[i] + radial_component + axial_component;
