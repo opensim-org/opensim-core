@@ -44,10 +44,21 @@ using SimTK::Vec3;
 using SimTK::UnitVec3;
 
 static const char* wrapTypeName = "cylinder";
-static Vec3 p0(0.0, 0.0, -1.0);
-static Vec3 dn(0.0, 0.0, 1.0);
+static const Vec3 g_CylinderBottom(0.0, 0.0, -1.0);
+static const UnitVec3 g_CylinderDirection(0.0, 0.0, 1.0);
 #define MAX_ITERATIONS    100
 #define TANGENCY_THRESHOLD (0.1 * SimTK_DEGREE_TO_RADIAN) // find tangency to within 1 degree
+
+// helper function for calling the wrapmath version
+static Vec3 GetClosestPointOnLineToPoint(const Vec3& pt,
+                                         const Vec3& linePt,
+                                         const UnitVec3& lineDir)
+{
+    Vec3 rv;
+    double t;
+    WrapMath::GetClosestPointOnLineToPoint(pt, linePt, lineDir, rv, t);
+    return rv;
+}
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -131,8 +142,6 @@ void WrapCylinder::extendFinalizeFromProperties()
         InvalidPropertyValue,
         getProperty_length().getName(),
         "Length cannot be less than zero");
-    // Cache in _radius for reuse in time sensitive code downstream
-    _radius = get_radius();
 }
 
 //_____________________________________________________________________________
@@ -179,6 +188,7 @@ string WrapCylinder::getDimensionsString() const
 int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
                                     const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
+    const double& _radius = get_radius();
     double dist, p11_dist, p22_dist, t, dot1, dot2, dot3, dot4, d, sin_theta,
         /* *r11, *r22, */alpha, beta, r_squared = _radius * _radius;
     double dist1, dist2;
@@ -209,8 +219,8 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     aWrapResult.wrap_pts.setSize(0);
 
     // abort if aPoint1 or aPoint2 is inside the cylinder.
-    if (WrapMath::CalcDistanceSquaredPointToLine(aPoint1, p0, dn) < r_squared ||
-        WrapMath::CalcDistanceSquaredPointToLine(aPoint2, p0, dn) < r_squared)
+    if (WrapMath::CalcDistanceSquaredPointToLine(aPoint1, g_CylinderBottom, g_CylinderDirection) < r_squared ||
+        WrapMath::CalcDistanceSquaredPointToLine(aPoint2, g_CylinderBottom, g_CylinderDirection) < r_squared)
     {
         return insideRadius;
     }
@@ -243,8 +253,8 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     }
 
     // find points p11 & p22 on the cylinder axis closest aPoint1 & aPoint2
-    WrapMath::GetClosestPointOnLineToPoint(aPoint1, p0, dn, p11, t);
-    WrapMath::GetClosestPointOnLineToPoint(aPoint2, p0, dn, p22, t);
+    WrapMath::GetClosestPointOnLineToPoint(aPoint1, g_CylinderBottom, g_CylinderDirection, p11, t);
+    WrapMath::GetClosestPointOnLineToPoint(aPoint2, g_CylinderBottom, g_CylinderDirection, p22, t);
 
     // find preliminary tangent point candidates r1a & r1b
     vv = aPoint1 - p11;
@@ -260,7 +270,7 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
 
     dist = sqrt(r_squared - dist * dist);
 
-    uu = dn % vv;
+    uu = g_CylinderDirection % vv;
 
     for (i = 0; i < 3; i++)
     {
@@ -282,7 +292,7 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
 
     dist = sqrt(r_squared - dist * dist);
 
-    uu = dn % vv;
+    uu = g_CylinderDirection % vv;
 
     for (i = 0; i < 3; i++)
     {
@@ -476,7 +486,7 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
         mpt[i] = aPoint1[i] + t * (aPoint2[i] - aPoint1[i]);
 
     // find closest point on cylinder axis to mpt
-    WrapMath::GetClosestPointOnLineToPoint(mpt, p0, dn, axispt, t);
+    WrapMath::GetClosestPointOnLineToPoint(mpt, g_CylinderBottom, g_CylinderDirection, axispt, t);
 
     // find normal of plane through aPoint1, aPoint2, axispt
     l1 = aPoint1 - axispt;
@@ -491,9 +501,9 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     // cross plane normal and cylinder axis (each way) to
     // get vectors pointing from axispt towards mpt and
     // away from mpt (you can't tell which is which yet).
-    vert1 = dn % plane_normal;
+    vert1 = g_CylinderDirection % plane_normal;
     WrapMath::NormalizeOrZero(vert1, vert1);
-    vert2 = plane_normal % dn;
+    vert2 = plane_normal % g_CylinderDirection;
     WrapMath::NormalizeOrZero(vert2, vert2);
 
     // now find two potential apex points, one along each vector
@@ -549,11 +559,11 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
 
     for (i = 0; i < 3; i++)
     {
-        r1a[i] = aWrapResult.r1[i] - 10.0 * dn[i];
-        r2a[i] = aWrapResult.r2[i] - 10.0 * dn[i];
+        r1a[i] = aWrapResult.r1[i] - 10.0 * g_CylinderDirection[i];
+        r2a[i] = aWrapResult.r2[i] - 10.0 * g_CylinderDirection[i];
 
-        r1b[i] = aWrapResult.r1[i] + 10.0 * dn[i];
-        r2b[i] = aWrapResult.r2[i] + 10.0 * dn[i];
+        r1b[i] = aWrapResult.r1[i] + 10.0 * g_CylinderDirection[i];
+        r2b[i] = aWrapResult.r2[i] + 10.0 * g_CylinderDirection[i];
     }
 
     r1_inter = WrapMath::IntersectLineSegPlane(r1a, r1b, plane_normal, d, r1p);
@@ -595,156 +605,121 @@ int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::V
     return return_code;
 }
 
-//_____________________________________________________________________________
 /**
- * Calculate the wrapping points along a spiral path on the cylinder from aPoint1
- * to aPoint2. This function may slide aPoint1 and aPoint2 axially along the
- * cylinder's surface to achieve tangency to within 1 degree at the two points.
+ * Calculate the wrapping points along a spiral path on the cylinder from `p1`
+ * to `p2`. This function may slide `p1` and `p2` axially along the cylinder's
+ * surface to achieve tangency to within 1 degree at the two points.
  *
- * @param aPoint1 One end of the spiral path
- * @param aPoint2 The other end of the spiral path
- * @param far_side_wrap Boolean indicating if the wrap is the long way around
- * @param aWrapResult The result of the wrapping (tangent points, etc.)
+ * @param p1 One end of the spiral path
+ * @param p2 The other end of the spiral path
+ * @param doFarSideWrap Boolean indicating if the wrap is the long way around
+ * @param out The result of the wrapping (tangent points, etc.)
  */
-void WrapCylinder::_make_spiral_path(SimTK::Vec3& aPoint1,
-                                                 SimTK::Vec3& aPoint2,
-                                                 bool far_side_wrap,
-                                                 WrapResult& aWrapResult) const
+void WrapCylinder::_make_spiral_path(const SimTK::Vec3& p1,
+                                     const SimTK::Vec3& p2,
+                                     const bool doFarSideWrap,
+                                     WrapResult& out) const
 {
-    double x, y, t, axial_dist, theta;
-    Vec3 r1a, r2a, uu, vv, ax, axial_vec, wrap_pt;
-    double sense = far_side_wrap ? -1.0 : 1.0;
-    int i, iterations = 0;
+    Vec3 r1a, r2a, uu, vv, axial_vec, wrap_pt;
+    double sense = doFarSideWrap ? -1.0 : 1.0;
+    int iterations = 0;
+    const double radius = get_radius();
 
 restart_spiral_wrap:
 
-    aWrapResult.wrap_pts.setSize(0);
+    const Vec3 r1SurfacePos = out.r1;
+    const Vec3 r1AxialPos = GetClosestPointOnLineToPoint(r1SurfacePos, g_CylinderBottom, g_CylinderDirection);
+    const Vec3 r2SurfacePos = out.r2;
+    const Vec3 r2AxialPos = GetClosestPointOnLineToPoint(r2SurfacePos, g_CylinderBottom, g_CylinderDirection);
 
-    // determine the axial vector
+    const Vec3 r1AxisToSurface = r1SurfacePos - r1AxialPos;
+    const UnitVec3 r1AxisToSurfaceDir(r1AxisToSurface);
+    const UnitVec3 r2AxisToSurfaceDir(r2SurfacePos - r2AxialPos);
 
-    WrapMath::GetClosestPointOnLineToPoint(aWrapResult.r1, p0, dn, r1a, t);
-    WrapMath::GetClosestPointOnLineToPoint(aWrapResult.r2, p0, dn, r2a, t);
+    const Vec3 r1AxisToR2Axis = r2AxialPos - r1AxialPos;
 
-    axial_vec = r2a - r1a;
-
-    axial_dist = axial_vec.norm();
-
-    // determine the radial angle
-    uu = aWrapResult.r1 - r1a;
-    vv = aWrapResult.r2 - r2a;
-
-    for (i = 0; i < 3; i++)
-    {
-        uu[i] /= _radius;
-        vv[i] /= _radius;
+    double theta = acos(SimTK::dot(r1AxisToSurfaceDir, r2AxisToSurfaceDir));
+    if (doFarSideWrap) {
+        theta -= 2.0*SimTK_PI;
     }
 
-    theta = acos((~uu * vv) / (uu.norm() * vv.norm()));
+    // use Pythagoras to calculate the length of the spiral path (imagine
+    // a right angle where one edge is a line around the circumference and
+    // the other edge is a line along the cylinder axis at a right angle)
+    {
+        const double x = radius * theta;  // circumference
+        const double y = r1AxisToR2Axis.norm();
+        out.wrap_path_length = sqrt(x*x + y*y);
+    }
 
-    if (far_side_wrap)
-        theta = 2.0 * SimTK_PI - theta;
+    const UnitVec3 ax{SimTK::cross(r1AxisToSurfaceDir, r2AxisToSurfaceDir)};
 
-    // use Pythagoras to calculate the length of the spiral path (imaging
-    // a right triangle wrapping around the surface of a cylinder)
-    x = _radius * theta;
-    y = axial_dist;
+    auto CalcWrapPoint = [&](double t)  // t = 0.0 to 1.0
+    {
+        SimTK::Mat33 R = SimTK::Rotation{t * theta, ax};
+        return r1AxialPos + R*r1AxisToSurface + t*r1AxisToR2Axis;
+    };
 
-    aWrapResult.wrap_path_length = sqrt(x * x + y * y);
-
-    // build path segments
-    ax = uu % vv;
-    WrapMath::NormalizeOrZero(ax, ax);
-
-    vv = ax % uu;
-
-    SimTK::Rotation m;
-    m.set(0, 0, ax[0]); m.set(0, 1, ax[1]); m.set(0, 2, ax[2]);
-    m.set(1, 0, uu[0]); m.set(1, 1, uu[1]); m.set(1, 2, uu[2]);
-    m.set(2, 0, vv[0]); m.set(2, 1, vv[1]); m.set(2, 2, vv[2]);
     // WrapTorus creates a WrapCyl with no connected model, avoid this hack
-    if (!_model.empty() && !getModel().getDisplayHints().isVisualizationEnabled() &&
-            aWrapResult.singleWrap) {
+    if (!_model.empty() &&
+        !getModel().getDisplayHints().isVisualizationEnabled() &&
+        out.singleWrap) {
+
         // Use one WrapSegment/cord instead of finely sampled list of wrap_pt(s)
-        _calc_spiral_wrap_point(
-                r1a, axial_vec, m, ax, sense, 0, theta, wrap_pt);
-        aWrapResult.wrap_pts.append(wrap_pt);
-        _calc_spiral_wrap_point(
-                r1a, axial_vec, m, ax, sense, 1.0, theta, wrap_pt);
-        aWrapResult.wrap_pts.append(wrap_pt);
+        out.wrap_pts.setSize(2);
+        out.wrap_pts[0] = CalcWrapPoint(0);
+        out.wrap_pts[1] = CalcWrapPoint(1.0);
     } 
     else {
+
         // Each muscle segment on the surface of the cylinder should be
         // 0.002 meters long. This assumes the model is in meters, of course.
-        int numWrapSegments = (int)(aWrapResult.wrap_path_length / 0.002);
-        if (numWrapSegments < 1) numWrapSegments = 1;
+        //
+        // TODO: design, build, staff, and shoot an ion cannon at this
+        int numWrapSegments = static_cast<int>(out.wrap_path_length / 0.002);
+        if (numWrapSegments < 1) {
+            numWrapSegments = 1;
+        }
 
-        for (i = 0; i < numWrapSegments; i++) {
-            double t = (double)i / numWrapSegments;
+        out.wrap_pts.setSize(0);
+        out.wrap_pts.ensureCapacity(numWrapSegments);
+        for (int i = 0; i < numWrapSegments; i++) {
+            // TODO: re-use the ion cannon (above) to annihilate this and
+            // TODO: replace it with `i/(numWrapSegments-1)`
+            double t = static_cast<double>(i)/static_cast<double>(numWrapSegments);
 
-            _calc_spiral_wrap_point(
-                    r1a, axial_vec, m, ax, sense, t, theta, wrap_pt);
+            Vec3 wrap_pt = CalcWrapPoint(t);
 
             // adjust r1/r2 tangent points if necessary to achieve tangency with
             // the spiral path:
-            if (i == 1 && iterations < MAX_ITERATIONS &&
-                    !aWrapResult.singleWrap) {
-                bool did_adjust_r2 = false;
+            if (i == 1
+                && iterations < MAX_ITERATIONS
+                && !out.singleWrap) {
+
                 bool did_adjust_r1 = _adjust_tangent_point(
-                        aPoint1, dn, aWrapResult.r1, wrap_pt);
+                    p1,
+                    g_CylinderDirection,
+                    out.r1,
+                    wrap_pt);
 
-                SimTK::Vec3 temp_wrap_pt;
+                Vec3 temp_wrap_pt = CalcWrapPoint(1.0 - t);
 
-                _calc_spiral_wrap_point(r1a, axial_vec, m, ax, sense, 1.0 - t,
-                        theta, temp_wrap_pt);
-
-                did_adjust_r2 = _adjust_tangent_point(
-                        aPoint2, dn, aWrapResult.r2, temp_wrap_pt);
+                bool did_adjust_r2 = _adjust_tangent_point(
+                        p2,
+                        g_CylinderDirection,
+                        out.r2,
+                        temp_wrap_pt);
 
                 if (did_adjust_r1 || did_adjust_r2) {
                     iterations++;
+                    // TODO: realize that ion cannons (above) aren't enough and resort to
+                    //       using an appropriate death star on this
                     goto restart_spiral_wrap;
                 }
             }
 
-            aWrapResult.wrap_pts.append(wrap_pt);
+            out.wrap_pts.append(wrap_pt);
         }
-    }
-}
-
-//_____________________________________________________________________________
-/**
- * Calculate a new point along a spiral wrapping path.
- *
- * @param r1a An existing point on the spiral path
- * @param axial_vec Vector from r1a parallel to cylinder axis
- * @param m A transform matrix used for the radial component
- * @param axis Axis of the cylinder
- * @param sense The direction of the spiral
- * @param t Parameterized amount of angle for this point
- * @param theta The total angle of the spiral on the cylinder
- * @param wrap_pt The new point on the spiral path
- */
-void WrapCylinder::_calc_spiral_wrap_point(const SimTK::Vec3& r1a,
-                                             const SimTK::Vec3& axial_vec,
-                                             const SimTK::Rotation& m,
-                                             const SimTK::Vec3& axis,
-                                             double sense,
-                                             double t,
-                                             double theta,
-                                             SimTK::Vec3& wrap_pt) const
-{
-    SimTK::Rotation R;
-    double angle = sense * t * theta;
-    R.setRotationFromAngleAboutNonUnitVector(angle, axis);
-
-    SimTK::Mat33 n = m * ~R;
-
-    for (int i = 0; i < 3; i++)
-    {
-        double radial_component = _radius * n[1][i];
-        double axial_component = t * axial_vec[i];
-
-        wrap_pt[i] = r1a[i] + radial_component + axial_component;
     }
 }
 
@@ -762,10 +737,10 @@ void WrapCylinder::_calc_spiral_wrap_point(const SimTK::Vec3& r1a,
  * @param w1 A wrapping point (?)
  * @return Whether or not the point was adjusted
  */
-bool WrapCylinder::_adjust_tangent_point(SimTK::Vec3& pt1,
-                                                      SimTK::Vec3& dn,
-                                                      SimTK::Vec3& r1,
-                                                      SimTK::Vec3& w1) const
+bool WrapCylinder::_adjust_tangent_point(const SimTK::Vec3& pt1,
+                                         const SimTK::UnitVec3& dn,
+                                         SimTK::Vec3& r1,
+                                         const SimTK::Vec3& w1) const
 {
     SimTK::Vec3 pr_vec = r1 - pt1;
     SimTK::Vec3 rw_vec = w1 - r1;

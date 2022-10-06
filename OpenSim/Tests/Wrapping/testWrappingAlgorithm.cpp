@@ -90,8 +90,8 @@ int main()
         woTwo->setName("pulley2");
         // Change the angle between the cylinder axis and the line connecting end points of pulley
         // -36 to 36 degrees guarantees that wrapping doesn't occur at the cap of the cylinder which is a rather poorly 
-        // handled scenario and may need to be dropped as non-biological and also results in truncated conic-section
-        // Wider range should work also but ellipsoid wrapping bugs out and produces a kink
+        // handled scenario and may need to be dropped as non-biological and also results in truncated conic-section.
+        // Wider range should work but ellipsoid wrapping bugs out and produces a kink
         // -Ayman 10/22
         auto startAngle = -SimTK::Pi / 5;
         auto endAngle = SimTK::Pi / 5;
