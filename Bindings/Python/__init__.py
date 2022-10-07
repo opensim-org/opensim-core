@@ -1,7 +1,8 @@
 import sys
 import os
 
-os.add_dll_directory(os.path.dirname(os.path.realpath(__file__)))
+if sys.version_info.major == 3 and sys.version_info.minor >= 8:
+    os.add_dll_directory(os.path.dirname(os.path.realpath(__file__)))
 
 from .simbody import *
 from .common import *
