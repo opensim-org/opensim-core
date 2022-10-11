@@ -1,7 +1,7 @@
 import sys
 import os
 
-if sys.version_info.major == 3 and sys.version_info.minor >= 8:
+if sys.version_info.major == 3 and sys.version_info.minor >= 8 and sys.platform.startswith('win'):
     os.add_dll_directory(os.path.dirname(os.path.realpath(__file__)))
 
 from .simbody import *
