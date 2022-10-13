@@ -220,14 +220,15 @@ int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::
     // the ellipsoid dimensions because they do not change from one call to the
     // next. You don't want the factor to change because the algorithm uses
     // some vectors (r1, r2, c1) from the previous call.
-    aWrapResult.factor = 3.0 / get_dimensions().sum();
+    Vec3 dimensions = get_dimensions();
+    aWrapResult.factor = 3.0 / dimensions.sum();
 
     for (i = 0; i < 3; i++)
     {
         p1[i] = aPoint1[i] * aWrapResult.factor;
         p2[i] = aPoint2[i] * aWrapResult.factor;
         m[i]  = origin[i] * aWrapResult.factor;
-        a[i]  = get_dimensions()[i] * aWrapResult.factor;
+        a[i]  = dimensions[i] * aWrapResult.factor;
     }
 
     p1e = -1.0;
@@ -830,6 +831,7 @@ void WrapEllipsoid::CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, Si
         // Just use r1 and r2 as the surface points and return the distance
         // between them as the distance along the ellipsoid.
         aWrapResult.wrap_pts.setSize(0);
+        aWrapResult.wrap_pts.ensureCapacity(2);
         //SimmPoint p1(r1);
         aWrapResult.wrap_pts.append(r1);
         //SimmPoint p2(r2);
@@ -906,14 +908,15 @@ void WrapEllipsoid::CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, Si
     }
 
     rphi[2][2] = 1;
-
     for (i = 0; i < numInteriorPts; i++)
     {
         phi = (i + 1) * dphi;
-        rphi[0][0] = cos(phi);
-        rphi[0][1] = -sin(phi);
-        rphi[1][0] = sin(phi);
-        rphi[1][1] = cos(phi);
+        double sinPhi = sin(phi);
+        double cosPhi = cos(phi);
+        rphi[0][0] = cosPhi;
+        rphi[0][1] = -sinPhi;
+        rphi[1][0] = sinPhi;
+        rphi[1][1] = cosPhi;
 
         for (j = 0; j < 3; j++)
         {
@@ -946,6 +949,7 @@ void WrapEllipsoid::CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, Si
     }
 
     aWrapResult.wrap_pts.setSize(0);
+    aWrapResult.wrap_pts.ensureCapacity(numInteriorPts);
     //SimmPoint p1(r1);
     aWrapResult.wrap_pts.append(r1);
 
