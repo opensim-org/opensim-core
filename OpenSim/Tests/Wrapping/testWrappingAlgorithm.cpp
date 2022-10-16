@@ -32,19 +32,24 @@ using namespace OpenSim;
 using namespace SimTK;
 using namespace std;
 
-void testSingleWrapObjectPerpendicular(OpenSim::WrapObject* wObj);
+void testSingleWrapObjectPerpendicular(OpenSim::WrapObject* wObj, Vec3 axialRotation = Vec3(0.0));
 void testCompareWrapObjects(OpenSim::WrapCylinder* wObj1, OpenSim::WrapObject* wObj2);
 
 int main()
 {
     SimTK::Array_<std::string> failures;
-
+    
     try {
         auto* wo = new WrapCylinder();
         wo->setName("pulley1");
         wo->set_radius(.5);
         wo->set_length(1);
         testSingleWrapObjectPerpendicular(wo);
+        // Rotating a cylinder around its axis doesn't change wrapping result but
+        // changes the local coordinate system for computation by changing the quadrant
+        testSingleWrapObjectPerpendicular(wo, Vec3{ 0, 0, SimTK::Pi / 2 });
+        testSingleWrapObjectPerpendicular(wo, Vec3{ 0, 0, SimTK::Pi });
+        testSingleWrapObjectPerpendicular(wo, Vec3{ 0, 0, -SimTK::Pi / 2 });
         wo->set_quadrant("+y");
         testSingleWrapObjectPerpendicular(wo);
     }
@@ -58,6 +63,15 @@ int main()
         wo->setName("pulley1");
         wo->set_radius(.5);
         testSingleWrapObjectPerpendicular(wo);
+        testSingleWrapObjectPerpendicular(wo, Vec3{ 0, 0, SimTK::Pi / 2 });
+        testSingleWrapObjectPerpendicular(wo, Vec3{ 0, 0, SimTK::Pi });
+        testSingleWrapObjectPerpendicular(wo, Vec3{ 0, 0, -SimTK::Pi / 2 });
+        testSingleWrapObjectPerpendicular(wo, Vec3{ 0, SimTK::Pi / 2, 0 });
+        testSingleWrapObjectPerpendicular(wo, Vec3{ 0, SimTK::Pi, 0 });
+        testSingleWrapObjectPerpendicular(wo, Vec3{ 0, -SimTK::Pi / 2, 0 });
+        testSingleWrapObjectPerpendicular(wo, Vec3{ SimTK::Pi / 2, 0, 0 });
+        testSingleWrapObjectPerpendicular(wo, Vec3{ SimTK::Pi, 0, 0 });
+        testSingleWrapObjectPerpendicular(wo, Vec3{ -SimTK::Pi / 2, 0, 0 });
         wo->set_quadrant("+y");
         testSingleWrapObjectPerpendicular(wo);
     }
@@ -65,11 +79,15 @@ int main()
         std::cout << "Exception: " << e.what() << std::endl;
         failures.push_back("TestWrapSphere");
     }
+    
     try {
         auto* wo = new WrapEllipsoid();
         wo->setName("pulley1");
         wo->set_dimensions(Vec3(.5));
         testSingleWrapObjectPerpendicular(wo);
+        testSingleWrapObjectPerpendicular(wo, Vec3{ 0, 0, SimTK::Pi / 2 });
+        testSingleWrapObjectPerpendicular(wo, Vec3{ 0, 0, SimTK::Pi });
+        testSingleWrapObjectPerpendicular(wo, Vec3{ 0, 0, -SimTK::Pi / 2 });
         wo->set_quadrant("+y");
         testSingleWrapObjectPerpendicular(wo);
 
@@ -78,8 +96,9 @@ int main()
         std::cout << "Exception: " << e.what() << std::endl;
         failures.push_back("TestWrapEllipsoid");
     }
-
-    // Compare rotated wrap cylinder by angle theta with an ellipsoid with radii matching cylinder
+    
+    // Compare wrap cylinder rotated by angle theta with an ellipsoid that has radii matching 
+    // the cross section of the rotated cylinder
     
     try {
         auto* woOne = new WrapCylinder();
@@ -97,7 +116,7 @@ int main()
         auto endAngle = SimTK::Pi / 5;
         for (double angle = startAngle; angle <= endAngle; angle += SimTK::Pi/180) {
             woOne->set_xyz_body_rotation(Vec3(0,  angle, 0)); // Rotate the cylinder by angle
-            woTwo->set_dimensions(Vec3(.5/cos(angle), .5, 1)); // Change radii of ellipsoid to match
+            woTwo->set_dimensions(Vec3(.5/cos(angle), .5, 1)); // Change radii of ellipsoid to match cross-section
             std::cout << "compare cylinder vs ellipsoid at angle " << angle * 180/SimTK::Pi
                       << std::endl;
             testCompareWrapObjects(woOne, woTwo);
@@ -120,7 +139,7 @@ int main()
 // particularly path perpendicular to cylinder axis 
 // and compare results to analytical/expected answers. Since cross-section is a circle/arc
 // results should match a sphere or ellipsoid with matching radii
-void testSingleWrapObjectPerpendicular(WrapObject* wrapObject)
+void testSingleWrapObjectPerpendicular(WrapObject* wrapObject, Vec3 axisRotations)
 {
     auto visualize = false;
     const double r = 0.5;
@@ -138,6 +157,7 @@ void testSingleWrapObjectPerpendicular(WrapObject* wrapObject)
 
     // Add the wrap object to the body, which takes ownership of it
     WrapObject* wObj = wrapObject->clone();
+    wObj->set_xyz_body_rotation(axisRotations);
     ground.addWrapObject(wObj);
 
     // One spring has wrap cylinder with respect to ground origin
