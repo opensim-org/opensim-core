@@ -421,7 +421,7 @@ void PiecewiseLinearFunction::calcCoefficients()
    _b.setSize(n);
 
     for (int i=0; i<n-1; i++) {
-        double range = MAX(TINY_NUMBER, _x[i+1] - _x[i]);
+        double range = std::max(TINY_NUMBER, _x[i+1] - _x[i]);
         _b[i] = (_y[i+1] - _y[i]) / range;
     }
     _b[n-1] = _b[n-2];
