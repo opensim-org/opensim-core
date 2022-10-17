@@ -117,8 +117,7 @@ int main()
         for (double angle = startAngle; angle <= endAngle; angle += SimTK::Pi/180) {
             woOne->set_xyz_body_rotation(Vec3(0,  angle, 0)); // Rotate the cylinder by angle
             woTwo->set_dimensions(Vec3(.5/cos(angle), .5, 1)); // Change radii of ellipsoid to match cross-section
-            std::cout << "compare cylinder vs ellipsoid at angle " << angle * 180/SimTK::Pi
-                      << std::endl;
+            // std::cout << "compare cylinder vs ellipsoid at angle " << angle * 180/SimTK::Pi << std::endl;
             testCompareWrapObjects(woOne, woTwo);
         }
     }
