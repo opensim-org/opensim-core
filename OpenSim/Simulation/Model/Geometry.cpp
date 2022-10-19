@@ -279,10 +279,6 @@ void Mesh::extendFinalizeFromProperties() {
             for (unsigned i = 0; i < attempts.size(); ++i)
                 log_debug(attempts[i]);
             
-            if (!isAbsolutePath &&
-                !Pathname::environmentVariableExists("OPENSIM_HOME"))
-                log_debug("Set environment variable OPENSIM_HOME to search $OPENSIM_HOME/Geometry.");
-            return;
         }
 
         try {
