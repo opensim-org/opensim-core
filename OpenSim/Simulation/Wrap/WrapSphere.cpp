@@ -216,7 +216,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
    if (disc < 0.0) 
    {
       aFlag = false;
-        aWrapResult.wrap_path_length = 0.0;
+      aWrapResult.wrap_path_length = 0.0;
       return noWrap;
    }
    auto sqrtDisc = sqrt(disc);
@@ -235,6 +235,14 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
     WrapMath::NormalizeOrZero(p2m, np2);
 
     hp2 = p1p2 % np2;
+
+    auto p1mNorm = p1m.norm();
+    a1 = asin(radius / p1mNorm);
+    auto cosA1 = cos(a1);
+    
+    a2 = asin(radius / p2m.norm());
+    auto p2mNorm = p2m.norm();
+    double cosA2 = cos(a2);
 
    // if the muscle line passes too close to the center of the sphere
    // then give up
@@ -258,9 +266,6 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
       ra[i][1] = y[i];
       ra[i][2] = z[i];
    }
-    auto p1mNorm = p1m.norm();
-    a1 = asin(radius / p1mNorm);
-    auto cosA1 = cos(a1);
 
     rrx.setRotationFromAngleAboutX(a1);
     aa = ra * ~rrx;
@@ -287,13 +292,9 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
       ra[i][2] = z[i];
    }
 
-   a2 = asin(radius / p2m.norm());
-
    rrx.setRotationFromAngleAboutX(a2);
    aa = ra * ~rrx;
 
-   auto p2mNorm = p2m.norm();
-   double cosA2 = cos(a2);
    for (i = 0; i < 3; i++)
       r2a[i] = aPoint2[i] + aa[i][1] * p2mNorm * cosA2;
 
