@@ -777,8 +777,8 @@ void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEnd
                       maxZ[i] - minZ[i] > aThreshold)
             {
                 double maxDim = maxX[i] - minX[i];
-                maxDim = MAX(maxDim, (maxY[i] - minY[i]));
-                maxDim = MAX(maxDim, (maxZ[i] - minZ[i]));
+                maxDim = std::max(maxDim, (maxY[i] - minY[i]));
+                maxDim = std::max(maxDim, (maxZ[i] - minZ[i]));
                 log_warn("Movement of marker {} in {} is {} (threshold = {})",
                         _markerNames[i], _fileName, maxDim, aThreshold);
             }

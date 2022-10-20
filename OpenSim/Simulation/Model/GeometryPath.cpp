@@ -915,11 +915,13 @@ void GeometryPath::computePath(const SimTK::State& s) const
 
     // Clear the current path.
     _currentPathPtrsCache.setSize(0);
+    const auto& pointSet = get_PathPointSet();
+    _currentPathPtrsCache.ensureCapacity(pointSet.getSize());
 
     // Add the active fixed and moving via points to the path.
-    for (int i = 0; i < get_PathPointSet().getSize(); i++) {
-        if (get_PathPointSet()[i].isActive(s))
-            _currentPathPtrsCache.append(&get_PathPointSet()[i]); // <--- !!!!BAD
+    for (int i = 0; i < pointSet.getSize(); i++) {
+        if (pointSet[i].isActive(s))
+            _currentPathPtrsCache.append(&pointSet[i]); // <--- !!!!BAD
     }
   
     // Use the current path so far to check for intersection with wrap objects, 
@@ -937,7 +939,7 @@ void GeometryPath::computePath(const SimTK::State& s) const
     // copied/moved-from version of the model, rather than the original one, so the
     // pointers may be stale.
     std::vector<PathElementLookup>& lookups = updCacheVariableValue(s, _currentPathCV);
-    PopulatePathElementLookup(get_PathPointSet(),
+    PopulatePathElementLookup(pointSet,
                               get_PathWrapSet(),
                               _currentPathPtrsCache,
                               *this,

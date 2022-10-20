@@ -333,7 +333,7 @@ void SimmSpline::calcCoefficients()
 
    if (n == 2)
    {
-      t = MAX(TINY_NUMBER,_x[1]-_x[0]);
+      t = std::max(TINY_NUMBER,_x[1]-_x[0]);
       _b[0] = _b[1] = (_y[1]-_y[0])/t;
       _c[0] = _c[1] = 0.0;
       _d[0] = _d[1] = 0.0;
@@ -347,11 +347,11 @@ void SimmSpline::calcCoefficients()
     * b = diagonal, d = offdiagonal, c = right-hand side
     */
 
-   _d[0] = MAX(TINY_NUMBER,_x[1] - _x[0]);
+   _d[0] = std::max(TINY_NUMBER,_x[1] - _x[0]);
    _c[1] = (_y[1]-_y[0])/_d[0];
    for (i=1; i<nm1; i++)
    {
-      _d[i] = MAX(TINY_NUMBER,_x[i+1] - _x[i]);
+      _d[i] = std::max(TINY_NUMBER,_x[i+1] - _x[i]);
       _b[i] = 2.0*(_d[i-1]+_d[i]);
       _c[i+1] = (_y[i+1]-_y[i])/_d[i];
       _c[i] = _c[i+1] - _c[i];
@@ -370,12 +370,12 @@ void SimmSpline::calcCoefficients()
    {
       double d1, d2, d3, d20, d30, d31;
 
-      d31 = MAX(TINY_NUMBER,_x[3] - _x[1]);
-      d20 = MAX(TINY_NUMBER,_x[2] - _x[0]);
-      d1 = MAX(TINY_NUMBER,_x[nm1]-_x[n-3]);
-      d2 = MAX(TINY_NUMBER,_x[nm2]-_x[n-4]);
-      d30 = MAX(TINY_NUMBER,_x[3] - _x[0]);
-      d3 = MAX(TINY_NUMBER,_x[nm1]-_x[n-4]);
+      d31 = std::max(TINY_NUMBER,_x[3] - _x[1]);
+      d20 = std::max(TINY_NUMBER,_x[2] - _x[0]);
+      d1 = std::max(TINY_NUMBER,_x[nm1]-_x[n-3]);
+      d2 = std::max(TINY_NUMBER,_x[nm2]-_x[n-4]);
+      d30 = std::max(TINY_NUMBER,_x[3] - _x[0]);
+      d3 = std::max(TINY_NUMBER,_x[nm1]-_x[n-4]);
       _c[0] = _c[2]/d31 - _c[1]/d20;
       _c[nm1] = _c[nm2]/d1 - _c[n-3]/d2;
       _c[0] = _c[0]*_d[0]*_d[0]/d30;

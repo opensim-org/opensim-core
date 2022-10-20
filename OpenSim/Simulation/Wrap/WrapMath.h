@@ -48,22 +48,36 @@ class OSIMSIMULATION_API WrapMath
 //=============================================================================
 public:
     static bool
-        IntersectLines(SimTK::Vec3& p1, SimTK::Vec3& p2,
-        SimTK::Vec3& p3, SimTK::Vec3& p4,
-        SimTK::Vec3& pInt1, double& s,
-        SimTK::Vec3& pInt2, double& t);
+        IntersectLines(const SimTK::Vec3& p1,
+                       const SimTK::Vec3& p2,
+                       const SimTK::Vec3& p3,
+                       const SimTK::Vec3& p4,
+                       SimTK::Vec3& pInt1,
+                       double& s,
+                       SimTK::Vec3& pInt2,
+                       double& t);
     static bool
         IntersectLineSegPlane(SimTK::Vec3& pt1, SimTK::Vec3& pt2,
         SimTK::UnitVec3& plane, double d, SimTK::Vec3& inter);
-    static void
-        GetClosestPointOnLineToPoint(SimTK::Vec3& pt, SimTK::Vec3& linePt, SimTK::Vec3& line,
-                                      SimTK::Vec3& closestPt, double& t);
+    static void GetClosestPointOnLineToPoint(
+            const SimTK::Vec3& pt,
+            const SimTK::Vec3& linePt,
+            const SimTK::UnitVec3& line,
+            SimTK::Vec3& closestPt,
+            double& t);
+    static void GetClosestPointOnLineToPoint(
+            const SimTK::Vec3& pt,
+            const SimTK::Vec3& linePt,
+            const SimTK::Vec3& line,
+            SimTK::Vec3& closestPt,
+            double& t);
+
     inline static double CalcDistanceSquaredBetweenPoints(
         SimTK::Vec3& point1, SimTK::Vec3& point2) {
         return (point1 - point2).normSqr();
     }
     inline static double CalcDistanceSquaredPointToLine(
-            SimTK::Vec3& point, SimTK::Vec3& linePt, SimTK::Vec3& line){
+            const SimTK::Vec3& point, const SimTK::Vec3& linePt, const SimTK::Vec3& line){
         SimTK::Vec3 pToLinePt = (linePt - point);
         SimTK::Vec3 n = line.normalize();
         return (pToLinePt - (~pToLinePt * n) * n).normSqr();

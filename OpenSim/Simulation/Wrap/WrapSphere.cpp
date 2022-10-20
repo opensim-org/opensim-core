@@ -165,7 +165,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
                                  const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
    double l1, l2, disc, a, b, c, a1, a2, j1, j2, j3, j4, r1r2,
-            axis[4], angle, *r11, *r22;
+            angle, *r11, *r22;
     Vec3 ri, p2m, p1m, mp, r1n, r2n,
             p1p2, np2, hp2, r1m, r2m, y, z, n, r1a, r2a,
             r1b, r2b, r1am, r2am, r1bm, r2bm;
@@ -196,42 +196,35 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
     aWrapResult.wrap_pts.setSize(0);
 
     for (i = 0; i < 3; i++) {
-        p1m[i] = aPoint1[i] - origin[i];
-        p2m[i] = aPoint2[i] - origin[1];
+        p1m[i] = aPoint1[i];// origin is 0 by construction  -origin[i];
+        p2m[i] = aPoint2[i];
         ri[i] = aPoint1[i] - aPoint2[i];
-        mp[i] = origin[i] - aPoint2[i];
+        mp[i] = - aPoint2[i];
         p1p2[i] = aPoint1[i] - aPoint2[i];
     }
-
+    const double radius = get_radius();
    // check that neither point is inside the radius of the sphere
-    if (p1m.norm() < get_radius() || p2m.norm() < get_radius())
+    if (p1m.norm() < radius || p2m.norm() < radius)
       return insideRadius;
 
    a = (~ri*ri);
    b = -2.0 * (~mp*ri);
-   c = (~mp*mp) - get_radius() * get_radius();
+   c = (~mp*mp) - radius * radius;
    disc = b * b - 4.0 * a * c;
 
    // check if there is an intersection of p1p2 and the sphere
    if (disc < 0.0) 
    {
       aFlag = false;
-        aWrapResult.wrap_path_length = 0.0;
-      return noWrap;
-   }
-
-   l1 = (-b + sqrt(disc)) / (2.0 * a);
-   l2 = (-b - sqrt(disc)) / (2.0 * a);
-
-   // check if the intersection is between p1 and p2
-   if ( ! (0.0 < l1 && l1 < 1.0) || ! (0.0 < l2 && l2 < 1.0))   
-   {
-      aFlag = false;
       aWrapResult.wrap_path_length = 0.0;
       return noWrap;
    }
+   auto sqrtDisc = sqrt(disc);
+   l1 = (-b + sqrtDisc) / (2.0 * a);
+   l2 = (-b - sqrtDisc) / (2.0 * a);
 
-   if (l1 < l2) 
+   // check if the intersection is between p1 and p2
+   if ( ! (0.0 < l1 && l1 < 1.0) || ! (0.0 < l2 && l2 < 1.0))   
    {
       aFlag = false;
       aWrapResult.wrap_path_length = 0.0;
@@ -242,6 +235,14 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
     WrapMath::NormalizeOrZero(p2m, np2);
 
     hp2 = p1p2 % np2;
+
+    auto p1mNorm = p1m.norm();
+    a1 = asin(radius / p1mNorm);
+    auto cosA1 = cos(a1);
+    
+    a2 = asin(radius / p2m.norm());
+    auto p2mNorm = p2m.norm();
+    double cosA2 = cos(a2);
 
    // if the muscle line passes too close to the center of the sphere
    // then give up
@@ -255,7 +256,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
    // calc tangent point candidates r1a, r1b
     WrapMath::NormalizeOrZero(hp2, n);
     for (i = 0; i < 3; i++)
-        y[i] = origin[i] - aPoint1[i];
+        y[i] = - aPoint1[i];
     WrapMath::NormalizeOrZero(y, y);
     z = n % y;
    
@@ -266,23 +267,21 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
       ra[i][2] = z[i];
    }
 
-    a1 = asin(get_radius() / p1m.norm());
-
     rrx.setRotationFromAngleAboutX(a1);
     aa = ra * ~rrx;
 
    for (i = 0; i < 3; i++)
-      r1a[i] = aPoint1[i] + aa[i][1] * p1m.norm() * cos(a1);
+      r1a[i] = aPoint1[i] + aa[i][1] * p1mNorm * cosA1;
 
    rrx.setRotationFromAngleAboutX(-a1);
    aa = ra * ~rrx;
 
    for (i = 0; i < 3; i++)
-      r1b[i] = aPoint1[i] + aa[i][1] * p1m.norm() * cos(a1);
+      r1b[i] = aPoint1[i] + aa[i][1] * p1mNorm * cosA1;
 
    // calc tangent point candidates r2a, r2b
     for (i = 0; i < 3; i++)
-        y[i] = origin[i] - aPoint2[i];
+        y[i] =  - aPoint2[i];
     WrapMath::NormalizeOrZero(y, y);
     z = n % y;
 
@@ -293,25 +292,23 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
       ra[i][2] = z[i];
    }
 
-   a2 = asin(get_radius() / p2m.norm());
-
    rrx.setRotationFromAngleAboutX(a2);
    aa = ra * ~rrx;
 
    for (i = 0; i < 3; i++)
-      r2a[i] = aPoint2[i] + aa[i][1] * p2m.norm() * cos(a2);
+      r2a[i] = aPoint2[i] + aa[i][1] * p2mNorm * cosA2;
 
    rrx.setRotationFromAngleAboutX(-a2);
    aa = ra * ~rrx;
 
    for (i = 0; i < 3; i++)
-      r2b[i] = aPoint2[i] + aa[i][1] * p2m.norm() * cos(a2);
+      r2b[i] = aPoint2[i] + aa[i][1] * p2mNorm * cosA2;
 
    // determine wrapping tangent points r1 & r2
-    r1am = r1a - origin;
-    r1bm = r1b - origin;
-    r2am = r2a - origin;
-    r2bm = r2b - origin;
+    r1am = r1a;
+    r1bm = r1b;
+    r2am = r2a;
+    r2bm = r2b;
 
     WrapMath::NormalizeOrZero(r1am, r1am);
     WrapMath::NormalizeOrZero(r1bm, r1bm);
@@ -367,7 +364,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
    {
       if (DSIGN(aPoint1[_wrapAxis]) == _wrapSign || DSIGN(aPoint2[_wrapAxis]) == _wrapSign)
       {
-         double tt, r_squared = get_radius() * get_radius();
+         double tt, r_squared = radius * radius;
             Vec3 mm;
          // If either muscle point is on the constrained side, then check for intersection
          // of the muscle line and the cylinder. If there is an intersection, then
@@ -404,7 +401,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
 
          // determine best constrained r1 & r2 tangent points:
          for (i = 0; i < 3; i++)
-            sum_musc[i] = (origin[i] - aPoint1[i]) + (origin[i] - aPoint2[i]);
+            sum_musc[i] = (- aPoint1[i]) + (- aPoint2[i]);
 
          WrapMath::NormalizeOrZero(sum_musc, sum_musc);
 
@@ -451,7 +448,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
          // determine if the resulting tangent points create a far side wrap
          for (i = 0; i < 3; i++) {
             sum_musc[i] = (aWrapResult.r1[i] - aPoint1[i]) + (aWrapResult.r2[i] - aPoint2[i]);
-            sum_r[i] = (aWrapResult.r1[i] - origin[i]) + (aWrapResult.r2[i] - origin[i]);
+            sum_r[i] = (aWrapResult.r1[i]) + (aWrapResult.r2[i]);
          }
 
          if ((~sum_r*sum_musc) < 0.0)
@@ -461,8 +458,8 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
 
  calc_path:
     for (i = 0; i < 3; i++) {
-        r1m[i] = aWrapResult.r1[i] - origin[i];
-        r2m[i] = aWrapResult.r2[i] - origin[i];
+        r1m[i] = aWrapResult.r1[i];
+        r2m[i] = aWrapResult.r2[i];
     }
 
     WrapMath::NormalizeOrZero(r1m, r1n);
@@ -473,15 +470,12 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
    if (far_side_wrap)
         angle = -(2 * SimTK_PI - angle);
    
-   r1r2 = get_radius() * angle;
+   r1r2 = radius * angle;
    aWrapResult.wrap_path_length = r1r2;
 
     Vec3 axis3 = r1n % r2n;
-    WrapMath::NormalizeOrZero(axis3, axis3);
 
-   for(int ii=0; ii<3; ii++) axis[ii]=axis3[ii];
-   axis[3] = 1.0;
-
+    SimTK::UnitVec3 axis(axis3);
     aWrapResult.wrap_pts.setSize(0);
 
     // Each muscle segment on the surface of the sphere should be
@@ -490,6 +484,7 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
     if (numWrapSegments < 1)
         numWrapSegments = 1;
 
+    aWrapResult.wrap_pts.ensureCapacity(numWrapSegments);
     //SimmPoint sp1(aWrapResult.r1);
     aWrapResult.wrap_pts.append(aWrapResult.r1);
 
@@ -499,9 +494,8 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
 
     SimTK::Rotation R;
     for (i = 0; i < numWrapSegments - 2; i++) {
-        double wangle = angle * (i+1) / (numWrapSegments - 1) * SimTK_DEGREE_TO_RADIAN;
-
-        R.setRotationFromAngleAboutNonUnitVector(wangle, Vec3::getAs(axis));
+        double wangle = angle * (i+1) / (numWrapSegments - 1); // angle is in radians
+        R.setRotationFromAngleAboutUnitVector(-wangle, axis);
         rotvec = ~R * vec;
 
         SimTK::Vec3 wp;
