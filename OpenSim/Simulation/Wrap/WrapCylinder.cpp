@@ -683,13 +683,22 @@ restart_spiral_wrap:
 
         out.wrap_pts.setSize(0);
         out.wrap_pts.ensureCapacity(numWrapSegments);
+        auto startAngle = acos(r1AxisToSurfaceDir[0]);
+        auto endAngle = acos(r2AxisToSurfaceDir[0]);
+        auto angleSign = DSIGN(endAngle - startAngle);
         for (int i = 0; i < numWrapSegments; i++) {
             // TODO: re-use the ion cannon (above) to annihilate this and
             // TODO: replace it with `i/(numWrapSegments-1)`
             double t = static_cast<double>(i)/static_cast<double>(numWrapSegments);
 
-            Vec3 wrap_pt = CalcWrapPoint(t);
-
+            //Vec3 wrap_pt = CalcWrapPoint(t);
+            /* TODO: Ayman 10/22
+            * We should replace the CalcWrapPoint method with a simplified version considering
+            * that rotation axis is always either 0,0,1 or 0,0,-1 by construction
+            * the line below does the trick but fails in some quadrants */
+            Vec3 wrap_pt(radius * cos(startAngle + t * (endAngle - startAngle)),
+                angleSign* radius * sin(startAngle + t * (endAngle - startAngle)),
+                          r1AxialPos[2] + t * r1AxisToR2Axis[2]);
             // adjust r1/r2 tangent points if necessary to achieve tangency with
             // the spiral path:
             if (i == 1
