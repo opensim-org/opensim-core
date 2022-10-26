@@ -112,6 +112,7 @@
 #include "SimbodyEngine/TransformAxis.h"
 #include "SimbodyEngine/Coordinate.h"
 #include "SimbodyEngine/SpatialTransform.h"
+#include "SimbodyEngine/ConstantCurvatureJoint.h"
 
 #include "AssemblySolver.h"
 #include "CoordinateReference.h"

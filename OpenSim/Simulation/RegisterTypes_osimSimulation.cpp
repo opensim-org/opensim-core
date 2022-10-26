@@ -23,6 +23,7 @@
 
 
 #include <OpenSim/Common/Object.h>
+#include "OpenSim/Simulation/SimbodyEngine/ConstantCurvatureJoint.h"
 #include "RegisterTypes_osimSimulation.h"
 
 #include "Model/Model.h"
@@ -225,6 +226,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
     Object::registerType( PinJoint() );
     Object::registerType( SliderJoint() );
     Object::registerType( PlanarJoint() );
+    Object::registerType( ConstantCurvatureJoint() );
     Object::registerType( TransformAxis() );
     Object::registerType( Coordinate() );
     Object::registerType( SpatialTransform() );

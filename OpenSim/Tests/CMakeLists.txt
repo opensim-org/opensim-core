@@ -16,5 +16,6 @@ if(BUILD_TESTING)
     add_subdirectory(AnalysisPluginExample)
     add_subdirectory(BodyDragExample)
     add_subdirectory(BuildDynamicWalker)
+    add_subdirectory(ConstantCurvatureExample)
 endif()
 
