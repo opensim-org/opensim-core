@@ -165,10 +165,10 @@ setNull() {
 void
 ExponentialContact::
 constructProperties() {
-    SimTK::Transform contactXForm;
+    SimTK::Transform X_GP;
     SimTK::Vec3 origin(0.0);
     Parameters params;
-    constructProperty_contact_plane_transform(contactXForm);
+    constructProperty_contact_plane_transform(X_GP);
     constructProperty_body_name("");
     constructProperty_body_station(origin);
     constructProperty_contact_parameters(params);
@@ -214,6 +214,29 @@ extendAddToSystem(SimTK::MultibodySystem& system) const {
         const_cast<ExponentialContact *>(this);
     mutableThis->_spr = spr;
     mutableThis->_index = spr->getForceIndex();
+
+    // Should I connect states to the Component interface here by
+    // instantiating concrete OpenSim::StateVariable objects for which
+    // I have implemented the required virtual methods?
+    // 
+    // And then also do something similar for the data cache entries?
+    // 
+    // On the Simbody side, there are 4 states:
+    // 1. mus (Real, discrete state)
+    // 2. muk (Real, discrete state)
+    // 3. po (Vec3, auto update discrete state)
+    // 4. K (Real, auto update discrete state)
+    // 
+    // Also on the Simbody side, are 24 data cache entries:
+    // 1. p_G (Vec3, Stage::Position)
+    // 2. p_P (Vec3, Stage::Position)
+    // 3. pz (Real, Stage::Position)
+    // 4. pxy (Vec3, Stage::Position)
+    // 5. v_G (Vec3, Stage::Velocity)
+    // ...
+    // 9. fzElas (Real, Stage::Dynamics)
+    // ...
+    // 24. f_G (Vec3, State::Dynamics)
 }
 
 //-----------------------------------------------------------------------------

@@ -284,13 +284,18 @@ public:
     ExponentialContact();
 
     /** Construct an ExponentialContact instance.
-    @param XContactPlane Transform specifying the location and orientation of
-    the contact plane in Ground.
+    @param X_GP Transform specifying the location and orientation of the
+    contact plane frame (P) with respect to the Ground frame (G). The positive
+    z-axis of P defines the normal direction; the x-axis and y-axis of P
+    together define the tangent (or friction) plane. Note that X_GP is the
+    operator that transforms a point of P (point_P) to that same point in
+    space but measured from the Ground origin (G₀) and expressed in G
+    (i.e., point_G = X_GP * point_P).
     @param bodyName Name of the body to which the force is applied.
     @param station Point on the body at which the force is applied.
     @param params Optional parameters object used to customize the
     topology-stage characteristics of the contact model. */
-    explicit ExponentialContact(const SimTK::Transform& contactPlaneXform,
+    explicit ExponentialContact(const SimTK::Transform& X_GP,
         const std::string& bodyName, const SimTK::Vec3& station,
         SimTK::ExponentialSpringParameters params =
         SimTK::ExponentialSpringParameters());
@@ -326,7 +331,7 @@ public:
     //-------------------------------------------------------------------------
     /** Set the transform that specifies the location and orientation of the
     contact plane in the Ground frame. */
-    void setContactPlaneTransform(const SimTK::Transform& contactPlaneXform);
+    void setContactPlaneTransform(const SimTK::Transform& X_GP);
     /** Get the transform that specifies the location and orientation of the
     contact plane in the Ground frame. */
     const SimTK::Transform& getContactPlaneTransform() const;
@@ -542,7 +547,7 @@ protected:
     /** Connect to the OpenSim Model. */
     void extendConnectToModel(Model& model) override;
 
-    /** Create a SimTK::ExponentialSpringForce objects that implements
+    /** Create a SimTK::ExponentialSpringForce object that implements
     this Force. */
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
@@ -562,7 +567,7 @@ private:
 //=============================================================================
 // ExponentialContact::Parameters
 //=============================================================================
-/** This subclass helps manage most of the topology-stage parameters of an
+/** This subclass helps manage the topology-stage parameters of an
 OpenSim::ExponentialContact object. It does not provide the interface for
 getting and setting contact parameters (directly anyway) but rather provides
 the infrastructure for making the underlying SimTK::ExponentialSpringForce and
@@ -583,8 +588,6 @@ properties are update to match parameters.
 
 To get or set values of the parameters managed by this class, you should use
 ExponentialContact::getParameters() and ExponentialContact::setParameters().
-Note that the values of the parameters managed by this class should always be
-the same as the values of their corresponding properties.
 
 @author F. C. Anderson **/
 class ExponentialContact::Parameters : public Object {
