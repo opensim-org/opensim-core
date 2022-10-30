@@ -154,7 +154,7 @@ void AssemblySolver::updateCoordinateReference(const std::string &coordName, dou
     for(p = _coordinateReferencesp.begin(); 
         p != _coordinateReferencesp.end(); p++) {
         if(p->getName() == coordName){
-            p->setValueFunction(*new Constant(value));
+            p->setValueFunction(Constant(value));
             p->setWeight(weight);
             return;
         }

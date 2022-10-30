@@ -76,7 +76,7 @@ public:
     * @param ReferenceFunction that specifies the value of the coordinate
     *        to be matched at a given time
     */
-    CoordinateReference(const std::string name, 
+    CoordinateReference(const std::string name,
                         const Function &ReferenceFunction);
 
     CoordinateReference(const CoordinateReference& source);
@@ -112,10 +112,7 @@ public:
     void setWeight(double weight);
 
     /** %Set the coordinate value as a function of time. */
-    void setValueFunction(const OpenSim::Function& function)
-    {
-        _coordinateValueFunction = function.clone();
-    }
+    void setValueFunction(const OpenSim::Function& function);
 private:
     void copyData(const CoordinateReference& source);
 

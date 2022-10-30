@@ -78,7 +78,7 @@ void test(const std::string filename) {
     using namespace std;
 
     // The walking C3D files included in this test should not take more
-    // than 40ms (BTK) or 200ms (ezc3d) on most hardware.
+    // than 200ms (ezc3d) on most hardware.
     // We make the max time 200ms to account for potentially slower CI machines.
     const long long MaximumLoadTimeInNs = SimTK::secToNs(0.200);
     
@@ -171,13 +171,7 @@ void test(const std::string filename) {
     loadTime = watch.getElapsedTimeInNs();
     cout << "\tC3DFileAdapter '" << filename << "' read with forces at COP in "
         << watch.formatNs(loadTime) << endl;
-    // on ci-biulds will define SKIP_TIMING as it is unpredictably slow on some
-    // machines
-    #if defined(NDEBUG) && !defined(SKIP_TIMING) && defined(WITH_BTK)
-    ASSERT(loadTime < MaximumLoadTimeInNs, __FILE__, __LINE__,
-        "Unable to load '" + filename + "' within " +
-        to_string(MaximumLoadTimeInNs) + "ns.");
-    #endif
+
     std::shared_ptr<TimeSeriesTableVec3> force_table_cop =
             c3dFileAdapter.getForcesTable(tables2);
     downsample_table(*force_table_cop, 100);

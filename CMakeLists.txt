@@ -29,7 +29,7 @@ include(FeatureSummary)
 # ----------------
 set(OPENSIM_MAJOR_VERSION 4)
 set(OPENSIM_MINOR_VERSION 4)
-set(OPENSIM_PATCH_VERSION 0)
+set(OPENSIM_PATCH_VERSION 1)
 
 # Don't include the patch version if it is 0.
 set(PATCH_VERSION_STRING)
@@ -135,7 +135,7 @@ from the internet, we turn this option OFF." ON)
 set(SIMBODY_HOME $ENV{SIMBODY_HOME} CACHE
     PATH "The location of the Simbody installation to use; you can change this. Set as empty to let CMake search for Simbody automatically.")
 
-option(OPENSIM_COPY_DEPENDENCIES "Copy Simbody, ezc3d and BTK into the
+option(OPENSIM_COPY_DEPENDENCIES "Copy Simbody and ezc3d into the
 OpenSim installation. This should be set to ON when making a relocatable
 distribution, and should be set to OFF when packaging for Homebrew, Debian,
 etc. On Linux and macOS: we use relative RPATHs when ON, and absolute RPATHs
@@ -144,7 +144,7 @@ BUILD_PYTHON_WRAPPING is ON, so if this OFF, a warning is thrown." ON)
 mark_as_advanced(OPENSIM_COPY_DEPENDENCIES)
 
 option(OPENSIM_PYTHON_STANDALONE "Make the Python package standalone, meaning
-the OpenSim (and Simbody, ezc3d and BTK) shared libraries it depends on are copied
+the OpenSim (and Simbody and ezc3d) shared libraries it depends on are copied
 into the package. If you are building OpenSim on the same machine on which you
 plan to use it, you can leave this OFF. If you are distributing OpenSim to
 other computers, you should turn this ON. If macOS, this option affects how
@@ -160,6 +160,7 @@ mark_as_advanced(OPENSIM_PYTHON_STANDALONE) # Mainly for packagers; not users.
 
 option(OPENSIM_PYTHON_CONDA "Build specifically for Conda packaging
 which implies NO C++ tests and no runtime as managed by Conda." OFF)
+mark_as_advanced(OPENSIM_PYTHON_CONDA)
 
 option(BUILD_API_ONLY "Build/install only headers, libraries,
 wrapping, tests; not applications (opensim, ik, rra, etc.)." OFF)
@@ -549,6 +550,7 @@ endif()
 
 if(${BUILD_PYTHON_WRAPPING})
     set(required_python_version 3)
+    set(Python3_ROOT_DIR ""  CACHE PATH "Top level directory containing Python3. For conda environments, this can also be set to the top level directory for a specific environment.")
     find_package(Python3 3.6 REQUIRED COMPONENTS Interpreter Development NumPy)
     message("Python3_FOUND:${Python3_FOUND}")
     message("Python3_VERSION:${Python3_VERSION}")
@@ -638,9 +640,9 @@ if(UNIX) # Linux and macOS
         # Add the automatically determined parts of the RPATH which point
         # to directories outside the build tree to the install RPATH.
         # If we are copying Simbody into OpenSim's installation, then
-        # there's no need to link to the libraries in Simbody's, ezc3d's or BTK's
+        # there's no need to link to the libraries in Simbody's or ezc3d's
         # original installations. Furthermore, we may be distributing OpenSim
-        # to other computers that will not have our original Simbody, ezc3d or BTK
+        # to other computers that will not have our original Simbody or ezc3d
         # installations, and so the RPATH would point to a nonexistant
         # directory on others' computers.
         set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
@@ -694,44 +696,24 @@ endif()
 
 
 set(OPENSIM_C3D_PARSER None CACHE STRING
-    "Compile OpenSim with a C3D parser ? ezc3d or BTK provide C3D reading.")
-set_property(CACHE OPENSIM_C3D_PARSER PROPERTY STRINGS "ezc3d" "BTK" "None")
+    "Compile OpenSim with a C3D parser ? ezc3d provide C3D reading.")
+set_property(CACHE OPENSIM_C3D_PARSER PROPERTY STRINGS "ezc3d" "None")
 if(${OPENSIM_C3D_PARSER} STREQUAL "ezc3d")
     set(WITH_EZC3D true)
-    set(WITH_BTK false)
-    if(WIN32)
-        set(ezc3d_hint "${OPENSIM_DEPENDENCIES_DIR}/ezc3d/cmake")
-    else()
-        set(ezc3d_hint "${OPENSIM_DEPENDENCIES_DIR}/ezc3d/lib/cmake/ezc3d")
-    endif()
+    set(ezc3d_hint "${OPENSIM_DEPENDENCIES_DIR}/ezc3d/lib/cmake/ezc3d")
     find_package(ezc3d REQUIRED HINTS "${ezc3d_hint}")
     add_definitions(-DWITH_EZC3D)
+    set(ezc3d_ROOT_DIR "${ezc3d_DIR}/../../..")
+    set(ezc3d_LIBRARY_DIR "${ezc3d_ROOT_DIR}/lib")
+    set(ezc3d_INCLUDE_DIR "${ezc3d_ROOT_DIR}/include")
     OpenSimCopyDependencyDLLsForWin(DEP_NAME ezc3d
-            DEP_BIN_DIR "${ezc3d_LIBRARY_DIR}/../bin"
+            DEP_BIN_DIR "${ezc3d_DIR}/../../../bin"
             )
+    include_directories("${ezc3d_INCLUDE_DIR}")
+    set(ezc3d_LIBRARY "ezc3d")
     if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
-        OpenSimInstallDependencyLibraries(ezc3d "${ezc3d_LIBRARY_DIR}/../"
-            "${ezc3d_LIBRARY_DIR}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
-    endif()
-
-elseif(${OPENSIM_C3D_PARSER} STREQUAL "BTK")
-    set(WITH_EZC3D false)
-    unset(ezc3d_LIBRARY_DIR CACHE)
-    unset(ezc3d_LIBRARY)
-    unset(ezc3d_INCLUDE_DIR CACHE)
-    set(WITH_BTK true)
-
-    # If compiling with BTK, find and use it.
-    find_package(BTK
-                 REQUIRED
-                 HINTS "${OPENSIM_DEPENDENCIES_DIR}/BTK/share/btk-0.4dev")
-    include(${BTK_USE_FILE})
-    add_definitions(-DWITH_BTK)
-    OpenSimCopyDependencyDLLsForWin(DEP_NAME BTK
-            DEP_BIN_DIR ${BTK_INSTALL_PREFIX}/bin)
-    if(BUILD_PYTHON_WRAPPING AND OPENSIM_PYTHON_STANDALONE)
-        OpenSimInstallDependencyLibraries(BTK "${BTK_INSTALL_PREFIX}"
-            "${BTK_LIBRARY_DIRS}" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
+        OpenSimInstallDependencyLibraries(ezc3d "${ezc3d_DIR}/../../../bin"
+            "${ezc3d_DIR}/../../../lib" "${OPENSIM_INSTALL_PYTHONDIR}/opensim")
     endif()
 
 else()
@@ -739,7 +721,6 @@ else()
     unset(ezc3d_LIBRARY_DIR CACHE)
     unset(ezc3d_LIBRARY)
     unset(ezc3d_INCLUDE_DIR CACHE)
-    set(WITH_BTK false)
 endif()
 
 find_package(spdlog REQUIRED
@@ -849,6 +830,32 @@ if(OPENSIM_WITH_CASADI)
     endif()
 endif()
 
+# IPOPT
+# -----
+
+# Avoid using pkg-config on Windows as it's not easy to get
+# on Windows. On UNIX, the pkg-config file for Ipopt provides
+# a flag that we must use.
+if(UNIX)
+    find_package(PkgConfig REQUIRED)
+endif()
+
+if (OPENSIM_WITH_CASADI OR OPENSIM_WITH_TROPTER)
+    if(UNIX)
+        pkg_check_modules(IPOPT REQUIRED ipopt IMPORTED_TARGET)
+    else()
+        find_package(Ipopt REQUIRED CONFIG)
+        set_package_properties(IPOPT PROPERTIES
+                URL https://projects.coin-or.org/Ipopt
+                TYPE REQUIRED
+                PURPOSE "Nonlinear optimization")
+        # Flags to use when building a shared library.
+        # TODO move these flags to a specific target.
+        # TODO set(CMAKE_SHARED_LINKER_FLAGS
+        # TODO        "${CMAKE_SHARED_LINKER_FLAGS} ${IPOPT_LINK_FLAGS}")
+        OpenSimCopyDependencyDLLsForWin(DEP_NAME IPOPT DEP_BIN_DIR "${Ipopt_ROOT_DIR}/bin")
+    endif()
+endif()
 
 # Installing dependencies into OpenSim's installation.
 # ----------------------------------------------------
@@ -925,15 +932,6 @@ if(${OPENSIM_COPY_DEPENDENCIES})
         # LIB: .so files on Linux, .dylib on macOS
         file(GLOB ezc3d_desired_lib_files "${ezc3d_LIBRARY_DIR}/*ezc3d*")
         install(FILES ${ezc3d_desired_lib_files}
-                DESTINATION "${CMAKE_INSTALL_LIBDIR}")
-    endif()
-
-    # BTK
-    # ---
-    if(NOT WIN32)
-        # LIB: .so files on Linux, .dylib on macOS
-        file(GLOB btk_desired_lib_files "${BTK_LIBRARY_DIRS}/*BTK*")
-        install(FILES ${btk_desired_lib_files}
                 DESTINATION "${CMAKE_INSTALL_LIBDIR}")
     endif()
 
