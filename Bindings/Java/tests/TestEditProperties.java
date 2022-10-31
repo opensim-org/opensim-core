@@ -76,6 +76,7 @@ class TestEditProperties {
         propertyStringList.setValue(0, "Output0");
         System.out.println(propertyStringList.toString());
         System.out.println("Test finished!");
+        assert propertyStringList.getValue(0).equals("Output0");
         System.exit(0);
     }
     catch(IOException ex){
