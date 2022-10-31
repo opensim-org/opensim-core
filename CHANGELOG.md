@@ -13,7 +13,9 @@ v4.4.1
 - Modifed the swig interface files to make OpenSim::PathPointSet adopt new PathPoints inserted into it. (Issue #3276)
 - Remove references to obsoleted dependency BTK, use ezc3d exclusively.
 - Fixed an issue with IPOPT libraries when building OpenSim with `OPENSIM_WITH_CASADI = ON` but `OPENSIM_WITH_TROPTER = OFF` (Issue #3267).
+- Removed all references to deprecated environment variable `OPENSIM_HOME`.
 - Fix issue where templatized Property classes are not available to Objects defined in plugins.
+
 
 v4.4
 ====
