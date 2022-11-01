@@ -281,7 +281,7 @@ printConditions() {
         appliedForce = "None";
 
     cout << endl << endl;
-    cout << "          model:  " << modelDes << " (10 kg, 6 dof, 10x10x10 cm^3)" << endl;
+    cout << "          model:  " << modelDes << " (10 kg, 6 dof, 20x20x20 cm^3)" << endl;
     cout << "        contact:  " << contactDes << endl;
     cout << "         motion:  " << motion << endl;
     cout << "  applied force:  " << appliedForce << endl;
