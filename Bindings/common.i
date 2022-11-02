@@ -26,6 +26,7 @@
 %include <OpenSim/Common/Property.h>
 %include <OpenSim/Common/PropertyGroup.h>
 %template(ArrayPtrsPropertyGroup) OpenSim::ArrayPtrs<OpenSim::PropertyGroup>;
+%template (PropertyString) OpenSim::Property<std::string>;
 %template (PropertyStringList) OpenSim::Property<std::string>;
 %template (PropertyObjectList) OpenSim::Property<OpenSim::Object>;
 %template (PropertyIntList) OpenSim::Property<int>;
