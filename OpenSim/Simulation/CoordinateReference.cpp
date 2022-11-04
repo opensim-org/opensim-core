@@ -142,4 +142,11 @@ void CoordinateReference::setWeight(double weight)
     _defaultWeight = weight;
 }
 
+
+void CoordinateReference::setValueFunction(const OpenSim::Function& function)
+{
+    delete _coordinateValueFunction;
+    _coordinateValueFunction = function.clone();
+}
+
 } // end of namespace OpenSim

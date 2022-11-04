@@ -39,6 +39,93 @@ using namespace OpenSim;
 using namespace SimTK;
 using SimTK::Vec3;
 
+// this is what is stored in a cache variable at runtime. It's a value-type that's safe to
+// pass between multiple models, which looks up a point in the component path
+class OpenSim::GeometryPath::PathElementLookup {
+public:
+    static PathElementLookup fromPtr(const OpenSim::PathPointSet& pps,
+                                     const OpenSim::PathWrapSet& pws,
+                                     const OpenSim::GeometryPath& geomPath,
+                                     const OpenSim::AbstractPathPoint* ptr)
+    {
+        // linearly search each collection to figure out its type + index
+
+        const OpenSim::Component* owner = &ptr->getOwner();
+
+        if (owner == &geomPath) {
+            for (int i = 0, len = pps.getSize(); i < len; ++i) {
+                if (&pps[i] == ptr) {
+                    return PathElementLookup{PointType::InPathPointSet, i};
+                }
+            }
+        }
+        else {
+            for (int i = 0, len = pws.getSize(); i < len; ++i) {
+                if (&pws[i] == owner) {
+                    PointType t = ptr == &pws[i].getWrapPoint1() ? PointType::PathWrapPt1 : PointType::PathWrapPt2;
+                    return PathElementLookup{t, i};
+                }
+            }
+        }
+
+        OPENSIM_THROW(OpenSim::Exception, "unable to create a PathElementLookup for the given pointer: are you sure it is part of the GeometryPath?");
+    }
+
+private:
+    enum class PointType : char { InPathPointSet, PathWrapPt1, PathWrapPt2 };
+
+    PathElementLookup(PointType pointType, int index) :
+        index_{index},
+        pointType_{pointType}
+    {
+    }
+public:
+    OpenSim::AbstractPathPoint* toPtr(const OpenSim::PathPointSet& pps,
+                                      const OpenSim::PathWrapSet& pws) const
+    {
+        switch (pointType_) {
+        case PointType::InPathPointSet:
+            return &pps.get(index_);
+        case PointType::PathWrapPt1:
+            return const_cast<OpenSim::PathWrapPoint*>(&pws.get(index_).getWrapPoint1());
+        case PointType::PathWrapPt2:
+            return const_cast<OpenSim::PathWrapPoint*>(&pws.get(index_).getWrapPoint2());
+        default:
+            OPENSIM_THROW(OpenSim::Exception, "unhandled PointType passed to `toPtr`: this is a developer error");
+        }
+    }
+
+private:
+    int index_ : 24;
+    PointType pointType_ : 8;
+};
+
+static void PopulatePathPointersCache(
+    const OpenSim::PathPointSet& pps,
+    const OpenSim::PathWrapSet& pws,
+    const std::vector<OpenSim::GeometryPath::PathElementLookup>& lookups,
+    OpenSim::Array<OpenSim::AbstractPathPoint*>& out)
+{
+    out.setSize(static_cast<int>(lookups.size()));
+    for (int i = 0, len = static_cast<int>(lookups.size()); i < len; ++i) {
+        out[i] = lookups[i].toPtr(pps, pws);
+    }
+}
+
+static void PopulatePathElementLookup(
+    const OpenSim::PathPointSet& pps,
+    const OpenSim::PathWrapSet& pws,
+    const OpenSim::Array<OpenSim::AbstractPathPoint*>& ptrs,
+    const OpenSim::GeometryPath& geomPath,
+    std::vector<OpenSim::GeometryPath::PathElementLookup>& out)
+{
+    out.clear();
+    out.reserve(ptrs.getSize());
+    for (int i = 0, len = ptrs.getSize(); i < len; ++i) {
+        out.push_back(OpenSim::GeometryPath::PathElementLookup::fromPtr(pps, pws, geomPath, ptrs[i]));
+    }
+}
+
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
@@ -102,7 +189,7 @@ void GeometryPath::extendConnectToModel(Model& aModel)
     this->_speedCV = addCacheVariable("speed", 0.0, SimTK::Stage::Velocity);
 
     // Cache the set of points currently defining this path.
-    this->_currentPathCV = addCacheVariable("current_path", Array<AbstractPathPoint*>{}, SimTK::Stage::Position);
+    this->_currentPathCV = addCacheVariable("current_path", std::vector<PathElementLookup>{}, SimTK::Stage::Position);
 
     // We consider this cache entry valid any time after it has been created
     // and first marked valid, and we won't ever invalidate it.
@@ -231,7 +318,7 @@ const OpenSim::Array <AbstractPathPoint*> & GeometryPath::
 getCurrentPath(const SimTK::State& s)  const
 {
     computePath(s);   // compute checks if path needs to be recomputed
-    return getCacheVariableValue< Array<AbstractPathPoint*> >(s, "current_path");
+    return _currentPathPtrsCache;
 }
 
 // get the path as PointForceDirections directions 
@@ -814,24 +901,47 @@ extendPostScale(const SimTK::State& s, const ScaleSet& scaleSet)
 void GeometryPath::computePath(const SimTK::State& s) const
 {
     if (isCacheVariableValid(s, _currentPathCV)) {
+        // even though the cache variable is valid, re-populate the pointers cache
+        //
+        // this is because although it may be valid *in the state* the
+        // model-level pointers cache may be dirty with lookups from other
+        // states
+        PopulatePathPointersCache(get_PathPointSet(),
+                                  get_PathWrapSet(),
+                                  getCacheVariableValue(s, _currentPathCV),
+                                  _currentPathPtrsCache);
         return;
     }
 
     // Clear the current path.
-    Array<AbstractPathPoint*>& currentPath = updCacheVariableValue(s, _currentPathCV);
-    currentPath.setSize(0);
+    _currentPathPtrsCache.setSize(0);
 
     // Add the active fixed and moving via points to the path.
     for (int i = 0; i < get_PathPointSet().getSize(); i++) {
         if (get_PathPointSet()[i].isActive(s))
-            currentPath.append(&get_PathPointSet()[i]); // <--- !!!!BAD
+            _currentPathPtrsCache.append(&get_PathPointSet()[i]); // <--- !!!!BAD
     }
   
     // Use the current path so far to check for intersection with wrap objects, 
     // which may add additional points to the path.
-    applyWrapObjects(s, currentPath);
-    calcLengthAfterPathComputation(s, currentPath);
+    applyWrapObjects(s, _currentPathPtrsCache);
+    calcLengthAfterPathComputation(s, _currentPathPtrsCache);
 
+    // the pointers array now contains the "correct" (wrapped) path
+    //
+    // because the path is state-dependent (different states may wrap differently), the
+    // path points (abstract) must be stored in a SimTK cache variable.
+    //
+    // However, we can't store raw pointers in a cache variable because that may cause
+    // aliasing issues in downstream code. E.g. the state may later be used with a
+    // copied/moved-from version of the model, rather than the original one, so the
+    // pointers may be stale.
+    std::vector<PathElementLookup>& lookups = updCacheVariableValue(s, _currentPathCV);
+    PopulatePathElementLookup(get_PathPointSet(),
+                              get_PathWrapSet(),
+                              _currentPathPtrsCache,
+                              *this,
+                              lookups);
     markCacheVariableValid(s, _currentPathCV);
 }
 

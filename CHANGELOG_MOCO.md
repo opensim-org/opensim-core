@@ -3,6 +3,13 @@ Moco Change Log
 
 1.2.0
 -----
+- 2022-06-03: Fixed bug that was breaking marker tracking problems when
+              using MocoTrack::setMarkersReferenceFromTRC().
+
+- 2022-04-15: Added MocoInitialOutputGoal, MocoFinalOutputGoal,
+              MocoOutputPeriodicityGoal, MocoOutputTrackingGoal, and
+              MocoOutputConstraint.
+
 - 2022-03-25: Fixed a bug where calculations from MocoStudy::analyze() were
               incorrect because DeGrooteFregly2016Muscle auxiliary variables
               were not included in the SimTK::State. Added convenience 

@@ -56,19 +56,21 @@ void BufferedOrientationsReference::getValuesAtTime(
     }
 }
 
-void BufferedOrientationsReference::getNextValuesAndTime(
-        double& time, SimTK::Array_<SimTK::Rotation_<double>>& values) {
+double BufferedOrientationsReference::getNextValuesAndTime(
+        SimTK::Array_<SimTK::Rotation_<double>>& values) {
 
+    double returnTime;
     SimTK::RowVector_<SimTK::Rotation> nextRow;
-    _orientationDataQueue.pop_front(time, nextRow);
+    _orientationDataQueue.pop_front(returnTime, nextRow);
     int n = nextRow.size();
     values.resize(n);
 
     for (int i = 0; i < n; ++i) { values[i] = nextRow[i]; }
+    return returnTime;
 }
 
 void BufferedOrientationsReference::putValues(
-        double time, const SimTK::RowVector_<SimTK::Rotation>& dataRow) {
+        double time, const SimTK::RowVector_<SimTK::Rotation_<double>>& dataRow) {
     _orientationDataQueue.push_back(time, dataRow);
 }
 } // end of namespace OpenSim

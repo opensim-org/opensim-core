@@ -69,15 +69,13 @@ function configureOpenSim()
 function [openSimFolder] = uiGetOpenSimFolder()
     % Prompt user for OpenSim folder.
     startPath = '';
-    if strcmp(getenv('OPENSIM_HOME'), '')
-        if ispc
-            startPath = 'C:/';
-        elseif ismac
-            startPath = '/Applications/';
-        end
-    else
-        startPath = getenv('OPENSIM_HOME');
+    
+    if ispc
+        startPath = 'C:/';
+    elseif ismac
+        startPath = '/Applications/';
     end
+
     prompt = 'Select the OpenSim installation folder.';
     if ismac
         % The Mac file dialog does not show the prompt in the file dialog.

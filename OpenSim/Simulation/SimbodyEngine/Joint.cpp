@@ -758,8 +758,10 @@ int Joint::assignSystemIndicesToBodyAndCoordinates(
     Self& mutableSelf = const_cast<Self&>(*this);
 
     int j = startingCoordinateIndex;
+
     for (int iq = 0; iq < numMobilities; ++iq){
         if (j < nc){ // assign
+            //<=== This assumes coordinates as PROPERTY are in same order of mobilities
             mutableSelf.upd_coordinates(j)._mobilizerQIndex =
                 SimTK::MobilizerQIndex(iq);
             mutableSelf.upd_coordinates(j)._bodyIndex =

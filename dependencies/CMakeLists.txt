@@ -170,20 +170,13 @@ SetDefaultCMakeBuildType()
 AddDependency(NAME       ezc3d
               DEFAULT    OFF
               GIT_URL    https://github.com/pyomeca/ezc3d.git
-              GIT_TAG    Release_1.4.6
+              GIT_TAG    Release_1.5.0
               CMAKE_ARGS -DBUILD_EXAMPLE:BOOL=OFF)
-
-AddDependency(NAME       BTK
-              DEFAULT    OFF
-              # GIT_URL  https://github.com/Biomechanical-ToolKit/BTKCore.git
-              GIT_URL    https://github.com/opensim-org/BTKCore.git
-              GIT_TAG    6d787d0be223851a8f454f2ee8c7d9e47b84cbbe
-              CMAKE_ARGS -DBUILD_SHARED_LIBS:BOOL=ON)
 
 AddDependency(NAME       simbody
               DEFAULT    ON
               GIT_URL    https://github.com/simbody/simbody.git
-              GIT_TAG    a8f49c84e98ccf3b7e6f05db55a29520e5f9c176
+              GIT_TAG    e855d954a786128c3271a3406d7bda782e7c4c4f
               CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF
                          -DBUILD_TESTING:BOOL=OFF)
 

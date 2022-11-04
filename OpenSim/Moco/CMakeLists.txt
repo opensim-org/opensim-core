@@ -34,6 +34,8 @@ set(MOCO_SOURCES
         MocoGoal/MocoSumSquaredStateGoal.cpp
         MocoGoal/MocoContactTrackingGoal.cpp
         MocoGoal/MocoContactTrackingGoal.h
+        MocoGoal/MocoContactImpulseTrackingGoal.cpp
+        MocoGoal/MocoContactImpulseTrackingGoal.h
         MocoGoal/MocoControlGoal.h
         MocoGoal/MocoControlGoal.cpp
         MocoGoal/MocoControlTrackingGoal.h
@@ -78,6 +80,8 @@ set(MOCO_SOURCES
         MocoControlBoundConstraint.h
         MocoFrameDistanceConstraint.h
         MocoFrameDistanceConstraint.cpp
+        MocoOutputConstraint.h
+        MocoOutputConstraint.cpp
         Components/DiscreteController.cpp
         Components/DiscreteController.h
         Components/StationPlaneContactForce.h

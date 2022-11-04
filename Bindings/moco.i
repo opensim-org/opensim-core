@@ -25,6 +25,7 @@ namespace OpenSim {
 %include <OpenSim/Moco/MocoGoal/MocoControlGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoControlTrackingGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoContactTrackingGoal.h>
+%include <OpenSim/Moco/MocoGoal/MocoContactImpulseTrackingGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoInitialActivationGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoJointReactionGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoSumSquaredStateGoal.h>
@@ -48,7 +49,7 @@ namespace OpenSim {
 
 %include <OpenSim/Moco/MocoControlBoundConstraint.h>
 %include <OpenSim/Moco/MocoFrameDistanceConstraint.h>
-
+%include <OpenSim/Moco/MocoOutputConstraint.h>
 
 %include <OpenSim/Moco/MocoProblemRep.h>
 
@@ -139,8 +140,8 @@ namespace OpenSim {
 %include <OpenSim/Moco/MocoTrack.h>
 
 %include <OpenSim/Moco/MocoUtilities.h>
-%template(analyzeMocoTrajectory) OpenSim::analyze<double>;
-%template(analyzeMocoTrajectoryVec3) OpenSim::analyze<SimTK::Vec3>;
-%template(analyzeMocoTrajectorySpatialVec) OpenSim::analyze<SimTK::SpatialVec>;
+%template(analyzeMocoTrajectory) OpenSim::analyzeMocoTrajectory<double>;
+%template(analyzeMocoTrajectoryVec3) OpenSim::analyzeMocoTrajectory<SimTK::Vec3>;
+%template(analyzeMocoTrajectorySpatialVec) OpenSim::analyzeMocoTrajectory<SimTK::SpatialVec>;
 
 %include <OpenSim/Moco/ModelOperatorsDGF.h>
