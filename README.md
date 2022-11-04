@@ -22,15 +22,6 @@ This repository contains:
  
 This repository does *not* include source code for the OpenSim GUI. The source code for the Opensim GUI can be found [here](https://github.com/opensim-org/opensim-gui).
 
-
-## Table of contents
-
-- [Documentation](#documentation)
-- [Examples and tutorials](#examples-and-tutorials)
-- [Releases](#releases-)
-- [Build Instructions](#build-instructions-)
-- [License](#license-)
-
 ## Documentation
 
 OpenSim's documentation can be found in our [Documentation](https://simtk-confluence.stanford.edu:8443/display/OpenSim/Documentation) website. 
