@@ -52,6 +52,24 @@ This repository contains:
  
 This repository does *not* include source code for the OpenSim GUI. The source code for the Opensim GUI can be found [here](https://github.com/opensim-org/opensim-gui).
 
+## Download and Setup
+
+Depending on your needs, there are different ways of downloading and setting up OpenSim:
+
+- **OpenSim GUI**
+  - [Download page](https://simtk.org/frs/?group_id=91)
+  - [Scripting in the GUI](https://simtk-confluence.stanford.edu:8443/display/OpenSim/Scripting+in+the+GUI)
+- **Scripting**
+  - [Build Instructions](https://github.com/opensim-org/opensim-core/wiki/Build-Instructions)
+  - [Setup Instructions](https://simtk-confluence.stanford.edu:8443/display/OpenSim/Scripting)
+- **C++ Development**
+  - [Build Instructions](https://github.com/opensim-org/opensim-core/wiki/Build-Instructions)
+  - [Developer's Guide](https://simtk-confluence.stanford.edu:8443/display/OpenSim/Developer%27s+Guide)
+  - [API Reference](https://simtk.org/api_docs/opensim/api_docs)
+- **Looking for help?**
+  - [Ask a question](https://simtk.org/plugins/phpBB/indexPhpbb.php?group_id=91&pluginname=phpBB)
+  - [Submit an Issue](https://github.com/opensim-org/opensim-core/issues)
+
 ## Documentation
 
 OpenSim's documentation can be found in our [Documentation](https://simtk-confluence.stanford.edu:8443/display/OpenSim/Documentation) website. 
