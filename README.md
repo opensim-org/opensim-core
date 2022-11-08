@@ -59,11 +59,10 @@ Depending on your needs, there are different ways of downloading and setting up 
 - **OpenSim GUI**
   - [Download page](https://simtk.org/frs/?group_id=91)
   - [Scripting in the GUI](https://simtk-confluence.stanford.edu:8443/display/OpenSim/Scripting+in+the+GUI)
-- **Scripting**
-  - [Build Instructions](https://github.com/opensim-org/opensim-core/wiki/Build-Instructions)
+- **Matlab and Python Scripting**
   - [Setup Instructions](https://simtk-confluence.stanford.edu:8443/display/OpenSim/Scripting)
 - **C++ Development**
-  - [Build Instructions](https://github.com/opensim-org/opensim-core/wiki/Build-Instructions)
+  - [Build Instructions](https://github.com/opensim-org/opensim-core/wiki/Build-Instructions) for Windows, macOS, and Linux (Ubuntu and Debian).
   - [Developer's Guide](https://simtk-confluence.stanford.edu:8443/display/OpenSim/Developer%27s+Guide)
   - [API Reference](https://simtk.org/api_docs/opensim/api_docs)
 - **Looking for help?**
