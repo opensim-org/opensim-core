@@ -1,8 +1,7 @@
 <!-- OpenSim Logo -->
 <p align=center>
     <a href="https://opensim.stanford.edu/">
-        <img src="https://opensim.stanford.edu/images/ui/logo_opensim.png" alt="OpenSim Logo">
-    </a>
+        <img src="https://drive.google.com/uc?id=1urYfucgR4pCM5OeXySMBVc3i5oGfYRAf" alt="OpenSim Logo">
 </p>
 
 <!-- Badges -->
