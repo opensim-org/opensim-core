@@ -47,7 +47,7 @@ This repository contains:
  - OpenSim's C++ libraries.
  - OpenSim's C++ examples.
  - OpenSim's command-line applications (inverse kinematics, computed muscle control, etc.).
- - OpenSim's Java and Python wrapping.
+ - OpenSim's Java and Python bindings.
  
 This repository does *not* include source code for the OpenSim GUI. The source code for the Opensim GUI can be found [here](https://github.com/opensim-org/opensim-gui).
 
@@ -60,6 +60,10 @@ Depending on your needs, there are different ways of downloading and setting up 
   - [Scripting in the GUI](https://simtk-confluence.stanford.edu:8443/display/OpenSim/Scripting+in+the+GUI)
 - **Matlab and Python Scripting**
   - [Setup Instructions](https://simtk-confluence.stanford.edu:8443/display/OpenSim/Scripting)
+- **Scriptiong in Conda**
+  - [Conda Package](https://anaconda.org/opensim-org/opensim)
+  - [Source Code](https://github.com/opensim-org/conda-opensim)
+  - [More Info](https://simtk-confluence.stanford.edu:8443/display/OpenSim/Conda+Package)
 - **C++ Development**
   - [Build Instructions](https://github.com/opensim-org/opensim-core/wiki/Build-Instructions) for Windows, macOS, and Linux (Ubuntu and Debian).
   - [Developer's Guide](https://simtk-confluence.stanford.edu:8443/display/OpenSim/Developer%27s+Guide)
