@@ -28,7 +28,7 @@
 
 ---
 
-**NOTE: This repository contains the source code of OpenSim 4.x. For OpenSim 3.x or earlier, see [this link](https://simtk-confluence.stanford.edu:8443/display/OpenSim/Building+OpenSim+from+Source).**
+**NOTE: This repository contains the source code of OpenSim 4.x. For OpenSim 3.x or earlier, see [this link](https://simtk-confluence.stanford.edu/display/OpenSim/Building+OpenSim+from+Source).**
 
 OpenSim is software that lets users develop models of musculoskeletal structures and create dynamic simulations of movement, such as this one:
 
@@ -57,16 +57,16 @@ Depending on your needs, there are different ways of downloading and setting up 
 
 - **OpenSim GUI**
   - [Download page](https://simtk.org/frs/?group_id=91)
-  - [Scripting in the GUI](https://simtk-confluence.stanford.edu:8443/display/OpenSim/Scripting+in+the+GUI)
+  - [Scripting in the GUI](https://simtk-confluence.stanford.edu/display/OpenSim/Scripting+in+the+GUI)
 - **Matlab and Python Scripting**
-  - [Setup Instructions](https://simtk-confluence.stanford.edu:8443/display/OpenSim/Scripting)
+  - [Setup Instructions](https://simtk-confluence.stanford.edu/display/OpenSim/Scripting)
 - **Scriptiong in Conda**
   - [Conda Package](https://anaconda.org/opensim-org/opensim)
   - [Source Code](https://github.com/opensim-org/conda-opensim)
-  - [More Info](https://simtk-confluence.stanford.edu:8443/display/OpenSim/Conda+Package)
+  - [More Info](https://simtk-confluence.stanford.edu/display/OpenSim/Conda+Package)
 - **C++ Development**
   - [Build Instructions](https://github.com/opensim-org/opensim-core/wiki/Build-Instructions) for Windows, macOS, and Linux (Ubuntu and Debian).
-  - [Developer's Guide](https://simtk-confluence.stanford.edu:8443/display/OpenSim/Developer%27s+Guide)
+  - [Developer's Guide](https://simtk-confluence.stanford.edu/display/OpenSim/Developer%27s+Guide)
   - [API Reference](https://simtk.org/api_docs/opensim/api_docs)
 - **Looking for help?**
   - [Ask a question](https://simtk.org/plugins/phpBB/indexPhpbb.php?group_id=91&pluginname=phpBB)
@@ -74,12 +74,12 @@ Depending on your needs, there are different ways of downloading and setting up 
 
 ## Documentation
 
-OpenSim's documentation can be found in our [Documentation](https://simtk-confluence.stanford.edu:8443/display/OpenSim/Documentation) website. 
+OpenSim's documentation can be found in our [Documentation](https://simtk-confluence.stanford.edu/display/OpenSim/Documentation) website. 
 OpenSim's C++ API reference can be found [here](https://simtk.org/api_docs/opensim/api_docs/).
 
 A simple example of an elbow simulation in C++, Python and Matlab can be found in the [OpenSim API Example](https://github.com/opensim-org/opensim-core/wiki/OpenSim-API-Example) page of this repository's wiki.
 
-Examples and Tutorials for OpenSim can be found in the [Examples and tutorials](https://simtk-confluence.stanford.edu:8443/display/OpenSim/Examples+and+Tutorials) website. These tutorials move from introductory to more advanced, so you can learn OpenSim in a progressive way. Additional OpenSim-based tutorials, homework problems, and project ideas are available on the [Biomechanics of Movement classroom site](https://simtk-confluence-homeworks.stanford.edu:8443/pages/viewpage.action?pageId=5537857). 
+Examples and Tutorials for OpenSim can be found in the [Examples and tutorials](https://simtk-confluence.stanford.edu/display/OpenSim/Examples+and+Tutorials) website. These tutorials move from introductory to more advanced, so you can learn OpenSim in a progressive way. Additional OpenSim-based tutorials, homework problems, and project ideas are available on the [Biomechanics of Movement classroom site](https://simtk-confluence-homeworks.stanford.edu/pages/viewpage.action?pageId=5537857). 
 
 ## Releases [![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/opensim-org/opensim-core?include_prereleases)](https://github.com/opensim-org/opensim-core/releases)
 
