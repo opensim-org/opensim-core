@@ -114,3 +114,15 @@ Acknowledging the OpenSim project helps us and helps you. It allows us to track 
 > Delp, S. L., Anderson, F. C., Arnold, A. S., Loan, P., Habib, A., John, C. T., Guendelman, E., & Thelen, D. G. (2007). **OpenSim: open-source software to create and analyze dynamic simulations of movement.** _IEEE Transactions on Bio-Medical Engineering, 54(11), 1940–1950_. https://doi.org/10.1109/TBME.2007.901024
 
 If you use plugins, models, or other components contributed by your fellow researchers, you must acknowledge their work as described in the license that accompanies each of these files.
+
+
+## Funding
+
+The OpenSim project has received funding from the following grants and contracts:
+
+ - United States National Institutes of Health (NIH)
+    - Simulation of Biological Structures (Simbios; U54 GM072970)
+    - Simulation in Rehabilitation Research (NCSRR; R24 HD065690, P2C HD065690)
+    - Mobilize Center (U54 EB020405)
+ - United States Defense Advanced Research Projects Agency (DARPA)
+    - Warrior Web (W911QX-12-C-0018)
