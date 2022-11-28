@@ -140,7 +140,7 @@ updateWorkVariables()
     _q = 0;
     if(_model) {
         try {
-            _q = &_model->updCoordinateSet().get(_coordinateName);
+            _q = &_model->getCoordinateSet().get(_coordinateName);
         }
         catch (const Exception&) {
             throw Exception("CMC_Joint.updateWorkVariables: ERROR- joint task '" + getName() 
@@ -191,7 +191,7 @@ operator=(const CMC_Joint &aTask)
  * @param aModel Model.
  */
 void CMC_Joint::
-setModel(Model& aModel)
+setModel(const Model& aModel)
 {
     CMC_Task::setModel(aModel);
     updateWorkVariables();

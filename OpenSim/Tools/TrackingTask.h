@@ -62,7 +62,7 @@ protected:
     Array<double> &_w;
 
     /** Model. */
-    Model *_model;
+    const Model *_model;
 
     /** Number of functions for this target. */
     int _nTrk;
@@ -108,8 +108,8 @@ public:
     // GET AND SET
     //--------------------------------------------------------------------------
     // MODEL
-    virtual void setModel(OpenSim::Model& aModel);
-    Model* getModel() const;
+    virtual void setModel(const OpenSim::Model& aModel);
+    const Model* getModel() const;
 
     // ON,OFF
     void setOn(bool aTrueFalse);

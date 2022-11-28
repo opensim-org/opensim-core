@@ -127,7 +127,7 @@ updateWorkVariables(const SimTK::State& s)
     _v = 0;
     if(_model) {
 
-        BodySet& bs = _model->updBodySet();
+        const BodySet& bs = _model->getBodySet();
     
         _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
 
@@ -199,21 +199,6 @@ operator=(const CMC_Point &aTask)
 // GET AND SET
 //=============================================================================
 //-----------------------------------------------------------------------------
-// MODEL
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Initializes pointers to the Coordinate and Speed in the model given the 
- * coordinate name assigned to this task.
- *
- * @param aModel Model.
- */
-void CMC_Point::
-setModel(Model& aModel)
-{
-    CMC_Task::setModel(aModel);
-}
-//-----------------------------------------------------------------------------
 // Point
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
@@ -265,7 +250,7 @@ computeErrors(const SimTK::State& s, double aT)
     //std::cout<<"_inertialPTrk[2] = "<<_inertialPTrk[2]<<std::endl;
     //std::cout<<"_p = "<<_p<<std::endl;
 
-    BodySet& bs = _model->updBodySet();
+    const BodySet& bs = _model->getBodySet();
 
     _inertialPTrk = 0;
     _inertialVTrk = 0;
@@ -430,7 +415,7 @@ computeAccelerations(const SimTK::State& s )
 
     // ACCELERATION
     _a = 0;
-    BodySet& bs = _model->updBodySet();
+    const BodySet& bs = _model->getBodySet();
     if(_wrtBodyName == "center_of_mass") {
 
         SimTK::Vec3 pVec,vVec,aVec,com;
@@ -455,6 +440,74 @@ computeAccelerations(const SimTK::State& s )
         _a = _wrtBody->findStationAccelerationInGround(s, _point);
         if(_a[0] != _a[0]) throw Exception("CMC_Point.computeAccelerations: ERROR- point task '" + getName() 
                                             + "' references invalid acceleration components",__FILE__,__LINE__);
+    }
+}
+
+//_____________________________________________________________________________
+/**
+ * Compute the Jacobian for the tracked point given the current state 
+ * of the model.
+ */
+void CMC_Point::
+computeJacobian(const SimTK::State& s )
+{
+    if (_wrtBodyName == "center_of_mass") {
+        double M = _model->getTotalMass(s);
+        SimTK::Matrix J(3, s.getNU(), 0.0);
+        for (int i = 0; i < _model->getBodySet().getSize(); i++) {
+            auto m = _model->getBodySet()[i].get_mass();
+            if (m == 0) {
+                cout << "Warning: body " << _model->getBodySet()[i].getName() 
+                     << " has zero mass" << endl;
+                continue;
+            }
+            auto com = _model->getBodySet()[i].get_mass_center();
+            SimTK::Matrix temp;
+            _model->getMatterSubsystem()
+                .calcStationJacobian(s,
+                                    _model->getBodySet()[i]
+                                    .getMobilizedBodyIndex(), com, temp);
+            J += m * temp;
+        }
+        _j = J / M;
+    } else {
+        _model->getMatterSubsystem()
+            .calcStationJacobian(s,
+                                _model->getBodySet().get(_wrtBodyName)
+                                .getMobilizedBodyIndex(), _point, _j);
+    }
+}
+
+//_____________________________________________________________________________
+/**
+ * Compute the Jacobian bias term for the tracked point given the current state 
+ * of the model.
+ */
+void CMC_Point::
+computeBias(const SimTK::State& s )
+{
+    if (_wrtBodyName == "center_of_mass") {
+        double M = _model->getTotalMass(s);
+        SimTK::Vec3 JdotQdot(0);
+        for (int i = 0; i < _model->getBodySet().getSize(); i++) {
+            auto m = _model->getBodySet()[i].get_mass();
+            if (m == 0) {
+                cout << "Warning: body " << _model->getBodySet()[i].getName() <<
+                    " has zero mass" << endl;
+                continue;
+            }
+            auto com = _model->getBodySet()[i].get_mass_center();
+            SimTK::Vec3 temp = _model->getMatterSubsystem().
+                calcBiasForStationJacobian(
+                s, _model->getBodySet()[i].getMobilizedBodyIndex(), com);
+            JdotQdot += m * temp;
+        }
+        _b = SimTK::Vector(-1.0 * JdotQdot / M);
+    } else {
+        SimTK::Vec3 JdotQdot = _model->getMatterSubsystem().
+        calcBiasForStationJacobian(
+        s, _model->getBodySet().get(_wrtBodyName).getMobilizedBodyIndex(), _point);
+        _b = SimTK::Vector(-1.0 * JdotQdot);
     }
 }
 

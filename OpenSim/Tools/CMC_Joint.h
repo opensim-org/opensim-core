@@ -62,7 +62,7 @@ protected:
     double &_limit;
 
     // Work Variables
-    Coordinate *_q;
+    const Coordinate *_q;
 
 //=============================================================================
 // METHODS
@@ -91,7 +91,7 @@ public:
     //--------------------------------------------------------------------------
     // GET AND SET
     //--------------------------------------------------------------------------
-    virtual void setModel(Model& aModel) override;
+    virtual void setModel(const Model& aModel) override;
     void setCoordinateName(const std::string &aName);
     std::string getCoordinateName() const;
     double getLimit() const;
