@@ -118,9 +118,11 @@ protected:
     /** Accelerations. */
     SimTK::Vec3 _a;
     /** Jacobian. */
-    double *_j;
+    SimTK::Matrix _j;
+    /** Jacobian bias. */
+    SimTK::Vector _b;
     /** Effective mass matrix. */
-    double *_m;
+    SimTK::Matrix _m;
 
 //=============================================================================
 // METHODS
@@ -204,6 +206,9 @@ public:
     double getDesiredAcceleration(int aWhich) const;
     // ACCELERATIONS
     double getAcceleration(int aWhich) const;
+    // JACOBIAN
+    SimTK::Matrix getJacobian() const;
+    SimTK::Vector getBias() const;
 
     //--------------------------------------------------------------------------
     // COMPUTATIONS
@@ -212,7 +217,8 @@ public:
     virtual void computeDesiredAccelerations(const SimTK::State& s, double aT) = 0;
     virtual void computeDesiredAccelerations(const SimTK::State& s, double aTI,double aTF) = 0;
     virtual void computeAccelerations(const SimTK::State& s ) = 0;
-    virtual void computeJacobian();
+    virtual void computeJacobian(const SimTK::State& s);
+    virtual void computeBias(const SimTK::State& s);
     virtual void computeEffectiveMassMatrix();
 
 //=============================================================================

@@ -165,7 +165,7 @@ operator=(const TrackingTask &aTask)
  * @param aModel Model.
  */
 void TrackingTask::
-setModel(Model& aModel)
+setModel(const Model& aModel)
 {
     _model = &aModel;
 }
@@ -176,7 +176,7 @@ setModel(Model& aModel)
  *
  * @return Pointer to the model.
  */
-Model* TrackingTask::
+const Model* TrackingTask::
 getModel() const
 {
     return(_model);
