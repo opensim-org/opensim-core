@@ -8,7 +8,7 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 
 v4.4.1
 ======
-
+- Update `report.py` to set specific colors for plotted trajectories
 - Made `Component::getSocketNames` a `const` member method (previously: non-const)
 - Modifed the swig interface files to make OpenSim::PathPointSet adopt new PathPoints inserted into it. (Issue #3276)
 - Remove references to obsoleted dependency BTK, use ezc3d exclusively.
