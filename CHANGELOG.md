@@ -10,7 +10,7 @@ v4.4.1
 ======
 
 - Made `Component::getSocketNames` a `const` member method (previously: non-const)
-- Added `ModOpReplaceMusclesWithPathActuators`
+- Added `ModOpReplaceMusclesWithPathActuators` to the list of available model operators in `ModelOperators.h`
 
 v4.4
 ====
