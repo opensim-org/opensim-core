@@ -21,6 +21,10 @@
 # rely on electromyography data, while the second example penalizes deviation
 # from electromyography data for a subset of muscles.
 #
+# Both examples use the Python utility osim.report to automatically generate a
+# PDF that includes the trajectories of all states and controls in the solution.
+# This utility requires a Python environment with Matplotlib and NumPy installed.
+#
 # See the README.txt next to this file for more information.
 
 import opensim as osim
