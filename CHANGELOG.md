@@ -15,7 +15,7 @@ v4.4.1
 - Fixed an issue with IPOPT libraries when building OpenSim with `OPENSIM_WITH_CASADI = ON` but `OPENSIM_WITH_TROPTER = OFF` (Issue #3267).
 - Removed all references to deprecated environment variable `OPENSIM_HOME`.
 - Fix issue where templatized Property classes are not available to Objects defined in plugins.
-
+- Minimum supported version for Java is now 1.8 in the cmake files (Issue #3215).
 
 v4.4
 ====
