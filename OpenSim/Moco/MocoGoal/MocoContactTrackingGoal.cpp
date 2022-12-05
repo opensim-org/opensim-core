@@ -204,6 +204,7 @@ void MocoContactTrackingGoal::initializeOnModelImpl(const Model& model) const {
                 double factor = SimTK::max(
                     data.getDependentColumn(forceID + suffixes[i]).abs());
                 OPENSIM_THROW_IF_FRMOBJ(factor < SimTK::SignificantReal,
+                        Exception,
                         "The property `normalize_tracking_error` was enabled, "
                         "but the peak magnitude of the ground contact force "
                         "data in the {}-direction is close to zero.",
