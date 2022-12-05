@@ -63,13 +63,6 @@ set_package_properties(Eigen3 PROPERTIES
         TYPE REQUIRED
         PURPOSE "Matrix library")
 
-# Avoid using pkg-config on Windows as it's not easy to get
-# on Windows. On UNIX, the pkg-config file for Ipopt provides
-# a flag that we must use.
-if(UNIX)
-    find_package(PkgConfig REQUIRED)
-endif()
-
 # ColPack can now use CMake to be built.
 find_package(ColPack 1.0.10 REQUIRED HINTS "${OPENSIM_DEPENDENCIES_DIR}/colpack")
 set_package_properties(ColPack PROPERTIES
@@ -83,21 +76,6 @@ set_package_properties(ADOLC PROPERTIES
         TYPE REQUIRED
         PURPOSE "Computing derivatives for optimization")
 tropter_copy_dlls(DEP_NAME ADOLC DEP_INSTALL_DIR "${ADOLC_DIR}/bin")
-
-if(UNIX)
-    pkg_check_modules(IPOPT REQUIRED ipopt IMPORTED_TARGET)
-else()
-    find_package(Ipopt REQUIRED CONFIG)
-    set_package_properties(IPOPT PROPERTIES
-            URL https://projects.coin-or.org/Ipopt
-            TYPE REQUIRED
-            PURPOSE "Nonlinear optimization")
-    # Flags to use when building a shared library.
-    # TODO move these flags to a specific target.
-    # TODO set(CMAKE_SHARED_LINKER_FLAGS
-    # TODO        "${CMAKE_SHARED_LINKER_FLAGS} ${IPOPT_LINK_FLAGS}")
-    tropter_copy_dlls(DEP_NAME IPOPT DEP_INSTALL_DIR "${Ipopt_ROOT_DIR}/bin")
-endif()
 
 # OpenMP allows parallelization (of evaluating dynamics and path constraints
 # across tropter points) and is usually a feature of a compiler. It's fine if

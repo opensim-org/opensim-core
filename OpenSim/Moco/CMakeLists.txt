@@ -34,6 +34,8 @@ set(MOCO_SOURCES
         MocoGoal/MocoSumSquaredStateGoal.cpp
         MocoGoal/MocoContactTrackingGoal.cpp
         MocoGoal/MocoContactTrackingGoal.h
+        MocoGoal/MocoContactImpulseTrackingGoal.cpp
+        MocoGoal/MocoContactImpulseTrackingGoal.h
         MocoGoal/MocoControlGoal.h
         MocoGoal/MocoControlGoal.cpp
         MocoGoal/MocoControlTrackingGoal.h

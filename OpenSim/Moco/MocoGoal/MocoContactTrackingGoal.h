@@ -177,9 +177,9 @@ ExternalLoads in each contact group.
 
 Adding a scale factor to a MocoContactTrackingGoal.
 @code
-auto* markerTrackingGoal = problem.addGoal<MocoContactTrackingGoal>();
+auto* contactTrackingGoal = problem.addGoal<MocoContactTrackingGoal>();
 ...
-markerTrackingGoal->addScaleFactor(
+contactTrackingGoal->addScaleFactor(
         'RightGRF_vertical_scale_factor', 'Right_GRF', 1, {0.5, 2.0});
 @endcode
 

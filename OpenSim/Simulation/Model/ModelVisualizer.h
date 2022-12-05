@@ -106,8 +106,6 @@ instructions on what to display.
 The Simbody visualizer binary needs to be found at runtime to create a
 visualizer. The search proceeds in the following order:
 * Directory of the currently running executable/binary.
-* Directory referred to by the environment variable OPENSIM_HOME/bin
-  if it exists.
 * Directories referred to by the environment variable PATH.
 * Possible locations for simbody installations:
   -- SIMBODY_HOME/bin if the environment variable SIMBODY_HOME exists.
@@ -199,9 +197,7 @@ public:
       - Otherwise, try the search paths added through 
         addDirToGeometrySearchPaths(). The paths are searched in 
         reverse-chronological order -- the latest path added is searched first.
-      - Finally, try installDir/geoFile where installDir is taken from
-        the OPENSIM_HOME environment variable if it exists, otherwise
-        a default installation directory. 
+      - Otherwise a default installation directory. 
     
     No attempt is made to validate the contents of the file or whether it
     has a supported extension; we're just looking for a file of the given
