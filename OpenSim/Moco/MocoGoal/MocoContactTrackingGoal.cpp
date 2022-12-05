@@ -198,11 +198,16 @@ void MocoContactTrackingGoal::initializeOnModelImpl(const Model& model) const {
         }
 
         // Compute normalization factors.
-        std::vector<std::string> suffixes = {"x", "y", "z"};
-        for (int i = 0; i < 3; ++i) {
-            double factor = SimTK::max(
-                data.getDependentColumn(forceID + suffixes[i]).abs());
-            if (factor > SimTK::SignificantReal) {
+        if (get_normalize_tracking_error()) {
+            std::vector<std::string> suffixes = {"x", "y", "z"};
+            for (int i = 0; i < 3; ++i) {
+                double factor = SimTK::max(
+                    data.getDependentColumn(forceID + suffixes[i]).abs());
+                OPENSIM_THROW_IF_FRMOBJ(factor < SimTK::SignificantReal,
+                        "The property `normalize_tracking_error` was enabled, "
+                        "but the peak magnitude of the ground contact force "
+                        "data in the {}-direction is close to zero.",
+                        suffixes[i]);
                 groupInfo.normalizeFactors[i] = factor;
             }
         }
