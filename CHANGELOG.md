@@ -10,6 +10,7 @@ v4.4.1
 ======
 - Update `report.py` to set specific colors for plotted trajectories
 - Made `Component::getSocketNames` a `const` member method (previously: non-const)
+- Added `ModOpReplaceMusclesWithPathActuators` to the list of available model operators in `ModelOperators.h`
 - Modifed the swig interface files to make OpenSim::PathPointSet adopt new PathPoints inserted into it. (Issue #3276)
 - Remove references to obsoleted dependency BTK, use ezc3d exclusively.
 - Fixed an issue with IPOPT libraries when building OpenSim with `OPENSIM_WITH_CASADI = ON` but `OPENSIM_WITH_TROPTER = OFF` (Issue #3267).
