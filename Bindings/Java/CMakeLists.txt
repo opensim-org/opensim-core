@@ -75,7 +75,7 @@ add_subdirectory(OpenSimJNI)
 
 # Compile java sources.
 # ---------------------
-find_package(Java 1.7 REQUIRED)
+find_package(Java 1.8 REQUIRED)
 
 # To avoid compiling stale .java files, delete any existing files and copy
 # over the new files from the module-specific directories (see
@@ -109,7 +109,7 @@ add_custom_command(
             ${SWIG_JAVA_SOURCE_BUILD_OUTPUT_DIR}
     COMMAND ${JAVA_COMPILE}
             org/opensim/modeling/*.java 
-            -source 1.7 -target 1.7
+            -source 1.8 -target 1.8
     COMMAND ${JAVA_ARCHIVE} -cvf ${SWIG_JAVA_JAR_NAME}
             org/opensim/modeling/*.class
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/src
