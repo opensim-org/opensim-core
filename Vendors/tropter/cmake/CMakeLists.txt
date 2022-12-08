@@ -23,6 +23,7 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
             ${gfortran}
             ${quadmath}
             ${gcc_libdir}/libgcc_s.1.dylib
+            ${gcc_libdir}/libgcc_s.1.1.dylib
 
             DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
