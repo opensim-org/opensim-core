@@ -124,7 +124,7 @@ The OpenSim project is currently supported by the following:
     - [Restore Center](https://restore.stanford.edu/) (P2C HD101913)
  - [Wu Tsai Human Performance Alliance](https://humanperformancealliance.org/)
 
-The OpenSim project has also previously received funding from the following grants and contracts:
+Past funding includes the following grants and contracts:
 
  - United States National Institutes of Health (NIH)
     - Simulation of Biological Structures (Simbios; U54 GM072970)
