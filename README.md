@@ -111,14 +111,20 @@ Third-party components have their own licenses. see our [Notice](https://github.
 
 Acknowledging the OpenSim project helps us and helps you. It allows us to track our impact, which is essential for securing funding to improve the software and provide support to our users (you). If you use OpenSim, we would be extremely grateful if you acknowledge us by citing the following paper:
 
-> Delp, S. L., Anderson, F. C., Arnold, A. S., Loan, P., Habib, A., John, C. T., Guendelman, E., & Thelen, D. G. (2007). **OpenSim: open-source software to create and analyze dynamic simulations of movement.** _IEEE Transactions on Bio-Medical Engineering, 54(11), 1940–1950_. https://doi.org/10.1109/TBME.2007.901024
+> Seth A, Hicks JL, Uchida TK, Habib A, Dembia CL, et al. (2018) **OpenSim: Simulating musculoskeletal dynamics and neuromuscular control to study human and animal movement.** _PLOS Computational Biology_ 14(7): e1006223. https://doi.org/10.1371/journal.pcbi.1006223
 
 If you use plugins, models, or other components contributed by your fellow researchers, you must acknowledge their work as described in the license that accompanies each of these files.
 
 
 ## Funding
 
-The OpenSim project has received funding from the following grants and contracts:
+The OpenSim project is currently supported by the following:
+ - United States National Institutes of Health (NIH)
+    - [Mobilize Center](https://mobilize.stanford.edu/) (P41 EB027060)
+    - [Restore Center](https://restore.stanford.edu/) (P2C HD101913)
+ - [Wu Tsai Human Performance Alliance](https://humanperformancealliance.org/)
+
+The OpenSim project has also previously received funding from the following grants and contracts:
 
  - United States National Institutes of Health (NIH)
     - Simulation of Biological Structures (Simbios; U54 GM072970)
