@@ -35,7 +35,7 @@ OpenSim is software that lets users develop models of musculoskeletal structures
 <!-- OpenSim Simulation -->
 <p align="center">
     <video width="320" height="240" controls>
-        <source src="doc/images/opensim_run_cycle.mp4" type="video/mp4">
+        <source src="https://github.com/opensim-org/opensim-core/blob/update_readme_animation/doc/images/opensim_run_cycle.mp4" type="video/mp4">
     </video>
 </p>
 
