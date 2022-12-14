@@ -866,7 +866,7 @@ void ConstantCurvatureJoint::extendScale(
     Super::extendScale(s, scaleSet);
 
     // Get scale factors (if an entry for the parent Frame's base Body exists).
-    const Vec3& scaleFactors = getScaleFactors(scaleSet, getParentFrame());
+    const Vec3& scaleFactors = getScaleFactors(scaleSet, getChildFrame());
     if (scaleFactors == ModelComponent::InvalidScaleFactors) return;
 
     // TODO: Need to scale transforms appropriately, given an arbitrary axis.
