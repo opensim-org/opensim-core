@@ -325,6 +325,8 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
     std::regex keyvalue{R"((.*)=(.*))"};
     std::string header{};
     std::string line{};
+    std::string numberOrDelim = "[0-9."+_delimitersRead+" -]+";
+    std::regex dataLine{ numberOrDelim };
     ValueArrayDictionary keyValuePairs;
     while(std::getline(in_stream, line)) {
         ++line_num;
@@ -336,6 +338,10 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
             line.pop_back();
 
         if(std::regex_match(line, endheader))
+            break;
+        // Exit this loop for parsing header if we hit data line
+        // this may blow up downstream but at least we don't hang
+        if (std::regex_match(line, dataLine))
             break;
 
         // Detect Key value pairs of the form "key = value" and add them to
