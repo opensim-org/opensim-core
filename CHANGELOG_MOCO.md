@@ -1,6 +1,12 @@
 Moco Change Log
 ===============
 
+1.2.1
+-----
+- 2022-07-25: Added property `normalize_tracking_error` to `MocoContactTrackingGoal` 
+              to normalize the 3D contact tracking error based on the contact 
+              tracking data.
+
 1.2.0
 -----
 - 2022-06-03: Fixed bug that was breaking marker tracking problems when

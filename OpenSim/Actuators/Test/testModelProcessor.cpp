@@ -80,7 +80,7 @@ TEST_CASE("ModelProcessor") {
     }
 }
 
-TEST_CASE("ModOpRemoveMuscles") {
+Model createElbowModel() {
     Model model;
     using SimTK::Vec3;
     using SimTK::Inertia;
@@ -100,11 +100,26 @@ TEST_CASE("ModOpRemoveMuscles") {
     model.addForce(biceps);
     model.finalizeConnections();
 
-    ModelProcessor proc(model);
+    return model;
+}
+
+TEST_CASE("ModOpRemoveMuscles") {
+    ModelProcessor proc(createElbowModel());
     proc.append(ModOpRemoveMuscles());
     Model processedModel = proc.process();
     processedModel.finalizeFromProperties();
 
     CHECK(processedModel.countNumComponents<Millard2012EquilibriumMuscle>() ==
             0);
+}
+
+TEST_CASE("ModOpReplaceMusclesWithPathActuators") {
+    ModelProcessor proc(createElbowModel());
+    proc.append(ModOpReplaceMusclesWithPathActuators());
+    Model processedModel = proc.process();
+    processedModel.finalizeFromProperties();
+
+    CHECK(processedModel.countNumComponents<Millard2012EquilibriumMuscle>() ==
+            0);
+    CHECK(processedModel.countNumComponents<PathActuator>() == 1);
 }

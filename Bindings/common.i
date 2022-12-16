@@ -26,7 +26,10 @@
 %include <OpenSim/Common/Property.h>
 %include <OpenSim/Common/PropertyGroup.h>
 %template(ArrayPtrsPropertyGroup) OpenSim::ArrayPtrs<OpenSim::PropertyGroup>;
-%template (PropertyString) OpenSim::Property<std::string>;
+%template (PropertyStringList) OpenSim::Property<std::string>;
+%template (PropertyObjectList) OpenSim::Property<OpenSim::Object>;
+%template (PropertyIntList) OpenSim::Property<int>;
+%template (PropertyDoubleList) OpenSim::Property<double>;
 %include <OpenSim/Common/Object.h>
 %include <OpenSim/Common/ObjectGroup.h>
 %include <Bindings/PropertyHelper.h>
@@ -420,7 +423,7 @@ namespace OpenSim {
 %include <OpenSim/Common/CSVFileAdapter.h>
 %include <OpenSim/Common/XsensDataReader.h>
 
-#if defined WITH_EZC3D || defined (WITH_BTK)
+#if defined (WITH_EZC3D)
 %include <OpenSim/Common/C3DFileAdapter.h>
 
 %extend OpenSim::C3DFileAdapter {

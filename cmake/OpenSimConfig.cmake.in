@@ -32,8 +32,8 @@
 #                                            
 # This file will also find Simbody; you do not
 # need to use `find_package(Simbody)` in your own project. If OpenSim's
-# installation does *not* contain Simbody (and ezc3d or BTK), you might need to set
-# CMAKE_PREFIX_PATH to the directory containing Simbody, and make sure that ezc3d or BTK
+# installation does *not* contain Simbody (and ezc3d), you might need to set
+# CMAKE_PREFIX_PATH to the directory containing Simbody, and make sure that ezc3d
 # libraries are available during runtime.
 #
 # Adapted from SimbodyConfig.cmake
