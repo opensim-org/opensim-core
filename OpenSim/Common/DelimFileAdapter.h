@@ -325,7 +325,7 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
     std::regex keyvalue{R"((.*)=(.*))"};
     std::string header{};
     std::string line{};
-    std::string numberOrDelim = "[0-9."+_delimitersRead+" -]+";
+    std::string numberOrDelim = "[0-9][0-9."+_delimitersRead+" -]+";
     std::regex dataLine{ numberOrDelim };
     ValueArrayDictionary keyValuePairs;
     while(std::getline(in_stream, line)) {
