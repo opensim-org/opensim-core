@@ -215,3 +215,12 @@ using namespace SimTK;
 %import "java_common.i"
 opensim_unique_ptr(OpenSim::PositionMotion);
 %include <Bindings/simulation.i>
+
+%javamethodmodifiers OpenSim::TransformAxis::setFunction "private"
+%rename OpenSim::TransformAxis::setFunction private_setFunction;
+%typemap(javacode) OpenSim::TransformAxis %{
+  public void setFunction(Function adoptee) {
+      adoptee.markAdopted();
+      private_setFunction(adoptee);
+  }
+%}
