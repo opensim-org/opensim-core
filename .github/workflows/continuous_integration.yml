@@ -342,7 +342,7 @@ jobs:
         VERSION=`cmake -L . | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
         echo $VERSION
         echo "VERSION=$VERSION" >> $GITHUB_ENV
-        echo "::set-output name=version::$VERSION"
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
 
     - name: Build opensim-core
       run: |
@@ -492,7 +492,7 @@ jobs:
         VERSION=`cmake -L . | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
         echo $VERSION
         echo "VERSION=$VERSION" >> $GITHUB_ENV
-        echo "::set-output name=version::$VERSION"
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
 
     - name: Build opensim-core
       run: |
@@ -593,7 +593,7 @@ jobs:
         VERSION=`cmake -L . | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
         echo $VERSION
         echo "VERSION=$VERSION" >> $GITHUB_ENV
-        echo "::set-output name=version::$VERSION"
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
 
     - name: Build opensim-core
       run: |
@@ -696,7 +696,7 @@ jobs:
         VERSION=`cmake -L . | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
         echo $VERSION
         echo "VERSION=$VERSION" >> $GITHUB_ENV
-        echo "::set-output name=version::$VERSION"
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
 
     - name: Build opensim-core
       run: |
@@ -800,7 +800,7 @@ jobs:
         VERSION=`cmake -L . | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
         echo $VERSION
         echo "VERSION=$VERSION" >> $GITHUB_ENV
-        echo "::set-output name=version::$VERSION"
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
 
     - name: Build opensim-core
       run: |
