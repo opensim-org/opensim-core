@@ -80,7 +80,7 @@ jobs:
         $version = $env:match.split('=')[1]
         echo $version
         echo "VERSION=$version" >> $GITHUB_ENV
-        echo "::set-output name=version::$VERSION"
+        echo "version=$version" >> $env:GITHUB_OUTPUT
 
     - name: Build opensim-core
       # Install now to avoid building bindings twice (issue when using Visual Studio 2019).
@@ -112,7 +112,7 @@ jobs:
         python -m unittest discover --start-directory opensim/tests --verbose
 
     - name: Upload opensim-core
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: opensim-core-${{ steps.configure.outputs.version }}-win
         path: opensim-core-${{ steps.configure.outputs.version }}.zip
@@ -215,7 +215,8 @@ jobs:
         $version = $env:match.split('=')[1]
         echo $version
         echo "VERSION=$version" >> $GITHUB_ENV
-        echo "::set-output name=version::$VERSION"
+        echo "version=$version" >> $env:GITHUB_OUTPUT
+
 
     - name: Build opensim-core
       # Install now to avoid building bindings twice (TODO: issue when using Visual Studio 2019, is this an issue too in Visual Studio 2022?).
@@ -247,7 +248,7 @@ jobs:
         python -m unittest discover --start-directory opensim/tests --verbose
 
     - name: Upload opensim-core
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: opensim-core-${{ steps.configure.outputs.version }}-win
         path: opensim-core-${{ steps.configure.outputs.version }}.zip
@@ -370,7 +371,7 @@ jobs:
         python3 -m unittest discover --start-directory opensim/tests --verbose
 
     - name: Upload opensim-core
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         # The upload-artifact zipping does not preserve symlinks or executable
         # bits. So we zip ourselves, even though this causes a double-zip.
@@ -520,7 +521,7 @@ jobs:
         python3 -m unittest discover --start-directory opensim/tests --verbose
 
     - name: Upload opensim-core
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         # The upload-artifact zipping does not preserve symlinks or executable
         # bits. So we zip ourselves, even though this causes a double-zip.
@@ -624,7 +625,7 @@ jobs:
     #     # python3 -m unittest discover --start-directory opensim/tests --verbose
 
     - name: Upload opensim-core
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         # The upload-artifact zipping does not preserve symlinks or executable
         # bits. So we zip ourselves, even though this causes a double-zip.
@@ -727,7 +728,7 @@ jobs:
     #     # python3 -m unittest discover --start-directory opensim/tests --verbose
 
     - name: Upload opensim-core
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         # The upload-artifact zipping does not preserve symlinks or executable
         # bits. So we zip ourselves, even though this causes a double-zip.
@@ -831,7 +832,7 @@ jobs:
     #     # python3 -m unittest discover --start-directory opensim/tests --verbose
 
     - name: Upload opensim-core
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         # The upload-artifact zipping does not preserve symlinks or executable
         # bits. So we zip ourselves, even though this causes a double-zip.
