@@ -68,7 +68,15 @@ class TestModelBuilding {
 
         WrapEllipsoid ellipsoid = new WrapEllipsoid();
         arm.getGround().addWrapObject(ellipsoid);
-
+        {
+            // test TrasnformAxis.setFunction issue #3210
+            StepFunction stepFunction = new StepFunction(0.5, 3.0, 0.3, 1.0);
+            TransformAxis transformAxis = new TransformAxis();
+            transformAxis.setFunction(stepFunction);
+            System.gc(); // Request gc could free stepFunction and crash
+            Function f = transformAxis.getFunction();
+            System.out.println(f.dump());
+        }
         System.out.println("Test finished!");
     }
     catch (IOException ex){
