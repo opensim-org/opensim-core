@@ -1,0 +1,10 @@
+--- Ipopt/src/Algorithm/LinearSolvers/IpMumpsSolverInterface.cpp	2022-04-13 11:59:52.000000000 -0700
++++ Ipopt/src/Algorithm/LinearSolvers/IpMumpsSolverInterface.cpp	2022-04-13 11:59:37.000000000 -0700
+@@ -16,6 +16,7 @@
+ // The first header to include is the one for MPI.  
+ // In newer ThirdParty/Mumps, mpi.h is renamed to mumps_mpi.h.
+ // We get informed about this by having COIN_USE_MUMPS_MPI_H defined.
++#include "mumps_compat.h"
+ #ifdef COIN_USE_MUMPS_MPI_H
+ #include "mumps_mpi.h"
+ #else
