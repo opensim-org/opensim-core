@@ -340,9 +340,11 @@ DelimFileAdapter<T>::extendRead(const std::string& fileName) const {
         if(std::regex_match(line, endheader))
             break;
         // Exit this loop for parsing header if we hit data line
-        // this may blow up downstream but at least we don't hang
+        // this will blow up immediately rather than hang
         if (std::regex_match(line, dataLine))
-            break;
+            OPENSIM_THROW(
+                Exception,
+                "Missing end of header block");
 
         // Detect Key value pairs of the form "key = value" and add them to
         // metadata.
