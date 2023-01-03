@@ -232,7 +232,13 @@ private:
 /// forces and torques used are taken from the first six outputs of
 /// getRecordValues(); this order is of use for, for example, the
 /// SmoothSphereHalfSpaceForce contact model but might have a different meaning
-/// for different contact models.
+/// for different contact models. Centers of pressure are computed assuming the
+/// that the vertical ground contact force is in the y-direction, which is the
+/// OpenSim convention. In addition, the centers of pressure are computed using
+/// the force and torque values applied to the half space, which should be the
+/// second six outputs from getRecordValues() (this order also corresponds to
+/// the SmoothSphereHalfSpaceForces values).
+///
 /// @ingroup mocoutil
 OSIMMOCO_API
 TimeSeriesTable createExternalLoadsTableForGait(Model model,
