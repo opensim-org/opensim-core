@@ -46,6 +46,8 @@ elseif(TROPTER_COPY_DEPENDENCIES AND UNIX)
 
     file(GLOB gfortran "${gcc_libdir}/libgfortran*.so")
     file(GLOB quadmath "${gcc_libdir}/libquadmath*.so")
+    message(STATUS "gfortran list ${gfortran}" )
+    message(STATUS "quadmath list ${quadmath}" )
 
     install(FILES
             ${ADOLC_DIR}/lib64/libadolc.so.2
