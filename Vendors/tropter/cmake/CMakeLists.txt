@@ -38,6 +38,10 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
 
 elseif(TROPTER_COPY_DEPENDENCIES AND UNIX)
     message(STATUS "getting dir for ${pkgcfg_lib_IPOPT_gfortran}" )
+    message(STATUS "ADOLC_DIR dir ${ADOLC_DIR}" )
+    message(STATUS "ColPack_ROOT_DIR dir ${ColPack_ROOT_DIR}" )
+    message(STATUS "IPOPT_LIBDIR dir ${IPOPT_LIBDIR}" )
+    
     get_filename_component(gcc_libdir "${pkgcfg_lib_IPOPT_gfortran}" DIRECTORY)
 
     file(GLOB gfortran "${gcc_libdir}/libgfortran*.so")
