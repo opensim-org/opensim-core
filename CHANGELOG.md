@@ -17,6 +17,7 @@ v4.4.1
 - Removed all references to deprecated environment variable `OPENSIM_HOME`.
 - Fix issue where templatized Property classes are not available to Objects defined in plugins.
 - Minimum supported version for Java is now 1.8 in the cmake files (Issue #3215).
+- Fix CSV file adapter hanging on csv files that are missing end-header (issue #2432).
 
 v4.4
 ====
