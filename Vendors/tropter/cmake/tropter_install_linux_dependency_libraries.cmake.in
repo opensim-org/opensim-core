@@ -10,6 +10,7 @@ macro(install_name_tool_add_rpath lib)
     execute_process(COMMAND patchelf
             --add-rpath "$ORIGIN"
             "${libdir}/lib${lib}")
+    message(STATUS "patchelf --add-rpath ORIGIN to ${libdir}/lib${lib}")
 endmacro()
 
 macro(install_name_tool_delete_rpath lib rpath)
