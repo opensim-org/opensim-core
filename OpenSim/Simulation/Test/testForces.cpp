@@ -1230,7 +1230,6 @@ void testElasticFoundation() {
     // end timing
     cout << "Elastic Foundation simulation time = "
          << 1.e3 * (clock() - startTime) / CLOCKS_PER_SEC << "ms" << endl;
-    ;
 
     // make sure we can access dynamic variables
     osimModel.getMultibodySystem().realize(osim_state, Stage::Acceleration);
@@ -1280,9 +1279,11 @@ void testExponentialContact() {
     using namespace SimTK;
 
     // Construct a model and serialize it -----------------------------
-    // This is done so that a model file does not need to be installed.
+    // This is done so that a model file does not have to be installed.
     // Subsequent checks are done with the deserialized model.
     string fileName = "BouncingBlock_ExponentialContact.osim";
+    string baseName = "EC";
+    const int nEC{8};
     // Start temporary model scope
     {
         Model* model = new Model();
@@ -1314,7 +1315,6 @@ void testExponentialContact() {
         Vec3 floorOrigin(0., -0.004, 0.); // Shift to account for penetration.
         Transform X_GP(floorRot, floorOrigin);
         // Stations
-        const int nEC{8};
         double hs = 0.01; // half side = 10 cm.
         Vec3 corner[nEC];
         corner[0] = Vec3(hs, -hs, hs);
@@ -1328,7 +1328,7 @@ void testExponentialContact() {
         // Place an exponential contact at each of the 8 stations
         ExponentialContact* ec[nEC]{NULL};
         for (int i = 0; i < nEC; ++i) {
-            string nameEC = "Exp" + std::to_string(i);
+            string nameEC = baseName + std::to_string(i);
             ec[i] = new OpenSim::ExponentialContact(
                     X_GP, block->getName(), corner[i], params);
             ec[i]->setName(nameEC);
@@ -1342,7 +1342,7 @@ void testExponentialContact() {
         model->print(fileName);
 
         // Delete the model
-        delete model;       // TODO(fcanderson): Crashing right now.  Why?
+        delete model;
 
     } // End temporary model scope.
 
@@ -1364,10 +1364,10 @@ void testExponentialContact() {
     body.setQToFitTranslation(state, pos);
     model.getMultibodySystem().realize(state, Stage::Position);
 
-    // Reset the anchor points of any ExponentialContact instances.
+    // Reset the anchor points of all ExponentialContact instances.
     ForceSet &fSet = model.updForceSet();
     ExponentialContact::resetAnchorPoints(fSet, state);
-    
+
     // Simulate
     Manager manager(model);
     manager.setIntegratorAccuracy(1e-6);
@@ -1395,14 +1395,17 @@ void testExponentialContact() {
     // across all contact instances.
     Vec3 gfrc = block.getMass() * gravity_vec;
     Vec3 tfrc(0.0);
-    for (int i = 0; i < 8; ++i) {
-        string nameEC = "Exp" + to_string(i);
+    for (int i = 0; i < nEC; ++i) {
+        string nameEC = baseName + to_string(i);
         const OpenSim::ExponentialContact& spr =
                 (OpenSim::ExponentialContact&)model.getForceSet().get(nameEC);
+        OpenSim::Array<string> labels = spr.getRecordLabels();
+        cout << endl << labels << endl;
         Array<double> spr_values = spr.getRecordValues(state);
-        tfrc[0] += spr_values[12];  // x
-        tfrc[1] += spr_values[13];  // y
-        tfrc[2] += spr_values[14];  // z
+        cout << endl << spr_values << endl;
+        tfrc[0] += spr_values[0];  // x
+        tfrc[1] += spr_values[1];  // y
+        tfrc[2] += spr_values[2];  // z
     }
     //cout << "gfrc = " << gfrc << endl;
     //cout << "tfrc = " << tfrc << endl;
