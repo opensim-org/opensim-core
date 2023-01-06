@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2022 Stanford University and the Authors                     *
+ * Copyright (c) 2022-2023 Stanford University and the Authors                *
  * Author(s): F. C. Anderson                                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -84,7 +84,7 @@ public:
         corner[4] = Vec3( hs,  hs,  hs);
         corner[5] = Vec3( hs,  hs, -hs);
         corner[6] = Vec3(-hs,  hs, -hs);
-        corner[7] = Vec3(-hs,  hs,  hs);    
+        corner[7] = Vec3(-hs,  hs,  hs);
     };
 
     // Destructor
@@ -460,7 +460,7 @@ addHuntCrossleyContact(OpenSim::Body* block)
     std::string name = "";
     for (int i = 0; i < n; ++i) {
         // Geometry
-        name = "sphere_" + std::to_string(i); 
+        name = "sphere_" + std::to_string(i);
         geomHC[i] = new ContactSphere(0.005, corner[i], *block, name);
         model->addContactGeometry(geomHC[i]);
 

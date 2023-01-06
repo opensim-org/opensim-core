@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Copyright (c) 2022-20232 Stanford University and the Authors               *
  * Author(s):  F. C. Anderson                                                 *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -22,6 +22,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "Model.h"
+#include "simbody/internal/SimbodyMatterSubsystem.h"
 #include "ExponentialContact.h"
 
 using namespace OpenSim;
@@ -102,7 +103,7 @@ updateParameters() {
 // member variable (_stkparam) is kept consistent with the properties.
 // It is necessary to have the _stkparams member variable because there needs
 // to be a place to store non-default parameters when the underlying
-// SimTK::ExponentialSpringForce hasn't been instantiated.
+// SimTK::ExponentialSpringForce hasn't yet been instantiated.
 // Having to do a little extra bookkeeping (i.e., storing properties values
 // twice [once in the Properties and once in _stkparams]) is justified
 // by not having to rewrite a whole bunch of additional accessor methods.
@@ -124,7 +125,7 @@ setSimTKParameters(const SimTK::ExponentialSpringParameters& params) {
     updateProperties();
 }
 //_____________________________________________________________________________
-// Get a read-only reference to the  SimTK::ExponentialSpringParamters held
+// Get a read-only reference to the SimTK::ExponentialSpringParameters held
 // by this instance.
 const SimTK::ExponentialSpringParameters&
 ExponentialContact::Parameters::
@@ -218,15 +219,15 @@ extendAddToSystem(SimTK::MultibodySystem& system) const {
     // Should I connect states to the Component interface here by
     // instantiating concrete OpenSim::StateVariable objects for which
     // I have implemented the required virtual methods?
-    // 
+    //
     // And then also do something similar for the data cache entries?
-    // 
+    //
     // On the Simbody side, there are 4 states:
     // 1. mus (Real, discrete state)
     // 2. muk (Real, discrete state)
     // 3. po (Vec3, auto update discrete state)
     // 4. K (Real, auto update discrete state)
-    // 
+    //
     // Also on the Simbody side, are 24 data cache entries:
     // 1. p_G (Vec3, Stage::Position)
     // 2. p_P (Vec3, Stage::Position)
@@ -416,22 +417,25 @@ OpenSim::Array<std::string>
 ExponentialContact::
 getRecordLabels() const {
     OpenSim::Array<std::string> labels("");
+    string name = getName();  // Name of this contact instance.
     std::string frameName = getBodyName();
-    labels.append(getName()+"."+frameName+".p0.X");
-    labels.append(getName()+"."+frameName+".p0.Y");
-    labels.append(getName()+"."+frameName+".p0.Z");
-    labels.append(getName()+"."+frameName+".station.X");
-    labels.append(getName()+"."+frameName+".station.Y");
-    labels.append(getName()+"."+frameName+".station.Z");
-    labels.append(getName()+"."+frameName+".forceNormal.X");
-    labels.append(getName()+"."+frameName+".forceNormal.Y");
-    labels.append(getName()+"."+frameName+".forceNormal.Z");
-    labels.append(getName()+"."+frameName+".forceFriction.X");
-    labels.append(getName()+"."+frameName+".forceFriction.Y");
-    labels.append(getName()+"."+frameName+".forceFriction.Z");
-    labels.append(getName()+"."+frameName+".force.X");
-    labels.append(getName()+"."+frameName+".force.Y");
-    labels.append(getName()+"."+frameName+".force.Z");
+    std::string groundName = getModel().getGround().getName();
+
+    // Record format consistent with HuntCrossleyForce.
+    // Body
+    labels.append(name + "." + frameName + ".force.X");
+    labels.append(name + "." + frameName + ".force.Y");
+    labels.append(name + "." + frameName + ".force.Z");
+    labels.append(name + "." + frameName + ".torque.X");
+    labels.append(name + "." + frameName + ".torque.Y");
+    labels.append(name + "." + frameName + ".torque.Z");
+    // Ground
+    labels.append(name + "." + groundName + ".force.X");
+    labels.append(name + "." + groundName + ".force.Y");
+    labels.append(name + "." + groundName + ".force.Z");
+    labels.append(name + "." + groundName + ".torque.X");
+    labels.append(name + "." + groundName + ".torque.Y");
+    labels.append(name + "." + groundName + ".torque.Z");
 
     return labels;
 }
@@ -445,17 +449,33 @@ getRecordValues(const SimTK::State& state) const  {
     const SimTK::Force& abstractForce = forceSubsys.getForce(_index);
     const auto& spr = (SimTK::ExponentialSpringForce&)(abstractForce);
 
-    SimTK::Vec3 p0 = spr.getAnchorPointPosition(state);
-    SimTK::Vec3 station = spr.getStationPosition(state);
-    SimTK::Vec3 normal = spr.getNormalForce(state);
-    SimTK::Vec3 friction = spr.getFrictionForce(state);
-    SimTK::Vec3 force = spr.getForce(state);
+    // Get the loads
+    SimTK::Vector_<SimTK::SpatialVec> bForces(0);  // body
+    SimTK::Vector_<SimTK::Vec3> pForces(0);  // particle
+    SimTK::Vector mForces(0);  // mobility
+    spr.calcForceContribution(state, bForces, pForces, mForces);
 
-    values.append(3, &p0[0]);
-    values.append(3, &station[0]);
-    values.append(3, &normal[0]);
-    values.append(3, &friction[0]);
+    // Body
+    SimTK::Vec3 force;
+    SimTK::Vec3 torque;
+    const auto& bodyIndex = _body->getMobilizedBodyIndex();
+    SimTK::SpatialVec& bodyForce = bForces(bodyIndex);
+    force = bodyForce[1];
+    double fy = force[1];
+    torque = bodyForce[0];
     values.append(3, &force[0]);
+    values.append(3, &torque[0]);
+
+    // Ground
+    const SimTK::MultibodySystem& system = _model->getSystem();
+    const SimTK::SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
+    const SimTK::MobilizedBody& ground = matter.getGround();
+    const auto& groundIndex = ground.getMobilizedBodyIndex();
+    SimTK::SpatialVec& groundForce = bForces(groundIndex);
+    force = groundForce[1];
+    torque = groundForce[0];
+    values.append(3, &force[0]);
+    values.append(3, &torque[0]);
 
     return values;
 }
