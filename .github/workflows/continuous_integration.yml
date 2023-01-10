@@ -511,7 +511,7 @@ jobs:
         make install
         cd $GITHUB_WORKSPACE
         mv $GITHUB_WORKSPACE/../opensim-core-install opensim-core-${{ steps.configure.outputs.version }}
-        zip --symlinks --recurse-paths --quiet opensim-core-${{ steps.configure.outputs.version }}.zip opensim-core-${{ steps.configure.outputs.version }}
+        zip --symlinks --recurse-paths --quiet opensim-core-${{ steps.configure.outputs.version }}-11.zip opensim-core-${{ steps.configure.outputs.version }}
         mv opensim-core-${{ steps.configure.outputs.version }} $GITHUB_WORKSPACE/../opensim-core-install
 
     - name: Test Python bindings
