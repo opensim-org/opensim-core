@@ -321,6 +321,7 @@ TimeSeriesTable OpenSim::createExternalLoadsTableForGait(Model model,
         // Compute centers of pressure for both feet. We need to use the force
         // and torque information from the half space to compute the correct
         // locations.
+        // TODO: Support contact plane normals in any direction.
         SimTK::Vec3 copRight(0);
         copRight(0) = halfSpaceTorquesRight(2) / halfSpaceForcesRight(1);
         copRight(2) = -halfSpaceTorquesRight(0) / halfSpaceForcesRight(1);

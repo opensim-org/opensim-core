@@ -224,20 +224,41 @@ private:
 /// Obtain the ground reaction forces, centers of pressure, and torques
 /// resulting from Force elements (e.g., SmoothSphereHalfSpaceForce), using a
 /// model and states trajectory. Forces and torques are expressed in the ground
-/// frame with respect to the ground origin. Hence, the centers of pressure are
-/// at the origin. Paths to Force elements should be provided separately for
-/// elements of the right and left feet. The output is a table formatted for use
-/// with OpenSim tools; the labels of the columns distinguish between right
-/// ("<>_r") and left ("<>_l") forces, centers of pressure, and torques. The
-/// forces and torques used are taken from the first six outputs of
-/// getRecordValues(); this order is of use for, for example, the
-/// SmoothSphereHalfSpaceForce contact model but might have a different meaning
-/// for different contact models. Centers of pressure are computed assuming the
-/// that the vertical ground contact force is in the y-direction, which is the
-/// OpenSim convention. In addition, the centers of pressure are computed using
-/// the force and torque values applied to the half space, which should be the
-/// second six outputs from getRecordValues() (this order also corresponds to
-/// the SmoothSphereHalfSpaceForces values).
+/// frame with respect to the ground origin. Paths to Force elements should be
+/// provided separately for elements of the right and left feet. The output is a
+/// table formatted for use with OpenSim tools; the labels of the columns
+/// distinguish between right ("<>_r") and left ("<>_l") forces, centers of
+/// pressure, and torques. Centers of pressure are computed assuming the
+/// that the contact plane's normal is in the y-direction, which is the OpenSim
+/// convention.
+///
+/// The forces and torques are computed from the first six outputs of
+/// getRecordValues(), while the centers of pressure are computed from the second
+/// six outputs. The first six outputs should correspond to the contact force
+/// components applied to the foot bodies (e.g., the "sphere" forces in
+/// SmoothSphereHalfSpaceForce), and the second six outputs should correspond to
+/// the contact force components applied to the contact place (e.g., the
+/// "half-space" forces in SmoothSphereHalfSpaceForce). The contact plane is
+/// often attached to ground for foot-ground contact models, but it need not be,
+/// as long as the contact plane normal is in the y-direction.
+///
+/// In general, this utility needs getRecordValues() to report the
+/// following force and torque information at the specified indices:
+///
+/// index - component (body)
+/// ------------------------
+///     0 - force-x (foot)
+///     1 - force-y (foot)
+///     2 - force-z (foot)
+///     3 - torque-x (foot)
+///     4 - torque-y (foot)
+///     5 - torque-z (foot)
+///     6 - force-x (contact plane)
+///     7 - force-y (contact plane)
+///     8 - force-z (contact plane)
+///     9 - torque-x (contact plane)
+///    10 - torque-y (contact plane)
+///    11 - torque-z (contact plane)
 ///
 /// @ingroup mocoutil
 OSIMMOCO_API
