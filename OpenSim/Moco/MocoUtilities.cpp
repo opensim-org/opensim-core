@@ -283,36 +283,61 @@ TimeSeriesTable OpenSim::createExternalLoadsTableForGait(Model model,
     int count = 0;
     for (const auto& state : trajectory) {
         model.realizeVelocity(state);
-        SimTK::Vec3 forcesRight(0);
-        SimTK::Vec3 torquesRight(0);
+        SimTK::Vec3 sphereForcesRight(0);
+        SimTK::Vec3 sphereTorquesRight(0);
+        SimTK::Vec3 halfSpaceForcesRight(0);
+        SimTK::Vec3 halfSpaceTorquesRight(0);
         // Loop through all Forces of the right side.
         for (const auto& smoothForce : forcePathsRightFoot) {
             Array<double> forceValues =
                     model.getComponent<Force>(smoothForce).getRecordValues(state);
-            forcesRight += SimTK::Vec3(forceValues[0], forceValues[1],
+            sphereForcesRight += SimTK::Vec3(forceValues[0], forceValues[1],
                     forceValues[2]);
-            torquesRight += SimTK::Vec3(forceValues[3], forceValues[4],
+            sphereTorquesRight += SimTK::Vec3(forceValues[3], forceValues[4],
                     forceValues[5]);
+            halfSpaceForcesRight += SimTK::Vec3(forceValues[6], forceValues[7],
+                    forceValues[8]);
+            halfSpaceTorquesRight += SimTK::Vec3(forceValues[9], forceValues[10],
+                    forceValues[11]);
         }
-        SimTK::Vec3 forcesLeft(0);
-        SimTK::Vec3 torquesLeft(0);
+        SimTK::Vec3 sphereForcesLeft(0);
+        SimTK::Vec3 sphereTorquesLeft(0);
+        SimTK::Vec3 halfSpaceForcesLeft(0);
+        SimTK::Vec3 halfSpaceTorquesLeft(0);
         // Loop through all Forces of the left side.
         for (const auto& smoothForce : forcePathsLeftFoot) {
             Array<double> forceValues =
                     model.getComponent<Force>(smoothForce).getRecordValues(state);
-            forcesLeft += SimTK::Vec3(forceValues[0], forceValues[1],
+            sphereForcesLeft += SimTK::Vec3(forceValues[0], forceValues[1],
                     forceValues[2]);
-            torquesLeft += SimTK::Vec3(forceValues[3], forceValues[4],
+            sphereTorquesLeft += SimTK::Vec3(forceValues[3], forceValues[4],
                     forceValues[5]);
+            halfSpaceForcesLeft += SimTK::Vec3(forceValues[6], forceValues[7],
+                    forceValues[8]);
+            halfSpaceTorquesLeft += SimTK::Vec3(forceValues[9], forceValues[10],
+                    forceValues[11]);
         }
+
+        // Compute centers of pressure for both feet. We need to use the force
+        // and torque information from the half space to compute the correct
+        // locations.
+        // TODO: Support contact plane normals in any direction.
+        SimTK::Vec3 copRight(0);
+        copRight(0) = halfSpaceTorquesRight(2) / halfSpaceForcesRight(1);
+        copRight(2) = -halfSpaceTorquesRight(0) / halfSpaceForcesRight(1);
+
+        SimTK::Vec3 copLeft(0);
+        copLeft(0) = halfSpaceTorquesLeft(2) / halfSpaceForcesLeft(1);
+        copLeft(2) = -halfSpaceTorquesLeft(0) / halfSpaceForcesLeft(1);
+
         // Append row to table.
         SimTK::RowVector_<SimTK::Vec3> row(6);
-        row(0) = forcesRight;
-        row(1) = SimTK::Vec3(0);
-        row(2) = forcesLeft;
-        row(3) = SimTK::Vec3(0);
-        row(4) = torquesRight;
-        row(5) = torquesLeft;
+        row(0) = sphereForcesRight;
+        row(1) = copRight;
+        row(2) = sphereForcesLeft;
+        row(3) = copLeft;
+        row(4) = sphereTorquesRight;
+        row(5) = sphereTorquesLeft;
         externalForcesTable.appendRow(state.getTime(), row);
         ++count;
     }
