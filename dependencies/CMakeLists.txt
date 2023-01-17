@@ -17,14 +17,14 @@ function(SetDefaultCMakeInstallPrefix)
     get_filename_component(BASE_DIR ${BASE_DIR} DIRECTORY)
     # Default install prefix for OpenSim dependencies. If user changes
     # CMAKE_INSTALL_PREFIX, this directory will be removed.
-    set(DEFAULT_CMAKE_INSTALL_PREFIX 
+    set(DEFAULT_CMAKE_INSTALL_PREFIX
         ${BASE_DIR}/opensim_dependencies_install
         CACHE
         INTERNAL
         "Default CMAKE_INSTALL_PREFIX for OpenSim dependencies.")
 
     if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-        set(CMAKE_INSTALL_PREFIX 
+        set(CMAKE_INSTALL_PREFIX
             ${DEFAULT_CMAKE_INSTALL_PREFIX}
             CACHE
             PATH
@@ -33,7 +33,7 @@ function(SetDefaultCMakeInstallPrefix)
     endif()
 endfunction()
 
-# CMake doesn't clear prefix directories when user changes it. 
+# CMake doesn't clear prefix directories when user changes it.
 # Remove it to avoid confusion.
 function(RemoveDefaultInstallDirIfEmpty DIR)
     file(GLOB CONTENTS ${DIR}/*)
@@ -66,7 +66,7 @@ endfunction()
 #   GIT_URL    -- (Required) git repository to download the sources from.
 #   GIT_TAG    -- (Required) git tag to checkout before commencing build.
 #   DEPENDS    -- (Optional) Other projects this project depends on.
-#   CMAKE_ARGS -- (Optional) A CMake list of arguments to be passed to CMake 
+#   CMAKE_ARGS -- (Optional) A CMake list of arguments to be passed to CMake
 #                 while building the project.
 # You must provide either URL or GIT_URL and GIT_TAG, but not all 3.
 function(AddDependency)
@@ -176,7 +176,7 @@ AddDependency(NAME       ezc3d
 AddDependency(NAME       simbody
               DEFAULT    ON
               GIT_URL    https://github.com/simbody/simbody.git
-              GIT_TAG    e855d954a786128c3271a3406d7bda782e7c4c4f
+              GIT_TAG    462b2a6dbb8794db2922d72f52b29b488a178ebc
               CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF
                          -DBUILD_TESTING:BOOL=OFF)
 
@@ -251,7 +251,7 @@ if (WIN32)
 
 
     if(SUPERBUILD_ipopt)
-    
+
         # Ipopt: Download pre-built binaries built by chrisdembia.
         # This binary distribution comes with MUMPS and OpenBLAS.
         # Compiled with clang-cl 5.0 and flang, using conda.
