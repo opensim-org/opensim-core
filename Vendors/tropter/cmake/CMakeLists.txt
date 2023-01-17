@@ -12,9 +12,6 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
         OUTPUT_VARIABLE libgcc_name
         OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-    
-    message(STATUS "NAME: ${libgcc_name}")
-
     install(FILES
             ${ADOLC_DIR}/lib64/libadolc.2.dylib
             ${ADOLC_DIR}/lib64/libadolc.dylib
