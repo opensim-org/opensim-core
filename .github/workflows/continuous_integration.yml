@@ -21,7 +21,7 @@ jobs:
     runs-on: windows-2019
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
 
     - name: Install Doxygen
       # choco install doxygen.portable # <-- too unreliable.
@@ -31,7 +31,7 @@ jobs:
         echo "$env:GITHUB_WORKSPACE\\doxygen" >> $GITHUB_PATH
 
     - name: Install Python packages
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: '3.8'
         
@@ -44,7 +44,7 @@ jobs:
 
     - name: Cache dependencies
       id: cache-dependencies
-      uses: actions/cache@v1
+      uses: actions/cache@v3
       with:
         path: ~/opensim_dependencies_install
         # Every time a cache is created, it's stored with this key.
@@ -80,7 +80,7 @@ jobs:
         $version = $env:match.split('=')[1]
         echo $version
         echo "VERSION=$version" >> $GITHUB_ENV
-        echo "::set-output name=version::$VERSION"
+        echo "version=$version" >> $env:GITHUB_OUTPUT
 
     - name: Build opensim-core
       # Install now to avoid building bindings twice (issue when using Visual Studio 2019).
@@ -112,7 +112,7 @@ jobs:
         python -m unittest discover --start-directory opensim/tests --verbose
 
     - name: Upload opensim-core
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: opensim-core-${{ steps.configure.outputs.version }}-win
         path: opensim-core-${{ steps.configure.outputs.version }}.zip
@@ -156,7 +156,7 @@ jobs:
     runs-on: windows-2022
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
 
     - name: Install Doxygen
       # choco install doxygen.portable # <-- too unreliable.
@@ -166,7 +166,7 @@ jobs:
         echo "$env:GITHUB_WORKSPACE\\doxygen" >> $GITHUB_PATH
 
     - name: Install Python packages
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: '3.8'
         
@@ -179,7 +179,7 @@ jobs:
 
     - name: Cache dependencies
       id: cache-dependencies
-      uses: actions/cache@v1
+      uses: actions/cache@v3
       with:
         path: ~/opensim_dependencies_install
         # Every time a cache is created, it's stored with this key.
@@ -215,7 +215,8 @@ jobs:
         $version = $env:match.split('=')[1]
         echo $version
         echo "VERSION=$version" >> $GITHUB_ENV
-        echo "::set-output name=version::$VERSION"
+        echo "version=$version" >> $env:GITHUB_OUTPUT
+
 
     - name: Build opensim-core
       # Install now to avoid building bindings twice (TODO: issue when using Visual Studio 2019, is this an issue too in Visual Studio 2022?).
@@ -247,7 +248,7 @@ jobs:
         python -m unittest discover --start-directory opensim/tests --verbose
 
     - name: Upload opensim-core
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: opensim-core-${{ steps.configure.outputs.version }}-win
         path: opensim-core-${{ steps.configure.outputs.version }}.zip
@@ -259,7 +260,7 @@ jobs:
     runs-on: macos-10.15
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
     
     - uses: actions/setup-python@v4
       with:
@@ -277,7 +278,7 @@ jobs:
 
     - name: Cache SWIG
       id: cache-swig
-      uses: actions/cache@v1
+      uses: actions/cache@v3
       with:
         path: ~/swig
         key: ${{ runner.os }}-swig
@@ -293,7 +294,7 @@ jobs:
 
     - name: Cache dependencies
       id: cache-dependencies
-      uses: actions/cache@v1
+      uses: actions/cache@v3
       with:
         path: ~/opensim_dependencies_install
         # If Homebrew updates the gcc package, then our cache of IPOPT is invalid.
@@ -341,7 +342,7 @@ jobs:
         VERSION=`cmake -L . | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
         echo $VERSION
         echo "VERSION=$VERSION" >> $GITHUB_ENV
-        echo "::set-output name=version::$VERSION"
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
 
     - name: Build opensim-core
       run: |
@@ -370,7 +371,7 @@ jobs:
         python3 -m unittest discover --start-directory opensim/tests --verbose
 
     - name: Upload opensim-core
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         # The upload-artifact zipping does not preserve symlinks or executable
         # bits. So we zip ourselves, even though this causes a double-zip.
@@ -403,6 +404,130 @@ jobs:
     #     asset_name: opensim-core-${{ steps.configure.outputs.version }}.zip
     #     asset_content_type: application/zip
 
+  mac11:
+    name: Mac11
+
+    runs-on: macos-11
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.8' 
+        
+    - name: Install Homebrew packages
+      # Save the gfortran version to a file so we can use it in the cache key.
+      run: |
+        brew install cmake pkgconfig autoconf libtool automake wget pcre doxygen llvm
+        brew reinstall gcc
+        pip3 install numpy==1.20.2
+        gfortran -v
+        mkdir gfortran_version
+        gfortran -v &> gfortran_version/gfortran_version.txt
+
+    - name: Cache SWIG
+      id: cache-swig
+      uses: actions/cache@v3
+      with:
+        path: ~/swig
+        key: ${{ runner.os }}-swig
+
+    - name: Install SWIG
+      # if: steps.cache-swig.outputs.cache-hit != 'true'
+      run: |
+        mkdir ~/swig-source && cd ~/swig-source
+        wget https://github.com/swig/swig/archive/refs/tags/rel-4.0.2.tar.gz
+        tar xzf rel-4.0.2.tar.gz && cd swig-rel-4.0.2
+        sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache
+        make && make -j4 install
+
+    - name: Cache dependencies
+      id: cache-dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/opensim_dependencies_install
+        # If Homebrew updates the gcc package, then our cache of IPOPT is invalid.
+        # Specifically, the pkgcfg_lib_IPOPT_gfortran CMake variable becomes
+        # undefined.
+        key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}-${{ hashFiles('gfortran_version/*') }}
+
+    - name: Build dependencies
+      if: steps.cache-dependencies.outputs.cache-hit != 'true'
+      run: |
+        mkdir $GITHUB_WORKSPACE/../build_deps
+        cd $GITHUB_WORKSPACE/../build_deps
+        DEP_CMAKE_ARGS=($GITHUB_WORKSPACE/dependencies -LAH)
+        DEP_CMAKE_ARGS+=(-DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install)
+        DEP_CMAKE_ARGS+=(-DCMAKE_BUILD_TYPE=Release)
+        DEP_CMAKE_ARGS+=(-DSUPERBUILD_ezc3d=ON)
+        DEP_CMAKE_ARGS+=(-DOPENSIM_WITH_TROPTER=ON)
+        DEP_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=ON)
+        DEP_CMAKE_ARGS+=(-DOPENSIM_DISABLE_LOG_FILE=ON)
+        DEP_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=11)
+        printf '%s\n' "${DEP_CMAKE_ARGS[@]}"
+        cmake "${DEP_CMAKE_ARGS[@]}"
+        make --jobs 4
+
+    - name: Configure opensim-core
+      id: configure
+      run: |
+        mkdir $GITHUB_WORKSPACE/../build
+        cd $GITHUB_WORKSPACE/../build
+        OSIM_CMAKE_ARGS=($GITHUB_WORKSPACE -LAH)
+        OSIM_CMAKE_ARGS+=(-DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/../opensim-core-install)
+        OSIM_CMAKE_ARGS+=(-DCMAKE_BUILD_TYPE=Release)
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install)
+        OSIM_CMAKE_ARGS+=(-DCMAKE_OSX_DEPLOYMENT_TARGET=11)
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_C3D_PARSER=ezc3d)
+        OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on)
+        OSIM_CMAKE_ARGS+=(-DSWIG_EXECUTABLE=$HOME/swig/bin/swig)
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_INSTALL_UNIX_FHS=OFF)
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_DOXYGEN_USE_MATHJAX=off)
+        # TODO: Update to simbody.github.io/latest
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simbody.github.io/simtk.org/api_docs/simbody/latest/")
+        OSIM_CMAKE_ARGS+=(-DCMAKE_CXX_FLAGS="-Werror, -Wdeprecated-copy")
+        printf '%s\n' "${OSIM_CMAKE_ARGS[@]}"
+        cmake "${OSIM_CMAKE_ARGS[@]}"
+        VERSION=`cmake -L . | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
+        echo $VERSION
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+    - name: Build opensim-core
+      run: |
+        cd $GITHUB_WORKSPACE/../build
+        make --jobs 4
+
+    - name: Test opensim-core
+      run: |
+        cd $GITHUB_WORKSPACE/../build
+        ctest --parallel 4 --output-on-failure
+
+    - name: Install opensim-core
+      run: |
+        cd $GITHUB_WORKSPACE/../build
+        make doxygen
+        make install
+        cd $GITHUB_WORKSPACE
+        mv $GITHUB_WORKSPACE/../opensim-core-install opensim-core-${{ steps.configure.outputs.version }}
+        zip --symlinks --recurse-paths --quiet opensim-core-${{ steps.configure.outputs.version }}-11.zip opensim-core-${{ steps.configure.outputs.version }}
+        mv opensim-core-${{ steps.configure.outputs.version }} $GITHUB_WORKSPACE/../opensim-core-install
+
+    - name: Test Python bindings
+      run: |
+        cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
+        # Run the python tests, verbosely.
+        python3 -m unittest discover --start-directory opensim/tests --verbose
+
+    - name: Upload opensim-core
+      uses: actions/upload-artifact@v3
+      with:
+        # The upload-artifact zipping does not preserve symlinks or executable
+        # bits. So we zip ourselves, even though this causes a double-zip.
+        name: opensim-core-${{ steps.configure.outputs.version }}-mac-11
+        path: opensim-core-${{ steps.configure.outputs.version }}-11.zip
+
 
   ubuntu:
     name: Ubuntu
@@ -410,7 +535,7 @@ jobs:
     runs-on: ubuntu-18.04
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
 
     - name: Install packages
       run: sudo apt-get update && sudo apt-get install --yes build-essential libtool autoconf pkg-config gfortran libopenblas-dev liblapack-dev freeglut3-dev libxi-dev libxmu-dev doxygen python3 python3-dev python3-numpy python3-setuptools
@@ -425,7 +550,7 @@ jobs:
         make && make -j4 install
     - name: Cache dependencies
       id: cache-dependencies
-      uses: actions/cache@v1
+      uses: actions/cache@v3
       with:
         path: ~/opensim_dependencies_install
         key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
@@ -468,7 +593,7 @@ jobs:
         VERSION=`cmake -L . | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
         echo $VERSION
         echo "VERSION=$VERSION" >> $GITHUB_ENV
-        echo "::set-output name=version::$VERSION"
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
 
     - name: Build opensim-core
       run: |
@@ -500,7 +625,7 @@ jobs:
     #     # python3 -m unittest discover --start-directory opensim/tests --verbose
 
     - name: Upload opensim-core
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         # The upload-artifact zipping does not preserve symlinks or executable
         # bits. So we zip ourselves, even though this causes a double-zip.
@@ -513,7 +638,7 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
 
     - name: Install packages
       run: sudo apt-get update && sudo apt-get install --yes build-essential libtool autoconf pkg-config gfortran libopenblas-dev liblapack-dev freeglut3-dev libxi-dev libxmu-dev doxygen python3 python3-dev python3-numpy python3-setuptools
@@ -528,13 +653,13 @@ jobs:
         make && make -j4 install
     - name: Cache dependencies
       id: cache-dependencies
-      uses: actions/cache@v1
+      uses: actions/cache@v3
       with:
         path: ~/opensim_dependencies_install
         key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
 
     - name: Build dependencies
-      if: steps.cache-dependencies.outputs.cache-hit != 'true'
+      # if: steps.cache-dependencies.outputs.cache-hit != 'true'
       run: |
         mkdir $GITHUB_WORKSPACE/../build_deps
         cd $GITHUB_WORKSPACE/../build_deps
@@ -571,7 +696,7 @@ jobs:
         VERSION=`cmake -L . | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
         echo $VERSION
         echo "VERSION=$VERSION" >> $GITHUB_ENV
-        echo "::set-output name=version::$VERSION"
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
 
     - name: Build opensim-core
       run: |
@@ -603,11 +728,115 @@ jobs:
     #     # python3 -m unittest discover --start-directory opensim/tests --verbose
 
     - name: Upload opensim-core
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         # The upload-artifact zipping does not preserve symlinks or executable
         # bits. So we zip ourselves, even though this causes a double-zip.
-        name: opensim-core-${{ steps.configure.outputs.version }}-linux
+        name: opensim-core-${{ steps.configure.outputs.version }}-ub20-linux
+        path: opensim-core-${{ steps.configure.outputs.version }}-ub20.zip
+  ubuntu20-nomoco:
+    name: Ubuntu2004-nomoco
+
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install packages
+      run: sudo apt-get update && sudo apt-get install --yes build-essential libtool autoconf pkg-config gfortran libopenblas-dev liblapack-dev freeglut3-dev libxi-dev libxmu-dev doxygen python3 python3-dev python3-numpy python3-setuptools
+
+    - name: Install SWIG
+      # if: steps.cache-swig.outputs.cache-hit != 'true'
+      run: |
+        mkdir ~/swig-source && cd ~/swig-source
+        wget https://github.com/swig/swig/archive/refs/tags/rel-4.0.2.tar.gz
+        tar xzf rel-4.0.2.tar.gz && cd swig-rel-4.0.2
+        sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache
+        make && make -j4 install
+    - name: Cache dependencies
+      id: cache-dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/opensim_dependencies_install
+        key: ${{ runner.os }}-dependencies-${{ hashFiles('dependencies/*') }}
+
+    - name: Build dependencies
+      # if: steps.cache-dependencies.outputs.cache-hit != 'true'
+      run: |
+        mkdir $GITHUB_WORKSPACE/../build_deps
+        cd $GITHUB_WORKSPACE/../build_deps
+        DEP_CMAKE_ARGS=($GITHUB_WORKSPACE/dependencies -LAH)
+        DEP_CMAKE_ARGS+=(-DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install)
+        DEP_CMAKE_ARGS+=(-DCMAKE_BUILD_TYPE=Release)
+        DEP_CMAKE_ARGS+=(-DSUPERBUILD_ezc3d=ON)
+        DEP_CMAKE_ARGS+=(-DOPENSIM_WITH_TROPTER=OFF)
+        DEP_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=OFF)
+        printf '%s\n' "${DEP_CMAKE_ARGS[@]}"
+        cmake "${DEP_CMAKE_ARGS[@]}"
+        make --jobs 4
+
+    - name: Configure opensim-core
+      id: configure
+      run: |
+        mkdir $GITHUB_WORKSPACE/../build
+        cd $GITHUB_WORKSPACE/../build
+        OSIM_CMAKE_ARGS=($GITHUB_WORKSPACE -LAH)
+        OSIM_CMAKE_ARGS+=(-DCMAKE_INSTALL_PREFIX=$GITHUB_WORKSPACE/../opensim-core-install)
+        OSIM_CMAKE_ARGS+=(-DCMAKE_BUILD_TYPE=Release)
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install)
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_C3D_PARSER=ezc3d)
+        OSIM_CMAKE_ARGS+=(-DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on)
+        OSIM_CMAKE_ARGS+=(-DSWIG_DIR=~/swig/share/swig)
+        OSIM_CMAKE_ARGS+=(-DSWIG_EXECUTABLE=~/swig/bin/swig)
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_INSTALL_UNIX_FHS=OFF)
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_DOXYGEN_USE_MATHJAX=off)
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_WITH_TROPTER=off)
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_WITH_CASADI=off)
+        # TODO: Update to simbody.github.io/latest
+        OSIM_CMAKE_ARGS+=(-DOPENSIM_SIMBODY_DOXYGEN_LOCATION="https://simbody.github.io/simtk.org/api_docs/simbody/latest/")
+        OSIM_CMAKE_ARGS+=(-DCMAKE_CXX_FLAGS="-Werror")
+        printf '%s\n' "${OSIM_CMAKE_ARGS[@]}"
+        cmake "${OSIM_CMAKE_ARGS[@]}"
+        VERSION=`cmake -L . | grep OPENSIM_QUALIFIED_VERSION | cut -d "=" -f2`
+        echo $VERSION
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+    - name: Build opensim-core
+      run: |
+        cd $GITHUB_WORKSPACE/../build
+        make --jobs 4
+
+    - name: Test opensim-core
+      run: |
+        cd $GITHUB_WORKSPACE/../build
+        # TODO: Temporary for python to find Simbody libraries.
+        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/opensim_dependencies_install/simbody/lib
+        # ctest --parallel 4 --output-on-failure
+
+    - name: Install opensim-core
+      run: |
+        cd $GITHUB_WORKSPACE/../build
+        make doxygen
+        make --jobs 4 install
+        cd $GITHUB_WORKSPACE
+        mv $GITHUB_WORKSPACE/../opensim-core-install opensim-core-${{ steps.configure.outputs.version }}
+        zip --symlinks --recurse-paths --quiet opensim-core-${{ steps.configure.outputs.version }}-ub20.zip opensim-core-${{ steps.configure.outputs.version }}
+        mv opensim-core-${{ steps.configure.outputs.version }} $GITHUB_WORKSPACE/../opensim-core-install
+
+    # - name: Test Python bindings
+    #   run: |
+    #     echo "TODO: Skipping Python tests."
+    #     # cd $GITHUB_WORKSPACE/../opensim-core-install/sdk/Python
+    #     # Run the python tests, verbosely.
+    #     # python3 -m unittest discover --start-directory opensim/tests --verbose
+
+    - name: Upload opensim-core
+      uses: actions/upload-artifact@v3
+      with:
+        # The upload-artifact zipping does not preserve symlinks or executable
+        # bits. So we zip ourselves, even though this causes a double-zip.
+        name: opensim-core-${{ steps.configure.outputs.version }}-ub20-nomoco-linux
         path: opensim-core-${{ steps.configure.outputs.version }}-ub20.zip
 
   style:
@@ -616,7 +845,7 @@ jobs:
     runs-on: ubuntu-18.04
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
 
     - name: Check for tabs
       # Ensure that there are no tabs in source code.

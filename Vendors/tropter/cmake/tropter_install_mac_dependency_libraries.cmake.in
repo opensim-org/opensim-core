@@ -54,7 +54,7 @@ macro(install_name_tool_delete_rpath lib rpath)
 endmacro()
 
 # Get the directory containing libgcc_s.1.dylib.
-# otool: Get the list of dependencies of gfortran, which includes libgcc_s.
+# otool: Get the list of dependencies of coinmumps, which includes libgcc_s.
 # grep: Isolate the line containing libgcc.
 # perl: Extract only the directory, without the filename.
 #    ^\\s+     matches all spaces at the start of the string.
@@ -62,7 +62,7 @@ endmacro()
 #   \\/libg.*  matches the rest of the line.
 #   \\1        replaces the contents of the entire match with match group #1
 execute_process(COMMAND bash "-c"
-    "otool -L ${libdir}/libgfortran.dylib | grep 'libgcc' | perl -pe 's/^\\s+(.*)\\/libg.*/\\1/gc'"
+    "otool -L ${libdir}/libcoinmumps.dylib | grep 'libgcc' | perl -pe 's/^\\s+(.*)\\/libg.*/\\1/gc'"
     OUTPUT_VARIABLE libgcc_dir
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 
@@ -93,7 +93,7 @@ install_name_tool_change_quadmath(ipopt.1)
 install_name_tool_id(coinmumps.1)
 install_name_tool_change(coinmumps.1 coinmetis.1 "@IPOPT_LIBDIR@")
 install_name_tool_change_gfortran(coinmumps.1)
-install_name_tool_change(coinmumps.1 gcc_s.1 "${libgcc_dir}")
+install_name_tool_change(coinmumps.1 gcc_s.1.1 "${libgcc_dir}")
 install_name_tool_change_quadmath(coinmumps.1)
 install_name_tool_add_rpath(coinmumps.1)
 
@@ -109,16 +109,16 @@ install_name_tool_add_rpath(coinmetis.1)
 
 # gfortran
 install_name_tool_id(gfortran)
-install_name_tool_change(gfortran gcc_s.1 "${libgcc_dir}")
+install_name_tool_change(gfortran gcc_s.1.1 "${libgcc_dir}")
 install_name_tool_change_quadmath(gfortran)
 install_name_tool_change_quadmath(gfortran.5)
 install_name_tool_add_rpath(gfortran)
 install_name_tool_add_rpath(gfortran.5)
 
 # gcc_s
-install_name_tool_id(gcc_s.1)
+install_name_tool_id(gcc_s.1.1)
 
 # quadmath
 install_name_tool_id(quadmath.0)
-install_name_tool_change(quadmath.0 gcc_s.1 "${libgcc_dir}")
+install_name_tool_change(quadmath.0 gcc_s.1.1 "${libgcc_dir}")
 install_name_tool_add_rpath(quadmath.0)
