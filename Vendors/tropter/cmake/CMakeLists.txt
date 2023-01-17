@@ -38,13 +38,45 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
     install(SCRIPT "${script}")
 
 elseif(TROPTER_COPY_DEPENDENCIES AND UNIX)
-        get_filename_component(gcc_libdir "${pkgcfg_lib_IPOPT_gfortran}" DIRECTORY)
+    message(STATUS "getting dir for ${pkgcfg_lib_IPOPT_gfortran}" )
+    message(STATUS "ADOLC_DIR dir ${ADOLC_DIR}" )
+    message(STATUS "ColPack_ROOT_DIR dir ${ColPack_ROOT_DIR}" )
+    message(STATUS "IPOPT_LIBDIR dir ${IPOPT_LIBDIR}" )
+    
+    get_filename_component(gcc_libdir "${pkgcfg_lib_IPOPT_gfortran}" DIRECTORY)
 
-        file(GLOB gfortran "${gcc_libdir}/libgfortran*.so")
-        file(GLOB quadmath "${gcc_libdir}/libquadmath*.so")
+    file(GLOB gfortran "${gcc_libdir}/libgfortran*.so")
+    file(GLOB quadmath "${gcc_libdir}/libquadmath*.so")
+    message(STATUS "gfortran list ${gfortran}" )
+    message(STATUS "quadmath list ${quadmath}" )
 
-        install(FILES
-           ${ADOLC_DIR}/lib64/libadolc.so.2.1.0 DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    install(FILES
+            ${ADOLC_DIR}/lib64/libadolc.so.2
+            ${ADOLC_DIR}/lib64/libadolc.so.2.1.0
+            ${ADOLC_DIR}/lib64/libadolc.so
+            # /usr/local/opt/boost/lib/libboost_system.so
+            ${ColPack_ROOT_DIR}/lib/libColPack.so.0
+            ${ColPack_ROOT_DIR}/lib/libColPack.so
+            ${IPOPT_LIBDIR}/libipopt.so.1.10.8
+            ${IPOPT_LIBDIR}/libipopt.so.1
+            ${IPOPT_LIBDIR}/libipopt.so
+            ${IPOPT_LIBDIR}/libcoinmumps.so.1.6.0
+            ${IPOPT_LIBDIR}/libcoinmumps.so.1
+            ${IPOPT_LIBDIR}/libcoinmumps.so
+            ${IPOPT_LIBDIR}/libcoinmetis.so.1.3.5
+            ${IPOPT_LIBDIR}/libcoinmetis.so.1
+            ${IPOPT_LIBDIR}/libcoinmetis.so
+
+            ${gfortran}
+            ${quadmath}
+            ${gcc_libdir}/libgcc_s.so
+
+            DESTINATION ${CMAKE_INSTALL_LIBDIR})
+        set(script
+            ${CMAKE_CURRENT_BINARY_DIR}/tropter_install_linux_dependency_libraries.cmake)
+        configure_file(tropter_install_linux_dependency_libraries.cmake.in
+                   "${script}" @ONLY)
+        install(SCRIPT "${script}")
 endif()
 
 
