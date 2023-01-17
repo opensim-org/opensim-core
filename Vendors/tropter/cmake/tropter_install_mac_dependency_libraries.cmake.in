@@ -73,9 +73,6 @@ execute_process(COMMAND bash "-c"
     OUTPUT_VARIABLE libgcc_name
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-
-message(STATUS "NAME: ${libgcc_name}")
-
 # tropter
 install_name_tool_change(tropter adolc.2 "@ADOLC_DIR@/lib64")
 install_name_tool_change(tropter ipopt.1 "@IPOPT_LIBDIR@")
