@@ -30,6 +30,7 @@
 %template (PropertyObjectList) OpenSim::Property<OpenSim::Object>;
 %template (PropertyIntList) OpenSim::Property<int>;
 %template (PropertyDoubleList) OpenSim::Property<double>;
+%template (PropertyBoolList) OpenSim::Property<bool>;
 %include <OpenSim/Common/Object.h>
 %include <OpenSim/Common/ObjectGroup.h>
 %include <Bindings/PropertyHelper.h>
