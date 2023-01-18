@@ -110,7 +110,7 @@ which has the form of the Hunt & Crossley damping model:
 
 The friction force is computed by blending two different friction models.
 The blending is performed based on the 'Sliding' State of the
-ExponentialSpringForce class. 
+ExponentialSpringForce class.
 
 #### Friction Model 1 - Pure Damping (Sliding = 1.0)
 When the body station is sliding with respect to the contact plane, the
@@ -641,7 +641,8 @@ private:
     void constructProperties();
     void updateParameters();
     void updateProperties();
-    void updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber);
+    void updateFromXMLNode(SimTK::Xml::Element& node,
+        int versionNumber) override;
     SimTK::ExponentialSpringParameters _stkparams;
 };
 
