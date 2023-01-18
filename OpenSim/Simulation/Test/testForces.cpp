@@ -1400,9 +1400,9 @@ void testExponentialContact() {
         const OpenSim::ExponentialContact& spr =
                 (OpenSim::ExponentialContact&)model.getForceSet().get(nameEC);
         OpenSim::Array<string> labels = spr.getRecordLabels();
-        cout << endl << labels << endl;
+        //cout << endl << labels << endl;
         Array<double> spr_values = spr.getRecordValues(state);
-        cout << endl << spr_values << endl;
+        //cout << endl << spr_values << endl;
         tfrc[0] += spr_values[0];  // x
         tfrc[1] += spr_values[1];  // y
         tfrc[2] += spr_values[2];  // z
@@ -1414,8 +1414,9 @@ void testExponentialContact() {
     ASSERT_EQUAL(tfrc[2], -gfrc[2], 1.0e-4); // z
 
     // Before exiting lets see if cloning works
+    string ecName = baseName + "0";
     const OpenSim::ExponentialContact& spr =
-            (OpenSim::ExponentialContact&)model.getForceSet().get("Exp0");
+            (OpenSim::ExponentialContact&)model.getForceSet().get(ecName);
     OpenSim::ExponentialContact* sprCopy = spr.clone();
     bool isEqual = (*sprCopy == spr);
     if (!isEqual) {
