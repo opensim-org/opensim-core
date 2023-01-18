@@ -63,7 +63,12 @@ public:
     const std::string& getOutputPath() const { return get_output_path(); }
 
     /** Set the exponent applied to the output value in the integrand. This
-    exponent is applied when minimizing the norm of a vector type output. */
+    exponent is applied when minimizing the norm of a vector type output. The
+    default exponent is set to 1, meaning that the output can take on negative
+    values in the integrand. When the exponent is set to a value greater than
+    1, the absolute value function is applied to the output (before the
+    exponent is applied), meaning that odd numbered exponents (greater than 1)
+    do not take on negative values. */
     void setExponent(int exponent) { set_exponent(exponent); }
     int getExponent() const { return get_exponent(); }
 
@@ -112,8 +117,13 @@ private:
             "The absolute path to the output in the model to use as the "
             "integrand for this goal.");
     OpenSim_DECLARE_PROPERTY(exponent, int,
-            "The exponent applied to the output value in the integrand "
-            "(default: 1).");
+            "The exponent applied to the output value in the integrand. "
+            "The output can take on negative values in the integrand when the "
+            "exponent is set to 1 (the default value). When the exponent is "
+            "set to a value greater than 1, the absolute value function is "
+            "applied to the output (before the exponent is applied), meaning "
+            "that odd numbered exponents (greater than 1) do not take on "
+            "negative values.");
     OpenSim_DECLARE_PROPERTY(output_index, int,
             "The index to the value to be minimized when a vector type "
             "Output is specified. For SpatialVec Outputs, indices 0, 1, "
