@@ -136,7 +136,7 @@ int main()
     cout << "Done" << std::endl;
     return 0;
 }
-// Test results of wrapping a sigle path perpendicular to a wrapObject
+// Test results of wrapping a single path perpendicular to a wrapObject
 // particularly path perpendicular to cylinder axis (Z axis)
 // and compare results to analytical/expected answers. Since cross-section is a circle/arc
 // results should match a sphere or ellipsoid with matching radius.
@@ -195,7 +195,7 @@ void testSingleWrapObjectPerpendicular(WrapObject* wrapObject, Vec3 axisRotation
         ASSERT_EQUAL<double>(-r, ma1, .0001); // SimTK::Eps
         double len1 = spring1->getLength(s);
         // Length is 0.9 by construction plus a portion of a quarter circle with radius r proportional to i
-        ASSERT_EQUAL<double>(len1, .9 + 0.25 * 2 * SimTK::Pi * r * i / nsteps, 1e-6); //this formula is based on radius = .5
+        ASSERT_EQUAL<double>(len1, 2*r-0.1 + 0.25 * 2 * SimTK::Pi * r * i / nsteps, 1e-6); 
 
     }
 }
@@ -230,12 +230,13 @@ void testCompareWrapObjects(OpenSim::WrapCylinder* wObj1, OpenSim::WrapObject* w
     spring1->updGeometryPath().
         appendNewPathPoint("insert", *body, Vec3(-r, r, 0));
     spring1->updGeometryPath().addPathWrap(*wObj);
-
     model.addComponent(spring1);
-    // Ceate offset frame in z direction
+
+    // Create offset frame in z direction
     PhysicalOffsetFrame* offsetZ = new PhysicalOffsetFrame(
-    "z_plus1", ground, SimTK::Transform(Vec3(0, 0, 1)));
+        "z_plus1", ground, SimTK::Transform(Vec3(0, 0, 1)));
     model.addComponent(offsetZ);
+
     // repeat for wObj2 offset in z direction
     // Add the wrap object to the body, which takes ownership of it
     WrapObject* wObj_2 = wObj2->clone();
@@ -248,7 +249,6 @@ void testCompareWrapObjects(OpenSim::WrapCylinder* wObj1, OpenSim::WrapObject* w
     spring2->updGeometryPath().
         appendNewPathPoint("insert", *body, Vec3(-r, r, 1));
     spring2->updGeometryPath().addPathWrap(*wObj_2);
-
     model.addComponent(spring2);
 
     model.finalizeConnections();
