@@ -7,16 +7,21 @@ set(libdir "@CMAKE_INSTALL_PREFIX@/@CMAKE_INSTALL_LIBDIR@")
 message(STATUS "Editing RPATH of tropter dependency libraries")
 
 macro(install_name_tool_add_rpath lib)
-    execute_process(COMMAND patchelf
-            --set-rpath "$ORIGIN"
-            "${libdir}/lib${lib}")
-    message(STATUS "patchelf --add-rpath ORIGIN to ${libdir}/lib${lib}")
+    execute_process(COMMAND bash "-c" "patchelf --force-rpath --set-rpath '$ORIGIN/:$ORIGIN/../../sdk/Simbody/lib' '${libdir}/lib${lib}'"
+        OUTPUT_VARIABLE res)
+    message(STATUS "patchelf --force-rpath --set-rpath '$ORIGIN/:$ORIGIN/../../sdk/Simbody/lib' '${libdir}/lib${lib}' '${res}'")
 endmacro()
 
-macro(install_name_tool_delete_rpath lib rpath)
-    execute_process(COMMAND patchelf
-            --remove-rpath ${rpath}
-            "${libdir}/lib${lib}")
+macro(install_name_tool_delete_rpath lib)
+    execute_process(COMMAND bash "-c" "patchelf --remove-rpath '${libdir}/lib${lib}'"
+        OUTPUT_VARIABLE res)
+    message(STATUS "patchelf --remove-rpath '${libdir}/lib${lib}' '${res}'")
+endmacro()
+
+macro(install_name_tool_print_rpath lib)
+    execute_process(COMMAND bash "-c" "patchelf --print-rpath '${libdir}/lib${lib}'"
+        OUTPUT_VARIABLE created_rpath)
+    message(STATUS "RPATH = '${created_rpath}'")
 endmacro()
 
 # Get the directory containing libgcc_s.1.dylib.
@@ -39,13 +44,16 @@ endmacro()
 #install_name_tool_change(tropter coinmetis.1 "@IPOPT_LIBDIR@")
 #install_name_tool_change_gfortran(tropter)
 #install_name_tool_change_quadmath(tropter)
+#install_name_tool_add_rpath(tropter.so)
+
+install_name_tool_print_rpath(tropter.so)
+install_name_tool_delete_rpath(tropter.so)
 install_name_tool_add_rpath(tropter.so)
+install_name_tool_print_rpath(tropter.so)
 
 # adol-c
 #install_name_tool_id(adolc.2)
-install_name_tool_add_rpath(adolc.so.2.1.0)
-install_name_tool_add_rpath(adolc.so)
-install_name_tool_add_rpath(adolc.so.2)
+#install_name_tool_add_rpath(adolc.so.2.1.0)
+#install_name_tool_add_rpath(adolc.so)
+#install_name_tool_add_rpath(adolc.so.2)
 #install_name_tool_delete_rpath(adolc.2 "@ColPack_ROOT_DIR@/lib")
-
-
