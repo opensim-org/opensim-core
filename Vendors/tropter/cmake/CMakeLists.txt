@@ -44,8 +44,8 @@ elseif(TROPTER_COPY_DEPENDENCIES AND UNIX)
     
     get_filename_component(gcc_libdir "${pkgcfg_lib_IPOPT_gfortran}" DIRECTORY)
 
-    file(GLOB gfortran "${gcc_libdir}/libgfortran*.so")
-    file(GLOB quadmath "${gcc_libdir}/libquadmath*.so")
+    file(GLOB gfortran "${gcc_libdir}/../../../x86_64-linux-gnu/libgfortran*.so*")
+    file(GLOB quadmath "${gcc_libdir}/../../../x86_64-linux-gnu/libquadmath*.so*")
     message(STATUS "gfortran list ${gfortran}" )
     message(STATUS "quadmath list ${quadmath}" )
 
@@ -77,6 +77,5 @@ elseif(TROPTER_COPY_DEPENDENCIES AND UNIX)
                    "${script}" @ONLY)
         install(SCRIPT "${script}")
 endif()
-
 
 
