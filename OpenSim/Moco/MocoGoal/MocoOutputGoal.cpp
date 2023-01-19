@@ -207,14 +207,14 @@ void MocoOutputExtremumGoal::initializeOnModelImpl(const Model& output) const {
     OPENSIM_THROW_IF_FRMOBJ(m_minimizeVectorNorm == 1 &&
                                         m_data_type == Type_Vec3,
             Exception, "The MocoOutputExtremumGoal cannot be used when "
-            "taking the norm of an ouput of SimTK::Vec3 type. Use the "
+            "taking the norm of an output of SimTK::Vec3 type. Use the "
             "MocoOutputGoal instead.");
 
     OPENSIM_THROW_IF_FRMOBJ(
              m_minimizeVectorNorm == 1 && m_data_type == Type_SpatialVec,
              Exception,
              "The MocoOutputExtremumGoal cannot be used when "
-             "taking the norm of an ouput of SimTK::SpatialVec type. Use the "
+             "taking the norm of an output of SimTK::SpatialVec type. Use the "
              "MocoOutputGoal instead.");
     
     if (get_extremum_type() == "minimum") { 
@@ -228,6 +228,11 @@ void MocoOutputExtremumGoal::initializeOnModelImpl(const Model& output) const {
 
 void MocoOutputExtremumGoal::calcIntegrandImpl(
         const IntegrandInput& input, double& integrand) const {
+    OPENSIM_THROW_IF_FRMOBJ(
+            get_smoothing_factor() < 0.2 || get_smoothing_factor() > 1.0,
+            Exception,
+            "The smoothing factor must be on the closed interval "
+            "[0.2,1.0].");
     double integrand_temp =
             (1 / get_smoothing_factor()) *
             (std::log(1 + exp(get_smoothing_factor() * m_beta *

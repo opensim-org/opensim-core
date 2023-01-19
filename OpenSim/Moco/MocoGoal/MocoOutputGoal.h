@@ -205,7 +205,7 @@ The goal is computed as follows:
 
 \f[
 \frac{1}{dm} \int_{t_i}^{t_f} 
-    w_vB((\frac{1}{s} (\ln (1 + \exp (s\betav))))^p) ~dt
+    w_v\beta((\frac{1}{s} (\ln (1 + \exp (s\betav))))^p) ~dt
 \f]
 We use the following notation:
 - \f$ d \f$: displacement of the system, if `divide_by_displacement` is
@@ -214,14 +214,12 @@ We use the following notation:
   true; 1 otherwise.
 - \f$ v \f$: the output variable of choice.
 - \f$ w_v \f$: the weight for output variable \f$ v \f$.
-- \f$ B \f$: the approximate extremum to be taken (B = -1 for minimum;
-  B = 1 for maximum).
+- \f$ \beta \f$: the approximate extremum to be taken (\beta == -1 for
+  minimum; \beta == 1 for maximum).
 - \f$ s \f$: the smoothing factor for approximating the extremum. With
-  \f$ s \f$ set to >= 1 the approximation is closer to the true extremum
-  to be taken, whilst if it is set to < 1 the approximation is further 
-  from the true extremum (more smoothing). For \f$ v \f$ with magnitudes
-  between 1-3000 during a simulation it is recommended to set this value
-  as 0.2 to prevent the exponential operator from reaching Inf.
+  \f$ s \f$ == 1 the approximation is closer to the true extremum taken.
+  For \f$ v \f$ with potentially large magnitudes (> 2000) during a simulation
+  it is recommended to set this property as 0.2 to avoid Inf.
 - \f$ p \f$: the `exponent`.
 */
 class OSIMMOCO_API MocoOutputExtremumGoal : public MocoOutputBase {
@@ -255,7 +253,10 @@ public:
     }
     std::string getExtremumType() const { return get_extremum_type(); }
 
-    /** Set the smoothing factor used for the extremum approximation. */
+    /** Set the smoothing factor (Default = 1) used for the extremum
+    approximation. It is recommended to set this property to 0.2 to prevent
+    the calculation returning Inf in circumstances when the output may reach
+    large magnitudes (> 2000) during a simulation. */
     void setSmoothingFactor(double smoothing_factor) {
         set_smoothing_factor(smoothing_factor);
     }
@@ -282,17 +283,10 @@ private:
             "(Default extremum type = 'minimum').");
     OpenSim_DECLARE_PROPERTY(smoothing_factor, double,
             "The smoothing factor applied in the approximation of the "
-            "extremum function (Default extremum scaler = 1). For outputs "
-            "with magnitudes between 1-3000 during a simulation it is "
-            "recommended to set this property as 0.2 to prevent the "
-            "calculation from reaching Inf."
-            "For example, if the extremum_type is 'maximum', "
-            "smoothing_factor = 1, and the output variable = 30000; it "
-            "returns Inf. Decrease the smoothing_factor = 0.2; it returns "
-            "3000.0 recurring. With output variable = 25 and "
-            "smoothing_factor = 0.2; it returns 25.0335767. With output "
-            "variable = 25 and smoothing_factor = 1; it returns 25.0 "
-            "recurring.");
+            "extremum function (Default = 1). For outputs with "
+            "potentially large magnitudes (> 2000) during a simulation "
+            "it is recommended to set this property to 0.2 to prevent "
+            "the calculation from reaching Inf.");
 
     enum DataType {
         Type_double,
