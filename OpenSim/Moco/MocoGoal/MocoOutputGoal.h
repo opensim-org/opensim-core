@@ -253,10 +253,10 @@ public:
     }
     std::string getExtremumType() const { return get_extremum_type(); }
 
-    /** Set the smoothing factor (Default = 1) used for the extremum
-    approximation. It is recommended to set this property to 0.2 to prevent
-    the calculation returning Inf in circumstances when the output may reach
-    large magnitudes (> 2000) during a simulation. */
+    /** Set the smoothing factor used for the extremum approximation
+    (default = 1.0). This property can be set between [0.2, 1.0]. For Outputs
+    that may take on large values (> ~2000) during a simulation, it is
+    recommended to set this property closer to 0.2.*/
     void setSmoothingFactor(double smoothing_factor) {
         set_smoothing_factor(smoothing_factor);
     }
@@ -283,10 +283,10 @@ private:
             "(Default extremum type = 'minimum').");
     OpenSim_DECLARE_PROPERTY(smoothing_factor, double,
             "The smoothing factor applied in the approximation of the "
-            "extremum function (Default = 1). For outputs with "
-            "potentially large magnitudes (> 2000) during a simulation "
-            "it is recommended to set this property to 0.2 to prevent "
-            "the calculation from reaching Inf.");
+            "extremum function (default = 1.0). This property can be set "
+            "between [0.2, 1.0]. For Outputs that may take on large values "
+            "(> ~2000) during a simulation, it is recommended to set this "
+            "property closer to 0.2.");
 
     enum DataType {
         Type_double,

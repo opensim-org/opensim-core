@@ -229,7 +229,7 @@ void MocoOutputExtremumGoal::initializeOnModelImpl(const Model& output) const {
 void MocoOutputExtremumGoal::calcIntegrandImpl(
         const IntegrandInput& input, double& integrand) const {
     OPENSIM_THROW_IF_FRMOBJ(
-            get_smoothing_factor() < 0.2 || get_smoothing_factor() > 1.0,
+            get_smoothing_factor() <= 0.2 || get_smoothing_factor() >= 1.0,
             Exception,
             "The smoothing factor must be on the closed interval "
             "[0.2,1.0].");
