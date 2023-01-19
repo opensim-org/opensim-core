@@ -9,7 +9,7 @@ message(STATUS "Editing RPATH of tropter dependency libraries")
 macro(install_name_tool_add_rpath lib)
     execute_process(COMMAND bash "-c" "patchelf --force-rpath --set-rpath '$ORIGIN/:$ORIGIN/../../sdk/Simbody/lib' '${libdir}/lib${lib}'"
         OUTPUT_VARIABLE res)
-    message(STATUS "patchelf --force-rpath --set-rpath '$ORIGIN/:$ORIGIN/../../sdk/Simbody/lib' '${libdir}/lib${lib}' '${res}'")
+    message(STATUS "patchelf --set-rpath '$ORIGIN/:$ORIGIN/../../sdk/Simbody/lib' '${libdir}/lib${lib}' '${res}'")
 endmacro()
 
 macro(install_name_tool_delete_rpath lib)
@@ -50,6 +50,16 @@ install_name_tool_print_rpath(tropter.so)
 install_name_tool_delete_rpath(tropter.so)
 install_name_tool_add_rpath(tropter.so)
 install_name_tool_print_rpath(tropter.so)
+
+install_name_tool_print_rpath(ipopt.so)
+install_name_tool_delete_rpath(ipopt.so)
+install_name_tool_add_rpath(ipopt.so)
+install_name_tool_print_rpath(ipopt.so)
+
+install_name_tool_print_rpath(adolc.so)
+install_name_tool_delete_rpath(adolc.so)
+install_name_tool_add_rpath(adolc.so)
+install_name_tool_print_rpath(adolc.so)
 
 # adol-c
 #install_name_tool_id(adolc.2)
