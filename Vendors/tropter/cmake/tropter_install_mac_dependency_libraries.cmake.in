@@ -66,6 +66,13 @@ execute_process(COMMAND bash "-c"
     OUTPUT_VARIABLE libgcc_dir
     OUTPUT_STRIP_TRAILING_WHITESPACE)
 
+# Get the actual name of the library libgcc_s.1.dylib (can be libgcc_s.1.1.dylib),
+# or another if it changes in the future.
+execute_process(COMMAND bash "-c"
+    "basename `otool -L ${libdir}/libcoinmumps.dylib  | grep 'libgcc' | awk '{print $1}'` .dylib | cut -c 4-"
+    OUTPUT_VARIABLE libgcc_name
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
 # tropter
 install_name_tool_change(tropter adolc.2 "@ADOLC_DIR@/lib64")
 install_name_tool_change(tropter ipopt.1 "@IPOPT_LIBDIR@")
@@ -93,7 +100,7 @@ install_name_tool_change_quadmath(ipopt.1)
 install_name_tool_id(coinmumps.1)
 install_name_tool_change(coinmumps.1 coinmetis.1 "@IPOPT_LIBDIR@")
 install_name_tool_change_gfortran(coinmumps.1)
-install_name_tool_change(coinmumps.1 gcc_s.1.1 "${libgcc_dir}")
+install_name_tool_change(coinmumps.1 "${libgcc_name}" "${libgcc_dir}")
 install_name_tool_change_quadmath(coinmumps.1)
 install_name_tool_add_rpath(coinmumps.1)
 
@@ -109,16 +116,16 @@ install_name_tool_add_rpath(coinmetis.1)
 
 # gfortran
 install_name_tool_id(gfortran)
-install_name_tool_change(gfortran gcc_s.1.1 "${libgcc_dir}")
+install_name_tool_change(gfortran "${libgcc_name}" "${libgcc_dir}")
 install_name_tool_change_quadmath(gfortran)
 install_name_tool_change_quadmath(gfortran.5)
 install_name_tool_add_rpath(gfortran)
 install_name_tool_add_rpath(gfortran.5)
 
 # gcc_s
-install_name_tool_id(gcc_s.1.1)
+install_name_tool_id("${libgcc_name}")
 
 # quadmath
 install_name_tool_id(quadmath.0)
-install_name_tool_change(quadmath.0 gcc_s.1.1 "${libgcc_dir}")
+install_name_tool_change(quadmath.0 "${libgcc_name}" "${libgcc_dir}")
 install_name_tool_add_rpath(quadmath.0)
