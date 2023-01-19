@@ -193,6 +193,119 @@ private:
     void constructProperties();
 };
 
+/** This goal permits the integration of only positive or negative values from a
+model Output. This goal allows you to use model Outputs of type double, or a 
+single specified element from an Output of type SimTK::Vec3 or 
+SimTK::SpatialVec in the integrand of a goal. You can also specify the exponent
+of the value in the integrand via 'setExponent()'. 
+
+This goal performs a smooth approximation of the common 'minimum' or 'maximum'
+extremum functions and then calculates the resulting integral. 
+The goal is computed as follows:
+
+\f[
+\frac{1}{dm} \int_{t_i}^{t_f} 
+    w_vB((\frac{1}{s} (\ln (1 + \exp (s\betav))))^p) ~dt
+\f]
+We use the following notation:
+- \f$ d \f$: displacement of the system, if `divide_by_displacement` is
+  true; 1 otherwise.
+- \f$ m \f$: mass of the system, if `divide_by_mass` is
+  true; 1 otherwise.
+- \f$ v \f$: the output variable of choice.
+- \f$ w_v \f$: the weight for output variable \f$ v \f$.
+- \f$ B \f$: the approximate extremum to be taken (B = -1 for minimum;
+  B = 1 for maximum).
+- \f$ s \f$: the smoothing factor for approximating the extremum. With
+  \f$ s \f$ set to >= 1 the approximation is closer to the true extremum
+  to be taken, whilst if it is set to < 1 the approximation is further 
+  from the true extremum (more smoothing). For \f$ v \f$ with magnitudes
+  between 1-3000 during a simulation it is recommended to set this value
+  as 0.2 to prevent the exponential operator from reaching Inf.
+- \f$ p \f$: the `exponent`.
+*/
+class OSIMMOCO_API MocoOutputExtremumGoal : public MocoOutputBase {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoOutputExtremumGoal, MocoOutputBase);
+
+public:
+    MocoOutputExtremumGoal() { constructProperties(); }
+    MocoOutputExtremumGoal(std::string name) : MocoOutputBase(std::move(name)) {
+        constructProperties();
+    }
+    MocoOutputExtremumGoal(std::string name, double weight)
+            : MocoOutputBase(std::move(name), weight) {
+        constructProperties();
+    }
+
+    /** Set if the goal should be divided by the displacement of the system's
+    center of mass over the phase. */
+    void setDivideByDisplacement(bool tf) { set_divide_by_displacement(tf); }
+    bool getDivideByDisplacement() const {
+        return get_divide_by_displacement();
+    }
+
+    /** Set if the goal should be divided by the total mass of the model. */
+    void setDivideByMass(bool tf) { set_divide_by_mass(tf); }
+    bool getDivideByMass() const { return get_divide_by_mass(); }
+
+    /** Set the type of extremum ('minimum' or 'maximum') to be applied to the 
+    output variable of choice. */
+    void setExtremumType(std::string extremum_type) {
+        set_extremum_type(extremum_type);
+    }
+    std::string getExtremumType() const { return get_extremum_type(); }
+
+    /** Set the smoothing factor used for the extremum approximation. */
+    void setSmoothingFactor(double smoothing_factor) {
+        set_smoothing_factor(smoothing_factor);
+    }
+    double getSmoothingFactor() const { return get_smoothing_factor(); }
+
+protected:
+    void initializeOnModelImpl(const Model&) const override;
+    void calcIntegrandImpl(
+            const IntegrandInput& state, double& integrand) const override;
+    void calcGoalImpl(
+            const GoalInput& input, SimTK::Vector& values) const override;
+    bool getSupportsEndpointConstraintImpl() const override { return true; }
+    Mode getDefaultModeImpl() const override { return Mode::Cost; }
+
+private:
+    OpenSim_DECLARE_PROPERTY(divide_by_displacement, bool,
+            "Divide by the model's displacement over the phase (default: "
+            "false)");
+    OpenSim_DECLARE_PROPERTY(divide_by_mass, bool,
+            "Divide by the model's total mass (default: false)");
+    OpenSim_DECLARE_PROPERTY(extremum_type, std::string,
+            "The type of extremum to be taken in the goal."
+            "'minimum' or 'maximum'"
+            "(Default extremum type = 'minimum').");
+    OpenSim_DECLARE_PROPERTY(smoothing_factor, double,
+            "The smoothing factor applied in the approximation of the "
+            "extremum function (Default extremum scaler = 1). For outputs "
+            "with magnitudes between 1-3000 during a simulation it is "
+            "recommended to set this property as 0.2 to prevent the "
+            "calculation from reaching Inf."
+            "For example, if the extremum_type is 'maximum', "
+            "smoothing_factor = 1, and the output variable = 30000; it "
+            "returns Inf. Decrease the smoothing_factor = 0.2; it returns "
+            "3000.0 recurring. With output variable = 25 and "
+            "smoothing_factor = 0.2; it returns 25.0335767. With output "
+            "variable = 25 and smoothing_factor = 1; it returns 25.0 "
+            "recurring.");
+
+    enum DataType {
+        Type_double,
+        Type_Vec3,
+        Type_SpatialVec,
+    };
+    mutable DataType m_data_type;
+    mutable int m_beta;
+    mutable bool m_minimizeVectorNorm; 
+
+    void constructProperties();
+};
+
 /** This goal allows you to minimize or constrain a Model Output value at the
 beginning of a trajectory. Outputs of type double, SimTK::Vec3, and
 SimTK::SpatialVec are supported. By default, when using vector type Outputs, the

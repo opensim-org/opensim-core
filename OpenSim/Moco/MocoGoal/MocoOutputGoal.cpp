@@ -185,6 +185,69 @@ void MocoOutputGoal::calcGoalImpl(
 }
 
 // ============================================================================
+// MocoOutputExtremumGoal
+// ============================================================================
+
+void MocoOutputExtremumGoal::constructProperties() {
+    constructProperty_divide_by_displacement(false);
+    constructProperty_divide_by_mass(false);
+    constructProperty_extremum_type("minimum");
+    constructProperty_smoothing_factor(1);
+}
+
+void MocoOutputExtremumGoal::initializeOnModelImpl(const Model& output) const {
+    initializeOnModelBase();
+
+    OPENSIM_THROW_IF_FRMOBJ(
+            get_extremum_type() != "minimum" 
+                && get_extremum_type() != "maximum",
+            Exception, "The extremum type must be either 'minimum' " 
+            " or 'maximum'.");
+
+    OPENSIM_THROW_IF_FRMOBJ(m_minimizeVectorNorm == 1 &&
+                                        m_data_type == Type_Vec3,
+            Exception, "The MocoOutputExtremumGoal cannot be used when "
+            "taking the norm of an ouput of SimTK::Vec3 type. Use the "
+            "MocoOutputGoal instead.");
+
+    OPENSIM_THROW_IF_FRMOBJ(
+             m_minimizeVectorNorm == 1 && m_data_type == Type_SpatialVec,
+             Exception,
+             "The MocoOutputExtremumGoal cannot be used when "
+             "taking the norm of an ouput of SimTK::SpatialVec type. Use the "
+             "MocoOutputGoal instead.");
+    
+    if (get_extremum_type() == "minimum") { 
+        m_beta = -1;
+    } else if (get_extremum_type() == "maximum") {
+        m_beta = 1;
+    };
+
+    setRequirements(1, 1, getDependsOnStage());
+}
+
+void MocoOutputExtremumGoal::calcIntegrandImpl(
+        const IntegrandInput& input, double& integrand) const {
+    double integrand_temp =
+            (1 / get_smoothing_factor()) *
+            (std::log(1 + exp(get_smoothing_factor() * m_beta *
+                                  calcOutputValue(input.state))));
+    integrand = m_beta*setValueToExponent(integrand_temp);
+}
+
+void MocoOutputExtremumGoal::calcGoalImpl(
+        const MocoGoal::GoalInput& input, SimTK::Vector& values) const {
+    values[0] = input.integral;
+    if (get_divide_by_displacement()) {
+        values[0] /=
+                calcSystemDisplacement(input.initial_state, input.final_state);
+    }
+    if (get_divide_by_mass()) {
+        values[0] /= getModel().getTotalMass(input.initial_state);
+    }
+}
+
+// ============================================================================
 // MocoOutputTrackingGoal
 // ============================================================================
 
