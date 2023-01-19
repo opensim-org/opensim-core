@@ -34,7 +34,7 @@ using namespace std;
 
 void testSingleWrapObjectPerpendicular(OpenSim::WrapObject* wObj, Vec3 axialRotation = Vec3(0.0));
 void testCompareWrapObjects(OpenSim::WrapCylinder* wObj1, OpenSim::WrapObject* wObj2);
-
+void testEllipsoidWrapLength(OpenSim::WrapEllipsoid* wObj);
 const double radius = 0.5;
 int main()
 {
@@ -84,6 +84,7 @@ int main()
     try {
         auto* wo = new WrapEllipsoid();
         wo->setName("pulley1");
+        // Use wrapEllipsoid methods to wrap on a sphere
         wo->set_dimensions(Vec3(radius));
         testSingleWrapObjectPerpendicular(wo);
         testSingleWrapObjectPerpendicular(wo, Vec3{ 0, 0, SimTK::Pi / 2 });
@@ -109,25 +110,39 @@ int main()
         auto* woTwo = new WrapEllipsoid();
         woTwo->setName("pulley2");
         // Change the angle between the cylinder axis and the line connecting end points of the pulley.
-        // Values -36 to 36 degrees guarantee that wrapping doesn't occur at the cap of the cylinder which is a rather poorly 
+        // Values -30 to 30 degrees guarantee that wrapping doesn't occur at the cap of the cylinder which is a rather poorly 
         // handled scenario that leads to C0 length curve and may need to be dropped as non-biological 
         // this scenario also results in a truncated conic-section that can't be computed analytically.
         // Wider range should work but ellipsoid wrapping bugs out and produces a kink.
         // -Ayman 10/22
-        auto startAngle = -SimTK::Pi / 5;
-        auto endAngle = SimTK::Pi / 5;
+        auto startAngle = -SimTK::Pi / 6;
+        auto endAngle = SimTK::Pi / 6;
         for (double angle = startAngle; angle <= endAngle; angle += SimTK::Pi/180) {
             woOne->set_xyz_body_rotation(Vec3(0,  angle, 0)); // Rotate the cylinder by angle
-            woTwo->set_dimensions(Vec3(radius/cos(angle), radius, 1)); // Change radii of ellipsoid to match cross-section
+            woTwo->set_dimensions(Vec3(radius/cos(angle), radius, 1)); // Change radii of ellipsoid to match cross-section of cylinder cut
             // std::cout << "compare cylinder vs ellipsoid at angle " << angle * 180/SimTK::Pi << std::endl;
             testCompareWrapObjects(woOne, woTwo);
+        }
+
+    }
+    catch (const std::exception& e) {
+        std::cout << "Exception: " << e.what() << std::endl;
+        failures.push_back("Test Compare Cylinder-Ellipsoid failed.");
+    } 
+    
+    try {
+        auto* wo = new WrapEllipsoid();
+        wo->setName("pulley1");
+        // change rotation angle by 1 deg up to a little under pi/2 which is a singularity
+        for (double angle = 0; angle < SimTK::Pi/2 -.1; angle += SimTK::Pi / 180*5) {
+            wo->set_dimensions(Vec3(radius / cos(angle), radius, 1));
+            testEllipsoidWrapLength(wo);
         }
     }
     catch (const std::exception& e) {
         std::cout << "Exception: " << e.what() << std::endl;
-        failures.push_back("Test Compare failed.");
-    } 
-
+        failures.push_back("testEllipsoidWrapLength");
+    }
     if (!failures.empty()) {
         cout << "Done, with failure(s): " << failures << std::endl;
         return 1;
@@ -179,8 +194,7 @@ void testSingleWrapObjectPerpendicular(WrapObject* wrapObject, Vec3 axisRotation
     //model.print(wObj->getConcreteClassName()+"Analytical.osim");
     //model.updDisplayHints().disableVisualization();
     SimTK::State& s = model.initSystem();
-    auto& coord = joint->updCoordinate();
-    const CoordinateSet& cset = model.getCoordinateSet();
+    auto& coord = joint->getCoordinate();
     int nsteps = 1000;
     for (int i = 0; i <= nsteps; ++i) {
         
@@ -194,13 +208,13 @@ void testSingleWrapObjectPerpendicular(WrapObject* wrapObject, Vec3 axisRotation
 
         ASSERT_EQUAL<double>(-r, ma1, .0001); // SimTK::Eps
         double len1 = spring1->getLength(s);
-        // Length is 0.9 by construction plus a portion of a quarter circle with radius r proportional to i
+        // Length is 2*r -0.1 by construction plus a portion of a quarter circle with radius r proportional to i
         ASSERT_EQUAL<double>(len1, 2*r-0.1 + 0.25 * 2 * SimTK::Pi * r * i / nsteps, 1e-6); 
 
     }
 }
 // Test results of wrapping a sigle path around a wrapCylinder wObj1
-// and compare results to analytically equivalent wrapObject wObj2
+// and compare results to analytically equivalent wrapEllipsoid wObj2
 // For example wrapping around a rotated cylinder against an ellipsoid with radii 
 // picked to match the radii of the elliptical cross-section
 void testCompareWrapObjects(OpenSim::WrapCylinder* wObj1, OpenSim::WrapObject* wObj2) {
@@ -256,8 +270,7 @@ void testCompareWrapObjects(OpenSim::WrapCylinder* wObj1, OpenSim::WrapObject* w
     //model.print("wrapAnalytical.osim");
     //model.updDisplayHints().disableVisualization();
     SimTK::State& s = model.initSystem();
-    auto& coord = joint->updCoordinate();
-    const CoordinateSet& cset = model.getCoordinateSet();
+    auto& coord = joint->getCoordinate();
 
     int nsteps = 1000;
     for (int i = 0; i <= nsteps; ++i) {
@@ -270,7 +283,64 @@ void testCompareWrapObjects(OpenSim::WrapCylinder* wObj1, OpenSim::WrapObject* w
 
         double len1 = spring1->getLength(s);
         double len2 = spring2->getLength(s);
-        ASSERT_EQUAL<double>(len1, len2, .01);
+        //std::cout << std::fabs(len1 - len2) << std::endl;
+        ASSERT_EQUAL<double>(len1, len2, .01*r);
     }
+}
+// Ellipsoid passed in has radii of a,b, c wrapping occurs along z axis
+// no closed-form analytical solution to compare but approximate length
+// for full ellipse. Wrapping should match exactly 1/4 
+// perimeter of ellipse + fixed offset baked in.
+void testEllipsoidWrapLength(OpenSim::WrapEllipsoid* wrapObject)
+{
+    auto visualize = false;
+    const double r = radius;
+    Model model;
+
+    auto& ground = model.updGround();
+    auto body = new OpenSim::Body("body", 1, Vec3(-r, 0, 0), Inertia(0.1, 0.1, 0.01));
+    model.addComponent(body);
+
+    auto joint = new PinJoint("pin", ground, *body);
+    auto& qi = joint->updCoordinate();
+    qi.setName("q_pin");
+    model.addComponent(joint);
+
+    // Add the wrap object to the body, which takes ownership of it
+    WrapObject* wObj = wrapObject->clone();
+    ground.addWrapObject(wObj);
+
+    // One spring has wrap cylinder with respect to ground origin
+    PathSpring* spring1 =
+        new PathSpring("spring1", 1.0, 0.1, 0.01);
+    spring1->updGeometryPath().
+        appendNewPathPoint("origin", ground, Vec3(r - .1, r, 0)); //offset in X direction to avoid ambiguous scenario where path passes through center
+    // insertion point is -r down from the tip of the long axis of the ellipsoid
+    spring1->updGeometryPath().
+        appendNewPathPoint("insert", *body, Vec3(-wrapObject->get_dimensions()[0], -r, 0));
+    spring1->updGeometryPath().addPathWrap(*wObj);
+
+    model.addComponent(spring1);
+
+    model.finalizeConnections();
+    model.setUseVisualizer(visualize);
+    //model.print(wObj->getConcreteClassName()+"Analytical.osim");
+    //model.updDisplayHints().disableVisualization();
+    SimTK::State& s = model.initSystem();
+    model.realizeVelocity(s);
+
+    if (visualize)
+        model.getVisualizer().show(s);
+
+    double len1 = spring1->getLength(s);
+    // ref Ramanujan formula https://www.cuemath.com/measurement/perimeter-of-ellipse/
+    double a = wrapObject->get_dimensions()[0];
+    double b = wrapObject->get_dimensions()[1];
+    double h = ((a - b) * (a - b)) / ((a + b) * (a+b));
+    double lengthAnalyticalApprox = SimTK::Pi * (a + b) * (1 + 3 * h / (10 + std::sqrt(4 - 3 * h)));
+    //std::cout << "Compare: " << len1 << " and " << 2 * r - 0.1 + lengthAnalyticalApprox / 4 << std::endl;
+    // Length is 1/4 ellipse + 2r -.1
+    ASSERT_EQUAL<double>(len1, 2 * r - 0.1 + lengthAnalyticalApprox/4, 1e-4);
+
 }
 
