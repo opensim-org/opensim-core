@@ -118,8 +118,10 @@ int main()
         auto startAngle = -SimTK::Pi / 6;
         auto endAngle = SimTK::Pi / 6;
         for (double angle = startAngle; angle <= endAngle; angle += SimTK::Pi/180) {
-            woOne->set_xyz_body_rotation(Vec3(0,  angle, 0)); // Rotate the cylinder by angle
-            woTwo->set_dimensions(Vec3(radius/cos(angle), radius, 1)); // Change radii of ellipsoid to match cross-section of cylinder cut
+            // Rotate the cylinder by angle
+            woOne->set_xyz_body_rotation(Vec3(0,  angle, 0)); 
+            // Change radii of ellipsoid to match cross-section of cylinder cut
+            woTwo->set_dimensions(Vec3(radius/cos(angle), radius, 1)); 
             // std::cout << "compare cylinder vs ellipsoid at angle " << angle * 180/SimTK::Pi << std::endl;
             testCompareWrapObjects(woOne, woTwo);
         }
@@ -181,8 +183,9 @@ void testSingleWrapObjectPerpendicular(WrapObject* wrapObject, Vec3 axisRotation
     // One spring has wrap cylinder with respect to ground origin
     PathSpring* spring1 =
         new PathSpring("spring1", 1.0, 0.1, 0.01);
+    //offset in X direction to avoid ambiguous scenario where path passes through center
     spring1->updGeometryPath().
-        appendNewPathPoint("origin", ground, Vec3(r-.1, r, 0)); //offset in X direction to avoid ambiguous scenario where path passes through center
+        appendNewPathPoint("origin", ground, Vec3(r-.1, r, 0)); 
     spring1->updGeometryPath().
         appendNewPathPoint("insert", *body, Vec3(-r, r, 0));
     spring1->updGeometryPath().addPathWrap(*wObj);
@@ -213,7 +216,7 @@ void testSingleWrapObjectPerpendicular(WrapObject* wrapObject, Vec3 axisRotation
 
     }
 }
-// Test results of wrapping a sigle path around a wrapCylinder wObj1
+// Test results of wrapping a single path around a wrapCylinder wObj1
 // and compare results to analytically equivalent wrapEllipsoid wObj2
 // For example wrapping around a rotated cylinder against an ellipsoid with radii 
 // picked to match the radii of the elliptical cross-section
@@ -221,7 +224,6 @@ void testCompareWrapObjects(OpenSim::WrapCylinder* wObj1, OpenSim::WrapObject* w
     auto visualize = false;
     const double r = wObj1->get_radius();
     Model model;
-    model.setName("test" + wObj1->getConcreteClassName()+wObj2->getConcreteClassName());
 
     auto& ground = model.updGround();
     auto body = new OpenSim::Body("body", 1, Vec3(-r, 0, 0), Inertia(0.1, 0.1, 0.01));
@@ -239,8 +241,9 @@ void testCompareWrapObjects(OpenSim::WrapCylinder* wObj1, OpenSim::WrapObject* w
     // One spring has wrap cylinder with respect to ground origin
     PathSpring* spring1 =
         new PathSpring("spring1", 1.0, 0.1, 0.01);
+    //offset in X direction to avoid ambiguous scenario where path passes through center
     spring1->updGeometryPath().
-        appendNewPathPoint("origin", ground, Vec3(r - .1, r, 0)); //offset in X direction to avoid ambiguous scenario where path passes through center
+        appendNewPathPoint("origin", ground, Vec3(r - .1, r, 0)); 
     spring1->updGeometryPath().
         appendNewPathPoint("insert", *body, Vec3(-r, r, 0));
     spring1->updGeometryPath().addPathWrap(*wObj);
@@ -258,9 +261,9 @@ void testCompareWrapObjects(OpenSim::WrapCylinder* wObj1, OpenSim::WrapObject* w
     // One spring has wrap cylinder with respect to ground origin
     PathSpring* spring2 =
         new PathSpring("spring2", 1.0, 0.1, 0.01);
+    //offset in X direction to avoid ambiguous scenario where path passes through center
     spring2->updGeometryPath().
-        appendNewPathPoint("origin", ground, Vec3(r - .1, r, 1)); //offset in X direction to avoid ambiguous scenario where path passes through center
-    spring2->updGeometryPath().
+        appendNewPathPoint("origin", ground, Vec3(r - .1, r, 1)); 
         appendNewPathPoint("insert", *body, Vec3(-r, r, 1));
     spring2->updGeometryPath().addPathWrap(*wObj_2);
     model.addComponent(spring2);
@@ -287,9 +290,9 @@ void testCompareWrapObjects(OpenSim::WrapCylinder* wObj1, OpenSim::WrapObject* w
         ASSERT_EQUAL<double>(len1, len2, .01*r);
     }
 }
-// Ellipsoid passed in has radii of a,b, c wrapping occurs along z axis
+// Ellipsoid passed in has radii of a, b, c wrapping occurs along z axis
 // no closed-form analytical solution to compare but approximate length
-// for full ellipse. Wrapping should match exactly 1/4 
+// for full ellipse. Wrapping should match approximately 1/4 
 // perimeter of ellipse + fixed offset baked in.
 void testEllipsoidWrapLength(OpenSim::WrapEllipsoid* wrapObject)
 {
@@ -313,8 +316,9 @@ void testEllipsoidWrapLength(OpenSim::WrapEllipsoid* wrapObject)
     // One spring has wrap cylinder with respect to ground origin
     PathSpring* spring1 =
         new PathSpring("spring1", 1.0, 0.1, 0.01);
+    //offset in X direction to avoid ambiguous scenario where path passes through center
     spring1->updGeometryPath().
-        appendNewPathPoint("origin", ground, Vec3(r - .1, r, 0)); //offset in X direction to avoid ambiguous scenario where path passes through center
+        appendNewPathPoint("origin", ground, Vec3(r - .1, r, 0)); 
     // insertion point is -r down from the tip of the long axis of the ellipsoid
     spring1->updGeometryPath().
         appendNewPathPoint("insert", *body, Vec3(-wrapObject->get_dimensions()[0], -r, 0));
@@ -324,8 +328,7 @@ void testEllipsoidWrapLength(OpenSim::WrapEllipsoid* wrapObject)
 
     model.finalizeConnections();
     model.setUseVisualizer(visualize);
-    //model.print(wObj->getConcreteClassName()+"Analytical.osim");
-    //model.updDisplayHints().disableVisualization();
+
     SimTK::State& s = model.initSystem();
     model.realizeVelocity(s);
 
