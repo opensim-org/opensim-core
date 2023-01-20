@@ -61,6 +61,17 @@ install_name_tool_delete_rpath(adolc.so)
 install_name_tool_add_rpath(adolc.so)
 install_name_tool_print_rpath(adolc.so)
 
+install_name_tool_print_rpath(coinmumps.so.1)
+install_name_tool_delete_rpath(coinmumps.so.1)
+install_name_tool_add_rpath(coinmumps.so.1)
+install_name_tool_print_rpath(coinmumps.so.1)
+
+install_name_tool_print_rpath(coinmetis.so.1)
+install_name_tool_delete_rpath(coinmetis.so.1)
+install_name_tool_add_rpath(coinmetis.so.1)
+install_name_tool_print_rpath(coinmetis.so.1)
+
+
 # adol-c
 #install_name_tool_id(adolc.2)
 #install_name_tool_add_rpath(adolc.so.2.1.0)
