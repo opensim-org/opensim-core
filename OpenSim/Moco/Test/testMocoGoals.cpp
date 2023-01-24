@@ -911,7 +911,8 @@ TEMPLATE_TEST_CASE("MocoOutputGoal", "", MocoCasADiSolver,
     }
 }
 
-TEST_CASE("MocoOutputPeriodicityGoal and MocoOutputTrackingGoal") {
+TEMPLATE_TEST_CASE("MocoOutputPeriodicityGoal and MocoOutputTrackingGoal", "",
+        MocoCasADiSolver) {
 
         // Output periodicity problem.
         // ---------------------------
@@ -922,7 +923,7 @@ TEST_CASE("MocoOutputPeriodicityGoal and MocoOutputTrackingGoal") {
         goal->setName("periodic_speed");
         goal->setOutputPath("/body|linear_velocity");
         goal->setMode("endpoint_constraint");
-        auto &solver = study.initSolver<MocoCasADiSolver>();
+        auto &solver = study.initSolver<TestType>();
         solver.set_num_mesh_intervals(10);
         MocoSolution solution = study.solve();
         double initialSpeed = solution.getState("/slider/position/speed")[0];
@@ -951,7 +952,7 @@ TEST_CASE("MocoOutputPeriodicityGoal and MocoOutputTrackingGoal") {
         goalTracking->setExponent(2);
         goalTracking->setOutputIndex(0);
         goalTracking->setTrackingFunction(*speedSpline);
-        auto& solverTracking = studyTracking.initSolver<MocoCasADiSolver>();
+        auto& solverTracking = studyTracking.initSolver<TestType>();
         solverTracking.set_num_mesh_intervals(10);
         MocoSolution solutionTracking = studyTracking.solve();
         auto solutionSpeed =

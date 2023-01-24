@@ -44,8 +44,6 @@ namespace OpenSim {
 %template(StdVectorMocoBounds) std::vector<OpenSim::MocoBounds>;
 
 %ignore OpenSim::MocoMultibodyConstraint::getKinematicLevels;
-//%ignore OpenSim::MocoConstraintInfo::getBounds;
-//%ignore OpenSim::MocoConstraintInfo::setBounds;
 %ignore OpenSim::MocoProblemRep::getMultiplierInfos;
 
 %include <OpenSim/Moco/MocoConstraint.h>
