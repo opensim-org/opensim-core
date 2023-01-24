@@ -39,10 +39,13 @@ namespace OpenSim {
 %include <OpenSim/Moco/MocoGoal/MocoInitialVelocityEquilibriumDGFGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoStepTimeAsymmetryGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoStepLengthAsymmetryGoal.h>
+%include <OpenSim/Moco/MocoConstraintInfo.h>
+
+%template(StdVectorMocoBounds) std::vector<OpenSim::MocoBounds>;
 
 %ignore OpenSim::MocoMultibodyConstraint::getKinematicLevels;
-%ignore OpenSim::MocoConstraintInfo::getBounds;
-%ignore OpenSim::MocoConstraintInfo::setBounds;
+//%ignore OpenSim::MocoConstraintInfo::getBounds;
+//%ignore OpenSim::MocoConstraintInfo::setBounds;
 %ignore OpenSim::MocoProblemRep::getMultiplierInfos;
 
 %include <OpenSim/Moco/MocoConstraint.h>

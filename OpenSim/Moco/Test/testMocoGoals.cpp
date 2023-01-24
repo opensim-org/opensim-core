@@ -400,11 +400,11 @@ TEMPLATE_TEST_CASE("Test tracking goals", "", MocoCasADiSolver,
     }
 }
 
-TEST_CASE("Test MocoScaleFactor", "") {
+TEMPLATE_TEST_CASE("Test MocoScaleFactor", "", MocoCasADiSolver) {
     // Start with double pendulum problem to minimize control effort to create
     // a trajectory to track.
     MocoStudy study =
-            setupMocoStudyDoublePendulumMinimizeEffort<MocoCasADiSolver>();
+            setupMocoStudyDoublePendulumMinimizeEffort<TestType>();
     auto solutionEffort = study.solve();
 
     // Change the strength of the CoordinateActuators in the Model so that we
@@ -436,7 +436,7 @@ TEST_CASE("Test MocoScaleFactor", "") {
 
     // Update the solver with the new problem and disable initSystem() calls for
     // the MocoParameters.
-    auto& solver = study.updSolver<MocoCasADiSolver>();
+    auto& solver = study.updSolver<TestType>();
     solver.set_parameters_require_initsystem(false);
     solver.resetProblem(problem);
     // Construct a guess for the problem. We double the actuator strengths so
@@ -667,6 +667,14 @@ TEMPLATE_TEST_CASE("Endpoint constraints", "[casadi]", MocoCasADiSolver) {
         // the pendulum to end with some downward velocity.
         CHECK(solution.getState("/jointset/j0/q0/speed").getElt(N - 1, 0) ==
                 Approx(-0.05).margin(1e-10));
+    }
+
+    SECTION("Set bounds with scripting-friendly method.") {
+        periodic->setEndpointConstraintBounds(
+                std::vector<MocoBounds>(2, {-1.0, 1.0}));
+        const auto& conInfo = periodic->getConstraintInfo();
+        CHECK(conInfo.getBounds()[0] == MocoBounds(-1.0, 1.0));
+        CHECK(conInfo.getBounds()[1] == MocoBounds(-1.0, 1.0));
     }
 
     SECTION("Goal works in cost mode.") {

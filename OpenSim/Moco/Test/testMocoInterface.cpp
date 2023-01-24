@@ -82,8 +82,7 @@ MocoStudy createSlidingMassMocoStudy() {
     return study;
 }
 
-TEMPLATE_TEST_CASE("Non-uniform mesh", "", MocoCasADiSolver,
-        MocoTropterSolver) {
+TEMPLATE_TEST_CASE("Non-uniform mesh", "", MocoCasADiSolver, MocoTropterSolver) {
     auto transcriptionScheme =
             GENERATE(as<std::string>{}, "trapezoidal", "hermite-simpson");
     MocoStudy study;
@@ -207,8 +206,7 @@ std::unique_ptr<Model> createPendulumModel() {
     return model;
 }
 
-TEMPLATE_TEST_CASE("Solver options", "", MocoCasADiSolver,
-        MocoTropterSolver) {
+TEMPLATE_TEST_CASE("Solver options", "", MocoCasADiSolver, MocoTropterSolver) {
     MocoStudy study = createSlidingMassMocoStudy<TestType>();
     auto& ms = study.initSolver<TestType>();
     MocoSolution solDefault = study.solve();
@@ -258,7 +256,7 @@ TEMPLATE_TEST_CASE("Solver options", "", MocoCasADiSolver,
     }
 }
 
-TEMPLATE_TEST_CASE("Ordering of calls", "", MocoCasADiSolver, 
+TEMPLATE_TEST_CASE("Ordering of calls", "", MocoCasADiSolver,
         MocoTropterSolver) {
 
     // Solve a problem, edit the problem, re-solve.
@@ -303,10 +301,10 @@ TEMPLATE_TEST_CASE("Ordering of calls", "", MocoCasADiSolver,
 
 /// Test that we can read in a Moco setup file, solve, edit the setup,
 /// re-solve.
-TEST_CASE("Serializing a MocoStudy", "") {
+TEMPLATE_TEST_CASE("Serializing a MocoStudy", "", MocoCasADiSolver) {
     std::string fname = "testMocoInterface_testOMOCOSerialization.omoco";
     
-    MocoStudy study = createSlidingMassMocoStudy<MocoCasADiSolver>();
+    MocoStudy study = createSlidingMassMocoStudy<TestType>();
     MocoSolution sol0 = study.solve();
     study.print(fname);
     
@@ -417,8 +415,7 @@ TEST_CASE("Building a problem", "") {
     }
 }
 
-TEMPLATE_TEST_CASE(
-        "Workflow", "", MocoCasADiSolver, MocoTropterSolver) {
+TEMPLATE_TEST_CASE("Workflow", "", MocoCasADiSolver, MocoTropterSolver) {
 
     // Default bounds.
     SECTION("Default bounds") {
@@ -919,8 +916,7 @@ TEMPLATE_TEST_CASE("State tracking", "", MocoCasADiSolver,
     // TODO error if data does not cover time window.
 }
 
-TEMPLATE_TEST_CASE(
-        "Guess", "", MocoCasADiSolver, MocoTropterSolver) {
+TEMPLATE_TEST_CASE("Guess", "", MocoCasADiSolver, MocoTropterSolver) {
 
     MocoStudy study = createSlidingMassMocoStudy<TestType>();
     auto& ms = study.initSolver<TestType>();
@@ -1315,8 +1311,7 @@ TEMPLATE_TEST_CASE("Guess time-stepping", "[tropter]",
     }
 }
 
-TEMPLATE_TEST_CASE("MocoTrajectory", "", MocoCasADiSolver,
-        MocoTropterSolver) {
+TEMPLATE_TEST_CASE("MocoTrajectory", "", MocoCasADiSolver, MocoTropterSolver) {
     // Reading and writing.
     {
         const std::string fname = "testMocoInterface_testMocoTrajectory.sto";
@@ -1713,8 +1708,7 @@ TEST_CASE("Interpolate", "") {
     SimTK_TEST(SimTK::isNaN(newY[3]));
 }
 
-TEMPLATE_TEST_CASE("Sliding mass", "", MocoCasADiSolver,
-        MocoTropterSolver) {
+TEMPLATE_TEST_CASE("Sliding mass", "", MocoCasADiSolver, MocoTropterSolver) {
     MocoStudy study = createSlidingMassMocoStudy<TestType>();
     MocoSolution solution = study.solve();
     int numTimes = 20;
