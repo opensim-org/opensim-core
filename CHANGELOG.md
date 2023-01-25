@@ -18,6 +18,7 @@ v4.4.1
 - Fix issue where templatized Property classes are not available to Objects defined in plugins.
 - Minimum supported version for Java is now 1.8 in the cmake files (Issue #3215).
 - Fix CSV file adapter hanging on csv files that are missing end-header (issue #2432).
+- Improve documentation for MotionType to serve scripting users (Issue #3324).
 
 v4.4
 ====
