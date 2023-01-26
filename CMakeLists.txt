@@ -503,7 +503,7 @@ if(${BUILD_JAVA_WRAPPING})
     # for MATLAB requires version 7.0 (R14).
     find_package(Matlab COMPONENTS MAIN_PROGRAM)
     # Issue warning if Matlab and OpenSim build architectures differ.
-    # That is, one is 64-bit and other is not.
+    # That is, only 64-bit is supported.
     if(Matlab_FOUND)
         if(${Matlab_MEX_EXTENSION} MATCHES ".*64")
             # On Unix, assume host architecture to be same as target 
@@ -515,26 +515,13 @@ if(${BUILD_JAVA_WRAPPING})
                 message(WARNING ${MSG})
             elseif(MSVC AND NOT ${CMAKE_GENERATOR_PLATFORM} MATCHES "64")
                 string(CONCAT MSG 
-                       "Matlab found is 64-bit but C++ compiler chosen is "
-                       "32-bit. Matlab arch and OpenSim binaries arch have"
-                       " to be same.")
+                       "Matlab found is 32-bit which is no longer supported.")
                 message(WARNING ${MSG})
             endif()
-        elseif(${Matlab_MEX_EXTENSION} MATCHES "32")
-            # On Unix, assume host architecture to be same as target 
-            # architecture.
-            if(UNIX AND ${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "64")
-                string(CONCAT MSG
-                       "Matlab found is 32-bit but host is 64-bit. Matlab arch"
-                       " and OpenSim binaries arch have to be same.")
-                message(WARNING ${MSG})
-            elseif(MSVC AND ${CMAKE_GENERATOR_PLATFORM} MATCHES "64")
-                string(CONCAT MSG
-                       "Matlab found is 32-bit but C++ compiler chosen is "
-                       "64-bit. Matlab arch and OpenSim binaries arch have"
-                       " to be same.")
-                message(WARNING ${MSG})
-            endif()
+        else()
+            string(CONCAT MSG
+                       "Matlab 64-bit was not found.")
+            message(WARNING ${MSG})
         endif()
     endif()
     # Most users need to copy dependencies if wrapping is on. Warn user
