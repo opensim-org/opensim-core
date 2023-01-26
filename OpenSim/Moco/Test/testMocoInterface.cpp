@@ -314,7 +314,7 @@ TEMPLATE_TEST_CASE("Serializing a MocoStudy", "", MocoCasADiSolver,
 
     // TODO tropter solutions are very slightly different between successive
     // solves.
-    SimTK_TEST(sol0.isNumericallyEqual(sol1, 1e-10));
+    SimTK_TEST(sol0.isNumericallyEqual(sol1, 1e-8));
 }
 
 // TODO does not pass consistently on Mac

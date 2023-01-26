@@ -241,8 +241,8 @@ class TestSwigAddtlInterface(unittest.TestCase):
     def test_StdVectorMocoBounds(self):
         bounds = osim.StdVectorMocoBounds()
         bounds.append(osim.MocoBounds(1.23, 4.56))
-        assert(bounds.get(0).getLower() == 1.23)
-        assert(bounds.get(0).getUpper() == 4.56)
+        assert(bounds[0].getLower() == 1.23)
+        assert(bounds[0].getUpper() == 4.56)
 
 class TestWorkflow(unittest.TestCase):
 
