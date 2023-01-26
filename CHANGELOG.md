@@ -19,6 +19,7 @@ v4.4.1
 - Minimum supported version for Java is now 1.8 in the cmake files (Issue #3215).
 - Fix CSV file adapter hanging on csv files that are missing end-header (issue #2432).
 - Improve documentation for MotionType to serve scripting users (Issue #3324).
+- Drop support for 32-bit Matlab in build system since Matlab stopped providing 32-bit distributions (issue #3373).
 
 v4.4
 ====
