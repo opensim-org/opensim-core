@@ -301,7 +301,8 @@ TEMPLATE_TEST_CASE("Ordering of calls", "", MocoCasADiSolver,
 
 /// Test that we can read in a Moco setup file, solve, edit the setup,
 /// re-solve.
-TEMPLATE_TEST_CASE("Serializing a MocoStudy", "", MocoCasADiSolver) {
+TEMPLATE_TEST_CASE("Serializing a MocoStudy", "", MocoCasADiSolver,
+        MocoTropterSolver) {
     std::string fname = "testMocoInterface_testOMOCOSerialization.omoco";
     
     MocoStudy study = createSlidingMassMocoStudy<TestType>();
@@ -310,8 +311,10 @@ TEMPLATE_TEST_CASE("Serializing a MocoStudy", "", MocoCasADiSolver) {
     
     MocoStudy mocoDeserialized(fname);
     MocoSolution sol1 = mocoDeserialized.solve();
-    
-    SimTK_TEST(sol0.isNumericallyEqual(sol1));
+
+    // TODO tropter solutions are very slightly different between successive
+    // solves.
+    SimTK_TEST(sol0.isNumericallyEqual(sol1, 1e-10));
 }
 
 // TODO does not pass consistently on Mac
