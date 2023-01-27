@@ -3,6 +3,9 @@ Moco Change Log
 
 1.2.1
 -----
+- 2023-01-24: Added convenience methods `MocoGoal::setEndpointConstraintBounds` and
+              `MocoGoal::getEndpointConstraintBounds`.
+
 - 2023-01-03: Add center of pressure calculations to 
               `MocoUtilities::createExternalLoadsTableForGait`.
 
