@@ -26,6 +26,8 @@
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Common/Array.h>
 
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Analyses/Kinematics.h>
@@ -120,6 +122,9 @@ public:
     void test();
     void testParameters();
     void testSerialization();
+    void testDiscreteVariable(State& state, const ExponentialContact& ec,
+        const string& name, double valOrig,
+        double delta = 0.1, double tol = 1.0e-6);
 
     // Simulation
     void setInitialConditions(SimTK::State& state,
@@ -672,6 +677,27 @@ testSerialization() {
     SimTK_ASSERT_ALWAYS(pCopy == p,
         "Deserialized parameters are not equal to original parameters.");
 }
+//_____________________________________________________________________________
+void
+ExponentialContactTester::
+testDiscreteVariable(State& state, const ExponentialContact& ec,
+    const string& name, double val, double delta, double tol)
+{
+    // Get the starting value, which should be the same as val.
+    double valDV = ec.getDiscreteVariableValue(state, name);
+    ASSERT_EQUAL(val, valDV, tol);
+
+    // Set a new value.
+    double valNew = val + delta;
+    ec.setDiscreteVariableValue(state, name, valNew);
+    double valNewDV = ec.getDiscreteVariableValue(state, name);
+    ASSERT_EQUAL(valNew, valNewDV, tol);
+
+    // Restore the starting value.
+    ec.setDiscreteVariableValue(state, name, val);
+    valDV = ec.getDiscreteVariableValue(state, name);
+    ASSERT_EQUAL(val, valDV, tol);
+}
 
 //_____________________________________________________________________________
 void
@@ -694,6 +720,44 @@ simulate()
     // Reset the elastic anchor point for each ExponentialContact instance
     ForceSet& fSet = model->updForceSet();
     ExponentialContact::resetAnchorPoints(fSet, state);
+
+    // Check the Component API for discrete states.
+    int i;
+    int n = fSet.getSize();
+    for (i = 0; i < n; ++i) {
+        try {
+            string name;
+            double delta = 0.1;
+            double tol = 1.0e-6;
+            double val{0.0}, valAfter{0.0};
+
+            // Get the ExponentialContact Component
+            ExponentialContact& ec =
+                    dynamic_cast<ExponentialContact&>(fSet.get(i));
+            string path = ec.getAbsolutePathString();
+            cout << "path = " << path << endl;
+
+            // Static Coefficient of Friction
+            name = ec.getMuStaticDiscreteStateName();
+            val = ec.getMuStatic(state);
+            testDiscreteVariable(state, ec, name, val, delta, tol);
+            valAfter = ec.getMuStatic(state);
+            ASSERT_EQUAL(val, valAfter, tol);
+
+            // Kinetic Coefficient of Friction
+            name = ec.getMuKineticDiscreteStateName();
+            val = ec.getMuKinetic(state);
+            testDiscreteVariable(state, ec, name, val, delta, tol);
+            valAfter = ec.getMuKinetic(state);
+            ASSERT_EQUAL(val, valAfter, tol);
+
+        } catch (const std::exception& e) {
+            // Nothing should happen here. Execution is just skipping any
+            // OpenSim::Force that is not an ExponentialContact.
+            cout << e.what() << endl;
+        }
+
+    }
 
     // Integrate
     Manager manager(*model);
