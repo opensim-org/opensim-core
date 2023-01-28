@@ -216,29 +216,70 @@ extendAddToSystem(SimTK::MultibodySystem& system) const {
     mutableThis->_spr = spr;
     mutableThis->_index = spr->getForceIndex();
 
-    // Should I connect states to the Component interface here by
-    // instantiating concrete OpenSim::StateVariable objects for which
-    // I have implemented the required virtual methods?
-    //
-    // And then also do something similar for the data cache entries?
-    //
-    // On the Simbody side, there are 4 states:
-    // 1. mus (Real, discrete state)
-    // 2. muk (Real, discrete state)
-    // 3. po (Vec3, auto update discrete state)
-    // 4. K (Real, auto update discrete state)
-    //
-    // Also on the Simbody side, are 24 data cache entries:
-    // 1. p_G (Vec3, Stage::Position)
-    // 2. p_P (Vec3, Stage::Position)
-    // 3. pz (Real, Stage::Position)
-    // 4. pxy (Vec3, Stage::Position)
-    // 5. v_G (Vec3, Stage::Velocity)
-    // ...
-    // 9. fzElas (Real, Stage::Dynamics)
-    // ...
-    // 24. f_G (Vec3, State::Dynamics)
+    // Expose the discrete states of ExponentialSpringForce in OpenSim
+    bool allocate = false;
+    std::string name = getMuStaticDiscreteStateName();
+    addDiscreteVariable(name, SimTK::Stage::Dynamics, allocate);
+    name = getMuKineticDiscreteStateName();
+    addDiscreteVariable(name, SimTK::Stage::Dynamics, allocate);
+    name = getSlidingDiscreteStateName();
+    addDiscreteVariable(name, SimTK::Stage::Dynamics, allocate);
+    //addDiscreteVariable("anchor", SimTK::Stage::Dynamics, allocate);
 }
+
+
+//_____________________________________________________________________________
+// F. C. Anderson (Jan 2023)
+// This method is needed because class OpenSim::ExponentialContact has 4
+// discrete states that are allocated in
+// SimTK::ExponentialSpringForce::realizeTopology(), not in
+// OpenSim::Component::extendRealizeTopology().
+// These states are added to the OpenSim map of discrete states
+// (i.e., Component::_namedDiscreteVariableInfo) so that they are accessible
+// in OpenSim. See ExponentialContact::extendAddToSystem(). However, because
+// these discrete states are not allocated by OpenSim::Component, OpenSim has
+// no knowledge of their indices into the SimTK::State. The purpose of this
+// method is to properly initialize those indices.
+void
+ExponentialContact::
+extendRealizeTopology(SimTK::State& state) const {
+
+    Super::extendRealizeTopology(state);
+
+    // A critical question...
+    // Can we guarrantee that ExponentialSpringForce::realizeTopology() will
+    // always be called before this method !?!?
+    //
+    // Maybe. Perhaps the ExponentialSpringForce object will always
+    // be listed in the SimTK::System before the ExponentialContact component?
+    // If not, then it is possible that getMuStaticStateIndex() will
+    // return a bad index.
+    //
+    // What I can confirm is that, so far, the indices in multiple tests have
+    // been assigned correctly.
+    //
+    // If there are mysterious failures because of a bad State index, the
+    // source of the issue may be that ExponentialSpringForce::realizeTopology
+    // was not called prior to ExponentialContact::extendRealizeTopology.
+
+    const SimTK::Subsystem* subsys = &_spr->getForceSubsystem();
+    SimTK::DiscreteVariableIndex index;
+    std::string name;
+
+    name = getMuStaticDiscreteStateName();
+    index = _spr->getMuStaticStateIndex();
+    updDiscreteVariableIndex(name, index, subsys);
+
+    name = getMuKineticDiscreteStateName();
+    index = _spr->getMuKineticStateIndex();
+    updDiscreteVariableIndex(name, index, subsys);
+
+    name = getSlidingDiscreteStateName();
+    index = _spr->getSlidingStateIndex();
+    updDiscreteVariableIndex(name, index, subsys);
+}
+
+
 
 //-----------------------------------------------------------------------------
 // Utility

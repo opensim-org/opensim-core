@@ -359,10 +359,16 @@ public:
     const SimTK::ExponentialSpringParameters& getParameters() const;
 
     //-------------------------------------------------------------------------
-    // Accessors for states
+    // Accessors for Discrete States
     //-------------------------------------------------------------------------
+    /** Get the name used for the discrete state representing the static
+    coefficient of friction (μₛ). This is the name used to access informattion
+    related to μₛ via the OpenSim::Component API. For example, see
+    Component::getDiscreteVariableValue(). */
+    std::string getMuStaticDiscreteStateName() const { return "mu_static"; }
+
     /** Set the static coefficient of friction (μₛ) for this exponential
-    spring. The value of μₛ is held in the System's State object. Unlike the
+    spring. μₛ is a discrete state. The value of μₛ is held in the System's State object. Unlike the
     parameters managed by ExponentialSpringParameters, μₛ can be set at any
     time during a simulation. A change to μₛ will invalidate the System at
     Stage::Dynamics, but not at Stage::Topology.
@@ -375,6 +381,12 @@ public:
     state for this exponential spring.
     @param state State object from which to retrieve μₛ. */
     SimTK::Real getMuStatic(const SimTK::State& state) const;
+
+    /** Get the name used for the discrete state representing the kinetic
+    coefficient of friction (μₖ). This is the name used to access informattion
+    related to μₖ via the OpenSim::Component API. For example, see
+    Component::getDiscreteVariableValue(). */
+    std::string getMuKineticDiscreteStateName() const { return "mu_kinetic"; }
 
     /** Set the kinetic coefficient of friction (μₖ) for this exponential
     spring. The value of μₖ is held in the System's State object. Unlike the
@@ -390,6 +402,12 @@ public:
     state for this exponential spring.
     @param state State object from which to retrieve μₖ. */
     SimTK::Real getMuKinetic(const SimTK::State& state) const;
+
+    /** Get the name used for the discrete state representing the 'sliding'
+    state (K) of the elastic anchor point. This is the name used to access
+    informattion related to K via the OpenSim::Component API. For example, see
+    Component::getDiscreteVariableValue(). */
+    std::string getSlidingDiscreteStateName() const { return "sliding"; }
 
     /** Get the Sliding state of the spring.
     @param state State object from which to retrieve Sliding. */
@@ -550,6 +568,9 @@ protected:
     /** Create a SimTK::ExponentialSpringForce object that implements
     this Force. */
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+
+    /** Initialize discrete variable indices. */
+    virtual void extendRealizeTopology(SimTK::State& state) const override;
 
     /** Update this Object base on an XML node. */
     void updateFromXMLNode(SimTK::Xml::Element& node,
