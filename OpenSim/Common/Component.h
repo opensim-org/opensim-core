@@ -2422,10 +2422,12 @@ protected:
     void addStateVariable(Component::StateVariable*  stateVariable) const;
 
     /** Add a system discrete variable belonging to this Component, give
-    it a name by which it can be referenced, and declare the lowest Stage that
-    should be invalidated if this variable's value is changed. **/
+    it a name by which it can be referenced, declare the lowest Stage that
+    should be invalidated if this variable's value is changed, and specify
+    whether the discrete state should be allocated by class Component.
+    */
     void addDiscreteVariable(const std::string& discreteVariableName,
-                             SimTK::Stage       invalidatesStage) const;
+        SimTK::Stage invalidatesStage, bool allocate = true) const;
 
     /**
      * Get writable reference to the MultibodySystem that this component is
@@ -2454,6 +2456,17 @@ protected:
      */
     const SimTK::DiscreteVariableIndex
     getDiscreteVariableIndex(const std::string& name) const;
+
+   /**
+     * Update the index of a Component's discrete variable. This method is
+     * intended for derived Components that may need to initialize the index
+     * held by OpenSim. Such a situation occurs when an underlying Simbody
+     * subsystem is responsible for the allocation of a discrete variable
+     * (not OpenSim), and OpenSim needs to be told the value of that index.
+     */
+    void updDiscreteVariableIndex(const std::string& name,
+        const SimTK::DiscreteVariableIndex& index,
+        const SimTK::Subsystem* subsystem = nullptr) const;
 
     // End of System Creation and Access Methods.
     //@}
@@ -3176,15 +3189,41 @@ private:
         int order;
     };
 
-    // Structure to hold related info about discrete variables
+    // Structure to hold related info about discrete variables.
     struct DiscreteVariableInfo {
         DiscreteVariableInfo() {}
-        explicit DiscreteVariableInfo(SimTK::Stage invalidates)
-        :   invalidatesStage(invalidates) {}
+        explicit DiscreteVariableInfo(SimTK::Stage invalidates,
+            bool allocate = true) :
+            invalidatesStage(invalidates), allocate(allocate) {}
+
         // Model
         SimTK::Stage                    invalidatesStage;
+
         // System
         SimTK::DiscreteVariableIndex    index;
+
+        // F. C. Anderson (Jan 2023)
+        // Introduced two data members: 'subsystem' and 'allocate'.
+        // These two data members allow OpenSim::Component to expose a
+        // discrete state that was allocated by a class other than
+        // OpenSim::Component and as a member of Subsystem other than the
+        // default SimTK::Subsystem.
+
+        // Subsystem to which the discrete state belongs.
+        // If 'nullptr' (default), class Component assumes that the discrete
+        // state was allocated as a member of the default SimTK::Subsystem.
+        const SimTK::Subsystem* subsystem{nullptr};
+
+        // Flag to prevent a double allocation.
+        // If 'true' (default), the discrete variable is allocated normally
+        // in Component::extendRealizeTopology().
+        // If 'false', allocation in Component::extendRealizeTopology() is
+        // skipped and is assumed to occur elsewhere. In this case, the
+        // derived Component is responsible for initializing the index of the
+        // discrete state, as well its Subsystem. This should be done by
+        // implementing an overriding extendRealizeTopology() method.
+        // See ExponentialContact::extendRealizeTopology() for an example.
+        bool allocate{true};
     };
 
     /**
