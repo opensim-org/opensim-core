@@ -5,6 +5,13 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
     file(GLOB gfortran "${gcc_libdir}/libgfortran*.dylib")
     file(GLOB quadmath "${gcc_libdir}/libquadmath*.dylib")
 
+    # Get the actual name of the library libgcc_s.1.dylib (can be libgcc_s.1.1.dylib),
+    # or another if it changes in the future.
+    execute_process(COMMAND bash "-c"
+        "basename `otool -L ${IPOPT_LIBDIR}/libcoinmumps.dylib  | grep 'libgcc' | awk '{print $1}'`"
+        OUTPUT_VARIABLE libgcc_name
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+
     install(FILES
             ${ADOLC_DIR}/lib64/libadolc.2.dylib
             ${ADOLC_DIR}/lib64/libadolc.dylib
@@ -22,8 +29,7 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
 
             ${gfortran}
             ${quadmath}
-            ${gcc_libdir}/libgcc_s.1.dylib
-            ${gcc_libdir}/libgcc_s.1.1.dylib
+            ${gcc_libdir}/${libgcc_name}
 
             DESTINATION ${CMAKE_INSTALL_LIBDIR})
 

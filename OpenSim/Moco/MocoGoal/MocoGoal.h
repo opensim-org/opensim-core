@@ -139,6 +139,21 @@ public:
     }
     MocoConstraintInfo& updConstraintInfo() { return upd_MocoConstraintInfo(); }
 
+    /// Set the vector of endpoint constraint bounds for this MocoGoal. This
+    /// vector must have length equal to the number of outputs for this goal,
+    /// otherwise an exception is thrown.
+    /// This info is ignored if getSupportsEndpointConstraint() is false.
+    void setEndpointConstraintBounds(const std::vector<MocoBounds>& bounds) {
+        updConstraintInfo().setBounds(bounds);
+    }
+    /// Get the vector of the endpoint constraint bounds for this MocoGoal.
+    /// @details Note: the return value is constructed fresh on every call from
+    /// the internal property. Avoid repeated calls to this function.
+    std::vector<MocoBounds> getEndpointConstraintBounds() const {
+        std::vector<MocoBounds> bounds(getConstraintInfo().getBounds());
+        return bounds;
+    }
+
     /// Get the length of the return value of calcGoal().
     int getNumOutputs() const {
         OPENSIM_THROW_IF_FRMOBJ(!m_model, Exception,
