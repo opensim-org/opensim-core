@@ -1273,14 +1273,14 @@ void testElasticFoundation() {
 
 
 // Test the wrapping of ExponentialSpringForce in OpenSim
-// Simple simulation of bouncing ball with dissipation should generate contact
+// Simple simulation of bouncing block with dissipation should generate contact
 // forces that settle to block weight (mg = 10.0 * g).
 void testExponentialContact() {
     using namespace SimTK;
 
     // Construct a model and serialize it -----------------------------
     // This is done so that a model file does not have to be installed.
-    // Subsequent checks are done with the deserialized model.
+    // Below the temporary scope, checks are done with the deserialized model.
     string fileName = "BouncingBlock_ExponentialContact.osim";
     string baseName = "EC";
     const int nEC{8};
