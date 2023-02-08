@@ -35,13 +35,14 @@ function(OpenSimAddInstallRPATH)
             set(rpath_macro "\@loader_path")
         endif()
     elseif(UNIX)
-        set(rpath_macro "\$ORIGIN")
+        set(rpath_macro ".")
     endif()
 
     file(RELATIVE_PATH to_root "${CMAKE_INSTALL_PREFIX}/${OSIMRP_FROM}"
         "${CMAKE_INSTALL_PREFIX}")
     set_property(TARGET ${OSIMRP_TARGET} APPEND PROPERTY INSTALL_RPATH
         "${rpath_macro}/${to_root}${OSIMRP_TO}")
+    message(STATUS "Set rpath '${rpath_macro}/${to_root}${OSIMRP_TO}' to '${OSIMRP_TARGET}'")
 endfunction()
 
 # Similar to OpenSimAddInstallRPATH except the run-path is the same directory
