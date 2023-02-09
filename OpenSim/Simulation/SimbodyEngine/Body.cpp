@@ -81,6 +81,7 @@ void Body::extendFinalizeFromProperties()
     const SimTK::MassProperties& massProps = getMassProperties();
     _internalRigidBody = SimTK::Body::Rigid(massProps);
     _slaves.clear();
+    _inertia = SimTK::Inertia{};  // forces `getInertia` to re-update from the property (#3395)
 }
 
 //_____________________________________________________________________________
