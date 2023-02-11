@@ -573,9 +573,7 @@ int StaticOptimization::begin(const SimTK::State& s )
         for(size_t i=0u; i<coordinates.size(); ++i) {
             const Coordinate& coord = *coordinates[i];
             if(!coord.isConstrained(sWorkingCopy)) {
-                Array<int> inds = _statesStore->
-                    getColumnIndicesForIdentifier(coord.getName()) ;
-                _accelerationIndices.append(inds[0]);
+                _accelerationIndices.append(static_cast<int>(i));
             }
         }
 
