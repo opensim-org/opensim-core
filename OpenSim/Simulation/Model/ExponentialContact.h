@@ -361,29 +361,35 @@ public:
     //-------------------------------------------------------------------------
     // Accessors for Discrete States
     //-------------------------------------------------------------------------
+    /** Get a pointer to the SimTK::Subsystem from which this
+    ExponentialContact instance allocates its discrete states. */
+    const SimTK::Subsystem* getSubsystem() const {
+        return &_spr->getForceSubsystem();
+    }
+
     /** Get the name used for the discrete state representing the static
-    coefficient of friction (μₛ). This is the name used to access informattion
+    coefficient of friction (μₛ). This name is used to access informattion
     related to μₛ via the OpenSim::Component API. For example, see
     Component::getDiscreteVariableValue(). */
     std::string getMuStaticDiscreteStateName() const { return "mu_static"; }
 
     /** Set the static coefficient of friction (μₛ) for this exponential
-    spring. μₛ is a discrete state. The value of μₛ is held in the System's State object. Unlike the
-    parameters managed by ExponentialSpringParameters, μₛ can be set at any
-    time during a simulation. A change to μₛ will invalidate the System at
-    Stage::Dynamics, but not at Stage::Topology.
+    spring. μₛ is a discrete state. The value of μₛ is held in the System's
+    State object. Unlike the parameters managed by ExponentialSpringParameters,
+    μₛ can be set at any time during a simulation. A change to μₛ will
+    invalidate the System at Stage::Dynamics, but not at Stage::Topology.
     @param state State object that will be modified.
     @param mus %Value of the static coefficient of friction. No upper bound.
     0.0 ≤ μₛ. If μₛ < μₖ, μₖ is set equal to μₛ. */
     void setMuStatic(SimTK::State& state, SimTK::Real mus);
 
     /** Get the static coefficient of friction (μₛ) held by the specified
-    state for this exponential spring.
+    state for this exponential contact instance.
     @param state State object from which to retrieve μₛ. */
     SimTK::Real getMuStatic(const SimTK::State& state) const;
 
     /** Get the name used for the discrete state representing the kinetic
-    coefficient of friction (μₖ). This is the name used to access informattion
+    coefficient of friction (μₖ). This name is the used to access informattion
     related to μₖ via the OpenSim::Component API. For example, see
     Component::getDiscreteVariableValue(). */
     std::string getMuKineticDiscreteStateName() const { return "mu_kinetic"; }
@@ -399,19 +405,39 @@ public:
     void setMuKinetic(SimTK::State& state, SimTK::Real muk);
 
     /** Get the kinetic coefficient of friction (μₖ) held by the specified
-    state for this exponential spring.
+    state for this exponential contact instance.
     @param state State object from which to retrieve μₖ. */
     SimTK::Real getMuKinetic(const SimTK::State& state) const;
 
     /** Get the name used for the discrete state representing the 'sliding'
-    state (K) of the elastic anchor point. This is the name used to access
+    state (K) of the elastic anchor point. This name is used to access
     informattion related to K via the OpenSim::Component API. For example, see
     Component::getDiscreteVariableValue(). */
     std::string getSlidingDiscreteStateName() const { return "sliding"; }
 
-    /** Get the Sliding state of the spring.
-    @param state State object from which to retrieve Sliding. */
+    /** Get the Sliding state of this exponential contact instance after it
+    has been updated to be consistent with the System State. The System must
+    be realized to Stage::Dynamics to access this data.
+    @param state State object on which to base the calculations. */
     SimTK::Real getSliding(const SimTK::State& state) const;
+
+    /** Get the name used for the discrete state representing the position
+    of the elastic anchor point (p₀). This name is used to access
+    informattion related to p₀ via the OpenSim::Component API. For example,
+    see Component::getDiscreteVariableAbstractValue(). */
+    std::string getAnchorPointDiscreteStateName() const { return "anchor"; }
+
+    /** Get the position of the elastic anchor point (p₀) after it has been
+    updated to be consistent with friction limits. p₀ is the spring zero of
+    the damped linear spring used in Friction Model 2. The system must be
+    realized to Stage::Dynamics to access this data.
+    @param state State object on which to base the calculations.
+    @param inGround Flag for choosing the frame in which the returned quantity
+    will be expressed. If true (the default), the quantity will be expressed
+    in the Ground frame. If false, the quantity will be expressed in the frame
+    of the contact plane. */
+    SimTK::Vec3 getAnchorPointPosition(
+            const SimTK::State& state, bool inGround = true) const;
 
     //-------------------------------------------------------------------------
     // Accessors for data cache entries
@@ -533,18 +559,6 @@ public:
     SimTK::Vec3 getStationVelocity(
         const SimTK::State& state, bool inGround = true) const;
 
-    /** Get the position of the elastic anchor point (p₀), which will always
-    lie in the Contact Plane. p₀ is the spring zero of the damped linear
-    spring used in Friction Model 2. The system must be realized to
-    Stage::Dynamics to access this data.
-    @param state State object on which to base the calculations.
-    @param inGround Flag for choosing the frame in which the returned quantity
-    will be expressed. If true (the default), the quantity will be expressed
-    in the Ground frame. If false, the quantity will be expressed in the frame
-    of the contact plane. */
-    SimTK::Vec3 getAnchorPointPosition(
-        const SimTK::State& state, bool inGround = true) const;
-
     //-------------------------------------------------------------------------
     // Reporting
     //-------------------------------------------------------------------------
@@ -625,12 +639,8 @@ public:
         "Elasticity of the friction spring (20,000.0 N/m).");
     OpenSim_DECLARE_PROPERTY(friction_viscosity, double,
         "Viscosity of the friction spring (282.8427 N*s/m).");
-    OpenSim_DECLARE_PROPERTY(sliding_time_constant, double,
-        "Time constant for rise/decay between static and kinetic friction conditions (0.01 s).");
-    OpenSim_DECLARE_PROPERTY(settle_velocity, double,
+     OpenSim_DECLARE_PROPERTY(settle_velocity, double,
         "Velocity below which static friction conditions are triggered (0.01 m/s) .");
-    OpenSim_DECLARE_PROPERTY(settle_acceleration, double,
-        "Acceleration below which static friction conditions are triggered (1.0 m/s²).");
     OpenSim_DECLARE_PROPERTY(initial_mu_static, double,
         "Initial value of the static coefficient of friction.");
     OpenSim_DECLARE_PROPERTY(initial_mu_kinetic, double,

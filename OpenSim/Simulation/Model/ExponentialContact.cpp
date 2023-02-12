@@ -224,7 +224,8 @@ extendAddToSystem(SimTK::MultibodySystem& system) const {
     addDiscreteVariable(name, SimTK::Stage::Dynamics, allocate);
     name = getSlidingDiscreteStateName();
     addDiscreteVariable(name, SimTK::Stage::Dynamics, allocate);
-    //addDiscreteVariable("anchor", SimTK::Stage::Dynamics, allocate);
+    name = getAnchorPointDiscreteStateName();
+    addDiscreteVariable(name, SimTK::Stage::Dynamics, allocate);
 }
 
 
@@ -262,7 +263,7 @@ extendRealizeTopology(SimTK::State& state) const {
     // source of the issue may be that ExponentialSpringForce::realizeTopology
     // was not called prior to ExponentialContact::extendRealizeTopology.
 
-    const SimTK::Subsystem* subsys = &_spr->getForceSubsystem();
+    const SimTK::Subsystem* subsys = getSubsystem();
     SimTK::DiscreteVariableIndex index;
     std::string name;
 
@@ -276,6 +277,10 @@ extendRealizeTopology(SimTK::State& state) const {
 
     name = getSlidingDiscreteStateName();
     index = _spr->getSlidingStateIndex();
+    updDiscreteVariableIndex(name, index, subsys);
+
+    name = getAnchorPointDiscreteStateName();
+    index = _spr->getAnchorPointStateIndex();
     updDiscreteVariableIndex(name, index, subsys);
 }
 
