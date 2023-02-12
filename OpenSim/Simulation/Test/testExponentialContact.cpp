@@ -123,8 +123,8 @@ public:
     void testParameters();
     void testSerialization();
     void testDiscreteVariable(State& state, const ExponentialContact& ec,
-        const string& name, double valOrig,
-        double delta = 0.1, double tol = 1.0e-6);
+        const string& name);
+    void testDiscreteVariables(State& state, const ForceSet& fSet);
 
     // Simulation
     void setInitialConditions(SimTK::State& state,
@@ -681,22 +681,107 @@ testSerialization() {
 void
 ExponentialContactTester::
 testDiscreteVariable(State& state, const ExponentialContact& ec,
-    const string& name, double val, double delta, double tol)
+    const string& name)
 {
-    // Get the starting value, which should be the same as val.
-    double valDV = ec.getDiscreteVariableValue(state, name);
-    ASSERT_EQUAL(val, valDV, tol);
+    // Get the starting value.
+    const SimTK::AbstractValue& val =
+        ec.getDiscreteVariableAbstractValue(state, name);
+
+    /*
+    // Switch depending on the type
+    if (SimTK::Value<double>::isA(val)) {
+        SimTK::Value<double> deltaDouble(delta);
+        SimTK::Value<double> tolDouble(tol);
+
+        //
+    }
 
     // Set a new value.
     double valNew = val + delta;
-    ec.setDiscreteVariableValue(state, name, valNew);
+    ec.setDiscreteVariableValue<double>(state, name, valNew);
     double valNewDV = ec.getDiscreteVariableValue(state, name);
     ASSERT_EQUAL(valNew, valNewDV, tol);
 
     // Restore the starting value.
     ec.setDiscreteVariableValue(state, name, val);
-    valDV = ec.getDiscreteVariableValue(state, name);
+    double valDV = SimTK::Value<double>::downcast(
+        ec.getDiscreteVariableAbstractValue(state, name));
     ASSERT_EQUAL(val, valDV, tol);
+    */
+}
+
+//_____________________________________________________________________________
+// Only types that are handled are double and Vec3.
+void
+ExponentialContactTester::
+testDiscreteVariables(State& state, const ForceSet& fSet) {
+
+    // Get the names
+    OpenSim::Array<std::string> names = fSet.getDiscreteVariableNames();
+
+    // Loop
+    int n = names.size();
+    for (int i = 0; i < n; ++i) {
+
+        // Starting value
+        SimTK::AbstractValue& valAbstract =
+            fSet.updDiscreteVariableAbstractValue(state, names[i]);
+
+        // Declarations
+        double tol = 1.0e-6;
+        double deltaDbl = 0.1;
+        Vec3 deltaVec3(deltaDbl);
+        double valStartDbl{NaN};
+        Vec3 valStartVec3{NaN};
+
+        // Perturb
+        if (SimTK::Value<double>::isA(valAbstract)) {
+            SimTK::Value<double>& valDbl =
+                SimTK::Value<double>::updDowncast(valAbstract);
+            valStartDbl = valDbl.get();
+            valDbl = valStartDbl + deltaDbl;
+        } else if (SimTK::Value<Vec3>::isA(valAbstract)) {
+            SimTK::Value<Vec3>& valVec3 =
+                    SimTK::Value<Vec3>::updDowncast(valAbstract);
+            valStartVec3 = valVec3.get();
+            valVec3 = valStartVec3 + deltaVec3;
+        }
+
+        // Check that the value changed correctly
+        if (SimTK::Value<double>::isA(valAbstract)) {
+            SimTK::Value<double>& valDbl =
+                    SimTK::Value<double>::updDowncast(valAbstract);
+            ASSERT_EQUAL(valDbl.get(), valStartDbl + deltaDbl, tol);
+        } else if (SimTK::Value<Vec3>::isA(valAbstract)) {
+            SimTK::Value<Vec3>& valVec3 =
+                    SimTK::Value<Vec3>::updDowncast(valAbstract);
+            ASSERT_EQUAL(valVec3.get(), valStartVec3 + deltaVec3, tol);
+        }
+
+        // Restore
+        if (SimTK::Value<double>::isA(valAbstract)) {
+            SimTK::Value<double>& valDbl =
+                    SimTK::Value<double>::updDowncast(valAbstract);
+            valDbl = valStartDbl;
+        } else if (SimTK::Value<Vec3>::isA(valAbstract)) {
+            SimTK::Value<Vec3>& valVec3 =
+                    SimTK::Value<Vec3>::updDowncast(valAbstract);
+            valVec3 = valStartVec3;
+        }
+
+        // Check that the value was restored correctly
+        if (SimTK::Value<double>::isA(valAbstract)) {
+            SimTK::Value<double>& valDbl =
+                    SimTK::Value<double>::updDowncast(valAbstract);
+            ASSERT_EQUAL(valDbl.get(), valStartDbl, tol);
+        } else if (SimTK::Value<Vec3>::isA(valAbstract)) {
+            SimTK::Value<Vec3>& valVec3 =
+                    SimTK::Value<Vec3>::updDowncast(valAbstract);
+            ASSERT_EQUAL(valVec3.get(), valStartVec3, tol);
+        }
+
+    }
+
 }
 
 //_____________________________________________________________________________
@@ -726,30 +811,15 @@ simulate()
     int n = fSet.getSize();
     for (i = 0; i < n; ++i) {
         try {
-            string name;
-            double delta = 0.1;
-            double tol = 1.0e-6;
-            double val{0.0}, valAfter{0.0};
 
             // Get the ExponentialContact Component
-            ExponentialContact& ec =
-                    dynamic_cast<ExponentialContact&>(fSet.get(i));
-            string path = ec.getAbsolutePathString();
-            cout << "path = " << path << endl;
+            //ExponentialContact& ec =
+            //        dynamic_cast<ExponentialContact&>(fSet.get(i));
+            //string path = ec.getAbsolutePathString();
+            //cout << "path = " << path << endl;
 
-            // Static Coefficient of Friction
-            name = ec.getMuStaticDiscreteStateName();
-            val = ec.getMuStatic(state);
-            testDiscreteVariable(state, ec, name, val, delta, tol);
-            valAfter = ec.getMuStatic(state);
-            ASSERT_EQUAL(val, valAfter, tol);
-
-            // Kinetic Coefficient of Friction
-            name = ec.getMuKineticDiscreteStateName();
-            val = ec.getMuKinetic(state);
-            testDiscreteVariable(state, ec, name, val, delta, tol);
-            valAfter = ec.getMuKinetic(state);
-            ASSERT_EQUAL(val, valAfter, tol);
+            // Test DiscreteVariable Component API
+            testDiscreteVariables(state, fSet);
 
         } catch (const std::exception& e) {
             // Nothing should happen here. Execution is just skipping any
