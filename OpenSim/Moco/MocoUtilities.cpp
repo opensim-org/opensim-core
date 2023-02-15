@@ -282,7 +282,7 @@ TimeSeriesTable OpenSim::createExternalLoadsTableForGait(Model model,
     TimeSeriesTableVec3 externalForcesTable;
     int count = 0;
     for (const auto& state : trajectory) {
-        model.realizeVelocity(state);
+        model.realizeDynamics(state);
         SimTK::Vec3 sphereForcesRight(0);
         SimTK::Vec3 sphereTorquesRight(0);
         SimTK::Vec3 halfSpaceForcesRight(0);

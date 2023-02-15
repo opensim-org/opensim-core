@@ -8,6 +8,7 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 
 v4.5
 ======
+- IMU::calcGyroscopeSignal() now reports angular velocities in the IMU frame.
 - Update `report.py` to set specific colors for plotted trajectories
 - Made `Component::getSocketNames` a `const` member method (previously: non-const)
 - Added `ModOpReplaceMusclesWithPathActuators` to the list of available model operators in `ModelOperators.h`

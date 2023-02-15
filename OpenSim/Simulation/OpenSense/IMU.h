@@ -32,10 +32,14 @@ namespace OpenSim {
 //                               IMU
 //=============================================================================
 /**
-IMU is a Model Component that represents an IMU along with its Geometry
-for visualization.
-@todo add noise model, limits/saturation, as needed.
+IMU is a Model Component that represents a virtual IMU along with its Geometry
+for visualization. This component reports angular velocity and linear
+acceleration (with gravitational acceleration subtracted) vectors expressed in
+the IMU frame to mimic the behavior of real-world IMUs. It also reports
+orientations between the IMU and ground frame as Quaternions, expressed in the
+ground frame.
 
+@todo add noise model, limits/saturation, as needed.
 
 @authors Ayman Habib
 **/
@@ -62,21 +66,25 @@ public:
     OpenSim_DECLARE_OUTPUT(accelerometer_signal, SimTK::Vec3,
             calcAccelerometerSignal, SimTK::Stage::Acceleration);
     // Outputs
-    /// Report the Transform of this IMU in Ground frame
+    /// Report the Transform of this IMU in the Ground frame.
     SimTK::Transform calcTransformInGround(const SimTK::State& s) const {
         return get_frame().getTransformInGround(s);
     }
-    /// Report the orientation of this IMU in ground frame expressed as Quaternion
+    /// Report the orientation of this IMU in ground frame expressed as a
+    /// Quaternion.
     SimTK::Quaternion calcOrientationAsQuaternion(const SimTK::State& s) const {
         return SimTK::Quaternion(calcTransformInGround(s).R());
     }
-    /// Report the angular velocity of the frame to which this IMU is attached
-    /// in ground frame
+    /// Report the angular velocity of this IMU in the frame it is attached to.
     SimTK::Vec3 calcGyroscopeSignal(const SimTK::State& s) const {
-        return get_frame().getAngularVelocityInGround(s);
+        const auto& model = getModel();
+        const auto& ground = model.getGround();
+        return ground.expressVectorInAnotherFrame(s,
+            get_frame().getAngularVelocityInGround(s), get_frame());
     }
-    /// Report the linear acceleration of the frame to which this IMU is attached in Ground.
-    /// Gravity is subtracted and result expressed in the frame to which the IMU is attached.
+    /// Report the linear acceleration of the frame to which this IMU is
+    /// attached in the Ground grame. Gravity is subtracted and result expressed
+    /// in the frame to which the IMU is attached.
     SimTK::Vec3 calcAccelerometerSignal(
             const SimTK::State& s) const {
         const auto& model = getModel();
