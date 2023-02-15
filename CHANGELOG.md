@@ -6,7 +6,7 @@ request related to the change, then we may provide the commit.
 
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
 
-v4.4.1
+v4.5
 ======
 - Update `report.py` to set specific colors for plotted trajectories
 - Made `Component::getSocketNames` a `const` member method (previously: non-const)
