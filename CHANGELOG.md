@@ -20,6 +20,7 @@ v4.5
 - Fix CSV file adapter hanging on csv files that are missing end-header (issue #2432).
 - Improve documentation for MotionType to serve scripting users (Issue #3324).
 - Drop support for 32-bit Matlab in build system since Matlab stopped providing 32-bit distributions (issue #3373).
+- Hotfixed body inertia not being updated after changing the 'inertia' property of a body (Issue #3395).
 
 v4.4
 ====
