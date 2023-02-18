@@ -67,15 +67,18 @@ public:
             calcAccelerometerSignal, SimTK::Stage::Acceleration);
     // Outputs
     /// Report the Transform of this IMU in the Ground frame.
+    /// @note Requires realizing the State to SimTK::Stage::Position.
     SimTK::Transform calcTransformInGround(const SimTK::State& s) const {
         return get_frame().getTransformInGround(s);
     }
     /// Report the orientation of this IMU in ground frame expressed as a
     /// Quaternion.
+    /// @note Requires realizing the State to SimTK::Stage::Position.
     SimTK::Quaternion calcOrientationAsQuaternion(const SimTK::State& s) const {
         return SimTK::Quaternion(calcTransformInGround(s).R());
     }
     /// Report the angular velocity of this IMU in the frame it is attached to.
+    /// @note Requires realizing the State to SimTK::Stage::Velocity.
     SimTK::Vec3 calcGyroscopeSignal(const SimTK::State& s) const {
         const auto& model = getModel();
         const auto& ground = model.getGround();
@@ -85,6 +88,7 @@ public:
     /// Report the linear acceleration of the frame to which this IMU is
     /// attached in the Ground grame. Gravity is subtracted and result expressed
     /// in the frame to which the IMU is attached.
+    /// @note Requires realizing the State to SimTK::Stage::Acceleration.
     SimTK::Vec3 calcAccelerometerSignal(
             const SimTK::State& s) const {
         const auto& model = getModel();
