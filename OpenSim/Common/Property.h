@@ -598,7 +598,7 @@ protected:
     virtual void setValueVirtual(int index, const T& value) = 0;
     virtual int appendValueVirtual(const T& value) = 0;
     virtual int adoptAndAppendValueVirtual(T* value) = 0;
-    virtual void removeValueAtIndexVirtual(int index) {};
+    virtual void removeValueAtIndexVirtual(int index) = 0;
     /** @endcond **/
 #endif
 };
@@ -989,7 +989,8 @@ private:
     {   values.push_back(*valuep); // make a copy
         delete valuep; // throw out the old one
         return values.size()-1; }
-
+    void removeValueAtIndexVirtual(int index) override final
+    {   values.erase(&values[index]);  }
     // This is the default implementation; specialization is required if
     // the Simbody default behavior is different than OpenSim's; e.g. for
     // Transform serialization.
@@ -1168,7 +1169,7 @@ public:
     }
     // Remove value at specific index
     void removeValueAtIndexVirtual(int index) override {
-        objects.erase(&objects.at(index));
+        objects.erase(&objects[index]);
     }
 private:
     // Base class checks the index.
