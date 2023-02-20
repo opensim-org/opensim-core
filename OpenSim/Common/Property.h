@@ -516,7 +516,16 @@ public:
         setValueIsDefault(false);
         return adoptAndAppendValueVirtual(value);
     }
-
+    /** Remove specific entry of the list at index **/
+    void removeValueAtIndex(int index) {
+        if (index > getNumValues() || index < 0)
+            throw OpenSim::Exception("Property<T>::removeValueAtIndex(): Property " + getName()
+                + "invalid index, out of range, ignored.");
+        if (getNumValues() - 1 < this->getMinListSize() || getNumValues() - 1 > this->getMaxListSize())
+            throw OpenSim::Exception("Property<T>::removeValueAtIndex(): Property " + getName()
+                + "resulting list has improper size, ignored.");
+        removeValueAtIndexVirtual(index);
+    }
     /** Search the value list for an element that has the given \a value and
     return its index if found, otherwise -1. This requires only that the 
     template type T supports operator==(). This is a linear search so will 
@@ -589,6 +598,7 @@ protected:
     virtual void setValueVirtual(int index, const T& value) = 0;
     virtual int appendValueVirtual(const T& value) = 0;
     virtual int adoptAndAppendValueVirtual(T* value) = 0;
+    virtual void removeValueAtIndexVirtual(int index) {};
     /** @endcond **/
 #endif
 };
@@ -1155,6 +1165,10 @@ public:
             if (objects[i]->getName() == name)
                 return i;
         return -1;
+    }
+    // Remove value at specific index
+    void removeValueAtIndexVirtual(int index) override {
+        objects.erase(&objects.at(index));
     }
 private:
     // Base class checks the index.
