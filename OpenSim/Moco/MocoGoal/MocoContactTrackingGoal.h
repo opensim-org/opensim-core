@@ -59,7 +59,7 @@ public:
             "The name of an ExternalForce object in the ExternalLoads set.");
     OpenSim_DECLARE_LIST_PROPERTY(alternative_frame_paths, std::string,
             "If neither of the two bodies/frames of a contact force match "
-            "ExternalForce's applied_to_body, then one of the bodies/frames "
+            "ExternalForce's applied_to_body, then one of the bodies/frames " 
             "must match one of these alternative frame paths.");
     MocoContactTrackingGoalGroup();
     MocoContactTrackingGoalGroup(

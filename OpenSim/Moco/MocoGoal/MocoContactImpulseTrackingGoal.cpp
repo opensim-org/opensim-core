@@ -40,7 +40,8 @@ MocoContactImpulseTrackingGoalGroup::MocoContactImpulseTrackingGoalGroup(
         const std::vector<std::string>& contactForcePaths,
         const std::string& externalForceName,
         const std::vector<std::string>& altFramePaths) :
-        MocoContactImpulseTrackingGoalGroup(contactForcePaths, externalForceName) {
+        MocoContactImpulseTrackingGoalGroup(contactForcePaths, 
+            externalForceName) {
     for (const auto& path : altFramePaths) {
         append_alternative_frame_paths(path);
     }
@@ -66,7 +67,8 @@ void MocoContactImpulseTrackingGoal::setExternalLoadsFile(
     set_external_loads_file(extLoadsFile);
 }
 
-void MocoContactImpulseTrackingGoal::setExternalLoads(const ExternalLoads& extLoads) {
+void MocoContactImpulseTrackingGoal::setExternalLoads(
+        const ExternalLoads& extLoads) {
     updProperty_external_loads_file().clear();
     set_external_loads(extLoads);
 }
@@ -88,15 +90,16 @@ void MocoContactImpulseTrackingGoal::addScaleFactor(const std::string& name,
         "Contact group associated with external force '{}' not found.",
         externalForceName);
 
-    // Update the scale factor map so we can retrieve the correct MocoScaleFactor
-    // for this contact group during initialization.
+    // Update the scale factor map so we can retrieve the correct
+    // MocoScaleFactor for this contact group during initialization.
     m_scaleFactorMap[externalForceName] = name;
 
     // Append the scale factor to the MocoGoal.
     appendScaleFactor(MocoScaleFactor(name, bounds));
 }
 
-void MocoContactImpulseTrackingGoal::initializeOnModelImpl(const Model& model) const {
+void MocoContactImpulseTrackingGoal::initializeOnModelImpl(
+        const Model& model) const {
 
     // Calculate the denominator.
     m_denominator = model.getTotalMass(model.getWorkingState());
@@ -200,7 +203,8 @@ void MocoContactImpulseTrackingGoal::initializeOnModelImpl(const Model& model) c
         RefPtrMSF thisScaleFactorRef;
         bool foundScaleFactor = false;
         for (const auto& scaleFactor : scaleFactors) {
-            if (m_scaleFactorMap[group.get_external_force_name()] == scaleFactor.getName()) {
+            if (m_scaleFactorMap[group.get_external_force_name()] == 
+                    scaleFactor.getName()) {
                 thisScaleFactorRef = &scaleFactor;
                 foundScaleFactor = true;
             }
@@ -333,7 +337,8 @@ void MocoContactImpulseTrackingGoal::calcIntegrandImpl(
             scaleFactor = scaleFactorRef->getScaleFactor();
         }
 
-        double error = force_model - scaleFactor * force_ref[get_impulse_axis()];
+        double error = force_model - 
+            scaleFactor * force_ref[get_impulse_axis()];
         integrand += error;
     }
 

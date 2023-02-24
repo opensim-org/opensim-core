@@ -26,6 +26,7 @@ namespace OpenSim {
 %include <OpenSim/Moco/MocoGoal/MocoControlTrackingGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoContactTrackingGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoContactImpulseTrackingGoal.h>
+%include <OpenSim/Moco/MocoGoal/MocoContactImpulseGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoInitialActivationGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoJointReactionGoal.h>
 %include <OpenSim/Moco/MocoGoal/MocoSumSquaredStateGoal.h>
