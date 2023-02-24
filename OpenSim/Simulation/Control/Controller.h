@@ -146,6 +146,9 @@ private:
     // the (sub)set of Model actuators that this controller controls */ 
     Set<const Actuator> _actuatorSet;
 
+    // construct and initialize properties
+    void constructProperties();
+
 //=============================================================================
 };  // END of class Controller
 

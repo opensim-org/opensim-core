@@ -49,10 +49,7 @@ Controller::Controller() :
     _numControls{0},
     _actuatorSet{}
 {
-    setAuthors("Ajay Seth, Frank Anderson, Chand John, Samuel Hamner");
-    constructProperty_enabled(true);
-    constructProperty_actuator_list();
-    _actuatorSet.setMemoryOwner(false);
+    constructProperties();
 }
 
 Controller::Controller(Controller const& src) :
@@ -62,11 +59,16 @@ Controller::Controller(Controller const& src) :
     _numControls{src._numControls},
     _actuatorSet{}
 {
+    // care: the reason this custom copy constructor exists is to prevent
+    // a memory leak (#3247)
     _actuatorSet.setMemoryOwner(false);
 }
 
 Controller& Controller::operator=(Controller const& src)
 {
+    // care: the reason this custom copy assignment exists is to prevent
+    // a memory leak (#3247)
+
     if (&src != this)
     {
         static_cast<ModelComponent&>(*this) = static_cast<ModelComponent const&>(src);
@@ -85,6 +87,17 @@ Controller::~Controller() noexcept = default;
 //=============================================================================
 //_____________________________________________________________________________
 //_____________________________________________________________________________
+
+/**
+ * Connect properties to local pointers.
+ */
+void Controller::constructProperties()
+{
+    setAuthors("Ajay Seth, Frank Anderson, Chand John, Samuel Hamner");
+    constructProperty_enabled(true);
+    constructProperty_actuator_list();
+    _actuatorSet.setMemoryOwner(false);
+}
 
 void Controller::updateFromXMLNode(SimTK::Xml::Element& node,
                                    int versionNumber) {
