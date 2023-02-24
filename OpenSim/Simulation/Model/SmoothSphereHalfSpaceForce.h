@@ -116,6 +116,10 @@ public:
             "The sphere participating in this contact.");
     OpenSim_DECLARE_SOCKET(half_space, ContactHalfSpace,
             "The half-space participating in this contact.");
+    OpenSim_DECLARE_OUTPUT(sphere_force, SimTK::SpatialVec, getSphereForce,
+            SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(half_space_force, SimTK::SpatialVec, 
+            getHalfSpaceForce, SimTK::Stage::Dynamics);
 
     //=========================================================================
     // PUBLIC METHODS
@@ -139,6 +143,12 @@ public:
     /// values are expressed in the ground frame.
     OpenSim::Array<double> getRecordValues(
             const SimTK::State& state) const override;
+
+    /// sphere force
+    SimTK::SpatialVec getSphereForce(const SimTK::State& s) const;
+
+    /// half space force
+    SimTK::SpatialVec getHalfSpaceForce(const SimTK::State& s) const;
 
 protected:
     /// Create a SimTK::Force which implements this Force.
