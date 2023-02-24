@@ -47,6 +47,11 @@ public:
     void setImpulseAxis(int impulseAxis) { set_impulse_axis(impulseAxis); }
     int getImpulseAxis() const { return get_impulse_axis(); }
 
+    void setExtremumType(std::string extremum_type) {
+        set_extremum_type(extremum_type);
+    }
+    std::string getExtremumType() const { return get_extremum_type(); }
+
 protected:
     void initializeOnModelImpl(const Model&) const override;
     void calcIntegrandImpl(
