@@ -204,6 +204,12 @@ void MocoOutputExtremumGoal::initializeOnModelImpl(const Model& output) const {
             Exception, "The extremum type must be either 'minimum' " 
             " or 'maximum'.");
 
+    OPENSIM_THROW_IF_FRMOBJ(
+            get_smoothing_factor() < 0.2 || get_smoothing_factor() > 1.0,
+            Exception,
+            fmt::format("Expected the smoothing factor must be in the range "
+                    "[0.2, 1.0], but received {}.", get_smoothing_factor()));
+
     OPENSIM_THROW_IF_FRMOBJ(m_minimizeVectorNorm == 1 &&
                                         m_data_type == Type_Vec3,
             Exception, "The MocoOutputExtremumGoal cannot be used when "
@@ -228,11 +234,6 @@ void MocoOutputExtremumGoal::initializeOnModelImpl(const Model& output) const {
 
 void MocoOutputExtremumGoal::calcIntegrandImpl(
         const IntegrandInput& input, double& integrand) const {
-    OPENSIM_THROW_IF_FRMOBJ(
-            get_smoothing_factor() <= 0.2 || get_smoothing_factor() >= 1.0,
-            Exception,
-            "The smoothing factor must be on the closed interval "
-            "[0.2,1.0].");
     double integrand_temp =
             (1 / get_smoothing_factor()) *
             (std::log(1 + exp(get_smoothing_factor() * m_beta *
