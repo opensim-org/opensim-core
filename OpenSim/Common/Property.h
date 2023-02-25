@@ -26,6 +26,7 @@
 // INCLUDES
 #include "AbstractProperty.h"
 #include "Exception.h"
+#include "Logger.h"
 
 #include "SimTKcommon/SmallMatrix.h"
 #include "SimTKcommon/internal/BigMatrix.h"
@@ -881,27 +882,44 @@ public:
        (SimTK::Xml::Element& propertyElement,
         int                  versionNumber) override final {
         std::istringstream valstream(propertyElement.getValue());
+
+        // read the values _transactionally_: if a read failure occurs then
+        // `values` should return to their original state (#3409)
+        SimTK::Array_<T, int> valuesBackup = values;
+        bool shouldRollback = false;
+
         if (!readSimplePropertyFromStream(valstream)) {
-            std::cerr << "Failed to read " << SimTK::NiceTypeName<T>::name()
-            << " property " << this->getName() << "; input='" 
-            << valstream.str().substr(0,50) // limit displayed length
-            << "'.\n";
+            log_warn("Failed to read '{}': property '{}' with input '{}': the data has been ignored",
+                SimTK::NiceTypeName<T>::name(),
+                this->getName(),
+                valstream.str().substr(0, 50)  // limit displayed length
+            );
+            shouldRollback = true;
         }
         if (values.size() < this->getMinListSize()) {
-            std::cerr << "Not enough values for " 
-            << SimTK::NiceTypeName<T>::name() << " property " << this->getName() 
-            << "; input='" << valstream.str().substr(0,50) // limit displayed length 
-            << "'. Expected " << this->getMinListSize()
-            << ", got " << values.size() << ".\n";
+            log_warn("Failed to read '{}': property '{}' with input '{}': does not contain enough values (minimum: {}, got: {}): the data (all fields) have been ignored",
+                SimTK::NiceTypeName<T>::name(),
+                this->getName(),
+                valstream.str().substr(0,50),  // limit displayed length
+                this->getMinListSize(),
+                values.size()
+            );
+            shouldRollback = true;
         }
         if (values.size() > this->getMaxListSize()) {
-            std::cerr << "Too many values for " 
-            << SimTK::NiceTypeName<T>::name() << " property " << this->getName() 
-            << "; input='" << valstream.str().substr(0,50) // limit displayed length 
-            << "'. Expected " << this->getMaxListSize()
-            << ", got " << values.size() << ". Ignoring extras.\n";
+            log_warn("Truncated '{}': property '{}' with input '{}': contains too many values (maximum: {}, got: {}): the data has been truncated",
+                SimTK::NiceTypeName<T>::name(),
+                this->getName(),
+                valstream.str().substr(0,50),  // limit displayed length
+                this->getMaxListSize(),
+                values.size()
+            );
 
-            values.resize(this->getMaxListSize());
+            values.resize(this->getMaxListSize());  // truncate
+        }
+
+        if (shouldRollback) {
+            values = std::move(valuesBackup);  // perform data rollback
         }
     }
 
@@ -966,11 +984,11 @@ private:
     // This is the Property<T> interface implementation.
     // Base class checks the index.
     const T& getValueVirtual(int index) const   override final 
-    {   return values[index]; }
+    {   return values.at(index); }
     T& updValueVirtual(int index)               override final 
-    {   return values[index]; }
+    {   return values.at(index); }
     void setValueVirtual(int index, const T& value) override final
-    {   values[index] = value; }
+    {   values.at(index) = value; }
     int appendValueVirtual(const T& value)     override final
     {   values.push_back(value); return values.size()-1; }
     // Adopting a simple property just means we have to delete the one that
