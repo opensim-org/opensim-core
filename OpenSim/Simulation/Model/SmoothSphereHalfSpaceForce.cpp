@@ -157,19 +157,8 @@ OpenSim::Array<double> SmoothSphereHalfSpaceForce::getRecordValues(
     const auto& halfSpace = getConnectee<ContactHalfSpace>("half_space");
     const auto halfSpaceIdx = halfSpace.getFrame().getMobilizedBodyIndex();
 
-    const Model& model = getModel();
-    const auto& forceSubsys = model.getForceSubsystem();
-    const SimTK::Force& abstractForce = forceSubsys.getForce(_index);
-    const auto& simtkForce =
-            static_cast<const SimTK::SmoothSphereHalfSpaceForce&>(
-                    abstractForce);
-
     SimTK::Vector_<SimTK::SpatialVec> bodyForces(0);
-    SimTK::Vector_<SimTK::Vec3> particleForces(0);
-    SimTK::Vector mobilityForces(0);
-
-    simtkForce.calcForceContribution(
-            state, bodyForces, particleForces, mobilityForces);
+    calcBodyForces(state, bodyForces);
 
     // On sphere
     const auto& thisBodyForce1 = bodyForces(sphereIdx);
@@ -193,20 +182,8 @@ SimTK::SpatialVec SmoothSphereHalfSpaceForce::getSphereForce(
     const auto& sphere = getConnectee<ContactSphere>("sphere");
     const auto sphereIdx = sphere.getFrame().getMobilizedBodyIndex();
 
-    const Model& model = getModel();
-    const auto& forceSubsys = model.getForceSubsystem();
-    const SimTK::Force& abstractForce = forceSubsys.getForce(_index);
-    const auto& simtkForce =
-            static_cast<const SimTK::SmoothSphereHalfSpaceForce&>(
-                    abstractForce);
-
     SimTK::Vector_<SimTK::SpatialVec> bodyForces(0);
-    SimTK::Vector_<SimTK::Vec3> particleForces(0);
-    SimTK::Vector mobilityForces(0);
-
-    simtkForce.calcForceContribution(
-            state, bodyForces, particleForces, mobilityForces);
-
+    calcBodyForces(state, bodyForces);
     return bodyForces(sphereIdx);
 }
 
@@ -215,6 +192,14 @@ SimTK::SpatialVec SmoothSphereHalfSpaceForce::getHalfSpaceForce(
     const auto& halfSpace = getConnectee<ContactHalfSpace>("half_space");
     const auto halfSpaceIdx = halfSpace.getFrame().getMobilizedBodyIndex();
 
+    SimTK::Vector_<SimTK::SpatialVec> bodyForces(0);
+    calcBodyForces(state, bodyForces);
+    return bodyForces(halfSpaceIdx);
+}
+
+void SmoothSphereHalfSpaceForce::calcBodyForces(
+        const SimTK::State& state,
+        SimTK::Vector_<SimTK::SpatialVec>& bodyForces) const {
     const Model& model = getModel();
     const auto& forceSubsys = model.getForceSubsystem();
     const SimTK::Force& abstractForce = forceSubsys.getForce(_index);
@@ -222,14 +207,11 @@ SimTK::SpatialVec SmoothSphereHalfSpaceForce::getHalfSpaceForce(
             static_cast<const SimTK::SmoothSphereHalfSpaceForce&>(
                     abstractForce);
 
-    SimTK::Vector_<SimTK::SpatialVec> bodyForces(0);
     SimTK::Vector_<SimTK::Vec3> particleForces(0);
     SimTK::Vector mobilityForces(0);
 
     simtkForce.calcForceContribution(
             state, bodyForces, particleForces, mobilityForces);
-
-    return bodyForces(halfSpaceIdx);
 }
 
 void SmoothSphereHalfSpaceForce::generateDecorations(bool fixed,
@@ -239,20 +221,9 @@ void SmoothSphereHalfSpaceForce::generateDecorations(bool fixed,
 
     if (!fixed && (state.getSystemStage() >= SimTK::Stage::Dynamics) &&
             hints.get_show_forces()) {
-        // Get the underlying SimTK force element.
-        const Model& model = getModel();
-        const auto& forceSubsystem = model.getForceSubsystem();
-        const SimTK::Force& abstractForce = forceSubsystem.getForce(_index);
-        const auto& simtkForce =
-                static_cast<const SimTK::SmoothSphereHalfSpaceForce&>(
-                        abstractForce);
-
         // Compute the body forces.
         SimTK::Vector_<SimTK::SpatialVec> bodyForces(0);
-        SimTK::Vector_<SimTK::Vec3> particleForces(0);
-        SimTK::Vector mobilityForces(0);
-        simtkForce.calcForceContribution(
-                state, bodyForces, particleForces, mobilityForces);
+        calcBodyForces(state, bodyForces);
 
         // Get the index to the associated contact sphere.
         const auto& sphere = getConnectee<ContactSphere>("sphere");
