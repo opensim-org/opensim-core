@@ -408,3 +408,14 @@ EXPOSE_SET_CONSTRUCTORS_HELPER(MarkerSet);
 EXPOSE_SET_CONSTRUCTORS_HELPER(WrapObjectSet);
 EXPOSE_SET_CONSTRUCTORS_HELPER(CoordinateSet);
 
+// Extend class to extract Forces from Simbody
+%extend OpenSim::Model {
+public:
+    static const SimTK::Vector_<SpatialVec>& getGravityForces(
+            const OpenSim::Model& model,
+            const SimTK::State& state)
+    {
+        return model.getGravityForce().getBodyForces(state);
+    }
+
+};
