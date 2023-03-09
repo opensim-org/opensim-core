@@ -3,6 +3,8 @@ Moco Change Log
 
 1.2.1
 -----
+- 2023-03-08: Added `MocoTrajectory::trimToIndices`.
+
 - 2023-02-25: Added `getSphereForce`, `getHalfSpaceForce`, and associated `Output`s 
               `sphere_force` and `half_space_force` to `SmoothSphereHalfSpaceForce`.
 

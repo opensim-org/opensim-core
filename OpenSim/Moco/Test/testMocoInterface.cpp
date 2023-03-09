@@ -1424,6 +1424,32 @@ TEMPLATE_TEST_CASE("MocoTrajectory", "", MocoCasADiSolver, MocoTropterSolver) {
         }
     }
 
+    // trimToIndices()
+    {
+        SimTK::Vector time = createVectorLinspace(5, -3.1, 8.9);
+        std::vector<std::string> snames{"s0"};
+        std::vector<std::string> cnames{"c0"};
+        SimTK::Matrix states = SimTK::Test::randMatrix(5, 1);
+        states.set(1, 0, 1.23);
+        states.set(3, 0, 4.56);
+        SimTK::Matrix controls = SimTK::Test::randMatrix(5, 1);
+        controls.set(1, 0, 7.89);
+        controls.set(3, 0, 1.01);
+        MocoTrajectory it(time, snames, cnames, {}, {}, states, controls,
+                SimTK::Matrix(), SimTK::RowVector());
+
+        it.trimToIndices(1, 3);
+        SimTK_TEST_EQ(it.getInitialTime(), time[1]);
+        SimTK_TEST_EQ(it.getFinalTime(), time[3]);
+
+        SimTK::VectorView_<double> s0 = it.getState("s0");
+        SimTK::VectorView_<double> c0 = it.getControl("c0");
+        SimTK_TEST_EQ(s0[0], 1.23);
+        SimTK_TEST_EQ(s0[it.getNumTimes()-1], 4.56);
+        SimTK_TEST_EQ(c0[0], 7.89);
+        SimTK_TEST_EQ(c0[it.getNumTimes()-1], 1.01);
+    }
+
     // compareContinuousVariablesRMS
     auto testCompareContinuousVariablesRMS =
             [](int NT, int NS, int NC, int NM, double duration, double error,
