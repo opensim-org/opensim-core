@@ -3,9 +3,9 @@
 /* -------------------------------------------------------------------------- *
  * OpenSim: MocoTrajectory.h                                                  *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2017 Stanford University and the Authors                     *
+ * Copyright (c) 2023 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia                                              *
+ * Author(s): Christopher Dembia, Nicholas Bianco                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -423,6 +423,9 @@ public:
     /// trajectory.
     /// @note Overrides any existing acceleration values in the trajectory.
     void generateAccelerationsFromSpeeds();
+    /// Trim the trajectory to include the rows starting at newStartIndex and
+    /// and ending at newFinalIndex.
+    void trimToIndices(int newStartIndex, int newFinalIndex);
     /// @}
 
     /// @name Accessors
