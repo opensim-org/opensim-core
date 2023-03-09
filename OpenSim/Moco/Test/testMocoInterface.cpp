@@ -1430,11 +1430,11 @@ TEMPLATE_TEST_CASE("MocoTrajectory", "", MocoCasADiSolver, MocoTropterSolver) {
         std::vector<std::string> snames{"s0"};
         std::vector<std::string> cnames{"c0"};
         SimTK::Matrix states = SimTK::Test::randMatrix(5, 1);
-        states.set(1, 1, 1.23);
-        states.set(3, 1, 4.56);
+        states.set(1, 0, 1.23);
+        states.set(3, 0, 4.56);
         SimTK::Matrix controls = SimTK::Test::randMatrix(5, 1);
-        states.set(1, 1, 7.89);
-        states.set(3, 1, 1.01);
+        controls.set(1, 0, 7.89);
+        controls.set(3, 0, 1.01);
         MocoTrajectory it(time, snames, cnames, {}, {}, states, controls,
                 SimTK::Matrix(), SimTK::RowVector());
 
