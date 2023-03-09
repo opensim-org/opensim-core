@@ -518,7 +518,8 @@ void MocoTrajectory::generateAccelerationsFromSpeeds() {
 void MocoTrajectory::trimToIndices(int newStartIndex, int newFinalIndex) {
     OPENSIM_THROW_IF(newFinalIndex < newStartIndex, Exception,
             fmt::format("Expected newFinalIndex to be greater than "
-                        "newStartIndex, but received {} and {}, respectively.",
+                        "newStartIndex, but received {} and {} for "
+                        "newStartIndex and newFinalIndex, respectively.",
                         newStartIndex, newFinalIndex));
     OPENSIM_THROW_IF(newStartIndex < 0, Exception,
             fmt::format("Expected newStartIndex to be greater than or equal to"
