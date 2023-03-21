@@ -762,7 +762,7 @@ Solution Transcription::solve(const Iterate& guessOrig) {
         casadi::DMVector constraintsOut;
         constraintFunc.call(finalVarsDMV, constraintsOut);
         printConstraintValues(solution, expandConstraints(constraintsOut[0]));
-    }
+   }
     return solution;
 }
 
@@ -1110,7 +1110,7 @@ void Transcription::printConstraintValues(const Iterate& it,
                     const double L1 = max;
                     const double time_of_max = it.times(argmax).scalar();
 
-                    std::string label = fmt::format("{}_{:02i}", pc.name, ieq);
+                    std::string label = fmt::format("{}_{}", pc.name, ieq);
                     ss << std::setfill('0') << std::setw(2) << ipc << ":"
                            << std::setfill(' ') << std::setw(maxNameLength)
                            << label << spacer << std::setprecision(2)
@@ -1121,6 +1121,7 @@ void Transcription::printConstraintValues(const Iterate& it,
                 ++ipc;
             }
         }
+
         ss << "Path constraint values at each path constraint point:" << std::endl;
         ss << "      time  ";
         for (int ipc = 0; ipc < (int)pathconNames.size(); ++ipc) {
@@ -1140,7 +1141,9 @@ void Transcription::printConstraintValues(const Iterate& it,
         }
     }
     if (stream.rdbuf() == std::cout.rdbuf()) {
-        OpenSim::log_cout(ss.str());
+        // TODO log_cout() does not work for Level::Warn and up.
+        // OpenSim::log_cout(ss.str());
+        std::cout << ss.str() << std::endl;
     } else {
         stream << ss.str() << std::endl;
     }
@@ -1160,7 +1163,9 @@ void Transcription::printObjectiveBreakdown(const Iterate& it,
         }
     }
     if (stream.rdbuf() == std::cout.rdbuf()) {
-        OpenSim::log_cout(ss.str());
+        // TODO log_cout() does not work for Level::Warn and up.
+        // OpenSim::log_cout(ss.str());
+        std::cout << ss.str() << std::endl;
     } else {
         stream << ss.str() << std::endl;
     }
