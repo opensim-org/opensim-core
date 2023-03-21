@@ -1095,7 +1095,7 @@ void Transcription::printConstraintValues(const Iterate& it,
         updateMaxNameLength(pathconNames);
         // To make space for indices.
         maxNameLength += 3;
-        ss << "\n  L2 norm across mesh, max abs value (L1 norm), time of "
+        ss << "  L2 norm across mesh, max abs value (L1 norm), time of "
                   "max abs"
                << std::endl;
         row.resize(1, m_numMeshPoints);
@@ -1121,7 +1121,7 @@ void Transcription::printConstraintValues(const Iterate& it,
                 ++ipc;
             }
         }
-        ss << "Path constraint values at each path constraint point:" << std::endl;
+        ss << "\nPath constraint values at each path constraint point:" << std::endl;
         ss << "      time  ";
         for (int ipc = 0; ipc < (int)pathconNames.size(); ++ipc) {
             ss << std::setw(9) << ipc << "  ";
@@ -1152,7 +1152,7 @@ void Transcription::printObjectiveBreakdown(const Iterate& it,
         const casadi::DM& objectiveTerms,
         std::ostream& stream) const {
     std::stringstream ss;
-    ss << "Breakdown of objective (including weights):";
+    ss << "\nBreakdown of objective (including weights):";
     if (objectiveTerms.numel() == 0) {
         ss << " no terms";
     } else {

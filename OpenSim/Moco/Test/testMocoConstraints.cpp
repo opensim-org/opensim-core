@@ -990,49 +990,29 @@ TEMPLATE_TEST_CASE("DoublePendulumEqualControl", "",
     SimTK_TEST(solution.isNumericallyEqual(solutionDeserialized));
 }
 
-/// Solve an optimal control problem where a double pendulum must reach a
-/// specified final configuration while subject to a constraint that its
-/// actuators must produce an equal control trajectory.
-TEMPLATE_TEST_CASE("test failing constraints", "",
+/// Test that a problem that fails with path constraints does not return a zero
+/// time vector.
+TEMPLATE_TEST_CASE("FailWithPathConstraints", "",
         MocoCasADiSolver, MocoTropterSolver) {
     OpenSim::Object::registerType(EqualControlConstraint());
     MocoStudy study;
-    study.setName("double_pendulum_equal_control");
+    study.setName("path_constraint_fail");
     MocoProblem& mp = study.updProblem();
     auto model = createDoublePendulumModel();
     model->finalizeConnections();
     mp.setModelAsCopy(*model);
-
     auto* equalControlConstraint =
             mp.addPathConstraint<EqualControlConstraint>();
     MocoConstraintInfo cInfo;
     cInfo.setBounds(std::vector<MocoBounds>(1, {0, 0}));
     equalControlConstraint->setConstraintInfo(cInfo);
-
     mp.setTimeBounds(0, 1);
-    // Coordinate value state boundary conditions are consistent with the
-    // point-on-line constraint and should require the model to "unfold" itself.
-    mp.setStateInfo("/jointset/j0/q0/value", {-10, 10}, 0, SimTK::Pi / 2);
-    mp.setStateInfo("/jointset/j0/q0/speed", {-50, 50});
-    mp.setStateInfo("/jointset/j1/q1/value", {-10, 10}, SimTK::Pi, 0);
-    mp.setStateInfo("/jointset/j1/q1/speed", {-50, 50});
-    mp.setControlInfo("/tau0", {-50, 50});
-    mp.setControlInfo("/tau1", {-50, 50});
-
     mp.addGoal<MocoControlGoal>();
-
     auto& ms = study.initSolver<TestType>();
-    ms.set_optim_max_iterations(5);
-    ms.set_num_mesh_intervals(25);
+    ms.set_optim_max_iterations(1);
+    ms.set_num_mesh_intervals(5);
     ms.set_verbosity(2);
-    ms.set_optim_solver("ipopt");
-    ms.set_optim_convergence_tolerance(1e-3);
-    ms.setGuess("bounds");
-
     MocoSolution solution = study.solve().unseal();
-    solution.write("testConstraints_testDoublePendulum_test_fail.sto");
-    // moco.visualize(solution);
-
 }
 
 // This problem is a point mass welded to ground, with gravity. We are
