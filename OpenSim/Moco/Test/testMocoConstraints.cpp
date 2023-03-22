@@ -990,6 +990,31 @@ TEMPLATE_TEST_CASE("DoublePendulumEqualControl", "",
     SimTK_TEST(solution.isNumericallyEqual(solutionDeserialized));
 }
 
+/// Test that a problem that fails with path constraints does not return a zero
+/// time vector.
+TEMPLATE_TEST_CASE("FailWithPathConstraints", "",
+        MocoCasADiSolver, MocoTropterSolver) {
+    OpenSim::Object::registerType(EqualControlConstraint());
+    MocoStudy study;
+    study.setName("path_constraint_fail");
+    MocoProblem& mp = study.updProblem();
+    auto model = createDoublePendulumModel();
+    model->finalizeConnections();
+    mp.setModelAsCopy(*model);
+    auto* equalControlConstraint =
+            mp.addPathConstraint<EqualControlConstraint>();
+    MocoConstraintInfo cInfo;
+    cInfo.setBounds(std::vector<MocoBounds>(1, {0, 0}));
+    equalControlConstraint->setConstraintInfo(cInfo);
+    mp.setTimeBounds(0, 1);
+    mp.addGoal<MocoControlGoal>();
+    auto& ms = study.initSolver<TestType>();
+    ms.set_optim_max_iterations(1);
+    ms.set_num_mesh_intervals(5);
+    ms.set_verbosity(2);
+    MocoSolution solution = study.solve().unseal();
+}
+
 // This problem is a point mass welded to ground, with gravity. We are
 // solving for the mass that allows the point mass to obey the constraint
 // of staying in place. This checks that the parameters are applied to both
