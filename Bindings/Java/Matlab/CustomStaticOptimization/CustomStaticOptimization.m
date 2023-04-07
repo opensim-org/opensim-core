@@ -153,8 +153,11 @@ muscles = model.updMuscles();
 for i = 1:muscles.getSize()
    % Downcast base muscle to Millard2012EquilibriumMuscle.
    muscle = Millard2012EquilibriumMuscle.safeDownCast(muscles.get(i-1));
+   % Disable muscle dynamics.
+   muscle.set_ignore_tendon_compliance(true);
+   muscle.set_ignore_activation_dynamics(true);
    
-   % TODO: Fill in max force array and disable muscle dynamics {
+   % TODO: Fill in max force array here {
    
    % }
 end
@@ -195,7 +198,18 @@ for i = 1:numTimePoints
     fprintf('Optimizing...time step %i/%i \n',  i, numTimePoints);
     
     % TODO: Construct inputs to FMINCON here {
-    
+
+    % Loop through model coordinates to set coordinate values and speeds. We set
+    % all coordinates to make sure we have the correct kinematic state when
+    % compute muscle multipliers and moment arms.
+    for j = 1:length(coordNamesAll)
+        coord = coords.get(coordNamesAll{j});
+        coord.setValue(state, coordinates(i,j));
+
+        % TODO: Set the coordinate speed here
+
+    end
+
     % }
     
     % TODO: Call FMINCON to solve the problem here {
