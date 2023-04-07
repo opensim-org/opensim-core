@@ -206,8 +206,9 @@ for i = 1:numTimePoints
         coord = coords.get(coordNamesAll{j});
         coord.setValue(state, coordinates(i,j));
 
-        % TODO: Set the coordinate speed here
+        % TODO: Set the coordinate speed here {
 
+        % }
     end
 
     % }
