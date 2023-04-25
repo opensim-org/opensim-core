@@ -45,9 +45,13 @@ public:
     }
 
     double calcValue(const SimTK::Vector& x) const override {
-        SimTK::Vector xf(1);
-        xf[0] = x[0];
-        return scale*f1->calcValue(xf)-x[1];
+        int n_indep_coords = x.size() - 1;
+        SimTK::Vector xf(n_indep_coords);
+        for (int i = 0; i < n_indep_coords; i++) {
+            xf[i] = x[i];
+        }
+        
+        return scale * f1->calcValue(xf) - x[n_indep_coords];
     }
 
     double calcDerivative(const std::vector<int>& derivComponents, const SimTK::Vector& x) const {
@@ -55,20 +59,23 @@ public:
     }
 
     double calcDerivative(const SimTK::Array_<int>& derivComponents, const SimTK::Vector& x) const override {
+        int n_indep_coords = x.size() - 1;
         if (derivComponents.size() == 1){
-            if (derivComponents[0]==0){
-                SimTK::Vector x1(1);
-                x1[0] = x[0];
+            if (derivComponents[0] != n_indep_coords){
+                SimTK::Vector x1(n_indep_coords);
+                for (int i = 0; i < n_indep_coords; i++) {
+                    x1[i] = x[i];
+                }
                 return scale*f1->calcDerivative(derivComponents, x1);
-            }
-            else if (derivComponents[0]==1)
+            } else {
                 return -1;
+            }                
         }
         else if(derivComponents.size() == 2){
-            if (derivComponents[0]==0 && derivComponents[1] == 0){
-                SimTK::Vector x1(1);
-                x1[0] = x[0];
-                return scale*f1->calcDerivative(derivComponents, x1);
+            if (derivComponents[0] != n_indep_coords && derivComponents[1] != n_indep_coords){
+                SimTK::Vector x1(n_indep_coords);
+                for (int i = 0; i < n_indep_coords; i++) { x1[i] = x[i]; }
+                return scale * f1->calcDerivative(derivComponents, x1);
             }
         }
         return 0;
