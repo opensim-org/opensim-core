@@ -779,54 +779,6 @@ ComponentPath Component::getRelativePath(const Component& wrt) const
     return thisP.formRelativePath(wrtP);
 }
 
-//_____________________________________________________________________________
-// F. C. Anderson (Feb 2023)
-// Added so that get, set, and upd methods can be called for discrete
-// variables based on an absolute path.
-//
-// For a discrete variable, the final element in the path string
-// (i.e., the leaf) is not a component, but rather simply the name of the
-// discrete variable. This name is the key used to look up the discrete
-// variable info in the internal std::map _namedDiscreteVariableInfo.
-//
-// Two things are needed:
-// 1. The component owner of the discrete variable, which is not the
-// leaf but the second-to-last element in the path.
-// 2.
-const Component* Component::traverseToLastOwner(
-        const std::string& pathName) const {
-    return traverseToStateVariable(ComponentPath{pathName});
-}
-
-const Component::StateVariable* Component::traverseToStateVariable(
-        const ComponentPath& path) const {
-    // Must have already called initSystem.
-    OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
-
-    const StateVariable* found = nullptr;
-    if (path.getNumPathLevels() == 1) {
-        // There was no slash. The state variable should be in this component.
-        auto it = _namedStateVariableInfo.find(path.toString());
-        if (it != _namedStateVariableInfo.end()) {
-            return it->second.stateVariable.get();
-        }
-    } else if (path.getNumPathLevels() > 1) {
-        const auto& compPath = path.getParentPath();
-        const Component* comp = traversePathToComponent<Component>(compPath);
-        if (comp) {
-            // This is the leaf of the path:
-            const auto& varName = path.getComponentName();
-            found = comp->traverseToStateVariable(varName);
-        }
-    }
-
-    return found;
-}
-
-
-
-
-
 
 const Component::StateVariable* Component::
     traverseToStateVariable(const std::string& pathName) const
@@ -1139,7 +1091,7 @@ getDiscreteVariableValue(const SimTK::State& s, const std::string& name) const
 
 //_____________________________________________________________________________
 // F. C. Anderson (Jan 2023)
-// This method was added in order to handle Discrete Variables that are not of
+// This method was added in order to handle Discrete Variables that are not
 // type double.
 const SimTK::AbstractValue&
 Component::
@@ -1184,7 +1136,7 @@ getDiscreteVariableAbstractValue(const SimTK::State& s,
 //_____________________________________________________________________________
 // F. C. Anderson (Jan 2023)
 // This method was added in order to handle Discrete Variables that
-// are not of type double.
+// are not type double.
 SimTK::AbstractValue&
 Component::
 updDiscreteVariableAbstractValue(SimTK::State& s,

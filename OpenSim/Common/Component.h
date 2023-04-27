@@ -3310,7 +3310,7 @@ private:
         // If 'false', allocation in Component::extendRealizeTopology() is
         // skipped and is assumed to occur elsewhere. In this case, the
         // derived Component is responsible for initializing the index of the
-        // discrete state, as well its Subsystem. This should be done by
+        // discrete state, as well as its Subsystem. This should be done by
         // implementing an overriding extendRealizeTopology() method.
         // See ExponentialContact::extendRealizeTopology() for an example.
         bool allocate{true};
