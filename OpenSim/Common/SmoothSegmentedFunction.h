@@ -24,8 +24,14 @@
  * -------------------------------------------------------------------------- */
 #include "osimCommonDLL.h"
 #include "SegmentedQuinticBezierToolkit.h"
+#include <memory>
 
 namespace OpenSim { 
+
+    /**
+    Class containing the data used by SmoothSegmentedFuncion.
+    */
+    class SmoothSegmentedFunctionData;
 
     /**
     This class contains the quintic Bezier curves, x(u) and y(u), that have been
@@ -316,21 +322,8 @@ namespace OpenSim {
        ///@endcond
 
     private:
-       
-        /**Array of spline fit functions X(u) for each Bezier elbow*/
-        SimTK::Array_<SimTK::Spline> _arraySplineUX;        
-        /**Spline fit of the integral of the curve y(x)*/
-        SimTK::Spline _splineYintX;
-        
-        /**Bezier X1,...,Xn control point locations. Control points are 
-        stored in 6x1 vectors in the order above*/
-        SimTK::Array_<SimTK::Vector> _mXVec; 
-        /**Bezier Y1,...,Yn control point locations. Control points are 
-        stored in 6x1 vectors in the order above*/
-        SimTK::Array_<SimTK::Vector> _mYVec; 
 
-        /**The number of quintic Bezier curves that describe the relation*/
-        int _numBezierSections;
+        std::shared_ptr<const SmoothSegmentedFunctionData> _smoothData = nullptr;
 
         /**The minimum value of the domain*/
         double _x0;
