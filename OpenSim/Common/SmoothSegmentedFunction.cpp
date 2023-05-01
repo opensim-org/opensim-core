@@ -39,6 +39,21 @@ static double UTOL = (double)SimTK::Eps*1e2;
 static double INTTOL = (double)SimTK::Eps*1e2;
 static int MAXITER = 20;
 static int NUM_SAMPLE_PTS = 100;
+
+//=============================================================================
+// RULE OF FIVE
+//=============================================================================
+
+SmoothSegmentedFunction::SmoothSegmentedFunction(const SmoothSegmentedFunction&) = default;
+
+SmoothSegmentedFunction& SmoothSegmentedFunction::operator=(const SmoothSegmentedFunction&) = default;
+
+SmoothSegmentedFunction::SmoothSegmentedFunction(SmoothSegmentedFunction&&) noexcept = default;
+
+SmoothSegmentedFunction& SmoothSegmentedFunction::operator=(SmoothSegmentedFunction&&) noexcept = default;
+
+SmoothSegmentedFunction::~SmoothSegmentedFunction() noexcept = default;
+
 //=============================================================================
 // UTILITY FUNCTIONS
 //=============================================================================

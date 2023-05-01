@@ -70,6 +70,15 @@ namespace OpenSim {
         ///NaN's
         SmoothSegmentedFunction();
 
+        SmoothSegmentedFunction(const SmoothSegmentedFunction&);
+
+        SmoothSegmentedFunction& operator=(const SmoothSegmentedFunction&);
+
+        ~SmoothSegmentedFunction() noexcept;
+
+        SmoothSegmentedFunction(SmoothSegmentedFunction&&) noexcept;
+
+        SmoothSegmentedFunction& operator=(SmoothSegmentedFunction&&) noexcept;
 
 
        /**Calculates the value of the curve this object represents.
