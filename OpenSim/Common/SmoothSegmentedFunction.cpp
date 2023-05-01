@@ -27,6 +27,9 @@
 #include <fstream>
 #include "simmath/internal/SplineFitter.h"
 #include <memory>
+#include <mutex>
+#include <unordered_map>
+#include <utility>
 
 //=============================================================================
 // STATICS
@@ -70,7 +73,84 @@ struct SmoothSegmentedFunctionParameters {
     bool _computeIntegral;
     bool _intx0x1;
 };
+
+bool operator==(
+    const SimTK::Matrix &lhs,
+    const SimTK::Matrix &rhs
+) {
+    if (lhs.nrow() != rhs.nrow() || lhs.ncol() != rhs.ncol()) {
+        return false;
+    }
+    for (int r = 0; r < lhs.nrow(); ++r)
+        for (int c = 0; c < lhs.ncol(); ++c)
+            if (lhs.row(r)[c] != rhs.row(r)[c]) return false;
+    return true;
+}
+
+bool operator==(
+    const SmoothSegmentedFunctionParameters &lhs,
+    const SmoothSegmentedFunctionParameters &rhs
+) {
+    return
+    lhs._x0 == rhs._x0 &&
+    lhs._x1 == rhs._x1 &&
+    lhs._y0 == rhs._y0 &&
+    lhs._y1 == rhs._y1 &&
+    lhs._dydx0 == rhs._dydx0 &&
+    lhs._dydx1 == rhs._dydx1 &&
+    lhs._computeIntegral == rhs._computeIntegral &&
+    lhs._intx0x1 == rhs._intx0x1 &&
+    lhs._mX == rhs._mX &&
+    lhs._mY == rhs._mY;
+}
+
+//=============================================================================
+// HASHING OF PARAMETERS
+//=============================================================================
+
+template<typename T>
+inline std::size_t HashCombine(std::size_t seed, T const &v) {
+    std::hash<T> hasher;
+    return seed ^ (hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2));
+}
+
+template<typename T>
+inline std::size_t HashOf(T const &v) {
+    return std::hash<T>{}(v);
+}
+
+template<typename T, typename... Others>
+inline std::size_t HashOf(T const &v, Others const &...others) {
+    return HashCombine(HashOf(v), HashOf(others...));
+}
+
+template<>
+inline std::size_t HashOf(SimTK::Matrix const &matrix) {
+    std::size_t hash = HashOf(matrix.nrow(), matrix.ncol());
+    for (int r = 0; r < matrix.nrow(); ++r) {
+        for (int c = 0; c < matrix.ncol(); ++c) {
+            hash = HashCombine(hash, matrix.row(r)[c]);
+        }
+    }
+    return hash;
+}
+
 } // namespace OpenSim
+
+template <>
+struct std::hash<SmoothSegmentedFunctionParameters> final
+{
+    size_t operator()(const SmoothSegmentedFunctionParameters& params) const {
+        return HashOf(
+            params._mX, params._mY,
+            params._x0, params._x1,
+            params._y0, params._y1,
+            params._dydx0, params._dydx1,
+            params._computeIntegral,
+            params._intx0x1
+        );
+    }
+};
 
 //=============================================================================
 // SMOOTHSEGMENTEDFUNCTION DATA
@@ -97,6 +177,53 @@ struct SmoothSegmentedFunctionData {
         /**The number of quintic Bezier curves that describe the relation*/
         int _numBezierSections;
 };
+
+//=============================================================================
+// DATA LOOKUP
+//=============================================================================
+
+/** Manages an unordered map of SmoothSegmentedFunction's Data, using the Parameters as key.
+ * If the same SmoothSegmentedFunctionParameters were previously used to
+ * construct the SmoothSegmentedFunctionData, a shared pointer to that data is
+ * obtained. If the given parameters are new, a new data object is constructed
+ * and added. This prevents duplication of the SmoothSegmentedFunction data for
+ * identical curves.
+*/
+class SmoothSegmentedFunctionDataCache final {
+
+    public:
+    ~SmoothSegmentedFunctionDataCache() {}
+
+    std::shared_ptr<const SmoothSegmentedFunctionData> lookup(
+            const SmoothSegmentedFunctionParameters& params,
+            const std::string& name) {
+        std::lock_guard<std::mutex> guard{_cacheMutex};
+        auto it = _cache.find(params);
+        if (it != _cache.end()) {
+            return it->second;
+        } else {
+            std::shared_ptr<OpenSim::SmoothSegmentedFunctionData> ptr =
+                    std::make_shared<SmoothSegmentedFunctionData>(
+                            SmoothSegmentedFunctionData(params, name));
+            _cache[params] = ptr;
+            return ptr;
+        }
+    }
+
+    private:
+
+    std::mutex _cacheMutex;
+    std::unordered_map<SmoothSegmentedFunctionParameters,
+            std::shared_ptr<const SmoothSegmentedFunctionData>>
+            _cache;
+};
+
+std::shared_ptr<const OpenSim::SmoothSegmentedFunctionData> SmoothSegmentedFunctionDataLookup(
+    const SmoothSegmentedFunctionParameters& params, const std::string& name) {
+    static SmoothSegmentedFunctionDataCache s_GlobalCache;
+    return s_GlobalCache.lookup(params, name);
+}
+
 } // namespace OpenSim
 
 //=============================================================================
@@ -253,8 +380,7 @@ _x0(x0),_x1(x1),_y0(y0),_y1(y1),_dydx0(dydx0),_dydx1(dydx1),
             SmoothSegmentedFunctionParameters(mX, mY, x0, x1, y0, y1, dydx0,
                     dydx1, computeIntegral, intx0x1));
 
-    _smoothData = std::make_shared<SmoothSegmentedFunctionData>(
-                            SmoothSegmentedFunctionData(params, name));
+    _smoothData = SmoothSegmentedFunctionDataLookup(params, name);
 }
 
 SmoothSegmentedFunction::SmoothSegmentedFunction()
