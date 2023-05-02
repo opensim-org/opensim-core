@@ -127,26 +127,26 @@ bool operator==(
 //=============================================================================
 
 template <typename T>
-inline std::size_t HashCombine(std::size_t seed, const T& v)
+inline size_t HashCombine(size_t seed, const T& v)
 {
     std::hash<T> hasher;
     return seed ^ (hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2));
 }
 
-template <typename T> inline std::size_t HashOf(const T& v)
+template <typename T> inline size_t HashOf(const T& v)
 {
     return std::hash<T>{}(v);
 }
 
 template <typename T, typename... Others>
-inline std::size_t HashOf(const T& v, const Others&... others)
+inline size_t HashOf(const T& v, const Others&... others)
 {
     return HashCombine(HashOf(v), HashOf(others...));
 }
 
-template <> inline std::size_t HashOf(const SimTK::Matrix& matrix)
+template <> inline size_t HashOf(const SimTK::Matrix& matrix)
 {
-    std::size_t hash = HashOf(matrix.nrow(), matrix.ncol());
+    size_t hash = HashOf(matrix.nrow(), matrix.ncol());
     for (int r = 0; r < matrix.nrow(); ++r) {
         for (int c = 0; c < matrix.ncol(); ++c) {
             hash = HashCombine(hash, matrix.row(r)[c]);
