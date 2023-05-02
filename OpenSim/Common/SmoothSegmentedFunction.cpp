@@ -48,22 +48,36 @@ static int NUM_SAMPLE_PTS = 100;
 // PARAMETERS
 //=============================================================================
 
-/** Helper struct containing all parameters required to construct the
- * SmoothSegmentedFunctionData.
-*/
+// Helper struct containing all parameters required to construct the
+// SmoothSegmentedFunctionData.
 namespace OpenSim {
-struct SmoothSegmentedFunctionParameters {
+struct SmoothSegmentedFunctionParameters
+{
 
-    SmoothSegmentedFunctionParameters(const SimTK::Matrix& mX,
-            const SimTK::Matrix& mY, double x0, double x1, double y0, double y1,
-            double dydx0, double dydx1, bool computeIntegral, bool intx0x1)
-            : _mX(mX), _mY(mY), _x0(x0), _x1(x1), _y0(y0), _y1(y1),
-              _dydx0(dydx0), _dydx1(dydx1), _computeIntegral(computeIntegral),
-              _intx0x1(intx0x1) {}
+    SmoothSegmentedFunctionParameters(
+        const SimTK::Matrix& mX,
+        const SimTK::Matrix& mY,
+        double x0,
+        double x1,
+        double y0,
+        double y1,
+        double dydx0,
+        double dydx1,
+        bool computeIntegral,
+        bool intx0x1):
+        _mX(mX),
+        _mY(mY),
+        _x0(x0),
+        _x1(x1),
+        _y0(y0),
+        _y1(y1),
+        _dydx0(dydx0),
+        _dydx1(dydx1),
+        _computeIntegral(computeIntegral),
+        _intx0x1(intx0x1) {}
 
     SimTK::Matrix _mX;
     SimTK::Matrix _mY;
-
     double _x0;
     double _x1;
     double _y0;
@@ -75,22 +89,26 @@ struct SmoothSegmentedFunctionParameters {
 };
 
 bool operator==(
-    const SimTK::Matrix &lhs,
-    const SimTK::Matrix &rhs
-) {
+    const SimTK::Matrix& lhs,
+    const SimTK::Matrix& rhs)
+{
     if (lhs.nrow() != rhs.nrow() || lhs.ncol() != rhs.ncol()) {
         return false;
     }
-    for (int r = 0; r < lhs.nrow(); ++r)
-        for (int c = 0; c < lhs.ncol(); ++c)
-            if (lhs.row(r)[c] != rhs.row(r)[c]) return false;
+    for (int r = 0; r < lhs.nrow(); ++r) {
+        for (int c = 0; c < lhs.ncol(); ++c) {
+            if (lhs.row(r)[c] != rhs.row(r)[c]) {
+                return false;
+            }
+        }
+    }
     return true;
 }
 
 bool operator==(
-    const SmoothSegmentedFunctionParameters &lhs,
-    const SmoothSegmentedFunctionParameters &rhs
-) {
+    const SmoothSegmentedFunctionParameters& lhs,
+    const SmoothSegmentedFunctionParameters& rhs)
+{
     return
     lhs._x0 == rhs._x0 &&
     lhs._x1 == rhs._x1 &&
@@ -108,24 +126,26 @@ bool operator==(
 // HASHING OF PARAMETERS
 //=============================================================================
 
-template<typename T>
-inline std::size_t HashCombine(std::size_t seed, T const &v) {
+template <typename T>
+inline std::size_t HashCombine(std::size_t seed, const T& v)
+{
     std::hash<T> hasher;
     return seed ^ (hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2));
 }
 
-template<typename T>
-inline std::size_t HashOf(T const &v) {
+template <typename T> inline std::size_t HashOf(const T& v)
+{
     return std::hash<T>{}(v);
 }
 
-template<typename T, typename... Others>
-inline std::size_t HashOf(T const &v, Others const &...others) {
+template <typename T, typename... Others>
+inline std::size_t HashOf(const T& v, const Others&... others)
+{
     return HashCombine(HashOf(v), HashOf(others...));
 }
 
-template<>
-inline std::size_t HashOf(SimTK::Matrix const &matrix) {
+template <> inline std::size_t HashOf(const SimTK::Matrix& matrix)
+{
     std::size_t hash = HashOf(matrix.nrow(), matrix.ncol());
     for (int r = 0; r < matrix.nrow(); ++r) {
         for (int c = 0; c < matrix.ncol(); ++c) {
@@ -137,18 +157,21 @@ inline std::size_t HashOf(SimTK::Matrix const &matrix) {
 
 } // namespace OpenSim
 
-template <>
-struct std::hash<SmoothSegmentedFunctionParameters> final
+template <> struct std::hash<SmoothSegmentedFunctionParameters> final
 {
-    size_t operator()(const SmoothSegmentedFunctionParameters& params) const {
+    size_t operator()(const SmoothSegmentedFunctionParameters& params) const
+    {
         return HashOf(
-            params._mX, params._mY,
-            params._x0, params._x1,
-            params._y0, params._y1,
-            params._dydx0, params._dydx1,
+            params._mX,
+            params._mY,
+            params._x0,
+            params._x1,
+            params._y0,
+            params._y1,
+            params._dydx0,
+            params._dydx1,
             params._computeIntegral,
-            params._intx0x1
-        );
+            params._intx0x1);
     }
 };
 
@@ -157,69 +180,76 @@ struct std::hash<SmoothSegmentedFunctionParameters> final
 //=============================================================================
 
 namespace OpenSim {
-struct SmoothSegmentedFunctionData {
-        SmoothSegmentedFunctionData(
-                const SmoothSegmentedFunctionParameters& params,
-                const std::string& name);
+struct SmoothSegmentedFunctionData
+{
 
-        /**Array of spline fit functions X(u) for each Bezier elbow*/
-        SimTK::Array_<SimTK::Spline> _arraySplineUX;
-        /**Spline fit of the integral of the curve y(x)*/
-        SimTK::Spline _splineYintX;
+    SmoothSegmentedFunctionData(
+        const SmoothSegmentedFunctionParameters& params,
+        const std::string& name);
 
-        /**Bezier X1,...,Xn control point locations. Control points are
-        stored in 6x1 vectors in the order above*/
-        SimTK::Array_<SimTK::Vector> _mXVec;
-        /**Bezier Y1,...,Yn control point locations. Control points are
-        stored in 6x1 vectors in the order above*/
-        SimTK::Array_<SimTK::Vector> _mYVec;
+    /**Array of spline fit functions X(u) for each Bezier elbow*/
+    SimTK::Array_<SimTK::Spline> _arraySplineUX;
 
-        /**The number of quintic Bezier curves that describe the relation*/
-        int _numBezierSections;
+    /**Spline fit of the integral of the curve y(x)*/
+    SimTK::Spline _splineYintX;
+
+    /**Bezier X1,...,Xn control point locations. Control points are
+    stored in 6x1 vectors in the order above*/
+    SimTK::Array_<SimTK::Vector> _mXVec;
+
+    /**Bezier Y1,...,Yn control point locations. Control points are
+    stored in 6x1 vectors in the order above*/
+    SimTK::Array_<SimTK::Vector> _mYVec;
+
+    /**The number of quintic Bezier curves that describe the relation*/
+    int _numBezierSections;
 };
 
 //=============================================================================
 // DATA LOOKUP
 //=============================================================================
 
-/** Manages an unordered map of SmoothSegmentedFunction's Data, using the Parameters as key.
- * If the same SmoothSegmentedFunctionParameters were previously used to
- * construct the SmoothSegmentedFunctionData, a shared pointer to that data is
- * obtained. If the given parameters are new, a new data object is constructed
- * and added. This prevents duplication of the SmoothSegmentedFunction data for
- * identical curves.
-*/
-class SmoothSegmentedFunctionDataCache final {
+// Manages an unordered map of SmoothSegmentedFunction's Data, using the Parameters as key.
+// If the same SmoothSegmentedFunctionParameters were previously used to
+// construct the SmoothSegmentedFunctionData, a shared pointer to that data is
+// obtained. If the given parameters are new, a new data object is constructed
+// and added. This prevents duplication of the SmoothSegmentedFunction data for
+// identical curves.
+class SmoothSegmentedFunctionDataCache final
+{
 
-    public:
+public:
     ~SmoothSegmentedFunctionDataCache() {}
 
     std::shared_ptr<const SmoothSegmentedFunctionData> lookup(
             const SmoothSegmentedFunctionParameters& params,
-            const std::string& name) {
+            const std::string& name)
+    {
         std::lock_guard<std::mutex> guard{_cacheMutex};
         auto it = _cache.find(params);
         if (it != _cache.end()) {
             return it->second;
         } else {
             std::shared_ptr<OpenSim::SmoothSegmentedFunctionData> ptr =
-                    std::make_shared<SmoothSegmentedFunctionData>(
-                            SmoothSegmentedFunctionData(params, name));
+                std::make_shared<SmoothSegmentedFunctionData>(
+                    SmoothSegmentedFunctionData(params, name)
+                );
             _cache[params] = ptr;
             return ptr;
         }
     }
 
-    private:
-
+private:
     std::mutex _cacheMutex;
     std::unordered_map<SmoothSegmentedFunctionParameters,
-            std::shared_ptr<const SmoothSegmentedFunctionData>>
-            _cache;
+        std::shared_ptr<const SmoothSegmentedFunctionData>> _cache;
 };
 
-std::shared_ptr<const OpenSim::SmoothSegmentedFunctionData> SmoothSegmentedFunctionDataLookup(
-    const SmoothSegmentedFunctionParameters& params, const std::string& name) {
+std::shared_ptr<const OpenSim::SmoothSegmentedFunctionData>
+    SmoothSegmentedFunctionDataLookup(
+        const SmoothSegmentedFunctionParameters& params,
+        const std::string& name)
+{
     static SmoothSegmentedFunctionDataCache s_GlobalCache;
     return s_GlobalCache.lookup(params, name);
 }
@@ -230,13 +260,17 @@ std::shared_ptr<const OpenSim::SmoothSegmentedFunctionData> SmoothSegmentedFunct
 // RULE OF FIVE
 //=============================================================================
 
-SmoothSegmentedFunction::SmoothSegmentedFunction(const SmoothSegmentedFunction&) = default;
+SmoothSegmentedFunction::SmoothSegmentedFunction(
+        const SmoothSegmentedFunction&) = default;
 
-SmoothSegmentedFunction& SmoothSegmentedFunction::operator=(const SmoothSegmentedFunction&) = default;
+SmoothSegmentedFunction& SmoothSegmentedFunction::operator=(
+        const SmoothSegmentedFunction&) = default;
 
-SmoothSegmentedFunction::SmoothSegmentedFunction(SmoothSegmentedFunction&&) noexcept = default;
+SmoothSegmentedFunction::SmoothSegmentedFunction(
+        SmoothSegmentedFunction&&) noexcept = default;
 
-SmoothSegmentedFunction& SmoothSegmentedFunction::operator=(SmoothSegmentedFunction&&) noexcept = default;
+SmoothSegmentedFunction& SmoothSegmentedFunction::operator=(
+        SmoothSegmentedFunction&&) noexcept = default;
 
 SmoothSegmentedFunction::~SmoothSegmentedFunction() noexcept = default;
 
@@ -291,19 +325,20 @@ SmoothSegmentedFunction::~SmoothSegmentedFunction() noexcept = default;
 
         N.B. These costs are dependent on SegmentedQuinticBezierToolkit
 */
-SmoothSegmentedFunctionData::SmoothSegmentedFunctionData(const
-SmoothSegmentedFunctionParameters &params, const std::string& name)
+SmoothSegmentedFunctionData::SmoothSegmentedFunctionData(
+        const SmoothSegmentedFunctionParameters& params,
+        const std::string& name)
 {
-  const SimTK::Matrix& mX = params._mX;
-  const SimTK::Matrix& mY = params._mY;
-  double x0 = params._x0;
-  double x1 = params._x1;
-  double y0 = params._y0;
-  double y1 = params._y1;
-  double dydx0 = params._dydx0;
-  double dydx1 = params._dydx1;
-  bool computeIntegral = params._computeIntegral;
-  bool intx0x1 = params._intx0x1;
+    const SimTK::Matrix& mX = params._mX;
+    const SimTK::Matrix& mY = params._mY;
+    double x0 = params._x0;
+    double x1 = params._x1;
+    double y0 = params._y0;
+    double y1 = params._y1;
+    double dydx0 = params._dydx0;
+    double dydx1 = params._dydx1;
+    bool computeIntegral = params._computeIntegral;
+    bool intx0x1 = params._intx0x1;
 
     _numBezierSections = mX.ncol();
 
@@ -369,24 +404,55 @@ SmoothSegmentedFunctionParameters &params, const std::string& name)
     }
 }
 
-SmoothSegmentedFunction::
-  SmoothSegmentedFunction(const SimTK::Matrix& mX, const SimTK::Matrix& mY,  
-          double x0, double x1, double y0, double y1,double dydx0, double dydx1,
-          bool computeIntegral, bool intx0x1, const std::string& name):
-_x0(x0),_x1(x1),_y0(y0),_y1(y1),_dydx0(dydx0),_dydx1(dydx1),
-     _computeIntegral(computeIntegral),_intx0x1(intx0x1),_name(name)
+SmoothSegmentedFunction::SmoothSegmentedFunction(
+    const SimTK::Matrix& mX,
+    const SimTK::Matrix& mY,
+    double x0,
+    double x1,
+    double y0,
+    double y1,
+    double dydx0,
+    double dydx1,
+    bool computeIntegral,
+    bool intx0x1,
+    const std::string& name):
+    _x0(x0),
+    _x1(x1),
+    _y0(y0),
+    _y1(y1),
+    _dydx0(dydx0),
+    _dydx1(dydx1),
+    _computeIntegral(computeIntegral),
+    _intx0x1(intx0x1),
+    _name(name)
 {
     SmoothSegmentedFunctionParameters params(
-            SmoothSegmentedFunctionParameters(mX, mY, x0, x1, y0, y1, dydx0,
-                    dydx1, computeIntegral, intx0x1));
+        SmoothSegmentedFunctionParameters(
+            mX,
+            mY,
+            x0,
+            x1,
+            y0,
+            y1,
+            dydx0,
+            dydx1,
+            computeIntegral,
+            intx0x1)
+        );
 
     _smoothData = SmoothSegmentedFunctionDataLookup(params, name);
 }
 
-SmoothSegmentedFunction::SmoothSegmentedFunction()
-        : _x0(SimTK::NaN), _x1(SimTK::NaN), _y0(SimTK::NaN), _y1(SimTK::NaN),
-          _dydx0(SimTK::NaN), _dydx1(SimTK::NaN), _computeIntegral(false),
-          _intx0x1(false), _name("NOT_YET_SET") {}
+SmoothSegmentedFunction::SmoothSegmentedFunction():
+    _x0(SimTK::NaN),
+    _x1(SimTK::NaN),
+    _y0(SimTK::NaN),
+    _y1(SimTK::NaN),
+    _dydx0(SimTK::NaN),
+    _dydx1(SimTK::NaN),
+    _computeIntegral(false),
+    _intx0x1(false),
+    _name("NOT_YET_SET") {}
 
 /*Detailed Computational Costs
 ________________________________________________________________________
