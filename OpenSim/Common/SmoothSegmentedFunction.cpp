@@ -186,8 +186,34 @@ struct SmoothSegmentedFunctionData
 {
 
     SmoothSegmentedFunctionData(
-        const SmoothSegmentedFunctionParameters& params,
+        const SimTK::Matrix& mX,
+        const SimTK::Matrix& mY,
+        double x0,
+        double x1,
+        double y0,
+        double y1,
+        double dydx0,
+        double dydx1,
+        bool computeIntegral,
+        bool intx0x1,
         const std::string& name);
+
+    SmoothSegmentedFunctionData(
+        const SmoothSegmentedFunctionParameters& params,
+        const std::string& name):
+        SmoothSegmentedFunctionData(
+            params._mX,
+            params._mY,
+            params._x0,
+            params._x1,
+            params._y0,
+            params._y1,
+            params._dydx0,
+            params._dydx1,
+            params._computeIntegral,
+            params._intx0x1,
+            name
+        ) {}
 
     /**Array of spline fit functions X(u) for each Bezier elbow*/
     SimTK::Array_<SimTK::Spline> _arraySplineUX;
@@ -205,6 +231,26 @@ struct SmoothSegmentedFunctionData
 
     /**The number of quintic Bezier curves that describe the relation*/
     int _numBezierSections;
+
+    /**The minimum value of the domain*/
+    double _x0;
+    /**The maximum value of the domain*/
+    double _x1;
+    /**The minimum value of the range*/
+    double _y0;
+    /**The maximum value of the range*/
+    double _y1;
+    /**The slope at _x0*/
+    double _dydx0;
+    /**The slope at _x1*/
+    double _dydx1;
+    /**This is the users */
+    bool _computeIntegral;
+
+    /**This variable, when true, indicates that the user wants the integral
+    from left to right (x0 to x1). If it is false, the integral from right
+    to left (x1 to x0) is computed*/
+    bool _intx0x1;
 };
 
 } // namespace OpenSim
@@ -326,20 +372,26 @@ SmoothSegmentedFunction::~SmoothSegmentedFunction() noexcept = default;
         N.B. These costs are dependent on SegmentedQuinticBezierToolkit
 */
 SmoothSegmentedFunctionData::SmoothSegmentedFunctionData(
-        const SmoothSegmentedFunctionParameters& params,
-        const std::string& name)
+    const SimTK::Matrix& mX,
+    const SimTK::Matrix& mY,
+    double x0,
+    double x1,
+    double y0,
+    double y1,
+    double dydx0,
+    double dydx1,
+    bool computeIntegral,
+    bool intx0x1,
+    const std::string& name):
+    _x0(x0),
+    _x1(x1),
+    _y0(y0),
+    _y1(y1),
+    _dydx0(dydx0),
+    _dydx1(dydx1),
+    _computeIntegral(computeIntegral),
+    _intx0x1(intx0x1)
 {
-    const SimTK::Matrix& mX = params._mX;
-    const SimTK::Matrix& mY = params._mY;
-    double x0 = params._x0;
-    double x1 = params._x1;
-    double y0 = params._y0;
-    double y1 = params._y1;
-    double dydx0 = params._dydx0;
-    double dydx1 = params._dydx1;
-    bool computeIntegral = params._computeIntegral;
-    bool intx0x1 = params._intx0x1;
-
     _numBezierSections = mX.ncol();
 
     //////////////////////////////////////////////////
@@ -416,32 +468,23 @@ SmoothSegmentedFunction::SmoothSegmentedFunction(
     bool computeIntegral,
     bool intx0x1,
     const std::string& name):
-    _x0(x0),
-    _x1(x1),
-    _y0(y0),
-    _y1(y1),
-    _dydx0(dydx0),
-    _dydx1(dydx1),
-    _computeIntegral(computeIntegral),
-    _intx0x1(intx0x1),
+    _smoothData(
+        SmoothSegmentedFunctionDataLookup(
+            SmoothSegmentedFunctionParameters(
+                mX,
+                mY,
+                x0,
+                x1,
+                y0,
+                y1,
+                dydx0,
+                dydx1,
+                computeIntegral,
+                intx0x1),
+            name)
+        ),
     _name(name)
-{
-    SmoothSegmentedFunctionParameters params(
-        SmoothSegmentedFunctionParameters(
-            mX,
-            mY,
-            x0,
-            x1,
-            y0,
-            y1,
-            dydx0,
-            dydx1,
-            computeIntegral,
-            intx0x1)
-        );
-
-    _smoothData = SmoothSegmentedFunctionDataLookup(params, name);
-}
+{}
 
 SmoothSegmentedFunction::SmoothSegmentedFunction():
     _x0(SimTK::NaN),
@@ -477,19 +520,30 @@ ________________________________________________________________________
 
 double SmoothSegmentedFunction::calcValue(double x) const
 {
+    auto& arraySplineUX = _smoothData->_arraySplineUX;
+    auto& mXVec = _smoothData->_mXVec;
+    auto& mYVec = _smoothData->_mYVec;
+    double x0 = _smoothData->_x0;
+    double x1 = _smoothData->_x1;
+    double y0 = _smoothData->_y0;
+    double y1 = _smoothData->_y1;
+    double dydx0 = _smoothData->_dydx0;
+    double dydx1 = _smoothData->_dydx1;
+
     double yVal = 0;
-    if(x >= _x0 && x <= _x1 )
+
+    if(x >= x0 && x <= x1 )
     {
-        int idx  = SegmentedQuinticBezierToolkit::calcIndex(x,_smoothData->_mXVec);
+        int idx  = SegmentedQuinticBezierToolkit::calcIndex(x,mXVec);
         double u = SegmentedQuinticBezierToolkit::
-                 calcU(x,_smoothData->_mXVec[idx], _smoothData->_arraySplineUX[idx], UTOL,MAXITER);
+                 calcU(x,mXVec[idx], arraySplineUX[idx], UTOL,MAXITER);
         yVal = SegmentedQuinticBezierToolkit::
-                 calcQuinticBezierCurveVal(u,_smoothData->_mYVec[idx]);
+                 calcQuinticBezierCurveVal(u,mYVec[idx]);
     }else{
-        if(x < _x0){
-            yVal = _y0 + _dydx0*(x-_x0);            
+        if(x < x0){
+            yVal = y0 + dydx0*(x-x0);
         }else{
-            yVal = _y1 + _dydx1*(x-_x1);                    
+            yVal = y1 + dydx1*(x-x1);
         }    
     }
 
@@ -543,27 +597,34 @@ double SmoothSegmentedFunction::calcDerivative(double x, int order) const
 
     //QUINTIC SPLINE
 
-    
+    auto& arraySplineUX = _smoothData->_arraySplineUX;
+    auto& mXVec = _smoothData->_mXVec;
+    auto& mYVec = _smoothData->_mYVec;
+    double x0 = _smoothData->_x0;
+    double x1 = _smoothData->_x1;
+    double dydx0 = _smoothData->_dydx0;
+    double dydx1 = _smoothData->_dydx1;
+
     if(order==0){
                 yVal = calcValue(x);
     }else{
-            if(x >= _x0 && x <= _x1){        
-                int idx  = SegmentedQuinticBezierToolkit::calcIndex(x,_smoothData->_mXVec);
+            if(x >= x0 && x <= x1){
+                int idx  = SegmentedQuinticBezierToolkit::calcIndex(x,mXVec);
                 double u = SegmentedQuinticBezierToolkit::
-                                calcU(x,_smoothData->_mXVec[idx], _smoothData->_arraySplineUX[idx],
+                                calcU(x,mXVec[idx], arraySplineUX[idx],
                                 UTOL,MAXITER);
                 yVal = SegmentedQuinticBezierToolkit::
-                            calcQuinticBezierCurveDerivDYDX(u, _smoothData->_mXVec[idx],
-                            _smoothData->_mYVec[idx], order);
+                            calcQuinticBezierCurveDerivDYDX(u, mXVec[idx],
+                            mYVec[idx], order);
 /*
                             std::cout << _mX(3, idx) << std::endl;
                             std::cout << _mX(idx) << std::endl;*/
             }else{
                     if(order == 1){
-                        if(x < _x0){
-                            yVal = _dydx0;
+                        if(x < x0){
+                            yVal = dydx0;
                         }else{
-                            yVal = _dydx1;}
+                            yVal = dydx1;}
                     }else{
                         yVal = 0;}   
                 }
@@ -624,40 +685,49 @@ ________________________________________________________________________
 */
 double SmoothSegmentedFunction::calcIntegral(double x) const
 {
-    SimTK_ERRCHK1_ALWAYS(_computeIntegral,
+    SimTK_ERRCHK1_ALWAYS(_smoothData->_computeIntegral,
         "SmoothSegmentedFunction::calcIntegral",
         "%s: This curve was not constructed with its integral because"
         "computeIntegral was false",_name.c_str());
 
+    auto& splineYintX = _smoothData->_splineYintX;
+    double x0 = _smoothData->_x0;
+    double x1 = _smoothData->_x1;
+    double y0 = _smoothData->_y0;
+    double y1 = _smoothData->_y1;
+    double dydx0 = _smoothData->_dydx0;
+    double dydx1 = _smoothData->_dydx1;
+    bool intx0x1 = _smoothData->_intx0x1;
+
     double yVal = 0;    
-    if(x >= _x0 && x <= _x1){
-        yVal = _smoothData->_splineYintX.calcValue(SimTK::Vector(1,x));
+    if(x >= x0 && x <= x1){
+        yVal = splineYintX.calcValue(SimTK::Vector(1,x));
     }else{
         //LINEAR EXTRAPOLATION         
-        if(x < _x0){
+        if(x < x0){
             SimTK::Vector tmp(1);
-            tmp(0) = _x0;
-            double ic = _smoothData->_splineYintX.calcValue(tmp);
-            if(_intx0x1){//Integrating left to right
-                yVal = _y0*(x-_x0) 
-                    + _dydx0*(x-_x0)*(x-_x0)*0.5 
+            tmp(0) = x0;
+            double ic = splineYintX.calcValue(tmp);
+            if(intx0x1){//Integrating left to right
+                yVal = y0*(x-x0)
+                    + dydx0*(x-x0)*0.5
                     + ic;
             }else{//Integrating right to left
-                yVal = -_y0*(x-_x0) 
-                    - _dydx0*(x-_x0)*(x-_x0)*0.5 
+                yVal = -y0*(x-x0)
+                    - dydx0*(x-x0)*(x-x0)*0.5
                     + ic;
             }            
         }else{
             SimTK::Vector tmp(1);
-            tmp(0) = _x1;
-            double ic = _smoothData->_splineYintX.calcValue(tmp);
-            if(_intx0x1){
-                yVal = _y1*(x-_x1) 
-                    + _dydx1*(x-_x1)*(x-_x1)*0.5 
+            tmp(0) = x1;
+            double ic = splineYintX.calcValue(tmp);
+            if(intx0x1){
+                yVal = y1*(x-x1)
+                    + dydx1*(x-x1)*(x-x1)*0.5
                     + ic;
             }else{
-                yVal = -_y1*(x-_x1) 
-                    - _dydx1*(x-_x1)*(x-_x1)*0.5 
+                yVal = -y1*(x-x1)
+                    - dydx1*(x-x1)*(x-x1)*0.5
                     + ic;
             }
         }
@@ -668,12 +738,12 @@ double SmoothSegmentedFunction::calcIntegral(double x) const
 
 bool SmoothSegmentedFunction::isIntegralAvailable() const
 {
-    return _computeIntegral;
+    return _smoothData->_computeIntegral;
 }
 
 bool SmoothSegmentedFunction::isIntegralComputedLeftToRight() const
 {
-    return _intx0x1;
+    return _smoothData->_intx0x1;
 }
 
 int SmoothSegmentedFunction::getArgumentSize() const
@@ -698,13 +768,15 @@ void SmoothSegmentedFunction::setName(std::string &name)
 
 SimTK::Vec2 SmoothSegmentedFunction::getCurveDomain() const
 {
+    auto& mXVec = _smoothData->_mXVec;
+
     SimTK::Vec2 xrange;
     
     xrange(0) = 0; 
     xrange(1) = 0; 
-    if (!_smoothData->_mXVec.empty()) {
-        xrange(0) = _smoothData->_mXVec[0](0);
-        xrange(1) = _smoothData->_mXVec[_smoothData->_mXVec.size()-1](_smoothData->_mXVec[0].size()-1);
+    if (!mXVec.empty()) {
+        xrange(0) = mXVec[0](0);
+        xrange(1) = mXVec[mXVec.size()-1](mXVec[0].size()-1);
     }
     return xrange;
 }
@@ -751,26 +823,30 @@ SimTK::Matrix SmoothSegmentedFunction::calcSampledMuscleCurve(int maxOrder,
         "SmoothSegmentedFunction::calcSampledMuscleCurve",
         "Derivative order past the maximum computed order requested");
 
+    int numBezierSections = _smoothData->_numBezierSections;
+    bool computeIntegral = _smoothData->_computeIntegral;
+    auto& mXVec = _smoothData->_mXVec;
+
     double x0,x1,delta;
     //y,dy,d1y,d2y,d3y,d4y,d5y,d6y,iy
-   SimTK::Vector midX(NUM_SAMPLE_PTS*_smoothData->_numBezierSections-(_smoothData->_numBezierSections-1));
+   SimTK::Vector midX(NUM_SAMPLE_PTS*numBezierSections-(numBezierSections-1));
    SimTK::Vector x(NUM_SAMPLE_PTS);
 
    //Generate a sample of X values inside of the curve that is denser where 
    //the curve is more curvy.
    double u;
    int idx = 0;
-      for(int s=0; s < _smoothData->_numBezierSections; s++){
+      for(int s=0; s < numBezierSections; s++){
         //Sample the local set for u and x
         for(int i=0;i<NUM_SAMPLE_PTS;i++){
                 u = ( (double)i )/( (double)(NUM_SAMPLE_PTS-1) );
                 x(i) = SegmentedQuinticBezierToolkit::
-                    calcQuinticBezierCurveVal(u,_smoothData->_mXVec[s]);
-                if(_smoothData->_numBezierSections > 1){
+                    calcQuinticBezierCurveVal(u,mXVec[s]);
+                if(numBezierSections > 1){
                    //Skip the last point of a set that has another set of points
                    //after it. Why? The last point and the starting point of the
                    //next set are identical in value.
-                    if(i<(NUM_SAMPLE_PTS-1) || s == (_smoothData->_numBezierSections-1)){
+                    if(i<(NUM_SAMPLE_PTS-1) || s == (numBezierSections-1)){
                         midX(idx) = x(i);
                         idx++;
                     }
@@ -786,7 +862,7 @@ SimTK::Matrix SmoothSegmentedFunction::calcSampledMuscleCurve(int maxOrder,
     
     SimTK::Matrix results;
 
-    if(_computeIntegral){
+    if(computeIntegral){
         results.resize(pts*(midX.size()-1)+2*10*pts,maxOrder+2+1);
     }else{
         results.resize(pts*(midX.size()-1)+2*10*pts,maxOrder+2);
@@ -807,11 +883,11 @@ SimTK::Matrix SmoothSegmentedFunction::calcSampledMuscleCurve(int maxOrder,
 
     //generate some sample points in the extrapolated region
     idx=0;
-    x0 = _x0 - 0.1*(_x1-_x0);
+    x0 = _smoothData->_x0 - 0.1*(_smoothData->_x1-_smoothData->_x0);
     if(domainMin < x0)
         x0 = domainMin;
 
-    x1 = _x0;
+    x1 = _smoothData->_x0;
     delta = (0.1)*(x1-x0)/(pts);
 
     for(int j=0;j<pts*10;j++){
@@ -832,8 +908,8 @@ SimTK::Matrix SmoothSegmentedFunction::calcSampledMuscleCurve(int maxOrder,
     }
 
     //generate some points in the extrapolated region
-    x0 = _x1;
-    x1 = _x1 + 0.1*(_x1-_x0);
+    x0 = _smoothData->_x1;
+    x1 = _smoothData->_x1 + 0.1*(_smoothData->_x1-_smoothData->_x0);
     if(domainMax > x1)
         x1 = domainMax;
 
@@ -868,7 +944,7 @@ SimTK::Matrix SmoothSegmentedFunction::calcSampledMuscleCurve(int maxOrder,
         if(maxOrder>=6)
         results(i,7) = calcDerivative(d6y,ax);
 
-        if(_computeIntegral){
+        if(computeIntegral){
             results(i,maxOrder+2) = calcIntegral(ax(0));
         }
     }
