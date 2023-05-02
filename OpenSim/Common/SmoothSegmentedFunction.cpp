@@ -295,21 +295,23 @@ public:
         std::lock_guard<std::mutex> guard{_cacheMutex};
         auto it = _cache.find(params);
         if (it != _cache.end()) {
-            return it->second;
-        } else {
-            std::shared_ptr<OpenSim::SmoothSegmentedFunctionData> ptr =
+            auto data_ptr = it->second.lock();
+            if (data_ptr) {
+                return data_ptr;
+            }
+        }
+        return _cache.insert({
+                params,
                 std::make_shared<SmoothSegmentedFunctionData>(
                     SmoothSegmentedFunctionData(params, name)
-                );
-            _cache[params] = ptr;
-            return ptr;
-        }
+                )
+            }).first->second.lock();
     }
 
 private:
     std::mutex _cacheMutex;
     std::unordered_map<SmoothSegmentedFunctionParameters,
-        std::shared_ptr<const SmoothSegmentedFunctionData>> _cache;
+        std::weak_ptr<const SmoothSegmentedFunctionData>> _cache;
 };
 
 std::shared_ptr<const OpenSim::SmoothSegmentedFunctionData>
