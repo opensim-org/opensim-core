@@ -30,6 +30,7 @@
 #include <mutex>
 #include <unordered_map>
 #include <utility>
+#include <math.h>
 
 //=============================================================================
 // STATICS
@@ -76,6 +77,19 @@ struct SmoothSegmentedFunctionParameters
         _computeIntegral(computeIntegral),
         _intx0x1(intx0x1) {}
 
+    // Uninitialized parameters.
+    SmoothSegmentedFunctionParameters():
+    _mX(SimTK::Matrix()),
+    _mY(SimTK::Matrix()),
+    _x0(SimTK::NaN),
+    _x1(SimTK::NaN),
+    _y0(SimTK::NaN),
+    _y1(SimTK::NaN),
+    _dydx0(SimTK::NaN),
+    _dydx1(SimTK::NaN),
+    _computeIntegral(false),
+    _intx0x1(false) {}
+
     SimTK::Matrix _mX;
     SimTK::Matrix _mY;
     double _x0;
@@ -110,16 +124,25 @@ bool operator==(
     const SmoothSegmentedFunctionParameters& rhs)
 {
     return
-    lhs._mX == rhs._mX &&
-    lhs._mY == rhs._mY &&
-    lhs._x0 == rhs._x0 &&
-    lhs._x1 == rhs._x1 &&
-    lhs._y0 == rhs._y0 &&
-    lhs._y1 == rhs._y1 &&
-    lhs._dydx0 == rhs._dydx0 &&
-    lhs._dydx1 == rhs._dydx1 &&
-    lhs._computeIntegral == rhs._computeIntegral &&
-    lhs._intx0x1 == rhs._intx0x1;
+        lhs._mX == rhs._mX &&
+        lhs._mY == rhs._mY &&
+        ((
+            lhs._x0 == rhs._x0 &&
+            lhs._x1 == rhs._x1 &&
+            lhs._y0 == rhs._y0 &&
+            lhs._y1 == rhs._y1 &&
+            lhs._dydx0 == rhs._dydx0 &&
+            lhs._dydx1 == rhs._dydx1
+        ) || (
+            std::isnan(lhs._x0) && std::isnan(rhs._x0) &&
+            std::isnan(lhs._x1) && std::isnan(rhs._x1) &&
+            std::isnan(lhs._y0) && std::isnan(rhs._y0) &&
+            std::isnan(lhs._y1) && std::isnan(rhs._y1) &&
+            std::isnan(lhs._dydx0) && std::isnan(rhs._dydx0) &&
+            std::isnan(lhs._dydx1) && std::isnan(rhs._dydx1)
+        )) &&
+        lhs._computeIntegral == rhs._computeIntegral &&
+        lhs._intx0x1 == rhs._intx0x1;
 }
 
 } // namespace OpenSim
@@ -485,15 +508,13 @@ SmoothSegmentedFunction::SmoothSegmentedFunction(
 {}
 
 SmoothSegmentedFunction::SmoothSegmentedFunction():
-    _x0(SimTK::NaN),
-    _x1(SimTK::NaN),
-    _y0(SimTK::NaN),
-    _y1(SimTK::NaN),
-    _dydx0(SimTK::NaN),
-    _dydx1(SimTK::NaN),
-    _computeIntegral(false),
-    _intx0x1(false),
-    _name("NOT_YET_SET") {}
+    _smoothData(
+        SmoothSegmentedFunctionDataLookup(
+            SmoothSegmentedFunctionParameters(),
+            "NOT_YET_SET")
+        ),
+    _name("NOT_YET_SET")
+{}
 
 /*Detailed Computational Costs
 ________________________________________________________________________
