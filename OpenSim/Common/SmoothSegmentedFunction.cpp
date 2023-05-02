@@ -51,7 +51,7 @@ static int NUM_SAMPLE_PTS = 100;
 
 // Helper struct containing all parameters required to construct the
 // SmoothSegmentedFunctionData.
-namespace OpenSim {
+namespace {
 struct SmoothSegmentedFunctionParameters
 {
 
@@ -145,7 +145,7 @@ bool operator==(
         lhs._intx0x1 == rhs._intx0x1;
 }
 
-} // namespace OpenSim
+} // namespace
 
 //=============================================================================
 // HASHING OF PARAMETERS
