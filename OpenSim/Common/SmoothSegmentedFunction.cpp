@@ -110,6 +110,8 @@ bool operator==(
     const SmoothSegmentedFunctionParameters& rhs)
 {
     return
+    lhs._mX == rhs._mX &&
+    lhs._mY == rhs._mY &&
     lhs._x0 == rhs._x0 &&
     lhs._x1 == rhs._x1 &&
     lhs._y0 == rhs._y0 &&
@@ -117,9 +119,7 @@ bool operator==(
     lhs._dydx0 == rhs._dydx0 &&
     lhs._dydx1 == rhs._dydx1 &&
     lhs._computeIntegral == rhs._computeIntegral &&
-    lhs._intx0x1 == rhs._intx0x1 &&
-    lhs._mX == rhs._mX &&
-    lhs._mY == rhs._mY;
+    lhs._intx0x1 == rhs._intx0x1;
 }
 
 //=============================================================================
