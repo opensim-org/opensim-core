@@ -215,12 +215,6 @@ struct SmoothSegmentedFunctionData
 
 namespace {
 
-// Manages an unordered map of SmoothSegmentedFunction's Data, using the Parameters as key.
-// If the same SmoothSegmentedFunctionParameters were previously used to
-// construct the SmoothSegmentedFunctionData, a shared pointer to that data is
-// obtained. If the given parameters are new, a new data object is constructed
-// and added. This prevents duplication of the SmoothSegmentedFunction data for
-// identical curves.
 class SmoothSegmentedFunctionDataCache final
 {
 
