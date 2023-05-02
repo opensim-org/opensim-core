@@ -122,29 +122,33 @@ bool operator==(
     lhs._intx0x1 == rhs._intx0x1;
 }
 
+} // namespace OpenSim
+
 //=============================================================================
 // HASHING OF PARAMETERS
 //=============================================================================
 
 template <typename T>
-inline size_t HashCombine(size_t seed, const T& v)
+static inline size_t HashCombine(size_t seed, const T& v)
 {
     std::hash<T> hasher;
     return seed ^ (hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2));
 }
 
-template <typename T> inline size_t HashOf(const T& v)
+template <typename T>
+static inline size_t HashOf(const T& v)
 {
     return std::hash<T>{}(v);
 }
 
 template <typename T, typename... Others>
-inline size_t HashOf(const T& v, const Others&... others)
+static inline size_t HashOf(const T& v, const Others&... others)
 {
     return HashCombine(HashOf(v), HashOf(others...));
 }
 
-template <> inline size_t HashOf(const SimTK::Matrix& matrix)
+template <>
+inline size_t HashOf(const SimTK::Matrix& matrix)
 {
     size_t hash = HashOf(matrix.nrow(), matrix.ncol());
     for (int r = 0; r < matrix.nrow(); ++r) {
@@ -154,8 +158,6 @@ template <> inline size_t HashOf(const SimTK::Matrix& matrix)
     }
     return hash;
 }
-
-} // namespace OpenSim
 
 template <> struct std::hash<SmoothSegmentedFunctionParameters> final
 {
@@ -205,9 +207,13 @@ struct SmoothSegmentedFunctionData
     int _numBezierSections;
 };
 
+} // namespace OpenSim
+
 //=============================================================================
 // DATA LOOKUP
 //=============================================================================
+
+namespace {
 
 // Manages an unordered map of SmoothSegmentedFunction's Data, using the Parameters as key.
 // If the same SmoothSegmentedFunctionParameters were previously used to
@@ -254,7 +260,7 @@ std::shared_ptr<const OpenSim::SmoothSegmentedFunctionData>
     return s_GlobalCache.lookup(params, name);
 }
 
-} // namespace OpenSim
+} // namespace
 
 //=============================================================================
 // RULE OF FIVE
