@@ -265,8 +265,6 @@ class SmoothSegmentedFunctionDataCache final
 {
 
 public:
-    ~SmoothSegmentedFunctionDataCache() {}
-
     std::shared_ptr<const SmoothSegmentedFunctionData> lookup(
             const SmoothSegmentedFunctionParameters& params,
             const std::string& name)
