@@ -293,12 +293,19 @@ public:
             const std::string& name)
     {
         std::lock_guard<std::mutex> guard{_cacheMutex};
+        cleanup();
+        return findOrInsert(params, name);
+    }
+
+private:
+    // Find previously constructed data, or construct new and insert.
+    std::shared_ptr<const SmoothSegmentedFunctionData> findOrInsert(
+            const SmoothSegmentedFunctionParameters& params,
+            const std::string& name)
+    {
         auto it = _cache.find(params);
         if (it != _cache.end()) {
-            auto data_ptr = it->second.lock();
-            if (data_ptr) {
-                return data_ptr;
-            }
+            return it->second.lock();
         }
         return _cache.insert({
                 params,
@@ -308,7 +315,19 @@ public:
             }).first->second.lock();
     }
 
-private:
+    // Do a pass-over to clean up expired pointers.
+    void cleanup()
+    {
+        for (auto it=_cache.begin(); it!=_cache.end();) {
+            if ( it->second.expired() ) {
+                it = _cache.erase(it);
+            }
+            else {
+                ++it;
+            }
+        }
+    }
+
     std::mutex _cacheMutex;
     std::unordered_map<SmoothSegmentedFunctionParameters,
         std::weak_ptr<const SmoothSegmentedFunctionData>> _cache;
