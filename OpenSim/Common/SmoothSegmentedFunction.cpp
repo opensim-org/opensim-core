@@ -126,7 +126,7 @@ bool operator==(
     const SmoothSegmentedFunctionParameters& rhs)
 {
     auto equalOrBothNaN = [] (double a, double b) -> bool {
-        return a == b || ( isnan(a) && isnan(b) );
+        return a == b || ( std::isnan(a) && std::isnan(b) );
     };
     return
         lhs._mX == rhs._mX &&
