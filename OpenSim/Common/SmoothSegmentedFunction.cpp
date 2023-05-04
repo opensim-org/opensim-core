@@ -65,7 +65,7 @@ struct SmoothSegmentedFunctionParameters
         double dydx0,
         double dydx1,
         bool computeIntegral,
-        bool intx0x1):
+        bool intx0x1) :
         _mX(mX),
         _mY(mY),
         _x0(x0),
@@ -219,7 +219,7 @@ struct SmoothSegmentedFunctionData
 
     SmoothSegmentedFunctionData(
         const SmoothSegmentedFunctionParameters& params,
-        const std::string& name):
+        const std::string& name) :
         SmoothSegmentedFunctionData(
             params._mX,
             params._mY,
@@ -420,7 +420,7 @@ SmoothSegmentedFunctionData::SmoothSegmentedFunctionData(
     double dydx1,
     bool computeIntegral,
     bool intx0x1,
-    const std::string& name):
+    const std::string& name) :
     _x0(x0),
     _x1(x1),
     _y0(y0),
@@ -505,7 +505,7 @@ SmoothSegmentedFunction::SmoothSegmentedFunction(
     double dydx1,
     bool computeIntegral,
     bool intx0x1,
-    const std::string& name):
+    const std::string& name) :
     _smoothData(
         SmoothSegmentedFunctionDataLookup(
             SmoothSegmentedFunctionParameters(
@@ -524,7 +524,7 @@ SmoothSegmentedFunction::SmoothSegmentedFunction(
     _name(name)
 {}
 
-SmoothSegmentedFunction::SmoothSegmentedFunction():
+SmoothSegmentedFunction::SmoothSegmentedFunction() :
     _smoothData(
         SmoothSegmentedFunctionDataLookup(
             SmoothSegmentedFunctionParameters(),
