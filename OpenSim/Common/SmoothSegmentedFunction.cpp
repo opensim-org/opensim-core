@@ -78,17 +78,17 @@ struct SmoothSegmentedFunctionParameters
         _intx0x1(intx0x1) {}
 
     // Uninitialized parameters.
-    SmoothSegmentedFunctionParameters():
-    _mX(SimTK::Matrix()),
-    _mY(SimTK::Matrix()),
-    _x0(SimTK::NaN),
-    _x1(SimTK::NaN),
-    _y0(SimTK::NaN),
-    _y1(SimTK::NaN),
-    _dydx0(SimTK::NaN),
-    _dydx1(SimTK::NaN),
-    _computeIntegral(false),
-    _intx0x1(false) {}
+    SmoothSegmentedFunctionParameters() :
+        _mX(SimTK::Matrix()),
+        _mY(SimTK::Matrix()),
+        _x0(SimTK::NaN),
+        _x1(SimTK::NaN),
+        _y0(SimTK::NaN),
+        _y1(SimTK::NaN),
+        _dydx0(SimTK::NaN),
+        _dydx1(SimTK::NaN),
+        _computeIntegral(false),
+        _intx0x1(false) {}
 
     SimTK::Matrix _mX;
     SimTK::Matrix _mY;
