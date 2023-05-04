@@ -282,14 +282,13 @@ namespace {
 
 class SmoothSegmentedFunctionDataCache final
 {
-
 public:
     std::shared_ptr<const SmoothSegmentedFunctionData> lookup(
             const SmoothSegmentedFunctionParameters& params,
             const std::string& name)
     {
         std::lock_guard<std::mutex> guard{_cacheMutex};
-        cleanup();
+        garbageCollectExpiredData();
         return findOrInsert(params, name);
     }
 
@@ -312,7 +311,7 @@ private:
     }
 
     // Do a pass-over to clean up expired pointers.
-    void cleanup()
+    void garbageCollectExpiredData()
     {
         for (auto it=_cache.begin(); it!=_cache.end();) {
             if ( it->second.expired() ) {
