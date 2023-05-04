@@ -314,10 +314,9 @@ private:
     void garbageCollectExpiredData()
     {
         for (auto it=_cache.begin(); it!=_cache.end();) {
-            if ( it->second.expired() ) {
+            if (it->second.expired()) {
                 it = _cache.erase(it);
-            }
-            else {
+            } else {
                 ++it;
             }
         }
