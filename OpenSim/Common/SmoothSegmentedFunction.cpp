@@ -554,9 +554,10 @@ ________________________________________________________________________
 
 double SmoothSegmentedFunction::calcValue(double x) const
 {
-    auto& arraySplineUX = _smoothData->_arraySplineUX;
-    auto& mXVec = _smoothData->_mXVec;
-    auto& mYVec = _smoothData->_mYVec;
+    const SimTK::Array_<SimTK::Spline>& arraySplineUX =
+    _smoothData->_arraySplineUX;
+    const SimTK::Array_<SimTK::Vector>& mXVec = _smoothData->_mXVec;
+    const SimTK::Array_<SimTK::Vector>& mYVec = _smoothData->_mYVec;
     double x0 = _smoothData->_x0;
     double x1 = _smoothData->_x1;
     double y0 = _smoothData->_y0;
@@ -631,9 +632,10 @@ double SmoothSegmentedFunction::calcDerivative(double x, int order) const
 
     //QUINTIC SPLINE
 
-    auto& arraySplineUX = _smoothData->_arraySplineUX;
-    auto& mXVec = _smoothData->_mXVec;
-    auto& mYVec = _smoothData->_mYVec;
+    const SimTK::Array_<SimTK::Spline>& arraySplineUX =
+    _smoothData->_arraySplineUX;
+    const SimTK::Array_<SimTK::Vector>& mXVec = _smoothData->_mXVec;
+    const SimTK::Array_<SimTK::Vector>& mYVec = _smoothData->_mYVec;
     double x0 = _smoothData->_x0;
     double x1 = _smoothData->_x1;
     double dydx0 = _smoothData->_dydx0;
@@ -724,7 +726,7 @@ double SmoothSegmentedFunction::calcIntegral(double x) const
         "%s: This curve was not constructed with its integral because"
         "computeIntegral was false",_name.c_str());
 
-    auto& splineYintX = _smoothData->_splineYintX;
+    const SimTK::Spline& splineYintX = _smoothData->_splineYintX;
     double x0 = _smoothData->_x0;
     double x1 = _smoothData->_x1;
     double y0 = _smoothData->_y0;
@@ -802,7 +804,7 @@ void SmoothSegmentedFunction::setName(std::string &name)
 
 SimTK::Vec2 SmoothSegmentedFunction::getCurveDomain() const
 {
-    auto& mXVec = _smoothData->_mXVec;
+    const SimTK::Array_<SimTK::Vector>& mXVec = _smoothData->_mXVec;
 
     SimTK::Vec2 xrange;
     
@@ -859,7 +861,7 @@ SimTK::Matrix SmoothSegmentedFunction::calcSampledMuscleCurve(int maxOrder,
 
     int numBezierSections = _smoothData->_numBezierSections;
     bool computeIntegral = _smoothData->_computeIntegral;
-    auto& mXVec = _smoothData->_mXVec;
+    const SimTK::Array_<SimTK::Vector>& mXVec = _smoothData->_mXVec;
 
     double x0,x1,delta;
     //y,dy,d1y,d2y,d3y,d4y,d5y,d6y,iy
