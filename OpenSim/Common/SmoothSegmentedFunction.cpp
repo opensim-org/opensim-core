@@ -119,28 +119,24 @@ bool operator==(
     return true;
 }
 
+// Does what you expect, with the exception of NaN==NaN resulting in true, for
+// x0, x1, y0, y1, dydxo, dydx1. This is to catch the uninitialized case.
 bool operator==(
     const SmoothSegmentedFunctionParameters& lhs,
     const SmoothSegmentedFunctionParameters& rhs)
 {
+    auto equalOrBothNaN = [] (double a, double b) -> bool {
+        return a == b || ( isnan(a) && isnan(b) );
+    };
     return
         lhs._mX == rhs._mX &&
         lhs._mY == rhs._mY &&
-        ((
-            lhs._x0 == rhs._x0 &&
-            lhs._x1 == rhs._x1 &&
-            lhs._y0 == rhs._y0 &&
-            lhs._y1 == rhs._y1 &&
-            lhs._dydx0 == rhs._dydx0 &&
-            lhs._dydx1 == rhs._dydx1
-        ) || (
-            std::isnan(lhs._x0) && std::isnan(rhs._x0) &&
-            std::isnan(lhs._x1) && std::isnan(rhs._x1) &&
-            std::isnan(lhs._y0) && std::isnan(rhs._y0) &&
-            std::isnan(lhs._y1) && std::isnan(rhs._y1) &&
-            std::isnan(lhs._dydx0) && std::isnan(rhs._dydx0) &&
-            std::isnan(lhs._dydx1) && std::isnan(rhs._dydx1)
-        )) &&
+        equalOrBothNaN(lhs._x0, rhs._x0) &&
+        equalOrBothNaN(lhs._x1, rhs._x1) &&
+        equalOrBothNaN(lhs._y0, rhs._y0) &&
+        equalOrBothNaN(lhs._y1, rhs._y1) &&
+        equalOrBothNaN(lhs._dydx0, rhs._dydx0) &&
+        equalOrBothNaN(lhs._dydx1, rhs._dydx1) &&
         lhs._computeIntegral == rhs._computeIntegral &&
         lhs._intx0x1 == rhs._intx0x1;
 }
