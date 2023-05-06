@@ -122,8 +122,8 @@ public:
     void test();
     void testParameters();
     void testSerialization();
-    void testDiscreteVariable(State& state, const ExponentialContact& ec,
-        const string& name);
+    void printDiscreteVariableAbstractValue(const string& pathName,
+        const AbstractValue& value) const;
     void testDiscreteVariables(State& state, const ForceSet& fSet);
 
     // Simulation
@@ -680,38 +680,28 @@ testSerialization() {
 //_____________________________________________________________________________
 void
 ExponentialContactTester::
-testDiscreteVariable(State& state, const ExponentialContact& ec,
-    const string& name)
+printDiscreteVariableAbstractValue(const string& pathName,
+    const AbstractValue& value) const
 {
-    // Get the starting value.
-    const SimTK::AbstractValue& val =
-        ec.getDiscreteVariableAbstractValue(state, name);
+    cout << pathName << " = ";
 
-    /*
     // Switch depending on the type
-    if (SimTK::Value<double>::isA(val)) {
-        SimTK::Value<double> deltaDouble(delta);
-        SimTK::Value<double> tolDouble(tol);
-
-        //
+    if (SimTK::Value<double>::isA(value)) {
+        double x = SimTK::Value<double>::downcast(value);
+        cout << x << endl;
+    } else if (SimTK::Value<Vec3>::isA(value)) {
+        Vec3 x = SimTK::Value<Vec3>::downcast(value);
+        cout << x << endl;
     }
-
-    // Set a new value.
-    double valNew = val + delta;
-    ec.setDiscreteVariableValue<double>(state, name, valNew);
-    double valNewDV = ec.getDiscreteVariableValue(state, name);
-    ASSERT_EQUAL(valNew, valNewDV, tol);
-
-    // Restore the starting value.
-    ec.setDiscreteVariableValue(state, name, val);
-    double valDV = SimTK::Value<double>::downcast(
-        ec.getDiscreteVariableAbstractValue(state, name));
-    ASSERT_EQUAL(val, valDV, tol);
-    */
 }
 
 //_____________________________________________________________________________
-// Only types that are handled are double and Vec3.
+// The only types that are handled are double and Vec3 at this point.
+// The significant changes in how Discrete Variables are handled are:
+//      1. Values are now not assumed to be doubles but are AbstractValues.
+//      2. Discrete variables outside of OpenSim are permitted.
+//      3. Discrete variables may be accessed via the Component API by
+//      specifying the path (e.g., path = "/forceset/Exp0/anchor").
 void
 ExponentialContactTester::
 testDiscreteVariables(State& state, const ForceSet& fSet) {
@@ -723,9 +713,10 @@ testDiscreteVariables(State& state, const ForceSet& fSet) {
     int n = names.size();
     for (int i = 0; i < n; ++i) {
 
-        // Starting value
-        SimTK::AbstractValue& valAbstract =
+        // Print values for debugging purposes.
+        AbstractValue& valAbstract =
             fSet.updDiscreteVariableAbstractValue(state, names[i]);
+        printDiscreteVariableAbstractValue(names[i], valAbstract);
 
         // Declarations
         double tol = 1.0e-6;
@@ -738,7 +729,7 @@ testDiscreteVariables(State& state, const ForceSet& fSet) {
         if (SimTK::Value<double>::isA(valAbstract)) {
             SimTK::Value<double>& valDbl =
                 SimTK::Value<double>::updDowncast(valAbstract);
-            valStartDbl = valDbl.get();
+            valStartDbl = valDbl;
             valDbl = valStartDbl + deltaDbl;
         } else if (SimTK::Value<Vec3>::isA(valAbstract)) {
             SimTK::Value<Vec3>& valVec3 =
@@ -746,6 +737,7 @@ testDiscreteVariables(State& state, const ForceSet& fSet) {
             valStartVec3 = valVec3.get();
             valVec3 = valStartVec3 + deltaVec3;
         }
+        printDiscreteVariableAbstractValue(names[i], valAbstract);
 
         // Check that the value changed correctly
         if (SimTK::Value<double>::isA(valAbstract)) {
@@ -758,7 +750,7 @@ testDiscreteVariables(State& state, const ForceSet& fSet) {
             ASSERT_EQUAL(valVec3.get(), valStartVec3 + deltaVec3, tol);
         }
 
-        // Restore
+        // Restore the starting value
         if (SimTK::Value<double>::isA(valAbstract)) {
             SimTK::Value<double>& valDbl =
                     SimTK::Value<double>::updDowncast(valAbstract);
@@ -768,8 +760,9 @@ testDiscreteVariables(State& state, const ForceSet& fSet) {
                     SimTK::Value<Vec3>::updDowncast(valAbstract);
             valVec3 = valStartVec3;
         }
+        printDiscreteVariableAbstractValue(names[i], valAbstract);
 
-        // Check that the value was restored correctly
+        // Check that the value was correctly restored
         if (SimTK::Value<double>::isA(valAbstract)) {
             SimTK::Value<double>& valDbl =
                     SimTK::Value<double>::updDowncast(valAbstract);
@@ -807,26 +800,11 @@ simulate()
     ExponentialContact::resetAnchorPoints(fSet, state);
 
     // Check the Component API for discrete states.
-    int i;
     int n = fSet.getSize();
-    for (i = 0; i < n; ++i) {
-        try {
-
-            // Get the ExponentialContact Component
-            //ExponentialContact& ec =
-            //        dynamic_cast<ExponentialContact&>(fSet.get(i));
-            //string path = ec.getAbsolutePathString();
-            //cout << "path = " << path << endl;
-
-            // Test DiscreteVariable Component API
-            testDiscreteVariables(state, fSet);
-
-        } catch (const std::exception& e) {
-            // Nothing should happen here. Execution is just skipping any
-            // OpenSim::Force that is not an ExponentialContact.
-            cout << e.what() << endl;
-        }
-
+    try {
+        testDiscreteVariables(state, fSet);
+    } catch (const std::exception& e) {
+        cout << e.what() << endl;
     }
 
     // Integrate
