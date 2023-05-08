@@ -300,7 +300,12 @@ private:
     {
         auto it = _cache.find(params);
         if (it != _cache.end()) {
-            return it->second.lock();
+            auto data_ptr = it->second.lock();
+            // We expect expired data to be collected at this point, but check
+            // if expired here to be on the safe side.
+            if (data_ptr) {
+                return data_ptr;
+            }
         }
         return _cache.insert({
                 params,
