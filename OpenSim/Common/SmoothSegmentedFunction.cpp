@@ -77,29 +77,18 @@ struct SmoothSegmentedFunctionParameters
         _computeIntegral(computeIntegral),
         _intx0x1(intx0x1) {}
 
-    // Uninitialized parameters.
-    SmoothSegmentedFunctionParameters() :
-        _mX(SimTK::Matrix()),
-        _mY(SimTK::Matrix()),
-        _x0(SimTK::NaN),
-        _x1(SimTK::NaN),
-        _y0(SimTK::NaN),
-        _y1(SimTK::NaN),
-        _dydx0(SimTK::NaN),
-        _dydx1(SimTK::NaN),
-        _computeIntegral(false),
-        _intx0x1(false) {}
+    SmoothSegmentedFunctionParameters() {}
 
-    SimTK::Matrix _mX;
-    SimTK::Matrix _mY;
-    double _x0;
-    double _x1;
-    double _y0;
-    double _y1;
-    double _dydx0;
-    double _dydx1;
-    bool _computeIntegral;
-    bool _intx0x1;
+    SimTK::Matrix _mX = SimTK::Matrix();
+    SimTK::Matrix _mY = SimTK::Matrix();
+    double _x0 = SimTK::NaN;
+    double _x1 = SimTK::NaN;
+    double _y0 = SimTK::NaN;
+    double _y1 = SimTK::NaN;
+    double _dydx0 = SimTK::NaN;
+    double _dydx1 = SimTK::NaN;
+    bool _computeIntegral = false;
+    bool _intx0x1 = false;
 };
 
 bool operator==(
