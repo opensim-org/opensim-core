@@ -30,7 +30,7 @@
 #include <mutex>
 #include <unordered_map>
 #include <utility>
-#include <math.h>
+#include <cmath>
 
 //=============================================================================
 // STATICS
