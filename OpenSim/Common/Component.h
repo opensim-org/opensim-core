@@ -1429,7 +1429,7 @@ public:
      *
      * To obtain the type-specific value of a discrete variable, perform
      * a cast using the template methods provided in class SimTK::Value<T>.
-     * When the type is unknow, it can be querried using the
+     * When the type is unknown, it can be queried using the
      * SimTK::Value<T>::isA() method. For example,
      *
      * ```
@@ -1467,7 +1467,7 @@ public:
      *
      * To obtain the type-specific value of a discrete variable, perform
      * a cast using the template methods provided in class SimTK::Value<T>.
-     * When the type is unknow, it can be querried using the
+     * When the type is unknown, it can be queried using the
      * SimTK::Value<T>::isA() method. For example,
      *
      * ```
