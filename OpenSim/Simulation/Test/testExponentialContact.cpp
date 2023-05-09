@@ -813,6 +813,7 @@ simulate()
     manager.setIntegratorAccuracy(integ_accuracy);
     state.setTime(0.0);
     manager.initialize(state);
+    manager.setWriteToStorage(true);
     std::clock_t startTime = std::clock();
     state = manager.integrate(tf);
     auto runTime = 1.e3 * (std::clock() - startTime) / CLOCKS_PER_SEC;
@@ -827,6 +828,10 @@ simulate()
 
     // Write the model to file
     //model->print("C:\\Users\\fcand\\Documents\\block.osim");
+
+    // Write recorded states to file
+    Storage& store = manager.getStateStorage();
+    store.print("BouncingBlock.states");
 }
 
 //_____________________________________________________________________________
