@@ -44,17 +44,50 @@ using namespace std;
 /**
  * Default constructor.
  */
-Controller::Controller() 
+Controller::Controller() :
+    ModelComponent{},
+    _numControls{0},
+    _actuatorSet{}
 {
     constructProperties();
 }
 
+Controller::Controller(Controller const& src) :
+    ModelComponent{src},
+    PropertyIndex_enabled{src.PropertyIndex_enabled},
+    PropertyIndex_actuator_list{src.PropertyIndex_actuator_list},
+    _numControls{src._numControls},
+    _actuatorSet{}
+{
+    // care: the reason this custom copy constructor exists is to prevent
+    // a memory leak (#3247)
+    _actuatorSet.setMemoryOwner(false);
+}
+
+Controller& Controller::operator=(Controller const& src)
+{
+    // care: the reason this custom copy assignment exists is to prevent
+    // a memory leak (#3247)
+
+    if (&src != this)
+    {
+        static_cast<ModelComponent&>(*this) = static_cast<ModelComponent const&>(src);
+        PropertyIndex_enabled = src.PropertyIndex_enabled;
+        PropertyIndex_actuator_list = src.PropertyIndex_actuator_list;
+        _numControls = src._numControls;
+        _actuatorSet.setSize(0);
+    }
+    return *this;
+}
+
+Controller::~Controller() noexcept = default;
 
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
 //_____________________________________________________________________________
 //_____________________________________________________________________________
+
 /**
  * Connect properties to local pointers.
  */
@@ -63,8 +96,6 @@ void Controller::constructProperties()
     setAuthors("Ajay Seth, Frank Anderson, Chand John, Samuel Hamner");
     constructProperty_enabled(true);
     constructProperty_actuator_list();
-
-    // Set is only a reference list, not ownership
     _actuatorSet.setMemoryOwner(false);
 }
 
@@ -125,8 +156,8 @@ void Controller::extendConnectToModel(Model& model)
     // if we use a list Socket<Actuator> 
 
     // make sure controller does not take ownership
-    _actuatorSet.setMemoryOwner(false);
     _actuatorSet.setSize(0);
+    _actuatorSet.setMemoryOwner(false);
 
     int nac = getProperty_actuator_list().size();
     if (nac == 0)
@@ -172,9 +203,9 @@ void Controller::setActuators(const Set<Actuator>& actuators)
     //TODO this needs to be setting a Socket list of Actuators
 
     // make sure controller does NOT assume ownership
+    _actuatorSet.setSize(0);
     _actuatorSet.setMemoryOwner(false);
     //Rebuild consistent set of actuator lists
-    _actuatorSet.setSize(0);
     updProperty_actuator_list().clear();
     for (int i = 0; i< actuators.getSize(); i++){
         addActuator(actuators[i]);

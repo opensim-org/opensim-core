@@ -1,9 +1,9 @@
 /* -------------------------------------------------------------------------- *
  * OpenSim Moco: MocoTrajectory.cpp                                           *
  * -------------------------------------------------------------------------- *
- * Copyright (c) 2017 Stanford University and the Authors                     *
+ * Copyright (c) 2023 Stanford University and the Authors                     *
  *                                                                            *
- * Author(s): Christopher Dembia                                              *
+ * Author(s): Christopher Dembia, Nicholas Bianco                             *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
  * not use this file except in compliance with the License. You may obtain a  *
@@ -513,6 +513,50 @@ void MocoTrajectory::generateAccelerationsFromSpeeds() {
 
     // Assign derivative names.
     m_derivative_names = derivativeNames;
+}
+
+void MocoTrajectory::trimToIndices(int newStartIndex, int newFinalIndex) {
+    OPENSIM_THROW_IF(newFinalIndex < newStartIndex, Exception,
+            fmt::format("Expected newFinalIndex to be greater than "
+                        "newStartIndex, but received {} and {} for "
+                        "newStartIndex and newFinalIndex, respectively.",
+                        newStartIndex, newFinalIndex));
+    OPENSIM_THROW_IF(newStartIndex < 0, Exception,
+            fmt::format("Expected newStartIndex to be greater than or equal to"
+                        "0, but received {}.", newStartIndex));
+    OPENSIM_THROW_IF(newFinalIndex > getNumTimes()-1, Exception,
+            fmt::format("Expected newFinalIndex to be less than or equal to"
+                        "the current final index {}, but received {}.",
+                        getNumTimes()-1, newFinalIndex));
+
+    const int newLength = newFinalIndex - newStartIndex + 1;
+
+    const SimTK::Matrix statesBlock =
+            m_states(newStartIndex, 0, newLength, m_states.ncol());
+    m_states = statesBlock;
+
+    const SimTK::Matrix controlsBlock =
+            m_controls(newStartIndex, 0, newLength, m_controls.ncol());
+    m_controls = controlsBlock;
+
+    const SimTK::Matrix multipliersBlock =
+            m_multipliers(newStartIndex, 0, newLength, m_multipliers.ncol());
+    m_multipliers = multipliersBlock;
+
+    const SimTK::Matrix derivativesBlock =
+            m_derivatives(newStartIndex, 0, newLength, m_derivatives.ncol());
+    m_derivatives = derivativesBlock;
+
+    const SimTK::Matrix slacksBlock =
+            m_slacks(newStartIndex, 0, newLength, m_slacks.ncol());
+    m_slacks = slacksBlock;
+
+    SimTK::Vector newTime(newLength, 0.0);
+    for (int i = 0; i < newLength; ++i) {
+        newTime[i] = m_time[i + newStartIndex];
+    }
+
+    m_time = newTime;
 }
 
 double MocoTrajectory::getInitialTime() const {
