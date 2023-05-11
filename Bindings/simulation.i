@@ -330,7 +330,8 @@ OpenSim::ModelComponentSet<OpenSim::Controller>;
 %include <OpenSim/Actuators/MuscleFixedWidthPennationModel.h>
 %include <OpenSim/Actuators/Thelen2003Muscle.h>
 %include <OpenSim/Actuators/Millard2012EquilibriumMuscle.h>
-
+// Additional utility to access GravityForces
+%include <OpenSim/Simulation/Model/GravityHelper.h>
 
 // Compensate for insufficient C++11 support in SWIG
 // =================================================
@@ -409,13 +410,3 @@ EXPOSE_SET_CONSTRUCTORS_HELPER(WrapObjectSet);
 EXPOSE_SET_CONSTRUCTORS_HELPER(CoordinateSet);
 
 // Extend class to extract Forces from Simbody
-%extend OpenSim::Model {
-public:
-    static const SimTK::Vector_<SpatialVec>& getGravityForces(
-            const OpenSim::Model& model,
-            const SimTK::State& state)
-    {
-        return model.getGravityForce().getBodyForces(state);
-    }
-
-};
