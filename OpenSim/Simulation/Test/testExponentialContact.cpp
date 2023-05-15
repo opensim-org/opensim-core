@@ -44,6 +44,8 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
+#include <OpenSim/Simulation/StatesTrajectory.h>
+#include <OpenSim/Simulation/StatesTrajectoryReporter.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include "SimTKsimbody.h"
 
@@ -157,12 +159,15 @@ public:
     Model* model{NULL};
     OpenSim::Body* blockEC{NULL};
     OpenSim::Body* blockHC{NULL};
-    OpenSim::ExponentialContact* sprEC[n]{NULL};
-    OpenSim::HuntCrossleyForce* sprHC[n]{NULL};
-    OpenSim::ContactGeometry* geomHC[n]{NULL};
+    OpenSim::ExponentialContact* sprEC[n]{nullptr};
+    OpenSim::HuntCrossleyForce* sprHC[n]{nullptr};
+    OpenSim::ContactGeometry* geomHC[n]{nullptr};
     Storage fxData;
-    ExternalForce* fxEC{NULL};
-    ExternalForce* fxHC{NULL};
+    ExternalForce* fxEC{nullptr};
+    ExternalForce* fxHC{nullptr};
+
+    // Reporters
+    StatesTrajectoryReporter* statesReporter{nullptr};
 
 }; // End class ExponentialContactTester declarations
 
@@ -345,6 +350,14 @@ buildModel()
             model->addForce(fxHC);
         }
     }
+
+    // Reporters
+    // StatesTrajectory
+    statesReporter = new StatesTrajectoryReporter();
+    statesReporter->setName("states_reporter");
+    statesReporter->set_report_time_interval(0.001);
+    model->addComponent(statesReporter);
+
 
     // Visuals?
     if (showVisuals) {
@@ -829,9 +842,12 @@ simulate()
     // Write the model to file
     //model->print("C:\\Users\\fcand\\Documents\\block.osim");
 
-    // Write recorded states to file
+    // Write recorded states
+    // From the Storage object maintained by the Manager
     Storage& store = manager.getStateStorage();
     store.print("BouncingBlock.states");
+    // From the StatesTrajectoryReporter
+    const StatesTrajectory& statesTrajectory = statesReporter->getStates();
 }
 
 //_____________________________________________________________________________
