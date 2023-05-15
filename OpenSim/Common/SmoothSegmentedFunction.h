@@ -29,9 +29,9 @@
 namespace OpenSim { 
 
     /**
-    Class containing the data used by SmoothSegmentedFuncion.
+    Struct containing the data used by SmoothSegmentedFuncion.
     */
-    class SmoothSegmentedFunctionData;
+    struct SmoothSegmentedFunctionData;
 
     /**
     This class contains the quintic Bezier curves, x(u) and y(u), that have been
