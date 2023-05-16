@@ -6,8 +6,9 @@ request related to the change, then we may provide the commit.
 
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
 
-v4.4.1
+v4.5
 ======
+- IMU::calcGyroscopeSignal() now reports angular velocities in the IMU frame.
 - Update `report.py` to set specific colors for plotted trajectories
 - Made `Component::getSocketNames` a `const` member method (previously: non-const)
 - Added `ModOpReplaceMusclesWithPathActuators` to the list of available model operators in `ModelOperators.h`
@@ -20,6 +21,9 @@ v4.4.1
 - Fix CSV file adapter hanging on csv files that are missing end-header (issue #2432).
 - Improve documentation for MotionType to serve scripting users (Issue #3324).
 - Drop support for 32-bit Matlab in build system since Matlab stopped providing 32-bit distributions (issue #3373).
+- Hotfixed body inertia not being updated after changing the 'inertia' property of a body (Issue #3395).
+- Fixed segfault that can occur when working with OpenSim::Models that are initialized from invalid XML (osim) data (#3409)
+- Deduplicated `SmoothSegmentedFunction` data when constructing the muscle curves (#3442).
 
 v4.4
 ====
