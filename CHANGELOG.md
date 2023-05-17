@@ -23,7 +23,9 @@ v4.5
 - Drop support for 32-bit Matlab in build system since Matlab stopped providing 32-bit distributions (issue #3373).
 - Hotfixed body inertia not being updated after changing the 'inertia' property of a body (Issue #3395).
 - Fixed segfault that can occur when working with OpenSim::Models that are initialized from invalid XML (osim) data (#3409)
+- Deduplicated `SmoothSegmentedFunction` data when constructing the muscle curves (#3442).
 - Added `OpenSim::AbstractSocket::canConnectTo(Object const&) const`, for faster socket connectivity checks (#3451)
+
 
 v4.4
 ====
