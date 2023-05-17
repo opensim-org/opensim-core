@@ -51,11 +51,11 @@ int main()
         //~3.5s for CoordinateStateVariable::setValue() enforcing constraints
         //~0.18s for CoordinateStateVariable::setValue() NOT enforcing constraints
         //       plus explicit Model::assemble() after model.setStateVariableValues()
-//        instrumentSetStateValues("PushUpToesOnGroundLessPreciseConstraints.osim");
-//        testAssemblySatisfiesConstraints("knee_patella_ligament.osim");
-//        testAssembleModelWithConstraints("PushUpToesOnGroundExactConstraints.osim");
-//        testAssembleModelWithConstraints("PushUpToesOnGroundLessPreciseConstraints.osim");
-//        testAssembleModelWithConstraints("PushUpToesOnGroundWithMuscles.osim");
+        instrumentSetStateValues("PushUpToesOnGroundLessPreciseConstraints.osim");
+        testAssemblySatisfiesConstraints("knee_patella_ligament.osim");
+        testAssembleModelWithConstraints("PushUpToesOnGroundExactConstraints.osim");
+        testAssembleModelWithConstraints("PushUpToesOnGroundLessPreciseConstraints.osim");
+        testAssembleModelWithConstraints("PushUpToesOnGroundWithMuscles.osim");
         testCoordinateCouplerCompoundFunction();
     }
     catch (const std::exception& e) {
