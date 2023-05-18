@@ -145,6 +145,10 @@ public:
         OPENSIM_THROW(Exception, "Not supported for this type of socket.");
     }
 
+    /** Returns `true` if the socket can connect to the object (i.e. because
+        the object is a matching type for the socket) */
+    virtual bool canConnectTo(const Object&) const = 0;
+
     /** Connect this %Socket to the provided connectee object. If this is a
         list socket, the connectee is appended to the list of connectees;
         otherwise, the provided connectee replaces the single connectee. */
@@ -363,6 +367,10 @@ public:
     Return a const reference to the object connected to this Socket */
     const T& getConnectee() const;
 
+    bool canConnectTo(const Object& object) const override {
+        return dynamic_cast<const T*>(&object) != nullptr;
+    }
+
     /** Connect this Socket to the provided connectee object */
     void connect(const Object& object) override {
         const T* objT = dynamic_cast<const T*>(&object);
@@ -498,6 +506,12 @@ public:
     // Change the return type of clone(). This is similar to what the Object
     // macros do (see OpenSim_OBJECT_ABSTRACT_DEFS).
     AbstractInput* clone() const override = 0;
+
+    bool canConnectTo(OpenSim::Object const&) const override {
+        // see `connect`: you cannot connect an object to an input: must
+        // be an `AbstractOutput`
+        return false;
+    }
 
     // Socket interface
     void connect(const Object& object) override {
