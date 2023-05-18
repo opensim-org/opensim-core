@@ -29,7 +29,7 @@
 #include "simbody/internal/Constraint.h"
 
 /**
- * This is a helper class that is used to take function that computes the value
+ * This is a helper class that is used to take a function that computes the value
  * of a dependent coordinate as a function of independent coordinates and cast
  * it as a function that computes the value of a constraint function as a
  * function of all coordinates. This is done by subtracting the value of the
@@ -42,10 +42,12 @@
  *
  * this class creates a new function with the form
  *
- * C(q) = 0 = f(qi_1, qi_2, ..., qi_N) - qd
+ * C(q) = 0 = s * f(qi_1, qi_2, ..., qi_N) - qd
  *
  * where qd is the value of the dependent coordinate, and qi_1, qi_2, ..., qi_N
- * are the values of the independent coordinates.
+ * are the values of the independent coordinates. This class also introduces the
+ * optional scale factor 's', which is used to scale the value of the function
+ * that computes the dependent coordinate. By default, the scale factor is 1.
  */
 class CompoundFunction : public SimTK::Function {
 
@@ -58,8 +60,9 @@ public:
     /**
      * Default constructor.
      */
-    CompoundFunction(const SimTK::Function *f, double scale) :
-            originalFunction(f), scaleFactor(scale) {}
+    CompoundFunction(const SimTK::Function* originalFunction,
+                     double scaleFactor) :
+            originalFunction(originalFunction), scaleFactor(scaleFactor) {}
 
     /**
      * Compute the residual value of the compound function. The value of the
