@@ -25,6 +25,7 @@ v4.5
 - Fixed segfault that can occur when working with OpenSim::Models that are initialized from invalid XML (osim) data (#3409)
 - Deduplicated `SmoothSegmentedFunction` data when constructing the muscle curves (#3442).
 - Added `OpenSim::AbstractSocket::canConnectTo(Object const&) const`, for faster socket connectivity checks (#3451)
+- Fixed the `CoordinateCouplerConstraint` bug preventing functions with multiple independent coordinates (#3435)
 
 
 v4.4
