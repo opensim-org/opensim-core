@@ -26,6 +26,7 @@ v4.5
 - Deduplicated `SmoothSegmentedFunction` data when constructing the muscle curves (#3442).
 - Added `OpenSim::AbstractSocket::canConnectTo(Object const&) const`, for faster socket connectivity checks (#3451)
 - Fixed the `CoordinateCouplerConstraint` bug preventing functions with multiple independent coordinates (#3435)
+- Fixed `CMC_TaskSet` memory leak whenever it is copied (#3457)
 
 
 v4.4
