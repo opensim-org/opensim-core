@@ -405,7 +405,7 @@ void testCoordinateCouplerCompoundFunction() {
         auto model = createConstrainedPendulumModel(function);
         // Set the initial state to a random value.
         auto state = model.initSystem();
-        SimTK::Vector q_rand = SimTK::Test::randVector(3);
+        SimTK::Vector q_rand = SimTK::Test::randVector(model.getNumStateVariables());
         model.setStateVariableValues(state, q_rand);
         model.assemble(state);
         // Compute the constraint error.
@@ -430,7 +430,7 @@ void testCoordinateCouplerCompoundFunction() {
         auto model = createConstrainedPendulumModel(multiPoly);
         // Set the initial state to a random value.
         auto state = model.initSystem();
-        SimTK::Vector q_rand = SimTK::Test::randVector(3);
+        SimTK::Vector q_rand = SimTK::Test::randVector(model.getNumStateVariables());
         model.setStateVariableValues(state, q_rand);
         model.assemble(state);
         // Compute the constraint error.

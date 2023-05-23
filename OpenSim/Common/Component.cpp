@@ -966,7 +966,7 @@ void Component::
 
     int nsv = getNumStateVariables();
 
-    SimTK_ASSERT(values.size() == nsv,
+    SimTK_ASSERT_ALWAYS(values.size() == nsv,
         "Component::setStateVariableValues() number values does not match the "
         "number of state variables.");
 
