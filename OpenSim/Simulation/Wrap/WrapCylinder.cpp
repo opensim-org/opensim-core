@@ -632,8 +632,8 @@ restart_spiral_wrap:
     vv = aWrapResult.r2 - r2a;
 
     theta = std::atan2(
-        SimTK::dot(SimTK::cross(uu, vv), dn),
-        SimTK::dot(uu, vv)
+        SimTK::dot(SimTK::cross(uu, vv), dn), // = sin(theta) * radius^2
+        SimTK::dot(uu, vv) // = cos(theta) * radius^2
     );
 
     if (far_side_wrap)
