@@ -621,7 +621,7 @@ restart_spiral_wrap:
     aWrapResult.wrap_pts.setSize(0);
 
     // determine the axial vector
- 
+
     WrapMath::GetClosestPointOnLineToPoint(aWrapResult.r1, p0, dn, r1a, t);
     WrapMath::GetClosestPointOnLineToPoint(aWrapResult.r2, p0, dn, r2a, t);
 
