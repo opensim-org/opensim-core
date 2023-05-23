@@ -13,7 +13,7 @@ include(CMakeDependentOption)
 set(
     SIMBODY_EXTRA_CMAKE_ARGS ""
     CACHE STRING
-    "extra args to forward when configuring Simbody with CMake. The format must be: VARNAME1:TYPE1=VALUE1;VARNAME2:TYPE2=VALUE2"
+    "extra arguments to forward when configuring Simbody's build. The format must be: VARNAME1:TYPE1=VALUE1;VARNAME2:TYPE2=VALUE2 (e.g. '-DSIMBODY_EXTRA_CMAKE_ARGS=-DSIMBODY_BUILD_VISUALIZER:BOOL=OFF;-DBUILD_USING_OTHER_LAPACK:PATH=/some/path'")
 )
 
 # Set the default for CMAKE_INSTALL_PREFIX.
