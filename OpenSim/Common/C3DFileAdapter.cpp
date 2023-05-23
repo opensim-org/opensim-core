@@ -44,6 +44,7 @@ namespace OpenSim {
 
 const std::string C3DFileAdapter::_markers{"markers"};
 const std::string C3DFileAdapter::_forces{"forces"};
+const std::string C3DFileAdapter::_analog{ "analog" };
 
 const std::unordered_map<std::string, size_t>
 C3DFileAdapter::_unit_index{{"marker", 0},
@@ -197,6 +198,8 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         fpTypes.push_back(static_cast<unsigned>(type));
 
     }
+    auto analogFrequency = static_cast<double>(c3d.header().frameRate()
+        * c3d.header().nbAnalogByFrame());
 
     if(numPlatform != 0) {
         for (auto type : c3d.parameters().group("FORCE_PLATFORM")
@@ -229,8 +232,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         }
 
         const int nf = static_cast<int>(force_platforms_extractor.forcePlatform(0).nbFrames());
-        auto analogFrequency = static_cast<double>(c3d.header().frameRate()
-                                                   * c3d.header().nbAnalogByFrame());
+        
         const auto& pf_ref(force_platforms_extractor.forcePlatforms());
 
         std::vector<double> force_times(nf);
@@ -319,6 +321,29 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
                 emptyTimes, noData, emptyLabels);
         tables.emplace(_forces, emptyforcesTable);
     }
+
+    // Try to extract analog data and place in a new TimeSeriesTable 
+    std::vector<std::string> analog_labels{};
+    for (auto label : c3d.parameters().group("ANALOG")
+        .parameter("LABELS").valuesAsString()) {
+        analog_labels.push_back(SimTK::Value<std::string>(label));
+    }
+
+    // For now assume force_platform data exists, eventually replace with a different way to get number of frames
+    const int nf = static_cast<int>(force_platforms_extractor.forcePlatform(0).nbFrames());
+    SimTK::Matrix_<double> analog_data_matrix(nf, (int)analog_labels.size());
+    std::vector<double> analog_times(nf);
+    double time_step{ 1.0 / analogFrequency };
+    for (int f = 0; f < nf; ++f)
+        analog_times[f] = f * time_step;
+    auto& analog_table =
+        *(new TimeSeriesTable(analog_times, analog_data_matrix, analog_labels));
+    analog_table.updTableMetaData().setValueForKey("DataRate", std::to_string(analogFrequency));
+    // C3D standard is to read empty values as zero, but sets a
+    // "residual" value to -1 and it is how it knows to export these
+    // values as blank
+
+    //tables.emplace(_analog, analog_table);
     return tables;
 #endif
 }
