@@ -331,7 +331,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
     }
 
     int numAnalogSignals = (int)analog_labels.size();
-    int totalAnalogFrames = c3d.data().nbFrames() * c3d.header().nbAnalogByFrame();
+    int totalAnalogFrames = (int) (c3d.data().nbFrames() * c3d.header().nbAnalogByFrame());
     SimTK::Matrix analog_data_matrix(totalAnalogFrames, numAnalogSignals);
     std::vector<double> analog_times(totalAnalogFrames);
     double analog_time_step{ 1.0 / analogFrequency };
@@ -353,9 +353,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
     auto& analog_table =
         *(new TimeSeriesTable(analog_times, analog_data_matrix, analog_labels));
     analog_table.updTableMetaData().setValueForKey("DataRate", std::to_string(analogFrequency));
-    STOFileAdapter sto_adapter{};
-    sto_adapter.write(analog_table, "analogData.sto");
-    //tables.emplace(_analog, analog_table);
+    tables.emplace(_analog, std::shared_ptr<TimeSeriesTable>(&analog_table));
     return tables;
 
 }
