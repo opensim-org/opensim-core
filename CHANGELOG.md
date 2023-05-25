@@ -28,6 +28,8 @@ v4.5
 - Fixed the `CoordinateCouplerConstraint` bug preventing functions with multiple independent coordinates (#3435)
 - Added `SIMBODY_EXTRA_CMAKE_ARGS` to `dependencies/CMakeLists.txt`, which lets integrators customize Simbody via the OpenSim superbuild (#3455)
 - Fixed out-of-bounds memory access in testAssemblySolver (#3460)
+- Fixed segfault that can occur when building models with unusual joint topologies (it now
+  throws a `std::bad_cast` exception instead, #3299)
 
 
 v4.4

@@ -32,6 +32,7 @@ using namespace std;
 
 void testModelFinalizePropertiesAndConnections();
 void testModelTopologyErrors();
+void testDoesNotSegfaultWithUnusualConnections();
 
 int main() {
     LoadOpenSimLibrary("osimActuators");
@@ -39,6 +40,7 @@ int main() {
     SimTK_START_TEST("testModelInterface");
         SimTK_SUBTEST(testModelFinalizePropertiesAndConnections);
         SimTK_SUBTEST(testModelTopologyErrors);
+        SimTK_SUBTEST(testDoesNotSegfaultWithUnusualConnections);
     SimTK_END_TEST();
 }
 
@@ -226,4 +228,35 @@ void testModelTopologyErrors()
     joint1->connectSocket_child_frame(*frame2);
 
     ASSERT_THROW(JointFramesHaveSameBaseFrame, degenerate.initSystem());
+}
+
+void testDoesNotSegfaultWithUnusualConnections()
+{
+    // automated reproduction for bug reported in #3299
+    //
+    // effectively, the multibody graph making procedure contained
+    // an edge-case in which an unusual model graph (reproduced by
+    // the code below) could cause it to segfault
+
+    try
+    {
+        OpenSim::Model m;
+        OpenSim::PhysicalFrame const& groundFrame = m.getGround();
+
+        auto pelvis = std::make_unique<OpenSim::Body>("pelvis", 1.0, SimTK::Vec3{}, SimTK::Inertia{});
+        OpenSim::PhysicalFrame const& pelvisFrame = *pelvis;
+        m.addBody(pelvis.release());
+
+        m.addJoint(new OpenSim::PinJoint{"ground_pelvis", groundFrame, pelvisFrame});
+        m.addJoint(new OpenSim::PinJoint{"pelvis_ground", pelvisFrame, groundFrame});
+
+        m.finalizeFromProperties();
+        m.finalizeConnections();
+    }
+    catch (OpenSim::Exception const&)
+    {
+        // this test only ensures that the #3299 repro doesn't
+        // _segfault_ - the method is still permitted to throw
+        // a runtime exception (for now... ;))
+    }
 }
