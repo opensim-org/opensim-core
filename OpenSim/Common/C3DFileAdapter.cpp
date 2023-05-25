@@ -3,6 +3,7 @@
 #ifdef WITH_EZC3D
 #include "ezc3d/ezc3d_all.h"
 #endif
+#include "STOFileAdapter.h"
 
 namespace {
 
@@ -328,7 +329,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         .parameter("LABELS").valuesAsString()) {
         analog_labels.push_back(SimTK::Value<std::string>(label));
     }
-
+    // This could be c3d.parameters().group("ANALOG").parameter("RATE")
     // For now assume force_platform data exists, eventually replace with a different way to get number of frames
     const int nf = static_cast<int>(force_platforms_extractor.forcePlatform(0).nbFrames());
     SimTK::Matrix_<double> analog_data_matrix(nf, (int)analog_labels.size());
@@ -336,13 +337,29 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
     double time_step{ 1.0 / analogFrequency };
     for (int f = 0; f < nf; ++f)
         analog_times[f] = f * time_step;
+    int numAnalogFrames(static_cast<int>(c3d.data().nbFrames()));
+    // "residual" value to -1 and it is how it knows to export these
+    // values as blank
+    for (int f = 0; f < numAnalogFrames; ++f) {
+        SimTK::RowVector row{ (int)analog_labels.size(), SimTK::NaN };
+        //auto col = 0;
+        // C3D standard is to read empty values as zero, but sets a
+        // "residual" value to -1 and it is how it knows to export these
+        // values as blank, instead of 0,  when exporting to .trc
+        // See: C3D documention 3D Point Residuals
+        // Read in value if it is not zero or residual is not -1
+        for (int col=0; col < (int)analog_labels.size(); ++col)
+            row[col] = c3d.data().frame(f).analogs().subframe(0).
+                channel(col).data();
+        row.dump();
+        analog_data_matrix.updRow(f) = row;
+        //marker_times[f] = 0 + f * time_step; //TODO: 0 should be start_time
+    }
     auto& analog_table =
         *(new TimeSeriesTable(analog_times, analog_data_matrix, analog_labels));
     analog_table.updTableMetaData().setValueForKey("DataRate", std::to_string(analogFrequency));
-    // C3D standard is to read empty values as zero, but sets a
-    // "residual" value to -1 and it is how it knows to export these
-    // values as blank
-
+    STOFileAdapter sto_adapter{};
+    sto_adapter.write(analog_table, "analogData.sto");
     //tables.emplace(_analog, analog_table);
     return tables;
 #endif
