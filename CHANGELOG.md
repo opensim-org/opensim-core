@@ -26,6 +26,7 @@ v4.5
 - Deduplicated `SmoothSegmentedFunction` data when constructing the muscle curves (#3442).
 - Added `OpenSim::AbstractSocket::canConnectTo(Object const&) const`, for faster socket connectivity checks (#3451)
 - Fixed the `CoordinateCouplerConstraint` bug preventing functions with multiple independent coordinates (#3435)
+- Fixed `CMC_TaskSet` memory leak whenever it is copied (#3457)
 - Added `SIMBODY_EXTRA_CMAKE_ARGS` to `dependencies/CMakeLists.txt`, which lets integrators customize Simbody via the OpenSim superbuild (#3455)
 - Fixed out-of-bounds memory access in testAssemblySolver (#3460)
 
