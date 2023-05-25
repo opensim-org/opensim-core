@@ -27,6 +27,8 @@
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 
+#include <memory>
+
 using namespace OpenSim;
 using namespace std;
 
@@ -243,7 +245,7 @@ void testDoesNotSegfaultWithUnusualConnections()
         OpenSim::Model m;
         OpenSim::PhysicalFrame const& groundFrame = m.getGround();
 
-        auto pelvis = std::make_unique<OpenSim::Body>("pelvis", 1.0, SimTK::Vec3{}, SimTK::Inertia{});
+        std::unique_ptr<OpenSim::Body> pelvis{new OpenSim::Body{"pelvis", 1.0, SimTK::Vec3{}, SimTK::Inertia{}}};
         OpenSim::PhysicalFrame const& pelvisFrame = *pelvis;
         m.addBody(pelvis.release());
 
