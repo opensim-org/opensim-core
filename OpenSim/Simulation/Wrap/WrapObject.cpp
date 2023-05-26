@@ -75,7 +75,7 @@ void WrapObject::constructProperties()
 const PhysicalFrame& WrapObject::getFrame() const
 {
     if (!_frame) {
-        OPENSIM_THROW_FRMOBJ(OpenSim::Exception, "Tried to call WrapObject::getFrame before the frame has been set. This can happen if the WrapObject is part of the WrapObjectSet of a PhysicalFrame (see: opensim-core issue #3465)");
+        OPENSIM_THROW_FRMOBJ(OpenSim::Exception, "Tried to call WrapObject::getFrame before the frame has been set. Make sure that `OpenSim::WrapObject::setFrame` is called on the `WrapObject` before doing any operations with the `WrapObject`.");
     }
     return _frame.getRef();
 }
