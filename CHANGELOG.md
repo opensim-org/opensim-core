@@ -29,6 +29,8 @@ v4.5
 - Fixed `CMC_TaskSet` memory leak whenever it is copied (#3457)
 - Added `SIMBODY_EXTRA_CMAKE_ARGS` to `dependencies/CMakeLists.txt`, which lets integrators customize Simbody via the OpenSim superbuild (#3455)
 - Fixed out-of-bounds memory access in testAssemblySolver (#3460)
+- The property, input, output, and socket macros (e.g. OpenSim_DECLARE_PROPERTY) can now be used outside of the OpenSim namespace
+  and no longer require a `using namespace OpenSim;` declaration in order to work (#3468)
 
 
 v4.4

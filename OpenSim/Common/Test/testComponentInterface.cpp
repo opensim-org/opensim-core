@@ -33,6 +33,28 @@
 #include <simbody/internal/MobilizedBody_Ground.h>
 #include <random>
 
+namespace
+{
+    // compiler test (see issue #3468)
+    //
+    // - this component must be compiled before the `using namespace` declarations below
+    // - this component must be compile-able
+    // - it exists to test whether OpenSim's component+macro system works for components
+    //   defined in their own namespace, without an implict dependency on `using namespace OpenSim`
+    // - this is effectively a compiler assertion that the OpenSim macros work as expected
+    // - more information available in issue #3468
+    class ComponentInAnonymousNamespace : public OpenSim::Component {
+        OpenSim_DECLARE_CONCRETE_OBJECT(ComponentInAnonymousNamespace, OpenSim::Component);
+
+        double getDoubleOutput(const SimTK::State&) const { return 0.0; }
+    public:
+        OpenSim_DECLARE_PROPERTY(some_prop, SimTK::Vec3, "comment");
+        OpenSim_DECLARE_INPUT(some_input, float, SimTK::Stage::Acceleration, "some other comment");
+        OpenSim_DECLARE_OUTPUT(some_output, double, getDoubleOutput, SimTK::Stage::Model);
+        OpenSim_DECLARE_SOCKET(some_socket, OpenSim::Component, "some socket comment");
+    };
+}
+
 using namespace OpenSim;
 using namespace std;
 using namespace SimTK;
