@@ -48,6 +48,7 @@ public:
 
 void testWrapCylinder();
 void testWrapObjectUpdateFromXMLNode30515();
+void testWrapObjectScaleWithNoFrameDoesNotSegfault();
 void simulate(Model& osimModel, State& si, double initialTime, double finalTime);
 void simulateModelWithMusclesNoViz(const string &modelFile, double finalTime, double activation=0.5);
 void simulateModelWithPassiveMuscles(const string &modelFile, double finalTime);
@@ -72,6 +73,13 @@ int main()
     } catch (const std::exception& e) {
          std::cout << "Exception: " << e.what() << std::endl;
          failures.push_back("testWrapObjectUpdateFromXMLNode30515");
+    }
+
+    try{
+        testWrapObjectScaleWithNoFrameDoesNotSegfault();
+    } catch (const std::exception& e) {
+        std::cout << "Exception: " << e.what() << std::endl;
+        failures.push_back("testWrapObjectScaleWithNoFrameDoesNotSegfault");
     }
 
     if (!failures.empty()) {
@@ -942,7 +950,29 @@ void testWrapObjectUpdateFromXMLNode30515() {
     }
 }
 
+void testWrapObjectScaleWithNoFrameDoesNotSegfault()
+{
+    // reproduction for #3465
+    //
+    // effectively, if code tries to use a `WrapObject` outside
+    // of a `PhysicalFrame` then the code in this test will segfault
+    // without the fix because `WrapObject` will contain nullptrs
+    // that are usually "fixed" by the parent `PhysicalFrame`
+    //
+    // the "proper" fix for this is to (e.g.) use the socket API but
+    // this was avoided in #3465, which just focuses on downgrading
+    // the segfault
 
-
-
-
+    try {
+        OpenSim::Model m;
+        m.addComponent(new OpenSim::WrapCylinder{});
+        m.buildSystem();
+        SimTK::State& state = m.initializeState();
+        m.scale(state, OpenSim::ScaleSet{}, true);
+    } catch (const OpenSim::Exception&) {
+        // the fix in #3465 only ensures no runtime segfaults may
+        // occur - it does not guarantee that `WrapObject`s are
+        // usable outside of their usual usage (i.e. as children
+        // of `PhysicalFrame`s)
+    }
+}

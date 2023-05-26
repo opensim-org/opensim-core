@@ -10,6 +10,12 @@ include(ExternalProject)
 include(CMakeParseArguments)
 include(CMakeDependentOption)
 
+set(
+    SIMBODY_EXTRA_CMAKE_ARGS ""
+    CACHE STRING
+    "extra arguments to forward when configuring Simbody's build. The format must be: VARNAME1:TYPE1=VALUE1;VARNAME2:TYPE2=VALUE2 (e.g. '-DSIMBODY_EXTRA_CMAKE_ARGS=-DSIMBODY_BUILD_VISUALIZER:BOOL=OFF;-DBUILD_USING_OTHER_LAPACK:PATH=/some/path')"
+)
+
 # Set the default for CMAKE_INSTALL_PREFIX.
 function(SetDefaultCMakeInstallPrefix)
     get_filename_component(BASE_DIR ${CMAKE_SOURCE_DIR} DIRECTORY)
@@ -178,7 +184,8 @@ AddDependency(NAME       simbody
               GIT_URL    https://github.com/simbody/simbody.git
               GIT_TAG    e855d954a786128c3271a3406d7bda782e7c4c4f
               CMAKE_ARGS -DBUILD_EXAMPLES:BOOL=OFF
-                         -DBUILD_TESTING:BOOL=OFF)
+                         -DBUILD_TESTING:BOOL=OFF
+                         ${SIMBODY_EXTRA_CMAKE_ARGS})
 
 AddDependency(NAME       docopt
               DEFAULT    ON
