@@ -1251,16 +1251,21 @@ TypeHelper::create(const std::string& name, bool isOne)
 #ifndef SWIG
 SimTK_DEFINE_UNIQUE_INDEX_TYPE(PropertyIndex);
 #endif
+} //namespace
+
+// below: macro definitions (care: these must be defined such that they
+// can be expanded in classes that are outside of the OpenSim
+// namespace: see issue #3468)
 
 // Used by OpenSim_DECLARE_PROPERTY_HELPER below to control the members
 // that are used with SWIG.
 #ifndef SWIG
 #define OpenSim_DECLARE_PROPERTY_HELPER_PROPERTY_MEMBERS(name, T)           \
     /** @cond **/                                                           \
-    PropertyIndex PropertyIndex_##name;                                     \
-    const Property<T>& getProperty_##name() const                           \
+    OpenSim::PropertyIndex PropertyIndex_##name;                            \
+    const OpenSim::Property<T>& getProperty_##name() const                  \
     {   return this->template getProperty<T>(PropertyIndex_##name); }       \
-    Property<T>& updProperty_##name()                                       \
+    OpenSim::Property<T>& updProperty_##name()                              \
     {   return this->template updProperty<T>(PropertyIndex_##name); }       \
     /** @endcond **/
 #else
@@ -1607,7 +1612,6 @@ OpenSim_DECLARE_PROPERTY_ATMOST() rather than this macro.
                                         (minSize), (maxSize))               \
     /** @}                                                               */
 
-} //namespace
 //=============================================================================
 //=============================================================================
 

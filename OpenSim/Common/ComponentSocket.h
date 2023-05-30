@@ -956,6 +956,12 @@ private:
     SimTK::ResetOnCopy<AliasList> _aliases;
 }; // END class Input<Y>
 
+} // end of namespace OpenSim
+
+
+// below: macro definitions (care: these must be defined such that they
+// can be expanded in classes that are outside of the OpenSim
+// namespace: see issue #3468)
         
 /// @name Creating Sockets to other objects for your Component
 /// Use these macros at the top of your component class declaration,
@@ -1002,7 +1008,7 @@ private:
     OpenSim_DOXYGEN_Q_PROPERTY(T, cname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    PropertyIndex PropertyIndex_socket_##cname {                            \
+    OpenSim::PropertyIndex PropertyIndex_socket_##cname {                   \
         this->template constructSocket<T>(#cname,                           \
                 "Path to a Component that satisfies the Socket '"           \
                 #cname "' of type " #T " (description: " comment ").")      \
@@ -1014,7 +1020,7 @@ private:
     /** Call finalizeConnections() afterwards to update the socket's     */ \
     /** connectee path property. The reference to the connectee set here */ \
     /** takes precedence over the connectee path property.               */ \
-    void connectSocket_##cname(const Object& object) {                      \
+    void connectSocket_##cname(const OpenSim::Object& object) {             \
         this->updSocket(#cname).connect(object);                            \
     }                                                                       \
     /** @}                                                               */
@@ -1079,12 +1085,12 @@ private:
     OpenSim_DOXYGEN_Q_PROPERTY(T, cname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    PropertyIndex PropertyIndex_socket_##cname {           \
+    OpenSim::PropertyIndex PropertyIndex_socket_##cname {                   \
         constructSocket_##cname()                                           \
     };                                                                      \
     /* Declare the method used in the in-class member initializer.       */ \
     /* This method will be defined by OpenSim_DEFINE_SOCKET_FD.          */ \
-    PropertyIndex constructSocket_##cname();                                \
+    OpenSim::PropertyIndex constructSocket_##cname();                       \
     /* Remember the provided type so we can use it in the DEFINE macro.  */ \
     typedef T _socket_##cname##_type;                                       \
     /** @endcond                                                         */ \
@@ -1094,7 +1100,7 @@ private:
     /** Call finalizeConnections() afterwards to update the socket's     */ \
     /** connectee path property. The reference to the connectee set here */ \
     /** takes precedence over the connectee path property.               */ \
-    void connectSocket_##cname(const Object& object) {                      \
+    void connectSocket_##cname(const OpenSim::Object& object) {             \
         this->updSocket(#cname).connect(object);                            \
     }                                                                       \
     /** @}                                                               */
@@ -1118,7 +1124,7 @@ private:
 // than `MyComponent` but that include MyComponent.h). OpenSim::Geometry is an
 // example of this scenario.
 #define OpenSim_DEFINE_SOCKET_FD(cname, Class)                              \
-PropertyIndex Class::constructSocket_##cname() {                            \
+OpenSim::PropertyIndex Class::constructSocket_##cname() {                   \
     using T = _socket_##cname##_type;                                       \
     std::string typeStr = T::getClassName();                                \
     return this->template constructSocket<T>(#cname,                        \
@@ -1171,7 +1177,7 @@ PropertyIndex Class::constructSocket_##cname() {                            \
     OpenSim_DOXYGEN_Q_PROPERTY(T, iname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    PropertyIndex PropertyIndex_input_##iname {                             \
+    OpenSim::PropertyIndex PropertyIndex_input_##iname {                    \
         this->template constructInput<T>(#iname, false,                     \
             "Path to an output (channel) to satisfy the one-value Input '"  \
             #iname "' of type " #T " (description: " comment ").",  istage) \
@@ -1188,7 +1194,7 @@ PropertyIndex Class::constructSocket_##cname() {                            \
     /** Call finalizeConnections() afterwards to update the input's      */ \
     /** connectee path property. The reference to the output set here    */ \
     /** takes precedence over the connectee path property.               */ \
-    void connectInput_##iname(const AbstractOutput& output,                 \
+    void connectInput_##iname(const OpenSim::AbstractOutput& output,        \
                               const std::string& alias = "") {              \
         updInput(#iname).connect(output, alias);                            \
     }                                                                       \
@@ -1198,7 +1204,7 @@ PropertyIndex Class::constructSocket_##cname() {                            \
     /** Call finalizeConnections() afterwards to update the input's      */ \
     /** connectee path property. The reference to the channel set here   */ \
     /** takes precedence over the connectee path property.               */ \
-    void connectInput_##iname(const AbstractChannel& channel,               \
+    void connectInput_##iname(const OpenSim::AbstractChannel& channel,      \
                               const std::string& alias = "") {              \
         updInput(#iname).connect(channel, alias);                           \
     }                                                                       \
@@ -1238,7 +1244,7 @@ PropertyIndex Class::constructSocket_##cname() {                            \
     OpenSim_DOXYGEN_Q_PROPERTY(T, iname)                                    \
     /** @}                                                               */ \
     /** @cond                                                            */ \
-    PropertyIndex PropertyIndex_input_##iname {                             \
+    OpenSim::PropertyIndex PropertyIndex_input_##iname {                    \
         this->template constructInput<T>(#iname, true,                      \
             "Paths to outputs (channels) to satisfy the list Input '"       \
             #iname "' of type " #T " (description: " comment "). "          \
@@ -1257,7 +1263,7 @@ PropertyIndex Class::constructSocket_##cname() {                            \
     /** Call finalizeConnections() afterwards to update the input's      */ \
     /** connectee path property. The reference to the output set here    */ \
     /** takes precedence over the connectee path property.               */ \
-    void connectInput_##iname(const AbstractOutput& output,                 \
+    void connectInput_##iname(const OpenSim::AbstractOutput& output,        \
                               const std::string& alias = "") {              \
         updInput(#iname).connect(output, alias);                            \
     }                                                                       \
@@ -1267,13 +1273,11 @@ PropertyIndex Class::constructSocket_##cname() {                            \
     /** Call finalizeConnections() afterwards to update the input's      */ \
     /** connectee path property. The reference to the channel set here   */ \
     /** takes precedence over the connectee path property.               */ \
-    void connectInput_##iname(const AbstractChannel& channel,               \
+    void connectInput_##iname(const OpenSim::AbstractChannel& channel,      \
                               const std::string& alias = "") {              \
         updInput(#iname).connect(channel, alias);                           \
     }                                                                       \
     /** @}                                                               */
 /// @}
-
-} // end of namespace OpenSim
 
 #endif  // OPENSIM_COMPONENT_SOCKET_H_
