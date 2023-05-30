@@ -31,6 +31,7 @@ v4.5
 - Added `SIMBODY_EXTRA_CMAKE_ARGS` to `dependencies/CMakeLists.txt`, which lets integrators customize Simbody via the OpenSim superbuild (#3455)
 - Fixed out-of-bounds memory access in testAssemblySolver (#3460)
 - Fixed runtime segfault that can occur when trying to use a `WrapObject` that is not a child of a `PhysicalFrame` (#3465)
+- Fixed issues #3083 #2575 where analog data is not pulled out from c3d files, a getAnalogDataTable() has been implemented and added to the C3DFileAdapter
 
 
 v4.4
