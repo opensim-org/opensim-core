@@ -200,6 +200,7 @@ void test(const std::string filename) {
     compare_tables<double>(*analog_table,
         std_analog,
         SimTK::SqrtEps);
+    cout << "\t" << analogs_file << " is equivalent to its standard." << endl;
 
 }
 
