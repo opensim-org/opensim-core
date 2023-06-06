@@ -3,6 +3,9 @@ Moco Change Log
 
 1.2.1
 -----
+- 2023-06-06: Instead of reading from file, changed to recompute the inverse
+              solution in `testMocoInverse` before testing imu-outputs.
+
 - 2023-03-21: Fixed a bug where failing `MocoProblem`s with path constraints returned
               a zero time vector.
 
