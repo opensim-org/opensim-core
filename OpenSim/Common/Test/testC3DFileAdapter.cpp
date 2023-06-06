@@ -202,6 +202,22 @@ void test(const std::string filename) {
         SimTK::SqrtEps);
     cout << "\t" << analogs_file << " is equivalent to its standard." << endl;
 
+    // For the test files, analog data contains force vectors with some rogod body transform/signs changed
+    // Verify this fact for the first row of data
+    // analog.Fx1 = -forces.f1_2
+    // analog.Fy1 = -forces.f1_1
+    // analog.Fz1 = -forces.f1_3
+    SimTK::RowVectorView analogTableFirstRow = analog_table->getRowAtIndex(0);
+    SimTK::RowVectorView forcesTableFirstRow = forces.getRowAtIndex(0);
+
+
+    ASSERT_EQUAL<double>(analogTableFirstRow.getElt(0, 0), -forcesTableFirstRow.getElt(0, 1), SimTK::SignificantReal, __FILE__, __LINE__,
+        "Analog and Force data at col 0 failed to have matching value.");
+    ASSERT_EQUAL<double>(analogTableFirstRow.getElt(0, 1), -forcesTableFirstRow.getElt(0, 0), SimTK::SignificantReal, __FILE__, __LINE__,
+        "Analog and Force data at col 1 failed to have matching value.");
+    ASSERT_EQUAL<double>(analogTableFirstRow.getElt(0, 2), -forcesTableFirstRow.getElt(0, 2), SimTK::SignificantReal, __FILE__, __LINE__,
+        "Analog and Force data at col 2 failed to have matching value.");
+
 }
 
 int main() {
