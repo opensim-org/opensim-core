@@ -218,6 +218,24 @@ TEST_CASE("Test IMUDataReporter for gait") {
         ModOpIgnorePassiveFiberForcesDGF() |
         ModOpTendonComplianceDynamicsModeDGF("implicit") |
         ModOpAddExternalLoads("subject_walk_armless_external_loads.xml");
+
+    MocoInverse inverse;
+    inverse.setModel(modelProcessor);
+    inverse.setKinematics(
+            TableProcessor("subject_walk_armless_coordinates.mot") |
+            TabOpLowPassFilter(6));
+    inverse.set_initial_time(0.450);
+    inverse.set_final_time(1.0);
+    inverse.set_kinematics_allow_extra_columns(true);
+    inverse.set_mesh_interval(0.025);
+    inverse.set_constraint_tolerance(1e-4);
+    inverse.set_convergence_tolerance(1e-4);
+    inverse.set_output_paths(0, ".*tendon_force.*");
+    inverse.set_output_paths(1, ".*fiber_force_along_tendon.*");
+
+    MocoInverseSolution inverseSolution = inverse.solve();
+    MocoTrajectory std = inverseSolution.getMocoSolution();
+
     std::vector<std::string> paths = {"/bodyset/pelvis",
                                        "/bodyset/femur_r",
                                        "/bodyset/tibia_r",
@@ -225,7 +243,6 @@ TEST_CASE("Test IMUDataReporter for gait") {
     Model model = modelProcessor.process();
     OpenSenseUtilities().addModelIMUs(model, paths);
     model.initSystem();
-    MocoTrajectory std("std_testMocoInverse_subject_18musc_solution.sto");
     TimeSeriesTableVec3 accelSignals =
             analyzeMocoTrajectory<SimTK::Vec3>(model, std,
                                                {".*accelerometer_signal"});
