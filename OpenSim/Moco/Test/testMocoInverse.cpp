@@ -230,8 +230,6 @@ TEST_CASE("Test IMUDataReporter for gait") {
     inverse.set_mesh_interval(0.025);
     inverse.set_constraint_tolerance(1e-4);
     inverse.set_convergence_tolerance(1e-4);
-    inverse.set_output_paths(0, ".*tendon_force.*");
-    inverse.set_output_paths(1, ".*fiber_force_along_tendon.*");
 
     MocoInverseSolution inverseSolution = inverse.solve();
     MocoTrajectory std = inverseSolution.getMocoSolution();
