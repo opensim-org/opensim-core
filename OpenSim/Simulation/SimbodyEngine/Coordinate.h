@@ -107,12 +107,12 @@ public:
         the displacement about or along an axis is the coordinate value.
         If the Coordinate cannot be interpreted as being either of these
         it is flagged as Coupled. */
-    enum MotionType
+    enum MotionType: unsigned
     {
-        Undefined,
-        Rotational,
-        Translational,
-        Coupled
+        Undefined = 0u,     ///< 0
+        Rotational = 1u,    ///< 1
+        Translational = 2u, ///< 2
+        Coupled = 3u        ///< 3
     };
 
 

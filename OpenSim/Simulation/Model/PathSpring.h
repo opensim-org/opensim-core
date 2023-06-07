@@ -143,7 +143,7 @@ public:
     // COMPUTATIONS
     //--------------------------------------------------------------------------
     /** compute the moment-arm of the PathSpring about a coordinate of interest. */
-    double computeMomentArm(const SimTK::State& s, Coordinate& aCoord) const;
+    double computeMomentArm(const SimTK::State& s, const Coordinate& aCoord) const;
 
     //--------------------------------------------------------------------------
     // SCALE

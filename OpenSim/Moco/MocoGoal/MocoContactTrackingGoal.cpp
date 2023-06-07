@@ -59,6 +59,7 @@ void MocoContactTrackingGoal::constructProperties() {
     constructProperty_external_loads_file("");
     constructProperty_projection("none");
     constructProperty_projection_vector();
+    constructProperty_normalize_tracking_error(false);
 }
 
 void MocoContactTrackingGoal::setExternalLoadsFile(
@@ -91,7 +92,7 @@ void MocoContactTrackingGoal::addScaleFactor(const std::string& name,
 
     // Check that the index is in the correct range.
     OPENSIM_THROW_IF_FRMOBJ((index < 0) || (index > 2), Exception,
-                "Expected marker scale factor index to be in the range [0, 2], "
+                "Expected contact scale factor index to be in the range [0, 2], "
                 "but received '{}'.", index);
 
     // Update the scale factor map so we can retrieve the correct MocoScaleFactor
@@ -193,6 +194,22 @@ void MocoContactTrackingGoal::initializeOnModelImpl(const Model& model) const {
                 OPENSIM_THROW_FRMOBJ(Exception,
                         "Could not find '{}' in the model or the BodySet.",
                         forceExpressedInBody);
+            }
+        }
+
+        // Compute normalization factors.
+        if (get_normalize_tracking_error()) {
+            std::vector<std::string> suffixes = {"x", "y", "z"};
+            for (int i = 0; i < 3; ++i) {
+                double factor = SimTK::max(
+                    data.getDependentColumn(forceID + suffixes[i]).abs());
+                OPENSIM_THROW_IF_FRMOBJ(factor < SimTK::SignificantReal,
+                        Exception,
+                        "The property `normalize_tracking_error` was enabled, "
+                        "but the peak magnitude of the ground contact force "
+                        "data in the {}-direction is close to zero.",
+                        suffixes[i]);
+                groupInfo.normalizeFactors[i] = factor;
             }
         }
 
@@ -334,7 +351,11 @@ void MocoContactTrackingGoal::calcIntegrandImpl(
             }
         }
 
+        // Compute the tracking error.
         SimTK::Vec3 error3D = force_model - force_ref;
+
+        // Apply tracking error normalization.
+        error3D = error3D.elementwiseDivide(group.normalizeFactors);
 
         // Project the error.
         SimTK::Vec3 error;

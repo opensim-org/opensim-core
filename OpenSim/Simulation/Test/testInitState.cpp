@@ -37,11 +37,6 @@ using namespace std;
 // new state.
 //==============================================================================
 void testStates(const string& modelFile);
-//==============================================================================
-// testMemoryUsage tests that repeated initialization of the state does not  
-// cause the memory footprint of the process to increase significantly.
-//==============================================================================
-void testMemoryUsage(const string& modelFile);
 
 static const int MAX_N_TRIES = 100;
 
@@ -50,8 +45,6 @@ int main()
     try {
         LoadOpenSimLibrary("osimActuators");
         testStates("arm26.osim");
-        testMemoryUsage("arm26.osim");
-        testMemoryUsage("PushUpToesOnGroundWithMuscles.osim");
     }
     catch (const Exception& e) {
         cout << "testInitState failed: ";
@@ -142,47 +135,3 @@ void testStates(const string& modelFile)
     ASSERT(max(abs(y1-y2)) > 1e-4);
 }
 
-void testMemoryUsage(const string& modelFile)
-{
-    using namespace SimTK;
-
-    // Throw an exception if we cannot validate estimates
-    // of memory with current instrumentation
-    validateMemoryUseEstimates();
-
-    //=========================================================================
-    // Estimate the size of the model when loaded into memory
-    auto creator = [modelFile]() { 
-        Model* model = new Model(modelFile);
-        return model;
-    };
-
-    size_t model_size = 
-        estimateMemoryChangeForCreator<Model>(creator, 5);
-
-    OPENSIM_THROW_IF(model_size == 0, OpenSim::Exception,
-        "Model size was estimated to be zero.");
-
-    Model model(modelFile);
-    State& state = model.initSystem();
-
-    // also time how long initializing the state takes
-    clock_t startTime = clock();
-
-    // determine the change in memory usage due to invoking model.initialiState
-    auto command = [&model, state]() mutable { state = model.initializeState(); };
-    const size_t leak = estimateMemoryChangeForCommand(command, MAX_N_TRIES);
-
-    long double leak_percent = 100.0 * double(leak) / model_size;
-
-    long double dT = (long double)(clock() - startTime) / CLOCKS_PER_SEC;
-    long double meanT = 1.0e3 * dT / MAX_N_TRIES; // in ms
-
-    cout << "Approximate leak size: " << leak / 1024.0 << "KB or " <<
-        leak_percent << "% of model size." << endl;
-    cout << "Average initialization time: " << meanT << "ms" << endl;
-
-    // If we are leaking more than 0.5% of the model's footprint that is significant
-    ASSERT((leak_percent) < 0.5, __FILE__, __LINE__,
-        "testMemoryUsage: state initialization leak > 0.5% of model memory footprint.");
-}

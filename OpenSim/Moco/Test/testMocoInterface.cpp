@@ -82,8 +82,7 @@ MocoStudy createSlidingMassMocoStudy() {
     return study;
 }
 
-TEMPLATE_TEST_CASE("Non-uniform mesh", "", MocoCasADiSolver,
-        MocoTropterSolver) {
+TEMPLATE_TEST_CASE("Non-uniform mesh", "", MocoCasADiSolver, MocoTropterSolver) {
     auto transcriptionScheme =
             GENERATE(as<std::string>{}, "trapezoidal", "hermite-simpson");
     MocoStudy study;
@@ -207,8 +206,7 @@ std::unique_ptr<Model> createPendulumModel() {
     return model;
 }
 
-TEMPLATE_TEST_CASE("Solver options", "", MocoCasADiSolver,
-        MocoTropterSolver) {
+TEMPLATE_TEST_CASE("Solver options", "", MocoCasADiSolver, MocoTropterSolver) {
     MocoStudy study = createSlidingMassMocoStudy<TestType>();
     auto& ms = study.initSolver<TestType>();
     MocoSolution solDefault = study.solve();
@@ -258,7 +256,7 @@ TEMPLATE_TEST_CASE("Solver options", "", MocoCasADiSolver,
     }
 }
 
-TEMPLATE_TEST_CASE("Ordering of calls", "", MocoCasADiSolver, 
+TEMPLATE_TEST_CASE("Ordering of calls", "", MocoCasADiSolver,
         MocoTropterSolver) {
 
     // Solve a problem, edit the problem, re-solve.
@@ -303,16 +301,17 @@ TEMPLATE_TEST_CASE("Ordering of calls", "", MocoCasADiSolver,
 
 /// Test that we can read in a Moco setup file, solve, edit the setup,
 /// re-solve.
-TEST_CASE("Serializing a MocoStudy", "") {
+// TODO tropter solutions are very slightly different between successive solves.
+TEMPLATE_TEST_CASE("Serializing a MocoStudy", "", MocoCasADiSolver) {
     std::string fname = "testMocoInterface_testOMOCOSerialization.omoco";
     
-    MocoStudy study = createSlidingMassMocoStudy<MocoCasADiSolver>();
+    MocoStudy study = createSlidingMassMocoStudy<TestType>();
     MocoSolution sol0 = study.solve();
     study.print(fname);
     
     MocoStudy mocoDeserialized(fname);
     MocoSolution sol1 = mocoDeserialized.solve();
-    
+
     SimTK_TEST(sol0.isNumericallyEqual(sol1));
 }
 
@@ -417,8 +416,7 @@ TEST_CASE("Building a problem", "") {
     }
 }
 
-TEMPLATE_TEST_CASE(
-        "Workflow", "", MocoCasADiSolver, MocoTropterSolver) {
+TEMPLATE_TEST_CASE("Workflow", "", MocoCasADiSolver, MocoTropterSolver) {
 
     // Default bounds.
     SECTION("Default bounds") {
@@ -919,8 +917,7 @@ TEMPLATE_TEST_CASE("State tracking", "", MocoCasADiSolver,
     // TODO error if data does not cover time window.
 }
 
-TEMPLATE_TEST_CASE(
-        "Guess", "", MocoCasADiSolver, MocoTropterSolver) {
+TEMPLATE_TEST_CASE("Guess", "", MocoCasADiSolver, MocoTropterSolver) {
 
     MocoStudy study = createSlidingMassMocoStudy<TestType>();
     auto& ms = study.initSolver<TestType>();
@@ -1315,8 +1312,7 @@ TEMPLATE_TEST_CASE("Guess time-stepping", "[tropter]",
     }
 }
 
-TEMPLATE_TEST_CASE("MocoTrajectory", "", MocoCasADiSolver,
-        MocoTropterSolver) {
+TEMPLATE_TEST_CASE("MocoTrajectory", "", MocoCasADiSolver, MocoTropterSolver) {
     // Reading and writing.
     {
         const std::string fname = "testMocoInterface_testMocoTrajectory.sto";
@@ -1426,6 +1422,32 @@ TEMPLATE_TEST_CASE("MocoTrajectory", "", MocoCasADiSolver,
             SimTK_TEST_EQ(it.getInitialTime(), 7.2);
             SimTK_TEST_EQ(it.getFinalTime(), 7.2);
         }
+    }
+
+    // trimToIndices()
+    {
+        SimTK::Vector time = createVectorLinspace(5, -3.1, 8.9);
+        std::vector<std::string> snames{"s0"};
+        std::vector<std::string> cnames{"c0"};
+        SimTK::Matrix states = SimTK::Test::randMatrix(5, 1);
+        states.set(1, 0, 1.23);
+        states.set(3, 0, 4.56);
+        SimTK::Matrix controls = SimTK::Test::randMatrix(5, 1);
+        controls.set(1, 0, 7.89);
+        controls.set(3, 0, 1.01);
+        MocoTrajectory it(time, snames, cnames, {}, {}, states, controls,
+                SimTK::Matrix(), SimTK::RowVector());
+
+        it.trimToIndices(1, 3);
+        SimTK_TEST_EQ(it.getInitialTime(), time[1]);
+        SimTK_TEST_EQ(it.getFinalTime(), time[3]);
+
+        SimTK::VectorView_<double> s0 = it.getState("s0");
+        SimTK::VectorView_<double> c0 = it.getControl("c0");
+        SimTK_TEST_EQ(s0[0], 1.23);
+        SimTK_TEST_EQ(s0[it.getNumTimes()-1], 4.56);
+        SimTK_TEST_EQ(c0[0], 7.89);
+        SimTK_TEST_EQ(c0[it.getNumTimes()-1], 1.01);
     }
 
     // compareContinuousVariablesRMS
@@ -1713,8 +1735,7 @@ TEST_CASE("Interpolate", "") {
     SimTK_TEST(SimTK::isNaN(newY[3]));
 }
 
-TEMPLATE_TEST_CASE("Sliding mass", "", MocoCasADiSolver,
-        MocoTropterSolver) {
+TEMPLATE_TEST_CASE("Sliding mass", "", MocoCasADiSolver, MocoTropterSolver) {
     MocoStudy study = createSlidingMassMocoStudy<TestType>();
     MocoSolution solution = study.solve();
     int numTimes = 20;
