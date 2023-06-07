@@ -3,6 +3,7 @@
 #ifdef WITH_EZC3D
 #include "ezc3d/ezc3d_all.h"
 #endif
+#include "STOFileAdapter.h"
 
 namespace {
 
@@ -44,6 +45,7 @@ namespace OpenSim {
 
 const std::string C3DFileAdapter::_markers{"markers"};
 const std::string C3DFileAdapter::_forces{"forces"};
+const std::string C3DFileAdapter::_analog{ "analog" };
 
 const std::unordered_map<std::string, size_t>
 C3DFileAdapter::_unit_index{{"marker", 0},
@@ -66,7 +68,7 @@ void C3DFileAdapter::write(
 
 C3DFileAdapter::OutputTables
 C3DFileAdapter::extendRead(const std::string& fileName) const {
-#ifdef WITH_EZC3D
+
     auto c3d = ezc3d::c3d(fileName);
 
     EventTable event_table{};
@@ -197,6 +199,8 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         fpTypes.push_back(static_cast<unsigned>(type));
 
     }
+    auto analogFrequency = static_cast<double>(c3d.header().frameRate()
+        * c3d.header().nbAnalogByFrame());
 
     if(numPlatform != 0) {
         for (auto type : c3d.parameters().group("FORCE_PLATFORM")
@@ -229,8 +233,7 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
         }
 
         const int nf = static_cast<int>(force_platforms_extractor.forcePlatform(0).nbFrames());
-        auto analogFrequency = static_cast<double>(c3d.header().frameRate()
-                                                   * c3d.header().nbAnalogByFrame());
+        
         const auto& pf_ref(force_platforms_extractor.forcePlatforms());
 
         std::vector<double> force_times(nf);
@@ -319,8 +322,40 @@ C3DFileAdapter::extendRead(const std::string& fileName) const {
                 emptyTimes, noData, emptyLabels);
         tables.emplace(_forces, emptyforcesTable);
     }
+
+    // Try to extract analog data and place in a new TimeSeriesTable_<double> 
+    std::vector<std::string> analog_labels{};
+    for (auto label : c3d.parameters().group("ANALOG")
+        .parameter("LABELS").valuesAsString()) {
+        analog_labels.push_back(SimTK::Value<std::string>(label));
+    }
+
+    int numAnalogSignals = (int)analog_labels.size();
+    int totalAnalogFrames = (int) (c3d.data().nbFrames() * c3d.header().nbAnalogByFrame());
+    SimTK::Matrix analog_data_matrix(totalAnalogFrames, numAnalogSignals);
+    std::vector<double> analog_times(totalAnalogFrames);
+    double analog_time_step{ 1.0 / analogFrequency };
+
+    // Exrtact matrix of analog data one (sub)frame at a time
+    int rowNumber = 0;
+    for (const auto& frame : c3d.data().frames()) {
+        for (size_t i = 0; i < frame.analogs().nbSubframes(); ++i) {
+            const auto& subframe(frame.analogs().subframe(i));
+            SimTK::RowVector_<double> row{ numAnalogSignals, SimTK::NaN };
+            for (int col = 0; col < numAnalogSignals; ++col) {
+                row[col] = subframe.channel(col).data();
+            }
+            analog_data_matrix.updRow(rowNumber) = row;
+            analog_times[rowNumber] = rowNumber * analog_time_step; //TODO: 0 should be start_time
+            rowNumber++;
+        }
+    }
+    auto& analog_table =
+        *(new TimeSeriesTable(analog_times, analog_data_matrix, analog_labels));
+    analog_table.updTableMetaData().setValueForKey("DataRate", std::to_string(analogFrequency));
+    tables.emplace(_analog, std::shared_ptr<TimeSeriesTable>(&analog_table));
     return tables;
-#endif
+
 }
 
 void
