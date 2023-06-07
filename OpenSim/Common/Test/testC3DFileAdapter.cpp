@@ -202,7 +202,7 @@ void test(const std::string filename) {
         SimTK::SqrtEps);
     cout << "\t" << analogs_file << " is equivalent to its standard." << endl;
 
-    // For the test files, analog data contains force vectors with some rogod body transform/signs changed
+    // For the test files, analog data contains force vectors with some rigid body transform/signs changed
     // Verify this fact for the first row of data
     // analog.Fx1 = -forces.f1_2
     // analog.Fy1 = -forces.f1_1
