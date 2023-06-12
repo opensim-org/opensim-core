@@ -140,29 +140,32 @@ SmoothSegmentedFunction* SmoothSegmentedFunctionFactory::
        //(1-c)*dydx23c0 + c*dydx23c1; 
     
     //Compute the locations of the control points
-       SimTK::Matrix p0 = SegmentedQuinticBezierToolkit::
+       std::pair<SimTK::Vec6, SimTK::Vec6> p0 = SegmentedQuinticBezierToolkit::
            calcQuinticBezierCornerControlPoints(x0,ylow,dydx0,x01,y01,dydx01,c);
-       SimTK::Matrix p1 = SegmentedQuinticBezierToolkit::
+       std::pair<SimTK::Vec6, SimTK::Vec6> p1 = SegmentedQuinticBezierToolkit::
           calcQuinticBezierCornerControlPoints(x01,y01,dydx01,x1s,y1s,dydx1s,c);
-       SimTK::Matrix p2 = SegmentedQuinticBezierToolkit::
+       std::pair<SimTK::Vec6, SimTK::Vec6> p2 = SegmentedQuinticBezierToolkit::
           calcQuinticBezierCornerControlPoints(x1s,y1s,dydx1s,x2, y2, dydx2,c);
-       SimTK::Matrix p3 = SegmentedQuinticBezierToolkit::
+       std::pair<SimTK::Vec6, SimTK::Vec6> p3 = SegmentedQuinticBezierToolkit::
            calcQuinticBezierCornerControlPoints(x2, y2, dydx2,x23,y23,dydx23,c);
-       SimTK::Matrix p4 = SegmentedQuinticBezierToolkit::
+       std::pair<SimTK::Vec6, SimTK::Vec6> p4 = SegmentedQuinticBezierToolkit::
            calcQuinticBezierCornerControlPoints(x23,y23,dydx23,x3,ylow,dydx3,c);
                                     
-        SimTK::Matrix mX(6,5), mY(6,5);
-        mX(0) = p0(0);
-        mX(1) = p1(0);
-        mX(2) = p2(0);
-        mX(3) = p3(0);
-        mX(4) = p4(0);
+        std::vector<SimTK::Vec6> mX {
+            p0.first,
+            p1.first,
+            p2.first,
+            p3.first,
+            p4.first
+        };
 
-        mY(0) = p0(1);
-        mY(1) = p1(1);
-        mY(2) = p2(1);
-        mY(3) = p3(1);
-        mY(4) = p4(1);
+        std::vector<SimTK::Vec6> mY {
+            p0.second,
+            p1.second,
+            p2.second,
+            p3.second,
+            p4.second
+        };
 
         //std::string curveName = muscleName;
         //curveName.append("_fiberActiveForceLengthCurve");
@@ -236,30 +239,33 @@ SmoothSegmentedFunction* SmoothSegmentedFunctionFactory::
     double yNearE = yE + 0.5*dydxNearE*(xNearE-xE) + 0.5*dydxE*(xNearE-xE);
 
 
-    SimTK::Matrix concPts1 = SegmentedQuinticBezierToolkit::
+    std::pair<SimTK::Vec6, SimTK::Vec6> concPts1 = SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(xC,yC,dydxC, 
                                             xNearC, yNearC,dydxNearC,cC);
-    SimTK::Matrix concPts2 = SegmentedQuinticBezierToolkit::
+    std::pair<SimTK::Vec6, SimTK::Vec6> concPts2 = SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(xNearC,yNearC,dydxNearC, 
                                              xIso,  yIso,  dydxIso,  cC);
-    SimTK::Matrix eccPts1 = SegmentedQuinticBezierToolkit::
+    std::pair<SimTK::Vec6, SimTK::Vec6> eccPts1 = SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(xIso,      yIso,    dydxIso, 
                                              xNearE,  yNearE,  dydxNearE, cE);
 
-    SimTK::Matrix eccPts2 = SegmentedQuinticBezierToolkit::
+    std::pair<SimTK::Vec6, SimTK::Vec6> eccPts2 = SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(xNearE, yNearE, dydxNearE, 
                                                  xE,     yE,     dydxE, cE);
 
-    SimTK::Matrix mX(6,4), mY(6,4);
-    mX(0) = concPts1(0);
-    mX(1) = concPts2(0);
-    mX(2) = eccPts1(0);
-    mX(3) = eccPts2(0);
+    std::vector<SimTK::Vec6> mX {
+        concPts1.first,
+        concPts2.first,
+        eccPts1.first,
+        eccPts2.first
+    };
 
-    mY(0) = concPts1(1);
-    mY(1) = concPts2(1);
-    mY(2) = eccPts1(1);
-    mY(3) = eccPts2(1);
+    std::vector<SimTK::Vec6> mY {
+        concPts1.second,
+        concPts2.second,
+        eccPts1.second,
+        eccPts2.second
+    };
 
     //std::string curveName = muscleName;
     //curveName.append("_fiberForceVelocityCurve");
@@ -331,31 +337,36 @@ SmoothSegmentedFunction* SmoothSegmentedFunctionFactory::
     double xNearE = 0.9;
     double yNearE = yE + 0.5*dydxNearE*(xNearE-xE) + 0.5*dydxE*(xNearE-xE);
 
+    
 
-    SimTK::Matrix concPts1 = SegmentedQuinticBezierToolkit::
+
+    std::pair<SimTK::Vec6, SimTK::Vec6> concPts1 = SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(xC,yC,dydxC, 
                                             xNearC, yNearC,dydxNearC,cC);
-    SimTK::Matrix concPts2 = SegmentedQuinticBezierToolkit::
+    std::pair<SimTK::Vec6, SimTK::Vec6> concPts2 = SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(xNearC,yNearC,dydxNearC, 
                                              xIso,  yIso,  dydxIso,  cC);
-    SimTK::Matrix eccPts1 = SegmentedQuinticBezierToolkit::
+    std::pair<SimTK::Vec6, SimTK::Vec6> eccPts1 = SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(xIso,      yIso,    dydxIso, 
                                              xNearE,  yNearE,  dydxNearE, cE);
 
-    SimTK::Matrix eccPts2 = SegmentedQuinticBezierToolkit::
+    std::pair<SimTK::Vec6, SimTK::Vec6> eccPts2 = SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(xNearE, yNearE, dydxNearE, 
                                                  xE,     yE,     dydxE, cE);
 
-    SimTK::Matrix mX(6,4), mY(6,4);
-    mX(0) = concPts1(0);
-    mX(1) = concPts2(0);
-    mX(2) = eccPts1(0);
-    mX(3) = eccPts2(0);
+    std::vector<SimTK::Vec6> mX {
+        concPts1.first,
+        concPts2.first,
+        eccPts1.first,
+        eccPts2.first
+    };
 
-    mY(0) = concPts1(1);
-    mY(1) = concPts2(1);
-    mY(2) = eccPts1(1);
-    mY(3) = eccPts2(1);
+    std::vector<SimTK::Vec6> mY {
+        concPts1.second,
+        concPts2.second,
+        eccPts1.second,
+        eccPts2.second
+    };
     
     SmoothSegmentedFunction* mclCrvFcn = new 
         SmoothSegmentedFunction(mY,mX,yC,yE,xC,xE,1/dydxC,1/dydxE,
@@ -394,12 +405,15 @@ SmoothSegmentedFunction* SmoothSegmentedFunctionFactory::
     double y1 = 1;
     double dydx1 = k;
 
-    SimTK::Matrix ctrlPts = SegmentedQuinticBezierToolkit::
+    std::pair<SimTK::Vec6, SimTK::Vec6> ctrlPts = SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(x0,y0,dydx0,x1,y1,dydx1,c);
-    
-    SimTK::Matrix mX(6,1), mY(6,1);
-    mX = ctrlPts(0);
-    mY = ctrlPts(1);
+
+    std::vector<SimTK::Vec6> mX {
+        ctrlPts.first
+    };
+    std::vector<SimTK::Vec6> mY {
+        ctrlPts.second
+    };
 
     //std::string curveName = muscleName;
     //curveName.append("_fiberCompressiveForcePennationCurve");
@@ -441,12 +455,11 @@ SmoothSegmentedFunction* SmoothSegmentedFunctionFactory::
     double y1 = 0;
     double dydx1 = 0;
 
-    SimTK::Matrix ctrlPts = SegmentedQuinticBezierToolkit::
+    std::pair<SimTK::Vec6, SimTK::Vec6> ctrlPts = SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(x0,y0,dydx0,x1,y1,dydx1,c);
-    
-    SimTK::Matrix mX(6,1), mY(6,1);
-    mX = ctrlPts(0);
-    mY = ctrlPts(1);
+
+    std::vector<SimTK::Vec6> mX {ctrlPts.first};
+    std::vector<SimTK::Vec6> mY {ctrlPts.second};
 
     //std::string curveName = muscleName;
     //curveName.append("_fiberCompressiveForceCosPennationCurve");
@@ -489,12 +502,11 @@ SmoothSegmentedFunction* SmoothSegmentedFunctionFactory::
     double y1 = 0;
     double dydx1 = 0;
 
-    SimTK::Matrix ctrlPts = SegmentedQuinticBezierToolkit::
+    std::pair<SimTK::Vec6, SimTK::Vec6> ctrlPts = SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(x0,y0,dydx0,x1,y1,dydx1,c);
 
-    SimTK::Matrix mX(6,1), mY(6,1);
-    mX(0) = ctrlPts(0);
-    mY(0) = ctrlPts(1);
+    std::vector<SimTK::Vec6> mX {ctrlPts.first};
+    std::vector<SimTK::Vec6> mY {ctrlPts.second};
 
     // curveName = muscleName;
     //curveName.append("_fiberCompressiveForceLengthCurve");
@@ -569,21 +581,22 @@ SmoothSegmentedFunction* SmoothSegmentedFunctionFactory::
     double yLow     = yfoot + kLow*(xLow-xfoot);
 
     //Compute the Quintic Bezier control points
-    SimTK::Matrix p0 = SegmentedQuinticBezierToolkit::
+    std::pair<SimTK::Vec6, SimTK::Vec6> p0 = SegmentedQuinticBezierToolkit::
      calcQuinticBezierCornerControlPoints(xZero, yZero, 0,
                                            xLow, yLow,  kLow,c);
     
-    SimTK::Matrix p1 = SegmentedQuinticBezierToolkit::
+    std::pair<SimTK::Vec6, SimTK::Vec6> p1 = SegmentedQuinticBezierToolkit::
      calcQuinticBezierCornerControlPoints(xLow, yLow, kLow,
                                           xIso, yIso, kIso, c);
-    SimTK::Matrix mX(6,2);
-    SimTK::Matrix mY(6,2);
 
-    mX(0) = p0(0);
-    mY(0) = p0(1);
-
-    mX(1) = p1(0);
-    mY(1) = p1(1);
+    std::vector<SimTK::Vec6> mX {
+        p0.first,
+        p1.first
+    };
+    std::vector<SimTK::Vec6> mY {
+        p0.second,
+        p1.second
+    };
     
 
     //std::string curveName = muscleName;
@@ -669,20 +682,21 @@ SmoothSegmentedFunction* SmoothSegmentedFunctionFactory::
 
 
     //Compute the Quintic Bezier control points
-    SimTK::Matrix p0 = SegmentedQuinticBezierToolkit::
+    std::pair<SimTK::Vec6, SimTK::Vec6> p0 = SegmentedQuinticBezierToolkit::
      calcQuinticBezierCornerControlPoints(x0,y0,dydx0,
                                         xToeCtrl,yToeCtrl,dydxToeMid,c);
-    SimTK::Matrix p1 = SegmentedQuinticBezierToolkit::
+    std::pair<SimTK::Vec6, SimTK::Vec6> p1 = SegmentedQuinticBezierToolkit::
      calcQuinticBezierCornerControlPoints(xToeCtrl, yToeCtrl, dydxToeMid,
                                               xToe,     yToe,    dydxIso, c);
-    SimTK::Matrix mX(6,2);
-    SimTK::Matrix mY(6,2);
 
-    mX(0) = p0(0);
-    mY(0) = p0(1);
-
-    mX(1) = p1(0);
-    mY(1) = p1(1);
+    std::vector<SimTK::Vec6> mX {
+        p0.first,
+        p1.first
+    };
+    std::vector<SimTK::Vec6> mY {
+        p0.second,
+        p1.second
+    };
 
     //std::string curveName = muscleName;
     //curveName.append("_tendonForceLengthCurve");
