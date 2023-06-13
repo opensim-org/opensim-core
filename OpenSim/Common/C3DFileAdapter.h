@@ -22,8 +22,6 @@
 #ifndef OPENSIM_C3D_FILE_ADAPTER_H_
 #define OPENSIM_C3D_FILE_ADAPTER_H_
 
-#if defined (WITH_EZC3D)
-
 #include "FileAdapter.h"
 #include "TimeSeriesTable.h"
 #include "Event.h"
@@ -67,6 +65,7 @@ public:
         auto tables  =  c3dFileAdapter.read("myData.c3d");
         auto markersTable = c3dFileAdapter.getMarkersTable(tables);
         auto forcesTable = c3dFileAdapter.getForcesTable(tables);
+        auto analogDataTable = c3dFileAdapter.getAnalogDataTable(tables);
         \endcode
 
         <b>Python example</b>
@@ -133,9 +132,15 @@ public:
         std::shared_ptr<AbstractDataTable>& adt = tables.at("forces");
         return std::dynamic_pointer_cast<TimeSeriesTableVec3>(adt);
     }
+    /** Retrieve the TimeSeriesTable of AnalogData, typically this contains forces, moments */
+     std::shared_ptr<TimeSeriesTable> getAnalogDataTable(DataAdapter::OutputTables& tables) {
+         std::shared_ptr<AbstractDataTable>& adt = tables.at("analog");
+         return std::dynamic_pointer_cast<TimeSeriesTable>(adt);
+     }
 
     static const std::string _markers;
     static const std::string _forces;
+    static const std::string _analog;
 
 
 protected:
@@ -152,7 +157,5 @@ private:
 };
 
 } // namespace OpenSim
-
-#endif // WITH_EZC3D
 
 #endif // OPENSIM_C3D_FILE_ADAPTER_H_

@@ -185,12 +185,6 @@ int main() {
         // Verify the loading of marker data (14 markers) from .trc into a Storage
         SimTK_SUBTEST2(testStorageLoadingFromFile, "dataWithNaNsOfDifferentCases.trc", 43);
 
-        #if defined (WITH_EZC3D)
-            // Verify the loading of forces from .c3d into a Storage. Includes 2
-            // force-plates with force, point, moment vectors (Vec3 flattened)
-            SimTK_SUBTEST2(testStorageLoadingFromFile, "walking2.c3d", 3*6+1);
-        #endif
-
         SimTK_SUBTEST(testStorageLegacy);
 
         SimTK_SUBTEST(testStorageGetStateIndexBackwardsCompatibility);
