@@ -401,6 +401,8 @@ SmoothSegmentedFunctionData::SmoothSegmentedFunctionData(
     bool computeIntegral,
     bool intx0x1,
     const std::string& name) :
+    _ctrlPtsX(ctrlPtsX),
+    _ctrlPtsY(ctrlPtsY),
     _x0(x0),
     _x1(x1),
     _y0(y0),
@@ -408,9 +410,7 @@ SmoothSegmentedFunctionData::SmoothSegmentedFunctionData(
     _dydx0(dydx0),
     _dydx1(dydx1),
     _computeIntegral(computeIntegral),
-    _intx0x1(intx0x1),
-    _ctrlPtsX(ctrlPtsX),
-    _ctrlPtsY(ctrlPtsY)
+    _intx0x1(intx0x1)
 {
     _numBezierSections = _ctrlPtsX.size();
 
