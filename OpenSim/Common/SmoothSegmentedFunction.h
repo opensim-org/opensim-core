@@ -339,7 +339,7 @@ namespace OpenSim {
        /**
        Creates a set of quintic Bezier Curve.
 
-       @param mX         The n-vector of quintic Bezier x point locations (6xn).
+       @param ctrlPtsX   The n-vector of quintic Bezier x point locations (6xn).
                          Each element contains the 6 control points required
                          for each quintic Bezier curve. For C0 continuity 
                          adjacent elements must share the last and first control
@@ -347,7 +347,7 @@ namespace OpenSim {
                          control points of adjacent curves should be on the same
                          curve.
 
-       @param mY         The n-vector of quintic Bezier y point locations (6xn).
+       @param ctrlPtsY   The n-vector of quintic Bezier y point locations (6xn).
                         
        @param x0         The minimum x value. This is used for the linear 
                          extrapolation of the Bezier curve. This parameter is
@@ -394,8 +394,8 @@ namespace OpenSim {
 
               */
        SmoothSegmentedFunction(
-          const std::vector<SimTK::Vec6>& mX,
-          const std::vector<SimTK::Vec6>& mY,
+          const std::vector<SimTK::Vec6>& ctrlPtsX,
+          const std::vector<SimTK::Vec6>& ctrlPtsY,
           double x0,
           double x1,
           double y0,

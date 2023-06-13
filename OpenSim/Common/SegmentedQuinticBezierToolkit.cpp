@@ -68,19 +68,19 @@ void SegmentedQuinticBezierToolkit::
 
 void SegmentedQuinticBezierToolkit::printBezierSplineFitCurves(
     const SimTK::Function_<double>& curveFit,
-    std::vector<SimTK::Vec6>& mX,
-    std::vector<SimTK::Vec6>& mY,
+    std::vector<SimTK::Vec6>& ctrlPtsX,
+    std::vector<SimTK::Vec6>& ctrlPtsY,
     SimTK::Vector& xVal,
     SimTK::Vector& yVal,
     std::string& filename)
 {
 
-    SimTK_ERRCHK_ALWAYS(mX.size() == mY.size(),
+    SimTK_ERRCHK_ALWAYS(ctrlPtsX.size() == ctrlPtsY.size(),
         "SegmentedQuinticBezierToolkit::printBezierSplineFitCurves",
-        "Error: mX and mY control points must have same number of elements");
+        "Error: X and Y control points must have same number of elements");
 
         std::string caller = "printBezierSplineFitCurves";
-        int nbezier =  mX.size();
+        int nbezier =  ctrlPtsX.size();
         int rows = NUM_SAMPLE_PTS*nbezier - (nbezier-1);
 
         SimTK::Vector y1Val(rows);
@@ -113,8 +113,8 @@ void SegmentedQuinticBezierToolkit::printBezierSplineFitCurves(
               oidx = i + j*NUM_SAMPLE_PTS - offset*(j-1);
 
               u = ( (double)(i+offset) )/( (double)(NUM_SAMPLE_PTS-1) );
-              y1Val(oidx) = calcQuinticBezierCurveDerivDYDX(u, mX[j], mY[j], 1);
-              y2Val(oidx) = calcQuinticBezierCurveDerivDYDX(u, mX[j], mY[j], 2);
+              y1Val(oidx) = calcQuinticBezierCurveDerivDYDX(u, ctrlPtsX[j], ctrlPtsY[j], 1);
+              y2Val(oidx) = calcQuinticBezierCurveDerivDYDX(u, ctrlPtsX[j], ctrlPtsY[j], 2);
 
               tmp(0) = xVal(oidx);
               ySVal(oidx) = curveFit.calcValue( tmp );
@@ -926,16 +926,16 @@ SimTK::Matrix SegmentedQuinticBezierToolkit::calcNumIntBezierYfcnX(
                             const SimTK::Vector& vX, 
                             double ic0, double intAcc, 
                             double uTol, int uMaxIter,
-                            const std::vector<SimTK::Vec6>& mX,
-                            const std::vector<SimTK::Vec6>& mY,
+                            const std::vector<SimTK::Vec6>& ctrlPtsX,
+                            const std::vector<SimTK::Vec6>& ctrlPtsY,
                             const SimTK::Array_<SimTK::Spline>& aSplineUX,
                             bool flag_intLeftToRight,
                             const std::string& caller)
 {
     SimTK::Matrix intXY(vX.size(),2);
     BezierData bdata;
-        bdata._mX             = mX;
-        bdata._mY             = mY;
+        bdata._ctrlPtsX       = ctrlPtsX;
+        bdata._ctrlPtsY       = ctrlPtsY;
         bdata._initalValue    = ic0;
         bdata._aArraySplineUX = aSplineUX;
         bdata._uMaxIter       = uMaxIter;
