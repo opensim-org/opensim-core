@@ -462,27 +462,24 @@ void testQuinticBezier_Exceptions(){
     string name  = "testQuinticBezier_Exceptions()";
 
     //Generate a Bezier curve
-    SimTK::Vector xPts(6);
-    SimTK::Vector yPts(6);
+    SimTK::Vec6 xPts(
+        0,
+        0.5,
+        0.5,
+        0.75,
+        0.75,
+        1);
 
-    SimTK::Matrix xMPts(6,1);
-    SimTK::Matrix yMPts(6,1);
+    SimTK::Vec6 yPts(
+        0,
+        0.125,
+        0.125,
+        0.5,
+        0.5,
+        1);
 
-    xPts(0) = 0;
-    xPts(1) = 0.5;
-    xPts(2) = 0.5;
-    xPts(3) = 0.75;
-    xPts(4) = 0.75;
-    xPts(5) = 1;
-    xMPts(0) = xPts;
-
-    yPts(0) = 0;
-    yPts(1) = 0.125;
-    yPts(2) = 0.125;
-    yPts(3) = 0.5;
-    yPts(4) = 0.5;
-    yPts(5) = 1;
-    yMPts(0) = yPts;
+    std::vector<SimTK::Vec6> xPtsSet{xPts};
+    std::vector<SimTK::Vec6> yPtsSet{yPts};
 
     SimTK::Vector u(100);
     SimTK::Vector x(100);
@@ -514,15 +511,16 @@ void testQuinticBezier_Exceptions(){
     double dydx0EX1 = 0; //illegal pair
     double dydx1EX1 = 0.1;
 
-    SimTK_TEST_MUST_THROW(SimTK::Matrix test1 = SegmentedQuinticBezierToolkit::
+    using CtrlPtsXY = std::pair<SimTK::Vec6, SimTK::Vec6>;
+    SimTK_TEST_MUST_THROW(CtrlPtsXY test1 = SegmentedQuinticBezierToolkit::
                      calcQuinticBezierCornerControlPoints(x0, y0, dydx0, 
                                         x1, y1,dydx1, curvinessEX1));
 
-    SimTK_TEST_MUST_THROW(SimTK::Matrix test2 = SegmentedQuinticBezierToolkit::
+    SimTK_TEST_MUST_THROW(CtrlPtsXY test2 = SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(x0, y0, dydx0, 
                             x1, y1,dydx1, curvinessEX2));
 
-    SimTK_TEST_MUST_THROW(SimTK::Matrix test2 = SegmentedQuinticBezierToolkit::
+    SimTK_TEST_MUST_THROW(CtrlPtsXY test2 = SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(x0, y0, dydx0EX1, 
                             x1, y1,dydx1EX1, curviness));
 
@@ -530,13 +528,13 @@ void testQuinticBezier_Exceptions(){
     //Test exceptions for calcIndex
     //=========================================================================
 
-    double xEX1 = xPts(0)-0.01; //This is not in the set.
-    double xEX2 = xPts(5)+0.01; //This is not in the set.
+    double xEX1 = xPts[0]-0.01; //This is not in the set.
+    double xEX2 = xPts[5]+0.01; //This is not in the set.
 
     SimTK_TEST_MUST_THROW(/*int t = */SegmentedQuinticBezierToolkit::
-                            calcIndex(xEX1, xMPts));
+                            calcIndex(xEX1, xPtsSet));
     SimTK_TEST_MUST_THROW(/*int t = */SegmentedQuinticBezierToolkit::
-                            calcIndex(xEX2, xMPts));
+                            calcIndex(xEX2, xPtsSet));
 
     //=========================================================================
     //Test exceptions for calcU
@@ -553,15 +551,11 @@ void testQuinticBezier_Exceptions(){
 
     double uEX1 = -0.01; //illegal
     double uEX2 = 1.01;  //illegal
-    SimTK::Vector xPtsEX(5);
-    xPtsEX = 0;
 
     SimTK_TEST_MUST_THROW(/*double tst = */SegmentedQuinticBezierToolkit::
         calcQuinticBezierCurveVal(uEX1,xPts));
     SimTK_TEST_MUST_THROW(/*double tst = */SegmentedQuinticBezierToolkit::
         calcQuinticBezierCurveVal(uEX2,xPts));
-    SimTK_TEST_MUST_THROW(/*double tst = */SegmentedQuinticBezierToolkit::
-        calcQuinticBezierCurveVal(0.5,xPtsEX));
 
     //=========================================================================
     //Test exceptions for calcQuinticBezierCurveDerivU
@@ -571,8 +565,6 @@ void testQuinticBezier_Exceptions(){
         calcQuinticBezierCurveDerivU(uEX1, xPts, (int)1));
     SimTK_TEST_MUST_THROW(/*double tst = */SegmentedQuinticBezierToolkit::
         calcQuinticBezierCurveDerivU(uEX2, xPts, (int)1));
-    SimTK_TEST_MUST_THROW(/*double tst = */SegmentedQuinticBezierToolkit::
-        calcQuinticBezierCurveDerivU(0.5, xPtsEX, (int)1));
     SimTK_TEST_MUST_THROW(/*double tst = */SegmentedQuinticBezierToolkit::
         calcQuinticBezierCurveDerivU(0.5, xPts, 0));
 
@@ -588,10 +580,6 @@ void testQuinticBezier_Exceptions(){
         calcQuinticBezierCurveDerivDYDX(0.5,xPts,yPts,0));
     SimTK_TEST_MUST_THROW(/*double test= */SegmentedQuinticBezierToolkit::
         calcQuinticBezierCurveDerivDYDX(0.5,xPts,yPts,7));
-    SimTK_TEST_MUST_THROW(/*double test= */SegmentedQuinticBezierToolkit::
-        calcQuinticBezierCurveDerivDYDX(0.5,xPtsEX,yPts,3));
-    SimTK_TEST_MUST_THROW(/*double test= */SegmentedQuinticBezierToolkit::
-        calcQuinticBezierCurveDerivDYDX(0.5,xPts,xPtsEX,3));
     
     //=========================================================================
     //Test exceptions for calcNumIntBezierYfcnX
@@ -612,21 +600,26 @@ void testQuinticBezier_DU_DYDX()
     cout <<"**************************************************"<<endl;
     cout << "   TEST: Bezier Curve Derivative DU" << endl;
     string name  = "testQuinticBezier_DU_DYDX()";
-        SimTK::Vector xPts(6);
-        SimTK::Vector yPts(6);
-        xPts(0) = 0;
-        xPts(1) = 0.5;
-        xPts(2) = 0.5;
-        xPts(3) = 0.75;
-        xPts(4) = 0.75;
-        xPts(5) = 1;
 
-        yPts(0) = 0;
-        yPts(1) = 0.125;
-        yPts(2) = 0.125;
-        yPts(3) = 0.5;
-        yPts(4) = 0.5;
-        yPts(5) = 1;
+    //Generate a Bezier curve
+    SimTK::Vec6 xPts(
+        0,
+        0.5,
+        0.5,
+        0.75,
+        0.75,
+        1);
+
+    SimTK::Vec6 yPts(
+        0,
+        0.125,
+        0.125,
+        0.5,
+        0.5,
+        1);
+
+    std::vector<SimTK::Vec6> xPtsSet{xPts};
+    std::vector<SimTK::Vec6> yPtsSet{yPts};
 
         double val = 0;
         double d1 = 0;
@@ -818,13 +811,11 @@ void sampleBezierCornerGeneration()
     
     
     
-    SimTK::Matrix xyPts = SegmentedQuinticBezierToolkit::
+    std::pair<SimTK::Vec6, SimTK::Vec6> xyPts = SegmentedQuinticBezierToolkit::
        calcQuinticBezierCornerControlPoints(x0,y0,dydx0, x1,y1,dydx1,curviness);
 
-    cout << "XY Corner Control Points" << endl;
-    cout << xyPts << endl;
-
-
+    cout << "XY Corner Control Points: X = " << endl;
+    cout << xyPts.first << ", Y = " << xyPts.second << endl;
 }
 /**
     This function will sample and print a SimTK::Function to file
