@@ -34,6 +34,7 @@ v4.5
   and no longer require a `using namespace OpenSim;` declaration in order to work (#3468)
 - Fixed runtime segfault that can occur when trying to use a `WrapObject` that is not a child of a `PhysicalFrame` (#3465)
 - Fixed issues #3083 #2575 where analog data is not pulled out from c3d files, a a new function getAnalogDataTable() has been added to the C3DFileAdapter
+- Fixed segfault that can occur when building models with unusual joint topologies (it now throws an `OpenSim::Exception` instead, #3299)
 
 
 v4.4
