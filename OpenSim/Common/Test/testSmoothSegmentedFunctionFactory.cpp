@@ -511,16 +511,15 @@ void testQuinticBezier_Exceptions(){
     double dydx0EX1 = 0; //illegal pair
     double dydx1EX1 = 0.1;
 
-    using CtrlPtsXY = std::pair<SimTK::Vec6, SimTK::Vec6>;
-    SimTK_TEST_MUST_THROW(CtrlPtsXY test1 = SegmentedQuinticBezierToolkit::
+    SimTK_TEST_MUST_THROW(/*std::pair<SimTK::Vec6, SimTK::Vec6> test = */SegmentedQuinticBezierToolkit::
                      calcQuinticBezierCornerControlPoints(x0, y0, dydx0, 
                                         x1, y1,dydx1, curvinessEX1));
 
-    SimTK_TEST_MUST_THROW(CtrlPtsXY test2 = SegmentedQuinticBezierToolkit::
+    SimTK_TEST_MUST_THROW(/*std::pair<SimTK::Vec6, SimTK::Vec6> test = */SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(x0, y0, dydx0, 
                             x1, y1,dydx1, curvinessEX2));
 
-    SimTK_TEST_MUST_THROW(CtrlPtsXY test2 = SegmentedQuinticBezierToolkit::
+    SimTK_TEST_MUST_THROW(/*std::pair<SimTK::Vec6, SimTK::Vec6> test = */SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(x0, y0, dydx0EX1, 
                             x1, y1,dydx1EX1, curviness));
 
