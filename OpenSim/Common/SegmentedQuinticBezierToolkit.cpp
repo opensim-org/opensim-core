@@ -143,7 +143,7 @@ void SegmentedQuinticBezierToolkit::printBezierSplineFitCurves(
         Divisions   Multiplication  Additions   Assignments
         1           13              9              23
 */
-std::pair<SimTK::Vec6, SimTK::Vec6>
+SegmentedQuinticBezierToolkit::ControlPointsXY
     SegmentedQuinticBezierToolkit::calcQuinticBezierCornerControlPoints(
         double x0,
         double y0,
@@ -232,7 +232,7 @@ std::pair<SimTK::Vec6, SimTK::Vec6>
     SimTK::Vec6 xPts(x0, x0_mid, x0_mid, x1_mid, x1_mid, x1);
     SimTK::Vec6 yPts(y0, y0_mid, y0_mid, y1_mid, y1_mid, y1);
 
-    return std::pair<SimTK::Vec6, SimTK::Vec6>(xPts, yPts);
+    return SegmentedQuinticBezierToolkit::ControlPointsXY{xPts, yPts};
 }
 
 //=============================================================================

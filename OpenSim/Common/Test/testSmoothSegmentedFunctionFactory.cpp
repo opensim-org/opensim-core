@@ -511,15 +511,15 @@ void testQuinticBezier_Exceptions(){
     double dydx0EX1 = 0; //illegal pair
     double dydx1EX1 = 0.1;
 
-    SimTK_TEST_MUST_THROW(/*std::pair<SimTK::Vec6, SimTK::Vec6> test = */SegmentedQuinticBezierToolkit::
+    SimTK_TEST_MUST_THROW(/*SegmentedQuinticBezierToolkit::ControlPointsXY test = */SegmentedQuinticBezierToolkit::
                      calcQuinticBezierCornerControlPoints(x0, y0, dydx0, 
                                         x1, y1,dydx1, curvinessEX1));
 
-    SimTK_TEST_MUST_THROW(/*std::pair<SimTK::Vec6, SimTK::Vec6> test = */SegmentedQuinticBezierToolkit::
+    SimTK_TEST_MUST_THROW(/*SegmentedQuinticBezierToolkit::ControlPointsXY test = */SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(x0, y0, dydx0, 
                             x1, y1,dydx1, curvinessEX2));
 
-    SimTK_TEST_MUST_THROW(/*std::pair<SimTK::Vec6, SimTK::Vec6> test = */SegmentedQuinticBezierToolkit::
+    SimTK_TEST_MUST_THROW(/*SegmentedQuinticBezierToolkit::ControlPointsXY test = */SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(x0, y0, dydx0EX1, 
                             x1, y1,dydx1EX1, curviness));
 
@@ -810,11 +810,11 @@ void sampleBezierCornerGeneration()
     
     
     
-    std::pair<SimTK::Vec6, SimTK::Vec6> xyPts = SegmentedQuinticBezierToolkit::
+    SegmentedQuinticBezierToolkit::ControlPointsXY xyPts = SegmentedQuinticBezierToolkit::
        calcQuinticBezierCornerControlPoints(x0,y0,dydx0, x1,y1,dydx1,curviness);
 
     cout << "XY Corner Control Points: X = " << endl;
-    cout << xyPts.first << ", Y = " << xyPts.second << endl;
+    cout << xyPts.x << ", Y = " << xyPts.y << endl;
 }
 /**
     This function will sample and print a SimTK::Function to file

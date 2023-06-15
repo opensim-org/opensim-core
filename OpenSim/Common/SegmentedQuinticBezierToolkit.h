@@ -449,7 +449,14 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
             const SimTK::Vec6& ypts,
             int order);
 
-        
+
+        // A pair of Vec6 that correspond to the X, and Y control points for a
+        // quintic Bezier curve.
+        struct ControlPointsXY final {
+            SimTK::Vec6 x;
+            SimTK::Vec6 y;
+        };
+
         /**
         Calculates the location of quintic Bezier curve control points to 
         create a C shaped curve.
@@ -501,13 +508,13 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
             double dydx1 = 43;
             double c = 0.75;
 
-            std::pair<SimTK::Vec6, SimTK::Vec6> pXY = SegmentedQuinticBezierToolkit::
+            SegmentedQuinticBezierToolkit::ControlPointsXY pXY = SegmentedQuinticBezierToolkit::
                calcQuinticBezierCornerControlPoints(x0, y0, dydx0,x1,y1,dydx01,
                                                                      c);
             @endcode
 
         */
-        static std::pair<SimTK::Vec6, SimTK::Vec6> calcQuinticBezierCornerControlPoints(
+        static ControlPointsXY calcQuinticBezierCornerControlPoints(
             double x0,
             double y0,
             double dydx0,
