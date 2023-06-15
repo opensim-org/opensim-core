@@ -671,16 +671,18 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
         @param data     A matrix of data
         @param filename The name of the file to print
         */
-        static void printMatrixToFile(const SimTK::Vector& col0, 
-                          const SimTK::Matrix& data, std::string& filename);
+        static void printMatrixToFile(
+            const SimTK::Vector& col0,
+            const SimTK::Matrix& data,
+            const std::string& filename);
 
         static void printBezierSplineFitCurves(
             const SimTK::Function_<double>& curveFit,
-            std::vector<SimTK::Vec6>& ctrlPtsX,
-            std::vector<SimTK::Vec6>& ctrlPtsY,
-            SimTK::Vector& xVal,
-            SimTK::Vector& yVal,
-            std::string& filename);
+            const std::vector<SimTK::Vec6>& ctrlPtsX,
+            const std::vector<SimTK::Vec6>& ctrlPtsY,
+            const SimTK::Vector& xVal,
+            const SimTK::Vector& yVal,
+            const std::string& filename);
 
         /**
         This function will return a value that is equal to u, except when u is

@@ -46,9 +46,10 @@ static int NUM_SAMPLE_PTS = 100; //The number of knot points to use to sample
 * @params data: A matrix of data
 * @params filename: The name of the file to print
 */
-void SegmentedQuinticBezierToolkit::
-    printMatrixToFile(const SimTK::Vector& col0, 
-    const SimTK::Matrix& data, std::string& filename)
+void SegmentedQuinticBezierToolkit::printMatrixToFile(
+    const SimTK::Vector& col0,
+    const SimTK::Matrix& data,
+    const std::string& filename)
 {
     
     ofstream datafile;
@@ -68,11 +69,11 @@ void SegmentedQuinticBezierToolkit::
 
 void SegmentedQuinticBezierToolkit::printBezierSplineFitCurves(
     const SimTK::Function_<double>& curveFit,
-    std::vector<SimTK::Vec6>& ctrlPtsX,
-    std::vector<SimTK::Vec6>& ctrlPtsY,
-    SimTK::Vector& xVal,
-    SimTK::Vector& yVal,
-    std::string& filename)
+    const std::vector<SimTK::Vec6>& ctrlPtsX,
+    const std::vector<SimTK::Vec6>& ctrlPtsY,
+    const SimTK::Vector& xVal,
+    const SimTK::Vector& yVal,
+    const std::string& filename)
 {
 
     SimTK_ERRCHK_ALWAYS(ctrlPtsX.size() == ctrlPtsY.size(),
