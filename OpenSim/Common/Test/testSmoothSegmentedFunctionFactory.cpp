@@ -462,21 +462,21 @@ void testQuinticBezier_Exceptions(){
     string name  = "testQuinticBezier_Exceptions()";
 
     //Generate a Bezier curve
-    SimTK::Vec6 xPts(
+    SimTK::Vec6 xPts = {
         0,
         0.5,
         0.5,
         0.75,
         0.75,
-        1);
+        1};
 
-    SimTK::Vec6 yPts(
+    SimTK::Vec6 yPts = {
         0,
         0.125,
         0.125,
         0.5,
         0.5,
-        1);
+        1};
 
     std::vector<SimTK::Vec6> xPtsSet{xPts};
     std::vector<SimTK::Vec6> yPtsSet{yPts};
@@ -601,21 +601,21 @@ void testQuinticBezier_DU_DYDX()
     string name  = "testQuinticBezier_DU_DYDX()";
 
     //Generate a Bezier curve
-    SimTK::Vec6 xPts(
+    SimTK::Vec6 xPts = {
         0,
         0.5,
         0.5,
         0.75,
         0.75,
-        1);
+        1};
 
-    SimTK::Vec6 yPts(
+    SimTK::Vec6 yPts = {
         0,
         0.125,
         0.125,
         0.5,
         0.5,
-        1);
+        1};
 
     std::vector<SimTK::Vec6> xPtsSet{xPts};
     std::vector<SimTK::Vec6> yPtsSet{yPts};
