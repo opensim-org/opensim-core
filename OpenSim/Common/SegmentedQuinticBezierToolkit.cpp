@@ -75,14 +75,17 @@ void SegmentedQuinticBezierToolkit::printBezierSplineFitCurves(
     const SimTK::Vector& yVal,
     const std::string& filename)
 {
+    const size_t nbezier =  ctrlPtsX.size();
 
-    SimTK_ERRCHK_ALWAYS(ctrlPtsX.size() == ctrlPtsY.size(),
+    SimTK_ERRCHK_ALWAYS(nbezier == ctrlPtsY.size(),
         "SegmentedQuinticBezierToolkit::printBezierSplineFitCurves",
         "Error: X and Y control points must have same number of elements");
 
-        std::string caller = "printBezierSplineFitCurves";
-        int nbezier =  ctrlPtsX.size();
-        int rows = NUM_SAMPLE_PTS*nbezier - (nbezier-1);
+    SimTK_ERRCHK_ALWAYS(nbezier > 0,
+        "SegmentedQuinticBezierToolkit::printBezierSplineFitCurves",
+        "Error: Control points vector (ctrlPtsX and ctrlPtsY) must be non-empty.");
+
+        const size_t rows = NUM_SAMPLE_PTS*nbezier - (nbezier-1);
 
         SimTK::Vector y1Val(rows);
         SimTK::Vector y2Val(rows);
@@ -100,20 +103,15 @@ void SegmentedQuinticBezierToolkit::printBezierSplineFitCurves(
         deriv1[0] = 0;
         deriv2[0] = 0;
         deriv2[1] = 0;
-        double u = 0;
-        int oidx = 0;
-        int offset = 0;
-        for(int j=0; j < nbezier ; j++)
+        for(size_t j=0; j < nbezier ; j++)
         {
-            if(j > 0){
-                offset = 1;
-            }
+            const size_t offset = (j > 0)? 1: 0;
 
-            for(int i=0; i<NUM_SAMPLE_PTS-offset; i++)
+            for(size_t i=0; i<NUM_SAMPLE_PTS-offset; i++)
             {
-              oidx = i + j*NUM_SAMPLE_PTS - offset*(j-1);
+              const size_t oidx = i + j*NUM_SAMPLE_PTS - offset*(j-1);
 
-              u = ( (double)(i+offset) )/( (double)(NUM_SAMPLE_PTS-1) );
+              const double u = ( (double)(i+offset) )/( (double)(NUM_SAMPLE_PTS-1) );
               y1Val(oidx) = calcQuinticBezierCurveDerivDYDX(u, ctrlPtsX[j], ctrlPtsY[j], 1);
               y2Val(oidx) = calcQuinticBezierCurveDerivDYDX(u, ctrlPtsX[j], ctrlPtsY[j], 2);
 
