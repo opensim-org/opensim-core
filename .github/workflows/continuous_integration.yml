@@ -71,7 +71,6 @@ jobs:
 
     - name: Configure opensim-core
       id: configure
-      # -DSWIG_LIB=C:\ProgramData\Chocolatey\lib\swig\tools\install\Lib -DSWIG_DIR=C:\ProgramData\Chocolatey\lib\swig\tools\install\Lib -DSWIG_EXECUTABLE=C:\ProgramData\chocolatey\bin\swig.exe
       run: |
         mkdir $env:GITHUB_WORKSPACE\\build
         chdir $env:GITHUB_WORKSPACE\\build
@@ -207,7 +206,6 @@ jobs:
         cmake -E env CXXFLAGS="/W0" cmake $env:GITHUB_WORKSPACE/dependencies -LAH -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install -DSUPERBUILD_ezc3d=ON -DOPENSIM_WITH_TROPTER=ON -DOPENSIM_WITH_CASADI=ON
         cmake --build . --config Release -- /maxcpucount:4
 
-    # -DSWIG_LIB=C:\ProgramData\Chocolatey\lib\swig\tools\install\Lib -DSWIG_DIR=C:\ProgramData\Chocolatey\lib\swig\tools\install\Lib -DSWIG_EXECUTABLE=C:\ProgramData\chocolatey\bin\swig.exe
     - name: Configure opensim-core
       id: configure
       run: |
