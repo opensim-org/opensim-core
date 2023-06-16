@@ -75,17 +75,13 @@ void SegmentedQuinticBezierToolkit::printBezierSplineFitCurves(
     const SimTK::Vector& yVal,
     const std::string& filename)
 {
-    const size_t nbezier =  ctrlPtsX.size();
 
-    SimTK_ERRCHK_ALWAYS(nbezier == ctrlPtsY.size(),
+    SimTK_ERRCHK_ALWAYS(ctrlPtsX.size() == ctrlPtsY.size(),
         "SegmentedQuinticBezierToolkit::printBezierSplineFitCurves",
         "Error: X and Y control points must have same number of elements");
 
-    SimTK_ERRCHK_ALWAYS(nbezier > 0,
-        "SegmentedQuinticBezierToolkit::printBezierSplineFitCurves",
-        "Error: Control points vector (ctrlPtsX and ctrlPtsY) must be non-empty.");
-
-        const size_t rows = NUM_SAMPLE_PTS*nbezier - (nbezier-1);
+        const size_t nbezier =  ctrlPtsX.size();
+        const size_t rows = (NUM_SAMPLE_PTS - 1) * nbezier + 1;
 
         SimTK::Vector y1Val(rows);
         SimTK::Vector y2Val(rows);
