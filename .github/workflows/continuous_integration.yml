@@ -71,13 +71,14 @@ jobs:
 
     - name: Configure opensim-core
       id: configure
+      # -DSWIG_LIB=C:\ProgramData\Chocolatey\lib\swig\tools\install\Lib -DSWIG_DIR=C:\ProgramData\Chocolatey\lib\swig\tools\install\Lib -DSWIG_EXECUTABLE=C:\ProgramData\chocolatey\bin\swig.exe
       run: |
         mkdir $env:GITHUB_WORKSPACE\\build
         chdir $env:GITHUB_WORKSPACE\\build
         # TODO: Can remove /WX when we use that in CMakeLists.txt.
         # Set the CXXFLAGS environment variable to turn warnings into errors.
         # Skip timing test section included by default.
-        cmake -E env CXXFLAGS="/WX -DSKIP_TIMING" cmake $env:GITHUB_WORKSPACE -LAH -G"Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install -DOPENSIM_C3D_PARSER=ezc3d -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on -DPython3_ROOT_DIR=C:\hostedtoolcache\windows\Python\3.8.10\x64 -DSWIG_LIB=C:\ProgramData\Chocolatey\lib\swig\tools\install\Lib -DSWIG_DIR=C:\ProgramData\Chocolatey\lib\swig\tools\install\Lib -DSWIG_EXECUTABLE=C:\ProgramData\chocolatey\bin\swig.exe
+        cmake -E env CXXFLAGS="/WX -DSKIP_TIMING" cmake $env:GITHUB_WORKSPACE -LAH -G"Visual Studio 16 2019" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install -DOPENSIM_C3D_PARSER=ezc3d -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on -DPython3_ROOT_DIR=C:\hostedtoolcache\windows\Python\3.8.10\x64 
         $env:match = cmake -L . | Select-String -Pattern OPENSIM_QUALIFIED_VERSION
         $version = $env:match.split('=')[1]
         echo $version
@@ -206,6 +207,7 @@ jobs:
         cmake -E env CXXFLAGS="/W0" cmake $env:GITHUB_WORKSPACE/dependencies -LAH -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim_dependencies_install -DSUPERBUILD_ezc3d=ON -DOPENSIM_WITH_TROPTER=ON -DOPENSIM_WITH_CASADI=ON
         cmake --build . --config Release -- /maxcpucount:4
 
+    # -DSWIG_LIB=C:\ProgramData\Chocolatey\lib\swig\tools\install\Lib -DSWIG_DIR=C:\ProgramData\Chocolatey\lib\swig\tools\install\Lib -DSWIG_EXECUTABLE=C:\ProgramData\chocolatey\bin\swig.exe
     - name: Configure opensim-core
       id: configure
       run: |
@@ -214,7 +216,7 @@ jobs:
         # TODO: Can remove /WX when we use that in CMakeLists.txt.
         # Set the CXXFLAGS environment variable to turn warnings into errors.
         # Skip timing test section included by default.
-        cmake -E env CXXFLAGS="/WX -DSKIP_TIMING" cmake $env:GITHUB_WORKSPACE -LAH -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install -DOPENSIM_C3D_PARSER=ezc3d -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on -DPython3_ROOT_DIR=C:\hostedtoolcache\windows\Python\3.8.10\x64 -DSWIG_LIB=C:\ProgramData\Chocolatey\lib\swig\tools\install\Lib -DSWIG_DIR=C:\ProgramData\Chocolatey\lib\swig\tools\install\Lib -DSWIG_EXECUTABLE=C:\ProgramData\chocolatey\bin\swig.exe
+        cmake -E env CXXFLAGS="/WX -DSKIP_TIMING" cmake $env:GITHUB_WORKSPACE -LAH -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX=~/opensim-core-install -DOPENSIM_DEPENDENCIES_DIR=~/opensim_dependencies_install -DOPENSIM_C3D_PARSER=ezc3d -DBUILD_PYTHON_WRAPPING=on -DBUILD_JAVA_WRAPPING=on -DPython3_ROOT_DIR=C:\hostedtoolcache\windows\Python\3.8.10\x64
         $env:match = cmake -L . | Select-String -Pattern OPENSIM_QUALIFIED_VERSION
         $version = $env:match.split('=')[1]
         echo $version
