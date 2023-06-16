@@ -291,7 +291,7 @@ jobs:
       run: |
         mkdir ~/swig-source && cd ~/swig-source
         wget https://github.com/swig/swig/archive/refs/tags/v4.1.1.tar.gz
-        tar xzf v4.1.1.tar.gz && cd swig-v4.1.1
+        tar xzf v4.1.1.tar.gz && ls && cd swig-v4.1.1
         sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache
         make && make -j4 install
 
@@ -499,7 +499,7 @@ jobs:
       run: |
         mkdir ~/swig-source && cd ~/swig-source
         wget https://github.com/swig/swig/archive/refs/tags/v4.1.1.tar.gz
-        tar xzf v4.1.1.tar.gz && cd swig-v4.1.1
+        tar xzf v4.1.1.tar.gz && ls && cd swig-v4.1.1
         sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache
         make && make -j4 install
     - name: Cache dependencies
