@@ -35,8 +35,8 @@ using namespace OpenSim;
 using namespace std;
 
 
-static int NUM_SAMPLE_PTS = 100; //The number of knot points to use to sample
-                                //each Bezier corner section
+static size_t NUM_SAMPLE_PTS = 100; //The number of knot points to use to sample
+                                    //each Bezier corner section
 
 /**
 * This function will print cvs file of the column vector col0 and the matrix data
@@ -105,7 +105,7 @@ void SegmentedQuinticBezierToolkit::printBezierSplineFitCurves(
 
             for(size_t i=0; i<NUM_SAMPLE_PTS-offset; i++)
             {
-              const size_t oidx = i + j*NUM_SAMPLE_PTS - offset*(j-1);
+              const size_t oidx = i + j*(NUM_SAMPLE_PTS-offset) + 1;
 
               const double u = ( (double)(i+offset) )/( (double)(NUM_SAMPLE_PTS-1) );
               y1Val(oidx) = calcQuinticBezierCurveDerivDYDX(u, ctrlPtsX[j], ctrlPtsY[j], 1);
