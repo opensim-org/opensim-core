@@ -2222,6 +2222,29 @@ SimTK::Vec3 Model::calcMassCenterAcceleration(const SimTK::State &s) const
     getMultibodySystem().realize(s, Stage::Acceleration);
     return getMatterSubsystem().calcSystemMassCenterAccelerationInGround(s);    
 }
+/**
+ * Return the spatial momentum about the system mass center expressed in Ground.
+ *
+ */
+SimTK::SpatialVec Model::calcMomentum(const SimTK::State &s) const
+{
+    return getMatterSubsystem().calcSystemCentralMomentum(s);
+}
+/**
+ * Return the angular momentum about the system mass center expressed in Ground.
+ *
+ */
+SimTK::Vec3 Model::calcAngularMomentum(const SimTK::State& s) const {
+    return getMatterSubsystem().calcSystemCentralMomentum(s).get(0);
+}
+/**
+ * Return the linear momentum expressed in Ground.
+ *
+ */
+SimTK::Vec3 Model::calcLinearMomentum(const SimTK::State& s) const {
+    return getMatterSubsystem().calcSystemCentralMomentum(s).get(1);
+}
+
 
 /**
 * Construct outputs

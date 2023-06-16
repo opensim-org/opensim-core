@@ -237,7 +237,16 @@ public:
             calcKineticEnergy, SimTK::Stage::Position);
 
     OpenSim_DECLARE_OUTPUT(potential_energy, double,
-        calcPotentialEnergy, SimTK::Stage::Velocity);
+            calcPotentialEnergy, SimTK::Stage::Velocity);
+
+    OpenSim_DECLARE_OUTPUT(momentum, SimTK::SpatialVec,
+            calcMomentum, SimTK::Stage::Velocity);
+
+    OpenSim_DECLARE_OUTPUT(angular_momentum, SimTK::Vec3,
+            calcAngularMomentum, SimTK::Stage::Velocity);
+
+    OpenSim_DECLARE_OUTPUT(linear_momentum, SimTK::Vec3,
+            calcLinearMomentum, SimTK::Stage::Velocity);
 
 
 //=============================================================================
@@ -833,6 +842,9 @@ public:
     SimTK::Vec3 calcMassCenterPosition(const SimTK::State &s) const;
     SimTK::Vec3 calcMassCenterVelocity(const SimTK::State &s) const;
     SimTK::Vec3 calcMassCenterAcceleration(const SimTK::State &s) const;
+    SimTK::SpatialVec calcMomentum(const SimTK::State &s) const;
+    SimTK::Vec3 calcAngularMomentum(const SimTK::State &s) const;
+    SimTK::Vec3 calcLinearMomentum(const SimTK::State &s) const;
     /** return the total Kinetic Energy for the underlying system.*/
     double calcKineticEnergy(const SimTK::State &s) const {
         return getMultibodySystem().calcKineticEnergy(s);
