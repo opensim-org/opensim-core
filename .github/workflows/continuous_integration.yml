@@ -40,7 +40,7 @@ jobs:
       run: python3 -m pip install numpy==1.20.2
 
     - name: Install SWIG
-      run: choco install swig --version 4.0.2 --yes --limit-output --allow-downgrade
+      run: choco install swig --version 4.0.2 --yes --allow-downgrade
 
     - name: Cache dependencies
       id: cache-dependencies
@@ -175,7 +175,7 @@ jobs:
       run: python3 -m pip install numpy==1.20.2
 
     - name: Install SWIG
-      run: choco install swig --version 4.0.2 --yes --limit-output --allow-downgrade
+      run: choco install swig --version 4.0.2 --yes --allow-downgrade
 
     - name: Cache dependencies
       id: cache-dependencies
