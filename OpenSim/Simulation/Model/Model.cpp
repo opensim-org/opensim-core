@@ -2235,14 +2235,14 @@ SimTK::SpatialVec Model::calcMomentum(const SimTK::State &s) const
  *
  */
 SimTK::Vec3 Model::calcAngularMomentum(const SimTK::State& s) const {
-    return getMatterSubsystem().calcSystemCentralMomentum(s).get(0);
+    return calcMomentum(s).get(0);
 }
 /**
  * Return the linear momentum expressed in Ground.
  *
  */
 SimTK::Vec3 Model::calcLinearMomentum(const SimTK::State& s) const {
-    return getMatterSubsystem().calcSystemCentralMomentum(s).get(1);
+    return calcMomentum(s).get(1);
 }
 
 
