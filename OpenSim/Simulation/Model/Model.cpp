@@ -2201,8 +2201,7 @@ SimTK::Inertia Model::getInertiaAboutMassCenter(const SimTK::State &s) const
  */
 SimTK::Vec3 Model::calcMassCenterPosition(const SimTK::State &s) const
 {
-    getMultibodySystem().realize(s, Stage::Position);
-    return getMatterSubsystem().calcSystemMassCenterLocationInGround(s);    
+    return getMatterSubsystem().calcSystemMassCenterLocationInGround(s);
 }
 /**
  * Return the velocity vector of the system mass center, measured from the Ground origin, and expressed in Ground.
@@ -2210,8 +2209,7 @@ SimTK::Vec3 Model::calcMassCenterPosition(const SimTK::State &s) const
  */
 SimTK::Vec3 Model::calcMassCenterVelocity(const SimTK::State &s) const
 {
-    getMultibodySystem().realize(s, Stage::Velocity);
-    return getMatterSubsystem().calcSystemMassCenterVelocityInGround(s);    
+    return getMatterSubsystem().calcSystemMassCenterVelocityInGround(s);
 }
 /**
  * Return the acceleration vector of the system mass center, measured from the Ground origin, and expressed in Ground.
@@ -2219,8 +2217,7 @@ SimTK::Vec3 Model::calcMassCenterVelocity(const SimTK::State &s) const
  */
 SimTK::Vec3 Model::calcMassCenterAcceleration(const SimTK::State &s) const
 {
-    getMultibodySystem().realize(s, Stage::Acceleration);
-    return getMatterSubsystem().calcSystemMassCenterAccelerationInGround(s);    
+    return getMatterSubsystem().calcSystemMassCenterAccelerationInGround(s);
 }
 /**
  * Return the spatial momentum about the system mass center expressed in Ground.
