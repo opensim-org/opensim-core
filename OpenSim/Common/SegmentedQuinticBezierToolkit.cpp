@@ -35,8 +35,9 @@ using namespace OpenSim;
 using namespace std;
 
 
-static size_t NUM_SAMPLE_PTS = 100; //The number of knot points to use to sample
-                                    //each Bezier corner section
+ //The number of knot points to use to sample each Bezier corner section.
+static constexpr ptrdiff_t NUM_SAMPLE_PTS = 100;
+static_assert(NUM_SAMPLE_PTS>0);
 
 /**
 * This function will print cvs file of the column vector col0 and the matrix data
@@ -80,8 +81,8 @@ void SegmentedQuinticBezierToolkit::printBezierSplineFitCurves(
         "SegmentedQuinticBezierToolkit::printBezierSplineFitCurves",
         "Error: X and Y control points must have same number of elements");
 
-        const size_t nbezier =  ctrlPtsX.size();
-        const size_t rows = (NUM_SAMPLE_PTS - 1) * nbezier + 1;
+        const ptrdiff_t nbezier =  ctrlPtsX.size();
+        const ptrdiff_t rows = (NUM_SAMPLE_PTS - 1) * nbezier + 1;
 
         SimTK::Vector y1Val(rows);
         SimTK::Vector y2Val(rows);
@@ -99,13 +100,13 @@ void SegmentedQuinticBezierToolkit::printBezierSplineFitCurves(
         deriv1[0] = 0;
         deriv2[0] = 0;
         deriv2[1] = 0;
-        for(size_t j=0; j < nbezier ; j++)
+        for(ptrdiff_t j=0; j < nbezier ; j++)
         {
-            const size_t offset = (j > 0)? 1: 0;
+            const ptrdiff_t offset = (j > 0)? 1: 0;
 
-            for(size_t i=0; i<NUM_SAMPLE_PTS-offset; i++)
+            for(ptrdiff_t i=0; i<NUM_SAMPLE_PTS-offset; i++)
             {
-              const size_t oidx = i + j*(NUM_SAMPLE_PTS-offset) + 1;
+              const ptrdiff_t oidx = i + j*(NUM_SAMPLE_PTS-offset) + 1;
 
               const double u = ( (double)(i+offset) )/( (double)(NUM_SAMPLE_PTS-1) );
               y1Val(oidx) = calcQuinticBezierCurveDerivDYDX(u, ctrlPtsX[j], ctrlPtsY[j], 1);
