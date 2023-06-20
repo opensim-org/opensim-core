@@ -2167,64 +2167,55 @@ void Model::realizeReport(const SimTK::State& state) const
     getSystem().realize(state, Stage::Report);
 }
 
-
-/**
- * Compute the derivatives of the generalized coordinates and speeds.
- */
+//------------------------------------------------------------------------------
+// Subsystem computations
+//------------------------------------------------------------------------------
 void Model::computeStateVariableDerivatives(const SimTK::State &s) const
 {
     realizeAcceleration(s);
 }
 
-/**
- * Get the total mass of the model
- *
- * @return the mass of the model
- */
 double Model::getTotalMass(const SimTK::State &s) const
 {
     return getMatterSubsystem().calcSystemMass(s);
 }
-/**
- * getInertiaAboutMassCenter
- *
- */
+
 SimTK::Inertia Model::getInertiaAboutMassCenter(const SimTK::State &s) const
 {
-    SimTK::Inertia inertia = getMatterSubsystem().calcSystemCentralInertiaInGround(s);
+    SimTK::Inertia inertia =
+            getMatterSubsystem().calcSystemCentralInertiaInGround(s);
 
     return inertia;
 }
-/**
- * Return the position vector of the system mass center, measured from the Ground origin, and expressed in Ground.
- *
- */
+
 SimTK::Vec3 Model::calcMassCenterPosition(const SimTK::State &s) const
 {
     getMultibodySystem().realize(s, Stage::Position);
-    return getMatterSubsystem().calcSystemMassCenterLocationInGround(s);    
+    return getMatterSubsystem().calcSystemMassCenterLocationInGround(s);
 }
-/**
- * Return the velocity vector of the system mass center, measured from the Ground origin, and expressed in Ground.
- *
- */
+
 SimTK::Vec3 Model::calcMassCenterVelocity(const SimTK::State &s) const
 {
     getMultibodySystem().realize(s, Stage::Velocity);
-    return getMatterSubsystem().calcSystemMassCenterVelocityInGround(s);    
+    return getMatterSubsystem().calcSystemMassCenterVelocityInGround(s);
 }
-/**
- * Return the acceleration vector of the system mass center, measured from the Ground origin, and expressed in Ground.
- *
- */
+
 SimTK::Vec3 Model::calcMassCenterAcceleration(const SimTK::State &s) const
 {
     getMultibodySystem().realize(s, Stage::Acceleration);
-    return getMatterSubsystem().calcSystemMassCenterAccelerationInGround(s);    
+    return getMatterSubsystem().calcSystemMassCenterAccelerationInGround(s);
 }
 
-/**
-* Construct outputs
-*
-**/
+SimTK::SpatialVec Model::calcMomentum(const SimTK::State &s) const
+{
+    getMultibodySystem().realize(s, Stage::Velocity);
+    return getMatterSubsystem().calcSystemCentralMomentum(s);
+}
 
+SimTK::Vec3 Model::calcAngularMomentum(const SimTK::State& s) const {
+    return calcMomentum(s).get(0);
+}
+
+SimTK::Vec3 Model::calcLinearMomentum(const SimTK::State& s) const {
+    return calcMomentum(s).get(1);
+}
