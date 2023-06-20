@@ -836,20 +836,65 @@ public:
     //--------------------------------------------------------------------------
     // Subsystem computations
     //--------------------------------------------------------------------------
+    /**
+     * Compute the derivatives of the generalized coordinates and speeds.
+     */
     void computeStateVariableDerivatives(const SimTK::State &s) const override;
+
+    /**
+     * Get the total mass of the model.
+     *
+     * @return the mass of the model.
+     */
     double getTotalMass(const SimTK::State &s) const;
+
+    /**
+     * Get the whole-body inertia of the model about the center of mass,
+     * expressed in the Ground frame.
+     */
     SimTK::Inertia getInertiaAboutMassCenter(const SimTK::State &s) const;
+
+    /**
+     * Return the position vector of the system mass center, measured from the
+     * Ground origin, and expressed in Ground.
+     */
     SimTK::Vec3 calcMassCenterPosition(const SimTK::State &s) const;
+
+    /**
+     * Return the velocity vector of the system mass center, measured from the
+     * Ground origin, and expressed in Ground.
+     */
     SimTK::Vec3 calcMassCenterVelocity(const SimTK::State &s) const;
+
+    /**
+     * Return the acceleration vector of the system mass center, measured from
+     * the Ground origin, and expressed in Ground.
+     */
     SimTK::Vec3 calcMassCenterAcceleration(const SimTK::State &s) const;
+
+    /**
+     * Return the spatial momentum about the system mass center expressed in
+     * Ground.
+     */
     SimTK::SpatialVec calcMomentum(const SimTK::State &s) const;
+
+    /**
+     * Return the angular momentum about the system mass center expressed in
+     * Ground.
+     */
     SimTK::Vec3 calcAngularMomentum(const SimTK::State &s) const;
+
+    /**
+     * Return the linear momentum expressed in Ground.
+     */
     SimTK::Vec3 calcLinearMomentum(const SimTK::State &s) const;
-    /** return the total Kinetic Energy for the underlying system.*/
+
+    /** Return the total Kinetic Energy for the underlying system.*/
     double calcKineticEnergy(const SimTK::State &s) const {
         return getMultibodySystem().calcKineticEnergy(s);
-    }    
-    /** return the total Potential Energy for the underlying system.*/
+    }
+
+    /** Return the total Potential Energy for the underlying system.*/
     double calcPotentialEnergy(const SimTK::State &s) const {
         return getMultibodySystem().calcPotentialEnergy(s);
     }
