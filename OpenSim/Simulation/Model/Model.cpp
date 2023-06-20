@@ -2201,6 +2201,7 @@ SimTK::Inertia Model::getInertiaAboutMassCenter(const SimTK::State &s) const
  */
 SimTK::Vec3 Model::calcMassCenterPosition(const SimTK::State &s) const
 {
+    getMultibodySystem().realize(s, Stage::Position);
     return getMatterSubsystem().calcSystemMassCenterLocationInGround(s);
 }
 /**
@@ -2209,6 +2210,7 @@ SimTK::Vec3 Model::calcMassCenterPosition(const SimTK::State &s) const
  */
 SimTK::Vec3 Model::calcMassCenterVelocity(const SimTK::State &s) const
 {
+    getMultibodySystem().realize(s, Stage::Velocity);
     return getMatterSubsystem().calcSystemMassCenterVelocityInGround(s);
 }
 /**
@@ -2217,6 +2219,7 @@ SimTK::Vec3 Model::calcMassCenterVelocity(const SimTK::State &s) const
  */
 SimTK::Vec3 Model::calcMassCenterAcceleration(const SimTK::State &s) const
 {
+    getMultibodySystem().realize(s, Stage::Acceleration);
     return getMatterSubsystem().calcSystemMassCenterAccelerationInGround(s);
 }
 /**
