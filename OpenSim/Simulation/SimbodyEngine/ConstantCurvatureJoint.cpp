@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2017 Stanford University and the Authors                *
+ * Copyright (c) 2005-2023 Stanford University and the Authors                *
  * Author(s): Keenon Werling                                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -46,32 +46,32 @@ Vec3 OpenSim::ConstantCurvatureJoint::clamp(const SimTK::Vec3& q)
   Vec3 pos = q;
   double bound = (M_PI / 2) - 0.01;
   if (pos(0) > bound) {
-    std::cout << "WARNING! ConstantCurvatureJoint position outside of its supported range! X rotation reached position " << pos(0) << ", which is above upper bound " << bound << ". This will lead to unphysical behavior. Please adjust your model / simulation to avoid this state." << std::endl;
+    log_warn("WARNING! ConstantCurvatureJoint position outside of its supported range! X rotation reached position " << pos(0) << ", which is above upper bound " << bound << ". This will lead to unphysical behavior. Please adjust your model / simulation to avoid this state.");
     assert(false);
     pos(0) = bound;
   }
   if (pos(0) < -bound) {
-    std::cout << "WARNING! ConstantCurvatureJoint position outside of its supported range! X rotation reached position " << pos(0) << ", which is below lower bound " << -bound << ". This will lead to unphysical behavior. Please adjust your model / simulation to avoid this state." << std::endl;
+    log_warn("WARNING! ConstantCurvatureJoint position outside of its supported range! X rotation reached position " << pos(0) << ", which is below lower bound " << -bound << ". This will lead to unphysical behavior. Please adjust your model / simulation to avoid this state.");
     assert(false);
     pos(0) = -bound;
   }
   if (pos(1) > bound) {
-    std::cout << "WARNING! ConstantCurvatureJoint position outside of its supported range! Z rotation reached position " << pos(1) << ", which is above upper bound " << bound << ". This will lead to unphysical behavior. Please adjust your model / simulation to avoid this state." << std::endl;
+    log_warn("WARNING! ConstantCurvatureJoint position outside of its supported range! Z rotation reached position " << pos(1) << ", which is above upper bound " << bound << ". This will lead to unphysical behavior. Please adjust your model / simulation to avoid this state.");
     assert(false);
     pos(1) = bound;
   }
   if (pos(1) < -bound) {
-    std::cout << "WARNING! ConstantCurvatureJoint position outside of its supported range! Z rotation reached position " << pos(1) << ", which is below lower bound " << -bound << ". This will lead to unphysical behavior. Please adjust your model / simulation to avoid this state." << std::endl;
+    log_warn("WARNING! ConstantCurvatureJoint position outside of its supported range! Z rotation reached position " << pos(1) << ", which is below lower bound " << -bound << ". This will lead to unphysical behavior. Please adjust your model / simulation to avoid this state.");
     assert(false);
     pos(1) = -bound;
   }
   if (pos(2) > bound) {
-    std::cout << "WARNING! ConstantCurvatureJoint position outside of its supported range! Y rotation reached position " << pos(2) << ", which is above upper bound " << bound << ". This will lead to unphysical behavior. Please adjust your model / simulation to avoid this state." << std::endl;
+    log_warn("WARNING! ConstantCurvatureJoint position outside of its supported range! Y rotation reached position " << pos(2) << ", which is above upper bound " << bound << ". This will lead to unphysical behavior. Please adjust your model / simulation to avoid this state.");
     assert(false);
     pos(2) = bound;
   }
   if (pos(2) < -bound) {
-    std::cout << "WARNING! ConstantCurvatureJoint position outside of its supported range! Y rotation reached position " << pos(2) << ", which is below lower bound " << -bound << ". This will lead to unphysical behavior. Please adjust your model / simulation to avoid this state." << std::endl;
+    log_warn("WARNING! ConstantCurvatureJoint position outside of its supported range! Y rotation reached position " << pos(2) << ", which is below lower bound " << -bound << ". This will lead to unphysical behavior. Please adjust your model / simulation to avoid this state.");
     assert(false);
     pos(2) = -bound;
   }

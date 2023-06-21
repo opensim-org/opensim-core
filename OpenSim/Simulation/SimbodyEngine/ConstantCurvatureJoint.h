@@ -9,7 +9,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2022 Stanford University and the Authors                     *
+ * Copyright (c) 2023 Stanford University and the Authors                     *
  * Author(s): Keenon Werling                                                  *
  *                                                                            *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
@@ -113,7 +113,10 @@ public:
             const PhysicalFrame& child, const SimTK::Vec3& neutralAngleXZY,
             const double length);
 
-    /** Deprecated Joint Constructor*/
+    /** Deprecated Joint Constructor
+        NOTE(keenon): This constructor seems necessary to compile, but it has a 
+        comment marking it deprecated in the EllipsoidJoint, so I copied that comment 
+        over here as well. */
     ConstantCurvatureJoint(const std::string& name, const PhysicalFrame& parent,
             const SimTK::Vec3& locationInParent,
             const SimTK::Vec3& orientationInParent, const PhysicalFrame& child,
@@ -202,4 +205,4 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // OPENSIM_ELLIPSOID_JOINT_H_
+#endif // OPENSIM_CONSTANT_CURVATURE_JOINT_H_

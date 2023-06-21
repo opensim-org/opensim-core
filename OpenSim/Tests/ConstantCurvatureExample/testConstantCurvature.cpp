@@ -7,7 +7,7 @@
  * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
  * through the Warrior Web program.                                           *
  *                                                                            *
- * Copyright (c) 2005-2022 Stanford University and the Authors                *
+ * Copyright (c) 2005-2023 Stanford University and the Authors                *
  * Author(s): Keenon Werling                                                  *
  * Contributor(s): Chris Dembia, Thomas Uchida, James Dunne, Connor Rawlings, *
  *                 Samuel Suys                                                *
@@ -33,10 +33,10 @@
  * 3. When the visualizer pops up, click View -> Save Movie.
  * 4. cd into testREADME_1 and run the following commands (on Linux):
  *      $ convert 'Frame*.png[400x470+200+100]' \( +clone -set delay 100 \)
- *          +swap +delete opensim_double_pendulum_muscle_1.gif
+ *          +swap +delete opensim_constant_curvature_1.gif
  *      $ gifsicle --crop-transparency --optimize=O3 --colors=32 --delay 5 <
- *          opensim_double_pendulum_muscle_1.gif >
- *          opensim_double_pendulum_muscle.gif
+ *          opensim_constant_curvature_1.gif >
+ *          opensim_constant_curvature.gif
  * 5. Copy your gif over to OpenSim/doc/images, and commit it to the
  *    repository.
  */
@@ -343,4 +343,3 @@ int main() {
 
     return 0;
 };
-/// [README]
