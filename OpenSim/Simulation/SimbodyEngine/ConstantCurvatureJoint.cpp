@@ -78,7 +78,7 @@ Vec3 OpenSim::ConstantCurvatureJoint::clamp(const SimTK::Vec3& q)
   return pos;
 }
 
-Mat33 OpenSim::ConstantCurvatureJoint::eulerXZYToMatrix(const Vec3& _angle)
+Rotation OpenSim::ConstantCurvatureJoint::eulerXZYToMatrix(const Vec3& _angle)
 {
     // +-           -+   +-                                        -+
   // | r00 r01 r02 |   |  cy*cz           -sz      cz*sy          |
@@ -107,7 +107,7 @@ Mat33 OpenSim::ConstantCurvatureJoint::eulerXZYToMatrix(const Vec3& _angle)
   ret(1, 2) = -cy * sx + cx * sy * sz;
   ret(2, 2) = cx * cy + sx * sy * sz;
 
-  return ret;
+  return Rotation(ret, true);
 }
 
 /// This gives the gradient of an XZY rotation matrix with respect to the
@@ -283,7 +283,7 @@ Mat63 OpenSim::ConstantCurvatureJoint::getEulerJacobianDerivWrtPos(
 Mat63 OpenSim::ConstantCurvatureJoint::getConstantCurveJacobian(const Vec3& pos, double d)
 {
   // 1. Do the euler rotation
-  Mat33 rot = eulerXZYToMatrix(pos);
+  Rotation rot = eulerXZYToMatrix(pos);
   Mat63 J = getEulerJacobian(pos);
 
   // Remember, this is X,*Z*,Y
@@ -368,7 +368,7 @@ Mat63 OpenSim::ConstantCurvatureJoint::getConstantCurveJacobian(const Vec3& pos,
 Mat63 OpenSim::ConstantCurvatureJoint::getConstantCurveJacobianDerivWrtPosition(const Vec3& pos, double d, int index)
 {
   // 1. Do the euler rotation
-  const Mat33 rot = eulerXZYToMatrix(pos);
+  const Rotation rot = eulerXZYToMatrix(pos);
   const Mat33 rot_dFirst = eulerXZYToMatrixGrad(pos, index);
 
   Mat63 J_dFirst = getEulerJacobianDerivWrtPos(pos, index);
@@ -601,7 +601,7 @@ Mat63 OpenSim::ConstantCurvatureJoint::getConstantCurveJacobianDerivWrtTime(cons
 Transform OpenSim::ConstantCurvatureJoint::getTransform(Vec3 pos, double d)
 {
   // 1. Do the euler rotation
-  Mat33 rot = eulerXZYToMatrix(pos);
+  Rotation rot = eulerXZYToMatrix(pos);
 
   // 2. Computing translation from vertical
   double cx = cos(pos(0));
@@ -636,7 +636,7 @@ Transform OpenSim::ConstantCurvatureJoint::getTransform(Vec3 pos, double d)
   }
 
   return Transform(
-    Rotation(rot, true), translation
+    rot, translation
   );
 }
 

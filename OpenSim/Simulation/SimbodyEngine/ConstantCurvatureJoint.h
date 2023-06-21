@@ -155,7 +155,7 @@ public:
     /** This method will clamp an input set of joint angles q to the limits of the joint, and return the clamped vector */
     static SimTK::Vec3 clamp(const SimTK::Vec3& q);
     /** This method will convert a vector of X,Z,Y rotations into the corresponding SO3 rotation matrix */
-    static SimTK::Mat33 eulerXZYToMatrix(const SimTK::Vec3& _angle);
+    static SimTK::Rotation eulerXZYToMatrix(const SimTK::Vec3& _angle);
     /** This method will convert an SO3 rotation matrix into a corresponding vector of X,Z,Y rotations */
     static SimTK::Mat33 eulerXZYToMatrixGrad(const SimTK::Vec3& _angle, int index);
     /** This method will return the Jacobian of a pure Euler joint (following the XZY convention), where each 
