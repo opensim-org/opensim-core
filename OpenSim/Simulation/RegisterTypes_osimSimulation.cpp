@@ -23,7 +23,6 @@
 
 
 #include <OpenSim/Common/Object.h>
-#include "OpenSim/Simulation/SimbodyEngine/ConstantCurvatureJoint.h"
 #include "RegisterTypes_osimSimulation.h"
 
 #include "Model/Model.h"
@@ -123,6 +122,7 @@
 #include "SimbodyEngine/CustomJoint.h"
 #include "SimbodyEngine/WeldJoint.h"
 #include "SimbodyEngine/ScapulothoracicJoint.h"
+#include "OpenSim/Simulation/SimbodyEngine/ConstantCurvatureJoint.h"
 #include "SimbodyEngine/TransformAxis.h"
 #include "SimbodyEngine/Coordinate.h"
 #include "SimbodyEngine/SpatialTransform.h"
