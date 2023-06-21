@@ -37,7 +37,7 @@ using namespace std;
 
  //The number of knot points to use to sample each Bezier corner section.
 static constexpr ptrdiff_t NUM_SAMPLE_PTS = 100;
-static_assert(NUM_SAMPLE_PTS>0);
+static_assert(NUM_SAMPLE_PTS>0, "SegmentedQuinticBezierToolkit::NUM_SAMPLE_PTS must be larger than zero.");
 
 /**
 * This function will print cvs file of the column vector col0 and the matrix data
