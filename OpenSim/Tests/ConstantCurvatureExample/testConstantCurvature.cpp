@@ -23,22 +23,9 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-/* Whenever you change this test:
- * 1. Copy the new code over to the README.md, making sure to omit the
- * preprocessor lines (#ifdef VISUALIZE; #endif).
- *
- * If your changes would cause the gif to change substantially, make a new gif:
- * 1. Uncomment the `VISUALIZE` definition.
- * 2. Recompile and execute this code (testREADME in your build directory).
- * 3. When the visualizer pops up, click View -> Save Movie.
- * 4. cd into testREADME_1 and run the following commands (on Linux):
- *      $ convert 'Frame*.png[400x470+200+100]' \( +clone -set delay 100 \)
- *          +swap +delete opensim_constant_curvature_1.gif
- *      $ gifsicle --crop-transparency --optimize=O3 --colors=32 --delay 5 <
- *          opensim_constant_curvature_1.gif >
- *          opensim_constant_curvature.gif
- * 5. Copy your gif over to OpenSim/doc/images, and commit it to the
- *    repository.
+/* These tests cover checking the analytical Jacobians and gradients of Jacobians
+ * for the ConstantCurvatureJoint. The ground-truth Jacobians were computed using
+ * finite differences in Nimble, and then converted into hard-coded C++ by hand.
  */
 
 #include "OpenSim/Actuators/SpringGeneralizedForce.h"
