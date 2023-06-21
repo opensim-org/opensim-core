@@ -81,8 +81,8 @@ void SegmentedQuinticBezierToolkit::printBezierSplineFitCurves(
         "SegmentedQuinticBezierToolkit::printBezierSplineFitCurves",
         "Error: X and Y control points must have same number of elements");
 
-        const ptrdiff_t nbezier =  ctrlPtsX.size();
-        const ptrdiff_t rows = (NUM_SAMPLE_PTS - 1) * nbezier + 1;
+        const ptrdiff_t nbezier = ctrlPtsX.size();
+        const int rows = static_cast<int>((NUM_SAMPLE_PTS - 1) * nbezier + 1);
 
         SimTK::Vector y1Val(rows);
         SimTK::Vector y2Val(rows);
@@ -106,7 +106,7 @@ void SegmentedQuinticBezierToolkit::printBezierSplineFitCurves(
 
             for(ptrdiff_t i=0; i<NUM_SAMPLE_PTS-offset; i++)
             {
-              const ptrdiff_t oidx = i + j*(NUM_SAMPLE_PTS-offset) + 1;
+              const int oidx = static_cast<int>(i + j*(NUM_SAMPLE_PTS-offset) + 1);
 
               const double u = ( (double)(i+offset) )/( (double)(NUM_SAMPLE_PTS-1) );
               y1Val(oidx) = calcQuinticBezierCurveDerivDYDX(u, ctrlPtsX[j], ctrlPtsY[j], 1);
