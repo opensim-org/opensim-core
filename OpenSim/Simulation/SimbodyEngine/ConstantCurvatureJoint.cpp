@@ -37,6 +37,8 @@
 
 using namespace SimTK;
 
+// We use this definition of PI to exactly numerically match the Nimble implementation, 
+// so that the precomputed values for the unit tests are correct.
 #ifndef M_PI
 #define M_PI 3.14159
 #endif
@@ -46,32 +48,32 @@ Vec3 OpenSim::ConstantCurvatureJoint::clamp(const SimTK::Vec3& q)
   Vec3 pos = q;
   double bound = (M_PI / 2) - 0.01;
   if (pos(0) > bound) {
-    log_warn("WARNING! ConstantCurvatureJoint position outside of its supported range! X rotation reached position " << pos(0) << ", which is above upper bound " << bound << ". This will lead to unphysical behavior. Please adjust your model / simulation to avoid this state.");
+    log_warn(fmt::format("WARNING! ConstantCurvatureJoint position outside of its supported range! X rotation reached position {}, which is above upper bound {}. This will lead to unphysical behavior. Please adjust your model / simulation to avoid this state.", pos(0), bound));
     assert(false);
     pos(0) = bound;
   }
   if (pos(0) < -bound) {
-    log_warn("WARNING! ConstantCurvatureJoint position outside of its supported range! X rotation reached position " << pos(0) << ", which is below lower bound " << -bound << ". This will lead to unphysical behavior. Please adjust your model / simulation to avoid this state.");
+    log_warn(fmt::format("WARNING! ConstantCurvatureJoint position outside of its supported range! X rotation reached position {}, which is below lower bound {}. This will lead to unphysical behavior. Please adjust your model / simulation to avoid this state.", pos(0), -bound)));
     assert(false);
     pos(0) = -bound;
   }
   if (pos(1) > bound) {
-    log_warn("WARNING! ConstantCurvatureJoint position outside of its supported range! Z rotation reached position " << pos(1) << ", which is above upper bound " << bound << ". This will lead to unphysical behavior. Please adjust your model / simulation to avoid this state.");
+    log_warn(fmt::format("WARNING! ConstantCurvatureJoint position outside of its supported range! Z rotation reached position {}, which is above upper bound {}. This will lead to unphysical behavior. Please adjust your model / simulation to avoid this state.", pos(1), bound));
     assert(false);
     pos(1) = bound;
   }
   if (pos(1) < -bound) {
-    log_warn("WARNING! ConstantCurvatureJoint position outside of its supported range! Z rotation reached position " << pos(1) << ", which is below lower bound " << -bound << ". This will lead to unphysical behavior. Please adjust your model / simulation to avoid this state.");
+    log_warn(fmt::format("WARNING! ConstantCurvatureJoint position outside of its supported range! Z rotation reached position {}, which is below lower bound {}. This will lead to unphysical behavior. Please adjust your model / simulation to avoid this state.", pos(1), -bound));
     assert(false);
     pos(1) = -bound;
   }
   if (pos(2) > bound) {
-    log_warn("WARNING! ConstantCurvatureJoint position outside of its supported range! Y rotation reached position " << pos(2) << ", which is above upper bound " << bound << ". This will lead to unphysical behavior. Please adjust your model / simulation to avoid this state.");
+    log_warn(fmt::format("WARNING! ConstantCurvatureJoint position outside of its supported range! Y rotation reached position {}, which is above upper bound {}. This will lead to unphysical behavior. Please adjust your model / simulation to avoid this state.", pos(2), bound));
     assert(false);
     pos(2) = bound;
   }
   if (pos(2) < -bound) {
-    log_warn("WARNING! ConstantCurvatureJoint position outside of its supported range! Y rotation reached position " << pos(2) << ", which is below lower bound " << -bound << ". This will lead to unphysical behavior. Please adjust your model / simulation to avoid this state.");
+    log_warn(fmt::format("WARNING! ConstantCurvatureJoint position outside of its supported range! Y rotation reached position {}, which is below lower bound {}. This will lead to unphysical behavior. Please adjust your model / simulation to avoid this state.", pos(2), -bound));
     assert(false);
     pos(2) = -bound;
   }

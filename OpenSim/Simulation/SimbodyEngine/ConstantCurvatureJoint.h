@@ -74,7 +74,8 @@ public:
         rx = myConstantCurvatureJoint.get_coordinates(0);
         \endcode
 
-        The joint has an XZY rotation ordering. We use this ordering because that means 
+        IMPORTANT WARNING!!!
+        The joint has an **X-Z-Y** rotation ordering. We use this ordering because that means 
         the first two DOFs are rotation and translation, while the last DOF is merely a 
         "twist" of the segment without any translation. This is also for compatibility with
         the original implementation in Nimble Physics.
