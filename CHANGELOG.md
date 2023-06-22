@@ -6,14 +6,37 @@ request related to the change, then we may provide the commit.
 
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
 
-v4.4.1
+v4.5
 ======
-
+- IMU::calcGyroscopeSignal() now reports angular velocities in the IMU frame.
+- Update `report.py` to set specific colors for plotted trajectories
 - Made `Component::getSocketNames` a `const` member method (previously: non-const)
+- Added `ModOpReplaceMusclesWithPathActuators` to the list of available model operators in `ModelOperators.h`
 - Modifed the swig interface files to make OpenSim::PathPointSet adopt new PathPoints inserted into it. (Issue #3276)
 - Remove references to obsoleted dependency BTK, use ezc3d exclusively.
 - Fixed an issue with IPOPT libraries when building OpenSim with `OPENSIM_WITH_CASADI = ON` but `OPENSIM_WITH_TROPTER = OFF` (Issue #3267).
 - Removed all references to deprecated environment variable `OPENSIM_HOME`.
+- Fix issue where templatized Property classes are not available to Objects defined in plugins.
+- Minimum supported version for Java is now 1.8 in the cmake files (Issue #3215).
+- Fix CSV file adapter hanging on csv files that are missing end-header (issue #2432).
+- Improve documentation for MotionType to serve scripting users (Issue #3324).
+- Drop support for 32-bit Matlab in build system since Matlab stopped providing 32-bit distributions (issue #3373).
+- Hotfixed body inertia not being updated after changing the 'inertia' property of a body (Issue #3395).
+- Fixed segfault that can occur when working with OpenSim::Models that are initialized from invalid XML (osim) data (#3409)
+- Deduplicated `SmoothSegmentedFunction` data when constructing the muscle curves (#3442).
+- Added `OpenSim::AbstractSocket::canConnectTo(Object const&) const`, for faster socket connectivity checks (#3451)
+- Fixed the `CoordinateCouplerConstraint` bug preventing functions with multiple independent coordinates (#3435)
+- Removed memory leak tests from `testInitState` and `testComponents`, because external analyzers (e.g. libASAN) are better-suited to this (#3459)
+- Fixed `CMC_TaskSet` memory leak whenever it is copied (#3457)
+- Added `SIMBODY_EXTRA_CMAKE_ARGS` to `dependencies/CMakeLists.txt`, which lets integrators customize Simbody via the OpenSim superbuild (#3455)
+- Fixed out-of-bounds memory access in testAssemblySolver (#3460)
+- The property, input, output, and socket macros (e.g. OpenSim_DECLARE_PROPERTY) can now be used outside of the OpenSim namespace
+  and no longer require a `using namespace OpenSim;` declaration in order to work (#3468)
+- Fixed runtime segfault that can occur when trying to use a `WrapObject` that is not a child of a `PhysicalFrame` (#3465)
+- Fixed issues #3083 #2575 where analog data is not pulled out from c3d files, a a new function getAnalogDataTable() has been added to the C3DFileAdapter
+- Fixed segfault that can occur when building models with unusual joint topologies (it now throws an `OpenSim::Exception` instead, #3299)
+- Add `calcMomentum`, `calcAngularMomentum`, `calcLinearMomentum`, and associated `Output`s to `Model` (#3474)
+
 
 v4.4
 ====

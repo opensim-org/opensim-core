@@ -118,6 +118,14 @@ public:
             "The half-space participating in this contact.");
 
     //=========================================================================
+    // OUTPUTS
+    //=========================================================================
+    OpenSim_DECLARE_OUTPUT(sphere_force, SimTK::SpatialVec, getSphereForce,
+            SimTK::Stage::Dynamics);
+    OpenSim_DECLARE_OUTPUT(half_space_force, SimTK::SpatialVec,
+            getHalfSpaceForce, SimTK::Stage::Dynamics);
+
+    //=========================================================================
     // PUBLIC METHODS
     //=========================================================================
     SmoothSphereHalfSpaceForce();
@@ -140,6 +148,14 @@ public:
     OpenSim::Array<double> getRecordValues(
             const SimTK::State& state) const override;
 
+    /// Get a SimTK::SpatialVec containing the forces and torques applied to
+    /// the contact sphere.
+    SimTK::SpatialVec getSphereForce(const SimTK::State& s) const;
+
+    /// Get a SimTK::SpatialVec containing the forces and torques applied to
+    /// the contact half space.
+    SimTK::SpatialVec getHalfSpaceForce(const SimTK::State& s) const;
+
 protected:
     /// Create a SimTK::Force which implements this Force.
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
@@ -152,6 +168,9 @@ private:
     // INITIALIZATION
     void constructProperties();
     mutable double m_forceVizScaleFactor;
+
+    void calcBodyForces(const SimTK::State& s,
+                        SimTK::Vector_<SimTK::SpatialVec>& bodyForces) const;
 
 //=============================================================================
 }; // END of class SmoothSphereHalfSpaceForce

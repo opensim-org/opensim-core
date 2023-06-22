@@ -78,6 +78,7 @@ void Body::constructProperties()
 void Body::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
+    _inertia = SimTK::Inertia{};  // forces `getInertia` to re-update from the property (#3395)
     const SimTK::MassProperties& massProps = getMassProperties();
     _internalRigidBody = SimTK::Body::Rigid(massProps);
     _slaves.clear();
@@ -215,8 +216,8 @@ void Body::scaleInertialProperties(const SimTK::Vec3& scaleFactors, bool scaleMa
     if (scaleMass)
         upd_mass() *= massScaleFactor;
     // Fix issue #2871 by fmatari
-    SimTK::Mat33 inertia = _inertia.toMat33();
-    //SimTK::SymMat33 inertia = _inertia.asSymMat33();
+    SimTK::Mat33 inertia = getInertia().toMat33();
+    //SimTK::SymMat33 inertia = getInertia().asSymMat33();
 
     // If the mass is zero, then make the inertia tensor zero as well.
     // If the X, Y, Z scale factors are equal, then you can scale the
@@ -346,8 +347,7 @@ void Body::scaleInertialProperties(const ScaleSet& scaleSet, bool scaleMass)
 void Body::scaleMass(double aScaleFactor)
 {
     upd_mass() *= aScaleFactor;
-    _inertia *= aScaleFactor;
-    upd_inertia() *= aScaleFactor;
+    setInertia(aScaleFactor * getInertia());
 }
 
 //=============================================================================

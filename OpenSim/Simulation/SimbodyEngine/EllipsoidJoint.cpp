@@ -82,6 +82,10 @@ void EllipsoidJoint::constructProperties()
     setAuthors("Ajay Seth");
     SimTK::Vec3 radii(NaN);
     constructProperty_radii_x_y_z(radii);
+
+    Appearance appearance;
+    appearance.set_visible(true);
+    constructProperty_Appearance(appearance);
 }
 
 //=============================================================================
@@ -176,6 +180,7 @@ void EllipsoidJoint::generateDecorations
     // since this method is called with fixed={true, false}
     if (!fixed) return; 
     // Construct the visible Ellipsoid
+    if (!get_Appearance().get_visible()) return;
     SimTK::DecorativeEllipsoid ellipsoid(get_radii_x_y_z());
     const OpenSim::PhysicalFrame& frame = getParentFrame();
     ellipsoid.setColor(Vec3(0.0, 1.0, 1.0));

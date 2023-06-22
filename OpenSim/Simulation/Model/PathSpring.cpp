@@ -191,7 +191,7 @@ extendPostScale(const SimTK::State& s, const ScaleSet& scaleSet)
 /**
  * Compute the moment-arm of this muscle about a coordinate.
  */
-double PathSpring::computeMomentArm(const SimTK::State& s, Coordinate& aCoord) const
+double PathSpring::computeMomentArm(const SimTK::State& s, const Coordinate& aCoord) const
 {
     return getGeometryPath().computeMomentArm(s, aCoord);
 }

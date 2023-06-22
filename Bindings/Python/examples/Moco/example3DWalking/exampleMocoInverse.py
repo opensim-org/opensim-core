@@ -21,6 +21,10 @@
 # rely on electromyography data, while the second example penalizes deviation
 # from electromyography data for a subset of muscles.
 #
+# Both examples use the Python utility osim.report to automatically generate a
+# PDF that includes the trajectories of all states and controls in the solution.
+# This utility requires a Python environment with Matplotlib and NumPy installed.
+#
 # See the README.txt next to this file for more information.
 
 import opensim as osim
@@ -140,12 +144,13 @@ def solveMocoInverseWithEMG():
     model = modelProcessor.process()
     output = 'example3DWalking_MocoInverseWithEMG_report.pdf'
     ref_files = [
-        'example3DWalking_MocoInverseWithEMG_solution.sto',
-        'controls_reference.sto']
+        'controls_reference.sto',
+        'example3DWalking_MocoInverseWithEMG_solution.sto']
     report = osim.report.Report(model,
                                 'example3DWalking_MocoInverse_solution.sto',
                                 output=output, bilateral=True,
-                                ref_files=ref_files)
+                                ref_files=ref_files,
+                                colors=['black', 'blue', 'red'])
     # The PDF is saved to the working directory.
     report.generate()
 

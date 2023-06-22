@@ -63,7 +63,12 @@ public:
     const std::string& getOutputPath() const { return get_output_path(); }
 
     /** Set the exponent applied to the output value in the integrand. This
-    exponent is applied when minimizing the norm of a vector type output. */
+    exponent is applied when minimizing the norm of a vector type output. The
+    default exponent is set to 1, meaning that the output can take on negative
+    values in the integrand. When the exponent is set to a value greater than
+    1, the absolute value function is applied to the output (before the
+    exponent is applied), meaning that odd numbered exponents (greater than 1)
+    do not take on negative values. */
     void setExponent(int exponent) { set_exponent(exponent); }
     int getExponent() const { return get_exponent(); }
 
@@ -112,8 +117,13 @@ private:
             "The absolute path to the output in the model to use as the "
             "integrand for this goal.");
     OpenSim_DECLARE_PROPERTY(exponent, int,
-            "The exponent applied to the output value in the integrand "
-            "(default: 1).");
+            "The exponent applied to the output value in the integrand. "
+            "The output can take on negative values in the integrand when the "
+            "exponent is set to 1 (the default value). When the exponent is "
+            "set to a value greater than 1, the absolute value function is "
+            "applied to the output (before the exponent is applied), meaning "
+            "that odd numbered exponents (greater than 1) do not take on "
+            "negative values.");
     OpenSim_DECLARE_PROPERTY(output_index, int,
             "The index to the value to be minimized when a vector type "
             "Output is specified. For SpatialVec Outputs, indices 0, 1, "
@@ -190,6 +200,113 @@ private:
             "false)");
     OpenSim_DECLARE_PROPERTY(divide_by_mass, bool,
             "Divide by the model's total mass (default: false)");
+    void constructProperties();
+};
+
+/** This goal permits the integration of only positive or negative values from a
+model Output. This goal allows you to use model Outputs of type double, or a 
+single specified element from an Output of type SimTK::Vec3 or 
+SimTK::SpatialVec in the integrand of a goal. You can also specify the exponent
+of the value in the integrand via 'setExponent()'. 
+
+This goal performs a smooth approximation of the common 'minimum' or 'maximum'
+extremum functions and then calculates the resulting integral. 
+The goal is computed as follows:
+
+\f[
+\frac{1}{dm} \int_{t_i}^{t_f} 
+    w_v\beta((\frac{1}{s} (\ln (1 + \exp (s\betav))))^p) ~dt
+\f]
+We use the following notation:
+- \f$ d \f$: displacement of the system, if `divide_by_displacement` is
+  true; 1 otherwise.
+- \f$ m \f$: mass of the system, if `divide_by_mass` is
+  true; 1 otherwise.
+- \f$ v \f$: the output variable of choice.
+- \f$ w_v \f$: the weight for output variable \f$ v \f$.
+- \f$ \beta \f$: the approximate extremum to be taken (\beta == -1 for
+  minimum; \beta == 1 for maximum).
+- \f$ s \f$: the smoothing factor for approximating the extremum. With
+  \f$ s \f$ == 1 the approximation is closer to the true extremum taken.
+  For \f$ v \f$ with potentially large magnitudes (> 2000) during a simulation
+  it is recommended to set this property as 0.2 to avoid Inf.
+- \f$ p \f$: the `exponent`.
+*/
+class OSIMMOCO_API MocoOutputExtremumGoal : public MocoOutputBase {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoOutputExtremumGoal, MocoOutputBase);
+
+public:
+    MocoOutputExtremumGoal() { constructProperties(); }
+    MocoOutputExtremumGoal(std::string name) : MocoOutputBase(std::move(name)) {
+        constructProperties();
+    }
+    MocoOutputExtremumGoal(std::string name, double weight)
+            : MocoOutputBase(std::move(name), weight) {
+        constructProperties();
+    }
+
+    /** Set if the goal should be divided by the displacement of the system's
+    center of mass over the phase. */
+    void setDivideByDisplacement(bool tf) { set_divide_by_displacement(tf); }
+    bool getDivideByDisplacement() const {
+        return get_divide_by_displacement();
+    }
+
+    /** Set if the goal should be divided by the total mass of the model. */
+    void setDivideByMass(bool tf) { set_divide_by_mass(tf); }
+    bool getDivideByMass() const { return get_divide_by_mass(); }
+
+    /** Set the type of extremum ('minimum' or 'maximum') to be applied to the 
+    output variable of choice. */
+    void setExtremumType(std::string extremum_type) {
+        set_extremum_type(extremum_type);
+    }
+    std::string getExtremumType() const { return get_extremum_type(); }
+
+    /** Set the smoothing factor used for the extremum approximation
+    (default = 1.0). This property can be set between [0.2, 1.0]. For Outputs
+    that may take on large values (> ~2000) during a simulation, it is
+    recommended to set this property closer to 0.2.*/
+    void setSmoothingFactor(double smoothing_factor) {
+        set_smoothing_factor(smoothing_factor);
+    }
+    double getSmoothingFactor() const { return get_smoothing_factor(); }
+
+protected:
+    void initializeOnModelImpl(const Model&) const override;
+    void calcIntegrandImpl(
+            const IntegrandInput& state, double& integrand) const override;
+    void calcGoalImpl(
+            const GoalInput& input, SimTK::Vector& values) const override;
+    bool getSupportsEndpointConstraintImpl() const override { return true; }
+    Mode getDefaultModeImpl() const override { return Mode::Cost; }
+
+private:
+    OpenSim_DECLARE_PROPERTY(divide_by_displacement, bool,
+            "Divide by the model's displacement over the phase (default: "
+            "false)");
+    OpenSim_DECLARE_PROPERTY(divide_by_mass, bool,
+            "Divide by the model's total mass (default: false)");
+    OpenSim_DECLARE_PROPERTY(extremum_type, std::string,
+            "The type of extremum to be taken in the goal."
+            "'minimum' or 'maximum'"
+            "(Default extremum type = 'minimum').");
+    OpenSim_DECLARE_PROPERTY(smoothing_factor, double,
+            "The smoothing factor applied in the approximation of the "
+            "extremum function (default = 1.0). This property can be set "
+            "between [0.2, 1.0]. For Outputs that may take on large values "
+            "(> ~2000) during a simulation, it is recommended to set this "
+            "property closer to 0.2.");
+
+    enum DataType {
+        Type_double,
+        Type_Vec3,
+        Type_SpatialVec,
+    };
+    mutable DataType m_data_type;
+    mutable int m_beta;
+    mutable bool m_minimizeVectorNorm; 
+
     void constructProperties();
 };
 
