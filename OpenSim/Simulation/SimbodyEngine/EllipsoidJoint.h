@@ -79,6 +79,9 @@ public:
         Rotation3Z = 2u  ///< 2
     };
 
+    OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance,
+        "Default appearance attributes for this EllipsoidJoint");
+
 private:
     /** Specify the Coordinates of the EllipsoidJoint */
     CoordinateIndex rx{ constructCoordinate(Coordinate::MotionType::Rotational,
@@ -119,6 +122,11 @@ public:
 
     //Set properties
     void setEllipsoidRadii(const SimTK::Vec3& radii);
+
+    /** Turn on/off the ellipsoid drawn by generateDecorations(). */
+    void setEllipsoidVisible(bool visible) {
+        upd_Appearance().set_visible(visible);
+    };
 
     /** Exposes getCoordinate() method defined in base class (overloaded below).
         @see Joint */

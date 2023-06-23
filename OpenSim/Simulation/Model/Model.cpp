@@ -65,6 +65,29 @@ using namespace SimTK;
 // STATICS
 //=============================================================================
 
+template<typename TConcreteComponent>
+static TConcreteComponent* MultibodyGraphMakerPtrCast(void* p)
+{
+    // this helper function exists to try and add a little bit of
+    // runtime safety checking to a `void*` downcast, to try and
+    // downgrade what would otherwise be runtime segfaults (#3299)
+    // into runtime exceptions (which can be caught, logged, etc.)
+
+    if (!p)
+    {
+        return nullptr;
+    }
+
+    TConcreteComponent* casted = dynamic_cast<TConcreteComponent*>(static_cast<Component*>(p));
+
+    if (!casted)
+    {
+        OPENSIM_THROW(OpenSim::Exception, "Failed to convert a pointer from a SimTK::MultibodyGraphMaker to the desired type. This is a known bug that can happen when trying to assemble models that have incorrect topologies (see opensim-core issue #3299). You might need to change/fix your model's topology, or post a comment on that issue.");
+    }
+
+    return casted;
+}
+
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -833,9 +856,9 @@ void Model::extendConnectToModel(Model &model)
 
         if (mob.isSlaveMobilizer()){
             // add the slave body and joint
-            Body* outbMaster = static_cast<Body*>(mob.getOutboardMasterBodyRef());
-            Joint* useJoint = static_cast<Joint*>(mob.getJointRef());
-            Body* outb = static_cast<Body*>(mob.getOutboardBodyRef());
+            Body* outbMaster = MultibodyGraphMakerPtrCast<Body>(mob.getOutboardMasterBodyRef());
+            Joint* useJoint = MultibodyGraphMakerPtrCast<Joint>(mob.getJointRef());
+            Body* outb = MultibodyGraphMakerPtrCast<Body>(mob.getOutboardBodyRef());
 
             // the joint must be added to the system next
             setNextSubcomponentInSystem(*useJoint);
@@ -858,11 +881,11 @@ void Model::extendConnectToModel(Model &model)
 
         if (mob.isAddedBaseMobilizer()){
             // create and add the base joint to enable these dofs
-            Body* child = static_cast<Body*>(mob.getOutboardBodyRef());
+            Body* child = MultibodyGraphMakerPtrCast<Body>(mob.getOutboardBodyRef());
             log_warn("Body '{}' not connected by a Joint."
                 "A FreeJoint will be added to connect it to ground.", 
                 child->getName());
-            Ground* ground = static_cast<Ground*>(mob.getInboardBodyRef());
+            Ground* ground = MultibodyGraphMakerPtrCast<Ground>(mob.getInboardBodyRef());
 
             std::string jname = "free_" + child->getName();
             SimTK::Vec3 zeroVec(0.0);
@@ -878,11 +901,11 @@ void Model::extendConnectToModel(Model &model)
         else{
             // Update the directionality of the joint according to tree's
             // preferential direction
-            static_cast<Joint*>(mob.getJointRef())->isReversed =
+            MultibodyGraphMakerPtrCast<Joint>(mob.getJointRef())->isReversed =
                 mob.isReversedFromJoint();
 
             // order the joint components in the order of the multibody tree
-            Joint* joint = static_cast<Joint*>(mob.getJointRef());
+            Joint* joint = MultibodyGraphMakerPtrCast<Joint>(mob.getJointRef());
             setNextSubcomponentInSystem(*joint);
 
 
@@ -895,9 +918,9 @@ void Model::extendConnectToModel(Model &model)
         const MultibodyGraphMaker::LoopConstraint& loop =
             _multibodyTree.getLoopConstraint(lcx);
 
-        Joint& joint = *(Joint*)loop.getJointRef();
-        Body&  parent = *(Body*)loop.getParentBodyRef();
-        Body&  child = *(Body*)loop.getChildBodyRef();
+        Joint& joint = *MultibodyGraphMakerPtrCast<Joint>(loop.getJointRef());
+        Body&  parent = *MultibodyGraphMakerPtrCast<Body>(loop.getParentBodyRef());
+        Body&  child = *MultibodyGraphMakerPtrCast<Body>(loop.getChildBodyRef());
 
         if (joint.getConcreteClassName() == "WeldJoint") {
             WeldConstraint* weld = new WeldConstraint( joint.getName()+"_Loop",
@@ -2144,64 +2167,55 @@ void Model::realizeReport(const SimTK::State& state) const
     getSystem().realize(state, Stage::Report);
 }
 
-
-/**
- * Compute the derivatives of the generalized coordinates and speeds.
- */
+//------------------------------------------------------------------------------
+// Subsystem computations
+//------------------------------------------------------------------------------
 void Model::computeStateVariableDerivatives(const SimTK::State &s) const
 {
     realizeAcceleration(s);
 }
 
-/**
- * Get the total mass of the model
- *
- * @return the mass of the model
- */
 double Model::getTotalMass(const SimTK::State &s) const
 {
     return getMatterSubsystem().calcSystemMass(s);
 }
-/**
- * getInertiaAboutMassCenter
- *
- */
+
 SimTK::Inertia Model::getInertiaAboutMassCenter(const SimTK::State &s) const
 {
-    SimTK::Inertia inertia = getMatterSubsystem().calcSystemCentralInertiaInGround(s);
+    SimTK::Inertia inertia =
+            getMatterSubsystem().calcSystemCentralInertiaInGround(s);
 
     return inertia;
 }
-/**
- * Return the position vector of the system mass center, measured from the Ground origin, and expressed in Ground.
- *
- */
+
 SimTK::Vec3 Model::calcMassCenterPosition(const SimTK::State &s) const
 {
     getMultibodySystem().realize(s, Stage::Position);
-    return getMatterSubsystem().calcSystemMassCenterLocationInGround(s);    
+    return getMatterSubsystem().calcSystemMassCenterLocationInGround(s);
 }
-/**
- * Return the velocity vector of the system mass center, measured from the Ground origin, and expressed in Ground.
- *
- */
+
 SimTK::Vec3 Model::calcMassCenterVelocity(const SimTK::State &s) const
 {
     getMultibodySystem().realize(s, Stage::Velocity);
-    return getMatterSubsystem().calcSystemMassCenterVelocityInGround(s);    
+    return getMatterSubsystem().calcSystemMassCenterVelocityInGround(s);
 }
-/**
- * Return the acceleration vector of the system mass center, measured from the Ground origin, and expressed in Ground.
- *
- */
+
 SimTK::Vec3 Model::calcMassCenterAcceleration(const SimTK::State &s) const
 {
     getMultibodySystem().realize(s, Stage::Acceleration);
-    return getMatterSubsystem().calcSystemMassCenterAccelerationInGround(s);    
+    return getMatterSubsystem().calcSystemMassCenterAccelerationInGround(s);
 }
 
-/**
-* Construct outputs
-*
-**/
+SimTK::SpatialVec Model::calcMomentum(const SimTK::State &s) const
+{
+    getMultibodySystem().realize(s, Stage::Velocity);
+    return getMatterSubsystem().calcSystemCentralMomentum(s);
+}
 
+SimTK::Vec3 Model::calcAngularMomentum(const SimTK::State& s) const {
+    return calcMomentum(s).get(0);
+}
+
+SimTK::Vec3 Model::calcLinearMomentum(const SimTK::State& s) const {
+    return calcMomentum(s).get(1);
+}

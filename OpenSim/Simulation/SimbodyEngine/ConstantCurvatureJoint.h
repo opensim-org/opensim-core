@@ -28,17 +28,18 @@
 
 namespace OpenSim {
 
-//=============================================================================
-//=============================================================================
+//==============================================================================
+//==============================================================================
 /**
 
 A class implementing a ConstantCurvatureJoint joint. A ConstantCurvatureJoint
 connects two bodies by a line segment of a fixed length. The endpoint of the
-ConstantCurvatureJoint can be rotated by euler angles, and the offset is computed
-as a function of the euler angles and the fixed length of the line segment.
+ConstantCurvatureJoint can be rotated by euler angles, and the offset is
+computed as a function of the euler angles and the fixed length of the line
+segment.
 
 This joint was originally designed as a lightweight way to model spine segments,
-which can be approximated without individual link segments be instead using 3 of 
+which can be approximated without individual link segments be instead using 3 of
 these joints in series.
 
 @author Keenon Werling
@@ -52,21 +53,21 @@ public:
 
         <b>C++ example</b>
         \code{.cpp}
-        const auto& rx = myConstantCurvatureJoint.
-                         getCoordinate(ConstantCurvatureJoint::Coord::Rotation1X);
+        const auto& rx = myConstantCurvatureJoint.getCoordinate(
+                            ConstantCurvatureJoint::Coord::Rotation1X);
         \endcode
 
         <b>Python example</b>
         \code{.py}
         import opensim
-        rx =
-       myConstantCurvatureJoint.getCoordinate(opensim.ConstantCurvatureJoint.Coord_Rotation1X)
+        rx = myConstantCurvatureJoint.getCoordinate(
+                    opensim.ConstantCurvatureJoint.Coord_Rotation1X)
         \endcode
 
         <b>Java example</b>
         \code{.java}
-        rx =
-       myConstantCurvatureJoint.getCoordinate(ConstantCurvatureJoint.Coord.Rotation1X);
+        rx = myConstantCurvatureJoint.getCoordinate(
+                    ConstantCurvatureJoint.Coord.Rotation1X);
         \endcode
 
         <b>MATLAB example</b>
@@ -74,11 +75,12 @@ public:
         rx = myConstantCurvatureJoint.get_coordinates(0);
         \endcode
 
-        IMPORTANT WARNING!!!
-        The joint has an **X-Z-Y** rotation ordering. We use this ordering because that means 
-        the first two DOFs are rotation and translation, while the last DOF is merely a 
-        "twist" of the segment without any translation. This is also for compatibility with
-        the original implementation in Nimble Physics.
+        @note
+        The joint has an **X-Z-Y** rotation ordering. We use this ordering
+        because that means the first two DOFs are rotation and translation,
+        while the last DOF is merely a "twist" of the segment without any
+        translation. This is also for compatibility with the original
+        implementation in Nimble Physics.
     */
     enum class Coord : unsigned {
         RotationX = 0u, ///< 0
@@ -87,7 +89,7 @@ public:
     };
 
 private:
-    /** Specify the Coordinates of the ConstantCurvatureJoint */
+    /** Specify the Coordinates of the ConstantCurvatureJoint. */
     CoordinateIndex rx{constructCoordinate(Coordinate::MotionType::Rotational,
             static_cast<unsigned>(Coord::RotationX))};
     CoordinateIndex rz{constructCoordinate(Coordinate::MotionType::Rotational,
@@ -96,17 +98,17 @@ private:
             static_cast<unsigned>(Coord::RotationY))};
 
 public:
-    //==============================================================================
+    //==========================================================================
     // PROPERTIES
-    //==============================================================================
+    //==========================================================================
     OpenSim_DECLARE_PROPERTY(neutral_angle_x_z_y, SimTK::Vec3,
             "The neutral angle of the endpoint as a Vec3(rX, rY, rZ).");
 
     OpenSim_DECLARE_PROPERTY(length, double, "Length of line segment.");
 
-    //=============================================================================
+    //==========================================================================
     // METHODS
-    //=============================================================================
+    //==========================================================================
     // CONSTRUCTION
     ConstantCurvatureJoint();
     /** Convenience Joint like Constructor */
@@ -115,9 +117,9 @@ public:
             const double length);
 
     /** Deprecated Joint Constructor
-        NOTE(keenon): This constructor seems necessary to compile, but it has a 
-        comment marking it deprecated in the EllipsoidJoint, so I copied that comment 
-        over here as well. */
+        NOTE(keenon): This constructor seems necessary to compile, but it has a
+        comment marking it deprecated in the EllipsoidJoint, so I copied that
+        comment over here as well. */
     ConstantCurvatureJoint(const std::string& name, const PhysicalFrame& parent,
             const SimTK::Vec3& locationInParent,
             const SimTK::Vec3& orientationInParent, const PhysicalFrame& child,
@@ -152,36 +154,66 @@ public:
     // SCALE
     void extendScale(const SimTK::State& s, const ScaleSet& scaleSet) override;
 
-    ////////////////////////////////////
-    // Public, static math utility functions. These are public to faccilitate testing.
-    ////////////////////////////////////
+    //==========================================================================
+    // Public, static math utility functions.
+    //==========================================================================
 
-    /** This method will clamp an input set of joint angles q to the limits of the joint, and return the clamped vector */
+    /** This method will clamp an input set of joint angles q to the limits of
+     * the joint, and return the clamped vector.
+     */
     static SimTK::Vec3 clamp(const SimTK::Vec3& q);
-    /** This method will convert a vector of X,Z,Y rotations into the corresponding SO3 rotation matrix */
+
+    /** This method will convert a vector of X,Z,Y rotations into the
+     * corresponding SO3 rotation matrix.
+     */
     static SimTK::Rotation eulerXZYToMatrix(const SimTK::Vec3& _angle);
-    /** This method will convert an SO3 rotation matrix into a corresponding vector of X,Z,Y rotations */
-    static SimTK::Mat33 eulerXZYToMatrixGrad(const SimTK::Vec3& _angle, int index);
-    /** This method will return the Jacobian of a pure Euler joint (following the XZY convention), where each 
-        column gives the derivative of the spatial (SE3) coordinates for the joint transform wrt one degree of 
-        freedom of the joint (so there are 3, and each is of dimension 6) */
+
+    /** This method will convert an SO3 rotation matrix into a corresponding
+     * vector of X,Z,Y rotations.
+     */
+    static SimTK::Mat33 eulerXZYToMatrixGrad(
+            const SimTK::Vec3& _angle, int index);
+
+    /** This method will return the Jacobian of a pure Euler joint (following
+     * the XZY convention), where each column gives the derivative of the
+     * spatial (SE3) coordinates for the joint transform wrt one degree of
+     * freedom of the joint (so there are 3, and each is of dimension 6).
+     */
     static SimTK::Mat63 getEulerJacobian(const SimTK::Vec3& q);
-    /** This method will return the derivative of the matrix returned by getEulerJacobian, with respect to changes 
-        to the `index` DOF of the joint. This is the same shape as the original matrix, because we take the 
-        derivative of every entry of the matrix separately */
-    static SimTK::Mat63 getEulerJacobianDerivWrtPos(const SimTK::Vec3& q, int index);
-    /** This is much like getEulerJacobian(), because the rotational component is exactly the same, but the 
-        translational component is now non-zero. This takes as input the length of the line segment, `d`. */
-    static SimTK::Mat63 getConstantCurveJacobian(const SimTK::Vec3& pos, double d);
-    /** This method will return the derivative of the matrix returned by getConstantCurveJacobian, with respect 
-        to changes to the `index` DOF of the joint. This is the same shape as the original matrix, because we 
-        take the derivative of every entry of the matrix separately */
-    static SimTK::Mat63 getConstantCurveJacobianDerivWrtPosition(const SimTK::Vec3& pos, double d, int index);
-    /** This method will return the derivative of the matrix returned by getConstantCurveJacobian, with respect 
-        to time (changes to every element in `pos` at rate `dPos`). This is the same shape as the original matrix, 
-        because we take the derivative of every entry of the matrix separately */
-    static SimTK::Mat63 getConstantCurveJacobianDerivWrtTime(const SimTK::Vec3& pos, const SimTK::Vec3& dPos, double d);
-    /** This computes a transform for a given DOF position (XZY euler rotation) and line segment length */
+
+    /** This method will return the derivative of the matrix returned by
+     * getEulerJacobian, with respect to changes to the `index` DOF of the
+     * joint. This is the same shape as the original matrix, because we take
+     * the derivative of every entry of the matrix separately.
+     */
+    static SimTK::Mat63 getEulerJacobianDerivWrtPos(
+            const SimTK::Vec3& q, int index);
+
+    /** This is much like getEulerJacobian(), because the rotational component
+     * is exactly the same, but the translational component is now non-zero.
+     * This takes as input the length of the line segment, `d`.
+     */
+    static SimTK::Mat63 getConstantCurveJacobian(
+            const SimTK::Vec3& pos, double d);
+
+    /** This method will return the derivative of the matrix returned by
+     * getConstantCurveJacobian, with respect to changes to the `index` DOF of
+     * the joint. This is the same shape as the original matrix, because we
+     * take the derivative of every entry of the matrix separately.
+     */
+    static SimTK::Mat63 getConstantCurveJacobianDerivWrtPosition(
+            const SimTK::Vec3& pos, double d, int index);
+
+    /** This method will return the derivative of the matrix returned by
+     * getConstantCurveJacobian, with respect to time (changes to every element
+     * in `pos` at rate `dPos`). This is the same shape as the original matrix,
+     * because we take the derivative of every entry of the matrix separately.
+     */
+    static SimTK::Mat63 getConstantCurveJacobianDerivWrtTime(
+            const SimTK::Vec3& pos, const SimTK::Vec3& dPos, double d);
+
+    /** This computes a transform for a given DOF position (XZY euler rotation)
+     * and line segment length. */
     static SimTK::Transform getTransform(SimTK::Vec3 pos, double d);
 
 protected:
@@ -199,10 +231,10 @@ protected:
 private:
     void constructProperties();
 
-    //=============================================================================
+//==============================================================================
 }; // END of class ConstantCurvatureJoint
-//=============================================================================
-//=============================================================================
+//==============================================================================
+//==============================================================================
 
 } // end of namespace OpenSim
 

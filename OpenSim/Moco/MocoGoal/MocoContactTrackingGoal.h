@@ -259,6 +259,14 @@ public:
             const std::string& externalForceName, int index,
             const MocoBounds& bounds);
 
+    /// Normalize each component of the 3-D tracking error by the peak value of 
+    /// each contact force component in the tracking data. No normalization is 
+    /// applied when tracking data is close to zero (default: false).
+    void setNormalizeTrackingError(bool tf) {
+        set_normalize_tracking_error(tf);
+    }
+    bool getNormalizeTrackingError() { return get_normalize_tracking_error(); }
+
 protected:
     void initializeOnModelImpl(const Model&) const override;
     void calcIntegrandImpl(
@@ -286,6 +294,11 @@ private:
             "(optional) If provided, the force error is projected onto the "
             "plane perpendicular to this vector. The vector is expressed in "
             "ground. The vector can have any length.");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(normalize_tracking_error, bool,
+            "Normalize each component of the 3-D tracking error by the peak "
+            "magnitude of each contact force component in the tracking data. "
+            "If the peak magnitude of the ground contact force data is close "
+            "to zero, an exception is thrown (default: false).");
 
     void constructProperties();
 
@@ -313,6 +326,7 @@ private:
         std::vector<std::pair<const SmoothSphereHalfSpaceForce*, int>> contacts;
         GCVSplineSet refSplines;
         const PhysicalFrame* refExpressedInFrame = nullptr;
+        SimTK::Vec3 normalizeFactors = SimTK::Vec3(1.0);
     };
     mutable std::vector<GroupInfo> m_groups;
 

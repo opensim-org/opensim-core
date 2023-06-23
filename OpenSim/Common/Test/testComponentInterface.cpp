@@ -33,6 +33,28 @@
 #include <simbody/internal/MobilizedBody_Ground.h>
 #include <random>
 
+namespace
+{
+    // compiler test (see issue #3468)
+    //
+    // - this component must be compiled before the `using namespace` declarations below
+    // - this component must be compile-able
+    // - it exists to test whether OpenSim's component+macro system works for components
+    //   defined in their own namespace, without an implict dependency on `using namespace OpenSim`
+    // - this is effectively a compiler assertion that the OpenSim macros work as expected
+    // - more information available in issue #3468
+    class ComponentInAnonymousNamespace : public OpenSim::Component {
+        OpenSim_DECLARE_CONCRETE_OBJECT(ComponentInAnonymousNamespace, OpenSim::Component);
+
+        double getDoubleOutput(const SimTK::State&) const { return 0.0; }
+    public:
+        OpenSim_DECLARE_PROPERTY(some_prop, SimTK::Vec3, "comment");
+        OpenSim_DECLARE_INPUT(some_input, float, SimTK::Stage::Acceleration, "some other comment");
+        OpenSim_DECLARE_OUTPUT(some_output, double, getDoubleOutput, SimTK::Stage::Model);
+        OpenSim_DECLARE_SOCKET(some_socket, OpenSim::Component, "some socket comment");
+    };
+}
+
 using namespace OpenSim;
 using namespace std;
 using namespace SimTK;
@@ -924,6 +946,50 @@ void testListSockets() {
     std::cout << bar.getConnectee<Foo>("parentFoo").get_mass() << std::endl;
     
     // TODO redo with the property list / the reference connect().
+}
+
+void testSocketCanConnectTo() {
+    TheWorld theWorld;
+    theWorld.setName("world");
+
+    Foo& foo = *new Foo(); foo.setName("foo"); foo.set_mass(2.0);
+    theWorld.add(&foo);
+
+    Foo& foo2 = *new Foo(); foo2.setName("foo2"); foo2.set_mass(3.0);
+    theWorld.add(&foo2);
+
+    Bar& bar = *new Bar(); bar.setName("bar");
+    theWorld.add(&bar);
+
+    SimTK_TEST(bar.getSocket("parentFoo").canConnectTo(foo));
+    SimTK_TEST(bar.getSocket("childFoo").canConnectTo(foo2));
+
+    // `theWorld` is an invalid type for the socket, so `canConnectTo` should
+    // return `false`
+    SimTK_TEST(!bar.getSocket("parentFoo").canConnectTo(theWorld));
+    SimTK_TEST(!bar.getSocket("childFoo").canConnectTo(theWorld));
+}
+
+void testInputCanConnectTo() {
+    TheWorld theWorld;
+    theWorld.setName("world");
+
+    Foo& foo = *new Foo(); foo.setName("foo"); foo.set_mass(2.0);
+    theWorld.add(&foo);
+
+    Foo& foo2 = *new Foo(); foo2.setName("foo2"); foo2.set_mass(3.0);
+    theWorld.add(&foo2);
+
+    Bar& bar = *new Bar(); bar.setName("bar");
+    theWorld.add(&bar);
+
+    // an arbitrary object cannot be connected to an input (the
+    // argument must at least be an AbstractOutput), so these
+    // should return `false`, always.
+    SimTK_TEST(!foo.getInput("input1").canConnectTo(theWorld));
+    SimTK_TEST(!foo.getInput("input1").canConnectTo(foo));
+    SimTK_TEST(!foo.getInput("input1").canConnectTo(foo2));
+    SimTK_TEST(!foo.getInput("input1").canConnectTo(bar));
 }
 
 void testComponentPathNames()
@@ -2551,6 +2617,8 @@ int main() {
         SimTK_SUBTEST(testExceptionsFinalizeFromPropertiesAfterCopy);
         SimTK_SUBTEST(testListInputs);
         SimTK_SUBTEST(testListSockets);
+        SimTK_SUBTEST(testSocketCanConnectTo);
+        SimTK_SUBTEST(testInputCanConnectTo);
         SimTK_SUBTEST(testComponentPathNames);
         SimTK_SUBTEST(testFindComponent);
         SimTK_SUBTEST(testTraversePathToComponent);
