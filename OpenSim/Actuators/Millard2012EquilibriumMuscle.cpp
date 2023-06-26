@@ -1039,7 +1039,7 @@ calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
         // fiber force.
         mdi.userDefinedDynamicsExtras.resize(2);
         mdi.userDefinedDynamicsExtras[0] = p1Fm; //elastic
-        mdi.userDefinedDynamicsExtras[0] = p2Fm; //damping
+        mdi.userDefinedDynamicsExtras[1] = p2Fm; //damping
 
     } catch(const std::exception &x) {
         std::string msg = "Exception caught in Millard2012EquilibriumMuscle::"
