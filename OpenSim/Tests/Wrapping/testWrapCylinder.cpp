@@ -32,7 +32,7 @@
 
 using namespace OpenSim;
 
-// Section with geometry related helper functions and classes.
+// Section with geometry related class and functions.
 namespace {
 
     // A path segment determined in terms of the start and end point.
@@ -65,6 +65,7 @@ namespace {
         return os <<
             "PathSegment{start: " << path.start << ", end: " << path.end << "}";
     }
+
 }
 
 // Section with helpers for evaluating the wrapping result in the upcoming test.
@@ -159,6 +160,7 @@ namespace {
             && IsEqual(lhs.length, rhs.length, tolerance.length)
             && lhs.noWrap == rhs.noWrap;
     }
+
 }
 
 // Section on configuring and simulating a specific wrapping scenario.
@@ -254,9 +256,6 @@ namespace {
         return result;
     }
 
-}
-
-namespace {
     // Simulates and tests a wrapping case:
     // - Computes the wrapping result given the input.
     // - Tests if computed result is equal to the expected result.
