@@ -166,9 +166,9 @@ class Report(object):
 
         if self.colors is None:
             self.colors = list()
-            import matplotlib.cm as cm
+            import matplotlib
             cmap_samples = np.linspace(0.1, 0.9, len(self.refs)+1)
-            cmap = cm.get_cmap('jet')
+            cmap = matplotlib.colormaps['jet']
             for sample in cmap_samples:
                 self.colors.append(cmap(sample))
 
@@ -621,9 +621,9 @@ def main():
     if ref_files != None: refs = ref_files
     colormap = args.colormap
     if colormap is None: colormap = 'jet'
-    import matplotlib.cm as cm
+    import matplotlib
     cmap_samples = np.linspace(0.1, 0.9, len(refs)+1)
-    cmap = cm.get_cmap(colormap)
+    cmap = matplotlib.colormaps['jet']
     for sample in cmap_samples:
         colors.append(cmap(sample))
 
