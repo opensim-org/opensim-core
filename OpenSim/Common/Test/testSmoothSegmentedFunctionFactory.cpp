@@ -478,8 +478,8 @@ void testQuinticBezier_Exceptions(){
         0.5,
         1};
 
-    std::vector<SimTK::Vec6> xPtsSet{xPts};
-    std::vector<SimTK::Vec6> yPtsSet{yPts};
+    SimTK::Array_<SimTK::Vec6> xPtsSet{xPts};
+    SimTK::Array_<SimTK::Vec6> yPtsSet{yPts};
 
     SimTK::Vector u(100);
     SimTK::Vector x(100);
@@ -617,8 +617,8 @@ void testQuinticBezier_DU_DYDX()
         0.5,
         1};
 
-    std::vector<SimTK::Vec6> xPtsSet{xPts};
-    std::vector<SimTK::Vec6> yPtsSet{yPts};
+    SimTK::Array_<SimTK::Vec6> xPtsSet{xPts};
+    SimTK::Array_<SimTK::Vec6> yPtsSet{yPts};
 
         double val = 0;
         double d1 = 0;

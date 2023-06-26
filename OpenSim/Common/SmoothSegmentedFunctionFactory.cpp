@@ -151,7 +151,7 @@ SmoothSegmentedFunction* SmoothSegmentedFunctionFactory::
        SegmentedQuinticBezierToolkit::ControlPointsXY p4 = SegmentedQuinticBezierToolkit::
            calcQuinticBezierCornerControlPoints(x23,y23,dydx23,x3,ylow,dydx3,c);
                                     
-        std::vector<SimTK::Vec6> ctrlPtsX {
+        SimTK::Array_<SimTK::Vec6> ctrlPtsX {
             p0.x,
             p1.x,
             p2.x,
@@ -159,7 +159,7 @@ SmoothSegmentedFunction* SmoothSegmentedFunctionFactory::
             p4.x
         };
 
-        std::vector<SimTK::Vec6> ctrlPtsY {
+        SimTK::Array_<SimTK::Vec6> ctrlPtsY {
             p0.y,
             p1.y,
             p2.y,
@@ -262,14 +262,14 @@ SmoothSegmentedFunction* SmoothSegmentedFunctionFactory::
         calcQuinticBezierCornerControlPoints(xNearE, yNearE, dydxNearE, 
                                                  xE,     yE,     dydxE, cE);
 
-    std::vector<SimTK::Vec6> ctrlPtsX {
+    SimTK::Array_<SimTK::Vec6> ctrlPtsX {
         concPts1.x,
         concPts2.x,
         eccPts1.x,
         eccPts2.x
     };
 
-    std::vector<SimTK::Vec6> ctrlPtsY {
+    SimTK::Array_<SimTK::Vec6> ctrlPtsY {
         concPts1.y,
         concPts2.y,
         eccPts1.y,
@@ -373,14 +373,14 @@ SmoothSegmentedFunction* SmoothSegmentedFunctionFactory::
         calcQuinticBezierCornerControlPoints(xNearE, yNearE, dydxNearE, 
                                                  xE,     yE,     dydxE, cE);
 
-    std::vector<SimTK::Vec6> ctrlPtsX {
+    SimTK::Array_<SimTK::Vec6> ctrlPtsX {
         concPts1.x,
         concPts2.x,
         eccPts1.x,
         eccPts2.x
     };
 
-    std::vector<SimTK::Vec6> ctrlPtsY {
+    SimTK::Array_<SimTK::Vec6> ctrlPtsY {
         concPts1.y,
         concPts2.y,
         eccPts1.y,
@@ -437,10 +437,10 @@ SmoothSegmentedFunction* SmoothSegmentedFunctionFactory::
     SegmentedQuinticBezierToolkit::ControlPointsXY ctrlPts = SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(x0,y0,dydx0,x1,y1,dydx1,c);
 
-    std::vector<SimTK::Vec6> ctrlPtsX {
+    SimTK::Array_<SimTK::Vec6> ctrlPtsX {
         ctrlPts.x
     };
-    std::vector<SimTK::Vec6> ctrlPtsY {
+    SimTK::Array_<SimTK::Vec6> ctrlPtsY {
         ctrlPts.y
     };
 
@@ -497,8 +497,8 @@ SmoothSegmentedFunction* SmoothSegmentedFunctionFactory::
     SegmentedQuinticBezierToolkit::ControlPointsXY ctrlPts = SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(x0,y0,dydx0,x1,y1,dydx1,c);
 
-    std::vector<SimTK::Vec6> ctrlPtsX {ctrlPts.x};
-    std::vector<SimTK::Vec6> ctrlPtsY {ctrlPts.y};
+    SimTK::Array_<SimTK::Vec6> ctrlPtsX {ctrlPts.x};
+    SimTK::Array_<SimTK::Vec6> ctrlPtsY {ctrlPts.y};
 
     //std::string curveName = muscleName;
     //curveName.append("_fiberCompressiveForceCosPennationCurve");
@@ -554,8 +554,8 @@ SmoothSegmentedFunction* SmoothSegmentedFunctionFactory::
     SegmentedQuinticBezierToolkit::ControlPointsXY ctrlPts = SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(x0,y0,dydx0,x1,y1,dydx1,c);
 
-    std::vector<SimTK::Vec6> ctrlPtsX {ctrlPts.x};
-    std::vector<SimTK::Vec6> ctrlPtsY {ctrlPts.y};
+    SimTK::Array_<SimTK::Vec6> ctrlPtsX {ctrlPts.x};
+    SimTK::Array_<SimTK::Vec6> ctrlPtsY {ctrlPts.y};
 
     // curveName = muscleName;
     //curveName.append("_fiberCompressiveForceLengthCurve");
@@ -648,11 +648,11 @@ SmoothSegmentedFunction* SmoothSegmentedFunctionFactory::
      calcQuinticBezierCornerControlPoints(xLow, yLow, kLow,
                                           xIso, yIso, kIso, c);
 
-    std::vector<SimTK::Vec6> ctrlPtsX {
+    SimTK::Array_<SimTK::Vec6> ctrlPtsX {
         p0.x,
         p1.x
     };
-    std::vector<SimTK::Vec6> ctrlPtsY {
+    SimTK::Array_<SimTK::Vec6> ctrlPtsY {
         p0.y,
         p1.y
     };
@@ -752,11 +752,11 @@ SmoothSegmentedFunction* SmoothSegmentedFunctionFactory::
      calcQuinticBezierCornerControlPoints(xToeCtrl, yToeCtrl, dydxToeMid,
                                               xToe,     yToe,    dydxIso, c);
 
-    std::vector<SimTK::Vec6> ctrlPtsX {
+    SimTK::Array_<SimTK::Vec6> ctrlPtsX {
         p0.x,
         p1.x
     };
-    std::vector<SimTK::Vec6> ctrlPtsY {
+    SimTK::Array_<SimTK::Vec6> ctrlPtsY {
         p0.y,
         p1.y
     };

@@ -36,7 +36,7 @@ using namespace std;
 
 
  //The number of knot points to use to sample each Bezier corner section.
-static constexpr ptrdiff_t NUM_SAMPLE_PTS = 100;
+static constexpr int NUM_SAMPLE_PTS = 100;
 static_assert(NUM_SAMPLE_PTS>0, "SegmentedQuinticBezierToolkit::NUM_SAMPLE_PTS must be larger than zero.");
 
 /**
@@ -70,8 +70,8 @@ void SegmentedQuinticBezierToolkit::printMatrixToFile(
 
 void SegmentedQuinticBezierToolkit::printBezierSplineFitCurves(
     const SimTK::Function_<double>& curveFit,
-    const std::vector<SimTK::Vec6>& ctrlPtsX,
-    const std::vector<SimTK::Vec6>& ctrlPtsY,
+    const SimTK::Array_<SimTK::Vec6>& ctrlPtsX,
+    const SimTK::Array_<SimTK::Vec6>& ctrlPtsY,
     const SimTK::Vector& xVal,
     const SimTK::Vector& yVal,
     const std::string& filename)
@@ -81,8 +81,8 @@ void SegmentedQuinticBezierToolkit::printBezierSplineFitCurves(
         "SegmentedQuinticBezierToolkit::printBezierSplineFitCurves",
         "Error: X and Y control points must have same number of elements");
 
-        const ptrdiff_t nbezier = ctrlPtsX.size();
-        const int rows = static_cast<int>((NUM_SAMPLE_PTS - 1) * nbezier + 1);
+        const int nbezier = ctrlPtsX.size();
+        const int rows = (NUM_SAMPLE_PTS - 1) * nbezier + 1;
 
         SimTK::Vector y1Val(rows);
         SimTK::Vector y2Val(rows);
@@ -100,13 +100,13 @@ void SegmentedQuinticBezierToolkit::printBezierSplineFitCurves(
         deriv1[0] = 0;
         deriv2[0] = 0;
         deriv2[1] = 0;
-        for(ptrdiff_t j=0; j < nbezier ; j++)
+        for(int j=0; j < nbezier ; j++)
         {
-            const ptrdiff_t offset = (j > 0)? 1: 0;
+            const int offset = (j > 0)? 1: 0;
 
-            for(ptrdiff_t i=0; i<NUM_SAMPLE_PTS-offset; i++)
+            for(int i=0; i<NUM_SAMPLE_PTS-offset; i++)
             {
-              const int oidx = static_cast<int>(i + j*(NUM_SAMPLE_PTS-offset) + 1);
+              const int oidx = i + j*(NUM_SAMPLE_PTS-offset) + 1;
 
               const double u = ( (double)(i+offset) )/( (double)(NUM_SAMPLE_PTS-1) );
               y1Val(oidx) = calcQuinticBezierCurveDerivDYDX(u, ctrlPtsX[j], ctrlPtsY[j], 1);
@@ -858,7 +858,7 @@ int SegmentedQuinticBezierToolkit::calcIndex(double x,
 
 int SegmentedQuinticBezierToolkit::calcIndex(
     double x,
-    const std::vector<SimTK::Vec6>& bezierPtsX)
+    const SimTK::Array_<SimTK::Vec6>& bezierPtsX)
 {
     int idx = 0;
     bool flag_found = false;
@@ -922,8 +922,8 @@ SimTK::Matrix SegmentedQuinticBezierToolkit::calcNumIntBezierYfcnX(
                             const SimTK::Vector& vX, 
                             double ic0, double intAcc, 
                             double uTol, int uMaxIter,
-                            const std::vector<SimTK::Vec6>& ctrlPtsX,
-                            const std::vector<SimTK::Vec6>& ctrlPtsY,
+                            const SimTK::Array_<SimTK::Vec6>& ctrlPtsX,
+                            const SimTK::Array_<SimTK::Vec6>& ctrlPtsY,
                             const SimTK::Array_<SimTK::Spline>& aSplineUX,
                             bool flag_intLeftToRight,
                             const std::string& caller)

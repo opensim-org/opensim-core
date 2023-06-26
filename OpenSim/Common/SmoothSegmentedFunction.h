@@ -394,8 +394,8 @@ namespace OpenSim {
 
               */
        SmoothSegmentedFunction(
-          const std::vector<SimTK::Vec6>& ctrlPtsX,
-          const std::vector<SimTK::Vec6>& ctrlPtsY,
+          const SimTK::Array_<SimTK::Vec6>& ctrlPtsX,
+          const SimTK::Array_<SimTK::Vec6>& ctrlPtsY,
           double x0,
           double x1,
           double y0,

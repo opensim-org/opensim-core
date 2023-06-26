@@ -56,8 +56,8 @@ struct SmoothSegmentedFunctionParameters
 {
 
     SmoothSegmentedFunctionParameters(
-        const std::vector<SimTK::Vec6>& ctrlPtsX,
-        const std::vector<SimTK::Vec6>& ctrlPtsY,
+        const SimTK::Array_<SimTK::Vec6>& ctrlPtsX,
+        const SimTK::Array_<SimTK::Vec6>& ctrlPtsY,
         double x0,
         double x1,
         double y0,
@@ -79,8 +79,8 @@ struct SmoothSegmentedFunctionParameters
 
     SmoothSegmentedFunctionParameters() {}
 
-    std::vector<SimTK::Vec6> _ctrlPtsX;
-    std::vector<SimTK::Vec6> _ctrlPtsY;
+    SimTK::Array_<SimTK::Vec6> _ctrlPtsX;
+    SimTK::Array_<SimTK::Vec6> _ctrlPtsY;
     double _x0 = SimTK::NaN;
     double _x1 = SimTK::NaN;
     double _y0 = SimTK::NaN;
@@ -145,7 +145,7 @@ inline size_t HashOf(const SimTK::Vec6& v)
 }
 
 template <>
-inline size_t HashOf(const std::vector<SimTK::Vec6>& v)
+inline size_t HashOf(const SimTK::Array_<SimTK::Vec6>& v)
 {
     int n = v.size();
     size_t hash = HashOf(n);
@@ -182,8 +182,8 @@ struct SmoothSegmentedFunctionData
 {
 
     SmoothSegmentedFunctionData(
-        const std::vector<SimTK::Vec6>& ctrlPtsX,
-        const std::vector<SimTK::Vec6>& ctrlPtsY,
+        const SimTK::Array_<SimTK::Vec6>& ctrlPtsX,
+        const SimTK::Array_<SimTK::Vec6>& ctrlPtsY,
         double x0,
         double x1,
         double y0,
@@ -219,11 +219,11 @@ struct SmoothSegmentedFunctionData
 
     /**Bezier X1,...,Xn control point locations. Control points are
     stored in 6x1 vectors in the order above*/
-    std::vector<SimTK::Vec6> _ctrlPtsX;
+    SimTK::Array_<SimTK::Vec6> _ctrlPtsX;
 
     /**Bezier Y1,...,Yn control point locations. Control points are
     stored in 6x1 vectors in the order above*/
-    std::vector<SimTK::Vec6> _ctrlPtsY;
+    SimTK::Array_<SimTK::Vec6> _ctrlPtsY;
 
     /**The number of quintic Bezier curves that describe the relation*/
     int _numBezierSections;
@@ -390,8 +390,8 @@ SmoothSegmentedFunction::~SmoothSegmentedFunction() noexcept = default;
         N.B. These costs are dependent on SegmentedQuinticBezierToolkit
 */
 SmoothSegmentedFunctionData::SmoothSegmentedFunctionData(
-    const std::vector<SimTK::Vec6>& ctrlPtsX,
-    const std::vector<SimTK::Vec6>& ctrlPtsY,
+    const SimTK::Array_<SimTK::Vec6>& ctrlPtsX,
+    const SimTK::Array_<SimTK::Vec6>& ctrlPtsY,
     double x0,
     double x1,
     double y0,
@@ -479,8 +479,8 @@ SmoothSegmentedFunctionData::SmoothSegmentedFunctionData(
 }
 
 SmoothSegmentedFunction::SmoothSegmentedFunction(
-    const std::vector<SimTK::Vec6>& ctrlPtsX,
-    const std::vector<SimTK::Vec6>& ctrlPtsY,
+    const SimTK::Array_<SimTK::Vec6>& ctrlPtsX,
+    const SimTK::Array_<SimTK::Vec6>& ctrlPtsY,
     double x0,
     double x1,
     double y0,
@@ -542,8 +542,8 @@ double SmoothSegmentedFunction::calcValue(double x) const
 {
     const SimTK::Array_<SimTK::Spline>& arraySplineUX =
     _smoothData->_arraySplineUX;
-    const std::vector<SimTK::Vec6>& ctrlPtsX = _smoothData->_ctrlPtsX;
-    const std::vector<SimTK::Vec6>& ctrlPtsY = _smoothData->_ctrlPtsY;
+    const SimTK::Array_<SimTK::Vec6>& ctrlPtsX = _smoothData->_ctrlPtsX;
+    const SimTK::Array_<SimTK::Vec6>& ctrlPtsY = _smoothData->_ctrlPtsY;
     double x0 = _smoothData->_x0;
     double x1 = _smoothData->_x1;
     double y0 = _smoothData->_y0;
@@ -620,8 +620,8 @@ double SmoothSegmentedFunction::calcDerivative(double x, int order) const
 
     const SimTK::Array_<SimTK::Spline>& arraySplineUX =
     _smoothData->_arraySplineUX;
-    const std::vector<SimTK::Vec6>& ctrlPtsX = _smoothData->_ctrlPtsX;
-    const std::vector<SimTK::Vec6>& ctrlPtsY = _smoothData->_ctrlPtsY;
+    const SimTK::Array_<SimTK::Vec6>& ctrlPtsX = _smoothData->_ctrlPtsX;
+    const SimTK::Array_<SimTK::Vec6>& ctrlPtsY = _smoothData->_ctrlPtsY;
     double x0 = _smoothData->_x0;
     double x1 = _smoothData->_x1;
     double dydx0 = _smoothData->_dydx0;
@@ -790,7 +790,7 @@ void SmoothSegmentedFunction::setName(std::string &name)
 
 SimTK::Vec2 SmoothSegmentedFunction::getCurveDomain() const
 {
-    const std::vector<SimTK::Vec6>& ctrlPtsX = _smoothData->_ctrlPtsX;
+    const SimTK::Array_<SimTK::Vec6>& ctrlPtsX = _smoothData->_ctrlPtsX;
 
     SimTK::Vec2 xrange;
     
@@ -847,7 +847,7 @@ SimTK::Matrix SmoothSegmentedFunction::calcSampledMuscleCurve(int maxOrder,
 
     int numBezierSections = _smoothData->_numBezierSections;
     bool computeIntegral = _smoothData->_computeIntegral;
-    const std::vector<SimTK::Vec6>& ctrlPtsX = _smoothData->_ctrlPtsX;
+    const SimTK::Array_<SimTK::Vec6>& ctrlPtsX = _smoothData->_ctrlPtsX;
 
     double x0,x1,delta;
     //y,dy,d1y,d2y,d3y,d4y,d5y,d6y,iy

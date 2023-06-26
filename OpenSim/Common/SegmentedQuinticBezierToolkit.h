@@ -247,7 +247,7 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
         */
         static int calcIndex(double x, const SimTK::Matrix& bezierPtsX);
 
-        static int calcIndex(double x, const std::vector<SimTK::Vec6>& bezierPtsX);
+        static int calcIndex(double x, const SimTK::Array_<SimTK::Vec6>& bezierPtsX);
 
 
 
@@ -658,8 +658,8 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
             double intAcc,
             double uTol,
             int uMaxIter,
-            const std::vector<SimTK::Vec6>& ctrlPtsX,
-            const std::vector<SimTK::Vec6>& ctrlPtsY,
+            const SimTK::Array_<SimTK::Vec6>& ctrlPtsX,
+            const SimTK::Array_<SimTK::Vec6>& ctrlPtsY,
             const SimTK::Array_<SimTK::Spline>& aSplineUX,
             bool flag_intLeftToRight,
             const std::string& name);
@@ -685,8 +685,8 @@ class OSIMCOMMON_API SegmentedQuinticBezierToolkit
 
         static void printBezierSplineFitCurves(
             const SimTK::Function_<double>& curveFit,
-            const std::vector<SimTK::Vec6>& ctrlPtsX,
-            const std::vector<SimTK::Vec6>& ctrlPtsY,
+            const SimTK::Array_<SimTK::Vec6>& ctrlPtsX,
+            const SimTK::Array_<SimTK::Vec6>& ctrlPtsY,
             const SimTK::Vector& xVal,
             const SimTK::Vector& yVal,
             const std::string& filename);
@@ -708,10 +708,10 @@ of a Bezier curve set.
 */
 class BezierData {
     public:
-        /**A n-vector of 6 Bezier control points for the X axis (domain)*/
-        std::vector<SimTK::Vec6> _ctrlPtsX;
-        /**A n-vector of 6 Bezier control points for the Y axis (range)*/
-        std::vector<SimTK::Vec6> _ctrlPtsY;
+        /**A n-array of 6 Bezier control points for the X axis (domain)*/
+        SimTK::Array_<SimTK::Vec6> _ctrlPtsX;
+        /**A n-array of 6 Bezier control points for the Y axis (range)*/
+        SimTK::Array_<SimTK::Vec6> _ctrlPtsY;
         /**An n element array containing the approximate spline fits of the
         inverse function of x(u), namely u(x)*/
         SimTK::Array_< SimTK::Spline_<double> > _aArraySplineUX;
