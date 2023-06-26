@@ -314,13 +314,16 @@ int main()
     // =========================================================================
 
     name = "Perpendicular";
-    input.path = {{2, 0.9, 0}, {-2, 1.0, 0}};
+    input.path = {{2, -2, 0}, {-2, 2.1, 0}};
 
-    expected.path = { {0.0505759009075089, 0.998720220205536, 0}, {0, 1, 0} };
-    expected.length = 0.0505974872969326;
+    expected.path = {
+        {0.911437827766148, 0.411437827766148, 0},
+        {0.441911556159667, 0.897058624913969, 0}
+    };
+    expected.length = 0.689036814042993;
     expected.noWrap = false;
 
-    failLog += TestWrapping(input, expected, tolerance, name, true);
+    failLog += TestWrapping(input, expected, tolerance, name);
 
     // =========================================================================
     // ====================== Handling of Test Results =========================
