@@ -43,7 +43,8 @@ using namespace std;
 static double UTOL = (double)SimTK::Eps*1e2;
 static double INTTOL = (double)SimTK::Eps*1e2;
 static int MAXITER = 20;
-static int NUM_SAMPLE_PTS = 100;
+static constexpr int NUM_SAMPLE_PTS = 100;
+static_assert(NUM_SAMPLE_PTS>0, "SmoothSegmentedFunction::NUM_SAMPLE_PTS must be larger than zero.");
 
 //=============================================================================
 // PARAMETERS
