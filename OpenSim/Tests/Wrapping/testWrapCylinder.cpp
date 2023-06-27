@@ -43,8 +43,8 @@ namespace {
             end(endPoint)
         {}
 
-        SimTK::Vec3 start {0., 0., 0.};
-        SimTK::Vec3 end {0., 0., 0.};
+        SimTK::Vec3 start {SimTK::NaN};
+        SimTK::Vec3 end {SimTK::NaN};
     };
 
     std::ostream& operator<<(
