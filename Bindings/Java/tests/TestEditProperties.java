@@ -78,6 +78,7 @@ class TestEditProperties {
         assert propertyStringList.getValue(0).equals("Output0");
         propertyStringList.removeValueAtIndex(0);
         assert propertyStringList.size()==1;
+        assert propertyStringList.getValue(0).equals("Output2");
         System.out.println("Test finished!");
         System.exit(0);
     }
