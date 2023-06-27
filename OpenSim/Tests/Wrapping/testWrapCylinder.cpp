@@ -36,6 +36,8 @@ namespace {
 
     // A path segment determined in terms of the start and end point.
     struct PathSegment final {
+        PathSegment() = default;
+
         PathSegment(
             const SimTK::Vec3& startPoint,
             const SimTK::Vec3& endPoint) :
@@ -70,7 +72,7 @@ namespace {
         }
 
         // Path segment on cylinder surface.
-        PathSegment path = {{}, {}};
+        PathSegment path;
         // Path segment length.
         double length = NAN;
         // True if there is no wrapping (the other fields don't matter).
