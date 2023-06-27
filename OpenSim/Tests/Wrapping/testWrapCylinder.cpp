@@ -110,7 +110,7 @@ namespace {
         double rhs,
         double tolerance)
     {
-        return std::abs(lhs - rhs) < tolerance;
+        return std::abs(lhs - rhs) <= tolerance;
     }
 
     bool IsEqualWithinTolerance(
