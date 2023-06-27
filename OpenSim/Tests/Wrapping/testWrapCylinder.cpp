@@ -189,27 +189,36 @@ namespace {
         Model model;
         model.setName("testWrapCylinderModel");
 
-        std::unique_ptr<WrapCylinder> cylinder(new WrapCylinder());
-        cylinder->setName("cylinder");
-        cylinder->set_radius(input.radius);
-        cylinder->set_length(input.cylinderLength);
-        cylinder->set_quadrant(input.quadrant);
-        cylinder->set_xyz_body_rotation(input.eulerRotations);
-        cylinder->setFrame(model.getGround());
+        // Add a spring to create the wrapping path.
+        {
+            std::unique_ptr<PathSpring> spring (
+                new PathSpring("spring", 1., 1., 1.));
+            spring->updGeometryPath().appendNewPathPoint(
+                "startPoint",
+                model.get_ground(),
+                input.path.start);
+            spring->updGeometryPath().appendNewPathPoint(
+                "endPoint",
+                model.get_ground(),
+                input.path.end);
 
-        std::unique_ptr<PathSpring> spring (new PathSpring("spring", 1., 1., 1.));
-        spring->updGeometryPath().appendNewPathPoint(
-            "startPoint",
-            model.get_ground(),
-            input.path.start);
-        spring->updGeometryPath().appendNewPathPoint(
-            "endPoint",
-            model.get_ground(),
-            input.path.end);
-        spring->updGeometryPath().addPathWrap(*cylinder.get());
+            model.addComponent(spring.release());
+        }
 
-        model.addComponent(spring.release());
-        model.updGround().addWrapObject(cylinder.release());
+        // Add the cylinder as the wrapping surface for the spring.
+        {
+            std::unique_ptr<WrapCylinder> cylinder(new WrapCylinder());
+            cylinder->setName("cylinder");
+            cylinder->set_radius(input.radius);
+            cylinder->set_length(input.cylinderLength);
+            cylinder->set_quadrant(input.quadrant);
+            cylinder->set_xyz_body_rotation(input.eulerRotations);
+            cylinder->setFrame(model.getGround());
+
+            model.updComponent<PathSpring>("spring")
+                .updGeometryPath().addPathWrap(*cylinder.get());
+            model.updGround().addWrapObject(cylinder.release());
+        }
 
         model.finalizeConnections();
         model.setUseVisualizer(visualize);
