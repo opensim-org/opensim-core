@@ -36,8 +36,15 @@ namespace {
 
     // A path segment determined in terms of the start and end point.
     struct PathSegment final {
-        SimTK::Vec3 start;
-        SimTK::Vec3 end;
+        PathSegment(
+            const SimTK::Vec3& startPoint,
+            const SimTK::Vec3& endPoint) :
+            start(startPoint),
+            end(endPoint)
+        {}
+
+        SimTK::Vec3 start {0., 0., 0.};
+        SimTK::Vec3 end {0., 0., 0.};
     };
 
     std::ostream& operator<<(
