@@ -32,31 +32,13 @@
 
 using namespace OpenSim;
 
-// Section with geometry related class and functions.
 namespace {
 
     // A path segment determined in terms of the start and end point.
     struct PathSegment final {
-        PathSegment(
-            SimTK::Vec3 startPoint,
-            SimTK::Vec3 endPoint) :
-            start(startPoint),
-            end(endPoint)
-        {}
-
-        SimTK::Vec3 start {};
-        SimTK::Vec3 end {};
+        SimTK::Vec3 start;
+        SimTK::Vec3 end;
     };
-
-    PathSegment operator*(
-        const SimTK::Rotation& rot,
-        const PathSegment& path)
-    {
-        return PathSegment {
-            rot * path.start,
-            rot * path.end
-        };
-    }
 
     std::ostream& operator<<(
         std::ostream& os,
@@ -113,13 +95,6 @@ namespace {
         double position = 1e-9;
         double length = 1e-9;
     };
-
-    std::ostream& operator<<(std::ostream& os, const WrappingTolerances& tol) {
-        return os <<
-            "WrappingTolerances{" <<
-            "position: " << tol.position << ", " <<
-            "length: " << tol.length << "}";
-    }
 
     bool IsEqual(
         double lhs,
