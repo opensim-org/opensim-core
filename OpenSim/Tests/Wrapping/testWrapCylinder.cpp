@@ -96,7 +96,7 @@ namespace {
     struct WrappingTolerances final {
         WrappingTolerances() = default;
 
-        WrappingTolerances(double eps):
+        WrappingTolerances(double eps) :
             position(eps),
             length(eps)
         {}
