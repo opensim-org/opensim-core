@@ -556,7 +556,7 @@ computeFiberEquilibrium(SimTK::State& s, bool solveForVelocity) const
     double pathSpeed = solveForVelocity ? getLengtheningSpeed(s) : 0;
     double activation = getActivation(s);
 
-    const MuscleStateEstimatorResult result =
+    const MuscleStateEstimate result =
         estimateMuscleFiberState(
             activation,
             pathLength,
@@ -566,28 +566,28 @@ computeFiberEquilibrium(SimTK::State& s, bool solveForVelocity) const
             solveForVelocity);
 
     if (result.status ==
-        MuscleStateEstimatorResult::Status::Failure_MaxIterationsReached) {
+        MuscleStateEstimate::Status::Failure_MaxIterationsReached) {
             std::ostringstream oss;
             oss << "Internal exception encountered:\n"
-                << "    Solution error " << std::abs(result.solution_error)
-                << "    exceeds tolerance of " << tol << "\n"
+                << "    Solution error " << std::abs(result.solutionError)
+                << " exceeds tolerance of " << tol << "\n"
                 << "    Newton iterations reached limit of " << maxIter << "\n"
                 << "    Activation is " << activation << "\n"
-                << "    Fiber length is " << result.fiber_length << "\n";
+                << "    Fiber length is " << result.fiberLength << "\n";
             OPENSIM_THROW_FRMOBJ(MuscleCannotEquilibrate, oss.str());
     }
 
     if (result.status ==
-        MuscleStateEstimatorResult::Status::Warning_FiberAtLowerBound) {
+        MuscleStateEstimate::Status::Warning_FiberAtLowerBound) {
             log_warn(
                 "Millard2012EquilibriumMuscle static solution: '{}' is at its"
                     "minimum fiber length of {}.",
                 getName(),
-                result.fiber_length);
+                result.fiberLength);
     }
 
-    setActuation(s, result.tendon_force);
-    setFiberLength(s, result.fiber_length);
+    setActuation(s, result.tendonForce);
+    setFiberLength(s, result.fiberLength);
 }
 
 //==============================================================================
@@ -1351,7 +1351,7 @@ double Millard2012EquilibriumMuscle::clampFiberLength(double lce) const
     return max(lce, getMinimumFiberLength());
 }
 
-Millard2012EquilibriumMuscle::MuscleStateEstimatorResult
+Millard2012EquilibriumMuscle::MuscleStateEstimate
     Millard2012EquilibriumMuscle::estimateMuscleFiberState(
         const double aActivation,
         const double pathLength,
@@ -1595,24 +1595,24 @@ Millard2012EquilibriumMuscle::MuscleStateEstimatorResult
         iter++;
     }
 
-    MuscleStateEstimatorResult result;
-    result.solution_error = ferr;
+    MuscleStateEstimate result;
+    result.solutionError = ferr;
 
     if(abs(ferr) < aSolTolerance) {
-        result.status = MuscleStateEstimatorResult::Status::Success_Converged;
+        result.status = MuscleStateEstimate::Status::Success_Converged;
 
-        result.fiber_length   = clampFiberLength(lce);
-        result.fiber_velocity = dlce;
-        result.tendon_force   = fse*fiso;
+        result.fiberLength    = clampFiberLength(lce);
+        result.tendonVelocity = dlce;
+        result.tendonForce    = fse * fiso;
 
         return result;
     }
 
     if (lce <= getMinimumFiberLength()) {
-        result.status = MuscleStateEstimatorResult::Status::
+        result.status = MuscleStateEstimate::Status::
             Warning_FiberAtLowerBound;
 
-        lce = getMinimumFiberLength();
+        lce    = getMinimumFiberLength();
         phi    = getPennationModel().calcPennationAngle(lce);
         cosphi = cos(phi);
         tl     = getPennationModel().calcTendonLength(cosphi,lce,ml);
@@ -1620,14 +1620,14 @@ Millard2012EquilibriumMuscle::MuscleStateEstimatorResult
         tlN    = tl/tsl;
         fse    = fseCurve.calcValue(tlN);
 
-        result.fiber_length   = lce;
-        result.fiber_velocity = 0;
-        result.tendon_force   = fse*fiso;
+        result.fiberLength    = lce;
+        result.tendonVelocity = 0;
+        result.tendonForce    = fse * fiso;
 
         return result;
     }
 
-    result.status = MuscleStateEstimatorResult::Status::
+    result.status = MuscleStateEstimate::Status::
         Failure_MaxIterationsReached;
     return result;
 }

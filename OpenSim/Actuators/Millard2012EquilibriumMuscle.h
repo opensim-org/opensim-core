@@ -734,11 +734,11 @@ private:
     // length.
     double clampFiberLength(double lce) const;
 
-    struct MuscleStateEstimatorResult {
-        double solution_error = SimTK::NaN;
-        double fiber_length = SimTK::NaN;
-        double fiber_velocity = SimTK::NaN;
-        double tendon_force = SimTK::NaN;
+    struct MuscleStateEstimate {
+        double solutionError = SimTK::NaN;
+        double fiberLength = SimTK::NaN;
+        double tendonVelocity = SimTK::NaN;
+        double tendonForce = SimTK::NaN;
 
         enum Status {
             Success_Converged,
@@ -761,7 +761,7 @@ private:
     @param staticSolution set to true to calculate the static equilibrium
            solution, setting fiber and tendon velocities to zero
     */
-    MuscleStateEstimatorResult
+    MuscleStateEstimate
         estimateMuscleFiberState(const double aActivation,
                                  const double pathLength,
                                  const double pathLengtheningSpeed,
