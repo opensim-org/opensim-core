@@ -105,7 +105,7 @@ namespace {
         double length = 1e-9;
     };
 
-    bool IsEqual(
+    bool IsEqualWithinTolerance(
         double lhs,
         double rhs,
         double tolerance)
@@ -113,26 +113,26 @@ namespace {
         return std::abs(lhs - rhs) < tolerance;
     }
 
-    bool IsEqual(
+    bool IsEqualWithinTolerance(
         const SimTK::Vec3& lhs,
         const SimTK::Vec3& rhs,
         double tolerance)
     {
-        return IsEqual(lhs[0], rhs[0], tolerance)
-            && IsEqual(lhs[1], rhs[1], tolerance)
-            && IsEqual(lhs[2], rhs[2], tolerance);
+        return IsEqualWithinTolerance(lhs[0], rhs[0], tolerance)
+            && IsEqualWithinTolerance(lhs[1], rhs[1], tolerance)
+            && IsEqualWithinTolerance(lhs[2], rhs[2], tolerance);
     }
 
-    bool IsEqual(
+    bool IsEqualWithinTolerance(
         const PathSegment& lhs,
         const PathSegment& rhs,
         double tolerance)
     {
-        return IsEqual(lhs.start, rhs.start, tolerance)
-            && IsEqual(lhs.end, rhs.end, tolerance);
+        return IsEqualWithinTolerance(lhs.start, rhs.start, tolerance)
+            && IsEqualWithinTolerance(lhs.end, rhs.end, tolerance);
     }
 
-    bool IsEqual(
+    bool IsEqualWithinTolerance(
         const WrapTestResult& lhs,
         const WrapTestResult& rhs,
         const WrappingTolerances& tolerance)
@@ -140,8 +140,8 @@ namespace {
         if (lhs.noWrap && rhs.noWrap) {
             return true;
         }
-        return IsEqual(lhs.path, rhs.path, tolerance.position)
-            && IsEqual(lhs.length, rhs.length, tolerance.length)
+        return IsEqualWithinTolerance(lhs.path, rhs.path, tolerance.position)
+            && IsEqualWithinTolerance(lhs.length, rhs.length, tolerance.length)
             && lhs.noWrap == rhs.noWrap;
     }
 
@@ -255,7 +255,7 @@ namespace {
 
         WrapTestResult result = solve(input, visualize);
 
-        if (!IsEqual(result, expected, tol.position)) {
+        if (!IsEqualWithinTolerance(result, expected, tol.position)) {
             std::ostringstream oss;
             oss << "\nFAILED: case = " << testCase;
             oss << "\n    input = " << input;
