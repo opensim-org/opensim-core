@@ -568,7 +568,7 @@ computeFiberEquilibrium(SimTK::State& s, bool solveForVelocity) const
     if (result.status ==
         MuscleStateEstimate::Status::Failure_MaxIterationsReached) {
             std::ostringstream oss;
-            oss << "Internal exception encountered:\n"
+            oss << "Failed to compute muscle equilibrium state:\n"
                 << "    Solution error " << std::abs(result.solutionError)
                 << " exceeds tolerance of " << tol << "\n"
                 << "    Newton iterations reached limit of " << maxIter << "\n"
