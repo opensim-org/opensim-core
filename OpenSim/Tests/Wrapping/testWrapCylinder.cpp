@@ -309,11 +309,13 @@ int main()
     name = "Perpendicular";
     input.path = {{2, -2, 0}, {-2, 2.1, 0}};
 
+    // Solution obtained from copy-pasting the solution (OpenSim 4.5).
     expected.path = {
-        {0.911437827766148, 0.411437827766148, 0},
-        {0.441911556159667, 0.897058624913969, 0}
+        {0.911437827766147, 0.411437827766148, 0.},
+        {0.441911556159668, 0.897058624913969, 0.},
     };
     expected.length = 0.689036814042993;
+
     expected.noWrap = false;
 
     failLog.push_back(TestWrapping(input, expected, tolerance, name));
