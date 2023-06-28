@@ -227,7 +227,7 @@ namespace {
         }
 
         // Endpoints of the total path:
-        PathSegment path = {{}, {}};
+        PathSegment path;
 
         // Wrapping cylinder parameters:
         double radius = 1.;
