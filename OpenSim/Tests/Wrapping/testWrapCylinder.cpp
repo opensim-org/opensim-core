@@ -283,7 +283,7 @@ namespace {
 
 int main()
 {
-    std::string failLog;
+    std::vector<std::string> failLog;
     WrappingTolerances tolerance;
 
     WrapInput input {};
@@ -300,7 +300,7 @@ int main()
 
     WrapTestResult expected = WrapTestResult::NoWrap();
 
-    failLog += TestWrapping(input, expected, tolerance, name);
+    failLog.push_back(TestWrapping(input, expected, tolerance, name));
 
     // =========================================================================
     // ======================= Perpendicular Case ==============================
@@ -316,17 +316,27 @@ int main()
     expected.length = 0.689036814042993;
     expected.noWrap = false;
 
-    failLog += TestWrapping(input, expected, tolerance, name);
+    failLog.push_back(TestWrapping(input, expected, tolerance, name));
 
     // =========================================================================
     // ====================== Handling of Test Results =========================
     // =========================================================================
 
-    if (!failLog.empty()) {
-        std::cerr << failLog << std::endl;
+    size_t failedCount = 0;
+    for (size_t i = 0; i < failLog.size(); ++i) {
+        if (!failLog[i].empty()) {
+            ++failedCount;
+            std::cerr << failLog[i] << std::endl;
+        }
+    }
+
+    if (failedCount > 0) {
+        std::cout << "Wrap Cylinder Test: Failed " << failedCount << " out of "
+            << failLog.size() << " tests." << std::endl;
         return 1;
     }
 
-    std::cout << "Wrap Cylinder Test Done." << std::endl;
+    std::cout << "Wrap Cylinder Test: Passed " << failLog.size() << " tests." <<
+        std::endl;
     return 0;
 }
