@@ -5,13 +5,13 @@ if (sys.platform.startswith('win')):
       print("adding dll_directory "+os.path.dirname(os.path.realpath(__file__)))
       os.add_dll_directory(curFolder)
       # in dev environment, we also add "../../../../Release"
-      install_path = os.path.dirname(os.path.join(curFolder, "../../../bin"))
+      install_path = os.path.join(curFolder, "../../../bin")
       if (os.path.exists(install_path)):
           print("adding dll_directory "+install_path)
           os.add_dll_directory(install_path)
-      dev_path = os.path.dirname(os.path.join(curFolder, "../../../../Release"))
+      dev_path = os.path.join(curFolder, "../../../../Release")
       if (os.path.exists(dev_path)):
-          print("adding dll_director y"+dev_path)
+          print("adding dll_directory "+dev_path)
           os.add_dll_directory(dev_path)
 
 from .simbody import *
