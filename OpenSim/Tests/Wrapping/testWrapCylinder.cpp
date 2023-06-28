@@ -45,8 +45,8 @@ namespace {
             end(endPoint)
         {}
 
-        SimTK::Vec3 start {SimTK::NaN};
-        SimTK::Vec3 end {SimTK::NaN};
+        SimTK::Vec3 start{SimTK::NaN};
+        SimTK::Vec3 end{SimTK::NaN};
     };
 
     std::ostream& operator<<(
@@ -74,7 +74,7 @@ namespace {
         // Path segment on cylinder surface.
         PathSegment path;
         // Path segment length.
-        double length = NAN;
+        double length = SimTK::NaN;
         // True if there is no wrapping (the other fields don't matter).
         bool noWrap = false;
     };
@@ -191,7 +191,7 @@ namespace {
 
         // Add a spring to create the wrapping path.
         {
-            std::unique_ptr<PathSpring> spring (
+            std::unique_ptr<PathSpring> spring(
                 new PathSpring("spring", 1., 1., 1.));
             spring->updGeometryPath().appendNewPathPoint(
                 "startPoint",
