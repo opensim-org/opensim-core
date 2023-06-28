@@ -33,6 +33,7 @@
 using namespace OpenSim;
 
 namespace {
+    static constexpr double c_TAU = 2. * M_PI;
 
     // A path segment determined in terms of the start and end point.
     struct PathSegment final {
@@ -57,6 +58,51 @@ namespace {
             "PathSegment{start: " << path.start << ", end: " << path.end << "}";
     }
 
+    PathSegment operator*(
+        const SimTK::Rotation& rot,
+        const PathSegment& path)
+    {
+        return PathSegment{
+            rot * path.start,
+            rot * path.end
+        };
+    }
+
+    // Angular distance from start- to end-angle in either positive or negative direction.
+    double AngularDistance(
+        double startAngle,
+        double endAngle,
+        bool positiveRotation)
+    {
+        double distance = std::fmod(endAngle - startAngle, c_TAU);
+        while ((distance < 0.) && positiveRotation) {
+            distance += c_TAU;
+        }
+        while ((distance > 0.) && !positiveRotation) {
+            distance -= c_TAU;
+        }
+        return distance;
+    }
+
+    // Returns direction of shortest angular distance for a vector aligned with the
+    // start point to become aligned with the end point (true if positive).
+    bool DirectionOfShortestAngularDistance(
+        SimTK::Vec2 start,
+        SimTK::Vec2 end)
+    {
+        return AngularDistance(
+            std::atan2(start[1], start[0]),
+            std::atan2(end[1], end[0]),
+            true) <= M_PI;
+    }
+
+    bool DirectionOfShortestAngularDistanceAboutZAxis(const PathSegment& path)
+    {
+        return DirectionOfShortestAngularDistance(
+            path.start.getSubVec<2>(0),
+            path.end.getSubVec<2>(0));
+    }
+
 }
 
 // Section with helpers for evaluating the wrapping result in the upcoming test.
@@ -75,6 +121,8 @@ namespace {
         PathSegment path;
         // Path segment length.
         double length = SimTK::NaN;
+        // Direction of wrapping wrt cylinder axis.
+        bool positiveDirection = true;
         // True if there is no wrapping (the other fields don't matter).
         bool noWrap = false;
     };
@@ -89,7 +137,9 @@ namespace {
         return os <<
             "WrapTestResult{" <<
             "path: " << result.path << ", " <<
-            "length: " << result.length << "}";
+            "length: " << result.length << ", " <<
+            "direction: " << (result.positiveDirection? "Positive" : "Negative")
+            << "}";
     }
 
     // Struct holding the tolerances when asserting the wrapping result.
@@ -142,6 +192,7 @@ namespace {
         }
         return IsEqualWithinTolerance(lhs.path, rhs.path, tolerance.position)
             && IsEqualWithinTolerance(lhs.length, rhs.length, tolerance.length)
+            && lhs.positiveDirection == rhs.positiveDirection
             && lhs.noWrap == rhs.noWrap;
     }
 
@@ -244,6 +295,12 @@ namespace {
             wrapResult.r2,
         };
         result.length = wrapResult.wrap_path_length;
+        // Determine the wrapping sign based on the first path segment.
+        result.positiveDirection = DirectionOfShortestAngularDistanceAboutZAxis(
+            input.cylinderOrientation().invert() * PathSegment{
+                input.path.start,
+                wrapResult.r1,
+            });
         result.noWrap = wrapResult.wrap_pts.size() == 0;
 
         return result;
