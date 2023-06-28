@@ -230,8 +230,9 @@ namespace {
             model.getVisualizer().show(state);
         }
 
-        model.updComponent<PathSpring>("spring").getLength(state);
-        WrapResult wrapResult = model.updComponent<PathSpring>("spring")
+        // Trigger computing the wrapping path (realizing the state will not).
+        model.getComponent<PathSpring>("spring").getLength(state);
+        const WrapResult wrapResult = model.getComponent<PathSpring>("spring")
                 .getGeometryPath()
                 .getWrapSet()
                 .get("pathwrap")
