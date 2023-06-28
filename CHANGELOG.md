@@ -36,6 +36,7 @@ v4.5
 - Fixed issues #3083 #2575 where analog data is not pulled out from c3d files, a a new function getAnalogDataTable() has been added to the C3DFileAdapter
 - Fixed segfault that can occur when building models with unusual joint topologies (it now throws an `OpenSim::Exception` instead, #3299)
 - Add `calcMomentum`, `calcAngularMomentum`, `calcLinearMomentum`, and associated `Output`s to `Model` (#3474)
+- Changed control points in `SegmentedQuinticBezierToolkit` to be of `SimTK::Vec6` type instead of `SimTK::Vector` (#3481).
 - Added a cylinder wrapping test: `testWrapCylinder.cpp` (#3498)
 
 

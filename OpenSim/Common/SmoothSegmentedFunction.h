@@ -339,15 +339,15 @@ namespace OpenSim {
        /**
        Creates a set of quintic Bezier Curve.
 
-       @param mX         The matrix of quintic Bezier x point locations (6xn).
-                         Each column vector is the 6 control points required
+       @param ctrlPtsX   The n-vector of quintic Bezier x point locations (6xn).
+                         Each element contains the 6 control points required
                          for each quintic Bezier curve. For C0 continuity 
-                         adjacent columns must share the last and first control
+                         adjacent elements must share the last and first control
                          points. For C1 continuity the last 2 and first two
                          control points of adjacent curves should be on the same
                          curve.
 
-       @param mY         The matrix of quintic Bezier y point locations (6xn).
+       @param ctrlPtsY   The n-vector of quintic Bezier y point locations (6xn).
                         
        @param x0         The minimum x value. This is used for the linear 
                          extrapolation of the Bezier curve. This parameter is
@@ -393,9 +393,18 @@ namespace OpenSim {
        \endverbatim
 
               */
-       SmoothSegmentedFunction(const SimTK::Matrix& mX, const SimTK::Matrix& mY, 
-          double x0, double x1,double y0, double y1,double dydx0, double dydx1,
-          bool computeIntegral, bool intx0x1, const std::string& name); 
+       SmoothSegmentedFunction(
+          const SimTK::Array_<SimTK::Vec6>& ctrlPtsX,
+          const SimTK::Array_<SimTK::Vec6>& ctrlPtsY,
+          double x0,
+          double x1,
+          double y0,
+          double y1,
+          double dydx0,
+          double dydx1,
+          bool computeIntegral,
+          bool intx0x1,
+          const std::string& name);
 
         /**
         This function will print cvs file of the column vector col0 and the 
