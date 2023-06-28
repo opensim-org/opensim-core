@@ -1598,6 +1598,7 @@ Millard2012EquilibriumMuscle::MuscleStateEstimate
     MuscleStateEstimate result;
     result.solutionError = ferr;
 
+    // Check if solution converged.
     if(abs(ferr) < aSolTolerance) {
         result.status = MuscleStateEstimate::Status::Success_Converged;
 
@@ -1608,6 +1609,7 @@ Millard2012EquilibriumMuscle::MuscleStateEstimate
         return result;
     }
 
+    // Check if fiberlength is at or exceeds lower bound.
     if (lce <= getMinimumFiberLength()) {
         result.status = MuscleStateEstimate::Status::
             Warning_FiberAtLowerBound;
@@ -1627,6 +1629,7 @@ Millard2012EquilibriumMuscle::MuscleStateEstimate
         return result;
     }
 
+    // Solution failed to converge.
     result.status = MuscleStateEstimate::Status::
         Failure_MaxIterationsReached;
     return result;
