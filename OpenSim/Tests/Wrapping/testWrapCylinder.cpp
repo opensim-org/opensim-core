@@ -226,7 +226,6 @@ namespace {
         const SimTK::State& state = model.initSystem();
 
         if (visualize) {
-            model.realizeVelocity(state);
             model.getVisualizer().show(state);
         }
 
