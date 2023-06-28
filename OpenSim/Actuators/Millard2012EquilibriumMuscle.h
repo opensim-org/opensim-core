@@ -740,11 +740,11 @@ private:
         double tendonVelocity = SimTK::NaN;
         double tendonForce = SimTK::NaN;
 
-        enum Status {
+        enum class Status {
             Success_Converged,
             Warning_FiberAtLowerBound,
             Failure_MaxIterationsReached
-        } status = Failure_MaxIterationsReached;
+        } status = Status::Failure_MaxIterationsReached;
     };
 
     /* Solves fiber length and velocity to satisfy the equilibrium equations.
