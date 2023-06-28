@@ -80,7 +80,7 @@ echo
 
 # Install dependencies from package manager.
 echo "LOG: INSTALLING DEPENDENCIES..."
-sudo apt-get update && sudo apt-get install --yes build-essential cmake autotools-dev autoconf pkg-config automake libopenblas-dev liblapack-dev freeglut3-dev libxi-dev libxmu-dev doxygen python3 python3-dev python3-numpy python3-setuptools git byacc libssl-dev libpcre3 libpcre3-dev libtool gfortran ninja-build patchelf || ( echo "Installation of dependencies using apt-get failed." && exit )
+sudo apt-get update && sudo apt-get install --yes build-essential cmake autotools-dev autoconf pkg-config automake libopenblas-dev liblapack-dev freeglut3-dev libxi-dev libxmu-dev doxygen python3 python3-dev python3-numpy python3-setuptools git byacc libssl-dev libpcre3 libpcre3-dev libpcre2-dev libtool gfortran ninja-build patchelf || ( echo "Installation of dependencies using apt-get failed." && exit )
 echo 
 
 # Debian does not have openjdk-8-jdk available, so install from temurin repo.
@@ -149,11 +149,11 @@ else
 fi
 echo
 
-# Download and install SWIG 4.0.2.
-echo "LOG: INSTALLING SWIG 4.0.2..."
+# Download and install SWIG 4.1.1.
+echo "LOG: INSTALLING SWIG 4.1.1..."
 mkdir -p ~/opensim-workspace/swig-source || true && cd ~/opensim-workspace/swig-source
-wget -nc -q --show-progress https://github.com/swig/swig/archive/refs/tags/rel-4.0.2.tar.gz
-tar xzf rel-4.0.2.tar.gz && cd swig-rel-4.0.2
+wget -nc -q --show-progress https://github.com/swig/swig/archive/refs/tags/v4.1.1.tar.gz
+tar xzf v4.1.1.tar.gz && cd swig-4.1.1
 sh autogen.sh && ./configure --prefix=$HOME/swig --disable-ccache
 make && make -j$NUM_JOBS install  
 echo
