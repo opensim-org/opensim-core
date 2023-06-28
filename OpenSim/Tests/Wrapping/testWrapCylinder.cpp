@@ -46,6 +46,17 @@ namespace {
             end(endPoint)
         {}
 
+        // Returns PathSegment with start and end swapped.
+        PathSegment getReversed() const
+        {
+            return PathSegment{end, start};
+        }
+
+        void setReversed()
+        {
+            *this = getReversed();
+        }
+
         SimTK::Vec3 start{SimTK::NaN};
         SimTK::Vec3 end{SimTK::NaN};
     };
@@ -374,6 +385,13 @@ int main()
     expected.length = 0.689036814042993;
 
     expected.noWrap = false;
+
+    failLog.push_back(TestWrapping(input, expected, tolerance, name));
+
+    // Swapping start and end should not change the path:
+    input.path.setReversed();
+    expected.path.setReversed();
+    expected.positiveDirection = false;
 
     failLog.push_back(TestWrapping(input, expected, tolerance, name));
 
