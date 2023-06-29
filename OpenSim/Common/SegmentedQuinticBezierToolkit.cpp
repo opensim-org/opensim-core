@@ -35,8 +35,9 @@ using namespace OpenSim;
 using namespace std;
 
 
-static int NUM_SAMPLE_PTS = 100; //The number of knot points to use to sample
-                                //each Bezier corner section
+ //The number of knot points to use to sample each Bezier corner section.
+static constexpr int NUM_SAMPLE_PTS = 100;
+static_assert(NUM_SAMPLE_PTS>0, "SegmentedQuinticBezierToolkit::NUM_SAMPLE_PTS must be larger than zero.");
 
 /**
 * This function will print cvs file of the column vector col0 and the matrix data
@@ -46,9 +47,10 @@ static int NUM_SAMPLE_PTS = 100; //The number of knot points to use to sample
 * @params data: A matrix of data
 * @params filename: The name of the file to print
 */
-void SegmentedQuinticBezierToolkit::
-    printMatrixToFile(const SimTK::Vector& col0, 
-    const SimTK::Matrix& data, std::string& filename)
+void SegmentedQuinticBezierToolkit::printMatrixToFile(
+    const SimTK::Vector& col0,
+    const SimTK::Matrix& data,
+    const std::string& filename)
 {
     
     ofstream datafile;
@@ -66,14 +68,21 @@ void SegmentedQuinticBezierToolkit::
     datafile.close();
 } 
 
-void SegmentedQuinticBezierToolkit::
-    printBezierSplineFitCurves(const SimTK::Function_<double>& curveFit, 
-    SimTK::Matrix& ctrlPts, SimTK::Vector& xVal, SimTK::Vector& yVal, 
-    std::string& filename)
+void SegmentedQuinticBezierToolkit::printBezierSplineFitCurves(
+    const SimTK::Function_<double>& curveFit,
+    const SimTK::Array_<SimTK::Vec6>& ctrlPtsX,
+    const SimTK::Array_<SimTK::Vec6>& ctrlPtsY,
+    const SimTK::Vector& xVal,
+    const SimTK::Vector& yVal,
+    const std::string& filename)
 {
-        std::string caller = "printBezierSplineFitCurves";
-        int nbezier =  int(ctrlPts.ncol()/2.0);
-        int rows = NUM_SAMPLE_PTS*nbezier - (nbezier-1);
+
+    SimTK_ERRCHK_ALWAYS(ctrlPtsX.size() == ctrlPtsY.size(),
+        "SegmentedQuinticBezierToolkit::printBezierSplineFitCurves",
+        "Error: X and Y control points must have same number of elements");
+
+        const int nbezier = ctrlPtsX.size();
+        const int rows = (NUM_SAMPLE_PTS - 1) * nbezier + 1;
 
         SimTK::Vector y1Val(rows);
         SimTK::Vector y2Val(rows);
@@ -91,32 +100,23 @@ void SegmentedQuinticBezierToolkit::
         deriv1[0] = 0;
         deriv2[0] = 0;
         deriv2[1] = 0;
-        double u = 0;
-        int oidx = 0;
-        int offset = 0;
         for(int j=0; j < nbezier ; j++)
         {
-            if(j > 0){
-                offset = 1;
-            }
+            const int offset = (j > 0)? 1: 0;
 
             for(int i=0; i<NUM_SAMPLE_PTS-offset; i++)
             {
-              oidx = i + j*NUM_SAMPLE_PTS - offset*(j-1);
+              const int oidx = i + j*(NUM_SAMPLE_PTS-offset) + 1;
 
-              u = ( (double)(i+offset) )/( (double)(NUM_SAMPLE_PTS-1) );
-              y1Val(oidx) = calcQuinticBezierCurveDerivDYDX(u,
-                  ctrlPts(2*j),ctrlPts(2*j+1),1);
-              y2Val(oidx) = calcQuinticBezierCurveDerivDYDX(u,
-                  ctrlPts(2*j),ctrlPts(2*j+1),2);
+              const double u = ( (double)(i+offset) )/( (double)(NUM_SAMPLE_PTS-1) );
+              y1Val(oidx) = calcQuinticBezierCurveDerivDYDX(u, ctrlPtsX[j], ctrlPtsY[j], 1);
+              y2Val(oidx) = calcQuinticBezierCurveDerivDYDX(u, ctrlPtsX[j], ctrlPtsY[j], 2);
 
               tmp(0) = xVal(oidx);
               ySVal(oidx) = curveFit.calcValue( tmp );
 
-          
               y1SVal(oidx) = curveFit.calcDerivative(deriv1,tmp);
               y2SVal(oidx) = curveFit.calcDerivative(deriv2,tmp);
-             
 
               printMatrix(oidx,0) = yVal(oidx);
               printMatrix(oidx,1) = y1Val(oidx);
@@ -138,12 +138,16 @@ void SegmentedQuinticBezierToolkit::
         Divisions   Multiplication  Additions   Assignments
         1           13              9              23
 */
-SimTK::Matrix SegmentedQuinticBezierToolkit::
-    calcQuinticBezierCornerControlPoints(double x0, double y0, double dydx0, 
-                           double x1, double y1, double dydx1, double curviness)
+SegmentedQuinticBezierToolkit::ControlPointsXY
+    SegmentedQuinticBezierToolkit::calcQuinticBezierCornerControlPoints(
+        double x0,
+        double y0,
+        double dydx0,
+        double x1,
+        double y1,
+        double dydx1,
+        double curviness)
 {
-    SimTK::Matrix xyPts(6,2); 
-
     SimTK_ERRCHK_ALWAYS( (curviness>=0 && curviness <= 1) , 
         "SegmentedQuinticBezierToolkit::calcQuinticBezierCornerControlPoints", 
         "Error: double argument curviness must be between 0.0 and 1.0.");
@@ -190,13 +194,6 @@ SimTK::Matrix SegmentedQuinticBezierToolkit::
         "The intersection point for the two lines defined by the input"
         "parameters must be consistent with a C shaped corner.");
 
-    //Start point
-    xyPts(0,0) = x0;
-    xyPts(0,1) = y0;
-    //End point
-    xyPts(5,0) = x1;
-    xyPts(5,1) = y1;
-
     /*
     //New mid point control code, which spreads the curve out more gradually    
     double deltaX   = (xC-xyPts(0,0));    
@@ -220,18 +217,17 @@ SimTK::Matrix SegmentedQuinticBezierToolkit::
     */
     
     //Original code - leads to 2 localized corners
-    xyPts(1,0) = x0 + curviness*(xC-xyPts(0,0));
-    xyPts(1,1) = y0 + curviness*(yC-xyPts(0,1));
-    xyPts(2,0) = xyPts(1,0);
-    xyPts(2,1) = xyPts(1,1);
+    double x0_mid = x0 + curviness*(xCx0);
+    double y0_mid = y0 + curviness*(yCy0);
 
     //Second two midpoints
-    xyPts(3,0) = xyPts(5,0) + curviness*(xC-xyPts(5,0));
-    xyPts(3,1) = xyPts(5,1) + curviness*(yC-xyPts(5,1));
-    xyPts(4,0) = xyPts(3,0);
-    xyPts(4,1) = xyPts(3,1);
+    double x1_mid = x1 + curviness*(xCx1);
+    double y1_mid = y1 + curviness*(yCy1);
     
-    return xyPts;
+    SimTK::Vec6 xPts(x0, x0_mid, x0_mid, x1_mid, x1_mid, x1);
+    SimTK::Vec6 yPts(y0, y0_mid, y0_mid, y1_mid, y1_mid, y1);
+
+    return SegmentedQuinticBezierToolkit::ControlPointsXY{xPts, yPts};
 }
 
 //=============================================================================
@@ -242,8 +238,9 @@ SimTK::Matrix SegmentedQuinticBezierToolkit::
 Multiplications     Additions   Assignments
 21                  20          13
 */
-double  SegmentedQuinticBezierToolkit::
-    calcQuinticBezierCurveVal(double u, const SimTK::Vector& pts)
+double SegmentedQuinticBezierToolkit::calcQuinticBezierCurveVal(
+    double u,
+    const SimTK::Vec6& pts)
 {
     double val = -1;
 
@@ -252,12 +249,6 @@ double  SegmentedQuinticBezierToolkit::
         "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveVal", 
         "Error: double argument u must be between 0.0 and 1.0"
         "but %f was entered.",u);
-
-    
-
-    SimTK_ERRCHK_ALWAYS( (pts.size() == 6) , 
-        "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveVal", 
-        "Error: vector argument pts must have a length of 6.");
 
     //Compute the Bezier point
     double p0 = pts(0);
@@ -364,8 +355,11 @@ Detailed Computational Costs
             total   9           334             209         106
 
 */
-double SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivDYDX(double u,
-                const SimTK::Vector& xpts, const SimTK::Vector& ypts, int order)
+double SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivDYDX(
+    double u,
+    const SimTK::Vec6& xpts,
+    const SimTK::Vec6& ypts,
+    int order)
 {
     double val = SimTK::NaN;
    
@@ -373,14 +367,6 @@ double SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivDYDX(double u,
     SimTK_ERRCHK_ALWAYS( (u>=0 && u <= 1) , 
         "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU", 
         "Error: double argument u must be between 0.0 and 1.0.");
-
-    SimTK_ERRCHK_ALWAYS( (xpts.size()==6) , 
-        "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU", 
-        "Error: vector argument xpts \nmust have a length of 6.");
-
-    SimTK_ERRCHK_ALWAYS( (ypts.size()==6) , 
-        "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU", 
-        "Error: vector argument ypts \nmust have a length of 6.");
 
     SimTK_ERRCHK_ALWAYS( (order >= 1),
         "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU", 
@@ -641,18 +627,16 @@ d2x/du2             17              17          9
 d3y/du3             14              14          6
 
 */
-double SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU(double u,
-                 const SimTK::Vector& pts,int order)
+double SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU(
+    double u,
+    const SimTK::Vec6& pts,
+    int order)
 {
     double val = -1;
 
     SimTK_ERRCHK_ALWAYS( (u>=0 && u <= 1) , 
         "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU", 
         "Error: double argument u must be between 0.0 and 1.0.");
-
-    SimTK_ERRCHK_ALWAYS( (pts.size()==6) , 
-        "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU", 
-        "Error: vector argument pts \nmust have a length of 6.");
 
     SimTK_ERRCHK_ALWAYS( (order >= 1),
         "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU", 
@@ -785,21 +769,14 @@ double SegmentedQuinticBezierToolkit::clampU(double u){
                 Comparisons     Div     Mult    Additions   Assignments
     eval U      7+8=15          2       82      42          60
 */
-double SegmentedQuinticBezierToolkit::calcU(double ax, const SimTK::Vector& bezierPtsX, 
-                                 const SimTK::Spline& splineUX, double tol, 
-                                 int maxIter)
+double SegmentedQuinticBezierToolkit::calcU(
+    double ax,
+    const SimTK::Vec6& bezierPtsX,
+    const SimTK::Spline& splineUX,
+    double tol,
+    int maxIter)
 {
-    //Check to make sure that ax is in the curve domain
-    double minX = 1e100;
-    double maxX = -1e100;
-    for(int i=0; i<bezierPtsX.nrow(); i++){
-        if(bezierPtsX(i) > maxX)
-            maxX = bezierPtsX(i);
-        if(bezierPtsX(i) < minX)
-            minX = bezierPtsX(i);
-    }
-
-    SimTK_ERRCHK_ALWAYS( ax >= minX && ax <= maxX, 
+    SimTK_ERRCHK_ALWAYS( ax >= SimTK::min(bezierPtsX) && ax <= SimTK::max(bezierPtsX),
         "SegmentedQuinticBezierToolkit::calcU", 
         "Error: input ax was not in the domain of the Bezier curve specified \n"
         "by the control points in bezierPtsX.");
@@ -879,8 +856,9 @@ int SegmentedQuinticBezierToolkit::calcIndex(double x,
     return idx;
 }
 
-int SegmentedQuinticBezierToolkit::calcIndex(double x, 
-                                             const SimTK::Array_<SimTK::Vector>& bezierPtsX)
+int SegmentedQuinticBezierToolkit::calcIndex(
+    double x,
+    const SimTK::Array_<SimTK::Vec6>& bezierPtsX)
 {
     int idx = 0;
     bool flag_found = false;
@@ -944,15 +922,16 @@ SimTK::Matrix SegmentedQuinticBezierToolkit::calcNumIntBezierYfcnX(
                             const SimTK::Vector& vX, 
                             double ic0, double intAcc, 
                             double uTol, int uMaxIter,
-                            const SimTK::Matrix& mX, const SimTK::Matrix& mY,
+                            const SimTK::Array_<SimTK::Vec6>& ctrlPtsX,
+                            const SimTK::Array_<SimTK::Vec6>& ctrlPtsY,
                             const SimTK::Array_<SimTK::Spline>& aSplineUX,
                             bool flag_intLeftToRight,
                             const std::string& caller)
 {
     SimTK::Matrix intXY(vX.size(),2);
     BezierData bdata;
-        bdata._mX             = mX;
-        bdata._mY             = mY;
+        bdata._ctrlPtsX       = ctrlPtsX;
+        bdata._ctrlPtsY       = ctrlPtsY;
         bdata._initalValue    = ic0;
         bdata._aArraySplineUX = aSplineUX;
         bdata._uMaxIter       = uMaxIter;

@@ -37,6 +37,8 @@ v4.5
 - Fixed segfault that can occur when building models with unusual joint topologies (it now throws an `OpenSim::Exception` instead, #3299)
 - Add `calcMomentum`, `calcAngularMomentum`, `calcLinearMomentum`, and associated `Output`s to `Model` (#3474)
 - Fix issue where a different __init__.py is used by conda package and dev environment, the fix allows developers to install local builds into conda. (#3502)
+- Changed control points in `SegmentedQuinticBezierToolkit` to be of `SimTK::Vec6` type instead of `SimTK::Vector` (#3481).
+
 
 v4.4
 ====
