@@ -33,7 +33,7 @@
 using namespace OpenSim;
 
 namespace {
-    constexpr double c_TAU = 2. * M_PI;
+    const double c_TAU = 2. * SimTK::Pi;
 
     // A path segment determined in terms of the start and end point.
     struct PathSegment final {
@@ -104,7 +104,7 @@ namespace {
         return AngularDistance(
             std::atan2(start[1], start[0]),
             std::atan2(end[1], end[0]),
-            true) <= M_PI;
+            true) <= SimTK::Pi;
     }
 
     bool DirectionOfShortestAngularDistanceAboutZAxis(const PathSegment& path)
