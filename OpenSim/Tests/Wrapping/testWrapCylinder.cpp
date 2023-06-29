@@ -33,7 +33,7 @@
 using namespace OpenSim;
 
 namespace {
-    static constexpr double c_TAU = 2. * M_PI;
+    constexpr double c_TAU = 2. * M_PI;
 
     // A path segment determined in terms of the start and end point.
     struct PathSegment final {
