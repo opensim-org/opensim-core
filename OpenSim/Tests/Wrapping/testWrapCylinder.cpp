@@ -75,7 +75,7 @@ namespace {
     {
         return PathSegment{
             rot * path.start,
-            rot * path.end
+            rot * path.end,
         };
     }
 
