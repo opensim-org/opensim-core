@@ -541,20 +541,47 @@ namespace {
     {
 
         WrapTestResult result = solve(input, visualize);
+        std::ostringstream failedBuf;
 
+        // Test if wrapping result matches expected result.
         if (!IsEqualWithinTolerance(result, expected, tol.position)) {
-            std::ostringstream oss;
-            oss << "\nFAILED: case = " << testCase;
-            oss << "\n    input = " << input;
-            oss << "\n    result = " << result;
-            oss << "\n    expected = " << expected;
-            oss << "\n    caused by: "
-                << "Expected and simulated result not equal to within tolerance = "
-                << tol.position;
-            return oss.str();
+            failedBuf << "\n        ";
+            failedBuf << "Expected and simulated result not equal to within tolerance = " << tol.position;
         }
 
-        return std::string{};
+        // Test geodesic properties of wrapping result.
+        if (!result.noWrap) {
+            failedBuf << TestGeodesicProperties(
+                input,
+                result,
+                tol,
+                "Wrapping result"
+            );
+        }
+
+        // Als test geodesic properties of supplied expected result.
+        if (!expected.noWrap) {
+            failedBuf << TestGeodesicProperties(
+                input,
+                expected,
+                WrappingTolerances(1e-13),
+                "Supplied expected path"
+            );
+        }
+
+        std::string failedStr = failedBuf.str();
+        if (failedStr.empty()) {
+            return failedStr;
+        }
+
+        // If failed, print info related to this test case.
+        std::ostringstream oss;
+        oss << "\nFAILED: case = " << testCase;
+        oss << "\n    input = " << input;
+        oss << "\n    result = " << result;
+        oss << "\n    expected = " << expected;
+        oss << "\n    caused by:" << failedStr;
+        return oss.str();
     }
 
 }
