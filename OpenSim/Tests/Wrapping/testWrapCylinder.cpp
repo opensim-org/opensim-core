@@ -426,10 +426,7 @@ namespace {
 
         // Convert the WrapResult to a WrapTestResult for convenient assertions.
         WrapTestResult result;
-        result.path = PathSegment{
-            wrapResult.r1,
-            wrapResult.r2,
-        };
+        result.path = {wrapResult.r1, wrapResult.r2};
         result.length = wrapResult.wrap_path_length;
         // Determine the wrapping sign based on the first path segment.
         result.positiveDirection = DirectionOfShortestAngularDistanceAboutZAxis(
