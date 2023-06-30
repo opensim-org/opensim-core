@@ -326,6 +326,10 @@ namespace {
             && lhs.noWrap == rhs.noWrap;
     }
 
+    double ErrorInfinityNorm(const SimTK::UnitVec3& lhs, const SimTK::UnitVec3& rhs) {
+        return SimTK::max(( lhs.asVec3() - rhs.asVec3() ).abs());
+    }
+
 }
 
 // Section on configuring and simulating a specific wrapping scenario.
