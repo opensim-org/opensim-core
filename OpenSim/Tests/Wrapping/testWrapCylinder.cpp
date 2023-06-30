@@ -120,6 +120,119 @@ namespace {
             path.end.getSubVec<2>(0));
     }
 
+    // Representation of a point in space using cylindrical coordinates.
+    struct CylindricalCoordinates final {
+
+        CylindricalCoordinates(const SimTK::Vec3& point) :
+            radius(SimTK::Vec2(point[0], point[1]).norm()),
+            angle(std::atan2(point[1], point[0])),
+            axialPosition(point[2])
+        {}
+
+        double radius;
+        double angle;
+        double axialPosition;
+    };
+
+    // A geodesic path definition on a cylindrical surface.
+    //
+    // The wrapping problem is not solved here, instead the geodesic is constructed
+    // given a wrapping result, and allows for the surface gradient and path length
+    // to be evaluated. These values can then be used for asserting correctness of
+    // the given wrapping result.
+    class CylinderGeodesic final {
+
+        CylinderGeodesic(
+            PathSegment<CylindricalCoordinates> wrappedPath,
+            bool wrappingDirection
+        ) :
+            _startPoint(
+                wrappedPath.start),
+            _axialDistance(
+                wrappedPath.end.axialPosition -
+                wrappedPath.start.axialPosition),
+            _angularDistance(
+                AngularDistance(
+                    wrappedPath.start.angle,
+                    wrappedPath.end.angle,
+                    wrappingDirection)),
+            _cylinderOrientation(
+                SimTK::Rotation())
+        {}
+
+        CylinderGeodesic(
+            PathSegmentVec3 wrappedPath,
+            bool wrapping_direction
+        ) :
+            CylinderGeodesic(PathSegment<CylindricalCoordinates>(wrappedPath),
+                wrapping_direction)
+        {}
+
+        public:
+        CylinderGeodesic(
+            const PathSegmentVec3& wrappedPath,
+            bool wrapping_direction,
+            const SimTK::Rotation& cylinder_orientation
+        ) :
+            CylinderGeodesic(
+                cylinder_orientation.invert() * wrappedPath,
+                wrapping_direction)
+        {
+            _cylinderOrientation = cylinder_orientation;
+        }
+
+        private:
+
+        // Computes the surface gradient along the geodesic path (start: t=0, end: t=1).
+        SimTK::Vec3 computeSurfaceGradient(double t) const
+        {
+            SimTK::Rotation rotZAxis;
+            rotZAxis.setRotationFromAngleAboutZ(_angularDistance * t + _startPoint.angle);
+            return _cylinderOrientation *
+                rotZAxis * (
+                    SimTK::Vec3(0., 1., 0.) * _startPoint.radius
+                    * _angularDistance
+                    + SimTK::Vec3(0., 0., 1.)
+                    * _axialDistance
+                );
+        }
+
+        public:
+        // Compute surface gradient direction at start of geodesic path.
+        SimTK::UnitVec3 computeGradientDirectionAtStart() const
+        {
+            return SimTK::UnitVec3(computeSurfaceGradient(0.));
+        }
+
+        // Compute surface gradient direction at end of geodesic path.
+        SimTK::UnitVec3 computeGradientDirectionAtEnd() const
+        {
+            return SimTK::UnitVec3(computeSurfaceGradient(1.));
+        }
+
+        // Compute geodesic path length.
+        double computeLength() const
+        {
+            return std::sqrt(
+                    std::pow(_angularDistance * _startPoint.radius, 2) +
+                    std::pow(_axialDistance, 2)
+                );
+        }
+
+        double getRadius() const {
+            return _startPoint.radius;
+        }
+
+        private:
+        // Local coordinates of starting point of wrapped path.
+        CylindricalCoordinates _startPoint;
+        // Distance from start to end of wrapped path.
+        double _axialDistance;
+        double _angularDistance;
+        // Cylinder orientation wrt ground frame.
+        SimTK::Rotation _cylinderOrientation;
+    };
+
 }
 
 // Section with helpers for evaluating the wrapping result in the upcoming test.
