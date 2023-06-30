@@ -278,11 +278,13 @@ namespace {
 
         WrappingTolerances(double eps) :
             position(eps),
-            length(eps)
+            length(eps),
+            gradientDirection(eps)
         {}
 
-        double position = 1e-9;
+        double position = 1e-2;
         double length = 1e-9;
+        double gradientDirection = 5e-2;
     };
 
     bool IsEqualWithinTolerance(
@@ -315,13 +317,13 @@ namespace {
     bool IsEqualWithinTolerance(
         const WrapTestResult& lhs,
         const WrapTestResult& rhs,
-        const WrappingTolerances& tolerance)
+        double tolerance)
     {
         if (lhs.noWrap && rhs.noWrap) {
             return true;
         }
-        return IsEqualWithinTolerance(lhs.path, rhs.path, tolerance.position)
-            && IsEqualWithinTolerance(lhs.length, rhs.length, tolerance.length)
+        return IsEqualWithinTolerance(lhs.path, rhs.path, tolerance)
+            && IsEqualWithinTolerance(lhs.length, rhs.length, tolerance)
             && lhs.positiveDirection == rhs.positiveDirection
             && lhs.noWrap == rhs.noWrap;
     }
@@ -440,9 +442,94 @@ namespace {
         return result;
     }
 
+}
+
+// Section on testing.
+namespace {
+
+    std::string TestGeodesicProperties(
+        const WrapInput& input,
+        const WrapTestResult& result,
+        const WrappingTolerances& tol,
+        const std::string& name)
+    {
+        std::ostringstream oss;
+        std::string delim = "\n        ";
+
+        // =====================================================================
+        // ============ Test: Wrapped points distance to surface. ==============
+        // =====================================================================
+
+        // We can assert if the wrapped path points lie on the surface of the
+        // cylinder, by computing the radial position in cylindrical
+        // coordinates.
+
+        CylinderGeodesic geodesicPath(
+            result.path,
+            result.positiveDirection,
+            input.cylinderOrientation()
+        );
+
+        double error = std::abs(geodesicPath.getRadius() - input.radius);
+        if (error > tol.position) {
+            oss << delim << name << ": Distance to surface error = " << error <<
+                " exceeds tolerance = " << tol.position;
+        }
+
+        // =====================================================================
+        // ===================== Test: Wrapping length. ========================
+        // =====================================================================
+
+        // We can test the path length by recomputing it from the path points
+        // via the CylinderGeodesic.
+
+        error = std::abs(geodesicPath.computeLength() - result.length);
+        if (error > tol.length) {
+            oss << delim << name << ": Length error = " << error <<
+                " exceeds tolerance = " << tol.length;
+        }
+
+        // =====================================================================
+        // ===================== Test: Tangency to surface =====================
+        // =====================================================================
+
+        // The path must at all times be tangent to the cylinder surface. We can
+        // test that the straight-line segments, before and after wrapping the
+        // surface, are also tangent to the surface.
+
+        // Straight line segment from path start point to surface must be
+        // tangent to cylinder surface.
+
+
+        error = ErrorInfinityNorm(
+            geodesicPath.computeGradientDirectionAtStart(),
+            SimTK::UnitVec3(result.path.start - input.path.start));
+        if (error > tol.gradientDirection) {
+            oss << delim << name << ": Start segment gradient error = " << error
+                << " exceeds tolerance = " << tol.gradientDirection;
+            oss << delim << name << ": Start segment gradient = " << geodesicPath.computeGradientDirectionAtStart();
+            oss << delim << name << ": Start segment line = " << SimTK::UnitVec3(result.path.start - input.path.start);
+        }
+
+        // Straight line segment from surface to path end point must be tangent
+        // to cylinder surface.
+        error = ErrorInfinityNorm(
+            geodesicPath.computeGradientDirectionAtEnd(),
+            SimTK::UnitVec3(input.path.end - result.path.end));
+        if (error > tol.gradientDirection) {
+            oss << delim << name << ": End segment gradient error = " << error
+                << " exceeds tolerance = " << tol.gradientDirection;
+            oss << delim << name << ": End segment gradient = " << geodesicPath.computeGradientDirectionAtEnd();
+            oss << delim << name << ": End segment line = " << SimTK::UnitVec3(input.path.end - result.path.end);
+        }
+
+        return oss.str();
+    }
+
     // Simulates and tests a wrapping case:
     // - Computes the wrapping result given the input.
     // - Tests if computed result is equal to the expected result.
+    // - Tests if geodesic properties of computed result are correct.
     // - Returns a string containing info on the failed test, or an empty string
     // if succesful.
     std::string TestWrapping(
