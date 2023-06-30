@@ -588,7 +588,7 @@ int main()
     std::vector<std::string> failLog;
     WrappingTolerances tolerance;
 
-    WrapInput input {};
+    WrapInput input;
     input.radius = 1.;
     input.cylinderLength = 10.;
 
@@ -598,7 +598,7 @@ int main()
 
     // Placing the path inside the cylinder results in a no-wrap.
     std::string name = "Inside cylinder";
-    input.path = {{}, {}};
+    input.path = {{0., 0., 0.}, {0., 0., 0.}};
 
     WrapTestResult expected = WrapTestResult::NoWrap();
 
