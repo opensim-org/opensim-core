@@ -32,6 +32,7 @@
 
 using namespace OpenSim;
 
+// Section containing Geometry related helpers.
 namespace {
     const double c_TAU = 2. * SimTK::Pi;
 
@@ -47,16 +48,16 @@ namespace {
 
         template<typename X>
         PathSegment(PathSegment<X> other) :
-            PathSegment {
+            PathSegment{
                 T(other.start),
-                T(other.end)
+                T(other.end),
             }
         {}
 
         // Returns PathSegment with start and end swapped.
         PathSegment getReversed() const
         {
-            return PathSegment{end, start};
+            return {end, start};
         }
 
         void setReversed()
@@ -78,10 +79,13 @@ namespace {
             "PathSegment{start: " << path.start << ", end: " << path.end << "}";
     }
 
-    PathSegmentVec3 operator*(const SimTK::Rotation& rot, const PathSegmentVec3& path) {
-        return PathSegmentVec3 {
+    PathSegmentVec3 operator*(
+        const SimTK::Rotation& rot,
+        const PathSegmentVec3& path)
+    {
+        return {
             rot * path.start,
-            rot * path.end
+            rot * path.end,
           };
     }
 
@@ -137,17 +141,15 @@ namespace {
     // A geodesic path definition on a cylindrical surface.
     //
     // The wrapping problem is not solved here, instead the geodesic is constructed
-    // given a wrapping result, and allows for the surface gradient and path length
-    // to be evaluated. These values can then be used for asserting correctness of
-    // the given wrapping result.
+    // given a wrapping result, and allows for the surface tangent direction and
+    // path length to be evaluated. These values can then be used for asserting correctness of
+    // the given wrapping result in later tests.
     class CylinderGeodesic final {
 
         CylinderGeodesic(
             PathSegment<CylindricalCoordinates> wrappedPath,
-            bool wrappingDirection
-        ) :
-            _startPoint(
-                wrappedPath.start),
+            bool wrappingDirection) :
+            _startPoint(wrappedPath.start),
             _axialDistance(
                 wrappedPath.end.axialPosition -
                 wrappedPath.start.axialPosition),
@@ -156,15 +158,15 @@ namespace {
                     wrappedPath.start.angle,
                     wrappedPath.end.angle,
                     wrappingDirection)),
-            _cylinderOrientation(
-                SimTK::Rotation())
+            _cylinderOrientation(SimTK::Rotation())
         {}
 
         CylinderGeodesic(
             PathSegmentVec3 wrappedPath,
             bool wrapping_direction
         ) :
-            CylinderGeodesic(PathSegment<CylindricalCoordinates>(wrappedPath),
+            CylinderGeodesic(
+                PathSegment<CylindricalCoordinates>(wrappedPath),
                 wrapping_direction)
         {}
 
@@ -444,6 +446,10 @@ namespace {
 // Section on testing.
 namespace {
 
+    // Function for testing the geodesic properties of the wrapping result.
+    //
+    // Returns string with info on failed tests, or empty string in case of
+    // success.
     std::string TestGeodesicProperties(
         const WrapInput& input,
         const WrapTestResult& result,
@@ -477,8 +483,8 @@ namespace {
         // ===================== Test: Wrapping length. ========================
         // =====================================================================
 
-        // We can test the path length by recomputing it from the path points
-        // via the CylinderGeodesic.
+        // We can test the path result length by recomputing it from the path
+        // points via the CylinderGeodesic.
 
         error = std::abs(geodesicPath.computeLength() - result.length);
         if (error > tol.length) {
@@ -520,6 +526,7 @@ namespace {
             oss << delim << name << ": End segment line = " << SimTK::UnitVec3(input.path.end - result.path.end);
         }
 
+        // Return info on failed tests if any, or an empty string.
         return oss.str();
     }
 
@@ -556,7 +563,9 @@ namespace {
             );
         }
 
-        // Als test geodesic properties of supplied expected result.
+        // Also test geodesic properties of the supplied expected result.
+        // This is to prevent accidentally testing against an incorrect expected
+        // wrapping result.
         if (!expected.noWrap) {
             failedBuf << TestGeodesicProperties(
                 input,
@@ -647,7 +656,7 @@ int main()
         return 1;
     }
 
-    std::cout << "Wrap Cylinder Test: Passed " << failLog.size() << " tests." <<
-        std::endl;
+    std::cout << "Wrap Cylinder Test: Passed " << failLog.size() << " tests."
+        << std::endl;
     return 0;
 }
