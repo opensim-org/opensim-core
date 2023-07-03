@@ -761,8 +761,7 @@ private:
     @param staticSolution set to true to calculate the static equilibrium
            solution, setting fiber and tendon velocities to zero
     */
-    MuscleStateEstimate
-        estimateMuscleFiberState(const double aActivation,
+    MuscleStateEstimate estimateMuscleFiberState(const double aActivation,
                                  const double pathLength,
                                  const double pathLengtheningSpeed,
                                  const double aSolTolerance,
