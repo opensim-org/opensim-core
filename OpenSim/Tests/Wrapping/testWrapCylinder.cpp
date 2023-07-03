@@ -185,8 +185,9 @@ namespace {
 
         private:
 
-        // Computes the surface gradient along the geodesic path (start: t=0, end: t=1).
-        SimTK::Vec3 computeSurfaceGradient(double t) const
+        // Computes a tangent vector to the surface along the geodesic path.
+        // Argument t: start: t=0, end: t=1.
+        SimTK::Vec3 computeSurfaceTangentVector(double t) const
         {
             SimTK::Rotation rotZAxis;
             rotZAxis.setRotationFromAngleAboutZ(_angularDistance * t + _startPoint.angle);
@@ -200,16 +201,16 @@ namespace {
         }
 
         public:
-        // Compute surface gradient direction at start of geodesic path.
-        SimTK::UnitVec3 computeGradientDirectionAtStart() const
+        // Compute surface tangent direction at start of geodesic path.
+        SimTK::UnitVec3 computeTangentDirectionAtStart() const
         {
-            return SimTK::UnitVec3(computeSurfaceGradient(0.));
+            return SimTK::UnitVec3(computeSurfaceTangentVector(0.));
         }
 
-        // Compute surface gradient direction at end of geodesic path.
-        SimTK::UnitVec3 computeGradientDirectionAtEnd() const
+        // Compute surface tangent direction at end of geodesic path.
+        SimTK::UnitVec3 computeTangentDirectionAtEnd() const
         {
-            return SimTK::UnitVec3(computeSurfaceGradient(1.));
+            return SimTK::UnitVec3(computeSurfaceTangentVector(1.));
         }
 
         // Compute geodesic path length.
@@ -281,12 +282,12 @@ namespace {
         WrappingTolerances(double eps) :
             position(eps),
             length(eps),
-            gradientDirection(eps)
+            tangentDirection(eps)
         {}
 
         double position = 1e-2;
         double length = 1e-9;
-        double gradientDirection = 5e-2;
+        double tangentDirection = 5e-2;
     };
 
     bool IsEqualWithinTolerance(
@@ -502,28 +503,34 @@ namespace {
 
         // Straight line segment from path start point to surface must be
         // tangent to cylinder surface.
-
-
+        SimTK::UnitVec3 start_straight_segment_direction =
+            SimTK::UnitVec3(result.path.start - input.path.start);
         error = ErrorInfinityNorm(
-            geodesicPath.computeGradientDirectionAtStart(),
-            SimTK::UnitVec3(result.path.start - input.path.start));
-        if (error > tol.gradientDirection) {
-            oss << delim << name << ": Start segment gradient error = " << error
-                << " exceeds tolerance = " << tol.gradientDirection;
-            oss << delim << name << ": Start segment gradient = " << geodesicPath.computeGradientDirectionAtStart();
-            oss << delim << name << ": Start segment line = " << SimTK::UnitVec3(result.path.start - input.path.start);
+            geodesicPath.computeTangentDirectionAtStart(),
+            start_straight_segment_direction);
+        if (error > tol.tangentDirection) {
+            oss << delim << name << ": Start segment tangent direction error = " << error
+                << " exceeds tolerance = " << tol.tangentDirection;
+            oss << delim << name << ": Start surface tangent vector direction = "
+                << geodesicPath.computeTangentDirectionAtStart();
+            oss << delim << name << ": Start straight line segment direction = "
+                << start_straight_segment_direction;
         }
 
         // Straight line segment from surface to path end point must be tangent
         // to cylinder surface.
+        SimTK::UnitVec3 end_straight_segment_direction =
+            SimTK::UnitVec3(input.path.end - result.path.end);
         error = ErrorInfinityNorm(
-            geodesicPath.computeGradientDirectionAtEnd(),
-            SimTK::UnitVec3(input.path.end - result.path.end));
-        if (error > tol.gradientDirection) {
-            oss << delim << name << ": End segment gradient error = " << error
-                << " exceeds tolerance = " << tol.gradientDirection;
-            oss << delim << name << ": End segment gradient = " << geodesicPath.computeGradientDirectionAtEnd();
-            oss << delim << name << ": End segment line = " << SimTK::UnitVec3(input.path.end - result.path.end);
+            geodesicPath.computeTangentDirectionAtEnd(),
+            end_straight_segment_direction);
+        if (error > tol.tangentDirection) {
+            oss << delim << name << ": End segment tangent direction error = " << error
+                << " exceeds tolerance = " << tol.tangentDirection;
+            oss << delim << name << ": End surface tangent vector direction = "
+                << geodesicPath.computeTangentDirectionAtEnd();
+            oss << delim << name << ": End straight line segment direction = "
+                << end_straight_segment_direction;
         }
 
         // Return info on failed tests if any, or an empty string.
