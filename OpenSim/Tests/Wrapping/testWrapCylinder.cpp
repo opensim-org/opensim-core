@@ -46,20 +46,14 @@ namespace {
             end(endPoint)
         {}
 
-        // Returns PathSegment with start and end swapped.
-        PathSegment getReversed() const
-        {
-            return PathSegment{end, start};
-        }
-
-        void setReversed()
-        {
-            *this = getReversed();
-        }
-
         SimTK::Vec3 start{SimTK::NaN};
         SimTK::Vec3 end{SimTK::NaN};
     };
+
+    // Returns PathSegment with start and end swapped.
+    PathSegment Reversed(const PathSegment& path) {
+        return PathSegment{path.end, path.start};
+    }
 
     std::ostream& operator<<(
         std::ostream& os,
@@ -389,8 +383,8 @@ int main()
     failLog.push_back(TestWrapping(input, expected, tolerance, name));
 
     // Swapping start and end should not change the path:
-    input.path.setReversed();
-    expected.path.setReversed();
+    input.path = Reversed(input.path);
+    expected.path = Reversed(expected.path);
     expected.positiveDirection = false;
 
     failLog.push_back(TestWrapping(input, expected, tolerance, name));
