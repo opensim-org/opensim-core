@@ -73,17 +73,31 @@ namespace {
         };
     }
 
-    // Angular distance from start- to end-angle in either positive or negative direction.
+    enum class RotationDirection {
+        Positive,
+        Negative,
+    };
+
+    std::ostream& operator<<(
+        std::ostream& os,
+        const RotationDirection& direction)
+    {
+        return os << "RotationDirection::" << (
+            (direction == RotationDirection::Positive)? "Positive": "Negative");
+    }
+
+    // Angular distance from start- to end-angle in either positive or negative
+    // direction.
     double AngularDistance(
         double startAngle,
         double endAngle,
-        bool positiveRotation)
+        RotationDirection direction)
     {
         double distance = std::fmod(endAngle - startAngle, c_TAU);
-        while ((distance < 0.) && positiveRotation) {
+        while (distance < 0. && direction == RotationDirection::Positive) {
             distance += c_TAU;
         }
-        while ((distance > 0.) && !positiveRotation) {
+        while (distance > 0. && direction == RotationDirection::Negative) {
             distance -= c_TAU;
         }
         return distance;
@@ -91,17 +105,23 @@ namespace {
 
     // Returns direction of shortest angular distance for a vector aligned with the
     // start point to become aligned with the end point (true if positive).
-    bool DirectionOfShortestAngularDistance(
+    RotationDirection DirectionOfShortestAngularDistance(
         SimTK::Vec2 start,
         SimTK::Vec2 end)
     {
-        return AngularDistance(
+        // Compute angular distance assuming positive rotation.
+        double distance = AngularDistance(
             std::atan2(start[1], start[0]),
             std::atan2(end[1], end[0]),
-            true) <= SimTK::Pi;
+            RotationDirection::Positive);
+        // Check if positive direction was the shortest path.
+        return distance <= SimTK::Pi?
+                RotationDirection::Positive:
+                RotationDirection::Negative;
     }
 
-    bool DirectionOfShortestAngularDistanceAboutZAxis(const PathSegment& path)
+    RotationDirection DirectionOfShortestAngularDistanceAboutZAxis(
+        const PathSegment& path)
     {
         return DirectionOfShortestAngularDistance(
             path.start.getSubVec<2>(0),
@@ -127,7 +147,7 @@ namespace {
         // Path segment length.
         double length = SimTK::NaN;
         // Direction of wrapping wrt cylinder axis.
-        bool positiveDirection = true;
+        RotationDirection direction = RotationDirection::Positive;
         // True if there is no wrapping (the other fields don't matter).
         bool noWrap = false;
     };
@@ -143,8 +163,7 @@ namespace {
             "WrapTestResult{" <<
             "path: " << result.path << ", " <<
             "length: " << result.length << ", " <<
-            "direction: " << (result.positiveDirection? "Positive" : "Negative")
-            << "}";
+            "direction: " << result.direction << "}";
     }
 
     // Struct holding the tolerances when asserting the wrapping result.
@@ -197,7 +216,7 @@ namespace {
         }
         return IsEqualWithinTolerance(lhs.path, rhs.path, tolerance.position)
             && IsEqualWithinTolerance(lhs.length, rhs.length, tolerance.length)
-            && lhs.positiveDirection == rhs.positiveDirection
+            && lhs.direction == rhs.direction
             && lhs.noWrap == rhs.noWrap;
     }
 
@@ -301,7 +320,7 @@ namespace {
         };
         result.length = wrapResult.wrap_path_length;
         // Determine the wrapping sign based on the first path segment.
-        result.positiveDirection = DirectionOfShortestAngularDistanceAboutZAxis(
+        result.direction = DirectionOfShortestAngularDistanceAboutZAxis(
             input.cylinderOrientation().invert() * PathSegment{
                 input.path.start,
                 wrapResult.r1,
@@ -385,7 +404,7 @@ int main()
     // Swapping start and end should not change the path:
     input.path = Reversed(input.path);
     expected.path = Reversed(expected.path);
-    expected.positiveDirection = false;
+    expected.direction = RotationDirection::Negative;
 
     failLog.push_back(TestWrapping(input, expected, tolerance, name));
 
