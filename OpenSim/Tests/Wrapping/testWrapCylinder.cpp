@@ -643,7 +643,30 @@ int main()
     expected.path.setReversed();
     expected.positiveDirection = false;
 
+    failLog.push_back(TestWrapping(input, expected, tolerance, name + "reversed"));
+
+    // =========================================================================
+    // ============================= Axial case ================================
+    // =========================================================================
+
+    name = "Axial";
+    input.path = {{2, -2, 1}, {-2, 2.1, -1}};
+
+    // Same result for all positive quadrants.
+    expected.path = {
+        {0.911437827766148, 0.411437827766148, 0.126370674513168},
+        {0.441911556159667, 0.897058624913969, -0.101149865520415},
+    };
+    expected.length = 0.725628918417459;
+    expected.positiveDirection = true;
+
     failLog.push_back(TestWrapping(input, expected, tolerance, name));
+
+    input.path.setReversed();
+    expected.path.setReversed();
+    expected.positiveDirection = false;
+
+    failLog.push_back(TestWrapping(input, expected, tolerance, name + "reversed"));
 
     // =========================================================================
     // ====================== Handling of Test Results =========================
