@@ -34,7 +34,7 @@ using namespace OpenSim;
 
 // Section containing Geometry related helpers.
 namespace {
-    const double c_TAU = 2. * SimTK::Pi;
+    constexpr double c_TAU = 2. * SimTK_PI;
 
     // A path segment determined in terms of the start and end point.
     template<typename T>
@@ -54,20 +54,16 @@ namespace {
             }
         {}
 
-        // Returns PathSegment with start and end swapped.
-        PathSegment getReversed() const
-        {
-            return {end, start};
-        }
-
-        void setReversed()
-        {
-            *this = getReversed();
-        }
-
         T start{SimTK::NaN};
         T end{SimTK::NaN};
     };
+
+    // Returns PathSegment with start and end swapped.
+    template<typename T>
+    PathSegment<T> Reversed(const PathSegment<T>& path)
+    {
+        return PathSegment<T>{path.end, path.start};
+    }
 
     using PathSegmentVec3 = PathSegment<SimTK::Vec3>;
 
@@ -89,17 +85,31 @@ namespace {
           };
     }
 
-    // Angular distance from start- to end-angle in either positive or negative direction.
+    enum class RotationDirection {
+        Positive,
+        Negative,
+    };
+
+    std::ostream& operator<<(
+        std::ostream& os,
+        const RotationDirection& direction)
+    {
+        return os << "RotationDirection::" << (
+            (direction == RotationDirection::Positive)? "Positive": "Negative");
+    }
+
+    // Angular distance from start- to end-angle in either positive or negative
+    // direction.
     double AngularDistance(
         double startAngle,
         double endAngle,
-        bool positiveRotation)
+        RotationDirection direction)
     {
         double distance = std::fmod(endAngle - startAngle, c_TAU);
-        while ((distance < 0.) && positiveRotation) {
+        while (distance < 0. && direction == RotationDirection::Positive) {
             distance += c_TAU;
         }
-        while ((distance > 0.) && !positiveRotation) {
+        while (distance > 0. && direction == RotationDirection::Negative) {
             distance -= c_TAU;
         }
         return distance;
@@ -107,17 +117,23 @@ namespace {
 
     // Returns direction of shortest angular distance for a vector aligned with the
     // start point to become aligned with the end point (true if positive).
-    bool DirectionOfShortestAngularDistance(
+    RotationDirection DirectionOfShortestAngularDistance(
         SimTK::Vec2 start,
         SimTK::Vec2 end)
     {
-        return AngularDistance(
+        // Compute angular distance assuming positive rotation.
+        double distance = AngularDistance(
             std::atan2(start[1], start[0]),
             std::atan2(end[1], end[0]),
-            true) <= SimTK::Pi;
+            RotationDirection::Positive);
+        // Check if positive direction was the shortest path.
+        return distance <= SimTK::Pi?
+                RotationDirection::Positive:
+                RotationDirection::Negative;
     }
 
-    bool DirectionOfShortestAngularDistanceAboutZAxis(const PathSegmentVec3& path)
+    RotationDirection DirectionOfShortestAngularDistanceAboutZAxis(
+        const PathSegmentVec3& path)
     {
         return DirectionOfShortestAngularDistance(
             path.start.getSubVec<2>(0),
@@ -148,7 +164,7 @@ namespace {
 
         CylinderGeodesic(
             PathSegment<CylindricalCoordinates> wrappedPath,
-            bool wrappingDirection) :
+            RotationDirection wrappingDirection) :
             _startPoint(wrappedPath.start),
             _axialDistance(
                 wrappedPath.end.axialPosition -
@@ -163,24 +179,24 @@ namespace {
 
         CylinderGeodesic(
             PathSegmentVec3 wrappedPath,
-            bool wrapping_direction
+            RotationDirection wrappingDirection
         ) :
             CylinderGeodesic(
                 PathSegment<CylindricalCoordinates>(wrappedPath),
-                wrapping_direction)
+                wrappingDirection)
         {}
 
         public:
         CylinderGeodesic(
             const PathSegmentVec3& wrappedPath,
-            bool wrapping_direction,
-            const SimTK::Rotation& cylinder_orientation
+            RotationDirection wrappingDirection,
+            const SimTK::Rotation& cylinderOrientation
         ) :
             CylinderGeodesic(
-                cylinder_orientation.invert() * wrappedPath,
-                wrapping_direction)
+                cylinderOrientation.invert() * wrappedPath,
+                wrappingDirection)
         {
-            _cylinderOrientation = cylinder_orientation;
+            _cylinderOrientation = cylinderOrientation;
         }
 
         private:
@@ -255,7 +271,7 @@ namespace {
         // Path segment length.
         double length = SimTK::NaN;
         // Direction of wrapping wrt cylinder axis.
-        bool positiveDirection = true;
+        RotationDirection direction = RotationDirection::Positive;
         // True if there is no wrapping (the other fields don't matter).
         bool noWrap = false;
     };
@@ -271,8 +287,7 @@ namespace {
             "WrapTestResult{" <<
             "path: " << result.path << ", " <<
             "length: " << result.length << ", " <<
-            "direction: " << (result.positiveDirection? "Positive" : "Negative")
-            << "}";
+            "direction: " << result.direction << "}";
     }
 
     // Struct holding the tolerances when asserting the wrapping result.
@@ -327,7 +342,7 @@ namespace {
         }
         return IsEqualWithinTolerance(lhs.path, rhs.path, tolerance)
             && IsEqualWithinTolerance(lhs.length, rhs.length, tolerance)
-            && lhs.positiveDirection == rhs.positiveDirection
+            && lhs.direction == rhs.direction
             && lhs.noWrap == rhs.noWrap;
     }
 
@@ -432,7 +447,7 @@ namespace {
         result.path = {wrapResult.r1, wrapResult.r2};
         result.length = wrapResult.wrap_path_length;
         // Determine the wrapping sign based on the first path segment.
-        result.positiveDirection = DirectionOfShortestAngularDistanceAboutZAxis(
+        result.direction = DirectionOfShortestAngularDistanceAboutZAxis(
             input.cylinderOrientation().invert() * PathSegmentVec3{
                 input.path.start,
                 wrapResult.r1,
@@ -470,7 +485,7 @@ namespace {
 
         CylinderGeodesic geodesicPath(
             result.path,
-            result.positiveDirection,
+            result.direction,
             input.cylinderOrientation()
         );
 
@@ -639,9 +654,9 @@ int main()
     failLog.push_back(TestWrapping(input, expected, tolerance, name));
 
     // Swapping start and end should not change the path:
-    input.path.setReversed();
-    expected.path.setReversed();
-    expected.positiveDirection = false;
+    input.path = Reversed(input.path);
+    expected.path = Reversed(expected.path);
+    expected.direction = RotationDirection::Negative;
 
     failLog.push_back(TestWrapping(input, expected, tolerance, name + "reversed"));
 
@@ -658,13 +673,13 @@ int main()
         {0.441911556159667, 0.897058624913969, -0.101149865520415},
     };
     expected.length = 0.725628918417459;
-    expected.positiveDirection = true;
+    expected.direction = RotationDirection::Positive;
 
     failLog.push_back(TestWrapping(input, expected, tolerance, name));
 
-    input.path.setReversed();
-    expected.path.setReversed();
-    expected.positiveDirection = false;
+    input.path = Reversed(input.path);
+    expected.path = Reversed(expected.path);
+    expected.direction = RotationDirection::Negative;
 
     failLog.push_back(TestWrapping(input, expected, tolerance, name + "reversed"));
 
