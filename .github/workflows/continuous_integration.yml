@@ -116,7 +116,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: opensim-core-${{ steps.configure.outputs.version }}-win-2019
-        path: opensim-core-${{ steps.configure.outputs.version }}-2019.zip
+        path: opensim-core-${{ steps.configure.outputs.version }}.zip
 
     # TODO: Must be relative to the workspace?
     # - name: Upload opensim-moco dependencies
