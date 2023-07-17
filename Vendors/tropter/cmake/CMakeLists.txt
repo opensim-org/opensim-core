@@ -12,7 +12,20 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
         OUTPUT_VARIABLE libgcc_name
         OUTPUT_STRIP_TRAILING_WHITESPACE)
     message(STATUS "MY_VARIABLES=${SDOLC_DIR} ${ColPack_ROOT_DIR} ${IPOPT_LIBDIR} ${gfortran} ${quadmath} ${gcc_libdir}")
-    install(FILES
+    if (OPENSIM_PYTHON_CONDA)
+       install(FILES
+            ${ADOLC_DIR}/lib64/libadolc.2.dylib
+            ${ADOLC_DIR}/lib64/libadolc.dylib
+            # /usr/local/opt/boost/lib/libboost_system.dylib
+            ${ColPack_ROOT_DIR}/lib/libColPack.0.dylib
+
+            ${gfortran}
+            ${quadmath}
+            ${gcc_libdir}/${libgcc_name}
+
+            DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    else
+	install(FILES
             ${ADOLC_DIR}/lib64/libadolc.2.dylib
             ${ADOLC_DIR}/lib64/libadolc.dylib
             # /usr/local/opt/boost/lib/libboost_system.dylib
