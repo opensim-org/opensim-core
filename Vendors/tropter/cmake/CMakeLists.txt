@@ -11,7 +11,7 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
         "basename `otool -L ${IPOPT_LIBDIR}/libcoinmumps.dylib  | grep 'libgcc' | awk '{print $1}'`"
         OUTPUT_VARIABLE libgcc_name
         OUTPUT_STRIP_TRAILING_WHITESPACE)
-
+    message(STATUS "MY_VARIABLES=${SDOLC_DIR} ${ColPack_ROOT_DIR} ${IPOPT_LIBDIR} ${gfortran} ${quadmath} ${gcc_libdir}")
     install(FILES
             ${ADOLC_DIR}/lib64/libadolc.2.dylib
             ${ADOLC_DIR}/lib64/libadolc.dylib
