@@ -517,7 +517,7 @@ namespace {
         // ===================== Test: Wrapping length. ========================
         // =====================================================================
 
-        // We can test the path result length by recomputing it from the path
+        // We can test the wrap-result length by recomputing it from the path
         // points via the CylinderGeodesic.
 
         error = std::abs(geodesicPath.computeLength() - result.length);
@@ -535,7 +535,7 @@ namespace {
         // surface, are also tangent to the surface.
 
         // Straight line segment from path start point to surface must be
-        // tangent to cylinder surface.
+        // tangent to cylinder surface:
         SimTK::UnitVec3 start_straight_segment_direction =
             SimTK::UnitVec3(result.path.start - input.path.start);
         error = ErrorInfinityNorm(
@@ -544,14 +544,14 @@ namespace {
         if (error > tol.tangentDirection) {
             oss << delim << name << ": Start segment tangent direction error = " << error
                 << " exceeds tolerance = " << tol.tangentDirection;
-            oss << delim << name << ": Start surface tangent vector direction = "
+            oss << delim << name << ": Start surface tangent direction = "
                 << geodesicPath.computeTangentDirectionAtStart();
             oss << delim << name << ": Start straight line segment direction = "
                 << start_straight_segment_direction;
         }
 
         // Straight line segment from surface to path end point must be tangent
-        // to cylinder surface.
+        // to cylinder surface:
         SimTK::UnitVec3 end_straight_segment_direction =
             SimTK::UnitVec3(input.path.end - result.path.end);
         error = ErrorInfinityNorm(
@@ -560,7 +560,7 @@ namespace {
         if (error > tol.tangentDirection) {
             oss << delim << name << ": End segment tangent direction error = " << error
                 << " exceeds tolerance = " << tol.tangentDirection;
-            oss << delim << name << ": End surface tangent vector direction = "
+            oss << delim << name << ": End surface tangent direction = "
                 << geodesicPath.computeTangentDirectionAtEnd();
             oss << delim << name << ": End straight line segment direction = "
                 << end_straight_segment_direction;
