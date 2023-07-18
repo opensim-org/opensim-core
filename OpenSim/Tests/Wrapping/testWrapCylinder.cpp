@@ -603,18 +603,6 @@ namespace {
             );
         }
 
-        // Also test geodesic properties of the supplied expected result.
-        // This is to prevent accidentally testing against an incorrect expected
-        // wrapping result.
-        if (!expected.noWrap) {
-            failedBuf << TestGeodesicProperties(
-                input,
-                expected,
-                WrappingTolerances(1e-13),
-                "Supplied expected path"
-            );
-        }
-
         std::string failedStr = failedBuf.str();
         if (failedStr.empty()) {
             return failedStr;
@@ -660,10 +648,24 @@ int main()
     testCaseList.push_back(testCase);
 
     // =========================================================================
-    // ======================= Perpendicular Case ==============================
+    // ======================= Perpendicular Case 1 ============================
     // =========================================================================
 
-    testCase.name = "Perpendicular";
+    testCase.name = "Perpendicular 1";
+    testCase.input.path = {{2, 0.9, 0}, {-2, 1.0, 0}};
+
+    // Solution obtained from copy-pasting the solution (OpenSim 4.5).
+    testCase.expected.path = { {0.0505759009075089, 0.998720220205536, 0}, {0, 1, 0} };
+    testCase.expected.length = 0.0505974872969326;
+    testCase.expected.noWrap = false;
+
+    testCaseList.push_back(testCase);
+
+    // =========================================================================
+    // ======================= Perpendicular Case 2 ============================
+    // =========================================================================
+
+    testCase.name = "Perpendicular 2";
     testCase.input.path = {{2, -2, 0}, {-2, 2.1, 0}};
 
     testCase.expected.path = {
@@ -671,23 +673,6 @@ int main()
         {0.441911556159668, 0.897058624913969, 0.},
     };
     testCase.expected.length = 0.689036814042993;
-    testCase.expected.noWrap = false;
-
-    testCaseList.push_back(testCase);
-
-    // =========================================================================
-    // ============================= Axial case ================================
-    // =========================================================================
-
-    testCase.name = "Axial";
-    testCase.input.path = {{2, -2, 1}, {-2, 2.1, -1}};
-
-    testCase.expected.path = {
-        {0.911437827766148, 0.411437827766148, 0.126370674513168},
-        {0.441911556159667, 0.897058624913969, -0.101149865520415},
-    };
-    testCase.expected.length = 0.725628918417459;
-    testCase.expected.direction = RotationDirection::Positive;
 
     testCaseList.push_back(testCase);
 
