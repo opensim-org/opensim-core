@@ -39,8 +39,6 @@ namespace {
     // A path segment determined in terms of the start and end point.
     template<typename T>
     struct PathSegment final {
-        PathSegment() = default;
-
         PathSegment(T startPoint, T endPoint) :
             start(std::move(startPoint)),
             end(std::move(endPoint))
@@ -54,8 +52,8 @@ namespace {
             }
         {}
 
-        T start{SimTK::NaN};
-        T end{SimTK::NaN};
+        T start;
+        T end;
     };
 
     // Returns PathSegment with start and end swapped.
@@ -267,7 +265,10 @@ namespace {
         }
 
         // Path segment on cylinder surface.
-        PathSegmentVec3 path;
+        PathSegmentVec3 path{
+            SimTK::Vec3{SimTK::NaN},
+            SimTK::Vec3{SimTK::NaN},
+        };
         // Path segment length.
         double length = SimTK::NaN;
         // Direction of wrapping wrt cylinder axis.
@@ -370,7 +371,10 @@ namespace {
         }
 
         // Endpoints of the total path:
-        PathSegmentVec3 path;
+        PathSegmentVec3 path{
+            SimTK::Vec3{SimTK::NaN},
+            SimTK::Vec3{SimTK::NaN},
+        };
 
         // Wrapping cylinder parameters:
         double radius = 1.;
