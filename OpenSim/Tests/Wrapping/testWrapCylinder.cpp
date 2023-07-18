@@ -33,6 +33,7 @@
 using namespace OpenSim;
 
 namespace {
+    constexpr double c_TAU = 2. * SimTK_PI;
 
     // A path segment determined in terms of the start and end point.
     struct PathSegment final {
@@ -49,12 +50,82 @@ namespace {
         SimTK::Vec3 end{SimTK::NaN};
     };
 
+    // Returns PathSegment with start and end swapped.
+    PathSegment Reversed(const PathSegment& path) {
+        return PathSegment{path.end, path.start};
+    }
+
     std::ostream& operator<<(
         std::ostream& os,
         const PathSegment& path)
     {
         return os <<
             "PathSegment{start: " << path.start << ", end: " << path.end << "}";
+    }
+
+    PathSegment operator*(
+        const SimTK::Rotation& rot,
+        const PathSegment& path)
+    {
+        return PathSegment{
+            rot * path.start,
+            rot * path.end,
+        };
+    }
+
+    enum class RotationDirection {
+        Positive,
+        Negative,
+    };
+
+    std::ostream& operator<<(
+        std::ostream& os,
+        const RotationDirection& direction)
+    {
+        return os << "RotationDirection::" << (
+            (direction == RotationDirection::Positive)? "Positive": "Negative");
+    }
+
+    // Angular distance from start- to end-angle in either positive or negative
+    // direction.
+    double AngularDistance(
+        double startAngle,
+        double endAngle,
+        RotationDirection direction)
+    {
+        double distance = std::fmod(endAngle - startAngle, c_TAU);
+        while (distance < 0. && direction == RotationDirection::Positive) {
+            distance += c_TAU;
+        }
+        while (distance > 0. && direction == RotationDirection::Negative) {
+            distance -= c_TAU;
+        }
+        return distance;
+    }
+
+    // Returns direction of shortest angular distance for a vector aligned with the
+    // start point to become aligned with the end point (true if positive).
+    RotationDirection DirectionOfShortestAngularDistance(
+        SimTK::Vec2 start,
+        SimTK::Vec2 end)
+    {
+        // Compute angular distance assuming positive rotation.
+        double distance = AngularDistance(
+            std::atan2(start[1], start[0]),
+            std::atan2(end[1], end[0]),
+            RotationDirection::Positive);
+        // Check if positive direction was the shortest path.
+        return distance <= SimTK::Pi?
+                RotationDirection::Positive:
+                RotationDirection::Negative;
+    }
+
+    RotationDirection DirectionOfShortestAngularDistanceAboutZAxis(
+        const PathSegment& path)
+    {
+        return DirectionOfShortestAngularDistance(
+            path.start.getSubVec<2>(0),
+            path.end.getSubVec<2>(0));
     }
 
 }
@@ -75,6 +146,8 @@ namespace {
         PathSegment path;
         // Path segment length.
         double length = SimTK::NaN;
+        // Direction of wrapping wrt cylinder axis.
+        RotationDirection direction = RotationDirection::Positive;
         // True if there is no wrapping (the other fields don't matter).
         bool noWrap = false;
     };
@@ -89,7 +162,8 @@ namespace {
         return os <<
             "WrapTestResult{" <<
             "path: " << result.path << ", " <<
-            "length: " << result.length << "}";
+            "length: " << result.length << ", " <<
+            "direction: " << result.direction << "}";
     }
 
     // Struct holding the tolerances when asserting the wrapping result.
@@ -142,6 +216,7 @@ namespace {
         }
         return IsEqualWithinTolerance(lhs.path, rhs.path, tolerance.position)
             && IsEqualWithinTolerance(lhs.length, rhs.length, tolerance.length)
+            && lhs.direction == rhs.direction
             && lhs.noWrap == rhs.noWrap;
     }
 
@@ -165,7 +240,7 @@ namespace {
         }
 
         // Endpoints of the total path:
-        PathSegment path = {{}, {}};
+        PathSegment path;
 
         // Wrapping cylinder parameters:
         double radius = 1.;
@@ -244,6 +319,12 @@ namespace {
             wrapResult.r2,
         };
         result.length = wrapResult.wrap_path_length;
+        // Determine the wrapping sign based on the first path segment.
+        result.direction = DirectionOfShortestAngularDistanceAboutZAxis(
+            input.cylinderOrientation().invert() * PathSegment{
+                input.path.start,
+                wrapResult.r1,
+            });
         result.noWrap = wrapResult.wrap_pts.size() == 0;
 
         return result;
@@ -317,6 +398,13 @@ int main()
     expected.length = 0.689036814042993;
 
     expected.noWrap = false;
+
+    failLog.push_back(TestWrapping(input, expected, tolerance, name));
+
+    // Swapping start and end should not change the path:
+    input.path = Reversed(input.path);
+    expected.path = Reversed(expected.path);
+    expected.direction = RotationDirection::Negative;
 
     failLog.push_back(TestWrapping(input, expected, tolerance, name));
 
