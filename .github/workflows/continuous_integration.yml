@@ -115,7 +115,7 @@ jobs:
     - name: Upload opensim-core
       uses: actions/upload-artifact@v3
       with:
-        name: opensim-core-${{ steps.configure.outputs.version }}-win
+        name: opensim-core-${{ steps.configure.outputs.version }}-win-2019
         path: opensim-core-${{ steps.configure.outputs.version }}.zip
 
     # TODO: Must be relative to the workspace?
