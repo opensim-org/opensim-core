@@ -312,9 +312,9 @@ namespace {
             tangentDirection(eps)
         {}
 
-        double position = 1e-2;
+        double position = 1e-9;
         double length = 1e-9;
-        double tangentDirection = 5e-2;
+        double tangentDirection = 1e-9;
     };
 
     bool IsEqualWithinTolerance(
