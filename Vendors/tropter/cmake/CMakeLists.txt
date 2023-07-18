@@ -30,11 +30,6 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
             ${IPOPT_LIBDIR}/libcoinmetis.1.3.5.dylib
             ${IPOPT_LIBDIR}/libcoinmetis.1.dylib
             ${IPOPT_LIBDIR}/libcoinmetis.dylib
-
-            ${gfortran}
-            ${quadmath}
-            ${gcc_libdir}/${libgcc_name}
-
             DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
     else ()
