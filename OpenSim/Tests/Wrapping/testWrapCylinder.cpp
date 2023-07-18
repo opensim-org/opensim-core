@@ -95,7 +95,8 @@ namespace {
         const RotationDirection& direction)
     {
         return os << "RotationDirection::" << (
-            (direction == RotationDirection::Positive)? "Positive": "Negative");
+            (direction == RotationDirection::Positive)?
+                "Positive" : "Negative");
     }
 
     // Angular distance from start- to end-angle in either positive or negative
@@ -128,8 +129,7 @@ namespace {
             RotationDirection::Positive);
         // Check if positive direction was the shortest path.
         return distance <= SimTK::Pi?
-                RotationDirection::Positive:
-                RotationDirection::Negative;
+                RotationDirection::Positive : RotationDirection::Negative;
     }
 
     RotationDirection DirectionOfShortestAngularDistanceAboutZAxis(
@@ -142,7 +142,7 @@ namespace {
 
     // Representation of a point in space using cylindrical coordinates.
     struct CylindricalCoordinates final {
-
+        // Convert cartesian to cylindrical coordinates.
         CylindricalCoordinates(const SimTK::Vec3& point) :
             radius(SimTK::Vec2(point[0], point[1]).norm()),
             angle(std::atan2(point[1], point[0])),
@@ -154,7 +154,7 @@ namespace {
         double axialPosition;
     };
 
-    // A geodesic path definition on a cylindrical surface.
+    // A geodesic (path) definition on a cylindrical surface.
     //
     // The wrapping problem is not solved here, instead the geodesic is constructed
     // given a wrapping result, and allows for the surface tangent direction and
@@ -167,8 +167,8 @@ namespace {
             RotationDirection wrappingDirection) :
             _startPoint(wrappedPath.start),
             _axialDistance(
-                wrappedPath.end.axialPosition -
-                wrappedPath.start.axialPosition),
+                wrappedPath.end.axialPosition
+                - wrappedPath.start.axialPosition),
             _angularDistance(
                 AngularDistance(
                     wrappedPath.start.angle,
@@ -201,32 +201,35 @@ namespace {
 
         private:
 
-        // Computes a tangent vector to the surface along the geodesic path.
-        // Argument t: start: t=0, end: t=1.
-        SimTK::Vec3 computeSurfaceTangentVector(double t) const
+        // Helper for computing the tangent vector to the surface along the
+        // geodesic path. The angle argument allows for computing the tangent
+        // vector at a certain point along the path.
+        SimTK::Vec3 computeSurfaceTangentVector(double angle) const
         {
             SimTK::Rotation rotZAxis;
-            rotZAxis.setRotationFromAngleAboutZ(_angularDistance * t + _startPoint.angle);
+            rotZAxis.setRotationFromAngleAboutZ(angle);
             return _cylinderOrientation *
                 rotZAxis * (
                     SimTK::Vec3(0., 1., 0.) * _startPoint.radius
                     * _angularDistance
-                    + SimTK::Vec3(0., 0., 1.)
-                    * _axialDistance
+                    + SimTK::Vec3(0., 0., 1.) * _axialDistance
                 );
         }
 
         public:
-        // Compute surface tangent direction at start of geodesic path.
+
+        // Compute surface tangent direction at start of the path.
         SimTK::UnitVec3 computeTangentDirectionAtStart() const
         {
-            return SimTK::UnitVec3(computeSurfaceTangentVector(0.));
+            return SimTK::UnitVec3(
+                computeSurfaceTangentVector(_startPoint.angle));
         }
 
-        // Compute surface tangent direction at end of geodesic path.
+        // Compute surface tangent direction at end of the path.
         SimTK::UnitVec3 computeTangentDirectionAtEnd() const
         {
-            return SimTK::UnitVec3(computeSurfaceTangentVector(1.));
+            return SimTK::UnitVec3(computeSurfaceTangentVector(
+                _startPoint.angle + _angularDistance));
         }
 
         // Compute geodesic path length.
@@ -243,6 +246,7 @@ namespace {
         }
 
         private:
+
         // Local coordinates of starting point of wrapped path.
         CylindricalCoordinates _startPoint;
         // Distance from start to end of wrapped path.
@@ -349,7 +353,10 @@ namespace {
             && lhs.noWrap == rhs.noWrap;
     }
 
-    double ErrorInfinityNorm(const SimTK::UnitVec3& lhs, const SimTK::UnitVec3& rhs) {
+    double ErrorInfinityNorm(
+        const SimTK::UnitVec3& lhs,
+        const SimTK::UnitVec3& rhs)
+    {
         return SimTK::max(( lhs.asVec3() - rhs.asVec3() ).abs());
     }
 
