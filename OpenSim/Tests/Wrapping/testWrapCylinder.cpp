@@ -179,8 +179,7 @@ namespace {
 
         CylinderGeodesic(
             PathSegmentVec3 wrappedPath,
-            RotationDirection wrappingDirection
-        ) :
+            RotationDirection wrappingDirection) :
             CylinderGeodesic(
                 PathSegment<CylindricalCoordinates>(wrappedPath),
                 wrappingDirection)
