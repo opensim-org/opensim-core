@@ -634,72 +634,94 @@ namespace {
 
 int main()
 {
-    std::vector<std::string> failLog;
-    WrappingTolerances tolerance;
+    struct TestCase {
+        std::string name{};
+        WrapInput input{};
+        WrapTestResult expected{};
+        bool visualize = false;
+    } testCase;
 
-    WrapInput input;
-    input.radius = 1.;
-    input.cylinderLength = 10.;
+    std::vector<TestCase> testCaseList{};
+
+    testCase.input.radius = 1.;
+    testCase.input.cylinderLength = 10.;
+    testCase.input.quadrant = "all";
 
     // =========================================================================
     // ======================== No-Wrapping Case ===============================
     // =========================================================================
 
     // Placing the path inside the cylinder results in a no-wrap.
-    std::string name = "Inside cylinder";
-    input.path = {{0., 0., 0.}, {0., 0., 0.}};
+    testCase.name = "Inside cylinder";
+    testCase.input.path = {{0., 0., 0.}, {0., 0., 0.}};
 
-    WrapTestResult expected = WrapTestResult::NoWrap();
+    testCase.expected = WrapTestResult::NoWrap();
 
-    failLog.push_back(TestWrapping(input, expected, tolerance, name));
+    testCaseList.push_back(testCase);
 
     // =========================================================================
     // ======================= Perpendicular Case ==============================
     // =========================================================================
 
-    name = "Perpendicular";
-    input.path = {{2, -2, 0}, {-2, 2.1, 0}};
+    testCase.name = "Perpendicular";
+    testCase.input.path = {{2, -2, 0}, {-2, 2.1, 0}};
 
-    // Solution obtained from copy-pasting the solution (OpenSim 4.5).
-    expected.path = {
+    testCase.expected.path = {
         {0.911437827766147, 0.411437827766148, 0.},
         {0.441911556159668, 0.897058624913969, 0.},
     };
-    expected.length = 0.689036814042993;
+    testCase.expected.length = 0.689036814042993;
+    testCase.expected.noWrap = false;
 
-    expected.noWrap = false;
-
-    failLog.push_back(TestWrapping(input, expected, tolerance, name));
-
-    // Swapping start and end should not change the path:
-    SwapStartEnd(input.path);
-    SwapStartEnd(expected.path);
-    expected.direction = RotationDirection::Negative;
-
-    failLog.push_back(TestWrapping(input, expected, tolerance, name + "reversed"));
+    testCaseList.push_back(testCase);
 
     // =========================================================================
     // ============================= Axial case ================================
     // =========================================================================
 
-    name = "Axial";
-    input.path = {{2, -2, 1}, {-2, 2.1, -1}};
+    testCase.name = "Axial";
+    testCase.input.path = {{2, -2, 1}, {-2, 2.1, -1}};
 
-    // Same result for all positive quadrants.
-    expected.path = {
+    testCase.expected.path = {
         {0.911437827766148, 0.411437827766148, 0.126370674513168},
         {0.441911556159667, 0.897058624913969, -0.101149865520415},
     };
-    expected.length = 0.725628918417459;
-    expected.direction = RotationDirection::Positive;
+    testCase.expected.length = 0.725628918417459;
+    testCase.expected.direction = RotationDirection::Positive;
 
-    failLog.push_back(TestWrapping(input, expected, tolerance, name));
+    testCaseList.push_back(testCase);
 
-    SwapStartEnd(input.path);
-    SwapStartEnd(expected.path);
-    expected.direction = RotationDirection::Negative;
+    // =========================================================================
+    // =========================== Reversed path ===============================
+    // =========================================================================
 
-    failLog.push_back(TestWrapping(input, expected, tolerance, name + "reversed"));
+    // Swapping the start and end should not affect the wrapping path, other
+    // than inverting the wrapping direction.
+
+    for (TestCase c: testCaseList) {
+        TestCase reversedCase(c);
+        reversedCase.name = c.name + " (reversed)";
+        SwapStartEnd(reversedCase.input.path);
+        SwapStartEnd(reversedCase.expected.path);
+        reversedCase.expected.direction = !(c.expected.direction);
+        testCaseList.push_back(reversedCase);
+    }
+
+    // =========================================================================
+    // =========================== Run all tests ===============================
+    // =========================================================================
+
+    std::vector<std::string> failLog;
+    WrappingTolerances tolerance;
+
+    for (size_t i = 0; i < testCaseList.size(); ++i) {
+        failLog.push_back(TestWrapping(
+            testCaseList[i].input,
+            testCaseList[i].expected,
+            tolerance,
+            testCaseList[i].name,
+            testCaseList[i].visualize));
+    }
 
     // =========================================================================
     // ====================== Handling of Test Results =========================
