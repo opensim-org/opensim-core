@@ -47,8 +47,8 @@ namespace {
         template<typename X>
         PathSegment(PathSegment<X> other) :
             PathSegment{
-                T(other.start),
-                T(other.end),
+                T(std::move(other.start)),
+                T(std::move(other.end)),
             }
         {}
 
