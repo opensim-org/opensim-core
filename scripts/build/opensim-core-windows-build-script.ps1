@@ -77,30 +77,35 @@ choco install swig  -y
 choco install nsis  -y
 py -m pip install numpy
 
+# Refresh choco environment so we can use tools from terminal now.
+$env:ChocolateyInstall = Convert-Path "$((Get-Command choco).Path)\..\.."   
+Import-Module "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
+refreshenv
+
 # Clone opensim-core
 chdir C:/opensim-workspace/
-&"$Env:Programfiles\Git\bin\git.exe" clone https://github.com/opensim-org/opensim-core.git C:/opensim-workspace/opensim-core-source
+git clone https://github.com/opensim-org/opensim-core.git C:/opensim-workspace/opensim-core-source
 chdir C:/opensim-workspace/opensim-core-source
-&"$Env:Programfiles\Git\bin\git.exe" checkout $CORE_BRANCH
+git.exe checkout $CORE_BRANCH
 
 # Generate dependencies project and build dependencies using superbuild
 md C:/opensim-workspace/opensim-core-dependencies-build
 chdir C:/opensim-workspace/opensim-core-dependencies-build
-&"$Env:Programfiles\CMake\bin\cmake.exe" C:/opensim-workspace/opensim-core-source/dependencies/ -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX="C:/opensim-workspace/opensim-core-dependencies-install" -DSUPERBUILD_ezc3d:BOOL=on -DOPENSIM_WITH_CASADI:BOOL=$MOCO -DOPENSIM_WITH_TROPTER:BOOL=$MOCO
-&"$Env:Programfiles\CMake\bin\cmake.exe" . -LAH
-&"$Env:Programfiles\CMake\bin\cmake.exe" --build . --config $DEBUG_TYPE -- /maxcpucount:$NUM_JOBS
+cmake C:/opensim-workspace/opensim-core-source/dependencies/ -G"Visual Studio 17 2022" -A x64 -DCMAKE_INSTALL_PREFIX="C:/opensim-workspace/opensim-core-dependencies-install" -DSUPERBUILD_ezc3d:BOOL=on -DOPENSIM_WITH_CASADI:BOOL=$MOCO -DOPENSIM_WITH_TROPTER:BOOL=$MOCO
+cmake . -LAH
+cmake --build . --config $DEBUG_TYPE -- /maxcpucount:$NUM_JOBS
 
 # Generate opensim-core build and build it
 md C:/opensim-workspace/opensim-core-build
 chdir C:/opensim-workspace/opensim-core-build
 $env:CXXFLAGS = "/W0"
-&"$Env:Programfiles\CMake\bin\cmake.exe" C:/opensim-workspace/opensim-core-source/ -G"Visual Studio 17 2022" -A x64 -DOPENSIM_DEPENDENCIES_DIR="C:/opensim-workspace/opensim-core-dependencies-install" -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WRAPPING=on -DOPENSIM_C3D_PARSER=ezc3d -DBUILD_TESTING=off -DCMAKE_INSTALL_PREFIX="C:/opensim-core" -DOPENSIM_WITH_CASADI:BOOL=$MOCO -DOPENSIM_WITH_TROPTER:BOOL=$MOCO
-&"$Env:Programfiles\CMake\bin\cmake.exe" . -LAH
-&"$Env:Programfiles\CMake\bin\cmake.exe" --build . --config $DEBUG_TYPE -- /maxcpucount:$NUM_JOBS
-&"$Env:Programfiles\CMake\bin\cmake.exe" --install .
+cmake C:/opensim-workspace/opensim-core-source/ -G"Visual Studio 17 2022" -A x64 -DOPENSIM_DEPENDENCIES_DIR="C:/opensim-workspace/opensim-core-dependencies-install" -DBUILD_JAVA_WRAPPING=on -DBUILD_PYTHON_WRAPPING=on -DOPENSIM_C3D_PARSER=ezc3d -DBUILD_TESTING=off -DCMAKE_INSTALL_PREFIX="C:/opensim-core" -DOPENSIM_WITH_CASADI:BOOL=$MOCO -DOPENSIM_WITH_TROPTER:BOOL=$MOCO
+cmake . -LAH
+cmake --build . --config $DEBUG_TYPE -- /maxcpucount:$NUM_JOBS
+cmake --install .
 
 # Test opensim-core
-&"$Env:Programfiles\CMake\bin\ctest.exe" --parallel $NUM_JOBS --build-config $DEBUG_TYPE -E python*
+ctest --parallel $NUM_JOBS --build-config $DEBUG_TYPE -E python*
 
 # Test python bindings
 cd C:\opensim-core\sdk\python

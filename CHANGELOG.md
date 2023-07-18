@@ -6,7 +6,7 @@ request related to the change, then we may provide the commit.
 
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
 
-v4.5
+v4.4.1
 ======
 - IMU::calcGyroscopeSignal() now reports angular velocities in the IMU frame.
 - Update `report.py` to set specific colors for plotted trajectories
@@ -36,6 +36,7 @@ v4.5
 - Fixed issues #3083 #2575 where analog data is not pulled out from c3d files, a a new function getAnalogDataTable() has been added to the C3DFileAdapter
 - Fixed segfault that can occur when building models with unusual joint topologies (it now throws an `OpenSim::Exception` instead, #3299)
 - Add `calcMomentum`, `calcAngularMomentum`, `calcLinearMomentum`, and associated `Output`s to `Model` (#3474)
+- Fix issue where a different __init__.py is used by conda package and dev environment, the fix allows developers to install local builds into conda. (#3502)
 - Changed control points in `SegmentedQuinticBezierToolkit` to be of `SimTK::Vec6` type instead of `SimTK::Vector` (#3481).
 - Added a cylinder wrapping test: `testWrapCylinder.cpp` (#3498)
 
