@@ -56,11 +56,13 @@ namespace {
         T end;
     };
 
-    // Returns PathSegment with start and end swapped.
+    // Swaps start and end of path.
     template<typename T>
-    PathSegment<T> Reversed(const PathSegment<T>& path)
+    void SwapStartEnd(PathSegment<T>& path)
     {
-        return PathSegment<T>{path.end, path.start};
+        T tmp(std::move(path.start));
+        path.start = std::move(path.end);
+        path.end = std::move(tmp);
     }
 
     using PathSegmentVec3 = PathSegment<SimTK::Vec3>;
@@ -658,8 +660,8 @@ int main()
     failLog.push_back(TestWrapping(input, expected, tolerance, name));
 
     // Swapping start and end should not change the path:
-    input.path = Reversed(input.path);
-    expected.path = Reversed(expected.path);
+    SwapStartEnd(input.path);
+    SwapStartEnd(expected.path);
     expected.direction = RotationDirection::Negative;
 
     failLog.push_back(TestWrapping(input, expected, tolerance, name + "reversed"));
@@ -681,8 +683,8 @@ int main()
 
     failLog.push_back(TestWrapping(input, expected, tolerance, name));
 
-    input.path = Reversed(input.path);
-    expected.path = Reversed(expected.path);
+    SwapStartEnd(input.path);
+    SwapStartEnd(expected.path);
     expected.direction = RotationDirection::Negative;
 
     failLog.push_back(TestWrapping(input, expected, tolerance, name + "reversed"));
