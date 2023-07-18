@@ -12,7 +12,31 @@ if(TROPTER_COPY_DEPENDENCIES AND APPLE)
         OUTPUT_VARIABLE libgcc_name
         OUTPUT_STRIP_TRAILING_WHITESPACE)
     if (OPENSIM_PYTHON_CONDA)
+        set(ADOLC_DIR adol-c)
+        set(ColPack_ROOT_DIR adol-c)
+	set(IPOPT_LIBDIR ipopt/lib)
         message(STATUS "MY_VARIABLES=${ADOLC_DIR}-${ColPack_ROOT_DIR}-${IPOPT_LIBDIR}-${gfortran}-${quadmath}-${gcc_libdir}-${CMAKE_INSTALL_LIBDIR}")
+	install(FILES
+            ${ADOLC_DIR}/lib64/libadolc.2.dylib
+            ${ADOLC_DIR}/lib64/libadolc.dylib
+            # /usr/local/opt/boost/lib/libboost_system.dylib
+            ${ColPack_ROOT_DIR}/lib/libColPack.0.dylib
+            ${IPOPT_LIBDIR}/libipopt.1.10.8.dylib
+            ${IPOPT_LIBDIR}/libipopt.1.dylib
+            ${IPOPT_LIBDIR}/libipopt.dylib
+            ${IPOPT_LIBDIR}/libcoinmumps.1.6.0.dylib
+            ${IPOPT_LIBDIR}/libcoinmumps.1.dylib
+            ${IPOPT_LIBDIR}/libcoinmumps.dylib
+            ${IPOPT_LIBDIR}/libcoinmetis.1.3.5.dylib
+            ${IPOPT_LIBDIR}/libcoinmetis.1.dylib
+            ${IPOPT_LIBDIR}/libcoinmetis.dylib
+
+            ${gfortran}
+            ${quadmath}
+            ${gcc_libdir}/${libgcc_name}
+
+            DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
     else ()
 	install(FILES
             ${ADOLC_DIR}/lib64/libadolc.2.dylib
