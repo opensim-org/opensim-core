@@ -734,17 +734,18 @@ private:
     // length.
     double clampFiberLength(double lce) const;
 
-    // Status flag returned by estimateMuscleFiberState().
-    enum StatusFromEstimateMuscleFiberState {
-        Success_Converged,
-        Warning_FiberAtLowerBound,
-        Failure_MaxIterationsReached
-    };
+    struct MuscleStateEstimate {
+        double solutionError = SimTK::NaN;
+        double fiberLength = SimTK::NaN;
+        double tendonVelocity = SimTK::NaN;
+        double tendonForce = SimTK::NaN;
 
-    // Associative array of values returned by estimateMuscleFiberState():
-    // solution_error, iterations, fiber_length, fiber_velocity, and
-    // tendon_force.
-    typedef std::map<std::string, double> ValuesFromEstimateMuscleFiberState;
+        enum class Status {
+            Success_Converged,
+            Warning_FiberAtLowerBound,
+            Failure_MaxIterationsReached
+        } status = Status::Failure_MaxIterationsReached;
+    };
 
     /* Solves fiber length and velocity to satisfy the equilibrium equations.
     The velocity of the entire musculotendon actuator is shared between the
@@ -760,9 +761,7 @@ private:
     @param staticSolution set to true to calculate the static equilibrium
            solution, setting fiber and tendon velocities to zero
     */
-    std::pair<StatusFromEstimateMuscleFiberState,
-              ValuesFromEstimateMuscleFiberState>
-        estimateMuscleFiberState(const double aActivation,
+    MuscleStateEstimate estimateMuscleFiberState(const double aActivation,
                                  const double pathLength,
                                  const double pathLengtheningSpeed,
                                  const double aSolTolerance,
