@@ -194,7 +194,7 @@ namespace {
                 PathSegment<CylindricalCoordinates>(wrappedPath),
                 wrappingDirection) {}
 
-        public:
+    public:
         CylinderGeodesic(
             const PathSegmentVec3& wrappedPath,
             RotationDirection wrappingDirection,
@@ -206,8 +206,11 @@ namespace {
             _cylinderOrientation = cylinderOrientation;
         }
 
-        private:
+        double getRadius() const {
+            return _startPoint.radius;
+        }
 
+    private:
         // Helper for computing the tangent vector to the surface along the
         // geodesic path. The angle argument allows for computing the tangent
         // vector at a certain point along the path.
@@ -215,12 +218,9 @@ namespace {
         {
             SimTK::Rotation rotZAxis;
             rotZAxis.setRotationFromAngleAboutZ(angle);
-            return _cylinderOrientation *
-                rotZAxis * (
-                    SimTK::Vec3(0., 1., 0.) * _startPoint.radius
-                    * _angularDistance
-                    + SimTK::Vec3(0., 0., 1.) * _axialDistance
-                );
+            return _cylinderOrientation * rotZAxis * (
+                getRadius() * _angularDistance * SimTK::Vec3(0., 1., 0.)
+                + _axialDistance * SimTK::Vec3(0., 0., 1.));
         }
 
     public:
@@ -246,12 +246,7 @@ namespace {
                 + std::pow(_axialDistance, 2));
         }
 
-        double getRadius() const {
-            return _startPoint.radius;
-        }
-
-        private:
-
+    private:
         // Local coordinates of starting point of wrapped path.
         CylindricalCoordinates _startPoint;
         // Distance from start to end of wrapped path.
