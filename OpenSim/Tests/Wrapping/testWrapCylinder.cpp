@@ -174,7 +174,7 @@ namespace {
     class CylinderGeodesic final
     {
         CylinderGeodesic(
-            PathSegment<CylindricalCoordinates> wrappedPath,
+            const PathSegment<CylindricalCoordinates>& wrappedPath,
             RotationDirection wrappingDirection) :
             _startPoint(wrappedPath.start),
             _axialDistance(
@@ -188,7 +188,7 @@ namespace {
             _cylinderOrientation(SimTK::Rotation()) {}
 
         CylinderGeodesic(
-            PathSegmentVec3 wrappedPath,
+            const PathSegmentVec3& wrappedPath,
             RotationDirection wrappingDirection) :
             CylinderGeodesic(
                 PathSegment<CylindricalCoordinates>(wrappedPath),
