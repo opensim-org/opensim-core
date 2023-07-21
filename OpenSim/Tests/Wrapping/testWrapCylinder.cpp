@@ -34,11 +34,13 @@ using namespace OpenSim;
 
 // Section containing Geometry related helpers.
 namespace {
+
     constexpr double c_TAU = 2. * SimTK_PI;
 
     // A path segment determined in terms of the start and end point.
     template<typename T>
-    struct PathSegment final {
+    struct PathSegment final
+    {
         PathSegment(T startPoint, T endPoint) :
             start(std::move(startPoint)),
             end(std::move(endPoint))
@@ -82,10 +84,11 @@ namespace {
         return {
             rot * path.start,
             rot * path.end,
-          };
+        };
     }
 
-    enum class RotationDirection {
+    enum class RotationDirection
+    {
         Positive,
         Negative,
     };
@@ -152,8 +155,7 @@ namespace {
         CylindricalCoordinates(const SimTK::Vec3& point) :
             radius(SimTK::Vec2(point[0], point[1]).norm()),
             angle(std::atan2(point[1], point[0])),
-            axialPosition(point[2])
-        {}
+            axialPosition(point[2]) {}
 
         double radius;
         double angle;
@@ -166,8 +168,8 @@ namespace {
     // given a wrapping result, and allows for the surface tangent direction and
     // path length to be evaluated. These values can then be used for asserting correctness of
     // the given wrapping result in later tests.
-    class CylinderGeodesic final {
-
+    class CylinderGeodesic final
+    {
         CylinderGeodesic(
             PathSegment<CylindricalCoordinates> wrappedPath,
             RotationDirection wrappingDirection) :
@@ -180,23 +182,20 @@ namespace {
                     wrappedPath.start.angle,
                     wrappedPath.end.angle,
                     wrappingDirection)),
-            _cylinderOrientation(SimTK::Rotation())
-        {}
+            _cylinderOrientation(SimTK::Rotation()) {}
 
         CylinderGeodesic(
             PathSegmentVec3 wrappedPath,
             RotationDirection wrappingDirection) :
             CylinderGeodesic(
                 PathSegment<CylindricalCoordinates>(wrappedPath),
-                wrappingDirection)
-        {}
+                wrappingDirection) {}
 
         public:
         CylinderGeodesic(
             const PathSegmentVec3& wrappedPath,
             RotationDirection wrappingDirection,
-            const SimTK::Rotation& cylinderOrientation
-        ) :
+            const SimTK::Rotation& cylinderOrientation) :
             CylinderGeodesic(
                 cylinderOrientation.invert() * wrappedPath,
                 wrappingDirection)
@@ -221,8 +220,7 @@ namespace {
                 );
         }
 
-        public:
-
+    public:
         // Compute surface tangent direction at start of the path.
         SimTK::UnitVec3 computeTangentDirectionAtStart() const
         {
@@ -241,9 +239,8 @@ namespace {
         double computeLength() const
         {
             return std::sqrt(
-                    std::pow(_angularDistance * _startPoint.radius, 2) +
-                    std::pow(_axialDistance, 2)
-                );
+                std::pow(getRadius() * _angularDistance, 2)
+                + std::pow(_axialDistance, 2));
         }
 
         double getRadius() const {
@@ -260,16 +257,16 @@ namespace {
         // Cylinder orientation wrt ground frame.
         SimTK::Rotation _cylinderOrientation;
     };
-
 }
 
 // Section with helpers for evaluating the wrapping result in the upcoming test.
 namespace {
 
     // Struct for holding the result of the wrapping solution.
-    struct WrapTestResult final {
-
-        static WrapTestResult NoWrap() {
+    struct WrapTestResult final
+    {
+        static WrapTestResult NoWrap()
+        {
             WrapTestResult result;
             result.noWrap = true;
             return result;
@@ -303,14 +300,14 @@ namespace {
     }
 
     // Struct holding the tolerances when asserting the wrapping result.
-    struct WrappingTolerances final {
+    struct WrappingTolerances final
+    {
         WrappingTolerances() = default;
 
         WrappingTolerances(double eps) :
             position(eps),
             length(eps),
-            tangentDirection(eps)
-        {}
+            tangentDirection(eps) {}
 
         double position = 1e-9;
         double length = 1e-9;
@@ -376,9 +373,10 @@ namespace {
     // defined radius, length, active quadrant, and relative orientation.
     // A specific wrapping case can be configured by choosing the start and end
     // points of the path.
-    struct WrapInput final {
-
-        SimTK::Rotation cylinderOrientation() const {
+    struct WrapInput final
+    {
+        SimTK::Rotation cylinderOrientation() const
+        {
             SimTK::Rotation orientation;
             orientation.setRotationToBodyFixedXYZ(eulerRotations);
             return orientation;
@@ -389,7 +387,6 @@ namespace {
             SimTK::Vec3{SimTK::NaN},
             SimTK::Vec3{SimTK::NaN},
         };
-
         // Wrapping cylinder parameters:
         double radius = 1.;
         double cylinderLength = 1.;
@@ -397,7 +394,8 @@ namespace {
         SimTK::Vec3 eulerRotations = {0., 0., 0.};
     };
 
-    std::ostream& operator<<(std::ostream& os, const WrapInput& input) {
+    std::ostream& operator<<(std::ostream& os, const WrapInput& input)
+    {
         return os <<
             "WrapInput{" <<
             "path: " << input.path << ", " <<
@@ -408,7 +406,8 @@ namespace {
     }
 
     // Simulates the wrapping scenario as configured by the WrapInput.
-    WrapTestResult solve(const WrapInput& input, bool visualize) {
+    WrapTestResult solve(const WrapInput& input, bool visualize)
+    {
         Model model;
         model.setName("testWrapCylinderModel");
 
@@ -504,8 +503,7 @@ namespace {
         CylinderGeodesic geodesicPath(
             result.path,
             result.direction,
-            input.cylinderOrientation()
-        );
+            input.cylinderOrientation());
 
         double error = std::abs(geodesicPath.getRadius() - input.radius);
         if (error > tol.position) {
@@ -583,7 +581,6 @@ namespace {
         std::string testCase,
         bool visualize = false)
     {
-
         WrapTestResult result = solve(input, visualize);
         std::ostringstream failedBuf;
 
@@ -622,7 +619,8 @@ namespace {
 
 int main()
 {
-    struct TestCase {
+    struct TestCase
+    {
         std::string name{};
         WrapInput input{};
         WrapTestResult expected{};
