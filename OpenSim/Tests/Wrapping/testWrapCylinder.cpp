@@ -98,14 +98,16 @@ namespace {
         const RotationDirection& direction)
     {
         return os << "RotationDirection::" << (
-            (direction == RotationDirection::Positive)?
-                "Positive" : "Negative");
+            direction == RotationDirection::Positive ?
+            "Positive" :
+            "Negative");
     }
 
     RotationDirection operator!(RotationDirection direction)
     {
-        return direction == RotationDirection::Positive?
-            RotationDirection::Negative : RotationDirection::Positive;
+        return direction == RotationDirection::Positive ?
+            RotationDirection::Negative :
+            RotationDirection::Positive;
     }
 
     // Angular distance from start- to end-angle in either positive or negative
@@ -137,8 +139,9 @@ namespace {
             std::atan2(end[1], end[0]),
             RotationDirection::Positive);
         // Check if positive direction was the shortest path.
-        return distance <= SimTK::Pi?
-                RotationDirection::Positive : RotationDirection::Negative;
+        return distance <= SimTK::Pi ?
+            RotationDirection::Positive :
+            RotationDirection::Negative;
     }
 
     RotationDirection DirectionOfShortestAngularDistanceAboutZAxis(
@@ -359,7 +362,7 @@ namespace {
         const SimTK::UnitVec3& lhs,
         const SimTK::UnitVec3& rhs)
     {
-        return SimTK::max(( lhs.asVec3() - rhs.asVec3() ).abs());
+        return SimTK::max((lhs.asVec3() - rhs.asVec3()).abs());
     }
 
 }
