@@ -679,12 +679,12 @@ int main()
     // Swapping the start and end should not affect the wrapping path, other
     // than inverting the wrapping direction.
 
-    for (TestCase c: testCaseList) {
-        TestCase reversedCase(c);
-        reversedCase.name = c.name + " (reversed)";
+    for (size_t i = 0, len = testCaseList.size(); i < len; ++i) {
+        TestCase reversedCase(testCaseList[i]);
+        reversedCase.name = testCaseList[i].name + " (reversed)";
         SwapStartEnd(reversedCase.input.path);
         SwapStartEnd(reversedCase.expected.path);
-        reversedCase.expected.direction = !(c.expected.direction);
+        reversedCase.expected.direction = !(testCaseList[i].expected.direction);
         testCaseList.push_back(reversedCase);
     }
 
