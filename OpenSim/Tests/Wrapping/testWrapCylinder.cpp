@@ -712,7 +712,7 @@ int main()
     for (size_t i = 0; i < failLog.size(); ++i) {
         if (!failLog[i].empty()) {
             ++failedCount;
-            std::cerr << failLog[i] << std::endl;
+            std::cout << failLog[i] << std::endl;
         }
     }
 
