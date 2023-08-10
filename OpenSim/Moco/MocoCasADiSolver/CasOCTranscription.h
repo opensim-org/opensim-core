@@ -130,6 +130,7 @@ protected:
         std::vector<T> endpoint;
         std::vector<T> path;
         T interp_controls;
+        T projection;
     };
     void printConstraintValues(const Iterate& it,
             const Constraints<casadi::DM>& constraints,
@@ -149,6 +150,7 @@ protected:
     int m_numAuxiliaryResiduals = -1;
     int m_numConstraints = -1;
     int m_numPathConstraintPoints = -1;
+    int m_numProjectionStates = -1;
     casadi::DM m_grid;
     casadi::DM m_pointsForInterpControls;
     casadi::MX m_times;
@@ -161,16 +163,20 @@ private:
     casadi::MX m_paramsTrajMesh;
     casadi::MX m_paramsTrajMeshInterior;
     casadi::MX m_paramsTrajPathCon;
+    casadi::MX m_paramsTrajProjState;
     VariablesDM m_lowerBounds;
     VariablesDM m_upperBounds;
     VariablesDM m_shift;
     VariablesDM m_scale;
+    casadi::MX m_defectStates;
 
     casadi::DM m_meshIndicesMap;
     casadi::Matrix<casadi_int> m_gridIndices;
     casadi::Matrix<casadi_int> m_meshIndices;
     casadi::Matrix<casadi_int> m_meshInteriorIndices;
     casadi::Matrix<casadi_int> m_pathConstraintIndices;
+    casadi::Matrix<casadi_int> m_projectionStateIndices;
+    casadi::Matrix<casadi_int> m_notProjectionStateIndices;
 
     casadi::MX m_xdot; // State derivatives.
 
@@ -204,8 +210,7 @@ private:
     void transcribe();
     void setObjectiveAndEndpointConstraints();
     void calcDefects() {
-        calcDefectsImpl(
-                m_unscaledVars.at(states), m_xdot, m_constraints.defects);
+        calcDefectsImpl(m_defectStates, m_xdot, m_constraints.defects);
     }
     void calcInterpolatingControls() {
         calcInterpolatingControlsImpl(
@@ -217,7 +222,11 @@ private:
     template <typename T>
     static std::vector<Var> getSortedVarKeys(const Variables<T>& vars) {
         std::vector<Var> keys;
-        for (const auto& kv : vars) { keys.push_back(kv.first); }
+        for (const auto& kv : vars) {
+//            std::cout << "DEBUG key: " << kv.first << std::endl;
+//            std::cout << "DEBUG var: " << kv.second << std::endl;
+            keys.push_back(kv.first);
+        }
         std::sort(keys.begin(), keys.end());
         return keys;
     }
@@ -227,6 +236,7 @@ private:
     static T flattenVariables(const CasOC::Variables<T>& vars) {
         std::vector<T> stdvec;
         for (const auto& key : getSortedVarKeys(vars)) {
+            //std::cout << "DEBUG: " << key << std::endl;
             stdvec.push_back(vars.at(key));
         }
         return T::veccat(stdvec);
@@ -314,13 +324,16 @@ private:
         //    residual_0     x
         //    defect_0       x    x
         //    kinematic_1         x
+        //    projection_1        x
         //    path_1              x
         //    residual_1          x
         //    defect_1            x    x
         //    kinematic_2              x
+        //    projection_2             x
         //    path_2                   x
         //    residual_2               x
         //    kinematic_3                   x
+        //    projection_2                  x
         //    path_3                        x
         //    residual_3                    x
 
@@ -336,18 +349,21 @@ private:
         //    defect_0       x     x     x
         //    interp_con_0   x     x     x
         //    kinematic_1                x
+        //    projection_1               x
         //    path_1                     x     *
         //    residual_1                 x
         //    residual_1.5                     x
         //    defect_1                   x     x     x
         //    interp_con_1               x     x     x
         //    kinematic_2                            x
+        //    projection_2                           x
         //    path_2                                 x     *
         //    residual_2                             x
         //    residual_2.5                                 x
         //    defect_2                               x     x     x
         //    interp_con_2                           x     x     x
         //    kinematic_3                                        x
+        //    projection_3                                       x
         //    path_3                                             x
         //    residual_3                                         x
         //                   0    0.5    1    1.5    2    2.5    3
@@ -367,6 +383,7 @@ private:
         int icon = 0;
         for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
             copyColumn(constraints.kinematic, imesh);
+            if (imesh > 0) copyColumn(constraints.projection, imesh-1);
             if (imesh < m_numMeshIntervals) {
                 while (m_grid(igrid).scalar() < m_solver.getMesh()[imesh + 1]) {
                     copyColumn(constraints.multibody_residuals, igrid);
@@ -409,6 +426,8 @@ private:
                 m_numGridPoints);
         out.kinematic = init(m_problem.getNumKinematicConstraintEquations(),
                 m_numMeshPoints);
+        out.projection = init(m_problem.getNumProjectionConstraintEquations(),
+                m_numMeshIntervals);
         out.endpoint.resize(m_problem.getEndpointConstraintInfos().size());
         for (int iec = 0; iec < (int)m_constraints.endpoint.size(); ++iec) {
             const auto& info = m_problem.getEndpointConstraintInfos()[iec];
@@ -447,6 +466,7 @@ private:
         int icon = 0;
         for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
             copyColumn(out.kinematic, imesh);
+            if (imesh > 0) copyColumn(out.projection, imesh-1);
             if (imesh < m_numMeshIntervals) {
                 while (m_grid(igrid).scalar() < m_solver.getMesh()[imesh + 1]) {
                     copyColumn(out.multibody_residuals, igrid);

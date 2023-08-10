@@ -104,6 +104,18 @@ public:
     void setImplicitAuxiliaryDerivativesWeight(double weight) {
         m_implicitAuxiliaryDerivativesWeight = weight;
     }
+    bool getMinimizeStateProjection() const {
+        return m_minimizeStateProjection;
+    }
+    void setMinimizeStateProjection(bool tf) {
+        m_minimizeStateProjection = tf;
+    }
+    double getStateProjectionWeight() const {
+        return m_stateProjectionWeight;
+    }
+    void setStateProjectionWeight(double weight) {
+        m_stateProjectionWeight = weight;
+    }
 
     /// Whether or not to constrain control values at mesh interval midpoints
     /// by linearly interpolating control values from mesh interval endpoints.
@@ -201,6 +213,8 @@ private:
     double m_implicitMultibodyAccelerationsWeight = 1.0;
     bool m_minimizeImplicitAuxiliaryDerivatives = false;
     double m_implicitAuxiliaryDerivativesWeight = 1.0;
+    bool m_minimizeStateProjection = true;
+    double m_stateProjectionWeight = 0.0001;
     bool m_interpolateControlMidpoints = true;
     bool m_enforcePathConstraintMidpoints = false;
     Bounds m_implicitMultibodyAccelerationBounds;

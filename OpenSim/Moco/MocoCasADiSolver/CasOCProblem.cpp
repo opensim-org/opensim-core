@@ -31,11 +31,12 @@ using OpenSim::Exception;
 
 namespace CasOC {
 
-Iterate Iterate::resample(const casadi::DM& newTimes) const {
+Iterate Iterate::resample(const casadi::DM& newTimes,
+                          bool addProjectionStates = false) const {
     auto mocoIt = OpenSim::convertToMocoTrajectory(*this);
     auto simtkNewTimes = OpenSim::convertToSimTKVector(newTimes);
     mocoIt.resample(simtkNewTimes);
-    return OpenSim::convertToCasOCIterate(mocoIt);
+    return OpenSim::convertToCasOCIterate(mocoIt, addProjectionStates);
 }
 
 std::vector<std::string>

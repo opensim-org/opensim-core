@@ -36,6 +36,7 @@ void MocoDirectCollocationSolver::constructProperties() {
     constructProperty_optim_ipopt_print_level(-1);
     constructProperty_guess_file("");
     constructProperty_velocity_correction_bounds({-0.1, 0.1});
+    constructProperty_projection_variable_bounds({-0.1, 0.1});
     constructProperty_implicit_multibody_acceleration_bounds({-1000, 1000});
     constructProperty_implicit_auxiliary_derivative_bounds({-1000, 1000});
     constructProperty_minimize_lagrange_multipliers(false);

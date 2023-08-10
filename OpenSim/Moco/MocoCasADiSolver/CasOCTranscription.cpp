@@ -99,13 +99,20 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
                              ? m_problem.getNumMultibodyDynamicsEquations()
                              : 0;
     m_numAuxiliaryResiduals = m_problem.getNumAuxiliaryResidualEquations();
+    const int numMultibodyStates =
+            m_problem.getNumCoordinates() + m_problem.getNumSpeeds();
+    m_numProjectionStates =
+            m_problem.getNumProjectionConstraintEquations() &&
+            m_problem.getIsKinematicConstraintMethodProjection()
+            ? numMultibodyStates : 0;
 
     m_numConstraints =
             m_numDefectsPerMeshInterval * m_numMeshIntervals +
             m_numMultibodyResiduals * m_numGridPoints +
             m_numAuxiliaryResiduals * m_numGridPoints +
             m_problem.getNumKinematicConstraintEquations() * m_numMeshPoints +
-            m_problem.getNumControls() * (int)pointsForInterpControls.numel();
+            m_problem.getNumControls() * (int)pointsForInterpControls.numel() +
+            m_problem.getNumProjectionConstraintEquations() * m_numMeshIntervals;
     m_constraints.endpoint.resize(
             m_problem.getEndpointConstraintInfos().size());
     for (int iec = 0; iec < (int)m_constraints.endpoint.size(); ++iec) {
@@ -127,28 +134,43 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     m_scaledVars[final_time] = MX::sym("final_time");
     m_scaledVars[states] =
             MX::sym("states", m_problem.getNumStates(), m_numGridPoints);
+    m_scaledVars[projection_states] = MX::sym(
+            "projection_states", m_numProjectionStates, m_numMeshIntervals);
+    m_defectStates = MX(m_problem.getNumStates(), m_numGridPoints);
     m_scaledVars[controls] =
             MX::sym("controls", m_problem.getNumControls(), m_numGridPoints);
     m_scaledVars[multipliers] = MX::sym(
             "multipliers", m_problem.getNumMultipliers(), m_numGridPoints);
     m_scaledVars[derivatives] = MX::sym(
             "derivatives", m_problem.getNumDerivatives(), m_numGridPoints);
-
-    // TODO: This assumes that slack variables are applied at all
-    // collocation points on the mesh interval interior.
-    m_scaledVars[slacks] = MX::sym(
-            "slacks", m_problem.getNumSlacks(), m_numMeshInteriorPoints);
     m_scaledVars[parameters] =
             MX::sym("parameters", m_problem.getNumParameters(), 1);
+    if (m_problem.getIsKinematicConstraintMethodProjection()) {
+        m_scaledVars[slacks] = MX::sym(
+            "slacks", m_problem.getNumSlacks(), m_numMeshIntervals);
+    } else {
+        // Here, the mesh interior points will be the mesh interval midpoints
+        // in the Hermite-Simpson collocation scheme.
+        m_scaledVars[slacks] = MX::sym(
+            "slacks", m_problem.getNumSlacks(), m_numMeshInteriorPoints);
+    }
 
     m_meshIndicesMap = createMeshIndices();
     std::vector<int> meshIndicesVector;
     std::vector<int> meshInteriorIndicesVector;
+    std::vector<int> projectionStateIndicesVector;
+    std::vector<int> notProjectionStateIndicesVector;
     for (int i = 0; i < m_meshIndicesMap.size2(); ++i) {
         if (m_meshIndicesMap(i).scalar() == 1) {
             meshIndicesVector.push_back(i);
+            if (i == 0) {
+                notProjectionStateIndicesVector.push_back(i);
+            } else {
+                projectionStateIndicesVector.push_back(i);
+            }
         } else {
             meshInteriorIndicesVector.push_back(i);
+            notProjectionStateIndicesVector.push_back(i);
         }
     }
 
@@ -168,6 +190,9 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     m_pathConstraintIndices = m_solver.getEnforcePathConstraintMidpoints()
                              ? makeTimeIndices(gridIndicesVector)
                              : makeTimeIndices(meshIndicesVector);
+    m_projectionStateIndices = makeTimeIndices(projectionStateIndicesVector);
+    m_notProjectionStateIndices =
+            makeTimeIndices(notProjectionStateIndicesVector);
 
     // Set variable bounds.
     // --------------------
@@ -264,6 +289,18 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
         }
     }
     {
+        const auto& stateInfos = m_problem.getStateInfos();
+        for (int ias = 0; ias < m_numProjectionStates; ++ias) {
+            const auto& info = stateInfos[ias];
+            setVariableBounds(
+                    projection_states, ias, Slice(0, m_numMeshIntervals - 1),
+                    info.bounds);
+            setVariableBounds(projection_states, ias, -1, info.finalBounds);
+            setVariableScaling(projection_states, Slice(), Slice(),
+                               info.bounds);
+        }
+    }
+    {
         const auto& paramInfos = m_problem.getParameterInfos();
         int ip = 0;
         for (const auto& info : paramInfos) {
@@ -281,11 +318,23 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
             MX::repmat(m_unscaledVars[parameters], 1, m_numGridPoints);
     m_paramsTrajMesh =
             MX::repmat(m_unscaledVars[parameters], 1, m_numMeshPoints);
-    m_paramsTrajMeshInterior = MX::repmat(m_unscaledVars[parameters], 1, 
-        m_numMeshInteriorPoints);
+    m_paramsTrajMeshInterior =
+            MX::repmat(m_unscaledVars[parameters], 1, m_numMeshInteriorPoints);
     m_paramsTrajPathCon =
-            MX::repmat(m_unscaledVars[parameters], 1,
-                       m_numPathConstraintPoints);
+            MX::repmat(m_unscaledVars[parameters], 1, m_numPathConstraintPoints);
+    m_paramsTrajProjState =
+            MX::repmat(m_unscaledVars[parameters], 1, m_numMeshIntervals);
+
+    if (m_numProjectionStates) {
+        m_defectStates(Slice(0, numMultibodyStates), m_projectionStateIndices) =
+            m_unscaledVars[projection_states];
+        m_defectStates(
+                Slice(0, numMultibodyStates), m_notProjectionStateIndices) =
+                m_unscaledVars[states](Slice(0, numMultibodyStates),
+                    m_notProjectionStateIndices);
+    } else {
+        m_defectStates = m_unscaledVars[states];
+    }
 }
 
 void Transcription::transcribe() {
@@ -339,35 +388,68 @@ void Transcription::transcribe() {
             m_problem.getNumKinematicConstraintEquations();
     m_constraints.kinematic = MX(
             casadi::Sparsity::dense(numKinematicConstraints, m_numMeshPoints));
-
     const auto& kcBounds = m_problem.getKinematicConstraintBounds();
     m_constraintsLowerBounds.kinematic = casadi::DM::repmat(
             kcBounds.lower, numKinematicConstraints, m_numMeshPoints);
     m_constraintsUpperBounds.kinematic = casadi::DM::repmat(
             kcBounds.upper, numKinematicConstraints, m_numMeshPoints);
 
+    // Initialize memory for projection constraints.
+    // ---------------------------------------------
+    int numProjectionConstraints =
+            m_problem.getNumProjectionConstraintEquations();
+    m_constraints.projection = MX(
+            casadi::Sparsity::dense(numProjectionConstraints,
+                                    m_numMeshIntervals));
+    m_constraintsLowerBounds.projection =
+            DM::zeros(numProjectionConstraints, m_numMeshIntervals);
+    m_constraintsUpperBounds.projection =
+            DM::zeros(numProjectionConstraints, m_numMeshIntervals);
+
     // qdot
     // ----
     const MX u = m_unscaledVars[states](Slice(NQ, NQ + NU), Slice());
     m_xdot(Slice(0, NQ), Slice()) = u;
 
-    if (m_problem.getEnforceConstraintDerivatives() &&
-            m_numMeshInteriorPoints &&
-            !m_problem.isPrescribedKinematics()) {
-        // In Hermite-Simpson, we must compute a velocity correction at all mesh
-        // interval midpoints and update qdot. See MocoCasADiVelocityCorrection
-        // for more details. This function only takes multibody state variables:
-        // coordinates and speeds.
-        // TODO: The points at which we apply the velocity correction
-        // are correct for Trapezoidal (no points) and Hermite-Simpson (mesh
-        // interval midpoints), but might not be correct in general. Revisit
-        // this if we add other transcription schemes.
-        const auto velocityCorrectionOut = evalOnTrajectory(
-                m_problem.getVelocityCorrection(), {multibody_states, slacks},
-                m_meshInteriorIndices);
-        const auto u_correction = velocityCorrectionOut.at(0);
+    if (numKinematicConstraints  &&
+            !m_problem.isPrescribedKinematics() &&
+            m_problem.getEnforceConstraintDerivatives()) {
 
-        m_xdot(Slice(0, NQ), m_meshInteriorIndices) += u_correction;
+        OPENSIM_THROW_IF(!m_problem.getIsKinematicConstraintMethodProjection() &&
+                         m_solver.getTranscriptionScheme() != "hermite-simpson",
+                         OpenSim::Exception,
+            "Expected the 'hermite-simpson' transcription scheme when using "
+            "the PKT method for enforcing kinematic constraints, but the '{}' "
+            "scheme was selected.", m_solver.getTranscriptionScheme());
+
+        if (m_solver.getTranscriptionScheme() == "hermite-simpson" &&
+                !m_problem.getIsKinematicConstraintMethodProjection()) {
+            // In Hermite-Simpson, we must compute a velocity correction at all
+            // mesh interval midpoints and update qdot.
+            // See MocoCasADiVelocityCorrection for more details. This function
+            // only takes multibody state variables: coordinates and speeds.
+            const auto velocityCorrectionOut = evalOnTrajectory(
+                    m_problem.getVelocityCorrection(),
+                    {multibody_states, slacks},
+                    m_meshInteriorIndices);
+            const auto u_correction = velocityCorrectionOut.at(0);
+
+            m_xdot(Slice(0, NQ), m_meshInteriorIndices) += u_correction;
+        }
+
+        if (m_problem.getIsKinematicConstraintMethodProjection()) {
+            const auto projectionOut = evalOnTrajectory(
+                    m_problem.getStateProjection(),
+                    {multibody_states, slacks},
+                    m_projectionStateIndices);
+            const auto x_proj = projectionOut.at(0);
+
+            m_constraints.projection =
+                    m_unscaledVars[states](Slice(0, NQ + NU),
+                            m_projectionStateIndices) -
+                    m_unscaledVars[projection_states] -
+                    x_proj;
+        }
     }
 
     // udot, zdot, residual, kcerr
@@ -513,6 +595,13 @@ void Transcription::setObjectiveAndEndpointConstraints() {
     if (minimizeAuxiliaryDerivatives) {
         m_objectiveTermNames.push_back("auxiliary_derivatives");
     }
+    bool minimizeStateProjection =
+            m_solver.getMinimizeStateProjection() &&
+            m_problem.getNumKinematicConstraintEquations() &&
+            m_problem.getIsKinematicConstraintMethodProjection();
+    if (minimizeStateProjection) {
+        m_objectiveTermNames.push_back("state_projection");
+    }
     m_objectiveTerms = MX::zeros((int)m_objectiveTermNames.size(), 1);
 
     int iterm = 0;
@@ -566,7 +655,8 @@ void Transcription::setObjectiveAndEndpointConstraints() {
     // Minimize generalized accelerations.
     if (minimizeAccelerations) {
         const auto& numAccels = m_problem.getNumAccelerations();
-        const auto accels = m_scaledVars[derivatives](Slice(0, numAccels), Slice());
+        const auto accels = m_scaledVars[derivatives](
+                Slice(0, numAccels), Slice());
         const double accelWeight =
                 m_solver.getImplicitMultibodyAccelerationsWeight();
         MX integrandTraj = MX::sum1(MX::sq(accels));
@@ -587,6 +677,13 @@ void Transcription::setObjectiveAndEndpointConstraints() {
                        dot(quadCoeffs.T(), integrandTraj);
     }
 
+    // Minimize state projection distance.
+    if (minimizeStateProjection) {
+        MX integrandTraj = MX::sum1(
+                MX::sq(m_scaledVars[states] - m_defectStates));
+        m_objectiveTerms(iterm++) = m_solver.getStateProjectionWeight() *
+                       m_duration * dot(quadCoeffs.T(), integrandTraj);
+    }
 
     // Endpoint constraints
     // --------------------
@@ -640,7 +737,10 @@ Solution Transcription::solve(const Iterate& guessOrig) {
     // -------------------
     const auto guessTimes = createTimes(guessOrig.variables.at(initial_time),
             guessOrig.variables.at(final_time));
-    auto guess = guessOrig.resample(guessTimes);
+    bool addProjectionStates =
+            m_problem.getNumKinematicConstraintEquations() &&
+            m_problem.getIsKinematicConstraintMethodProjection();
+    auto guess = guessOrig.resample(guessTimes, addProjectionStates);
 
     // Adjust guesses for the slack variables to ensure they are the correct
     // length (i.e. slacks.size2() == m_numPointsIgnoringConstraints).
@@ -653,9 +753,18 @@ Solution Transcription::solve(const Iterate& guessOrig) {
         if (slacks.size2() == m_numGridPoints) {
             casadi::DM meshIndices = createMeshIndices();
             std::vector<casadi_int> slackColumnsToRemove;
+            if (m_problem.getIsKinematicConstraintMethodProjection()) {
+                slackColumnsToRemove.push_back(0);
+            }
             for (int itime = 0; itime < m_numGridPoints; ++itime) {
-                if (meshIndices(itime).__nonzero__()) {
-                    slackColumnsToRemove.push_back(itime);
+                if (m_problem.getIsKinematicConstraintMethodProjection()) {
+                    if (!meshIndices(itime).__nonzero__()) {
+                        slackColumnsToRemove.push_back(itime);
+                    }
+                } else {
+                    if (meshIndices(itime).__nonzero__()) {
+                        slackColumnsToRemove.push_back(itime);
+                    }
                 }
             }
             // The first argument is an empty vector since we don't want to
@@ -666,11 +775,44 @@ Solution Transcription::solve(const Iterate& guessOrig) {
         // Check that either that the slack variables provided in the guess
         // are the correct length, or that the correct number of columns
         // were removed.
-        OPENSIM_THROW_IF(slacks.size2() != m_numMeshInteriorPoints,
+        int slackLength;
+        if (m_problem.getIsKinematicConstraintMethodProjection()) {
+            slackLength = m_numMeshIntervals;
+        } else {
+            slackLength = m_numMeshInteriorPoints;
+        }
+        OPENSIM_THROW_IF(slacks.size2() != slackLength,
                 OpenSim::Exception,
                 "Expected slack variables to be length {}, but they are length "
                 "{}.",
-                m_numMeshInteriorPoints, slacks.size2());
+                slackLength, slacks.size2());
+    }
+
+    // Adjust guesses for the projection variables to ensure they are the
+    // correct length.
+    if (guess.variables.find(Var::projection_states) != guess.variables.end()) {
+        auto& projection_states = guess.variables.at(Var::projection_states);
+
+        if (projection_states.size2() == m_numGridPoints) {
+            casadi::DM meshIndices = createMeshIndices();
+            std::vector<casadi_int> columnsToRemove;
+            columnsToRemove.push_back(0);
+
+            for (int itime = 0; itime < m_numGridPoints; ++itime) {
+                if (!meshIndices(itime).__nonzero__()) {
+                    columnsToRemove.push_back(itime);
+                }
+            }
+            // The first argument is an empty vector since we don't want to
+            // remove an entire row.
+            projection_states.remove(std::vector<casadi_int>(), columnsToRemove);
+        }
+
+        OPENSIM_THROW_IF(projection_states.size2() != m_numMeshIntervals,
+                OpenSim::Exception,
+                "Expected projection state variables to be length {}, but they "
+                "are length {}.",
+                m_numMeshIntervals, projection_states.size2());
     }
 
     // Create the CasADi NLP function.
@@ -1257,6 +1399,8 @@ casadi::MXVector Transcription::evalOnTrajectory(
         mxIn[mxIn.size() - 1] = m_paramsTrajMeshInterior;
     } else if (&timeIndices == &m_pathConstraintIndices) {
         mxIn[mxIn.size() - 1] = m_paramsTrajPathCon;
+    } else if (&timeIndices == &m_projectionStateIndices) {
+        mxIn[mxIn.size() - 1] = m_paramsTrajProjState;
     } else {
         OPENSIM_THROW(OpenSim::Exception, "Internal error.");
     }

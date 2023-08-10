@@ -475,6 +475,11 @@ public:
         return (int)getSpeedIndices().size();
     }
 
+    int getNumMultibodyStates() const {
+        ensureUnsealed();
+        return (int)getMultibodyStateIndices().size();
+    }
+
     int getNumAccelerations() const {
         ensureUnsealed();
         return (int)getAccelerationIndices().size();
@@ -527,6 +532,18 @@ public:
             }
         }
         return speedNames;
+    }
+    std::vector<std::string> getMultibodyStateNames() const {
+        ensureUnsealed();
+        std::vector<std::string> multibodyStateNames;
+        for (const auto& name : m_state_names) {
+            if (name.find("/value") != std::string::npos) {
+                multibodyStateNames.push_back(name);
+            } else if (name.find("/speed") != std::string::npos) {
+                multibodyStateNames.push_back(name);
+            }
+        }
+        return multibodyStateNames;
     }
     std::vector<std::string> getAccelerationNames() const {
         ensureUnsealed();
@@ -588,6 +605,13 @@ public:
         if (indices.empty()) indices.push_back(0);
         return {m_states.block(0, indices[0],
                 m_states.nrow(), getNumSpeeds())};
+    }
+    SimTK::Matrix getMultibodyStatesTrajectory() const {
+        ensureUnsealed();
+        auto indices = getMultibodyStateIndices();
+        if (indices.empty()) indices.push_back(0);
+        return {m_states.block(0, indices[0],
+                m_states.nrow(), getNumMultibodyStates())};
     }
     SimTK::Matrix getAccelerationsTrajectory() const {
         ensureUnsealed();
@@ -876,6 +900,19 @@ private:
             }
         }
         return speedIndices;
+    }
+    std::vector<int> getMultibodyStateIndices() const {
+        ensureUnsealed();
+        std::vector<int> multibodyStateIndices;
+        auto valueIndices = getValueIndices();
+        auto speedIndices = getSpeedIndices();
+        multibodyStateIndices.reserve(
+                valueIndices.size() + speedIndices.size());
+        multibodyStateIndices.insert(multibodyStateIndices.end(),
+                valueIndices.begin(), valueIndices.end());
+        multibodyStateIndices.insert(multibodyStateIndices.end(),
+                speedIndices.begin(), speedIndices.end());
+        return multibodyStateIndices;
     }
     std::vector<int> getAccelerationIndices() const {
         ensureUnsealed();

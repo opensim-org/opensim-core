@@ -29,11 +29,6 @@ class Trapezoidal : public Transcription {
 public:
     Trapezoidal(const Solver& solver, const Problem& problem)
             : Transcription(solver, problem) {
-
-        OPENSIM_THROW_IF(problem.getEnforceConstraintDerivatives(),
-                OpenSim::Exception,
-                "Enforcing kinematic constraint derivatives "
-                "not supported with trapezoidal transcription.");
         createVariablesAndSetBounds(m_solver.getMesh(),
                 m_problem.getNumStates());
     }

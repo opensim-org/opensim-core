@@ -54,6 +54,9 @@ void MocoCasADiSolver::constructProperties() {
     constructProperty_implicit_auxiliary_derivatives_weight(1.0);
 
     constructProperty_enforce_path_constraint_midpoints(false);
+    constructProperty_kinematic_constraint_method("PKT");
+    constructProperty_minimize_state_projection_distance(true);
+    constructProperty_state_projection_distance_weight(0.0001);
 }
 
 bool MocoCasADiSolver::isAvailable() {
@@ -175,8 +178,20 @@ std::unique_ptr<MocoCasOCProblem> MocoCasADiSolver::createCasOCProblem() const {
     OPENSIM_THROW_IF(!model.getMatterSubsystem().getUseEulerAngles(
                              model.getWorkingState()),
             Exception, "Quaternions are not supported.");
+
+    if (getProblemRep().getNumKinematicConstraintEquations()) {
+        checkPropertyValueIsInSet(getProperty_kinematic_constraint_method(),
+                                  {"PKT", "projection"});
+        OPENSIM_THROW_IF(get_transcription_scheme() != "hermite-simpson" &&
+                     get_kinematic_constraint_method() == "PKT", Exception,
+            "Expected the 'hermite-simpson' transcription scheme when using "
+            "PKT method for enforcing kinematic constraint, but received '{}'.",
+            get_transcription_scheme());
+    }
+
     return OpenSim::make_unique<MocoCasOCProblem>(*this, problemRep,
-            createProblemRepJar(numThreads), get_multibody_dynamics_mode());
+            createProblemRepJar(numThreads), get_multibody_dynamics_mode(),
+            get_kinematic_constraint_method());
 #else
     OPENSIM_THROW(MocoCasADiSolverNotAvailable);
 #endif
@@ -193,23 +208,6 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     checkPropertyValueIsInSet(getProperty_optim_solver(), {"ipopt", "snopt"});
     checkPropertyValueIsInSet(getProperty_transcription_scheme(),
             {"trapezoidal", "hermite-simpson"});
-    OPENSIM_THROW_IF(casProblem.getNumKinematicConstraintEquations() != 0 &&
-                             get_transcription_scheme() == "trapezoidal",
-            OpenSim::Exception,
-            "Kinematic constraints not supported with "
-            "trapezoidal transcription.");
-    // Enforcing constraint derivatives is only supported when Hermite-Simpson
-    // is set as the transcription scheme.
-    if (casProblem.getNumKinematicConstraintEquations() != 0) {
-        OPENSIM_THROW_IF(get_transcription_scheme() != "hermite-simpson" &&
-                                 get_enforce_constraint_derivatives(),
-                Exception,
-                "If enforcing derivatives of model kinematic "
-                "constraints, then the property 'transcription_scheme' "
-                "must be set to 'hermite-simpson'. "
-                "Currently, it is set to '{}'.",
-                get_transcription_scheme());
-    }
 
     checkPropertyValueIsInRangeOrSet(getProperty_num_mesh_intervals(), 0,
             std::numeric_limits<int>::max(), {});
@@ -324,6 +322,10 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     casSolver->setImplicitAuxiliaryDerivativesWeight(
             get_implicit_auxiliary_derivatives_weight());
 
+    casSolver->setMinimizeStateProjection(
+            get_minimize_state_projection_distance());
+    casSolver->setStateProjectionWeight(get_state_projection_distance_weight());
+
     casSolver->setOptimSolver(get_optim_solver());
     casSolver->setInterpolateControlMidpoints(
             get_interpolate_control_midpoints());
@@ -362,7 +364,10 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     if (guess.empty()) {
         casGuess = casSolver->createInitialGuessFromBounds();
     } else {
-        casGuess = convertToCasOCIterate(guess);
+        bool addProjectionStates =
+                getProblemRep().getNumKinematicConstraintEquations() &&
+                get_kinematic_constraint_method() == "projection";
+        casGuess = convertToCasOCIterate(guess, addProjectionStates);
     }
 
     // Temporarily disable printing of negative muscle force warnings so the

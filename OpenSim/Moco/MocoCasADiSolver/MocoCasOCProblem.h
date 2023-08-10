@@ -67,8 +67,9 @@ inline casadi::DM convertToCasADiDM(const SimTK::Vector& simtkVec) {
     return convertToCasADiDMTemplate(simtkVec);
 }
 
-/// This resamples the iterate to obtain values that lie on the mesh.
-inline CasOC::Iterate convertToCasOCIterate(const MocoTrajectory& mocoIt) {
+/// This converts a MocoTrajectory to a CasOC::Iterate.
+inline CasOC::Iterate convertToCasOCIterate(const MocoTrajectory& mocoIt,
+        bool addProjectionStates = false) {
     CasOC::Iterate casIt;
     CasOC::VariablesDM& casVars = casIt.variables;
     using CasOC::Var;
@@ -90,6 +91,10 @@ inline CasOC::Iterate convertToCasOCIterate(const MocoTrajectory& mocoIt) {
     }
     casVars[Var::parameters] =
             convertToCasADiDMTranspose(mocoIt.getParameters());
+    if (addProjectionStates) {
+            casVars[Var::projection_states] = convertToCasADiDMTranspose(
+                    mocoIt.getMultibodyStatesTrajectory());
+    }
     casIt.times = convertToCasADiDMTranspose(mocoIt.getTime());
     casIt.state_names = mocoIt.getStateNames();
     casIt.control_names = mocoIt.getControlNames();
@@ -97,6 +102,21 @@ inline CasOC::Iterate convertToCasOCIterate(const MocoTrajectory& mocoIt) {
     casIt.slack_names = mocoIt.getSlackNames();
     casIt.derivative_names = mocoIt.getDerivativeNames();
     casIt.parameter_names = mocoIt.getParameterNames();
+    if (addProjectionStates) {
+        auto mbStateNames = mocoIt.getMultibodyStateNames();
+        for (auto name : mbStateNames) {
+            auto valuepos = name.find("/value");
+            if (valuepos != std::string::npos) {
+                name.replace(valuepos, 6, "_projection/value");
+                casIt.projection_state_names.push_back(name);
+            }
+            auto speedpos = name.find("/speed");
+            if (speedpos != std::string::npos) {
+                name.replace(speedpos, 6, "_projection/speed");
+                casIt.projection_state_names.push_back(name);
+            }
+        }
+    }
     return casIt;
 }
 
@@ -169,7 +189,7 @@ TOut convertToMocoTrajectory(const CasOC::Iterate& casIt) {
             simtkParameters);
 
     // Append slack variables. MocoTrajectory requires the slack variables to be
-    // the same length as its time vector, but it will not be if the
+    // the same length as its time vector, but it might not be if the
     // CasOC::Iterate was generated from a CasOC::Transcription object.
     // Therefore, slack variables are interpolated as necessary.
     if (!casIt.slack_names.empty()) {
@@ -196,7 +216,8 @@ public:
     MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
             const MocoProblemRep& mocoProblemRep,
             std::unique_ptr<ThreadsafeJar<const MocoProblemRep>> jar,
-            std::string dynamicsMode);
+            std::string dynamicsMode,
+            std::string kinematicConstraintMethod);
 
     int getJarSize() const { return (int)m_jar->size(); }
 
@@ -328,6 +349,49 @@ private:
         SimTK::Vector qdotCorr((int)velocity_correction.rows(),
                 velocity_correction.ptr(), true);
         matterBase.multiplyByGTranspose(simtkStateBase, gamma, qdotCorr);
+
+        m_jar->leave(std::move(mocoProblemRep));
+    }
+    void calcStateProjection(const double& time,
+            const casadi::DM& multibody_states, const casadi::DM& slacks,
+            const casadi::DM& parameters,
+            casadi::DM& projection) const override {
+        if (isPrescribedKinematics()) return;
+        auto mocoProblemRep = m_jar->take();
+
+        const auto& modelBase = mocoProblemRep->getModelBase();
+        auto& simtkStateBase = mocoProblemRep->updStateBase();
+
+        // Update the model and state.
+        applyParametersToModelProperties(parameters, *mocoProblemRep);
+        convertStatesToSimTKState(
+                SimTK::Stage::Velocity, time, multibody_states,
+                modelBase, simtkStateBase, false);
+        modelBase.realizeVelocity(simtkStateBase);
+
+        const SimTK::SimbodyMatterSubsystem& matterBase =
+                modelBase.getMatterSubsystem();
+
+        // holonomic constraint errors
+        SimTK::Vector mu_p(
+                getNumHolonomicConstraintEquations(), slacks.ptr(), true);
+        SimTK::Vector proj_p(getNumCoordinates(), projection.ptr(), true);
+        matterBase.multiplyByPqTranspose(simtkStateBase, mu_p, proj_p);
+
+        // dt(holonomic) + non-holonomic constraint errors
+        // TODO since we don't have multiplyByPVTranspose, we add the number of
+        // acceleration constraints to the vector mu_v to match the number of
+        // rows in G. There are no slack variables associated with these extra
+        // elements in mu_v, so this is just extra memory so to get the correct
+        // dimensions for the matrix multiplication.
+        SimTK::Vector mu_v(
+                getNumHolonomicConstraintEquations() +
+                getNumNonHolonomicConstraintEquations() +
+                getNumAccelerationConstraintEquations(),
+                slacks.ptr() + getNumHolonomicConstraintEquations(), true);
+        SimTK::Vector proj_v(getNumSpeeds(), projection.ptr() +
+                getNumCoordinates(), true);
+        matterBase.multiplyByGTranspose(simtkStateBase, mu_v, proj_v);
 
         m_jar->leave(std::move(mocoProblemRep));
     }
