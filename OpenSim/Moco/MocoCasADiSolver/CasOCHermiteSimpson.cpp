@@ -51,7 +51,8 @@ DM HermiteSimpson::createMeshIndicesImpl() const {
 }
 
 void HermiteSimpson::calcDefectsImpl(const casadi::MX& x,
-        const casadi::MX& xdot, casadi::MX& defects) const {
+        const casadi::MX& x_proj, const casadi::MX& xdot,
+        bool useProjectionStates, casadi::MX& defects) const {
     // For more information, see doxygen documentation for the class.
 
     const int NS = m_problem.getNumStates();
@@ -70,7 +71,8 @@ void HermiteSimpson::calcDefectsImpl(const casadi::MX& x,
         const auto h = m_times(time_ip1) - m_times(time_i);
         const auto x_i = x(Slice(), time_i);
         const auto x_mid = x(Slice(), time_mid);
-        const auto x_ip1 = x(Slice(), time_ip1);
+        const auto x_ip1 = useProjectionStates ? x_proj(Slice(), imesh) :
+                                                 x(Slice(), time_ip1);
         const auto xdot_i = xdot(Slice(), time_i);
         const auto xdot_mid = xdot(Slice(), time_mid);
         const auto xdot_ip1 = xdot(Slice(), time_ip1);

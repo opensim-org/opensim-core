@@ -199,7 +199,8 @@ private:
     virtual casadi::DM createMeshIndicesImpl() const = 0;
     /// Override this function in your derived class set the defect, kinematic,
     /// and path constraint errors required for your transcription scheme.
-    virtual void calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
+    virtual void calcDefectsImpl(const casadi::MX& x, const casadi::MX& x_proj,
+            const casadi::MX& xdot, bool useProjectionStates,
             casadi::MX& defects) const = 0;
     virtual void calcInterpolatingControlsImpl(const casadi::MX& /*controls*/,
             casadi::MX& /*interpControls*/) const {
@@ -210,7 +211,13 @@ private:
     void transcribe();
     void setObjectiveAndEndpointConstraints();
     void calcDefects() {
-        calcDefectsImpl(m_defectStates, m_xdot, m_constraints.defects);
+        bool useProjectionStates =
+                m_problem.getNumKinematicConstraintEquations() &
+                m_problem.isKinematicConstraintMethodProjection();
+        calcDefectsImpl(m_unscaledVars.at(states),
+                        m_unscaledVars.at(projection_states),
+                        m_xdot, useProjectionStates,
+                        m_constraints.defects);
     }
     void calcInterpolatingControls() {
         calcInterpolatingControlsImpl(

@@ -37,8 +37,9 @@ private:
     casadi::DM createQuadratureCoefficientsImpl() const override;
     casadi::DM createMeshIndicesImpl() const override;
 
-    void calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
-            casadi::MX& defects) const override;
+    void calcDefectsImpl(const casadi::MX& x, const casadi::MX& x_proj,
+                         const casadi::MX& xdot, bool useProjectionStates,
+                         casadi::MX& defects) const override;
 };
 
 } // namespace CasOC

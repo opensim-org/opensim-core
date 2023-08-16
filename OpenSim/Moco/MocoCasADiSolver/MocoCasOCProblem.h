@@ -373,12 +373,12 @@ private:
                 modelBase.getMatterSubsystem();
 
         // holonomic constraint errors
-        std::cout << "getNumHolonomicConstraintEquations() = "
-                  << getNumHolonomicConstraintEquations() << std::endl;
-        std::cout << "getNumNonHolonomicConstraintEquations() = "
-                  << getNumNonHolonomicConstraintEquations() << std::endl;
-        std::cout << "getNumAccelerationConstraintEquations() = "
-                  << getNumAccelerationConstraintEquations() << std::endl;
+//        std::cout << "getNumHolonomicConstraintEquations() = "
+//                  << getNumHolonomicConstraintEquations() << std::endl;
+//        std::cout << "getNumNonHolonomicConstraintEquations() = "
+//                  << getNumNonHolonomicConstraintEquations() << std::endl;
+//        std::cout << "getNumAccelerationConstraintEquations() = "
+//                  << getNumAccelerationConstraintEquations() << std::endl;
 
         SimTK::Vector mu_p(
                 getNumHolonomicConstraintEquations(), slacks.ptr(), true);
@@ -400,11 +400,11 @@ private:
                 getNumCoordinates(), true);
         matterBase.multiplyByGTranspose(simtkStateBase, mu_v, proj_v);
 
-        std::cout << "mu_p = " << mu_p << std::endl;
-        std::cout << "mu_v = " << mu_v << std::endl;
-        std::cout << "proj_p = " << proj_p << std::endl;
-        std::cout << "proj_v = " << proj_v << std::endl;
-        std::cout << "projection: " << projection << std::endl;
+//        std::cout << "mu_p = " << mu_p << std::endl;
+//        std::cout << "mu_v = " << mu_v << std::endl;
+//        std::cout << "proj_p = " << proj_p << std::endl;
+//        std::cout << "proj_v = " << proj_v << std::endl;
+//        std::cout << "projection: " << projection << std::endl;
 
         m_jar->leave(std::move(mocoProblemRep));
     }

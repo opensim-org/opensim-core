@@ -41,7 +41,9 @@ DM Trapezoidal::createMeshIndicesImpl() const {
 }
 
 void Trapezoidal::calcDefectsImpl(
-        const casadi::MX& x, const casadi::MX& xdot, casadi::MX& defects) const {
+        const casadi::MX& x, const casadi::MX& x_proj,
+        const casadi::MX& xdot, bool useProjectionStates,
+        casadi::MX& defects) const {
 
     // We have arranged the code this way so that all constraints at a given
     // mesh point are grouped together (organizing the sparsity of the Jacobian
@@ -49,7 +51,8 @@ void Trapezoidal::calcDefectsImpl(
     for (int itime = 0; itime < m_numMeshIntervals; ++itime) {
         const auto h = m_times(itime + 1) - m_times(itime);
         const auto x_i = x(Slice(), itime);
-        const auto x_ip1 = x(Slice(), itime + 1);
+        const auto x_ip1 = useProjectionStates ? x_proj(Slice(), itime) :
+                                                  x(Slice(), itime + 1);
         const auto xdot_i = xdot(Slice(), itime);
         const auto xdot_ip1 = xdot(Slice(), itime + 1);
 

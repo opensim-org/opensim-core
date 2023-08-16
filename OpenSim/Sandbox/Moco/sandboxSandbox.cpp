@@ -296,7 +296,7 @@ void testDoublePendulumPrescribedMotionProjection(MocoSolution& couplerSolution,
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
-    ms.set_transcription_scheme("hermite-simpson");
+    ms.set_transcription_scheme("trapezoidal");
     ms.set_kinematic_constraint_method("projection");
     ms.set_multibody_dynamics_mode(dynamics_mode);
     ms.set_parallel(0);
@@ -306,7 +306,7 @@ void testDoublePendulumPrescribedMotionProjection(MocoSolution& couplerSolution,
     guess.setStatesTrajectory(statesTrajCoupler);
     ms.setGuess(guess);
 
-    MocoSolution solution = study.solve();
+    MocoSolution solution = study.solve().unseal();
     solution.write("sandboxTestConstraints_testDoublePendulumPrescribedMotion.sto");
     //study.visualize(solution);
 
@@ -398,7 +398,7 @@ void testDoublePendulumPrescribedMotionProjection(MocoSolution& couplerSolution,
 int main() {
     MocoSolution couplerSol;
     testDoublePendulumCoordinateCouplerProjection(couplerSol, "explicit");
-    //testDoublePendulumPrescribedMotionProjection(couplerSol, "explicit");
+    testDoublePendulumPrescribedMotionProjection(couplerSol, "explicit");
 
     return EXIT_SUCCESS;
 }
