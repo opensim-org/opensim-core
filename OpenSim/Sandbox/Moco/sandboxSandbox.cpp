@@ -223,11 +223,12 @@ void testDoublePendulumCoordinateCouplerProjection(
     ms.set_transcription_scheme("trapezoidal");
     ms.set_kinematic_constraint_method("projection");
     ms.set_multibody_dynamics_mode(dynamics_mode);
+    ms.set_enforce_constraint_derivatives(true);
     ms.set_parallel(0);
     ms.setGuess("bounds");
 
     solution = study.solve();
-    solution.write("testConstraints_testDoublePendulumCoordinateCoupler.sto");
+    solution.write("sandboxTestConstraints_testDoublePendulumCoordinateCoupler.sto");
     //study.visualize(solution);
 
     model->initSystem();
@@ -247,9 +248,157 @@ void testDoublePendulumCoordinateCouplerProjection(
     runForwardSimulation(*model, solution, 1e-1);
 }
 
+/// Solve an optimal control problem where a double pendulum must follow a
+/// prescribed motion based on the previous test case (see
+/// testDoublePendulumCoordinateCoupler).
+void testDoublePendulumPrescribedMotionProjection(MocoSolution& couplerSolution,
+        std::string dynamics_mode) {
+    MocoStudy study;
+    study.setName("double_pendulum_prescribed_motion");
+    MocoProblem& mp = study.updProblem();
+
+    // Create double pendulum model.
+    auto model = createDoublePendulumModel();
+    // Create a spline set for the model states from the previous solution. We
+    // need to call initSystem() and set the model here in order to convert the
+    // solution from the previous problem to a StatesTrajectory.
+    model->initSystem();
+    mp.setModelAsCopy(*model);
+
+    TimeSeriesTable statesTrajCoupler =
+            couplerSolution.exportToStatesTrajectory(mp).exportToTable(*model);
+    GCVSplineSet statesSpline(statesTrajCoupler);
+
+    // Apply the prescribed motion constraints.
+    Coordinate& q0 = model->updJointSet().get("j0").updCoordinate();
+    q0.setPrescribedFunction(statesSpline.get("/jointset/j0/q0/value"));
+    q0.setDefaultIsPrescribed(true);
+    Coordinate& q1 = model->updJointSet().get("j1").updCoordinate();
+    q1.setPrescribedFunction(statesSpline.get("/jointset/j1/q1/value"));
+    q1.setDefaultIsPrescribed(true);
+    // Set the model again after implementing the constraints.
+    mp.setModelAsCopy(*model);
+
+    mp.setTimeBounds(0, 1);
+    // No bounds here, since the problem is already highly constrained by the
+    // prescribed motion constraints on the coordinates.
+    mp.setStateInfo("/jointset/j0/q0/value", {-10, 10});
+    mp.setStateInfo("/jointset/j0/q0/speed", {-50, 50});
+    mp.setStateInfo("/jointset/j1/q1/value", {-10, 10});
+    mp.setStateInfo("/jointset/j1/q1/speed", {-50, 50});
+    mp.setControlInfo("/tau0", {-25, 25});
+    mp.setControlInfo("/tau1", {-25, 25});
+
+    mp.addGoal<MocoControlGoal>();
+
+    auto& ms = study.initCasADiSolver();
+    ms.set_num_mesh_intervals(20);
+    ms.set_verbosity(2);
+    ms.set_optim_solver("ipopt");
+    ms.set_optim_convergence_tolerance(1e-3);
+    ms.set_transcription_scheme("hermite-simpson");
+    ms.set_kinematic_constraint_method("projection");
+    ms.set_multibody_dynamics_mode(dynamics_mode);
+    ms.set_parallel(0);
+
+    // Set guess based on coupler solution trajectory.
+    MocoTrajectory guess(ms.createGuess("bounds"));
+    guess.setStatesTrajectory(statesTrajCoupler);
+    ms.setGuess(guess);
+
+    MocoSolution solution = study.solve();
+    solution.write("sandboxTestConstraints_testDoublePendulumPrescribedMotion.sto");
+    //study.visualize(solution);
+
+    // Create a TimeSeriesTable containing the splined state data from
+    // testDoublePendulumCoordinateCoupler. Since this splined data could be
+    // somewhat different from the coordinate coupler OCP solution, we use this
+    // to create a direct comparison between the prescribed motion OCP solution
+    // states and exactly what the PrescribedMotion constraints should be
+    // enforcing.
+    auto statesTraj = solution.exportToStatesTrajectory(mp);
+    // Initialize data structures to use in the TimeSeriesTable
+    // convenience constructor.
+    std::vector<double> indVec((int)statesTraj.getSize());
+    SimTK::Matrix depData(
+            (int)statesTraj.getSize(), (int)solution.getStateNames().size());
+    SimTK::Vector timeVec(1);
+    for (int i = 0; i < (int)statesTraj.getSize(); ++i) {
+        const auto& s = statesTraj.get(i);
+        const SimTK::Real& time = s.getTime();
+        indVec[i] = time;
+        timeVec.updElt(0, 0) = time;
+        depData.set(i, 0,
+                statesSpline.get("/jointset/j0/q0/value").calcValue(timeVec));
+        depData.set(i, 1,
+                statesSpline.get("/jointset/j1/q1/value").calcValue(timeVec));
+        // The values for the speed states are created from the spline
+        // derivative values.
+        depData.set(i, 2,
+                statesSpline.get("/jointset/j0/q0/value")
+                        .calcDerivative({0}, timeVec));
+        depData.set(i, 3,
+                statesSpline.get("/jointset/j1/q1/value")
+                        .calcDerivative({0}, timeVec));
+    }
+    TimeSeriesTable splineStateValues(
+            indVec, depData, solution.getStateNames());
+
+    // Create a MocoTrajectory containing the splined state values. The splined
+    // state values are also set for the controls and adjuncts as dummy data.
+    const auto& statesTimes = splineStateValues.getIndependentColumn();
+    SimTK::Vector time((int)statesTimes.size(), statesTimes.data(), true);
+    auto mocoIterSpline = MocoTrajectory(time,
+            splineStateValues.getColumnLabels(),
+            splineStateValues.getColumnLabels(),
+            splineStateValues.getColumnLabels(), {},
+            splineStateValues.getMatrix(), splineStateValues.getMatrix(),
+            splineStateValues.getMatrix(), SimTK::RowVector(0));
+
+    // Only compare the position-level values between the current solution
+    // states and the states from the previous test (original and splined).
+    // These should match well, since position-level values are enforced
+    // directly via a path constraint in the current problem formulation (see
+    // MocoTropterSolver for details).
+
+    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(mocoIterSpline,
+                              {{"states", {"/jointset/j0/q0/value",
+                                                  "/jointset/j1/q1/value"}}}),
+            0, 1e-3);
+    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(couplerSolution,
+                              {{"states", {"/jointset/j0/q0/value",
+                                                  "/jointset/j1/q1/value"}}}),
+            0, 1e-3);
+    // Only compare the velocity-level values between the current solution
+    // states and the states from the previous test (original and splined).
+    // These won't match as well as the position-level values, since velocity-
+    // level errors are not enforced in the current problem formulation.
+    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(mocoIterSpline,
+                              {{"states", {"/jointset/j0/q0/speed",
+                                                  "/jointset/j1/q1/speed"}}}),
+            0, 1e-1);
+    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(couplerSolution,
+                              {{"states", {"/jointset/j0/q0/speed",
+                                                  "/jointset/j1/q1/speed"}}}),
+            0, 1e-1);
+    // Compare only the actuator controls. These match worse compared to the
+    // velocity-level states. It is currently unclear to what extent this is
+    // related to velocity-level states not matching well or the how the model
+    // constraints are enforced in the current formulation.
+    SimTK_TEST_EQ_TOL(solution.compareContinuousVariablesRMS(couplerSolution,
+                              {{"controls", {"/tau0", "/tau1"}}}),
+            0, 5);
+
+    // Run a forward simulation using the solution controls in prescribed
+    // controllers for the model actuators and see if we get the correct states
+    // trajectory back.
+    runForwardSimulation(*model, solution, 1e-1);
+}
+
 int main() {
     MocoSolution couplerSol;
     testDoublePendulumCoordinateCouplerProjection(couplerSol, "explicit");
+    //testDoublePendulumPrescribedMotionProjection(couplerSol, "explicit");
 
     return EXIT_SUCCESS;
 }

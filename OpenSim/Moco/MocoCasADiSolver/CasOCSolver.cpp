@@ -78,7 +78,10 @@ Solution Solver::solve(const Iterate& guess) const {
         const auto guessTimes =
                 transcription->createTimes(guessCopy.variables.at(initial_time),
                         guessCopy.variables.at(final_time));
-        guessCopy = guessCopy.resample(guessTimes);
+        bool addProjectionStates =
+                m_problem.getNumKinematicConstraintEquations() &&
+                m_problem.isKinematicConstraintMethodProjection();
+        guessCopy = guessCopy.resample(guessTimes, addProjectionStates);
         pointsForSparsityDetection->push_back(guessCopy.variables);
     } else if (m_sparsity_detection == "random") {
         // Make sure the exact same sparsity pattern is used every time.

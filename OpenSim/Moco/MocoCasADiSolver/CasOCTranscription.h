@@ -222,11 +222,7 @@ private:
     template <typename T>
     static std::vector<Var> getSortedVarKeys(const Variables<T>& vars) {
         std::vector<Var> keys;
-        for (const auto& kv : vars) {
-//            std::cout << "DEBUG key: " << kv.first << std::endl;
-//            std::cout << "DEBUG var: " << kv.second << std::endl;
-            keys.push_back(kv.first);
-        }
+        for (const auto& kv : vars) { keys.push_back(kv.first); }
         std::sort(keys.begin(), keys.end());
         return keys;
     }
@@ -236,7 +232,6 @@ private:
     static T flattenVariables(const CasOC::Variables<T>& vars) {
         std::vector<T> stdvec;
         for (const auto& key : getSortedVarKeys(vars)) {
-            //std::cout << "DEBUG: " << key << std::endl;
             stdvec.push_back(vars.at(key));
         }
         return T::veccat(stdvec);
@@ -383,7 +378,7 @@ private:
         int icon = 0;
         for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
             copyColumn(constraints.kinematic, imesh);
-            if (imesh > 0) copyColumn(constraints.projection, imesh-1);
+            if (imesh > 0) copyColumn(constraints.projection, imesh - 1);
             if (imesh < m_numMeshIntervals) {
                 while (m_grid(igrid).scalar() < m_solver.getMesh()[imesh + 1]) {
                     copyColumn(constraints.multibody_residuals, igrid);

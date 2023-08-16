@@ -176,12 +176,12 @@ public:
             "enable this property to enforce MocoPathConstraints at mesh "
             "interval midpoints. Default: false.");
 
-    OpenSim_DECLARE_PROPERTY(kinematic_constraint_method, std::string,
-            "TODO: 'PKT' or 'projection'");
     OpenSim_DECLARE_PROPERTY(minimize_state_projection_distance, bool,
             "TODO: default true");
     OpenSim_DECLARE_PROPERTY(state_projection_distance_weight, double,
             "TODO: default 0.0001");
+    OpenSim_DECLARE_PROPERTY(projection_variable_bounds, MocoBounds,
+            "TODO");
 
     MocoCasADiSolver();
 

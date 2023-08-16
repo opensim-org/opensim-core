@@ -147,14 +147,18 @@ public:
             "enforced, set the bounds on the slack variables performing the "
             "velocity correction to project the model coordinates back onto "
             "the constraint manifold. Default: [-0.1, 0.1]");
-    OpenSim_DECLARE_PROPERTY(projection_variable_bounds, MocoBounds,
-            "TODO");
+
     OpenSim_DECLARE_PROPERTY(implicit_multibody_acceleration_bounds, MocoBounds,
             "Bounds on acceleration variables in implicit dynamics mode. "
             "Default: [-1000, 1000]");
     OpenSim_DECLARE_PROPERTY(implicit_auxiliary_derivative_bounds, MocoBounds,
             "Bounds on derivative variables for components with auxiliary "
             "dynamics in implicit form. Default: [-1000, 1000]");
+
+    OpenSim_DECLARE_PROPERTY(kinematic_constraint_method, std::string,
+            "The method used to enforce kinematic constraints in the direct "
+            "collocation problem. 'PKT' (default) or 'projection' (only valid "
+            "with CasADi).");
 
     MocoDirectCollocationSolver() { constructProperties(); }
 

@@ -386,7 +386,7 @@ public:
             }
         }
         if (getNumKinematicConstraintEquations() &&
-                getIsKinematicConstraintMethodProjection()) {
+                isKinematicConstraintMethodProjection()) {
             for (const auto& info : m_stateInfos) {
                 if (info.type == StateType::Coordinate) {
                     auto name = info.name;
@@ -494,7 +494,7 @@ public:
 
         if (getEnforceConstraintDerivatives() &&
                 getNumKinematicConstraintEquations()) {
-            if (getIsKinematicConstraintMethodProjection()) {
+            if (isKinematicConstraintMethodProjection()) {
                 mutThis->m_stateProjectionFunc =
                     OpenSim::make_unique<StateProjection>();
                 mutThis->m_stateProjectionFunc->constructFunction(this,
@@ -598,12 +598,12 @@ public:
     std::string getKinematicConstraintMethod() const {
         return m_kinematicConstraintMethod;
     }
-    bool getIsKinematicConstraintMethodProjection() const {
+    bool isKinematicConstraintMethodProjection() const {
         return m_isKinematicConstraintMethodProjection;
     }
     int getNumProjectionConstraintEquations() const {
         if (getNumKinematicConstraintEquations() &&
-                getIsKinematicConstraintMethodProjection()) {
+                isKinematicConstraintMethodProjection()) {
             return getNumMultibodyStates();
         } else {
             return 0;

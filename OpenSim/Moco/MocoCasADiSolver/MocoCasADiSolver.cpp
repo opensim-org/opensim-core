@@ -54,9 +54,9 @@ void MocoCasADiSolver::constructProperties() {
     constructProperty_implicit_auxiliary_derivatives_weight(1.0);
 
     constructProperty_enforce_path_constraint_midpoints(false);
-    constructProperty_kinematic_constraint_method("PKT");
     constructProperty_minimize_state_projection_distance(true);
     constructProperty_state_projection_distance_weight(0.0001);
+    constructProperty_projection_variable_bounds({-10, 10});
 }
 
 bool MocoCasADiSolver::isAvailable() {

@@ -540,7 +540,8 @@ MocoTrajectory runForwardSimulation(
 /// control effort.
 template <typename TestType>
 void testDoublePendulumPointOnLine(
-        bool enforce_constraint_derivatives, std::string dynamics_mode) {
+        bool enforce_constraint_derivatives, std::string dynamics_mode,
+        std::string kinematic_constraint_method = "PKT") {
     MocoStudy study;
     study.setName("double_pendulum_point_on_line");
     MocoProblem& mp = study.updProblem();
@@ -585,6 +586,7 @@ void testDoublePendulumPointOnLine(
     ms.set_optim_convergence_tolerance(1e-3);
     ms.set_transcription_scheme("hermite-simpson");
     ms.set_enforce_constraint_derivatives(enforce_constraint_derivatives);
+    ms.set_kinematic_constraint_method(kinematic_constraint_method);
     ms.set_minimize_lagrange_multipliers(true);
     ms.set_lagrange_multiplier_weight(10);
     ms.set_multibody_dynamics_mode(dynamics_mode);
@@ -618,7 +620,9 @@ void testDoublePendulumPointOnLine(
 /// control effort.
 template <typename SolverType>
 void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
-        bool enforce_constraint_derivatives, std::string dynamics_mode) {
+        bool enforce_constraint_derivatives, std::string dynamics_mode,
+        std::string kinematic_constraint_method = "PKT",
+        std::string transcription_scheme = "hermite-simpson") {
     MocoStudy study;
     study.setName("double_pendulum_coordinate_coupler");
 
@@ -663,8 +667,9 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
-    ms.set_transcription_scheme("hermite-simpson");
+    ms.set_transcription_scheme(transcription_scheme);
     ms.set_enforce_constraint_derivatives(enforce_constraint_derivatives);
+    ms.set_kinematic_constraint_method(kinematic_constraint_method);
     ms.set_minimize_lagrange_multipliers(true);
     ms.set_lagrange_multiplier_weight(10);
     ms.set_multibody_dynamics_mode(dynamics_mode);
@@ -672,83 +677,7 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
 
     solution = study.solve();
     solution.write("testConstraints_testDoublePendulumCoordinateCoupler.sto");
-    // moco.visualize(solution);
-
-    model->initSystem();
-    StatesTrajectory states = solution.exportToStatesTrajectory(mp);
-    for (int i = 0; i < (int)states.getSize(); ++i) {
-        const auto& s = states.get(i);
-        model->realizePosition(s);
-
-        // The coordinates should be coupled according to the linear function
-        // described above.
-        SimTK_TEST_EQ_TOL(q1.getValue(s), m * q0.getValue(s) + b, 1e-2);
-    }
-
-    // Run a forward simulation using the solution controls in prescribed
-    // controllers for the model actuators and see if we get the correct states
-    // trajectory back.
-    runForwardSimulation(*model, solution, 1e-1);
-}
-
-/// Solve an optimal control problem where a double pendulum must reach a
-/// specified final configuration while subject to a constraint that couples
-/// its two coordinates together via a linear relationship and minimizing
-/// control effort. TODO
-void testDoublePendulumCoordinateCouplerProjection(
-        MocoSolution& solution, std::string dynamics_mode) {
-    MocoStudy study;
-    study.setName("double_pendulum_coordinate_coupler_projection");
-
-    // Create double pendulum model and add the coordinate coupler constraint.
-    auto model = createDoublePendulumModel();
-    const Coordinate& q0 = model->getCoordinateSet().get("q0");
-    const Coordinate& q1 = model->getCoordinateSet().get("q1");
-    CoordinateCouplerConstraint* constraint = new CoordinateCouplerConstraint();
-    Array<std::string> indepCoordNames;
-    indepCoordNames.append("q0");
-    constraint->setIndependentCoordinateNames(indepCoordNames);
-    constraint->setDependentCoordinateName("q1");
-    // Represented by the following equation,
-    //      q1 = m*q0 + b
-    // this linear function couples the two model coordinates such that given
-    // the boundary conditions for q0 from testDoublePendulumPointOnLine, the
-    // same boundary conditions for q1 should be achieved without imposing
-    // bounds for this coordinate.
-    const SimTK::Real m = -2;
-    const SimTK::Real b = SimTK::Pi;
-    LinearFunction linFunc(m, b);
-    // Avoid CoordinateCoupler::setFunction(const Function&); it has a leak.
-    constraint->setFunction(&linFunc);
-    model->addConstraint(constraint);
-    model->finalizeConnections();
-
-    MocoProblem& mp = study.updProblem();
-    mp.setModelAsCopy(*model);
-    mp.setTimeBounds(0, 1);
-    // Boundary conditions are only enforced for the first coordinate, so we can
-    // test that the second coordinate is properly coupled.
-    mp.setStateInfo("/jointset/j0/q0/value", {-5, 5}, 0, SimTK::Pi / 2);
-    mp.setStateInfo("/jointset/j0/q0/speed", {-10, 10}, 0, 0);
-    mp.setStateInfo("/jointset/j1/q1/value", {-10, 10});
-    mp.setStateInfo("/jointset/j1/q1/speed", {-5, 5}, 0, 0);
-    mp.setControlInfo("/tau0", {-50, 50});
-    mp.setControlInfo("/tau1", {-50, 50});
-    mp.addGoal<MocoControlGoal>();
-
-    auto& ms = study.initSolver<MocoCasADiSolver>();
-    ms.set_num_mesh_intervals(20);
-    ms.set_verbosity(2);
-    ms.set_optim_solver("ipopt");
-    ms.set_optim_convergence_tolerance(1e-3);
-    ms.set_transcription_scheme("trapezoidal");
-    ms.set_kinematic_constraint_method("projection");
-    ms.set_multibody_dynamics_mode(dynamics_mode);
-    ms.setGuess("bounds");
-
-    solution = study.solve();
-    solution.write("testConstraints_testDoublePendulumCoordinateCoupler.sto");
-    // moco.visualize(solution);
+    //study.visualize(solution);
 
     model->initSystem();
     StatesTrajectory states = solution.exportToStatesTrajectory(mp);
@@ -772,7 +701,9 @@ void testDoublePendulumCoordinateCouplerProjection(
 /// testDoublePendulumCoordinateCoupler).
 template <typename SolverType>
 void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
-        bool enforce_constraint_derivatives, std::string dynamics_mode) {
+        bool enforce_constraint_derivatives, std::string dynamics_mode,
+        std::string kinematic_constraint_method = "PKT",
+        std::string transcription_scheme = "hermite-simpson") {
     MocoStudy study;
     study.setName("double_pendulum_prescribed_motion");
     MocoProblem& mp = study.updProblem();
@@ -816,8 +747,9 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
-    ms.set_transcription_scheme("hermite-simpson");
+    ms.set_transcription_scheme(transcription_scheme);
     ms.set_enforce_constraint_derivatives(enforce_constraint_derivatives);
+    ms.set_kinematic_constraint_method(kinematic_constraint_method);
     ms.set_minimize_lagrange_multipliers(true);
     ms.set_lagrange_multiplier_weight(10);
     ms.set_multibody_dynamics_mode(dynamics_mode);
@@ -829,7 +761,7 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
 
     MocoSolution solution = study.solve();
     solution.write("testConstraints_testDoublePendulumPrescribedMotion.sto");
-    // study.visualize(solution);
+    //study.visualize(solution);
 
     // Create a TimeSeriesTable containing the splined state data from
     // testDoublePendulumCoordinateCoupler. Since this splined data could be
@@ -935,12 +867,6 @@ TEMPLATE_TEST_CASE("DoublePendulum with and without constraint derivatives",
     }
 }
 
-TEST_CASE("DoublePendulum using projection method", "[explicit]") {
-    MocoSolution couplerSol;
-    testDoublePendulumCoordinateCouplerProjection(
-            couplerSol, "explicit");
-}
-
 TEST_CASE("DoublePendulum with and without constraint derivatives",
         "[implicit][casadi]") {
     SECTION("DoublePendulum without constraint derivatives") {
@@ -979,6 +905,24 @@ TEST_CASE("DoublePendulumPointOnLine with constraint derivatives",
         "[implicit][casadi]") {
     testDoublePendulumPointOnLine<MocoCasADiSolver>(true, "implicit");
 }
+
+TEST_CASE("DoublePendulum tests using projection method", "[explicit]") {
+    MocoSolution couplerSol;
+    testDoublePendulumCoordinateCoupler<MocoCasADiSolver>(
+            couplerSol, true, "explicit", "projection", "trapezoidal");
+    testDoublePendulumPrescribedMotion<MocoCasADiSolver>(
+                couplerSol, true, "explicit", "projection", "trapezoidal");
+    //testDoublePendulumPointOnLine<MocoCasADiSolver>(true, "explicit", "projection");
+}
+
+//TEST_CASE("DoublePendulum tests using projection method", "[implicit]") {
+//    MocoSolution couplerSol;
+//    testDoublePendulumCoordinateCoupler<MocoCasADiSolver>(
+//            couplerSol, true, "implicit", "projection");
+//    testDoublePendulumPrescribedMotion<MocoCasADiSolver>(
+//                couplerSol, true, "implicit", "projection");
+//    testDoublePendulumPointOnLine<MocoCasADiSolver>(true, "implicit", "projection");
+//}
 
 class EqualControlConstraint : public MocoPathConstraint {
     OpenSim_DECLARE_CONCRETE_OBJECT(EqualControlConstraint, MocoPathConstraint);

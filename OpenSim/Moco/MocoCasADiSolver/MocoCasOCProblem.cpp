@@ -123,7 +123,7 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
             ma = kc.getNumAccelerationEquations();
             kinLevels = kc.getKinematicLevels();
 
-            if (getIsKinematicConstraintMethodProjection()) {
+            if (isKinematicConstraintMethodProjection()) {
                 OPENSIM_THROW_IF(!enforceConstraintDerivs, Exception,
                          "The projection method for enforcing kinematic "
                          "constraints requires that the solver property "
@@ -194,7 +194,7 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
                                 "constraint to begin with 'lambda' but it "
                                 "begins with '{}'.",
                                 multInfo.getName().substr(0, 6));
-                        if (getIsKinematicConstraintMethodProjection()) {
+                        if (isKinematicConstraintMethodProjection()) {
                             // Add "mu" variables for the projection method by
                             // Bordalba et al. (2023).
                             const auto muBounds = convertBounds(

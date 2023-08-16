@@ -103,7 +103,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
             m_problem.getNumCoordinates() + m_problem.getNumSpeeds();
     m_numProjectionStates =
             m_problem.getNumProjectionConstraintEquations() &&
-            m_problem.getIsKinematicConstraintMethodProjection()
+            m_problem.isKinematicConstraintMethodProjection()
             ? numMultibodyStates : 0;
 
     m_numConstraints =
@@ -145,12 +145,16 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
             "derivatives", m_problem.getNumDerivatives(), m_numGridPoints);
     m_scaledVars[parameters] =
             MX::sym("parameters", m_problem.getNumParameters(), 1);
-    if (m_problem.getIsKinematicConstraintMethodProjection()) {
+    if (m_problem.isKinematicConstraintMethodProjection()) {
+        // In the projection method for enforcing kinematic constraints, the
+        // slack variables are applied at the mesh points at the end of each
+        // mesh interval.
         m_scaledVars[slacks] = MX::sym(
             "slacks", m_problem.getNumSlacks(), m_numMeshIntervals);
     } else {
-        // Here, the mesh interior points will be the mesh interval midpoints
-        // in the Hermite-Simpson collocation scheme.
+        // In the PKT method for enforcing kinematic constraints, the mesh
+        // interior points will be the mesh interval midpoints in the
+        // Hermite-Simpson collocation scheme.
         m_scaledVars[slacks] = MX::sym(
             "slacks", m_problem.getNumSlacks(), m_numMeshInteriorPoints);
     }
@@ -411,11 +415,11 @@ void Transcription::transcribe() {
     const MX u = m_unscaledVars[states](Slice(NQ, NQ + NU), Slice());
     m_xdot(Slice(0, NQ), Slice()) = u;
 
-    if (numKinematicConstraints  &&
+    if (numKinematicConstraints &&
             !m_problem.isPrescribedKinematics() &&
             m_problem.getEnforceConstraintDerivatives()) {
 
-        OPENSIM_THROW_IF(!m_problem.getIsKinematicConstraintMethodProjection() &&
+        OPENSIM_THROW_IF(!m_problem.isKinematicConstraintMethodProjection() &&
                          m_solver.getTranscriptionScheme() != "hermite-simpson",
                          OpenSim::Exception,
             "Expected the 'hermite-simpson' transcription scheme when using "
@@ -423,7 +427,7 @@ void Transcription::transcribe() {
             "scheme was selected.", m_solver.getTranscriptionScheme());
 
         if (m_solver.getTranscriptionScheme() == "hermite-simpson" &&
-                !m_problem.getIsKinematicConstraintMethodProjection()) {
+                !m_problem.isKinematicConstraintMethodProjection()) {
             // In Hermite-Simpson, we must compute a velocity correction at all
             // mesh interval midpoints and update qdot.
             // See MocoCasADiVelocityCorrection for more details. This function
@@ -437,7 +441,7 @@ void Transcription::transcribe() {
             m_xdot(Slice(0, NQ), m_meshInteriorIndices) += u_correction;
         }
 
-        if (m_problem.getIsKinematicConstraintMethodProjection()) {
+        if (m_problem.isKinematicConstraintMethodProjection()) {
             const auto projectionOut = evalOnTrajectory(
                     m_problem.getStateProjection(),
                     {multibody_states, slacks},
@@ -598,7 +602,7 @@ void Transcription::setObjectiveAndEndpointConstraints() {
     bool minimizeStateProjection =
             m_solver.getMinimizeStateProjection() &&
             m_problem.getNumKinematicConstraintEquations() &&
-            m_problem.getIsKinematicConstraintMethodProjection();
+            m_problem.isKinematicConstraintMethodProjection();
     if (minimizeStateProjection) {
         m_objectiveTermNames.push_back("state_projection");
     }
@@ -739,7 +743,7 @@ Solution Transcription::solve(const Iterate& guessOrig) {
             guessOrig.variables.at(final_time));
     bool addProjectionStates =
             m_problem.getNumKinematicConstraintEquations() &&
-            m_problem.getIsKinematicConstraintMethodProjection();
+            m_problem.isKinematicConstraintMethodProjection();
     auto guess = guessOrig.resample(guessTimes, addProjectionStates);
 
     // Adjust guesses for the slack variables to ensure they are the correct
@@ -753,11 +757,11 @@ Solution Transcription::solve(const Iterate& guessOrig) {
         if (slacks.size2() == m_numGridPoints) {
             casadi::DM meshIndices = createMeshIndices();
             std::vector<casadi_int> slackColumnsToRemove;
-            if (m_problem.getIsKinematicConstraintMethodProjection()) {
+            if (m_problem.isKinematicConstraintMethodProjection()) {
                 slackColumnsToRemove.push_back(0);
             }
             for (int itime = 0; itime < m_numGridPoints; ++itime) {
-                if (m_problem.getIsKinematicConstraintMethodProjection()) {
+                if (m_problem.isKinematicConstraintMethodProjection()) {
                     if (!meshIndices(itime).__nonzero__()) {
                         slackColumnsToRemove.push_back(itime);
                     }
@@ -776,7 +780,7 @@ Solution Transcription::solve(const Iterate& guessOrig) {
         // are the correct length, or that the correct number of columns
         // were removed.
         int slackLength;
-        if (m_problem.getIsKinematicConstraintMethodProjection()) {
+        if (m_problem.isKinematicConstraintMethodProjection()) {
             slackLength = m_numMeshIntervals;
         } else {
             slackLength = m_numMeshInteriorPoints;
