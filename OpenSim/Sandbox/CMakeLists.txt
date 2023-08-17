@@ -21,7 +21,7 @@ OpenSimCopySharedTestFiles(gait10dof18musc_subject01.osim)
 foreach(exec_file ${TO_COMPILE})
     get_filename_component(_target_name ${exec_file} NAME_WE)
     add_executable(${_target_name} EXCLUDE_FROM_ALL ${exec_file})
-    target_link_libraries(${_target_name} osimTools)
+    target_link_libraries(${_target_name} osimTools osimMoco)
     set_target_properties(${_target_name} PROPERTIES
         FOLDER "Future sandbox"
     )

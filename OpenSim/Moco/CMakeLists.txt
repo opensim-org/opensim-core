@@ -120,6 +120,8 @@ if(OPENSIM_WITH_CASADI)
             MocoCasADiSolver/CasOCTrapezoidal.cpp
             MocoCasADiSolver/CasOCHermiteSimpson.h
             MocoCasADiSolver/CasOCHermiteSimpson.cpp
+            MocoCasADiSolver/CasOCGaussPseudospectral.h
+            MocoCasADiSolver/CasOCGaussPseudospectral.cpp
             MocoCasADiSolver/CasOCIterate.h
             MocoCasADiSolver/MocoCasOCProblem.h
             MocoCasADiSolver/MocoCasOCProblem.cpp
