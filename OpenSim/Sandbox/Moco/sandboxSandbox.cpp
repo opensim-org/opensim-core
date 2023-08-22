@@ -29,7 +29,7 @@
 
 using namespace OpenSim;
 
-std::vector<double> createLegendrePolynomialRoots(int degree) {
+casadi::DM createLegendrePolynomialRoots(int degree) {
     // TODO based on the Benson thesis.
 
     // Create indices.
@@ -67,33 +67,34 @@ std::vector<double> createLegendrePolynomialRoots(int degree) {
             eigenvalues.data() + eigenvalues.size());
     std::sort(stdVector.begin(), stdVector.end());
 
-    return stdVector;
+    // Convert stdVector to a casadi::DM
+    casadi::DM roots(stdVector);
+
+    return roots;
 }
 
 // Function to multiply a vector by a scalar
-Eigen::MatrixXd multiply(const Eigen::VectorXd& vec, const Eigen::MatrixXd& x) {
+Eigen::VectorXd multiply(const Eigen::VectorXd& vec, const Eigen::VectorXd& x) {
     double scale = vec.prod();
-
     if (std::isinf(scale)) {
-        Eigen::MatrixXd result(x.rows(), x.cols());
-
-        for (int i = 0; i < x.cols(); ++i) {
-            for (int j = 0; j < x.rows(); ++j) {
-                Eigen::VectorXd product = x.col(i);
-                product(j) *= vec.prod();
-                result(j, i) = product.prod();
-            }
+        Eigen::VectorXd result(x.size());
+        for (int i = 0; i < x.size(); ++i) {
+            Eigen::VectorXd tmp = x(i) * vec;
+            result(i) = tmp.prod();
         }
-
         return result;
     } else {
         return scale * x;
     }
 }
 
+//template <typename T>
+//int sign(T val) {
+//    return (T(0) < val) - (val < T(0));
+//}
+
 Eigen::MatrixXd legendre_custom(int n, std::vector<double> x) {
 
-    std::cout << "n = " << n << std::endl;
     int numRoots = (int)x.size();
     std::vector<double> rootn(2 * n + 1);
     for (int i = 0; i < 2 * n + 1; ++i) {
@@ -126,23 +127,44 @@ Eigen::MatrixXd legendre_custom(int n, std::vector<double> x) {
     }
 
     if (!ind.empty()) {
-        std::vector<double> v((int)ind.size()), w((int)ind.size());
-        std::vector<double> m1((int)ind.size());
-        for (int k = 0; k < (int)ind.size(); ++k) {
-            int col = ind[k];
-            v[k] = 9.2 - std::log(tol) / (n * s[col]);
-            w[k] = 1.0 / std::log(v[k]);
-            m1[k] = std::min(static_cast<double>(n),
-                    std::floor(1.0 + n * s[col] * v[k] * w[k] *
-                               (1.0058 + w[k] * (3.819 - w[k] * 12.173))));
-            for (int m = static_cast<int>(m1[k]) - 2; m >= 0; --m) {
-                P(m + 1, col) =
-                        ((m + 1) * twocot[col] * P(m + 2, col) -
-                          rootn[n + m + 3] * rootn[n - m] * P(m + 3, col)) /
-                            (rootn[n + m + 2] * rootn[n - m + 1]);
-            }
-        }
+        std::cout << "DEBUG!!!! Need 'ind' code..." << std::endl;
     }
+
+//    if (!ind.empty()) {
+//        std::vector<double> v((int)ind.size()), w((int)ind.size());
+//        std::vector<int> m1((int)ind.size());
+//        for (int k = 0; k < (int)ind.size(); ++k) {
+//            int col = ind[k];
+//            v[k] = 9.2 - std::log(tol) / (n * s[col]);
+//            w[k] = 1.0 / std::log(v[k]);
+//            m1[k] = (int)std::min(static_cast<double>(n),
+//                        std::floor(1.0 + n * s[col] * v[k] * w[k] *
+//                                   (1.0058 + w[k] * (3.819 - w[k] * 12.173))));
+//
+//            for (int i = m1[k]; i <= n + 1; ++i) {
+//                P[i, col] = 0;
+//            }
+//
+//            double tstart = std::numeric_limits<double>::epsilon();
+//            P[m1[k], col] = sign(static_cast<double>(m1[k] % 2) - 0.5) * tstart;
+//            if (x[col] < 0) {
+//                P[m1[k], col] =
+//                        sign(static_cast<double>((n + 1) % 2) - 0.5) * tstart;
+//            }
+//
+//            double sumsq = tol;
+//            for (int m = m1[k] - 2; m >= 0; --m) {
+//                P[m + 1, col] = ((m + 1) * twocot[col] * P[m + 2, col] -
+//                    rootn[n + m + 3] * rootn[n - m] * P[m + 3, col]) /
+//                    (rootn[n + m + 2] * rootn[n - m + 1]);
+//                sumsq = P[m + 1, col] * P[m + 1, col] + sumsq;
+//            }
+//            double scale = 1.0 / std::sqrt(2 * sumsq - P[1, col] * P[1, col]);
+//            for (int i = 0; i <= m1[k]; ++i) {
+//                P[i, col] *= scale;
+//            }
+//        }
+//    }
 
     std::vector<int> nind;
     for (int i = 0; i < numRoots; ++i) {
@@ -162,8 +184,7 @@ Eigen::MatrixXd legendre_custom(int n, std::vector<double> x) {
             c *= 1.0 - 1.0 / i;
         }
 
-        for (int k = 0; k < (int)nind.size(); ++k) {
-            int col = nind[k];
+        for (int col : nind) {
             P(n, col) = std::sqrt(c) * sn[col];
             P(n - 1, col) = P(n, col) * twocot[col] * n / rootn[2 * n];
 
@@ -183,7 +204,7 @@ Eigen::MatrixXd legendre_custom(int n, std::vector<double> x) {
         }
     }
 
-    // Polar argument   (x = +-1)
+    // Polar argument (x = +-1)
     for (int i = 0; i < (int)s.size(); ++i) {
         if (s[i] == 0) {
             y(0, i) = std::pow(x[i], n);
@@ -196,11 +217,9 @@ Eigen::MatrixXd legendre_custom(int n, std::vector<double> x) {
         Eigen::VectorXd rootn_vec(end-start+1);
         int k = 0;
         for (int j = n - m + 2; j <= n + m + 1; ++j) {
-            std::cout << "j: " << j << std::endl;
             rootn_vec(k) = rootn[j-1];
             ++k;
         }
-        std::cout << "rootn_vec: " << rootn_vec << std::endl;
         y.row(m) = multiply(rootn_vec, y.row(m));
     }
 
@@ -214,37 +233,39 @@ Eigen::MatrixXd legendre_custom(int n, std::vector<double> x) {
 }
 
 int main() {
-    int n = 4;
-    std::vector<double> x = createLegendrePolynomialRoots(n);
-    Eigen::MatrixXd result = legendre_custom(n+1, x);
+//    for (int n = 1; n <= 20; ++n) {
+//        std::cout << "n = " << n << std::endl;
+//
+//        casadi::DM roots = createLegendrePolynomialRoots(n);
+//        std::vector<double> x = roots.get_elements();
+//        Eigen::MatrixXd result = legendre_custom(n + 1, x);
+//
+//        const auto Pnp1 = result.row(0);
+//
+//        std::vector<double> Pndot(Pnp1.size());
+//        for (int i = 0; i < (int)Pnp1.size(); ++i) {
+//            Pndot[i] = -(n + 1) / (1 - x[i] * x[i]) * Pnp1[i];
+//        }
+//
+//        std::vector<double> w(Pndot.size());
+//        for (int i = 0; i < (int)Pndot.size(); ++i) {
+//            w[i] = 1 / (Pndot[i] * Pndot[i]) * (2 / (1 - x[i] * x[i]));
+//        }
+//
+//        std::cout << "x: " << x << "\n";
+//        std::cout << "w: " << w << "\n";
+//        std::cout << std::endl;
+//    }
 
-    // Print the roots
-    for (size_t i = 0; i < x.size(); ++i) {
-        std::cout << "x_" << i << " = " << x[i] << "\n";
-    }
+    int degree = 2;
+    auto roots = casadi::collocation_points(degree, "legendre");
+    casadi::DM C, D, B;
+    casadi::collocation_coeff(roots, C, D, B);
 
-    // Print the result
-    std::cout << "Result:\n" << result << "\n";
-
-    const auto Pnp1 = result.row(0);
-
-    std::cout << "Pnp1: " << Pnp1 << "\n";
-
-    //Pndot = -(n+1)./(1-x.^2).*Pnp1;
-    //w = 1./(Pndot).^2.*(2./(1-x.^2));
-
-    std::vector<double> Pndot(Pnp1.size());
-    for (int i = 0; i < (int)Pnp1.size(); ++i) {
-        Pndot[i] = -(n+1) / (1 - x[i] * x[i]) * Pnp1[i];
-    }
-
-    std::cout << "Pndot: " << Pndot << "\n";
-    std::vector<double> w(Pndot.size());
-    for (int i = 0; i < (int)Pndot.size(); ++i) {
-        w[i] = 1 / (Pndot[i] * Pndot[i]) * (2 / (1 - x[i] * x[i]));
-    }
-
-    std::cout << "w: " << w << "\n";
+    std::cout << "roots: " << roots << std::endl;
+    std::cout << "C: " << C << std::endl;
+    std::cout << "D: " << D << std::endl;
+    std::cout << "B: " << B << std::endl;
 
     return 0;
 }

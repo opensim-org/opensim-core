@@ -377,6 +377,14 @@ private:
                 while (icon < m_pointsForInterpControls.numel() &&
                         m_pointsForInterpControls(icon).scalar() <
                                 m_solver.getMesh()[imesh + 1]) {
+                    std::cout << "imesh: " << imesh << std::endl;
+                    std::cout << "icon: " << icon << std::endl;
+                    std::cout << "m_pointsForInterpControls(icon): "
+                              << m_pointsForInterpControls(icon).scalar()
+                              << std::endl;
+                    std::cout << "m_solver.getMesh()[imesh + 1]: "
+                                << m_solver.getMesh()[imesh + 1] << std::endl;
+                    std::cout << std::endl;
                     copyColumn(constraints.interp_controls, icon);
                     ++icon;
                 }

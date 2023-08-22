@@ -54,10 +54,10 @@ SimTK::Matrix expectedSolution(const SimTK::Vector& time) {
     return expectedStatesTrajectory;
 }
 
-TEMPLATE_TEST_CASE("Second order linear min effort", "",
-        MocoCasADiSolver, MocoTropterSolver) {
-    // Kirk 1998, Example 5.1-1, page 198.
-
+/// Kirk 1998, Example 5.1-1, page 198.
+template <typename SolverType>
+MocoStudy createSecondOrderLinearMinimumEffortStudy(
+        const std::string& transcription_scheme) {
     Model model;
     auto* body = new Body("b", 1, SimTK::Vec3(0), SimTK::Inertia(0));
     model.addBody(body);
@@ -74,8 +74,8 @@ TEMPLATE_TEST_CASE("Second order linear min effort", "",
     model.addForce(actu);
     model.finalizeConnections();
 
-    MocoStudy moco;
-    auto& problem = moco.updProblem();
+    MocoStudy study;
+    auto& problem = study.updProblem();
 
     problem.setModelAsCopy(model);
     problem.setTimeBounds(0, 2);
@@ -85,12 +85,32 @@ TEMPLATE_TEST_CASE("Second order linear min effort", "",
 
     problem.addGoal<MocoControlGoal>("effort", 0.5);
 
-    auto& solver = moco.initSolver<TestType>();
-    solver.set_num_mesh_intervals(50);
-    MocoSolution solution = moco.solve();
+    auto& solver = study.initSolver<SolverType>();
+    solver.set_num_mesh_intervals(100);
+    solver.set_transcription_scheme(transcription_scheme);
 
+    return study;
+}
+
+TEST_CASE("Second order linear min effort - MocoTropterSolver") {
+    MocoStudy study =
+            createSecondOrderLinearMinimumEffortStudy<MocoTropterSolver>(
+                    "hermite-simpson");
+    MocoSolution solution = study.solve();
     const auto expected = expectedSolution(solution.getTime());
+    OpenSim_CHECK_MATRIX_ABSTOL(solution.getStatesTrajectory(), expected, 1e-5);
+}
 
+TEST_CASE("Second order linear min effort - MocoCasADiSolver") {
+    auto transcription_scheme =
+                GENERATE(as<std::string>{}, "hermite-simpson",
+                    "legendre-gauss-3", "legendre-gauss-7",
+                    "legendre-gauss-radau-3", "legendre-gauss-radau-7");
+    MocoStudy study =
+            createSecondOrderLinearMinimumEffortStudy<MocoCasADiSolver>(
+                    transcription_scheme);
+    MocoSolution solution = study.solve();
+    const auto expected = expectedSolution(solution.getTime());
     OpenSim_CHECK_MATRIX_ABSTOL(solution.getStatesTrajectory(), expected, 1e-5);
 }
 
@@ -103,6 +123,7 @@ TEMPLATE_TEST_CASE("Second order linear min effort", "",
 TEMPLATE_TEST_CASE("Linear tangent steering",
         "[casadi]", /*MocoTropterSolver, TODO*/
         MocoCasADiSolver) {
+
     // The problem is parameterized by a, T, and h, with 0 < 4h/(aT^2) < 1.
     const double a = 5;
     const double finalTime = 1; // "T"
@@ -165,7 +186,6 @@ TEMPLATE_TEST_CASE("Linear tangent steering",
             a, finalTime, finalHeight);
 
     MocoSolution solution = study.solve().unseal();
-    solution.write("testMocoAnalytic_LinearTangentSteering_solution.sto");
 
     const SimTK::Vector time = solution.getTime();
     SimTK::Vector expectedAngle(time.size());

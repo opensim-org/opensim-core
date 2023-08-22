@@ -15,10 +15,12 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "CasOCHermiteSimpson.h"
 #include "CasOCProblem.h"
 #include "CasOCTranscription.h"
 #include "CasOCTrapezoidal.h"
+#include "CasOCHermiteSimpson.h"
+#include "CasOCLegendreGauss.h"
+#include "CasOCLegendreGaussRadau.h"
 
 #include <OpenSim/Moco/MocoUtilities.h>
 
@@ -32,6 +34,51 @@ std::unique_ptr<Transcription> Solver::createTranscription() const {
         transcription = OpenSim::make_unique<Trapezoidal>(*this, m_problem);
     } else if (m_transcriptionScheme == "hermite-simpson") {
         transcription = OpenSim::make_unique<HermiteSimpson>(*this, m_problem);
+    } else if (m_transcriptionScheme == "legendre-gauss-1") {
+        transcription = OpenSim::make_unique<LegendreGauss>(*this, m_problem, 1);
+    } else if (m_transcriptionScheme == "legendre-gauss-2") {
+        transcription = OpenSim::make_unique<LegendreGauss>(*this, m_problem, 2);
+    } else if (m_transcriptionScheme == "legendre-gauss-3") {
+        transcription = OpenSim::make_unique<LegendreGauss>(*this, m_problem, 3);
+    } else if (m_transcriptionScheme == "legendre-gauss-4") {
+        transcription = OpenSim::make_unique<LegendreGauss>(*this, m_problem, 4);
+    } else if (m_transcriptionScheme == "legendre-gauss-5") {
+        transcription = OpenSim::make_unique<LegendreGauss>(*this, m_problem, 5);
+    } else if (m_transcriptionScheme == "legendre-gauss-6") {
+        transcription = OpenSim::make_unique<LegendreGauss>(*this, m_problem, 6);
+    } else if (m_transcriptionScheme == "legendre-gauss-7") {
+        transcription = OpenSim::make_unique<LegendreGauss>(*this, m_problem, 7);
+    } else if (m_transcriptionScheme == "legendre-gauss-8") {
+        transcription = OpenSim::make_unique<LegendreGauss>(*this, m_problem, 8);
+    } else if (m_transcriptionScheme == "legendre-gauss-9") {
+        transcription = OpenSim::make_unique<LegendreGauss>(*this, m_problem, 9);
+    } else if (m_transcriptionScheme == "legendre-gauss-radau-1") {
+        transcription = OpenSim::make_unique<LegendreGaussRadau>(
+                *this, m_problem, 1);
+    } else if (m_transcriptionScheme == "legendre-gauss-radau-2") {
+        transcription = OpenSim::make_unique<LegendreGaussRadau>(
+                *this, m_problem, 2);
+    } else if (m_transcriptionScheme == "legendre-gauss-radau-3") {
+        transcription = OpenSim::make_unique<LegendreGaussRadau>(
+                *this, m_problem, 3);
+    } else if (m_transcriptionScheme == "legendre-gauss-radau-4") {
+        transcription = OpenSim::make_unique<LegendreGaussRadau>(
+                *this, m_problem, 4);
+    } else if (m_transcriptionScheme == "legendre-gauss-radau-5") {
+        transcription = OpenSim::make_unique<LegendreGaussRadau>(
+                *this, m_problem, 5);
+    } else if (m_transcriptionScheme == "legendre-gauss-radau-6") {
+        transcription = OpenSim::make_unique<LegendreGaussRadau>(
+                *this, m_problem, 6);
+    } else if (m_transcriptionScheme == "legendre-gauss-radau-7") {
+        transcription = OpenSim::make_unique<LegendreGaussRadau>(
+                *this, m_problem, 7);
+    } else if (m_transcriptionScheme == "legendre-gauss-radau-8") {
+        transcription = OpenSim::make_unique<LegendreGaussRadau>(
+                *this, m_problem, 8);
+    } else if (m_transcriptionScheme == "legendre-gauss-radau-9") {
+        transcription = OpenSim::make_unique<LegendreGaussRadau>(
+                *this, m_problem, 9);
     } else {
         OPENSIM_THROW(Exception, "Unknown transcription scheme '{}'.",
                 m_transcriptionScheme);
