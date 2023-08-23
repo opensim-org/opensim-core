@@ -27,6 +27,7 @@
 // INCLUDE
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include "OpenSim/Simulation/Model/ModelComponent.h"
+#include "OpenSim/Simulation/Model/AbstractPath.h"
 #include "PathPointSet.h"
 #include <OpenSim/Simulation/Wrap/PathWrapSet.h>
 #include <OpenSim/Simulation/MomentArmSolver.h>
@@ -55,23 +56,12 @@ class WrapObject;
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMSIMULATION_API GeometryPath : public ModelComponent {
-OpenSim_DECLARE_CONCRETE_OBJECT(GeometryPath, ModelComponent);
-    //=============================================================================
-    // OUTPUTS
-    //=============================================================================
-    OpenSim_DECLARE_OUTPUT(length, double, getLength, SimTK::Stage::Position);
-    // 
-    OpenSim_DECLARE_OUTPUT(lengthening_speed, double, getLengtheningSpeed,
-        SimTK::Stage::Velocity);
+class OSIMSIMULATION_API GeometryPath : public AbstractPath {
+OpenSim_DECLARE_CONCRETE_OBJECT(GeometryPath, AbstractPath);
 
 //=============================================================================
 // DATA
 //=============================================================================
-public:
-    OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance,
-        "Default appearance attributes for this GeometryPath");
-
 private:
     OpenSim_DECLARE_UNNAMED_PROPERTY(PathPointSet,
         "The set of points defining the path");
@@ -93,12 +83,13 @@ private:
 
     mutable CacheVariable<double> _lengthCV;
     mutable CacheVariable<double> _speedCV;
+    mutable CacheVariable<SimTK::Vec3> _colorCV;
+
 public:
     class PathElementLookup;
 private:
     mutable CacheVariable<std::vector<PathElementLookup>> _currentPathCV;
-    mutable CacheVariable<SimTK::Vec3> _colorCV;
-    
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -134,18 +125,6 @@ public:
     //--------------------------------------------------------------------------
     // GET
     //--------------------------------------------------------------------------
-
-    /** If you call this prior to extendAddToSystem() it will be used to initialize
-    the color cache variable. Otherwise %GeometryPath will choose its own
-    default which varies depending on owner. **/
-    void setDefaultColor(const SimTK::Vec3& color) {
-        updProperty_Appearance().setValueIsDefault(false);
-        upd_Appearance().set_color(color); 
-    };
-    /** Returns the color that will be used to initialize the color cache
-    at the next extendAddToSystem() call. The actual color used to draw the path
-    will be taken from the cache variable, so may have changed. **/
-    const SimTK::Vec3& getDefaultColor() const { return get_Appearance().get_color(); }
 
     /** %Set the value of the color cache variable owned by this %GeometryPath
     object, in the cache of the given state. The value of this variable is used
@@ -184,15 +163,16 @@ public:
     @param[in,out] mobilityForces  Vector of generalized forces, one per mobility   
     */
     void addInEquivalentForces(const SimTK::State& state,
-                               const double& tension, 
+                               double tension,
                                SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-                               SimTK::Vector& mobilityForces) const;
+                               SimTK::Vector& mobilityForces) const override;
 
 
     //--------------------------------------------------------------------------
     // COMPUTATIONS
     //--------------------------------------------------------------------------
-    virtual double computeMomentArm(const SimTK::State& s, const Coordinate& aCoord) const;
+    double computeMomentArm(const SimTK::State& s,
+                            const Coordinate& aCoord) const override;
 
     //--------------------------------------------------------------------------
     // SCALING

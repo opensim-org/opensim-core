@@ -133,9 +133,7 @@ static void PopulatePathElementLookup(
 /*
  * Default constructor.
  */
-GeometryPath::GeometryPath() :
-    ModelComponent(),
-    _preScaleLength(0.0)
+GeometryPath::GeometryPath() : AbstractPath(), _preScaleLength(0.0)
 {
     setAuthors("Peter Loan");
     constructProperties();
@@ -193,7 +191,7 @@ void GeometryPath::extendConnectToModel(Model& aModel)
 
     // We consider this cache entry valid any time after it has been created
     // and first marked valid, and we won't ever invalidate it.
-    this->_colorCV = addCacheVariable("color", get_Appearance().get_color(), SimTK::Stage::Topology);
+    this->_colorCV = addCacheVariable("color", get_appearance().get_color(), SimTK::Stage::Topology);
 }
 
  void GeometryPath::extendInitStateFromProperties(SimTK::State& s) const
@@ -281,10 +279,6 @@ void GeometryPath::constructProperties()
     constructProperty_PathPointSet(PathPointSet());
 
     constructProperty_PathWrapSet(PathWrapSet());
-    
-    Appearance appearance;
-    appearance.set_color(SimTK::Gray);
-    constructProperty_Appearance(appearance);
 }
 
 //_____________________________________________________________________________
@@ -388,7 +382,7 @@ getPointForceDirections(const SimTK::State& s,
 /* add in the equivalent spatial forces on bodies for an applied tension 
     along the GeometryPath to a set of bodyForces */
 void GeometryPath::addInEquivalentForces(const SimTK::State& s,
-    const double& tension, 
+    double tension,
     SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
     SimTK::Vector& mobilityForces) const
 {

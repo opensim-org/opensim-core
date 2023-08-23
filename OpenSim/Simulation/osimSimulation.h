@@ -52,6 +52,7 @@
 #include "Model/PathPointSet.h"
 #include "Model/ConditionalPathPoint.h"
 #include "Model/MovingPathPoint.h"
+#include "Model/AbstractPath.h"
 #include "Model/GeometryPath.h"
 #include "Model/PrescribedForce.h"
 #include "Model/PointToPointSpring.h"
