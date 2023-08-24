@@ -6,5 +6,4 @@ OpenSimAddTests(
     TESTPROGRAMS ${TEST_PROGS}
     DATAFILES ${TEST_FILES}
     LINKLIBS osimTools
-    INCLUDEDIRS "${CMAKE_SOURCE_DIR}/tropter/external/catch"
     )

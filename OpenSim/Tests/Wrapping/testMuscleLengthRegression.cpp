@@ -25,36 +25,39 @@
 #include <SimTKcommon.h>
 
 #define CATCH_CONFIG_MAIN
-#include <Vendors/tropter/external/catch/catch.hpp>
+#include <OpenSim/Auxiliary/catch.hpp>
 
-using namespace OpenSim;
-
-TimeSeriesTable createMuscleLengthsTable(const Model& model,
-        const TimeSeriesTable& coordinates) {
-    auto statesTraj = StatesTrajectory::createFromStatesTable(
-            model, coordinates, true, true, true);
-    TimeSeriesTable lengths;
-    const auto& muscleSet = model.getMuscles();
-    for (const auto& state : statesTraj) {
-        model.realizePosition(state);
-        SimTK::RowVector lengthsRow(muscleSet.getSize());
+namespace {
+    using OpenSim::TimeSeriesTable;
+    TimeSeriesTable createMuscleLengthsTable(const OpenSim::Model& model,
+            const TimeSeriesTable& coordinates) {
+        auto statesTraj = OpenSim::StatesTrajectory::createFromStatesTable(
+                model, coordinates, true, true, true);
+        TimeSeriesTable lengths;
+        const auto& muscleSet = model.getMuscles();
+        for (const auto& state : statesTraj) {
+            model.realizePosition(state);
+            SimTK::RowVector lengthsRow(muscleSet.getSize());
+            for (int imuscle = 0; imuscle < muscleSet.getSize(); ++imuscle) {
+                const auto& muscle = muscleSet.get(imuscle);
+                const auto& geometryPath = muscle.getGeometryPath();
+                lengthsRow[imuscle] = geometryPath.getLength(state);
+            }
+            lengths.appendRow(state.getTime(), lengthsRow);
+        }
+        std::vector<std::string> labels;
         for (int imuscle = 0; imuscle < muscleSet.getSize(); ++imuscle) {
             const auto& muscle = muscleSet.get(imuscle);
-            const auto& geometry_path = muscle.getGeometryPath();
-            lengthsRow[imuscle] = geometry_path.getLength(state);
+            const auto& path = muscle.getAbsolutePathString();
+            labels.push_back(path + "|length");
         }
-        lengths.appendRow(state.getTime(), lengthsRow);
-    }
-    std::vector<std::string> labels;
-    for (int imuscle = 0; imuscle < muscleSet.getSize(); ++imuscle) {
-        const auto& muscle = muscleSet.get(imuscle);
-        const auto& path = muscle.getAbsolutePathString();
-        labels.push_back(path + "|length");
-    }
-    lengths.setColumnLabels(labels);
+        lengths.setColumnLabels(labels);
 
-    return lengths;
+        return lengths;
+    }
 }
+
+using namespace OpenSim;
 
 TEST_CASE("Rajagopal2016, 18 muscles") {
     Model model("subject_walk_armless_18musc.osim");
@@ -67,14 +70,12 @@ TEST_CASE("Rajagopal2016, 18 muscles") {
             tableProcessor.processAndConvertToRadians(model);
 
     TimeSeriesTable lengths = createMuscleLengthsTable(model, coordinates);
-//    STOFileAdapter::write(lengths,
-//            "std_testMuscleLengthRegression_subject_walk_armless.sto");
 
-    TimeSeriesTable std_lengths(
+    TimeSeriesTable stdLengths(
             "std_testMuscleLengthRegression_subject_walk_armless.sto");
     CHECK(SimTK::Test::numericallyEqual(
-            lengths.getMatrix(), std_lengths.getMatrix(),
-            (int)lengths.getNumColumns(), 1e-6));
+            lengths.getMatrix(), stdLengths.getMatrix(),
+            static_cast<int>(lengths.getNumColumns()), 1e-6));
 }
 
 TEST_CASE("Gait10dof18musc") {
@@ -88,12 +89,10 @@ TEST_CASE("Gait10dof18musc") {
             tableProcessor.processAndConvertToRadians(model);
 
     TimeSeriesTable lengths = createMuscleLengthsTable(model, coordinates);
-//    STOFileAdapter::write(lengths,
-//            "std_testMuscleLengthRegression_walk_gait1018.sto");
 
-    TimeSeriesTable std_lengths(
+    TimeSeriesTable stdLengths(
             "std_testMuscleLengthRegression_walk_gait1018.sto");
     CHECK(SimTK::Test::numericallyEqual(
-            lengths.getMatrix(), std_lengths.getMatrix(),
-            (int)lengths.getNumColumns(), 1e-6));
+            lengths.getMatrix(), stdLengths.getMatrix(),
+            static_cast<int>(lengths.getNumColumns()), 1e-6));
 }
