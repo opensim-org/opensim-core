@@ -431,20 +431,18 @@ void testPathSpring() {
     osimModel.setGravity(gravity_vec);
 
     PathSpring spring("spring", restlength, stiffness, dissipation);
-    spring.updGeometryPath().appendNewPathPoint(
-            "origin", block, Vec3(-0.1, 0.0, 0.0));
+    auto& path = dynamic_cast<GeometryPath&>(spring.updPath());
+    path.appendNewPathPoint("origin", block, Vec3(-0.1, 0.0, 0.0));
 
     int N = 10;
     for (int i = 1; i < N; ++i) {
         double angle = i * Pi / N;
         double x = 0.1 * cos(angle);
         double y = 0.1 * sin(angle);
-        spring.updGeometryPath().appendNewPathPoint(
-                "", pulleyBody, Vec3(-x, y, 0.0));
+        path.appendNewPathPoint("", pulleyBody, Vec3(-x, y, 0.0));
     }
 
-    spring.updGeometryPath().appendNewPathPoint(
-            "insertion", block, Vec3(0.1, 0.0, 0.0));
+    path.appendNewPathPoint("insertion", block, Vec3(0.1, 0.0, 0.0));
 
     // BUG in defining wrapping API requires that the Force containing the
     // GeometryPath be connected to the model before the wrap can be added
@@ -2093,14 +2091,12 @@ void testBlankevoort1991Ligament() {
             new Blankevoort1991Ligament("ligament", stiffness, restlength);
     ligament->set_damping_coefficient(0.0);
 
-    ligament->upd_GeometryPath().appendNewPathPoint(
-            "origin", ground, Vec3(0.0, 0.0, 0.0));
-    ligament->upd_GeometryPath().addPathWrap(*pulley1);
-    ligament->upd_GeometryPath().appendNewPathPoint(
-            "midpoint", ground, Vec3(0.1, 0.6, 0.0));
-    ligament->upd_GeometryPath().addPathWrap(*pulley2);
-    ligament->upd_GeometryPath().appendNewPathPoint(
-            "insertion", *block, Vec3(0.0, 0.0, 0.0));
+    auto& path = dynamic_cast<GeometryPath&>(ligament->upd_path());
+    path.appendNewPathPoint("origin", ground, Vec3(0.0, 0.0, 0.0));
+    path.addPathWrap(*pulley1);
+    path.appendNewPathPoint("midpoint", ground, Vec3(0.1, 0.6, 0.0));
+    path.addPathWrap(*pulley2);
+    path.appendNewPathPoint("insertion", *block, Vec3(0.0, 0.0, 0.0));
 
     osimModel.addForce(ligament);
 
@@ -2210,8 +2206,11 @@ void testBlankevoort1991Ligament() {
     double lig_slack_length = 1.0;
 
     Blankevoort1991Ligament* lig = new Blankevoort1991Ligament("ligament",
-            model.updGround(), SimTK::Vec3(0), *brick, SimTK::Vec3(0),
             lig_stiffness, lig_slack_length);
+    // TODO assumes that GeometryPath is the default path type
+    auto& path2 = dynamic_cast<GeometryPath&>(lig->upd_path());
+    path2.appendNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
+    path2.appendNewPathPoint("insertion", *brick, SimTK::Vec3(0));
     model.addForce(lig);
 
     SimTK::State state = model.initSystem();

@@ -23,6 +23,7 @@
  * -------------------------------------------------------------------------- */
 #include <iostream>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/GeometryPath.h>
 #include "OpenSim/Simulation/SimbodyEngine/PinJoint.h"
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>

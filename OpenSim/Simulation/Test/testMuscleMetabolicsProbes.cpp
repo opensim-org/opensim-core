@@ -385,8 +385,9 @@ void generateUmbergerMuscleData(const std::string& muscleName,
     // Create muscle attached to ground and block.
     UmbergerMuscle *muscle = new UmbergerMuscle(muscleName, maxIsometricForce,
         optimalFiberLength, width, Arel, Brel, FmaxEccentric);
-    muscle->addNewPathPoint("muscle-ground", ground, Vec3(0));
-    muscle->addNewPathPoint("muscle-block",  *block, Vec3(0));
+    auto& path = dynamic_cast<GeometryPath&>(muscle->updPath());
+    path.appendNewPathPoint("muscle-ground", ground, Vec3(0));
+    path.appendNewPathPoint("muscle-block",  *block, Vec3(0));
     model.addForce(muscle);
 
     // Attach muscle controller.
@@ -696,15 +697,17 @@ void testProbesUsingMillardMuscleSimulation()
 
     Millard2012EquilibriumMuscle *muscle1 = new Millard2012EquilibriumMuscle(
         "muscle1", 100, optimalFiberLength, tendonSlackLength, 0);
-    muscle1->addNewPathPoint("m1_ground", ground, Vec3(-anchorDistance,0,0));
-    muscle1->addNewPathPoint("m1_block",  *block, Vec3(-blockSideLength/2,0,0));
+    auto& path1 = dynamic_cast<GeometryPath&>(muscle1->updPath());
+    path1.appendNewPathPoint("m1_ground", ground, Vec3(-anchorDistance,0,0));
+    path1.appendNewPathPoint("m1_block",  *block, Vec3(-blockSideLength/2,0,0));
     muscle1->setDefaultActivation(desiredActivation);
     model.addForce(muscle1);
 
     Millard2012EquilibriumMuscle *muscle2 = new Millard2012EquilibriumMuscle(
         "muscle2", 100, optimalFiberLength, tendonSlackLength, 0);
-    muscle2->addNewPathPoint("m2_ground", ground, Vec3(anchorDistance,0,0));
-    muscle2->addNewPathPoint("m2_block",  *block, Vec3(blockSideLength/2,0,0));
+    auto& path2 = dynamic_cast<GeometryPath&>(muscle2->updPath());
+    path2.appendNewPathPoint("m2_ground", ground, Vec3(anchorDistance,0,0));
+    path2.appendNewPathPoint("m2_block",  *block, Vec3(blockSideLength/2,0,0));
     muscle2->setDefaultActivation(desiredActivation);
     model.addForce(muscle2);
 

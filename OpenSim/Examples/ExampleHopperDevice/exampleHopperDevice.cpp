@@ -99,7 +99,8 @@ void connectDeviceToModel(OpenSim::Device& device, OpenSim::Model& model,
     if (model.hasComponent<WrapCylinder>(patellaPath)) {
         auto& cable = model.updComponent<PathActuator>("device/cableAtoB");
         auto& wrapObject = model.updComponent<WrapCylinder>(patellaPath);
-        cable.updGeometryPath().addPathWrap(wrapObject);
+        auto& path = dynamic_cast<GeometryPath&>(cable.updPath());
+        path.addPathWrap(wrapObject);
     }
 }
 

@@ -76,8 +76,9 @@ int main() {
     // Add a muscle that flexes the elbow.
     Millard2012EquilibriumMuscle* biceps = new
         Millard2012EquilibriumMuscle("biceps", 100, 0.6, 0.55, 0);
-    biceps->addNewPathPoint("origin",    *humerus, Vec3(0, 0.3, 0));
-    biceps->addNewPathPoint("insertion", *radius,  Vec3(0, 0.2, 0));
+    auto& path = dynamic_cast<GeometryPath&>(biceps->updPath());
+    path.appendNewPathPoint("origin",    *humerus, Vec3(0, 0.3, 0));
+    path.appendNewPathPoint("insertion", *radius,  Vec3(0, 0.2, 0));
 
     // Add a controller that specifies the excitation of the muscle.
     PrescribedController* brain = new PrescribedController();

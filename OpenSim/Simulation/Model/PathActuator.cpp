@@ -25,6 +25,7 @@
 // INCLUDES
 //=============================================================================
 #include "PathActuator.h"
+#include "GeometryPath.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -62,7 +63,7 @@ void PathActuator::setNull()
  */
 void PathActuator::constructProperties()
 {
-    constructProperty_GeometryPath(GeometryPath());
+    constructProperty_path(GeometryPath()); // TODO is this the best default?
     constructProperty_optimal_force(1.0);
 }
 
@@ -107,7 +108,7 @@ double PathActuator::getOptimalForce() const
  */
 double PathActuator::getLength(const SimTK::State& s) const
 {
-    return getGeometryPath().getLength(s);
+    return getPath().getLength(s);
 }
 //_____________________________________________________________________________
 /**
@@ -117,7 +118,7 @@ double PathActuator::getLength(const SimTK::State& s) const
  */
 double PathActuator::getLengtheningSpeed(const SimTK::State& s) const
 {
-    return getGeometryPath().getLengtheningSpeed(s);
+    return getPath().getLengtheningSpeed(s);
 }
 //_____________________________________________________________________________
 /**
@@ -128,21 +129,6 @@ double PathActuator::getLengtheningSpeed(const SimTK::State& s) const
 double PathActuator::getStress( const SimTK::State& s) const
 {
     return fabs(getActuation(s)/get_optimal_force()); 
-}
-
-
-//_____________________________________________________________________________
-/**
- * Add a Path point to the _path of the actuator. The new point is appended 
- * to the end of the current path
- *
- */
-void PathActuator::addNewPathPoint(
-         const std::string& proposedName, 
-         const PhysicalFrame& aBody, 
-         const SimTK::Vec3& aPositionOnBody) {
-    // Create new PathPoint already appended to the PathPointSet for the path
-    updGeometryPath().appendNewPathPoint(proposedName, aBody, aPositionOnBody);
 }
 
 //=============================================================================
@@ -173,7 +159,7 @@ void PathActuator::computeForce( const SimTK::State& s,
 {
     if(!_model) return;
 
-    const GeometryPath &path = getGeometryPath();
+    const auto &path = getPath();
 
     // compute path's lengthening speed if necessary
     double speed = path.getLengtheningSpeed(s);
@@ -200,7 +186,7 @@ void PathActuator::computeForce( const SimTK::State& s,
  */
 double PathActuator::computeMomentArm(const SimTK::State& s, Coordinate& aCoord) const
 {
-    return getGeometryPath().computeMomentArm(s, aCoord);
+    return getPath().computeMomentArm(s, aCoord);
 }
 
 //------------------------------------------------------------------------------
@@ -216,7 +202,7 @@ void PathActuator::extendRealizeDynamics(const SimTK::State& state) const
     if (appliesForce(state) && !isActuationOverridden(state)){
         const SimTK::Vec3 color = computePathColor(state);
         if (!color.isNaN())
-            getGeometryPath().setColor(state, color);
+            getPath().setColor(state, color);
     }
 }
 

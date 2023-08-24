@@ -39,14 +39,14 @@
 namespace OpenSim {
 
 class Function;
-class GeometryPath;
+class AbstractPath;
 class ScaleSet;
 
 //=============================================================================
 //=============================================================================
 /**
  * A class implementing a ligament. The path of the ligament is
- * stored in a GeometryPath object.
+ * stored in an object derived from AbstractPath.
  */
 class OSIMSIMULATION_API Ligament : public Force {
 OpenSim_DECLARE_CONCRETE_OBJECT(Ligament, Force);
@@ -54,8 +54,8 @@ public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-    OpenSim_DECLARE_UNNAMED_PROPERTY(GeometryPath, 
-        "the set of points defining the path of the ligament");
+    OpenSim_DECLARE_PROPERTY(path, AbstractPath,
+        "The path defines the length and lengthening speed of the PathSpring");
     OpenSim_DECLARE_PROPERTY(resting_length, double,
         "resting length of the ligament");
     OpenSim_DECLARE_PROPERTY(pcsa_force, double,
@@ -76,11 +76,11 @@ public:
     // GET
     //--------------------------------------------------------------------------
     // Properties
-    const GeometryPath& getGeometryPath() const 
-    {   return get_GeometryPath(); }
-    GeometryPath& updGeometryPath() 
-    {   return upd_GeometryPath(); }
-    bool hasGeometryPath() const override { return true;};
+    const AbstractPath& getPath() const
+    {   return get_path(); }
+    AbstractPath& updPath()
+    {   return upd_path(); }
+    bool hasPath() const override { return true;};
     virtual double getLength(const SimTK::State& s) const;
     virtual double getRestingLength() const 
     {   return get_resting_length(); }

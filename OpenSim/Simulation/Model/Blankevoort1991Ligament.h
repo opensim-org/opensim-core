@@ -24,7 +24,6 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Simulation/Model/Force.h>
-#include <OpenSim/Simulation/Model/GeometryPath.h>
 
 namespace OpenSim {
 
@@ -169,6 +168,8 @@ affected by scaling the model.
 
 */
 
+class AbstractPath;
+
 class OSIMSIMULATION_API Blankevoort1991Ligament : public Force  {
 OpenSim_DECLARE_CONCRETE_OBJECT(Blankevoort1991Ligament, Force)
 
@@ -177,8 +178,8 @@ public:
 // PROPERTIES
 //=============================================================================
 
-    OpenSim_DECLARE_UNNAMED_PROPERTY(GeometryPath,
-        "The set of points defining the path of the ligament")
+    OpenSim_DECLARE_PROPERTY(path, AbstractPath,
+        "The path defines the length and lengthening speed of the ligament.")
     OpenSim_DECLARE_PROPERTY(linear_stiffness, double,
         "The slope of the linear region of the force-strain curve. " 
         "Units of force/strain (N).")
@@ -223,15 +224,6 @@ private:
 public:
     //Constructors
     Blankevoort1991Ligament();
-
-    Blankevoort1991Ligament(std::string name, 
-        const PhysicalFrame& frame1, SimTK::Vec3 point1,
-        const PhysicalFrame& frame2, SimTK::Vec3 point2);
-
-    Blankevoort1991Ligament(std::string name, 
-        const PhysicalFrame& frame1, SimTK::Vec3 point1,
-        const PhysicalFrame& frame2, SimTK::Vec3 point2,
-        double linear_stiffness, double slack_length);
     
     Blankevoort1991Ligament(std::string name, 
         double linear_stiffness, double slack_length);

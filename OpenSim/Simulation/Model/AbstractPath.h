@@ -183,6 +183,28 @@ public:
      * get the color of the path in that state.
      */
     void setDefaultColor(const SimTK::Vec3& color);
+
+    /**
+     * Get the current length of the path, *before* the last set of scaling
+     * operations were applied to it.
+     *
+     * Internally, the path stores the original length in a `double` during
+     * `extendPreScale`. Therefore, be *very* careful with this method, because
+     * the recorded length is dependent on the length as computed during
+     * `extendPreScale`, which may have been called with a different state.
+     */
+    double getPreScaleLength(const SimTK::State& s) const;
+    void setPreScaleLength(const SimTK::State& s, double preScaleLength);
+
+private:
+    // Used by `(get|set)PreLengthScale`. Used during `extend(Pre|Post)Scale` by
+    // downstream users of AbstractPath to cache the length of the path before
+    // scaling.
+    //
+    // Ideally, downstream classes would perform the caching themselves, because
+    // the AbstractPath API isn't an ideal place to store this information. This
+    // field is mostly here for backwards-compatability with the API.
+    double _preScaleLength = 0.0;
 };
 
 } // namespace OpenSim

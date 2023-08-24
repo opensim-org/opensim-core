@@ -332,18 +332,18 @@ void testClutchedPathSpring()
 
     ClutchedPathSpring* spring = 
         new ClutchedPathSpring("clutch_spring", stiffness, dissipation, 0.01);
-
-    spring->updGeometryPath().appendNewPathPoint("origin", *block, Vec3(-0.1, 0.0 ,0.0));
+    auto& path = dynamic_cast<GeometryPath&>(spring->updPath());
+    path.appendNewPathPoint("origin", *block, Vec3(-0.1, 0.0 ,0.0));
     
     int N = 10;
     for(int i=1; i<N; ++i){
         double angle = i*Pi/N;
         double x = 0.1*cos(angle);
         double y = 0.1*sin(angle);
-        spring->updGeometryPath().appendNewPathPoint("", *pulleyBody, Vec3(-x, y ,0.0));
+        path.appendNewPathPoint("", *pulleyBody, Vec3(-x, y ,0.0));
     }
 
-    spring->updGeometryPath().appendNewPathPoint("insertion", *block, Vec3(0.1, 0.0 ,0.0));
+    path.appendNewPathPoint("insertion", *block, Vec3(0.1, 0.0 ,0.0));
 
     // BUG in defining wrapping API requires that the Force containing the GeometryPath be
     // connected to the model before the wrap can be added
@@ -480,8 +480,9 @@ void testMcKibbenActuator()
     OpenSim::Body* ball = new OpenSim::Body("ball", mass, Vec3(0), mass*SimTK::Inertia::sphere(0.1));
     ball->scale(Vec3(ball_radius), false);
 
-    actuator->addNewPathPoint("mck_ground", ground, Vec3(0));
-    actuator->addNewPathPoint("mck_ball", *ball, Vec3(ball_radius));
+    auto& path = dynamic_cast<GeometryPath&>(actuator->updPath());
+    path.appendNewPathPoint("mck_ground", ground, Vec3(0));
+    path.appendNewPathPoint("mck_ball", *ball, Vec3(ball_radius));
 
     Vec3 locationInParent(0, ball_radius, 0), orientationInParent(0), locationInBody(0), orientationInBody(0);
     SliderJoint *ballToGround = new SliderJoint("ballToGround", ground, locationInParent, orientationInParent, *ball, locationInBody, orientationInBody);

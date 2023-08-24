@@ -713,9 +713,11 @@ void createLuxoJr(OpenSim::Model& model){
                                             "knee_extensor_right",
                                             knee_extensor_F0, knee_extensor_lm0,
                                             knee_extensor_lts, pennationAngle);
-    kneeExtensorRight->addNewPathPoint("knee_extensor_right_origin", *leg_Hlink,
+    auto& pathKneeRight = dynamic_cast<GeometryPath&>(
+            kneeExtensorRight->updPath());
+    pathKneeRight.appendNewPathPoint("knee_extensor_right_origin", *leg_Hlink,
                                   knee_extensor_origin);
-    kneeExtensorRight->addNewPathPoint("knee_extensor_right_insertion",
+    pathKneeRight.appendNewPathPoint("knee_extensor_right_insertion",
                                       *bottom_bracket,
                                         knee_extensor_insertion);
     kneeExtensorRight->set_ignore_tendon_compliance(true);
@@ -727,14 +729,16 @@ void createLuxoJr(OpenSim::Model& model){
                             knee_extensor_F0, knee_extensor_lm0,
                             knee_extensor_lts, pennationAngle);
 
-    kneeExtensorLeft->addNewPathPoint("knee_extensor_left_origin", *leg_Hlink,
+    auto& pathKneeLeft = dynamic_cast<GeometryPath&>(
+            kneeExtensorLeft->updPath());
+    pathKneeLeft.appendNewPathPoint("knee_extensor_left_origin", *leg_Hlink,
                                   knee_extensor_origin);
-    kneeExtensorLeft->addNewPathPoint("knee_extensor_left_insertion",
+    pathKneeLeft.appendNewPathPoint("knee_extensor_left_insertion",
                                       *bottom_bracket,
                                         knee_extensor_insertion);
 
     // flip the z coordinates of all path points
-    PathPointSet& points = kneeExtensorLeft->updGeometryPath().updPathPointSet();
+    PathPointSet& points = pathKneeLeft.updPathPointSet();
     for (int i=0; i<points.getSize(); ++i) {
         dynamic_cast<PathPoint&>(points[i]).upd_location()[2] *= -1;
     }
@@ -747,10 +751,12 @@ void createLuxoJr(OpenSim::Model& model){
                                             "back_extensor_right",
                                             back_extensor_F0, back_extensor_lm0,
                                             back_extensor_lts, pennationAngle);
-    
-    backExtensorRight->addNewPathPoint("back_extensor_right_origin", *chest,
+
+    auto& pathBackRight = dynamic_cast<GeometryPath&>(
+            backExtensorRight->updPath());
+    pathBackRight.appendNewPathPoint("back_extensor_right_origin", *chest,
                                       back_extensor_origin);
-    backExtensorRight->addNewPathPoint("back_extensor_right_insertion", *back,
+    pathBackRight.appendNewPathPoint("back_extensor_right_insertion", *back,
                                       back_extensor_insertion);
     backExtensorRight->set_ignore_tendon_compliance(true);
     model.addForce(backExtensorRight);
@@ -760,13 +766,15 @@ void createLuxoJr(OpenSim::Model& model){
             new Millard2012EquilibriumMuscle("back_extensor_left",
                                     back_extensor_F0, back_extensor_lm0,
                                     back_extensor_lts, pennationAngle);
-    backExtensorLeft->addNewPathPoint("back_extensor_left_origin", *chest,
+
+    auto& pathBackLeft = dynamic_cast<GeometryPath&>(
+            backExtensorLeft->updPath());
+    pathBackLeft.appendNewPathPoint("back_extensor_left_origin", *chest,
                                       back_extensor_origin);
-    backExtensorLeft->addNewPathPoint("back_extensor_left_insertion", *back,
+    pathBackLeft.appendNewPathPoint("back_extensor_left_insertion", *back,
                                       back_extensor_insertion);
 
-    PathPointSet& pointsLeft = backExtensorLeft->updGeometryPath()
-        .updPathPointSet();
+    PathPointSet& pointsLeft = pathBackLeft.updPathPointSet();
     for (int i=0; i<points.getSize(); ++i) {
         dynamic_cast<PathPoint&>(pointsLeft[i]).upd_location()[2] *= -1;
     }

@@ -24,6 +24,7 @@
 #include "MomentArmSolver.h"
 #include "Model/PointForceDirection.h"
 #include "Model/Model.h"
+#include "Model/GeometryPath.h"
 
 using namespace std;
 using namespace SimTK;

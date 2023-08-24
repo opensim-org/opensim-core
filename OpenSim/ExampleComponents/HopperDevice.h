@@ -101,7 +101,7 @@ protected:
     void extendRealizeDynamics(const SimTK::State& s) const override {
         const auto& actuator = getComponent<PathActuator>(get_actuator_name());
         double level = fmin(1., getTension(s) / actuator.get_optimal_force());
-        actuator.getGeometryPath().setColor(s, SimTK::Vec3(level, 0.5, 0));
+        actuator.getPath().setColor(s, SimTK::Vec3(level, 0.5, 0));
     }
 
 }; // end of HopperDevice

@@ -35,6 +35,7 @@
 #include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Simulation/Model/Ligament.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
+#include <OpenSim/Simulation/Model/GeometryPath.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/EllipsoidJoint.h>
@@ -561,8 +562,9 @@ void scalePhysicalOffsetFrames()
         const Vec3 offset1 = Vec3(0.2, 0.4, 0.6);
         PathActuator* act1 = new PathActuator();
         act1->setName("pathActuator1");
-        act1->addNewPathPoint("point1a", model->updGround(), Vec3(0));
-        act1->addNewPathPoint("point1b", *body, offset1);
+        auto& path = dynamic_cast<GeometryPath&>(act1->updPath());
+        path.appendNewPathPoint("point1a", model->updGround(), Vec3(0));
+        path.appendNewPathPoint("point1b", *body, offset1);
         body->addComponent(act1);
 
         // Second PathActuator is attached to the Body via a POF. Both new
@@ -575,8 +577,9 @@ void scalePhysicalOffsetFrames()
 
         PathActuator* act2 = new PathActuator();
         act2->setName("pathActuator2");
-        act2->addNewPathPoint("point2a", model->updGround(), Vec3(0));
-        act2->addNewPathPoint("point2b", *pof2, offset2);
+        auto& path2 = dynamic_cast<GeometryPath&>(act2->updPath());
+        path2.appendNewPathPoint("point2a", model->updGround(), Vec3(0));
+        path2.appendNewPathPoint("point2b", *pof2, offset2);
         act1->addComponent(act2);
 
         State& s = model->initSystem();
@@ -592,9 +595,11 @@ void scalePhysicalOffsetFrames()
                 model->getComponent<PathActuator>(pathToAct1);
             const PathActuator& pa2 =
                 model->getComponent<PathActuator>(pathToAct2);
+            const auto& path1 = dynamic_cast<const GeometryPath&>(pa1.getPath());
+            const auto& path2 = dynamic_cast<const GeometryPath&>(pa2.getPath());
 
-            const PathPointSet& pps1 = pa1.getGeometryPath().getPathPointSet();
-            const PathPointSet& pps2 = pa2.getGeometryPath().getPathPointSet();
+            const PathPointSet& pps1 = path1.getPathPointSet();
+            const PathPointSet& pps2 = path2.getPathPointSet();
 
             for (int i = 0; i < 2; ++i)
             {

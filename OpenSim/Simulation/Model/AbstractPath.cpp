@@ -22,6 +22,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "AbstractPath.h"
+#include "Appearance.h"
 
 using namespace OpenSim;
 
@@ -49,4 +50,15 @@ void AbstractPath::setDefaultColor(const SimTK::Vec3& color)
 {
     updProperty_appearance().setValueIsDefault(false);
     upd_appearance().set_color(color);
+}
+
+double OpenSim::AbstractPath::getPreScaleLength(const SimTK::State&) const
+{
+    return _preScaleLength;
+}
+
+void OpenSim::AbstractPath::setPreScaleLength(const SimTK::State&,
+        double preScaleLength)
+{
+    _preScaleLength = preScaleLength;
 }

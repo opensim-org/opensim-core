@@ -92,8 +92,10 @@ Model createElbowModel() {
     // Add a muscle that flexes the elbow.
     auto* biceps = new
             Millard2012EquilibriumMuscle("biceps", 200, 0.6, 0.55, 0);
-    biceps->addNewPathPoint("origin", model.getGround(), Vec3(0, 0.8, 0));
-    biceps->addNewPathPoint("insertion", *body,  Vec3(0, 0.7, 0));
+
+    auto& path = dynamic_cast<GeometryPath&>(biceps->updPath());
+    path.appendNewPathPoint("origin", model.getGround(), Vec3(0, 0.8, 0));
+    path.appendNewPathPoint("insertion", *body,  Vec3(0, 0.7, 0));
 
     model.addBody(body);
     model.addJoint(joint);

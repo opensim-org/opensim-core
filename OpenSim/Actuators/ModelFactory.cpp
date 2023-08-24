@@ -22,6 +22,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
+#include <OpenSim/Simulation/Model/GeometryPath.h>
 #include <OpenSim/Common/CommonUtilities.h>
 
 using namespace OpenSim;
@@ -171,35 +172,43 @@ void ModelFactory::replaceMusclesWithPathActuators(OpenSim::Model &model) {
 
         model.addForce(actu);
 
-        // For the connectee names in the PathPoints to be correct, we must add
-        // the path points after adding the PathActuator to the model.
-        const auto& pathPointSet = musc.getGeometryPath().getPathPointSet();
-        auto& geomPath = actu->updGeometryPath();
-        for (int ip = 0; ip < pathPointSet.getSize(); ++ip) {
-            auto* pathPoint = pathPointSet.get(ip).clone();
-            const auto& socketNames = pathPoint->getSocketNames();
-            for (const auto& socketName : socketNames) {
-                pathPoint->updSocket(socketName)
-                        .connect(pathPointSet.get(ip)
-                                .getSocket(socketName)
-                                .getConnecteeAsObject());
-            }
-            geomPath.updPathPointSet().adoptAndAppend(pathPoint);
-        }
+        // Copy the muscle's path.
+        AbstractPath& path = musc.updPath();
+        actu->updProperty_path().clear();
+        if (auto* pGeometryPath = dynamic_cast<GeometryPath*>(&path)) {
+            actu->updProperty_path().setValue(GeometryPath());
+            auto& thisGeometryPath = dynamic_cast<GeometryPath&>(
+                    actu->updPath());
 
-        // For the connectee names in the PathWraps to be correct, we must add
-        // the path wraps after adding the PathActuator to the model.
-        const auto& pathWrapSet = musc.getGeometryPath().getWrapSet();
-        for (int ipw = 0; ipw < pathWrapSet.getSize(); ++ipw) {
-            auto* pathWrap = pathWrapSet.get(ipw).clone();
-            const auto& socketNames = pathWrap->getSocketNames();
-            for (const auto& socketName : socketNames) {
-                pathWrap->updSocket(socketName)
-                        .connect(pathWrapSet.get(ipw)
-                                .getSocket(socketName)
-                                .getConnecteeAsObject());
+            // For the connectee names in the PathPoints to be correct, we must
+            // add the path points after adding the PathActuator to the model.
+            const auto& pathPointSet = pGeometryPath->getPathPointSet();
+            for (int ip = 0; ip < pathPointSet.getSize(); ++ip) {
+                auto* pathPoint = pathPointSet.get(ip).clone();
+                const auto& socketNames = pathPoint->getSocketNames();
+                for (const auto& socketName : socketNames) {
+                    pathPoint->updSocket(socketName)
+                            .connect(pathPointSet.get(ip)
+                                             .getSocket(socketName)
+                                             .getConnecteeAsObject());
+                }
+                thisGeometryPath.updPathPointSet().adoptAndAppend(pathPoint);
             }
-            geomPath.updWrapSet().adoptAndAppend(pathWrap);
+
+            // For the connectee names in the PathWraps to be correct, we must
+            // add the path wraps after adding the PathActuator to the model.
+            const auto& pathWrapSet = pGeometryPath->getWrapSet();
+            for (int ipw = 0; ipw < pathWrapSet.getSize(); ++ipw) {
+                auto* pathWrap = pathWrapSet.get(ipw).clone();
+                const auto& socketNames = pathWrap->getSocketNames();
+                for (const auto& socketName : socketNames) {
+                    pathWrap->updSocket(socketName)
+                            .connect(pathWrapSet.get(ipw)
+                                             .getSocket(socketName)
+                                             .getConnecteeAsObject());
+                }
+                thisGeometryPath.updWrapSet().adoptAndAppend(pathWrap);
+            }
         }
 
         musclesToDelete.push_back(&musc);

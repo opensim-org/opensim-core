@@ -63,8 +63,9 @@ Model createHangingMuscleModel(bool ignoreActivationDynamics,
     actu->set_tendon_compliance_dynamics_mode("implicit");
     actu->set_max_contraction_velocity(10);
     actu->set_pennation_angle_at_optimal(0.10);
-    actu->addNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
-    actu->addNewPathPoint("insertion", *body, SimTK::Vec3(0));
+    auto& path = dynamic_cast<GeometryPath&>(actu->updPath());
+    path.appendNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
+    path.appendNewPathPoint("insertion", *body, SimTK::Vec3(0));
     model.addForce(actu);
 
     // Add metabolics probes: one for the total metabolic rate,

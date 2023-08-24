@@ -199,11 +199,13 @@ void addComponentsToModel(Model& osimModel)
 
     // Specify the paths for the two muscles
     // Path for muscle 1
-    muscle1->addNewPathPoint("muscle1-point1", ground, Vec3(0.0, 0.05, -0.35));
-    muscle1->addNewPathPoint("muscle1-point2", *block, Vec3(0.0, 0.0, -0.05));
+    auto& path1 = dynamic_cast<GeometryPath&>(muscle1->updPath());
+    path1.appendNewPathPoint("muscle1-point1", ground, Vec3(0.0,0.05,-0.35));
+    path1.appendNewPathPoint("muscle1-point2", *block, Vec3(0.0,0.0,-0.05));
     // Path for muscle 2
-    muscle2->addNewPathPoint("muscle2-point1", ground, Vec3(0.0, 0.05, 0.35));
-    muscle2->addNewPathPoint("muscle2-point2", *block, Vec3(0.0, 0.0, 0.05));
+    auto& path2 = dynamic_cast<GeometryPath&>(muscle2->updPath());
+    path2.appendNewPathPoint("muscle2-point1", ground, Vec3(0.0,0.05,0.35));
+    path2.appendNewPathPoint("muscle2-point2", *block, Vec3(0.0,0.0,0.05));
 
     // Add the two muscles (as forces) to the model
     osimModel.addComponent(muscle1);

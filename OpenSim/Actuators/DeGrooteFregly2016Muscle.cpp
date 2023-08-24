@@ -27,6 +27,7 @@
 #include <OpenSim/Actuators/Thelen2003Muscle.h>
 #include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include "OpenSim/Simulation/Model/GeometryPath.h"
 #include "OpenSim/Common/STOFileAdapter.h"
 
 using namespace OpenSim;
@@ -1021,31 +1022,39 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
         actu->set_ignore_activation_dynamics(
                 muscBase.get_ignore_activation_dynamics());
 
-        const auto& pathPointSet = muscBase.getGeometryPath().getPathPointSet();
-        auto& geomPath = actu->updGeometryPath();
-        for (int ipp = 0; ipp < pathPointSet.getSize(); ++ipp) {
-            auto* pathPoint = pathPointSet.get(ipp).clone();
-            const auto& socketNames = pathPoint->getSocketNames();
-            for (const auto& socketName : socketNames) {
-                pathPoint->updSocket(socketName)
-                        .connect(pathPointSet.get(ipp)
-                                         .getSocket(socketName)
-                                         .getConnecteeAsObject());
-            }
-            geomPath.updPathPointSet().adoptAndAppend(pathPoint);
-        }
+        // Copy the muscle's path.
+        AbstractPath& path = muscBase.updPath();
+        actu->updProperty_path().clear();
+        if (auto* pGeometryPath = dynamic_cast<GeometryPath*>(&path)) {
+            actu->updProperty_path().setValue(GeometryPath());
+            auto& thisGeometryPath = dynamic_cast<GeometryPath&>(
+                    actu->updPath());
 
-        const auto& pathWrapSet = muscBase.getGeometryPath().getWrapSet();
-        for (int ipw = 0; ipw < pathWrapSet.getSize(); ++ipw) {
-            auto* pathWrap = pathWrapSet.get(ipw).clone();
-            const auto& socketNames = pathWrap->getSocketNames();
-            for (const auto& socketName : socketNames) {
-                pathWrap->updSocket(socketName)
-                        .connect(pathWrapSet.get(ipw)
-                                .getSocket(socketName)
-                                .getConnecteeAsObject());
+            const auto& pathPointSet = pGeometryPath->getPathPointSet();
+            for (int ipp = 0; ipp < pathPointSet.getSize(); ++ipp) {
+                auto* pathPoint = pathPointSet.get(ipp).clone();
+                const auto& socketNames = pathPoint->getSocketNames();
+                for (const auto& socketName : socketNames) {
+                    pathPoint->updSocket(socketName)
+                            .connect(pathPointSet.get(ipp)
+                                             .getSocket(socketName)
+                                             .getConnecteeAsObject());
+                }
+                thisGeometryPath.updPathPointSet().adoptAndAppend(pathPoint);
             }
-            geomPath.updWrapSet().adoptAndAppend(pathWrap);
+
+            const auto& pathWrapSet = pGeometryPath->getWrapSet();
+            for (int ipw = 0; ipw < pathWrapSet.getSize(); ++ipw) {
+                auto* pathWrap = pathWrapSet.get(ipw).clone();
+                const auto& socketNames = pathWrap->getSocketNames();
+                for (const auto& socketName : socketNames) {
+                    pathWrap->updSocket(socketName)
+                            .connect(pathWrapSet.get(ipw)
+                                             .getSocket(socketName)
+                                             .getConnecteeAsObject());
+                }
+                thisGeometryPath.updWrapSet().adoptAndAppend(pathWrap);
+            }
         }
 
         std::string actname = actu->getName();
@@ -1074,14 +1083,14 @@ void DeGrooteFregly2016Muscle::extendPostScale(
         const SimTK::State& s, const ScaleSet& scaleSet) {
     Super::extendPostScale(s, scaleSet);
 
-    GeometryPath& path = upd_GeometryPath();
+    AbstractPath& path = upd_path();
     if (path.getPreScaleLength(s) > 0.0)
     {
         double scaleFactor = path.getLength(s) / path.getPreScaleLength(s);
         upd_optimal_fiber_length() *= scaleFactor;
         upd_tendon_slack_length() *= scaleFactor;
 
-        // Clear the pre-scale length that was stored in the GeometryPath.
+        // Clear the pre-scale length that was stored in the path.
         path.setPreScaleLength(s, 0.0);
     }
 }

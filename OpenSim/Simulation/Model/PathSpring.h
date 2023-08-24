@@ -31,20 +31,20 @@
 
 namespace OpenSim {
 
-class GeometryPath;
+class AbstractPath;
 class ScaleSet;
 
 //=============================================================================
 //=============================================================================
 /**
  * A class implementing a PathSpring. The path of the PathSpring is
- * determined by a GeometryPath object. A PathSpring is a massless Force
- * element which applies tension along a path connected to bodies and can wrap
- * over surfaces.  The tension is proportional to its stretch beyond its
- * resting length and the amount of dissipation scales with amount of stretch,
- * such that tension = (K*s)*(1+D*ldot) where stretch, s = l-lo for l > lo, and 
- * 0 otherwise. l is the path length of the spring and lo is its rest length.
- * K is the linear stiffness and D is the dissipation factor.
+ * determined by an object derived from AbstractPath. A PathSpring is a
+ * massless Force element which applies tension along a path connected to bodies
+ * and can wrap over surfaces.  The tension is proportional to its stretch
+ * beyond its resting length and the amount of dissipation scales with amount of
+ * stretch, such that tension = (K*s)*(1+D*ldot) where stretch, s = l-lo for
+ * l > lo, and 0 otherwise. l is the path length of the spring and lo is its
+ * rest length. K is the linear stiffness and D is the dissipation factor.
  * When l < lo the spring applies no tension to the bodies and considered
  * to be slack.
  *
@@ -62,9 +62,8 @@ public:
         "The linear stiffness (N/m) of the PathSpring");
     OpenSim_DECLARE_PROPERTY(dissipation, double,
         "The dissipation factor (s/m) of the PathSpring");
-    OpenSim_DECLARE_UNNAMED_PROPERTY(GeometryPath, 
-        "The GeometryPath defines the set of points and wrapping surface" 
-        "interactions that form the path of action of the PathSpring");
+    OpenSim_DECLARE_PROPERTY(path, AbstractPath,
+        "The path defines the length and lengthening speed of the PathSpring");
 
 //=============================================================================
 // OUTPUTS
@@ -118,12 +117,11 @@ public:
     {   return get_dissipation(); }
     void setDissipation(double dissipation);
 
-    /** Access the GeometryPath to update connection points and
-        specify wrap objects the path can interact with. */
-    const GeometryPath& getGeometryPath() const 
-    {   return get_GeometryPath(); }
-    GeometryPath& updGeometryPath() 
-    {   return upd_GeometryPath(); }
+    /** Accessors for the AbstractPath object */
+    const AbstractPath& getPath() const
+    {   return get_path(); }
+    AbstractPath& updPath()
+    {   return upd_path(); }
 
     //--------------------------------------------------------------------------
     //  <B> State dependent values </B>

@@ -103,9 +103,9 @@ public:
 
     /** Return a flag indicating whether the Force is applied along a Path. If
     you override this method to return true for a specific subclass, it must
-    also implement the getGeometryPath() method. **/
-    virtual bool hasGeometryPath() const {
-        return getPropertyIndex("GeometryPath").isValid();
+    also implement the getPath() method. **/
+    virtual bool hasPath() const {
+        return getPropertyIndex("path").isValid();
     };
 
 protected:

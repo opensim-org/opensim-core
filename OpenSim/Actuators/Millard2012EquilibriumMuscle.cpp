@@ -598,14 +598,14 @@ extendPostScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
     Super::extendPostScale(s, scaleSet);
 
-    GeometryPath& path = upd_GeometryPath();
+    AbstractPath& path = upd_path();
     if (path.getPreScaleLength(s) > 0.0)
     {
         double scaleFactor = path.getLength(s) / path.getPreScaleLength(s);
         upd_optimal_fiber_length() *= scaleFactor;
         upd_tendon_slack_length() *= scaleFactor;
 
-        // Clear the pre-scale length that was stored in the GeometryPath.
+        // Clear the pre-scale length that was stored in the path.
         path.setPreScaleLength(s, 0.0);
     }
 }

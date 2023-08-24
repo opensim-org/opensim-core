@@ -151,11 +151,10 @@ void testSingleWrapObjectPerpendicular(WrapObject* wrapObject, Vec3 axisRotation
     PathSpring* spring1 =
         new PathSpring("spring1", 1.0, 0.1, 0.01);
     //offset in X direction to avoid ambiguous scenario where path passes through center
-    spring1->updGeometryPath().
-        appendNewPathPoint("origin", ground, Vec3(r-.1, r, 0)); 
-    spring1->updGeometryPath().
-        appendNewPathPoint("insert", *body, Vec3(-r, r, 0));
-    spring1->updGeometryPath().addPathWrap(*wObj);
+    auto& path1 = dynamic_cast<GeometryPath&>(spring1->updPath());
+    path1.appendNewPathPoint("origin", ground, Vec3(r-.1, r, 0));
+    path1.appendNewPathPoint("insert", *body, Vec3(-r, r, 0));
+    path1.addPathWrap(*wObj);
 
     model.addComponent(spring1);
 
@@ -210,12 +209,11 @@ void testEllipsoidWrapLength(OpenSim::WrapEllipsoid* wrapObject)
     PathSpring* spring1 =
         new PathSpring("spring1", 1.0, 0.1, 0.01);
     //offset in X direction to avoid ambiguous scenario where path passes through center
-    spring1->updGeometryPath().
-        appendNewPathPoint("origin", ground, Vec3(r - .1, r, 0)); 
+    auto& path1 = dynamic_cast<GeometryPath&>(spring1->updPath());
+    path1.appendNewPathPoint("origin", ground, Vec3(r - .1, r, 0));
     // insertion point is -r down from the tip of the long axis of the ellipsoid
-    spring1->updGeometryPath().
-        appendNewPathPoint("insert", *body, Vec3(-wrapObject->get_dimensions()[0], -r, 0));
-    spring1->updGeometryPath().addPathWrap(*wObj);
+    path1.appendNewPathPoint("insert", *body, Vec3(-wrapObject->get_dimensions()[0], -r, 0));
+    path1.addPathWrap(*wObj);
 
     model.addComponent(spring1);
 

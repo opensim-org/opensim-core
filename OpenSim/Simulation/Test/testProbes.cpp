@@ -247,8 +247,9 @@ void simulateMuscle(
     //Attach the muscle
     /*const string &actuatorType = */aMuscle->getConcreteClassName();
     aMuscle->setName("muscle");
-    aMuscle->addNewPathPoint("muscle-box", ground, Vec3(anchorWidth / 2, 0, 0));
-    aMuscle->addNewPathPoint("muscle-ball", *ball, Vec3(-ballRadius, 0, 0));
+    auto& path = dynamic_cast<GeometryPath&>(aMuscle->updPath());
+    path.appendNewPathPoint("muscle-box", ground, Vec3(anchorWidth / 2, 0, 0));
+    path.appendNewPathPoint("muscle-ball", *ball, Vec3(-ballRadius, 0, 0));
 
     ActivationFiberLengthMuscle_Deprecated *aflMuscle
         = dynamic_cast<ActivationFiberLengthMuscle_Deprecated *>(aMuscle);

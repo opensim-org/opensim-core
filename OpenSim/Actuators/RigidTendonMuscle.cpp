@@ -161,7 +161,7 @@ void RigidTendonMuscle::calcMusclePotentialEnergyInfo(const SimTK::State& s,
 void RigidTendonMuscle::calcFiberVelocityInfo(const State& s, FiberVelocityInfo& fvi) const
 {
     /*const MuscleLengthInfo &mli = */getMuscleLengthInfo(s);
-    fvi.fiberVelocity = getGeometryPath().getLengtheningSpeed(s);
+    fvi.fiberVelocity = getPath().getLengtheningSpeed(s);
     fvi.normFiberVelocity = fvi.fiberVelocity / 
                             (getOptimalFiberLength()*getMaxContractionVelocity());
     fvi.fiberForceVelocityMultiplier = 

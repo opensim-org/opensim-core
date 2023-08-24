@@ -133,14 +133,16 @@ int main()
                 pennationAngle);
 
         // Define the path of the muscles
-        fatigable->addNewPathPoint("fatigable-point1", ground, 
+        auto& fatigablePath = dynamic_cast<GeometryPath&>(fatigable->updPath());
+        fatigablePath.appendNewPathPoint("fatigable-point1", ground,
             Vec3(0.0, halfLength, -0.35));
-        fatigable->addNewPathPoint("fatigable-point2", *block, 
+        fatigablePath.appendNewPathPoint("fatigable-point2", *block,
             Vec3(0.0, halfLength, -halfLength));
 
-        original->addNewPathPoint("original-point1", ground, 
+        auto& originalPath = dynamic_cast<GeometryPath&>(original->updPath());
+        originalPath.appendNewPathPoint("original-point1", ground,
             Vec3(0.0, halfLength, 0.35));
-        original->addNewPathPoint("original-point2", *block, 
+        originalPath.appendNewPathPoint("original-point2", *block,
             Vec3(0.0, halfLength, halfLength));
 
         // Define the default states for the two muscles
