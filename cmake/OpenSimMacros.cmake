@@ -347,7 +347,7 @@ function(OpenSimAddTests)
         # http://www.cmake.org/cmake/help/v2.8.9/cmake.html#module:CMakeParseArguments
         set(options)
         set(oneValueArgs)
-        set(multiValueArgs TESTPROGRAMS DATAFILES LINKLIBS SOURCES INCLUDEDIRS)
+        set(multiValueArgs TESTPROGRAMS DATAFILES LINKLIBS SOURCES)
         cmake_parse_arguments(
             OSIMADDTESTS "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
@@ -371,8 +371,6 @@ function(OpenSimAddTests)
             set_target_properties(${TEST_NAME} PROPERTIES
                 FOLDER "Tests"
 				)
-            target_include_directories(${TEST_NAME} PRIVATE
-                ${OSIMADDTESTS_INCLUDEDIRS})
 
         endforeach()
 
