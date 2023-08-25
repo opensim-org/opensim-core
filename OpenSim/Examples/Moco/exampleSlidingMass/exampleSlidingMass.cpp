@@ -103,7 +103,6 @@ int main() {
     // =====================
     MocoCasADiSolver& solver = study.initCasADiSolver();
     solver.set_num_mesh_intervals(50);
-    solver.set_transcription_scheme("legendre-gauss-3");
 
     // Now that we've finished setting up the tool, print it to a file.
     study.print("sliding_mass.omoco");
@@ -112,7 +111,7 @@ int main() {
     // ==================
     MocoSolution solution = study.solve();
 
-    solution.write("sliding_mass_solution.sto");
+    //solution.write("sliding_mass_solution.sto");
 
     // Visualize.
     // ==========

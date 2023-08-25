@@ -169,9 +169,6 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
                              ? makeTimeIndices(gridIndicesVector)
                              : makeTimeIndices(meshIndicesVector);
 
-    std::cout << "Mesh indices: " << m_meshIndices << std::endl;
-    std::cout << "Mesh interior indices: " << m_meshInteriorIndices << std::endl;
-
     // Set variable bounds.
     // --------------------
     auto initializeBoundsDM = [&](VariablesDM& bounds) {
@@ -477,9 +474,6 @@ void Transcription::transcribe() {
 
     // Interpolating controls.
     // -----------------------
-    std::cout << "Times: " << m_times << std::endl;
-    std::cout << "Points for interpolating controls: "
-              << m_pointsForInterpControls << std::endl;
     m_constraints.interp_controls =
             casadi::DM(casadi::Sparsity::dense(m_problem.getNumControls(),
                     (int)m_pointsForInterpControls.numel()));
