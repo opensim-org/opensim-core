@@ -142,7 +142,7 @@ TEST_CASE("DeGrooteFregly2016Muscle basics") {
     musclePtr->set_ignore_tendon_compliance(true);
     musclePtr->set_fiber_damping(0);
     musclePtr->setName("muscle");
-    auto& path = dynamic_cast<GeometryPath&>(musclePtr->updPath());
+    auto& path = musclePtr->updPath<GeometryPath>();
     path.appendNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
     path.appendNewPathPoint("insertion", *body, SimTK::Vec3(0));
     model.addComponent(musclePtr);

@@ -22,7 +22,6 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/PointForceDirection.h>
 #include "Blankevoort1991Ligament.h"
 #include "GeometryPath.h"
 
@@ -43,6 +42,11 @@ Blankevoort1991Ligament::Blankevoort1991Ligament(
     setName(name);
     set_linear_stiffness(linear_stiffness);
     set_slack_length(slack_length);
+}
+
+GeometryPath& Blankevoort1991Ligament::initGeometryPath() {
+    set_path(GeometryPath());
+    return updPath<GeometryPath>();
 }
 
 void Blankevoort1991Ligament::setNull()
@@ -92,8 +96,7 @@ void Blankevoort1991Ligament::extendFinalizeFromProperties() {
             "Transistion Strain cannot be less than 0");
 
     // Set Default Ligament Color
-    AbstractPath& path = upd_path();
-    path.setDefaultColor(SimTK::Vec3(0.1202, 0.7054, 0.1318));
+    updPath().setDefaultColor(SimTK::Vec3(0.1202, 0.7054, 0.1318));
 }
 
 void Blankevoort1991Ligament::extendAddToSystem(
@@ -115,7 +118,7 @@ void Blankevoort1991Ligament::extendPostScale(
     const SimTK::State& s, const ScaleSet& scaleSet) {
     Super::extendPostScale(s, scaleSet);
 
-    AbstractPath& path = upd_path();
+    AbstractPath& path = updPath();
     double slack_length = get_slack_length();
     if (path.getPreScaleLength(s) > 0.0)
     {
@@ -132,12 +135,12 @@ void Blankevoort1991Ligament::extendPostScale(
 //=============================================================================
 
 double Blankevoort1991Ligament::getLength(const SimTK::State& state) const {
-    return get_path().getLength(state);
+    return getPath().getLength(state);
 }
 
 double Blankevoort1991Ligament::getLengtheningSpeed(
         const SimTK::State& state) const {
-    return get_path().getLengtheningSpeed(state);
+    return getPath().getLengtheningSpeed(state);
 }
 
 double Blankevoort1991Ligament::getStrain(const SimTK::State& state) const {
@@ -323,7 +326,7 @@ void Blankevoort1991Ligament::computeForce(const SimTK::State& s,
         // total force
         double force_total = getTotalForce(s);
 
-        const AbstractPath &path = get_path();
+        const AbstractPath &path = getPath();
 
         path.addInEquivalentForces(
                 s, force_total, bodyForces, generalizedForces);
@@ -355,7 +358,7 @@ double Blankevoort1991Ligament::computePotentialEnergy(
 
 double Blankevoort1991Ligament::computeMomentArm(
         const SimTK::State& s, Coordinate& aCoord) const {
-    return get_path().computeMomentArm(s, aCoord);
+    return getPath().computeMomentArm(s, aCoord);
 }
 
 //=============================================================================

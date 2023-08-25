@@ -152,7 +152,7 @@ void testMomentArmsAcrossCompoundJoint()
     model.addComponent(hip);
 
     Thelen2003Muscle* musc = new Thelen2003Muscle("muscle", 10., 0.1, 0.2, 0.);
-    auto& path = dynamic_cast<GeometryPath&>(musc->updPath());
+    auto& path = musc->updPath<GeometryPath>();
     path.appendNewPathPoint("p1", model.updGround(), SimTK::Vec3(0.05, 0, 0));
     path.appendNewPathPoint("p2", *leg, SimTK::Vec3(0.05, 0.25, 0.01));
     model.addForce(musc);

@@ -144,7 +144,7 @@ Model buildHopper(bool showVisualizer) {
            mclPennAng = 0.;
     auto vastus = new Thelen2003Muscle("vastus", mclFmax, mclOptFibLen,
                                        mclTendonSlackLen, mclPennAng);
-    auto& path = dynamic_cast<GeometryPath&>(vastus->updPath());
+    auto& path = vastus->updPath<GeometryPath>();
     path.appendNewPathPoint("origin", *thigh, Vec3(linkRadius, 0.1, 0));
     path.appendNewPathPoint("insertion", *shank, Vec3(linkRadius, 0.15, 0));
     hopper.addForce(vastus);

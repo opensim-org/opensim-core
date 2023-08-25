@@ -63,7 +63,7 @@ void PathActuator::setNull()
  */
 void PathActuator::constructProperties()
 {
-    constructProperty_path(GeometryPath()); // TODO is this the best default?
+    constructProperty_path(GeometryPath());
     constructProperty_optimal_force(1.0);
 }
 
@@ -71,6 +71,15 @@ void PathActuator::constructProperties()
 //=============================================================================
 // GET AND SET
 //=============================================================================
+//-----------------------------------------------------------------------------
+// PATH
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+GeometryPath& PathActuator::initGeometryPath() {
+    set_path(GeometryPath());
+    return updPath<GeometryPath>();
+}
+
 //-----------------------------------------------------------------------------
 // OPTIMAL FORCE
 //-----------------------------------------------------------------------------

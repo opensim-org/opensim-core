@@ -93,7 +93,7 @@ Model createElbowModel() {
     auto* biceps = new
             Millard2012EquilibriumMuscle("biceps", 200, 0.6, 0.55, 0);
 
-    auto& path = dynamic_cast<GeometryPath&>(biceps->updPath());
+    auto& path = biceps->updPath<GeometryPath>();
     path.appendNewPathPoint("origin", model.getGround(), Vec3(0, 0.8, 0));
     path.appendNewPathPoint("insertion", *body,  Vec3(0, 0.7, 0));
 

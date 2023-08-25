@@ -28,6 +28,7 @@
 // INCLUDES
 //=============================================================================
 #include "Force.h"
+#include "AbstractPath.h"
 
 #ifdef SWIG
     #ifdef OSIMACTUATORS_API
@@ -39,8 +40,8 @@
 namespace OpenSim {
 
 class Function;
-class AbstractPath;
 class ScaleSet;
+class GeometryPath;
 
 //=============================================================================
 //=============================================================================
@@ -54,8 +55,6 @@ public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-    OpenSim_DECLARE_PROPERTY(path, AbstractPath,
-        "The path defines the length and lengthening speed of the PathSpring");
     OpenSim_DECLARE_PROPERTY(resting_length, double,
         "resting length of the ligament");
     OpenSim_DECLARE_PROPERTY(pcsa_force, double,
@@ -73,14 +72,28 @@ public:
     // assignment operator.
 
     //--------------------------------------------------------------------------
+    // PATH
+    //--------------------------------------------------------------------------
+    AbstractPath& updPath() { return upd_path(); }
+    const AbstractPath& getPath() const { return get_path(); }
+    template <typename PathType>
+    PathType& updPath() {
+        return dynamic_cast<PathType&>(upd_path());
+    }
+    template <typename PathType>
+    const PathType& getPath() const {
+        return dynamic_cast<PathType&>(get_path());
+    }
+    bool hasPath() const override { return true;};
+
+    /// Initialize the path of the PathActuator with a GeometryPath. This
+    /// returns a reference to the newly created GeometryPath, which you can
+    /// then edit. This deletes the previous path if one exists.
+    GeometryPath& initGeometryPath();
+
+    //--------------------------------------------------------------------------
     // GET
     //--------------------------------------------------------------------------
-    // Properties
-    const AbstractPath& getPath() const
-    {   return get_path(); }
-    AbstractPath& updPath()
-    {   return upd_path(); }
-    bool hasPath() const override { return true;};
     virtual double getLength(const SimTK::State& s) const;
     virtual double getRestingLength() const 
     {   return get_resting_length(); }
@@ -161,6 +174,10 @@ protected:
         values.append(getTension(state));
         return values;
     }
+
+    OpenSim_DECLARE_PROPERTY(path, AbstractPath,
+            "The path defines the length and lengthening speed of the "
+            "PathSpring");
 
 private:
     void constructProperties();

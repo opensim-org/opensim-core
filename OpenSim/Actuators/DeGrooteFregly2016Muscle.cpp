@@ -1024,11 +1024,8 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
 
         // Copy the muscle's path.
         AbstractPath& path = muscBase.updPath();
-        actu->updProperty_path().clear();
         if (auto* pGeometryPath = dynamic_cast<GeometryPath*>(&path)) {
-            actu->updProperty_path().setValue(GeometryPath());
-            auto& thisGeometryPath = dynamic_cast<GeometryPath&>(
-                    actu->updPath());
+            auto& thisGeometryPath = actu->initGeometryPath();
 
             const auto& pathPointSet = pGeometryPath->getPathPointSet();
             for (int ipp = 0; ipp < pathPointSet.getSize(); ++ipp) {

@@ -247,7 +247,7 @@ void simulateMuscle(
     //Attach the muscle
     /*const string &actuatorType = */aMuscle->getConcreteClassName();
     aMuscle->setName("muscle");
-    auto& path = dynamic_cast<GeometryPath&>(aMuscle->updPath());
+    auto& path = aMuscle->updPath<GeometryPath>();
     path.appendNewPathPoint("muscle-box", ground, Vec3(anchorWidth / 2, 0, 0));
     path.appendNewPathPoint("muscle-ball", *ball, Vec3(-ballRadius, 0, 0));
 

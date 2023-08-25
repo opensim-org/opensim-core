@@ -255,7 +255,7 @@ void simulateMuscle(
     //Attach the muscle
     const string &actuatorType = aMuscle->getConcreteClassName();
     aMuscle->setName("muscle");
-    auto& path = dynamic_cast<GeometryPath&>(aMuscle->updPath());
+    auto& path = aMuscle->updPath<GeometryPath>();
     path.appendNewPathPoint("muscle-box", ground, Vec3(anchorWidth/2,0,0));
     path.appendNewPathPoint("muscle-ball", *ball, Vec3(-ballRadius,0,0));
     
@@ -608,7 +608,7 @@ void testThelen2003Muscle()
         false);
 
     Model m;
-    auto& path = dynamic_cast<GeometryPath&>(muscle.updPath());
+    auto& path = muscle.updPath<GeometryPath>();
     path.appendNewPathPoint("p1", m.getGround(), SimTK::Vec3(0.0));
     path.appendNewPathPoint("p2", m.getGround(), SimTK::Vec3(1.0));
     // Test property bounds.
@@ -700,7 +700,7 @@ void testThelen2003Muscle()
             MaxIsometricForce0, OptimalFiberLength0, TendonSlackLength0,
             PennationAngle0);
 
-        auto& path = dynamic_cast<GeometryPath&>(myMcl->updPath());
+        auto& path = myMcl->updPath<GeometryPath>();
         path.appendNewPathPoint("p1", myModel.getGround(), SimTK::Vec3(0.0));
         path.appendNewPathPoint("p2", myModel.getGround(), SimTK::Vec3(1.0));
         myModel.addForce(myMcl);
@@ -786,7 +786,7 @@ void testThelen2003Muscle()
         const double tendonSlackLength  = 0.001;
         auto muscle = new Thelen2003Muscle("muscle", 1., optimalFiberLength,
                                            tendonSlackLength, 0.);
-        auto& path = dynamic_cast<GeometryPath&>(muscle->updPath());
+        auto& path = muscle->updPath<GeometryPath>();
         path.appendNewPathPoint("p1", model.updGround(), SimTK::Vec3(0));
         path.appendNewPathPoint("p2", model.updGround(), SimTK::Vec3(0,0,1));
         model.addForce(muscle);
@@ -802,7 +802,7 @@ void testThelen2003Muscle()
     {
         Model model;
         auto muscle = new Thelen2003Muscle("muscle", 1., 0.5, 0.5, 0.);
-        auto& path = dynamic_cast<GeometryPath&>(muscle->updPath());
+        auto& path = muscle->updPath<GeometryPath>();
         path.appendNewPathPoint("p1", model.updGround(), SimTK::Vec3(0));
         path.appendNewPathPoint("p2", model.updGround(), SimTK::Vec3(0,0,1));
         model.addForce(muscle);
@@ -878,7 +878,7 @@ void testMillard2012EquilibriumMuscle()
         const double tendonSlackLength  = 100.0; //long tendon
         auto muscle = new Millard2012EquilibriumMuscle("muscle", 1.,
                           optimalFiberLength, tendonSlackLength, 0.);
-        auto& path = dynamic_cast<GeometryPath&>(muscle->updPath());
+        auto& path = muscle->updPath<GeometryPath>();
         path.appendNewPathPoint("p1", model.updGround(), SimTK::Vec3(0));
         path.appendNewPathPoint("p2", model.updGround(), SimTK::Vec3(0,0,1));
         model.addForce(muscle);
@@ -897,7 +897,7 @@ void testMillard2012EquilibriumMuscle()
         const double tendonSlackLength =  0.1; //short tendon
         auto muscle = new Millard2012EquilibriumMuscle("muscle", 1.,
             optimalFiberLength, tendonSlackLength, 0.);
-        auto& path = dynamic_cast<GeometryPath&>(muscle->updPath());
+        auto& path = muscle->updPath<GeometryPath>();
         path.appendNewPathPoint("p1", model.updGround(), SimTK::Vec3(0));
         path.appendNewPathPoint("p2", model.updGround(), SimTK::Vec3(0, 0, 1));
         model.addForce(muscle);
@@ -914,7 +914,7 @@ void testMillard2012EquilibriumMuscle()
     {
         Model model;
         auto muscle = new Millard2012EquilibriumMuscle("mcl", 1., 0.5, 0.5, 0.);
-        auto& path = dynamic_cast<GeometryPath&>(muscle->updPath());
+        auto& path = muscle->updPath<GeometryPath>();
         path.appendNewPathPoint("p1", model.updGround(), SimTK::Vec3(0));
         path.appendNewPathPoint("p2", model.updGround(), SimTK::Vec3(0,0,1));
         model.addForce(muscle);

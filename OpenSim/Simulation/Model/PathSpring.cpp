@@ -26,7 +26,6 @@
 //=============================================================================
 #include "PathSpring.h"
 #include "GeometryPath.h"
-#include "PointForceDirection.h"
 
 //=============================================================================
 // STATICS
@@ -93,6 +92,15 @@ void PathSpring::setStiffness(double stiffness)
 void PathSpring::setDissipation(double dissipation)
 {
     set_dissipation(dissipation);
+}
+
+//_____________________________________________________________________________
+/*
+ * Initialize a GeometryPath.
+ */
+GeometryPath& PathSpring::initGeometryPath() {
+    set_path(GeometryPath());
+    return updPath<GeometryPath>();
 }
 
 //_____________________________________________________________________________

@@ -84,7 +84,7 @@ public:
 
     // INTERFACE METHODS
     //
-    // Concrete implementations of `GeometryPath` *must* provide these.
+    // Concrete implementations of `AbstractPath` *must* provide these.
 
     /**
      * Get the current color of the path.

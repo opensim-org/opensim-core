@@ -28,10 +28,11 @@
 // INCLUDES
 //=============================================================================
 #include "Force.h"
+#include "AbstractPath.h"
 
 namespace OpenSim {
 
-class AbstractPath;
+class GeometryPath;
 class ScaleSet;
 
 //=============================================================================
@@ -62,8 +63,6 @@ public:
         "The linear stiffness (N/m) of the PathSpring");
     OpenSim_DECLARE_PROPERTY(dissipation, double,
         "The dissipation factor (s/m) of the PathSpring");
-    OpenSim_DECLARE_PROPERTY(path, AbstractPath,
-        "The path defines the length and lengthening speed of the PathSpring");
 
 //=============================================================================
 // OUTPUTS
@@ -117,11 +116,23 @@ public:
     {   return get_dissipation(); }
     void setDissipation(double dissipation);
 
-    /** Accessors for the AbstractPath object */
-    const AbstractPath& getPath() const
-    {   return get_path(); }
-    AbstractPath& updPath()
-    {   return upd_path(); }
+    /** get/set the path object */
+    AbstractPath& updPath() { return upd_path(); }
+    const AbstractPath& getPath() const { return get_path(); }
+    template <typename PathType>
+    PathType& updPath() {
+        return dynamic_cast<PathType&>(upd_path());
+    }
+    template <typename PathType>
+    const PathType& getPath() const {
+        return dynamic_cast<PathType&>(get_path());
+    }
+    bool hasPath() const override { return true;};
+
+    /// Initialize the path of the PathActuator with a GeometryPath. This
+    /// returns a reference to the newly created GeometryPath, which you can
+    /// then edit. This deletes the previous path if one exists.
+    GeometryPath& initGeometryPath();
 
     //--------------------------------------------------------------------------
     //  <B> State dependent values </B>
@@ -182,6 +193,11 @@ protected:
         values.append(getTension(state));
         return values;
     }
+
+protected:
+    OpenSim_DECLARE_PROPERTY(path, AbstractPath,
+            "The path defines the length and lengthening speed of the "
+            "PathSpring");
 
 private:
     void constructProperties();

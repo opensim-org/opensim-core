@@ -413,7 +413,7 @@ namespace {
         {
             std::unique_ptr<PathSpring> spring(
                 new PathSpring("spring", 1., 1., 1.));
-            auto& path = dynamic_cast<GeometryPath&>(spring->updPath());
+            auto& path = spring->updPath<GeometryPath>();
             path.appendNewPathPoint(
                 "startPoint",
                 model.get_ground(),
@@ -436,8 +436,8 @@ namespace {
             cylinder->set_xyz_body_rotation(input.eulerRotations);
             cylinder->setFrame(model.getGround());
 
-            auto& path = dynamic_cast<GeometryPath&>(
-                    model.updComponent<PathSpring>("spring").updPath());
+            auto& path = model.updComponent<PathSpring>("spring")
+                    .updPath<GeometryPath>();
             path.addPathWrap(*cylinder.get());
             model.updGround().addWrapObject(cylinder.release());
         }

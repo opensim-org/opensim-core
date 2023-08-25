@@ -562,7 +562,7 @@ void scalePhysicalOffsetFrames()
         const Vec3 offset1 = Vec3(0.2, 0.4, 0.6);
         PathActuator* act1 = new PathActuator();
         act1->setName("pathActuator1");
-        auto& path = dynamic_cast<GeometryPath&>(act1->updPath());
+        auto& path = act1->updPath<GeometryPath>();
         path.appendNewPathPoint("point1a", model->updGround(), Vec3(0));
         path.appendNewPathPoint("point1b", *body, offset1);
         body->addComponent(act1);
@@ -577,7 +577,7 @@ void scalePhysicalOffsetFrames()
 
         PathActuator* act2 = new PathActuator();
         act2->setName("pathActuator2");
-        auto& path2 = dynamic_cast<GeometryPath&>(act2->updPath());
+        auto& path2 = act2->updPath<GeometryPath>();
         path2.appendNewPathPoint("point2a", model->updGround(), Vec3(0));
         path2.appendNewPathPoint("point2b", *pof2, offset2);
         act1->addComponent(act2);

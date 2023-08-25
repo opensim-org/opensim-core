@@ -431,7 +431,7 @@ void testPathSpring() {
     osimModel.setGravity(gravity_vec);
 
     PathSpring spring("spring", restlength, stiffness, dissipation);
-    auto& path = dynamic_cast<GeometryPath&>(spring.updPath());
+    auto& path = spring.updPath<GeometryPath>();
     path.appendNewPathPoint("origin", block, Vec3(-0.1, 0.0, 0.0));
 
     int N = 10;
@@ -2091,7 +2091,7 @@ void testBlankevoort1991Ligament() {
             new Blankevoort1991Ligament("ligament", stiffness, restlength);
     ligament->set_damping_coefficient(0.0);
 
-    auto& path = dynamic_cast<GeometryPath&>(ligament->upd_path());
+    auto& path = ligament->updPath<GeometryPath>();
     path.appendNewPathPoint("origin", ground, Vec3(0.0, 0.0, 0.0));
     path.addPathWrap(*pulley1);
     path.appendNewPathPoint("midpoint", ground, Vec3(0.1, 0.6, 0.0));
@@ -2207,8 +2207,7 @@ void testBlankevoort1991Ligament() {
 
     Blankevoort1991Ligament* lig = new Blankevoort1991Ligament("ligament",
             lig_stiffness, lig_slack_length);
-    // TODO assumes that GeometryPath is the default path type
-    auto& path2 = dynamic_cast<GeometryPath&>(lig->upd_path());
+    auto& path2 = lig->updPath<GeometryPath>();
     path2.appendNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
     path2.appendNewPathPoint("insertion", *brick, SimTK::Vec3(0));
     model.addForce(lig);

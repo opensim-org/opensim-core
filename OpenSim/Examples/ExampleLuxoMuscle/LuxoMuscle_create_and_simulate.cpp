@@ -713,8 +713,7 @@ void createLuxoJr(OpenSim::Model& model){
                                             "knee_extensor_right",
                                             knee_extensor_F0, knee_extensor_lm0,
                                             knee_extensor_lts, pennationAngle);
-    auto& pathKneeRight = dynamic_cast<GeometryPath&>(
-            kneeExtensorRight->updPath());
+    auto& pathKneeRight = kneeExtensorRight->updPath<GeometryPath>();
     pathKneeRight.appendNewPathPoint("knee_extensor_right_origin", *leg_Hlink,
                                   knee_extensor_origin);
     pathKneeRight.appendNewPathPoint("knee_extensor_right_insertion",
@@ -729,8 +728,7 @@ void createLuxoJr(OpenSim::Model& model){
                             knee_extensor_F0, knee_extensor_lm0,
                             knee_extensor_lts, pennationAngle);
 
-    auto& pathKneeLeft = dynamic_cast<GeometryPath&>(
-            kneeExtensorLeft->updPath());
+    auto& pathKneeLeft = kneeExtensorLeft->updPath<GeometryPath>();
     pathKneeLeft.appendNewPathPoint("knee_extensor_left_origin", *leg_Hlink,
                                   knee_extensor_origin);
     pathKneeLeft.appendNewPathPoint("knee_extensor_left_insertion",
@@ -752,8 +750,7 @@ void createLuxoJr(OpenSim::Model& model){
                                             back_extensor_F0, back_extensor_lm0,
                                             back_extensor_lts, pennationAngle);
 
-    auto& pathBackRight = dynamic_cast<GeometryPath&>(
-            backExtensorRight->updPath());
+    auto& pathBackRight = backExtensorRight->updPath<GeometryPath>();
     pathBackRight.appendNewPathPoint("back_extensor_right_origin", *chest,
                                       back_extensor_origin);
     pathBackRight.appendNewPathPoint("back_extensor_right_insertion", *back,
@@ -767,8 +764,7 @@ void createLuxoJr(OpenSim::Model& model){
                                     back_extensor_F0, back_extensor_lm0,
                                     back_extensor_lts, pennationAngle);
 
-    auto& pathBackLeft = dynamic_cast<GeometryPath&>(
-            backExtensorLeft->updPath());
+    auto& pathBackLeft = backExtensorLeft->updPath<GeometryPath>();
     pathBackLeft.appendNewPathPoint("back_extensor_left_origin", *chest,
                                       back_extensor_origin);
     pathBackLeft.appendNewPathPoint("back_extensor_left_insertion", *back,

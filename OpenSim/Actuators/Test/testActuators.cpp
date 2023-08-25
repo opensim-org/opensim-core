@@ -332,7 +332,7 @@ void testClutchedPathSpring()
 
     ClutchedPathSpring* spring = 
         new ClutchedPathSpring("clutch_spring", stiffness, dissipation, 0.01);
-    auto& path = dynamic_cast<GeometryPath&>(spring->updPath());
+    auto& path = spring->updPath<GeometryPath>();
     path.appendNewPathPoint("origin", *block, Vec3(-0.1, 0.0 ,0.0));
     
     int N = 10;
@@ -480,7 +480,7 @@ void testMcKibbenActuator()
     OpenSim::Body* ball = new OpenSim::Body("ball", mass, Vec3(0), mass*SimTK::Inertia::sphere(0.1));
     ball->scale(Vec3(ball_radius), false);
 
-    auto& path = dynamic_cast<GeometryPath&>(actuator->updPath());
+    auto& path = actuator->updPath<GeometryPath>();
     path.appendNewPathPoint("mck_ground", ground, Vec3(0));
     path.appendNewPathPoint("mck_ball", *ball, Vec3(ball_radius));
 

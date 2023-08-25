@@ -82,7 +82,7 @@ Device* buildDevice() {
     auto pathActuator = new PathActuator();
     pathActuator->setName("cableAtoB");
     pathActuator->set_optimal_force(OPTIMAL_FORCE);
-    auto& path = dynamic_cast<GeometryPath&>(pathActuator->updPath());
+    auto& path = pathActuator->updPath<GeometryPath>();
     path.appendNewPathPoint("pointA", *cuffA, Vec3(0));
     //pathActuator->addNewPathPoint("pointB", *cuffB, Vec3(0));
     device->addComponent(pathActuator);

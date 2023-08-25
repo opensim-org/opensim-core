@@ -24,6 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Simulation/Model/Force.h>
+#include <OpenSim/Simulation/Model/AbstractPath.h>
 
 namespace OpenSim {
 
@@ -106,7 +107,7 @@ setLinearStiffnessForcePerLength() and getLinearStiffnessForcePerLength().
 
 When scaling a model (using the ScaleTool) that contains a 
 Blankevoort1991Ligament, the slack_length property is scaled by the ratio of 
-the entire GeometryPath length in the default model pose before and after 
+the entire path length in the default model pose before and after
 scaling the bone geometries. This ensures that the strain in the ligament in 
 the default pose is equivilent before and after scaling. Thus, it is important 
 to consider the order of scaling the model and setting the slack_length 
@@ -168,7 +169,7 @@ affected by scaling the model.
 
 */
 
-class AbstractPath;
+class GeometryPath;
 
 class OSIMSIMULATION_API Blankevoort1991Ligament : public Force  {
 OpenSim_DECLARE_CONCRETE_OBJECT(Blankevoort1991Ligament, Force)
@@ -178,8 +179,6 @@ public:
 // PROPERTIES
 //=============================================================================
 
-    OpenSim_DECLARE_PROPERTY(path, AbstractPath,
-        "The path defines the length and lengthening speed of the ligament.")
     OpenSim_DECLARE_PROPERTY(linear_stiffness, double,
         "The slope of the linear region of the force-strain curve. " 
         "Units of force/strain (N).")
@@ -222,11 +221,29 @@ private:
 // METHODS
 //=============================================================================
 public:
-    //Constructors
+    // Constructors
     Blankevoort1991Ligament();
     
     Blankevoort1991Ligament(std::string name, 
         double linear_stiffness, double slack_length);
+
+    // Path
+    AbstractPath& updPath() { return upd_path(); }
+    const AbstractPath& getPath() const { return get_path(); }
+    template <typename PathType>
+    PathType& updPath() {
+        return dynamic_cast<PathType&>(upd_path());
+    }
+    template <typename PathType>
+    const PathType& getPath() const {
+        return dynamic_cast<PathType&>(get_path());
+    }
+    bool hasPath() const override { return true;};
+
+    /// Initialize the path of the PathActuator with a GeometryPath. This
+    /// returns a reference to the newly created GeometryPath, which you can
+    /// then edit. This deletes the previous path if one exists.
+    GeometryPath& initGeometryPath();
 
     //-------------------------------------------------------------------------
     // SET
@@ -310,6 +327,9 @@ public:
             const SimTK::State& state) const override;
 
 protected:
+    OpenSim_DECLARE_PROPERTY(path, AbstractPath,
+            "The path defines the length and lengthening speed of the "
+            "ligament.")
 
     void extendFinalizeFromProperties() override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;

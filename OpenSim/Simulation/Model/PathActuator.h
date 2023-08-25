@@ -34,6 +34,7 @@ namespace OpenSim {
 class Coordinate;
 class ForceSet;
 class Model;
+class GeometryPath;
 
 /**
  * This is the base class for actuators that apply controllable tension along 
@@ -48,8 +49,6 @@ public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-    OpenSim_DECLARE_PROPERTY(path, AbstractPath,
-        "The path of the actuator which defines length and lengthening speed.");
     OpenSim_DECLARE_PROPERTY(optimal_force, double,
         "The maximum force this actuator can produce.");
 
@@ -68,9 +67,21 @@ public:
     //--------------------------------------------------------------------------
     // Path
     AbstractPath& updPath() { return upd_path(); }
-    const AbstractPath& getPath() const
-    {   return get_path(); }
+    const AbstractPath& getPath() const { return get_path(); }
+    template <typename PathType>
+    PathType& updPath() {
+        return dynamic_cast<PathType&>(upd_path());
+    }
+    template <typename PathType>
+    const PathType& getPath() const {
+        return dynamic_cast<PathType&>(get_path());
+    }
     bool hasPath() const override { return true;};
+
+    /// Initialize the path of the PathActuator with a GeometryPath. This
+    /// returns a reference to the newly created GeometryPath, which you can
+    /// then edit. This deletes the previous path if one exists.
+    GeometryPath& initGeometryPath();
 
     // OPTIMAL FORCE
     void setOptimalForce(double aOptimalForce);
@@ -124,6 +135,11 @@ protected:
 
     /** Extension of parent class method; derived classes may extend further. **/
     void extendRealizeDynamics(const SimTK::State& state) const override;
+
+protected:
+    OpenSim_DECLARE_PROPERTY(path, AbstractPath,
+            "The path of the actuator which defines length and lengthening "
+            "speed.");
 
 private:
     void setNull();
