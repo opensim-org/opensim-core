@@ -54,7 +54,7 @@ MocoAddTest(NAME testMocoInverse RESOURCES
         )
 
 MocoAddTest(NAME testMocoTrack RESOURCES
-        testMocoTrack_subject01.osim
+        walk_gait1018_subject01.osim
         walk_gait1018_state_reference.mot
         walk_gait1018_subject01_grf.xml
         walk_gait1018_subject01_grf.mot
@@ -66,3 +66,9 @@ MocoAddTest(NAME testMocoTrack RESOURCES
 MocoAddTest(NAME testMocoAnalytic)
 
 MocoAddTest(NAME testMocoMetabolics)
+
+file(COPY subject_walk_armless_18musc.osim subject_walk_armless_coordinates.mot
+     DESTINATION "${CMAKE_BINARY_DIR}/OpenSim/Tests/Wrapping")
+
+file(COPY walk_gait1018_subject01.osim walk_gait1018_state_reference.mot
+        DESTINATION "${CMAKE_BINARY_DIR}/OpenSim/Tests/Wrapping")
