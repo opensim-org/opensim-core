@@ -21,6 +21,8 @@
 
 #include <Moco/osimMoco.h>
 
+using namespace OpenSim;
+
 int main() {
     // TODO Logger::setLevel(Logger::Level::Debug);
     MocoTrack track;
@@ -33,4 +35,3 @@ int main() {
     MocoSolution solution = track.solve();
     return EXIT_SUCCESS;
 }
-

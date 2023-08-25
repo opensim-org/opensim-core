@@ -1800,7 +1800,9 @@ void testSlidingMass(const std::string& transcriptionScheme) {
 
         // Speed is a piecewise linear function and force is a piecewise
         // constant (bang-bang) function. The speed and force are not
-        // continuous at t = 1.
+        // continuous at t = 1. Trapezoidal collocation happens to avoid the
+        // discrepancies between the direct collocation solutions and the actual
+        // solution at the discontinuity, but other schemes do not.
         double expectedSpeed = t < half ? t : 2.0 - t;
         double expectedForce = t < half ? 10 : -10;
         if (t < half-0.05 || t > half+0.05) {
