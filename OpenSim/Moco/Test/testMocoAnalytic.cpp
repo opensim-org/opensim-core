@@ -124,6 +124,13 @@ TEMPLATE_TEST_CASE("Linear tangent steering",
         "[casadi]", /*MocoTropterSolver, TODO*/
         MocoCasADiSolver) {
 
+    // The pseudospectral schemes have higher accuracy and therefore require
+    // fewer mesh intervals compare to the Hermite-Simpson scheme. The LG scheme
+    // seems to require more mesh intervals than the LGR scheme to achieve the
+    // same performance. This may be because the LG scheme does not have a
+    // collocation point at the final time point, whereas the LGR scheme does,
+    // and this problem has a cost function based solely on the state at the
+    // final time point.
     using record = std::tuple<std::string, int>;
     auto settings = GENERATE(table<std::string, int>({
         record{"hermite-simpson", 100},
