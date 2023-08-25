@@ -127,8 +127,8 @@ TEMPLATE_TEST_CASE("Linear tangent steering",
     using record = std::tuple<std::string, int>;
     auto settings = GENERATE(table<std::string, int>({
         record{"hermite-simpson", 100},
-        record{"legendre-gauss-3", 50},
-        record{"legendre-gauss-7", 50},
+        record{"legendre-gauss-3", 75},
+        record{"legendre-gauss-7", 75},
         record{"legendre-gauss-radau-3", 50},
         record{"legendre-gauss-radau-7", 50}
     }));
