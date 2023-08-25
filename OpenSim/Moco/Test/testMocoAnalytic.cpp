@@ -86,7 +86,7 @@ MocoStudy createSecondOrderLinearMinimumEffortStudy(
     problem.addGoal<MocoControlGoal>("effort", 0.5);
 
     auto& solver = study.initSolver<SolverType>();
-    solver.set_num_mesh_intervals(100);
+    solver.set_num_mesh_intervals(50);
     solver.set_transcription_scheme(transcription_scheme);
 
     return study;
@@ -123,6 +123,18 @@ TEST_CASE("Second order linear min effort - MocoCasADiSolver") {
 TEMPLATE_TEST_CASE("Linear tangent steering",
         "[casadi]", /*MocoTropterSolver, TODO*/
         MocoCasADiSolver) {
+
+    using record = std::tuple<std::string, int>;
+    auto settings = GENERATE(table<std::string, int>({
+        record{"hermite-simpson", 100},
+        record{"legendre-gauss-3", 50},
+        record{"legendre-gauss-7", 50},
+        record{"legendre-gauss-radau-3", 50},
+        record{"legendre-gauss-radau-7", 50}
+    }));
+
+    auto transcription_scheme = std::get<0>(settings);
+    auto num_mesh_intervals = std::get<1>(settings);
 
     // The problem is parameterized by a, T, and h, with 0 < 4h/(aT^2) < 1.
     const double a = 5;
@@ -184,8 +196,17 @@ TEMPLATE_TEST_CASE("Linear tangent steering",
 
     MocoStudy study = MocoStudyFactory::createLinearTangentSteeringStudy(
             a, finalTime, finalHeight);
+    auto& solver = study.initCasADiSolver();
+    solver.set_transcription_scheme(transcription_scheme);
+    solver.set_optim_finite_difference_scheme("forward");
+    solver.set_num_mesh_intervals(num_mesh_intervals);
+    solver.set_scale_variables_using_bounds(true);
+    solver.set_optim_convergence_tolerance(1e-5);
 
     MocoSolution solution = study.solve().unseal();
+    solution.write(
+            fmt::format("testMocoAnalytic_LinearTangentSteering_{}_solution.sto",
+                    transcription_scheme));
 
     const SimTK::Vector time = solution.getTime();
     SimTK::Vector expectedAngle(time.size());

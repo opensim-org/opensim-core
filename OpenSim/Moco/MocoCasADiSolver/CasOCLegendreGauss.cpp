@@ -61,18 +61,13 @@ void LegendreGauss::calcDefectsImpl(const casadi::MX& x,
     const int NS = m_problem.getNumStates();
     for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
         const int igrid = imesh * (m_degree + 1);
-        std::cout << "igrid: " << igrid << std::endl;
-        std::cout << "igrid + m_degree + 1: " << igrid + m_degree + 1 << std::endl;
         const auto h = m_times(igrid + m_degree + 1) - m_times(igrid);
-        std::cout << "slice: " << Slice(igrid, igrid + m_degree + 1) << std::endl;
         const auto x_i = x(Slice(), Slice(igrid, igrid + m_degree + 1));
         const auto xdot_i = xdot(Slice(),
                 Slice(igrid + 1, igrid + m_degree + 1));
-        std::cout << "slice+1: " << Slice(igrid + 1, igrid + m_degree + 1) << std::endl;
         const auto x_ip1 = x(Slice(), igrid + m_degree + 1);
 
         // Residual function defects.
-        // [NS, deg] = [NS, deg] - [NS, deg+1] * [deg+1, deg]
         MX residual = h * xdot_i - MX::mtimes(x_i, m_differentiationMatrix);
         for (int d = 0; d < m_degree; ++d) {
             defects(Slice(d * NS, (d + 1) * NS), imesh) = residual(Slice(), d);

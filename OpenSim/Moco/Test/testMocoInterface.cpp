@@ -63,7 +63,9 @@ std::unique_ptr<Model> createSlidingMassModel() {
 }
 
 template <typename SolverType = MocoTropterSolver>
-MocoStudy createSlidingMassMocoStudy() {
+MocoStudy createSlidingMassMocoStudy(
+        const std::string& transcriptionScheme = "trapezoidal",
+        int numMeshIntervals = 19) {
     MocoStudy study;
     study.setName("sliding_mass");
     study.set_write_solution("false");
@@ -76,8 +78,8 @@ MocoStudy createSlidingMassMocoStudy() {
     mp.addGoal<MocoFinalTimeGoal>();
 
     auto& ms = study.initSolver<SolverType>();
-    ms.set_num_mesh_intervals(19);
-    ms.set_transcription_scheme("trapezoidal");
+    ms.set_num_mesh_intervals(numMeshIntervals);
+    ms.set_transcription_scheme(transcriptionScheme);
     ms.set_enforce_constraint_derivatives(false);
     return study;
 }
@@ -1735,10 +1737,28 @@ TEST_CASE("Interpolate", "") {
     SimTK_TEST(SimTK::isNaN(newY[3]));
 }
 
-TEMPLATE_TEST_CASE("Sliding mass", "", MocoCasADiSolver, MocoTropterSolver) {
-    MocoStudy study = createSlidingMassMocoStudy<TestType>();
+template <typename SolverType>
+void testSlidingMass(const std::string& transcriptionScheme) {
+    int N = 50;
+    MocoStudy study = createSlidingMassMocoStudy<SolverType>(
+            transcriptionScheme, N);
     MocoSolution solution = study.solve();
-    int numTimes = 20;
+    solution.write(
+            fmt::format("testMocoInterface_testSlidingMass_{}_solution.sto",
+                    transcriptionScheme));
+    int numTimes;
+    if (transcriptionScheme == "trapezoidal") {
+        numTimes = N + 1;
+    } else if (transcriptionScheme == "hermite-simpson") {
+        numTimes = 2*N + 1;
+    } else if (transcriptionScheme == "legendre-gauss-radau-3") {
+        numTimes = 3*N + 1;
+    } else if (transcriptionScheme == "legendre-gauss-3") {
+        numTimes = 4*N + 1;
+    } else {
+        OPENSIM_THROW(Exception, "Unrecognized transcription scheme.");
+    }
+
     int numStates = 2;
     int numValues = 1;
     int numSpeeds = 1;
@@ -1776,14 +1796,31 @@ TEMPLATE_TEST_CASE("Sliding mass", "", MocoCasADiSolver, MocoTropterSolver) {
         double expectedPos =
                 t < half ? 0.5 * pow(t, 2)
                          : -0.5 * pow(t - half, 2) + 1.0 * (t - half) + 0.5;
-        SimTK_TEST_EQ_TOL(states(itime, 0), expectedPos, 1e-2);
+        SimTK_TEST_EQ_TOL(expectedPos, states(itime, 0), 1e-2)
 
+        // Speed is a piecewise linear function and force is a piecewise
+        // constant (bang-bang) function. The speed and force are not
+        // continuous at t = 1.
         double expectedSpeed = t < half ? t : 2.0 - t;
-        SimTK_TEST_EQ_TOL(states(itime, 1), expectedSpeed, 1e-2);
-
         double expectedForce = t < half ? 10 : -10;
-        SimTK_TEST_EQ_TOL(controls(itime, 0), expectedForce, 1e-2);
+        if (t < half-0.05 || t > half+0.05) {
+            SimTK_TEST_EQ_TOL(expectedSpeed, states(itime, 1), 1e-2)
+            SimTK_TEST_EQ_TOL(expectedForce, controls(itime, 0), 1e-2)
+        }
     }
+}
+
+TEST_CASE("Sliding mass - MocoTropterSolver") {
+    auto transcription_scheme =
+                GENERATE(as<std::string>{}, "trapezoidal", "hermite-simpson");
+    testSlidingMass<MocoTropterSolver>(transcription_scheme);
+}
+
+TEST_CASE("Sliding mass - MocoCasADiSolver") {
+    auto transcription_scheme =
+                GENERATE(as<std::string>{}, "trapezoidal", "hermite-simpson",
+                    "legendre-gauss-3", "legendre-gauss-radau-3");
+    testSlidingMass<MocoCasADiSolver>(transcription_scheme);
 }
 
 TEMPLATE_TEST_CASE("Solving an empty MocoProblem", "",
