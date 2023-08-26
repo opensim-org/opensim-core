@@ -6,6 +6,10 @@ request related to the change, then we may provide the commit.
 
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
 
+v4.5
+====
+- Added `AbstractPath` which is a base class for `GeometryPath` and other path types (#3388). TODO: add API changes.
+
 v4.4.1
 ======
 - IMU::calcGyroscopeSignal() now reports angular velocities in the IMU frame.

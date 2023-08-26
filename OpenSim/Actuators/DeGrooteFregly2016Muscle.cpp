@@ -1080,7 +1080,7 @@ void DeGrooteFregly2016Muscle::extendPostScale(
         const SimTK::State& s, const ScaleSet& scaleSet) {
     Super::extendPostScale(s, scaleSet);
 
-    AbstractPath& path = upd_path();
+    AbstractPath& path = updPath();
     if (path.getPreScaleLength(s) > 0.0)
     {
         double scaleFactor = path.getLength(s) / path.getPreScaleLength(s);

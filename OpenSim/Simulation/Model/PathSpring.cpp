@@ -114,8 +114,7 @@ void PathSpring::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
 
-    AbstractPath& path = upd_path();
-    path.setDefaultColor(DefaultPathSpringColor);
+    updPath().setDefaultColor(DefaultPathSpringColor);
 
     OPENSIM_THROW_IF_FRMOBJ(
         (SimTK::isNaN(get_resting_length()) || get_resting_length() < 0),
@@ -182,7 +181,7 @@ extendPostScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
     Super::extendPostScale(s, scaleSet);
 
-    AbstractPath& path = upd_path();
+    AbstractPath& path = updPath();
     if (path.getPreScaleLength(s) > 0.0)
     {
         double scaleFactor = path.getLength(s) / path.getPreScaleLength(s);
