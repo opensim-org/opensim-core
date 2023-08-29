@@ -36,7 +36,7 @@ Blankevoort1991Ligament::Blankevoort1991Ligament() : Force() {
 }
 
 Blankevoort1991Ligament::Blankevoort1991Ligament(std::string name,
-        const PhysicalFrame& frame1, SimTK::Vec3 point1,
+        const PhysicalFrame& frame1, SimTK::Vec3 point1, 
         const PhysicalFrame& frame2, SimTK::Vec3 point2)
         : Blankevoort1991Ligament() {
     setName(name);
@@ -45,8 +45,8 @@ Blankevoort1991Ligament::Blankevoort1991Ligament(std::string name,
 }
 
 Blankevoort1991Ligament::Blankevoort1991Ligament(std::string name,
-        const PhysicalFrame& frame1, SimTK::Vec3 point1,
-        const PhysicalFrame& frame2, SimTK::Vec3 point2,
+        const PhysicalFrame& frame1, SimTK::Vec3 point1, 
+        const PhysicalFrame& frame2, SimTK::Vec3 point2, 
         double linear_stiffness, double slack_length)
         : Blankevoort1991Ligament(name, frame1, point1, frame2, point2) {
     set_linear_stiffness(linear_stiffness);

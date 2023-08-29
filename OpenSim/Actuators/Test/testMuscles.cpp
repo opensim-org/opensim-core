@@ -697,7 +697,7 @@ void testThelen2003Muscle()
         Thelen2003Muscle* myMcl = new Thelen2003Muscle("myMuscle",
             MaxIsometricForce0, OptimalFiberLength0, TendonSlackLength0,
             PennationAngle0);
-
+        
         myMcl->addNewPathPoint("p1", myModel.getGround(), SimTK::Vec3(0.0));
         myMcl->addNewPathPoint("p2", myModel.getGround(), SimTK::Vec3(1.0));
         myModel.addForce(myMcl);

@@ -152,7 +152,7 @@ void testSingleWrapObjectPerpendicular(WrapObject* wrapObject, Vec3 axisRotation
         new PathSpring("spring1", 1.0, 0.1, 0.01);
     //offset in X direction to avoid ambiguous scenario where path passes through center
     spring1->updGeometryPath().
-        appendNewPathPoint("origin", ground, Vec3(r-.1, r, 0));
+        appendNewPathPoint("origin", ground, Vec3(r-.1, r, 0)); 
     spring1->updGeometryPath().
         appendNewPathPoint("insert", *body, Vec3(-r, r, 0));
     spring1->updGeometryPath().addPathWrap(*wObj);
@@ -211,7 +211,7 @@ void testEllipsoidWrapLength(OpenSim::WrapEllipsoid* wrapObject)
         new PathSpring("spring1", 1.0, 0.1, 0.01);
     //offset in X direction to avoid ambiguous scenario where path passes through center
     spring1->updGeometryPath().
-        appendNewPathPoint("origin", ground, Vec3(r - .1, r, 0));
+        appendNewPathPoint("origin", ground, Vec3(r - .1, r, 0)); 
     // insertion point is -r down from the tip of the long axis of the ellipsoid
     spring1->updGeometryPath().
         appendNewPathPoint("insert", *body, Vec3(-wrapObject->get_dimensions()[0], -r, 0));

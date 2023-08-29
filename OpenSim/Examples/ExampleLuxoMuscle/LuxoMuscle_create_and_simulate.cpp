@@ -747,7 +747,6 @@ void createLuxoJr(OpenSim::Model& model){
                                             "back_extensor_right",
                                             back_extensor_F0, back_extensor_lm0,
                                             back_extensor_lts, pennationAngle);
-
     backExtensorRight->addNewPathPoint("back_extensor_right_origin", *chest,
                                       back_extensor_origin);
     backExtensorRight->addNewPathPoint("back_extensor_right_insertion", *back,

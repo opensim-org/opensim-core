@@ -130,7 +130,7 @@ const Array<AbstractPathPoint*>& OpenSimContext::getCurrentPath(Muscle& m) {
 void OpenSimContext::copyMuscle(Muscle& from, Muscle& to) {
   to = from;
   recreateSystemKeepStage();
-  to.updPath<GeometryPath>().updateGeometry(*_configState);
+  to.updGeometryPath().updateGeometry(*_configState);
 }
 
 // Muscle Points

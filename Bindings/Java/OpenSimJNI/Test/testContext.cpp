@@ -199,7 +199,7 @@ int main()
     AbstractPathPoint* clonedPoint = savePoint.clone();
 
     // Test delete second PathPoint from TRIlong muscle
-    context->deletePathPoint(dTRIlong->updGeometryPath(), 2);
+    context->deletePathPoint(dTRIlong->updGeometryPath(), 2); 
     assert(pathPoints.getSize() == origSize - 1);
     std::string pathAfterDeletionInXML = dTRIlong->updGeometryPath().dump();
     std::cout << pathAfterDeletionInXML << endl;
