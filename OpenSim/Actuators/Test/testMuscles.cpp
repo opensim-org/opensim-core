@@ -873,9 +873,8 @@ void testMillard2012EquilibriumMuscle()
         const double tendonSlackLength  = 100.0; //long tendon
         auto muscle = new Millard2012EquilibriumMuscle("muscle", 1.,
                           optimalFiberLength, tendonSlackLength, 0.);
-        auto& path = muscle->updPath<GeometryPath>();
-        path.appendNewPathPoint("p1", model.updGround(), SimTK::Vec3(0));
-        path.appendNewPathPoint("p2", model.updGround(), SimTK::Vec3(0,0,1));
+        muscle->addNewPathPoint("p1", model.updGround(), SimTK::Vec3(0));
+        muscle->addNewPathPoint("p2", model.updGround(), SimTK::Vec3(0,0,1));
         model.addForce(muscle);
 
         SimTK::State& state = model.initSystem();

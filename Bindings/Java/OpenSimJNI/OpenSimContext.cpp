@@ -30,7 +30,6 @@
 #include <OpenSim/Simulation/Model/MovingPathPoint.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Simulation/Model/PathPoint.h>
-#include <OpenSim/Simulation/Model/GeometryPath.h>
 #include <OpenSim/Simulation/Wrap/PathWrap.h>
 #include <OpenSim/Simulation/Model/ConditionalPathPoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
@@ -125,21 +124,13 @@ double OpenSimContext::getMuscleLength(Muscle& m) {
 }
 
 const Array<AbstractPathPoint*>& OpenSimContext::getCurrentPath(Muscle& m) {
-  if (auto* p = dynamic_cast<const GeometryPath*>(&m.getPath())) {
-      return p->getCurrentPath(*_configState);
-  } else {
-      OPENSIM_THROW(Exception, "Muscle path is not a GeometryPath.")
-  }
+  return m.getGeometryPath().getCurrentPath(*_configState);
 }
 
 void OpenSimContext::copyMuscle(Muscle& from, Muscle& to) {
-  if (auto* p = dynamic_cast<const GeometryPath*>(&from.getPath())) {
-      to = from;
-      recreateSystemKeepStage();
-      to.updPath<GeometryPath>().updateGeometry(*_configState);
-  } else {
-      OPENSIM_THROW(Exception, "Muscle path is not a GeometryPath.")
-  }
+  to = from;
+  recreateSystemKeepStage();
+  to.updPath<GeometryPath>().updateGeometry(*_configState);
 }
 
 // Muscle Points

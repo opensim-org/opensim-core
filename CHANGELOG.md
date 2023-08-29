@@ -8,7 +8,7 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 
 v4.5
 ====
-- Added `AbstractPath` which is a base class for `GeometryPath` and other path types (#3388). TODO: add API changes.
+- Added `AbstractPath` which is a base class for `GeometryPath` and other path types (#3388).
 
 v4.4.1
 ======

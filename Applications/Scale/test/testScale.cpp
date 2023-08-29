@@ -575,7 +575,6 @@ void scalePhysicalOffsetFrames()
 
         PathActuator* act2 = new PathActuator();
         act2->setName("pathActuator2");
-        auto& path2 = act2->updPath<GeometryPath>();
         act2->addNewPathPoint("point2a", model->updGround(), Vec3(0));
         act2->addNewPathPoint("point2b", *pof2, offset2);
         act1->addComponent(act2);

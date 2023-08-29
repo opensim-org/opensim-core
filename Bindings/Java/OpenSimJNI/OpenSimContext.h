@@ -48,7 +48,6 @@ class GeometryPath;
 class AbstractPathPoint;
 class PathWrap;
 class ConditionalPathPoint;
-class PathPoint;
 class WrapObject;
 class Analysis;
 class AnalyzeTool;

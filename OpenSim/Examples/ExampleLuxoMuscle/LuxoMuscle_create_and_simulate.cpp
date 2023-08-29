@@ -760,7 +760,6 @@ void createLuxoJr(OpenSim::Model& model){
             new Millard2012EquilibriumMuscle("back_extensor_left",
                                     back_extensor_F0, back_extensor_lm0,
                                     back_extensor_lts, pennationAngle);
-
     backExtensorLeft->addNewPathPoint("back_extensor_left_origin", *chest,
                                       back_extensor_origin);
     backExtensorLeft->addNewPathPoint("back_extensor_left_insertion", *back,
