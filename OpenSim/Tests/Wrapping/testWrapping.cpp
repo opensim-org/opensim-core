@@ -357,9 +357,9 @@ void testWrapCylinder()
     PathSpring* spring1 =
         new PathSpring("spring1", 1.0, 0.1, 0.01);
     spring1->updGeometryPath().
-            appendNewPathPoint("origin", ground, Vec3(-off, 0, 0));
+        appendNewPathPoint("origin", ground, Vec3(-off, 0, 0));
     spring1->updGeometryPath().
-            appendNewPathPoint("insert", *body, Vec3(0));
+        appendNewPathPoint("insert", *body, Vec3(0));
     spring1->updGeometryPath().addPathWrap(*pulley1);
 
     model.addComponent(spring1);
@@ -376,9 +376,9 @@ void testWrapCylinder()
     PathSpring* spring2 =
         new PathSpring("spring2", 1.0, 0.1, 0.01);
     spring2->updGeometryPath().
-            appendNewPathPoint("origin", ground, Vec3(-off, 0, 0));
+        appendNewPathPoint("origin", ground, Vec3(-off, 0, 0));
     spring2->updGeometryPath().
-            appendNewPathPoint("insert", *body, Vec3(0));
+        appendNewPathPoint("insert", *body, Vec3(0));
     spring2->updGeometryPath().addPathWrap(*pulley2);
     spring2->updGeometryPath().setDefaultColor(Vec3(0, 0.8, 0));
 
@@ -546,7 +546,7 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
             numMuscles++;
             paths.append(&mus->updGeometryPath());
             pathNames.append(mus->getName());
-            cout << mus->getName() << ": " << mus->updGeometryPath().getWrapSet().getSize() << endl;
+            cout << mus->getName() << ": " << mus->getGeometryPath().getWrapSet().getSize() << endl;
             continue;
         }
     }

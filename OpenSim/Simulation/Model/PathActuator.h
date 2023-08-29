@@ -124,8 +124,8 @@ public:
      * @note Only valid if the `path` owned by this PathActuator supports
      * PathPoint%s (e.g., GeometryPath). */
     void addNewPathPoint(const std::string& proposedName,
-            const PhysicalFrame& aBody,
-            const SimTK::Vec3& aPositionOnBody);
+                         const PhysicalFrame& aBody,
+                         const SimTK::Vec3& aPositionOnBody);
 
     //--------------------------------------------------------------------------
     // APPLICATION

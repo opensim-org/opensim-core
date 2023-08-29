@@ -37,9 +37,8 @@ TEST_CASE("Bhargava2004SmoothedMuscleMetabolics basics") {
     musclePtr->set_ignore_tendon_compliance(false);
     musclePtr->set_fiber_damping(0.01);
     musclePtr->setName("muscle");
-    auto& path = musclePtr->updPath<GeometryPath>();
-    path.appendNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
-    path.appendNewPathPoint("insertion", *body, SimTK::Vec3(0));
+    musclePtr->addNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
+    musclePtr->addNewPathPoint("insertion", *body, SimTK::Vec3(0));
     model.addComponent(musclePtr);
     auto& muscle = model.getComponent<DeGrooteFregly2016Muscle>("muscle");
 

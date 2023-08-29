@@ -224,13 +224,13 @@ public:
     Blankevoort1991Ligament();
 
     Blankevoort1991Ligament(std::string name,
-            const PhysicalFrame& frame1, SimTK::Vec3 point1,
-            const PhysicalFrame& frame2, SimTK::Vec3 point2);
+        const PhysicalFrame& frame1, SimTK::Vec3 point1,
+        const PhysicalFrame& frame2, SimTK::Vec3 point2);
 
     Blankevoort1991Ligament(std::string name,
-            const PhysicalFrame& frame1, SimTK::Vec3 point1,
-            const PhysicalFrame& frame2, SimTK::Vec3 point2,
-            double linear_stiffness, double slack_length);
+        const PhysicalFrame& frame1, SimTK::Vec3 point1,
+        const PhysicalFrame& frame2, SimTK::Vec3 point2,
+        double linear_stiffness, double slack_length);
     
     Blankevoort1991Ligament(std::string name, 
         double linear_stiffness, double slack_length);

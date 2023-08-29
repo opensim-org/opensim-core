@@ -436,7 +436,7 @@ namespace {
             cylinder->setFrame(model.getGround());
 
             model.updComponent<PathSpring>("spring")
-                    .updGeometryPath().addPathWrap(*cylinder.get());
+                .updGeometryPath().addPathWrap(*cylinder.get());
             model.updGround().addWrapObject(cylinder.release());
         }
 

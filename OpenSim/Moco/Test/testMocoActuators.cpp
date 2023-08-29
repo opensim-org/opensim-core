@@ -58,9 +58,8 @@ Model createHangingMuscleModel(double optimalFiberLength,
     }
     actu->set_max_contraction_velocity(10);
     actu->set_pennation_angle_at_optimal(0);
-    auto& path = actu->updPath<GeometryPath>();
-    path.appendNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
-    path.appendNewPathPoint("insertion", *body, SimTK::Vec3(0));
+    actu->addNewPathPoint("origin", model.updGround(), SimTK::Vec3(0));
+    actu->addNewPathPoint("insertion", *body, SimTK::Vec3(0));
     model.addForce(actu);
 
     body->attachGeometry(new Sphere(0.05));
