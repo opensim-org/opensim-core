@@ -37,7 +37,7 @@ DM LegendreGauss::createQuadratureCoefficientsImpl() const {
     for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
         const int igrid = imesh * (m_degree + 1);
         // There are no quadrature coefficients at the mesh points (i.e.,
-        // quadCoeffs(igrid) = 0.0).
+        // quadCoeffs(igrid) = 0).
         for (int d = 0; d < m_degree; ++d) {
             quadCoeffs(igrid + d + 1) += w(d) * meshIntervals(imesh);
         }

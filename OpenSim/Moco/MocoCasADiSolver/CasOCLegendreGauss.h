@@ -24,10 +24,11 @@ namespace CasOC {
 
 /// Enforce the differential equations in the problem using pseudospectral
 /// transcription with Legendre-Gauss (LG) collocation points. This method is
-/// often referred to as the Gauss Pseudospectral Method (GPM) [1, 2]. This
+/// sometimes referred to as the Gauss Pseudospectral Method (GPM) [1, 2]. This
 /// implementation supports Lagrange polynomials of degree within the range
 /// [1, 9]. The number of collocation points per mesh interval is equal to the
-/// degree of the Lagrange polynomials. The integral in the objective function
+/// degree of the Lagrange polynomials, where all collocation point line within
+/// the interior of the mesh interval. The integral in the objective function
 /// is approximated using the Gauss weights associated with these points.
 ///
 /// Defect constraints.
