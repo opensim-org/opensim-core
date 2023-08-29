@@ -144,9 +144,8 @@ Model buildHopper(bool showVisualizer) {
            mclPennAng = 0.;
     auto vastus = new Thelen2003Muscle("vastus", mclFmax, mclOptFibLen,
                                        mclTendonSlackLen, mclPennAng);
-    auto& path = vastus->updPath<GeometryPath>();
-    path.appendNewPathPoint("origin", *thigh, Vec3(linkRadius, 0.1, 0));
-    path.appendNewPathPoint("insertion", *shank, Vec3(linkRadius, 0.15, 0));
+    vastus->addNewPathPoint("origin", *thigh, Vec3(linkRadius, 0.1, 0));
+    vastus->addNewPathPoint("insertion", *shank, Vec3(linkRadius, 0.15, 0));
     hopper.addForce(vastus);
 
     // Attach a cylinder (patella) to the distal end of the thigh over which the
@@ -163,7 +162,7 @@ Model buildHopper(bool showVisualizer) {
     thigh->addComponent(patellaFrame);
 
     // Configure the vastus muscle to wrap over the patella.
-    path.addPathWrap(*patella);
+    vastus->updGeometryPath().addPathWrap(*patella);
 
     // Create a controller to excite the vastus muscle.
     auto brain = new PrescribedController();

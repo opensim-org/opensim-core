@@ -33,7 +33,6 @@
 #include <OpenSim/Simulation/Model/PathPoint.h>
 #include <OpenSim/Simulation/Wrap/PathWrap.h>
 #include <OpenSim/Simulation/Model/ConditionalPathPoint.h>
-#include <OpenSim/Simulation/Model/GeometryPath.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/Simulation/Wrap/WrapObject.h>
 #include <OpenSim/Simulation/Model/Analysis.h>

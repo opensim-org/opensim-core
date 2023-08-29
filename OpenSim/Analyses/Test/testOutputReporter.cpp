@@ -161,9 +161,8 @@ void simulateMuscle(
     //Attach the muscle
     /*const string &actuatorType = */muscle->getConcreteClassName();
     muscle->setName("muscle");
-    auto& path = muscle->updPath<GeometryPath>();
-    path.appendNewPathPoint("muscle-box", ground, Vec3(anchorWidth / 2, 0, 0));
-    path.appendNewPathPoint("muscle-ball", *ball, Vec3(-ballRadius, 0, 0));
+    muscle->addNewPathPoint("muscle-box", ground, Vec3(anchorWidth / 2, 0, 0));
+    muscle->addNewPathPoint("muscle-ball", *ball, Vec3(-ballRadius, 0, 0));
 
     model.addForce(muscle);
 

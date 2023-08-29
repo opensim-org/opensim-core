@@ -26,9 +26,8 @@ class TestModelBuilding {
             0.6,        // Optimal fibre length
             0.55,       // Tendon slack length
             0.0);       // Pennation angle
-        GeometryPath pathBiceps = biceps.initGeometryPath();
-        pathBiceps.appendNewPathPoint("origin", hum, ArrayDouble.createVec3(new double[]{0, 0.8, 0}));
-        pathBiceps.appendNewPathPoint("insert", rad, ArrayDouble.createVec3(new double[]{0, 0.7, 0}));
+        biceps.addNewPathPoint("origin", hum, ArrayDouble.createVec3(new double[]{0, 0.8, 0}));
+        biceps.addNewPathPoint("insert", rad, ArrayDouble.createVec3(new double[]{0, 0.7, 0}));
 
         PrescribedController cns = new PrescribedController();
         cns.addActuator(biceps);

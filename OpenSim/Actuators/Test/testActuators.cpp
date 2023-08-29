@@ -480,9 +480,8 @@ void testMcKibbenActuator()
     OpenSim::Body* ball = new OpenSim::Body("ball", mass, Vec3(0), mass*SimTK::Inertia::sphere(0.1));
     ball->scale(Vec3(ball_radius), false);
 
-    auto& path = actuator->updPath<GeometryPath>();
-    path.appendNewPathPoint("mck_ground", ground, Vec3(0));
-    path.appendNewPathPoint("mck_ball", *ball, Vec3(ball_radius));
+    actuator->addNewPathPoint("mck_ground", ground, Vec3(0));
+    actuator->addNewPathPoint("mck_ball", *ball, Vec3(ball_radius));
 
     Vec3 locationInParent(0, ball_radius, 0), orientationInParent(0), locationInBody(0), orientationInBody(0);
     SliderJoint *ballToGround = new SliderJoint("ballToGround", ground, locationInParent, orientationInParent, *ball, locationInBody, orientationInBody);
