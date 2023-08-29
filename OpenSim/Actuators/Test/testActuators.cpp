@@ -332,18 +332,18 @@ void testClutchedPathSpring()
 
     ClutchedPathSpring* spring = 
         new ClutchedPathSpring("clutch_spring", stiffness, dissipation, 0.01);
-    auto& path = spring->updPath<GeometryPath>();
-    path.appendNewPathPoint("origin", *block, Vec3(-0.1, 0.0 ,0.0));
+
+    spring->updGeometryPath().appendNewPathPoint("origin", *block, Vec3(-0.1, 0.0 ,0.0));
     
     int N = 10;
     for(int i=1; i<N; ++i){
         double angle = i*Pi/N;
         double x = 0.1*cos(angle);
         double y = 0.1*sin(angle);
-        path.appendNewPathPoint("", *pulleyBody, Vec3(-x, y ,0.0));
+        spring->updGeometryPath().appendNewPathPoint("", *pulleyBody, Vec3(-x, y ,0.0));
     }
 
-    path.appendNewPathPoint("insertion", *block, Vec3(0.1, 0.0 ,0.0));
+    spring->updGeometryPath().appendNewPathPoint("insertion", *block, Vec3(0.1, 0.0 ,0.0));
 
     // BUG in defining wrapping API requires that the Force containing the GeometryPath be
     // connected to the model before the wrap can be added

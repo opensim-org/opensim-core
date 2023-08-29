@@ -413,12 +413,11 @@ namespace {
         {
             std::unique_ptr<PathSpring> spring(
                 new PathSpring("spring", 1., 1., 1.));
-            auto& path = spring->updPath<GeometryPath>();
-            path.appendNewPathPoint(
+            spring->updGeometryPath().appendNewPathPoint(
                 "startPoint",
                 model.get_ground(),
                 input.path.start);
-            path.appendNewPathPoint(
+            spring->updGeometryPath().appendNewPathPoint(
                 "endPoint",
                 model.get_ground(),
                 input.path.end);
@@ -436,9 +435,8 @@ namespace {
             cylinder->set_xyz_body_rotation(input.eulerRotations);
             cylinder->setFrame(model.getGround());
 
-            auto& path = model.updComponent<PathSpring>("spring")
-                    .updPath<GeometryPath>();
-            path.addPathWrap(*cylinder.get());
+            model.updComponent<PathSpring>("spring")
+                    .updGeometryPath().addPathWrap(*cylinder.get());
             model.updGround().addWrapObject(cylinder.release());
         }
 
@@ -453,9 +451,8 @@ namespace {
 
         // Trigger computing the wrapping path (realizing the state will not).
         model.getComponent<PathSpring>("spring").getLength(state);
-        const auto& path = dynamic_cast<const GeometryPath&>(
-                model.getComponent<PathSpring>("spring").getPath());
-        const WrapResult wrapResult = path
+        const WrapResult wrapResult = model.getComponent<PathSpring>("spring")
+                .getPath<GeometryPath>()
                 .getWrapSet()
                 .get("pathwrap")
                 .getPreviousWrap();

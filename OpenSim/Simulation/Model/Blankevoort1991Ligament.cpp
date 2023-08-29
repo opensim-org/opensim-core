@@ -23,7 +23,6 @@
 
 #include <OpenSim/Simulation/Model/Model.h>
 #include "Blankevoort1991Ligament.h"
-#include "GeometryPath.h"
 
 using namespace OpenSim;
 
@@ -34,6 +33,24 @@ using namespace OpenSim;
 Blankevoort1991Ligament::Blankevoort1991Ligament() : Force() {
     constructProperties();
     setNull();
+}
+
+Blankevoort1991Ligament::Blankevoort1991Ligament(std::string name,
+        const PhysicalFrame& frame1, SimTK::Vec3 point1,
+        const PhysicalFrame& frame2, SimTK::Vec3 point2)
+        : Blankevoort1991Ligament() {
+    setName(name);
+    updGeometryPath().appendNewPathPoint("p1", frame1, point1);
+    updGeometryPath().appendNewPathPoint("p2", frame2, point2);
+}
+
+Blankevoort1991Ligament::Blankevoort1991Ligament(std::string name,
+        const PhysicalFrame& frame1, SimTK::Vec3 point1,
+        const PhysicalFrame& frame2, SimTK::Vec3 point2,
+        double linear_stiffness, double slack_length)
+        : Blankevoort1991Ligament(name, frame1, point1, frame2, point2) {
+    set_linear_stiffness(linear_stiffness);
+    set_slack_length(slack_length);
 }
 
 Blankevoort1991Ligament::Blankevoort1991Ligament(

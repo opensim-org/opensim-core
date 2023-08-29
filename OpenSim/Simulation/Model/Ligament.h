@@ -29,6 +29,7 @@
 //=============================================================================
 #include "Force.h"
 #include "AbstractPath.h"
+#include "GeometryPath.h"
 
 #ifdef SWIG
     #ifdef OSIMACTUATORS_API
@@ -41,7 +42,6 @@ namespace OpenSim {
 
 class Function;
 class ScaleSet;
-class GeometryPath;
 
 //=============================================================================
 //=============================================================================
@@ -74,17 +74,35 @@ public:
     //--------------------------------------------------------------------------
     // PATH
     //--------------------------------------------------------------------------
+    bool hasPath() const override { return true;};
+
     AbstractPath& updPath() { return upd_path(); }
     const AbstractPath& getPath() const { return get_path(); }
+
     template <typename PathType>
     PathType& updPath() {
         return dynamic_cast<PathType&>(upd_path());
     }
     template <typename PathType>
     const PathType& getPath() const {
-        return dynamic_cast<PathType&>(get_path());
+        return dynamic_cast<const PathType&>(get_path());
     }
-    bool hasPath() const override { return true;};
+
+    template <typename PathType>
+    PathType* tryUpdPath() {
+        return dynamic_cast<PathType*>(&upd_path());
+    }
+    template <typename PathType>
+    const PathType* tryGetPath() const {
+        return dynamic_cast<const PathType*>(&get_path());
+    }
+
+    GeometryPath& updGeometryPath() {
+        return updPath<GeometryPath>();
+    }
+    const GeometryPath& getGeometryPath() const {
+        return getPath<GeometryPath>();
+    }
 
     /// Initialize the path of the PathActuator with a GeometryPath. This
     /// returns a reference to the newly created GeometryPath, which you can

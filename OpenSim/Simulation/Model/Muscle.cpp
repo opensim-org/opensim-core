@@ -155,7 +155,7 @@ void Muscle::constructProperties()
     // By default the min and max controls on muscle are 0.0 and 1.0
     setMinControl(0.0);
     setMaxControl(1.0);
-    upd_path().setDefaultColor(DefaultMuscleColor);
+    updPath().setDefaultColor(DefaultMuscleColor);
 }
 
 
@@ -676,6 +676,12 @@ SimTK::Vec3 Muscle::computePathColor(const SimTK::State& state) const {
         SimTK::clamp(0., getActivation(state), 1.);
     const SimTK::Vec3 color(activation, 0, 1-activation); // blue to red
     return color;
+}
+
+
+void Muscle::updateGeometry(const SimTK::State& s)
+{
+    updGeometryPath().updateGeometry(s);
 }
 
 

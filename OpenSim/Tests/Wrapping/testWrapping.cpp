@@ -356,10 +356,11 @@ void testWrapCylinder()
     // One spring has wrap cylinder with respect to ground origin
     PathSpring* spring1 =
         new PathSpring("spring1", 1.0, 0.1, 0.01);
-    auto& path1 = spring1->updPath<GeometryPath>();
-    path1.appendNewPathPoint("origin", ground, Vec3(-off, 0, 0));
-    path1.appendNewPathPoint("insert", *body, Vec3(0));
-    path1.addPathWrap(*pulley1);
+    spring1->updGeometryPath().
+            appendNewPathPoint("origin", ground, Vec3(-off, 0, 0));
+    spring1->updGeometryPath().
+            appendNewPathPoint("insert", *body, Vec3(0));
+    spring1->updGeometryPath().addPathWrap(*pulley1);
 
     model.addComponent(spring1);
 
@@ -374,11 +375,12 @@ void testWrapCylinder()
     // Second spring has wrap cylinder with respect to bodyOffse origin
     PathSpring* spring2 =
         new PathSpring("spring2", 1.0, 0.1, 0.01);
-    auto& path2 = spring2->updPath<GeometryPath>();
-    path2.appendNewPathPoint("origin", ground, Vec3(-off, 0, 0));
-    path2.appendNewPathPoint("insert", *body, Vec3(0));
-    path2.addPathWrap(*pulley2);
-    path2.setDefaultColor(Vec3(0, 0.8, 0));
+    spring2->updGeometryPath().
+            appendNewPathPoint("origin", ground, Vec3(-off, 0, 0));
+    spring2->updGeometryPath().
+            appendNewPathPoint("insert", *body, Vec3(0));
+    spring2->updGeometryPath().addPathWrap(*pulley2);
+    spring2->updGeometryPath().setDefaultColor(Vec3(0, 0.8, 0));
 
     model.addComponent(spring2);
 
@@ -534,8 +536,7 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
         Ligament* lig = dynamic_cast<Ligament*>(&osimModel.getForceSet()[i]);
         if (lig != 0) {
             numLigaments++;
-            auto& ligPath = lig->updPath<GeometryPath>();
-            paths.append(&ligPath);
+            paths.append(&lig->updGeometryPath());
             pathNames.append(lig->getName());
             continue;
         }
@@ -543,10 +544,9 @@ void simulateModelWithCables(const string &modelFile, double finalTime)
         Muscle* mus = dynamic_cast<Muscle*>(&osimModel.getForceSet()[i]);
         if (mus != 0) {
             numMuscles++;
-            auto& musPath = mus->updPath<GeometryPath>();
-            paths.append(&musPath);
+            paths.append(&mus->updGeometryPath());
             pathNames.append(mus->getName());
-            cout << mus->getName() << ": " << musPath.getWrapSet().getSize() << endl;
+            cout << mus->getName() << ": " << mus->updGeometryPath().getWrapSet().getSize() << endl;
             continue;
         }
     }

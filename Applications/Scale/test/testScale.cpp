@@ -595,11 +595,9 @@ void scalePhysicalOffsetFrames()
                 model->getComponent<PathActuator>(pathToAct1);
             const PathActuator& pa2 =
                 model->getComponent<PathActuator>(pathToAct2);
-            const auto& path1 = dynamic_cast<const GeometryPath&>(pa1.getPath());
-            const auto& path2 = dynamic_cast<const GeometryPath&>(pa2.getPath());
 
-            const PathPointSet& pps1 = path1.getPathPointSet();
-            const PathPointSet& pps2 = path2.getPathPointSet();
+            const PathPointSet& pps1 = pa1.getGeometryPath().getPathPointSet();
+            const PathPointSet& pps2 = pa2.getGeometryPath().getPathPointSet();
 
             for (int i = 0; i < 2; ++i)
             {

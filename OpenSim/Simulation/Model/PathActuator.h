@@ -25,6 +25,7 @@
 
 #include "Actuator.h"
 #include "AbstractPath.h"
+#include "GeometryPath.h"
 
 //=============================================================================
 //=============================================================================
@@ -34,7 +35,6 @@ namespace OpenSim {
 class Coordinate;
 class ForceSet;
 class Model;
-class GeometryPath;
 
 /**
  * This is the base class for actuators that apply controllable tension along 
@@ -66,17 +66,35 @@ public:
     // GET AND SET
     //--------------------------------------------------------------------------
     // Path
+    bool hasPath() const override { return true;};
+
     AbstractPath& updPath() { return upd_path(); }
     const AbstractPath& getPath() const { return get_path(); }
+
     template <typename PathType>
     PathType& updPath() {
         return dynamic_cast<PathType&>(upd_path());
     }
     template <typename PathType>
     const PathType& getPath() const {
-        return dynamic_cast<PathType&>(get_path());
+        return dynamic_cast<const PathType&>(get_path());
     }
-    bool hasPath() const override { return true;};
+
+    template <typename PathType>
+    PathType* tryUpdPath() {
+        return dynamic_cast<PathType*>(&upd_path());
+    }
+    template <typename PathType>
+    const PathType* tryGetPath() const {
+        return dynamic_cast<const PathType*>(&get_path());
+    }
+
+    GeometryPath& updGeometryPath() {
+        return updPath<GeometryPath>();
+    }
+    const GeometryPath& getGeometryPath() const {
+        return getPath<GeometryPath>();
+    }
 
     /// Initialize the path of the PathActuator with a GeometryPath. This
     /// returns a reference to the newly created GeometryPath, which you can
@@ -99,6 +117,15 @@ public:
 
     // STRESS
     double getStress( const SimTK::State& s ) const override;
+
+    // Convenience method to add PathPoints
+    /** @note This function does not maintain the State and so should be used
+     * only before a valid State is created.
+     * @note Only valid if the `path` owned by this PathActuator supports
+     * PathPoint%s (e.g., GeometryPath). */
+    void addNewPathPoint(const std::string& proposedName,
+            const PhysicalFrame& aBody,
+            const SimTK::Vec3& aPositionOnBody);
 
     //--------------------------------------------------------------------------
     // APPLICATION

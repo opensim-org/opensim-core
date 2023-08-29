@@ -122,7 +122,7 @@ int main()
     cout << "Prop after create system is " << dProp2.toString() << endl;
     bool after = PropertyHelper::getValueBool(dProp);
     SimTK_ASSERT_ALWAYS(!after, "Property has wrong value!!");
-    dTRIlong->updPath<GeometryPath>().updateGeometry(context->getCurrentStateRef());
+    dTRIlong->updGeometryPath().updateGeometry(context->getCurrentStateRef());
     const OpenSim::Array<AbstractPathPoint*>& path = context->getCurrentPath(*dTRIlong);
     cout << "Muscle Path" << endl;
     cout << path.getSize() << endl;
@@ -157,7 +157,7 @@ int main()
     cout << "After setting coordinate to 100 deg." << endl;
     cout << xform << endl;
     // Compare to known xform
-    dTRIlong->updPath<GeometryPath>().updateGeometry(context->getCurrentStateRef());
+    dTRIlong->updGeometryPath().updateGeometry(context->getCurrentStateRef());
     const OpenSim::Array<AbstractPathPoint*>& newPath = context->getCurrentPath(*dTRIlong);
     context->realizePosition();
     // Compare to known path 
@@ -191,8 +191,8 @@ int main()
     context->restoreStateFromCachedModel();
 
     // Exercise PathPoint operations used to edit Path in GUI
-    PathPointSet& pathPoints = dTRIlong->updPath<GeometryPath>().updPathPointSet();
-    std::string pathBeforeInXML = dTRIlong->updPath<GeometryPath>().dump();
+    PathPointSet& pathPoints = dTRIlong->updGeometryPath().updPathPointSet();
+    std::string pathBeforeInXML = dTRIlong->updGeometryPath().dump();
     std::cout << pathBeforeInXML << endl;
     int origSize = pathPoints.getSize();
     AbstractPathPoint& savePoint = pathPoints.get("TRIlong-P2");
@@ -200,17 +200,17 @@ int main()
     AbstractPathPoint* clonedPoint = savePoint.clone();
 
     // Test delete second PathPoint from TRIlong muscle
-    context->deletePathPoint(dTRIlong->updPath<GeometryPath>(), 2);
+    context->deletePathPoint(dTRIlong->updGeometryPath(), 2);
     assert(pathPoints.getSize() == origSize - 1);
-    std::string pathAfterDeletionInXML = dTRIlong->updPath<GeometryPath>().dump();
+    std::string pathAfterDeletionInXML = dTRIlong->updGeometryPath().dump();
     std::cout << pathAfterDeletionInXML << endl;
     
     // Test adding PathPoint to TRIlong muscle (Stationary)
     Component& frame = model->updBodySet().updComponent(saveFrameName);
     PhysicalFrame* physFrame = PhysicalFrame::safeDownCast(&frame);
-    context->addPathPoint(dTRIlong->updPath<GeometryPath>(), 3, *physFrame);
+    context->addPathPoint(dTRIlong->updGeometryPath(), 3, *physFrame);
     assert(pathPoints.getSize() == origSize);
-    std::string pathAfterReinsertionInXML = dTRIlong->updPath<GeometryPath>().dump();
+    std::string pathAfterReinsertionInXML = dTRIlong->updGeometryPath().dump();
     std::cout << pathAfterReinsertionInXML << endl;
 
     // Test changing type to ConditionalPathPoint
@@ -218,10 +218,10 @@ int main()
     AbstractPathPoint& oldPoint = pathPoints.get(2);
     newPoint->setCoordinate(model->getCoordinateSet().get(0));
     newPoint->setParentFrame(oldPoint.getParentFrame());
-    context->replacePathPoint(dTRIlong->updPath<GeometryPath>(), oldPoint, *newPoint);
+    context->replacePathPoint(dTRIlong->updGeometryPath(), oldPoint, *newPoint);
     assert(pathPoints.getSize() == origSize);
 
-    std::string pathAfterTypeChangeToViaInXML = dTRIlong->updPath<GeometryPath>().dump();
+    std::string pathAfterTypeChangeToViaInXML = dTRIlong->updGeometryPath().dump();
     std::cout << pathAfterTypeChangeToViaInXML << endl;
  
     // Make a change to a socket that is invalid and verify that we can recover

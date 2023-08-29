@@ -441,6 +441,8 @@ protected:
     void extendSetPropertiesFromState(const SimTK::State &s) override;
     void extendInitStateFromProperties(SimTK::State& state) const override;
 
+    // Update the display geometry attached to the muscle
+    virtual void updateGeometry(const SimTK::State& s);
     // End of Interfaces imposed by parent classes.
     //@} 
 

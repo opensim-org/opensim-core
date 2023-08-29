@@ -25,7 +25,6 @@
 // INCLUDES
 //=============================================================================
 #include "PathActuator.h"
-#include "GeometryPath.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -138,6 +137,20 @@ double PathActuator::getLengtheningSpeed(const SimTK::State& s) const
 double PathActuator::getStress( const SimTK::State& s) const
 {
     return fabs(getActuation(s)/get_optimal_force()); 
+}
+
+//_____________________________________________________________________________
+/**
+ * Add a Path point to the _path of the actuator. The new point is appended
+ * to the end of the current path
+ *
+ */
+void PathActuator::addNewPathPoint(
+        const std::string& proposedName,
+        const PhysicalFrame& aBody,
+        const SimTK::Vec3& aPositionOnBody) {
+    // Create new PathPoint already appended to the PathPointSet for the path
+    updGeometryPath().appendNewPathPoint(proposedName, aBody, aPositionOnBody);
 }
 
 //=============================================================================

@@ -25,6 +25,7 @@
 
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/Model/AbstractPath.h>
+#include <OpenSim/Simulation/Model/GeometryPath.h>
 
 namespace OpenSim {
 
@@ -169,8 +170,6 @@ affected by scaling the model.
 
 */
 
-class GeometryPath;
-
 class OSIMSIMULATION_API Blankevoort1991Ligament : public Force  {
 OpenSim_DECLARE_CONCRETE_OBJECT(Blankevoort1991Ligament, Force)
 
@@ -223,22 +222,49 @@ private:
 public:
     // Constructors
     Blankevoort1991Ligament();
+
+    Blankevoort1991Ligament(std::string name,
+            const PhysicalFrame& frame1, SimTK::Vec3 point1,
+            const PhysicalFrame& frame2, SimTK::Vec3 point2);
+
+    Blankevoort1991Ligament(std::string name,
+            const PhysicalFrame& frame1, SimTK::Vec3 point1,
+            const PhysicalFrame& frame2, SimTK::Vec3 point2,
+            double linear_stiffness, double slack_length);
     
     Blankevoort1991Ligament(std::string name, 
         double linear_stiffness, double slack_length);
 
     // Path
+    bool hasPath() const override { return true;};
+
     AbstractPath& updPath() { return upd_path(); }
     const AbstractPath& getPath() const { return get_path(); }
+
     template <typename PathType>
     PathType& updPath() {
         return dynamic_cast<PathType&>(upd_path());
     }
     template <typename PathType>
     const PathType& getPath() const {
-        return dynamic_cast<PathType&>(get_path());
+        return dynamic_cast<const PathType&>(get_path());
     }
-    bool hasPath() const override { return true;};
+
+    template <typename PathType>
+    PathType* tryUpdPath() {
+        return dynamic_cast<PathType*>(&upd_path());
+    }
+    template <typename PathType>
+    const PathType* tryGetPath() const {
+        return dynamic_cast<const PathType*>(&get_path());
+    }
+
+    GeometryPath& updGeometryPath() {
+        return updPath<GeometryPath>();
+    }
+    const GeometryPath& getGeometryPath() const {
+        return getPath<GeometryPath>();
+    }
 
     /// Initialize the path of the PathActuator with a GeometryPath. This
     /// returns a reference to the newly created GeometryPath, which you can

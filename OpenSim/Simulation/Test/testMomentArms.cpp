@@ -152,9 +152,8 @@ void testMomentArmsAcrossCompoundJoint()
     model.addComponent(hip);
 
     Thelen2003Muscle* musc = new Thelen2003Muscle("muscle", 10., 0.1, 0.2, 0.);
-    auto& path = musc->updPath<GeometryPath>();
-    path.appendNewPathPoint("p1", model.updGround(), SimTK::Vec3(0.05, 0, 0));
-    path.appendNewPathPoint("p2", *leg, SimTK::Vec3(0.05, 0.25, 0.01));
+    musc->addNewPathPoint("p1", model.updGround(), SimTK::Vec3(0.05, 0, 0));
+    musc->addNewPathPoint("p2", *leg, SimTK::Vec3(0.05, 0.25, 0.01));
     model.addForce(musc);
 
     SimTK::State& s = model.initSystem();
@@ -253,7 +252,7 @@ SimTK::Vector computeGenForceScaling(const Model &osimModel, const SimTK::State 
                 && (ac.getJoint().getName() != "tib_pat_r") ){
             MobilizedBodyIndex modbodIndex = ac.getBodyIndex();
             const MobilizedBody& mobod = osimModel.getMatterSubsystem().getMobilizedBody(modbodIndex);
-            SpatialVec Hcol = mobod.getHCol(s, SimTK::MobilizerUIndex(0)); //ac.getMobilizerQIndex())); // get n�th column of H
+            SpatialVec Hcol = mobod.getHCol(s, SimTK::MobilizerUIndex(0)); //ac.getMobilizerQIndex())); // get nth column of H
 
             /*double thetaScale = */Hcol[0].norm(); // magnitude of the rotational part of this column of H
             
@@ -350,9 +349,8 @@ void testMomentArmDefinitionForModel(const string &filename, const string &coord
 
         //cout << "muscle  force: " << muscle.getForce(s) << endl;
         //double ma = muscle.computeMomentArm(s, coord);
-        const auto& path = dynamic_cast<const GeometryPath&>(muscle.updPath());
-        double ma = maSolver.solve(s, coord, path);
-        double ma_dldtheta = computeMomentArmFromDefinition(s, path, coord);
+        double ma = maSolver.solve(s, coord, muscle.getGeometryPath());
+        double ma_dldtheta = computeMomentArmFromDefinition(s, muscle.getGeometryPath(), coord);
 
         cout << "r's = " << ma << "::" << ma_dldtheta <<"  at q = " << coord.getValue(s)*180/Pi; 
 
