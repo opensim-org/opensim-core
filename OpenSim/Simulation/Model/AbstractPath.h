@@ -70,7 +70,7 @@ public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-    OpenSim_DECLARE_PROPERTY(appearance, Appearance,
+    OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance,
             "Default appearance attributes for this AbstractPath.");
 
 //=============================================================================

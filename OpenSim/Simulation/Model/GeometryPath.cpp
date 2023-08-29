@@ -191,7 +191,7 @@ void GeometryPath::extendConnectToModel(Model& aModel)
 
     // We consider this cache entry valid any time after it has been created
     // and first marked valid, and we won't ever invalidate it.
-    this->_colorCV = addCacheVariable("color", get_appearance().get_color(), SimTK::Stage::Topology);
+    this->_colorCV = addCacheVariable("color", get_Appearance().get_color(), SimTK::Stage::Topology);
 }
 
  void GeometryPath::extendInitStateFromProperties(SimTK::State& s) const

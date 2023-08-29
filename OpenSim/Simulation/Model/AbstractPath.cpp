@@ -31,7 +31,7 @@ AbstractPath::AbstractPath() : ModelComponent() {
 
     Appearance appearance;
     appearance.set_color(SimTK::Gray);
-    constructProperty_appearance(appearance);
+    constructProperty_Appearance(appearance);
 }
 
 AbstractPath::AbstractPath(AbstractPath const&) = default;
@@ -43,21 +43,21 @@ AbstractPath& AbstractPath::operator=(const AbstractPath&) = default;
 // DEFAULTED METHODS
 const SimTK::Vec3& AbstractPath::getDefaultColor() const
 {
-    return get_appearance().get_color();
+    return get_Appearance().get_color();
 }
 
 void AbstractPath::setDefaultColor(const SimTK::Vec3& color)
 {
-    updProperty_appearance().setValueIsDefault(false);
-    upd_appearance().set_color(color);
+    updProperty_Appearance().setValueIsDefault(false);
+    upd_Appearance().set_color(color);
 }
 
-double OpenSim::AbstractPath::getPreScaleLength(const SimTK::State&) const
+double AbstractPath::getPreScaleLength(const SimTK::State&) const
 {
     return _preScaleLength;
 }
 
-void OpenSim::AbstractPath::setPreScaleLength(const SimTK::State&,
+void AbstractPath::setPreScaleLength(const SimTK::State&,
         double preScaleLength)
 {
     _preScaleLength = preScaleLength;
