@@ -40,11 +40,10 @@ namespace CasOC {
 ///
 /// Control approximation.
 /// ----------------------
-/// In [1, 2], the control is approximated using of basis of Lagrange polynomials
-/// similar to the state approximation. Here, we opt for the implementation used
-/// in [3], which linearly interpolates the control between mesh and collocation
-/// points, due to its simplicity and ease of implementation within the existing
-/// CasOCTranscription framework.
+/// We have implemented the approach used in [3], where control values are
+/// linearly interpolated between mesh and collocation points, due to its
+/// simplicity and ease of implementation within the existing CasOCTranscription
+/// framework.
 ///
 /// Kinematic constraints and path constraints.
 /// -------------------------------------------
