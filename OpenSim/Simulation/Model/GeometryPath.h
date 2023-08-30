@@ -69,9 +69,6 @@ private:
     OpenSim_DECLARE_UNNAMED_PROPERTY(PathWrapSet,
         "The wrap objects that are associated with this path");
 
-    // used for scaling tendon and fiber lengths
-    double _preScaleLength;
-
     // Solver used to compute moment-arms. The GeometryPath owns this object,
     // but we cannot simply use a unique_ptr because we want the pointer to be
     // cleared on copy.
@@ -143,8 +140,6 @@ public:
 
     double getLength( const SimTK::State& s) const;
     void setLength( const SimTK::State& s, double length) const;
-    double getPreScaleLength( const SimTK::State& s) const;
-    void setPreScaleLength( const SimTK::State& s, double preScaleLength);
     const Array<AbstractPathPoint*>& getCurrentPath( const SimTK::State& s) const;
 
     double getLengtheningSpeed(const SimTK::State& s) const;
@@ -163,7 +158,7 @@ public:
     @param[in,out] mobilityForces  Vector of generalized forces, one per mobility   
     */
     void addInEquivalentForces(const SimTK::State& state,
-                               double tension,
+                               const double& tension,
                                SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                                SimTK::Vector& mobilityForces) const override;
 

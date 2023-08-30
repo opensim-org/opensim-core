@@ -323,6 +323,54 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                 framesNode->getParentElement().eraseNode(framesNode);
             }
         }
+        if (versionNumber < 40500) {
+            // In version 40500, the XML syntax for components that own 
+            // GeometryPath objects (PathActuator, PathSpring, Ligament,
+            // and Blankevoort1991Ligament) changed: the 'GeometryPath` unnamed
+            // property was replaced with the named property 'path', which is of
+            // type 'AbstractPath'. Since 'path' is still a one object property,
+            // the property will still be serialized using the concrete type
+            // (e.g., 'GeometryPath') and with name attribute set to 'path'.
+            // Therefore, we can simply update the name attribute of any
+            // existing 'GeometryPath' nodes to 'path'.
+            
+            // Components that own paths can be in the model's ForceSet or
+            // the components list.
+            SimTK::Xml::element_iterator forceSetNode =
+                aNode.element_begin("ForceSet");
+            SimTK::Xml::element_iterator componentsNode =
+                    aNode.element_begin("components");
+            
+            // Loop through the ForceSet and update any GeometryPath nodes.
+            if (forceSetNode != aNode.element_end()) {
+                SimTK::Xml::element_iterator objects_node =
+                        forceSetNode->element_begin("objects");
+                SimTK::Xml::element_iterator forceIter =
+                        objects_node->element_begin();
+                for (; forceIter != objects_node->element_end(); ++forceIter) {
+                    SimTK::Xml::element_iterator geometryPathNode =
+                            forceIter->element_begin("GeometryPath");
+                    if (geometryPathNode != forceIter->element_end()) {
+                        geometryPathNode->setAttributeValue("name", "path");
+                    }
+                }
+            }
+            
+            // Loop through the components list and update any GeometryPath 
+            // nodes.
+            if (componentsNode != aNode.element_end()) {
+                SimTK::Xml::element_iterator forceIter =
+                        componentsNode->element_begin();
+                for (; forceIter != componentsNode->element_end(); ++forceIter) {
+                    SimTK::Xml::element_iterator geometryPathNode =
+                            forceIter->element_begin("GeometryPath");
+                    if (geometryPathNode != forceIter->element_end()) {
+                        geometryPathNode->setAttributeValue("name", "path");
+                    }
+                }
+            }
+            
+        }
     }
      // Call base class now assuming _node has been corrected for current version
      Super::updateFromXMLNode(aNode, versionNumber);

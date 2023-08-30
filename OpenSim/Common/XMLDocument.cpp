@@ -66,8 +66,10 @@ using namespace std;
 // 30516 for GeometryPath default_color -> Appearance
 // 30517 for removal of _connectee_name suffix to shorten XML for socket, input
 // 40000 for OpenSim 4.0 release 40000
+// 40500 for OpenSim 4.5 release, moving 'GeometryPath' nodes under the 'path' 
+//       node for supporting generic path types.
 
-const int XMLDocument::LatestVersion = 40000;
+const int XMLDocument::LatestVersion = 40500;
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTOR(S)
 //=============================================================================

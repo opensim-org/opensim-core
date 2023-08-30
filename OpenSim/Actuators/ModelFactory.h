@@ -60,7 +60,7 @@ public:
     /// @name Modify a Model
     /// @{
 
-    /// Replace muscles in a model with a PathActuator of the same GeometryPath,
+    /// Replace muscles in a model with a PathActuator of the same path,
     /// optimal force, and min/max control defaults.
     /// @note This only replaces muscles within the model's ForceSet.
     static void replaceMusclesWithPathActuators(Model& model);
