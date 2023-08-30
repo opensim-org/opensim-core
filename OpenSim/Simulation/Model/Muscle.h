@@ -430,7 +430,7 @@ protected:
 
     /** Potential energy stored by the muscle */
     double computePotentialEnergy(const SimTK::State& state) const override;
-    
+
     /** Override PathActuator virtual to calculate a preferred color for the 
     muscle path based on activation. **/
     SimTK::Vec3 computePathColor(const SimTK::State& state) const override;
@@ -440,7 +440,7 @@ protected:
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     void extendSetPropertiesFromState(const SimTK::State &s) override;
     void extendInitStateFromProperties(SimTK::State& state) const override;
-
+    
     // Update the display geometry attached to the muscle
     virtual void updateGeometry(const SimTK::State& s);
     // End of Interfaces imposed by parent classes.

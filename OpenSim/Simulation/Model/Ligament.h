@@ -74,7 +74,7 @@ public:
     //--------------------------------------------------------------------------
     // PATH
     //--------------------------------------------------------------------------
-    bool hasPath() const override { return true;};
+    bool hasPath() const override { return true; };
 
     AbstractPath& updPath() { return upd_path(); }
     const AbstractPath& getPath() const { return get_path(); }

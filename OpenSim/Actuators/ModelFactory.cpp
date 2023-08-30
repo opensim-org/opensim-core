@@ -173,8 +173,7 @@ void ModelFactory::replaceMusclesWithPathActuators(OpenSim::Model &model) {
         model.addForce(actu);
 
         // Copy the muscle's path.
-        AbstractPath& path = musc.updPath();
-        if (auto* pGeometryPath = dynamic_cast<GeometryPath*>(&path)) {
+        if (auto* pGeometryPath = musc.tryUpdPath<GeometryPath>()) {
             GeometryPath& thisGeometryPath = actu->initGeometryPath();
 
             // For the connectee names in the PathPoints to be correct, we must

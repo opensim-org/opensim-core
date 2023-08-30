@@ -452,7 +452,7 @@ namespace {
         // Trigger computing the wrapping path (realizing the state will not).
         model.getComponent<PathSpring>("spring").getLength(state);
         const WrapResult wrapResult = model.getComponent<PathSpring>("spring")
-                .getPath<GeometryPath>()
+                .getGeometryPath()
                 .getWrapSet()
                 .get("pathwrap")
                 .getPreviousWrap();

@@ -77,10 +77,13 @@ public:
 // METHODS
 //=============================================================================
     AbstractPath();
-    AbstractPath(const AbstractPath&);
     ~AbstractPath() noexcept;
-
+    
+    AbstractPath(const AbstractPath&);
     AbstractPath& operator=(const AbstractPath&);
+    
+    AbstractPath(AbstractPath&& other) noexcept;
+    AbstractPath& operator=(AbstractPath&& other) noexcept;
 
     // INTERFACE METHODS
     //
