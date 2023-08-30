@@ -174,8 +174,6 @@ void ModelFactory::replaceMusclesWithPathActuators(OpenSim::Model &model) {
 
         // Copy the muscle's path.
         if (auto* pGeometryPath = musc.tryUpdPath<GeometryPath>()) {
-            GeometryPath& thisGeometryPath = actu->initGeometryPath();
-
             // For the connectee names in the PathPoints to be correct, we must
             // add the path points after adding the PathActuator to the model.
             const auto& pathPointSet = pGeometryPath->getPathPointSet();
@@ -188,7 +186,8 @@ void ModelFactory::replaceMusclesWithPathActuators(OpenSim::Model &model) {
                                              .getSocket(socketName)
                                              .getConnecteeAsObject());
                 }
-                thisGeometryPath.updPathPointSet().adoptAndAppend(pathPoint);
+                actu->updGeometryPath().updPathPointSet()
+                        .adoptAndAppend(pathPoint);
             }
 
             // For the connectee names in the PathWraps to be correct, we must
@@ -203,8 +202,14 @@ void ModelFactory::replaceMusclesWithPathActuators(OpenSim::Model &model) {
                                              .getSocket(socketName)
                                              .getConnecteeAsObject());
                 }
-                thisGeometryPath.updWrapSet().adoptAndAppend(pathWrap);
+                actu->updGeometryPath().updWrapSet()
+                        .adoptAndAppend(pathWrap);
             }
+        } else {
+            OPENSIM_THROW(Exception,
+                    "Muscle '{}' contains supported path type {}.",
+                    musc.getName(), 
+                    musc.getPath().getConcreteClassName())
         }
 
         musclesToDelete.push_back(&musc);

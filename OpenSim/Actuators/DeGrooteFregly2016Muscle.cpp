@@ -1023,10 +1023,7 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
                 muscBase.get_ignore_activation_dynamics());
 
         // Copy the muscle's path.
-        AbstractPath& path = muscBase.updPath();
-        if (auto* pGeometryPath = dynamic_cast<GeometryPath*>(&path)) {
-            auto& thisGeometryPath = actu->initGeometryPath();
-
+        if (auto* pGeometryPath = muscBase.tryUpdPath<GeometryPath>()) {
             const auto& pathPointSet = pGeometryPath->getPathPointSet();
             for (int ipp = 0; ipp < pathPointSet.getSize(); ++ipp) {
                 auto* pathPoint = pathPointSet.get(ipp).clone();
@@ -1037,7 +1034,8 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
                                              .getSocket(socketName)
                                              .getConnecteeAsObject());
                 }
-                thisGeometryPath.updPathPointSet().adoptAndAppend(pathPoint);
+                actu->updGeometryPath().updPathPointSet()
+                        .adoptAndAppend(pathPoint);
             }
 
             const auto& pathWrapSet = pGeometryPath->getWrapSet();
@@ -1050,8 +1048,14 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
                                              .getSocket(socketName)
                                              .getConnecteeAsObject());
                 }
-                thisGeometryPath.updWrapSet().adoptAndAppend(pathWrap);
+                actu->updGeometryPath().updWrapSet()
+                        .adoptAndAppend(pathWrap);
             }
+        } else {
+            OPENSIM_THROW(Exception,
+                    "Muscle '{}' contains supported path type {}.",
+                    muscBase.getName(), 
+                    muscBase.getPath().getConcreteClassName())
         }
 
         std::string actname = actu->getName();
