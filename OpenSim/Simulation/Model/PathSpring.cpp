@@ -94,15 +94,6 @@ void PathSpring::setDissipation(double dissipation)
 }
 
 //_____________________________________________________________________________
-/*
- * Initialize a GeometryPath.
- */
-GeometryPath& PathSpring::initGeometryPath() {
-    set_path(GeometryPath());
-    return updPath<GeometryPath>();
-}
-
-//_____________________________________________________________________________
 /**
  * Perform some setup functions that happen after the
  * PathSpring has been deserialized or copied.

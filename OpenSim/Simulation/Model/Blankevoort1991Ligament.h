@@ -265,12 +265,7 @@ public:
     const GeometryPath& getGeometryPath() const {
         return getPath<GeometryPath>();
     }
-
-    /// Initialize the path of the PathActuator with a GeometryPath. This
-    /// returns a reference to the newly created GeometryPath, which you can
-    /// then edit. This deletes the previous path if one exists.
-    GeometryPath& initGeometryPath();
-
+    
     //-------------------------------------------------------------------------
     // SET
     //-------------------------------------------------------------------------

@@ -48,13 +48,6 @@ Ligament::Ligament()
 }
 
 //_____________________________________________________________________________
-// Initialize a GeometryPath.
-GeometryPath& Ligament::initGeometryPath() {
-    set_path(GeometryPath());
-    return updPath<GeometryPath>();
-}
-
-//_____________________________________________________________________________
 /*
  * Construct and initialize the properties for the ligament.
  * 

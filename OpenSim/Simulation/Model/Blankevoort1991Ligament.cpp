@@ -61,11 +61,6 @@ Blankevoort1991Ligament::Blankevoort1991Ligament(
     set_slack_length(slack_length);
 }
 
-GeometryPath& Blankevoort1991Ligament::initGeometryPath() {
-    set_path(GeometryPath());
-    return updPath<GeometryPath>();
-}
-
 void Blankevoort1991Ligament::setNull()
 {
     setAuthors("Colin Smith");
