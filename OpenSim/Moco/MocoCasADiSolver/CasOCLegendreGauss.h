@@ -40,10 +40,10 @@ namespace CasOC {
 ///
 /// Control approximation.
 /// ----------------------
-/// We have implemented the approach used in [3], where control values are
-/// linearly interpolated between mesh and collocation points, due to its
-/// simplicity and ease of implementation within the existing CasOCTranscription
-/// framework.
+/// We use the control approximation strategy from Bordalba et al. [3], where
+/// control values are linearly interpolated between mesh and collocation points,
+/// due to its simplicity and ease of implementation within the existing
+/// CasOCTranscription framework.
 ///
 /// Kinematic constraints and path constraints.
 /// -------------------------------------------
@@ -61,7 +61,7 @@ namespace CasOC {
 ///     Astronautics, 2007.
 /// [3] Bordalba, Ricard, Tobias Schoels, Lluís Ros, Josep M. Porta, and
 ///     Moritz Diehl. "Direct collocation methods for trajectory optimization
-///     in constrained robotic systems." IEEE Transactions on Robotics (2022).
+///     in constrained robotic systems." IEEE Transactions on Robotics (2023).
 ///
 class LegendreGauss : public Transcription {
 public:
