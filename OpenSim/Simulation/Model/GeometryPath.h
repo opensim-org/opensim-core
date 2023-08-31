@@ -25,8 +25,6 @@
 
 
 // INCLUDE
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include "OpenSim/Simulation/Model/ModelComponent.h"
 #include "OpenSim/Simulation/Model/AbstractPath.h"
 #include "PathPointSet.h"
 #include <OpenSim/Simulation/Wrap/PathWrapSet.h>
@@ -80,12 +78,11 @@ private:
 
     mutable CacheVariable<double> _lengthCV;
     mutable CacheVariable<double> _speedCV;
-    mutable CacheVariable<SimTK::Vec3> _colorCV;
-
 public:
     class PathElementLookup;
 private:
     mutable CacheVariable<std::vector<PathElementLookup>> _currentPathCV;
+    mutable CacheVariable<SimTK::Vec3> _colorCV;
 
 //=============================================================================
 // METHODS
