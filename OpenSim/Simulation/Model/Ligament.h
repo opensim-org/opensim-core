@@ -55,6 +55,8 @@ public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
+    OpenSim_DECLARE_PROPERTY(path, AbstractPath,
+        "The path defines the length and lengthening speed of the PathSpring");
     OpenSim_DECLARE_PROPERTY(resting_length, double,
         "resting length of the ligament");
     OpenSim_DECLARE_PROPERTY(pcsa_force, double,
@@ -187,10 +189,6 @@ protected:
         values.append(getTension(state));
         return values;
     }
-
-    OpenSim_DECLARE_PROPERTY(path, AbstractPath,
-            "The path defines the length and lengthening speed of the "
-            "PathSpring");
 
 private:
     void constructProperties();

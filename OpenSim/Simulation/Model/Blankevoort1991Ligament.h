@@ -177,7 +177,9 @@ public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-
+    
+    OpenSim_DECLARE_PROPERTY(path, AbstractPath,
+        "The path defines the length and lengthening speed of the ligament.")
     OpenSim_DECLARE_PROPERTY(linear_stiffness, double,
         "The slope of the linear region of the force-strain curve. " 
         "Units of force/strain (N).")
@@ -348,10 +350,7 @@ public:
             const SimTK::State& state) const override;
 
 protected:
-    OpenSim_DECLARE_PROPERTY(path, AbstractPath,
-            "The path defines the length and lengthening speed of the "
-            "ligament.")
-
+    
     void extendFinalizeFromProperties() override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 

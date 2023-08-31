@@ -63,6 +63,8 @@ public:
         "The linear stiffness (N/m) of the PathSpring");
     OpenSim_DECLARE_PROPERTY(dissipation, double,
         "The dissipation factor (s/m) of the PathSpring");
+    OpenSim_DECLARE_PROPERTY(path, AbstractPath,
+        "The path defines the length and lengthening speed of the PathSpring");
 
 //=============================================================================
 // OUTPUTS
@@ -206,11 +208,6 @@ protected:
         values.append(getTension(state));
         return values;
     }
-
-protected:
-    OpenSim_DECLARE_PROPERTY(path, AbstractPath,
-            "The path defines the length and lengthening speed of the "
-            "PathSpring");
 
 private:
     void constructProperties();

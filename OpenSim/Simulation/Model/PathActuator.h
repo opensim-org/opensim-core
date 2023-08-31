@@ -49,6 +49,8 @@ public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
+    OpenSim_DECLARE_PROPERTY(path, AbstractPath,
+        "The path of the actuator which defines length and lengthening speed.");
     OpenSim_DECLARE_PROPERTY(optimal_force, double,
         "The maximum force this actuator can produce.");
 
@@ -158,11 +160,6 @@ protected:
 
     /** Extension of parent class method; derived classes may extend further. **/
     void extendRealizeDynamics(const SimTK::State& state) const override;
-
-protected:
-    OpenSim_DECLARE_PROPERTY(path, AbstractPath,
-            "The path of the actuator which defines length and lengthening "
-            "speed.");
 
 private:
     void setNull();
