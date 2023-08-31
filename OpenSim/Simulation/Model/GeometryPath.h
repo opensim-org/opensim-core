@@ -161,8 +161,15 @@ public:
                                const double& tension,
                                SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                                SimTK::Vector& mobilityForces) const override;
-
-
+    
+    /** Copy the PathPoint%s and PathWrap%s of the source path into this path's
+     * PathPointSet and PathWrapSet, respectively. 
+     * @note This *appends* PathPoint%s and PathWrap%s to this path's 
+     * properties. If you wish to overwrite the path entirely, clear the 
+     * PathPointSet and PathWrapSet first.
+     */
+    void copyFrom(const AbstractPath& source) override;
+    
     //--------------------------------------------------------------------------
     // COMPUTATIONS
     //--------------------------------------------------------------------------

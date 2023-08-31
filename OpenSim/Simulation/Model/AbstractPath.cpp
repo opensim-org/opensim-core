@@ -40,9 +40,9 @@ AbstractPath::~AbstractPath() noexcept = default;
 
 AbstractPath& AbstractPath::operator=(const AbstractPath&) = default;
 
-AbstractPath::AbstractPath(AbstractPath&& other) noexcept = default;
+AbstractPath::AbstractPath(AbstractPath&& other) = default;
 
-AbstractPath& AbstractPath::operator=(AbstractPath&& other) noexcept = default;
+AbstractPath& AbstractPath::operator=(AbstractPath&& other) = default;
 
 // DEFAULTED METHODS
 const SimTK::Vec3& AbstractPath::getDefaultColor() const

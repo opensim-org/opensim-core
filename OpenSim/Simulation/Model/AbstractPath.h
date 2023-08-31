@@ -82,8 +82,8 @@ public:
     AbstractPath(const AbstractPath&);
     AbstractPath& operator=(const AbstractPath&);
     
-    AbstractPath(AbstractPath&& other) noexcept;
-    AbstractPath& operator=(AbstractPath&& other) noexcept;
+    AbstractPath(AbstractPath&& other);
+    AbstractPath& operator=(AbstractPath&& other);
 
     // INTERFACE METHODS
     //
@@ -158,11 +158,20 @@ public:
      */
     virtual double computeMomentArm(const SimTK::State& s,
             const Coordinate& aCoord) const = 0;
+    
+    /**
+     * Copy the properties of the source path into this path.
+     * 
+     * Concrete implementations (e.g., `GeometryPath`) may use a variety of 
+     * properties to define the path length and lengthening speed and therefore 
+     * must provide a relevant implementation.
+     */
+    virtual void copyFrom(const AbstractPath& source) = 0;
 
     // DEFAULTED METHODS
     //
-    // These are non-deprecated methods that for which AbstractPath provides a
-    // default implementation.
+    // These are methods that for which AbstractPath provides default 
+    // implementation.
 
     /**
      * Get the default color of the path.
@@ -198,7 +207,7 @@ public:
      */
     double getPreScaleLength(const SimTK::State& s) const;
     void setPreScaleLength(const SimTK::State& s, double preScaleLength);
-
+    
 private:
     // Used by `(get|set)PreLengthScale`. Used during `extend(Pre|Post)Scale` by
     // downstream users of AbstractPath to cache the length of the path before

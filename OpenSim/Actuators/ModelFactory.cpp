@@ -159,58 +159,20 @@ void ModelFactory::replaceMusclesWithPathActuators(OpenSim::Model &model) {
 
     // Create path actuators from muscle properties and add to the model. Save
     // a list of pointers of the muscles to delete.
+    model.finalizeConnections();
     std::vector<Muscle*> musclesToDelete;
     auto& muscleSet = model.updMuscles();
     for (int im = 0; im < muscleSet.getSize(); ++im) {
         auto& musc = muscleSet.get(im);
-        auto* actu = new PathActuator();
+        auto actu = OpenSim::make_unique<PathActuator>();
         actu->setName(musc.getName());
         musc.setName(musc.getName() + "_delete");
+        actu->set_appliesForce(musc.get_appliesForce());
         actu->setOptimalForce(musc.getMaxIsometricForce());
         actu->setMinControl(musc.getMinControl());
         actu->setMaxControl(musc.getMaxControl());
-
-        model.addForce(actu);
-
-        // Copy the muscle's path.
-        if (auto* pGeometryPath = musc.tryUpdPath<GeometryPath>()) {
-            // For the connectee names in the PathPoints to be correct, we must
-            // add the path points after adding the PathActuator to the model.
-            const auto& pathPointSet = pGeometryPath->getPathPointSet();
-            for (int ip = 0; ip < pathPointSet.getSize(); ++ip) {
-                auto* pathPoint = pathPointSet.get(ip).clone();
-                const auto& socketNames = pathPoint->getSocketNames();
-                for (const auto& socketName : socketNames) {
-                    pathPoint->updSocket(socketName)
-                            .connect(pathPointSet.get(ip)
-                                             .getSocket(socketName)
-                                             .getConnecteeAsObject());
-                }
-                actu->updGeometryPath().updPathPointSet()
-                        .adoptAndAppend(pathPoint);
-            }
-
-            // For the connectee names in the PathWraps to be correct, we must
-            // add the path wraps after adding the PathActuator to the model.
-            const auto& pathWrapSet = pGeometryPath->getWrapSet();
-            for (int ipw = 0; ipw < pathWrapSet.getSize(); ++ipw) {
-                auto* pathWrap = pathWrapSet.get(ipw).clone();
-                const auto& socketNames = pathWrap->getSocketNames();
-                for (const auto& socketName : socketNames) {
-                    pathWrap->updSocket(socketName)
-                            .connect(pathWrapSet.get(ipw)
-                                             .getSocket(socketName)
-                                             .getConnecteeAsObject());
-                }
-                actu->updGeometryPath().updWrapSet()
-                        .adoptAndAppend(pathWrap);
-            }
-        } else {
-            OPENSIM_THROW(Exception,
-                    "Muscle '{}' contains supported path type {}.",
-                    musc.getName(), 
-                    musc.getPath().getConcreteClassName())
-        }
+        actu->updPath().copyFrom(musc.getPath());
+        model.addForce(actu.release());
 
         musclesToDelete.push_back(&musc);
     }

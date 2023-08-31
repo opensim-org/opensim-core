@@ -1021,44 +1021,7 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
                 muscBase.get_ignore_tendon_compliance());
         actu->set_ignore_activation_dynamics(
                 muscBase.get_ignore_activation_dynamics());
-
-        // Copy the muscle's path.
-        if (auto* pGeometryPath = muscBase.tryUpdPath<GeometryPath>()) {
-            const auto& pathPointSet = pGeometryPath->getPathPointSet();
-            for (int ipp = 0; ipp < pathPointSet.getSize(); ++ipp) {
-                auto* pathPoint = pathPointSet.get(ipp).clone();
-                const auto& socketNames = pathPoint->getSocketNames();
-                for (const auto& socketName : socketNames) {
-                    pathPoint->updSocket(socketName)
-                            .connect(pathPointSet.get(ipp)
-                                             .getSocket(socketName)
-                                             .getConnecteeAsObject());
-                }
-                actu->updGeometryPath().updPathPointSet()
-                        .adoptAndAppend(pathPoint);
-            }
-
-            const auto& pathWrapSet = pGeometryPath->getWrapSet();
-            for (int ipw = 0; ipw < pathWrapSet.getSize(); ++ipw) {
-                auto* pathWrap = pathWrapSet.get(ipw).clone();
-                const auto& socketNames = pathWrap->getSocketNames();
-                for (const auto& socketName : socketNames) {
-                    pathWrap->updSocket(socketName)
-                            .connect(pathWrapSet.get(ipw)
-                                             .getSocket(socketName)
-                                             .getConnecteeAsObject());
-                }
-                actu->updGeometryPath().updWrapSet()
-                        .adoptAndAppend(pathWrap);
-            }
-        } else {
-            OPENSIM_THROW(Exception,
-                    "Muscle '{}' contains supported path type {}.",
-                    muscBase.getName(), 
-                    muscBase.getPath().getConcreteClassName())
-        }
-
-        std::string actname = actu->getName();
+        actu->updPath().copyFrom(muscBase.getPath());
         model.addForce(actu.release());
 
         musclesToDelete.push_back(&muscBase);
