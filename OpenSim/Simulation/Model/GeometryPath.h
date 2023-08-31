@@ -158,7 +158,7 @@ public:
     @param[in,out] mobilityForces  Vector of generalized forces, one per mobility   
     */
     void addInEquivalentForces(const SimTK::State& state,
-                               const double& tension,
+                               const double& tension, 
                                SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                                SimTK::Vector& mobilityForces) const override;
     

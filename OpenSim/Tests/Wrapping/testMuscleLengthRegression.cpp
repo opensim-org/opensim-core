@@ -40,8 +40,8 @@ namespace {
             SimTK::RowVector lengthsRow(muscleSet.getSize());
             for (int imuscle = 0; imuscle < muscleSet.getSize(); ++imuscle) {
                 const auto& muscle = muscleSet.get(imuscle);
-                const auto& path = muscle.getPath();
-                lengthsRow[imuscle] = path.getLength(state);
+                const auto& geometryPath = muscle.getGeometryPath();
+                lengthsRow[imuscle] = geometryPath.getLength(state);
             }
             lengths.appendRow(state.getTime(), lengthsRow);
         }

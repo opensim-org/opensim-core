@@ -26,7 +26,6 @@
 //=============================================================================
 #include "PathWrap.h"
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/GeometryPath.h>
 
 //=============================================================================
 // STATICS

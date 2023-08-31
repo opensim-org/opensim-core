@@ -350,7 +350,7 @@ public:
             const SimTK::State& state) const override;
 
 protected:
-    
+
     void extendFinalizeFromProperties() override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
 
