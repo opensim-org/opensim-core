@@ -177,7 +177,7 @@ public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-    
+
     OpenSim_DECLARE_PROPERTY(path, AbstractPath,
         "The path defines the length and lengthening speed of the ligament.")
     OpenSim_DECLARE_PROPERTY(linear_stiffness, double,

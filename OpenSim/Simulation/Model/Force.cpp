@@ -78,6 +78,22 @@ Force::updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber) {
                 elem.setValue(SimTK::String(!isDisabled));
             }
         }
+        if (versionNumber < 40500) {
+            // In version 40500, the XML syntax for components that own 
+            // GeometryPath objects (PathActuator, PathSpring, Ligament,
+            // and Blankevoort1991Ligament) changed: the 'GeometryPath` unnamed
+            // property was replaced with the named property 'path', which is of
+            // type 'AbstractPath'. Since 'path' is still a one object property,
+            // the property will still be serialized using the concrete type
+            // (e.g., 'GeometryPath') and with name attribute set to 'path'.
+            // Therefore, we can simply update the name attribute of any
+            // existing 'GeometryPath' nodes to 'path'.
+            SimTK::Xml::element_iterator geometryPathNode =
+                    node.element_begin("GeometryPath");
+            if (geometryPathNode != node.element_end()) {
+                geometryPathNode->setAttributeValue("name", "path");
+            }
+        }
     }
 
     Super::updateFromXMLNode(node, versionNumber);
