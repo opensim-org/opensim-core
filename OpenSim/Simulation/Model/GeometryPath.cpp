@@ -382,7 +382,7 @@ getPointForceDirections(const SimTK::State& s,
 /* add in the equivalent spatial forces on bodies for an applied tension 
     along the GeometryPath to a set of bodyForces */
 void GeometryPath::addInEquivalentForces(const SimTK::State& s,
-    const double& tension,
+    const double& tension, 
     SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
     SimTK::Vector& mobilityForces) const
 {

@@ -83,7 +83,7 @@ public:
 private:
     mutable CacheVariable<std::vector<PathElementLookup>> _currentPathCV;
     mutable CacheVariable<SimTK::Vec3> _colorCV;
-
+    
 //=============================================================================
 // METHODS
 //=============================================================================
