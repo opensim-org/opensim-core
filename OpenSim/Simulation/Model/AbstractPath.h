@@ -166,7 +166,15 @@ public:
      * properties to define the path length and lengthening speed and therefore 
      * must provide a relevant implementation.
      */
-    virtual void copyFrom(const AbstractPath& source) = 0;
+    virtual void assign(const AbstractPath& source) = 0;
+    
+    /**
+     * Return whether or not a path can be visualized.
+     * 
+     * Concrete implementations may be visualizable (e.g., `GeometryPath`) or
+     * they may not be and therefore must provide a relevant implementation. 
+     */
+    virtual bool isVisualPath() const = 0;
 
     // DEFAULTED METHODS
     //

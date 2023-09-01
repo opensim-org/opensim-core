@@ -171,7 +171,7 @@ void ModelFactory::replaceMusclesWithPathActuators(OpenSim::Model &model) {
         actu->setOptimalForce(musc.getMaxIsometricForce());
         actu->setMinControl(musc.getMinControl());
         actu->setMaxControl(musc.getMaxControl());
-        actu->updPath().copyFrom(musc.getPath());
+        actu->updPath().assign(musc.getPath());
         model.addForce(actu.release());
 
         musclesToDelete.push_back(&musc);

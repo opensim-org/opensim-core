@@ -165,7 +165,9 @@ public:
      * properties. If you wish to overwrite the path entirely, clear the 
      * PathPointSet and PathWrapSet first.
      */
-    void copyFrom(const AbstractPath& source) override;
+    void assign(const AbstractPath& source) override;
+    
+    bool isVisualPath() const override { return true; }
     
     //--------------------------------------------------------------------------
     // COMPUTATIONS

@@ -68,8 +68,6 @@ public:
     // GET AND SET
     //--------------------------------------------------------------------------
     // Path
-    bool hasPath() const override { return true; };
-
     AbstractPath& updPath() { return upd_path(); }
     const AbstractPath& getPath() const { return get_path(); }
 
@@ -98,6 +96,7 @@ public:
         return getPath<GeometryPath>();
     }
     
+    bool hasVisualPath() const override { return getPath().isVisualPath(); };
 
     // OPTIMAL FORCE
     void setOptimalForce(double aOptimalForce);

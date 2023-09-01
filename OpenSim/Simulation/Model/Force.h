@@ -99,14 +99,12 @@ public:
     getRecordValues(const SimTK::State& state) const {
         return OpenSim::Array<double>();
     };
-
-
-    /** Return a flag indicating whether the Force is applied along a Path. If
-    you override this method to return true for a specific subclass, it must
-    also implement the getPath() method. **/
-    virtual bool hasPath() const {
-        return getPropertyIndex("path").isValid();
-    };
+    
+    /** Return a flag indicating whether the Force is applied along a path that
+     * can be visualized. If you override this method to return true for a 
+     * specific subclass, it must also implement the getPath() method. 
+     */
+    virtual bool hasVisualPath() const { return false; }
 
 protected:
     /** Default constructor sets up Force-level properties; can only be

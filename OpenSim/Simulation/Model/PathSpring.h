@@ -119,8 +119,6 @@ public:
     void setDissipation(double dissipation);
 
     /** get/set the path object */
-    bool hasPath() const override { return true; };
-
     AbstractPath& updPath() { return upd_path(); }
     const AbstractPath& getPath() const { return get_path(); }
 
@@ -148,6 +146,8 @@ public:
     const GeometryPath& getGeometryPath() const {
         return getPath<GeometryPath>();
     }
+    
+    bool hasVisualPath() const override { return getPath().isVisualPath(); };
 
     //--------------------------------------------------------------------------
     //  <B> State dependent values </B>
