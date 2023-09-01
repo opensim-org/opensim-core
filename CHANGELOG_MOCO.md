@@ -1,6 +1,12 @@
 Moco Change Log
 ===============
 
+1.2.2
+-----
+- 2023-08-25: Added the pseudospectral transcription schemes 
+              `CasOCLegendreGauss` and `CasOCLegendreGaussRadau`, which are 
+              compatible with `MocoCasADiSolver`.
+
 1.2.1
 -----
 - 2023-03-21: Fixed a bug where failing `MocoProblem`s with path constraints returned
