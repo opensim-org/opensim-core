@@ -1020,7 +1020,7 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
                 muscBase.get_ignore_tendon_compliance());
         actu->set_ignore_activation_dynamics(
                 muscBase.get_ignore_activation_dynamics());
-        actu->updPath().assign(muscBase.getPath());
+        actu->updProperty_path().assign(muscBase.getProperty_path());
         model.addForce(actu.release());
 
         musclesToDelete.push_back(&muscBase);

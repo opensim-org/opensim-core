@@ -160,15 +160,6 @@ public:
             const Coordinate& aCoord) const = 0;
     
     /**
-     * Copy the properties of the source path into this path.
-     * 
-     * Concrete implementations (e.g., `GeometryPath`) may use a variety of 
-     * properties to define the path length and lengthening speed and therefore 
-     * must provide a relevant implementation.
-     */
-    virtual void assign(const AbstractPath& source) = 0;
-    
-    /**
      * Return whether or not a path can be visualized.
      * 
      * Concrete implementations may be visualizable (e.g., `GeometryPath`) or

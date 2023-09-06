@@ -501,43 +501,6 @@ void GeometryPath::addInEquivalentForces(const SimTK::State& s,
     }
 }
 
-void GeometryPath::assign(const OpenSim::AbstractPath& source) 
-{
-    const auto* src = dynamic_cast<const GeometryPath*>(&source);
-    if (!src) {
-        OPENSIM_THROW(Exception, "GeometryPath::copyFrom(): expected a "
-            "GeometryPath, but got a " + source.getConcreteClassName());
-    }
-    
-    // Copy the path points.
-    const auto& pathPointSet = src->getPathPointSet();
-    for (int ipp = 0; ipp < pathPointSet.getSize(); ++ipp) {
-        auto* pathPoint = pathPointSet.get(ipp).clone();
-        const auto& socketNames = pathPoint->getSocketNames();
-        for (const auto& socketName : socketNames) {
-            pathPoint->updSocket(socketName)
-                    .connect(pathPointSet.get(ipp)
-                                     .getSocket(socketName)
-                                     .getConnecteeAsObject());
-        }
-        this->updPathPointSet().adoptAndAppend(pathPoint);
-    }
-    
-    // Copy the wrap objects.
-    const auto& pathWrapSet = src->getWrapSet();
-    for (int ipw = 0; ipw < pathWrapSet.getSize(); ++ipw) {
-        auto* pathWrap = pathWrapSet.get(ipw).clone();
-        const auto& socketNames = pathWrap->getSocketNames();
-        for (const auto& socketName : socketNames) {
-            pathWrap->updSocket(socketName)
-                    .connect(pathWrapSet.get(ipw)
-                                     .getSocket(socketName)
-                                     .getConnecteeAsObject());
-        }
-        this->updWrapSet().adoptAndAppend(pathWrap);
-    }
-}
-
 //_____________________________________________________________________________
 /*
  * Update the geometric representation of the path.

@@ -171,7 +171,8 @@ void ModelFactory::replaceMusclesWithPathActuators(OpenSim::Model &model) {
         actu->setOptimalForce(musc.getMaxIsometricForce());
         actu->setMinControl(musc.getMinControl());
         actu->setMaxControl(musc.getMaxControl());
-        actu->updPath().assign(musc.getPath());
+        actu->updProperty_path().assign(musc.getProperty_path());
+        actu->upd_path().setDefaultColor({0.5, 0.5, 0.5});
         model.addForce(actu.release());
 
         musclesToDelete.push_back(&musc);
