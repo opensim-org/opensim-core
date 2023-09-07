@@ -24,6 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "Actuator.h"
+#include "AbstractPath.h"
 #include "GeometryPath.h"
 
 //=============================================================================
@@ -37,8 +38,8 @@ class Model;
 
 /**
  * This is the base class for actuators that apply controllable tension along 
- * a geometry path. %PathActuator has no states; the control is simply the 
- * tension to be applied along a geometry path (i.e. tensionable rope).
+ * a path. %PathActuator has no states; the control is simply the tension to be
+ * applied along a path (i.e. tensionable rope).
  *
  * @author Ajay Seth
  */
@@ -48,8 +49,8 @@ public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-    OpenSim_DECLARE_UNNAMED_PROPERTY(GeometryPath,
-        "The set of points defining the path of the actuator.");
+    OpenSim_DECLARE_PROPERTY(path, AbstractPath,
+        "The path of the actuator which defines length and lengthening speed.");
     OpenSim_DECLARE_PROPERTY(optimal_force, double,
         "The maximum force this actuator can produce.");
 
@@ -67,10 +68,35 @@ public:
     // GET AND SET
     //--------------------------------------------------------------------------
     // Path
-    GeometryPath& updGeometryPath() { return upd_GeometryPath(); }
-    const GeometryPath& getGeometryPath() const 
-    {   return get_GeometryPath(); }
-    bool hasGeometryPath() const override { return true;};
+    AbstractPath& updPath() { return upd_path(); }
+    const AbstractPath& getPath() const { return get_path(); }
+
+    template <typename PathType>
+    PathType& updPath() {
+        return dynamic_cast<PathType&>(upd_path());
+    }
+    template <typename PathType>
+    const PathType& getPath() const {
+        return dynamic_cast<const PathType&>(get_path());
+    }
+
+    template <typename PathType>
+    PathType* tryUpdPath() {
+        return dynamic_cast<PathType*>(&upd_path());
+    }
+    template <typename PathType>
+    const PathType* tryGetPath() const {
+        return dynamic_cast<const PathType*>(&get_path());
+    }
+
+    GeometryPath& updGeometryPath() {
+        return updPath<GeometryPath>();
+    }
+    const GeometryPath& getGeometryPath() const {
+        return getPath<GeometryPath>();
+    }
+    
+    bool hasVisualPath() const override { return getPath().isVisualPath(); };
 
     // OPTIMAL FORCE
     void setOptimalForce(double aOptimalForce);
@@ -90,8 +116,10 @@ public:
     double getStress( const SimTK::State& s ) const override;
 
     // Convenience method to add PathPoints
-     /** Note that this function does not maintain the State and so should be used only
-        before a valid State is created */
+    /** @note This function does not maintain the State and so should be used
+     * only before a valid State is created.
+     * @note Only valid if the `path` owned by this PathActuator supports
+     * PathPoint%s (e.g., GeometryPath). */
     void addNewPathPoint(const std::string& proposedName,
                          const PhysicalFrame& aBody,
                          const SimTK::Vec3& aPositionOnBody);

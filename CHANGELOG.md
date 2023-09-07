@@ -6,6 +6,14 @@ request related to the change, then we may provide the commit.
 
 This is not a comprehensive list of changes but rather a hand-curated collection of the more notable ones. For a comprehensive history, see the [OpenSim Core GitHub repo](https://github.com/opensim-org/opensim-core).
 
+v4.5
+====
+- Added `AbstractPath` which is a base class for `GeometryPath` and other path types (#3388). All path-based forces now 
+own the property `path` of type `AbstractPath` instead of the `GeometryPath` unnamed property. Getters and setters have 
+been added to these forces to provide access to concrete path types (e.g., `updPath<T>`). In `Ligament` and 
+`Blankevoort1991Ligament`, usages of `get_GeometryPath`, `upd_GeometryPath`, etc., need to be been updated to 
+`getGeometryPath`, `updGeometryPath`, etc., or a suitable alternative.    
+
 v4.4.1
 ======
 - IMU::calcGyroscopeSignal() now reports angular velocities in the IMU frame.

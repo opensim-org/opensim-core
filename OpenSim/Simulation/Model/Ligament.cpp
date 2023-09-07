@@ -25,7 +25,6 @@
 // INCLUDES
 //=============================================================================
 #include "Ligament.h"
-#include "GeometryPath.h"
 #include "PointForceDirection.h"
 #include <OpenSim/Common/SimmSpline.h>
 
@@ -63,7 +62,7 @@ Ligament::Ligament()
 void Ligament::constructProperties()
 {
     setAuthors("Peter Loan");
-    constructProperty_GeometryPath(GeometryPath());
+    constructProperty_path(GeometryPath());
     constructProperty_resting_length(0.0);
     constructProperty_pcsa_force(0.0);
 
@@ -84,8 +83,7 @@ void Ligament::extendFinalizeFromProperties()
     // Resting length must be greater than 0.0.
     assert(get_resting_length() > 0.0);
 
-    GeometryPath& path = upd_GeometryPath();
-    path.setDefaultColor(DefaultLigamentColor);
+    updPath().setDefaultColor(DefaultLigamentColor);
 }
 
 
@@ -99,7 +97,7 @@ void Ligament::extendRealizeDynamics(const SimTK::State& state) const {
     if(appliesForce(state)){
         const SimTK::Vec3 color = computePathColor(state);
         if (!color.isNaN())
-            getGeometryPath().setColor(state, color);
+            getPath().setColor(state, color);
     }
 }
 
@@ -145,7 +143,7 @@ SimTK::Vec3 Ligament::computePathColor(const SimTK::State& state) const {
  */
 double Ligament::getLength(const SimTK::State& s) const
 {
-    return getGeometryPath().getLength(s);
+    return getPath().getLength(s);
 }
 
 //_____________________________________________________________________________
@@ -193,13 +191,13 @@ void Ligament::extendPostScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
     Super::extendPostScale(s, scaleSet);
 
-    GeometryPath& path = upd_GeometryPath();
+    AbstractPath& path = updPath();
     if (path.getPreScaleLength(s) > 0.0)
     {
         double scaleFactor = path.getLength(s) / path.getPreScaleLength(s);
         upd_resting_length() *= scaleFactor;
 
-        // Clear the pre-scale length that was stored in the GeometryPath.
+        // Clear the pre-scale length that was stored in the path.
         path.setPreScaleLength(s, 0.0);
     }
 }
@@ -218,7 +216,7 @@ const double& Ligament::getTension(const SimTK::State& s) const
  */
 double Ligament::computeMomentArm(const SimTK::State& s, Coordinate& aCoord) const
 {
-    return getGeometryPath().computeMomentArm(s, aCoord);
+    return getPath().computeMomentArm(s, aCoord);
 }
 
 
@@ -227,30 +225,22 @@ void Ligament::computeForce(const SimTK::State& s,
                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
                               SimTK::Vector& generalizedForces) const
 {
-    const GeometryPath& path = getGeometryPath();
+    const auto& path = getPath();
     const double& restingLength = get_resting_length();
     const double& pcsaForce = get_pcsa_force();
 
-    double force = 0;
+    double tension = 0;
 
     if (path.getLength(s) <= restingLength){
-        setCacheVariableValue(s, _tensionCV, force);
+        setCacheVariableValue(s, _tensionCV, tension);
         return;
     }
     
     // evaluate normalized tendon force length curve
-    force = getForceLengthCurve().calcValue(
+    tension = getForceLengthCurve().calcValue(
         SimTK::Vector(1, path.getLength(s)/restingLength))* pcsaForce;
-    setCacheVariableValue(s, _tensionCV, force);
+    setCacheVariableValue(s, _tensionCV, tension);
 
-    OpenSim::Array<PointForceDirection*> PFDs;
-    path.getPointForceDirections(s, &PFDs);
-
-    for (int i=0; i < PFDs.getSize(); i++) {
-        applyForceToPoint(s, PFDs[i]->frame(), PFDs[i]->point(), 
-                          force*PFDs[i]->direction(), bodyForces);
-    }
-    for(int i=0; i < PFDs.getSize(); i++)
-        delete PFDs[i];
+    path.addInEquivalentForces(s, tension, bodyForces, generalizedForces);
 }
 

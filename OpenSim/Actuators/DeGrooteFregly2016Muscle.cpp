@@ -1020,35 +1020,7 @@ void DeGrooteFregly2016Muscle::replaceMuscles(
                 muscBase.get_ignore_tendon_compliance());
         actu->set_ignore_activation_dynamics(
                 muscBase.get_ignore_activation_dynamics());
-
-        const auto& pathPointSet = muscBase.getGeometryPath().getPathPointSet();
-        auto& geomPath = actu->updGeometryPath();
-        for (int ipp = 0; ipp < pathPointSet.getSize(); ++ipp) {
-            auto* pathPoint = pathPointSet.get(ipp).clone();
-            const auto& socketNames = pathPoint->getSocketNames();
-            for (const auto& socketName : socketNames) {
-                pathPoint->updSocket(socketName)
-                        .connect(pathPointSet.get(ipp)
-                                         .getSocket(socketName)
-                                         .getConnecteeAsObject());
-            }
-            geomPath.updPathPointSet().adoptAndAppend(pathPoint);
-        }
-
-        const auto& pathWrapSet = muscBase.getGeometryPath().getWrapSet();
-        for (int ipw = 0; ipw < pathWrapSet.getSize(); ++ipw) {
-            auto* pathWrap = pathWrapSet.get(ipw).clone();
-            const auto& socketNames = pathWrap->getSocketNames();
-            for (const auto& socketName : socketNames) {
-                pathWrap->updSocket(socketName)
-                        .connect(pathWrapSet.get(ipw)
-                                .getSocket(socketName)
-                                .getConnecteeAsObject());
-            }
-            geomPath.updWrapSet().adoptAndAppend(pathWrap);
-        }
-
-        std::string actname = actu->getName();
+        actu->updProperty_path().assign(muscBase.getProperty_path());
         model.addForce(actu.release());
 
         musclesToDelete.push_back(&muscBase);
@@ -1074,14 +1046,14 @@ void DeGrooteFregly2016Muscle::extendPostScale(
         const SimTK::State& s, const ScaleSet& scaleSet) {
     Super::extendPostScale(s, scaleSet);
 
-    GeometryPath& path = upd_GeometryPath();
+    AbstractPath& path = updPath();
     if (path.getPreScaleLength(s) > 0.0)
     {
         double scaleFactor = path.getLength(s) / path.getPreScaleLength(s);
         upd_optimal_fiber_length() *= scaleFactor;
         upd_tendon_slack_length() *= scaleFactor;
 
-        // Clear the pre-scale length that was stored in the GeometryPath.
+        // Clear the pre-scale length that was stored in the path.
         path.setPreScaleLength(s, 0.0);
     }
 }

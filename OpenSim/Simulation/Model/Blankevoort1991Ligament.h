@@ -24,6 +24,7 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Simulation/Model/Force.h>
+#include <OpenSim/Simulation/Model/AbstractPath.h>
 #include <OpenSim/Simulation/Model/GeometryPath.h>
 
 namespace OpenSim {
@@ -107,7 +108,7 @@ setLinearStiffnessForcePerLength() and getLinearStiffnessForcePerLength().
 
 When scaling a model (using the ScaleTool) that contains a 
 Blankevoort1991Ligament, the slack_length property is scaled by the ratio of 
-the entire GeometryPath length in the default model pose before and after 
+the entire path length in the default model pose before and after
 scaling the bone geometries. This ensures that the strain in the ligament in 
 the default pose is equivilent before and after scaling. Thus, it is important 
 to consider the order of scaling the model and setting the slack_length 
@@ -176,9 +177,9 @@ public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-
-    OpenSim_DECLARE_UNNAMED_PROPERTY(GeometryPath,
-        "The set of points defining the path of the ligament")
+    
+    OpenSim_DECLARE_PROPERTY(path, AbstractPath,
+        "The path defines the length and lengthening speed of the ligament.")
     OpenSim_DECLARE_PROPERTY(linear_stiffness, double,
         "The slope of the linear region of the force-strain curve. " 
         "Units of force/strain (N).")
@@ -221,7 +222,7 @@ private:
 // METHODS
 //=============================================================================
 public:
-    //Constructors
+    // Constructors
     Blankevoort1991Ligament();
 
     Blankevoort1991Ligament(std::string name, 
@@ -236,6 +237,37 @@ public:
     Blankevoort1991Ligament(std::string name, 
         double linear_stiffness, double slack_length);
 
+    // Path
+    AbstractPath& updPath() { return upd_path(); }
+    const AbstractPath& getPath() const { return get_path(); }
+
+    template <typename PathType>
+    PathType& updPath() {
+        return dynamic_cast<PathType&>(upd_path());
+    }
+    template <typename PathType>
+    const PathType& getPath() const {
+        return dynamic_cast<const PathType&>(get_path());
+    }
+
+    template <typename PathType>
+    PathType* tryUpdPath() {
+        return dynamic_cast<PathType*>(&upd_path());
+    }
+    template <typename PathType>
+    const PathType* tryGetPath() const {
+        return dynamic_cast<const PathType*>(&get_path());
+    }
+
+    GeometryPath& updGeometryPath() {
+        return updPath<GeometryPath>();
+    }
+    const GeometryPath& getGeometryPath() const {
+        return getPath<GeometryPath>();
+    }
+    
+    bool hasVisualPath() const override { return getPath().isVisualPath(); };
+    
     //-------------------------------------------------------------------------
     // SET
     //-------------------------------------------------------------------------
