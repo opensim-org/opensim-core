@@ -76,46 +76,20 @@ public:
 //=============================================================================
 // METHODS
 //=============================================================================
+    
+    // CONSTRUCTION AND DESTRUCTION
     AbstractPath();
-    ~AbstractPath() noexcept;
+    ~AbstractPath() override;
     
     AbstractPath(const AbstractPath&);
     AbstractPath& operator=(const AbstractPath&);
     
-    AbstractPath(AbstractPath&& other);
-    AbstractPath& operator=(AbstractPath&& other);
+    AbstractPath(AbstractPath&& other) noexcept;
+    AbstractPath& operator=(AbstractPath&& other) noexcept;
 
     // INTERFACE METHODS
     //
     // Concrete implementations of `AbstractPath` *must* provide these.
-
-    /**
-     * Get the current color of the path.
-     *
-     * This is the runtime, potentially state-dependent, color of the path. It
-     * is the color used to display the path in that state (e.g., for UI
-     * rendering).
-     *
-     * This color value is typically initialized with the default color (see:
-     * `getDefaultColor`), but the color can change between simulation states
-     * because downstream code (e.g. muscles) might call `setColor` to implement
-     * state-dependent path coloring.
-     */
-    virtual SimTK::Vec3 getColor(const SimTK::State& s) const = 0;
-
-    /**
-     * Set the current color of the path.
-     *
-     * Internally, sets the current color value of the path for the provided
-     * state (e.g. using cache variables).
-     *
-     * The value of this variable is used as the color when the path is drawn,
-     * which occurs with the state realized to Stage::Dynamics. Therefore, you
-     * must call this method during realizeDynamics() or earlier in order for it
-     * to have any effect.
-     */
-    virtual void setColor(
-            const SimTK::State& s, const SimTK::Vec3& color) const = 0;
 
     /**
      * Get the current length of the path.
@@ -194,6 +168,39 @@ public:
      * get the color of the path in that state.
      */
     void setDefaultColor(const SimTK::Vec3& color);
+    
+    /**
+     * Get the current color of the path.
+     *
+     * This is the runtime, potentially state-dependent, color of the path. It
+     * is the color used to display the path in that state (e.g., for UI
+     * rendering).
+     *
+     * This color value is typically initialized with the default color (see:
+     * `getDefaultColor`), but the color can change between simulation states
+     * because downstream code (e.g. muscles) might call `setColor` to implement
+     * state-dependent path coloring.
+     * 
+     * If not overridden in concrete implementations, this method returns the
+     * default color.
+     */
+    virtual SimTK::Vec3 getColor(const SimTK::State& s) const;
+    
+    /**
+     * Set the current color of the path.
+     *
+     * Internally, sets the current color value of the path for the provided
+     * state (e.g. using cache variables).
+     *
+     * The value of this variable is used as the color when the path is drawn,
+     * which occurs with the state realized to Stage::Dynamics. Therefore, you
+     * must call this method during realizeDynamics() or earlier in order for it
+     * to have any effect.
+     * 
+     * If not overridden in concrete implementations, this method does nothing.
+     */
+    virtual void setColor(
+            const SimTK::State& s, const SimTK::Vec3& color) const {};
 
     /**
      * Get the current length of the path, *before* the last set of scaling

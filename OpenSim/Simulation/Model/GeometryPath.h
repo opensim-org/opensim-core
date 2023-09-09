@@ -49,10 +49,10 @@ class WrapObject;
 //=============================================================================
 //=============================================================================
 /**
- * A base class representing a path (muscle, ligament, etc.).
+ * A concrete class representing a path (muscle, ligament, etc.) based on 
+ * geometry objects in the model (e.g., PathPoints and PathWraps).
  *
  * @author Peter Loan
- * @version 1.0
  */
 class OSIMSIMULATION_API GeometryPath : public AbstractPath {
 OpenSim_DECLARE_CONCRETE_OBJECT(GeometryPath, AbstractPath);

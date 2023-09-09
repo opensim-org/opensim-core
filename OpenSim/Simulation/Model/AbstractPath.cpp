@@ -26,6 +26,9 @@
 
 using namespace OpenSim;
 
+//=============================================================================
+// CONSTRUCTOR(S) AND DESTRUCTOR
+//=============================================================================
 AbstractPath::AbstractPath() : ModelComponent() {
     setAuthors("Nicholas Bianco, Joris Verhagen, Adam Kewley");
 
@@ -36,15 +39,17 @@ AbstractPath::AbstractPath() : ModelComponent() {
 
 AbstractPath::AbstractPath(AbstractPath const&) = default;
 
-AbstractPath::~AbstractPath() noexcept = default;
+AbstractPath::~AbstractPath() = default;
 
 AbstractPath& AbstractPath::operator=(const AbstractPath&) = default;
 
-AbstractPath::AbstractPath(AbstractPath&& other) = default;
+AbstractPath::AbstractPath(AbstractPath&& other) noexcept = default;
 
-AbstractPath& AbstractPath::operator=(AbstractPath&& other) = default;
+AbstractPath& AbstractPath::operator=(AbstractPath&& other) noexcept = default;
 
+//=============================================================================
 // DEFAULTED METHODS
+//=============================================================================
 const SimTK::Vec3& AbstractPath::getDefaultColor() const
 {
     return get_Appearance().get_color();
@@ -54,6 +59,11 @@ void AbstractPath::setDefaultColor(const SimTK::Vec3& color)
 {
     updProperty_Appearance().setValueIsDefault(false);
     upd_Appearance().set_color(color);
+}
+
+SimTK::Vec3 AbstractPath::getColor(const SimTK::State& s) const
+{
+    return getDefaultColor();
 }
 
 double AbstractPath::getPreScaleLength(const SimTK::State&) const
