@@ -36,7 +36,7 @@ const std::string FunctionBasedPath::MOMENT_ARMS_NAME("moment_arms");
 FunctionBasedPath::FunctionBasedPath() : AbstractPath() 
 {
     setAuthors("Nicholas Bianco");
-    
+    constructProperties();
 }
 
 FunctionBasedPath::~FunctionBasedPath() = default;
@@ -67,9 +67,9 @@ std::vector<std::string> FunctionBasedPath::getCoordinates() const
     return coordinates;
 }
 
-void FunctionBasedPath::setLengthFunction(Function* lengthFunction) 
+void FunctionBasedPath::setLengthFunction(const Function& lengthFunction) 
 {
-    set_length_function(*lengthFunction);
+    set_length_function(lengthFunction);
 }
 
 const Function& FunctionBasedPath::getLengthFunction() const 
@@ -77,9 +77,9 @@ const Function& FunctionBasedPath::getLengthFunction() const
     return get_length_function();
 }
 
-void FunctionBasedPath::setSpeedFunction(Function* speedFunction) 
+void FunctionBasedPath::setSpeedFunction(const Function& speedFunction) 
 {
-    set_speed_function(*speedFunction);
+    set_speed_function(speedFunction);
 }
 
 const Function& FunctionBasedPath::getSpeedFunction() const 
@@ -87,9 +87,9 @@ const Function& FunctionBasedPath::getSpeedFunction() const
     return get_speed_function();
 }
 
-void FunctionBasedPath::appendMomentArmFunction(Function* momentArmFunction) 
+void FunctionBasedPath::appendMomentArmFunction(const Function& momentArmFunction) 
 {
-    append_moment_arm_functions(*momentArmFunction);
+    append_moment_arm_functions(momentArmFunction);
 }
 
 void FunctionBasedPath::setMomentArmFunctions(
@@ -120,7 +120,7 @@ double FunctionBasedPath::computeMomentArm(const SimTK::State& s,
 {
     computeMomentArms(s);
     return getCacheVariableValue<SimTK::Vector>(s, MOMENT_ARMS_NAME)
-            .get(_coordinateIndices.at(coord.getName()));
+            .get(_coordinateIndices.at(coord.getAbsolutePathString()));
 }
 
 double FunctionBasedPath::getLengtheningSpeed(const SimTK::State& s) const 
@@ -227,6 +227,8 @@ void FunctionBasedPath::computeLengtheningSpeed(const SimTK::State& s) const
         for (int i = 0; i < _coordinates.size(); ++i) {
             coordinateSpeeds[i] = _coordinates[i]->getSpeedValue(s);
         }
+        std::cout << "coord speeds: " << coordinateSpeeds << std::endl;
+        std::cout << "moment arms: " << momentArms << std::endl;
         setCacheVariableValue(s, LENGTHENING_SPEED_NAME, 
                 coordinateSpeeds * momentArms);
     } else {
@@ -303,6 +305,8 @@ void FunctionBasedPath::extendFinalizeFromProperties() {
     }
     
    // Populate the coordinate index map.
+    _coordinateIndices.clear();
+    std::cout << "coords: " << getProperty_coordinates().size() << std::endl;
     for (int i = 0; i < getProperty_coordinates().size(); ++i) {
         _coordinateIndices[get_coordinates(i)] = i;
     }
@@ -312,6 +316,7 @@ void FunctionBasedPath::extendConnectToModel(Model& model) {
     
     // Check that the coordinates are in the model. If so, grab references
     // pointers to them.
+    _coordinates.clear();
     for (int i = 0; i < getProperty_coordinates().size(); ++i) {
         const auto& coordName = get_coordinates(i);
         OPENSIM_THROW_IF_FRMOBJ(!model.hasComponent<Coordinate>(coordName),

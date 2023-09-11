@@ -56,8 +56,7 @@ public:
 // PROPERTIES
 //=============================================================================
     OpenSim_DECLARE_LIST_PROPERTY(coordinates, std::string, "");
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(length_function, Function, 
-            "default: constant 0");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(length_function, Function, "");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(speed_function, Function, "");
     OpenSim_DECLARE_LIST_PROPERTY(moment_arm_functions, Function, "");
     
@@ -75,13 +74,13 @@ public:
     // warning: freshly constructed from property list
     std::vector<std::string> getCoordinates() const;
     
-    void setLengthFunction(Function* lengthFunction);
+    void setLengthFunction(const Function& lengthFunction);
     const Function& getLengthFunction() const;
     
-    void setSpeedFunction(Function* speedFunction);
+    void setSpeedFunction(const Function& speedFunction);
     const Function& getSpeedFunction() const;
     
-    void appendMomentArmFunction(Function* momentArmFunction);
+    void appendMomentArmFunction(const Function& momentArmFunction);
     void setMomentArmFunctions(const std::vector<Function>& momentArmFunctions);
     const Function& getMomentArmFunction(
             const std::string& coordinateName) const;

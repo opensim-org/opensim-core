@@ -23,6 +23,7 @@
 
 #include <OpenSim/OpenSim.h>
 #include <OpenSim/Actuators/ModelOperators.h>
+#include <OpenSim/Simulation/Model/FunctionBasedPath.h>
 #include <SimTKcommon.h>
 
 #define CATCH_CONFIG_MAIN
@@ -336,5 +337,172 @@ TEST_CASE("testMuscleLengths") {
         CHECK(SimTK::Test::numericallyEqual(lengths.getMatrix(),
                 stdLengths.getMatrix(),
                 static_cast<int>(lengths.getNumColumns()), 1e-6));
+    }
+}
+
+TEST_CASE("testFunctionBasedPath") {
+    
+    const double q_x = 0.12;
+    const double q_y = 0.34;
+    const double qdot_x = 0.56;
+    const double qdot_y = 0.78;
+    const double tension = 0.91;
+    
+    SECTION("Sliding point mass") {
+        // 1-DOF polynomial path function.
+        // length = q^2 + 2*q + 3
+        SimTK::Vector coeffs(3, 0.0);
+        coeffs[0] = 1.0;
+        coeffs[1] = 2.0;
+        coeffs[2] = 3.0;
+        PolynomialFunction poly(coeffs);
+        
+        // Test values.
+        // momentArm = dl/dq = 2*q + 2
+        // speed = qdot * momentArm
+        const double length = q_x * q_x + 2 * q_x + 3;
+        const double momentArm = 2 * q_x + 2;
+        const double speed = qdot_x * momentArm;
+        const double genForce = tension * momentArm;
+        
+        // Create a sliding mass model and add a PathActuator with a 1-DOF
+        // FunctionBasedPath.
+        Model model = ModelFactory::createSlidingPointMass();
+        
+        FunctionBasedPath fbPath;
+        fbPath.setName("polynomial_path_1dof");
+        fbPath.setLengthFunction(poly);
+        fbPath.setCoordinates({"/slider/position"});
+        
+        auto* actu = new PathActuator();
+        actu->set_path(fbPath);
+        actu->setName("actuator");
+        actu->setOptimalForce(1);
+        model.addComponent(actu);
+        model.finalizeConnections();
+        
+        // Initialize the system and set the state and controls.
+        SimTK::State state = model.initSystem();
+        model.getCoordinateSet()[0].setValue(state, q_x);
+        model.getCoordinateSet()[0].setSpeedValue(state, qdot_x);
+        auto& controls = model.updControls(state);
+        controls[0] = tension;
+        controls[1] = 0.0;
+        model.setControls(state, controls);
+        model.realizeAcceleration(state);
+        
+        // Run inverse dynamics to compute the generalized force applied by the
+        // PathActuator.
+        auto& matter = model.updMatterSubsystem();
+        SimTK::Vector residuals(1);
+        SimTK::Vector zero(1, 0.0);
+        SimTK::Vector_<SimTK::SpatialVec> bodyForces(2, 
+                SimTK::SpatialVec(SimTK::Vec3(0), SimTK::Vec3(0)));
+        matter.calcResidualForce(state, 
+                zero, 
+                bodyForces,
+                state.getUDot(), 
+                SimTK::Vector(0),
+                residuals);
+        
+        // Check that the length, moment arms, speed, and generalized forces are
+        // correct. Compare quantities that should have been calculated to 
+        // machine tolerance given the problem size, which we'll characterize by 
+        // the number of mobilities (based on Simbody's testing).
+        const auto& path = actu->getPath();
+        const double tol = 10 * state.getNU() * SimTK::Test::defTol<double>();
+        CHECK_THAT(length, Catch::WithinAbs(path.getLength(state), tol));
+        auto& coord = model.getCoordinateSet()[0];
+        CHECK_THAT(momentArm, 
+            Catch::WithinAbs(path.computeMomentArm(state, coord), tol));
+        CHECK_THAT(speed, 
+            Catch::WithinAbs(path.getLengtheningSpeed(state), tol));
+        CHECK_THAT(genForce, Catch::WithinAbs(residuals[0], tol));
+    }
+    
+    SECTION("Planar point mass") {
+        // 2-DOF polynomial path function.
+        SimTK::Vector coeffs(6, 0.0);
+        coeffs[0] = 1.0;
+        coeffs[1] = 2.0;
+        coeffs[2] = 3.0;
+        coeffs[3] = 4.0;
+        coeffs[4] = 5.0;
+        coeffs[5] = 6.0;
+        MultivariatePolynomialFunction poly(coeffs, 2, 2);
+        
+        // Test values.
+        // momentArm_x = dl/dq_x = 4 + 5*q_y + 12*q_x
+        // momentArm_y = dl/dq_y = 2 + 5*q_x + 6*q_y
+        // speed = qdot_x * momentArm_x + qdot_y * momentArm_y
+        const double length = 1.0 + 2.0 * q_y + 3.0 * q_y * q_y + 4.0 * q_x + 
+                              5.0 * q_x * q_y + 6.0 * q_x * q_x;
+        const double momentArm_x = 4.0 + 5.0 * q_y + 12.0 * q_x;
+        const double momentArm_y = 2.0 + 5.0 * q_x + 6.0 * q_y;
+        const double speed = qdot_x * momentArm_x + qdot_y * momentArm_y;
+        const double genForce_x = tension * momentArm_x;
+        const double genForce_y = tension * momentArm_y;
+        
+        // Create a planar point mass model and add a PathActuator with a 2-DOF
+        // FunctionBasedPath.
+        Model model = ModelFactory::createPlanarPointMass();
+        model.setGravity(Vec3(0.0));
+        
+        FunctionBasedPath fbPath;
+        fbPath.setName("polynomial_path_2dof");
+        fbPath.setLengthFunction(poly);
+        fbPath.setCoordinates({"/jointset/tx/tx", "/jointset/ty/ty"});
+        
+        auto* actu = new PathActuator();
+        actu->set_path(fbPath);
+        actu->setName("actuator");
+        actu->setOptimalForce(1);
+        model.addComponent(actu);
+        model.finalizeConnections();
+        
+        // Initialize the system and set the state and controls.
+        SimTK::State state = model.initSystem();
+        model.getCoordinateSet()[0].setValue(state, q_x);
+        model.getCoordinateSet()[1].setValue(state, q_y);
+        model.getCoordinateSet()[0].setSpeedValue(state, qdot_x);
+        model.getCoordinateSet()[1].setSpeedValue(state, qdot_y);
+        auto& controls = model.updControls(state);
+        controls[0] = tension;
+        controls[1] = 0.0;
+        controls[2] = 0.0;
+        model.setControls(state, controls);
+        model.realizeAcceleration(state);
+        
+        // Run inverse dynamics to compute the generalized force applied by the
+        // PathActuator.
+        auto& matter = model.updMatterSubsystem();
+        SimTK::Vector residuals(2);
+        SimTK::Vector zero(2, 0.0);
+        SimTK::Vector_<SimTK::SpatialVec> bodyForces(3, 
+                SimTK::SpatialVec(SimTK::Vec3(0), SimTK::Vec3(0)));
+        matter.calcResidualForce(state, 
+                zero, 
+                bodyForces,
+                state.getUDot(), 
+                SimTK::Vector(0),
+                residuals);
+        
+        // Check that the length, moment arms, speed, and generalized forces are
+        // correct. Compare quantities that should have been calculated to 
+        // machine tolerance given the problem size, which we'll characterize by 
+        // the number of mobilities (based on Simbody's testing).
+        const auto& path = actu->getPath();
+        const double tol = 10 * state.getNU() * SimTK::Test::defTol<double>();
+        CHECK_THAT(length, Catch::WithinAbs(path.getLength(state), tol));
+        auto& tx = model.getCoordinateSet()[0];
+        auto& ty = model.getCoordinateSet()[1];
+        CHECK_THAT(momentArm_x, 
+                Catch::WithinAbs(path.computeMomentArm(state, tx), tol));
+        CHECK_THAT(momentArm_y, 
+                Catch::WithinAbs(path.computeMomentArm(state, ty), tol));
+        CHECK_THAT(speed, 
+                Catch::WithinAbs(path.getLengtheningSpeed(state), tol));
+        CHECK_THAT(genForce_x, Catch::WithinAbs(residuals[0], tol));
+        CHECK_THAT(genForce_y, Catch::WithinAbs(residuals[1], tol));
     }
 }
