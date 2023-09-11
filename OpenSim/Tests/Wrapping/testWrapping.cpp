@@ -299,40 +299,42 @@ TEST_CASE("testWrapObjectScaleWithNoFrameDoesNotSegfault") {
     }
 }
 
-TEST_CASE("testMuscleLengths, Rajagopal2016, 18 muscles") {
-    Model model("subject_walk_armless_18musc.osim");
-    model.initSystem();
+TEST_CASE("testMuscleLengths") {
     
-    TableProcessor tableProcessor =
-            TableProcessor("subject_walk_armless_coordinates.mot") |
-            TabOpUseAbsoluteStateNames();
-    TimeSeriesTable coordinates =
-            tableProcessor.processAndConvertToRadians(model);
+    SECTION("Rajagopal2016, 18 muscles") {
+        Model model("subject_walk_armless_18musc.osim");
+        model.initSystem();
+    
+        TableProcessor tableProcessor =
+                TableProcessor("subject_walk_armless_coordinates.mot") |
+                TabOpUseAbsoluteStateNames();
+        TimeSeriesTable coordinates =
+                tableProcessor.processAndConvertToRadians(model);
+        
+        TimeSeriesTable lengths = createMuscleLengthsTable(model, coordinates);
 
-    TimeSeriesTable lengths = createMuscleLengthsTable(model, coordinates);
+        TimeSeriesTable stdLengths(
+                "std_testMuscleLengths_subject_walk_armless.sto");
+        CHECK(SimTK::Test::numericallyEqual(
+                lengths.getMatrix(), stdLengths.getMatrix(),
+                static_cast<int>(lengths.getNumColumns()), 1e-6));
+    }
+    
+    SECTION("gait10dof18musc") {
+        Model model("walk_gait1018_subject01.osim");
+        model.initSystem();
 
-    TimeSeriesTable stdLengths(
-            "std_testMuscleLengths_subject_walk_armless.sto");
-    CHECK(SimTK::Test::numericallyEqual(
-            lengths.getMatrix(), stdLengths.getMatrix(),
-            static_cast<int>(lengths.getNumColumns()), 1e-6));
-}
+        TableProcessor tableProcessor =
+                TableProcessor("walk_gait1018_state_reference.mot") |
+                TabOpUseAbsoluteStateNames();
+        TimeSeriesTable coordinates =
+                tableProcessor.processAndConvertToRadians(model);
 
-TEST_CASE("testMuscleLengths, gait10dof18musc") {
-    Model model("walk_gait1018_subject01.osim");
-    model.initSystem();
+        TimeSeriesTable lengths = createMuscleLengthsTable(model, coordinates);
 
-    TableProcessor tableProcessor =
-            TableProcessor("walk_gait1018_state_reference.mot") |
-            TabOpUseAbsoluteStateNames();
-    TimeSeriesTable coordinates =
-            tableProcessor.processAndConvertToRadians(model);
-
-    TimeSeriesTable lengths = createMuscleLengthsTable(model, coordinates);
-
-    TimeSeriesTable stdLengths(
-            "std_testMuscleLengths_walk_gait1018.sto");
-    CHECK(SimTK::Test::numericallyEqual(
-            lengths.getMatrix(), stdLengths.getMatrix(),
-            static_cast<int>(lengths.getNumColumns()), 1e-6));
+        TimeSeriesTable stdLengths("std_testMuscleLengths_walk_gait1018.sto");
+        CHECK(SimTK::Test::numericallyEqual(lengths.getMatrix(),
+                stdLengths.getMatrix(),
+                static_cast<int>(lengths.getNumColumns()), 1e-6));
+    }
 }
