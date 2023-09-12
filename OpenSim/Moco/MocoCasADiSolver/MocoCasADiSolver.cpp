@@ -207,7 +207,30 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     Dict solverOptions;
     checkPropertyValueIsInSet(getProperty_optim_solver(), {"ipopt", "snopt"});
     checkPropertyValueIsInSet(getProperty_transcription_scheme(),
-            {"trapezoidal", "hermite-simpson"});
+            {"trapezoidal", "hermite-simpson", "legendre-gauss-1",
+             "legendre-gauss-2", "legendre-gauss-3", "legendre-gauss-4",
+             "legendre-gauss-5", "legendre-gauss-6", "legendre-gauss-7",
+             "legendre-gauss-8", "legendre-gauss-9", "legendre-gauss-radau-1",
+             "legendre-gauss-radau-2", "legendre-gauss-radau-3",
+             "legendre-gauss-radau-4", "legendre-gauss-radau-5",
+             "legendre-gauss-radau-6", "legendre-gauss-radau-7",
+             "legendre-gauss-radau-8", "legendre-gauss-radau-9"});
+    OPENSIM_THROW_IF(casProblem.getNumKinematicConstraintEquations() != 0 &&
+                             get_transcription_scheme() == "trapezoidal",
+            OpenSim::Exception,
+            "Kinematic constraints not supported with "
+            "trapezoidal transcription.");
+    // Enforcing constraint derivatives is not supported with trapezoidal
+    // transcription.
+    if (casProblem.getNumKinematicConstraintEquations() != 0) {
+        OPENSIM_THROW_IF(get_transcription_scheme() == "trapezoidal" &&
+                                 get_enforce_constraint_derivatives(),
+                Exception,
+                "The current transcription scheme is '{}', but enforcing "
+                "kinematic constraint derivatives is not supported with "
+                "trapezoidal transcription.",
+                get_transcription_scheme());
+    }
 
     checkPropertyValueIsInRangeOrSet(getProperty_num_mesh_intervals(), 0,
             std::numeric_limits<int>::max(), {});

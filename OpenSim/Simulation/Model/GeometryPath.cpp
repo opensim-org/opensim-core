@@ -133,9 +133,7 @@ static void PopulatePathElementLookup(
 /*
  * Default constructor.
  */
-GeometryPath::GeometryPath() :
-    ModelComponent(),
-    _preScaleLength(0.0)
+GeometryPath::GeometryPath() : AbstractPath()
 {
     setAuthors("Peter Loan");
     constructProperties();
@@ -281,10 +279,6 @@ void GeometryPath::constructProperties()
     constructProperty_PathPointSet(PathPointSet());
 
     constructProperty_PathWrapSet(PathWrapSet());
-    
-    Appearance appearance;
-    appearance.set_color(SimTK::Gray);
-    constructProperty_Appearance(appearance);
 }
 
 //_____________________________________________________________________________
@@ -568,13 +562,6 @@ double GeometryPath::getLengtheningSpeed( const SimTK::State& s) const
 void GeometryPath::setLengtheningSpeed( const SimTK::State& s, double speed ) const
 {
     setCacheVariableValue(s, _speedCV, speed);
-}
-
-void GeometryPath::setPreScaleLength( const SimTK::State& s, double length ) {
-    _preScaleLength = length;
-}
-double GeometryPath::getPreScaleLength( const SimTK::State& s) const {
-    return _preScaleLength;
 }
 
 //=============================================================================

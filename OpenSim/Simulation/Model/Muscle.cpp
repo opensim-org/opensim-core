@@ -26,7 +26,6 @@
 //=============================================================================
 #include "Muscle.h"
 
-#include "GeometryPath.h"
 #include "Model.h"
 #include <OpenSim/Common/XMLDocument.h>
 
@@ -156,7 +155,7 @@ void Muscle::constructProperties()
     // By default the min and max controls on muscle are 0.0 and 1.0
     setMinControl(0.0);
     setMaxControl(1.0);
-    upd_GeometryPath().setDefaultColor(DefaultMuscleColor);
+    updPath().setDefaultColor(DefaultMuscleColor);
 }
 
 

@@ -62,7 +62,7 @@ void PathActuator::setNull()
  */
 void PathActuator::constructProperties()
 {
-    constructProperty_GeometryPath(GeometryPath());
+    constructProperty_path(GeometryPath());
     constructProperty_optimal_force(1.0);
 }
 
@@ -107,7 +107,7 @@ double PathActuator::getOptimalForce() const
  */
 double PathActuator::getLength(const SimTK::State& s) const
 {
-    return getGeometryPath().getLength(s);
+    return getPath().getLength(s);
 }
 //_____________________________________________________________________________
 /**
@@ -117,7 +117,7 @@ double PathActuator::getLength(const SimTK::State& s) const
  */
 double PathActuator::getLengtheningSpeed(const SimTK::State& s) const
 {
-    return getGeometryPath().getLengtheningSpeed(s);
+    return getPath().getLengtheningSpeed(s);
 }
 //_____________________________________________________________________________
 /**
@@ -173,7 +173,7 @@ void PathActuator::computeForce( const SimTK::State& s,
 {
     if(!_model) return;
 
-    const GeometryPath &path = getGeometryPath();
+    const auto &path = getPath();
 
     // compute path's lengthening speed if necessary
     double speed = path.getLengtheningSpeed(s);
@@ -200,7 +200,7 @@ void PathActuator::computeForce( const SimTK::State& s,
  */
 double PathActuator::computeMomentArm(const SimTK::State& s, Coordinate& aCoord) const
 {
-    return getGeometryPath().computeMomentArm(s, aCoord);
+    return getPath().computeMomentArm(s, aCoord);
 }
 
 //------------------------------------------------------------------------------
@@ -216,7 +216,7 @@ void PathActuator::extendRealizeDynamics(const SimTK::State& state) const
     if (appliesForce(state) && !isActuationOverridden(state)){
         const SimTK::Vec3 color = computePathColor(state);
         if (!color.isNaN())
-            getGeometryPath().setColor(state, color);
+            getPath().setColor(state, color);
     }
 }
 

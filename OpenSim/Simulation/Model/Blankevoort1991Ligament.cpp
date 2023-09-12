@@ -22,7 +22,6 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/PointForceDirection.h>
 #include "Blankevoort1991Ligament.h"
 
 using namespace OpenSim;
@@ -41,8 +40,8 @@ Blankevoort1991Ligament::Blankevoort1991Ligament(std::string name,
         const PhysicalFrame& frame2, SimTK::Vec3 point2)
         : Blankevoort1991Ligament() {
     setName(name);
-    upd_GeometryPath().appendNewPathPoint("p1", frame1, point1);
-    upd_GeometryPath().appendNewPathPoint("p2", frame2, point2);
+    updGeometryPath().appendNewPathPoint("p1", frame1, point1);
+    updGeometryPath().appendNewPathPoint("p2", frame2, point2);
 }
 
 Blankevoort1991Ligament::Blankevoort1991Ligament(std::string name,
@@ -81,7 +80,7 @@ void Blankevoort1991Ligament::setNull()
 }
 
 void Blankevoort1991Ligament::constructProperties() {
-    constructProperty_GeometryPath(GeometryPath());
+    constructProperty_path(GeometryPath());
     constructProperty_linear_stiffness(1.0);
     constructProperty_transition_strain(0.06);
     constructProperty_damping_coefficient(0.003);
@@ -109,8 +108,7 @@ void Blankevoort1991Ligament::extendFinalizeFromProperties() {
             "Transistion Strain cannot be less than 0");
 
     // Set Default Ligament Color
-    GeometryPath& path = upd_GeometryPath();
-    path.setDefaultColor(SimTK::Vec3(0.1202, 0.7054, 0.1318));
+    updPath().setDefaultColor(SimTK::Vec3(0.1202, 0.7054, 0.1318));
 }
 
 void Blankevoort1991Ligament::extendAddToSystem(
@@ -132,14 +130,14 @@ void Blankevoort1991Ligament::extendPostScale(
     const SimTK::State& s, const ScaleSet& scaleSet) {
     Super::extendPostScale(s, scaleSet);
 
-    GeometryPath& path = upd_GeometryPath();
+    AbstractPath& path = updPath();
     double slack_length = get_slack_length();
     if (path.getPreScaleLength(s) > 0.0)
     {
         double scaleFactor = path.getLength(s) / path.getPreScaleLength(s);
         set_slack_length(scaleFactor * slack_length);
 
-        // Clear the pre-scale length that was stored in the GeometryPath.
+        // Clear the pre-scale length that was stored in the path.
         path.setPreScaleLength(s, 0.0);
     }
 }
@@ -149,12 +147,12 @@ void Blankevoort1991Ligament::extendPostScale(
 //=============================================================================
 
 double Blankevoort1991Ligament::getLength(const SimTK::State& state) const {
-    return get_GeometryPath().getLength(state);
+    return getPath().getLength(state);
 }
 
 double Blankevoort1991Ligament::getLengtheningSpeed(
         const SimTK::State& state) const {
-    return get_GeometryPath().getLengtheningSpeed(state);
+    return getPath().getLengtheningSpeed(state);
 }
 
 double Blankevoort1991Ligament::getStrain(const SimTK::State& state) const {
@@ -340,7 +338,7 @@ void Blankevoort1991Ligament::computeForce(const SimTK::State& s,
         // total force
         double force_total = getTotalForce(s);
 
-        const GeometryPath &path = get_GeometryPath();
+        const AbstractPath &path = getPath();
 
         path.addInEquivalentForces(
                 s, force_total, bodyForces, generalizedForces);
@@ -372,7 +370,7 @@ double Blankevoort1991Ligament::computePotentialEnergy(
 
 double Blankevoort1991Ligament::computeMomentArm(
         const SimTK::State& s, Coordinate& aCoord) const {
-    return get_GeometryPath().computeMomentArm(s, aCoord);
+    return getPath().computeMomentArm(s, aCoord);
 }
 
 //=============================================================================
