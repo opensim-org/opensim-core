@@ -41,6 +41,8 @@ namespace OpenSim {
 /**
  * A concrete class representing a path for muscles, ligaments, etc., based on 
  * OpenSim::Function objects.
+ * 
+ * This class 
  *
  * TODOs
  * - coordinates must be in the same order as the function arguments
@@ -55,10 +57,23 @@ public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-    OpenSim_DECLARE_LIST_PROPERTY(coordinates, std::string, "");
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(length_function, Function, "");
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(speed_function, Function, "");
-    OpenSim_DECLARE_LIST_PROPERTY(moment_arm_functions, Function, "");
+    OpenSim_DECLARE_LIST_PROPERTY(coordinates, std::string, 
+            "The list of model coordinates whose values and speeds are "
+            "used as arguments to the path functions.");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(length_function, Function, 
+            "The OpenSim::Function object that computes the length of the path "
+            "as a function of the coordinate values. The function arguments "
+            "must match the order in the 'coordinates' property.");
+    OpenSim_DECLARE_LIST_PROPERTY(moment_arm_functions, Function, 
+            "The list of OpenSim::Function objects that compute the moment "
+            "arms of the path as a function of the coordinate values. The "
+            "function arguments must match the order in the 'coordinates' "
+            "property.");
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(speed_function, Function, 
+            "The OpenSim::Function object that computes the speed of the path "
+            "as a function of the coordinate values and speeds. The function "
+            "arguments must be the coordinate values followed by coordinate "
+            "speeds both matching the order in the 'coordinates' property.");
     
 //=============================================================================
 // METHODS
@@ -69,23 +84,36 @@ public:
     ~FunctionBasedPath() override;
     
     // GET AND SET
-    void appendCoordinate(const std::string& coordinateName);
+    /// Set the list of model coordinate names that are used as arguments to the
+    /// path functions. The order of the coordinates must match the order of the
+    /// function arguments.
     void setCoordinates(const std::vector<std::string>& coordinateNames);
-    // warning: freshly constructed from property list
+    void appendCoordinate(const std::string& coordinateName);
+    /// @details Note: the return value is constructed fresh on every call from 
+    /// the internal property. Avoid repeated calls to this function.
     std::vector<std::string> getCoordinates() const;
     
+    /// Set the function that computes the length of the path as a function of
+    /// the coordinate values. The function must have the same number of 
+    /// arguments as the number of coordinates.
     void setLengthFunction(const Function& lengthFunction);
     const Function& getLengthFunction() const;
     
-    void setSpeedFunction(const Function& speedFunction);
-    const Function& getSpeedFunction() const;
-    
-    void appendMomentArmFunction(const Function& momentArmFunction);
+    /// Set the list of functions that compute the moment arms of the path as a
+    /// function of the coordinate values. The order of the functions must match
+    /// the order of the coordinates.
     void setMomentArmFunctions(const std::vector<Function>& momentArmFunctions);
+    void appendMomentArmFunction(const Function& momentArmFunction);
     const Function& getMomentArmFunction(
             const std::string& coordinateName) const;
     
-    // INTERFACE METHODS
+    /// Set the function that computes the speed of the path as a function of
+    /// the coordinate values and speeds. The function must have the same number 
+    /// of arguments as the number of coordinate values and speeds.
+    void setSpeedFunction(const Function& speedFunction);
+    const Function& getSpeedFunction() const;
+    
+    // ABSTRACT PATH INTERFACE
     double getLength(const SimTK::State& s) const override;
     double getLengtheningSpeed(const SimTK::State& s) const override;
     double computeMomentArm(const SimTK::State& s, 
@@ -97,13 +125,16 @@ public:
     bool isVisualPath() const override { return false; }
     
 private:
-    // ModelComponent interface.
+    // MODEL COMPONENT INTERFACE
     void extendFinalizeFromProperties() override;
     void extendConnectToModel(Model& model) override;
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     
     // CONVENIENCE METHODS
     void constructProperties();
+    SimTK::Vector computeCoordinateValues(const SimTK::State& s) const;
+    SimTK::Vector computeCoordinateSpeeds(const SimTK::State& s) const;
+    SimTK::Vector computeCoordinatesState(const SimTK::State& s) const;
     void computeLength(const SimTK::State& s) const;
     void computeMomentArms(const SimTK::State& s) const;
     void computeLengtheningSpeed(const SimTK::State& s) const;
@@ -111,12 +142,12 @@ private:
     // MEMBER VARIABLES
     std::vector<SimTK::ReferencePtr<const Coordinate>> _coordinates;
     std::map<std::string, int> _coordinateIndices;
-    bool _computeSpeeds = false;
     bool _computeMomentArms = false;
+    bool _computeSpeeds = false;
     
     static const std::string LENGTH_NAME;
-    static const std::string LENGTHENING_SPEED_NAME;
     static const std::string MOMENT_ARMS_NAME;
+    static const std::string LENGTHENING_SPEED_NAME;
 };
 
 } // namespace OpenSim

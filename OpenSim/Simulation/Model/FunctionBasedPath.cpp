@@ -163,19 +163,48 @@ void FunctionBasedPath::constructProperties()
     constructProperty_moment_arm_functions();
 }
 
+SimTK::Vector FunctionBasedPath::computeCoordinateValues(
+        const SimTK::State& s) const 
+{
+    SimTK::Vector coordinateValues((int)_coordinates.size(), 0.0);
+    for (int i = 0; i < _coordinates.size(); ++i) {
+        coordinateValues[i] = _coordinates[i]->getValue(s);
+    }
+    
+    return coordinateValues;
+}
+
+SimTK::Vector FunctionBasedPath::computeCoordinateSpeeds(
+        const SimTK::State& s) const 
+{
+    SimTK::Vector coordinateSpeeds((int)_coordinates.size(), 0.0);
+    for (int i = 0; i < _coordinates.size(); ++i) {
+        coordinateSpeeds[i] = _coordinates[i]->getSpeedValue(s);
+    }
+    
+    return coordinateSpeeds;
+}
+
+SimTK::Vector FunctionBasedPath::computeCoordinatesState(
+        const SimTK::State& s) const 
+{
+    SimTK::Vector coordinatesState(2*(int)_coordinates.size(), 0.0);
+    for (int i = 0; i < _coordinates.size(); ++i) {
+        coordinatesState[i] = _coordinates[i]->getValue(s);
+        coordinatesState[i + (int)_coordinates.size()] = 
+                _coordinates[i]->getSpeedValue(s);
+    }
+    
+    return coordinatesState;
+}
+
 void FunctionBasedPath::computeLength(const SimTK::State& s) const
 {
     if (isCacheVariableValid(s, LENGTH_NAME)) {
         return;
     }
-    
-    const auto& lengthFunction = getLengthFunction();
-    SimTK::Vector arguments(lengthFunction.getArgumentSize(), 0.0);
-    for (int i = 0; i < lengthFunction.getArgumentSize(); ++i) {
-        arguments[i] = _coordinates[i]->getValue(s);
-    }
-    
-    setCacheVariableValue(s, LENGTH_NAME, lengthFunction.calcValue(arguments));
+    setCacheVariableValue(s, LENGTH_NAME, 
+            getLengthFunction().calcValue(computeCoordinateValues(s)));
 }
 
 void FunctionBasedPath::computeMomentArms(const SimTK::State& s) const 
@@ -190,13 +219,11 @@ void FunctionBasedPath::computeMomentArms(const SimTK::State& s) const
         // coordinates.
         computeLength(s);
         SimTK::Vector momentArms((int)_coordinates.size(), 0.0);
-        SimTK::Vector arguments(getLengthFunction().getArgumentSize(), 0.0);
-        for (int i = 0; i < getLengthFunction().getArgumentSize(); ++i) {
-            arguments[i] = _coordinates[i]->getValue(s);
-        }
         for (int i = 0; i < _coordinates.size(); ++i) {
-            momentArms[i] = getLengthFunction().calcDerivative({i}, arguments);
+            momentArms[i] = getLengthFunction().calcDerivative({i}, 
+                    computeCoordinateValues(s));
         }
+        
         setCacheVariableValue(s, MOMENT_ARMS_NAME, momentArms);
     } else {
         const auto& momentArmFunctions = getProperty_moment_arm_functions();
@@ -204,7 +231,7 @@ void FunctionBasedPath::computeMomentArms(const SimTK::State& s) const
         for (int i = 0; i < momentArmFunctions.size(); ++i) {
             const auto& momentArmFunction = get_moment_arm_functions(i);
             momentArms[i] = momentArmFunction.calcValue(
-                    SimTK::Vector(1, _coordinates[i]->getValue(s)));
+                    computeCoordinateValues(s));
         }
     
         setCacheVariableValue(s, MOMENT_ARMS_NAME, momentArms);
@@ -223,26 +250,12 @@ void FunctionBasedPath::computeLengtheningSpeed(const SimTK::State& s) const
         computeMomentArms(s);
         auto momentArms = 
                 getCacheVariableValue<SimTK::Vector>(s, MOMENT_ARMS_NAME);
-        SimTK::RowVector coordinateSpeeds((int)_coordinates.size(), 0.0);
-        for (int i = 0; i < _coordinates.size(); ++i) {
-            coordinateSpeeds[i] = _coordinates[i]->getSpeedValue(s);
-        }
-        std::cout << "coord speeds: " << coordinateSpeeds << std::endl;
-        std::cout << "moment arms: " << momentArms << std::endl;
+        SimTK::Vector coordinateSpeeds = computeCoordinateSpeeds(s);
         setCacheVariableValue(s, LENGTHENING_SPEED_NAME, 
-                coordinateSpeeds * momentArms);
+                ~coordinateSpeeds * momentArms);
     } else {
-        const auto& speedFunction = getSpeedFunction();
-        SimTK::Vector arguments(speedFunction.getArgumentSize(), 0.0);
-        int numCoords = (int)_coordinates.size();
-        for (int i = 0; i < numCoords; ++i) {
-            arguments[i] = _coordinates[i]->getValue(s);
-        }
-        for (int i = 0; i < numCoords; ++i) {
-            arguments[i + numCoords] = _coordinates[i]->getSpeedValue(s);
-        }
         setCacheVariableValue(s, LENGTHENING_SPEED_NAME, 
-                speedFunction.calcValue(arguments));
+                getSpeedFunction().calcValue(computeCoordinatesState(s)));
     }
 }
 
@@ -284,11 +297,13 @@ void FunctionBasedPath::extendFinalizeFromProperties() {
         
         for (int i = 0; i < getProperty_moment_arm_functions().size(); ++i) {
             OPENSIM_THROW_IF_FRMOBJ(
-                    get_moment_arm_functions(i).getArgumentSize() != 1, 
-                    Exception,
-                    fmt::format("Expected the moment arm function for "
-                                "coordinate '{}' to have one argument.",
-                            get_coordinates(i)));
+                    get_moment_arm_functions(i).getArgumentSize() != 
+                    getProperty_coordinates().size(), Exception,
+                    fmt::format("Expected the number of arguments in "
+                                "'moment_arm_functions[{}]' ({}) to equal the "
+                                "number of coordinates ({}).",
+                                i, get_moment_arm_functions(i).getArgumentSize(),
+                                getProperty_coordinates().size()));
         }
     }
     
@@ -298,15 +313,15 @@ void FunctionBasedPath::extendFinalizeFromProperties() {
         OPENSIM_THROW_IF_FRMOBJ(getSpeedFunction().getArgumentSize() !=
                 2*getProperty_coordinates().size(), Exception,
                 fmt::format("Expected the number of arguments in "
-                            "'speed_function' ({}) to equal the number of "
-                            "coordinates ({}).",
+                            "'speed_function' ({}) to equal to twice the "
+                            "number of coordinates ({}).",
                             getSpeedFunction().getArgumentSize(),
                             getProperty_coordinates().size()));
     }
     
-   // Populate the coordinate index map.
+    // Populate the coordinate index map. In case "finalizeFromProperties()" is
+    // called multiple times, clear the map first.
     _coordinateIndices.clear();
-    std::cout << "coords: " << getProperty_coordinates().size() << std::endl;
     for (int i = 0; i < getProperty_coordinates().size(); ++i) {
         _coordinateIndices[get_coordinates(i)] = i;
     }
@@ -315,7 +330,8 @@ void FunctionBasedPath::extendConnectToModel(Model& model) {
     Super::extendConnectToModel(model);
     
     // Check that the coordinates are in the model. If so, grab references
-    // pointers to them.
+    // pointers to them. In case "connectToModel()" is called multiple times,
+    // clear any existing references first.
     _coordinates.clear();
     for (int i = 0; i < getProperty_coordinates().size(); ++i) {
         const auto& coordName = get_coordinates(i);
@@ -331,8 +347,7 @@ void FunctionBasedPath::extendConnectToModel(Model& model) {
 void FunctionBasedPath::extendAddToSystem(
         SimTK::MultibodySystem& system) const {
     Super::extendAddToSystem(system);
-
-    addCacheVariable(LENGTH_NAME, 0.0, SimTK::Stage::Position);
+    addCacheVariable<double>(LENGTH_NAME, 0.0, SimTK::Stage::Position);
     addCacheVariable<SimTK::Vector>(MOMENT_ARMS_NAME, 
             SimTK::Vector(getProperty_coordinates().size(), 0.0),
             SimTK::Stage::Velocity);
