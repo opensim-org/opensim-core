@@ -1,5 +1,5 @@
 /* ------------------------------------------------------------------------- *
-*                       OpenSim:  sandboxWrapping.cpp                        *
+*                  OpenSim:  testWrappping_Deprecated.cpp                    *
 * -------------------------------------------------------------------------- *
 * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
 * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -19,6 +19,10 @@
 * See the License for the specific language governing permissions and        *
 * limitations under the License.                                             *
 * -------------------------------------------------------------------------- */
+
+// "Deprecated" wrapping tests (i.e., tests that are not currently run in 
+// continuous integratino) to either be removed or reincorporated in to the
+// test suites (after refactor and review). 
 
 #include <OpenSim/OpenSim.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
