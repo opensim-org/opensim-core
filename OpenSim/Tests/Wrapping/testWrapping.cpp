@@ -24,6 +24,7 @@
 #include <OpenSim/OpenSim.h>
 #include <OpenSim/Actuators/ModelOperators.h>
 #include <OpenSim/Simulation/Model/FunctionBasedPath.h>
+#include <OpenSim/Common/CommonUtilities.h>
 #include <SimTKcommon.h>
 
 #define CATCH_CONFIG_MAIN
@@ -351,11 +352,7 @@ TEST_CASE("testFunctionBasedPath") {
     SECTION("Sliding point mass") {
         // 1-DOF polynomial path function.
         // length = q^2 + 2*q + 3
-        SimTK::Vector coeffs(3, 0.0);
-        coeffs[0] = 1.0;
-        coeffs[1] = 2.0;
-        coeffs[2] = 3.0;
-        PolynomialFunction poly(coeffs);
+        PolynomialFunction poly(createVector({1.0, 2.0, 3.0}));
         
         // Test values.
         // momentArm = dl/dq = 2*q + 2
@@ -385,22 +382,17 @@ TEST_CASE("testFunctionBasedPath") {
         SimTK::State state = model.initSystem();
         model.getCoordinateSet()[0].setValue(state, q_x);
         model.getCoordinateSet()[0].setSpeedValue(state, qdot_x);
-        auto& controls = model.updControls(state);
-        controls[0] = tension;
-        controls[1] = 0.0;
-        model.setControls(state, controls);
+        model.setControls(state, createVector({tension, 0.0, 0.0}));
         model.realizeAcceleration(state);
         
         // Run inverse dynamics to compute the generalized force applied by the
         // PathActuator.
         auto& matter = model.updMatterSubsystem();
-        SimTK::Vector residuals(1);
-        SimTK::Vector zero(1, 0.0);
-        SimTK::Vector_<SimTK::SpatialVec> bodyForces(2, 
-                SimTK::SpatialVec(SimTK::Vec3(0), SimTK::Vec3(0)));
+        SimTK::Vector residuals(1, 0.0);
         matter.calcResidualForce(state, 
-                zero, 
-                bodyForces,
+                createVector({0.0}), 
+                SimTK::Vector_<SimTK::SpatialVec>(2, 
+                    SimTK::SpatialVec(SimTK::Vec3(0), SimTK::Vec3(0))),
                 state.getUDot(), 
                 SimTK::Vector(0),
                 residuals);
@@ -423,14 +415,8 @@ TEST_CASE("testFunctionBasedPath") {
     SECTION("Planar point mass, length function") {
         // 2-DOF polynomial path function.
         // length = 1 + 2*q_y + 3*q_y^2 + 4*q_x + 5*q_x*q_y + 6*q_x^2
-        SimTK::Vector coeffs(6, 0.0);
-        coeffs[0] = 1.0;
-        coeffs[1] = 2.0;
-        coeffs[2] = 3.0;
-        coeffs[3] = 4.0;
-        coeffs[4] = 5.0;
-        coeffs[5] = 6.0;
-        MultivariatePolynomialFunction poly(coeffs, 2, 2);
+        MultivariatePolynomialFunction poly(
+                createVector({1.0, 2.0, 3.0, 4.0, 5.0, 6.0}), 2, 2);
         
         // Test values.
         // momentArm_x = dl/dq_x = 4 + 5*q_y + 12*q_x
@@ -447,7 +433,7 @@ TEST_CASE("testFunctionBasedPath") {
         // Create a planar point mass model and add a PathActuator with a 2-DOF
         // FunctionBasedPath.
         Model model = ModelFactory::createPlanarPointMass();
-        model.setGravity(Vec3(0.0));
+        model.setGravity(SimTK::Vec3(0.0));
         
         FunctionBasedPath fbPath;
         fbPath.setName("polynomial_path_2dof");
@@ -467,23 +453,17 @@ TEST_CASE("testFunctionBasedPath") {
         model.getCoordinateSet()[1].setValue(state, q_y);
         model.getCoordinateSet()[0].setSpeedValue(state, qdot_x);
         model.getCoordinateSet()[1].setSpeedValue(state, qdot_y);
-        auto& controls = model.updControls(state);
-        controls[0] = tension;
-        controls[1] = 0.0;
-        controls[2] = 0.0;
-        model.setControls(state, controls);
+        model.setControls(state, createVector({tension, 0.0, 0.0}));
         model.realizeAcceleration(state);
         
         // Run inverse dynamics to compute the generalized forces applied by the
         // PathActuator.
         auto& matter = model.updMatterSubsystem();
-        SimTK::Vector residuals(2);
-        SimTK::Vector zero(2, 0.0);
-        SimTK::Vector_<SimTK::SpatialVec> bodyForces(3, 
-                SimTK::SpatialVec(SimTK::Vec3(0), SimTK::Vec3(0)));
+        SimTK::Vector residuals(2, 0.0);
         matter.calcResidualForce(state, 
-                zero, 
-                bodyForces,
+                SimTK::Vector(2, 0.0), 
+                SimTK::Vector_<SimTK::SpatialVec>(3, 
+                    SimTK::SpatialVec(SimTK::Vec3(0), SimTK::Vec3(0))),
                 state.getUDot(), 
                 SimTK::Vector(0),
                 residuals);
@@ -510,29 +490,16 @@ TEST_CASE("testFunctionBasedPath") {
     SECTION("Planar point mass, all functions") {
         // 2-DOF polynomial path function.
         // length = 1 + 2*q_y + 3*q_y^2 + 4*q_x + 5*q_x*q_y + 6*q_x^2
-        SimTK::Vector lengthCoeffs(6, 0.0);
-        lengthCoeffs[0] = 1.0;
-        lengthCoeffs[1] = 2.0;
-        lengthCoeffs[2] = 3.0;
-        lengthCoeffs[3] = 4.0;
-        lengthCoeffs[4] = 5.0;
-        lengthCoeffs[5] = 6.0;
-        MultivariatePolynomialFunction lengthFunc(lengthCoeffs, 2, 2);
+        MultivariatePolynomialFunction lengthFunc(
+                createVector({1.0, 2.0, 3.0, 4.0, 5.0, 6.0}), 2, 2);
         
         // Moment arm functions.
         // momentArm_x = dl/dq_x = 4 + 5*q_y + 12*q_x
-        // momentArm_y = dl/dq_y = 2 + 6*q_y + 5*q_x 
-        SimTK::Vector momentArmCoeffs_x(3, 0.0);
-        momentArmCoeffs_x[0] = 4.0;
-        momentArmCoeffs_x[1] = 5.0;
-        momentArmCoeffs_x[2] = 12.0;
-        MultivariatePolynomialFunction momentArmFunc_x(momentArmCoeffs_x, 2, 1);
-        
-        SimTK::Vector momentArmCoeffs_y(3, 0.0);
-        momentArmCoeffs_y[0] = 2.0;
-        momentArmCoeffs_y[1] = 6.0;
-        momentArmCoeffs_y[2] = 5.0;
-        MultivariatePolynomialFunction momentArmFunc_y(momentArmCoeffs_y, 2, 1);
+        // momentArm_y = dl/dq_y = 2 + 6*q_y + 5*q_x
+        MultivariatePolynomialFunction momentArmFunc_x(
+                createVector({4.0, 5.0, 12.0}), 2, 1);
+        MultivariatePolynomialFunction momentArmFunc_y(
+                createVector({2.0, 6.0, 5.0}), 2, 1);
         
         // Speed function.
         // speed = qdot_x * momentArm_x + qdot_y * momentArm_y
@@ -563,7 +530,7 @@ TEST_CASE("testFunctionBasedPath") {
         // Create a planar point mass model and add a PathActuator with a 2-DOF
         // FunctionBasedPath.
         Model model = ModelFactory::createPlanarPointMass();
-        model.setGravity(Vec3(0.0));
+        model.setGravity(SimTK::Vec3(0.0));
         
         FunctionBasedPath fbPath;
         fbPath.setName("polynomial_path_2dof");
@@ -586,23 +553,17 @@ TEST_CASE("testFunctionBasedPath") {
         model.getCoordinateSet()[1].setValue(state, q_y);
         model.getCoordinateSet()[0].setSpeedValue(state, qdot_x);
         model.getCoordinateSet()[1].setSpeedValue(state, qdot_y);
-        auto& controls = model.updControls(state);
-        controls[0] = tension;
-        controls[1] = 0.0;
-        controls[2] = 0.0;
-        model.setControls(state, controls);
+        model.setControls(state, createVector({tension, 0.0, 0.0}));
         model.realizeAcceleration(state);
         
         // Run inverse dynamics to compute the generalized forces applied by the
         // PathActuator.
         auto& matter = model.updMatterSubsystem();
-        SimTK::Vector residuals(2);
-        SimTK::Vector zero(2, 0.0);
-        SimTK::Vector_<SimTK::SpatialVec> bodyForces(3, 
-                SimTK::SpatialVec(SimTK::Vec3(0), SimTK::Vec3(0)));
+        SimTK::Vector residuals(2, 0.0);
         matter.calcResidualForce(state, 
-                zero, 
-                bodyForces,
+                SimTK::Vector(2, 0.0), 
+                SimTK::Vector_<SimTK::SpatialVec>(3, 
+                    SimTK::SpatialVec(SimTK::Vec3(0), SimTK::Vec3(0))),
                 state.getUDot(), 
                 SimTK::Vector(0),
                 residuals);
