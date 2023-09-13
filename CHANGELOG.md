@@ -12,7 +12,9 @@ v4.5
 own the property `path` of type `AbstractPath` instead of the `GeometryPath` unnamed property. Getters and setters have 
 been added to these forces to provide access to concrete path types (e.g., `updPath<T>`). In `Ligament` and 
 `Blankevoort1991Ligament`, usages of `get_GeometryPath`, `upd_GeometryPath`, etc., need to be been updated to 
-`getGeometryPath`, `updGeometryPath`, etc., or a suitable alternative.    
+`getGeometryPath`, `updGeometryPath`, etc., or a suitable alternative.
+- Deleting elements from an `OpenSim::Coordinate` range now throws an exception during `finalizeFromProperties` (previously:
+  it would let you do it, and throw later when `Coordinate::getMinRange()` or `Coordinate::getMaxRange()` were called, #3532)
 
 v4.4.1
 ======

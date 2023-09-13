@@ -141,6 +141,14 @@ void Coordinate::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
 
+    // eagerly check if outside code has somehow managed to remove elements
+    // from this coordinate's `range` property (issue #3532)
+    OPENSIM_THROW_IF(
+        getProperty_range().size() < 2,
+        Exception,
+        "A coordinate range must contain at least two elements (minimum, maximum)"
+    );
+
     string prefix = "Coordinate("+getName()+")::extendFinalizeFromProperties:";
 
     // Make sure the default value is within the range when clamped
