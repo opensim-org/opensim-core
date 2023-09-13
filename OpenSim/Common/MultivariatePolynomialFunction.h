@@ -28,8 +28,8 @@ This implementation assumes a maximum of six input dimensions and allows
 computation of first-order derivatives only.
 @param coefficients the polynomial coefficients in order of ascending
 powers starting from the last independent component.
-For a polynomial of third order independent on three components
-(X, Y, Z), the order is a follows:
+For a third-order polynomial that is a function of three components (X, Y, Z), 
+the order is a follows:
 <pre>
 Index | X  Y  Z
 0     | 0  0  0
