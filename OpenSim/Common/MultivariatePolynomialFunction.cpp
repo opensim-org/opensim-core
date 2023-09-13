@@ -28,11 +28,11 @@ public:
     SimTKMultivariatePolynomial(const SimTK::Vector_<T>& coefficients,
             const int& dimension, const int& order)
             : coefficients(coefficients), dimension(dimension), order(order) {
-        OPENSIM_THROW_IF(dimension < 0 || dimension > 4, Exception,
-                "Expected dimension >= 0 && <=4 but got {}.", dimension);
+        OPENSIM_THROW_IF(dimension < 0 || dimension > 6, Exception,
+                "Expected dimension >= 0 && <=6 but got {}.", dimension);
         OPENSIM_THROW_IF(order < 0, Exception,
                 "Expected order >= 0 but got {}.", order);
-        std::array<int, 4> nq{{0, 0, 0, 0}};
+        std::array<int, 6> nq{{0, 0, 0, 0, 0, 0}};
         int coeff_nr = 0;
         for (nq[0] = 0; nq[0] < order + 1; ++nq[0]) {
             int nq2_s;
@@ -52,7 +52,21 @@ public:
                         nq4_s = 0;
                     else
                         nq4_s = order - nq[0] - nq[1] - nq[2];
-                    for (nq[3] = 0; nq[3] < nq4_s + 1; ++nq[3]) { ++coeff_nr; }
+                    for (nq[3] = 0; nq[3] < nq4_s + 1; ++nq[3]) { 
+                        int nq5_s;
+                        if (dimension < 5)
+                            nq5_s = 0;
+                        else
+                            nq5_s = order - nq[0] - nq[1] - nq[2] - nq[3];
+                        for (nq[4] = 0; nq[4] < nq5_s + 1; ++nq[4]) {
+                            int nq6_s;
+                            if (dimension < 6)
+                                nq6_s = 0;
+                            else
+                                nq6_s = order - nq[0] - nq[1] - nq[2] - nq[3] - nq[4];
+                            for (nq[5] = 0; nq[5] < nq6_s + 1; ++nq[5]) { ++coeff_nr; }
+                        }
+                    }
                 }
             }
         }
@@ -61,7 +75,7 @@ public:
                 coefficients.size());
     }
     T calcValue(const SimTK::Vector& x) const override {
-        std::array<int, 4> nq{{0, 0, 0, 0}};
+        std::array<int, 6> nq{{0, 0, 0, 0, 0, 0}};
         T value = static_cast<T>(0);
         int coeff_nr = 0;
         for (nq[0] = 0; nq[0] < order + 1; ++nq[0]) {
@@ -83,12 +97,26 @@ public:
                     else
                         nq4_s = order - nq[0] - nq[1] - nq[2];
                     for (nq[3] = 0; nq[3] < nq4_s + 1; ++nq[3]) {
-                        T valueP = static_cast<T>(1);
-                        for (int i = 0; i < dimension; ++i) {
-                            valueP *= std::pow(x[i], nq[i]);
+                        int nq5_s;
+                        if (dimension < 5)
+                            nq5_s = 0;
+                        else
+                            nq5_s = order - nq[0] - nq[1] - nq[2] - nq[3];
+                        for (nq[4] = 0; nq[4] < nq5_s + 1; ++nq[4]) {
+                            int nq6_s;
+                            if (dimension < 6)
+                                nq6_s = 0;
+                            else
+                                nq6_s = order - nq[0] - nq[1] - nq[2] - nq[3] - nq[4];
+                            for (nq[5] = 0; nq[5] < nq6_s + 1; ++nq[5]) {
+                                T valueP = static_cast<T>(1);
+                                for (int i = 0; i < dimension; ++i) {
+                                    valueP *= std::pow(x[i], nq[i]);
+                                }
+                                value += valueP * coefficients[coeff_nr];
+                                ++coeff_nr;
+                            }
                         }
-                        value += valueP * coefficients[coeff_nr];
-                        ++coeff_nr;
                     }
                 }
             }
@@ -97,7 +125,7 @@ public:
     }
     T calcDerivative(const SimTK::Array_<int>& derivComponent,
             const SimTK::Vector& x) const override {
-        std::array<int, 4> nq{{0, 0, 0, 0}};
+        std::array<int, 6> nq{{0, 0, 0, 0, 0, 0}};
         T value = static_cast<T>(0);
         int nqNonNegative;
         int coeff_nr = 0;
@@ -120,44 +148,76 @@ public:
                     else
                         nq4_s = order - nq[0] - nq[1] - nq[2];
                     for (nq[3] = 0; nq[3] < nq4_s + 1; ++nq[3]) {
-                        if (derivComponent[0] == 0) {
-                            nqNonNegative = nq[0] - 1;
-                            if (nqNonNegative < 0) nqNonNegative = 0;
-                            T valueP = nq[0] * std::pow(x[0], nqNonNegative);
-                            for (int i = 0; i < dimension; ++i) {
-                                if (i == derivComponent[0]) continue;
-                                valueP *= std::pow(x[i], nq[i]);
+                        int nq5_s;
+                        if (dimension < 5)
+                            nq5_s = 0;
+                        else
+                            nq5_s = order - nq[0] - nq[1] - nq[2] - nq[3];
+                        for (nq[4] = 0; nq[4] < nq5_s + 1; ++nq[4]) {
+                            int nq6_s;
+                            if (dimension < 6)
+                                nq6_s = 0;
+                            else
+                                nq6_s = order - nq[0] - nq[1] - nq[2] - nq[3] - nq[4];
+                            for (nq[5] = 0; nq[5] < nq6_s + 1; ++nq[5]) {
+                                if (derivComponent[0] == 0) {
+                                    nqNonNegative = nq[0] - 1;
+                                    if (nqNonNegative < 0) nqNonNegative = 0;
+                                    T valueP = nq[0] * std::pow(x[0], nqNonNegative);
+                                    for (int i = 0; i < dimension; ++i) {
+                                        if (i == derivComponent[0]) continue;
+                                        valueP *= std::pow(x[i], nq[i]);
+                                    }
+                                    value += valueP * coefficients[coeff_nr];
+                                } else if (derivComponent[0] == 1) {
+                                    nqNonNegative = nq[1] - 1;
+                                    if (nqNonNegative < 0) nqNonNegative = 0;
+                                    T valueP = nq[1] * std::pow(x[1], nqNonNegative);
+                                    for (int i = 0; i < dimension; ++i) {
+                                        if (i == derivComponent[0]) continue;
+                                        valueP *= std::pow(x[i], nq[i]);
+                                    }
+                                    value += valueP * coefficients[coeff_nr];
+                                } else if (derivComponent[0] == 2) {
+                                    nqNonNegative = nq[2] - 1;
+                                    if (nqNonNegative < 0) nqNonNegative = 0;
+                                    T valueP = nq[2] * std::pow(x[2], nqNonNegative);
+                                    for (int i = 0; i < dimension; ++i) {
+                                        if (i == derivComponent[0]) continue;
+                                        valueP *= std::pow(x[i], nq[i]);
+                                    }
+                                    value += valueP * coefficients[coeff_nr];
+                                } else if (derivComponent[0] == 3) {
+                                    nqNonNegative = nq[3] - 1;
+                                    if (nqNonNegative < 0) nqNonNegative = 0;
+                                    T valueP = nq[3] * std::pow(x[3], nqNonNegative);
+                                    for (int i = 0; i < dimension; ++i) {
+                                        if (i == derivComponent[0]) continue;
+                                        valueP *= std::pow(x[i], nq[i]);
+                                    }
+                                    value += valueP * coefficients[coeff_nr];
+                                } else if (derivComponent[0] == 4) {
+                                    nqNonNegative = nq[4] - 1;
+                                    if (nqNonNegative < 0) nqNonNegative = 0;
+                                    T valueP = nq[4] * std::pow(x[4], nqNonNegative);
+                                    for (int i = 0; i < dimension; ++i) {
+                                        if (i == derivComponent[0]) continue;
+                                        valueP *= std::pow(x[i], nq[i]);
+                                    }
+                                    value += valueP * coefficients[coeff_nr];
+                                } else if (derivComponent[0] == 5) {
+                                    nqNonNegative = nq[5] - 1;
+                                    if (nqNonNegative < 0) nqNonNegative = 0;
+                                    T valueP = nq[5] * std::pow(x[5], nqNonNegative);
+                                    for (int i = 0; i < dimension; ++i) {
+                                        if (i == derivComponent[0]) continue;
+                                        valueP *= std::pow(x[i], nq[i]);
+                                    }
+                                    value += valueP * coefficients[coeff_nr];
+                                }
+                                ++coeff_nr;
                             }
-                            value += valueP * coefficients[coeff_nr];
-                        } else if (derivComponent[0] == 1) {
-                            nqNonNegative = nq[1] - 1;
-                            if (nqNonNegative < 0) nqNonNegative = 0;
-                            T valueP = nq[1] * std::pow(x[1], nqNonNegative);
-                            for (int i = 0; i < dimension; ++i) {
-                                if (i == derivComponent[0]) continue;
-                                valueP *= std::pow(x[i], nq[i]);
-                            }
-                            value += valueP * coefficients[coeff_nr];
-                        } else if (derivComponent[0] == 2) {
-                            nqNonNegative = nq[2] - 1;
-                            if (nqNonNegative < 0) nqNonNegative = 0;
-                            T valueP = nq[2] * std::pow(x[2], nqNonNegative);
-                            for (int i = 0; i < dimension; ++i) {
-                                if (i == derivComponent[0]) continue;
-                                valueP *= std::pow(x[i], nq[i]);
-                            }
-                            value += valueP * coefficients[coeff_nr];
-                        } else if (derivComponent[0] == 3) {
-                            nqNonNegative = nq[3] - 1;
-                            if (nqNonNegative < 0) nqNonNegative = 0;
-                            T valueP = nq[3] * std::pow(x[3], nqNonNegative);
-                            for (int i = 0; i < dimension; ++i) {
-                                if (i == derivComponent[0]) continue;
-                                valueP *= std::pow(x[i], nq[i]);
-                            }
-                            value += valueP * coefficients[coeff_nr];
                         }
-                        ++coeff_nr;
                     }
                 }
             }
