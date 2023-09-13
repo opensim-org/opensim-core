@@ -25,6 +25,7 @@
 //==============================================================================
 // INCLUDES
 //==============================================================================
+#include <OpenSim/Common/Exception.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
@@ -206,7 +207,7 @@ void CoordinateActuator::computeForce( const SimTK::State& s,
 double CoordinateActuator::
 getSpeed( const SimTK::State& s) const
 {
-    assert(_coord);
+    OPENSIM_ASSERT_FRMOBJ(_coord != nullptr);
     return _coord->getSpeedValue(s);
 };
 

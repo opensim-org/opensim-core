@@ -29,6 +29,7 @@
 
 
 // INCLUDES
+#include "Assertion.h"
 #include "osimCommonDLL.h"
 #include "AbstractProperty.h"
 #include "Exception.h"
@@ -146,15 +147,15 @@ public:
     virtual void readFromXMLElement
        (SimTK::Xml::Element& propertyElement,
         int                  versionNumber) override
-    {assert(!"Property_Deprecated::readFromXMLElement not implemented");}
+    {OPENSIM_ASSERT(!"Property_Deprecated::readFromXMLElement not implemented");}
 
     virtual void writeToXMLElement
        (SimTK::Xml::Element& propertyElement) const override
-    {assert(!"Property_Deprecated::writeToXMLElement not implemented");}
+    {OPENSIM_ASSERT(!"Property_Deprecated::writeToXMLElement not implemented");}
 
     // Override for array types.
     int getNumValues() const override {return 1;}
-    void clearValues() override {assert(!"implemented");}
+    void clearValues() override {OPENSIM_ASSERT(!"implemented");}
 
     bool isUnnamedProperty() const override {return false;}
     bool isObjectProperty() const override {return false;}

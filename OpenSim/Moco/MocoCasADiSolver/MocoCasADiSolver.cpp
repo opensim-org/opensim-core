@@ -18,6 +18,7 @@
 
 #include "MocoCasADiSolver.h"
 
+#include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Moco/MocoUtilities.h>
 
 #ifdef OPENSIM_WITH_CASADI
@@ -129,7 +130,7 @@ const MocoTrajectory& MocoCasADiSolver::getGuess() const {
         if (get_guess_file() != "" && m_guessFromFile.empty()) {
             // The API should make it impossible for both guessFromFile and
             // guessFromAPI to be non-empty.
-            assert(m_guessFromAPI.empty());
+            OPENSIM_ASSERT(m_guessFromAPI.empty());
             // No need to load from file again if we've already loaded it.
             MocoTrajectory guessFromFile(get_guess_file());
             checkGuess(guessFromFile);

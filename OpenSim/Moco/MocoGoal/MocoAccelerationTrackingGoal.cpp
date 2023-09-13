@@ -20,6 +20,7 @@
 
 #include <OpenSim/Moco/MocoUtilities.h>
 
+#include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
 
@@ -35,12 +36,12 @@ void MocoAccelerationTrackingGoal::initializeOnModelImpl(
         TimeSeriesTableVec3 accelerationTableToUse;
         // Should not be able to supply any two simultaneously.
         if (get_acceleration_reference_file() != "") { // acceleration ref file
-            assert(m_acceleration_table.getNumColumns() == 0);
+            OPENSIM_ASSERT(m_acceleration_table.getNumColumns() == 0);
             accelerationTableToUse =
                     TimeSeriesTableVec3(get_acceleration_reference_file());
 
         } else { // acceleration table
-            assert(get_acceleration_reference_file() == "");
+            OPENSIM_ASSERT(get_acceleration_reference_file() == "");
             accelerationTableToUse = m_acceleration_table;
         }
 

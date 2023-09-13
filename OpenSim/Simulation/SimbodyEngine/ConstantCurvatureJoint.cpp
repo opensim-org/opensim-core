@@ -33,6 +33,7 @@
 #include <SimTKcommon/internal/DecorativeGeometry.h>
 #include <SimTKcommon/internal/Transform.h>
 
+#include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
 using namespace SimTK;
@@ -55,7 +56,7 @@ Vec3 OpenSim::ConstantCurvatureJoint::clamp(const SimTK::Vec3& q) {
                 "to unphysical behavior. Please adjust your model "
                 "or simulation to avoid this state.",
                 pos(0), bound));
-        assert(false);
+        OPENSIM_ASSERT(false);
         pos(0) = bound;
     }
     if (pos(0) < -bound) {
@@ -66,7 +67,7 @@ Vec3 OpenSim::ConstantCurvatureJoint::clamp(const SimTK::Vec3& q) {
                 "to unphysical behavior. Please adjust your model "
                 "or simulation to avoid this state.",
                 pos(0), -bound));
-        assert(false);
+        OPENSIM_ASSERT(false);
         pos(0) = -bound;
     }
     if (pos(1) > bound) {
@@ -77,7 +78,7 @@ Vec3 OpenSim::ConstantCurvatureJoint::clamp(const SimTK::Vec3& q) {
                 "to unphysical behavior. Please adjust your model "
                 "or simulation to avoid this state.",
                 pos(1), bound));
-        assert(false);
+        OPENSIM_ASSERT(false);
         pos(1) = bound;
     }
     if (pos(1) < -bound) {
@@ -88,7 +89,7 @@ Vec3 OpenSim::ConstantCurvatureJoint::clamp(const SimTK::Vec3& q) {
                 "to unphysical behavior. Please adjust your model "
                 "or simulation to avoid this state.",
                 pos(1), -bound));
-        assert(false);
+        OPENSIM_ASSERT(false);
         pos(1) = -bound;
     }
     if (pos(2) > bound) {
@@ -99,7 +100,7 @@ Vec3 OpenSim::ConstantCurvatureJoint::clamp(const SimTK::Vec3& q) {
                 "to unphysical behavior. Please adjust your model "
                 "or simulation to avoid this state.",
                 pos(2), bound));
-        assert(false);
+        OPENSIM_ASSERT(false);
         pos(2) = bound;
     }
     if (pos(2) < -bound) {
@@ -110,7 +111,7 @@ Vec3 OpenSim::ConstantCurvatureJoint::clamp(const SimTK::Vec3& q) {
                 "to unphysical behavior. Please adjust your model "
                 "or simulation to avoid this state.",
                 pos(2), -bound));
-        assert(false);
+        OPENSIM_ASSERT(false);
         pos(2) = -bound;
     }
     return pos;
@@ -204,7 +205,7 @@ Mat33 OpenSim::ConstantCurvatureJoint::eulerXZYToMatrixGrad(
         ret(1, 2) = -(-sy) * sx + cx * (cy)*sz;
         ret(2, 2) = cx * (-sy) + sx * (cy)*sz;
     } else {
-        assert(false);
+        OPENSIM_ASSERT(false);
     }
 
     return ret;
@@ -246,7 +247,7 @@ Mat63 OpenSim::ConstantCurvatureJoint::getEulerJacobian(const Vec3& q) {
 
 Mat63 OpenSim::ConstantCurvatureJoint::getEulerJacobianDerivWrtPos(
         const Vec3& q, int index) {
-    assert(index < 3);
+    OPENSIM_ASSERT(index < 3);
 
     Mat63 DJ_Dq;
     DJ_Dq.setToZero();
@@ -677,10 +678,10 @@ public:
                 OpenSim::ConstantCurvatureJoint::clamp(q + neutralPos), length);
         Vec6 result = J * Vec3(u[0], u[1], u[2]);
 
-        assert(!q.isNaN());
-        assert(!J.isNaN());
-        assert(!J.isInf());
-        assert(!result.isNaN());
+        OPENSIM_ASSERT(!q.isNaN());
+        OPENSIM_ASSERT(!J.isNaN());
+        OPENSIM_ASSERT(!J.isInf());
+        OPENSIM_ASSERT(!result.isNaN());
 
         return SpatialVec(result.getSubVec<3>(0), result.getSubVec<3>(3));
     }
@@ -698,10 +699,10 @@ public:
 
         Vec3 result = J.transpose() * rawSpatial;
 
-        assert(!q.isNaN());
-        assert(!J.isNaN());
-        assert(!J.isInf());
-        assert(!result.isNaN());
+        OPENSIM_ASSERT(!q.isNaN());
+        OPENSIM_ASSERT(!J.isNaN());
+        OPENSIM_ASSERT(!J.isInf());
+        OPENSIM_ASSERT(!result.isNaN());
 
         Vec3::updAs(f) = result;
     }
@@ -721,11 +722,11 @@ public:
                         dq, length);
         Vec6 result = dJ * Vec3(u[0], u[1], u[2]);
 
-        assert(!q.isNaN());
-        assert(!dq.isNaN());
-        assert(!dJ.isNaN());
-        assert(!dJ.isInf());
-        assert(!result.isNaN());
+        OPENSIM_ASSERT(!q.isNaN());
+        OPENSIM_ASSERT(!dq.isNaN());
+        OPENSIM_ASSERT(!dJ.isNaN());
+        OPENSIM_ASSERT(!dJ.isInf());
+        OPENSIM_ASSERT(!result.isNaN());
 
         return SpatialVec(result.getSubVec<3>(0), result.getSubVec<3>(3));
     }
@@ -747,24 +748,24 @@ public:
 
         Vec3 result = dJ.transpose() * rawSpatial;
 
-        assert(!q.isNaN());
-        assert(!dq.isNaN());
-        assert(!dJ.isNaN());
-        assert(!dJ.isInf());
-        assert(!result.isNaN());
+        OPENSIM_ASSERT(!q.isNaN());
+        OPENSIM_ASSERT(!dq.isNaN());
+        OPENSIM_ASSERT(!dJ.isNaN());
+        OPENSIM_ASSERT(!dJ.isInf());
+        OPENSIM_ASSERT(!result.isNaN());
 
         Vec3::updAs(f) = result;
     }
 
     void setQToFitTransform(
             const State&, const Transform& X_FM, int nq, Real* q) const {
-        assert(false);
+        OPENSIM_ASSERT(false);
         Vec3::updAs(q) = X_FM.p();
     }
 
     void setUToFitVelocity(
             const State&, const SpatialVec& V_FM, int nu, Real* u) const {
-        assert(false);
+        OPENSIM_ASSERT(false);
         Vec3::updAs(u) = V_FM[1];
     }
 
