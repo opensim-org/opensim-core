@@ -1,4 +1,3 @@
-project(OpenSim)
 #
 # Build of OpenSim. There are three steps:
 #    (1) Choose appropriate platform
@@ -8,7 +7,8 @@ project(OpenSim)
 #
 #----------------------------------------------------
 
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.5)
+project(OpenSim)
 
 if(COMMAND cmake_policy)
     cmake_policy(SET CMP0003 NEW)
