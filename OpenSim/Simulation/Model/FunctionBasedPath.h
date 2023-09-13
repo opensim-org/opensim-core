@@ -40,15 +40,41 @@ namespace OpenSim {
 //=============================================================================
 /**
  * A concrete class representing a path for muscles, ligaments, etc., based on 
- * OpenSim::Function objects.
+ * `Function` objects. This class can be used when efficient computations of 
+ * path length, lengthening speed, and moment arms are a priority (e.g., a 
+ * direct collocation problem).
  * 
- * This class 
- *
- * TODOs
- * - coordinates must be in the same order as the function arguments
- * - coordinates must be in the same order as the moment arm functions
- * - does *not* support joints with u =/= qdot (e.g., BallJoint)
- * - only applied mobility forces
+ * Each instance of this class requires a list of model coordinates that the
+ * path is dependent on and a function that computes the length of the path as a
+ * function of the coordinate values. Optionally, the user can provide functions
+ * that compute the moment arms of the path as a function of the coordinate
+ * values and a function that computes the speed of the path as a function of
+ * the coordinate values and speeds. If the moment arm functions are not
+ * provided, the moment arms will be computed from the derivative of the length
+ * function with respect to the coordinate values. If the speed function is not
+ * provided, the speed will be computed using the dot product of the moment 
+ * arms and coordinate speeds based on the chain rule:
+ * 
+ * \f[
+ * \dot{l}(\bm{q}) = \frac{dl}{dt} = \frac{dl}{d\bm{q}} \frac{dq}{dt} 
+ *                  = \frac{dl}{d\bm{q}} \dot{q}
+ * \f]
+ * 
+ * The length function and the moment arm functions (if provided) must have the 
+ * same number of arguments as the number of coordinates, where the order of the 
+ * arguments matches the order in the `coordinates` property. Each moment arm
+ * function corresponds to a single coordinate, and the order of the functions 
+ * in the `moment_arm_functions` property must match the order in `coordinates`.
+ * 
+ * The speed function (if provided) must have twice as many arguments as the
+ * number of coordinates, where the first half of the arguments are the
+ * coordinate values and the second half are the coordinate speeds. The order of
+ * the value and speed arguments must match the order in the `coordinates` 
+ * property.
+ * 
+ * The forces applied to the model by the path are computed by multiplying the
+ * tension in the path by the moment arms. Therefore, this class only applies
+ * mobility (i.e., generalized) forces to the model.
  */
 class OSIMSIMULATION_API FunctionBasedPath : public AbstractPath {
 OpenSim_DECLARE_CONCRETE_OBJECT(FunctionBasedPath, AbstractPath);
@@ -59,7 +85,7 @@ public:
 //=============================================================================
     OpenSim_DECLARE_LIST_PROPERTY(coordinates, std::string, 
             "The list of model coordinates whose values and speeds are "
-            "used as arguments to the path functions.");
+            "used as arguments to the path function(s).");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(length_function, Function, 
             "The OpenSim::Function object that computes the length of the path "
             "as a function of the coordinate values. The function arguments "
@@ -73,7 +99,7 @@ public:
             "The OpenSim::Function object that computes the speed of the path "
             "as a function of the coordinate values and speeds. The function "
             "arguments must be the coordinate values followed by coordinate "
-            "speeds both matching the order in the 'coordinates' property.");
+            "speeds, both matching the order in the 'coordinates' property.");
     
 //=============================================================================
 // METHODS

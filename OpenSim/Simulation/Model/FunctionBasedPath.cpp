@@ -179,7 +179,7 @@ SimTK::Vector FunctionBasedPath::computeCoordinateSpeeds(
 {
     SimTK::Vector coordinateSpeeds((int)_coordinates.size(), 0.0);
     for (int i = 0; i < _coordinates.size(); ++i) {
-        coordinateSpeeds[i] = _coordinates[i]->getSpeedValue(s);
+        coordinateSpeeds[i] = _coordinates[i]->getQDot(s);
     }
     
     return coordinateSpeeds;

@@ -153,6 +153,8 @@ public:
     /** return the name (label) used to identify the Coordinate's speed
         state variable. Returns the string "<coordinate_name>/speed" */
     const std::string& getSpeedName() const;
+    
+    double getQDot(const SimTK::State& s) const;
 
     /** get the default value for this coordinate. This is the value 
         used if no value has been set prior to a simulation. */
