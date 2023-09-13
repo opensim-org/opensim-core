@@ -24,11 +24,11 @@
 namespace OpenSim {
 
 /** A multivariate polynomial function.
-This implementation assumes a maximum of four input dimensions and allows
+This implementation assumes a maximum of six input dimensions and allows
 computation of first-order derivatives only.
 @param coefficients the polynomial coefficients in order of ascending
-powers starting from the last dependent component.
-For a polynomial of third order dependent on three components
+powers starting from the last independent component.
+For a polynomial of third order independent on three components
 (X, Y, Z), the order is a follows:
 <pre>
 Index | X  Y  Z
@@ -56,17 +56,17 @@ Index | X  Y  Z
 Assuming c6 the index 6 coefficient, the corresponding term is Y Z^2.
 @note The order of coefficients for this class is the *opposite** from the order
 used in the univariate PolynomialFunction.
-@param dimension the number of dependent components
+@param dimension the number of independent components
 @param order the polynomial order (the largest sum of exponents in a single term) */
 class OSIMCOMMON_API MultivariatePolynomialFunction : public Function {
     OpenSim_DECLARE_CONCRETE_OBJECT(MultivariatePolynomialFunction, Function);
 
 public:
     OpenSim_DECLARE_PROPERTY(coefficients, SimTK::Vector,
-            "Coefficients of a multivariate polynomial function in order of"
-            " ascending powers starting from the last dependent component.");
+            "Coefficients of a multivariate polynomial function in order of "
+            "ascending powers starting from the last independent component.");
     OpenSim_DECLARE_PROPERTY(dimension, int,
-            "Number of input dimensions (i.e., dependent components).");
+            "Number of input dimensions (i.e., independent components).");
     OpenSim_DECLARE_PROPERTY(
             order, int, "The largest sum of exponents in a single term.");
 
