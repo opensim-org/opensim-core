@@ -39,7 +39,7 @@ AbstractPath::AbstractPath() : ModelComponent() {
 
 AbstractPath::AbstractPath(AbstractPath const&) = default;
 
-AbstractPath::~AbstractPath() = default;
+AbstractPath::~AbstractPath() noexcept = default;
 
 AbstractPath& AbstractPath::operator=(const AbstractPath&) = default;
 

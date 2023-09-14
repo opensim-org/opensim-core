@@ -79,7 +79,7 @@ public:
     
     // CONSTRUCTION AND DESTRUCTION
     AbstractPath();
-    ~AbstractPath() override;
+    ~AbstractPath() noexcept override;
     
     AbstractPath(const AbstractPath&);
     AbstractPath& operator=(const AbstractPath&);
