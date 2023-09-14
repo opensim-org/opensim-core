@@ -144,9 +144,9 @@ void Coordinate::extendFinalizeFromProperties()
     // eagerly check if outside code has somehow managed to remove elements
     // from this coordinate's `range` property (issue #3532)
     OPENSIM_THROW_IF(
-        getProperty_range().size() < 2,
+        getProperty_range().size() != 2,
         Exception,
-        "A coordinate range must contain at least two elements (minimum, maximum)"
+        "A coordinate range must contain exactly two elements (minimum, maximum)"
     );
 
     string prefix = "Coordinate("+getName()+")::extendFinalizeFromProperties:";
