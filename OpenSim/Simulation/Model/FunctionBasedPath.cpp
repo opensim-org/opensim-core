@@ -142,7 +142,7 @@ void FunctionBasedPath::addInEquivalentForces(const SimTK::State& state,
     // Apply the mobility forces.
     const SimTK::SimbodyMatterSubsystem& matter = 
             getModel().getMatterSubsystem();
-    for (int i = 0; i < _coordinates.size(); ++i) {
+    for (int i = 0; i < (int)_coordinates.size(); ++i) {
         const SimTK::MobilizedBody& mobod =
                 matter.getMobilizedBody(_coordinates[i]->getBodyIndex());
         mobod.applyOneMobilityForce(state, 
