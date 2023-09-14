@@ -26,7 +26,7 @@
 
 using namespace OpenSim;
 
-const std::string FunctionBasedPath::LENGTH_NAME("length_cache");
+const std::string FunctionBasedPath::LENGTH_NAME("length");
 const std::string FunctionBasedPath::LENGTHENING_SPEED_NAME("lengthening_speed");
 const std::string FunctionBasedPath::MOMENT_ARMS_NAME("moment_arms");
 
@@ -179,7 +179,7 @@ SimTK::Vector FunctionBasedPath::computeCoordinateSpeeds(
 {
     SimTK::Vector coordinateSpeeds((int)_coordinates.size(), 0.0);
     for (int i = 0; i < (int)_coordinates.size(); ++i) {
-        coordinateSpeeds[i] = _coordinates[i]->getQDot(s);
+        coordinateSpeeds[i] = _coordinates[i]->getQDotValue(s);
     }
     
     return coordinateSpeeds;

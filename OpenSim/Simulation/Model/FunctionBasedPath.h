@@ -44,19 +44,19 @@ namespace OpenSim {
  * path length, lengthening speed, and moment arms are a priority (e.g., a 
  * direct collocation problem).
  * 
- * Each instance of this class requires a list of model coordinates that the
- * path is dependent on and a function, \f$ l(q) \f$, that computes the length 
- * of the path as a function of the coordinate values, \f$ q \f$. Optionally, 
- * the user can provide functions that compute the moment arms of the path as a 
- * function of the coordinate values and a function that computes the speed of 
- * the path as a function of the coordinate values and speeds. 
+ * Each instance of this class requires both a list of model coordinates that 
+ * the path is dependent on and a function, \f$ l(q) \f$, that computes the 
+ * length of the path as a function of the coordinate values, \f$ q \f$. 
+ * Optionally, functions can be provided to compute the moment arms of the path 
+ * as a function of the coordinate values and a function that computes the speed 
+ * of the path as a function of the coordinate values and speeds. 
  * 
  * If the moment arm functions are not provided, the moment arms will be 
  * computed from the derivative of the length function with respect to the 
  * coordinate values: 
  * 
  * \f[
- * r_i = \frac{\partial l}{\partial q_i}
+ * r_i = \frac{\partial l}{\partial q_i} \quad i = 1, \ldots, N_q
  * \f]
  * 
  *  * Where, 
@@ -64,6 +64,7 @@ namespace OpenSim {
  * - \f$ q \f$: the set of coordinate values.
  * - \f$ r_i \f$: the moment arm of the path with respect to the \f$ i^{th} \f$
  * coordinate.
+ * - \f$ N_q \f$: the number of coordinates.
  * 
  * If the speed function is not provided, the speed will be computed using the 
  * dot product of the moment arms and coordinate speeds based on the chain rule:
@@ -77,7 +78,6 @@ namespace OpenSim {
  * Where, 
  * - \f$ dot{l} \f$: the lengthening speed of the path.
  * - \f$ dot{q} \f$: the set of coordinate speeds.
- * - \f$ N_q \f$: the number of coordinates.
  * 
  * The length function and the moment arm functions (if provided) must have the 
  * same number of arguments as the number of coordinates, where the order of the 

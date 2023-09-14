@@ -370,7 +370,7 @@ const std::string&  Coordinate::getSpeedName() const
     return _speedName;
 }
 
-double Coordinate::getQDot(const SimTK::State& s) const {
+double Coordinate::getQDotValue(const SimTK::State& s) const {
     return _model->getMatterSubsystem().getMobilizedBody(_bodyIndex).getOneQDot(s,_mobilizerQIndex);
 }
 
