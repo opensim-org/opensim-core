@@ -53,7 +53,6 @@ Quantities represented this way include
 Spatial configuration has to be handled differently though since
 orientation is not a vector quantity. (We use Transform for this concept
 which includes a Rotation matrix and a translation Vec3.) **/
-#ifndef SWIG
 typedef Vec<2,   Vec3>              SpatialVec;
 /** A SpatialVec that is always single (float) precision regardless of
 the compiled-in precision of Real. **/
@@ -131,7 +130,7 @@ typedef ArticulatedInertia_<double> dArticulatedInertia;
 
 /** For backwards compatibility only; use UnitInertia instead. **/
 typedef UnitInertia  Gyration;
-#endif
+
 // -----------------------------------------------------------------------------
 //                             INERTIA MATRIX
 // -----------------------------------------------------------------------------
@@ -198,10 +197,8 @@ Typedefs exist for the most common invocations of Inertia_\<P\>:
 **/
 template <class P=Real>
 class SimTK_SimTKCOMMON_EXPORT Inertia_ {
-#ifndef SWIG
     typedef SymMat<3,P>     SymMat33P;
     typedef Rotation_<P>    RotationP;
-#endif
 public:
 /// Default is a NaN-ed out mess to avoid accidents, even in Release mode.
 /// Other than this value, an Inertia matrix should always be valid.
@@ -247,7 +244,6 @@ Inertia_(const P& xx, const P& yy, const P& zz,
                         xy, yy,
                         xz, yz, zz);
     errChk("Inertia::setInertia(xx,yy,zz,xy,xz,yz)"); }
-#ifndef SWIG
 /// Construct an Inertia from a symmetric 3x3 matrix. The diagonals must
 /// be nonnegative and satisfy the triangle inequality.
 explicit Inertia_(const SymMat33P& I) : I_OF_F(I) 
@@ -409,7 +405,6 @@ const SymMat33P& asSymMat33() const {return I_OF_F;}
 /// Expand the internal packed representation into a full 3x3 symmetric
 /// matrix with all elements set.
 Mat33 toMat33() const {return Mat33(I_OF_F);}
-#endif
 
 /// Obtain the inertia moments (diagonal of the Inertia matrix) as a Vec3
 /// ordered xx, yy, zz.
@@ -422,7 +417,6 @@ bool isNaN()    const {return I_OF_F.isNaN();}
 bool isInf()    const {return I_OF_F.isInf();}
 bool isFinite() const {return I_OF_F.isFinite();}
 
-#ifndef SWIG
 /// Compare this inertia matrix with another one and return true if they
 /// are close to within a default numerical tolerance. Cost is about
 /// 30 flops.
@@ -572,9 +566,7 @@ void errChk(const char* methodName) const {
 // Inertia expressed in frame F and about F's origin OF. Note that frame F
 // is implicit here; all we actually have are the inertia scalars.
 SymMat33P I_OF_F; 
-#endif
 };
-#ifndef SWIG
 /// Add two compatible inertia matrices, meaning they must be taken about the
 /// same point and expressed in the same frame. There is no way to verify
 /// compatibility; make sure you know what you're doing. Cost is 6 flops.
@@ -1352,10 +1344,8 @@ Typedefs exist for the most common invocations of MassProperties_\<P\>:
    almost always used)
  - \ref SimTK::fMassProperties "fMassProperties" for single (float) precision
  - \ref SimTK::dMassProperties "dMassProperties" for double precision **/
-#endif
 template <class P>
 class SimTK_SimTKCOMMON_EXPORT MassProperties_ {
-#ifndef SWIG
     typedef P               P;
     typedef Vec<3,P>        Vec3;
     typedef UnitInertia_<P> UnitInertiaP;
@@ -1366,7 +1356,6 @@ class SimTK_SimTKCOMMON_EXPORT MassProperties_ {
     typedef Rotation_<P>    RotationP;
     typedef Transform_<P>   TransformP;
     typedef Inertia_<P>     InertiaP;
-#endif
 public:
 /** Create a mass properties object in which the mass, mass center, and 
 inertia are meaningless; you must assign values before using this. **/
@@ -1374,7 +1363,6 @@ MassProperties_() { setMassProperties(0,Vec3(0),UnitInertiaP()); }
 /** Create a mass properties object from individually supplied mass,
 mass center, and inertia matrix.  The inertia matrix is divided by the
 mass to produce the unit inertia. **/
-#ifndef SWIG
 MassProperties_(const P& m, const Vec3& com, const InertiaP& inertia)
     { setMassProperties(m,com,inertia); }
 
@@ -1483,7 +1471,7 @@ method. **/
 MassProperties_ reexpress(const RotationP& R_BC) const {
     return MassProperties_(mass, ~R_BC*comInB, unitInertia_OB_B.reexpress(R_BC));
 }
-#endif
+
 /** Return true only if the mass stored here is \e exactly zero.\ If the mass
 resulted from a computation, you should use isNearlyMassless() instead.
 @see isNearlyMassless(), isExactlyCentral() **/
@@ -1527,7 +1515,6 @@ NaN or Infinity.\ Note that Ground's mass properties are not finite.
 bool isFinite() const {
     return SimTK::isFinite(mass) && comInB.isFinite() && unitInertia_OB_B.isFinite();
 }
-#ifndef SWIG
 /** Convert this MassProperties object to a spatial inertia matrix and return
 it as a SpatialMat, which is a 2x2 matrix of 3x3 submatrices. 
 @see toMat66() **/
@@ -1553,13 +1540,12 @@ Mat66P toMat66() const {
     M.template updSubMat<3,3>(3,3) = mass; // a diagonal matrix
     return M;
 }
-#endif
+
 private:
 P        mass;
 Vec3        comInB;         // meas. from B origin, expr. in B
 UnitInertiaP unitInertia_OB_B;   // about B origin, expr. in B
 };
-#ifndef SWIG
 /** Output a human-readable representation of a MassProperties object to
 the given output stream. **/
 template <class P> static inline std::ostream& 
@@ -1571,10 +1557,8 @@ operator<<(std::ostream& o, const MassProperties_<P>& mp) {
              << "\n}\n";
 }
 
-#else
 typedef SimTK::Inertia_<double> Inertia;
 typedef SimTK::MassProperties_<double> MassProperties;
-#endif
 } // namespace SimTK
 
 #endif // SimTK_SIMMATRIX_MASS_PROPERTIES_H_
