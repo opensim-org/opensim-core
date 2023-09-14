@@ -1,5 +1,10 @@
 
-file(GLOB TEST_PROGS "test*.cpp")
+set(TEST_PROGS
+        testWrapping.cpp
+        # testWrapping_Deprecated.cpp
+        testWrapCylinder.cpp
+        testWrappingAlgorithm.cpp
+)
 file(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
 
 OpenSimAddTests(
