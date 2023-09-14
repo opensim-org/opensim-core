@@ -13,6 +13,8 @@ own the property `path` of type `AbstractPath` instead of the `GeometryPath` unn
 been added to these forces to provide access to concrete path types (e.g., `updPath<T>`). In `Ligament` and 
 `Blankevoort1991Ligament`, usages of `get_GeometryPath`, `upd_GeometryPath`, etc., need to be been updated to 
 `getGeometryPath`, `updGeometryPath`, etc., or a suitable alternative.    
+- Fixed a minor memory leak when calling `OpenSim::CoordinateCouplerConstraint::setFunction` (#3541)
+- Increase the number of input dimensions supported by `MultivariatePolynomialFunction` to 6 (#3386)
 - Added `Assertion.h` and associated `OPENSIM_ASSERT*` macros (#3531)
 - Replaced uses of `assert` with `OPENSIM_ASSERT`, so that assertion may be configured via cmake in the future, and
   so that OpenSim (esp. debug builds) throw instead of terminating the process (#3531)
