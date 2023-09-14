@@ -2,7 +2,7 @@
 #define OPENSIM_ASSERTION_H_
 
 /* ------------------------------------------------------------------------- *
-*                           OpenSim:  Exception.h                            *
+*                           OpenSim:  Assertion.h                            *
 * -------------------------------------------------------------------------- *
 * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
 * See http://opensim.stanford.edu and the NOTICE file for more information.  *
