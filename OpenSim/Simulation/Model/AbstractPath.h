@@ -84,8 +84,8 @@ public:
     AbstractPath(const AbstractPath&);
     AbstractPath& operator=(const AbstractPath&);
     
-    AbstractPath(AbstractPath&& other) noexcept;
-    AbstractPath& operator=(AbstractPath&& other) noexcept;
+    AbstractPath(AbstractPath&& other);
+    AbstractPath& operator=(AbstractPath&& other);
 
     // INTERFACE METHODS
     //
