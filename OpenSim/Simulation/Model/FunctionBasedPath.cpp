@@ -167,7 +167,7 @@ SimTK::Vector FunctionBasedPath::computeCoordinateValues(
         const SimTK::State& s) const 
 {
     SimTK::Vector coordinateValues((int)_coordinates.size(), 0.0);
-    for (int i = 0; i < _coordinates.size(); ++i) {
+    for (int i = 0; i < (int)_coordinates.size(); ++i) {
         coordinateValues[i] = _coordinates[i]->getValue(s);
     }
     
@@ -178,7 +178,7 @@ SimTK::Vector FunctionBasedPath::computeCoordinateSpeeds(
         const SimTK::State& s) const 
 {
     SimTK::Vector coordinateSpeeds((int)_coordinates.size(), 0.0);
-    for (int i = 0; i < _coordinates.size(); ++i) {
+    for (int i = 0; i < (int)_coordinates.size(); ++i) {
         coordinateSpeeds[i] = _coordinates[i]->getQDot(s);
     }
     
@@ -189,7 +189,7 @@ SimTK::Vector FunctionBasedPath::computeCoordinatesState(
         const SimTK::State& s) const 
 {
     SimTK::Vector coordinatesState(2*(int)_coordinates.size(), 0.0);
-    for (int i = 0; i < _coordinates.size(); ++i) {
+    for (int i = 0; i < (int)_coordinates.size(); ++i) {
         coordinatesState[i] = _coordinates[i]->getValue(s);
         coordinatesState[i + (int)_coordinates.size()] = 
                 _coordinates[i]->getSpeedValue(s);
@@ -219,7 +219,7 @@ void FunctionBasedPath::computeMomentArms(const SimTK::State& s) const
         // coordinates.
         computeLength(s);
         SimTK::Vector momentArms((int)_coordinates.size(), 0.0);
-        for (int i = 0; i < _coordinates.size(); ++i) {
+        for (int i = 0; i < (int)_coordinates.size(); ++i) {
             momentArms[i] = getLengthFunction().calcDerivative({i}, 
                     computeCoordinateValues(s));
         }
