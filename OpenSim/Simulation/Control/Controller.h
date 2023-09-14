@@ -67,7 +67,7 @@ public:
         "enabled." );
 
     OpenSim_DECLARE_LIST_PROPERTY(actuator_list, std::string,
-        "The list of model actuators that this controller will control."
+        "The names of the model actuators that this controller will control."
         "The keyword ALL indicates the controller will control all the "
         "actuators in the model" );
 
