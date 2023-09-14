@@ -15,6 +15,8 @@ been added to these forces to provide access to concrete path types (e.g., `updP
 `getGeometryPath`, `updGeometryPath`, etc., or a suitable alternative.    
 - Fixed a minor memory leak when calling `OpenSim::CoordinateCouplerConstraint::setFunction` (#3541)
 - Increase the number of input dimensions supported by `MultivariatePolynomialFunction` to 6 (#3386)
+- `PointToPointSpring` now throws an exception on finalizing connections if both sides of the spring
+  are connected to the same base frame (#3485)
 
 v4.4.1
 ======
