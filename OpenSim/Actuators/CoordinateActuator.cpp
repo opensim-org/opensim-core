@@ -25,7 +25,7 @@
 //==============================================================================
 // INCLUDES
 //==============================================================================
-#include <OpenSim/Common/Exception.h>
+#include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
