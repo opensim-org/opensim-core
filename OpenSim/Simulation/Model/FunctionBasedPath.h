@@ -45,20 +45,39 @@ namespace OpenSim {
  * direct collocation problem).
  * 
  * Each instance of this class requires a list of model coordinates that the
- * path is dependent on and a function that computes the length of the path as a
- * function of the coordinate values. Optionally, the user can provide functions
- * that compute the moment arms of the path as a function of the coordinate
- * values and a function that computes the speed of the path as a function of
- * the coordinate values and speeds. If the moment arm functions are not
- * provided, the moment arms will be computed from the derivative of the length
- * function with respect to the coordinate values. If the speed function is not
- * provided, the speed will be computed using the dot product of the moment 
- * arms and coordinate speeds based on the chain rule:
+ * path is dependent on and a function, \f$ l(q) \f$, that computes the length 
+ * of the path as a function of the coordinate values, \f$ q \f$. Optionally, 
+ * the user can provide functions that compute the moment arms of the path as a 
+ * function of the coordinate values and a function that computes the speed of 
+ * the path as a function of the coordinate values and speeds. 
+ * 
+ * If the moment arm functions are not provided, the moment arms will be 
+ * computed from the derivative of the length function with respect to the 
+ * coordinate values: 
  * 
  * \f[
- * \dot{l}(\bm{q}) = \frac{dl}{dt} = \frac{dl}{d\bm{q}} \frac{dq}{dt} 
- *                  = \frac{dl}{d\bm{q}} \dot{q}
+ * r_i = \frac{\partial l}{\partial q_i}
  * \f]
+ * 
+ *  * Where, 
+ * - \f$ l \f$: the length of the path.
+ * - \f$ q \f$: the set of coordinate values.
+ * - \f$ r_i \f$: the moment arm of the path with respect to the \f$ i^{th} \f$
+ * coordinate.
+ * 
+ * If the speed function is not provided, the speed will be computed using the 
+ * dot product of the moment arms and coordinate speeds based on the chain rule:
+ * 
+ * \f[
+ * \dot{l}(q,\dot{q}) = \frac{dl}{dt} = \frac{dl}{dq} \frac{dq}{dt} 
+ *                    = \frac{dl}{dq} \dot{q}
+ *                    = \sum_{i=1}^{N_q} r_i \dot{q}_i
+ * \f]
+ * 
+ * Where, 
+ * - \f$ dot{l} \f$: the lengthening speed of the path.
+ * - \f$ dot{q} \f$: the set of coordinate speeds.
+ * - \f$ N_q \f$: the number of coordinates.
  * 
  * The length function and the moment arm functions (if provided) must have the 
  * same number of arguments as the number of coordinates, where the order of the 
