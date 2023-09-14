@@ -30,47 +30,47 @@
 
 namespace TestAssertion {
 
-	[[noreturn]] void SomeAssertingFunction() {
-		OPENSIM_ASSERT_ALWAYS(false && "i-am-in-the-error-msg");
-	}
+    [[noreturn]] void SomeAssertingFunction() {
+        OPENSIM_ASSERT_ALWAYS(false && "i-am-in-the-error-msg");
+    }
 
-	class SomeAssertingObject : public OpenSim::Object {
-		OpenSim_DECLARE_CONCRETE_OBJECT(SomeAssertingObject, OpenSim::Object);
-	public:
-		SomeAssertingObject()
-		{
-			setName("name-of-the-object");
-			OPENSIM_ASSERT_FRMOBJ(false && "and-i-am-also-in-the-error-msg");
-		}
-	};
+    class SomeAssertingObject : public OpenSim::Object {
+        OpenSim_DECLARE_CONCRETE_OBJECT(SomeAssertingObject, OpenSim::Object);
+    public:
+        SomeAssertingObject()
+        {
+            setName("name-of-the-object");
+            OPENSIM_ASSERT_FRMOBJ(false && "and-i-am-also-in-the-error-msg");
+        }
+    };
 }
 
 TEST_CASE("OPENSIM_ASSERT_ALWAYS throws an OpenSim::Exception on failure")
 {
-	CHECK_THROWS_AS(OPENSIM_ASSERT_ALWAYS(false), OpenSim::Exception);
+    CHECK_THROWS_AS(OPENSIM_ASSERT_ALWAYS(false), OpenSim::Exception);
 }
 
 TEST_CASE("OPENSIM_ASSERT_ALWAYS exception contains expected information")
 {
-	try {
-		TestAssertion::SomeAssertingFunction();
-	} catch (const OpenSim::Exception& ex) {
-		REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("SomeAssertingFunction"));
-		REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("testAssertion.cpp"));
-		REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("34"));  // sorry ;)
-		REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("i-am-in-the-error-msg"));
-	}
+    try {
+        TestAssertion::SomeAssertingFunction();
+    } catch (const OpenSim::Exception& ex) {
+        REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("SomeAssertingFunction"));
+        REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("testAssertion.cpp"));
+        REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("34"));  // sorry ;)
+        REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("i-am-in-the-error-msg"));
+    }
 }
 
 TEST_CASE("OPENSIM_ASSERT_FRMOBJ_ALWAYS exception contains expected information")
 {
-	try {
-		TestAssertion::SomeAssertingObject throwsOnConstruction{};
-	} catch (const OpenSim::Exception& ex) {
-		REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("SomeAssertingObject"));
-		REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("testAssertion.cpp"));
-		REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("43"));  // sorry (again)
-		REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("name-of-the-object"));
-		REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("and-i-am-also-in-the-error-msg"));
-	}
+    try {
+        TestAssertion::SomeAssertingObject throwsOnConstruction{};
+    } catch (const OpenSim::Exception& ex) {
+        REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("SomeAssertingObject"));
+        REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("testAssertion.cpp"));
+        REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("43"));  // sorry (again)
+        REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("name-of-the-object"));
+        REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("and-i-am-also-in-the-error-msg"));
+    }
 }
