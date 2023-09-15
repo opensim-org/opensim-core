@@ -16,6 +16,8 @@ been added to these forces to provide access to concrete path types (e.g., `updP
 - Fixed a minor memory leak when calling `OpenSim::CoordinateCouplerConstraint::setFunction` (#3541)
 - Increase the number of input dimensions supported by `MultivariatePolynomialFunction` to 6 (#3386)
 - Fixed mis-indexing into an `OpenSim::ObjectProperty` now throws an exception rather than segfaulting (#3347)
+- `PointToPointSpring` now throws an exception on finalizing connections if both sides of the spring
+  are connected to the same base frame (#3485)
 - Clarified that `OpenSim::Controller`'s `actuator_list` takes a list of actuator names, rather than paths (#3484)
 - Deleting elements from an `OpenSim::Coordinate` range now throws an exception during `finalizeFromProperties` (previously:
   it would let you do it, and throw later when `Coordinate::getMinRange()` or `Coordinate::getMaxRange()` were called, #3532)
