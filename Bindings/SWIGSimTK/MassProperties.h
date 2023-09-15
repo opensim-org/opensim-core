@@ -671,9 +671,9 @@ Typedefs exist for the most common invocations of UnitInertia_\<P\>:
    almost always used)
  - \ref SimTK::fUnitInertia "fUnitInertia" for single (float) precision
  - \ref SimTK::dUnitInertia "dUnitInertia" for double precision **/
-template <class P>
-class SimTK_SimTKCOMMON_EXPORT UnitInertia_ : public Inertia_<P> {
-    typedef P               P;
+template <class T>
+class SimTK_SimTKCOMMON_EXPORT UnitInertia_ : public Inertia_<T> {
+    typedef T               P;
     typedef Vec<3,P>        Vec3;
     typedef SymMat<3,P>     SymMat33P;
     typedef Mat<3,3,P>      Mat33;
@@ -995,9 +995,9 @@ Typedefs exist for the most common invocations of SpatialInertia_\<P\>:
    almost always used)
  - \ref SimTK::fSpatialInertia "fSpatialInertia" for single (float) precision
  - \ref SimTK::dSpatialInertia "dSpatialInertia" for double precision **/
-template <class P> 
+template <class T>
 class SimTK_SimTKCOMMON_EXPORT SpatialInertia_ {
-    typedef P               P;
+    typedef T               P;
     typedef Vec<3,P>        Vec3;
     typedef UnitInertia_<P> UnitInertiaP;
     typedef Mat<3,3,P>      Mat33;
@@ -1236,9 +1236,9 @@ Typedefs exist for the most common invocations of ArticulatedInertia_\<P\>:
    precision
  - \ref SimTK::dArticulatedInertia "dArticulatedInertia" for double 
    precision **/
-template <class P> 
+template <class T>
 class ArticulatedInertia_ {
-    typedef P               P;
+    typedef T               P;
     typedef Vec<3,P>        Vec3;
     typedef UnitInertia_<P> UnitInertiaP;
     typedef Mat<3,3,P>      Mat33;
@@ -1344,9 +1344,9 @@ Typedefs exist for the most common invocations of MassProperties_\<P\>:
    almost always used)
  - \ref SimTK::fMassProperties "fMassProperties" for single (float) precision
  - \ref SimTK::dMassProperties "dMassProperties" for double precision **/
-template <class P>
+template <class T>
 class SimTK_SimTKCOMMON_EXPORT MassProperties_ {
-    typedef P               P;
+    typedef T               P;
     typedef Vec<3,P>        Vec3;
     typedef UnitInertia_<P> UnitInertiaP;
     typedef Mat<3,3,P>      Mat33;
