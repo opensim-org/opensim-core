@@ -52,24 +52,32 @@ TEST_CASE("OPENSIM_ASSERT_ALWAYS throws an OpenSim::Exception on failure")
 
 TEST_CASE("OPENSIM_ASSERT_ALWAYS exception contains expected information")
 {
+    // sorry: the line number in this source file that `OPENSIM_ASSERT_ALWAYS`
+    // appears on is hard-coded here because automating that is difficult
+    const char* lineNumberOfAssertionInThisFile = "34";
+
     try {
         TestAssertion::SomeAssertingFunction();
     } catch (const OpenSim::Exception& ex) {
         REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("SomeAssertingFunction"));
         REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("testAssertion.cpp"));
-        REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("34"));  // sorry ;)
+        REQUIRE_THAT(ex.what(), Catch::Matchers::Contains(lineNumberOfAssertionInThisFile));
         REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("i-am-in-the-error-msg"));
     }
 }
 
 TEST_CASE("OPENSIM_ASSERT_FRMOBJ_ALWAYS exception contains expected information")
 {
+    // sorry: the line number in this source file that `OPENSIM_ASSERT_FRMOBJ`
+    // appears on is hard-coded here because automating that is difficult
+    const char* lineNumberOfAssertionInThisFile = "43";
+
     try {
         TestAssertion::SomeAssertingObject throwsOnConstruction{};
     } catch (const OpenSim::Exception& ex) {
         REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("SomeAssertingObject"));
         REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("testAssertion.cpp"));
-        REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("43"));  // sorry (again)
+        REQUIRE_THAT(ex.what(), Catch::Matchers::Contains(lineNumberOfAssertionInThisFile));
         REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("name-of-the-object"));
         REQUIRE_THAT(ex.what(), Catch::Matchers::Contains("and-i-am-also-in-the-error-msg"));
     }

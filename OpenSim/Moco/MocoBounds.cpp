@@ -45,7 +45,7 @@ MocoBounds::MocoBounds(double lower, double upper) : MocoBounds() {
 }
 
 MocoBounds::MocoBounds(const Property<double>& p) : MocoBounds() {
-    OPENSIM_ASSERT(p.size() <= 2);
+    OPENSIM_ASSERT_FRMOBJ(p.size() <= 2);
     if (p.size() >= 1) {
         OPENSIM_THROW_IF(SimTK::isNaN(p[0]), Exception, "NaN value detected. "
             "Please provide a non-NaN value for the bounds.");

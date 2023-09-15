@@ -30,6 +30,10 @@ namespace OpenSim {
 
     class Object;
 
+    // a function that is called whenever an assertion fails
+    //
+    // callers may assume that the implementation halts forward progression of
+    // the caller by either throwing an exception or terminating the process
     [[noreturn]] OSIMCOMMON_API void OnAssertionError(
         char const* failingCode,
         char const* failingFile,
@@ -39,17 +43,32 @@ namespace OpenSim {
     );
 }
 
-#define OPENSIM_ASSERT_ALWAYS(CONDITION) \
-    static_cast<bool>(CONDITION) ? static_cast<void>(0) : OpenSim::OnAssertionError(#CONDITION, __FILE__, __func__, __LINE__)
-#define OPENSIM_ASSERT_FRMOBJ_ALWAYS(CONDITION) \
-    static_cast<bool>(CONDITION) ? static_cast<void>(0) : OpenSim::OnAssertionError(#CONDITION, __FILE__, __func__, __LINE__, this)
+/**
+ * @name Macros to assert that expressions are true
+ *
+ * The purpose of these macros is to assert that preconditions are met within the
+ * source code of OpenSim. If the precondition is not met, and the macros are enabled,
+ * then the implementation will halt forward progression of the calling thread, either
+ * by throwing an exception or terminating the process.
+ */
 
+// always ensures `expr` converts to `true` or otherwise halts forward progression of the calling thread
+#define OPENSIM_ASSERT_ALWAYS(expr) \
+    static_cast<bool>(expr) ? static_cast<void>(0) : OpenSim::OnAssertionError(#expr, __FILE__, __func__, __LINE__)
+
+// always ensures `expr` converts to `true` or otherwise halts forward progression of the calling thread
+// and passes `this` to the error handler (for better error messages)
+#define OPENSIM_ASSERT_FRMOBJ_ALWAYS(expr) \
+    static_cast<bool>(expr) ? static_cast<void>(0) : OpenSim::OnAssertionError(#expr, __FILE__, __func__, __LINE__, this)
+
+// these macros behave identially to their `_ALWAYS` counterparts, but may be conditionally
+// toggled by compile-time flags
 #if defined(NDEBUG)
-#define OPENSIM_ASSERT(CONDITION)
-#define OPENSIM_ASSERT_FRMOBJ(CONDITION)
+#define OPENSIM_ASSERT(expr)
+#define OPENSIM_ASSERT_FRMOBJ(expr)
 #else
-#define OPENSIM_ASSERT(CONDITION) OPENSIM_ASSERT_ALWAYS(CONDITION)
-#define OPENSIM_ASSERT_FRMOBJ(CONDITION) OPENSIM_ASSERT_FRMOBJ_ALWAYS(CONDITION)
+#define OPENSIM_ASSERT(expr) OPENSIM_ASSERT_ALWAYS(expr)
+#define OPENSIM_ASSERT_FRMOBJ(expr) OPENSIM_ASSERT_FRMOBJ_ALWAYS(expr)
 #endif
 
 #endif // OPENSIM_ASSERTION_H_

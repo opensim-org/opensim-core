@@ -36,12 +36,12 @@ void MocoAccelerationTrackingGoal::initializeOnModelImpl(
         TimeSeriesTableVec3 accelerationTableToUse;
         // Should not be able to supply any two simultaneously.
         if (get_acceleration_reference_file() != "") { // acceleration ref file
-            OPENSIM_ASSERT(m_acceleration_table.getNumColumns() == 0);
+            OPENSIM_ASSERT_FRMOBJ(m_acceleration_table.getNumColumns() == 0);
             accelerationTableToUse =
                     TimeSeriesTableVec3(get_acceleration_reference_file());
 
         } else { // acceleration table
-            OPENSIM_ASSERT(get_acceleration_reference_file() == "");
+            OPENSIM_ASSERT_FRMOBJ(get_acceleration_reference_file() == "");
             accelerationTableToUse = m_acceleration_table;
         }
 
