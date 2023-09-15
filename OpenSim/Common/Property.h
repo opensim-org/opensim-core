@@ -25,6 +25,7 @@
 
 // INCLUDES
 #include "AbstractProperty.h"
+#include "Assertion.h"
 #include "Exception.h"
 #include "Logger.h"
 
@@ -877,7 +878,7 @@ public:
         // Property_Deprecated implementation can't copy this flag right.
         if (this->getValueIsDefault() != other.getValueIsDefault())
             return false;
-        assert(this->size() == other.size()); // base class checked
+        OPENSIM_ASSERT(this->size() == other.size()); // base class checked
         const SimpleProperty& otherS = SimpleProperty::getAs(other);
         for (int i=0; i<values.size(); ++i)
             if (!Property<T>::TypeHelper::isEqual(values[i], otherS.values[i]))

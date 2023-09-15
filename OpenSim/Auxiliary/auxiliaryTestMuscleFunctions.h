@@ -22,6 +22,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "OpenSim/Common/Assertion.h"
 #include "OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h"
 
 /** A debugging utility for investigating muscle equilibrium failures.
@@ -40,7 +41,7 @@ void reportTendonAndFiberForcesAcrossFiberLengths(const T& muscle,
 {
     // should only be using this utility for equilibrium muscles 
     // with a compliant tendon
-    assert(!muscle.get_ignore_tendon_compliance());
+    OPENSIM_ASSERT(!muscle.get_ignore_tendon_compliance());
 
     SimTK::State s = state;
 

@@ -35,13 +35,13 @@
 
 // INCLUDES
 
+#include "Assertion.h"
 #include "osimCommonDLL.h"
 #include "PropertySet.h"
 #include "PropertyTable.h"
 #include "Property.h"
 
 #include <cstring>
-#include <cassert>
 
 // DISABLES MULTIPLE INSTANTIATION WARNINGS
 
@@ -1345,7 +1345,7 @@ ObjectProperty<T>::isEqualTo(const AbstractProperty& other) const {
     // Property_Deprecated implementation can't copy this flag right.
     if (this->getValueIsDefault() != other.getValueIsDefault())
         return false;
-    assert(this->size() == other.size()); // base class checked
+    OPENSIM_ASSERT(this->size() == other.size()); // base class checked
     const ObjectProperty& otherO = ObjectProperty::getAs(other);
     for (int i=0; i<objects.size(); ++i) {
         const T* const thisp  = objects[i].get();
@@ -1404,11 +1404,11 @@ ObjectProperty<T>::readFromXMLElement
 
         // Create an Object of the element tag's type.
         Object* object = Object::newInstanceOfType(objTypeTag);
-        assert(object); // we just checked above
+        OPENSIM_ASSERT(object); // we just checked above
         object->readObjectFromXMLNodeOrFile(*iter, versionNumber);
 
         T* objectT = dynamic_cast<T*>(object);
-        assert(objectT); // should have worked by construction
+        OPENSIM_ASSERT(objectT); // should have worked by construction
         adoptAndAppendValueVirtual(objectT); // don't copy
     }
 

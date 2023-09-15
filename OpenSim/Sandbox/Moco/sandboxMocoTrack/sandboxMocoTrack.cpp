@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <Moco/osimMoco.h>
 
+#include <OpenSim/Common/Assertion.h>
 #include <OpenSim/OpenSim.h>
 
 using namespace OpenSim;
@@ -84,7 +85,7 @@ void transformReactionToBodyFrame(const MocoStudy& study,
     model.initSystem();
     const auto& ground = model.getGround();
     auto statesTraj = iterate.exportToStatesTrajectory(study.getProblem());
-    assert(statesTraj.getSize() == reactionTable.getNumRows());
+    OPENSIM_ASSERT_FRMOBJ(statesTraj.getSize() == reactionTable.getNumRows());
 
     for (int irow = 0; irow < reactionTable.getNumRows(); ++irow) {
         auto& row = reactionTable.updRowAtIndex(irow);

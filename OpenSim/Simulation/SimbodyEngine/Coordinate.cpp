@@ -26,6 +26,7 @@
 //=============================================================================
 #include "Coordinate.h"
 #include "CoordinateCouplerConstraint.h"
+#include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include "simbody/internal/Constraint.h"
@@ -51,7 +52,7 @@ public:
     }
 
     SimTK::Real calcValue(const SimTK::Vector& x) const override {
-        assert(x.size() == argumentSize);
+        OPENSIM_ASSERT(x.size() == argumentSize);
         return value;
     }
 

@@ -15,6 +15,9 @@ been added to these forces to provide access to concrete path types (e.g., `updP
 `getGeometryPath`, `updGeometryPath`, etc., or a suitable alternative.    
 - Fixed a minor memory leak when calling `OpenSim::CoordinateCouplerConstraint::setFunction` (#3541)
 - Increase the number of input dimensions supported by `MultivariatePolynomialFunction` to 6 (#3386)
+- Added `Assertion.h` and associated `OPENSIM_ASSERT*` macros (#3531)
+- Replaced uses of `assert` with `OPENSIM_ASSERT`, so that assertion may be configured via cmake in the future, and
+  so that OpenSim (esp. debug builds) throw instead of terminating the process (#3531)
 - Fixed mis-indexing into an `OpenSim::ObjectProperty` now throws an exception rather than segfaulting (#3347)
 - `PointToPointSpring` now throws an exception on finalizing connections if both sides of the spring
   are connected to the same base frame (#3485)

@@ -28,6 +28,7 @@ This file provides an OpenSim-oriented interface to the Simbody Visualizer
 that provides some visualization and user interaction when running a program
 that uses the OpenSim API. **/
 
+#include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <simbody/internal/Visualizer.h>
 
@@ -145,12 +146,12 @@ public:
     /** If you want access to the underlying Simbody SimTK::Visualizer, you
     can get a const reference here. **/
     const SimTK::Visualizer& getSimbodyVisualizer() const 
-    {   assert(_viz); return *_viz; }
+    {   OPENSIM_ASSERT(_viz); return *_viz; }
     /** If you want writable access to the underlying Simbody SimTK::Visualizer,
     you can get a non-const reference here, provided that you have non-const
     access to the %ModelVisualizer. **/
     SimTK::Visualizer& updSimbodyVisualizer() 
-    {   assert(_viz); return *_viz; }
+    {   OPENSIM_ASSERT(_viz); return *_viz; }
     /**@}**/
 
     /** @name               Miscellaneous utilities
