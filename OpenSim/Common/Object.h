@@ -1449,7 +1449,7 @@ ObjectProperty<T>::setValueAsObject(const Object& obj, int index) {
             + " which can't be stored in this " + objectClassName
             + " property " + this->getName());
 
-    objects[index] = newObjT;
+    objects.at(index) = newObjT;
 }
 /** @endcond **/
 

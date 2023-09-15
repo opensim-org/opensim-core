@@ -18,6 +18,9 @@ been added to these forces to provide access to concrete path types (e.g., `updP
 - Added `Assertion.h` and associated `OPENSIM_ASSERT*` macros (#3531)
 - Replaced uses of `assert` with `OPENSIM_ASSERT`, so that assertion may be configured via cmake in the future, and
   so that OpenSim (esp. debug builds) throw instead of terminating the process (#3531)
+- Fixed mis-indexing into an `OpenSim::ObjectProperty` now throws an exception rather than segfaulting (#3347)
+- `PointToPointSpring` now throws an exception on finalizing connections if both sides of the spring
+  are connected to the same base frame (#3485)
 - Clarified that `OpenSim::Controller`'s `actuator_list` takes a list of actuator names, rather than paths (#3484)
 - Deleting elements from an `OpenSim::Coordinate` range now throws an exception during `finalizeFromProperties` (previously:
   it would let you do it, and throw later when `Coordinate::getMinRange()` or `Coordinate::getMaxRange()` were called, #3532)

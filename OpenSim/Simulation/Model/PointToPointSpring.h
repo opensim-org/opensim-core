@@ -132,6 +132,8 @@ protected:
 
     void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) override;
 
+    void extendConnectToModel(Model&) override;
+
 private:
     void setNull();
     void constructProperties();
