@@ -32,6 +32,7 @@
 
 #include "Object.h"
 
+#include "Assertion.h"
 #include "Exception.h"
 #include "IO.h"
 #include "Logger.h"
@@ -1663,7 +1664,7 @@ void Object::setObjectIsUpToDateWithProperties()
 
 void Object::updateFromXMLDocument()
 {
-    assert(_document != nullptr);
+    OPENSIM_ASSERT_FRMOBJ(_document != nullptr);
 
     SimTK::Xml::Element e = _document->getRootDataElement();
     IO::CwdChanger cwd = IO::CwdChanger::changeToParentOf(_document->getFileName());

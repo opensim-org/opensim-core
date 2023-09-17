@@ -26,6 +26,7 @@
 //=============================================================================
 #include "Coordinate.h"
 #include "CoordinateCouplerConstraint.h"
+#include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include "simbody/internal/Constraint.h"
@@ -51,7 +52,7 @@ public:
     }
 
     SimTK::Real calcValue(const SimTK::Vector& x) const override {
-        assert(x.size() == argumentSize);
+        OPENSIM_ASSERT(x.size() == argumentSize);
         return value;
     }
 
@@ -140,6 +141,14 @@ void Coordinate::constructProperties(void)
 void Coordinate::extendFinalizeFromProperties()
 {
     Super::extendFinalizeFromProperties();
+
+    // eagerly check if outside code has somehow managed to remove elements
+    // from this coordinate's `range` property (issue #3532)
+    OPENSIM_THROW_IF(
+        getProperty_range().size() != 2,
+        Exception,
+        "A coordinate range must contain exactly two elements (minimum, maximum)"
+    );
 
     string prefix = "Coordinate("+getName()+")::extendFinalizeFromProperties:";
 

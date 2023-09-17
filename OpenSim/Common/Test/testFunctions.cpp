@@ -100,7 +100,7 @@ TEST_CASE("MultivariatePolynomialFunction") {
                     Catch::Contains("Expected dimension"));
         }
         {
-            MultivariatePolynomialFunction f(createVector({1}), 5, 1);
+            MultivariatePolynomialFunction f(createVector({1}), 7, 1);
             CHECK_THROWS_WITH(f.calcValue(SimTK::Vector()),
                     Catch::Contains("Expected dimension"));
         }
@@ -149,6 +149,15 @@ TEST_CASE("MultivariatePolynomialFunction") {
         SimTK::Vector input = createVector({0.3, 7.3, 0.8, 6.4});
         double expected = c[0] + c[1] * input[3] + c[2] * input[2] +
                           c[3] * input[1] + c[4] * input[0];
+        CHECK(f.calcValue(input) == expected);
+    }
+    SECTION("Test 6-dimensional 1st order polynomial") {
+        SimTK::Vector c = SimTK::Test::randVector(7);
+        MultivariatePolynomialFunction f(c, 6, 1);
+        SimTK::Vector input = createVector({0.3, 7.3, 0.8, 6.4, 1.2, 3.4});
+        double expected = c[0] + c[1] * input[5] + c[2] * input[4] +
+                          c[3] * input[3] + c[4] * input[2] + c[5] * input[1] +
+                          c[6] * input[0];
         CHECK(f.calcValue(input) == expected);
     }
 }

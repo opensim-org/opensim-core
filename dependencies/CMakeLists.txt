@@ -2,9 +2,10 @@
 # compile and install all OpenSim dependencies. Using super-build is optional.
 # OpenSim does not use this file directly.
 
-project(OpenSimDependencies)
 # We require a version of CMake that supports Visual Studio 2015.
-cmake_minimum_required(VERSION 3.2)
+cmake_minimum_required(VERSION 3.5)
+
+project(OpenSimDependencies)
 
 include(ExternalProject)
 include(CMakeParseArguments)

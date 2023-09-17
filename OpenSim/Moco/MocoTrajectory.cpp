@@ -20,6 +20,7 @@
 #include "MocoProblem.h"
 #include "MocoUtilities.h"
 
+#include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Common/STOFileAdapter.h>
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -1346,7 +1347,7 @@ double MocoTrajectory::compareContinuousVariablesRMSInternal(
         }
         // Trapezoidal rule for uniform grid:
         // dt / 2 (f_0 + 2f_1 + 2f_2 + 2f_3 + ... + 2f_{N-1} + f_N)
-        assert(numTimes > 2);
+        OPENSIM_ASSERT(numTimes > 2);
         return timeInterval / 2.0 *
                (sumSquaredError.sum() + sumSquaredError(1, numTimes - 2).sum());
     };

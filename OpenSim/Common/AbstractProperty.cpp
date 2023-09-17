@@ -24,6 +24,7 @@
 // INCLUDES
 //============================================================================
 #include "AbstractProperty.h"
+#include "Assertion.h"
 #include "Object.h"
 
 #include <limits>
@@ -205,7 +206,7 @@ void AbstractProperty::writeToXMLParentElement(Xml::Element& parent) const {
     if (!isOneObjectProperty()) {
         // Concrete property will be represented by an Xml element of
         // the form <propName> value(s) </propName>.
-        assert(!getName().empty());
+        OPENSIM_ASSERT(!getName().empty());
         Xml::Element propElement(getName());
         writeToXMLElement(propElement);
         parent.insertNodeAfter(parent.node_end(), propElement);

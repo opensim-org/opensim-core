@@ -934,6 +934,21 @@ void testCoordinateCouplerConstraint()
 
     // Forces were held in storage during simulation, now write to file
     forceReport->printResults("CouplerModelForces");
+
+    // repro for #3347: creating a `CoordinateCouplerConstraint` with no
+    // `coupled_coordinates_function` should throw a runtime exception
+    // rather than segfault
+    {
+        OpenSim::Model m;
+        m.addConstraint(new OpenSim::CoordinateCouplerConstraint{});
+
+        try {
+            // this shouldn't segfault...
+            m.buildSystem();
+        } catch (const std::exception&) {
+            // ... but it is permitted to throw
+        }
+    }
 }
 
 void testRollingOnSurfaceConstraint()

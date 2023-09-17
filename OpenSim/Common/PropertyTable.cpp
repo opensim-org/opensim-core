@@ -25,6 +25,8 @@
 //============================================================================
 #include "PropertyTable.h"
 
+#include "Assertion.h"
+
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -77,12 +79,12 @@ bool PropertyTable::equals(const PropertyTable& other) const {
 
 int PropertyTable::adoptProperty(AbstractProperty* prop)
 {
-    assert(prop);
+    OPENSIM_ASSERT(prop != nullptr);
     const int          nxtIndex = properties.size();
     const std::string& name     = prop->getName();
 
     // Unnamed property should have had its Object class name used as its name.
-    assert(!name.empty());
+    OPENSIM_ASSERT(!name.empty());
 
     if (hasProperty(name))
         throw OpenSim::Exception

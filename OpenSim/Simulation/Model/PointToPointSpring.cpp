@@ -28,6 +28,9 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 
+#include <sstream>
+#include <utility>
+
 using namespace OpenSim;
 using namespace std;
 
@@ -233,4 +236,20 @@ void PointToPointSpring::updateFromXMLNode(SimTK::Xml::Element& aNode, int versi
     }
 
     Super::updateFromXMLNode(aNode, versionNumber);
+}
+
+void PointToPointSpring::extendConnectToModel(Model&)
+{
+    // validate that the spring is attached to two different base
+    // frames; otherwise, unusual simulation behavior may occur
+    // (#3485)
+    auto const& pf1 = getConnectee<PhysicalFrame>("body1");
+    auto const& pf2 = getConnectee<PhysicalFrame>("body2");
+    OpenSim::Frame const& pf1Base = pf1.findBaseFrame();
+
+    if (&pf1Base == &pf2.findBaseFrame()) {
+        std::stringstream ss;
+        ss << " body1 (" << pf1.getAbsolutePathString() << ") and body2 (" << pf2.getAbsolutePathString() << ") have the same base frame (" << pf1Base.getAbsolutePathString() << "), this is not permitted.";
+        OPENSIM_THROW_FRMOBJ(Exception, std::move(ss).str());
+    }
 }

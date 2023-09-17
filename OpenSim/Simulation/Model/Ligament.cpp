@@ -26,6 +26,8 @@
 //=============================================================================
 #include "Ligament.h"
 #include "PointForceDirection.h"
+
+#include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Common/SimmSpline.h>
 
 //=============================================================================
@@ -81,7 +83,7 @@ void Ligament::extendFinalizeFromProperties()
     Super::extendFinalizeFromProperties();
 
     // Resting length must be greater than 0.0.
-    assert(get_resting_length() > 0.0);
+    OPENSIM_ASSERT_FRMOBJ(get_resting_length() > 0.0);
 
     updPath().setDefaultColor(DefaultLigamentColor);
 }
