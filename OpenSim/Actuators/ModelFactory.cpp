@@ -308,4 +308,3 @@ void ModelFactory::createReserveActuators(Model& model, double optimalForce,
         log_info("  {}", name);
     }
 }
-

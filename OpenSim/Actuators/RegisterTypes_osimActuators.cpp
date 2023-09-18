@@ -88,6 +88,8 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
     Object::registerType(ModOpAddReserves());
     Object::registerType(ModOpAddExternalLoads());
     Object::registerType(ModOpReplaceJointsWithWelds());
+    Object::registerType(ModOpReplaceMusclesWithPathActuators());
+    Object::registerType(ModOpReplacePathSpringPathsWithFunctionBasedPaths());
 
     //Object::RegisterType( ConstantMuscleActivation() );
     //Object::RegisterType( ZerothOrderMuscleActivationDynamics() );
