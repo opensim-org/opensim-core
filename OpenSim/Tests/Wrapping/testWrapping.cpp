@@ -349,17 +349,17 @@ TEST_CASE("testFunctionBasedPath") {
     const double qdot_y = 0.78;
     const double tension = 0.91;
     
-    SECTION("Sliding point mass") {
+    SECTION("Sliding point mass, length function") {
         // 1-DOF polynomial path function.
-        // length = q^2 + 2*q + 3
-        PolynomialFunction poly(createVector({1.0, 2.0, 3.0}));
+        // length = q^3 + 2*q^2 + 3*q + 4
+        PolynomialFunction poly(createVector({1.0, 2.0, 3.0, 4.0}));
         
         // Test values.
-        // momentArm = dl/dq = 2*q + 2
-        // speed = qdot * momentArm
-        const double length = q_x * q_x + 2 * q_x + 3;
-        const double momentArm = 2 * q_x + 2;
-        const double speed = qdot_x * momentArm;
+        // momentArm = -dl/dq = -3*q^2 - 4*q - 3
+        // speed = -qdot * momentArm
+        const double length = q_x*q_x*q_x + 2*q_x*q_x + 3*q_x + 4;
+        const double momentArm = -3*q_x*q_x - 4*q_x - 3;
+        const double speed = -qdot_x * momentArm;
         const double genForce = tension * momentArm;
         
         // Create a sliding mass model and add a PathActuator with a 1-DOF
@@ -419,14 +419,14 @@ TEST_CASE("testFunctionBasedPath") {
                 createVector({1.0, 2.0, 3.0, 4.0, 5.0, 6.0}), 2, 2);
         
         // Test values.
-        // momentArm_x = dl/dq_x = 4 + 5*q_y + 12*q_x
-        // momentArm_y = dl/dq_y = 2 + 5*q_x + 6*q_y
-        // speed = qdot_x * momentArm_x + qdot_y * momentArm_y
+        // momentArm_x = -dl/dq_x = -4 - 5*q_y - 12*q_x
+        // momentArm_y = -dl/dq_y = -2 - 5*q_x - 6*q_y
+        // speed = -qdot_x * momentArm_x - qdot_y * momentArm_y
         const double length = 1.0 + 2.0 * q_y + 3.0 * q_y * q_y + 4.0 * q_x + 
                               5.0 * q_x * q_y + 6.0 * q_x * q_x;
-        const double momentArm_x = 4.0 + 5.0 * q_y + 12.0 * q_x;
-        const double momentArm_y = 2.0 + 5.0 * q_x + 6.0 * q_y;
-        const double speed = qdot_x * momentArm_x + qdot_y * momentArm_y;
+        const double momentArm_x = -4.0 - 5.0 * q_y - 12.0 * q_x;
+        const double momentArm_y = -2.0 - 5.0 * q_x - 6.0 * q_y;
+        const double speed = -qdot_x * momentArm_x - qdot_y * momentArm_y;
         const double genForce_x = tension * momentArm_x;
         const double genForce_y = tension * momentArm_y;
         
@@ -492,17 +492,17 @@ TEST_CASE("testFunctionBasedPath") {
         // length = 1 + 2*q_y + 3*q_y^2 + 4*q_x + 5*q_x*q_y + 6*q_x^2
         MultivariatePolynomialFunction lengthFunc(
                 createVector({1.0, 2.0, 3.0, 4.0, 5.0, 6.0}), 2, 2);
-        
+
         // Moment arm functions.
-        // momentArm_x = dl/dq_x = 4 + 5*q_y + 12*q_x
-        // momentArm_y = dl/dq_y = 2 + 6*q_y + 5*q_x
+        // momentArm_x = -dl/dq_x = -4 - 5*q_y - 12*q_x
+        // momentArm_y = -dl/dq_y = -2 - 6*q_y - 5*q_x
         MultivariatePolynomialFunction momentArmFunc_x(
-                createVector({4.0, 5.0, 12.0}), 2, 1);
+                createVector({-4.0, -5.0, -12.0}), 2, 1);
         MultivariatePolynomialFunction momentArmFunc_y(
-                createVector({2.0, 6.0, 5.0}), 2, 1);
-        
+                createVector({-2.0, -6.0, -5.0}), 2, 1);
+
         // Speed function.
-        // speed = qdot_x * momentArm_x + qdot_y * momentArm_y
+        // speed = -qdot_x * momentArm_x - qdot_y * momentArm_y
         //       = qdot_x * (4 + 5*q_y + 12*q_x) + qdot_y * (2 + 5*q_x + 6*q_y)
         //       = 4*qdot_x + 5*qdot_x*q_y + 12*qdot_x*q_x + 2*qdot_y +
         //         5*qdot_y*q_x + 6*qdot_y*q_y
@@ -517,36 +517,36 @@ TEST_CASE("testFunctionBasedPath") {
         speedCoeffs[11] = 5.0;
         speedCoeffs[12] = 12.0;
         MultivariatePolynomialFunction speedFunc(speedCoeffs, 4, 2);
-        
+
         // Test values.
         const double length = 1.0 + 2.0 * q_y + 3.0 * q_y * q_y + 4.0 * q_x + 
                               5.0 * q_x * q_y + 6.0 * q_x * q_x;
-        const double momentArm_x = 4.0 + 5.0 * q_y + 12.0 * q_x;
-        const double momentArm_y = 2.0 + 5.0 * q_x + 6.0 * q_y;
-        const double speed = qdot_x * momentArm_x + qdot_y * momentArm_y;
+        const double momentArm_x = -4.0 - 5.0 * q_y - 12.0 * q_x;
+        const double momentArm_y = -2.0 - 5.0 * q_x - 6.0 * q_y;
+        const double speed = -qdot_x * momentArm_x - qdot_y * momentArm_y;
         const double genForce_x = tension * momentArm_x;
         const double genForce_y = tension * momentArm_y;
-        
+
         // Create a planar point mass model and add a PathActuator with a 2-DOF
         // FunctionBasedPath.
         Model model = ModelFactory::createPlanarPointMass();
         model.setGravity(SimTK::Vec3(0.0));
-        
+
         FunctionBasedPath fbPath;
         fbPath.setName("polynomial_path_2dof");
         fbPath.setLengthFunction(lengthFunc);
         fbPath.appendMomentArmFunction(momentArmFunc_x);
         fbPath.appendMomentArmFunction(momentArmFunc_y);
-        fbPath.setSpeedFunction(speedFunc);
+        fbPath.setLengtheningSpeedFunction(speedFunc);
         fbPath.setCoordinates({"/jointset/tx/tx", "/jointset/ty/ty"});
-        
+
         auto* actu = new PathActuator();
         actu->set_path(fbPath);
         actu->setName("actuator");
         actu->setOptimalForce(1);
         model.addComponent(actu);
         model.finalizeConnections();
-        
+
         // Initialize the system and set the state and controls.
         SimTK::State state = model.initSystem();
         model.getCoordinateSet()[0].setValue(state, q_x);
@@ -555,7 +555,7 @@ TEST_CASE("testFunctionBasedPath") {
         model.getCoordinateSet()[1].setSpeedValue(state, qdot_y);
         model.setControls(state, createVector({tension, 0.0, 0.0}));
         model.realizeAcceleration(state);
-        
+
         // Run inverse dynamics to compute the generalized forces applied by the
         // PathActuator.
         auto& matter = model.updMatterSubsystem();
@@ -567,7 +567,7 @@ TEST_CASE("testFunctionBasedPath") {
                 state.getUDot(), 
                 SimTK::Vector(0),
                 residuals);
-        
+
         // Check that the length, moment arms, speed, and generalized forces are
         // correct. Compare quantities that should have been calculated to 
         // machine tolerance given the problem size, which we'll characterize by 

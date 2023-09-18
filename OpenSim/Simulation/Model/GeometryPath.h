@@ -125,7 +125,7 @@ public:
     as the color when the path is drawn, which occurs with the state realized 
     to Stage::Dynamics. So you must call this method during realizeDynamics() or 
     earlier in order for it to have any effect. **/
-    void setColor(const SimTK::State& s, const SimTK::Vec3& color) const;
+    void setColor(const SimTK::State& s, const SimTK::Vec3& color) const override;
 
     /** Get the current value of the color cache entry owned by this
     %GeometryPath object in the given state. You can access this value any time
@@ -133,13 +133,13 @@ public:
     the default color value specified in a call to setDefaultColor() earlier,
     or it will have the default color value chosen by %GeometryPath.
     @see setDefaultColor() **/
-    SimTK::Vec3 getColor(const SimTK::State& s) const;
+    SimTK::Vec3 getColor(const SimTK::State& s) const override;
 
-    double getLength( const SimTK::State& s) const;
+    double getLength( const SimTK::State& s) const override;
     void setLength( const SimTK::State& s, double length) const;
     const Array<AbstractPathPoint*>& getCurrentPath( const SimTK::State& s) const;
 
-    double getLengtheningSpeed(const SimTK::State& s) const;
+    double getLengtheningSpeed(const SimTK::State& s) const override;
     void setLengtheningSpeed( const SimTK::State& s, double speed ) const;
 
     /** get the path as PointForceDirections directions, which can be used
