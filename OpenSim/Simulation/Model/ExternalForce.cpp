@@ -26,6 +26,7 @@
 //==============================================================================
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
@@ -333,7 +334,7 @@ void ExternalForce::computeForce(const SimTK::State& state,
 {
     double time = state.getTime();
 
-    assert(_appliedToBody!=nullptr);
+    OPENSIM_ASSERT_FRMOBJ(_appliedToBody != nullptr);
 
     if (_appliesForce) {
         Vec3 force = getForceAtTime(time);

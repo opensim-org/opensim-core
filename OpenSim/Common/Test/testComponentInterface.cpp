@@ -22,6 +22,7 @@
  * -------------------------------------------------------------------------- */
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Common/Component.h>
+#include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/Reporter.h>
 #include <OpenSim/Common/TableSource.h>
 #include <OpenSim/Common/STOFileAdapter.h>
@@ -52,6 +53,28 @@ namespace
         OpenSim_DECLARE_INPUT(some_input, float, SimTK::Stage::Acceleration, "some other comment");
         OpenSim_DECLARE_OUTPUT(some_output, double, getDoubleOutput, SimTK::Stage::Model);
         OpenSim_DECLARE_SOCKET(some_socket, OpenSim::Component, "some socket comment");
+    };
+
+    class ComponentWithOptionalSimpleProperty final : public OpenSim::Component {
+        OpenSim_DECLARE_CONCRETE_OBJECT(ComponentWithOptionalSimpleProperty, OpenSim::Component);
+    public:
+        OpenSim_DECLARE_OPTIONAL_PROPERTY(num, int, "");
+
+        ComponentWithOptionalSimpleProperty()
+        {
+            constructProperty_num();
+        }
+    };
+
+    class ComponentWithOptionalObjectProperty final : public OpenSim::Component {
+        OpenSim_DECLARE_CONCRETE_OBJECT(ComponentWithOptionalObjectProperty, OpenSim::Component);
+    public:
+        OpenSim_DECLARE_OPTIONAL_PROPERTY(func, OpenSim::Function, "");
+
+        ComponentWithOptionalObjectProperty()
+        {
+            constructProperty_func();
+        }
     };
 }
 
@@ -2603,6 +2626,43 @@ void testCacheVariableInterface() {
     }
 }
 
+// repro related to #3409/#3411
+//
+// if downstream code tries to read an optional SimpleProperty without
+// checking whether it's populated or not, it should throw an exception
+// rather than segfaulting
+void testIncorrectlyReadingAnOptionalSimplePropertyDoesNotSegfault()
+{
+    ComponentWithOptionalSimpleProperty c;
+
+    ASSERT_EQUAL(c.getProperty_num().size(), 0);
+    try {
+        // shouldn't segfault...
+        ASSERT_EQUAL(c.get_num(), 1337);
+    } catch (const std::exception&) {
+        // ... but should throw an exception
+    }
+}
+
+// repro related to #3347
+//
+// if downstream code (e.g. OpenSim::CoordinateCouplerConstraint in
+// OpenSim <=4.4) tries to read an optional ObjectProperty without checking
+// whether it's populated or not, it should throw an exception rather
+// than segfaulting
+void testIncorrectlyReadingAnOptionalObjectPropertyDoesNotSegfault()
+{
+    ComponentWithOptionalObjectProperty c;
+
+    ASSERT_EQUAL(c.getProperty_func().size(), 0);
+    try {
+        // shouldn't segfault...
+        c.get_func().getName();
+    } catch (const std::exception&) {
+        // ... but should throw an exception
+    }
+}
+
 int main() {
 
     //Register new types for testing deserialization
@@ -2645,6 +2705,9 @@ int main() {
 
         SimTK_SUBTEST(testFormattedDateTime);
         SimTK_SUBTEST(testCacheVariableInterface);
+        SimTK_SUBTEST(testIncorrectlyReadingAnOptionalSimplePropertyDoesNotSegfault);
+        SimTK_SUBTEST(testIncorrectlyReadingAnOptionalObjectPropertyDoesNotSegfault);
+
 
     SimTK_END_TEST();
 }
