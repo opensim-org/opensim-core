@@ -20,6 +20,7 @@
 
 #include <OpenSim/Moco/MocoUtilities.h>
 
+#include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/StatesTrajectory.h>
 
@@ -34,14 +35,14 @@ void MocoTranslationTrackingGoal::initializeOnModelImpl(const Model& model)
             get_translation_reference_file() != "") { // reference file provided
         TimeSeriesTableVec3 translationTableToUse;
         // Should not be able to supply any two simultaneously.
-        assert(get_states_reference().empty());
+        OPENSIM_ASSERT_FRMOBJ(get_states_reference().empty());
         if (get_translation_reference_file() != "") { // translation ref file
-            assert(m_translation_table.getNumColumns() == 0);
+            OPENSIM_ASSERT_FRMOBJ(m_translation_table.getNumColumns() == 0);
             translationTableToUse = TimeSeriesTableVec3(
                     get_translation_reference_file());
 
         } else { // translation table
-            assert(get_translation_reference_file() == "");
+            OPENSIM_ASSERT_FRMOBJ(get_translation_reference_file() == "");
             translationTableToUse = m_translation_table;
         }
 
@@ -73,8 +74,8 @@ void MocoTranslationTrackingGoal::initializeOnModelImpl(const Model& model)
         }
 
     } else { // states reference file or states reference provided
-        assert(get_translation_reference_file() != "");
-        assert(m_translation_table.getNumColumns() == 0);
+        OPENSIM_ASSERT_FRMOBJ(get_translation_reference_file() != "");
+        OPENSIM_ASSERT_FRMOBJ(m_translation_table.getNumColumns() == 0);
         // TODO: set relativeToDirectory properly.
         TimeSeriesTable statesTableToUse =
                 get_states_reference().processAndConvertToRadians(model);

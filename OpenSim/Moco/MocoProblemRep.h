@@ -24,6 +24,7 @@
 #include "MocoVariableInfo.h"
 #include "osimMocoDLL.h"
 
+#include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Actuators/DeGrooteFregly2016Muscle.h>
 
@@ -111,7 +112,7 @@ public:
     /// ModelDisabledConstraints. Some solvers may need to use 2 state objects
     /// at once; you can supply an index of 1 to get a second state object.
     SimTK::State& updStateDisabledConstraints(int index = 0) const {
-        assert(index <= 1);
+        OPENSIM_ASSERT(index <= 1);
         return m_state_disabled_constraints[index];
     }
     /// This is a component inside ModelDisabledConstraints that you can use to

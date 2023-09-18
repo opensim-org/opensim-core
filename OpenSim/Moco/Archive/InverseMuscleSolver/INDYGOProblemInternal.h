@@ -25,6 +25,7 @@
 #include "InverseMuscleSolverMotionData.h"
 #include <algorithm>
 
+#include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
@@ -376,7 +377,7 @@ public:
             // Set control names.
             const auto& otherControlsLabels =
                     mrsVars.other_controls.getColumnLabels();
-            assert(_numCoordActuators == (int)otherControlsLabels.size());
+            OPENSIM_ASSERT(_numCoordActuators == (int)otherControlsLabels.size());
             for (int i_act = 0; i_act < _numCoordActuators; ++i_act) {
                 vars.control_names[i_act] =
                         otherControlsLabels[i_act] + "_control";

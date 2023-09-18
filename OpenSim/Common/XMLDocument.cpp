@@ -29,6 +29,7 @@
 //-----------------------------------------------------------------------------
 // INCLUDES
 //-----------------------------------------------------------------------------
+#include "Assertion.h"
 #include "XMLDocument.h"
 #include "Object.h"
 #include <functional>
@@ -245,7 +246,7 @@ updateDocumentVersion()
     }
 
     // Validate >=  10500 and < latest as sanity check
-    assert(_documentVersion >= 10500 && _documentVersion <= LatestVersion);
+    OPENSIM_ASSERT(_documentVersion >= 10500 && _documentVersion <= LatestVersion);
 }
 //_____________________________________________________________________________
 /**

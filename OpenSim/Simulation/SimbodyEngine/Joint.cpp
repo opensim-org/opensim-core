@@ -25,6 +25,7 @@
 // INCLUDES
 //==============================================================================
 #include "Joint.h"
+#include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/PhysicalFrame.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
@@ -479,7 +480,7 @@ SimTK::SpatialVec Joint::calcEquivalentSpatialForceForMobilizedBody(const SimTK:
     }
     else{
         // should be the case where gen force is zero.
-        assert(f.norm() < SimTK::SignificantReal);
+        OPENSIM_ASSERT_FRMOBJ(f.norm() < SimTK::SignificantReal);
     }
 
     // The spatial forces above are expressed in the joint frame of the parent

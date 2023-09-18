@@ -27,6 +27,7 @@
 #include "CustomJoint.h"
 #include "SpatialTransform.h"
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Common/Assertion.h>
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/LinearFunction.h>
 #include "simbody/internal/MobilizedBody_FunctionBased.h"
@@ -292,13 +293,13 @@ void CustomJoint::extendAddToSystem(SimTK::MultibodySystem& system) const
     SimTK_ASSERT1(numCoords <= 6,
         "%s cannot exceed 6 mobilities (dofs).",
         getConcreteClassName().c_str());
-    assert(functions.size() == 6);
+    OPENSIM_ASSERT_FRMOBJ(functions.size() == 6);
 
     SimTK_ASSERT2(numCoords <= 6,
         "%s::%s must specify functions for complete spatial (6 axes) motion.",
         getConcreteClassName().c_str(),
                   getSpatialTransform().getConcreteClassName().c_str());
-    assert(coordinateIndices.size() == 6);
+    OPENSIM_ASSERT_FRMOBJ(coordinateIndices.size() == 6);
 
     SimTK_ASSERT2(axes.size() == 6,
         "%s::%s must specify 6 independent axes to span spatial motion.",
@@ -373,7 +374,7 @@ updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                 if (objectType == "TransformAxis"){
                     OpenSim::TransformAxis* readAxis = 
                         new OpenSim::TransformAxis(objElmt);
-                    assert(nextAxis <=5);
+                    OPENSIM_ASSERT_FRMOBJ(nextAxis <=5);
                     bool isRotation = false;
                     SimTK::Xml::element_iterator rotationNode = 
                         objElmt.element_begin("is_rotation");
@@ -406,8 +407,8 @@ updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                     nextAxis++;
                 }
             }
-            assert(rotationIndices.getSize() <=3);
-            assert(translationIndices.getSize() <=3);
+            OPENSIM_ASSERT_FRMOBJ(rotationIndices.getSize() <=3);
+            OPENSIM_ASSERT_FRMOBJ(translationIndices.getSize() <=3);
             //XMLNode::RemoveChildren(SpatialTransformAxesNode);
             int nRotations = rotationIndices.getSize();
             int nTranslations = translationIndices.getSize();

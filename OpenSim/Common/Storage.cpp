@@ -29,6 +29,7 @@
 // INCLUDES
 #include "Storage.h"
 
+#include "Assertion.h"
 #include "CommonUtilities.h"
 #include "GCVSpline.h"
 #include "GCVSplineSet.h"
@@ -2675,7 +2676,7 @@ void Storage::interpolateAt(const Array<double> &targetTimes)
 void Storage::
 setOutputFileName(const std::string& aFileName)
 {
-    assert(_fileName=="");
+    OPENSIM_ASSERT_FRMOBJ(_fileName == "");
     _fileName = aFileName;
 
     // OPEN THE FILE

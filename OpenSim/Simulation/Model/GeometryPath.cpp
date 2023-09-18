@@ -28,8 +28,10 @@
 #include "ConditionalPathPoint.h"
 #include "MovingPathPoint.h"
 #include "PointForceDirection.h"
-#include <OpenSim/Simulation/Wrap/PathWrap.h>
 #include "Model.h"
+
+#include <OpenSim/Common/Assertion.h>
+#include <OpenSim/Simulation/Wrap/PathWrap.h>
 
 //=============================================================================
 // STATICS
@@ -220,7 +222,7 @@ generateDecorations(bool fixed, const ModelDisplayHints& hints,
 
     const Array<AbstractPathPoint*>& pathPoints = getCurrentPath(state);
 
-    assert(pathPoints.size() > 1);
+    OPENSIM_ASSERT_FRMOBJ(pathPoints.size() > 1);
 
     const AbstractPathPoint* lastPoint = pathPoints[0];
     MobilizedBodyIndex mbix(0);

@@ -25,6 +25,7 @@
 
 // INCLUDES
 #include "AbstractProperty.h"
+#include "Assertion.h"
 #include "Exception.h"
 #include "Logger.h"
 
@@ -877,7 +878,7 @@ public:
         // Property_Deprecated implementation can't copy this flag right.
         if (this->getValueIsDefault() != other.getValueIsDefault())
             return false;
-        assert(this->size() == other.size()); // base class checked
+        OPENSIM_ASSERT(this->size() == other.size()); // base class checked
         const SimpleProperty& otherS = SimpleProperty::getAs(other);
         for (int i=0; i<values.size(); ++i)
             if (!Property<T>::TypeHelper::isEqual(values[i], otherS.values[i]))
@@ -1151,13 +1152,13 @@ public:
     const Object& getValueAsObject(int index=-1) const override final {
         if (index < 0 && this->getMinListSize()==1 && this->getMaxListSize()==1)
             index = 0;
-        return *objects[index];
+        return *objects.at(index);
     }
 
     Object& updValueAsObject(int index=-1) override final {
         if (index < 0 && this->getMinListSize()==1 && this->getMaxListSize()==1)
             index = 0;
-        return *objects[index];
+        return *objects.at(index);
     }
 
     static bool isA(const AbstractProperty& prop) 
@@ -1187,17 +1188,17 @@ public:
     }
     // Remove value at specific index
     void removeValueAtIndexVirtual(int index) override {
-        objects.erase(&objects[index]);
+        objects.erase(&objects.at(index));
     }
 private:
     // Base class checks the index.
     const T& getValueVirtual(int index) const override final 
-    {   return *objects[index]; }
+    {   return *objects.at(index); }
     T& updValueVirtual(int index) override final 
-    {   return *objects[index]; }
+    {   return *objects.at(index); }
     void setValueVirtual(int index, const T& obj) override final
-    {   objects[index].reset((T*)nullptr);
-        objects[index] = obj; }
+    {   objects.at(index).reset((T*)nullptr);
+        objects.at(index) = obj; }
     int appendValueVirtual(const T& obj) override final
     {   objects.push_back();        // add empty element
         objects.back() = obj;       // insert a copy

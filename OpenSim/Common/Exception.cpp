@@ -29,7 +29,6 @@
 // INCLUDES
 #include <iostream>
 #include <string>
-#include <cassert>
 #include "osimCommonDLL.h"
 #include "Exception.h"
 #include "IO.h"
@@ -58,12 +57,6 @@ exception()
     setMessage(aMsg);
     _file = aFile;
     _line = aLine;
-
-// make it assert false when debugging...
-//#ifndef NDEBUG
-//  print(cout);
-//  assert(false);
-//#endif
 }
 
 namespace {
