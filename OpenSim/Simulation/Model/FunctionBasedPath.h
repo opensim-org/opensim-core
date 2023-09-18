@@ -61,7 +61,7 @@ namespace OpenSim {
  * 
  * \f[
  * \dot{l} = \frac{dl}{dt} 
- *         = \sum_i \frac{\partial l}{\partial q_i}} \frac{dq_i}{dt} 
+ *         = \sum_i \frac{\partial l}{\partial q_i} \frac{dq_i}{dt} 
  *         = \sum_i -r_i \dot{q}_i
  * \f]
  * 
@@ -103,19 +103,20 @@ namespace OpenSim {
  * 
  * References
  * ----------
- * [1] Meyer AJ, Patten C, Fregly BJ (2017) "Lower extremity EMG-driven modeling 
- *        of walking with automated adjustment of musculoskeletal geometry." 
- *        PLoS ONE 12(7): e0179698. https://doi.org/10.1371/journal.pone.0179698
- * [2] van den Bogert, A.J., Geijtenbeek, T., Even-Zohar, O. et al. (2013) "A 
- *        real-time system for biomechanical analysis of human movement and 
- *        muscle function." Med Biol Eng Comput 51, 1069–1077 (2013). 
- *        https://doi.org/10.1007/s11517-013-1076-z
- * [3] Sherman MA, Seth A, Delp SL. (2013) "What is a Moment Arm? Calculating 
- *        Muscle Effectiveness in Biomechanical Models Using Generalized 
- *        Coordinates." ASME. International Design Engineering Technical 
- *        Conferences and Computers and Information in Engineering Conference, 
- *        Volume 7B: 9th International Conference on Multibody Systems, 
- *        Nonlinear Dynamics, and Control. 
+ * - [1] Meyer AJ, Patten C, Fregly BJ (2017) "Lower extremity EMG-driven 
+ *       modeling of walking with automated adjustment of musculoskeletal 
+ *       geometry." PLoS ONE 12(7): e0179698. 
+ *       https://doi.org/10.1371/journal.pone.0179698
+ * - [2] van den Bogert, A.J., Geijtenbeek, T., Even-Zohar, O. et al. (2013) "A 
+ *       real-time system for biomechanical analysis of human movement and 
+ *       muscle function." Med Biol Eng Comput 51, 1069–1077 (2013). 
+ *       https://doi.org/10.1007/s11517-013-1076-z
+ * - [3] Sherman MA, Seth A, Delp SL. (2013) "What is a Moment Arm? Calculating 
+ *       Muscle Effectiveness in Biomechanical Models Using Generalized 
+ *       Coordinates." ASME. International Design Engineering Technical 
+ *       Conferences and Computers and Information in Engineering Conference, 
+ *       Volume 7B: 9th International Conference on Multibody Systems, 
+ *       Nonlinear Dynamics, and Control. 
  */
 class OSIMSIMULATION_API FunctionBasedPath : public AbstractPath {
 OpenSim_DECLARE_CONCRETE_OBJECT(FunctionBasedPath, AbstractPath);
