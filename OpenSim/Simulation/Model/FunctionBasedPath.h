@@ -164,12 +164,14 @@ public:
     /// Set the function that computes the length of the path as a function of
     /// the coordinate values. The function must have the same number of 
     /// arguments as the number of coordinates.
+    /// @note The length function is copied into the internal property.
     void setLengthFunction(const Function& lengthFunction);
     const Function& getLengthFunction() const;
     
     /// Set the list of functions that compute the moment arms of the path as a
     /// function of the coordinate values. The order of the functions must match
     /// the order of the coordinates.
+    /// @note The moment arm functions are copied into the internal property.
     void setMomentArmFunctions(const std::vector<Function>& momentArmFunctions);
     void appendMomentArmFunction(const Function& momentArmFunction);
     const Function& getMomentArmFunction(
@@ -178,6 +180,7 @@ public:
     /// Set the function that computes the speed of the path as a function of
     /// the coordinate values and speeds. The function must have the same number 
     /// of arguments as the number of coordinate values and speeds.
+    /// @note The length function is copied into the internal property.
     void setLengtheningSpeedFunction(const Function& speedFunction);
     const Function& getLengtheningSpeedFunction() const;
     
