@@ -16,14 +16,13 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 #define CATCH_CONFIG_MAIN
-#include "Testing.h"
+#include <OpenSim/Auxiliary/catch.hpp>
 
-#include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Actuators/ModelFactory.h>
 #include <OpenSim/Moco/Components/AccelerationMotion.h>
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
-#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
+#include <OpenSim/Common/LinearFunction.h>
 
 using namespace OpenSim;
 using namespace Catch;
@@ -163,7 +162,7 @@ TEMPLATE_TEST_CASE("Similar solutions between implicit and explicit dynamics",
 
         // Solutions are approximately equal.
         CHECK(solutionImplicit.getFinalTime() ==
-                Approx(solution.getFinalTime()).margin(1e-2));
+                Detail::Approx(solution.getFinalTime()).margin(1e-2));
         CHECK(stateError < 2.0);
         CHECK(controlError < 30.0);
 
@@ -306,7 +305,7 @@ SCENARIO("Using MocoTrajectory with the implicit dynamics mode",
         }
         THEN("RMS error is computed correctly") {
             REQUIRE(iterA.compareContinuousVariablesRMS(iterB) ==
-                    Approx(valueA - valueB));
+                    Detail::Approx(valueA - valueB));
         }
     }
 }
@@ -319,7 +318,7 @@ TEST_CASE("AccelerationMotion") {
     state.updQ()[0] = -SimTK::Pi / 2;
     model.realizeAcceleration(state);
     // Default.
-    CHECK(state.getUDot()[0] == Approx(0).margin(1e-10));
+    CHECK(state.getUDot()[0] == Detail::Approx(0).margin(1e-10));
 
     // Enable.
     accel->setEnabled(state, true);
@@ -327,12 +326,12 @@ TEST_CASE("AccelerationMotion") {
     udot[0] = SimTK::Random::Uniform(-1, 1).getValue();
     accel->setUDot(state, udot);
     model.realizeAcceleration(state);
-    CHECK(state.getUDot()[0] == Approx(udot[0]).margin(1e-10));
+    CHECK(state.getUDot()[0] == Detail::Approx(udot[0]).margin(1e-10));
 
     // Disable.
     accel->setEnabled(state, false);
     model.realizeAcceleration(state);
-    CHECK(state.getUDot()[0] == Approx(0).margin(1e-10));
+    CHECK(state.getUDot()[0] == Detail::Approx(0).margin(1e-10));
 }
 
 // This class implements a custom component with simple dynamics in implicit

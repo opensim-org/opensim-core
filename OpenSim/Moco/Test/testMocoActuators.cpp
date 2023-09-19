@@ -22,10 +22,10 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Tools/CMCTool.h>
 #include "OpenSim/Tools/CMC_TaskSet.h"
+#include "OpenSim/Tools/CMC_Joint.h"
 
 #define CATCH_CONFIG_MAIN
-#include "Testing.h"
-#include "OpenSim/Tools/CMC_Joint.h"
+#include <OpenSim/Auxiliary/catch.hpp>
 
 using namespace OpenSim;
 
