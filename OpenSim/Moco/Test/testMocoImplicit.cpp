@@ -15,14 +15,15 @@
  * See the License for the specific language governing permissions and        *
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
-#define CATCH_CONFIG_MAIN
-#include <OpenSim/Auxiliary/catch.hpp>
 
 #include <OpenSim/Actuators/ModelFactory.h>
 #include <OpenSim/Moco/Components/AccelerationMotion.h>
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/Model/PhysicalOffsetFrame.h>
 #include <OpenSim/Common/LinearFunction.h>
+
+#define CATCH_CONFIG_MAIN
+#include "Testing.h"
 
 using namespace OpenSim;
 using namespace Catch;

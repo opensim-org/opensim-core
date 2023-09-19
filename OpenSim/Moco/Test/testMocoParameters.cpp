@@ -16,13 +16,14 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#define CATCH_CONFIG_MAIN
-#include "Testing.h"
-
 #include <OpenSim/Actuators/SpringGeneralizedForce.h>
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
+
+#define CATCH_CONFIG_MAIN
+#include "Testing.h"
+
 using namespace OpenSim;
 
 // Resharper is a JetBrains add-on to Visual Studio that allows running tests

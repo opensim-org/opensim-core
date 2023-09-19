@@ -25,7 +25,7 @@
 #include "OpenSim/Tools/CMC_Joint.h"
 
 #define CATCH_CONFIG_MAIN
-#include <OpenSim/Auxiliary/catch.hpp>
+#include "Testing.h"
 
 using namespace OpenSim;
 
