@@ -17,11 +17,11 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include <OpenSim/Moco/osimMoco.h>
+#include <OpenSim/Simulation/Manager/Manager.h>
+
 #define CATCH_CONFIG_MAIN
 #include "Testing.h"
-#include <OpenSim/Moco/osimMoco.h>
-
-#include <OpenSim/Simulation/Manager/Manager.h>
 
 const double FRICTION_COEFFICIENT = 0.7;
 
