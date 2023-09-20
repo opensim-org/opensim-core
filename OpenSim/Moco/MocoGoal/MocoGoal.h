@@ -251,20 +251,15 @@ public:
 
         calcGoalImpl(input, goal);
         
+        // Apply normalizations.
         if (get_divide_by_displacement()) {
-            const double displacement = calcSystemDisplacement(
-                    input.initial_state, input.final_state);
-            goal /= displacement;
+            goal /= calcSystemDisplacement(input);
         }
-        
         if (get_divide_by_duration()) {
-            const double duration = calcDuration(input);
-            goal /= duration;
+            goal /= calcDuration(input);
         }
-        
         if (get_divide_by_mass()) {
-            const double mass = calcSystemMass(input.initial_state);
-            goal /= mass;
+            goal /= calcSystemMass(input);
         }
 
         if (input.initial_state.getSystemStage() > initialStageBefore) {
@@ -447,12 +442,13 @@ protected:
         return m_model.getRef();
     }
 
-    double calcSystemDisplacement(
-            const SimTK::State& initial, const SimTK::State& final) const;
-    
+    /// Calculate the displacement of the system's center of mass over the
+    /// phase.
+    double calcSystemDisplacement(const GoalInput& input) const;
+    /// Calculate the duration of the phase.
     double calcDuration(const GoalInput& input) const;
-    
-    double calcSystemMass(const SimTK::State& state) const;
+    /// Calculate the mass of the system.
+    double calcSystemMass(const GoalInput& input) const;
 
     /// Append a MocoScaleFactor to this MocoGoal.
     void appendScaleFactor(const MocoScaleFactor& scaleFactor) {
@@ -564,8 +560,7 @@ protected:
     void calcGoalImpl(
             const GoalInput& input, SimTK::Vector& values) const override {
         // Calculate average gait speed.
-        const double displacement = calcSystemDisplacement(
-                input.initial_state, input.final_state);
+        const double displacement = calcSystemDisplacement(input);
         const double duration = calcDuration(input);
         values[0] = get_desired_average_speed() - (displacement / duration);
         if (getModeIsCost()) { values[0] = SimTK::square(values[0]); }

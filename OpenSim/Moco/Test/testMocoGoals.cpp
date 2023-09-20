@@ -1046,9 +1046,9 @@ protected:
     }
     void calcGoalImpl(
             const GoalInput& in, SimTK::Vector& values) const override {
-        values[0] = calcSystemDisplacement(in.initial_state, in.final_state);
+        values[0] = calcSystemDisplacement(in);
         values[1] = calcDuration(in);
-        values[2] = calcSystemMass(in.initial_state);
+        values[2] = calcSystemMass(in);
     }
 };
 
