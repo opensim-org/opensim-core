@@ -57,6 +57,14 @@ double MocoGoal::calcSystemDisplacement(const SimTK::State& initialState,
     return (comFinal - comInitial).norm();
 }
 
+double MocoGoal::calcDuration(const GoalInput& input) const {
+    return input.final_time - input.initial_time;
+}
+
+double MocoGoal::calcSystemMass(const SimTK::State& state) const {
+    return getModel().getTotalMass(state);
+}
+
 void MocoGoal::constructProperties() {
     constructProperty_enabled(true);
     constructProperty_weight(1);

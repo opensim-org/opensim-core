@@ -258,12 +258,12 @@ public:
         }
         
         if (get_divide_by_duration()) {
-            const double duration = input.final_time - input.initial_time;
+            const double duration = calcDuration(input);
             goal /= duration;
         }
         
         if (get_divide_by_mass()) {
-            const double mass = getModel().getTotalMass(input.initial_state);
+            const double mass = calcSystemMass(input.initial_state);
             goal /= mass;
         }
 
@@ -326,6 +326,12 @@ public:
             }
         }
         
+        if (getDivideByDuration()) {
+            if (m_stageDependency < SimTK::Stage::Topology) {
+                m_stageDependency = SimTK::Stage::Topology;
+            }
+        }
+        
         if (getDivideByMass()) {
             if (m_stageDependency < SimTK::Stage::Instance) {
                 m_stageDependency = SimTK::Stage::Instance;
@@ -362,6 +368,8 @@ public:
     }
     
     /// Set if the goal should be divided by the phase duration.
+    /// @note Increases the stage dependency of this goal to 
+    /// SimTK::Stage::Topology, if it is not already equal or higher
     void setDivideByDuration(bool tf) { set_divide_by_duration(tf); }
     bool getDivideByDuration() const {
         return get_divide_by_duration();
@@ -441,6 +449,10 @@ protected:
 
     double calcSystemDisplacement(
             const SimTK::State& initial, const SimTK::State& final) const;
+    
+    double calcDuration(const GoalInput& input) const;
+    
+    double calcSystemMass(const SimTK::State& state) const;
 
     /// Append a MocoScaleFactor to this MocoGoal.
     void appendScaleFactor(const MocoScaleFactor& scaleFactor) {
@@ -551,17 +563,10 @@ protected:
     }
     void calcGoalImpl(
             const GoalInput& input, SimTK::Vector& values) const override {
-        SimTK::Real timeInitial = input.initial_state.getTime();
-        SimTK::Real timeFinal = input.final_state.getTime();
-        SimTK::Real duration = timeFinal - timeInitial;
-
-        SimTK::Vec3 comInitial =
-                getModel().calcMassCenterPosition(input.initial_state);
-        SimTK::Vec3 comFinal =
-                getModel().calcMassCenterPosition(input.final_state);
-        // TODO: Use distance squared for convexity.
-        SimTK::Real displacement = (comFinal - comInitial).norm();
         // Calculate average gait speed.
+        const double displacement = calcSystemDisplacement(
+                input.initial_state, input.final_state);
+        const double duration = calcDuration(input);
         values[0] = get_desired_average_speed() - (displacement / duration);
         if (getModeIsCost()) { values[0] = SimTK::square(values[0]); }
     }
