@@ -24,6 +24,7 @@
 #include <OpenSim/Common/TableUtilities.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/SimulationUtilities.h>
 
 namespace OpenSim {
 
@@ -224,6 +225,23 @@ public:
         auto labels = table.getColumnLabels();
         updateStateLabels40(*model, labels);
         table.setColumnLabels(labels);
+    }
+};
+
+/// Invoke SimulationUtilities::appendCoupledCoordinateValues() on the table.
+class OSIMSIMULATION_API TabOpAppendCoupledCoordinateValues 
+        : public TableOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(TabOpAppendCoupledCoordinateValues, 
+            TableOperator);
+
+public:
+    TabOpAppendCoupledCoordinateValues() {}
+
+    void operate(TimeSeriesTable& table, const Model* model) const override {
+
+        OPENSIM_THROW_IF(!model, Exception,
+                "Expected a model, but no model was provided.");
+        appendCoupledCoordinateValues(table, *model);
     }
 };
 

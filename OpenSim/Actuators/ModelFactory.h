@@ -19,8 +19,9 @@
  * -------------------------------------------------------------------------- */
 
 #include "osimActuatorsDLL.h"
-#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/FunctionBasedPath.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Actuators/ModelProcessor.h>
 
 namespace OpenSim {
 

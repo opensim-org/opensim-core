@@ -27,8 +27,13 @@
 #include "Model/Model.h"
 
 #include <simbody/internal/Visualizer_InputListener.h>
+#include <SimTKcommon/internal/IteratorRange.h>
 
 #include <OpenSim/Common/TableUtilities.h>
+#include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
+#include <OpenSim/Simulation/TableProcessor.h>
+
+#include <future>
 
 using namespace OpenSim;
 
@@ -438,3 +443,179 @@ TimeSeriesTableVec3 OpenSim::createSyntheticIMUAccelerationSignals(
 
     return accelTableIMU;
 }
+
+void OpenSim::appendCoupledCoordinateValues(
+        OpenSim::TimeSeriesTable& table, const OpenSim::Model& model) {
+    
+    const CoordinateSet& coordinateSet = model.getCoordinateSet();
+    const auto& couplerConstraints = 
+            model.getComponentList<CoordinateCouplerConstraint>();
+    for (const auto& couplerConstraint : couplerConstraints) {
+        
+        // Get the dependent coordinate and check if the table already contains
+        // values for it. If so, skip this constraint.
+        const Coordinate& coordinate = coordinateSet.get(
+                couplerConstraint.getDependentCoordinateName());
+        const std::string& coupledCoordinatePath = 
+                fmt::format("{}/value", coordinate.getAbsolutePathString());
+        if (table.hasColumn(coupledCoordinatePath)) {
+            continue;
+        }
+        
+        // Get the paths to the independent coordinate values.
+        const Array<std::string>& independentCoordinateNames = 
+                couplerConstraint.getIndependentCoordinateNames();
+        std::vector<std::string> independentCoordinatePaths;
+        for (int i = 0; i < independentCoordinateNames.getSize(); ++i) {
+            const Coordinate& independentCoordinate = coordinateSet.get(
+                    independentCoordinateNames[i]);
+            independentCoordinatePaths.push_back(
+                    fmt::format("{}/value", 
+                        independentCoordinate.getAbsolutePathString()));
+            OPENSIM_THROW_IF(
+                    !table.hasColumn(independentCoordinatePaths.back()),
+                    Exception, 
+                    "Expected the coordinates table to contain a column with "
+                    "label '{}', but it does not.",
+                    independentCoordinatePaths.back())
+        }
+        
+        // Compute the dependent coordinate values from the function in the 
+        // CoordinateCouplerConstraint.
+        SimTK::Vector independentValues(
+                (int)independentCoordinatePaths.size(), 0.0);
+        SimTK::Vector newColumn((int)table.getNumRows());
+        const Function& function = couplerConstraint.getFunction();
+        for (int irow = 0; irow < table.getNumRows(); ++irow) {
+            int ival = 0;
+            for (const auto& independentCoordinatePath : 
+                    independentCoordinatePaths) {
+                independentValues[ival++] = 
+                        table.getDependentColumn(independentCoordinatePath)[irow];
+            }
+            newColumn[irow] = function.calcValue(independentValues);
+        }
+        
+        // Append the new column to the table.
+        table.appendColumn(coupledCoordinatePath, newColumn);
+    }
+}
+
+
+
+void OpenSim::computePathLengthsAndMomentArms(
+        const std::string& modelFile, 
+        const std::string& coordinateValuesFile,
+        const std::string& modelName, 
+        const std::string& pathMotionFile4Polynomials,
+        const std::vector<std::string>& joints,
+        const std::vector<std::string>& muscles,
+        const std::string& type_bounds_polynomials,
+        const std::string& side, 
+        int threads = std::thread::hardware_concurrency() - 2) {
+    
+    // Check inputs.
+    OPENSIM_THROW_IF(
+            threads < 1 || threads > std::thread::hardware_concurrency(),
+            Exception, "Number of threads must be between 1 and {}.",
+            std::thread::hardware_concurrency());
+    
+    // Load model.
+    Model model(modelFile);
+    model.initSystem();
+    
+    
+    // Load coordinate values.
+    TableProcessor tableProcessor = TableProcessor(coordinateValuesFile) |
+                                    TabOpUseAbsoluteStateNames() |
+                                    TabOpAppendCoupledCoordinateValues();
+    TimeSeriesTable coordinateValues = 
+            tableProcessor.processAndConvertToRadians(model);
+    auto statesTrajectory = StatesTrajectory::createFromStatesTable(
+            model, coordinateValues);
+    
+    // Determine the maximum number of path and moment arm evaluations.
+    const auto& paths = model.getComponentList<AbstractPath>();
+    int numPaths = std::distance(paths.begin(), paths.end());
+    int numCoordinates = coordinateValues.getNumColumns();
+    int numColumns = numCoordinates + (numPaths * numCoordinates);
+    
+    // Define helper function for path length and moment arm computations.
+    auto calcPathLengthsAndMomentArmsSubset = [numColumns](Model model, 
+            StatesTrajectory::IteratorRange subsetStates) -> SimTK::Matrix {
+        Logger::setLevel(Logger::Level::Error);
+        model.initSystem();
+        const CoordinateSet& coordinateSet = model.getCoordinateSet();
+        
+        // Create a matrix to store the results (adjust the dimensions accordingly)
+        SimTK::Matrix results(
+                std::distance(subsetStates.begin(), subsetStates.end()),
+                numColumns);
+        
+        int row = 0;
+        for (const auto& state : subsetStates) {
+            model.realizePosition(state);
+
+            // Compute and store path lengths and moment arms in the 'results' matrix
+            // You need to implement the logic to calculate and fill the matrix here.
+            // You may use 'row' as the row index to store results for each state.
+        
+            // Example:
+            // results(row, 0) = ...; // Store path length for this state
+            // results(row, 1) = ...; // Store moment arms for this state
+
+            row++;
+        }
+
+        return results;
+    };
+    
+    
+    // Divide the path length and moment arm computations across multiple 
+    // threads.
+    int stride = static_cast<int>(
+            std::floor(coordinateValues.getNumRows() / threads));
+    std::vector<std::future<SimTK::Matrix>> futures;
+    int offset = 0;
+    for (int ithread = 0; ithread < threads; ++ithread) {
+        StatesTrajectory::const_iterator begin_iter = 
+                statesTrajectory.begin() + offset;
+        StatesTrajectory::const_iterator end_iter = (ithread == threads-1) ?
+                statesTrajectory.end() : 
+                statesTrajectory.begin() + offset + stride;
+        futures.push_back(std::async(std::launch::async, 
+                calcPathLengthsAndMomentArmsSubset, 
+                model, 
+                makeIteratorRange(begin_iter, end_iter)));
+        offset += stride;
+    }
+    
+    // Wait for threads to finish and collect results
+    std::vector<SimTK::Matrix> outputs(threads);
+    for (int i = 0; i < threads; ++i) {
+        outputs[i] = futures[i].get();
+    }
+    
+    // Assemble results into one TimeSeriesTable
+    
+    // Gather data
+    
+    // Implement logic to combine data from multiple threads
+    
+    // Put data in a suitable data structure
+    
+    // Save data to file
+    
+    // Fit polynomial coefficients
+    
+    // You can implement this part based on your needs.
+    
+    std::cout << "Fit polynomials." << std::endl;
+    
+    // Save polynomialData to file
+    
+    
+    std::cout << "Done fitting polynomials." << std::endl;
+}
+
+
