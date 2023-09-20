@@ -250,6 +250,22 @@ public:
                 input.final_state.getSystemStage();
 
         calcGoalImpl(input, goal);
+        
+        if (get_divide_by_displacement()) {
+            const double displacement = calcSystemDisplacement(
+                    input.initial_state, input.final_state);
+            goal /= displacement;
+        }
+        
+        if (get_divide_by_duration()) {
+            const double duration = input.final_time - input.initial_time;
+            goal /= duration;
+        }
+        
+        if (get_divide_by_mass()) {
+            const double mass = getModel().getTotalMass(input.initial_state);
+            goal /= mass;
+        }
 
         if (input.initial_state.getSystemStage() > initialStageBefore) {
             SimTK_ERRCHK2_ALWAYS(
@@ -303,6 +319,18 @@ public:
         }
 
         initializeOnModelImpl(model);
+        
+        if (getDivideByDisplacement()) {
+            if (m_stageDependency < SimTK::Stage::Position) {
+                m_stageDependency = SimTK::Stage::Position;
+            }
+        }
+        
+        if (getDivideByMass()) {
+            if (m_stageDependency < SimTK::Stage::Instance) {
+                m_stageDependency = SimTK::Stage::Instance;
+            }
+        }
 
         OPENSIM_THROW_IF_FRMOBJ(m_numIntegrals == -1, Exception,
                 "Expected setRequirements() to be invoked, "
@@ -323,6 +351,29 @@ public:
     /// Print the name type and mode of this goal. In cost mode, this prints the
     /// weight.
     void printDescription() const;
+    
+    /// Set if the goal should be divided by the displacement of the system's
+    /// center of mass over the phase.
+    /// @note Increases the stage dependency of this goal to 
+    /// SimTK::Stage::Position, if it is not already equal or higher.
+    void setDivideByDisplacement(bool tf) { set_divide_by_displacement(tf); }
+    bool getDivideByDisplacement() const {
+        return get_divide_by_displacement();
+    }
+    
+    /// Set if the goal should be divided by the phase duration.
+    void setDivideByDuration(bool tf) { set_divide_by_duration(tf); }
+    bool getDivideByDuration() const {
+        return get_divide_by_duration();
+    }
+    
+    /// Set if the goal should be divided by the model's mass.
+    /// @note Increases the stage dependency of this goal to 
+    /// SimTK::Stage::Instance, if it is not already equal or higher.
+    void setDivideByMass(bool tf) { set_divide_by_mass(tf); }
+    bool getDivideByMass() const {
+        return get_divide_by_mass();
+    }
 
 protected:
     /// Perform any caching before the problem is solved.
@@ -413,7 +464,14 @@ private:
             "via a MocoParameter. A copy of each MocoScaleFactor component is "
             "added to the model internal to MocoProblem, which makes the scale "
             "factors values available when computing the cost function for each "
-            "MocoGoal.")
+            "MocoGoal.");
+    OpenSim_DECLARE_PROPERTY(divide_by_displacement, bool,
+            "Divide by the model's displacement over the phase (default: "
+            "false)");
+    OpenSim_DECLARE_PROPERTY(divide_by_duration, bool,
+            "Divide by the phase duration (default: false)");
+    OpenSim_DECLARE_PROPERTY(divide_by_mass, bool,
+            "Divide by the model's mass (default: false)");
 
     void constructProperties();
 

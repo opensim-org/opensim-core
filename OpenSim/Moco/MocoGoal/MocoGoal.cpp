@@ -63,4 +63,7 @@ void MocoGoal::constructProperties() {
     constructProperty_mode();
     constructProperty_MocoConstraintInfo(MocoConstraintInfo());
     constructProperty_scale_factors();
+    constructProperty_divide_by_displacement(false);
+    constructProperty_divide_by_duration(false);
+    constructProperty_divide_by_mass(false);
 }

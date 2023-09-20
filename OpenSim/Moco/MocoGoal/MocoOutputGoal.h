@@ -161,27 +161,10 @@ class OSIMMOCO_API MocoOutputGoal : public MocoOutputBase {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoOutputGoal, MocoOutputBase);
 
 public:
-    MocoOutputGoal() { constructProperties(); }
-    MocoOutputGoal(std::string name) : MocoOutputBase(std::move(name)) {
-        constructProperties();
-    }
+    MocoOutputGoal() {}
+    MocoOutputGoal(std::string name) : MocoOutputBase(std::move(name)) {}
     MocoOutputGoal(std::string name, double weight)
-            : MocoOutputBase(std::move(name), weight) {
-        constructProperties();
-    }
-
-    /** Set if the goal should be divided by the displacement of the system's
-    center of mass over the phase. */
-    void setDivideByDisplacement(bool tf) { set_divide_by_displacement(tf); }
-    bool getDivideByDisplacement() const {
-        return get_divide_by_displacement();
-    }
-
-    /** Set if the goal should be divided by the total mass of the model. */
-    void setDivideByMass(bool tf) { set_divide_by_mass(tf); }
-    bool getDivideByMass() const {
-        return get_divide_by_mass();
-    }
+            : MocoOutputBase(std::move(name), weight) {}
 
 protected:
     void initializeOnModelImpl(const Model&) const override;
@@ -193,14 +176,6 @@ protected:
     Mode getDefaultModeImpl() const override {
         return Mode::Cost;
     }
-
-private:
-    OpenSim_DECLARE_PROPERTY(divide_by_displacement, bool,
-            "Divide by the model's displacement over the phase (default: "
-            "false)");
-    OpenSim_DECLARE_PROPERTY(divide_by_mass, bool,
-            "Divide by the model's total mass (default: false)");
-    void constructProperties();
 };
 
 /** This goal permits the integration of only positive or negative values from a
@@ -245,17 +220,6 @@ public:
         constructProperties();
     }
 
-    /** Set if the goal should be divided by the displacement of the system's
-    center of mass over the phase. */
-    void setDivideByDisplacement(bool tf) { set_divide_by_displacement(tf); }
-    bool getDivideByDisplacement() const {
-        return get_divide_by_displacement();
-    }
-
-    /** Set if the goal should be divided by the total mass of the model. */
-    void setDivideByMass(bool tf) { set_divide_by_mass(tf); }
-    bool getDivideByMass() const { return get_divide_by_mass(); }
-
     /** Set the type of extremum ('minimum' or 'maximum') to be applied to the 
     output variable of choice. */
     void setExtremumType(std::string extremum_type) {
@@ -282,11 +246,6 @@ protected:
     Mode getDefaultModeImpl() const override { return Mode::Cost; }
 
 private:
-    OpenSim_DECLARE_PROPERTY(divide_by_displacement, bool,
-            "Divide by the model's displacement over the phase (default: "
-            "false)");
-    OpenSim_DECLARE_PROPERTY(divide_by_mass, bool,
-            "Divide by the model's total mass (default: false)");
     OpenSim_DECLARE_PROPERTY(extremum_type, std::string,
             "The type of extremum to be taken in the goal."
             "'minimum' or 'maximum'"
