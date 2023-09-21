@@ -86,13 +86,6 @@ public:
     void setExponent(int exponent) { set_exponent(exponent); }
     double getExponent() const { return get_exponent(); }
 
-    /** Set if the goal should be divided by the displacement of the system's
-    center of mass over the phase. */
-    void setDivideByDisplacement(bool tf) { set_divide_by_displacement(tf); }
-    bool getDivideByDisplacement() const {
-        return get_divide_by_displacement();
-    }
-
 protected:
     void initializeOnModelImpl(const Model&) const override;
     void calcIntegrandImpl(
@@ -108,13 +101,10 @@ private:
             "the weight for unspecified controls is 1.");
     OpenSim_DECLARE_PROPERTY(control_weights_pattern, MocoWeightSet,
             "Set control weights for all controls matching a regular "
-            "expression.")
+            "expression.");
     OpenSim_DECLARE_PROPERTY(
             exponent, int, "The exponent on controls; greater than or equal to "
                            "2 (default: 2).");
-    OpenSim_DECLARE_PROPERTY(divide_by_displacement, bool,
-            "Divide by the model's displacement over the phase (default: "
-            "false)");
     mutable std::vector<double> m_weights;
     mutable std::vector<int> m_controlIndices;
     mutable std::vector<std::string> m_controlNames;
