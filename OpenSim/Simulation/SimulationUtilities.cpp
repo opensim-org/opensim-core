@@ -506,13 +506,7 @@ void OpenSim::appendCoupledCoordinateValues(
 void OpenSim::computePathLengthsAndMomentArms(
         const std::string& modelFile, 
         const std::string& coordinateValuesFile,
-        const std::string& modelName, 
-        const std::string& pathMotionFile4Polynomials,
-        const std::vector<std::string>& joints,
-        const std::vector<std::string>& muscles,
-        const std::string& type_bounds_polynomials,
-        const std::string& side, 
-        int threads = std::thread::hardware_concurrency() - 2) {
+        int threads = (int)std::thread::hardware_concurrency() - 2) {
     
     // Check inputs.
     OPENSIM_THROW_IF(
@@ -523,7 +517,6 @@ void OpenSim::computePathLengthsAndMomentArms(
     // Load model.
     Model model(modelFile);
     model.initSystem();
-    
     
     // Load coordinate values.
     TableProcessor tableProcessor = TableProcessor(coordinateValuesFile) |
@@ -536,8 +529,8 @@ void OpenSim::computePathLengthsAndMomentArms(
     
     // Determine the maximum number of path and moment arm evaluations.
     const auto& paths = model.getComponentList<AbstractPath>();
-    int numPaths = std::distance(paths.begin(), paths.end());
-    int numCoordinates = coordinateValues.getNumColumns();
+    int numPaths = (int)std::distance(paths.begin(), paths.end());
+    int numCoordinates = (int)coordinateValues.getNumColumns();
     int numColumns = numCoordinates + (numPaths * numCoordinates);
     
     // Define helper function for path length and moment arm computations.
@@ -547,22 +540,16 @@ void OpenSim::computePathLengthsAndMomentArms(
         model.initSystem();
         const CoordinateSet& coordinateSet = model.getCoordinateSet();
         
-        // Create a matrix to store the results (adjust the dimensions accordingly)
+        // Create a matrix to store the results
         SimTK::Matrix results(
-                std::distance(subsetStates.begin(), subsetStates.end()),
+                (int)std::distance(subsetStates.begin(), subsetStates.end()),
                 numColumns);
         
         int row = 0;
         for (const auto& state : subsetStates) {
             model.realizePosition(state);
 
-            // Compute and store path lengths and moment arms in the 'results' matrix
-            // You need to implement the logic to calculate and fill the matrix here.
-            // You may use 'row' as the row index to store results for each state.
-        
-            // Example:
-            // results(row, 0) = ...; // Store path length for this state
-            // results(row, 1) = ...; // Store moment arms for this state
+
 
             row++;
         }

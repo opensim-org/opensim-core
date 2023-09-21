@@ -390,12 +390,6 @@ OSIMSIMULATION_API void appendCoupledCoordinateValues(
 OSIMSIMULATION_API void computePathLengthsAndMomentArms(
         const std::string& modelFile, 
         const std::string& coordinateValuesFile,
-        const std::string& modelName, 
-        const std::string& pathMotionFile4Polynomials,
-        const std::vector<std::string>& joints,
-        const std::vector<std::string>& muscles,
-        const std::string& type_bounds_polynomials,
-        const std::string& side, 
         int threads);
 
 } // end of namespace OpenSim

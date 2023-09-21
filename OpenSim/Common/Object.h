@@ -347,6 +347,9 @@ public:
     used by the Property declaration macros for fast access to properties. **/
     template <class T> Property<T>& 
     updProperty(const PropertyIndex& index);
+    /** @copydoc updProperty(const PropertyIndex&) **/
+    template <class T> Property<T>&
+    updProperty(const std::string& name);
 
     /** Returns \c true if no property's value has changed since the last time
     setObjectIsUpToDateWithProperties() was called. **/
@@ -941,6 +944,12 @@ template <class T> Property<T>& Object::
 updProperty(const PropertyIndex& index) {
     _objectIsUpToDate = false; // property may be changed
     return _propertyTable.updProperty<T>(index);
+}
+
+template <class T> Property<T>& Object::
+updProperty(const std::string& name) {
+    _objectIsUpToDate = false; // property may be changed
+    return _propertyTable.updProperty<T>(name);
 }
 
 template <class T> PropertyIndex Object::

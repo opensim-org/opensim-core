@@ -95,75 +95,31 @@ public:
     /// Replace the paths of the forces in the model with the 
     /// FunctionBasedPath%s specified in the file 'pathsFileName'. The file must 
     /// be a Set of FunctionBasedPath%s where the name of each path matches the 
-    /// name of a corresponding Force in the model. The path name is appended
+    /// path of a corresponding Force in the model. The path name is appended
     /// with "_path" to avoid name ambiguity in the final model.
-    /// @note This checks both the model's ForceSet and the model's components
-    /// list for forces matches the names of the FunctionBasedPath%s in the
-    /// file.
-    template <typename T>
     static void replacePathsWithFunctionBasedPaths(Model& model, 
             const std::string& pathsFileName) {
         Set<FunctionBasedPath> pathSet(pathsFileName);
         for (int i = 0; i < pathSet.getSize(); ++i) {
             auto path = pathSet.get(i);
-            const auto& forceName = path.getName();
-            const auto componentPath = fmt::format("/{}", forceName);
-            const auto forceSetPath = fmt::format("/forceset/{}", forceName);
-            OPENSIM_THROW_IF(!model.hasComponent<T>(forceSetPath) && 
-                    !model.hasComponent<T>(componentPath), Exception,
-                    "Model does not contain a force with name {}.", forceName);
-            OPENSIM_THROW_IF(model.hasComponent<T>(forceSetPath) && 
-                             model.hasComponent<T>(componentPath), Exception,
-                    "Model does not contain a force with name {} at two "
-                    "paths: {} and {}", forceName, forceSetPath, componentPath);
             
-            // Get the force component.
-            const auto forcePath = model.hasComponent<T>(forceSetPath) ? 
-                    forceSetPath : componentPath;
-            auto& force = model.updComponent<T>(forcePath);
+            // Get the force component associated with this path.
+            OPENSIM_THROW_IF(!model.hasComponent<Force>(path.getName()), 
+                    Exception, "Model does not contain a Force at path {}.", 
+                    path.getName());
+            auto& force = model.updComponent<Force>(path.getName());
             
             // Check that the force has a path property.
             OPENSIM_THROW_IF(
-                    !force.template hasProperty<AbstractPath>(), Exception,
-                    "Force {} does not have a path property.", forceName);
+                    !force.hasProperty("path"), Exception,
+                    "Force {} does not have a path property.", path.getName());
             
-            // Overwrite the path with the function-based path.
-            path.setName(fmt::format("{}_path", forceName)))
-            force.set_path(path);
+            // Update the path.
+            path.setName(fmt::format("{}_path", force.getName()));
+            force.updProperty<AbstractPath>("path").setValue(path);
         }
+        model.finalizeFromProperties();
         model.finalizeConnections();
-    }
-    
-    /// @copydoc replacePathsWithFunctionBasedPaths()
-    static void replacePathSpringPathsWithFunctionBasedPaths(Model& model, 
-            const std::string& pathsFileName) {
-        replacePathsWithFunctionBasedPaths<PathSpring>(model, pathsFileName);
-    }
-    
-    /// @copydoc replacePathsWithFunctionBasedPaths()
-    /// @note This will replace the paths of all Muscle%s in the model.
-    static void replacePathActuatorPathsWithFunctionBasedPaths(Model& model, 
-            const std::string& pathsFileName) {
-        replacePathsWithFunctionBasedPaths<PathActuator>(model, pathsFileName);
-    }
-    
-    /// @copydoc replacePathsWithFunctionBasedPaths()
-    static void replaceMusclePathsWithFunctionBasedPaths(Model& model, 
-            const std::string& pathsFileName) {
-        replacePathsWithFunctionBasedPaths<Muscle>(model, pathsFileName);
-    }
-    
-    /// @copydoc replacePathsWithFunctionBasedPaths()
-    static void replaceLigamentPathsWithFunctionBasedPaths(Model& model, 
-            const std::string& pathsFileName) {
-        replacePathsWithFunctionBasedPaths<Ligament>(model, pathsFileName);
-    }
-    
-    /// @copydoc replacePathsWithFunctionBasedPaths()
-    static void replaceBlankevoort1991LigamentPathsWithFunctionBasedPaths(
-            Model& model, const std::string& pathsFileName) {
-        replacePathsWithFunctionBasedPaths<Blankevoort1991Ligament>(
-                model, pathsFileName);
     }
 };
 

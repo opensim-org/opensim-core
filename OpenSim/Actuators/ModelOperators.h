@@ -188,116 +188,29 @@ public:
     }
 };
 
-class OSIMACTUATORS_API ModOpReplacePathsWithFunctionBasedPathsBase
+/// Invoke ModelFactory::replacePathsWithFunctionBasedPaths() on the model.
+class OSIMACTUATORS_API ModOpReplacePathsWithFunctionBasedPaths 
         : public ModelOperator {
-    OpenSim_DECLARE_ABSTRACT_OBJECT(
-            ModOpReplacePathsWithFunctionBasedPathsBase, ModelOperator);
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+            ModOpReplacePathsWithFunctionBasedPaths, ModelOperator);
     OpenSim_DECLARE_PROPERTY(paths_file, std::string,
             "Path to a file containing FunctionBasedPath definitions.");
-    
+
 public:
-    ModOpReplacePathsWithFunctionBasedPathsBase() {
+    ModOpReplacePathsWithFunctionBasedPaths() {
         constructProperty_paths_file("");
     }
-    ModOpReplacePathsWithFunctionBasedPathsBase(std::string pathsFile) :
-            ModOpReplacePathsWithFunctionBasedPathsBase() {
+    ModOpReplacePathsWithFunctionBasedPaths(std::string pathsFile) :
+            ModOpReplacePathsWithFunctionBasedPaths() {
         set_paths_file(std::move(pathsFile));
     }
-    const std::string& getPathsFile() const { return get_paths_file(); }
-    void operate(Model& model, const std::string&) const override = 0;
-};
-
-/// Invoke ModelFactory::replacePathSpringPathsWithFunctionBasedPaths() on the 
-/// model.
-class OSIMACTUATORS_API ModOpReplacePathSpringPathsWithFunctionBasedPaths
-        : public ModOpReplacePathsWithFunctionBasedPathsBase {
-    OpenSim_DECLARE_CONCRETE_OBJECT(
-            ModOpReplacePathSpringPathsWithFunctionBasedPaths, 
-            ModOpReplacePathsWithFunctionBasedPathsBase);
-
-public:
     void operate(Model& model, const std::string&) const override {
         // Without finalizeFromProperties(), an exception is raised
         // about the model not having any subcomponents.
         model.finalizeFromProperties();
         model.finalizeConnections();
-        ModelFactory::replacePathSpringPathsWithFunctionBasedPaths(
-                model, getPathsFile());
-    }
-};
-
-/// Invoke ModelFactory::replacePathActuatorPathsWithFunctionBasedPaths() on the 
-/// model. 
-/// @note This will replace the paths of all Muscle%s in the model.
-class OSIMACTUATORS_API ModOpReplacePathActuatorPathsWithFunctionBasedPaths
-        : public ModOpReplacePathsWithFunctionBasedPathsBase {
-    OpenSim_DECLARE_CONCRETE_OBJECT(
-            ModOpReplacePathActuatorPathsWithFunctionBasedPaths, 
-            ModOpReplacePathsWithFunctionBasedPathsBase);
-public:
-    void operate(Model& model, const std::string&) const override {
-        // Without finalizeFromProperties(), an exception is raised
-        // about the model not having any subcomponents.
-        model.finalizeFromProperties();
-        model.finalizeConnections();
-        ModelFactory::replacePathActuatorPathsWithFunctionBasedPaths(
-                model, getPathsFile());
-    }
-};
-
-/// Invoke ModelFactory::replaceMusclePathsWithFunctionBasedPaths() on the 
-/// model.
-class OSIMACTUATORS_API ModOpReplaceMusclePathsWithFunctionBasedPaths
-        : public ModOpReplacePathsWithFunctionBasedPathsBase {
-    OpenSim_DECLARE_CONCRETE_OBJECT(
-            ModOpReplaceMusclePathsWithFunctionBasedPaths, 
-            ModOpReplacePathsWithFunctionBasedPathsBase);
-public:
-    void operate(Model& model, const std::string&) const override {
-        // Without finalizeFromProperties(), an exception is raised
-        // about the model not having any subcomponents.
-        model.finalizeFromProperties();
-        model.finalizeConnections();
-        ModelFactory::replaceMusclePathsWithFunctionBasedPaths(
-                model, getPathsFile());
-    }
-};
-
-/// Invoke ModelFactory::replaceLigamentPathsWithFunctionBasedPaths() on the 
-/// model.
-class OSIMACTUATORS_API ModOpReplaceLigamentPathsWithFunctionBasedPaths
-        : public ModOpReplacePathsWithFunctionBasedPathsBase {
-    OpenSim_DECLARE_CONCRETE_OBJECT(
-            ModOpReplaceLigamentPathsWithFunctionBasedPaths, 
-            ModOpReplacePathsWithFunctionBasedPathsBase);
-public:
-    void operate(Model& model, const std::string&) const override {
-        // Without finalizeFromProperties(), an exception is raised
-        // about the model not having any subcomponents.
-        model.finalizeFromProperties();
-        model.finalizeConnections();
-        ModelFactory::replaceLigamentPathsWithFunctionBasedPaths(
-                model, getPathsFile());
-    }
-};
-
-/// Invoke 
-/// ModelFactory::replaceBlankevoort1991LigamentPathsWithFunctionBasedPaths() on 
-/// the model.
-class OSIMACTUATORS_API 
-        ModOpReplaceBlankevoort1991LigamentPathsWithFunctionBasedPaths
-        : public ModOpReplacePathsWithFunctionBasedPathsBase {
-    OpenSim_DECLARE_CONCRETE_OBJECT(
-            ModOpReplaceBlankevoort1991LigamentPathsWithFunctionBasedPaths, 
-            ModOpReplacePathsWithFunctionBasedPathsBase);
-public:
-    void operate(Model& model, const std::string&) const override {
-        // Without finalizeFromProperties(), an exception is raised
-        // about the model not having any subcomponents.
-        model.finalizeFromProperties();
-        model.finalizeConnections();
-        ModelFactory::replaceBlankevoort1991LigamentPathsWithFunctionBasedPaths(
-                model, getPathsFile());
+        ModelFactory::replacePathsWithFunctionBasedPaths(model, 
+                get_paths_file());
     }
 };
 
