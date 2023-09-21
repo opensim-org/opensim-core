@@ -29,7 +29,6 @@ void MocoControlGoal::constructProperties() {
     constructProperty_control_weights(MocoWeightSet());
     constructProperty_control_weights_pattern(MocoWeightSet());
     constructProperty_exponent(2);
-    constructProperty_divide_by_displacement(false);
 }
 
 void MocoControlGoal::setWeightForControl(
@@ -112,9 +111,7 @@ void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
         };
     }
 
-    setRequirements(1, 1,
-            get_divide_by_displacement() ? SimTK::Stage::Position
-                                         : SimTK::Stage::Model);
+    setRequirements(1, 1, SimTK::Stage::Model);
 }
 
 void MocoControlGoal::calcIntegrandImpl(
@@ -132,10 +129,6 @@ void MocoControlGoal::calcIntegrandImpl(
 void MocoControlGoal::calcGoalImpl(
         const GoalInput& input, SimTK::Vector& cost) const {
     cost[0] = input.integral;
-    if (get_divide_by_displacement()) {
-        cost[0] /=
-                calcSystemDisplacement(input.initial_state, input.final_state);
-    }
 }
 
 void MocoControlGoal::printDescriptionImpl() const {

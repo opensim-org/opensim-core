@@ -1033,3 +1033,56 @@ TEST_CASE("MocoGoal stage dependency") {
     CHECK_THROWS_WITH(goal.calcGoal(input, goalValue),
             Catch::Contains("calcGoal()") && Catch::Contains("final_state"));
 }
+
+/// This goal calculates the displacement of the system between the initial and
+/// final states, the duration of the phase, and the mass of the system.
+class MocoDivideByTestingGoal : public MocoGoal {
+    OpenSim_DECLARE_CONCRETE_OBJECT(MocoDivideByTestingGoal, MocoGoal);
+public:
+    MocoDivideByTestingGoal() = default;
+protected:
+    void initializeOnModelImpl(const Model&) const override {
+        setRequirements(0, 3, SimTK::Stage::Position);
+    }
+    void calcGoalImpl(
+            const GoalInput& in, SimTK::Vector& values) const override {
+        values[0] = calcSystemDisplacement(in);
+        values[1] = calcDuration(in);
+        values[2] = calcSystemMass(in);
+    }
+};
+
+// Ensure that the "divide by" methods return the correct values.
+TEST_CASE("MocoGoal divide by displacement/duration/mass") {
+    Model model = ModelFactory::createSlidingPointMass();
+    SimTK::State state = model.initSystem();
+    const double mass = model.getTotalMass(state);
+    MocoDivideByTestingGoal goal;
+    goal.initializeOnModel(model);
+    state.invalidateAll(SimTK::Stage::Instance);
+    auto initialState = state;
+    auto finalState = state;
+    
+    // Initial and final time.
+    const double initial_time = 0.0;
+    const double final_time = 2.5;
+    const double duration = final_time - initial_time;
+    initialState.setTime(initial_time);
+    finalState.setTime(final_time);
+
+    // Initial and final position.
+    const double initial_position = 0.12;
+    const double final_position = 0.74;
+    const double displacement = final_position - initial_position;
+    initialState.updQ()[0] = initial_position;
+    finalState.updQ()[0] = final_position;
+
+    MocoGoal::GoalInput input{initial_time, initialState, SimTK::Vector(), 
+                final_time, finalState, SimTK::Vector(), 0};
+    SimTK::Vector goalValues;
+    goal.calcGoal(input, goalValues);
+
+    CHECK_THAT(goalValues[0], Catch::WithinAbs(displacement, SimTK::Eps));
+    CHECK_THAT(goalValues[1], Catch::WithinAbs(duration, SimTK::Eps));
+    CHECK_THAT(goalValues[2], Catch::WithinAbs(mass, SimTK::Eps));
+}
