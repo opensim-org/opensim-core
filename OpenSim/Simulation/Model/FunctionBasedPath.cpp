@@ -107,6 +107,12 @@ const Function& FunctionBasedPath::getMomentArmFunction(
     return get_moment_arm_functions(_coordinateIndices.at(coordinateName));
 }
 
+const SimTK::Vector& FunctionBasedPath::getMomentArms(
+        const SimTK::State& s) const {
+    computeMomentArms(s);
+    return getCacheVariableValue<SimTK::Vector>(s, MOMENT_ARMS_NAME);
+}
+
 //=============================================================================
 // ABSTRACT PATH INTERFACE
 //=============================================================================
@@ -266,6 +272,16 @@ void FunctionBasedPath::extendFinalizeFromProperties() {
     OPENSIM_THROW_IF_FRMOBJ(getProperty_coordinate_paths().empty(), Exception, 
             "This path should be dependent on at least one coordinate, but"
             "no coordinates were provided.")
+    
+    // Check that the `coordinate_paths` are unique.
+    std::set<std::string> uniqueCoordinatePaths;
+    for (int i = 0; i < getProperty_coordinate_paths().size(); ++i) {
+        const auto& coordName = get_coordinate_paths(i);
+        OPENSIM_THROW_IF_FRMOBJ(uniqueCoordinatePaths.count(coordName) > 0,
+                Exception, fmt::format("Coordinate '{}' was provided more than "
+                                       "once.", coordName))
+        uniqueCoordinatePaths.insert(coordName);
+    }
     
     OPENSIM_THROW_IF_FRMOBJ(getLengthFunction().getArgumentSize() !=
             getProperty_coordinate_paths().size(), Exception,
