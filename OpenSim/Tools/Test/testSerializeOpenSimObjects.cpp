@@ -26,6 +26,7 @@
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Actuators/osimActuators.h>
 #include <OpenSim/Analyses/osimAnalyses.h>
+#include <OpenSim/Simulation/Model/FunctionBasedPath.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -80,16 +81,27 @@ int main()
     #endif
 
     try {
-        Model testModel;
+        Model testModel = ModelFactory::createSlidingPointMass();
         srand((unsigned)time(0));
-
+    
         //Test serialization for all ModelComponents
         ArrayPtrs<OpenSim::ModelComponent> availableComponentTypes;
         Object::getRegisteredObjectsOfGivenType<OpenSim::ModelComponent>(availableComponentTypes);
-
+    
         for (int i=0; i< availableComponentTypes.getSize(); i++){
             Object* clone = availableComponentTypes[i]->clone();
-            Object* randClone = randomize(clone);
+            Object* randClone;
+            // FunctionBasedPath is a special case: it has specific requirements
+            // for its properties.
+            if (auto* path = dynamic_cast<FunctionBasedPath*>(clone)){
+                path->setCoordinatePaths({"/jointset/slider/position"});
+                LinearFunction f = LinearFunction(1.0, 0.0);
+                randomize(&f);
+                path->setLengthFunction(f);
+                randClone = path;
+            } else {
+                randClone = randomize(clone);
+            }
             try {
                 ModelComponent* comp = ModelComponent::safeDownCast(randClone);
                 testModel.addModelComponent(comp);
@@ -99,33 +111,33 @@ int main()
                 //std::cout << errMsg << std::endl;
             }
         }
-
+    
         int nc = testModel.getMiscModelComponentSet().getSize();
         cout << nc << " model components were serialized in testModel." << endl;
-
-
+    
+    
         //Serialize all the components
         testModel.print("allComponents.osim");
-
+    
         Model deserializedModel("allComponents.osim");
         deserializedModel.print("allComponents_reserialized.osim");
-
+    
         nc = deserializedModel.getMiscModelComponentSet().getSize();
         cout << nc << " model components were deserialized from file." << endl;
-
+    
         ASSERT(testModel == deserializedModel,  
             "deserializedModel FAILED to match original model.");
-
+    
         //Might as well test cloning and assignment
         Model* cloneModel = testModel.clone();
-
+    
         ASSERT(testModel == *cloneModel,
             "cloneModel FAILED to match original model.");
-
+    
         Model assignedModel = *cloneModel;
-
+    
         delete cloneModel;
-
+    
         ASSERT(testModel == assignedModel,
             "assignedModel FAILED to match original model.");
 
