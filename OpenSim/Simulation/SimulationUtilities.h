@@ -387,10 +387,24 @@ OSIMSIMULATION_API TimeSeriesTableVec3 createSyntheticIMUAccelerationSignals(
 OSIMSIMULATION_API void appendCoupledCoordinateValues(
         TimeSeriesTable& table, const Model& model);
 
-OSIMSIMULATION_API void computePathLengthsAndMomentArms(
-        const std::string& modelFile, 
-        const std::string& coordinateValuesFile,
-        int threads);
+
+// TODO: 1) will unlock locked coordinates (so must provide data for these
+//          coordinates)
+//       2) coordinate values must have number of columns equal to 
+//          number of independent coordinates (Appends coupled coordinate 
+//          values, if missing)
+//       3) Updates the coordinates table to use absolute state names
+OSIMSIMULATION_API TimeSeriesTable computePathLengthsAndMomentArms(
+        Model model, 
+        const TimeSeriesTable& coordinateValues,
+        int threads = (int)std::thread::hardware_concurrency() - 2,
+        double momentArmTolerance = 1e-4);
+
+// TODO: 1) expects length and moment arm column names in specific format
+//OSIMSIMULATION_API void fitFunctionBasedPathCoefficients(
+//        Model model,
+//        const TimeSeriesTable& pathLengthsAndMomentArms,
+//        );
 
 } // end of namespace OpenSim
 

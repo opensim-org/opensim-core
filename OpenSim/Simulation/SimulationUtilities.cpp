@@ -502,43 +502,55 @@ void OpenSim::appendCoupledCoordinateValues(
 }
 
 
-
-void OpenSim::computePathLengthsAndMomentArms(
-        const std::string& modelFile, 
-        const std::string& coordinateValuesFile,
-        int threads = (int)std::thread::hardware_concurrency() - 2) {
+TimeSeriesTable OpenSim::computePathLengthsAndMomentArms(
+        Model model, 
+        const TimeSeriesTable& coordinateValues,
+        int threads,
+        double momentArmTolerance) {
     
     // Check inputs.
     OPENSIM_THROW_IF(
-            threads < 1 || threads > std::thread::hardware_concurrency(),
+            threads < 1 || threads > (int)std::thread::hardware_concurrency(),
             Exception, "Number of threads must be between 1 and {}.",
             std::thread::hardware_concurrency());
     
     // Load model.
-    Model model(modelFile);
+    SimTK::State state = model.initSystem();
+    
+    // Unlock all locked coordinates.
+    for (auto& coordinate : model.updComponentList<Coordinate>()) {
+        coordinate.set_locked(false);
+    }
+    model.finalizeFromProperties();
     model.initSystem();
     
     // Load coordinate values.
-    TableProcessor tableProcessor = TableProcessor(coordinateValuesFile) |
+    TableProcessor tableProcessor = TableProcessor(coordinateValues) |
                                     TabOpUseAbsoluteStateNames() |
                                     TabOpAppendCoupledCoordinateValues();
-    TimeSeriesTable coordinateValues = 
+    TimeSeriesTable coordinateValuesProcessed = 
             tableProcessor.processAndConvertToRadians(model);
+    
+    Array<std::string> stateVariableNames = model.getStateVariableNames();
+    for (const auto& label : coordinateValuesProcessed.getColumnLabels()) {
+        OPENSIM_THROW_IF(stateVariableNames.findIndex(label) == -1, Exception,
+                "Expected the model to contain the coordinate value state "
+                "'{}', but it does not.", label);
+    }
     auto statesTrajectory = StatesTrajectory::createFromStatesTable(
-            model, coordinateValues);
+            model, coordinateValuesProcessed, true);
     
     // Determine the maximum number of path and moment arm evaluations.
     const auto& paths = model.getComponentList<AbstractPath>();
     int numPaths = (int)std::distance(paths.begin(), paths.end());
-    int numCoordinates = (int)coordinateValues.getNumColumns();
-    int numColumns = numCoordinates + (numPaths * numCoordinates);
+    int numCoordinates = (int)coordinateValuesProcessed.getNumColumns();
+    int numColumns = numPaths + (numPaths * numCoordinates);
     
     // Define helper function for path length and moment arm computations.
-    auto calcPathLengthsAndMomentArmsSubset = [numColumns](Model model, 
-            StatesTrajectory::IteratorRange subsetStates) -> SimTK::Matrix {
-        Logger::setLevel(Logger::Level::Error);
+    auto calcPathLengthsAndMomentArmsSubset = [numColumns, numPaths](
+            Model model, StatesTrajectory::IteratorRange subsetStates) 
+                -> SimTK::Matrix {
         model.initSystem();
-        const CoordinateSet& coordinateSet = model.getCoordinateSet();
         
         // Create a matrix to store the results
         SimTK::Matrix results(
@@ -546,22 +558,38 @@ void OpenSim::computePathLengthsAndMomentArms(
                 numColumns);
         
         int row = 0;
+        const auto& forces = model.getComponentList<Force>();
         for (const auto& state : subsetStates) {
             model.realizePosition(state);
-
-
-
+            
+            int ip = 0;
+            int ima = 0;
+            for (const auto& force : forces) {
+                if (force.hasProperty("path")) {
+                    const AbstractPath& path = 
+                            force.getProperty<AbstractPath>("path").getValue();
+                    
+                    // Compute path length.
+                    results(row, ip++) = path.getLength(state);
+                    
+                    // Compute moment arms.
+                    for (const auto& coordinate : 
+                            model.getComponentList<Coordinate>()) {
+                        results(row, numPaths + ima++) = 
+                                path.computeMomentArm(state, coordinate);
+                    }
+                }
+            }
             row++;
         }
 
         return results;
     };
     
-    
     // Divide the path length and moment arm computations across multiple 
     // threads.
     int stride = static_cast<int>(
-            std::floor(coordinateValues.getNumRows() / threads));
+            std::floor(coordinateValuesProcessed.getNumRows() / threads));
     std::vector<std::future<SimTK::Matrix>> futures;
     int offset = 0;
     for (int ithread = 0; ithread < threads; ++ithread) {
@@ -584,25 +612,49 @@ void OpenSim::computePathLengthsAndMomentArms(
     }
     
     // Assemble results into one TimeSeriesTable
+    TimeSeriesTable results;
+    std::vector<double> time = coordinateValuesProcessed.getIndependentColumn();
+    int itime = 0;
+    for (int i = 0; i < threads; ++i) {
+        for (int j = 0; j < outputs[i].nrow(); ++j) {
+            results.appendRow(time[itime++], outputs[i].row(j));
+        }
+    }
     
-    // Gather data
+    int ip = 0;
+    int ima = 0;
+    std::vector<std::string> labels(numColumns);
+    const auto& forces = model.getComponentList<Force>();
+    for (const auto& force : forces) {
+        if (force.hasProperty("path")) {
+            labels[ip++] = 
+                    fmt::format("{}_length", force.getAbsolutePathString());
+            for (const auto& coordinate : 
+                    model.getComponentList<Coordinate>()) {
+                labels[numPaths + ima++] = fmt::format("{}_moment_arm_{}", 
+                        force.getAbsolutePathString(), coordinate.getName());
+            }
+        }
+    }
+    results.setColumnLabels(labels);
     
-    // Implement logic to combine data from multiple threads
+    // Remove moment arm columns that contain values below a certain tolerance.
+    for (const auto& label : results.getColumnLabels()) {
+        if (label.find("_moment_arm_") != std::string::npos) {
+            const auto& col = results.getDependentColumn(label);
+            if (col.normInf() < momentArmTolerance) {
+                results.removeColumn(label);
+            }
+        }
+    }
     
-    // Put data in a suitable data structure
-    
-    // Save data to file
-    
-    // Fit polynomial coefficients
-    
-    // You can implement this part based on your needs.
-    
-    std::cout << "Fit polynomials." << std::endl;
-    
-    // Save polynomialData to file
-    
-    
-    std::cout << "Done fitting polynomials." << std::endl;
+    return results;
 }
+
+//void OpenSim::fitFunctionBasedPathCoefficients() {
+//    
+//}
+
+
 
 

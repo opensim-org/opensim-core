@@ -341,6 +341,9 @@ public:
     used by the Property declaration macros for fast access to properties. **/
     template <class T> const Property<T>& 
     getProperty(const PropertyIndex& index) const;
+    /** @copydoc getProperty(const PropertyIndex&) **/
+    template <class T> const Property<T>& 
+    getProperty(const std::string& name) const;
 
     /** Get property of known type Property\<T> as a writable reference;
     the property must be present and have the right type. This is primarily
@@ -938,6 +941,11 @@ hasProperty() const {
 template <class T> const Property<T>& Object::
 getProperty(const PropertyIndex& index) const {
     return _propertyTable.getProperty<T>(index);
+}
+
+template <class T> const Property<T>& Object::
+getProperty(const std::string& name) const {
+    return _propertyTable.getProperty<T>(name);
 }
 
 template <class T> Property<T>& Object::
