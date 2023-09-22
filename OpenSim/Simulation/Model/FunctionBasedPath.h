@@ -125,9 +125,10 @@ public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-    OpenSim_DECLARE_LIST_PROPERTY(coordinates, std::string, 
-            "The list of model coordinates whose values and speeds are "
-            "used as arguments to the path function(s).");
+    OpenSim_DECLARE_LIST_PROPERTY(coordinate_paths, std::string, 
+            "The list of paths to the model coordinates that are used as "
+            "arguments to the length, lengthening speed, and moment arm "
+            "functions.");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(length_function, Function, 
             "The OpenSim::Function object that computes the length of the path "
             "as a function of the coordinate values. The function arguments "
@@ -152,14 +153,15 @@ public:
     ~FunctionBasedPath() override;
     
     // GET AND SET
-    /// Set the list of model coordinate names that are used as arguments to the
-    /// path functions. The order of the coordinates must match the order of the
-    /// function arguments.
-    void setCoordinates(const std::vector<std::string>& coordinateNames);
-    void appendCoordinate(const std::string& coordinateName);
+    /// Set the list of paths to the model coordinate that are used as arguments 
+    /// to the length and, if provided, lengthening speed and moment functions. 
+    /// The order of the coordinates must match the order of the function 
+    /// arguments.
+    void setCoordinatePaths(const std::vector<std::string>& coordinatePaths);
+    void appendCoordinatePath(const std::string& coordinatePath);
     /// @details Note: the return value is constructed fresh on every call from 
     /// the internal property. Avoid repeated calls to this function.
-    std::vector<std::string> getCoordinates() const;
+    std::vector<std::string> getCoordinatePaths() const;
     
     /// Set the function that computes the length of the path as a function of
     /// the coordinate values. The function must have the same number of 
@@ -175,7 +177,8 @@ public:
     void setMomentArmFunctions(const std::vector<Function>& momentArmFunctions);
     void appendMomentArmFunction(const Function& momentArmFunction);
     const Function& getMomentArmFunction(
-            const std::string& coordinateName) const;
+            const std::string& coordinatePath) const;
+    const SimTK::Vector& getMomentArms(const SimTK::State& s) const;
     
     /// Set the function that computes the speed of the path as a function of
     /// the coordinate values and speeds. The function must have the same number 

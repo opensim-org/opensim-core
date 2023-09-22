@@ -44,24 +44,24 @@ FunctionBasedPath::~FunctionBasedPath() = default;
 //=============================================================================
 // GET AND SET METHODS
 //=============================================================================
-void FunctionBasedPath::appendCoordinate(const std::string& coordinateName) 
+void FunctionBasedPath::appendCoordinatePath(const std::string& coordinatePath) 
 {
-    append_coordinates(coordinateName);
+    append_coordinate_paths(coordinatePath);
 }
 
-void FunctionBasedPath::setCoordinates(
-        const std::vector<std::string>& coordinateNames) 
+void FunctionBasedPath::setCoordinatePaths(
+        const std::vector<std::string>& coordinatePaths) 
 {
-    for (const auto& coordName : coordinateNames) {
-        appendCoordinate(coordName);
+    for (const auto& coordName : coordinatePaths) {
+        appendCoordinatePath(coordName);
     }
 }
 
-std::vector<std::string> FunctionBasedPath::getCoordinates() const 
+std::vector<std::string> FunctionBasedPath::getCoordinatePaths() const 
 {
     std::vector<std::string> coordinates;
-    for (int i = 0; i < getProperty_coordinates().size(); ++i) {
-        coordinates.push_back(get_coordinates(i));
+    for (int i = 0; i < getProperty_coordinate_paths().size(); ++i) {
+        coordinates.push_back(get_coordinate_paths(i));
     }
     
     return coordinates;
@@ -158,7 +158,7 @@ void FunctionBasedPath::addInEquivalentForces(const SimTK::State& state,
 //=============================================================================
 void FunctionBasedPath::constructProperties()
 {
-    constructProperty_coordinates();
+    constructProperty_coordinate_paths();
     constructProperty_length_function();
     constructProperty_moment_arm_functions();
     constructProperty_lengthening_speed_function();
@@ -261,18 +261,18 @@ void FunctionBasedPath::extendFinalizeFromProperties() {
     // Check the properties.
     OPENSIM_THROW_IF_FRMOBJ(getProperty_length_function().empty(), 
             Exception, "Expected 'length_function' to be provided, but the "
-                       "property was empty.");
+                       "property was empty.")
     
-    OPENSIM_THROW_IF_FRMOBJ(getProperty_coordinates().empty(), Exception, 
+    OPENSIM_THROW_IF_FRMOBJ(getProperty_coordinate_paths().empty(), Exception, 
             "This path should be dependent on at least one coordinate, but"
-            "no coordinates were provided.");
+            "no coordinates were provided.")
     
     OPENSIM_THROW_IF_FRMOBJ(getLengthFunction().getArgumentSize() !=
-            getProperty_coordinates().size(), Exception,
+            getProperty_coordinate_paths().size(), Exception,
             fmt::format("Expected the number of arguments in 'length_function' "
                         "({}) to equal the number of coordinates ({}).",
                         getLengthFunction().getArgumentSize(),
-                        getProperty_coordinates().size()));
+                        getProperty_coordinate_paths().size()))
     
     if (getProperty_moment_arm_functions().empty()) {
         _computeMomentArms = true;
@@ -280,24 +280,24 @@ void FunctionBasedPath::extendFinalizeFromProperties() {
                 Exception, "Since moment arm functions were not provided, "
                            "expected the length function to be at least "
                            "first-order differentiable with respect to "
-                           "the coordinate values, but it is not.");
+                           "the coordinate values, but it is not.")
     } else {
         OPENSIM_THROW_IF_FRMOBJ(getProperty_moment_arm_functions().size() !=
-                                getProperty_coordinates().size(), Exception,
+                                getProperty_coordinate_paths().size(), Exception,
                 fmt::format("Expected the number of moment arm functions ({}) "
                             "to equal the number of coordinates ({}).",
                         getProperty_moment_arm_functions().size(),
-                        getProperty_coordinates().size()));
+                        getProperty_coordinate_paths().size()))
         
         for (int i = 0; i < getProperty_moment_arm_functions().size(); ++i) {
             OPENSIM_THROW_IF_FRMOBJ(
                     get_moment_arm_functions(i).getArgumentSize() != 
-                            getProperty_coordinates().size(), Exception,
+                            getProperty_coordinate_paths().size(), Exception,
                     fmt::format("Expected the number of arguments in "
                                 "'moment_arm_functions[{}]' ({}) to equal the "
                                 "number of coordinates ({}).",
                             i, get_moment_arm_functions(i).getArgumentSize(),
-                            getProperty_coordinates().size()));
+                            getProperty_coordinate_paths().size()))
         }
     }
     
@@ -306,19 +306,19 @@ void FunctionBasedPath::extendFinalizeFromProperties() {
     } else {
         OPENSIM_THROW_IF_FRMOBJ(
                 getLengtheningSpeedFunction().getArgumentSize() !=
-                2*getProperty_coordinates().size(), Exception,
+                2*getProperty_coordinate_paths().size(), Exception,
                 fmt::format("Expected the number of arguments in "
                             "'speed_function' ({}) to equal to twice the "
                             "number of coordinates ({}).",
                         getLengtheningSpeedFunction().getArgumentSize(),
-                        getProperty_coordinates().size()));
+                        getProperty_coordinate_paths().size()))
     }
     
     // Populate the coordinate index map. In case "finalizeFromProperties()" is
     // called multiple times, clear the map first.
     _coordinateIndices.clear();
-    for (int i = 0; i < getProperty_coordinates().size(); ++i) {
-        _coordinateIndices[get_coordinates(i)] = i;
+    for (int i = 0; i < getProperty_coordinate_paths().size(); ++i) {
+        _coordinateIndices[get_coordinate_paths(i)] = i;
     }
 }
 void FunctionBasedPath::extendConnectToModel(Model& model) {
@@ -328,12 +328,12 @@ void FunctionBasedPath::extendConnectToModel(Model& model) {
     // pointers to them. In case "connectToModel()" is called multiple times,
     // clear any existing references first.
     _coordinates.clear();
-    for (int i = 0; i < getProperty_coordinates().size(); ++i) {
-        const auto& coordName = get_coordinates(i);
+    for (int i = 0; i < getProperty_coordinate_paths().size(); ++i) {
+        const auto& coordName = get_coordinate_paths(i);
         OPENSIM_THROW_IF_FRMOBJ(!model.hasComponent<Coordinate>(coordName),
                 Exception,
                 fmt::format("Coordinate '{}' does not exist in the model.",
-                            coordName));
+                            coordName))
         
         _coordinates.emplace_back(
                 &model.getComponent<const Coordinate>(coordName));
@@ -344,7 +344,7 @@ void FunctionBasedPath::extendAddToSystem(
     Super::extendAddToSystem(system);
     addCacheVariable<double>(LENGTH_NAME, 0.0, SimTK::Stage::Position);
     addCacheVariable<SimTK::Vector>(MOMENT_ARMS_NAME, 
-            SimTK::Vector(getProperty_coordinates().size(), 0.0),
+            SimTK::Vector(getProperty_coordinate_paths().size(), 0.0),
             SimTK::Stage::Velocity);
     addCacheVariable<double>(LENGTHENING_SPEED_NAME, 0.0,
                 SimTK::Stage::Velocity);
