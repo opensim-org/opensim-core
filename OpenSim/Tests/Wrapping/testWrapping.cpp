@@ -369,7 +369,7 @@ TEST_CASE("testFunctionBasedPath") {
         FunctionBasedPath fbPath;
         fbPath.setName("polynomial_path_1dof");
         fbPath.setLengthFunction(poly);
-        fbPath.setCoordinates({"/slider/position"});
+        fbPath.setCoordinatePaths({"/slider/position"});
         
         auto* actu = new PathActuator();
         actu->set_path(fbPath);
@@ -438,7 +438,7 @@ TEST_CASE("testFunctionBasedPath") {
         FunctionBasedPath fbPath;
         fbPath.setName("polynomial_path_2dof");
         fbPath.setLengthFunction(poly);
-        fbPath.setCoordinates({"/jointset/tx/tx", "/jointset/ty/ty"});
+        fbPath.setCoordinatePaths({"/jointset/tx/tx", "/jointset/ty/ty"});
         
         auto* actu = new PathActuator();
         actu->set_path(fbPath);
@@ -538,7 +538,7 @@ TEST_CASE("testFunctionBasedPath") {
         fbPath.appendMomentArmFunction(momentArmFunc_x);
         fbPath.appendMomentArmFunction(momentArmFunc_y);
         fbPath.setLengtheningSpeedFunction(speedFunc);
-        fbPath.setCoordinates({"/jointset/tx/tx", "/jointset/ty/ty"});
+        fbPath.setCoordinatePaths({"/jointset/tx/tx", "/jointset/ty/ty"});
 
         auto* actu = new PathActuator();
         actu->set_path(fbPath);
