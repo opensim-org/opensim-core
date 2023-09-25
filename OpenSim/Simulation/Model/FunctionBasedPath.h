@@ -193,6 +193,10 @@ public:
     // ABSTRACT PATH INTERFACE
     double getLength(const SimTK::State& s) const override;
     double getLengtheningSpeed(const SimTK::State& s) const override;
+    /// @note This must check if the path is dependent on the provided 
+    /// coordinate, which requires a search through the list of coordinates.
+    /// To retreive the moment arms directly from the cache variable, use
+    /// `getMomentArms()`.
     double computeMomentArm(const SimTK::State& s, 
             const Coordinate& coord) const override;
     void addInEquivalentForces(const SimTK::State& state,
