@@ -128,21 +128,24 @@ public:
     OpenSim_DECLARE_LIST_PROPERTY(coordinate_paths, std::string, 
             "The list of paths to the model coordinates that are used as "
             "arguments to the length, lengthening speed, and moment arm "
-            "functions.");
+            "functions. You must provide a least one coordinate path, and "
+            "the order of the paths must match the order of the function "
+            "length function arguments.");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(length_function, Function, 
-            "The OpenSim::Function object that computes the length of the path "
-            "as a function of the coordinate values. The function arguments "
-            "must match the order in the 'coordinates' property.");
+            "(Required) The OpenSim::Function object that computes the length "
+            "of the path as a function of the coordinate values. The function "
+            "arguments must match the order in the 'coordinates' property.");
     OpenSim_DECLARE_LIST_PROPERTY(moment_arm_functions, Function, 
-            "The list of OpenSim::Function objects that compute the moment "
-            "arms of the path as a function of the coordinate values. The "
-            "function arguments must match the order in the 'coordinates' "
+            "(Optional) The list of OpenSim::Function objects that compute the " 
+            "moment arms of the path as a function of the coordinate values. "
+            "The function arguments must match the order in the 'coordinates' "
             "property.");
     OpenSim_DECLARE_OPTIONAL_PROPERTY(lengthening_speed_function, Function, 
-            "The OpenSim::Function object that computes the speed of the path "
-            "as a function of the coordinate values and speeds. The function "
-            "arguments must be the coordinate values followed by coordinate "
-            "speeds, both matching the order in the 'coordinates' property.");
+            "(Optional) The OpenSim::Function object that computes the speed " 
+            "of the path as a function of the coordinate values and speeds. "
+            "The function arguments must be the coordinate values followed by "
+            "coordinate speeds, both matching the order in the 'coordinates' "
+            "property.");
     
 //=============================================================================
 // METHODS
