@@ -394,17 +394,22 @@ OSIMSIMULATION_API void appendCoupledCoordinateValues(
 //          number of independent coordinates (Appends coupled coordinate 
 //          values, if missing)
 //       3) Updates the coordinates table to use absolute state names
-OSIMSIMULATION_API TimeSeriesTable computePathLengthsAndMomentArms(
+OSIMSIMULATION_API void computePathLengthsAndMomentArms(
         Model model, 
         const TimeSeriesTable& coordinateValues,
+        TimeSeriesTable& pathLengths,
+        TimeSeriesTable& momentArms,
+        std::map<std::string, std::vector<std::string>>& momentArmMap,
         int threads = (int)std::thread::hardware_concurrency() - 2,
-        double momentArmTolerance = 1e-4);
+        double momentArmTolerance = 1e-3);
 
 // TODO: 1) expects length and moment arm column names in specific format
-//OSIMSIMULATION_API void fitFunctionBasedPathCoefficients(
-//        Model model,
-//        const TimeSeriesTable& pathLengthsAndMomentArms,
-//        );
+OSIMSIMULATION_API void fitFunctionBasedPathCoefficients(
+        Model model,
+        const TimeSeriesTable& coordinateValues,
+        const TimeSeriesTable& pathLengths,
+        const TimeSeriesTable& momentArms,
+        const std::map<std::string, std::vector<std::string>>& momentArmMap);
 
 } // end of namespace OpenSim
 

@@ -74,9 +74,12 @@ public:
                 "Expected {} coefficients but got {}.", coeff_nr,
                 coefficients.size());
     }
-    T calcValue(const SimTK::Vector& x) const override {
+    
+
+    SimTK::Vector_<T> calcTermValues(const SimTK::Vector& x) const {
         std::array<int, 6> nq{{0, 0, 0, 0, 0, 0}};
-        T value = static_cast<T>(0);
+        SimTK::Vector_<T> values = static_cast<SimTK::Vector_<T>>(
+                SimTK::Vector(coefficients.size(), 0.0));
         int coeff_nr = 0;
         for (nq[0] = 0; nq[0] < order + 1; ++nq[0]) {
             int nq2_s;
@@ -113,7 +116,7 @@ public:
                                 for (int i = 0; i < dimension; ++i) {
                                     valueP *= std::pow(x[i], nq[i]);
                                 }
-                                value += valueP * coefficients[coeff_nr];
+                                values[coeff_nr] = valueP;
                                 ++coeff_nr;
                             }
                         }
@@ -121,12 +124,20 @@ public:
                 }
             }
         }
-        return value;
+        return values;
     }
-    T calcDerivative(const SimTK::Array_<int>& derivComponent,
-            const SimTK::Vector& x) const override {
+    
+    T calcValue(const SimTK::Vector& x) const override {
+        SimTK::Vector_<T> values = calcTermValues(x);
+        return ~coefficients * values;
+    }
+    
+    SimTK::Vector_<T> calcTermDerivatives(
+            const SimTK::Array_<int>& derivComponent,
+            const SimTK::Vector& x) const {
         std::array<int, 6> nq{{0, 0, 0, 0, 0, 0}};
-        T value = static_cast<T>(0);
+        SimTK::Vector_<T> derivatives = static_cast<SimTK::Vector_<T>>(
+                SimTK::Vector(coefficients.size(), 0.0));
         int nqNonNegative;
         int coeff_nr = 0;
         for (nq[0] = 0; nq[0] < order + 1; ++nq[0]) {
@@ -163,57 +174,57 @@ public:
                                 if (derivComponent[0] == 0) {
                                     nqNonNegative = nq[0] - 1;
                                     if (nqNonNegative < 0) nqNonNegative = 0;
-                                    T valueP = nq[0] * std::pow(x[0], nqNonNegative);
+                                    T derivP = nq[0] * std::pow(x[0], nqNonNegative);
                                     for (int i = 0; i < dimension; ++i) {
                                         if (i == derivComponent[0]) continue;
-                                        valueP *= std::pow(x[i], nq[i]);
+                                        derivP *= std::pow(x[i], nq[i]);
                                     }
-                                    value += valueP * coefficients[coeff_nr];
+                                    derivatives[coeff_nr] = derivP;
                                 } else if (derivComponent[0] == 1) {
                                     nqNonNegative = nq[1] - 1;
                                     if (nqNonNegative < 0) nqNonNegative = 0;
-                                    T valueP = nq[1] * std::pow(x[1], nqNonNegative);
+                                    T derivP = nq[1] * std::pow(x[1], nqNonNegative);
                                     for (int i = 0; i < dimension; ++i) {
                                         if (i == derivComponent[0]) continue;
-                                        valueP *= std::pow(x[i], nq[i]);
+                                        derivP *= std::pow(x[i], nq[i]);
                                     }
-                                    value += valueP * coefficients[coeff_nr];
+                                    derivatives[coeff_nr] = derivP;
                                 } else if (derivComponent[0] == 2) {
                                     nqNonNegative = nq[2] - 1;
                                     if (nqNonNegative < 0) nqNonNegative = 0;
-                                    T valueP = nq[2] * std::pow(x[2], nqNonNegative);
+                                    T derivP = nq[2] * std::pow(x[2], nqNonNegative);
                                     for (int i = 0; i < dimension; ++i) {
                                         if (i == derivComponent[0]) continue;
-                                        valueP *= std::pow(x[i], nq[i]);
+                                        derivP *= std::pow(x[i], nq[i]);
                                     }
-                                    value += valueP * coefficients[coeff_nr];
+                                    derivatives[coeff_nr] = derivP;
                                 } else if (derivComponent[0] == 3) {
                                     nqNonNegative = nq[3] - 1;
                                     if (nqNonNegative < 0) nqNonNegative = 0;
-                                    T valueP = nq[3] * std::pow(x[3], nqNonNegative);
+                                    T derivP = nq[3] * std::pow(x[3], nqNonNegative);
                                     for (int i = 0; i < dimension; ++i) {
                                         if (i == derivComponent[0]) continue;
-                                        valueP *= std::pow(x[i], nq[i]);
+                                        derivP *= std::pow(x[i], nq[i]);
                                     }
-                                    value += valueP * coefficients[coeff_nr];
+                                    derivatives[coeff_nr] = derivP;
                                 } else if (derivComponent[0] == 4) {
                                     nqNonNegative = nq[4] - 1;
                                     if (nqNonNegative < 0) nqNonNegative = 0;
-                                    T valueP = nq[4] * std::pow(x[4], nqNonNegative);
+                                    T derivP = nq[4] * std::pow(x[4], nqNonNegative);
                                     for (int i = 0; i < dimension; ++i) {
                                         if (i == derivComponent[0]) continue;
-                                        valueP *= std::pow(x[i], nq[i]);
+                                        derivP *= std::pow(x[i], nq[i]);
                                     }
-                                    value += valueP * coefficients[coeff_nr];
+                                    derivatives[coeff_nr] = derivP;
                                 } else if (derivComponent[0] == 5) {
                                     nqNonNegative = nq[5] - 1;
                                     if (nqNonNegative < 0) nqNonNegative = 0;
-                                    T valueP = nq[5] * std::pow(x[5], nqNonNegative);
+                                    T derivP = nq[5] * std::pow(x[5], nqNonNegative);
                                     for (int i = 0; i < dimension; ++i) {
                                         if (i == derivComponent[0]) continue;
-                                        valueP *= std::pow(x[i], nq[i]);
+                                        derivP *= std::pow(x[i], nq[i]);
                                     }
-                                    value += valueP * coefficients[coeff_nr];
+                                    derivatives[coeff_nr] = derivP;
                                 }
                                 ++coeff_nr;
                             }
@@ -222,8 +233,15 @@ public:
                 }
             }
         }
-        return value;
+        return derivatives;
     }
+    
+    T calcDerivative(const SimTK::Array_<int>& derivComponent,
+            const SimTK::Vector& x) const override {
+        SimTK::Vector_<T> derivatives = calcTermDerivatives(derivComponent, x);
+        return ~coefficients * derivatives;
+    }
+    
     int getArgumentSize() const override { return dimension; }
     int getMaxDerivativeOrder() const override { return 1; }
     SimTKMultivariatePolynomial* clone() const override {
@@ -243,4 +261,17 @@ private:
 SimTK::Function* MultivariatePolynomialFunction::createSimTKFunction() const {
     return new SimTKMultivariatePolynomial<SimTK::Real>(
             get_coefficients(), get_dimension(), getOrder());
+}
+
+SimTK::Vector MultivariatePolynomialFunction::getTermValues(
+        const SimTK::Vector& x) const {
+    return static_cast<const SimTKMultivariatePolynomial<SimTK::Real>*>(
+                    _function)->calcTermValues(x);
+}
+
+SimTK::Vector MultivariatePolynomialFunction::getTermDerivatives(
+        const std::vector<int>& derivComponent, const SimTK::Vector& x) const {
+    return static_cast<const SimTKMultivariatePolynomial<SimTK::Real>*>(
+                    _function)->calcTermDerivatives(
+                    SimTK::ArrayViewConst_<int>(derivComponent), x);
 }

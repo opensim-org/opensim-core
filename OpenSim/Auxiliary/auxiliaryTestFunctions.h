@@ -26,7 +26,6 @@
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/LinearFunction.h>
-#include <OpenSim/Common/MultivariatePolynomialFunction.h>
 #include <OpenSim/Common/PropertyObjArray.h>
 #include <OpenSim/Common/CommonUtilities.h>
 #include "getRSS.h"
@@ -252,7 +251,7 @@ OpenSim::Object* randomize(OpenSim::Object* obj)
         // bool t4 = ap.isOneValueProperty();
         string ts = ap.getTypeName();
         //cout << ts << endl;
-        if (ap.isOptionalProperty() && ts != "Function")
+        if (ap.isOptionalProperty())
             continue;
         if (ts == "bool"&& !isList) 
             ap.updValue<bool>() = (rand() % 2 == 0);
@@ -293,28 +292,12 @@ OpenSim::Object* randomize(OpenSim::Object* obj)
                 if (propObjArray->size()){
                     randomize(&(propObjArray->updValueAsObject(0)));
                 }
-            } else{
-                if (isList) {
-                    Property<Function>& prop = Property<Function>::updAs(ap);
-                    for (int i=0; i< prop.size(); ++i) {
-                        LinearFunction f;
-                        randomize(&f);
-                        prop.appendValue(f);
-                    }
-                } else {
-                    Property<Function>& prop = Property<Function>::updAs(ap);
-                    // Special case for `FunctionBasedPath`.
-                    if (prop.getName() == "lengthening_speed_function") {
-                        MultivariatePolynomialFunction f(
-                                createVector({1.0, 2.0, 3.0}), 2, 1);
-                        randomize(&f);
-                        prop = f;
-                    } else {
-                        LinearFunction f;
-                        randomize(&f);
-                        prop = f;
-                    }
-                }
+            } 
+            else{
+                Property<Function>& prop = Property<Function>::updAs(ap);
+                LinearFunction f;
+                randomize(&f);
+                prop = f;
             }
             
         } else if (ap.isObjectProperty() && !isList) {

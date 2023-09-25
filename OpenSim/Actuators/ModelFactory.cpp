@@ -308,3 +308,28 @@ void ModelFactory::createReserveActuators(Model& model, double optimalForce,
         log_info("  {}", name);
     }
 }
+
+void ModelFactory::replacePathsWithFunctionBasedPaths(OpenSim::Model& model, 
+            const std::string& pathsFileName) {
+    Set<FunctionBasedPath> pathSet(pathsFileName);
+    for (int i = 0; i < pathSet.getSize(); ++i) {
+        auto path = pathSet.get(i);
+            
+        // Get the force component associated with this path.
+        OPENSIM_THROW_IF(!model.hasComponent<Force>(path.getName()), 
+                Exception, "Model does not contain a Force at path {}.", 
+                path.getName());
+        auto& force = model.updComponent<Force>(path.getName());
+            
+        // Check that the force has a path property.
+        OPENSIM_THROW_IF(
+                !force.hasProperty("path"), Exception,
+                "Force {} does not have a path property.", path.getName());
+            
+        // Update the path.
+        path.setName(fmt::format("{}_path", force.getName()));
+        force.updProperty<AbstractPath>("path").setValue(path);
+    }
+    model.finalizeFromProperties();
+    model.finalizeConnections();
+}

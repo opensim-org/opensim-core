@@ -93,34 +93,13 @@ public:
             bool skipCoordinatesWithExistingActuators = true);
     
     /// Replace the paths of the forces in the model with the 
-    /// FunctionBasedPath%s specified in the file 'pathsFileName'. The file must 
-    /// be a Set of FunctionBasedPath%s where the name of each path matches the 
-    /// path of a corresponding Force in the model. The path name is appended
-    /// with "_path" to avoid name ambiguity in the final model.
+    /// FunctionBasedPath%s specified in the file 'functionBasedPathsFile'. 
+    /// The file must contain a Set of FunctionBasedPath%s where the name of 
+    /// each path matches the path of a corresponding Force in the model. The 
+    /// path name is appended with "_path" to avoid name ambiguity in the final 
+    /// model.
     static void replacePathsWithFunctionBasedPaths(Model& model, 
-            const std::string& pathsFileName) {
-        Set<FunctionBasedPath> pathSet(pathsFileName);
-        for (int i = 0; i < pathSet.getSize(); ++i) {
-            auto path = pathSet.get(i);
-            
-            // Get the force component associated with this path.
-            OPENSIM_THROW_IF(!model.hasComponent<Force>(path.getName()), 
-                    Exception, "Model does not contain a Force at path {}.", 
-                    path.getName());
-            auto& force = model.updComponent<Force>(path.getName());
-            
-            // Check that the force has a path property.
-            OPENSIM_THROW_IF(
-                    !force.hasProperty("path"), Exception,
-                    "Force {} does not have a path property.", path.getName());
-            
-            // Update the path.
-            path.setName(fmt::format("{}_path", force.getName()));
-            force.updProperty<AbstractPath>("path").setValue(path);
-        }
-        model.finalizeFromProperties();
-        model.finalizeConnections();
-    }
+            const std::string& functionBasedPathsFile);
 };
 
 } // namespace OpenSim

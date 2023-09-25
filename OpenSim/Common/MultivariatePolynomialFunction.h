@@ -97,6 +97,10 @@ public:
 
     /// Return function
     SimTK::Function* createSimTKFunction() const override;
+    
+    SimTK::Vector getTermValues(const SimTK::Vector& x) const;
+    SimTK::Vector getTermDerivatives(const std::vector<int>& derivComponent,
+            const SimTK::Vector& x) const;
 
 private:
     void constructProperties() {
