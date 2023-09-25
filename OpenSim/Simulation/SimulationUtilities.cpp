@@ -26,16 +26,15 @@
 #include "Manager/Manager.h"
 #include "Model/Model.h"
 #include <future>
-
 #include <SimTKcommon/internal/IteratorRange.h>
 
 #include <simbody/internal/Visualizer_InputListener.h>
 
-#include <OpenSim/Common/TableUtilities.h>
-#include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
-#include <OpenSim/Simulation/TableProcessor.h>
 #include <OpenSim/Common/MultivariatePolynomialFunction.h>
 
+#include <OpenSim/Common/TableUtilities.h>
+#include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
+#include <OpenSim/Simulation/Model/FunctionBasedPath.h>
 
 using namespace OpenSim;
 
@@ -676,13 +675,13 @@ void OpenSim::computePathLengthsAndMomentArms(
     }
 }
 
-void OpenSim::fitFunctionBasedPathCoefficients(
+double OpenSim::fitFunctionBasedPathCoefficients(
         Model model,
         const TimeSeriesTable& coordinateValues,
         const TimeSeriesTable& pathLengths,
         const TimeSeriesTable& momentArms,
-        const std::map<std::string, std::vector<std::string>>& momentArmMap) {
-    
+        const std::map<std::string, std::vector<std::string>>& momentArmMap,
+        const int minOrder, const int maxOrder) {
     
     // Helper functions.
     // -----------------
@@ -703,30 +702,23 @@ void OpenSim::fitFunctionBasedPathCoefficients(
     // ----------------------
     const CoordinateSet& coordinateSet = model.getCoordinateSet();
     const int numCoordinates = coordinateSet.getSize();
-    // Map from coordinate name to index.
-    std::map<std::string, int> coordinateIndexMap;
-    for (int i = 0; i < numCoordinates; ++i) {
-        coordinateIndexMap[coordinateSet[i].getName()] = i;
-    }
-    // Map from coordinate name to absolute path.
-    std::map<std::string, std::string> coordinatePathMap;
-    for (int i = 0; i < numCoordinates; ++i) {
-        coordinatePathMap[coordinateSet[i].getName()] = 
-                coordinateSet[i].getAbsolutePathString();
-    }
-    // Number of time points.
     const int numTimes = (int)coordinateValues.getNumRows();
     
-    // Maximum polynomial order.
-    const int maxOrder = 6;
-    
-    // Loop through model forces and compute function-based path coefficients.
+    // Build a FunctionBasedPath for each path-based force in the model.
+    // -----------------------------------------------------------------
+    Set<FunctionBasedPath> functionBasedPaths;
+    const auto forces = model.getComponentList<Force>();
+    const int numForces = (int)std::distance(forces.begin(), forces.end());
+    SimTK::Vector bestRootMeanSquareErrors(numForces, SimTK::Infinity);
+    int iforce = 0;
     for (const auto& force : model.getComponentList<Force>())  {
-        std::cout << "force path: " << force.getAbsolutePathString() << std::endl;
         
-        // Check if the current 
+        // Check if the current force is dependent on any coordinates in the 
+        // model. If not, skip it.
         if (momentArmMap.find(force.getAbsolutePathString()) == 
                 momentArmMap.end()) {
+            bestRootMeanSquareErrors[iforce] = 0.0;
+            ++iforce;
             continue;
         }
         
@@ -735,6 +727,11 @@ void OpenSim::fitFunctionBasedPathCoefficients(
         std::vector<std::string> coordinatesNamesThisForce = 
                 momentArmMap.at(forcePath);
         int numCoordinatesThisForce = (int)coordinatesNamesThisForce.size();
+        std::vector<std::string> coordinatePathsThisForce;
+        for (const auto& coordinateName : coordinatesNamesThisForce) {
+            coordinatePathsThisForce.push_back(
+                    coordinateSet.get(coordinateName).getAbsolutePathString());
+        }
         
         // The path lengths for this force.
         const SimTK::VectorView pathLengthsThisForce = 
@@ -752,13 +749,9 @@ void OpenSim::fitFunctionBasedPathCoefficients(
                     momentArms.getDependentColumn(
                             fmt::format("{}_moment_arm_{}", forcePath, 
                                     coordinateName));
-            std::cout << "coordinate name: " << coordinateName << std::endl;
-            std::cout << "coordinate path: " << coordinatePathMap.at(
-                    coordinateName) << std::endl;
             const SimTK::VectorView coordinateValuesThisCoordinate = 
-                    coordinateValues.getDependentColumn(
-                            fmt::format("{}/value", 
-                                    coordinatePathMap.at(coordinateName)));
+                    coordinateValues.getDependentColumn(fmt::format("{}/value", 
+                            coordinatePathsThisForce[ic]));
             for (int itime = 0; itime < numTimes; ++itime) {
                 momentArmsThisForce.set(
                         itime, ic, momentArmsThisCoordinate[itime]);
@@ -767,22 +760,21 @@ void OpenSim::fitFunctionBasedPathCoefficients(
             }
         }
         
-        // Polynomial fitting
-        bool foundFunctionBasedFit = false;
-        int order = 2;
-        while (order < maxOrder) {
+        // Polynomial fitting.
+        // -------------------
+        double bestRootMeanSquareError = SimTK::Infinity;
+        SimTK::Vector bestCoefficients;
+        int bestOrder = minOrder;
+        for (int order = minOrder; order <= maxOrder; ++order) {
             
-            // Create a multivariate polynomial function.
+            // Initialize the multivariate polynomial function.
             int n = numCoordinatesThisForce + order;
             int k = order;
             int numCoefficients = 
                     factorial(n) / (factorial(k) * factorial(n - k));
             SimTK::Vector dummyCoefficients(numCoefficients, 0.0);
-            MultivariatePolynomialFunction function(
-                    dummyCoefficients, numCoordinatesThisForce, order);
-            
-            // TODO avoid this hack
-            std::cout << function.calcValue(coordinatesThisForce.row(0).getAsVector()) << std::endl;
+            MultivariatePolynomialFunction dummyFunction(dummyCoefficients,
+                    numCoordinatesThisForce, order);
             
             // Initialize A and b matrices.
             SimTK::Matrix A(numTimes * (numCoordinatesThisForce + 1), 
@@ -792,17 +784,17 @@ void OpenSim::fitFunctionBasedPathCoefficients(
             // Fill in the A matrix. This contains the polynomial terms for the
             // path length and moment arms.
             for (int itime = 0; itime < numTimes; ++itime) {
-                A(itime, 0, 1, numCoefficients) = function.getTermValues(
+                A(itime, 0, 1, numCoefficients) = dummyFunction.getTermValues(
                         coordinatesThisForce.row(itime).getAsVector());
 
                 for (int ic = 0; ic < numCoordinatesThisForce; ++ic) {
                     SimTK::Vector termDerivatives = 
-                        function.getTermDerivatives({ic},
-                                coordinatesThisForce.row(itime).getAsVector());
+                        dummyFunction.getTermDerivatives({ic},
+                            coordinatesThisForce.row(itime).getAsVector());
                     termDerivatives.negate();
                     A((ic+1)*numTimes + itime, 0, 1, numCoefficients) = 
-                            function.getTermDerivatives({ic},
-                                    coordinatesThisForce.row(itime).getAsVector());
+                        dummyFunction.getTermDerivatives({ic},
+                            coordinatesThisForce.row(itime).getAsVector());
                 }
             }
 
@@ -813,32 +805,52 @@ void OpenSim::fitFunctionBasedPathCoefficients(
                 b((ic+1)*numTimes, numTimes) = momentArmsThisForce.col(ic);
             }
             
-            // Solve the least-squares problem.
-            // A * x = b
-            // x = pinv(A)*b
-            // where pinv(A) = ~A / (A * ~A)
+            // Solve the least-squares problem. A is a rectangular matrix with 
+            // full column rank, so we can use the left pseudo-inverse to solve 
+            // for the coefficients.
             SimTK::Matrix pinv_A = (~A * A).invert() * ~A;
-            SimTK::Vector x_hat = pinv_A * b;
+            SimTK::Vector coefficients = pinv_A * b;
             
-            SimTK::Vector b_hat = A * x_hat;
-            SimTK::Vector error = b - b_hat;
-
-            std::cout << "order: " << order << std::endl;
-            std::cout << "coefficients: " << x_hat << std::endl;
+            // Calculate the RMS error.
+            SimTK::Vector b_fit = A * coefficients;
+            SimTK::Vector error = b - b_fit;
+            const double rmsError = std::sqrt((error.normSqr() / error.size()));
             
-            // Calculate RMS error from 'error'
-            double rmsError = std::sqrt((error.normSqr() / error.size()));
-            std::cout << "rms error: " << rmsError << std::endl;
+            // Save best solution.
+            if (rmsError < bestRootMeanSquareErrors[iforce]) {
+                bestRootMeanSquareErrors[iforce] = rmsError;
+                bestCoefficients = coefficients;
+                bestOrder = order;
+            }
             
-            
-            
-            order++;
+            ++order;
         }
         
+        // Create a FunctionBasedPath for the current path-based force.
+        MultivariatePolynomialFunction lengthFunction;
+        lengthFunction.setDimension(numCoordinatesThisForce);
+        lengthFunction.setOrder(bestOrder);
+        lengthFunction.setCoefficients(bestCoefficients);
         
+        auto functionBasedPath = std::make_unique<FunctionBasedPath>();
+        functionBasedPath->setName(forcePath);
+        functionBasedPath->setCoordinatePaths(coordinatePathsThisForce);
+        functionBasedPath->setLengthFunction(lengthFunction);
+        functionBasedPaths.adoptAndAppend(functionBasedPath.release());
         
+        ++iforce;
     }
     
+    // Save the function-based paths to a file.
+    // ----------------------------------------
+    functionBasedPaths.print("testPolynomialFitting_Set_FunctionBasedPaths.xml");
+    
+    // Return the average RMS error.
+    // -----------------------------
+    double averageRootMeanSquareError = bestRootMeanSquareErrors.sum() / 
+            bestRootMeanSquareErrors.size();
+    
+    return averageRootMeanSquareError;
 }
 
 

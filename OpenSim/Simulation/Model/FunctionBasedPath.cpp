@@ -125,9 +125,14 @@ double FunctionBasedPath::getLength(const SimTK::State& s) const
 double FunctionBasedPath::computeMomentArm(const SimTK::State& s, 
         const Coordinate& coord) const 
 {
-    computeMomentArms(s);
-    return getCacheVariableValue<SimTK::Vector>(s, MOMENT_ARMS_NAME)
-            .get(_coordinateIndices.at(coord.getAbsolutePathString()));
+    if (_coordinateIndices.find(coord.getAbsolutePathString()) != 
+            _coordinateIndices.end()) {
+        computeMomentArms(s);
+        return getCacheVariableValue<SimTK::Vector>(s, MOMENT_ARMS_NAME)
+                .get(_coordinateIndices.at(coord.getAbsolutePathString()));
+    } else { 
+        return 0.0; 
+    }
 }
 
 double FunctionBasedPath::getLengtheningSpeed(const SimTK::State& s) const 

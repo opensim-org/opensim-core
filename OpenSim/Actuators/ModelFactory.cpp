@@ -310,8 +310,8 @@ void ModelFactory::createReserveActuators(Model& model, double optimalForce,
 }
 
 void ModelFactory::replacePathsWithFunctionBasedPaths(OpenSim::Model& model, 
-            const std::string& pathsFileName) {
-    Set<FunctionBasedPath> pathSet(pathsFileName);
+            const std::string& functionBasedPathsFile) {
+    Set<FunctionBasedPath> pathSet(functionBasedPathsFile);
     for (int i = 0; i < pathSet.getSize(); ++i) {
         auto path = pathSet.get(i);
             

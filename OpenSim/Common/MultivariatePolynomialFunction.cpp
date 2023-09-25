@@ -70,11 +70,11 @@ public:
                 }
             }
         }
+
         OPENSIM_THROW_IF(coefficients.size() != coeff_nr, Exception,
                 "Expected {} coefficients but got {}.", coeff_nr,
                 coefficients.size());
     }
-    
 
     SimTK::Vector_<T> calcTermValues(const SimTK::Vector& x) const {
         std::array<int, 6> nq{{0, 0, 0, 0, 0, 0}};
@@ -125,11 +125,6 @@ public:
             }
         }
         return values;
-    }
-    
-    T calcValue(const SimTK::Vector& x) const override {
-        SimTK::Vector_<T> values = calcTermValues(x);
-        return ~coefficients * values;
     }
     
     SimTK::Vector_<T> calcTermDerivatives(
@@ -236,6 +231,11 @@ public:
         return derivatives;
     }
     
+    T calcValue(const SimTK::Vector& x) const override {
+        SimTK::Vector_<T> values = calcTermValues(x);
+        return ~coefficients * values;
+    }
+    
     T calcDerivative(const SimTK::Array_<int>& derivComponent,
             const SimTK::Vector& x) const override {
         SimTK::Vector_<T> derivatives = calcTermDerivatives(derivComponent, x);
@@ -265,12 +265,16 @@ SimTK::Function* MultivariatePolynomialFunction::createSimTKFunction() const {
 
 SimTK::Vector MultivariatePolynomialFunction::getTermValues(
         const SimTK::Vector& x) const {
+    if (_function == NULL)
+        _function = createSimTKFunction();
     return static_cast<const SimTKMultivariatePolynomial<SimTK::Real>*>(
                     _function)->calcTermValues(x);
 }
 
 SimTK::Vector MultivariatePolynomialFunction::getTermDerivatives(
         const std::vector<int>& derivComponent, const SimTK::Vector& x) const {
+    if (_function == NULL)
+        _function = createSimTKFunction();
     return static_cast<const SimTKMultivariatePolynomial<SimTK::Real>*>(
                     _function)->calcTermDerivatives(
                     SimTK::ArrayViewConst_<int>(derivComponent), x);

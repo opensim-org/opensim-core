@@ -404,12 +404,14 @@ OSIMSIMULATION_API void computePathLengthsAndMomentArms(
         double momentArmTolerance = 1e-3);
 
 // TODO: 1) expects length and moment arm column names in specific format
-OSIMSIMULATION_API void fitFunctionBasedPathCoefficients(
+//       2) returns average RMS error
+OSIMSIMULATION_API double fitFunctionBasedPathCoefficients(
         Model model,
         const TimeSeriesTable& coordinateValues,
         const TimeSeriesTable& pathLengths,
         const TimeSeriesTable& momentArms,
-        const std::map<std::string, std::vector<std::string>>& momentArmMap);
+        const std::map<std::string, std::vector<std::string>>& momentArmMap,
+        const int minOrder = 2, const int maxOrder = 6);
 
 } // end of namespace OpenSim
 
