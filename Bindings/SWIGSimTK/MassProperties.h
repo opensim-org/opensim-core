@@ -197,9 +197,9 @@ Typedefs exist for the most common invocations of Inertia_\<P\>:
 **/
 template <class P=Real>
 class SimTK_SimTKCOMMON_EXPORT Inertia_ {
+public:
     typedef SymMat<3,P>     SymMat33P;
     typedef Rotation_<P>    RotationP;
-public:
 /// Default is a NaN-ed out mess to avoid accidents, even in Release mode.
 /// Other than this value, an Inertia matrix should always be valid.
 Inertia_() : I_OF_F(NTraits<P>::getNaN()) {}
@@ -666,7 +666,7 @@ represent them with the symbol "G" to avoid confusion with general inertia
 matrices for which the symbol "I" (or sometimes "J") is used. 
 
 <h3>Abbreviations</h3>
-Typedefs exist for the most common invocations of UnitInertia_\<P\>:
+Typedefs exist for the most common invocations of UnitInertia_\<T\>:
  - \ref SimTK::UnitInertia "UnitInertia" for default Real precision (this is 
    almost always used)
  - \ref SimTK::fUnitInertia "fUnitInertia" for single (float) precision
@@ -1556,9 +1556,6 @@ operator<<(std::ostream& o, const MassProperties_<P>& mp) {
              << "\n  Ixy,xz,yz=" << mp.getUnitInertia().getProducts()
              << "\n}\n";
 }
-
-typedef SimTK::Inertia_<double> Inertia;
-typedef SimTK::MassProperties_<double> MassProperties;
 } // namespace SimTK
 
 #endif // SimTK_SIMMATRIX_MASS_PROPERTIES_H_
