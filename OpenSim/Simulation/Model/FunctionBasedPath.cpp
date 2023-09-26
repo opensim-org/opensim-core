@@ -23,62 +23,61 @@
 
 #include "FunctionBasedPath.h"
 #include "Model.h"
+#include <OpenSim/Common/Assertion.h>
 
 using namespace OpenSim;
 
-const std::string FunctionBasedPath::LENGTH_NAME("length");
-const std::string FunctionBasedPath::MOMENT_ARMS_NAME("moment_arms");
-const std::string FunctionBasedPath::LENGTHENING_SPEED_NAME("lengthening_speed");
+static const std::string cv_lengthName("length");
+static const std::string cv_momentArmsName("moment_arms");
+static const std::string cv_lengtheningSpeedName("lengthening_speed");
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
-FunctionBasedPath::FunctionBasedPath() : AbstractPath() 
+FunctionBasedPath::FunctionBasedPath() : AbstractPath()
 {
     setAuthors("Nicholas Bianco");
     constructProperties();
 }
 
-FunctionBasedPath::~FunctionBasedPath() = default;
-
 //=============================================================================
 // GET AND SET METHODS
 //=============================================================================
-void FunctionBasedPath::appendCoordinatePath(const std::string& coordinatePath) 
+void FunctionBasedPath::appendCoordinatePath(const std::string& coordinatePath)
 {
     append_coordinate_paths(coordinatePath);
 }
 
 void FunctionBasedPath::setCoordinatePaths(
-        const std::vector<std::string>& coordinatePaths) 
+        const std::vector<std::string>& coordinatePaths)
 {
     for (const auto& coordName : coordinatePaths) {
         appendCoordinatePath(coordName);
     }
 }
 
-std::vector<std::string> FunctionBasedPath::getCoordinatePaths() const 
+std::vector<std::string> FunctionBasedPath::getCoordinatePaths() const
 {
     std::vector<std::string> coordinates;
     for (int i = 0; i < getProperty_coordinate_paths().size(); ++i) {
         coordinates.push_back(get_coordinate_paths(i));
     }
-    
+
     return coordinates;
 }
 
-void FunctionBasedPath::setLengthFunction(const Function& lengthFunction) 
+void FunctionBasedPath::setLengthFunction(const Function& lengthFunction)
 {
     set_length_function(lengthFunction);
 }
 
-const Function& FunctionBasedPath::getLengthFunction() const 
+const Function& FunctionBasedPath::getLengthFunction() const
 {
     return get_length_function();
 }
 
 void FunctionBasedPath::setLengtheningSpeedFunction(
-        const Function& speedFunction) 
+        const Function& speedFunction)
 {
     set_lengthening_speed_function(speedFunction);
 }
@@ -88,13 +87,13 @@ const Function& FunctionBasedPath::getLengtheningSpeedFunction() const {
 }
 
 void FunctionBasedPath::appendMomentArmFunction(
-        const Function& momentArmFunction) 
+        const Function& momentArmFunction)
 {
     append_moment_arm_functions(momentArmFunction);
 }
 
 void FunctionBasedPath::setMomentArmFunctions(
-        const std::vector<Function>& momentArmFunctions) 
+        const std::vector<Function>& momentArmFunctions)
 {
     for (const auto& momentArmFunction : momentArmFunctions) {
         append_moment_arm_functions(momentArmFunction);
@@ -110,56 +109,57 @@ const Function& FunctionBasedPath::getMomentArmFunction(
 const SimTK::Vector& FunctionBasedPath::getMomentArms(
         const SimTK::State& s) const {
     computeMomentArms(s);
-    return getCacheVariableValue<SimTK::Vector>(s, MOMENT_ARMS_NAME);
+    return getCacheVariableValue<SimTK::Vector>(s, cv_momentArmsName);
 }
 
 //=============================================================================
 // ABSTRACT PATH INTERFACE
 //=============================================================================
-double FunctionBasedPath::getLength(const SimTK::State& s) const 
+double FunctionBasedPath::getLength(const SimTK::State& s) const
 {
     computeLength(s);
-    return getCacheVariableValue<double>(s, LENGTH_NAME); 
+    return getCacheVariableValue<double>(s, cv_lengthName);
 }
 
-double FunctionBasedPath::computeMomentArm(const SimTK::State& s, 
-        const Coordinate& coord) const 
+double FunctionBasedPath::computeMomentArm(const SimTK::State& s,
+        const Coordinate& coord) const
 {
-    if (_coordinateIndices.find(coord.getAbsolutePathString()) != 
+    if (_coordinateIndices.find(coord.getAbsolutePathString()) !=
             _coordinateIndices.end()) {
         computeMomentArms(s);
-        return getCacheVariableValue<SimTK::Vector>(s, MOMENT_ARMS_NAME)
+        return getCacheVariableValue<SimTK::Vector>(s, cv_momentArmsName)
                 .get(_coordinateIndices.at(coord.getAbsolutePathString()));
-    } else { 
-        return 0.0; 
+    } else {
+        return 0.0;
     }
 }
 
-double FunctionBasedPath::getLengtheningSpeed(const SimTK::State& s) const 
+double FunctionBasedPath::getLengtheningSpeed(const SimTK::State& s) const
 {
     computeLengtheningSpeed(s);
-    return getCacheVariableValue<double>(s, LENGTHENING_SPEED_NAME);
+    return getCacheVariableValue<double>(s, cv_lengtheningSpeedName);
 }
 
 void FunctionBasedPath::addInEquivalentForces(const SimTK::State& state,
         const double& tension,
         SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
-        SimTK::Vector& mobilityForces) const 
+        SimTK::Vector& mobilityForces) const
 {
     // Get the moment arms.
     computeMomentArms(state);
-    const auto& momentArms = 
-            getCacheVariableValue<SimTK::Vector>(state, MOMENT_ARMS_NAME);
-    
+    const auto& momentArms =
+            getCacheVariableValue<SimTK::Vector>(state, cv_momentArmsName);
+    OPENSIM_ASSERT_ALWAYS(momentArms.size() == _coordinates.size());
+
     // Apply the mobility forces.
-    const SimTK::SimbodyMatterSubsystem& matter = 
+    const SimTK::SimbodyMatterSubsystem& matter =
             getModel().getMatterSubsystem();
     for (int i = 0; i < (int)_coordinates.size(); ++i) {
         const SimTK::MobilizedBody& mobod =
                 matter.getMobilizedBody(_coordinates[i]->getBodyIndex());
-        mobod.applyOneMobilityForce(state, 
+        mobod.applyOneMobilityForce(state,
                 _coordinates[i]->getMobilizerQIndex(),
-                momentArms[i] * tension, 
+                momentArms[i] * tension,
                 mobilityForces);
     }
 }
@@ -176,43 +176,43 @@ void FunctionBasedPath::constructProperties()
 }
 
 SimTK::Vector FunctionBasedPath::computeCoordinateValues(
-        const SimTK::State& s) const 
+        const SimTK::State& s) const
 {
     SimTK::Vector coordinateValues((int)_coordinates.size(), 0.0);
     for (int i = 0; i < (int)_coordinates.size(); ++i) {
         coordinateValues[i] = _coordinates[i]->getValue(s);
     }
-    
+
     return coordinateValues;
 }
 
 SimTK::Vector FunctionBasedPath::computeCoordinateDerivatives(
-        const SimTK::State& s) const 
+        const SimTK::State& s) const
 {
     SimTK::Vector coordinateSpeeds((int)_coordinates.size(), 0.0);
     for (int i = 0; i < (int)_coordinates.size(); ++i) {
         coordinateSpeeds[i] = _coordinates[i]->getQDotValue(s);
     }
-    
+
     return coordinateSpeeds;
 }
 
 void FunctionBasedPath::computeLength(const SimTK::State& s) const
 {
-    if (isCacheVariableValid(s, LENGTH_NAME)) {
+    if (isCacheVariableValid(s, cv_lengthName)) {
         return;
     }
-    
-    setCacheVariableValue(s, LENGTH_NAME, 
+
+    setCacheVariableValue(s, cv_lengthName,
             getLengthFunction().calcValue(computeCoordinateValues(s)));
 }
 
-void FunctionBasedPath::computeMomentArms(const SimTK::State& s) const 
+void FunctionBasedPath::computeMomentArms(const SimTK::State& s) const
 {
-    if (isCacheVariableValid(s, MOMENT_ARMS_NAME)) {
+    if (isCacheVariableValid(s, cv_momentArmsName)) {
         return;
     }
-    
+
     const auto& values = computeCoordinateValues(s);
     SimTK::Vector momentArms((int)_coordinates.size(), 0.0);
     if (_computeMomentArms) {
@@ -230,35 +230,35 @@ void FunctionBasedPath::computeMomentArms(const SimTK::State& s) const
             momentArms[i] = momentArmFunction.calcValue(values);
         }
     }
-    setCacheVariableValue(s, MOMENT_ARMS_NAME, momentArms);
+    setCacheVariableValue(s, cv_momentArmsName, momentArms);
 }
 
-void FunctionBasedPath::computeLengtheningSpeed(const SimTK::State& s) const 
+void FunctionBasedPath::computeLengtheningSpeed(const SimTK::State& s) const
 {
-    if (isCacheVariableValid(s, LENGTHENING_SPEED_NAME)) {
+    if (isCacheVariableValid(s, cv_lengtheningSpeedName)) {
         return;
     }
-    
+
     if (_computeLengtheningSpeed) {
         // If we do not have a speed function, then compute the lengthening
-        // speed based on the scalar product between the moment arms and the 
+        // speed based on the scalar product between the moment arms and the
         // coordinate derivatives.
         computeMomentArms(s);
-        const auto& momentArms = 
-                getCacheVariableValue<SimTK::Vector>(s, MOMENT_ARMS_NAME);
+        const auto& momentArms =
+                getCacheVariableValue<SimTK::Vector>(s, cv_momentArmsName);
         const SimTK::Vector& qdot = computeCoordinateDerivatives(s);
         // Negate the moment arms to cancel out the negative sign from the
         // OpenSim convention.
         const double lengtheningSpeed = ~qdot * momentArms.negate();
-        setCacheVariableValue(s, LENGTHENING_SPEED_NAME, lengtheningSpeed);
+        setCacheVariableValue(s, cv_lengtheningSpeedName, lengtheningSpeed);
     } else {
         SimTK::Vector coordinatesState(2*(int)_coordinates.size(), 0.0);
         for (int i = 0; i < (int)_coordinates.size(); ++i) {
             coordinatesState[i] = _coordinates[i]->getValue(s);
-            coordinatesState[i + (int)_coordinates.size()] = 
+            coordinatesState[i + (int)_coordinates.size()] =
                     _coordinates[i]->getSpeedValue(s);
         }
-        setCacheVariableValue(s, LENGTHENING_SPEED_NAME, 
+        setCacheVariableValue(s, cv_lengtheningSpeedName,
                 getLengtheningSpeedFunction().calcValue(coordinatesState));
     }
 }
@@ -270,34 +270,39 @@ void FunctionBasedPath::extendFinalizeFromProperties() {
     Super::extendFinalizeFromProperties();
 
     // Check the properties.
-    OPENSIM_THROW_IF_FRMOBJ(getProperty_length_function().empty(), 
+    OPENSIM_THROW_IF_FRMOBJ(getProperty_length_function().empty(),
             Exception, "Expected 'length_function' to be provided, but the "
                        "property was empty.")
-    
-    OPENSIM_THROW_IF_FRMOBJ(getProperty_coordinate_paths().empty(), Exception, 
+
+    OPENSIM_THROW_IF_FRMOBJ(getProperty_coordinate_paths().empty(), Exception,
             "This path should be dependent on at least one coordinate, but"
             "no coordinates were provided.")
-    
+
     // Check that the `coordinate_paths` are unique.
-    std::set<std::string> uniqueCoordinatePaths;
+    std::vector<std::string> uniqueCoordinatePaths;
+    uniqueCoordinatePaths.reserve(getProperty_coordinate_paths().size());
     for (int i = 0; i < getProperty_coordinate_paths().size(); ++i) {
-        const auto& coordName = get_coordinate_paths(i);
-        OPENSIM_THROW_IF_FRMOBJ(uniqueCoordinatePaths.count(coordName) > 0,
-                Exception, fmt::format("Coordinate '{}' was provided more than "
-                                       "once.", coordName))
-        uniqueCoordinatePaths.insert(coordName);
+        const auto& coordinatePath = get_coordinate_paths(i);
+        if (std::find(uniqueCoordinatePaths.begin(),
+                      uniqueCoordinatePaths.end(),
+                    coordinatePath) != uniqueCoordinatePaths.end()) {
+            OPENSIM_THROW_FRMOBJ(Exception,
+                    fmt::format("Coordinate '{}' was provided more than once.",
+                            coordinatePath))
+        }
+        uniqueCoordinatePaths.push_back(coordinatePath);
     }
-    
+
     OPENSIM_THROW_IF_FRMOBJ(getLengthFunction().getArgumentSize() !=
             getProperty_coordinate_paths().size(), Exception,
             fmt::format("Expected the number of arguments in 'length_function' "
                         "({}) to equal the number of coordinates ({}).",
                         getLengthFunction().getArgumentSize(),
                         getProperty_coordinate_paths().size()))
-    
+
     if (getProperty_moment_arm_functions().empty()) {
         _computeMomentArms = true;
-        OPENSIM_THROW_IF_FRMOBJ(getLengthFunction().getMaxDerivativeOrder() < 1, 
+        OPENSIM_THROW_IF_FRMOBJ(getLengthFunction().getMaxDerivativeOrder() < 1,
                 Exception, "Since moment arm functions were not provided, "
                            "expected the length function to be at least "
                            "first-order differentiable with respect to "
@@ -309,10 +314,10 @@ void FunctionBasedPath::extendFinalizeFromProperties() {
                             "to equal the number of coordinates ({}).",
                         getProperty_moment_arm_functions().size(),
                         getProperty_coordinate_paths().size()))
-        
+
         for (int i = 0; i < getProperty_moment_arm_functions().size(); ++i) {
             OPENSIM_THROW_IF_FRMOBJ(
-                    get_moment_arm_functions(i).getArgumentSize() != 
+                    get_moment_arm_functions(i).getArgumentSize() !=
                             getProperty_coordinate_paths().size(), Exception,
                     fmt::format("Expected the number of arguments in "
                                 "'moment_arm_functions[{}]' ({}) to equal the "
@@ -321,7 +326,7 @@ void FunctionBasedPath::extendFinalizeFromProperties() {
                             getProperty_coordinate_paths().size()))
         }
     }
-    
+
     if (getProperty_lengthening_speed_function().empty()) {
         _computeLengtheningSpeed = true;
     } else {
@@ -334,7 +339,7 @@ void FunctionBasedPath::extendFinalizeFromProperties() {
                         getLengtheningSpeedFunction().getArgumentSize(),
                         getProperty_coordinate_paths().size()))
     }
-    
+
     // Populate the coordinate index map. In case "finalizeFromProperties()" is
     // called multiple times, clear the map first.
     _coordinateIndices.clear();
@@ -344,7 +349,7 @@ void FunctionBasedPath::extendFinalizeFromProperties() {
 }
 void FunctionBasedPath::extendConnectToModel(Model& model) {
     Super::extendConnectToModel(model);
-    
+
     // Check that the coordinates are in the model. If so, grab references
     // pointers to them. In case "connectToModel()" is called multiple times,
     // clear any existing references first.
@@ -355,7 +360,7 @@ void FunctionBasedPath::extendConnectToModel(Model& model) {
                 Exception,
                 fmt::format("Coordinate '{}' does not exist in the model.",
                             coordName))
-        
+
         _coordinates.emplace_back(
                 &model.getComponent<const Coordinate>(coordName));
     }
@@ -363,10 +368,10 @@ void FunctionBasedPath::extendConnectToModel(Model& model) {
 void FunctionBasedPath::extendAddToSystem(
         SimTK::MultibodySystem& system) const {
     Super::extendAddToSystem(system);
-    addCacheVariable<double>(LENGTH_NAME, 0.0, SimTK::Stage::Position);
-    addCacheVariable<SimTK::Vector>(MOMENT_ARMS_NAME, 
+    addCacheVariable<double>(cv_lengthName, 0.0, SimTK::Stage::Position);
+    addCacheVariable<SimTK::Vector>(cv_momentArmsName,
             SimTK::Vector(getProperty_coordinate_paths().size(), 0.0),
-            SimTK::Stage::Velocity);
-    addCacheVariable<double>(LENGTHENING_SPEED_NAME, 0.0,
+            SimTK::Stage::Position);
+    addCacheVariable<double>(cv_lengtheningSpeedName, 0.0,
                 SimTK::Stage::Velocity);
 }
