@@ -411,7 +411,7 @@ OSIMSIMULATION_API double fitFunctionBasedPathCoefficients(
         const TimeSeriesTable& pathLengths,
         const TimeSeriesTable& momentArms,
         const std::map<std::string, std::vector<std::string>>& momentArmMap,
-        const int minOrder = 2, const int maxOrder = 6);
+        const int minOrder = 2, const int maxOrder = 9);
 
 } // end of namespace OpenSim
 

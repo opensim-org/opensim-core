@@ -366,7 +366,7 @@ void FunctionBasedPath::extendAddToSystem(
     addCacheVariable<double>(LENGTH_NAME, 0.0, SimTK::Stage::Position);
     addCacheVariable<SimTK::Vector>(MOMENT_ARMS_NAME, 
             SimTK::Vector(getProperty_coordinate_paths().size(), 0.0),
-            SimTK::Stage::Velocity);
+            SimTK::Stage::Position);
     addCacheVariable<double>(LENGTHENING_SPEED_NAME, 0.0,
                 SimTK::Stage::Velocity);
 }

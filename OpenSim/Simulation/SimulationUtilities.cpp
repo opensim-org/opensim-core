@@ -541,7 +541,7 @@ void OpenSim::computePathLengthsAndMomentArms(
                 "'{}', but it does not.", label);
     }
     auto statesTrajectory = StatesTrajectory::createFromStatesTable(
-            model, coordinateValues, true);
+            model, coordinateValues, true, false, false);
     
     // Determine the maximum number of path and moment arm evaluations.
     const auto& paths = model.getComponentList<AbstractPath>();
@@ -790,11 +790,9 @@ double OpenSim::fitFunctionBasedPathCoefficients(
                 for (int ic = 0; ic < numCoordinatesThisForce; ++ic) {
                     SimTK::Vector termDerivatives = 
                         dummyFunction.getTermDerivatives({ic},
-                            coordinatesThisForce.row(itime).getAsVector());
-                    termDerivatives.negate();
+                        coordinatesThisForce.row(itime).getAsVector()).negate();
                     A((ic+1)*numTimes + itime, 0, 1, numCoefficients) = 
-                        dummyFunction.getTermDerivatives({ic},
-                            coordinatesThisForce.row(itime).getAsVector());
+                            termDerivatives;
                 }
             }
 
