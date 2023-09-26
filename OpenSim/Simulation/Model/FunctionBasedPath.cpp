@@ -150,7 +150,7 @@ void FunctionBasedPath::addInEquivalentForces(const SimTK::State& state,
     computeMomentArms(state);
     const auto& momentArms =
             getCacheVariableValue<SimTK::Vector>(state, _momentArmsCV);
-    OPENSIM_ASSERT_ALWAYS(momentArms.size() == _coordinates.size());
+    OPENSIM_ASSERT_ALWAYS(momentArms.size() == (int)_coordinates.size());
 
     // Apply the mobility forces.
     const SimTK::SimbodyMatterSubsystem& matter =
