@@ -212,6 +212,11 @@ private:
     std::unordered_map<std::string, int> _coordinateIndices;
     bool _computeMomentArms = false;
     bool _computeLengtheningSpeed = false;
+
+    // CACHE VARIABLES
+    mutable CacheVariable<double> _lengthCV;
+    mutable CacheVariable<SimTK::Vector> _momentArmsCV;
+    mutable CacheVariable<double> _lengtheningSpeedCV;
 };
 
 } // namespace OpenSim
