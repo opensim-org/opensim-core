@@ -24,13 +24,14 @@
  * -------------------------------------------------------------------------- */
 
 #include "osimCommonDLL.h"
+#include "Assertion.h"
 #include <functional>
 #include <iostream>
 #include <memory>
 #include <mutex>
 #include <stack>
-#include <condition_variable>
 
+#include <condition_variable>
 #include <SimTKcommon/internal/BigMatrix.h>
 
 namespace OpenSim {
@@ -164,6 +165,16 @@ private:
     mutable std::mutex m_mutex;
     std::condition_variable m_inventoryMonitor;
 };
+
+// A C++ function for finding the K nearest nearest neighbors of two
+// matrices X and Y, where X is MX-by-N and Y is MY-by-N. Rows of X and Y
+// correspond to observations and columns correspond to variables. The function
+// should return a the MY-by-K matrices D and IDX. D sorts the distances in each
+// row in ascending order. Each row in IDX contains the indices of K closest
+// neighbors in X corresponding to the K smallest distances in D.
+OSIMCOMMON_API SimTK::Matrix computeKNearestNeighbors(const SimTK::Matrix& x,
+        const SimTK::Matrix& y, int k = 1);
+
 
 } // namespace OpenSim
 

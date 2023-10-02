@@ -183,3 +183,43 @@ SimTK::Real OpenSim::solveBisection(
     }
     return midpoint;
 }
+
+SimTK::Matrix OpenSim::computeKNearestNeighbors(const SimTK::Matrix& x,
+        const SimTK::Matrix& y, int k) {
+
+    OPENSIM_THROW_IF(x.ncol() != y.ncol(), Exception,
+            "Expected the matrices 'x' and 'y' to have the same number of "
+            "columns, but found {} and {}, respectively.", x.ncol(), y.ncol());
+
+    // Initialize the output matrices.
+    SimTK::Matrix distances(y.nrow(), k, 0.0);
+
+    // Loop over each row in 'y'.
+    for (int iy = 0; iy < y.nrow(); ++iy) {
+        std::vector<double> distancesVec;
+
+        // Compute distances between the current row in 'y' and all rows in 'x'.
+        // Skip the distance between the current row in 'y' and itself.
+        for (int ix = 0; ix < x.nrow(); ++ix) {
+            const double distance = (y.row(iy) - x.row(ix)).normSqr();
+            distancesVec.push_back(distance);
+        }
+
+        // Sort the distances in ascending order.
+        std::sort(distancesVec.begin(), distancesVec.end(),
+                [](const double& a, const double& b) {
+                    return a < b;
+                });
+
+        // Take the first K distances.
+        for (int ik = 0; ik < k; ++ik) {
+            distances.set(iy, ik, distancesVec[ik]);
+        }
+    }
+
+    return distances;
+}
+
+//
+
+
