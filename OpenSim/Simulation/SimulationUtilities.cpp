@@ -33,6 +33,7 @@
 #include <OpenSim/Common/MultivariatePolynomialFunction.h>
 
 #include <OpenSim/Common/TableUtilities.h>
+#include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
 #include <OpenSim/Simulation/Model/FunctionBasedPath.h>
 
@@ -122,7 +123,7 @@ OpenSim::updatePre40KinematicsStorageFor40MotionType(const Model& pre40Model,
     // There is no issue if the kinematics are in internal values (i.e. not
     // converted to degrees)
     if(!kinematics.isInDegrees()) return nullptr;
-    
+
     if (pre40Model.getDocumentFileVersion() >= 30415) {
         throw Exception("updateKinematicsStorageForUpdatedModel has no updates "
             "to make because the model '" + pre40Model.getName() + "'is up-to-date.\n"
@@ -130,30 +131,30 @@ OpenSim::updatePre40KinematicsStorageFor40MotionType(const Model& pre40Model,
             "nothing further must be done. Otherwise, provide the original model "
             "file used to generate the motion files and try again.");
     }
-    
+
     std::vector<const Coordinate*> problemCoords;
     auto coordinates = pre40Model.getComponentList<Coordinate>();
     for (auto& coord : coordinates) {
         const Coordinate::MotionType oldMotionType =
                 coord.getUserSpecifiedMotionTypePriorTo40();
         const Coordinate::MotionType motionType = coord.getMotionType();
-        
+
         if ((oldMotionType != Coordinate::MotionType::Undefined) &&
             (oldMotionType != motionType)) {
             problemCoords.push_back(&coord);
         }
     }
-    
+
     if (problemCoords.size() == 0)
         return nullptr;
-    
+
     std::unique_ptr<Storage> updatedKinematics(kinematics.clone());
     // Cycle the inconsistent Coordinates
     for (const auto& coord : problemCoords) {
         // Get the corresponding column of data and if in degrees
         // undo the radians to degrees conversion on that column.
         int ix = updatedKinematics->getStateIndex(coord->getName());
-        
+
         if (ix < 0) {
             log_warn("updateKinematicsStorageForUpdatedModel(): motion '{}' "
                      "does not contain inconsistent coordinate '{}'.)",
@@ -168,12 +169,12 @@ OpenSim::updatePre40KinematicsStorageFor40MotionType(const Model& pre40Model,
     return updatedKinematics;
 }
 
-    
+
 void OpenSim::updatePre40KinematicsFilesFor40MotionType(const Model& model,
         const std::vector<std::string>& filePaths,
         std::string suffix)
 {
-    // Cycle through the data files 
+    // Cycle through the data files
     for (const auto& filePath : filePaths) {
         Storage motion(filePath);
         auto updatedMotion =
@@ -207,7 +208,7 @@ void OpenSim::updateSocketConnecteesBySearch(Model& model)
                 socket.finalizeConnection(model);
             } catch (const ComponentNotFoundOnSpecifiedPath&) {
                 const ComponentPath path(socket.getConnecteePath());
-                if (path.getNumPathLevels() >= 1) { 
+                if (path.getNumPathLevels() >= 1) {
                     const Component* found =
                         model.findComponent(path.getComponentName());
                     if (found) {
@@ -446,42 +447,48 @@ TimeSeriesTableVec3 OpenSim::createSyntheticIMUAccelerationSignals(
 }
 
 void OpenSim::appendCoupledCoordinateValues(
-        OpenSim::TimeSeriesTable& table, const OpenSim::Model& model) {
-    
+        OpenSim::TimeSeriesTable& table, const OpenSim::Model& model,
+        bool overwriteExistingColumns) {
+
     const CoordinateSet& coordinateSet = model.getCoordinateSet();
-    const auto& couplerConstraints = 
+    const auto& couplerConstraints =
             model.getComponentList<CoordinateCouplerConstraint>();
     for (const auto& couplerConstraint : couplerConstraints) {
-        
+
         // Get the dependent coordinate and check if the table already contains
-        // values for it. If so, skip this constraint.
+        // values for it. If so, skip this constraint (unless we are
+        // overwriting existing columns).
         const Coordinate& coordinate = coordinateSet.get(
                 couplerConstraint.getDependentCoordinateName());
-        const std::string& coupledCoordinatePath = 
+        const std::string& coupledCoordinatePath =
                 fmt::format("{}/value", coordinate.getAbsolutePathString());
         if (table.hasColumn(coupledCoordinatePath)) {
-            continue;
+            if (overwriteExistingColumns) {
+                table.removeColumn(coupledCoordinatePath);
+            } else {
+                continue;
+            }
         }
-        
+
         // Get the paths to the independent coordinate values.
-        const Array<std::string>& independentCoordinateNames = 
+        const Array<std::string>& independentCoordinateNames =
                 couplerConstraint.getIndependentCoordinateNames();
         std::vector<std::string> independentCoordinatePaths;
         for (int i = 0; i < independentCoordinateNames.getSize(); ++i) {
             const Coordinate& independentCoordinate = coordinateSet.get(
                     independentCoordinateNames[i]);
             independentCoordinatePaths.push_back(
-                    fmt::format("{}/value", 
+                    fmt::format("{}/value",
                         independentCoordinate.getAbsolutePathString()));
             OPENSIM_THROW_IF(
                     !table.hasColumn(independentCoordinatePaths.back()),
-                    Exception, 
+                    Exception,
                     "Expected the coordinates table to contain a column with "
                     "label '{}', but it does not.",
                     independentCoordinatePaths.back())
         }
-        
-        // Compute the dependent coordinate values from the function in the 
+
+        // Compute the dependent coordinate values from the function in the
         // CoordinateCouplerConstraint.
         SimTK::Vector independentValues(
                 (int)independentCoordinatePaths.size(), 0.0);
@@ -489,14 +496,14 @@ void OpenSim::appendCoupledCoordinateValues(
         const Function& function = couplerConstraint.getFunction();
         for (int irow = 0; irow < table.getNumRows(); ++irow) {
             int ival = 0;
-            for (const auto& independentCoordinatePath : 
+            for (const auto& independentCoordinatePath :
                     independentCoordinatePaths) {
-                independentValues[ival++] = 
+                independentValues[ival++] =
                         table.getDependentColumn(independentCoordinatePath)[irow];
             }
             newColumn[irow] = function.calcValue(independentValues);
         }
-        
+
         // Append the new column to the table.
         table.appendColumn(coupledCoordinatePath, newColumn);
     }
@@ -504,14 +511,14 @@ void OpenSim::appendCoupledCoordinateValues(
 
 
 void OpenSim::computePathLengthsAndMomentArms(
-        Model model, 
+        Model model,
         const TimeSeriesTable& coordinateValues,
         TimeSeriesTable& pathLengths,
         TimeSeriesTable& momentArms,
         std::map<std::string, std::vector<std::string>>& momentArmMap,
-        int threads,
-        double momentArmTolerance) {
-    
+        double momentArmTolerance,
+        int threads) {
+
     // Check inputs.
     OPENSIM_THROW_IF(
             threads < 1 || threads > (int)std::thread::hardware_concurrency(),
@@ -522,18 +529,19 @@ void OpenSim::computePathLengthsAndMomentArms(
     OPENSIM_THROW_IF(momentArms.getNumRows() != 0, Exception,
             "Expected 'momentArms' to be empty.");
     momentArmMap.clear();
-    
+
     // Load model.
     SimTK::State state = model.initSystem();
-    
+
     // Load coordinate values.
     // TODO check coordinate values
+    // TODO delete coordinate speeds
 //    TableProcessor tableProcessor = TableProcessor(coordinateValues) |
 //                                    TabOpUseAbsoluteStateNames() |
 //                                    TabOpAppendCoupledCoordinateValues();
-//    TimeSeriesTable coordinateValuesProcessed = 
+//    TimeSeriesTable coordinateValuesProcessed =
 //            tableProcessor.processAndConvertToRadians(model);
-    
+
     Array<std::string> stateVariableNames = model.getStateVariableNames();
     for (const auto& label : coordinateValues.getColumnLabels()) {
         OPENSIM_THROW_IF(stateVariableNames.findIndex(label) == -1, Exception,
@@ -542,43 +550,43 @@ void OpenSim::computePathLengthsAndMomentArms(
     }
     auto statesTrajectory = StatesTrajectory::createFromStatesTable(
             model, coordinateValues, true, false, false);
-    
+
     // Determine the maximum number of path and moment arm evaluations.
     const auto& paths = model.getComponentList<AbstractPath>();
     int numPaths = (int)std::distance(paths.begin(), paths.end());
     int numCoordinates = (int)coordinateValues.getNumColumns();
     int numColumns = numPaths + (numPaths * numCoordinates);
-    
+
     // Define helper function for path length and moment arm computations.
     auto calcPathLengthsAndMomentArmsSubset = [numColumns, numPaths](
-            Model model, StatesTrajectory::IteratorRange subsetStates) 
+            Model model, StatesTrajectory::IteratorRange subsetStates)
                 -> SimTK::Matrix {
         model.initSystem();
-        
+
         // Create a matrix to store the results
         SimTK::Matrix results(
                 (int)std::distance(subsetStates.begin(), subsetStates.end()),
                 numColumns);
-        
+
         int row = 0;
         const auto& forces = model.getComponentList<Force>();
         for (const auto& state : subsetStates) {
             model.realizePosition(state);
-            
+
             int ip = 0;
             int ima = 0;
             for (const auto& force : forces) {
                 if (force.hasProperty("path")) {
-                    const AbstractPath& path = 
+                    const AbstractPath& path =
                             force.getProperty<AbstractPath>("path").getValue();
-                    
+
                     // Compute path length.
                     results(row, ip++) = path.getLength(state);
-                    
+
                     // Compute moment arms.
-                    for (const auto& coordinate : 
+                    for (const auto& coordinate :
                             model.getComponentList<Coordinate>()) {
-                        results(row, numPaths + ima++) = 
+                        results(row, numPaths + ima++) =
                                 path.computeMomentArm(state, coordinate);
                     }
                 }
@@ -588,45 +596,45 @@ void OpenSim::computePathLengthsAndMomentArms(
 
         return results;
     };
-    
-    // Divide the path length and moment arm computations across multiple 
+
+    // Divide the path length and moment arm computations across multiple
     // threads.
     int stride = static_cast<int>(
             std::floor(coordinateValues.getNumRows() / threads));
     std::vector<std::future<SimTK::Matrix>> futures;
     int offset = 0;
     for (int ithread = 0; ithread < threads; ++ithread) {
-        StatesTrajectory::const_iterator begin_iter = 
+        StatesTrajectory::const_iterator begin_iter =
                 statesTrajectory.begin() + offset;
         StatesTrajectory::const_iterator end_iter = (ithread == threads-1) ?
-                statesTrajectory.end() : 
+                statesTrajectory.end() :
                 statesTrajectory.begin() + offset + stride;
-        futures.push_back(std::async(std::launch::async, 
-                calcPathLengthsAndMomentArmsSubset, 
-                model, 
+        futures.push_back(std::async(std::launch::async,
+                calcPathLengthsAndMomentArmsSubset,
+                model,
                 makeIteratorRange(begin_iter, end_iter)));
         offset += stride;
     }
-    
+
     // Wait for threads to finish and collect results
     std::vector<SimTK::Matrix> outputs(threads);
     for (int i = 0; i < threads; ++i) {
         outputs[i] = futures[i].get();
     }
-    
+
     // Assemble results into one TimeSeriesTable
     std::vector<double> time = coordinateValues.getIndependentColumn();
     int itime = 0;
     for (int i = 0; i < threads; ++i) {
         for (int j = 0; j < outputs[i].nrow(); ++j) {
-            pathLengths.appendRow(time[itime], outputs[i].block(j, 0, 1, 
+            pathLengths.appendRow(time[itime], outputs[i].block(j, 0, 1,
                     numPaths).getAsRowVector());
             momentArms.appendRow(time[itime], outputs[i].block(j, numPaths, 1,
                     numPaths * numCoordinates).getAsRowVector());
             itime++;
         }
     }
-    
+
     int ip = 0;
     int ima = 0;
     std::vector<std::string> pathLengthLabels(numPaths);
@@ -634,20 +642,22 @@ void OpenSim::computePathLengthsAndMomentArms(
     const auto& forces = model.getComponentList<Force>();
     for (const auto& force : forces) {
         if (force.hasProperty("path")) {
-            pathLengthLabels[ip++] = 
+            pathLengthLabels[ip++] =
                     fmt::format("{}_length", force.getAbsolutePathString());
-            for (const auto& coordinate : 
+            for (const auto& coordinate :
                     model.getComponentList<Coordinate>()) {
-                momentArmLabels[ima++] = fmt::format("{}_moment_arm_{}", 
+                momentArmLabels[ima++] = fmt::format("{}_moment_arm_{}",
                         force.getAbsolutePathString(), coordinate.getName());
             }
         }
     }
+
+    std::cout << "momentArmLabels size: " << momentArmLabels.size() << std::endl;
     pathLengths.setColumnLabels(pathLengthLabels);
     momentArms.setColumnLabels(momentArmLabels);
-    
+
     // Remove columns for coupled coordinates.
-    for (const auto& couplerConstraint : 
+    for (const auto& couplerConstraint :
             model.getComponentList<CoordinateCouplerConstraint>()) {
         auto momentArmLabel = fmt::format("_moment_arm_{}",
                 couplerConstraint.getDependentCoordinateName());
@@ -657,7 +667,7 @@ void OpenSim::computePathLengthsAndMomentArms(
             }
         }
     }
-    
+
     // Remove moment arm columns that contain values below the specified
     // moment arm tolerance.
     for (const auto& label : momentArms.getColumnLabels()) {
@@ -681,8 +691,9 @@ double OpenSim::fitFunctionBasedPathCoefficients(
         const TimeSeriesTable& pathLengths,
         const TimeSeriesTable& momentArms,
         const std::map<std::string, std::vector<std::string>>& momentArmMap,
+        std::string outputPath,
         const int minOrder, const int maxOrder) {
-    
+
     // Helper functions.
     // -----------------
     // Factorial function.
@@ -693,38 +704,41 @@ double OpenSim::fitFunctionBasedPathCoefficients(
         }
         return result;
     };
-    
+
     // Initialize model.
     // -----------------
     model.initSystem();
-    
+
     // Coordinate references.
     // ----------------------
     const CoordinateSet& coordinateSet = model.getCoordinateSet();
     const int numCoordinates = coordinateSet.getSize();
     const int numTimes = (int)coordinateValues.getNumRows();
-    
+
     // Build a FunctionBasedPath for each path-based force in the model.
     // -----------------------------------------------------------------
+    // Solving A*x = b, where x is the vector of coefficients for the
+    // FunctionBasedPath, A is a matrix of polynomial terms, and b is a vector
+    // of path lengths and moment arms.
     Set<FunctionBasedPath> functionBasedPaths;
     const auto forces = model.getComponentList<Force>();
     const int numForces = (int)std::distance(forces.begin(), forces.end());
     SimTK::Vector bestRootMeanSquareErrors(numForces, SimTK::Infinity);
     int iforce = 0;
     for (const auto& force : model.getComponentList<Force>())  {
-        
-        // Check if the current force is dependent on any coordinates in the 
+
+        // Check if the current force is dependent on any coordinates in the
         // model. If not, skip it.
-        if (momentArmMap.find(force.getAbsolutePathString()) == 
+        if (momentArmMap.find(force.getAbsolutePathString()) ==
                 momentArmMap.end()) {
             bestRootMeanSquareErrors[iforce] = 0.0;
             ++iforce;
             continue;
         }
-        
+
         // The current force path and the number of coordinates it depends on.
         const std::string& forcePath = force.getAbsolutePathString();
-        std::vector<std::string> coordinatesNamesThisForce = 
+        std::vector<std::string> coordinatesNamesThisForce =
                 momentArmMap.at(forcePath);
         int numCoordinatesThisForce = (int)coordinatesNamesThisForce.size();
         std::vector<std::string> coordinatePathsThisForce;
@@ -732,55 +746,53 @@ double OpenSim::fitFunctionBasedPathCoefficients(
             coordinatePathsThisForce.push_back(
                     coordinateSet.get(coordinateName).getAbsolutePathString());
         }
-        
-        // The path lengths for this force.
-        const SimTK::VectorView pathLengthsThisForce = 
-                pathLengths.getDependentColumn(
-                        fmt::format("{}_length", forcePath));
-        
+
+        // Initialize the 'b' vector. This is the same for all polynomial
+        // orders.
+        SimTK::Vector b(numTimes * (numCoordinatesThisForce + 1), 0.0);
+
+        // The path lengths for this force. This is the first N elements of the
+        // 'b' vector.
+        b(0, numTimes) = pathLengths.getDependentColumn(
+                fmt::format("{}_length", forcePath));
+
         // The moment arms and coordinate values for this force.
-        SimTK::Matrix momentArmsThisForce(numTimes, 
-                numCoordinatesThisForce, 0.0);
-        SimTK::Matrix coordinatesThisForce(numTimes, numCoordinatesThisForce, 
+        SimTK::Matrix coordinatesThisForce(numTimes, numCoordinatesThisForce,
                 0.0);
         for (int ic = 0; ic < numCoordinatesThisForce; ++ic) {
             const std::string& coordinateName = coordinatesNamesThisForce[ic];
-            const SimTK::VectorView momentArmsThisCoordinate = 
-                    momentArms.getDependentColumn(
-                            fmt::format("{}_moment_arm_{}", forcePath, 
-                                    coordinateName));
-            const SimTK::VectorView coordinateValuesThisCoordinate = 
-                    coordinateValues.getDependentColumn(fmt::format("{}/value", 
+            b((ic+1)*numTimes, numTimes) = momentArms.getDependentColumn(
+                    fmt::format("{}_moment_arm_{}", forcePath, coordinateName));
+
+            const SimTK::VectorView coordinateValuesThisCoordinate =
+                    coordinateValues.getDependentColumn(fmt::format("{}/value",
                             coordinatePathsThisForce[ic]));
             for (int itime = 0; itime < numTimes; ++itime) {
-                momentArmsThisForce.set(
-                        itime, ic, momentArmsThisCoordinate[itime]);
                 coordinatesThisForce.set(
                         itime, ic, coordinateValuesThisCoordinate[itime]);
             }
         }
-        
+
         // Polynomial fitting.
         // -------------------
         double bestRootMeanSquareError = SimTK::Infinity;
         SimTK::Vector bestCoefficients;
         int bestOrder = minOrder;
         for (int order = minOrder; order <= maxOrder; ++order) {
-            
+
             // Initialize the multivariate polynomial function.
             int n = numCoordinatesThisForce + order;
             int k = order;
-            int numCoefficients = 
+            int numCoefficients =
                     factorial(n) / (factorial(k) * factorial(n - k));
             SimTK::Vector dummyCoefficients(numCoefficients, 0.0);
             MultivariatePolynomialFunction dummyFunction(dummyCoefficients,
                     numCoordinatesThisForce, order);
-            
-            // Initialize A and b matrices.
-            SimTK::Matrix A(numTimes * (numCoordinatesThisForce + 1), 
+
+            // Initialize the 'A' matrix.
+            SimTK::Matrix A(numTimes * (numCoordinatesThisForce + 1),
                     numCoefficients, 0.0);
-            SimTK::Vector b(numTimes * (numCoordinatesThisForce + 1), 0.0);
-            
+
             // Fill in the A matrix. This contains the polynomial terms for the
             // path length and moment arms.
             for (int itime = 0; itime < numTimes; ++itime) {
@@ -788,68 +800,138 @@ double OpenSim::fitFunctionBasedPathCoefficients(
                         coordinatesThisForce.row(itime).getAsVector());
 
                 for (int ic = 0; ic < numCoordinatesThisForce; ++ic) {
-                    SimTK::Vector termDerivatives = 
+                    SimTK::Vector termDerivatives =
                         dummyFunction.getTermDerivatives({ic},
                         coordinatesThisForce.row(itime).getAsVector()).negate();
-                    A((ic+1)*numTimes + itime, 0, 1, numCoefficients) = 
+                    A((ic+1)*numTimes + itime, 0, 1, numCoefficients) =
                             termDerivatives;
                 }
             }
 
-            // Fill in the b vector. This contains the path lengths and 
-            // moment arms data.
-            b(0, numTimes) = pathLengthsThisForce;
-            for (int ic = 0; ic < numCoordinatesThisForce; ++ic) {
-                b((ic+1)*numTimes, numTimes) = momentArmsThisForce.col(ic);
-            }
-            
-            // Solve the least-squares problem. A is a rectangular matrix with 
-            // full column rank, so we can use the left pseudo-inverse to solve 
+            // Solve the least-squares problem. A is a rectangular matrix with
+            // full column rank, so we can use the left pseudo-inverse to solve
             // for the coefficients.
             SimTK::Matrix pinv_A = (~A * A).invert() * ~A;
             SimTK::Vector coefficients = pinv_A * b;
-            
+
             // Calculate the RMS error.
             SimTK::Vector b_fit = A * coefficients;
             SimTK::Vector error = b - b_fit;
             const double rmsError = std::sqrt((error.normSqr() / error.size()));
-            
+
             // Save best solution.
             if (rmsError < bestRootMeanSquareErrors[iforce]) {
                 bestRootMeanSquareErrors[iforce] = rmsError;
                 bestCoefficients = coefficients;
                 bestOrder = order;
             }
-            
+
             ++order;
         }
-        
+
         // Create a FunctionBasedPath for the current path-based force.
         MultivariatePolynomialFunction lengthFunction;
         lengthFunction.setDimension(numCoordinatesThisForce);
         lengthFunction.setOrder(bestOrder);
         lengthFunction.setCoefficients(bestCoefficients);
-        
+
         auto functionBasedPath = std::make_unique<FunctionBasedPath>();
         functionBasedPath->setName(forcePath);
         functionBasedPath->setCoordinatePaths(coordinatePathsThisForce);
         functionBasedPath->setLengthFunction(lengthFunction);
         functionBasedPaths.adoptAndAppend(functionBasedPath.release());
-        
+
         ++iforce;
     }
-    
+
     // Save the function-based paths to a file.
     // ----------------------------------------
-    functionBasedPaths.print("testPolynomialFitting_Set_FunctionBasedPaths.xml");
-    
+    functionBasedPaths.print(outputPath);
+
     // Return the average RMS error.
     // -----------------------------
-    double averageRootMeanSquareError = bestRootMeanSquareErrors.sum() / 
+    double averageRootMeanSquareError = bestRootMeanSquareErrors.sum() /
             bestRootMeanSquareErrors.size();
-    
+
     return averageRootMeanSquareError;
 }
+
+void OpenSim::sampleAndAppendValues(TimeSeriesTable& values,
+        int numSamples, double rangeMultiplier) {
+
+    // Generate coordinate bounds.
+    SimTK::Matrix lowerBounds = values.getMatrix();
+    SimTK::Matrix upperBounds = values.getMatrix();
+    SimTK::RowVector offset = SimTK::mean(lowerBounds);
+    OPENSIM_ASSERT_ALWAYS(offset.size() == values.getNumColumns());
+    for (int icol = 0; icol < values.getNumColumns(); ++icol) {
+
+        const SimTK::VectorView col = lowerBounds.col(icol);
+        const SimTK::Real range = SimTK::max(col) - SimTK::min(col);
+
+        lowerBounds.col(icol).updAsVector() -= offset[icol];
+        upperBounds.col(icol).updAsVector() -= offset[icol];
+
+        lowerBounds.col(icol).updAsVector() -= rangeMultiplier * range;
+        upperBounds.col(icol).updAsVector() += rangeMultiplier * range;
+    }
+
+    // Create a vector of time indices to sample from.
+    std::vector<int> sampleTimeIndices;
+    sampleTimeIndices.reserve(numSamples);
+    const double dN = (double)lowerBounds.nrow() / (double)numSamples;
+    for (int i = 0; i < numSamples; ++i) {
+        sampleTimeIndices.push_back((int)std::floor(i * dN));
+    }
+
+    // Create and seed a random number generator.
+    SimTK::Random::Uniform random;
+    random.setSeed(static_cast<int>(std::time(nullptr)));
+
+    // Create a matrix to store the samples.
+    const int numCoordinates = lowerBounds.ncol();
+    SimTK::Matrix samples(2*numSamples, numCoordinates, 0.0);
+
+    // Create vector of indices.
+    std::vector<int> indices(numSamples);
+    for (int i = 0; i < numSamples; ++i) {
+        indices[i] = i;
+    }
+
+    // Generate a sample matrix by randomly permuting the indices.
+    for (int i = 0; i < numCoordinates; ++i) {
+        std::random_shuffle(indices.begin(), indices.end());
+        for (int j = 0; j < numSamples; ++j) {
+            samples(j, i) = (random.getValue() + indices[j]) / numSamples;
+            samples(j, i) *= lowerBounds(sampleTimeIndices[j], i);
+            samples(j, i) += offset[i];
+        }
+    }
+
+    for (int i = 0; i < numCoordinates; ++i) {
+        std::random_shuffle(indices.begin(), indices.end());
+        for (int j = 0; j < numSamples; ++j) {
+            samples(j+numSamples, i) =
+                    (random.getValue() + indices[j]) / numSamples;
+            samples(j+numSamples, i) *= upperBounds(sampleTimeIndices[j], i);
+            samples(j+numSamples, i) += offset[i];
+        }
+    }
+
+
+    // Create new time column equal to twice the number of samples.
+    const auto& time = values.getIndependentColumn();
+    const double dt = time[1] - time[0];
+    double timeSampled = time.back();
+    for (int itime = 0; itime < 2*numSamples; ++itime) {
+        timeSampled += dt;
+        values.appendRow(timeSampled, samples.row(itime));
+    }
+}
+
+
+
+
 
 
 

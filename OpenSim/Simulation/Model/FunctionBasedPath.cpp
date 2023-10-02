@@ -47,6 +47,7 @@ void FunctionBasedPath::appendCoordinatePath(const std::string& coordinatePath)
 void FunctionBasedPath::setCoordinatePaths(
         const std::vector<std::string>& coordinatePaths)
 {
+    updProperty_coordinate_paths().clear();
     for (const auto& coordinatePath : coordinatePaths) {
         appendCoordinatePath(coordinatePath);
     }
