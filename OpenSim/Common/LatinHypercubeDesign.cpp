@@ -22,6 +22,7 @@
  * -------------------------------------------------------------------------- */
 
 #include "LatinHypercubeDesign.h"
+#include "Exception.h"
 #include <numeric>
 
 #include <SimTKcommon/internal/BigMatrix.h>
@@ -29,79 +30,129 @@
 
 using namespace OpenSim;
 
-double LatinHypercubeDesign::computeMaximinDistance(
-        const SimTK::Matrix& x) {
-    SimTK::Matrix nearestNeighbors = computeKNearestNeighbors(x, x, 2);
-    return SimTK::min(nearestNeighbors.col(1));
+static const std::vector<std::string> ValidDistanceCriteria =
+        {"maximin", "phi_p"};
+
+void LatinHypercubeDesign::checkConfiguration() const {
+    OPENSIM_THROW_IF(m_numSamples < 1, Exception,
+            "The number of samples must be greater than zero.");
+    OPENSIM_THROW_IF(m_numVariables < 1, Exception,
+            "The number of variables must be greater than zero.");
+
+    bool distanceCriterionIsValid =
+            std::find(ValidDistanceCriteria.begin(),
+                      ValidDistanceCriteria.end(),
+                      m_distanceCriterion) ==
+            ValidDistanceCriteria.end();
+    OPENSIM_THROW_IF(distanceCriterionIsValid, Exception,
+            "Invalid distance criterion. You must choose be one of the "
+            "following: 'maximin', 'phi_p'.");
 }
 
-double LatinHypercubeDesign::computePhiPDistanceCriterion(
-        const SimTK::Matrix& x, const SimTK::Matrix& distances, int p) {
+SimTK::Matrix LatinHypercubeDesign::generateTranslationalPropagationDesign(
+        int numSeedPoints) const {
+    checkConfiguration();
 
+    if (numSeedPoints != -1) {
+        // Generate a seed with 'numSeedPoints' based on a seed with a single
+        // point.
+        OPENSIM_THROW_IF(numSeedPoints > m_numSamples, Exception,
+                "The number of seed points must be less than or equal to the "
+                "number of samples.")
+        SimTK::Matrix seed = computeTranslationalPropagationDesign(numSeedPoints,
+                SimTK::Matrix(1, m_numVariables, 1.0));
+        return computeTranslationalPropagationDesign(m_numSamples, seed);
+
+    } else {
+        // If the number of seed points was not specified, then iterate through
+        // several seed designs and choose the one with the best distance
+        // criterion. We arbitrarily choose the maximum number of seed points
+        // to be 10% of the number of samples.
+        int maxNumSeedPoints = (int)std::ceil(m_numSamples / 10);
+        SimTK::Matrix bestDesign;
+        double bestDistance = SimTK::Infinity;
+        int nSeedPoints = 1;
+        while (nSeedPoints <= maxNumSeedPoints) {
+            // Create the seed.
+            SimTK::Matrix seed =
+                    computeTranslationalPropagationDesign(nSeedPoints,
+                            SimTK::Matrix(1, m_numVariables, 1.0));
+
+            // Create the Latin hypercube design.
+            SimTK::Matrix design = computeTranslationalPropagationDesign(
+                    m_numSamples, seed);
+
+            // Compute the distance criterion.
+            double distance = computeDistanceCriterion(design);
+            if (distance < bestDistance) {
+                bestDesign = design;
+                bestDistance = distance;
+            }
+            ++nSeedPoints;
+        }
+
+        return bestDesign;
+    }
+}
+
+double LatinHypercubeDesign::computeDistanceCriterion(
+        const SimTK::Matrix& design) const {
+    if (m_useMaximinDistanceCriterion) {
+        return computeMaximinDistanceCriterion(design);
+    } else {
+        return computePhiDistanceCriterion(design);
+    }
+}
+
+double LatinHypercubeDesign::computeMaximinDistanceCriterion(
+        const SimTK::Matrix& design) const {
+    SimTK::Matrix nearestNeighbors =
+            computeKNearestNeighbors(design, design, 2);
+    return -SimTK::min(nearestNeighbors.col(1));
+}
+
+double LatinHypercubeDesign::computePhiDistanceCriterion(
+        const SimTK::Matrix& design) const {
     double sumInverseDistancesP = 0;
-    for (int i = 0; i < x.nrow(); ++i) {
-        for (int j = 0; j < x.nrow(); ++j) {
+    for (int i = 0; i < design.nrow(); ++i) {
+        for (int j = 0; j < design.nrow(); ++j) {
             if (i < j) {
-                sumInverseDistancesP += 1.0 / pow(distances(i, j), p);
+                double distance = (design.row(j) - design.row(i)).norm();
+                sumInverseDistancesP +=
+                        1.0 / pow(distance, m_phiDistanceExponent);
             }
         }
     }
 
-    return pow(sumInverseDistancesP, 1.0 / p);
-}
-
-SimTK::Matrix LatinHypercubeDesign::computeIntersiteDistanceMatrix(
-        const SimTK::Matrix& x) {
-
-    // Compute a matrix of distance values, where each element is the distance
-    // between the corresponding rows in 'x' and 'y'. The elements should be
-    // d_ij where 1 <= i, j <= n, i != j, where n is the number of rows in
-    // 'x' and 'y'.
-    SimTK::Matrix distances(x.nrow(), x.nrow(), 0.0);
-    for (int i = 0; i < x.nrow(); ++i) {
-        for (int j = 0; j < x.nrow(); ++j) {
-            if (i != j) {
-                distances(i, j) = (x.row(i) - x.row(j)).normSqr();
-            }
-        }
-    }
-
-    return distances;
+    return pow(sumInverseDistancesP, 1.0 / m_phiDistanceExponent);
 }
 
 SimTK::Matrix LatinHypercubeDesign::computeTranslationalPropagationDesign(
-        int numSamples, int numVariables, SimTK::Matrix seed, int numSeedPoints)
-{
-    // Sorting helper functions.
-    // -------------------------
-    // https://stackoverflow.com/questions/1577475/c-sorting-and-keeping-track-of-indexes
-    auto sort_indexes = [](const std::vector<double>& v) -> std::vector<size_t> {
-        std::vector<size_t> idx(v.size());
-        std::iota(idx.begin(), idx.end(), 0);
-        std::stable_sort(idx.begin(), idx.end(),
-                [&v](size_t i1, size_t i2) {return v[i1] < v[i2];});
-        return idx;
-    };
+        int numSamples, SimTK::Matrix seed) const {
 
-    // Same as above, but for SimTK::Vector.
-    auto sort_indexes_simtk = [](const SimTK::Vector& v) -> std::vector<size_t> {
-        std::vector<size_t> idx(v.size());
+    // Sorting helper function.
+    // ------------------------
+    // https://stackoverflow.com/questions/1577475/c-sorting-and-keeping-track-of-indexes
+    auto sort_indexes = [](const SimTK::Vector& v) -> std::vector<int> {
+        std::vector<int> idx(v.size());
         std::iota(idx.begin(), idx.end(), 0);
         std::stable_sort(idx.begin(), idx.end(),
-                [&v](size_t i1, size_t i2) {return v[i1] < v[i2];});
+                [&v](int i1, int i2) {return v[i1] < v[i2];});
         return idx;
     };
 
     // Define the size of the TPLHD to be created first.
-    // ------------------------------------------------
+    // -------------------------------------------------
+    int numSeedPoints = (int)seed.nrow();
+    int numVariables = (int)seed.ncol();
     double numDivisions =
-            std::pow(numSamples / numSeedPoints, 1.0 / numVariables);
+            std::pow(getNumSamples() / numSeedPoints, 1.0 / getNumVariables());
     int numDivisionsRounded = (int)std::ceil(numDivisions);
     int numSeeds;
     if (numDivisionsRounded > numDivisions) {
         numSeeds = (int)std::pow(numDivisionsRounded, numVariables);
     } else {
-        OPENSIM_ASSERT_ALWAYS(numSamples % numSeedPoints == 0);
+        OPENSIM_ASSERT_ALWAYS(getNumSamples() % numSeedPoints == 0);
         numSeeds = numSamples / numSeedPoints;
     }
     int numSamplesRounded = numSeeds * numSeedPoints;
@@ -141,7 +192,6 @@ SimTK::Matrix LatinHypercubeDesign::computeTranslationalPropagationDesign(
     for (int i = 0; i < numVariables; ++i) {
         // Update the seed with the most recently added points.
         seed = tplhd.block(0, 0, numSeedPoints, numVariables);
-        std::cout << "seed: " << seed << std::endl;
 
         // Prepare the seed update.
         for (int j = 0; j < i; ++j) {
@@ -153,7 +203,6 @@ SimTK::Matrix LatinHypercubeDesign::computeTranslationalPropagationDesign(
         }
 
         // Fill in each of the divisions.
-        int numNewSeedPoints = 0;
         for (int j = 1; j < numDivisionsRounded; ++j) {
 
             // Update the seed.
@@ -168,8 +217,6 @@ SimTK::Matrix LatinHypercubeDesign::computeTranslationalPropagationDesign(
         }
     }
 
-    std::cout << "tplhd: " << tplhd << std::endl;
-
     // If necessary, resize the TPLHD.
     // -------------------------------
     if (numSamplesRounded > numSamples) {
@@ -179,10 +226,9 @@ SimTK::Matrix LatinHypercubeDesign::computeTranslationalPropagationDesign(
         SimTK::RowVector center(numVariables, 0.5*numSamplesRounded);
 
         // Compute the distance between each point and the center.
-        std::vector<double> distance;
-        distance.reserve(numSamplesRounded);
+        SimTK::Vector distance(numSamplesRounded, 0.0);
         for (int i = 0; i < numSamplesRounded; ++i) {
-            distance.push_back((tplhd.row(i) - center).norm());
+            distance.set(i, (tplhd.row(i) - center).norm());
         }
 
         // Resize the TPLHD by taking the 'numSamples' points closest to the
@@ -201,8 +247,8 @@ SimTK::Matrix LatinHypercubeDesign::computeTranslationalPropagationDesign(
         for (int i = 0; i < numVariables; ++i) {
 
             // Place the current design at the origin.
-            std::vector<size_t> sortedColumnIndexes =
-                    sort_indexes_simtk(tplhdResized.col(i));
+            std::vector<int> sortedColumnIndexes =
+                    sort_indexes(tplhdResized.col(i));
             SimTK::Matrix tplhdTemp = tplhdResized;
             for (int j = 0; j < numSamples; ++j) {
                 tplhdResized.updRow(j) = tplhdTemp.row(sortedColumnIndexes[j]);

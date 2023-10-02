@@ -189,7 +189,8 @@ SimTK::Matrix OpenSim::computeKNearestNeighbors(const SimTK::Matrix& x,
 
     OPENSIM_THROW_IF(x.ncol() != y.ncol(), Exception,
             "Expected the matrices 'x' and 'y' to have the same number of "
-            "columns, but found {} and {}, respectively.", x.ncol(), y.ncol());
+            "columns, but found {} and {}, respectively.",
+            x.ncol(), y.ncol());
 
     // Initialize the output matrices.
     SimTK::Matrix distances(y.nrow(), k, 0.0);
@@ -199,7 +200,6 @@ SimTK::Matrix OpenSim::computeKNearestNeighbors(const SimTK::Matrix& x,
         std::vector<double> distancesVec;
 
         // Compute distances between the current row in 'y' and all rows in 'x'.
-        // Skip the distance between the current row in 'y' and itself.
         for (int ix = 0; ix < x.nrow(); ++ix) {
             const double distance = (y.row(iy) - x.row(ix)).normSqr();
             distancesVec.push_back(distance);
@@ -207,9 +207,7 @@ SimTK::Matrix OpenSim::computeKNearestNeighbors(const SimTK::Matrix& x,
 
         // Sort the distances in ascending order.
         std::sort(distancesVec.begin(), distancesVec.end(),
-                [](const double& a, const double& b) {
-                    return a < b;
-                });
+                [](const double& a, const double& b) { return a < b; });
 
         // Take the first K distances.
         for (int ik = 0; ik < k; ++ik) {
@@ -219,7 +217,3 @@ SimTK::Matrix OpenSim::computeKNearestNeighbors(const SimTK::Matrix& x,
 
     return distances;
 }
-
-//
-
-
