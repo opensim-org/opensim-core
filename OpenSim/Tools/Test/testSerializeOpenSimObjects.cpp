@@ -49,11 +49,11 @@ static void indent(int nSpaces) {
 // Recursively dump out contents of an object and its properties.
 static void dumpObj(const Object& obj, int nSpaces) {
     indent(nSpaces);
-    cout << obj.getConcreteClassName() << " Object " 
+    cout << obj.getConcreteClassName() << " Object "
          << (obj.getName().empty()?"NONAME":obj.getName())
          << endl;
     for (int p=0; p < obj.getNumProperties(); ++p) {
-        const AbstractProperty& ap = obj.getPropertyByIndex(p); 
+        const AbstractProperty& ap = obj.getPropertyByIndex(p);
         indent(nSpaces+2);
         cout << ap.getName() << "=" << ap.toString() << endl;
         // Check return values from Property API for debugging purposes
@@ -83,16 +83,20 @@ int main()
     try {
         Model testModel = ModelFactory::createSlidingPointMass();
         srand((unsigned)time(0));
-    
+
         //Test serialization for all ModelComponents
         ArrayPtrs<OpenSim::ModelComponent> availableComponentTypes;
         Object::getRegisteredObjectsOfGivenType<OpenSim::ModelComponent>(availableComponentTypes);
-    
+
         for (int i=0; i< availableComponentTypes.getSize(); i++){
             Object* clone = availableComponentTypes[i]->clone();
             Object* randClone;
-            // FunctionBasedPath is a special case: it has specific requirements
-            // for its properties.
+            // FunctionBasedPath requires that its properties follow specific
+            // requirements. For example, `length_function` must have the same
+            // number arguments as `coordinate_paths` and the coordinate paths
+            // must match a 'Coordinate' in the model. Therefore, we must make
+            // sure we obey these requirements before randomizing the Function
+            // property value.
             if (auto* path = dynamic_cast<FunctionBasedPath*>(clone)){
                 path->setCoordinatePaths({"/jointset/slider/position"});
                 LinearFunction f = LinearFunction(1.0, 0.0);
@@ -111,33 +115,33 @@ int main()
                 //std::cout << errMsg << std::endl;
             }
         }
-    
+
         int nc = testModel.getMiscModelComponentSet().getSize();
         cout << nc << " model components were serialized in testModel." << endl;
-    
-    
+
+
         //Serialize all the components
         testModel.print("allComponents.osim");
-    
+
         Model deserializedModel("allComponents.osim");
         deserializedModel.print("allComponents_reserialized.osim");
-    
+
         nc = deserializedModel.getMiscModelComponentSet().getSize();
         cout << nc << " model components were deserialized from file." << endl;
-    
-        ASSERT(testModel == deserializedModel,  
+
+        ASSERT(testModel == deserializedModel,
             "deserializedModel FAILED to match original model.");
-    
+
         //Might as well test cloning and assignment
         Model* cloneModel = testModel.clone();
-    
+
         ASSERT(testModel == *cloneModel,
             "cloneModel FAILED to match original model.");
-    
+
         Model assignedModel = *cloneModel;
-    
+
         delete cloneModel;
-    
+
         ASSERT(testModel == assignedModel,
             "assignedModel FAILED to match original model.");
 
