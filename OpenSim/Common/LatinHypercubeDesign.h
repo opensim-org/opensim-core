@@ -31,21 +31,64 @@ namespace OpenSim {
 // A class for generating Latin hypercube designs.
 class OSIMCOMMON_API LatinHypercubeDesign {
 public:
+    // CONSTRUCTION
     LatinHypercubeDesign() = default;
+    LatinHypercubeDesign(int numSamples, int numVariables) :
+        m_numSamples(numSamples), m_numVariables(numVariables) {}
 
-    SimTK::Matrix computeTranslationalPropagationDesign(int numSamples,
-            int numVariables, SimTK::Matrix seed, int numSeedPoints);
+    LatinHypercubeDesign(const LatinHypercubeDesign&) = default;
+    LatinHypercubeDesign(LatinHypercubeDesign&&) = default;
+    LatinHypercubeDesign& operator=(const LatinHypercubeDesign&) = default;
+    LatinHypercubeDesign& operator=(LatinHypercubeDesign&&) = default;
+
+    // GET AND SET
+    /// num samples
+    void setNumSamples(int numSamples) {
+        m_numSamples = numSamples;
+    }
+    int getNumSamples() const {
+        return m_numSamples;
+    }
+
+    /// num variables
+    void setNumVariables(int numVariables) {
+        m_numVariables = numVariables;
+    }
+    int getNumVariables() const {
+        return m_numVariables;
+    }
+
+    /// distance criterion
+    void setDistanceCriterion(std::string distanceCriterion) {
+        m_distanceCriterion = std::move(distanceCriterion);
+        m_useMaximinDistanceCriterion = m_distanceCriterion == "maximin";
+    }
+    const std::string& getDistanceCriterion() const {
+        return m_distanceCriterion;
+    }
+
+    /// tplhs design
+    SimTK::Matrix generateTranslationalPropagationDesign(
+            int numSeedPoints = -1) const;
+
+
+
+    SimTK::Matrix computeTranslationalPropagationDesign(
+            int numSamples, SimTK::Matrix seed) const;
 
 private:
-    std::string m_criterion = "maximin"; // maximin, phi_p
 
-    double computeMaximinDistance(const SimTK::Matrix& x);
+    double computeDistanceCriterion(const SimTK::Matrix& design) const;
+    double computeMaximinDistanceCriterion(const SimTK::Matrix& design) const;
+    double computePhiDistanceCriterion(const SimTK::Matrix& design) const;
 
-    SimTK::Matrix computeIntersiteDistanceMatrix(
-            const SimTK::Matrix& x);
+    void checkConfiguration() const;
 
-    double computePhiPDistanceCriterion(const SimTK::Matrix& x,
-            const SimTK::Matrix& distances, int p = 50);
+    int m_numSamples = -1;
+    int m_numVariables = -1;
+    std::string m_distanceCriterion = "maximin";
+    bool m_useMaximinDistanceCriterion = true;
+    int m_phiDistanceExponent = 25;
 
 };
 
