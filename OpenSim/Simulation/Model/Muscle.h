@@ -445,7 +445,8 @@ protected:
     virtual void updateGeometry(const SimTK::State& s);
     // End of Interfaces imposed by parent classes.
     //@} 
-
+public:
+    void copyPropertiesFromObject(const OpenSim::Muscle& fromObject);
 
 private:
     void setNull();
