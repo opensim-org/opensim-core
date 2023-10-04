@@ -242,6 +242,11 @@ void Mesh::extendFinalizeFromProperties() {
                     get_mesh_file());
             return;   // Orphan Mesh not descendant of a model
         }
+        const Model* ownerModel = dynamic_cast<const Model*>(rootModel);
+
+        //No visualization don't try to load meshes
+        if (!ownerModel->visualizationIsEnabled())
+            return;
 
         // Current interface to Visualizer calls generateDecorations on every
         // frame. On first time through, load file and create DecorativeMeshFile
