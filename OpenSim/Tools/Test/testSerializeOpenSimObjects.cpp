@@ -26,6 +26,7 @@
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Actuators/osimActuators.h>
 #include <OpenSim/Analyses/osimAnalyses.h>
+#include <OpenSim/Simulation/Model/FunctionBasedPath.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -48,11 +49,11 @@ static void indent(int nSpaces) {
 // Recursively dump out contents of an object and its properties.
 static void dumpObj(const Object& obj, int nSpaces) {
     indent(nSpaces);
-    cout << obj.getConcreteClassName() << " Object " 
+    cout << obj.getConcreteClassName() << " Object "
          << (obj.getName().empty()?"NONAME":obj.getName())
          << endl;
     for (int p=0; p < obj.getNumProperties(); ++p) {
-        const AbstractProperty& ap = obj.getPropertyByIndex(p); 
+        const AbstractProperty& ap = obj.getPropertyByIndex(p);
         indent(nSpaces+2);
         cout << ap.getName() << "=" << ap.toString() << endl;
         // Check return values from Property API for debugging purposes
@@ -80,7 +81,7 @@ int main()
     #endif
 
     try {
-        Model testModel;
+        Model testModel = ModelFactory::createSlidingPointMass();
         srand((unsigned)time(0));
 
         //Test serialization for all ModelComponents
@@ -89,7 +90,22 @@ int main()
 
         for (int i=0; i< availableComponentTypes.getSize(); i++){
             Object* clone = availableComponentTypes[i]->clone();
-            Object* randClone = randomize(clone);
+            Object* randClone;
+            // FunctionBasedPath requires that its properties follow specific
+            // requirements. For example, `length_function` must have the same
+            // number arguments as `coordinate_paths` and the coordinate paths
+            // must match a 'Coordinate' in the model. Therefore, we must make
+            // sure we obey these requirements before randomizing the Function
+            // property value.
+            if (auto* path = dynamic_cast<FunctionBasedPath*>(clone)){
+                path->setCoordinatePaths({"/jointset/slider/position"});
+                LinearFunction f = LinearFunction(1.0, 0.0);
+                randomize(&f);
+                path->setLengthFunction(f);
+                randClone = path;
+            } else {
+                randClone = randomize(clone);
+            }
             try {
                 ModelComponent* comp = ModelComponent::safeDownCast(randClone);
                 testModel.addModelComponent(comp);
@@ -113,7 +129,7 @@ int main()
         nc = deserializedModel.getMiscModelComponentSet().getSize();
         cout << nc << " model components were deserialized from file." << endl;
 
-        ASSERT(testModel == deserializedModel,  
+        ASSERT(testModel == deserializedModel,
             "deserializedModel FAILED to match original model.");
 
         //Might as well test cloning and assignment
