@@ -1,5 +1,3 @@
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "cert-err60-cpp"
 /* -------------------------------------------------------------------------- *
 *                      OpenSim:  LatinHypercubeDesign.cpp                     *
 * -------------------------------------------------------------------------- *
