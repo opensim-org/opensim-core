@@ -43,9 +43,9 @@ namespace OpenSim {
  * parameter spaces. Optimal Latin hypercube designs are those that maximize the
  * minimum distance between samples in the design. This class provides methods
  * for generating random Latin hypercube designs, as well as methods for
- * generating optimal Latin hypercube designs based on the translational
- * propagation algorithm from Viana et al. (2009) and the enhanced stochastic
- * evolutionary algorithm from Jin et al. (2005).
+ * generating Latin hypercube designs based on the translational propagation
+ * algorithm from Viana et al. (2009) and the enhanced stochastic evolutionary
+ * algorithm from Jin et al. (2005).
  *
  * How to create a Latin hypercube design
  * --------------------------------------
@@ -81,7 +81,7 @@ namespace OpenSim {
  *
  * Finally, each design can be evaluated using the evaluateDesign() method:
  * @code
- * double score = lhs.evaluateDesign(design); *
+ * double score = lhs.evaluateDesign(design);
  * @endcode
  *
  * Lower design scores are better. The "maximin" criterion returns a negative
