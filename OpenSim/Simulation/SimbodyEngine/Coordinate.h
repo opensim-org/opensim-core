@@ -41,13 +41,13 @@ class Model;
 //=============================================================================
 //=============================================================================
 /**
- * A Coordinate is a ModelComponent for managing the access and behavior 
- * of a model's generalized coordinate including its value, speed and 
- * acceleration (once system accelerations have been realized). 
+ * A Coordinate is a ModelComponent for managing the access and behavior
+ * of a model's generalized coordinate including its value, speed and
+ * acceleration (once system accelerations have been realized).
  * As a ModelComponent it provides resources to enable a Coordinate to be
  * locked, prescribed, or clamped (limited to a min-to-max range).
  *
- * @authors Ajay Seth, Ayman Habib, Michael Sherman 
+ * @authors Ajay Seth, Ayman Habib, Michael Sherman
  */
 class OSIMSIMULATION_API Coordinate : public ModelComponent {
 OpenSim_DECLARE_CONCRETE_OBJECT(Coordinate, ModelComponent);
@@ -56,11 +56,11 @@ public:
 //==============================================================================
 // PROPERTIES
 //==============================================================================
-    OpenSim_DECLARE_PROPERTY(default_value, double, 
+    OpenSim_DECLARE_PROPERTY(default_value, double,
         "The value of this coordinate before any value has been set. "
         "Rotational coordinate value is in radians and Translational in meters.");
 
-    OpenSim_DECLARE_PROPERTY(default_speed_value, double, 
+    OpenSim_DECLARE_PROPERTY(default_speed_value, double,
         "The speed value of this coordinate before any value has been set. "
         "Rotational coordinate value is in rad/s and Translational in m/s.");
 
@@ -68,30 +68,30 @@ public:
         "The minimum and maximum values that the coordinate can range between. "
         "Rotational coordinate range in radians and Translational in meters." );
 
-    OpenSim_DECLARE_PROPERTY(clamped, bool, 
+    OpenSim_DECLARE_PROPERTY(clamped, bool,
         "Flag indicating whether or not the values of the coordinates should "
         "be limited to the range, above." );
 
-    OpenSim_DECLARE_PROPERTY(locked, bool, 
+    OpenSim_DECLARE_PROPERTY(locked, bool,
         "Flag indicating whether or not the values of the coordinates should "
         "be constrained to the current (e.g. default) value, above." );
 
-    OpenSim_DECLARE_OPTIONAL_PROPERTY(prescribed_function, Function, 
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(prescribed_function, Function,
         "If specified, the coordinate can be prescribed by a function of time. "
         "It can be any OpenSim Function with valid second order derivatives." );
 
-    OpenSim_DECLARE_PROPERTY(prescribed, bool, 
+    OpenSim_DECLARE_PROPERTY(prescribed, bool,
         "Flag indicating whether or not the values of the coordinates should "
         "be prescribed according to the function above. It is ignored if the "
         "no prescribed function is specified." );
 
-    OpenSim_DECLARE_PROPERTY(is_free_to_satisfy_constraints, bool, 
+    OpenSim_DECLARE_PROPERTY(is_free_to_satisfy_constraints, bool,
         "Flag identifies whether or not this coordinate can change freely when "
         "posing the model to satisfy kinematic constraints.  When true, the "
         "coordinate's initial or specified value is ignored when considering "
         "constraints. This allows values for important coordinates, which have "
-        "this flag set to false, to dictate the value of unimportant coordinates " 
-        "if they are linked via constraints."); 
+        "this flag set to false, to dictate the value of unimportant coordinates "
+        "if they are linked via constraints.");
 
 //==============================================================================
 // OUTPUTS
@@ -119,7 +119,7 @@ public:
 //=============================================================================
 // PUBLIC METHODS
 //=============================================================================
-    /** @name Public accessor methods 
+    /** @name Public accessor methods
         Get and set attributes of the Coordinate **/
     /**@{**/
 
@@ -141,7 +141,7 @@ public:
         Model::assemble(state) once all Coordinate values have been set.
         Alternatively, use Model::setStateVariableValues() to set all coordinate
         values and their speeds at once followed by Model::assemble(state).
-      
+
         The provided value will be clamped to the coordinate's range if
         the coordinate is clamped and enforceConstraints is true.
         */
@@ -153,35 +153,35 @@ public:
     /** return the name (label) used to identify the Coordinate's speed
         state variable. Returns the string "<coordinate_name>/speed" */
     const std::string& getSpeedName() const;
-    
+
     /** get the derivative of Coordinate's value from the state. This value is
         *not* necessarily equal to the value returned by getSpeedValue(). */
     double getQDotValue(const SimTK::State& s) const;
 
-    /** get the default value for this coordinate. This is the value 
+    /** get the default value for this coordinate. This is the value
         used if no value has been set prior to a simulation. */
     double getDefaultValue() const { return get_default_value(); }
     void setDefaultValue(double aDefaultValue);
 
-    /** get the default speed value for this coordinate. This is the value 
+    /** get the default speed value for this coordinate. This is the value
         used if no value has been set prior to a simulation. */
     double getDefaultSpeedValue() const { return get_default_speed_value(); }
-    void setDefaultSpeedValue(double aDefaultSpeedValue) 
+    void setDefaultSpeedValue(double aDefaultSpeedValue)
         { upd_default_speed_value() = aDefaultSpeedValue; }
 
-    /** get acceleration of the coordinate is dependent on having 
+    /** get acceleration of the coordinate is dependent on having
         realized the model and state to the acceleration stage */
     double getAccelerationValue(const SimTK::State& s) const;
 
-    /** determine or set whether or not the Coordinate is 
+    /** determine or set whether or not the Coordinate is
         "clamped" between a range of values. */
     bool getClamped(const SimTK::State& s) const;
-    void setClamped(SimTK::State& s, bool aLocked) const;
+    void setClamped(SimTK::State& s, bool aClamped) const;
     /** get/set whether or not the Coordinate is clamped by default */
     bool getDefaultClamped() const { return get_clamped(); }
     void setDefaultClamped(bool aClamped ) { upd_clamped() = aClamped; }
 
-    /** get the value for the Coordinate's range of motion */ 
+    /** get the value for the Coordinate's range of motion */
     double getRangeMin() const {return get_range(0); }
     double getRangeMax() const {return get_range(1); }
     /** set the range with a double array of length 2 in order of
@@ -190,8 +190,8 @@ public:
     void setRange(double aRange[2]);
     void setRangeMin(double aMin);
     void setRangeMax(double aMax);
-    
-    /** determine or set whether or not the Coordinate is 
+
+    /** determine or set whether or not the Coordinate is
         "locked" for a given state of the Model. */
     bool getLocked(const SimTK::State& s) const;
     void setLocked(SimTK::State& s, bool aLocked) const;
@@ -199,26 +199,26 @@ public:
     bool getDefaultLocked() const { return get_locked(); }
     void setDefaultLocked(bool aLocked) { upd_locked() = aLocked; }
 
-    /** determine or set whether or not the Coordinate is 
+    /** determine or set whether or not the Coordinate is
         "prescribed" for a given state of the Model. */
     bool isPrescribed(const SimTK::State& s) const;
     void setIsPrescribed(SimTK::State& s, bool isPrescribed ) const;
     /** get/set whether or not the Coordinate is locked by default */
     bool getDefaultIsPrescribed() const {return get_prescribed();}
     void setDefaultIsPrescribed(bool isPrescribed ) {upd_prescribed() = isPrescribed;}
-    /** Specify an OpenSim Function specifies the prescribed motion for this 
+    /** Specify an OpenSim Function specifies the prescribed motion for this
         Coordinate as a function of time. Note, this function must provide
-        valid first and second order derivatives. */       
+        valid first and second order derivatives. */
     void setPrescribedFunction(const Function& function);
     const Function& getPrescribedFunction() const;
-    
+
     /** Return true if coordinate is dependent on other coordinates via a coupler
-        constraint OR it has been flagged as free to change when satisfying 
+        constraint OR it has been flagged as free to change when satisfying
         the model's kinematic constraints in general. */
     bool isDependent(const SimTK::State& s) const;
 
     /** Return true if coordinate is locked, prescribed, or dependent on other coordinates */
-    bool isConstrained(const SimTK::State& s) const; 
+    bool isConstrained(const SimTK::State& s) const;
 
     /** @name Advanced Access to underlying Simbody system resources */
     /**@{**/
@@ -237,18 +237,18 @@ public:
     /** default constructor*/
     Coordinate();
 
-    /** Convenience constructor */  
-    Coordinate(const std::string &aName, MotionType aMotionType, 
-        double defaultValue, double aRangeMin, double aRangeMax);   
-    
-    // Uses default (compiler-generated) destructor, copy constructor and copy 
+    /** Convenience constructor */
+    Coordinate(const std::string &aName, MotionType aMotionType,
+        double defaultValue, double aRangeMin, double aRangeMax);
+
+    // Uses default (compiler-generated) destructor, copy constructor and copy
     // assignment operator.
 
 protected:
     // Only model should be invoking these ModelComponent interface methods.
     void extendAddToSystem(SimTK::MultibodySystem& system) const override;
     //State structure is locked and now we can assign names to state variables
-    //allocated by underlying components after modeling options have been 
+    //allocated by underlying components after modeling options have been
     //factored in.
     void extendRealizeInstance(const SimTK::State& state) const override;
     void extendInitStateFromProperties(SimTK::State& s) const override;
@@ -271,11 +271,11 @@ private:
     class CoordinateStateVariable : public StateVariable {
         public:
         // Constructors
-        /** Convenience constructor for defining a Component added state variable */ 
+        /** Convenience constructor for defining a Component added state variable */
         explicit CoordinateStateVariable(const std::string& name, //state var name
                         const Component& owner,       //owning component
                         SimTK::SubsystemIndex subSysIndex,
-                        int index) : 
+                        int index) :
                     StateVariable(name, owner, subSysIndex, index, false) {}
 
         //override StateVariable virtual methods
@@ -289,11 +289,11 @@ private:
     class SpeedStateVariable : public StateVariable {
         public:
         // Constructors
-        /** Convenience constructor for defining a Component added state variable */ 
+        /** Convenience constructor for defining a Component added state variable */
         explicit SpeedStateVariable(const std::string& name, //state var name
                         const Component& owner,       //owning component
                         SimTK::SubsystemIndex subSysIndex,
-                        int index) : 
+                        int index) :
                     StateVariable(name, owner, subSysIndex, index, false) {}
 
         //override StateVariable virtual methods
@@ -309,7 +309,7 @@ private:
     // and range must be set.
     // NOTE: Changing the prescribed motion function requires topology to be realized
     //       so state is invalidated
-    //       Enabling/disabling locking, prescribed motion or clamping is allowable 
+    //       Enabling/disabling locking, prescribed motion or clamping is allowable
     //       during a simulation.
     //       The last constraint to be set takes precedence.
     /** Indices for the constraint in Simbody. */
@@ -343,8 +343,8 @@ private:
     void constructProperties();
     void extendFinalizeFromProperties() override;
 
-    friend class CoordinateCouplerConstraint; 
-    friend class Joint; 
+    friend class CoordinateCouplerConstraint;
+    friend class Joint;
 
 //=============================================================================
 };  // END of class Coordinate

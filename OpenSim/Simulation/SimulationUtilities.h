@@ -388,49 +388,6 @@ OSIMSIMULATION_API void appendCoupledCoordinateValues(
         TimeSeriesTable& table, const Model& model,
         bool overwriteExistingColumns = true);
 
-
-// TODO: 0) should any of the TODOs below be handled in this function?
-//          (probably not, just throw exceptions)
-//       1) how to handle locked coordinates?
-//       2) coordinate values must have number of columns equal to
-//          number of independent coordinates (Appends coupled coordinate
-//          values, if missing)
-//       3) Updates the coordinates table to use absolute state names
-OSIMSIMULATION_API void computePathLengthsAndMomentArms(
-        Model model,
-        const TimeSeriesTable& coordinateValues,
-        TimeSeriesTable& pathLengths,
-        TimeSeriesTable& momentArms,
-        std::map<std::string, std::vector<std::string>>& momentArmMap,
-        double momentArmTolerance = 1e-3,
-        int threads = (int)std::thread::hardware_concurrency() - 2);
-
-// TODO: 1) expects length and moment arm column names in specific format
-//       2) returns average RMS error
-OSIMSIMULATION_API double fitFunctionBasedPathCoefficients(
-        Model model,
-        const TimeSeriesTable& coordinateValues,
-        const TimeSeriesTable& pathLengths,
-        const TimeSeriesTable& momentArms,
-        const std::map<std::string, std::vector<std::string>>& momentArmMap,
-        std::string outputPath,
-        const int minOrder = 2, const int maxOrder = 6);
-
-// TODO: 1) move to TableUtilities (better: switch to SimTK::Matrix and move to CommonUilities)
-//       2) create independent utilites for Latin hypercube sampling, finding
-//       3) k-nearest neighbors, and computing minimax and/or phi-p criteria
-OSIMSIMULATION_API void sampleAndAppendValues(
-        TimeSeriesTable& values,
-        int numSamples = 1000,
-        double rangeMultiplier = 2.0);
-
-
-
-
-
-
-
-
 } // end of namespace OpenSim
 
 
