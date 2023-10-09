@@ -694,15 +694,18 @@ double OpenSim::fitFunctionBasedPathCoefficients(
         std::string outputPath,
         const int minOrder, const int maxOrder) {
 
-    // Helper functions.
-    // -----------------
-    // Factorial function.
+    // Factorial helper function.
     auto factorial = [](int n) {
         int result = 1;
         for (int i = 1; i <= n; ++i) {
             result *= i;
         }
         return result;
+    };
+
+    // n-choose-k helper function.
+    auto nchoosek = [factorial](int n, int k) {
+        return factorial(n) / (factorial(k) * factorial(n - k));
     };
 
     // Initialize model.
@@ -781,10 +784,8 @@ double OpenSim::fitFunctionBasedPathCoefficients(
         for (int order = minOrder; order <= maxOrder; ++order) {
 
             // Initialize the multivariate polynomial function.
-            int n = numCoordinatesThisForce + order;
-            int k = order;
             int numCoefficients =
-                    factorial(n) / (factorial(k) * factorial(n - k));
+                    nchoosek(numCoordinatesThisForce + order, order);
             SimTK::Vector dummyCoefficients(numCoefficients, 0.0);
             MultivariatePolynomialFunction dummyFunction(dummyCoefficients,
                     numCoordinatesThisForce, order);
