@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "OpenSim/Common/Function.h"
 #include "OpenSim/Simulation/Model/AbstractPath.h"
+#include "OpenSim/Common/Function.h"
 
 namespace OpenSim {
 

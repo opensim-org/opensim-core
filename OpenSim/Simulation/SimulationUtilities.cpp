@@ -22,10 +22,12 @@
  * -------------------------------------------------------------------------- */
 
 #include "SimulationUtilities.h"
+
 #include "Manager/Manager.h"
 #include "Model/Model.h"
 
 #include <simbody/internal/Visualizer_InputListener.h>
+
 #include <OpenSim/Common/TableUtilities.h>
 #include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>

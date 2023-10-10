@@ -64,7 +64,7 @@ public:
         "The speed value of this coordinate before any value has been set. "
         "Rotational coordinate value is in rad/s and Translational in m/s.");
 
-    OpenSim_DECLARE_LIST_PROPERTY_SIZE(range, double, 2, 
+    OpenSim_DECLARE_LIST_PROPERTY_SIZE(range, double, 2,
         "The minimum and maximum values that the coordinate can range between. "
         "Rotational coordinate range in radians and Translational in meters." );
 
@@ -141,7 +141,7 @@ public:
         Model::assemble(state) once all Coordinate values have been set.
         Alternatively, use Model::setStateVariableValues() to set all coordinate
         values and their speeds at once followed by Model::assemble(state).
-        
+      
         The provided value will be clamped to the coordinate's range if
         the coordinate is clamped and enforceConstraints is true.
         */
@@ -176,12 +176,12 @@ public:
     /** determine or set whether or not the Coordinate is 
         "clamped" between a range of values. */
     bool getClamped(const SimTK::State& s) const;
-    void setClamped(SimTK::State& s, bool aClamped) const; 
+    void setClamped(SimTK::State& s, bool aClamped) const;
     /** get/set whether or not the Coordinate is clamped by default */
     bool getDefaultClamped() const { return get_clamped(); }
     void setDefaultClamped(bool aClamped ) { upd_clamped() = aClamped; }
 
-    /** get the value for the Coordinate's range of motion */
+    /** get the value for the Coordinate's range of motion */ 
     double getRangeMin() const {return get_range(0); }
     double getRangeMax() const {return get_range(1); }
     /** set the range with a double array of length 2 in order of
@@ -211,7 +211,7 @@ public:
         valid first and second order derivatives. */       
     void setPrescribedFunction(const Function& function);
     const Function& getPrescribedFunction() const;
-
+    
     /** Return true if coordinate is dependent on other coordinates via a coupler
         constraint OR it has been flagged as free to change when satisfying 
         the model's kinematic constraints in general. */
