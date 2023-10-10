@@ -25,15 +25,7 @@
 #include "Model.h"
 #include <future>
 
-#include <SimTKcommon/internal/IteratorRange.h>
-#include <OpenSim/Actuators/ModelProcessor.h>
-#include <OpenSim/Actuators/ModelOperators.h>
 #include <OpenSim/Common/Assertion.h>
-#include <OpenSim/Common/LatinHypercubeDesign.h>
-#include <OpenSim/Common/MultivariatePolynomialFunction.h>
-#include <OpenSim/Common/STOFileAdapter.h>
-#include <OpenSim/Simulation/StatesTrajectory.h>
-#include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
 
 using namespace OpenSim;
 

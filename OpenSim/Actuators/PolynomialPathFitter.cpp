@@ -22,21 +22,27 @@
  * -------------------------------------------------------------------------- */
 
 #include "PolynomialPathFitter.h"
+#include <OpenSim/Common/STOFileAdapter.h>
+#include <OpenSim/Common/LatinHypercubeDesign.h>
+#include <OpenSim/Common/MultivariatePolynomialFunction.h>
+#include <OpenSim/Actuators/ModelOperators.h>
+#include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
+#include <future>
 
 using namespace OpenSim;
 
 //=============================================================================
 // FUNCTION-BASED PATH FITTER BOUNDS
 //=============================================================================
-PolynomialPathFitterBounds::FunctionBasedPathFitterBounds() : Object()
+PolynomialPathFitterBounds::PolynomialPathFitterBounds() : Object()
 {
     setAuthors("Nicholas Bianco");
     constructProperties();
 }
 
-PolynomialPathFitterBounds::FunctionBasedPathFitterBounds(
+PolynomialPathFitterBounds::PolynomialPathFitterBounds(
         const std::string& coordinatePath, const SimTK::Vec2& bounds) :
-        FunctionBasedPathFitterBounds() {
+        PolynomialPathFitterBounds() {
     set_coordinate_path(coordinatePath);
     OPENSIM_THROW_IF_FRMOBJ(bounds[0] >= bounds[1], Exception,
             "Expected the lower bound to be less than the upper bound, but "
@@ -53,29 +59,28 @@ void PolynomialPathFitterBounds::constructProperties() {
 // FUNCTION-BASED PATH FITTER
 //=============================================================================
 
-PolynomialPathFitter::FunctionBasedPathFitter() : Object()
+PolynomialPathFitter::PolynomialPathFitter() : Object()
 {
     setAuthors("Nicholas Bianco");
     constructProperties();
 }
 
-PolynomialPathFitter::~FunctionBasedPathFitter() noexcept = default;
+PolynomialPathFitter::~PolynomialPathFitter() noexcept = default;
 
-PolynomialPathFitter::FunctionBasedPathFitter(
+PolynomialPathFitter::PolynomialPathFitter(
         PolynomialPathFitter const&) = default;
 
 PolynomialPathFitter& PolynomialPathFitter::operator=(
         const PolynomialPathFitter&) = default;
 
-PolynomialPathFitter::FunctionBasedPathFitter(
+PolynomialPathFitter::PolynomialPathFitter(
         PolynomialPathFitter&& other) = default;
 
 PolynomialPathFitter& PolynomialPathFitter::operator=(
         PolynomialPathFitter&& other) = default;
 
-void PolynomialPathFitter::setModel(Model model) {
-    //    set_model(std::move(model));
-    m_model = std::move(model);
+void PolynomialPathFitter::setModel(ModelProcessor model) {
+        set_model(std::move(model));
 }
 void PolynomialPathFitter::setCoordinateValues(TableProcessor values) {
     set_coordinate_values(std::move(values));
@@ -109,8 +114,7 @@ void PolynomialPathFitter::runFittingPipeline() {
     // Process the inputs.
     // -------------------
     // Load the model.
-    Model model = m_model;
-    //    Model model = get_model().process(getDocumentDirectory());
+    Model model = get_model().process(getDocumentDirectory());
     model.initSystem();
 
     // Load the coordinate values.
@@ -203,14 +207,14 @@ void PolynomialPathFitter::runFittingPipeline() {
             "received {}.", get_maximum_polynomial_order())
 
     OPENSIM_THROW_IF_FRMOBJ(get_minimum_polynomial_order() >
-                                    get_maximum_polynomial_order(), Exception,
+                            get_maximum_polynomial_order(), Exception,
             "Expected 'minimum_polynomial_order' to be less than or equal to "
             "'maximum_polynomial_order', but received {} and {}, "
             "respectively.", get_minimum_polynomial_order(),
             get_maximum_polynomial_order())
 
     OPENSIM_THROW_IF_FRMOBJ(get_parallel() < 1 ||
-                                    get_parallel() > (int)std::thread::hardware_concurrency(), Exception,
+            get_parallel() > (int)std::thread::hardware_concurrency(), Exception,
             "Expected 'threads' to be between 1 and {}, but received {}.",
             std::thread::hardware_concurrency(), get_parallel())
 
@@ -279,7 +283,7 @@ TimeSeriesTable PolynomialPathFitter::sampleCoordinateValues(
             for (int icol = 0; icol < design.ncol(); ++icol) {
                 double slope = 0.5*(boundsVec[icol][1] - boundsVec[icol][0]);
                 SimTK::Vector candidateCol = slope*(design.col(icol) + 1.0) +
-                                             boundsVec[icol][0] + valuesBlock(*it, icol);
+                        boundsVec[icol][0] + valuesBlock(*it, icol);
 
                 // Check that all elements in the column are within the range of
                 // motion. If not, move the element inside the range of motion
@@ -372,7 +376,7 @@ void PolynomialPathFitter::computePathLengthsAndMomentArms(
 
     // Define helper function for path length and moment arm computations.
     auto calcPathLengthsAndMomentArmsSubset = [numColumns, numPaths](
-                                                      Model model, StatesTrajectory::IteratorRange subsetStates)
+            Model model, StatesTrajectory::IteratorRange subsetStates)
             -> SimTK::Matrix {
         model.initSystem();
 
@@ -419,8 +423,8 @@ void PolynomialPathFitter::computePathLengthsAndMomentArms(
     for (int ithread = 0; ithread < get_parallel(); ++ithread) {
         auto begin_iter = statesTrajectory.begin() + offset;
         auto end_iter = (ithread == get_parallel()-1) ?
-                                                        statesTrajectory.end() :
-                                                        statesTrajectory.begin() + offset + stride;
+                statesTrajectory.end() :
+                statesTrajectory.begin() + offset + stride;
         futures.push_back(std::async(std::launch::async,
                 calcPathLengthsAndMomentArmsSubset,
                 model,
@@ -442,7 +446,7 @@ void PolynomialPathFitter::computePathLengthsAndMomentArms(
             pathLengths.appendRow(time[itime],
                     outputs[i].block(j, 0, 1, numPaths).getAsRowVector());
             momentArms.appendRow(time[itime], outputs[i].block(j, numPaths, 1,
-                                                                numPaths * numCoordinates).getAsRowVector());
+                    numPaths * numCoordinates).getAsRowVector());
             itime++;
         }
     }

@@ -27,7 +27,6 @@
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/LinearFunction.h>
 #include <OpenSim/Common/PropertyObjArray.h>
-#include <OpenSim/Common/CommonUtilities.h>
 #include "getRSS.h"
 
 #include <fstream>
@@ -242,7 +241,6 @@ OpenSim::Object* randomize(OpenSim::Object* obj)
     // value.
      for (int p=0; p < obj->getNumProperties(); ++p) {
         AbstractProperty& ap = obj->updPropertyByIndex(p); 
-        std::cout << obj->getName() << " " << ap.getName() << std::endl;
         //cout << ap.getName() << "=" << ap.toString() << endl;
         // Check return values from Property API for debugging purposes
         bool isList = ap.isListProperty();
@@ -251,7 +249,7 @@ OpenSim::Object* randomize(OpenSim::Object* obj)
         // bool t4 = ap.isOneValueProperty();
         string ts = ap.getTypeName();
         //cout << ts << endl;
-        if (ap.isOptionalProperty())
+        if (ap.isOptionalProperty()) 
             continue;
         if (ts == "bool"&& !isList) 
             ap.updValue<bool>() = (rand() % 2 == 0);
@@ -285,14 +283,14 @@ OpenSim::Object* randomize(OpenSim::Object* obj)
         } else if (ts == "Function") {
             //FunctionSet's objects getTypeName() returns "Function"
             //which is wrong! This is a HACK to test that we aren't
-            //treating the PropertyObjArray<Function> as a Function
+            //treating the PropertyObjArray<Function> as a Function.
             PropertyObjArray<Function>* propObjArray =
                 dynamic_cast<PropertyObjArray<Function>*>(&ap);
             if (propObjArray){
                 if (propObjArray->size()){
                     randomize(&(propObjArray->updValueAsObject(0)));
                 }
-            } 
+            }
             else{
                 Property<Function>& prop = Property<Function>::updAs(ap);
                 LinearFunction f;

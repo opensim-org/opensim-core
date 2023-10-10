@@ -53,8 +53,7 @@ Index | X  Y  Z
 18    | 2  1  0
 19    | 3  0  0
 </pre>
-Assuming c6 the index 6 coefficient, the correspo
- nding term is Y Z^2.
+Assuming c6 the index 6 coefficient, the corresponding term is Y Z^2.
 @note The order of coefficients for this class is the *opposite** from the order
 used in the univariate PolynomialFunction.
 @param dimension the number of independent components

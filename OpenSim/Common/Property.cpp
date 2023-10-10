@@ -102,7 +102,7 @@ isEqual(const SimTK::Transform& a, const SimTK::Transform& b) {
 }
 
 //=============================================================================
-// PROPERTY
+// PROPERTY 
 //=============================================================================
 
 // Try a few instantiations so we catch bugs now.

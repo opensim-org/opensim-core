@@ -24,7 +24,6 @@
  * -------------------------------------------------------------------------- */
 
 #include "OpenSim/Common/Function.h"
-#include "OpenSim/Common/TimeSeriesTable.h"
 #include "OpenSim/Simulation/Model/AbstractPath.h"
 
 namespace OpenSim {

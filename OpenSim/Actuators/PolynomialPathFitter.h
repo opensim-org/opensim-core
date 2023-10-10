@@ -23,6 +23,9 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include <OpenSim/Simulation/TableProcessor.h>
+#include <OpenSim/Actuators/ModelProcessor.h>
+
 namespace OpenSim {
 
 /**
@@ -61,7 +64,7 @@ public:
     // GET AND SET
     // TODO 1) explain locked and clamped coordinates (i.e., based on the
     //         property values)
-    void setModel(Model model);
+    void setModel(ModelProcessor model);
 
     // TODO 1) assume that coordinate values satisfy kinematic constraints
     //         in the model (except for CoordinateCouplerConstraints)
