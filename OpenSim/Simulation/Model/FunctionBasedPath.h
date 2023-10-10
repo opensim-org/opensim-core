@@ -26,8 +26,6 @@
 #include "OpenSim/Common/Function.h"
 #include "OpenSim/Common/TimeSeriesTable.h"
 #include "OpenSim/Simulation/Model/AbstractPath.h"
-#include "OpenSim/Simulation/TableProcessor.h"
-#include "OpenSim/Actuators/ModelProcessor.h"
 
 namespace OpenSim {
 
@@ -220,122 +218,6 @@ private:
     mutable CacheVariable<double> _lengthCV;
     mutable CacheVariable<SimTK::Vector> _momentArmsCV;
     mutable CacheVariable<double> _lengtheningSpeedCV;
-};
-
-//=============================================================================
-//                       FUNCTION-BASED PATH FITTER
-//=============================================================================
-
-/**
- * A helper class for storing coordinate bounds.
- */
-class OSIMSIMULATION_API FunctionBasedPathFitterBounds : public Object {
-    OpenSim_DECLARE_CONCRETE_OBJECT(FunctionBasedPathFitterBounds, Object);
-public:
-    OpenSim_DECLARE_PROPERTY(coordinate_path, std::string, "TODO.")
-    OpenSim_DECLARE_PROPERTY(bounds, SimTK::Vec2, "TODO.")
-    FunctionBasedPathFitterBounds();
-    FunctionBasedPathFitterBounds(
-            const std::string& coordinatePath, const SimTK::Vec2& bounds);
-private:
-    void constructProperties();
-};
-
-/**
- * A class for fitting a set of `FunctionBasedPath`s to paths in an OpenSim
- * model.
- */
-class OSIMSIMULATION_API FunctionBasedPathFitter : public Object {
-    OpenSim_DECLARE_CONCRETE_OBJECT(FunctionBasedPathFitter, Object);
-public:
-    // CONSTRUCTION AND DESTRUCTION
-    FunctionBasedPathFitter();
-    ~FunctionBasedPathFitter() noexcept override;
-    FunctionBasedPathFitter(const FunctionBasedPathFitter&);
-    FunctionBasedPathFitter(FunctionBasedPathFitter&&);
-    FunctionBasedPathFitter& operator=(const FunctionBasedPathFitter&);
-    FunctionBasedPathFitter& operator=(FunctionBasedPathFitter&&);
-
-    // GET AND SET
-    // TODO 1) explain locked and clamped coordinates (i.e., based on the
-    //         property values)
-    void setModel(ModelProcessor model) {
-        set_model(std::move(model));
-    }
-
-    // TODO 1) assume that coordinate values satisfy kinematic constraints
-    //         in the model (except for CoordinateCouplerConstraints)
-    //      2) use absolute state names and convert to radians
-    void setCoordinateValues(TableProcessor coordinateValues) {
-        set_coordinate_values(std::move(coordinateValues));
-    }
-
-    void setMomentArmTolerance(double momentArmTolerance) {
-        set_moment_arm_tolerance(momentArmTolerance);
-    }
-
-    /** Get the (canonicalized) absolute directory containing the file from
-     * which this tool was loaded. If the `FunctionBasedPathFitter` was not
-     * loaded from a file, this returns an empty string.
-     */
-    std::string getDocumentDirectory() const;
-
-
-private:
-    // PROPERTIES
-    OpenSim_DECLARE_PROPERTY(model, ModelProcessor, "TODO.");
-    OpenSim_DECLARE_PROPERTY(coordinate_values, TableProcessor, "TODO.");
-    OpenSim_DECLARE_PROPERTY(moment_arm_tolerance, double, "TODO.");
-    OpenSim_DECLARE_PROPERTY(minimum_polynomial_order, int, "TODO.");
-    OpenSim_DECLARE_PROPERTY(maximum_polynomial_order, int, "TODO.");
-    OpenSim_DECLARE_PROPERTY(parallel, int, "TODO.");
-    OpenSim_DECLARE_PROPERTY(
-            default_coordinate_sampling_bounds, SimTK::Vec2, "TODO.");
-    OpenSim_DECLARE_LIST_PROPERTY(
-            coordinate_sampling_bounds, FunctionBasedPathFitterBounds,
-            "TODO.");
-    OpenSim_DECLARE_PROPERTY(num_samples_per_frame, int, "TODO.");
-
-    void constructProperties();
-
-
-    // FITTING PIPELINE FUNCTIONS
-    void runFittingPipeline();
-
-
-    void sampleAndAppendCoordinateValues(
-            TimeSeriesTable& values);
-
-
-    // TODO: 0) should any of the TODOs below be handled in this function?
-    //          (probably not, just throw exceptions)
-    //       1) how to handle locked coordinates?
-    //       2) coordinate values must have number of columns equal to
-    //          number of independent coordinates (Appends coupled coordinate
-    //          values, if missing)
-    //       3) Updates the coordinates table to use absolute state names
-    void computePathLengthsAndMomentArms(
-            Model model,
-            const TimeSeriesTable& coordinateValues,
-            TimeSeriesTable& pathLengths,
-            TimeSeriesTable& momentArms,
-            std::map<std::string, std::vector<std::string>>& momentArmMap);
-
-    // TODO: 1) expects length and moment arm column names in specific format
-    //       2) returns average RMS error
-    double fitFunctionBasedPathCoefficients(
-            Model model,
-            const TimeSeriesTable& coordinateValues,
-            const TimeSeriesTable& pathLengths,
-            const TimeSeriesTable& momentArms,
-            const std::map<std::string, std::vector<std::string>>& momentArmMap,
-            std::string outputPath,
-            const int minOrder = 2, const int maxOrder = 6);
-
-    // MEMBER VARIABLES
-    std::unordered_map<std::string, SimTK::Vec2> m_coordinateBoundsMap;
-
-
 };
 
 } // namespace OpenSim
