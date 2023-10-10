@@ -323,15 +323,15 @@ out all the values of any property:
 @endcode
 
 
-@see OpenSim::Object, OpenSim::AbstractProperty
+@see OpenSim::Object, OpenSim::AbstractProperty 
 @author Michael Sherman
 **/
 template <class T>
 class Property : public AbstractProperty {
 public:
     /** Provides type-specific methods used to implement generic functionality.
-    This class must be specialized for any
-    type T that is used in a Property\<T> instantiation, unless T is an
+    This class must be specialized for any 
+    type T that is used in a Property\<T> instantiation, unless T is an 
     Object or something derived from Object. **/
     struct TypeHelper;
 
@@ -348,15 +348,15 @@ public:
     throw an exception if the index does not refer to an already-existing
     value. This operator is synonymous with getValue(i). **/
     const T& operator[](int i) const {return getValue(i);}
-    /** Get a writable reference to one of the values in the value list. This
+    /** Get a writable reference to one of the values in the value list. This 
     will throw an exception if the index does not refer to an already-existing
     value. This operator is synonymous with updValue(i). **/
     T& operator[](int i) {return updValue(i);}
 
     /** Assignment to a value of type T sets the value of this single-valued
-    property to a copy of the supplied \a value; not allowed for a list
+    property to a copy of the supplied \a value; not allowed for a list 
     property. This does not invoke the assignment operator on the existing
-    value. Instead, the value list is cleared and then replaced by the new
+    value. Instead, the value list is cleared and then replaced by the new 
     value. This is synonymous with setValue(value). **/
     Property& operator=(const T& value) {
         setValue(value);
@@ -365,7 +365,7 @@ public:
 
     /** Assignment to a container of values of type T sets the entire value
     list of this list property to a copy of the values in the container. The
-    current value list is cleared before the assignment. This is synonymous
+    current value list is cleared before the assignment. This is synonymous 
     with setValue(valueList). **/
     template< template <class> class Container >
     Property& operator=(const Container<T>& valueList) {
@@ -375,16 +375,16 @@ public:
 
     /** Replace the i'th value list element with a copy of the given \a value.
     The index i must be between 0 and the current list length, meaning it is
-    OK to refer one element past the last element. In that case the new
+    OK to refer one element past the last element. In that case the new 
     \a value is appended to the list using appendValue(), which will throw an
     exception if the list is already at its maximum allowable size. In the case
-    where index i refers to an existing element, a simple property
-    will assign a new value to the existing element but an object property
-    will delete the old object and replace it with a clone() of the new one
+    where index i refers to an existing element, a simple property 
+    will assign a new value to the existing element but an object property 
+    will delete the old object and replace it with a clone() of the new one 
     -- it will \e not invoke the old object's assignment operator. That means
     that the concrete object type may be changed by this operation, provided
-    it is still a type derived from object type T. If you want to invoke the
-    existing value's assignment operator, use updValue(i) rather than
+    it is still a type derived from object type T. If you want to invoke the 
+    existing value's assignment operator, use updValue(i) rather than 
     setValue(i). **/
     void setValue(int i, const T& value) {
         const int n = getNumValues();
@@ -396,12 +396,12 @@ public:
         }
         throw OpenSim::Exception(
             "Property<T>::setValue(i,value): index " + SimTK::String(i)
-            + " out of range for property " + getName()
+            + " out of range for property " + getName() 
             + " which currently has " + SimTK::String(n) + " values.");
     }
 
     /** Provide a new value for a single-valued
-    property. The current value (if any) is replaced, and %size()==1
+    property. The current value (if any) is replaced, and %size()==1 
     afterwards. An exception is thrown if this is a list property. **/
     void setValue(const T& value) {
         if (isListProperty()) {
@@ -420,17 +420,17 @@ public:
     template< template <class> class Container >
     void setValue(const Container<T>& valueList) {
         if (   valueList.size() < getMinListSize()
-            || valueList.size() > getMaxListSize())
+            || valueList.size() > getMaxListSize()) 
         {
-            const std::string reqLen = getMinListSize()==getMaxListSize()
+            const std::string reqLen = getMinListSize()==getMaxListSize() 
                 ? "exactly " + SimTK::String(getMinListSize())
-                : "between " + SimTK::String(getMinListSize()) +
+                : "between " + SimTK::String(getMinListSize()) + 
                   " and " + SimTK::String(getMaxListSize());
-
+                  
             throw OpenSim::Exception
                ("Property<T>::setValue(Container<T>): the number of elements "
-                "supplied (" + SimTK::String(valueList.size()) +
-                ") was out of range " " for property " + getName() +
+                "supplied (" + SimTK::String(valueList.size()) + 
+                ") was out of range " " for property " + getName() + 
                 " which requires " + reqLen + " elements.");
         }
         clear();
@@ -439,8 +439,8 @@ public:
         setValueIsDefault(false);
     }
 
-    /** Return a const reference to the selected value from this property's
-    value list. If the property is at most single valued then the \a index is
+    /** Return a const reference to the selected value from this property's 
+    value list. If the property is at most single valued then the \a index is 
     optional and we'll behave as though index=0 were supplied. You can use
     the square bracket operator property[index] instead. **/
     const T& getValue(int index=-1) const {
@@ -454,8 +454,8 @@ public:
         return getValueVirtual(index);
     }
 
-    /** Return a writable reference to the selected value from this property's
-    value list. If the property is at most single valued then the \a index is
+    /** Return a writable reference to the selected value from this property's 
+    value list. If the property is at most single valued then the \a index is 
     optional and we'll behave as though index=0 were supplied.  You can use
     the square bracket operator property[index] instead. **/
     T& updValue(int index=-1) {
@@ -467,26 +467,26 @@ public:
                 "of values.");
         }
         setValueIsDefault(false);
-        return updValueVirtual(index);
+        return updValueVirtual(index); 
     }
 
-    /** Append a copy of the supplied \a value to the end of this property's
-    value list. An exception is thrown if the property can't hold any more
+    /** Append a copy of the supplied \a value to the end of this property's 
+    value list. An exception is thrown if the property can't hold any more 
     values. The index assigned to this value is returned. **/
     int appendValue(const T& value) {
         if (getNumValues() >= getMaxListSize())
             throw OpenSim::Exception(
-                "Property::appendValue(T&): property " + getName()
-                + " can't hold any more than "
+                "Property::appendValue(T&): property " + getName() 
+                + " can't hold any more than " 
                 + SimTK::String(getMaxListSize()) + " values.");
         setValueIsDefault(false);
         return appendValueVirtual(value);
     }
 
-    /** Append a \e copy of the supplied \a value to the end of this
-    property's value list. An exception is thrown if the property can't hold
-    any more values. The index assigned to this value is returned. Note that
-    although we  accept a pointer here, we do not take over ownership. See
+    /** Append a \e copy of the supplied \a value to the end of this 
+    property's value list. An exception is thrown if the property can't hold 
+    any more values. The index assigned to this value is returned. Note that 
+    although we  accept a pointer here, we do not take over ownership. See 
     adoptAndAppendValue() if you want the property to take ownership. **/
     int appendValue(const T* value) {
         if (value == NULL)
@@ -495,7 +495,7 @@ public:
                 __FILE__, __LINE__);
         if (getNumValues() >= getMaxListSize())
             throw OpenSim::Exception(
-                "Property::appendValue(T*): property " + getName()
+                "Property::appendValue(T*): property " + getName() 
                 + " can't hold any more than "
                 + SimTK::String(getMaxListSize()) + " values.");
         setValueIsDefault(false);
@@ -512,7 +512,7 @@ public:
                 "Property::adoptAndAppendValue(T*): null value not allowed.");
         if (getNumValues() >= getMaxListSize())
             throw OpenSim::Exception(
-                "Property::adoptAndAppendValue(T*): property " + getName()
+                "Property::adoptAndAppendValue(T*): property " + getName() 
                 + " can't hold any more than " + SimTK::String(getMaxListSize())
                 + " values.");
         setValueIsDefault(false);
@@ -529,8 +529,8 @@ public:
         removeValueAtIndexVirtual(index);
     }
     /** Search the value list for an element that has the given \a value and
-    return its index if found, otherwise -1. This requires only that the
-    template type T supports operator==(). This is a linear search so will
+    return its index if found, otherwise -1. This requires only that the 
+    template type T supports operator==(). This is a linear search so will 
     take time proportional to the length of the value list. **/
     int findIndex(const T& value) const {
         const int nValues = getNumValues();
@@ -541,9 +541,9 @@ public:
     }
 
     /** Return index of passed in name if the Property contains objects that are
-    derived from OpenSim::Object, and -1 if no such Object is found. Throws an
+    derived from OpenSim::Object, and -1 if no such Object is found. Throws an 
     Exception if the List doesn't contain OpenSim Objects (e.g. primitive types)
-    since these are not named. When a search is performed, it's a linear search.
+    since these are not named. When a search is performed, it's a linear search. 
     **/
     virtual int findIndexForName(const SimTK::String& name) const = 0;
 
@@ -552,31 +552,31 @@ public:
     the type T must be exactly the type used when the concrete property was
     allocated; it is not sufficient for T to be a more general base type from
     which the actual type was derived. **/
-    static bool isA(const AbstractProperty& prop)
+    static bool isA(const AbstractProperty& prop) 
     {   return dynamic_cast<const Property*>(&prop) != NULL; }
 
     /** Downcast the given AbstractProperty to a concrete
     property of this type (%Property\<T>). An exception is thrown if
-    this is not the right type only in DEBUG mode; see isA() if you need to
+    this is not the right type only in DEBUG mode; see isA() if you need to 
     check first. **/
     static const Property& getAs(const AbstractProperty& prop) {
         const Property* p = SimTK_DYNAMIC_CAST_DEBUG<const Property*>(&prop);
         if (p) return *p;
         throw OpenSim::Exception
-           ("Property<T>::getAs(): Property " + prop.getName()
+           ("Property<T>::getAs(): Property " + prop.getName() 
             + " was not of type "
             + std::string(SimTK::NiceTypeName<T>::name()));
     }
 
     /** Downcast the given AbstractProperty to a writable concrete
     property of this type (%Property\<T>). An exception is thrown if
-    this is not the right type only in DEBUG mode; see isA() if you need to
+    this is not the right type only in DEBUG mode; see isA() if you need to 
     check first. **/
     static Property& updAs(AbstractProperty& prop) {
         Property* p = SimTK_DYNAMIC_CAST_DEBUG<Property*>(&prop);
         if (p) return *p;
         throw OpenSim::Exception
-           ("Property<T>::updAs(): Property " + prop.getName()
+           ("Property<T>::updAs(): Property " + prop.getName() 
             + " was not of type "
             + std::string(SimTK::NiceTypeName<T>::name()));
     }
@@ -589,7 +589,7 @@ protected:
     Property& operator=(const Property&) = default;
     Property& operator=(Property&&) = default;
 #ifndef SWIG
-    /** @cond **/
+    /** @cond **/ 
     // Hide from Doxygen.
     // This is the interface that SimpleProperty and ObjectProperty must
     // implement.
@@ -613,9 +613,9 @@ protected:
 // and ObjectProperty but some definitions must be delayed until after
 // SimpleProperty and ObjectProperty are declared.
 
-/** This is the generic definition of Property::TypeHelper to be used
-whenever T does not have a specialization, meaning that T must be a type
-derived from class Object. Any non-Object type that is to be used as a property
+/** This is the generic definition of Property::TypeHelper to be used 
+whenever T does not have a specialization, meaning that T must be a type 
+derived from class Object. Any non-Object type that is to be used as a property 
 type \e must provide a specialization of this class. **/
 template <class T> struct Property<T>::TypeHelper {
     static const bool IsObjectType = true;
@@ -642,7 +642,7 @@ template<> struct Property<int>::TypeHelper {
 /** TypeHelper specialization for std::string. **/
 template<> struct Property<std::string>::TypeHelper {
     static const bool IsObjectType = false;
-    static SimpleProperty<std::string>*
+    static SimpleProperty<std::string>* 
         create(const std::string& name, bool isOne);
     static std::string getTypeName() {return "string";}
     static bool isEqual(const std::string& a, const std::string& b)
@@ -650,7 +650,7 @@ template<> struct Property<std::string>::TypeHelper {
 };
 
 /** TypeHelper specialization for double. Note that isEqual() operator here
-returns true if values are equal to within a tolerance. We also say NaN==NaN,
+returns true if values are equal to within a tolerance. We also say NaN==NaN, 
 which is not standard IEEE floating point behavior. **/
 template<> struct Property<double>::TypeHelper {
     static const bool IsObjectType = false;
@@ -672,10 +672,10 @@ template<> struct Property<SimTK::Vec2>::TypeHelper  {
 for information on floating point comparison. **/
 template<> struct Property<SimTK::Vec3>::TypeHelper  {
     static const bool IsObjectType = false;
-    static SimpleProperty<SimTK::Vec3>*
+    static SimpleProperty<SimTK::Vec3>* 
         create(const std::string& name, bool isOne);
     static std::string getTypeName() {return "Vec3";}
-    OSIMCOMMON_API static bool isEqual(const SimTK::Vec3& a,
+    OSIMCOMMON_API static bool isEqual(const SimTK::Vec3& a, 
                                        const SimTK::Vec3& b);
 };
 /** TypeHelper specialization for SimTK::Vec6; see double specialization
@@ -692,10 +692,10 @@ template<> struct Property<SimTK::Vec6>::TypeHelper  {
 for information on floating point comparison. **/
 template<> struct Property<SimTK::Vector>::TypeHelper  {
     static const bool IsObjectType = false;
-    static SimpleProperty<SimTK::Vector>*
+    static SimpleProperty<SimTK::Vector>* 
         create(const std::string& name, bool isOne);
     static std::string getTypeName() {return "Vector";}
-    OSIMCOMMON_API static bool isEqual(const SimTK::Vector& a,
+    OSIMCOMMON_API static bool isEqual(const SimTK::Vector& a, 
                                        const SimTK::Vector& b);
 };
 
@@ -703,10 +703,10 @@ template<> struct Property<SimTK::Vector>::TypeHelper  {
 for information on floating point comparison. **/
 template<> struct Property<SimTK::Transform>::TypeHelper  {
     static const bool IsObjectType = false;
-    static SimpleProperty<SimTK::Transform>*
+    static SimpleProperty<SimTK::Transform>* 
         create(const std::string& name, bool isOne);
     static std::string getTypeName() {return "Transform";}
-    OSIMCOMMON_API static bool isEqual(const SimTK::Transform& a,
+    OSIMCOMMON_API static bool isEqual(const SimTK::Transform& a, 
                                        const SimTK::Transform& b);
 };
 #endif
@@ -724,7 +724,7 @@ Property<T>::getTypeName() const {
 /** @cond **/
 
 //==============================================================================
-//                  HELPERS FOR WRITING PROPERTY VALUES
+//                  HELPERS FOR WRITING PROPERTY VALUES 
 //==============================================================================
 // This section is hidden from SWIG because of compiling issues (i.e., SWIG
 // thought these functions were part of Property in some cases, rather than
@@ -823,24 +823,24 @@ writeSimplePropertyToStreamForDisplay(std::ostream& o,
 //==============================================================================
 //                             SIMPLE PROPERTY
 //==============================================================================
-/** This subclass of Property<T> is used when type T=S is a "simple" type,
+/** This subclass of Property<T> is used when type T=S is a "simple" type, 
 meaning it is not derived from Object. **/
 template <class T>
 class SimpleProperty : public Property<T> {
 public:
     /** A simple property must have a non-null name. **/
-    SimpleProperty(const std::string& name, bool isOneValue) {
+    SimpleProperty(const std::string& name, bool isOneValue) { 
         if (name.empty())
             throw OpenSim::Exception(
                 "addProperty<" + std::string(SimTK::NiceTypeName<T>::name())
-                + ">(): a simple (non-Object) property must have a name.");
-        this->setName(name);
-        if (isOneValue) this->setAllowableListSize(1);
+                + ">(): a simple (non-Object) property must have a name.");     
+        this->setName(name); 
+        if (isOneValue) this->setAllowableListSize(1); 
     }
 
     // Default destructor, copy constructor, copy assignment.
 
-    SimpleProperty* clone() const override final
+    SimpleProperty* clone() const override final 
     {   return new SimpleProperty(*this); }
 
     void assign(const AbstractProperty& that) override {
@@ -852,7 +852,7 @@ public:
                           " | Received: " + that.getTypeName());
         }
     }
-
+    
     // Write the value of this property suitable for displaying to a user
     // (i.e., this number may be rounded and not an exact representation of
     // the actual value being used). This function calls `toStringForDisplay()`
@@ -877,7 +877,7 @@ public:
 
     bool isUnnamedProperty() const override final {return false;}
     bool isObjectProperty() const override final {return false;}
-    bool isAcceptableObjectTag(const std::string&) const override final
+    bool isAcceptableObjectTag(const std::string&) const override final 
     {   return false; }
 
     int getNumValues() const override final {return values.size(); }
@@ -945,41 +945,41 @@ public:
     }
 
     // Property element will be just a value element. We'll serialize it
-    // using an unformatted write to produce a series of blank-separated
+    // using an unformatted write to produce a series of blank-separated 
     // tokens.
     void writeToXMLElement
        (SimTK::Xml::Element& propertyElement) const override final {
         std::ostringstream valstream;
         writeSimplePropertyToStream(valstream);
-        propertyElement.setValue(valstream.str());
-    }
+        propertyElement.setValue(valstream.str()); 
+    } 
 
 
     const Object& getValueAsObject(int index=-1) const override final {
         throw OpenSim::Exception(
-                "SimpleProperty<T>::getValueAsObject(): property "
-                + this->getName() + " is not an Object property.");
+                "SimpleProperty<T>::getValueAsObject(): property " 
+                + this->getName() + " is not an Object property."); 
     }
 
     Object& updValueAsObject(int index=-1) override final {
         throw OpenSim::Exception(
-                "SimpleProperty<T>::updValueAsObject(): property "
-                + this->getName() + " is not an Object property.");
+                "SimpleProperty<T>::updValueAsObject(): property " 
+                + this->getName() + " is not an Object property."); 
     }
 
     void setValueAsObject(const Object& obj, int index=-1) override final {
         throw OpenSim::Exception(
-                "SimpleProperty<T>::setValueAsObject(): property "
-                + this->getName() + " is not an Object property.");
+                "SimpleProperty<T>::setValueAsObject(): property " 
+                + this->getName() + " is not an Object property."); 
     }
 
-    static bool isA(const AbstractProperty& prop)
+    static bool isA(const AbstractProperty& prop) 
     {   return dynamic_cast<const SimpleProperty*>(&prop) != NULL; }
 
     static const SimpleProperty& getAs(const AbstractProperty& prop) {
         const SimpleProperty* p = SimTK_DYNAMIC_CAST_DEBUG<const SimpleProperty*>(&prop);
         if (p) return *p;
-        throw OpenSim::Exception
+        throw OpenSim::Exception 
            ("SimpleProperty<T>::getAs(): Property " + prop.getName()
             + " was not of simple type "
             + std::string(SimTK::NiceTypeName<T>::name()),
@@ -990,7 +990,7 @@ public:
         SimpleProperty* p = SimTK_DYNAMIC_CAST_DEBUG<SimpleProperty*>(&prop);
         if (p) return *p;
         throw OpenSim::Exception
-           ("SimpleProperty<T>::updAs(): Property " + prop.getName()
+           ("SimpleProperty<T>::updAs(): Property " + prop.getName() 
            + " was not of simple type "
             + std::string(SimTK::NiceTypeName<T>::name()),
             __FILE__, __LINE__);
@@ -1004,9 +1004,9 @@ public:
 private:
     // This is the Property<T> interface implementation.
     // Base class checks the index.
-    const T& getValueVirtual(int index) const   override final
+    const T& getValueVirtual(int index) const   override final 
     {   return values.at(index); }
-    T& updValueVirtual(int index)               override final
+    T& updValueVirtual(int index)               override final 
     {   return values.at(index); }
     void setValueVirtual(int index, const T& value) override final
     {   values.at(index) = value; }
@@ -1045,7 +1045,7 @@ private:
 
 template <> inline bool SimpleProperty<SimTK::Transform>::
 readSimplePropertyFromStream(std::istream& in)
-{
+{   
     // Read in an array of Vec6 objects.
     SimTK::Array_<SimTK::Vec6,int> rotTrans;
     values.clear();
@@ -1065,7 +1065,7 @@ readSimplePropertyFromStream(std::istream& in)
 
 template <> inline void SimpleProperty<SimTK::Transform>::
 writeSimplePropertyToStream(std::ostream& o) const
-{
+{   
     // Convert array of Transform objects to an array of Vec6 objects.
     SimTK::Array_<SimTK::Vec6> rotTrans;
     for (int i = 0; i < values.size(); ++i) {
@@ -1095,22 +1095,22 @@ readSimplePropertyFromStream(std::istream& in)
 //==============================================================================
 //                             OBJECT PROPERTY
 //==============================================================================
-/** This subclass of Property<T> is used when type T=O is an "object" type,
+/** This subclass of Property<T> is used when type T=O is an "object" type, 
 meaning it is derived from %OpenSim's Object serializable base class. **/
 template <class T>
 class ObjectProperty : public Property<T> {
 public:
-    /** A one-object property can be unnamed, in which case we use the
+    /** A one-object property can be unnamed, in which case we use the 
     object type tag as a name for lookup purposes. We consider the property
     unnamed if its name is null or if the object type tag is given explicitly
     as its name. **/
-    ObjectProperty(const std::string& name, bool isOneValue)
+    ObjectProperty(const std::string& name, bool isOneValue) 
     :   isUnnamed(false) {
         objectClassName = T::getClassName();
         if (name.empty() || name == objectClassName) {
-            if (!isOneValue)
+            if (!isOneValue) 
                 throw OpenSim::Exception(
-                    "addProperty<" + objectClassName +
+                    "addProperty<" + objectClassName + 
                     ">(): only a one-object property can be unnamed or use "
                     "the object type as a name.");
 
@@ -1127,7 +1127,7 @@ public:
     const std::string& getObjectClassName() const {return objectClassName;}
 
 
-    ObjectProperty* clone() const override final
+    ObjectProperty* clone() const override final 
     {   return new ObjectProperty(*this); }
 
     void assign(const AbstractProperty& that) override {
@@ -1171,14 +1171,14 @@ public:
         return *objects.at(index);
     }
 
-    static bool isA(const AbstractProperty& prop)
+    static bool isA(const AbstractProperty& prop) 
     {   return dynamic_cast<const ObjectProperty*>(&prop) != NULL; }
 
     static const ObjectProperty& getAs(const AbstractProperty& prop) {
         const ObjectProperty* p = SimTK_DYNAMIC_CAST_DEBUG<const ObjectProperty*>(&prop);
         if (p) return *p;
         throw OpenSim::Exception
-           ("ObjectProperty<T>::getAs(): Property " + prop.getName()
+           ("ObjectProperty<T>::getAs(): Property " + prop.getName() 
             + " was not of object type " + T::getClassName());
     }
 
@@ -1186,7 +1186,7 @@ public:
         ObjectProperty* p = SimTK_DYNAMIC_CAST_DEBUG<ObjectProperty*>(&prop);
         if (p) return *p;
         throw OpenSim::Exception
-           ("ObjectProperty<T>::updAs(): Property " + prop.getName()
+           ("ObjectProperty<T>::updAs(): Property " + prop.getName() 
            + " was not of object type " + T::getClassName());
     }
     // Return index if name matches, -1 if not found, slow linear search by name
@@ -1202,9 +1202,9 @@ public:
     }
 private:
     // Base class checks the index.
-    const T& getValueVirtual(int index) const override final
+    const T& getValueVirtual(int index) const override final 
     {   return *objects.at(index); }
-    T& updValueVirtual(int index) override final
+    T& updValueVirtual(int index) override final 
     {   return *objects.at(index); }
     void setValueVirtual(int index, const T& obj) override final
     {   objects.at(index).reset((T*)nullptr);
@@ -1219,7 +1219,7 @@ private:
         return objects.size()-1; }
 
     std::string  objectClassName;
-    bool         isUnnamed;    // we'll use the objectTypeTag as a name
+    bool         isUnnamed;    // we'll use the objectTypeTag as a name 
 
     // This is like an std::vector<ClonePtr<T>>, with an int index rather
     // than unsigned. A ClonePtr is just a pointer that knows to call
@@ -1233,25 +1233,25 @@ private:
 //==============================================================================
 // These had to wait for SimpleProperty and ObjectProperty.
 
-template <class T>
+template <class T> 
 inline ObjectProperty<T>* Property<T>::
-TypeHelper::create(const std::string& name, bool isOne)
+TypeHelper::create(const std::string& name, bool isOne) 
 {   return new ObjectProperty<T>(name, isOne); }
 
 inline SimpleProperty<bool>* Property<bool>::
-TypeHelper::create(const std::string& name, bool isOne)
+TypeHelper::create(const std::string& name, bool isOne) 
 {   return new SimpleProperty<bool>(name, isOne); }
 
 inline SimpleProperty<int>* Property<int>::
-TypeHelper::create(const std::string& name, bool isOne)
+TypeHelper::create(const std::string& name, bool isOne) 
 {   return new SimpleProperty<int>(name, isOne); }
 
 inline SimpleProperty<std::string>* Property<std::string>::
-TypeHelper::create(const std::string& name, bool isOne)
+TypeHelper::create(const std::string& name, bool isOne) 
 {   return new SimpleProperty<std::string>(name, isOne); }
 
 inline SimpleProperty<double>* Property<double>::
-TypeHelper::create(const std::string& name, bool isOne)
+TypeHelper::create(const std::string& name, bool isOne) 
 {   return new SimpleProperty<double>(name, isOne); }
 
 inline SimpleProperty<SimTK::Vec2>* Property<SimTK::Vec2>::
@@ -1259,7 +1259,7 @@ inline SimpleProperty<SimTK::Vec2>* Property<SimTK::Vec2>::
 {   return new SimpleProperty<SimTK::Vec2>(name, isOne); }
 
 inline SimpleProperty<SimTK::Vec3>* Property<SimTK::Vec3>::
-TypeHelper::create(const std::string& name, bool isOne)
+TypeHelper::create(const std::string& name, bool isOne) 
 {   return new SimpleProperty<SimTK::Vec3>(name, isOne); }
 
 inline SimpleProperty<SimTK::Vec6>* Property<SimTK::Vec6>::
@@ -1269,11 +1269,11 @@ TypeHelper::create(const std::string& name, bool isOne)
 }
 
 inline SimpleProperty<SimTK::Vector>* Property<SimTK::Vector>::
-TypeHelper::create(const std::string& name, bool isOne)
+TypeHelper::create(const std::string& name, bool isOne) 
 {   return new SimpleProperty<SimTK::Vector>(name, isOne); }
 
 inline SimpleProperty<SimTK::Transform>* Property<SimTK::Transform>::
-TypeHelper::create(const std::string& name, bool isOne)
+TypeHelper::create(const std::string& name, bool isOne) 
 {   return new SimpleProperty<SimTK::Transform>(name, isOne); }
 
 // Create a self-initializing integer index for fast access to properties
@@ -1306,7 +1306,7 @@ SimTK_DEFINE_UNIQUE_INDEX_TYPE(PropertyIndex);
 
 // For a property whose effective name (that is, property name or object
 // type for unnamed properties) is given, declare a variable to hold
-// its PropertyIndex and the methods needed for property access. This is
+// its PropertyIndex and the methods needed for property access. This is 
 // used by all DECLARE_PROPERTY macro variants.
 #define OpenSim_DECLARE_PROPERTY_HELPER(name, T)                            \
     OpenSim_DECLARE_PROPERTY_HELPER_PROPERTY_MEMBERS(name, T)               \
@@ -1359,10 +1359,10 @@ SimTK_DEFINE_UNIQUE_INDEX_TYPE(PropertyIndex);
 // We actually also use this macro to document component outputs, etc.
 #define OpenSim_DOXYGEN_Q_PROPERTY(T, name)
 
-/** Declare a required, single-value property of the given \a pname and
+/** Declare a required, single-value property of the given \a pname and 
 type \a T, with an associated \a comment. The value list for this property will
 always contain exactly one element, and the property must be initialized at
-construction. This macro, and the other similar macros, define several related
+construction. This macro, and the other similar macros, define several related 
 methods. If the property name is my_prop_name, then the defined methods are:
   - constructProperty_my_prop_name(initialValue)
   - getProperty_my_prop_name()
@@ -1373,7 +1373,7 @@ methods. If the property name is my_prop_name, then the defined methods are:
 
 For some property types, the initial value may be omitted during construction.
 A data member is also created but is intended for internal use only:
-  - PropertyIndex_my_prop_name holds the property table index for this
+  - PropertyIndex_my_prop_name holds the property table index for this 
     property after it has been constructed
 
 @relates OpenSim::Property **/
@@ -1412,8 +1412,8 @@ A data member is also created but is intended for internal use only:
 
 
 /** Declare a required, unnamed property holding exactly one object of type
-T derived from %OpenSim's Object class and identified by that object's class
-name rather than a property name. At construction, this property must be
+T derived from %OpenSim's Object class and identified by that object's class 
+name rather than a property name. At construction, this property must be 
 initialized with an object of type T.
 @relates OpenSim::Property **/
 #define OpenSim_DECLARE_UNNAMED_PROPERTY(T, comment)                        \
@@ -1492,7 +1492,7 @@ value of type T.
 
 
 /** Declare a property of the given \a pname containing a variable-length
-list of values of the given type T. The property may be constructed as empty,
+list of values of the given type T. The property may be constructed as empty, 
 or with initialization to a templatized Container\<T> for any Container that
 supports a %size() method and operator[] element selection.
 @see OpenSim_DECLARE_LIST_PROPERTY_SIZE()
@@ -1525,11 +1525,11 @@ supports a %size() method and operator[] element selection.
     /** @endcond **/                                                        \
     /** @}                                                               */
 
-/** Declare a property of the given \a pname containing a list of values of
+/** Declare a property of the given \a pname containing a list of values of 
 the given type T, with the number of values in the list restricted to be
-exactly \a listSize (> 0) elements, no more or less. A fixed-size property must
+exactly \a listSize (> 0) elements, no more or less. A fixed-size property must 
 be initialized at construction, by providing a templatized Container\<T> with
-the right number of elements, using any Container that supports a %size()
+the right number of elements, using any Container that supports a %size() 
 method and operator[] element selection.
 @relates OpenSim::Property **/
 #define OpenSim_DECLARE_LIST_PROPERTY_SIZE(pname, T, listSize, comment)     \
@@ -1552,11 +1552,11 @@ method and operator[] element selection.
                                          (listSize), (listSize))            \
     /** @}                                                               */
 
-/** Declare a property of the given \a pname containing a list of values of
-the given type T, with the number of values required to be at least
-\a minSize (> 0) elements. Such a property must be initialized at construction,
-by providing a templatized Container\<T> with at least \a minSize elements,
-using any Container that supports a %size() method and operator[] element
+/** Declare a property of the given \a pname containing a list of values of 
+the given type T, with the number of values required to be at least 
+\a minSize (> 0) elements. Such a property must be initialized at construction, 
+by providing a templatized Container\<T> with at least \a minSize elements, 
+using any Container that supports a %size() method and operator[] element 
 selection.
 @relates OpenSim::Property **/
 #define OpenSim_DECLARE_LIST_PROPERTY_ATLEAST(pname, T, minSize, comment)   \
@@ -1580,11 +1580,11 @@ selection.
                                 (minSize), std::numeric_limits<int>::max()) \
     /** @}                                                               */
 
-/** Declare a property of the given \a pname containing a list of values of
+/** Declare a property of the given \a pname containing a list of values of 
 the given type T, with the number of values in the list restricted to be
-no more than \a maxSize (> 0) elements.  This kind of property may optionally
-be initialized at construction, by providing a templatized Container\<T> with
-no more than \a maxSize elements, using any Container that supports a %size()
+no more than \a maxSize (> 0) elements.  This kind of property may optionally 
+be initialized at construction, by providing a templatized Container\<T> with 
+no more than \a maxSize elements, using any Container that supports a %size() 
 method and operator[] element selection.
 @relates OpenSim::Property **/
 #define OpenSim_DECLARE_LIST_PROPERTY_ATMOST(pname, T, maxSize, comment)    \
@@ -1612,11 +1612,11 @@ method and operator[] element selection.
     /** @endcond **/                                                        \
     /** @}                                                               */
 
-/** Declare a property of the given \a pname containing a list of values of
+/** Declare a property of the given \a pname containing a list of values of 
 the given type T, with the number of values in the list restricted to be
-in the range \a minSize (> 0) to \a maxSize (> \a minSize).  This kind of
-property must be initialized with at least \a minSize values at construction.
-If you want to allow zero elements, so that initialization is optional, use
+in the range \a minSize (> 0) to \a maxSize (> \a minSize).  This kind of 
+property must be initialized with at least \a minSize values at construction. 
+If you want to allow zero elements, so that initialization is optional, use 
 OpenSim_DECLARE_PROPERTY_ATMOST() rather than this macro.
 @relates OpenSim::Property **/
 #define OpenSim_DECLARE_LIST_PROPERTY_RANGE(pname, T, minSize, maxSize,     \
