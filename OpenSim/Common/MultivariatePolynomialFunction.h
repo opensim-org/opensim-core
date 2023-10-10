@@ -98,7 +98,9 @@ public:
     /// Return function
     SimTK::Function* createSimTKFunction() const override;
     
+    /// Get a vector of the terms in the polynomial function.
     SimTK::Vector getTermValues(const SimTK::Vector& x) const;
+    /// Get a vector of the derivatives of the terms in the polynomial function.
     SimTK::Vector getTermDerivatives(const std::vector<int>& derivComponent,
             const SimTK::Vector& x) const;
 

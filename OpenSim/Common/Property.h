@@ -833,7 +833,7 @@ public:
         if (name.empty())
             throw OpenSim::Exception(
                 "addProperty<" + std::string(SimTK::NiceTypeName<T>::name())
-                + ">(): a simple (non-Object) property must have a name.");     
+                + ">(): a simple (non-Object) property must have a name.");        
         this->setName(name); 
         if (isOneValue) this->setAllowableListSize(1); 
     }
@@ -979,8 +979,8 @@ public:
     static const SimpleProperty& getAs(const AbstractProperty& prop) {
         const SimpleProperty* p = SimTK_DYNAMIC_CAST_DEBUG<const SimpleProperty*>(&prop);
         if (p) return *p;
-        throw OpenSim::Exception 
-           ("SimpleProperty<T>::getAs(): Property " + prop.getName()
+        throw OpenSim::Exception
+           ("SimpleProperty<T>::getAs(): Property " + prop.getName() 
             + " was not of simple type "
             + std::string(SimTK::NiceTypeName<T>::name()),
             __FILE__, __LINE__);

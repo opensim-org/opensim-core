@@ -116,7 +116,7 @@ OpenSim::updatePre40KinematicsStorageFor40MotionType(const Model& pre40Model,
     // There is no issue if the kinematics are in internal values (i.e. not
     // converted to degrees)
     if(!kinematics.isInDegrees()) return nullptr;
-
+    
     if (pre40Model.getDocumentFileVersion() >= 30415) {
         throw Exception("updateKinematicsStorageForUpdatedModel has no updates "
             "to make because the model '" + pre40Model.getName() + "'is up-to-date.\n"
@@ -124,30 +124,30 @@ OpenSim::updatePre40KinematicsStorageFor40MotionType(const Model& pre40Model,
             "nothing further must be done. Otherwise, provide the original model "
             "file used to generate the motion files and try again.");
     }
-
+    
     std::vector<const Coordinate*> problemCoords;
     auto coordinates = pre40Model.getComponentList<Coordinate>();
     for (auto& coord : coordinates) {
         const Coordinate::MotionType oldMotionType =
                 coord.getUserSpecifiedMotionTypePriorTo40();
         const Coordinate::MotionType motionType = coord.getMotionType();
-
+        
         if ((oldMotionType != Coordinate::MotionType::Undefined) &&
             (oldMotionType != motionType)) {
             problemCoords.push_back(&coord);
         }
     }
-
+    
     if (problemCoords.size() == 0)
         return nullptr;
-
+    
     std::unique_ptr<Storage> updatedKinematics(kinematics.clone());
     // Cycle the inconsistent Coordinates
     for (const auto& coord : problemCoords) {
         // Get the corresponding column of data and if in degrees
         // undo the radians to degrees conversion on that column.
         int ix = updatedKinematics->getStateIndex(coord->getName());
-
+        
         if (ix < 0) {
             log_warn("updateKinematicsStorageForUpdatedModel(): motion '{}' "
                      "does not contain inconsistent coordinate '{}'.)",
@@ -162,12 +162,12 @@ OpenSim::updatePre40KinematicsStorageFor40MotionType(const Model& pre40Model,
     return updatedKinematics;
 }
 
-
+    
 void OpenSim::updatePre40KinematicsFilesFor40MotionType(const Model& model,
         const std::vector<std::string>& filePaths,
         std::string suffix)
 {
-    // Cycle through the data files
+    // Cycle through the data files 
     for (const auto& filePath : filePaths) {
         Storage motion(filePath);
         auto updatedMotion =
@@ -201,7 +201,7 @@ void OpenSim::updateSocketConnecteesBySearch(Model& model)
                 socket.finalizeConnection(model);
             } catch (const ComponentNotFoundOnSpecifiedPath&) {
                 const ComponentPath path(socket.getConnecteePath());
-                if (path.getNumPathLevels() >= 1) {
+                if (path.getNumPathLevels() >= 1) { 
                     const Component* found =
                         model.findComponent(path.getComponentName());
                     if (found) {
