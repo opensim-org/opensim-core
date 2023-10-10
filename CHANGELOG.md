@@ -25,6 +25,7 @@ been added to these forces to provide access to concrete path types (e.g., `updP
 - Deleting elements from an `OpenSim::Coordinate` range now throws an exception during `finalizeFromProperties` (previously:
   it would let you do it, and throw later when `Coordinate::getMinRange()` or `Coordinate::getMaxRange()` were called, #3532)
 - Added `FunctionBasedPath`, a class for representing paths in `Force`s based on `Function` objects (#3389)
+- Fixed bindings to expose the method Model::getCoordinatesInMultibodyTreeOrder to scripting users (#3569)
 
 v4.4.1
 ======
