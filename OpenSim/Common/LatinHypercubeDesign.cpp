@@ -97,12 +97,12 @@ int LatinHypercubeDesign::getPhiPDistanceExponent() const {
 //=============================================================================
 SimTK::Matrix LatinHypercubeDesign::generateRandomDesign(int iterations) const {
     checkConfiguration();
-    Logger::info("Generating a random Latin hypercube design with {} "
-                 "iterations...", iterations);
+    log_info("Generating a random Latin hypercube design with {} "
+             "iterations...", iterations);
     SimTK::Matrix design = computeRandomDesign(m_numSamples, m_numVariables,
             iterations);
-    Logger::info("The final design has score {} using the '{}' distance "
-                 "criterion (lower is better).",
+    log_info("The final design has score {} using the '{}' distance "
+             "criterion (lower is better).",
             evaluateDesign(design), m_distanceCriterion);
     return design;
 }
@@ -116,9 +116,9 @@ SimTK::Matrix LatinHypercubeDesign::generateTranslationalPropagationDesign(
         int minPts = (int)std::ceil(0.05 * m_numSamples);
         int maxPts = (int)std::ceil(0.25 * m_numSamples);
         int deltaPts = (int)std::ceil(0.05 * m_numSamples);
-        Logger::info("Generating Latin hypercube designs using the "
-                     "translational propagation algorithm between {} "
-                     "and {} seed points...", minPts, maxPts);
+        log_info("Generating Latin hypercube designs using the "
+                 "translational propagation algorithm between {} "
+                 "and {} seed points...", minPts, maxPts);
 
         SimTK::Matrix currentDesign;
         double currentScore, score = SimTK::Infinity;
@@ -133,12 +133,12 @@ SimTK::Matrix LatinHypercubeDesign::generateTranslationalPropagationDesign(
                 design = currentDesign;
                 score = currentScore;
             }
-            Logger::info("Score for {} seed points = {}", pts, currentScore);
+            log_info("Score for {} seed points = {}", pts, currentScore);
         }
     } else {
         OPENSIM_THROW_IF(numSeedPoints < 1, Exception,
                 "The number of seed points must be greater than zero.")
-        Logger::info("Generating a Latin hypercube design using the "
+        log_info("Generating a Latin hypercube design using the "
                  "translational propagation algorithm with {} seed points...",
                 numSeedPoints);
         SimTK::Matrix seed = computeRandomDesign(
@@ -148,8 +148,8 @@ SimTK::Matrix LatinHypercubeDesign::generateTranslationalPropagationDesign(
         design /= m_numSamples;
     }
 
-    Logger::info("The final design has score {} using the '{}' distance "
-                 "criterion (lower is better).",
+    log_info("The final design has score {} using the '{}' distance "
+             "criterion (lower is better).",
             evaluateDesign(design), m_distanceCriterion);
     return design;
 }
@@ -157,8 +157,8 @@ SimTK::Matrix LatinHypercubeDesign::generateTranslationalPropagationDesign(
 SimTK::Matrix LatinHypercubeDesign::generateStochasticEvolutionaryDesign(
         int iterations, const SimTK::Matrix& initialDesign) const {
     checkConfiguration();
-    Logger::info("Generating a Latin hypercube design using the enhanced "
-                 "stochastic evolutionary algorithm with {} iterations...",
+    log_info("Generating a Latin hypercube design using the enhanced "
+             "stochastic evolutionary algorithm with {} iterations...",
             iterations);
 
     // A function the smoothly transitions between two values.
@@ -176,12 +176,12 @@ SimTK::Matrix LatinHypercubeDesign::generateStochasticEvolutionaryDesign(
             m_numSamples, 5, 50, 0.01);
     int numInnerIterations = (int)smoothBoundedFunction(
             m_numSamples, 10, 100, 0.005);
-    Logger::info("Number of outer iterations = {} (provided by user)",
+    log_info("Number of outer iterations = {} (provided by user)",
             iterations);
-    Logger::info("Number of column exchanges = {} (computed based on the "
-                 "number of samples)", numColumnExchanges);
-    Logger::info("Number of inner iterations = {} (computed based on the "
-                    "number of samples)", numInnerIterations);
+    log_info("Number of column exchanges = {} (computed based on the "
+             "number of samples)", numColumnExchanges);
+    log_info("Number of inner iterations = {} (computed based on the "
+             "number of samples)", numInnerIterations);
 
     SimTK::Matrix initialDesignToUse(m_numSamples, m_numVariables);
     if (!initialDesign.nrow()) {
@@ -197,7 +197,7 @@ SimTK::Matrix LatinHypercubeDesign::generateStochasticEvolutionaryDesign(
                 m_numVariables, initialDesign.ncol())
         initialDesignToUse = initialDesign;
     }
-    Logger::info("Initial design score = {}",
+    log_info("Initial design score = {}",
             evaluateDesign(initialDesignToUse));
 
     // Perform the stochastic evolutionary algorithm.
@@ -205,7 +205,7 @@ SimTK::Matrix LatinHypercubeDesign::generateStochasticEvolutionaryDesign(
             initialDesignToUse, numColumnExchanges,
             numInnerIterations, iterations);
 
-    Logger::info("The final design has score {} using the '{}' distance "
+    log_info("The final design has score {} using the '{}' distance "
                  "criterion (lower is better).",
             evaluateDesign(design), m_distanceCriterion);
     return design;
@@ -520,8 +520,8 @@ SimTK::Matrix LatinHypercubeDesign::computeStochasticEvolutionaryDesign(
         }
 
         ++outer;
-        Logger::info("Iteration {}/{} score = {}", outer, numOuterIterations,
-                distanceBest);
+        log_info("Iteration {}/{} score = {}", outer, numOuterIterations,
+                 distanceBest);
     }
 
     return designBest;
@@ -598,6 +598,6 @@ void LatinHypercubeDesign::checkConfiguration() const {
             "Invalid distance criterion. You must choose be one of the "
             "following: 'maximin', 'phi_p'.")
 
-    Logger::info("LatinHypercubeDesign");
-    Logger::info("--------------------");
+    log_info("LatinHypercubeDesign");
+    log_info("--------------------");
 }
