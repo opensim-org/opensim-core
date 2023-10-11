@@ -26,6 +26,16 @@
 
 #include <iostream>
 
+/// Determine if `string` starts with the substring `start`.
+/// https://stackoverflow.com/questions/874134/find-if-string-ends-with-another-string-in-c
+/// @ingroup mocogenutil
+static bool startsWith(const std::string& string, const std::string& start) {
+    if (string.length() >= start.length()) {
+        return string.compare(0, start.length(), start) == 0;
+    }
+    return false;
+}
+
 using namespace OpenSim;
 
 static const char helpMessage[] =
@@ -103,7 +113,7 @@ void visualize(std::string file, std::string trajectory_file) {
         std::cin.get();
     } else {
         MocoTrajectory trajectory(trajectory_file);
-        visualize(*model, trajectory.exportToStatesStorage());
+        // visualize(*model, trajectory.exportToStatesStorage());
     }
 }
 
