@@ -28,9 +28,11 @@
 #include <numeric>
 #include <random>
 
-#include <OpenSim/Common/Logger.h>
+#include <SimTKcommon/Testing.h>
 #include <SimTKcommon/internal/Random.h>
 #include <SimTKcommon/internal/VectorMath.h>
+
+#include <OpenSim/Common/Logger.h>
 
 using namespace OpenSim;
 
@@ -562,8 +564,9 @@ SimTK::Matrix LatinHypercubeDesign::computeRandomDesign(
     for (int i = 0; i < iterations; ++i) {
         // Generate a random hypercube and normalize it.
         design = computeRandomHypercube(numSamples, numVariables);
+        design -= SimTK::Test::randMatrix(numSamples, numVariables);
         design /= numSamples;
-
+        
         // Compute the distance criterion and save the best design.
         double distance = evaluateDesign(design);
         if (distance < distanceBest) {

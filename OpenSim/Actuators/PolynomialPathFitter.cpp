@@ -92,8 +92,8 @@ void PolynomialPathFitter::constructProperties() {
     constructProperty_moment_arm_tolerance(1e-3);
     constructProperty_minimum_polynomial_order(2);
     constructProperty_maximum_polynomial_order(9);
-    constructProperty_parallel((int)std::thread::hardware_concurrency() - 2);
-    constructProperty_default_coordinate_sampling_bounds({-5.0, 5.0});
+    constructProperty_parallel((int)std::thread::hardware_concurrency());
+    constructProperty_default_coordinate_sampling_bounds({-10.0, 10.0});
     constructProperty_coordinate_sampling_bounds();
     constructProperty_num_samples_per_frame(25);
 }
@@ -159,6 +159,8 @@ void PolynomialPathFitter::runFittingPipeline() {
     // ---------------------------
     // Set the default bounds for all coordinates.
     SimTK::Vec2 defaultBounds = get_default_coordinate_sampling_bounds();
+    defaultBounds[0] = SimTK::convertDegreesToRadians(defaultBounds[0]);
+    defaultBounds[1] = SimTK::convertDegreesToRadians(defaultBounds[1]);
     m_coordinateBoundsMap.reserve(model.getNumCoordinates());
     m_coordinateRangeMap.reserve(model.getNumCoordinates());
     for (const auto& coordinate : model.getComponentList<Coordinate>()) {
@@ -187,6 +189,8 @@ void PolynomialPathFitter::runFittingPipeline() {
                 Exception, "Expected the model to contain the coordinate '{}', "
                            "but it does not.", coordinatePath)
         SimTK::Vec2 bounds = get_coordinate_sampling_bounds(i).get_bounds();
+        bounds[0] = SimTK::convertDegreesToRadians(bounds[0]);
+        bounds[1] = SimTK::convertDegreesToRadians(bounds[1]);
         std::string valuePath = fmt::format("{}/value", coordinatePath);
         m_coordinateBoundsMap[valuePath] = bounds;
     }
@@ -194,7 +198,7 @@ void PolynomialPathFitter::runFittingPipeline() {
     // Validate settings.
     // ------------------
     OPENSIM_THROW_IF_FRMOBJ(get_moment_arm_tolerance() < 0 ||
-                                    get_moment_arm_tolerance() > 1, Exception,
+                            get_moment_arm_tolerance() > 1, Exception,
             "Expected 'moment_arm_tolerance' to be in the range [0, 1], but "
             "received {}.", get_moment_arm_tolerance())
 
@@ -225,8 +229,9 @@ void PolynomialPathFitter::runFittingPipeline() {
     // Recompute the coupled coordinate values.
     auto tableProcessorSampled = TableProcessor(valuesSampled) |
                                  TabOpAppendCoupledCoordinateValues();
-    valuesSampled = tableProcessor.process(&model);
+    valuesSampled = tableProcessorSampled.process(&model);
 
+    STOFileAdapter::write(values, "coordinate_values_original.sto");
     STOFileAdapter::write(valuesSampled, "coordinate_values_sampled.sto");
 
     // Compute path lengths and moment arms.
@@ -246,64 +251,67 @@ void PolynomialPathFitter::runFittingPipeline() {
 
 TimeSeriesTable PolynomialPathFitter::sampleCoordinateValues(
         const TimeSeriesTable& values) {
+    // Mute the Latin hypercube sampling output, so it doesn't print out for
+    // every time point.
+    Logger::Level origLoggerLevel = Logger::getLevel();
+    Logger::setLevel(Logger::Level::Warn);
+    
     // Create a Latin hypercube design to sample the coordinate values.
     LatinHypercubeDesign lhs;
     lhs.setNumSamples(get_num_samples_per_frame());
     lhs.setNumVariables((int)values.getNumColumns());
-
-    // Store the coordinate bounds and ranges in vectors that we can pass to the
-    // helper function below.
-    std::vector<SimTK::Vec2> boundsVec;
-    boundsVec.reserve(values.getNumColumns());
-    std::vector<SimTK::Vec2> rangeVec;
-    rangeVec.reserve(values.getNumColumns());
-    for (const auto& label : values.getColumnLabels()) {
-        boundsVec.push_back(m_coordinateBoundsMap[label]);
-        rangeVec.push_back(m_coordinateRangeMap[label]);
-    }
-
+    
     // Helper function for sampling the coordinate values between two time
     // indexes.
-    auto sampleCoordinateValuesSubset = [lhs, boundsVec, rangeVec](
-                        std::vector<int>::iterator begin_iter,
-                        std::vector<int>::iterator end_iter,
-                        const SimTK::Matrix& valuesBlock) -> SimTK::Matrix {
-
+    auto sampleCoordinateValuesSubset = [lhs](
+            std::vector<int>::iterator begin_iter,
+            std::vector<int>::iterator end_iter,
+            const TimeSeriesTable& values,
+            const std::unordered_map<std::string, SimTK::Vec2>& boundsMap,
+            const std::unordered_map<std::string, SimTK::Vec2>& rangeMap) 
+                -> SimTK::Matrix {
+        
         SimTK::Matrix results(
                 lhs.getNumSamples()*(int)std::distance(begin_iter, end_iter),
-                (int)valuesBlock.ncol());
+                (int)values.getNumColumns());
+        int thisTimeIndex = 0;
         for (auto it = begin_iter; it != end_iter; ++it) {
-            // Generate the design and shift between [-1, 1].
+            // Generate the design and shift to between [-1, 1].
             SimTK::Matrix design = lhs.generateStochasticEvolutionaryDesign(5);
-            design -= 0.5;
-            design *= 2.0;
-
-            // Linearly transform the design to the specified bounds for each
-            // coordinate.
-            for (int icol = 0; icol < design.ncol(); ++icol) {
-                double slope = 0.5*(boundsVec[icol][1] - boundsVec[icol][0]);
+            design.elementwiseSubtractFromScalarInPlace(0.5);
+            design *= 2;
+            
+            int icol = 0;
+            for (const std::string& label : values.getColumnLabels()) {
+                const SimTK::VectorView column = 
+                        values.getDependentColumn(label);
+                const auto& bounds = boundsMap.at(label);
+                const auto& range = rangeMap.at(label);
+                
+                // Linearly transform the design to the specified bounds for 
+                // each coordinate.
+                double slope = 0.5*(bounds[1] - bounds[0]);
                 SimTK::Vector candidateCol = slope*(design.col(icol) + 1.0) +
-                        boundsVec[icol][0] + valuesBlock(*it, icol);
-
+                        bounds[0] + column[*it];
+                
                 // Check that all elements in the column are within the range of
                 // motion. If not, move the element inside the range of motion
                 // that is closest to the original value.
                 for (double& elt : candidateCol) {
-                    if (elt < rangeVec[icol][0]) {
-                        elt = rangeVec[icol][0];
-                    } else if (elt > rangeVec[icol][1]) {
-                        elt = rangeVec[icol][1];
+                    if (elt < range[0]) {
+                        elt = range[0];
+                    } else if (elt > range[1]) {
+                        elt = range[1];
                     }
                 }
-
-                // Save the (potentially modified) column.
                 design.updCol(icol) = candidateCol;
+                ++icol;
             }
-
+            
             // Store the results.
-            results.updBlock(
-                    (int)std::distance(begin_iter, it)*lhs.getNumSamples(),
-                    0, lhs.getNumSamples(), (int)valuesBlock.ncol()) = design;
+            results.updBlock(thisTimeIndex*lhs.getNumSamples(), 0, 
+                    lhs.getNumSamples(), (int)values.getNumColumns()) = design;
+            ++thisTimeIndex;
         }
 
         return results;
@@ -319,22 +327,25 @@ TimeSeriesTable PolynomialPathFitter::sampleCoordinateValues(
     for (int ithread = 0; ithread < get_parallel(); ++ithread) {
         auto begin_iter = timeIndexes.begin() + offset;
         auto end_iter = (ithread == get_parallel()-1) ?
-                                                        timeIndexes.end() :
-                                                        timeIndexes.begin() + offset + stride;
-        SimTK::Matrix valuesBlock = values.getMatrixBlock(*begin_iter, 0,
-                (int)std::distance(begin_iter, end_iter),
-                values.getNumColumns());
+                timeIndexes.end() :
+                timeIndexes.begin() + offset + stride;
         futures.push_back(std::async(std::launch::async,
                 sampleCoordinateValuesSubset,
-                begin_iter, end_iter, valuesBlock));
+                begin_iter, end_iter, values,
+                m_coordinateBoundsMap,
+                m_coordinateRangeMap));
         offset += stride;
     }
 
     // Wait for threads to finish and collect the results.
-    std::vector<SimTK::Matrix> outputs(get_parallel());
+    std::vector<SimTK::Matrix> outputs;
+    outputs.reserve(get_parallel());
     for (int i = 0; i < get_parallel(); ++i) {
-        outputs[i] = futures[i].get();
+        outputs.push_back(futures[i].get());
     }
+    
+    // Reset the logger.
+    OpenSim::Logger::setLevel(origLoggerLevel);
 
     // Assemble the results into one TimeSeriesTable.
     int timeIdx = 0;
@@ -342,12 +353,17 @@ TimeSeriesTable PolynomialPathFitter::sampleCoordinateValues(
     double dt = (times[1] - times[0]) / (get_num_samples_per_frame() + 1);
     TimeSeriesTable valuesSampled;
     for (int i = 0; i < get_parallel(); ++i) {
-        // Append the original values.
-        valuesSampled.appendRow(times[timeIdx], values.getRowAtIndex(timeIdx));
-        // Append the sampled values.
-        for (int irow = 0; irow < outputs[i].nrow(); ++irow) {
-            valuesSampled.appendRow(times[timeIdx] + (irow + 1)*dt,
-                    outputs[i].row(irow));
+        int numTimeIndexes = outputs[i].nrow() / get_num_samples_per_frame();
+        for (int j = 0; j < numTimeIndexes; ++j) {
+            // Append the original values.
+            valuesSampled.appendRow(times[timeIdx], 
+                    values.getRowAtIndex(timeIdx));
+            // Append the sampled values.
+            for (int irow = 0; irow < get_num_samples_per_frame(); ++irow) {
+                valuesSampled.appendRow(times[timeIdx] + (irow + 1)*dt,
+                        outputs[i].row(irow + j*get_num_samples_per_frame()));
+            }
+            ++timeIdx;
         }
     }
     valuesSampled.addTableMetaData<std::string>("inDegrees", "no");
@@ -433,9 +449,10 @@ void PolynomialPathFitter::computePathLengthsAndMomentArms(
     }
 
     // Wait for threads to finish and collect results
-    std::vector<SimTK::Matrix> outputs(get_parallel());
+    std::vector<SimTK::Matrix> outputs;
+    outputs.reserve(get_parallel());
     for (int i = 0; i < get_parallel(); ++i) {
-        outputs[i] = futures[i].get();
+        outputs.push_back(futures[i].get());
     }
 
     // Assemble results into one TimeSeriesTable
