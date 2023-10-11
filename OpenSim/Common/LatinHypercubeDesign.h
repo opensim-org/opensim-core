@@ -34,16 +34,29 @@ namespace OpenSim {
  * A Latin hypercube is an m-by-n matrix, where 'm' is the number of design
  * samples and 'n' is the number of variables in the design. Each sample point
  * (i.e., each row in the design) is the only sample point in its row and column
- * in the hypercube defined by the number of variables. For example, a 5-by-5
- * grid with samples along the diagonal would be a valid Latin hypercube design
- * with 5 samples and 2 variables (note that the matrix representing the design
- * is a 5-by-2 matrix representing the coordinates of these samples).
+ * in the hypercube defined by the number of variables. 
  *
- * Latin hypercube designs are useful for sampling a large, multivariate
- * parameter spaces. Optimal Latin hypercube designs are those that maximize the
- * minimum distance between samples in the design. This class provides methods
- * for generating random Latin hypercube designs, as well as methods for
- * generating Latin hypercube designs based on the translational propagation
+ * For example, consider a design with 5 samples and 2 variables:
+ *
+ *            grid                       matrix
+ *       __ __ __ __ __                __       __
+ *      |    x         |              | 0.6  0.2 |
+ *      |         x    |              | 1.0  0.4 |
+ *   q2 | x            |          q = | 0.2  0.6 |
+ *      |            x |              | 0.8  0.8 |
+ *      |      x       |              | 0.4  1.0 |
+ *       ‾‾ ‾‾ ‾‾ ‾‾ ‾‾               ‾‾       ‾‾
+ *             q1
+ *
+ * On the left is the 5-by-5 square grid (i.e., 2-D hypercube) that is produced
+ * if the samples are plotted in the variable space defined by q1 and q2. On the
+ * right is the 5-by-2 design matrix that contains the 5 samples.
+ *             
+ * Latin hypercube designs are useful for sampling large, multivariate parameter 
+ * spaces. Optimal Latin hypercube designs are those that maximize the minimum 
+ * distance between samples in the design. This class provides methods for 
+ * generating random Latin hypercube designs, as well as methods for
+ * generating Latin hypercube designs using the translational propagation
  * algorithm from Viana et al. (2009) and the enhanced stochastic evolutionary
  * algorithm from Jin et al. (2005).
  *
