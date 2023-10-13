@@ -66,10 +66,10 @@ namespace OpenSim {
  * variables and samples in the design, and, optionally, the distance criterion
  * used to evaluate each design. The distance criterion can be either "maximin"
  * or "phi_p", where "maximin" is the default. The "phi_p" distance criterion
- * is a approximation of the "maximin" criterion that can be used to generate
- * designs with a using inverse distances raised to a large exponent (see [2]
- * for more details). The exponent used for the "phi_p" distance criterion can
- * be set using the setPhiPDistanceExponent() method.
+ * is an approximation of the "maximin" criterion that can be used to generate
+ * designs that minimize the sum of inverse distances raised to a large exponent
+ * (see [2] for more details). The exponent used for the "phi_p" distance
+ * criterion can be set using the setPhiPDistanceExponent() method.
  *
  * For example, a random Latin hypercube design with 10 samples and 3 variables
  * can be created as follows:
@@ -97,9 +97,11 @@ namespace OpenSim {
  * double score = lhs.evaluateDesign(design);
  * @endcode
  *
- * Lower design scores are better. The "maximin" criterion returns a negative
- * value since it is a maximization criterion, while the "phi_p" criterion
- * returns a positive value since it is a minimization criterion.
+ * Lower design scores are better. Since the original "maximin" is a
+ * maximization criterion, here we negate it so it strictly takes on negative
+ * values. The "phi_p" criterion returns a positive value since it is a
+ * minimization criterion. While both criteria aim to achieve a similar goal,
+ * the values returned by each are not directly comparable.
  *
  * Recommendations for different sized designs
  * -------------------------------------------
@@ -108,7 +110,7 @@ namespace OpenSim {
  * guarantee that the design is optimal.
  *
  * To rapidly create Latin hypercube designs with a small number of samples
- * (less than 25) and variables (less than 5),
+ * (fewer than ~25) and variables (fewer than ~5),
  * generateTranslationalPropagationDesign() is recommended. This method uses a
  * deterministic algorithm that translates and propagates a "seed" design
  * throughout the design space to generate a Latin hypercube design.
@@ -118,7 +120,9 @@ namespace OpenSim {
  * approach randomly exchanges samples between columns in the design matrix and
  * accepts new designs based on an evolving warming and cooling schedule. This
  * method is slower than the other two methods, but generally leads to better
- * designs.
+ * designs. This algorithm requires many evaluations of the design score, so
+ * it is recommended to use the "phi_p" distance criterion, which approximates
+ * "maximin", but is much faster.
  *
  * References
  * ----------
@@ -231,8 +235,8 @@ private:
      * Helper function for generating Latin hypercube designs based on the
      * translational propagation algorithm.
      */
-    static SimTK::Matrix computeTranslationalPropagationDesign(
-            int numSamples, SimTK::Matrix seed);
+    SimTK::Matrix computeTranslationalPropagationDesign(
+            SimTK::Matrix seed) const;
 
     /**
      * Helper functions for computing the distance between samples in a Latin
@@ -244,6 +248,8 @@ private:
     /**
      * Helper functions for computing random Latin hypercube designs.
      */
+    static SimTK::Matrix computeRandomMatrix(
+            int numSamples, int numVariables);
     static SimTK::Matrix computeRandomHypercube(
             int numSamples, int numVariables);
     SimTK::Matrix computeRandomDesign(
