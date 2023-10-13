@@ -26,6 +26,7 @@ been added to these forces to provide access to concrete path types (e.g., `updP
   it would let you do it, and throw later when `Coordinate::getMinRange()` or `Coordinate::getMaxRange()` were called, #3532)
 - Added `FunctionBasedPath`, a class for representing paths in `Force`s based on `Function` objects (#3389)
 - Fixed bindings to expose the method Model::getCoordinatesInMultibodyTreeOrder to scripting users (#3569)
+- Fixed a bug where constructing a `ModelProcessor` from a `Model` object led to an invalid `Model`
 
 v4.4.1
 ======
