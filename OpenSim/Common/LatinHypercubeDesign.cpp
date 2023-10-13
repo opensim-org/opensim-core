@@ -296,7 +296,7 @@ SimTK::Matrix LatinHypercubeDesign::computeTranslationalPropagationDesign(
 
     // If the seed already has the desired number of samples, return it as the
     // final design.
-    if (numSamplesRounded == m_numSamples) {
+    if (seed.nrow() == m_numSamples) {
        seed /= m_numSamples;
        return seed;
     }
@@ -601,9 +601,6 @@ void LatinHypercubeDesign::checkConfiguration() const {
     OPENSIM_THROW_IF(m_numVariables < 1, Exception,
             "Expected the number of variables to be greater than zero, but "
             "received {}.", m_numVariables)
-    OPENSIM_THROW_IF(m_phiDistanceExponent < 1, Exception,
-            "Expected the phi_p distance exponent to be greater than zero, but "
-            "received {}.", m_phiDistanceExponent)
 
     bool distanceCriterionIsValid =
             std::find(ValidDistanceCriteria.begin(),
@@ -613,6 +610,12 @@ void LatinHypercubeDesign::checkConfiguration() const {
     OPENSIM_THROW_IF(distanceCriterionIsValid, Exception,
             "Invalid distance criterion. You must choose be one of the "
             "following: 'maximin', 'phi_p'.")
+
+    if (!m_useMaximinDistanceCriterion) {
+        OPENSIM_THROW_IF(m_phiDistanceExponent < 1, Exception,
+                "Expected the 'phi-p' distance exponent to be greater than zero, "
+                "but received {}.", m_phiDistanceExponent)
+    }
 
     log_info("LatinHypercubeDesign");
     log_info("--------------------");
