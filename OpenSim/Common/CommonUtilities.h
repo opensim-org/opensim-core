@@ -165,7 +165,7 @@ private:
     std::condition_variable m_inventoryMonitor;
 };
 
-/// Compute the K nearest neighbors of two matrices 'x' and 'y'. 'x' and 'y'
+/// Compute the 'k' nearest neighbors of two matrices 'x' and 'y'. 'x' and 'y'
 /// should contain the same number of columns, but can have different numbers of
 /// rows. The function returns a matrix with 'k' number of columns and the same
 /// number of rows as 'y'. Each row in the output matrix contains 'k' distance

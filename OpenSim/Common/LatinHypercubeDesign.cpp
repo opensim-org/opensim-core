@@ -125,9 +125,7 @@ SimTK::Matrix LatinHypercubeDesign::generateTranslationalPropagationDesign(
         for (int pts = minPts; pts <= maxPts; pts += deltaPts) {
             SimTK::Matrix seed = computeRandomDesign(pts, m_numVariables, 25);
             seed *= pts;
-            currentDesign = computeTranslationalPropagationDesign(
-                    m_numSamples, seed);
-            currentDesign /= m_numSamples;
+            currentDesign = computeTranslationalPropagationDesign(seed);
             currentScore = evaluateDesign(currentDesign);
             if (currentScore < score) {
                 design = currentDesign;
@@ -144,8 +142,7 @@ SimTK::Matrix LatinHypercubeDesign::generateTranslationalPropagationDesign(
         SimTK::Matrix seed = computeRandomDesign(
                 numSeedPoints, m_numVariables, 25);
         seed *= numSeedPoints;
-        design = computeTranslationalPropagationDesign(m_numSamples, seed);
-        design /= m_numSamples;
+        design = computeTranslationalPropagationDesign(seed);
     }
 
     log_info("The final design has score {} using the '{}' distance "
@@ -171,7 +168,7 @@ SimTK::Matrix LatinHypercubeDesign::generateStochasticEvolutionaryDesign(
     // The maximum number of column exchanges (50) and inner iterations (100)
     // are set based on the Jin et al. (2005) paper. We arbitrarily set the
     // minimum number of column exchanges and inner iterations to 10% of their
-    // max values.
+    // maximum values.
     int numColumnExchanges = (int)smoothBoundedFunction(
             m_numSamples, 5, 50, 0.01);
     int numInnerIterations = (int)smoothBoundedFunction(
@@ -238,14 +235,14 @@ double LatinHypercubeDesign::computePhiDistanceCriterion(
         for (int j = i + 1; j < numRows; ++j) {
             const SimTK::RowVectorView row_j = design.row(j);
             double distance = (row_j - row_i).abs().sum();
-            sumInverseDistancesP += pow(distance, 1.0 / m_phiDistanceExponent);
+            sumInverseDistancesP += pow(1.0 / distance, m_phiDistanceExponent);
         }
     }
     return pow(sumInverseDistancesP, 1.0 / m_phiDistanceExponent);
 }
 
 SimTK::Matrix LatinHypercubeDesign::computeTranslationalPropagationDesign(
-        int numSamples, SimTK::Matrix seed) {
+        SimTK::Matrix seed) const {
 
     // Sorting helper function.
     // ------------------------
@@ -263,16 +260,16 @@ SimTK::Matrix LatinHypercubeDesign::computeTranslationalPropagationDesign(
     int numSeedPoints = (int)seed.nrow();
     int numVariables = (int)seed.ncol();
     double numDivisions =
-           std::pow(numSamples / numSeedPoints, 1.0 / numVariables);
+           std::pow(m_numSamples / numSeedPoints, 1.0 / numVariables);
     int numDivisionsRounded = (int)std::ceil(numDivisions);
-    int numSeeds;
+    int numBlocks;
     if (numDivisionsRounded > numDivisions) {
-       numSeeds = (int)std::pow(numDivisionsRounded, numVariables);
+        numBlocks = (int)std::pow(numDivisionsRounded, numVariables);
     } else {
-       OPENSIM_ASSERT_ALWAYS(numSamples % numSeedPoints == 0);
-       numSeeds = numSamples / numSeedPoints;
+       OPENSIM_ASSERT_ALWAYS(m_numSamples % numSeedPoints == 0);
+       numBlocks = m_numSamples / numSeedPoints;
     }
-    int numSamplesRounded = numSeeds * numSeedPoints;
+    int numSamplesRounded = numBlocks * numSeedPoints;
 
     // Reshape the seed to create the first design.
     // --------------------------------------------
@@ -294,6 +291,13 @@ SimTK::Matrix LatinHypercubeDesign::computeTranslationalPropagationDesign(
                seed[i][j] = std::round(seed[i][j]);
            }
        }
+    }
+
+    // If the seed already has the desired number of samples, return it as the
+    // final design.
+    if (numSamplesRounded == m_numSamples) {
+       seed /= m_numSamples;
+       return seed;
     }
 
     // Create the TPLHD.
@@ -336,8 +340,8 @@ SimTK::Matrix LatinHypercubeDesign::computeTranslationalPropagationDesign(
 
     // If necessary, resize the TPLHD.
     // -------------------------------
-    if (numSamplesRounded > numSamples) {
-       SimTK::Matrix tplhdResized(numSamples, numVariables);
+    if (numSamplesRounded > m_numSamples) {
+       SimTK::Matrix tplhdResized(m_numSamples, numVariables);
 
        // Center the design space.
        SimTK::RowVector center(numVariables, 0.5*numSamplesRounded);
@@ -352,7 +356,7 @@ SimTK::Matrix LatinHypercubeDesign::computeTranslationalPropagationDesign(
        // center.
        int isample = 0;
        for (int irow : sort_indexes(distance)) {
-           if (isample >= numSamples) {
+           if (isample >= m_numSamples) {
                break;
            }
            tplhdResized.updRow(isample) = tplhd.row(irow);
@@ -367,7 +371,7 @@ SimTK::Matrix LatinHypercubeDesign::computeTranslationalPropagationDesign(
            std::vector<int> sortedColumnIndexes =
                    sort_indexes(tplhdResized.col(ivar));
            SimTK::Matrix tplhdTemp = tplhdResized;
-           for (int irow = 0; irow < numSamples; ++irow) {
+           for (int irow = 0; irow < m_numSamples; ++irow) {
                tplhdResized.updRow(irow) =
                        tplhdTemp.row(sortedColumnIndexes[irow]);
            }
@@ -375,17 +379,16 @@ SimTK::Matrix LatinHypercubeDesign::computeTranslationalPropagationDesign(
            tplhdResized.updCol(ivar) += 1;
 
            // Eliminate empty coordinates.
-           int expectedValue = 1;
-           for (int irow = 0; irow < numSamples; ++irow) {
-               if (tplhdResized[irow][ivar] != expectedValue) {
-                   tplhdResized[irow][ivar] = expectedValue;
+           for (int irow = 0; irow < m_numSamples; ++irow) {
+               if (tplhdResized[irow][ivar] != irow + 1) {
+                   tplhdResized[irow][ivar] = irow + 1;
                }
-               ++expectedValue;
            }
        }
        tplhd = tplhdResized;
     }
 
+    tplhd /= m_numSamples;
     return tplhd;
 }
 
@@ -512,7 +515,7 @@ SimTK::Matrix LatinHypercubeDesign::computeStochasticEvolutionaryDesign(
                threshold /= alpha1;
             }
         } else {
-            if (acceptanceRatio > 0.1) {
+            if (acceptanceRatio < 0.1) {
                 threshold /= alpha3;
             } else if (acceptanceRatio > 0.8) {
                 threshold *= alpha2;
