@@ -235,7 +235,8 @@ double LatinHypercubeDesign::computePhiDistanceCriterion(
         for (int j = i + 1; j < numRows; ++j) {
             const SimTK::RowVectorView row_j = design.row(j);
             double distance = (row_j - row_i).abs().sum();
-            sumInverseDistancesP += pow(1.0 / distance, m_phiDistanceExponent);
+            sumInverseDistancesP += pow(1.0 / distance,
+                    m_phiDistanceExponent);
         }
     }
     return pow(sumInverseDistancesP, 1.0 / m_phiDistanceExponent);
@@ -530,6 +531,18 @@ SimTK::Matrix LatinHypercubeDesign::computeStochasticEvolutionaryDesign(
     return designBest;
 }
 
+SimTK::Matrix LatinHypercubeDesign::computeRandomMatrix(int numSamples,
+        int numVariables) {
+    SimTK::Random::Uniform random(0, 1);
+    SimTK::Matrix matrix(numSamples, numVariables);
+    for (int i = 0; i < numSamples; ++i) {
+        for (int j = 0; j < numVariables; ++j) {
+            matrix[i][j] = random.getValue();
+        }
+    }
+    return matrix;
+}
+
 SimTK::Matrix LatinHypercubeDesign::computeRandomHypercube(
         int numSamples, int numVariables) {
     SimTK::Matrix hypercube(numSamples, numVariables);
@@ -567,7 +580,7 @@ SimTK::Matrix LatinHypercubeDesign::computeRandomDesign(
     for (int i = 0; i < iterations; ++i) {
         // Generate a random hypercube and normalize it.
         design = computeRandomHypercube(numSamples, numVariables);
-        design -= SimTK::Test::randMatrix(numSamples, numVariables);
+        design -= computeRandomMatrix(numSamples, numVariables);
         design /= numSamples;
 
         // Compute the distance criterion and save the best design.

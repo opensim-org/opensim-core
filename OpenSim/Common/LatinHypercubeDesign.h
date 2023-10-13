@@ -120,7 +120,9 @@ namespace OpenSim {
  * approach randomly exchanges samples between columns in the design matrix and
  * accepts new designs based on an evolving warming and cooling schedule. This
  * method is slower than the other two methods, but generally leads to better
- * designs.
+ * designs. This algorithm requires many evaluations of the design score, so
+ * it is recommended to use the "phi_p" distance criterion, which approximates
+ * "maximin", but is much faster.
  *
  * References
  * ----------
@@ -246,6 +248,8 @@ private:
     /**
      * Helper functions for computing random Latin hypercube designs.
      */
+    static SimTK::Matrix computeRandomMatrix(
+            int numSamples, int numVariables);
     static SimTK::Matrix computeRandomHypercube(
             int numSamples, int numVariables);
     SimTK::Matrix computeRandomDesign(
