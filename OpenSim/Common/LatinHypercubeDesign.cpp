@@ -28,7 +28,6 @@
 #include <numeric>
 #include <random>
 
-#include <SimTKcommon/Testing.h>
 #include <SimTKcommon/internal/Random.h>
 #include <SimTKcommon/internal/VectorMath.h>
 
@@ -259,6 +258,11 @@ SimTK::Matrix LatinHypercubeDesign::computeTranslationalPropagationDesign(
     // Define the size of the TPLHD to be created first.
     // -------------------------------------------------
     int numSeedPoints = (int)seed.nrow();
+    OPENSIM_THROW_IF(numSeedPoints > m_numSamples, Exception,
+            "Expected the number of seed points to be less than or equal to "
+            "the number of samples, but received {} seed points and {} "
+            "samples.", numSeedPoints, m_numSamples)
+
     int numVariables = (int)seed.ncol();
     double numDivisions =
            std::pow(m_numSamples / numSeedPoints, 1.0 / numVariables);
@@ -613,8 +617,8 @@ void LatinHypercubeDesign::checkConfiguration() const {
 
     if (!m_useMaximinDistanceCriterion) {
         OPENSIM_THROW_IF(m_phiDistanceExponent < 1, Exception,
-                "Expected the 'phi-p' distance exponent to be greater than zero, "
-                "but received {}.", m_phiDistanceExponent)
+                "Expected the 'phi-p' distance exponent to be greater than "
+                "zero, but received {}.", m_phiDistanceExponent)
     }
 
     log_info("LatinHypercubeDesign");
