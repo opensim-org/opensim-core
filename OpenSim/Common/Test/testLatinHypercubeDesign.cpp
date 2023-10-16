@@ -21,7 +21,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <Opensim/Common/LatinHypercubeDesign.h>
+#include <OpenSim/Common/LatinHypercubeDesign.h>
 
 #define CATCH_CONFIG_MAIN
 #include <OpenSim/Auxiliary/catch.hpp>

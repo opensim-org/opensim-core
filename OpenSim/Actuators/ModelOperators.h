@@ -81,9 +81,6 @@ class OSIMACTUATORS_API ModOpRemoveMuscles : public ModelOperator {
 
 public:
     void operate(Model& model, const std::string&) const override {
-        // Without finalizeFromProperties(), an exception is raised
-        // about the model not having any subcomponents.
-        model.finalizeFromProperties();
         model.finalizeConnections();
         ModelFactory::removeMuscles(model);
     }
@@ -180,9 +177,6 @@ class OSIMACTUATORS_API ModOpReplaceMusclesWithPathActuators
 
 public:
     void operate(Model& model, const std::string&) const override {
-        // Without finalizeFromProperties(), an exception is raised
-        // about the model not having any subcomponents.
-        model.finalizeFromProperties();
         model.finalizeConnections();
         ModelFactory::replaceMusclesWithPathActuators(model);
     }
