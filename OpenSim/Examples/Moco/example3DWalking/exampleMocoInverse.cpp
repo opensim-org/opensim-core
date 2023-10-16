@@ -24,13 +24,14 @@
 /// See the README.txt next to this file for more information.
 
 #include <OpenSim/Actuators/ModelOperators.h>
+#include <OpenSim/Actuators/PolynomialPathFitter.h>
 #include <OpenSim/Common/Adapters.h>
 #include <OpenSim/Moco/osimMoco.h>
 
 using namespace OpenSim;
 
 /// This problem solves in about 5 minutes.
-void solveMocoInverse() {
+void solveMocoInverse(bool useFunctionBasedPaths = false) {
 
     // Construct the MocoInverse tool.
     MocoInverse inverse;
@@ -49,6 +50,12 @@ void solveMocoInverse() {
     // Only valid for DeGrooteFregly2016Muscles.
     modelProcessor.append(ModOpScaleActiveFiberForceCurveWidthDGF(1.5));
     modelProcessor.append(ModOpAddReserves(1.0));
+    if (useFunctionBasedPaths) {
+        // Use function-based paths instead of the default spline-based paths.
+        modelProcessor.append(
+                ModOpReplacePathsWithFunctionBasedPaths(
+                        "subject_scale_walk_FunctionBasedPathSet.xml"));
+    }
     inverse.setModel(modelProcessor);
 
     // Construct a TableProcessor of the coordinate data and pass it to the
@@ -68,7 +75,15 @@ void solveMocoInverse() {
     inverse.set_kinematics_allow_extra_columns(true);
 
     // Solve the problem and write the solution to a Storage file.
+    // Time how long it takes to solve using std::chrono.
+    auto start = std::chrono::high_resolution_clock::now();
     MocoInverseSolution solution = inverse.solve();
+    auto end = std::chrono::high_resolution_clock::now();
+    std::string withOrWithout = useFunctionBasedPaths ? "with" : "without";
+    std::cout << fmt::format("Solve time {}: ", withOrWithout)
+              << std::chrono::duration_cast<std::chrono::seconds>(end - start)
+                     .count()
+              << " seconds" << std::endl;
     solution.getMocoSolution().write(
             "example3DWalking_MocoInverse_solution.sto");
 
@@ -138,11 +153,30 @@ void solveMocoInverseWithEMG() {
     STOFileAdapter::write(controlsRef, "controls_reference.sto");
 }
 
+void fitFunctionBasedPaths() {
+    PolynomialPathFitter fitter;
+    fitter.setModel(ModelProcessor("subject_walk_armless.osim"));
+    TimeSeriesTable coordinates("coordinates.sto");
+    coordinates.trim(0.81, 1.79);
+
+    TimeSeriesTable coordinatesReduced;
+    const auto& times = coordinates.getIndependentColumn();
+    for (int i = 0; i < coordinates.getNumRows(); i += 10) {
+        coordinatesReduced.appendRow(times[i], coordinates.getRowAtIndex(i));
+    }
+    coordinatesReduced.setColumnLabels(coordinates.getColumnLabels());
+    coordinatesReduced.addTableMetaData<std::string>("inDegrees", "yes");
+
+    fitter.setCoordinateValues(TableProcessor(coordinatesReduced));
+    fitter.runFittingPipeline();
+}
+
 int main() {
 
-    solveMocoInverse();
+    solveMocoInverse(false);
+    solveMocoInverse(true);
 
-    solveMocoInverseWithEMG();
+//    solveMocoInverseWithEMG();
 
     // If you installed the Moco python package, you can compare both solutions
     // using the following command:
