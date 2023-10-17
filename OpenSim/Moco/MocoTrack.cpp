@@ -146,7 +146,6 @@ TimeSeriesTable MocoTrack::configureStateTracking(
         MocoProblem& problem, Model& model) {
 
     // Read in the states reference data and spline.
-    // TODO convert Degrees to Radians.
     TimeSeriesTable states = get_states_reference().processAndConvertToRadians(
             getDocumentDirectory(), model);
     auto stateSplines = GCVSplineSet(states, states.getColumnLabels());

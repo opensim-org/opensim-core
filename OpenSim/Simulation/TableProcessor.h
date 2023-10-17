@@ -256,6 +256,34 @@ public:
     }
 };
 
+/// Invoke SimulationUtilities::appendCoordinateValueDerivatives() on the table.
+class OSIMSIMULATION_API TabOpAppendCoordinateValueDerivatives
+        : public TableOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(TabOpAppendCoordinateValueDerivatives,
+            TableOperator);
+
+public:
+    OpenSim_DECLARE_PROPERTY(overwrite_existing_columns, bool,
+            "Whether to overwrite existing columns for coordinate speeds in "
+            "the table (default: true).");
+
+    TabOpAppendCoordinateValueDerivatives() {
+        constructProperty_overwrite_existing_columns(true);
+    }
+    TabOpAppendCoordinateValueDerivatives(bool overwriteExistingColumns)
+            : TabOpAppendCoordinateValueDerivatives() {
+        set_overwrite_existing_columns(overwriteExistingColumns);
+    }
+
+    void operate(TimeSeriesTable& table, const Model* model) const override {
+
+        OPENSIM_THROW_IF(!model, Exception,
+                "Expected a model, but no model was provided.");
+        appendCoordinateValueDerivatives(table, *model,
+                get_overwrite_existing_columns());
+    }
+};
+
 } // namespace OpenSim
 
 #endif // OPENSIM_TABLEPROCESSOR_H

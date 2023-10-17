@@ -30,6 +30,7 @@
 
 #include <OpenSim/Common/TableUtilities.h>
 #include <OpenSim/Common/CommonUtilities.h>
+#include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
 
 using namespace OpenSim;
@@ -502,4 +503,47 @@ void OpenSim::appendCoupledCoordinateValues(
         // Append the new column to the table.
         table.appendColumn(coupledCoordinatePath, newColumn);
     }
+}
+
+void OpenSim::appendCoordinateValueDerivatives(OpenSim::TimeSeriesTable& table,
+        const OpenSim::Model& model, bool overwriteExistingColumns) {
+
+    auto splines = GCVSplineSet(table);
+    const auto& labels = table.getColumnLabels();
+    const auto& times = table.getIndependentColumn();
+    for (int i = 0; i < splines.getSize(); ++i) {
+        auto* spline = splines.getGCVSpline(i);
+        std::string valuePath = labels[i];
+
+        // Check that the current coordinate exists in the model. If so,
+        // generate the model path for the coordinate speed.
+        std::string speedPath;
+        if (valuePath.substr(valuePath.size() - 6) == "/value") {
+            valuePath = valuePath.substr(0, valuePath.size() - 6);
+            if (!model.hasComponent<Coordinate>(valuePath)) {
+                continue;
+            }
+            speedPath = fmt::format("{}/speed", valuePath);
+        } else {
+            continue;
+        }
+
+        // Check if the table already contains values for the speed. If so,
+        // skip this coordinate (unless we are overwriting existing columns).
+        if (table.hasColumn(speedPath)) {
+            if (overwriteExistingColumns) {
+                table.removeColumn(speedPath);
+            } else {
+                continue;
+            }
+        }
+
+        // Compute the speed values from the spline.
+        SimTK::Vector speed((int)times.size());
+        for (int j = 0; j < (int)times.size(); ++j) {
+            speed[j] = spline->calcDerivative({0}, SimTK::Vector(1, times[j]));
+        }
+        table.appendColumn(speedPath, speed);
+    }
+
 }

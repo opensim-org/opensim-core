@@ -67,7 +67,7 @@ public:
     PolynomialPathFitter& operator=(const PolynomialPathFitter&);
     PolynomialPathFitter& operator=(PolynomialPathFitter&&);
 
-    // GET AND SET
+    // MAIN INPUTS
     // TODO 1) explain locked and clamped coordinates (i.e., based on the
     //         property values)
     void setModel(ModelProcessor model);
@@ -78,6 +78,10 @@ public:
     //      3) table must have the "inDegrees" flag
     void setCoordinateValues(TableProcessor coordinateValues);
 
+    // RUN PATH FITTING
+    void run();
+
+    // SETTINGS
     /**
      * The moment arm threshold value that determines whether or not a path
      * depends on a model coordinate. In other words, the moment arm of a path
@@ -120,7 +124,44 @@ public:
     /// @copydoc setDefaultCoordinateSamplingBounds()
     SimTK::Vec2 getDefaultCoordinateSamplingBounds() const;
 
-    void runFittingPipeline();
+    /**
+     * The bounds (in degrees) that determine the minimum and maximum coordinate
+     * value samples at each time point for the coordinate at `coordinatePath`.
+     *
+     * The bounds are specified as a `SimTK::Vec2`, where the first element is
+     * the minimum bound and the second element is the maximum bound. The .
+     * maximum sample value at a particular time point is the nominal coordinate
+     * value plus the maximum bound, and the minimum sample value is the
+     * nominal coordinate value minus the minimum bound.
+     *
+     * @note This overrides the default coordinate sampling bounds for the
+     *       coordinate at `coordinatePath`.
+     */
+     void appendCoordinateSamplingBounds(
+            const std::string& coordinatePath, const SimTK::Vec2& bounds);
+
+    void setMomentArmTolerance(double tolerance);
+    double getMomentArmTolerance() const;
+
+    void setPathLengthTolerance(double tolerance);
+    double getPathLengthTolerance() const;
+
+    void setNumSamplesPerFrame(int numSamples);
+    int getNumSamplesPerFrame() const;
+
+    void setParallel(int numThreads);
+    int getParallel() const;
+
+    void setLatinHypercubeAlgorithm(std::string algorithm);
+    std::string getLatinHypercubeAlgorithm() const;
+
+    void setOutputDirectory(std::string directory);
+    std::string getOutputDirectory() const;
+
+    // HELPER FUNCTIONS
+    static void evaluateFittedPaths(Model model,
+            TableProcessor trajectory,
+            const std::string& functionBasedPathsFileName);
 
 private:
     // PROPERTIES
@@ -139,10 +180,17 @@ private:
             "The maximum order of the polynomial used to fit each path. The "
             "order of a polynomial is the highest power of the independent "
             "variable(s) in the polynomial.");
-    OpenSim_DECLARE_PROPERTY(
-            default_coordinate_sampling_bounds, SimTK::Vec2, "TODO.");
+    OpenSim_DECLARE_PROPERTY(default_coordinate_sampling_bounds, SimTK::Vec2,
+            "The default bounds (in degrees) that determine the minimum and "
+            "maximum coordinate value samples at each time point.");
     OpenSim_DECLARE_LIST_PROPERTY(
-            coordinate_sampling_bounds, PolynomialPathFitterBounds, "TODO.");
+            coordinate_sampling_bounds, PolynomialPathFitterBounds,
+            "The bounds (in degrees) that determine the minimum and maximum "
+            "coordinate value samples at each time point for specific "
+            "coordinates. These bounds override the default coordinate "
+            "sampling bounds.");
+    OpenSim_DECLARE_PROPERTY(moment_arm_tolerance, double, "TODO.");
+    OpenSim_DECLARE_PROPERTY(path_length_tolerance, double, "TODO.");
     OpenSim_DECLARE_PROPERTY(num_samples_per_frame, int, "TODO.");
     OpenSim_DECLARE_PROPERTY(parallel, int, "TODO.");
     OpenSim_DECLARE_PROPERTY(
@@ -152,45 +200,50 @@ private:
     void constructProperties();
 
     // PATH FITTING PIPELINE
+    typedef std::unordered_map<std::string, std::vector<std::string>>
+            MomentArmMap;
 
-    // TODO
     TimeSeriesTable sampleCoordinateValues(const TimeSeriesTable& values);
 
-    // TODO: 0) should any of the TODOs below be handled in this function?
-    //          (probably not, just throw exceptions)
-    //       1) how to handle locked coordinates?
-    //       2) coordinate values must have number of columns equal to
-    //          number of independent coordinates (Appends coupled coordinate
-    //          values, if missing)
-    //       3) Updates the coordinates table to use absolute state names
-    void computePathLengthsAndMomentArms(const Model& model,
-            const TimeSeriesTable& coordinateValues,
-            TimeSeriesTable& pathLengths,
-            TimeSeriesTable& momentArms);
+    static void computePathLengthsAndMomentArms(const Model& model,
+            const TimeSeriesTable& coordinateValues, int numThreads,
+            TimeSeriesTable& pathLengths, TimeSeriesTable& momentArms);
 
     void filterSampledData(const Model& model,
-            TimeSeriesTable& coordinateValues,
-            TimeSeriesTable& pathLengths,
-            TimeSeriesTable& momentArms,
-            std::map<std::string, std::vector<std::string>>& momentArmMap);
+            TimeSeriesTable& coordinateValues, TimeSeriesTable& pathLengths,
+            TimeSeriesTable& momentArms, MomentArmMap& momentArmMap);
 
-    // TODO: 1) expects length and moment arm column names in specific format
-    //       2) returns average RMS error
     Set<FunctionBasedPath> fitPolynomialCoefficients(const Model& model,
             const TimeSeriesTable& coordinateValues,
             const TimeSeriesTable& pathLengths,
             const TimeSeriesTable& momentArms,
-            const std::map<std::string, std::vector<std::string>>& momentArmMap);
-
-    // TODO
-    void evaluateFit(Model model, const TimeSeriesTable& coordinateValues);
+            const MomentArmMap& momentArmMap);
 
     // HELPER FUNCTIONS
-    /** Get the (canonicalized) absolute directory containing the file from
+    /**
+     * Get the (canonicalized) absolute directory containing the file from
      * which this tool was loaded. If the `FunctionBasedPathFitter` was not
      * loaded from a file, this returns an empty string.
      */
     std::string getDocumentDirectory() const;
+
+    /**
+     * Remove columns from the `momentArms` table that do not correspond to
+     * entries in the `momentArmMap`.
+     */
+    static void removeMomentArmColumns(TimeSeriesTable& momentArms,
+            const MomentArmMap& momentArmMap);
+
+    /**
+     * Get the RMS errors between two sets of path lengths and moment arms
+     * computed from a model with FunctionBasedPaths and the original model. The
+     * `modelFitted` argument must be the model with the FunctionBasedPaths.
+     */
+    static void computeFittingErrors(const Model& modelFitted,
+            const TimeSeriesTable& pathLengths,
+            const TimeSeriesTable& momentArms,
+            const TimeSeriesTable& pathLengthsFitted,
+            const TimeSeriesTable& momentArmsFitted);
 
     // MEMBER VARIABLES
     std::unordered_map<std::string, SimTK::Vec2> m_coordinateBoundsMap;

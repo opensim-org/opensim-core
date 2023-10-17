@@ -29,6 +29,8 @@
 #include <OpenSim/Common/LatinHypercubeDesign.h>
 #include <OpenSim/Common/MultivariatePolynomialFunction.h>
 #include <OpenSim/Common/STOFileAdapter.h>
+#include <OpenSim/Common/Constant.h>
+#include <OpenSim/Simulation/Control/PrescribedController.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
 
@@ -49,13 +51,13 @@ PolynomialPathFitterBounds::PolynomialPathFitterBounds(
     set_coordinate_path(coordinatePath);
     OPENSIM_THROW_IF_FRMOBJ(bounds[0] >= bounds[1], Exception,
             "Expected the lower bound to be less than the upper bound, but "
-            "this is not the case.")
+            "it is not.")
     set_bounds(bounds);
 }
 
 void PolynomialPathFitterBounds::constructProperties() {
     constructProperty_coordinate_path("");
-    constructProperty_bounds({-5.0, 5.0});
+    constructProperty_bounds({-10.0, 10.0});
 }
 
 //=============================================================================
@@ -83,55 +85,10 @@ PolynomialPathFitter& PolynomialPathFitter::operator=(
         PolynomialPathFitter&& other) = default;
 
 //=============================================================================
-// GET AND SET
-//=============================================================================
-
-void PolynomialPathFitter::setModel(ModelProcessor model) {
-        set_model(std::move(model));
-}
-
-void PolynomialPathFitter::setCoordinateValues(TableProcessor values) {
-    set_coordinate_values(std::move(values));
-}
-
-void PolynomialPathFitter::setMomentArmThreshold(double threshold) {
-    set_moment_arm_threshold(threshold);
-}
-
-double PolynomialPathFitter::getMomentArmThreshold() const {
-    return get_moment_arm_threshold();
-}
-
-void PolynomialPathFitter::setMinimumPolynomialOrder(int order) {
-    set_minimum_polynomial_order(order);
-}
-
-int PolynomialPathFitter::getMinimumPolynomialOrder() const {
-    return get_minimum_polynomial_order();
-}
-
-void PolynomialPathFitter::setMaximumPolynomialOrder(int order) {
-    set_maximum_polynomial_order(order);
-}
-
-int PolynomialPathFitter::getMaximumPolynomialOrder() const {
-    return get_maximum_polynomial_order();
-}
-
-void PolynomialPathFitter::setDefaultCoordinateSamplingBounds(
-        SimTK::Vec2 bounds) {
-    set_default_coordinate_sampling_bounds(std::move(bounds));
-}
-
-SimTK::Vec2 PolynomialPathFitter::getDefaultCoordinateSamplingBounds() const {
-    return get_default_coordinate_sampling_bounds();
-}
-
-//=============================================================================
 // PATH FITTING PIPELINE
 //=============================================================================
 
-void PolynomialPathFitter::runFittingPipeline() {
+void PolynomialPathFitter::run() {
 
     log_info("====================");
     log_info("PolynomialPathFitter");
@@ -294,7 +251,8 @@ void PolynomialPathFitter::runFittingPipeline() {
             {"random", "ESEA"});
     m_useStochasticEvolutionaryLHS =
             (get_latin_hypercube_algorithm() == "ESEA");
-    log_info("Latin hypercube algorithm = {}", get_latin_hypercube_algorithm());
+    log_info("Latin hypercube algorithm = '{}'",
+            get_latin_hypercube_algorithm());
 
     // Create the output filenames.
     std::string outputDir = get_output_directory();
@@ -344,15 +302,15 @@ void PolynomialPathFitter::runFittingPipeline() {
     log_info("-------------------------------------------------");
     TimeSeriesTable pathLengths;
     TimeSeriesTable momentArms;
-    computePathLengthsAndMomentArms(model, valuesSampled, pathLengths,
-            momentArms);
+    computePathLengthsAndMomentArms(model, valuesSampled, get_parallel(),
+            pathLengths, momentArms);
 
     // Filter sampled data.
     // --------------------
     log_info("");
     log_info("Step 6/8: Filtering sampled data.");
     log_info("---------------------------------");
-    std::map<std::string, std::vector<std::string>> momentArmMap;
+    MomentArmMap momentArmMap;
     filterSampledData(model, valuesSampled, pathLengths, momentArms,
             momentArmMap);
 
@@ -382,9 +340,21 @@ void PolynomialPathFitter::runFittingPipeline() {
     Array<std::string> pathNames;
     functionBasedPaths.getNames(pathNames);
 
-    // Print a breakdown of the fitted paths.
+    // Print the FunctionBasedPaths to file.
+    std::string functionBasedPathsFileName =
+            SimTK::Pathname::getAbsolutePathname(
+                    fmt::format("{}/{}_FunctionBasedPathSet.xml",
+                            outputDir, model.getName()));
     log_info("");
-    log_info("Breakdown of the fitted paths: ");
+    log_info("Printing the FunctionBasedPaths to '{}'...",
+            functionBasedPathsFileName);
+    functionBasedPaths.print(functionBasedPathsFileName);
+
+    // Evaluate the fit.
+    // -----------------
+    log_info("");
+    log_info("Step 8/8: Evaluating the fit.");
+    log_info("-----------------------------");
 
     // Find the longest path name.
     int longestPathName = 0;
@@ -407,24 +377,9 @@ void PolynomialPathFitter::runFittingPipeline() {
         log_info(line);
     }
 
-    // Print the FunctionBasedPaths to file.
-    std::string functionBasedPathsFileName =
-            SimTK::Pathname::getAbsolutePathname(
-                    fmt::format("{}/{}_FunctionBasedPathSet.xml",
-                            outputDir, model.getName()));
-    log_info("");
-    log_info("Printing the FunctionBasedPaths to '{}'...",
-            functionBasedPathsFileName);
-    functionBasedPaths.print(functionBasedPathsFileName);
-
-    // Evaluate the fit.
-    // -----------------
-    log_info("");
-    log_info("Step 8/8: Evaluating the fit.");
-    log_info("-----------------------------");
-//    evaluateFit(model, values);
-
     // Add the FunctionBasedPaths to the model.
+    log_info("");
+    log_info("Computing path lengths and moment arms from the fitted paths...");
     ModelProcessor modelProcessor = ModelProcessor(model) |
             ModOpReplacePathsWithFunctionBasedPaths(functionBasedPathsFileName);
     Model modelFitted = modelProcessor.process();
@@ -432,24 +387,16 @@ void PolynomialPathFitter::runFittingPipeline() {
     // Recompute the path lengths and moment arms.
     TimeSeriesTable pathLengthsFitted;
     TimeSeriesTable momentArmsFitted;
-    computePathLengthsAndMomentArms(modelFitted, valuesSampled,
+    computePathLengthsAndMomentArms(modelFitted, valuesSampled, get_parallel(),
             pathLengthsFitted, momentArmsFitted);
 
     // Remove moment arm columns that are not in the map.
-    for (const auto& label : momentArmsFitted.getColumnLabels()) {
-        std::string path = label.substr(0, label.find("_moment_arm_"));
-        std::string coordinate = label.substr(
-                label.find("_moment_arm_") + 12);
-        if (momentArmMap.find(path) != momentArmMap.end()) {
-            if (std::find(momentArmMap.at(path).begin(),
-                          momentArmMap.at(path).end(), coordinate) ==
-                          momentArmMap.at(path).end()) {
-                momentArmsFitted.removeColumn(label);
-            }
-        } else {
-            momentArmsFitted.removeColumn(label);
-        }
-    }
+    removeMomentArmColumns(momentArmsFitted, momentArmMap);
+
+    // Compute the RMS error between the original and fitted path lengths and
+    // moment arms.
+    computeFittingErrors(modelFitted, pathLengths, momentArms,
+            pathLengthsFitted, momentArmsFitted);
 
     // Print the fitted path lengths and moment arms to file.
     std::string pathLengthsFittedFileName =
@@ -460,6 +407,8 @@ void PolynomialPathFitter::runFittingPipeline() {
             SimTK::Pathname::getAbsolutePathname(
                     fmt::format("{}/{}_moment_arms_fitted.sto",
                             outputDir, model.getName()));
+
+    log_info("");
     log_info("Printing the fitted path lengths to '{}'...",
             pathLengthsFittedFileName);
     STOFileAdapter::write(pathLengthsFitted, pathLengthsFittedFileName);
@@ -546,9 +495,9 @@ TimeSeriesTable PolynomialPathFitter::sampleCoordinateValues(
             std::floor(values.getNumRows() / get_parallel()));
     std::vector<std::future<SimTK::Matrix>> futures;
     int offset = 0;
-    for (int ithread = 0; ithread < get_parallel(); ++ithread) {
+    for (int thread = 0; thread < get_parallel(); ++thread) {
         auto begin_iter = timeIndexes.begin() + offset;
-        auto end_iter = (ithread == get_parallel()-1) ?
+        auto end_iter = (thread == get_parallel()-1) ?
                 timeIndexes.end() :
                 timeIndexes.begin() + offset + stride;
         futures.push_back(std::async(std::launch::async,
@@ -595,6 +544,7 @@ TimeSeriesTable PolynomialPathFitter::sampleCoordinateValues(
 void PolynomialPathFitter::computePathLengthsAndMomentArms(
         const Model& model,
         const TimeSeriesTable& coordinateValues,
+        int numThreads,
         TimeSeriesTable& pathLengths,
         TimeSeriesTable& momentArms) {
 
@@ -609,15 +559,15 @@ void PolynomialPathFitter::computePathLengthsAndMomentArms(
     int numColumns = numPaths + (numPaths * numCoordinates);
 
     // Define helper function for path length and moment arm computations.
-    auto calcPathLengthsAndMomentArmsSubset = [&, numColumns, numPaths](
-            Model model, int thread,
+    auto calcPathLengthsAndMomentArmsSubset =
+            [numThreads, numColumns, numPaths](Model model, int thread,
             StatesTrajectory::IteratorRange subsetStates) -> SimTK::Matrix {
         model.initSystem();
 
         int numTimePoints = (int)std::distance(subsetStates.begin(),
                 subsetStates.end());
-        log_info("Thread {}/{}: computing values for times {:1.2f}-{:1.2f} "
-                 "seconds...", thread, get_parallel(),
+        log_info("Thread {:2d}/{:2d}: computing values for times "
+                 "{:1.2f}-{:1.2f} seconds...", thread+1, numThreads,
                  subsetStates.begin()->getTime(),
                  (subsetStates.end()-1)->getTime());
 
@@ -654,12 +604,12 @@ void PolynomialPathFitter::computePathLengthsAndMomentArms(
     // Divide the path length and moment arm computations across multiple
     // threads.
     int stride = static_cast<int>(
-            std::floor(coordinateValues.getNumRows() / get_parallel()));
+            std::floor(coordinateValues.getNumRows() / numThreads));
     std::vector<std::future<SimTK::Matrix>> futures;
     int offset = 0;
-    for (int thread = 0; thread < get_parallel(); ++thread) {
+    for (int thread = 0; thread < numThreads; ++thread) {
         auto begin_iter = statesTrajectory.begin() + offset;
-        auto end_iter = (thread == get_parallel()-1) ?
+        auto end_iter = (thread == numThreads-1) ?
                 statesTrajectory.end() :
                 statesTrajectory.begin() + offset + stride;
         futures.push_back(std::async(std::launch::async,
@@ -671,15 +621,15 @@ void PolynomialPathFitter::computePathLengthsAndMomentArms(
 
     // Wait for threads to finish and collect results
     std::vector<SimTK::Matrix> outputs;
-    outputs.reserve(get_parallel());
-    for (int i = 0; i < get_parallel(); ++i) {
+    outputs.reserve(numThreads);
+    for (int i = 0; i < numThreads; ++i) {
         outputs.push_back(futures[i].get());
     }
 
     // Assemble results into one TimeSeriesTable
     std::vector<double> times = coordinateValues.getIndependentColumn();
     int itime = 0;
-    for (int i = 0; i < get_parallel(); ++i) {
+    for (int i = 0; i < numThreads; ++i) {
         for (int j = 0; j < outputs[i].nrow(); ++j) {
             pathLengths.appendRow(times[itime],
                     outputs[i].block(j, 0, 1, numPaths).getAsRowVector());
@@ -713,7 +663,7 @@ void PolynomialPathFitter::filterSampledData(const Model& model,
         TimeSeriesTable& coordinateValues,
         TimeSeriesTable& pathLengths,
         TimeSeriesTable& momentArms,
-        std::map<std::string, std::vector<std::string>>& momentArmMap) {
+        MomentArmMap& momentArmMap) {
 
     // Remove moment arm columns for coupled coordinates.
     for (const auto& couplerConstraint :
@@ -819,7 +769,7 @@ Set<FunctionBasedPath> PolynomialPathFitter::fitPolynomialCoefficients(
         const TimeSeriesTable& coordinateValues,
         const TimeSeriesTable& pathLengths,
         const TimeSeriesTable& momentArms,
-        const std::map<std::string, std::vector<std::string>>& momentArmMap) {
+        const MomentArmMap& momentArmMap) {
 
     // n-choose-k helper function.
     // stackoverflow.com/questions/15301885/best-way-of-calculating-n-choose-k
@@ -834,14 +784,10 @@ Set<FunctionBasedPath> PolynomialPathFitter::fitPolynomialCoefficients(
     const CoordinateSet& coordinateSet = model.getCoordinateSet();
     const int numTimes = (int)coordinateValues.getNumRows();
 
-    // Pre-compute vectors.
-    // --------------------
+    // Pre-compute variables.
+    // ----------------------
     const auto forces = model.getComponentList<Force>();
     const int numForces = (int)std::distance(forces.begin(), forces.end());
-    // Fitting errors.
-    SimTK::Vector bestRootMeanSquareErrors(numForces, SimTK::Infinity);
-    SimTK::Vector pathLengthRMSErrors(numForces, 0.0);
-    SimTK::Vector momentArmRMSErrors(numForces, 0.0);
     // Force indexes and paths.
     std::vector<int> forceIndexes;
     std::vector<std::string> forcePaths;
@@ -872,11 +818,10 @@ Set<FunctionBasedPath> PolynomialPathFitter::fitPolynomialCoefficients(
             // Check if the current force is dependent on any coordinates in the
             // model. If not, skip it.
             if (momentArmMap.find(forcePath) == momentArmMap.end()) {
-                bestRootMeanSquareErrors[iforce] = 0.0;
                 continue;
             }
-            log_info("Thread {}/{}: fitting coefficients for force '{}'...",
-                     thread, get_parallel(), forcePath);
+            log_info("Thread {:2d}/{:2d}: fitting coefficients for force "
+                     "'{}'...", thread+1, get_parallel(), forcePath);
 
             // The current force path and the number of coordinates it depends
             // on.
@@ -921,11 +866,9 @@ Set<FunctionBasedPath> PolynomialPathFitter::fitPolynomialCoefficients(
 
             // Polynomial fitting.
             // -------------------
-            SimTK::Vector bestCoefficients;
-            int bestOrder = get_minimum_polynomial_order();
-            for (int order = get_minimum_polynomial_order();
-                    order <= get_maximum_polynomial_order(); ++order) {
-
+            SimTK::Vector coefficients;
+            int order = get_minimum_polynomial_order();
+            while (true) {
                 // Initialize the multivariate polynomial function.
                 int numCoefficients =
                         choose(numCoordinatesThisForce + order, order);
@@ -958,39 +901,38 @@ Set<FunctionBasedPath> PolynomialPathFitter::fitPolynomialCoefficients(
                 // with full column rank, so we can use the left pseudo-inverse
                 // to solve for the coefficients.
                 SimTK::Matrix pinv_A = (~A * A).invert() * ~A;
-                SimTK::Vector coefficients = pinv_A * b;
+                coefficients = pinv_A * b;
 
                 // Calculate the RMS error.
                 SimTK::Vector b_fit = A * coefficients;
                 SimTK::Vector error = b - b_fit;
-                const double rmsError =
-                        std::sqrt((error.normSqr() / error.size()));
 
-                // Save best solution.
-                if (rmsError < bestRootMeanSquareErrors[iforce]) {
-                    bestRootMeanSquareErrors[iforce] = rmsError;
-                    bestCoefficients = coefficients;
-                    bestOrder = order;
+                // If the fit achieves the path length and moment arm thresholds
+                // we set, then exit the loop.
+                SimTK::Vector pathLengthError = error.block(
+                        0, 0, numTimes, 1).getAsVector();
+                SimTK::Vector momentArmError = error.block(
+                        numTimes, 0, numTimes * numCoordinatesThisForce,
+                        1).getAsVector();
 
-                    // Save the path length and moment arm RMS errors.
-                    SimTK::Vector pathLengthError = error.block(
-                            0, 0, numTimes, 1).getAsVector();
-                    SimTK::Vector momentArmError = error.block(
-                            numTimes, 0, numTimes * numCoordinatesThisForce,
-                            1).getAsVector();
+                double pathLengthRMSError = std::sqrt(
+                        pathLengthError.normSqr() / pathLengthError.size());
+                double momentArmRMSError = std::sqrt(
+                        momentArmError.normSqr() / momentArmError.size());
 
-                    pathLengthRMSErrors[iforce] = std::sqrt(
-                            pathLengthError.normSqr() / pathLengthError.size());
-                    momentArmRMSErrors[iforce] = std::sqrt(
-                            momentArmError.normSqr() / momentArmError.size());
+                if (pathLengthRMSError < get_path_length_tolerance() &&
+                        momentArmRMSError < get_moment_arm_tolerance() ||
+                        order == get_maximum_polynomial_order()) {
+                    break;
                 }
+                ++order;
             }
 
             // Create a FunctionBasedPath for the current path-based force.
             MultivariatePolynomialFunction lengthFunction;
             lengthFunction.setDimension(numCoordinatesThisForce);
-            lengthFunction.setOrder(bestOrder);
-            lengthFunction.setCoefficients(bestCoefficients);
+            lengthFunction.setOrder(order);
+            lengthFunction.setCoefficients(coefficients);
 
             auto functionBasedPath = std::make_unique<FunctionBasedPath>();
             functionBasedPath->setName(forcePath);
@@ -1028,40 +970,283 @@ Set<FunctionBasedPath> PolynomialPathFitter::fitPolynomialCoefficients(
         }
     }
 
-    // Report the average errors.
-    // --------------------------
-    double avgPathLengthRMSError = 100.0*pathLengthRMSErrors.sum() / numForces;
-    double avgMomentArmRMSError = 100.0*momentArmRMSErrors.sum() / numForces;
-    log_info("");
-    log_info("Average path length RMSE = {:1.3f} cm", avgPathLengthRMSError, 1);
-    log_info("Average moment arm RMSE  = {:1.3f} cm", avgMomentArmRMSError, 1);
-
     return functionBasedPaths;
 }
 
-void PolynomialPathFitter::evaluateFit(Model model,
-        const TimeSeriesTable& coordinateValues) {
+//=============================================================================
+// SETTINGS
+//=============================================================================
 
-    ModelProcessor modelProcessor = ModelProcessor(model) |
-            ModOpReplacePathsWithFunctionBasedPaths("function_based_paths.xml");
-    Model modelUpdated = modelProcessor.process();
+void PolynomialPathFitter::setModel(ModelProcessor model) {
+    set_model(std::move(model));
+}
 
-    model.initSystem();
-    modelUpdated.initSystem();
+void PolynomialPathFitter::setCoordinateValues(TableProcessor values) {
+    set_coordinate_values(std::move(values));
+}
 
-    Manager manager(modelUpdated);
+void PolynomialPathFitter::setMomentArmThreshold(double threshold) {
+    set_moment_arm_threshold(threshold);
+}
+
+double PolynomialPathFitter::getMomentArmThreshold() const {
+    return get_moment_arm_threshold();
+}
+
+void PolynomialPathFitter::setMinimumPolynomialOrder(int order) {
+    set_minimum_polynomial_order(order);
+}
+
+int PolynomialPathFitter::getMinimumPolynomialOrder() const {
+    return get_minimum_polynomial_order();
+}
+
+void PolynomialPathFitter::setMaximumPolynomialOrder(int order) {
+    set_maximum_polynomial_order(order);
+}
+
+int PolynomialPathFitter::getMaximumPolynomialOrder() const {
+    return get_maximum_polynomial_order();
+}
+
+void PolynomialPathFitter::setDefaultCoordinateSamplingBounds(
+        SimTK::Vec2 bounds) {
+    set_default_coordinate_sampling_bounds(std::move(bounds));
+}
+
+SimTK::Vec2 PolynomialPathFitter::getDefaultCoordinateSamplingBounds() const {
+    return get_default_coordinate_sampling_bounds();
+}
+
+void PolynomialPathFitter::appendCoordinateSamplingBounds(
+        const std::string& coordinatePath, const SimTK::Vec2& bounds) {
+    append_coordinate_sampling_bounds({coordinatePath, bounds});
+}
+
+void PolynomialPathFitter::setMomentArmTolerance(double tolerance) {
+    set_moment_arm_tolerance(tolerance);
+}
+
+double PolynomialPathFitter::getMomentArmTolerance() const {
+    return get_moment_arm_tolerance();
+}
+
+void PolynomialPathFitter::setPathLengthTolerance(double tolerance) {
+    set_path_length_tolerance(tolerance);
+}
+
+double PolynomialPathFitter::getPathLengthTolerance() const {
+    return get_path_length_tolerance();
+}
+
+void PolynomialPathFitter::setNumSamplesPerFrame(int numSamples) {
+    set_num_samples_per_frame(numSamples);
+}
+
+int PolynomialPathFitter::getNumSamplesPerFrame() const {
+    return get_num_samples_per_frame();
+}
+
+void PolynomialPathFitter::setParallel(int numThreads) {
+    set_parallel(numThreads);
+}
+
+int PolynomialPathFitter::getParallel() const {
+    return get_parallel();
+}
+
+void PolynomialPathFitter::setLatinHypercubeAlgorithm(
+        std::string algorithm) {
+    set_latin_hypercube_algorithm(std::move(algorithm));
+}
+
+std::string PolynomialPathFitter::getLatinHypercubeAlgorithm() const {
+    return get_latin_hypercube_algorithm();
+}
+
+void PolynomialPathFitter::setOutputDirectory(std::string directory) {
+    set_output_directory(std::move(directory));
+}
+
+std::string PolynomialPathFitter::getOutputDirectory() const {
+    return get_output_directory();
 }
 
 //=============================================================================
 // HELPER FUNCTIONS
 //=============================================================================
 
+void PolynomialPathFitter::evaluateFittedPaths(Model model,
+        TableProcessor trajectory,
+        const std::string& functionBasedPathsFileName) {
+
+    // Initialize the original model.
+    model.initSystem();
+
+    // Create another model and add the FunctionBasedPaths to it.
+    ModelProcessor modelProcessor = ModelProcessor(model) |
+            ModOpReplacePathsWithFunctionBasedPaths(functionBasedPathsFileName);
+    Model modelFitted = modelProcessor.process();
+
+    // Create a moment arm map based on the fitted model paths.
+    MomentArmMap momentArmMap;
+    for (const auto& path : modelFitted.getComponentList<FunctionBasedPath>()) {
+        momentArmMap[path.getAbsolutePathString()] =
+                path.getCoordinatePaths();
+    }
+
+    // Get the coordinate values table from the trajectory. This may contain
+    // extra values, but that's okay.
+    TimeSeriesTable coordinateValues =
+            trajectory.processAndConvertToRadians(model);
+
+    log_info("");
+    log_info("Computing path lengths and moment arms for the original model..");
+    TimeSeriesTable pathLengths;
+    TimeSeriesTable momentArms;
+    int numThreads = (int)std::thread::hardware_concurrency()-2;
+    computePathLengthsAndMomentArms(model, coordinateValues, numThreads,
+            pathLengths, momentArms);
+
+    log_info("");
+    log_info("Computing path lengths and moment arms for the fitted model..");
+    TimeSeriesTable pathLengthsFitted;
+    TimeSeriesTable momentArmsFitted;
+    computePathLengthsAndMomentArms(model, coordinateValues, numThreads,
+            pathLengthsFitted, momentArmsFitted);
+
+    // Remove moment arm columns that are not in the map.
+    removeMomentArmColumns(momentArms, momentArmMap);
+    removeMomentArmColumns(momentArmsFitted, momentArmMap);
+
+    // Compute the RMS errors.
+    computeFittingErrors(model, pathLengths, momentArms, pathLengthsFitted,
+            momentArmsFitted);
+}
+
+void PolynomialPathFitter::removeMomentArmColumns(TimeSeriesTable& momentArms,
+        const MomentArmMap& momentArmMap) {
+    for (const auto& label : momentArms.getColumnLabels()) {
+        std::string path = label.substr(0, label.find("_moment_arm_"));
+        std::string coordinate = label.substr(
+                label.find("_moment_arm_") + 12);
+        if (momentArmMap.find(path) != momentArmMap.end()) {
+            if (std::find(momentArmMap.at(path).begin(),
+                        momentArmMap.at(path).end(), coordinate) ==
+                    momentArmMap.at(path).end()) {
+                momentArms.removeColumn(label);
+            }
+        } else {
+            momentArms.removeColumn(label);
+        }
+    }
+}
+
+void PolynomialPathFitter::computeFittingErrors(const Model& modelFitted,
+        const TimeSeriesTable& pathLengths, const TimeSeriesTable& momentArms,
+        const TimeSeriesTable& pathLengthsFitted,
+        const TimeSeriesTable& momentArmsFitted) {
+
+    OPENSIM_ASSERT_ALWAYS(pathLengths.getNumRows() ==
+            pathLengthsFitted.getNumRows());
+    OPENSIM_ASSERT_ALWAYS(momentArms.getNumRows() ==
+            momentArmsFitted.getNumRows());
+    OPENSIM_ASSERT_ALWAYS(pathLengths.getNumColumns() ==
+            pathLengthsFitted.getNumColumns());
+    OPENSIM_ASSERT_ALWAYS(momentArms.getNumColumns() ==
+            momentArmsFitted.getNumColumns());
+
+    const auto& functionBasedPaths =
+            modelFitted.getComponentList<FunctionBasedPath>();
+    int numPaths = (int)std::distance(functionBasedPaths.begin(),
+            functionBasedPaths.end());
+    OPENSIM_THROW_IF(numPaths == 0, Exception,
+            "Expected the model to contain 'FunctionBasedPath's, but none were "
+            "found.")
+
+    log_info("");
+    log_info("Summary of path length and moment arm RMS errors: ");
+    SimTK::Vector pathLengthRMSErrors((int)pathLengths.getNumColumns());
+    SimTK::Vector momentArmRMSErrors((int)momentArms.getNumColumns());
+    int ip = 0;
+    int ima = 0;
+    for (const auto& path : modelFitted.getComponentList<FunctionBasedPath>()) {
+        std::string pathName = path.getAbsolutePathString();
+        pathName = pathName.substr(0, pathName.find("/path"));
+        log_info("Errors for '{}':", pathName);
+
+        SimTK::Vector pathLength = pathLengths.getDependentColumn(
+                fmt::format("{}_length", pathName));
+        SimTK::Vector pathLengthFitted = pathLengthsFitted.getDependentColumn(
+                fmt::format("{}_length", pathName));
+        SimTK::Vector pathLengthError = pathLength - pathLengthFitted;
+        double pathLengthRMSError = 100.0 * std::sqrt(
+                pathLengthError.normSqr() / pathLengthError.size());
+        pathLengthRMSErrors[ip++] = pathLengthRMSError;
+        log_info(" - path length RMSE: {:1.3f} cm", pathLengthRMSError);
+
+        if (pathLengthRMSError > 0.1) {
+            log_warn("The path length RMS error is greater than 0.1 cm. "
+                     "Consider increasing the number of samples per frame or "
+                     "the polynomial order and re-fitting the model.",
+                    pathName);
+        }
+
+        for (const auto& coordinatePath : path.getCoordinatePaths()) {
+            const Coordinate& coordinate =
+                    modelFitted.getComponent<Coordinate>(coordinatePath);
+            const std::string& coordinateName = coordinate.getName();
+
+            SimTK::Vector momentArm = momentArms.getDependentColumn(
+                    fmt::format("{}_moment_arm_{}", pathName, coordinateName));
+            SimTK::Vector momentArmFitted = momentArmsFitted.getDependentColumn(
+                    fmt::format("{}_moment_arm_{}", pathName, coordinateName));
+            SimTK::Vector momentArmError = momentArm - momentArmFitted;
+            double momentArmRMSError = 100.0 * std::sqrt(
+                    momentArmError.normSqr() / momentArmError.size());
+            momentArmRMSErrors[ima++] = momentArmRMSError;
+            log_info(" - '{}' moment arm RMSE: {:1.3f} cm", coordinateName,
+                    momentArmRMSError);
+
+            if (momentArmRMSError > 0.1) {
+                log_warn("The '{}' moment arm RMS error is greater than 0.1 "
+                         "cm. Consider increasing the number of samples per "
+                         "frame or the polynomial order and re-fitting the "
+                         "model.",
+                        coordinateName);
+            }
+
+        }
+        log_info("");
+    }
+
+    double averagePathLengthError = pathLengthRMSErrors.sum() /
+                                    pathLengthRMSErrors.size();
+    double averageMomentArmError = momentArmRMSErrors.sum() /
+                                   momentArmRMSErrors.size();
+    log_info("Average path length RMSE = {:1.3f} cm", averagePathLengthError);
+    if (averagePathLengthError > 0.02) {
+        log_warn("The average path length RMS error is greater than 0.02 cm. "
+                 "Consider increasing the number of samples per frame or the "
+                 "polynomial order and re-fitting the model.");
+    }
+
+    log_info("Average moment arm RMSE  = {:1.3f} cm", averageMomentArmError);
+    if (averageMomentArmError > 0.02) {
+        log_warn("The average moment arm RMS error is greater than 0.02 cm. "
+                 "Consider increasing the number of samples per frame or the "
+                 "polynomial order and re-fitting the model.");
+    }
+}
+
 void PolynomialPathFitter::constructProperties() {
     constructProperty_model(ModelProcessor());
     constructProperty_coordinate_values(TableProcessor());
     constructProperty_moment_arm_threshold(1e-3);
+    constructProperty_moment_arm_tolerance(1e-4);
+    constructProperty_path_length_tolerance(1e-4);
     constructProperty_minimum_polynomial_order(2);
-    constructProperty_maximum_polynomial_order(6);
+    constructProperty_maximum_polynomial_order(9);
     constructProperty_parallel((int)std::thread::hardware_concurrency()-2);
     constructProperty_default_coordinate_sampling_bounds({-10.0, 10.0});
     constructProperty_coordinate_sampling_bounds();
