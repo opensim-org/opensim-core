@@ -1018,7 +1018,7 @@ Set<FunctionBasedPath> PolynomialPathFitter::fitPolynomialCoefficients(
             lengthFunction.setOrder(order);
             lengthFunction.setCoefficients(coefficients);
 
-            auto functionBasedPath = std::make_unique<FunctionBasedPath>();
+            auto functionBasedPath = make_unique<FunctionBasedPath>();
             functionBasedPath->setName(forcePath);
             functionBasedPath->setCoordinatePaths(coordinatePathsThisForce);
             functionBasedPath->setLengthFunction(lengthFunction);

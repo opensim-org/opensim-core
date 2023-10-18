@@ -72,28 +72,49 @@ public:
      * The model containing geometry-based path objects to which
      * polynomial-based path objects will be fitted.
      *
-     * We expect the model to contain at least one path object derived from
-     * `AbstractPath` and does not already contain any `FunctionBasedPath`
-     * objects. The bounds for clamped coordinates are obeyed during the fitting
-     * process. Locked coordinates are unlocked if data is provided for them,
-     * or replaced with WeldJoints if no data is provided for them.
+     * The model should be provided using a `ModelProcessor` object. We expect
+     * the model to contain at least one path object derived from `AbstractPath`
+     * and does not already contain any `FunctionBasedPath` objects. The bounds
+     * for clamped coordinates are obeyed during the fitting process. Locked
+     * coordinates are unlocked if data is provided for them, or replaced with
+     * WeldJoints if no data is provided for them.
      */
     void setModel(ModelProcessor model);
 
     /**
-     * The trajectory of coordinate values
+     * The reference trajectory used to sample coordinate values for path
+     * fitting.
+     *
+     * The reference trajectory should be provided using a `TableProcessor`
+     * object. The reference trajectory must contain coordinate values for all
+     * `Coordinate`s in the model. We assumed that the coordinate values meet
+     * all the kinematic constraints in the model, except for
+     * `CoordinateCouplerConstraint`s, since we automatically update the
+     * coordinate trajectory to satisfy these constraints. The `TimeSeriesTable`
+     * must contain the "inDegrees" metadata flag; the coordinate values are
+     * automatically converted to radians if this flag is set to true.
      */
-
-    // TODO 1) assume that coordinate values satisfy kinematic constraints
-    //         in the model (except for CoordinateCouplerConstraints)
-    //      2) use absolute state names and convert to radians
-    //      3) table must have the "inDegrees" flag
     void setCoordinateValues(TableProcessor coordinateValues);
 
     // RUN PATH FITTING
     void run();
 
     // SETTINGS
+    /**
+     * The directory to which the path fitting results are written.
+     *
+     * If the path fitting is successful, the fitted paths are written as a
+     * `Set` of `FunctionBasedPath` objects (with path length functions defined
+     * using `MultivariatePolynomialFunction` objects) to an XML file. Files
+     * containing the modified coordinate values, sampled coordinate values,
+     * path lengths, and moment arms for both the original and fitted paths are
+     * also written to the output directory.
+     *
+     * @note By default, results are written to the current working directory.
+     */
+    void setOutputDirectory(std::string directory);
+    std::string getOutputDirectory() const;
+
     /**
      * The moment arm threshold value that determines whether or not a path
      * depends on a model coordinate. In other words, the moment arm of a path
@@ -198,17 +219,46 @@ public:
     /// @copydoc setPathLengthTolerance()
     double getPathLengthTolerance() const;
 
+    /**
+     * The number of samples taken per time frame in the coordinate values table
+     * used to fit each path.
+     *
+     * @note The default number of samples per frame is set to 25.
+     */
     void setNumSamplesPerFrame(int numSamples);
+    /// @copydoc setNumSamplesPerFrame()
     int getNumSamplesPerFrame() const;
 
+    /**
+     * The number of threads used to parallelize the path fitting process.
+     *
+     * This setting is used to divide the coordinate sampling, path length and
+     * moment arm computations, and path fitting across multiple threads. The
+     * number of threads must be greater than zero.
+     *
+     * @note The default number of threads is set to two fewer than the number
+     *       of available hardware threads.
+     */
     void setParallel(int numThreads);
+    /// @copydoc setParallel()
     int getParallel() const;
 
+    /**
+     * The Latin hypercube sampling algorithm used to sample coordinate values
+     * for path fitting.
+     *
+     * The Latin hypercube sampling algorithm is used to sample coordinate
+     * values for path fitting. The algorithm can be set to either "random" or
+     * "ESEA", which stands for the enhanced stochastic evolutionary algorithm
+     * developed by Jin et al. 2005 (see class `LatinHypercubeDesign` for more
+     * details). The "random" algorithm is used by default, and "ESEA" can be
+     * used to improve the quality of the sampling at the expense of higher
+     * computational cost. For most applications, the "random" algorithm is
+     * likely sufficient.
+     */
     void setLatinHypercubeAlgorithm(std::string algorithm);
+    /// @copydoc setLatinHypercubeAlgorithm()
     std::string getLatinHypercubeAlgorithm() const;
-
-    void setOutputDirectory(std::string directory);
-    std::string getOutputDirectory() const;
 
     // HELPER FUNCTIONS
     static void evaluateFittedPaths(Model model,
@@ -217,8 +267,14 @@ public:
 
 private:
     // PROPERTIES
-    OpenSim_DECLARE_PROPERTY(model, ModelProcessor, "TODO.");
-    OpenSim_DECLARE_PROPERTY(coordinate_values, TableProcessor, "TODO.");
+    OpenSim_DECLARE_PROPERTY(model, ModelProcessor,
+            "The model containing geometry-based path objects to which "
+            "polynomial-based path objects will be fitted.");
+    OpenSim_DECLARE_PROPERTY(coordinate_values, TableProcessor,
+            "The reference trajectory used to sample coordinate values for "
+            "path fitting.");
+    OpenSim_DECLARE_PROPERTY(output_directory, std::string,
+            "The directory to which the path fitting results are written.");
     OpenSim_DECLARE_PROPERTY(moment_arm_threshold, double,
             "The moment arm threshold value that determines whether or not a "
             "path depends on a model coordinate. In other words, the moment "
@@ -251,11 +307,17 @@ private:
             "between the path lengths computed from an original model path and "
             "a fitted polynomial-based path, which is used to determine the "
             "order of the polynomial used in the fitted path (default: 1e-4).");
-    OpenSim_DECLARE_PROPERTY(num_samples_per_frame, int, "TODO.");
-    OpenSim_DECLARE_PROPERTY(parallel, int, "TODO.");
+    OpenSim_DECLARE_PROPERTY(num_samples_per_frame, int,
+            "The number of samples taken per time frame in the coordinate "
+            "values table used to fit each path (default: 25).");
+    OpenSim_DECLARE_PROPERTY(parallel, int,
+            "The number of threads used to parallelize the path fitting "
+            "process (default: two fewer than the number of available "
+            "hardware threads).");
     OpenSim_DECLARE_PROPERTY(
-            latin_hypercube_algorithm, std::string, "TODO.");
-    OpenSim_DECLARE_PROPERTY(output_directory, std::string, "TODO.");
+            latin_hypercube_algorithm, std::string,
+            "The Latin hypercube sampling algorithm used to sample coordinate "
+            "values for path fitting (default: \"random\").");
 
     void constructProperties();
 
