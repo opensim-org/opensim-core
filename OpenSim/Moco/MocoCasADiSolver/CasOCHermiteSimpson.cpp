@@ -50,9 +50,8 @@ DM HermiteSimpson::createMeshIndicesImpl() const {
     return indices;
 }
 
-void HermiteSimpson::calcDefectsImpl(const casadi::MX& x,
-        const casadi::MX& x_proj, const casadi::MX& xdot,
-        bool useProjectionStates, casadi::MX& defects) const {
+void HermiteSimpson::calcDefectsImpl(const casadi::MXVector& x,
+        const casadi::MX& xdot, casadi::MX& defects) const {
     // For more information, see doxygen documentation for the class.
 
     const int NS = m_problem.getNumStates();
@@ -69,10 +68,9 @@ void HermiteSimpson::calcDefectsImpl(const casadi::MX& x,
         time_ip1 = 2 * imesh + 2;
 
         const auto h = m_times(time_ip1) - m_times(time_i);
-        const auto x_i = x(Slice(), time_i);
-        const auto x_mid = x(Slice(), time_mid);
-        const auto x_ip1 = useProjectionStates ? x_proj(Slice(), imesh) :
-                                                 x(Slice(), time_ip1);
+        const auto x_i = x[imesh](Slice(), 0);
+        const auto x_mid = x[imesh](Slice(), 1);
+        const auto x_ip1 = x[imesh](Slice(), 2);
         const auto xdot_i = xdot(Slice(), time_i);
         const auto xdot_mid = xdot(Slice(), time_mid);
         const auto xdot_ip1 = xdot(Slice(), time_ip1);
@@ -87,22 +85,35 @@ void HermiteSimpson::calcDefectsImpl(const casadi::MX& x,
     }
 }
 
+void HermiteSimpson::calcInterpolatingVariables(const casadi::MX& variables,
+        casadi::MX& interpVariables) const {
+    int time_i;
+    int time_mid;
+    int time_ip1;
+    for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+        time_i = 2 * imesh;
+        time_mid = 2 * imesh + 1;
+        time_ip1 = 2 * imesh + 2;
+        const auto x_i = variables(Slice(), time_i);
+        const auto x_mid = variables(Slice(), time_mid);
+        const auto x_ip1 = variables(Slice(), time_ip1);
+        interpVariables(Slice(), imesh) = x_mid - 0.5 * (x_ip1 + x_i);
+    }
+}
+
 void HermiteSimpson::calcInterpolatingControlsImpl(
         const casadi::MX& controls, casadi::MX& interpControls) const {
     if (m_problem.getNumControls() &&
             m_solver.getInterpolateControlMidpoints()) {
-        int time_i;
-        int time_mid;
-        int time_ip1;
-        for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
-            time_i = 2 * imesh;
-            time_mid = 2 * imesh + 1;
-            time_ip1 = 2 * imesh + 2;
-            const auto c_i = controls(Slice(), time_i);
-            const auto c_mid = controls(Slice(), time_mid);
-            const auto c_ip1 = controls(Slice(), time_ip1);
-            interpControls(Slice(), imesh) = c_mid - 0.5 * (c_ip1 + c_i);
-        }
+        calcInterpolatingVariables(controls, interpControls);
+    }
+}
+
+void HermiteSimpson::calcInterpolatingMultipliersImpl(
+        const casadi::MX& multipliers, casadi::MX& interpMultipliers) const {
+    if (m_problem.getNumMultipliers() &&
+            m_solver.getInterpolateMultiplierMidpoints()) {
+        calcInterpolatingVariables(multipliers, interpMultipliers);
     }
 }
 

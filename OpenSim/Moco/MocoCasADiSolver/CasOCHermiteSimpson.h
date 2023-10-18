@@ -53,6 +53,13 @@ public:
             pointsForInterpControls =
                     casadi::DM::zeros(1, m_solver.getMesh().size() - 1);
         }
+        const bool interpMultipliers =
+                m_solver.getInterpolateMultiplierMidpoints();
+        casadi::DM pointsForInterpMultipliers;
+        if (interpMultipliers) {
+            pointsForInterpMultipliers =
+                    casadi::DM::zeros(1, m_solver.getMesh().size() - 1);
+        }
         for (int i = 0; i < grid.numel(); ++i) {
             if (i % 2 == 0) {
                 grid(i) = mesh[i / 2];
@@ -61,20 +68,26 @@ public:
                 if (interpControls) {
                     pointsForInterpControls(i / 2) = grid(i);
                 }
+                if (interpMultipliers) {
+                    pointsForInterpMultipliers(i / 2) = grid(i);
+                }
             }
         }
-        createVariablesAndSetBounds(grid, 2 * m_problem.getNumStates(),
-                pointsForInterpControls);
+        createVariablesAndSetBounds(grid, 2 * m_problem.getNumStates(), 3,
+                pointsForInterpControls, pointsForInterpMultipliers);
     }
 
 private:
     casadi::DM createQuadratureCoefficientsImpl() const override;
     casadi::DM createMeshIndicesImpl() const override;
-    void calcDefectsImpl(const casadi::MX& x, const casadi::MX& x_proj,
-                         const casadi::MX& xdot, bool useProjectionStates,
+    void calcDefectsImpl(const casadi::MXVector& x, const casadi::MX& xdot,
                          casadi::MX& defects) const override;
+    void calcInterpolatingVariables(const casadi::MX& variables,
+            casadi::MX& interpVariables) const;
     void calcInterpolatingControlsImpl(const casadi::MX& controls,
             casadi::MX& interpControls) const override;
+    void calcInterpolatingMultipliersImpl(const casadi::MX& multipliers,
+            casadi::MX& interpMultipliers) const override;
 };
 
 } // namespace CasOC

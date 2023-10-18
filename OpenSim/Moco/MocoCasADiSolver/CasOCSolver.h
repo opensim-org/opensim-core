@@ -120,11 +120,19 @@ public:
     /// Whether or not to constrain control values at mesh interval midpoints
     /// by linearly interpolating control values from mesh interval endpoints.
     /// @note Only applies to Hermite-Simpson collocation.
+    // TODO update this comment
     void setInterpolateControlMidpoints(bool tf) {
         m_interpolateControlMidpoints = tf;
     }
     bool getInterpolateControlMidpoints() const {
         return m_interpolateControlMidpoints;
+    }
+
+    void setInterpolateMultiplierMidpoints(bool tf) {
+        m_interpolateMultiplierMidpoints = tf;
+    }
+    bool getInterpolateMultiplierMidpoints() const {
+        return m_interpolateMultiplierMidpoints;
     }
 
     /// Whether or not to enforce path constraints at mesh interval midpoints.
@@ -216,6 +224,7 @@ private:
     bool m_minimizeStateProjection = true;
     double m_stateProjectionWeight = 0.0001;
     bool m_interpolateControlMidpoints = true;
+    bool m_interpolateMultiplierMidpoints = false;
     bool m_enforcePathConstraintMidpoints = false;
     Bounds m_implicitMultibodyAccelerationBounds;
     Bounds m_implicitAuxiliaryDerivativeBounds;

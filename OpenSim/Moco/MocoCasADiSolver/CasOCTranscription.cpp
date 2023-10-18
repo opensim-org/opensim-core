@@ -82,7 +82,9 @@ private:
 
 void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
         int numDefectsPerMeshInterval,
-        const casadi::DM& pointsForInterpControls) {
+        int numPointsPerMeshInterval,
+        const casadi::DM& pointsForInterpControls,
+        const casadi::DM& pointsForInterpMultipliers) {
     // Set the grid.
     // -------------
     // The grid for a transcription scheme includes both mesh points (i.e.
@@ -94,7 +96,9 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     m_numMeshIntervals = m_numMeshPoints - 1;
     m_numMeshInteriorPoints = m_numGridPoints - m_numMeshPoints;
     m_numDefectsPerMeshInterval = numDefectsPerMeshInterval;
+    m_numPointsPerMeshInterval = numPointsPerMeshInterval;
     m_pointsForInterpControls = pointsForInterpControls;
+    m_pointsForInterpMultipliers = pointsForInterpMultipliers;
     m_numMultibodyResiduals = m_problem.isDynamicsModeImplicit()
                              ? m_problem.getNumMultibodyDynamicsEquations()
                              : 0;
@@ -112,6 +116,8 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
             m_numAuxiliaryResiduals * m_numGridPoints +
             m_problem.getNumKinematicConstraintEquations() * m_numMeshPoints +
             m_problem.getNumControls() * (int)pointsForInterpControls.numel() +
+            m_problem.getNumMultipliers() *
+                    (int)pointsForInterpMultipliers.numel() +
             m_problem.getNumProjectionConstraintEquations() * m_numMeshIntervals;
     m_constraints.endpoint.resize(
             m_problem.getEndpointConstraintInfos().size());
@@ -136,7 +142,6 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
             MX::sym("states", m_problem.getNumStates(), m_numGridPoints);
     m_scaledVars[projection_states] = MX::sym(
             "projection_states", m_numProjectionStates, m_numMeshIntervals);
-    m_defectStates = MX(m_problem.getNumStates(), m_numGridPoints);
     m_scaledVars[controls] =
             MX::sym("controls", m_problem.getNumControls(), m_numGridPoints);
     m_scaledVars[multipliers] = MX::sym(
@@ -145,6 +150,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
             "derivatives", m_problem.getNumDerivatives(), m_numGridPoints);
     m_scaledVars[parameters] =
             MX::sym("parameters", m_problem.getNumParameters(), 1);
+
     if (m_problem.isKinematicConstraintMethodProjection()) {
         // In the projection method for enforcing kinematic constraints, the
         // slack variables are applied at the mesh points at the end of each
@@ -157,6 +163,13 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
         // Hermite-Simpson collocation scheme.
         m_scaledVars[slacks] = MX::sym(
             "slacks", m_problem.getNumSlacks(), m_numMeshInteriorPoints);
+    }
+
+    m_defectStates = MXVector(m_numMeshIntervals);
+    m_projectionStateDistances = MX(m_numProjectionStates, m_numMeshIntervals);
+    for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+        m_defectStates[imesh] = MX(m_problem.getNumStates(),
+                m_numPointsPerMeshInterval);
     }
 
     m_meshIndicesMap = createMeshIndices();
@@ -313,6 +326,7 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
             ++ip;
         }
     }
+
     m_unscaledVars = unscaleVariables(m_scaledVars);
 
     m_duration = m_unscaledVars[final_time] - m_unscaledVars[initial_time];
@@ -329,15 +343,28 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     m_paramsTrajProjState =
             MX::repmat(m_unscaledVars[parameters], 1, m_numMeshIntervals);
 
-    if (m_numProjectionStates) {
-        m_defectStates(Slice(0, numMultibodyStates), m_projectionStateIndices) =
-            m_unscaledVars[projection_states];
-        m_defectStates(
-                Slice(0, numMultibodyStates), m_notProjectionStateIndices) =
-                m_unscaledVars[states](Slice(0, numMultibodyStates),
-                    m_notProjectionStateIndices);
-    } else {
-        m_defectStates = m_unscaledVars[states];
+    // 0 1 2 3 | 4 | 5 6 7 8 | 9 | 10 11 12 13
+    casadi_int istart = 0;
+    for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
+        std::cout << "imesh: " << imesh << std::endl;
+        casadi_int numPts = m_numPointsPerMeshInterval;
+        casadi_int iend = istart + numPts - 1;
+        std::cout << "numPts: " << numPts << std::endl;
+        std::cout << "istart: " << istart << std::endl;
+        std::cout << "iend: " << iend << std::endl;
+        if (m_numProjectionStates) {
+            m_defectStates[imesh](Slice(), Slice(0, numPts-1)) =
+                m_unscaledVars[states](Slice(), Slice(istart, iend));
+            m_defectStates[imesh](Slice(), numPts-1) =
+                m_unscaledVars[projection_states](Slice(), imesh);
+            m_projectionStateDistances(Slice(), imesh) =
+                m_unscaledVars[projection_states](Slice(), imesh) -
+                m_unscaledVars[states](Slice(), iend);
+        } else {
+            m_defectStates[imesh](Slice(), Slice()) =
+                m_unscaledVars[states](Slice(), Slice(istart, iend+1));
+        }
+        istart = iend;
     }
 }
 
@@ -569,6 +596,19 @@ void Transcription::transcribe() {
     m_constraintsUpperBounds.interp_controls = boundsOnInterpControls;
 
     calcInterpolatingControls();
+
+    // Interpolating multipliers.
+    // --------------------------
+    m_constraints.interp_multipliers =
+            casadi::DM(casadi::Sparsity::dense(m_problem.getNumMultipliers(),
+                    (int)m_pointsForInterpMultipliers.numel()));
+    const auto boundsOnInterpMultipliers = casadi::DM::zeros(
+            m_problem.getNumMultipliers(),
+            (int)m_pointsForInterpMultipliers.numel());
+    m_constraintsLowerBounds.interp_multipliers = boundsOnInterpMultipliers;
+    m_constraintsUpperBounds.interp_multipliers = boundsOnInterpMultipliers;
+
+    calcInterpolatingMultipliers();
 }
 
 void Transcription::setObjectiveAndEndpointConstraints() {
@@ -682,11 +722,9 @@ void Transcription::setObjectiveAndEndpointConstraints() {
     }
 
     // Minimize state projection distance.
-    if (minimizeStateProjection) {
-        MX integrandTraj = MX::sum1(
-                MX::sq(m_scaledVars[states] - m_defectStates));
+    if (minimizeStateProjection && m_numProjectionStates) {
         m_objectiveTerms(iterm++) = m_solver.getStateProjectionWeight() *
-                       m_duration * dot(quadCoeffs.T(), integrandTraj);
+                       MX::sum2(MX::sum1(MX::sq(m_projectionStateDistances)));
     }
 
     // Endpoint constraints

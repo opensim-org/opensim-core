@@ -73,7 +73,9 @@ protected:
     /// scheme applies constraints between control points.
     void createVariablesAndSetBounds(const casadi::DM& grid,
             int numDefectsPerMeshInterval,
-            const casadi::DM& pointsForInterpControls = casadi::DM());
+            int numPointsPerMeshInterval,
+            const casadi::DM& pointsForInterpControls = casadi::DM(),
+            const casadi::DM& pointsForInterpMultipliers = casadi::DM());
 
     /// We assume all functions depend on time and parameters.
     /// "inputs" is prepended by time and postpended (?) by parameters.
@@ -130,6 +132,7 @@ protected:
         std::vector<T> endpoint;
         std::vector<T> path;
         T interp_controls;
+        T interp_multipliers;
         T projection;
     };
     void printConstraintValues(const Iterate& it,
@@ -146,6 +149,7 @@ protected:
     int m_numMeshIntervals = -1;
     int m_numMeshInteriorPoints = -1;
     int m_numDefectsPerMeshInterval = -1;
+    int m_numPointsPerMeshInterval = -1;
     int m_numMultibodyResiduals = -1;
     int m_numAuxiliaryResiduals = -1;
     int m_numConstraints = -1;
@@ -153,6 +157,7 @@ protected:
     int m_numProjectionStates = -1;
     casadi::DM m_grid;
     casadi::DM m_pointsForInterpControls;
+    casadi::DM m_pointsForInterpMultipliers;
     casadi::MX m_times;
     casadi::MX m_duration;
 
@@ -168,7 +173,8 @@ private:
     VariablesDM m_upperBounds;
     VariablesDM m_shift;
     VariablesDM m_scale;
-    casadi::MX m_defectStates;
+    casadi::MXVector m_defectStates;
+    casadi::MX m_projectionStateDistances;
 
     casadi::DM m_meshIndicesMap;
     casadi::Matrix<casadi_int> m_gridIndices;
@@ -199,29 +205,34 @@ private:
     virtual casadi::DM createMeshIndicesImpl() const = 0;
     /// Override this function in your derived class set the defect, kinematic,
     /// and path constraint errors required for your transcription scheme.
-    virtual void calcDefectsImpl(const casadi::MX& x, const casadi::MX& x_proj,
-            const casadi::MX& xdot, bool useProjectionStates,
-            casadi::MX& defects) const = 0;
+    virtual void calcDefectsImpl(const casadi::MXVector& x,
+            const casadi::MX& xdot, casadi::MX& defects) const = 0;
     virtual void calcInterpolatingControlsImpl(const casadi::MX& /*controls*/,
             casadi::MX& /*interpControls*/) const {
         OPENSIM_THROW_IF(m_pointsForInterpControls.numel(), OpenSim::Exception,
                 "Must provide constraints for interpolating controls.")
     }
+    virtual void calcInterpolatingMultipliersImpl(
+            const casadi::MX& /*multipliers*/,
+            casadi::MX& /*interpMultipliers*/) const {
+        OPENSIM_THROW_IF(m_pointsForInterpMultipliers.numel(),
+                OpenSim::Exception,
+                "Must provide constraints for interpolating multipliers.")
+    }
 
     void transcribe();
     void setObjectiveAndEndpointConstraints();
     void calcDefects() {
-        bool useProjectionStates =
-                m_problem.getNumKinematicConstraintEquations() &
-                m_problem.isKinematicConstraintMethodProjection();
-        calcDefectsImpl(m_unscaledVars.at(states),
-                        m_unscaledVars.at(projection_states),
-                        m_xdot, useProjectionStates,
-                        m_constraints.defects);
+        calcDefectsImpl(m_defectStates, m_xdot, m_constraints.defects);
     }
     void calcInterpolatingControls() {
         calcInterpolatingControlsImpl(
                 m_unscaledVars.at(controls), m_constraints.interp_controls);
+    }
+    void calcInterpolatingMultipliers() {
+        calcInterpolatingMultipliersImpl(
+                m_unscaledVars.at(multipliers),
+                m_constraints.interp_multipliers);
     }
 
     /// Use this function to ensure you iterate through variables in the same
@@ -350,6 +361,7 @@ private:
         //    residual_0.5         x
         //    defect_0       x     x     x
         //    interp_con_0   x     x     x
+        //    interp_mult_0  x     x     x
         //    kinematic_1                x
         //    projection_1               x
         //    path_1                     x     *
@@ -357,6 +369,7 @@ private:
         //    residual_1.5                     x
         //    defect_1                   x     x     x
         //    interp_con_1               x     x     x
+        //    interp_mult_1              x     x     x
         //    kinematic_2                            x
         //    projection_2                           x
         //    path_2                                 x     *
@@ -364,6 +377,7 @@ private:
         //    residual_2.5                                 x
         //    defect_2                               x     x     x
         //    interp_con_2                           x     x     x
+        //    interp_mult_2                          x     x     x
         //    kinematic_3                                        x
         //    projection_3                                       x
         //    path_3                                             x
@@ -383,6 +397,8 @@ private:
         int igrid = 0;
         // Index for pointsForInterpControls.
         int icon = 0;
+        // Index for pointsForInterpMultipliers.
+        int imult = 0;
         for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
             copyColumn(constraints.kinematic, imesh);
             if (imesh > 0) copyColumn(constraints.projection, imesh - 1);
@@ -398,6 +414,12 @@ private:
                                 m_solver.getMesh()[imesh + 1]) {
                     copyColumn(constraints.interp_controls, icon);
                     ++icon;
+                }
+                while (imult < m_pointsForInterpMultipliers.numel() &&
+                        m_pointsForInterpMultipliers(imult).scalar() <
+                                m_solver.getMesh()[imesh + 1]) {
+                    copyColumn(constraints.interp_multipliers, imult);
+                    ++imult;
                 }
             }
         }
@@ -442,6 +464,8 @@ private:
         }
         out.interp_controls = init(m_problem.getNumControls(),
                 (int)m_pointsForInterpControls.numel());
+        out.interp_multipliers = init(m_problem.getNumMultipliers(),
+                (int)m_pointsForInterpMultipliers.numel());
 
         int iflat = 0;
         auto copyColumn = [&flat, &iflat](T& matrix, int columnIndex) {
@@ -466,6 +490,8 @@ private:
         int igrid = 0;
         // Index for pointsForInterpControls.
         int icon = 0;
+        // Index for pointsForInterpMultipliers.
+        int imult = 0;
         for (int imesh = 0; imesh < m_numMeshPoints; ++imesh) {
             copyColumn(out.kinematic, imesh);
             if (imesh > 0) copyColumn(out.projection, imesh-1);
@@ -481,6 +507,12 @@ private:
                                 m_solver.getMesh()[imesh + 1]) {
                     copyColumn(out.interp_controls, icon);
                     ++icon;
+                }
+                while (imult < m_pointsForInterpMultipliers.numel() &&
+                        m_pointsForInterpMultipliers(imult).scalar() <
+                                m_solver.getMesh()[imesh + 1]) {
+                    copyColumn(out.interp_multipliers, imult);
+                    ++imult;
                 }
             }
         }

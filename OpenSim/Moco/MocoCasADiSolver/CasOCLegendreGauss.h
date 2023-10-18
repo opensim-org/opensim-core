@@ -77,6 +77,13 @@ public:
             pointsForInterpControls = casadi::DM::zeros(1,
                     numMeshIntervals * m_degree);
         }
+        const bool interpMultipliers =
+                m_solver.getInterpolateMultiplierMidpoints();
+        casadi::DM pointsForInterpMultipliers;
+        if (interpMultipliers) {
+            pointsForInterpMultipliers = casadi::DM::zeros(1,
+                    numMeshIntervals * m_degree);
+        }
 
         // Get the collocation points (roots of Legendre polynomials). The roots
         // are returned on the interval (0, 1), not (-1, 1) as in the theses of
@@ -105,16 +112,22 @@ public:
         grid(numGridPoints - 1) = mesh[numMeshIntervals];
         createVariablesAndSetBounds(grid,
                 (m_degree + 1) * m_problem.getNumStates(),
-                pointsForInterpControls);
+                m_degree + 2,
+                pointsForInterpControls,
+                pointsForInterpMultipliers);
     }
 
 private:
     casadi::DM createQuadratureCoefficientsImpl() const override;
     casadi::DM createMeshIndicesImpl() const override;
-    void calcDefectsImpl(const casadi::MX& x, const casadi::MX& xdot,
+    void calcDefectsImpl(const casadi::MXVector& x, const casadi::MX& xdot,
             casadi::MX& defects) const override;
+    void calcInterpolatingVariables(const casadi::MX& variables,
+            casadi::MX& interpVariables) const;
     void calcInterpolatingControlsImpl(const casadi::MX& controls,
             casadi::MX& interpControls) const override;
+    void calcInterpolatingMultipliersImpl(const casadi::MX& multipliers,
+            casadi::MX& interpMultipliers) const override;
 
     int m_degree;
     std::vector<double> m_legendreRoots;
