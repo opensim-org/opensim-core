@@ -17,7 +17,7 @@
  * -------------------------------------------------------------------------- */
 
 #define CATCH_CONFIG_MAIN
-#include "OpenSim/Auxiliary/catch/catch.hpp"
+#include <OpenSim/Auxiliary/catch/catch.hpp>
 
 #include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Common/STOFileAdapter.h>

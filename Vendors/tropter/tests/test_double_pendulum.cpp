@@ -15,7 +15,7 @@
 // ----------------------------------------------------------------------------
 
 #define CATCH_CONFIG_MAIN
-#include "catch/catch.hpp"
+#include <catch.hpp>
 #include "testing_optimalcontrol.h"
 #include <Eigen/LU>
 

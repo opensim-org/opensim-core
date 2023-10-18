@@ -14,7 +14,7 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 #define CATCH_CONFIG_MAIN
-#include "catch/catch.hpp"
+#include <catch.hpp>
 #include "testing.h"
 
 #include <tropter/tropter.h>

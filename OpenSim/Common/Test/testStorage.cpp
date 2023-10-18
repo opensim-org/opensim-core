@@ -25,7 +25,7 @@
 #include <OpenSim/Common/STOFileAdapter.h>
 
 #define CATCH_CONFIG_MAIN
-#include "OpenSim/Auxiliary/catch/catch.hpp"
+#include <OpenSim/Auxiliary/catch/catch.hpp>
 #include <fstream>
 
 using namespace OpenSim;

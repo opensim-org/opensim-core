@@ -25,7 +25,7 @@
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 #define CATCH_CONFIG_MAIN
-#include "OpenSim/Auxiliary/catch/catch.hpp"
+#include <OpenSim/Auxiliary/catch/catch.hpp>
 
 using namespace OpenSim;
 using namespace std;

@@ -17,7 +17,7 @@
 #include <tropter/tropter.h>
 
 #define CATCH_CONFIG_MAIN
-#include "catch/catch.hpp"
+#include <catch.hpp>
 #include "testing.h"
 #include "testing_optimalcontrol.h"
 

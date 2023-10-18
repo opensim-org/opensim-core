@@ -18,7 +18,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "OpenSim/Auxiliary/catch/catch.hpp"
+#include <OpenSim/Auxiliary/catch/catch.hpp>
 
 #include <OpenSim/Common/osimCommon.h>
 

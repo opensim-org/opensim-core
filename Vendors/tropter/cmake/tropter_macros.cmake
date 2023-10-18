@@ -18,7 +18,7 @@ function(tropter_add_test)
     target_link_libraries(${TROPTEST_NAME} tropter ${TROPTEST_LIB_DEPENDS})
     # TODO Tropter shouldn't know that it's in a larger project.
     target_include_directories(${TROPTEST_NAME}
-        PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../../OpenSim/Auxiliary")
+        PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../../OpenSim/Auxiliary/catch")
     if(TROPTER_WITH_SNOPT)
         target_compile_definitions(${TROPTEST_NAME} PRIVATE TROPTER_WITH_SNOPT)
     endif()

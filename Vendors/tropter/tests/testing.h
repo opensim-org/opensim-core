@@ -16,7 +16,7 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 
-#include "catch/catch.hpp"
+#include <catch.hpp>
 #include <Eigen/Dense>
 
 /// Compare any two Eigen matrices (their dimensions and each element)
