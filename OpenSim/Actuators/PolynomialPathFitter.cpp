@@ -29,7 +29,7 @@
 #include <OpenSim/Common/LatinHypercubeDesign.h>
 #include <OpenSim/Common/MultivariatePolynomialFunction.h>
 #include <OpenSim/Common/STOFileAdapter.h>
-#include <OpenSim/Common/Constant.h>
+#include <OpenSim/Common/IO.h>
 #include <OpenSim/Simulation/Control/PrescribedController.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
@@ -97,11 +97,26 @@ void PolynomialPathFitter::run() {
 
     // Process the inputs.
     // -------------------
-    log_info("Step 1/8: Loading the model and coordinate data.");
+    log_info("Step 1/9: Loading the model and coordinate data.");
     log_info("------------------------------------------------");
+
     // Load the model.
     Model model = get_model().process(getDocumentDirectory());
     model.initSystem();
+
+    const auto pathList = model.getComponentList<AbstractPath>();
+    int numPaths = (int)std::distance(pathList.begin(), pathList.end());
+    OPENSIM_THROW_IF_FRMOBJ(!numPaths, Exception,
+            "Expected the model to contain at least one AbstractPath, but it "
+            "does not.")
+
+    const auto fbPathList = model.getComponentList<FunctionBasedPath>();
+    int numFunctionBasedPaths = (int)std::distance(fbPathList.begin(),
+            fbPathList.end());
+    OPENSIM_THROW_IF_FRMOBJ(numFunctionBasedPaths, Exception,
+            "Expected the model to not contain any FunctionBasedPaths, but it "
+            "does. Please remove all FunctionBasedPaths from the model before "
+            "running the PolynomialPathFitter.")
 
     // Load the coordinate values.
     TableProcessor tableProcessor = get_coordinate_values();
@@ -167,21 +182,21 @@ void PolynomialPathFitter::run() {
     // Coordinate sampling bounds.
     // ---------------------------
     log_info("");
-    log_info("Step 2/8: Setting the coordinate bounds.");
+    log_info("Step 2/9: Setting the coordinate bounds.");
     log_info("----------------------------------------");
-    // Set the default bounds for all coordinates.
-    SimTK::Vec2 defaultBounds = get_default_coordinate_sampling_bounds();
-    log_info("Default bounds: [{}, {}] degrees.",
-            defaultBounds[0], defaultBounds[1]);
+    // Set the global bounds for all coordinates.
+    SimTK::Vec2 globalBounds = get_global_coordinate_sampling_bounds();
+    log_info("Global bounds: [{}, {}] degrees.",
+             globalBounds[0], globalBounds[1]);
 
-    defaultBounds[0] = SimTK::convertDegreesToRadians(defaultBounds[0]);
-    defaultBounds[1] = SimTK::convertDegreesToRadians(defaultBounds[1]);
+    globalBounds[0] = SimTK::convertDegreesToRadians(globalBounds[0]);
+    globalBounds[1] = SimTK::convertDegreesToRadians(globalBounds[1]);
     m_coordinateBoundsMap.reserve(model.getNumCoordinates());
     m_coordinateRangeMap.reserve(model.getNumCoordinates());
     for (const auto& coordinate : model.getComponentList<Coordinate>()) {
         std::string valuePath = fmt::format("{}/value",
                 coordinate.getAbsolutePathString());
-        m_coordinateBoundsMap.insert({valuePath, defaultBounds});
+        m_coordinateBoundsMap.insert({valuePath, globalBounds});
 
         // If the coordinate is clamped, then we also store the allowable range
         // of motion.
@@ -216,7 +231,7 @@ void PolynomialPathFitter::run() {
     // Validate settings.
     // ------------------
     log_info("");
-    log_info("Step 3/8: Checking the user-defined settings.");
+    log_info("Step 3/9: Checking the user-defined settings.");
     log_info("---------------------------------------------");
     OPENSIM_THROW_IF_FRMOBJ(get_moment_arm_threshold() < 0 ||
                             get_moment_arm_threshold() > 1, Exception,
@@ -262,12 +277,14 @@ void PolynomialPathFitter::run() {
         } else {
             outputDir = getDocumentDirectory();
         }
+    } else {
+        IO::makeDir(outputDir);
     }
 
     // Sample coordinate values around the provided trajectory.
     // --------------------------------------------------------
     log_info("");
-    log_info("Step 4/8: Sampling coordinate values around the provided "
+    log_info("Step 4/9: Sampling coordinate values around the provided "
              "trajectory.");
     log_info("----------------------------------------------------------------"
              "----");
@@ -279,81 +296,51 @@ void PolynomialPathFitter::run() {
     valuesSampled = tableProcessorSampled.process(&model);
     log_info("Total number of samples = {}", valuesSampled.getNumRows());
 
-    // Print the coordinate values to file.
-    std::string coordinatesFileName =
-            SimTK::Pathname::getAbsolutePathname(
-                    fmt::format("{}/{}_coordinate_values.sto",
-                            outputDir, model.getName()));
-    std::string sampledCoordinatesFileName =
-            SimTK::Pathname::getAbsolutePathname(
-                    fmt::format("{}/{}_coordinate_values_sampled.sto",
-                            outputDir, model.getName()));
-    log_info(fmt::format("Printing original coordinate values to '{}'...",
-            coordinatesFileName));
-    STOFileAdapter::write(values, coordinatesFileName);
-    log_info(fmt::format("Printing sampled coordinate values to '{}'...",
-            sampledCoordinatesFileName));
-    STOFileAdapter::write(valuesSampled, sampledCoordinatesFileName);
-
     // Compute path lengths and moment arms.
     // -------------------------------------
     log_info("");
-    log_info("Step 5/8: Computing path lengths and moment arms.");
+    log_info("Step 5/9: Computing path lengths and moment arms.");
     log_info("-------------------------------------------------");
+    log_info("");
+    log_info("Computing path lengths and moment arms for the original "
+             "coordinate data...");
     TimeSeriesTable pathLengths;
     TimeSeriesTable momentArms;
-    computePathLengthsAndMomentArms(model, valuesSampled, get_parallel(),
+    computePathLengthsAndMomentArms(model, values, get_parallel(),
             pathLengths, momentArms);
+
+    log_info("");
+    log_info("Computing path lengths and moment arms for the sampled "
+             "coordinate data...");
+    TimeSeriesTable pathLengthsSampled;
+    TimeSeriesTable momentArmsSampled;
+    computePathLengthsAndMomentArms(model, valuesSampled, get_parallel(),
+            pathLengthsSampled, momentArmsSampled);
 
     // Filter sampled data.
     // --------------------
     log_info("");
-    log_info("Step 6/8: Filtering sampled data.");
+    log_info("Step 6/9: Filtering sampled data.");
     log_info("---------------------------------");
     MomentArmMap momentArmMap;
-    filterSampledData(model, valuesSampled, pathLengths, momentArms,
-            momentArmMap);
-
-    // Print the path lengths and moment arms to file.
-    std::string pathLengthsFileName =
-            SimTK::Pathname::getAbsolutePathname(
-                    fmt::format("{}/{}_path_lengths.sto",
-                            outputDir, model.getName()));
-    std::string momentArmsFileName =
-            SimTK::Pathname::getAbsolutePathname(
-                    fmt::format("{}/{}_moment_arms.sto",
-                            outputDir, model.getName()));
-    log_info("");
-    log_info("Printing the sampled path lengths to '{}'...",
-            pathLengthsFileName);
-    STOFileAdapter::write(pathLengths, pathLengthsFileName);
-    log_info("Printing the sampled moment arms to '{}'...", momentArmsFileName);
-    STOFileAdapter::write(momentArms, momentArmsFileName);
+    filterSampledData(model, valuesSampled, pathLengthsSampled,
+            momentArmsSampled, momentArmMap);
 
     // Fit the FunctionBasedPaths.
     // ---------------------------
     log_info("");
-    log_info("Step 7/8: Fitting polynomial coefficients.");
+    log_info("Step 7/9: Fitting polynomial coefficients.");
     log_info("------------------------------------------");
     Set<FunctionBasedPath> functionBasedPaths = fitPolynomialCoefficients(
-            model, valuesSampled, pathLengths, momentArms, momentArmMap);
+            model, valuesSampled, pathLengthsSampled, momentArmsSampled,
+            momentArmMap);
     Array<std::string> pathNames;
     functionBasedPaths.getNames(pathNames);
-
-    // Print the FunctionBasedPaths to file.
-    std::string functionBasedPathsFileName =
-            SimTK::Pathname::getAbsolutePathname(
-                    fmt::format("{}/{}_FunctionBasedPathSet.xml",
-                            outputDir, model.getName()));
-    log_info("");
-    log_info("Printing the FunctionBasedPaths to '{}'...",
-            functionBasedPathsFileName);
-    functionBasedPaths.print(functionBasedPathsFileName);
 
     // Evaluate the fit.
     // -----------------
     log_info("");
-    log_info("Step 8/8: Evaluating the fit.");
+    log_info("Step 8/9: Evaluating the fit.");
     log_info("-----------------------------");
 
     // Find the longest path name.
@@ -380,25 +367,102 @@ void PolynomialPathFitter::run() {
     // Add the FunctionBasedPaths to the model.
     log_info("");
     log_info("Computing path lengths and moment arms from the fitted paths...");
-    ModelProcessor modelProcessor = ModelProcessor(model) |
-            ModOpReplacePathsWithFunctionBasedPaths(functionBasedPathsFileName);
-    Model modelFitted = modelProcessor.process();
+    Model modelFitted = model;
+    modelFitted.initSystem();
+    ModelFactory::replacePathsWithFunctionBasedPaths(modelFitted,
+            functionBasedPaths);
 
     // Recompute the path lengths and moment arms.
     TimeSeriesTable pathLengthsFitted;
     TimeSeriesTable momentArmsFitted;
-    computePathLengthsAndMomentArms(modelFitted, valuesSampled, get_parallel(),
+    computePathLengthsAndMomentArms(modelFitted, values, get_parallel(),
             pathLengthsFitted, momentArmsFitted);
 
+    TimeSeriesTable pathLengthsSampledFitted;
+    TimeSeriesTable momentArmsSampledFitted;
+    computePathLengthsAndMomentArms(modelFitted, valuesSampled, get_parallel(),
+            pathLengthsSampledFitted, momentArmsSampledFitted);
+
     // Remove moment arm columns that are not in the map.
+    removeMomentArmColumns(momentArms, momentArmMap);
     removeMomentArmColumns(momentArmsFitted, momentArmMap);
+    removeMomentArmColumns(momentArmsSampledFitted, momentArmMap);
 
     // Compute the RMS error between the original and fitted path lengths and
     // moment arms.
-    computeFittingErrors(modelFitted, pathLengths, momentArms,
-            pathLengthsFitted, momentArmsFitted);
+    computeFittingErrors(modelFitted, pathLengthsSampled, momentArmsSampled,
+            pathLengthsSampledFitted, momentArmsSampledFitted);
 
-    // Print the fitted path lengths and moment arms to file.
+    // Print out results.
+    // ------------------
+    log_info("");
+    log_info("Step 9/9: Printing out results to file.");
+    log_info("---------------------------------------");
+
+    // Print the FunctionBasedPaths to file.
+    std::string functionBasedPathsFileName =
+            SimTK::Pathname::getAbsolutePathname(
+                    fmt::format("{}/{}_FunctionBasedPathSet.xml",
+                            outputDir, model.getName()));
+    log_info("Printing the FunctionBasedPaths to '{}'...",
+            functionBasedPathsFileName);
+    functionBasedPaths.print(functionBasedPathsFileName);
+
+    // Print the coordinate values to file.
+    std::string coordinatesFileName =
+            SimTK::Pathname::getAbsolutePathname(
+                    fmt::format("{}/{}_coordinate_values.sto",
+                            outputDir, model.getName()));
+    std::string sampledCoordinatesFileName =
+            SimTK::Pathname::getAbsolutePathname(
+                    fmt::format("{}/{}_coordinate_values_sampled.sto",
+                            outputDir, model.getName()));
+    log_info("");
+    log_info(fmt::format("Printing original coordinate values to '{}'...",
+            coordinatesFileName));
+    STOFileAdapter::write(values, coordinatesFileName);
+    log_info(fmt::format("Printing sampled coordinate values to '{}'...",
+            sampledCoordinatesFileName));
+    STOFileAdapter::write(valuesSampled, sampledCoordinatesFileName);
+
+    // Print the path lengths and moment arms from the original coordinate
+    // data to file.
+    std::string pathLengthsFileName =
+            SimTK::Pathname::getAbsolutePathname(
+                    fmt::format("{}/{}_path_lengths.sto",
+                            outputDir, model.getName()));
+    std::string momentArmsFileName =
+            SimTK::Pathname::getAbsolutePathname(
+                    fmt::format("{}/{}_moment_arms.sto",
+                            outputDir, model.getName()));
+    log_info("");
+    log_info("Printing the path lengths to '{}'...",
+            pathLengthsFileName);
+    STOFileAdapter::write(pathLengths, pathLengthsFileName);
+    log_info("Printing the moment arms to '{}'...", momentArmsFileName);
+    STOFileAdapter::write(momentArms, momentArmsFileName);
+
+    // Print the path lengths and moment arms from the sampled coordinate
+    // data to file.
+    std::string pathLengthsSampledFileName =
+            SimTK::Pathname::getAbsolutePathname(
+                    fmt::format("{}/{}_path_lengths_sampled.sto",
+                            outputDir, model.getName()));
+    std::string momentArmsSampledFileName =
+            SimTK::Pathname::getAbsolutePathname(
+                    fmt::format("{}/{}_moment_arms_sampled.sto",
+                            outputDir, model.getName()));
+
+    log_info("");
+    log_info("Printing the sampled path lengths to '{}'...",
+            pathLengthsSampledFileName);
+    STOFileAdapter::write(pathLengths, pathLengthsSampledFileName);
+    log_info("Printing the sampled moment arms to '{}'...",
+            momentArmsSampledFileName);
+    STOFileAdapter::write(momentArms, momentArmsSampledFileName);
+
+    // Print the fitted path lengths and moment arms using the original
+    // coordinate data to file.
     std::string pathLengthsFittedFileName =
             SimTK::Pathname::getAbsolutePathname(
                     fmt::format("{}/{}_path_lengths_fitted.sto",
@@ -409,12 +473,33 @@ void PolynomialPathFitter::run() {
                             outputDir, model.getName()));
 
     log_info("");
-    log_info("Printing the fitted path lengths to '{}'...",
-            pathLengthsFittedFileName);
+    log_info("Printing the fitted path lengths from the original coordinate "
+             "values to '{}'...", pathLengthsFittedFileName);
     STOFileAdapter::write(pathLengthsFitted, pathLengthsFittedFileName);
-    log_info("Printing the fitted moment arms to '{}'...",
-            momentArmsFittedFileName);
+    log_info("Printing the fitted moment arms from the original coordinate "
+             "to '{}'...", momentArmsFittedFileName);
     STOFileAdapter::write(momentArmsFitted, momentArmsFittedFileName);
+
+    // Print the fitted path lengths and moment arms using the sampled
+    // coordinate data to file.
+    std::string pathLengthsSampledFittedFileName =
+            SimTK::Pathname::getAbsolutePathname(
+                    fmt::format("{}/{}_path_lengths_sampled_fitted.sto",
+                            outputDir, model.getName()));
+    std::string momentArmsSampledFittedFileName =
+            SimTK::Pathname::getAbsolutePathname(
+                    fmt::format("{}/{}_moment_arms_sampled_fitted.sto",
+                            outputDir, model.getName()));
+
+    log_info("");
+    log_info("Printing the fitted path lengths from the sampled coordinate "
+             "values to '{}'...", pathLengthsSampledFittedFileName);
+    STOFileAdapter::write(pathLengthsSampledFitted,
+            pathLengthsSampledFittedFileName);
+    log_info("Printing the fitted moment arms from the sampled coordinate "
+             "values to '{}'...", momentArmsSampledFittedFileName);
+    STOFileAdapter::write(momentArmsSampledFitted,
+            momentArmsSampledFittedFileName);
 }
 
 TimeSeriesTable PolynomialPathFitter::sampleCoordinateValues(
@@ -751,8 +836,7 @@ void PolynomialPathFitter::filterSampledData(const Model& model,
     // Remove the rejected time points.
     if (!rejectedTimePoints.empty()) {
         log_info("Removing {} samples ({:1.1f}% of total) that are larger than "
-                 "{} standard deviations from the nominal values of the moment "
-                 "arm and/or path length samples...",
+                 "{} standard deviations from nominal values...",
                 rejectedTimePoints.size(),
                 100.0*rejectedTimePoints.size()/coordinateValues.getNumRows(),
                 threshold);
@@ -1009,13 +1093,13 @@ int PolynomialPathFitter::getMaximumPolynomialOrder() const {
     return get_maximum_polynomial_order();
 }
 
-void PolynomialPathFitter::setDefaultCoordinateSamplingBounds(
+void PolynomialPathFitter::setGlobalCoordinateSamplingBounds(
         SimTK::Vec2 bounds) {
-    set_default_coordinate_sampling_bounds(std::move(bounds));
+    set_global_coordinate_sampling_bounds(std::move(bounds));
 }
 
-SimTK::Vec2 PolynomialPathFitter::getDefaultCoordinateSamplingBounds() const {
-    return get_default_coordinate_sampling_bounds();
+SimTK::Vec2 PolynomialPathFitter::getGlobalCoordinateSamplingBounds() const {
+    return get_global_coordinate_sampling_bounds();
 }
 
 void PolynomialPathFitter::appendCoordinateSamplingBounds(
@@ -1248,7 +1332,7 @@ void PolynomialPathFitter::constructProperties() {
     constructProperty_minimum_polynomial_order(2);
     constructProperty_maximum_polynomial_order(9);
     constructProperty_parallel((int)std::thread::hardware_concurrency()-2);
-    constructProperty_default_coordinate_sampling_bounds({-10.0, 10.0});
+    constructProperty_global_coordinate_sampling_bounds({-10.0, 10.0});
     constructProperty_coordinate_sampling_bounds();
     constructProperty_num_samples_per_frame(25);
     constructProperty_latin_hypercube_algorithm("random");

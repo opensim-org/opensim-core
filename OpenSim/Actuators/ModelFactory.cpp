@@ -310,10 +310,9 @@ void ModelFactory::createReserveActuators(Model& model, double optimalForce,
 }
 
 void ModelFactory::replacePathsWithFunctionBasedPaths(OpenSim::Model& model, 
-            const std::string& functionBasedPathsFile) {
-    Set<FunctionBasedPath> pathSet(functionBasedPathsFile);
-    for (int i = 0; i < pathSet.getSize(); ++i) {
-        auto path = pathSet.get(i);
+            const Set<FunctionBasedPath>& functionBasedPaths) {
+    for (int i = 0; i < functionBasedPaths.getSize(); ++i) {
+        auto path = functionBasedPaths.get(i);
             
         // Get the force component associated with this path.
         OPENSIM_THROW_IF(!model.hasComponent<Force>(path.getName()), 

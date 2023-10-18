@@ -92,14 +92,12 @@ public:
             double bound = SimTK::NaN,
             bool skipCoordinatesWithExistingActuators = true);
     
-    /// Replace the paths of the forces in the model with the 
-    /// FunctionBasedPath%s specified in the file 'functionBasedPathsFile'. 
-    /// The file must contain a Set of FunctionBasedPath%s where the name of 
-    /// each path matches the path of a corresponding Force in the model. The 
-    /// path name is appended with "_path" to avoid name ambiguity in the final 
-    /// model.
+    /// Replace the paths of the forces in the model with the provided Set of
+    /// FunctionBasedPath%s. The name of each FunctionBasedPath should match the
+    /// path of a corresponding Force in the model. The path name is appended
+    /// with "_path" to avoid name ambiguity in the final model.
     static void replacePathsWithFunctionBasedPaths(Model& model, 
-            const std::string& functionBasedPathsFile);
+            const Set<FunctionBasedPath>& functionBasedPaths);
 };
 
 } // namespace OpenSim

@@ -68,9 +68,21 @@ public:
     PolynomialPathFitter& operator=(PolynomialPathFitter&&);
 
     // MAIN INPUTS
-    // TODO 1) explain locked and clamped coordinates (i.e., based on the
-    //         property values)
+    /**
+     * The model containing geometry-based path objects to which
+     * polynomial-based path objects will be fitted.
+     *
+     * We expect the model to contain at least one path object derived from
+     * `AbstractPath` and does not already contain any `FunctionBasedPath`
+     * objects. The bounds for clamped coordinates are obeyed during the fitting
+     * process. Locked coordinates are unlocked if data is provided for them,
+     * or replaced with WeldJoints if no data is provided for them.
+     */
     void setModel(ModelProcessor model);
+
+    /**
+     * The trajectory of coordinate values
+     */
 
     // TODO 1) assume that coordinate values satisfy kinematic constraints
     //         in the model (except for CoordinateCouplerConstraints)
@@ -111,7 +123,7 @@ public:
     int getMaximumPolynomialOrder() const;
 
     /**
-     * The default bounds (in degrees) that determine the minimum and maximum
+     * The global bounds (in degrees) that determine the minimum and maximum
      * coordinate value samples at each time point.
      *
      * The bounds are specified as a `SimTK::Vec2`, where the first element is
@@ -119,31 +131,71 @@ public:
      * maximum sample value at a particular time point is the nominal coordinate
      * value plus the maximum bound, and the minimum sample value is the
      * nominal coordinate value minus the minimum bound.
+     *
+     * @note The default global bounds are set to [-10, 10] degrees.
+     *
+     * @note To override the default global bounds for a specific coordinate,
+     *       use the `appendCoordinateSamplingBounds()` method.
      */
-    void setDefaultCoordinateSamplingBounds(SimTK::Vec2 bounds);
-    /// @copydoc setDefaultCoordinateSamplingBounds()
-    SimTK::Vec2 getDefaultCoordinateSamplingBounds() const;
+    void setGlobalCoordinateSamplingBounds(SimTK::Vec2 bounds);
+    /// @copydoc setGlobalCoordinateSamplingBounds()
+    SimTK::Vec2 getGlobalCoordinateSamplingBounds() const;
 
     /**
      * The bounds (in degrees) that determine the minimum and maximum coordinate
      * value samples at each time point for the coordinate at `coordinatePath`.
      *
      * The bounds are specified as a `SimTK::Vec2`, where the first element is
-     * the minimum bound and the second element is the maximum bound. The .
+     * the minimum bound and the second element is the maximum bound. The
      * maximum sample value at a particular time point is the nominal coordinate
      * value plus the maximum bound, and the minimum sample value is the
-     * nominal coordinate value minus the minimum bound.
-     *
-     * @note This overrides the default coordinate sampling bounds for the
-     *       coordinate at `coordinatePath`.
+     * nominal coordinate value minus the minimum bound. This overrides the
+     * global bounds set by `setGlobalCoordinateSamplingBounds()` for this
+     * coordinate.
      */
      void appendCoordinateSamplingBounds(
             const std::string& coordinatePath, const SimTK::Vec2& bounds);
 
+    /**
+     * The tolerance on the root-mean-square (RMS) error (in meters) between the
+     * moment arms computed from an original model path and a fitted
+     * polynomial-based path, which is used to determine the order of the
+     * polynomial used in the fitted path.
+     *
+     * The moment arm RMS error must be less than the tolerance for the
+     * polynomial order to be accepted. If the RMS error is greater than the
+     * tolerance, the polynomial order is increased by one and the path is
+     * refitted. This process is repeated until the RMS error is less than the
+     * tolerance or the maximum polynomial order is reached.
+     *
+     * @note The default moment arm tolerance is set to 1e-4 meters.
+     * @note The path length RMS error must also be less than the path length
+     *       tolerance for the polynomial order to be accepted (see
+     *       `setPathLengthTolerance`).
+     */
     void setMomentArmTolerance(double tolerance);
+    /// @copydoc setMomentArmTolerance()
     double getMomentArmTolerance() const;
 
+    /**
+     * The tolerance on the root-mean-square (RMS) error (in meters) between the
+     * path lengths computed from an original model path and a fitted
+     * polynomial-based path, which is used to determine the order of the
+     * polynomial used in the fitted path.
+     *
+     * The path length RMS error must be less than the tolerance for the
+     * polynomial order to be accepted. If the RMS error is greater than the
+     * tolerance, the polynomial order is increased by one and the path is
+     * refitted. This process is repeated until the RMS error is less than the
+     * tolerance or the maximum polynomial order is reached.
+     *
+     * @note The default path length tolerance is set to 1e-4 meters.
+     * @note The moment arm RMS error must also be less than the moment arm
+     *       tolerance for the polynomial order to be accepted (see
+     *      `setMomentArmTolerance`).
+     */
     void setPathLengthTolerance(double tolerance);
+    /// @copydoc setPathLengthTolerance()
     double getPathLengthTolerance() const;
 
     void setNumSamplesPerFrame(int numSamples);
@@ -180,8 +232,8 @@ private:
             "The maximum order of the polynomial used to fit each path. The "
             "order of a polynomial is the highest power of the independent "
             "variable(s) in the polynomial.");
-    OpenSim_DECLARE_PROPERTY(default_coordinate_sampling_bounds, SimTK::Vec2,
-            "The default bounds (in degrees) that determine the minimum and "
+    OpenSim_DECLARE_PROPERTY(global_coordinate_sampling_bounds, SimTK::Vec2,
+            "The global bounds (in degrees) that determine the minimum and "
             "maximum coordinate value samples at each time point.");
     OpenSim_DECLARE_LIST_PROPERTY(
             coordinate_sampling_bounds, PolynomialPathFitterBounds,
@@ -189,8 +241,16 @@ private:
             "coordinate value samples at each time point for specific "
             "coordinates. These bounds override the default coordinate "
             "sampling bounds.");
-    OpenSim_DECLARE_PROPERTY(moment_arm_tolerance, double, "TODO.");
-    OpenSim_DECLARE_PROPERTY(path_length_tolerance, double, "TODO.");
+    OpenSim_DECLARE_PROPERTY(moment_arm_tolerance, double,
+            "The tolerance on the root-mean-square (RMS) error (in meters) "
+            "between the moment arms computed from an original model path and "
+            "a fitted polynomial-based path, which is used to determine the "
+            "order of the polynomial used in the fitted path (default: 1e-4).");
+    OpenSim_DECLARE_PROPERTY(path_length_tolerance, double,
+            "The tolerance on the root-mean-square (RMS) error (in meters) "
+            "between the path lengths computed from an original model path and "
+            "a fitted polynomial-based path, which is used to determine the "
+            "order of the polynomial used in the fitted path (default: 1e-4).");
     OpenSim_DECLARE_PROPERTY(num_samples_per_frame, int, "TODO.");
     OpenSim_DECLARE_PROPERTY(parallel, int, "TODO.");
     OpenSim_DECLARE_PROPERTY(

@@ -203,8 +203,8 @@ public:
         // about the model not having any subcomponents.
         model.finalizeFromProperties();
         model.finalizeConnections();
-        ModelFactory::replacePathsWithFunctionBasedPaths(model, 
-                get_paths_file());
+        ModelFactory::replacePathsWithFunctionBasedPaths(model,
+                Set<FunctionBasedPath>(get_paths_file()));
     }
 };
 
