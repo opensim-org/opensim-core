@@ -15,11 +15,11 @@
 // ----------------------------------------------------------------------------
 
 #define CATCH_CONFIG_MAIN
-#include <catch.hpp>
+#include "catch/catch.hpp"
 #include "testing_optimalcontrol.h"
+#include <Eigen/LU>
 
 #include <tropter/tropter.h>
-#include <Eigen/LU>
 
 using Eigen::Ref;
 using Eigen::VectorXd;

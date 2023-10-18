@@ -14,11 +14,10 @@
 // limitations under the License.
 // ----------------------------------------------------------------------------
 #define CATCH_CONFIG_MAIN
-#include <catch.hpp>
+#include "catch/catch.hpp"
+#include "testing.h"
 
 #include <tropter/tropter.h>
-
-#include "testing.h"
 
 using Eigen::Ref;
 using Eigen::VectorXd;

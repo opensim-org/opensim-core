@@ -15,8 +15,8 @@
 // ----------------------------------------------------------------------------
 
 #define CATCH_CONFIG_MAIN
+#include "catch/catch.hpp"
 #include "testing.h"
-#include <catch.hpp>
 #include <unsupported/Eigen/Splines>
 
 #include <tropter/tropter.h>

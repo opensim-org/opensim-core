@@ -17,8 +17,7 @@
 #include <tropter/tropter.h>
 
 #define CATCH_CONFIG_MAIN
-#include <catch.hpp>
-
+#include "catch/catch.hpp"
 #include "testing_optimalcontrol.h"
 
 using Eigen::Ref;
