@@ -490,7 +490,7 @@ void OpenSim::appendCoupledCoordinateValues(
                 (int)independentCoordinatePaths.size(), 0.0);
         SimTK::Vector newColumn((int)table.getNumRows());
         const Function& function = couplerConstraint.getFunction();
-        for (int irow = 0; irow < table.getNumRows(); ++irow) {
+        for (int irow = 0; irow < (int)table.getNumRows(); ++irow) {
             int ival = 0;
             for (const auto& independentCoordinatePath :
                     independentCoordinatePaths) {

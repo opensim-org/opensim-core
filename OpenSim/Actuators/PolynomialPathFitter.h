@@ -54,8 +54,112 @@ private:
 };
 
 /**
- * A class for fitting a set of `FunctionBasedPath`s to existing geometry-paths
- * in an OpenSim model using `MultivariatePolynomialFunction`s.
+ * A utility class for fitting a set of `FunctionBasedPath`s to existing
+ * geometry-path in an OpenSim model using `MultivariatePolynomialFunction`s.
+ *
+ * The primary inputs to this class include a model containing path objects
+ * derived from `AbstractPath` (e.g., `GeometryPath`) and a reference
+ * trajectory containing coordinate values for all `Coordinate`s in the model.
+ * The path fitting process samples coordinate values around the reference
+ * trajectory, computes path lengths and moment arms from the geometry-based
+ * paths in the model, and fits polynomial coefficients for
+ * `MultivariatePolynomialFunction` objects based on the path length and moment
+ * arm samples. The fitted paths are written to an XML file, along with the
+ * modified coordinate values, sampled coordinate values, path lengths, and
+ * moment arms for both the original and fitted paths.
+ *
+ * @note Each file name is prefixed with the name of the model, and the
+ *       directory to which the results are written can be specified using the
+ *      `setOutputDirectory` method.
+ *
+ * Settings
+ * --------
+ * Various settings can be adjusted to control the path fitting process. The
+ * `setMomentArmsThreshold` method determines whether or not a path depends on a
+ * model coordinate. In other words, the moment arm of a path with respect to a
+ * particular coordinate must be greater than this value to be included during
+ * path fitting. The `setMinimumPolynomialOrder` and `setMaximumPolynomialOrder`
+ * methods specify the minimum and maximum order of the polynomial used to
+ * fit each path. The `setGlobalCoordinateSamplingBounds` property specifies
+ * the global bounds (in degrees) that determine the minimum and maximum
+ * coordinate values sampled at each time point. The method
+ * `appendCoordinateSamplingBounds` can be used to override the global bounds
+ * for a specific coordinate. The `setMomentArmTolerance` and
+ * `setPathLengthTolerance` methods specify the tolerance on the
+ * root-mean-square (RMS) error (in meters) between the moment arms and path
+ * lengths computed from the original model paths and the fitted polynomial
+ * paths. The `setNumSamplesPerFrame` method specifies the number of samples
+ * taken per time frame in the coordinate values table used to fit each path.
+ * The `setParallel` method specifies the number of threads used to parallelize
+ * the path fitting process. The `setLatinHypercubeAlgorithm` method specifies
+ * the Latin hypercube sampling algorithm used to sample coordinate values for
+ * path fitting.
+ *
+ * The default settings are as follows:
+ *
+ *    - Moment arm threshold: 1e-3 meters
+ *    - Minimum polynomial order: 2
+ *    - Maximum polynomial order: 6
+ *    - Global coordinate sampling bounds: [-10, 10] degrees
+ *    - Moment arm tolerance: 1e-4 meters
+ *    - Path length tolerance: 1e-4 meters
+ *    - Number of samples per frame: 25
+ *    - Number of threads: (# of available hardware threads) - 2
+ *    - Latin hypercube sampling algorithm: "random"
+ *
+ * Usage
+ * -----
+ * The most basic usage of `PolynomialPathFitter` requires the user to provide
+ * a model and reference trajectory. The model should contain at least one path
+ * object derived from `AbstractPath` and should not contain any
+ * `FunctionBasedPath` objects. The reference trajectory must contain coordinate
+ * values for all `Coordinate`s in the model:
+ *
+ * @code{.cpp}
+ * PolynomialPathFitter fitter;
+ * fitter.setModel(ModelProcessor("model.osim"));
+ * fitter.setCoordinateValues(TableProcessor("values.sto"));
+ * @endcode
+ *
+ * The additional settings can be adjusted using the various `set` methods
+ * described above. For example, the global coordinate sampling bounds, bounds
+ * for the coordinate at "/jointset/slider/position", and the number of samples
+ * per frame can be set as follows:
+ *
+ * @code{.cpp}
+ * fitter.setGlobalCoordinateSamplingBounds(SimTK::Vec2(-20.0, 20.0));
+ * fitter.appendCoordinateSamplingBounds(
+ *         "/jointset/slider/position", SimTK::Vec2(-5.0, 15.0));
+ * fitter.setNumSamplesPerFrame(50);
+ * @endcode
+ *
+ * The path fitting process can be run using the `run()` method:
+ *
+ * @code{.cpp}
+ * fitter.run();
+ * @endcode
+ *
+ * Recommendations
+ * ---------------
+ * Information from each step of the path fitting process is logged to the
+ * console, provided that you have set the OpenSim::Logger to level "info" or
+ * greater. Warnings are printed if the number of samples is likely insufficient
+ * for the fitting process, or if the fit for a particular path did not meet the
+ * specified tolerances.
+ *
+ * It is highly recommended to use the files printed to the output directory to
+ * evaluate the quality of the fitted paths. Depending on the quality of the
+ * original model, it may not be possible to achieve a good fit for all paths
+ * (e.g., due to kinks or other discontinuities in the path). Finally, the
+ * fitted paths should only be used in simulations for which the coordinate
+ * values represent the expected range of motion for the model. If you are
+ * unsure if a simulation you have created with the fitted paths is valid, you
+ * can use the `evaluateFunctionBasedPaths` static method to compare the fitted
+ * paths to the original model paths given a new kinematic trajectory.
+ *
+ * @note The `evaluateFunctionBasedPaths` method can be used independently from
+ *       the rest of this class, and does not require the `FunctionBasedPath`s
+ *       in the model to use `MultivariatePolynomialFunction`s.
  */
 class OSIMACTUATORS_API PolynomialPathFitter : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(PolynomialPathFitter, Object);

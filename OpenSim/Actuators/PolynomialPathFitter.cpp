@@ -125,7 +125,13 @@ void PolynomialPathFitter::run() {
     tableProcessor.append(TabOpAppendCoupledCoordinateValues());
     TimeSeriesTable values = tableProcessor.processAndConvertToRadians(
             getDocumentDirectory(), model);
-    log_info("Coordinate data: {} columns, {} time points",
+    OPENSIM_THROW_IF_FRMOBJ(!values.getNumRows(), Exception,
+            "Expected the coordinate values table to contain at least one row, "
+            "but it does not.");
+    OPENSIM_THROW_IF_FRMOBJ(!values.getNumColumns(), Exception,
+            "Expected the coordinate values table to contain at least one "
+            "column, but it does not.");
+    log_info("Coordinate values table: {} columns, {} time points",
             values.getNumColumns(), values.getNumRows());
 
     // Validate the coordinate values table

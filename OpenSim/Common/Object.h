@@ -342,7 +342,7 @@ public:
     template <class T> const Property<T>& 
     getProperty(const PropertyIndex& index) const;
     /** @copydoc getProperty(const PropertyIndex&) **/
-    template <class T> const Property<T>& 
+    template <class T> const Property<T>&
     getProperty(const std::string& name) const;
 
     /** Get property of known type Property\<T> as a writable reference;
