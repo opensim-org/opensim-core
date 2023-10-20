@@ -23,7 +23,6 @@
 
 #include "FunctionBasedPath.h"
 #include "Model.h"
-#include <future>
 
 #include <OpenSim/Common/Assertion.h>
 

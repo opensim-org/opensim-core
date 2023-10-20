@@ -24,7 +24,6 @@
 /// See the README.txt next to this file for more information.
 
 #include <OpenSim/Actuators/ModelOperators.h>
-#include <OpenSim/Actuators/PolynomialPathFitter.h>
 #include <OpenSim/Common/Adapters.h>
 #include <OpenSim/Moco/osimMoco.h>
 
@@ -69,10 +68,10 @@ void solveMocoInverse() {
     inverse.set_kinematics_allow_extra_columns(true);
 
     // Solve the problem and write the solution to a Storage file.
-    // Time how long it takes to solve using std::chrono.
     MocoInverseSolution solution = inverse.solve();
     solution.getMocoSolution().write(
             "example3DWalking_MocoInverse_solution.sto");
+
 }
 
 /// This problem penalizes the deviation from electromyography data for a
