@@ -31,9 +31,11 @@ namespace OpenSim {
 
 /**
  * A helper class for specifying the minimum and maximum bounds for the
- * coordinate at `coordinate_path` during path fitting. The bounds are
- * specified as a `SimTK::Vec2` in the property `bounds`, where the first
- * element is the minimum bound and the second element is the maximum bound.
+ * coordinate at `coordinate_path` during path fitting.
+ *
+ * The bounds are specified as a `SimTK::Vec2` in the property `bounds`, where
+ * the first element is the minimum bound and the second element is the maximum
+ * bound.
  */
 class OSIMACTUATORS_API PolynomialPathFitterBounds : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(PolynomialPathFitterBounds, Object);
@@ -52,8 +54,8 @@ private:
 };
 
 /**
- * A class for fitting a set of `FunctionBasedPath`s to paths in an OpenSim
- * model.
+ * A class for fitting a set of `FunctionBasedPath`s to existing geometry-paths
+ * in an OpenSim model using `MultivariatePolynomialFunction`s.
  */
 class OSIMACTUATORS_API PolynomialPathFitter : public Object {
     OpenSim_DECLARE_CONCRETE_OBJECT(PolynomialPathFitter, Object);
@@ -92,11 +94,55 @@ public:
      * `CoordinateCouplerConstraint`s, since we automatically update the
      * coordinate trajectory to satisfy these constraints. The `TimeSeriesTable`
      * must contain the "inDegrees" metadata flag; the coordinate values are
-     * automatically converted to radians if this flag is set to true.
+     * automatically converted to radians if this flag is set to "yes".
      */
     void setCoordinateValues(TableProcessor coordinateValues);
 
     // RUN PATH FITTING
+    /**
+     * Run the path fitting process.
+     *
+     * The path fitting process consists of the following steps:
+     *
+     *     1. Load the model and reference coordinate values trajectory. The
+     *        coordinate values table is modified to update the column labels
+     *        based on the model coordinate paths, to update any coordinates
+     *        dependent on `CoordinateCouplerConstraint`s, and to convert the
+     *        coordinate values to radians if the "inDegrees" metadata flag is
+     *        set to "yes".
+     *
+     *     2. Set sampling bounds for coordinates based on the global and
+     *        coordinate-specific bounds properties.
+     *
+     *     3. Verify that the remaining user settings are valid.
+     *
+     *     4. Sample coordinate values around the reference trajectory using
+     *        Latin hypercube sampling. The sampling is defined based on the
+     *        coordinate bounds and range maps, the number of samples per frame,
+     *        and the Latin hypercube sampling algorithm.
+     *
+     *     5. Compute path lengths and moment arms from the geometry-based paths
+     *        in the input model.
+     *
+     *     6. Filter out bad coordinate samples and populate a map containing
+     *        the coordinates that path is dependent on.
+     *
+     *     7. Fit the polynomial coefficients by finding a least-squares fit
+     *        between the path lengths and moment arms computed from the
+     *        geometry-based paths and the path lengths and moment arms
+     *        computed from the fitted polynomial-based paths.
+     *
+     *     8. Print out a summary of the path fitting results, including
+     *        information about the fitted polynomial functions and
+     *        root-mean-square (RMS) errors between the original and fitted
+     *        paths.
+     *
+     *     9. Write the fitted paths, modified coordinate values, sampled
+     *        coordinate values, path lengths, and moment arms to files.
+     *
+     * @note Steps 4, 5, and 7 are parallelized using the number of threads
+     *       specified via the `setParallel()` method.
+     */
     void run();
 
     // SETTINGS
@@ -120,6 +166,8 @@ public:
      * depends on a model coordinate. In other words, the moment arm of a path
      * with respect to a particular coordinate must be greater than this value
      * to be included during path fitting.
+     *
+     * @note The default moment arm threshold is set to 1e-3 meters.
      */
     void setMomentArmThreshold(double threshold);
     /// @copydoc setMomentArmThreshold()
@@ -129,6 +177,8 @@ public:
      * The minimum order of the polynomial used to fit each path. The order of
      * a polynomial is the highest power of the independent variable(s) in the
      * polynomial.
+     *
+     * @note The default minimum polynomial order is set to 2.
      */
     void setMinimumPolynomialOrder(int order);
     /// @copydoc setMinimumPolynomialOrder()
@@ -138,6 +188,8 @@ public:
      * The maximum order of the polynomial used to fit each path. The order of
      * a polynomial is the highest power of the independent variable(s) in the
      * polynomial.
+     *
+     * @note The default maximum polynomial order is set to 6.
      */
     void setMaximumPolynomialOrder(int order);
     /// @copydoc setMaximumPolynomialOrder()
@@ -261,9 +313,24 @@ public:
     std::string getLatinHypercubeAlgorithm() const;
 
     // HELPER FUNCTIONS
-    static void evaluateFittedPaths(Model model,
-            TableProcessor trajectory,
-            const std::string& functionBasedPathsFileName);
+    /**
+     * Print out a summary of the path fitting results, including information
+     * about the fitted polynomial functions and root-mean-square (RMS) errors
+     * between the original and fitted paths.
+     *
+     * The `trajectory` argument is a `TableProcessor` object containing the
+     * simulation trajectory, specifically the set of coordinate values, used to
+     * compute path lengths and moment arms. The `polynomialPathsFile` argument
+     * is the path to an XML file containing the set of `FunctionBasedPath`s
+     * fitted to the geometry-based paths in `model`. These paths can be defined
+     * by `MultivariatePolynomialFunction`s generated by this class or any other
+     * `Function` objects that approximate the original model paths.
+     */
+    static void evaluateFunctionBasedPaths(Model model,
+            const TableProcessor& trajectory,
+            const std::string& functionBasedPathsFile,
+            double pathLengthTolerance = 1e-4,
+            double momentArmTolerance = 1e-4);
 
 private:
     // PROPERTIES
@@ -317,24 +384,62 @@ private:
     OpenSim_DECLARE_PROPERTY(
             latin_hypercube_algorithm, std::string,
             "The Latin hypercube sampling algorithm used to sample coordinate "
-            "values for path fitting (default: \"random\").");
+            "values for path fitting (default: 'random').");
 
     void constructProperties();
 
     // PATH FITTING PIPELINE
+    /**
+     * Type alias for the moment arm map. The keys are the paths in the model
+     * and the values are vectors containing the names of coordinates on which
+     * the paths depend.
+     */
     typedef std::unordered_map<std::string, std::vector<std::string>>
             MomentArmMap;
 
+    /**
+     * Helper function to sample coordinate values around the user-provided
+     * coordinate trajectory contained in the `values` input table. The
+     * sampling is defined based on the coordinate bounds and range maps,
+     * the number of samples per frame, and the Latin hypercube sampling
+     * algorithm.
+     */
     TimeSeriesTable sampleCoordinateValues(const TimeSeriesTable& values);
 
+    /**
+     * Helper function to compute path lengths and moment arms for the
+     * geometry-based paths in the model. The path lengths and moment arms
+     * are computed using the coordinate values in the `coordinateValues`
+     * table. The `numThreads` argument specifies the number of threads used
+     * to parallelize the computations.
+     */
     static void computePathLengthsAndMomentArms(const Model& model,
             const TimeSeriesTable& coordinateValues, int numThreads,
             TimeSeriesTable& pathLengths, TimeSeriesTable& momentArms);
 
+    /**
+     * Helper function to filter out bad coordinate value samples and determine
+     * which coordinates each path is dependent on. Bad samples are defined as
+     * coordinate values that produce path length and/or moment are values that
+     * deviate by a set number of standard deviations away from the nominal
+     * trajectories. The `momentArmMap` argument is a map containing the
+     * coordinates each path is dependent on. Columns in the `momentArms` table
+     * are removed if they do not correspond to entries in the `momentArmMap`.
+     */
     void filterSampledData(const Model& model,
             TimeSeriesTable& coordinateValues, TimeSeriesTable& pathLengths,
             TimeSeriesTable& momentArms, MomentArmMap& momentArmMap);
 
+    /**
+     * Helper function to fit polynomial coefficients to the path lengths and
+     * moment arms computed from the geometry-based paths in the model. The
+     * `coordinateValues`, `pathLengths`, and `momentArms` table arguments are
+     * the result of previous model sampling and data filtering steps. The
+     * `momentArmMap` argument is a map containing the coordinates each path is
+     * dependent on, which determines the number of independent coordinates
+     * that each `MultivariatePolynomialFunction` contains to approximate the
+     * original path.
+     */
     Set<FunctionBasedPath> fitPolynomialCoefficients(const Model& model,
             const TimeSeriesTable& coordinateValues,
             const TimeSeriesTable& pathLengths,
@@ -365,7 +470,8 @@ private:
             const TimeSeriesTable& pathLengths,
             const TimeSeriesTable& momentArms,
             const TimeSeriesTable& pathLengthsFitted,
-            const TimeSeriesTable& momentArmsFitted);
+            const TimeSeriesTable& momentArmsFitted,
+            double pathLengthTolerance, double momentArmTolerance);
 
     // MEMBER VARIABLES
     std::unordered_map<std::string, SimTK::Vec2> m_coordinateBoundsMap;

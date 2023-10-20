@@ -66,6 +66,9 @@ delete_this_to_stop_optimization*.txt
 .idea/deployment.xml
 .idea/other.xml
 
+# Clang-Tidy
+.clang-tidy
+
 # CMake
 cmake-build-*
 
