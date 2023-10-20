@@ -24,7 +24,8 @@
 #include <OpenSim/Simulation/Model/PointToPointSpring.h>
 
 #define CATCH_CONFIG_MAIN
-#include <OpenSim/Auxiliary/catch.hpp>
+#include <OpenSim/Auxiliary/catch/catch.hpp>
+
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 

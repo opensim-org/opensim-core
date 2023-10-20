@@ -26,7 +26,7 @@
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Common/Object.h>
 #define CATCH_CONFIG_MAIN
-#include <OpenSim/Auxiliary/catch.hpp>
+#include <OpenSim/Auxiliary/catch/catch.hpp>
 
 namespace TestAssertion {
 

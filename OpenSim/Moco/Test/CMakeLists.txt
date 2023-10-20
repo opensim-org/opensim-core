@@ -12,8 +12,6 @@ function(MocoAddTest)
     # To organize targets in Visual Studio's Solution Explorer.
     set_target_properties(${MOCOTEST_NAME} PROPERTIES FOLDER "Moco/Tests")
     target_link_libraries(${MOCOTEST_NAME} osimMoco ${MOCOTEST_LIB_DEPENDS})
-    target_include_directories(${MOCOTEST_NAME}
-            PRIVATE "${CMAKE_SOURCE_DIR}/tropter/external/catch")
     # Skip tests relying on MocoCasADiSolver if CasADi is not available.
     if(NOT OPENSIM_WITH_CASADI)
         list(APPEND test_args "exclude:*MocoCasADiSolver*")
