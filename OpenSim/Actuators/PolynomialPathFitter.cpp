@@ -125,12 +125,6 @@ void PolynomialPathFitter::run() {
     tableProcessor.append(TabOpAppendCoupledCoordinateValues());
     TimeSeriesTable values = tableProcessor.processAndConvertToRadians(
             getDocumentDirectory(), model);
-    OPENSIM_THROW_IF_FRMOBJ(!values.getNumRows(), Exception,
-            "Expected the coordinate values table to contain at least one row, "
-            "but it does not.");
-    OPENSIM_THROW_IF_FRMOBJ(!values.getNumColumns(), Exception,
-            "Expected the coordinate values table to contain at least one "
-            "column, but it does not.");
     log_info("Coordinate values table: {} columns, {} time points",
             values.getNumColumns(), values.getNumRows());
 
@@ -240,17 +234,20 @@ void PolynomialPathFitter::run() {
     log_info("");
     log_info("Step 3/9: Verify the user-defined settings.");
     log_info("-------------------------------------------");
+    // Parallelization.
     OPENSIM_THROW_IF_FRMOBJ(get_parallel() < 1 ||
             get_parallel() > (int)std::thread::hardware_concurrency(), Exception,
             "Expected 'threads' to be between 1 and {}, but received {}.",
             std::thread::hardware_concurrency(), get_parallel())
     log_info("Number of threads = {}", get_parallel());
 
+    // Number of samples per frame.
     OPENSIM_THROW_IF_FRMOBJ(get_num_samples_per_frame() < 1, Exception,
             "Expected 'num_samples_per_frame' to be a non-zero integer value, "
             "but received {}.", get_num_samples_per_frame());
     log_info("Number of samples per frame = {}", get_num_samples_per_frame());
 
+    // Latin hypercube algorithm.
     checkPropertyValueIsInSet(getProperty_latin_hypercube_algorithm(),
             {"random", "ESEA"});
     m_useStochasticEvolutionaryLHS =
@@ -258,6 +255,7 @@ void PolynomialPathFitter::run() {
     log_info("Latin hypercube algorithm = '{}'",
             get_latin_hypercube_algorithm());
 
+    // Moment arm threshold.
     OPENSIM_THROW_IF_FRMOBJ(get_moment_arm_threshold() < 0 ||
                             get_moment_arm_threshold() > 1, Exception,
             "Expected 'moment_arm_threshold' to be in the range [0, 1], but "
@@ -265,14 +263,12 @@ void PolynomialPathFitter::run() {
     log_info("Moment arm threshold = {:1.1e} meters",
             get_moment_arm_threshold(), 1);
 
-    OPENSIM_THROW_IF_FRMOBJ(get_minimum_polynomial_order() < 1, Exception,
-            "Expected 'minimum_polynomial_order' to be at least 1, but "
-            "received {}.", get_minimum_polynomial_order())
-
+    // Polynomial order.
+    checkPropertyValueIsPositive(getProperty_minimum_polynomial_order());
+    checkPropertyValueIsPositive(getProperty_maximum_polynomial_order());
     OPENSIM_THROW_IF_FRMOBJ(get_maximum_polynomial_order() > 9, Exception,
             "Expected 'maximum_polynomial_order' to be at most 9, but "
             "received {}.", get_maximum_polynomial_order())
-
     OPENSIM_THROW_IF_FRMOBJ(get_minimum_polynomial_order() >
                             get_maximum_polynomial_order(), Exception,
             "Expected 'minimum_polynomial_order' to be less than or equal to "
@@ -282,21 +278,17 @@ void PolynomialPathFitter::run() {
     log_info("Minimum polynomial order = {}", get_minimum_polynomial_order());
     log_info("Maximum polynomial order = {}", get_maximum_polynomial_order());
 
-    OPENSIM_THROW_IF_FRMOBJ(get_moment_arm_tolerance() < 0 ||
-                                    get_moment_arm_tolerance() > 1, Exception,
-            "Expected 'moment_arm_tolerance' to be in the range [0, 1], but "
-            "received {:2g}.", get_moment_arm_tolerance())
+    // Fitting tolerances.
+    checkPropertyValueIsInRangeOrSet(getProperty_path_length_tolerance(),
+                                     0.0, 1.0, {});
+    checkPropertyValueIsInRangeOrSet(getProperty_moment_arm_tolerance(),
+                                     0.0, 1.0, {});
+    log_info("Path length fitting tolerance = {:1.1e} meters",
+             get_path_length_tolerance(), 1);
     log_info("Moment arm fitting tolerance = {:1.1e} meters",
             get_moment_arm_tolerance(), 1);
 
-    OPENSIM_THROW_IF_FRMOBJ(get_path_length_tolerance() < 0 ||
-                                    get_path_length_tolerance() > 1, Exception,
-            "Expected 'path_length_tolerance' to be in the range [0, 1], but "
-            "received {:2g}.", get_path_length_tolerance())
-    log_info("Path length fitting tolerance = {:1.1e} meters",
-            get_path_length_tolerance(), 1);
-
-    // Create the output filenames.
+    // Output directory.
     std::string outputDir = get_output_directory();
     if (outputDir.empty()) {
         if (getDocumentDirectory().empty()) {
