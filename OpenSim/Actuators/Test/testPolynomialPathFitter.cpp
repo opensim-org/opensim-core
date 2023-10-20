@@ -80,6 +80,7 @@ namespace {
 
 TEST_CASE("Invalid configurations") {
     PolynomialPathFitter fitter;
+    fitter.setParallel(1);
 
     SECTION("No model") {
         REQUIRE_THROWS_WITH(fitter.run(), Catch::Contains("No source model."));
