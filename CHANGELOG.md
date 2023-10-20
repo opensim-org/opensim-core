@@ -28,6 +28,8 @@ been added to these forces to provide access to concrete path types (e.g., `updP
 - Fixed bindings to expose the method Model::getCoordinatesInMultibodyTreeOrder to scripting users (#3569)
 - Fixed a bug where constructing a `ModelProcessor` from a `Model` object led to an invalid `Model`
 - Added `LatinHypercubeDesign`, a class for generating Latin hypercube designs using random and algorithm methods (#3570)
+- Added `PolynomialPathFitter`, A utility class for fitting a set of `FunctionBasedPath`s to existing geometry-path in 
+  an OpenSim model using `MultivariatePolynomialFunction`s (#3390)
 
 v4.4.1
 ======
