@@ -1038,8 +1038,8 @@ Set<FunctionBasedPath> PolynomialPathFitter::fitPolynomialCoefficients(
                         pathLengthError.normSqr() / pathLengthError.size());
                 double momentArmRMSError = std::sqrt(
                         momentArmError.normSqr() / momentArmError.size());
-                if (pathLengthRMSError < get_path_length_tolerance() &&
-                        momentArmRMSError < get_moment_arm_tolerance() ||
+                if ((pathLengthRMSError < get_path_length_tolerance() &&
+                        momentArmRMSError < get_moment_arm_tolerance()) ||
                         order == get_maximum_polynomial_order()) {
                     break;
                 }
