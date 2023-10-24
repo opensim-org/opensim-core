@@ -58,7 +58,7 @@ When you are ready to make a PR, please adhere to the guidelines below.
 
 6. Any other changes to the code require review by one member of the Dev Team, and manual testing by one member of the Dev Team. A reviewer may determine that a second reviewer from the Dev Team is required for the pull request to be accepted; you may also suggest whether the pull request should require one or two reviewers. You or the reviewers may merge the pull request once the reviewers accept the pull request.
 
-7. If you pull request involves adding a new class or performing a major object or algorithm refactor, the Dev Team can assist with assigning appropriate reviewers. 
+7. If your pull request involves adding a new class or performing a major object or algorithm refactor, the Dev Team can assist with assigning appropriate reviewers. 
 
 8. As the changes introduced by your pull request become finalized throughout the review process, you should decide if your changes warrant being mentioned in the change log. If so, update the [CHANGELOG.md](https://github.com/opensim-org/opensim-core/blob/master/CHANGELOG.md) with an additional commit to your pull request.
 
