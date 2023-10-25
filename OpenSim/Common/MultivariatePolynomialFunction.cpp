@@ -265,7 +265,7 @@ SimTK::Function* MultivariatePolynomialFunction::createSimTKFunction() const {
 
 SimTK::Vector MultivariatePolynomialFunction::getTermValues(
         const SimTK::Vector& x) const {
-    if (_function == NULL)
+    if (_function == nullptr)
         _function = createSimTKFunction();
     return static_cast<const SimTKMultivariatePolynomial<SimTK::Real>*>(
                     _function)->calcTermValues(x);
@@ -273,7 +273,7 @@ SimTK::Vector MultivariatePolynomialFunction::getTermValues(
 
 SimTK::Vector MultivariatePolynomialFunction::getTermDerivatives(
         const std::vector<int>& derivComponent, const SimTK::Vector& x) const {
-    if (_function == NULL)
+    if (_function == nullptr)
         _function = createSimTKFunction();
     return static_cast<const SimTKMultivariatePolynomial<SimTK::Real>*>(
                     _function)->calcTermDerivatives(

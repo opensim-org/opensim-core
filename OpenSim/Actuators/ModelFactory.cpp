@@ -309,7 +309,7 @@ void ModelFactory::createReserveActuators(Model& model, double optimalForce,
     }
 }
 
-void ModelFactory::replacePathsWithFunctionBasedPaths(OpenSim::Model& model, 
+void ModelFactory::replacePathsWithFunctionBasedPaths(Model& model,
             const Set<FunctionBasedPath>& functionBasedPaths) {
     for (int i = 0; i < functionBasedPaths.getSize(); ++i) {
         auto path = functionBasedPaths.get(i);
@@ -327,7 +327,7 @@ void ModelFactory::replacePathsWithFunctionBasedPaths(OpenSim::Model& model,
             
         // Update the path.
         path.setName(fmt::format("{}_path", force.getName()));
-        force.updProperty<AbstractPath>("path").setValue(path);
+        force.updPropertyByName<AbstractPath>("path").setValue(path);
     }
     model.finalizeFromProperties();
     model.finalizeConnections();

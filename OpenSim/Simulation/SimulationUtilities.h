@@ -395,7 +395,7 @@ OSIMSIMULATION_API void appendCoupledCoordinateValues(
 /// labels must be the full path to the coordinate values (e.g.,
 /// `/jointset/ground_pelvis/pelvis_tx/value`).
 /// @ingroup simulationutil
-OSIMSIMULATION_API void appendCoordinateValueDerivatives(
+OSIMSIMULATION_API void appendCoordinateValueDerivativesAsSpeeds(
         TimeSeriesTable& table, const Model& model,
         bool overwriteExistingColumns = true);
 

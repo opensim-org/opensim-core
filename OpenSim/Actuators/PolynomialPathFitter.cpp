@@ -235,11 +235,12 @@ void PolynomialPathFitter::run() {
     log_info("Step 3/9: Verify the user-defined settings.");
     log_info("-------------------------------------------");
     // Parallelization.
-    OPENSIM_THROW_IF_FRMOBJ(get_parallel() < 1 ||
-            get_parallel() > (int)std::thread::hardware_concurrency(), Exception,
+    OPENSIM_THROW_IF_FRMOBJ(get_num_parallel_threads() < 1 ||
+            get_num_parallel_threads() >
+                (int)std::thread::hardware_concurrency(), Exception,
             "Expected 'threads' to be between 1 and {}, but received {}.",
-            std::thread::hardware_concurrency(), get_parallel())
-    log_info("Number of threads = {}", get_parallel());
+            std::thread::hardware_concurrency(), get_num_parallel_threads())
+    log_info("Number of threads = {}", get_num_parallel_threads());
 
     // Number of samples per frame.
     OPENSIM_THROW_IF_FRMOBJ(get_num_samples_per_frame() < 1, Exception,
@@ -328,7 +329,7 @@ void PolynomialPathFitter::run() {
              "coordinate data...");
     TimeSeriesTable pathLengths;
     TimeSeriesTable momentArms;
-    computePathLengthsAndMomentArms(model, values, get_parallel(),
+    computePathLengthsAndMomentArms(model, values, get_num_parallel_threads(),
             pathLengths, momentArms);
 
     log_info("");
@@ -336,7 +337,7 @@ void PolynomialPathFitter::run() {
              "coordinate data...");
     TimeSeriesTable pathLengthsSampled;
     TimeSeriesTable momentArmsSampled;
-    computePathLengthsAndMomentArms(model, valuesSampled, get_parallel(),
+    computePathLengthsAndMomentArms(model, valuesSampled, get_num_parallel_threads(),
             pathLengthsSampled, momentArmsSampled);
 
     // Filter sampled data.
@@ -408,13 +409,14 @@ void PolynomialPathFitter::run() {
     // Recompute the path lengths and moment arms.
     TimeSeriesTable pathLengthsFitted;
     TimeSeriesTable momentArmsFitted;
-    computePathLengthsAndMomentArms(modelFitted, values, get_parallel(),
-            pathLengthsFitted, momentArmsFitted);
+    computePathLengthsAndMomentArms(modelFitted, values,
+            get_num_parallel_threads(), pathLengthsFitted, momentArmsFitted);
 
     TimeSeriesTable pathLengthsSampledFitted;
     TimeSeriesTable momentArmsSampledFitted;
-    computePathLengthsAndMomentArms(modelFitted, valuesSampled, get_parallel(),
-            pathLengthsSampledFitted, momentArmsSampledFitted);
+    computePathLengthsAndMomentArms(modelFitted, valuesSampled,
+            get_num_parallel_threads(), pathLengthsSampledFitted,
+            momentArmsSampledFitted);
 
     // Remove moment arm columns that are not in the map.
     removeMomentArmColumns(momentArms, momentArmMap);
@@ -611,12 +613,12 @@ TimeSeriesTable PolynomialPathFitter::sampleCoordinateValues(
     std::vector<int> timeIndexes(values.getNumRows());
     std::iota(timeIndexes.begin(), timeIndexes.end(), 0);
     int stride = static_cast<int>(
-            std::floor(values.getNumRows() / get_parallel()));
+            std::floor(values.getNumRows() / get_num_parallel_threads()));
     std::vector<std::future<SimTK::Matrix>> futures;
     int offset = 0;
-    for (int thread = 0; thread < get_parallel(); ++thread) {
+    for (int thread = 0; thread < get_num_parallel_threads(); ++thread) {
         auto begin_iter = timeIndexes.begin() + offset;
-        auto end_iter = (thread == get_parallel()-1) ?
+        auto end_iter = (thread == get_num_parallel_threads()-1) ?
                 timeIndexes.end() :
                 timeIndexes.begin() + offset + stride;
         futures.push_back(std::async(std::launch::async,
@@ -627,8 +629,8 @@ TimeSeriesTable PolynomialPathFitter::sampleCoordinateValues(
 
     // Wait for threads to finish and collect the results.
     std::vector<SimTK::Matrix> outputs;
-    outputs.reserve(get_parallel());
-    for (int i = 0; i < get_parallel(); ++i) {
+    outputs.reserve(get_num_parallel_threads());
+    for (int i = 0; i < get_num_parallel_threads(); ++i) {
         outputs.push_back(futures[i].get());
     }
     
@@ -640,7 +642,7 @@ TimeSeriesTable PolynomialPathFitter::sampleCoordinateValues(
     const auto& times = values.getIndependentColumn();
     double dt = (times[1] - times[0]) / (get_num_samples_per_frame() + 1);
     TimeSeriesTable valuesSampled;
-    for (int i = 0; i < get_parallel(); ++i) {
+    for (int i = 0; i < get_num_parallel_threads(); ++i) {
         int numTimeIndexes = outputs[i].nrow() / get_num_samples_per_frame();
         for (int j = 0; j < numTimeIndexes; ++j) {
             // Append the original values.
@@ -701,7 +703,8 @@ void PolynomialPathFitter::computePathLengthsAndMomentArms(
             for (const auto& force : forces) {
                 if (force.hasProperty("path")) {
                     const AbstractPath& path =
-                            force.getProperty<AbstractPath>("path").getValue();
+                            force.getPropertyByName<AbstractPath>("path")
+                                    .getValue();
 
                     // Compute path length.
                     results(row, ip++) = path.getLength(state);
@@ -939,7 +942,8 @@ Set<FunctionBasedPath> PolynomialPathFitter::fitPolynomialCoefficients(
                 continue;
             }
             log_info("Thread {:2d}/{:2d}: fitting coefficients for force "
-                     "'{}'...", thread+1, get_parallel(), forcePath);
+                     "'{}'...", thread+1, get_num_parallel_threads(),
+                    forcePath);
 
             // The current force path and the number of coordinates it depends
             // on.
@@ -1066,11 +1070,12 @@ Set<FunctionBasedPath> PolynomialPathFitter::fitPolynomialCoefficients(
     // Divide the polynomial fitting across multiple threads.
     std::vector<std::future<std::vector<std::unique_ptr<FunctionBasedPath>>>>
             futures;
-    int stride = static_cast<int>(std::floor(numForces / get_parallel()));
+    int stride = static_cast<int>(std::floor(
+            numForces / get_num_parallel_threads()));
     int offset = 0;
-    for (int thread = 0; thread < get_parallel(); ++thread) {
+    for (int thread = 0; thread < get_num_parallel_threads(); ++thread) {
         auto begin_iter = forceIndexes.begin() + offset;
-        auto end_iter = (thread == get_parallel()-1) ?
+        auto end_iter = (thread == get_num_parallel_threads()-1) ?
                 forceIndexes.end() :
                 forceIndexes.begin() + offset + stride;
         futures.push_back(std::async(std::launch::async,
@@ -1081,7 +1086,7 @@ Set<FunctionBasedPath> PolynomialPathFitter::fitPolynomialCoefficients(
 
     // Wait for threads to finish and collect the results.
     Set<FunctionBasedPath> functionBasedPaths;
-    for (int thread = 0; thread < get_parallel(); ++thread) {
+    for (int thread = 0; thread < get_num_parallel_threads(); ++thread) {
         auto thesePaths = futures[thread].get();
         for (auto& path : thesePaths) {
             functionBasedPaths.adoptAndAppend(path.release());
@@ -1165,12 +1170,12 @@ int PolynomialPathFitter::getNumSamplesPerFrame() const {
     return get_num_samples_per_frame();
 }
 
-void PolynomialPathFitter::setParallel(int numThreads) {
-    set_parallel(numThreads);
+void PolynomialPathFitter::setNumParallelThreads(int numThreads) {
+    set_num_parallel_threads(numThreads);
 }
 
-int PolynomialPathFitter::getParallel() const {
-    return get_parallel();
+int PolynomialPathFitter::getNumParallelThreads() const {
+    return get_num_parallel_threads();
 }
 
 void PolynomialPathFitter::setLatinHypercubeAlgorithm(
@@ -1383,7 +1388,8 @@ void PolynomialPathFitter::constructProperties() {
     constructProperty_path_length_tolerance(1e-4);
     constructProperty_minimum_polynomial_order(2);
     constructProperty_maximum_polynomial_order(6);
-    constructProperty_parallel((int)std::thread::hardware_concurrency()-2);
+    constructProperty_num_parallel_threads(
+            (int)std::thread::hardware_concurrency()-2);
     constructProperty_global_coordinate_sampling_bounds({-10.0, 10.0});
     constructProperty_coordinate_sampling_bounds();
     constructProperty_num_samples_per_frame(25);

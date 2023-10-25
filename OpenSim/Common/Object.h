@@ -343,7 +343,7 @@ public:
     getProperty(const PropertyIndex& index) const;
     /** @copydoc getProperty(const PropertyIndex&) **/
     template <class T> const Property<T>&
-    getProperty(const std::string& name) const;
+    getPropertyByName(const std::string& name) const;
 
     /** Get property of known type Property\<T> as a writable reference;
     the property must be present and have the right type. This is primarily
@@ -352,7 +352,7 @@ public:
     updProperty(const PropertyIndex& index);
     /** @copydoc updProperty(const PropertyIndex&) **/
     template <class T> Property<T>&
-    updProperty(const std::string& name);
+    updPropertyByName(const std::string& name);
 
     /** Returns \c true if no property's value has changed since the last time
     setObjectIsUpToDateWithProperties() was called. **/
@@ -944,7 +944,7 @@ getProperty(const PropertyIndex& index) const {
 }
 
 template <class T> const Property<T>& Object::
-getProperty(const std::string& name) const {
+getPropertyByName(const std::string& name) const {
     return _propertyTable.getProperty<T>(name);
 }
 
@@ -955,7 +955,7 @@ updProperty(const PropertyIndex& index) {
 }
 
 template <class T> Property<T>& Object::
-updProperty(const std::string& name) {
+updPropertyByName(const std::string& name) {
     _objectIsUpToDate = false; // property may be changed
     return _propertyTable.updProperty<T>(name);
 }

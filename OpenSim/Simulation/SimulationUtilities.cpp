@@ -442,9 +442,8 @@ TimeSeriesTableVec3 OpenSim::createSyntheticIMUAccelerationSignals(
     return accelTableIMU;
 }
 
-void OpenSim::appendCoupledCoordinateValues(
-        OpenSim::TimeSeriesTable& table, const OpenSim::Model& model,
-        bool overwriteExistingColumns) {
+void OpenSim::appendCoupledCoordinateValues(TimeSeriesTable& table,
+        const Model& model, bool overwriteExistingColumns) {
 
     const CoordinateSet& coordinateSet = model.getCoordinateSet();
     const auto& couplerConstraints =
@@ -505,8 +504,8 @@ void OpenSim::appendCoupledCoordinateValues(
     }
 }
 
-void OpenSim::appendCoordinateValueDerivatives(OpenSim::TimeSeriesTable& table,
-        const OpenSim::Model& model, bool overwriteExistingColumns) {
+void OpenSim::appendCoordinateValueDerivativesAsSpeeds(TimeSeriesTable& table,
+        const Model& model, bool overwriteExistingColumns) {
 
     auto splines = GCVSplineSet(table);
     const auto& labels = table.getColumnLabels();

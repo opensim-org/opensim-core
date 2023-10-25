@@ -42,7 +42,8 @@ class OSIMACTUATORS_API PolynomialPathFitterBounds : public Object {
 
 public:
     OpenSim_DECLARE_PROPERTY(coordinate_path, std::string,
-            "The path to the bounded coordinate in the model.")
+            "The path to the coordinate in the model that is bounded during "
+            "path fitting.")
     OpenSim_DECLARE_PROPERTY(bounds, SimTK::Vec2,
             "The bounds for the coordinate. The first element is the minimum "
             "bound and the second element is the maximum bound.")
@@ -76,13 +77,13 @@ private:
  * --------
  * Various settings can be adjusted to control the path fitting process. The
  * `setMomentArmsThreshold` method determines whether or not a path depends on a
- * model coordinate. In other words, the moment arm of a path with respect to a
- * particular coordinate must be greater than this value to be included during
- * path fitting. The `setMinimumPolynomialOrder` and `setMaximumPolynomialOrder`
- * methods specify the minimum and maximum order of the polynomial used to
- * fit each path. The `setGlobalCoordinateSamplingBounds` property specifies
- * the global bounds (in degrees) that determine the minimum and maximum
- * coordinate values sampled at each time point. The method
+ * model coordinate. In other words, the absolute value the moment arm of a with
+ * respect to a particular coordinate must be greater than this value to be
+ * included during path fitting. The `setMinimumPolynomialOrder` and
+ * `setMaximumPolynomialOrder` methods specify the minimum and maximum order of
+ * the polynomial used to fit each path. The `setGlobalCoordinateSamplingBounds`
+ * property specifies the global bounds (in degrees) that determine the minimum
+ * and maximum coordinate values sampled at each time point. The method
  * `appendCoordinateSamplingBounds` can be used to override the global bounds
  * for a specific coordinate. The `setMomentArmTolerance` and
  * `setPathLengthTolerance` methods specify the tolerance on the
@@ -106,6 +107,11 @@ private:
  *    - Number of samples per frame: 25
  *    - Number of threads: (# of available hardware threads) - 2
  *    - Latin hypercube sampling algorithm: "random"
+ *
+ * @note The default settings were chosen based on testing with a human
+ *       lower-extremity model. Different settings may be required for other
+ *       models with larger or smaller anatomical measures (e.g., dinosaur
+ *       models).
  *
  * Usage
  * -----
@@ -395,9 +401,9 @@ public:
      * @note The default number of threads is set to two fewer than the number
      *       of available hardware threads.
      */
-    void setParallel(int numThreads);
+    void setNumParallelThreads(int numThreads);
     /// @copydoc setParallel()
-    int getParallel() const;
+    int getNumParallelThreads() const;
 
     /**
      * The Latin hypercube sampling algorithm used to sample coordinate values
@@ -481,7 +487,7 @@ private:
     OpenSim_DECLARE_PROPERTY(num_samples_per_frame, int,
             "The number of samples taken per time frame in the coordinate "
             "values table used to fit each path (default: 25).");
-    OpenSim_DECLARE_PROPERTY(parallel, int,
+    OpenSim_DECLARE_PROPERTY(num_parallel_threads, int,
             "The number of threads used to parallelize the path fitting "
             "process (default: two fewer than the number of available "
             "hardware threads).");

@@ -256,22 +256,23 @@ public:
     }
 };
 
-/// Invoke SimulationUtilities::appendCoordinateValueDerivatives() on the table.
-class OSIMSIMULATION_API TabOpAppendCoordinateValueDerivatives
+/// Invoke SimulationUtilities::appendCoordinateValueDerivativesAsSpeeds() on
+/// the table.
+class OSIMSIMULATION_API TabOpAppendCoordinateValueDerivativesAsSpeeds
         : public TableOperator {
-    OpenSim_DECLARE_CONCRETE_OBJECT(TabOpAppendCoordinateValueDerivatives,
-            TableOperator);
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+            TabOpAppendCoordinateValueDerivativesAsSpeeds, TableOperator);
 
 public:
     OpenSim_DECLARE_PROPERTY(overwrite_existing_columns, bool,
             "Whether to overwrite existing columns for coordinate speeds in "
             "the table (default: true).");
 
-    TabOpAppendCoordinateValueDerivatives() {
+    TabOpAppendCoordinateValueDerivativesAsSpeeds() {
         constructProperty_overwrite_existing_columns(true);
     }
-    TabOpAppendCoordinateValueDerivatives(bool overwriteExistingColumns)
-            : TabOpAppendCoordinateValueDerivatives() {
+    TabOpAppendCoordinateValueDerivativesAsSpeeds(bool overwriteExistingColumns)
+            : TabOpAppendCoordinateValueDerivativesAsSpeeds() {
         set_overwrite_existing_columns(overwriteExistingColumns);
     }
 
@@ -279,7 +280,7 @@ public:
 
         OPENSIM_THROW_IF(!model, Exception,
                 "Expected a model, but no model was provided.");
-        appendCoordinateValueDerivatives(table, *model,
+        appendCoordinateValueDerivativesAsSpeeds(table, *model,
                 get_overwrite_existing_columns());
     }
 };
