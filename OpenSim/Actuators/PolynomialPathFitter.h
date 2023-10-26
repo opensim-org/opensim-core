@@ -154,14 +154,15 @@ private:
  * specified tolerances.
  *
  * It is highly recommended to use the files printed to the output directory to
- * evaluate the quality of the fitted paths. Depending on the quality of the
- * original model, it may not be possible to achieve a good fit for all paths
- * (e.g., due to kinks or other discontinuities in the path). Finally, the
- * fitted paths should only be used in simulations for which the coordinate
- * values represent the expected range of motion for the model. If you are
- * unsure if a simulation you have created with the fitted paths is valid, you
- * can use the `evaluateFunctionBasedPaths` static method to compare the fitted
- * paths to the original model paths given a new kinematic trajectory.
+ * evaluate the quality of the fitted paths (see `setOutputDirectory()` for more
+ * details). Depending on the quality of the original model, it may not be
+ * possible to achieve a good fit for all paths (e.g., due to kinks or other
+ * discontinuities in the path). Finally, the fitted paths should only be used
+ * in simulations for which the coordinate values represent the expected range
+ * of motion for the model. If you are unsure if a simulation you have created
+ * with the fitted paths is valid, you can use the `evaluateFunctionBasedPaths`
+ * static method to compare the fitted paths to the original model paths given a
+ * new kinematic trajectory.
  *
  * @note The `evaluateFunctionBasedPaths` method can be used independently from
  *       the rest of this class, and does not require the `FunctionBasedPath`s
@@ -306,16 +307,20 @@ public:
     int getMaximumPolynomialOrder() const;
 
     /**
-     * The global bounds (in degrees) that determine the minimum and maximum
-     * coordinate value samples at each time point.
+     * The global bounds that determine the minimum and maximum coordinate value
+     * samples at each time point.
      *
      * The bounds are specified as a `SimTK::Vec2`, where the first element is
-     * the minimum bound and the second element is the maximum bound. The .
+     * the minimum bound and the second element is the maximum bound. Rotational
+     * coordinates are in degrees; translational coordinates in meters. The
      * maximum sample value at a particular time point is the nominal coordinate
      * value plus the maximum bound, and the minimum sample value is the
      * nominal coordinate value minus the minimum bound.
      *
-     * @note The default global bounds are set to [-10, 10] degrees.
+     * @note The default global bounds are set to [-10, 10] degrees/meters.
+     * If you have a model with paths that cross translational joints, you may
+     * to specify smaller bounds for the translational coordinates (see
+     * `appendCoordinateSamplingBounds()`).
      *
      * @note To override the default global bounds for a specific coordinate,
      *       use the `appendCoordinateSamplingBounds()` method.
