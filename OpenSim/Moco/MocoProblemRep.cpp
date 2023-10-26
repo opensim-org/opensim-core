@@ -76,8 +76,9 @@ void MocoProblemRep::initialize() {
     // Check for bodies with zero mass.
     for (const auto& body : m_model_base.getComponentList<Body>()) {
         if (body.getMass() == 0) {
-            OPENSIM_THROW(Exception, "Body '{}' has zero mass, but Moco "
-                                     "does not support bodies with zero mass.",
+            log_warn("Body '{}' has zero mass. If this body is not an "
+                     "intermediate body for a joint or welded to another "
+                     "massful body, it may lead to issues during optimization.",
                     body.getAbsolutePathString());
         }
     }

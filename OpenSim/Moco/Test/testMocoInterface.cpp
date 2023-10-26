@@ -2197,23 +2197,6 @@ TEMPLATE_TEST_CASE("Locked coordinates ", "",
             Catch::Contains("Coordinate '/slider/position' is locked"));
 }
 
-TEMPLATE_TEST_CASE("Zero-mass bodies ", "",
-        MocoCasADiSolver, MocoTropterSolver) {
-    MocoStudy study;
-    auto& problem = study.updProblem();
-    Model model("subject_walk_armless_18musc.osim");
-    model.initSystem();
-    // Simbody allows zero-mass patella bodies (presumably because they are
-    // driven by CoordinateCouplerConstraints).
-    auto& body = model.updBodySet().get("patella_r");
-    body.setMass(0);
-    body.setInertia(SimTK::Inertia(0));
-    model.finalizeFromProperties();
-    problem.setModel(make_unique<Model>(model));
-    CHECK_THROWS_WITH(problem.createRep(),
-            Catch::Contains("Body '/bodyset/patella_r' has zero mass"));
-}
-
 /*
 TEMPLATE_TEST_CASE("Controllers in the model", "",
         MocoCasADiSolver, MocoTropterSolver) {
