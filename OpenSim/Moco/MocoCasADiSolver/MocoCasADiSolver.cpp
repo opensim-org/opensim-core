@@ -216,22 +216,6 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
              "legendre-gauss-radau-4", "legendre-gauss-radau-5",
              "legendre-gauss-radau-6", "legendre-gauss-radau-7",
              "legendre-gauss-radau-8", "legendre-gauss-radau-9"});
-//    OPENSIM_THROW_IF(casProblem.getNumKinematicConstraintEquations() != 0 &&
-//                             get_transcription_scheme() == "trapezoidal",
-//            OpenSim::Exception,
-//            "Kinematic constraints not supported with "
-//            "trapezoidal transcription.");
-    // Enforcing constraint derivatives is not supported with trapezoidal
-    // transcription.
-//    if (casProblem.getNumKinematicConstraintEquations() != 0) {
-//        OPENSIM_THROW_IF(get_transcription_scheme() == "trapezoidal" &&
-//                                 get_enforce_constraint_derivatives(),
-//                Exception,
-//                "The current transcription scheme is '{}', but enforcing "
-//                "kinematic constraint derivatives is not supported with "
-//                "trapezoidal transcription.",
-//                get_transcription_scheme());
-//    }
 
     checkPropertyValueIsInRangeOrSet(getProperty_num_mesh_intervals(), 0,
             std::numeric_limits<int>::max(), {});
@@ -354,7 +338,8 @@ std::unique_ptr<CasOC::Solver> MocoCasADiSolver::createCasOCSolver(
     casSolver->setInterpolateControlMidpoints(
             get_interpolate_control_midpoints());
     casSolver->setInterpolateMultiplierMidpoints(
-            get_transcription_scheme().find("legendre") != std::string::npos);
+            get_kinematic_constraint_method() == "projection" &&
+            get_transcription_scheme() != "trapezoidal");
     casSolver->setEnforcePathConstraintMidpoints(
             get_enforce_path_constraint_midpoints());
     if (casProblem.getJarSize() > 1) {
