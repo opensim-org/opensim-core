@@ -238,9 +238,10 @@ void PolynomialPathFitter::run() {
     OPENSIM_THROW_IF_FRMOBJ(get_num_parallel_threads() < 1 ||
             get_num_parallel_threads() >
                 (int)std::thread::hardware_concurrency(), Exception,
-            "Expected 'threads' to be between 1 and {}, but received {}.",
-            std::thread::hardware_concurrency(), get_num_parallel_threads())
-    log_info("Number of threads = {}", get_num_parallel_threads());
+            "Expected 'num_parallel_threads' to be between 1 and {}, but "
+            "received {}.", std::thread::hardware_concurrency(),
+            get_num_parallel_threads())
+    log_info("Number of parallel threads = {}", get_num_parallel_threads());
 
     // Number of samples per frame.
     OPENSIM_THROW_IF_FRMOBJ(get_num_samples_per_frame() < 1, Exception,

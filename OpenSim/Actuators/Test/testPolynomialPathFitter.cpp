@@ -80,7 +80,7 @@ namespace {
 
 TEST_CASE("Invalid configurations") {
     PolynomialPathFitter fitter;
-    fitter.setParallel(1);
+    fitter.setNumParallelThreads(1);
 
     SECTION("No model") {
         REQUIRE_THROWS_WITH(fitter.run(), Catch::Contains("No source model."));
@@ -107,9 +107,9 @@ TEST_CASE("Invalid configurations") {
     fitter.setCoordinateValues(createCoordinatesTable(true, true));
 
     SECTION("Number of threads") {
-        fitter.setParallel(-1);
+        fitter.setNumParallelThreads(-1);
         REQUIRE_THROWS_WITH(fitter.run(), Catch::Contains(
-                "Expected 'threads' to be between"));
+                "Expected 'num_parallel_threads' to be"));
     }
 
     SECTION("Number of samples per frame") {
