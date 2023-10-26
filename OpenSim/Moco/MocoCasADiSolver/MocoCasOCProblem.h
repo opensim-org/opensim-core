@@ -369,28 +369,28 @@ private:
                 modelBase, simtkStateBase, false);
         modelBase.realizeVelocity(simtkStateBase);
 
+        // Compute the state projection vector based on the method by Bordalba
+        // et al. (2023). Our implementation looks slightly different from the
+        // projection constraints in the manuscript since we compute the
+        // projections for the coordinate values and coordinate speeds
+        // separately based on how Simbody's assembler handles constraint
+        // projections.
         const SimTK::SimbodyMatterSubsystem& matterBase =
                 modelBase.getMatterSubsystem();
 
-        // holonomic constraint errors
-//        std::cout << "getNumHolonomicConstraintEquations() = "
-//                  << getNumHolonomicConstraintEquations() << std::endl;
-//        std::cout << "getNumNonHolonomicConstraintEquations() = "
-//                  << getNumNonHolonomicConstraintEquations() << std::endl;
-//        std::cout << "getNumAccelerationConstraintEquations() = "
-//                  << getNumAccelerationConstraintEquations() << std::endl;
-
+        // Holonomic constraint errors.
         SimTK::Vector mu_p(
                 getNumHolonomicConstraintEquations(), slacks.ptr(), true);
         SimTK::Vector proj_p(getNumCoordinates(), projection.ptr(), true);
         matterBase.multiplyByPqTranspose(simtkStateBase, mu_p, proj_p);
 
-        // dt(holonomic) + non-holonomic constraint errors
-        // TODO since we don't have multiplyByPVTranspose, we add the number of
-        // acceleration constraints to the vector mu_v to match the number of
-        // rows in G. There are no slack variables associated with these extra
-        // elements in mu_v, so this is just extra memory so to get the correct
-        // dimensions for the matrix multiplication.
+        // Derivative of holonomic constraint errors and non-holonomic
+        // constraint errors.
+        //
+        // We add the number of acceleration constraints to the vector 'mu_v' to
+        // match the number of rows in G. There are no slack variables
+        // associated with these extra elements in mu_v, so this is just extra
+        // memory so to get the correct dimensions for the matrix multiplication.
         SimTK::Vector mu_v(
                 getNumHolonomicConstraintEquations() +
                 getNumNonHolonomicConstraintEquations() +
@@ -399,12 +399,6 @@ private:
         SimTK::Vector proj_v(getNumSpeeds(), projection.ptr() +
                 getNumCoordinates(), true);
         matterBase.multiplyByGTranspose(simtkStateBase, mu_v, proj_v);
-
-//        std::cout << "mu_p = " << mu_p << std::endl;
-//        std::cout << "mu_v = " << mu_v << std::endl;
-//        std::cout << "proj_p = " << proj_p << std::endl;
-//        std::cout << "proj_v = " << proj_v << std::endl;
-//        std::cout << "projection: " << projection << std::endl;
 
         m_jar->leave(std::move(mocoProblemRep));
     }

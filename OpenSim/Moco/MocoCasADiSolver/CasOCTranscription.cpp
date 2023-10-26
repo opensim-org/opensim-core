@@ -165,6 +165,9 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
             "slacks", m_problem.getNumSlacks(), m_numMeshInteriorPoints);
     }
 
+    // Each element in the "defect states" vector is a matrix (i.e., MX)
+    // containing the states needed to construct the defect constraints for an
+    // individual mesh interval.
     m_defectStates = MXVector(m_numMeshIntervals);
     m_projectionStateDistances = MX(m_numProjectionStates, m_numMeshIntervals);
     for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
@@ -343,15 +346,10 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
     m_paramsTrajProjState =
             MX::repmat(m_unscaledVars[parameters], 1, m_numMeshIntervals);
 
-    // 0 1 2 3 | 4 | 5 6 7 8 | 9 | 10 11 12 13
     casadi_int istart = 0;
     for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
-        std::cout << "imesh: " << imesh << std::endl;
         casadi_int numPts = m_numPointsPerMeshInterval;
         casadi_int iend = istart + numPts - 1;
-        std::cout << "numPts: " << numPts << std::endl;
-        std::cout << "istart: " << istart << std::endl;
-        std::cout << "iend: " << iend << std::endl;
         if (m_numProjectionStates) {
             m_defectStates[imesh](Slice(), Slice(0, numPts-1)) =
                 m_unscaledVars[states](Slice(), Slice(istart, iend));

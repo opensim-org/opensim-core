@@ -177,11 +177,18 @@ public:
             "interval midpoints. Default: false.");
 
     OpenSim_DECLARE_PROPERTY(minimize_state_projection_distance, bool,
-            "TODO: default true");
+            "Minimize the distance between the projection states and the "
+            "constraint manifold when using the 'projection' method for "
+            "enforcing kinematic constraints. Default: true.");
     OpenSim_DECLARE_PROPERTY(state_projection_distance_weight, double,
-            "TODO: default 0.0001");
+            "The weight on the cost term if "
+            "'minimize_state_projection_distance' is enabled. "
+            "Default: 1e-6.");
     OpenSim_DECLARE_PROPERTY(projection_variable_bounds, MocoBounds,
-            "TODO");
+            "The bounds on the slack variables added to the problem which "
+            "determine the magnitude of the constraint projection at each "
+            "mesh interval when using the 'projection' method for "
+            "enforcing kinematic constraints.");
 
     MocoCasADiSolver();
 

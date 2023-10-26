@@ -56,7 +56,7 @@ void MocoCasADiSolver::constructProperties() {
 
     constructProperty_enforce_path_constraint_midpoints(false);
     constructProperty_minimize_state_projection_distance(true);
-    constructProperty_state_projection_distance_weight(0.0001);
+    constructProperty_state_projection_distance_weight(1e-6);
     constructProperty_projection_variable_bounds({-10, 10});
 }
 

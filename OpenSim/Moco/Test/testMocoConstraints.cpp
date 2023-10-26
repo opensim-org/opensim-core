@@ -541,7 +541,9 @@ MocoTrajectory runForwardSimulation(
 template <typename TestType>
 void testDoublePendulumPointOnLine(
         bool enforce_constraint_derivatives, std::string dynamics_mode,
-        std::string kinematic_constraint_method = "PKT") {
+        const std::string& kinematic_constraint_method = "PKT",
+        const std::string& transcription_scheme = "hermite-simpson",
+        int num_mesh_intervals = 20) {
     MocoStudy study;
     study.setName("double_pendulum_point_on_line");
     MocoProblem& mp = study.updProblem();
@@ -577,18 +579,20 @@ void testDoublePendulumPointOnLine(
     mp.setControlInfo("/tau0", {-100, 100});
     mp.setControlInfo("/tau1", {-100, 100});
 
-    mp.addGoal<MocoControlGoal>();
+    auto* effort = mp.addGoal<MocoControlGoal>();
 
     auto& ms = study.initSolver<TestType>();
-    ms.set_num_mesh_intervals(20);
+    ms.set_num_mesh_intervals(num_mesh_intervals);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
-    ms.set_transcription_scheme("hermite-simpson");
+    ms.set_transcription_scheme(transcription_scheme);
     ms.set_enforce_constraint_derivatives(enforce_constraint_derivatives);
     ms.set_kinematic_constraint_method(kinematic_constraint_method);
-    ms.set_minimize_lagrange_multipliers(true);
-    ms.set_lagrange_multiplier_weight(10);
+    if (!enforce_constraint_derivatives) {
+        ms.set_minimize_lagrange_multipliers(true);
+        ms.set_lagrange_multiplier_weight(10);
+    }
     ms.set_multibody_dynamics_mode(dynamics_mode);
     ms.setGuess("bounds");
 
@@ -622,7 +626,8 @@ template <typename SolverType>
 void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
         bool enforce_constraint_derivatives, std::string dynamics_mode,
         std::string kinematic_constraint_method = "PKT",
-        std::string transcription_scheme = "hermite-simpson") {
+        std::string transcription_scheme = "hermite-simpson",
+        int num_mesh_intervals = 20) {
     MocoStudy study;
     study.setName("double_pendulum_coordinate_coupler");
 
@@ -660,18 +665,20 @@ void testDoublePendulumCoordinateCoupler(MocoSolution& solution,
     mp.setStateInfo("/jointset/j1/q1/speed", {-5, 5}, 0, 0);
     mp.setControlInfo("/tau0", {-50, 50});
     mp.setControlInfo("/tau1", {-50, 50});
-    mp.addGoal<MocoControlGoal>();
+    auto* effort = mp.addGoal<MocoControlGoal>();
 
     auto& ms = study.initSolver<SolverType>();
-    ms.set_num_mesh_intervals(20);
+    ms.set_num_mesh_intervals(num_mesh_intervals);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
     ms.set_optim_convergence_tolerance(1e-3);
     ms.set_transcription_scheme(transcription_scheme);
     ms.set_enforce_constraint_derivatives(enforce_constraint_derivatives);
     ms.set_kinematic_constraint_method(kinematic_constraint_method);
-    ms.set_minimize_lagrange_multipliers(true);
-    ms.set_lagrange_multiplier_weight(10);
+    if (!enforce_constraint_derivatives) {
+        ms.set_minimize_lagrange_multipliers(true);
+        ms.set_lagrange_multiplier_weight(10);
+    }
     ms.set_multibody_dynamics_mode(dynamics_mode);
     ms.setGuess("bounds");
 
@@ -703,7 +710,8 @@ template <typename SolverType>
 void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
         bool enforce_constraint_derivatives, std::string dynamics_mode,
         std::string kinematic_constraint_method = "PKT",
-        std::string transcription_scheme = "hermite-simpson") {
+        std::string transcription_scheme = "hermite-simpson",
+        int num_mesh_intervals = 20) {
     MocoStudy study;
     study.setName("double_pendulum_prescribed_motion");
     MocoProblem& mp = study.updProblem();
@@ -740,18 +748,20 @@ void testDoublePendulumPrescribedMotion(MocoSolution& couplerSolution,
     mp.setControlInfo("/tau0", {-25, 25});
     mp.setControlInfo("/tau1", {-25, 25});
 
-    mp.addGoal<MocoControlGoal>();
+    auto* effort = mp.addGoal<MocoControlGoal>();
 
     auto& ms = study.initSolver<SolverType>();
-    ms.set_num_mesh_intervals(20);
+    ms.set_num_mesh_intervals(num_mesh_intervals);
     ms.set_verbosity(2);
     ms.set_optim_solver("ipopt");
-    ms.set_optim_convergence_tolerance(1e-3);
+    ms.set_optim_convergence_tolerance(1e-2);
     ms.set_transcription_scheme(transcription_scheme);
     ms.set_enforce_constraint_derivatives(enforce_constraint_derivatives);
     ms.set_kinematic_constraint_method(kinematic_constraint_method);
-    ms.set_minimize_lagrange_multipliers(true);
-    ms.set_lagrange_multiplier_weight(10);
+    if (!enforce_constraint_derivatives) {
+        ms.set_minimize_lagrange_multipliers(true);
+        ms.set_lagrange_multiplier_weight(10);
+    }
     ms.set_multibody_dynamics_mode(dynamics_mode);
 
     // Set guess based on coupler solution trajectory.
@@ -906,23 +916,41 @@ TEST_CASE("DoublePendulumPointOnLine with constraint derivatives",
     testDoublePendulumPointOnLine<MocoCasADiSolver>(true, "implicit");
 }
 
-TEST_CASE("DoublePendulum tests using projection method", "[explicit]") {
+TEST_CASE("DoublePendulum tests using projection method (explicit)",
+        "[explicit]") {
+    std::string scheme = GENERATE(as<std::string>{},
+            "trapezoidal", "hermite-simpson", "legendre-gauss-radau-3");
+
+    int num_mesh_intervals = 50;
     MocoSolution couplerSol;
     testDoublePendulumCoordinateCoupler<MocoCasADiSolver>(
-            couplerSol, true, "explicit", "projection", "trapezoidal");
+            couplerSol, true, "explicit", "projection", scheme,
+            num_mesh_intervals);
     testDoublePendulumPrescribedMotion<MocoCasADiSolver>(
-                couplerSol, true, "explicit", "projection", "trapezoidal");
-    //testDoublePendulumPointOnLine<MocoCasADiSolver>(true, "explicit", "projection");
+            couplerSol, true, "explicit", "projection", scheme,
+            num_mesh_intervals);
+    testDoublePendulumPointOnLine<MocoCasADiSolver>(
+            true, "explicit", "projection", scheme,
+            num_mesh_intervals);
 }
 
-//TEST_CASE("DoublePendulum tests using projection method", "[implicit]") {
-//    MocoSolution couplerSol;
-//    testDoublePendulumCoordinateCoupler<MocoCasADiSolver>(
-//            couplerSol, true, "implicit", "projection");
-//    testDoublePendulumPrescribedMotion<MocoCasADiSolver>(
-//                couplerSol, true, "implicit", "projection");
-//    testDoublePendulumPointOnLine<MocoCasADiSolver>(true, "implicit", "projection");
-//}
+TEST_CASE("DoublePendulum tests using projection method (implicit)",
+        "[implicit]") {
+    std::string scheme = GENERATE(as<std::string>{},
+            "trapezoidal", "hermite-simpson", "legendre-gauss-radau-3");
+
+    int num_mesh_intervals = 100;
+    MocoSolution couplerSol;
+    testDoublePendulumCoordinateCoupler<MocoCasADiSolver>(
+            couplerSol, true, "implicit", "projection", scheme,
+            num_mesh_intervals);
+    testDoublePendulumPrescribedMotion<MocoCasADiSolver>(
+            couplerSol, true, "implicit", "projection", scheme,
+            num_mesh_intervals);
+    testDoublePendulumPointOnLine<MocoCasADiSolver>(
+            true, "implicit", "projection", scheme,
+            num_mesh_intervals);
+}
 
 class EqualControlConstraint : public MocoPathConstraint {
     OpenSim_DECLARE_CONCRETE_OBJECT(EqualControlConstraint, MocoPathConstraint);
