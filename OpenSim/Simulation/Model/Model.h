@@ -926,7 +926,7 @@ public:
         in order of the Multibody Tree and now that can be attributed to 
         corresponding generalized Coordinates of the Model. 
         Throws if the MultibodySystem is not valid. */
-    std::vector<SimTK::ReferencePtr<const Coordinate>>
+    std::vector<SimTK::ReferencePtr<const OpenSim::Coordinate>>
         getCoordinatesInMultibodyTreeOrder() const;
 
     /** Get a warning message if any Coordinates have a MotionType that is NOT

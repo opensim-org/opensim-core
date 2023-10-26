@@ -1,6 +1,6 @@
 
 OpenSimAddTests(
-    TESTPROGRAMS testCommandLineInterface
+    TESTPROGRAMS testCommandLineInterface.cpp
     # Don't need OpenSim since we only interact with OpenSim through the
     # command line tool. But we use Simbody for its Testing.h.
     LINKLIBS SimTKcommon

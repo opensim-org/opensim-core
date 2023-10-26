@@ -15,8 +15,8 @@
 // ----------------------------------------------------------------------------
 
 #define CATCH_CONFIG_MAIN
-#include "testing.h"
 #include <catch.hpp>
+#include "testing.h"
 #include <unsupported/Eigen/Splines>
 
 #include <tropter/tropter.h>
@@ -105,10 +105,11 @@ TEST_CASE("Final position and parameter cost with two local optima, "
         ocp->set_parameter_guess(guess, "p", -1);
         Solution solution = dircol.solve(guess);
         solution.write("final_position_local_optima_low_solution.csv");
-        REQUIRE(Approx(solution.states.rightCols<1>()[0]).epsilon(1e-4) ==
-                -1 / sqrt(2));
-        REQUIRE(Approx(solution.parameters[0]).epsilon(1e-4) == -1 / sqrt(2));
-        REQUIRE(Approx(solution.adjuncts.norm()).epsilon(1e-4) == 0);
+        REQUIRE(Detail::Approx(solution.states.rightCols<1>()[0]).epsilon(1e-4)
+                == -1 / sqrt(2));
+        REQUIRE(Detail::Approx(solution.parameters[0]).epsilon(1e-4)
+                == -1 / sqrt(2));
+        REQUIRE(Detail::Approx(solution.adjuncts.norm()).epsilon(1e-4) == 0);
     }
     // Guess high.
     {
@@ -128,10 +129,11 @@ TEST_CASE("Final position and parameter cost with two local optima, "
         ocp->set_parameter_guess(guess, "p", +1);
         Solution solution = dircol.solve(guess);
         solution.write("final_position_local_optima_high_solution.csv");
-        REQUIRE(Approx(solution.states.rightCols<1>()[0]).epsilon(1e-4) ==
-                +1 / sqrt(2));
-        REQUIRE(Approx(solution.parameters[0]).epsilon(1e-4) == +1 / sqrt(2));
-        REQUIRE(Approx(solution.adjuncts.norm()).epsilon(1e-4) == 0);
+        REQUIRE(Detail::Approx(solution.states.rightCols<1>()[0]).epsilon(1e-4)
+                == +1 / sqrt(2));
+        REQUIRE(Detail::Approx(solution.parameters[0]).epsilon(1e-4)
+                == +1 / sqrt(2));
+        REQUIRE(Detail::Approx(solution.adjuncts.norm()).epsilon(1e-4) == 0);
     }
 }
 
@@ -313,10 +315,11 @@ TEST_CASE("Final position and parameter cost with two local optima, "
         ocp->set_parameter_guess(guess, "p", -1);
         Solution solution = dircol.solve(guess);
         solution.write("final_position_local_optima_low_solution.csv");
-        REQUIRE(Approx(solution.states.rightCols<1>()[0]).epsilon(1e-4) ==
-                -1 / sqrt(2));
-        REQUIRE(Approx(solution.parameters[0]).epsilon(1e-4) == -1 / sqrt(2));
-        REQUIRE(Approx(solution.adjuncts.norm()).epsilon(1e-4) == 0);
+        REQUIRE(Detail::Approx(solution.states.rightCols<1>()[0]).epsilon(1e-4)
+                == -1 / sqrt(2));
+        REQUIRE(Detail::Approx(solution.parameters[0]).epsilon(1e-4)
+                == -1 / sqrt(2));
+        REQUIRE(Detail::Approx(solution.adjuncts.norm()).epsilon(1e-4) == 0);
     }
     // Guess high.
     {
@@ -344,10 +347,11 @@ TEST_CASE("Final position and parameter cost with two local optima, "
         ocp->set_parameter_guess(guess, "p", +1);
         Solution solution = dircol.solve(guess);
         solution.write("final_position_local_optima_high_solution.csv");
-        REQUIRE(Approx(solution.states.rightCols<1>()[0]).epsilon(1e-4) ==
-                +1 / sqrt(2));
-        REQUIRE(Approx(solution.parameters[0]).epsilon(1e-4) == +1 / sqrt(2));
-        REQUIRE(Approx(solution.adjuncts.norm()).epsilon(1e-4) == 0);
+        REQUIRE(Detail::Approx(solution.states.rightCols<1>()[0]).epsilon(1e-4)
+                == +1 / sqrt(2));
+        REQUIRE(Detail::Approx(solution.parameters[0]).epsilon(1e-4)
+                == +1 / sqrt(2));
+        REQUIRE(Detail::Approx(solution.adjuncts.norm()).epsilon(1e-4) == 0);
     }
 }
 

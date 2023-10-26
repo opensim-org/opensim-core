@@ -157,11 +157,6 @@ void MocoOutputBase::printDescriptionImpl() const {
 // MocoOutputGoal
 // ============================================================================
 
-void MocoOutputGoal::constructProperties() {
-    constructProperty_divide_by_displacement(false);
-    constructProperty_divide_by_mass(false);
-}
-
 void MocoOutputGoal::initializeOnModelImpl(const Model& output) const {
     initializeOnModelBase();
     setRequirements(1, 1, getDependsOnStage());
@@ -175,13 +170,6 @@ void MocoOutputGoal::calcIntegrandImpl(
 void MocoOutputGoal::calcGoalImpl(
         const MocoGoal::GoalInput& input, SimTK::Vector& values) const {
     values[0] = input.integral;
-    if (get_divide_by_displacement()) {
-        values[0] /=
-                calcSystemDisplacement(input.initial_state, input.final_state);
-    }
-    if (get_divide_by_mass()) {
-        values[0] /= getModel().getTotalMass(input.initial_state);
-    }
 }
 
 // ============================================================================
@@ -189,8 +177,6 @@ void MocoOutputGoal::calcGoalImpl(
 // ============================================================================
 
 void MocoOutputExtremumGoal::constructProperties() {
-    constructProperty_divide_by_displacement(false);
-    constructProperty_divide_by_mass(false);
     constructProperty_extremum_type("minimum");
     constructProperty_smoothing_factor(1);
 }
@@ -244,13 +230,6 @@ void MocoOutputExtremumGoal::calcIntegrandImpl(
 void MocoOutputExtremumGoal::calcGoalImpl(
         const MocoGoal::GoalInput& input, SimTK::Vector& values) const {
     values[0] = input.integral;
-    if (get_divide_by_displacement()) {
-        values[0] /=
-                calcSystemDisplacement(input.initial_state, input.final_state);
-    }
-    if (get_divide_by_mass()) {
-        values[0] /= getModel().getTotalMass(input.initial_state);
-    }
 }
 
 // ============================================================================

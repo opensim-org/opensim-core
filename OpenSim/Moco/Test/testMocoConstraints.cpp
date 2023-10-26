@@ -16,11 +16,7 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#define CATCH_CONFIG_MAIN
-#include "Testing.h"
-using Catch::Contains;
 #include <simbody/internal/Constraint.h>
-
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Actuators/ModelFactory.h>
 #include <OpenSim/Actuators/ModelOperators.h>
@@ -32,6 +28,10 @@ using Catch::Contains;
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Moco/osimMoco.h>
 #include <OpenSim/Simulation/osimSimulation.h>
+
+#define CATCH_CONFIG_MAIN
+#include "Testing.h"
+using Catch::Contains;
 
 using namespace OpenSim;
 using SimTK::State;

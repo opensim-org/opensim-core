@@ -24,32 +24,28 @@
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
+#define CATCH_CONFIG_MAIN
+#include <OpenSim/Auxiliary/catch/catch.hpp>
+
 using namespace OpenSim;
 using namespace std;
 
-int main() {
-    try {
-        double x[] = {0.0, 1.0, 2.0, 2.5, 5.0, 10.0};
-        double y[] = {0.5, 0.7, 2.0, -1.0, 0.5, 0.1};
-        PiecewiseLinearFunction f1(6, x, y);
-        FunctionAdapter adapter(f1);
-        std::unique_ptr<SimTK::Function> func_ptr{f1.createSimTKFunction()};
-        const SimTK::Function& f2 = *func_ptr;
-        SimTK::Vector xvec(1);
-        vector<int> deriv(1, 0);
-        for (int i = 0; i < 100; ++i) {
-            xvec[0] = i*0.01;
-            ASSERT_EQUAL(f1.calcValue(xvec), adapter.calcValue(xvec), 1e-10, __FILE__, __LINE__);
-            ASSERT_EQUAL(f1.calcDerivative(deriv,xvec), adapter.calcDerivative(deriv,xvec), 1e-10, __FILE__, __LINE__);
-            ASSERT_EQUAL(f1.calcValue(xvec), f2.calcValue(xvec),  1e-10, __FILE__, __LINE__);
-            ASSERT_EQUAL(f1.calcDerivative(deriv,xvec), f2.calcDerivative(deriv,xvec), 1e-10, __FILE__, __LINE__);
-        }
-        ASSERT(adapter.getArgumentSize() == 1, __FILE__, __LINE__);
+TEST_CASE("Function Adapter has Expected Behavior")
+{
+    double x[] = {0.0, 1.0, 2.0, 2.5, 5.0, 10.0};
+    double y[] = {0.5, 0.7, 2.0, -1.0, 0.5, 0.1};
+    PiecewiseLinearFunction f1(6, x, y);
+    FunctionAdapter adapter(f1);
+    std::unique_ptr<SimTK::Function> func_ptr{f1.createSimTKFunction()};
+    const SimTK::Function& f2 = *func_ptr;
+    SimTK::Vector xvec(1);
+    vector<int> deriv(1, 0);
+    for (int i = 0; i < 100; ++i) {
+        xvec[0] = i*0.01;
+        ASSERT_EQUAL(f1.calcValue(xvec), adapter.calcValue(xvec), 1e-10, __FILE__, __LINE__);
+        ASSERT_EQUAL(f1.calcDerivative(deriv,xvec), adapter.calcDerivative(deriv,xvec), 1e-10, __FILE__, __LINE__);
+        ASSERT_EQUAL(f1.calcValue(xvec), f2.calcValue(xvec),  1e-10, __FILE__, __LINE__);
+        ASSERT_EQUAL(f1.calcDerivative(deriv,xvec), f2.calcDerivative(deriv,xvec), 1e-10, __FILE__, __LINE__);
     }
-    catch (const Exception& e) {
-        e.print(cerr);
-        return 1;
-    }
-    cout << "Done" << endl;
-    return 0;
+    ASSERT(adapter.getArgumentSize() == 1, __FILE__, __LINE__);
 }

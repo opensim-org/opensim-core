@@ -24,7 +24,8 @@
 
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #define CATCH_CONFIG_MAIN
-#include <OpenSim/Auxiliary/catch.hpp>
+#include <OpenSim/Auxiliary/catch/catch.hpp>
+
 #include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
 #include <OpenSim/Common/TableUtilities.h>
