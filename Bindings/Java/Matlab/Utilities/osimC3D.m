@@ -172,7 +172,21 @@ classdef osimC3D < matlab.mixin.SetGet
                    end
                 end
             end
-           disp('Point and Torque values convert from mm and Nmm to m and Nm, respectively')
+            % verify markers are in mm
+            markersMetaDataUnits = self.markers.getTableMetaDataString("Units");
+            if (strcmpi(markersMetaDataUnits, "mm"))
+                nRows  = self.markers.getNumRows();
+                for i = 0 : self.markers.getNumColumns - 1
+                    columnData = self.markers.updDependentColumnAtIndex(i);
+                   for u = 0 : nRows - 1
+                     % Divide by 1000
+                     columnData.set(u,columnData.get(u).scalarDivideEq(1000));
+                   end            
+                end
+                % todo fix units in table/trc file to correspond to data
+                % self.markers.addTableMetaDataString("units", "mm");
+            end
+            disp('Point and Torque values convert from mm and Nmm to m and Nm, respectively')
         end
         function writeTRC(self,varargin)
             % Write marker data to trc file.
