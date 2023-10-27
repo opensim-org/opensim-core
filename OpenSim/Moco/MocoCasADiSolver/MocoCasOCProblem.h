@@ -69,7 +69,8 @@ inline casadi::DM convertToCasADiDM(const SimTK::Vector& simtkVec) {
 
 /// This converts a MocoTrajectory to a CasOC::Iterate.
 inline CasOC::Iterate convertToCasOCIterate(const MocoTrajectory& mocoIt,
-        bool addProjectionStates = false) {
+        const std::vector<std::string>& expectedSlackNames,
+        bool appendProjectionStates = false) {
     CasOC::Iterate casIt;
     CasOC::VariablesDM& casVars = casIt.variables;
     using CasOC::Var;
@@ -81,17 +82,14 @@ inline CasOC::Iterate convertToCasOCIterate(const MocoTrajectory& mocoIt,
             convertToCasADiDMTranspose(mocoIt.getControlsTrajectory());
     casVars[Var::multipliers] =
             convertToCasADiDMTranspose(mocoIt.getMultipliersTrajectory());
-    if (!mocoIt.getSlackNames().empty()) {
-        casVars[Var::slacks] =
-                convertToCasADiDMTranspose(mocoIt.getSlacksTrajectory());
-    }
+
     if (!mocoIt.getDerivativeNames().empty()) {
         casVars[Var::derivatives] =
                 convertToCasADiDMTranspose(mocoIt.getDerivativesTrajectory());
     }
     casVars[Var::parameters] =
             convertToCasADiDMTranspose(mocoIt.getParameters());
-    if (addProjectionStates) {
+    if (appendProjectionStates) {
             casVars[Var::projection_states] = convertToCasADiDMTranspose(
                     mocoIt.getMultibodyStatesTrajectory());
     }
@@ -99,10 +97,14 @@ inline CasOC::Iterate convertToCasOCIterate(const MocoTrajectory& mocoIt,
     casIt.state_names = mocoIt.getStateNames();
     casIt.control_names = mocoIt.getControlNames();
     casIt.multiplier_names = mocoIt.getMultiplierNames();
-    casIt.slack_names = mocoIt.getSlackNames();
     casIt.derivative_names = mocoIt.getDerivativeNames();
     casIt.parameter_names = mocoIt.getParameterNames();
-    if (addProjectionStates) {
+
+    // Projection state variables.
+    // ---------------------------
+    // Extra variables needed when using the 'projection' method for enforcing
+    // kinematic constraints from Bordalba et al. (2023).
+    if (appendProjectionStates) {
         auto mbStateNames = mocoIt.getMultibodyStateNames();
         for (auto name : mbStateNames) {
             auto valuepos = name.find("/value");
@@ -117,6 +119,39 @@ inline CasOC::Iterate convertToCasOCIterate(const MocoTrajectory& mocoIt,
             }
         }
     }
+    // Slack variables.
+    // ----------------
+    // Check that the guess has the expected slack names from the CasOCProblem.
+    bool matchedExpectedSlackNames =
+            mocoIt.getSlackNames().size() == expectedSlackNames.size();
+    if (matchedExpectedSlackNames) {
+        for (const auto& expectedName : expectedSlackNames) {
+            if (std::find(mocoIt.getSlackNames().begin(),
+                        mocoIt.getSlackNames().end(), expectedName) ==
+                    mocoIt.getSlackNames().end()) {
+                matchedExpectedSlackNames = false;
+                break;
+            }
+        }
+    }
+
+    // If the guess matches the expected slack names, use the slack values from
+    // the guess. If not, create a vector of zeros to use as the initial guess
+    // for the slack variables.
+    if (matchedExpectedSlackNames) {
+        casIt.slack_names = mocoIt.getSlackNames();
+        if (!mocoIt.getSlackNames().empty()) {
+            casVars[Var::slacks] =
+                    convertToCasADiDMTranspose(mocoIt.getSlacksTrajectory());
+        }
+    } else {
+        casIt.slack_names = expectedSlackNames;
+        if (!expectedSlackNames.empty()) {
+            casVars[Var::slacks] = casadi::DM::zeros(
+                    (int)expectedSlackNames.size(), mocoIt.getNumTimes());
+        }
+    }
+
     return casIt;
 }
 

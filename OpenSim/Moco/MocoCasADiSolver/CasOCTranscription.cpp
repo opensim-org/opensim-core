@@ -347,17 +347,34 @@ void Transcription::createVariablesAndSetBounds(const casadi::DM& grid,
             MX::repmat(m_unscaledVars[parameters], 1, m_numMeshIntervals);
 
     casadi_int istart = 0;
+    int numStates = m_problem.getNumStates();
     for (int imesh = 0; imesh < m_numMeshIntervals; ++imesh) {
         casadi_int numPts = m_numPointsPerMeshInterval;
         casadi_int iend = istart + numPts - 1;
         if (m_numProjectionStates) {
+            // The states at all points in the mesh interval except the last
+            // point are the regular state variables.
             m_defectStates[imesh](Slice(), Slice(0, numPts-1)) =
                 m_unscaledVars[states](Slice(), Slice(istart, iend));
-            m_defectStates[imesh](Slice(), numPts-1) =
+
+            // The multibody states at the last point in the mesh interval are
+            // the projection states.
+            m_defectStates[imesh](Slice(0, m_numProjectionStates), numPts-1) =
                 m_unscaledVars[projection_states](Slice(), imesh);
+
+            // The non-multibody states at the last point (i.e., auxiliary state
+            // variables for muscles) are also the same as the regular state
+            // variables (there are no projection states for these variables).
+            m_defectStates[imesh](
+                        Slice(m_numProjectionStates, numStates), numPts-1) =
+                    m_unscaledVars[states](
+                        Slice(m_numProjectionStates, numStates), iend);
+
+            // Calculate the distance between the regular multibody states and
+            // the projection multibody states.
             m_projectionStateDistances(Slice(), imesh) =
                 m_unscaledVars[projection_states](Slice(), imesh) -
-                m_unscaledVars[states](Slice(), iend);
+                m_unscaledVars[states](Slice(0, m_numProjectionStates), iend);
         } else {
             m_defectStates[imesh](Slice(), Slice()) =
                 m_unscaledVars[states](Slice(), Slice(istart, iend+1));
@@ -777,10 +794,10 @@ Solution Transcription::solve(const Iterate& guessOrig) {
     // -------------------
     const auto guessTimes = createTimes(guessOrig.variables.at(initial_time),
             guessOrig.variables.at(final_time));
-    bool addProjectionStates =
+    bool appendProjectionStates =
             m_problem.getNumKinematicConstraintEquations() &&
             m_problem.isKinematicConstraintMethodProjection();
-    auto guess = guessOrig.resample(guessTimes, addProjectionStates);
+    auto guess = guessOrig.resample(guessTimes, appendProjectionStates);
 
     // Adjust guesses for the slack variables to ensure they are the correct
     // length (i.e. slacks.size2() == m_numPointsIgnoringConstraints).

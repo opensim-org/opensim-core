@@ -375,10 +375,15 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     if (guess.empty()) {
         casGuess = casSolver->createInitialGuessFromBounds();
     } else {
-        bool addProjectionStates =
+        std::vector<std::string> expectedSlackNames;
+        for (const auto& info : casProblem->getSlackInfos()) {
+            expectedSlackNames.push_back(info.name);
+        }
+        bool appendProjectionStates =
                 getProblemRep().getNumKinematicConstraintEquations() &&
                 get_kinematic_constraint_method() == "projection";
-        casGuess = convertToCasOCIterate(guess, addProjectionStates);
+        casGuess = convertToCasOCIterate(guess, expectedSlackNames,
+                appendProjectionStates);
     }
 
     // Temporarily disable printing of negative muscle force warnings so the
@@ -386,11 +391,11 @@ MocoSolution MocoCasADiSolver::solveImpl() const {
     Logger::Level origLoggerLevel = Logger::getLevel();
     Logger::setLevel(Logger::Level::Warn);
     CasOC::Solution casSolution;
-//    try {
+    try {
     casSolution = casSolver->solve(casGuess);
-//    } catch (...) {
-//        OpenSim::Logger::setLevel(origLoggerLevel);
-//    }
+    } catch (...) {
+        OpenSim::Logger::setLevel(origLoggerLevel);
+    }
     OpenSim::Logger::setLevel(origLoggerLevel);
 
     MocoSolution mocoSolution =
