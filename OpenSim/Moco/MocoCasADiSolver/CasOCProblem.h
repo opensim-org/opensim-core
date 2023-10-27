@@ -644,13 +644,15 @@ public:
         return *m_multibodyFuncIgnoringConstraints;
     }
     /// Get a function to compute the velocity correction to qdot when enforcing
-    /// kinematic constraints and their derivatives. We require a separate
-    /// function for this since we don't actually compute qdot within the
-    /// multibody system.
+    /// kinematic constraints and their derivatives using the method by
+    /// Posa et al. (2016). We require a separate function for this since we don't
+    /// actually compute qdot within the multibody system.
     const casadi::Function& getVelocityCorrection() const {
         return *m_velocityCorrectionFunc;
     }
-    // TODO
+    /// Get a function to compute the state projection term when enforcing
+    /// kinematic constraints and their derivatives using the method by
+    /// Bordalba et al. (2023).
     const casadi::Function& getStateProjection() const {
         return *m_stateProjectionFunc;
     }
