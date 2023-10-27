@@ -297,7 +297,8 @@ public:
     casadi::DM getSubsetPoint(const VariablesDM& fullPoint) const override;
 };
 
-// TODO
+/// This function should compute a state projection term to make feasible
+/// problems that enforce kinematic constraints and their derivatives.
 class StateProjection : public Function {
 public:
     casadi_int get_n_in() override final { return 4; }

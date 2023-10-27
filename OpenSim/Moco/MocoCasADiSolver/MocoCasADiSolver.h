@@ -188,7 +188,7 @@ public:
             "The bounds on the slack variables added to the problem which "
             "determine the magnitude of the constraint projection at each "
             "mesh interval when using the 'projection' method for "
-            "enforcing kinematic constraints.");
+            "enforcing kinematic constraints. Default: [-10, 10].");
 
     MocoCasADiSolver();
 

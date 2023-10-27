@@ -117,20 +117,33 @@ public:
         m_stateProjectionWeight = weight;
     }
 
-    /// Whether or not to constrain control values at mesh interval midpoints
+    /// Whether or not to constrain control values interior to the mesh interval
     /// by linearly interpolating control values from mesh interval endpoints.
-    /// @note Only applies to Hermite-Simpson collocation.
-    // TODO update this comment
+    ///
+    /// @note For Hermite-Simpson collocation, this applies to the time point
+    ///       at the midpoint of the mesh interval. For Legendre-Gauss and
+    ///       Legendre-Gauss-Radau collocation, this applies to all time points
+    ///       in the interior of the mesh interval.
     void setInterpolateControlMidpoints(bool tf) {
         m_interpolateControlMidpoints = tf;
     }
+    /// @copydoc setInterpolateControlMidpoints()
     bool getInterpolateControlMidpoints() const {
         return m_interpolateControlMidpoints;
     }
 
+    /// Whether or not to constrain multiplier values interior to the mesh
+    /// interval by linearly interpolating multiplier values from mesh interval
+    /// endpoints.
+    ///
+    /// @note For Hermite-Simpson collocation, this applies to the time point
+    ///       at the midpoint of the mesh interval. For Legendre-Gauss and
+    ///       Legendre-Gauss-Radau collocation, this applies to all time points
+    ///       in the interior of the mesh interval.
     void setInterpolateMultiplierMidpoints(bool tf) {
         m_interpolateMultiplierMidpoints = tf;
     }
+    /// @copydoc setInterpolateMultiplierMidpoints()
     bool getInterpolateMultiplierMidpoints() const {
         return m_interpolateMultiplierMidpoints;
     }
@@ -222,7 +235,7 @@ private:
     bool m_minimizeImplicitAuxiliaryDerivatives = false;
     double m_implicitAuxiliaryDerivativesWeight = 1.0;
     bool m_minimizeStateProjection = true;
-    double m_stateProjectionWeight = 0.0001;
+    double m_stateProjectionWeight = 1e-6;
     bool m_interpolateControlMidpoints = true;
     bool m_interpolateMultiplierMidpoints = false;
     bool m_enforcePathConstraintMidpoints = false;
