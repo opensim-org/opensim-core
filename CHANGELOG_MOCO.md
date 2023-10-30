@@ -3,9 +3,17 @@ Moco Change Log
 
 1.2.2
 -----
+- 2023-10-25: Fixed a bug preventing deserialization of `MocoFrameDistanceConstraint`.
+
+- 2023-10-25: Locked coordinates are now explicitly disallowed in `MocoProblem`s, 
+              since they lead to NaNs values during optimization. A warning is
+              now printed for bodies with zero mass since this also leads to 
+              NaNs for ill-defined models.
+
 - 2023-09-20: Moved `setDivideByDisplacement` and `setDivideByMass` to base 
               `MocoGoal` class and added `MocoGoal::setDivideByDuration`. All 
               `MocoGoal`s can now use these methods to normalize goal values.
+
 - 2023-08-25: Added the pseudospectral transcription schemes 
               `CasOCLegendreGauss` and `CasOCLegendreGaussRadau`, which are 
               compatible with `MocoCasADiSolver`.
