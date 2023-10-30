@@ -71,6 +71,28 @@ void MocoProblemRep::initialize() {
     const auto& ph0 = m_problem->getPhase(0);
     // TODO: Provide directory from which to load model file.
     m_model_base = ph0.getModelProcessor().process();
+    m_model_base.initSystem();
+
+    // Check for bodies with zero mass.
+    for (const auto& body : m_model_base.getComponentList<Body>()) {
+        if (body.getMass() == 0) {
+            log_warn("Body '{}' has zero mass. If this body is not an "
+                     "intermediate body for a joint or welded to another "
+                     "massful body, it may lead to issues during optimization.",
+                    body.getAbsolutePathString());
+        }
+    }
+
+    // Check for locked coordinates.
+    for (const auto& coordinate : m_model_base.getComponentList<Coordinate>()) {
+        if (coordinate.get_locked()) {
+            OPENSIM_THROW(Exception, "Coordinate '{}' is locked, but Moco "
+                                     "does not support locked coordinates. "
+                                     "Consider replacing the joint for this "
+                                     "coordinate with a WeldJoint instead.",
+                    coordinate.getAbsolutePathString());
+        }
+    }
 
     auto discreteControllerBaseUPtr = make_unique<DiscreteController>();
     m_discrete_controller_base.reset(discreteControllerBaseUPtr.get());
