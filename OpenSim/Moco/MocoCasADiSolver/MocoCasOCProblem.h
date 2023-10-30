@@ -408,8 +408,8 @@ private:
         // et al. (2023). Our implementation looks slightly different from the
         // projection constraints in the manuscript since we compute the
         // projections for the coordinate values and coordinate speeds
-        // separately based on how Simbody's assembler handles constraint
-        // projections.
+        // separately based on how Simbody's assembler handles coordinate
+        // projections for kinematic constraints.
         const SimTK::SimbodyMatterSubsystem& matterBase =
                 modelBase.getMatterSubsystem();
 
@@ -431,6 +431,17 @@ private:
                 getNumNonHolonomicConstraintEquations() +
                 getNumAccelerationConstraintEquations(),
                 slacks.ptr() + getNumHolonomicConstraintEquations(), true);
+        if (getNumAccelerationConstraintEquations()) {
+            // Set the extra elements in mu_v related to the acceleration
+            // constraints to zero, so they do not affect the projections for
+            // the coordinate speeds. This is necessary because 'slacks' will
+            // have fewer elements than 'mu_v' when there are acceleration
+            // constraints.
+            mu_v.updBlock(getNumHolonomicConstraintEquations() +
+                    getNumNonHolonomicConstraintEquations(), 0,
+                    getNumAccelerationConstraintEquations(), 1).setToZero();
+        }
+
         SimTK::Vector proj_v(getNumSpeeds(), projection.ptr() +
                 getNumCoordinates(), true);
         matterBase.multiplyByGTranspose(simtkStateBase, mu_v, proj_v);

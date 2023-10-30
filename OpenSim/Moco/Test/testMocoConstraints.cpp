@@ -952,6 +952,51 @@ TEST_CASE("DoublePendulum tests using projection method (implicit)",
             num_mesh_intervals);
 }
 
+TEST_CASE("Bad configurations with kinematic constraints") {
+    MocoStudy study;
+    study.setName("double_pendulum_coordinate_coupler");
+
+    // Create a double pendulum model and add a constraint.
+    auto model = createDoublePendulumModel();
+    const Coordinate& q0 = model->getCoordinateSet().get("q0");
+    const Coordinate& q1 = model->getCoordinateSet().get("q1");
+    CoordinateCouplerConstraint* constraint = new CoordinateCouplerConstraint();
+    Array<std::string> indepCoordNames;
+    indepCoordNames.append("q0");
+    constraint->setIndependentCoordinateNames(indepCoordNames);
+    constraint->setDependentCoordinateName("q1");
+    const SimTK::Real m = -2;
+    const SimTK::Real b = SimTK::Pi;
+    LinearFunction linFunc(m, b);
+    constraint->setFunction(&linFunc);
+    model->addConstraint(constraint);
+    model->finalizeConnections();
+    MocoProblem& mp = study.updProblem();
+    mp.setModelAsCopy(*model);
+    mp.setTimeBounds(0, 1);
+
+    auto& ms = study.initSolver<MocoCasADiSolver>();
+
+    SECTION("Enforce constraint derivatives") {
+        ms.set_enforce_constraint_derivatives(false);
+        ms.set_kinematic_constraint_method("projection");
+        CHECK_THROWS_WITH(study.solve(),
+                Catch::Contains("The projection method for enforcing "
+                                "kinematic"));
+    }
+
+    SECTION("PKT method with Hermite-Simpson only") {
+        ms.set_enforce_constraint_derivatives(true);
+        ms.set_kinematic_constraint_method("PKT");
+        ms.set_transcription_scheme("trapezoidal");
+        CHECK_THROWS_WITH(study.solve(),
+                Catch::Contains("Expected the 'hermite-simpson' transcription "
+                                "scheme"));
+    }
+}
+
+
+
 class EqualControlConstraint : public MocoPathConstraint {
     OpenSim_DECLARE_CONCRETE_OBJECT(EqualControlConstraint, MocoPathConstraint);
 
