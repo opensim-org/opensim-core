@@ -1,17 +1,3 @@
-% Specify point used for calculating output joint reaction moments
-% 0 = electrical center, 1 = COP
-%outputMomentsPoint = 0;
-% Set flag indicating whether or not to convert length units from mm to m
-% 0 = no, 1 = yes
-%convertLengthUnits = 0 if unspecified;
-function c3dExport(outputMomentsPoint, convertLengthUnits)
-
-% This function was originally developed by the Stanford OpenSim team (see
-% below for credits) but was modified slightly by B.J. Fregly of the Rice
-% Computational Neuromechanics Lab at Rice University.
-% The modified version names output .trc and .mot files with the same
-% basename as the selcted input .c3d file.
-
 % ----------------------------------------------------------------------- %
 % The OpenSim API is a toolkit for musculoskeletal modeling and           %
 % simulation. See http://opensim.stanford.edu and the NOTICE file         %
@@ -33,6 +19,21 @@ function c3dExport(outputMomentsPoint, convertLengthUnits)
 % implied. See the License for the specific language governing            %
 % permissions and limitations under the License.                          %
 % ----------------------------------------------------------------------- %
+
+% Specify point used for calculating output joint reaction moments
+% 0 = electrical center, 1 = COP
+%useCenterOfPressureAsMomentsPoint = 0;
+% Set flag indicating whether or not to convert length units from mm to m
+% 0 = no, 1 = yes
+%convertLengthUnits = 0 if unspecified;
+function c3dExport(useCenterOfPressureAsMomentsPoint, convertLengthUnits)
+
+% This function was originally developed by the Stanford OpenSim team (see
+% below for credits) but was modified slightly by B.J. Fregly of the Rice
+% Computational Neuromechanics Lab at Rice University.
+% The modified version names output .trc and .mot files with the same
+% basename as the selcted input .c3d file.
+
     
     if nargin < 2
         convertLengthUnits =  0
@@ -49,7 +50,7 @@ function c3dExport(outputMomentsPoint, convertLengthUnits)
     %% Construct an opensimC3D object with input c3d path
     % Constructor takes full path to c3d file and an integer for forceplate
     % representation in output forces file (0 = electrical center, 1 = COP). 
-    c3d = osimC3D(c3dpath,outputMomentsPoint);
+    c3d = osimC3D(c3dpath,useCenterOfPressureAsMomentsPoint);
     
     %% Get some stats...
     % Get the number of marker trajectories
@@ -85,7 +86,7 @@ function c3dExport(outputMomentsPoint, convertLengthUnits)
     basename = strtok(filename,'.');
     markersFilename = strcat(basename,'_markers.trc');
     
-    switch outputMomentsPoint
+    switch useCenterOfPressureAsMomentsPoint
         case 0
             forcesFilename = strcat(basename,'_forces_EC.mot');
         case 1

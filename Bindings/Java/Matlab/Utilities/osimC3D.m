@@ -165,11 +165,9 @@ classdef osimC3D < matlab.mixin.SetGet
                 % and moment columns will have 'p' and 'm' prefixes,
                 % respectively.
                 if ~startsWith(char(labels.get(i)),'f')
-                   columnData = self.forces.updDependentColumnAtIndex(i);
-                   for u = 0 : nRows - 1
-                     % Divide by 1000
-                     columnData.set(u,columnData.get(u).scalarDivideEq(1000));
-                   end
+                    columnData = self.forces.updDependentColumnAtIndex(i);
+                    % Divide by 1000
+                    columnData.mul_assign(.001);
                 end
             end
             % verify markers are in mm
@@ -178,10 +176,8 @@ classdef osimC3D < matlab.mixin.SetGet
                 nRows  = self.markers.getNumRows();
                 for i = 0 : self.markers.getNumColumns - 1
                     columnData = self.markers.updDependentColumnAtIndex(i);
-                   for u = 0 : nRows - 1
-                     % Divide by 1000
-                     columnData.set(u,columnData.get(u).scalarDivideEq(1000));
-                   end            
+                    % Divide by 1000
+                    columnData.mul_assign(.001);           
                 end
                 % todo fix units in table/trc file to correspond to data
                 % self.markers.addTableMetaDataString("units", "mm");
