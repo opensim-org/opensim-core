@@ -5,7 +5,7 @@
 % and supported by the US National Institutes of Health (U54 GM072970,    %
 % R24 HD065690) and by DARPA through the Warrior Web program.             %
 %                                                                         %
-% Copyright (c) 2005-2018 Stanford University and the Authors             %
+% Copyright (c) 2005-2023 Stanford University and the Authors             %
 % Author(s): James Dunne                                                  %
 %            BJ Fregly                                                    %
 % Licensed under the Apache License, Version 2.0 (the "License");         %
@@ -28,10 +28,7 @@
 %convertLengthUnits = 0 if unspecified;
 function c3dExport(useCenterOfPressureAsMomentsPoint, convertLengthUnits)
 
-% This function was originally developed by the Stanford OpenSim team (see
-% below for credits) but was modified slightly by B.J. Fregly of the Rice
-% Computational Neuromechanics Lab at Rice University.
-% The modified version names output .trc and .mot files with the same
+% The function names output .trc and .mot files with the same
 % basename as the selcted input .c3d file.
 
     

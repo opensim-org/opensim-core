@@ -170,7 +170,7 @@ classdef osimC3D < matlab.mixin.SetGet
                     columnData.mul_assign(.001);
                 end
             end
-            % verify markers are in mm
+            % Convert markers to meters only if in millimeters
             markersMetaDataUnits = self.markers.getTableMetaDataString("Units");
             if (strcmpi(markersMetaDataUnits, "mm"))
                 nRows  = self.markers.getNumRows();
@@ -180,7 +180,7 @@ classdef osimC3D < matlab.mixin.SetGet
                     columnData.mul_assign(.001);           
                 end
                 % todo fix units in table/trc file to correspond to data
-                % self.markers.addTableMetaDataString("units", "mm");
+                
             end
             disp('Point and Torque values convert from mm and Nmm to m and Nm, respectively')
         end

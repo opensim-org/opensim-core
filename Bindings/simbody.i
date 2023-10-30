@@ -47,23 +47,6 @@ namespace SimTK {
 %template(Quaternion)  SimTK::Quaternion_<double>;
 }
 
-
-%rename(__add_assign__)       MatrixBaseVec3::operator +=;
-%rename(__sub_assign__)       MatrixBaseVec3::operator -=;
-%rename(__mul_assign__)       MatrixBaseVec3::operator *=;
-%rename(__div_assign__)       MatrixBaseVec3::operator /=;
-%rename(__add__)              MatrixBaseVec3::operator+;
-%rename(__pos__)              MatrixBaseVec3::operator+();
-%rename(__pos__)              MatrixBaseVec3::operator+() const;
-%rename(__sub__)              MatrixBaseVec3::operator-;
-%rename(__neg__)              MatrixBaseVec3::operator-() const;
-%rename(__neg__)              MatrixBaseVec3::operator-();
-%rename(__mul__)              MatrixBaseVec3::operator*;
-%rename(__deref__)            MatrixBaseVec3::operator*();
-%rename(__deref__)            MatrixBaseVec3::operator*() const;
-%rename(__div__)              MatrixBaseVec3::operator/;
-
-
 // Vector and Matrix
 //%include <Bindings/std.i>
 %include <SWIGSimTK/BigMatrix.h>
