@@ -19,7 +19,7 @@ class TestC3DFileAdapter {
         // convert data to meters and write a copy
         TimeSeriesTableVec3 markerTableInMeters = new TimeSeriesTableVec3(markerTable);
         for (int col=0; col < markerTableInMeters.getNumColumns(); col++)
-            markerTableInMeters.updDependentColumnAtIndex(col).mul_assign(.001);
+            markerTableInMeters.updDependentColumnAtIndex(col).multiplyAssign(.001);
         String markersInMetersFileName = new String("markersMeters.mot");
         STOFileAdapterVec3 stoAdapterM = new STOFileAdapterVec3();
         stoAdapterM.write(markerTableInMeters, markersInMetersFileName); 

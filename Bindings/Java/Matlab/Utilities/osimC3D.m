@@ -167,7 +167,7 @@ classdef osimC3D < matlab.mixin.SetGet
                 if ~startsWith(char(labels.get(i)),'f')
                     columnData = self.forces.updDependentColumnAtIndex(i);
                     % Divide by 1000
-                    columnData.mul_assign(.001);
+                    columnData.multiplyAssign(.001);
                 end
             end
             % Convert markers to meters only if in millimeters
@@ -177,7 +177,7 @@ classdef osimC3D < matlab.mixin.SetGet
                 for i = 0 : self.markers.getNumColumns - 1
                     columnData = self.markers.updDependentColumnAtIndex(i);
                     % Divide by 1000
-                    columnData.mul_assign(.001);           
+                    columnData.multiplyAssign(.001);           
                 end
                 % todo fix units in table/trc file to correspond to data
                 

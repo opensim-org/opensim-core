@@ -177,12 +177,12 @@ typedef SimTK::RowVector_<double> RowVector;
  }
 // multiply assign operator is useful for unit conversion of data columns
 %extend VectorView_<Vec3> {
-    VectorView_<Vec3> mul_assign(double t){
+    VectorView_<Vec3> multiplyAssign(double t){
         return $self->operator*=(t);
     }
 }
 %extend VectorView_<double> {
-    VectorView_<double> mul_assign(double t){
+    VectorView_<double> multiplyAssign(double t){
         return $self->operator*=(t);
     }
 }
