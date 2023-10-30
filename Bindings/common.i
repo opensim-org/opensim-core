@@ -185,10 +185,6 @@ namespace OpenSim {
     getTableMetaDataString(const std::string& key) const {
         return $self->getTableMetaData<std::string>(key);
     }
-    
-    void setTableMetaDataString(const std::string& key, const std::string& value) {
-        $self->updTableMetaData().setValueForKey(key, value);
-    }
 
     std::vector<std::string>
     getDependentsMetaDataString(const std::string& key) const {
