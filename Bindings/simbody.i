@@ -47,6 +47,23 @@ namespace SimTK {
 %template(Quaternion)  SimTK::Quaternion_<double>;
 }
 
+
+%rename(__add_assign__)       MatrixBaseVec3::operator +=;
+%rename(__sub_assign__)       MatrixBaseVec3::operator -=;
+%rename(__mul_assign__)       MatrixBaseVec3::operator *=;
+%rename(__div_assign__)       MatrixBaseVec3::operator /=;
+%rename(__add__)              MatrixBaseVec3::operator+;
+%rename(__pos__)              MatrixBaseVec3::operator+();
+%rename(__pos__)              MatrixBaseVec3::operator+() const;
+%rename(__sub__)              MatrixBaseVec3::operator-;
+%rename(__neg__)              MatrixBaseVec3::operator-() const;
+%rename(__neg__)              MatrixBaseVec3::operator-();
+%rename(__mul__)              MatrixBaseVec3::operator*;
+%rename(__deref__)            MatrixBaseVec3::operator*();
+%rename(__deref__)            MatrixBaseVec3::operator*() const;
+%rename(__div__)              MatrixBaseVec3::operator/;
+
+
 // Vector and Matrix
 //%include <Bindings/std.i>
 %include <SWIGSimTK/BigMatrix.h>
@@ -175,6 +192,17 @@ typedef SimTK::RowVector_<double> RowVector;
          return rowVec;
      }
  }
+// multiply assign operator is useful for unit conversion of data columns
+%extend VectorView_<Vec3> {
+    VectorView_<Vec3> mul_assign(double t){
+        return $self->operator*=(t);
+    }
+}
+%extend VectorView_<double> {
+    VectorView_<double> mul_assign(double t){
+        return $self->operator*=(t);
+    }
+}
 
 // Swig macro to instantiate all template classes needed 
 // to make a DataTable of type ETY
@@ -192,7 +220,6 @@ typedef SimTK::RowVector_<double> RowVector;
 
 INSTANTIATE_MATRIXTYPES(Vec3)
 INSTANTIATE_MATRIXTYPES(Vec6)
-
 
 %template(MatrixBaseQuaternion)    SimTK::MatrixBase<Quaternion_<double>>;
 //%template(MatrixViewQuaternion)    SimTK::MatrixView_<Quaternion_<double>>;
