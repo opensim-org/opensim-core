@@ -26,7 +26,7 @@
 //=============================================================================
 #include "Muscle.h"
 
-#include "GeometryPath.h"
+
 #include "Model.h"
 #include <OpenSim/Common/XMLDocument.h>
 
