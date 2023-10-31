@@ -74,6 +74,9 @@ void WrapObject::constructProperties()
 
 const PhysicalFrame& WrapObject::getFrame() const
 {
+    if (!_frame) {
+        OPENSIM_THROW_FRMOBJ(OpenSim::Exception, "Tried to call WrapObject::getFrame before the frame has been set. Make sure that `OpenSim::WrapObject::setFrame` is called on the `WrapObject` before doing any operations with the `WrapObject`.");
+    }
     return _frame.getRef();
 }
 
@@ -214,7 +217,7 @@ void WrapObject::updateFromXMLNode(SimTK::Xml::Element& node,
                     node.element_begin("color");
             if (colorIter != node.element_end()) {
                 color.setValue(colorIter->getValue());
-                node.removeNode(colorIter);  // FC
+                node.removeNode(colorIter);
                 colorIter->clearOrphan();
                 appearanceModified = true;
             }
