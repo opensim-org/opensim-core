@@ -3,6 +3,16 @@
 import os
 import sys
 from setuptools import setup
+import fileinput
+
+# update __init__.py in local installation
+install_path = os.path.abspath('../../bin').replace(os.sep, '/')
+if (sys.platform.startswith('win') and os.path.exists(install_path)):
+    print ('install path found as '+ install_path)
+    with fileinput.FileInput('opensim/__init__.py', inplace=True, backup='.bak') as file:
+        for line in file:
+            print(line.replace('DLL_PATH', "'" + install_path + "'"), end='')
+
 # This provides the variable `__version__`.
 if sys.version_info[0] < 3:
     execfile('opensim/version.py')
