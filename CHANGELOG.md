@@ -28,7 +28,8 @@ been added to these forces to provide access to concrete path types (e.g., `updP
 - Fixed bindings to expose the method Model::getCoordinatesInMultibodyTreeOrder to scripting users (#3569)
 - Fixed a bug where constructing a `ModelProcessor` from a `Model` object led to an invalid `Model`
 - Added `LatinHypercubeDesign`, a class for generating Latin hypercube designs using random and algorithm methods (#3570)
-- Fixed memory leaks that occurred when deserializing v3.0 models (e.g., Rajagopal2015.osim). (issue #3537)
+- Refactor c3dExport.m file as a Matlab function (#3501), also expose method to allow some operations on tableColumns
+  (multiplyAssign) to speed up data processing.
 
 v4.4.1
 ======
