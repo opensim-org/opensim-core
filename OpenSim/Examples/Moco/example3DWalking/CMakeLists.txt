@@ -1,10 +1,11 @@
 set(EXAMPLE_MOCO_TRACK_FILES
-        subject_walk_armless.osim
-        coordinates.sto
+        subject_walk_scaled.osim
+        coordinates.mot
         grf_walk.mot
         grf_walk.xml
         marker_trajectories.trc
-        electromyography.sto)
+        electromyography.sto
+        README.txt)
 
 OpenSimAddExampleCXX(NAME example3DWalking SUBDIR Moco
         EXECUTABLES exampleMocoTrack exampleMocoInverse
