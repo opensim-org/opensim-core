@@ -1086,3 +1086,20 @@ TEST_CASE("MocoGoal divide by displacement/duration/mass") {
     CHECK_THAT(goalValues[1], Catch::WithinAbs(duration, SimTK::Eps));
     CHECK_THAT(goalValues[2], Catch::WithinAbs(mass, SimTK::Eps));
 }
+
+TEST_CASE("MocoFrameDistanceConstraint de/serialization") {
+
+    {
+        auto study = createStudy(0, {0, 100.0});
+        auto& problem = study.updProblem();
+        auto* con = problem.addPathConstraint<MocoFrameDistanceConstraint>();
+        con->setName("distance_constraint");
+        con->addFramePair("/body", "/ground", 0, 1);
+        study.print("testMocoGoals_MocoFrameDistanceConstraint_study.omoco");
+    }
+
+    {
+        MocoStudy study(
+                "testMocoGoals_MocoFrameDistanceConstraint_study.omoco");
+    }
+}

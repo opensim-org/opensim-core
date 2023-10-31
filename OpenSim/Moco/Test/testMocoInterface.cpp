@@ -39,50 +39,55 @@ using namespace OpenSim;
 // - model_file vs model.
 // - test problems without controls (including with setting guesses).
 
-std::unique_ptr<Model> createSlidingMassModel() {
-    auto model = make_unique<Model>();
-    model->setName("sliding_mass");
-    model->set_gravity(SimTK::Vec3(0, 0, 0));
-    auto* body = new Body("body", 10.0, SimTK::Vec3(0), SimTK::Inertia(0));
-    model->addComponent(body);
+// HELPER FUNCTIONS
+namespace {
+    std::unique_ptr<Model> createSlidingMassModel(
+            double mass = 10.0, bool lock_coordinate = false) {
+        auto model = make_unique<Model>();
+        model->setName("sliding_mass");
+        model->set_gravity(SimTK::Vec3(0, 0, 0));
+        auto* body = new Body("body", mass, SimTK::Vec3(0), SimTK::Inertia(0));
+        model->addComponent(body);
 
-    // Allows translation along x.
-    auto* joint = new SliderJoint("slider", model->getGround(), *body);
-    auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
-    coord.setName("position");
-    model->addComponent(joint);
+        // Allows translation along x.
+        auto* joint = new SliderJoint("slider", model->getGround(), *body);
+        auto& coord = joint->updCoordinate(SliderJoint::Coord::TranslationX);
+        coord.setName("position");
+        if (lock_coordinate) { coord.set_locked(true); }
+        model->addComponent(joint);
 
-    auto* actu = new CoordinateActuator();
-    actu->setCoordinate(&coord);
-    actu->setName("actuator");
-    actu->setOptimalForce(1);
-    actu->setMinControl(-10);
-    actu->setMaxControl(10);
-    model->addComponent(actu);
+        auto* actu = new CoordinateActuator();
+        actu->setCoordinate(&coord);
+        actu->setName("actuator");
+        actu->setOptimalForce(1);
+        actu->setMinControl(-10);
+        actu->setMaxControl(10);
+        model->addComponent(actu);
 
-    return model;
-}
+        return model;
+    }
 
-template <typename SolverType = MocoTropterSolver>
-MocoStudy createSlidingMassMocoStudy(
-        const std::string& transcriptionScheme = "trapezoidal",
-        int numMeshIntervals = 19) {
-    MocoStudy study;
-    study.setName("sliding_mass");
-    study.set_write_solution("false");
-    MocoProblem& mp = study.updProblem();
-    mp.setModel(createSlidingMassModel());
-    mp.setTimeBounds(MocoInitialBounds(0), MocoFinalBounds(0, 10));
-    mp.setStateInfo("/slider/position/value", MocoBounds(0, 1),
-            MocoInitialBounds(0), MocoFinalBounds(1));
-    mp.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
-    mp.addGoal<MocoFinalTimeGoal>();
+    template <typename SolverType = MocoTropterSolver>
+    MocoStudy createSlidingMassMocoStudy(
+            const std::string& transcriptionScheme = "trapezoidal",
+            int numMeshIntervals = 19) {
+        MocoStudy study;
+        study.setName("sliding_mass");
+        study.set_write_solution("false");
+        MocoProblem& mp = study.updProblem();
+        mp.setModel(createSlidingMassModel());
+        mp.setTimeBounds(MocoInitialBounds(0), MocoFinalBounds(0, 10));
+        mp.setStateInfo("/slider/position/value", MocoBounds(0, 1),
+                MocoInitialBounds(0), MocoFinalBounds(1));
+        mp.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
+        mp.addGoal<MocoFinalTimeGoal>();
 
-    auto& ms = study.initSolver<SolverType>();
-    ms.set_num_mesh_intervals(numMeshIntervals);
-    ms.set_transcription_scheme(transcriptionScheme);
-    ms.set_enforce_constraint_derivatives(false);
-    return study;
+        auto& ms = study.initSolver<SolverType>();
+        ms.set_num_mesh_intervals(numMeshIntervals);
+        ms.set_transcription_scheme(transcriptionScheme);
+        ms.set_enforce_constraint_derivatives(false);
+        return study;
+    }
 }
 
 TEMPLATE_TEST_CASE("Non-uniform mesh", "", MocoCasADiSolver, MocoTropterSolver) {
@@ -2182,6 +2187,15 @@ TEST_CASE("Solver isAvailable()") {
 #endif
 }
 
+TEMPLATE_TEST_CASE("Locked coordinates ", "",
+        MocoCasADiSolver, MocoTropterSolver) {
+    MocoStudy study;
+    auto& problem = study.updProblem();
+    auto model = createSlidingMassModel(10.0, true);
+    problem.setModel(std::move(model));
+    CHECK_THROWS_WITH(problem.createRep(),
+            Catch::Contains("Coordinate '/slider/position' is locked"));
+}
 
 /*
 TEMPLATE_TEST_CASE("Controllers in the model", "",
