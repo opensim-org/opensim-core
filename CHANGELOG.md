@@ -30,6 +30,8 @@ been added to these forces to provide access to concrete path types (e.g., `updP
 - Added `LatinHypercubeDesign`, a class for generating Latin hypercube designs using random and algorithm methods (#3570)
 - Refactor c3dExport.m file as a Matlab function (#3501), also expose method to allow some operations on tableColumns
   (multiplyAssign) to speed up data processing.
+- Fixed xml-related memory leaks that were occuring when deserializing
+  Rajagopal2015.osim, an OpenSim v3.0 full-body model. (Issue #3537, PR #3594)
 
 v4.4.1
 ======
