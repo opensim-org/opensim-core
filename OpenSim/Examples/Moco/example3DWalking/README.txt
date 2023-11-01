@@ -8,6 +8,8 @@ Data and model source: https://simtk.org/projects/full_body
 
 Model
 -----
+TODO update to LaiUhlrich2022 info
+
 The model described in the file 'subject_walk_armless.osim' is a modified
 version of the Rajagopoal et al. 2016 musculoskeletal model. The lumbar,
 subtalar, and mtp coordinates have been replaced with WeldJoints and residual
