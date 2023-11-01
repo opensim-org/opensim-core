@@ -588,7 +588,7 @@ double SmoothSegmentedFunction::calcDerivative(double x, int order) const
         const double y0 = _smoothData->_y0;
         const double x0 = _smoothData->_x0;
         const double dydx0 = _smoothData->_dydx0;
-        if(x < x0){
+        if (x < x0) {
             switch (order) {
                 case 0: return y0 + dydx0*(x-x0);
                 case 1: return dydx0;
@@ -601,7 +601,7 @@ double SmoothSegmentedFunction::calcDerivative(double x, int order) const
         const double x1 = _smoothData->_x1;
         const double y1 = _smoothData->_y1;
         const double dydx1 = _smoothData->_dydx1;
-        if(x > x1){
+        if (x > x1) {
             switch (order) {
                 case 0: return y1 + dydx1*(x-x1);
                 case 1: return dydx1;
@@ -613,14 +613,21 @@ double SmoothSegmentedFunction::calcDerivative(double x, int order) const
     const SimTK::Array_<SimTK::Vec6>& ctrlPtsX = _smoothData->_ctrlPtsX;
     const int idx  = SegmentedQuinticBezierToolkit::calcIndex(x,ctrlPtsX);
 
-    const SimTK::Array_<SimTK::Spline>& arraySplineUX = _smoothData->_arraySplineUX;
-    const double u = SegmentedQuinticBezierToolkit::
-        calcU(x,ctrlPtsX[idx], arraySplineUX[idx], UTOL,MAXITER);
+    const SimTK::Array_<SimTK::Spline>& arraySplineUX =
+        _smoothData->_arraySplineUX;
+    const double u = SegmentedQuinticBezierToolkit::calcU(
+            x,
+            ctrlPtsX[idx],
+            arraySplineUX[idx],
+            UTOL,
+            MAXITER);
 
     const SimTK::Array_<SimTK::Vec6>& ctrlPtsY = _smoothData->_ctrlPtsY;
-    return SegmentedQuinticBezierToolkit::
-        calcQuinticBezierCurveDerivDYDX(u, ctrlPtsX[idx],
-                ctrlPtsY[idx], order);
+    return SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivDYDX(
+            u,
+            ctrlPtsX[idx],
+            ctrlPtsY[idx],
+            order);
 }
 
 double SmoothSegmentedFunction::

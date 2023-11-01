@@ -323,7 +323,7 @@ double SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivDYDX(
     int order)
 {
     double val = SimTK::NaN;
-   
+
     //Bounds checking on the input
     SimTK_ERRCHK_ALWAYS( (u>=0 && u <= 1) , 
         "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU", 
@@ -340,8 +340,8 @@ double SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivDYDX(
     //std::string localCaller = caller;
     //localCaller.append(".calcQuinticBezierCurveDerivDYDX");
     //Compute the derivative d^n y/ dx^n
-     switch(order){
-        case 0: // Calculate y.
+     switch (order) {
+        case 0: // Calculate y
             {
                 double y = calcQuinticBezierCurveDerivU(u, ypts, 0);
 
@@ -608,7 +608,7 @@ double SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU(
 
     SimTK_ERRCHK_ALWAYS( (order >= 0),
         "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU",
-        "Error: order must be greater than, or equal to 0");
+        "Error: order must be greater than, or equal to 0.");
 
     //Compute the Bezier point
     double p0 = pts(0);
@@ -618,7 +618,7 @@ double SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU(
     double p4 = pts(4);
     double p5 = pts(5);
 
-    switch(order){
+    switch (order) {
         case 0:
             {
                 double u5 = 1;
