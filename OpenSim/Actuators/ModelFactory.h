@@ -94,8 +94,9 @@ public:
     
     /// Replace the paths of the forces in the model with the provided Set of
     /// FunctionBasedPath%s. The name of each FunctionBasedPath should match the
-    /// path of a corresponding Force in the model. The path name is appended
-    /// with "_path" to avoid name ambiguity in the final model.
+    /// component path (i.e., '/forceset/soleus_r') of the corresponding Force
+    /// in the model. The Force objects in the model must have a property named
+    /// 'path' that stores an object derived from AbstractPath.
     static void replacePathsWithFunctionBasedPaths(Model& model, 
             const Set<FunctionBasedPath>& functionBasedPaths);
 };

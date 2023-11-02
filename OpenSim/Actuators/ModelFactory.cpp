@@ -315,19 +315,16 @@ void ModelFactory::replacePathsWithFunctionBasedPaths(Model& model,
         auto path = functionBasedPaths.get(i);
             
         // Get the force component associated with this path.
-        OPENSIM_THROW_IF(!model.hasComponent<Force>(path.getName()), 
-                Exception, "Model does not contain a Force at path {}.", 
-                path.getName());
         auto& force = model.updComponent<Force>(path.getName());
-            
-        // Check that the force has a path property.
-        OPENSIM_THROW_IF(
-                !force.hasProperty("path"), Exception,
-                "Force {} does not have a path property.", path.getName());
-            
-        // Update the path.
-        path.setName(fmt::format("{}_path", force.getName()));
-        force.updPropertyByName<AbstractPath>("path").setValue(path);
+
+        // Replace the path.
+        try {
+            force.updPropertyByName<AbstractPath>("path").setValue(path);
+        } catch (const Exception& e) {
+            OPENSIM_THROW(Exception,
+                    "Failed to replace path for force '{}': {}",
+                    force.getAbsolutePathString(), e.getMessage());
+        }
     }
     model.finalizeFromProperties();
     model.finalizeConnections();
