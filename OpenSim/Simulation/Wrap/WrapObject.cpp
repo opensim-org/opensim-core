@@ -266,11 +266,15 @@ void WrapObject::updateFromXMLNode(SimTK::Xml::Element& node,
                 appearanceNode.insertNodeAfter(appearanceNode.element_end(),
                         visibleNode);
                 appearanceModified = true;
+            } else if (visibleNode.isOrphan()) {
+                visibleNode.clearOrphan();
             }
 
             // Add Appearance to the WrapObject.
             if (appearanceModified) {
                 node.insertNodeAfter(node.element_end(), appearanceNode);
+            } else if (appearanceNode.isOrphan()) {
+                appearanceNode.clearOrphan();
             }
         }
     }
