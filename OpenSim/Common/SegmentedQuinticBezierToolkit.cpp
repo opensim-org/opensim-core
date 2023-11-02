@@ -331,7 +331,7 @@ double SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivDYDX(
 
     SimTK_ERRCHK_ALWAYS( (order >= 0),
         "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU", 
-        "Error: order must be greater than zero.");
+        "Error: order must be greater than or equal to zero.");
 
     SimTK_ERRCHK_ALWAYS( (order <= 6),
         "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU", 
