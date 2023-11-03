@@ -1,15 +1,8 @@
 import sys
 import os
 if (sys.platform.startswith('win')):
-      curFolder = os.path.dirname(os.path.realpath(__file__))
-      os.add_dll_directory(curFolder)
-      # in install env, add relative path from init.py to bin, in build environment, we also add "../../../../Release"
-      install_path = os.path.join(curFolder, "../../../bin")
-      if (os.path.exists(install_path)):
-          os.add_dll_directory(install_path)
-      dev_path = os.path.join(curFolder, "../../../../Release")
-      if (os.path.exists(dev_path)):
-          os.add_dll_directory(dev_path)
+    os.add_dll_directory(curFolder)
+    os.add_dll_directory(os.path.join(os.path.dirname(sys.executable),'Scripts'))
 
 from .simbody import *
 from .common import *
