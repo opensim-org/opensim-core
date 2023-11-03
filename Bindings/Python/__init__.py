@@ -1,6 +1,7 @@
 import sys
 import os
 if (sys.platform.startswith('win')):
+    curFolder = os.path.dirname(os.path.realpath(__file__))
     os.add_dll_directory(curFolder)
     os.add_dll_directory(os.path.join(os.path.dirname(sys.executable),'Scripts'))
 
