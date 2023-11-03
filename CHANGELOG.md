@@ -8,10 +8,10 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 
 v4.5
 ====
-- Added `AbstractPath` which is a base class for `GeometryPath` and other path types (#3388). All path-based forces now 
-own the property `path` of type `AbstractPath` instead of the `GeometryPath` unnamed property. Getters and setters have 
-been added to these forces to provide access to concrete path types (e.g., `updPath<T>`). In `Ligament` and 
-`Blankevoort1991Ligament`, usages of `get_GeometryPath`, `upd_GeometryPath`, etc., need to be updated to 
+- Added `AbstractGeometryPath` which is a base class for `GeometryPath` and other path types (#3388). All path-based 
+forces now own the property `path` of type `AbstractGeometryPath` instead of the `GeometryPath` unnamed property. Getters 
+and setters have been added to these forces to provide access to concrete path types (e.g., `updPath<T>`). In `Ligament`
+and `Blankevoort1991Ligament`, usages of `get_GeometryPath`, `upd_GeometryPath`, etc., need to be updated to 
 `getGeometryPath`, `updGeometryPath`, etc., or a suitable alternative.    
 - Fixed a minor memory leak when calling `OpenSim::CoordinateCouplerConstraint::setFunction` (#3541)
 - Increase the number of input dimensions supported by `MultivariatePolynomialFunction` to 6 (#3386)

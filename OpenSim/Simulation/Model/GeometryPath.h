@@ -25,11 +25,11 @@
 
 
 // INCLUDE
-#include "OpenSim/Simulation/Model/AbstractPath.h"
+#include "OpenSim/Simulation/Model/AbstractGeometryPath.h"
 #include "PathPointSet.h"
-#include <OpenSim/Simulation/Wrap/PathWrapSet.h>
-#include <OpenSim/Simulation/MomentArmSolver.h>
 
+#include <OpenSim/Simulation/MomentArmSolver.h>
+#include <OpenSim/Simulation/Wrap/PathWrapSet.h>
 
 #ifdef SWIG
     #ifdef OSIMSIMULATION_API
@@ -54,8 +54,8 @@ class WrapObject;
  *
  * @author Peter Loan
  */
-class OSIMSIMULATION_API GeometryPath : public AbstractPath {
-OpenSim_DECLARE_CONCRETE_OBJECT(GeometryPath, AbstractPath);
+class OSIMSIMULATION_API GeometryPath : public AbstractGeometryPath {
+OpenSim_DECLARE_CONCRETE_OBJECT(GeometryPath, AbstractGeometryPath);
 
 //=============================================================================
 // DATA
