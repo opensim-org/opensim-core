@@ -92,7 +92,7 @@ void Body::extendFinalizeFromProperties()
 void Body::extendConnectToModel(Model& aModel)
 {
     Super::extendConnectToModel(aModel);
-    
+
     int nslaves = (int)_slaves.size();
 
     if (nslaves){
@@ -142,11 +142,11 @@ const SimTK::Inertia& Body::getInertia() const
         else{
             try {
                 _inertia = SimTK::Inertia(Ivec.getSubVec<3>(0), Ivec.getSubVec<3>(3));
-            } 
+            }
             catch (const std::exception& ex){
                 // Should throw an Exception but we have models we have released with
                 // bad inertias. E.g. early gait23 models had an error in the inertia
-                // of the toes Body. We cannot allow failures with our models so 
+                // of the toes Body. We cannot allow failures with our models so
                 // raise a warning and do something sensible with the values at hand.
                 log_warn("Body {} has invalid inertia. ", getName());
                 log_error(ex.what());
@@ -156,7 +156,7 @@ const SimTK::Inertia& Body::getInertia() const
 
                 // and then assume a spherical shape.
                 _inertia = SimTK::Inertia(Vec3(diag), Vec3(0));
-                
+
                 log_warn("{} Body's inertia being reset to: {}",
                     getName(), _inertia);
             }
@@ -369,7 +369,7 @@ SimTK::MassProperties Body::getMassProperties() const
             // shift if com has nonzero distance from b
             Ib = Icom.shiftFromMassCenter(com, m);
         }
-    
+
         return SimTK::MassProperties(m, com, Ib);
     }
     catch (const std::exception& ex) {
@@ -394,6 +394,7 @@ void Body::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
                 if (iIter != aNode.element_end()) {
                     newInertia[i] = iIter->getValueAs<double>();
                     aNode.removeNode(iIter);
+                    iIter->clearOrphan();
                 }
             }
             std::ostringstream strs;
@@ -418,7 +419,7 @@ Body* Body::addSlave()
     name << getName() << "_slave_" << count;
     slave->setName(name.str());
 
-    //add to internal list of references 
+    //add to internal list of references
     _slaves.push_back(SimTK::ReferencePtr<Body>(slave));
 
     //add to list of subcomponents to automatically add to system and initialize
