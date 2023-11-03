@@ -5,17 +5,12 @@ import sys
 from setuptools import setup
 from pathlib import Path
 
-# find path to bin folder
-if  list(Path('..').rglob('opensim-cmd.exe')):
-    bin_path = os.path.dirname(os.path.relpath(up1[0]))
-    bin_files = []
-    print('conda installation.', 'Relative path to the bin directory =', bin_path)
-elif list(Path('../..').rglob('opensim-cmd.exe')):
-    bin_path = os.path.dirname(os.path.relpath(up2[0]))
-    bin_files = [os.path.join(bin_path, i).replace(os.sep,'/') for i in os.listdir(bin_path)]
-    print('pip installation', 'Relative path to the bin directory =', bin_path)
+opensimCMD = '../../bin/opensim-cmd.exe' # local installation
+if os.path.isfile(opensimCMD):
+	bin_path  = os.path.dirname(os.path.relpath(opensimCMD))
+	bin_files = [os.path.join(bin_path, i).replace(os.sep,'/') for i in os.listdir(bin_path)]
 else:
-    raise NotADirectoryError('Cannot find the bin directory')
+	bin_files = []
 
 # This provides the variable `__version__`.
 if sys.version_info[0] < 3:
