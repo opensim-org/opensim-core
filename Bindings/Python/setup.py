@@ -3,7 +3,6 @@
 import os
 import sys
 from setuptools import setup
-from pathlib import Path
 
 opensimCMD = '../../bin/opensim-cmd.exe' # local installation
 if os.path.isfile(opensimCMD):
