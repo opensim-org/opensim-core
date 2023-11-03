@@ -21,9 +21,126 @@
 # limitations under the License.                                             #
 # -------------------------------------------------------------------------- #
 
+import os
 import opensim as osim
+from plotting import (plot_coordinate_samples, plot_path_lengths,
+                      plot_moment_arms)
 
 # This example demonstrates how to use the PolynomialPathFitter class to create
 # function-based representations of muscle-tendon lengths and moment arms using
 # multivariate polynomial functions.
 
+# Create the PolynomialPathFitter
+# -------------------------------
+fitter = osim.PolynomialPathFitter()
+
+# Set the model (required).
+#
+# The model should contain path-based force objects (e.g., Muscles) that use
+# geometry-based paths (e.g., GeometryPath) to model path lengths and moment
+# arms. The fitter will create a set of FunctionBasedPaths that use
+# MultivariatePolynomialFunctions to model the path lengths and moment arms
+# of the original model.
+modelProcessor = osim.ModelProcessor('subject_walk_scaled.osim')
+fitter.setModel(modelProcessor)
+
+# Set the coordinate values table (required).
+#
+# The fitter will randomly sample around the coordinate values provided in the
+# table to generate model  configurations for which to compute path lengths and
+# moment arms. This table has many more rows than are needed for the fitter to
+# generate a good fit, so we will remove some of the rows to speed up the
+# fitting process.
+model = modelProcessor.process()
+model.initSystem()
+tableProcessor = osim.TableProcessor('coordinates.sto')
+tableProcessor.append(osim.TabOpAppendCoupledCoordinateValues())
+tableProcessor.append(osim.TabOpUseAbsoluteStateNames())
+values = tableProcessor.processAndConvertToRadians(model)
+times = values.getIndependentColumn()
+for i in range(len(times)):
+    if i % 5 != 0:
+        values.removeRow(times[i])
+
+fitter.setCoordinateValues(osim.TableProcessor(values))
+
+# Configure optional settings
+# ---------------------------
+# Use these settings to modify the default settings to tailor the fitting
+# process to your model and motion. See the documentation for
+# PolynomialPathFitter for more options.
+
+# Set a (relative) directory to where the fitting results will be saved.
+# Files printed to this directory include the set of FunctionBasedPaths
+# created by the fitter, the path lengths and moment arms computed for each
+# model configuration, and the path lengths and moment arms fitted to the
+# polynomial functions. File names will be prepended with the name of the
+# model.
+results_dir = 'results'
+fitter.setOutputDirectory(results_dir)
+
+# Set the maximum order of the polynomials used to fit the path lengths
+# and moment arms. Higher order polynomials might lead to a better fit,
+# but could decrease performance in the final model.
+fitter.setMaximumPolynomialOrder(8)
+
+# Run the fitter
+# --------------
+# Information about each step fitting process will be printed to the
+# console including the path length and moment arm RMS error for
+# each force object and averaged across all force objects.
+# fitter.run()
+
+# Plot the results
+# ----------------
+# Use the plotting functions in plotting.py to visualize the results of the
+# fitting process and determine if the fits are good enough for your needs,
+# or if the model or fitting settings need to be modified.
+
+# Plot the sampled coordinate values used to generate the path lengths
+# and moment arms.
+# plot_coordinate_samples(results_dir, model.getName())
+
+# Plot the path lengths and moment arms computed from the original model
+# paths (blue) and the fitted polynomial paths (orange).
+#
+# For most muscles the fit is very good, but there are noticeable fitting
+# errors in a few muscles (e.g., /forceset/gaslat_r and /forceset/glmax1_r).
+# Errors like these usually arise from the fitting process struggling with
+# discontinuities due from wrapping geometry issues in the original model.
+# Depending on size of the errors, you may want to adjust the wrapping
+# geometry in the original model and re-run the fitter.
+# plot_path_lengths(results_dir, model.getName())
+# plot_moment_arms(results_dir, model.getName())
+
+# Evaluate the fitted functions on a 'new' trajectory
+# ---------------------------------------------------
+# You can use PolynomialPathFitter to evaluate a set of previously fitted
+# FunctionBasedPaths on a new trajectory. This can be useful if you want to
+# evaluate the path lengths and moment arms of a model on a trajectory that
+# was not used to fit the functions. This example uses the same trajectory
+# used to fit the functions, but you can replace it with any trajectory
+# that has a set of coordinate values that are consistent with the model.
+# Note that we do not need to use the 'fitter' object to call this function
+# (i.e., it is a static function).
+functionBasedPathsFile = os.path.join(
+    results_dir, f'{model.getName()}_FunctionBasedPathSet.xml')
+values.removeColumn('wrist_flex_l/value')
+values.removeColumn('wrist_flex_r/value')
+values.removeColumn('wrist_dev_l/value')
+values.removeColumn('wrist_dev_r/value')
+osim.PolynomialPathFitter.evaluateFunctionBasedPaths(
+    model, osim.TableProcessor(values), functionBasedPathsFile)
+
+# Replacing the original paths with the fitted paths
+# --------------------------------------------------
+# You can use a ModelProcessor to replace the original paths in the model
+# with the fitted paths. This can be useful if you want to use the fitted
+# paths in a simulation or analysis tool but keep the original paths in the
+# model file.
+modelProcessor = osim.ModelProcessor('subject_walk_scaled.osim')
+modelProcessor.append(osim.ModOpReplacePathsWithFunctionBasedPaths(
+    functionBasedPathsFile))
+model = modelProcessor.process()
+model.initSystem()
+model.printToXML('subject_walk_scaled_fitted_paths.osim')

@@ -1215,9 +1215,17 @@ void PolynomialPathFitter::evaluateFunctionBasedPaths(Model model,
 
     // Create a moment arm map based on the fitted model paths.
     MomentArmMap momentArmMap;
-    for (const auto& path : modelFitted.getComponentList<FunctionBasedPath>()) {
-        momentArmMap[path.getAbsolutePathString()] =
-                path.getCoordinatePaths();
+    Set<FunctionBasedPath> functionBasedPaths(functionBasedPathsFileName);
+    for (int i = 0; i < functionBasedPaths.getSize(); ++i) {
+        const auto& path = functionBasedPaths.get(i);
+        std::vector<std::string> coordinateNames;
+        for (const auto& coordinatePath : path.getCoordinatePaths()) {
+            const auto& coordinate =
+                    model.getComponent<Coordinate>(coordinatePath);
+            coordinateNames.push_back(coordinate.getName());
+        }
+
+        momentArmMap[path.getName()] = coordinateNames;
     }
 
     // Get the coordinate values table from the trajectory. This may contain
@@ -1238,7 +1246,7 @@ void PolynomialPathFitter::evaluateFunctionBasedPaths(Model model,
     log_info("Computing path lengths and moment arms for the fitted model..");
     TimeSeriesTable pathLengthsFitted;
     TimeSeriesTable momentArmsFitted;
-    computePathLengthsAndMomentArms(model, coordinateValues, numThreads,
+    computePathLengthsAndMomentArms(modelFitted, coordinateValues, numThreads,
             pathLengthsFitted, momentArmsFitted);
 
     // Remove moment arm columns that are not in the map.
@@ -1246,8 +1254,9 @@ void PolynomialPathFitter::evaluateFunctionBasedPaths(Model model,
     removeMomentArmColumns(momentArmsFitted, momentArmMap);
 
     // Compute the RMS errors.
-    computeFittingErrors(model, pathLengths, momentArms, pathLengthsFitted,
-            momentArmsFitted, pathLengthTolerance, momentArmTolerance);
+    computeFittingErrors(modelFitted, pathLengths, momentArms,
+            pathLengthsFitted, momentArmsFitted,
+            pathLengthTolerance, momentArmTolerance);
 }
 
 void PolynomialPathFitter::removeMomentArmColumns(TimeSeriesTable& momentArms,

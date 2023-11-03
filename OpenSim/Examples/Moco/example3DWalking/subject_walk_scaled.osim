@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <OpenSimDocument Version="40000">
-    <Model name="optimized_scale_and_markers">
+    <Model name="subject_walk_scaled">
         <!--The model's ground reference frame.-->
         <Ground name="ground">
             <!--The geometry used to display the axes of this Frame.-->
