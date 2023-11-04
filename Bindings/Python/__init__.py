@@ -3,9 +3,7 @@ import os
 if (sys.platform.startswith('win')):
     curFolder = os.path.dirname(os.path.realpath(__file__))
     os.add_dll_directory(curFolder)
-    opensimCMD = os.path.join(sys.exec_prefix, 'Scripts', 'opensim-cmd.exe')
-    if os.path.isfile(opensimCMD):
-        os.add_dll_directory(os.path.dirname(opensimCMD))
+    os.environ['PATH'] = curFolder+os.pathsep+os.environ['PATH']
 
 from .simbody import *
 from .common import *
