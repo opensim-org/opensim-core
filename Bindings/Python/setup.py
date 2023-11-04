@@ -4,12 +4,10 @@ import os
 import sys
 from setuptools import setup
 
-opensimCMD = '../../bin/opensim-cmd.exe' # local installation
-if os.path.isfile(opensimCMD):
-	bin_path  = os.path.dirname(os.path.relpath(opensimCMD))
-	bin_files = [os.path.join(bin_path, i).replace(os.sep,'/') for i in os.listdir(bin_path)]
+if os.path.isfile('../../bin/opensim-cmd.exe'): # local installation
+    bin_files = [os.path.join('../../bin', i).replace(os.sep,'/') for i in os.listdir('../../bin')]
 else:
-	bin_files = []
+    bin_files = []
 
 # This provides the variable `__version__`.
 if sys.version_info[0] < 3:
@@ -25,7 +23,7 @@ setup(name='opensim',
       url='http://opensim.stanford.edu/',
       license='Apache 2.0',
       packages=['opensim'],
-      data_files = [('Scripts', bin_files)],
+      data_files = [('Lib/site-packages/opensim', bin_files)],
       # The last 3 entries are for if OPENSIM_PYTHON_STANDALONE is ON.
       # The asterisk after the extension is to handle version numbers on Linux.
       package_data={'opensim': ['_*.*', '*.dylib', '*.dll', '*.so*']},
