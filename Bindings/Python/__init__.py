@@ -3,7 +3,16 @@ import os
 if (sys.platform.startswith('win')):
     curFolder = os.path.dirname(os.path.realpath(__file__))
     os.add_dll_directory(curFolder)
-    os.environ['PATH'] = curFolder+os.pathsep+os.environ['PATH']
+    # when installed locally via "python -m pip install ."
+    if os.path.isfile(os.path.join(curFolder, 'opensim-cmd.exe')):
+        os.environ['PATH'] = curFolder+os.pathsep+os.environ['PATH']
+    # for Python bindings tests
+    install_path = os.path.join(curFolder, "../../../bin")
+    if (os.path.exists(install_path)):
+        os.add_dll_directory(install_path)
+    dev_path = os.path.join(curFolder, "../../../../Release")
+    if (os.path.exists(dev_path)):
+        os.add_dll_directory(dev_path)
 
 from .simbody import *
 from .common import *
