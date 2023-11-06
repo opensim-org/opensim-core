@@ -8,6 +8,7 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 
 v4.5
 ====
+- Fixed a minor bug when the locally installed package (via `pip`) couldn't find the dependencies (#3593). Added `data_files` argument to the `setup.py` to copy all the dependencies into the opensim package folder in the Python environment.
 - Added `AbstractPath` which is a base class for `GeometryPath` and other path types (#3388). All path-based forces now 
 own the property `path` of type `AbstractPath` instead of the `GeometryPath` unnamed property. Getters and setters have 
 been added to these forces to provide access to concrete path types (e.g., `updPath<T>`). In `Ligament` and 
