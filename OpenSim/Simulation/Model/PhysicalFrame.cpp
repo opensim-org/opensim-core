@@ -62,7 +62,7 @@ const SimTK::MobilizedBody& PhysicalFrame::getMobilizedBody() const
     return getModel().getMatterSubsystem().getMobilizedBody(_mbIndex);
 }
 
-SimTK::MobilizedBody& PhysicalFrame::updMobilizedBody() 
+SimTK::MobilizedBody& PhysicalFrame::updMobilizedBody()
 {
     return updModel().updMatterSubsystem().updMobilizedBody(_mbIndex);
 }
@@ -76,7 +76,7 @@ void PhysicalFrame::setMobilizedBodyIndex(const SimTK::MobilizedBodyIndex& mbix)
 
 /*
 * Implementation of Frame interface by PhysicalFrame.
-* 
+*
 */
 SimTK::Transform PhysicalFrame::
     calcTransformInGround(const SimTK::State& s) const
@@ -134,7 +134,7 @@ void PhysicalFrame::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
 {
     if (versionNumber < XMLDocument::getLatestVersion()) {
         if (versionNumber < 30502) {
-            // Find node for <VisibleObject> remove it then create Geometry for the 
+            // Find node for <VisibleObject> remove it then create Geometry for the
             SimTK::Xml::element_iterator iIter = aNode.element_begin("VisibleObject");
             if (iIter != aNode.element_end()) {
                 SimTK::Xml::Element visObjElement = SimTK::Xml::Element::getAs(aNode.removeNode(iIter));
@@ -186,6 +186,8 @@ void PhysicalFrame::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
                         geomSetIter->setElementTag("geometry");
                     }
                 }
+                if(visObjElement.isOrphan())
+                    visObjElement.clearOrphan();
             }
         }
     }
@@ -224,7 +226,7 @@ void PhysicalFrame::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bod
             if (innerXformIter != displayGeomIter->element_end()) {
                 innerXformVec6 = innerXformIter->getValueAs<SimTK::Vec6>();
             }
-            // Old geometry/visibleObject could specify 2 transforms one per DisplayGeometry 
+            // Old geometry/visibleObject could specify 2 transforms one per DisplayGeometry
             // and one for the whole visibleObject.
             // We'll attach to the frame only if both transforms are identity
             attachToThisFrame = (innerXformVec6.norm() < SimTK::Eps)
@@ -323,7 +325,7 @@ void PhysicalFrame::convertDisplayGeometryToGeometryXML(SimTK::Xml::Element& bod
             // Insert Mesh into parent
             if (attachToThisFrame)
                 geometrySetNode.insertNodeAfter(geometrySetNode.element_end(), meshNode);
-                        
+
             displayGeomIter++;
             counter++;
         }
