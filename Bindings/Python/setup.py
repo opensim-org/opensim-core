@@ -4,7 +4,9 @@ import os
 import sys
 from setuptools import setup
 
-if os.path.isfile('../../bin/opensim-cmd.exe'): # local installation
+# This provides a list of relative paths to all the dependencies in the bin folder.
+# Only when installed locally via "python -m pip install ." in Windows
+if os.path.isfile('../../bin/opensim-cmd.exe'):
     bin_files = [os.path.join('../../bin', i).replace(os.sep,'/') for i in os.listdir('../../bin')]
 else:
     bin_files = []
@@ -23,6 +25,7 @@ setup(name='opensim',
       url='http://opensim.stanford.edu/',
       license='Apache 2.0',
       packages=['opensim'],
+      # Copy the bin_files into the opensim package directory
       data_files = [('Lib/site-packages/opensim', bin_files)],
       # The last 3 entries are for if OPENSIM_PYTHON_STANDALONE is ON.
       # The asterisk after the extension is to handle version numbers on Linux.
