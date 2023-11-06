@@ -93,8 +93,8 @@ int main() {
     model.addController(brain);
 
     // Add a console reporter to print the muscle fiber force and elbow angle.
-    ConsoleReporter* reporter = new ConsoleReporter();
-    reporter->set_report_time_interval(1.0);
+    TableReporter* reporter = new TableReporter();
+    reporter->set_report_time_interval(0.01);
     reporter->addToReport(biceps->getOutput("fiber_force"));
     reporter->addToReport(
         elbow->getCoordinate(PinJoint::Coord::RotationZ).getOutput("value"),
@@ -131,7 +131,8 @@ int main() {
 
     // Simulate.
     simulate(model, state, 5.0);
-
+    auto table = reporter->getTable();
+    STOFileAdapter::write(table, "fiberforce.sto");
     return 0;
 };
 /// [README]
