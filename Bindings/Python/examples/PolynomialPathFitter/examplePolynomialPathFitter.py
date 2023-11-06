@@ -34,7 +34,7 @@ from plotting import (plot_coordinate_samples, plot_path_lengths,
 # -------------------------------
 fitter = osim.PolynomialPathFitter()
 
-# Set the model (required).
+# Set the model.
 #
 # The model should contain path-based force objects (e.g., Muscles) that use
 # geometry-based paths (e.g., GeometryPath) to model path lengths and moment
@@ -44,7 +44,7 @@ fitter = osim.PolynomialPathFitter()
 modelProcessor = osim.ModelProcessor('subject_walk_scaled.osim')
 fitter.setModel(modelProcessor)
 
-# Set the coordinate values table (required).
+# Set the coordinate values table.
 #
 # The fitter will randomly sample around the coordinate values provided in the
 # table to generate model  configurations for which to compute path lengths and
@@ -84,12 +84,24 @@ fitter.setOutputDirectory(results_dir)
 # but could decrease performance in the final model.
 fitter.setMaximumPolynomialOrder(8)
 
+# By default, coordinate values are sample around the nominal coordinate
+# values using bounds of [-10, 10] degrees. You can set custom bounds for
+# individual coordinates using the appendCoordinateSamplingBounds() method.
+fitter.appendCoordinateSamplingBounds(
+    '/jointset/hip_r/hip_flexion_r', osim.Vec2(-15, 15))
+fitter.appendCoordinateSamplingBounds(
+    '/jointset/hip_l/hip_flexion_l', osim.Vec2(-15, 15))
+fitter.appendCoordinateSamplingBounds(
+    '/jointset/ankle_r/ankle_angle_r', osim.Vec2(-25, 10))
+fitter.appendCoordinateSamplingBounds(
+    '/jointset/ankle_l/ankle_angle_l', osim.Vec2(-25, 10))
+
 # Run the fitter
 # --------------
 # Information about each step fitting process will be printed to the
 # console including the path length and moment arm RMS error for
 # each force object and averaged across all force objects.
-# fitter.run()
+fitter.run()
 
 # Plot the results
 # ----------------
@@ -99,7 +111,7 @@ fitter.setMaximumPolynomialOrder(8)
 
 # Plot the sampled coordinate values used to generate the path lengths
 # and moment arms.
-# plot_coordinate_samples(results_dir, model.getName())
+plot_coordinate_samples(results_dir, model.getName())
 
 # Plot the path lengths and moment arms computed from the original model
 # paths (blue) and the fitted polynomial paths (orange).
@@ -110,8 +122,8 @@ fitter.setMaximumPolynomialOrder(8)
 # discontinuities due from wrapping geometry issues in the original model.
 # Depending on size of the errors, you may want to adjust the wrapping
 # geometry in the original model and re-run the fitter.
-# plot_path_lengths(results_dir, model.getName())
-# plot_moment_arms(results_dir, model.getName())
+plot_path_lengths(results_dir, model.getName())
+plot_moment_arms(results_dir, model.getName())
 
 # Evaluate the fitted functions on a 'new' trajectory
 # ---------------------------------------------------
@@ -125,6 +137,7 @@ fitter.setMaximumPolynomialOrder(8)
 # (i.e., it is a static function).
 functionBasedPathsFile = os.path.join(
     results_dir, f'{model.getName()}_FunctionBasedPathSet.xml')
+# Remove columns for locked coordinates.
 values.removeColumn('wrist_flex_l/value')
 values.removeColumn('wrist_flex_r/value')
 values.removeColumn('wrist_dev_l/value')
