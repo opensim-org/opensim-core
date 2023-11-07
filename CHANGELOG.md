@@ -31,8 +31,7 @@ been added to these forces to provide access to concrete path types (e.g., `updP
 - Refactor c3dExport.m file as a Matlab function (#3501), also expose method to allow some operations on tableColumns
   (multiplyAssign) to speed up data processing.
 - Fixed xml-related memory leaks that were occuring when deserializing OpenSim models. (Issue #3537, PR #3594)
-- Fixed a minor bug when the locally installed package (via `pip`) couldn't find the dependencies (#3593).
-  Added `data_files` argument to the `setup.py` to copy all the dependencies into the opensim package folder in the Python environment.
+- Fixed a minor bug when the locally installed package (via `pip`) couldn't find the dependencies (PR #3593). Added `data_files` argument to the `setup.py` to copy all the dependencies into the opensim package folder in the Python environment.
 
 v4.4.1
 ======
