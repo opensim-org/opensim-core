@@ -143,9 +143,9 @@ void WrapObject::extendFinalizeFromProperties()
     }
 }
 
-int WrapObject::wrapPathSegment(const SimTK::State& s, 
+int WrapObject::wrapPathSegment(const SimTK::State& s,
                                 AbstractPathPoint& aPoint1, AbstractPathPoint& aPoint2,
-                                const PathWrap& aPathWrap, 
+                                const PathWrap& aPathWrap,
                                 WrapResult& aWrapResult) const
 {
    int return_code = noWrap;
@@ -157,7 +157,7 @@ int WrapObject::wrapPathSegment(const SimTK::State& s,
     // to, to the frame of the wrap object's body
     pt1 = aPoint1.getParentFrame()
         .findStationLocationInAnotherFrame(s, aPoint1.getLocation(s), getFrame());
-    
+
     pt2 = aPoint2.getParentFrame()
         .findStationLocationInAnotherFrame(s, aPoint2.getLocation(s), getFrame());
 
@@ -193,7 +193,7 @@ void WrapObject::updateFromXMLNode(SimTK::Xml::Element& node,
             // We ignore most of VisibleObject's other properties (e.g.,
             // transform), since it would be misleading to draw the wrap object
             // in the wrong place.
-            SimTK::Xml::Element appearanceNode("Appearance"); 
+            SimTK::Xml::Element appearanceNode("Appearance");
             // Use the correct defaults for WrapObject's appearance, which
             // are different from the default Appearance.
             SimTK::Xml::Element color("color");
@@ -218,6 +218,7 @@ void WrapObject::updateFromXMLNode(SimTK::Xml::Element& node,
             if (colorIter != node.element_end()) {
                 color.setValue(colorIter->getValue());
                 node.removeNode(colorIter);
+                colorIter->clearOrphan();
                 appearanceModified = true;
             }
 
@@ -237,6 +238,7 @@ void WrapObject::updateFromXMLNode(SimTK::Xml::Element& node,
                     appearanceModified = true;
                 }
                 node.removeNode(dispPrefIter);
+                dispPrefIter->clearOrphan();
             }
             SimTK::Xml::element_iterator visObjIter =
                     node.element_begin("VisibleObject");
@@ -247,7 +249,7 @@ void WrapObject::updateFromXMLNode(SimTK::Xml::Element& node,
                     if (voDispPrefIter->getValueAs<int>() == 0) {
                         visibleNode.setValue("false");
                         appearanceModified = true;
-                    } else if (rep.getValue() == "3" && 
+                    } else if (rep.getValue() == "3" &&
                             voDispPrefIter->getValueAs<int>() < 4) {
                         // Set `representation`.
                         // The representation still has its default value,
@@ -258,16 +260,21 @@ void WrapObject::updateFromXMLNode(SimTK::Xml::Element& node,
                     }
                 }
                 node.removeNode(visObjIter);
+                visObjIter->clearOrphan();
             }
             if (visibleNode.getValue() != "") {
                 appearanceNode.insertNodeAfter(appearanceNode.element_end(),
                         visibleNode);
                 appearanceModified = true;
+            } else if (visibleNode.isOrphan()) {
+                visibleNode.clearOrphan();
             }
 
             // Add Appearance to the WrapObject.
             if (appearanceModified) {
                 node.insertNodeAfter(node.element_end(), appearanceNode);
+            } else if (appearanceNode.isOrphan()) {
+                appearanceNode.clearOrphan();
             }
         }
     }
