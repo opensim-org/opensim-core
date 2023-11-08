@@ -1122,6 +1122,28 @@ void testMonotonicity(SimTK::Matrix mcfSample)
     cout << endl;
 }
 
+/*
+ 5. Tests the output when NaN is the input.
+*/
+template<typename F>
+void testMuscleCurveNaNBehavior(const F& curve)
+{
+    cout << "   TEST: NaN behavior. " << endl;
+
+    // Curve value at NaN gives NaN.
+    SimTK_TEST(std::isnan(curve.calcValue(SimTK::NaN)));
+
+    // First order derivative at NaN is same as evaluating at infinity.
+    SimTK_TEST(!std::isnan(curve.calcDerivative(SimTK::NaN, 1)));
+    SimTK_TEST(curve.calcDerivative(SimTK::NaN, 1) ==
+            curve.calcDerivative(SimTK::Infinity, 1));
+
+    // Second order derivative at NaN is zero.
+    SimTK_TEST(curve.calcDerivative(SimTK::NaN, 2) == 0.);
+
+    cout << "    passed testing NaN behavior." << endl;
+}
+
 //______________________________________________________________________________
 /**
  * Create a muscle bench marking system. The bench mark consists of a single muscle 
@@ -1209,8 +1231,10 @@ int main(int argc, char* argv[])
             testMuscleCurveC2Continuity(tendonCurve,tendonCurveSample);
         //4. Test for monotonicity where appropriate
             testMonotonicity(tendonCurveSample);
+        //5. Test NaN behavior.
+            testMuscleCurveNaNBehavior(tendonCurve);
 
-        //5. Testing Exceptions
+        //6. Testing Exceptions
             cout << endl;
             cout << "   Exception Testing" << endl;
             SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* tendonCurveEX
@@ -1279,8 +1303,10 @@ int main(int argc, char* argv[])
         //4. Test for monotonicity where appropriate
 
             testMonotonicity(fiberFLCurveSample);
+        //5. Test NaN behavior.
+            testMuscleCurveNaNBehavior(fiberFLCurve);
 
-        //5. Testing Exceptions
+        //6. Testing Exceptions
             cout << endl;
             cout << "   Exception Testing" << endl;
             SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberFLCurveEX 
@@ -1348,7 +1374,9 @@ int main(int argc, char* argv[])
         //4. Test for monotonicity where appropriate
 
             testMonotonicity(fiberCECurveSample);
-        //5. Testing Exceptions
+        //5. Test NaN behavior.
+            testMuscleCurveNaNBehavior(fiberCECurve);
+        //6. Testing Exceptions
             cout << endl;
             cout << "   Exception Testing" << endl;
             SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberCECurveEX 
@@ -1412,7 +1440,9 @@ int main(int argc, char* argv[])
             testMuscleCurveC2Continuity(fiberCEPhiCurve,fiberCEPhiCurveSample);
         //4. Test for monotonicity where appropriate
             testMonotonicity(fiberCEPhiCurveSample);
-        //5. Testing Exceptions
+        //5. Test NaN behavior.
+            testMuscleCurveNaNBehavior(fiberCEPhiCurve);
+        //6. Testing Exceptions
             cout << endl;
             cout << "   Exception Testing" << endl;
             SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberCEPhiCurveEX 
@@ -1485,7 +1515,9 @@ int main(int argc, char* argv[])
         //4. Test for monotonicity where appropriate
 
             testMonotonicity(fiberCECosPhiCurveSample);
-        //5. Test exceptions
+        //5. Test NaN behavior.
+            testMuscleCurveNaNBehavior(fiberCECosPhiCurve);
+        //6. Test exceptions
             cout << endl;
         cout << "   Exception Testing" << endl;
             SimTK_TEST_MUST_THROW(/*SmoothSegmentedFunction* fiberCECosPhiCurveEX 
@@ -1575,7 +1607,9 @@ int main(int argc, char* argv[])
         //4. Test for monotonicity where appropriate
 
             testMonotonicity(fiberFVCurveSample);
-        //5. Exception testing
+        //5. Test NaN behavior.
+            testMuscleCurveNaNBehavior(fiberFVCurve);
+        //6. Exception testing
             cout << endl;    
             cout << "   Exception Testing" << endl;
                 
@@ -1686,8 +1720,10 @@ int main(int argc, char* argv[])
         //4. Test for monotonicity where appropriate
 
             testMonotonicity(fiberFVInvCurveSample);
+        //5. Test NaN behavior.
+            testMuscleCurveNaNBehavior(fiberFVInvCurve);
 
-        //5. Testing the exceptions
+        //6. Testing the exceptions
 
             //5. Exception testing
             cout << endl;
