@@ -860,6 +860,13 @@ public:
      */
     Array<std::string> getStateVariableNames() const;
 
+    /**
+     * Get the names of discrete state variables maintained by the Component
+     * and its subcomponents.
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
+     */
+    Array<std::string> getDiscreteVariableNames() const;
 
     /** @name Component Socket Access methods
         Access Sockets of this component by name. */
@@ -1369,16 +1376,17 @@ public:
         const std::string& name) const;
 
     /**
-     * Get the value of a discrete variable allocated by this Component by name.
+     * Get the value (assumed to be type double) of a discrete variable
+     * allocated by this Component by name.
      *
      * @param state   the State from which to get the value
      * @param name    the name of the state variable
-     * @return value  the discrete variable value
+     * @return value  the discrete variable value as a double
      * @throws ComponentHasNoSystem if this Component has not been added to a
      *         System (i.e., if initSystem has not been called)
      */
     double getDiscreteVariableValue(const SimTK::State& state,
-                                    const std::string& name) const;
+        const std::string& name) const;
 
     /**
      * %Set the value of a discrete variable allocated by this Component by name.
@@ -1391,6 +1399,149 @@ public:
      */
     void setDiscreteVariableValue(SimTK::State& state, const std::string& name,
                                   double value) const;
+
+
+    //-------------------------------------------------------------------------
+    // F. C. Anderson (January 2023, May 2023)
+    // Added the ability to get the value of a discrete variable as a
+    // SimTK::AbstractValue, thereby allowing types like Vec3.
+    // In addition, getDiscreteVariableAbstractValue() and
+    // updDiscreteVariableAbstractValue() accept the path of a discrete
+    // variable, not just its name.
+
+    /**
+     * Based on a specified path, resolve the name of a discrete variable and
+     * the component that owns it (i.e., its parent).
+     *
+     * @param pathName Specified path of the discrete variable in the Model
+     * heirarchy.
+     * @param dvName Returned name of the discrete variable. This string is
+     * simply the last string in the specified pathName.
+     * @return Pointer to the Component that owns the discrete variable.
+     */
+    const Component* resolveDiscreteVariableNameAndOwner(
+            const std::string& pathName, std::string& dvName) const;
+
+    /**
+     * Retrieve a read-only reference to the abstract value of the discrete
+     * variable at a specified path. This method provides a more general
+     * interface that is not limited to values of type double.
+     *
+     * To obtain the type-specific value of a discrete variable, perform
+     * a cast using the template methods provided in class SimTK::Value<T>.
+     * When the type is unknown, it can be queried using the
+     * SimTK::Value<T>::isA() method. For example,
+     *
+     * ```
+     *      const SimTK::AbstractValue& valAbstract =
+     *          getDiscreteVariableAbstractValue(state, pathName);
+     *
+     *      if (SimTK::Value<double>::isA(valAbstract)) {
+     *          const SimTK::Value<double>& valDbl =
+     *              SimTK::Value<double>::downcast(valAbstract);
+     *          double x = valDbl + 0.4;
+     *
+     *      } else if (SimTK::Value<Vec3>::isA(valAbstract)) {
+     *          const SimTK::Value<Vec3>& valVec3 =
+     *              SimTK::Value<Vec3>::downcast(valAbstract);
+     *          Vec3 x = valDbl + Vec3(0.4);
+     *      }
+     * ```
+     *
+     * @param state State from which to get the value.
+     * @param pathName Specified path of the discrete variable in the Model
+     * heirarchy.
+     * @return Value of the discrete variable as a reference to an
+     * AbstractValue.
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called).
+     * @throws Exception if the discrete variable is not found.
+     */
+    const SimTK::AbstractValue& getDiscreteVariableAbstractValue(
+            const SimTK::State& state, const std::string& pathName) const;
+
+    /**
+     * Retrieve a writable reference to the abstract value of the discrete
+     * variable at a specified path. This method provides a more general
+     * interface that is not limited to values of type double.
+     *
+     * To obtain the type-specific value of a discrete variable, perform
+     * a cast using the template methods provided in class SimTK::Value<T>.
+     * When the type is unknown, it can be queried using the
+     * SimTK::Value<T>::isA() method. For example,
+     *
+     * ```
+     *      SimTK::AbstractValue& valAbstract =
+     *          updDiscreteVariableAbstractValue(state, pathName);
+     *
+     *      if (SimTK::Value<double>::isA(valAbstract)) {
+     *          SimTK::Value<double>& valDbl =
+     *              SimTK::Value<double>::updDowncast(valAbstract);
+     *          valDbl = 0.4;
+     *
+     *      } else if (SimTK::Value<Vec3>::isA(valAbstract)) {
+     *          SimTK::Value<Vec3>& valVec3 =
+     *              SimTK::Value<Vec3>::updDowncast(valAbstract);
+     *          valDbl = Vec3(0.4);
+     *      }
+     * ```
+     *
+     * @param state State from which to get the value.
+     * @param pathName Specified path of the discrete variable in the Model
+     * heirarchy.
+     * @return Value of the discrete variable as a reference to an
+     * AbstractValue.
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called).
+     * @throws Exception if the discrete variable is not found.
+     */
+    SimTK::AbstractValue& updDiscreteVariableAbstractValue(
+            SimTK::State& state, const std::string& name) const;
+    //--------------------------------------------------------------------------
+
+
+
+    /**
+     * %Set the value of a discrete variable allocated by this Component by
+     * name. This method is a template to account for Discrete Variables that
+     * are not type double.
+     *
+     * @param s      the State for which to set the value
+     * @param name   the name of the discrete variable
+     * @param value  the value to set
+     * @throws ComponentHasNoSystem if this Component has not been added to a
+     *         System (i.e., if initSystem has not been called)
+     */
+    template <class T>
+    void setDiscreteVariableValue(SimTK::State& s, const std::string& name,
+        const T& value) const
+    {
+        // Must have already called initSystem.
+        OPENSIM_THROW_IF_FRMOBJ(!hasSystem(), ComponentHasNoSystem);
+
+        std::map<std::string, DiscreteVariableInfo>::const_iterator it;
+        it = _namedDiscreteVariableInfo.find(name);
+
+        if (it != _namedDiscreteVariableInfo.end()) {
+            SimTK::DiscreteVariableIndex dvIndex = it->second.index;
+
+            // Account for non-default subsystem
+            const SimTK::Subsystem* subsystem = it->second.subsystem;
+            if (subsystem == nullptr) subsystem = &getDefaultSubsystem();
+
+            // Update the value
+            SimTK::Value<T>::downcast(
+                subsystem->updDiscreteVariable(s,dvIndex)) = value;
+
+        } else {
+            std::stringstream msg;
+            msg << "Component::setDiscreteVariable: ERR- name '" << name
+                << "' not found.\n "
+                << "for component '" << getName() << "' of type "
+                << getConcreteClassName();
+            throw Exception(msg.str(), __FILE__, __LINE__);
+        }
+    }
 
     /**
      * A cache variable containing a value of type T.
@@ -1956,6 +2107,12 @@ public:
 
 protected:
     class StateVariable;
+
+    // F. C. Anderson (May 2023)
+    // Need declaration up front to support new methods for traversing the
+    // Component graph to Discrete Variables.
+    //struct DiscreteVariableInfo;
+
     //template <class T> friend class ComponentSet;
     // Give the ComponentMeasure access to the realize() methods.
     template <class T> friend class ComponentMeasure;
@@ -2422,10 +2579,12 @@ protected:
     void addStateVariable(Component::StateVariable*  stateVariable) const;
 
     /** Add a system discrete variable belonging to this Component, give
-    it a name by which it can be referenced, and declare the lowest Stage that
-    should be invalidated if this variable's value is changed. **/
+    it a name by which it can be referenced, declare the lowest Stage that
+    should be invalidated if this variable's value is changed, and specify
+    whether the discrete state should be allocated by class Component.
+    */
     void addDiscreteVariable(const std::string& discreteVariableName,
-                             SimTK::Stage       invalidatesStage) const;
+        SimTK::Stage invalidatesStage, bool allocate = true) const;
 
     /**
      * Get writable reference to the MultibodySystem that this component is
@@ -2454,6 +2613,17 @@ protected:
      */
     const SimTK::DiscreteVariableIndex
     getDiscreteVariableIndex(const std::string& name) const;
+
+   /**
+     * Update the index of a Component's discrete variable. This method is
+     * intended for derived Components that may need to initialize the index
+     * held by OpenSim. Such a situation occurs when an underlying Simbody
+     * subsystem is responsible for the allocation of a discrete variable
+     * (not OpenSim), and OpenSim needs to be told the value of that index.
+     */
+    void updDiscreteVariableIndex(const std::string& name,
+        const SimTK::DiscreteVariableIndex& index,
+        const SimTK::Subsystem* subsystem = nullptr) const;
 
     // End of System Creation and Access Methods.
     //@}
@@ -2657,6 +2827,8 @@ public:
      */
     const StateVariable* traverseToStateVariable(
             const ComponentPath& path) const;
+
+
 #endif
 
     /// @name Access to the owning component (advanced).
@@ -2934,6 +3106,18 @@ private:
     {   return (int)_namedStateVariableInfo.size(); }
     Array<std::string> getStateVariableNamesAddedByComponent() const;
 
+    // F. C. Anderson (Feb 2023)
+    // Added so that discrete states can be serialized and deserialized.
+    //
+    // Get the number of discrete states that the Component added to the
+    // underlying computational system. It includes the number of built-in
+    // discrete states exposed by this component. It represents the number of
+    // discrete variables managed by this Component.
+    int getNumDiscreteVariablesAddedByComponent() const {
+        return (int)_namedDiscreteVariableInfo.size();
+    }
+    Array<std::string> getDiscreteVariableNamesAddedByComponent() const;
+
     const SimTK::DefaultSystemSubsystem& getDefaultSubsystem() const
         {   return getSystem().getDefaultSubsystem(); }
     SimTK::DefaultSystemSubsystem& updDefaultSubsystem() const
@@ -3176,16 +3360,43 @@ private:
         int order;
     };
 
-    // Structure to hold related info about discrete variables
+    // Structure to hold related info about discrete variables.
     struct DiscreteVariableInfo {
         DiscreteVariableInfo() {}
-        explicit DiscreteVariableInfo(SimTK::Stage invalidates)
-        :   invalidatesStage(invalidates) {}
+        explicit DiscreteVariableInfo(SimTK::Stage invalidates,
+            bool allocate = true) :
+            invalidatesStage(invalidates), allocate(allocate) {}
+
         // Model
         SimTK::Stage                    invalidatesStage;
+
         // System
         SimTK::DiscreteVariableIndex    index;
+
+        // F. C. Anderson (Jan 2023)
+        // Introduced two data members: 'subsystem' and 'allocate'.
+        // These two data members allow OpenSim::Component to expose a
+        // discrete state that was allocated by a class other than
+        // OpenSim::Component and as a member of Subsystem other than the
+        // default SimTK::Subsystem.
+
+        // Subsystem to which the discrete state belongs.
+        // If 'nullptr' (default), class Component assumes that the discrete
+        // state was allocated as a member of the default SimTK::Subsystem.
+        const SimTK::Subsystem* subsystem{nullptr};
+
+        // Flag to prevent a double allocation.
+        // If 'true' (default), the discrete variable is allocated normally
+        // in Component::extendRealizeTopology().
+        // If 'false', allocation in Component::extendRealizeTopology() is
+        // skipped and is assumed to occur elsewhere. In this case, the
+        // derived Component is responsible for initializing the index of the
+        // discrete state, as well as its Subsystem. This should be done by
+        // implementing an overriding extendRealizeTopology() method.
+        // See ExponentialContact::extendRealizeTopology() for an example.
+        bool allocate{true};
     };
+
 
     /**
     * A cache variable, as stored internally by Component.

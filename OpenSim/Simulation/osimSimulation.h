@@ -40,6 +40,7 @@
 #include "Model/ContactSphere.h"
 #include "Model/CoordinateSet.h"
 #include "Model/ElasticFoundationForce.h"
+#include "Model/ExponentialContact.h"
 #include "Model/HuntCrossleyForce.h"
 #include "Model/SmoothSphereHalfSpaceForce.h"
 #include "Model/Ligament.h"
