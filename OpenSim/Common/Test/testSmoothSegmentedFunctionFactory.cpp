@@ -565,7 +565,7 @@ void testQuinticBezier_Exceptions(){
     SimTK_TEST_MUST_THROW(/*double tst = */SegmentedQuinticBezierToolkit::
         calcQuinticBezierCurveDerivU(uEX2, xPts, (int)1));
     SimTK_TEST_MUST_THROW(/*double tst = */SegmentedQuinticBezierToolkit::
-        calcQuinticBezierCurveDerivU(0.5, xPts, 0));
+        calcQuinticBezierCurveDerivU(0.5, xPts, -1));
 
     //=========================================================================
     //Test exceptions for calcQuinticBezierCurveDerivDYDX
@@ -576,7 +576,7 @@ void testQuinticBezier_Exceptions(){
     SimTK_TEST_MUST_THROW(/*double test= */SegmentedQuinticBezierToolkit::
         calcQuinticBezierCurveDerivDYDX(uEX2,xPts,yPts,1));
     SimTK_TEST_MUST_THROW(/*double test= */SegmentedQuinticBezierToolkit::
-        calcQuinticBezierCurveDerivDYDX(0.5,xPts,yPts,0));
+        calcQuinticBezierCurveDerivDYDX(0.5,xPts,yPts,-1));
     SimTK_TEST_MUST_THROW(/*double test= */SegmentedQuinticBezierToolkit::
         calcQuinticBezierCurveDerivDYDX(0.5,xPts,yPts,7));
     
