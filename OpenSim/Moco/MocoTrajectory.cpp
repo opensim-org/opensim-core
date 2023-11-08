@@ -369,17 +369,24 @@ void MocoTrajectory::insertControlsTrajectory(
 void MocoTrajectory::generateSpeedsFromValues() {
     auto valuesTable = exportToValuesTable();
     int numValues = (int)valuesTable.getNumColumns();
+    const std::vector<std::string>& valueNames = valuesTable.getColumnLabels();
     OPENSIM_THROW_IF(!numValues, Exception,
         "Tried to compute speeds from coordinate values, but no values "
         "exist in the trajectory.");
-    m_states.resize(getNumTimes(), 2*numValues);
+
+    // Save the auxiliary states to fill back in later.
+    SimTK::Matrix auxiliaryStates = getAuxiliaryStatesTrajectory();
+    std::vector<std::string> auxiliaryStateNames = getAuxiliaryStateNames();
+
+    // Resize the states trajectory to hold the values, speeds, and any
+    // auxiliary states.
+    m_states.resize(getNumTimes(), 2*numValues + getNumAuxiliaryStates());
 
     // Spline the values trajectory.
     GCVSplineSet splines(valuesTable, {}, std::min(getNumTimes() - 1, 5));
 
+    // Create the speed names.
     std::vector<std::string> stateNames;
-    const std::vector<std::string>& valueNames =
-            valuesTable.getColumnLabels();
     std::vector<std::string> speedNames;
     for (int ivalue = 0; ivalue < numValues; ++ivalue) {
         std::string name(valueNames[ivalue]);
@@ -389,6 +396,14 @@ void MocoTrajectory::generateSpeedsFromValues() {
         speedNames.push_back(name);
     }
 
+    // Append the speed names to the state names.
+    stateNames.insert(stateNames.end(), speedNames.begin(), speedNames.end());
+
+    // Append the auxiliary state names to the state names.
+    stateNames.insert(stateNames.end(), auxiliaryStateNames.begin(),
+            auxiliaryStateNames.end());
+
+    // Fill in the coordinate and speed values based on the splined values.
     SimTK::Vector currTime(1, SimTK::NaN);
     for (int ivalue = 0; ivalue < numValues; ++ivalue) {
         const auto& name = valueNames[ivalue];
@@ -399,6 +414,14 @@ void MocoTrajectory::generateSpeedsFromValues() {
             m_states(itime, ivalue) = splines.get(name).calcValue(currTime);
             m_states(itime, ivalue + numValues) =
                     splines.get(name).calcDerivative({0}, currTime);
+        }
+    }
+
+    // Fill back in any auxiliary state values.
+    for (int iaux = 0; iaux < getNumAuxiliaryStates(); ++iaux) {
+        for (int itime = 0; itime < m_time.size(); ++itime) {
+            currTime[0] = m_time[itime];
+            m_states(itime, 2*numValues + iaux) = auxiliaryStates(itime, iaux);
         }
     }
 
