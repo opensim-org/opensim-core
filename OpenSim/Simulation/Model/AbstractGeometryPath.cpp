@@ -22,7 +22,6 @@
  * -------------------------------------------------------------------------- */
 
 #include "AbstractGeometryPath.h"
-#include "Appearance.h"
 
 using namespace OpenSim;
 
@@ -45,7 +44,7 @@ AbstractGeometryPath::~AbstractGeometryPath() noexcept = default;
 AbstractGeometryPath& AbstractGeometryPath::operator=(
         const AbstractGeometryPath&) = default;
 
-AbstractGeometryPath::AbstractPath(
+AbstractGeometryPath::AbstractGeometryPath(
         AbstractGeometryPath&& other) = default;
 
 AbstractGeometryPath& AbstractGeometryPath::operator=(
