@@ -105,11 +105,11 @@ void PolynomialPathFitter::run() {
     Model model = get_model().process(getDocumentDirectory());
     model.initSystem();
 
-    const auto pathList = model.getComponentList<AbstractPath>();
+    const auto pathList = model.getComponentList<AbstractGeometryPath>();
     int numPaths = (int)std::distance(pathList.begin(), pathList.end());
     OPENSIM_THROW_IF_FRMOBJ(!numPaths, Exception,
-            "Expected the model to contain at least one AbstractPath, but it "
-            "does not.")
+            "Expected the model to contain at least one AbstractGeometryPath, "
+            "but it does not.")
 
     const auto fbPathList = model.getComponentList<FunctionBasedPath>();
     int numFunctionBasedPaths = (int)std::distance(fbPathList.begin(),
@@ -675,7 +675,7 @@ void PolynomialPathFitter::computePathLengthsAndMomentArms(
             model, coordinateValues, true, false, false);
 
     // Determine the maximum number of path and moment arm evaluations.
-    const auto& paths = model.getComponentList<AbstractPath>();
+    const auto& paths = model.getComponentList<AbstractGeometryPath>();
     int numPaths = (int)std::distance(paths.begin(), paths.end());
     int numCoordinates = (int)coordinateValues.getNumColumns();
     int numColumns = numPaths + (numPaths * numCoordinates);
@@ -703,9 +703,9 @@ void PolynomialPathFitter::computePathLengthsAndMomentArms(
             int ima = 0;
             for (const auto& force : forces) {
                 if (force.hasProperty("path")) {
-                    const AbstractPath& path =
-                            force.getPropertyByName<AbstractPath>("path")
-                                    .getValue();
+                    const AbstractGeometryPath& path =
+                        force.getPropertyByName<AbstractGeometryPath>("path")
+                            .getValue();
 
                     // Compute path length.
                     results(row, ip++) = path.getLength(state);
