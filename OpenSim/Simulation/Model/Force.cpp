@@ -83,7 +83,7 @@ Force::updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber) {
             // GeometryPath objects (PathActuator, PathSpring, Ligament,
             // and Blankevoort1991Ligament) changed: the 'GeometryPath` unnamed
             // property was replaced with the named property 'path', which is of
-            // type 'AbstractPath'. Since 'path' is still a one object property,
+            // type 'AbstractGeometryPath'. Since 'path' is still a one object property,
             // the property will still be serialized using the concrete type
             // (e.g., 'GeometryPath') and with name attribute set to 'path'.
             // Therefore, we can simply update the name attribute of any

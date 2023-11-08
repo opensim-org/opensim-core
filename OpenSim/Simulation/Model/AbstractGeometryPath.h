@@ -1,7 +1,7 @@
-#ifndef OPENSIM_ABSTRACTPATH_H
-#define OPENSIM_ABSTRACTPATH_H
+#ifndef OPENSIM_ABSTRACTGEOMETRYPATH_H
+#define OPENSIM_ABSTRACTGEOMETRYPATH_H
 /* -------------------------------------------------------------------------- *
- *                          OpenSim:  AbstractPath.h                          *
+ *                   OpenSim:  AbstractGeometryPath.h                         *
  * -------------------------------------------------------------------------- *
  * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
  * See http://opensim.stanford.edu and the NOTICE file for more information.  *
@@ -39,7 +39,7 @@ namespace OpenSim {
 class Coordinate;
 
 //=============================================================================
-//                              ABSTRACT PATH
+//                         ABSTRACT GEOMETRY PATH
 //=============================================================================
 /**
  * A base class that represents a path that has a computable length and
@@ -50,14 +50,14 @@ class Coordinate;
  * `OpenSim::Ligament`s, etc.
  *
  * This class *only* defines a length and lengthening speed. We do not assume
- * that an `OpenSim::AbstractPath` is a straight line between two points or
- * assume that it is many straight lines between `n` points. The derived
+ * that an `OpenSim::AbstractGeometryPath` is a straight line between two points
+ * or assume that it is many straight lines between `n` points. The derived
  * implementation may define a path using points, or it may define a path using
  * a curve fit. It may also define a path based on analytical functions for the
  * length and lengthening speed.
  */
-class OSIMSIMULATION_API AbstractPath : public ModelComponent {
-OpenSim_DECLARE_ABSTRACT_OBJECT(AbstractPath, ModelComponent);
+class OSIMSIMULATION_API AbstractGeometryPath : public ModelComponent {
+OpenSim_DECLARE_ABSTRACT_OBJECT(AbstractGeometryPath, ModelComponent);
 
 public:
 //=============================================================================
@@ -71,25 +71,25 @@ public:
 // PROPERTIES
 //=============================================================================
     OpenSim_DECLARE_UNNAMED_PROPERTY(Appearance,
-            "Default appearance attributes for this AbstractPath.");
+            "Default appearance attributes for this AbstractGeometryPath.");
 
 //=============================================================================
 // METHODS
 //=============================================================================
     
     // CONSTRUCTION AND DESTRUCTION
-    AbstractPath();
-    ~AbstractPath() noexcept override;
-    
-    AbstractPath(const AbstractPath&);
-    AbstractPath& operator=(const AbstractPath&);
-    
-    AbstractPath(AbstractPath&& other);
-    AbstractPath& operator=(AbstractPath&& other);
+    AbstractGeometryPath();
+    ~AbstractGeometryPath() noexcept override;
+
+    AbstractGeometryPath(const AbstractGeometryPath&);
+    AbstractGeometryPath& operator=(const AbstractGeometryPath&);
+
+    AbstractGeometryPath(AbstractGeometryPath&& other);
+    AbstractGeometryPath& operator=(AbstractGeometryPath&& other);
 
     // INTERFACE METHODS
     //
-    // Concrete implementations of `AbstractPath` *must* provide these.
+    // Concrete implementations of `AbstractGeometryPath` *must* provide these.
 
     /**
      * Get the current length of the path.
@@ -114,7 +114,7 @@ public:
 
     /**
      *  Add in the equivalent body and generalized forces to be applied to the
-     *  multibody system resulting from a tension along the AbstractPath.
+     *  multibody system resulting from a tension along the AbstractGeometryPath.
      *
      *  @param         state           state used to evaluate forces
      *  @param[in]     tension         scalar of the applied (+ve) tensile force
@@ -143,7 +143,7 @@ public:
 
     // DEFAULTED METHODS
     //
-    // These are methods that for which AbstractPath provides default 
+    // These are methods that for which AbstractGeometryPath provides default
     // implementation.
 
     /**
@@ -216,15 +216,16 @@ public:
     
 private:
     // Used by `(get|set)PreLengthScale`. Used during `extend(Pre|Post)Scale` by
-    // downstream users of AbstractPath to cache the length of the path before
-    // scaling.
+    // downstream users of AbstractGeometryPath to cache the length of the path
+    // before scaling.
     //
     // Ideally, downstream classes would perform the caching themselves, because
-    // the AbstractPath API isn't an ideal place to store this information. This
-    // field is mostly here for backwards-compatability with the API.
+    // the AbstractGeometryPath API isn't an ideal place to store this
+    // information. This field is mostly here for backwards-compatability with
+    // the API.
     double _preScaleLength = 0.0;
 };
 
 } // namespace OpenSim
 
-#endif // OPENSIM_ABSTRACTPATH_H
+#endif // OPENSIM_ABSTRACTGEOMETRYPATH_H

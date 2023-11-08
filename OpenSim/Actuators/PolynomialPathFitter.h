@@ -59,7 +59,7 @@ private:
  * geometry-path in an OpenSim model using `MultivariatePolynomialFunction`s.
  *
  * The primary inputs to this class include a model containing path objects
- * derived from `AbstractPath` (e.g., `GeometryPath`) and a reference
+ * derived from `AbstractGeometryPath` (e.g., `GeometryPath`) and a reference
  * trajectory containing coordinate values for all `Coordinate`s in the model.
  * The path fitting process samples coordinate values around the reference
  * trajectory, computes path lengths and moment arms from the geometry-based
@@ -117,7 +117,7 @@ private:
  * -----
  * The most basic usage of `PolynomialPathFitter` requires the user to provide
  * a model and reference trajectory. The model should contain at least one path
- * object derived from `AbstractPath` and should not contain any
+ * object derived from `AbstractGeometryPath` and should not contain any
  * `FunctionBasedPath` objects. The reference trajectory must contain coordinate
  * values for all `Coordinate`s in the model:
  *
@@ -186,7 +186,7 @@ public:
      * polynomial-based path objects will be fitted.
      *
      * The model should be provided using a `ModelProcessor` object. We expect
-     * the model to contain at least one path object derived from `AbstractPath`
+     * the model to contain at least one path object derived from `AbstractGeometryPath`
      * and does not already contain any `FunctionBasedPath` objects. The bounds
      * for clamped coordinates are obeyed during the fitting process. Locked
      * coordinates are unlocked if data is provided for them, or replaced with

@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "OpenSim/Simulation/Model/AbstractPath.h"
 #include "OpenSim/Common/Function.h"
+#include "OpenSim/Simulation/Model/AbstractGeometryPath.h"
 
 namespace OpenSim {
 
@@ -111,8 +111,8 @@ namespace OpenSim {
  *       Volume 7B: 9th International Conference on Multibody Systems,
  *       Nonlinear Dynamics, and Control.
  */
-class OSIMSIMULATION_API FunctionBasedPath : public AbstractPath {
-OpenSim_DECLARE_CONCRETE_OBJECT(FunctionBasedPath, AbstractPath);
+class OSIMSIMULATION_API FunctionBasedPath : public AbstractGeometryPath {
+OpenSim_DECLARE_CONCRETE_OBJECT(FunctionBasedPath, AbstractGeometryPath);
 
 public:
 //=============================================================================
