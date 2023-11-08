@@ -129,6 +129,8 @@ TEST_CASE("MultivariatePolynomialFunction") {
                 createVector({3, 1, 2}), 1, 2);
         SimTK::Vector x = createVector({0.338});
         CHECK(univariate.calcValue(x) == multivariate.calcValue(x));
+        CHECK(univariate.calcDerivative({0}, x) ==
+                multivariate.calcDerivative({0}, x));
     }
     SECTION("Test 3-dimensional 3rd order polynomial") {
         SimTK::Vector c = SimTK::Test::randVector(20);
@@ -143,6 +145,9 @@ TEST_CASE("MultivariatePolynomialFunction") {
                           c[12]*x*z*z + c[13]*x*y + c[14]*x*y*z + c[15]*x*y*y +
                           c[16]*x*x + c[17]*x*x*z + c[18]*x*x*y + c[19]*x*x*x;
         CHECK(f.calcValue(input) == expected);
+        CHECK(f.calcDerivative({0}, input) == c[10] + c[11]*z + c[12]*z*z +
+                c[13]*y + c[14]*y*z + c[15]*y*y + 2*c[16]*x + 2*c[17]*x*z +
+                2*c[18]*x*y + 3*c[19]*x*x);
     }
     SECTION("Test 4-dimensional 1st order polynomial") {
         SimTK::Vector c = SimTK::Test::randVector(5);
@@ -151,6 +156,7 @@ TEST_CASE("MultivariatePolynomialFunction") {
         double expected = c[0] + c[1] * input[3] + c[2] * input[2] +
                           c[3] * input[1] + c[4] * input[0];
         CHECK(f.calcValue(input) == expected);
+        CHECK(f.calcDerivative({0}, input) == c[4]);
     }
     SECTION("Test 6-dimensional 1st order polynomial") {
         SimTK::Vector c = SimTK::Test::randVector(7);
@@ -160,6 +166,7 @@ TEST_CASE("MultivariatePolynomialFunction") {
                           c[3] * input[3] + c[4] * input[2] + c[5] * input[1] +
                           c[6] * input[0];
         CHECK(f.calcValue(input) == expected);
+        CHECK(f.calcDerivative({0}, input) == c[6]);
     }
 }
 

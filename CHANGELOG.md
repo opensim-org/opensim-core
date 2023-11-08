@@ -32,6 +32,8 @@ been added to these forces to provide access to concrete path types (e.g., `updP
   (multiplyAssign) to speed up data processing.
 - Fixed xml-related memory leaks that were occuring when deserializing OpenSim models. (Issue #3537, PR #3594)
 - Fixed a minor bug when the locally installed package (via `pip`) couldn't find the dependencies (PR #3593). Added `data_files` argument to the `setup.py` to copy all the dependencies into the opensim package folder in the Python environment.
+- Added `PolynomialPathFitter`, A utility class for fitting a set of `FunctionBasedPath`s to existing geometry-path in 
+  an OpenSim model using `MultivariatePolynomialFunction`s (#3390)
 
 v4.4.1
 ======

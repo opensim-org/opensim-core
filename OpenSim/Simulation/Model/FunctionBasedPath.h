@@ -90,9 +90,9 @@ namespace OpenSim {
  * order of the value and speed arguments must match the order in the
  * `coordinates` property.
  *
- * The forces applied to the model by the path are computed by multiplying the
- * tension in the path by the moment arms. Therefore, this class only applies
- * mobility (i.e., generalized) forces to the model.
+ * @note The forces applied to the model by the path are computed by multiplying
+ * the tension in the path by the moment arms. Therefore, this class only
+ * applies mobility (i.e., generalized) forces to the model.
  *
  * References
  * ----------

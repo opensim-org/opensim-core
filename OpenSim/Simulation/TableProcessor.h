@@ -24,6 +24,7 @@
 #include <OpenSim/Common/TableUtilities.h>
 #include <OpenSim/Common/TimeSeriesTable.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/SimulationUtilities.h>
 
 namespace OpenSim {
 
@@ -224,6 +225,63 @@ public:
         auto labels = table.getColumnLabels();
         updateStateLabels40(*model, labels);
         table.setColumnLabels(labels);
+    }
+};
+
+/// Invoke SimulationUtilities::appendCoupledCoordinateValues() on the table.
+class OSIMSIMULATION_API TabOpAppendCoupledCoordinateValues
+        : public TableOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(TabOpAppendCoupledCoordinateValues,
+            TableOperator);
+
+public:
+    OpenSim_DECLARE_PROPERTY(overwrite_existing_columns, bool,
+            "Whether to overwrite existing columns for coupled coordinate "
+            "values in the table (default: true).");
+
+    TabOpAppendCoupledCoordinateValues() {
+        constructProperty_overwrite_existing_columns(true);
+    }
+    TabOpAppendCoupledCoordinateValues(bool overwriteExistingColumns)
+            : TabOpAppendCoupledCoordinateValues() {
+        set_overwrite_existing_columns(overwriteExistingColumns);
+    }
+
+    void operate(TimeSeriesTable& table, const Model* model) const override {
+
+        OPENSIM_THROW_IF(!model, Exception,
+                "Expected a model, but no model was provided.");
+        appendCoupledCoordinateValues(table, *model,
+                get_overwrite_existing_columns());
+    }
+};
+
+/// Invoke SimulationUtilities::appendCoordinateValueDerivativesAsSpeeds() on
+/// the table.
+class OSIMSIMULATION_API TabOpAppendCoordinateValueDerivativesAsSpeeds
+        : public TableOperator {
+    OpenSim_DECLARE_CONCRETE_OBJECT(
+            TabOpAppendCoordinateValueDerivativesAsSpeeds, TableOperator);
+
+public:
+    OpenSim_DECLARE_PROPERTY(overwrite_existing_columns, bool,
+            "Whether to overwrite existing columns for coordinate speeds in "
+            "the table (default: true).");
+
+    TabOpAppendCoordinateValueDerivativesAsSpeeds() {
+        constructProperty_overwrite_existing_columns(true);
+    }
+    TabOpAppendCoordinateValueDerivativesAsSpeeds(bool overwriteExistingColumns)
+            : TabOpAppendCoordinateValueDerivativesAsSpeeds() {
+        set_overwrite_existing_columns(overwriteExistingColumns);
+    }
+
+    void operate(TimeSeriesTable& table, const Model* model) const override {
+
+        OPENSIM_THROW_IF(!model, Exception,
+                "Expected a model, but no model was provided.");
+        appendCoordinateValueDerivativesAsSpeeds(table, *model,
+                get_overwrite_existing_columns());
     }
 };
 

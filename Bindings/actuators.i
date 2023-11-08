@@ -27,3 +27,4 @@ namespace OpenSim {
 
 %include <OpenSim/Actuators/ModelProcessor.h>
 %include <OpenSim/Actuators/ModelOperators.h>
+%include <OpenSim/Actuators/PolynomialPathFitter.h>
