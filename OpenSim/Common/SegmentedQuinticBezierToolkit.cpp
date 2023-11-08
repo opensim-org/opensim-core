@@ -242,46 +242,7 @@ double SegmentedQuinticBezierToolkit::calcQuinticBezierCurveVal(
     double u,
     const SimTK::Vec6& pts)
 {
-    double val = -1;
-
-
-    SimTK_ERRCHK1_ALWAYS( (u>=0 && u <= 1) , 
-        "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveVal", 
-        "Error: double argument u must be between 0.0 and 1.0"
-        "but %f was entered.",u);
-
-    //Compute the Bezier point
-    double p0 = pts(0);
-    double p1 = pts(1);
-    double p2 = pts(2);
-    double p3 = pts(3);
-    double p4 = pts(4);
-    double p5 = pts(5);
-
-    double u5 = 1;
-    double u4 = u;
-    double u3 = u4*u;
-    double u2 = u3*u;
-    double u1 = u2*u;
-    double u0 = u1*u;
-
-    //See lines 1-6 of MuscleCurveCodeOpt_20120210
-    double t2 = u1 * 0.5e1;
-    double t3 = u2 * 0.10e2;
-    double t4 = u3 * 0.10e2;
-    double t5 = u4 * 0.5e1;
-    double t9 = u0 * 0.5e1;
-    double t10 = u1 * 0.20e2;
-    double t11 = u2 * 0.30e2;
-    double t15 = u0 * 0.10e2;
-    val = p0 * (u0 * (-0.1e1) + t2 - t3 + t4 - t5 + u5 * 0.1e1) 
-        + p1 * (t9 - t10 + t11 + u3 * (-0.20e2) + t5) 
-        + p2 * (-t15 + u1 * 0.30e2 - t11 + t4) 
-        + p3 * (t15 - t10 + t3) 
-        + p4 * (-t9 + t2) + p5 * u0 * 0.1e1;
-
-
-    return val;
+    return calcQuinticBezierCurveDerivU(u, pts, 0);
 }
 
 /*
@@ -362,15 +323,15 @@ double SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivDYDX(
     int order)
 {
     double val = SimTK::NaN;
-   
+
     //Bounds checking on the input
     SimTK_ERRCHK_ALWAYS( (u>=0 && u <= 1) , 
         "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU", 
         "Error: double argument u must be between 0.0 and 1.0.");
 
-    SimTK_ERRCHK_ALWAYS( (order >= 1),
+    SimTK_ERRCHK_ALWAYS( (order >= 0),
         "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU", 
-        "Error: order must be greater than.");
+        "Error: order must be greater than or equal to zero.");
 
     SimTK_ERRCHK_ALWAYS( (order <= 6),
         "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU", 
@@ -379,8 +340,15 @@ double SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivDYDX(
     //std::string localCaller = caller;
     //localCaller.append(".calcQuinticBezierCurveDerivDYDX");
     //Compute the derivative d^n y/ dx^n
-     switch(order){
-        case 1: //Calculate dy/dx 
+     switch (order) {
+        case 0: // Calculate y
+            {
+                double y = calcQuinticBezierCurveDerivU(u, ypts, 0);
+
+                val = y;
+            }
+            break;
+        case 1: // Calculate dy/dx
             { 
                 double dxdu =calcQuinticBezierCurveDerivU(u,xpts,1);
                 double dydu =calcQuinticBezierCurveDerivU(u,ypts,1);
@@ -638,9 +606,9 @@ double SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU(
         "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU", 
         "Error: double argument u must be between 0.0 and 1.0.");
 
-    SimTK_ERRCHK_ALWAYS( (order >= 1),
-        "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU", 
-        "Error: order must be greater than, or equal to 1");
+    SimTK_ERRCHK_ALWAYS( (order >= 0),
+        "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU",
+        "Error: order must be greater than, or equal to 0.");
 
     //Compute the Bezier point
     double p0 = pts(0);
@@ -650,7 +618,32 @@ double SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU(
     double p4 = pts(4);
     double p5 = pts(5);
 
-    switch(order){
+    switch (order) {
+        case 0:
+            {
+                double u5 = 1;
+                double u4 = u;
+                double u3 = u4*u;
+                double u2 = u3*u;
+                double u1 = u2*u;
+                double u0 = u1*u;
+
+                //See lines 1-6 of MuscleCurveCodeOpt_20120210
+                double t2 = u1 * 0.5e1;
+                double t3 = u2 * 0.10e2;
+                double t4 = u3 * 0.10e2;
+                double t5 = u4 * 0.5e1;
+                double t9 = u0 * 0.5e1;
+                double t10 = u1 * 0.20e2;
+                double t11 = u2 * 0.30e2;
+                double t15 = u0 * 0.10e2;
+                val = p0 * (u0 * (-0.1e1) + t2 - t3 + t4 - t5 + u5 * 0.1e1)
+                    + p1 * (t9 - t10 + t11 + u3 * (-0.20e2) + t5)
+                    + p2 * (-t15 + u1 * 0.30e2 - t11 + t4)
+                    + p3 * (t15 - t10 + t3)
+                    + p4 * (-t9 + t2) + p5 * u0 * 0.1e1;
+            }
+            break;
         case 1: 
             {  
                 double t1 = u*u;//u ^ 2;

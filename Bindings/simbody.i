@@ -175,6 +175,17 @@ typedef SimTK::RowVector_<double> RowVector;
          return rowVec;
      }
  }
+// multiply assign operator is useful for unit conversion of data columns
+%extend VectorView_<Vec3> {
+    VectorView_<Vec3> multiplyAssign(double t){
+        return $self->operator*=(t);
+    }
+}
+%extend VectorView_<double> {
+    VectorView_<double> multiplyAssign(double t){
+        return $self->operator*=(t);
+    }
+}
 
 // Swig macro to instantiate all template classes needed 
 // to make a DataTable of type ETY
@@ -192,7 +203,6 @@ typedef SimTK::RowVector_<double> RowVector;
 
 INSTANTIATE_MATRIXTYPES(Vec3)
 INSTANTIATE_MATRIXTYPES(Vec6)
-
 
 %template(MatrixBaseQuaternion)    SimTK::MatrixBase<Quaternion_<double>>;
 //%template(MatrixViewQuaternion)    SimTK::MatrixView_<Quaternion_<double>>;
