@@ -628,8 +628,8 @@ double SmoothSegmentedFunction::calcDerivative(double x, int order) const
         }
     }
 
-    // In case of NaN return zero.
-    return 0.;
+    // In case of NaN return NaN.
+    return SimTK::NaN;
 }
 
 double SmoothSegmentedFunction::
