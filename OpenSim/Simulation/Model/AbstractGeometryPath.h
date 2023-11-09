@@ -1,5 +1,5 @@
-#ifndef OPENSIM_ABSTRACTGEOMETRYPATH_H
-#define OPENSIM_ABSTRACTGEOMETRYPATH_H
+#ifndef OPENSIM_ABSTRACT_GEOMETRY_PATH_H
+#define OPENSIM_ABSTRACT_GEOMETRY_PATH_H
 /* -------------------------------------------------------------------------- *
  *                   OpenSim:  AbstractGeometryPath.h                         *
  * -------------------------------------------------------------------------- *
@@ -228,4 +228,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // OPENSIM_ABSTRACTGEOMETRYPATH_H
+#endif // OPENSIM_ABSTRACT_GEOMETRY_PATH_H

@@ -1,5 +1,5 @@
-#ifndef OPENSIM_FUNCTIONBASEDPATH_H
-#define OPENSIM_FUNCTIONBASEDPATH_H
+#ifndef OPENSIM_FUNCTION_BASED_PATH_H
+#define OPENSIM_FUNCTION_BASED_PATH_H
 /* -------------------------------------------------------------------------- *
  *                      OpenSim:  FunctionBasedPath.h                         *
  * -------------------------------------------------------------------------- *
@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include "OpenSim/Common/Function.h"
 #include "OpenSim/Simulation/Model/AbstractGeometryPath.h"
+#include "OpenSim/Common/Function.h"
 
 namespace OpenSim {
 
@@ -221,4 +221,4 @@ private:
 
 } // namespace OpenSim
 
-#endif // OPENSIM_FUNCTIONBASEDPATH_H
+#endif // OPENSIM_FUNCTION_BASED_PATH_H
