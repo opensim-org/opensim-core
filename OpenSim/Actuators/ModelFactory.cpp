@@ -319,7 +319,7 @@ void ModelFactory::replacePathsWithFunctionBasedPaths(Model& model,
 
         // Replace the path.
         try {
-            force.updPropertyByName<AbstractPath>("path").setValue(path);
+            force.updPropertyByName<AbstractGeometryPath>("path").setValue(path);
         } catch (const Exception& e) {
             OPENSIM_THROW(Exception,
                     "Failed to replace path for force '{}': {}",

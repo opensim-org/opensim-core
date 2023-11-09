@@ -130,7 +130,7 @@ void Blankevoort1991Ligament::extendPostScale(
     const SimTK::State& s, const ScaleSet& scaleSet) {
     Super::extendPostScale(s, scaleSet);
 
-    AbstractPath& path = updPath();
+    AbstractGeometryPath& path = updPath();
     double slack_length = get_slack_length();
     if (path.getPreScaleLength(s) > 0.0)
     {
@@ -338,7 +338,7 @@ void Blankevoort1991Ligament::computeForce(const SimTK::State& s,
         // total force
         double force_total = getTotalForce(s);
 
-        const AbstractPath &path = getPath();
+        const AbstractGeometryPath&path = getPath();
 
         path.addInEquivalentForces(
                 s, force_total, bodyForces, generalizedForces);

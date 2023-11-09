@@ -23,8 +23,8 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
+#include "AbstractGeometryPath.h"
 #include "Actuator.h"
-#include "AbstractPath.h"
 #include "GeometryPath.h"
 
 //=============================================================================
@@ -49,7 +49,7 @@ public:
 //=============================================================================
 // PROPERTIES
 //=============================================================================
-    OpenSim_DECLARE_PROPERTY(path, AbstractPath,
+    OpenSim_DECLARE_PROPERTY(path, AbstractGeometryPath,
         "The path of the actuator which defines length and lengthening speed.");
     OpenSim_DECLARE_PROPERTY(optimal_force, double,
         "The maximum force this actuator can produce.");
@@ -68,8 +68,8 @@ public:
     // GET AND SET
     //--------------------------------------------------------------------------
     // Path
-    AbstractPath& updPath() { return upd_path(); }
-    const AbstractPath& getPath() const { return get_path(); }
+    AbstractGeometryPath& updPath() { return upd_path(); }
+    const AbstractGeometryPath& getPath() const { return get_path(); }
 
     template <typename PathType>
     PathType& updPath() {

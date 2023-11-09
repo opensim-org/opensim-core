@@ -135,7 +135,7 @@ static void PopulatePathElementLookup(
 /*
  * Default constructor.
  */
-GeometryPath::GeometryPath() : AbstractPath()
+GeometryPath::GeometryPath() : AbstractGeometryPath()
 {
     setAuthors("Peter Loan");
     constructProperties();
