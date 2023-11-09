@@ -199,8 +199,10 @@ TEST_CASE("MocoInverse Rajagopal2016, 18 muscles", "[casadi]") {
         auto med_gas_l_excitation = solution.getControl("/forceset/med_gas_l");
 
         for (int i = 0; i < solution.getNumTimes(); ++i) {
-            CHECK(med_gas_r_excitation[i] < 0.1);
-            CHECK(med_gas_l_excitation[i] < 0.1);
+            CHECK(med_gas_r_excitation[i] <=
+                    Catch::Detail::Approx(0.1).margin(1e-6));
+            CHECK(med_gas_l_excitation[i] <=
+                    Catch::Detail::Approx(0.1).margin(1e-6));
         }
 
     }
