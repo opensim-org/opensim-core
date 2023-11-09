@@ -96,7 +96,7 @@ public:
     /// FunctionBasedPath%s. The name of each FunctionBasedPath should match the
     /// component path (i.e., '/forceset/soleus_r') of the corresponding Force
     /// in the model. The Force objects in the model must have a property named
-    /// 'path' that stores an object derived from AbstractPath.
+    /// 'path' that stores an object derived from AbstractGeometryPath.
     static void replacePathsWithFunctionBasedPaths(Model& model, 
             const Set<FunctionBasedPath>& functionBasedPaths);
 };

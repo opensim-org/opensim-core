@@ -171,13 +171,13 @@ extendPostScale(const SimTK::State& s, const ScaleSet& scaleSet)
 {
     Super::extendPostScale(s, scaleSet);
 
-    AbstractPath& path = updPath();
+    AbstractGeometryPath& path = updPath();
     if (path.getPreScaleLength(s) > 0.0)
     {
         double scaleFactor = path.getLength(s) / path.getPreScaleLength(s);
         upd_resting_length() *= scaleFactor;
 
-        // Clear the pre-scale length that was stored in the AbstractPath.
+        // Clear the pre-scale length that was stored in the AbstractGeometryPath.
         path.setPreScaleLength(s, 0.0);
     }
 }
@@ -200,7 +200,7 @@ void PathSpring::computeForce(const SimTK::State& s,
                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
                               SimTK::Vector& generalizedForces) const
 {
-    const AbstractPath& path = getPath();
+    const AbstractGeometryPath& path = getPath();
     const double& tension = getTension(s);
     path.addInEquivalentForces(s, tension, bodyForces, generalizedForces);
 }
