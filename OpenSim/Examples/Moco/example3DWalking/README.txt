@@ -1,21 +1,22 @@
-OpenSim Moco example: 3-D walking
-=================================
+OpenSim Moco: example3DWalking
+==============================
 
 This folder contains examples for simulating walking with a model containing
 80 lower-limb muscles.
 
-Data and model source: https://simtk.org/projects/full_body
+Data and model sources:
+- https://simtk.org/projects/full_body
+- https://simtk.org/projects/model-high-flex
+- https://simtk.org/projects/fbmodpassivecal
 
 Model
 -----
-TODO update to LaiUhlrich2022 info
-
-The model described in the file 'subject_walk_armless.osim' is a modified
-version of the Rajagopoal et al. 2016 musculoskeletal model. The lumbar,
-subtalar, and mtp coordinates have been replaced with WeldJoints and residual
-actuators have been added to the pelvis ('optimal_force' of 1 N-m for rotational
-coordinates and 10 N for translational coordinates). Finally, the arms and all
-associated components have been removed for simplicity.
+The model described in the file 'subject_walk_scaled.osim' is a modified
+version of the Rajagopoal et al. 2016 musculoskeletal model. The passive forces
+and muscle-tendon paths have been modified based on Uhlrich et al. 2022 and
+Lai et al. 2017. The subtalar, mtp, and wrist coordinates have been replaced with
+WeldJoints and residual actuators have been added to the pelvis. The model was
+fit to the marker trajectories and ground reaction forces using AddBiomechanics.
 
 Data
 ----
