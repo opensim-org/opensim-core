@@ -23,8 +23,9 @@
 
 import os
 import opensim as osim
-from plotting import (plot_coordinate_samples, plot_path_lengths,
-                      plot_moment_arms)
+from examplePolynomialPathFitter_plotting import (plot_coordinate_samples,
+                                                  plot_path_lengths,
+                                                  plot_moment_arms)
 
 # This example demonstrates how to use the PolynomialPathFitter class to create
 # function-based representations of muscle-tendon lengths and moment arms using
@@ -88,13 +89,13 @@ fitter.setMaximumPolynomialOrder(8)
 # values using bounds of [-10, 10] degrees. You can set custom bounds for
 # individual coordinates using the appendCoordinateSamplingBounds() method.
 fitter.appendCoordinateSamplingBounds(
-    '/jointset/hip_r/hip_flexion_r', osim.Vec2(-15, 15))
+    '/jointset/hip_r/hip_flexion_r', osim.Vec2(-5, 5))
 fitter.appendCoordinateSamplingBounds(
-    '/jointset/hip_l/hip_flexion_l', osim.Vec2(-15, 15))
+    '/jointset/hip_l/hip_flexion_l', osim.Vec2(-5, 5))
 fitter.appendCoordinateSamplingBounds(
-    '/jointset/ankle_r/ankle_angle_r', osim.Vec2(-25, 10))
+    '/jointset/ankle_r/ankle_angle_r', osim.Vec2(-10, 5))
 fitter.appendCoordinateSamplingBounds(
-    '/jointset/ankle_l/ankle_angle_l', osim.Vec2(-25, 10))
+    '/jointset/ankle_l/ankle_angle_l', osim.Vec2(-10, 5))
 
 # Run the fitter
 # --------------

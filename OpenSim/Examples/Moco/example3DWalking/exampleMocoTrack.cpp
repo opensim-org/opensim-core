@@ -128,7 +128,7 @@ void muscleDrivenStateTracking() {
     // ModelProcessors by appending TableOperators to modify the base table.
     // A TableProcessor with no operators, as we have here, simply returns the
     // base table.
-    track.setStatesReference(TableProcessor("coordinates.mot"));
+    track.setStatesReference(TableProcessor("coordinates.sto"));
     track.set_states_global_tracking_weight(10);
 
     // This setting allows extra data columns contained in the states
