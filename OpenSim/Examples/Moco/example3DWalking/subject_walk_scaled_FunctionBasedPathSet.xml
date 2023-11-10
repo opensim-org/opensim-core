@@ -1,0 +1,1208 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<OpenSimDocument Version="40500">
+	<Set_FunctionBasedPath_>
+		<objects>
+			<FunctionBasedPath name="/forceset/addbrev_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_r/hip_flexion_r /jointset/hip_r/hip_adduction_r /jointset/hip_r/hip_rotation_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.14238173478957819 -0.0052114207403236561 -0.004312918414076777 0.001497092176789184 1.6659112967525174e-05 -0.057462141952680887 -0.0026398022224611065 0.00024308646808654559 0.0021738434573626156 -0.010186463008396303 -0.0013037529306011791 0.0026104903110075323 0.0053612069810077866 -0.0016083440817295689 0.0018814040031636414 -0.035342994299933393 0.00061561906380482869 -0.0014970503627172037 0.00036333694353704029 -0.021506096333730434 -0.00088885464523001168 0.0019677175368563657 0.0056305131469810109 -0.0011336636292416105 0.0026058051680397359 0.0023443753630809825 0.0034027000172294356 -0.00055536273514792257 -0.0029955569815517552 0.0010364614018537432 -0.0057121401682248621 0.0065251244705316078 0.00046862736553794138 0.0042404767858979916 0.00086781946479159403</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>4</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/addlong_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_r/hip_flexion_r /jointset/hip_r/hip_adduction_r /jointset/hip_r/hip_rotation_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.2399176324121125 -0.0054964137548384594 0.00061668617553220636 0.0015981923743669305 0.00017366844074299592 -0.062278475414481803 -0.00084638019295391325 0.00074069130612807951 0.00074603512058128544 -0.0040825609378632071 0.0016923111487165518 0.0013536480478361424 0.0095559186662259148 0.0001804765879904394 0.0025742171546345436 -0.054206200112376965 -0.00098532403920692968 -0.00039020229619268521 0.00030752949500450686 -0.017402505064031886 0.002504496958782665 0.0017263420715982918 0.021588503989666889 0.0013561336570878334 0.0084360415025080786 0.00075368056290662708 0.00082582400119163312 -0.0013571042130979801 -0.0033699402146867658 -0.00018878203149402651 -0.0015564443481396182 0.009186689693811376 0.00043508694238572236 0.0030727606981607041 0.0013213666854609203</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>4</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/addmagDist_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_r/hip_flexion_r /jointset/hip_r/hip_adduction_r /jointset/hip_r/hip_rotation_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.21164190068402777 5.4992361979672871e-05 -0.001985678855285708 0.00032552173232179332 0.00024119075470300019 -0.054115331012939555 0.0025804327829263502 0.0006694391328059781 -0.0017475691586382558 0.024800413700490343 0.0019236461295354405 0.0014665644302692341 0.015007307882912761 0.00010303478269990469 0.00021041899036201159 0.027213695367748356 0.0040463536194868177 -0.0021177865365341504 -0.00074809781146612919 0.0084120500433222875 0.0002229654967733286 -0.00083126167015411679 -0.014134456896222036 -0.00057394278229644781 -0.0076542577539932925 0.032046150893049775 0.00010130646138270486 0.0011271926184178269 0.010269390499905226 -0.0018074321971158149 -0.011914617328485705 -0.0089575903778598993 -0.0018778291393504931 -0.0055988352597637096 -0.0028752209524610123</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>4</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/addmagIsch_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_r/hip_flexion_r /jointset/hip_r/hip_adduction_r /jointset/hip_r/hip_rotation_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.32332215661934161 -0.0053419932023810483 0.0024768621303863257 0.00051282033521294441 -0.0038059375961940474 -0.028130841223076915 -0.079587812577114725 -0.067451820489971004 0.024517651706934859 -0.037743335875685513 -0.0008171675755386927 -0.0023443026217092591 -0.002010275093355547 -0.025760808967304708 -0.1105739516502922 -0.24034873391820893 -0.20162789551373408 0.034926520595967021 0.00019367674987345968 -0.00020526971938507853 0.0059092747594831846 -0.0026460925453002382 -0.049361212905839724 -0.064924057787708461 0.011303227660097571 0.00049126814253736342 0.002430107617025814 0.019589656827811924 0.050698561946701678 0.027372839845039493 -0.0050410650831962311 -0.01212990550638697 -0.016368129494154518 -0.047307440160851741 -0.032257285249287518 -0.0045864316697354548 -0.013087875515229662 -0.0010375143777478571 -0.013891079801341383 0.010029858298320629 0.085241008156058465 0.0083886108476882784 0.023697772012804565 0.13391113748298575 0.01574325625522453 0.045720554999728803 -0.0066570096089989634 -3.6976275433881086e-05 -0.00075125046410185836 -0.0010834277446691973 0.039772023965480553 0.172833371079816 0.21328083445394119 0.00083422639622049845 -0.0017100503332986878 0.0021253240342203536 -0.0021853577731520196 0.0078681997236951587 0.034947556819344361 0.044063263958504462 -0.028510959218764526 -0.0011663742660765501 -0.0029156579655823171 -0.034382465914133846 -0.096958017155011011 -0.061974630669441311 -0.0053559044718375125 0.0065006255296814267 0.016368890404195958 0.0020598957984032246 -0.075667897325629979 0.010307904767022058 0.023183584122388773 0.069986141720667 0.092272162981693079 -0.0011823184281175637 -0.037414231544872535 -0.028809615381970383 -0.030319419085914429 -0.081135561678515183 0.00064479881379506739 0.030392753391301541 0.0037799207799524294 -0.000523378743237092 -0.0006424807376254095 0.0044040254470773185 0.041618309438758563 0.079347408737542535 -0.00064573786280939713 0.0037110421319138114 0.005368511905943874 0.023367080372490474 0.031293743374737497 0.0091001506569524659 -0.01597031589195317 0.0076081822150014236 0.018114395170343509 0.068616797475146429 0.081302113477157031 -0.0042236497328453065 -0.02856877148924282 -0.061265071372822388 -0.072385841511990345 -0.0098592131430553977 -0.041615101455673112 -0.085101327501481153 0.019272915628238779 0.080545145496668955 0.053583818070782455 -0.01194618304505172 0.0019609470030143507 0.0013945151263608075 0.0098704683832159315 0.045649315137192337 0.061038581901052574 -0.0022162710276473806 -0.0024811262004727297 -0.014922101704374543 -0.027935625140746614 -0.024984194347807208 0.0080568159561268688 -0.0099933527119131001 -0.036517252325205779 -0.086776623126612384 0.01089258884728087 0.017795942338172173 0.043335045929538851 0.0018305247856245507 0.056435649406832912 -0.010502170356710035 -0.0024740549795738789 -0.0049044564207530788 0.0035487532069060123 0.002114078543803171 -0.009706989132411456 0.007042873409443322 -0.0034540642657612448 0.011890456570678892 -0.00068567541178088474 0.0041886975394692261 -0.010536705091490049 0.0017680569274907997 -0.021928258807196514 0.025136180071089472 0.0059332781433340375 0.0018221962251075822 0.0016834947511830684 -0.011297063619808104 -0.011377090991698476 -0.0021664857057808553 0.0026511697749879177 -0.0020898071582970447 -0.0010866400734336717 0.012769573457306001 0.027219095003790723 -0.00061525214950066895 0.017773684312798098 0.005041786879835369 -0.021352013652901892 0.0042400688238449719 -0.0017814979454293602 0.0012642359572076791 -0.021167059423697655 0.023097609766633043 -0.0011768356923312375</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>8</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/addmagMid_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_r/hip_flexion_r /jointset/hip_r/hip_adduction_r /jointset/hip_r/hip_rotation_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.13864768467120048 -0.00068228640339213734 -0.0039693332960718261 0.001454746592344373 0.0010561369806056909 -0.070680878799539631 -0.00014172843153462103 0.0012632375903680066 -0.0010960676555253149 0.0038173593586159861 0.0010576234625911524 0.0035585103966002877 0.013721688416754634 0.00015951606409871772 0.0045206579501769588 -0.0049750130622511499 0.0072782528287985305 -0.0026426560655935542 -0.00093728165893418498 -0.0034212358589365958 0.0037073532890342354 -0.00045804933258945986 -0.00064534323187354103 0.00080874049056560557 -0.0014007328753667021 0.028538176522926458 0.0027729313108820672 0.00038022752686037154 0.01904365475117344 0.001322076837105548 -0.0033064571733135862 0.0013907767142497171 -0.0027765589757022969 -0.00053310692038622198 -0.0052033816796616334</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>4</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/addmagProx_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_r/hip_flexion_r /jointset/hip_r/hip_adduction_r /jointset/hip_r/hip_rotation_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.12151593176428123 0.0048898313677476057 -0.0076376981734058843 0.0012246168096301544 0.00069159093253948407 -0.052963153140830964 -0.0030195482078177191 0.00095707025865124373 0.0026962772303899957 -0.0096250768930750286 -0.004742201009230106 0.0035933691604084768 0.004519073783078433 -0.0026978016971718841 0.0015282076972768105 -0.024727074887944116 0.006052601751765788 -0.0015372528997220955 -0.00035237914140058568 -0.018151099520145444 -0.00079473676298509361 0.001187775828639766 -0.0015215657825951604 -0.00074279789907177656 -0.0010544712758161698 0.0063981457149404949 0.0047246003697563729 0.00060490583507222945 0.0027687595411073971 0.0047558020356016639 -0.0049991270497058166 0.005594166019812003 -0.00081692149642294905 0.0056604562209579363 -0.00012933607391361711</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>4</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/bflh_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_r/hip_flexion_r /jointset/hip_r/hip_adduction_r /jointset/hip_r/hip_rotation_r /jointset/walker_knee_r/knee_angle_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.41452480629863531 -0.0339585546228433 0.0068092583531773098 -0.0096771757926439553 0.0032557604545078831 0.0074640081671199137 0.002661686729553425 -0.0013280496162509871 0.0002848819880908347 0.0013610039431772906 0.0013699997407992754 -0.00061065736460167385 -0.001178287248311553 -0.00039590399309895498 -0.00011026590903017526 -0.026992645813542552 -0.0012983319895369327 0.00062642731984188273 -0.00021010769234770669 -0.0035628787602101442 -0.0023662483496094872 0.00066401411987672485 0.0024312313534671755 0.00017487305582881003 0.0003712783037248376 0.023208885833699674 -0.00017747733719667287 -2.4252459385064288e-05 -0.0013932019648054382 -0.00080364508499521114 0.00082842275966277397 0.0061004372708786912 -0.00014514550943463177 0.00064284200968261996 -0.0019358415358230634 0.056411359165940159 -0.0022658612296675628 0.00084726761965513186 9.5108511090674703e-05 0.0036799432848386294 0.00047189375165945622 -5.5777449360646612e-05 0.0019505226625216193 0.00059833388711173243 -0.00041092706322165545 0.0095658546015055697 0.0014407183136797925 -0.00010699489197284361 0.0054310494989288456 0.0024617152768767474 -0.0031305040894364713 -0.031778441783433239 -0.00034068880872373676 0.001723757487088989 -0.0048500047825560519 0.023599445537301374 0.0018243739848895024 -0.00078029386831950825 -0.0038377077292450984 -0.00050471482734294444 -0.0020093425347819565 0.0027153738176294833 -0.00019221234752373668 0.00087871941001725997 -0.0065352509692315954 -0.012355822941339993 -0.00014140188346140531 8.1925104822143762e-05 -0.0026907545230982211 -0.00070816524005906396</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>4</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>4</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/bfsh_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/walker_knee_r/knee_angle_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.23019097573546704 -0.024775355717744921 0.0067622369514496166 -0.0091377394958138385 0.0024914303651859819</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>1</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>4</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/edl_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/ankle_r/ankle_angle_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.51249710496093326 -0.039531164156781734 -0.0051115004347811127 0.0022031865940479187</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>1</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>3</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/ehl_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/ankle_r/ankle_angle_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.47552079572751205 -0.042488634705528563 -0.0059994519600081496 0.0022544964512886882</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>1</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>3</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/fdl_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/ankle_r/ankle_angle_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.50084199697857779 0.011439610036732236 -0.0075971536837316223</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>1</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>2</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/fhl_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/ankle_r/ankle_angle_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.47700442369444152 0.018125645082894697 -0.0079690581179126981</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>1</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>2</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/gaslat_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/walker_knee_r/knee_angle_r /jointset/ankle_r/ankle_angle_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.52904798482886672 0.053590858425563957 -0.009467056558600211 -0.006985524888452754 0.0019540184410961042 -0.0056841332357518808 -0.0044416930916328506 -0.036490066924894982 0.10698753141808745 -0.027804659849628467 -0.00044615731188536186 -0.00041799371045230362 -0.0095121102510757356 0.038701838045267292 0.044383571435928915 -0.11638108813648551 0.13835207065901967 0.012946542794037671 0.010834251983975404 -0.026402215622701841 0.03063424084445255 -0.1129577854650007 -0.12068581325446837 0.1551080194685126 -0.029950374009011287 -0.051532266300332488 0.14381711114009887 -0.058800235482447394 0.080318553391349162 0.088146337955449516 0.049213268975134991 0.087253955467506042 -0.24732878398972696 0.046149269240359309 -0.0098055150961265103 -0.03478154501941573 -0.064112255063537862 0.17402453855815481 -0.010973729343268956 -0.0032329692011832034 0.019368309426037573 -0.043485046680248489 0.013680755590902703 -0.0014630230037022498 -0.0041444447729859181</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>2</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>8</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/gasmed_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/walker_knee_r/knee_angle_r /jointset/ankle_r/ankle_angle_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.53661159712501771 0.053276585076630023 -0.0080260378428480168 -0.0077890352796206709 -0.012291499065513878 6.8941134503075916e-05 0.00014044646171896749 -0.0093277068669085327 -5.0756919481972495e-05 0.001846500860987931</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>2</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>3</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/glmax1_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_r/hip_flexion_r /jointset/hip_r/hip_adduction_r /jointset/hip_r/hip_rotation_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.20824678397592641 0.024290232815409461 0.013573805520437724 -0.036654435052653062 -0.089527145127794264 0.36664707852779171 4.5374860903344576 14.808763320612107 15.757442936661715 0.018956087969156852 0.026324432815796564 0.018470520675394817 -0.05510161839011931 -1.1465602906753167 -7.8478802519413033 -26.813664233443088 -32.108361231320124 -0.011858214449820556 -0.016564399315936298 0.15153547611320958 1.0477782813381107 4.2495498165765921 17.4595249656379 27.098198036187949 0.0029116582402019609 -0.092033845417018187 -0.53539863156976419 -0.45974896734585774 -4.1654089436914825 -14.292432936629529 0.028044511391600774 0.15578621063904557 -1.2211696393013893 -3.116799926878806 5.9211680100245747 0.030934559274209426 0.58110058031043432 0.12848883472778858 -5.5992699254593532 -0.1185994483899807 -0.39539876135398089 -0.10450486461169389 -0.28046793949914778 -0.72365192692177938 -0.13997249443600174 0.051665967851853165 -0.030355527715906695 -0.0108544185555704 -0.042719130069648177 0.22177533114923839 1.3692686767727194 2.5148974298641349 3.4495151819101988 0.015856468613976785 0.025346028375574845 0.17629124818460437 -0.39317117568389987 -2.9955664150505132 -0.83652409160058872 2.3492505670949386 0.007069533151909356 -0.11972970062200838 0.053225421243366669 1.4472232373856233 -9.6299113511729342 -26.537563178637818 0.066591618221788218 0.13534920687010235 -1.3088540631623633 7.4802077891285856 31.738439487874004 -0.0021295879196602096 1.1122102336503366 -2.2732054470603948 -15.158033724060813 -0.54534472205941054 -1.2464322447676197 -0.2333379048596867 -0.046353570276726118 -3.4316752212283501 2.0141088971233323 -0.0047225258011324989 0.0024940067986166312 0.074907823624577791 0.23865045317123548 0.3177856521384812 -1.3898385548350829 -3.3988798215778702 0.0078161167074854397 -0.11655567290113882 -0.44804884351622665 0.27288469839201546 5.4123758350808595 9.0868234713651255 0.10099459824693438 0.39011660972706297 -1.0203926816934126 -6.2876733236893045 -10.342303779675554 -0.071639658678500445 1.3454770100115294 6.1789573097464228 14.438863612168578 -0.59746428597373047 -3.2167395367962506 -9.8477148033860136 -0.011151590758460582 -2.9293676555699095 2.6307791161313681 0.0034519289661446521 -0.0015709039845933645 -0.048760549466047007 0.04247826376967067 -0.35565343704894148 -3.0873008906980481 0.057328660162156174 0.12634348695219572 -1.1844373740652292 -2.721060666853381 2.3093750819033945 -0.16127528693639673 0.91936554891740974 4.7483185691953045 5.9249701260543786 -0.50968924271423866 -2.9925777807849854 -6.2800271049375009 0.31822577075626896 -1.994790660144139 2.3226068066752354 0.020954446021100477 -0.004939287759616745 -0.51643733943715708 -1.3205948187100269 -1.5355918075855455 -0.12647004153721719 0.56184165773600181 3.4725988216307968 6.2279676293601636 -0.41602789234417126 -2.7242198293168194 -3.8235644597670722 0.62484307495076075 -1.2371905939848664 1.15464347806265 -0.025551890273869837 -0.05802913813970368 0.3863035220375593 1.786548408854802 -0.11915587905773506 -0.90898672721040752 -1.7079984591684418 0.81092435767546023 1.0415746319374772 0.10174050587477046 -0.017079251910415615 0.068200284344879597 0.6920456096449199 0.38369291335501887 0.10314534209880336 -0.2694216855784704 0.031156389821193176 0.061883724899467883 -0.20082877584580733 -0.016781052715080159</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>8</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/glmax2_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_r/hip_flexion_r /jointset/hip_r/hip_adduction_r /jointset/hip_r/hip_rotation_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.23301587065593005 0.024036283661967892 0.020909716548753034 -0.0088649057686916964 -0.0088563576900080251 -0.0074942439794109805 0.056555035242601637 0.097639727118917108 0.087589781455010007 0.0085588127792989785 0.008377193961607932 -0.0094545801379766065 0.010262448803747479 0.031122459633506488 -0.086376652510214882 0.32562837713363091 0.43505588939468909 -0.0066495628703838192 0.005057340300497485 -0.0051385132244220321 -0.092866648554032205 0.19324700151399404 -0.30416126907527741 -0.4073604730794117 -0.0027991414202047514 -0.0095200285270063204 0.11736605411963502 -0.27440405436267512 0.14473571082978665 0.18210941955353466 0.010751810393163544 -0.091368047107539277 0.15618548373169733 0.09285992876562732 0.20040824607334512 0.039650936286719708 -0.0089215906828065406 -0.25543314529009115 -0.32713456228322746 -0.018204418191612452 0.20840918690653568 0.3983856739047697 -0.064445347033730088 -0.36426634648799616 0.14233667656934626 0.066800729355846591 -0.023218733898668929 -0.016084740253602545 0.020162249668761727 0.021867094850199997 -0.13461462599881652 -0.14172272838448008 0.16196939546611611 0.018861241658816634 0.041077354139212811 -0.01410257657862583 -0.1609544020405555 0.46016749815629976 1.3887860986132872 0.56163001379826472 -0.02848895711770991 -0.034711302678655451 0.25386601946561271 -0.52019379642436825 -2.2547388894269442 -0.72003708050535642 0.036103520603025123 -0.22121614086259225 0.22341039847508426 2.6108108769048646 1.0451622737884376 0.10517409212247664 0.11003515871183617 -1.8795182169603064 -0.77241982066829717 -0.12340971959631404 1.001008462683878 1.1811016488031614 -0.29341550949894607 -1.0286945151272311 0.38990441258575326 -0.0079608329487208408 0.0071886851481330061 -0.0020258814029687593 -0.080785846832755387 0.21191917624827852 0.8734582417512835 0.69551851929635922 -0.019249787938116984 -0.054684101885189955 0.2409683915251595 -0.39990835749653764 -2.5757541911125617 -1.5748530568135972 0.070651928070625675 -0.25764777167501707 0.1523567774773586 4.2945735253352986 3.2160511811980732 0.16718841640319923 0.30381441009634391 -4.0017553918720488 -3.6085377794749145 -0.29667802142276972 2.3061911066263283 3.3768232637696736 -0.75364733894488112 -2.2739009716310732 0.83017831912692963 -0.006629814566337597 -0.013990190664288575 0.066950283527990137 -0.0080253172930488809 -0.5639495033689208 -0.59572613100639671 0.042326770453463315 -0.1245586742055866 -0.14655089258873016 2.2248401969330471 3.2088596211482256 0.13319391784987861 0.49647287961360037 -2.9696581559522137 -5.6939876013905897 -0.4278467097267375 2.2008148928641331 6.3853014252210238 -0.9251354479628926 -4.5051980360909312 1.7704808578010718 0.0099428802120496082 -0.023749954077213798 -0.035750373003324079 0.3475965444088307 0.48776660908353808 0.059787276608907876 0.24386685272525252 -0.92189532418142817 -1.9352283411672424 -0.30573440710350575 1.0346851299051965 3.4788790538829555 -0.72734065411935311 -3.6065482988937241 1.9380921670860285 0.013781168697486398 0.033813197189616777 -0.16948085362301807 -0.25841685488373378 -0.11267611962827552 0.33663807348810559 0.97696653079866225 -0.43162616007302512 -1.6908966354638244 1.3668157079233212 -0.017093983769794475 0.068363029760893909 0.1691169253441801 -0.15579871902513959 -0.53803422554450053 0.69413446591357419 -0.030207485462136831 -0.080494042708776442 0.20895377396214571 0.031638982735831107</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>8</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/glmax3_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_r/hip_flexion_r /jointset/hip_r/hip_adduction_r /jointset/hip_r/hip_rotation_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.23036222378571283 0.021127816435433707 0.008957230926702326 -0.0057368301808252333 -3.3591569730008096e-05 0.0013981499798239442 -0.050838049161382806 -0.0057720605493582627 0.0095986482131621906 -0.0020058029654368543 -0.0028805098936575389 0.016548375833673471 -0.013343570202873347 0.0087055831752664101 0.0035259767660639212 0.017945033172662602 -0.0097837709911338527 0.0015199058144350476 0.0097468419585041155 -0.0055060760562555587 0.0074862883830103047 0.082454774723787108 -0.013576757278604837 0.0039532266594642798 0.0054087387431364332 -0.00013661448056314588 0.056153209968763433 0.010710073029481905 -0.022401444196191278 0.00076929222253810706 -0.031940005643502682 0.037358537812364069 -0.015087701936177388 -0.050789617342713568 0.021613868472743557 -0.023440789926369901 0.0085433219743668055 0.0054039805288954882 -0.014170860609081404 -0.002143397744940457 -0.042712355795227912 0.022821360735159429 0.015031445738693677 -0.033882355178140561 -0.034901784324259312 0.046080710475883468 -0.021911851761791248 0.00072693769359964558 0.010651789560804729 0.017984748865517663 -0.028115381105881035 0.05182311998273835 0.016151970654344875 -0.0023221064791873018 -0.00073216423353123416 -0.0085829632479427591</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>5</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/glmed1_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_r/hip_flexion_r /jointset/hip_r/hip_adduction_r /jointset/hip_r/hip_rotation_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.13922120301602497 -0.0080691322245531206 0.0083317211900567675 0.0020515479775634273 0.00012525148495639961 0.057830452356887219 0.01614549008723129 -0.028076720923968145 -0.006402904203922458 -0.010210052389974147 -0.0054241396412170913 0.00090278997602528065 -0.0053219718278017742 0.00030495170455367986 0.0020458838473839764 0.01140865661333466 -0.052079555673952733 -0.01093187838161894 0.0075103057518973466 -0.0085583884858422589 0.019320165123308836 0.02212126776348362 0.0054384757714845341 -0.00092163729035303664 -0.0015050715807887675 -0.0082929349879644308 0.0065007575657824324 -0.0032442594813346026 -0.022480942630108414 -0.019140990678012469 0.0079716370743850105 -0.0013683011448753161 0.0036340921273947478 0.0033185308686511285 0.00060199200662656624</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>4</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/glmed2_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_r/hip_flexion_r /jointset/hip_r/hip_adduction_r /jointset/hip_r/hip_rotation_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.16970035153854063 0.010761502737278517 0.002748154807621305 -0.0018988062399739479 2.6390230555569072e-05 0.052714142238039004 0.017540839931874771 -0.027753673385630985 -0.0037844323169414838 -0.011524875425653997 -0.0044988356230010332 0.004171941611477676 -0.0050973083089408911 -0.00077997332217728896 0.0016224966125592244 0.022421904186097769 -0.053785461819925169 -0.0076454390073045593 0.0089075160500666807 0.0044021364032434396 0.019392324884639323 0.012827191227519345 -0.00045536975119139388 -0.0042070757806444512 -0.00076295244121510591 -0.0035491096728094253 0.0020972205586674091 -0.0055733304805281178 -0.025995271163473672 -0.01707254871325499 0.0074723743131003863 -0.0034420345771815431 0.0057784397668000538 0.0038996182267146823 0.00080852861937065967</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>4</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/glmed3_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_r/hip_flexion_r /jointset/hip_r/hip_adduction_r /jointset/hip_r/hip_rotation_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.13216700949224272 0.024252893384911305 0.00096339278237997871 -0.0042168086035378151 0.00027622474988076012 0.04358090795382371 0.018615525212100487 -0.0253824730364971 -0.0014620204772143254 -0.011895734009967591 -0.005850615965508248 0.0062975267941597704 -0.00317487506758509 0.00029488303312623511 0.0011417102531524066 0.027947280770935546 -0.04906277131257241 -0.0043773483579182216 0.0094292655636513331 0.011429386216626378 0.023581395616987053 0.0098747316336243902 -0.0016826526060415923 -0.0064588892260395393 -0.0015433238632130025 0.0013555109370637047 0.00014822165760296208 -0.008455024493900197 -0.025311687535481894 -0.018107824934501048 0.0066570546831294236 -0.0052021754437337571 0.0061664398135494016 0.0047805379082931773 0.0011281360486344897</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>4</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/glmin1_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_r/hip_flexion_r /jointset/hip_r/hip_adduction_r /jointset/hip_r/hip_rotation_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.10734030585573281 -0.014472541987081373 0.011843510450121386 0.0046072023616309686 0.00064458771905871683 0.054742926407304431 0.0036180172955829278 -0.028857873807335271 -0.0071318258697419127 -0.0077451256272871548 -0.0043966559872262168 0.0018636313964966874 -0.0050905496841989013 0.0021983593642061214 0.0023916253393074963 -0.0084548341548319177 -0.050053515505681656 -0.0050815773158420455 0.0085758711560299239 -0.012456268713442601 0.026394622841688396 0.025645284587719391 0.0087052562167217202 -0.0031333378486601763 -0.0028526764202476628 -0.0055538506284092655 0.0045743709488918899 -0.0069439832878535283 -0.023200406233524457 -0.017395404462289755 0.0097959735265753418 0.00090426206732616523 0.0053147838400885638 0.0019711867943947941 0.00033695884915836325</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>4</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/glmin2_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_r/hip_flexion_r /jointset/hip_r/hip_adduction_r /jointset/hip_r/hip_rotation_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.11307574048169913 0.0039256106745311371 0.0061572638617073015 -0.00047681671319794273 -0.0002461630821152195 0.050438324824506123 -0.0050024902857200033 -0.027111844697777217 -0.0029912027375221966 -0.0088610608434866352 0.0019936976503587651 0.0075581319784821565 -0.0044080430538493169 0.00073133626212384115 0.001446448437723429 -0.0032463725706805345 -0.04838447136190091 0.0034156585198155637 0.010187648297864758 0.0042984610075055656 0.022812523666357866 0.0073800311929372196 -0.0021396097538671269 -0.011241112431569871 -0.00074711293367037514 -0.004015423684706497 -0.0026429450498963386 -0.0098363364098865494 -0.023126607270893655 -0.0059361688917702474 0.010873305968778295 0.00044780302704133655 0.0064940907553106579 0.0011048840152823995 0.00022831863300295149</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>4</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/glmin3_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_r/hip_flexion_r /jointset/hip_r/hip_adduction_r /jointset/hip_r/hip_rotation_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.090990455547664148 0.015248657457405446 0.00029636583708009414 -0.0024016006884023801 -6.1268541994877673e-05 0.042068004244268521 -0.0033246773496227338 -0.020982034201519346 -0.00035201882234482651 -0.0092711223595941285 0.0032789731021543077 0.0091815596179863849 -0.0026492016719769306 -2.6171145947630057e-06 0.0003664364696307768 0.0035524469098868476 -0.042610592715528507 0.0056915880004309739 0.0077218776843434155 0.013569244935172212 0.020397282169578229 -0.0012408799050613486 -0.0060223051470212159 -0.014005857510384315 -0.00028185981603977978 0.00013734120681656875 -0.0063346305898655392 -0.011225844140210148 -0.022483729813937679 -0.0023314215727036698 0.010162512744874636 -0.00057195770846649966 0.0077244371645000436 0.0014416266429162061 5.8554979315777142e-05</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>4</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/grac_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_r/hip_flexion_r /jointset/hip_r/hip_adduction_r /jointset/hip_r/hip_rotation_r /jointset/walker_knee_r/knee_angle_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.43596313568336165 -0.025846868036603094 -0.013083030895850393 0.0083911556046364372 -0.0075189443693773261 0.0024841446083705239 0.0054200344797760295 0.0042199521326555453 -0.0026531716884526943 0.003996903756400578 -0.0018542466351789031 0.0027924784094494766 -0.0016162022378763412 0.00056114041386603531 9.0522468105278767e-05 -0.00067043316243873055 -0.00086968451593276864 -0.00015543367963327467 0.00039700199308649522 -0.00055879008848841775 0.00074285659905084806 -0.05922234170869068 -0.0017691916526842487 0.00080939668504780851 0.0013863562600973634 -0.00089283769062666735 -0.0033055240660092729 -0.0033175578936928936 -0.0014986974933658302 0.0014168620668703854 -0.002813885242905859 0.00046948066254494917 0.00013206675565171494 0.0006387353357894122 8.2089675299929291e-05 0.00040482418149022012 0.031197826022219731 -0.0016414653460824265 0.0014935888117035643 -0.00046296124654668049 -0.0033885035694475791 -0.0021157202524846254 -0.00018673327345453651 -0.00257143766090971 0.00095036075122877962 -0.00037142598804929005 0.014731762417658011 -9.9562949235582369e-05 0.00047002700763293083 -9.9092615938416027e-05 0.00053233287520675445 0.00015983515462371302 -0.002081067041535174 0.00061451647139573783 0.00069064695850430441 -0.001658044267943669 -0.016119414695580005 -0.0045499281845985213 0.0028271795422617212 -0.0040778593420949926 0.00196114774978553 -0.0062125861668093051 0.0028478134976494735 -0.0015177567327326479 -0.00010742007779632536 0.0020982762312405051 0.0029069586492043286 -0.00065249274293959641 0.0017301245638961539 -0.000198653716498166 0.00062325733667960607 -0.0016839360139803328 -0.00092949611834572865 0.00050884135036704332 -0.0001773399850916258 -0.0013929095473958391 -0.0010655968730355527 -0.00044553978460231238 3.2553812894656669e-05 -0.00043786742786002648 -0.00023125966199005713 0.0065767945190437632 0.00024868395965507462 0.00032466885887198581 0.00018227183543820651 -0.00035462834573689008 -0.00055470041001867243 0.0014551574952424587 0.00041743843446022415 0.00078243804154399924 -9.493046506587653e-05 0.032309917643783492 -0.00072121022539647429 -0.00032808313537879277 0.00027396753724346154 -0.00090615846689250199 -0.00089055836722720107 0.00029001568689669498 -0.0001908426061523297 0.00030939710116949893 -6.7257272425319835e-06 0.0019482894124971957 0.0012086065563349374 -0.00059996751503211979 0.0020356631456091719 0.0026411792093018662 0.0014777194130666472 -0.01805129839579615 -0.00021448422332159025 0.00088157600119895653 -0.0037899230324180424 0.0039663245229622588 0.0013004478674057867 -0.00013458164069227543 0.0013098150551506308 0.0002600754937211432 -0.00063592108265182875 0.0007343568597879479 -0.0001069979518416333 0.00021615844292413973 -0.00078217684234799961 -0.0037407573660478326 -0.00025841352426238663 0.00013180695651908572 -0.00052000570749976052 -0.00042728188215893331</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>4</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>5</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/iliacus_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_r/hip_flexion_r /jointset/hip_r/hip_adduction_r /jointset/hip_r/hip_rotation_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.22737682657395741 -0.010660719310184858 0.00012159034874953213 0.0014581903244830533 0.0064851266196455162 -0.001023774886285429 0.00031371930618658488 -0.0011836913462183844 -0.0037125801478251866 0.0024067532276983374 -0.039030375258095787 0.00054999201928126269 -0.0025060239200380657 -0.015318667967100878 -0.00056343043040726481 0.0064843117745968168 -0.00025014114869576756 -0.0019268269344156542 0.0015565356139176758 -0.0023291592542521249</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>3</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/perbrev_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/ankle_r/ankle_angle_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.23386030162078822 0.010609262833606343 -0.002804124720287406</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>1</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>2</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/perlong_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/ankle_r/ankle_angle_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.46013568010219907 0.01245874374232073 -0.0022139450918601746 -0.0012894253554914246</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>1</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>3</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/piri_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_r/hip_flexion_r /jointset/hip_r/hip_adduction_r /jointset/hip_r/hip_rotation_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.15158742850136353 0.028844165493836588 -0.0042603367656715218 -0.0034066343664749255 0.0005145373323282009 0.025945644330294497 0.0012317206686434834 -0.012657413597425766 0.0015012972448819599 -0.0089927767557538753 0.0010782488949788011 0.0062075685585227429 -0.0018194255379952431 -0.00072357626649935077 0.00033064793763361625 0.010938320692483983 -0.02997088206605179 0.0055768700169378446 0.0037550886233615713 0.022690131520395958 0.01054717662688733 -0.0092597373974542315 -0.0062122267194064645 -0.0073594584859750191 -0.0004177846999719691 0.0026657054821958201 -0.010874046512682069 -0.0072389836055487969 -0.017010987327847449 0.0025508712003653486 0.0050044382671974247 -0.0020694578589124219 0.0078498759272168928 -0.00025614952452658542 8.1311205234897349e-05</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>4</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/psoas_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_r/hip_flexion_r /jointset/hip_r/hip_adduction_r /jointset/hip_r/hip_rotation_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.25203169786796986 -0.0017279119343871752 -0.0040092177052928916 0.00069854683983858938 0.00042548319716415798 -0.0036947673982396516 -0.00049206610885721793 0.00071745216487763654 0.00061298152898163743 -0.0007739252861103513 -0.0053894087492431988 0.00080464306733712878 0.0042870776814469772 -0.0044888985949318302 0.0036746584143628556 -0.026884517455464774 0.0031393866074510965 -0.00073691068924439541 -0.00077581453703200068 -0.010540681929892264 -0.00034923289519983586 -0.0010196727691888501 0.0014206486355903514 0.0041711106294064848 -0.0029171054951842726 -0.00062235840976849902 -0.0028386877044242285 -0.00054981239634416127 0.0044404285303959613 -0.0056137368776703889 0.0079734327846815289 -0.0046393083149859756 0.001937656582575296 -0.00371631334961991 0.0026521702680282664</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>4</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/recfem_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_r/hip_flexion_r /jointset/hip_r/hip_adduction_r /jointset/hip_r/hip_rotation_r /jointset/walker_knee_r/knee_angle_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.51571298576613001 0.047645624723188534 0.0055180431955928148 -0.010330177442386379 0.0046335772757166898 -0.0012513697839535429 0.0023461888427048347 -0.001368947953474649 0.0026597595414074257 -0.0024672931210159166 0.00061012847495830699 0.0025870490660751715 -0.0015489731832028183 0.0022662786403264685 -0.0012294225593822373 -0.00066048767188129644 -0.00025912871617493274 0.00066989509992849007 -0.001324182372653492 0.00049944865454792844 -0.001140691613932255 0.015482985643082639 -1.2242415490317711e-05 0.00076256582900636712 -0.00066226377635642138 0.0001172036012605454 -0.0062841965186024159 0.002750075319626026 -0.0027127132058289822 0.0014143221343456862 9.1831871513157874e-05 0.00056779291557867637 -0.00026819340496989666 0.0022047609841993028 -0.00048035015377890806 0.0012737849513038664 -0.020141788424777107 -0.0007264114492183144 0.0011516303918895916 -0.00063053097010778807 -0.0010915806454531798 0.00040395919276013529 -0.00028947400412845421 -0.0012871142536470888 0.0017884692809493597 -0.00084131314254308064 -0.0017314167202746671 -0.00032285740363796129 0.00039700951547998029 0.0011745583464287156 -0.00080222829064613313 0.0010580062847472165 0.00049915402441531712 0.001269219007574741 0.00029275204284592008 0.00045663341952439148 -0.039180847485912752 0.0033452372494714552 -0.0084323151983871861 0.0088753605494828556 -0.0026914747168086013 0.00013795958743905535 0.00014938372705809591 -0.00086989073393879993 0.00064686959153165157 0.0033039809027912079 -0.0013196668015426759 0.00036920657861364361 -0.00035516061250385778 -0.00052333407686374364 -0.00095424390647544876 0.0014592467024226775 -0.00026420112015575783 -0.00011505779504478457 0.00036194859653511922 0.0044555435173720178 -0.0010225078115986591 4.0681325065520792e-06 -0.00024657508556782411 1.3857389953570018e-06 -0.00096968673445358333 0.014424311130720131 0.00041201130019104563 0.00059930831730756911 -0.00076191301355885014 0.00060956070264573759 9.4958652790407227e-05 -0.00082292596345992757 0.00089707340464197918 4.2914591832579922e-05 -0.0001924813841228416 -0.01923629415317011 -0.001161284804446249 0.0015154262212377153 -0.00098192331971280766 0.00019946077046224578 -0.00030271479993345578 0.00019116677525130328 -0.00072562350864303438 -0.00021917852148385533 -8.351692493658978e-05 0.00074083687289791284 0.00043303201846824492 -0.00062127234907310112 0.0028768590109461882 -0.00027850807631869199 3.2598723105100735e-05 0.01059611400942379 -0.00090259830523857455 0.00041023681624650205 -0.0006934955980380192 0.0046670965170556317 8.2657001801449863e-05 -0.00014524521122511206 9.3718860922208943e-06 -0.00010140214846872062 -0.00051124830153359525 -2.4225361193752919e-05 -0.00022650921155858972 -0.00020166769961055164 -0.0012990826890382156 0.0014898465904290025 0.00011708162625075439 7.7645306811631934e-06 2.7776207506261712e-05 -6.874724746544619e-05</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>4</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>5</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/sart_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_r/hip_flexion_r /jointset/hip_r/hip_adduction_r /jointset/hip_r/hip_rotation_r /jointset/walker_knee_r/knee_angle_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.60195173031287774 -0.014332752998783695 -0.013533491683075913 0.0026340889599639852 -0.0001275329116729997 0.0041615678505228151 -2.9547901382322908e-05 6.5266431553858602e-05 -3.7761496662357406e-05 -0.0017594608057129482 -1.7409498586454941e-06 -7.1167577160639016e-06 -0.000668214994918652 -8.7370596773548762e-06 0.00012938122519286853 0.017534111325912545 4.0893349563166177e-05 -6.0414875141172198e-05 2.0450660729749277e-05 0.00030424197252063343 5.2620238736336494e-05 -1.1037157137144133e-05 0.0036035793242864744 0.00012860624907303411 3.9978113859676627e-05 -0.030821129879767536 -3.6287724759859522e-05 3.3074045603560955e-05 0.00037699907172883298 9.5490316388796857e-05 0.00076466955466568702 -0.0017534060495501965 0.00011454102960584775 0.00011562953636103481 0.0015182622592235932 -0.033847924765383931 7.5233680743300386e-07 -6.5034722443753933e-06 7.930468080922418e-06 0.0077063658806252816 -9.1212324247884216e-06 1.8599162688665636e-05 -0.00043908108331743083 2.97353980773496e-05 -0.0011626848335457801 0.0057745833516162116 3.5909785685990888e-06 1.7322740060543725e-05 -0.00078392783264265244 1.948338783379154e-05 -0.0022817985850748053 0.01439916623131731 7.8322684033058914e-05 0.00032516984133206764 -0.0013299257740463318 -0.030377439031125258 -3.3829981422215778e-05 1.7684729097050124e-05 -0.0013107182991182135 4.6845254163269603e-06 -0.00023628308394161063 0.0053586857062006069 -2.7806895434493664e-05 8.5488535086364667e-05 0.012943262989977361 0.0032328722195539773 9.383048770093068e-06 -0.00085945696908122865 -2.0177826216960164e-05 0.0016593435071883902</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>4</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>4</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/semimem_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_r/hip_flexion_r /jointset/hip_r/hip_adduction_r /jointset/hip_r/hip_rotation_r /jointset/walker_knee_r/knee_angle_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.40416895739761849 -0.036862496857703847 -0.0024397263800590733 -0.0047926136621075695 0.0027917557397394016 -0.001368300956286234 0.0018728045226767479 -0.0010785218351461446 9.8799438694748362e-05 0.0025284760338584711 0.0017354217791593148 -0.00055755403547497889 0.00029327391387276168 -0.00028928764077377632 -0.00022998995430651196 -0.016538342044159229 -0.00088572979590697523 0.0011885339321744792 -0.00048420981566177617 -0.0033801653143183735 -0.002784073257551077 0.00060973664305070203 -0.0011267377885031975 -6.0875486170805846e-05 0.00039976077823943707 0.022088942243930595 0.00012358392811934757 -4.5481892599743217e-06 -0.00059857418141201046 -0.00079447157748100859 -0.00019578492640186172 0.0036206528660638906 -0.00010119808076811354 0.00056071742640348627 -0.0019263518535212341 0.05024242154498551 -0.0019916317392252342 -0.00018261864977761413 0.0006189204642534327 -0.0021460813371997809 -4.076823049746788e-06 -6.4748954382319238e-05 0.0012650338562171411 0.00072969483993400681 0.0003025202954391204 -0.00070414379334225231 0.00075899831862489794 -0.00029443097110151088 0.0046022888220038317 0.0029212290480839639 0.0019309333477064074 -0.028680512321354903 -0.00045610020510910719 0.00060974647071707121 -0.0015720642883395946 0.020902661290111955 0.0019560402977174918 -0.00068468380946138188 0.0016713342427494237 0.00015303691412901343 -0.0012996874224621897 -8.3781389949574235e-05 -0.00053569127062683131 0.00075928098902454486 -0.0059230235037831943 -0.010764120498727823 -9.7951514857312109e-05 0.00013467109725420371 -7.5465954389919399e-05 -0.00066836907190230901</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>4</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>4</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/semiten_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_r/hip_flexion_r /jointset/hip_r/hip_adduction_r /jointset/hip_r/hip_rotation_r /jointset/walker_knee_r/knee_angle_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.45404774695534955 -0.044860718822557738 -0.0059864367444522745 0.0072634281511436806 -0.021848812180600106 0.018612588724589312 -0.0047414119364239636 -0.00096758679603277864 0.0039733165565279029 -0.00499617753855491 0.0086115519017828605 -0.0074367430334127248 0.0020657644229898592 0.0038121437224548052 0.0020106946387175831 -0.00055965375739502746 0.0011253996617027865 -0.00070269237983193152 0.00047970885541835043 0.00056731990284308084 -0.0049845688796092066 0.0029298270217673755 0.0013915479619450079 -0.0039337060913703804 0.00025005202047657243 0.0022446835143617532 -0.0038344786379091444 0.00076751588950905872 -0.027814430313895803 -0.0021326796760954823 0.002935393505399795 -0.0014354312941970769 -0.00029060320909262576 0.0003303380307628569 -0.0055411969463093512 -0.0028296151521352811 -0.0036116740641406295 0.0029365907004852672 -0.00022789261995681041 -0.0017059007716411648 -0.00054562311546445946 0.0023069091831022783 -0.0016736236311826332 -6.6697522602951476e-05 -0.00081276833744398308 0.00067694613305272671 -0.0026420073461704209 -0.0024857460811927882 -0.0042296937668686758 0.029942906567710904 4.8875275364423953e-06 -0.0011213134622758384 0.0028488655365932897 -0.001514013131256337 -0.0020332355807743318 0.00010824072836840759 -0.0037940226105482168 0.0028759967518084692 -0.00070522031545927621 0.0010716413965021487 -0.002261953574395275 -0.00033113923761027243 0.00036257245590008182 -0.0028222668372778464 0.0067511903891983626 5.1645256164711308e-06 0.0038936405910326797 -0.0046878240744886585 0.0013664669078802772 -7.7070456699896697e-05 0.003133244910069154 -0.0015987001349403842 0.0028369882425855197 0.00082057474996150687 -0.0040085404206735807 0.007964466296688651 -0.012926156922403594 0.0020936666657494106 0.00031754281308471054 0.006012481797794832 0.0018778990247790908 -0.011658186908188196 -0.0054252529790525346 -0.0018279519567730952 0.056398762050208689 -0.0033659496049901834 0.0040286966659199104 -0.012359051996727811 0.012276358138951173 -0.0035607009046588582 -0.0037586511759870908 0.0011700662406403869 -0.001489640613409008 0.00014049803937294267 0.00018551026406481657 0.0018195653160615786 0.0016387451002907293 0.0011560496461657781 -0.00049212662276788464 0.0007986030921260899 -0.00028638963596070116 0.00085373948327205004 0.00050665686235774659 -0.00046905578647673477 -0.00024265909597451967 -4.4021284620395121e-05 0.0022206718672892452 -0.0019042755083642205 0.00055017158675318653 -0.00025485059013130682 0.0067171678191412631 0.0027443514627725632 0.0053873759090679197 -0.0037790946921471861 0.0022683146499087635 0.00050851118102918915 0.0012470652500123276 -0.0012098597629524779 0.0013292561231586961 -0.00049733197839277668 -0.035407176155295296 -0.00032624124739464829 0.0003635624230649817 -0.00081517515714332354 0.0011261869564373485 0.0011509213288136153 -0.00074872700732186168 -0.00055623843109356527 0.0056025260143642503 0.0017346676456068957 -0.0027635213925999279 0.0022631589196290009 -0.0027703844407185978 -0.0011136733175680918 -0.0016484296810540841 0.0020277557263686458 0.0072849322501096075 -0.0039175383707686692 0.0017473528451983386 -0.0044267465120850693 0.029056010963636691 0.0026754004197080592 -0.0030690796915272827 0.0050997877812627452 -0.0023496749329976036 0.0028964470611520109 -0.0022277258750178679 0.0021615376751524659 -0.0003831151955610223 -0.0020314641940518768 -0.0014721095358513183 -0.00085288119389027427 -0.0013392247652523315 -0.00086956133590093947 -0.0020101723894166306 0.00035648721438746769 1.3706584203578031e-05 -0.0012989519269771639 0.0016505302276576606 0.0012788380890070628 0.0036131035382958128 -0.00060599552571869038 7.8673800359011512e-05 -6.0650985860248455e-05 -0.00058996475649763201 -0.011398587046444728 -0.00056610800905768956 -0.00065015449088015739 -0.0007292047563526383 0.00065881776597554787 0.00034271160970254777 -0.0008898386845903898 -0.0010357626224851233 -0.00080298156196039719 -0.0022301221095715556 -0.013888565942872992 0.00011265411113239561 -1.745874836442255e-05 -0.00061800279833249233 0.00012682229620492654 0.0013214568556283086 -0.0012884569847533278 0.0003009156976124246 0.00075063303610041054 9.8980351648421147e-05 -0.00020513679946762594 -0.00021291853338756891 -0.0013084616623765793 -0.0016971791613635818 -0.002579074690080833 -0.00043903058724089976 0.010619505803698909 0.00236667190346235 0.00050860102968231424 0.00029944688250962666 -0.0017906012968051531 -0.00048050502902618249 0.00053776374179715627 -0.0007407986529088228 0.00015162999118163104 -0.00031236368544733416 0.00058451141630550939 0.0017832009018484305 0.00065253168071444535 -0.0028907629878617076 0.0022872478557409148 0.00054649032446671755 0.00039815407108370116 -0.0012909083334791543 -0.00098311821755109677</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>4</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>6</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/soleus_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/ankle_r/ankle_angle_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.38472610109136562 0.049772828721375902 -0.012418029516017899 -0.0068157816179787835</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>1</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>3</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/tfl_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_r/hip_flexion_r /jointset/hip_r/hip_adduction_r /jointset/hip_r/hip_rotation_r /jointset/walker_knee_r/knee_angle_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.54666545349367901 0.014949315652323592 0.0074907476569143891 -0.0080661996197131536 0.0019255672145333238 -0.0044953111263318869 -6.177881001090296e-05 0.00010648299086184311 -3.9315085906931483e-05 0.012185723497919007 -0.00015124954001042028 0.00011050151749599899 0.0013506646343962991 -0.0001344226973687198 -0.0010320553346996793 0.059360617246289021 1.9964775227071516e-05 -5.7977874516200426e-05 5.7031915426904503e-06 -0.014035035364610697 -0.0005085835797176612 4.6929513760976461e-05 -0.019711916545393306 -0.0013217867856506777 -0.0006378324253415278 -0.024784912632122246 -2.811503373797728e-05 7.6080227354859443e-06 -0.0013503931536930623 6.4867909856159735e-05 0.00060551280193567509 -0.0026769802051149687 0.00026799818235497984 0.0017791575766407061 0.00081245096888119081 -0.036089141634554421 -4.9229762119148222e-06 -7.5330831332520986e-06 1.8215649058875617e-05 -0.032839152823765254 -5.3165443528041778e-05 5.8584065068151424e-06 0.0095214714193694976 -0.00022487786673552117 0.0085627309397482594 -0.0023470706396209935 4.141506336141763e-05 9.5842856385720362e-05 0.014894500113899188 0.00030621957987086545 0.0047056839375552518 0.0065346267711882877 0.00010428245703572662 -0.0085228742456258614 -0.0019963638756413512 -0.024729854788530504 -5.7632011851425325e-05 3.1914207332632928e-07 -7.2857299910616101e-05 -4.6023530165236104e-05 -0.0020959214084719708 -0.0092803608999191649 -0.00019763688037503191 0.0047858173413234143 0.014257628010828917 0.0015351912598136821 5.223759181511507e-05 0.0014493221335779391 -0.00024339136403057551 0.00051690390443718886</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>4</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>4</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/tibant_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/ankle_r/ankle_angle_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.36155450087521007 -0.048109129375399483 -0.0068068874822726005 0.0040550992600359584</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>1</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>3</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/tibpost_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/ankle_r/ankle_angle_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.38074136517494384 0.012468888671671948 -0.0071372673998409009</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>1</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>2</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/vasint_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/walker_knee_r/knee_angle_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.28631234534529981 0.045516911095487299 0.010086805012760477 -0.068895868503696722 0.19317612681532367 -0.31343006813515151 0.28252509712371709 -0.13155724638199667 0.024611493729686667</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>1</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>8</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/vaslat_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/walker_knee_r/knee_angle_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.30047236958444323 0.03950711985041238 0.028405457556944382 -0.06725317510194613 0.12426748551101462 -0.20092532852975734 0.19835023015202197 -0.10041413889640943 0.020010307874388535</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>1</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>8</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/vasmed_r">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/walker_knee_r/knee_angle_r</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.2751786834044827 0.043494704663069456 0.01574288619538947 -0.075030244752656197 0.1799464090545021 -0.27831449612250442 0.24990529962258287 -0.1174265522941286 0.022219906628872892</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>1</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>8</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/addbrev_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_l/hip_flexion_l /jointset/hip_l/hip_adduction_l /jointset/hip_l/hip_rotation_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.14241999558679461 -0.0052041966993625066 -0.0041819675602236756 0.0016932951435005509 -0.057622269847269689 -0.0027378461593825327 -0.00011106692746732314 -0.010141105373641315 -0.0013754673360679454 0.0059708237274487845 -0.035410253952222352 0.00054506735919704113 -0.0020158489663168987 -0.021173583675656499 -0.00064631616361892632 0.0039091377565171241 0.0022208196819408031 0.0037158312302391599 -0.0010326636211478019 0.0072770478996847026</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>3</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/addlong_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_l/hip_flexion_l /jointset/hip_l/hip_adduction_l /jointset/hip_l/hip_rotation_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.23995365574574778 -0.0055056167993592156 0.00060894738621148151 0.0015588189023712129 -0.062424941848634626 -0.0008736098900705765 0.00083794621260783661 -0.0040357157017765202 0.0020744800963181094 0.011330253374484185 -0.054295716199416297 -0.00094280421794556664 -0.00095143589025062369 -0.016888924037631311 0.0024760579509251115 0.021820450022405385 0.00072707297610547341 0.0010108864135174055 -0.001923372801894196 0.01016328330027293</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>3</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/addmagDist_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_l/hip_flexion_l /jointset/hip_l/hip_adduction_l /jointset/hip_l/hip_rotation_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.21165634451083953 6.0222983489000268e-05 -0.0019650602694829531 0.00033724646384520511 0.00019425548091064247 -0.054078606327554422 0.0026695622128768094 0.0011664608100308968 -0.0017020088876307398 0.02488689569308242 0.0018403915079709193 0.0015251978715587575 0.014886693565978765 -0.00011750445684194342 -0.00050682293340482726 0.027217023933219547 0.0040709412132466727 -0.0021292894093048547 -0.00038463572139321397 0.0083682086569350032 0.0004152849815247549 -0.0011683383096234177 -0.014230086683381875 -0.00055325194741634182 -0.0074464956832552935 0.032023091165402098 8.0883074512152882e-05 0.0012647450075827973 0.010007896100987321 -0.0023751088568729557 -0.012076974899536607 -0.0093246183498262285 -0.0019856065892801377 -0.0051031019484387447 -0.0022784771190873785</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>4</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/addmagIsch_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_l/hip_flexion_l /jointset/hip_l/hip_adduction_l /jointset/hip_l/hip_rotation_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.32329418802272558 -0.0053654292969449614 0.0023824282470101669 0.00068779159562876266 -0.037714612041442559 -0.00081694539031890395 -0.0020052391383902812 0.034334287226074803 -7.5652848762501607e-05 0.0094379492564647845 0.045866075477730486 -0.0065794420893481682 0.00017046465993968387 0.00076007459651474452 -0.00087714338764788172 -0.032210851818907017 0.030038527398623258 0.0041684613198313411 -0.0010641231850190046 -0.012670524638894638</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>3</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/addmagMid_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_l/hip_flexion_l /jointset/hip_l/hip_adduction_l /jointset/hip_l/hip_rotation_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.13866025743946017 -0.0006837527329573884 -0.0039904461849870282 0.0010633804677068191 -0.00011913908003005725 -0.070708015326770998 -0.00014781825976338788 0.0015014307850376571 -0.00082921010362443188 0.0038815255572593093 0.00092710041863698471 0.0030889233504748609 0.013943770460168385 0.00053637821459164568 0.0046797745624123565 -0.0049809278020704166 0.007286515282238162 -0.002582002769746876 -0.00062517928434902188 -0.0033984067119981407 0.0039379467417452896 -0.0011509032352932929 -0.0004292368625449679 0.0015197478568185459 -0.0020309536691606425 0.028565068508098899 0.0029586966791062576 0.0005341589655865072 0.01997632146182669 0.00072199787010753978 -0.0040448351572567164 0.001490244786219329 -0.0031517085746868671 -0.0022196841796778286 -0.0054696466109863092</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>4</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/addmagProx_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_l/hip_flexion_l /jointset/hip_l/hip_adduction_l /jointset/hip_l/hip_rotation_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.12154487639531526 0.0049072477902884545 -0.0075918092778177997 0.0010609270759605557 0.00058874944087137073 -0.053026183481247206 -0.0032007920922097186 -0.0001497100879604347 0.0022737176093526059 -0.0096039785847697474 -0.0046417445036503755 0.0028298835542575865 0.0048637158451524925 -0.0026869307932325913 0.0018583846916496725 -0.024780680074985354 0.0059822913664463193 -0.0017391276696572865 -0.00058016564235993423 -0.018185582424991888 -0.00090001266525147777 0.0010210477315091137 -0.001768600930009975 -0.00078943596251118187 -0.0016891935621336463 0.0064122027859365776 0.0047701085126485212 0.00037028373445729664 0.0025364946025922715 0.004950877831102418 -0.0044659754180177268 0.0058628141376224838 -0.00078736081334386033 0.0064857759963741586 -0.00047582024121927612</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>4</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/bflh_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_l/hip_flexion_l /jointset/hip_l/hip_adduction_l /jointset/hip_l/hip_rotation_l /jointset/walker_knee_l/knee_angle_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.41452949784726878 -0.033988912449275786 0.0068535201915612938 -0.0096835667264811593 0.0032434789448179766 0.0074738292856560617 0.0025279883148102878 -0.001032780545565238 0.0001389861792965522 0.0012968123408093467 0.0015214914430256761 -0.00063816206331796844 -0.0012252900865381043 -0.00032013692765850871 -0.00016760586071292422 -0.027000503428522064 -0.0012417316921082191 0.00050405488156896419 -0.00014247664434211663 -0.0035747251834528536 -0.0022158504426249052 0.00062233369019903506 0.0025482346022763368 0.00030149944582650353 0.0003668512129525818 0.023151617212506564 -5.6563713977526861e-05 -5.2893050435395494e-05 -0.0015011304489823607 -0.00063369982306931837 0.00069670613490878126 0.0061234919021978312 -8.5915831384983664e-05 0.00045162747243574132 -0.001711733436813298 0.056427604695907296 -0.0021762036480956586 0.00064087369143424897 0.00021442680642893444 0.0036577284997221923 0.00059284054693231408 -0.00014116790035254045 0.0019895233950399014 0.00036602870049510502 -0.00051828555587458839 0.0094768400004545932 0.001616879883683771 -0.00023215258727931747 0.0056412439088952436 0.002266138998647855 -0.0037442004422362151 -0.032446015168691583 -0.00023383335825998024 0.0013392544848802495 -0.0042295404877525375 0.023556417771972298 0.0019073250672842178 -0.00081916772687183267 -0.0037903242316448017 -0.00063568760377267304 -0.0018521581495512961 0.0025782523155753129 -0.00015776159917064471 0.00040769717243339124 -0.0051935095848625479 -0.012606381198535185 -0.00020720904808333967 7.1885931382650387e-05 -0.002182099451357319 -0.00030183805776469496</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>4</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>4</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/bfsh_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/walker_knee_l/knee_angle_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.23019358133270401 -0.024802126611606797 0.0068801422763633451 -0.0092950525784118304 0.0025528625628459161</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>1</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>4</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/edl_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/ankle_l/ankle_angle_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.51249644837115538 -0.039533836821737334 -0.0050911329897579032 0.0022475882675996638</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>1</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>3</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/ehl_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/ankle_l/ankle_angle_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.47552021919254411 -0.042490863866047342 -0.0059817545114822252 0.0022921987909384932</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>1</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>3</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/fdl_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/ankle_l/ankle_angle_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.50084189864652229 0.011426731110207575 -0.0075929540945687485</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>1</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>2</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/fhl_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/ankle_l/ankle_angle_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.47700437038098287 0.018106751713077365 -0.0079652320279424999</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>1</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>2</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/gaslat_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/walker_knee_l/knee_angle_l /jointset/ankle_l/ankle_angle_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.52964640998063317 0.05354365641927343 -0.0090080887840237791 -0.0071506447049893927 0.0034489481170424004 0.0010126689009146567 -0.068861807202680897 0.10313811109893972 -0.048833323353827285 -0.027699164683048987 -0.0016883002433874272 -0.0034899674417524775 -0.0058006854805604247 0.051512204153591812 -0.075302181342662089 0.26627469765221656 -0.16101866363569328 0.012729384273791703 0.024800210969130508 -0.016546375208264331 0.014986639056664169 -0.21960028449751534 0.20408937720104015 -0.20654914171176986 -0.031257470793645298 -0.10630218670520132 0.12278668333569104 -0.040951727566157392 0.25602891279304796 -0.1234370546232828 0.05732797687458243 0.18702920869827014 -0.21841190016334056 0.044929593255971345 -0.092230913616753119 -0.047913537746026427 -0.15759482423171692 0.15375182753435973 -0.015048301009891268 0.0059757173382444604 0.063482553907659847 -0.0381714487982543 0.010772324728054531 -0.0098101466804092693 -0.0038182476406571344</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>2</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>8</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/gasmed_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/walker_knee_l/knee_angle_l /jointset/ankle_l/ankle_angle_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.53660485211192399 0.053252353664515681 -0.0079121794914016781 -0.0078211652708129933 -0.012207898762694794 0.00011773321008966061 1.7519717137162472e-05 -0.0095486944962605031 -8.1155165764829263e-05 0.001963729767430472</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>2</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>3</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/glmax1_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_l/hip_flexion_l /jointset/hip_l/hip_adduction_l /jointset/hip_l/hip_rotation_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.20820820653122629 0.024207174244059534 0.014692594907118923 -0.0067416241381642724 0.012589485333587461 0.011487070467725768 -0.208093973637062 -0.58626814939740046 2.6823235498204983 0.01890056476960544 0.024103274239633019 -0.020592538580842222 -0.042245749243510329 0.20042420424956009 0.55311137462102566 -2.0896903477788298 -0.35707693594325179 -0.011395714424039308 0.0038087320089461637 0.074336760528759718 -0.50543910513412493 -0.65051208275529593 6.1434227363705052 -2.9601310223998021 0.00082180978427212864 -0.05332067893157847 0.57455652979626304 0.15950055556618525 -6.9720727372194409 1.9915617066372153 0.028980243221440306 -0.31404438241558319 -0.067072903633759187 6.890824127642472 -3.0887424627229216 0.065463456656027472 0.27966590956330073 -5.3901225860381343 7.7094590303737673 -0.24662311906368917 2.252554259243948 -5.297303761991226 -0.35276064379848365 0.075591134548643149 1.1000092800500338 0.051852692197224937 -0.030434984544676129 -0.012628715575044632 0.0068881088762227502 0.074809916819268865 -0.037090657324323706 -0.86517774962360061 1.7018106446638106 0.015045819384854865 0.02671971760819904 0.077238724063166439 -0.24774436882707762 -0.38533109398241344 1.8381134064227764 3.7707077975453158 0.0084882982716216956 -0.074465054114540796 0.37085064015453623 0.80291225870035465 -2.2090250120132575 -12.150099441439501 0.061393238907088407 -0.23425405064357677 -1.0985106353120919 4.0533996572218758 14.179746209526806 0.044394166285933338 0.86814123465280857 -4.2392477700406328 -12.54155271285598 -0.32103890197110801 2.1942881857193077 10.033203521174224 -0.64780402524184832 -5.2704116056743908 1.1895368504692749 -0.0042406692042216759 0.0043749301924942306 0.031471093168153878 -0.026444760398141132 -0.0070581582433303352 -0.73920991865437669 1.8367144059205334 0.01132738319752763 -0.053346887007170642 0.068206917254143448 0.48970725745645788 1.2537107607570472 -7.3510503557571143 0.10689859131098482 0.072360773535316558 -1.3458329184365556 0.66702089085499594 11.269125644166206 -0.18693300279491237 1.1233207953740449 -2.2782957298107207 -14.440836983694618 -0.56443285419669798 0.90973976514781896 13.631594099597935 0.21950285747115234 -7.5319421966036408 2.2427441002021458 0.0067708551427305601 -0.0046560442043623151 0.037954550708021485 -0.060703188121542268 -0.05826563599040506 1.3032514353044187 0.085458380919770122 0.05008026593627412 -0.49035677981358561 0.59279660079035545 -2.3449342176279404 -0.33405542965758017 0.49704770850802127 -0.93177991251814984 -1.0059761533174598 -0.57931332869940289 -0.45857065623988036 4.8673820352518931 1.4641669432412747 -2.8343407065952193 0.20535273315722638 0.030099601542025005 -0.031429630626620568 -0.14468379764708525 0.31007102199427733 -0.46923937384830622 -0.22635643191478164 0.092807294487817674 0.31625803181554402 -0.20201883564583062 -0.46917021074263748 -1.5274623777613703 2.1899731783157872 2.751452339465394 -0.20810574866844073 -1.6406915048991095 -0.065941902960113666 -0.0023648544230121839 0.043000329508499011 -0.27419653299176466 -0.24315843645554969 -0.41830380763539937 0.15403125756398245 2.5184888786472857 1.3929226078117489 -2.6948045115868071 -0.059166472723734667 0.1745384724658692 0.084166515376323262 1.0573468563186244 0.38682676079851142 -2.1814524298772118 0.19880787813013118 -0.1705312940619739 -0.74720556224177237 -0.10696156864640886</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>8</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/glmax2_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_l/hip_flexion_l /jointset/hip_l/hip_adduction_l /jointset/hip_l/hip_rotation_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.2330119603212186 0.024080127627074167 0.020640822940041527 -0.009534393414251904 0.00030044393783161289 -0.002520246649857462 0.0025973867558345028 0.0084785193880746734 0.0085086583067873756 -0.0067428159431848116 -0.011121273030248357 0.025721194648821555 -0.0061654078255665374 -0.0064510937041292477 -3.3364653663617782e-05 0.020466132447643025 -0.044465824635296448 0.017071033951458928 0.00097825219050385313 -0.016660382214653539 0.049525361374972057 -0.023594119149545231 0.0086784115685590024 -0.023427156633125952 0.0033320057557679819 0.0054585169893052576 -0.0052616948240100641 0.0029676589164895845 0.066728529877564544 -0.023266349189583986 -0.014003262157483798 0.011041418685873458 0.0049832230679234552 -0.0015884698127557834 0.019193078358997934 0.034133218500349158 0.0064414608930517979 -0.045291266626005078 -0.026400129924048978 -0.02154636926234187 -0.033072608549319947 0.073538257123013193 0.08346165983709701 0.026556298286669958 -0.033753399244793224 -0.10940622813016715 0.012838992977539479 0.046072701078816551 -0.014304803802728604 -0.0078611839515880539 0.0042852420600252338 0.0061593566511968382 -0.02441695366375279 -0.0023952266519081133 -0.013578466996395559 -0.050280258487052483 0.073855481964013314 0.094517712401781376 0.057769540726554422 -0.013543341944749689 -0.21288622111903463 0.010728486733216804 0.15680054114079156 -0.086750187906283402 -0.0048837979133986749 -0.011325865052756011 0.018004361744984255 0.0258724706068033 0.033452754632223608 0.0091577406122624622 -0.12187838052936496 0.00041944797739204456 0.11583607999664199 -0.11441689102869548 0.008377910786034495 0.0030538114513538718 -0.024800235343496724 0.0029464259709185456 0.044422144285062484 -0.085773124593183911 0.0020717653583242211 0.0070011110822823094 -0.038348146086574338 -0.007814159516869432</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>6</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/glmax3_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_l/hip_flexion_l /jointset/hip_l/hip_adduction_l /jointset/hip_l/hip_rotation_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.23036038310603654 0.021121218477649934 0.0089492347667998982 -0.0055388609463034224 -3.4436373854939621e-05 0.00018853669869209593 -0.050829827872664803 -0.0057988313690484029 0.009347944805557392 -0.0020033900621932851 -9.7439398123189526e-05 0.016617988901554345 -0.013376462068659979 0.0079124193004657915 -0.00018813288666634899 0.018150280627630685 -0.0074411356296997097 0.0016484886551807456 0.0061153229483294795 -0.0012874173786543248 0.00198179632715628 0.082452181815220085 -0.013513008019167109 0.0039081024453266836 0.0044158849306662482 -0.0015802643541327831 0.056003057847496852 0.011078379232968887 -0.020101389802859769 0.0036984207641660768 -0.032809444143123492 0.033501402163141347 -0.017101460276954538 -0.048255957006173557 0.018909178132417319 -0.015586069762422671 0.008599992411088336 0.0055161641274327662 -0.012657407976464212 -0.0012254990021995545 -0.042936342582981693 0.018928762674390469 0.011594594731659788 -0.025810749942856235 -0.027966385428344637 0.044179520440390523 -0.021711824952977909 0.0001473006102941485 0.0078398092002429053 0.020786686416503917 -0.021458396275342018 0.037850955564723697 0.014709023816681696 -0.0020276299846921889 -0.0047763273551865134 -0.0068499316192406111</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>5</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/glmed1_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_l/hip_flexion_l /jointset/hip_l/hip_adduction_l /jointset/hip_l/hip_rotation_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.1392235542241872 -0.0080437674924823521 0.0083709719728259965 0.0017059552974984717 -3.1642443433104708e-05 0.057794347191730044 0.015948056573002231 -0.027923521387596174 -0.0067919165031675843 -0.010270499097860954 -0.0045978518601165509 0.0040573108380068659 -0.0053823735426064782 0.0011749774895321225 0.0018437383090101316 0.01140747812359374 -0.051989642230994497 -0.0099600961773529638 0.0088256294391473051 -0.008539782097074837 0.017959065824518533 0.019451565337578938 0.004716500279162302 -0.0048142073908818443 -0.0017431593983763256 -0.0083422112932513681 0.0056805490769294056 -0.0057545180802366707 -0.021823824149954388 -0.015554704166623398 0.0097216822122458239 -0.0012222655726096231 0.0047191514658394412 0.0024172313115296013 0.00049099005940819816</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>4</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/glmed2_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_l/hip_flexion_l /jointset/hip_l/hip_adduction_l /jointset/hip_l/hip_rotation_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.16970158238696245 0.010769489733550934 0.0027524031193997063 -0.0019394274391002421 0.00014594159420845354 0.052678019766844719 0.017352547695773952 -0.027310010806839848 -0.0032953712118226619 -0.011590672004321656 -0.0040699259199770072 0.0068637846976409176 -0.0051732293360565607 -0.0002154339593830377 0.0015864562422378138 0.022414863772398333 -0.053764658096891474 -0.0073578772647017116 0.0088568906763042306 0.004398398623085679 0.017772620190240482 0.0098088128353958394 -0.00085728270410120487 -0.0061839332423138556 -0.0006763302415782349 -0.003571591577538725 0.0016445809136594912 -0.0067219970693188436 -0.025274618608657026 -0.012790068607523923 0.0086092243282461702 -0.0032551418966096485 0.0065788605387671478 0.0029357928001230472 0.00058282858330998514</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>4</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/glmed3_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_l/hip_flexion_l /jointset/hip_l/hip_adduction_l /jointset/hip_l/hip_rotation_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.13216764883522741 0.024250629977134421 0.00095176187424860133 -0.0040751628911469629 0.00044762928714922292 0.043539559771645371 0.01841903964858637 -0.024874281353371708 -0.0010456932179876996 -0.011963901603828512 -0.0055147963655545569 0.0089131815583832347 -0.0033179604978523548 0.0003709971662777371 0.0010889516758300153 0.027933069319435375 -0.049088299128777886 -0.0045628229649221554 0.0083613144192999436 0.011410812326591885 0.021573131975484501 0.0058813911767728166 -0.0021074078635465537 -0.0085023636096004124 -0.0012550160290994421 0.0013472655002705123 -0.00015481816289399761 -0.0088361012032580431 -0.02442861743690105 -0.012988877907518395 0.0078223172123319633 -0.004909233897472289 0.0069998061092186878 0.0036260380440889875 0.00071582772573485463</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>4</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/glmin1_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_l/hip_flexion_l /jointset/hip_l/hip_adduction_l /jointset/hip_l/hip_rotation_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.10734345856919497 -0.01445281672727503 0.011829344179071433 0.003830749343040864 0.00011100254574392902 0.054683762020628746 0.0033160723588598392 -0.028687214791364952 -0.0081914259346978335 -0.0078267872161267207 -0.0033433207930164926 0.0058041405526351305 -0.0052221679496158363 0.0027068947632905168 0.0020732283367378185 -0.0084397514013648707 -0.049897652458984913 -0.0038103860432229168 0.011177285591463857 -0.012419768429533991 0.024216487942792304 0.021200113611678381 0.0076682821581053363 -0.0088699660690559259 -0.003037174512146224 -0.0056222646180484944 0.0038466081403643478 -0.009602481122599444 -0.022040711062540411 -0.011506584317267652 0.012176152615632388 0.00093624498961624857 0.0060668182054167364 0.00028348028345299221 0.00038024493752042226</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>4</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/glmin2_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_l/hip_flexion_l /jointset/hip_l/hip_adduction_l /jointset/hip_l/hip_rotation_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.11307639627194717 0.0039073445052888751 0.0060528040456076125 -0.00077654338440348342 -0.00042190537960137185 0.050387885160976392 -0.005186708019024165 -0.025927665314767499 -0.0015559979145822868 -0.0089196959142316245 0.0020333158108888998 0.0096536313332589857 -0.0045249912082175863 0.00028842121832366678 0.0014184450318476848 -0.0032340054263922152 -0.048337563259625488 0.0034062469415271461 0.010302925347394444 0.004272681656669052 0.020332269266091798 0.0017342954786543326 -0.0022043315327963282 -0.012059591849761301 -0.00015651395897824618 -0.0040276548893597389 -0.0025084869308687622 -0.009758709463929675 -0.022014496003914981 0.00026626615736555996 0.011095744823721079 0.00040356270110436906 0.0062671543221294234 -0.00044756945256536077 0.00027040624072099056</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>4</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/glmin3_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_l/hip_flexion_l /jointset/hip_l/hip_adduction_l /jointset/hip_l/hip_rotation_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.090989956787799628 0.015216053936150609 0.00017532573279314495 -0.0024222787918619852 5.6303416404200637e-05 0.042022822453964839 -0.0034868908859142372 -0.020090607190285558 0.0009469634543198543 -0.0093320993658599881 0.0029823680881208852 0.010514301771261189 -0.0027655163166171335 -0.00091170736061494111 0.00059493938579679453 0.0035619287906424012 -0.042621707236991768 0.0051467697350831383 0.0070237936323084586 0.013548080148783608 0.018376044299108395 -0.0051496934445590349 -0.0057461741713296689 -0.012923577896835597 0.0006379618794908799 0.00015362255631474784 -0.0057873058008080696 -0.0098371321890621168 -0.021367116113999791 0.0032932596291078992 0.0097086548750532613 -0.00062049921212798233 0.0070452055745067708 -0.00026186846735991721 3.7404657087879994e-05</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>4</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/grac_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_l/hip_flexion_l /jointset/hip_l/hip_adduction_l /jointset/hip_l/hip_rotation_l /jointset/walker_knee_l/knee_angle_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.43596638544283073 -0.02591227413102053 -0.012462975779346578 0.0067875631638341953 -0.0060582087893850502 0.0020502511083240007 0.0054302397262848447 0.0040658133551536892 -0.0020069795927994847 0.0031509819624953492 -0.0015290776546297586 0.0027910277132888587 -0.0017137620065484911 0.00080718210713402283 -5.0232375107202443e-05 -0.00096032938394994963 -0.0005897418235297874 7.521485265714529e-05 -0.00017177807604593152 -0.00010320763871172328 0.0004970930892225729 -0.059201955842184753 -0.0020990750350142694 0.0020934016214311279 -0.0002879635378078149 -0.00020845158999111652 -0.0033532804392938952 -0.0031053016155513985 -0.0016012301514399167 0.0013145108730215054 -0.0029693392595233148 0.0013877761928177198 -0.00064837860347428196 0.00042145065975300047 0.00081130125409396565 -0.00023938376524256357 0.031226693627345807 -0.0018294308698218089 0.0016436370277951007 -0.00045134545446127376 -0.0032990691699504773 -0.003028896100298563 0.00048627552194537 -0.0021824464567488096 0.00035974514852015642 0.0012721265833657213 0.014713090899915621 0.00018740806580099239 0.0002562476368372287 5.9318151927751545e-05 0.00074306325037852322 0.00041588083630834737 -0.002203424833797128 0.00059261441146929916 0.0013288030624110862 -0.001878435074046843 -0.01612959645300658 -0.004461310030389261 0.0025455535603724913 -0.0036781586119122773 0.0017661298719011942 -0.0062281696729591897 0.0026600389199356298 -0.00087121095770730211 -0.00042516216294412052 0.0020094336338990055 0.0025274331934828742 -0.0001984671766124113 0.0013093086076761149 -0.00080377615098461475 -0.00044547265430128159 -0.0017400567028922442 -0.00073099903939470774 0.0003959243867244144 -0.00027208980525665367 -0.0012688173103385704 -0.0014240773720257381 1.6814720208353396e-05 5.5323717365308891e-05 7.6082976752732943e-05 -9.5636461361312778e-05 0.006508813527023081 0.00060916745505298626 -9.1916854993766804e-05 0.00024053426429867646 -0.00055299773228033376 0.00011525413776474901 0.0015483267929056667 1.9262646850996736e-05 0.00036819790189261296 -2.4242194309101093e-05 0.032296518823541988 -0.00080043534982628161 -0.00027127768492969412 0.00033424277937019723 -0.00092747733579570202 -0.00082034942968170846 0.00024806371738085332 -0.00016141659078832766 0.0001872904740329623 0.00025309430160415326 0.0019547392842178186 0.0011564561541160738 -0.00037772227474364416 0.0022966331428436052 0.0025162309630402044 0.0015496038237631966 -0.018048272647896886 -0.00044665506567262322 0.0013904098479269212 -0.0037660281684333066 0.0039795627439981867 0.0012853530354177015 -0.00023860083139071471 0.0014008511650157017 -0.00013509436724574604 -0.00056367034664250349 0.0008829357587843504 -0.00035362330121747952 -0.0002100330717076072 -0.00051048641829893942 -0.0035573834300859945 -0.0001788620120781602 0.0001525019951988485 -0.00059618494006314997 -0.00066834917144362508</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>4</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>5</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/iliacus_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_l/hip_flexion_l /jointset/hip_l/hip_adduction_l /jointset/hip_l/hip_rotation_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.22739248584373289 -0.010673817874949577 0.00010570390898621297 0.0014831505954662756 0.0064422994595151857 -0.0011657158020813344 0.00024006163682587146 -0.0013577299910911905 -0.0034013667222303266 0.0029702821203543327 -0.039056690452062698 0.00040837000554149345 -0.0023829267670742978 -0.015118888737124733 0.00034762010380323032 0.0072089628464855563 -0.00051013369198766353 -0.0015579682178852592 0.0015838320518618838 -0.001889807230136655</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>3</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/perbrev_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/ankle_l/ankle_angle_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.23385923662008351 0.010672426250697168 -0.0028223939151486295 -0.0008671627881741028</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>1</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>3</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/perlong_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/ankle_l/ankle_angle_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.46013531799117774 0.012458138857356854 -0.0022041402500617476 -0.0012739004827603752</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>1</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>3</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/piri_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_l/hip_flexion_l /jointset/hip_l/hip_adduction_l /jointset/hip_l/hip_rotation_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.15158592329172985 0.028806001410779443 -0.004362102241268242 -0.0033605091681986241 0.00057174026752635334 0.025926571279838186 0.0011313018649730644 -0.012376233851587671 0.0023588698781037858 -0.0090199521567548638 0.00085701186235038356 0.006630003112624152 -0.0018432076104510841 -0.0010807895855563464 0.00051382179206514397 0.010948291493466857 -0.029975504283302826 0.0049883664902818864 0.0031828208695595115 0.022698411881844072 0.0098776125663318851 -0.0098030764605199425 -0.0060684444892990025 -0.0061597254107415671 -5.1244941758181543e-05 0.002702448710705554 -0.010044741207569792 -0.0054692693638836625 -0.016572218893087916 0.0050599082195926584 0.0047875498526391046 -0.0021599302509050823 0.0066138080928287435 -0.00097650620340661266 6.0947356808583138e-05</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>4</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/psoas_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_l/hip_flexion_l /jointset/hip_l/hip_adduction_l /jointset/hip_l/hip_rotation_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.25202090579894881 -0.0017779484065145791 -0.0039820140751802681 0.00037742285089540967 -0.0036196685479184306 -0.00087823665790208612 0.00033068435691768061 -0.00029065170241698634 -0.0043401195147676763 0.003747016926648469 -0.027061965304483935 0.0032127552595111373 -0.0010376621452860709 -0.01072770693948244 -0.0021407284060541553 0.0041941567510675112 -0.00037009596979288827 -0.0018099724357947111 0.0026103508834020919 -0.0029776398235782202</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>3</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>3</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/recfem_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_l/hip_flexion_l /jointset/hip_l/hip_adduction_l /jointset/hip_l/hip_rotation_l /jointset/walker_knee_l/knee_angle_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.51569935111738574 0.04778211210300333 0.00475006138644415 -0.0087809002549953646 0.0034071678819015583 -0.00091340713467601836 0.0023427561420422509 -0.0014257360098450674 0.0030623933383649789 -0.0031761998835787312 0.00096795891665075627 0.0025340204195210855 -0.00093392130481440548 0.0011195573264754656 -0.00074943632756672009 -0.0003672199957814567 3.853977682075657e-06 0.00012150652195107412 2.9426620575962728e-05 -0.00015861566065883338 -0.00048201436079771225 0.015479149457632489 7.8045220426773313e-05 0.00041008478148931647 -0.00030777593526440481 2.8097706420068314e-05 -0.006194661476801153 0.0019139674713965482 -0.0014635890237321191 0.00098809028325489508 -2.0096442383488191e-06 -3.6821581978474037e-05 -9.0343407875928032e-05 0.0005323260903120602 0.00066477737502921956 0.00057065801793702452 -0.020132367016646887 -0.00067268931956141918 0.00081973586580486003 -0.00038799618473271414 -0.00066602178742760493 -0.00023719152792459603 0.00026560417390880041 -0.00032738335833639961 0.00037524250540293871 0.00078223844411224848 -0.0018671014592739925 0.00010192191705469834 0.00015407797151849965 0.00034780211172780455 0.00028536233709825035 0.00047881647942323372 0.00093842781431178589 0.00090666612605648273 0.00019090152019644684 0.00017072228077288947 -0.039144680636981385 0.0028240000920923308 -0.0067294186451949192 0.0070205995530249693 -0.0020707329197983079 0.00015440217873542516 -0.00011933912320795114 0.00022989932229913415 -0.00018832561899266662 0.003317733889084221 -0.0010813668798201745 0.00028778060231681493 -0.00014541320080811157 0.000314235495270317 0.00033512185650155606 0.0014119114001371078 9.8298834817625455e-05 -0.00058092314246670381 0.00040314390366068167 0.0042940822196125515 -0.00021077288956213909 -0.00058987491497569633 -0.00035491572810100497 0.0007575324534629549 -0.00054017144077969387 0.014468705430899937 0.00035889789484273599 0.0001680331747983932 -0.00058101080954598458 0.00026366626521171014 0.0002577228069066094 -0.00023669592097591845 -0.00060534932101119899 -0.00016761447842158624 -0.0013160203789690773 -0.019328290957267142 -0.00058812787955452852 0.00053024426441077629 -0.00049408416604270475 0.00022947249877521234 -0.00038374436654428027 0.00038913433946178514 -0.00069392563137346227 1.3659751203413587e-05 -0.00031224667515532473 0.00090514133554540747 -0.00020374036500185608 -0.00013764983885953514 0.0031893298714264478 -0.0010840748113487451 -0.00041295622440600682 0.010392886671415864 -0.00043269018526885511 -0.00031833870314687844 -0.00070181799768222013 0.0047895614975703811 -0.0003100658796133419 6.9400789350597397e-05 -9.2382041768829617e-05 -0.00015384768145631215 -0.00048494705057024429 -0.00034965726735596133 0.00021055675971567788 -8.4047125669972086e-05 -0.0010417496635188755 0.0014698598806194669 0.00033883910513766367 7.3736833610912056e-05 0.00026605969183994581 -0.00015944604762796753</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>4</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>5</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/sart_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_l/hip_flexion_l /jointset/hip_l/hip_adduction_l /jointset/hip_l/hip_rotation_l /jointset/walker_knee_l/knee_angle_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.60194251111754715 -0.014421004945063523 -0.013207173066011418 0.0022812824080116782 0.0041801011128338988 1.320333543399861e-05 -1.0535292973869516e-05 -0.0017303097873186371 2.3425247563841992e-05 -0.00090693403888709393 0.017478101093373815 0.00010097819204161835 6.5028518966252325e-05 0.00037467631669663393 1.5997155881553606e-05 0.0032159431072221172 -0.029961866240364562 -0.00060712905776333088 0.00040394449352946057 -0.0022383438687112183 -0.033987280335136483 2.8874729623904692e-05 -7.4719001308611328e-05 0.0076633330649412013 7.1059511611987694e-06 -0.0006092200421506024 0.0055273775773104078 -0.00040661962289125842 -0.00086605040759262972 0.018830653719217393 -0.030152351335691122 7.1068977912544024e-05 -0.0017990862782317177 0.0060832587985140754 0.0042757908485838488</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>4</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>3</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/semimem_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_l/hip_flexion_l /jointset/hip_l/hip_adduction_l /jointset/hip_l/hip_rotation_l /jointset/walker_knee_l/knee_angle_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.40416622718987177 -0.036855740449627132 -0.0026610787792255637 -0.0044002990553080679 0.0026184458883966176 -0.0013441575490246911 0.0016224819209409052 -0.00053547888751250211 -0.00018295502504363744 0.0024622765360598274 0.0020290123567803745 -0.00069173353900914302 0.00025471199326777713 -0.00016922529701056901 -0.00017197727018105886 -0.016559564377674172 -0.00066942590136398515 0.00071178692245366679 -0.00022390269536735845 -0.0033657685476665431 -0.0027520068894446642 0.00063102160363460883 -0.0011393392548322962 0.00015025130667527115 0.00037992938156647935 0.022025872337513606 0.000280628524194987 -5.7202732743402899e-05 -0.0006818561340455661 -0.00060757439427151002 -0.00021112140767422179 0.0036440202359469646 -2.565916943621707e-05 0.00058375520557686438 -0.0017235421850405762 0.050253187334892549 -0.0019537156729652265 -0.00037772648210750441 0.0007572172463158254 -0.0021639196783806718 0.00020611531939647394 -0.00017572897931787622 0.0015014415026095096 0.00048343718136977995 0.00011584521368307232 -0.00075390986465724075 0.00076634825345708619 -0.00039828125258667451 0.0046263207547122326 0.0028885699590715623 0.0015673912848600052 -0.029160998519986464 -0.00048055250573756541 0.00029868071251828803 -0.0010297737485333068 0.020835528191168264 0.0021661948230616247 -0.00082522823462144684 0.001713665454647263 -4.9944317193790468e-05 -0.0016494250436645177 -0.00024607034362910372 -0.00026315567342932028 0.00062473644901039774 -0.0049556375399470312 -0.010848191073786413 -0.00013877280281525672 3.4925976822123089e-05 0.00037172896449007682 -0.00047790848295734049</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>4</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>4</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/semiten_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_l/hip_flexion_l /jointset/hip_l/hip_adduction_l /jointset/hip_l/hip_rotation_l /jointset/walker_knee_l/knee_angle_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.45404210317363042 -0.045006825299984614 -0.0042422696905976137 0.00068003628806019589 -0.011618258513899166 0.011696330846374876 -0.003049345669177723 -0.00096406835713787093 0.0040046131906447289 -0.0051610098180865094 0.0085822788457663376 -0.007081041118597477 0.0018786125579841372 0.0039310219301693051 0.00060600324604037235 0.0032932276291634476 -0.0021834554528292896 0.00020407338077136987 1.2142879527842247e-05 0.00068619380076088304 -0.0019108888087832291 0.00085706475945131135 -0.00011414998040997371 -0.0014024070812043302 0.00053419327322938061 0.00016675027596074537 -7.984515521110248e-05 0.0014097295268431856 -0.027795279361254803 -0.0025899991001535573 0.0052041707525177635 -0.0057333371575158838 0.0032258235670013236 -0.00072355587064921079 -0.0055808185458978542 -0.0027420335209336561 -0.0033827877855277569 0.0024650880499977033 -3.4154690704543296e-05 -0.0018961093715290276 0.0020061280120338859 -0.0022694495304194685 0.00085087477873154816 0.0017545385148615704 -0.0013141054567192799 0.00059657404103822609 -0.0012569008320224302 -0.00022232778093276596 0.0011026973796188868 0.029946426200523641 0.00019230945217247307 -0.00075698000509180543 0.001245579723330659 -0.00041597086919467662 -0.0017261269805091163 -0.0015235047401968803 -0.00051156368834433773 0.00075519347315846979 -0.00068981307567597423 -0.0012608632541011118 0.00064083281697663134 0.00099301221505932943 -0.0020351830781307426 0.00044492212953383715 0.0068539077315752477 -0.00024576884451828012 0.00037761557910447789 1.7395900351934411e-05 0.0006175766576098006 0.002710973543514684 -0.00062476512701008344 -0.001795541177995835 0.0032801747284824916 -0.0018183194871209728 -0.0046556678886162063 0.0049556614235646938 -0.0041679385639480215 0.0032458203936172538 -0.0033758345750715293 0.0043634062281620234 0.0031341583205839545 -0.0060780536841018602 -0.0043135555128593333 -0.0025456993643177632 0.056361211007620184 -0.0027088582924527215 0.00069501663082296723 -0.0065967507512647138 0.0080764538980219146 -0.0024073912514876806 -0.0037580439716840236 0.00083037744131857173 0.00060892666576267804 -0.0031863935711354606 0.0016361305823849146 0.0016819666354375036 0.0028516403585807236 -0.0010695560666218733 4.5613838001894946e-05 0.00076155739465434864 -0.0010047052295896943 0.0016818197896055743 -1.7809324649818888e-05 0.00060676962863618136 -0.0018378272655252686 -0.00016468512907183425 0.0035089464482013629 -0.0049551782749379216 0.002719265320542692 -0.00046424045199440419 0.0068960664079689418 0.0022899520362055859 0.0047005230674902121 -0.0031344834030043109 0.0025768506564270606 -0.0022864181642556032 0.0011711439085696817 -0.0024910240052658139 0.0017807964454229289 0.0040938681761306921 -0.035225432043785872 -0.00094374030312294503 0.00013669709982368217 -0.00011654262533890313 0.0016641732131752953 -7.2582175448112924e-05 -0.0010126339985456053 0.001296018359321639 0.0007760344747599012 0.0010568932904301571 -0.0025912625484716639 0.00021464997038345298 -0.0017463141267581748 -0.0022152726622961423 -0.0038295570811620718 -0.001003661515186638 0.0056601952934229021 -0.0004563916311138116 -0.00019193881229960042 -0.0010999353853552098 0.029096142783806719 0.0015967230979562423 0.0014752546913111664 -0.00010557372970505346 -0.00081016939603969595 0.0028307492114974663 -0.0015475499358688439 0.0019328925254552373 -0.00085470092528369527 -0.0024366029428702545 -0.00025176044223630743 -0.00013444267284723498 0.00074213460138914593 -0.0020852356598802038 -0.00044432968910748487 0.00058291098586752787 -0.001292377530417327 0.0015870008947087174 -0.00033156075950516216 0.0015659002675506891 0.003108172308620108 -0.00081602500116550883 0.0014571557966863101 0.00092556195261387633 -0.0012252016458137755 -0.012209383717021384 -0.00042022994253343589 2.1432471897129155e-05 -0.0032285304971499101 0.0032649829133338439 -0.002226505511528237 -0.0010250874715370809 0.0035670231907121044 0.0039516000697408359 -0.00050087735197446959 -0.013781667477970761 0.00045642243117138104 -0.00072647490292760265 0.00057595581837493624 7.6572882103307036e-05 0.00018366000700729344 0.00074223704401679929 0.0014840070118044345 -0.0014565746657440304 -0.00072289443322450019 -0.00040528094564368288 -0.0010429398956113486 -0.00040562390290955862 -0.0028731615531314828 -0.00086196283824230486 -0.0018377273816338796 0.011781456235912051 0.0015742655885147699 0.0012862248166621813 -0.00096859186614059532 -0.001726864374303779 -0.001103621110811808 -0.00042679004903590931 -0.00057740967308630064 -0.0009642214622456245 -0.00082000294840593117 0.00066541101414335649 0.0019242455483733751 0.0015148666070755133 -0.0027010428900699187 0.0016071318061215794 0.0015386533493616033 0.00078637274979385854 -0.0010060888002730466 -0.0004156888371432248</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>4</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>6</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/soleus_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/ankle_l/ankle_angle_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.38472478059742976 0.049769615254452809 -0.012380541762571081 -0.0067497516556427042</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>1</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>3</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/tfl_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/hip_l/hip_flexion_l /jointset/hip_l/hip_adduction_l /jointset/hip_l/hip_rotation_l /jointset/walker_knee_l/knee_angle_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.54665725511246543 0.015022885463685517 0.0071761462515104232 -0.0076571331641481152 0.0017674857298052822 -0.0045149719582581902 -3.318743950757107e-05 5.9826727132637182e-05 -2.4924255908767797e-05 0.011995123527386981 7.1608950490726419e-05 6.8902315941429918e-05 0.0012666275589477728 -9.9055699656988168e-05 -0.0014297862020206391 0.059320461437547517 0.00010885077005399148 -0.00013739317940008792 3.5901161883212544e-05 -0.01433264354878744 6.0271458283702839e-06 -9.9460787699404818e-06 -0.019112041260232908 -0.00048427507833954155 0.00067885972504459291 -0.024703960223622916 -7.8832025209545233e-05 -4.9665535501827417e-06 -0.00084298255234947468 5.287894340903281e-05 0.0022422431430357075 -0.0026868302248873235 0.00012352270821331974 0.0017432882445459362 0.00068838115528146494 -0.03607540633448067 -0.00010508616616639604 0.00014788875020357097 -3.7585247145107927e-05 -0.032850118685957969 2.6072684480684491e-05 -4.9595099699578795e-05 0.009176942589321049 -0.00036589212313677556 0.0081705063595923048 -0.0024443620958416431 3.8050159314565626e-05 8.5820435392250263e-05 0.013569646930998342 -7.3605845368642897e-05 0.0016158069221225485 0.0065399726991539541 0.00016361082034157496 -0.0088533631504332088 -0.0014734501831819304 -0.024737032899011357 7.3235404421255754e-06 -7.0977168070346331e-05 6.7042628022305289e-05 7.3894190802354948e-05 -0.00088132824197578784 -0.0090537920681410325 -0.0002375878595805158 0.0080757442263879806 0.013889713717644657 0.0015397261689532005 7.8195053351753739e-05 0.0012842895370231899 -5.1633003001032039e-05 0.00048294010560225194</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>4</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>4</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/tibant_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/ankle_l/ankle_angle_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.36155305168299806 -0.048114292274206182 -0.0067630655509419843 0.0041446758760207226</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>1</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>3</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/tibpost_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/ankle_l/ankle_angle_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.38074128228830351 0.012454895088827439 -0.0071333255614500126</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>1</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>2</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/vasint_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/walker_knee_l/knee_angle_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.28631053865712902 0.045577636971680484 0.0080162061080739887 -0.052566917877536555 0.13675470028479261 -0.21359223321423132 0.18834443306486598 -0.086494445780833401 0.016011315984011041</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>1</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>8</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/vaslat_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/walker_knee_l/knee_angle_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.30047066757280605 0.039580488872560826 0.026045087923790459 -0.048879708629944785 0.061259479507249345 -0.09004179399905933 0.09417874631523708 -0.050728890587464104 0.010551948786927921</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>1</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>8</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+			<FunctionBasedPath name="/forceset/vasmed_l">
+				<!--The list of paths to the model coordinates that are used as arguments to the length, lengthening speed, and moment arm functions. You must provide a least one coordinate path, and the order of the paths must match the order of the arguments passed to `length_function` (and `moment_arm_functions` and `lengthening_speed_function`, if provided).-->
+				<coordinate_paths>/jointset/walker_knee_l/knee_angle_l</coordinate_paths>
+				<!--(Required) The OpenSim::Function object that computes the length of the path as a function of the coordinate values. The function arguments must match the order in `coordinate_paths`.-->
+				<length_function>
+					<MultivariatePolynomialFunction>
+						<!--Coefficients of a multivariate polynomial function in order of ascending powers starting from the last independent component.-->
+						<coefficients>0.2751768252462668 0.043556639420088195 0.01366903385725886 -0.058733582654725357 0.12373169714400141 -0.17893896731985837 0.15622262010648669 -0.072625012806155492 0.013673296265005292</coefficients>
+						<!--Number of input dimensions (i.e., independent components).-->
+						<dimension>1</dimension>
+						<!--The largest sum of exponents in a single term.-->
+						<order>8</order>
+					</MultivariatePolynomialFunction>
+				</length_function>
+			</FunctionBasedPath>
+		</objects>
+		<groups />
+	</Set_FunctionBasedPath_>
+</OpenSimDocument>

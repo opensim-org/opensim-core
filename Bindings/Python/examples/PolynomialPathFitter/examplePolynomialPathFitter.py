@@ -138,11 +138,6 @@ plot_moment_arms(results_dir, model.getName())
 # (i.e., it is a static function).
 functionBasedPathsFile = os.path.join(
     results_dir, f'{model.getName()}_FunctionBasedPathSet.xml')
-# Remove columns for locked coordinates.
-values.removeColumn('wrist_flex_l/value')
-values.removeColumn('wrist_flex_r/value')
-values.removeColumn('wrist_dev_l/value')
-values.removeColumn('wrist_dev_r/value')
 osim.PolynomialPathFitter.evaluateFunctionBasedPaths(
     model, osim.TableProcessor(values), functionBasedPathsFile)
 

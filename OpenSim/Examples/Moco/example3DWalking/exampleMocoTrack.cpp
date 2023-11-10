@@ -42,9 +42,6 @@ void torqueDrivenMarkerTracking() {
     // model by appending ModelOperators. Operations are performed in the order
     // that they are appended to the model.
     ModelProcessor modelProcessor("subject_walk_scaled.osim");
-    // Weld the subtalar and MTP joints.
-    modelProcessor.append(ModOpReplaceJointsWithWelds(
-            {"subtalar_r", "mtp_r", "subtalar_l", "mtp_l"}));
     // Add ground reaction external loads in lieu of a ground-contact model.
     modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml") );
     // Remove all the muscles in the model's ForceSet.
@@ -112,8 +109,6 @@ void muscleDrivenStateTracking() {
     // DeGrooteFregly2016Muscles, and adjustments are made to the default muscle
     // parameters.
     ModelProcessor modelProcessor("subject_walk_scaled.osim");
-    modelProcessor.append(ModOpReplaceJointsWithWelds(
-            {"subtalar_r", "mtp_r", "subtalar_l", "mtp_l"}));
     modelProcessor.append(ModOpAddExternalLoads("grf_walk.xml"));
     modelProcessor.append(ModOpIgnoreTendonCompliance());
     modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
@@ -121,6 +116,9 @@ void muscleDrivenStateTracking() {
     modelProcessor.append(ModOpIgnorePassiveFiberForcesDGF());
     // Only valid for DeGrooteFregly2016Muscles.
     modelProcessor.append(ModOpScaleActiveFiberForceCurveWidthDGF(1.5));
+    // Use a function-based representation for the muscle paths.
+    modelProcessor.append(ModOpReplacePathsWithFunctionBasedPaths(
+            "subject_walk_scaled_FunctionBasedPathSet.xml"));
     track.setModel(modelProcessor);
 
     // Construct a TableProcessor of the coordinate data and pass it to the 
@@ -175,13 +173,9 @@ void muscleDrivenStateTracking() {
 int main() {
 
     // Solve the torque-driven marker tracking problem.
-    // This problem takes a few minutes to solve.
     torqueDrivenMarkerTracking();
 
     // Solve the muscle-driven state tracking problem.
-    // This problem could take an hour or more to solve, depending on the 
-    // number of processor cores available for parallelization. With 12 cores,
-    // it takes around 25 minutes.
     muscleDrivenStateTracking();
 
     return EXIT_SUCCESS;
