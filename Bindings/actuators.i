@@ -12,7 +12,7 @@
 %include <OpenSim/Actuators/Millard2012AccelerationMuscle.h>
 %include <OpenSim/Actuators/McKibbenActuator.h>
 %include <OpenSim/Actuators/DeGrooteFregly2016Muscle.h>
-%template (SetFunctionBasedPath) OpenSim::Set<OpenSim::FunctionBasedPath>;
+%template (SetFunctionBasedPaths) OpenSim::Set<OpenSim::FunctionBasedPath>;
 
 %include <OpenSim/Actuators/ModelFactory.h>
 
