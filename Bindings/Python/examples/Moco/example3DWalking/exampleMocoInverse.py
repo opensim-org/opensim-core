@@ -1,9 +1,9 @@
 # -------------------------------------------------------------------------- #
 # OpenSim Moco: exampleMocoInverse.py                                        #
 # -------------------------------------------------------------------------- #
-# Copyright (c) 2020 Stanford University and the Authors                     #
+# Copyright (c) 2023 Stanford University and the Authors                     #
 #                                                                            #
-# Author(s): Christopher Dembia                                              #
+# Author(s): Christopher Dembia, Nicholas Bianco                             #
 #                                                                            #
 # Licensed under the Apache License, Version 2.0 (the "License") you may     #
 # not use this file except in compliance with the License. You may obtain a  #
@@ -38,7 +38,7 @@ def solveMocoInverse():
     # muscles in the model are replaced with optimization-friendly
     # DeGrooteFregly2016Muscles, and adjustments are made to the default muscle
     # parameters.
-    modelProcessor = osim.ModelProcessor('subject_walk_armless.osim')
+    modelProcessor = osim.ModelProcessor('subject_walk_scaled.osim')
     modelProcessor.append(osim.ModOpAddExternalLoads('grf_walk.xml'))
     modelProcessor.append(osim.ModOpIgnoreTendonCompliance())
     modelProcessor.append(osim.ModOpReplaceMusclesWithDeGrooteFregly2016())
@@ -46,6 +46,9 @@ def solveMocoInverse():
     modelProcessor.append(osim.ModOpIgnorePassiveFiberForcesDGF())
     # Only valid for DeGrooteFregly2016Muscles.
     modelProcessor.append(osim.ModOpScaleActiveFiberForceCurveWidthDGF(1.5))
+    # Use a function-based representation for the muscle paths.
+    modelProcessor.append(osim.ModOpReplacePathsWithFunctionBasedPaths(
+        "subject_walk_scaled_FunctionBasedPathSet.xml"))
     modelProcessor.append(osim.ModOpAddReserves(1.0))
     inverse.setModel(modelProcessor)
 
@@ -57,8 +60,8 @@ def solveMocoInverse():
     inverse.setKinematics(osim.TableProcessor('coordinates.sto'))
 
     # Initial time, final time, and mesh interval.
-    inverse.set_initial_time(0.81)
-    inverse.set_final_time(1.79)
+    inverse.set_initial_time(0.48)
+    inverse.set_final_time(1.61)
     inverse.set_mesh_interval(0.02)
 
     # By default, Moco gives an error if the kinematics contains extra columns.
@@ -81,17 +84,19 @@ def solveMocoInverseWithEMG():
 
     # This initial block of code is identical to the code above.
     inverse = osim.MocoInverse()
-    modelProcessor = osim.ModelProcessor('subject_walk_armless.osim')
+    modelProcessor = osim.ModelProcessor('subject_walk_scaled.osim')
     modelProcessor.append(osim.ModOpAddExternalLoads('grf_walk.xml'))
     modelProcessor.append(osim.ModOpIgnoreTendonCompliance())
     modelProcessor.append(osim.ModOpReplaceMusclesWithDeGrooteFregly2016())
     modelProcessor.append(osim.ModOpIgnorePassiveFiberForcesDGF())
     modelProcessor.append(osim.ModOpScaleActiveFiberForceCurveWidthDGF(1.5))
+    modelProcessor.append(osim.ModOpReplacePathsWithFunctionBasedPaths(
+        "subject_walk_scaled_FunctionBasedPathSet.xml"))
     modelProcessor.append(osim.ModOpAddReserves(1.0))
     inverse.setModel(modelProcessor)
     inverse.setKinematics(osim.TableProcessor('coordinates.sto'))
-    inverse.set_initial_time(0.81)
-    inverse.set_final_time(1.79)
+    inverse.set_initial_time(0.48)
+    inverse.set_final_time(1.61)
     inverse.set_mesh_interval(0.02)
     inverse.set_kinematics_allow_extra_columns(True)
 
@@ -155,9 +160,9 @@ def solveMocoInverseWithEMG():
     report.generate()
 
 
-# This problem solves in about 5 minutes.
+# Solve the basic muscle redundancy problem with MocoInverse.
 solveMocoInverse()
 
 # This problem penalizes the deviation from electromyography data for a
-# subset of muscles, and solves in about 30 minutes.
+# subset of muscles.
 solveMocoInverseWithEMG()

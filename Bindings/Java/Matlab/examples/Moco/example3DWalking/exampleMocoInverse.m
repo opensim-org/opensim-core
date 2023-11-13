@@ -1,9 +1,9 @@
 % -------------------------------------------------------------------------- %
 % OpenSim Moco: exampleMocoInverse.m                                         %
 % -------------------------------------------------------------------------- %
-% Copyright (c) 2020 Stanford University and the Authors                     %
+% Copyright (c) 2023 Stanford University and the Authors                     %
 %                                                                            %
-% Author(s): Christopher Dembia                                              %
+% Author(s): Christopher Dembia, Nicholas Bianco                             %
 %                                                                            %
 % Licensed under the Apache License, Version 2.0 (the "License"); you may    %
 % not use this file except in compliance with the License. You may obtain a  %
@@ -25,11 +25,11 @@
 
 function exampleMocoInverse()
 
-% This problem solves in about 5 minutes.
+% Solve the basic muscle redundancy problem with MocoInverse.
 solveMocoInverse();
 
 % This problem penalizes the deviation from electromyography data for a
-% subset of muscles, and solves in about 30 minutes.
+% subset of muscles.
 solveMocoInverseWithEMG();
 
 end
@@ -45,7 +45,7 @@ inverse = MocoInverse();
 % muscles in the model are replaced with optimization-friendly
 % DeGrooteFregly2016Muscles, and adjustments are made to the default muscle
 % parameters.
-modelProcessor = ModelProcessor('subject_walk_armless.osim');
+modelProcessor = ModelProcessor('subject_walk_scaled.osim');
 modelProcessor.append(ModOpAddExternalLoads('grf_walk.xml'));
 modelProcessor.append(ModOpIgnoreTendonCompliance());
 modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
@@ -53,6 +53,9 @@ modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
 modelProcessor.append(ModOpIgnorePassiveFiberForcesDGF());
 % Only valid for DeGrooteFregly2016Muscles.
 modelProcessor.append(ModOpScaleActiveFiberForceCurveWidthDGF(1.5));
+% Use a function-based representation for the muscle paths.
+modelProcessor.append(ModOpReplacePathsWithFunctionBasedPaths(...
+        "subject_walk_scaled_FunctionBasedPathSet.xml"));
 modelProcessor.append(ModOpAddReserves(1.0));
 inverse.setModel(modelProcessor);
 
@@ -64,8 +67,8 @@ inverse.setModel(modelProcessor);
 inverse.setKinematics(TableProcessor('coordinates.sto'));
 
 % Initial time, final time, and mesh interval.
-inverse.set_initial_time(0.81);
-inverse.set_final_time(1.79);
+inverse.set_initial_time(0.48);
+inverse.set_final_time(1.61);
 inverse.set_mesh_interval(0.02);
 
 % By default, Moco gives an error if the kinematics contains extra columns.
@@ -92,17 +95,19 @@ import org.opensim.modeling.*;
 
 % This initial block of code is identical to the code above.
 inverse = MocoInverse();
-modelProcessor = ModelProcessor('subject_walk_armless.osim');
+modelProcessor = ModelProcessor('subject_walk_scaled.osim');
 modelProcessor.append(ModOpAddExternalLoads('grf_walk.xml'));
 modelProcessor.append(ModOpIgnoreTendonCompliance());
 modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
 modelProcessor.append(ModOpIgnorePassiveFiberForcesDGF());
 modelProcessor.append(ModOpScaleActiveFiberForceCurveWidthDGF(1.5));
+modelProcessor.append(ModOpReplacePathsWithFunctionBasedPaths(...
+        "subject_walk_scaled_FunctionBasedPathSet.xml"));
 modelProcessor.append(ModOpAddReserves(1.0));
 inverse.setModel(modelProcessor);
 inverse.setKinematics(TableProcessor('coordinates.sto'));
-inverse.set_initial_time(0.81);
-inverse.set_final_time(1.79);
+inverse.set_initial_time(0.48);
+inverse.set_final_time(1.61);
 inverse.set_mesh_interval(0.02);
 inverse.set_kinematics_allow_extra_columns(true);
 

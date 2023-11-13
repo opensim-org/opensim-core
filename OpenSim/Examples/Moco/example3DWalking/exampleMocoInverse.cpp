@@ -145,8 +145,11 @@ void solveMocoInverseWithEMG() {
 
 int main() {
 
+    // Solve the basic muscle redundancy problem with MocoInverse.
     solveMocoInverse();
 
+    // This problem penalizes the deviation from electromyography data for a
+    // subset of muscles.
     solveMocoInverseWithEMG();
 
     // If you installed the Moco python package, you can compare both solutions
