@@ -105,80 +105,9 @@ void PolynomialPathFitter::run() {
     Model model = get_model().process(getDocumentDirectory());
     model.initSystem();
 
-    const auto pathList = model.getComponentList<AbstractGeometryPath>();
-    int numPaths = (int)std::distance(pathList.begin(), pathList.end());
-    OPENSIM_THROW_IF_FRMOBJ(!numPaths, Exception,
-            "Expected the model to contain at least one AbstractGeometryPath, "
-            "but it does not.")
-
-    const auto fbPathList = model.getComponentList<FunctionBasedPath>();
-    int numFunctionBasedPaths = (int)std::distance(fbPathList.begin(),
-            fbPathList.end());
-    OPENSIM_THROW_IF_FRMOBJ(numFunctionBasedPaths, Exception,
-            "Expected the model to not contain any FunctionBasedPaths, but it "
-            "does. Please remove all FunctionBasedPaths from the model before "
-            "running the PolynomialPathFitter.")
-
-    // Load the coordinate values.
-    TableProcessor tableProcessor = get_coordinate_values();
-    tableProcessor.append(TabOpUseAbsoluteStateNames());
-    tableProcessor.append(TabOpAppendCoupledCoordinateValues());
-    TimeSeriesTable values = tableProcessor.processAndConvertToRadians(
-            getDocumentDirectory(), model);
-    log_info("Coordinate values table: {} columns, {} time points",
-            values.getNumColumns(), values.getNumRows());
-
-    // Validate the coordinate values table
-    std::vector<std::string> jointsToWeld;
-    for (auto& coordinate : model.updComponentList<Coordinate>()) {
-        std::string valuePath = fmt::format("{}/value",
-                coordinate.getAbsolutePathString());
-
-        // If the coordinate is locked, but the user provided a column for the
-        // coordinate, then we unlock it. Otherwise, we will weld the joint that
-        // the coordinate belongs to.
-        if (coordinate.get_locked()) {
-            if (values.hasColumn(valuePath)) {
-                coordinate.set_locked(false);
-            } else {
-                jointsToWeld.push_back(coordinate.getJoint().getName());
-            }
-        } else {
-            OPENSIM_THROW_IF_FRMOBJ(!values.hasColumn(valuePath), Exception,
-                    fmt::format("Expected the coordinate values table to "
-                                "contain a column for '{}' (this coordinate is "
-                                "not locked), but it does not.",
-                            coordinate.getAbsolutePathString()))
-        }
-    }
-
-    // If we detected any joints to be welded, update the model.
-    if (!jointsToWeld.empty()) {
-        log_info("Welding the following locked joints (no data provided): ");
-        for (const auto& jointName : jointsToWeld) {
-            log_info("  {}", jointName);
-        }
-        auto modelProcessor = ModelProcessor(model) |
-                              ModOpReplaceJointsWithWelds(jointsToWeld);
-        model = modelProcessor.process();
-    }
-
-    // Delete any columns in the coordinate values table that are not in the
-    // model.
-    std::vector<std::string> columnsToDelete;
-    for (const auto& columnLabel : values.getColumnLabels()) {
-        // Check if the column label ends with "/value".
-        if (columnLabel.substr(columnLabel.size() - 6) != "/value") {
-            values.removeColumn(columnLabel);
-            continue;
-        }
-        // Check if the column label contains a coordinate path.
-        const std::string coordinatePath = columnLabel.substr(
-                0, columnLabel.size() - std::string("/value").size());
-        if (!model.hasComponent(coordinatePath)) {
-            values.removeColumn(columnLabel);
-        }
-    }
+    // Load the coordinate values table.
+    TimeSeriesTable values = loadCoordinateValuesAndValidateModel(
+            getDocumentDirectory(), get_coordinate_values(), model);
 
     // Coordinate sampling bounds.
     // ---------------------------
@@ -338,8 +267,8 @@ void PolynomialPathFitter::run() {
              "coordinate data...");
     TimeSeriesTable pathLengthsSampled;
     TimeSeriesTable momentArmsSampled;
-    computePathLengthsAndMomentArms(model, valuesSampled, get_num_parallel_threads(),
-            pathLengthsSampled, momentArmsSampled);
+    computePathLengthsAndMomentArms(model, valuesSampled,
+            get_num_parallel_threads(), pathLengthsSampled, momentArmsSampled);
 
     // Filter sampled data.
     // --------------------
@@ -537,6 +466,87 @@ void PolynomialPathFitter::run() {
              "values to '{}'...", momentArmsSampledFittedFileName);
     STOFileAdapter::write(momentArmsSampledFitted,
             momentArmsSampledFittedFileName);
+}
+
+TimeSeriesTable PolynomialPathFitter::loadCoordinateValuesAndValidateModel(
+        const std::string& documentDir, TableProcessor tableProcessor,
+        Model& model) {
+
+    const auto pathList = model.getComponentList<AbstractGeometryPath>();
+    int numPaths = (int)std::distance(pathList.begin(), pathList.end());
+    OPENSIM_THROW_IF(!numPaths, Exception,
+            "Expected the model to contain at least one AbstractGeometryPath, "
+            "but it does not.")
+
+    const auto fbPathList = model.getComponentList<FunctionBasedPath>();
+    int numFunctionBasedPaths = (int)std::distance(fbPathList.begin(),
+            fbPathList.end());
+    OPENSIM_THROW_IF(numFunctionBasedPaths, Exception,
+            "Expected the model to not contain any FunctionBasedPaths, but it "
+            "does. Please remove all FunctionBasedPaths from the model before "
+            "running the PolynomialPathFitter.")
+
+    // Load the coordinate values.
+    tableProcessor.append(TabOpUseAbsoluteStateNames());
+    tableProcessor.append(TabOpAppendCoupledCoordinateValues());
+    TimeSeriesTable values = tableProcessor.processAndConvertToRadians(
+            documentDir, model);
+    log_info("Coordinate values table: {} columns, {} time points",
+            values.getNumColumns(), values.getNumRows());
+
+    // Validate the coordinate values table
+    std::vector<std::string> jointsToWeld;
+    for (auto& coordinate : model.updComponentList<Coordinate>()) {
+        std::string valuePath = fmt::format("{}/value",
+                coordinate.getAbsolutePathString());
+
+        // If the coordinate is locked, but the user provided a column for the
+        // coordinate, then we unlock it. Otherwise, we will weld the joint that
+        // the coordinate belongs to.
+        if (coordinate.get_locked()) {
+            if (values.hasColumn(valuePath)) {
+                coordinate.set_locked(false);
+            } else {
+                jointsToWeld.push_back(coordinate.getJoint().getName());
+            }
+        } else {
+            OPENSIM_THROW_IF(!values.hasColumn(valuePath), Exception,
+                    fmt::format("Expected the coordinate values table to "
+                                "contain a column for '{}' (this coordinate is "
+                                "not locked), but it does not.",
+                            coordinate.getAbsolutePathString()))
+        }
+    }
+
+    // If we detected any joints to be welded, update the model.
+    if (!jointsToWeld.empty()) {
+        log_info("Welding the following locked joints (no data provided): ");
+        for (const auto& jointName : jointsToWeld) {
+            log_info("  {}", jointName);
+        }
+        auto modelProcessor = ModelProcessor(model) |
+                              ModOpReplaceJointsWithWelds(jointsToWeld);
+        model = modelProcessor.process();
+    }
+
+    // Delete any columns in the coordinate values table that are not in the
+    // model.
+    std::vector<std::string> columnsToDelete;
+    for (const auto& columnLabel : values.getColumnLabels()) {
+        // Check if the column label ends with "/value".
+        if (columnLabel.substr(columnLabel.size() - 6) != "/value") {
+            values.removeColumn(columnLabel);
+            continue;
+        }
+        // Check if the column label contains a coordinate path.
+        const std::string coordinatePath = columnLabel.substr(
+                0, columnLabel.size() - std::string("/value").size());
+        if (!model.hasComponent(coordinatePath)) {
+            values.removeColumn(columnLabel);
+        }
+    }
+
+    return values;
 }
 
 TimeSeriesTable PolynomialPathFitter::sampleCoordinateValues(
@@ -1201,7 +1211,7 @@ std::string PolynomialPathFitter::getOutputDirectory() const {
 //=============================================================================
 
 void PolynomialPathFitter::evaluateFunctionBasedPaths(Model model,
-        const TableProcessor& trajectory,
+        TableProcessor trajectory,
         const std::string& functionBasedPathsFileName,
         double pathLengthTolerance, double momentArmTolerance) {
 
@@ -1230,8 +1240,9 @@ void PolynomialPathFitter::evaluateFunctionBasedPaths(Model model,
 
     // Get the coordinate values table from the trajectory. This may contain
     // extra values, but that's okay.
-    TimeSeriesTable coordinateValues =
-            trajectory.processAndConvertToRadians(model);
+    std::string currentDirectory = IO::getCwd();
+    TimeSeriesTable coordinateValues = loadCoordinateValuesAndValidateModel(
+            currentDirectory, std::move(trajectory), model);
 
     // Compute path lengths and moment arms for the original and fitted models.
     log_info("");
