@@ -117,8 +117,8 @@ void muscleDrivenStateTracking() {
     // Only valid for DeGrooteFregly2016Muscles.
     modelProcessor.append(ModOpScaleActiveFiberForceCurveWidthDGF(1.5));
     // Use a function-based representation for the muscle paths.
-//    modelProcessor.append(ModOpReplacePathsWithFunctionBasedPaths(
-//            "subject_walk_scaled_FunctionBasedPathSet.xml"));
+    modelProcessor.append(ModOpReplacePathsWithFunctionBasedPaths(
+            "subject_walk_scaled_FunctionBasedPathSet.xml"));
     track.setModel(modelProcessor);
 
     // Construct a TableProcessor of the coordinate data and pass it to the 
@@ -148,33 +148,31 @@ void muscleDrivenStateTracking() {
     MocoStudy study = track.initialize();
 
     // Get a reference to the MocoControlGoal that is added to every MocoTrack
-    // problem by default and use it to set the control effort weight to 5.
+    // problem by default.
     MocoProblem& problem = study.updProblem();
     MocoControlGoal& effort =
         dynamic_cast<MocoControlGoal&>(problem.updGoal("control_effort"));
-    effort.setWeight(5.0);
 
     // Put a large weight on the pelvis CoordinateActuators, which act as the
     // residual, or 'hand-of-god', forces which we would like to keep as small
     // as possible.
-//     Model model = modelProcessor.process();
-//     for (const auto& coordAct : model.getComponentList<CoordinateActuator>()) {
-//        auto coordPath = coordAct.getAbsolutePathString();
-//        if (coordPath.find("pelvis") != std::string::npos) {
-//            effort.setWeightForControl(coordPath, 10);
-//        }
-//    }
+     Model model = modelProcessor.process();
+     for (const auto& coordAct : model.getComponentList<CoordinateActuator>()) {
+        auto coordPath = coordAct.getAbsolutePathString();
+        if (coordPath.find("pelvis") != std::string::npos) {
+            effort.setWeightForControl(coordPath, 10);
+        }
+    }
     
     // Solve and visualize.
     MocoSolution solution = study.solve();
-    solution.write("exampleMocoTrack_solution.sto");
     study.visualize(solution);
 }
 
 int main() {
 
     // Solve the torque-driven marker tracking problem.
-//    torqueDrivenMarkerTracking();
+    torqueDrivenMarkerTracking();
 
     // Solve the muscle-driven state tracking problem.
     muscleDrivenStateTracking();
