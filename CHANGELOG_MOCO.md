@@ -1,8 +1,11 @@
 Moco Change Log
 ===============
 
-1.2.2
+1.3.0
 -----
+- 2023-11-08: Fixed a bug where `MocoTrajectory::generateSpeedsFromValues()` was
+              accidentally deleting auxiliary state values.
+
 - 2023-10-25: Fixed a bug preventing deserialization of `MocoFrameDistanceConstraint`.
 
 - 2023-10-25: Locked coordinates are now explicitly disallowed in `MocoProblem`s, 
