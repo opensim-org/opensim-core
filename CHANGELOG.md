@@ -34,6 +34,7 @@ and `Blankevoort1991Ligament`, usages of `get_GeometryPath`, `upd_GeometryPath`,
 - Fixed a minor bug when the locally installed package (via `pip`) couldn't find the dependencies (PR #3593). Added `data_files` argument to the `setup.py` to copy all the dependencies into the opensim package folder in the Python environment.
 - Added `PolynomialPathFitter`, A utility class for fitting a set of `FunctionBasedPath`s to existing geometry-path in 
   an OpenSim model using `MultivariatePolynomialFunction`s (#3390)
+- Bumped the version of `ezc3d` which can now Read Kistler files
 
 v4.4.1
 ======
