@@ -53,7 +53,11 @@ modelProcessor.append(ModOpReplaceMusclesWithDeGrooteFregly2016());
 modelProcessor.append(ModOpIgnorePassiveFiberForcesDGF());
 % Only valid for DeGrooteFregly2016Muscles.
 modelProcessor.append(ModOpScaleActiveFiberForceCurveWidthDGF(1.5));
-% Use a function-based representation for the muscle paths.
+% Use a function-based representation for the muscle paths. This is
+% recommended to speed up convergence, but if you would like to use
+% the original GeometryPath muscle wrapping instead, simply comment out
+% this line. To learn how to create a set of function-based paths for
+% your model, see the example 'examplePolynomialPathFitter.m'.
 modelProcessor.append(ModOpReplacePathsWithFunctionBasedPaths(...
         "subject_walk_scaled_FunctionBasedPathSet.xml"));
 modelProcessor.append(ModOpAddReserves(1.0));

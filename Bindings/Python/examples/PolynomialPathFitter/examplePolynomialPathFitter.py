@@ -42,22 +42,18 @@ fitter = osim.PolynomialPathFitter()
 # arms. The fitter will create a set of FunctionBasedPaths that use
 # MultivariatePolynomialFunctions to model the path lengths and moment arms
 # of the original model.
-modelProcessor = osim.ModelProcessor('subject_walk_scaled.osim')
-fitter.setModel(modelProcessor)
+model = osim.Model('subject_walk_scaled.osim')
+model.initSystem()
+fitter.setModel(osim.ModelProcessor(model))
 
 # Set the coordinate values table.
 #
 # The fitter will randomly sample around the coordinate values provided in the
-# table to generate model  configurations for which to compute path lengths and
+# table to generate model configurations for which to compute path lengths and
 # moment arms. This table has many more rows than are needed for the fitter to
 # generate a good fit, so we will remove some of the rows to speed up the
 # fitting process.
-model = modelProcessor.process()
-model.initSystem()
-tableProcessor = osim.TableProcessor('coordinates.sto')
-tableProcessor.append(osim.TabOpAppendCoupledCoordinateValues())
-tableProcessor.append(osim.TabOpUseAbsoluteStateNames())
-values = tableProcessor.processAndConvertToRadians(model)
+values = osim.TimeSeriesTable('coordinates.sto')
 times = values.getIndependentColumn()
 for i in range(len(times)):
     if i % 5 != 0:
@@ -82,7 +78,8 @@ fitter.setOutputDirectory(results_dir)
 
 # Set the maximum order of the polynomials used to fit the path lengths
 # and moment arms. Higher order polynomials might lead to a better fit,
-# but could decrease performance in the final model.
+# but could increase the computational time required to evaluate the
+# path length functions.
 fitter.setMaximumPolynomialOrder(5)
 
 # By default, coordinate values are sample around the nominal coordinate

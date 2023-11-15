@@ -487,10 +487,10 @@ TimeSeriesTable PolynomialPathFitter::loadCoordinateValuesAndValidateModel(
             "running the PolynomialPathFitter.")
 
     // Load the coordinate values.
+    tableProcessor.append(TabOpConvertDegreesToRadians());
     tableProcessor.append(TabOpUseAbsoluteStateNames());
     tableProcessor.append(TabOpAppendCoupledCoordinateValues());
-    TimeSeriesTable values = tableProcessor.processAndConvertToRadians(
-            documentDir, model);
+    TimeSeriesTable values = tableProcessor.process(documentDir, &model);
     log_info("Coordinate values table: {} columns, {} time points",
             values.getNumColumns(), values.getNumRows());
 

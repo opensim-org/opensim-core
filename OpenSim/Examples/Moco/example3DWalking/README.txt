@@ -16,7 +16,8 @@ version of the Rajagopoal et al. 2016 musculoskeletal model. The passive forces
 and muscle-tendon paths have been modified based on Uhlrich et al. 2022 and
 Lai et al. 2017. The subtalar, mtp, and wrist coordinates have been replaced with
 WeldJoints and residual actuators have been added to the pelvis. The model was
-fit to the marker trajectories and ground reaction forces using AddBiomechanics.
+fit to the marker trajectories and ground reaction forces using AddBiomechanics
+(https://addbiomechanics.org/).
 
 Data
 ----
