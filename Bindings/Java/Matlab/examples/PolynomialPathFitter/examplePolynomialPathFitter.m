@@ -94,7 +94,7 @@ fitter.appendCoordinateSamplingBounds(...
 % Information about each step fitting process will be printed to the
 % console including the path length and moment arm RMS error for
 % each force object and averaged across all force objects.
-% fitter.run();
+fitter.run();
 
 % Plot the results
 % ----------------
