@@ -36,3 +36,9 @@ file(COPY ${EXAMPLE_PATH_FITTER_FILES}
         "${CMAKE_BINARY_DIR}/Bindings/Python/examples/PolynomialPathFitter")
 install(FILES ${EXAMPLE_PATH_FITTER_FILES}
         DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}/PolynomialPathFitter")
+
+file(COPY ${EXAMPLE_PATH_FITTER_FILES}
+        DESTINATION
+        "${CMAKE_BINARY_DIR}/Bindings/Java/Matlab/examples/PolynomialPathFitter")
+install(FILES ${EXAMPLE_PATH_FITTER_FILES}
+        DESTINATION "${OPENSIM_INSTALL_MATLABEXDIR}/PolynomialPathFitter")

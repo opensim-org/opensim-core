@@ -99,7 +99,7 @@ fitter.run()
 
 # Plot the results
 # ----------------
-# Use the plotting functions in plotting.py to visualize the results of the
+# Use the plotting helper functions to visualize the results of the
 # fitting process and determine if the fits are good enough for your needs,
 # or if the model or fitting settings need to be modified.
 
