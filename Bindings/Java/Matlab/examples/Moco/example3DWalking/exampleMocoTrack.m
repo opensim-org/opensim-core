@@ -31,13 +31,9 @@
 function exampleMocoTrack()
 
 % Solve the torque-driven marker tracking problem.
-% This problem takes a few minutes to solve.
 torqueDrivenMarkerTracking();
 
 % Solve the muscle-driven state tracking problem.
-% This problem could take an hour or more to solve, depending on the number of
-% processor cores available for parallelization. With 12 cores, it takes around
-% 25 minutes.
 muscleDrivenStateTracking();
 
 end
@@ -63,7 +59,7 @@ modelProcessor.append(ModOpRemoveMuscles());
 % Add CoordinateActuators to the model degrees-of-freedom. This
 % ignores the pelvis coordinates which already have residual 
 % CoordinateActuators.
-modelProcessor.append(ModOpAddReserves(100, 1.0));
+modelProcessor.append(ModOpAddReserves(250, 1.0));
 track.setModel(modelProcessor);
 
 % Use this convenience function to set the MocoTrack markers reference

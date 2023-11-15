@@ -49,7 +49,7 @@ void torqueDrivenMarkerTracking() {
     // Add CoordinateActuators to the model degrees-of-freedom. This
     // ignores the pelvis coordinates which already have residual
     // CoordinateActuators.
-    modelProcessor.append(ModOpAddReserves(100.0, 1.0));
+    modelProcessor.append(ModOpAddReserves(250.0, 1.0));
     track.setModel(modelProcessor);
     // In C++, you could alternatively use the pipe operator '|' to
     // append ModelOperators:
