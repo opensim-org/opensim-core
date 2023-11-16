@@ -115,7 +115,7 @@ plotCoordinateSamples(resultsDir, modelName);
 % discontinuities due from wrapping geometry issues in the original model.
 % Depending on size of the errors, you may want to adjust the wrapping
 % geometry in the original model and re-run the fitter.
-plotPathLengths(resultsDir,modelName);
+plotPathLengths(resultsDir, modelName);
 plotMomentArms(resultsDir, modelName);
 
 % Evaluate the fitted functions on a 'new' trajectory
@@ -169,7 +169,7 @@ for iFig = 1:nFig
             iPlot = (iRow - 1) * nCol + iCol;
             iLabel = iPlot + (iFig - 1) * nPlots;
             if iLabel < labels.size()
-                label = labels.get(iLabel);
+                label = char(labels.get(iLabel));
                 subplot(nRow, nCol, iPlot);
 
                 if ~isempty(sampled)
