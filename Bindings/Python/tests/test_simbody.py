@@ -104,19 +104,21 @@ class TestSimbody(unittest.TestCase):
     def test_vectorview_typemaps(self):
         # Use a TimeSeriesTable to obtain VectorViews.
         table = osim.TimeSeriesTable()
-        table.setColumnLabels(['a'])
-        table.appendRow(0.0, osim.RowVector([1.5]))
-        table.appendRow(1.0, osim.RowVector([2.5]))
+        table.setColumnLabels(['a', 'b'])
+        table.appendRow(0.0, osim.RowVector([1.5, 2.0]))
+        table.appendRow(1.0, osim.RowVector([2.5, 3.0]))
         column = table.getDependentColumn('a').to_numpy()
         assert len(column) == 2
         assert column[0] == 1.5
         assert column[1] == 2.5
         row = table.getRowAtIndex(0).to_numpy()
-        assert len(row) == 1
+        assert len(row) == 2
         assert row[0] == 1.5
+        assert row[1] == 2.0
         row = table.getRowAtIndex(1).to_numpy()
-        assert len(row) == 1
+        assert len(row) == 2
         assert row[0] == 2.5
+        assert row[1] == 3.0
 
     def test_matrix_typemaps(self):
         npm = np.array([[5, 3], [3, 6], [8, 1]])
