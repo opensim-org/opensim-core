@@ -151,32 +151,6 @@ double CoordinateActuator::computeActuation( const SimTK::State& s ) const
 
 
 //==============================================================================
-// UTILITY
-//==============================================================================
-//_____________________________________________________________________________
-/**
- */
-ForceSet *CoordinateActuator::
-CreateForceSetOfCoordinateActuatorsForModel(const SimTK::State& s, Model& aModel,double aOptimalForce,bool aIncludeLockedAndConstrainedCoordinates)
-{
-    ForceSet& as = aModel.updForceSet();
-    as.setSize(0);
-    auto coordinates = aModel.getCoordinatesInMultibodyTreeOrder();
-    for(size_t i=0u; i < coordinates.size(); ++i) {
-        const Coordinate& coord = *coordinates[i];
-        if(!aIncludeLockedAndConstrainedCoordinates && (coord.isConstrained(s))) continue;
-        CoordinateActuator *actuator = new CoordinateActuator();
-        actuator->setCoordinate(const_cast<Coordinate*>(&coord));
-        actuator->setName(coord.getName()+"_actuator");
-        actuator->setOptimalForce(aOptimalForce);
-        as.append(actuator);
-    }
-
-    aModel.invalidateSystem();
-    return &as;
-}
-
-//==============================================================================
 // APPLICATION
 //==============================================================================
 //_____________________________________________________________________________

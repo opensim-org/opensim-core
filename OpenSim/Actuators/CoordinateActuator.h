@@ -71,11 +71,6 @@ public:
     /** Get the current setting of the 'optimal_force' property. **/
     double getOptimalForce() const override; // part of Actuator interface
 
-    //--------------------------------------------------------------------------
-    // UTILITY
-    //--------------------------------------------------------------------------
-    static ForceSet* CreateForceSetOfCoordinateActuatorsForModel(const SimTK::State& s, Model& aModel,double aOptimalForce = 1,bool aIncludeLockedAndConstrainedCoordinates = true);
-
     bool isCoordinateValid() const;
     double getSpeed( const SimTK::State& s) const override;
 
