@@ -175,13 +175,6 @@ void PathActuator::computeForce( const SimTK::State& s,
 
     const auto &path = getPath();
 
-    // compute path's lengthening speed if necessary
-    double speed = path.getLengtheningSpeed(s);
-
-    // the lengthening speed of this actuator is the "speed" of the actuator 
-    // used to compute power
-    setSpeed(s, speed);
-
     double force =0;
     if( isActuationOverridden(s) ) {
         force = computeOverrideActuation(s);
