@@ -35,6 +35,8 @@ and `Blankevoort1991Ligament`, usages of `get_GeometryPath`, `upd_GeometryPath`,
 - Added `PolynomialPathFitter`, A utility class for fitting a set of `FunctionBasedPath`s to existing geometry-path in 
   an OpenSim model using `MultivariatePolynomialFunction`s (#3390)
 - Bumped the version of `ezc3d` which can now Read Kistler files
+- Removed `CoordinateActuator::CreateForceSetOfCoordinateActuatorsForModel` (#3612). Please use a `ModelProcessor` with 
+  `ModOpAddReserves` to add a set of `CoordinateActuators` to a `Model`.
 
 v4.4.1
 ======
