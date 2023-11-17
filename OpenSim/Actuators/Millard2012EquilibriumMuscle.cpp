@@ -933,9 +933,12 @@ calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
                 "calcFiberVelocityInfo",
                 "%s: Active-force-length factor is 0, causing a singularity");
 
-            fv = calcFv(a, mli.fiberActiveForceLengthMultiplier,
-                        mli.fiberPassiveForceLengthMultiplier, fse,
-                        mli.cosPennationAngle);
+            fv = CalcUndampedFiberForceVelocityMultiplier(
+                a,
+                mli.fiberActiveForceLengthMultiplier,
+                mli.fiberPassiveForceLengthMultiplier,
+                fse,
+                mli.cosPennationAngle);
 
             // Evaluate the inverse force-velocity curve.
             dlceN = fvInvCurve.calcValue(fv);
@@ -1058,6 +1061,8 @@ calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
         double tendonSlackLen = getTendonSlackLength();
         double optFiberLen    = getOptimalFiberLength();
         double fiso           = getMaxIsometricForce();
+        double beta           = getFiberDamping();
+
         //double penHeight      = penMdl.getParallelogramHeight();
         const TendonForceLengthCurve& fseCurve = get_TendonForceLengthCurve();
 
@@ -1092,15 +1097,25 @@ calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
         if(fiberStateClamped < 0.5) { //flag is set to 0.0 or 1.0
             SimTK::Vec4 fiberForceV;
 
-            fiberForceV = calcFiberForce(fiso, a,
-                                         mli.fiberActiveForceLengthMultiplier,
-                                         mvi.fiberForceVelocityMultiplier,
-                                         mli.fiberPassiveForceLengthMultiplier,
-                                         mvi.normFiberVelocity);
-            fm   = fiberForceV[0];
-            aFm  = fiberForceV[1];
-            p1Fm = fiberForceV[2];
-            p2Fm = fiberForceV[3];
+            aFm = CalcActiveFiberForce(
+                fiso,
+                a,
+                mli.fiberActiveForceLengthMultiplier,
+                mvi.fiberForceVelocityMultiplier);
+            p1Fm = CalcPassiveFiberElasticForce(
+                fiso,
+                mli.fiberPassiveForceLengthMultiplier);
+            p2Fm =
+                CalcPassiveFiberDampingForce(fiso, mvi.normFiberVelocity, beta);
+            fm = CalcFiberForce(
+                fiso,
+                a,
+                mli.fiberActiveForceLengthMultiplier,
+                mvi.fiberForceVelocityMultiplier,
+                mli.fiberPassiveForceLengthMultiplier,
+                mvi.normFiberVelocity,
+                beta);
+
             pFm  = p1Fm + p2Fm;
 
             // Every configuration except the rigid tendon chooses a fiber
@@ -1298,7 +1313,12 @@ calcDampedNormFiberVelocity(double fiso,
 
     // Get a really excellent starting position to reduce the number of
     // iterations. This reduces the simulation time by about 1%.
-    double fv = calcFv(max(a,0.01), max(fal,0.01), fpe, fse, max(cosPhi,0.01));
+    double fv = CalcUndampedFiberForceVelocityMultiplier(
+        max(a, 0.01),
+        max(fal, 0.01),
+        fpe,
+        fse,
+        max(cosPhi, 0.01));
     double dlceN_dt = fvInvCurve.calcValue(fv);
 
     // The approximation is poor beyond the maximum velocities.
@@ -1528,6 +1548,7 @@ Millard2012EquilibriumMuscle::MuscleStateEstimate
     const double ofl       = getOptimalFiberLength();
     const double fiso      = getMaxIsometricForce();
     const double vmax      = getMaxContractionVelocity();
+    const double beta      = getFiberDamping();
 
     const TendonForceLengthCurve& fseCurve = get_TendonForceLengthCurve();
     const FiberForceLengthCurve& fpeCurve  = get_FiberForceLengthCurve();
@@ -1591,7 +1612,7 @@ Millard2012EquilibriumMuscle::MuscleStateEstimate
 
     // Functional to compute the equilibrium force error
     auto ferrFunc = [&] {
-        fiberForceV = calcFiberForce(fiso, ma, fal, fv, fpe, dlceN);
+        fiberForceV = CalcFiberForce(fiso, ma, fal, fv, fpe, dlceN, beta);
         Fm = fiberForceV[0];
         FmAT = Fm * cosphi;
         Ft = fse*fiso;
@@ -1676,8 +1697,7 @@ Millard2012EquilibriumMuscle::MuscleStateEstimate
     // Starting guess at the force-velocity multiplier is static
     fv = 1.0;
 
-    fiberForceV = calcFiberForce(fiso, ma, fal, fv, fpe, dlceN);
-    Fm = fiberForceV[0];
+    Fm = CalcFiberForce(fiso, ma, fal, fv, fpe, dlceN, beta);
 
     // Compute the partial derivative of the force error w.r.t. lce
     partialsFunc();
@@ -1825,8 +1845,7 @@ calcActiveFiberForceAlongTendon(double activation,
         double phi = getPennationModel().calcPennationAngle(lceN);
 
         //Compute the active fiber force
-        Vec4 fiberForceV = calcFiberForce(fiso,ca,fal,fv,fpe,dlceN);
-        double fa = fiberForceV[1];
+        double fa = CalcActiveFiberForce(fiso, ca, fal, fv);
         activeFiberForce = fa * cos(phi);
 
     } catch(const std::exception &x) {
