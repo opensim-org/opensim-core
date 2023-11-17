@@ -23,7 +23,9 @@
 
 % This example demonstrates how to use the PolynomialPathFitter class to create
 % function-based representations of muscle-tendon lengths and moment arms using
-% multivariate polynomial functions.
+% multivariate polynomial functions. Depending on your machine, this example
+% may take several minutes or more to complete. You can view the progress of
+% the fitting process in the 'opensim.log' file.
 function examplePolynomialPathFitter
 
 import org.opensim.modeling.*;
