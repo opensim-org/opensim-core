@@ -910,13 +910,10 @@ calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
 
             // Elastic tendon, no damping.
 
-            double a = SimTK::NaN;
-            if(!get_ignore_activation_dynamics()) {
-                a = getActivationModel().clampActivation(
-                        getStateVariableValue(s, STATE_ACTIVATION_NAME));
-            } else {
-                a = getActivationModel().clampActivation(getControl(s));
-            }
+            double a = get_ignore_activation_dynamics() ?
+                           getControl(s) :
+                           getStateVariableValue(s, STATE_ACTIVATION_NAME);
+            a = getActivationModel().clampActivation(a);
 
             const TendonForceLengthCurve& fseCurve =
                 get_TendonForceLengthCurve();
@@ -948,28 +945,22 @@ calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
 
             // Elastic tendon, with damping.
 
-            double a = SimTK::NaN;
-            if(!get_ignore_activation_dynamics()) {
-                a = getActivationModel().clampActivation(
-                        getStateVariableValue(s, STATE_ACTIVATION_NAME));
-            } else {
-                a = getActivationModel().clampActivation(getControl(s));
-            }
+            double a = get_ignore_activation_dynamics() ?
+                           getControl(s) :
+                           getStateVariableValue(s, STATE_ACTIVATION_NAME);
+            a = getActivationModel().clampActivation(a);
 
             const TendonForceLengthCurve& fseCurve =
                 get_TendonForceLengthCurve();
             double fse = fseCurve.calcValue(mli.normTendonLength);
 
-            // Newton solve for fiber velocity.
-            fv = 1.0;
-            dlce = -1;
-            dlceN = -1;
             double beta = get_fiber_damping();
-
-            SimTK_ERRCHK_ALWAYS(beta > SimTK::SignificantReal,
+            SimTK_ERRCHK_ALWAYS(
+                beta > SimTK::SignificantReal,
                 "calcFiberVelocityInfo",
                 "Fiber damping coefficient must be greater than 0.");
 
+            // Newton solve for fiber velocity.
             DampedFiberVelocityCalculationResult result =
                 CalcDampedNormFiberVelocity(
                     getMaxIsometricForce(),
@@ -982,20 +973,20 @@ calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
                     getForceVelocityCurve(),
                     fvInvCurve);
 
-            if(!result.converged) {
+            if (!result.converged) {
                 // Throw an exception here because there is no point integrating
                 // a muscle velocity that is invalid (it will end up producing
                 // invalid fiber lengths and will ultimately cause numerical
                 // problems). The idea is to produce an exception and catch this
                 // early before it can cause more damage.
-                throw (OpenSim::Exception(getName() +
-                       " Fiber velocity Newton method did not converge"));
+                throw(OpenSim::Exception(
+                    getName() +
+                    " Fiber velocity Newton method did not converge"));
             }
 
             // If the Newton method converged, update the fiber velocity.
-            dlceN = result.normFiberVelocity;
-            dlce  = dlceN*getOptimalFiberLength()
-                *getMaxContractionVelocity();
+            dlce = getOptimalFiberLength() * getMaxContractionVelocity() *
+                   (dlceN = result.normFiberVelocity);
             fv = get_ForceVelocityCurve().calcValue(dlceN);
         }
 
