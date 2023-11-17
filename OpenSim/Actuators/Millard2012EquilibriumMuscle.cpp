@@ -34,6 +34,152 @@ const string Millard2012EquilibriumMuscle::
 const double MIN_NONZERO_DAMPING_COEFFICIENT = 0.001;
 
 //==============================================================================
+// HELPER FUNCTIONS
+//==============================================================================
+namespace
+{
+
+inline double CalcActiveFiberForce(double fiso, double a, double fal, double fv)
+{
+    return fiso * (a * fal * fv);
+}
+
+inline double CalcPassiveFiberElasticForce(double fiso, double fpe)
+{
+    return fiso * fpe;
+}
+
+inline double CalcPassiveFiberDampingForce(
+    double fiso,
+    double dlceN,
+    double beta)
+{
+    return fiso * beta * dlceN;
+}
+
+// The total, active and passive, fiber force.
+inline double CalcFiberForce(
+    double fiso,
+    double a,
+    double fal,
+    double fv,
+    double fpe,
+    double dlceN,
+    double beta)
+{
+    return CalcActiveFiberForce(fiso, a, fal, fv) +
+           (CalcPassiveFiberElasticForce(fiso, fpe) +
+            CalcPassiveFiberDampingForce(fiso, dlceN, beta));
+}
+
+// Computes the fiber-force-velocity curve value from the force equilibrium,
+// assuming zero fiber damping.
+inline double CalcUndampedFiberForceVelocityMultiplier(
+    double a,
+    double fal,
+    double fp,
+    double fse,
+    double cosphi)
+{
+    return (fse / cosphi - fp) / (a * fal);
+}
+
+// Helper struct containing the result (and byproducts) of solving the
+// damped equilibrium force equation for fiber-velocity using newton
+// iterations.
+struct DampedFiberVelocityCalculationResult final
+{
+    double normFiberVelocity;
+    double convergenceError;
+    bool converged;
+};
+
+DampedFiberVelocityCalculationResult CalcDampedNormFiberVelocity(
+    double fiso,
+    double a,
+    double fal,
+    double fpe,
+    double fse,
+    double beta,
+    double cosPhi,
+    const ForceVelocityCurve& fvCurve,
+    const ForceVelocityInverseCurve& fvInvCurve)
+{
+
+    int maxIter = 20; // this routine converges quickly; 20 is quite generous
+    double tol  = 1.0e-10 * fiso;
+    if (tol < SimTK::SignificantReal * 100) {
+        tol = SimTK::SignificantReal * 100;
+    }
+    double perturbation   = 0.0;
+    double fiberForce     = 0.0;
+    double err            = 1.0e10;
+    double derr_d_dlceNdt = 0.0;
+    double delta          = 0.0;
+    double iter           = 0.0;
+
+    // Get a really excellent starting position to reduce the number of
+    // iterations. This reduces the simulation time by about 1%.
+    double fv = CalcUndampedFiberForceVelocityMultiplier(
+        max(a, 0.01),
+        max(fal, 0.01),
+        fpe,
+        fse,
+        max(cosPhi, 0.01));
+    double dlceN_dt = fvInvCurve.calcValue(fv);
+
+    // The approximation is poor beyond the maximum velocities.
+    if (dlceN_dt > 1.0) {
+        dlceN_dt = 1.0;
+    }
+    if (dlceN_dt < -1.0) {
+        dlceN_dt = -1.0;
+    }
+
+    double df_d_dlceNdt = 0.0;
+
+    while (abs(err) > tol && iter < maxIter) {
+        fv         = fvCurve.calcValue(dlceN_dt);
+        fiberForce = CalcFiberForce(fiso, a, fal, fv, fpe, dlceN_dt, beta);
+
+        err = fiberForce * cosPhi - fse * fiso;
+        df_d_dlceNdt =
+            fiso * (a * fal * fvCurve.calcDerivative(dlceN_dt, 1) + beta);
+        derr_d_dlceNdt = df_d_dlceNdt * cosPhi;
+
+        if (abs(err) > tol && abs(derr_d_dlceNdt) > SimTK::SignificantReal) {
+            delta    = -err / derr_d_dlceNdt;
+            dlceN_dt = dlceN_dt + delta;
+
+        } else if (abs(derr_d_dlceNdt) < SimTK::SignificantReal) {
+            // Perturb the solution if we've lost rank. This should never happen
+            // for this problem since dfv_d_dlceNdt > 0 and b > 0 (and so
+            // derr_d_dlceNdt > 0).
+            perturbation = 2.0 * ((double)rand()) / ((double)RAND_MAX) - 1.0;
+            dlceN_dt     = dlceN_dt + perturbation * 0.05;
+        }
+        iter++;
+    }
+
+    bool converged = abs(err) <= tol;
+
+    // If we failed to converge, it's probably because the fiber is at its lower
+    // bound. That decision is made further down the line, so if convergence
+    // didn't happen, let the user know and return a NaN.
+    if (!converged) {
+        dlceN_dt = -1.;
+    }
+
+    return {
+        dlceN_dt,
+        err,
+        converged,
+    };
+}
+
+} // namespace
+
+//==============================================================================
 // PROPERTIES
 //==============================================================================
 void Millard2012EquilibriumMuscle::setNull()
@@ -821,18 +967,19 @@ calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
                 "calcFiberVelocityInfo",
                 "Fiber damping coefficient must be greater than 0.");
 
-            SimTK::Vec3 fiberVelocityV = calcDampedNormFiberVelocity(
-                getMaxIsometricForce(), a, mli.fiberActiveForceLengthMultiplier,
-                mli.fiberPassiveForceLengthMultiplier, fse, beta,
-                mli.cosPennationAngle);
+            DampedFiberVelocityCalculationResult result =
+                CalcDampedNormFiberVelocity(
+                    getMaxIsometricForce(),
+                    a,
+                    mli.fiberActiveForceLengthMultiplier,
+                    mli.fiberPassiveForceLengthMultiplier,
+                    fse,
+                    beta,
+                    mli.cosPennationAngle,
+                    getForceVelocityCurve(),
+                    fvInvCurve);
 
-            // If the Newton method converged, update the fiber velocity.
-            if(fiberVelocityV[2] > 0.5) { //flag is set to 0.0 or 1.0
-                dlceN = fiberVelocityV[0];
-                dlce  = dlceN*getOptimalFiberLength()
-                        *getMaxContractionVelocity();
-                fv = get_ForceVelocityCurve().calcValue(dlceN);
-            } else {
+            if(!result.converged) {
                 // Throw an exception here because there is no point integrating
                 // a muscle velocity that is invalid (it will end up producing
                 // invalid fiber lengths and will ultimately cause numerical
@@ -841,6 +988,12 @@ calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
                 throw (OpenSim::Exception(getName() +
                        " Fiber velocity Newton method did not converge"));
             }
+
+            // If the Newton method converged, update the fiber velocity.
+            dlceN = result.normFiberVelocity;
+            dlce  = dlceN*getOptimalFiberLength()
+                *getMaxContractionVelocity();
+            fv = get_ForceVelocityCurve().calcValue(dlceN);
         }
 
         // Compute the other velocity-related components.
