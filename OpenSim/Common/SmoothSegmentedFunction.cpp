@@ -604,7 +604,7 @@ static_assert(
 DerivativeValues calcSelectedDerivatives(
     double x,
     const SelectedDerivativeOrders& selectedOrders,
-    const std::shared_ptr<const SmoothSegmentedFunctionData> smoothData)
+    const std::shared_ptr<const SmoothSegmentedFunctionData>& smoothData)
 {
     const double x0 = smoothData->_x0;
     const double x1 = smoothData->_x1;
