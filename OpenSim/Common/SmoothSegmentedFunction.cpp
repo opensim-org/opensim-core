@@ -587,12 +587,12 @@ namespace
 {
 
 // Used to select which derivative orders to compute:
-// e.g. selectedOrders = {true, false, false, true, false, false} selects the
-// zeroth and third order derivative.
-using SelectedDerivativeOrders = std::array<bool, 6>;
+// e.g. selectedOrders = {true, false, false, true, false, false, false}
+// selects the zeroth and third order derivative.
+using SelectedDerivativeOrders = std::array<bool, 7>;
 // Array with the element index corresponding to the derivative-order,
 // i.e. the first element is the zeroth-order derivative, etc.
-using DerivativeValues = std::array<double, 6>;
+using DerivativeValues = std::array<double, 7>;
 static_assert(
     SelectedDerivativeOrders{}.size() == DerivativeValues{}.size(),
     "Size of SelectedDerivativeOrders and DerivativeValues must match");
