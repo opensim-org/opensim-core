@@ -590,15 +590,18 @@ namespace
 // e.g. selectedOrders = {true, false, false, true, false, false} selects the
 // zeroth and third order derivative.
 using SelectedDerivativeOrders = std::array<bool, 6>;
+// Array with the element index corresponding to the derivative-order,
+// i.e. the first element is the zeroth-order derivative, etc.
+using DerivativeValues = std::array<double, 6>;
+static_assert(
+    SelectedDerivativeOrders{}.size() == DerivativeValues{}.size(),
+    "Size of SelectedDerivativeOrders and DerivativeValues must match");
 
 // Helper function for computing a selection of derivatives up to sixth order.
 //
-// Returns array with the element index corresponding to the derivative-order,
-// i.e. the first element is the zeroth-order derivative, etc.
-//
 // This function avoids repeating calcU and calcIndex, when calcDerivative is
 // called for different orders.
-std::array<double, 6> calcSelectedDerivatives(
+DerivativeValues calcSelectedDerivatives(
     double x,
     const SelectedDerivativeOrders& selectedOrders,
     const std::shared_ptr<const SmoothSegmentedFunctionData> smoothData)
@@ -609,9 +612,16 @@ std::array<double, 6> calcSelectedDerivatives(
     if (x < x0) {
         const double y0    = smoothData->_y0;
         const double dydx0 = smoothData->_dydx0;
-        return {y0 + dydx0 * (x - x0), dydx0, 0., 0., 0., 0.};
+        return {y0 + dydx0 * (x - x0), dydx0};
     }
 
+    if (x > x1) {
+        const double y1    = smoothData->_y1;
+        const double dydx1 = smoothData->_dydx1;
+        return {y1 + dydx1 * (x - x1), dydx1};
+    }
+
+    DerivativeValues y{};
     if (x <= x1) {
         const SimTK::Array_<SimTK::Vec6>& ctrlPtsX = smoothData->_ctrlPtsX;
         const int idx = SegmentedQuinticBezierToolkit::calcIndex(x, ctrlPtsX);
@@ -626,10 +636,9 @@ std::array<double, 6> calcSelectedDerivatives(
             MAXITER);
 
         const SimTK::Array_<SimTK::Vec6>& ctrlPtsY = smoothData->_ctrlPtsY;
-        std::array<double, 6> y;
-        for (int i = 0; i < 6; ++i) {
+        for (size_t i = 0; i < y.size(); ++i) {
             if (selectedOrders[i]) {
-                y[i] = SegmentedQuinticBezierToolkit::
+                y.at(i) = SegmentedQuinticBezierToolkit::
                     calcQuinticBezierCurveDerivDYDX(
                         u,
                         ctrlPtsX[idx],
@@ -640,38 +649,27 @@ std::array<double, 6> calcSelectedDerivatives(
         return y;
     }
 
-    if (x > x1) {
-        const double y1    = smoothData->_y1;
-        const double dydx1 = smoothData->_dydx1;
-        return {y1 + dydx1 * (x - x1), dydx1, 0., 0., 0., 0.};
-    }
-
     // In case of NaN return NaN.
-    return {
-        SimTK::NaN,
-        SimTK::NaN,
-        SimTK::NaN,
-        SimTK::NaN,
-        SimTK::NaN,
-        SimTK::NaN};
+    y.fill(SimTK::NaN);
+    return y;
 }
+
 } // namespace
 
 double SmoothSegmentedFunction::calcDerivative(double x, int order) const
 {
-    SelectedDerivativeOrders orders = {false};
-    orders[order] = true;
-    return calcSelectedDerivatives(x, orders, _smoothData)[order];
+    SelectedDerivativeOrders orders{};
+    orders.at(order) = true;
+    return calcSelectedDerivatives(x, orders, _smoothData).at(order);
 }
 
 SmoothSegmentedFunction::ValueAndDerivative SmoothSegmentedFunction::
     calcValueAndFirstDerivative(double x) const
 {
-    const SelectedDerivativeOrders orders =
-        {true, true, false, false, false, false};
-    const std::array<double, 6> y =
+    const SelectedDerivativeOrders orders{true, true};
+    const DerivativeValues y =
         calcSelectedDerivatives(x, orders, _smoothData);
-    return std::make_pair(y[0], y[1]);
+    return {y.at(0), y.at(1)};
 }
 
 double SmoothSegmentedFunction::calcDerivative(

@@ -137,8 +137,12 @@ namespace OpenSim {
        */
        double calcDerivative(double x, int order) const;       
 
-       // Pair containing curve value and first derivative together.
-       using ValueAndDerivative = std::pair<double, double>;
+       // Helper struct containing curve value and first derivative together.
+       struct ValueAndDerivative final
+       {
+           double value;
+           double derivative;
+       };
 
        /// Returns the same as calcValue(x) and calcDerivative(x, 1), but more
        // efficient than calling them separately.
