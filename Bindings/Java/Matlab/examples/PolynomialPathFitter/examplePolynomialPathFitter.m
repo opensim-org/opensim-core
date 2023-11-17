@@ -114,7 +114,7 @@ plotCoordinateSamples(resultsDir, modelName);
 % For most muscles the fit is very good, but there are noticeable fitting
 % errors in a few muscles (e.g., /forceset/gaslat_r and /forceset/glmax1_r).
 % Errors like these usually arise from the fitting process struggling with
-% discontinuities due from wrapping geometry issues in the original model.
+% discontinuities due to wrapping geometry issues in the original model.
 % Depending on size of the errors, you may want to adjust the wrapping
 % geometry in the original model and re-run the fitter.
 plotPathLengths(resultsDir, modelName);
