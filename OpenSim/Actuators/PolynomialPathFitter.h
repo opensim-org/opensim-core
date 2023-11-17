@@ -186,11 +186,12 @@ public:
      * polynomial-based path objects will be fitted.
      *
      * The model should be provided using a `ModelProcessor` object. We expect
-     * the model to contain at least one path object derived from `AbstractGeometryPath`
-     * and does not already contain any `FunctionBasedPath` objects. The bounds
-     * for clamped coordinates are obeyed during the fitting process. Locked
-     * coordinates are unlocked if data is provided for them, or replaced with
-     * WeldJoints if no data is provided for them.
+     * the model to contain at least one path object derived from
+     * `AbstractGeometryPath` and does not already contain any
+     * `FunctionBasedPath` objects. The bounds for clamped coordinates are
+     * obeyed during the fitting process. Locked coordinates are unlocked if
+     * data is provided for them, or replaced with WeldJoints if no data is
+     * provided for them.
      */
     void setModel(ModelProcessor model);
 
@@ -442,7 +443,7 @@ public:
      * `Function` objects that approximate the original model paths.
      */
     static void evaluateFunctionBasedPaths(Model model,
-            const TableProcessor& trajectory,
+            TableProcessor trajectory,
             const std::string& functionBasedPathsFile,
             double pathLengthTolerance = 1e-4,
             double momentArmTolerance = 1e-4);
@@ -511,6 +512,19 @@ private:
      */
     typedef std::unordered_map<std::string, std::vector<std::string>>
             MomentArmMap;
+
+    /**
+     * Helper function to load the reference coordinate values trajectory and
+     * validate the model. The coordinate values table is modified to update the
+     * column labels based on the model coordinate paths, to update any
+     * coordinates dependent on `CoordinateCouplerConstraint`s, and to convert
+     * the coordinate values to radians if the "inDegrees" metadata flag is set
+     * to "yes".
+     */
+    static TimeSeriesTable loadCoordinateValuesAndValidateModel(
+            const std::string& documentDir,
+            TableProcessor tableProcessor,
+            Model& model);
 
     /**
      * Helper function to sample coordinate values around the user-provided
