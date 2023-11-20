@@ -39,16 +39,28 @@ const double MIN_NONZERO_DAMPING_COEFFICIENT = 0.001;
 namespace
 {
 
+// Calculates the active fiber force.
+//    @param fiso maximum isometric force
+//    @param a activation
+//    @param fal active-force-length multiplier
+//    @param fv fiber-force-velocity multiplier
 inline double CalcActiveFiberForce(double fiso, double a, double fal, double fv)
 {
     return fiso * (a * fal * fv);
 }
 
+// Calculates the passive elastic fiber force.
+//    @param fiso maximum isometric force
+//    @param fpe passive-force-length multiplier
 inline double CalcPassiveFiberElasticForce(double fiso, double fpe)
 {
     return fiso * fpe;
 }
 
+// Calculates the passive damped fiber force.
+//    @param fiso maximum isometric force
+//    @param dlceN normalized fiber velocity
+//    @param beta damping coefficient
 inline double CalcPassiveFiberDampingForce(
     double fiso,
     double dlceN,
@@ -57,7 +69,14 @@ inline double CalcPassiveFiberDampingForce(
     return fiso * beta * dlceN;
 }
 
-// The total, active and passive, fiber force.
+// Calculates the total, active and passive, fiber force.
+//    @param fiso maximum isometric force
+//    @param a activation
+//    @param fal active-force-length multiplier
+//    @param fv fiber-force-velocity multiplier
+//    @param fpe passive-force-length multiplier
+//    @param dlceN normalized fiber velocity
+//    @param beta damping coefficient
 inline double CalcFiberForce(
     double fiso,
     double a,
@@ -72,8 +91,13 @@ inline double CalcFiberForce(
             CalcPassiveFiberDampingForce(fiso, dlceN, beta));
 }
 
-// Computes the fiber-force-velocity curve value from the force equilibrium,
+// Calculates the fiber-force-velocity curve value from the force equilibrium,
 // assuming zero fiber damping.
+//    @param a activation
+//    @param fal active-force-length multiplier
+//    @param fp passive-force-length multiplier
+//    @param fse tendon-force-length multiplier
+//    @param cosPhi cosine of pennation angle
 inline double CalcUndampedFiberForceVelocityMultiplier(
     double a,
     double fal,
@@ -85,8 +109,7 @@ inline double CalcUndampedFiberForceVelocityMultiplier(
 }
 
 // Helper struct containing the result (and byproducts) of solving the
-// damped equilibrium force equation for fiber-velocity using newton
-// iterations.
+// damped equilibrium force equation for fiber-velocity.
 struct DampedFiberVelocityCalculationResult final
 {
     double normFiberVelocity;
@@ -94,6 +117,17 @@ struct DampedFiberVelocityCalculationResult final
     bool converged;
 };
 
+/* Calculates the fiber velocity that satisfies the damped equilibrium equation
+given a fixed fiber length.
+    @param fiso maximum isometric force
+    @param a activation
+    @param fal active-force-length multiplier
+    @param fpe passive-force-length multiplier
+    @param fse tendon-force-length multiplier
+    @param beta damping coefficient
+    @param cosPhi cosine of pennation angle
+    @param fvCurve fiber force velocity curve
+    @param fvInvCurve inverse fiber force velocity curve */
 DampedFiberVelocityCalculationResult CalcDampedNormFiberVelocity(
     double fiso,
     double a,
