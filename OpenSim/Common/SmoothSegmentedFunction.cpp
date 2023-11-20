@@ -24,6 +24,7 @@
 // INCLUDES
 //=============================================================================
 #include "SmoothSegmentedFunction.h"
+#include <array>
 #include <fstream>
 #include "simmath/internal/SplineFitter.h"
 #include <memory>
@@ -582,59 +583,98 @@ If x is in the linear region
 ________________________________________________________________________
     */
 
-double SmoothSegmentedFunction::calcDerivative(double x, int order) const
+namespace
 {
-    const double x0 = _smoothData->_x0;
-    const double x1 = _smoothData->_x1;
+
+// Used to select which derivative orders to compute:
+// e.g. selectedOrders = {true, false, false, true, false, false, false}
+// selects the zeroth and third order derivative.
+using SelectedDerivativeOrders = std::array<bool, 7>;
+// Array with the element index corresponding to the derivative-order,
+// i.e. the first element is the zeroth-order derivative, etc.
+using DerivativeValues = std::array<double, 7>;
+static_assert(
+    SelectedDerivativeOrders{}.size() == DerivativeValues{}.size(),
+    "Size of SelectedDerivativeOrders and DerivativeValues must match");
+
+// Helper function for computing a selection of derivatives up to sixth order.
+//
+// This function avoids repeating calcU and calcIndex, when calcDerivative is
+// called for different orders.
+DerivativeValues calcSelectedDerivatives(
+    double x,
+    const SelectedDerivativeOrders& selectedOrders,
+    const std::shared_ptr<const SmoothSegmentedFunctionData>& smoothData)
+{
+    const double x0 = smoothData->_x0;
+    const double x1 = smoothData->_x1;
 
     if (x < x0) {
-        const double y0 = _smoothData->_y0;
-        const double dydx0 = _smoothData->_dydx0;
-        switch (order) {
-            case 0: return y0 + dydx0*(x-x0);
-            case 1: return dydx0;
-            default: return 0.;
-        }
-    }
-
-    if (x <= x1) {
-        const SimTK::Array_<SimTK::Vec6>& ctrlPtsX = _smoothData->_ctrlPtsX;
-        const int idx  = SegmentedQuinticBezierToolkit::calcIndex(x,ctrlPtsX);
-
-        const SimTK::Array_<SimTK::Spline>& arraySplineUX =
-            _smoothData->_arraySplineUX;
-        const double u = SegmentedQuinticBezierToolkit::calcU(
-                x,
-                ctrlPtsX[idx],
-                arraySplineUX[idx],
-                UTOL,
-                MAXITER);
-
-        const SimTK::Array_<SimTK::Vec6>& ctrlPtsY = _smoothData->_ctrlPtsY;
-        return SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivDYDX(
-                u,
-                ctrlPtsX[idx],
-                ctrlPtsY[idx],
-                order);
+        const double y0    = smoothData->_y0;
+        const double dydx0 = smoothData->_dydx0;
+        return {y0 + dydx0 * (x - x0), dydx0};
     }
 
     if (x > x1) {
-        const double y1 = _smoothData->_y1;
-        const double dydx1 = _smoothData->_dydx1;
-        switch (order) {
-            case 0: return y1 + dydx1*(x-x1);
-            case 1: return dydx1;
-            default: return 0.;
+        const double y1    = smoothData->_y1;
+        const double dydx1 = smoothData->_dydx1;
+        return {y1 + dydx1 * (x - x1), dydx1};
+    }
+
+    DerivativeValues y{};
+    if (x <= x1) {
+        const SimTK::Array_<SimTK::Vec6>& ctrlPtsX = smoothData->_ctrlPtsX;
+        const int idx = SegmentedQuinticBezierToolkit::calcIndex(x, ctrlPtsX);
+
+        const SimTK::Array_<SimTK::Spline>& arraySplineUX =
+            smoothData->_arraySplineUX;
+        const double u = SegmentedQuinticBezierToolkit::calcU(
+            x,
+            ctrlPtsX[idx],
+            arraySplineUX[idx],
+            UTOL,
+            MAXITER);
+
+        const SimTK::Array_<SimTK::Vec6>& ctrlPtsY = smoothData->_ctrlPtsY;
+        for (size_t i = 0; i < y.size(); ++i) {
+            if (selectedOrders[i]) {
+                y.at(i) = SegmentedQuinticBezierToolkit::
+                    calcQuinticBezierCurveDerivDYDX(
+                        u,
+                        ctrlPtsX[idx],
+                        ctrlPtsY[idx],
+                        i);
+            }
         }
+        return y;
     }
 
     // In case of NaN return NaN.
-    return SimTK::NaN;
+    y.fill(SimTK::NaN);
+    return y;
 }
 
-double SmoothSegmentedFunction::
-    calcDerivative(const SimTK::Array_<int>& derivComponents,
-                 const SimTK::Vector& ax) const
+} // namespace
+
+double SmoothSegmentedFunction::calcDerivative(double x, int order) const
+{
+    SelectedDerivativeOrders orders{};
+    orders.at(order) = true;
+    return calcSelectedDerivatives(x, orders, _smoothData).at(order);
+}
+
+SmoothSegmentedFunction::ValueAndDerivative SmoothSegmentedFunction::
+    calcValueAndFirstDerivative(double x) const
+{
+    const SelectedDerivativeOrders orders{true, true};
+    const DerivativeValues y =
+        calcSelectedDerivatives(x, orders, _smoothData);
+    return {y.at(0), y.at(1)};
+}
+
+double SmoothSegmentedFunction::calcDerivative(
+    const SimTK::Array_<int>& derivComponents,
+    const SimTK::Vector& ax) const
 {
     for(int i=0; i < (signed)derivComponents.size(); i++){
         SimTK_ERRCHK2_ALWAYS( derivComponents[i] == 0,
