@@ -166,8 +166,7 @@ public:
     // Accessing actuation, speed, and power of a scalar valued actuator
     virtual void setActuation(const SimTK::State& s, double aActuation) const;
     virtual double getActuation(const SimTK::State& s) const;
-    virtual void setSpeed( const SimTK::State& s, double aspeed) const;
-    virtual double getSpeed( const SimTK::State& s) const;
+    virtual double getSpeed( const SimTK::State& s) const = 0;
     double getPower(const SimTK::State& s) const override { return getActuation(s)*getSpeed(s); }
     virtual double getStress(const SimTK::State& s) const;
     virtual double getOptimalForce() const;
@@ -250,7 +249,6 @@ private:
     void constructProperties();
 
     mutable CacheVariable<double> _actuationCV;
-    mutable CacheVariable<double> _speedCV;
 
 //=============================================================================
 };  // END of class ScalarActuator

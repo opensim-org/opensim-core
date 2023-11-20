@@ -106,6 +106,14 @@ public:
     virtual double getLength(const SimTK::State& s) const;
     virtual double getLengtheningSpeed(const SimTK::State& s) const;
 
+    //--------------------------------------------------------------------------
+    // Implement ScalarActuator Interface
+    //--------------------------------------------------------------------------
+    double getSpeed( const SimTK::State& s) const final
+    {
+        return getLengtheningSpeed(s);
+    }
+
     // Power: Since lengthening is positive and tension always shortens, positive power
     // is when muscle is shortening under tension.
     double getPower(const SimTK::State& s) const override 

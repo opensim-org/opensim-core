@@ -112,6 +112,17 @@ public:
 
     // default destructor, copy constructor, copy assignment
 
+    //--------------------------------------------------------------------------
+    // Implement ScalarActuator interface
+    //--------------------------------------------------------------------------
+    double getSpeed( const SimTK::State& s) const override;
+
+protected:
+    //--------------------------------------------------------------------------
+    // Implement ModelComponent Interface
+    //--------------------------------------------------------------------------
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+
 private:
     void constructProperties();
 
@@ -151,6 +162,11 @@ private:
     // The bodies on which this point-to-point actuator acts.
     SimTK::ReferencePtr<Body> _bodyA, _bodyB;
 
+    // CachedVariables: Speed- and direction along force, used to compute power
+    mutable CacheVariable<double> _speedCV;
+    mutable CacheVariable<SimTK::UnitVec3> _directionCV;
+
+    SimTK::UnitVec3 getDirectionBAInGround(const SimTK::State& s) const;
 //=============================================================================
 };  // END of class PointToPointActuator
 

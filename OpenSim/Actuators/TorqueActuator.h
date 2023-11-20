@@ -125,6 +125,17 @@ public:
     /** Get the second body (bodyB) to which this actuator applies torque. */
     const PhysicalFrame& getBodyB() const {return *_bodyB;}
 
+    //--------------------------------------------------------------------------
+    // Implement ScalarActuator interface
+    //--------------------------------------------------------------------------
+    double getSpeed( const SimTK::State& s) const override;
+
+protected:
+    //--------------------------------------------------------------------------
+    // Implement ModelComponent Interface
+    //--------------------------------------------------------------------------
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+
 //==============================================================================
 // PRIVATE
 //==============================================================================
@@ -168,6 +179,9 @@ private:
 
     // Corresponding Body to which the equal and opposite torque is applied.
     SimTK::ReferencePtr<const PhysicalFrame> _bodyB;
+
+    // CachedVariable: Speed used to compute power.
+    mutable CacheVariable<double> _speedCV;
 
 //==============================================================================
 };  // END of class TorqueActuator

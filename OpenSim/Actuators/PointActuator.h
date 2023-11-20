@@ -85,6 +85,13 @@ public:
     /** Get the current value of the 'optimal_force' property. **/
     double getOptimalForce() const override; // Part of Actuator interface.
 
+protected:
+
+    //--------------------------------------------------------------------------
+    // Implement ModelComponent Interface
+    //--------------------------------------------------------------------------
+    void extendAddToSystem(SimTK::MultibodySystem& system) const override;
+
 private:
     void setNull();
     void constructProperties();
@@ -93,6 +100,11 @@ private:
     // also sets the corresponding body name property.
     void setBody(Body* aBody);
     Body* getBody() const;
+
+    //--------------------------------------------------------------------------
+    // Implement ScalarActuator interface
+    //--------------------------------------------------------------------------
+    double getSpeed( const SimTK::State& s) const override;
 
     //--------------------------------------------------------------------------
     // Implement Force interface
@@ -112,7 +124,7 @@ private:
     //--------------------------------------------------------------------------
     // Setup method to initialize Body reference
     void extendConnectToModel(Model& model) override;
-    
+
     //--------------------------------------------------------------------------
     // Implement Object interface.
     //--------------------------------------------------------------------------
@@ -121,6 +133,9 @@ private:
 
     // Corresponding Body to which the point actuator is applied.
     SimTK::ReferencePtr<Body> _body;
+
+    // CacheVariable for storing computed speed along force direction.
+    mutable CacheVariable<double> _speedCV;
 
 //=============================================================================
 };  // END of class PointActuator
