@@ -396,3 +396,13 @@ install(DIRECTORY ../Java/Matlab/examples/Moco/exampleSquatToStand
         PATTERN "*.m" EXCLUDE)
 install(DIRECTORY OpenSenseExample
         DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}")
+
+# Install the Geometry folder to the Moco examples.
+install(DIRECTORY ../Java/Matlab/OpenSenseExample/Geometry/
+        DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}/Moco/example3DWalking/Geometry/")
+install(DIRECTORY ../Java/Matlab/OpenSenseExample/Geometry/
+        DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}/Moco/exampleEMGTracking/Geometry/")
+install(DIRECTORY ../Java/Matlab/OpenSenseExample/Geometry/
+        DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}/Moco/exampleSquatToStand/Geometry/")
+install(DIRECTORY ../Java/Matlab/OpenSenseExample/Geometry/
+        DESTINATION "${OPENSIM_INSTALL_PYTHONEXDIR}/Moco/exampleSquatToStand/exampleIMUTracking/Geometry/")

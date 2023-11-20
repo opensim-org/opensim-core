@@ -18,7 +18,8 @@
 #include <OpenSim/Actuators/DeGrooteFregly2016Muscle.h>
 
 #include <OpenSim/Actuators/ModelFactory.h>
-
+#include <OpenSim/Actuators/ModelProcessor.h>
 #include <OpenSim/Actuators/ModelOperators.h>
+#include <OpenSim/Actuators/PolynomialPathFitter.h>
 
 #endif // OPENSIM_OPENSIM_HEADERS_ACTUATORS_H_

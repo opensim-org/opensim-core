@@ -177,7 +177,7 @@ SetDefaultCMakeBuildType()
 AddDependency(NAME       ezc3d
               DEFAULT    OFF
               GIT_URL    https://github.com/pyomeca/ezc3d.git
-              GIT_TAG    Release_1.5.0
+              GIT_TAG    Release_1.5.6
               CMAKE_ARGS -DBUILD_EXAMPLE:BOOL=OFF)
 
 AddDependency(NAME       simbody

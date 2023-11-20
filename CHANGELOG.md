@@ -8,10 +8,10 @@ This is not a comprehensive list of changes but rather a hand-curated collection
 
 v4.5
 ====
-- Added `AbstractPath` which is a base class for `GeometryPath` and other path types (#3388). All path-based forces now
-own the property `path` of type `AbstractPath` instead of the `GeometryPath` unnamed property. Getters and setters have
-been added to these forces to provide access to concrete path types (e.g., `updPath<T>`). In `Ligament` and
-`Blankevoort1991Ligament`, usages of `get_GeometryPath`, `upd_GeometryPath`, etc., need to be updated to
+- Added `AbstractGeometryPath` which is a base class for `GeometryPath` and other path types (#3388). All path-based
+forces now own the property `path` of type `AbstractGeometryPath` instead of the `GeometryPath` unnamed property. Getters
+and setters have been added to these forces to provide access to concrete path types (e.g., `updPath<T>`). In `Ligament`
+and `Blankevoort1991Ligament`, usages of `get_GeometryPath`, `upd_GeometryPath`, etc., need to be updated to
 `getGeometryPath`, `updGeometryPath`, etc., or a suitable alternative.
 - Fixed a minor memory leak when calling `OpenSim::CoordinateCouplerConstraint::setFunction` (#3541)
 - Increase the number of input dimensions supported by `MultivariatePolynomialFunction` to 6 (#3386)
@@ -31,6 +31,12 @@ been added to these forces to provide access to concrete path types (e.g., `updP
 - Refactor c3dExport.m file as a Matlab function (#3501), also expose method to allow some operations on tableColumns
   (multiplyAssign) to speed up data processing.
 - Fixed xml-related memory leaks that were occuring when deserializing OpenSim models. (Issue #3537, PR #3594)
+- Fixed a minor bug when the locally installed package (via `pip`) couldn't find the dependencies (PR #3593). Added `data_files` argument to the `setup.py` to copy all the dependencies into the opensim package folder in the Python environment.
+- Added `PolynomialPathFitter`, A utility class for fitting a set of `FunctionBasedPath`s to existing geometry-path in 
+  an OpenSim model using `MultivariatePolynomialFunction`s (#3390)
+- Added `examplePolynomialPathFitter.py`, a scripting example that demonstrates how to use `PolynomialPathFitter` (#3607)
+- Fixed a bug where using `to_numpy()` to convert `RowVectorView`s to Python arrays returned incorrect data (#3613)
+- Bumped the version of `ezc3d` which can now Read Kistler files
 
 v4.4.1
 ======

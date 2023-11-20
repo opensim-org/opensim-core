@@ -137,6 +137,17 @@ namespace OpenSim {
        */
        double calcDerivative(double x, int order) const;       
 
+       // Helper struct containing curve value and first derivative together.
+       struct ValueAndDerivative final
+       {
+           double value;
+           double derivative;
+       };
+
+       /// Returns the same as calcValue(x) and calcDerivative(x, 1), but more
+       // efficient than calling them separately.
+       ValueAndDerivative calcValueAndFirstDerivative(double x) const;
+
 #ifndef SWIG
        /// Allow the more general calcDerivative from the base class to be used.
        // This helps avoid the -Woverloaded-virtual warning with Clang.

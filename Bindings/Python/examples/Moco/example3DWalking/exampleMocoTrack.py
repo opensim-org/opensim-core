@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------------- #
 # OpenSim Moco: exampleMocoTrack.py                                          #
 # -------------------------------------------------------------------------- #
-# Copyright (c) 2019 Stanford University and the Authors                     #
+# Copyright (c) 2023 Stanford University and the Authors                     #
 #                                                                            #
 # Author(s): Nicholas Bianco                                                 #
 #                                                                            #
@@ -39,14 +39,14 @@ def torqueDrivenMarkerTracking():
     # ModelOperators. Operations are performed in the order that they are
     # appended to the model.
     # Create the base Model by passing in the model file.
-    modelProcessor = osim.ModelProcessor("subject_walk_armless.osim")
+    modelProcessor = osim.ModelProcessor("subject_walk_scaled.osim")
     # Add ground reaction external loads in lieu of a ground-contact model.
     modelProcessor.append(osim.ModOpAddExternalLoads("grf_walk.xml"))
     # Remove all the muscles in the model's ForceSet.
     modelProcessor.append(osim.ModOpRemoveMuscles())
     # Add CoordinateActuators to the model degrees-of-freedom. This ignores the 
     # pelvis coordinates which already have residual CoordinateActuators.
-    modelProcessor.append(osim.ModOpAddReserves(250))
+    modelProcessor.append(osim.ModOpAddReserves(250.0, 1.0))
     track.setModel(modelProcessor)
 
     # Use this convenience function to set the MocoTrack markers reference
@@ -84,9 +84,9 @@ def torqueDrivenMarkerTracking():
 
     # Initial time, final time, and mesh interval. The number of mesh points
     # used to discretize the problem is computed internally using these values.
-    track.set_initial_time(0.81)
-    track.set_final_time(1.65)
-    track.set_mesh_interval(0.05)
+    track.set_initial_time(0.48)
+    track.set_final_time(1.61)
+    track.set_mesh_interval(0.02)
 
     # Solve! Use track.solve() to skip visualizing.
     solution = track.solveAndVisualize()
@@ -101,7 +101,7 @@ def muscleDrivenStateTracking():
     # muscles in the model are replaced with optimization-friendly
     # DeGrooteFregly2016Muscles, and adjustments are made to the default muscle
     # parameters.
-    modelProcessor = osim.ModelProcessor("subject_walk_armless.osim")
+    modelProcessor = osim.ModelProcessor("subject_walk_scaled.osim")
     modelProcessor.append(osim.ModOpAddExternalLoads("grf_walk.xml"))
     modelProcessor.append(osim.ModOpIgnoreTendonCompliance())
     modelProcessor.append(osim.ModOpReplaceMusclesWithDeGrooteFregly2016())
@@ -109,6 +109,13 @@ def muscleDrivenStateTracking():
     modelProcessor.append(osim.ModOpIgnorePassiveFiberForcesDGF())
     # Only valid for DeGrooteFregly2016Muscles.
     modelProcessor.append(osim.ModOpScaleActiveFiberForceCurveWidthDGF(1.5))
+    # Use a function-based representation for the muscle paths. This is
+    # recommended to speed up convergence, but if you would like to use
+    # the original GeometryPath muscle wrapping instead, simply comment out
+    # this line. To learn how to create a set of function-based paths for
+    # your model, see the example 'examplePolynomialPathFitter.py'.
+    modelProcessor.append(osim.ModOpReplacePathsWithFunctionBasedPaths(
+            "subject_walk_scaled_FunctionBasedPathSet.xml"))
     track.setModel(modelProcessor)
 
     # Construct a TableProcessor of the coordinate data and pass it to the 
@@ -117,7 +124,6 @@ def muscleDrivenStateTracking():
     # A TableProcessor with no operators, as we have here, simply returns the
     # base table.
     track.setStatesReference(osim.TableProcessor("coordinates.sto"))
-    track.set_states_global_tracking_weight(10)
 
     # This setting allows extra data columns contained in the states
     # reference that don't correspond to model coordinates.
@@ -129,9 +135,9 @@ def muscleDrivenStateTracking():
     track.set_track_reference_position_derivatives(True)
 
     # Initial time, final time, and mesh interval.
-    track.set_initial_time(0.81)
-    track.set_final_time(1.65)
-    track.set_mesh_interval(0.08)
+    track.set_initial_time(0.48)
+    track.set_final_time(1.61)
+    track.set_mesh_interval(0.02)
 
     # Instead of calling solve(), call initialize() to receive a pre-configured
     # MocoStudy object based on the settings above. Use this to customize the
@@ -159,11 +165,7 @@ def muscleDrivenStateTracking():
     study.visualize(solution)
 
 # Solve the torque-driven marker tracking problem.
-# This problem takes a few minutes to solve.
 torqueDrivenMarkerTracking()
 
 # Solve the muscle-driven state tracking problem.
-# This problem could take an hour or more to solve, depending on the number of
-# processor cores available for parallelization. With 12 cores, it takes around
-# 25 minutes.
 muscleDrivenStateTracking()

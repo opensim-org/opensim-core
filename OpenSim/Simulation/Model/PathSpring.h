@@ -27,8 +27,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
+#include "AbstractGeometryPath.h"
 #include "Force.h"
-#include "AbstractPath.h"
 #include "GeometryPath.h"
 
 namespace OpenSim {
@@ -39,7 +39,7 @@ class ScaleSet;
 //=============================================================================
 /**
  * A class implementing a PathSpring. The path of the PathSpring is
- * determined by an object derived from AbstractPath. A PathSpring is a
+ * determined by an object derived from AbstractGeometryPath. A PathSpring is a
  * massless Force element which applies tension along a path connected to bodies
  * and can wrap over surfaces.  The tension is proportional to its stretch
  * beyond its resting length and the amount of dissipation scales with amount of
@@ -63,7 +63,7 @@ public:
         "The linear stiffness (N/m) of the PathSpring");
     OpenSim_DECLARE_PROPERTY(dissipation, double,
         "The dissipation factor (s/m) of the PathSpring");
-    OpenSim_DECLARE_PROPERTY(path, AbstractPath,
+    OpenSim_DECLARE_PROPERTY(path, AbstractGeometryPath,
         "The path defines the length and lengthening speed of the PathSpring");
 
 //=============================================================================
@@ -119,8 +119,8 @@ public:
     void setDissipation(double dissipation);
 
     /** get/set the path object */
-    AbstractPath& updPath() { return upd_path(); }
-    const AbstractPath& getPath() const { return get_path(); }
+    AbstractGeometryPath& updPath() { return upd_path(); }
+    const AbstractGeometryPath& getPath() const { return get_path(); }
 
     template <typename PathType>
     PathType& updPath() {

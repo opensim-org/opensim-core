@@ -341,12 +341,18 @@ public:
     used by the Property declaration macros for fast access to properties. **/
     template <class T> const Property<T>& 
     getProperty(const PropertyIndex& index) const;
+    /** @copydoc getProperty(const PropertyIndex&) **/
+    template <class T> const Property<T>&
+    getPropertyByName(const std::string& name) const;
 
     /** Get property of known type Property\<T> as a writable reference;
     the property must be present and have the right type. This is primarily
     used by the Property declaration macros for fast access to properties. **/
     template <class T> Property<T>& 
     updProperty(const PropertyIndex& index);
+    /** @copydoc updProperty(const PropertyIndex&) **/
+    template <class T> Property<T>&
+    updPropertyByName(const std::string& name);
 
     /** Returns \c true if no property's value has changed since the last time
     setObjectIsUpToDateWithProperties() was called. **/
@@ -937,10 +943,21 @@ getProperty(const PropertyIndex& index) const {
     return _propertyTable.getProperty<T>(index);
 }
 
+template <class T> const Property<T>& Object::
+getPropertyByName(const std::string& name) const {
+    return _propertyTable.getProperty<T>(name);
+}
+
 template <class T> Property<T>& Object::
 updProperty(const PropertyIndex& index) {
     _objectIsUpToDate = false; // property may be changed
     return _propertyTable.updProperty<T>(index);
+}
+
+template <class T> Property<T>& Object::
+updPropertyByName(const std::string& name) {
+    _objectIsUpToDate = false; // property may be changed
+    return _propertyTable.updProperty<T>(name);
 }
 
 template <class T> PropertyIndex Object::

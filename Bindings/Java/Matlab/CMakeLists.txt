@@ -69,10 +69,25 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/OpenSenseExample/Geometry/"
         DESTINATION
         "${OPENSIM_INSTALL_PYTHONEXDIR}/Moco/exampleSquatToStand/Geometry/")
         
-# Copy Geometry folder for Moco 2D walking examples
+# Copy Geometry folder for Moco examples
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/OpenSenseExample/Geometry/"
         DESTINATION
         "${OPENSIM_INSTALL_MATLABEXDIR}/Moco/example2DWalking/Geometry/")
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/OpenSenseExample/Geometry/"
+        DESTINATION
+        "${OPENSIM_INSTALL_MATLABEXDIR}/Moco/example3DWalking/Geometry/")
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/OpenSenseExample/Geometry/"
+        DESTINATION
+        "${OPENSIM_INSTALL_MATLABEXDIR}/Moco/exampleEMGTracking/Geometry/")
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/OpenSenseExample/Geometry/"
+        DESTINATION
+        "${OPENSIM_INSTALL_MATLABEXDIR}/Moco/exampleMarkerTracking10DOF/Geometry/")
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/OpenSenseExample/Geometry/"
+        DESTINATION
+        "${OPENSIM_INSTALL_MATLABEXDIR}/Moco/exampleSquatToStand/Geometry/")
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/OpenSenseExample/Geometry/"
+        DESTINATION
+        "${OPENSIM_INSTALL_MATLABEXDIR}/Moco/exampleSquatToStand/exampleIMUTracking/Geometry/")
 
 # The configureOpenSim.m script contains paths into the OpenSim installation
 # that may be different on different platforms, so we configure it with CMake

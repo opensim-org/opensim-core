@@ -33,6 +33,7 @@
 #include "GCVSpline.h"
 #include "GCVSplineSet.h"
 #include "IO.h"
+#include "LatinHypercubeDesign.h"
 #include "LinearFunction.h"
 #include "LoadOpenSimLibrary.h"
 #include "Logger.h"
