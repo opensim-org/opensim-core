@@ -18,8 +18,6 @@ class TestC3DFileAdapter {
 
         // convert data to meters and write a copy
         TimeSeriesTableVec3 markerTableInMeters = new TimeSeriesTableVec3(markerTable);
-        if (markerTableInMeters.hasTableMetaDataKey("Units"))
-            markerTableInMeters.removeTableMetaDataKey("Units");
         markerTableInMeters.addTableMetaDataString("Units", "M");
         for (int col=0; col < markerTableInMeters.getNumColumns(); col++)
             markerTableInMeters.updDependentColumnAtIndex(col).multiplyAssign(.001);
