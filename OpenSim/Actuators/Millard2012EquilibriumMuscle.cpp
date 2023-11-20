@@ -1019,8 +1019,8 @@ calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
             }
 
             // If the Newton method converged, update the fiber velocity.
-            dlce = getOptimalFiberLength() * getMaxContractionVelocity() *
-                   (dlceN = result.normFiberVelocity);
+            dlceN = result.normFiberVelocity;
+            dlce = dlceN * getOptimalFiberLength() * getMaxContractionVelocity();
             fv = get_ForceVelocityCurve().calcValue(dlceN);
         }
 
