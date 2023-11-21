@@ -44,7 +44,7 @@ namespace
 //    @param a activation
 //    @param fal active-force-length multiplier
 //    @param fv fiber-force-velocity multiplier
-inline double CalcActiveFiberForce(double fiso, double a, double fal, double fv)
+inline double calcActiveFiberForce(double fiso, double a, double fal, double fv)
 {
     return fiso * (a * fal * fv);
 }
@@ -52,7 +52,7 @@ inline double CalcActiveFiberForce(double fiso, double a, double fal, double fv)
 // Calculates the passive elastic fiber force.
 //    @param fiso maximum isometric force
 //    @param fpe passive-force-length multiplier
-inline double CalcPassiveFiberElasticForce(double fiso, double fpe)
+inline double calcPassiveFiberElasticForce(double fiso, double fpe)
 {
     return fiso * fpe;
 }
@@ -61,7 +61,7 @@ inline double CalcPassiveFiberElasticForce(double fiso, double fpe)
 //    @param fiso maximum isometric force
 //    @param dlceN normalized fiber velocity
 //    @param beta damping coefficient
-inline double CalcPassiveFiberDampingForce(
+inline double calcPassiveFiberDampingForce(
     double fiso,
     double dlceN,
     double beta)
@@ -77,7 +77,7 @@ inline double CalcPassiveFiberDampingForce(
 //    @param fpe passive-force-length multiplier
 //    @param dlceN normalized fiber velocity
 //    @param beta damping coefficient
-inline double CalcFiberForce(
+inline double calcFiberForce(
     double fiso,
     double a,
     double fal,
@@ -86,9 +86,9 @@ inline double CalcFiberForce(
     double dlceN,
     double beta)
 {
-    return CalcActiveFiberForce(fiso, a, fal, fv) +
-           (CalcPassiveFiberElasticForce(fiso, fpe) +
-            CalcPassiveFiberDampingForce(fiso, dlceN, beta));
+    return calcActiveFiberForce(fiso, a, fal, fv) +
+           (calcPassiveFiberElasticForce(fiso, fpe) +
+            calcPassiveFiberDampingForce(fiso, dlceN, beta));
 }
 
 // Calculates the fiber-force-velocity curve value from the force equilibrium,
@@ -98,7 +98,7 @@ inline double CalcFiberForce(
 //    @param fp passive-force-length multiplier
 //    @param fse tendon-force-length multiplier
 //    @param cosPhi cosine of pennation angle
-inline double CalcUndampedFiberForceVelocityMultiplier(
+inline double calcUndampedFiberForceVelocityMultiplier(
     double a,
     double fal,
     double fp,
@@ -128,7 +128,7 @@ given a fixed fiber length.
     @param cosPhi cosine of pennation angle
     @param fvCurve fiber force velocity curve
     @param fvInvCurve inverse fiber force velocity curve */
-DampedFiberVelocityCalculationResult CalcDampedNormFiberVelocity(
+DampedFiberVelocityCalculationResult calcDampedNormFiberVelocity(
     double fiso,
     double a,
     double fal,
@@ -154,7 +154,7 @@ DampedFiberVelocityCalculationResult CalcDampedNormFiberVelocity(
 
     // Get a really excellent starting position to reduce the number of
     // iterations. This reduces the simulation time by about 1%.
-    double fv = CalcUndampedFiberForceVelocityMultiplier(
+    double fv = calcUndampedFiberForceVelocityMultiplier(
         max(a, 0.01),
         max(fal, 0.01),
         fpe,
@@ -174,7 +174,7 @@ DampedFiberVelocityCalculationResult CalcDampedNormFiberVelocity(
 
     while (abs(err) > tol && iter < maxIter) {
         fv         = fvCurve.calcValue(dlceN_dt);
-        fiberForce = CalcFiberForce(fiso, a, fal, fv, fpe, dlceN_dt, beta);
+        fiberForce = calcFiberForce(fiso, a, fal, fv, fpe, dlceN_dt, beta);
 
         err = fiberForce * cosPhi - fse * fiso;
         df_d_dlceNdt =
@@ -964,7 +964,7 @@ calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
                 "calcFiberVelocityInfo",
                 "%s: Active-force-length factor is 0, causing a singularity");
 
-            fv = CalcUndampedFiberForceVelocityMultiplier(
+            fv = calcUndampedFiberForceVelocityMultiplier(
                 a,
                 mli.fiberActiveForceLengthMultiplier,
                 mli.fiberPassiveForceLengthMultiplier,
@@ -996,7 +996,7 @@ calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
 
             // Newton solve for fiber velocity.
             DampedFiberVelocityCalculationResult result =
-                CalcDampedNormFiberVelocity(
+                calcDampedNormFiberVelocity(
                     getMaxIsometricForce(),
                     a,
                     mli.fiberActiveForceLengthMultiplier,
@@ -1120,16 +1120,16 @@ calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
         double Ke           = 0.0;
 
         if(fiberStateClamped < 0.5) { //flag is set to 0.0 or 1.0
-            aFm = CalcActiveFiberForce(
+            aFm = calcActiveFiberForce(
                 fiso,
                 a,
                 mli.fiberActiveForceLengthMultiplier,
                 mvi.fiberForceVelocityMultiplier);
-            p1Fm = CalcPassiveFiberElasticForce(
+            p1Fm = calcPassiveFiberElasticForce(
                 fiso,
                 mli.fiberPassiveForceLengthMultiplier);
             p2Fm =
-                CalcPassiveFiberDampingForce(fiso, mvi.normFiberVelocity, beta);
+                calcPassiveFiberDampingForce(fiso, mvi.normFiberVelocity, beta);
             pFm  = p1Fm + p2Fm;
 
             // Total fiber force:
@@ -1502,7 +1502,7 @@ Millard2012EquilibriumMuscle::MuscleStateEstimate
 
     // Functional to compute the equilibrium force error
     auto ferrFunc = [&] {
-        Fm = CalcFiberForce(fiso, ma, fal, fv, fpe, dlceN, beta);
+        Fm = calcFiberForce(fiso, ma, fal, fv, fpe, dlceN, beta);
         FmAT = Fm * cosphi;
         Ft = fse*fiso;
         ferr = FmAT - Ft;
@@ -1586,7 +1586,7 @@ Millard2012EquilibriumMuscle::MuscleStateEstimate
     // Starting guess at the force-velocity multiplier is static
     fv = 1.0;
 
-    Fm = CalcFiberForce(fiso, ma, fal, fv, fpe, dlceN, beta);
+    Fm = calcFiberForce(fiso, ma, fal, fv, fpe, dlceN, beta);
 
     // Compute the partial derivative of the force error w.r.t. lce
     partialsFunc();
@@ -1734,7 +1734,7 @@ calcActiveFiberForceAlongTendon(double activation,
         double phi = getPennationModel().calcPennationAngle(lceN);
 
         //Compute the active fiber force
-        double fa = CalcActiveFiberForce(fiso, ca, fal, fv);
+        double fa = calcActiveFiberForce(fiso, ca, fal, fv);
         activeFiberForce = fa * cos(phi);
 
     } catch(const std::exception &x) {
