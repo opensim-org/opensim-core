@@ -35,7 +35,7 @@ and `Blankevoort1991Ligament`, usages of `get_GeometryPath`, `upd_GeometryPath`,
 - Added `PolynomialPathFitter`, A utility class for fitting a set of `FunctionBasedPath`s to existing geometry-path in 
   an OpenSim model using `MultivariatePolynomialFunction`s (#3390)
 - Bumped the version of `ezc3d` which can now Read Kistler files
-- Added method to addTableMetaDataString through Scripting (#3589)
+- Updated scripting method addTableMetaDataString to support overwriting metadata value for an existing key (#3589)
 
 v4.4.1
 ======
