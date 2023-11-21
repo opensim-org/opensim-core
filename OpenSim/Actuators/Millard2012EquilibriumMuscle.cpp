@@ -1120,8 +1120,6 @@ calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
         double Ke           = 0.0;
 
         if(fiberStateClamped < 0.5) { //flag is set to 0.0 or 1.0
-            SimTK::Vec4 fiberForceV;
-
             aFm = CalcActiveFiberForce(
                 fiso,
                 a,
@@ -1483,8 +1481,6 @@ Millard2012EquilibriumMuscle::MuscleStateEstimate
     double dferr_d_lce  = 0.0;   // partial of solution error w.r.t lce
     double delta_lce    = 0.0;   // change in lce
 
-    SimTK::Vec4 fiberForceV(SimTK::NaN);
-
     //*******************************
     // Helper functions
     //Update position level quantities, only if they won't go singular
@@ -1506,8 +1502,7 @@ Millard2012EquilibriumMuscle::MuscleStateEstimate
 
     // Functional to compute the equilibrium force error
     auto ferrFunc = [&] {
-        fiberForceV = CalcFiberForce(fiso, ma, fal, fv, fpe, dlceN, beta);
-        Fm = fiberForceV[0];
+        Fm = CalcFiberForce(fiso, ma, fal, fv, fpe, dlceN, beta);
         FmAT = Fm * cosphi;
         Ft = fse*fiso;
         ferr = FmAT - Ft;
