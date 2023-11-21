@@ -104,7 +104,11 @@ private:
     //--------------------------------------------------------------------------
     // Implement ScalarActuator interface
     //--------------------------------------------------------------------------
+    /** Get speed along force vector. */
     double getSpeed( const SimTK::State& s) const override;
+
+    /** Computes speed along force vector. */
+    double computeSpeed( const SimTK::State& s) const;
 
     //--------------------------------------------------------------------------
     // Implement Force interface

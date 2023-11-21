@@ -125,11 +125,6 @@ public:
     /** Get the second body (bodyB) to which this actuator applies torque. */
     const PhysicalFrame& getBodyB() const {return *_bodyB;}
 
-    //--------------------------------------------------------------------------
-    // Implement ScalarActuator interface
-    //--------------------------------------------------------------------------
-    double getSpeed( const SimTK::State& s) const override;
-
 protected:
     //--------------------------------------------------------------------------
     // Implement ModelComponent Interface
@@ -155,6 +150,10 @@ private:
     double computeActuation(const SimTK::State& s) const override;
     // Return the stress, defined as abs(force/optimal_force).
     double getStress(const SimTK::State& state) const override; 
+    //* Get speed along force vector. */
+    double getSpeed( const SimTK::State& s) const override;
+    //* Compute speed along force vector. */
+    double computeSpeed( const SimTK::State& s) const;
 
     //--------------------------------------------------------------------------
     // Implement ModelComponent interface

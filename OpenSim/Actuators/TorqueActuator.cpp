@@ -176,12 +176,21 @@ void TorqueActuator::computeForce(
 
 double TorqueActuator::getSpeed(const SimTK::State& s) const
 {
-    if (!_model || !_bodyA) {
-        return 0.;
-    }
-
     if (isCacheVariableValid(s, _speedCV)) {
         return getCacheVariableValue(s, _speedCV);
+    }
+
+    double speed = computeSpeed(s);
+
+    updCacheVariableValue(s, _speedCV) = speed;
+    markCacheVariableValid(s, _speedCV);
+    return speed;
+}
+
+double TorqueActuator::computeSpeed(const SimTK::State& s) const
+{
+    if (!_model || !_bodyA) {
+        return 0.;
     }
 
     const bool torqueIsGlobal = getTorqueIsGlobal();
@@ -196,9 +205,6 @@ double TorqueActuator::getSpeed(const SimTK::State& s) const
     // the "speed" is the relative angular velocity of the bodies
     // projected onto the torque axis.
     double speed = ~(omegaA - omegaB) * axis;
-
-    updCacheVariableValue(s, _speedCV) = speed;
-    markCacheVariableValid(s, _speedCV);
     return speed;
 }
 

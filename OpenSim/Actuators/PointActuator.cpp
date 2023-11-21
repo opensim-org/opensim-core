@@ -152,15 +152,21 @@ double PointActuator::getSpeed(const SimTK::State& s) const
         return getCacheVariableValue(s, _speedCV);
     }
 
+    double speed = computeSpeed(s);
+
+    updCacheVariableValue(s, _speedCV) = speed;
+    markCacheVariableValid(s, _speedCV);
+    return speed;
+}
+
+double PointActuator::computeSpeed(const SimTK::State& s) const
+{
     // get the velocity of the actuator in ground
     Vec3 velocity = _body->findStationVelocityInGround(s, get_point());
 
     // the speed of the point is the "speed" of the actuator used to compute
     // power
     double speed = velocity.norm();
-
-    updCacheVariableValue(s, _speedCV) = speed;
-    markCacheVariableValid(s, _speedCV);
     return speed;
 }
 

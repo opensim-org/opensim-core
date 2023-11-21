@@ -186,6 +186,19 @@ SimTK::UnitVec3 PointToPointActuator::getDirectionBAInGround(
 
 double PointToPointActuator::getSpeed(const SimTK::State& s) const
 {
+    if (isCacheVariableValid(s, _speedCV)) {
+        return getCacheVariableValue(s, _speedCV);
+    }
+
+    double speed = computeSpeed(s);
+
+    updCacheVariableValue(s, _speedCV) = speed;
+    markCacheVariableValid(s, _speedCV);
+    return speed;
+}
+
+double PointToPointActuator::computeSpeed(const SimTK::State& s) const
+{
     if (!_model || !_bodyA || !_bodyB) {
         return 0.;
     }
@@ -194,10 +207,6 @@ double PointToPointActuator::getSpeed(const SimTK::State& s) const
     const bool pointsAreGlobal = getPointsAreGlobal();
     if (pointsAreGlobal) {
         return 0.;
-    }
-
-    if (isCacheVariableValid(s, _speedCV)) {
-        return getCacheVariableValue(s, _speedCV);
     }
 
     const SimTK::Vec3& pointA_inBodyA = getPointA();
@@ -212,9 +221,6 @@ double PointToPointActuator::getSpeed(const SimTK::State& s) const
     // Speed used to compute power is the speed along the line connecting
     // the two bodies.
     double speed = ~velAB_G * getDirectionBAInGround(s);
-
-    updCacheVariableValue(s, _speedCV) = speed;
-    markCacheVariableValid(s, _speedCV);
     return speed;
 }
 

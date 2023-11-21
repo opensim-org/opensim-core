@@ -112,11 +112,6 @@ public:
 
     // default destructor, copy constructor, copy assignment
 
-    //--------------------------------------------------------------------------
-    // Implement ScalarActuator interface
-    //--------------------------------------------------------------------------
-    double getSpeed( const SimTK::State& s) const override;
-
 protected:
     //--------------------------------------------------------------------------
     // Implement ModelComponent Interface
@@ -146,6 +141,10 @@ private:
     double computeActuation( const SimTK::State& s) const override;
     // Return the stress, defined as abs(force/optimal_force).
     double getStress( const SimTK::State& s ) const override;
+    /** Get speed along force vector. */
+    double getSpeed( const SimTK::State& s) const override;
+    /** Computes speed along force vector. */
+    double computeSpeed( const SimTK::State& s) const;
 
     //--------------------------------------------------------------------------
     // Implement ModelComponent interface
