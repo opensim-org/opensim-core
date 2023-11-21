@@ -1132,16 +1132,10 @@ calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
                 mli.fiberPassiveForceLengthMultiplier);
             p2Fm =
                 CalcPassiveFiberDampingForce(fiso, mvi.normFiberVelocity, beta);
-            fm = CalcFiberForce(
-                fiso,
-                a,
-                mli.fiberActiveForceLengthMultiplier,
-                mvi.fiberForceVelocityMultiplier,
-                mli.fiberPassiveForceLengthMultiplier,
-                mvi.normFiberVelocity,
-                beta);
-
             pFm  = p1Fm + p2Fm;
+
+            // Total fiber force:
+            fm = aFm + pFm;
 
             // Every configuration except the rigid tendon chooses a fiber
             // velocity that ensures that the fiber does not generate a
