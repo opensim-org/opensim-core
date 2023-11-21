@@ -44,7 +44,7 @@ namespace
 //    @param a activation
 //    @param fal active-force-length multiplier
 //    @param fv fiber-force-velocity multiplier
-inline double calcActiveFiberForce(double fiso, double a, double fal, double fv)
+inline double calcFiberForceActive(double fiso, double a, double fal, double fv)
 {
     return fiso * (a * fal * fv);
 }
@@ -52,7 +52,7 @@ inline double calcActiveFiberForce(double fiso, double a, double fal, double fv)
 // Calculates the passive elastic fiber force.
 //    @param fiso maximum isometric force
 //    @param fpe passive-force-length multiplier
-inline double calcPassiveFiberElasticForce(double fiso, double fpe)
+inline double calcFiberForcePassiveElastic(double fiso, double fpe)
 {
     return fiso * fpe;
 }
@@ -61,7 +61,7 @@ inline double calcPassiveFiberElasticForce(double fiso, double fpe)
 //    @param fiso maximum isometric force
 //    @param dlceN normalized fiber velocity
 //    @param beta damping coefficient
-inline double calcPassiveFiberDampingForce(
+inline double calcFiberForcePassiveDamping(
     double fiso,
     double dlceN,
     double beta)
@@ -86,9 +86,9 @@ inline double calcFiberForce(
     double dlceN,
     double beta)
 {
-    return calcActiveFiberForce(fiso, a, fal, fv) +
-           (calcPassiveFiberElasticForce(fiso, fpe) +
-            calcPassiveFiberDampingForce(fiso, dlceN, beta));
+    return calcFiberForceActive(fiso, a, fal, fv) +
+           (calcFiberForcePassiveElastic(fiso, fpe) +
+            calcFiberForcePassiveDamping(fiso, dlceN, beta));
 }
 
 // Calculates the fiber-force-velocity curve value from the force equilibrium,
@@ -1120,16 +1120,16 @@ calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
         double Ke           = 0.0;
 
         if(fiberStateClamped < 0.5) { //flag is set to 0.0 or 1.0
-            aFm = calcActiveFiberForce(
+            aFm = calcFiberForceActive(
                 fiso,
                 a,
                 mli.fiberActiveForceLengthMultiplier,
                 mvi.fiberForceVelocityMultiplier);
-            p1Fm = calcPassiveFiberElasticForce(
+            p1Fm = calcFiberForcePassiveElastic(
                 fiso,
                 mli.fiberPassiveForceLengthMultiplier);
             p2Fm =
-                calcPassiveFiberDampingForce(fiso, mvi.normFiberVelocity, beta);
+                calcFiberForcePassiveDamping(fiso, mvi.normFiberVelocity, beta);
             pFm  = p1Fm + p2Fm;
 
             // Total fiber force:
@@ -1734,7 +1734,7 @@ calcActiveFiberForceAlongTendon(double activation,
         double phi = getPennationModel().calcPennationAngle(lceN);
 
         //Compute the active fiber force
-        double fa = calcActiveFiberForce(fiso, ca, fal, fv);
+        double fa = calcFiberForceActive(fiso, ca, fal, fv);
         activeFiberForce = fa * cos(phi);
 
     } catch(const std::exception &x) {
