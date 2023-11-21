@@ -1013,9 +1013,9 @@ calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
                 // invalid fiber lengths and will ultimately cause numerical
                 // problems). The idea is to produce an exception and catch this
                 // early before it can cause more damage.
-                throw(OpenSim::Exception(
+                OPENSIM_THROW(OpenSim::Exception,
                     getName() +
-                    " Fiber velocity Newton method did not converge"));
+                    " Fiber velocity Newton method did not converge");
             }
 
             // If the Newton method converged, update the fiber velocity.
