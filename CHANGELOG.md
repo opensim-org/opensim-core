@@ -37,6 +37,7 @@ and `Blankevoort1991Ligament`, usages of `get_GeometryPath`, `upd_GeometryPath`,
 - Added `examplePolynomialPathFitter.py`, a scripting example that demonstrates how to use `PolynomialPathFitter` (#3607)
 - Fixed a bug where using `to_numpy()` to convert `RowVectorView`s to Python arrays returned incorrect data (#3613)
 - Bumped the version of `ezc3d` which can now Read Kistler files
+- Updated scripting method addTableMetaDataString to support overwriting metadata value for an existing key (#3589)
 - Exposed simbody methods to obtain GravityForces, MobilityForces and BodyForces (#3490)
 
 v4.4.1

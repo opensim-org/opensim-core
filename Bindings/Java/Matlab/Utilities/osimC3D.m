@@ -179,8 +179,8 @@ classdef osimC3D < matlab.mixin.SetGet
                     % Divide by 1000
                     columnData.multiplyAssign(.001);           
                 end
-                % todo fix units in table/trc file to correspond to data
-                
+                % Fix units in table/trc file to correspond to data
+                self.markers.addTableMetaDataString("Units", "M");
             end
             disp('Point and Torque values convert from mm and Nmm to m and Nm, respectively')
         end
