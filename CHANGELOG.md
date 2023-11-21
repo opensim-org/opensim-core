@@ -38,6 +38,7 @@ and `Blankevoort1991Ligament`, usages of `get_GeometryPath`, `upd_GeometryPath`,
 - Fixed a bug where using `to_numpy()` to convert `RowVectorView`s to Python arrays returned incorrect data (#3613)
 - Bumped the version of `ezc3d` which can now Read Kistler files
 - Updated scripting method addTableMetaDataString to support overwriting metadata value for an existing key (#3589)
+- Simbody was updated such that the headers it transitively exposes to downstream projects are compatible with C++20 (#3619)
 
 v4.4.1
 ======
