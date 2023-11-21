@@ -44,7 +44,7 @@ namespace
 //    @param a activation
 //    @param fal active-force-length multiplier
 //    @param fv fiber-force-velocity multiplier
-inline double calcFiberForceActive(double fiso, double a, double fal, double fv)
+double calcFiberForceActive(double fiso, double a, double fal, double fv)
 {
     return fiso * (a * fal * fv);
 }
@@ -52,7 +52,7 @@ inline double calcFiberForceActive(double fiso, double a, double fal, double fv)
 // Calculates the passive elastic fiber force.
 //    @param fiso maximum isometric force
 //    @param fpe passive-force-length multiplier
-inline double calcFiberForcePassiveElastic(double fiso, double fpe)
+double calcFiberForcePassiveElastic(double fiso, double fpe)
 {
     return fiso * fpe;
 }
@@ -61,7 +61,7 @@ inline double calcFiberForcePassiveElastic(double fiso, double fpe)
 //    @param fiso maximum isometric force
 //    @param dlceN normalized fiber velocity
 //    @param beta damping coefficient
-inline double calcFiberForcePassiveDamping(
+double calcFiberForcePassiveDamping(
     double fiso,
     double dlceN,
     double beta)
@@ -77,7 +77,7 @@ inline double calcFiberForcePassiveDamping(
 //    @param fpe passive-force-length multiplier
 //    @param dlceN normalized fiber velocity
 //    @param beta damping coefficient
-inline double calcFiberForce(
+double calcFiberForce(
     double fiso,
     double a,
     double fal,
@@ -98,7 +98,7 @@ inline double calcFiberForce(
 //    @param fp passive-force-length multiplier
 //    @param fse tendon-force-length multiplier
 //    @param cosPhi cosine of pennation angle
-inline double calcUndampedFiberForceVelocityMultiplier(
+double calcUndampedFiberForceVelocityMultiplier(
     double a,
     double fal,
     double fp,
