@@ -49,14 +49,27 @@ void DiscreteController::computeControls(
     const auto& dv = subSys.getDiscreteVariable(s, m_discreteVarIndex) ;
     const auto& discreteControls =
             SimTK::Value<SimTK::Vector>::downcast(dv).get();
-    controls += discreteControls;
+
+    for (int i = 0; i < getActuatorSet().getSize(); ++i) {
+        controls[m_actuatorIndices[i]] += discreteControls[i];
+    }
 }
 
 void DiscreteController::extendRealizeTopology(SimTK::State& state) const {
     Super::extendRealizeTopology(state);
     const SimTK::Subsystem& subSys = getSystem().getDefaultSubsystem();
+
+    int count = 0;
+    for (const auto& actu : getModel().getComponentList<Actuator>()) {
+        if (getActuatorSet().contains(actu.getName())) {
+            m_actuatorIndices.push_back(count);
+        }
+        ++count;
+    }
+    OPENSIM_ASSERT(getActuatorSet().getSize() == m_actuatorIndices.size());
+
     m_discreteVarIndex =
             subSys.allocateDiscreteVariable(state, SimTK::Stage::Dynamics,
                     new SimTK::Value<SimTK::Vector>(
-                            SimTK::Vector(getModel().getNumControls(), 0.0)));
+                            SimTK::Vector(getActuatorSet().getSize(), 0.0)));
 }

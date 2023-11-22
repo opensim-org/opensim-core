@@ -41,18 +41,6 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
     setDynamicsMode(dynamicsMode);
     const auto& model = problemRep.getModelBase();
 
-    // Ensure the model does not have user-provided controllers.
-    int numControllers = 0;
-    for (const auto& controller : model.getComponentList<Controller>()) {
-        // Avoid unused variable warning.
-        (void)&controller;
-        ++numControllers;
-    }
-    // The model has a DiscreteController added by MocoProblemRep; any other
-    // controllers were added by the user.
-    OPENSIM_THROW_IF(numControllers > 1, Exception,
-            "MocoCasADiSolver does not support models with Controllers.");
-
     if (problemRep.isPrescribedKinematics()) {
         setPrescribedKinematics(true, model.getWorkingState().getNU());
     }
@@ -75,13 +63,18 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
                 convertBounds(info.getFinalBounds()));
     }
 
-    auto controlNames =
-            createControlNamesFromModel(model, m_modelControlIndices);
-    for (const auto& controlName : controlNames) {
-        const auto& info = problemRep.getControlInfo(controlName);
-        addControl(controlName, convertBounds(info.getBounds()),
+    // Add control variables for the DiscreteController (i.e., controls that
+    // do not have a user-defined Controller associated with them).
+    const auto& controllerMap = problemRep.getControllerMap();
+    m_modelControlIndices.clear();
+    m_modelControlIndices.reserve(
+        controllerMap.at("discrete_controller").size());
+    for (const auto& value : controllerMap.at("discrete_controller")) {
+        const auto& info = problemRep.getControlInfo(value.first);
+        addControl(value.first, convertBounds(info.getBounds()),
                 convertBounds(info.getInitialBounds()),
                 convertBounds(info.getFinalBounds()));
+        m_modelControlIndices.push_back(value.second);
     }
 
     // Set the number of residual equations to be enforced for components with

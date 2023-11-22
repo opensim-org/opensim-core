@@ -52,6 +52,7 @@ void MocoControlGoal::setWeightForControlPattern(
 void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
 
     // Get all expected control names.
+    // TODO check for controllers
     auto controlNames = createControlNamesFromModel(model);
 
     // Check that the model controls are in the correct order.

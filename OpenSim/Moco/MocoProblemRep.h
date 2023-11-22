@@ -321,6 +321,14 @@ public:
     getImplicitComponentReferencePtrs() const {
         return m_implicit_component_refs;
     }
+
+    /// TODO
+    const
+    std::unordered_map<std::string, std::vector<std::pair<std::string, int>>>&
+    getControllerMap() const {
+        return m_controller_map;
+    }
+
     /// @}
 
 private:
@@ -396,6 +404,8 @@ private:
 
     std::unordered_map<std::string, MocoVariableInfo> m_state_infos;
     std::unordered_map<std::string, MocoVariableInfo> m_control_infos;
+    std::unordered_map<std::string, std::vector<std::pair<std::string, int>>>
+    m_controller_map;
 
     std::vector<std::unique_ptr<MocoParameter>> m_parameters;
     std::vector<std::unique_ptr<MocoGoal>> m_costs;

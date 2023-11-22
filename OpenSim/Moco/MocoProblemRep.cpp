@@ -29,6 +29,7 @@
 
 #include <OpenSim/Simulation/PositionMotion.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
+#include <OpenSim/Simulation/Control/PrescribedController.h>
 
 using namespace OpenSim;
 
@@ -94,7 +95,55 @@ void MocoProblemRep::initialize() {
         }
     }
 
+    // Manage controllers.
+    // -------------------
+    // Create "master" list of control names and indices. These will be divided
+    // up among the controllers.
+    std::vector<int> modelControlIndices;
+    auto controlNames =
+        createControlNamesFromModel(m_model_base, modelControlIndices);
+
+    // Assign controls to controllers added by the user.
+    for (const auto& controller : m_model_base.getComponentList<Controller>()) {
+        // TODO support other controllers
+        if (!dynamic_cast<const PrescribedController*>(&controller)) {
+            OPENSIM_THROW(Exception, "TODO");
+        }
+
+        const auto& actuators = controller.getActuatorSet();
+        std::vector<std::pair<std::string, int>> controllerActuators;
+        controllerActuators.reserve(actuators.getSize());
+        for (int i = 0; i < actuators.getSize(); ++i) {
+            const auto& actu = actuators.get(i);
+            const auto& actuName = actu.getAbsolutePathString();
+            auto it = std::find(controlNames.begin(), controlNames.end(),
+                    actuName);
+            int index = modelControlIndices[it - controlNames.begin()];
+            std::cout << "DEBUG user controller control: " << actuName << " " << index << std::endl;
+            controllerActuators.emplace_back(actuName, index);
+            modelControlIndices.erase(modelControlIndices.begin() +
+                                      (it - controlNames.begin()));
+            controlNames.erase(it);
+        }
+
+        m_controller_map[controller.getName()] = controllerActuators;
+    }
+
+    std::cout << "DEBUG controlNames.size(): " << controlNames.size() << std::endl;
+
+    // Add the remaining controls to the DiscreteController.
     auto discreteControllerBaseUPtr = make_unique<DiscreteController>();
+    discreteControllerBaseUPtr->setName("discrete_controller");
+    std::vector<std::pair<std::string, int>> discreteControllerActuators;
+    for (int i = 0; i < controlNames.size(); ++i) {
+        discreteControllerBaseUPtr->addActuator(
+            m_model_base.getComponent<Actuator>(controlNames[i]));
+        discreteControllerActuators.emplace_back(
+                controlNames[i], modelControlIndices[i]);
+    }
+    m_controller_map[discreteControllerBaseUPtr->getName()] =
+            discreteControllerActuators;
+
     m_discrete_controller_base.reset(discreteControllerBaseUPtr.get());
     m_model_base.addController(discreteControllerBaseUPtr.release());
 
@@ -428,7 +477,6 @@ void MocoProblemRep::initialize() {
 
     // Control infos.
     // --------------
-    auto controlNames = createControlNamesFromModel(m_model_base);
     for (int i = 0; i < ph0.getProperty_control_infos_pattern().size(); ++i) {
         const auto& pattern = ph0.get_control_infos_pattern(i).getName();
         auto regexPattern = std::regex(pattern);
@@ -445,8 +493,8 @@ void MocoProblemRep::initialize() {
         const auto& name = ph0.get_control_infos(i).getName();
         auto it = std::find(controlNames.begin(), controlNames.end(), name);
         OPENSIM_THROW_IF(it == controlNames.end(), Exception,
-                "Control info provided for nonexistent or disabled actuator "
-                "'{}'.",
+                "Control info provided for nonexistent, disabled, or "
+                "controlled actuator '{}'.",
                 name);
     }
 
@@ -456,9 +504,14 @@ void MocoProblemRep::initialize() {
     }
 
     // Loop through all the actuators in the model and create control infos
-    // for the associated actuator control variables.
+    // for any remaining actuators in the DiscreteController without infos.
     for (const auto& actu : m_model_base.getComponentList<Actuator>()) {
         const std::string actuName = actu.getAbsolutePathString();
+        // If this actuator is not in the DiscreteController, skip it.
+        if (std::find(controlNames.begin(), controlNames.end(), actuName) ==
+                controlNames.end()) {
+            continue;
+        }
         if (actu.numControls() == 1) {
             // No control info exists; add one.
             if (m_control_infos.count(actuName) == 0) {
