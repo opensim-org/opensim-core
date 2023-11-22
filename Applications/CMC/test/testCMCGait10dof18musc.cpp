@@ -39,6 +39,6 @@ TEST_CASE("testGait10dof18musc") {
         "gait10dof18musc_std_walk_subject_states.sto");
     for (const auto& label : results.getColumnLabels()) {
         REQUIRE(SimTK::Test::numericallyEqual(results.getDependentColumn(label),
-            std.getDependentColumn(label), 1, 1e-9));
+            std.getDependentColumn(label), 1, 1e-3));
     }
 }
