@@ -22,66 +22,24 @@
 
 // INCLUDE
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Tools/CMCTool.h>
-#include <OpenSim/Tools/ForwardTool.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+
+#define CATCH_CONFIG_MAIN
+#include <OpenSim/Auxiliary/catch/catch.hpp>
 
 using namespace OpenSim;
-using namespace std;
 
-void testGait10dof18musc();
-
-int main() {
-
-    SimTK::Array_<std::string> failures;
-
-    // Model uses Millard2012EquilibriumMuscle type muscles
-    try { testGait10dof18musc(); }
-    catch (const std::exception& e) {
-        cout << e.what() << endl;
-        failures.push_back("testGait10dof18musc");
-    }
-
-    if (!failures.empty()) {
-        cout << "Done, with failure(s): " << failures << endl;
-        return 1;
-    }
-
-    cout << "Done" << endl;
-
-    return 0;
-}
-
-// Perform regression test with standard generated from Gait10dof18musc
-// example in OpenSim 3.2
-void testGait10dof18musc() {
-    cout<<"\n******************************************************************" << endl;
-    cout << "*                      testGait10dof18musc                       *" << endl;
-    cout << "******************************************************************\n" << endl;
+TEST_CASE("testGait10dof18musc") {
     CMCTool cmc("gait10dof18musc_Setup_CMC.xml");
-    const string& muscleType = cmc.getModel().getMuscles()[0].getConcreteClassName();
+    cmc.run();
 
-    if (!cmc.run())
-        OPENSIM_THROW(Exception, "testGait10dof18musc " + muscleType +
-            " failed to complete.");
-
-    Storage results("gait10dof18musc_ResultsCMC/walk_subject_states.sto");
-    Storage temp("gait10dof18musc_std_walk_subject_states.sto");
-
-    Storage *standard = new Storage();
-    cmc.getModel().formStateStorage(temp, *standard);
-
-    int nstates = standard->getColumnLabels().size() - 1;
-
-    // angles and speeds within 0.01 rads and 0.01 rad/s;
-    // and activations to within 1%
-    std::vector<double> rms_tols(nstates, 0.01);
-
-    CHECK_STORAGE_AGAINST_STANDARD(results, *standard, rms_tols,
-        __FILE__, __LINE__, "testGait10dof18musc "+ muscleType + " failed");
-
-    cout << "\ntestGait10dof18musc "+ muscleType +" passed\n" << endl;
+    const TimeSeriesTable results(
+        "gait10dof18musc_ResultsCMC/walk_subject_states.sto");
+    const TimeSeriesTable std(
+        "gait10dof18musc_std_walk_subject_states.sto");
+    for (const auto& label : results.getColumnLabels()) {
+        REQUIRE(SimTK::Test::numericallyEqual(
+            results.getDependentColumn(label), std.getDependentColumn(label),
+            results.getNumRows(), 1e-6));
+    }
 }
-
-
