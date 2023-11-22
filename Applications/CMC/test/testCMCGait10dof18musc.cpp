@@ -38,8 +38,7 @@ TEST_CASE("testGait10dof18musc") {
     const TimeSeriesTable std(
         "gait10dof18musc_std_walk_subject_states.sto");
     for (const auto& label : results.getColumnLabels()) {
-        REQUIRE(SimTK::Test::numericallyEqual(
-            results.getDependentColumn(label), std.getDependentColumn(label),
-            results.getNumRows(), 1e-6));
+        REQUIRE(SimTK::Test::numericallyEqual(results.getDependentColumn(label),
+            std.getDependentColumn(label), 1, 1e-9));
     }
 }
