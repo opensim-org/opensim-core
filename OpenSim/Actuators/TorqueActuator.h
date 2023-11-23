@@ -151,9 +151,9 @@ private:
     // Return the stress, defined as abs(force/optimal_force).
     double getStress(const SimTK::State& state) const override; 
     //* Get speed along force vector. */
-    double getSpeed( const SimTK::State& s) const override;
+    double getSpeed(const SimTK::State& s) const override;
     //* Compute speed along force vector. */
-    double computeSpeed( const SimTK::State& s) const;
+    double calcSpeed(const SimTK::State& s) const;
 
     //--------------------------------------------------------------------------
     // Implement ModelComponent interface

@@ -137,14 +137,14 @@ private:
 
     //--------------------------------------------------------------------------
     // Implement Actuator interface (also see getOptimalForce() above)
-    //--------------------------------------------------------------------------    
-    double computeActuation( const SimTK::State& s) const override;
+    //--------------------------------------------------------------------------
+    double computeActuation(const SimTK::State& s) const override;
     // Return the stress, defined as abs(force/optimal_force).
-    double getStress( const SimTK::State& s ) const override;
+    double getStress(const SimTK::State& s) const override;
     /** Get speed along force vector. */
-    double getSpeed( const SimTK::State& s) const override;
+    double getSpeed(const SimTK::State& s) const override;
     /** Computes speed along force vector. */
-    double computeSpeed( const SimTK::State& s) const;
+    double calcSpeed(const SimTK::State& s) const;
 
     //--------------------------------------------------------------------------
     // Implement ModelComponent interface

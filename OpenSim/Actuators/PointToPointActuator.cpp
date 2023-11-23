@@ -126,7 +126,7 @@ void PointToPointActuator::setBodyB(Body* aBody)
  * this actuator divided by its optimal force.
  * @return Stress.
  */
-double PointToPointActuator::getStress( const SimTK::State& s) const
+double PointToPointActuator::getStress(const SimTK::State& s) const
 {
     return std::abs(getActuation(s) / getOptimalForce()); 
 }
@@ -138,7 +138,7 @@ double PointToPointActuator::getStress( const SimTK::State& s) const
  * @param s current SimTK::State 
  */
 
-double PointToPointActuator::computeActuation( const SimTK::State& s ) const
+double PointToPointActuator::computeActuation(const SimTK::State& s) const
 {
     if(!_model) return 0;
 
@@ -190,14 +190,14 @@ double PointToPointActuator::getSpeed(const SimTK::State& s) const
         return getCacheVariableValue(s, _speedCV);
     }
 
-    double speed = computeSpeed(s);
+    double speed = calcSpeed(s);
 
     updCacheVariableValue(s, _speedCV) = speed;
     markCacheVariableValid(s, _speedCV);
     return speed;
 }
 
-double PointToPointActuator::computeSpeed(const SimTK::State& s) const
+double PointToPointActuator::calcSpeed(const SimTK::State& s) const
 {
     if (!_model || !_bodyA || !_bodyB) {
         return 0.;

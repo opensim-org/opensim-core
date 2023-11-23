@@ -109,7 +109,7 @@ public:
     //--------------------------------------------------------------------------
     // Implement ScalarActuator Interface
     //--------------------------------------------------------------------------
-    double getSpeed( const SimTK::State& s) const final
+    double getSpeed(const SimTK::State& s) const final
     {
         return getLengtheningSpeed(s);
     }
@@ -121,7 +121,7 @@ public:
 
 
     // STRESS
-    double getStress( const SimTK::State& s ) const override;
+    double getStress(const SimTK::State& s ) const override;
 
     // Convenience method to add PathPoints
     /** @note This function does not maintain the State and so should be used
@@ -135,15 +135,15 @@ public:
     //--------------------------------------------------------------------------
     // APPLICATION
     //--------------------------------------------------------------------------
-    virtual void computeForce( const SimTK::State& state, 
+    virtual void computeForce(const SimTK::State& state,
                                SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
                                SimTK::Vector& mobilityForces) const override;
 
     //--------------------------------------------------------------------------
     // COMPUTATIONS
     //--------------------------------------------------------------------------
-    double computeActuation( const SimTK::State& s) const override;
-    virtual double computeMomentArm( const SimTK::State& s, Coordinate& aCoord) const;
+    double computeActuation(const SimTK::State& s) const override;
+    virtual double computeMomentArm(const SimTK::State& s, Coordinate& aCoord) const;
 
 protected:
     /** Override this method if you would like to calculate a color for use when

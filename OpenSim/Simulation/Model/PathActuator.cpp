@@ -125,7 +125,7 @@ double PathActuator::getLengtheningSpeed(const SimTK::State& s) const
 * this actuator divided by its optimal force.
 * @return Stress.
 */
-double PathActuator::getStress( const SimTK::State& s) const
+double PathActuator::getStress(const SimTK::State& s) const
 {
     return fabs(getActuation(s)/get_optimal_force()); 
 }
@@ -153,7 +153,7 @@ void PathActuator::addNewPathPoint(
  * Compute all quantities necessary for applying the actuator force to the
  * model.
  */
-double PathActuator::computeActuation( const SimTK::State& s ) const
+double PathActuator::computeActuation(const SimTK::State& s ) const
 {
     // FORCE
     return( getControl(s) * get_optimal_force() );
@@ -167,7 +167,7 @@ double PathActuator::computeActuation( const SimTK::State& s ) const
 /**
  * Apply the actuator force along path wrapping over and connecting rigid bodies
  */
-void PathActuator::computeForce( const SimTK::State& s, 
+void PathActuator::computeForce(const SimTK::State& s,
                                SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
                                SimTK::Vector& mobilityForces) const
 {

@@ -180,14 +180,14 @@ double TorqueActuator::getSpeed(const SimTK::State& s) const
         return getCacheVariableValue(s, _speedCV);
     }
 
-    double speed = computeSpeed(s);
+    double speed = calcSpeed(s);
 
     updCacheVariableValue(s, _speedCV) = speed;
     markCacheVariableValid(s, _speedCV);
     return speed;
 }
 
-double TorqueActuator::computeSpeed(const SimTK::State& s) const
+double TorqueActuator::calcSpeed(const SimTK::State& s) const
 {
     if (!_model || !_bodyA) {
         return 0.;

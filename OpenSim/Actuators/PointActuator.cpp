@@ -135,7 +135,7 @@ double PointActuator::getOptimalForce() const
 //_____________________________________________________________________________
 // Get the stress of the force. This would be the force or torque provided by 
 // this actuator divided by its optimal force.
-double PointActuator::getStress( const SimTK::State& s) const
+double PointActuator::getStress(const SimTK::State& s) const
 {
     return std::abs(getActuation(s) / getOptimalForce()); 
 }
@@ -152,14 +152,14 @@ double PointActuator::getSpeed(const SimTK::State& s) const
         return getCacheVariableValue(s, _speedCV);
     }
 
-    double speed = computeSpeed(s);
+    double speed = calcSpeed(s);
 
     updCacheVariableValue(s, _speedCV) = speed;
     markCacheVariableValid(s, _speedCV);
     return speed;
 }
 
-double PointActuator::computeSpeed(const SimTK::State& s) const
+double PointActuator::calcSpeed(const SimTK::State& s) const
 {
     // get the velocity of the actuator in ground
     Vec3 velocity = _body->findStationVelocityInGround(s, get_point());
@@ -174,7 +174,7 @@ double PointActuator::computeSpeed(const SimTK::State& s) const
  * Compute all quantities necessary for applying the actuator force to the
  * model.
  */
-double PointActuator::computeActuation( const SimTK::State& s ) const
+double PointActuator::computeActuation(const SimTK::State& s) const
 {
     if(!_model) return 0;
 
