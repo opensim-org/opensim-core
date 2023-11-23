@@ -100,6 +100,39 @@ Visual Studio), the tests will fail if either `OPENSIM_WITH_CASADI` or
 libraries are available).
 
 
+Checking for Memory Leaks with LibASAN
+--------------------------------------
+
+The easiest way to check for memory leaks is to use LibASAN on Linux or Mac. If you are
+using Windows 11 then you can use WSL2 to create a Linux virtual machine. Alternatively, you
+can use Windows' native support for libASAN, which is documented [here](https://devblogs.microsoft.com/cppblog/addresssanitizer-asan-for-windows-with-msvc/).
+
+Make sure you have the `clang` and `clang++` C/C++ compilers installed (best
+to google this), and then compile OpenSim in a terminal with the relevant flags:
+
+```bash
+# enable libASAN when compiling C++ sources
+export CXXFLAGS="-fsanitize=address"
+
+# link the libASAN runtime when linking binaries
+export LDFLAGS="-fsanitize=address"
+
+# configure dependencies, for example:
+cmake -S dependencies/ -B ../osim-deps-build -DCMAKE_INSTALL_PREFIX=${PWD}/../osim-deps-install
+
+# build dependencies, for example:
+cmake --build ../osim-deps-build/
+
+# configure OpenSim, for example:
+cmake -S . -B ../osim-build -DOPENSIM_DEPENDENCIES_PATH=${PWD}/../osim-deps-install
+
+# build OpenSim, for example:
+cmake --build ../osim-build/
+
+# (then run/test something: the runtime should now perform memory checks)
+```
+
+
 Checking for Memory Leaks through GitHub
 ----------------------------------------
 If you want to check memory leaks, you can have Travis-CI run valgrind on the test cases. Just put `[ci valgrind]` in your commit message.

@@ -156,6 +156,7 @@ void muscleDrivenStateTracking() {
     MocoProblem& problem = study.updProblem();
     MocoControlGoal& effort =
         dynamic_cast<MocoControlGoal&>(problem.updGoal("control_effort"));
+    effort.setWeight(0.1);
 
     // Put a large weight on the pelvis CoordinateActuators, which act as the
     // residual, or 'hand-of-god', forces which we would like to keep as small
@@ -167,6 +168,15 @@ void muscleDrivenStateTracking() {
             effort.setWeightForControl(coordPath, 10);
         }
     }
+
+    // Constrain the muscle activations at the initial time point to equal
+    // the initial muscle excitation value.
+    problem.addGoal<MocoInitialActivationGoal>("initial_activation");
+
+    // Update the solver tolerances.
+    auto& solver = study.updSolver<MocoCasADiSolver>();
+    solver.set_optim_convergence_tolerance(1e-3);
+    solver.set_optim_constraint_tolerance(1e-4);
     
     // Solve and visualize.
     MocoSolution solution = study.solve();
