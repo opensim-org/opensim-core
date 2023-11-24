@@ -129,7 +129,9 @@ double TorqueActuator::getStress(const State& s) const
  */
 double TorqueActuator::computeActuation(const State& s) const
 {
-    if(!_model) return 0;
+    if (!_model) {
+        return SimTK::NaN;
+    }
 
     // FORCE
     return getControl(s) * getOptimalForce();
@@ -190,7 +192,7 @@ double TorqueActuator::getSpeed(const SimTK::State& s) const
 double TorqueActuator::calcSpeed(const SimTK::State& s) const
 {
     if (!_model || !_bodyA) {
-        return 0.;
+        return SimTK::NaN;
     }
 
     const bool torqueIsGlobal = getTorqueIsGlobal();

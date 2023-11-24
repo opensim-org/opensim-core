@@ -140,7 +140,9 @@ double PointToPointActuator::getStress(const SimTK::State& s) const
 
 double PointToPointActuator::computeActuation(const SimTK::State& s) const
 {
-    if(!_model) return 0;
+    if (!_model) {
+        return SimTK::NaN;
+    }
 
     // FORCE
     return getControl(s) * getOptimalForce();
@@ -200,7 +202,7 @@ double PointToPointActuator::getSpeed(const SimTK::State& s) const
 double PointToPointActuator::calcSpeed(const SimTK::State& s) const
 {
     if (!_model || !_bodyA || !_bodyB) {
-        return 0.;
+        return SimTK::NaN;
     }
 
     // Speed is zero for constant points defined in the same frame.

@@ -172,13 +172,13 @@ double PointActuator::calcSpeed(const SimTK::State& s) const
  */
 double PointActuator::computeActuation(const SimTK::State& s) const
 {
-    if(!_model) return 0;
+    if (!_model) {
+        return SimTK::NaN;
+    }
 
     // FORCE
     return getControl(s) * getOptimalForce();
 }
-
-
 
 //=============================================================================
 // APPLICATION
