@@ -127,7 +127,7 @@ double PathActuator::getLengtheningSpeed(const SimTK::State& s) const
 */
 double PathActuator::getStress(const SimTK::State& s) const
 {
-    return fabs(getActuation(s)/get_optimal_force()); 
+    return fabs(getActuation(s)/get_optimal_force());
 }
 
 
@@ -138,8 +138,8 @@ double PathActuator::getStress(const SimTK::State& s) const
  *
  */
 void PathActuator::addNewPathPoint(
-         const std::string& proposedName, 
-         const PhysicalFrame& aBody, 
+         const std::string& proposedName,
+         const PhysicalFrame& aBody,
          const SimTK::Vec3& aPositionOnBody) {
     // Create new PathPoint already appended to the PathPointSet for the path
     updGeometryPath().appendNewPathPoint(proposedName, aBody, aPositionOnBody);
@@ -153,7 +153,7 @@ void PathActuator::addNewPathPoint(
  * Compute all quantities necessary for applying the actuator force to the
  * model.
  */
-double PathActuator::computeActuation(const SimTK::State& s ) const
+double PathActuator::computeActuation(const SimTK::State& s) const
 {
     // FORCE
     return( getControl(s) * get_optimal_force() );
@@ -168,7 +168,7 @@ double PathActuator::computeActuation(const SimTK::State& s ) const
  * Apply the actuator force along path wrapping over and connecting rigid bodies
  */
 void PathActuator::computeForce(const SimTK::State& s,
-                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                                SimTK::Vector& mobilityForces) const
 {
     if(!_model) return;

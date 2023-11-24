@@ -116,12 +116,12 @@ public:
 
     // Power: Since lengthening is positive and tension always shortens, positive power
     // is when muscle is shortening under tension.
-    double getPower(const SimTK::State& s) const override 
+    double getPower(const SimTK::State& s) const override
     {   return -getActuation(s)*getSpeed(s); }
 
 
     // STRESS
-    double getStress(const SimTK::State& s ) const override;
+    double getStress(const SimTK::State& s) const override;
 
     // Convenience method to add PathPoints
     /** @note This function does not maintain the State and so should be used
@@ -136,7 +136,7 @@ public:
     // APPLICATION
     //--------------------------------------------------------------------------
     virtual void computeForce(const SimTK::State& state,
-                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+                               SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
                                SimTK::Vector& mobilityForces) const override;
 
     //--------------------------------------------------------------------------
