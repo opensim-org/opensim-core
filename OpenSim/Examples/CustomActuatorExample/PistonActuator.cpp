@@ -163,8 +163,7 @@ SimTK::UnitVec3 PistonActuator::calcDirectionBAInGround(
 double PistonActuator::getSpeed(const SimTK::State& s) const
 {
     // Speed is zero for constant points defined in the same frame.
-    const bool pointsAreGlobal = get_points_are_global();
-    if (pointsAreGlobal) {
+    if (get_points_are_global()) {
         return 0.;
     }
 
