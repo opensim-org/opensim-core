@@ -224,11 +224,6 @@ double PointToPointActuator::calcSpeed(const SimTK::State& s) const
     return speed;
 }
 
-/**
- * Apply the actuator force to BodyA and BodyB.
- *
- * @param s current SimTK::State
- */
 void PointToPointActuator::computeForce(
     const SimTK::State& s,
     SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
