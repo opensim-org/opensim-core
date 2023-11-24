@@ -238,7 +238,7 @@ void PointToPointActuator::computeForce(
     const bool pointsAreGlobal = getPointsAreGlobal();
     const SimTK::Vec3& pointA  = getPointA();
     const SimTK::Vec3& pointB  = getPointB();
-    Ground ground              = getModel().getGround();
+    const Ground& ground       = getModel().getGround();
 
     SimTK::Vec3 pointA_inBodyA =
         pointsAreGlobal
