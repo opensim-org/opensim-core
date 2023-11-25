@@ -342,7 +342,7 @@ protected:
                     m_mocoProbRep.getDiscreteControllerDisabledConstraints()
                             .updDiscreteControls(simTKStateDisabledConstraints);
             for (int ic = 0; ic < controls.size(); ++ic) {
-                osimControls[m_modelControlIndices[ic]] = controls[ic];
+                osimControls[ic] = controls[ic];
             }
         }
 
