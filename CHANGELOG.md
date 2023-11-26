@@ -40,6 +40,7 @@ and `Blankevoort1991Ligament`, usages of `get_GeometryPath`, `upd_GeometryPath`,
 - Updated scripting method addTableMetaDataString to support overwriting metadata value for an existing key (#3589)
 - Exposed simbody methods to obtain GravityForces, MobilityForces and BodyForces (#3490)
 - Simbody was updated such that the headers it transitively exposes to downstream projects are compatible with C++20 (#3619)
+- Moved speed computation from `computeForce` in children of `ScalarActuator` to dedicated `getSpeed` function.
 
 
 v4.4.1
