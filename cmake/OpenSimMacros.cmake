@@ -367,7 +367,13 @@ function(OpenSimAddTests)
             add_executable(${TEST_NAME} ${test_program}
                 ${OSIMADDTESTS_SOURCES})
             target_link_libraries(${TEST_NAME} ${OSIMADDTESTS_LINKLIBS})
-            add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
+            if(UNIX OR APPLE)
+                list(APPEND test_args "exclude:[win]")
+            endif()
+            if(WIN32)
+                list(APPEND test_args "exclude:[unix]")
+            endif()
+            add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME} ${test_args})
             set_target_properties(${TEST_NAME} PROPERTIES
                 FOLDER "Tests"
 				)
