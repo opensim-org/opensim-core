@@ -108,9 +108,7 @@ protected:
     }
 
     void addControlVariables() {
-        auto controlNames =
-                createControlNamesFromModel(m_modelBase, m_modelControlIndices);
-        for (const auto& controlName : controlNames) {
+        for (const auto& controlName : m_mocoProbRep.getControlNames()) {
             const auto& info = m_mocoProbRep.getControlInfo(controlName);
             this->add_control(controlName, convertBounds(info.getBounds()),
                     convertBounds(info.getInitialBounds()),

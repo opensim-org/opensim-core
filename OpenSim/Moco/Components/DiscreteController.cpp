@@ -49,9 +49,8 @@ void DiscreteController::computeControls(
     const auto& dv = subSys.getDiscreteVariable(s, m_discreteVarIndex) ;
     const auto& discreteControls =
             SimTK::Value<SimTK::Vector>::downcast(dv).get();
-
-    for (int i = 0; i < getActuatorSet().getSize(); ++i) {
-        controls[m_actuatorIndices[i]] += discreteControls[i];
+    for (int i = 0; i < m_controlIndices.size(); ++i) {
+        controls[m_controlIndices[i]] += discreteControls[i];
     }
 }
 
@@ -59,17 +58,22 @@ void DiscreteController::extendRealizeTopology(SimTK::State& state) const {
     Super::extendRealizeTopology(state);
     const SimTK::Subsystem& subSys = getSystem().getDefaultSubsystem();
 
+    // Get the control indexes for the actuators that are in the actuator set.
+    // We store the indexes this way so that they are in the same order as the
+    // controls in the model.
     int count = 0;
     for (const auto& actu : getModel().getComponentList<Actuator>()) {
-        if (getActuatorSet().contains(actu.getName())) {
-            m_actuatorIndices.push_back(count);
+        for (int i = 0; i < actu.numControls(); ++i) {
+            if (getActuatorSet().contains(actu.getName())) {
+                m_controlIndices.push_back(count);
+            }
+            ++count;
         }
-        ++count;
     }
-    OPENSIM_ASSERT(getActuatorSet().getSize() == m_actuatorIndices.size());
 
+    const SimTK::Vector initControls(
+            static_cast<int>(m_controlIndices.size()), 0.0);
     m_discreteVarIndex =
             subSys.allocateDiscreteVariable(state, SimTK::Stage::Dynamics,
-                    new SimTK::Value<SimTK::Vector>(
-                            SimTK::Vector(getActuatorSet().getSize(), 0.0)));
+                    new SimTK::Value<SimTK::Vector>(initControls));
 }

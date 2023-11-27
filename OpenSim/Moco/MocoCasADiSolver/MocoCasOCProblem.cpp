@@ -65,16 +65,11 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
 
     // Add control variables for the DiscreteController (i.e., controls that
     // do not have a user-defined Controller associated with them).
-    const auto& controllerMap = problemRep.getControllerMap();
-    m_modelControlIndices.clear();
-    m_modelControlIndices.reserve(
-        controllerMap.at("discrete_controller").size());
-    for (const auto& value : controllerMap.at("discrete_controller")) {
-        const auto& info = problemRep.getControlInfo(value.first);
-        addControl(value.first, convertBounds(info.getBounds()),
+    for (const auto& controlName : problemRep.getControlNames()) {
+        const auto& info = problemRep.getControlInfo(controlName);
+        addControl(controlName, convertBounds(info.getBounds()),
                 convertBounds(info.getInitialBounds()),
                 convertBounds(info.getFinalBounds()));
-        m_modelControlIndices.push_back(value.second);
     }
 
     // Set the number of residual equations to be enforced for components with

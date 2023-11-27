@@ -39,7 +39,7 @@ public:
 protected:
     void extendRealizeTopology(SimTK::State&) const override;
     mutable SimTK::DiscreteVariableIndex m_discreteVarIndex;
-    mutable std::vector<int> m_actuatorIndices;
+    mutable std::vector<int> m_controlIndices;
 
 };
 
