@@ -97,13 +97,7 @@ void MocoProblemRep::initialize() {
 
     // Manage controllers.
     // -------------------
-    // Get the list of actuators in order stored in the model.
-    std::vector<std::string> actuatorPaths;
-    for (const auto& actu : m_model_base.getComponentList<Actuator>()) {
-        actuatorPaths.push_back(actu.getAbsolutePathString());
-    }
-
-    // Assign controls to controllers added by the user.
+    // Check that the any controllers added by the user are valid.
     for (const auto& controller : m_model_base.getComponentList<Controller>()) {
         if (!dynamic_cast<const PrescribedController*>(&controller)) {
             OPENSIM_THROW(Exception, "Moco only supports PrescribedController "
@@ -112,33 +106,27 @@ void MocoProblemRep::initialize() {
                     controller.getAbsolutePathString(),
                     controller.getConcreteClassName());
         }
-
-        const auto& actuators = controller.getActuatorSet();
-        for (int i = 0; i < actuators.getSize(); ++i) {
-            const auto& actu = actuators.get(i);
-            const auto& actuPath = actu.getAbsolutePathString();
-            auto it = std::find(actuatorPaths.begin(), actuatorPaths.end(),
-                    actuPath);
-            actuatorPaths.erase(it);
-        }
     }
 
+    // Get the list of actuators that are controlled by the user. There should
+    // be no DiscreteController in the model at this point, so we set the second
+    // argument to false.
+    std::vector<std::string> controlledActuatorPaths =
+        createControlledActuatorPathsFromModel(m_model_base, false);
 
     // Add the remaining actuators to the DiscreteController.
-    m_control_names.clear();
     auto discreteControllerBaseUPtr = make_unique<DiscreteController>();
     discreteControllerBaseUPtr->setName("discrete_controller");
-    for (int i = 0; i < actuatorPaths.size(); ++i) {
-        const auto& actu = m_model_base.getComponent<Actuator>(actuatorPaths[i]);
-        discreteControllerBaseUPtr->addActuator(actu);
-        if (actu.numControls() > 1) {
-            for (int idx = 0; idx < actu.numControls(); ++idx) {
-                m_control_names.push_back(actuatorPaths[i] + "_" +
-                                       std::to_string(idx));
-            }
-        } else {
-            m_control_names.push_back(actuatorPaths[i]);
+    for (const auto& actu : m_model_base.getComponentList<Actuator>()) {
+        if (std::find(controlledActuatorPaths.begin(),
+                      controlledActuatorPaths.end(),
+                      actu.getAbsolutePathString()) !=
+                controlledActuatorPaths.end()) {
+            continue;
         }
+        if (!actu.get_appliesForce()) { continue; }
+
+        discreteControllerBaseUPtr->addActuator(actu);
     }
 
     m_discrete_controller_base.reset(discreteControllerBaseUPtr.get());
@@ -474,22 +462,23 @@ void MocoProblemRep::initialize() {
 
     // Control infos.
     // --------------
+    std::vector<std::string> controlNames = createControlNamesFromModel(
+            m_model_base, true, true);
     for (int i = 0; i < ph0.getProperty_control_infos_pattern().size(); ++i) {
         const auto& pattern = ph0.get_control_infos_pattern(i).getName();
         auto regexPattern = std::regex(pattern);
-        for (const auto& control_name : m_control_names) {
-            if (std::regex_match(control_name, regexPattern)) {
-                m_control_infos[control_name] =
-                        ph0.get_control_infos_pattern(i);
-                m_control_infos[control_name].setName(control_name);
+        for (const auto& controlName : controlNames) {
+            if (std::regex_match(controlName, regexPattern)) {
+                m_control_infos[controlName] = ph0.get_control_infos_pattern(i);
+                m_control_infos[controlName].setName(controlName);
             }
         }
     }
 
     for (int i = 0; i < ph0.getProperty_control_infos().size(); ++i) {
         const auto& name = ph0.get_control_infos(i).getName();
-        auto it = std::find(m_control_names.begin(), m_control_names.end(), name);
-        OPENSIM_THROW_IF(it == m_control_names.end(), Exception,
+        auto it = std::find(controlNames.begin(), controlNames.end(), name);
+        OPENSIM_THROW_IF(it == controlNames.end(), Exception,
                 "Control info provided for nonexistent, disabled, or "
                 "controlled actuator '{}'.",
                 name);
@@ -526,19 +515,6 @@ void MocoProblemRep::initialize() {
                             MocoBounds::unconstrained());
                 }
             }
-
-            if (ph0.get_bound_activation_from_excitation()) {
-                const auto* muscle = dynamic_cast<const Muscle*>(&actu);
-                if (muscle && !muscle->get_ignore_activation_dynamics()) {
-                    const std::string stateName = actuName + "/activation";
-                    auto& info = m_state_infos[stateName];
-                    if (info.getName().empty()) { info.setName(stateName); }
-                    if (!info.getBounds().isSet()) {
-                        info.setBounds(m_control_infos[actuName].getBounds());
-                    }
-                }
-            }
-
         } else {
             // This is a non-scalar actuator, so we need to add multiple
             // control infos.
@@ -551,6 +527,30 @@ void MocoProblemRep::initialize() {
                 if (!m_control_infos[controlName].getBounds().isSet()) {
                     m_control_infos[controlName].setBounds(
                             MocoBounds::unconstrained());
+                }
+            }
+        }
+    }
+
+    // Bound activations based on muscle excitation control bounds bounds. Set
+    // this for all muscles, including those controller by a user-defined
+    // controller.
+    if (ph0.get_bound_activation_from_excitation()) {
+        for (const auto& actu : m_model_base.getComponentList<Actuator>()) {
+            const std::string actuName = actu.getAbsolutePathString();
+            const auto* muscle = dynamic_cast<const Muscle*>(&actu);
+            if (muscle && !muscle->get_ignore_activation_dynamics()) {
+                const std::string stateName = actuName + "/activation";
+                auto& info = m_state_infos[stateName];
+                if (info.getName().empty()) { info.setName(stateName); }
+                if (!info.getBounds().isSet()) {
+                    if (m_control_infos.count(actuName)) {
+                        info.setBounds(m_control_infos[actuName].getBounds());
+                    } else {
+                        info.setBounds(
+                            {muscle->getMinControl(), muscle->getMaxControl()});
+                    }
+
                 }
             }
         }

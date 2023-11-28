@@ -108,7 +108,7 @@ void MocoPhase::printControlNamesWithSubstring(const std::string& substring) {
     std::vector<std::string> foundNames;
     Model model = get_model().process();
     model.initSystem();
-    const auto controlNames = createControlNamesFromModel(model);
+    const auto controlNames = createControlNamesFromModel(model, true, true);
     for (int i = 0; i < (int)controlNames.size(); ++i) {
         if (controlNames[i].find(substring) != std::string::npos) {
             foundNames.push_back(controlNames[i]);

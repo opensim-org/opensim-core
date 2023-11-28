@@ -25,12 +25,18 @@ using namespace OpenSim;
 void MocoInitialActivationGoal::initializeOnModelImpl(
         const Model& model) const {
 
+    // Get a map of all the state indices in the system.
     auto allSysYIndices = createSystemYIndexMap(model);
-    auto systemControlIndexMap = createSystemControlIndexMap(model);
+
+    // Get a map of all the control indices in the system. Skip muscles that
+    // are already controlled by a user-defined controller.
+    auto systemControlIndexMap = createSystemControlIndexMap(model, true, true);
 
     for (const auto& muscle : model.getComponentList<Muscle>()) {
-        if (!muscle.get_ignore_activation_dynamics()) {
-            const std::string path = muscle.getAbsolutePathString();
+        const std::string path = muscle.getAbsolutePathString();
+        const bool muscleIsNotControlled = systemControlIndexMap.find(path) !=
+                                           systemControlIndexMap.end();
+        if (!muscle.get_ignore_activation_dynamics() && muscleIsNotControlled) {
             int excitationIndex = systemControlIndexMap[path];
             int activationIndex = allSysYIndices[path + "/activation"];
             m_indices.emplace_back(excitationIndex, activationIndex);

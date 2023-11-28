@@ -130,6 +130,10 @@ controlTrackingGoal->addScaleFactor(
 Tracking problems in direct collocation perform best when tracking smooth
 data, so it is recommended to filter the data in the reference you provide
 to the cost.
+
+@note Controls belonging to actuators controlled by user-defined controllers
+cannot be tracked by this goal.
+
 @ingroup mocogoal */
 class OSIMMOCO_API MocoControlTrackingGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoControlTrackingGoal, MocoGoal);

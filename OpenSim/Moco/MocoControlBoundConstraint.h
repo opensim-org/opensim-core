@@ -38,6 +38,10 @@ not perform such a check for other types of functions.
 constrain any control signals, even if you have provided control paths.
 
 @note This class can only constrain control signals for ScalarActuator%s.
+
+@note Controls belonging to actuators controlled by user-defined controllers
+will not appear in the MocoProblem, and therefore cannot be constrained by
+this class.
 @ingroup mocopathcon */
 class OSIMMOCO_API MocoControlBoundConstraint : public MocoPathConstraint {
     OpenSim_DECLARE_CONCRETE_OBJECT(

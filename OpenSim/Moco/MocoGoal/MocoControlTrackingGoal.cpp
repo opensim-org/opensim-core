@@ -66,8 +66,10 @@ void MocoControlTrackingGoal::addScaleFactor(const std::string &name,
 void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
 
     // Get a map between control names and their indices in the model. This also
-    // checks that the model controls are in the correct order.
-    auto allControlIndices = createSystemControlIndexMap(model);
+    // checks that the model controls are in the correct order. Controls
+    // associated with actuators controlled by user-defined controllers are not
+    // included in this map.
+    auto allControlIndices = createSystemControlIndexMap(model, true, true);
 
     // Throw exception if a weight is specified for a nonexistent control.
     for (int i = 0; i < get_control_weights().getSize(); ++i) {
@@ -75,7 +77,8 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
         if (allControlIndices.count(weightName) == 0) {
             OPENSIM_THROW_FRMOBJ(Exception,
                     "Weight provided with name '{}' but this is "
-                    "not a recognized control.",
+                    "not a recognized control or it is already controlled by a"
+                    "user-defined controller.",
                     weightName);
         }
     }
@@ -92,7 +95,8 @@ void MocoControlTrackingGoal::initializeOnModelImpl(const Model& model) const {
         const auto& controlName = get_reference_labels(i).getName();
         if (allControlIndices.count(controlName) == 0) {
             OPENSIM_THROW_FRMOBJ(Exception,
-                    "Control '{}' does not exist in the model.", controlName);
+                    "Control '{}' does not exist in the model or it is already "
+                    "controlled by a user-defined controller.", controlName);
         }
         OPENSIM_THROW_IF_FRMOBJ(controlsToTrack.count(controlName), Exception,
                 "Expected control '{}' to be provided no more "

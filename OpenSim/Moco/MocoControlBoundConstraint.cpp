@@ -39,9 +39,6 @@ void MocoControlBoundConstraint::constructProperties() {
 void MocoControlBoundConstraint::initializeOnModelImpl(
         const Model& model, const MocoProblemInfo& problemInfo) const {
 
-    // Get all expected control names.
-    auto controlNames = createControlNamesFromModel(model);
-
     // Check that the model controls are in the correct order.
     checkOrderSystemControls(model);
 
@@ -53,13 +50,15 @@ void MocoControlBoundConstraint::initializeOnModelImpl(
     }
     // Make sure there are no nonexistent controls.
     if (m_hasLower || m_hasUpper) {
-        auto systemControlIndexMap = createSystemControlIndexMap(model);
+        auto systemControlIndexMap =
+                createSystemControlIndexMap(model, true, true);
         for (int i = 0; i < getProperty_control_paths().size(); ++i) {
             const auto& thisName = get_control_paths(i);
             OPENSIM_THROW_IF_FRMOBJ(systemControlIndexMap.count(thisName) == 0,
                     Exception,
                     "Control path '{}' was provided but no such "
-                    "control exists in the model.",
+                    "control exists in the model or it is already controlled "
+                    "by a user-defined controller.",
                     thisName);
             m_controlIndices.push_back(systemControlIndexMap[thisName]);
         }

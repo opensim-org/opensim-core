@@ -52,13 +52,12 @@ void MocoControlGoal::setWeightForControlPattern(
 void MocoControlGoal::initializeOnModelImpl(const Model& model) const {
 
     // Get all expected control names.
-    // TODO check for controllers
-    auto controlNames = createControlNamesFromModel(model);
+    auto controlNames = createControlNamesFromModel(model, true, true);
 
     // Check that the model controls are in the correct order.
     checkOrderSystemControls(model);
 
-    auto systemControlIndexMap = createSystemControlIndexMap(model);
+    auto systemControlIndexMap = createSystemControlIndexMap(model, true, true);
     // Make sure there are no weights for nonexistent controls.
     for (int i = 0; i < get_control_weights().getSize(); ++i) {
         const auto& thisName = get_control_weights()[i].getName();

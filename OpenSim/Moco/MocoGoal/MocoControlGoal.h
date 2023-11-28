@@ -49,6 +49,10 @@ We use the following notation:
 
 If `p > 2`, we first take the absolute value of the control; this is to properly
 handle odd exponents.
+
+@note Controls belonging to actuators controlled by user-defined controllers
+are not included in the cost.
+
 @ingroup mocogoal */
 class OSIMMOCO_API MocoControlGoal : public MocoGoal {
 OpenSim_DECLARE_CONCRETE_OBJECT(MocoControlGoal, MocoGoal);

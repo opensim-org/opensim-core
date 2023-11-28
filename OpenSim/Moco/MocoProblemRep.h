@@ -322,20 +322,6 @@ public:
         return m_implicit_component_refs;
     }
 
-    /// TODO
-    const
-    std::unordered_map<std::string, std::vector<std::pair<std::string, int>>>&
-    getControllerMap() const {
-        return m_controller_map;
-    }
-
-    /// TODO control names for the DiscreteController, in model order.
-    const std::vector<std::string>& getControlNames() const {
-        return m_control_names;
-    }
-
-    /// @}
-
 private:
     explicit MocoProblemRep(const MocoProblem& problem);
     friend MocoProblem;
@@ -409,9 +395,6 @@ private:
 
     std::unordered_map<std::string, MocoVariableInfo> m_state_infos;
     std::unordered_map<std::string, MocoVariableInfo> m_control_infos;
-    std::vector<std::string> m_control_names;
-    std::unordered_map<std::string, std::vector<std::pair<std::string, int>>>
-    m_controller_map;
 
     std::vector<std::unique_ptr<MocoParameter>> m_parameters;
     std::vector<std::unique_ptr<MocoGoal>> m_costs;

@@ -95,6 +95,10 @@ pair_hamstrings2.set_final_variable("/hamstrings_r");
 periodicGoal->append_control_pairs(pair_hamstrings2);
 @endcode
 This is an endpoint constraint goal by default.
+
+@note Controls belonging to actuators controlled by user-defined controllers are
+ignored by this goal.
+
 @ingroup mocogoal */
 class OSIMMOCO_API MocoPeriodicityGoal : public MocoGoal {
     OpenSim_DECLARE_CONCRETE_OBJECT(MocoPeriodicityGoal, MocoGoal);

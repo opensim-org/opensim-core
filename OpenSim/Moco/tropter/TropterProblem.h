@@ -63,19 +63,6 @@ protected:
                                  m_stateBase),
                 Exception, "Quaternions are not supported.");
 
-        // Ensure the model does not have user-provided controllers.
-        int numControllers = 0;
-        for (const auto& controller :
-                m_modelBase.template getComponentList<Controller>()) {
-            // Avoid unused variable warning.
-            (void)&controller;
-            ++numControllers;
-        }
-        // The model has a DiscreteController added by MocoProblemRep; any other
-        // controllers were added by the user.
-        OPENSIM_THROW_IF(numControllers > 1, Exception,
-                "MocoCasADiSolver does not support models with Controllers.");
-
         // It is sufficient to create these containers from the original model
         // since the discrete variables added to the model with disabled
         // constraints wouldn't show up anyway.
@@ -108,7 +95,10 @@ protected:
     }
 
     void addControlVariables() {
-        for (const auto& controlName : m_mocoProbRep.getControlNames()) {
+        // Add control variables for the DiscreteController (i.e., controls that
+        // do not have a user-defined Controller associated with them).
+        auto controlNames = createControlNamesFromModel(m_modelBase, true, true);
+        for (const auto& controlName : controlNames) {
             const auto& info = m_mocoProbRep.getControlInfo(controlName);
             this->add_control(controlName, convertBounds(info.getBounds()),
                     convertBounds(info.getInitialBounds()),
