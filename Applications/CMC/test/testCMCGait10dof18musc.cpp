@@ -29,7 +29,7 @@
 
 using namespace OpenSim;
 
-TEST_CASE("testGait10dof18musc", "[win]") {
+TEST_CASE("testGait10dof18musc (Windows)", "[win]") {
     CMCTool cmc("gait10dof18musc_Setup_CMC.xml");
     cmc.run();
 
@@ -43,7 +43,7 @@ TEST_CASE("testGait10dof18musc", "[win]") {
     }
 }
 
-TEST_CASE("testGait10dof18musc", "[unix]") {
+TEST_CASE("testGait10dof18musc (Mac/Linux)", "[unix]") {
     CMCTool cmc("gait10dof18musc_Setup_CMC.xml");
     cmc.run();
 
