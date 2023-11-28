@@ -18,15 +18,13 @@
  * limitations under the License.                                             *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Moco/osimMocoDLL.h>
-
-#include <OpenSim/Simulation/Control/Controller.h>
+#include "Controller.h"
 
 namespace OpenSim {
 
 /** This component is used internally by Moco for passing a solver's control
 variables to a Model. */
-class DiscreteController : public Controller {
+class OSIMSIMULATION_API DiscreteController : public Controller {
     OpenSim_DECLARE_CONCRETE_OBJECT(DiscreteController, Controller);
 public:
     DiscreteController() = default;
@@ -44,6 +42,5 @@ protected:
 };
 
 } // namespace OpenSim
-
 
 #endif // OPENSIM_DISCRETECONTROLLER_H

@@ -21,8 +21,8 @@
 #include "CasOCProblem.h"
 #include "MocoCasADiSolver.h"
 
+#include <OpenSim/Simulation/Control/DiscreteController.h>
 #include <OpenSim/Moco/Components/AccelerationMotion.h>
-#include <OpenSim/Moco/Components/DiscreteController.h>
 #include <OpenSim/Moco/Components/DiscreteForces.h>
 #include <OpenSim/Moco/MocoBounds.h>
 #include <OpenSim/Moco/MocoProblemRep.h>

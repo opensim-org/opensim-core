@@ -32,7 +32,7 @@
 #include <OpenSim/Common/CommonUtilities.h>
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
-#include <OpenSim/Moco/Components/DiscreteController.h>
+#include <OpenSim/Simulation/Control/DiscreteController.h>
 
 using namespace OpenSim;
 

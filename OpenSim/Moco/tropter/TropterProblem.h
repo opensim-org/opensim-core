@@ -21,13 +21,13 @@
 #include <simbody/internal/Constraint.h>
 
 #include <OpenSim/Moco/Components/AccelerationMotion.h>
-#include <OpenSim/Moco/Components/DiscreteController.h>
 #include <OpenSim/Moco/Components/DiscreteForces.h>
 #include <OpenSim/Moco/MocoBounds.h>
 #include <OpenSim/Moco/MocoTropterSolver.h>
 #include <OpenSim/Moco/MocoUtilities.h>
 #include <OpenSim/Simulation/InverseDynamicsSolver.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
+#include <OpenSim/Simulation/Control/DiscreteController.h>
 
 #include <tropter/tropter.h>
 

@@ -19,7 +19,6 @@
 #include "MocoProblemRep.h"
 
 #include "Components/AccelerationMotion.h"
-#include "Components/DiscreteController.h"
 #include "Components/DiscreteForces.h"
 #include "MocoProblem.h"
 #include "MocoProblemInfo.h"
@@ -29,6 +28,7 @@
 
 #include <OpenSim/Simulation/PositionMotion.h>
 #include <OpenSim/Simulation/SimulationUtilities.h>
+#include <OpenSim/Simulation/Control/DiscreteController.h>
 #include <OpenSim/Simulation/Control/PrescribedController.h>
 
 using namespace OpenSim;
