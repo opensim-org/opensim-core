@@ -53,6 +53,7 @@ delete_this_to_stop_optimization*.txt
 .idea/misc.xml
 .idea/codeStyles/codeStyleConfig.xml
 .idea/codeStyles/Project.xml
+.idea/editor.xml
 
 # Sensitive or high-churn files:
 .idea/**/dataSources/
