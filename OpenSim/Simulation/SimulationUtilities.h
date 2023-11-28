@@ -152,7 +152,10 @@ OSIMSIMULATION_API
 std::unordered_map<std::string, int> createSystemYIndexMap(const Model& model);
 #endif
 
-/// TODO
+/// Create a vector of actuator paths in the model associated with a Controller.
+/// The flag 'ignoreDiscreteController' is used to exclude any actuators
+/// associated a DiscreteController, which is used internally by Moco to pass
+/// control variables from a solver to a model.
 OSIMSIMULATION_API
 std::vector<std::string> createControlledActuatorPathsFromModel(
         const Model& model, bool ignoreDiscreteController = false);
@@ -165,8 +168,11 @@ std::vector<std::string> createControlledActuatorPathsFromModel(
 /// to the number of controls associated with actuators that apply a force
 /// (appliesForce == True). Its elements are the indices of the controls in the
 /// Model::updControls() that are associated with actuators that apply a force.
+/// Use 'skipControlledActuators' to exclude any actuators associated with a
+/// Controller; 'ignoreDiscreteController' is used to ignore the logic
+/// 'skipControlledActuators' for DiscreteController%s (see
+/// createControlledActuatorPathsFromModel()).
 /// @ingroup simulationutil
-/// TODO ingoring controllers
 OSIMSIMULATION_API
 std::vector<std::string> createControlNamesFromModel(
         const Model& model, std::vector<int>& modelControlIndices,
@@ -174,20 +180,22 @@ std::vector<std::string> createControlNamesFromModel(
         bool ignoreDiscreteController = false);
 /// Same as above, but when there is no mapping to the modelControlIndices.
 /// @ingroup simulationutil
-/// TODO ingoring controllers
 OSIMSIMULATION_API
 std::vector<std::string> createControlNamesFromModel(const Model& model,
         bool skipControlledActuators = false,
         bool ignoreDiscreteController = false);
 /// The map provides the index of each control variable in the SimTK::Vector
 /// returned by Model::getControls(), using the control name as the
-/// key.
+/// key. Use 'skipControlledActuators' to exclude any actuators associated with
+/// a Controller; 'ignoreDiscreteController' is used to ignore the logic
+/// 'skipControlledActuators' for DiscreteController%s (see
+/// createControlledActuatorPathsFromModel()).
+///
 /// @throws Exception if the order of actuators in the model does not match
 ///     the order of controls in Model::getControls(). This is an internal
 ///     error, but you may be able to avoid the error by ensuring all Actuator%s
 ///     are in the Model's ForceSet.
 /// @ingroup simulationutil
-/// TODO ingoring controllers
 OSIMSIMULATION_API
 std::unordered_map<std::string, int> createSystemControlIndexMap(
         const Model& model,

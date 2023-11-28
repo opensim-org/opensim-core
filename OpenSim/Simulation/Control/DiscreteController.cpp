@@ -49,7 +49,7 @@ void DiscreteController::computeControls(
     const auto& dv = subSys.getDiscreteVariable(s, m_discreteVarIndex) ;
     const auto& discreteControls =
             SimTK::Value<SimTK::Vector>::downcast(dv).get();
-    for (int i = 0; i < m_controlIndices.size(); ++i) {
+    for (int i = 0; i < (int)m_controlIndices.size(); ++i) {
         controls[m_controlIndices[i]] += discreteControls[i];
     }
 }
