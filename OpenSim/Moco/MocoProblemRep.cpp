@@ -114,17 +114,17 @@ void MocoProblemRep::initialize() {
     std::vector<std::string> controlledActuatorPaths =
         createControlledActuatorPathsFromModel(m_model_base, false);
 
-    // Add the remaining actuators to the DiscreteController.
+    // Add the non-controlled, enabled actuators to the DiscreteController.
     auto discreteControllerBaseUPtr = make_unique<DiscreteController>();
     discreteControllerBaseUPtr->setName("discrete_controller");
     for (const auto& actu : m_model_base.getComponentList<Actuator>()) {
-        if (std::find(controlledActuatorPaths.begin(),
-                      controlledActuatorPaths.end(),
-                      actu.getAbsolutePathString()) !=
-                controlledActuatorPaths.end()) {
+        bool isControlled = std::find(controlledActuatorPaths.begin(),
+                                      controlledActuatorPaths.end(),
+                                      actu.getAbsolutePathString()) !=
+                                          controlledActuatorPaths.end();
+        if (isControlled || !actu.get_appliesForce()) {
             continue;
         }
-        if (!actu.get_appliesForce()) { continue; }
 
         discreteControllerBaseUPtr->addActuator(actu);
     }

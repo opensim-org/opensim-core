@@ -2230,24 +2230,55 @@ TEMPLATE_TEST_CASE("Locked coordinates ", "",
             Catch::Contains("Coordinate '/slider/position' is locked"));
 }
 
-TEST_CASE("Controllers in the model", "") {
-    MocoStudy study;
-    auto& problem = study.updProblem();
-    auto model = createSlidingMassModel();
-    auto* controller = new PrescribedController();
-    controller->addActuator(model->getComponent<Actuator>("actuator"));
-    controller->prescribeControlForActuator("actuator", new Constant(0.4));
-    model->addController(controller);
-    problem.setModel(std::move(model));
-    problem.setTimeBounds(0, {0, 10});
-    problem.setStateInfo("/slider/position/value", {0, 1}, 0, 1);
-    problem.setStateInfo("/slider/position/speed", {-100, 100}, 0);
-    problem.addGoal<MocoFinalTimeGoal>();
+TEMPLATE_TEST_CASE("Sliding mass with PrescribedController", "",
+        MocoCasADiSolver, MocoTropterSolver) {
 
-    auto& solver = study.initCasADiSolver();
-    solver.set_num_mesh_intervals(20);
-    solver.set_parallel(0);
-    MocoSolution solution = study.solve();
-    std::cout << "DEBUG " << solution.getControl("/actuator") << std::endl;
+    // Solve a sliding mass problem and store the results.
+    TimeSeriesTable controlsTable;
+    SimTK::Matrix statesTrajectory;
+    {
+        MocoStudy study;
+        auto& problem = study.updProblem();
+        auto model = createSlidingMassModel();
+        problem.setModel(std::move(model));
+        problem.setTimeBounds(0, 5);
+        problem.setStateInfo("/slider/position/value", {0, 1}, 0, 1);
+        problem.setStateInfo("/slider/position/speed", {-100, 100}, 0, 0);
+        problem.setControlInfo("/actuator", {-50, 50});
+        problem.addGoal<MocoControlGoal>();
+        auto& solver = study.initSolver<TestType>();
+        solver.set_num_mesh_intervals(50);
+        MocoSolution solution = study.solve();
+        statesTrajectory = solution.getStatesTrajectory();
+        controlsTable = solution.exportToControlsTable();
+    }
 
+    // Apply the control from the previous problem to a new problem with a
+    // PrescribedController and check that we get the same states trajectory
+    // back.
+    {
+        const auto& time = controlsTable.getIndependentColumn();
+        const auto& control = controlsTable.getDependentColumn("/actuator");
+        auto model = createSlidingMassModel();
+        auto* controller = new PrescribedController();
+        controller->addActuator(model->getComponent<Actuator>("/actuator"));
+        controller->prescribeControlForActuator("actuator",
+            new GCVSpline(5, control.size(), time.data(), &control[0],
+                    "/actuator", 0.0));
+        model->addController(controller);
+        model->finalizeConnections();
+
+        MocoStudy study;
+        auto& problem = study.updProblem();
+        problem.setModel(std::move(model));
+        problem.setTimeBounds(0, 5);
+        problem.setStateInfo("/slider/position/value", {0, 1}, 0);
+        problem.setStateInfo("/slider/position/speed", {-100, 100}, 0);
+        auto& solver = study.initSolver<TestType>();
+        solver.set_num_mesh_intervals(50);
+        MocoSolution solution = study.solve();
+
+        OpenSim_REQUIRE_MATRIX_ABSTOL(solution.getStatesTrajectory(),
+            statesTrajectory, 1e-9);
+    }
 }
