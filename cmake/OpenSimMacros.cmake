@@ -367,11 +367,14 @@ function(OpenSimAddTests)
             add_executable(${TEST_NAME} ${test_program}
                 ${OSIMADDTESTS_SOURCES})
             target_link_libraries(${TEST_NAME} ${OSIMADDTESTS_LINKLIBS})
-            if(UNIX OR APPLE)
-                list(APPEND test_args "~[win]")
+            if(APPLE)
+                list(APPEND test_args "exclude:[win]")
+            endif()
+            if(UNIX)
+                list(APPEND test_args "exclude:[win]")
             endif()
             if(WIN32)
-                list(APPEND test_args "~[unix]")
+                list(APPEND test_args "exclude:[unix]")
             endif()
             add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME} ${test_args})
             set_target_properties(${TEST_NAME} PROPERTIES
@@ -380,7 +383,7 @@ function(OpenSimAddTests)
 
         endforeach()
 
-        # Copy data files to build directory.
+        # Copy data files to build directory.::
         foreach(data_file ${OSIMADDTESTS_DATAFILES})
             # This command re-copies the data files if they are modified;
             # custom commands don't do this.
@@ -394,6 +397,29 @@ function(OpenSimAddTests)
 
     endif()
 
+endfunction()
+
+function(OpenSimAddTest)
+    set(options)
+    set(oneValueArgs NAME)
+    set(multiValueArgs LIB_DEPENDS RESOURCES)
+    cmake_parse_arguments(OSIMTEST
+            "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    add_executable(${OSIMTEST_NAME} ${OSIMTEST_NAME}.cpp)
+    # To organize targets in Visual Studio's Solution Explorer.
+    set_target_properties(${OSIMTEST_NAME} PROPERTIES FOLDER "Tests")
+    target_link_libraries(${OSIMTEST_NAME} ${OSIMTEST_LIB_DEPENDS})
+#    if(APPLE)
+#        list(APPEND test_args "exclude:[win]")
+#    endif()
+#    if(UNIX)
+#        list(APPEND test_args "exclude:[win]")
+#    endif()
+#    if(WIN32)
+#        list(APPEND test_args "exclude:[unix]")
+#    endif()
+    add_test(NAME ${OSIMTEST_NAME} COMMAND ${OSIMTEST_NAME} ${test_args})
+    file(COPY ${OSIMTEST_RESOURCES} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 endfunction()
 
 

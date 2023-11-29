@@ -37,9 +37,19 @@ TEST_CASE("testGait10dof18musc (Windows)", "[win]") {
         "gait10dof18musc_ResultsCMC/walk_subject_states.sto");
     const TimeSeriesTable std(
         "gait10dof18musc_std_walk_subject_states_win.sto");
-    for (const auto& label : results.getColumnLabels()) {
-        REQUIRE(SimTK::Test::numericallyEqual(results.getDependentColumn(label),
-            std.getDependentColumn(label), 1, 1e-2));
+
+    // TODO: Replace with macro from OpenSim/Moco/Test/Testing.h
+    const auto& actual = results.getMatrix();
+    const auto& expected = std.getMatrix();
+    REQUIRE((actual.nrow() == expected.nrow()));
+    REQUIRE((actual.ncol() == expected.ncol()));
+    for (int ir = 0; ir < actual.nrow(); ++ir) {
+        for (int ic = 0; ic < actual.ncol(); ++ic) {
+            INFO("(" << ir << "," << ic << "): " << actual.getElt(ir, ic) <<
+                " vs " << expected.getElt(ir, ic));
+            REQUIRE((Catch::Detail::Approx(actual.getElt(ir, ic)).margin(1e-2)
+                == expected.getElt(ir, ic)));
+        }
     }
 }
 
@@ -47,12 +57,22 @@ TEST_CASE("testGait10dof18musc (Mac/Linux)", "[unix]") {
     CMCTool cmc("gait10dof18musc_Setup_CMC.xml");
     cmc.run();
 
-    const TimeSeriesTable results(
+    TimeSeriesTable results(
         "gait10dof18musc_ResultsCMC/walk_subject_states.sto");
-    const TimeSeriesTable std(
+    TimeSeriesTable std(
         "gait10dof18musc_std_walk_subject_states_unix.sto");
-    for (const auto& label : results.getColumnLabels()) {
-        REQUIRE(SimTK::Test::numericallyEqual(results.getDependentColumn(label),
-            std.getDependentColumn(label), 1, 1e-2));
+
+    // TODO: Replace with macro from OpenSim/Moco/Test/Testing.h
+    const auto& actual = results.getMatrix();
+    const auto& expected = std.getMatrix();
+    REQUIRE((actual.nrow() == expected.nrow()));
+    REQUIRE((actual.ncol() == expected.ncol()));
+    for (int ir = 0; ir < actual.nrow(); ++ir) {
+        for (int ic = 0; ic < actual.ncol(); ++ic) {
+            INFO("(" << ir << "," << ic << "): " << actual.getElt(ir, ic) <<
+                " vs " << expected.getElt(ir, ic));
+            REQUIRE((Catch::Detail::Approx(actual.getElt(ir, ic)).margin(1e-2)
+                == expected.getElt(ir, ic)));
+        }
     }
 }
