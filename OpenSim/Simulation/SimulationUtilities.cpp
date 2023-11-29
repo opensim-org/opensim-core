@@ -317,7 +317,29 @@ std::vector<std::string> OpenSim::createControlledActuatorPathsFromModel(
         const auto& actuators = controller.getActuatorSet();
         for (int i = 0; i < actuators.getSize(); ++i) {
             const auto& actu = actuators.get(i);
-            actuPaths.push_back(actu.getAbsolutePathString());
+            const auto& actuPath = actu.getAbsolutePathString();
+            if (std::find(actuPaths.begin(), actuPaths.end(),
+                        actuPath) == actuPaths.end()) {
+                actuPaths.push_back(actuPath);
+            }
+
+        }
+    }
+
+    // Remove any actuators that are also controlled by a DiscreteController.
+    if (ignoreDiscreteController) {
+        for (const auto& controller :
+                model.getComponentList<DiscreteController>()) {
+            const auto& actuators = controller.getActuatorSet();
+            for (int i = 0; i < actuators.getSize(); ++i) {
+                const auto& actu = actuators.get(i);
+                const auto& actuPath = actu.getAbsolutePathString();
+                auto it = std::find(actuPaths.begin(), actuPaths.end(),
+                        actuPath);
+                if (it != actuPaths.end()) {
+                    actuPaths.erase(it);
+                }
+            }
         }
     }
 
