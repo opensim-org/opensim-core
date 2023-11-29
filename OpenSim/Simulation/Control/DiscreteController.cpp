@@ -18,6 +18,7 @@
 
 #include "DiscreteController.h"
 
+#include <OpenSim/Simulation/SimulationUtilities.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
@@ -59,15 +60,17 @@ void DiscreteController::extendRealizeTopology(SimTK::State& state) const {
     const SimTK::Subsystem& subSys = getSystem().getDefaultSubsystem();
 
     // Get the control indexes for the actuators that are in the actuator set.
-    // We store the indexes this way so that they are in the same order as the
-    // controls in the model.
+    // This logic stores the indexes in the order of actuators stored in the
+    // model, skipping over indexes for any actuators not included in the
+    // DiscreteController's actuator set.
     int count = 0;
     for (const auto& actu : getModel().getComponentList<Actuator>()) {
-        for (int i = 0; i < actu.numControls(); ++i) {
+        const int nc = actu.numControls();
+        for (int ic = 0; ic < nc; ++ic) {
             if (getActuatorSet().contains(actu.getName())) {
                 m_controlIndices.push_back(count);
             }
-            ++count;
+            count++;
         }
     }
 

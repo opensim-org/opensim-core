@@ -63,8 +63,13 @@ MocoCasOCProblem::MocoCasOCProblem(const MocoCasADiSolver& mocoCasADiSolver,
                 convertBounds(info.getFinalBounds()));
     }
 
-    // Add control variables for the DiscreteController (i.e., controls that
-    // do not have a user-defined Controller associated with them).
+    // Add control variables to the problem (i.e., any controls for actuators
+    // in the model's DiscreteController). First, double that the system
+    // controls are in the same order as the model.
+    checkOrderSystemControls(model);
+    // Get the list of control names (based on actuator paths) in the order of
+    // the system controls, which is the order the DiscreteController expects.
+    // Add the controls to the problem in the same order.
     auto controlNames = createControlNamesFromModel(model, true, true);
     for (const auto& controlName : controlNames) {
         const auto& info = problemRep.getControlInfo(controlName);

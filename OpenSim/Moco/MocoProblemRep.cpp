@@ -122,11 +122,9 @@ void MocoProblemRep::initialize() {
                                       controlledActuatorPaths.end(),
                                       actu.getAbsolutePathString()) !=
                                           controlledActuatorPaths.end();
-        if (isControlled || !actu.get_appliesForce()) {
-            continue;
+        if (!isControlled && actu.get_appliesForce()) {
+            discreteControllerBaseUPtr->addActuator(actu);
         }
-
-        discreteControllerBaseUPtr->addActuator(actu);
     }
 
     m_discrete_controller_base.reset(discreteControllerBaseUPtr.get());
@@ -489,8 +487,9 @@ void MocoProblemRep::initialize() {
         m_control_infos[name] = ph0.get_control_infos(i);
     }
 
-    // Loop through the actuators in the DiscreteController and create control
-    // info for any without infos.
+    // Loop through the actuators in the DiscreteController since these are the
+    // only actuators that will have associated optimal control variables.
+    // Create control infos for actuators that do not have a any control info.
     const auto& dcActuators = m_discrete_controller_base->getActuatorSet();
     for (int i = 0; i < dcActuators.getSize(); ++i) {
         const auto& actu = dcActuators.get(i);
@@ -533,7 +532,7 @@ void MocoProblemRep::initialize() {
     }
 
     // Bound activations based on muscle excitation control bounds bounds. Set
-    // this for all muscles, including those controller by a user-defined
+    // this for all muscles, including those controlled by a user-defined
     // controller.
     if (ph0.get_bound_activation_from_excitation()) {
         for (const auto& actu : m_model_base.getComponentList<Actuator>()) {
@@ -550,7 +549,6 @@ void MocoProblemRep::initialize() {
                         info.setBounds(
                             {muscle->getMinControl(), muscle->getMaxControl()});
                     }
-
                 }
             }
         }

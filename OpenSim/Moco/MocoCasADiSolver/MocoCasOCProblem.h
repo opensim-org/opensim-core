@@ -560,6 +560,7 @@ private:
             SimTK::Vector& simtkControls =
                     discreteController.updDiscreteControls(simtkState);
             for (int ic = 0; ic < getNumControls(); ++ic) {
+                // simtkControls[m_modelControlIndices[ic]] = *(controls.ptr() + ic);
                 simtkControls[ic] = *(controls.ptr() + ic);
             }
         }

@@ -95,9 +95,15 @@ protected:
     }
 
     void addControlVariables() {
-        // Add control variables for the DiscreteController (i.e., controls that
-        // do not have a user-defined Controller associated with them).
-        auto controlNames = createControlNamesFromModel(m_modelBase, true, true);
+        // Add control variables to the problem (i.e., any controls for
+        // actuators in the model's DiscreteController). First, double check
+        // that the system controls are in the same order as the model.
+        checkOrderSystemControls(m_modelBase);
+        // Get the list of control names (based on actuator paths) in the order
+        // of the system controls, which is the order the DiscreteController
+        // expects. Add the controls to the problem in the same order.
+        auto controlNames =
+                createControlNamesFromModel(m_modelBase, true, true);
         for (const auto& controlName : controlNames) {
             const auto& info = m_mocoProbRep.getControlInfo(controlName);
             this->add_control(controlName, convertBounds(info.getBounds()),
