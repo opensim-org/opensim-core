@@ -1,0 +1,190 @@
+/* -------------------------------------------------------------------------- *
+ *                       OpenSim:  InputController.cpp                        *
+ * -------------------------------------------------------------------------- *
+ * The OpenSim API is a toolkit for musculoskeletal modeling and simulation.  *
+ * See http://opensim.stanford.edu and the NOTICE file for more information.  *
+ * OpenSim is developed at Stanford University and supported by the US        *
+ * National Institutes of Health (U54 GM072970, R24 HD065690) and by DARPA    *
+ * through the Warrior Web program.                                           *
+ *                                                                            *
+ * Copyright (c) 2005-2023 Stanford University and the Authors                *
+ * Author(s): Nicholas Bianco                                                 *
+ *                                                                            *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may    *
+ * not use this file except in compliance with the License. You may obtain a  *
+ * copy of the License at http://www.apache.org/licenses/LICENSE-2.0.         *
+ *                                                                            *
+ * Unless required by applicable law or agreed to in writing, software        *
+ * distributed under the License is distributed on an "AS IS" BASIS,          *
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   *
+ * See the License for the specific language governing permissions and        *
+ * limitations under the License.                                             *
+ * -------------------------------------------------------------------------- */
+
+#include "InputController.h"
+
+//#include <OpenSim/Simulation/Model/Actuator.h>
+
+using namespace OpenSim;
+
+//=============================================================================
+// InputController
+//=============================================================================
+
+//=============================================================================
+// CONSTRUCTOR(S) AND DESTRUCTOR
+//=============================================================================
+InputController::InputController() : Controller() {}
+
+InputController::~InputController() = default;
+
+InputController::InputController(const InputController& other)
+        : Controller(other) {}
+
+InputController& InputController::operator=(const InputController& other)
+        : Controller(other) {
+    return *this;
+}
+
+InputController::InputController(InputController&& other) noexcept = default;
+
+InputController&
+InputController::operator=(InputController&& other) noexcept = default;
+
+//=============================================================================
+// METHODS
+//=============================================================================
+const std::vector<std::string>& InputController::getControlNames() const {
+    return m_controlNames;
+}
+
+const std::vector<int>& InputController::getControlIndexes() const {
+    return m_controlIndexes;
+}
+
+std::vector<std::string> InputController::getInputChannelAliases() const {
+    std::vector<std::string> aliases;
+    const auto& input = getInput<double>("inputs");
+    aliases.reserve(input.getNumConnectees());
+    for (int i = 0; i < input.getNumConnectees(); ++i) {
+        aliases.push_back(input.getAlias(i));
+    }
+
+    return aliases;
+}
+
+//=============================================================================
+// MODEL COMPONENT INTERFACE
+//=============================================================================
+void InputController::extendConnectToModel(Model& model) override {
+    Super::extendConnectToModel(model);
+
+    // Get a list of the control names and indexes for all actuators in the
+    // model. These two vectors serve as a mapping between control names
+    // model control cache indexes.
+    std::vector<int> modelControlIndexes;
+    const std::vector<std::string> modelControlNames =
+        createControlNamesFromModel(model, modelControlIndexes);
+
+    // Based on the controller's ActuatorSet, store lists of the control
+    // names and their indexes in the model control cache.
+    m_controlNames.clear();
+    m_controlIndexes.clear();
+    const auto& actuSet = getActuatorSet();
+    for (int i = 0; i < actuSet.getSize(); ++i) {
+        const auto& actu = actuSet.get(i);
+        if (actu.numControls() > 1) {
+            // Non-scalar actuator.
+            for (int j = 0; j < actu.numControls(); ++j) {
+                // Use the control name format based on
+                // SimulationUtiltiies::createControlNamesFromModel().
+                m_controlNames.push_back(
+                    fmt::format("{}_{}", actu.getAbsolutePathString(), j));
+                auto it = std::find(modelControlNames.begin(),
+                    modelControlNames.end(), m_controlNames.back());
+                m_controlIndexes.push_back(
+                    modelControlIndexes[it - modelControlNames.begin()]);
+            }
+        } else {
+            // Scalar actuator.
+            m_controlNames.push_back(actu.getAbsolutePathString());
+            auto it = std::find(modelControlNames.begin(),
+                modelControlNames.end(), m_controlNames.back());
+            m_controlIndexes.push_back(
+                modelControlIndexes[it - modelControlNames.begin()]);
+        }
+    }
+
+    setNumControls(static_cast<int>(m_controlNames.size()));
+}
+
+
+//=============================================================================
+// ActuatorInputController
+//=============================================================================
+
+//=============================================================================
+// CONSTRUCTOR(S) AND DESTRUCTOR
+//=============================================================================
+ActuatorInputController::ActuatorInputController() : InputController() {}
+
+ActuatorInputController::~ActuatorInputController() = default;
+
+ActuatorInputController::ActuatorInputController(
+        const ActuatorInputController& other) : InputController(other) {}
+
+ActuatorInputController& ActuatorInputController::operator=(
+        const ActuatorInputController& other) : InputController(other) {
+    return *this;
+}
+
+ActuatorInputController::ActuatorInputController(
+        ActuatorInputController&& other) noexcept = default;
+
+ActuatorInputController& ActuatorInputController::operator=(
+        ActuatorInputController&& other) noexcept = default;
+
+//=============================================================================
+// CONTROLLER INTERFACE
+//=============================================================================
+void ActuatorInputController::computeControls(const SimTK::State& s,
+        SimTK::Vector& controls) const override {
+    const auto& input = getInput<double>("inputs");
+    for (int i = 0; i < input.getNumConnectees(); ++i) {
+        controls[m_controlIndexesInConnecteeOrder[i]] = input.getValue(s, i);
+    }
+}
+
+//=============================================================================
+// MODEL COMPONENT INTERFACE
+//=============================================================================
+void ActuatorInputController::extendConnectToModel(Model& model) override {
+    Super::extendConnectToModel(model);
+
+    const auto& controlNames = getControlNames();
+    const auto& controlIndexes = getControlIndexes();
+    OPENSIM_ASSERT(getNumControls() ==
+        static_cast<int>(controlNames.size()))
+
+    const auto& input = getInput<double>("inputs");
+    OPENSIM_THROW_IF(input.getNumConnectees() != getNumControls(), Exception,
+        "Expected the number of Input connectees ({}) to match the number "
+        "of actuators controls ({}), but they do not.",
+        input.getNumConnectees(), getNumControls());
+
+    // Use the Input channel aliases to map the Input connectee indexes to
+    // the corresponding control indexes in the model control cache. We
+    // expect the Input connectee aliases to match the names of the actuator
+    // controls in the controller's ActuatorSet.
+    m_controlIndexesInConnecteeOrder.clear();
+    m_controlIndexesInConnecteeOrder.reserve(getNumControls());
+    for (const auto& alias : getInputChannelAliases()) {
+        auto it = std::find(controlNames.begin(), controlNames.end(), alias);
+        OPENSIM_THROW_IF(it == controlNames.end(), Exception,
+            "Expected the Input alias '{}' to match a control name for an "
+            "actuator in the controller's ActuatorSet, but it does not.",
+            alias);
+        m_controlIndexesInConnecteeOrder.push_back(
+            controlIndexes[it - controlNames.begin()]);
+    }
+}

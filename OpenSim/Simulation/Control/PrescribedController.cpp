@@ -72,9 +72,7 @@ PrescribedController::
 /*
  * Destructor.
  */
-PrescribedController::~PrescribedController()
-{
-}
+PrescribedController::~PrescribedController() = default;
 
 /*
  * Set NULL values for all member variables.

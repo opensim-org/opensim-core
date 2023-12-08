@@ -97,7 +97,22 @@ void MocoProblemRep::initialize() {
 
     // Manage controllers.
     // -------------------
+    // Check that the order of the controls in the system matches the order of
+    // the actuators in the model.
+    checkOrderSystemControls(m_model_base);
+
+    // Steps:
+    //  1) Check that existing controllers are valid (PrescribedController and ActuatorController, for now)
+    //  2) Skip over actuators that have controllers (when the user does not want to add controls for these actuators)
+    //  3) Add a ControlDistributor
+
+    // TODO need a MocoProblem option to allow adding OCP controls for
+    // that already have a controller.
+
     // Check that the any controllers added by the user are valid.
+    bool addControlsForControlledActuators = false;
+    std::vector<std::string> actuatorsToSkip;
+    std::vector<std::string> controlNamesToAddToControlDistributor; // TODO better name
     for (const auto& controller : m_model_base.getComponentList<Controller>()) {
         if (!dynamic_cast<const PrescribedController*>(&controller)) {
             OPENSIM_THROW(Exception, "Moco only supports PrescribedController "
@@ -105,14 +120,20 @@ void MocoProblemRep::initialize() {
                                      "'{}'.",
                     controller.getAbsolutePathString(),
                     controller.getConcreteClassName());
+
+            if (!addControlsForControlledActuators) {
+                for (const auto& actu : controller.getActuatorSet()) {
+                    actuatorsToSkip.push_back(actu.getAbsolutePathString());
+                }
+            }
         }
     }
 
     // Get the list of actuators that are controlled by the user. There should
     // be no DiscreteController in the model at this point, so we set the second
     // argument to false.
-    std::vector<std::string> controlledActuatorPaths =
-        createControlledActuatorPathsFromModel(m_model_base, false);
+    // std::vector<std::string> controlledActuatorPaths =
+    //     createControlledActuatorPathsFromModel(m_model_base, false);
 
     // Add the non-controlled, enabled actuators to the DiscreteController.
     auto discreteControllerBaseUPtr = make_unique<DiscreteController>();

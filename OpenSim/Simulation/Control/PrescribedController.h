@@ -84,7 +84,7 @@ public:
                          int interpMethodType = 1);
 
     /** Destructor */
-    virtual ~PrescribedController();
+    ~PrescribedController() override;
 
     //--------------------------------------------------------------------------
     // CONTROL

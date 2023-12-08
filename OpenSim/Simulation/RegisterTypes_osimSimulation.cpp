@@ -90,6 +90,7 @@
 #include "Control/ControlConstant.h"
 #include "Control/ControlLinear.h"
 #include "Control/PrescribedController.h"
+#include "Control/InputController.h"
 
 #include "Wrap/PathWrap.h"
 #include "Wrap/PathWrapSet.h"
@@ -134,6 +135,7 @@
 #include "TableProcessor.h"
 #include "MarkersReference.h"
 #include "PositionMotion.h"
+#include "Control/InputController.h"
 
 #include <string>
 #include <iostream>
@@ -267,6 +269,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 
     Object::registerType( ControlSetController() );
     Object::registerType( PrescribedController() );
+    Object::registerType( ActuatorInputController() );
 
     Object::registerType( PathActuator() );
     Object::registerType( ProbeSet() );
