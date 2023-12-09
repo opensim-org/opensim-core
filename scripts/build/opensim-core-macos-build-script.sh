@@ -18,7 +18,7 @@ Help() {
     echo "    -d         Debug Type. Available Options:"
     echo "                   Release (Default): No debugger symbols. Optimized."
     echo "                   Debug: Debugger symbols. No optimizations (>10x slower). Library names ending with _d."
-    echo "                   RelWithDefInfo: Debugger symbols. Optimized. Bigger than Release, but not slower."
+    echo "                   RelWithDebInfo: Debugger symbols. Optimized. Bigger than Release, but not slower."
     echo "                   MinSizeRel: No debugger symbols. Minimum size. Optimized."
     echo "    -j         Number of jobs to use when building libraries (>=1)."
     echo "    -s         Simple build without moco (Tropter and Casadi disabled)."
