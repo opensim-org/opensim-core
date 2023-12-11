@@ -119,6 +119,7 @@ double calcUndampedFiberForceVelocityMultiplier(
 struct DampedFiberVelocityCalculationResult final
 {
     double normFiberVelocity;
+    double fiberForceVelocityMultiplier;
     double convergenceError;
     bool converged;
 };
@@ -179,12 +180,14 @@ DampedFiberVelocityCalculationResult calcDampedNormFiberVelocity(
     double df_d_dlceNdt = 0.0;
 
     while (abs(err) > tol && iter < maxIter) {
-        fv         = fvCurve.calcValue(dlceN_dt);
+        SmoothSegmentedFunction::ValueAndDerivative fvEval =
+            fvCurve.calcValueAndDerivative(dlceN_dt);
+        fv         = fvEval.value;
         fiberForce = calcFiberForce(fiso, a, fal, fv, fpe, dlceN_dt, beta);
 
         err = fiberForce * cosPhi - fse * fiso;
         df_d_dlceNdt =
-            fiso * (a * fal * fvCurve.calcDerivative(dlceN_dt, 1) + beta);
+            fiso * (a * fal * fvEval.derivative + beta);
         derr_d_dlceNdt = df_d_dlceNdt * cosPhi;
 
         if (abs(err) > tol && abs(derr_d_dlceNdt) > SimTK::SignificantReal) {
@@ -212,6 +215,7 @@ DampedFiberVelocityCalculationResult calcDampedNormFiberVelocity(
 
     return {
         dlceN_dt,
+        fv,
         err,
         converged,
     };
@@ -1068,7 +1072,7 @@ calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
             // If the Newton method converged, update the fiber velocity.
             dlceN = result.normFiberVelocity;
             dlce = dlceN * getOptimalFiberLength() * getMaxContractionVelocity();
-            fv = get_ForceVelocityCurve().calcValue(dlceN);
+            fv = result.fiberForceVelocityMultiplier;
         }
 
         // Compute the other velocity-related components.
