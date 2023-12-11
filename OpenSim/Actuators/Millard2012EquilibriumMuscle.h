@@ -586,23 +586,6 @@ private:
                           double fpe,
                           double dlceN) const;
 
-    /*  @param fiso the maximum isometric force the fiber can generate
-        @param a activation
-        @param fal the fiber active-force-length multiplier
-        @param fv the fiber force-velocity multiplier
-        @param fpe the fiber force-length multiplier
-        @param sinphi the sine of the pennation angle
-        @param cosphi the cosine of the pennation angle
-        @param lce the fiber length
-        @param lceN the normalized fiber length
-        @param optFibLen the optimal fiber length
-        @returns the stiffness of the fiber in the direction of the fiber */
-    double calcFiberStiffness(double fiso,
-                              double a,
-                              double fv,
-                              double lceN,
-                              double optFibLen) const;
-
     /*  @param fiberForce the force, in Newtons, developed by the fiber
         @param fiberStiffness the stiffness, in N/m, of the fiber
         @param lce the fiber length
