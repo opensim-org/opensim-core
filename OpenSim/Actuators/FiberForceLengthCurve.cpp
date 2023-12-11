@@ -219,6 +219,15 @@ double FiberForceLengthCurve::calcValue(double normFiberLength) const
     return m_curve.calcValue(normFiberLength);
 }
 
+SmoothSegmentedFunction::ValueAndDerivative FiberForceLengthCurve::
+    calcValueAndDerivative(double normFiberLength) const
+{
+    SimTK_ASSERT(
+        isObjectUpToDateWithProperties(),
+        "FiberForceLengthCurve: Curve is not up-to-date with its properties");
+    return m_curve.calcValueAndFirstDerivative(normFiberLength);
+}
+
 double FiberForceLengthCurve::calcDerivative(double normFiberLength,
                                              int order) const
 {

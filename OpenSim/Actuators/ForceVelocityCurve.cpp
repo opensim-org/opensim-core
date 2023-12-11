@@ -176,6 +176,15 @@ double ForceVelocityCurve::calcValue(double normFiberVelocity) const
     return m_curve.calcValue(normFiberVelocity);
 }
 
+SmoothSegmentedFunction::ValueAndDerivative ForceVelocityCurve::
+    calcValueAndDerivative(double normFiberVelocity) const
+{
+    SimTK_ASSERT(
+        isObjectUpToDateWithProperties(),
+        "ForceVelocityCurve: Curve is not up-to-date with its properties");
+    return m_curve.calcValueAndFirstDerivative(normFiberVelocity);
+}
+
 double ForceVelocityCurve::calcDerivative(double normFiberVelocity,
                                           int order) const
 {
