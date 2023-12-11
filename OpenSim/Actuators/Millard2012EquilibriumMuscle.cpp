@@ -33,8 +33,11 @@ const string Millard2012EquilibriumMuscle::
     STATE_FIBER_LENGTH_NAME = "fiber_length";
 const double MIN_NONZERO_DAMPING_COEFFICIENT = 0.001;
 
-const static int MLIFiberForceLengthCurveDerivative = 0;
+const static int MLIFiberForceLengthCurveDerivative  = 0;
 const static int MLIActiveForceLengthCurveDerivative = 1;
+const static int MVIIsFiberStateClamped         = 0;
+const static int MVITendonForceLengthMultiplier = 1;
+const static int MVITendonStiffness             = 2;
 
 //==============================================================================
 // HELPER FUNCTIONS
@@ -946,8 +949,25 @@ calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
         const MuscleLengthInfo &mli = getMuscleLengthInfo(s);
 
         // Get the static properties of this muscle.
-        double dlenMcl   = getLengtheningSpeed(s);
-        double optFibLen = getOptimalFiberLength();
+        const double dlenMcl        = getLengtheningSpeed(s);
+        const double optFibLen      = getOptimalFiberLength();
+        const double fiso           = getMaxIsometricForce();
+        const double tendonSlackLen = getTendonSlackLength();
+
+        // Compute tendon force length multiplier, and tendon stiffness. Tendon
+        // stiffness is computed here, because it is cheaper to evaluate the
+        // curve value and derivative simultaneously.
+        double fse = SimTK::NaN; // NaN for rigid tendon.
+        double tendonStiffness = SimTK::Infinity; // Inf for rigid tednon.
+        if (!get_ignore_tendon_compliance()) { // In case of compliant tendon.
+            const TendonForceLengthCurve& fseCurve =
+                get_TendonForceLengthCurve();
+            SmoothSegmentedFunction::ValueAndDerivative fseEval =
+                fseCurve.calcValueAndDerivative(mli.normTendonLength);
+
+            fse             = fseEval.value;
+            tendonStiffness = fseEval.derivative * (fiso/tendonSlackLen);
+        }
 
         //======================================================================
         // Compute fv by inverting the force-velocity relationship in the
@@ -984,10 +1004,6 @@ calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
                            getStateVariableValue(s, STATE_ACTIVATION_NAME);
             a = getActivationModel().clampActivation(a);
 
-            const TendonForceLengthCurve& fseCurve =
-                get_TendonForceLengthCurve();
-            double fse = fseCurve.calcValue(mli.normTendonLength);
-
             SimTK_ERRCHK_ALWAYS(mli.cosPennationAngle > SimTK::SignificantReal,
                 "calcFiberVelocityInfo",
                 "%s: Pennation angle is 90 degrees, causing a singularity");
@@ -1019,10 +1035,6 @@ calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
                            getStateVariableValue(s, STATE_ACTIVATION_NAME);
             a = getActivationModel().clampActivation(a);
 
-            const TendonForceLengthCurve& fseCurve =
-                get_TendonForceLengthCurve();
-            double fse = fseCurve.calcValue(mli.normTendonLength);
-
             double beta = get_fiber_damping();
             SimTK_ERRCHK_ALWAYS(
                 beta > SimTK::SignificantReal,
@@ -1032,7 +1044,7 @@ calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
             // Newton solve for fiber velocity.
             DampedFiberVelocityCalculationResult result =
                 calcDampedNormFiberVelocity(
-                    getMaxIsometricForce(),
+                    fiso,
                     a,
                     mli.fiberActiveForceLengthMultiplier,
                     mli.fiberPassiveForceLengthMultiplier,
@@ -1094,8 +1106,11 @@ calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
         fvi.normTendonVelocity           = dtl/getTendonSlackLength();
         fvi.fiberForceVelocityMultiplier = fv;
 
-        fvi.userDefinedVelocityExtras.resize(1);
-        fvi.userDefinedVelocityExtras[0] = fiberStateClamped;
+        fvi.userDefinedVelocityExtras.resize(3);
+        fvi.userDefinedVelocityExtras[MVIIsFiberStateClamped] =
+            fiberStateClamped;
+        fvi.userDefinedVelocityExtras[MVITendonForceLengthMultiplier] = fse;
+        fvi.userDefinedVelocityExtras[MVITendonStiffness] = tendonStiffness;
 
     } catch(const std::exception &x) {
         std::string msg = "Exception caught in Millard2012EquilibriumMuscle::"
@@ -1115,7 +1130,8 @@ calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
         // Get the quantities that we've already computed.
         const MuscleLengthInfo &mli = getMuscleLengthInfo(s);
         const FiberVelocityInfo &mvi = getFiberVelocityInfo(s);
-        double fiberStateClamped = mvi.userDefinedVelocityExtras[0];
+        double fiberStateClamped =
+            mvi.userDefinedVelocityExtras[MVIIsFiberStateClamped];
 
         // Get the properties of this muscle.
         double tendonSlackLen = getTendonSlackLength();
@@ -1199,28 +1215,22 @@ calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
             dFmAT_dlceAT = calc_DFiberForceAT_DFiberLengthAT(dFmAT_dlce,
                 mli.sinPennationAngle, mli.cosPennationAngle, mli.fiberLength);
 
-            // Compute the stiffness of the tendon.
+            // Compute the stiffness of the muscle.
+            dFt_dtl = mvi.userDefinedVelocityExtras[MVITendonStiffness];
             if(!get_ignore_tendon_compliance()) {
-                dFt_dtl = fseCurve.calcDerivative(mli.normTendonLength,1)
-                          *(fiso/tendonSlackLen);
-
                 // Compute the stiffness of the whole musculotendon actuator.
                 if (abs(dFmAT_dlceAT*dFt_dtl) > 0.0
                     && abs(dFmAT_dlceAT+dFt_dtl) > SimTK::SignificantReal) {
                     Ke = (dFmAT_dlceAT*dFt_dtl)/(dFmAT_dlceAT+dFt_dtl);
                 }
             } else {
-                dFt_dtl = SimTK::Infinity;
                 Ke = dFmAT_dlceAT;
             }
         }
 
-        double fse = 0.0;
-        if(!get_ignore_tendon_compliance()) {
-            fse = fseCurve.calcValue(mli.normTendonLength);
-        } else {
-            fse = fmAT/fiso;
-        }
+        const double fse = get_ignore_tendon_compliance()
+            ? fmAT/fiso
+            : mvi.userDefinedVelocityExtras[MVITendonForceLengthMultiplier];
 
         mdi.activation                = a;
         mdi.fiberForce                = fm;
