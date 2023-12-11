@@ -223,6 +223,15 @@ double TendonForceLengthCurve::calcValue(double aNormLength) const
     return m_curve.calcValue(aNormLength);
 }
 
+SmoothSegmentedFunction::ValueAndDerivative TendonForceLengthCurve::
+    calcValueAndDerivative(double aNormLength) const
+{
+    SimTK_ASSERT(
+        isObjectUpToDateWithProperties(),
+        "TendonForceLengthCurve: Tendon is not up-to-date with its properties");
+    return m_curve.calcValueAndFirstDerivative(aNormLength);
+}
+
 double TendonForceLengthCurve::calcDerivative(double aNormLength,
                                               int order) const
 {
